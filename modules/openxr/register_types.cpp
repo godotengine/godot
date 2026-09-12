@@ -79,6 +79,9 @@
 #include "extensions/openxr_valve_controller_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
+#include "extensions/spatial_container/openxr_spatial_container_extension.h"
+#include "extensions/spatial_container/openxr_spatial_container_self_rendering_extension.h"
+#include "extensions/spatial_container/openxr_spatial_container_state.h"
 #include "extensions/spatial_entities/openxr_spatial_anchor.h"
 #include "extensions/spatial_entities/openxr_spatial_entity_extension.h"
 #include "extensions/spatial_entities/openxr_spatial_marker_tracking.h"
@@ -115,6 +118,25 @@
 static OpenXRAPI *openxr_api = nullptr;
 static OpenXRInteractionProfileMetadata *openxr_interaction_profile_metadata = nullptr;
 static Ref<OpenXRInterface> openxr_interface;
+
+struct ExtensionSingleton {
+	String class_name;
+	OpenXRExtensionWrapper *extension;
+	bool registered_with_openxr;
+	bool registered_as_singleton;
+};
+
+static Vector<ExtensionSingleton> extensions_singletons;
+static inline void _register_extension(OpenXRExtensionWrapper *p_extension, bool p_register_with_openxr = true, bool p_register_as_singleton = false) {
+	String class_name = p_extension->get_class();
+	if (p_register_with_openxr) {
+		OpenXRAPI::register_extension_wrapper(p_extension);
+	}
+	if (p_register_as_singleton) {
+		Engine::get_singleton()->add_singleton(Engine::Singleton(class_name, p_extension));
+	}
+	extensions_singletons.push_back({ class_name, p_extension, p_register_with_openxr, p_register_as_singleton });
+}
 
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
@@ -156,88 +178,67 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			// Always register our extension wrappers even if we don't initialize OpenXR.
 			// Some of these wrappers will add functionality to our editor.
 #ifdef ANDROID_ENABLED
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRAndroidExtension));
+			_register_extension(memnew(OpenXRAndroidExtension));
 #endif
 
 			// register our other extensions
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPalmPoseExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRLocalFloorExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPicoControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRCompositionLayerDepthExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRCompositionLayerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHuaweiControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRDisplayRefreshRateExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRWMRControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRML2ControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMetaControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXREyeGazeInteractionExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandInteractionExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMxInkExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRValveControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRKHRGenericController));
+			_register_extension(memnew(OpenXRPalmPoseExtension));
+			_register_extension(memnew(OpenXRLocalFloorExtension));
+			_register_extension(memnew(OpenXRPicoControllerExtension));
+			_register_extension(memnew(OpenXRCompositionLayerDepthExtension));
+			_register_extension(memnew(OpenXRCompositionLayerExtension));
+			_register_extension(memnew(OpenXRHTCControllerExtension));
+			_register_extension(memnew(OpenXRHTCViveTrackerExtension));
+			_register_extension(memnew(OpenXRHuaweiControllerExtension));
+			_register_extension(memnew(OpenXRDisplayRefreshRateExtension));
+			_register_extension(memnew(OpenXRWMRControllerExtension));
+			_register_extension(memnew(OpenXRML2ControllerExtension));
+			_register_extension(memnew(OpenXRMetaControllerExtension));
+			_register_extension(memnew(OpenXREyeGazeInteractionExtension));
+			_register_extension(memnew(OpenXRHandInteractionExtension));
+			_register_extension(memnew(OpenXRMxInkExtension));
+			_register_extension(memnew(OpenXRVisibilityMaskExtension));
+			_register_extension(memnew(OpenXRPerformanceSettingsExtension));
+			_register_extension(memnew(OpenXRValveControllerExtension));
+			_register_extension(memnew(OpenXRKHRGenericController));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
-			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);
-			OpenXRAPI::register_extension_wrapper(future_extension);
-			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRFutureExtension", future_extension));
+			_register_extension(memnew(OpenXRFutureExtension), true, true);
 
 			// Register render model extension as a singleton.
 #ifdef MODULE_GLTF_ENABLED
-			OpenXRRenderModelExtension *render_model_extension = memnew(OpenXRRenderModelExtension);
-			OpenXRAPI::register_extension_wrapper(render_model_extension);
-			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRRenderModelExtension", render_model_extension));
+			_register_extension(memnew(OpenXRRenderModelExtension), true, true);
 #endif
 
 			// Register spatial entity extensions
-			OpenXRSpatialEntityExtension *spatial_entity_extension = memnew(OpenXRSpatialEntityExtension);
-			OpenXRAPI::register_extension_wrapper(spatial_entity_extension);
-			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRSpatialEntityExtension", spatial_entity_extension));
-
-			OpenXRSpatialAnchorCapability *anchor_capability = memnew(OpenXRSpatialAnchorCapability);
-			OpenXRAPI::register_extension_wrapper(anchor_capability);
-			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRSpatialAnchorCapability", anchor_capability));
-
-			OpenXRSpatialPlaneTrackingCapability *plane_tracking_capability = memnew(OpenXRSpatialPlaneTrackingCapability);
-			OpenXRAPI::register_extension_wrapper(plane_tracking_capability);
-			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRSpatialPlaneTrackingCapability", plane_tracking_capability));
-
-			OpenXRSpatialMarkerTrackingCapability *marker_tracking_capability = memnew(OpenXRSpatialMarkerTrackingCapability);
-			OpenXRAPI::register_extension_wrapper(marker_tracking_capability);
-			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRSpatialMarkerTrackingCapability", marker_tracking_capability));
+			_register_extension(memnew(OpenXRSpatialEntityExtension), true, true);
+			_register_extension(memnew(OpenXRSpatialAnchorCapability), true, true);
+			_register_extension(memnew(OpenXRSpatialPlaneTrackingCapability), true, true);
+			_register_extension(memnew(OpenXRSpatialMarkerTrackingCapability), true, true);
 
 			// Register frame synthesis extension as a singleton.
-			OpenXRFrameSynthesisExtension *frame_synthesis_extension = memnew(OpenXRFrameSynthesisExtension);
-			OpenXRAPI::register_extension_wrapper(frame_synthesis_extension);
-			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRFrameSynthesisExtension", frame_synthesis_extension));
+			_register_extension(memnew(OpenXRFrameSynthesisExtension), true, true);
 
 			// Register android thread settings extension as a singleton.
-			OpenXRAndroidThreadSettingsExtension *android_thread_settings = memnew(OpenXRAndroidThreadSettingsExtension);
-			OpenXRAPI::register_extension_wrapper(android_thread_settings);
-			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRAndroidThreadSettingsExtension", android_thread_settings));
+			_register_extension(memnew(OpenXRAndroidThreadSettingsExtension), true, true);
 
 			// Register user presence extension as a singleton
-			OpenXRUserPresenceExtension *user_presence_extension = memnew(OpenXRUserPresenceExtension);
-			OpenXRAPI::register_extension_wrapper(user_presence_extension);
+			_register_extension(memnew(OpenXRUserPresenceExtension), true, true);
 
 			// register gated extensions
-			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXRDebugUtilsExtension));
-			}
-			if (GLOBAL_GET("xr/openxr/extensions/hand_tracking")) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandTrackingExtension));
-			}
+			_register_extension(memnew(OpenXRDebugUtilsExtension), int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0);
+			_register_extension(memnew(OpenXRHandTrackingExtension), GLOBAL_GET("xr/openxr/extensions/hand_tracking"));
+
+			// Spatial container extensions
+			bool spatial_container_enabled = GLOBAL_GET("xr/openxr/extensions/spatial_container/enabled");
+			_register_extension(memnew(OpenXRSpatialContainerExtension), spatial_container_enabled, true);
+			// For now we gate the self rendering extension under the same preference as the spatial_container extension.
+			// TODO: When we add support for system rendering, gate self rendering under a different project setting.
+			_register_extension(memnew(OpenXRSpatialContainerSelfRenderingExtension), spatial_container_enabled, true);
 
 			// register gated binding modifiers
-			if (GLOBAL_GET("xr/openxr/binding_modifiers/analog_threshold")) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXRValveAnalogThresholdExtension));
-			}
-			if (GLOBAL_GET("xr/openxr/binding_modifiers/dpad_binding")) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXRDPadBindingExtension));
-			}
+			_register_extension(memnew(OpenXRValveAnalogThresholdExtension), GLOBAL_GET("xr/openxr/binding_modifiers/analog_threshold"));
+			_register_extension(memnew(OpenXRDPadBindingExtension), GLOBAL_GET("xr/openxr/binding_modifiers/dpad_binding"));
 		}
 
 		if (OpenXRAPI::openxr_is_enabled()) {
@@ -306,6 +307,10 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRRenderModelManager);
 #endif
 
+		GDREGISTER_CLASS(OpenXRSpatialContainerExtension);
+		GDREGISTER_CLASS(OpenXRSpatialContainerSelfRenderingExtension);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialContainerState);
+
 		GDREGISTER_CLASS(OpenXRSpatialEntityExtension);
 		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialEntityTracker);
 		GDREGISTER_CLASS(OpenXRAnchorTracker);
@@ -365,6 +370,17 @@ void uninitialize_openxr_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+
+	for (const ExtensionSingleton &extension_singleton : extensions_singletons) {
+		if (extension_singleton.registered_as_singleton) {
+			Engine::get_singleton()->remove_singleton(extension_singleton.class_name);
+		}
+		if (!extension_singleton.registered_with_openxr) {
+			// OpenXRAPI handles the cleanup for registered extensions.
+			memdelete(extension_singleton.extension);
+		}
+	}
+	extensions_singletons.clear();
 
 	if (openxr_interface.is_valid()) {
 		// uninitialize just in case

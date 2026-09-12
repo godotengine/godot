@@ -70,7 +70,6 @@ void exit_callback() {
 	delete os; // We used a normal new, so it needs a normal delete.
 	os = nullptr;
 	godot_cleanup_profiler();
-	emscripten_cancel_main_loop(); // We are exiting in this iteration.
 	emscripten_force_exit(exit_code); // Exit runtime.
 }
 

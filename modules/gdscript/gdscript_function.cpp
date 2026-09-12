@@ -243,6 +243,7 @@ GDScriptFunction::~GDScriptFunction() {
 	for (int i = 0; i < argument_types.size(); i++) {
 		argument_types.write[i].script_type_ref = Ref<Script>();
 	}
+
 	return_type.script_type_ref = Ref<Script>();
 
 #ifdef DEBUG_ENABLED
@@ -351,9 +352,23 @@ GDScriptFunctionState::GDScriptFunctionState() :
 		instances_list(this) {
 }
 
-GDScriptFunctionState::~GDScriptFunctionState() {
+void GDScriptFunctionState::clear() {
+	if (cleared) {
+		return;
+	}
+	ERR_FAIL_NULL_MSG(GDScriptLanguage::singleton, "GDScript bug (please report): Function state was not cleared before language shutdown.");
 	MutexLock lock(GDScriptLanguage::singleton->mutex);
+	if (cleared) {
+		return;
+	}
+	cleared = true;
+
+	_clear_connections();
 	scripts_list.remove_from_list();
 	instances_list.remove_from_list();
 	_clear_stack();
+}
+
+GDScriptFunctionState::~GDScriptFunctionState() {
+	clear();
 }

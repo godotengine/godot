@@ -30,6 +30,7 @@
 
 #include "input_event.h"
 
+#include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
 #include "core/math/transform_2d.h"
@@ -61,6 +62,10 @@ bool InputEvent::is_action_released(const StringName &p_action, bool p_exact_mat
 	bool pressed_state;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>(const_cast<InputEvent *>(this)), p_action, p_exact_match, &pressed_state, nullptr, nullptr);
 	return valid && !pressed_state;
+}
+
+bool InputEvent::is_action_just_pressed_or_echo(const StringName &p_action, bool p_exact_match) const {
+	return is_action(p_action, p_exact_match) && (is_echo() || Input::get_singleton()->is_action_just_pressed_by_event(p_action, const_cast<InputEvent *>(this)));
 }
 
 float InputEvent::get_action_strength(const StringName &p_action, bool p_exact_match) const {
@@ -228,11 +233,11 @@ bool InputEventWithModifiers::is_meta_pressed() const {
 	return meta_pressed;
 }
 
-void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *event) {
-	set_alt_pressed(event->is_alt_pressed());
-	set_shift_pressed(event->is_shift_pressed());
-	set_ctrl_pressed(event->is_ctrl_pressed());
-	set_meta_pressed(event->is_meta_pressed());
+void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *p_event) {
+	set_alt_pressed(p_event->is_alt_pressed());
+	set_shift_pressed(p_event->is_shift_pressed());
+	set_ctrl_pressed(p_event->is_ctrl_pressed());
+	set_meta_pressed(p_event->is_meta_pressed());
 }
 
 BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
@@ -881,7 +886,7 @@ String InputEventMouseButton::_to_string() {
 		case MouseButton::WHEEL_RIGHT:
 		case MouseButton::MB_XBUTTON1:
 		case MouseButton::MB_XBUTTON2:
-			button_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)idx - 1])); // button index starts from 1, array index starts from 0, so subtract 1
+			button_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)idx - 1])); // button index starts from 1, array index starts from 0, so subtract 1
 			break;
 		default:
 			break;
@@ -1008,19 +1013,19 @@ String InputEventMouseMotion::_to_string() {
 	String button_mask_string = itos((int64_t)mouse_button_mask);
 
 	if (mouse_button_mask.has_flag(MouseButtonMask::LEFT)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
 	}
 	if (mouse_button_mask.has_flag(MouseButtonMask::MIDDLE)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
 	}
 	if (mouse_button_mask.has_flag(MouseButtonMask::RIGHT)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
 	}
 	if (mouse_button_mask.has_flag(MouseButtonMask::MB_XBUTTON1)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
 	}
 	if (mouse_button_mask.has_flag(MouseButtonMask::MB_XBUTTON2)) {
-		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
+		button_mask_string += vformat(" (%s)", RTR(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
 	}
 
 	// Work around the fact vformat can only take 5 substitutions but 7 need to be passed.
@@ -1194,7 +1199,7 @@ static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX] = {
 };
 
 String InputEventJoypadMotion::as_text() const {
-	String desc = axis < JoyAxis::MAX ? TTRGET(_joy_axis_descriptions[(size_t)axis]) : RTR("Unknown Joypad Axis");
+	String desc = axis < JoyAxis::MAX ? RTR(_joy_axis_descriptions[(size_t)axis]) : RTR("Unknown Joypad Axis");
 
 	return vformat(RTR("Joypad Motion on Axis %d (%s) with Value %.2f"), axis, desc, axis_value);
 }
@@ -1308,7 +1313,7 @@ String InputEventJoypadButton::as_text() const {
 	String text = vformat(RTR("Joypad Button %d"), (int64_t)button_index);
 
 	if (button_index > JoyButton::INVALID && button_index < JoyButton::SDL_MAX) {
-		text += vformat(" (%s)", TTRGET(_joy_button_descriptions[(size_t)button_index]));
+		text += vformat(" (%s)", RTR(_joy_button_descriptions[(size_t)button_index]));
 	}
 
 	if (pressure != 0) {
@@ -1379,6 +1384,14 @@ bool InputEventScreenTouch::is_double_tap() const {
 	return double_tap;
 }
 
+void InputEventScreenTouch::set_long_press(bool p_long_press) {
+	long_press = p_long_press;
+}
+
+bool InputEventScreenTouch::is_long_press() const {
+	return long_press;
+}
+
 RequiredResult<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 	Ref<InputEventScreenTouch> st;
 	st.instantiate();
@@ -1389,6 +1402,7 @@ RequiredResult<InputEvent> InputEventScreenTouch::xformed_by(const Transform2D &
 	st->set_pressed(pressed);
 	st->set_canceled(canceled);
 	st->set_double_tap(double_tap);
+	st->set_long_press(long_press);
 
 	st->merge_meta_from(this);
 
@@ -1405,7 +1419,8 @@ String InputEventScreenTouch::_to_string() {
 	String p = pressed ? "true" : "false";
 	String canceled_state = canceled ? "true" : "false";
 	String double_tap_string = double_tap ? "true" : "false";
-	return vformat("InputEventScreenTouch: index=%d, pressed=%s, canceled=%s, position=(%s), double_tap=%s", index, p, canceled_state, String(get_position()), double_tap_string);
+	String long_press_string = long_press ? "true" : "false";
+	return vformat("InputEventScreenTouch: index=%d, pressed=%s, canceled=%s, position=(%s), double_tap=%s long_press=%s", index, p, canceled_state, String(get_position()), double_tap_string, long_press_string);
 }
 
 void InputEventScreenTouch::_bind_methods() {
@@ -1421,11 +1436,15 @@ void InputEventScreenTouch::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_double_tap", "double_tap"), &InputEventScreenTouch::set_double_tap);
 	ClassDB::bind_method(D_METHOD("is_double_tap"), &InputEventScreenTouch::is_double_tap);
 
+	ClassDB::bind_method(D_METHOD("set_long_press", "long_press"), &InputEventScreenTouch::set_long_press);
+	ClassDB::bind_method(D_METHOD("is_long_press"), &InputEventScreenTouch::is_long_press);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "set_index", "get_index");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "canceled"), "set_canceled", "is_canceled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "double_tap"), "set_double_tap", "is_double_tap");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "long_press"), "set_long_press", "is_long_press");
 }
 
 ///////////////////////////////////
@@ -1932,7 +1951,7 @@ void InputEventShortcut::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &InputEventShortcut::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &InputEventShortcut::get_shortcut);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static()), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, Shortcut::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_shortcut", "get_shortcut");
 }
 
 String InputEventShortcut::as_text() const {

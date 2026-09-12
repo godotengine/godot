@@ -58,22 +58,6 @@ void GraphElement::_resort() {
 	}
 }
 
-Size2 GraphElement::get_minimum_size() const {
-	Size2 minsize;
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = as_sortable_control(get_child(i), SortableVisibilityMode::IGNORE);
-		if (!child) {
-			continue;
-		}
-
-		Size2i size = child->get_bound_minimum_size();
-
-		minsize = minsize.max(size);
-	}
-
-	return minsize;
-}
-
 void GraphElement::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {

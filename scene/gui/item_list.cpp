@@ -346,7 +346,7 @@ Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
 	if (p_expand && p_idx % current_columns == current_columns - 1) {
 		int width = get_size().width - theme_cache.panel_style->get_minimum_size().width;
 		if (scroll_bar_v->is_visible()) {
-			width -= scroll_bar_v->get_bound_minimum_size().width;
+			width -= scroll_bar_v->get_bound_minimum_size().width + theme_cache.scroll_bar_h_separation;
 		}
 		ret.size.width = width - ret.position.x;
 	}
@@ -934,7 +934,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		else if (p_event->is_action("ui_up", true)) {
+		else if (p_event->is_action_just_pressed_or_echo("ui_up", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
@@ -981,7 +981,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		else if (p_event->is_action("ui_down", true)) {
+		else if (p_event->is_action_just_pressed_or_echo("ui_down", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
@@ -1058,7 +1058,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		else if (p_event->is_action("ui_left", true)) {
+		else if (p_event->is_action_just_pressed_or_echo("ui_left", true)) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != 0) {
@@ -1087,7 +1087,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 
-		else if (p_event->is_action("ui_right", true)) {
+		else if (p_event->is_action_just_pressed_or_echo("ui_right", true)) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
@@ -1170,8 +1170,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() * pan_gesture->get_delta().y / 8);
-		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() * pan_gesture->get_delta().x / 8);
+		Vector2 delta = pan_gesture->get_delta();
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + delta.y);
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + delta.x);
 	}
 
 	if (scroll_value_modified && (scroll_bar_v->get_value() != prev_scroll_v || scroll_bar_h->get_value() != prev_scroll_h)) {
@@ -1420,7 +1421,7 @@ void ItemList::_notification(int p_what) {
 			Size2 size = get_size();
 			int width = size.width - theme_cache.panel_style->get_minimum_size().width;
 			if (scroll_bar_v->is_visible()) {
-				width -= scroll_bar_v_min.width;
+				width -= scroll_bar_v_min.width + theme_cache.scroll_bar_h_separation;
 			}
 
 			draw_style_box(theme_cache.panel_style, Rect2(Point2(), size));
@@ -1550,7 +1551,7 @@ void ItemList::_notification(int p_what) {
 				bool is_hovered = (hovered == i);
 				bool is_selected = items[i].selected;
 				bool is_disabled = items[i].disabled;
-				bool is_focused = has_focus();
+				bool is_focused = has_focus(true);
 
 				if (is_disabled) {
 					if (is_hovered) {
@@ -2487,6 +2488,7 @@ void ItemList::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, v_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scroll_bar_h_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, focus_style, "focus");

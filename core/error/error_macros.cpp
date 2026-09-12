@@ -147,7 +147,8 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 // but we don't want to make it noisy by printing lots of file & line info (because it's already
 // been printing by a preceding _err_print_error).
 void _err_print_error_asap(const String &p_error, ErrorHandlerType p_type) {
-	const char *err_details = p_error.utf8().get_data();
+	const CharString err_details_str = p_error.utf8();
+	const char *err_details = err_details_str.get_data();
 
 	if (!CoreGlobals::print_ready) {
 		_err_print_fallback(nullptr, nullptr, 0, err_details, p_type, false);

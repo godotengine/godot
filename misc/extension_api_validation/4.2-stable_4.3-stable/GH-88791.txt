@@ -1,5 +1,3 @@
-GH-88791
---------
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Skeleton3D/methods/add_bone': return_value
 
 Added a return value for add_bone.

@@ -61,6 +61,10 @@
 #include "scene/gui/tree.h"
 #include "servers/display/display_server.h"
 
+#ifndef ANDROID_ENABLED
+#include "editor/export/android_sdk_manager.h"
+#endif
+
 #include <zstd.h>
 
 void ProjectExportTextureFormatError::_on_fix_texture_format_pressed() {
@@ -385,6 +389,21 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 			export_templates_error->hide();
 		}
 
+#ifndef ANDROID_ENABLED
+		if (current->get_platform()->is_class("EditorExportPlatformAndroid") && !(AndroidSDKManager::is_android_sdk_setup() && AndroidSDKManager::is_java_sdk_setup())) {
+			if (!AndroidSDKManager::is_java_sdk_setup() && !AndroidSDKManager::is_android_sdk_setup()) {
+				setup_android_java_sdk->set_text(TTRC("Setup Android Build"));
+			} else if (!AndroidSDKManager::is_java_sdk_setup()) {
+				setup_android_java_sdk->set_text(TTRC("Setup Java SDK"));
+			} else if (!AndroidSDKManager::is_android_sdk_setup()) {
+				setup_android_java_sdk->set_text(TTRC("Setup Android SDK"));
+			}
+			android_sdk_error_container->show();
+		} else {
+			android_sdk_error_container->hide();
+		}
+#endif
+
 		export_warning->hide();
 		export_button->set_disabled(true);
 	} else {
@@ -405,6 +424,9 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 
 		export_error->hide();
 		export_templates_error->hide();
+#ifndef ANDROID_ENABLED
+		android_sdk_error_container->hide();
+#endif
 		export_button->set_disabled(false);
 	}
 
@@ -421,8 +443,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		export_texture_format_error->hide();
 	}
 
-	String enc_in_filters_str = current->get_enc_in_filter();
-	String enc_ex_filters_str = current->get_enc_ex_filter();
+	String enc_in_filters_str = current->get_enc_in_filters_str();
+	String enc_ex_filters_str = current->get_enc_ex_filters_str();
 	if (!updating_enc_filters) {
 		enc_in_filters->set_text(enc_in_filters_str);
 		enc_ex_filters->set_text(enc_ex_filters_str);
@@ -547,6 +569,14 @@ void ProjectExportDialog::_advanced_options_pressed() {
 	_update_presets();
 }
 
+#ifndef ANDROID_ENABLED
+void ProjectExportDialog::_update_android_sdk_error_container() {
+	if (android_sdk_error_container->is_visible() && (AndroidSDKManager::is_android_sdk_setup() || AndroidSDKManager::is_java_sdk_setup())) {
+		_update_current_preset();
+	}
+}
+#endif
+
 void ProjectExportDialog::_options_filter_changed(const String &p_filter) {
 	const bool search_active = !p_filter.is_empty();
 	advanced_options->set_disabled(search_active);
@@ -658,8 +688,8 @@ void ProjectExportDialog::_enc_filters_changed(const String &p_filters) {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
 
-	current->set_enc_in_filter(enc_in_filters->get_text());
-	current->set_enc_ex_filter(enc_ex_filters->get_text());
+	current->set_enc_in_filters_str(enc_in_filters->get_text());
+	current->set_enc_ex_filters_str(enc_ex_filters->get_text());
 
 	updating_enc_filters = true;
 	_update_current_preset();
@@ -807,8 +837,8 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_patch_delta_include_filter(current->get_patch_delta_include_filter());
 	preset->set_patch_delta_exclude_filter(current->get_patch_delta_exclude_filter());
 	preset->set_custom_features(current->get_custom_features());
-	preset->set_enc_in_filter(current->get_enc_in_filter());
-	preset->set_enc_ex_filter(current->get_enc_ex_filter());
+	preset->set_enc_in_filters_str(current->get_enc_in_filters_str());
+	preset->set_enc_ex_filters_str(current->get_enc_ex_filters_str());
 	preset->set_enc_pck(current->get_enc_pck());
 	preset->set_enc_directory(current->get_enc_directory());
 	preset->set_script_encryption_key(current->get_script_encryption_key());
@@ -1840,7 +1870,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	patch_delta_min_reduction->set_min(0.0);
 	patch_delta_min_reduction->set_max(100.0);
 	patch_delta_min_reduction->set_step(1.0);
-	patch_delta_min_reduction->set_suffix("%");
+	patch_delta_min_reduction->set_format("%s%%");
 	patch_delta_min_reduction->set_tooltip_text(TTRC("How much smaller, when compared to the new file, a delta-encoded patch needs to be for it to be exported.\n"
 													 "If the patch is not at least this much smaller, the new file will be exported as-is."));
 	patch_delta_min_reduction->connect(SceneStringName(value_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_min_reduction_changed));
@@ -2089,6 +2119,23 @@ ProjectExportDialog::ProjectExportDialog() {
 	download_templates->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	export_templates_error->add_child(download_templates);
 	download_templates->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_open_export_template_manager));
+
+#ifndef ANDROID_ENABLED
+	// Android SDK errors bottom section.
+	android_sdk_error_container = memnew(HBoxContainer);
+	main_vb->add_child(android_sdk_error_container);
+	android_sdk_error_container->hide();
+
+	AndroidSDKManager *android_sdk_manager = memnew(AndroidSDKManager);
+	add_child(android_sdk_manager);
+	android_sdk_manager->connect("java_sdk_installed", callable_mp(this, &ProjectExportDialog::_update_android_sdk_error_container));
+	android_sdk_manager->connect("android_sdk_installed", callable_mp(this, &ProjectExportDialog::_update_android_sdk_error_container));
+
+	setup_android_java_sdk = memnew(LinkButton);
+	setup_android_java_sdk->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	android_sdk_error_container->add_child(setup_android_java_sdk);
+	setup_android_java_sdk->connect(SceneStringName(pressed), callable_mp(android_sdk_manager, &AndroidSDKManager::run_setup).bind(Callable(), Callable()));
+#endif
 
 	// Export project file dialog.
 

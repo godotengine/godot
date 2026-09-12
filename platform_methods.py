@@ -17,7 +17,7 @@ compatibility_platform_aliases = {
 }
 
 # CPU architecture options.
-architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc64", "wasm32", "wasm64", "loongarch64"]
+architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc64", "wasm32", "loongarch64"]
 architecture_aliases = {
     "x86": "x86_32",
     "x64": "x86_64",
@@ -304,17 +304,26 @@ def generate_bundle_apple_embedded(platform, framework_dir, framework_dir_sim, u
     shutil.rmtree(app_dir)
 
 
-def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_header_filename, all_swift_files):
+def setup_swift_builder(
+    env,
+    apple_platform,
+    sdk_path,
+    current_path,
+    bridging_header_filename,
+    all_swift_files,
+):
+    # Compile Swift sources and emit a Swift->ObjC interop header.
+
     from SCons.Script import Action, Builder
 
     if apple_platform == "macos":
         target_suffix = "macosx10.9"
 
     elif apple_platform == "ios":
-        target_suffix = "ios14.0"  # iOS 14.0 needed for SwiftUI lifecycle
+        target_suffix = "ios15.0"  # iOS 15.0 needed for SwiftUI lifecycle
 
     elif apple_platform == "iossimulator":
-        target_suffix = "ios14.0-simulator"  # iOS 14.0 needed for SwiftUI lifecycle
+        target_suffix = "ios15.0-simulator"  # iOS 15.0 needed for SwiftUI lifecycle
 
     elif apple_platform == "visionos":
         target_suffix = "xros26.0"
@@ -327,23 +336,28 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
 
     swiftc_target = env["arch"] + "-apple-" + target_suffix
 
-    env["ALL_SWIFT_FILES"] = all_swift_files
-    env["CURRENT_PATH"] = current_path
-    if "SWIFT_FRONTEND" in env and env["SWIFT_FRONTEND"] != "":
-        frontend_path = env["SWIFT_FRONTEND"]
+    if "SWIFT_COMPILER" in env and env["SWIFT_COMPILER"] != "":
+        swiftc_path = env["SWIFT_COMPILER"]
     elif "osxcross" not in env:
-        frontend_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swift-frontend"
+        swiftc_path = "$APPLE_TOOLCHAIN_PATH/usr/bin/swiftc"
     else:
-        frontend_path = None
+        swiftc_path = None
 
-    if frontend_path is None:
-        raise Exception("Swift frontend path is not set. Please set SWIFT_FRONTEND.")
+    if swiftc_path is None:
+        raise Exception("Swift compiler path is not set. Please set SWIFT_COMPILER.")
 
     bridging_header_path = current_path + "/" + bridging_header_filename
-    env["SWIFTC"] = frontend_path + " -frontend -c"  # Swift compiler
-    env["SWIFTCFLAGS"] = [
+    swift_module_name = "godot_swift_module"
+    # Standard `<module>-Swift.h` name plus `.gen.h` so it's covered by `*.gen.*` in `.gitignore`.
+    swift_objc_header_path = current_path + "/" + swift_module_name + "-Swift.gen.h"
+    env["SWIFTC"] = swiftc_path  # Swift compiler
+    # Flags for the whole-module Swift compile.
+    common_swift_flags = [
+        "-warnings-as-errors",
         "-cxx-interoperability-mode=default",
         "-emit-object",
+        "-emit-objc-header-path",
+        swift_objc_header_path,
         "-target",
         swiftc_target,
         "-sdk",
@@ -354,15 +368,20 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         "6",
         "-parse-as-library",
         "-module-name",
-        "godot_swift_module",
+        swift_module_name,
         "-I./",  # Pass the current directory as the header root so bridging headers can include files from any point of the hierarchy
     ]
+    # All sources are compiled together into a single object, which requires whole-module mode.
+    # Whole-module mode is also required for `-emit-objc-header-path`; per-file mode drops it.
+    env["SWIFTCFLAGS"] = ["-wmo"] + common_swift_flags
 
     if "osxcross" in env:
         env.Append(
             SWIFTCFLAGS=[
                 "-resource-dir",
                 "/root/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift",
+                "-Xfrontend",
+                "-enable-cross-import-overlays",
             ]
         )
 
@@ -379,11 +398,8 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
         env.Append(SWIFTCFLAGS=["-Onone"])
 
     def generate_swift_action(source, target, env, for_signature):
-        fullpath_swift_files = [env["CURRENT_PATH"] + "/" + file for file in env["ALL_SWIFT_FILES"]]
-        fullpath_swift_files.remove(source[0].abspath)
-
-        fullpath_swift_files_string = '"' + '" "'.join(fullpath_swift_files) + '"'
-        compile_command = "$SWIFTC " + fullpath_swift_files_string + " -primary-file $SOURCE -o $TARGET $SWIFTCFLAGS"
+        swift_files_string = '"' + '" "'.join([file.abspath for file in source]) + '"'
+        compile_command = "$SWIFTC " + swift_files_string + " -o $TARGET $SWIFTCFLAGS"
 
         swift_comdstr = env.get("SWIFTCOMSTR")
         if swift_comdstr is not None:
@@ -393,11 +409,23 @@ def setup_swift_builder(env, apple_platform, sdk_path, current_path, bridging_he
 
         return swift_action
 
-    # Define Builder for Swift files
+    def swift_emitter(target, source, env):
+        # Redirect the object, but keep the interop header next to the Swift sources so
+        # ObjC++ in the same directory resolves it with a quoted `#import`.
+        target, source = methods.redirect_emitter(target, source, env)
+        return target + [env.File(swift_objc_header_path)], source
+
+    # Define Builder that compiles all Swift sources into a single object file plus the
+    # `@objc` interop header.
     swift_builder = Builder(
-        generator=generate_swift_action, suffix=env["OBJSUFFIX"], src_suffix=".swift", emitter=methods.redirect_emitter
+        generator=generate_swift_action, suffix=env["OBJSUFFIX"], src_suffix=".swift", emitter=swift_emitter
     )
 
-    env.Append(BUILDERS={"Swift": swift_builder})
-    env["BUILDERS"]["Library"].add_src_builder("Swift")
-    env["BUILDERS"]["Object"].add_action(".swift", Action(generate_swift_action, generator=1))
+    env.Append(BUILDERS={"SwiftModule": swift_builder})
+
+    swift_sources = [env.File(current_path + "/" + file) for file in all_swift_files]
+    swift_module, swift_objc_header = env.SwiftModule(current_path + "/" + swift_module_name, swift_sources)
+    # Lets ObjC++ sources that `#import` the interop header order against its generation.
+    env["SWIFT_OBJC_HEADER_TARGET"] = swift_objc_header
+
+    return [swift_module]

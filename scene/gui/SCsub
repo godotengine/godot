@@ -4,3 +4,11 @@ from misc.utility.scons_hints import *
 Import("env")
 
 env.add_source_files(env.scene_sources, "*.cpp")
+
+# HACK: GraphEdit has a strong dependency on Line2D, so always compile for advanced GUI builds.
+# However, these just serve as internal classes, we don't need to expose them, since 2D is supposed to be disabled.
+# Proper fix: Refactor GraphEdit to not depend on Line2D, use lower level line drawing APIs instead.
+if env["disable_2d"] and not env["disable_advanced_gui"]:
+    env.add_source_files(env.scene_sources, "../2d/line_2d.cpp")
+    env.add_source_files(env.scene_sources, "../2d/line_builder.cpp")
+    env.add_source_files(env.scene_sources, "../2d/node_2d.cpp")

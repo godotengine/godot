@@ -30,9 +30,9 @@
 
 #include "audio_rb_resampler.h"
 
-#include "core/math/audio_frame.h"
 #include "core/math/math_funcs_binary.h"
 #include "core/os/memory.h"
+#include "servers/audio/audio_frame.h"
 
 int AudioRBResampler::get_channel_count() const {
 	if (!rb) {

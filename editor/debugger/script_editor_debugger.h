@@ -89,8 +89,6 @@ private:
 		VMEM_MENU_OWNERS,
 	};
 
-	AcceptDialog *msgdialog = nullptr;
-
 	LineEdit *clicked_ctrl = nullptr;
 	LineEdit *clicked_ctrl_type = nullptr;
 	LineEdit *live_edit_root = nullptr;
@@ -372,6 +370,8 @@ public:
 	bool get_debug_mute_audio() const;
 	void set_debug_mute_audio(bool p_mute);
 
+	void set_debug_collisions(bool p_enable);
+
 	EditorDebuggerNode::CameraOverride get_camera_override() const;
 	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);
 
@@ -395,7 +395,7 @@ public:
 	void send_message(const String &p_message, const Array &p_args);
 	void toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data);
 
-	void update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot);
+	void update_layout(EditorDock::DockLayout p_layout, int p_slot);
 
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();

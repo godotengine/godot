@@ -93,13 +93,12 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 	Dictionary dict = p_param;
 	LSP::TextDocumentIdentifier doc;
 	doc.load(dict["textDocument"]);
-	String text = dict["text"];
 
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
 	Ref<GDScript> scr = ResourceLoader::load(path);
 	if (scr.is_valid() && (scr->load_source_code(path) == OK)) {
 		if (scr->is_tool()) {
-			scr->get_language()->reload_tool_script(scr, true);
+			scr->get_language()->reload_tool_script(scr);
 		} else {
 			scr->reload(true);
 		}
@@ -343,7 +342,7 @@ Variant GDScriptTextDocument::declaration(const Dictionary &p_params) {
 				case LSP::SymbolKind::Function:
 					id = "class_method:" + symbol->native_class + ":" + symbol->name;
 					break;
-				default:
+				default: // Deprecated.
 					id = "class_global:" + symbol->native_class + ":" + symbol->name;
 					break;
 			}

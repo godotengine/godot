@@ -2,16 +2,15 @@
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
-#include "common.h"
+#include "x509_internal.h"
 
-#include "mbedtls/build_info.h"
 #if defined(MBEDTLS_PKCS7_C)
 #include "mbedtls/pkcs7.h"
-#include "x509_internal.h"
 #include "mbedtls/asn1.h"
 #include "mbedtls/x509_crt.h"
 #include "mbedtls/x509_crl.h"
 #include "mbedtls/oid.h"
+#include "x509_oid.h"
 #include "mbedtls/error.h"
 
 #if defined(MBEDTLS_FS_IO)
@@ -482,7 +481,7 @@ static int pkcs7_get_signed_data(unsigned char *buf, size_t buflen,
         return ret;
     }
 
-    ret = mbedtls_oid_get_md_alg(&signed_data->digest_alg_identifiers, &md_alg);
+    ret = mbedtls_x509_oid_get_md_alg(&signed_data->digest_alg_identifiers, &md_alg);
     if (ret != 0) {
         return MBEDTLS_ERR_PKCS7_INVALID_ALG;
     }
@@ -661,10 +660,24 @@ static int mbedtls_pkcs7_data_or_hash_verify(mbedtls_pkcs7 *pkcs7,
         return MBEDTLS_ERR_PKCS7_CERT_DATE_INVALID;
     }
 
-    ret = mbedtls_oid_get_md_alg(&pkcs7->signed_data.digest_alg_identifiers, &md_alg);
+    ret = mbedtls_x509_oid_get_md_alg(&pkcs7->signed_data.digest_alg_identifiers, &md_alg);
     if (ret != 0) {
         return ret;
     }
+
+#if !defined(MBEDTLS_PKCS7_ALLOW_WEAK_SIGNATURES)
+    /* Ensure the MD alg from the PKCS#7 context and signature algorithm from
+     * the certificate belong to the list of secure algorithms
+     * (i.e. mbedtls_x509_crt_profile_default). */
+    ret = mbedtls_x509_profile_check_md_alg(&mbedtls_x509_crt_profile_default, md_alg);
+    if (ret != 0) {
+        return MBEDTLS_ERR_PKCS7_INVALID_ALG;
+    }
+    ret = mbedtls_x509_profile_check_pk_alg(&mbedtls_x509_crt_profile_default, cert->sig_pk);
+    if (ret != 0) {
+        return MBEDTLS_ERR_PKCS7_INVALID_ALG;
+    }
+#endif /* MBEDTLS_PKCS7_ALLOW_WEAK_SIGNATURES */
 
     md_info = mbedtls_md_info_from_type(md_alg);
     if (md_info == NULL) {
@@ -705,9 +718,9 @@ static int mbedtls_pkcs7_data_or_hash_verify(mbedtls_pkcs7 *pkcs7,
      * failed to validate'.
      */
     for (signer = &pkcs7->signed_data.signers; signer; signer = signer->next) {
-        ret = mbedtls_pk_verify(&pk_cxt, md_alg, hash,
-                                mbedtls_md_get_size(md_info),
-                                signer->sig.p, signer->sig.len);
+        ret = mbedtls_pk_verify_ext(cert->sig_pk, &pk_cxt, md_alg, hash,
+                                    mbedtls_md_get_size(md_info),
+                                    signer->sig.p, signer->sig.len);
 
         if (ret == 0) {
             break;
@@ -767,7 +780,7 @@ void mbedtls_pkcs7_free(mbedtls_pkcs7 *pkcs7)
         mbedtls_free(signer_prev);
     }
 
-    pkcs7->raw.p = NULL;
+    mbedtls_platform_zeroize(pkcs7, sizeof(*pkcs7));
 }
 
 #endif

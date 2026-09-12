@@ -96,6 +96,13 @@ TEST_CASE("[Color] Operators") {
 			"Color negation should behave as expected (affecting the alpha channel, unlike `invert()`).");
 }
 
+TEST_CASE("[Color] Hash") {
+	const Color red = Color(1, 0, 0, 1);
+	const Color yellow = Color(1, 1, 0, 1);
+
+	CHECK(red.hash() != yellow.hash());
+}
+
 TEST_CASE("[Color] Reading methods") {
 	constexpr Color dark_blue = Color(0, 0, 0.5, 0.4);
 

@@ -268,24 +268,6 @@ static GroupOrder heapPop(GroupOrder* heap, size_t size)
 	return top;
 }
 
-static unsigned int countShared(const ClusterGroup* groups, int group1, int group2, const ClusterAdjacency& adjacency)
-{
-	unsigned int total = 0;
-
-	for (int i1 = group1; i1 >= 0; i1 = groups[i1].next)
-		for (int i2 = group2; i2 >= 0; i2 = groups[i2].next)
-		{
-			for (unsigned int adj = adjacency.offsets[i1]; adj < adjacency.offsets[i1 + 1]; ++adj)
-				if (adjacency.clusters[adj] == unsigned(i2))
-				{
-					total += adjacency.shared[adj];
-					break;
-				}
-		}
-
-	return total;
-}
-
 static void mergeBounds(ClusterGroup& target, const ClusterGroup& source)
 {
 	float r1 = target.radius, r2 = source.radius;
@@ -323,7 +305,7 @@ static float boundsScore(const ClusterGroup& target, const ClusterGroup& source)
 	return mr > 0 ? r1 / mr : 0.f;
 }
 
-static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdjacency& adjacency, size_t max_partition_size, bool use_bounds)
+static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdjacency& adjacency, size_t max_partition_size, bool use_bounds, unsigned int* shared_acc, unsigned int& out_shared)
 {
 	assert(groups[id].size > 0);
 
@@ -331,20 +313,34 @@ static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdj
 
 	int best_group = -1;
 	float best_score = 0;
+	unsigned int best_shared = 0;
 
+	// compute shared count based on underlying clusters for every adjacent group
+	// note: we assume shared_acc only contains zeros on input
 	for (int ci = id; ci >= 0; ci = groups[ci].next)
-	{
 		for (unsigned int adj = adjacency.offsets[ci]; adj != adjacency.offsets[ci + 1]; ++adj)
 		{
 			int other = groups[adjacency.clusters[adj]].group;
-			if (other < 0)
+			if (other >= 0)
+				shared_acc[other] += adjacency.shared[adj];
+		}
+
+	// score each adjacent group and pick the best one; resets shared_acc in the process
+	for (int ci = id; ci >= 0; ci = groups[ci].next)
+		for (unsigned int adj = adjacency.offsets[ci]; adj != adjacency.offsets[ci + 1]; ++adj)
+		{
+			int other = groups[adjacency.clusters[adj]].group;
+			if (other < 0 || shared_acc[other] == 0)
 				continue;
+
+			// note: we reset shared_acc here to make sure the next invocation sees zero inputs; it's important that this is done before any early outs
+			unsigned int shared = shared_acc[other];
+			shared_acc[other] = 0;
 
 			assert(groups[other].size > 0);
 			if (groups[id].size + groups[other].size > max_partition_size)
 				continue;
 
-			unsigned int shared = countShared(groups, id, other, adjacency);
 			float other_rsqrt = 1.f / sqrtf(float(int(groups[other].vertices)));
 
 			// normalize shared count by the expected boundary of each group (+ keeps scoring symmetric)
@@ -358,10 +354,11 @@ static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdj
 			{
 				best_group = other;
 				best_score = score;
+				best_shared = shared;
 			}
 		}
-	}
 
+	out_shared = best_shared;
 	return best_group;
 }
 
@@ -513,6 +510,9 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 	GroupOrder* order = allocator.allocate<GroupOrder>(cluster_count);
 	size_t pending = 0;
 
+	unsigned int* shared_acc = allocator.allocate<unsigned int>(cluster_count);
+	memset(shared_acc, 0, cluster_count * sizeof(unsigned int));
+
 	// create a singleton group for each cluster and order them by priority
 	for (size_t i = 0; i < cluster_count; ++i)
 	{
@@ -553,14 +553,12 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 		if (groups[top.id].size >= target_partition_size)
 			continue;
 
-		int best_group = pickGroupToMerge(groups, top.id, adjacency, max_partition_size, /* use_bounds= */ vertex_positions);
+		unsigned int best_shared = 0;
+		int best_group = pickGroupToMerge(groups, top.id, adjacency, max_partition_size, /* use_bounds= */ vertex_positions, shared_acc, best_shared);
 
 		// we can't grow the group any more, emit as is
 		if (best_group == -1)
 			continue;
-
-		// compute shared vertices to adjust the total vertices estimate after merging
-		unsigned int shared = countShared(groups, top.id, best_group, adjacency);
 
 		// combine groups by linking them together
 		unsigned int tail = top.id;
@@ -572,7 +570,7 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 		// update group sizes; note, the vertex update is a O(1) approximation which avoids recomputing the true size
 		groups[top.id].size += groups[best_group].size;
 		groups[top.id].vertices += groups[best_group].vertices;
-		groups[top.id].vertices = (groups[top.id].vertices > shared) ? groups[top.id].vertices - shared : 1;
+		groups[top.id].vertices = (groups[top.id].vertices > best_shared) ? groups[top.id].vertices - best_shared : 1;
 
 		groups[best_group].size = 0;
 		groups[best_group].vertices = 0;

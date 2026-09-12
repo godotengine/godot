@@ -28,31 +28,31 @@ struct CullParams {
 };
 
 private:
-void _cull_translate_hits(CullParams &p) {
+void _cull_translate_hits(CullParams &r_params) {
 	int num_hits = _cull_hits.size();
-	int left = p.result_max - p.result_count_overall;
+	int left = r_params.result_max - r_params.result_count_overall;
 
 	if (num_hits > left) {
 		num_hits = left;
 	}
 
-	int out_n = p.result_count_overall;
+	int out_n = r_params.result_count_overall;
 
 	for (int n = 0; n < num_hits; n++) {
 		uint32_t ref_id = _cull_hits[n];
 
 		const ItemExtra &ex = _extra[ref_id];
-		p.result_array[out_n] = ex.userdata;
+		r_params.result_array[out_n] = ex.userdata;
 
-		if (p.subindex_array) {
-			p.subindex_array[out_n] = ex.subindex;
+		if (r_params.subindex_array) {
+			r_params.subindex_array[out_n] = ex.subindex;
 		}
 
 		out_n++;
 	}
 
-	p.result_count = num_hits;
-	p.result_count_overall += num_hits;
+	r_params.result_count = num_hits;
+	r_params.result_count_overall += num_hits;
 }
 
 public:
@@ -177,15 +177,15 @@ int cull_aabb(CullParams &r_params, bool p_translate_hits = true) {
 	return r_params.result_count;
 }
 
-bool _cull_hits_full(const CullParams &p) {
+bool _cull_hits_full(const CullParams &p_params) {
 	// instead of checking every hit, we can do a lazy check for this condition.
 	// it isn't a problem if we write too much _cull_hits because they only the
 	// result_max amount will be translated and outputted. But we might as
 	// well stop our cull checks after the maximum has been reached.
-	return (int)_cull_hits.size() >= p.result_max;
+	return (int)_cull_hits.size() >= p_params.result_max;
 }
 
-void _cull_hit(uint32_t p_ref_id, CullParams &p) {
+void _cull_hit(uint32_t p_ref_id, CullParams &r_params) {
 	// take into account masks etc
 	// this would be more efficient to do before plane checks,
 	// but done here for ease to get started
@@ -193,7 +193,7 @@ void _cull_hit(uint32_t p_ref_id, CullParams &p) {
 		const ItemExtra &ex = _extra[p_ref_id];
 
 		// user supplied function (for e.g. pairable types and pairable masks in the render tree)
-		if (!USER_CULL_TEST_FUNCTION::user_cull_check(p.tester, ex.userdata)) {
+		if (!USER_CULL_TEST_FUNCTION::user_cull_check(r_params.tester, ex.userdata)) {
 			return;
 		}
 	}

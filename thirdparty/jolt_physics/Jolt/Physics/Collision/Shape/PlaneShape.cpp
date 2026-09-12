@@ -166,8 +166,6 @@ void PlaneShape::Draw(DebugRenderer *inRenderer, RMat44Arg inCenterOfMassTransfo
 
 bool PlaneShape::CastRay(const RayCast &inRay, const SubShapeIDCreator &inSubShapeIDCreator, RayCastResult &ioHit) const
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Test starting inside of negative half space
 	float distance = mPlane.SignedDistance(inRay.mOrigin);
 	if (distance <= 0.0f)
@@ -196,8 +194,6 @@ bool PlaneShape::CastRay(const RayCast &inRay, const SubShapeIDCreator &inSubSha
 
 void PlaneShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastSettings, const SubShapeIDCreator &inSubShapeIDCreator, CastRayCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Test shape filter
 	if (!inShapeFilter.ShouldCollide(this, inSubShapeIDCreator.GetID()))
 		return;
@@ -235,8 +231,6 @@ void PlaneShape::CastRay(const RayCast &inRay, const RayCastSettings &inRayCastS
 
 void PlaneShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubShapeIDCreator, CollidePointCollector &ioCollector, const ShapeFilter &inShapeFilter) const
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Test shape filter
 	if (!inShapeFilter.ShouldCollide(this, inSubShapeIDCreator.GetID()))
 		return;
@@ -248,8 +242,6 @@ void PlaneShape::CollidePoint(Vec3Arg inPoint, const SubShapeIDCreator &inSubSha
 
 void PlaneShape::CollideSoftBodyVertices(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale, const CollideSoftBodyVertexIterator &inVertices, uint inNumVertices, int inCollidingShapeIndex) const
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Convert plane to world space
 	Plane plane = mPlane.Scaled(inScale).GetTransformed(inCenterOfMassTransform);
 
@@ -290,8 +282,6 @@ inline static void sGetSupportingFace(const ConvexShape *inShape, Vec3Arg inShap
 
 void PlaneShape::sCastConvexVsPlane(const ShapeCast &inShapeCast, const ShapeCastSettings &inShapeCastSettings, const Shape *inShape, Vec3Arg inScale, [[maybe_unused]] const ShapeFilter &inShapeFilter, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, CastShapeCollector &ioCollector)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Get the shapes
 	JPH_ASSERT(inShapeCast.mShape->GetType() == EShapeType::Convex);
 	JPH_ASSERT(inShape->GetType() == EShapeType::Plane);
@@ -310,7 +300,7 @@ void PlaneShape::sCastConvexVsPlane(const ShapeCast &inShapeCast, const ShapeCas
 	Vec3 normal_in_convex_shape_space = inShapeCast.mCenterOfMassStart.Multiply3x3Transposed(normal);
 	Vec3 support_point = inShapeCast.mCenterOfMassStart * shape1_support->GetSupport(-normal_in_convex_shape_space);
 	float signed_distance = plane.SignedDistance(support_point);
-	float convex_radius = shape1_support->GetConvexRadius();
+	float convex_radius = shape1_support->GetConvexRadius() + inShapeCastSettings.mExtraConvexRadius;
 	float penetration_depth = -signed_distance + convex_radius;
 	float dot = inShapeCast.mDirection.Dot(normal);
 
@@ -444,8 +434,6 @@ int PlaneShape::GetTrianglesNext(GetTrianglesContext &ioContext, int inMaxTriang
 
 void PlaneShape::sCollideConvexVsPlane(const Shape *inShape1, const Shape *inShape2, Vec3Arg inScale1, Vec3Arg inScale2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, const SubShapeIDCreator &inSubShapeIDCreator1, const SubShapeIDCreator &inSubShapeIDCreator2, const CollideShapeSettings &inCollideShapeSettings, CollideShapeCollector &ioCollector, [[maybe_unused]] const ShapeFilter &inShapeFilter)
 {
-	JPH_PROFILE_FUNCTION();
-
 	// Get the shapes
 	JPH_ASSERT(inShape1->GetType() == EShapeType::Convex);
 	JPH_ASSERT(inShape2->GetType() == EShapeType::Plane);

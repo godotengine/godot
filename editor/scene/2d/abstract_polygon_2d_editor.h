@@ -111,12 +111,14 @@ protected:
 	virtual void _menu_option(int p_option);
 	void _wip_changed();
 	void _wip_close();
+	bool _wip_undo();
 	void _wip_cancel();
 
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 
 	bool _commit_drag();
+	void _cancel_drag();
 
 	void remove_point(const Vertex &p_vertex);
 	Vertex get_active_point() const;

@@ -1767,7 +1767,7 @@ DisplayServerEnums::WindowID DisplayServerMacOS::create_sub_window(DisplayServer
 
 	DisplayServerEnums::WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
 
-	uint32_t set_flags = p_flags & ~(DisplayServerEnums::WINDOW_FLAG_MAX - 1); // Clear the flags that are not supported by the window.
+	uint32_t set_flags = p_flags & ((1 << DisplayServerEnums::WINDOW_FLAG_MAX) - 1); // Clear the flags that are not supported by the window.
 	while (set_flags != 0) {
 		// Find the index of the next set bit.
 		uint32_t index = (uint32_t)__builtin_ctzll(set_flags);
@@ -2969,13 +2969,8 @@ void DisplayServerMacOS::window_get_edr_values(DisplayServerEnums::WindowID p_wi
 		*v = val; \
 	}
 
-	if (@available(macOS 10.15, *)) {
-		SET_VAL(r_max_potential_edr_value, screen.maximumPotentialExtendedDynamicRangeColorComponentValue);
-		SET_VAL(r_max_edr_value, screen.maximumExtendedDynamicRangeColorComponentValue);
-	} else {
-		SET_VAL(r_max_potential_edr_value, 1.0);
-		SET_VAL(r_max_edr_value, 1.0);
-	}
+	SET_VAL(r_max_potential_edr_value, screen.maximumPotentialExtendedDynamicRangeColorComponentValue);
+	SET_VAL(r_max_edr_value, screen.maximumExtendedDynamicRangeColorComponentValue);
 
 #undef SET_VAL
 }

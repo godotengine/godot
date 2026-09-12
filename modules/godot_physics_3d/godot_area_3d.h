@@ -32,8 +32,9 @@
 
 #include "godot_collision_object_3d.h"
 
+#include "core/templates/hash_set.h"
 #include "core/templates/self_list.h"
-#include "servers/physics_3d/physics_server_3d.h"
+#include "core/variant/callable.h"
 
 class GodotSpace3D;
 class GodotBody3D;
@@ -41,9 +42,9 @@ class GodotSoftBody3D;
 class GodotConstraint3D;
 
 class GodotArea3D : public GodotCollisionObject3D {
-	PhysicsServer3D::AreaSpaceOverrideMode gravity_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
-	PhysicsServer3D::AreaSpaceOverrideMode linear_damping_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
-	PhysicsServer3D::AreaSpaceOverrideMode angular_damping_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
+	PS3DE::AreaSpaceOverrideMode gravity_override_mode = PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
+	PS3DE::AreaSpaceOverrideMode linear_damping_override_mode = PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
+	PS3DE::AreaSpaceOverrideMode angular_damping_override_mode = PS3DE::AREA_SPACE_OVERRIDE_DISABLED;
 
 	real_t gravity = 9.80665;
 	Vector3 gravity_vector = Vector3(0, -1, 0);
@@ -102,7 +103,7 @@ class GodotArea3D : public GodotCollisionObject3D {
 	virtual void _shapes_changed() override;
 	void _queue_monitor_update();
 
-	void _set_space_override_mode(PhysicsServer3D::AreaSpaceOverrideMode &r_mode, PhysicsServer3D::AreaSpaceOverrideMode p_new_mode);
+	void _set_space_override_mode(PS3DE::AreaSpaceOverrideMode &r_mode, PS3DE::AreaSpaceOverrideMode p_new_mode);
 
 public:
 	void set_monitor_callback(const Callable &p_callback);
@@ -120,8 +121,8 @@ public:
 	_FORCE_INLINE_ void add_area_to_query(GodotArea3D *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
 	_FORCE_INLINE_ void remove_area_from_query(GodotArea3D *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
 
-	void set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value);
-	Variant get_param(PhysicsServer3D::AreaParameter p_param) const;
+	void set_param(PS3DE::AreaParameter p_param, const Variant &p_value);
+	Variant get_param(PS3DE::AreaParameter p_param) const;
 
 	_FORCE_INLINE_ void set_gravity(real_t p_gravity) { gravity = p_gravity; }
 	_FORCE_INLINE_ real_t get_gravity() const { return gravity; }

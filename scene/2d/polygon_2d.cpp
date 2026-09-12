@@ -580,8 +580,9 @@ NodePath Polygon2D::get_bone_path(int p_index) const {
 	return bone_weights[p_index].path;
 }
 
-Vector<float> Polygon2D::get_bone_weights(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), Vector<float>());
+const Vector<float> &Polygon2D::get_bone_weights(int p_index) const {
+	static const Vector<float> EMPTY;
+	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), EMPTY);
 	return bone_weights[p_index].weights;
 }
 

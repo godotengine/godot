@@ -123,13 +123,22 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_start_offset(int p_offset) { start_offset = p_offset; }
+	void set_start_offset(int p_offset) {
+		ERR_FAIL_COND(p_offset < 0);
+		start_offset = p_offset;
+	}
 	int get_start_offset() const { return start_offset; }
 
-	void set_max_results(int p_max_results) { max_results = p_max_results; }
+	void set_max_results(int p_max_results) {
+		ERR_FAIL_COND(p_max_results <= 0);
+		max_results = p_max_results;
+	}
 	int get_max_results() const { return max_results; }
 
-	void set_max_misses(int p_max_misses) { max_misses = p_max_misses; }
+	void set_max_misses(int p_max_misses) {
+		ERR_FAIL_COND(p_max_misses < 0);
+		max_misses = p_max_misses;
+	}
 	int get_max_misses() const { return max_misses; }
 
 	void set_use_exact_tokens(bool p_use_exact_tokens) { exact_token_matches = p_use_exact_tokens; }

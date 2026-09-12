@@ -33,12 +33,12 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
 
 class AudioStreamPreview : public RefCounted {
 	GDCLASS(AudioStreamPreview, RefCounted);
 	friend class AudioStream;
-	Vector<uint8_t> preview;
+	LocalVector<uint8_t> preview;
 	float length;
 
 	friend class AudioStreamPreviewGenerator;

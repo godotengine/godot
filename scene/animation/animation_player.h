@@ -166,16 +166,16 @@ protected:
 	void _set_root_bind_compat_80813(const NodePath &p_root);
 	NodePath _get_root_bind_compat_80813() const;
 	void _seek_bind_compat_80813(double p_time, bool p_update = false);
-	void _play_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
-	void _play_backwards_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1);
+	void _play_bind_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
+	void _play_backwards_bind_compat_84906(const StringName &p_name = StringName(), double p_custom_blend = -1);
 
-	Vector<String> _get_queue_compat_110767();
-	String _get_current_animation_compat_110767() const;
-	void _set_current_animation_compat_110767(const String &p_animation);
-	String _get_assigned_animation_compat_110767() const;
-	void _set_assigned_animation_compat_110767(const String &p_animation);
-	String _get_autoplay_compat_110767() const;
-	void _set_autoplay_compat_110767(const String &p_name);
+	Vector<String> _get_queue_bind_compat_110767();
+	String _get_current_animation_bind_compat_110767() const;
+	void _set_current_animation_bind_compat_110767(const String &p_animation);
+	String _get_assigned_animation_bind_compat_110767() const;
+	void _set_assigned_animation_bind_compat_110767(const String &p_animation);
+	String _get_autoplay_bind_compat_110767() const;
+	void _set_autoplay_bind_compat_110767(const String &p_name);
 
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED

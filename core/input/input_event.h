@@ -72,6 +72,7 @@ public:
 	bool is_action(const StringName &p_action, bool p_exact_match = false) const;
 	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false, bool p_exact_match = false) const;
 	bool is_action_released(const StringName &p_action, bool p_exact_match = false) const;
+	bool is_action_just_pressed_or_echo(const StringName &p_action, bool p_exact_match = false) const;
 	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
 
@@ -139,7 +140,7 @@ public:
 	void set_meta_pressed(bool p_pressed);
 	bool is_meta_pressed() const;
 
-	void set_modifiers_from_event(const InputEventWithModifiers *event);
+	void set_modifiers_from_event(const InputEventWithModifiers *p_event);
 
 	BitField<KeyModifierMask> get_modifiers_mask() const;
 
@@ -373,6 +374,7 @@ class InputEventScreenTouch : public InputEventFromWindow {
 	int index = 0;
 	Vector2 pos;
 	bool double_tap = false;
+	bool long_press = false;
 
 protected:
 	static void _bind_methods();
@@ -389,6 +391,9 @@ public:
 
 	void set_double_tap(bool p_double_tap);
 	bool is_double_tap() const;
+
+	void set_long_press(bool p_double_tap);
+	bool is_long_press() const;
 
 	virtual RequiredResult<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;

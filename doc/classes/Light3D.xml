@@ -119,6 +119,15 @@
 		<member name="shadow_caster_mask" type="int" setter="set_shadow_caster_mask" getter="get_shadow_caster_mask" default="4294967295">
 			The light will only cast shadows using objects in the selected layers.
 		</member>
+		<member name="shadow_contact_shadows_allow" type="bool" setter="set_allow_contact_shadows" getter="get_allow_contact_shadows" default="true">
+			Enables screen-space contact shadows for this light. Only used when [member ProjectSettings.rendering/lights_and_shadows/contact_shadow/enabled] is enabled.
+		</member>
+		<member name="shadow_contact_shadows_blur" type="float" setter="set_param" getter="get_param" default="1.0">
+			Blurs the edges of the contact shadow. [code]0.0[/code] produces sharp shadows; higher values increase the noise magnitude. Only used when [member shadow_contact_shadows_allow] is enabled.
+		</member>
+		<member name="shadow_contact_shadows_opacity" type="float" setter="set_param" getter="get_param" default="1.0">
+			Changes the opacity of this light's screen-space contact shadows. A value of [code]1.0[/code] uses the same opacity as [member shadow_opacity], a value of [code]0.5[/code] would be 50% of the opacity of [member shadow_opacity]. Only used when [member shadow_contact_shadows_allow] is enabled.
+		</member>
 		<member name="shadow_enabled" type="bool" setter="set_shadow" getter="has_shadow" default="false">
 			If [code]true[/code], the light will cast real-time shadows. This has a significant performance cost. Only enable shadow rendering when it makes a noticeable difference in the scene's appearance, and consider using [member distance_fade_enabled] to hide the light when far away from the [Camera3D].
 		</member>
@@ -198,7 +207,13 @@
 		<constant name="PARAM_INTENSITY" value="20" enum="Param">
 			Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
-		<constant name="PARAM_MAX" value="21" enum="Param">
+		<constant name="PARAM_CONTACT_SHADOW_OPACITY" value="21" enum="Param">
+			Constant for accessing [member shadow_contact_shadows_opacity].
+		</constant>
+		<constant name="PARAM_CONTACT_SHADOW_BLUR" value="22" enum="Param">
+			Constant for accessing [member shadow_contact_shadows_blur].
+		</constant>
+		<constant name="PARAM_MAX" value="23" enum="Param">
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
@@ -206,11 +221,13 @@
 			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking [LightmapGI]. Hiding a light will still affect baking [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled]).
 		</constant>
 		<constant name="BAKE_STATIC" value="1" enum="BakeMode">
-			Light is taken into account in static baking ([VoxelGI], [LightmapGI], SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time. This is suitable for subtle changes (such as flickering torches), but generally not large changes such as toggling a light on and off.
+			Light is taken into account in static baking ([VoxelGI], [LightmapGI], SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified, but its global illumination will not update in real-time.
 			[b]Note:[/b] The light is not baked in [LightmapGI] if [member editor_only] is [code]true[/code].
+			[b]Note:[/b] When using [LightmapGI], both the direct and indirect light are baked. Since direct light is baked, the light doesn't display a specular lobe on static lightmapped meshes. Shadows on static lightmapped meshes will also look less detailed, but the light still casts shadows that can be displayed on dynamic objects. Since real-time light computations are skipped on static lightmapped meshes, this bake mode improves runtime performance compared to [constant BAKE_DYNAMIC] and [constant BAKE_DISABLED].
 		</constant>
 		<constant name="BAKE_DYNAMIC" value="2" enum="BakeMode">
-			Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) only). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant BAKE_STATIC]. This has a greater performance cost compared to [constant BAKE_STATIC]. When using SDFGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
+			Light is taken into account in dynamic baking ([VoxelGI] and SDFGI ([member Environment.sdfgi_enabled])). The light can be moved around or modified with global illumination updating in real-time. The light's global illumination appearance will be slightly different compared to [constant BAKE_STATIC]. This has a greater performance cost compared to [constant BAKE_STATIC]. When using SDFGI, the update speed of dynamic lights is affected by [member ProjectSettings.rendering/global_illumination/sdfgi/frames_to_update_lights].
+			[b]Note:[/b] When using [LightmapGI], the light's indirect light is baked, but direct light and shadows remain real-time. This mode allows performing [i]subtle[/i] changes to a light's color, energy, and position while still looking fairly correct. For example, you can use this to create flickering static torches that have their indirect light baked.
 		</constant>
 	</constants>
 </class>

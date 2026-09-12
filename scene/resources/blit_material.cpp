@@ -58,6 +58,9 @@ void BlitMaterial::_update_shader(BlendMode p_blend) {
 			case BLEND_MODE_DISABLED:
 				code += "blend_disabled";
 				break;
+			case BLEND_MODE_PREMULTIPLIED_ALPHA:
+				code += "blend_premul_alpha";
+				break;
 			default:
 				code += "blend_mix";
 				break;
@@ -131,6 +134,7 @@ void BlitMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
 	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULTIPLIED_ALPHA);
 }
 
 BlitMaterial::BlitMaterial() {

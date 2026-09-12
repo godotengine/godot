@@ -41,6 +41,10 @@
 #include "servers/navigation_3d/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
 
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
 void World3D::_register_camera(Camera3D *p_camera) {
 	cameras.insert(p_camera);
 }
@@ -54,10 +58,10 @@ RID World3D::get_space() const {
 	if (space.is_null()) {
 		space = PhysicsServer3D::get_singleton()->space_create();
 		PhysicsServer3D::get_singleton()->space_set_active(space, true);
-		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY, GLOBAL_GET("physics/3d/default_gravity"));
-		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_GET("physics/3d/default_gravity_vector"));
-		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_LINEAR_DAMP, GLOBAL_GET("physics/3d/default_linear_damp"));
-		PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_GET("physics/3d/default_angular_damp"));
+		PhysicsServer3D::get_singleton()->area_set_param(space, PS3DE::AREA_PARAM_GRAVITY, GLOBAL_GET("physics/3d/default_gravity"));
+		PhysicsServer3D::get_singleton()->area_set_param(space, PS3DE::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_GET("physics/3d/default_gravity_vector"));
+		PhysicsServer3D::get_singleton()->area_set_param(space, PS3DE::AREA_PARAM_LINEAR_DAMP, GLOBAL_GET("physics/3d/default_linear_damp"));
+		PhysicsServer3D::get_singleton()->area_set_param(space, PS3DE::AREA_PARAM_ANGULAR_DAMP, GLOBAL_GET("physics/3d/default_angular_damp"));
 	}
 #endif // PHYSICS_3D_DISABLED
 	return space;

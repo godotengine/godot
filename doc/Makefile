@@ -28,4 +28,4 @@ rstjs:
 	rm -rf "$(OUTPUTDIR)/rstjs"
 	mkdir -p "$(OUTPUTDIR)/rstjs"
 	npm --prefix "$(JSDIR)" ci
-	npm --prefix "$(JSDIR)" run docs -- --destination "$(OUTPUTDIR)/rstjs/html5_shell_classref.rst"
+	npm --prefix "$(JSDIR)" run docs > "$(OUTPUTDIR)/rstjs/html5_shell_classref.rst"

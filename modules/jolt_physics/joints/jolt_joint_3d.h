@@ -30,7 +30,9 @@
 
 #pragma once
 
-#include "servers/physics_3d/physics_server_3d.h"
+#include "core/math/transform_3d.h"
+#include "core/templates/rid.h"
+#include "servers/physics_3d/physics_server_3d_enums.h"
 
 #include <Jolt/Jolt.h>
 
@@ -78,7 +80,7 @@ public:
 	JoltJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
 	virtual ~JoltJoint3D();
 
-	virtual PhysicsServer3D::JointType get_type() const { return PhysicsServer3D::JOINT_TYPE_MAX; }
+	virtual PS3DE::JointType get_type() const { return PS3DE::JOINT_TYPE_MAX; }
 
 	RID get_rid() const { return rid; }
 	void set_rid(const RID &p_rid) { rid = p_rid; }

@@ -40,9 +40,9 @@
 class JoltGeneric6DOFJoint3D final : public JoltJoint3D {
 	typedef Vector3::Axis Axis;
 	typedef JPH::SixDOFConstraintSettings::EAxis JoltAxis;
-	typedef PhysicsServer3D::G6DOFJointAxisParam Param;
+	typedef PS3DE::G6DOFJointAxisParam Param;
 	typedef JoltPhysicsServer3D::G6DOFJointAxisParamJolt JoltParam;
-	typedef PhysicsServer3D::G6DOFJointAxisFlag Flag;
+	typedef PS3DE::G6DOFJointAxisFlag Flag;
 	typedef JoltPhysicsServer3D::G6DOFJointAxisFlagJolt JoltFlag;
 
 	enum {
@@ -108,7 +108,7 @@ class JoltGeneric6DOFJoint3D final : public JoltJoint3D {
 public:
 	JoltGeneric6DOFJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
 
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_6DOF; }
+	virtual PS3DE::JointType get_type() const override { return PS3DE::JOINT_TYPE_6DOF; }
 
 	double get_param(Axis p_axis, Param p_param) const;
 	void set_param(Axis p_axis, Param p_param, double p_value);

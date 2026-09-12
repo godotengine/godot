@@ -52,7 +52,7 @@ public:
 
 protected:
 #ifndef DISABLE_DEPRECATED
-	compat::StreamPeerTCP::Status _get_status_compat_107954() const;
+	compat::StreamPeerTCP::Status _get_status_bind_compat_107954() const;
 	static void _bind_compatibility_methods();
 #endif
 

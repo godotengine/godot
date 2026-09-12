@@ -51,13 +51,13 @@ struct SinglePos
 
     u.format.v = format;
     switch (u.format.v) {
-    case 1: u.format1.serialize (c,
+    case 1: hb_barrier (); u.format1.serialize (c,
                                  src,
                                  glyph_val_iter_pairs,
                                  new_format,
                                  layout_variation_idx_delta_map);
       return;
-    case 2: u.format2.serialize (c,
+    case 2: hb_barrier (); u.format2.serialize (c,
                                  src,
                                  glyph_val_iter_pairs,
                                  new_format,
@@ -73,8 +73,8 @@ struct SinglePos
     if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
     TRACE_DISPATCH (this, u.format.v);
     switch (u.format.v) {
-    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 1: hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: hb_barrier (); return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }

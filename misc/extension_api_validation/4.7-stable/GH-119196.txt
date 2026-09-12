@@ -1,6 +1,3 @@
-GH-119196
---------------
-
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/DisplayServer/methods/get_display_cutouts': arguments
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/DisplayServer/methods/get_display_safe_area': arguments
 

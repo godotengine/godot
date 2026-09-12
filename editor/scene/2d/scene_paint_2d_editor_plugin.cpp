@@ -42,7 +42,13 @@
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/2d/tile_map_layer.h"
+#include "scene/2d/node_2d.h"
+#include "scene/resources/packed_scene.h"
+
+#include "modules/modules_enabled.gen.h" // For TileMap.
+#ifdef MODULE_TILEMAP_ENABLED
+#include "modules/tilemap/tile_map_layer.h"
+#endif
 #include "scene/gui/box_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/tree.h"
@@ -60,6 +66,7 @@ void ScenePaint2DEditor::_can_handle(bool p_is_node_2d, bool p_edit) {
 
 void ScenePaint2DEditor::_edit(Object *p_object) {
 	if (is_tool_selected) {
+#ifdef MODULE_TILEMAP_ENABLED
 		TileMapLayer *edited_layer = Object::cast_to<TileMapLayer>(p_object);
 		if (edited_layer) {
 			Ref<TileSet> tile_set = edited_layer->get_tile_set();
@@ -68,8 +75,12 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 				grid_step = tile_set->get_tile_size();
 			}
 		} else {
+#else
+		{
+#endif
 			grid = CanvasItemEditor::get_singleton()->is_grid_visible();
 			grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
+			grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
 		}
 	}
 
@@ -82,6 +93,7 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 	}
 
 	_update_node(p_object);
+	_update_hint_label();
 }
 
 void ScenePaint2DEditor::_update_node(Object *p_object) {
@@ -125,10 +137,10 @@ void ScenePaint2DEditor::_draw_overlay() {
 			for (int i = 1; i < 4; i++) {
 				bounds.expand_to(corners[i]);
 			}
-			int start_x = Math::floor(bounds.position.x / grid_step.x) * grid_step.x;
-			int end_x = Math::ceil((bounds.position.x + bounds.size.x) / grid_step.x) * grid_step.x;
-			int start_y = Math::floor(bounds.position.y / grid_step.y) * grid_step.y;
-			int end_y = Math::ceil((bounds.position.y + bounds.size.y) / grid_step.y) * grid_step.y;
+			int start_x = Math::floor((bounds.position.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x;
+			int end_x = Math::ceil(((bounds.position.x + bounds.size.x) - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x;
+			int start_y = Math::floor((bounds.position.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y;
+			int end_y = Math::ceil(((bounds.position.y + bounds.size.y) - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y;
 			Vector2 hint_distance = xform.get_scale() * grid_step;
 			float scale_fade = MIN(1.0, (MIN(hint_distance.x, hint_distance.y) - 5) / 5);
 			if (scale_fade > 0) {
@@ -152,8 +164,8 @@ void ScenePaint2DEditor::_draw_overlay() {
 			Vector2 mouse_canvas = viewport->get_local_mouse_position();
 			Vector2 mouse_local = xform.affine_inverse().xform(mouse_canvas);
 			Vector2 snapped_local = Vector2(
-					Math::floor(mouse_local.x / grid_step.x) * grid_step.x,
-					Math::floor(mouse_local.y / grid_step.y) * grid_step.y);
+					Math::floor((mouse_local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+					Math::floor((mouse_local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 			Vector2 corners[4] = {
 				snapped_local, snapped_local + Vector2(grid_step.x, 0),
 				snapped_local + Vector2(grid_step.x, grid_step.y),
@@ -189,12 +201,12 @@ void ScenePaint2DEditor::_draw_overlay() {
 			Vector2 snapped_local;
 			if (paint_mode == PAINT_MODE_SNAP_GRID_CELL_CENTER) {
 				snapped_local = Vector2(
-						Math::floor(mouse_local.x / grid_step.x) * grid_step.x,
-						Math::floor(mouse_local.y / grid_step.y) * grid_step.y);
+						Math::floor((mouse_local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+						Math::floor((mouse_local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 			} else if (paint_mode == PAINT_MODE_SNAP_GRID) {
 				snapped_local = Vector2(
-						Math::round(mouse_local.x / grid_step.x) * grid_step.x,
-						Math::round(mouse_local.y / grid_step.y) * grid_step.y);
+						Math::round((mouse_local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+						Math::round((mouse_local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 			}
 			final_local = (paint_mode != PAINT_MODE_FREE)
 					? (paint_mode == PAINT_MODE_SNAP_GRID ? snapped_local : (snapped_local + grid_step / 2.0))
@@ -203,6 +215,7 @@ void ScenePaint2DEditor::_draw_overlay() {
 		instance_container->set_position(xform.xform(final_local));
 		instance_container->set_rotation(xform.get_rotation());
 		instance_container->set_scale(xform.get_scale());
+		instance_container->set_skew(xform.get_skew());
 		_edit_properties();
 	}
 }
@@ -243,6 +256,18 @@ bool ScenePaint2DEditor::_is_instance_valid() {
 void ScenePaint2DEditor::_update_draw_overlay() {
 	if (custom_overlay) {
 		custom_overlay->queue_redraw();
+	}
+}
+
+void ScenePaint2DEditor::_update_hint_label() {
+	if (!is_tool_selected) {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(String(), String());
+	} else if (!cache_node) {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(TTRC("Select a Node2D to enable painting."), TTRC("The node will be used as a parent for the painted scenes."));
+	} else if (!selected_scene) {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(TTRC("Pick a scene for painting."), vformat(TTR("Use the Scene Picker from the toolbar or %s+Click a 2D scene instance."), keycode_get_string(Key::CMD_OR_CTRL)));
+	} else {
+		CanvasItemEditor::get_singleton()->get_viewport_control()->set_hint_label(String(), String());
 	}
 }
 
@@ -348,7 +373,8 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 			for (const CanvasItemEditor::SelectResult &result : results) {
 				Node2D *root = _get_node_root(result.item);
 				if (_is_scene_painted(root)) {
-					if (pos == root->get_position()) {
+					Vector2 root_pos = node->get_global_transform().xform(root->get_position());
+					if (pos.is_equal_approx(root_pos)) {
 						return;
 					}
 				}
@@ -377,6 +403,7 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 		undo_redo->add_do_method(node_2d, "set_global_position", pos);
 		undo_redo->add_undo_method(node, "remove_child", node_2d);
 		undo_redo->commit_action(false);
+		emit_signal(SNAME("scene_painted"), node_2d);
 	}
 
 	CanvasItemEditor::get_singleton()->update_viewport();
@@ -432,12 +459,12 @@ Vector2 ScenePaint2DEditor::_get_mouse_grid_cell() {
 	Vector2 snapped;
 	if (paint_mode == PAINT_MODE_SNAP_GRID_CELL_CENTER) {
 		snapped = Vector2(
-				Math::floor(local.x / grid_step.x) * grid_step.x,
-				Math::floor(local.y / grid_step.y) * grid_step.y);
+				Math::floor((local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+				Math::floor((local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 	} else if (paint_mode == PAINT_MODE_SNAP_GRID) {
 		snapped = Vector2(
-				Math::round(local.x / grid_step.x) * grid_step.x,
-				Math::round(local.y / grid_step.y) * grid_step.y);
+				Math::round((local.x - grid_offset.x) / grid_step.x) * grid_step.x + grid_offset.x,
+				Math::round((local.y - grid_offset.y) / grid_step.y) * grid_step.y + grid_offset.y);
 	}
 
 	return node->get_global_transform().xform(snapped);
@@ -592,6 +619,7 @@ void ScenePaint2DEditor::_scene_changed() {
 		cache_node = Object::cast_to<Node2D>(SceneTreeDock::get_singleton()->get_tree_editor()->get_selected());
 	}
 	_update_node();
+	_update_hint_label();
 }
 
 void ScenePaint2DEditor::_update_scene_picker(int p_mode, Control *p_control) {
@@ -728,6 +756,7 @@ ScenePaint2DEditor::PaintMode ScenePaint2DEditor::_reload_paint_mode() {
 
 void ScenePaint2DEditor::_grid_step_changed() {
 	grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
+	grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
 }
 
 void ScenePaint2DEditor::_bind_methods() {
@@ -735,12 +764,23 @@ void ScenePaint2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_scene_provider", "control"), &ScenePaint2DEditor::unregister_scene_provider);
 	ClassDB::bind_method(D_METHOD("set_painted_scene", "scene"), &ScenePaint2DEditor::set_painted_scene);
 	ClassDB::bind_method(D_METHOD("get_painted_scene"), &ScenePaint2DEditor::get_painted_scene);
+	ADD_SIGNAL(MethodInfo("scene_painted", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node2D::get_class_static())));
 }
 
 void ScenePaint2DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			advanced_settings_button->set_tooltip_text(TTR("Advanced Settings") + "\n" + TTR("Hold Alt while painting to temporarily switch to the previously used paint snap mode."));
+			advanced_settings_button->set_tooltip_text(TTR("Advanced Settings") + "\n" + vformat(TTR("Hold %s while painting to temporarily switch to the previously used paint snap mode."), keycode_get_string((Key)KeyModifierMask::ALT)));
+			if (toolbar->is_visible()) {
+				_update_hint_label();
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			// Dragging something into 2D viewport might override the label, so it needs to be restored.
+			if (toolbar->is_visible()) {
+				callable_mp(this, &ScenePaint2DEditor::_update_hint_label).call_deferred();
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -770,6 +810,8 @@ void ScenePaint2DEditor::_notification(int p_what) {
 
 void ScenePaint2DEditor::_set_picked_scene(Node2D *p_scene) {
 	selected_scene = p_scene;
+	_update_hint_label();
+
 	scene_picker_button->set_pressed(false);
 	input_tool = INPUT_TOOL_NONE;
 	if (!selected_scene) {
@@ -888,7 +930,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	scene_picker_button->set_toggle_mode(true);
 	scene_picker_button->set_accessibility_name(TTRC("Scene Picker"));
 	scene_picker_button->set_theme_type_variation(SceneStringName(FlatButton));
-	scene_picker_button->set_tooltip_text(TTRC("When enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding Ctrl enables picking from the 2D editor's viewport."));
+	scene_picker_button->set_tooltip_text(vformat(TTRC("When enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding %s enables picking from the 2D editor's viewport."), keycode_get_string(Key::CMD_OR_CTRL)));
 	scene_picker_button->connect(SceneStringName(toggled), callable_mp(this, &ScenePaint2DEditor::_scene_picker_toggled));
 	scene_picker_button->set_shortcut(ED_SHORTCUT("scene_painter/scene_picker", TTRC("Scene Picker"), Key::I));
 	scene_picker_button->set_shortcut_context(CanvasItemEditor::get_singleton());
@@ -932,17 +974,25 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_SNAP_GRID_CELL_CENTER);
 	advanced_settings_popup->add_separator();
 	advanced_settings_popup->add_check_item(TTRC("Allow Overlapping"), MENU_ITEM_ALLOW_OVERLAPPING);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Allow painting over existing painted scenes.\nHold Shift while painting to temporarily toggle this option."));
+	advanced_settings_popup->set_item_tooltip(-1, vformat(TTRC("Allow painting over existing painted scenes.\nHold %s while painting to temporarily toggle this option."), keycode_get_string(Key::SHIFT)));
 	advanced_settings_popup->set_item_disabled(-1, true);
 
 	advanced_settings_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ScenePaint2DEditor::_advanced_settings_id_pressed));
 }
 
 void ScenePaint2DEditorPlugin::_canvas_item_tool_changed(int p_tool) {
+	bool prev_selected = scene_paint_2d_editor->is_tool_selected;
 	scene_paint_2d_editor->is_tool_selected = (CanvasItemEditor::Tool)p_tool == CanvasItemEditor::TOOL_SCENE_PAINT;
+	if (!scene_paint_2d_editor->is_tool_selected && prev_selected) {
+		make_visible(false);
+		scene_paint_2d_editor->_update_hint_label();
+		return;
+	}
+
 	Node *selected_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
 	if (!selected_node) {
 		make_visible(false);
+		scene_paint_2d_editor->_update_hint_label();
 		return;
 	}
 	scene_paint_2d_editor->_set_picked_scene(nullptr);

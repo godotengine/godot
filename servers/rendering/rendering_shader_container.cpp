@@ -307,11 +307,11 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 		// This makes no practical difference in current graphics drivers, since Vulkan is the outlier.
 		BitField<RDC::ShaderStage> uniform_stage_flags;
 		if (pipeline_type == RDC::PIPELINE_TYPE_RAYTRACING) {
-			uniform_stage_flags = RDC::SHADER_STAGE_RAYGEN |
-					RDC::SHADER_STAGE_ANY_HIT |
-					RDC::SHADER_STAGE_CLOSEST_HIT |
-					RDC::SHADER_STAGE_MISS |
-					RDC::SHADER_STAGE_INTERSECTION;
+			uniform_stage_flags = RDC::SHADER_STAGE_RAYGEN_BIT |
+					RDC::SHADER_STAGE_ANY_HIT_BIT |
+					RDC::SHADER_STAGE_CLOSEST_HIT_BIT |
+					RDC::SHADER_STAGE_MISS_BIT |
+					RDC::SHADER_STAGE_INTERSECTION_BIT;
 		} else {
 			uniform_stage_flags = stage_flag;
 		}
@@ -324,9 +324,15 @@ Error RenderingShaderContainer::reflect_spirv(const String &p_shader_name, Span<
 					"Reflection of SPIR-V shader stage '" + String(RDC::SHADER_STAGE_NAMES[p_spirv[i].shader_stage]) + "' failed parsing shader.");
 
 			for (uint32_t j = 0; j < module.capability_count; j++) {
-				if (module.capabilities[j].value == SpvCapabilityMultiView) {
-					reflection.has_multiview = true;
-					break;
+				switch (module.capabilities[j].value) {
+					case SpvCapabilityMultiView: {
+						reflection.has_multiview = true;
+					} break;
+					case SpvCapabilityPhysicalStorageBufferAddresses: {
+						reflection.has_physical_storage_buffer_addresses = true;
+					} break;
+					default: {
+					}
 				}
 			}
 
@@ -685,6 +691,7 @@ void RenderingShaderContainer::set_from_shader_reflection(const ReflectShader &p
 	reflection_data.specialization_constants_count = p_reflection.specialization_constants.size();
 	reflection_data.pipeline_type = p_reflection.pipeline_type;
 	reflection_data.has_multiview = p_reflection.has_multiview;
+	reflection_data.has_physical_storage_buffer_addresses = p_reflection.has_physical_storage_buffer_addresses;
 	reflection_data.has_dynamic_buffers = p_reflection.has_dynamic_buffers;
 	reflection_data.compute_local_size[0] = p_reflection.compute_local_size[0];
 	reflection_data.compute_local_size[1] = p_reflection.compute_local_size[1];
@@ -744,6 +751,7 @@ RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_re
 	shader_refl.fragment_output_mask = reflection_data.fragment_output_mask;
 	shader_refl.pipeline_type = reflection_data.pipeline_type;
 	shader_refl.has_multiview = reflection_data.has_multiview;
+	shader_refl.has_physical_storage_buffer_addresses = reflection_data.has_physical_storage_buffer_addresses;
 	shader_refl.has_dynamic_buffers = reflection_data.has_dynamic_buffers;
 	shader_refl.compute_local_size[0] = reflection_data.compute_local_size[0];
 	shader_refl.compute_local_size[1] = reflection_data.compute_local_size[1];

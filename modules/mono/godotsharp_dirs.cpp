@@ -157,7 +157,9 @@ private:
 #endif
 
 		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+#ifdef MACOS_ENABLED
 		String res_dir = OS::get_singleton()->get_bundle_resource_dir();
+#endif
 
 #ifdef TOOLS_ENABLED
 		String data_dir_root = exe_dir.path_join("GodotSharp");

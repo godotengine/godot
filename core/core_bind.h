@@ -84,6 +84,7 @@ public:
 	Ref<Resource> get_cached_ref(const String &p_path);
 	bool exists(const String &p_path, const String &p_type_hint = "");
 	ResourceUID::ID get_resource_uid(const String &p_path);
+	String get_resource_type(const String &p_path);
 
 	Vector<String> list_directory(const String &p_directory);
 
@@ -172,12 +173,14 @@ protected:
 #endif
 
 public:
+#ifndef DISABLE_DEPRECATED
 	enum RenderingDriver {
 		RENDERING_DRIVER_VULKAN,
 		RENDERING_DRIVER_OPENGL3,
 		RENDERING_DRIVER_D3D12,
 		RENDERING_DRIVER_METAL,
 	};
+#endif // DISABLE_DEPRECATED
 
 	PackedByteArray get_entropy(int p_bytes);
 	String get_system_ca_certificates();
@@ -334,10 +337,10 @@ public:
 	static Geometry2D *get_singleton();
 	Variant segment_intersects_segment(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b);
 	Variant line_intersects_line(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b);
-	Vector<Vector2> get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2);
+	Vector<Vector2> get_closest_points_between_segments(const Vector2 &p_p1, const Vector2 &p_q1, const Vector2 &p_p2, const Vector2 &p_q2);
 	Vector2 get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b);
 	Vector2 get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b);
-	bool point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const;
+	bool point_is_inside_triangle(const Vector2 &p_s, const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c) const;
 
 	bool is_point_in_circle(const Vector2 &p_point, const Vector2 &p_circle_pos, real_t p_circle_radius);
 	real_t segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius);
@@ -402,7 +405,7 @@ public:
 	TypedArray<Plane> build_box_planes(const Vector3 &p_extents);
 	TypedArray<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	TypedArray<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
-	Vector<Vector3> get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2);
+	Vector<Vector3> get_closest_points_between_segments(const Vector3 &p_p1, const Vector3 &p_p2, const Vector3 &p_q1, const Vector3 &p_q2);
 	Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
 	Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
 	Vector3 get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2);
@@ -481,7 +484,7 @@ protected:
 	Callable target_callable;
 	::Thread thread;
 	static void _bind_methods();
-	static void _start_func(void *ud);
+	static void _start_func(void *p_ud);
 
 public:
 	enum Priority {
@@ -693,6 +696,20 @@ public:
 	~EngineDebugger();
 };
 
+class WeakRef : public RefCounted {
+	GDCLASS(WeakRef, RefCounted);
+
+	ObjectID ref;
+
+protected:
+	static void _bind_methods();
+
+public:
+	Variant get_ref() const;
+	void set_obj(Object *p_object);
+	void set_ref(const Ref<RefCounted> &p_ref);
+};
+
 } // namespace CoreBind
 
 VARIANT_ENUM_CAST(CoreBind::Logger::ErrorType);
@@ -701,7 +718,9 @@ VARIANT_ENUM_CAST(CoreBind::ResourceLoader::CacheMode);
 
 VARIANT_BITFIELD_CAST(CoreBind::ResourceSaver::SaverFlags);
 
+#ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(CoreBind::OS::RenderingDriver);
+#endif
 VARIANT_ENUM_CAST(CoreBind::OS::SystemDir);
 VARIANT_ENUM_CAST(CoreBind::OS::StdHandleType);
 

@@ -1139,7 +1139,7 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 	update_palette();
 }
 
-void GridMapEditor::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void GridMapEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (categories->is_visible()) {
 		item_palette_mc->set_theme_type_variation("");
 		mesh_library_palette->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_DISABLED);
@@ -1610,7 +1610,8 @@ void GridMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			floor->set_tooltip_text(
-					vformat(TTR("Change Grid Floor:\nPrevious Plane (%s)\nNext Plane (%s)"),
+					vformat(TTR("Change Grid Floor (%s + Mouse Wheel):\nPrevious Plane (%s)\nNext Plane (%s)\nCan be done while selecting for multi-floor selections."),
+							keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL),
 							ED_GET_SHORTCUT("grid_map/previous_floor")->get_as_text(),
 							ED_GET_SHORTCUT("grid_map/next_floor")->get_as_text()));
 
@@ -2231,7 +2232,7 @@ void GridMapEditorPlugin::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			EditorDockManager::get_singleton()->remove_dock(grid_map_editor);
-			memdelete_notnull(grid_map_editor);
+			memdelete(grid_map_editor);
 			grid_map_editor = nullptr;
 		} break;
 	}

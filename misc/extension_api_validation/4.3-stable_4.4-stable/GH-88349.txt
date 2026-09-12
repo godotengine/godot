@@ -1,5 +1,3 @@
-GH-88349
---------
 Validate extension JSON: Error: Field 'classes/CSGMesh3D/properties/mesh': type changed value in new API, from "Mesh" to "Mesh,-PlaneMesh,-PointMesh,-QuadMesh,-RibbonTrailMesh".
 Validate extension JSON: Error: Field 'classes/Decal/properties/texture_albedo': type changed value in new API, from "Texture2D" to "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture".
 Validate extension JSON: Error: Field 'classes/Decal/properties/texture_emission': type changed value in new API, from "Texture2D" to "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture".

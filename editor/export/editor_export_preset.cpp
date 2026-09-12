@@ -111,11 +111,12 @@ void EditorExportPreset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_features"), &EditorExportPreset::get_custom_features);
 	ClassDB::bind_method(D_METHOD("get_patches"), &EditorExportPreset::get_patches);
 	ClassDB::bind_method(D_METHOD("get_export_path"), &EditorExportPreset::get_export_path);
-	ClassDB::bind_method(D_METHOD("get_encryption_in_filter"), &EditorExportPreset::get_enc_in_filter);
-	ClassDB::bind_method(D_METHOD("get_encryption_ex_filter"), &EditorExportPreset::get_enc_ex_filter);
+	ClassDB::bind_method(D_METHOD("get_encryption_in_filter"), &EditorExportPreset::get_enc_in_filters_str);
+	ClassDB::bind_method(D_METHOD("get_encryption_ex_filter"), &EditorExportPreset::get_enc_ex_filters_str);
 	ClassDB::bind_method(D_METHOD("get_encrypt_pck"), &EditorExportPreset::get_enc_pck);
 	ClassDB::bind_method(D_METHOD("get_encrypt_directory"), &EditorExportPreset::get_enc_directory);
 	ClassDB::bind_method(D_METHOD("get_encryption_key"), &EditorExportPreset::get_script_encryption_key);
+	ClassDB::bind_method(D_METHOD("resolve_encryption_key"), &EditorExportPreset::resolve_script_encryption_key);
 	ClassDB::bind_method(D_METHOD("get_script_export_mode"), &EditorExportPreset::get_script_export_mode);
 
 	ClassDB::bind_method(D_METHOD("get_or_env", "name", "env_var"), &EditorExportPreset::_get_or_env);
@@ -517,21 +518,47 @@ String EditorExportPreset::get_custom_features() const {
 	return custom_features;
 }
 
-void EditorExportPreset::set_enc_in_filter(const String &p_filter) {
-	enc_in_filters = p_filter;
+void EditorExportPreset::set_enc_in_filters_str(const String &p_filter) {
+	enc_in_filters_str = p_filter;
+
+	enc_in_filters.clear();
+	for (const String &filter : enc_in_filters_str.split(",")) {
+		String stripped_filter = filter.strip_edges();
+		if (!stripped_filter.is_empty()) {
+			enc_in_filters.push_back(stripped_filter);
+		}
+	}
+
 	EditorExport::singleton->save_presets();
 }
 
-String EditorExportPreset::get_enc_in_filter() const {
+String EditorExportPreset::get_enc_in_filters_str() const {
+	return enc_in_filters_str;
+}
+
+Vector<String> EditorExportPreset::get_enc_in_filters() const {
 	return enc_in_filters;
 }
 
-void EditorExportPreset::set_enc_ex_filter(const String &p_filter) {
-	enc_ex_filters = p_filter;
+void EditorExportPreset::set_enc_ex_filters_str(const String &p_filter) {
+	enc_ex_filters_str = p_filter;
+
+	enc_ex_filters.clear();
+	for (const String &filter : enc_ex_filters_str.split(",")) {
+		String stripped_filter = filter.strip_edges();
+		if (!stripped_filter.is_empty()) {
+			enc_ex_filters.push_back(stripped_filter);
+		}
+	}
+
 	EditorExport::singleton->save_presets();
 }
 
-String EditorExportPreset::get_enc_ex_filter() const {
+String EditorExportPreset::get_enc_ex_filters_str() const {
+	return enc_ex_filters_str;
+}
+
+Vector<String> EditorExportPreset::get_enc_ex_filters() const {
 	return enc_ex_filters;
 }
 
@@ -564,11 +591,58 @@ bool EditorExportPreset::get_enc_directory() const {
 
 void EditorExportPreset::set_script_encryption_key(const String &p_key) {
 	script_key = p_key;
+	is_script_key_resolved = false;
 	EditorExport::singleton->save_presets();
 }
 
 String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
+}
+
+Vector<uint8_t> EditorExportPreset::resolve_script_encryption_key() {
+	if (is_script_key_resolved) {
+		return script_key_resolved;
+	}
+
+	String key;
+	const String from_env = OS::get_singleton()->get_environment(ENV_SCRIPT_ENCRYPTION_KEY);
+	if (!from_env.is_empty()) {
+		key = from_env.to_lower();
+	} else {
+		key = script_key.to_lower();
+	}
+
+	script_key_resolved.clear();
+	if (key.length() == 64) {
+		script_key_resolved.resize(32);
+		for (int i = 0; i < 32; i++) {
+			int v = 0;
+			if (i * 2 < key.length()) {
+				char32_t ct = key[i * 2];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct << 4;
+			}
+
+			if (i * 2 + 1 < key.length()) {
+				char32_t ct = key[i * 2 + 1];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct;
+			}
+			script_key_resolved.write[i] = v;
+		}
+	}
+
+	is_script_key_resolved = true;
+
+	return script_key_resolved;
 }
 
 void EditorExportPreset::set_script_export_mode(ScriptExportMode p_mode) {

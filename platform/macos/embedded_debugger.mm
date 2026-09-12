@@ -66,9 +66,7 @@ void EmbeddedDebugger::initialize(DisplayServerMacOSEmbedded *p_ds) {
 }
 
 void EmbeddedDebugger::deinitialize() {
-	if (singleton) {
-		memdelete(singleton);
-	}
+	memdelete(singleton);
 }
 
 #ifdef DEBUG_ENABLED

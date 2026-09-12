@@ -1,5 +1,3 @@
-GH-79308
---------
 Validate extension JSON: API was removed: classes/GraphEdit/methods/get_scroll_ofs
 Validate extension JSON: API was removed: classes/GraphEdit/methods/get_snap
 Validate extension JSON: API was removed: classes/GraphEdit/methods/get_zoom_hbox

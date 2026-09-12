@@ -141,7 +141,7 @@ protected:
 
 public:
 	HScrollBar() :
-			ScrollBar(HORIZONTAL) { set_v_size_flags(0); }
+			ScrollBar(HORIZONTAL) { set_v_size_flags(SIZE_SHRINK_BEGIN); }
 };
 
 class VScrollBar : public ScrollBar {
@@ -152,5 +152,5 @@ protected:
 
 public:
 	VScrollBar() :
-			ScrollBar(VERTICAL) { set_h_size_flags(0); }
+			ScrollBar(VERTICAL) { set_h_size_flags(SIZE_SHRINK_BEGIN); }
 };

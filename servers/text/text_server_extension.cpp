@@ -1471,13 +1471,13 @@ bool TextServerExtension::shaped_text_is_ready(const RID &p_shaped) const {
 }
 
 const Glyph *TextServerExtension::shaped_text_get_glyphs(const RID &p_shaped) const {
-	GDExtensionConstPtr<const Glyph> ret;
+	GDExtensionPtr<const Glyph> ret;
 	GDVIRTUAL_CALL(_shaped_text_get_glyphs, p_shaped, ret);
 	return ret;
 }
 
 const Glyph *TextServerExtension::shaped_text_sort_logical(const RID &p_shaped) {
-	GDExtensionConstPtr<const Glyph> ret;
+	GDExtensionPtr<const Glyph> ret;
 	GDVIRTUAL_CALL(_shaped_text_sort_logical, p_shaped, ret);
 	return ret;
 }
@@ -1531,7 +1531,7 @@ int64_t TextServerExtension::shaped_text_get_ellipsis_pos(const RID &p_shaped) c
 }
 
 const Glyph *TextServerExtension::shaped_text_get_ellipsis_glyphs(const RID &p_shaped) const {
-	GDExtensionConstPtr<const Glyph> ret;
+	GDExtensionPtr<const Glyph> ret;
 	GDVIRTUAL_CALL(_shaped_text_get_ellipsis_glyphs, p_shaped, ret);
 	return ret;
 }

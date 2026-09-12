@@ -58,6 +58,8 @@ public:
 		PARAM_SHADOW_BLUR = RSE::LIGHT_PARAM_SHADOW_BLUR,
 		PARAM_TRANSMITTANCE_BIAS = RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		PARAM_INTENSITY = RSE::LIGHT_PARAM_INTENSITY,
+		PARAM_CONTACT_SHADOW_OPACITY = RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY,
+		PARAM_CONTACT_SHADOW_BLUR = RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR,
 		PARAM_MAX = RSE::LIGHT_PARAM_MAX
 	};
 
@@ -86,6 +88,7 @@ private:
 	Ref<Texture2D> projector;
 	Color correlated_color = Color(1.0, 1.0, 1.0);
 	float temperature = 6500.0;
+	bool allow_contact_shadows = true;
 	// bind helpers
 
 	virtual void owner_changed_notify() override;
@@ -137,6 +140,9 @@ public:
 
 	void set_shadow_caster_mask(uint32_t p_caster_mask);
 	uint32_t get_shadow_caster_mask() const;
+
+	void set_allow_contact_shadows(bool p_enable);
+	bool get_allow_contact_shadows() const;
 
 	void set_bake_mode(BakeMode p_mode);
 	BakeMode get_bake_mode() const;

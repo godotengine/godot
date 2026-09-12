@@ -1335,11 +1335,11 @@ TEST_CASE("[Variant] Assignment To Vec3 from Bool,Int,Float,String,Vec2,Vec2i,Ve
 
 	Variant projection_v = Projection();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
-	quaternion_v = vec3_v;
-	CHECK(quaternion_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
+	projection_v = vec3_v;
+	CHECK(projection_v == Variant(Vector3(2.2f, 3.5f, 5.3f)));
 	vec3_v = Vector3(-5.4f, -7.9f, -2.1f);
-	quaternion_v = vec3_v;
-	CHECK(quaternion_v.get_type() == Variant::VECTOR3);
+	projection_v = vec3_v;
+	CHECK(projection_v.get_type() == Variant::VECTOR3);
 
 	Variant rid_v = RID();
 	vec3_v = Vector3(2.2f, 3.5f, 5.3f);
@@ -1821,9 +1821,10 @@ TEST_CASE("[Variant] Writer and parser dictionary") {
 	// d = {{1: 2}: 3, 4: "hello", 5: {null: []}}
 	Dictionary d = { { Dictionary({ { 1, 2 } }), 3 }, { 4, String("hello") }, { 5, Dictionary({ { Variant(), Array() } }) } };
 	String d_str;
-	VariantWriter::write_to_string(d, d_str);
+	VariantWriter::write_to_string(d, d_str, false);
 
-	CHECK_EQ(d_str, "{\n4: \"hello\",\n5: {\nnull: []\n},\n{\n1: 2\n}: 3\n}");
+	const String expected = "{\n4: \"hello\",\n5: {\nnull: []\n},\n{\n1: 2\n}: 3\n}";
+	CHECK_EQ(d_str, expected);
 
 	VariantParser::StreamString ss;
 	String errs;
@@ -1833,13 +1834,137 @@ TEST_CASE("[Variant] Writer and parser dictionary") {
 	ss.s = d_str;
 	VariantParser::parse(&ss, d_parsed, errs, line);
 
-	CHECK_MESSAGE(d_parsed == Variant(d), "Should parse back.");
+	CHECK_MESSAGE(d_parsed == Variant(d), "Should parse what it writes.");
+	CHECK_EQ(d_parsed.get_type(), Variant::DICTIONARY);
+
+	// Must be able to write the same string it parsed.
+	String d_parsed_str;
+	VariantWriter::write_to_string(d_parsed, d_parsed_str, false);
+	CHECK_EQ(d_parsed_str, expected);
+}
+
+TEST_CASE("[Variant] Pretty print dictionaries and arrays") {
+	String o_str;
+
+	// Dictionary of arrays
+	Dictionary d = {
+		{ 1, Array({ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29 }) },
+		{ 2, Array({ 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 46, 47, 49 }) },
+	};
+	VariantWriter::write_to_string(d, o_str, true);
+	String expected_str = "{\n"
+						  "1: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29],\n"
+						  "2: [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 46, 47, 49]\n"
+						  "}";
+	CHECK_EQ(o_str, expected_str);
+
+	// example metadata from image resource
+	d = { { "vram_texture", false } };
+	expected_str = "{\n\"vram_texture\": false\n}";
+
+	VariantWriter::write_to_string(d, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+	VariantWriter::write_to_string(d, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "Dictionary prints pretty and non-pretty the same way");
+
+	// Array of dictionaries
+	Array a = {
+		Dictionary({ { 1, String("A") }, { 2, String("B") } }),
+		Dictionary({ { 3, Array({ 3, 33, 333 }) } }),
+	};
+	VariantWriter::write_to_string(a, o_str, true);
+	expected_str = "[{\n"
+				   "1: \"A\",\n"
+				   "2: \"B\"\n"
+				   "}, {\n"
+				   "3: [3, 33, 333]\n"
+				   "}]";
+	CHECK_EQ(o_str, expected_str);
+}
+
+TEST_CASE("[Variant] Pretty print empty variants") {
+	String o_str;
+
+	Array a = {};
+	String expected_str = "[]";
+	VariantWriter::write_to_string(a, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+	VariantWriter::write_to_string(a, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "Empty Array prints pretty and non-pretty the same way");
+
+	Dictionary d = {};
+	expected_str = "{}";
+	VariantWriter::write_to_string(d, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+	VariantWriter::write_to_string(d, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "Empty Dictionary prints pretty and non-pretty the same way");
+}
+
+TEST_CASE("[Variant] Pretty print single element variants") {
+	String o_str;
+
+	Array a = { 65535 };
+	String expected_str = "[65535]";
+	VariantWriter::write_to_string(a, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+	VariantWriter::write_to_string(a, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "Single element Array prints pretty and non-pretty the same way");
+
+	Dictionary d = { { 123, String("one two three") } };
+	expected_str = "{\n"
+				   "123: \"one two three\"\n"
+				   "}";
+
+	VariantWriter::write_to_string(d, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+
+	VariantWriter::write_to_string(d, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "Dictionary prints pretty and non-pretty the same way");
+}
+
+TEST_CASE("[Variant] Pretty print common variants") {
+	String o_str;
+
+	Transform2D t2d = Transform2D(1.1f, 1.2f, 2.1f, 2.2f, 3.1f, 3.2f);
+	String expected_str = "Transform2D(1.1, 1.2, 2.1, 2.2, 3.1, 3.2)";
+	VariantWriter::write_to_string(t2d, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+	VariantWriter::write_to_string(t2d, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "Transform2D prints pretty and non-pretty the same way");
+
+	Transform3D t3d = Transform3D(1.1f, 1.2f, 1.3f, 2.1f, 2.2f, 2.3f, 3.1f, 3.2f, 3.3f, 4.1f, 4.2f, 4.3f);
+	expected_str = "Transform3D(1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 4.1, 4.2, 4.3)";
+	VariantWriter::write_to_string(t3d, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+	VariantWriter::write_to_string(t3d, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "Transform3D prints pretty and non-pretty the same way");
+
+	Vector3 v3 = Vector3(1, 2, 3);
+	expected_str = "Vector3(1, 2, 3)";
+	VariantWriter::write_to_string(v3, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+	VariantWriter::write_to_string(v3, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "Vector3 prints pretty and non-pretty the same way");
+
+	PackedByteArray pba = { 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x74, 0x68, 0x65, 0x72, 0x65, 0x21 }; // Hello there!
+	expected_str = "PackedByteArray(72, 101, 108, 108, 111, 32, 116, 104, 101, 114, 101, 33)";
+	VariantWriter::write_to_string(pba, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+	VariantWriter::write_to_string(pba, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "PackedByteArray prints pretty and non-pretty the same way");
+
+	PackedInt32Array pi32a = { 0x48656c6c, 0x6f207468, 0x65726521 }; // Hello there!
+	expected_str = "PackedInt32Array(1214606444, 1864397928, 1701995809)";
+	VariantWriter::write_to_string(pi32a, o_str, true);
+	CHECK_EQ(o_str, expected_str);
+	VariantWriter::write_to_string(pi32a, o_str, false);
+	CHECK_MESSAGE(o_str == expected_str, "PackedInt32Array prints pretty and non-pretty the same way");
 }
 
 TEST_CASE("[Variant] Writer key sorting") {
 	Dictionary d = { { StringName("C"), 3 }, { "A", 1 }, { StringName("B"), 2 }, { "D", 4 } };
 	String d_str;
-	VariantWriter::write_to_string(d, d_str);
+	VariantWriter::write_to_string(d, d_str, true);
 
 	CHECK_EQ(d_str, "{\n\"A\": 1,\n&\"B\": 2,\n&\"C\": 3,\n\"D\": 4\n}");
 }
@@ -1909,6 +2034,101 @@ TEST_CASE("[Variant] Writer recursive dictionary on keys") {
 	d2.clear();
 }
 #endif
+
+TEST_CASE("[Variant] Object non-pretty prints with correct newlines") {
+	Object *o1 = memnew(Object);
+	Variant v1 = o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str, false);
+
+	String expected_str = "Object(Object,\"script\":null)\n";
+
+	CHECK(o_str == expected_str);
+
+	memdelete(o1);
+}
+
+TEST_CASE("[Variant] Object pretty prints with correct newlines") {
+	Object *o1 = memnew(Object);
+	Variant v1 = o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str, true);
+
+	String expected_str = "Object(Object,\n\"script\": null\n)";
+
+	CHECK(o_str == expected_str);
+
+	memdelete(o1);
+}
+
+TEST_CASE("[Variant] Nested Objects non-pretty print without spacing") {
+	Object *o1 = memnew(Object);
+	Object *o2 = memnew(Object);
+	Object *o3 = memnew(Object);
+
+	o1->set_meta("o2", o2);
+	o2->set_meta("o3", o3);
+
+	Variant v1 = o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str, false);
+
+	String expected_str = "Object(Object,\"script\":null,\"metadata/o2\":Object(Object,\"script\":null,\"metadata/o3\":Object(Object,\"script\":null)\n)\n)\n";
+
+	CHECK(o_str == expected_str);
+
+	memdelete(o1);
+	memdelete(o2);
+	memdelete(o3);
+}
+
+TEST_CASE("[Variant] Nested Objects pretty print with correct newlines") {
+	Object *o1 = memnew(Object);
+	Object *o2 = memnew(Object);
+	Object *o3 = memnew(Object);
+
+	o1->set_meta("o2", o2);
+	o2->set_meta("o3", o3);
+
+	Variant v1 = o1;
+
+	String o_str;
+	VariantWriter::write_to_string(v1, o_str, true);
+
+	String expected_str = "Object(Object,\n"
+						  "\"script\": null,\n"
+						  "\"metadata/o2\": Object(Object,\n"
+						  "\"script\": null,\n"
+						  "\"metadata/o3\": Object(Object,\n"
+						  "\"script\": null\n"
+						  ")\n"
+						  ")\n"
+						  ")";
+
+	CHECK(o_str == expected_str);
+
+	memdelete(o1);
+	memdelete(o2);
+	memdelete(o3);
+}
+
+TEST_CASE("[Variant] Dictionary propagates pretty_print flag to nested Objects") {
+	Object *o1 = memnew(Object);
+	Dictionary d = { { 1, o1 } };
+
+	String o_str;
+	VariantWriter::write_to_string(d, o_str, true);
+	CHECK_EQ(o_str, "{\n1: Object(Object,\n\"script\": null\n)\n}");
+
+	VariantWriter::write_to_string(d, o_str, false);
+	// non-pretty printed Object has \n and Dictionary also has \n for a double \n\n
+	CHECK_EQ(o_str, "{\n1: Object(Object,\"script\":null)\n\n}");
+
+	memdelete(o1);
+}
 
 TEST_CASE("[Variant] Basic comparison") {
 	CHECK_EQ(Variant(1), Variant(1));

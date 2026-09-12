@@ -66,7 +66,7 @@ def generate_ucaps_fetch() -> None:
     source += make_cap_table("caps_table", "LTU_LEN", lower_to_upper)
     source += make_cap_table("reverse_caps_table", "UTL_LEN", upper_to_lower)
 
-    source += """static int _find_upper(int ch) {
+    source += """static int _find_upper(int p_char) {
 \tint low = 0;
 \tint high = LTU_LEN - 1;
 \tint middle;
@@ -74,19 +74,19 @@ def generate_ucaps_fetch() -> None:
 \twhile (low <= high) {
 \t\tmiddle = (low + high) / 2;
 
-\t\tif (ch < caps_table[middle][0]) {
+\t\tif (p_char < caps_table[middle][0]) {
 \t\t\thigh = middle - 1; // Search low end of array.
-\t\t} else if (caps_table[middle][0] < ch) {
+\t\t} else if (caps_table[middle][0] < p_char) {
 \t\t\tlow = middle + 1; // Search high end of array.
 \t\t} else {
 \t\t\treturn caps_table[middle][1];
 \t\t}
 \t}
 
-\treturn ch;
+\treturn p_char;
 }
 
-static int _find_lower(int ch) {
+static int _find_lower(int p_char) {
 \tint low = 0;
 \tint high = UTL_LEN - 1;
 \tint middle;
@@ -94,16 +94,16 @@ static int _find_lower(int ch) {
 \twhile (low <= high) {
 \t\tmiddle = (low + high) / 2;
 
-\t\tif (ch < reverse_caps_table[middle][0]) {
+\t\tif (p_char < reverse_caps_table[middle][0]) {
 \t\t\thigh = middle - 1; // Search low end of array.
-\t\t} else if (reverse_caps_table[middle][0] < ch) {
+\t\t} else if (reverse_caps_table[middle][0] < p_char) {
 \t\t\tlow = middle + 1; // Search high end of array.
 \t\t} else {
 \t\t\treturn reverse_caps_table[middle][1];
 \t\t}
 \t}
 
-\treturn ch;
+\treturn p_char;
 }
 """
 

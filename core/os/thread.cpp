@@ -88,6 +88,20 @@ void Thread::wait_to_finish() {
 	id = UNASSIGNED_ID;
 }
 
+void Thread::make_main_thread() {
+	if (caller_id == MAIN_ID) {
+		return; // We're already the main thread
+	}
+	CRASH_COND_MSG(!is_main_thread_assigned.set_if_clear(), "A second thread attempted to become the main thread.");
+	caller_id = MAIN_ID;
+}
+
+void Thread::release_main_thread() {
+	CRASH_COND_MSG(caller_id != MAIN_ID, "Trying to release main thread from a thread that isn't main.");
+	CRASH_COND(!is_main_thread_assigned.clear_if_set());
+	caller_id = id_counter.increment();
+}
+
 Error Thread::set_name(const String &p_name) {
 	if (platform_functions.set_name) {
 		return platform_functions.set_name(p_name);

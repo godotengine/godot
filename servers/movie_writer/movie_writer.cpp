@@ -63,8 +63,9 @@ uint32_t MovieWriter::get_audio_mix_rate() const {
 	GDVIRTUAL_CALL(_get_audio_mix_rate, ret);
 	return ret;
 }
-AudioServer::SpeakerMode MovieWriter::get_audio_speaker_mode() const {
-	AudioServer::SpeakerMode ret = AudioServer::SPEAKER_MODE_STEREO;
+
+AuSE::SpeakerMode MovieWriter::get_audio_speaker_mode() const {
+	AuSE::SpeakerMode ret = AuSE::SPEAKER_MODE_STEREO;
 	GDVIRTUAL_CALL(_get_audio_speaker_mode, ret);
 	return ret;
 }
@@ -231,8 +232,8 @@ void MovieWriter::add_frame() {
 	}
 
 	if (RenderingServer::get_singleton()->viewport_is_using_hdr_2d(main_vp_rid)) {
-		vp_tex->convert(Image::FORMAT_RGBA8);
 		vp_tex->linear_to_srgb();
+		vp_tex->convert(Image::FORMAT_RGBA8);
 	}
 
 	RenderingServer::get_singleton()->viewport_set_measure_render_time(main_vp_rid, true);

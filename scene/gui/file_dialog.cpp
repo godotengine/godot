@@ -457,6 +457,10 @@ void FileDialog::_push_history() {
 }
 
 void FileDialog::_action_pressed() {
+	if (_is_open_should_be_disabled()) {
+		return;
+	}
+
 	if (mode == FILE_MODE_OPEN_FILES) {
 		const Vector<String> files = get_selected_files();
 		if (!files.is_empty()) {
@@ -1234,6 +1238,10 @@ void FileDialog::update_customization() {
 	favorite_button->set_visible(customization_flags[CUSTOMIZATION_FAVORITES]);
 	favorite_vbox->set_visible(customization_flags[CUSTOMIZATION_FAVORITES]);
 	recent_vbox->set_visible(customization_flags[CUSTOMIZATION_RECENT]);
+	dir_prev->set_visible(customization_flags[CUSTOMIZATION_NAVIGATION_BUTTONS]);
+	dir_next->set_visible(customization_flags[CUSTOMIZATION_NAVIGATION_BUTTONS]);
+	drives->set_visible(customization_flags[CUSTOMIZATION_DRIVE_SELECTOR]);
+	filter->set_visible(customization_flags[CUSTOMIZATION_FILTERS]);
 }
 
 void FileDialog::clear_filename_filter() {
@@ -1578,6 +1586,7 @@ void FileDialog::_invalidate() {
 	}
 
 	update_file_list();
+	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 
 	if (ensure_visible_after_invalidating) {
 		file_list->ensure_current_is_visible();
@@ -2185,6 +2194,9 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "layout_toggle_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_LAYOUT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "overwrite_warning_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_OVERWRITE_WARNING);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "deleting_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_DELETE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "navigation_buttons_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_NAVIGATION_BUTTONS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "drive_selector_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_DRIVE_SELECTOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "filters_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_FILTERS);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE_PATH, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
@@ -2217,6 +2229,9 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_LAYOUT);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_OVERWRITE_WARNING);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_DELETE);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_NAVIGATION_BUTTONS);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_DRIVE_SELECTOR);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_FILTERS);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FileDialog, thumbnail_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);

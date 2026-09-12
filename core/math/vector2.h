@@ -51,28 +51,29 @@ struct [[nodiscard]] Vector2 {
 	};
 
 	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			real_t x;
-			real_t y;
-		};
-
-		struct {
-			real_t width;
-			real_t height;
-		};
-
-		real_t coord[2] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
+		real_t x = 0.0f;
+		real_t width;
+	};
+	union {
+		real_t y = 0.0f;
+		real_t height;
 	};
 
-	_FORCE_INLINE_ real_t &operator[](int p_axis) {
+	constexpr real_t &operator[](int p_axis) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(Vector2, x) == 0 * sizeof(real_t));
+		static_assert(offsetof(Vector2, width) == 0 * sizeof(real_t));
+		static_assert(offsetof(Vector2, y) == 1 * sizeof(real_t));
+		static_assert(offsetof(Vector2, height) == 1 * sizeof(real_t));
+		static_assert(sizeof(Vector2) == 2 * sizeof(real_t));
+
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
-	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
+	constexpr const real_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
 
 	_FORCE_INLINE_ Vector2::Axis min_axis_index() const {
@@ -199,12 +200,9 @@ struct [[nodiscard]] Vector2 {
 		return hash_fmix32(h);
 	}
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
-	constexpr Vector2() :
-			x(0), y(0) {}
+	constexpr Vector2() = default;
 	constexpr Vector2(real_t p_x, real_t p_y) :
 			x(p_x), y(p_y) {}
-	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 
 inline constexpr Vector2 Vector2::LEFT = { -1, 0 };

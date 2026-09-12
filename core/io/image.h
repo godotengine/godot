@@ -44,7 +44,7 @@ class Image;
 // Function pointer prototypes.
 
 typedef Error (*SavePNGFunc)(const String &p_path, const Ref<Image> &p_img);
-typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img);
+typedef Vector<uint8_t> (*SavePNGBufferFunc)(const Ref<Image> &p_img, bool p_fast);
 
 typedef Error (*SaveJPGFunc)(const String &p_path, const Ref<Image> &p_img, float p_quality);
 typedef Vector<uint8_t> (*SaveJPGBufferFunc)(const Ref<Image> &p_img, float p_quality);
@@ -213,6 +213,11 @@ public:
 		float rdo_quality_loss = 0;
 	};
 
+	static void _srgb2lin_hft4(void *p_td, uint32_t p_i);
+	static void _srgb2lin_hft3(void *p_td, uint32_t p_i);
+	static void _lin2srgb_hft4(void *p_td, uint32_t p_i);
+	static void _lin2srgb_hft3(void *p_td, uint32_t p_i);
+
 	// External saver function pointers.
 
 	static inline SavePNGFunc save_png_func = nullptr;
@@ -277,9 +282,10 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	Error _compress_bind_compat_115003(CompressMode p_mode, CompressSource p_source, ASTCFormat p_format);
-	Error _compress_from_channels_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format);
+	Error _compress_from_channels_bind_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format);
 	Vector<uint8_t> _save_exr_to_buffer_bind_compat_117800(bool p_grayscale = false) const;
 	Error _save_exr_bind_compat_117800(const String &p_path, bool p_grayscale = false) const;
+	Error _generate_mipmaps_bind_compat_104289(bool p_renormalize);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -293,8 +299,8 @@ private:
 
 	void _copy_internals_from(const Image &p_image);
 
-	_FORCE_INLINE_ Color _get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const;
-	_FORCE_INLINE_ void _set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color);
+	_FORCE_INLINE_ Color _get_color_at_ofs(const uint8_t *p_ptr, uint32_t p_ofs) const;
+	_FORCE_INLINE_ void _set_color_at_ofs(uint8_t *r_ptr, uint32_t p_ofs, const Color &p_color);
 
 	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int64_t &r_offset, int &r_width, int &r_height) const; // Get where the mipmap begins in data.
 
@@ -313,6 +319,10 @@ private:
 	Error _load_from_buffer(const Vector<uint8_t> &p_array, ImageMemLoadFunc p_loader);
 
 	_FORCE_INLINE_ void _generate_mipmap_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height, bool p_renormalize = false);
+
+	float _alpha_test_coverage(const uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_alpha_ref, float p_alpha_scale) const;
+	void _scale_alpha_to_coverage(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_desired_coverage, float p_alpha_ref);
+	void _scale_mipmap_alpha_bias(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_scale, float p_bias);
 
 	static void average_4_uint8(uint8_t &p_out, const uint8_t &p_a, const uint8_t &p_b, const uint8_t &p_c, const uint8_t &p_d);
 	static void average_4_float(float &p_out, const float &p_a, const float &p_b, const float &p_c, const float &p_d);
@@ -342,7 +352,7 @@ public:
 	// Get where the mipmap begins in data.
 	int64_t get_mipmap_offset(int p_mipmap) const;
 	void get_mipmap_offset_and_size(int p_mipmap, int64_t &r_ofs, int64_t &r_size) const;
-	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int64_t &r_ofs, int64_t &r_size, int &w, int &h) const;
+	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int64_t &r_ofs, int64_t &r_size, int &p_w, int &p_h) const;
 
 	static Image3DValidateError validate_3d_image(Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_images);
 	static String get_3d_image_validation_error_text(Image3DValidateError p_error);
@@ -364,7 +374,7 @@ public:
 	void flip_y();
 
 	// Generate a mipmap chain of an image (creates an image 1/4 the size, with averaging of 4->1).
-	Error generate_mipmaps(bool p_renormalize = false);
+	Error generate_mipmaps(bool p_renormalize = false, bool p_preserve_alpha_test_coverage = false, float p_alpha_test_threshold = 0.5);
 
 	Error generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map);
 
@@ -379,7 +389,7 @@ public:
 	// Returns true when the image is empty (0,0) in size.
 	bool is_empty() const;
 
-	Vector<uint8_t> get_data() const;
+	const Vector<uint8_t> &get_data() const _LIFETIME_BOUND_;
 
 	Error load(const String &p_path);
 	static Ref<Image> load_from_file(const String &p_path);
@@ -387,6 +397,7 @@ public:
 	Error save_jpg(const String &p_path, float p_quality = 0.75) const;
 	Error save_dds(const String &p_path) const;
 	Vector<uint8_t> save_png_to_buffer() const;
+	Vector<uint8_t> _save_png_to_buffer(bool p_fast = false) const;
 	Vector<uint8_t> save_jpg_to_buffer(float p_quality = 0.75) const;
 	Vector<uint8_t> save_exr_to_buffer(bool p_grayscale = false, bool p_color_image = false, float p_max_value = -1.0f) const;
 	Vector<uint8_t> save_dds_to_buffer() const;
@@ -434,7 +445,7 @@ public:
 	void normal_map_to_xy();
 	Ref<Image> rgbe_to_srgb();
 	Ref<Image> get_image_from_mipmap(int p_mipmap) const;
-	void bump_map_to_normal_map(float bump_scale = 1.0);
+	void bump_map_to_normal_map(float p_bump_scale = 1.0);
 
 	bool detect_signed(bool p_include_mips = true) const;
 
@@ -460,8 +471,8 @@ public:
 	Error load_dds_from_buffer(const Vector<uint8_t> &p_array);
 	Error load_exr_from_buffer(const Vector<uint8_t> &p_array);
 
-	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float scale = 1.0);
-	Error load_svg_from_string(const String &p_svg_str, float scale = 1.0);
+	Error load_svg_from_buffer(const Vector<uint8_t> &p_array, float p_scale = 1.0);
+	Error load_svg_from_string(const String &p_svg_str, float p_scale = 1.0);
 
 	void convert_rg_to_ra_rgba8();
 	void convert_ra_rgba8_to_rg();

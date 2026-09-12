@@ -33,7 +33,6 @@ package org.godotengine.editor.embed
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.preference.PreferenceManager
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -49,6 +48,7 @@ import androidx.fragment.app.Fragment
 import org.godotengine.editor.BaseGodotEditor
 import org.godotengine.editor.BaseGodotEditor.Companion.SNACKBAR_SHOW_DURATION_MS
 import org.godotengine.editor.R
+import org.godotengine.editor.utils.Utils
 import org.godotengine.godot.feature.PictureInPictureProvider
 import org.godotengine.godot.utils.DialogUtils
 
@@ -195,7 +195,6 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	private val selectDropdownMenu: PopupMenu by lazy {
 		PopupMenu(context, selectDropdownButton).apply {
 			inflate(R.menu.select_dropdown_menu)
-			menu.setGroupDividerEnabled(true)
 			setOnMenuItemClickListener { item: MenuItem ->
 				when (item.itemId) {
 					R.id.menu_show_selection_visibility -> {
@@ -413,13 +412,15 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 	}
 
 	internal fun refreshGameMenu(gameMenuState: Bundle) {
-		val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+		val sharedPrefs = Utils.getDefaultSharedPreferences(context)
 		if (menuListener?.isMenuBarCollapsable() == true) {
-			val collapsed = sharedPrefs.getBoolean(PREF_KEY_GAME_MENU_BAR_COLLAPSED, false)
-			view?.isVisible = !collapsed
-			menuListener?.onGameMenuCollapsed(collapsed)
+			val collapsed = sharedPrefs?.getBoolean(PREF_KEY_GAME_MENU_BAR_COLLAPSED, false)
+			if (collapsed != null) {
+				view?.isVisible = !collapsed
+				menuListener?.onGameMenuCollapsed(collapsed)
+			}
 		}
-		alwaysOnTopChecked = sharedPrefs.getBoolean(PREF_KEY_ALWAYS_ON_TOP, false)
+		alwaysOnTopChecked = sharedPrefs?.getBoolean(PREF_KEY_ALWAYS_ON_TOP, false) == true
 		isGameEmbedded = gameMenuState.getBoolean(BaseGodotEditor.EXTRA_IS_GAME_EMBEDDED, false)
 		isGameRunning = gameMenuState.getBoolean(BaseGodotEditor.EXTRA_IS_GAME_RUNNING, false)
 
@@ -481,7 +482,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 	private fun collapseGameMenu() {
 		view?.isVisible = false
-		PreferenceManager.getDefaultSharedPreferences(context).edit {
+		Utils.getDefaultSharedPreferences(context)?.edit {
 			putBoolean(PREF_KEY_GAME_MENU_BAR_COLLAPSED, true)
 		}
 		menuListener?.onGameMenuCollapsed(true)
@@ -489,7 +490,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 	internal fun expandGameMenu() {
 		view?.isVisible = true
-		PreferenceManager.getDefaultSharedPreferences(context).edit {
+		Utils.getDefaultSharedPreferences(context)?.edit {
 			putBoolean(PREF_KEY_GAME_MENU_BAR_COLLAPSED, false)
 		}
 		menuListener?.onGameMenuCollapsed(false)
@@ -502,7 +503,7 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 	private fun updateAlwaysOnTop(enabled: Boolean) {
 		alwaysOnTopChecked = enabled
-		PreferenceManager.getDefaultSharedPreferences(context).edit {
+		Utils.getDefaultSharedPreferences(context)?.edit {
 			putBoolean(PREF_KEY_ALWAYS_ON_TOP, enabled)
 		}
 	}
@@ -525,8 +526,8 @@ class GameMenuFragment : Fragment(), PopupMenu.OnMenuItemClickListener {
 
 				if (item.isChecked != isGameEmbedded && isGameRunning) {
 					activity?.let {
-						val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context)
-						if (!sharedPrefs.getBoolean(PREF_KEY_DONT_SHOW_RESTART_GAME_HINT, false)) {
+						val sharedPrefs = Utils.getDefaultSharedPreferences(context)
+						if (sharedPrefs?.getBoolean(PREF_KEY_DONT_SHOW_RESTART_GAME_HINT, false) == false) {
 							DialogUtils.showSnackbar(
 								it,
 								if (item.isChecked) getString(R.string.restart_embed_game_hint) else getString(R.string.restart_non_embedded_game_hint),

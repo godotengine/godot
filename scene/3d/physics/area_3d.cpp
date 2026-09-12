@@ -34,10 +34,11 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "servers/audio/audio_server.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 void Area3D::set_gravity_space_override_mode(SpaceOverride p_mode) {
 	gravity_space_override = p_mode;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE, p_mode);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE, p_mode);
 }
 
 Area3D::SpaceOverride Area3D::get_gravity_space_override_mode() const {
@@ -46,7 +47,7 @@ Area3D::SpaceOverride Area3D::get_gravity_space_override_mode() const {
 
 void Area3D::set_gravity_is_point(bool p_enabled) {
 	gravity_is_point = p_enabled;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT, p_enabled);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_IS_POINT, p_enabled);
 }
 
 bool Area3D::is_gravity_a_point() const {
@@ -55,7 +56,7 @@ bool Area3D::is_gravity_a_point() const {
 
 void Area3D::set_gravity_point_unit_distance(real_t p_scale) {
 	gravity_point_unit_distance = p_scale;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE, p_scale);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE, p_scale);
 }
 
 real_t Area3D::get_gravity_point_unit_distance() const {
@@ -64,7 +65,7 @@ real_t Area3D::get_gravity_point_unit_distance() const {
 
 void Area3D::set_gravity_point_center(const Vector3 &p_center) {
 	gravity_vec = p_center;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, p_center);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_VECTOR, p_center);
 }
 
 const Vector3 &Area3D::get_gravity_point_center() const {
@@ -73,7 +74,7 @@ const Vector3 &Area3D::get_gravity_point_center() const {
 
 void Area3D::set_gravity_direction(const Vector3 &p_direction) {
 	gravity_vec = p_direction;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, p_direction);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY_VECTOR, p_direction);
 }
 
 const Vector3 &Area3D::get_gravity_direction() const {
@@ -82,7 +83,7 @@ const Vector3 &Area3D::get_gravity_direction() const {
 
 void Area3D::set_gravity(real_t p_gravity) {
 	gravity = p_gravity;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY, p_gravity);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_GRAVITY, p_gravity);
 }
 
 real_t Area3D::get_gravity() const {
@@ -91,7 +92,7 @@ real_t Area3D::get_gravity() const {
 
 void Area3D::set_linear_damp_space_override_mode(SpaceOverride p_mode) {
 	linear_damp_space_override = p_mode;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE, p_mode);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE, p_mode);
 }
 
 Area3D::SpaceOverride Area3D::get_linear_damp_space_override_mode() const {
@@ -100,7 +101,7 @@ Area3D::SpaceOverride Area3D::get_linear_damp_space_override_mode() const {
 
 void Area3D::set_angular_damp_space_override_mode(SpaceOverride p_mode) {
 	angular_damp_space_override = p_mode;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE, p_mode);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE, p_mode);
 }
 
 Area3D::SpaceOverride Area3D::get_angular_damp_space_override_mode() const {
@@ -109,7 +110,7 @@ Area3D::SpaceOverride Area3D::get_angular_damp_space_override_mode() const {
 
 void Area3D::set_linear_damp(real_t p_linear_damp) {
 	linear_damp = p_linear_damp;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_LINEAR_DAMP, p_linear_damp);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_LINEAR_DAMP, p_linear_damp);
 }
 
 real_t Area3D::get_linear_damp() const {
@@ -118,7 +119,7 @@ real_t Area3D::get_linear_damp() const {
 
 void Area3D::set_angular_damp(real_t p_angular_damp) {
 	angular_damp = p_angular_damp;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP, p_angular_damp);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_ANGULAR_DAMP, p_angular_damp);
 }
 
 real_t Area3D::get_angular_damp() const {
@@ -127,7 +128,7 @@ real_t Area3D::get_angular_damp() const {
 
 void Area3D::set_priority(int p_priority) {
 	priority = p_priority;
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_PRIORITY, p_priority);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_PRIORITY, p_priority);
 }
 
 int Area3D::get_priority() const {
@@ -185,10 +186,10 @@ void Area3D::_initialize_wind() {
 	}
 
 	// Set force, source and direction in the physics server.
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR, wind_attenuation_factor);
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_WIND_SOURCE, wind_source);
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_WIND_DIRECTION, wind_direction);
-	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE, temp_magnitude);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_WIND_ATTENUATION_FACTOR, wind_attenuation_factor);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_WIND_SOURCE, wind_source);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_WIND_DIRECTION, wind_direction);
+	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PS3DE::AREA_PARAM_WIND_FORCE_MAGNITUDE, temp_magnitude);
 }
 
 void Area3D::_body_enter_tree(ObjectID p_id) {
@@ -222,7 +223,7 @@ void Area3D::_body_exit_tree(ObjectID p_id) {
 }
 
 void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_area_shape) {
-	bool body_in = p_status == PhysicsServer3D::AREA_BODY_ADDED;
+	bool body_in = p_status == PS3DE::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;
 
 	// Exit early if instance is invalid.
@@ -428,7 +429,7 @@ void Area3D::_area_exit_tree(ObjectID p_id) {
 }
 
 void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, int p_area_shape, int p_self_shape) {
-	bool area_in = p_status == PhysicsServer3D::AREA_BODY_ADDED;
+	bool area_in = p_status == PS3DE::AREA_BODY_ADDED;
 	ObjectID objid = p_instance;
 
 	// Exit if instance is invalid.
@@ -571,18 +572,18 @@ bool Area3D::has_overlapping_areas() const {
 	return !area_map.is_empty();
 }
 
-bool Area3D::overlaps_area(RequiredParam<Node> rp_area) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_area, rp_area, false);
-	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(p_area->get_instance_id());
+bool Area3D::overlaps_area(RequiredParam<Node> p_area) const {
+	EXTRACT_PARAM_OR_FAIL_V(check_area, p_area, false);
+	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(check_area->get_instance_id());
 	if (!E) {
 		return false;
 	}
 	return E->value.in_tree;
 }
 
-bool Area3D::overlaps_body(RequiredParam<Node> rp_body) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_body, rp_body, false);
-	HashMap<ObjectID, BodyState>::ConstIterator E = body_map.find(p_body->get_instance_id());
+bool Area3D::overlaps_body(RequiredParam<Node> p_body) const {
+	EXTRACT_PARAM_OR_FAIL_V(body, p_body, false);
+	HashMap<ObjectID, BodyState>::ConstIterator E = body_map.find(body->get_instance_id());
 	if (!E) {
 		return false;
 	}
@@ -651,18 +652,7 @@ void Area3D::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "audio_bus_name" || p_property.name == "reverb_bus_name") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
-			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
-
-		p_property.hint_string = options;
-	} else if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
+	if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
 		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		} else {
@@ -800,11 +790,11 @@ void Area3D::_bind_methods() {
 
 	ADD_GROUP("Audio Bus", "audio_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_AUDIO_BUS), "set_audio_bus_name", "get_audio_bus_name");
 
 	ADD_GROUP("Reverb Bus", "reverb_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_use_reverb_bus", "is_using_reverb_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus_name", "get_reverb_bus_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_AUDIO_BUS), "set_reverb_bus_name", "get_reverb_bus_name");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_amount", "get_reverb_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_uniformity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_uniformity", "get_reverb_uniformity");
 

@@ -47,27 +47,26 @@ struct [[nodiscard]] Vector4i {
 		AXIS_W,
 	};
 
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			int32_t x;
-			int32_t y;
-			int32_t z;
-			int32_t w;
-		};
+	int32_t x = 0;
+	int32_t y = 0;
+	int32_t z = 0;
+	int32_t w = 0;
 
-		int32_t coord[4] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
+	constexpr int32_t &operator[](int p_axis) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(Vector4i, x) == 0 * sizeof(int32_t));
+		static_assert(offsetof(Vector4i, y) == 1 * sizeof(int32_t));
+		static_assert(offsetof(Vector4i, z) == 2 * sizeof(int32_t));
+		static_assert(offsetof(Vector4i, w) == 3 * sizeof(int32_t));
+		static_assert(sizeof(Vector4i) == 4 * sizeof(int32_t));
 
-	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 4);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
-
-	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
+	constexpr const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 4);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
 
 	Vector4i::Axis min_axis_index() const;
@@ -144,9 +143,7 @@ struct [[nodiscard]] Vector4i {
 		return hash_fmix32(h);
 	}
 
-	constexpr Vector4i() :
-			x(0), y(0), z(0), w(0) {}
-	Vector4i(const Vector4 &p_vec4);
+	constexpr Vector4i() = default;
 	constexpr Vector4i(int32_t p_x, int32_t p_y, int32_t p_z, int32_t p_w) :
 			x(p_x), y(p_y), z(p_z), w(p_w) {}
 };
@@ -214,27 +211,27 @@ constexpr Vector4i Vector4i::operator*(const Vector4i &p_v) const {
 }
 
 constexpr Vector4i &Vector4i::operator/=(const Vector4i &p_v) {
-	x /= p_v.x;
-	y /= p_v.y;
-	z /= p_v.z;
-	w /= p_v.w;
+	x = Math::division_no_overflow(x, p_v.x);
+	y = Math::division_no_overflow(y, p_v.y);
+	z = Math::division_no_overflow(z, p_v.z);
+	w = Math::division_no_overflow(w, p_v.w);
 	return *this;
 }
 
 constexpr Vector4i Vector4i::operator/(const Vector4i &p_v) const {
-	return Vector4i(x / p_v.x, y / p_v.y, z / p_v.z, w / p_v.w);
+	return Vector4i(Math::division_no_overflow(x, p_v.x), Math::division_no_overflow(y, p_v.y), Math::division_no_overflow(z, p_v.z), Math::division_no_overflow(w, p_v.w));
 }
 
 constexpr Vector4i &Vector4i::operator%=(const Vector4i &p_v) {
-	x %= p_v.x;
-	y %= p_v.y;
-	z %= p_v.z;
-	w %= p_v.w;
+	x = Math::modulo_no_overflow(x, p_v.x);
+	y = Math::modulo_no_overflow(y, p_v.y);
+	z = Math::modulo_no_overflow(z, p_v.z);
+	w = Math::modulo_no_overflow(w, p_v.w);
 	return *this;
 }
 
 constexpr Vector4i Vector4i::operator%(const Vector4i &p_v) const {
-	return Vector4i(x % p_v.x, y % p_v.y, z % p_v.z, w % p_v.w);
+	return Vector4i(Math::modulo_no_overflow(x, p_v.x), Math::modulo_no_overflow(y, p_v.y), Math::modulo_no_overflow(z, p_v.z), Math::modulo_no_overflow(w, p_v.w));
 }
 
 constexpr Vector4i &Vector4i::operator*=(int32_t p_scalar) {
@@ -268,27 +265,27 @@ constexpr Vector4i operator*(double p_scalar, const Vector4i &p_vector) {
 }
 
 constexpr Vector4i &Vector4i::operator/=(int32_t p_scalar) {
-	x /= p_scalar;
-	y /= p_scalar;
-	z /= p_scalar;
-	w /= p_scalar;
+	x = Math::division_no_overflow(x, p_scalar);
+	y = Math::division_no_overflow(y, p_scalar);
+	z = Math::division_no_overflow(z, p_scalar);
+	w = Math::division_no_overflow(w, p_scalar);
 	return *this;
 }
 
 constexpr Vector4i Vector4i::operator/(int32_t p_scalar) const {
-	return Vector4i(x / p_scalar, y / p_scalar, z / p_scalar, w / p_scalar);
+	return Vector4i(Math::division_no_overflow(x, p_scalar), Math::division_no_overflow(y, p_scalar), Math::division_no_overflow(z, p_scalar), Math::division_no_overflow(w, p_scalar));
 }
 
 constexpr Vector4i &Vector4i::operator%=(int32_t p_scalar) {
-	x %= p_scalar;
-	y %= p_scalar;
-	z %= p_scalar;
-	w %= p_scalar;
+	x = Math::modulo_no_overflow(x, p_scalar);
+	y = Math::modulo_no_overflow(y, p_scalar);
+	z = Math::modulo_no_overflow(z, p_scalar);
+	w = Math::modulo_no_overflow(w, p_scalar);
 	return *this;
 }
 
 constexpr Vector4i Vector4i::operator%(int32_t p_scalar) const {
-	return Vector4i(x % p_scalar, y % p_scalar, z % p_scalar, w % p_scalar);
+	return Vector4i(Math::modulo_no_overflow(x, p_scalar), Math::modulo_no_overflow(y, p_scalar), Math::modulo_no_overflow(z, p_scalar), Math::modulo_no_overflow(w, p_scalar));
 }
 
 constexpr Vector4i Vector4i::operator-() const {

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
@@ -155,7 +156,7 @@ public:
 	FindReplaceBar();
 };
 
-typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced);
+typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
@@ -192,7 +193,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _update_text_editor_theme();
 	void _update_font_ligatures();
 	void _complete_request();
-	Ref<Texture2D> _get_completion_icon(const ScriptLanguage::CodeCompletionOption &p_option);
+	Ref<Texture2D> _get_completion_icon(const EditorLanguage::CompletionOption &p_option);
 
 	virtual void input(const Ref<InputEvent> &event) override;
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
@@ -226,10 +227,6 @@ class CodeTextEditor : public VBoxContainer {
 	void _toggle_files_pressed();
 
 protected:
-	virtual void _load_theme_settings() {}
-	virtual void _validate_script() {}
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {}
-
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
 	void _text_changed();
@@ -294,8 +291,6 @@ public:
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	void set_find_replace_bar(FindReplaceBar *p_bar);
 	void remove_find_replace_bar();
-	virtual void apply_code() {}
-	virtual void goto_error();
 
 	void toggle_bookmark();
 	void goto_next_bookmark();

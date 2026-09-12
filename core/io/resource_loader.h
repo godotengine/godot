@@ -176,7 +176,7 @@ private:
 
 	static ResourceLoadedCallback _loaded_callback;
 
-	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(const String &path);
+	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(const String &p_path);
 
 	struct ThreadLoadTask {
 		WorkerThreadPool::TaskID task_id = 0; // Used if run on a worker thread from the pool.
@@ -307,7 +307,7 @@ public:
 	static void set_load_callback(ResourceLoadedCallback p_callback);
 	static ResourceLoaderImport import;
 
-	static bool add_custom_resource_format_loader(const String &script_path);
+	static bool add_custom_resource_format_loader(const String &p_script_path);
 	static void add_custom_loaders();
 	static void remove_custom_loaders();
 

@@ -49,7 +49,6 @@ public:
 private:
 	Mode mode = MODE_MAX;
 	CryptoCore::AESContext ctx;
-	PackedByteArray iv;
 
 protected:
 	static void _bind_methods();

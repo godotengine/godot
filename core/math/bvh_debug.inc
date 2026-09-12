@@ -6,17 +6,17 @@ void _debug_recursive_print_tree(int p_tree_id) const {
 	}
 }
 
-String _debug_aabb_to_string(const BVHABB_CLASS &aabb) const {
-	POINT size = aabb.calculate_size();
+String _debug_aabb_to_string(const BVHABB_CLASS &p_aabb) const {
+	POINT size = p_aabb.calculate_size();
 
 	String sz;
 	real_t vol = 0.0;
 
 	for (int i = 0; i < POINT::AXIS_COUNT; ++i) {
 		sz += "(";
-		sz += itos(aabb.min[i]);
+		sz += itos(p_aabb.min[i]);
 		sz += " ~ ";
-		sz += itos(-aabb.neg_max[i]);
+		sz += itos(-p_aabb.neg_max[i]);
 		sz += ") ";
 
 		vol += size[i];

@@ -77,11 +77,26 @@
 		</constant>
 	</constants>
 	<theme_items>
+		<theme_item name="label_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Font color of the left label (see [member label]).
+		</theme_item>
+		<theme_item name="read_only_label_color" data_type="color" type="Color" default="Color(0, 0, 0, 1)">
+			Font color of the left label, when [member read_only] is enabled.
+		</theme_item>
+		<theme_item name="line_edit_margin" data_type="constant" type="int" default="0">
+			Left margin of the internal [LineEdit], used to align text.
+		</theme_item>
+		<theme_item name="line_edit_margin_empty" data_type="constant" type="int" default="0">
+			Left margin of the internal [LineEdit], when [member label] is empty.
+		</theme_item>
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			Single texture representing both the up and down buttons.
 		</theme_item>
 		<theme_item name="updown_disabled" data_type="icon" type="Texture2D">
 			Single texture representing both the up and down buttons, when the control is readonly or disabled.
+		</theme_item>
+		<theme_item name="label_bg" data_type="style" type="StyleBox">
+			Background stylebox for the left label, displayed when [member flat] is enabled.
 		</theme_item>
 	</theme_items>
 </class>

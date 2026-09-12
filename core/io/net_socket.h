@@ -99,7 +99,7 @@ public:
 	virtual Error bind(Address p_addr) = 0;
 	virtual Error listen(int p_max_pending) = 0;
 	virtual Error connect_to_host(Address p_addr) = 0;
-	virtual Error poll(PollType p_type, int timeout) const = 0;
+	virtual Error poll(PollType p_type, int p_timeout) const = 0;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read) = 0;
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IPAddress &r_ip, uint16_t &r_port, bool p_peek = false) = 0;
 	virtual Error send(const uint8_t *p_buffer, int p_len, int &r_sent) = 0;
