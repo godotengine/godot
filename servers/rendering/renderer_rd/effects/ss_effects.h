@@ -251,14 +251,15 @@ private:
 	};
 
 	struct SSILBlurPushConstant {
-		int32_t screen_size[2];
-		float edge_threshold;
+		float edge_sharpness;
 		int blur_dir;
+		float half_screen_pixel_size[2];
 	};
 
 	struct SSILUpsamplePushConstant {
-		int32_t screen_size[2];
-		int32_t half_pixel_size[2];
+		float edge_sharpness;
+		float pad;
+		float half_screen_pixel_size[2];
 	};
 
 	struct SSILProjectionUniforms {
