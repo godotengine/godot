@@ -29,11 +29,10 @@
 /**************************************************************************/
 
 #include "spring_bone_collision_capsule_3d.h"
+#include "spring_bone_collision_capsule_3d.compat.inc"
 
 #include "core/object/class_db.h"
 #include "scene/3d/spring_bone_collision_sphere_3d.h"
-
-#include "spring_bone_collision_capsule_3d.compat.inc"
 
 void SpringBoneCollisionCapsule3D::set_radius(float p_radius) {
 	radius = p_radius;
