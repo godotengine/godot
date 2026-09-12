@@ -89,8 +89,6 @@ private:
 		VMEM_MENU_OWNERS,
 	};
 
-	AcceptDialog *msgdialog = nullptr;
-
 	LineEdit *clicked_ctrl = nullptr;
 	LineEdit *clicked_ctrl_type = nullptr;
 	LineEdit *live_edit_root = nullptr;

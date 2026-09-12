@@ -95,6 +95,9 @@
 	</methods>
 	<members>
 		<member name="accessibility_region" type="bool" setter="set_accessibility_region" getter="is_accessibility_region" overrides="Container" default="true" />
+		<member name="allow_switch_screen" type="bool" setter="set_allow_switch_screen" getter="is_allow_switch_screen" default="false">
+			If [code]true[/code] and this dock is docked in the main screen, selecting a node in the scene tree can switch away from this dock. The selected node needs to be handled by another main screen dock (2D, 3D) for the switch to happen.
+		</member>
 		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="5">
 			The available layouts for this dock, as a bitmask. By default, the dock allows vertical and floating layouts.
 		</member>
@@ -155,8 +158,11 @@
 		<constant name="DOCK_LAYOUT_FLOATING" value="4" enum="DockLayout" is_bitfield="true">
 			Allows making the dock floating (opened as a separate window).
 		</constant>
+		<constant name="DOCK_LAYOUT_MAIN_SCREEN" value="8" enum="DockLayout" is_bitfield="true">
+			Allows using the dock as main screen.
+		</constant>
 		<constant name="DOCK_LAYOUT_ALL" value="7" enum="DockLayout" is_bitfield="true">
-			Allows placing the dock in all available slots.
+			Allows placing the dock in all available slots, except in main screen.
 		</constant>
 		<constant name="DOCK_SLOT_NONE" value="-1" enum="DockSlot">
 			The dock is closed.
@@ -194,7 +200,10 @@
 		<constant name="DOCK_SLOT_BOTTOM_R" value="10" enum="DockSlot">
 			Dock slot at the bottom, below bottom panel, on the right side.
 		</constant>
-		<constant name="DOCK_SLOT_MAX" value="11" enum="DockSlot">
+		<constant name="DOCK_SLOT_MAIN_SCREEN" value="11" enum="DockSlot">
+			The editor's main screen.
+		</constant>
+		<constant name="DOCK_SLOT_MAX" value="12" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
 		</constant>
 	</constants>

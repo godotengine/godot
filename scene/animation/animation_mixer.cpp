@@ -1955,7 +1955,7 @@ void AnimationMixer::_blend_apply() {
 						return;
 					}
 					if (t->loc_used && t->rot_used && t->scale_used) {
-						Transform3D transform = Transform3D(Basis(t->rot).scaled(t->scale), t->loc);
+						Transform3D transform = Transform3D(Basis(t->rot).scaled_local(t->scale), t->loc);
 						t_node_3d->set_transform(transform);
 					} else {
 						if (t->loc_used) {
@@ -2552,6 +2552,12 @@ void AnimationMixer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
 	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
+
+	// TODO Note: These used to be bound in AnimationPlayer::_bind_methods, indicating it
+	//            was originally meant to be exposed to AnimationPlayer instead of AnimationMixer.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("find_animation", "animation"), &AnimationMixer::find_animation);
+	ClassDB::bind_method(D_METHOD("find_animation_library", "animation"), &AnimationMixer::find_animation_library);
 }
 
 AnimationMixer::AnimationMixer() {

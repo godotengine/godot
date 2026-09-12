@@ -58,8 +58,14 @@
 		<theme_item name="center_grabber" data_type="constant" type="int" default="0">
 			Boolean constant. If [code]1[/code], the grabber texture size will be ignored and it will fit within slider's bounds based only on its center position.
 		</theme_item>
+		<theme_item name="grabber_max_size" data_type="constant" type="int" default="0">
+			The maximum allowed size of the [Slider]'s grabber icon. The grabber texture is scaled down so its widest axis is [theme_item grabber_max_size] and the other axis is scaled keeping the original ratio.
+		</theme_item>
 		<theme_item name="grabber_offset" data_type="constant" type="int" default="0">
 			Vertical or horizontal offset of the grabber.
+		</theme_item>
+		<theme_item name="tick_max_size" data_type="constant" type="int" default="0">
+			The maximum allowed size of the [Slider]'s tick icons. The tick texture is scaled down so its widest axis is [theme_item tick_max_size] and the other axis is scaled keeping the original ratio.
 		</theme_item>
 		<theme_item name="tick_offset" data_type="constant" type="int" default="0">
 			Vertical or horizontal offset of the ticks. The offset is reversed for top or left ticks.

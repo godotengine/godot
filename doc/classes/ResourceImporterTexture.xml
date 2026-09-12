@@ -71,6 +71,9 @@
 			If [code]true[/code], scales the imported image to match [member EditorSettings.interface/editor/appearance/custom_display_scale]. This should be enabled for editor plugin icons and custom class icons, but should be left disabled otherwise.
 			[b]Note:[/b] Only available for SVG images.
 		</member>
+		<member name="mipmaps/alpha_test_threshold" type="float" setter="" getter="" default="0.5">
+			The alpha threshold used when preserving alpha test coverage across mipmap levels. The coverage is measured at mipmap 0 using the setting and the lower mipmaps are adjusted to match that coverage. Higher values preserve more detail, lower values create softer edges. Note that this threshold is independent from the [code]Alpha Scissor Threshold[/code] set on the material and they both may need to be tuned for optimal results.
+		</member>
 		<member name="mipmaps/generate" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], smaller versions of the texture are generated on import. For example, a 64×64 texture will generate 6 mipmaps (32×32, 16×16, 8×8, 4×4, 2×2, 1×1). This has several benefits:
 			- Textures will not become grainy in the distance (in 3D), or if scaled down due to [Camera2D] zoom or [CanvasItem] scale (in 2D).
@@ -80,6 +83,9 @@
 		</member>
 		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
 			Unimplemented. This currently has no effect when changed.
+		</member>
+		<member name="mipmaps/preserve_alpha_test_coverage" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], automatically adjusts alpha values to maintain consistent coverage when alpha testing is used. This is especially useful for hair, foliage, or other alpha-tested materials, as it prevents fading or popping artifacts across mipmap levels (LODs). This option is intended for color textures and clamps the alpha channel in the 0.0 - 1.0 range.
 		</member>
 		<member name="process/channel_remap/alpha" type="int" setter="" getter="" default="3">
 			Specifies the data source of the output image's alpha channel.

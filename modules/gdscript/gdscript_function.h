@@ -34,7 +34,6 @@
 
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
-#include "core/os/thread.h"
 #include "core/string/string_name.h"
 #include "core/templates/pair.h"
 #include "core/templates/self_list.h"
@@ -347,6 +346,8 @@ private:
 	StringName source;
 	bool _static = false;
 	Vector<GDScriptDataType> argument_types;
+	// NOTE: This is the expected return type, but coroutines can actually return a `GDScriptFunctionState` object.
+	// In VM it is currently only used to return a default value on error (as a fallback).
 	GDScriptDataType return_type;
 	MethodInfo method_info;
 	Variant rpc_config;
@@ -379,7 +380,7 @@ private:
 	Vector<Variant::ValidatedConstructor> constructors;
 	Vector<Variant::ValidatedUtilityFunction> utilities;
 	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
-	Vector<MethodBind *> methods;
+	Vector<const MethodBind *> methods;
 	Vector<GDScriptFunction *> lambdas;
 
 	int _code_size = 0;
@@ -415,7 +416,7 @@ private:
 	const Variant::ValidatedConstructor *_constructors_ptr = nullptr;
 	const Variant::ValidatedUtilityFunction *_utilities_ptr = nullptr;
 	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
-	MethodBind **_methods_ptr = nullptr;
+	const MethodBind *const *_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
 
 #ifdef DEBUG_ENABLED

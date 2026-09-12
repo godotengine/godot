@@ -103,9 +103,6 @@ int GodotPhysicsDirectSpaceState2D::intersect_point(const PS2DT::PointParameters
 		}
 
 		r_results[cc].collider_id = col_obj->get_instance_id();
-		if (r_results[cc].collider_id.is_valid()) {
-			r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
-		}
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
 
@@ -194,9 +191,6 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const PS2DT::RayParameters &p
 	ERR_FAIL_NULL_V(res_obj, false); // Shouldn't happen but silences warning.
 
 	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id.is_valid()) {
-		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
-	}
 	r_result.normal = res_normal;
 	r_result.position = res_point;
 	r_result.rid = res_obj->get_self();
@@ -242,9 +236,6 @@ int GodotPhysicsDirectSpaceState2D::intersect_shape(const PS2DT::ShapeParameters
 		}
 
 		r_results[cc].collider_id = col_obj->get_instance_id();
-		if (r_results[cc].collider_id.is_valid()) {
-			r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
-		}
 		r_results[cc].rid = col_obj->get_self();
 		r_results[cc].shape = shape_idx;
 

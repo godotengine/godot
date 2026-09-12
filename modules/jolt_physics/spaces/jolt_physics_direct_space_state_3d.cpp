@@ -498,7 +498,6 @@ bool JoltPhysicsDirectSpaceState3D::intersect_ray(const PS3DT::RayParameters &p_
 	r_result.normal = to_godot(normal);
 	r_result.rid = object->get_rid();
 	r_result.collider_id = object->get_instance_id();
-	r_result.collider = object->get_instance();
 	r_result.shape = 0;
 
 	if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
@@ -543,7 +542,6 @@ int JoltPhysicsDirectSpaceState3D::intersect_point(const PS3DT::PointParameters 
 
 		result.rid = object->get_rid();
 		result.collider_id = object->get_instance_id();
-		result.collider = object->get_instance();
 	}
 
 	return hit_count;
@@ -615,7 +613,6 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const PS3DT::ShapeParameters 
 
 			result.rid = object->get_rid();
 			result.collider_id = object->get_instance_id();
-			result.collider = object->get_instance();
 
 			hit_count++;
 			if (hit_count >= p_result_max) {

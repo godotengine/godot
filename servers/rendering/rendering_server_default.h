@@ -244,6 +244,7 @@ public:
 	FUNC0RC(RID, texture_drawable_get_default_material)
 
 	FUNC2(texture_replace, RID, RID)
+	FUNC2(texture_replace_compatible, RID, RID)
 
 	FUNC3(texture_set_size_override, RID, int, int)
 // FIXME: Disabled during Vulkan refactoring, should be ported.
@@ -266,6 +267,8 @@ public:
 	FUNCRIDTEX2(texture_rd, const RID &, const RSE::TextureLayeredType)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
+
+	FUNC2(texture_2d_attach_streaming_state, RID, RID);
 
 	/* SHADER API */
 
@@ -499,6 +502,7 @@ public:
 	FUNC2(light_set_shadow_caster_mask, RID, uint32_t)
 	FUNC2(light_set_bake_mode, RID, RSE::LightBakeMode)
 	FUNC2(light_set_max_sdfgi_cascade, RID, uint32_t)
+	FUNC2(light_set_allow_contact_shadows, RID, bool)
 
 	FUNC2(light_omni_set_shadow_mode, RID, RSE::LightOmniShadowMode)
 
@@ -549,6 +553,8 @@ public:
 	FUNC2(lightmap_set_shadowmask_textures, RID, RID)
 	FUNC1R(RSE::ShadowmaskMode, lightmap_get_shadowmask_mode, RID)
 	FUNC2(lightmap_set_shadowmask_mode, RID, RSE::ShadowmaskMode)
+	FUNC1R(float, lightmap_get_specular_intensity, RID)
+	FUNC2(lightmap_set_specular_intensity, RID, float)
 
 	/* Shadow Atlas */
 	FUNC0R(RID, shadow_atlas_create)
@@ -716,6 +722,7 @@ public:
 	FUNC4(camera_set_perspective, RID, float, float, float)
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
 	FUNC5(camera_set_frustum, RID, float, Vector2, float, float)
+	FUNC3(camera_set_xr_projections, RID, TypedArray<Projection>, TypedArray<Transform3D>)
 	FUNC2(camera_set_transform, RID, const Transform3D &)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
@@ -1179,7 +1186,9 @@ public:
 #endif
 
 	virtual uint64_t get_rendering_info(RSE::RenderingInfo p_info) override;
+#ifdef RD_ENABLED
 	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const override;
+#endif
 
 	virtual void set_frame_profiling_enabled(bool p_enable) override;
 	virtual Vector<RenderingServerTypes::FrameProfileArea> get_frame_profile() override;

@@ -1,0 +1,177 @@
+diff --git a/thirdparty/offset_allocator/offsetAllocator.hpp b/thirdparty/offset_allocator/offsetAllocator.hpp
+--- a/thirdparty/offset_allocator/offsetAllocator.hpp
++++ b/thirdparty/offset_allocator/offsetAllocator.hpp
+@@ -10,7 +10,7 @@ namespace OffsetAllocator
+     typedef unsigned int uint32;
+ 
+     // 16 bit offsets mode will halve the metadata storage cost
+-    // But it only supports up to 65536 maximum allocation count
++    // But it only supports up to 65534 maximum allocation count
+ #ifdef USE_16_BIT_NODE_INDICES
+     typedef uint16 NodeIndex;
+ #else
+@@ -26,9 +26,10 @@ namespace OffsetAllocator
+     struct Allocation
+     {
+         static constexpr uint32 NO_SPACE = 0xffffffff;
++        static constexpr NodeIndex NO_SPACE_METADATA = static_cast<NodeIndex>(-1);
+         
+         uint32 offset = NO_SPACE;
+-        NodeIndex metadata = NO_SPACE; // internal: node index
++        NodeIndex metadata = NO_SPACE_METADATA; // internal: node index
+     };
+ 
+     struct StorageReport
+@@ -64,12 +65,12 @@ namespace OffsetAllocator
+         StorageReportFull storageReportFull() const;
+         
+     private:
+-        uint32 insertNodeIntoBin(uint32 size, uint32 dataOffset);
+-        void removeNodeFromBin(uint32 nodeIndex);
++        NodeIndex insertNodeIntoBin(uint32 size, uint32 dataOffset);
++        void removeNodeFromBin(NodeIndex nodeIndex);
+ 
+         struct Node
+         {
+-            static constexpr NodeIndex unused = 0xffffffff;
++            static constexpr NodeIndex unused = static_cast<NodeIndex>(-1);
+             
+             uint32 dataOffset = 0;
+             uint32 dataSize = 0;
+diff --git a/thirdparty/offset_allocator/offsetAllocator.cpp b/thirdparty/offset_allocator/offsetAllocator.cpp
+--- a/thirdparty/offset_allocator/offsetAllocator.cpp
++++ b/thirdparty/offset_allocator/offsetAllocator.cpp
+@@ -142,7 +142,7 @@ namespace OffsetAllocator
+     {
+         if (sizeof(NodeIndex) == 2)
+         {
+-            ASSERT(maxAllocs <= 65536);
++            ASSERT(maxAllocs <= static_cast<uint32>(Node::unused) - 1);
+         }
+         reset();
+     }
+@@ -187,7 +187,7 @@ namespace OffsetAllocator
+         // Freelist is a stack. Nodes in inverse order so that [0] pops first.
+         for (uint32 i = 0; i < m_maxAllocs + 1; i++)
+         {
+-            m_freeNodes[i] = m_maxAllocs - i;
++            m_freeNodes[i] = static_cast<NodeIndex>(m_maxAllocs - i);
+         }
+         
+         // Start state: Whole storage as one big node
+@@ -206,7 +206,7 @@ namespace OffsetAllocator
+         // Out of allocations?
+         if (m_freeOffset == Allocation::NO_SPACE)
+         {
+-            return {.offset = Allocation::NO_SPACE, .metadata = Allocation::NO_SPACE};
++            return {.offset = Allocation::NO_SPACE, .metadata = Allocation::NO_SPACE_METADATA};
+         }
+         
+         // Round up to bin index to ensure that alloc >= bin
+@@ -233,7 +233,7 @@ namespace OffsetAllocator
+             // Out of space?
+             if (topBinIndex == Allocation::NO_SPACE)
+             {
+-                return {.offset = Allocation::NO_SPACE, .metadata = Allocation::NO_SPACE};
++                return {.offset = Allocation::NO_SPACE, .metadata = Allocation::NO_SPACE_METADATA};
+             }
+ 
+             // All leaf bins here fit the alloc, since the top bin was rounded up. Start leaf search from bit 0.
+@@ -244,7 +244,7 @@ namespace OffsetAllocator
+         uint32 binIndex = (topBinIndex << TOP_BINS_INDEX_SHIFT) | leafBinIndex;
+         
+         // Pop the top node of the bin. Bin top = node.next.
+-        uint32 nodeIndex = m_binIndices[binIndex];
++        NodeIndex nodeIndex = m_binIndices[binIndex];
+         Node& node = m_nodes[nodeIndex];
+         uint32 nodeTotalSize = node.dataSize;
+         node.dataSize = size;
+@@ -274,7 +274,7 @@ namespace OffsetAllocator
+         uint32 reminderSize = nodeTotalSize - size;
+         if (reminderSize > 0)
+         {
+-            uint32 newNodeIndex = insertNodeIntoBin(reminderSize, node.dataOffset + size);
++            NodeIndex newNodeIndex = insertNodeIntoBin(reminderSize, node.dataOffset + size);
+             
+             // Link nodes next to each other so that we can merge them later if both are free
+             // And update the old next neighbor to point to the new node (in middle)
+@@ -289,10 +289,10 @@ namespace OffsetAllocator
+     
+     void Allocator::free(Allocation allocation)
+     {
+-        ASSERT(allocation.metadata != Allocation::NO_SPACE);
++        ASSERT(allocation.metadata != Allocation::NO_SPACE_METADATA);
+         if (!m_nodes) return;
+         
+-        uint32 nodeIndex = allocation.metadata;
++        NodeIndex nodeIndex = allocation.metadata;
+         Node& node = m_nodes[nodeIndex];
+         
+         // Double delete check
+@@ -329,8 +329,8 @@ namespace OffsetAllocator
+             node.neighborNext = nextNode.neighborNext;
+         }
+ 
+-        uint32 neighborNext = node.neighborNext;
+-        uint32 neighborPrev = node.neighborPrev;
++        NodeIndex neighborNext = node.neighborNext;
++        NodeIndex neighborPrev = node.neighborPrev;
+         
+         // Insert the removed node to freelist
+ #ifdef DEBUG_VERBOSE
+@@ -339,7 +339,7 @@ namespace OffsetAllocator
+         m_freeNodes[++m_freeOffset] = nodeIndex;
+ 
+         // Insert the (combined) free node to bin
+-        uint32 combinedNodeIndex = insertNodeIntoBin(size, offset);
++        NodeIndex combinedNodeIndex = insertNodeIntoBin(size, offset);
+ 
+         // Connect neighbors with the new combined node
+         if (neighborNext != Node::unused)
+@@ -354,7 +354,7 @@ namespace OffsetAllocator
+         }
+     }
+ 
+-    uint32 Allocator::insertNodeIntoBin(uint32 size, uint32 dataOffset)
++    NodeIndex Allocator::insertNodeIntoBin(uint32 size, uint32 dataOffset)
+     {
+         // Round down to bin index to ensure that bin >= alloc
+         uint32 binIndex = SmallFloat::uintToFloatRoundDown(size);
+@@ -371,8 +371,8 @@ namespace OffsetAllocator
+         }
+         
+         // Take a freelist node and insert on top of the bin linked list (next = old top)
+-        uint32 topNodeIndex = m_binIndices[binIndex];
+-        uint32 nodeIndex = m_freeNodes[m_freeOffset--];
++        NodeIndex topNodeIndex = m_binIndices[binIndex];
++        NodeIndex nodeIndex = m_freeNodes[m_freeOffset--];
+ #ifdef DEBUG_VERBOSE
+         printf("Getting node %u from freelist[%u]\n", nodeIndex, m_freeOffset + 1);
+ #endif
+@@ -388,7 +388,7 @@ namespace OffsetAllocator
+         return nodeIndex;
+     }
+     
+-    void Allocator::removeNodeFromBin(uint32 nodeIndex)
++    void Allocator::removeNodeFromBin(NodeIndex nodeIndex)
+     {
+         Node &node = m_nodes[nodeIndex];
+         
+@@ -440,7 +440,7 @@ namespace OffsetAllocator
+ 
+     uint32 Allocator::allocationSize(Allocation allocation) const
+     {
+-        if (allocation.metadata == Allocation::NO_SPACE) return 0;
++        if (allocation.metadata == Allocation::NO_SPACE_METADATA) return 0;
+         if (!m_nodes) return 0;
+         
+         return m_nodes[allocation.metadata].dataSize;
+@@ -473,7 +473,7 @@ namespace OffsetAllocator
+         for (uint32 i = 0; i < NUM_LEAF_BINS; i++)
+         {
+             uint32 count = 0;
+-            uint32 nodeIndex = m_binIndices[i];
++            NodeIndex nodeIndex = m_binIndices[i];
+             while (nodeIndex != Node::unused)
+             {
+                 nodeIndex = m_nodes[nodeIndex].binListNext;

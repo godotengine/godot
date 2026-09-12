@@ -82,6 +82,7 @@ public:
 		SIZE_EXPAND = 2,
 		SIZE_SHRINK_CENTER = 4,
 		SIZE_SHRINK_END = 8,
+		SIZE_MAXIMIZE = 16,
 
 		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 	};
@@ -170,6 +171,11 @@ public:
 		TEXT_DIRECTION_LTR = TextServer::DIRECTION_LTR,
 		TEXT_DIRECTION_RTL = TextServer::DIRECTION_RTL,
 		TEXT_DIRECTION_INHERITED = TextServer::DIRECTION_INHERITED,
+	};
+
+	enum AutoFocusStrategy {
+		STRATEGY_LEGACY,
+		STRATEGY_BALLOON,
 	};
 
 private:
@@ -400,11 +406,16 @@ private:
 
 	// Focus.
 
-	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
+	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_score, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 	bool _is_focus_mode_enabled() const;
 	void _update_focus_behavior_recursive();
 	void _propagate_focus_behavior_recursive_recursively(bool p_enabled, bool p_skip_non_inherited);
+
+	// Focus Strategies.
+	real_t _focus_strategy_legacy(const Vector2 &p_dir, const Control &p_candidate, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min);
+	real_t _focus_strategy_balloon_candidate_score(const Vector2 &p_start, const Vector2 &p_dir, const Pair<Vector2, Vector2> &p_edge);
+	real_t _focus_strategy_balloon(const Vector2 &p_dir, const Control &p_candidate, const Rect2 &p_clamp);
 
 	// Theming.
 
@@ -796,9 +807,9 @@ public:
 	void begin_bulk_theme_override();
 	void end_bulk_theme_override();
 
-	void add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> rp_icon);
-	void add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> rp_style);
-	void add_theme_font_override(const StringName &p_name, RequiredParam<Font> rp_font);
+	void add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> p_icon);
+	void add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> p_style);
+	void add_theme_font_override(const StringName &p_name, RequiredParam<Font> p_font);
 	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);

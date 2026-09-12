@@ -30,13 +30,16 @@
 
 #pragma once
 
-#include "core/object/script_language.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/rb_set.h"
 #include "scene/resources/shader_include.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/object/editor_language.h"
+#endif
 
 class ShaderPreprocessor {
 public:
@@ -216,10 +219,16 @@ private:
 
 	Error preprocess(State *p_state, const String &p_code, String &r_result);
 
-public:
-	typedef void (*IncludeCompletionFunction)(List<ScriptLanguage::CodeCompletionOption> *);
+	void _prepare_state(ShaderPreprocessor::State &rp_state, const String &p_filename, bool p_save_regions);
 
-	Error preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_defines = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
+public:
+	Error preprocess(const String &p_code, const String &p_filename, String &r_result, HashSet<Ref<ShaderInclude>> *r_includes = nullptr);
+
+#ifdef TOOLS_ENABLED
+	typedef void (*IncludeCompletionFunction)(List<EditorLanguage::CompletionOption> *);
+
+	Error preprocess_for_editor(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, List<EditorLanguage::CompletionOption> *r_completion_options = nullptr, List<EditorLanguage::CompletionOption> *r_completion_defines = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
+#endif
 
 	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords = false);
 	static void get_pragma_list(List<String> *r_pragmas);

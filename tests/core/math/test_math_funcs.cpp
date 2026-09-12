@@ -672,4 +672,28 @@ TEST_CASE_TEMPLATE("[Math] bezier_interpolate", T, float, double) {
 	static_assert(Math::is_equal_approx(Math::bezier_interpolate((T)0.0, (T)0.2, (T)0.8, (T)1.0, (T)1.0), (T)1.0));
 }
 
+TEST_CASE("[Math] division_no_overflow/modulo_no_overflow") {
+	// `INT_MIN / -1` overflows the quotient. That is undefined behavior, and on x86
+	// it traps at the hardware level rather than wrapping.
+	static_assert(Math::division_no_overflow(INT32_MIN, -1) == INT32_MIN);
+	static_assert(Math::division_no_overflow(INT64_MIN, (int64_t)-1) == INT64_MIN);
+	static_assert(Math::modulo_no_overflow(INT32_MIN, -1) == 0);
+	static_assert(Math::modulo_no_overflow(INT64_MIN, (int64_t)-1) == 0);
+
+	// Everything else must behave exactly like the built-in operators.
+	static_assert(Math::division_no_overflow(10, -1) == -10);
+	static_assert(Math::division_no_overflow(-10, -1) == 10);
+	static_assert(Math::division_no_overflow(7, 2) == 3);
+	static_assert(Math::division_no_overflow(-7, 2) == -3);
+	static_assert(Math::modulo_no_overflow(10, -1) == 0);
+	static_assert(Math::modulo_no_overflow(7, 2) == 1);
+	static_assert(Math::modulo_no_overflow(-7, 2) == -1);
+
+	// Non-constant operands take the runtime path rather than being folded.
+	int64_t num = INT64_MIN;
+	int64_t den = -1;
+	CHECK(Math::division_no_overflow(num, den) == INT64_MIN);
+	CHECK(Math::modulo_no_overflow(num, den) == 0);
+}
+
 } // namespace TestMathFuncs

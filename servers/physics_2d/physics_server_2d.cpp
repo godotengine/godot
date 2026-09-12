@@ -40,15 +40,15 @@ PhysicsServer2D *PhysicsServer2D::get_singleton() {
 	return singleton;
 }
 
-bool PhysicsServer2D::_body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters2D> rp_parameters, const Ref<PhysicsTestMotionResult2D> &p_result) {
-	EXTRACT_PARAM_OR_FAIL_V(p_parameters, rp_parameters, false);
+bool PhysicsServer2D::_body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters2D> p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result) {
+	EXTRACT_PARAM_OR_FAIL_V(parameters, p_parameters, false);
 
 	PS2DT::MotionResult *result_ptr = nullptr;
 	if (p_result.is_valid()) {
 		result_ptr = p_result->get_result_ptr();
 	}
 
-	return body_test_motion(p_body, p_parameters->get_parameters(), result_ptr);
+	return body_test_motion(p_body, parameters->get_parameters(), result_ptr);
 }
 
 void PhysicsServer2D::_bind_methods() {

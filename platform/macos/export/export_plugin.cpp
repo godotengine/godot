@@ -2492,8 +2492,7 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 			}
 			valid = false;
 		}
-	}
-	if (architecture == "universal" || architecture == "arm64") {
+	} else if (architecture == "arm64") {
 		if (!ResourceImporterTextureSettings::should_import_etc2_astc()) {
 			if (EditorNode::is_cmdline_mode()) {
 				err += TTR("Cannot export for universal or arm64 if ETC2 ASTC texture format is disabled. Enable it in the Project Settings (Rendering > Textures > VRAM Compression > Import ETC2 ASTC).") + "\n";

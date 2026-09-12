@@ -395,20 +395,20 @@ void Node2D::set_global_transform(const Transform2D &p_transform) {
 	}
 }
 
-Transform2D Node2D::get_relative_transform_to_parent(RequiredParam<const Node> rp_parent) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_parent, rp_parent, Transform2D());
+Transform2D Node2D::get_relative_transform_to_parent(RequiredParam<const Node> p_parent) const {
+	EXTRACT_PARAM_OR_FAIL_V(parent, p_parent, Transform2D());
 	ERR_READ_THREAD_GUARD_V(Transform2D());
-	if (p_parent == this) {
+	if (parent == this) {
 		return Transform2D();
 	}
 
 	Node2D *parent_2d = Object::cast_to<Node2D>(get_parent());
 
 	ERR_FAIL_NULL_V(parent_2d, Transform2D());
-	if (p_parent == parent_2d) {
+	if (parent == parent_2d) {
 		return get_transform();
 	} else {
-		return parent_2d->get_relative_transform_to_parent(p_parent) * get_transform();
+		return parent_2d->get_relative_transform_to_parent(parent) * get_transform();
 	}
 }
 

@@ -505,18 +505,18 @@ bool Area2D::has_overlapping_areas() const {
 	return !area_map.is_empty();
 }
 
-bool Area2D::overlaps_area(RequiredParam<Node> rp_area) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_area, rp_area, false);
-	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(p_area->get_instance_id());
+bool Area2D::overlaps_area(RequiredParam<Node> p_area) const {
+	EXTRACT_PARAM_OR_FAIL_V(check_area, p_area, false);
+	HashMap<ObjectID, AreaState>::ConstIterator E = area_map.find(check_area->get_instance_id());
 	if (!E) {
 		return false;
 	}
 	return E->value.in_tree;
 }
 
-bool Area2D::overlaps_body(RequiredParam<Node> rp_body) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_body, rp_body, false);
-	HashMap<ObjectID, BodyState>::ConstIterator E = body_map.find(p_body->get_instance_id());
+bool Area2D::overlaps_body(RequiredParam<Node> p_body) const {
+	EXTRACT_PARAM_OR_FAIL_V(body, p_body, false);
+	HashMap<ObjectID, BodyState>::ConstIterator E = body_map.find(body->get_instance_id());
 	if (!E) {
 		return false;
 	}
@@ -548,18 +548,7 @@ void Area2D::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "audio_bus_name") {
-		String options;
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			if (i > 0) {
-				options += ",";
-			}
-			String name = AudioServer::get_singleton()->get_bus_name(i);
-			options += name;
-		}
-
-		p_property.hint_string = options;
-	} else if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
+	if (p_property.name.begins_with("gravity") && p_property.name != "gravity_space_override") {
 		if (gravity_space_override == SPACE_OVERRIDE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		} else {
@@ -671,7 +660,7 @@ void Area2D::_bind_methods() {
 
 	ADD_GROUP("Audio Bus", "audio_bus_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_bus_override"), "set_audio_bus_override", "is_overriding_audio_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_AUDIO_BUS), "set_audio_bus_name", "get_audio_bus_name");
 
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_DISABLED);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE);

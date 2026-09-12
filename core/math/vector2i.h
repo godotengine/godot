@@ -197,29 +197,29 @@ constexpr void Vector2i::operator*=(int32_t p_rvalue) {
 }
 
 constexpr Vector2i Vector2i::operator/(const Vector2i &p_v1) const {
-	return Vector2i(x / p_v1.x, y / p_v1.y);
+	return Vector2i(Math::division_no_overflow(x, p_v1.x), Math::division_no_overflow(y, p_v1.y));
 }
 
 constexpr Vector2i Vector2i::operator/(int32_t p_rvalue) const {
-	return Vector2i(x / p_rvalue, y / p_rvalue);
+	return Vector2i(Math::division_no_overflow(x, p_rvalue), Math::division_no_overflow(y, p_rvalue));
 }
 
 constexpr void Vector2i::operator/=(int32_t p_rvalue) {
-	x /= p_rvalue;
-	y /= p_rvalue;
+	x = Math::division_no_overflow(x, p_rvalue);
+	y = Math::division_no_overflow(y, p_rvalue);
 }
 
 constexpr Vector2i Vector2i::operator%(const Vector2i &p_v1) const {
-	return Vector2i(x % p_v1.x, y % p_v1.y);
+	return Vector2i(Math::modulo_no_overflow(x, p_v1.x), Math::modulo_no_overflow(y, p_v1.y));
 }
 
 constexpr Vector2i Vector2i::operator%(int32_t p_rvalue) const {
-	return Vector2i(x % p_rvalue, y % p_rvalue);
+	return Vector2i(Math::modulo_no_overflow(x, p_rvalue), Math::modulo_no_overflow(y, p_rvalue));
 }
 
 constexpr void Vector2i::operator%=(int32_t p_rvalue) {
-	x %= p_rvalue;
-	y %= p_rvalue;
+	x = Math::modulo_no_overflow(x, p_rvalue);
+	y = Math::modulo_no_overflow(y, p_rvalue);
 }
 
 constexpr Vector2i Vector2i::operator-() const {

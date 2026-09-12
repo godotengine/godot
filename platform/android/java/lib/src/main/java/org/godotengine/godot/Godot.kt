@@ -144,6 +144,12 @@ class Godot private constructor(val context: Context) {
 	private val gyroscopeEnabled = AtomicBoolean(false)
 	private val mGyroscope: Sensor? by lazy { mSensorManager?.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
 
+	private val deviceOrientationEnabled = AtomicBoolean(false)
+	private val rotationVector: Sensor? by lazy {
+		mSensorManager?.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR)
+			?: mSensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+	}
+
 	val isXrRuntime: Boolean by lazy { hasFeature("xr_runtime") }
 
 	val tts = GodotTTS(context)
@@ -448,11 +454,15 @@ class Godot private constructor(val context: Context) {
 			controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
 		} else {
 			val fullScreenThemeValue = TypedValue()
-			val hasStatusBar = if (activity.theme.resolveAttribute(android.R.attr.windowFullscreen, fullScreenThemeValue, true) && fullScreenThemeValue.type == TypedValue.TYPE_INT_BOOLEAN) {
+			var hasStatusBar = if (activity.theme.resolveAttribute(android.R.attr.windowFullscreen, fullScreenThemeValue, true) && fullScreenThemeValue.type == TypedValue.TYPE_INT_BOOLEAN) {
 				fullScreenThemeValue.data == 0
 			} else {
 				// Fallback to checking the editor build
 				!isEditorBuild()
+			}
+
+			if (isEditorBuild() && orientation == Configuration.ORIENTATION_PORTRAIT) {
+				hasStatusBar = true
 			}
 
 			val types = if (hasStatusBar) {
@@ -714,6 +724,9 @@ class Godot private constructor(val context: Context) {
 		if (gyroscopeEnabled.get() && mGyroscope != null) {
 			mSensorManager?.registerListener(godotInputHandler, mGyroscope, SensorManager.SENSOR_DELAY_GAME)
 		}
+		if (deviceOrientationEnabled.get() && rotationVector != null) {
+			mSensorManager?.registerListener(godotInputHandler, rotationVector, SensorManager.SENSOR_DELAY_GAME)
+		}
 	}
 
 	internal fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
@@ -787,6 +800,18 @@ class Godot private constructor(val context: Context) {
 			runOnRenderThread {
 				GodotLib.onOrientationChange(orientation)
 			}
+
+			if (isEditorBuild() && !isInImmersiveMode()) {
+				val window = getActivity()?.window
+				if (window != null) {
+					val controller = WindowInsetsControllerCompat(window, window.decorView)
+					if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+						controller.show(WindowInsetsCompat.Type.statusBars())
+					} else {
+						controller.hide(WindowInsetsCompat.Type.statusBars())
+					}
+				}
+			}
 		}
 	}
 
@@ -830,7 +855,7 @@ class Godot private constructor(val context: Context) {
 		Log.v(TAG, "OnGodotSetupCompleted")
 
 		// These properties are defined after Godot setup completion, so we retrieve them here.
-		val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
+		val rightClickEmulataionEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
 		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
 		val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
 		val overrideVolumeButtons = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/override_volume_buttons"))
@@ -838,7 +863,7 @@ class Godot private constructor(val context: Context) {
 
 		runOnHostThread {
 			godotInputHandler.apply {
-				enableLongPress(longPressEnabled)
+				enableRightClickEmulation(rightClickEmulataionEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 				setOverrideVolumeButtons(overrideVolumeButtons)
 				disableScrollDeadzone(scrollDeadzoneDisabled)
@@ -867,8 +892,13 @@ class Godot private constructor(val context: Context) {
 		gravityEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_gravity")))
 		gyroscopeEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_gyroscope")))
 		magnetometerEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_magnetometer")))
+		deviceOrientationEnabled.set(java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/sensors/enable_device_orientation")))
 
 		runOnHostThread {
+			// Used to report 'Time to full display' metrics.
+			// See https://developer.android.com/topic/performance/vitals/launch-time#time-full for more info.
+			getActivity()?.reportFullyDrawn()
+
 			registerSensorsIfNeeded()
 		}
 
@@ -903,24 +933,33 @@ class Godot private constructor(val context: Context) {
 
 	@JvmOverloads
 	fun alert(message: String, title: String, okCallback: Runnable? = null) {
-		val activity = getActivity() ?: return
-
 		val renderLatch = CountDownLatch(1)
 		runOnHostThread {
-			val builder = AlertDialog.Builder(activity)
-			builder.setMessage(message).setTitle(title)
-			builder.setPositiveButton(
-				R.string.dialog_ok
-			) { dialog: DialogInterface, _: Int ->
-				okCallback?.run()
-				dialog.cancel()
+			val activity = getActivity()
+			if (activity == null) {
+				renderLatch.countDown()
+				return@runOnHostThread
+			}
+
+			try {
+				val builder = AlertDialog.Builder(activity)
+				builder.setMessage(message).setTitle(title)
+				builder.setPositiveButton(
+					R.string.dialog_ok
+				) { dialog: DialogInterface, _: Int ->
+					okCallback?.run()
+					dialog.cancel()
+					renderLatch.countDown()
+				}
+				builder.setOnCancelListener {
+					renderLatch.countDown()
+				}
+				val dialog = builder.create()
+				dialog.show()
+			} catch (e: WindowManager.BadTokenException) {
+				// fallback in case the activity state changes before show().
 				renderLatch.countDown()
 			}
-			builder.setOnCancelListener {
-				renderLatch.countDown()
-			}
-			val dialog = builder.create()
-			dialog.show()
 		}
 
 		// We only block the render thread.

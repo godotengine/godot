@@ -97,7 +97,7 @@ public:
 	void update_icon_max_width();
 	String get_selected_path();
 	ObjectID get_selected_object();
-	int get_current_debugger(); // Would love to have one tree for every debugger.
+	int get_current_debugger() { return debugger_id; }
 	inline TypedArray<uint64_t> get_selection() const { return inspected_object_ids.duplicate(); }
 	void update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger);
 	void select_nodes(const TypedArray<int64_t> &p_ids);

@@ -408,6 +408,11 @@ String TreeItem::get_text(int p_column) const {
 	return cells[p_column].text;
 }
 
+Ref<TextParagraph> TreeItem::_get_text_buf(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), nullptr);
+	return cells[p_column].text_buf;
+}
+
 void TreeItem::set_description(int p_column, String p_text) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -3022,7 +3027,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 		switched = true;
 	}
 
-	bool emitted_row = false;
+	bool emitted_row = true;
 
 	for (int i = 0; i < columns.size(); i++) {
 		TreeItem::Cell &c = p_current->cells.write[i];
@@ -3032,6 +3037,10 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 		}
 
 		if (select_mode == SELECT_ROW) {
+			if (&selected_cell == &c) {
+				selected_col = i;
+				emitted_row = false;
+			}
 			if (p_selected == p_current && (!c.selected || allow_reselect)) {
 				c.selected = true;
 				selected_item = p_selected;
@@ -3044,9 +3053,6 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					// Deselect other rows.
 					c.selected = false;
 				}
-			}
-			if (&selected_cell == &c) {
-				selected_col = i;
 			}
 		} else if (select_mode == SELECT_SINGLE || select_mode == SELECT_MULTI) {
 			if (!r_in_range && &selected_cell == &c) {
@@ -3165,7 +3171,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			if (relative_pos.y > item->cached_label_height) {
 				continue;
 			}
-			int result = propagate_mouse_event(relative_pos, x_ofs, y_ofs, x_limit, p_double_click, item, p_button, p_mod, false, true);
+			int result = propagate_mouse_event(relative_pos, item->sticky_offset.x, item->sticky_offset.y, x_limit, p_double_click, item, p_button, p_mod, false, true);
 			if (result < 0) {
 				return result;
 			}
@@ -4441,13 +4447,13 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		double prev_v = v_scroll->get_value();
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+		v_scroll->set_value(v_scroll->get_value() + pan_gesture->get_delta().y);
 
 		double prev_h = h_scroll->get_value();
 		if (is_layout_rtl()) {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * -pan_gesture->get_delta().x / 8);
+			h_scroll->set_value(h_scroll->get_value() - pan_gesture->get_delta().x);
 		} else {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+			h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x);
 		}
 
 		if (v_scroll->get_value() != prev_v || h_scroll->get_value() != prev_h) {
@@ -5752,6 +5758,7 @@ void Tree::set_self_modulate(const Color &p_self_modulate) {
 	RS::get_singleton()->canvas_item_set_self_modulate(content_ci, p_self_modulate);
 	RS::get_singleton()->canvas_item_set_self_modulate(custom_ci, p_self_modulate);
 	RS::get_singleton()->canvas_item_set_self_modulate(stylebox_ci, p_self_modulate);
+	RS::get_singleton()->canvas_item_set_self_modulate(drop_indicator_ci, p_self_modulate);
 }
 
 void Tree::_update_all() {

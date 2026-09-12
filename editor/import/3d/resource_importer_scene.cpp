@@ -1394,7 +1394,17 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 }
 
 Node *ResourceImporterScene::_replace_node_with_type_and_script(Node *p_node, String p_node_type, Ref<Script> p_script) {
-	p_node_type = p_node_type.get_slicec(' ', 0); // Full root_type is "ClassName (filename.gd)" for a script global class.
+	if (ResourceLoader::exists(p_node_type)) {
+		// Selecting a global class will set it to the res:// path of the script file.
+		// To make this work, we need to load the script asset and get its class name.
+		Ref<Script> node_type_script = ResourceLoader::load(p_node_type);
+		if (node_type_script.is_valid()) {
+			String global_name = node_type_script->get_global_name();
+			if (!global_name.is_empty()) {
+				p_node_type = global_name;
+			}
+		}
+	}
 	if (p_script.is_valid()) {
 		// Ensure the node type supports the script, or pick one that does.
 		String script_base_type = p_script->get_instance_base_type();

@@ -357,10 +357,22 @@ RunInstancesDialog::RunInstancesDialog() {
 	enable_multiple_instances_checkbox->set_pressed(EditorSettings::get_singleton()->get_project_metadata("debug_options", "multiple_instances_enabled", false));
 	instance_hb->add_child(enable_multiple_instances_checkbox);
 	enable_multiple_instances_checkbox->connect(SceneStringName(pressed), callable_mp(this, &RunInstancesDialog::_start_main_timer));
+#ifdef ANDROID_ENABLED
+	// On Android, multiple instances are only supported on XR devices.
+	bool is_xr_editor = OS::get_singleton()->has_feature("xr_editor");
+	enable_multiple_instances_checkbox->set_visible(is_xr_editor);
+	enable_multiple_instances_checkbox->set_disabled(!is_xr_editor);
+#endif
 
 	instance_count = memnew(SpinBox);
 	instance_count->set_min(1);
+#ifdef ANDROID_ENABLED
+	// Multi-instance support is limited on Android.
+	instance_count->set_max(2);
+	instance_count->set_visible(is_xr_editor);
+#else
 	instance_count->set_max(20);
+#endif
 	instance_count->set_value(EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_instance_count", stored_data.size()));
 	instance_count->set_accessibility_name(TTRC("Number of Instances"));
 

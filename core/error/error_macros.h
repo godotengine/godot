@@ -126,6 +126,16 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * issues when expanded e.g. after an `if (cond) ERR_FAIL();` without braces.
  */
 
+/**
+ * Evaluate the expression. If it results in an Error != OK, silently return the error.
+ */
+#define RETURN_IF_ERROR(m_exp) \
+	if (Error _err_propagate_error = (m_exp); unlikely(_err_propagate_error != OK)) { \
+		static_assert(std::is_same_v<std::decay_t<decltype(m_exp)>, Error>, "RETURN_IF_ERROR expects an Error-returning expression"); \
+		return _err_propagate_error; \
+	} else \
+		((void)0)
+
 // Index out of bounds error macros.
 // These macros should be used instead of `ERR_FAIL_COND` for bounds checking.
 
@@ -864,4 +874,4 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, m_object_id, m_string)
 
 #define PHYSICS_INTERPOLATION_WARNING(m_string) \
-	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID(UINT64_MAX), m_string)
+	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID((uint64_t)UINT64_MAX), m_string)

@@ -64,10 +64,10 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->set_hide_on_checkable_item_selection(false);
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/deploy_with_remote_debug", TTRC("Deploy with Remote Debug")), RUN_DEPLOY_REMOTE_DEBUG);
 	debug_menu->set_item_tooltip(-1,
-			TTRC("When this option is enabled, using one-click deploy will make the executable attempt to connect to this computer's IP so the running project can be debugged.\nThis option is intended to be used for remote debugging (typically with a mobile device).\nYou don't need to enable it to use the GDScript debugger locally."));
+			TTRC("When this option is enabled, using remote deploy will make the executable attempt to connect to this computer's IP so the running project can be debugged.\nThis option is intended to be used for remote debugging (typically with a mobile device).\nYou don't need to enable it to use the GDScript debugger locally."));
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/small_deploy_with_network_fs", TTRC("Small Deploy with Network Filesystem")), RUN_FILE_SERVER);
 	debug_menu->set_item_tooltip(-1,
-			TTRC("When this option is enabled, using one-click deploy for Android will only export an executable without the project data.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploying will use the USB cable for faster performance. This option speeds up testing for projects with large assets."));
+			TTRC("When this option is enabled, using remote deploy for Android will only export an executable without the project data.\nThe filesystem will be provided from the project by the editor over the network.\nOn Android, deploying will use the USB cable for faster performance. This option speeds up testing for projects with large assets."));
 	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_collision_shapes", TTRC("Visible Collision Shapes")), RUN_DEBUG_COLLISIONS);
 	debug_menu->set_item_tooltip(-1,

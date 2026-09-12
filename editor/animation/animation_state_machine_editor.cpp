@@ -561,8 +561,9 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 	// Pan window
 	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::MIDDLE)) {
-		h_scroll->set_value(h_scroll->get_value() - mm->get_relative().x);
-		v_scroll->set_value(v_scroll->get_value() - mm->get_relative().y);
+		Vector2 relative = mm->get_relative();
+		h_scroll->set_value(h_scroll->get_value() - relative.x);
+		v_scroll->set_value(v_scroll->get_value() - relative.y);
 	}
 
 	// Move mouse while connecting
@@ -768,8 +769,9 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+		Vector2 delta = pan_gesture->get_delta();
+		h_scroll->set_value(h_scroll->get_value() + delta.x);
+		v_scroll->set_value(v_scroll->get_value() + delta.y);
 	}
 }
 
@@ -801,9 +803,9 @@ String AnimationNodeStateMachineEditor::get_tooltip(const Point2 &p_pos) const {
 
 	String tooltip_text;
 	if (hovered_node_area == HOVER_NODE_PLAY) {
-		tooltip_text = vformat(TTR("Play/Travel to %s"), hovered_node_name);
+		tooltip_text = vformat(TTR("Play/Travel to %s."), hovered_node_name);
 	} else if (hovered_node_area == HOVER_NODE_EDIT) {
-		tooltip_text = vformat(TTR("Edit %s"), hovered_node_name);
+		tooltip_text = vformat(TTR("Open %s in editor."), hovered_node_name);
 	} else {
 		tooltip_text = hovered_node_name;
 	}
@@ -2145,6 +2147,8 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	menu->connect("popup_hide", callable_mp(this, &AnimationNodeStateMachineEditor::_stop_connecting));
 
 	animations_menu = memnew(PopupMenu);
+	animations_menu->set_search_bar_enabled(true);
+	animations_menu->set_search_bar_min_item_count(10);
 	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	menu->add_child(animations_menu);
 	animations_menu->connect("index_pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_add_animation_type));

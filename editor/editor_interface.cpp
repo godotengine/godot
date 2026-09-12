@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
@@ -421,9 +422,11 @@ Control *EditorInterface::get_base_control() const {
 	return EditorNode::get_singleton()->get_gui_base();
 }
 
+#ifndef DISABLE_DEPRECATED
 VBoxContainer *EditorInterface::get_editor_main_screen() const {
 	return EditorNode::get_singleton()->get_editor_main_screen()->get_control();
 }
+#endif
 
 ScriptEditor *EditorInterface::get_script_editor() const {
 	return ScriptEditor::get_singleton();
@@ -438,8 +441,16 @@ SubViewport *EditorInterface::get_editor_viewport_3d(int p_idx) const {
 	return Node3DEditor::get_singleton()->get_editor_viewport(p_idx)->get_viewport_node();
 }
 
+#ifndef DISABLE_DEPRECATED
 void EditorInterface::set_main_screen_editor(const String &p_name) {
-	EditorNode::get_singleton()->get_editor_main_screen()->select_by_name(p_name);
+	EditorDock *dock = EditorNode::get_singleton()->get_editor_main_screen()->get_dock_by_name(p_name);
+	ERR_FAIL_NULL_MSG(dock, "The editor name '" + p_name + "' was not found.");
+	EditorDockManager::get_singleton()->focus_dock(dock);
+}
+#endif
+
+EditorDock *EditorInterface::get_dock_by_name(const String &p_name) {
+	return EditorDockManager::get_singleton()->get_dock_by_name(p_name);
 }
 
 void EditorInterface::set_distraction_free_mode(bool p_enter) {
@@ -836,11 +847,14 @@ bool EditorInterface::is_movie_maker_enabled() const {
 void EditorInterface::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
+#ifndef DISABLE_DEPRECATED
 		if (pf == "set_main_screen_editor") {
-			for (String E : { "\"2D\"", "\"3D\"", "\"Script\"", "\"Game\"", "\"AssetLib\"" }) {
+			for (String E : { "\"2D\"", "\"3D\"", "\"Script\"", "\"Game\"", "\"Asset Store\"" }) {
 				r_options->push_back(E);
 			}
-		} else if (pf == "get_editor_viewport_3d") {
+		}
+#endif
+		if (pf == "get_editor_viewport_3d") {
 			for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
 				r_options->push_back(String::num_int64(i));
 			}
@@ -876,12 +890,15 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_editor_theme"), &EditorInterface::get_editor_theme);
 	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
-	ClassDB::bind_method(D_METHOD("get_editor_main_screen"), &EditorInterface::get_editor_main_screen);
 	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);
 	ClassDB::bind_method(D_METHOD("get_editor_viewport_2d"), &EditorInterface::get_editor_viewport_2d);
 	ClassDB::bind_method(D_METHOD("get_editor_viewport_3d", "idx"), &EditorInterface::get_editor_viewport_3d, DEFVAL(0));
 
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("get_editor_main_screen"), &EditorInterface::get_editor_main_screen);
 	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
+#endif
+	ClassDB::bind_method(D_METHOD("get_dock_by_name", "name"), &EditorInterface::get_dock_by_name);
 	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
 	ClassDB::bind_method(D_METHOD("is_distraction_free_mode_enabled"), &EditorInterface::is_distraction_free_mode_enabled);
 	ClassDB::bind_method(D_METHOD("is_multi_window_enabled"), &EditorInterface::is_multi_window_enabled);

@@ -243,6 +243,7 @@ GDScriptFunction::~GDScriptFunction() {
 	for (int i = 0; i < argument_types.size(); i++) {
 		argument_types.write[i].script_type_ref = Ref<Script>();
 	}
+
 	return_type.script_type_ref = Ref<Script>();
 
 #ifdef DEBUG_ENABLED

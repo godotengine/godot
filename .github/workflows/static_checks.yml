@@ -39,29 +39,12 @@ jobs:
           skip_initial_fetch: true
           files_yaml_from_source_file: .github/changed_files.yml
 
-      - name: Decide prek file scope (all files or only changed files)
-        id: prek-scope
-        shell: bash
+      - name: Style checks via prek
+        uses: j178/prek-action@v3.0.0
         env:
-          CHANGED_FILES: '"${{ steps.changed-files.outputs.everything_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
-        run: |
-          CHANGED_FILES_LENGTH=${#CHANGED_FILES}
-          if [ "$CHANGED_FILES_LENGTH" -lt 5 ] || [ "$CHANGED_FILES_LENGTH" -gt 100000 ]; then
-            echo "use_all_files=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "use_all_files=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Style checks via prek (all files)
-        if: steps.prek-scope.outputs.use_all_files == 'true'
-        uses: j178/prek-action@v2
+          FROM_REF: >-
+            ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha
+            || github.event.before != '0000000000000000000000000000000000000000' && github.event.before
+            || 'HEAD~1' }}
         with:
-          extra-args: --all-files
-
-      - name: Style checks via prek (changed files)
-        if: steps.prek-scope.outputs.use_all_files == 'false'
-        uses: j178/prek-action@v2
-        env:
-          CHANGED_FILES: '"${{ steps.changed-files.outputs.everything_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
-        with:
-          extra-args: --files ${{ env.CHANGED_FILES }}
+          extra-args: --from-ref ${{ env.FROM_REF }}

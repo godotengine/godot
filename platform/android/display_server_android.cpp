@@ -879,6 +879,10 @@ void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
+void DisplayServerAndroid::process_device_orientation(const Quaternion &p_orientation) {
+	Input::get_singleton()->set_device_orientation(p_orientation);
+}
+
 void DisplayServerAndroid::_mouse_update_mode() {
 	DisplayServerEnums::MouseMode wanted_mouse_mode = mouse_mode_override_enabled
 			? mouse_mode_override

@@ -55,7 +55,7 @@
 	}
 
 	if (!self.hasCalledProjectDataSetUp) {
-		[self setUpProjectData];
+		[self setUpProjectDataShowingBootLogo:YES];
 	}
 
 	if (!self.hasStartedMain) {
@@ -67,10 +67,10 @@
 	return NO;
 }
 
-- (void)setUpProjectData {
+- (void)setUpProjectDataShowingBootLogo:(BOOL)p_show_boot_logo {
 	self.hasCalledProjectDataSetUp = YES;
 	safeDispatchSyncToMain(^{
-		Main::setup2();
+		Main::setup2(p_show_boot_logo);
 
 		// this might be necessary before here
 		NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];

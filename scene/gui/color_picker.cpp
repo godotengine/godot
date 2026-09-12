@@ -432,7 +432,7 @@ void ColorPicker::_slider_value_changed() {
 		color_normalized = modes[current_mode]->get_color();
 	}
 	_normalized_apply_intensity_to_color();
-	intensity_value->set_prefix(intensity < 0 ? "" : "+");
+	intensity_value->set_format(intensity < 0 ? "" : "+%s");
 
 	modes[current_mode]->_value_changed();
 
@@ -743,7 +743,7 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 		alpha_slider->set_step(step);
 		alpha_slider->set_value(modes[current_mode]->get_alpha_slider_value());
 		intensity_slider->set_value(intensity);
-		intensity_value->set_prefix(intensity < 0 ? "" : "+");
+		intensity_value->set_format(intensity < 0 ? "" : "+%s");
 	}
 
 	_update_text_value();
@@ -933,7 +933,7 @@ void ColorPicker::_load_palette() {
 
 	file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_current_file("");
-	file_dialog->popup_centered_ratio();
+	file_dialog->popup_file_dialog();
 }
 
 void ColorPicker::_save_palette(bool p_is_save_as) {
@@ -953,7 +953,7 @@ void ColorPicker::_save_palette(bool p_is_save_as) {
 
 		file_dialog->set_file_mode(FileDialog::FILE_MODE_SAVE_FILE);
 		file_dialog->set_current_file("new_palette.tres");
-		file_dialog->popup_centered_ratio();
+		file_dialog->popup_file_dialog();
 	}
 }
 

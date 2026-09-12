@@ -31,13 +31,17 @@
 #pragma once
 
 #include "../visual_shader.h"
+#include "../visual_shader_group.h"
 
+#include "core/object/undo_redo.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/script/script_editor_base.h"
 #include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/graph_edit.h"
 
+class Button;
 class CodeEdit;
 class CodeHighlighter;
 class ColorPicker;
@@ -48,7 +52,10 @@ class FilterLineEdit;
 class GraphElement;
 class GraphFrame;
 class HFlowContainer;
+class ItemList;
+class LineEdit;
 class MenuButton;
+class OptionButton;
 class PopupPanel;
 class RichTextLabel;
 class ShaderMaterial;
@@ -131,8 +138,9 @@ private:
 	};
 
 	Ref<VisualShader> visual_shader;
+
 	HashMap<int, Link> links;
-	List<VisualShader::Connection> connections;
+	List<ShaderGraph::Connection> connections;
 
 	Color vector_expanded_color[4];
 
@@ -143,9 +151,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Vector<Color> get_connection_type_colors();
+
 	void set_editor(VisualShaderEditor *p_editor);
 	void register_shader(VisualShader *p_visual_shader);
-	void set_connections(const List<VisualShader::Connection> &p_connections);
+	void set_connections(const List<ShaderGraph::Connection> &p_connections);
 	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphElement *p_graph_element);
 	void register_output_port(int p_id, int p_port, VisualShaderNode::PortType p_port_type, TextureButton *p_button);
 	void register_parameter_name(int p_id, LineEdit *p_parameter_name);
@@ -180,7 +190,6 @@ public:
 	int get_constant_index(float p_constant) const;
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_theme();
-	bool is_node_has_parameter_instances_relatively(VisualShader::Type p_type, int p_node) const;
 
 	VisualShaderGraphPlugin();
 };
@@ -199,9 +208,65 @@ public:
 	Variant get_edited_property() const;
 };
 
+class VisualShaderGroupPortsDialog : public AcceptDialog {
+	GDCLASS(VisualShaderGroupPortsDialog, AcceptDialog);
+
+	VisualShaderEditor *vs_editor = nullptr;
+	VisualShaderGroup *group = nullptr;
+	bool edit_inputs = false; // Determines whether the dialog is used for input or output ports.
+
+	Button *add_port_btn = nullptr;
+	Button *remove_port_btn = nullptr;
+	Button *move_up_btn = nullptr;
+	Button *move_down_btn = nullptr;
+
+	ItemList *port_item_list = nullptr;
+
+	LineEdit *name_edit = nullptr;
+	OptionButton *port_type_optbtn = nullptr;
+
+	int _get_port_count() const;
+	String _get_port_name(int p_idx) const;
+	VisualShaderNode::PortType _get_port_type(int p_idx) const;
+	int _get_selected_port() const;
+
+	void _add_port();
+	void _remove_port();
+	void _move_selected_port(int p_offset);
+	void _move_port(int p_from, int p_to);
+	void _commit_port_name();
+	void _on_port_type_changed(int p_idx);
+
+	// Rebuilds the item list from the group and selects the respective item.
+	// A negative index results in no selection.
+	void _update_port_list(int p_selected_idx);
+	void _update_dialog_for_port(int p_idx);
+
+protected:
+	void _notification(int p_what);
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
+public:
+	void set_editor(VisualShaderEditor *p_editor);
+	void set_dialog_mode(bool p_edit_inputs);
+	void set_group(VisualShaderGroup *p_group);
+
+	VisualShaderGroupPortsDialog();
+};
+
 class VisualShaderEditor : public ScriptEditorBase {
 	GDCLASS(VisualShaderEditor, ScriptEditorBase);
 	friend class VisualShaderGraphPlugin;
+	friend class VisualShaderGroupPortsDialog;
+	friend class VisualShaderNodePluginDefaultEditor;
+	friend class EditorPropertyVisualShaderMode;
+
+	Ref<ShaderGraph> edited_shader_graph;
+	Ref<VisualShader> visual_shader; // Could be null (editing just a VisualShaderGroup).
+	Ref<VisualShaderGroup> visual_shader_group; // Could be null.
+
+	Ref<ShaderMaterial> preview_material;
+	Ref<Environment> preview_environment;
 
 	Ref<ConfigFile> vs_editor_cache; // Keeps the graph offsets and zoom levels for each VisualShader that has been edited.
 
@@ -212,8 +277,6 @@ class VisualShaderEditor : public ScriptEditorBase {
 	Ref<VisualShaderEditedProperty> edited_property_holder;
 
 	MaterialEditor *material_editor = nullptr;
-	Ref<ShaderMaterial> preview_material;
-	Ref<Environment> env;
 	String param_filter_name;
 	EditorProperty *current_prop = nullptr;
 	VBoxContainer *shader_preview_vbox = nullptr;
@@ -225,6 +288,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 	MenuButton *varying_button = nullptr;
 	Button *code_preview_button = nullptr;
 	Button *shader_preview_button = nullptr;
+	Button *exit_group_button = nullptr;
 	HFlowContainer *toolbar_hflow = nullptr;
 
 	int last_to_node = -1;
@@ -294,6 +358,9 @@ class VisualShaderEditor : public ScriptEditorBase {
 	HashMap<String, PropertyInfo> parameter_props;
 	VBoxContainer *param_vbox = nullptr;
 	VBoxContainer *param_vbox2 = nullptr;
+
+	VisualShaderGroupPortsDialog *group_ports_dialog = nullptr;
+	List<Ref<VisualShaderGroup>> group_edit_stack;
 
 	float cached_theme_base_scale = 1.0f;
 
@@ -382,6 +449,12 @@ class VisualShaderEditor : public ScriptEditorBase {
 	RichTextLabel *node_desc = nullptr;
 	Label *highend_label = nullptr;
 
+	void _vs_create_action(const String &p_name, UndoRedo::MergeMode p_merge_mode = UndoRedo::MERGE_DISABLE);
+	void _restore_graph_context(int p_shader_type, TypedArray<VisualShaderGroup> p_group_stack);
+
+	int _get_default_shader_type() const;
+	void _select_shader_type(VisualShader::Type p_type);
+
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos, VisualShaderNode::PortType p_input_port_type = VisualShaderNode::PORT_TYPE_MAX, VisualShaderNode::PortType p_output_port_type = VisualShaderNode::PORT_TYPE_MAX);
 
@@ -394,7 +467,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 	void _update_preview_parameter_list();
 	bool _update_preview_parameter_tree();
 
-	void _update_nodes();
+	void _update_available_nodes();
 	void _update_graph();
 
 	void _restore_editor_state();
@@ -402,6 +475,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 	String _get_cache_id_string() const;
 	String _get_cache_key(const String &p_prop_name) const;
 
+	// TODO: This would benefit from an extensive refactor.
 	struct AddOption {
 		String name;
 		String category;
@@ -457,11 +531,17 @@ class VisualShaderEditor : public ScriptEditorBase {
 	void _update_options_menu();
 	void _set_mode(int p_which);
 
+	void _edit_group_in_graph(int p_idx);
+	void _exit_group();
+	void _update_group_related_nodes();
+	void _edit_group_ports_pressed(int p_group_input_node_id, Button *p_button);
+
 	void _show_preview_text();
 	void _preview_close_requested();
 	void _preview_size_changed();
 	void _update_preview();
 	void _update_next_previews(int p_node_id);
+	// TODO: Move to ShaderGraph!
 	void _get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const;
 	String _get_description(int p_idx);
 
@@ -563,14 +643,18 @@ class VisualShaderEditor : public ScriptEditorBase {
 		bool disabled = false;
 	};
 
-	void _dup_copy_nodes(int p_type, List<CopyItem> &r_nodes, List<VisualShader::Connection> &r_connections);
-	void _dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<VisualShader::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate);
+	static bool _is_type_disallowed_in_group_context(const StringName &p_type_name, bool p_is_inside_group);
+	static bool _group_would_create_cycle(const Ref<VisualShaderGroup> &p_pasted_group, const Ref<VisualShaderGroup> &p_target_group);
+	bool _is_node_disallowed_in_context(const Ref<VisualShaderNode> &p_node) const;
+
+	void _dup_copy_nodes(int p_type, List<CopyItem> &r_nodes, List<ShaderGraph::Connection> &r_connections);
+	void _dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<ShaderGraph::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate);
 
 	void _duplicate_nodes();
 
 	static Vector2 selection_center;
 	static List<CopyItem> copy_items_buffer;
-	static List<VisualShader::Connection> copy_connections_buffer;
+	static List<ShaderGraph::Connection> copy_connections_buffer;
 
 	void _clear_copy_buffer();
 	void _copy_nodes(bool p_cut);
@@ -632,7 +716,14 @@ class VisualShaderEditor : public ScriptEditorBase {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	bool _is_available(int p_mode);
+	bool _is_available(int p_mode) const;
+
+	bool _is_editing_group() const;
+	Shader::Mode _get_validation_shader_mode() const;
+	VisualShader::Type _get_validation_shader_type() const;
+	bool _is_node_available_in_context(const Ref<VisualShaderNode> &p_node) const;
+	bool _is_add_option_available_in_context(const AddOption &p_option) const;
+
 	void _update_parameters(bool p_update_refs);
 	void _update_parameter_refs(HashSet<String> &p_names);
 	void _update_varyings();
@@ -646,6 +737,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 	void _update_custom_script(const Ref<Script> &p_script);
 	void _script_created(const Ref<Script> &p_script);
 	void _resource_saved(const Ref<Resource> &p_resource);
+	void _save_nested_groups();
 	void _resource_removed(const Ref<Resource> &p_resource);
 	void _resources_removed();
 
@@ -690,6 +782,9 @@ public:
 	Dictionary get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node);
 	void update_custom_type(const Ref<Resource> &p_resource);
 
+	Ref<VisualShader> get_visual_shader() const { return visual_shader; }
+	Ref<ShaderGraph> get_shader_graph() const { return edited_shader_graph; }
+
 	static void register_editor();
 
 	VisualShaderEditor();
@@ -727,9 +822,8 @@ public:
 class VisualShaderNodePortPreview : public Control {
 	GDCLASS(VisualShaderNodePortPreview, Control);
 	TextureRect *checkerboard = nullptr;
-	Ref<VisualShader> shader;
+	Ref<ShaderGraph> shader_graph;
 	Ref<ShaderMaterial> preview_mat;
-	VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 	int node = 0;
 	int port = 0;
 	bool is_valid = false;
@@ -739,7 +833,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	void setup(const Ref<VisualShader> &p_shader, Ref<ShaderMaterial> &p_preview_material, VisualShader::Type p_type, bool p_has_transparency, int p_node, int p_port, bool p_is_valid);
+	void setup(const Ref<ShaderGraph> &p_shader_graph, Ref<ShaderMaterial> &p_preview_material, bool p_has_transparency, int p_node, int p_port, bool p_is_valid);
 };
 
 class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {

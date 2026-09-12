@@ -45,6 +45,69 @@
  */
 class EditorLanguage {
 public:
+	// Keep enums in sync with:
+	// scene/gui/code_edit.h - CodeEdit::CodeCompletionKind
+	enum class CompletionKind {
+		CLASS,
+		FUNCTION,
+		SIGNAL,
+		VARIABLE,
+		MEMBER_VARIABLE,
+		ENUM,
+		CONSTANT,
+		NODE_PATH,
+		FILE_PATH,
+		PLAIN_TEXT,
+		KEYWORD,
+	};
+
+	// scene/gui/code_edit.h - CodeEdit::CodeCompletionLocation
+	// Can't bundle in namespace since namespaces are not allowed inside of class :/
+	struct CompletionLocation {
+		static constexpr int LOCAL = 0;
+		static constexpr int PARENT_MASK = 1 << 8;
+		static constexpr int OTHER_USER_CODE = 1 << 9;
+		static constexpr int OTHER = 1 << 10;
+
+		CompletionLocation() = delete;
+	};
+
+	struct TextEdit {
+		String new_text;
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
+
+		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
+	};
+
+	struct CompletionOption {
+		EditorLanguage::CompletionKind kind = EditorLanguage::CompletionKind::PLAIN_TEXT;
+		String display;
+		String insert_text;
+		/**
+		 * Optional server side calculated insertion.
+		 *
+		 * In contrast to `insert_text`, the editor must not do matching of preexisting text on `text_edit`.
+		 * Note: This is used by the language server, there is no support in the builtin editor for this property at the moment.
+		 */
+		TextEdit text_edit;
+		Variant default_value;
+		int location = CompletionLocation::OTHER;
+		String theme_color_name;
+
+		CompletionOption() = default;
+
+		CompletionOption(const String &p_text, EditorLanguage::CompletionKind p_kind, int p_location = CompletionLocation::OTHER, const String &p_theme_color_name = String()) {
+			display = p_text;
+			insert_text = p_text;
+			kind = p_kind;
+			location = p_location;
+			theme_color_name = p_theme_color_name;
+		}
+	};
+
 	/**
 	 * Called by the editor to request a list of `CodeCompletionOptions` from the language.
 	 *
@@ -57,7 +120,7 @@ public:
 	 * @param r_force If `false` a non-empty signature hint will take priority over completion. If `true` completion will take priority. Might be removed in the future in favor of showing both.
 	 * @param r_call_hint The returned signature hint. Can be empty.
 	 */
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	// Keep ScriptLanguageExtension::LookupResultType a subset of this.
 	struct LookupResult {
@@ -118,6 +181,55 @@ public:
 	 * @return The zero-based line number of the function or `-1` if not found.
 	 */
 	virtual int32_t find_function(const String &p_function, const String &p_code) const { return -1; }
+
+	/**
+	 * Called by the editor to reformat a section of code.
+	 *
+	 * In the case of GDScript the only supported kind of formatting is auto-indentation.
+	 *
+	 * @param r_code The current content of the source fragment. Implementations should also use this to return the formatted code. Either by formatting in place or through assignment.
+	 * @param p_from_line First line to be formatted (inclusive).
+	 * @param p_to_line Last line to be formatted (inclusive).
+	 */
+	virtual void format_code(String &r_code, uint32_t p_from_line, uint32_t p_to_line) const {}
+
+	struct Warning {
+		/// One-based.
+		int start_line = 0;
+		int start_column = -1;
+
+		/// One-based.
+		int end_line = 0;
+		int end_column = -1;
+
+		String string_code;
+		String message;
+	};
+
+	struct ScriptError {
+		String path;
+		/// All one-based.
+		int start_line = -1;
+		int start_column = -1;
+		int end_line = -1;
+		int end_column = -1;
+		String message;
+	};
+
+	/**
+	 * Called by the editor to check a source fragment for diagnostics (warnings and errors).
+	 *
+	 * The language should also return a list of functions for the editor to show in the outline. It can also specify safe lines for highlighting. In the future those features might be separated.
+	 *
+	 * @param p_code The current content of the source fragment.
+	 * @param p_path The path which identifies the source fragment. Implementations MAY support paths to builtin resources, or return an error for those.
+	 * @param r_errors The returned errors of the script. Might be `nullptr` if the caller does not care.
+	 * @param r_warnings The returned warnings of the script. Might be `nullptr` if the caller does not care.
+	 * @param r_functions The returned functions for the outline. Might be `nullptr` if the caller does not care.
+	 * @param r_safe_lines The returned safe-lines, this is a GDScript specific concept. Might be `nullptr` if the caller does not care.
+	 * @return `true` if the script has no errors, otherwise `false`.
+	 */
+	virtual bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const { return true; }
 
 	virtual ~EditorLanguage() = default;
 };

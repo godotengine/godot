@@ -181,17 +181,20 @@ public:
 	uint32_t get_tree_id(uint32_t p_handle) const {
 		BVHHandle h;
 		h.set(p_handle);
+		BVH_LOCKED_FUNCTION
 		return item_get_tree_id(h);
 	}
 	int get_subindex(uint32_t p_handle) const {
 		BVHHandle h;
 		h.set(p_handle);
+		BVH_LOCKED_FUNCTION
 		return item_get_subindex(h);
 	}
 
 	T *get(uint32_t p_handle) const {
 		BVHHandle h;
 		h.set(p_handle);
+		BVH_LOCKED_FUNCTION
 		return item_get_userdata(h);
 	}
 
@@ -484,6 +487,7 @@ public:
 	void item_get_AABB(BVHHandle p_handle, BOUNDS &r_aabb) {
 		DEV_ASSERT(!p_handle.is_invalid());
 		BVHABB_CLASS abb;
+		BVH_LOCKED_FUNCTION
 		tree.item_get_ABB(p_handle, abb);
 		abb.to(r_aabb);
 	}
@@ -580,12 +584,16 @@ private:
 		BVHABB_CLASS abb_from = p_expanded_abb_from;
 
 		// remove from pairing list for every partner
-		for (unsigned int n = 0; n < p_from.extended_pairs.size(); n++) {
+		for (uint32_t n = 0; n < p_from.extended_pairs.size(); n++) {
 			BVHHandle h_to = p_from.extended_pairs[n].handle;
 			if (_find_leavers_process_pair(p_from, abb_from, p_handle, h_to, p_full_check)) {
 				// we need to keep the counter n up to date if we deleted a pair
 				// as the number of items in p_from.extended_pairs will have decreased by 1
 				// and we don't want to miss an item
+
+				// Note this can overflow to UINT32_MAX if we process the 0th element,
+				// but it's fine as it will increment back to zero next loop,
+				// it is not UB with uint32_t.
 				n--;
 			}
 		}
@@ -796,7 +804,7 @@ private:
 		Mutex *_mutex = nullptr;
 	};
 
-	Mutex _mutex;
+	mutable Mutex _mutex;
 
 	// local toggle for turning on and off thread safety in project settings
 	bool _thread_safe = BVH_THREAD_SAFE;

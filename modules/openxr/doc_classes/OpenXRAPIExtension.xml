@@ -103,6 +103,12 @@
 				Returns the predicted display timing for the current frame.
 			</description>
 		</method>
+		<method name="get_primary_view_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the view count for the primary viewport.
+			</description>
+		</method>
 		<method name="get_projection_layer">
 			<return type="int" />
 			<description>

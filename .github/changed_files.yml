@@ -1,8 +1,3 @@
-# We lack a convenient means of gathering *all* the changes when specializations are passed, so
-#  a catch-all variable is the easiest workaround.
-everything:
-  - "**"
-
 # Determines if build actions should occur after static checks are ran. Broadly speaking, these
 #  files changing would result in SCons rebuilding the engine, or are otherwise pertinent to the
 #  buildsystem itself.

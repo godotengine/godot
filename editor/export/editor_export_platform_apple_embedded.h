@@ -187,6 +187,12 @@ protected:
 		bool force_opaque;
 	};
 
+	struct UsageDescription {
+		String preset_key;
+		String plist_key;
+		String placeholder;
+	};
+
 private:
 	void _fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const AppleEmbeddedConfigData &p_config, bool p_debug);
 
@@ -214,7 +220,10 @@ protected:
 	void _blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p_src, bool p_rot);
 
 	virtual Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) { return OK; }
-	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir) { return OK; }
+	virtual Error _export_icons(const Ref<EditorExportPreset> &p_preset, const String &p_iconset_dir);
+
+	// Asset-catalog dir name under Images.xcassets. visionOS overrides for layered icons.
+	virtual String _get_iconset_dir_name() const { return "AppIcon.appiconset"; }
 
 	virtual String get_platform_name() const = 0;
 	virtual String get_sdk_name() const = 0;
@@ -227,6 +236,8 @@ protected:
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
 	virtual Vector<IconInfo> get_icon_infos() const = 0;
+
+	virtual void get_usage_descriptions(List<UsageDescription> *r_descriptions) const;
 
 	void _notification(int p_what);
 

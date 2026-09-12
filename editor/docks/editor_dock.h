@@ -42,9 +42,11 @@ class EditorDock : public MarginContainer {
 
 public:
 	enum DockLayout {
+		DOCK_LAYOUT_NONE = 0,
 		DOCK_LAYOUT_VERTICAL = 1,
 		DOCK_LAYOUT_HORIZONTAL = 2,
 		DOCK_LAYOUT_FLOATING = 4,
+		DOCK_LAYOUT_MAIN_SCREEN = 8,
 		DOCK_LAYOUT_ALL = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL | DOCK_LAYOUT_FLOATING,
 	};
 
@@ -61,6 +63,7 @@ public:
 		DOCK_SLOT_BOTTOM,
 		DOCK_SLOT_BOTTOM_L,
 		DOCK_SLOT_BOTTOM_R,
+		DOCK_SLOT_MAIN_SCREEN,
 		DOCK_SLOT_MAX
 	};
 
@@ -78,11 +81,13 @@ private:
 	Color title_color = Color(0, 0, 0, 0);
 	Ref<Shortcut> shortcut;
 	DockSlot default_slot = DOCK_SLOT_NONE;
+
 	bool global = true;
 	bool transient = false;
 	bool closable = false;
+	bool allow_switch_screen = false;
 
-	DockLayout current_layout;
+	DockLayout current_layout = DOCK_LAYOUT_NONE;
 	BitField<DockLayout> available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_FLOATING;
 
 	bool is_open = false;
@@ -131,6 +136,9 @@ public:
 
 	void set_closable(bool p_closable) { closable = p_closable; }
 	bool is_closable() const { return closable; }
+
+	void set_allow_switch_screen(bool p_allow) { allow_switch_screen = p_allow; }
+	bool is_allow_switch_screen() const { return allow_switch_screen; }
 
 	void set_icon_name(const StringName &p_name);
 	StringName get_icon_name() const { return icon_name; }

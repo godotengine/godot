@@ -146,6 +146,7 @@
 /modules/lightmapper_rd/                      @godotengine/rendering
 /modules/meshoptimizer/                       @godotengine/rendering
 /modules/raycast/                             @godotengine/rendering
+/modules/texture_streaming/                   @godotengine/rendering
 /modules/vhacd/                               @godotengine/rendering
 /modules/visual_shader/                       @godotengine/shaders
 /modules/visual_shader/doc_classes/           @godotengine/shaders @godotengine/documentation

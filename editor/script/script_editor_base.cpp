@@ -34,6 +34,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
+#include "editor/script/find_in_files.h"
 #include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/script/syntax_highlighters.h"
@@ -269,7 +270,7 @@ TextEditorBase::EditMenus::EditMenus(ScriptEditor *p_se) {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace_in_files"), REPLACE_IN_FILES);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/replace_in_files"), REPLACE_IN_FILES);
 	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditMenus::_edit_option));
 
 	goto_menu = memnew(MenuButton);
@@ -513,13 +514,10 @@ bool TextEditorBase::_edit_option(int p_op) {
 		case SEARCH_REPLACE: {
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
-		case SEARCH_IN_FILES: {
-			String selected_text = tx->get_selected_text();
-			ScriptEditor::get_singleton()->open_find_in_files_dialog(selected_text);
-		} break;
+		case SEARCH_IN_FILES:
 		case REPLACE_IN_FILES: {
 			String selected_text = tx->get_selected_text();
-			ScriptEditor::get_singleton()->open_find_in_files_dialog(selected_text, true);
+			FindInFiles::get_singleton()->open_dock(selected_text, p_op == REPLACE_IN_FILES);
 		} break;
 		case SEARCH_GOTO_LINE: {
 			goto_line_popup->popup_find_line(code_editor);
@@ -575,14 +573,14 @@ void TextEditorBase::_saved_update() {
 }
 
 void TextEditorBase::_emit_request_save_new_history() {
-	Dictionary state = get_edit_state();
+	Dictionary state = get_navigation_state();
 	state["ensure_caret_visible"] = true;
 	previous_history_line = state["row"];
 	emit_signal(SNAME("_request_save_new_history"), state);
 }
 
 void TextEditorBase::_emit_request_save_previous_state() {
-	Dictionary state = get_edit_state();
+	Dictionary state = get_navigation_state();
 	state["ensure_caret_visible"] = true;
 	previous_history_line = state["row"];
 	emit_signal(SNAME("_request_save_previous_state"), state);
@@ -848,7 +846,7 @@ void CodeEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const
 	}
 }
 
-void CodeEditorBase::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void CodeEditorBase::_code_complete_scripts(void *p_ud, const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) {
 	CodeEditorBase *ste = (CodeEditorBase *)p_ud;
 	ste->_code_complete_script(p_code, r_options, r_force);
 }

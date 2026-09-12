@@ -1526,7 +1526,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_x->set_max(256);
 	sb_off_x->set_step(1);
 	sb_off_x->set_value(snap_offset.x);
-	sb_off_x->set_suffix("px");
+	sb_off_x->set_format("%s px");
 	sb_off_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_x));
 	sb_off_x->set_accessibility_name(TTRC("Grid Offset X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset X:"), sb_off_x);
@@ -1536,7 +1536,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_y->set_max(256);
 	sb_off_y->set_step(1);
 	sb_off_y->set_value(snap_offset.y);
-	sb_off_y->set_suffix("px");
+	sb_off_y->set_format("%s px");
 	sb_off_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_y));
 	sb_off_y->set_accessibility_name(TTRC("Grid Offset Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset Y:"), sb_off_y);
@@ -1546,7 +1546,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_x->set_max(256);
 	sb_step_x->set_step(1);
 	sb_step_x->set_value(snap_step.x);
-	sb_step_x->set_suffix("px");
+	sb_step_x->set_format("%s px");
 	sb_step_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_x));
 	sb_step_x->set_accessibility_name(TTRC("Grid Step X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step X:"), sb_step_x);
@@ -1556,7 +1556,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_y->set_max(256);
 	sb_step_y->set_step(1);
 	sb_step_y->set_value(snap_step.y);
-	sb_step_y->set_suffix("px");
+	sb_step_y->set_format("%s px");
 	sb_step_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_y));
 	sb_step_y->set_accessibility_name(TTRC("Grid Step Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step Y:"), sb_step_y);
@@ -1564,23 +1564,23 @@ Polygon2DEditor::Polygon2DEditor() {
 	zoom_widget = memnew(EditorZoomWidget);
 	canvas->add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
-	zoom_widget->connect("zoom_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(true));
+	zoom_widget->connect("zoom_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).bind(true).unbind(1));
 	zoom_widget->set_shortcut_context(nullptr);
 
 	vscroll = memnew(VScrollBar);
 	vscroll->set_step(0.001);
 	canvas->add_child(vscroll);
-	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 	hscroll = memnew(HScrollBar);
 	hscroll->set_step(0.001);
 	canvas->add_child(hscroll);
-	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
 	bone_scroll_main_vb->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 	sync_bones = memnew(Button(TTR("Sync Bones to Polygon")));
 	bone_scroll_main_vb->add_child(sync_bones);
-	sync_bones->set_h_size_flags(0);
+	sync_bones->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	sync_bones->connect(SceneStringName(pressed), callable_mp(this, &Polygon2DEditor::_sync_bones));
 	uv_main_hsc->add_child(bone_scroll_main_vb);
 	bone_scroll = memnew(ScrollContainer);

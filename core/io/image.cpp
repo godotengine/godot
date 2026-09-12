@@ -37,6 +37,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
 
@@ -2181,7 +2182,84 @@ void Image::normalize() {
 	}
 }
 
-Error Image::generate_mipmaps(bool p_renormalize) {
+float Image::_alpha_test_coverage(const uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_alpha_ref, float p_alpha_scale) const {
+	int right_step = (p_width == 1) ? 0 : 1;
+	int down_step = (p_height == 1) ? 0 : p_width;
+
+	float coverage = 0.0f;
+
+	const uint32_t n = 4;
+
+	// Guard against textures that are only 1px in either dimension
+	uint32_t cell_w = MAX(1u, p_width - 1);
+	uint32_t cell_h = MAX(1u, p_height - 1);
+
+	for (uint32_t y = 0; y < cell_h; y++) {
+		for (uint32_t x = 0; x < cell_w; x++) {
+			uint32_t i = y * cell_w + x;
+
+			float alpha00 = CLAMP(_get_color_at_ofs(p_dst, i).a * p_alpha_scale, 0.0, 1.0);
+			float alpha10 = CLAMP(_get_color_at_ofs(p_dst, i + right_step).a * p_alpha_scale, 0.0, 1.0);
+			float alpha01 = CLAMP(_get_color_at_ofs(p_dst, i + down_step).a * p_alpha_scale, 0.0, 1.0);
+			float alpha11 = CLAMP(_get_color_at_ofs(p_dst, i + right_step + down_step).a * p_alpha_scale, 0.0, 1.0);
+
+			float texel_coverage = 0.0f;
+			for (uint32_t sy = 0; sy < n; sy++) {
+				float fy = (sy + 0.5f) / n;
+				for (uint32_t sx = 0; sx < n; sx++) {
+					float fx = (sx + 0.5f) / n;
+					float alpha = alpha00 * (1 - fx) * (1 - fy) + alpha10 * fx * (1 - fy) + alpha01 * (1 - fx) * fy + alpha11 * fx * fy;
+					if (alpha > p_alpha_ref) {
+						texel_coverage += 1.0f;
+					}
+				}
+			}
+			coverage += texel_coverage / (n * n);
+		}
+	}
+	return coverage / float(cell_w * cell_h);
+}
+
+void Image::_scale_alpha_to_coverage(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_desired_coverage, float p_alpha_ref) {
+	float min_alpha_scale = 0.0f;
+	float max_alpha_scale = 4.0f;
+	float alpha_scale = 1.0f;
+	float best_alpha_scale = 1.0f;
+	float best_error = 999999.9f;
+
+	// Determine desired scale using a binary search. Hardcoded to 10 steps max.
+	for (int i = 0; i < 10; i++) {
+		float current_coverage = _alpha_test_coverage(p_dst, p_width, p_height, p_alpha_ref, alpha_scale);
+
+		float error = Math::abs(current_coverage - p_desired_coverage);
+		if (error < best_error) {
+			best_error = error;
+			best_alpha_scale = alpha_scale;
+		}
+
+		if (current_coverage < p_desired_coverage) {
+			min_alpha_scale = alpha_scale;
+		} else if (current_coverage > p_desired_coverage) {
+			max_alpha_scale = alpha_scale;
+		} else {
+			break;
+		}
+
+		alpha_scale = (min_alpha_scale + max_alpha_scale) * 0.5f;
+	}
+
+	_scale_mipmap_alpha_bias(p_dst, p_width, p_height, best_alpha_scale, 0.0f);
+}
+
+void Image::_scale_mipmap_alpha_bias(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_scale, float p_bias) {
+	for (uint32_t i = 0; i < p_width * p_height; i++) {
+		Color c = _get_color_at_ofs(p_dst, i);
+		c.a = CLAMP(c.a * p_scale + p_bias, 0.0f, 1.0f);
+		_set_color_at_ofs(p_dst, i, c);
+	}
+}
+
+Error Image::generate_mipmaps(bool p_renormalize, bool p_preserve_alpha_test_coverage, float p_alpha_test_threshold) {
 	ERR_FAIL_COND_V_MSG(is_compressed(), ERR_UNAVAILABLE, "Cannot generate mipmaps from compressed image formats.");
 	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
 
@@ -2195,12 +2273,21 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 	int prev_h = height;
 	int prev_w = width;
 
+	float desired_atc = 0.0f;
+	if (p_preserve_alpha_test_coverage) {
+		desired_atc = _alpha_test_coverage(wp, width, height, p_alpha_test_threshold, 1.0);
+	}
+
 	for (int i = 1; i <= gen_mipmap_count; i++) {
 		int64_t ofs;
 		int w, h;
 		_get_mipmap_offset_and_size(i, ofs, w, h);
 
 		_generate_mipmap_from_format(format, wp + prev_ofs, wp + ofs, prev_w, prev_h, p_renormalize);
+
+		if (p_preserve_alpha_test_coverage) {
+			_scale_alpha_to_coverage(wp + ofs, w, h, desired_atc, p_alpha_test_threshold);
+		}
 
 		prev_ofs = ofs;
 		prev_w = w;
@@ -3424,6 +3511,11 @@ void Image::_copy_internals_from(const Image &p_image) {
 	data = p_image.data;
 }
 
+template <typename T>
+_FORCE_INLINE_ T _quantize_unorm_fast(float p_value, float p_max) {
+	return static_cast<T>(CLAMP(p_value * p_max + 0.5f, 0.0f, p_max));
+}
+
 _FORCE_INLINE_ Color color_from_rgba4444(uint16_t p_col) {
 	float r = ((p_col >> 12) & 0xF) / 15.0;
 	float g = ((p_col >> 8) & 0xF) / 15.0;
@@ -3435,10 +3527,10 @@ _FORCE_INLINE_ Color color_from_rgba4444(uint16_t p_col) {
 _FORCE_INLINE_ uint16_t color_to_rgba4444(Color p_col) {
 	uint16_t rgba = 0;
 
-	rgba = uint16_t(CLAMP(p_col.r * 15.0, 0, 15)) << 12;
-	rgba |= uint16_t(CLAMP(p_col.g * 15.0, 0, 15)) << 8;
-	rgba |= uint16_t(CLAMP(p_col.b * 15.0, 0, 15)) << 4;
-	rgba |= uint16_t(CLAMP(p_col.a * 15.0, 0, 15));
+	rgba = _quantize_unorm_fast<uint16_t>(p_col.r, 15.0f) << 12;
+	rgba |= _quantize_unorm_fast<uint16_t>(p_col.g, 15.0f) << 8;
+	rgba |= _quantize_unorm_fast<uint16_t>(p_col.b, 15.0f) << 4;
+	rgba |= _quantize_unorm_fast<uint16_t>(p_col.a, 15.0f);
 
 	return rgba;
 }
@@ -3453,9 +3545,9 @@ _FORCE_INLINE_ Color color_from_rgb565(uint16_t p_col) {
 _FORCE_INLINE_ uint16_t color_to_rgb565(Color p_col) {
 	uint16_t rgba = 0;
 
-	rgba = uint16_t(CLAMP(p_col.r * 31.0, 0, 31)) << 11;
-	rgba |= uint16_t(CLAMP(p_col.g * 63.0, 0, 63)) << 5;
-	rgba |= uint16_t(CLAMP(p_col.b * 31.0, 0, 31));
+	rgba = _quantize_unorm_fast<uint16_t>(p_col.r, 31.0f) << 11;
+	rgba |= _quantize_unorm_fast<uint16_t>(p_col.g, 63.0f) << 5;
+	rgba |= _quantize_unorm_fast<uint16_t>(p_col.b, 31.0f);
 
 	return rgba;
 }
@@ -3600,29 +3692,29 @@ Color Image::_get_color_at_ofs(const uint8_t *p_ptr, uint32_t p_ofs) const {
 void Image::_set_color_at_ofs(uint8_t *r_ptr, uint32_t p_ofs, const Color &p_color) {
 	switch (format) {
 		case FORMAT_L8: {
-			r_ptr[p_ofs] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0, 255));
+			r_ptr[p_ofs] = _quantize_unorm_fast<uint8_t>(p_color.get_v(), 255.0f);
 		} break;
 		case FORMAT_LA8: {
-			r_ptr[p_ofs * 2 + 0] = uint8_t(CLAMP(p_color.get_v() * 255.0, 0, 255));
-			r_ptr[p_ofs * 2 + 1] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
+			r_ptr[p_ofs * 2 + 0] = _quantize_unorm_fast<uint8_t>(p_color.get_v(), 255.0f);
+			r_ptr[p_ofs * 2 + 1] = _quantize_unorm_fast<uint8_t>(p_color.a, 255.0f);
 		} break;
 		case FORMAT_R8: {
-			r_ptr[p_ofs] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
+			r_ptr[p_ofs] = _quantize_unorm_fast<uint8_t>(p_color.r, 255.0f);
 		} break;
 		case FORMAT_RG8: {
-			r_ptr[p_ofs * 2 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-			r_ptr[p_ofs * 2 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
+			r_ptr[p_ofs * 2 + 0] = _quantize_unorm_fast<uint8_t>(p_color.r, 255.0f);
+			r_ptr[p_ofs * 2 + 1] = _quantize_unorm_fast<uint8_t>(p_color.g, 255.0f);
 		} break;
 		case FORMAT_RGB8: {
-			r_ptr[p_ofs * 3 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-			r_ptr[p_ofs * 3 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
-			r_ptr[p_ofs * 3 + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
+			r_ptr[p_ofs * 3 + 0] = _quantize_unorm_fast<uint8_t>(p_color.r, 255.0f);
+			r_ptr[p_ofs * 3 + 1] = _quantize_unorm_fast<uint8_t>(p_color.g, 255.0f);
+			r_ptr[p_ofs * 3 + 2] = _quantize_unorm_fast<uint8_t>(p_color.b, 255.0f);
 		} break;
 		case FORMAT_RGBA8: {
-			r_ptr[p_ofs * 4 + 0] = uint8_t(CLAMP(p_color.r * 255.0, 0, 255));
-			r_ptr[p_ofs * 4 + 1] = uint8_t(CLAMP(p_color.g * 255.0, 0, 255));
-			r_ptr[p_ofs * 4 + 2] = uint8_t(CLAMP(p_color.b * 255.0, 0, 255));
-			r_ptr[p_ofs * 4 + 3] = uint8_t(CLAMP(p_color.a * 255.0, 0, 255));
+			r_ptr[p_ofs * 4 + 0] = _quantize_unorm_fast<uint8_t>(p_color.r, 255.0f);
+			r_ptr[p_ofs * 4 + 1] = _quantize_unorm_fast<uint8_t>(p_color.g, 255.0f);
+			r_ptr[p_ofs * 4 + 2] = _quantize_unorm_fast<uint8_t>(p_color.b, 255.0f);
+			r_ptr[p_ofs * 4 + 3] = _quantize_unorm_fast<uint8_t>(p_color.a, 255.0f);
 		} break;
 		case FORMAT_RGBA4444: {
 			((uint16_t *)r_ptr)[p_ofs] = color_to_rgba4444(p_color);
@@ -3670,40 +3762,40 @@ void Image::_set_color_at_ofs(uint8_t *r_ptr, uint32_t p_ofs, const Color &p_col
 			((uint32_t *)r_ptr)[p_ofs] = p_color.to_rgbe9995();
 		} break;
 		case FORMAT_R16: {
-			((uint16_t *)r_ptr)[p_ofs] = uint16_t(CLAMP(p_color.r * 65535.0, 0, 65535));
+			((uint16_t *)r_ptr)[p_ofs] = _quantize_unorm_fast<uint16_t>(p_color.r, 65535.0f);
 		} break;
 		case FORMAT_RG16: {
-			((uint16_t *)r_ptr)[p_ofs * 2 + 0] = uint16_t(CLAMP(p_color.r * 65535.0, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 2 + 1] = uint16_t(CLAMP(p_color.g * 65535.0, 0, 65535));
+			((uint16_t *)r_ptr)[p_ofs * 2 + 0] = _quantize_unorm_fast<uint16_t>(p_color.r, 65535.0f);
+			((uint16_t *)r_ptr)[p_ofs * 2 + 1] = _quantize_unorm_fast<uint16_t>(p_color.g, 65535.0f);
 		} break;
 		case FORMAT_RGB16: {
-			((uint16_t *)r_ptr)[p_ofs * 3 + 0] = uint16_t(CLAMP(p_color.r * 65535.0, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 3 + 1] = uint16_t(CLAMP(p_color.g * 65535.0, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 3 + 2] = uint16_t(CLAMP(p_color.b * 65535.0, 0, 65535));
+			((uint16_t *)r_ptr)[p_ofs * 3 + 0] = _quantize_unorm_fast<uint16_t>(p_color.r, 65535.0f);
+			((uint16_t *)r_ptr)[p_ofs * 3 + 1] = _quantize_unorm_fast<uint16_t>(p_color.g, 65535.0f);
+			((uint16_t *)r_ptr)[p_ofs * 3 + 2] = _quantize_unorm_fast<uint16_t>(p_color.b, 65535.0f);
 		} break;
 		case FORMAT_RGBA16: {
-			((uint16_t *)r_ptr)[p_ofs * 4 + 0] = uint16_t(CLAMP(p_color.r * 65535.0, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 4 + 1] = uint16_t(CLAMP(p_color.g * 65535.0, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 4 + 2] = uint16_t(CLAMP(p_color.b * 65535.0, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 4 + 3] = uint16_t(CLAMP(p_color.a * 65535.0, 0, 65535));
+			((uint16_t *)r_ptr)[p_ofs * 4 + 0] = _quantize_unorm_fast<uint16_t>(p_color.r, 65535.0f);
+			((uint16_t *)r_ptr)[p_ofs * 4 + 1] = _quantize_unorm_fast<uint16_t>(p_color.g, 65535.0f);
+			((uint16_t *)r_ptr)[p_ofs * 4 + 2] = _quantize_unorm_fast<uint16_t>(p_color.b, 65535.0f);
+			((uint16_t *)r_ptr)[p_ofs * 4 + 3] = _quantize_unorm_fast<uint16_t>(p_color.a, 65535.0f);
 		} break;
 		case FORMAT_R16I: {
-			((uint16_t *)r_ptr)[p_ofs] = uint16_t(CLAMP(p_color.r, 0, 65535));
+			((uint16_t *)r_ptr)[p_ofs] = uint16_t(CLAMP(p_color.r, 0.0f, 65535));
 		} break;
 		case FORMAT_RG16I: {
-			((uint16_t *)r_ptr)[p_ofs * 2 + 0] = uint16_t(CLAMP(p_color.r, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 2 + 1] = uint16_t(CLAMP(p_color.g, 0, 65535));
+			((uint16_t *)r_ptr)[p_ofs * 2 + 0] = uint16_t(CLAMP(p_color.r, 0.0f, 65535.0f));
+			((uint16_t *)r_ptr)[p_ofs * 2 + 1] = uint16_t(CLAMP(p_color.g, 0.0f, 65535.0f));
 		} break;
 		case FORMAT_RGB16I: {
-			((uint16_t *)r_ptr)[p_ofs * 3 + 0] = uint16_t(CLAMP(p_color.r, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 3 + 1] = uint16_t(CLAMP(p_color.g, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 3 + 2] = uint16_t(CLAMP(p_color.b, 0, 65535));
+			((uint16_t *)r_ptr)[p_ofs * 3 + 0] = uint16_t(CLAMP(p_color.r, 0.0f, 65535.0f));
+			((uint16_t *)r_ptr)[p_ofs * 3 + 1] = uint16_t(CLAMP(p_color.g, 0.0f, 65535.0f));
+			((uint16_t *)r_ptr)[p_ofs * 3 + 2] = uint16_t(CLAMP(p_color.b, 0.0f, 65535.0f));
 		} break;
 		case FORMAT_RGBA16I: {
-			((uint16_t *)r_ptr)[p_ofs * 4 + 0] = uint16_t(CLAMP(p_color.r, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 4 + 1] = uint16_t(CLAMP(p_color.g, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 4 + 2] = uint16_t(CLAMP(p_color.b, 0, 65535));
-			((uint16_t *)r_ptr)[p_ofs * 4 + 3] = uint16_t(CLAMP(p_color.a, 0, 65535));
+			((uint16_t *)r_ptr)[p_ofs * 4 + 0] = uint16_t(CLAMP(p_color.r, 0.0f, 65535.0f));
+			((uint16_t *)r_ptr)[p_ofs * 4 + 1] = uint16_t(CLAMP(p_color.g, 0.0f, 65535.0f));
+			((uint16_t *)r_ptr)[p_ofs * 4 + 2] = uint16_t(CLAMP(p_color.b, 0.0f, 65535.0f));
+			((uint16_t *)r_ptr)[p_ofs * 4 + 3] = uint16_t(CLAMP(p_color.a, 0.0f, 65535.0f));
 		} break;
 
 		default: {
@@ -3893,7 +3985,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("crop", "width", "height"), &Image::crop);
 	ClassDB::bind_method(D_METHOD("flip_x"), &Image::flip_x);
 	ClassDB::bind_method(D_METHOD("flip_y"), &Image::flip_y);
-	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize", "preserve_alpha_test_coverage", "alpha_test_threshold"), &Image::generate_mipmaps, DEFVAL(false), DEFVAL(false), DEFVAL(0.5f));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
 #ifndef DISABLE_DEPRECATED
@@ -4210,6 +4302,38 @@ bool Image::detect_signed(bool p_include_mips) const {
 	return false;
 }
 
+_FORCE_INLINE_ uint16_t _srgb2lin_hf(uint16_t p_s) {
+	float sf = Math::half_to_float(p_s);
+	if (sf < 0.04045) {
+		sf /= 12.92f;
+	} else {
+		sf = Math::pow((sf + 0.055f) / 1.055f, 2.4f);
+	}
+	return Math::make_half_float(sf);
+}
+
+void Image::_srgb2lin_hft4(void *p_td, uint32_t p_i) {
+	Image *img = (Image *)p_td;
+	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	for (int x = 0; x < img->width; x++) {
+		int i = img->width * p_i + x;
+		data_ptr[(i << 2) + 0] = _srgb2lin_hf(data_ptr[(i << 2) + 0]);
+		data_ptr[(i << 2) + 1] = _srgb2lin_hf(data_ptr[(i << 2) + 1]);
+		data_ptr[(i << 2) + 2] = _srgb2lin_hf(data_ptr[(i << 2) + 2]);
+	}
+}
+
+void Image::_srgb2lin_hft3(void *p_td, uint32_t p_i) {
+	Image *img = (Image *)p_td;
+	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	for (int x = 0; x < img->width; x++) {
+		int i = img->width * p_i + x;
+		data_ptr[(i * 3) + 0] = _srgb2lin_hf(data_ptr[(i * 3) + 0]);
+		data_ptr[(i * 3) + 1] = _srgb2lin_hf(data_ptr[(i * 3) + 1]);
+		data_ptr[(i * 3) + 2] = _srgb2lin_hf(data_ptr[(i * 3) + 2]);
+	}
+}
+
 void Image::srgb_to_linear() {
 	if (data.is_empty()) {
 		return;
@@ -4217,9 +4341,15 @@ void Image::srgb_to_linear() {
 
 	static const uint8_t srgb2lin[256] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 22, 22, 23, 23, 24, 24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 31, 31, 32, 33, 33, 34, 35, 36, 36, 37, 38, 38, 39, 40, 41, 42, 42, 43, 44, 45, 46, 47, 47, 48, 49, 50, 51, 52, 53, 54, 55, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78, 80, 81, 82, 83, 84, 85, 87, 88, 89, 90, 92, 93, 94, 95, 97, 98, 99, 101, 102, 103, 105, 106, 107, 109, 110, 112, 113, 114, 116, 117, 119, 120, 122, 123, 125, 126, 128, 129, 131, 132, 134, 135, 137, 139, 140, 142, 144, 145, 147, 148, 150, 152, 153, 155, 157, 159, 160, 162, 164, 166, 167, 169, 171, 173, 175, 176, 178, 180, 182, 184, 186, 188, 190, 192, 193, 195, 197, 199, 201, 203, 205, 207, 209, 211, 213, 215, 218, 220, 222, 224, 226, 228, 230, 232, 235, 237, 239, 241, 243, 245, 248, 250, 252, 255 };
 
-	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8);
+	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8 && format != FORMAT_RGBH && format != FORMAT_RGBAH);
 
-	if (format == FORMAT_RGBA8) {
+	if (format == FORMAT_RGBAH) {
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_srgb2lin_hft4, this, height, -1, true, String("SRGB2LIN4"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	} else if (format == FORMAT_RGBH) {
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_srgb2lin_hft3, this, height, -1, true, String("SRGB2LIN3"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	} else if (format == FORMAT_RGBA8) {
 		int len = data.size() / 4;
 		uint8_t *data_ptr = data.ptrw();
 
@@ -4241,6 +4371,38 @@ void Image::srgb_to_linear() {
 	}
 }
 
+_FORCE_INLINE_ uint16_t _lin2srgb_hf(uint16_t p_l) {
+	float lf = Math::half_to_float(p_l);
+	if (lf < 0.0031308f) {
+		lf *= 12.92f;
+	} else {
+		lf = 1.055f * Math::pow(lf, 1.0f / 2.4f) - 0.055f;
+	}
+	return Math::make_half_float(lf);
+}
+
+void Image::_lin2srgb_hft4(void *p_td, uint32_t p_i) {
+	Image *img = (Image *)p_td;
+	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	for (int x = 0; x < img->width; x++) {
+		int i = img->width * p_i + x;
+		data_ptr[(p_i << 2) + 0] = _lin2srgb_hf(data_ptr[(i << 2) + 0]);
+		data_ptr[(p_i << 2) + 1] = _lin2srgb_hf(data_ptr[(i << 2) + 1]);
+		data_ptr[(p_i << 2) + 2] = _lin2srgb_hf(data_ptr[(i << 2) + 2]);
+	}
+}
+
+void Image::_lin2srgb_hft3(void *p_td, uint32_t p_i) {
+	Image *img = (Image *)p_td;
+	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	for (int x = 0; x < img->width; x++) {
+		int i = img->width * p_i + x;
+		data_ptr[(i * 3) + 0] = _lin2srgb_hf(data_ptr[(i * 3) + 0]);
+		data_ptr[(i * 3) + 1] = _lin2srgb_hf(data_ptr[(i * 3) + 1]);
+		data_ptr[(i * 3) + 2] = _lin2srgb_hf(data_ptr[(i * 3) + 2]);
+	}
+}
+
 void Image::linear_to_srgb() {
 	if (data.is_empty()) {
 		return;
@@ -4248,9 +4410,15 @@ void Image::linear_to_srgb() {
 
 	static const uint8_t lin2srgb[256] = { 0, 12, 21, 28, 33, 38, 42, 46, 49, 52, 55, 58, 61, 63, 66, 68, 70, 73, 75, 77, 79, 81, 82, 84, 86, 88, 89, 91, 93, 94, 96, 97, 99, 100, 102, 103, 104, 106, 107, 109, 110, 111, 112, 114, 115, 116, 117, 118, 120, 121, 122, 123, 124, 125, 126, 127, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 151, 152, 153, 154, 155, 156, 157, 157, 158, 159, 160, 161, 161, 162, 163, 164, 165, 165, 166, 167, 168, 168, 169, 170, 171, 171, 172, 173, 174, 174, 175, 176, 176, 177, 178, 179, 179, 180, 181, 181, 182, 183, 183, 184, 185, 185, 186, 187, 187, 188, 189, 189, 190, 191, 191, 192, 193, 193, 194, 194, 195, 196, 196, 197, 197, 198, 199, 199, 200, 201, 201, 202, 202, 203, 204, 204, 205, 205, 206, 206, 207, 208, 208, 209, 209, 210, 210, 211, 212, 212, 213, 213, 214, 214, 215, 215, 216, 217, 217, 218, 218, 219, 219, 220, 220, 221, 221, 222, 222, 223, 223, 224, 224, 225, 226, 226, 227, 227, 228, 228, 229, 229, 230, 230, 231, 231, 232, 232, 233, 233, 234, 234, 235, 235, 236, 236, 237, 237, 237, 238, 238, 239, 239, 240, 240, 241, 241, 242, 242, 243, 243, 244, 244, 245, 245, 245, 246, 246, 247, 247, 248, 248, 249, 249, 250, 250, 251, 251, 251, 252, 252, 253, 253, 254, 254, 255 };
 
-	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8);
+	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8 && format != FORMAT_RGBH && format != FORMAT_RGBAH);
 
-	if (format == FORMAT_RGBA8) {
+	if (format == FORMAT_RGBAH) {
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_lin2srgb_hft4, this, height, -1, true, String("LIN2SRGB4"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	} else if (format == FORMAT_RGBH) {
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_lin2srgb_hft3, this, height, -1, true, String("LIN2SRGB3"));
+		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
+	} else if (format == FORMAT_RGBA8) {
 		int len = data.size() / 4;
 		uint8_t *data_ptr = data.ptrw();
 

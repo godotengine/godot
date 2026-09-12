@@ -43,6 +43,7 @@ import org.godotengine.godot.GodotActivity.Companion.EXTRA_COMMAND_LINE_PARAMS
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.collections.contentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -61,6 +62,7 @@ class GodotAppTest {
 		private const val GODOT_APP_CLASS_NAME = "com.godot.game.GodotApp"
 
 		private val TEST_COMMAND_LINE_PARAMS = arrayOf("This is a test")
+		private val VULKAN_RENDERER_COMMAND_LINE_PARAMS = arrayOf("--rendering-method","mobile")
 	}
 
 	private fun getTestPlugin(): GodotAppInstrumentedTestPlugin? {
@@ -191,6 +193,32 @@ class GodotAppTest {
 				val commandLineParams = activity.intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 				assertNotNull(commandLineParams)
 				assertTrue(commandLineParams.contentEquals(TEST_COMMAND_LINE_PARAMS))
+			}
+		}
+	}
+
+	/**
+	 * Test that launching using the Vulkan renderer doesn't crash the app.
+	 */
+	@Test
+	fun testVulkanGodotAppLaunch() {
+		val appIntent = Intent().apply {
+			component = ComponentName(BuildConfig.APPLICATION_ID, GODOT_APP_CLASS_NAME)
+			putExtra(EXTRA_COMMAND_LINE_PARAMS, VULKAN_RENDERER_COMMAND_LINE_PARAMS)
+		}
+		ActivityScenario.launch<GodotApp>(appIntent).use { scenario ->
+			val testPlugin = getTestPlugin()
+			assertNotNull(testPlugin)
+
+			Log.d(TAG, "Waiting for the Godot main loop to start...")
+			testPlugin.waitForGodotMainLoopStarted()
+
+			scenario.onActivity { activity ->
+				assertEquals(activity.intent.component?.className, GODOT_APP_CLASS_NAME)
+
+				val commandLineParams = activity.intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
+				assertNotNull(commandLineParams)
+				assertTrue(commandLineParams.contentEquals(VULKAN_RENDERER_COMMAND_LINE_PARAMS))
 			}
 		}
 	}

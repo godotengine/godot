@@ -87,7 +87,7 @@ String _remove_symlink(const String &dir) {
 _FORCE_INLINE_ static GameViewPlugin *_get_game_view_plugin() {
 	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
 	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
-	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_data().get_editor_by_name("Game"));
 }
 #endif
 
@@ -294,7 +294,7 @@ String OS_Android::get_distribution_name() const {
 		return "POSP";
 	} else if (!get_system_property("ro.xtended.version").is_empty()) {
 		return "Project-Xtended";
-	} else if (!get_system_property("org.evolution.version").is_empty()) {
+	} else if (!get_system_property("org.evolution.version").is_empty() || !get_system_property("ro.evolution.version").is_empty()) {
 		return "Evolution X";
 	} else if (!get_system_property("ro.corvus.version").is_empty()) {
 		return "Corvus-Q";
@@ -320,8 +320,8 @@ String OS_Android::get_distribution_name() const {
 
 String OS_Android::get_version() const {
 	const Vector<const char *> roms = { "ro.havoc.version", "org.pex.version", "org.pixelexperience.version",
-		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.corvus.version", "ro.pa.version",
-		"ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
+		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.evolution.version", "ro.corvus.version",
+		"ro.pa.version", "ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
 	for (int i = 0; i < roms.size(); i++) {
 		String rom_version = get_system_property(roms[i]);
 		if (!rom_version.is_empty()) {
@@ -807,15 +807,9 @@ Error OS_Android::move_to_trash(const String &p_path) {
 
 	// Check if it's a directory
 	if (da_ref->dir_exists(p_path)) {
-		Error err = da_ref->change_dir(p_path);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(da_ref->change_dir(p_path));
 		// This is directory, let's erase its contents
-		err = da_ref->erase_contents_recursive();
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(da_ref->erase_contents_recursive());
 		// Remove the top directory
 		return da_ref->remove(p_path);
 	} else if (da_ref->file_exists(p_path)) {

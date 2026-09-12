@@ -192,7 +192,7 @@ protected:
 
 	virtual void _load_theme_settings() override;
 
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) override;
+	virtual void _code_complete_script(const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) override;
 
 	virtual void _breakpoint_toggled(int p_row) override;
 	void _update_shader_previews();

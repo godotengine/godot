@@ -214,8 +214,8 @@ static String locale;
 static String log_file;
 static bool show_help = false;
 static uint64_t quit_after = 0;
-static ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
+static ProcessID editor_pid = 0;
 static bool found_project = false;
 static bool recovery_mode = false;
 static bool auto_build_solutions = false;
@@ -261,8 +261,8 @@ static bool force_res = false;
 
 // Debug
 
-static bool use_debug_profiler = false;
 #ifdef DEBUG_ENABLED
+static bool use_debug_profiler = false;
 static bool debug_collisions = false;
 static bool debug_paths = false;
 static bool debug_navigation = false;
@@ -587,10 +587,12 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--accessibility-driver <driver>", "Select accessibility driver ['accesskit', 'dummy'].\n");
 
 	print_help_title("Debug options");
+#ifdef DEBUG_ENABLED
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
-	print_help_option("-b, --breakpoints", "Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
+	print_help_option("-b, --breakpoints", "Breakpoint list as source:line comma-separated pairs, no spaces (use %%20 instead).\n");
 	print_help_option("--ignore-error-breaks", "If debugger is connected, prevents sending error breakpoints.\n");
 	print_help_option("--profiling", "Enable profiling in the script debugger.\n");
+#endif
 	print_help_option("--gpu-profile", "Show a GPU profile of the tasks that took the most time during frame rendering.\n");
 	print_help_option("--gpu-validation", "Enable graphics API validation layers for debugging.\n");
 #ifdef DEBUG_ENABLED
@@ -725,6 +727,17 @@ Error Main::test_setup() {
 #ifndef NAVIGATION_3D_DISABLED
 	NavigationServer3DManager::initialize_server_manager();
 #endif // NAVIGATION_3D_DISABLED
+
+	bool tests_exist = DirAccess::dir_exists_absolute(OS::get_singleton()->get_cwd().path_join("tests").path_join("data"));
+	if (!tests_exist) {
+		if (OS::get_singleton()->get_cwd().ends_with("bin")) {
+			// Likely running from `bin`, try changing cwd:
+			OS::get_singleton()->set_cwd(OS::get_singleton()->get_cwd().get_base_dir());
+			tests_exist = DirAccess::dir_exists_absolute(OS::get_singleton()->get_cwd().path_join("tests").path_join("data"));
+		}
+		ERR_FAIL_COND_V_MSG(!tests_exist, FAILED, "Test data not found, tests should be run from the Godot source repository root.");
+		WARN_PRINT("Tests should be run from the Godot source repository root, working directory was changed to " + OS::get_singleton()->get_cwd());
+	}
 
 	// From `Main::setup2()`.
 	register_early_core_singletons();
@@ -1038,13 +1051,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	String audio_driver = "";
 	String project_path = ".";
+
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	String debug_uri = "";
+	bool skip_breakpoints = false;
+	bool ignore_error_breaks = false;
+	Vector<String> breakpoints;
+#endif
+
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	bool test_rd_creation = false;
 	bool test_rd_support = false;
 #endif
-	bool skip_breakpoints = false;
-	bool ignore_error_breaks = false;
 	String main_pack;
 	bool quiet_stdout = false;
 	int separate_thread_render = -1; // Tri-state: -1 = not set, 0 = false, 1 = true.
@@ -1055,7 +1073,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String remotefs_pass;
 #endif
 
-	Vector<String> breakpoints;
 	bool delta_smoothing_override = false;
 	bool load_shell_env = false;
 
@@ -1455,9 +1472,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 		} else if (arg == "--profiling") { // enable profiling
-
+#ifdef DEBUG_ENABLED
 			use_debug_profiler = true;
-
+#else
+			ERR_PRINT(
+					"`--profiling` was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+#endif
 		} else if (arg == "-l" || arg == "--language") { // language
 
 			if (N) {
@@ -1752,6 +1773,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"To be able to use it, use the `disable_path_overrides=no` SCons option when compiling Godot.\n");
 			goto error;
 #endif // defined(OVERRIDE_PATH_ENABLED)
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 		} else if (arg == "-b" || arg == "--breakpoints") { // add breakpoints
 
 			if (N) {
@@ -1762,7 +1784,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing list of breakpoints, aborting.\n");
 				goto error;
 			}
-
+#endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
 		} else if (arg == "--max-fps") { // set maximum rendered FPS
 
 			if (N) {
@@ -1827,8 +1849,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif // defined(OVERRIDE_PATH_ENABLED) || defined(WEB_ENABLED) || defined(ANDROID_ENABLED)
 
 		} else if (arg == "-d" || arg == "--debug") {
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 			debug_uri = "local://";
 			OS::get_singleton()->_debug_stdout = true;
+#else
+			ERR_PRINT(
+					arg + " was specified on the command line, but this Godot binary was compiled without debug. Aborting.\n"
+						  "To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
+			goto error;
+#endif
 #if defined(DEBUG_ENABLED)
 		} else if (arg == "--debug-collisions") {
 			debug_collisions = true;
@@ -1871,6 +1900,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					"To be able to use it, use the `target=template_debug` SCons option when compiling Godot.\n");
 			goto error;
 #endif // defined(DEBUG_ENABLED) || defined (TOOLS_ENABLED)
+#ifdef TOOLS_ENABLED
 		} else if (arg == "--editor-pid") { // not exposed to user
 			if (N) {
 				editor_pid = N->get().to_int();
@@ -1879,6 +1909,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing editor PID argument, aborting.\n");
 				goto error;
 			}
+#endif // TOOLS_ENABLED
 		} else if (arg == "--disable-render-loop") {
 			disable_render_loop = true;
 		} else if (arg == "--fixed-fps") {
@@ -1914,10 +1945,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			profile_gpu = true;
 		} else if (arg == "--disable-crash-handler") {
 			OS::get_singleton()->disable_crash_handler();
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 		} else if (arg == "--skip-breakpoints") {
 			skip_breakpoints = true;
 		} else if (I->get() == "--ignore-error-breaks") {
 			ignore_error_breaks = true;
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 #ifndef XR_DISABLED
 		} else if (arg == "--xr-mode") {
 			if (N) {
@@ -2235,11 +2268,15 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_errors_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_warnings_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	EngineDebugger::initialize(debug_uri, skip_breakpoints, ignore_error_breaks, breakpoints, []() {
+#ifdef TOOLS_ENABLED
 		if (editor_pid) {
 			DisplayServer::get_singleton()->enable_for_stealing_focus(editor_pid);
 		}
+#endif
 	});
+#endif
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
@@ -2426,8 +2463,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Start with RenderingDevice-based backends.
 #ifdef RD_ENABLED
-	renderer_hints = "forward_plus,mobile";
+#ifdef FORWARD_RD_ENABLED
+	renderer_hints = "forward_plus";
+#endif // FORWARD_RD_ENABLED
+
+#ifdef MOBILE_RD_ENABLED
+	if (!renderer_hints.is_empty()) {
+		renderer_hints += ",";
+	}
+	renderer_hints += "mobile";
 	default_renderer_mobile = "mobile";
+#endif // MOBILE_RD_ENABLED
 #endif
 
 	// And Compatibility next, or first if Vulkan is disabled.
@@ -2535,6 +2581,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// Now validate whether the selected driver matches with the renderer.
 		bool valid_combination = false;
 		Vector<String> available_drivers;
+#ifdef RD_ENABLED
 		if (rendering_method == "forward_plus" || rendering_method == "mobile") {
 #ifdef VULKAN_ENABLED
 			available_drivers.push_back("vulkan");
@@ -2546,6 +2593,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			available_drivers.push_back("metal");
 #endif
 		}
+#endif // RD_ENABLED
+
 #ifdef GLES3_ENABLED
 		if (rendering_method == "gl_compatibility") {
 			available_drivers.push_back("opengl3");
@@ -2812,13 +2861,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "xr/openxr/target_api_version"), "");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"), "res://openxr_action_map.tres");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"), "0");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo"), "1"); // "Mono,Stereo,Quad,Observer"
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo,Stereo with Foveated Inset"), "1");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage,Local Floor"), "1");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/environment_blend_mode", PROPERTY_HINT_ENUM, "Opaque,Additive,Alpha"), "0");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/foveation_level", PROPERTY_HINT_ENUM, "Off,Low,Medium,High"), "0");
 	GLOBAL_DEF_BASIC("xr/openxr/foveation_dynamic", false);
 	GLOBAL_DEF_BASIC("xr/openxr/foveation_eye_tracked", true);
 	GLOBAL_DEF_BASIC("xr/openxr/foveation_with_subsampled_images", true);
+	GLOBAL_DEF_BASIC("xr/openxr/create_default_foveated_inset_viewport", true);
 
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
@@ -2852,6 +2902,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_unobstructed_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_container/enabled", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_container/bounds_mode", PROPERTY_HINT_ENUM, "Bounded,Immersive"), "0");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::VECTOR3, "xr/openxr/extensions/spatial_container/bounds", PROPERTY_HINT_NONE, ""), Vector3(0.5f, 0.5f, 0.5f));
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enabled", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_spatial_anchors", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_persistent_anchors", false);
@@ -2869,6 +2922,18 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// OpenXR Binding modifier settings
 	GLOBAL_DEF_BASIC("xr/openxr/binding_modifiers/analog_threshold", false);
 	GLOBAL_DEF_RST_BASIC("xr/openxr/binding_modifiers/dpad_binding", false);
+
+	// visionOS settings
+	GLOBAL_DEF_BASIC("xr/visionos/enable_hand_tracking", false);
+	GLOBAL_DEF_BASIC("xr/visionos/enable_controller_tracking", false);
+	// Dynamic render quality, to be used at runtime depending on the complexity of your scene, see https://developer.apple.com/documentation/compositorservices/defining-layer-renderer-quality.
+	GLOBAL_DEF_BASIC("xr/visionos/dynamic_render_quality/enable", false);
+	// The default value of 0.38 is equivalent to https://developer.apple.com/documentation/compositorservices/layerrenderer/capabilities/defaultrenderquality.
+	// Do not set this value higher than the maximum value you're planning to use at runtime, or your app will use more memory than necessary.
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "xr/visionos/dynamic_render_quality/maximum_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.38);
+	// Initial values of the corresponding VisionOSXRInterface properties, applied when the immersive scene is created.
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/visionos/upper_limb_visibility", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/visionos/persistent_system_overlays", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), 0);
 
 #ifdef TOOLS_ENABLED
 	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
@@ -3399,11 +3464,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 		OS::get_singleton()->benchmark_end_measure("Servers", "Display");
 	}
 
+#ifdef RD_ENABLED
 	// Max FPS needs to be set after the DisplayServer is created.
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (rd) {
 		rd->_set_max_fps(engine->get_max_fps());
 	}
+#endif // RD_ENABLED
 
 #ifdef TOOLS_ENABLED
 	// If the editor is running in windowed mode, ensure the window rect fits
@@ -3818,11 +3885,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 	BindingsGenerator::handle_cmdline_args(cmdline_args);
 #endif
 
+#ifdef DEBUG_ENABLED
 	if (use_debug_profiler && EngineDebugger::is_active()) {
 		// Start the "scripts" profiler, used in local debugging.
 		// We could add more, and make the CLI arg require a comma-separated list of profilers.
 		EngineDebugger::get_singleton()->profiler_enable("scripts", true);
 	}
+#endif
 
 	if (!project_manager) {
 		// If not running the project manager, and now that the engine is
@@ -5007,7 +5076,11 @@ bool Main::iteration() {
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	GodotProfileZoneGrouped(_profile_zone, "RenderingServer::draw");
+#ifdef RD_ENABLED
 	const bool has_pending_resources_for_processing = RD::get_singleton() && RD::get_singleton()->has_pending_resources_for_processing();
+#else
+	const bool has_pending_resources_for_processing = false;
+#endif // RD_ENABLED
 	bool wants_present = (DisplayServer::get_singleton()->can_any_window_draw() ||
 								 DisplayServer::get_singleton()->has_additional_outputs()) &&
 			RenderingServer::get_singleton()->is_render_loop_enabled();

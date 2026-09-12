@@ -175,6 +175,7 @@ public:
 	void set_preview_value(bool p_preview_value);
 	virtual void make_passthrough(bool p_passthrough) override;
 	virtual void update_property() override;
+	virtual void update_properties_recursive() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyArray();
 };
@@ -274,6 +275,7 @@ public:
 	void set_preview_value(bool p_preview_value);
 	virtual void make_passthrough(bool p_passthrough) override;
 	virtual void update_property() override;
+	virtual void update_properties_recursive() override;
 	virtual bool is_colored(ColorationMode p_mode) override;
 	EditorPropertyDictionary();
 };

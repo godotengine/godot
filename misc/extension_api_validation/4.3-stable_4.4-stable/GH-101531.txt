@@ -1,5 +1,3 @@
-GH-101531
----------
 Validate extension JSON: API was removed: classes/EditorSceneFormatImporter/methods/_get_import_flags
 
 This virtual method, and the internal public `get_import_flags`, were never used by the engine, since it was open sourced.

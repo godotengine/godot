@@ -31,7 +31,9 @@
 #include "xr_interface_extension.h"
 
 #include "core/object/class_db.h"
+#ifdef RD_ENABLED
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#endif
 
 void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_name);
@@ -50,8 +52,12 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_render_target_size);
 	GDVIRTUAL_BIND(_get_view_count);
 	GDVIRTUAL_BIND(_get_camera_transform);
+	GDVIRTUAL_BIND(_get_camera_projections, "tracker_name", "aspect", "z_near", "z_far");
+	GDVIRTUAL_BIND(_get_camera_offsets, "tracker_name");
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_get_transform_for_view, "view", "cam_transform");
 	GDVIRTUAL_BIND(_get_projection_for_view, "view", "aspect", "z_near", "z_far");
+#endif
 	GDVIRTUAL_BIND(_get_vrs_texture);
 	GDVIRTUAL_BIND(_get_vrs_texture_format);
 
@@ -214,6 +220,26 @@ Transform3D XRInterfaceExtension::get_camera_transform() {
 	return transform;
 }
 
+TypedArray<Projection> XRInterfaceExtension::get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) {
+	TypedArray<Projection> camera_projections;
+
+	if (GDVIRTUAL_CALL(_get_camera_projections, p_tracker_name, p_aspect, p_z_near, p_z_far, camera_projections)) {
+		return camera_projections;
+	}
+
+	return camera_projections;
+}
+
+TypedArray<Transform3D> XRInterfaceExtension::get_camera_offsets(const StringName &p_tracker_name) {
+	TypedArray<Transform3D> camera_offsets;
+
+	if (GDVIRTUAL_CALL(_get_camera_offsets, p_tracker_name, camera_offsets)) {
+		return camera_offsets;
+	}
+
+	return camera_offsets;
+}
+
 Transform3D XRInterfaceExtension::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	Transform3D transform;
 	GDVIRTUAL_CALL(_get_transform_for_view, p_view, p_cam_transform, transform);
@@ -327,10 +353,14 @@ void XRInterfaceExtension::end_frame() {
 RID XRInterfaceExtension::get_render_target_texture(RID p_render_target) {
 	// In due time this will need to be enhance to return the correct INTERNAL RID for the chosen rendering engine.
 	// So once a GLES driver is implemented we'll return that and the implemented plugin needs to handle this correctly too.
+#ifdef RD_ENABLED
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	ERR_FAIL_NULL_V_MSG(texture_storage, RID(), "Texture storage not setup");
 
 	return texture_storage->render_target_get_rd_texture(p_render_target);
+#else
+	return RID();
+#endif // RD_ENABLED
 }
 
 /*

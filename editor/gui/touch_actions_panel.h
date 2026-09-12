@@ -34,6 +34,7 @@
 
 class BoxContainer;
 class Button;
+class ColorRect;
 class TextureRect;
 
 class TouchActionsPanel : public PanelContainer {
@@ -48,11 +49,13 @@ private:
 	Button *cut_button = nullptr;
 	Button *copy_button = nullptr;
 	Button *paste_button = nullptr;
+	Button *tab_button = nullptr;
 
 	TextureRect *drag_handle = nullptr;
 	Button *layout_toggle_button = nullptr;
 	Button *lock_panel_button = nullptr;
 	Button *panel_pos_button = nullptr;
+	ColorRect *separator = nullptr;
 
 	bool locked_panel = false;
 	bool dragging = false;
@@ -70,6 +73,7 @@ private:
 
 	bool is_floating = false; // Embedded panel mode is default.
 	int embedded_panel_index = 0;
+	bool portrait_mode = false;
 
 	void _notification(int p_what);
 	virtual void input(const Ref<InputEvent> &event) override;
@@ -86,7 +90,8 @@ private:
 	void _on_modifier_button_toggled(bool p_pressed, int p_modifier);
 
 	void _hardware_keyboard_connected(bool p_connected);
+	void _screen_orientation_changed(int p_new_orientation);
 
 public:
-	TouchActionsPanel();
+	TouchActionsPanel(bool p_floating);
 };

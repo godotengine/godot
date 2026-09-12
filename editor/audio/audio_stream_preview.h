@@ -38,7 +38,7 @@
 class AudioStreamPreview : public RefCounted {
 	GDCLASS(AudioStreamPreview, RefCounted);
 	friend class AudioStream;
-	Vector<uint8_t> preview;
+	LocalVector<uint8_t> preview;
 	float length;
 
 	friend class AudioStreamPreviewGenerator;

@@ -58,6 +58,12 @@ extern void apple_embedded_finish();
 	return self;
 }
 
+// On visionOS Compositor Services mode (used by the visionOS XR module),
+// there's no way to easily show the boot logo on a simple quad.
+- (void)setUpProjectDataShowingBootLogo:(BOOL)p_show_boot_logo {
+	[super setUpProjectDataShowingBootLogo:NO];
+}
+
 - (void)updateXRInterface {
 	Ref<VisionOSXRInterface> visionos_xr_interface = VisionOSXRInterface::find_interface();
 	if (visionos_xr_interface.is_valid()) {

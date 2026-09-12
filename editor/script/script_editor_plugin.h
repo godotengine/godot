@@ -32,9 +32,9 @@
 
 #include "core/error/error_list.h"
 #include "core/object/script_language.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/script/script_editor_base.h"
-#include "scene/gui/panel_container.h"
 #include "scene/resources/text_file.h"
 
 class CodeTextEditor;
@@ -121,7 +121,7 @@ class DocumentOutline : public VBoxContainer {
 	GDCLASS(DocumentOutline, VBoxContainer);
 
 	ScriptEditor *script_editor = nullptr;
-	ItemList *item_list = nullptr;
+	Tree *tree = nullptr;
 	HBoxContainer *buttons_hbox = nullptr;
 	FilterLineEdit *filter = nullptr;
 	Button *sort_button = nullptr;
@@ -129,8 +129,11 @@ class DocumentOutline : public VBoxContainer {
 	bool members_overview_enabled = false;
 	bool help_overview_enabled = false;
 
+	Control *current_editor = nullptr;
+	bool updating_outline = false;
+
 	void _toggle_sort(bool p_alphabetic_sort);
-	void _item_list_selected(int p_idx);
+	void _tree_selected();
 
 protected:
 	void _notification(int p_what);
@@ -148,8 +151,8 @@ class FindInFiles;
 class TextFile;
 class ShaderCreateDialog;
 
-class ScriptEditor : public PanelContainer {
-	GDCLASS(ScriptEditor, PanelContainer);
+class ScriptEditor : public EditorDock {
+	GDCLASS(ScriptEditor, EditorDock);
 
 	enum MenuOptions {
 		// File.
@@ -236,8 +239,6 @@ class ScriptEditor : public PanelContainer {
 
 	Button *help_search = nullptr;
 	Button *site_search = nullptr;
-	Button *make_floating = nullptr;
-	bool is_floating = false;
 	EditorHelpSearch *help_search_dialog = nullptr;
 
 	friend class DocumentList;
@@ -272,10 +273,6 @@ class ScriptEditor : public PanelContainer {
 	Button *script_back = nullptr;
 	Button *script_forward = nullptr;
 
-	FindInFiles *find_in_files = nullptr;
-
-	WindowWrapper *window_wrapper = nullptr;
-
 #ifdef ANDROID_ENABLED
 	Control *virtual_keyboard_spacer = nullptr;
 	int last_kb_height = -1;
@@ -287,7 +284,6 @@ class ScriptEditor : public PanelContainer {
 
 	static int script_editor_func_count;
 	static CreateScriptEditorFunc script_editor_funcs[SCRIPT_EDITOR_FUNC_MAX];
-
 	Vector<Ref<EditorSyntaxHighlighter>> syntax_highlighters;
 
 	struct ScriptHistory {
@@ -328,6 +324,7 @@ class ScriptEditor : public PanelContainer {
 
 	void _close_tab(int p_idx, bool p_save = true);
 	void _update_find_replace_bar();
+	void _update_margins();
 
 	void _close_current_tab(bool p_save = true);
 	void _close_discard_current_tab(const String &p_str);
@@ -358,6 +355,7 @@ class ScriptEditor : public PanelContainer {
 	bool trim_final_newlines_on_save;
 	bool convert_indent_on_save;
 	bool external_editor_active;
+	bool _should_use_external_editor(const Ref<Script> &p_for_script);
 
 	void _goto_script_line2(int p_line);
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
@@ -399,8 +397,6 @@ class ScriptEditor : public PanelContainer {
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	void _setup_popup_menu(PopupMenu *p_menu, bool p_is_context_menu = true);
-	void _prepare_popup_menu(PopupMenu *p_menu, bool p_is_context_menu = true);
 	void _prepare_file_menu();
 	void _file_menu_closed();
 
@@ -456,15 +452,18 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
+
 public:
 	static ScriptEditor *get_singleton() { return script_editor; }
 	static ScriptEditor *get_bottom_script_editor() { return bottom_script_editor; }
+
+	static Dictionary get_context_data(Control *p_tab_control);
 
 	bool toggle_files_panel();
 	bool is_files_panel_toggled();
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
-	void open_find_in_files_dialog(const String &p_initial_text = "", bool p_replace = false);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
@@ -472,8 +471,8 @@ public:
 	Error close_file(const String &p_file);
 
 	void ensure_select_current();
-
-	bool is_editor_floating();
+	void focus_editor();
+	void focus_script_editor(const Ref<Resource> &p_for_resource);
 
 	void set_handled_resource_types(HashSet<String> p_file_types) { handled_resource_types = p_file_types; }
 
@@ -525,7 +524,7 @@ public:
 
 	static void register_create_script_editor_function(CreateScriptEditorFunc p_func);
 
-	ScriptEditor(const String &p_config_section, const String &p_cache_path, WindowWrapper *p_wrapper = nullptr, EditorDock *p_dock = nullptr);
+	ScriptEditor(const String &p_config_section, const String &p_cache_path);
 	~ScriptEditor();
 };
 
@@ -533,31 +532,26 @@ class ScriptEditorPlugin : public EditorPlugin {
 	GDCLASS(ScriptEditorPlugin, EditorPlugin);
 
 	ScriptEditor *script_editor = nullptr;
-	WindowWrapper *window_wrapper = nullptr;
 
-	String last_editor;
-
-	void _focus_another_editor();
-
-	void _save_last_editor(const String &p_editor);
-	void _window_visibility_changed(bool p_visible);
+	Ref<Shortcut> make_floating_shortcut;
 
 	static inline ScriptEditorPlugin *script_editor_plugin = nullptr;
 
+	bool skip_visible = false;
+
 protected:
-	void _notification(int p_what);
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	static ScriptEditorPlugin *get_singleton() { return script_editor_plugin; }
 
 	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
 
-	virtual String get_plugin_name() const override { return TTRC("Script"); }
+	virtual String get_plugin_name() const override { return "Script"; }
 	virtual bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
-	virtual void selected_notify() override;
 
 	virtual String get_unsaved_status(const String &p_for_scene) const override;
 	virtual void save_external_data() override;
@@ -571,4 +565,5 @@ public:
 	virtual void edited_scene_changed() override { script_editor->edited_scene_changed(); }
 
 	ScriptEditorPlugin();
+	~ScriptEditorPlugin();
 };

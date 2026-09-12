@@ -166,6 +166,29 @@ hb_cairo_pop_transform (hb_paint_funcs_t *pfuncs HB_UNUSED,
   cairo_restore (cr);
 }
 
+static void
+hb_cairo_fill_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
+		     void *paint_data,
+		     hb_codepoint_t glyph,
+		     hb_font_t *font,
+		     hb_bool_t use_foreground,
+		     hb_color_t color,
+		     void *user_data HB_UNUSED)
+{
+  hb_cairo_context_t *c = (hb_cairo_context_t *) paint_data;
+  cairo_t *cr = c->cr;
+
+  cairo_save (cr);
+
+  cairo_new_path (cr);
+  hb_font_draw_glyph (font, glyph, hb_cairo_draw_get_funcs (), cr);
+  cairo_close_path (cr);
+  _hb_cairo_set_source_color (c, use_foreground, color);
+  cairo_fill (cr);
+
+  cairo_restore (cr);
+}
+
 static hb_bool_t
 hb_cairo_paint_color_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
 			    void *paint_data,
@@ -303,23 +326,7 @@ hb_cairo_paint_color (hb_paint_funcs_t *pfuncs HB_UNUSED,
   hb_cairo_context_t *c = (hb_cairo_context_t *) paint_data;
   cairo_t *cr = c->cr;
 
-  if (use_foreground)
-  {
-#ifdef HAVE_CAIRO_USER_SCALED_FONT_GET_FOREGROUND_SOURCE
-    double r, g, b, a;
-    cairo_pattern_t *foreground = cairo_user_scaled_font_get_foreground_source (c->scaled_font);
-    if (cairo_pattern_get_rgba (foreground, &r, &g, &b, &a) == CAIRO_STATUS_SUCCESS)
-      cairo_set_source_rgba (cr, r, g, b, a * hb_color_get_alpha (color) / 255.);
-    else
-#endif
-      cairo_set_source_rgba (cr, 0, 0, 0, hb_color_get_alpha (color) / 255.);
-  }
-  else
-    cairo_set_source_rgba (cr,
-			   hb_color_get_red (color) / 255.,
-			   hb_color_get_green (color) / 255.,
-			   hb_color_get_blue (color) / 255.,
-			   hb_color_get_alpha (color) / 255.);
+  _hb_cairo_set_source_color (c, use_foreground, color);
   cairo_paint (cr);
 }
 
@@ -452,6 +459,7 @@ static struct hb_cairo_paint_funcs_lazy_loader_t : hb_paint_funcs_lazy_loader_t<
 
     hb_paint_funcs_set_push_transform_func (funcs, hb_cairo_push_transform, nullptr, nullptr);
     hb_paint_funcs_set_pop_transform_func (funcs, hb_cairo_pop_transform, nullptr, nullptr);
+    hb_paint_funcs_set_fill_glyph_func (funcs, hb_cairo_fill_glyph, nullptr, nullptr);
     hb_paint_funcs_set_color_glyph_func (funcs, hb_cairo_paint_color_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_glyph_func (funcs, hb_cairo_push_clip_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_rectangle_func (funcs, hb_cairo_push_clip_rectangle, nullptr, nullptr);
@@ -541,8 +549,8 @@ hb_cairo_init_scaled_font (cairo_scaled_font_t  *scaled_font,
       cairo_matrix_t font_matrix;
       cairo_scaled_font_get_scale_matrix (scaled_font, &font_matrix);
       hb_font_set_scale (font,
-			 round (font_matrix.xx * scale_factor),
-			 round (font_matrix.yy * scale_factor));
+			 hb_clamp_to<int32_t> (round (font_matrix.xx * scale_factor)),
+			 hb_clamp_to<int32_t> (round (font_matrix.yy * scale_factor)));
     }
 
     auto *init_func = (hb_cairo_font_init_func_t)
@@ -570,7 +578,7 @@ hb_cairo_init_scaled_font (cairo_scaled_font_t  *scaled_font,
   hb_font_get_h_extents (font, &hb_extents);
 
   extents->ascent  = (double)  hb_extents.ascender  / y_scale;
-  extents->descent = (double) -hb_extents.descender / y_scale;
+  extents->descent = -(double) hb_extents.descender / y_scale;
   extents->height  = extents->ascent + extents->descent;
 
 #ifdef HAVE_CAIRO_USER_FONT_FACE_SET_RENDER_COLOR_GLYPH_FUNC
@@ -675,10 +683,9 @@ hb_cairo_render_color_glyph (cairo_scaled_font_t  *scaled_font,
   c.color_cache = (hb_map_t *) cairo_scaled_font_get_user_data (scaled_font, &color_cache_key);
 
   /* Synthesizing variant: mono glyphs render here too via the
-   * push_clip_glyph + foreground-fill fallback inside
-   * hb_font_paint_glyph.  Callers that want the cheaper
-   * outline path for mono fonts set CAIRO_COLOR_MODE_NO_COLOR
-   * on the font options instead. */
+   * fill_glyph foreground fallback inside hb_font_paint_glyph.
+   * Callers that want the cheaper outline path for mono fonts set
+   * CAIRO_COLOR_MODE_NO_COLOR on the font options instead. */
   hb_font_paint_glyph (font, glyph, hb_cairo_paint_get_funcs (), &c, palette, color);
 
   return CAIRO_STATUS_SUCCESS;
@@ -1007,15 +1014,15 @@ hb_cairo_glyphs_from_buffer (hb_buffer_t *buffer,
 
   double x_scale = x_scale_factor ? 1. / x_scale_factor : 0.;
   double y_scale = y_scale_factor ? 1. / y_scale_factor : 0.;
-  hb_position_t hx = 0, hy = 0;
+  double hx = 0, hy = 0;
   int i;
   for (i = 0; i < (int) *num_glyphs; i++)
   {
     (*glyphs)[i].index = hb_glyph[i].codepoint;
-    (*glyphs)[i].x = x + (+hb_position->x_offset + hx) * x_scale;
-    (*glyphs)[i].y = y + (-hb_position->y_offset + hy) * y_scale;
+    (*glyphs)[i].x = x + ((double) hb_position->x_offset + hx) * x_scale;
+    (*glyphs)[i].y = y + (-(double) hb_position->y_offset + hy) * y_scale;
     hx +=  hb_position->x_advance;
-    hy += -hb_position->y_advance;
+    hy -= hb_position->y_advance;
 
     hb_position++;
   }

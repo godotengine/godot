@@ -291,14 +291,18 @@ void RuntimeNodeSelect::_set_camera_override_enabled(bool p_enabled) {
 	camera_override = p_enabled;
 
 	if (camera_first_override) {
+#ifndef _2D_DISABLED
 		_reset_camera_2d();
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 		_reset_camera_3d();
 #endif // _3D_DISABLED
 
 		camera_first_override = false;
 	} else if (p_enabled) {
+#ifndef _2D_DISABLED
 		_update_view_2d();
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 		Window *root = SceneTree::get_singleton()->get_root();
@@ -1156,7 +1160,9 @@ void RuntimeNodeSelect::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_ev
 	view_2d_offset.x -= scroll.x / view_2d_zoom;
 	view_2d_offset.y -= scroll.y / view_2d_zoom;
 
+#ifndef _2D_DISABLED
 	_update_view_2d();
+#endif // _2D_DISABLED
 }
 
 // A very shallow copy of the same function inside CanvasItemEditor.
@@ -1179,9 +1185,12 @@ void RuntimeNodeSelect::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Re
 		view_2d_offset = view_offset_int + (view_offset_frac * closest_zoom_factor).round() / closest_zoom_factor;
 	}
 
+#ifndef _2D_DISABLED
 	_update_view_2d();
+#endif // _2D_DISABLED
 }
 
+#ifndef _2D_DISABLED
 void RuntimeNodeSelect::_reset_camera_2d() {
 	camera_first_override = true;
 	Window *root = SceneTree::get_singleton()->get_root();
@@ -1212,6 +1221,7 @@ void RuntimeNodeSelect::_update_view_2d() {
 
 	_queue_selection_update();
 }
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 
@@ -1241,11 +1251,11 @@ void RuntimeNodeSelect::_find_3d_items_at_pos(const Point2 &p_pos, Vector<Select
 		ray_params.exclude = excluded;
 		if (ss->intersect_ray(ray_params, result)) {
 			SelectResult res;
-			res.item = Object::cast_to<Node>(result.collider);
+			res.item = result.collider_id.is_valid() ? ObjectDB::get_instance<Node>(result.collider_id) : nullptr;
 			res.order = -pos.distance_to(result.position);
 
 			// Fetch collision shapes.
-			CollisionObject3D *collision = Object::cast_to<CollisionObject3D>(result.collider);
+			CollisionObject3D *collision = result.collider_id.is_valid() ? ObjectDB::get_instance<CollisionObject3D>(result.collider_id) : nullptr;
 			if (collision) {
 				List<uint32_t> owners;
 				collision->get_shape_owners(&owners);
@@ -1364,16 +1374,15 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 	const int num_hits = ss->intersect_shape(shape_params, results, 32);
 	for (int i = 0; i < num_hits; i++) {
 		const PS3DT::ShapeResult &result = results[i];
-		if (!result.collider) {
+		SelectResult res;
+		res.item = result.collider_id.is_valid() ? ObjectDB::get_instance<Node>(result.collider_id) : nullptr;
+		if (!res.item) {
 			continue;
 		}
-
-		SelectResult res;
-		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
 
 		// Fetch collision shapes.
-		CollisionObject3D *collision = Object::cast_to<CollisionObject3D>(result.collider);
+		CollisionObject3D *collision = result.collider_id.is_valid() ? ObjectDB::get_instance<CollisionObject3D>(result.collider_id) : nullptr;
 		if (collision) {
 			List<uint32_t> owners;
 			collision->get_shape_owners(&owners);

@@ -22,6 +22,8 @@ USE_LIGHTMAP = false
 USE_SH_LIGHTMAP = false
 USE_LIGHTMAP_CAPTURE = false
 USE_MULTIVIEW = false
+USE_DECALS = false
+USE_DECAL_MIPMAPS = false
 RENDER_SHADOWS = false
 RENDER_SHADOWS_LINEAR = false
 SHADOW_MODE_PCF_5 = false
@@ -40,6 +42,7 @@ RENDER_MATERIAL = false
 SECOND_REFLECTION_PROBE = false
 LIGHTMAP_BICUBIC_FILTER = false
 RENDER_MOTION_VECTORS = false
+USE_LIGHTMAP_SPECULAR = false
 
 
 #[vertex]
@@ -1037,6 +1040,7 @@ void main() {
 9-reflection probe 2
 10-area light LUT 1
 11-area light LUT 2
+12-decal texture atlas
 
 */
 
@@ -1149,6 +1153,38 @@ uniform samplerCube refprobe2_texture; // texunit:-9
 #endif // SECOND_REFLECTION_PROBE
 
 #endif // DISABLE_REFLECTION_PROBE
+
+#ifdef USE_DECALS
+uniform sampler2D decal_atlas; // texunit:-12
+
+uniform uint decal_count;
+uniform uint decals0;
+uniform uint decals1;
+
+struct DecalData {
+	mat4 xform; //to decal transform
+	vec3 inv_extents;
+	float albedo_mix;
+	vec4 albedo_rect;
+	vec4 normal_rect;
+	vec4 orm_rect;
+	vec4 emission_rect;
+	vec4 modulate;
+	float emission_energy;
+	uint mask;
+	float upper_fade;
+	float lower_fade;
+	mat3x4 normal_xform;
+	vec3 normal;
+	float normal_fade;
+};
+
+layout(std140) uniform DecalDataBlock { // ubo:15
+	DecalData data[MAX_DECALS];
+}
+decal_data_block;
+
+#endif // USE_DECALS
 
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
@@ -1444,6 +1480,10 @@ uniform highp vec4 lightmap_uv_scale;
 uniform float lightmap_exposure_normalization;
 uniform uint lightmap_shadowmask_mode;
 
+#ifdef USE_LIGHTMAP_SPECULAR
+uniform float lightmap_specular_intensity;
+#endif
+
 #define SHADOWMASK_MODE_NONE uint(0)
 #define SHADOWMASK_MODE_REPLACE uint(1)
 #define SHADOWMASK_MODE_OVERLAY uint(2)
@@ -1519,7 +1559,7 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 #ifndef MODE_RENDER_DEPTH
 
 #ifndef USE_VERTEX_LIGHTING
-#if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || defined(USE_ADDITIVE_LIGHTING)
+#if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || defined(USE_ADDITIVE_LIGHTING) || defined(USE_SH_LIGHTMAP)
 
 float D_GGX(float cos_theta_m, float alpha) {
 	float a = cos_theta_m * alpha;
@@ -1584,8 +1624,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	vec3 light = L;
 	vec3 view = V;
 	bool is_area = false;
-	float area_diffuse = 1.0;
-	float area_specular = 1.0;
+	vec3 area_diffuse = vec3(1.0);
+	vec3 area_specular = vec3(1.0);
 	vec3 area_diffuse_tex_color = vec3(1.0);
 	vec3 area_specular_tex_color = vec3(1.0);
 
@@ -2398,10 +2438,89 @@ void main() {
 	// Convert colors to linear
 	albedo = srgb_to_linear(albedo);
 	emission = srgb_to_linear(emission);
+
+#ifdef USE_DECALS
+
+	vec3 vertex_ddx = dFdx(vertex);
+	vec3 vertex_ddy = dFdy(vertex);
+
+	for (uint i = 0u; i < decal_count; i++) {
+		uint decal_index = (i > 3u) ? ((decals1 >> ((i - 4u) * 8u)) & uint(0xFF)) : ((decals0 >> (i * 8u)) & uint(0xFF));
+		if (decal_index == uint(0xFF)) {
+			break;
+		}
+
+		vec3 uv_local = (decal_data_block.data[decal_index].xform * vec4(vertex, 1.0)).xyz;
+		if (any(lessThan(uv_local, vec3(0.0, -1.0, 0.0))) || any(greaterThan(uv_local, vec3(1.0)))) {
+			continue; //out of decal
+		}
+
+		float fade = pow(1.0 - (uv_local.y > 0.0 ? uv_local.y : -uv_local.y), uv_local.y > 0.0 ? decal_data_block.data[decal_index].upper_fade : decal_data_block.data[decal_index].lower_fade);
+
+		if (decal_data_block.data[decal_index].normal_fade > 0.0) {
+			fade *= smoothstep(decal_data_block.data[decal_index].normal_fade, 1.0, dot(vec3(geo_normal), decal_data_block.data[decal_index].normal) * 0.5 + 0.5);
+		}
+
+		//we need ddx/ddy for mipmaps, so simulate them
+		vec2 ddx = (decal_data_block.data[decal_index].xform * vec4(vertex_ddx, 0.0)).xz;
+		vec2 ddy = (decal_data_block.data[decal_index].xform * vec4(vertex_ddy, 0.0)).xz;
+
+		if (decal_data_block.data[decal_index].albedo_rect != vec4(0.0)) {
+			//has albedo
+			vec4 decal_albedo;
+#ifdef USE_DECAL_MIPMAPS
+			decal_albedo = textureGrad(decal_atlas, uv_local.xz * decal_data_block.data[decal_index].albedo_rect.zw + decal_data_block.data[decal_index].albedo_rect.xy, ddx * decal_data_block.data[decal_index].albedo_rect.zw, ddy * decal_data_block.data[decal_index].albedo_rect.zw);
+#else
+			decal_albedo = textureLod(decal_atlas, uv_local.xz * decal_data_block.data[decal_index].albedo_rect.zw + decal_data_block.data[decal_index].albedo_rect.xy, 0.0);
+#endif // USE_DECAL_MIPMAPS
+			decal_albedo.rgb = srgb_to_linear(decal_albedo.rgb) * decal_data_block.data[decal_index].modulate.rgb;
+			decal_albedo.a *= fade * decal_data_block.data[decal_index].modulate.a;
+			albedo = vec3(mix(vec3(albedo), decal_albedo.rgb, decal_albedo.a * decal_data_block.data[decal_index].albedo_mix));
+
+			if (decal_data_block.data[decal_index].normal_rect != vec4(0.0)) {
+				vec3 decal_normal;
+#ifdef USE_DECAL_MIPMAPS
+				decal_normal = textureGrad(decal_atlas, uv_local.xz * decal_data_block.data[decal_index].normal_rect.zw + decal_data_block.data[decal_index].normal_rect.xy, ddx * decal_data_block.data[decal_index].normal_rect.zw, ddy * decal_data_block.data[decal_index].normal_rect.zw).xyz;
+#else
+				decal_normal = textureLod(decal_atlas, uv_local.xz * decal_data_block.data[decal_index].normal_rect.zw + decal_data_block.data[decal_index].normal_rect.xy, 0.0).xyz;
+#endif // USE_DECAL_MIPMAPS
+				decal_normal.xy = decal_normal.xy * vec2(2.0, -2.0) - vec2(1.0, -1.0); //users prefer flipped y normal maps in most authoring software
+				decal_normal.z = sqrt(max(0.0, 1.0 - dot(decal_normal.xy, decal_normal.xy)));
+				//convert to view space, use xzy because y is up
+				decal_normal = (mat3(decal_data_block.data[decal_index].normal_xform) * decal_normal.xzy).xyz;
+
+				normal = vec3(normalize(mix(vec3(normal), decal_normal, decal_albedo.a)));
+			}
+
+			if (decal_data_block.data[decal_index].orm_rect != vec4(0.0)) {
+				vec3 decal_orm;
+#ifdef USE_DECAL_MIPMAPS
+				decal_orm = textureGrad(decal_atlas, uv_local.xz * decal_data_block.data[decal_index].orm_rect.zw + decal_data_block.data[decal_index].orm_rect.xy, ddx * decal_data_block.data[decal_index].orm_rect.zw, ddy * decal_data_block.data[decal_index].orm_rect.zw).xyz;
+#else
+				decal_orm = textureLod(decal_atlas, uv_local.xz * decal_data_block.data[decal_index].orm_rect.zw + decal_data_block.data[decal_index].orm_rect.xy, 0.0).xyz;
+#endif // USE_DECAL_MIPMAPS
+				ao = mix(float(ao), decal_orm.r, decal_albedo.a);
+				roughness = mix(float(roughness), decal_orm.g, decal_albedo.a);
+				metallic = mix(float(metallic), decal_orm.b, decal_albedo.a);
+			}
+		}
+
+		if (decal_data_block.data[decal_index].emission_rect != vec4(0.0)) {
+			//emission is additive, so its independent from albedo
+#ifdef USE_DECAL_MIPMAPS
+			emission += srgb_to_linear(textureGrad(decal_atlas, uv_local.xz * decal_data_block.data[decal_index].emission_rect.zw + decal_data_block.data[decal_index].emission_rect.xy, ddx * decal_data_block.data[decal_index].emission_rect.zw, ddy * decal_data_block.data[decal_index].emission_rect.zw).xyz) * decal_data_block.data[decal_index].modulate.rgb * decal_data_block.data[decal_index].emission_energy * fade;
+#else
+			emission += srgb_to_linear(textureLod(decal_atlas, uv_local.xz * decal_data_block.data[decal_index].emission_rect.zw + decal_data_block.data[decal_index].emission_rect.xy, 0.0).xyz) * decal_data_block.data[decal_index].modulate.rgb * decal_data_block.data[decal_index].emission_energy * fade;
+#endif // USE_DECAL_MIPMAPS
+		}
+	}
+#endif //!USE_DECALS
+
 	// TODO Backlight and transmittance when used
 #ifndef MODE_UNSHADED
 	vec3 f0 = F0(metallic, specular, albedo);
 	vec3 specular_light = vec3(0.0, 0.0, 0.0);
+	vec3 lightmap_specular_light = vec3(0.0);
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 
@@ -2544,10 +2663,64 @@ void main() {
 
 		vec3 n = normalize(lightmap_normal_xform * indirect_normal);
 
-		ambient_light += lm_light_l0 * lightmap_exposure_normalization;
-		ambient_light += lm_light_l1n1 * n.y * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
-		ambient_light += lm_light_l1_0 * n.z * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
-		ambient_light += lm_light_l1p1 * n.x * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		vec3 sh_light = lm_light_l0;
+		sh_light += lm_light_l0 * lm_light_l1n1 * n.y * 4.0;
+		sh_light += lm_light_l0 * lm_light_l1_0 * n.z * 4.0;
+		sh_light += lm_light_l0 * lm_light_l1p1 * n.x * 4.0;
+		sh_light *= lightmap_exposure_normalization;
+
+		ambient_light += sh_light;
+
+#ifdef USE_LIGHTMAP_SPECULAR
+		// Fake specular light to create some direct light specular lobes for directional lightmaps.
+		// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
+		const vec3 luminance_weights = vec3(0.2126, 0.7152, 0.0722);
+		vec3 l1 = vec3(
+				dot(lm_light_l0 * lm_light_l1p1, luminance_weights),
+				dot(lm_light_l0 * lm_light_l1n1, luminance_weights),
+				dot(lm_light_l0 * lm_light_l1_0, luminance_weights));
+		float l1_len = length(l1);
+		float l0_luminance = dot(lm_light_l0, luminance_weights);
+
+		if (l1_len > 1e-5 && l0_luminance > 1e-5) {
+			vec3 lightmap_direction = l1 / l1_len;
+			vec3 L_view = normalize(lightmap_direction * lightmap_normal_xform);
+			float NdotL = max(dot(normal, L_view), 0.0);
+
+			if (NdotL > 1e-4) {
+				vec3 specular_lightmap_normal = normalize(lightmap_normal_xform * normal);
+				vec3 specular_irradiance = lm_light_l0;
+				specular_irradiance += lm_light_l0 * lm_light_l1n1 * specular_lightmap_normal.y * 4.0;
+				specular_irradiance += lm_light_l0 * lm_light_l1_0 * specular_lightmap_normal.z * 4.0;
+				specular_irradiance += lm_light_l0 * lm_light_l1p1 * specular_lightmap_normal.x * 4.0;
+				specular_irradiance *= lightmap_exposure_normalization;
+				vec3 specular_light_color = max(specular_irradiance, vec3(0.0)) / max(NdotL, 0.1);
+
+				vec3 f0 = F0(metallic, specular, albedo);
+
+				vec3 diffuse_light_discarded = diffuse_light;
+				float directionality = clamp(l1_len / l0_luminance, 0.0, 1.0);
+				float specular_intensity = directionality * lightmap_specular_intensity * 2.0;
+
+				light_compute(normal, L_view, view, 0.0, specular_light_color, true, 1.0, f0, roughness, metallic, specular_intensity, albedo, alpha, screen_uv,
+#ifdef LIGHT_BACKLIGHT_USED
+						backlight,
+#endif
+#ifdef LIGHT_RIM_USED
+						rim, rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+						clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif
+#ifdef LIGHT_ANISOTROPY_USED
+						binormal, tangent, anisotropy,
+#endif
+						diffuse_light_discarded,
+						lightmap_specular_light);
+			}
+		}
+#endif // USE_LIGHTMAP_SPECULAR
+
 #else
 #ifdef LIGHTMAP_BICUBIC_FILTER
 		ambient_light += textureArray_bicubic(lightmap_textures, uvw, lightmap_texture_size).rgb * lightmap_exposure_normalization;
@@ -2606,7 +2779,7 @@ void main() {
 #endif
 	}
 #endif // !AMBIENT_LIGHT_DISABLED
-
+	specular_light += lightmap_specular_light;
 #ifdef USE_VERTEX_LIGHTING
 	specular_light += specular_light_interp * f0;
 	diffuse_light += diffuse_light_interp;

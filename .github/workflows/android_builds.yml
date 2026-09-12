@@ -12,7 +12,6 @@ env:
   SCONS_FLAGS: >-
     dev_mode=yes
     module_text_server_fb_enabled=yes
-    swappy=yes
 
 jobs:
   build-android:
@@ -65,7 +64,15 @@ jobs:
         uses: ./.github/actions/godot-deps
 
       - name: Download Swappy
-        run: python ./misc/scripts/install_swappy_android.py
+        shell: sh
+        id: swappy_sdk
+        run: |
+          if python ./misc/scripts/install_swappy_android.py; then
+            echo "SWAPPY_ENABLED=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Swappy installation failed, building without Swappy support."
+            echo "SWAPPY_ENABLED=no" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Download Perfetto
         shell: sh
@@ -81,7 +88,7 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} profiler=${{ steps.perfetto_sdk.outputs.PROFILER_ENABLED }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} profiler=${{ steps.perfetto_sdk.outputs.PROFILER_ENABLED }} swappy=${{ steps.swappy_sdk.outputs.SWAPPY_ENABLED }}
           platform: android
           target: ${{ matrix.target }}
 

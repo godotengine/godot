@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "editor/gui/code_editor.h"
 #include "editor/script/script_editor_base.h"
 #include "editor/script/script_editor_plugin.h"
@@ -63,9 +64,9 @@ class ScriptTextEditor : public CodeEditorBase {
 	Label *drag_info_label = nullptr;
 
 	Vector<String> functions;
-	List<ScriptLanguage::Warning> warnings;
-	List<ScriptLanguage::ScriptError> errors;
-	HashMap<String, List<ScriptLanguage::ScriptError>> depended_errors;
+	List<EditorLanguage::Warning> warnings;
+	List<EditorLanguage::ScriptError> errors;
+	HashMap<String, List<EditorLanguage::ScriptError>> depended_errors;
 	HashSet<int> safe_lines;
 
 	List<Connection> missing_connections;
@@ -138,6 +139,16 @@ class ScriptTextEditor : public CodeEditorBase {
 	String _get_dropped_resource_as_exported_member(const Ref<Resource> &p_resource, const Vector<ObjectID> &p_script_instance_obj_ids);
 	void _assign_dragged_export_variables();
 
+	Timer *hover_tooltip_timer = nullptr;
+	Point2i hover_tooltip_pos;
+	void _on_hover_tooltip_timer_timeout();
+	void _apply_project_settings();
+	static bool _is_line_col_in_range(int p_line, int p_column, int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
+		// TODO: Duplicate of logic from TextEdit::_is_line_col_in_range, minus the include_edges logic.
+		// At some point, this function should probably be unified.
+		return (p_line >= p_from_line && p_line <= p_to_line && (p_line > p_from_line || p_column >= p_from_column) && (p_line < p_to_line || p_column <= p_to_column));
+	}
+
 	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
 
 protected:
@@ -148,7 +159,7 @@ protected:
 	void _update_warnings();
 	void _update_errors();
 
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) override;
+	virtual void _code_complete_script(const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) override;
 
 	void _set_theme_for_script();
 	void _show_errors_panel(bool p_show);
@@ -186,6 +197,7 @@ protected:
 	void _goto_line(int p_line);
 
 	void _make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, const Vector2 &p_pos);
+	Dictionary _get_context_data() const;
 
 	virtual void _text_edit_gui_input(const Ref<InputEvent> &p_ev) override;
 	virtual bool _edit_option(int p_op) override;

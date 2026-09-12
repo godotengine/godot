@@ -42,7 +42,7 @@
 			results.push_back(result.get_string())
 		print(results) # Prints ["One", "Two", "Three"]
 		[/codeblock]
-		[b]Note:[/b] Godot's regex implementation is based on the [url=https://www.pcre.org/]PCRE2[/url] library. You can view the full pattern reference [url=https://www.pcre.org/current/doc/html/pcre2pattern.html]here[/url].
+		[b]Note:[/b] Godot's regex implementation is based on the [url=https://pcre2project.github.io/pcre2/]PCRE2[/url] library. You can view the full pattern reference [url=https://pcre2project.github.io/pcre2/doc/pcre2pattern/]here[/url].
 		[b]Tip:[/b] You can use [url=https://regexr.com/]Regexr[/url] to test regular expressions online.
 	</description>
 	<tutorials>

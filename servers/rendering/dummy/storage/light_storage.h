@@ -84,6 +84,8 @@ public:
 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override { return 0xFFFFFFFF; }
 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) override {}
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override {}
+	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) override {}
+	virtual bool light_get_allow_contact_shadows(RID p_light) const override { return false; }
 
 	virtual void light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) override {}
 
@@ -205,6 +207,8 @@ public:
 	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override {}
 	virtual RSE::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override { return RSE::SHADOWMASK_MODE_NONE; }
 	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskMode p_mode) override {}
+	virtual float lightmap_get_specular_intensity(RID p_lightmap) override { return 0.0f; }
+	virtual void lightmap_set_specular_intensity(RID p_lightmap, float p_intensity) override {}
 
 	/* LIGHTMAP INSTANCE */
 

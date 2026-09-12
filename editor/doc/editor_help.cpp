@@ -48,7 +48,6 @@
 #include "core/version.h"
 #include "editor/doc/doc_data_compressed.gen.h"
 #include "editor/docks/filesystem_dock.h"
-#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -765,7 +764,7 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 		TTRC("Constructors"),
 		TTRC("Operators"),
 	};
-	const String title = TTRGET(titles_by_type[p_method_type]);
+	const String title = TTR(titles_by_type[p_method_type]);
 
 	section_line.push_back(Pair<String, int>(title, class_desc->get_paragraph_count() - 2));
 	_push_title_font();
@@ -839,7 +838,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 		TTRC("Constructor Descriptions"),
 		TTRC("Operator Descriptions"),
 	};
-	const String title = TTRGET(titles_by_type[p_method_type]);
+	const String title = TTR(titles_by_type[p_method_type]);
 
 	section_line.push_back(Pair<String, int>(title, class_desc->get_paragraph_count() - 2));
 	_push_title_font();
@@ -891,7 +890,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 					TTRC("This constructor may be changed or removed in future versions."),
 					TTRC("This operator may be changed or removed in future versions."),
 				};
-				DEPRECATED_DOC_MSG(HANDLE_DOC(method.deprecated_message), TTRGET(messages_by_type[p_method_type]));
+				DEPRECATED_DOC_MSG(HANDLE_DOC(method.deprecated_message), TTR(messages_by_type[p_method_type]));
 			}
 
 			if (method.is_experimental) {
@@ -905,7 +904,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 					TTRC("This constructor may be changed or removed in future versions."),
 					TTRC("This operator may be changed or removed in future versions."),
 				};
-				EXPERIMENTAL_DOC_MSG(HANDLE_DOC(method.experimental_message), TTRGET(messages_by_type[p_method_type]));
+				EXPERIMENTAL_DOC_MSG(HANDLE_DOC(method.experimental_message), TTR(messages_by_type[p_method_type]));
 			}
 
 			if (!method.errors_returned.is_empty()) {
@@ -960,14 +959,14 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 						TTRC("There is currently no description for this constructor."),
 						TTRC("There is currently no description for this operator."),
 					};
-					message = TTRGET(messages_by_type[p_method_type]);
+					message = TTR(messages_by_type[p_method_type]);
 				} else {
 					static const char *messages_by_type[METHOD_TYPE_MAX] = {
 						TTRC("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
 						TTRC("There is currently no description for this constructor. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
 						TTRC("There is currently no description for this operator. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
 					};
-					message = TTRGET(messages_by_type[p_method_type]).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
+					message = TTR(messages_by_type[p_method_type]).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
 				}
 
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));
@@ -2355,7 +2354,7 @@ void EditorHelp::_update_doc() {
 void EditorHelp::_request_help(const String &p_string) {
 	Error err = _goto_desc(p_string, false);
 	if (err == OK) {
-		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+		ScriptEditor::get_singleton()->focus_editor();
 	}
 }
 
@@ -4360,7 +4359,7 @@ void EditorHelpBit::_go_to_url(const String &p_what) {
 
 void EditorHelpBit::_go_to_help(const String &p_what) {
 	if (ScriptEditor::get_singleton()) {
-		EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+		ScriptEditor::get_singleton()->focus_editor();
 		ScriptEditor::get_singleton()->goto_help(p_what);
 	} else {
 		_go_to_url(p_what);
@@ -5081,7 +5080,8 @@ Control *EditorHelpBitTooltip::make_tooltip(
 		const String &p_symbol,
 		const String &p_prologue,
 		bool p_use_class_prefix,
-		bool p_shortcut) {
+		bool p_shortcut,
+		const String &p_diagnostics) {
 	ERR_FAIL_NULL_V(p_target, _make_invisible_control());
 
 	// Show the custom tooltip only if it is not already visible.
@@ -5091,14 +5091,26 @@ Control *EditorHelpBitTooltip::make_tooltip(
 		return _make_invisible_control();
 	}
 
-	EditorHelpBit *help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, p_use_class_prefix, false, true));
-
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target, p_shortcut));
-	help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));
-	tooltip->add_child(help_bit);
+
+	bool has_diagnostics = !p_diagnostics.is_empty();
+	bool has_doc_tooltip = !p_symbol.is_empty() || !p_prologue.is_empty();
+
+	if (has_diagnostics) {
+		tooltip->diagnostics_label->set_text(p_diagnostics);
+	} else {
+		tooltip->diagnostics_label->hide();
+	}
+
+	if (has_doc_tooltip) {
+		EditorHelpBit *help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, p_use_class_prefix, false, true));
+		help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));
+		tooltip->vbox->add_child(help_bit);
+		help_bit->update_content_height();
+	}
+
 	p_target->add_child(tooltip);
 
-	help_bit->update_content_height();
 	if (tooltip->is_shortcut_pressed()) {
 		tooltip->_shortcut_pressed(p_target);
 	} else {
@@ -5159,6 +5171,19 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target, bool p_shortcut) {
 	_is_shortcut_pressed = p_shortcut;
 
 	set_theme_type_variation("TooltipPanel");
+
+	diagnostics_label = memnew(RichTextLabel);
+	diagnostics_label->set_theme_type_variation("EditorHelpBitTooltipTitle");
+	diagnostics_label->set_custom_minimum_size(Size2(640 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
+	diagnostics_label->set_fit_content(true);
+	diagnostics_label->set_selection_enabled(true);
+	diagnostics_label->set_context_menu_enabled(false);
+	diagnostics_label->set_use_bbcode(true);
+
+	vbox = memnew(VBoxContainer);
+	vbox->add_child(diagnostics_label);
+
+	add_child(vbox);
 
 	timer = memnew(Timer);
 	timer->set_wait_time(0.25);

@@ -403,6 +403,7 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 		undo_redo->add_do_method(node_2d, "set_global_position", pos);
 		undo_redo->add_undo_method(node, "remove_child", node_2d);
 		undo_redo->commit_action(false);
+		emit_signal(SNAME("scene_painted"), node_2d);
 	}
 
 	CanvasItemEditor::get_singleton()->update_viewport();
@@ -763,6 +764,7 @@ void ScenePaint2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_scene_provider", "control"), &ScenePaint2DEditor::unregister_scene_provider);
 	ClassDB::bind_method(D_METHOD("set_painted_scene", "scene"), &ScenePaint2DEditor::set_painted_scene);
 	ClassDB::bind_method(D_METHOD("get_painted_scene"), &ScenePaint2DEditor::get_painted_scene);
+	ADD_SIGNAL(MethodInfo("scene_painted", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node2D::get_class_static())));
 }
 
 void ScenePaint2DEditor::_notification(int p_what) {
@@ -928,7 +930,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	scene_picker_button->set_toggle_mode(true);
 	scene_picker_button->set_accessibility_name(TTRC("Scene Picker"));
 	scene_picker_button->set_theme_type_variation(SceneStringName(FlatButton));
-	scene_picker_button->set_tooltip_text(TTRC("When enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding Ctrl enables picking from the 2D editor's viewport."));
+	scene_picker_button->set_tooltip_text(vformat(TTRC("When enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding %s enables picking from the 2D editor's viewport."), keycode_get_string(Key::CMD_OR_CTRL)));
 	scene_picker_button->connect(SceneStringName(toggled), callable_mp(this, &ScenePaint2DEditor::_scene_picker_toggled));
 	scene_picker_button->set_shortcut(ED_SHORTCUT("scene_painter/scene_picker", TTRC("Scene Picker"), Key::I));
 	scene_picker_button->set_shortcut_context(CanvasItemEditor::get_singleton());
@@ -972,7 +974,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_SNAP_GRID_CELL_CENTER);
 	advanced_settings_popup->add_separator();
 	advanced_settings_popup->add_check_item(TTRC("Allow Overlapping"), MENU_ITEM_ALLOW_OVERLAPPING);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Allow painting over existing painted scenes.\nHold Shift while painting to temporarily toggle this option."));
+	advanced_settings_popup->set_item_tooltip(-1, vformat(TTRC("Allow painting over existing painted scenes.\nHold %s while painting to temporarily toggle this option."), keycode_get_string(Key::SHIFT)));
 	advanced_settings_popup->set_item_disabled(-1, true);
 
 	advanced_settings_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ScenePaint2DEditor::_advanced_settings_id_pressed));

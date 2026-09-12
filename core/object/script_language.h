@@ -188,13 +188,13 @@ public:
 	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const = 0;
 
 	virtual void update_exports() {} //editor tool
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const = 0;
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
+	virtual void get_script_method_list(List<MethodInfo> *r_list) const = 0;
+	virtual void get_script_property_list(List<PropertyInfo> *r_list) const = 0;
 
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
-	virtual void get_constants(HashMap<StringName, Variant> *p_constants) {}
-	virtual void get_members(HashSet<StringName> *p_members) {}
+	virtual void get_constants(HashMap<StringName, Variant> *r_constants) {}
+	virtual void get_members(HashSet<StringName> *r_members) {}
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
@@ -230,30 +230,6 @@ public:
 	virtual EditorLanguage *get_editor_language() = 0;
 #endif // TOOLS_ENABLED
 
-	struct Warning {
-		/// One-based.
-		int start_line = 0;
-		int start_column = -1;
-
-		/// One-based.
-		int end_line = 0;
-		int end_column = -1;
-
-		int code;
-		String string_code;
-		String message;
-	};
-
-	struct ScriptError {
-		String path;
-		/// All one-based.
-		int start_line = -1;
-		int start_column = -1;
-		int end_line = -1;
-		int end_column = -1;
-		String message;
-	};
-
 	enum TemplateLocation {
 		TEMPLATE_BUILT_IN,
 		TEMPLATE_EDITOR,
@@ -281,7 +257,6 @@ public:
 		}
 	};
 
-	void get_core_type_words(List<String> *p_core_type_words) const;
 	virtual Vector<String> get_reserved_words() const = 0;
 	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
 	virtual Vector<String> get_comment_delimiters() const = 0;
@@ -290,7 +265,6 @@ public:
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptError> *r_errors = nullptr, List<Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const = 0;
 	virtual String validate_path(const String &p_path) const { return ""; }
 	virtual bool supports_builtin_mode() const = 0;
 	virtual bool supports_documentation() const { return false; }
@@ -301,79 +275,6 @@ public:
 	virtual bool overrides_external_editor() { return false; }
 	virtual ScriptNameCasing preferred_file_name_casing() const { return SCRIPT_NAME_CASING_SNAKE_CASE; }
 
-	// Keep enums in sync with:
-	// scene/gui/code_edit.h - CodeEdit::CodeCompletionKind
-	enum CodeCompletionKind {
-		CODE_COMPLETION_KIND_CLASS,
-		CODE_COMPLETION_KIND_FUNCTION,
-		CODE_COMPLETION_KIND_SIGNAL,
-		CODE_COMPLETION_KIND_VARIABLE,
-		CODE_COMPLETION_KIND_MEMBER,
-		CODE_COMPLETION_KIND_ENUM,
-		CODE_COMPLETION_KIND_CONSTANT,
-		CODE_COMPLETION_KIND_NODE_PATH,
-		CODE_COMPLETION_KIND_FILE_PATH,
-		CODE_COMPLETION_KIND_PLAIN_TEXT,
-		CODE_COMPLETION_KIND_KEYWORD,
-		CODE_COMPLETION_KIND_MAX
-	};
-
-	// scene/gui/code_edit.h - CodeEdit::CodeCompletionLocation
-	enum CodeCompletionLocation {
-		LOCATION_LOCAL = 0,
-		LOCATION_PARENT_MASK = 1 << 8,
-		LOCATION_OTHER_USER_CODE = 1 << 9,
-		LOCATION_OTHER = 1 << 10,
-	};
-
-	struct TextEdit {
-		String new_text;
-		int start_line = -1;
-		int start_column;
-		int end_line;
-		int end_column;
-
-		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
-	};
-
-	struct CodeCompletionOption {
-		CodeCompletionKind kind = CODE_COMPLETION_KIND_PLAIN_TEXT;
-		String display;
-		String insert_text;
-		/**
-		 * Optional server side calculated insertion.
-		 *
-		 * In contrast to `insert_text`, the editor must not do matching of preexisting text on `text_edit`.
-		 * Note: This is used by the language server, there is no support in the builtin editor for this property at the moment.
-		 */
-		TextEdit text_edit;
-		Color font_color;
-		Ref<Resource> icon;
-		Variant default_value;
-		Vector<Pair<int, int>> matches;
-		bool matches_dirty = true; // Must be set when mutating `matches`, so that sorting characteristics are recalculated.
-		int location = LOCATION_OTHER;
-		String theme_color_name;
-
-		CodeCompletionOption() {}
-
-		CodeCompletionOption(const String &p_text, CodeCompletionKind p_kind, int p_location = LOCATION_OTHER, const String &p_theme_color_name = "") {
-			display = p_text;
-			insert_text = p_text;
-			kind = p_kind;
-			location = p_location;
-			theme_color_name = p_theme_color_name;
-		}
-
-		TypedArray<int> get_option_characteristics(const String &p_base);
-		void clear_characteristics();
-		TypedArray<int> get_option_cached_characteristics() const;
-
-	private:
-		TypedArray<int> charac;
-	};
-
-	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const = 0;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}
 	virtual void remove_named_global_constant(const StringName &p_name) {}
@@ -396,10 +297,10 @@ public:
 	virtual int debug_get_stack_level_line(int p_level) const = 0;
 	virtual String debug_get_stack_level_function(int p_level) const = 0;
 	virtual String debug_get_stack_level_source(int p_level) const = 0;
-	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
-	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
+	virtual void debug_get_stack_level_locals(int p_level, List<String> *r_locals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
+	virtual void debug_get_stack_level_members(int p_level, List<String> *r_members, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) { return nullptr; }
-	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
+	virtual void debug_get_globals(List<String> *r_globals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) = 0;
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() { return Vector<StackInfo>(); }
@@ -409,10 +310,9 @@ public:
 	virtual void reload_tool_script(const Ref<Script> &p_script) = 0;
 	/* LOADER FUNCTIONS */
 
-	virtual void get_recognized_extensions(List<String> *p_extensions) const = 0;
-	virtual void get_public_functions(List<MethodInfo> *p_functions) const = 0;
-	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const = 0;
-	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const = 0;
+	virtual void get_public_functions(List<MethodInfo> *r_functions) const = 0;
+	virtual void get_public_constants(List<Pair<String, Variant>> *r_constants) const = 0;
+	virtual void get_public_annotations(List<MethodInfo> *r_annotations) const = 0;
 
 	struct ProfilingInfo {
 		StringName signature;
@@ -426,8 +326,8 @@ public:
 	virtual void profiling_stop() = 0;
 	virtual void profiling_set_save_native_calls(bool p_enable) = 0;
 
-	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
-	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
+	virtual int profiling_get_accumulated_data(ProfilingInfo *r_info_arr, int p_info_max) = 0;
+	virtual int profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_info_max) = 0;
 
 	virtual void frame();
 
@@ -452,14 +352,14 @@ class PlaceHolderScriptInstance : public ScriptInstance {
 public:
 	virtual bool set(const StringName &p_name, const Variant &p_value) override;
 	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
-	virtual void get_property_list(List<PropertyInfo> *p_properties) const override;
+	virtual void get_property_list(List<PropertyInfo> *r_properties) const override;
 	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
-	virtual void validate_property(PropertyInfo &p_property) const override {}
+	virtual void validate_property(PropertyInfo &p_property) const override {} // TODO: Should this be `r_property`?
 
 	virtual bool property_can_revert(const StringName &p_name) const override { return false; }
 	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override { return false; }
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const override;
+	virtual void get_method_list(List<MethodInfo> *r_list) const override;
 	virtual bool has_method(const StringName &p_method) const override;
 
 	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override {
@@ -478,6 +378,7 @@ public:
 
 	Object *get_owner() override { return owner; }
 
+	// TODO: Should these be `r_properties` and `r_values`?
 	void update(const List<PropertyInfo> &p_properties, const HashMap<StringName, Variant> &p_values); //likely changed in editor
 
 	virtual bool is_placeholder() const override { return true; }

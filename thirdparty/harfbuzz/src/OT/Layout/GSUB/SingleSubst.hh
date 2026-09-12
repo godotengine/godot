@@ -30,11 +30,11 @@ struct SingleSubst
     if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
     TRACE_DISPATCH (this, u.format.v);
     switch (u.format.v) {
-    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
-    case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 1: hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2: hb_barrier (); return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
 #ifndef HB_NO_BEYOND_64K
-    case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
-    case 4: return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
+    case 3: hb_barrier (); return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
+    case 4: hb_barrier (); return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
 #endif
     default:return_trace (c->default_return_value ());
     }
@@ -73,17 +73,17 @@ struct SingleSubst
 
     u.format.v = format;
     switch (u.format.v) {
-    case 1: return_trace (u.format1.serialize (c,
+    case 1: hb_barrier (); return_trace (u.format1.serialize (c,
                                                + glyphs
                                                | hb_map_retains_sorting (hb_first),
                                                delta));
-    case 2: return_trace (u.format2.serialize (c, glyphs));
+    case 2: hb_barrier (); return_trace (u.format2.serialize (c, glyphs));
 #ifndef HB_NO_BEYOND_64K
-    case 3: return_trace (u.format3.serialize (c,
+    case 3: hb_barrier (); return_trace (u.format3.serialize (c,
                                                + glyphs
                                                | hb_map_retains_sorting (hb_first),
                                                delta));
-    case 4: return_trace (u.format4.serialize (c, glyphs));
+    case 4: hb_barrier (); return_trace (u.format4.serialize (c, glyphs));
 #endif
     default:return_trace (false);
     }

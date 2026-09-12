@@ -187,6 +187,7 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 // Hides certain parts of the Project Manager when window width gets smaller than combined_minimum_size.
 void ProjectManager::_update_compact_mode(bool p_reset_threshold) {
 	if (p_reset_threshold) {
+		project_list_sidebar->show();
 		compact_mode_threshold = root_container->get_combined_minimum_size().width;
 	}
 
@@ -195,7 +196,10 @@ void ProjectManager::_update_compact_mode(bool p_reset_threshold) {
 }
 
 void ProjectManager::_update_size_limits() {
-	const Size2 minimum_size = Size2(480, 300) * EDSCALE;
+	const Size2 default_minimum_size = Size2(720, 450) * EDSCALE;
+	const Size2 display_size = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW).size;
+	const real_t smallest_display_dimension = display_size.width < display_size.height ? display_size.width : display_size.height;
+	const Size2 minimum_size = default_minimum_size.minf(smallest_display_dimension);
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
@@ -1637,6 +1641,7 @@ ProjectManager::ProjectManager() {
 			project_list->connect(ProjectList::SIGNAL_SELECTION_CHANGED, callable_mp(this, &ProjectManager::_update_project_buttons));
 			project_list->connect(ProjectList::SIGNAL_PROJECT_ASK_OPEN, callable_mp(this, &ProjectManager::_open_selected_projects_check_recovery_mode));
 			project_list->connect(ProjectList::SIGNAL_MENU_OPTION_SELECTED, callable_mp(this, &ProjectManager::_project_list_menu_option));
+			project_list->connect(SceneStringName(minimum_size_changed), callable_mp(this, &ProjectManager::_update_compact_mode).bind(true));
 
 			// Empty project list placeholder.
 			{
@@ -1871,12 +1876,12 @@ ProjectManager::ProjectManager() {
 		ask_update_label->set_v_size_flags(SIZE_EXPAND_FILL);
 		ask_update_vb->add_child(ask_update_label);
 		ask_update_backup = memnew(CheckBox);
-		ask_update_backup->set_text(TTRC("Backup project first"));
+		ask_update_backup->set_text(TTRC("Back Up Project First"));
 		ask_update_backup->set_h_size_flags(SIZE_SHRINK_CENTER);
 		ask_update_vb->add_child(ask_update_backup);
 		ask_upgrade_tool = memnew(CheckBox);
 		ask_upgrade_tool->set_text(TTRC("Upgrade All Project Files"));
-		ask_upgrade_tool->set_tooltip_text(TTRC("Automatically runs the upgrade tool. This may take a while to finish. The project will be restarted once in the process."));
+		ask_upgrade_tool->set_tooltip_text(TTRC("Automatically runs the upgrade tool. This may take a while to finish. The editor may restart during the process."));
 		ask_upgrade_tool->set_h_size_flags(SIZE_SHRINK_CENTER);
 		ask_update_vb->add_child(ask_upgrade_tool);
 		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));

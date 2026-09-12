@@ -286,7 +286,7 @@ public:
                 f"{name.upper()} = {1 << index}" for index, name in enumerate(header_data.specialization_names)
             )
             file.write(f"""\
-	enum Specializations {{
+	enum Specializations : uint64_t {{
 		{specialization_names},
 	}};
 

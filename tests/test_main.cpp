@@ -176,7 +176,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		reinitialize();
 
 		String name = String(p_in.m_name);
-		String suite_name = String(p_in.m_test_suite);
+		[[maybe_unused]] String suite_name = String(p_in.m_test_suite);
 
 		if (name.contains("[SceneTree]") || name.contains("[Editor]")) {
 			memnew(Input);

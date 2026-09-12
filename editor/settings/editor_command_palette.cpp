@@ -192,10 +192,10 @@ void EditorCommandPalette::_confirmed() {
 }
 
 void EditorCommandPalette::open_popup() {
+	_update_command_search(String());
 	if (was_showed) {
 		popup(prev_rect);
 	} else {
-		_update_command_search(String());
 		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
 	}
 

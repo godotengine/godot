@@ -185,6 +185,11 @@ void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sorting_use_aabb_center", "enabled"), &VisualInstance3D::set_sorting_use_aabb_center);
 	ClassDB::bind_method(D_METHOD("is_sorting_use_aabb_center"), &VisualInstance3D::is_sorting_use_aabb_center);
 
+	// TODO Note: This used to be bound in GeometryInstance3D::_bind_methods, indicating it
+	//            was originally meant to be exposed to GeometryInstance3D instead of VisualInstance3D.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("get_aabb"), &VisualInstance3D::get_aabb);
+
 	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 
@@ -598,8 +603,6 @@ void GeometryInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &GeometryInstance3D::get_custom_aabb);
-
-	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance3D::get_aabb);
 
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT), "set_material_override", "get_material_override");

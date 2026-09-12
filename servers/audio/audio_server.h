@@ -53,6 +53,8 @@ public:
 	typedef void (*AudioCallback)(void *p_userdata);
 
 private:
+	static constexpr uint64_t AUDIO_DRIVER_SLEEP_DELAY_MSEC = 3000;
+
 	uint64_t mix_time = 0;
 	int mix_size = 0;
 
@@ -147,6 +149,8 @@ private:
 		Ref<AudioStreamPlayback> stream_playback;
 		// Playback state determines the fate of a particular AudioStreamListNode during the mix step. Must be atomically replaced.
 		std::atomic<PlaybackState> state = AWAITING_DELETION;
+		// Guards list removal from races between audio and main threads.
+		SafeFlag removed_from_playback_list;
 		// This data should only ever be modified by an atomic replacement of the pointer.
 		std::atomic<AudioStreamPlaybackBusDetails *> bus_details = nullptr;
 		// Previous bus details should only be accessed on the audio thread.
@@ -156,9 +160,13 @@ private:
 	};
 
 	SafeList<AudioStreamPlaybackListNode *> playback_list;
+	SafeNumeric<int32_t> playback_stream_count;
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard;
+	uint64_t playback_stream_idle_since_msec = 0;
+	bool output_driver_sleeping = false;
 	void _delete_stream_playback(Ref<AudioStreamPlayback> p_playback);
 	void _delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_node);
+	void _set_output_driver_sleep(bool p_enable);
 
 	void _cleanup_lists();
 

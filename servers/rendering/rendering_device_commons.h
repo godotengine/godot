@@ -1037,6 +1037,7 @@ public:
 		SUPPORTS_RAYTRACING_PIPELINE,
 		SUPPORTS_HDR_OUTPUT,
 		SUPPORTS_RASTERIZATION_RATE_MAP,
+		SUPPORTS_GPU_MAPPABLE_BUFFER,
 	};
 
 	enum SubgroupOperations {
@@ -1164,6 +1165,7 @@ public:
 		uint32_t fragment_output_mask = 0;
 		PipelineType pipeline_type = PIPELINE_TYPE_RASTERIZATION;
 		bool has_multiview = false;
+		bool has_physical_storage_buffer_addresses = false;
 		bool has_dynamic_buffers = false;
 		uint32_t compute_local_size[3] = {};
 		uint32_t push_constant_size = 0;

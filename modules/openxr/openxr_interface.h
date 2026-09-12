@@ -182,8 +182,12 @@ public:
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name) override;
+#ifndef DISABLE_DEPRECATED
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+#endif
 
 	virtual Rect2i get_render_region() override;
 
@@ -238,6 +242,17 @@ public:
 	/** User presence. */
 	bool is_user_presence_supported() const;
 	bool is_user_present() const;
+
+	/** View configuration */
+	enum ViewConfiguration {
+		VIEW_CONFIGURATION_MONO = 0,
+		VIEW_CONFIGURATION_STEREO = 1,
+		VIEW_CONFIGURATION_STEREO_WITH_INSET = 2,
+		VIEW_CONFIGURATION_UNSET = 254,
+		VIEW_CONFIGURATION_UNKNOWN = 255,
+	};
+
+	ViewConfiguration get_active_view_configuration() const;
 
 	/** Hand tracking. */
 	enum Hand {
@@ -345,6 +360,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(OpenXRInterface::SessionState)
+VARIANT_ENUM_CAST(OpenXRInterface::ViewConfiguration)
 VARIANT_ENUM_CAST(OpenXRInterface::Hand)
 VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
 VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource)

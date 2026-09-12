@@ -70,7 +70,7 @@ class RenderingShaderContainerFormat;
 template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
-	static constexpr size_t MAX_RESOURCE_SIZE = Span(RESOURCE_SIZES).max();
+	static constexpr size_t MAX_RESOURCE_SIZE = Span<size_t>(RESOURCE_SIZES).max();
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
@@ -157,6 +157,7 @@ public:
 	enum MemoryAllocationType {
 		MEMORY_ALLOCATION_TYPE_CPU, // For images, CPU allocation also means linear, GPU is tiling optimal.
 		MEMORY_ALLOCATION_TYPE_GPU,
+		MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE, // Supported on UMA devices or discrete devices with ReBAR.
 	};
 
 	/*****************/
@@ -727,6 +728,9 @@ public:
 
 	// ----- COMMANDS -----
 
+	virtual void command_begin_compute_pass(CommandBufferID p_cmd_buffer);
+	virtual void command_end_compute_pass(CommandBufferID p_cmd_buffer);
+
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
 	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
@@ -839,6 +843,12 @@ public:
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) = 0;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) = 0;
 
+	// Marks the start/end of a coherent batch of commands. Drivers may use this
+	// to flush incidental encoder state (e.g. a still-open blit encoder used for
+	// housekeeping copies) so subsequent commands start fresh. Default no-op.
+	virtual void command_group_begin(CommandBufferID p_cmd_buffer) {}
+	virtual void command_group_end(CommandBufferID p_cmd_buffer) {}
+
 	/****************/
 	/**** DEBUG *****/
 	/****************/
@@ -900,9 +910,11 @@ public:
 		API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT,
 		API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP,
 		API_TRAIT_SECONDARY_VIEWPORT_SCISSOR,
-		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
+		API_TRAIT_BUFFER_CLEARS_WITH_COPY_ENGINE,
+		API_TRAIT_TEXTURE_CLEARS_WITH_COPY_ENGINE,
 		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
 		API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS,
+		API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS,
 		API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS,
 		API_TRAIT_ACCELERATION_STRUCTURE_INSTANCE_SIZE,
 		API_TRAIT_SHADER_GROUP_HANDLE_SIZE,

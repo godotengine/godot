@@ -246,9 +246,9 @@ def configure(env: "SConsEnvironment"):
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
                 f"You can install them by running `python3 {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
-                "See the documentation for more information:\n"
-                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_macos.html\n"
-                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+                "See the documentation for more information:\n\t"
+                "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_macos.html#compiling-with-accesskit-support"
+                "\nAlternatively, disable this driver by compiling with `accesskit=no` explicitly."
             )
             env["accesskit"] = False
 
@@ -318,10 +318,10 @@ def configure(env: "SConsEnvironment"):
             else:
                 print_warning(
                     "The ANGLE rendering driver requires dependencies to be installed.\n"
-                    f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_angle.py')}`.\n"
-                    "See the documentation for more information:\n"
-                    "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                    "Alternatively, disable this driver by compiling with `angle=no` explicitly."
+                    f"You can install them by running `python3 {os.path.join('misc', 'scripts', 'install_angle.py')}`.\n"
+                    "See the documentation for more information:\n\t"
+                    "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_macos.html#compiling-with-angle-support"
+                    "\nAlternatively, disable this driver by compiling with `angle=no` explicitly."
                 )
                 env["angle"] = False
 
@@ -332,14 +332,14 @@ def configure(env: "SConsEnvironment"):
         env["metal"] = False
 
     if env["metal"]:
-        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED"])
         extra_frameworks.add("Metal")
         extra_frameworks.add("MetalKit")
         extra_frameworks.add("MetalFX")
         env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
         extra_frameworks.add("Metal")
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])

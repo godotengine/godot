@@ -976,12 +976,12 @@ RID GodotPhysicsServer3D::soft_body_create() {
 	return rid;
 }
 
-void GodotPhysicsServer3D::soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) {
+void GodotPhysicsServer3D::soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> p_rendering_server_handler) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);
-	EXTRACT_PARAM_OR_FAIL(p_rendering_server_handler, rp_rendering_server_handler);
+	EXTRACT_PARAM_OR_FAIL(rendering_server_handler, p_rendering_server_handler);
 
-	soft_body->update_rendering_server(p_rendering_server_handler);
+	soft_body->update_rendering_server(rendering_server_handler);
 }
 
 void GodotPhysicsServer3D::soft_body_set_space(RID p_body, RID p_space) {

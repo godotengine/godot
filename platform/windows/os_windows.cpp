@@ -2936,6 +2936,8 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
+	WinRTUtils::init();
+
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);
 #endif
@@ -2965,5 +2967,6 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 }
 
 OS_Windows::~OS_Windows() {
+	WinRTUtils::cleanup();
 	CoUninitialize();
 }

@@ -108,15 +108,6 @@ public:
 	};
 
 public:
-	struct PropertySetGet {
-		int index;
-		StringName setter;
-		StringName getter;
-		MethodBind *_setptr = nullptr;
-		MethodBind *_getptr = nullptr;
-		Variant::Type type;
-	};
-
 	struct ClassInfo {
 		APIType api = API_NONE;
 		ClassInfo *inherits_ptr = nullptr;
@@ -125,15 +116,7 @@ public:
 
 		ObjectGDExtension *gdextension = nullptr;
 
-		HashMap<StringName, MethodBind *> method_map;
-		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
-
-		List<PropertyInfo> property_list;
-		HashMap<StringName, PropertyInfo> property_map;
-
 #ifdef DEBUG_ENABLED
-		List<StringName> method_order;
-		HashSet<StringName> methods_in_properties;
 		List<MethodInfo> virtual_methods;
 		HashMap<StringName, MethodInfo> virtual_methods_map;
 		HashMap<StringName, Vector<Error>> method_error_values;
@@ -144,7 +127,6 @@ public:
 		List<StringName> dependency_list;
 #endif
 
-		AHashMap<StringName, PropertySetGet> property_setget;
 		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
 		bool disabled = false;
@@ -231,9 +213,8 @@ private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
 	static bool _is_parent_class(const StringName &p_class, const StringName &p_inherits);
-	static void _bind_compatibility(ClassInfo *r_type, MethodBind *p_method);
 	static MethodBind *_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility);
-	static void _bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility);
+	static void _bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility, bool p_take_ownership = true);
 
 	static Object *_instantiate_from_gdextension(ObjectGDExtension *p_object_gd_extension, bool p_notify_postinitialize, bool p_with_refcount);
 	static Object *_instantiate_internal(const StringName &p_class, bool p_require_real_class = false, bool p_notify_postinitialize = true, bool p_exposed_only = true, bool p_with_refcount = false);
@@ -302,7 +283,7 @@ public:
 	}
 
 	static void register_extension_class(ObjectGDExtension *p_extension);
-	static void unregister_extension_class(const StringName &p_class, bool p_free_method_binds = true);
+	static void unregister_extension_class(const StringName &p_class);
 
 	template <typename T>
 	static Object *_create_ptr_func(bool p_notify_postinitialize) {
@@ -454,7 +435,7 @@ public:
 		return _bind_vararg_method(bind, p_name, p_default_args, true);
 	}
 
-	static void bind_method_custom(const StringName &p_class, MethodBind *p_method);
+	static void bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_take_ownership = true);
 	static void bind_compatibility_method_custom(const StringName &p_class, MethodBind *p_method);
 
 	static void add_signal(const StringName &p_class, const MethodInfo &p_signal);
@@ -483,12 +464,12 @@ public:
 	static bool has_method(const StringName &p_class, const StringName &p_method, bool p_no_inheritance = false);
 	static void set_method_flags(const StringName &p_class, const StringName &p_method, int p_flags);
 
-	static void get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
-	static void get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods_with_hash, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
-	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false, bool p_exclude_from_properties = false);
+	static void get_method_list(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
+	static void get_method_list_with_compatibility(const StringName &p_class, List<Pair<MethodInfo, uint32_t>> *p_methods_with_hash, bool p_no_inheritance = false);
+	static bool get_method_info(const StringName &p_class, const StringName &p_method, MethodInfo *r_info, bool p_no_inheritance = false);
 	static int get_method_argument_count(const StringName &p_class, const StringName &p_method, bool *r_is_valid = nullptr, bool p_no_inheritance = false);
-	static MethodBind *get_method(const StringName &p_class, const StringName &p_name);
-	static MethodBind *get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists = nullptr, bool *r_is_deprecated = nullptr);
+	static const MethodBind *get_method(const StringName &p_class, const StringName &p_name);
+	static const MethodBind *get_method_with_compatibility(const StringName &p_class, const StringName &p_name, uint64_t p_hash, bool *r_method_exists = nullptr, bool *r_is_deprecated = nullptr);
 	static Vector<uint32_t> get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
@@ -546,13 +527,19 @@ public:
 };
 
 #define BIND_ENUM_CONSTANT(m_constant) \
-	get_gdtype_static_mutable().bind_integer_constant(__constant_get_enum_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant);
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_enum_name(m_constant), __constant_get_enum_value_name(#m_constant), static_cast<int64_t>(m_constant));
+#define BIND_ENUM_CONSTANT_EXT(m_constant, m_bound_name) \
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_enum_name(m_constant), #m_bound_name, static_cast<int64_t>(m_constant));
 
 #define BIND_BITFIELD_FLAG(m_constant) \
-	get_gdtype_static_mutable().bind_integer_constant(__constant_get_bitfield_name(m_constant), __constant_get_enum_value_name(#m_constant), m_constant, true);
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_bitfield_name(m_constant), __constant_get_enum_value_name(#m_constant), static_cast<int64_t>(m_constant), true);
+#define BIND_BITFIELD_FLAG_EXT(m_constant, m_bound_name) \
+	get_gdtype_static_mutable().bind_integer_constant(__constant_get_bitfield_name(m_constant), #m_bound_name, static_cast<int64_t>(m_constant), true);
 
 #define BIND_CONSTANT(m_constant) \
-	get_gdtype_static_mutable().bind_integer_constant(StringName(), __constant_get_enum_value_name(#m_constant), m_constant);
+	get_gdtype_static_mutable().bind_integer_constant(StringName(), __constant_get_enum_value_name(#m_constant), static_cast<int64_t>(m_constant));
+#define BIND_CONSTANT_EXT(m_constant, m_bound_name) \
+	get_gdtype_static_mutable().bind_integer_constant(StringName(), #m_bound_name, static_cast<int64_t>(m_constant));
 
 #ifdef DEBUG_ENABLED
 

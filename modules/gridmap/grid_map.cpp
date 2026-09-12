@@ -817,7 +817,9 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		return true;
 	}
 
+#ifndef PHYSICS_3D_DISABLED
 	Vector<Vector3> col_debug;
+#endif
 
 	/*
 	 * foreach item in this octant,
