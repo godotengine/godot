@@ -793,17 +793,9 @@ bool EditorData::reload_scene_from_memory(int p_idx, bool p_mark_unsaved) {
 	for (const Node *E : edited_scene.write[p_idx].selection) {
 		NodePath p = edited_scene[p_idx].root->get_path_to(E);
 		Node *new_node = new_scene->get_node(p);
-		// Node can't be found, skip it.
-		if (!new_node) {
-			continue;
+		if (new_node) {
+			new_selection.push_back(new_node);
 		}
-
-		// Node is no longer exposed, skip it.
-		if (E->has_meta(META_EXPOSED_IN_OWNER) && !new_node->has_meta(META_EXPOSED_IN_OWNER)) {
-			continue;
-		}
-
-		new_selection.push_back(new_node);
 	}
 
 	new_scene->set_scene_file_path(edited_scene[p_idx].root->get_scene_file_path());
