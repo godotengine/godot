@@ -258,6 +258,21 @@ void RasterizerGLES2::initialize() {
 			print_line("Disabling GPU threaded optimization via OpenGL debugging not supported by this driver.");
 		}
 	}
+#ifdef DEBUG_ENABLED
+	if (GLAD_GL_KHR_debug) {
+		push_label_func = glPushDebugGroup;
+		pop_label_func = glPopDebugGroup;
+		khr_debug_enabled = true;
+	}
+	if (GLAD_GL_ARB_timer_query) {
+		gen_queries_func = glGenQueries;
+		del_queries_func = glGenQueries;
+		query_counter_func = glQueryCounter;
+		get_query_func = glGetQueryObjectui64v;
+		enable_frame_timings();
+	}
+#endif
+#else
 #endif // GLAD_ENABLED
 
 	// For debugging
