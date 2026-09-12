@@ -764,7 +764,7 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 		TTRC("Constructors"),
 		TTRC("Operators"),
 	};
-	const String title = TTRGET(titles_by_type[p_method_type]);
+	const String title = TTR(titles_by_type[p_method_type]);
 
 	section_line.push_back(Pair<String, int>(title, class_desc->get_paragraph_count() - 2));
 	_push_title_font();
@@ -838,7 +838,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 		TTRC("Constructor Descriptions"),
 		TTRC("Operator Descriptions"),
 	};
-	const String title = TTRGET(titles_by_type[p_method_type]);
+	const String title = TTR(titles_by_type[p_method_type]);
 
 	section_line.push_back(Pair<String, int>(title, class_desc->get_paragraph_count() - 2));
 	_push_title_font();
@@ -890,7 +890,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 					TTRC("This constructor may be changed or removed in future versions."),
 					TTRC("This operator may be changed or removed in future versions."),
 				};
-				DEPRECATED_DOC_MSG(HANDLE_DOC(method.deprecated_message), TTRGET(messages_by_type[p_method_type]));
+				DEPRECATED_DOC_MSG(HANDLE_DOC(method.deprecated_message), TTR(messages_by_type[p_method_type]));
 			}
 
 			if (method.is_experimental) {
@@ -904,7 +904,7 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 					TTRC("This constructor may be changed or removed in future versions."),
 					TTRC("This operator may be changed or removed in future versions."),
 				};
-				EXPERIMENTAL_DOC_MSG(HANDLE_DOC(method.experimental_message), TTRGET(messages_by_type[p_method_type]));
+				EXPERIMENTAL_DOC_MSG(HANDLE_DOC(method.experimental_message), TTR(messages_by_type[p_method_type]));
 			}
 
 			if (!method.errors_returned.is_empty()) {
@@ -959,14 +959,14 @@ void EditorHelp::_update_method_descriptions(const DocData::ClassDoc &p_classdoc
 						TTRC("There is currently no description for this constructor."),
 						TTRC("There is currently no description for this operator."),
 					};
-					message = TTRGET(messages_by_type[p_method_type]);
+					message = TTR(messages_by_type[p_method_type]);
 				} else {
 					static const char *messages_by_type[METHOD_TYPE_MAX] = {
 						TTRC("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
 						TTRC("There is currently no description for this constructor. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
 						TTRC("There is currently no description for this operator. Please help us by [color=$color][url=$url]contributing one[/url][/color]!"),
 					};
-					message = TTRGET(messages_by_type[p_method_type]).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
+					message = TTR(messages_by_type[p_method_type]).replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
 				}
 
 				class_desc->add_image(get_editor_theme_icon(SNAME("Error")));

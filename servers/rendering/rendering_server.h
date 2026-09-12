@@ -325,6 +325,7 @@ public:
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) = 0;
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
 	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) = 0;
+	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) = 0;
 
 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) = 0;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
@@ -537,6 +538,7 @@ public:
 	virtual void camera_set_perspective(RID p_camera, float p_fovy_degrees, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) = 0;
 	virtual void camera_set_frustum(RID p_camera, float p_size, Vector2 p_offset, float p_z_near, float p_z_far) = 0;
+	virtual void camera_set_xr_projections(RID p_camera, TypedArray<Projection> p_projections, TypedArray<Transform3D> p_offsets = TypedArray<Transform3D>()) = 0;
 	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform) = 0;
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;

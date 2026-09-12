@@ -253,6 +253,10 @@ void TabContainer::_on_theme_changed() {
 
 	tab_bar->end_bulk_theme_override();
 
+	if (popup_button) {
+		popup_button->set_button_icon(theme_cache.menu_icon);
+	}
+
 	_update_margins();
 	if (get_tab_count() > 0) {
 		_repaint();

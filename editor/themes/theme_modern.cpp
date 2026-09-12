@@ -1792,6 +1792,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		// Bottom panel.
 		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
 		style_bottom_panel->set_content_margin_all(p_config.tab_container_style->get_content_margin(SIDE_LEFT));
+		style_bottom_panel->set_content_margin(SIDE_BOTTOM, p_config.content_panel_style->get_content_margin(SIDE_BOTTOM));
 		style_bottom_panel->set_border_width(SIDE_BOTTOM, 0);
 		style_bottom_panel->set_corner_radius_all(EDSCALE_RND(p_config.corner_radius));
 		style_bottom_panel->set_corner_radius(CORNER_BOTTOM_LEFT, 0);

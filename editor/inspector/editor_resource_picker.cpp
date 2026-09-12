@@ -790,7 +790,6 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 		return res_type;
 	}
 
-	// TODO: Replace with EditorFileSystem when PR #60606 is merged to use cached resource type.
 	String script_type = EditorNode::get_editor_data().script_class_get_name(res_script->get_path());
 	if (!script_type.is_empty()) {
 		res_type = script_type;

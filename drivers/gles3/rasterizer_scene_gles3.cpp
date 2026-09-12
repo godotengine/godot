@@ -2425,6 +2425,9 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	Ref<RenderSceneBuffersGLES3> rb = p_render_buffers;
 	ERR_FAIL_COND(rb.is_null());
 
+	// View count of our render target must match our camera data.
+	ERR_FAIL_COND(rb->get_view_count() != p_camera_data->view_count);
+
 	if (rb->get_scaling_3d_mode() != RSE::VIEWPORT_SCALING_3D_MODE_OFF) {
 		// If we're scaling, we apply tonemapping etc. in post, so disable it during rendering
 		apply_environment_effects_in_post = true;

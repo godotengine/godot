@@ -259,7 +259,7 @@ String ResourceImporterTexture::get_preset_name(int p_idx) const {
 		TTRC("3D"),
 	};
 
-	return TTRGET(preset_names[p_idx]);
+	return TTR(preset_names[p_idx]);
 }
 
 void ResourceImporterTexture::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {

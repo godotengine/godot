@@ -1265,7 +1265,7 @@ void TextEdit::_notification(int p_what) {
 						break;
 					}
 
-					const Vector<Pair<int64_t, Color>> color_map = _get_line_syntax_highlighting(minimap_line);
+					const bool minimap_has_highlighting = _update_line_syntax_highlighting(minimap_line);
 
 					Color line_background_color = text.get_line_background_color(minimap_line);
 
@@ -1330,15 +1330,17 @@ void TextEdit::_notification(int p_what) {
 							for (characters = 0; j + characters < str.length(); characters++) {
 								int next_char_index = j + characters;
 
-								for (const Pair<int64_t, Color> &color_data : color_map) {
-									if (last_wrap_column + next_char_index >= color_data.first) {
-										next_color = color_data.second;
-										if (!editable) {
-											next_color.a = theme_cache.font_readonly_color.a;
+								if (minimap_has_highlighting) {
+									for (const Pair<int64_t, Color> &color_data : syntax_highlighting_cache[minimap_line]) {
+										if (last_wrap_column + next_char_index >= color_data.first) {
+											next_color = color_data.second;
+											if (!editable) {
+												next_color.a = theme_cache.font_readonly_color.a;
+											}
+											next_color.a *= 0.6;
+										} else {
+											break;
 										}
-										next_color.a *= 0.6;
-									} else {
-										break;
 									}
 								}
 								if (characters == 0) {
@@ -1426,7 +1428,7 @@ void TextEdit::_notification(int p_what) {
 
 				LineDrawingCache cache_entry;
 
-				const Vector<Pair<int64_t, Color>> color_map = _get_line_syntax_highlighting(line);
+				const int has_highlighting = _update_line_syntax_highlighting(line);
 
 				// Ensure we at least use the font color.
 				Color current_color = !editable ? theme_cache.font_readonly_color : theme_cache.font_color;
@@ -1748,14 +1750,16 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					for (int j = 0; j < gl_size; j++) {
-						for (const Pair<int64_t, Color> &color_data : color_map) {
-							if (color_data.first <= glyphs[j].start) {
-								current_color = color_data.second;
-								if (!editable && current_color.a > theme_cache.font_readonly_color.a) {
-									current_color.a = theme_cache.font_readonly_color.a;
+						if (has_highlighting) {
+							for (const Pair<int64_t, Color> &color_data : syntax_highlighting_cache[line]) {
+								if (color_data.first <= glyphs[j].start) {
+									current_color = color_data.second;
+									if (!editable && current_color.a > theme_cache.font_readonly_color.a) {
+										current_color.a = theme_cache.font_readonly_color.a;
+									}
+								} else {
+									break;
 								}
-							} else {
-								break;
 							}
 						}
 						Color gl_color = current_color;
@@ -2992,13 +2996,14 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		// to detect that the interaction was part of a pan gesture and avoid showing the virtual keyboard.
 		touch_dragging_in_progress = true;
 		pan_gesture_performed = true;
-		const real_t delta = pan_gesture->get_delta().y;
+		const real_t line_height = text.get_line_height();
+		const real_t delta = pan_gesture->get_delta().y / line_height;
 		if (delta < 0) {
 			_scroll_up(-delta, false);
 		} else {
 			_scroll_down(delta, false);
 		}
-		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x * 100);
+		h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x);
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 			accept_event(); // Accept event if scroll changed.
 		}
@@ -9719,18 +9724,17 @@ Vector2i TextEdit::_get_hovered_gutter(const Point2 &p_mouse_pos) const {
 }
 
 /* Syntax highlighting. */
-Vector<Pair<int64_t, Color>> TextEdit::_get_line_syntax_highlighting(int p_line) {
+bool TextEdit::_update_line_syntax_highlighting(int p_line) {
 	if (syntax_highlighter.is_null() || setting_text) {
-		return Vector<Pair<int64_t, Color>>();
+		return false;
 	}
 
-	HashMap<int, Vector<Pair<int64_t, Color>>>::Iterator E = syntax_highlighting_cache.find(p_line);
-	if (E) {
-		return E->value;
+	if (syntax_highlighting_cache.has(p_line)) {
+		return true;
 	}
 
 	Dictionary color_map = syntax_highlighter->get_line_syntax_highlighting(p_line);
-	Vector<Pair<int64_t, Color>> result;
+	LocalVector<Pair<int64_t, Color>> result;
 	result.resize(color_map.size());
 	int i = 0;
 	for (const Variant *key = color_map.next(nullptr); key; key = color_map.next(key), i++) {
@@ -9740,11 +9744,11 @@ Vector<Pair<int64_t, Color>> TextEdit::_get_line_syntax_highlighting(int p_line)
 		if (color_data != nullptr) {
 			color_value = (color_data->operator Dictionary()).get("color", color_value);
 		}
-		result.write[i] = Pair<int64_t, Color>(key_data, color_value);
+		result[i] = Pair<int64_t, Color>(key_data, color_value);
 	}
 	syntax_highlighting_cache.insert(p_line, result);
 
-	return result;
+	return true;
 }
 
 void TextEdit::_clear_syntax_highlighting_cache() {

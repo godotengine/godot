@@ -1,0 +1,3 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 5: Calling "self.free()" can lead to bugs and crashes. Consider using "queue_free()" instead.
+>> ERROR at line 7: Calling "self.free()" can lead to bugs and crashes. Consider using "queue_free()" instead.

@@ -1029,8 +1029,6 @@ public:
 	};
 
 	struct PatternNode : public Node {
-		DataType type_constraint;
-
 		enum Type {
 			PT_LITERAL,
 			PT_EXPRESSION,

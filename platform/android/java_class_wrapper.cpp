@@ -1884,7 +1884,7 @@ bool JavaClassWrapper::_wrap_class_components(JNIEnv *p_env, const Ref<JavaClass
 	p_env->DeleteLocalRef(constructors);
 	p_env->DeleteLocalRef(methods);
 
-	jobjectArray fields = (jobjectArray)p_env->CallObjectMethod(p_class, Class_getFields);
+	jobjectArray fields = (jobjectArray)p_env->CallObjectMethod(p_class, Class_getDeclaredFields);
 
 	int count = p_env->GetArrayLength(fields);
 
@@ -2118,7 +2118,7 @@ JavaClassWrapper::JavaClassWrapper() {
 	jclass bclass = jni_find_class(env, "java/lang/Class");
 	Class_getConstructors = env->GetMethodID(bclass, "getConstructors", "()[Ljava/lang/reflect/Constructor;");
 	Class_getDeclaredMethods = env->GetMethodID(bclass, "getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
-	Class_getFields = env->GetMethodID(bclass, "getFields", "()[Ljava/lang/reflect/Field;");
+	Class_getDeclaredFields = env->GetMethodID(bclass, "getDeclaredFields", "()[Ljava/lang/reflect/Field;");
 	Class_getInterfaces = env->GetMethodID(bclass, "getInterfaces", "()[Ljava/lang/Class;");
 	Class_getName = env->GetMethodID(bclass, "getName", "()Ljava/lang/String;");
 	Class_getSuperclass = env->GetMethodID(bclass, "getSuperclass", "()Ljava/lang/Class;");

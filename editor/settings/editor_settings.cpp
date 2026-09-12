@@ -49,6 +49,7 @@
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/version.h"
+#include "editor/docks/dock_tab_container.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_property_name_processor.h"
@@ -482,9 +483,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Editor
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localization/localize_settings", true, "")
 	const String dock_tab_style_hint = "Text Only,Icon Only,Text and Icon";
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", 0, dock_tab_style_hint)
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 0, dock_tab_style_hint)
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/main_screen_dock_tab_style", is_android_editor ? 1 : 2, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", DockTabContainer::TabStyle::TEXT_ONLY, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", DockTabContainer::TabStyle::TEXT_ONLY, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/main_screen_dock_tab_style", is_android_editor ? DockTabContainer::TabStyle::ICON_ONLY : DockTabContainer::TabStyle::TEXT_AND_ICON, dock_tab_style_hint)
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/localization/ui_layout_direction", 0, "Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Display what the Auto display scale setting effectively corresponds to.

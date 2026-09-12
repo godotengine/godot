@@ -3909,16 +3909,16 @@ Error RenderingDeviceDriverVulkan::swap_chain_resize(CommandQueueID p_cmd_queue,
 
 		switch (swappy_mode) {
 			case PIPELINE_FORCED_ON:
-				SwappyVk_setAutoSwapInterval(true);
-				SwappyVk_setAutoPipelineMode(true);
+				SwappyVk_setAutoSwapInterval(false);
+				SwappyVk_setAutoPipelineMode(false);
 				break;
 			case AUTO_FPS_PIPELINE_FORCED_ON:
 				SwappyVk_setAutoSwapInterval(true);
 				SwappyVk_setAutoPipelineMode(false);
 				break;
 			case AUTO_FPS_AUTO_PIPELINE:
-				SwappyVk_setAutoSwapInterval(false);
-				SwappyVk_setAutoPipelineMode(false);
+				SwappyVk_setAutoSwapInterval(true);
+				SwappyVk_setAutoPipelineMode(true);
 				break;
 		}
 	}

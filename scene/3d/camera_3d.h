@@ -117,7 +117,7 @@ protected:
 
 	void _update_camera();
 	virtual void _request_camera_update();
-	void _update_camera_mode();
+	virtual void _update_camera_mode();
 
 	virtual void fti_pump_property() override;
 	virtual void fti_update_servers_property() override;

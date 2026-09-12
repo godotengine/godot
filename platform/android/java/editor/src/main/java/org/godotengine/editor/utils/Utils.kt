@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  visionos_definitions.h                                                */
+/*  Utils.kt                                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,48 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+package org.godotengine.editor.utils
 
-#ifdef VISIONOS_ENABLED
+import android.content.Context
 
-#include "core/os/mutex.h"
-#include "core/templates/safe_refcount.h"
-#include "drivers/metal/metal_objects_shared.h"
-#include "drivers/metal/rendering_context_driver_metal.h"
-#include "drivers/metal/rendering_device_driver_metal.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server.h"
-#include "servers/xr/xr_controller_tracker.h"
-#include "servers/xr/xr_hand_tracker.h"
-#include "servers/xr/xr_interface.h"
-#include "servers/xr/xr_positional_tracker.h"
-#include "servers/xr/xr_vrs.h"
-
-#ifdef __OBJC__
-// When compiling as Objective-C++, include the actual headers
-#import <ARKit/ARKit.h>
-#else // __OBJC__
-// When compiling as C++, use forward declarations for ARKit and CompositorServices types (opaque pointers)
-typedef struct ar_world_tracking_provider *ar_world_tracking_provider_t;
-typedef struct ar_hand_tracking_provider *ar_hand_tracking_provider_t;
-typedef struct ar_accessory_tracking_provider *ar_accessory_tracking_provider_t;
-typedef struct ar_data_providers *ar_data_providers_t;
-typedef struct ar_data_provider *ar_data_provider_t;
-;
-typedef struct ar_authorization_results *ar_authorization_results_t;
-typedef struct ar_session *ar_session_t;
-typedef struct ar_device_anchor *ar_device_anchor_t;
-typedef struct ar_hand_anchor *ar_hand_anchor_t;
-typedef struct ar_accessories *ar_accessories_t;
-typedef struct ar_accessory_anchor *ar_accessory_anchor_t;
-#endif // __OBJC__
-
-// Equivalent to ARKit's `ar_authorization_status`
-enum class VisionOSAuthorizationStatus {
-	NOT_DETERMINED,
-	ALLOWED,
-	DENIED,
-};
-
-#endif // VISIONOS_ENABLED
+object Utils {
+	fun getDefaultSharedPreferences(context: Context?) =  context?.getSharedPreferences("${context.packageName}_preferences", Context.MODE_PRIVATE)
+}

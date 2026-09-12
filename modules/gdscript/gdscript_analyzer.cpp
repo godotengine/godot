@@ -2060,24 +2060,6 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	static_context = previous_static_context;
 }
 
-void GDScriptAnalyzer::decide_pattern_type(GDScriptParser::PatternNode &p_pattern, GDScriptParser::PatternNode *p_statement) {
-	if (p_statement == nullptr) {
-		return;
-	}
-
-	// Use return or nested suite type as this suite type.
-	// TODO: Only downgrades. As long as all of the downgraded vars are unused irrelevant.
-	if (p_pattern.type_constraint.is_set() && (p_pattern.type_constraint != p_statement->type_constraint)) {
-		// Mixed types.
-		// TODO: This could use the common supertype instead.
-		p_pattern.type_constraint.kind = GDScriptParser::DataType::VARIANT;
-		p_pattern.type_constraint.type_source = GDScriptParser::DataType::UNDETECTED;
-	} else {
-		p_pattern.type_constraint = p_statement->type_constraint;
-		p_pattern.type_constraint.type_source = GDScriptParser::DataType::INFERRED;
-	}
-}
-
 void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite, bool p_is_root) {
 	for (GDScriptParser::Node *stmt : p_suite->statements) {
 		// Apply annotations.
@@ -2519,20 +2501,16 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 		return;
 	}
 
-	GDScriptParser::DataType result;
-
 	switch (p_match_pattern->pattern_type) {
 		case GDScriptParser::PatternNode::PT_LITERAL:
 			if (p_match_pattern->literal) {
 				reduce_literal(p_match_pattern->literal);
-				result = p_match_pattern->literal->type_constraint;
 			}
 			break;
 		case GDScriptParser::PatternNode::PT_EXPRESSION:
 			if (p_match_pattern->expression) {
 				GDScriptParser::ExpressionNode *expr = p_match_pattern->expression;
 				reduce_expression(expr);
-				result = expr->type_constraint;
 				if (!expr->is_constant) {
 					while (expr && expr->type == GDScriptParser::Node::SUBSCRIPT) {
 						GDScriptParser::SubscriptNode *sub = static_cast<GDScriptParser::SubscriptNode *>(expr);
@@ -2548,7 +2526,8 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 				}
 			}
 			break;
-		case GDScriptParser::PatternNode::PT_BIND:
+		case GDScriptParser::PatternNode::PT_BIND: {
+			GDScriptParser::DataType result;
 			if (p_match_test != nullptr) {
 				result = p_match_test->type_constraint;
 			} else {
@@ -2558,13 +2537,11 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 #ifdef DEBUG_ENABLED
 			is_shadowing(p_match_pattern->bind, "pattern bind", true);
 #endif // DEBUG_ENABLED
-			break;
+		} break;
 		case GDScriptParser::PatternNode::PT_ARRAY:
 			for (GDScriptParser::PatternNode *element_pattern : p_match_pattern->array) {
 				resolve_match_pattern(element_pattern, nullptr);
-				decide_pattern_type(*p_match_pattern, element_pattern);
 			}
-			result = p_match_pattern->type_constraint;
 			break;
 		case GDScriptParser::PatternNode::PT_DICTIONARY:
 			for (const GDScriptParser::PatternNode::Pair &element_pattern : p_match_pattern->dictionary) {
@@ -2577,18 +2554,13 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 
 				if (element_pattern.value_pattern) {
 					resolve_match_pattern(element_pattern.value_pattern, nullptr);
-					decide_pattern_type(*p_match_pattern, element_pattern.value_pattern);
 				}
 			}
-			result = p_match_pattern->type_constraint;
 			break;
 		case GDScriptParser::PatternNode::PT_WILDCARD:
 		case GDScriptParser::PatternNode::PT_REST:
-			result.kind = GDScriptParser::DataType::VARIANT;
 			break;
 	}
-
-	p_match_pattern->type_constraint = result;
 }
 
 void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
@@ -3851,6 +3823,14 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 #endif // DEBUG_ENABLED
 		} else {
 			push_error(vformat(R"*(Function "%s()" is a coroutine, so it must be called with "await".)*", p_call->function_name), p_call);
+		}
+	}
+
+	// Emit an error if trying to call `self.free()`. While users can easily bypass this error, the risk is high enough to make this a hard error if we can detect it.
+	if (p_call->function_name == CoreStringName(free_) && p_call->get_callee_type() == GDScriptParser::Node::SUBSCRIPT) {
+		const GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
+		if (subscript->base && subscript->base->type == GDScriptParser::Node::SELF) {
+			push_error(R"*(Calling "self.free()" can lead to bugs and crashes. Consider using "queue_free()" instead.)*", p_call);
 		}
 	}
 

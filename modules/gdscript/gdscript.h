@@ -358,38 +358,36 @@ class GDScriptInstance : public ScriptInstance {
 	void _call_implicit_ready_recursively(GDScript *p_script);
 
 public:
-	virtual Object *get_owner() { return owner; }
+	virtual Object *get_owner() override { return owner; }
 
-	virtual bool set(const StringName &p_name, const Variant &p_value);
-	virtual bool get(const StringName &p_name, Variant &r_ret) const;
-	virtual void get_property_list(List<PropertyInfo> *r_properties) const;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
-	virtual void validate_property(PropertyInfo &p_property) const;
+	virtual bool set(const StringName &p_name, const Variant &p_value) override;
+	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
+	virtual void get_property_list(List<PropertyInfo> *r_properties) const override;
+	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
+	virtual void validate_property(PropertyInfo &p_property) const override;
 
-	virtual bool property_can_revert(const StringName &p_name) const;
-	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const;
+	virtual bool property_can_revert(const StringName &p_name) const override;
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override;
 
-	virtual void get_method_list(List<MethodInfo> *r_list) const;
-	virtual bool has_method(const StringName &p_method) const;
+	virtual void get_method_list(List<MethodInfo> *r_list) const override;
+	virtual bool has_method(const StringName &p_method) const override;
 
-	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
-	virtual void notification(int p_notification, bool p_reversed = false);
-	String to_string(bool *r_valid);
+	virtual void notification(int p_notification, bool p_reversed = false) override;
+	virtual String to_string(bool *r_valid) override;
 
-	virtual Ref<Script> get_script() const;
+	virtual Ref<Script> get_script() const override;
 
-	virtual ScriptLanguage *get_language();
-
-	void set_path(const String &p_path);
+	virtual ScriptLanguage *get_language() override;
 
 	void reload_members();
 
-	virtual const Variant get_rpc_config() const;
+	virtual const Variant get_rpc_config() const override;
 
 	GDScriptInstance() :
 			script_instance_list(this) {}

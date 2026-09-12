@@ -436,6 +436,7 @@ Patches:
 
 - `0001-apple-disable-absolute-paths.patch` ([GH-92010](https://github.com/godotengine/godot/pull/92010))
 - `0002-apple-m1-msaa-fix.patch` ([GH-115893](https://github.com/godotengine/godot/issues/115893))
+- `0003-preprocessor-token-name-memcpy.patch` ([GH-123319](https://github.com/godotengine/godot/pull/123319))
 
 
 ## graphite

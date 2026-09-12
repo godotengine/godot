@@ -45,7 +45,6 @@ import android.os.Bundle
 import android.os.Debug
 import android.os.Environment
 import android.os.Process
-import android.preference.PreferenceManager
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -59,6 +58,7 @@ import androidx.window.layout.WindowMetricsCalculator
 import org.godotengine.editor.buildprovider.GradleBuildProvider
 import org.godotengine.editor.embed.EmbeddedGodotGame
 import org.godotengine.editor.embed.GameMenuFragment
+import org.godotengine.editor.utils.Utils
 import org.godotengine.editor.utils.signApk
 import org.godotengine.editor.utils.verifyApk
 import org.godotengine.godot.BuildProvider
@@ -559,7 +559,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	override fun onGodotSetupCompleted() {
 		super.onGodotSetupCompleted()
-		val longPressEnabled = enableLongPressGestures()
+		val rightClickEmulationEnabled = enableRightClickEmulation()
 		val panScaleEnabled = enablePanAndScaleGestures()
 		val overrideVolumeButtonsEnabled = overrideVolumeButtons()
 		val hapticEnabled = enableHapticOnLongPress()
@@ -567,7 +567,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
 			godotFragment?.godot?.renderView?.inputHandler?.apply {
-				enableLongPress(longPressEnabled)
+				enableRightClickEmulation(rightClickEmulationEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
 				setOverrideVolumeButtons(overrideVolumeButtonsEnabled)
 				enableHapticFeedback(hapticEnabled)
@@ -606,8 +606,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				editorMessageDispatcher.hasEditorConnection(RUN_GAME_INFO_1))) {
 			// If this is the editor window, and this is not the project manager, and we have a running game, then show
 			// a hint for how to resume the playing game.
-			val sharedPrefs = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-			if (!sharedPrefs.getBoolean(PREF_KEY_DONT_SHOW_GAME_RESUME_HINT, false)) {
+			val sharedPrefs = Utils.getDefaultSharedPreferences(applicationContext)
+			if (sharedPrefs?.getBoolean(PREF_KEY_DONT_SHOW_GAME_RESUME_HINT, false) == false) {
 				DialogUtils.showSnackbar(
 					this,
 					getString(R.string.show_game_resume_hint),
@@ -854,7 +854,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	/**
 	 * Enable long press gestures for the Godot Android editor.
 	 */
-	protected open fun enableLongPressGestures() =
+	protected open fun enableRightClickEmulation() =
 		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_long_press_as_right_click"))
 
 	/**

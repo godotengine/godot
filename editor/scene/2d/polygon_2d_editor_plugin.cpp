@@ -1564,17 +1564,17 @@ Polygon2DEditor::Polygon2DEditor() {
 	zoom_widget = memnew(EditorZoomWidget);
 	canvas->add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
-	zoom_widget->connect("zoom_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(true));
+	zoom_widget->connect("zoom_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).bind(true).unbind(1));
 	zoom_widget->set_shortcut_context(nullptr);
 
 	vscroll = memnew(VScrollBar);
 	vscroll->set_step(0.001);
 	canvas->add_child(vscroll);
-	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 	hscroll = memnew(HScrollBar);
 	hscroll->set_step(0.001);
 	canvas->add_child(hscroll);
-	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
 	bone_scroll_main_vb->set_custom_minimum_size(Size2(150 * EDSCALE, 0));

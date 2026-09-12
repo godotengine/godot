@@ -444,19 +444,20 @@ RID RenderSceneBuffersRD::get_texture_slice_view(const StringName &p_context, co
 
 	// asking the whole thing? just return the original
 	RD::TextureView default_view = RD::TextureView();
-	if (p_layer == 0 && p_mipmap == 0 && named_texture.format.array_layers == p_layers && named_texture.format.mipmaps == p_mipmaps && p_view == default_view) {
+	RD::TextureSliceType slice_type = (p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D);
+	if (p_layer == 0 && p_mipmap == 0 && named_texture.format.array_layers == p_layers && named_texture.format.mipmaps == p_mipmaps && p_view == default_view && ((named_texture.format.texture_type == RD::TEXTURE_TYPE_2D && slice_type == RD::TEXTURE_SLICE_2D) || (named_texture.format.texture_type == RD::TEXTURE_TYPE_2D_ARRAY && slice_type == RD::TEXTURE_SLICE_2D_ARRAY))) {
 		return named_texture.texture;
 	}
 
 	// see if we have this
-	NTSliceKey slice_key(p_layer, p_layers, p_mipmap, p_mipmaps, p_view);
+	NTSliceKey slice_key(p_layer, p_layers, p_mipmap, p_mipmaps, p_view, slice_type);
 	if (named_texture.slices.has(slice_key)) {
 		return named_texture.slices[slice_key];
 	}
 
 	// create our slice
 	RID &slice = named_texture.slices[slice_key];
-	slice = RD::get_singleton()->texture_create_shared_from_slice(p_view, named_texture.texture, p_layer, p_mipmap, p_mipmaps, p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D, p_layers);
+	slice = RD::get_singleton()->texture_create_shared_from_slice(p_view, named_texture.texture, p_layer, p_mipmap, p_mipmaps, slice_type, p_layers);
 
 	Array arr = {
 		p_context,
