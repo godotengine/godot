@@ -48,6 +48,7 @@ class CollisionObject : public Spatial {
 		ObjectID owner_id;
 		Transform xform;
 		struct ShapeBase {
+			RID fti_instance_debug_shape;
 			RID debug_shape;
 			Ref<Shape> shape;
 			int index;
