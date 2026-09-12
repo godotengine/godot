@@ -70,6 +70,10 @@ class CollisionObject2D : public Node2D {
 	Map<uint32_t, ShapeData> shapes;
 	bool only_update_transform_changes; //this is used for sync physics in KinematicBody
 
+	// Physics bodies using sync to physics defer setting global xform to callbacks from the physics.
+	// In these cases, resets should also be deferred until the callback, because global_xforms will be stale.
+	bool _fti_physics_reset_requested = false;
+
 protected:
 	CollisionObject2D(RID p_rid, bool p_area);
 
@@ -83,6 +87,7 @@ protected:
 	void _mouse_exit();
 
 	void set_only_update_transform_changes(bool p_enable);
+	void _on_physics_callback();
 
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::COLLISION_OBJECT_2D;
