@@ -1598,6 +1598,38 @@ void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	rect->texture = p_texture;
 }
 
+void RendererCanvasCull::canvas_item_add_slug_texture(RID p_item, const Rect2 &p_rect, RID p_texture, uint32_t p_offset, const Rect2 &p_src_rect, const Color &p_modulate, float p_scale, bool p_color) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	Item::CommandRect *rect = canvas_item->alloc_command<Item::CommandRect>();
+	ERR_FAIL_NULL(rect);
+	rect->modulate = p_modulate;
+	rect->rect = p_rect;
+
+	rect->texture = p_texture;
+
+	rect->source = Rect2(0, 0, 1, 1);
+	rect->flags = RendererCanvasRender::CANVAS_RECT_REGION;
+	if (p_color) {
+		rect->flags |= RendererCanvasRender::CANVAS_RECT_SLUG_COLOR;
+	} else {
+		rect->flags |= RendererCanvasRender::CANVAS_RECT_SLUG;
+	}
+
+	if (p_rect.size.x < 0) {
+		rect->flags |= RendererCanvasRender::CANVAS_RECT_FLIP_H;
+		rect->rect.size.x = -rect->rect.size.x;
+	}
+	if (p_rect.size.y < 0) {
+		rect->flags |= RendererCanvasRender::CANVAS_RECT_FLIP_V;
+		rect->rect.size.y = -rect->rect.size.y;
+	}
+	rect->offset = p_offset;
+	rect->source = p_src_rect;
+	rect->scale = p_scale;
+}
+
 void RendererCanvasCull::canvas_item_add_msdf_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, int p_outline_size, float p_px_range, float p_scale) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);

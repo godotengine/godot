@@ -346,7 +346,9 @@ public:
 	void draw_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false);
 	void draw_msdf_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), double p_outline = 0.0, double p_pixel_range = 4.0, double p_scale = 1.0);
 	void draw_lcd_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1));
+	void draw_slug_texture(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, uint32_t p_offset, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), double p_scale = 1.0, bool p_color = false);
 	void draw_style_box(RequiredParam<StyleBox> p_style_box, const Rect2 &p_rect);
+
 	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>());
 	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>());
 	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>());
@@ -462,6 +464,7 @@ class CanvasTexture : public Texture2D {
 	Ref<Texture2D> diffuse_texture;
 	Ref<Texture2D> normal_texture;
 	Ref<Texture2D> specular_texture;
+	Ref<Texture2D> slug_texture;
 	Color specular = Color(1, 1, 1, 1);
 	real_t shininess = 1.0;
 
@@ -480,8 +483,11 @@ public:
 	void set_normal_texture(const Ref<Texture2D> &p_normal);
 	Ref<Texture2D> get_normal_texture() const;
 
-	void set_specular_texture(const Ref<Texture2D> &p_specular);
+	void set_specular_texture(const Ref<Texture2D> &p_slug);
 	Ref<Texture2D> get_specular_texture() const;
+
+	void set_slug_texture(const Ref<Texture2D> &p_specular);
+	Ref<Texture2D> get_slug_texture() const;
 
 	void set_specular_color(const Color &p_color);
 	Color get_specular_color() const;

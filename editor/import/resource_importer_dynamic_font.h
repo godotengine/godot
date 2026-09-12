@@ -38,6 +38,7 @@ class ResourceImporterDynamicFont : public ResourceImporter {
 	enum Presets {
 		PRESET_DYNAMIC,
 		PRESET_MSDF,
+		PRESET_HB_SLUG,
 		PRESET_MAX
 	};
 

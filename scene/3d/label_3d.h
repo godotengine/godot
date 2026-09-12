@@ -75,6 +75,7 @@ private:
 		PackedColorArray mesh_colors;
 		PackedVector2Array mesh_uvs;
 		PackedInt32Array indices;
+		PackedInt32Array offsets;
 		int offset = 0;
 		float z_shift = 0.0;
 		RID material;

@@ -36,6 +36,7 @@
 #include "core/string/string_builder.h"
 #include "drivers/gles3/rasterizer_util_gles3.h"
 #include "drivers/gles3/storage/config.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef WEB_ENABLED
 #include "core/io/file_access.h"
@@ -46,8 +47,8 @@ static String _mkid(const String &p_id) {
 	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
 
-void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
-	Vector<String> lines = String::utf8(p_code).split("\n");
+void ShaderGLES3::_add_stage(const String &p_code, StageType p_stage_type) {
+	Vector<String> lines = p_code.split("\n");
 
 	String text;
 
@@ -105,11 +106,17 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_feedback_count, const Feedback *p_feedback, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants) {
 	name = p_name;
 
+	String vertex_code = String::utf8(p_vertex_code);
+	String fragment_code = String::utf8(p_fragment_code);
+
+	vertex_code = RenderingServer::include_vertex_module_code(vertex_code);
+	fragment_code = RenderingServer::include_fragment_module_code(fragment_code);
+
 	if (p_vertex_code) {
-		_add_stage(p_vertex_code, STAGE_TYPE_VERTEX);
+		_add_stage(vertex_code, STAGE_TYPE_VERTEX);
 	}
 	if (p_fragment_code) {
-		_add_stage(p_fragment_code, STAGE_TYPE_FRAGMENT);
+		_add_stage(fragment_code, STAGE_TYPE_FRAGMENT);
 	}
 
 	uniform_names = p_uniform_names;
@@ -133,9 +140,9 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 
 	StringBuilder tohash;
 	tohash.append("[Vertex]");
-	tohash.append(p_vertex_code ? String::utf8(p_vertex_code) : "");
+	tohash.append(p_vertex_code ? vertex_code : "");
 	tohash.append("[Fragment]");
-	tohash.append(p_fragment_code ? String::utf8(p_fragment_code) : "");
+	tohash.append(p_fragment_code ? fragment_code : "");
 
 	tohash.append("[gl_implementation]");
 	const String &vendor = String::utf8((const char *)glGetString(GL_VENDOR));

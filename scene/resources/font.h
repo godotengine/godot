@@ -197,9 +197,9 @@ class FontFile : public Font {
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
 	bool disable_embedded_bitmaps = true;
-	bool msdf = false;
+	TextServer::FontRenderMode mode = TextServer::FONT_RENDER_RASTER;
 	int msdf_pixel_range = 16;
-	int msdf_size = 48;
+	int source_size = 48;
 	int fixed_size = 0;
 	TextServer::FixedSizeScaleMode fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
 	bool force_autohinter = false;
@@ -268,14 +268,22 @@ public:
 	virtual void set_generate_mipmaps(bool p_generate_mipmaps);
 	virtual bool get_generate_mipmaps() const;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void set_multichannel_signed_distance_field(bool p_msdf);
 	virtual bool is_multichannel_signed_distance_field() const;
+#endif
+	virtual void set_render_mode(TextServer::FontRenderMode p_render_mode);
+	virtual TextServer::FontRenderMode get_render_mode() const;
 
 	virtual void set_msdf_pixel_range(int p_msdf_pixel_range);
 	virtual int get_msdf_pixel_range() const;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void set_msdf_size(int p_msdf_size);
 	virtual int get_msdf_size() const;
+#endif
+	virtual void set_source_size(int p_source_size);
+	virtual int get_source_size() const;
 
 	virtual void set_fixed_size(int p_fixed_size);
 	virtual int get_fixed_size() const;
@@ -374,6 +382,9 @@ public:
 
 	virtual void set_glyph_uv_rect(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Rect2 &p_uv_rect);
 	virtual Rect2 get_glyph_uv_rect(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
+
+	virtual void set_glyph_data_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int64_t p_data_offset);
+	virtual int64_t get_glyph_data_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
 
 	virtual void set_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx);
 	virtual int get_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const;
@@ -513,13 +524,16 @@ class SystemFont : public Font {
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 	bool keep_rounding_remainders = true;
 	double oversampling_override = 0.0;
-	bool msdf = false;
+	TextServer::FontRenderMode mode = TextServer::FONT_RENDER_RASTER;
 	int msdf_pixel_range = 16;
-	int msdf_size = 48;
+	int source_size = 48;
 
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
 	virtual void _update_base_font();
 	virtual void _update_rids() const override;
 
@@ -559,14 +573,22 @@ public:
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void set_multichannel_signed_distance_field(bool p_msdf);
 	virtual bool is_multichannel_signed_distance_field() const;
+#endif
+	virtual void set_render_mode(TextServer::FontRenderMode p_render_mode);
+	virtual TextServer::FontRenderMode get_render_mode() const;
 
 	virtual void set_msdf_pixel_range(int p_msdf_pixel_range);
 	virtual int get_msdf_pixel_range() const;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void set_msdf_size(int p_msdf_size);
 	virtual int get_msdf_size() const;
+#endif
+	virtual void set_source_size(int p_source_size);
+	virtual int get_source_size() const;
 
 	virtual void set_font_names(const PackedStringArray &p_names);
 	virtual PackedStringArray get_font_names() const;
