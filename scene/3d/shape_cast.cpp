@@ -286,7 +286,7 @@ bool ShapeCast::is_colliding() const {
 Object *ShapeCast::get_collider(int p_idx) const {
 	ERR_FAIL_INDEX_V_MSG(p_idx, result.size(), nullptr, "No collider found.");
 
-	if (result[p_idx].collider_id == 0) {
+	if (!result[p_idx].collider_id.is_valid()) {
 		return nullptr;
 	}
 	return ObjectDB::get_instance(result[p_idx].collider_id);

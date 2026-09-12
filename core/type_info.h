@@ -181,6 +181,16 @@ struct GetTypeInfo<const RefPtr &> {
 	}
 };
 
+//objectID
+template <>
+struct GetTypeInfo<ObjectID> {
+	static const Variant::Type VARIANT_TYPE = Variant::INT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
+	static inline PropertyInfo get_class_info() {
+		return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_INT_IS_OBJECTID);
+	}
+};
+
 //for variant
 template <>
 struct GetTypeInfo<Variant> {

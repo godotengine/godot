@@ -356,7 +356,7 @@ void BulletPhysicsServer::area_attach_object_instance_id(RID p_area, ObjectID p_
 
 ObjectID BulletPhysicsServer::area_get_object_instance_id(RID p_area) const {
 	if (space_owner.owns(p_area)) {
-		return 0;
+		return ObjectID();
 	}
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND_V(!area, ObjectID());
@@ -424,14 +424,14 @@ void BulletPhysicsServer::area_set_monitor_callback(RID p_area, Object *p_receiv
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_event_callback(CollisionObjectBullet::TYPE_RIGID_BODY, p_receiver ? p_receiver->get_instance_id() : 0, p_method);
+	area->set_event_callback(CollisionObjectBullet::TYPE_RIGID_BODY, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
 }
 
 void BulletPhysicsServer::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_receiver ? p_receiver->get_instance_id() : 0, p_method);
+	area->set_event_callback(CollisionObjectBullet::TYPE_AREA, p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
 }
 
 void BulletPhysicsServer::area_set_ray_pickable(RID p_area, bool p_enable) {
@@ -567,16 +567,16 @@ void BulletPhysicsServer::body_clear_shapes(RID p_body) {
 	body->remove_all_shapes();
 }
 
-void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_id) {
+void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, ObjectID p_id) {
 	CollisionObjectBullet *body = get_collision_object(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_instance_id(p_id);
 }
 
-uint32_t BulletPhysicsServer::body_get_object_instance_id(RID p_body) const {
+ObjectID BulletPhysicsServer::body_get_object_instance_id(RID p_body) const {
 	CollisionObjectBullet *body = get_collision_object(p_body);
-	ERR_FAIL_COND_V(!body, 0);
+	ERR_FAIL_COND_V(!body, ObjectID());
 
 	return body->get_instance_id();
 }
@@ -840,7 +840,7 @@ bool BulletPhysicsServer::body_is_omitting_force_integration(RID p_body) const {
 void BulletPhysicsServer::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(0), p_method, p_udata);
+	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method, p_udata);
 }
 
 void BulletPhysicsServer::body_set_ray_pickable(RID p_body, bool p_enable) {

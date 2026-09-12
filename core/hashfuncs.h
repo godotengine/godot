@@ -34,6 +34,7 @@
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/node_path.h"
+#include "core/object_id.h"
 #include "core/string_name.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
@@ -133,6 +134,7 @@ struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
 	static _FORCE_INLINE_ uint32_t hash(uint64_t p_int) { return hash_one_uint64(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const ObjectID &p_id) { return hash_one_uint64(p_id); }
 
 	static _FORCE_INLINE_ uint32_t hash(int64_t p_int) { return hash(uint64_t(p_int)); }
 	static _FORCE_INLINE_ uint32_t hash(float p_float) { return hash_djb2_one_float(p_float); }

@@ -160,7 +160,7 @@ private:
 	};
 
 	struct TrackNodeCacheKey {
-		uint32_t id;
+		ObjectID id;
 		int bone_idx;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
