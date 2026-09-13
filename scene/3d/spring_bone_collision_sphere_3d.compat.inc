@@ -35,8 +35,8 @@
 #include "core/object/class_db.h"
 
 void SpringBoneCollisionSphere3D::_bind_compatibility_methods() {
-	ClassDB::bind_method(D_METHOD("set_inside", "inside"), &SpringBoneCollisionSphere3D::_set_inside_bind_compat_122560);
-	ClassDB::bind_method(D_METHOD("get_inside"), &SpringBoneCollisionSphere3D::_is_inside_bind_compat_122560);
+	ClassDB::bind_compatibility_method(D_METHOD("set_inside", "inside"), &SpringBoneCollisionSphere3D::_set_inside_bind_compat_122560);
+	ClassDB::bind_compatibility_method(D_METHOD("is_inside"), &SpringBoneCollisionSphere3D::_is_inside_bind_compat_122560);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "inside"), "set_inside", "is_inside");
 }
 void SpringBoneCollisionSphere3D::_set_inside_bind_compat_122560(bool p_enabled) {

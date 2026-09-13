@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  spring_bone_collision_sphere_3d.compat.inc                            */
+/*  spring_bone_collision_capsule_3d.compat.inc                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -35,8 +35,8 @@
 #include "core/object/class_db.h"
 
 void SpringBoneCollisionCapsule3D::_bind_compatibility_methods() {
-	ClassDB::bind_method(D_METHOD("set_inside", "inside"), &SpringBoneCollisionCapsule3D::_set_inside_bind_compat_122560);
-	ClassDB::bind_method(D_METHOD("get_inside"), &SpringBoneCollisionCapsule3D::_is_inside_bind_compat_122560);
+	ClassDB::bind_compatibility_method(D_METHOD("set_inside", "inside"), &SpringBoneCollisionCapsule3D::_set_inside_bind_compat_122560);
+	ClassDB::bind_compatibility_method(D_METHOD("is_inside"), &SpringBoneCollisionCapsule3D::_is_inside_bind_compat_122560);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "inside"), "set_inside", "is_inside");
 }
 void SpringBoneCollisionCapsule3D::_set_inside_bind_compat_122560(bool p_enabled) {
