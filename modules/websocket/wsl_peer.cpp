@@ -528,7 +528,11 @@ Error WSLPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_opti
 	if ((port != 80 && !use_tls) || (port != 443 && use_tls)) {
 		port_string = ":" + itos(port);
 	}
-	request += "Host: " + host + port_string + "\r\n";
+	String host_header = host;
+	if (host_header.contains_char(':') && !host_header.begins_with("[")) {
+		host_header = "[" + host_header + "]";
+	}
+	request += "Host: " + host_header + port_string + "\r\n";
 	request += "Upgrade: websocket\r\n";
 	request += "Connection: Upgrade\r\n";
 	request += "Sec-WebSocket-Key: " + session_key + "\r\n";

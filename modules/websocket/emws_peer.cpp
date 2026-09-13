@@ -97,6 +97,9 @@ Error EMWSPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_tls
 		WARN_PRINT_ONCE("Custom headers are not supported in Web platform.");
 	}
 
+	if (host.contains_char(':') && !host.begins_with("[")) {
+		host = "[" + host + "]";
+	}
 	requested_url = scheme + host;
 
 	if (port && ((scheme == "ws://" && port != 80) || (scheme == "wss://" && port != 443))) {
@@ -108,7 +111,8 @@ Error EMWSPeer::connect_to_url(const String &p_url, const Ref<TLSOptions> &p_tls
 	}
 
 	peer_sock = godot_js_websocket_create(this, requested_url.utf8().get_data(), proto_string.utf8().get_data(), &_esws_on_connect, &_esws_on_message, &_esws_on_error, &_esws_on_close);
-	if (peer_sock == -1) {
+	if (peer_sock < 1) {
+		peer_sock = -1;
 		return FAILED;
 	}
 	in_buffer.resize(Math::nearest_shift((uint32_t)inbound_buffer_size), max_queued_packets);
