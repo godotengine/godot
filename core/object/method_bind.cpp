@@ -96,19 +96,6 @@ void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
 	default_argument_count = default_arguments.size();
 }
 
-void MethodBind::_generate_argument_types(int p_count) {
-	set_argument_count(p_count);
-
-	Variant::Type *argt = memnew_arr(Variant::Type, p_count + 1);
-	argt[0] = _get_argument_type(-1); // return type
-
-	for (int i = 0; i < p_count; i++) {
-		argt[i + 1] = _get_argument_type(i);
-	}
-
-	argument_types = argt;
-}
-
 MethodBind::MethodBind() {
 	static int last_id = 0;
 	method_id = last_id++;
