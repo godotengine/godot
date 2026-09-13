@@ -136,7 +136,7 @@ static real_t _verify_distance_within_taper(const Vector3 &p_origin, float p_bon
 	real_t taper_fore = (p_bone_origin_radius - p_bone_radius) / p_bone_length;
 	Vector3 diff = p_current - p_origin;
 	Vector3 bone_axis = p_current - p_current_origin; // should be length p_bone_radius due to calls to limit_length()
-	DEV_ASSERT(Math::is_equal_approx(bone_axis.length(), p_bone_length));
+	DEV_ASSERT(Math::is_equal_approx((float)bone_axis.length(), p_bone_length));
 	real_t taper_side = Math::sqrt(1.0 - taper_fore * taper_fore);
 	real_t lam = 1.0 - bone_axis.dot(diff) / (p_bone_length * p_bone_length);
 	Vector3 vecside = p_origin - (p_current_origin + bone_axis * lam);
@@ -174,7 +174,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &p_head, const Vect
 	const Vector3 &tail = p_tail;
 
 	Vector3 bone_axis = p_current - p_current_origin;
-	DEV_ASSERT(Math::is_equal_approx(bone_axis.length(), p_bone_length)); // enforced by limit_length()
+	DEV_ASSERT(Math::is_equal_approx((float)bone_axis.length(), p_bone_length)); // enforced by limit_length()
 	Vector3 p = tail - head;
 
 	// The bone_axis and p (the capsule axis) are skew lines,
@@ -279,13 +279,13 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &p_head, const Vect
 	Vector3 C_plane_z = perp * (1 / perp_len);
 	Vector3 C_plane_y = bone_axis * (1 / p_bone_length);
 	Vector3 C_plane_x = C_plane_z.cross(C_plane_y);
-	SB_DEV_ASSERT(Math::is_equal_approx(C_plane_z.length(), 1));
-	SB_DEV_ASSERT(Math::is_equal_approx(C_plane_y.length(), 1));
-	SB_DEV_ASSERT(Math::is_equal_approx(C_plane_x.length(), 1));
+	SB_DEV_ASSERT(Math::is_equal_approx((float)C_plane_z.length(), (float)1));
+	SB_DEV_ASSERT(Math::is_equal_approx((float)C_plane_y.length(), (float)1));
+	SB_DEV_ASSERT(Math::is_equal_approx((float)C_plane_x.length(), (float)1));
 
 	real_t p_length = Math::sqrt(pdp);
 	Vector3 C_capsule_vec = p * (1 / p_length);
-	SB_DEV_ASSERT(Math::is_equal_approx(C_capsule_vec.length(), 1));
+	SB_DEV_ASSERT(Math::is_equal_approx((float)C_capsule_vec.length(), (float)1));
 	Vector3 C_capsule_vec_inplane = Vector3(C_capsule_vec.dot(C_plane_x), C_capsule_vec.dot(C_plane_y), C_capsule_vec.dot(C_plane_z));
 	SB_DEV_ASSERT(Math::is_zero_approx(C_capsule_vec_inplane.z));
 	real_t capsule_vec_slope = C_capsule_vec_inplane.y / C_capsule_vec_inplane.x;
