@@ -18,7 +18,7 @@
 			[b]Note:[/b] Time still passes while the [RichTextLabel] is hidden.
 		</member>
 		<member name="env" type="Dictionary" setter="set_environment" getter="get_environment" default="{}">
-			Contains the arguments passed in the opening BBCode tag. By default, arguments are strings; if their contents match a type such as [bool], [int] or [float], they will be converted automatically. Color codes in the form [code]#rrggbb[/code] or [code]#rgb[/code] will be converted to an opaque [Color]. String arguments may not contain spaces, even if they're quoted. If present, quotes will also be present in the final string.
+			Contains the arguments passed in the opening BBCode tag. By default, arguments are strings; if their contents match a type such as [bool], [int], or [float], they will be converted automatically. Color codes in the form [code]#rrggbb[/code] or [code]#rgb[/code] will be converted to an opaque [Color]. String arguments may not contain spaces, even if they're quoted. If present, quotes will also be present in the final string.
 			For example, the opening BBCode tag [code][example foo=hello bar=true baz=42 color=#ffffff][/code] will map to the following [Dictionary]:
 			[codeblock]
 			{"foo": "hello", "bar": true, "baz": 42, "color": Color(1, 1, 1, 1)}

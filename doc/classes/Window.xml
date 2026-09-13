@@ -758,7 +758,7 @@
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
 		</member>
 		<member name="popup_wm_hint" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the [Window] will signal to the window manager that it is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+			If [code]true[/code], the [Window] will signal to the window manager that it is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable, and immovable child window).
 		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
@@ -792,7 +792,7 @@
 		</member>
 		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows.
-			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] Transparency support is implemented on Linux, macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
 			[b]Note:[/b] This property has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</member>
 		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -990,7 +990,7 @@
 			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</constant>
 		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">
-			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable, and immovable child window).
 			[b]Note:[/b] This flag has no effect in embedded windows.
 			[b]Note:[/b] This flag is implemented on Linux (Wayland).
 		</constant>

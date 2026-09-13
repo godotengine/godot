@@ -310,7 +310,7 @@
 			This means that if the total amount of blending is [code]0.0[/code], the result is equal to the [code]"RESET"[/code] animation.
 			If the number of tracks between the blended animations is different, the animation with the missing track is treated as if it had the initial value.
 			If [code]false[/code], The blend does not use the deterministic algorithm. The total weight is normalized and always [code]1.0[/code]. If the number of tracks between the blended animations is different, nothing is done about the animation that is missing a track.
-			[b]Note:[/b] In [AnimationTree], the blending with [AnimationNodeAdd2], [AnimationNodeAdd3], [AnimationNodeSub2] or the weight greater than [code]1.0[/code] may produce unexpected results.
+			[b]Note:[/b] In [AnimationTree], the blending with [AnimationNodeAdd2], [AnimationNodeAdd3], [AnimationNodeSub2], or the weight greater than [code]1.0[/code] may produce unexpected results.
 			For example, if [AnimationNodeAdd2] blends two nodes with the amount [code]1.0[/code], then total weight is [code]2.0[/code] but it will be normalized to make the total amount [code]1.0[/code] and the result will be equal to [AnimationNodeBlend2] with the amount [code]0.5[/code].
 		</member>
 		<member name="reset_on_save" type="bool" setter="set_reset_on_save_enabled" getter="is_reset_on_save_enabled" default="true">

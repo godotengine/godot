@@ -272,7 +272,7 @@
 			<return type="bool" />
 			<param index="0" name="color" type="String" />
 			<description>
-				Returns [code]true[/code] if [param color] is a valid HTML hexadecimal color string. The string must be a hexadecimal value (case-insensitive) of either 3, 4, 6 or 8 digits, and may be prefixed by a hash sign ([code]#[/code]). This method is identical to [method String.is_valid_html_color].
+				Returns [code]true[/code] if [param color] is a valid HTML hexadecimal color string. The string must be a hexadecimal value (case-insensitive) of either 3, 4, 6, or 8 digits, and may be prefixed by a hash sign ([code]#[/code]). This method is identical to [method String.is_valid_html_color].
 				[codeblocks]
 				[gdscript]
 				Color.html_is_valid("#55aaFF")   # Returns true

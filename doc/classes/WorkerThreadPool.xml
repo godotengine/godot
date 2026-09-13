@@ -81,7 +81,7 @@
 		<method name="get_caller_task_id" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the task ID of the current thread calling this method, or [code]-1[/code] if the task is a group task, invalid or the current thread is not part of the thread pool (e.g. the main thread).
+				Returns the task ID of the current thread calling this method, or [code]-1[/code] if the task is a group task, invalid, or the current thread is not part of the thread pool (e.g. the main thread).
 				Can be used by a task to get its own task ID, or to determine whether the current code is running inside the worker thread pool.
 				[b]Note:[/b] Group tasks have their own IDs, so this method will return [code]-1[/code] for group tasks.
 			</description>

@@ -6,7 +6,7 @@
 	<description>
 		Base class for [ImageTextureLayered] and [CompressedTextureLayered]. Cannot be used directly, but contains all the functions necessary for accessing the derived resource types. See also [Texture3D].
 		Data is set on a per-layer basis. For [Texture2DArray]s, the layer specifies the array layer.
-		All images need to have the same width, height and number of mipmap levels.
+		All images need to have the same width, height, and number of mipmap levels.
 		A [TextureLayered] can be loaded with [method ResourceLoader.load].
 		Internally, Godot maps these files to their respective counterparts in the target rendering driver (Vulkan, OpenGL3).
 	</description>

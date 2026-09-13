@@ -4,7 +4,7 @@
 		Godot editor's control for selecting [Resource] type properties.
 	</brief_description>
 	<description>
-		This [Control] node is used in the editor's Inspector dock to allow editing of [Resource] type properties. It provides options for creating, loading, saving and converting resources. Can be used with [EditorInspectorPlugin] to recreate the same behavior.
+		This [Control] node is used in the editor's Inspector dock to allow editing of [Resource] type properties. It provides options for creating, loading, saving, and converting resources. Can be used with [EditorInspectorPlugin] to recreate the same behavior.
 		[b]Note:[/b] This [Control] does not include any editor for the resource, as editing is controlled by the Inspector dock itself or sub-Inspectors.
 	</description>
 	<tutorials>

@@ -14,7 +14,7 @@
 			Controls how color channels should be used in the imported texture.
 			[b]sRGB Friendly:[/b], prevents the R and RG color formats from being used, as they do not support nonlinear sRGB encoding.
 			[b]Optimized:[/b], allows the RG color format to be used if the texture does not use the blue channel. This reduces memory usage if the texture's blue channel can be discarded (all pixels must have a blue value of [code]0[/code]).
-			[b]Normal Map (RG Channels):[/b] This forces all layers from the texture to be imported with the RG color format, with only the red and green channels preserved. RGTC (Red-Green Texture Compression) compression is able to preserve its detail much better, while using the same amount of memory as a standard RGBA VRAM-compressed texture. This only has an effect on textures with the VRAM Compressed or Basis Universal compression modes. This mode is only available in layered textures ([Cubemap], [CubemapArray], [Texture2DArray] and [Texture3D]).
+			[b]Normal Map (RG Channels):[/b] This forces all layers from the texture to be imported with the RG color format, with only the red and green channels preserved. RGTC (Red-Green Texture Compression) compression is able to preserve its detail much better, while using the same amount of memory as a standard RGBA VRAM-compressed texture. This only has an effect on textures with the VRAM Compressed or Basis Universal compression modes. This mode is only available in layered textures ([Cubemap], [CubemapArray], [Texture2DArray], and [Texture3D]).
 		</member>
 		<member name="compress/hdr_compression" type="int" setter="" getter="" default="1">
 			Controls how VRAM compression should be performed for HDR images.
@@ -60,7 +60,7 @@
 			If [code]true[/code], smaller versions of the texture are generated on import. For example, a 64×64 texture will generate 6 mipmaps (32×32, 16×16, 8×8, 4×4, 2×2, 1×1). This has several benefits:
 			- Textures will not become grainy in the distance (in 3D), or if scaled down due to [Camera2D] zoom or [CanvasItem] scale (in 2D).
 			- Performance will improve if the texture is displayed in the distance, since sampling smaller versions of the original texture is faster and requires less memory bandwidth.
-			The downside of mipmaps is that they increase memory usage by roughly 33% (for [Texture2DArray], [Cubemap] and [CubemapArray]) or 14% (for [Texture3D]).
+			The downside of mipmaps is that they increase memory usage by roughly 33% (for [Texture2DArray], [Cubemap], and [CubemapArray]) or 14% (for [Texture3D]).
 			It's recommended to enable mipmaps in 3D. However, in 2D, this should only be enabled if your project visibly benefits from having mipmaps enabled. If the camera never zooms out significantly, there won't be a benefit to enabling mipmaps but memory usage will increase.
 		</member>
 		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">

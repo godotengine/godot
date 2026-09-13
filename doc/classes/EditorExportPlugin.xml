@@ -218,7 +218,7 @@
 
 					func _supports_platform(platform) -&gt; bool:
 						if platform is EditorExportPlatformPC:
-							# Run on all desktop platforms including Windows, MacOS and Linux.
+							# Run on all desktop platforms including Windows, MacOS, and Linux.
 							return true
 						return false
 

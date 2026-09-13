@@ -126,7 +126,7 @@
 		</constant>
 		<constant name="MODE_OKHSL" value="3" enum="ColorModeType">
 			Allows editing the color with Hue/Saturation/Lightness sliders.
-			OKHSL is a new color space similar to HSL but that better match perception by leveraging the Oklab color space which is designed to be simple to use, while doing a good job at predicting perceived lightness, chroma and hue.
+			OKHSL is a new color space similar to HSL but that better match perception by leveraging the Oklab color space which is designed to be simple to use, while doing a good job at predicting perceived lightness, chroma, and hue.
 			[url=https://bottosson.github.io/posts/colorpicker/]Okhsv and Okhsl color spaces[/url]
 		</constant>
 		<constant name="SHAPE_HSV_RECTANGLE" value="0" enum="PickerShapeType">

@@ -86,7 +86,7 @@
 			Controls how the blend factor for the color channels is determined based on the destination's fragments.
 		</member>
 		<member name="enable_blend" type="bool" setter="set_enable_blend" getter="get_enable_blend" default="false">
-			If [code]true[/code], performs blending between the source and destination according to the factors defined in [member src_color_blend_factor], [member dst_color_blend_factor], [member src_alpha_blend_factor] and [member dst_alpha_blend_factor]. The blend modes [member color_blend_op] and [member alpha_blend_op] are also taken into account, with [member write_r], [member write_g], [member write_b] and [member write_a] controlling the output.
+			If [code]true[/code], performs blending between the source and destination according to the factors defined in [member src_color_blend_factor], [member dst_color_blend_factor], [member src_alpha_blend_factor], and [member dst_alpha_blend_factor]. The blend modes [member color_blend_op] and [member alpha_blend_op] are also taken into account, with [member write_r], [member write_g], [member write_b], and [member write_a] controlling the output.
 		</member>
 		<member name="src_alpha_blend_factor" type="int" setter="set_src_alpha_blend_factor" getter="get_src_alpha_blend_factor" enum="RenderingDevice.BlendFactor" default="0">
 			Controls how the blend factor for the alpha channel is determined based on the source's fragments.

@@ -300,7 +300,7 @@
 		<method name="update_mouse_cursor_state">
 			<return type="void" />
 			<description>
-				Force instantly updating the display based on the current mouse cursor position. This includes updating the mouse cursor shape and sending necessary [signal Control.mouse_entered], [signal CollisionObject2D.mouse_entered], [signal CollisionObject3D.mouse_entered] and [signal Window.mouse_entered] signals and their respective [code]mouse_exited[/code] counterparts.
+				Force instantly updating the display based on the current mouse cursor position. This includes updating the mouse cursor shape and sending necessary [signal Control.mouse_entered], [signal CollisionObject2D.mouse_entered], [signal CollisionObject3D.mouse_entered], and [signal Window.mouse_entered] signals and their respective [code]mouse_exited[/code] counterparts.
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -308,7 +308,7 @@
 			<param index="0" name="position" type="Vector2" />
 			<description>
 				Moves the mouse pointer to the specified position in this [Viewport] using the coordinate system of this [Viewport].
-				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS and Linux. It has no effect on Android, iOS and Web.
+				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS, and Linux. It has no effect on Android, iOS, and Web.
 			</description>
 		</method>
 	</methods>

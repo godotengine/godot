@@ -4,7 +4,7 @@
 		Manages the game loop via a hierarchy of nodes.
 	</brief_description>
 	<description>
-		As one of the most important classes, the [SceneTree] manages the hierarchy of nodes in a scene, as well as scenes themselves. Nodes can be added, fetched and removed. The whole scene tree (and thus the current scene) can be paused. Scenes can be loaded, switched and reloaded.
+		As one of the most important classes, the [SceneTree] manages the hierarchy of nodes in a scene, as well as scenes themselves. Nodes can be added, fetched, and removed. The whole scene tree (and thus the current scene) can be paused. Scenes can be loaded, switched, and reloaded.
 		You can also use the [SceneTree] to organize your nodes into [b]groups[/b]: every node can be added to as many groups as you want to create, e.g. an "enemy" group. You can then iterate these groups or even call methods and set properties on all the nodes belonging to any given group.
 		[SceneTree] is the default [MainLoop] implementation used by the engine, and is thus in charge of the game loop.
 	</description>
@@ -285,7 +285,7 @@
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused" default="false">
 			If [code]true[/code], the scene tree is considered paused. This causes the following behavior:
 			- 2D and 3D physics will be stopped, as well as collision detection and related signals.
-			- Depending on each node's [member Node.process_mode], their [method Node._process], [method Node._physics_process] and [method Node._input] callback methods may not called anymore.
+			- Depending on each node's [member Node.process_mode], their [method Node._process], [method Node._physics_process], and [method Node._input] callback methods may not called anymore.
 		</member>
 		<member name="physics_interpolation" type="bool" setter="set_physics_interpolation_enabled" getter="is_physics_interpolation_enabled" default="false">
 			If [code]true[/code], the renderer will interpolate the transforms of objects (both physics and non-physics) between the last two transforms, so that smooth motion is seen even when physics ticks do not coincide with rendered frames.

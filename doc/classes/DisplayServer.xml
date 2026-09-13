@@ -1747,7 +1747,7 @@
 		<method name="process_events">
 			<return type="void" />
 			<description>
-				Perform window manager processing, including input flushing. See also [method force_process_and_drop_events], [method Input.flush_buffered_events] and [member Input.use_accumulated_input].
+				Perform window manager processing, including input flushing. See also [method force_process_and_drop_events], [method Input.flush_buffered_events], and [member Input.use_accumulated_input].
 			</description>
 		</method>
 		<method name="register_additional_output">
@@ -2088,7 +2088,7 @@
 			<param index="0" name="event" type="int" enum="DisplayServer.TTSUtteranceEvent" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Adds a callback, which is called when the utterance has started, finished, canceled or reached a text boundary.
+				Adds a callback, which is called when the utterance has started, finished, canceled, or reached a text boundary.
 				- [constant TTS_UTTERANCE_STARTED], [constant TTS_UTTERANCE_ENDED], and [constant TTS_UTTERANCE_CANCELED] callable's method should take one [int] parameter, the utterance ID.
 				- [constant TTS_UTTERANCE_BOUNDARY] callable's method should take two [int] parameters, the index of the character and the utterance ID.
 				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
@@ -2159,7 +2159,7 @@
 				[param max_length] limits the number of characters that can be entered if different from [code]-1[/code].
 				[param cursor_start] can optionally define the current text cursor position if [param cursor_end] is not set.
 				[param cursor_start] and [param cursor_end] can optionally define the current text selection.
-				[b]Note:[/b] This method is implemented on Android, iOS and Web.
+				[b]Note:[/b] This method is implemented on Android, iOS, and Web.
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -2305,7 +2305,7 @@
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the size of the window specified by [param window_id] (in pixels), excluding the borders drawn by the operating system. This is also called the "client area". See also [method window_get_size_with_decorations], [method window_set_size] and [method window_get_position].
+				Returns the size of the window specified by [param window_id] (in pixels), excluding the borders drawn by the operating system. This is also called the "client area". See also [method window_get_size_with_decorations], [method window_set_size], and [method window_get_position].
 			</description>
 		</method>
 		<method name="window_get_size_with_decorations" qualifiers="const">
@@ -3383,7 +3383,7 @@
 			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</constant>
 		<constant name="WINDOW_FLAG_POPUP_WM_HINT" value="10" enum="WindowFlags">
-			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable, and immovable child window).
 			[b]Note:[/b] This flag is implemented on Linux (Wayland).
 		</constant>
 		<constant name="WINDOW_FLAG_MINIMIZE_DISABLED" value="11" enum="WindowFlags">

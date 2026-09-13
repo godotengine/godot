@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A 2D texture that obtains colors from a [Gradient] to fill the texture data. This texture is able to transform a color transition into different patterns such as a linear or a radial gradient. The texture is filled by interpolating colors starting from [member fill_from] to [member fill_to] offsets by default, but the gradient fill can be repeated to cover the entire texture.
-		The gradient is sampled individually for each pixel so it does not necessarily represent an exact copy of the gradient (see [member width] and [member height]). See also [GradientTexture1D], [CurveTexture] and [CurveXYZTexture].
+		The gradient is sampled individually for each pixel so it does not necessarily represent an exact copy of the gradient (see [member width] and [member height]). See also [GradientTexture1D], [CurveTexture], and [CurveXYZTexture].
 	</description>
 	<tutorials>
 	</tutorials>

@@ -23,7 +23,7 @@
 	</members>
 	<constants>
 		<constant name="TEXTURE_MODE_RGB" value="0" enum="TextureMode">
-			Store the curve equally across the red, green and blue channels. This uses more video memory, but is more compatible with shaders that only read the green and blue values.
+			Store the curve equally across the red, green, and blue channels. This uses more video memory, but is more compatible with shaders that only read the green and blue values.
 		</constant>
 		<constant name="TEXTURE_MODE_RED" value="1" enum="TextureMode">
 			Store the curve only in the red channel. This saves video memory, but some custom shaders may not be able to work with this.

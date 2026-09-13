@@ -4,7 +4,7 @@
 		Stores globally-accessible variables.
 	</brief_description>
 	<description>
-		Stores variables that can be accessed from everywhere. Use [method get_setting], [method set_setting] or [method has_setting] to access them. Variables stored in [code]project.godot[/code] are also loaded into [ProjectSettings], making this object very useful for reading custom game configuration options.
+		Stores variables that can be accessed from everywhere. Use [method get_setting], [method set_setting], or [method has_setting] to access them. Variables stored in [code]project.godot[/code] are also loaded into [ProjectSettings], making this object very useful for reading custom game configuration options.
 		When naming a Project Settings property, use the full path to the setting including the category. For example, [code]"application/config/name"[/code] for the project name. Category and property names can be viewed in the Project Settings dialog.
 		[b]Feature tags:[/b] Project settings can be overridden for specific platforms and configurations (debug, release, ...) using [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url].
 		[b]Overriding:[/b] Any project setting can be overridden by creating a file named [code]override.cfg[/code] in the project's root directory. This file is in the same format as [code]project.godot[/code], and can also be written using [ConfigFile]. This can also be used in exported projects by placing this file in the same directory as the project binary. Overriding will still take the base project settings' [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tags[/url] in account. Therefore, make sure to [i]also[/i] override the setting with the desired feature tags if you want them to override base project settings on all platforms and configurations.
@@ -346,7 +346,7 @@
 			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
 		</member>
 		<member name="application/config/name_localized" type="Dictionary" setter="" getter="" default="{}">
-			Translations of the project's name. This setting is used by OS tools to translate application name on Android, iOS and macOS.
+			Translations of the project's name. This setting is used by OS tools to translate application name on Android, iOS, and macOS.
 			[b]Note:[/b] When left empty, the application name is translated using the project translations.
 		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
@@ -971,7 +971,7 @@
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], allows HiDPI display on Windows, macOS, Android, iOS and Web. If [code]false[/code], the platform's low-DPI fallback will be used on HiDPI displays, which causes the window to be displayed in a blurry or pixelated manner (and can cause various window management bugs). Therefore, it is recommended to make your project scale to [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] instead of disabling this setting.
+			If [code]true[/code], allows HiDPI display on Windows, macOS, Android, iOS, and Web. If [code]false[/code], the platform's low-DPI fallback will be used on HiDPI displays, which causes the window to be displayed in a blurry or pixelated manner (and can cause various window management bugs). Therefore, it is recommended to make your project scale to [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] instead of disabling this setting.
 			[b]Note:[/b] This setting has no effect on Linux as DPI-awareness fallbacks are not supported there.
 		</member>
 		<member name="display/window/energy_saving/keep_screen_on" type="bool" setter="" getter="" default="true">
@@ -1150,7 +1150,7 @@
 			Number of bits per audio sample written to the [code].avi[/code] file. Only 16 and 32-bit are supported.
 		</member>
 		<member name="editor/movie_writer/disable_vsync" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], requests V-Sync to be disabled when writing a movie (similar to setting [member display/window/vsync/vsync_mode] to [b]Disabled[/b]). This can speed up video writing if the hardware is fast enough to render, encode and save the video at a framerate higher than the monitor's refresh rate.
+			If [code]true[/code], requests V-Sync to be disabled when writing a movie (similar to setting [member display/window/vsync/vsync_mode] to [b]Disabled[/b]). This can speed up video writing if the hardware is fast enough to render, encode, and save the video at a framerate higher than the monitor's refresh rate.
 			[b]Note:[/b] [member editor/movie_writer/disable_vsync] has no effect if the operating system or graphics driver forces V-Sync with no way for applications to disable it.
 		</member>
 		<member name="editor/movie_writer/fps" type="int" setter="" getter="" default="60">
@@ -1327,7 +1327,7 @@
 			Delay for tooltips in the editor.
 		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
-			Default [InputEventAction] to confirm a focused button, menu or list item, or validate input.
+			Default [InputEventAction] to confirm a focused button, menu, or list item, or validate input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_accessibility_drag_and_drop" type="Dictionary" setter="" getter="">
@@ -1750,8 +1750,8 @@
 			[b]Note:[/b] Not to be confused with [TextServerFallback].
 		</member>
 		<member name="internationalization/locale/include_text_server_data" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], text server break iteration rule sets, dictionaries and other optional data are included in the exported project.
-			[b]Note:[/b] "ICU / HarfBuzz / Graphite" text server data includes dictionaries for Burmese, Chinese, Japanese, Khmer, Lao and Thai as well as Unicode Standard Annex #29 and Unicode Standard Annex #14 word and line breaking rules. Data is about 4 MB large.
+			If [code]true[/code], text server break iteration rule sets, dictionaries, and other optional data are included in the exported project.
+			[b]Note:[/b] "ICU / HarfBuzz / Graphite" text server data includes dictionaries for Burmese, Chinese, Japanese, Khmer, Lao, and Thai as well as Unicode Standard Annex #29 and Unicode Standard Annex #14 word and line breaking rules. Data is about 4 MB large.
 			[b]Note:[/b] [TextServerFallback] does not use additional data.
 		</member>
 		<member name="internationalization/locale/line_breaking_strictness" type="int" setter="" getter="" default="0">
@@ -2779,15 +2779,15 @@
 		</member>
 		<member name="physics/jolt_physics_3d/motion_queries/recovery_amount" type="float" setter="" getter="" default="0.4">
 			Fraction of the total penetration to depenetrate per iteration during motion queries.
-			[b]Note:[/b] This affects methods [method CharacterBody3D.move_and_slide], [method PhysicsBody3D.move_and_collide], [method PhysicsBody3D.test_move] and [method PhysicsServer3D.body_test_motion].
+			[b]Note:[/b] This affects methods [method CharacterBody3D.move_and_slide], [method PhysicsBody3D.move_and_collide], [method PhysicsBody3D.test_move], and [method PhysicsServer3D.body_test_motion].
 		</member>
 		<member name="physics/jolt_physics_3d/motion_queries/recovery_iterations" type="int" setter="" getter="" default="4">
 			The number of iterations to run when depenetrating during motion queries.
-			[b]Note:[/b] This affects methods [method CharacterBody3D.move_and_slide], [method PhysicsBody3D.move_and_collide], [method PhysicsBody3D.test_move] and [method PhysicsServer3D.body_test_motion].
+			[b]Note:[/b] This affects methods [method CharacterBody3D.move_and_slide], [method PhysicsBody3D.move_and_collide], [method PhysicsBody3D.test_move], and [method PhysicsServer3D.body_test_motion].
 		</member>
 		<member name="physics/jolt_physics_3d/motion_queries/use_enhanced_internal_edge_removal" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables Jolt's enhanced internal edge removal during motion queries. This can help alleviate ghost collisions, but only with edges within a single body, meaning edges between separate bodies can still cause ghost collisions.
-			[b]Note:[/b] This affects methods [method CharacterBody3D.move_and_slide], [method PhysicsBody3D.move_and_collide], [method PhysicsBody3D.test_move] and [method PhysicsServer3D.body_test_motion].
+			[b]Note:[/b] This affects methods [method CharacterBody3D.move_and_slide], [method PhysicsBody3D.move_and_collide], [method PhysicsBody3D.test_move], and [method PhysicsServer3D.body_test_motion].
 		</member>
 		<member name="physics/jolt_physics_3d/queries/enable_ray_cast_face_index" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], populates the [code]face_index[/code] field in the results of [method PhysicsDirectSpaceState3D.intersect_ray], also accessed through [method RayCast3D.get_collision_face_index]. If [code]false[/code], the [code]face_index[/code] field will be left at its default value of [code]-1[/code].
@@ -2795,7 +2795,7 @@
 		</member>
 		<member name="physics/jolt_physics_3d/queries/use_enhanced_internal_edge_removal" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables Jolt's enhanced internal edge removal during shape queries. This can help alleviate ghost collisions when using shape queries for things like character movement, but only with edges within a single body, meaning edges between separate bodies can still cause ghost collisions.
-			[b]Note:[/b] This affects methods [method PhysicsDirectSpaceState3D.cast_motion], [method PhysicsDirectSpaceState3D.collide_shape], [method PhysicsDirectSpaceState3D.get_rest_info] and [method PhysicsDirectSpaceState3D.intersect_shape].
+			[b]Note:[/b] This affects methods [method PhysicsDirectSpaceState3D.cast_motion], [method PhysicsDirectSpaceState3D.collide_shape], [method PhysicsDirectSpaceState3D.get_rest_info], and [method PhysicsDirectSpaceState3D.intersect_shape].
 			[b]Note:[/b] Enabling this setting can cause certain shapes to be culled from the results entirely, but you will get at least one intersection per body.
 		</member>
 		<member name="physics/jolt_physics_3d/simulation/allow_sleep" type="bool" setter="" getter="" default="true">

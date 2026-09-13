@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ResourceImporterDynamicFont" inherits="ResourceImporter" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Imports a TTF, TTC, OTF, OTC, WOFF or WOFF2 font file for font rendering that adapts to any size.
+		Imports a TTF, TTC, OTF, OTC, WOFF, or WOFF2 font file for font rendering that adapts to any size.
 	</brief_description>
 	<description>
 		Unlike bitmap fonts, dynamic fonts can be resized to any size and still look crisp. Dynamic fonts also optionally support MSDF font rendering, which allows for run-time scale changes with no re-rasterization cost.
@@ -14,12 +14,12 @@
 	<members>
 		<member name="allow_system_fallback" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], automatically use system fonts as a fallback if a glyph isn't found in this dynamic font. This makes supporting CJK characters or emoji more straightforward, as you don't need to include a CJK/emoji font in your project. See also [member fallbacks].
-			[b]Note:[/b] The appearance of system fonts varies across platforms. Loading system fonts is only supported on Windows, macOS, Linux, Android and iOS.
+			[b]Note:[/b] The appearance of system fonts varies across platforms. Loading system fonts is only supported on Windows, macOS, Linux, Android, and iOS.
 		</member>
 		<member name="antialiasing" type="int" setter="" getter="" default="1">
 			The font antialiasing method to use.
 			[b]Disabled:[/b] Most suited for pixel art fonts, although you do not [i]have[/i] to change the antialiasing from the default [b]Grayscale[/b] if the font file was well-created and the font is used at an integer multiple of its intended size. If pixel art fonts have a bad appearance at their intended size, try setting [member subpixel_positioning] to [b]Disabled[/b] instead.
-			[b]Grayscale:[/b] Use grayscale antialiasing. This is the approach used by the operating system on macOS, Android and iOS.
+			[b]Grayscale:[/b] Use grayscale antialiasing. This is the approach used by the operating system on macOS, Android, and iOS.
 			[b]LCD Subpixel:[/b] Use antialiasing with subpixel patterns to make fonts sharper on LCD displays. This is the approach used by the operating system on Windows and most Linux distributions. The downside is that this can introduce "fringing" on edges, especially on display technologies that don't use standard RGB subpixels (such as OLED displays). The LCD subpixel layout is globally controlled by [member ProjectSettings.gui/theme/lcd_subpixel_layout], which also allows falling back to grayscale antialiasing.
 		</member>
 		<member name="compress" type="bool" setter="" getter="" default="true">
@@ -66,7 +66,7 @@
 			MSDF font rendering can be combined with [member generate_mipmaps] to further improve font rendering quality when scaled down.
 		</member>
 		<member name="opentype_features" type="Dictionary" setter="" getter="" default="{}">
-			The OpenType features to enable, disable or set a value for this font. This can be used to enable optional features provided by the font, such as ligatures or alternative glyphs. The list of supported OpenType features varies on a per-font basis.
+			The OpenType features to enable, disable, or set a value for this font. This can be used to enable optional features provided by the font, such as ligatures or alternative glyphs. The list of supported OpenType features varies on a per-font basis.
 		</member>
 		<member name="oversampling" type="float" setter="" getter="" default="0.0">
 			If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods.

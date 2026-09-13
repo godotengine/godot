@@ -97,7 +97,7 @@
 			<param index="0" name="b" type="Plane" />
 			<param index="1" name="c" type="Plane" />
 			<description>
-				Returns the intersection point of the three planes [param b], [param c] and this plane. If no intersection is found, [code]null[/code] is returned.
+				Returns the intersection point of the three planes [param b], [param c], and this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="intersects_ray" qualifiers="const">
