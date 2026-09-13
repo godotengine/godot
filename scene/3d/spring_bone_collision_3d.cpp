@@ -231,7 +231,7 @@ Vector3 SpringBoneCollision3D::_collide_sphere_taper(const Vector3 &p_origin, fl
 
 	Vector3 diff = p_current - p_origin;
 	Vector3 bone_axis = p_current - p_current_origin;
-	DEV_ASSERT(Math::is_equal_approx(bone_axis.length(), p_bone_length));
+	DEV_ASSERT(Math::is_equal_approx((float)bone_axis.length(), p_bone_length));
 	float taper_side = Math::sqrt(1.0 - taper_fore * taper_fore);
 	float bone_axis_sq = bone_axis.dot(bone_axis);
 	float lam = 1.0 - bone_axis.dot(diff) / bone_axis_sq; // calculated from the tail end
