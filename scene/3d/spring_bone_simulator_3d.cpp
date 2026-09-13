@@ -35,6 +35,8 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/3d/spring_bone_collision_3d.h"
+#include "scene/3d/spring_bone_collision_sphere_3d.h"
+#include "scene/3d/spring_bone_collision_capsule_3d.h"
 
 // Original VRM Spring Bone movement logic was distributed by (c) VRM Consortium. Licensed under the MIT license.
 
@@ -1704,6 +1706,22 @@ void SpringBoneSimulator3D::_make_gizmo_dirty() {
 void SpringBoneSimulator3D::_redraw_gizmo() {
 	update_gizmos();
 	gizmo_dirty = false;
+}
+
+bool SpringBoneSimulator3D::get_has_chain_collision() {
+	bool has_chain_collision = false;
+	for (uint32_t j = 0; j < collisions.size(); j++) {
+		Object *obj = ObjectDB::get_instance(collisions[j]);
+		if (obj) {
+			SpringBoneCollisionSphere3D *ns = Object::cast_to<SpringBoneCollisionSphere3D>(obj);
+			SpringBoneCollisionCapsule3D *nc = Object::cast_to<SpringBoneCollisionCapsule3D>(obj);
+				if ((ns && ns->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_CHAIN) || (nc && nc->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_CHAIN)) {
+				has_chain_collision = true;
+				break;
+			}
+		}
+	}
+	return has_chain_collision;
 }
 #endif
 

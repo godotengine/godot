@@ -322,6 +322,7 @@ public:
 #ifdef TOOLS_ENABLED
 	Vector3 get_bone_vector(int p_index, int p_joint) const;
 	virtual bool is_processed_on_saving() const override { return true; }
+	bool get_has_chain_collision();
 #endif // TOOLS_ENABLED
 
 	~SpringBoneSimulator3D();
