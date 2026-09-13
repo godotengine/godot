@@ -59,14 +59,7 @@ protected:
 	void _set_const(bool p_const);
 	void _set_static(bool p_static);
 	void _set_returns(bool p_returns);
-	virtual Variant::Type _get_argument_type(int p_arg) const {
-		if (p_arg < 0 || p_arg >= argument_count) {
-			p_arg = -1;
-		}
-		return argument_types[p_arg + 1];
-	}
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const = 0;
-	void _generate_argument_types(int p_count);
 
 	void set_argument_count(int p_count) { argument_count = p_count; }
 
@@ -160,10 +153,6 @@ public:
 		} else {
 			return PropertyInfo(Variant::NIL, "arg_" + itos(p_arg), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT);
 		}
-	}
-
-	virtual Variant::Type _get_argument_type(int p_arg) const override {
-		return _gen_argument_type_info(p_arg).type;
 	}
 
 #ifdef DEBUG_ENABLED
