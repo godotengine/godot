@@ -289,10 +289,8 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &p_head, const Vect
 	Vector3 C_capsule_vec_inplane = Vector3(C_capsule_vec.dot(C_plane_x), C_capsule_vec.dot(C_plane_y), C_capsule_vec.dot(C_plane_z));
 	SB_DEV_ASSERT(Math::is_zero_approx(C_capsule_vec_inplane.z));
 
-
 	if (Math::is_zero_approx(C_capsule_vec_inplane.x)) {
-		// Treat numerically parallel axes like the parallel-axis case above.
-		return 0.5;
+		return 0.5; // Treat numerically parallel axes like the parallel-axis case above.
 	}
 	real_t capsule_vec_slope = C_capsule_vec_inplane.y / C_capsule_vec_inplane.x;
 
