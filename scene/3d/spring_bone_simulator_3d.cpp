@@ -1715,7 +1715,7 @@ bool SpringBoneSimulator3D::get_has_chain_collision() {
 		if (obj) {
 			SpringBoneCollisionSphere3D *ns = Object::cast_to<SpringBoneCollisionSphere3D>(obj);
 			SpringBoneCollisionCapsule3D *nc = Object::cast_to<SpringBoneCollisionCapsule3D>(obj);
-				if ((ns && ns->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_CHAIN) || (nc && nc->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_CHAIN)) {
+			if ((ns && ns->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_CHAIN) || (nc && nc->get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_CHAIN)) {
 				has_chain_collision = true;
 				break;
 			}

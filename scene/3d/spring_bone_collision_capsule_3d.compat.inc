@@ -37,7 +37,6 @@
 void SpringBoneCollisionCapsule3D::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("set_inside", "inside"), &SpringBoneCollisionCapsule3D::_set_inside_bind_compat_122560);
 	ClassDB::bind_compatibility_method(D_METHOD("is_inside"), &SpringBoneCollisionCapsule3D::_is_inside_bind_compat_122560);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "inside"), "set_inside", "is_inside");
 }
 void SpringBoneCollisionCapsule3D::_set_inside_bind_compat_122560(bool p_enabled) {
 	return (set_collide_mode(p_enabled ? SpringBoneCollision3D::COLLIDE_MODE_INSIDE : SpringBoneCollision3D::COLLIDE_MODE_JOINT));

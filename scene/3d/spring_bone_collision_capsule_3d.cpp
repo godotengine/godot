@@ -33,6 +33,7 @@
 
 #include "core/object/class_db.h"
 #include "scene/3d/spring_bone_collision_sphere_3d.h"
+#include "spring_bone_simulator_3d.h"
 
 void SpringBoneCollisionCapsule3D::set_radius(float p_radius) {
 	radius = p_radius;
@@ -82,6 +83,10 @@ void SpringBoneCollisionCapsule3D::set_collide_mode(CollideMode p_collide_mode) 
 	collide_mode = p_collide_mode;
 #ifdef TOOLS_ENABLED
 	update_gizmos();
+	SpringBoneSimulator3D *parent = Object::cast_to<SpringBoneSimulator3D>(get_parent());
+	if (parent) {
+		parent->update_gizmos();
+	}
 #endif // TOOLS_ENABLED
 }
 
