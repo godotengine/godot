@@ -697,6 +697,12 @@ private:
 #ifndef DISABLE_DEPRECATED
 		Color background_color = Color(1, 1, 1);
 #endif // DISABLE_DEPRECATED
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> caret_moved_sound;
+		Ref<AudioStream> caret_move_rejected_sound;
+		Ref<AudioStream> text_changed_sound;
+		Ref<AudioStream> text_change_rejected_sound;
 	} theme_cache;
 
 	bool window_has_focus = true;
@@ -741,6 +747,7 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _move_caret_document_start(bool p_select);
 	void _move_caret_document_end(bool p_select);
+	bool _has_any_caret_moved(const PackedVector2Array &p_previous_caret_positions) const;
 	bool _clear_carets_and_selection();
 
 protected:
