@@ -293,7 +293,7 @@
 			The sizing strategy used to determine tab widths.
 		</member>
 		<member name="tab_style_side" type="int" setter="set_tab_style_side" getter="get_tab_style_side" enum="TabBar.TabStyleSide" default="0">
-			Which side of the tab the tab style highlight faces. [code]Top[/code] draws the style as-is, [code]Bottom[/code] flips it vertically, [code]Left[/code] and [code]Right[/code] rotate it 90 degrees. Set automatically from [TabContainer] based on the tab position.
+			Which side of the tab the tab style highlight faces. [code]Top[/code] draws the style as-is, [code]Bottom[/code] flips it vertically, [code]Left[/code] and [code]Right[/code] rotate it 90 degrees.
 		</member>
 		<member name="tab_text_rotation" type="int" setter="set_tab_text_rotation" getter="get_tab_text_rotation" enum="TabBar.TabTextRotation" default="0">
 			Rotation of the tab text and stacking of the tab content. [code]Clockwise[/code] rotates the text 90 degrees clockwise (reads top-to-bottom), [code]Counter-Clockwise[/code] rotates it 90 degrees counter-clockwise (reads bottom-to-top). Both stack icon, text and buttons vertically; [code]None[/code] keeps the horizontal layout.
