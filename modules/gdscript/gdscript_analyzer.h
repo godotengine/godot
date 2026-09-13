@@ -56,6 +56,15 @@ class GDScriptAnalyzer {
 	HashMap<const GDScriptParser::ClassNode *, Ref<GDScriptParserRef>> external_class_parser_cache;
 	bool static_context = false;
 
+	// Stack of narrowed types for variables, based on `is` type tests performed in the condition
+	// of the enclosing `if` statements. The narrowed type only applies while the block of that
+	// statement is being resolved and is dropped when the variable is assigned in the block.
+	struct NarrowedVariable {
+		const void *source = nullptr; // Points to the variable's or parameter's source node.
+		GDScriptParser::DataType type;
+	};
+	LocalVector<HashMap<StringName, NarrowedVariable>> narrowed_variables_stack;
+
 	// Tests for detecting invalid overloading of script members
 	static _FORCE_INLINE_ bool has_member_name_conflict_in_script_class(const StringName &p_name, const GDScriptParser::ClassNode *p_current_class_node, const GDScriptParser::Node *p_member);
 	static _FORCE_INLINE_ bool has_member_name_conflict_in_native_type(const StringName &p_name, const StringName &p_native_type_string);
@@ -84,6 +93,9 @@ class GDScriptAnalyzer {
 	void resolve_constant(GDScriptParser::ConstantNode *p_constant, bool p_is_local);
 	void resolve_parameter(GDScriptParser::ParameterNode *p_parameter);
 	void resolve_if(GDScriptParser::IfNode *p_if);
+	void collect_narrowed_variables(GDScriptParser::ExpressionNode *p_expression, HashMap<StringName, NarrowedVariable> &r_narrowed);
+	const NarrowedVariable *find_narrowed_type(const GDScriptParser::IdentifierNode *p_identifier) const;
+	void invalidate_narrowed_type(const GDScriptParser::IdentifierNode *p_identifier);
 	void resolve_for(GDScriptParser::ForNode *p_for);
 	void resolve_while(GDScriptParser::WhileNode *p_while);
 	void resolve_assert(GDScriptParser::AssertNode *p_assert);

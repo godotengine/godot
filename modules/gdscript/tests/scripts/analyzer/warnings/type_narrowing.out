@@ -1,0 +1,8 @@
+GDTEST_OK
+~~ WARNING at line 20: (UNSAFE_METHOD_ACCESS) The method "calc()" is not present on the inferred type "Variant" (but may be present on a subtype).
+~~ WARNING at line 25: (UNSAFE_METHOD_ACCESS) The method "calc()" is not present on the inferred type "Variant" (but may be present on a subtype).
+~~ WARNING at line 31: (UNSAFE_PROPERTY_ACCESS) The property "value" is not present on the inferred type "Reward" (but may be present on a subtype).
+~~ WARNING at line 32: (UNSAFE_METHOD_ACCESS) The method "calc()" is not present on the inferred type "Reward" (but may be present on a subtype).
+~~ WARNING at line 37: (UNSAFE_PROPERTY_ACCESS) The property "value" is not present on the inferred type "Reward" (but may be present on a subtype).
+~~ WARNING at line 38: (UNSAFE_PROPERTY_ACCESS) The property "value" is not present on the inferred type "Reward" (but may be present on a subtype).
+~~ WARNING at line 39: (UNSAFE_METHOD_ACCESS) The method "calc()" is not present on the inferred type "Reward" (but may be present on a subtype).

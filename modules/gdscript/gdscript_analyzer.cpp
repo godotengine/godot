@@ -2305,13 +2305,96 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 	resolve_assignable(p_parameter, kind);
 }
 
+// Returns the node that identifies a variable that can have a narrowed type, or `nullptr` if
+// the identifier cannot be narrowed (the source is known at parse time, so this never needs
+// the analyzer to have resolved the identifier).
+static const void *get_narrowing_source(const GDScriptParser::IdentifierNode *p_identifier) {
+	switch (p_identifier->source) {
+		case GDScriptParser::IdentifierNode::LOCAL_VARIABLE:
+		case GDScriptParser::IdentifierNode::STATIC_VARIABLE:
+			return p_identifier->variable_source;
+		case GDScriptParser::IdentifierNode::FUNCTION_PARAMETER:
+			return p_identifier->parameter_source;
+		default:
+			return nullptr;
+	}
+}
+
 void GDScriptAnalyzer::resolve_if(GDScriptParser::IfNode *p_if) {
 	reduce_expression(p_if->condition);
 
+	// Variables that are checked with `is` type tests in the condition have a narrowed type
+	// inside the block, so unsafe accesses on them can be considered safe.
+	HashMap<StringName, NarrowedVariable> condition_narrowed;
+	collect_narrowed_variables(p_if->condition, condition_narrowed);
+	if (!condition_narrowed.is_empty()) {
+		narrowed_variables_stack.push_back(condition_narrowed);
+	}
+
 	resolve_suite(p_if->true_block);
+
+	if (!condition_narrowed.is_empty()) {
+		narrowed_variables_stack.resize(narrowed_variables_stack.size() - 1);
+	}
 
 	if (p_if->false_block != nullptr) {
 		resolve_suite(p_if->false_block);
+	}
+}
+
+void GDScriptAnalyzer::collect_narrowed_variables(GDScriptParser::ExpressionNode *p_expression, HashMap<StringName, NarrowedVariable> &r_narrowed) {
+	if (p_expression == nullptr) {
+		return;
+	}
+	switch (p_expression->type) {
+		case GDScriptParser::Node::TYPE_TEST: {
+			GDScriptParser::TypeTestNode *type_test = static_cast<GDScriptParser::TypeTestNode *>(p_expression);
+			if (type_test->operand == nullptr || type_test->operand->type != GDScriptParser::Node::IDENTIFIER) {
+				return;
+			}
+			GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(type_test->operand);
+			const void *source = get_narrowing_source(identifier);
+			if (source == nullptr || !type_test->test_datatype.is_set() || type_test->test_datatype.is_pseudo_type) {
+				return;
+			}
+			NarrowedVariable narrowed;
+			narrowed.source = source;
+			narrowed.type = type_test->test_datatype;
+			narrowed.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+			r_narrowed.insert(identifier->name, narrowed);
+		} break;
+		case GDScriptParser::Node::BINARY_OPERATOR: {
+			GDScriptParser::BinaryOpNode *binary_op = static_cast<GDScriptParser::BinaryOpNode *>(p_expression);
+			if (binary_op->operation == GDScriptParser::BinaryOpNode::OP_LOGIC_AND) {
+				collect_narrowed_variables(binary_op->left_operand, r_narrowed);
+				collect_narrowed_variables(binary_op->right_operand, r_narrowed);
+			}
+		} break;
+		default:
+			break;
+	}
+}
+
+const GDScriptAnalyzer::NarrowedVariable *GDScriptAnalyzer::find_narrowed_type(const GDScriptParser::IdentifierNode *p_identifier) const {
+	const void *source = get_narrowing_source(p_identifier);
+	if (source == nullptr) {
+		return nullptr;
+	}
+	for (const HashMap<StringName, NarrowedVariable> &narrowed_variables : narrowed_variables_stack) {
+		HashMap<StringName, NarrowedVariable>::ConstIterator I = narrowed_variables.find(p_identifier->name);
+		if (I && I->value.source == source) {
+			return &I->value;
+		}
+	}
+	return nullptr;
+}
+
+void GDScriptAnalyzer::invalidate_narrowed_type(const GDScriptParser::IdentifierNode *p_identifier) {
+	if (get_narrowing_source(p_identifier) == nullptr) {
+		return;
+	}
+	for (HashMap<StringName, NarrowedVariable> &narrowed_variables : narrowed_variables_stack) {
+		narrowed_variables.erase(p_identifier->name);
 	}
 }
 
@@ -2899,6 +2982,14 @@ void GDScriptAnalyzer::update_dictionary_literal_element_type(GDScriptParser::Di
 }
 
 void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assignment) {
+	// Assigning a variable invalidates the narrowed type that may apply to it.
+	if (!narrowed_variables_stack.is_empty() && p_assignment->assignee != nullptr && p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
+		GDScriptParser::IdentifierNode *assignee_id = static_cast<GDScriptParser::IdentifierNode *>(p_assignment->assignee);
+		if (find_narrowed_type(assignee_id) != nullptr) {
+			invalidate_narrowed_type(assignee_id);
+		}
+	}
+
 	reduce_expression(p_assignment->assigned_value);
 
 #ifdef DEBUG_ENABLED
@@ -4519,6 +4610,14 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		case GDScriptParser::IdentifierNode::MEMBER_CLASS:
 		case GDScriptParser::IdentifierNode::NATIVE_CLASS:
 			break;
+	}
+
+	// Use the narrowed type from an `is` type test in the condition of an enclosing `if` statement.
+	if (found_source && !narrowed_variables_stack.is_empty()) {
+		const NarrowedVariable *narrowed = find_narrowed_type(p_identifier);
+		if (narrowed != nullptr) {
+			p_identifier->type_constraint = narrowed->type;
+		}
 	}
 
 #ifdef DEBUG_ENABLED
