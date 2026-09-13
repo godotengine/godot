@@ -111,6 +111,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	int icon_amount = 0;
 	int stylebox_amount = 0;
 	int sound_amount = 0;
+	int config_amount = 0;
 
 	tree_color_items.clear();
 	tree_constant_items.clear();
@@ -119,6 +120,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	tree_icon_items.clear();
 	tree_stylebox_items.clear();
 	tree_sound_items.clear();
+	tree_config_items.clear();
 
 	for (const StringName &E : types) {
 		String type_name = (String)E;
@@ -146,12 +148,16 @@ void ThemeItemImportTree::_update_items_tree() {
 		bool is_matching_filter = (filter_text.is_empty() || type_name.containsn(filter_text));
 		bool has_filtered_items = false;
 
-		for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
-			Theme::DataType dt = (Theme::DataType)i;
-
+		for (DataType dt : { DataType::COLOR, DataType::CONSTANT, DataType::FONT, DataType::FONT_SIZE, DataType::ICON, DataType::STYLEBOX, DataType::SOUND, DataType::CONFIG }) {
 			names.clear();
 			filtered_names.clear();
-			base_theme->get_theme_item_list(dt, E, &names);
+			if (dt == DataType::CONFIG) {
+				if (!base_theme->get_type_variation_base(E).is_empty()) {
+					names.push_back("base_type");
+				}
+			} else {
+				base_theme->get_theme_item_list((Theme::DataType)dt, E, &names);
+			}
 
 			bool data_type_has_filtered_items = false;
 
@@ -176,7 +182,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 			TreeItem *data_type_node = import_items_tree->create_item(type_node);
 			data_type_node->set_meta("_can_be_imported", false);
-			data_type_node->set_metadata(0, i);
+			data_type_node->set_metadata(0, (int)dt);
 			data_type_node->set_collapsed(!data_type_has_filtered_items);
 			data_type_node->set_cell_mode(IMPORT_ITEM, TreeItem::CELL_MODE_CHECK);
 			data_type_node->set_checked(IMPORT_ITEM, false);
@@ -188,7 +194,7 @@ void ThemeItemImportTree::_update_items_tree() {
 			List<TreeItem *> *item_list = nullptr;
 
 			switch (dt) {
-				case Theme::DATA_TYPE_COLOR:
+				case DataType::COLOR:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("Color")));
 					data_type_node->set_text(0, TTRC("Colors"));
 
@@ -196,7 +202,7 @@ void ThemeItemImportTree::_update_items_tree() {
 					color_amount += filtered_names.size();
 					break;
 
-				case Theme::DATA_TYPE_CONSTANT:
+				case DataType::CONSTANT:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("MemberConstant")));
 					data_type_node->set_text(0, TTRC("Constants"));
 
@@ -204,7 +210,7 @@ void ThemeItemImportTree::_update_items_tree() {
 					constant_amount += filtered_names.size();
 					break;
 
-				case Theme::DATA_TYPE_FONT:
+				case DataType::FONT:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("FontItem")));
 					data_type_node->set_text(0, TTRC("Fonts"));
 
@@ -212,7 +218,7 @@ void ThemeItemImportTree::_update_items_tree() {
 					font_amount += filtered_names.size();
 					break;
 
-				case Theme::DATA_TYPE_FONT_SIZE:
+				case DataType::FONT_SIZE:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("FontSize")));
 					data_type_node->set_text(0, TTRC("Font Sizes"));
 
@@ -220,7 +226,7 @@ void ThemeItemImportTree::_update_items_tree() {
 					font_size_amount += filtered_names.size();
 					break;
 
-				case Theme::DATA_TYPE_ICON:
+				case DataType::ICON:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("ImageTexture")));
 					data_type_node->set_text(0, TTRC("Icons"));
 
@@ -228,7 +234,7 @@ void ThemeItemImportTree::_update_items_tree() {
 					icon_amount += filtered_names.size();
 					break;
 
-				case Theme::DATA_TYPE_STYLEBOX:
+				case DataType::STYLEBOX:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("StyleBoxFlat")));
 					data_type_node->set_text(0, TTRC("Styleboxes"));
 
@@ -236,7 +242,7 @@ void ThemeItemImportTree::_update_items_tree() {
 					stylebox_amount += filtered_names.size();
 					break;
 
-				case Theme::DATA_TYPE_SOUND:
+				case DataType::SOUND:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("AudioStream")));
 					data_type_node->set_text(0, TTRC("Sounds"));
 
@@ -244,8 +250,13 @@ void ThemeItemImportTree::_update_items_tree() {
 					sound_amount += filtered_names.size();
 					break;
 
-				case Theme::DATA_TYPE_MAX:
-					break; // Can't happen, but silences warning.
+				case DataType::CONFIG:
+					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("Tools")));
+					data_type_node->set_text(0, TTRC("Config"));
+
+					item_list = &tree_config_items;
+					config_amount += filtered_names.size();
+					break;
 			}
 
 			filtered_names.sort_custom<StringName::AlphCompare>();
@@ -285,92 +296,14 @@ void ThemeItemImportTree::_update_items_tree() {
 		}
 	}
 
-	if (color_amount > 0) {
-		select_colors_label->set_text(vformat(TTRN("%d color", "%d colors", color_amount), color_amount));
-		select_all_colors_button->set_visible(true);
-		select_full_colors_button->set_visible(true);
-		deselect_all_colors_button->set_visible(true);
-	} else {
-		select_colors_label->set_text(TTR("No colors found."));
-		select_all_colors_button->set_visible(false);
-		select_full_colors_button->set_visible(false);
-		deselect_all_colors_button->set_visible(false);
-	}
-
-	if (constant_amount > 0) {
-		select_constants_label->set_text(vformat(TTRN("%d constant", "%d constants", constant_amount), constant_amount));
-		select_all_constants_button->set_visible(true);
-		select_full_constants_button->set_visible(true);
-		deselect_all_constants_button->set_visible(true);
-	} else {
-		select_constants_label->set_text(TTR("No constants found."));
-		select_all_constants_button->set_visible(false);
-		select_full_constants_button->set_visible(false);
-		deselect_all_constants_button->set_visible(false);
-	}
-
-	if (font_amount > 0) {
-		select_fonts_label->set_text(vformat(TTRN("%d font", "%d fonts", font_amount), font_amount));
-		select_all_fonts_button->set_visible(true);
-		select_full_fonts_button->set_visible(true);
-		deselect_all_fonts_button->set_visible(true);
-	} else {
-		select_fonts_label->set_text(TTR("No fonts found."));
-		select_all_fonts_button->set_visible(false);
-		select_full_fonts_button->set_visible(false);
-		deselect_all_fonts_button->set_visible(false);
-	}
-
-	if (font_size_amount > 0) {
-		select_font_sizes_label->set_text(vformat(TTRN("%d font size", "%d font sizes", font_size_amount), font_size_amount));
-		select_all_font_sizes_button->set_visible(true);
-		select_full_font_sizes_button->set_visible(true);
-		deselect_all_font_sizes_button->set_visible(true);
-	} else {
-		select_font_sizes_label->set_text(TTR("No font sizes found."));
-		select_all_font_sizes_button->set_visible(false);
-		select_full_font_sizes_button->set_visible(false);
-		deselect_all_font_sizes_button->set_visible(false);
-	}
-
-	if (icon_amount > 0) {
-		select_icons_label->set_text(vformat(TTRN("%d icon", "%d icons", icon_amount), icon_amount));
-		select_all_icons_button->set_visible(true);
-		select_full_icons_button->set_visible(true);
-		deselect_all_icons_button->set_visible(true);
-		select_icons_warning_hb->set_visible(true);
-	} else {
-		select_icons_label->set_text(TTR("No icons found."));
-		select_all_icons_button->set_visible(false);
-		select_full_icons_button->set_visible(false);
-		deselect_all_icons_button->set_visible(false);
-		select_icons_warning_hb->set_visible(false);
-	}
-
-	if (stylebox_amount > 0) {
-		select_styleboxes_label->set_text(vformat(TTRN("%d stylebox", "%d styleboxes", stylebox_amount), stylebox_amount));
-		select_all_styleboxes_button->set_visible(true);
-		select_full_styleboxes_button->set_visible(true);
-		deselect_all_styleboxes_button->set_visible(true);
-	} else {
-		select_styleboxes_label->set_text(TTR("No styleboxes found."));
-		select_all_styleboxes_button->set_visible(false);
-		select_full_styleboxes_button->set_visible(false);
-		deselect_all_styleboxes_button->set_visible(false);
-	}
-
-	if (sound_amount > 0) {
-		Array arr = { sound_amount };
-		select_sounds_label->set_text(TTRN("1 sound", "{num} sounds", sound_amount).format(arr, "{num}"));
-		select_all_sounds_button->set_visible(true);
-		select_full_sounds_button->set_visible(true);
-		deselect_all_sounds_button->set_visible(true);
-	} else {
-		select_sounds_label->set_text(TTR("No sounds found."));
-		select_all_sounds_button->set_visible(false);
-		select_full_sounds_button->set_visible(false);
-		deselect_all_sounds_button->set_visible(false);
-	}
+	color_overview->update_available(color_amount);
+	constant_overview->update_available(constant_amount);
+	fonts_overview->update_available(font_amount);
+	font_sizes_overview->update_available(font_size_amount);
+	icons_overview->update_available(icon_amount);
+	stylebox_overview->update_available(stylebox_amount);
+	sound_overview->update_available(sound_amount);
+	config_overview->update_available(config_amount);
 }
 
 void ThemeItemImportTree::_toggle_type_items(bool p_collapse) {
@@ -407,7 +340,7 @@ void ThemeItemImportTree::_store_selected_item(TreeItem *p_tree_item) {
 
 	ThemeItem ti;
 	ti.item_name = p_tree_item->get_text(0);
-	ti.data_type = (Theme::DataType)(int)data_type_node->get_metadata(0);
+	ti.data_type = (DataType)(int)data_type_node->get_metadata(0);
 	ti.type_name = type_node->get_text(0);
 
 	bool import = p_tree_item->is_checked(IMPORT_ITEM);
@@ -441,7 +374,7 @@ void ThemeItemImportTree::_restore_selected_item(TreeItem *p_tree_item) {
 
 	ThemeItem ti;
 	ti.item_name = p_tree_item->get_text(0);
-	ti.data_type = (Theme::DataType)(int)data_type_node->get_metadata(0);
+	ti.data_type = (DataType)(int)data_type_node->get_metadata(0);
 	ti.type_name = type_node->get_text(0);
 
 	if (!selected_items.has(ti)) {
@@ -459,47 +392,7 @@ void ThemeItemImportTree::_restore_selected_item(TreeItem *p_tree_item) {
 	}
 }
 
-void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
-	ERR_FAIL_INDEX_MSG(p_data_type, Theme::DATA_TYPE_MAX, "Theme item data type is out of bounds.");
-
-	Label *total_selected_items_label = nullptr;
-	switch (p_data_type) {
-		case Theme::DATA_TYPE_COLOR:
-			total_selected_items_label = total_selected_colors_label;
-			break;
-
-		case Theme::DATA_TYPE_CONSTANT:
-			total_selected_items_label = total_selected_constants_label;
-			break;
-
-		case Theme::DATA_TYPE_FONT:
-			total_selected_items_label = total_selected_fonts_label;
-			break;
-
-		case Theme::DATA_TYPE_FONT_SIZE:
-			total_selected_items_label = total_selected_font_sizes_label;
-			break;
-
-		case Theme::DATA_TYPE_ICON:
-			total_selected_items_label = total_selected_icons_label;
-			break;
-
-		case Theme::DATA_TYPE_STYLEBOX:
-			total_selected_items_label = total_selected_styleboxes_label;
-			break;
-
-		case Theme::DATA_TYPE_SOUND:
-			total_selected_items_label = total_selected_sounds_label;
-			break;
-
-		case Theme::DATA_TYPE_MAX:
-			return; // Can't happen, but silences warning.
-	}
-
-	if (!total_selected_items_label) {
-		return;
-	}
-
+void ThemeItemImportTree::_update_total_selected(DataType p_data_type) {
 	int count = 0;
 	for (const KeyValue<ThemeItem, ItemCheckedState> &E : selected_items) {
 		ThemeItem ti = E.key;
@@ -508,11 +401,31 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 		}
 	}
 
-	if (count == 0) {
-		total_selected_items_label->hide();
-	} else {
-		total_selected_items_label->set_text(vformat(TTRN("%d currently selected", "%d currently selected", count), count));
-		total_selected_items_label->show();
+	switch (p_data_type) {
+		case DataType::COLOR:
+			color_overview->update_selected(count);
+			break;
+		case DataType::CONSTANT:
+			constant_overview->update_selected(count);
+			break;
+		case DataType::FONT:
+			fonts_overview->update_selected(count);
+			break;
+		case DataType::FONT_SIZE:
+			font_sizes_overview->update_selected(count);
+			break;
+		case DataType::ICON:
+			icons_overview->update_selected(count);
+			break;
+		case DataType::STYLEBOX:
+			stylebox_overview->update_selected(count);
+			break;
+		case DataType::SOUND:
+			sound_overview->update_selected(count);
+			break;
+		case DataType::CONFIG:
+			config_overview->update_selected(count);
+			break;
 	}
 }
 
@@ -621,46 +534,40 @@ void ThemeItemImportTree::_deselect_all_items_pressed() {
 }
 
 void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
-	ERR_FAIL_INDEX_MSG(p_data_type, Theme::DATA_TYPE_MAX, "Theme item data type is out of bounds.");
-
 	if (updating_tree) {
 		return;
 	}
 
-	Theme::DataType data_type = (Theme::DataType)p_data_type;
+	DataType data_type = (DataType)p_data_type;
 	List<TreeItem *> *item_list = nullptr;
 
 	switch (data_type) {
-		case Theme::DATA_TYPE_COLOR:
+		case DataType::COLOR:
 			item_list = &tree_color_items;
 			break;
-
-		case Theme::DATA_TYPE_CONSTANT:
+		case DataType::CONSTANT:
 			item_list = &tree_constant_items;
 			break;
-
-		case Theme::DATA_TYPE_FONT:
+		case DataType::FONT:
 			item_list = &tree_font_items;
 			break;
-
-		case Theme::DATA_TYPE_FONT_SIZE:
+		case DataType::FONT_SIZE:
 			item_list = &tree_font_size_items;
 			break;
-
-		case Theme::DATA_TYPE_ICON:
+		case DataType::ICON:
 			item_list = &tree_icon_items;
 			break;
-
-		case Theme::DATA_TYPE_STYLEBOX:
+		case DataType::STYLEBOX:
 			item_list = &tree_stylebox_items;
 			break;
-
-		case Theme::DATA_TYPE_SOUND:
+		case DataType::SOUND:
 			item_list = &tree_sound_items;
 			break;
-
-		case Theme::DATA_TYPE_MAX:
-			return; // Can't happen, but silences warning.
+		case DataType::CONFIG:
+			item_list = &tree_config_items;
+			break;
+		default:
+			ERR_FAIL_MSG("Theme item data type is out of bounds.");
 	}
 
 	updating_tree = true;
@@ -680,46 +587,40 @@ void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
 }
 
 void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
-	ERR_FAIL_INDEX_MSG(p_data_type, Theme::DATA_TYPE_MAX, "Theme item data type is out of bounds.");
-
 	if (updating_tree) {
 		return;
 	}
 
-	Theme::DataType data_type = (Theme::DataType)p_data_type;
+	DataType data_type = (DataType)p_data_type;
 	List<TreeItem *> *item_list = nullptr;
 
 	switch (data_type) {
-		case Theme::DATA_TYPE_COLOR:
+		case DataType::COLOR:
 			item_list = &tree_color_items;
 			break;
-
-		case Theme::DATA_TYPE_CONSTANT:
+		case DataType::CONSTANT:
 			item_list = &tree_constant_items;
 			break;
-
-		case Theme::DATA_TYPE_FONT:
+		case DataType::FONT:
 			item_list = &tree_font_items;
 			break;
-
-		case Theme::DATA_TYPE_FONT_SIZE:
+		case DataType::FONT_SIZE:
 			item_list = &tree_font_size_items;
 			break;
-
-		case Theme::DATA_TYPE_ICON:
+		case DataType::ICON:
 			item_list = &tree_icon_items;
 			break;
-
-		case Theme::DATA_TYPE_STYLEBOX:
+		case DataType::STYLEBOX:
 			item_list = &tree_stylebox_items;
 			break;
-
-		case Theme::DATA_TYPE_SOUND:
+		case DataType::SOUND:
 			item_list = &tree_sound_items;
 			break;
-
-		case Theme::DATA_TYPE_MAX:
-			return; // Can't happen, but silences warning.
+		case DataType::CONFIG:
+			item_list = &tree_config_items;
+			break;
+		default:
+			ERR_FAIL_MSG("Theme item data type is out of bounds.");
 	}
 
 	updating_tree = true;
@@ -741,46 +642,40 @@ void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
 }
 
 void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
-	ERR_FAIL_INDEX_MSG(p_data_type, Theme::DATA_TYPE_MAX, "Theme item data type is out of bounds.");
-
 	if (updating_tree) {
 		return;
 	}
 
-	Theme::DataType data_type = (Theme::DataType)p_data_type;
+	DataType data_type = (DataType)p_data_type;
 	List<TreeItem *> *item_list = nullptr;
 
 	switch (data_type) {
-		case Theme::DATA_TYPE_COLOR:
+		case DataType::COLOR:
 			item_list = &tree_color_items;
 			break;
-
-		case Theme::DATA_TYPE_CONSTANT:
+		case DataType::CONSTANT:
 			item_list = &tree_constant_items;
 			break;
-
-		case Theme::DATA_TYPE_FONT:
+		case DataType::FONT:
 			item_list = &tree_font_items;
 			break;
-
-		case Theme::DATA_TYPE_FONT_SIZE:
+		case DataType::FONT_SIZE:
 			item_list = &tree_font_size_items;
 			break;
-
-		case Theme::DATA_TYPE_ICON:
+		case DataType::ICON:
 			item_list = &tree_icon_items;
 			break;
-
-		case Theme::DATA_TYPE_STYLEBOX:
+		case DataType::STYLEBOX:
 			item_list = &tree_stylebox_items;
 			break;
-
-		case Theme::DATA_TYPE_SOUND:
+		case DataType::SOUND:
 			item_list = &tree_sound_items;
 			break;
-
-		case Theme::DATA_TYPE_MAX:
-			return; // Can't happen, but silences warning.
+		case DataType::CONFIG:
+			item_list = &tree_config_items;
+			break;
+		default:
+			ERR_FAIL_MSG("Theme item data type is out of bounds.");
 	}
 
 	updating_tree = true;
@@ -828,43 +723,59 @@ void ThemeItemImportTree::_import_selected() {
 			Variant item_value = Variant();
 
 			if (cs == SELECT_IMPORT_FULL) {
-				item_value = base_theme->get_theme_item(ti.data_type, ti.item_name, ti.type_name);
+				if (ti.data_type == DataType::CONFIG) {
+					ERR_FAIL_COND(ti.item_name != "base_type");
+					item_value = base_theme->get_type_variation_base(ti.type_name);
+				} else {
+					item_value = base_theme->get_theme_item((Theme::DataType)ti.data_type, ti.item_name, ti.type_name);
+				}
 			} else {
 				switch (ti.data_type) {
-					case Theme::DATA_TYPE_COLOR:
+					case DataType::COLOR:
 						item_value = Color();
 						break;
 
-					case Theme::DATA_TYPE_CONSTANT:
+					case DataType::CONSTANT:
 						item_value = 0;
 						break;
 
-					case Theme::DATA_TYPE_FONT:
+					case DataType::FONT:
 						item_value = Ref<Font>();
 						break;
 
-					case Theme::DATA_TYPE_FONT_SIZE:
+					case DataType::FONT_SIZE:
 						item_value = -1;
 						break;
 
-					case Theme::DATA_TYPE_ICON:
+					case DataType::ICON:
 						item_value = Ref<Texture2D>();
 						break;
 
-					case Theme::DATA_TYPE_STYLEBOX:
+					case DataType::STYLEBOX:
 						item_value = Ref<StyleBox>();
 						break;
 
-					case Theme::DATA_TYPE_SOUND:
+					case DataType::SOUND:
 						item_value = Ref<AudioStream>();
 						break;
 
-					case Theme::DATA_TYPE_MAX:
-						break; // Can't happen, but silences warning.
+					case DataType::CONFIG:
+						item_value = StringName();
+						break;
 				}
 			}
-
-			new_snapshot->set_theme_item(ti.data_type, ti.item_name, ti.type_name, item_value);
+			if (ti.data_type == DataType::CONFIG) {
+				ERR_FAIL_COND(ti.item_name != "base_type");
+				if (item_value.is_zero()) {
+					if (!new_snapshot->get_type_variation_base(ti.type_name).is_empty()) {
+						new_snapshot->clear_type_variation(ti.type_name);
+					}
+				} else {
+					new_snapshot->set_type_variation(ti.type_name, item_value);
+				}
+			} else {
+				new_snapshot->set_theme_item((Theme::DataType)ti.data_type, ti.item_name, ti.type_name, item_value);
+			}
 		}
 
 		idx++;
@@ -904,13 +815,14 @@ void ThemeItemImportTree::reset_item_tree() {
 	import_items_filter->clear();
 	selected_items.clear();
 
-	total_selected_colors_label->hide();
-	total_selected_constants_label->hide();
-	total_selected_fonts_label->hide();
-	total_selected_font_sizes_label->hide();
-	total_selected_icons_label->hide();
-	total_selected_styleboxes_label->hide();
-	total_selected_sounds_label->hide();
+	color_overview->update_selected(0);
+	constant_overview->update_selected(0);
+	fonts_overview->update_selected(0);
+	font_sizes_overview->update_selected(0);
+	icons_overview->update_selected(0);
+	stylebox_overview->update_selected(0);
+	sound_overview->update_selected(0);
+	config_overview->update_selected(0);
 
 	_update_items_tree();
 }
@@ -934,42 +846,6 @@ void ThemeItemImportTree::_notification(int p_what) {
 			import_select_all_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
 			import_select_full_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
 			import_deselect_all_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
-
-			// Side panel buttons.
-			select_colors_icon->set_texture(get_editor_theme_icon(SNAME("Color")));
-			deselect_all_colors_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
-			select_all_colors_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
-			select_full_colors_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
-
-			select_constants_icon->set_texture(get_editor_theme_icon(SNAME("MemberConstant")));
-			deselect_all_constants_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
-			select_all_constants_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
-			select_full_constants_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
-
-			select_fonts_icon->set_texture(get_editor_theme_icon(SNAME("FontItem")));
-			deselect_all_fonts_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
-			select_all_fonts_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
-			select_full_fonts_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
-
-			select_font_sizes_icon->set_texture(get_editor_theme_icon(SNAME("FontSize")));
-			deselect_all_font_sizes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
-			select_all_font_sizes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
-			select_full_font_sizes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
-
-			select_icons_icon->set_texture(get_editor_theme_icon(SNAME("ImageTexture")));
-			deselect_all_icons_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
-			select_all_icons_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
-			select_full_icons_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
-
-			select_styleboxes_icon->set_texture(get_editor_theme_icon(SNAME("StyleBoxFlat")));
-			deselect_all_styleboxes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
-			select_all_styleboxes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
-			select_full_styleboxes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
-
-			select_sounds_icon->set_texture(get_editor_theme_icon(SNAME("AudioStream")));
-			deselect_all_sounds_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
-			select_all_sounds_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
-			select_full_sounds_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
 		} break;
 	}
 }
@@ -1024,225 +900,51 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_bulk_label->set_text(TTRC("Select by data type:"));
 	import_bulk_vb->add_child(import_bulk_label);
 
-	select_colors_icon = memnew(TextureRect);
-	select_colors_label = memnew(Label);
-	deselect_all_colors_button = memnew(Button);
-	select_all_colors_button = memnew(Button);
-	select_full_colors_button = memnew(Button);
-	total_selected_colors_label = memnew(Label);
+	color_overview = memnew(TypeSelectionOverview(this, DataType::COLOR, "Color"));
+	import_bulk_vb->add_child(color_overview);
+	import_bulk_vb->add_child(memnew(HSeparator));
 
-	select_constants_icon = memnew(TextureRect);
-	select_constants_label = memnew(Label);
-	deselect_all_constants_button = memnew(Button);
-	select_all_constants_button = memnew(Button);
-	select_full_constants_button = memnew(Button);
-	total_selected_constants_label = memnew(Label);
+	constant_overview = memnew(TypeSelectionOverview(this, DataType::CONSTANT, "MemberConstant"));
+	import_bulk_vb->add_child(constant_overview);
+	import_bulk_vb->add_child(memnew(HSeparator));
 
-	select_fonts_icon = memnew(TextureRect);
-	select_fonts_label = memnew(Label);
-	deselect_all_fonts_button = memnew(Button);
-	select_all_fonts_button = memnew(Button);
-	select_full_fonts_button = memnew(Button);
-	total_selected_fonts_label = memnew(Label);
+	fonts_overview = memnew(TypeSelectionOverview(this, DataType::FONT, "FontItem"));
+	import_bulk_vb->add_child(fonts_overview);
+	import_bulk_vb->add_child(memnew(HSeparator));
 
-	select_font_sizes_icon = memnew(TextureRect);
-	select_font_sizes_label = memnew(Label);
-	deselect_all_font_sizes_button = memnew(Button);
-	select_all_font_sizes_button = memnew(Button);
-	select_full_font_sizes_button = memnew(Button);
-	total_selected_font_sizes_label = memnew(Label);
+	font_sizes_overview = memnew(TypeSelectionOverview(this, DataType::FONT_SIZE, "FontSize"));
+	import_bulk_vb->add_child(font_sizes_overview);
+	import_bulk_vb->add_child(memnew(HSeparator));
 
-	select_icons_icon = memnew(TextureRect);
-	select_icons_label = memnew(Label);
-	deselect_all_icons_button = memnew(Button);
-	select_all_icons_button = memnew(Button);
-	select_full_icons_button = memnew(Button);
-	total_selected_icons_label = memnew(Label);
+	{ // Icons.
+		icons_overview = memnew(TypeSelectionOverview(this, DataType::ICON, "ImageTexture"));
+		import_bulk_vb->add_child(icons_overview);
+		select_icons_warning_hb = memnew(HBoxContainer);
+		import_bulk_vb->add_child(select_icons_warning_hb);
 
-	select_styleboxes_icon = memnew(TextureRect);
-	select_styleboxes_label = memnew(Label);
-	deselect_all_styleboxes_button = memnew(Button);
-	select_all_styleboxes_button = memnew(Button);
-	select_full_styleboxes_button = memnew(Button);
-	total_selected_styleboxes_label = memnew(Label);
+		select_icons_warning_icon = memnew(TextureRect);
+		select_icons_warning_icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+		select_icons_warning_hb->add_child(select_icons_warning_icon);
 
-	select_sounds_icon = memnew(TextureRect);
-	select_sounds_label = memnew(Label);
-	deselect_all_sounds_button = memnew(Button);
-	select_all_sounds_button = memnew(Button);
-	select_full_sounds_button = memnew(Button);
-	total_selected_sounds_label = memnew(Label);
+		select_icons_warning = memnew(Label);
+		select_icons_warning->set_text(TTRC("Caution: Adding icon data may considerably increase the size of your Theme resource."));
+		select_icons_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+		select_icons_warning->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		select_icons_warning_hb->add_child(select_icons_warning);
 
-	for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
-		Theme::DataType dt = (Theme::DataType)i;
-
-		TextureRect *select_items_icon = nullptr;
-		Label *select_items_label = nullptr;
-		Button *deselect_all_items_button = nullptr;
-		Button *select_all_items_button = nullptr;
-		Button *select_full_items_button = nullptr;
-		Label *total_selected_items_label = nullptr;
-
-		String items_title;
-		String select_all_items_tooltip;
-		String select_full_items_tooltip;
-		String deselect_all_items_tooltip;
-
-		switch (dt) {
-			case Theme::DATA_TYPE_COLOR:
-				select_items_icon = select_colors_icon;
-				select_items_label = select_colors_label;
-				deselect_all_items_button = deselect_all_colors_button;
-				select_all_items_button = select_all_colors_button;
-				select_full_items_button = select_full_colors_button;
-				total_selected_items_label = total_selected_colors_label;
-
-				items_title = TTRC("Colors");
-				select_all_items_tooltip = TTRC("Select all visible color items.");
-				select_full_items_tooltip = TTRC("Select all visible color items and their data.");
-				deselect_all_items_tooltip = TTRC("Deselect all visible color items.");
-				break;
-
-			case Theme::DATA_TYPE_CONSTANT:
-				select_items_icon = select_constants_icon;
-				select_items_label = select_constants_label;
-				deselect_all_items_button = deselect_all_constants_button;
-				select_all_items_button = select_all_constants_button;
-				select_full_items_button = select_full_constants_button;
-				total_selected_items_label = total_selected_constants_label;
-
-				items_title = TTRC("Constants");
-				select_all_items_tooltip = TTRC("Select all visible constant items.");
-				select_full_items_tooltip = TTRC("Select all visible constant items and their data.");
-				deselect_all_items_tooltip = TTRC("Deselect all visible constant items.");
-				break;
-
-			case Theme::DATA_TYPE_FONT:
-				select_items_icon = select_fonts_icon;
-				select_items_label = select_fonts_label;
-				deselect_all_items_button = deselect_all_fonts_button;
-				select_all_items_button = select_all_fonts_button;
-				select_full_items_button = select_full_fonts_button;
-				total_selected_items_label = total_selected_fonts_label;
-
-				items_title = TTRC("Fonts");
-				select_all_items_tooltip = TTRC("Select all visible font items.");
-				select_full_items_tooltip = TTRC("Select all visible font items and their data.");
-				deselect_all_items_tooltip = TTRC("Deselect all visible font items.");
-				break;
-
-			case Theme::DATA_TYPE_FONT_SIZE:
-				select_items_icon = select_font_sizes_icon;
-				select_items_label = select_font_sizes_label;
-				deselect_all_items_button = deselect_all_font_sizes_button;
-				select_all_items_button = select_all_font_sizes_button;
-				select_full_items_button = select_full_font_sizes_button;
-				total_selected_items_label = total_selected_font_sizes_label;
-
-				items_title = TTRC("Font sizes");
-				select_all_items_tooltip = TTRC("Select all visible font size items.");
-				select_full_items_tooltip = TTRC("Select all visible font size items and their data.");
-				deselect_all_items_tooltip = TTRC("Deselect all visible font size items.");
-				break;
-
-			case Theme::DATA_TYPE_ICON:
-				select_items_icon = select_icons_icon;
-				select_items_label = select_icons_label;
-				deselect_all_items_button = deselect_all_icons_button;
-				select_all_items_button = select_all_icons_button;
-				select_full_items_button = select_full_icons_button;
-				total_selected_items_label = total_selected_icons_label;
-
-				items_title = TTRC("Icons");
-				select_all_items_tooltip = TTRC("Select all visible icon items.");
-				select_full_items_tooltip = TTRC("Select all visible icon items and their data.");
-				deselect_all_items_tooltip = TTRC("Deselect all visible icon items.");
-				break;
-
-			case Theme::DATA_TYPE_STYLEBOX:
-				select_items_icon = select_styleboxes_icon;
-				select_items_label = select_styleboxes_label;
-				deselect_all_items_button = deselect_all_styleboxes_button;
-				select_all_items_button = select_all_styleboxes_button;
-				select_full_items_button = select_full_styleboxes_button;
-				total_selected_items_label = total_selected_styleboxes_label;
-
-				items_title = TTRC("Styleboxes");
-				select_all_items_tooltip = TTRC("Select all visible stylebox items.");
-				select_full_items_tooltip = TTRC("Select all visible stylebox items and their data.");
-				deselect_all_items_tooltip = TTRC("Deselect all visible stylebox items.");
-				break;
-
-			case Theme::DATA_TYPE_SOUND:
-				select_items_icon = select_sounds_icon;
-				select_items_label = select_sounds_label;
-				deselect_all_items_button = deselect_all_sounds_button;
-				select_all_items_button = select_all_sounds_button;
-				select_full_items_button = select_full_sounds_button;
-				total_selected_items_label = total_selected_sounds_label;
-
-				items_title = TTRC("Sounds");
-				select_all_items_tooltip = TTRC("Select all visible sound items.");
-				select_full_items_tooltip = TTRC("Select all visible sound items and their data.");
-				deselect_all_items_tooltip = TTRC("Deselect all visible sound items.");
-				break;
-
-			case Theme::DATA_TYPE_MAX:
-				continue; // Can't happen, but silences warning.
-		}
-
-		if (i > 0) {
-			import_bulk_vb->add_child(memnew(HSeparator));
-		}
-
-		HBoxContainer *all_set = memnew(HBoxContainer);
-		import_bulk_vb->add_child(all_set);
-
-		HBoxContainer *label_set = memnew(HBoxContainer);
-		label_set->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		all_set->add_child(label_set);
-		select_items_icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-		label_set->add_child(select_items_icon);
-		select_items_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		select_items_label->set_clip_text(true);
-		select_items_label->set_text(items_title);
-		label_set->add_child(select_items_label);
-
-		HBoxContainer *button_set = memnew(HBoxContainer);
-		button_set->set_alignment(BoxContainer::ALIGNMENT_END);
-		all_set->add_child(button_set);
-		select_all_items_button->set_flat(true);
-		select_all_items_button->set_tooltip_text(select_all_items_tooltip);
-		button_set->add_child(select_all_items_button);
-		select_all_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_select_all_data_type_pressed).bind(i));
-		select_full_items_button->set_flat(true);
-		select_full_items_button->set_tooltip_text(select_full_items_tooltip);
-		button_set->add_child(select_full_items_button);
-		select_full_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_select_full_data_type_pressed).bind(i));
-		deselect_all_items_button->set_flat(true);
-		deselect_all_items_button->set_tooltip_text(deselect_all_items_tooltip);
-		button_set->add_child(deselect_all_items_button);
-		deselect_all_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_deselect_all_data_type_pressed).bind(i));
-
-		total_selected_items_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
-		total_selected_items_label->hide();
-		import_bulk_vb->add_child(total_selected_items_label);
-
-		if (dt == Theme::DATA_TYPE_ICON) {
-			select_icons_warning_hb = memnew(HBoxContainer);
-			import_bulk_vb->add_child(select_icons_warning_hb);
-
-			select_icons_warning_icon = memnew(TextureRect);
-			select_icons_warning_icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-			select_icons_warning_hb->add_child(select_icons_warning_icon);
-
-			select_icons_warning = memnew(Label);
-			select_icons_warning->set_text(TTRC("Caution: Adding icon data may considerably increase the size of your Theme resource."));
-			select_icons_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-			select_icons_warning->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			select_icons_warning_hb->add_child(select_icons_warning);
-		}
+		import_bulk_vb->add_child(memnew(HSeparator));
 	}
+
+	stylebox_overview = memnew(TypeSelectionOverview(this, DataType::STYLEBOX, "StyleBoxFlat"));
+	import_bulk_vb->add_child(stylebox_overview);
+	import_bulk_vb->add_child(memnew(HSeparator));
+
+	sound_overview = memnew(TypeSelectionOverview(this, DataType::SOUND, "AudioStream"));
+	import_bulk_vb->add_child(sound_overview);
+	import_bulk_vb->add_child(memnew(HSeparator));
+
+	config_overview = memnew(TypeSelectionOverview(this, DataType::CONFIG, "Tools"));
+	import_bulk_vb->add_child(config_overview);
 
 	HBoxContainer *import_buttons = memnew(HBoxContainer);
 	add_child(import_buttons);
@@ -1285,6 +987,180 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_add_selected_button->set_text(TTRC("Import Selected"));
 	import_buttons->add_child(import_add_selected_button);
 	import_add_selected_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_import_selected));
+}
+
+ThemeItemImportTree::TypeSelectionOverview::Labels ThemeItemImportTree::TypeSelectionOverview::get_labels(DataType p_type) {
+	// TODO: Roses are read, violets are blue, no C++ 20 aggregates for you.
+	switch (p_type) {
+		case DataType::COLOR:
+			return Labels{
+				/* .title = */ TTRC("Colors"),
+				/* .select_all = */ TTRC("Select all visible color items."),
+				/* .select_full = */ TTRC("Select all visible color items and their data."),
+				/* .deselect_all = */ TTRC("Deselect all visible color items."),
+				/* .not_found = */ TTRC("No colors found."),
+				// HACK: TTRN("%d color", "%d colors", 0)
+				/* .one_found = */ "%d color",
+				/* .n_found = */ "%d colors",
+			};
+		case DataType::CONSTANT:
+			return Labels{
+				/* .title = */ TTRC("Constants"),
+				/* .select_all = */ TTRC("Select all visible constant items."),
+				/* .select_full = */ TTRC("Select all visible constant items and their data."),
+				/* .deselect_all = */ TTRC("Deselect all visible constant items."),
+				/* .not_found = */ TTRC("No constants found."),
+				// HACK: TTRN("%d constant", "%d constants", 0)
+				/* .one_found = */ "%d constant",
+				/* .n_found = */ "%d constants",
+			};
+		case DataType::FONT:
+			return Labels{
+				/* .title = */ TTRC("Fonts"),
+				/* .select_all = */ TTRC("Select all visible font items."),
+				/* .select_full = */ TTRC("Select all visible font items and their data."),
+				/* .deselect_all = */ TTRC("Deselect all visible font items."),
+				/* .not_found = */ TTRC("No fonts found."),
+				// HACK: TTRN("%d font", "%d fonts", 0)
+				/* .one_found = */ "%d font",
+				/* .n_found = */ "%d fonts",
+			};
+		case DataType::FONT_SIZE:
+			return Labels{
+				/* .title = */ TTRC("Font sizes"),
+				/* .select_all = */ TTRC("Select all visible font size items."),
+				/* .select_full = */ TTRC("Select all visible font size items and their data."),
+				/* .deselect_all = */ TTRC("Deselect all visible font size items."),
+				/* .not_found = */ TTRC("No font sizes found."),
+				// HACK: TTRN("%d font size", "%d font sizes", 0)
+				/* .one_found = */ "%d font size",
+				/* .n_found = */ "%d font sizes",
+			};
+		case DataType::ICON:
+			return Labels{
+				/* .title = */ TTRC("Icons"),
+				/* .select_all = */ TTRC("Select all visible icon items."),
+				/* .select_full = */ TTRC("Select all visible icon items and their data."),
+				/* .deselect_all = */ TTRC("Deselect all visible icon items."),
+				/* .not_found = */ TTRC("No icons found."),
+				// HACK: TTRN("%d icon", "%d icons", 0)
+				/* .one_found = */ "%d icon",
+				/* .n_found = */ "%d icons",
+			};
+		case DataType::STYLEBOX:
+			return Labels{
+				/* .title = */ TTRC("Styleboxes"),
+				/* .select_all = */ TTRC("Select all visible stylebox items."),
+				/* .select_full = */ TTRC("Select all visible stylebox items and their data."),
+				/* .deselect_all = */ TTRC("Deselect all visible stylebox items."),
+				/* .not_found = */ TTRC("No styleboxes found."),
+				// HACK: TTRN("%d stylebox", "%d styleboxes", 0)
+				/* .one_found = */ "%d stylebox",
+				/* .n_found = */ "%d styleboxes",
+			};
+		case DataType::SOUND:
+			return Labels{
+				/* .title = */ TTRC("Sounds"),
+				/* .select_all = */ TTRC("Select all visible sound items."),
+				/* .select_full = */ TTRC("Select all visible sound items and their data."),
+				/* .deselect_all = */ TTRC("Deselect all visible sound items."),
+				/* .not_found = */ TTRC("No sounds found."),
+				// HACK: TTRN("%d sound", "%d sounds", 0)
+				/* .one_found = */ "%d sound",
+				/* .n_found = */ "%d sounds",
+			};
+		case DataType::CONFIG:
+			return Labels{
+				/* .title = */ TTRC("Config"),
+				/* .select_all = */ TTRC("Select all visible config items."),
+				/* .select_full = */ TTRC("Select all visible config items and their data."),
+				/* .deselect_all = */ TTRC("Deselect all visible config items."),
+				/* .not_found = */ TTRC("No configs found."),
+				// HACK: TTRN("%d config", "%d configs", 0)
+				/* .one_found = */ "%d config",
+				/* .n_found = */ "%d configs",
+			};
+	}
+	ERR_FAIL_COND_V_MSG(true, {}, "Theme type out of bounds.");
+}
+
+void ThemeItemImportTree::TypeSelectionOverview::update_available(int p_amount) {
+	select_all->set_visible(p_amount > 0);
+	select_full->set_visible(p_amount > 0);
+	deselect_all->set_visible(p_amount > 0);
+
+	Labels labels = get_labels(type);
+	if (p_amount > 0) {
+		available_label->set_text(vformat(TTRN(labels.one_found, labels.n_found, p_amount), p_amount));
+	} else {
+		available_label->set_text(labels.not_found);
+	}
+}
+
+void ThemeItemImportTree::TypeSelectionOverview::update_selected(int p_amount) {
+	if (p_amount == 0) {
+		selected_label->hide();
+	} else {
+		selected_label->set_text(vformat(TTRN("%d currently selected", "%d currently selected", p_amount), p_amount));
+		selected_label->show();
+	}
+}
+
+void ThemeItemImportTree::TypeSelectionOverview::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		icon->set_texture(get_editor_theme_icon(icon_name));
+		deselect_all->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
+		select_all->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
+		select_full->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
+	}
+}
+
+ThemeItemImportTree::TypeSelectionOverview::TypeSelectionOverview(ThemeItemImportTree *p_tree, DataType p_type, const StringName &p_icon_name) : type(p_type), tree(p_tree), icon_name(p_icon_name) {
+	Labels labels = get_labels(p_type);
+
+	HBoxContainer *all_set = memnew(HBoxContainer);
+	add_child(all_set);
+
+	HBoxContainer *label_set = memnew(HBoxContainer);
+	label_set->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	all_set->add_child(label_set);
+
+	icon = memnew(TextureRect);
+	icon->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+	label_set->add_child(icon);
+
+	available_label = memnew(Label);
+	available_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	available_label->set_clip_text(true);
+	available_label->set_text(labels.title);
+	label_set->add_child(available_label);
+
+	HBoxContainer *button_set = memnew(HBoxContainer);
+	button_set->set_alignment(BoxContainer::ALIGNMENT_END);
+	all_set->add_child(button_set);
+
+	select_all = memnew(Button);
+	select_all->set_flat(true);
+	select_all->set_tooltip_text(labels.select_all);
+	select_all->connect(SceneStringName(pressed), callable_mp(tree, &ThemeItemImportTree::_select_all_data_type_pressed).bind((int)p_type));
+	button_set->add_child(select_all);
+
+	select_full = memnew(Button);
+	select_full->set_flat(true);
+	select_full->set_tooltip_text(labels.select_full);
+	select_full->connect(SceneStringName(pressed), callable_mp(tree, &ThemeItemImportTree::_select_full_data_type_pressed).bind((int)p_type));
+	button_set->add_child(select_full);
+
+	deselect_all = memnew(Button);
+	deselect_all->set_flat(true);
+	deselect_all->set_tooltip_text(labels.deselect_all);
+	deselect_all->connect(SceneStringName(pressed), callable_mp(tree, &ThemeItemImportTree::_deselect_all_data_type_pressed).bind((int)p_type));
+	button_set->add_child(deselect_all);
+
+	selected_label = memnew(Label);
+	selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	selected_label->hide();
+	add_child(selected_label);
 }
 
 ///////////////////////
