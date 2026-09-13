@@ -3,5 +3,7 @@ Validate extension JSON: API was removed: classes/SpringBoneCollisionCapsule3D/m
 Validate extension JSON: API was removed: classes/SpringBoneCollisionSphere3D/methods/is_inside
 Validate extension JSON: API was removed: classes/SpringBoneCollisionCapsule3D/properties/inside
 Validate extension JSON: API was removed: classes/SpringBoneCollisionSphere3D/properties/inside
+Validate extension JSON: API was removed: classes/SpringBoneCollisionCapsule3D/methods/set_inside
+Validate extension JSON: API was removed: classes/SpringBoneCollisionSphere3D/methods/set_inside
 
 The boolean inside flag was generalized to a CollideMode enum INSIDE, JOINT and CHAIN
