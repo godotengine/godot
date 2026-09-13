@@ -31,8 +31,9 @@
 #include "spring_bone_collision_sphere_3d.h"
 #include "spring_bone_collision_sphere_3d.compat.inc"
 
+#include "scene/3d/spring_bone_simulator_3d.h"
+
 #include "core/object/class_db.h"
-#include "spring_bone_simulator_3d.h"
 
 void SpringBoneCollisionSphere3D::set_radius(float p_radius) {
 	radius = p_radius;
