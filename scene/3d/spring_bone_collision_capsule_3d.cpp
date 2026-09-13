@@ -136,7 +136,7 @@ static real_t _verify_distance_within_taper(const Vector3 &p_origin, float p_bon
 	real_t taper_fore = (p_bone_origin_radius - p_bone_radius) / p_bone_length;
 	Vector3 diff = p_current - p_origin;
 	Vector3 bone_axis = p_current - p_current_origin; // should be length p_bone_radius due to calls to limit_length()
-	DEV_ASSERT(Math::is_equal_approx((float)bone_axis.length(), p_bone_length));
+	DEV_ASSERT(Math::is_equal_approx((float)bone_axis.length(), (float)p_bone_length));
 	real_t taper_side = Math::sqrt(1.0 - taper_fore * taper_fore);
 	real_t lam = 1.0 - bone_axis.dot(diff) / (p_bone_length * p_bone_length);
 	Vector3 vecside = p_origin - (p_current_origin + bone_axis * lam);
