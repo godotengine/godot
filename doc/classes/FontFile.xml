@@ -296,7 +296,7 @@
 			<return type="Transform2D" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
-				Returns 2D transform, applied to the font outlines, can be used for slanting, flipping and rotating glyphs.
+				Returns 2D transform, applied to the font outlines, can be used for slanting, flipping, and rotating glyphs.
 			</description>
 		</method>
 		<method name="get_variation_coordinates" qualifiers="const">

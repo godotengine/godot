@@ -281,7 +281,7 @@
 			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only red and green channels are used.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGB_FLOAT" value="6" enum="ArrayCustomFormat">
-			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only red, green and blue channels are used.
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only red, green, and blue channels are used.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RGBA_FLOAT" value="7" enum="ArrayCustomFormat">
 			Indicates this custom channel contains full float colors, in a [PackedFloat32Array].

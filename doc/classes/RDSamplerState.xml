@@ -14,7 +14,7 @@
 			If [member anisotropy_max] is [code]1.0[/code], forcibly disables anisotropy even if [member use_anisotropy] is [code]true[/code].
 		</member>
 		<member name="border_color" type="int" setter="set_border_color" getter="get_border_color" enum="RenderingDevice.SamplerBorderColor" default="2">
-			The border color that will be returned when sampling outside the sampler's bounds and the [member repeat_u], [member repeat_v] or [member repeat_w] modes have repeating disabled.
+			The border color that will be returned when sampling outside the sampler's bounds and the [member repeat_u], [member repeat_v], or [member repeat_w] modes have repeating disabled.
 		</member>
 		<member name="compare_op" type="int" setter="set_compare_op" getter="get_compare_op" enum="RenderingDevice.CompareOperator" default="7">
 			The compare operation to use. Only effective if [member enable_compare] is [code]true[/code].

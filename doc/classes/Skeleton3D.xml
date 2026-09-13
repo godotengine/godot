@@ -4,7 +4,7 @@
 		A node containing a bone hierarchy, used to create a 3D skeletal animation.
 	</brief_description>
 	<description>
-		[Skeleton3D] provides an interface for managing a hierarchy of bones, including pose, rest and animation (see [Animation]). It can also use ragdoll physics.
+		[Skeleton3D] provides an interface for managing a hierarchy of bones, including pose, rest, and animation (see [Animation]). It can also use ragdoll physics.
 		The overall transform of a bone with respect to the skeleton is determined by bone pose. Bone rest defines the initial transform of the bone pose.
 		Note that "global pose" below refers to the overall transform of the bone with respect to skeleton, so it is not the actual global/world transform of the bone.
 	</description>

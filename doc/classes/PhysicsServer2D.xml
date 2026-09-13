@@ -780,7 +780,7 @@
 		<method name="joint_create">
 			<return type="RID" />
 			<description>
-				Creates a 2D joint in the physics server, and returns the [RID] that identifies it. To set the joint type, use [method joint_make_damped_spring], [method joint_make_groove] or [method joint_make_pin]. Use [method joint_set_param] to set generic joint parameters.
+				Creates a 2D joint in the physics server, and returns the [RID] that identifies it. To set the joint type, use [method joint_make_damped_spring], [method joint_make_groove], or [method joint_make_pin]. Use [method joint_set_param] to set generic joint parameters.
 			</description>
 		</method>
 		<method name="joint_disable_collisions_between_bodies">

@@ -517,13 +517,13 @@
 		<method name="is_valid_html_color" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this string is a valid color in hexadecimal HTML notation. The string must be a hexadecimal value (see [method is_valid_hex_number]) of either 3, 4, 6 or 8 digits, and may be prefixed by a hash sign ([code]#[/code]). Other HTML notations for colors, such as names or [code]hsl()[/code], are not considered valid. See also [method Color.html].
+				Returns [code]true[/code] if this string is a valid color in hexadecimal HTML notation. The string must be a hexadecimal value (see [method is_valid_hex_number]) of either 3, 4, 6, or 8 digits, and may be prefixed by a hash sign ([code]#[/code]). Other HTML notations for colors, such as names or [code]hsl()[/code], are not considered valid. See also [method Color.html].
 			</description>
 		</method>
 		<method name="is_valid_identifier" qualifiers="const" deprecated="Use [method is_valid_ascii_identifier] instead.">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]), and the first character may not be a digit.
+				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits, and underscores ([code]_[/code]), and the first character may not be a digit.
 				[codeblock]
 				print("node_2d".is_valid_identifier())    # Prints true
 				print("TYPE_FLOAT".is_valid_identifier()) # Prints true

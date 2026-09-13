@@ -70,7 +70,7 @@
 		<signal name="animation_changed">
 			<param index="0" name="anim_name" type="StringName" />
 			<description>
-				Emitted when there's a change in one of the animations, e.g. tracks are added, moved or have changed paths. [param anim_name] is the key of the animation that was changed.
+				Emitted when there's a change in one of the animations, e.g. tracks are added, moved, or have changed paths. [param anim_name] is the key of the animation that was changed.
 				See also [signal Resource.changed], which this acts as a relay for.
 			</description>
 		</signal>

@@ -16,7 +16,7 @@
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns an input for this tracker. It can return a boolean, float or [Vector2] value depending on whether the input is a button, trigger or thumbstick/thumbpad.
+				Returns an input for this tracker. It can return a boolean, float, or [Vector2] value depending on whether the input is a button, trigger, or thumbstick/thumbpad.
 			</description>
 		</method>
 		<method name="get_pose" qualifiers="const">

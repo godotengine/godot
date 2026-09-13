@@ -167,7 +167,7 @@
 		<method name="update">
 			<return type="void" />
 			<description>
-				Updates the internal state of the grid according to the parameters to prepare it to search the path. Needs to be called if parameters like [member region], [member cell_size] or [member offset] are changed. [method is_dirty] will return [code]true[/code] if this is the case and this needs to be called.
+				Updates the internal state of the grid according to the parameters to prepare it to search the path. Needs to be called if parameters like [member region], [member cell_size], or [member offset] are changed. [method is_dirty] will return [code]true[/code] if this is the case and this needs to be called.
 				[b]Note:[/b] All point data (solidity and weight scale) will be cleared.
 			</description>
 		</method>

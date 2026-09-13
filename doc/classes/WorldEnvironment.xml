@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="WorldEnvironment" inherits="Node" api_type="core" keywords="background, sky" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Default environment properties for the entire scene (post-processing effects, lighting and background settings).
+		Default environment properties for the entire scene (post-processing effects, lighting, and background settings).
 	</brief_description>
 	<description>
 		The [WorldEnvironment] node is used to configure the default [Environment] for the scene.

@@ -106,7 +106,7 @@
 			<param index="1" name="use_luma" type="bool" />
 			<description>
 				Compute image metrics on the current image and the compared image. This can be used to calculate the similarity between two images.
-				The dictionary contains [code]max[/code], [code]mean[/code], [code]mean_squared[/code], [code]root_mean_squared[/code] and [code]peak_snr[/code].
+				The dictionary contains [code]max[/code], [code]mean[/code], [code]mean_squared[/code], [code]root_mean_squared[/code], and [code]peak_snr[/code].
 			</description>
 		</method>
 		<method name="convert">
@@ -662,7 +662,7 @@
 			Texture format with a single 8-bit depth representing luminance.
 		</constant>
 		<constant name="FORMAT_LA8" value="1" enum="Format">
-			OpenGL texture format with two values, luminance and alpha each stored with 8 bits.
+			OpenGL texture format with two values, luminance and alpha, each stored with 8 bits.
 		</constant>
 		<constant name="FORMAT_R8" value="2" enum="Format">
 			OpenGL texture format [code]RED[/code] with a single component and a bitdepth of 8.

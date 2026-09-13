@@ -418,7 +418,7 @@
 			<return type="float" />
 			<param index="0" name="side" type="int" enum="Side" />
 			<description>
-				Returns the anchor for the specified [enum Side]. A getter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
+				Returns the anchor for the specified [enum Side]. A getter method for [member anchor_bottom], [member anchor_left], [member anchor_right], and [member anchor_top].
 			</description>
 		</method>
 		<method name="get_begin" qualifiers="const">
@@ -477,7 +477,7 @@
 			<return type="NodePath" />
 			<param index="0" name="side" type="int" enum="Side" />
 			<description>
-				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
+				Returns the focus neighbor for the specified [enum Side]. A getter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right], and [member focus_neighbor_top].
 				[b]Note:[/b] To find the next [Control] on the specific [enum Side], even if a neighbor is not assigned, use [method find_valid_focus_neighbor].
 			</description>
 		</method>
@@ -511,7 +511,7 @@
 			<return type="float" />
 			<param index="0" name="offset" type="int" enum="Side" />
 			<description>
-				Returns the offset for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
+				Returns the offset for the specified [enum Side]. A getter method for [member offset_bottom], [member offset_left], [member offset_right], and [member offset_top].
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const">
@@ -529,7 +529,7 @@
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
-				Returns the position and size of the control in the coordinate system of the containing node. See [member position], [member scale] and [member size].
+				Returns the position and size of the control in the coordinate system of the containing node. See [member position], [member scale], and [member size].
 				[b]Note:[/b] If [member rotation] is not the default rotation, the resulting size is not meaningful.
 				[b]Note:[/b] Setting [member Viewport.gui_snap_controls_to_pixels] to [code]true[/code] can lead to rounding inaccuracies between the displayed control and the returned [Rect2].
 			</description>
@@ -864,7 +864,7 @@
 			<param index="2" name="keep_offset" type="bool" default="false" />
 			<param index="3" name="push_opposite_anchor" type="bool" default="true" />
 			<description>
-				Sets the anchor for the specified [enum Side] to [param anchor]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
+				Sets the anchor for the specified [enum Side] to [param anchor]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right], and [member anchor_top].
 				If [param keep_offset] is [code]true[/code], offsets aren't updated after this operation.
 				If [param push_opposite_anchor] is [code]true[/code] and the opposite anchor overlaps this anchor, the opposite one will have its value overridden. For example, when setting left anchor to 1 and the right anchor has value of 0.5, the right anchor will also get value of 1. If [param push_opposite_anchor] was [code]false[/code], the left anchor would get value 0.5.
 			</description>
@@ -963,7 +963,7 @@
 			<param index="0" name="side" type="int" enum="Side" />
 			<param index="1" name="neighbor" type="NodePath" />
 			<description>
-				Sets the focus neighbor for the specified [enum Side] to the [Control] at [param neighbor] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right] and [member focus_neighbor_top].
+				Sets the focus neighbor for the specified [enum Side] to the [Control] at [param neighbor] node path. A setter method for [member focus_neighbor_bottom], [member focus_neighbor_left], [member focus_neighbor_right], and [member focus_neighbor_top].
 			</description>
 		</method>
 		<method name="set_global_position">
@@ -980,7 +980,7 @@
 			<param index="0" name="side" type="int" enum="Side" />
 			<param index="1" name="offset" type="float" />
 			<description>
-				Sets the offset for the specified [enum Side] to [param offset]. A setter method for [member offset_bottom], [member offset_left], [member offset_right] and [member offset_top].
+				Sets the offset for the specified [enum Side] to [param offset]. A setter method for [member offset_bottom], [member offset_left], [member offset_right], and [member offset_top].
 			</description>
 		</method>
 		<method name="set_offsets_preset">
@@ -1030,7 +1030,7 @@
 			<param index="0" name="position" type="Vector2" />
 			<description>
 				Moves the mouse cursor to [param position], relative to [member position] of this [Control].
-				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS and Linux. It has no effect on Android, iOS and Web.
+				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS, and Linux. It has no effect on Android, iOS, and Web.
 			</description>
 		</method>
 	</methods>
@@ -1124,7 +1124,7 @@
 			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew). See also [method is_layout_rtl].
 		</member>
 		<member name="localize_numeral_system" type="bool" setter="set_localize_numeral_system" getter="is_localizing_numeral_system" default="true">
-			If [code]true[/code], automatically converts code line numbers, list indices, [SpinBox] and [ProgressBar] values from the Western Arabic (0..9) to the numeral systems used in current locale.
+			If [code]true[/code], automatically converts code line numbers, list indices, [SpinBox], and [ProgressBar] values from the Western Arabic (0..9) to the numeral systems used in current locale.
 			[b]Note:[/b] Numbers within the text are not automatically converted, it can be done manually, using [method TextServer.format_number].
 		</member>
 		<member name="mouse_behavior_recursive" type="int" setter="set_mouse_behavior_recursive" getter="get_mouse_behavior_recursive" enum="Control.MouseBehaviorRecursive" default="0">

@@ -112,7 +112,7 @@
 			<param index="0" name="xform" type="Transform2D" />
 			<param index="1" name="local_ofs" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns a copy of the given input event which has been offset by [param local_ofs] and transformed by [param xform]. Relevant for events of type [InputEventMouseButton], [InputEventMouseMotion], [InputEventScreenTouch], [InputEventScreenDrag], [InputEventMagnifyGesture] and [InputEventPanGesture].
+				Returns a copy of the given input event which has been offset by [param local_ofs] and transformed by [param xform]. Relevant for events of type [InputEventMouseButton], [InputEventMouseMotion], [InputEventScreenTouch], [InputEventScreenDrag], [InputEventMagnifyGesture], and [InputEventPanGesture].
 			</description>
 		</method>
 	</methods>

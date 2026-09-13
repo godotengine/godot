@@ -172,7 +172,7 @@
 		<method name="clear">
 			<return type="void" />
 			<description>
-				Removes everything in the gizmo including meshes, collisions and handles.
+				Removes everything in the gizmo including meshes, collisions, and handles.
 			</description>
 		</method>
 		<method name="get_node_3d" qualifiers="const">

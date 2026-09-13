@@ -452,7 +452,7 @@
 				Returns the exit code of a spawned process once it has finished running (see [method is_process_running]).
 				Returns [code]-1[/code] if the [param pid] is not a PID of a spawned child process, the process is still running, or the method is not implemented for the current platform.
 				[b]Note:[/b] Returns [code]-1[/code] if the [param pid] is a macOS bundled app process.
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_process_id" qualifiers="const">
@@ -527,7 +527,7 @@
 			<param index="1" name="shared_storage" type="bool" default="true" />
 			<description>
 				Returns the path to commonly used folders across different platforms, as defined by [param dir]. See the [enum SystemDir] constants for available locations.
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] Shared storage is implemented on Android and allows to differentiate between app specific and shared directories, if [param shared_storage] is [code]true[/code]. Shared directories have additional restrictions on Android.
 			</description>
 		</method>
@@ -541,7 +541,7 @@
 				Returns the path to the system font file with [param font_name] and style. Returns an empty string if no matching fonts found.
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
 				[b]Note:[/b] Returned font might have different style if the requested style is not available.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_system_font_path_for_text" qualifiers="const">
@@ -558,14 +558,14 @@
 				The following aliases can be used to request default fonts: "sans-serif", "serif", "monospace", "cursive", and "fantasy".
 				[b]Note:[/b] Depending on OS, it's not guaranteed that any of the returned fonts will be suitable for rendering specified text. Fonts should be loaded and checked in the order they are returned, and the first suitable one used.
 				[b]Note:[/b] Returned fonts might have different style if the requested style is not available or belong to a different font family.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_system_fonts" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 				Returns the list of font family names available.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_temp_dir" qualifiers="const">
@@ -734,7 +734,7 @@
 			<description>
 				Kill (terminate) the process identified by the given process ID ([param pid]), such as the ID returned by [method execute] in non-blocking mode. See also [method crash].
 				[b]Note:[/b] This method can also be used to kill processes that were not spawned by the engine.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="move_to_trash" qualifiers="const">
@@ -754,7 +754,7 @@
 				OS.MoveToTrash(ProjectSettings.GlobalizePath(fileToRemove));
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] This method is implemented on Android, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
 				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
 			</description>
 		</method>
@@ -883,7 +883,7 @@
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The mailto URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] project path into a system path for use with this method.
 				[b]Note:[/b] Use [method String.uri_encode] to encode characters within URLs in a URL-safe, portable way. This is especially required for line breaks. Otherwise, [method shell_open] may not work correctly in a project exported to the Web platform.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="shell_show_in_file_manager">
@@ -964,7 +964,7 @@
 			Standard I/O device is a console. This typically occurs when Godot is run from a terminal with no redirection. This is also used for all standard I/O devices when running Godot from the editor, at least on desktop platforms.
 		</constant>
 		<constant name="STD_HANDLE_FILE" value="2" enum="StdHandleType">
-			Standard I/O device is a regular file. This typically occurs with redirection from a terminal, e.g. [code]godot &gt; stdout.txt[/code], [code]godot &lt; stdin.txt[/code] or [code]godot &gt; stdout_stderr.txt 2&gt;&amp;1[/code].
+			Standard I/O device is a regular file. This typically occurs with redirection from a terminal, e.g. [code]godot &gt; stdout.txt[/code], [code]godot &lt; stdin.txt[/code], or [code]godot &gt; stdout_stderr.txt 2&gt;&amp;1[/code].
 		</constant>
 		<constant name="STD_HANDLE_PIPE" value="3" enum="StdHandleType">
 			Standard I/O device is a FIFO/pipe. This typically occurs with pipe usage from a terminal, e.g. [code]echo "Hello" | godot[/code].

@@ -224,7 +224,7 @@
 			<param index="1" name="key" type="String" />
 			<param index="2" name="data" type="Variant" />
 			<description>
-				Sets project-specific metadata with the [param section], [param key] and [param data] specified. This metadata is stored outside the project folder and therefore won't be checked into version control. See also [method get_project_metadata].
+				Sets project-specific metadata with the [param section], [param key], and [param data] specified. This metadata is stored outside the project folder and therefore won't be checked into version control. See also [method get_project_metadata].
 			</description>
 		</method>
 		<method name="set_recent_dirs">
@@ -452,7 +452,7 @@
 		</member>
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
-			When 3-button mouse emulation mode is enabled, the pan, zoom and orbit modifiers can always be used in the 3D editor viewport, even when not holding down any mouse button.
+			When 3-button mouse emulation mode is enabled, the pan, zoom, and orbit modifiers can always be used in the 3D editor viewport, even when not holding down any mouse button.
 		</member>
 		<member name="editors/3d/navigation/emulate_numpad" type="bool" setter="" getter="">
 			If [code]true[/code], allows using the top row [kbd]0[/kbd]-[kbd]9[/kbd] keys to function as their equivalent numpad keys for 3D editor navigation. This should be enabled on keyboards that have no numeric keypad available.
@@ -1209,7 +1209,7 @@
 			If [code]false[/code], when panels are made floating their position and size will match the ones when they are attached (excluding window border) to the editor window.
 		</member>
 		<member name="interface/multi_window/restore_windows_on_load" type="bool" setter="" getter="">
-			If [code]true[/code], the floating panel position, size, and screen will be saved on editor exit. On next launch the panels that were floating will be made floating in the saved positions, sizes and screens, if possible.
+			If [code]true[/code], the floating panel position, size, and screen will be saved on editor exit. On next launch the panels that were floating will be made floating in the saved positions, sizes, and screens, if possible.
 		</member>
 		<member name="interface/scene_tabs/auto_select_current_scene_file" type="bool" setter="" getter="">
 			If [code]true[/code], the FileSystem dock will automatically navigate to the currently selected scene tab.
@@ -1693,7 +1693,7 @@
 			The script editor's bookmark icon color (displayed in the gutter).
 		</member>
 		<member name="text_editor/theme/highlighting/brace_mismatch_color" type="Color" setter="" getter="">
-			The script editor's brace mismatch color. Used when the caret is currently on a mismatched brace, parenthesis or bracket character.
+			The script editor's brace mismatch color. Used when the caret is currently on a mismatched brace, parenthesis, or bracket character.
 		</member>
 		<member name="text_editor/theme/highlighting/breakpoint_color" type="Color" setter="" getter="">
 			The script editor's breakpoint icon color (displayed in the gutter).

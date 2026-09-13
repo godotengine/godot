@@ -71,7 +71,7 @@
 			<param index="3" name="test_only" type="bool" />
 			<description>
 				When inheriting from [AnimationRootNode], implement this virtual method to run some code when this animation node is processed. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute.
-				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
+				Here, call the [method blend_input], [method blend_node], or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
 				This function should return the delta.
 			</description>
 		</method>
@@ -233,7 +233,7 @@
 		</signal>
 		<signal name="tree_changed">
 			<description>
-				Emitted by nodes that inherit from this class and that have an internal tree when one of their animation nodes changes. The animation nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], [AnimationNodeBlendTree] and [AnimationNodeTransition].
+				Emitted by nodes that inherit from this class and that have an internal tree when one of their animation nodes changes. The animation nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], [AnimationNodeBlendTree], and [AnimationNodeTransition].
 			</description>
 		</signal>
 	</signals>

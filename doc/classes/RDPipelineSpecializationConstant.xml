@@ -14,7 +14,7 @@
 			The identifier of the specialization constant. This is a value starting from [code]0[/code] and that increments for every different specialization constant for a given shader.
 		</member>
 		<member name="value" type="Variant" setter="set_value" getter="get_value">
-			The specialization constant's value. Only [bool], [int] and [float] types are valid for specialization constants.
+			The specialization constant's value. Only [bool], [int], and [float] types are valid for specialization constants.
 		</member>
 	</members>
 </class>
