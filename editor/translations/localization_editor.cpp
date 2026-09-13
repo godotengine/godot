@@ -38,6 +38,7 @@
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -53,6 +54,7 @@ void LocalizationEditor::_notification(int p_what) {
 			translation_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_translation_delete));
 			template_source_list->connect("button_clicked", callable_mp(this, &LocalizationEditor::_template_source_delete));
 			template_add_builtin->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_builtin_strings_to_pot"));
+			template_add_title->set_pressed(GLOBAL_GET("internationalization/locale/translation_add_project_title_to_translation_template"));
 
 			List<String> tfn;
 			ResourceLoader::get_recognized_extensions_for_type("Translation", &tfn);
@@ -373,6 +375,12 @@ void LocalizationEditor::_template_source_add(const PackedStringArray &p_paths) 
 	undo_redo->commit_action();
 }
 
+void LocalizationEditor::_template_source_add_one(const String &p_path) {
+	if (!p_path.is_empty()) {
+		_template_source_add({ p_path });
+	}
+}
+
 void LocalizationEditor::_template_source_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
 	if (p_mouse_button != MouseButton::LEFT) {
 		return;
@@ -408,19 +416,28 @@ void LocalizationEditor::_template_generate_open() {
 	template_generate_dialog->popup_file_dialog();
 }
 
+void LocalizationEditor::_template_generate_quick_open() {
+	template_source_quick_open_dialog->popup_dialog({ "PackedScene", "Script" }, callable_mp(this, &LocalizationEditor::_template_source_add_one));
+}
+
 void LocalizationEditor::_template_generate_command() {
 	const String current_path = template_generate_dialog->get_current_path();
 	if (!current_path.is_empty() && current_path.get_file().is_valid_filename()) {
 		_template_generate(current_path);
 		EditorToaster::get_singleton()->popup_str(TTR("Template generated."));
 	} else {
-		ProjectSettingsEditor::get_singleton()->popup_centered();
+		ProjectSettingsEditor::get_singleton()->popup_project_settings();
 		_template_generate_open();
 	}
 }
 
 void LocalizationEditor::_template_add_builtin_toggled() {
 	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_builtin_strings_to_pot", template_add_builtin->is_pressed());
+	ProjectSettings::get_singleton()->save();
+}
+
+void LocalizationEditor::_template_add_title_toggled() {
+	ProjectSettings::get_singleton()->set_setting("internationalization/locale/translation_add_project_title_to_translation_template", template_add_title->is_pressed());
 	ProjectSettings::get_singleton()->save();
 }
 
@@ -770,7 +787,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+		mc->set_theme_type_variation("NoBorderBottomWideWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -808,7 +825,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalWide");
+		mc->set_theme_type_variation("NoBorderHorizontalWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -836,7 +853,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_child(addtr);
 
 		mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+		mc->set_theme_type_variation("NoBorderBottomWideWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -880,12 +897,16 @@ LocalizationEditor::LocalizationEditor() {
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_source_file_open));
 		thb->add_child(addtr);
 
+		addtr = memnew(Button(TTRC("Quick Add...")));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_generate_quick_open));
+		thb->add_child(addtr);
+
 		template_generate_button = memnew(Button(TTRC("Generate")));
 		template_generate_button->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_generate_open));
 		thb->add_child(template_generate_button);
 
 		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderHorizontalWide");
+		mc->set_theme_type_variation("NoBorderHorizontalWindow");
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 		tvb->add_child(mc);
 
@@ -896,16 +917,26 @@ LocalizationEditor::LocalizationEditor() {
 		tree_data_types[template_source_list] = "localization_editor_pot_item";
 		tree_settings[template_source_list] = "internationalization/locale/translations_pot_files";
 
+		HBoxContainer *checkbox_hb = memnew(HBoxContainer);
+		tvb->add_child(checkbox_hb);
+
 		template_add_builtin = memnew(CheckBox(TTRC("Add Built-in Strings")));
 		template_add_builtin->set_tooltip_text(TTRC("Add strings from built-in components such as certain Control nodes."));
 		template_add_builtin->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_add_builtin_toggled));
-		tvb->add_child(template_add_builtin);
+		checkbox_hb->add_child(template_add_builtin);
+
+		template_add_title = memnew(CheckBox(TTRC("Add Project Title")));
+		template_add_title->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_add_title_toggled));
+		checkbox_hb->add_child(template_add_title);
 
 		template_generate_dialog = memnew(EditorFileDialog);
 		template_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 		template_generate_dialog->set_current_path(EditorSettings::get_singleton()->get_project_metadata("pot_generator", "last_pot_path", String()));
 		template_generate_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_template_generate));
 		add_child(template_generate_dialog);
+
+		template_source_quick_open_dialog = memnew(EditorQuickOpenDialog);
+		add_child(template_source_quick_open_dialog);
 
 		template_source_open_dialog = memnew(EditorFileDialog);
 		template_source_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);

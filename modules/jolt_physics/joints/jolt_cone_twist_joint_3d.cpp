@@ -158,21 +158,21 @@ JoltConeTwistJoint3D::JoltConeTwistJoint3D(const JoltJoint3D &p_old_joint, JoltB
 	rebuild();
 }
 
-double JoltConeTwistJoint3D::get_param(PhysicsServer3D::ConeTwistJointParam p_param) const {
+double JoltConeTwistJoint3D::get_param(PS3DE::ConeTwistJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN: {
+		case PS3DE::CONE_TWIST_JOINT_SWING_SPAN: {
 			return swing_limit_span;
 		}
-		case PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN: {
+		case PS3DE::CONE_TWIST_JOINT_TWIST_SPAN: {
 			return twist_limit_span;
 		}
-		case PhysicsServer3D::CONE_TWIST_JOINT_BIAS: {
+		case PS3DE::CONE_TWIST_JOINT_BIAS: {
 			return CONE_TWIST_DEFAULT_BIAS;
 		}
-		case PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS: {
+		case PS3DE::CONE_TWIST_JOINT_SOFTNESS: {
 			return CONE_TWIST_DEFAULT_SOFTNESS;
 		}
-		case PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION: {
+		case PS3DE::CONE_TWIST_JOINT_RELAXATION: {
 			return CONE_TWIST_DEFAULT_RELAXATION;
 		}
 		default: {
@@ -181,27 +181,27 @@ double JoltConeTwistJoint3D::get_param(PhysicsServer3D::ConeTwistJointParam p_pa
 	}
 }
 
-void JoltConeTwistJoint3D::set_param(PhysicsServer3D::ConeTwistJointParam p_param, double p_value) {
+void JoltConeTwistJoint3D::set_param(PS3DE::ConeTwistJointParam p_param, double p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN: {
+		case PS3DE::CONE_TWIST_JOINT_SWING_SPAN: {
 			swing_limit_span = p_value;
 			_limits_changed();
 		} break;
-		case PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN: {
+		case PS3DE::CONE_TWIST_JOINT_TWIST_SPAN: {
 			twist_limit_span = p_value;
 			_limits_changed();
 		} break;
-		case PhysicsServer3D::CONE_TWIST_JOINT_BIAS: {
+		case PS3DE::CONE_TWIST_JOINT_BIAS: {
 			if (!Math::is_equal_approx(p_value, CONE_TWIST_DEFAULT_BIAS)) {
 				WARN_PRINT(vformat("Cone twist joint bias is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS: {
+		case PS3DE::CONE_TWIST_JOINT_SOFTNESS: {
 			if (!Math::is_equal_approx(p_value, CONE_TWIST_DEFAULT_SOFTNESS)) {
 				WARN_PRINT(vformat("Cone twist joint softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION: {
+		case PS3DE::CONE_TWIST_JOINT_RELAXATION: {
 			if (!Math::is_equal_approx(p_value, CONE_TWIST_DEFAULT_RELAXATION)) {
 				WARN_PRINT(vformat("Cone twist joint relaxation is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}

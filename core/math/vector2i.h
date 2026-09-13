@@ -51,28 +51,29 @@ struct [[nodiscard]] Vector2i {
 	};
 
 	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			int32_t x;
-			int32_t y;
-		};
-
-		struct {
-			int32_t width;
-			int32_t height;
-		};
-
-		int32_t coord[2] = { 0 };
-		// NOLINTEND(modernize-use-default-member-init)
+		int32_t x = 0;
+		int32_t width;
+	};
+	union {
+		int32_t y = 0;
+		int32_t height;
 	};
 
-	_FORCE_INLINE_ int32_t &operator[](int p_axis) {
+	constexpr int32_t &operator[](int p_axis) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(Vector2i, x) == 0 * sizeof(int32_t));
+		static_assert(offsetof(Vector2i, width) == 0 * sizeof(int32_t));
+		static_assert(offsetof(Vector2i, y) == 1 * sizeof(int32_t));
+		static_assert(offsetof(Vector2i, height) == 1 * sizeof(int32_t));
+		static_assert(sizeof(Vector2i) == 2 * sizeof(int32_t));
+
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
-	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
+	constexpr const int32_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 2);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
 
 	_FORCE_INLINE_ Vector2i::Axis min_axis_index() const {
@@ -154,12 +155,9 @@ struct [[nodiscard]] Vector2i {
 		return hash_fmix32(h);
 	}
 
-	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)
-	constexpr Vector2i() :
-			x(0), y(0) {}
+	constexpr Vector2i() = default;
 	constexpr Vector2i(int32_t p_x, int32_t p_y) :
 			x(p_x), y(p_y) {}
-	// NOLINTEND(cppcoreguidelines-pro-type-member-init)
 };
 
 inline constexpr Vector2i Vector2i::LEFT = { -1, 0 };
@@ -199,29 +197,29 @@ constexpr void Vector2i::operator*=(int32_t p_rvalue) {
 }
 
 constexpr Vector2i Vector2i::operator/(const Vector2i &p_v1) const {
-	return Vector2i(x / p_v1.x, y / p_v1.y);
+	return Vector2i(Math::division_no_overflow(x, p_v1.x), Math::division_no_overflow(y, p_v1.y));
 }
 
 constexpr Vector2i Vector2i::operator/(int32_t p_rvalue) const {
-	return Vector2i(x / p_rvalue, y / p_rvalue);
+	return Vector2i(Math::division_no_overflow(x, p_rvalue), Math::division_no_overflow(y, p_rvalue));
 }
 
 constexpr void Vector2i::operator/=(int32_t p_rvalue) {
-	x /= p_rvalue;
-	y /= p_rvalue;
+	x = Math::division_no_overflow(x, p_rvalue);
+	y = Math::division_no_overflow(y, p_rvalue);
 }
 
 constexpr Vector2i Vector2i::operator%(const Vector2i &p_v1) const {
-	return Vector2i(x % p_v1.x, y % p_v1.y);
+	return Vector2i(Math::modulo_no_overflow(x, p_v1.x), Math::modulo_no_overflow(y, p_v1.y));
 }
 
 constexpr Vector2i Vector2i::operator%(int32_t p_rvalue) const {
-	return Vector2i(x % p_rvalue, y % p_rvalue);
+	return Vector2i(Math::modulo_no_overflow(x, p_rvalue), Math::modulo_no_overflow(y, p_rvalue));
 }
 
 constexpr void Vector2i::operator%=(int32_t p_rvalue) {
-	x %= p_rvalue;
-	y %= p_rvalue;
+	x = Math::modulo_no_overflow(x, p_rvalue);
+	y = Math::modulo_no_overflow(y, p_rvalue);
 }
 
 constexpr Vector2i Vector2i::operator-() const {

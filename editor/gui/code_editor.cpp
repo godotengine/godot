@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_node.h"
@@ -222,7 +223,6 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 			text_editor->select(pos.y, pos.x, pos.y, pos.x + text.length());
 			text_editor->center_viewport_to_caret(0);
 			text_editor->set_code_hint("");
-			text_editor->cancel_code_completion();
 
 			line_col_changed_for_result = true;
 		}
@@ -1029,15 +1029,14 @@ void CodeTextEditor::_code_complete_timer_timeout() {
 }
 
 void CodeTextEditor::_complete_request() {
-	List<ScriptLanguage::CodeCompletionOption> entries;
+	List<EditorLanguage::CompletionOption> entries;
 	String ctext = text_editor->get_text_for_code_completion();
-	_code_complete_script(ctext, &entries);
 	bool forced = false;
 	if (code_complete_func) {
 		code_complete_func(code_complete_ud, ctext, &entries, forced);
 	}
 
-	for (const ScriptLanguage::CodeCompletionOption &e : entries) {
+	for (const EditorLanguage::CompletionOption &e : entries) {
 		Color font_color = completion_font_color;
 		if (!e.theme_color_name.is_empty() && EDITOR_GET("text_editor/completion/colorize_suggestions")) {
 			font_color = get_theme_color(e.theme_color_name, SNAME("Editor"));
@@ -1057,47 +1056,48 @@ void CodeTextEditor::_complete_request() {
 	text_editor->update_code_completion_options(forced);
 }
 
-Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCompletionOption &p_option) {
+Ref<Texture2D> CodeTextEditor::_get_completion_icon(const EditorLanguage::CompletionOption &p_option) {
 	Ref<Texture2D> tex;
 	switch (p_option.kind) {
-		case ScriptLanguage::CODE_COMPLETION_KIND_CLASS: {
-			if (has_theme_icon(p_option.display, EditorStringName(EditorIcons))) {
-				tex = get_editor_theme_icon(p_option.display);
+		case EditorLanguage::CompletionKind::CLASS: {
+			const String formatted_class_name = p_option.display.unquote();
+			if (has_theme_icon(formatted_class_name, EditorStringName(EditorIcons))) {
+				tex = get_editor_theme_icon(formatted_class_name);
 			} else {
-				tex = EditorNode::get_singleton()->get_class_icon(p_option.display);
+				tex = EditorNode::get_singleton()->get_class_icon(formatted_class_name);
 				if (tex.is_null()) {
 					tex = get_editor_theme_icon(SNAME("Object"));
 				}
 			}
 		} break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
+		case EditorLanguage::CompletionKind::ENUM:
 			tex = get_editor_theme_icon(SNAME("Enum"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
+		case EditorLanguage::CompletionKind::FILE_PATH:
 			tex = get_editor_theme_icon(SNAME("File"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
+		case EditorLanguage::CompletionKind::NODE_PATH:
 			tex = get_editor_theme_icon(SNAME("NodePath"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
+		case EditorLanguage::CompletionKind::VARIABLE:
 			tex = get_editor_theme_icon(SNAME("LocalVariable"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
+		case EditorLanguage::CompletionKind::CONSTANT:
 			tex = get_editor_theme_icon(SNAME("MemberConstant"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
+		case EditorLanguage::CompletionKind::MEMBER_VARIABLE:
 			tex = get_editor_theme_icon(SNAME("MemberProperty"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
+		case EditorLanguage::CompletionKind::SIGNAL:
 			tex = get_editor_theme_icon(SNAME("MemberSignal"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
+		case EditorLanguage::CompletionKind::FUNCTION:
 			tex = get_editor_theme_icon(SNAME("MemberMethod"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
+		case EditorLanguage::CompletionKind::KEYWORD:
 			tex = get_editor_theme_icon(SNAME("Keyword"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
+		case EditorLanguage::CompletionKind::PLAIN_TEXT:
 			tex = get_editor_theme_icon(SNAME("BoxMesh"));
 			break;
 		default:
@@ -1411,7 +1411,6 @@ void CodeTextEditor::goto_line_without_history(int p_line, int p_column) {
 	text_editor->set_caret_line(p_line, false);
 	text_editor->set_caret_column(p_column, false);
 	text_editor->set_code_hint("");
-	text_editor->cancel_code_completion();
 	adjust_viewport_to_caret();
 }
 
@@ -1425,7 +1424,6 @@ void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->unfold_line(CLAMP(p_line, 0, text_editor->get_line_count() - 1));
 	text_editor->select(p_line, p_begin, p_line, p_end);
 	text_editor->set_code_hint("");
-	text_editor->cancel_code_completion();
 	adjust_viewport_to_caret();
 	trigger_history_save_on_navigate();
 }
@@ -1437,7 +1435,6 @@ void CodeTextEditor::goto_line_centered(int p_line, int p_column) {
 	text_editor->set_caret_line(p_line, false);
 	text_editor->set_caret_column(p_column, false);
 	text_editor->set_code_hint("");
-	text_editor->cancel_code_completion();
 	center_viewport_to_caret();
 	trigger_history_save_on_navigate();
 }
@@ -1628,12 +1625,6 @@ Point2i CodeTextEditor::get_pos_for_display(Point2i p_internal_position) const {
 	return Point2(p_internal_position.x + 1, corrected_column + 1);
 }
 
-void CodeTextEditor::goto_error() {
-	if (!error->get_text().is_empty()) {
-		goto_line_centered(error_line, error_column);
-	}
-}
-
 void CodeTextEditor::_update_text_editor_theme() {
 	emit_signal(SNAME("load_theme_settings"));
 
@@ -1706,7 +1697,7 @@ void CodeTextEditor::_update_font_ligatures() {
 			} break;
 		}
 		Vector<String> variation_tags = String(EDITOR_GET("interface/editor/fonts/code_font_custom_variations")).split(",");
-		Dictionary variations_mono;
+		Dictionary variations_mono = fc->get_variation_opentype();
 		for (int i = 0; i < variation_tags.size(); i++) {
 			Vector<String> subtag_a = variation_tags[i].split("=");
 			if (subtag_a.size() == 2) {
@@ -1720,7 +1711,6 @@ void CodeTextEditor::_update_font_ligatures() {
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
-	_validate_script();
 	emit_signal(SNAME("validate_script"));
 }
 
@@ -1762,7 +1752,9 @@ void CodeTextEditor::_toggle_files_pressed() {
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		goto_error();
+		if (!error->get_text().is_empty()) {
+			goto_line_centered(error_line, error_column);
+		}
 	}
 }
 
@@ -1911,7 +1903,7 @@ void CodeTextEditor::_zoom_out() {
 }
 
 void CodeTextEditor::_zoom_to(float p_zoom_factor) {
-	if (zoom_factor == p_zoom_factor) {
+	if (Math::is_equal_approx(zoom_factor, p_zoom_factor)) {
 		return;
 	}
 

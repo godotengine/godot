@@ -41,8 +41,11 @@ class GDScriptFunction;
 class GDScriptInstance;
 
 class GDScriptLambdaCallable : public CallableCustom {
-	GDScript::UpdatableFuncPtr function;
+	// `script` must have a longer lifetime than `function`.
+	// `~UpdatableFuncPtr()` locks the GDScript mutex it points to via a raw pointer.
+	// As members are destroyed in reverse order of declaration, the reference must be declared first.
 	Ref<GDScript> script;
+	GDScript::UpdatableFuncPtr function;
 	uint32_t h;
 
 	Vector<Variant> captures;

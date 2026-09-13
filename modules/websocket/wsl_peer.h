@@ -44,7 +44,6 @@
 
 class WSLPeer : public WebSocketPeer {
 private:
-	static CryptoCore::RandomGenerator *_static_rng;
 	static WebSocketPeer *_create(bool p_notify_postinitialize);
 
 	// Callbacks.
@@ -133,7 +132,6 @@ private:
 
 public:
 	static void initialize();
-	static void deinitialize();
 
 	// PacketPeer
 	virtual int get_available_packet_count() const override;

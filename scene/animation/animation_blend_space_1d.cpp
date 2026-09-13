@@ -37,6 +37,7 @@
 void AnimationNodeBlendSpace1D::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
+	r_list->push_back(PropertyInfo(Variant::OBJECT, observer, PROPERTY_HINT_RESOURCE_TYPE, AnimationNodeObserverBlendSpace::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
@@ -606,6 +607,13 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_
 		NodeTimeInfo t = blend_node(p_process_state, p_instance, &other_instance, pi, FILTER_IGNORE, true, p_test_only);
 		if (i == new_closest) {
 			mind = t;
+		}
+	}
+
+	if (!p_test_only && new_closest != cur_closest && new_closest != -1) {
+		Ref<AnimationNodeObserverBlendSpace> observer_ref = p_instance.get_parameter_observer();
+		if (observer_ref.is_valid()) {
+			observer_ref->emit_signal("closest_point_changed", get_blend_point_name(new_closest));
 		}
 	}
 

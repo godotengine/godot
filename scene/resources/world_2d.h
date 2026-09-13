@@ -33,13 +33,14 @@
 #include "core/io/resource.h"
 
 #ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_2d/physics_server_2d.h"
+class PhysicsDirectSpaceState2D;
 #endif // PHYSICS_2D_DISABLED
 
 class VisibleOnScreenNotifier2D;
 class Viewport;
 struct SpatialIndexer2D;
 
+// World2D is needed for Viewport for CanvasItem rendering even when 2D is disabled.
 class World2D : public Resource {
 	GDCLASS(World2D, Resource);
 

@@ -38,6 +38,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/object/script_language.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
@@ -606,7 +607,7 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	GDScriptLanguageProtocol::get_singleton()->notify_client("textDocument/publishDiagnostics", params);
 }
 
-void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<ScriptLanguage::CodeCompletionOption> *r_options) {
+void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<EditorLanguage::CompletionOption> *r_options) {
 	String path = get_file_path(p_params.textDocument.uri);
 	String call_hint;
 	bool forced = false;
@@ -667,17 +668,15 @@ const LSP::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const LSP::TextDocu
 				symbol = get_script_symbol(class_path);
 
 			} else {
-				ScriptLanguage::LookupResult ret;
+				EditorLanguage::LookupResult ret;
 				// TODO: `lookup_code` should already account for this. We might be able to simplify code here.
 				if (symbol_name == "new" && parser->get_lines()[p_doc_pos.position.line].remove_chars(" \t").contains("new(")) {
 					symbol_name = "_init";
 				}
-				if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_name, p_func_required), symbol_name, path, nullptr, ret)) {
+				if (OK == GDScriptEditorLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_name, p_func_required), symbol_name, path, nullptr, ret)) {
 					if (ret.location >= 0) {
 						String target_script_path = path;
-						if (ret.script.is_valid()) {
-							target_script_path = ret.script->get_path();
-						} else if (!ret.script_path.is_empty()) {
+						if (!ret.script_path.is_empty()) {
 							target_script_path = ret.script_path;
 						}
 

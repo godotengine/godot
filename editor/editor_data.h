@@ -38,6 +38,7 @@ class ConfigFile;
 class EditorPlugin;
 class EditorUndoRedoManager;
 class PopupMenu;
+class PackedScene;
 
 /**
  * Stores the history of objects which have been selected for editing in the Editor & the Inspector.
@@ -112,6 +113,7 @@ public:
 
 	struct EditedScene {
 		Node *root = nullptr;
+		Ref<PackedScene> scene;
 		String path;
 		uint64_t file_modified_time = 0;
 		Dictionary editor_states;
@@ -201,6 +203,7 @@ public:
 	int add_edited_scene(int p_at_pos);
 	void remove_scene(int p_idx);
 	void set_scene_root(int p_idx, Node *p_root);
+	void set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node *p_root);
 	int get_edited_scene() const;
@@ -322,16 +325,17 @@ public:
 	void update(bool p_deferred = true);
 	void clear();
 
-	// Returns only the top level selected nodes.
-	// That is, if the selection includes some node and a child of that node, only the parent is returned.
+	// Returns only the top-level selected nodes (i.e. excludes any selected node whose parent is also selected).
+	// The first top-level node selected by the user is at the front of the list (i.e. not sorted in scene tree order).
 	List<Node *> get_top_selected_node_list();
-	// Same as get_top_selected_node_list but returns a copy in a TypedArray for binding to scripts.
+	// Same as get_top_selected_node_list() but returns a TypedArray for binding to scripts.
 	TypedArray<Node> get_top_selected_nodes();
-	// Returns all the selected nodes (list version of "get_selected_nodes").
+	// Returns all selected nodes (list version of "get_selected_nodes").
+	// The first node selected by the user is at the front of the list (i.e. not sorted in scene tree order).
 	List<Node *> get_full_selected_node_list();
-	// Same as get_full_selected_node_list but returns a copy in a TypedArray for binding to scripts.
+	// Same as get_full_selected_node_list() but returns a TypedArray for binding to scripts.
 	TypedArray<Node> get_selected_nodes();
-	// Returns the map of selected objects and their metadata.
+	// Returns the map of all selected nodes and their metadata.
 	HashMap<ObjectID, Object *> &get_selection() { return selection; }
 
 	~EditorSelection();

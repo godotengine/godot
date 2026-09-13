@@ -30,7 +30,12 @@
 
 #pragma once
 
-#include "servers/physics_3d/physics_server_3d.h"
+#include "core/math/aabb.h"
+#include "core/os/mutex.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/rid.h"
+#include "core/variant/variant.h"
+#include "servers/physics_3d/physics_server_3d_enums.h"
 
 #include <Jolt/Jolt.h>
 
@@ -50,7 +55,7 @@ protected:
 	String _owners_to_string() const;
 
 public:
-	typedef PhysicsServer3D::ShapeType ShapeType;
+	typedef PS3DE::ShapeType ShapeType;
 
 	virtual ~JoltShape3D() = 0;
 

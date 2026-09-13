@@ -107,14 +107,12 @@ private:
 
 	ID id = UNASSIGNED_ID;
 
+	static inline SafeFlag is_main_thread_assigned{ false };
 	static SafeNumeric<uint64_t> id_counter;
 	static thread_local ID caller_id;
 	THREADING_NAMESPACE::thread thread;
 
 	static void callback(ID p_caller_id, const Settings &p_settings, Thread::Callback p_callback, void *p_userdata);
-
-	static void make_main_thread() { caller_id = MAIN_ID; }
-	static void release_main_thread() { caller_id = id_counter.increment(); }
 
 public:
 	static void _set_platform_functions(const PlatformFunctions &p_functions);
@@ -130,6 +128,8 @@ public:
 	_FORCE_INLINE_ static ID get_main_id() { return MAIN_ID; }
 
 	_FORCE_INLINE_ static bool is_main_thread() { return caller_id == MAIN_ID; } // Gain a tiny bit of perf here because there is no need to validate caller_id here, because only main thread will be set as 1.
+	static void make_main_thread();
+	static void release_main_thread();
 
 	static Error set_name(const String &p_name);
 
@@ -182,9 +182,6 @@ private:
 
 	static PlatformFunctions platform_functions;
 
-	static void make_main_thread() {}
-	static void release_main_thread() {}
-
 public:
 	static void _set_platform_functions(const PlatformFunctions &p_functions);
 
@@ -193,6 +190,8 @@ public:
 	_FORCE_INLINE_ static ID get_main_id() { return MAIN_ID; }
 
 	_FORCE_INLINE_ static bool is_main_thread() { return true; }
+	static void make_main_thread() {}
+	static void release_main_thread() {}
 
 	static Error set_name(const String &p_name) { return ERR_UNAVAILABLE; }
 

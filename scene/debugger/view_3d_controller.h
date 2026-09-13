@@ -140,14 +140,25 @@ public:
 	};
 
 	struct Cursor {
-		Vector3 pos;
+		// Store the X/Y/Z position individually as doubles, as Vector3 is 32-bit in single-precision builds.
+		// We want to always use doubles, so that freelook and panning behavior stays correct
+		// when far away from the origin.
+		double pos_x;
+		double pos_y;
+		double pos_z;
+
 		real_t x_rot;
 		real_t y_rot;
 		real_t distance;
 		real_t fov_scale;
 		real_t unsnapped_x_rot;
 		real_t unsnapped_y_rot;
-		Vector3 eye_pos; // Used for freelook.
+
+		// Used for freelook.
+		double eye_pos_x;
+		double eye_pos_y;
+		double eye_pos_z;
+
 		// TODO: These variables are not related to cursor manipulation, and specific
 		// to Node3DEditorPlugin. So remove them in the future.
 		bool region_select;

@@ -24,60 +24,60 @@
 		</method>
 	</methods>
 	<signals>
-		<signal name="edited_script_changed">
+		<signal name="edited_script_changed" deprecated="This signal should only be used internally.">
 			<description>
 				Emitted after script validation.
 			</description>
 		</signal>
-		<signal name="go_to_help">
+		<signal name="go_to_help" deprecated="This signal should only be used internally. See [method ScriptEditor.goto_help] instead.">
 			<param index="0" name="what" type="String" />
 			<description>
 				Emitted when the user requests a specific documentation page.
 			</description>
 		</signal>
-		<signal name="go_to_method">
+		<signal name="go_to_method" deprecated="This signal should only be used internally.">
 			<param index="0" name="script" type="Object" />
 			<param index="1" name="method" type="String" />
 			<description>
 				Emitted when the user requests to view a specific method of a script, similar to [signal request_open_script_at_line].
 			</description>
 		</signal>
-		<signal name="name_changed">
+		<signal name="name_changed" deprecated="This signal should only be used internally.">
 			<description>
 				Emitted after script validation or when the edited resource has changed.
 			</description>
 		</signal>
-		<signal name="replace_in_files_requested">
+		<signal name="replace_in_files_requested" deprecated="This signal should only be used internally.">
 			<param index="0" name="text" type="String" />
 			<description>
 				Emitted when the user request to find and replace text in the file system.
 			</description>
 		</signal>
-		<signal name="request_help">
+		<signal name="request_help" deprecated="This signal should only be used internally.">
 			<param index="0" name="topic" type="String" />
 			<description>
 				Emitted when the user requests contextual help.
 			</description>
 		</signal>
-		<signal name="request_open_script_at_line">
+		<signal name="request_open_script_at_line" deprecated="This signal should only be used internally. See [method EditorInterface.edit_script] instead.">
 			<param index="0" name="script" type="Object" />
 			<param index="1" name="line" type="int" />
 			<description>
 				Emitted when the user requests to view a specific line of a script, similar to [signal go_to_method].
 			</description>
 		</signal>
-		<signal name="request_save_history">
+		<signal name="request_save_history" deprecated="This signal should only be used internally.">
 			<description>
 				Emitted when the editor requests to save a new history navigation point.
 			</description>
 		</signal>
-		<signal name="request_save_previous_state">
+		<signal name="request_save_previous_state" deprecated="This signal should only be used internally.">
 			<param index="0" name="state" type="Dictionary" />
 			<description>
 				Emitted when the editor requests an update to its navigation point.
 			</description>
 		</signal>
-		<signal name="search_in_files_requested">
+		<signal name="search_in_files_requested" deprecated="This signal should only be used internally.">
 			<param index="0" name="text" type="String" />
 			<description>
 				Emitted when the user request to search text in the file system.

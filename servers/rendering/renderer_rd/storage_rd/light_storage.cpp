@@ -163,6 +163,8 @@ void LightStorage::_light_initialize(RID p_light, RSE::LightType p_type) {
 	light.param[RSE::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 	light.param[RSE::LIGHT_PARAM_INTENSITY] = p_type == RSE::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
+	light.param[RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY] = 1.0;
+	light.param[RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR] = 1.0;
 
 	light_owner.initialize_rid(p_light, light);
 }
@@ -357,6 +359,20 @@ void LightStorage::light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) 
 
 	light->version++;
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+}
+
+void LightStorage::light_set_allow_contact_shadows(RID p_light, bool p_enable) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->allow_contact_shadows = p_enable;
+}
+
+bool LightStorage::light_get_allow_contact_shadows(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL_V(light, true);
+
+	return light->allow_contact_shadows;
 }
 
 void LightStorage::light_omni_set_shadow_mode(RID p_light, RSE::LightOmniShadowMode p_mode) {
@@ -723,6 +739,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 	omni_light_count = 0;
 	spot_light_count = 0;
 	area_light_count = 0;
+	uint32_t directional_contact_shadows_count = 0;
 
 	r_directional_light_soft_shadows = false;
 
@@ -781,6 +798,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				light_data.shadow_opacity = (p_using_shadows && light->shadow)
 						? light->param[RSE::LIGHT_PARAM_SHADOW_OPACITY]
 						: 0.0;
+				light_data.sscs_index = light->allow_contact_shadows ? directional_contact_shadows_count++ : 0xffffffff;
 
 				float angular_diameter = light->param[RSE::LIGHT_PARAM_SIZE];
 				if (angular_diameter > 0.0) {
@@ -816,7 +834,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						Projection correction;
 						correction.set_depth_correction(false, true, false);
 						Projection matrix = correction * light_instance->shadow_transform[j].camera;
-						float split = light_instance->shadow_transform[MIN(limit, j)].split;
+						float split = j <= limit ? light_instance->shadow_transform[j].split : 0;
 
 						Projection bias;
 						bias.set_light_bias();
@@ -858,8 +876,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 					}
 
 					float fade_start = light->param[RSE::LIGHT_PARAM_SHADOW_FADE_START];
-					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
-					light_data.fade_to = -light_data.shadow_split_offsets[3];
+					light_data.fade_from = -light_data.shadow_split_offsets[limit] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
+					light_data.fade_to = -light_data.shadow_split_offsets[limit];
 				}
 
 				r_directional_light_count++;
@@ -1549,9 +1567,7 @@ RID LightStorage::reflection_atlas_create() {
 void LightStorage::reflection_atlas_free(RID p_ref_atlas) {
 	reflection_atlas_set_size(p_ref_atlas, 0, 0);
 	ReflectionAtlas *ra = reflection_atlas_owner.get_or_null(p_ref_atlas);
-	if (ra->cluster_builder) {
-		memdelete(ra->cluster_builder);
-	}
+	memdelete(ra->cluster_builder);
 	reflection_atlas_owner.free(p_ref_atlas);
 }
 
@@ -2318,6 +2334,20 @@ void LightStorage::lightmap_set_shadowmask_mode(RID p_lightmap, RSE::ShadowmaskM
 	ERR_FAIL_NULL(lm);
 
 	lm->shadowmask_mode = p_mode;
+}
+
+float LightStorage::lightmap_get_specular_intensity(RID p_lightmap) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL_V(lm, 0.0f);
+
+	return lm->specular_intensity;
+}
+
+void LightStorage::lightmap_set_specular_intensity(RID p_lightmap, float p_intensity) {
+	Lightmap *lm = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lm);
+
+	lm->specular_intensity = p_intensity;
 }
 
 /* LIGHTMAP INSTANCE */

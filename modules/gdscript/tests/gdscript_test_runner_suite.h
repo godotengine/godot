@@ -31,6 +31,7 @@
 #pragma once
 
 #include "../gdscript_cache.h"
+#include "../gdscript_parser.h"
 #include "gdscript_test_runner.h"
 
 #include "core/io/file_access.h"
@@ -140,6 +141,40 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 			}
 		}
 	}
+}
+
+static void check_single_multiline_string_error(const String &p_string, int p_start_line, int p_start_column, int p_end_line, int p_end_column, const String &p_message) {
+	const String source = String("var s = \"\"\"\n") + p_string + "\n\"\"\"\n";
+
+	GDScriptParser parser;
+	parser.parse(source, "", false);
+	const List<GDScriptParser::ParserError> &errors = parser.get_errors();
+
+	REQUIRE_MESSAGE(errors.size() == 1, vformat("Expected exactly one error, got %d.", errors.size()));
+
+	const GDScriptParser::ParserError &error = errors.front()->get();
+
+	CHECK(error.start_line == p_start_line);
+	CHECK(error.start_column == p_start_column);
+	CHECK(error.end_line == p_end_line);
+	CHECK(error.end_column == p_end_column);
+	CHECK(error.message == p_message);
+}
+
+// These can't be part of the regular parser tests because they cannot test the position information of errors.
+TEST_CASE("[Modules][GDScript] Validate multi-line string error positions") {
+	check_single_multiline_string_error(String::chr(0x200E), 2, 1, 2, 2, "Invisible text direction control character present in the string, escape it (\"\\u200e\") to avoid confusion.");
+	check_single_multiline_string_error("\\Uzzzzzz", 2, 3, 2, 4, "Invalid hexadecimal digit in unicode escape sequence.");
+	check_single_multiline_string_error("\\p", 2, 1, 2, 3, "Invalid escape in string.");
+	check_single_multiline_string_error("abc\ndef\nghi\\p", 4, 4, 4, 6, "Invalid escape in string.");
+	check_single_multiline_string_error("\\uD800\\uD800", 2, 11, 2, 13, "Invalid UTF-16 sequence in string, unpaired lead surrogate.");
+	check_single_multiline_string_error("\\uDC00", 2, 5, 2, 7, "Invalid UTF-16 sequence in string, unpaired trail surrogate.");
+	check_single_multiline_string_error("\\uD800\\u0041", 2, 5, 2, 7, "Invalid UTF-16 sequence in string, unpaired lead surrogate.");
+	check_single_multiline_string_error("\\uD800\"abc", 2, 5, 2, 7, "Invalid UTF-16 sequence in string, unpaired lead surrogate");
+	check_single_multiline_string_error("\\uD800x", 2, 5, 2, 7, "Invalid UTF-16 sequence in string, unpaired lead surrogate");
+	check_single_multiline_string_error("\\uD800\\\n\\u0041", 2, 5, 2, 7, "Invalid UTF-16 sequence in string, unpaired lead surrogate.");
+	check_single_multiline_string_error("\\uD800\\", 2, 5, 2, 7, "Invalid UTF-16 sequence in string, unpaired lead surrogate");
+	check_single_multiline_string_error("\\uD800\\\nx", 2, 5, 2, 7, "Invalid UTF-16 sequence in string, unpaired lead surrogate");
 }
 
 } // namespace GDScriptTests

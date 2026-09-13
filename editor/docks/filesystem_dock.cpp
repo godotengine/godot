@@ -58,6 +58,7 @@
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/editor_resource_tooltip_plugins.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
+#include "editor/run/editor_run_bar.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/scene_create_dialog.h"
 #include "editor/settings/editor_command_palette.h"
@@ -72,6 +73,8 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/slider.h"
+#include "scene/main/timer.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
 
@@ -513,7 +516,7 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 				toolbar2_hbc->show();
 
 				tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
-				tree_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+				tree_mc->set_theme_type_variation("NoBorderBottomPanel");
 			}
 			button_file_list_display_mode->hide();
 
@@ -589,6 +592,7 @@ void FileSystemDock::_notification(int p_what) {
 
 			always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 			thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
+			thumbnail_size_slider->set_value(thumbnail_size_setting);
 
 			set_file_list_display_mode(FileSystemDock::FILE_LIST_DISPLAY_LIST);
 
@@ -692,6 +696,7 @@ void FileSystemDock::_notification(int p_what) {
 			int new_thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
 			if (new_thumbnail_size_setting != thumbnail_size_setting) {
 				thumbnail_size_setting = new_thumbnail_size_setting;
+				thumbnail_size_slider->set_value(thumbnail_size_setting);
 				do_redraw = true;
 			}
 
@@ -1059,6 +1064,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection, const Vector<Strin
 		const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 		files->set_fixed_icon_size(Size2(icon_size, icon_size));
 	}
+
+	thumbnail_size_slider->set_visible(use_thumbnails);
 
 	Ref<Texture2D> folder_icon = (use_thumbnails) ? folder_thumbnail : get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
 	const Color default_folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
@@ -1472,12 +1479,18 @@ void FileSystemDock::_update_history() {
 	current_path = history[history_pos];
 	_set_current_path_line_edit_text(current_path);
 
+	file_list_search_box->clear();
+	tree_search_box->clear();
+	searched_tokens.clear();
+
 	if (tree->is_visible()) {
+		tree->deselect_all();
 		_update_tree(get_uncollapsed_paths());
 		tree->grab_focus(true);
 	}
 
 	if (file_list_vb->is_visible()) {
+		files->deselect_all();
 		_update_file_list(false);
 	}
 
@@ -2179,6 +2192,19 @@ Vector<String> FileSystemDock::_file_list_get_selected() const {
 	return selected;
 }
 
+Dictionary FileSystemDock::_get_context_data(const PackedStringArray &p_selected_files) {
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["selected_files"] = p_selected_files;
+	return context_data;
+}
+
+Dictionary FileSystemDock::_get_context_data_for_create(const String &p_base_dir, bool p_needs_prefix) {
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["base_directory"] = p_base_dir;
+	context_data["needs_prefix"] = p_needs_prefix;
+	return context_data;
+}
+
 Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> selected_strings) {
 	// Remove paths or files that are included into another.
 	if (selected_strings.size() > 1) {
@@ -2277,7 +2303,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					external_program = EDITOR_GET("text_editor/external/exec_path");
 				} else if (extension == "res" || extension == "scn") {
 					// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
-				} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
+				} else if (resource_type == "CompressedTexture2D" || resource_type == "StreamedTexture2D" || resource_type == "Image") {
 					if (extension == "svg" || extension == "svgz") {
 						external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
 					} else {
@@ -2712,6 +2738,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_RUN_SCENE: {
+			if (p_selected.size() == 1) {
+				EditorRunBar::get_singleton()->play_custom_scene(p_selected[0]);
+			}
+		} break;
+
 		case EXTRA_FOCUS_PATH: {
 			focus_on_filter();
 		} break;
@@ -2721,13 +2753,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		default: {
 			if (p_option >= EditorContextMenuPlugin::BASE_ID) {
-				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option, p_selected)) {
-					// For create new file option, pass the path location of mouse click position instead, to plugin callback.
-					String fpath = current_path;
-					if (!fpath.ends_with("/")) {
-						fpath = fpath.get_base_dir();
-					}
-					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option, { fpath });
+				if (!EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_option)) {
+					EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_option);
 				}
 			} else if (p_option >= CONVERT_BASE_ID) {
 				selected_conversion_id = p_option - CONVERT_BASE_ID;
@@ -2776,12 +2803,14 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_NEW_TEXTFILE;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_key)) {
 		return FILE_MENU_RENAME;
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 	} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_key)) {
 		return FILE_MENU_SHOW_IN_EXPLORER;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_key)) {
 		return FILE_MENU_OPEN_EXTERNAL;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_key)) {
 		return FILE_MENU_OPEN_IN_TERMINAL;
+#endif
 	} else if (ED_IS_SHORTCUT("filesystem_dock/focus_path", p_key)) {
 		return EXTRA_FOCUS_PATH;
 	} else if (ED_IS_SHORTCUT("editor/open_search", p_key)) {
@@ -2878,7 +2907,7 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 	}
 	const String s = p_text.to_lower();
 	for (const String &t : searched_tokens) {
-		if (!s.contains(t)) {
+		if (!s.contains(t) && !s.matchn(t)) {
 			return false;
 		}
 	}
@@ -3432,6 +3461,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		if (all_files_scenes) {
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scene"), FILE_MENU_OPEN);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Play")), TTRC("Play Scene"), FILE_MENU_RUN_SCENE);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTRC("New Inherited Scene"), FILE_MENU_INHERIT);
 				if (main_scene_path != filenames[0]) {
 					p_popup->add_icon_item(get_editor_theme_icon(SNAME("PlayScene")), TTRC("Set as Main Scene"), FILE_MENU_MAIN_SCENE);
@@ -3540,7 +3570,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Favorites")), TTRC("Add to Favorites"), FILE_MENU_ADD_FAVORITE);
 		}
 		if (!all_not_favorites) {
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("NonFavorite")), TTRC("Remove from Favorites"), FILE_MENU_REMOVE_FAVORITE);
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Unfavorite")), TTRC("Remove from Favorites"), FILE_MENU_REMOVE_FAVORITE);
 		}
 
 		if (root_path_not_selected) {
@@ -3657,9 +3687,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		current_path = fpath;
 	} else if (no_paths) {
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
-		tree_popup->add_separator();
-		tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
-		tree_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
+		p_popup->add_separator();
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
+		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
 #endif
 	}
 
@@ -3669,7 +3699,14 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_MENU_OPEN_EXTERNAL);
 	}
 #endif
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_paths);
+
+	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM)) {
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, FileSystemDock::_get_context_data(p_paths));
+
+#ifndef DISABLE_DEPRECATED
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_paths, p_paths, 1000);
+#endif
+	}
 }
 
 void FileSystemDock::_add_create_options(PopupMenu *p_popup, const String &p_base_folder) {
@@ -3685,7 +3722,15 @@ void FileSystemDock::_add_create_options(PopupMenu *p_popup, const String &p_bas
 	p_popup->add_icon_item(get_editor_theme_icon(SNAME("TextFile")), prefix_new ? TTRC("New TextFile...") : TTRC("TextFile..."), FILE_MENU_NEW_TEXTFILE);
 	p_popup->set_item_shortcut(-1, ED_GET_SHORTCUT("filesystem_dock/new_textfile"));
 	// Options for CONTEXT_SLOT_FILESYSTEM_CREATE are added with an offset, to avoid conflicts in case plugins add options for both FileSystem slots.
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, prefix_new ? PackedStringArray() : PackedStringArray{ p_base_folder }, 500);
+	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE)) {
+		const String base_directory = prefix_new ? "res://" : p_base_folder;
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, FileSystemDock::_get_context_data_for_create(base_directory, prefix_new), 500);
+
+#ifndef DISABLE_DEPRECATED
+		const PackedStringArray legacy_data = prefix_new ? PackedStringArray() : PackedStringArray{ p_base_folder };
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(p_popup, EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, legacy_data, legacy_data, 1500);
+#endif
+	}
 }
 
 void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button) {
@@ -3730,6 +3775,21 @@ void FileSystemDock::_tree_empty_selected() {
 		_update_file_list(false);
 	}
 	_update_selection_changed();
+}
+
+void FileSystemDock::_thumbnail_size_changed(float p_value) {
+	thumbnail_size_setting = p_value;
+	if (file_list_vb->is_visible()) {
+		_update_file_list(true);
+	}
+
+	thumbnail_debounce_timer->start();
+}
+
+void FileSystemDock::_thumbnail_size_timeout() {
+	EditorSettings::get_singleton()->set_setting("docks/filesystem/thumbnail_size", thumbnail_size_setting);
+	EditorSettings::get_singleton()->notify_changes();
+	EditorSettings::get_singleton()->save();
 }
 
 void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -3892,32 +3952,55 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 		if (option_id > -1) {
 			_tree_rmb_option(option_id);
 		} else {
-			bool create = false;
-			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
-			if (!custom_callback.is_valid()) {
-				create = true;
-				custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_event);
-			}
-
-			if (custom_callback.is_valid()) {
-				Vector<String> selected = _tree_get_selected(false);
-				if (create) {
-					if (selected.is_empty()) {
-						selected.append("res://");
-					} else if (selected.size() == 1) {
-						selected.write[0] = selected[0].get_base_dir();
-					} else {
-						return;
-					}
-				}
-				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, selected);
-			} else {
+			const PackedStringArray selected = _tree_get_selected(false);
+			if (!_handle_custom_context_callback(p_event, selected)) {
 				return;
 			}
 		}
-
 		accept_event();
 	}
+}
+
+bool FileSystemDock::_handle_custom_context_callback(Ref<InputEvent> p_event, const PackedStringArray &p_selected) {
+	bool create = false;
+	Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
+	if (!custom_callback.is_valid()) {
+		create = true;
+		custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_event);
+	}
+
+	if (!custom_callback.is_valid()) {
+		return false;
+	}
+
+	String base_dir;
+	if (create) {
+		if (p_selected.is_empty()) {
+			base_dir = "res://";
+		} else if (p_selected.size() == 1) {
+			base_dir = p_selected[0].get_base_dir();
+		} else {
+			return false;
+		}
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (p_event->get_meta("_legacy_shortcut", false)) {
+		if (create && p_selected.is_empty()) {
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, PackedStringArray{ "res://" });
+		} else {
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, p_selected);
+		}
+		return true;
+	}
+#endif
+
+	EditorContextMenuPlugin::OptionsData context_data = create
+			? FileSystemDock::_get_context_data_for_create(base_dir, p_selected.is_empty())
+			: FileSystemDock::_get_context_data(p_selected);
+	EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
+
+	return true;
 }
 
 void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
@@ -3968,19 +4051,23 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 		if (option_id > -1) {
 			_file_list_rmb_option(option_id);
 		} else {
-			Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM, p_event);
-			if (!custom_callback.is_valid()) {
-				custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_FILESYSTEM_CREATE, p_event);
-			}
-
-			if (custom_callback.is_valid()) {
-				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _file_list_get_selected());
-			} else {
+			const PackedStringArray selected = _file_list_get_selected();
+			if (!_handle_custom_context_callback(p_event, selected)) {
 				return;
 			}
 		}
-
 		accept_event();
+	}
+
+	const Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_command_or_control_pressed() && file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP) {
+			thumbnail_size_slider->set_value(thumbnail_size_setting + 16);
+			_update_file_list(true);
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
+			thumbnail_size_slider->set_value(thumbnail_size_setting - 16);
+			_update_file_list(true);
+		}
 	}
 }
 
@@ -4171,7 +4258,7 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	return button;
 }
 
-void FileSystemDock::update_layout(EditorDock::DockLayout p_layout, EditorDock::DockSlot p_slot) {
+void FileSystemDock::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	bool new_horizontal = (p_layout == EditorDock::DOCK_LAYOUT_HORIZONTAL);
 	bool new_touches_bottom = (p_slot != EditorDock::DOCK_SLOT_BOTTOM);
 	if (horizontal == new_horizontal && touches_bottom == new_touches_bottom) {
@@ -4566,15 +4653,38 @@ FileSystemDock::FileSystemDock() {
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);
 
-	button_file_list_display_mode = memnew(Button);
-	button_file_list_display_mode->set_accessibility_name(TTRC("Display Mode"));
-	button_file_list_display_mode->set_theme_type_variation("FlatMenuButton");
-	path_hb->add_child(button_file_list_display_mode);
-
 	files_mc = memnew(MarginContainer);
 	file_list_vb->add_child(files_mc);
 	files_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 	files_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	bottom_toolbar_hbc = memnew(HBoxContainer);
+	bottom_toolbar_hbc->set_alignment(BoxContainer::ALIGNMENT_END);
+	file_list_vb->add_child(bottom_toolbar_hbc);
+
+	thumbnail_size_slider = memnew(HSlider);
+	thumbnail_size_slider->set_value(EDITOR_GET("docks/filesystem/thumbnail_size"));
+	thumbnail_size_slider->set_min(32);
+	thumbnail_size_slider->set_max(224);
+	thumbnail_size_slider->set_step(16);
+	thumbnail_size_slider->set_custom_minimum_size(Size2(64 * EDSCALE, 0));
+	thumbnail_size_slider->set_custom_maximum_size(Size2(128 * EDSCALE, -1));
+	thumbnail_size_slider->set_v_size_flags(SIZE_SHRINK_CENTER);
+	thumbnail_size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+	thumbnail_size_slider->connect(SceneStringName(value_changed), callable_mp(this, &FileSystemDock::_thumbnail_size_changed));
+	thumbnail_size_slider->set_accessibility_name(TTRC("Thumbnail Size"));
+	bottom_toolbar_hbc->add_child(thumbnail_size_slider);
+
+	thumbnail_debounce_timer = memnew(Timer);
+	thumbnail_debounce_timer->set_one_shot(true);
+	thumbnail_debounce_timer->set_wait_time(1.5);
+	thumbnail_debounce_timer->connect("timeout", callable_mp(this, &FileSystemDock::_thumbnail_size_timeout));
+	bottom_toolbar_hbc->add_child(thumbnail_debounce_timer);
+
+	button_file_list_display_mode = memnew(Button);
+	button_file_list_display_mode->set_accessibility_name(TTRC("Display Mode"));
+	button_file_list_display_mode->set_theme_type_variation("FlatMenuButton");
+	bottom_toolbar_hbc->add_child(button_file_list_display_mode);
 
 	files = memnew(FileSystemList);
 	files->set_accessibility_name(TTRC("Files"));

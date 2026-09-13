@@ -44,7 +44,7 @@ import org.godotengine.openxr.vendors.utils.*
 /**
  * Drives the 'run project' window of the Godot Editor.
  */
-open class GodotGame : BaseGodotGame() {
+abstract class GodotGame : BaseGodotGame() {
 
 	companion object {
 		private val TAG = GodotGame::class.java.simpleName
@@ -100,8 +100,6 @@ open class GodotGame : BaseGodotGame() {
 	}
 
 	override fun getGodotAppLayout() = R.layout.godot_game_layout
-
-	override fun getEditorWindowInfo() = RUN_GAME_INFO
 
 	override fun getEditorGameEmbedMode() = GameMenuUtils.GameEmbedMode.DISABLED
 
@@ -229,7 +227,7 @@ open class GodotGame : BaseGodotGame() {
 
 	override fun isMinimizedButtonEnabled() = isTaskRoot && !isNativeXRDevice(applicationContext)
 
-	override fun isCloseButtonEnabled() = !isHorizonOSDevice(applicationContext)
+	override fun isCloseButtonEnabled() = !isNativeXRDevice(applicationContext)
 
 	override fun isPiPButtonEnabled() = isPiPModeSupported()
 

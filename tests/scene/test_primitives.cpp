@@ -130,9 +130,9 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 		SUBCASE("[Primitive][Capsule] If normal.y == 0, then mesh makes a cylinder.") {
 			Vector<Vector3> normals = data[RSE::ARRAY_NORMAL];
 			for (int ii = 0; ii < points.size(); ++ii) {
-				float point_dist_from_yaxis = Math::sqrt(points[ii].x * points[ii].x + points[ii].z * points[ii].z);
-				Vector3 yaxis_to_point{ points[ii].x / point_dist_from_yaxis, 0.f, points[ii].z / point_dist_from_yaxis };
 				if (normals[ii].y == 0.f) {
+					float point_dist_from_yaxis = Math::sqrt(points[ii].x * points[ii].x + points[ii].z * points[ii].z);
+					Vector3 yaxis_to_point(points[ii].x / point_dist_from_yaxis, 0.f, points[ii].z / point_dist_from_yaxis);
 					float mag_of_normal = Math::sqrt(normals[ii].x * normals[ii].x + normals[ii].z * normals[ii].z);
 					Vector3 normalized_normal = normals[ii] / mag_of_normal;
 					CHECK_MESSAGE(point_dist_from_yaxis == doctest::Approx(radius),
@@ -190,7 +190,6 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 		int subdivide_height{ 2 };
 		int subdivide_depth{ 8 };
 		BoxMesh::create_mesh_array(data, size, subdivide_width, subdivide_height, subdivide_depth);
-		Vector<Vector3> points = data[RSE::ARRAY_VERTEX];
 		Vector<Vector3> normals = data[RSE::ARRAY_NORMAL];
 
 		SUBCASE("Only 6 distinct normals.") {

@@ -51,6 +51,9 @@ class GodotEditorTest {
 		private val TAG = GodotEditorTest::class.simpleName
 
 		private val TEST_COMMAND_LINE_PARAMS = arrayOf("This is a test")
+		private val PM_LAUNCH_COMMAND_LINE_PARAMS = arrayOf("--project-manager")
+		private val PM_VULKAN_LAUNCH_COMMAND_LINE_PARAMS = PM_LAUNCH_COMMAND_LINE_PARAMS + arrayOf("--rendering-method", "mobile")
+
 		private const val PROJECT_MANAGER_CLASS_NAME = "org.godotengine.editor.ProjectManager"
 		private const val GODOT_EDITOR_CLASS_NAME = "org.godotengine.editor.GodotEditor"
 	}
@@ -111,6 +114,26 @@ class GodotEditorTest {
 				val commandLineParams = activity.intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 				assertNotNull(commandLineParams)
 				assertTrue(commandLineParams.contentEquals(TEST_COMMAND_LINE_PARAMS))
+			}
+		}
+	}
+
+	/**
+	 * Check that the project manager can launch using vulkan (Forward mobile) without crashing.
+	 */
+	@Test
+	fun testVulkanProjectManagerLaunch() {
+		val godotEditorIntent = Intent().apply {
+			component = ComponentName(BuildConfig.APPLICATION_ID, GODOT_EDITOR_CLASS_NAME)
+			putExtra(EXTRA_COMMAND_LINE_PARAMS, PM_VULKAN_LAUNCH_COMMAND_LINE_PARAMS)
+		}
+		ActivityScenario.launch<GodotEditor>(godotEditorIntent).use { scenario ->
+			scenario.onActivity { activity ->
+				assertEquals(activity.intent.component?.className, GODOT_EDITOR_CLASS_NAME)
+
+				val commandLineParams = activity.intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
+				assertNotNull(commandLineParams)
+				assertTrue(commandLineParams.contentEquals(PM_VULKAN_LAUNCH_COMMAND_LINE_PARAMS))
 			}
 		}
 	}

@@ -39,7 +39,7 @@
 
 bool GodotCollisionSolver3D::solve_static_world_boundary(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin) {
 	const GodotWorldBoundaryShape3D *world_boundary = static_cast<const GodotWorldBoundaryShape3D *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
+	if (p_shape_B->get_type() == PS3DE::SHAPE_WORLD_BOUNDARY) {
 		return false;
 	}
 	Plane p = p_transform_A.xform(world_boundary->get_plane());
@@ -358,8 +358,8 @@ bool GodotCollisionSolver3D::solve_concave(const GodotShape3D *p_shape_A, const 
 }
 
 bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, Vector3 *r_sep_axis, real_t p_margin_A, real_t p_margin_B) {
-	PhysicsServer3D::ShapeType type_A = p_shape_A->get_type();
-	PhysicsServer3D::ShapeType type_B = p_shape_B->get_type();
+	PS3DE::ShapeType type_A = p_shape_A->get_type();
+	PS3DE::ShapeType type_B = p_shape_B->get_type();
 	bool concave_A = p_shape_A->is_concave();
 	bool concave_B = p_shape_B->is_concave();
 
@@ -371,16 +371,16 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 		swap = true;
 	}
 
-	if (type_A == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
-		if (type_B == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
+	if (type_A == PS3DE::SHAPE_WORLD_BOUNDARY) {
+		if (type_B == PS3DE::SHAPE_WORLD_BOUNDARY) {
 			WARN_PRINT_ONCE("Collisions between world boundaries are not supported.");
 			return false;
 		}
-		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
+		if (type_B == PS3DE::SHAPE_SEPARATION_RAY) {
 			WARN_PRINT_ONCE("Collisions between world boundaries and rays are not supported.");
 			return false;
 		}
-		if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {
+		if (type_B == PS3DE::SHAPE_SOFT_BODY) {
 			WARN_PRINT_ONCE("Collisions between world boundaries and soft bodies are not supported.");
 			return false;
 		}
@@ -391,8 +391,8 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 			return solve_static_world_boundary(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, p_margin_B);
 		}
 
-	} else if (type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
-		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
+	} else if (type_A == PS3DE::SHAPE_SEPARATION_RAY) {
+		if (type_B == PS3DE::SHAPE_SEPARATION_RAY) {
 			WARN_PRINT_ONCE("Collisions between rays are not supported.");
 			return false;
 		}
@@ -403,8 +403,8 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 			return solve_separation_ray(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, p_margin_A);
 		}
 
-	} else if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {
-		if (type_A == PhysicsServer3D::SHAPE_SOFT_BODY) {
+	} else if (type_B == PS3DE::SHAPE_SOFT_BODY) {
+		if (type_A == PS3DE::SHAPE_SOFT_BODY) {
 			WARN_PRINT_ONCE("Collisions between soft bodies are not supported.");
 			return false;
 		}
@@ -456,7 +456,7 @@ bool GodotCollisionSolver3D::concave_distance_callback(void *p_userdata, GodotSh
 
 bool GodotCollisionSolver3D::solve_distance_world_boundary(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B) {
 	const GodotWorldBoundaryShape3D *world_boundary = static_cast<const GodotWorldBoundaryShape3D *>(p_shape_A);
-	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
+	if (p_shape_B->get_type() == PS3DE::SHAPE_WORLD_BOUNDARY) {
 		return false;
 	}
 	Plane p = p_transform_A.xform(world_boundary->get_plane());
@@ -516,7 +516,7 @@ bool GodotCollisionSolver3D::solve_distance_world_boundary(const GodotShape3D *p
 }
 
 bool GodotCollisionSolver3D::solve_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_point_A, Vector3 &r_point_B, const AABB &p_concave_hint, Vector3 *r_sep_axis) {
-	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
+	if (p_shape_B->get_type() == PS3DE::SHAPE_WORLD_BOUNDARY) {
 		Vector3 a, b;
 		bool col = solve_distance_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, a, b);
 		r_point_A = b;

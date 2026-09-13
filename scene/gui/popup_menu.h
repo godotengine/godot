@@ -249,7 +249,7 @@ class PopupMenu : public Popup {
 
 	void _draw_items();
 	void _update_search_bar_visibility();
-	void _items_focus_entered();
+	bool _highlight_first_available_item(int p_from = 0, int p_to = -1, bool p_reversed = false);
 	void _search_bar_text_changed(const String &p_new_text);
 	void _search_bar_focus_entered();
 	void _filter_items(const String &p_query);
@@ -291,8 +291,8 @@ protected:
 	void _add_icon_shortcut_bind_compat_36493(const Ref<Texture2D> &p_icon, const Ref<Shortcut> &p_shortcut, int p_id = -1, bool p_global = false);
 	void _clear_bind_compat_79965();
 
-	void _set_system_menu_root_compat_87452(const String &p_special);
-	String _get_system_menu_root_compat_87452() const;
+	void _set_system_menu_root_bind_compat_87452(const String &p_special);
+	String _get_system_menu_root_bind_compat_87452() const;
 
 	static void _bind_compatibility_methods();
 #endif
