@@ -97,6 +97,13 @@ private:
 	bool _in_editor = false;
 	bool _embedded_in_editor = false;
 
+	mutable struct WallClock {
+		uint64_t prev_measured_raw_tick = 0;
+		uint64_t prev_measured_fluid_tick = 0;
+		double current_time_scale = 1.0;
+		Mutex mutex;
+	} _wall_clock;
+
 	CompositeLogger *_logger = nullptr;
 
 	bool restart_on_exit = false;
@@ -278,7 +285,10 @@ public:
 	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events);
 	virtual uint64_t get_frame_delay(bool p_can_draw) const;
 
-	virtual uint64_t get_ticks_usec() const = 0;
+	void set_wall_clock_time_scale(double p_scale);
+
+	uint64_t get_ticks_usec() const;
+	virtual uint64_t get_raw_ticks_usec() const = 0;
 	uint64_t get_ticks_msec() const;
 
 	virtual bool is_userfs_persistent() const { return true; }
