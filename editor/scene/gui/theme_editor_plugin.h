@@ -60,9 +60,20 @@ class ThemeItemImportTree : public VBoxContainer {
 	Ref<Theme> edited_theme;
 	Ref<Theme> base_theme;
 
+	enum class DataType {
+		COLOR,
+		CONSTANT,
+		FONT,
+		FONT_SIZE,
+		ICON,
+		STYLEBOX,
+		SOUND,
+		CONFIG, // Holds the `base_type` of theme type variations.
+	};
+
 	struct ThemeItem {
 		String type_name;
-		Theme::DataType data_type;
+		DataType data_type;
 		String item_name;
 
 		bool operator<(const ThemeItem &p_item) const {
@@ -93,6 +104,7 @@ class ThemeItemImportTree : public VBoxContainer {
 	List<TreeItem *> tree_icon_items;
 	List<TreeItem *> tree_stylebox_items;
 	List<TreeItem *> tree_sound_items;
+	List<TreeItem *> tree_config_items;
 
 	bool updating_tree = false;
 
@@ -101,54 +113,48 @@ class ThemeItemImportTree : public VBoxContainer {
 		IMPORT_ITEM_DATA = 2,
 	};
 
-	TextureRect *select_colors_icon = nullptr;
-	Label *select_colors_label = nullptr;
-	Button *select_all_colors_button = nullptr;
-	Button *select_full_colors_button = nullptr;
-	Button *deselect_all_colors_button = nullptr;
-	Label *total_selected_colors_label = nullptr;
+	class TypeSelectionOverview final : public VBoxContainer {
+		GDSOFTCLASS(TypeSelectionOverview, VBoxContainer);
 
-	TextureRect *select_constants_icon = nullptr;
-	Label *select_constants_label = nullptr;
-	Button *select_all_constants_button = nullptr;
-	Button *select_full_constants_button = nullptr;
-	Button *deselect_all_constants_button = nullptr;
-	Label *total_selected_constants_label = nullptr;
+		DataType type;
+		ThemeItemImportTree *const tree;
+		StringName icon_name;
 
-	TextureRect *select_fonts_icon = nullptr;
-	Label *select_fonts_label = nullptr;
-	Button *select_all_fonts_button = nullptr;
-	Button *select_full_fonts_button = nullptr;
-	Button *deselect_all_fonts_button = nullptr;
-	Label *total_selected_fonts_label = nullptr;
+		TextureRect *icon = nullptr;
+		Label *available_label;
+		Button *select_all;
+		Button *select_full;
+		Button *deselect_all;
+		Label *selected_label;
 
-	TextureRect *select_font_sizes_icon = nullptr;
-	Label *select_font_sizes_label = nullptr;
-	Button *select_all_font_sizes_button = nullptr;
-	Button *select_full_font_sizes_button = nullptr;
-	Button *deselect_all_font_sizes_button = nullptr;
-	Label *total_selected_font_sizes_label = nullptr;
+		struct Labels {
+			String title;
+			String select_all;
+			String select_full;
+			String deselect_all;
+			String not_found;
+			String one_found;
+			String n_found;
+		};
+		static Labels get_labels(DataType p_type);
 
-	TextureRect *select_icons_icon = nullptr;
-	Label *select_icons_label = nullptr;
-	Button *select_all_icons_button = nullptr;
-	Button *select_full_icons_button = nullptr;
-	Button *deselect_all_icons_button = nullptr;
-	Label *total_selected_icons_label = nullptr;
+		void _notification(int p_what);
 
-	TextureRect *select_styleboxes_icon = nullptr;
-	Label *select_styleboxes_label = nullptr;
-	Button *select_all_styleboxes_button = nullptr;
-	Button *select_full_styleboxes_button = nullptr;
-	Button *deselect_all_styleboxes_button = nullptr;
-	Label *total_selected_styleboxes_label = nullptr;
+	public:
+		void update_available(int p_amount);
+		void update_selected(int p_amount);
 
-	TextureRect *select_sounds_icon = nullptr;
-	Label *select_sounds_label = nullptr;
-	Button *select_all_sounds_button = nullptr;
-	Button *select_full_sounds_button = nullptr;
-	Button *deselect_all_sounds_button = nullptr;
-	Label *total_selected_sounds_label = nullptr;
+		TypeSelectionOverview(ThemeItemImportTree *p_tree, DataType p_type, const StringName &p_icon_name);
+	};
+
+	TypeSelectionOverview *color_overview;
+	TypeSelectionOverview *constant_overview;
+	TypeSelectionOverview *fonts_overview;
+	TypeSelectionOverview *font_sizes_overview;
+	TypeSelectionOverview *icons_overview;
+	TypeSelectionOverview *stylebox_overview;
+	TypeSelectionOverview *sound_overview;
+	TypeSelectionOverview *config_overview;
 
 	HBoxContainer *select_icons_warning_hb = nullptr;
 	TextureRect *select_icons_warning_icon = nullptr;
@@ -166,7 +172,7 @@ class ThemeItemImportTree : public VBoxContainer {
 
 	void _store_selected_item(TreeItem *p_tree_item);
 	void _restore_selected_item(TreeItem *p_tree_item);
-	void _update_total_selected(Theme::DataType p_data_type);
+	void _update_total_selected(DataType p_data_type);
 
 	void _tree_item_edited();
 	void _check_propagated_to_tree_item(Object *p_obj, int p_column);
