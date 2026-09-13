@@ -30,6 +30,9 @@
 
 #include "audio_driver_opensl.h"
 
+#include "java_godot_io_wrapper.h"
+#include "os_android.h"
+
 #include "core/os/os.h"
 #include "servers/audio/audio_server.h"
 
@@ -80,8 +83,28 @@ void AudioDriverOpenSL::_buffer_callbacks(
 
 	ad->_buffer_callback(queueItf);
 }
+static int _sanitize_mix_rate(int p_mix_rate) {
+	static const int opensl_rates[] = { SL_SAMPLINGRATE_8, SL_SAMPLINGRATE_11_025, SL_SAMPLINGRATE_12, SL_SAMPLINGRATE_16, SL_SAMPLINGRATE_22_05, SL_SAMPLINGRATE_24, SL_SAMPLINGRATE_32, SL_SAMPLINGRATE_44_1, SL_SAMPLINGRATE_48, SL_SAMPLINGRATE_64, SL_SAMPLINGRATE_88_2, SL_SAMPLINGRATE_96, SL_SAMPLINGRATE_192 };
+	for (const int samplerate : opensl_rates) {
+		if (p_mix_rate == samplerate / 1000) {
+			return p_mix_rate;
+		}
+	}
+	WARN_PRINT("Mix rate not supported by OpenSL, using default mix rate.");
+	return AudioDriverOpenSL::DEFAULT_MIX_RATE;
+}
 
 Error AudioDriverOpenSL::init() {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V_MSG(godot_io_java, ERR_INVALID_PARAMETER, "Godot IO Java Wrapper not available.");
+	mix_rate = _sanitize_mix_rate(godot_io_java->get_audio_output_sample_rate());
+
+	buffer_size = godot_io_java->get_audio_output_buffer_size();
+	if (buffer_size < MIN_BUFFER_SIZE) {
+		WARN_PRINT("Audio output buffer size not valid, using default.");
+		buffer_size = DEFAULT_BUFFER_SIZE;
+	}
+
 	SLresult res;
 	SLEngineOption EngineOption[] = {
 		{ (SLuint32)SL_ENGINEOPTION_THREADSAFE, (SLuint32)SL_BOOLEAN_TRUE }
@@ -99,9 +122,6 @@ void AudioDriverOpenSL::start() {
 	active = false;
 
 	SLresult res;
-
-	buffer_size = 1024;
-
 	for (int i = 0; i < BUFFER_COUNT; i++) {
 		buffers[i] = memnew_arr(int16_t, buffer_size * 2);
 		memset(buffers[i], 0, buffer_size * 4);
@@ -131,7 +151,7 @@ void AudioDriverOpenSL::start() {
 	/* Setup the format of the content in the buffer queue */
 	pcm.formatType = SL_DATAFORMAT_PCM;
 	pcm.numChannels = 2;
-	pcm.samplesPerSec = SL_SAMPLINGRATE_44_1;
+	pcm.samplesPerSec = SLuint32(mix_rate) * 1000;
 	pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
 	pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
 	pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
@@ -214,7 +234,7 @@ Error AudioDriverOpenSL::init_input_device() {
 	SLDataFormat_PCM format_pcm = {
 		SL_DATAFORMAT_PCM,
 		1,
-		SL_SAMPLINGRATE_44_1,
+		SLuint32(mix_rate) * 1000,
 		SL_PCMSAMPLEFORMAT_FIXED_16,
 		SL_PCMSAMPLEFORMAT_FIXED_16,
 		SL_SPEAKER_FRONT_CENTER,
@@ -301,7 +321,7 @@ Error AudioDriverOpenSL::input_stop() {
 }
 
 int AudioDriverOpenSL::get_mix_rate() const {
-	return 44100; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
+	return mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
@@ -344,6 +364,18 @@ void AudioDriverOpenSL::finish() {
 	if (sl) {
 		(*sl)->Destroy(sl);
 		sl = nullptr;
+	}
+	if (buffers[0]) {
+		for (int i = 0; i < BUFFER_COUNT; i++) {
+			if (buffers[i]) {
+				memdelete_arr(buffers[i]);
+				buffers[i] = nullptr;
+			}
+		}
+	}
+	if (mixdown_buffer) {
+		memdelete_arr(mixdown_buffer);
+		mixdown_buffer = nullptr;
 	}
 }
 

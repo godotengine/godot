@@ -56,6 +56,8 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_cache_dir = p_env->GetMethodID(cls, "getCacheDir", "()Ljava/lang/String;");
 		_get_temp_dir = p_env->GetMethodID(cls, "getTempDir", "()Ljava/lang/String;");
 		_get_data_dir = p_env->GetMethodID(cls, "getDataDir", "()Ljava/lang/String;");
+		_get_audio_output_sample_rate = p_env->GetMethodID(cls, "getAudioOutputSampleRate", "()I");
+		_get_audio_output_buffer_size = p_env->GetMethodID(cls, "getAudioOutputBufferSize", "()I");
 		_get_display_cutouts = p_env->GetMethodID(cls, "getDisplayCutouts", "()[I"),
 		_get_display_safe_area = p_env->GetMethodID(cls, "getDisplaySafeArea", "()[I"),
 		_get_locale = p_env->GetMethodID(cls, "getLocale", "()Ljava/lang/String;");
@@ -129,6 +131,26 @@ String GodotIOJavaWrapper::get_user_data_dir(const String &p_user_dir) {
 		return jstring_to_string(s, env);
 	} else {
 		return String();
+	}
+}
+
+int GodotIOJavaWrapper::get_audio_output_sample_rate() {
+	if (_get_audio_output_sample_rate) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, 0);
+		return env->CallIntMethod(godot_io_instance, _get_audio_output_sample_rate);
+	} else {
+		return 0;
+	}
+}
+
+int GodotIOJavaWrapper::get_audio_output_buffer_size() {
+	if (_get_audio_output_buffer_size) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, 0);
+		return env->CallIntMethod(godot_io_instance, _get_audio_output_buffer_size);
+	} else {
+		return 0;
 	}
 }
 
