@@ -113,8 +113,8 @@ void SpringBoneSimulator3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 Ref<ArrayMesh> SpringBoneSimulator3DGizmoPlugin::get_joints_mesh(Skeleton3D *p_skeleton, SpringBoneSimulator3D *p_simulator, bool p_is_selected) {
 	Color bone_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/spring_bone_joint");
-	Color cone_color = bone_color; // Color(1, 0, 0, 1);
-	bool draw_as_chain = p_simulator->get_has_chain_collision();
+	Color cone_color = bone_color;
+	bool draw_as_chain = p_simulator->has_chain_collision();
 
 	Ref<SurfaceTool> surface_tool;
 	surface_tool.instantiate();

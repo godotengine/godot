@@ -31,9 +31,10 @@
 #include "spring_bone_collision_capsule_3d.h"
 #include "spring_bone_collision_capsule_3d.compat.inc"
 
+#include "scene/3d/spring_bone_simulator_3d.h"
+
 #include "core/object/class_db.h"
 #include "scene/3d/spring_bone_collision_sphere_3d.h"
-#include "spring_bone_simulator_3d.h"
 
 void SpringBoneCollisionCapsule3D::set_radius(float p_radius) {
 	radius = p_radius;
@@ -327,7 +328,7 @@ static real_t _closest_capsule_sphere_to_taper(const Vector3 &p_head, const Vect
 	real_t y = x * capsule_vec_slope;
 	//real_t ya = y - x / (capsule_vec_slope * cone_slope * cone_slope);
 
-	real_t emu = y / (C_capsule_vec_inplane.y * p_length);
+	real_t emu = (fabs(C_capsule_vec_inplane.y) > 0.5 ? y / (C_capsule_vec_inplane.y * p_length) : x / (C_capsule_vec_inplane.x * p_length)); // Same value, but protects from a division by 0.
 	real_t mu0 = mu + emu;
 
 	// If the sphere in the bone cone is off and endpoint, then pick a mu in the collision capsule
