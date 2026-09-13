@@ -41,6 +41,65 @@ const uint32_t VIEW_MASK_BUFFER_INDEX = 24;
 
 class RenderingShaderContainerFormatMetal;
 
+/// Encodes the metal slot index and the stages which use the push constant buffer.
+///
+/// ┌─────────┬──────────────────────────────┐
+/// │  Bits   │            Usage             │
+/// ├─────────┼──────────────────────────────┤
+/// │  0...5  │         Binding Slot         │
+/// ├─────────┼──────────────────────────────┤
+/// │    6    │     SHADER_STAGE_VERTEX      │
+/// ├─────────┼──────────────────────────────┤
+/// │    7    │    SHADER_STAGE_FRAGMENT     │
+/// ├─────────┴──────────────────────────────┤
+/// │                  ...                   │
+/// ├─────────┬──────────────────────────────┤
+/// │   15    │  SHADER_STAGE_INTERSECTION   │
+/// └─────────┴──────────────────────────────┘
+struct MetalPushConstantBinding {
+	using RDC = RenderingDeviceCommons;
+
+	static constexpr uint32_t BINDING_BITS = 6;
+	static constexpr uint32_t BINDING_MASK = (1u << BINDING_BITS) - 1;
+	static constexpr uint32_t STAGE_MASK = ((1u << RDC::SHADER_STAGE_MAX) - 1) << BINDING_BITS;
+	static_assert(BINDING_BITS + RDC::SHADER_STAGE_MAX <= 32);
+
+	uint32_t value = 0;
+
+	/// Converts a format version 2 value, which was a single index bound to every stage.
+	static MetalPushConstantBinding from_shared_index(uint32_t p_index) {
+		MetalPushConstantBinding binding;
+		if (p_index != UINT32_MAX) {
+			binding.value = (p_index & BINDING_MASK) | STAGE_MASK;
+		}
+		return binding;
+	}
+
+	static constexpr uint32_t stage_bit(RDC::ShaderStage p_stage) {
+		return 1u << (BINDING_BITS + p_stage);
+	}
+
+	void set(RDC::ShaderStage p_stage, uint32_t p_index) {
+		DEV_ASSERT(p_index <= BINDING_MASK);
+		// Every stage of a shader shares one index.
+		DEV_ASSERT(!is_valid() || get_binding() == p_index);
+		value = (value & ~BINDING_MASK) | p_index | stage_bit(p_stage);
+	}
+
+	/// Returns `true` if the shader has a push constant block.
+	bool is_valid() const {
+		return value & STAGE_MASK;
+	}
+
+	uint32_t get_binding() const {
+		return value & BINDING_MASK;
+	}
+
+	bool has(RDC::ShaderStage p_stage) const {
+		return value & stage_bit(p_stage);
+	}
+};
+
 class RenderingShaderContainerMetal : public RenderingShaderContainer {
 	GDSOFTCLASS(RenderingShaderContainerMetal, RenderingShaderContainer);
 
@@ -70,7 +129,7 @@ public:
 		 */
 		MinOsVersion os_min_version;
 		uint32_t flags = NONE;
-		uint32_t push_constant_binding = UINT32_MAX; ///< Metal binding slot for the push constant data
+		MetalPushConstantBinding push_constant_binding; ///< Per-stage Metal binding slots for the push constant data.
 
 		/// @brief Returns `true` if the shader is compiled with multi-view support.
 		bool needs_view_mask_buffer() const {
@@ -197,7 +256,7 @@ private:
 	MetalDeviceProfile::MinimumRequirements inspect_spirv(const ReflectShader &p_shader);
 
 public:
-	static constexpr uint32_t FORMAT_VERSION = 2;
+	static constexpr uint32_t FORMAT_VERSION = 3;
 
 	void set_export_mode(bool p_export_mode) { export_mode = p_export_mode; }
 	void set_device_profile(const MetalDeviceProfile *p_device_profile) { device_profile = p_device_profile; }

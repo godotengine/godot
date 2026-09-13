@@ -646,7 +646,6 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 			} else {
 				push_constant_resource_binding.msl_buffer = next_index(Buffer, 1);
 			}
-			mtl_reflection_data.push_constant_binding = push_constant_resource_binding.msl_buffer;
 		}
 	}
 
@@ -708,6 +707,11 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const ReflectShader &p_
 					stage_data.vertex_input_binding_mask |= 1 << binding;
 				}
 			}
+		}
+
+		if (push_constant_resource_binding.desc_set == ResourceBindingPushConstantDescriptorSet &&
+				compiler.is_msl_resource_binding_used(execution_model, ResourceBindingPushConstantDescriptorSet, ResourceBindingPushConstantBinding)) {
+			mtl_reflection_data.push_constant_binding.set(stage, push_constant_resource_binding.msl_buffer);
 		}
 
 		stage_data.is_position_invariant = compiler.is_position_invariant();
@@ -784,6 +788,9 @@ uint32_t RenderingShaderContainerMetal::_to_bytes_shader_extra_data(uint8_t *p_b
 
 uint32_t RenderingShaderContainerMetal::_from_bytes_reflection_extra_data(const uint8_t *p_bytes) {
 	mtl_reflection_data = *(HeaderData *)p_bytes;
+	if (container_header.format_version < 3) {
+		mtl_reflection_data.push_constant_binding = MetalPushConstantBinding::from_shared_index(mtl_reflection_data.push_constant_binding.value);
+	}
 	return sizeof(HeaderData);
 }
 
