@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="collide_mode" type="int" enum="SpringBoneCollision3D.CollideMode" setter="set_collide_mode" getter="get_collide_mode" default="0">
+		<member name="collide_mode" type="int" setter="set_collide_mode" getter="get_collide_mode" enum="SpringBoneCollision3D.CollideMode" default="0">
 			Sets whether the collision sphere collides or traps the joint spheres, or interacts with the tapered cones between them.
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.1">
