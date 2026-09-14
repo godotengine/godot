@@ -2361,7 +2361,14 @@ void GDScriptAnalyzer::collect_narrowed_variables(GDScriptParser::ExpressionNode
 			narrowed.source = source;
 			narrowed.type = type_test->test_datatype;
 			narrowed.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-			r_narrowed.insert(identifier->name, narrowed);
+			// If the variable was tested against several types, it can only be an instance of the
+			// narrowest one, so keep it when the previous test was already more specific.
+			HashMap<StringName, NarrowedVariable>::Iterator E = r_narrowed.find(identifier->name);
+			if (E && is_type_compatible(narrowed.type, E->value.type)) {
+				// The new test is for a supertype of the narrowed type, the latter is kept.
+			} else {
+				r_narrowed.insert(identifier->name, narrowed);
+			}
 		} break;
 		case GDScriptParser::Node::BINARY_OPERATOR: {
 			GDScriptParser::BinaryOpNode *binary_op = static_cast<GDScriptParser::BinaryOpNode *>(p_expression);

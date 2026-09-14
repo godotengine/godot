@@ -34,7 +34,9 @@ func no_exec_test():
 
 func param_no_exec_test(reward: Reward):
 	if reward is GoldReward and reward is Reward:
-		print(reward.value) # Warning: the type is narrowed to "Reward" by the last type test.
+		print(reward.value) # No warning: the type is narrowed to GoldReward by the most specific test.
+	if reward is Reward and reward is GoldReward:
+		print(reward.value) # No warning: the order of the tests doesn't matter.
 	print(reward.value) # Warning.
 	print(reward.calc()) # Warning.
 
