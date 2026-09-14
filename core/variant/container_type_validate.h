@@ -34,6 +34,8 @@
 #include "core/object/script_language.h"
 #include "core/variant/variant.h"
 
+#include <optional>
+
 struct ContainerType {
 	Variant::Type variant_type = Variant::NIL;
 	StringName class_name;
@@ -47,40 +49,50 @@ struct ContainerTypeValidate {
 	const char *where = "container";
 
 private:
-	_FORCE_INLINE_ bool _internal_validate(Variant &r_inout_variant, const char *p_operation, bool p_output_errors) const {
+	// If the variant can be used as the container type without coercion, returns empty and sets p_success = true
+	// If coercion is required, returns a populated variant and sets p_success = true
+	// Otherwise, if the variant type is incompatible, returns empty and sets p_success = false
+	_FORCE_INLINE_ std::optional<Variant> _internal_coerce(const Variant &p_variant, bool &p_success, const char *p_operation, bool p_output_errors) const {
+		std::optional<Variant> ret;
 		if (variant_type == Variant::NIL) {
-			return true;
+			p_success = true;
+			return ret;
 		}
 
-		if (variant_type != r_inout_variant.get_type()) {
-			if (r_inout_variant.get_type() == Variant::NIL && variant_type == Variant::OBJECT) {
-				return true;
+		if (variant_type != p_variant.get_type()) {
+			if (p_variant.get_type() == Variant::NIL && variant_type == Variant::OBJECT) {
+				p_success = true;
+				return ret;
 			}
 
-			if (Variant::can_convert_strict(r_inout_variant.get_type(), variant_type)) {
-				Variant converted_to;
-				const Variant *converted_from = &r_inout_variant;
+			if (Variant::can_convert_strict(p_variant.get_type(), variant_type)) {
+				ret.emplace();
+				const Variant *converted_from = &p_variant;
 				Callable::CallError call_error;
-				Variant::construct(variant_type, converted_to, &converted_from, 1, call_error);
+				Variant::construct(variant_type, *ret, &converted_from, 1, call_error);
 
 				if (call_error.error == Callable::CallError::CALL_OK) {
-					r_inout_variant = converted_to;
-					return true;
+					p_success = true;
+					return ret;
 				}
+				ret.reset();
 			}
 
+			p_success = false;
 			if (p_output_errors) {
-				ERR_FAIL_V_MSG(false, vformat("Attempted to %s a variable of type '%s' into a %s of incompatible type '%s'.", String(p_operation), Variant::get_type_name(r_inout_variant.get_type()), where, Variant::get_type_name(variant_type)));
+				ERR_FAIL_V_MSG(ret, vformat("Attempted to %s a variable of type '%s' into a %s of incompatible type '%s'.", String(p_operation), Variant::get_type_name(p_variant.get_type()), where, Variant::get_type_name(variant_type)));
 			} else {
-				return false;
+				return ret;
 			}
 		}
 
 		if (variant_type != Variant::OBJECT) {
-			return true;
+			p_success = true;
+			return ret;
 		}
 
-		return _internal_validate_object(r_inout_variant, p_operation, p_output_errors);
+		p_success = _internal_validate_object(p_variant, p_operation, p_output_errors);
+		return ret;
 	}
 
 	_FORCE_INLINE_ bool _internal_validate_object(const Variant &p_variant, const char *p_operation, bool p_output_errors) const {
@@ -150,8 +162,8 @@ private:
 	}
 
 public:
-	_FORCE_INLINE_ bool validate(Variant &r_inout_variant, const char *p_operation = "use") const {
-		return _internal_validate(r_inout_variant, p_operation, true);
+	_FORCE_INLINE_ std::optional<Variant> coerce(const Variant &p_variant, bool &p_success, const char *p_operation = "use") const {
+		return _internal_coerce(p_variant, p_success, p_operation, true);
 	}
 
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
@@ -159,8 +171,9 @@ public:
 	}
 
 	_FORCE_INLINE_ bool test_validate(const Variant &p_variant) const {
-		Variant tmp = p_variant;
-		return _internal_validate(tmp, "", false);
+		bool valid;
+		_internal_coerce(p_variant, valid, "", true);
+		return valid;
 	}
 
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
