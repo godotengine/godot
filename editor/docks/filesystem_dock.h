@@ -329,7 +329,7 @@ private:
 	void _resource_created();
 	void _script_or_shader_created(const Ref<Resource> &p_resource);
 	void _make_scene_confirm();
-	void _rename_operation_confirm();
+	void _rename_operation_confirm(bool p_from_tree);
 	void _duplicate_operation_confirm(const String &p_path);
 	void _move_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
