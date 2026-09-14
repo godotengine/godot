@@ -556,7 +556,7 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 		variant_map.insert(key_data[i], value_data[i]);
 	}
 
-	_p->variant_map = variant_map;
+	_p->variant_map = std::move(variant_map);
 }
 
 const Variant *Dictionary::next(const Variant *p_key) const {
