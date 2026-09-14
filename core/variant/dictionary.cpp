@@ -687,20 +687,12 @@ bool Dictionary::is_same_typed_value(const Dictionary &p_other) const {
 	return _p->typed_value == p_other._p->typed_value;
 }
 
-ContainerType Dictionary::get_key_type() const {
-	ContainerType type;
-	type.variant_type = _p->typed_key.variant_type;
-	type.class_name = _p->typed_key.class_name;
-	type.script = _p->typed_key.script;
-	return type;
+const ContainerType &Dictionary::get_key_type() const {
+	return _p->typed_key;
 }
 
-ContainerType Dictionary::get_value_type() const {
-	ContainerType type;
-	type.variant_type = _p->typed_value.variant_type;
-	type.class_name = _p->typed_value.class_name;
-	type.script = _p->typed_value.script;
-	return type;
+const ContainerType &Dictionary::get_value_type() const {
+	return _p->typed_value;
 }
 
 uint32_t Dictionary::get_typed_key_builtin() const {
@@ -744,6 +736,13 @@ void Dictionary::operator=(const Dictionary &p_dictionary) {
 
 const void *Dictionary::id() const {
 	return _p;
+}
+
+Dictionary::Dictionary(const Dictionary &p_base, const ContainerType &p_key_type, const ContainerType &p_value_type) {
+	_p = memnew(DictionaryPrivate);
+	_p->refcount.init();
+	set_typed(p_key_type, p_value_type);
+	assign(p_base);
 }
 
 Dictionary::Dictionary(const Dictionary &p_base, uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
