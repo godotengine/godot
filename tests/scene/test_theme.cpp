@@ -64,6 +64,7 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Good theme type names") {
 		"snake_cased_name",
 		"42",
 		"_Underscore_",
+		String::utf8("contains_汉字"),
 	};
 
 	SUBCASE("add_type") {
@@ -129,7 +130,6 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Bad theme type names") {
 		"With/Slash",
 		"With Space",
 		"With@various$symbols!",
-		String::utf8("contains_汉字"),
 	};
 
 	ERR_PRINT_OFF; // All these rightfully print errors.
@@ -194,6 +194,7 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Good theme item names") {
 		"snake_cased_name",
 		"42",
 		"_Underscore_",
+		String::utf8("contains_汉字"),
 	};
 
 	SUBCASE("set_theme_item") {
@@ -231,7 +232,6 @@ TEST_CASE_FIXTURE(Fixture, "[Theme] Bad theme item names") {
 		"With/Slash",
 		"With Space",
 		"With@various$symbols!",
-		String::utf8("contains_汉字"),
 	};
 
 	ERR_PRINT_OFF; // All these rightfully print errors.
