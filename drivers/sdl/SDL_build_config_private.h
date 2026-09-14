@@ -36,6 +36,7 @@
 
 #define HAVE_STDARG_H 1
 #define HAVE_STDDEF_H 1
+#define HAVE_STDLIB_H 1
 
 // Here we disable SDL subsystems that are not going to be used
 #define SDL_CPUINFO_DISABLED 1
@@ -123,7 +124,6 @@
 
 #define SDL_PLATFORM_PRIVATE_NAME "macOS"
 #define HAVE_STDIO_H 1
-#define HAVE_STDLIB_H 1
 #define HAVE_LIBC 1
 #define SDL_HAPTIC_IOKIT 1
 #define SDL_JOYSTICK_IOKIT 1
@@ -145,7 +145,6 @@
 #endif
 
 #define HAVE_STDIO_H 1
-#define HAVE_STDLIB_H 1
 #define HAVE_LIBC 1
 
 #define SDL_JOYSTICK_MFI 1
