@@ -88,6 +88,10 @@ struct [[nodiscard]] Vector2 {
 	Vector2 normalized() const;
 	bool is_normalized() const;
 
+	_FORCE_INLINE_ Vector2 inverse() const {
+		return Vector2(1.0f / x, 1.0f / y);
+	}
+
 	real_t length() const;
 	real_t length_squared() const;
 	Vector2 limit_length(real_t p_len = 1.0) const;
