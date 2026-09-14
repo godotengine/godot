@@ -6195,9 +6195,7 @@ void EditorInspector::_clear_current_favorites() {
 void EditorInspector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
-				update_tree_pending = true;
-			}
+			update_tree_pending = true;
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
