@@ -1174,6 +1174,22 @@
 				Returns the drag coefficient of the given soft body.
 			</description>
 		</method>
+		<method name="soft_body_get_extra_property" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="name" type="StringName" />
+			<description>
+				Returns the value of a backend-specific soft body property, or an empty [Variant] if the current backend has no property by that name.
+				Jolt configuration and [code]skin/pose[/code] reads return independent deep snapshots, even without a live body. Live outputs require a built body in a space; otherwise they return [code]null[/code] with a diagnostic. [code]bend/count[/code] counts only dihedral constraints (Distance bend uses edges and reports zero here). [code]volume/current[/code] sums absolute current tetra volumes, not pressure-surface volume. [code]volume/positions[/code] returns world positions in authored vertex order; [code]volume/faces[/code] returns Godot-winding boundary indices.
+			</description>
+		</method>
+		<method name="soft_body_get_extra_property_list" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns every backend-specific soft body property the current physics backend supports, whether or not it has been set on [param body]. Each entry carries a [code]name[/code], a [code]type[/code] and a [code]usage[/code] bitmask. Lack of [constant @GlobalScope.PROPERTY_USAGE_STORAGE] means non-stored, not necessarily read-only: Jolt's [code]skin/pose[/code] is transient and writable; live outputs are read-only. Returns an empty array on a backend with no such properties, including GodotPhysics3D and dummy backends. This metadata does not add automatic [SoftBody3D] node serialization; adapters must save configurations explicitly.
+			</description>
+		</method>
 		<method name="soft_body_get_linear_stiffness" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
@@ -1306,6 +1322,37 @@
 			<description>
 				Sets the drag coefficient of the given soft body. Higher values increase this body's air resistance.
 				[b]Note:[/b] This value is currently unused by Godot's default physics implementation.
+			</description>
+		</method>
+		<method name="soft_body_set_extra_property">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="name" type="StringName" />
+			<param index="2" name="value" type="Variant" />
+			<description>
+				Sets a backend-specific soft body property and returns whether it was accepted. With Jolt, unknown prefixes return [code]false[/code] silently; a known Jolt prefix with an invalid key, type or value returns [code]false[/code] and prints a diagnostic. Discover available keys using [method soft_body_get_extra_property_list].
+				Jolt supports seven atomic [Dictionary] keys: [code]scalar/config[/code], [code]bend/config[/code], [code]lra/config[/code], [code]vertex/config[/code], [code]volume/config[/code], [code]skin/config[/code], and [code]rod/config[/code]. Pass [code]null[/code] to clear one. Changed configurations rebuild/reset simulation, identical snapshots are no-ops, and rejected writes preserve the previous state. [code]skin/pose[/code] takes an [Array] of world [Transform3D] values without rebuilding or clearing velocities. Every fresh skin body initially snaps selected vertices to its latest targets and clears their velocities before its first solve.
+				Real-valued configuration fields require [float] (not [int]); indices/enums require [int]. Vertex columns use source-mesh indices before welding, while volume indices refer to authored body-local points. Compliance is Jolt XPBD compliance; larger values are softer. Coordinates use Godot units. Volume supplies no shear/stretch material or runtime inversion protection. New renderer-dependent mesh paths are rejected by separate-thread Jolt; self-supplied volume or rod, optionally with scalar, remains supported even with an ignored mesh RID. Clearing the last replacement back to mesh is rejected on a separate physics thread.
+				[code]rod/config[/code] requires [code]joints[/code]: [PackedVector3Array] of N=2..1024 ordered body-local joints, with adjacent squared length at least 1e-12. Optional [code]compliance[/code] and [code]bend[/code] require [PackedFloat32Array] of exactly N-1 and N-2 finite nonnegative values, defaulting to zero. Optional [code]fixed[/code] requires an [int] from 0 to N inclusive, defaulting to 0, pinning the first fixed joints. Ordinary pins conflict with rod. [code]rod/state[/code] is a read-only [PackedFloat32Array] of 4*(N-1) xyzw quaternion components, not particle positions. Production discovery exposes 18 properties: seven configurations, ten live read-only channels and one writable skin pose.
+				[codeblock]
+				# Minimal self-supplied tetra on a backend advertising volume/config.
+				var body := PhysicsServer3D.soft_body_create()
+				var space := PhysicsServer3D.space_create()
+				var available := false
+				for property in PhysicsServer3D.soft_body_get_extra_property_list(body):
+				    available = available or property.name == "volume/config"
+				if available:
+				    var accepted := PhysicsServer3D.soft_body_set_extra_property(body, "volume/config", {
+				        "vertices": PackedVector3Array([Vector3.ZERO, Vector3.RIGHT, Vector3.UP, Vector3.BACK]),
+				        "tetrahedra": PackedInt32Array([0, 1, 2, 3]),
+				        "compliance": 0.001,
+				    })
+				    if accepted:
+				        PhysicsServer3D.soft_body_set_space(body, space)
+				        print(PhysicsServer3D.soft_body_get_extra_property(body, "volume/count")) # 1
+				PhysicsServer3D.free_rid(body)
+				PhysicsServer3D.free_rid(space)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="soft_body_set_linear_stiffness">
