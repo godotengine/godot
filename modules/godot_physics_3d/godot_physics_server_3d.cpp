@@ -40,6 +40,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/os/os.h"
+#include "core/variant/typed_array.h"
 
 #define FLUSH_QUERY_CHECK(m_object) \
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
@@ -1240,6 +1241,30 @@ bool GodotPhysicsServer3D::soft_body_is_point_pinned(RID p_body, int p_point_ind
 	ERR_FAIL_NULL_V(soft_body, false);
 
 	return soft_body->is_vertex_pinned(p_point_index);
+}
+
+bool GodotPhysicsServer3D::soft_body_set_extra_property(RID p_body, const StringName &p_name, const Variant &p_value) {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, false);
+
+	WARN_PRINT_ONCE("GodotPhysics3D does not support soft-body extra properties. Select \"Jolt Physics\" in Project Settings (physics/3d/physics_engine) and restart the project.");
+	return false;
+}
+
+Variant GodotPhysicsServer3D::soft_body_get_extra_property(RID p_body, const StringName &p_name) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, Variant());
+
+	WARN_PRINT_ONCE("GodotPhysics3D does not support soft-body extra properties. Select \"Jolt Physics\" in Project Settings (physics/3d/physics_engine) and restart the project.");
+	return Variant();
+}
+
+TypedArray<Dictionary> GodotPhysicsServer3D::soft_body_get_extra_property_list(RID p_body) const {
+	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(soft_body, TypedArray<Dictionary>());
+
+	WARN_PRINT_ONCE("GodotPhysics3D does not support soft-body extra properties. Select \"Jolt Physics\" in Project Settings (physics/3d/physics_engine) and restart the project.");
+	return TypedArray<Dictionary>();
 }
 
 /* JOINT API */

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/variant/typed_array.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
 class PhysicsDirectBodyState3DDummy : public PhysicsDirectBodyState3D {
@@ -365,6 +366,10 @@ public:
 	virtual void soft_body_remove_all_pinned_points(RID p_body) override {}
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) override {}
 	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const override { return false; }
+
+	virtual bool soft_body_set_extra_property(RID p_body, const StringName &p_name, const Variant &p_value) override { return false; }
+	virtual Variant soft_body_get_extra_property(RID p_body, const StringName &p_name) const override { return Variant(); }
+	virtual TypedArray<Dictionary> soft_body_get_extra_property_list(RID p_body) const override { return TypedArray<Dictionary>(); }
 
 	virtual void soft_body_apply_point_impulse(RID p_body, int p_point_index, const Vector3 &p_impulse) override {}
 	virtual void soft_body_apply_point_force(RID p_body, int p_point_index, const Vector3 &p_force) override {}

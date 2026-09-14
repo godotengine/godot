@@ -317,6 +317,10 @@ public:
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) override;
 	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const override;
 
+	virtual bool soft_body_set_extra_property(RID p_body, const StringName &p_name, const Variant &p_value) override;
+	virtual Variant soft_body_get_extra_property(RID p_body, const StringName &p_name) const override;
+	virtual TypedArray<Dictionary> soft_body_get_extra_property_list(RID p_body) const override;
+
 	/* JOINT API */
 
 	virtual RID joint_create() override;

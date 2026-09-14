@@ -36,6 +36,7 @@
 #include "../misc/jolt_stream_wrappers.h"
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
+#include "../objects/jolt_soft_body_3d.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "jolt_body_activation_listener_3d.h"
 #include "jolt_contact_listener_3d.h"
@@ -84,6 +85,9 @@ void JoltSpace3D::_pre_step(float p_step) {
 		object->pre_step(p_step);
 	}
 
+#ifdef TESTS_ENABLED
+	walking_soft_bodies_for_tests = true;
+#endif
 	const JPH::BodyID *active_soft_bodies = physics_system->GetActiveBodiesUnsafe(JPH::EBodyType::SoftBody);
 	const JPH::uint32 active_soft_body_count = physics_system->GetNumActiveBodies(JPH::EBodyType::SoftBody);
 
@@ -93,6 +97,9 @@ void JoltSpace3D::_pre_step(float p_step) {
 		object->pre_step(p_step);
 	}
 
+#ifdef TESTS_ENABLED
+	walking_soft_bodies_for_tests = false;
+#endif
 	physics_system->SetBodyActivationListener(body_activation_listener);
 }
 
@@ -192,6 +199,19 @@ void JoltSpace3D::step(float p_step) {
 	last_step = p_step;
 
 	_pre_step(p_step);
+	// Destroy failed bodies after active-array traversal, before Update.
+	// No borrowed body pointer may survive this step.
+	for (JoltSoftBody3D *body : faulted_soft_bodies) {
+		body->remove_faulted_live_body();
+	}
+	faulted_soft_bodies.clear();
+#ifdef TESTS_ENABLED
+	const JPH::BodyID *solving = physics_system->GetActiveBodiesUnsafe(JPH::EBodyType::SoftBody);
+	const uint32_t solving_count = physics_system->GetNumActiveBodies(JPH::EBodyType::SoftBody);
+	for (uint32_t i = 0; i < solving_count; ++i) {
+		try_get_soft_body(solving[i])->record_solver_step_for_tests();
+	}
+#endif
 
 	const JPH::EPhysicsUpdateError update_error = physics_system->Update(p_step, 1, temp_allocator, job_system);
 
@@ -427,6 +447,15 @@ JPH::Body *JoltSpace3D::add_object(const JoltObject3D &p_object, const JPH::Soft
 }
 
 void JoltSpace3D::remove_object(const JPH::BodyID &p_jolt_id) {
+#ifdef TESTS_ENABLED
+	// Observe deletion directly: stale active-array slots can hide unsafe removal
+	// from healthy-neighbor output.
+	if (walking_soft_bodies_for_tests) {
+		if (JoltSoftBody3D *body = try_get_soft_body(p_jolt_id)) {
+			body->record_removal_during_traversal_for_tests();
+		}
+	}
+#endif
 	JPH::BodyInterface &body_iface = get_body_iface();
 
 	if (!pending_objects_sleeping.erase_unordered(p_jolt_id) && !pending_objects_awake.erase_unordered(p_jolt_id)) {

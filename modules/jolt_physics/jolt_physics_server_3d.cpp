@@ -53,6 +53,8 @@
 #include "spaces/jolt_space_3d.h"
 #include "spaces/jolt_temp_allocator.h"
 
+#include "core/variant/typed_array.h"
+
 JoltPhysicsServer3D::JoltPhysicsServer3D(bool p_on_separate_thread) :
 		on_separate_thread(p_on_separate_thread) {
 	singleton = this;
@@ -980,6 +982,9 @@ PhysicsDirectBodyState3D *JoltPhysicsServer3D::body_get_direct_state(RID p_body)
 
 RID JoltPhysicsServer3D::soft_body_create() {
 	JoltSoftBody3D *body = memnew(JoltSoftBody3D);
+	body->set_owner_separate_thread(is_on_separate_thread());
+	// A recycled RID must not inherit the previous body's capability state.
+	body->clear_extra_properties();
 	RID rid = soft_body_owner.make_rid(body);
 	body->set_rid(rid);
 	return rid;
@@ -1248,6 +1253,27 @@ bool JoltPhysicsServer3D::soft_body_is_point_pinned(RID p_body, int p_point_inde
 	ERR_FAIL_NULL_V(body, false);
 
 	return body->is_vertex_pinned(p_point_index);
+}
+
+bool JoltPhysicsServer3D::soft_body_set_extra_property(RID p_body, const StringName &p_name, const Variant &p_value) {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, false);
+
+	return body->set_extra_property(p_name, p_value);
+}
+
+Variant JoltPhysicsServer3D::soft_body_get_extra_property(RID p_body, const StringName &p_name) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, Variant());
+
+	return body->get_extra_property(p_name);
+}
+
+TypedArray<Dictionary> JoltPhysicsServer3D::soft_body_get_extra_property_list(RID p_body) const {
+	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, TypedArray<Dictionary>());
+
+	return body->get_extra_property_list();
 }
 
 RID JoltPhysicsServer3D::joint_create() {

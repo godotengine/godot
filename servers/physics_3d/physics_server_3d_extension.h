@@ -474,6 +474,10 @@ public:
 	EXBIND3(soft_body_pin_point, RID, int, bool)
 	EXBIND2RC(bool, soft_body_is_point_pinned, RID, int)
 
+	EXBIND3R(bool, soft_body_set_extra_property, RID, const StringName &, const Variant &)
+	EXBIND2RC(Variant, soft_body_get_extra_property, RID, const StringName &)
+	EXBIND1RC(TypedArray<Dictionary>, soft_body_get_extra_property_list, RID)
+
 	EXBIND3(soft_body_apply_point_impulse, RID, int, const Vector3 &)
 	EXBIND3(soft_body_apply_point_force, RID, int, const Vector3 &)
 	EXBIND2(soft_body_apply_central_impulse, RID, const Vector3 &)

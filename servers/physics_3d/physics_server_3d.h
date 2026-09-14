@@ -61,6 +61,10 @@ protected:
 public:
 	static PhysicsServer3D *get_singleton();
 
+	// Test-owned servers overwrite the singleton; restore its previous value,
+	// including nullptr, on teardown.
+	static void set_singleton_for_tests(PhysicsServer3D *p_server) { singleton = p_server; }
+
 	RID shape_create(PS3DE::ShapeType p_shape);
 
 	virtual RID world_boundary_shape_create() = 0;
@@ -312,6 +316,10 @@ public:
 	virtual void soft_body_remove_all_pinned_points(RID p_body) = 0;
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) = 0;
 	virtual bool soft_body_is_point_pinned(RID p_body, int p_point_index) const = 0;
+
+	virtual bool soft_body_set_extra_property(RID p_body, const StringName &p_name, const Variant &p_value) = 0;
+	virtual Variant soft_body_get_extra_property(RID p_body, const StringName &p_name) const = 0;
+	virtual TypedArray<Dictionary> soft_body_get_extra_property_list(RID p_body) const = 0;
 
 	/* JOINT API */
 

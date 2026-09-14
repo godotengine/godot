@@ -30,6 +30,8 @@
 
 #include "jolt_soft_body_3d.h"
 
+#include "../capabilities/soft_body_cap_validation.h"
+#include "../capabilities/soft_body_capabilities.h"
 #include "../jolt_project_settings.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../spaces/jolt_broad_phase_layer.h"
@@ -44,7 +46,14 @@
 
 #include <Jolt/Physics/SoftBody/SoftBodyMotionProperties.h>
 
+#include <cfloat>
+
 namespace {
+
+JPH::Vec3 cap_local_vector(const JoltSoftBodyCapState &p_state, const JPH::Body &p_body, const Vector3 &p_world) {
+	const JPH::Vec3 value = to_jolt(p_world);
+	return SoftBodyCapValidation::mesh_family(p_state) ? p_body.GetCenterOfMassTransform().Multiply3x3Transposed(value) : value;
+}
 
 template <typename TJoltVertex>
 void pin_vertices(const JoltSoftBody3D &p_body, const HashSet<int> &p_pinned_vertices, const LocalVector<int> &p_mesh_to_physics, JPH::Array<TJoltVertex> &r_physics_vertices) {
@@ -78,6 +87,10 @@ void JoltSoftBody3D::_space_changing() {
 
 	if (in_space()) {
 		jolt_settings = new JPH::SoftBodyCreationSettings(jolt_body->GetSoftBodyCreationSettings());
+		// Clear the outgoing rod's origin policy even when no geometry remains.
+		if (SoftBodyCapValidation::new_path(cap_state) || prepared_settings != nullptr || !jolt_settings->mSettings->mRodStretchShearConstraints.empty()) {
+			jolt_settings->mUpdatePosition = true;
+		}
 		jolt_settings->mSettings = nullptr;
 		jolt_settings->mVertexRadius = JoltProjectSettings::soft_body_point_radius;
 	}
@@ -94,8 +107,22 @@ void JoltSoftBody3D::_space_changed() {
 }
 
 void JoltSoftBody3D::_add_to_space() {
-	if (unlikely(space == nullptr || !mesh.is_valid())) {
+	if (unlikely(space == nullptr)) {
 		return;
+	}
+
+	LocalVector<const CapabilitySpec *> active;
+	cap_collect_active(cap_state, active);
+
+	const int replace_count = cap_replace_count(active);
+	ERR_FAIL_COND_MSG(replace_count > 1, vformat("More than one geometry-replacing capability is active on '%s'. Only one capability may supply the vertices.", to_string()));
+
+	if (replace_count == 0) {
+		if (unlikely(!mesh.is_valid())) {
+			return;
+		}
+	} else if (mesh.is_valid()) {
+		WARN_PRINT(vformat("A geometry-replacing capability is active on '%s'; its mesh is ignored.", to_string()));
 	}
 
 	JPH::SoftBodySharedSettings *shared_settings = _create_shared_settings();
@@ -111,36 +138,278 @@ void JoltSoftBody3D::_add_to_space() {
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
 	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
 
+	if (SoftBodyCapValidation::new_path(cap_state) || prepared_settings != nullptr) {
+		// Replay defaults rather than inheriting the previous generation's overrides.
+		jolt_settings->mUpdatePosition = true;
+		jolt_settings->mFriction = 1.0f;
+		jolt_settings->mRestitution = 0.0f;
+		jolt_settings->mGravityFactor = 1.0f;
+		jolt_settings->mFacesDoubleSided = false;
+		jolt_settings->mVertexRadius = JoltProjectSettings::soft_body_point_radius;
+		if (cap_replace_count(active) == 0) {
+			const Transform3D creation = cap_state.bind_transform;
+			jolt_settings->mPosition = to_jolt_r(creation.origin);
+			jolt_settings->mRotation = to_jolt(creation.basis);
+			if (SoftBodyCapValidation::mesh_family(cap_state)) {
+				jolt_settings->mMakeRotationIdentity = false;
+			}
+		}
+	}
+	cap_apply_body(cap_state, active, *jolt_settings);
+
+#ifdef TESTS_ENABLED
+	++test_body_creations;
+#endif
 	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings);
 	if (new_jolt_body == nullptr) {
 		return;
 	}
 
 	jolt_body = new_jolt_body;
+	prepared_settings = nullptr;
+	cap_faulted = false;
+	cap_state.target_initialized = false;
+	active_capabilities = active;
+#ifdef TESTS_ENABLED
+	++cap_state.test_counts.generation;
+#endif
 
 	delete jolt_settings;
 	jolt_settings = nullptr;
 }
 
-JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
+bool JoltSoftBody3D::_thread_preflight(const JoltSoftBodyCapState &p_state, bool p_transition, String *r_error) const {
+	if (!owner_separate_thread) {
+		return true;
+	}
+	LocalVector<const CapabilitySpec *> active;
+	cap_collect_active(p_state, active);
+	const bool renderer_path = cap_replace_count(active) == 0 && mesh.is_valid();
+	if (SoftBodyCapValidation::mesh_family(p_state) || ((p_transition || SoftBodyCapValidation::new_path(p_state)) && renderer_path)) {
+		return SoftBodyCapValidation::fail(r_error, "SBREM-THREAD", "config/context", "result geometry requires RenderingServer on separate physics thread");
+	}
+	return true;
+}
+
+bool JoltSoftBody3D::_prepare_capability(JoltSoftBodyCapState &r_state, BindingCache &r_cache, JPH::Ref<JPH::SoftBodySharedSettings> &r_settings, LocalVector<int> &r_map, float p_mass, int p_precision, float p_stiffness, const HashSet<int> &p_pins, String *r_error) const {
+	using namespace SoftBodyCapValidation;
+	LocalVector<const CapabilitySpec *> active;
+	cap_collect_active(r_state, active);
+	const int replacements = cap_replace_count(active);
+	if (replacements > 1 || (replacements > 0 && mesh_family(r_state))) {
+		return fail(r_error, "SBREM-CONFLICT", "config", "REPLACE and mesh-family capabilities cannot coexist");
+	}
+	if ((r_state.has("volume/config") || r_state.has("rod/config")) && !p_pins.is_empty()) {
+		return fail(r_error, "SBREM-CONFLICT", r_state.has("rod/config") ? "rod/config.fixed" : "volume/config.fixed", "ordinary pin set must be empty");
+	}
+	if (!_thread_preflight(r_state, true, r_error)) {
+		return false;
+	}
+	const bool mesh_path = replacements == 0 && mesh.is_valid();
+	float inverse_mass = 0;
+	float base = 0;
+	if (!typed(r_state, p_mass, p_precision, p_stiffness, mesh_path, 0, inverse_mass, base, r_error)) {
+		return false;
+	}
+	// Reject negative indices without geometry only when capability preflight is active.
+	if (new_path(r_state)) {
+		for (int source : p_pins) {
+			if (source < 0) {
+				return fail(r_error, "SBREM-INDEX", "typed.pin", vformat("source %d is negative", source));
+			}
+		}
+	}
+	r_settings = nullptr;
+	r_map.clear();
+	if (replacements == 0 && !mesh.is_valid()) {
+		return true;
+	}
+	r_settings = new JPH::SoftBodySharedSettings;
+	if (mesh_path) {
+		PackedVector3Array vertices;
+		PackedInt32Array indices;
+		const bool cached = mesh_family(r_state) && r_cache.mesh == mesh;
+		if (cached) {
+			vertices = r_cache.vertices;
+			indices = r_cache.indices;
+		} else {
+#ifdef TESTS_ENABLED
+			++test_renderer_reads;
+			// Avoid mutation-test deadlock. Production must reject earlier with
+			// SBREM-THREAD and leave this counter unchanged to pass P20.
+			if (owner_separate_thread) {
+				return fail(r_error, "SBREM-CONTEXT", "test renderer boundary", "thread guard was bypassed before RenderingServer read");
+			}
+#endif
+			const Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(mesh, 0);
+			if (arrays.size() != RSE::ARRAY_MAX || arrays[RSE::ARRAY_VERTEX].get_type() != Variant::PACKED_VECTOR3_ARRAY || arrays[RSE::ARRAY_INDEX].get_type() != Variant::PACKED_INT32_ARRAY) {
+				return fail(r_error, "SBREM-CONTEXT", "mesh", "indexed triangle surface required");
+			}
+			vertices = arrays[RSE::ARRAY_VERTEX];
+			indices = arrays[RSE::ARRAY_INDEX];
+			if (mesh_family(r_state)) {
+				r_cache.mesh = mesh;
+				r_cache.vertices = vertices;
+				r_cache.indices = indices;
+				r_cache.frame = reference_transform;
+			}
+		}
+		if (!resource_size(vertices.size(), 1, 65536, 1, r_error, "mesh.vertices") || !resource_size(indices.size(), 3, 262144 * 3, 1, r_error, "mesh.indices") || indices.size() % 3 != 0) {
+			return fail(r_error, "SBREM-SIZE", "mesh", vformat("vertices %d, indices %d require bounded triangle arrays", vertices.size(), indices.size()));
+		}
+		for (int i = 0; i < vertices.size(); ++i) {
+			for (int axis = 0; axis < 3; ++axis) {
+				float value;
+				if (!finite_float(vertices[i][axis], value, r_error, vformat("mesh.vertices[%d][%d]", i, axis))) {
+					return false;
+				}
+			}
+		}
+		r_state.bind_transform = mesh_family(r_state) ? r_cache.frame : reference_transform;
+		r_map.resize(vertices.size());
+		for (int &index : r_map) {
+			index = -1;
+		}
+		HashMap<Vector3, int> welding;
+		for (int i = 0; i < indices.size(); i += 3) {
+			int face[3];
+			for (int j = 0; j < 3; ++j) {
+				const int source = indices[i + j];
+				if (source < 0 || source >= vertices.size()) {
+					return fail(r_error, "SBREM-INDEX", vformat("mesh.indices[%d]", i + j), vformat("%d outside [0, %d)", source, vertices.size()));
+				}
+				const Vector3 vertex = vertices[source];
+				if (!welding.has(vertex)) {
+					const int physics = r_settings->mVertices.size();
+					welding[vertex] = physics;
+					r_settings->mVertices.emplace_back(JPH::Float3(vertex.x, vertex.y, vertex.z));
+				}
+				face[j] = r_map[source] = welding[vertex];
+			}
+			if (face[0] != face[1] && face[0] != face[2] && face[1] != face[2]) {
+				r_settings->mFaces.emplace_back(face[2], face[1], face[0]);
+			}
+		}
+		if (r_settings->mFaces.empty()) {
+			return fail(r_error, "SBREM-CONTEXT", "mesh.faces", "no nondegenerate triangle");
+		}
+		if (!typed(r_state, p_mass, p_precision, p_stiffness, true, r_settings->mVertices.size(), inverse_mass, base, r_error)) {
+			return false;
+		}
+		for (auto &vertex : r_settings->mVertices) {
+			vertex.mInvMass = inverse_mass;
+		}
+		for (int source : p_pins) {
+			if (source < 0 || source >= (int)r_map.size() || r_map[source] < 0) {
+				return fail(r_error, "SBREM-INDEX", "typed.pin", vformat("source %d is not a referenced mesh vertex", source));
+			}
+			r_settings->mVertices[r_map[source]].mInvMass = 0;
+		}
+		for (const CapabilitySpec *cap : active) {
+			if (cap->mesh_pinned_vertices != nullptr) {
+				LocalVector<int> pins;
+				cap->mesh_pinned_vertices(r_state, r_map, pins);
+				for (int physics : pins) {
+					if (physics < 0 || physics >= (int)r_settings->mVertices.size()) {
+						return fail(r_error, "SBREM-INDEX", "skin/config.vertices", vformat("mapped vertex %d is invalid", physics));
+					}
+					if (r_settings->mVertices[physics].mInvMass == 0) {
+						return fail(r_error, "SBREM-CONFLICT", "skin/config.vertices", vformat("hard skin and ordinary pin overlap at physics vertex %d", physics));
+					}
+					r_settings->mVertices[physics].mInvMass = 0;
+				}
+			}
+		}
+		LocalVector<JPH::SoftBodySharedSettings::VertexAttributes> attributes;
+		attributes.resize(r_settings->mVertices.size());
+		for (auto &attribute : attributes) {
+			attribute.mCompliance = attribute.mShearCompliance = base;
+		}
+		auto bend_type = JPH::SoftBodySharedSettings::EBendType::None;
+		for (const CapabilitySpec *cap : active) {
+			if (cap->mesh_attributes != nullptr && !cap->mesh_attributes(r_state, r_map, attributes, bend_type, r_error)) {
+				return false;
+			}
+		}
+#ifdef TESTS_ENABLED
+		++r_state.test_counts.create_constraints;
+#endif
+		r_settings->CreateConstraints(attributes.ptr(), attributes.size(), bend_type);
+		for (auto &edge : r_settings->mEdgeConstraints) {
+			edge.mRestLength *= 1.0f - shrinking_factor;
+			if (!Math::is_finite(edge.mRestLength) || !Math::is_finite(edge.mCompliance)) {
+				return fail(r_error, "SBREM-CONTEXT", "mesh.edge", "derived rest length or compliance is not finite");
+			}
+		}
+	}
+	// Validate isolated settings/mapping before Optimize or live-body creation;
+	// hooks never receive caller-owned dictionaries.
+	for (const CapabilitySpec *cap : active) {
+		if (cap->contribute != nullptr) {
+			cap->contribute(r_state, *r_settings, r_map, p_mass);
+		}
+	}
+	if (!typed(r_state, p_mass, p_precision, p_stiffness, mesh_path, r_settings->mVertices.size(), inverse_mass, base, r_error)) {
+		return false;
+	}
+	for (const CapabilitySpec *cap : active) {
+		if (cap->validate_build != nullptr && !cap->validate_build(r_state, *r_settings, r_map, r_error)) {
+			return false;
+		}
+	}
+	for (const CapabilitySpec *cap : active) {
+		if (cap->derive != nullptr) {
+			cap->derive(*r_settings);
+		}
+	}
+#ifdef TESTS_ENABLED
+	if (test_without_volume_constraints) {
+		r_settings->mVolumeConstraints.clear();
+	}
+	++r_state.test_counts.optimize;
+#endif
+	r_settings->Optimize();
+	return true;
+}
+
+bool JoltSoftBody3D::_typed_preflight(float p_mass, int p_precision, float p_stiffness, const HashSet<int> &p_pins) {
+	if (!SoftBodyCapValidation::new_path(cap_state)) {
+		return true;
+	}
+	JoltSoftBodyCapState scratch = cap_state;
+	BindingCache cache = binding_cache;
+	JPH::Ref<JPH::SoftBodySharedSettings> settings;
+	LocalVector<int> mapping;
+	String error;
+	ERR_FAIL_COND_V_MSG(!_prepare_capability(scratch, cache, settings, mapping, p_mass, p_precision, p_stiffness, p_pins, &error), false, error);
+	cap_state = scratch;
+	binding_cache = cache;
+	mesh_to_physics = mapping;
+	prepared_settings = settings;
+	return true;
+}
+
+bool JoltSoftBody3D::_build_mesh_geometry(JPH::SoftBodySharedSettings &r_settings) {
 	RenderingServer *rendering = RenderingServer::get_singleton();
 
 	// TODO: calling RenderingServer::mesh_surface_get_arrays() from the physics thread
 	// is not safe and can deadlock when physics/3d/run_on_separate_thread is enabled.
 	// This method blocks on the main thread to return data, but the main thread may be
 	// blocked waiting on us in PhysicsServer3D::sync().
+#ifdef TESTS_ENABLED
+	++test_renderer_reads;
+#endif
 	const Array mesh_data = rendering->mesh_surface_get_arrays(mesh, 0);
-	ERR_FAIL_COND_V(mesh_data.is_empty(), nullptr);
+	ERR_FAIL_COND_V(mesh_data.is_empty(), false);
 
 	const PackedInt32Array mesh_indices = mesh_data[RSE::ARRAY_INDEX];
-	ERR_FAIL_COND_V(mesh_indices.is_empty(), nullptr);
+	ERR_FAIL_COND_V(mesh_indices.is_empty(), false);
 
 	const PackedVector3Array mesh_vertices = mesh_data[RSE::ARRAY_VERTEX];
-	ERR_FAIL_COND_V(mesh_vertices.is_empty(), nullptr);
+	ERR_FAIL_COND_V(mesh_vertices.is_empty(), false);
 
-	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
-	JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = settings->mVertices;
-	JPH::Array<JPH::SoftBodySharedSettings::Face> &physics_faces = settings->mFaces;
+	JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = r_settings.mVertices;
+	JPH::Array<JPH::SoftBodySharedSettings::Face> &physics_faces = r_settings.mFaces;
 
 	HashMap<Vector3, int> vertex_to_physics;
 
@@ -220,12 +489,52 @@ JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
 	JPH::SoftBodySharedSettings::VertexAttributes vertex_attrib;
 	vertex_attrib.mCompliance = vertex_attrib.mShearCompliance = inverse_stiffness;
 
-	settings->CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
+#ifdef TESTS_ENABLED
+	++cap_state.test_counts.create_constraints;
+#endif
+	r_settings.CreateConstraints(&vertex_attrib, 1, JPH::SoftBodySharedSettings::EBendType::None);
 	float multiplier = 1.0f - shrinking_factor;
-	for (JPH::SoftBodySharedSettings::Edge &e : settings->mEdgeConstraints) {
+	for (JPH::SoftBodySharedSettings::Edge &e : r_settings.mEdgeConstraints) {
 		e.mRestLength *= multiplier;
 	}
-	settings->Optimize();
+
+	return true;
+}
+
+JPH::SoftBodySharedSettings *JoltSoftBody3D::_create_shared_settings() {
+	if (prepared_settings != nullptr) {
+		return prepared_settings.GetPtr();
+	}
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		JoltSoftBodyCapState scratch = cap_state;
+		BindingCache cache = binding_cache;
+		LocalVector<int> mapping;
+		String error;
+		JPH::Ref<JPH::SoftBodySharedSettings> settings;
+		ERR_FAIL_COND_V_MSG(!_prepare_capability(scratch, cache, settings, mapping, mass, simulation_precision, stiffness_coefficient, pinned_vertices, &error), nullptr, error);
+		cap_state = scratch;
+		binding_cache = cache;
+		mesh_to_physics = mapping;
+		prepared_settings = settings;
+		return prepared_settings.GetPtr();
+	}
+	LocalVector<const CapabilitySpec *> active;
+	cap_collect_active(cap_state, active);
+
+	// Fresh settings prevent derive from reusing the previous configuration's values.
+	JPH::SoftBodySharedSettings *settings = new JPH::SoftBodySharedSettings();
+
+	if (cap_replace_count(active) == 0) {
+		if (!_build_mesh_geometry(*settings)) {
+			delete settings;
+			return nullptr;
+		}
+	} else {
+		// Replacement geometry has no mesh indices to translate.
+		mesh_to_physics.clear();
+	}
+
+	cap_build_settings(cap_state, active, *settings, mesh_to_physics, mass);
 
 	return settings;
 }
@@ -256,7 +565,7 @@ void JoltSoftBody3D::_apply_environmental_forces(float p_step) {
 	}
 
 	// Apply gravity to soft body. Note that this only works so long as vertices have uniform mass (excluding pinned vertices).
-	jolt_body->AddForce(to_jolt(gravity) * mass);
+	jolt_body->AddForce(cap_local_vector(cap_state, *jolt_body, gravity) * mass * jolt_body->GetMotionPropertiesUnchecked()->GetGravityFactor());
 
 	if (!wind_areas.is_empty()) {
 		JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
@@ -271,6 +580,12 @@ void JoltSoftBody3D::_apply_environmental_forces(float p_step) {
 			Vector3 v0 = to_godot(physics_vertex0.mPosition);
 			Vector3 v1 = to_godot(physics_vertex1.mPosition);
 			Vector3 v2 = to_godot(physics_vertex2.mPosition);
+			if (SoftBodyCapValidation::mesh_family(cap_state)) {
+				const auto frame = jolt_body->GetCenterOfMassTransform();
+				v0 = to_godot(frame.Multiply3x3(physics_vertex0.mPosition));
+				v1 = to_godot(frame.Multiply3x3(physics_vertex1.mPosition));
+				v2 = to_godot(frame.Multiply3x3(physics_vertex2.mPosition));
+			}
 			Vector3 centroid = com_position + (v0 + v1 + v2) * real_t(1.0 / 3.0);
 
 			// Calculate the triangle normal.
@@ -302,7 +617,7 @@ void JoltSoftBody3D::_apply_environmental_forces(float p_step) {
 				}
 
 				// Apply the force as an impulse over the timestep.
-				JPH::Vec3 impulse = to_jolt(wind_force * p_step);
+				JPH::Vec3 impulse = cap_local_vector(cap_state, *jolt_body, wind_force * p_step);
 				physics_vertex0.mVelocity += impulse * physics_vertex0.mInvMass;
 				physics_vertex1.mVelocity += impulse * physics_vertex1.mInvMass;
 				physics_vertex2.mVelocity += impulse * physics_vertex2.mInvMass;
@@ -326,6 +641,18 @@ void JoltSoftBody3D::_update_mass() {
 	}
 
 	pin_vertices(*this, pinned_vertices, mesh_to_physics, physics_vertices);
+
+	// Restore capability pins overwritten by the mass update.
+	cap_pin_vertices(cap_state, physics_vertices);
+	for (const CapabilitySpec *cap : active_capabilities) {
+		if (cap->mesh_pinned_vertices != nullptr) {
+			LocalVector<int> indices;
+			cap->mesh_pinned_vertices(cap_state, mesh_to_physics, indices);
+			for (int index : indices) {
+				physics_vertices[index].mInvMass = 0;
+			}
+		}
+	}
 }
 
 void JoltSoftBody3D::_update_pressure() {
@@ -369,7 +696,7 @@ void JoltSoftBody3D::_update_group_filter() {
 }
 
 void JoltSoftBody3D::_try_rebuild() {
-	if (space != nullptr) {
+	if (space != nullptr && !cap_faulted) {
 		_reset_space();
 	}
 }
@@ -379,10 +706,16 @@ void JoltSoftBody3D::_mesh_changed() {
 }
 
 void JoltSoftBody3D::_simulation_precision_changed() {
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		_try_rebuild();
+	}
 	wake_up();
 }
 
 void JoltSoftBody3D::_mass_changed() {
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		_try_rebuild();
+	}
 	_update_mass();
 	wake_up();
 }
@@ -398,6 +731,9 @@ void JoltSoftBody3D::_damping_changed() {
 }
 
 void JoltSoftBody3D::_pins_changed() {
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		_try_rebuild();
+	}
 	_update_mass();
 	wake_up();
 }
@@ -489,7 +825,42 @@ Vector3 JoltSoftBody3D::get_velocity_at_position(const Vector3 &p_position) cons
 }
 
 void JoltSoftBody3D::pre_step(float p_step) {
+	if (cap_faulted || !in_space()) {
+		return;
+	}
+#ifdef TESTS_ENABLED
+	++cap_state.test_counts.pre_step;
+#endif
 	_apply_environmental_forces(p_step);
+	for (const CapabilitySpec *cap : active_capabilities) {
+		if (cap->pre_step == nullptr) {
+			continue;
+		}
+#ifdef TESTS_ENABLED
+		if (test_skip_skin_call && String(cap->prefix) == "skin/") {
+			test_skip_skin_call = false;
+			continue;
+		}
+#endif
+		String error;
+		if (!cap->pre_step(cap_state, *jolt_body, p_step, space->get_temp_allocator(), &error)) {
+			ERR_PRINT(error);
+			cap_faulted = true;
+			space->enqueue_faulted_soft_body(this);
+			return;
+		}
+	}
+}
+
+void JoltSoftBody3D::remove_faulted_live_body() {
+	if (!cap_faulted || !in_space()) {
+		return;
+	}
+	// Remove only the live body; retain creation parameters, context and snapshots.
+	// Never rebuild on this failure path.
+	_space_changing();
+	_remove_from_space();
+	_invalidate_prepared();
 }
 
 void JoltSoftBody3D::set_mesh(const RID &p_mesh) {
@@ -498,6 +869,27 @@ void JoltSoftBody3D::set_mesh(const RID &p_mesh) {
 	}
 
 	mesh = p_mesh;
+	cap_faulted = false;
+	binding_cache = BindingCache();
+	_invalidate_prepared();
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		JoltSoftBodyCapState scratch = cap_state;
+		BindingCache cache;
+		JPH::Ref<JPH::SoftBodySharedSettings> settings;
+		LocalVector<int> mapping;
+		String error;
+		if (!_prepare_capability(scratch, cache, settings, mapping, mass, simulation_precision, stiffness_coefficient, pinned_vertices, &error)) {
+			// Keep the accepted mesh/context and snapshots; discard the old live body.
+			_space_changing();
+			_remove_from_space();
+			ERR_PRINT(error);
+			return;
+		}
+		cap_state = scratch;
+		binding_cache = cache;
+		prepared_settings = settings;
+		mesh_to_physics = mapping;
+	}
 	_mesh_changed();
 }
 
@@ -522,7 +914,7 @@ void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse)
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 	JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 
-	physics_vertex.mVelocity += to_jolt(p_impulse) * physics_vertex.mInvMass;
+	physics_vertex.mVelocity += cap_local_vector(cap_state, *jolt_body, p_impulse) * physics_vertex.mInvMass;
 
 	_motion_changed();
 }
@@ -539,7 +931,7 @@ void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 
-	const JPH::Vec3 impulse = to_jolt(p_impulse) / physics_vertices.size();
+	const JPH::Vec3 impulse = cap_local_vector(cap_state, *jolt_body, p_impulse) / physics_vertices.size();
 
 	for (JPH::SoftBodyVertex &physics_vertex : physics_vertices) {
 		if (physics_vertex.mInvMass > 0.0f) {
@@ -553,7 +945,7 @@ void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 void JoltSoftBody3D::apply_central_force(const Vector3 &p_force) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply central force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
-	jolt_body->AddForce(to_jolt(p_force));
+	jolt_body->AddForce(cap_local_vector(cap_state, *jolt_body, p_force));
 
 	_motion_changed();
 }
@@ -583,7 +975,11 @@ void JoltSoftBody3D::set_is_sleep_allowed(bool p_enabled) {
 }
 
 void JoltSoftBody3D::set_simulation_precision(int p_precision) {
-	if (unlikely(simulation_precision == p_precision)) {
+	if (simulation_precision == p_precision) {
+		return;
+	}
+
+	if (!_typed_preflight(mass, p_precision, stiffness_coefficient, pinned_vertices)) {
 		return;
 	}
 
@@ -593,11 +989,14 @@ void JoltSoftBody3D::set_simulation_precision(int p_precision) {
 }
 
 void JoltSoftBody3D::set_mass(float p_mass) {
-	ERR_FAIL_COND(p_mass <= 0.0); // A mass of zero would result in infinite inverse mass.
-
-	if (unlikely(mass == p_mass)) {
+	if (mass == p_mass) {
 		return;
 	}
+
+	if (!_typed_preflight(p_mass, simulation_precision, stiffness_coefficient, pinned_vertices)) {
+		return;
+	}
+	ERR_FAIL_COND(p_mass <= 0.0); // A mass of zero would result in infinite inverse mass.
 
 	mass = p_mass;
 
@@ -609,7 +1008,17 @@ float JoltSoftBody3D::get_stiffness_coefficient() const {
 }
 
 void JoltSoftBody3D::set_stiffness_coefficient(float p_coefficient) {
+	if (stiffness_coefficient == p_coefficient) {
+		return;
+	}
+
+	if (!_typed_preflight(mass, simulation_precision, p_coefficient, pinned_vertices)) {
+		return;
+	}
 	stiffness_coefficient = CLAMP(p_coefficient, 0.0f, 1.0f);
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		_try_rebuild();
+	}
 }
 
 float JoltSoftBody3D::get_shrinking_factor() const {
@@ -701,6 +1110,10 @@ Transform3D JoltSoftBody3D::get_transform() const {
 }
 
 void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
+	ERR_FAIL_COND_MSG(cap_state.has("skin/config") && p_transform != Transform3D(), "SBREM-CONTEXT typed.transform: active skin uses world joint pose");
+	if (cap_state.has("skin/config")) {
+		return;
+	}
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to set transform for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
 	// For whatever reason this has to be interpreted as a relative global-space transform rather than an absolute one,
@@ -708,7 +1121,12 @@ void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 	// transform to be identity, while still expecting to stay in its original position.
 	//
 	// We also discard any scaling, since we have no way of scaling the actual edge lengths.
-	const JPH::Mat44 relative_transform = to_jolt(p_transform.orthonormalized());
+	const Transform3D delta = p_transform.orthonormalized();
+	const Transform3D old_com = to_godot(jolt_body->GetCenterOfMassTransform());
+	const Transform3D world_change(delta.basis, old_com.origin + delta.origin - delta.basis.xform(old_com.origin));
+	const JPH::Mat44 relative_transform = to_jolt(delta);
+	const Basis local_rotation = old_com.basis.transposed() * delta.basis * old_com.basis;
+	const JPH::Mat44 vertex_transform = SoftBodyCapValidation::mesh_family(cap_state) ? to_jolt(Transform3D(local_rotation, Vector3())) : relative_transform;
 
 	// The translation delta goes to the body's position to avoid vertices getting too far away from it.
 	JPH::BodyInterface &body_iface = space->get_body_iface();
@@ -719,10 +1137,15 @@ void JoltSoftBody3D::set_transform(const Transform3D &p_transform) {
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 
 	for (JPH::SoftBodyVertex &vertex : physics_vertices) {
-		vertex.mPosition = vertex.mPreviousPosition = relative_transform.Multiply3x3(vertex.mPosition);
+		vertex.mPosition = vertex.mPreviousPosition = vertex_transform.Multiply3x3(vertex.mPosition);
 		vertex.mVelocity = JPH::Vec3::sZero();
 	}
 
+	reference_transform = world_change * reference_transform;
+	if (binding_cache.mesh.is_valid()) {
+		binding_cache.frame = world_change * binding_cache.frame;
+	}
+	_invalidate_prepared();
 	_transform_changed();
 }
 
@@ -783,12 +1206,14 @@ void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandl
 
 	const int mesh_vertex_count = mesh_to_physics.size();
 	const JPH::RVec3 body_position = jolt_body->GetCenterOfMassPosition();
+	const auto frame = jolt_body->GetCenterOfMassTransform();
+	const bool local_frame = SoftBodyCapValidation::mesh_family(cap_state);
 
 	for (int i = 0; i < mesh_vertex_count; ++i) {
 		const int physics_index = mesh_to_physics[i];
 		if (physics_index >= 0) {
-			const Vector3 vertex = to_godot(body_position + physics_vertices[(size_t)physics_index].mPosition);
-			const Vector3 normal = normals[(uint32_t)physics_index];
+			const Vector3 vertex = local_frame ? to_godot(frame * physics_vertices[(size_t)physics_index].mPosition) : to_godot(body_position + physics_vertices[(size_t)physics_index].mPosition);
+			const Vector3 normal = local_frame ? to_godot(frame.Multiply3x3(to_jolt(normals[(uint32_t)physics_index]))) : normals[(uint32_t)physics_index];
 
 			p_rendering_server_handler->set_vertex(i, vertex);
 			p_rendering_server_handler->set_normal(i, normal);
@@ -809,7 +1234,7 @@ Vector3 JoltSoftBody3D::get_vertex_position(int p_index) {
 	const JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 	const JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 
-	return to_godot(jolt_body->GetCenterOfMassPosition() + physics_vertex.mPosition);
+	return SoftBodyCapValidation::mesh_family(cap_state) ? to_godot(jolt_body->GetCenterOfMassTransform() * physics_vertex.mPosition) : to_godot(jolt_body->GetCenterOfMassPosition() + physics_vertex.mPosition);
 }
 
 void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position) {
@@ -824,30 +1249,159 @@ void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position)
 	JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 
 	const JPH::RVec3 center_of_mass = jolt_body->GetCenterOfMassPosition();
-	physics_vertex.mPosition = JPH::Vec3(to_jolt_r(p_position) - center_of_mass);
+	physics_vertex.mPosition = SoftBodyCapValidation::mesh_family(cap_state) ? JPH::Vec3(jolt_body->GetCenterOfMassTransform().InversedRotationTranslation() * to_jolt_r(p_position)) : JPH::Vec3(to_jolt_r(p_position) - center_of_mass);
 
 	_vertices_changed();
 }
 
+namespace {
+
+const CapProperty *find_cap_property(const CapabilitySpec &p_cap, const StringName &p_name) {
+	for (const CapProperty &candidate : p_cap.props) {
+		if (p_name == StringName(candidate.name)) {
+			return &candidate;
+		}
+	}
+
+	return nullptr;
+}
+
+} // namespace
+
+bool JoltSoftBody3D::set_extra_property(const StringName &p_name, const Variant &p_value) {
+	String error;
+	JoltSoftBodyCapState scratch = cap_state;
+	const CapStoreResult result = cap_state_store(scratch, p_name, p_value, &error);
+	if (result == CapStoreResult::UNKNOWN_PREFIX) {
+		return false;
+	}
+	ERR_FAIL_COND_V_MSG(result == CapStoreResult::REJECTED, false, error);
+	if (result == CapStoreResult::UNCHANGED) {
+		return true;
+	}
+	const CapabilitySpec *cap = find_capability(p_name);
+	const CapProperty *prop = find_cap_property(*cap, p_name);
+	if (!prop->rebuild_on_write) {
+		if (p_name == StringName("skin/pose")) {
+			const Transform3D frame = in_space() ? to_godot(jolt_body->GetCenterOfMassTransform()) : cap_state.bind_transform;
+			ERR_FAIL_COND_V_MSG(!SoftBodyCapValidation::skin_targets(scratch, scratch.get("skin/pose"), frame, "write", &error), false, error);
+		}
+		cap_state = scratch;
+		if (!cap_faulted) {
+			wake_up();
+		}
+		return true;
+	}
+	const bool transition = SoftBodyCapValidation::new_path(cap_state) || SoftBodyCapValidation::new_path(scratch);
+	if (transition) {
+		BindingCache cache = binding_cache;
+		JPH::Ref<JPH::SoftBodySharedSettings> settings;
+		LocalVector<int> mapping;
+		ERR_FAIL_COND_V_MSG(!_prepare_capability(scratch, cache, settings, mapping, mass, simulation_precision, stiffness_coefficient, pinned_vertices, &error), false, error);
+		if (!SoftBodyCapValidation::mesh_family(scratch)) {
+			cache = BindingCache();
+		}
+		binding_cache = cache;
+		prepared_settings = settings;
+		mesh_to_physics = mapping;
+	}
+	cap_state = scratch;
+	cap_collect_active(cap_state, active_capabilities);
+	cap_faulted = false;
+	_try_rebuild();
+	return true;
+}
+
+Variant JoltSoftBody3D::get_extra_property(const StringName &p_name) const {
+	const CapabilitySpec *cap = find_capability(p_name);
+	if (cap == nullptr) {
+		return Variant();
+	}
+
+	const CapProperty *prop = find_cap_property(*cap, p_name);
+	if (prop == nullptr || cap->get == nullptr) {
+		return Variant();
+	}
+
+	// Guard only live reads; stored keys must remain readable without a body.
+	if (prop->live_read) {
+		ERR_FAIL_COND_V_MSG(!in_space(), Variant(), vformat("Failed to read '%s' of '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", String(p_name), to_string()));
+
+		return cap->get(cap_state, jolt_body, p_name);
+	}
+
+	return SoftBodyCapValidation::snapshot(cap->get(cap_state, nullptr, p_name));
+}
+
+TypedArray<Dictionary> JoltSoftBody3D::get_extra_property_list() const {
+	TypedArray<Dictionary> list;
+
+	// Discovery must return every capability key, including keys not yet set.
+	for (const CapabilitySpec *cap : all_capabilities()) {
+		for (const CapProperty &prop : cap->props) {
+			Dictionary entry;
+			entry["name"] = String(prop.name);
+			entry["type"] = prop.type;
+			entry["usage"] = (prop.live_read || !prop.stored) ? (uint32_t)(PROPERTY_USAGE_DEFAULT & ~PROPERTY_USAGE_STORAGE) : (uint32_t)PROPERTY_USAGE_DEFAULT;
+			list.push_back(entry);
+		}
+	}
+
+	return list;
+}
+
 void JoltSoftBody3D::pin_vertex(int p_index) {
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		ERR_FAIL_COND_MSG(cap_state.has("volume/config"), vformat("SBREM-CONFLICT typed.pin[%d]: volume pins belong to volume/config.fixed", p_index));
+		ERR_FAIL_COND_MSG(cap_state.has("rod/config"), vformat("SBREM-CONFLICT typed.pin[%d]: rod pins belong to rod/config.fixed", p_index));
+		if (pinned_vertices.has(p_index)) {
+			return;
+		}
+		HashSet<int> candidate(pinned_vertices);
+		candidate.insert(p_index);
+		if (!_typed_preflight(mass, simulation_precision, stiffness_coefficient, candidate)) {
+			return;
+		}
+	}
 	pinned_vertices.insert(p_index);
 
 	_pins_changed();
 }
 
 void JoltSoftBody3D::unpin_vertex(int p_index) {
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		if (!pinned_vertices.has(p_index)) {
+			return;
+		}
+		HashSet<int> candidate(pinned_vertices);
+		candidate.erase(p_index);
+		if (!_typed_preflight(mass, simulation_precision, stiffness_coefficient, candidate)) {
+			return;
+		}
+	}
 	pinned_vertices.erase(p_index);
 
 	_pins_changed();
 }
 
 void JoltSoftBody3D::unpin_all_vertices() {
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		if (pinned_vertices.is_empty()) {
+			return;
+		}
+		if (!_typed_preflight(mass, simulation_precision, stiffness_coefficient, HashSet<int>())) {
+			return;
+		}
+	}
 	pinned_vertices.clear();
 
 	_pins_changed();
 }
 
 bool JoltSoftBody3D::is_vertex_pinned(int p_index) const {
+	if (SoftBodyCapValidation::new_path(cap_state)) {
+		return pinned_vertices.has(p_index);
+	}
 	ERR_FAIL_COND_V_MSG(!in_space(), false, vformat("Failed retrieve pin status of point for '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
 	ERR_FAIL_INDEX_V(p_index, (int)mesh_to_physics.size(), false);

@@ -33,6 +33,7 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
+#include "core/variant/typed_array.h"
 #include "servers/physics_3d/physics_server_3d.h"
 
 #define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread && !(doing_sync.is_set() && Thread::is_main_thread()))
@@ -338,6 +339,10 @@ public:
 	FUNC1(soft_body_remove_all_pinned_points, RID);
 	FUNC3(soft_body_pin_point, RID, int, bool);
 	FUNC2RC(bool, soft_body_is_point_pinned, RID, int);
+
+	FUNC3R(bool, soft_body_set_extra_property, RID, const StringName &, const Variant &);
+	FUNC2RC(Variant, soft_body_get_extra_property, RID, const StringName &);
+	FUNC1RC(TypedArray<Dictionary>, soft_body_get_extra_property_list, RID);
 
 	/* JOINT API */
 
