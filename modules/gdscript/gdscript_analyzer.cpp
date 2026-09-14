@@ -2047,10 +2047,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 
 #endif //DEBUG_ENABLED
 
-	if (!p_function->return_type_constraint.is_hard_type() && p_function->body->suite_type.is_set()) {
-		// Use the suite inferred type if return isn't explicitly set.
-		p_function->return_type_constraint = p_function->body->suite_type;
-	} else if (p_function->return_type_constraint.is_hard_type() && (p_function->return_type_constraint.kind != GDScriptParser::DataType::BUILTIN || p_function->return_type_constraint.builtin_type != Variant::NIL)) {
+	if (p_function->return_type_constraint.is_hard_type() && (p_function->return_type_constraint.kind != GDScriptParser::DataType::BUILTIN || p_function->return_type_constraint.builtin_type != Variant::NIL)) {
 		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
 			push_error(R"(Not all code paths return a value.)", p_function);
 		}
@@ -2070,49 +2067,6 @@ void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite, bool p_
 
 		resolve_node(stmt, p_is_root);
 		resolve_pending_lambda_bodies();
-
-		// Decide the suite type. TODO: This could probably be simplified by doing this in `resolve_return` and applying it directly to `current_function`.
-
-		GDScriptParser::DataType statement_type;
-		switch (stmt->type) {
-			case GDScriptParser::Node::IF: {
-				if (GDScriptParser::SuiteNode *sub_suite = static_cast<GDScriptParser::IfNode *>(stmt)->true_block; sub_suite) {
-					statement_type = sub_suite->suite_type;
-					break;
-				}
-				continue;
-			}
-			case GDScriptParser::Node::FOR: {
-				if (GDScriptParser::SuiteNode *sub_suite = static_cast<GDScriptParser::ForNode *>(stmt)->loop; sub_suite) {
-					statement_type = sub_suite->suite_type;
-					break;
-				}
-				continue;
-			}
-			case GDScriptParser::Node::WHILE: {
-				if (GDScriptParser::SuiteNode *sub_suite = static_cast<GDScriptParser::WhileNode *>(stmt)->loop; sub_suite) {
-					statement_type = sub_suite->suite_type;
-					break;
-				}
-				continue;
-			}
-			case GDScriptParser::Node::RETURN: {
-				statement_type = static_cast<GDScriptParser::ReturnNode *>(stmt)->return_type;
-			} break;
-			default:
-				continue;
-		}
-
-		// Use return or nested suite type as this suite type.
-		if (p_suite->suite_type.is_set() && (p_suite->suite_type != statement_type)) {
-			// Mixed types.
-			// TODO: This could use the common supertype instead.
-			p_suite->suite_type.kind = GDScriptParser::DataType::VARIANT;
-			p_suite->suite_type.type_source = GDScriptParser::DataType::UNDETECTED;
-		} else {
-			p_suite->suite_type = statement_type;
-			p_suite->suite_type.type_source = GDScriptParser::DataType::INFERRED;
-		}
 	}
 #ifdef DEBUG_ENABLED
 	for (const GDScriptParser::SuiteNode::Local &local : p_suite->locals) {
