@@ -72,8 +72,8 @@ private:
 public:
 	// Returns a pointer to a Variant holding a compatible value.
 	// Modifies and uses r_tmp_variant if conversions are needed.
-	_FORCE_INLINE_ const Variant *validate(const Variant &p_variant, Variant &r_tmp_variant, const char *p_operation = "use") const {
-		return _internal_validate(p_variant, r_tmp_variant, p_operation, true);
+	_FORCE_INLINE_ const Variant *validate(const Variant &p_variant, Variant &r_tmp_variant, const char *p_operation = "use", bool p_output_errors = true) const {
+		return _internal_validate(p_variant, r_tmp_variant, p_operation, p_output_errors);
 	}
 
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
