@@ -164,6 +164,13 @@ JoltJobSystem::JoltJobSystem() :
 	jobs.Init(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsJobs);
 }
 
+JoltJobSystem::~JoltJobSystem() {
+	// completed_head is process-global, but jobs belongs to this instance.
+	// Reclaim before destruction to prevent foreign pointers corrupting the next
+	// instance's free list and causing invalid task IDs or infinite reclaim loops.
+	_reclaim_jobs();
+}
+
 void JoltJobSystem::pre_step() {
 	// Nothing to do.
 }
