@@ -173,6 +173,8 @@ env_jolt.add_source_files(module_obj, "misc/*.cpp")
 env_jolt.add_source_files(module_obj, "objects/*.cpp")
 env_jolt.add_source_files(module_obj, "shapes/*.cpp")
 env_jolt.add_source_files(module_obj, "spaces/*.cpp")
+if env["tests"]:
+    env_jolt.add_source_files(module_obj, "tests/*.cpp")
 env.modules_sources += module_obj
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

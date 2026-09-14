@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  jolt_job_system.h                                                     */
+/*  test_jolt_job_system.cpp                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,77 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "../spaces/jolt_job_system.h"
 
-#include "core/os/spin_lock.h"
-#include "core/templates/hash_map.h"
+#include "core/object/ref_counted.h"
+#include "core/object/worker_thread_pool.h"
+#include "core/os/os.h"
+#include "core/os/semaphore.h"
+#include "tests/test_macros.h"
 
-#include <Jolt/Jolt.h>
+namespace TestJoltJobSystem {
 
-#include <Jolt/Core/FixedSizeFreeList.h>
-#include <Jolt/Core/JobSystemWithBarrier.h>
+void test_completed_job_reclamation(bool p_post_step) {
+	Ref<RefCounted> captured;
+	captured.instantiate();
+	CHECK(captured->get_reference_count() == 1);
 
-#include <atomic>
+	{
+		JoltJobSystem system;
+		JPH::JobSystem &api = system;
+		WorkerThreadPool *pool = WorkerThreadPool::get_singleton();
+		WorkerThreadPool::TaskID task_id = WorkerThreadPool::INVALID_TASK_ID;
+		Semaphore started;
+		bool ran = false;
+		JPH::JobHandle handle = api.CreateJob("Jolt job reclamation test", JPH::Color::sBlue, [captured, pool, &task_id, &started, &ran]() {
+			ran = captured.is_valid();
+			task_id = pool->get_caller_task_id();
+			started.post();
+		});
+		started.wait();
 
-class JoltJobSystem final : public JPH::JobSystemWithBarrier {
-	class Job : public JPH::JobSystem::Job {
-		inline static std::atomic<Job *> completed_head = nullptr;
+		// Check completion without consuming the task ID. Job's destructor waits on it.
+		if (pool->get_thread_count() > 0) {
+			while (!pool->is_task_completed(task_id)) {
+				OS::get_singleton()->delay_usec(100);
+			}
+		}
+		CHECK(ran);
+		CHECK(handle.IsDone());
 
-#ifdef DEBUG_ENABLED
-		const char *name = nullptr;
-#endif
+		// Keep the last handle through post_step(), then release it after workers finish.
+		system.post_step();
+		handle = JPH::JobHandle();
+		CHECK(captured->get_reference_count() == 2);
 
-		int64_t task_id = -1;
+		if (p_post_step) {
+			system.post_step();
+			CHECK(captured->get_reference_count() == 1);
+		}
+	}
 
-		std::atomic<Job *> completed_next = nullptr;
+	CHECK(captured->get_reference_count() == 1);
+}
 
-		static void _execute(void *p_user_data);
-
-	public:
-		Job(const char *p_name, JPH::ColorArg p_color, JPH::JobSystem *p_job_system, const JPH::JobSystem::JobFunction &p_job_function, JPH::uint32 p_dependency_count);
-		Job(const Job &p_other) = delete;
-		Job(Job &&p_other) = delete;
-		~Job();
-
-		static void push_completed(Job *p_job);
-		static Job *pop_completed();
-
-		void queue();
-
-		Job &operator=(const Job &p_other) = delete;
-		Job &operator=(Job &&p_other) = delete;
-	};
-
-#ifdef DEBUG_ENABLED
-	// We use `const void*` here to avoid the cost of hashing the actual string, since the job names
-	// are always literals and as such will point to the same address every time.
-	inline static HashMap<const void *, uint64_t> timings_by_job;
-
-	// TODO: Check whether the usage of SpinLock is justified or if this should be a mutex instead.
-	inline static SpinLock timings_lock;
-#endif
-
-	JPH::FixedSizeFreeList<Job> jobs;
-
-	int thread_count = 0;
-
-	virtual int GetMaxConcurrency() const override;
-
-	virtual JPH::JobHandle CreateJob(const char *p_name, JPH::ColorArg p_color, const JPH::JobSystem::JobFunction &p_job_function, JPH::uint32 p_dependency_count = 0) override;
-	virtual void QueueJob(JPH::JobSystem::Job *p_job) override;
-	virtual void QueueJobs(JPH::JobSystem::Job **p_jobs, JPH::uint p_job_count) override;
-	virtual void FreeJob(JPH::JobSystem::Job *p_job) override;
-
-	void _reclaim_jobs();
-
-public:
-	JoltJobSystem();
-	~JoltJobSystem();
-
-	void pre_step();
-	void post_step();
-
-#ifdef DEBUG_ENABLED
-	void flush_timings();
-#endif
-};
+} // namespace TestJoltJobSystem

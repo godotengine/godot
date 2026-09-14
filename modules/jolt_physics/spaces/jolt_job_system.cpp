@@ -164,6 +164,12 @@ JoltJobSystem::JoltJobSystem() :
 	jobs.Init(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsJobs);
 }
 
+JoltJobSystem::~JoltJobSystem() {
+	// Workers must finish before destruction. Drain the shared completed list
+	// before freeing this instance's job pool.
+	_reclaim_jobs();
+}
+
 void JoltJobSystem::pre_step() {
 	// Nothing to do.
 }
