@@ -85,6 +85,7 @@ private:
 		Ref<Texture2D> folded_arrow_mirrored;
 
 		int h_separation = 0;
+		int icon_max_width = 0;
 	} theme_cache;
 
 	Ref<StyleBox> _get_title_style() const;
@@ -104,6 +105,7 @@ protected:
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 	virtual bool has_point(const Point2 &p_point) const override;
 	void _notification(int p_what);
+	Size2 _fit_icon_size(const Size2 &p_size) const;
 	static void _bind_methods();
 
 public:
