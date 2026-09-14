@@ -35,13 +35,14 @@
 # Nguyen Ngoc Thai <thaidev247@gmail.com>, 2026.
 # Nam Namcuteee <namcuteeenam@gmail.com>, 2026.
 # Khắc Vinh Vũ <vukhacvinh31@gmail.com>, 2026.
+# Lý Hoàng Bách <bachmeme1212@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-06 10:05+0000\n"
-"Last-Translator: Khắc Vinh Vũ <vukhacvinh31@gmail.com>\n"
+"PO-Revision-Date: 2026-06-15 19:02+0000\n"
+"Last-Translator: Lý Hoàng Bách <bachmeme1212@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/vi/>\n"
 "Language: vi\n"
@@ -49,7 +50,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.17.1\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "Application"
 msgstr "Ứng dụng"
@@ -61,7 +62,7 @@ msgid "Name"
 msgstr "Tên"
 
 msgid "Name Localized"
-msgstr "Tên được bản địa hóa"
+msgstr "Tên theo ngôn ngữ hiển thị"
 
 msgid "Description"
 msgstr "Mô tả"
@@ -73,34 +74,34 @@ msgid "Run"
 msgstr "Chạy"
 
 msgid "Main Scene"
-msgstr "Cảnh chính"
+msgstr "Scene chính"
 
 msgid "Disable stdout"
-msgstr "Tắt stdout"
+msgstr "Tắt luồng xuất chuẩn"
 
 msgid "Disable stderr"
-msgstr "Tắt stderr"
+msgstr "Tắt luồng xuất lỗi chuẩn"
 
 msgid "Print Header"
-msgstr "Tiêu đê in"
+msgstr "In tiêu đề console"
 
 msgid "Enable Alt Space Menu"
-msgstr "Bật Menu không gian Alt"
+msgstr "Bật Menu phím Alt Space"
 
 msgid "Use Hidden Project Data Directory"
-msgstr "Dùng thư mục dữ liệu ẩn của dự án"
+msgstr "Dùng thư mục ẩn chứa dữ liệu của dự án"
 
 msgid "Use Custom User Dir"
-msgstr "Sử dụng thư mục người dùng tùy chỉnh"
+msgstr "Dùng thư mục người dùng tùy chỉnh"
 
 msgid "Custom User Dir Name"
 msgstr "Tên thư mục người dùng tùy chỉnh"
 
 msgid "Project Settings Override"
-msgstr "Ghi đè thiết đặt dự án"
+msgstr "Ghi đè cài đặt dự án"
 
 msgid "Disable Project Settings Override"
-msgstr "Vô hiệu Hoá Ghi đè Thiết đặt Dự án"
+msgstr "Vô hiệu Hóa Ghi đè cài đặt Dự án"
 
 msgid "Main Loop Type"
 msgstr "Loại vòng lặp chính"
@@ -118,10 +119,13 @@ msgid "General"
 msgstr "Tổng quan"
 
 msgid "Accessibility Support"
-msgstr "Trình soạn tập lệnh"
+msgstr "Hỗ trợ tiếp cận"
 
 msgid "Updates per Second"
-msgstr "Cập nhật mỗi giây"
+msgstr "Cập nhật mỗi Giây"
+
+msgid "Accessibility Driver"
+msgstr "Driver hỗ trợ tiếp cận"
 
 msgid "Display"
 msgstr "Hiển thị"
@@ -139,16 +143,16 @@ msgid "Viewport Height"
 msgstr "Chiều cao khung nhìn"
 
 msgid "Mode"
-msgstr "Chế đ"
+msgstr "Chế độ"
 
 msgid "Initial Position Type"
-msgstr "Vị trí toàn cục"
+msgstr "Kiểu vị trí ban đầu"
 
 msgid "Initial Position"
-msgstr "Vị trí toàn cục"
+msgstr "Vị trí ban đầu"
 
 msgid "Initial Screen"
-msgstr "Khởi tạo"
+msgstr "Màn hình ban đầu"
 
 msgid "Resizable"
 msgstr "Đổi kích cỡ được"
@@ -183,6 +187,12 @@ msgstr "Ghi đè chiều rộng cửa sổ"
 msgid "Window Height Override"
 msgstr "Ghi đè chiều cao cửa sổ"
 
+msgid "HDR"
+msgstr "HDR"
+
+msgid "Request HDR Output"
+msgstr "Yêu cầu đầu ra HDR"
+
 msgid "Energy Saving"
 msgstr "tiết kiệm năng lượng"
 
@@ -195,6 +205,9 @@ msgstr "Hoạt hình"
 msgid "Warnings"
 msgstr "Cảnh báo"
 
+msgid "Check Invalid Skeleton Modifier Node Paths"
+msgstr "Kiểm tra các đường dẫn Node Skeleton Modifier không hợp lệ"
+
 msgid "Check Invalid Track Paths"
 msgstr "Kiểm tra Đường dẫn theo dõi không hợp lệ"
 
@@ -203,6 +216,9 @@ msgstr "Kiểm tra loại nội suy góc xung đột"
 
 msgid "Compatibility"
 msgstr "Chế độ Tương thích"
+
+msgid "Default Parent Skeleton in Mesh Instance 3D"
+msgstr "Skeleton cha mặc định trong Mesh Instance 3D"
 
 msgid "Audio"
 msgstr "Âm thanh"
@@ -231,6 +247,9 @@ msgstr "iOS"
 msgid "Session Category"
 msgstr "Thể loại phiên"
 
+msgid "Mix with Others"
+msgstr "Trộn với Những Âm thanh Khác"
+
 msgid "Subwindows"
 msgstr "Cửa sổ phụ"
 
@@ -238,19 +257,19 @@ msgid "Embed Subwindows"
 msgstr "Nhúng cửa sổ phụ"
 
 msgid "Frame Pacing"
-msgstr "Tuỳ chọn bổ sung:"
+msgstr "Đồng bộ nhịp độ khung hình"
 
 msgid "Android"
 msgstr "Android"
 
 msgid "Enable Frame Pacing"
-msgstr "Xem Khung hình Liên tiếp"
+msgstr "Bật đồng bộ nhịp độ khung hình"
 
 msgid "Swappy Mode"
-msgstr "Chế độ chọn"
+msgstr "Chế độ Swappy"
 
 msgid "Physics"
-msgstr "Vật lí"
+msgstr "Vật lý"
 
 msgid "2D"
 msgstr "2D"
@@ -265,19 +284,19 @@ msgid "Stretch"
 msgstr "Kéo giãn"
 
 msgid "Aspect"
-msgstr "Tỉ lệ"
+msgstr "Tỷ lệ khung hình"
 
 msgid "Scale"
-msgstr "Tỷ lệ"
+msgstr "Tỷ lệ thu phóng"
 
 msgid "Scale Mode"
-msgstr "Chế độ tỷ lệ"
+msgstr "Chế độ thu phóng"
 
 msgid "Debug"
 msgstr "Gỡ lỗi"
 
 msgid "Settings"
-msgstr "Thiết đặt"
+msgstr "Cài đặt"
 
 msgid "Profiler"
 msgstr "Người lập hồ sơ"
@@ -312,23 +331,59 @@ msgstr "Ựa"
 msgid "Gzip"
 msgstr "Gzip"
 
+msgid "Crash Handler"
+msgstr "Trình Xử lý Sự cố"
+
 msgid "Message"
 msgstr "Thông điệp"
 
 msgid "Rendering"
 msgstr "Kết xuất"
 
+msgid "Occlusion Culling"
+msgstr "Loại bỏ Vật thể bị Che khuất"
+
+msgid "BVH Build Quality"
+msgstr "Chất lượng Xây dựng BVH"
+
+msgid "Jitter Projection"
+msgstr "Phép chiếu Nhiễu loạn"
+
+msgid "Internationalization"
+msgstr "Quốc tế hóa"
+
 msgid "Force Right to Left Layout Direction"
 msgstr "Bắt buộc hướng bố cục từ phải sang trái"
 
+msgid "Root Node Layout Direction"
+msgstr "Hướng Bố trí Root Node"
+
+msgid "Root Node Auto Translate"
+msgstr "Tự động Dịch Root Node"
+
 msgid "GUI"
 msgstr "GUI"
+
+msgid "Timers"
+msgstr "Bộ đếm thời gian"
 
 msgid "Incremental Search Max Interval Msec"
 msgstr "Tìm kiếm gia tăng Tối đa Interval Msec"
 
 msgid "Tooltip Delay (sec)"
 msgstr "Trì hoãn chú giải công cụ (giây)"
+
+msgid "Common"
+msgstr "Chung"
+
+msgid "Drag Threshold"
+msgstr "Ngưỡng Kéo"
+
+msgid "Snap Controls to Pixels"
+msgstr "Khớp các Control vào Pixels"
+
+msgid "Show Focus State on Pointer Event"
+msgstr "Hiện Tiêu điểm khi Tương tác Con trỏ"
 
 msgid "Fonts"
 msgstr "Phông chữ"
@@ -341,6 +396,12 @@ msgstr "Sử dụng Oversampling"
 
 msgid "Rendering Device"
 msgstr "Thiết bị Kết xuất"
+
+msgid "V-Sync"
+msgstr "V-Sync"
+
+msgid "Frame Queue Size"
+msgstr "Kích thước Hàng đợi Khung hình"
 
 msgid "Block Size (KB)"
 msgstr "Kích cỡ Khối (KB)"

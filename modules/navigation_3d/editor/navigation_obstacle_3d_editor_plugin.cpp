@@ -869,6 +869,7 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 	button_clear->set_toggle_mode(true);
 
 	button_clear_dialog = memnew(ConfirmationDialog);
+	button_clear_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	button_clear_dialog->set_title(TTR("Please Confirm..."));
 	button_clear_dialog->set_text(TTR("Remove all vertices?"));
 	button_clear_dialog->connect(SceneStringName(confirmed), callable_mp(NavigationObstacle3DEditorPlugin::singleton, &NavigationObstacle3DEditorPlugin::action_clear_vertices));

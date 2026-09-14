@@ -321,6 +321,12 @@ public:
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override;
 
 	virtual RenderingServerTypes::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override;
+
+	virtual RID mesh_surface_get_vertex_buffer_rd_rid(RID p_mesh, int p_surface) const override { return RID(); }
+	virtual RID mesh_surface_get_attribute_buffer_rd_rid(RID p_mesh, int p_surface) const override { return RID(); }
+	virtual RID mesh_surface_get_skin_buffer_rd_rid(RID p_mesh, int p_surface) const override { return RID(); }
+	virtual RID mesh_surface_get_index_buffer_rd_rid(RID p_mesh, int p_surface) const override { return RID(); }
+
 	virtual int mesh_get_surface_count(RID p_mesh) const override;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) override;

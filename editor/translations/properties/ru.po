@@ -209,13 +209,14 @@
 # XZY <XZY@xyecoc.com>, 2026.
 # MariyaShikunova <mariia@basealt.ru>, 2026.
 # Anatoly Zubarev <padamass@mail.ru>, 2026.
+# kureca <deviantart189@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-01 05:40+0000\n"
-"Last-Translator: Anatoly Zubarev <padamass@mail.ru>\n"
+"PO-Revision-Date: 2026-05-28 22:01+0000\n"
+"Last-Translator: kureca <deviantart189@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -224,7 +225,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.17.1\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -358,6 +359,12 @@ msgstr "Переопределение ширины окна"
 msgid "Window Height Override"
 msgstr "Переопределение высоты окна"
 
+msgid "HDR"
+msgstr "HDR"
+
+msgid "Request HDR Output"
+msgstr "Запрос HDR-вывода"
+
 msgid "Energy Saving"
 msgstr "Энергосбережение"
 
@@ -369,6 +376,9 @@ msgstr "Анимация"
 
 msgid "Warnings"
 msgstr "Предупреждения"
+
+msgid "Check Invalid Skeleton Modifier Node Paths"
+msgstr "Проверка неверных путей узлов модификатора скелета"
 
 msgid "Check Invalid Track Paths"
 msgstr "Проверить на неверные пути к дорожкам"
@@ -741,6 +751,9 @@ msgstr "Эмулировать мышь сенсорным вводом"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Эмулировать сенсорный ввод мышью"
+
+msgid "Ignore Joypad on Unfocused Application"
+msgstr "Игнорировать геймпад при отсутствии фокуса у приложения"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "Поведение при нажатии (устаревшее)"

@@ -36,7 +36,7 @@ TEST_FORCE_LINK(test_audio_stream_wav)
 #include "core/io/marshalls.h"
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
-#include "scene/resources/audio_stream_wav.h"
+#include "scene/resources/audio/audio_stream_wav.h"
 #include "tests/test_utils.h"
 
 namespace TestAudioStreamWAV {
@@ -203,7 +203,6 @@ TEST_CASE("[Audio][AudioStreamWAV] Default values") {
 	CHECK(stream->get_length() == 0);
 	CHECK(stream->is_monophonic() == false);
 	CHECK(stream->get_data() == Vector<uint8_t>{});
-	CHECK(stream->get_stream_name() == "");
 }
 
 TEST_CASE("[Audio][AudioStreamWAV] Save empty file") {

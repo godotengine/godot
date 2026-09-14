@@ -200,7 +200,11 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 	mp3s.instantiate();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
 
-	int success = drmp3_init_memory(&mp3s->mp3d, data.ptr(), data_len, (drmp3_allocation_callbacks *)&dr_alloc_calls);
+	int success = drmp3_init_memory(&mp3s->mp3d, data.ptr(), data.size(), (drmp3_allocation_callbacks *)&dr_alloc_calls);
+
+	if (success && !seek_table.is_empty()) {
+		drmp3_bind_seek_table(&mp3s->mp3d, seek_table.size(), seek_table.ptr());
+	}
 
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
@@ -211,33 +215,33 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 	return mp3s;
 }
 
-String AudioStreamMP3::get_stream_name() const {
-	return ""; //return stream_name;
-}
-
-void AudioStreamMP3::clear_data() {
-	data.clear();
-}
-
 void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
-	int src_data_len = p_data.size();
-
 	drmp3 *mp3d = memnew(drmp3);
-	int success = drmp3_init_memory(mp3d, p_data.ptr(), src_data_len, (drmp3_allocation_callbacks *)&dr_alloc_calls);
+	int success = drmp3_init_memory(mp3d, p_data.ptr(), p_data.size(), (drmp3_allocation_callbacks *)&dr_alloc_calls);
 	if (!success || mp3d->sampleRate == 0) {
 		memdelete(mp3d);
 		ERR_FAIL_MSG("Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
 	}
 
+	drmp3_uint64 pcm_frames;
+	drmp3_uint64 mp3_frames;
+	drmp3_get_mp3_and_pcm_frame_count(mp3d, &mp3_frames, &pcm_frames);
+
 	channels = mp3d->channels;
 	sample_rate = mp3d->sampleRate;
-	length = float(drmp3_get_pcm_frame_count(mp3d)) / (mp3d->sampleRate);
+	length = float(pcm_frames) / (mp3d->sampleRate);
+
+	// Initialize seek table.
+	drmp3_uint32 seek_count = mp3_frames / 20;
+	seek_table.resize(seek_count);
+	if (!drmp3_calculate_seek_points(mp3d, &seek_count, seek_table.ptr())) {
+		seek_table.reset();
+	}
 
 	drmp3_uninit(mp3d);
 	memdelete(mp3d);
 
 	data = p_data;
-	data_len = src_data_len;
 }
 
 Vector<uint8_t> AudioStreamMP3::get_data() const {
@@ -356,11 +360,4 @@ void AudioStreamMP3::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,1,or_greater"), "set_bar_beats", "get_bar_beats");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
-}
-
-AudioStreamMP3::AudioStreamMP3() {
-}
-
-AudioStreamMP3::~AudioStreamMP3() {
-	clear_data();
 }

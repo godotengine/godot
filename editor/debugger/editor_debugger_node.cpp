@@ -126,12 +126,12 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("remote_tree_select_requested", callable_mp(this, &EditorDebuggerNode::_remote_tree_select_requested).bind(id));
 	node->connect("remote_tree_clear_selection_requested", callable_mp(this, &EditorDebuggerNode::_remote_tree_clear_selection_requested).bind(id));
 	node->connect("remote_tree_updated", callable_mp(this, &EditorDebuggerNode::_remote_tree_updated).bind(id));
-	node->connect("remote_objects_updated", callable_mp(this, &EditorDebuggerNode::_remote_objects_updated).bind(id));
+	node->connect("remote_objects_updated", callable_mp(this, &EditorDebuggerNode::_remote_objects_updated));
 	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated).bind(id));
 	node->connect("remote_objects_requested", callable_mp(this, &EditorDebuggerNode::_remote_objects_requested).bind(id));
 	node->connect("set_breakpoint", callable_mp(this, &EditorDebuggerNode::_breakpoint_set_in_tree).bind(id));
 	node->connect("clear_breakpoints", callable_mp(this, &EditorDebuggerNode::_breakpoints_cleared_in_tree).bind(id));
-	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors));
+	node->connect("errors_cleared", callable_mp(this, &EditorDebuggerNode::_update_errors).bind(false));
 
 	if (tabs->get_tab_count() > 0) {
 		get_debugger(0)->clear_style();
@@ -236,13 +236,34 @@ void EditorDebuggerNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("breakpoints_cleared_in_tree", PropertyInfo(Variant::INT, "debugger")));
 }
 
+void EditorDebuggerNode::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->update_layout(p_layout, p_slot);
+	});
+}
+
 void EditorDebuggerNode::register_undo_redo(UndoRedo *p_undo_redo) {
 	p_undo_redo->set_method_notify_callback(_methods_changed, this);
 	p_undo_redo->set_property_notify_callback(_properties_changed, this);
 }
 
+void EditorDebuggerNode::set_current_debugger(int p_debugger) {
+	tabs->set_current_tab(p_debugger);
+}
+
 ScriptEditorDebugger *EditorDebuggerNode::get_debugger(int p_id) const {
 	return Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(p_id));
+}
+
+int EditorDebuggerNode::get_debugger_id(const ScriptEditorDebugger *p_debugger) {
+	for (int i = 0; i < tabs->get_tab_count(); i++) {
+		const ScriptEditorDebugger *debugger = Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(i));
+		if (p_debugger == debugger) {
+			return i;
+		}
+	}
+
+	ERR_FAIL_V(-1);
 }
 
 ScriptEditorDebugger *EditorDebuggerNode::get_previous_debugger() const {
@@ -293,10 +314,7 @@ Error EditorDebuggerNode::start(const String &p_uri) {
 	current_uri = p_uri;
 
 	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_uri.substr(0, p_uri.find("://") + 3)));
-	const Error err = server->start(p_uri);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(server->start(p_uri));
 	set_process(true);
 	EditorNode::get_log()->add_message("--- Debugging process started ---", EditorLog::MSG_TYPE_EDITOR);
 	return OK;
@@ -350,6 +368,8 @@ void EditorDebuggerNode::_notification(int p_what) {
 			if (tabs->get_tab_count() > 1) {
 				tabs->add_theme_style_override(SceneStringName(panel), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 			}
+
+			_update_errors(true);
 			_update_margins();
 
 			remote_scene_tree->update_icon_max_width();
@@ -441,7 +461,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 	}
 }
 
-void EditorDebuggerNode::_update_errors() {
+void EditorDebuggerNode::_update_errors(bool p_force) {
 	int error_count = 0;
 	int warning_count = 0;
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
@@ -449,7 +469,7 @@ void EditorDebuggerNode::_update_errors() {
 		warning_count += dbg->get_warning_count();
 	});
 
-	if (error_count != last_error_count || warning_count != last_warning_count) {
+	if (p_force || error_count != last_error_count || warning_count != last_warning_count) {
 		_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 			dbg->update_tabs();
 		});
@@ -520,14 +540,6 @@ void EditorDebuggerNode::_debugger_wants_stop(int p_id) {
 void EditorDebuggerNode::_debugger_changed(int p_tab) {
 	remote_scene_tree_wait = false;
 	inspect_edited_object_wait = false;
-
-	if (Object *robjs = InspectorDock::get_inspector_singleton()->get_edited_object()) {
-		if (Object::cast_to<EditorDebuggerRemoteObjects>(robjs)) {
-			// Clear inspected object, you can only inspect objects in selected debugger.
-			// Hopefully, in the future, we will have one inspector per debugger.
-			EditorNode::get_singleton()->push_item(nullptr);
-		}
-	}
 
 	if (ScriptEditorDebugger *prev_debug = get_previous_debugger()) {
 		prev_debug->clear_inspector();
@@ -712,14 +724,14 @@ void EditorDebuggerNode::request_remote_tree() {
 	get_current_debugger()->request_remote_tree();
 }
 
-void EditorDebuggerNode::set_remote_selection(const TypedArray<int64_t> &p_ids) {
+void EditorDebuggerNode::set_remote_selection(const TypedArray<int64_t> &p_ids, int p_debugger) {
 	stop_waiting_inspection();
-	get_current_debugger()->request_remote_objects(p_ids);
+	get_debugger(p_debugger)->request_remote_objects(p_ids);
 }
 
 void EditorDebuggerNode::clear_remote_tree_selection() {
 	remote_scene_tree->clear_selection();
-	get_current_debugger()->clear_inspector(remote_scene_tree_clear_msg);
+	get_debugger(remote_scene_tree->get_current_debugger())->clear_inspector();
 }
 
 void EditorDebuggerNode::stop_waiting_inspection() {
@@ -742,9 +754,7 @@ void EditorDebuggerNode::_remote_tree_clear_selection_requested(int p_debugger) 
 		return;
 	}
 	remote_scene_tree->clear_selection();
-	remote_scene_tree_clear_msg = false;
 	get_current_debugger()->clear_inspector(false);
-	remote_scene_tree_clear_msg = true;
 }
 
 void EditorDebuggerNode::_remote_tree_updated(int p_debugger) {
@@ -773,9 +783,9 @@ void EditorDebuggerNode::_remote_tree_button_pressed(Object *p_item, int p_colum
 	}
 }
 
-void EditorDebuggerNode::_remote_objects_updated(EditorDebuggerRemoteObjects *p_objs, int p_debugger) {
-	if (p_debugger == tabs->get_current_tab() && p_objs != InspectorDock::get_inspector_singleton()->get_edited_object()) {
-		EditorNode::get_singleton()->push_item(p_objs);
+void EditorDebuggerNode::_remote_objects_updated(EditorDebuggerRemoteObjects *p_remote_objects) {
+	if (p_remote_objects->debugger_id == tabs->get_current_tab() && p_remote_objects != InspectorDock::get_inspector_singleton()->get_edited_object()) {
+		EditorNode::get_singleton()->push_item(p_remote_objects);
 	}
 }
 
@@ -912,6 +922,12 @@ void EditorDebuggerNode::set_debug_mute_audio(bool p_mute) {
 
 bool EditorDebuggerNode::get_debug_mute_audio() const {
 	return debug_mute_audio;
+}
+
+void EditorDebuggerNode::set_debug_collisions(bool p_enabled) {
+	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
+		dbg->set_debug_collisions(p_enabled);
+	});
 }
 
 void EditorDebuggerNode::set_camera_override(CameraOverride p_override) {

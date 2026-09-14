@@ -47,9 +47,51 @@ float integrate_edge(vec3 p_proj0, vec3 p_proj1, vec3 p0, vec3 p1) {
 		// calculate the point on the line p0 to p1 that is closest to the vertex (origin)
 		vec3 half_point_t = p0 + normalize(p1 - p0) * dot(p0, normalize(p0 - p1));
 		vec3 half_point = normalize(half_point_t);
-		return integrate_edge_hill(p_proj0, half_point).y + integrate_edge_hill(half_point, p_proj1).y;
+
+		// Note: "integrate_edge_hill(p_proj0, half_point).y + integrate_edge_hill(half_point, p_proj1).y" code inlined to work around Adreno 650/660 shader compiler bug. Keep in sync with "servers/rendering/renderer_rd/shaders/area_lights_inc.glsl" and "integrate_edge_hill" method.
+		float theta_sintheta = 0.0;
+		{
+			float cosTheta = dot(p_proj0, half_point);
+
+			float x = cosTheta;
+			float y = abs(x);
+			float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+			float b = 3.45068 + (4.18814 + y) * y;
+			theta_sintheta = a / b;
+			if (x < 0.0) {
+				theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta; // original paper: 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - theta_sintheta
+			}
+		}
+		float aa = (theta_sintheta * cross(p_proj0, half_point)).y;
+		{
+			float cosTheta = dot(half_point, p_proj1);
+
+			float x = cosTheta;
+			float y = abs(x);
+			float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+			float b = 3.45068 + (4.18814 + y) * y;
+			theta_sintheta = a / b;
+			if (x < 0.0) {
+				theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta; // original paper: 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - theta_sintheta
+			}
+		}
+		float bb = (theta_sintheta * cross(half_point, p_proj1)).y;
+		return aa + bb;
+	} else {
+		// Note: "integrate_edge_hill(p_proj0, p_proj1).y" code inlined to work around Adreno 650/660 shader compiler bug. Keep in sync with "servers/rendering/renderer_rd/shaders/area_lights_inc.glsl" and "integrate_edge_hill" method.
+		float cosTheta = dot(p_proj0, p_proj1);
+
+		float x = cosTheta;
+		float y = abs(x);
+		float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+		float b = 3.45068 + (4.18814 + y) * y;
+		float theta_sintheta = a / b;
+
+		if (x < 0.0) {
+			theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta; // original paper: 0.5*inversesqrt(max(1.0 - x*x, 1e-7)) - theta_sintheta
+		}
+		return (theta_sintheta * cross(p_proj0, p_proj1)).y;
 	}
-	return integrate_edge_hill(p_proj0, p_proj1).y;
 }
 
 vec3 fetch_ltc_filtered_texture_with_form_factor(vec4 texture_rect, vec3 L[4], float max_mipmap, texture2D area_light_atlas, sampler texture_sampler) {
@@ -281,13 +323,13 @@ void ltc_evaluate(vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4], vec4 te
 	integral = I / (2.0 * M_PI);
 }
 
-void ltc_evaluate_specular(vec3 normal, vec3 eye_vec, float roughness, vec3 points[4], vec4 texture_rect, float max_mipmap, texture2D area_light_atlas, sampler texture_sampler, sampler2D ltc_lut1, sampler2D ltc_lut2, out float ltc_specular, out vec2 fresnel, out vec3 ltc_specular_tex_color) {
+void ltc_evaluate_specular(vec3 normal, vec3 eye_vec, float roughness, vec3 points[4], vec4 texture_rect, float max_mipmap, texture2D area_light_atlas, sampler texture_sampler, sampler lut_sampler, texture2D ltc_lut1, texture2D ltc_lut2, out float ltc_specular, out vec2 fresnel, out vec3 ltc_specular_tex_color) {
 	float theta = acos_approx(dot(normal, eye_vec));
 	const float LTC_LUT_SIZE = float(64.0);
 	vec2 lut_pos = vec2(max(roughness, float(0.02)), theta / float(0.5 * M_PI));
 	vec2 lut_uv = vec2(lut_pos * (float(63.0) / LTC_LUT_SIZE) + vec2(float(0.5) / LTC_LUT_SIZE)); // offset by 1 pixel
-	vec4 M_brdf_abcd = texture(ltc_lut1, lut_uv);
-	vec3 M_brdf_e_mag_fres = texture(ltc_lut2, lut_uv).xyz;
+	vec4 M_brdf_abcd = texture(sampler2D(ltc_lut1, lut_sampler), lut_uv);
+	vec3 M_brdf_e_mag_fres = texture(sampler2D(ltc_lut2, lut_sampler), lut_uv).xyz;
 	float scale = 1.0 / (M_brdf_abcd.x * M_brdf_e_mag_fres.x - M_brdf_abcd.y * M_brdf_abcd.w);
 
 	mat3 M_inv = mat3(

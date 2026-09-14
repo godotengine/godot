@@ -39,6 +39,8 @@
 
 #include "modules/modules_enabled.gen.h" // For svg, freetype.
 
+#include <memory>
+
 #ifdef MODULE_SVG_ENABLED
 #ifdef MODULE_FREETYPE_ENABLED
 

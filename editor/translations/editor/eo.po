@@ -1118,9 +1118,6 @@ msgstr "Je la fino"
 msgid "Travel"
 msgstr "Vojaĝa"
 
-msgid "No playback resource set at path: %s."
-msgstr "Ne reproduktada risurcaro al vojo: %s."
-
 msgid "Node Removed"
 msgstr "Nodon forigis"
 
@@ -5698,6 +5695,9 @@ msgstr "Nevalida fonto por ombrigilo."
 
 msgid "Run in Browser"
 msgstr "Ruli en foliumilo"
+
+msgid "No playback resource set at path: %s."
+msgstr "Ne reproduktada risurcaro al vojo: %s."
 
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"

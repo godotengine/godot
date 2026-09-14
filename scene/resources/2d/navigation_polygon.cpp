@@ -91,7 +91,7 @@ void NavigationPolygon::set_vertices(const Vector<Vector2> &p_vertices) {
 	rect_cache_dirty = true;
 }
 
-Vector<Vector2> NavigationPolygon::get_vertices() const {
+const Vector<Vector2> &NavigationPolygon::get_vertices() const {
 	RWLockRead read_lock(rwlock);
 	return vertices;
 }

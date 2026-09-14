@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
@@ -155,7 +156,7 @@ public:
 	FindReplaceBar();
 };
 
-typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced);
+typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
@@ -192,7 +193,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _update_text_editor_theme();
 	void _update_font_ligatures();
 	void _complete_request();
-	Ref<Texture2D> _get_completion_icon(const ScriptLanguage::CodeCompletionOption &p_option);
+	Ref<Texture2D> _get_completion_icon(const EditorLanguage::CompletionOption &p_option);
 
 	virtual void input(const Ref<InputEvent> &event) override;
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
@@ -211,6 +212,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _zoom_to(float p_zoom_factor);
 
 	void _show_goto_popup_request();
+	void _emit_request_save_new_history();
 
 	void _update_error_content_height();
 
@@ -225,10 +227,6 @@ class CodeTextEditor : public VBoxContainer {
 	void _toggle_files_pressed();
 
 protected:
-	virtual void _load_theme_settings() {}
-	virtual void _validate_script() {}
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {}
-
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
 	void _text_changed();
@@ -260,17 +258,20 @@ public:
 	void adjust_viewport_to_caret();
 	void center_viewport_to_caret();
 	void center_viewport_to_caret_if_line_invisible(int p_line);
+	void trigger_history_save_on_navigate();
 
+	void goto_line_without_history(int p_line, int p_column = 0);
 	void goto_line(int p_line, int p_column = 0);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	void goto_line_centered(int p_line, int p_column = 0);
+	void goto_line_and_center_if_necessary(int p_line, int p_column = 0);
 	void set_executing_line(int p_line);
 	void clear_executing_line();
 
-	Variant get_edit_state();
-	void set_edit_state(const Variant &p_state);
-	Variant get_navigation_state();
-	Variant get_previous_state();
+	Dictionary get_edit_state();
+	void set_edit_state(const Dictionary &p_state);
+	Dictionary get_navigation_state();
+	Dictionary get_previous_state();
 	void store_previous_state();
 
 	bool is_previewing_navigation_change() const;
@@ -290,8 +291,6 @@ public:
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	void set_find_replace_bar(FindReplaceBar *p_bar);
 	void remove_find_replace_bar();
-	virtual void apply_code() {}
-	virtual void goto_error();
 
 	void toggle_bookmark();
 	void goto_next_bookmark();

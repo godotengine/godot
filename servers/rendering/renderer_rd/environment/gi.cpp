@@ -454,7 +454,9 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		}
 
 		tf_render.format = RD::DATA_FORMAT_R32_UINT;
+		tf_render.usage_bits |= RD::TEXTURE_USAGE_STORAGE_ATOMIC_BIT;
 		render_geom_facing = create_clear_texture(tf_render, "SDFGI Render Geometry Facing");
+		tf_render.usage_bits &= ~RD::TEXTURE_USAGE_STORAGE_ATOMIC_BIT;
 
 		tf_render.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
 		render_sdf[0] = create_clear_texture(tf_render, "SDFGI Render SDF 0");
@@ -3667,7 +3669,7 @@ void GI::init(SkyRD *p_sky) {
 		String defines = "\n#define OCT_SIZE " + itos(SDFGI::LIGHTPROBE_OCT_SIZE) + "\n";
 		defines += "\n#define SH_SIZE " + itos(SDFGI::SH_SIZE) + "\n";
 		if (p_sky->sky_use_octmap_array) {
-			defines += "\n#define USE_OCTMAP_ARRAY\n";
+			defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY\n";
 		}
 
 		Vector<String> integrate_modes;

@@ -47,11 +47,11 @@ inline constexpr double INF = std::numeric_limits<double>::infinity();
 inline constexpr double NaN = std::numeric_limits<double>::quiet_NaN();
 } // namespace Math
 
-#define CMP_EPSILON 0.00001
-#define CMP_EPSILON2 (CMP_EPSILON * CMP_EPSILON)
+inline constexpr double CMP_EPSILON = 0.00001;
+inline constexpr double CMP_EPSILON2 = CMP_EPSILON * CMP_EPSILON;
 
-#define CMP_NORMALIZE_TOLERANCE 0.000001
-#define CMP_POINT_IN_PLANE_EPSILON 0.00001
+inline constexpr double CMP_NORMALIZE_TOLERANCE = 0.000001;
+inline constexpr double CMP_POINT_IN_PLANE_EPSILON = 0.00001;
 
 #ifdef DEBUG_ENABLED
 #define MATH_CHECKS
@@ -59,10 +59,10 @@ inline constexpr double NaN = std::numeric_limits<double>::quiet_NaN();
 
 //this epsilon is for values related to a unit size (scalar or vector len)
 #ifdef PRECISE_MATH_CHECKS
-#define UNIT_EPSILON 0.00001
+inline constexpr double UNIT_EPSILON = 0.00001;
 #else
 //tolerate some more floating point error normally
-#define UNIT_EPSILON 0.001
+inline constexpr double UNIT_EPSILON = 0.001;
 #endif
 
 #define USEC_TO_SEC(m_usec) ((m_usec) / 1000000.0)

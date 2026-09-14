@@ -111,17 +111,10 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 }
 
 ResourceUID::ID ResourceUID::create_id() {
-	// mbedTLS may not be fully initialized when the ResourceUID is created, so we
-	// need to lazily instantiate the random number generator.
-	if (crypto == nullptr) {
-		crypto = memnew(CryptoCore::RandomGenerator);
-		((CryptoCore::RandomGenerator *)crypto)->init();
-	}
-
 	while (true) {
 		ID id = INVALID_ID;
 		MutexLock lock(mutex);
-		Error err = ((CryptoCore::RandomGenerator *)crypto)->get_random_bytes((uint8_t *)&id, sizeof(id));
+		Error err = CryptoCore::generate_random((uint8_t *)&id, sizeof(id));
 		ERR_FAIL_COND_V(err != OK, INVALID_ID);
 		id &= 0x7FFFFFFFFFFFFFFF;
 		bool exists = unique_ids.has(id);
@@ -198,6 +191,13 @@ String ResourceUID::get_id_path(ID p_id) const {
 	const ResourceUID::Cache *cache = unique_ids.getptr(p_id);
 
 #if TOOLS_ENABLED
+	if (!cache) {
+		const ResourceUID::Cache *copy_cache = unique_ids_copy.getptr(p_id);
+		if (copy_cache) {
+			return String::utf8(copy_cache->cs.ptr());
+		}
+	}
+
 	// On startup, the scan_for_uid_on_startup callback should be set and will
 	// execute EditorFileSystem::scan_for_uid, which scans all project files
 	// to reload the UID cache before the first scan.
@@ -405,6 +405,7 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 }
 
 void ResourceUID::clear() {
+	MutexLock l(mutex);
 	cache_entries = 0;
 	if (use_reverse_cache) {
 		reverse_cache.clear();
@@ -412,6 +413,20 @@ void ResourceUID::clear() {
 	unique_ids.clear();
 	changed = false;
 }
+
+#ifdef TOOLS_ENABLED
+void ResourceUID::copy_and_clear_cache() {
+	MutexLock l(mutex);
+	cache_entries = 0;
+	unique_ids_copy = std::move(unique_ids);
+	changed = false;
+}
+
+void ResourceUID::clear_copy() {
+	MutexLock l(mutex);
+	unique_ids_copy.clear();
+}
+#endif
 
 void ResourceUID::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("id_to_text", "id"), &ResourceUID::id_to_text);
@@ -436,9 +451,4 @@ ResourceUID *ResourceUID::singleton = nullptr;
 ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
-}
-ResourceUID::~ResourceUID() {
-	if (crypto != nullptr) {
-		memdelete((CryptoCore::RandomGenerator *)crypto);
-	}
 }

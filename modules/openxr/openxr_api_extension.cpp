@@ -55,6 +55,7 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("insert_debug_label", "label_name"), &OpenXRAPIExtension::insert_debug_label);
 
 	ClassDB::bind_method(D_METHOD("get_view_count"), &OpenXRAPIExtension::get_view_count);
+	ClassDB::bind_method(D_METHOD("get_primary_view_count"), &OpenXRAPIExtension::get_primary_view_count);
 	ClassDB::bind_method(D_METHOD("get_view_configuration"), &OpenXRAPIExtension::get_view_configuration);
 
 	ClassDB::bind_method(D_METHOD("is_initialized"), &OpenXRAPIExtension::is_initialized);
@@ -133,7 +134,7 @@ uint64_t OpenXRAPIExtension::get_session() {
 	return (uint64_t)OpenXRAPI::get_singleton()->get_session();
 }
 
-Transform3D OpenXRAPIExtension::transform_from_pose(GDExtensionConstPtr<const void> p_pose) {
+Transform3D OpenXRAPIExtension::transform_from_pose(GDExtensionPtr<const void> p_pose) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), Transform3D());
 	return OpenXRAPI::get_singleton()->transform_from_pose(*(XrPosef *)p_pose.data);
 }
@@ -198,6 +199,11 @@ uint32_t OpenXRAPIExtension::get_view_count() const {
 	return (uint32_t)OpenXRAPI::get_singleton()->get_view_count();
 }
 
+uint32_t OpenXRAPIExtension::get_primary_view_count() const {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (uint32_t)OpenXRAPI::get_singleton()->get_primary_view_count();
+}
+
 uint64_t OpenXRAPIExtension::get_view_configuration() const {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
 	return (uint64_t)OpenXRAPI::get_singleton()->get_view_configuration();
@@ -213,7 +219,7 @@ bool OpenXRAPIExtension::is_running() {
 	return OpenXRAPI::get_singleton()->is_running();
 }
 
-void OpenXRAPIExtension::set_custom_play_space(GDExtensionConstPtr<const void> p_custom_space) {
+void OpenXRAPIExtension::set_custom_play_space(GDExtensionPtr<const void> p_custom_space) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->set_custom_play_space(*(XrSpace *)p_custom_space.data);
 }

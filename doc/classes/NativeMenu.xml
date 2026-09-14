@@ -471,6 +471,16 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="is_item_indeterminate" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the item at index [param idx] is indeterminate.
+				See [method set_item_indeterminate] for more info on how to set an item.
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
 		<method name="is_item_radio_checkable" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="rid" type="RID" />
@@ -615,6 +625,16 @@
 			<param index="2" name="level" type="int" />
 			<description>
 				Sets the horizontal offset of the item at the given [param idx].
+				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="set_item_indeterminate">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="indeterminate" type="bool" />
+			<description>
+				Sets the indeterminate status of the item at index [param idx].
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>

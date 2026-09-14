@@ -1031,9 +1031,6 @@ msgstr "Στο τέλος"
 msgid "Travel"
 msgstr "Ταξίδι"
 
-msgid "No playback resource set at path: %s."
-msgstr "Κανένας πόρος αναπαραγωγής στη διαδρομή: %s."
-
 msgid "Node Removed"
 msgstr "Μετονομασία κόμβου"
 
@@ -7569,6 +7566,9 @@ msgstr "Τοποθέτηση πλεγμάτων"
 
 msgid "Finishing Plot"
 msgstr "Ολοκλήρωση σχεδιαγράμματος"
+
+msgid "No playback resource set at path: %s."
+msgstr "Κανένας πόρος αναπαραγωγής στη διαδρομή: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "Δεν έχει οριστεί ριζικό AnimationNode για το γράφημα."

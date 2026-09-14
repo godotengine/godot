@@ -37,6 +37,7 @@
 void AnimationNodeBlendSpace1D::get_parameter_list(LocalVector<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
+	r_list->push_back(PropertyInfo(Variant::OBJECT, observer, PROPERTY_HINT_RESOURCE_TYPE, AnimationNodeObserverBlendSpace::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ALWAYS_DUPLICATE));
 	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
@@ -78,7 +79,12 @@ void AnimationNodeBlendSpace1D::validate_node(const AnimationTree *p_tree, const
 	AnimationRootNode::validate_node(p_tree, p_path);
 
 	if (get_blend_point_count() == 0) {
-		add_validation_error(p_tree, p_path, RTR("No blend points exist, so blending cannot take place."));
+		add_validation_error(p_tree, p_path, RTR(ERR_NO_BLEND_POINT));
+	}
+
+	const_cast<AnimationNodeBlendSpace1D *>(this)->_check_can_sync();
+	if (is_contain_invalid_point) {
+		add_validation_error(p_tree, p_path, RTR(ERR_INVALID_POINT));
 	}
 }
 
@@ -424,7 +430,16 @@ void AnimationNodeBlendSpace1D::_check_can_sync() {
 }
 
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
-	if (!blend_points_used || is_contain_invalid_point) {
+	if (!blend_points_used) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, RTR(ERR_NO_BLEND_POINT));
+		}
+		return NodeTimeInfo();
+	}
+	if (is_contain_invalid_point) {
+		if (!p_test_only && p_instance.is_blended()) {
+			make_invalid(p_process_state, p_instance, RTR(ERR_INVALID_POINT));
+		}
 		return NodeTimeInfo();
 	}
 
@@ -592,6 +607,13 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(ProcessState &p_
 		NodeTimeInfo t = blend_node(p_process_state, p_instance, &other_instance, pi, FILTER_IGNORE, true, p_test_only);
 		if (i == new_closest) {
 			mind = t;
+		}
+	}
+
+	if (!p_test_only && new_closest != cur_closest && new_closest != -1) {
+		Ref<AnimationNodeObserverBlendSpace> observer_ref = p_instance.get_parameter_observer();
+		if (observer_ref.is_valid()) {
+			observer_ref->emit_signal("closest_point_changed", get_blend_point_name(new_closest));
 		}
 	}
 

@@ -200,7 +200,7 @@ void main() {
 	cube_normal = mat3(orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
 
-	vec2 uv = gl_FragCoord.xy; // uv_interp * 0.5 + 0.5;
+	vec2 uv = uv_interp * 0.5 + 0.5;
 
 	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
@@ -244,12 +244,12 @@ void main() {
 #CODE : SKY
 	}
 
-	color *= sky_energy_multiplier;
-
 	// Convert to Linear for tonemapping so color matches scene shader better
 	color = srgb_to_linear(color);
 
-#if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
+	color *= sky_energy_multiplier;
+
+#if !defined(DISABLE_FOG)
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	if (fog_enabled) {

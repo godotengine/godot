@@ -8,7 +8,7 @@
 		Light is emitted in the -Z direction of the node's global basis. For an unrotated light, this means that the light is emitted forwards, illuminating the front side of a 3D model (see [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT]). The position of the node is ignored; only the basis is used to determine light direction.
 	</description>
 	<tutorials>
-		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html</link>
+		<link title="3D lights and shadows">$DOCS_URL/tutorials/3d/lights_and_shadows.html#directional-light</link>
 		<link title="Faking global illumination">$DOCS_URL/tutorials/3d/global_illumination/faking_global_illumination.html</link>
 	</tutorials>
 	<members>

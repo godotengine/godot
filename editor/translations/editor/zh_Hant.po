@@ -1349,9 +1349,6 @@ msgstr "在結束時"
 msgid "Travel"
 msgstr "跳轉"
 
-msgid "No playback resource set at path: %s."
-msgstr "路徑 %s 中沒有可播放的資源。"
-
 msgid "Node Removed"
 msgstr "已刪除節點"
 
@@ -18465,6 +18462,9 @@ msgstr ""
 
 msgid "Animation Apply Reset"
 msgstr "動畫套用重設"
+
+msgid "No playback resource set at path: %s."
+msgstr "路徑 %s 中沒有可播放的資源。"
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "尚未為此圖表設定根 AnimationNode。"

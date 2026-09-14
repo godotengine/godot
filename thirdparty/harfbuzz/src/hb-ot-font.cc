@@ -289,7 +289,7 @@ struct hb_ot_font_t
 
   void check_serial (hb_font_t *font) const
   {
-    int font_serial = font->serial_coords.get_acquire ();
+    int font_serial = font->serial.get_acquire ();
     if (cached_serial.get_acquire () != font_serial)
     {
       /* These caches are dependent on scale and synthetic settings.
@@ -643,6 +643,8 @@ hb_ot_get_glyph_v_origins (hb_font_t *font,
 {
   const hb_ot_font_t *ot_font = (const hb_ot_font_t *) font_data;
   const hb_ot_face_t *ot_face = ot_font->ot_face;
+
+  ot_font->check_serial (font);
 
   /* First, set all the x values to half the advance width. */
   font->get_glyph_h_advances (count,

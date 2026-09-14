@@ -412,12 +412,15 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 					chain.push_back(current_thread);
 
 					// We made it back to us, we're in a cycle.
-					if (next_thread == thread_index) {
+					if (next_thread == thread_index || chain.has(next_thread)) {
 						cycle_detected = true;
 						break;
 					}
 
 					if (chain.size() > thread_load_tasks.size()) {
+						ERR_PRINT(vformat("chain.size() > thread_load_tasks.size() for '%s' on thread %d",
+								load_task.local_path, thread_index));
+						cycle_detected = true;
 						break;
 					}
 
@@ -451,11 +454,6 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 					}
 				}
 			} else {
-				if (thread_waiting_on_backup.is_empty()) {
-					thread_waiting_on.erase(thread_index);
-				} else {
-					thread_waiting_on[thread_index] = thread_waiting_on_backup;
-				}
 				wait = false;
 			}
 
@@ -509,6 +507,13 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 
 		if (status != THREAD_LOAD_IN_PROGRESS) {
 			load_task.load_token->unreference();
+			thread_load_mutex.lock();
+			if (thread_waiting_on_backup.is_empty()) {
+				thread_waiting_on.erase(thread_index);
+			} else {
+				thread_waiting_on[thread_index] = thread_waiting_on_backup;
+			}
+			thread_load_mutex.unlock();
 			return;
 		}
 
@@ -541,6 +546,11 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	thread_load_mutex.lock();
 	bool thread_load_mutex_held = true;
 
+	bool was_finished = load_task.finished_load;
+	if (load_task.resource.is_valid()) {
+		load_task.finished_load = true;
+	}
+
 	load_task.resource = res;
 
 	load_task.progress = 1.0; // It was fully loaded at this point, so force progress to 1.0.
@@ -559,6 +569,16 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 			ResourceCache::lock.lock(); // Check and operations must happen atomically.
 			bool pending_unlock = true;
 			Ref<Resource> old_res = ResourceCache::get_ref(load_task.local_path);
+			if (was_finished) {
+				// If another thread already finished the entire load wait for it to complete
+				// cache registration, then use their instance.
+				while (!old_res.is_valid()) {
+					ResourceCache::lock.unlock();
+					OS::get_singleton()->delay_usec(1000);
+					ResourceCache::lock.lock();
+					old_res = ResourceCache::get_ref(load_task.local_path);
+				}
+			}
 			if (old_res.is_valid()) {
 				if (old_res != load_task.resource) {
 					// Resource can already exists at this point for two reasons:
@@ -1624,28 +1644,28 @@ void ResourceLoader::set_load_callback(ResourceLoadedCallback p_callback) {
 
 ResourceLoadedCallback ResourceLoader::_loaded_callback = nullptr;
 
-Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(const String &path) {
+Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(const String &p_path) {
 	for (int i = 0; i < loader_count; ++i) {
-		if (loader[i]->get_script_instance() && loader[i]->get_script_instance()->get_script()->get_path() == path) {
+		if (loader[i]->get_script_instance() && loader[i]->get_script_instance()->get_script()->get_path() == p_path) {
 			return loader[i];
 		}
 	}
 	return Ref<ResourceFormatLoader>();
 }
 
-bool ResourceLoader::add_custom_resource_format_loader(const String &script_path) {
-	if (_find_custom_resource_format_loader(script_path).is_valid()) {
+bool ResourceLoader::add_custom_resource_format_loader(const String &p_script_path) {
+	if (_find_custom_resource_format_loader(p_script_path).is_valid()) {
 		return false;
 	}
 
-	Ref<Resource> res = ResourceLoader::load(script_path);
+	Ref<Resource> res = ResourceLoader::load(p_script_path);
 	ERR_FAIL_COND_V(res.is_null(), false);
 	ERR_FAIL_COND_V(!res->is_class("Script"), false);
 
 	Ref<Script> s = res;
 	StringName ibt = s->get_instance_base_type();
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatLoader");
-	ERR_FAIL_COND_V_MSG(!valid_type, false, vformat("Failed to add a custom resource loader, script '%s' does not inherit 'ResourceFormatLoader'.", script_path));
+	ERR_FAIL_COND_V_MSG(!valid_type, false, vformat("Failed to add a custom resource loader, script '%s' does not inherit 'ResourceFormatLoader'.", p_script_path));
 
 	Object *obj = ClassDB::instantiate(ibt);
 	ERR_FAIL_NULL_V_MSG(obj, false, vformat("Failed to add a custom resource loader, cannot instantiate '%s'.", ibt));

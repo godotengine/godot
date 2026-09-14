@@ -84,7 +84,7 @@
 			The distance the link will search is controlled by [method NavigationServer2D.map_set_link_connection_radius].
 		</member>
 		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
-			When pathfinding enters this link from another regions navigation mesh the [member enter_cost] value is added to the path distance for determining the shortest path.
+			When pathfinding enters this link from another region's navigation mesh the [member enter_cost] value is added to the path distance for determining the shortest path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining all navigation layers the link belongs to. These navigation layers will be checked when requesting a path with [method NavigationServer2D.map_get_path].

@@ -107,7 +107,6 @@ void ProjectListItemControl::_notification(int p_what) {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 #endif
 			}
-
 			if (touch_menu_button) {
 				touch_menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			}
@@ -173,6 +172,10 @@ void ProjectListItemControl::_notification(int p_what) {
 			}
 
 			draw_line(Point2(0, get_size().y + 1), Point2(get_size().x, get_size().y + 1), get_theme_color(SNAME("guide_color"), SNAME("ProjectList")));
+		} break;
+
+		case NOTIFICATION_READY: {
+			set_project_title_autowrap();
 		} break;
 	}
 }
@@ -333,7 +336,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_different_version->set_focus_mode(FOCUS_ACCESSIBILITY);
 					project_different_version->set_tooltip_text(project_version_tooltip_text);
 					project_different_version->show();
-				} else if (p_features[i] == TTR("Unknown version")) {
+				} else if (p_features[i] == "u-ver") {
 					unknown_version = true;
 					project_different_version->hide();
 				}
@@ -418,6 +421,76 @@ void ProjectListItemControl::set_is_grayed(bool p_grayed) {
 	} else {
 		main_vbox->set_modulate(Color(1, 1, 1, 1.0));
 		explore_button->set_modulate(Color(1, 1, 1, 0.5));
+	}
+}
+
+void ProjectListItemControl::set_project_title_index(int p_title_index) {
+	project_title_index = p_title_index;
+}
+
+void ProjectListItemControl::set_project_title_autowrap() {
+	title_fullsize_cache = project_title->get_size().x;
+	window_size_cache = get_window()->get_size().x;
+
+	int tag_size = 0;
+	int tag_maxsize = 0;
+	for (Node *child : tag_container->iterate_children()) {
+		ProjectTag *tag = Object::cast_to<ProjectTag>(child);
+		tag_size += tag->get_size().x;
+
+		if (tag_maxsize == 0) {
+			tag_maxsize = tag->get_custom_maximum_size().x;
+		}
+	}
+	tag_size_cache = MIN(tag_size, tag_maxsize);
+	int &title_size_cache = get_list()->title_size_cache[project_title_index];
+
+	int size_check = 800 * EDSCALE;
+	if (title_size_cache == 0) {
+		title_size_cache = size_check;
+	}
+
+	if (title_fullsize_cache > size_check - tag_size_cache) {
+		resize_project_title();
+	}
+}
+
+void ProjectListItemControl::resize_project_title() {
+	if (get_window() == nullptr) {
+		return;
+	}
+
+	int window_size = get_window()->get_size().x;
+	int difference = window_size - window_size_cache;
+	window_size_cache = window_size;
+
+	int &title_size_cache = get_list()->title_size_cache[project_title_index];
+	title_size_cache += difference;
+
+	if (title_size_cache > title_fullsize_cache + tag_size_cache) {
+		project_title->set_custom_maximum_size(Vector2(-1, -1));
+		project_title->set_custom_minimum_size(Vector2(0, 0));
+		project_title->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
+
+		return;
+	}
+	ProjectTag tag = ProjectTag("dummy");
+	int tag_maxsize = tag.get_custom_maximum_size().x;
+	int title_maxsize = title_size_cache - tag_size_cache;
+	int title_minsize = title_size_cache - tag_maxsize;
+
+	int abs_minsize = (200 * EDSCALE);
+	if (title_fullsize_cache > abs_minsize) {
+		if (title_minsize < abs_minsize) {
+			title_minsize = abs_minsize + tag_maxsize - tag_size_cache;
+		}
+		if (title_maxsize < title_minsize) {
+			project_title->set_custom_maximum_size(Vector2(title_minsize, -1));
+		} else {
+			project_title->set_custom_maximum_size(Vector2(title_maxsize, -1));
+		}
+		project_title->set_custom_minimum_size(Vector2(title_minsize, 0));
+		project_title->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	}
 }
 
@@ -590,8 +663,10 @@ void ProjectList::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_ready()) {
-				// FIXME: Technically this only needs to update some dynamic texts, not the whole list.
-				update_project_list();
+				for (const Item &item : _projects) {
+					_update_project_control_translatable_fields(item);
+				}
+				update_dock_menu();
 			}
 		} break;
 
@@ -776,23 +851,23 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 			unsupported_features.push_back("3.x");
 			project_version = "3.x";
 		} else {
-			unsupported_features.push_back(TTR("Unknown version"));
+			unsupported_features.push_back("u-ver");
 		}
 	}
 
 	uint64_t last_edited = 0;
 	if (cf_err == OK) {
-		// The modification date marks the date the project was last edited.
-		// This is because the `project.godot` file will always be modified
-		// when editing a project (but not when running it).
-		last_edited = FileAccess::get_modified_time(conf);
-
-		String fscache = p_path.path_join(".fscache");
-		if (FileAccess::exists(fscache)) {
-			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
-			if (cache_modified > last_edited) {
-				last_edited = cache_modified;
-			}
+		int *cached_time = modified_time_cache.getptr(p_path);
+		if (cached_time) {
+			// Modified time may change as a result of Project Manager actions, which will affect sorting.
+			// For that reason, the time is read only once.
+			last_edited = *cached_time;
+		} else {
+			// The modification date marks the date the project was last edited.
+			// This is because the `project.godot` file will always be modified
+			// when editing a project (but not when running it).
+			last_edited = FileAccess::get_modified_time(conf);
+			modified_time_cache[p_path] = last_edited;
 		}
 	} else {
 		grayed = true;
@@ -861,11 +936,14 @@ void ProjectList::update_project_list() {
 	// If you have 150 projects, it may read through 150 files on your disk at once + load 150 icons.
 	// FIXME: Does it really have to be a full, hard reload? Runtime updates should be made much cheaper.
 
+	int temp_title_index = -1;
 	if (ProjectManager::get_singleton()->is_initialized()) {
 		// Clear whole list
 		for (int i = 0; i < _projects.size(); ++i) {
 			Item &project = _projects.write[i];
 			CRASH_COND(project.control == nullptr);
+
+			temp_title_index = project.project_title_index;
 			memdelete(project.control); // Why not queue_free()?
 		}
 
@@ -878,6 +956,9 @@ void ProjectList::update_project_list() {
 
 	// Create controls
 	for (int i = 0; i < _projects.size(); ++i) {
+		Item &item = _projects.write[i];
+		item.project_title_index = temp_title_index;
+
 		_create_project_item_control(i);
 	}
 
@@ -1065,10 +1146,14 @@ int ProjectList::refresh_project(const String &dir_path) {
 
 	bool was_selected = _selected_project_paths.has(dir_path);
 
+	int temp_title_index = -1;
+
 	// Remove item in any case
 	for (int i = 0; i < _projects.size(); ++i) {
 		const Item &existing_item = _projects[i];
 		if (existing_item.path == dir_path) {
+			temp_title_index = existing_item.project_title_index;
+
 			_remove_project(i, false);
 			break;
 		}
@@ -1080,6 +1165,7 @@ int ProjectList::refresh_project(const String &dir_path) {
 
 		Item item = load_project_data(dir_path, is_favorite);
 
+		item.project_title_index = temp_title_index;
 		_projects.push_back(item);
 		_create_project_item_control(_projects.size() - 1);
 
@@ -1124,15 +1210,16 @@ void ProjectList::_create_project_item_control(int p_index) {
 	ERR_FAIL_COND(item.control != nullptr); // Already created
 
 	ProjectListItemControl *hb = memnew(ProjectListItemControl);
+	item.control = hb;
+
 	hb->add_theme_constant_override("separation", 10 * EDSCALE);
 
-	hb->set_project_title(!item.missing ? item.project_name : TTR("Missing Project"));
+	_update_project_control_translatable_fields(item);
+
 	hb->set_project_path(item.path);
 	hb->set_tooltip_text(item.description);
 	hb->set_tags(item.tags, this);
-	hb->set_unsupported_features(item.unsupported_features.duplicate());
 	hb->set_project_version(item.project_version);
-	hb->set_last_edited_info(item.get_last_edited_string());
 
 	hb->set_is_favorite(item.favorite);
 	hb->set_is_missing(item.missing);
@@ -1146,8 +1233,24 @@ void ProjectList::_create_project_item_control(int p_index) {
 #endif
 	hb->connect("request_menu", callable_mp(this, &ProjectList::_open_menu).bind(hb));
 
+	if (item.project_title_index == -1) {
+		project_title_index_count++;
+		title_size_cache[project_title_index_count] = 0;
+		item.project_title_index = project_title_index_count;
+		hb->set_project_title_index(project_title_index_count);
+	} else {
+		hb->set_project_title_index(item.project_title_index);
+	}
+
 	project_list_vbox->add_child(hb);
-	item.control = hb;
+}
+
+void ProjectList::_update_project_control_translatable_fields(const Item &item) {
+	ProjectListItemControl *control = item.control;
+
+	control->set_project_title(!item.missing ? item.project_name : TTR("Missing Project"));
+	control->set_last_edited_info(item.get_last_edited_string());
+	control->set_unsupported_features(item.unsupported_features.duplicate());
 }
 
 void ProjectList::_toggle_project(int p_index) {
@@ -1489,6 +1592,14 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 	_last_clicked = "";
 
 	update_dock_menu();
+}
+
+// Resize project titles.
+
+void ProjectList::resize_project_titles() {
+	for (Item &item : _projects) {
+		item.control->resize_project_title();
+	}
 }
 
 // Missing projects.

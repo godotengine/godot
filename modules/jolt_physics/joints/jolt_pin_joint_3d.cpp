@@ -79,15 +79,15 @@ void JoltPinJoint3D::set_local_b(const Vector3 &p_local_b) {
 	_points_changed();
 }
 
-double JoltPinJoint3D::get_param(PhysicsServer3D::PinJointParam p_param) const {
+double JoltPinJoint3D::get_param(PS3DE::PinJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::PIN_JOINT_BIAS: {
+		case PS3DE::PIN_JOINT_BIAS: {
 			return PIN_DEFAULT_BIAS;
 		}
-		case PhysicsServer3D::PIN_JOINT_DAMPING: {
+		case PS3DE::PIN_JOINT_DAMPING: {
 			return PIN_DEFAULT_DAMPING;
 		}
-		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP: {
+		case PS3DE::PIN_JOINT_IMPULSE_CLAMP: {
 			return PIN_DEFAULT_IMPULSE_CLAMP;
 		}
 		default: {
@@ -96,19 +96,19 @@ double JoltPinJoint3D::get_param(PhysicsServer3D::PinJointParam p_param) const {
 	}
 }
 
-void JoltPinJoint3D::set_param(PhysicsServer3D::PinJointParam p_param, double p_value) {
+void JoltPinJoint3D::set_param(PS3DE::PinJointParam p_param, double p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::PIN_JOINT_BIAS: {
+		case PS3DE::PIN_JOINT_BIAS: {
 			if (!Math::is_equal_approx(p_value, PIN_DEFAULT_BIAS)) {
 				WARN_PRINT(vformat("Pin joint bias is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::PIN_JOINT_DAMPING: {
+		case PS3DE::PIN_JOINT_DAMPING: {
 			if (!Math::is_equal_approx(p_value, PIN_DEFAULT_DAMPING)) {
 				WARN_PRINT(vformat("Pin joint damping is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP: {
+		case PS3DE::PIN_JOINT_IMPULSE_CLAMP: {
 			if (!Math::is_equal_approx(p_value, PIN_DEFAULT_IMPULSE_CLAMP)) {
 				WARN_PRINT(vformat("Pin joint impulse clamp is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
@@ -155,6 +155,5 @@ void JoltPinJoint3D::rebuild() {
 
 	space->add_joint(this);
 
-	_update_enabled();
-	_update_iterations();
+	_update_joint();
 }

@@ -127,6 +127,7 @@ private:
 	mutable Size2i max_size;
 	mutable Vector<Vector2> mpath;
 	mutable Mode mode = MODE_WINDOWED;
+	mutable Mode toggle_fullscreen_previous_mode = mode;
 	mutable bool flags[FLAG_MAX] = {};
 	bool visible = true;
 	bool focused = false;
@@ -137,6 +138,7 @@ private:
 
 	void _update_viewport_for_hdr_output();
 
+	bool fullscreen_shortcut_enabled = false;
 	bool transient = false;
 	bool transient_to_focused = false;
 	bool exclusive = false;
@@ -266,7 +268,7 @@ private:
 
 protected:
 	virtual void _popup_base(const Rect2i &p_screen_rect = Rect2i());
-	virtual void _pre_popup() {} // Called after "about_to_popup", but before window is shown.
+	virtual void _pre_popup(const Size2i &p_size) {} // Called after "about_to_popup", but before window is shown.
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
 
@@ -339,6 +341,9 @@ public:
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
+
+	void set_fullscreen_shortcut_enabled(bool p_enabled);
+	bool is_fullscreen_shortcut_enabled() const;
 
 	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;

@@ -35,7 +35,7 @@
 #include "scene/main/node.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/animation_library.h"
-#include "scene/resources/audio_stream_polyphonic.h"
+#include "scene/resources/audio/audio_stream_polyphonic.h"
 
 class AnimatedValuesBackup;
 
@@ -72,7 +72,7 @@ public:
 	struct AnimationLibraryData {
 		StringName name;
 		Ref<AnimationLibrary> library;
-		bool operator<(const AnimationLibraryData &p_data) const { return name.operator String() < p_data.name.operator String(); }
+		bool operator<(const AnimationLibraryData &p_data) const { return name.string() < p_data.name.string(); }
 	};
 
 	struct AnimationData {
@@ -280,7 +280,7 @@ protected:
 		Ref<AudioStreamPolyphonic> audio_stream;
 		Ref<AudioStreamPlaybackPolyphonic> audio_stream_playback;
 		HashMap<ObjectID, PlayingAudioTrackInfo> playing_streams; // Key is Animation resource ObjectID.
-		AudioServer::PlaybackType playback_type;
+		AuSE::PlaybackType playback_type;
 		StringName bus;
 
 		TrackCacheAudio(const TrackCacheAudio &p_other) :
@@ -310,7 +310,7 @@ protected:
 	Vector<Node *> playing_audio_stream_players;
 
 	// Helpers.
-	void _clear_caches();
+	void _clear_caches(bool p_clear_track_cache = true);
 	void _clear_audio_streams();
 	void _clear_playing_caches();
 	void _init_root_motion_cache();
@@ -318,7 +318,7 @@ protected:
 	void _create_track_num_to_track_cache_for_animation(const Ref<Animation> &p_animation);
 
 	/* ---- Audio ---- */
-	AudioServer::PlaybackType playback_type;
+	AuSE::PlaybackType playback_type;
 
 	/* ---- Blending processor ---- */
 	LocalVector<AnimationInstance> animation_instances;

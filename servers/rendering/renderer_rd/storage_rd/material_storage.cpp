@@ -40,6 +40,12 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/storage/variant_converters.h"
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+#include "modules/texture_streaming/texture_streaming.h"
+#endif
+
 using namespace RendererRD;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -452,7 +458,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 3; i++) {
-				gui[i] = c.components[i];
+				gui[i] = c[i];
 			}
 
 		} break;
@@ -465,7 +471,7 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 4; i++) {
-				gui[i] = c.components[i];
+				gui[i] = c[i];
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
@@ -857,6 +863,14 @@ MaterialStorage::MaterialData::~MaterialData() {
 		material_storage->global_shader_uniforms.materials_using_texture.erase(global_texture_E);
 	}
 
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	if (material_feedback_rid.is_valid()) {
+		Vector<RID> empty_textures;
+		TextureStreaming::get_singleton()->material_set_textures(material_feedback_rid, empty_textures);
+		material_feedback_rid = RID();
+	}
+#endif
+
 	for (int i = 0; i < 2; i++) {
 		if (uniform_buffer[i].is_valid()) {
 			RD::get_singleton()->free_rid(uniform_buffer[i]);
@@ -875,6 +889,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 
 	bool uses_global_textures = false;
 	global_textures_pass++;
+	Vector<RID> material_feedback_textures;
 
 	for (int i = 0, k = 0; i < p_texture_uniforms.size(); i++) {
 		const StringName &uniform_name = p_texture_uniforms[i].name;
@@ -983,6 +998,9 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 
 				if (tex) {
 					rd_texture = (srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
+					if (tex->streaming_state.is_valid()) {
+						material_feedback_textures.push_back(tex->streaming_state);
+					}
 #ifdef TOOLS_ENABLED
 					if (tex->detect_3d_callback && p_3d_material) {
 						tex->detect_3d_callback(tex->detect_3d_callback_ud);
@@ -1019,6 +1037,13 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 			}
 		}
 	}
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	if (material_feedback_rid.is_valid() || !material_feedback_textures.is_empty()) {
+		material_feedback_rid = TextureStreaming::get_singleton()->material_set_textures(material_feedback_rid, material_feedback_textures);
+	}
+#endif
+
 	{
 		//for textures no longer used, unregister them
 		List<StringName> to_delete;
@@ -1282,6 +1307,7 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_modei, BLEND_MODE_SUB);
 	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_modei, BLEND_MODE_MUL);
 	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_modei, BLEND_MODE_DISABLED);
+	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_modei, BLEND_MODE_PREMULTIPLIED_ALPHA);
 
 	actions.uniforms = &uniforms;
 	Error err = texture_storage->tex_blit_shader.compiler.compile(RSE::SHADER_TEXTURE_BLIT, code, &actions, path, gen_code);
@@ -1359,6 +1385,15 @@ void MaterialStorage::TexBlitShaderData::set_code(const String &p_code) {
 			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
 			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
 			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+		} break;
+		case BLEND_MODE_PREMULTIPLIED_ALPHA: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 		} break;
 		case BLEND_MODE_DISABLED:
 		default: {
@@ -2189,9 +2224,7 @@ void MaterialStorage::shader_free(RID p_rid) {
 		}
 
 		//clear data if exists
-		if (shader->data) {
-			memdelete(shader->data);
-		}
+		memdelete(shader->data);
 	}
 
 	if (shader->embedded) {
@@ -2622,17 +2655,23 @@ RSE::CullMode RendererRD::MaterialStorage::material_get_cull_mode(RID p_material
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL_V(material, RSE::CULL_MODE_DISABLED);
 	ERR_FAIL_NULL_V(material->shader, RSE::CULL_MODE_DISABLED);
+
 	if (material->shader->type == ShaderType::SHADER_TYPE_3D && material->shader->data) {
+#ifdef FORWARD_RD_ENABLED
 		RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *sd_clustered = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *>(material->shader->data);
 		if (sd_clustered) {
 			return (RSE::CullMode)sd_clustered->cull_mode;
 		}
+#endif // FORWARD_RD_ENABLED
 
+#ifdef MOBILE_RD_ENABLED
 		RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *sd_mobile = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *>(material->shader->data);
 		if (sd_mobile) {
 			return (RSE::CullMode)sd_mobile->cull_mode;
 		}
+#endif // MOBILE_RD_ENABLED
 	}
+
 	return RSE::CULL_MODE_DISABLED;
 }
 

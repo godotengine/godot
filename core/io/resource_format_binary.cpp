@@ -110,15 +110,15 @@ void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {
 	}
 }
 
-static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
-	if (f->real_is_double) {
+static Error read_reals(real_t *r_dst, Ref<FileAccess> &r_file, size_t p_count) {
+	if (r_file->real_is_double) {
 		if constexpr (sizeof(real_t) == 8) {
 			// Ideal case with double-precision
-			f->get_buffer((uint8_t *)dst, count * sizeof(double));
+			r_file->get_buffer((uint8_t *)r_dst, p_count * sizeof(double));
 		} else if constexpr (sizeof(real_t) == 4) {
 			// May be slower, but this is for compatibility. Eventually the data should be converted.
-			for (size_t i = 0; i < count; ++i) {
-				dst[i] = f->get_double();
+			for (size_t i = 0; i < p_count; ++i) {
+				r_dst[i] = r_file->get_double();
 			}
 		} else {
 			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "real_t size is neither 4 nor 8!");
@@ -126,10 +126,10 @@ static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
 	} else {
 		if constexpr (sizeof(real_t) == 4) {
 			// Ideal case with float-precision
-			f->get_buffer((uint8_t *)dst, count * sizeof(float));
+			r_file->get_buffer((uint8_t *)r_dst, p_count * sizeof(float));
 		} else if constexpr (sizeof(real_t) == 8) {
-			for (size_t i = 0; i < count; ++i) {
-				dst[i] = f->get_float();
+			for (size_t i = 0; i < p_count; ++i) {
+				r_dst[i] = r_file->get_float();
 			}
 		} else {
 			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "real_t size is neither 4 nor 8!");
@@ -847,17 +847,17 @@ void ResourceLoaderBinary::set_translation_remapped(bool p_remapped) {
 	translation_remapped = p_remapped;
 }
 
-static void save_ustring(Ref<FileAccess> f, const String &p_string) {
+static void save_ustring(Ref<FileAccess> r_file, const String &p_string) {
 	CharString utf8 = p_string.utf8();
-	f->store_32(uint32_t(utf8.length() + 1));
-	f->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
+	r_file->store_32(uint32_t(utf8.length() + 1));
+	r_file->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
 }
 
-static String get_ustring(Ref<FileAccess> f) {
-	int len = f->get_32();
+static String get_ustring(Ref<FileAccess> r_file) {
+	int len = r_file->get_32();
 	Vector<char> str_buf;
 	str_buf.resize(len);
-	f->get_buffer((uint8_t *)&str_buf[0], len);
+	r_file->get_buffer((uint8_t *)&str_buf[0], len);
 	return String::utf8(&str_buf[0], len);
 }
 
@@ -873,23 +873,23 @@ String ResourceLoaderBinary::get_unicode_string() {
 	return String::utf8(&str_buf[0], len);
 }
 
-void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes) {
-	open(p_f, false, true);
+void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_file, HashSet<StringName> *p_classes) {
+	open(p_file, false, true);
 	if (error) {
 		return;
 	}
 
 	for (const IntResource &res : internal_resources) {
-		p_f->seek(res.offset);
+		p_file->seek(res.offset);
 		String t = get_unicode_string();
-		if (!p_f->get_error() && t != String() && ClassDB::class_exists(t)) {
+		if (!p_file->get_error() && t != String() && ClassDB::class_exists(t)) {
 			p_classes->insert(t);
 		}
 	}
 }
 
-void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types) {
-	open(p_f, false, true);
+void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_file, List<String> *p_dependencies, bool p_add_types) {
+	open(p_file, false, true);
 	if (error) {
 		return;
 	}
@@ -919,10 +919,10 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 	}
 }
 
-void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p_keep_uuid_paths) {
+void ResourceLoaderBinary::open(Ref<FileAccess> p_file, bool p_no_resources, bool p_keep_uuid_paths) {
 	error = OK;
 
-	f = p_f;
+	f = p_file;
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
@@ -1053,10 +1053,10 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 	}
 }
 
-String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
+String ResourceLoaderBinary::recognize(Ref<FileAccess> p_file) {
 	error = OK;
 
-	f = p_f;
+	f = p_file;
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
@@ -1094,10 +1094,10 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 	return get_unicode_string();
 }
 
-String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
+String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_file) {
 	error = OK;
 
-	f = p_f;
+	f = p_file;
 	uint8_t header[4];
 	f->get_buffer(header, 4);
 	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
@@ -1548,35 +1548,35 @@ bool ResourceFormatLoaderBinary::has_custom_uid_support() const {
 ///////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////
 
-void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> f, int p_bytes) {
+void ResourceFormatSaverBinaryInstance::_pad_buffer(Ref<FileAccess> r_file, int p_bytes) {
 	int extra = 4 - (p_bytes % 4);
 	if (extra < 4) {
 		for (int i = 0; i < extra; i++) {
-			f->store_8(0); //pad to 32
+			r_file->store_8(0); //pad to 32
 		}
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint) {
+void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> r_file, const Variant &p_property, HashMap<Ref<Resource>, int> &r_resource_map, HashMap<Ref<Resource>, int> &r_external_resources, HashMap<StringName, int> &r_string_map, const PropertyInfo &p_hint) {
 	switch (p_property.get_type()) {
 		case Variant::NIL: {
-			f->store_32(VARIANT_NIL);
+			r_file->store_32(VARIANT_NIL);
 			// don't store anything
 		} break;
 		case Variant::BOOL: {
-			f->store_32(VARIANT_BOOL);
+			r_file->store_32(VARIANT_BOOL);
 			bool val = p_property;
-			f->store_32(val);
+			r_file->store_32(val);
 		} break;
 		case Variant::INT: {
 			int64_t val = p_property;
 			if (val > 0x7FFFFFFF || val < -(int64_t)0x80000000) {
-				f->store_32(VARIANT_INT64);
-				f->store_64(uint64_t(val));
+				r_file->store_32(VARIANT_INT64);
+				r_file->store_64(uint64_t(val));
 
 			} else {
-				f->store_32(VARIANT_INT);
-				f->store_32(uint32_t(p_property));
+				r_file->store_32(VARIANT_INT);
+				r_file->store_32(uint32_t(p_property));
 			}
 
 		} break;
@@ -1584,393 +1584,393 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			double d = p_property;
 			float fl = d;
 			if (double(fl) != d) {
-				f->store_32(VARIANT_DOUBLE);
-				f->store_double(d);
+				r_file->store_32(VARIANT_DOUBLE);
+				r_file->store_double(d);
 			} else {
-				f->store_32(VARIANT_FLOAT);
-				f->store_real(fl);
+				r_file->store_32(VARIANT_FLOAT);
+				r_file->store_real(fl);
 			}
 
 		} break;
 		case Variant::STRING: {
-			f->store_32(VARIANT_STRING);
+			r_file->store_32(VARIANT_STRING);
 			String val = p_property;
-			save_unicode_string(f, val);
+			save_unicode_string(r_file, val);
 
 		} break;
 		case Variant::VECTOR2: {
-			f->store_32(VARIANT_VECTOR2);
+			r_file->store_32(VARIANT_VECTOR2);
 			Vector2 val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
+			r_file->store_real(val.x);
+			r_file->store_real(val.y);
 
 		} break;
 		case Variant::VECTOR2I: {
-			f->store_32(VARIANT_VECTOR2I);
+			r_file->store_32(VARIANT_VECTOR2I);
 			Vector2i val = p_property;
-			f->store_32(uint32_t(val.x));
-			f->store_32(uint32_t(val.y));
+			r_file->store_32(uint32_t(val.x));
+			r_file->store_32(uint32_t(val.y));
 
 		} break;
 		case Variant::RECT2: {
-			f->store_32(VARIANT_RECT2);
+			r_file->store_32(VARIANT_RECT2);
 			Rect2 val = p_property;
-			f->store_real(val.position.x);
-			f->store_real(val.position.y);
-			f->store_real(val.size.x);
-			f->store_real(val.size.y);
+			r_file->store_real(val.position.x);
+			r_file->store_real(val.position.y);
+			r_file->store_real(val.size.x);
+			r_file->store_real(val.size.y);
 
 		} break;
 		case Variant::RECT2I: {
-			f->store_32(VARIANT_RECT2I);
+			r_file->store_32(VARIANT_RECT2I);
 			Rect2i val = p_property;
-			f->store_32(uint32_t(val.position.x));
-			f->store_32(uint32_t(val.position.y));
-			f->store_32(uint32_t(val.size.x));
-			f->store_32(uint32_t(val.size.y));
+			r_file->store_32(uint32_t(val.position.x));
+			r_file->store_32(uint32_t(val.position.y));
+			r_file->store_32(uint32_t(val.size.x));
+			r_file->store_32(uint32_t(val.size.y));
 
 		} break;
 		case Variant::VECTOR3: {
-			f->store_32(VARIANT_VECTOR3);
+			r_file->store_32(VARIANT_VECTOR3);
 			Vector3 val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
-			f->store_real(val.z);
+			r_file->store_real(val.x);
+			r_file->store_real(val.y);
+			r_file->store_real(val.z);
 
 		} break;
 		case Variant::VECTOR3I: {
-			f->store_32(VARIANT_VECTOR3I);
+			r_file->store_32(VARIANT_VECTOR3I);
 			Vector3i val = p_property;
-			f->store_32(uint32_t(val.x));
-			f->store_32(uint32_t(val.y));
-			f->store_32(uint32_t(val.z));
+			r_file->store_32(uint32_t(val.x));
+			r_file->store_32(uint32_t(val.y));
+			r_file->store_32(uint32_t(val.z));
 
 		} break;
 		case Variant::VECTOR4: {
-			f->store_32(VARIANT_VECTOR4);
+			r_file->store_32(VARIANT_VECTOR4);
 			Vector4 val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
-			f->store_real(val.z);
-			f->store_real(val.w);
+			r_file->store_real(val.x);
+			r_file->store_real(val.y);
+			r_file->store_real(val.z);
+			r_file->store_real(val.w);
 
 		} break;
 		case Variant::VECTOR4I: {
-			f->store_32(VARIANT_VECTOR4I);
+			r_file->store_32(VARIANT_VECTOR4I);
 			Vector4i val = p_property;
-			f->store_32(uint32_t(val.x));
-			f->store_32(uint32_t(val.y));
-			f->store_32(uint32_t(val.z));
-			f->store_32(uint32_t(val.w));
+			r_file->store_32(uint32_t(val.x));
+			r_file->store_32(uint32_t(val.y));
+			r_file->store_32(uint32_t(val.z));
+			r_file->store_32(uint32_t(val.w));
 
 		} break;
 		case Variant::PLANE: {
-			f->store_32(VARIANT_PLANE);
+			r_file->store_32(VARIANT_PLANE);
 			Plane val = p_property;
-			f->store_real(val.normal.x);
-			f->store_real(val.normal.y);
-			f->store_real(val.normal.z);
-			f->store_real(val.d);
+			r_file->store_real(val.normal.x);
+			r_file->store_real(val.normal.y);
+			r_file->store_real(val.normal.z);
+			r_file->store_real(val.d);
 
 		} break;
 		case Variant::QUATERNION: {
-			f->store_32(VARIANT_QUATERNION);
+			r_file->store_32(VARIANT_QUATERNION);
 			Quaternion val = p_property;
-			f->store_real(val.x);
-			f->store_real(val.y);
-			f->store_real(val.z);
-			f->store_real(val.w);
+			r_file->store_real(val.x);
+			r_file->store_real(val.y);
+			r_file->store_real(val.z);
+			r_file->store_real(val.w);
 
 		} break;
 		case Variant::AABB: {
-			f->store_32(VARIANT_AABB);
+			r_file->store_32(VARIANT_AABB);
 			AABB val = p_property;
-			f->store_real(val.position.x);
-			f->store_real(val.position.y);
-			f->store_real(val.position.z);
-			f->store_real(val.size.x);
-			f->store_real(val.size.y);
-			f->store_real(val.size.z);
+			r_file->store_real(val.position.x);
+			r_file->store_real(val.position.y);
+			r_file->store_real(val.position.z);
+			r_file->store_real(val.size.x);
+			r_file->store_real(val.size.y);
+			r_file->store_real(val.size.z);
 
 		} break;
 		case Variant::TRANSFORM2D: {
-			f->store_32(VARIANT_TRANSFORM2D);
+			r_file->store_32(VARIANT_TRANSFORM2D);
 			Transform2D val = p_property;
-			f->store_real(val.columns[0].x);
-			f->store_real(val.columns[0].y);
-			f->store_real(val.columns[1].x);
-			f->store_real(val.columns[1].y);
-			f->store_real(val.columns[2].x);
-			f->store_real(val.columns[2].y);
+			r_file->store_real(val.columns[0].x);
+			r_file->store_real(val.columns[0].y);
+			r_file->store_real(val.columns[1].x);
+			r_file->store_real(val.columns[1].y);
+			r_file->store_real(val.columns[2].x);
+			r_file->store_real(val.columns[2].y);
 
 		} break;
 		case Variant::BASIS: {
-			f->store_32(VARIANT_BASIS);
+			r_file->store_32(VARIANT_BASIS);
 			Basis val = p_property;
-			f->store_real(val.rows[0].x);
-			f->store_real(val.rows[0].y);
-			f->store_real(val.rows[0].z);
-			f->store_real(val.rows[1].x);
-			f->store_real(val.rows[1].y);
-			f->store_real(val.rows[1].z);
-			f->store_real(val.rows[2].x);
-			f->store_real(val.rows[2].y);
-			f->store_real(val.rows[2].z);
+			r_file->store_real(val.rows[0].x);
+			r_file->store_real(val.rows[0].y);
+			r_file->store_real(val.rows[0].z);
+			r_file->store_real(val.rows[1].x);
+			r_file->store_real(val.rows[1].y);
+			r_file->store_real(val.rows[1].z);
+			r_file->store_real(val.rows[2].x);
+			r_file->store_real(val.rows[2].y);
+			r_file->store_real(val.rows[2].z);
 
 		} break;
 		case Variant::TRANSFORM3D: {
-			f->store_32(VARIANT_TRANSFORM3D);
+			r_file->store_32(VARIANT_TRANSFORM3D);
 			Transform3D val = p_property;
-			f->store_real(val.basis.rows[0].x);
-			f->store_real(val.basis.rows[0].y);
-			f->store_real(val.basis.rows[0].z);
-			f->store_real(val.basis.rows[1].x);
-			f->store_real(val.basis.rows[1].y);
-			f->store_real(val.basis.rows[1].z);
-			f->store_real(val.basis.rows[2].x);
-			f->store_real(val.basis.rows[2].y);
-			f->store_real(val.basis.rows[2].z);
-			f->store_real(val.origin.x);
-			f->store_real(val.origin.y);
-			f->store_real(val.origin.z);
+			r_file->store_real(val.basis.rows[0].x);
+			r_file->store_real(val.basis.rows[0].y);
+			r_file->store_real(val.basis.rows[0].z);
+			r_file->store_real(val.basis.rows[1].x);
+			r_file->store_real(val.basis.rows[1].y);
+			r_file->store_real(val.basis.rows[1].z);
+			r_file->store_real(val.basis.rows[2].x);
+			r_file->store_real(val.basis.rows[2].y);
+			r_file->store_real(val.basis.rows[2].z);
+			r_file->store_real(val.origin.x);
+			r_file->store_real(val.origin.y);
+			r_file->store_real(val.origin.z);
 
 		} break;
 		case Variant::PROJECTION: {
-			f->store_32(VARIANT_PROJECTION);
+			r_file->store_32(VARIANT_PROJECTION);
 			Projection val = p_property;
-			f->store_real(val.columns[0].x);
-			f->store_real(val.columns[0].y);
-			f->store_real(val.columns[0].z);
-			f->store_real(val.columns[0].w);
-			f->store_real(val.columns[1].x);
-			f->store_real(val.columns[1].y);
-			f->store_real(val.columns[1].z);
-			f->store_real(val.columns[1].w);
-			f->store_real(val.columns[2].x);
-			f->store_real(val.columns[2].y);
-			f->store_real(val.columns[2].z);
-			f->store_real(val.columns[2].w);
-			f->store_real(val.columns[3].x);
-			f->store_real(val.columns[3].y);
-			f->store_real(val.columns[3].z);
-			f->store_real(val.columns[3].w);
+			r_file->store_real(val.columns[0].x);
+			r_file->store_real(val.columns[0].y);
+			r_file->store_real(val.columns[0].z);
+			r_file->store_real(val.columns[0].w);
+			r_file->store_real(val.columns[1].x);
+			r_file->store_real(val.columns[1].y);
+			r_file->store_real(val.columns[1].z);
+			r_file->store_real(val.columns[1].w);
+			r_file->store_real(val.columns[2].x);
+			r_file->store_real(val.columns[2].y);
+			r_file->store_real(val.columns[2].z);
+			r_file->store_real(val.columns[2].w);
+			r_file->store_real(val.columns[3].x);
+			r_file->store_real(val.columns[3].y);
+			r_file->store_real(val.columns[3].z);
+			r_file->store_real(val.columns[3].w);
 
 		} break;
 		case Variant::COLOR: {
-			f->store_32(VARIANT_COLOR);
+			r_file->store_32(VARIANT_COLOR);
 			Color val = p_property;
 			// Color are always floats
-			f->store_float(val.r);
-			f->store_float(val.g);
-			f->store_float(val.b);
-			f->store_float(val.a);
+			r_file->store_float(val.r);
+			r_file->store_float(val.g);
+			r_file->store_float(val.b);
+			r_file->store_float(val.a);
 
 		} break;
 		case Variant::STRING_NAME: {
-			f->store_32(VARIANT_STRING_NAME);
+			r_file->store_32(VARIANT_STRING_NAME);
 			String val = p_property;
-			save_unicode_string(f, val);
+			save_unicode_string(r_file, val);
 
 		} break;
 
 		case Variant::NODE_PATH: {
-			f->store_32(VARIANT_NODE_PATH);
+			r_file->store_32(VARIANT_NODE_PATH);
 			NodePath np = p_property;
-			f->store_16(np.get_name_count());
+			r_file->store_16(np.get_name_count());
 			uint16_t snc = np.get_subname_count();
 			if (np.is_absolute()) {
 				snc |= 0x8000;
 			}
-			f->store_16(snc);
+			r_file->store_16(snc);
 			for (int i = 0; i < np.get_name_count(); i++) {
-				if (string_map.has(np.get_name(i))) {
-					f->store_32(uint32_t(string_map[np.get_name(i)]));
+				if (r_string_map.has(np.get_name(i))) {
+					r_file->store_32(uint32_t(r_string_map[np.get_name(i)]));
 				} else {
-					save_unicode_string(f, np.get_name(i), true);
+					save_unicode_string(r_file, np.get_name(i), true);
 				}
 			}
 			for (int i = 0; i < np.get_subname_count(); i++) {
-				if (string_map.has(np.get_subname(i))) {
-					f->store_32(uint32_t(string_map[np.get_subname(i)]));
+				if (r_string_map.has(np.get_subname(i))) {
+					r_file->store_32(uint32_t(r_string_map[np.get_subname(i)]));
 				} else {
-					save_unicode_string(f, np.get_subname(i), true);
+					save_unicode_string(r_file, np.get_subname(i), true);
 				}
 			}
 
 		} break;
 		case Variant::RID: {
-			f->store_32(VARIANT_RID);
+			r_file->store_32(VARIANT_RID);
 			WARN_PRINT("Can't save RIDs.");
 			RID val = p_property;
-			f->store_32(uint32_t(val.get_id()));
+			r_file->store_32(uint32_t(val.get_id()));
 		} break;
 		case Variant::OBJECT: {
-			f->store_32(VARIANT_OBJECT);
+			r_file->store_32(VARIANT_OBJECT);
 			Ref<Resource> res = p_property;
 			if (res.is_null() || res->get_meta(SNAME("_skip_save_"), false)) {
-				f->store_32(OBJECT_EMPTY);
+				r_file->store_32(OBJECT_EMPTY);
 				return; // Don't save it.
 			}
 
 			if (!res->is_built_in()) {
-				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
-				f->store_32(uint32_t(external_resources[res]));
+				r_file->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
+				r_file->store_32(uint32_t(r_external_resources[res]));
 			} else {
-				if (!resource_map.has(res)) {
-					f->store_32(OBJECT_EMPTY);
+				if (!r_resource_map.has(res)) {
+					r_file->store_32(OBJECT_EMPTY);
 					ERR_FAIL_MSG("Resource was not pre cached for the resource section, most likely due to circular reference.");
 				}
 
-				f->store_32(OBJECT_INTERNAL_RESOURCE);
-				f->store_32(uint32_t(resource_map[res]));
+				r_file->store_32(OBJECT_INTERNAL_RESOURCE);
+				r_file->store_32(uint32_t(r_resource_map[res]));
 				//internal resource
 			}
 
 		} break;
 		case Variant::CALLABLE: {
-			f->store_32(VARIANT_CALLABLE);
+			r_file->store_32(VARIANT_CALLABLE);
 			WARN_PRINT("Can't save Callables.");
 		} break;
 		case Variant::SIGNAL: {
-			f->store_32(VARIANT_SIGNAL);
+			r_file->store_32(VARIANT_SIGNAL);
 			WARN_PRINT("Can't save Signals.");
 		} break;
 
 		case Variant::DICTIONARY: {
-			f->store_32(VARIANT_DICTIONARY);
+			r_file->store_32(VARIANT_DICTIONARY);
 			Dictionary d = p_property;
-			f->store_32(uint32_t(d.size()));
+			r_file->store_32(uint32_t(d.size()));
 
 			for (const KeyValue<Variant, Variant> &kv : d) {
-				write_variant(f, kv.key, resource_map, external_resources, string_map);
-				write_variant(f, kv.value, resource_map, external_resources, string_map);
+				write_variant(r_file, kv.key, r_resource_map, r_external_resources, r_string_map);
+				write_variant(r_file, kv.value, r_resource_map, r_external_resources, r_string_map);
 			}
 
 		} break;
 		case Variant::ARRAY: {
-			f->store_32(VARIANT_ARRAY);
+			r_file->store_32(VARIANT_ARRAY);
 			Array a = p_property;
-			f->store_32(uint32_t(a.size()));
+			r_file->store_32(uint32_t(a.size()));
 			for (const Variant &var : a) {
-				write_variant(f, var, resource_map, external_resources, string_map);
+				write_variant(r_file, var, r_resource_map, r_external_resources, r_string_map);
 			}
 
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
-			f->store_32(VARIANT_PACKED_BYTE_ARRAY);
+			r_file->store_32(VARIANT_PACKED_BYTE_ARRAY);
 			Vector<uint8_t> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const uint8_t *r = arr.ptr();
-			f->store_buffer(r, len);
-			_pad_buffer(f, len);
+			r_file->store_buffer(r, len);
+			_pad_buffer(r_file, len);
 
 		} break;
 		case Variant::PACKED_INT32_ARRAY: {
-			f->store_32(VARIANT_PACKED_INT32_ARRAY);
+			r_file->store_32(VARIANT_PACKED_INT32_ARRAY);
 			Vector<int32_t> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const int32_t *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_32(uint32_t(r[i]));
+				r_file->store_32(uint32_t(r[i]));
 			}
 
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
-			f->store_32(VARIANT_PACKED_INT64_ARRAY);
+			r_file->store_32(VARIANT_PACKED_INT64_ARRAY);
 			Vector<int64_t> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const int64_t *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_64(uint64_t(r[i]));
+				r_file->store_64(uint64_t(r[i]));
 			}
 
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
-			f->store_32(VARIANT_PACKED_FLOAT32_ARRAY);
+			r_file->store_32(VARIANT_PACKED_FLOAT32_ARRAY);
 			Vector<float> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const float *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_float(r[i]);
+				r_file->store_float(r[i]);
 			}
 
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
-			f->store_32(VARIANT_PACKED_FLOAT64_ARRAY);
+			r_file->store_32(VARIANT_PACKED_FLOAT64_ARRAY);
 			Vector<double> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const double *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_double(r[i]);
+				r_file->store_double(r[i]);
 			}
 
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
-			f->store_32(VARIANT_PACKED_STRING_ARRAY);
+			r_file->store_32(VARIANT_PACKED_STRING_ARRAY);
 			Vector<String> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const String *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				save_unicode_string(f, r[i]);
+				save_unicode_string(r_file, r[i]);
 			}
 		} break;
 
 		case Variant::PACKED_VECTOR2_ARRAY: {
-			f->store_32(VARIANT_PACKED_VECTOR2_ARRAY);
+			r_file->store_32(VARIANT_PACKED_VECTOR2_ARRAY);
 			Vector<Vector2> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const Vector2 *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
+				r_file->store_real(r[i].x);
+				r_file->store_real(r[i].y);
 			}
 		} break;
 
 		case Variant::PACKED_VECTOR3_ARRAY: {
-			f->store_32(VARIANT_PACKED_VECTOR3_ARRAY);
+			r_file->store_32(VARIANT_PACKED_VECTOR3_ARRAY);
 			Vector<Vector3> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const Vector3 *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
-				f->store_real(r[i].z);
+				r_file->store_real(r[i].x);
+				r_file->store_real(r[i].y);
+				r_file->store_real(r[i].z);
 			}
 		} break;
 
 		case Variant::PACKED_COLOR_ARRAY: {
-			f->store_32(VARIANT_PACKED_COLOR_ARRAY);
+			r_file->store_32(VARIANT_PACKED_COLOR_ARRAY);
 			Vector<Color> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const Color *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_float(r[i].r);
-				f->store_float(r[i].g);
-				f->store_float(r[i].b);
-				f->store_float(r[i].a);
+				r_file->store_float(r[i].r);
+				r_file->store_float(r[i].g);
+				r_file->store_float(r[i].b);
+				r_file->store_float(r[i].a);
 			}
 
 		} break;
 		case Variant::PACKED_VECTOR4_ARRAY: {
-			f->store_32(VARIANT_PACKED_VECTOR4_ARRAY);
+			r_file->store_32(VARIANT_PACKED_VECTOR4_ARRAY);
 			Vector<Vector4> arr = p_property;
 			int len = arr.size();
-			f->store_32(uint32_t(len));
+			r_file->store_32(uint32_t(len));
 			const Vector4 *r = arr.ptr();
 			for (int i = 0; i < len; i++) {
-				f->store_real(r[i].x);
-				f->store_real(r[i].y);
-				f->store_real(r[i].z);
-				f->store_real(r[i].w);
+				r_file->store_real(r[i].x);
+				r_file->store_real(r[i].y);
+				r_file->store_real(r[i].z);
+				r_file->store_real(r[i].w);
 			}
 
 		} break;
@@ -2069,14 +2069,14 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 	}
 }
 
-void ResourceFormatSaverBinaryInstance::save_unicode_string(Ref<FileAccess> p_f, const String &p_string, bool p_bit_on_len) {
+void ResourceFormatSaverBinaryInstance::save_unicode_string(Ref<FileAccess> r_file, const String &p_string, bool p_bit_on_len) {
 	CharString utf8 = p_string.utf8();
 	if (p_bit_on_len) {
-		p_f->store_32(uint32_t((utf8.length() + 1) | 0x80000000));
+		r_file->store_32(uint32_t((utf8.length() + 1) | 0x80000000));
 	} else {
-		p_f->store_32(uint32_t(utf8.length() + 1));
+		r_file->store_32(uint32_t(utf8.length() + 1));
 	}
-	p_f->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
+	r_file->store_buffer((const uint8_t *)utf8.get_data(), utf8.length() + 1);
 }
 
 int ResourceFormatSaverBinaryInstance::get_string_index(const String &p_string) {

@@ -110,6 +110,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	HashSet<StringName> saturation_exceptions;
 	saturation_exceptions.insert("DefaultProjectIcon");
 	saturation_exceptions.insert("Godot");
+	saturation_exceptions.insert("GodotFile");
 	saturation_exceptions.insert("Logo");
 	saturation_exceptions.insert("TitleBarLogo");
 

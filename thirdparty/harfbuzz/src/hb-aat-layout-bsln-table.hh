@@ -127,10 +127,10 @@ struct bsln
 
     switch (format)
     {
-    case 0: return_trace (parts.format0.sanitize (c));
-    case 1: return_trace (parts.format1.sanitize (c));
-    case 2: return_trace (parts.format2.sanitize (c));
-    case 3: return_trace (parts.format3.sanitize (c));
+    case 0: hb_barrier (); return_trace (parts.format0.sanitize (c));
+    case 1: hb_barrier (); return_trace (parts.format1.sanitize (c));
+    case 2: hb_barrier (); return_trace (parts.format2.sanitize (c));
+    case 3: hb_barrier (); return_trace (parts.format3.sanitize (c));
     default:return_trace (true);
     }
   }

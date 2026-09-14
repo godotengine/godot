@@ -109,6 +109,7 @@ public:
 	virtual int find_item_index_with_submenu(const RID &p_rid, const RID &p_submenu_rid) const;
 
 	virtual bool is_item_checked(const RID &p_rid, int p_idx) const;
+	virtual bool is_item_indeterminate(const RID &p_rid, int p_idx) const;
 	virtual bool is_item_checkable(const RID &p_rid, int p_idx) const;
 	virtual bool is_item_radio_checkable(const RID &p_rid, int p_idx) const;
 	virtual Callable get_item_callback(const RID &p_rid, int p_idx) const;
@@ -126,6 +127,7 @@ public:
 	virtual int get_item_indentation_level(const RID &p_rid, int p_idx) const;
 
 	virtual void set_item_checked(const RID &p_rid, int p_idx, bool p_checked);
+	virtual void set_item_indeterminate(const RID &p_rid, int p_idx, bool p_indeterminate);
 	virtual void set_item_checkable(const RID &p_rid, int p_idx, bool p_checkable);
 	virtual void set_item_radio_checkable(const RID &p_rid, int p_idx, bool p_checkable);
 	virtual void set_item_callback(const RID &p_rid, int p_idx, const Callable &p_callback);

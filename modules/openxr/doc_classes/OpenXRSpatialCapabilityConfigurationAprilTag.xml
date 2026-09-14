@@ -31,7 +31,7 @@
 			5 by 5 bits, minimum Hamming distance between any two codes = 9, 35 codes.
 		</constant>
 		<constant name="APRIL_TAG_DICT_36H10" value="3" enum="AprilTagDict">
-			 6 by 6 bits, minimum Hamming distance between any two codes = 10, 2320 codes.
+			6 by 6 bits, minimum Hamming distance between any two codes = 10, 2320 codes.
 		</constant>
 		<constant name="APRIL_TAG_DICT_36H11" value="4" enum="AprilTagDict">
 			6 by 6 bits, minimum Hamming distance between any two codes = 11, 587 codes.

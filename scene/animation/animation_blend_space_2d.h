@@ -35,6 +35,9 @@
 class AnimationNodeBlendSpace2D : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode);
 
+	const String ERR_NO_TRIANGLE = "No triangles exist, so blending cannot take place.";
+	const String ERR_INVALID_POINT = "Cyclic sync modes require that all blend points in BlendSpace use non-nested Animation nodes with a finite, immutable length.";
+
 public:
 	enum BlendMode {
 		BLEND_MODE_INTERPOLATED,
@@ -90,6 +93,10 @@ protected:
 
 	void _set_triangles(const Vector<int> &p_triangles);
 	Vector<int> _get_triangles() const;
+
+#ifndef DISABLE_DEPRECATED
+	void _retry_set_triangles(const Vector<int> &p_triangles);
+#endif // DISABLE_DEPRECATED
 
 	void _blend_triangle(const Vector2 &p_pos, const LocalVector<Vector2> &p_points, LocalVector<float> &r_weights);
 

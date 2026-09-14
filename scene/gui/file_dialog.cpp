@@ -457,6 +457,10 @@ void FileDialog::_push_history() {
 }
 
 void FileDialog::_action_pressed() {
+	if (_is_open_should_be_disabled()) {
+		return;
+	}
+
 	if (mode == FILE_MODE_OPEN_FILES) {
 		const Vector<String> files = get_selected_files();
 		if (!files.is_empty()) {
@@ -1234,6 +1238,10 @@ void FileDialog::update_customization() {
 	favorite_button->set_visible(customization_flags[CUSTOMIZATION_FAVORITES]);
 	favorite_vbox->set_visible(customization_flags[CUSTOMIZATION_FAVORITES]);
 	recent_vbox->set_visible(customization_flags[CUSTOMIZATION_RECENT]);
+	dir_prev->set_visible(customization_flags[CUSTOMIZATION_NAVIGATION_BUTTONS]);
+	dir_next->set_visible(customization_flags[CUSTOMIZATION_NAVIGATION_BUTTONS]);
+	drives->set_visible(customization_flags[CUSTOMIZATION_DRIVE_SELECTOR]);
+	filter->set_visible(customization_flags[CUSTOMIZATION_FILTERS]);
 }
 
 void FileDialog::clear_filename_filter() {
@@ -1578,6 +1586,7 @@ void FileDialog::_invalidate() {
 	}
 
 	update_file_list();
+	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 
 	if (ensure_visible_after_invalidating) {
 		file_list->ensure_current_is_visible();
@@ -2185,6 +2194,9 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "layout_toggle_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_LAYOUT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "overwrite_warning_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_OVERWRITE_WARNING);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "deleting_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_DELETE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "navigation_buttons_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_NAVIGATION_BUTTONS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "drive_selector_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_DRIVE_SELECTOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "filters_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_FILTERS);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE_PATH, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
@@ -2217,6 +2229,9 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_LAYOUT);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_OVERWRITE_WARNING);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_DELETE);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_NAVIGATION_BUTTONS);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_DRIVE_SELECTOR);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_FILTERS);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FileDialog, thumbnail_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);
@@ -2274,6 +2289,7 @@ void FileDialog::set_show_hidden_files(bool p_show) {
 	if (show_hidden_files == p_show) {
 		return;
 	}
+	show_hidden->set_pressed_no_signal(p_show);
 	show_hidden_files = p_show;
 	invalidate();
 }
@@ -2627,6 +2643,7 @@ FileDialog::FileDialog() {
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // Too many extensions overflows it.
+	filter->set_fit_to_longest_item(false);
 	file_box->add_child(filter);
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_filter_selected));
 
@@ -2645,6 +2662,7 @@ FileDialog::FileDialog() {
 	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_save_confirm_pressed));
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	delete_dialog->set_text(ETR("Delete the selected file?\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 	add_child(delete_dialog, false, INTERNAL_MODE_FRONT);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_delete_confirm));
@@ -2663,10 +2681,12 @@ FileDialog::FileDialog() {
 	make_dir_dialog->register_text_enter(new_dir_name);
 
 	mkdirerr = memnew(AcceptDialog);
+	mkdirerr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	mkdirerr->set_text(ETR("Could not create folder."));
 	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
+	exterr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	exterr->set_text(ETR("Invalid extension, or empty filename."));
 	add_child(exterr, false, INTERNAL_MODE_FRONT);
 

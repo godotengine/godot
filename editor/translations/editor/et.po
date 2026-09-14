@@ -681,9 +681,6 @@ msgstr "Vahetu"
 msgid "At End"
 msgstr "Lõpus"
 
-msgid "No playback resource set at path: %s."
-msgstr "Teele %s pole taasesitusressurssi määratud."
-
 msgid "Node Removed"
 msgstr "Sõlm Eemaldatud"
 
@@ -8234,6 +8231,9 @@ msgstr "Signtool'il ebaõnnestus käivitatava faili allkirjastamine: %s."
 
 msgid "Preparing geometry %d/%d"
 msgstr "Geomeetria ettevalmistamine  %d/%d"
+
+msgid "No playback resource set at path: %s."
+msgstr "Teele %s pole taasesitusressurssi määratud."
 
 msgid "Top Orthogonal"
 msgstr "Ülaltvaade (Ortograafiline)"

@@ -108,8 +108,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-05-23 08:11+0000\n"
-"Last-Translator: Gianmarco Cavallo <cavallogianmarco@gmail.com>\n"
+"PO-Revision-Date: 2026-06-16 19:05+0000\n"
+"Last-Translator: Micky <micheledevita2@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -117,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2026.6.dev0\n"
+"X-Generator: Weblate 2026.7.dev0\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -399,7 +399,7 @@ msgid "Occlusion Culling"
 msgstr "Occlusion culling"
 
 msgid "BVH Build Quality"
-msgstr "Qualità compilazione BVH"
+msgstr "Qualità di costruzione BVH"
 
 msgid "Jitter Projection"
 msgstr "Tremola proiezione"
@@ -492,10 +492,10 @@ msgid "D3D12"
 msgstr "D3D12"
 
 msgid "Max Resource Descriptors"
-msgstr "Numero massimo di descrittori di risorse"
+msgstr "Numero massimo di risorse per frame"
 
 msgid "Max Sampler Descriptors"
-msgstr "Numero massimo di descrittori del campionatore"
+msgstr "Numero massimo di campionatori per frame"
 
 msgid "Agility SDK Version"
 msgstr "Versione di SDK Agility"
@@ -1266,10 +1266,10 @@ msgid "Generate Shadow Mesh"
 msgstr "Genera mesh d'ombra"
 
 msgid "Generate Lightmap UV2"
-msgstr "Genera lightmap UV2"
+msgstr "Genera UV2 per lightmap"
 
 msgid "Generate Lightmap UV2 Texel Size"
-msgstr "Dimensioni dei texel generati della lightmap UV2"
+msgstr "Dimensioni dei texel generati di UV2 per lightmap"
 
 msgid "Scale Mesh"
 msgstr "Scala della mesh"
@@ -1407,7 +1407,7 @@ msgid "Shadow Meshes"
 msgstr "Mesh d'ombra"
 
 msgid "Lightmap UV"
-msgstr "UV della lightmap"
+msgstr "UV per lightmap"
 
 msgid "LODs"
 msgstr "Livelli di dettaglio"
@@ -1716,7 +1716,7 @@ msgid "Roughness"
 msgstr "Rugosità"
 
 msgid "Src Normal"
-msgstr "Sorgente delle normali"
+msgstr "Sorgente di normali"
 
 msgid "Process"
 msgstr "Processo"
@@ -1737,7 +1737,7 @@ msgid "Alpha"
 msgstr "Alfa"
 
 msgid "Normal Map Invert Y"
-msgstr "Inverti Y in normal map"
+msgstr "Inverti Y in mappa di normali"
 
 msgid "HDR as sRGB"
 msgstr "HDR come sRGB"
@@ -1759,6 +1759,9 @@ msgstr "SVG"
 
 msgid "Editor"
 msgstr "Editor"
+
+msgid "Scale with Editor Scale"
+msgstr "Scala con la scala dell'editor"
 
 msgid "Atlas File"
 msgstr "File dell'atlante"
@@ -1798,10 +1801,10 @@ msgid "Normalize"
 msgstr "Normalizza"
 
 msgid "Loop Begin"
-msgstr "Inizio Loop"
+msgstr "Inizio loop"
 
 msgid "Loop End"
-msgstr "Fine Loop"
+msgstr "Fine loop"
 
 msgid "Draw Label"
 msgstr "Disegna etichetta"
@@ -1973,6 +1976,9 @@ msgstr "Localizzazione"
 
 msgid "Editor Language"
 msgstr "Lingua dell'editor"
+
+msgid "Asset Store"
+msgstr "Asset Store"
 
 msgid "Use Threads"
 msgstr "Usa i thread"
@@ -2254,6 +2260,9 @@ msgstr "Mostra pulsante di script"
 msgid "Restore Scenes on Load"
 msgstr "Ripristina scene al caricamento"
 
+msgid "Auto Select Current Scene File"
+msgstr "Seleziona automaticamente il file di scena attuale"
+
 msgid "Multi Window"
 msgstr "Multi-finestra"
 
@@ -2401,6 +2410,9 @@ msgstr "Estensioni di file di testo"
 msgid "Other File Extensions"
 msgstr "Altre estensioni di file"
 
+msgid "Ask Before Moving Files"
+msgstr "Chiedi prima di spostare i file"
+
 msgid "Property Editor"
 msgstr "Editor di proprietà"
 
@@ -2408,7 +2420,7 @@ msgid "Auto Refresh Interval"
 msgstr "Intervallo di aggiornamento automatico"
 
 msgid "Subresource Hue Tint"
-msgstr "Tinta tono delle sottorisorse"
+msgstr "Tinta tono delle sotto-risorse"
 
 msgid "Text Editor"
 msgstr "Editor di testo"
@@ -2750,7 +2762,7 @@ msgid "Visibility Notifier"
 msgstr "Notificatore di visibilità"
 
 msgid "Voxel GI"
-msgstr "VoxelGI"
+msgstr "Voxel GI"
 
 msgid "Path Tilt"
 msgstr "Inclinazione percorso"
@@ -3149,7 +3161,7 @@ msgid "Debugger"
 msgstr "Debugger"
 
 msgid "Auto Switch to Remote Scene Tree"
-msgstr "Passa automaticamente all'albero di scena remoto"
+msgstr "Passa automaticamente all'albero di scene remoto"
 
 msgid "Auto Switch to Stack Trace"
 msgstr "Passa automaticamente all'analisi dello stack"
@@ -3404,7 +3416,7 @@ msgid "Reference Space"
 msgstr "Spazio di riferimento"
 
 msgid "Environment Blend Mode"
-msgstr "Modo di fusione d'ambiente"
+msgstr "Modalità di fusione dell'ambiente"
 
 msgid "Foveation Level"
 msgstr "Livello di foveazione"
@@ -3416,7 +3428,7 @@ msgid "Submit Depth Buffer"
 msgstr "Invia buffer di profondità"
 
 msgid "Startup Alert"
-msgstr "Segnalazione d'inizio"
+msgstr "Segnalazione all'avvio"
 
 msgid "Extensions"
 msgstr "Estensioni"
@@ -3428,7 +3440,7 @@ msgid "Debug Message Types"
 msgstr "Tipi per i messaggi di debug"
 
 msgid "Frame Synthesis"
-msgstr "Creazione di Fotogramma"
+msgstr "Sintesi di frame"
 
 msgid "Hand Tracking"
 msgstr "Tracciamento delle mani"
@@ -3441,6 +3453,21 @@ msgstr "Sorgente dei dati di tracciamento delle mani (controller)"
 
 msgid "Hand Interaction Profile"
 msgstr "Profilo d'interazione delle mani"
+
+msgid "Enable Spatial Anchors"
+msgstr "Abilita ancoraggi spaziali"
+
+msgid "Enable Persistent Anchors"
+msgstr "Abilita ancoraggi persistenti"
+
+msgid "Enable Plane Tracking"
+msgstr "Abilita tracciamento dei piani"
+
+msgid "Enable Marker Tracking"
+msgstr "Abilita tracciamento dei marcatori"
+
+msgid "Enable Builtin Marker Tracking"
+msgstr "Abilita tracciamento dei marcatori integrato"
 
 msgid "Eye Gaze Interaction"
 msgstr "Interazione con lo sguardo degli occhi"
@@ -3506,7 +3533,7 @@ msgid "Show Image"
 msgstr "Mostra immagine"
 
 msgid "Stretch Mode"
-msgstr "Modo di stiramento"
+msgstr "Modalità di stiramento"
 
 msgid "Use Filter"
 msgstr "Usa filtro"
@@ -4283,7 +4310,7 @@ msgid "Position Steps"
 msgstr "Passi di posizione"
 
 msgid "Use Enhanced Internal Edge Removal"
-msgstr "Usa la rimozione avanzata dei bordi interni"
+msgstr "Usa rimozione avanzata dei bordi interni"
 
 msgid "Generate All Kinematic Contacts"
 msgstr "Genera tutti i contatti cinematici"
@@ -4295,7 +4322,7 @@ msgid "Speculative Contact Distance"
 msgstr "Distanza di contatto speculativo"
 
 msgid "Baumgarte Stabilization Factor"
-msgstr "Fattore di stabilizzazione Baumgarte"
+msgstr "Fattore di stabilizzazione di Baumgarte"
 
 msgid "Soft Body Point Radius"
 msgstr "Raggio dei punti dei corpi deformabili"
@@ -4349,7 +4376,7 @@ msgid "Collision Margin Fraction"
 msgstr "Frazione del margine di collisione"
 
 msgid "Active Edge Threshold"
-msgstr "Soglia del bordo attivo"
+msgstr "Soglia dei bordi attivi"
 
 msgid "World Node"
 msgstr "Nodo del mondo"
@@ -4667,7 +4694,7 @@ msgid "Alpha Blend"
 msgstr "Fusione dell'alfa"
 
 msgid "Enable Hole Punch"
-msgstr "Abilita la perforazione"
+msgstr "Abilita perforazione"
 
 msgid "Swapchain State"
 msgstr "Stato della swapchain"
@@ -4980,6 +5007,9 @@ msgstr "Usa il Wi-FI per il debug remoto"
 
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Host di debug remoto tramite Wi-Fi"
+
+msgid "Splash Screen"
+msgstr "Schermata di avvio"
 
 msgid "Background Color"
 msgstr "Colore per lo sfondo"
@@ -5336,19 +5366,19 @@ msgid "Device Bluetooth"
 msgstr "Dispositivo Bluetooth"
 
 msgid "Files Downloads"
-msgstr "File Download"
+msgstr "File in Download"
 
 msgid "Files Pictures"
-msgstr "File Immagini"
+msgstr "File in Immagini"
 
 msgid "Files Music"
-msgstr "File Audio"
+msgstr "File in Musica"
 
 msgid "Files Movies"
-msgstr "File Video"
+msgstr "File in Film"
 
 msgid "Files User Selected"
-msgstr "File Utente selezionato"
+msgstr "File in selezionati dall'utente"
 
 msgid "Helper Executables"
 msgstr "Eseguibili ausiliari"
@@ -5465,7 +5495,7 @@ msgid "For Desktop"
 msgstr "Per il desktop"
 
 msgid "For Mobile"
-msgstr "Per dispositivi mobile"
+msgstr "Per dispositivi mobili"
 
 msgid "HTML"
 msgstr "HTML"
@@ -5477,7 +5507,7 @@ msgid "Custom HTML Shell"
 msgstr "Shell HTML personalizzato"
 
 msgid "Head Include"
-msgstr "Includi head"
+msgstr "Includi in head"
 
 msgid "Canvas Resize Policy"
 msgstr "Regole di ridimensionamento canvas"
@@ -5489,7 +5519,7 @@ msgid "Experimental Virtual Keyboard"
 msgstr "Tastiera virtuale sperimentale"
 
 msgid "Progressive Web App"
-msgstr "Applicazione Web progressiva"
+msgstr "Applicazione Web Progressiva"
 
 msgid "Ensure Cross Origin Isolation Headers"
 msgstr "Garantisci intestazioni di isolamento cross-origin"
@@ -6272,7 +6302,7 @@ msgid "Pickable"
 msgstr "Selezionabile"
 
 msgid "Build Mode"
-msgstr "Modo di costruzione"
+msgstr "Modalità di costruzione"
 
 msgid "Disabled"
 msgstr "Disattivato"
@@ -6594,7 +6624,7 @@ msgid "External Skeleton"
 msgstr "Scheletro esterno"
 
 msgid "Keep Aspect"
-msgstr "Mantieni l'aspetto"
+msgstr "Mantieni aspetto"
 
 msgid "Cull Mask"
 msgstr "Maschera di culling"
@@ -6682,7 +6712,7 @@ msgid "Lower Fade"
 msgstr "Dissolvenza inferiore"
 
 msgid "Distance Fade"
-msgstr "Distanza dissolvenza"
+msgstr "Dissolvenza a distanza"
 
 msgid "Transform Align"
 msgstr "Allineamento trasformazione"
@@ -8650,6 +8680,9 @@ msgstr "Mostra dietro al genitore"
 msgid "Clip Children"
 msgstr "Ritaglia i figli"
 
+msgid "Oversampling with Scale"
+msgstr "Sovracampionamento con scala"
+
 msgid "Light Mask"
 msgstr "Maschera di luce"
 
@@ -8900,7 +8933,7 @@ msgid "Scaling 3D Scale"
 msgstr "Scala di ridimensionamento 3D"
 
 msgid "Texture Mipmap Bias"
-msgstr "Bias del mipmap delle texture"
+msgstr "Bias delle mipmap delle texture"
 
 msgid "Anisotropic Filtering Level"
 msgstr "Livello del filtro anisotropico"
@@ -9236,7 +9269,7 @@ msgid "Transpose"
 msgstr "Trasponi"
 
 msgid "Texture Origin"
-msgstr "Origine della texture"
+msgstr "Origine di texture"
 
 msgid "Terrain Set"
 msgstr "Insieme di terreni"
@@ -11916,7 +11949,7 @@ msgid "Half Size"
 msgstr "Usa mezze dimensioni"
 
 msgid "Adaptive Target"
-msgstr "Obiettivo adattabile"
+msgstr "Obiettivo adattivo"
 
 msgid "Blur Passes"
 msgstr "Passaggi di sfocatura"
@@ -12192,7 +12225,7 @@ msgid "Blend Shapes"
 msgstr "Forme di fusione"
 
 msgid "Hand Tracking Source"
-msgstr "Sorgente di tracciamento della mano"
+msgstr "Sorgente di tracciamento delle mani"
 
 msgid "Is Primary"
 msgstr "È primario"
@@ -12204,7 +12237,7 @@ msgid "AR"
 msgstr "AR"
 
 msgid "Is Anchor Detection Enabled"
-msgstr "Attiva rilevamento dell'ancora"
+msgstr "Attiva rilevamento degli ancoraggi"
 
 msgid "Tracking Confidence"
 msgstr "Affidabilità del tracciamento"

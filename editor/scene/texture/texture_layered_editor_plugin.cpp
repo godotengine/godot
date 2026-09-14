@@ -35,6 +35,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/button.h"
 #include "scene/gui/label.h"
 
 // Shader sources.
@@ -268,6 +269,9 @@ void TextureLayeredEditor::_notification(int p_what) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
 				info->add_theme_font_override(SceneStringName(font), metadata_label_font);
 			}
+			if (info_toggle) {
+				info_toggle->set_button_icon(get_editor_theme_icon(SNAME("Info")));
+			}
 			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
 		} break;
 	}
@@ -317,6 +321,11 @@ void TextureLayeredEditor::_update_material(bool p_texture_changed) {
 
 void TextureLayeredEditor::on_selected_channels_changed() {
 	_update_material(false);
+}
+
+void TextureLayeredEditor::_toggle_info() {
+	info->set_visible(!info->is_visible());
+	info_toggle->set_modulate(Color(1, 1, 1, info->is_visible() ? 0.8 : 0.4));
 }
 
 void TextureLayeredEditor::_draw_outline() {
@@ -451,6 +460,20 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	info->set_anchor(SIDE_TOP, 1);
 
 	add_child(info);
+
+	info_toggle = memnew(Button);
+	info_toggle->set_flat(true);
+	info_toggle->set_tooltip_text(TTRC("Toggle metadata overlay."));
+	info_toggle->set_theme_type_variation("PreviewLightButton");
+	info_toggle->set_modulate(Color(1, 1, 1, 0.8));
+	info_toggle->set_h_grow_direction(GROW_DIRECTION_END);
+	info_toggle->set_v_grow_direction(GROW_DIRECTION_BEGIN);
+	info_toggle->set_anchor(SIDE_LEFT, 0);
+	info_toggle->set_anchor(SIDE_RIGHT, 0);
+	info_toggle->set_anchor(SIDE_BOTTOM, 1);
+	info_toggle->set_anchor(SIDE_TOP, 1);
+	info_toggle->connect(SceneStringName(pressed), callable_mp(this, &TextureLayeredEditor::_toggle_info));
+	add_child(info_toggle);
 }
 
 bool EditorInspectorPluginLayeredTexture::can_handle(Object *p_object) {

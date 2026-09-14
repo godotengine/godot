@@ -189,8 +189,14 @@ class SceneTreeEditor : public Control {
 	bool pending_selection_update = false;
 	Timer *update_node_tooltip_delay = nullptr;
 
+	bool visibility_drag_value = false;
+	Vector2 visibility_drag_start_pos;
+	ObjectID visibility_drag_start_node;
+	LocalVector<ObjectID> visibility_drag_nodes;
+
 	static void _bind_methods();
 
+	void _gui_input(const Ref<InputEvent> &p_event);
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _toggle_visible(Node *p_node);
 	void _cell_multi_selected(Object *p_object, int p_cell, bool p_selected);
@@ -202,7 +208,8 @@ class SceneTreeEditor : public Control {
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
 	void _update_node_tooltip(Node *p_node, TreeItem *p_item);
 	void _queue_update_node_tooltip(Node *p_node, TreeItem *p_item);
-	void _tree_scroll_to_item(ObjectID p_item_id);
+	void _tree_scroll_to_item(ObjectID p_item_id, bool p_center_on_item);
+	void _reset_visibility_drag();
 
 	void _selection_changed();
 	Node *get_scene_node() const;
@@ -220,7 +227,10 @@ class SceneTreeEditor : public Control {
 	Timer *update_timer = nullptr;
 
 	LocalVector<StringName> *script_types;
+	bool _has_drop_selection(TreeItem *p_item, const Point2 &p_point) const;
 	bool _is_script_type(const StringName &p_type) const;
+	NodePath _get_node_path(Node *p_node) const;
+	Node *_get_node(const NodePath &p_path) const;
 
 	Vector<StringName> valid_types;
 
@@ -247,6 +257,7 @@ public:
 	Node *get_selected();
 	void set_can_rename(bool p_can_rename) { can_rename = p_can_rename; }
 	void set_editor_selection(EditorSelection *p_selection);
+	TreeItem *get_node_item(Node *p_node) const;
 
 	void set_show_enabled_subscene(bool p_show) { show_enabled_subscene = p_show; }
 	void set_valid_types(const Vector<StringName> &p_valid);

@@ -1166,9 +1166,6 @@ msgstr "இறுதியில்"
 msgid "Travel"
 msgstr "பயணம்"
 
-msgid "No playback resource set at path: %s."
-msgstr "பாதையில் பின்னணி வளம் இல்லை: %s."
-
 msgid "Node Removed"
 msgstr "முனை அகற்றப்பட்டது"
 
@@ -18246,6 +18243,9 @@ msgstr ""
 
 msgid "Animation Apply Reset"
 msgstr "அனிமேசன் மீட்டமைப்பைப் பயன்படுத்துகிறது"
+
+msgid "No playback resource set at path: %s."
+msgstr "பாதையில் பின்னணி வளம் இல்லை: %s."
 
 msgid "No root AnimationNode for the graph is set."
 msgstr "வரைபடத்திற்கான ரூட் அனிமேசன்நோட் எதுவும் அமைக்கப்படவில்லை."

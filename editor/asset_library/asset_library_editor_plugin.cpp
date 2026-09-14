@@ -39,11 +39,13 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
@@ -173,10 +175,20 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	icon->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	hb->add_child(icon);
 
+	text_margin = memnew(MarginContainer);
+	text_margin->add_theme_constant_override(SNAME("margin_left"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_right"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_top"), margin_size);
+	text_margin->add_theme_constant_override(SNAME("margin_bottom"), margin_size);
+	text_margin->set_h_size_flags(SIZE_EXPAND_FILL);
+	text_margin->set_mouse_filter(MOUSE_FILTER_IGNORE);
+	text_margin->set_clip_contents(true);
+	hb->add_child(text_margin);
+
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	hb->add_child(vb);
+	text_margin->add_child(vb);
 
 	Ref<StyleBoxEmpty> label_margin;
 	label_margin.instantiate();
@@ -224,7 +236,9 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	author_license_hbox->add_child(license);
 	license->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItem::_license_clicked));
 
-	vb->add_spacer();
+	// Ensure the entire asset card can be clicked.
+	Control *spacer = vb->add_spacer();
+	spacer->set_mouse_filter(MOUSE_FILTER_IGNORE);
 
 	HBoxContainer *rating_hbox = memnew(HBoxContainer);
 	rating_hbox->set_mouse_filter(MOUSE_FILTER_IGNORE);
@@ -236,9 +250,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	rating_hbox->add_child(rating_icon);
 
 	rating_count = memnew(Label);
-	rating_count->set_mouse_filter(MOUSE_FILTER_STOP);
 	rating_count->set_theme_type_variation("LabelNoMargin");
-	rating_count->set_tooltip_text(TTRC("Review Score"));
 	rating_count->set_accessibility_name(TTRC("Review Score"));
 	rating_hbox->add_child(rating_count);
 
@@ -274,8 +286,17 @@ EditorAssetLibraryZoomMode::EditorAssetLibraryZoomMode(Control *p_previews) {
 	ERR_FAIL_NULL(p_previews);
 	ERR_FAIL_COND(p_previews->get_parent());
 
+	Ref<Theme> theme;
+	if (EditorNode::get_singleton()) {
+		theme = EditorNode::get_singleton()->get_editor_theme();
+	} else if (ProjectManager::get_singleton()) {
+		theme = ProjectManager::get_singleton()->get_theme();
+	} else {
+		return;
+	}
+
 	ColorRect *dim = memnew(ColorRect);
-	dim->set_color(EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("base_color"), EditorStringName(Editor)));
+	dim->set_color(theme->get_color(SNAME("base_color"), EditorStringName(Editor)));
 	dim->set_anchors_preset(Control::PRESET_FULL_RECT);
 	add_child(dim);
 
@@ -305,7 +326,7 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 				Button *button = preview_images[i].button;
 				float button_texture_height = button->get_size().height - button->get_theme_stylebox(CoreStringName(normal), SNAME("Button"))->get_minimum_size().height;
 				float scale_ratio = button_texture_height / p_image->get_height();
-				button->set_custom_minimum_size(Size2(p_image->get_width() * scale_ratio * EDSCALE, 0));
+				button->set_custom_minimum_size(Size2(p_image->get_width() * scale_ratio, 0));
 
 				if (preview_images[i].is_video) {
 					Ref<Image> overlay = previews->get_editor_theme_icon(SNAME("PlayOverlay"))->get_image();
@@ -349,6 +370,14 @@ void EditorAssetLibraryItemDescription::_notification(int p_what) {
 			next_preview->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			previews_bg->add_theme_style_override(SceneStringName(panel), previews->get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit")));
 			zoom_button->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+
+			Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("OptionButton"));
+			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("OptionButton"));
+			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("OptionButton"));
+
+			int height = sb->get_minimum_size().height;
+			height += font->get_height(font_size);
+			version->set_custom_minimum_size(Size2(0, height));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -559,7 +588,7 @@ void EditorAssetLibraryItemDescription::add_release(const String &p_url, const S
 
 void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, const String &p_url, const String &p_thumbnail) {
 	if (preview_images.is_empty()) {
-		desc_vbox->set_h_size_flags(0);
+		desc_vbox->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 		previews_vbox->show();
 	}
 
@@ -615,9 +644,11 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	contents->add_child(version_label);
 
 	version = memnew(Label);
+	version->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	version->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	version->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	version->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	version->set_theme_type_variation("LabelNoMargin");
 	contents->add_child(version);
 
 	version_list = memnew(OptionButton);
@@ -935,7 +966,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	panel->add_child(hb);
 	icon = memnew(TextureRect);
 	icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	icon->set_v_size_flags(0);
+	icon->set_v_size_flags(SIZE_SHRINK_BEGIN);
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -1017,6 +1048,13 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("bg"), SNAME("AssetLib")));
 			error_label->move_to_front();
+
+			if (EditorNode::get_singleton()) {
+				EditorNode::get_singleton()->get_gui_base()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_margins));
+			} else if (ProjectManager::get_singleton()) {
+				ProjectManager::get_singleton()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorAssetLibrary::_update_margins));
+				_update_margins();
+			}
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -1039,7 +1077,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 				// Focus the search box automatically when switching to the Templates tab (in the Project Manager)
 				// or switching to the AssetLib tab (in the editor).
 				// The Project Manager's project filter box is automatically focused in the project manager code.
-				filter->grab_focus();
+				callable_mp((Control *)filter, &Control::grab_focus).call_deferred(false);
 #endif
 
 				if (initial_loading) {
@@ -1099,20 +1137,27 @@ void EditorAssetLibrary::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("asset_library") &&
-					!EditorSettings::get_singleton()->check_changed_settings_in_group("network")) {
-				break;
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("asset_store/use_threads") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("network/http_proxy")) {
+				setup_http_request(request);
 			}
 
-			_update_repository_options();
-			setup_http_request(request);
-
-			const bool loading_blocked_new = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
-			if (loading_blocked_new != loading_blocked) {
-				loading_blocked = loading_blocked_new;
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("asset_store/available_urls")) {
+				_update_repository_options();
 
 				if (!loading_blocked && is_visible()) {
-					_request_current_config(); // Reload config now that the network is available.
+					_request_current_config();
+				}
+			}
+
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("network/connection/network_mode")) {
+				const bool loading_blocked_new = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
+				if (loading_blocked_new != loading_blocked) {
+					loading_blocked = loading_blocked_new;
+
+					if (!loading_blocked && is_visible()) {
+						_request_current_config(); // Reload config now that the network is available.
+					}
 				}
 			}
 		} break;
@@ -1130,6 +1175,10 @@ void EditorAssetLibrary::_update_repository_options() {
 	}
 }
 
+void EditorAssetLibrary::_update_margins() {
+	update_layout(get_current_layout(), get_current_slot());
+}
+
 void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -1142,6 +1191,26 @@ void EditorAssetLibrary::shortcut_input(const Ref<InputEvent> &p_event) {
 			accept_event();
 		}
 	}
+}
+
+void EditorAssetLibrary::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	begin_bulk_theme_override();
+	if (p_layout == DOCK_LAYOUT_FLOATING) {
+		remove_theme_constant_override("margin_left");
+		remove_theme_constant_override("margin_right");
+		remove_theme_constant_override("margin_bottom");
+	} else {
+		int margin;
+		if (EditorNode::get_singleton()) {
+			margin = EditorNode::get_singleton()->get_editor_theme()->get_constant("base_margin", EditorStringName(Editor));
+		} else {
+			margin = ProjectManager::get_singleton()->get_theme_constant("base_margin", EditorStringName(Editor));
+		}
+		add_theme_constant_override("margin_left", margin);
+		add_theme_constant_override("margin_right", margin);
+		add_theme_constant_override("margin_bottom", margin);
+	}
+	end_bulk_theme_override();
 }
 
 void EditorAssetLibrary::_install_asset(const String &p_asset_id, const String &p_version, const String &p_download_url, const String &p_sha256) {
@@ -1234,8 +1303,6 @@ void EditorAssetLibrary::_image_update(void *p_image_queue) {
 			parsed_image = Image::_webp_mem_loader_func(r, len);
 		} else if ((memcmp(&r[0], &bmp_signature[0], 2) == 0) && Image::_bmp_mem_loader_func) {
 			parsed_image = Image::_bmp_mem_loader_func(r, len);
-		} else if (Image::_svg_scalable_mem_loader_func) {
-			parsed_image = Image::_svg_scalable_mem_loader_func(r, len, 1.0);
 		}
 
 		if (parsed_image.is_null()) {
@@ -1408,9 +1475,20 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, int p_asset_id, const St
 void EditorAssetLibrary::_repository_changed(int p_repository_id) {
 	_set_library_message(TTRC("Loading..."));
 
-	asset_top_page->hide();
-	asset_bottom_page->hide();
-	asset_items->hide();
+	if (asset_items) {
+		memdelete(asset_items);
+		asset_items = nullptr;
+	}
+
+	if (asset_top_page) {
+		memdelete(asset_top_page);
+		asset_top_page = nullptr;
+	}
+
+	if (asset_bottom_page) {
+		memdelete(asset_bottom_page);
+		asset_bottom_page = nullptr;
+	}
 
 	filter->set_editable(false);
 	sort->set_disabled(true);
@@ -1425,6 +1503,8 @@ void EditorAssetLibrary::_licenses_id_pressed(int p_id) {
 }
 
 void EditorAssetLibrary::_licenses_popup_hide() {
+	licenses_all_toggled = true;
+
 	bool research = false;
 	PopupMenu *pm = licenses->get_popup();
 	for (unsigned int i = 0; i < licenses_toggled.size(); i++) {
@@ -1432,6 +1512,10 @@ void EditorAssetLibrary::_licenses_popup_hide() {
 		if (toggled != licenses_toggled[i]) {
 			licenses_toggled[i] = toggled;
 			research = true;
+		}
+
+		if (!toggled) {
+			licenses_all_toggled = false;
 		}
 	}
 
@@ -1459,12 +1543,14 @@ void EditorAssetLibrary::_search(int p_page) {
 		args += "." + itos(GODOT_VERSION_PATCH);
 	}
 
-	int license_count = licenses->get_item_count();
-	if (license_count > 0) {
-		PopupMenu *popup = licenses->get_popup();
-		for (int i = 0; i < license_count; i++) {
-			if (popup->is_item_checked(i)) {
-				args += "&licenses=" + (String)popup->get_item_metadata(i);
+	if (!licenses_all_toggled) {
+		int license_count = licenses->get_item_count();
+		if (license_count > 0) {
+			PopupMenu *popup = licenses->get_popup();
+			for (int i = 0; i < license_count; i++) {
+				if (popup->is_item_checked(i)) {
+					args += "&licenses=" + (String)popup->get_item_metadata(i);
+				}
 			}
 		}
 	}
@@ -1671,9 +1757,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 	switch (requested) {
 		case REQUESTING_CHECK: {
-			if (!templates_only) {
-				_api_request("tags/?featured_only=true", REQUESTING_TAGS, true);
-			}
+			_api_request("tags/?featured_only=true", REQUESTING_TAGS, true);
 			_api_request("licenses/", REQUESTING_LICENSES, true);
 
 			filter->set_editable(true);
@@ -1685,12 +1769,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 		case REQUESTING_TAGS: {
 			categories->clear();
 
-			if (templates_only) {
-				categories->add_item(TTRC("Template"));
-			} else {
-				categories->add_item(TTRC("All"));
-				categories->set_disabled(false);
-			}
+			categories->add_item(TTRC("All"));
+			categories->set_disabled(false);
 
 			Array arr = dt;
 			for (int i = arr.size() - 1; i >= 0; i--) {
@@ -1714,6 +1794,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 		case REQUESTING_LICENSES: {
 			licenses_toggled.clear();
+			licenses_all_toggled = true;
 
 			Array arr = dt;
 			PopupMenu *popup = licenses->get_popup();
@@ -1736,19 +1817,26 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			if (asset_items) {
 				memdelete(asset_items);
+				asset_items = nullptr;
 			}
 
 			if (asset_top_page) {
 				memdelete(asset_top_page);
+				asset_top_page = nullptr;
 			}
 
 			if (asset_bottom_page) {
 				memdelete(asset_bottom_page);
+				asset_bottom_page = nullptr;
 			}
 
 			Dictionary d = dt;
-			ERR_FAIL_COND(!d.has("count"));
-			ERR_FAIL_COND(!d.has("hits"));
+			if (!d.has("count") || !d.has("hits")) {
+				_set_library_message_with_action(TTRC("Repository returned with invalid data."), TTRC("Retry"), callable_mp(this, &EditorAssetLibrary::_request_current_config));
+				error_hb->show();
+
+				return;
+			}
 
 			int page_len = 24; // API's default batch size.
 			int total_items = d["count"];
@@ -1761,8 +1849,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			_update_asset_items_columns();
-			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
-			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
+			asset_items->add_theme_constant_override("h_separation", 0);
+			asset_items->add_theme_constant_override("v_separation", 0);
 
 			library_vb->add_child(asset_items);
 
@@ -1852,9 +1940,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				}
 			}
 
-			if (description) {
-				memdelete(description);
-			}
+			memdelete(description);
 
 			description = memnew(EditorAssetLibraryItemDescription);
 			add_child(description);
@@ -1911,11 +1997,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			}
 
 			LocalVector<int> engine_version = { GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR, GODOT_VERSION_PATCH };
-			Array arr = dt;
-			// Iterate backwards, so the newer releases are added first.
-			for (int i = arr.size() - 1; i >= 0; i--) {
-				Dictionary d = arr[i];
-
+			for (const Dictionary d : (Array)dt) {
 				ERR_FAIL_COND(!d.has("download_url"));
 				ERR_FAIL_COND(!d.has("version"));
 				ERR_FAIL_COND(!d.has("stable"));
@@ -1938,7 +2020,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 						}
 					}
 					if (!is_compat) {
-						continue; // This release is for an older version of Godot.
+						continue; // This release is for a newer version of Godot.
 					}
 				}
 
@@ -1957,7 +2039,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 						}
 					}
 					if (!is_compat) {
-						continue; // This release is for a newer version of Godot.
+						continue; // This release is for an older version of Godot.
 					}
 				}
 
@@ -2012,6 +2094,10 @@ void EditorAssetLibrary::_install_external_asset(const String &p_zip_path, const
 }
 
 void EditorAssetLibrary::_update_asset_items_columns() {
+	if (!asset_items) {
+		return;
+	}
+
 	int new_columns = get_size().x / (450.0 * EDSCALE);
 	new_columns = MAX(1, new_columns);
 
@@ -2037,6 +2123,17 @@ void EditorAssetLibrary::_set_library_message(const String &p_message) {
 	library_message_button->hide();
 
 	library_message_box->show();
+
+	// Remove pagination, as an error message is being shown and there are no assets to list.
+	// Pagination is recreated when the next search is performed.
+	if (asset_top_page) {
+		memdelete(asset_top_page);
+		asset_top_page = nullptr;
+	}
+	if (asset_bottom_page) {
+		memdelete(asset_bottom_page);
+		asset_bottom_page = nullptr;
+	}
 }
 
 void EditorAssetLibrary::_set_library_message_with_action(const String &p_message, const String &p_action_text, const Callable &p_action) {
@@ -2065,6 +2162,13 @@ void EditorAssetLibrary::_bind_methods() {
 }
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
+	set_name(TTRC("Asset Store"));
+	set_icon_name("AssetStore");
+	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
+	set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
+	if (!Engine::get_singleton()->is_project_manager_hint()) {
+		set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_asset_store"));
+	}
 	templates_only = p_templates_only;
 	loading_blocked = ((int)EDITOR_GET("network/connection/network_mode") == EditorSettings::NETWORK_OFFLINE);
 
@@ -2095,7 +2199,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->connect(SceneStringName(text_changed), callable_mp(filter_debounce_timer, &Timer::start).bind(-1).unbind(1));
 
-	if (!p_templates_only) {
+	if (!templates_only) {
 		search_hb->add_child(memnew(VSeparator));
 	}
 
@@ -2109,7 +2213,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb->add_child(plugins);
 	plugins->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_manage_plugins));
 
-	if (p_templates_only) {
+	if (templates_only) {
 		open_asset->hide();
 		plugins->hide();
 	}
@@ -2123,21 +2227,22 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 		sort->add_item(sort_text[i]);
 	}
 
+	// TODO: Remove this once "Relevance" sorting is fixed.
+	sort->select(SORT_REVIEWS);
+
 	search_hb2->add_child(sort);
 
 	sort->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sort->set_clip_text(true);
+	sort->set_fit_to_longest_item(false);
 	sort->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
 
 	search_hb2->add_child(memnew(Label(TTRC("Category:"))));
 	categories = memnew(OptionButton);
-	if (p_templates_only) {
-		categories->add_item(TTRC("Template"));
-	} else {
-		categories->add_item(TTRC("All"));
-	}
+	categories->add_item(TTRC("All"));
 	categories->set_disabled(true);
 	categories->set_clip_text(true);
+	categories->set_fit_to_longest_item(false);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_hb2->add_child(categories);
 	categories->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_search).bind(1).unbind(1));
@@ -2146,6 +2251,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	repository = memnew(OptionButton);
 	repository->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	repository->set_clip_text(true);
+	repository->set_fit_to_longest_item(false);
 	search_hb2->add_child(repository);
 	repository->connect(SceneStringName(item_selected), callable_mp(this, &EditorAssetLibrary::_repository_changed));
 	_update_repository_options();
@@ -2194,6 +2300,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_message = memnew(Label);
 	library_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	library_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	library_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	library_message_box->add_child(library_message);
 
 	library_message_button = memnew(Button);
@@ -2264,10 +2371,6 @@ bool AssetLibraryEditorPlugin::is_available() {
 #endif
 }
 
-const Ref<Texture2D> AssetLibraryEditorPlugin::get_plugin_icon() const {
-	return EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("AssetStore"), EditorStringName(EditorIcons));
-}
-
 void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		addon_library->show();
@@ -2279,7 +2382,7 @@ void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(addon_library);
+	EditorDockManager::get_singleton()->add_dock(addon_library);
 	addon_library->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	addon_library->hide();
 }

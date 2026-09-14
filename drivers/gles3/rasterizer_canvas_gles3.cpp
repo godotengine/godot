@@ -685,7 +685,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 
 	state.current_tex = RID();
 
-	const uint64_t base_specialization = GLES3::Config::get_singleton()->float_texture_supported ? 0 : CanvasShaderGLES3::USE_RGBA_SHADOWS;
+	const uint64_t base_specialization = GLES3::Config::get_singleton()->float_texture_supported ? 0 : (uint64_t)CanvasShaderGLES3::USE_RGBA_SHADOWS;
 
 	for (uint32_t i = 0; i <= state.current_batch_index; i++) {
 		// Skipping when there is no instances.

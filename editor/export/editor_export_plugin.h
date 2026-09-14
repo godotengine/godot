@@ -43,6 +43,15 @@ class EditorExportPlugin : public RefCounted {
 	friend class EditorExportPlatform;
 	friend class EditorExportPreset;
 
+public:
+	// Data for an SPM dependency, collected via add_apple_embedded_platform_spm_package() during export
+	struct AppleEmbeddedSPMPackage {
+		String url;
+		String version;
+		Vector<String> products;
+	};
+
+private:
 	String export_base_path;
 	Ref<EditorExportPreset> export_preset;
 
@@ -62,6 +71,7 @@ class EditorExportPlugin : public RefCounted {
 	String apple_embedded_platform_linker_flags;
 	Vector<String> apple_embedded_platform_bundle_files;
 	String apple_embedded_platform_cpp_code;
+	Vector<AppleEmbeddedSPMPackage> apple_embedded_platform_spm_packages;
 
 	Vector<String> macos_plugin_files;
 
@@ -78,6 +88,7 @@ class EditorExportPlugin : public RefCounted {
 		apple_embedded_platform_plist_content = "";
 		apple_embedded_platform_linker_flags = "";
 		apple_embedded_platform_cpp_code = "";
+		apple_embedded_platform_spm_packages.clear();
 		macos_plugin_files.clear();
 	}
 
@@ -106,6 +117,7 @@ protected:
 	void add_apple_embedded_platform_linker_flags(const String &p_flags);
 	void add_apple_embedded_platform_bundle_file(const String &p_path);
 	void add_apple_embedded_platform_cpp_code(const String &p_code);
+	void add_apple_embedded_platform_spm_package(const String &p_url, const String &p_version, const PackedStringArray &p_products);
 	void add_macos_plugin_file(const String &p_path);
 
 	void skip();
@@ -192,6 +204,7 @@ public:
 	String get_apple_embedded_platform_linker_flags() const;
 	Vector<String> get_apple_embedded_platform_bundle_files() const;
 	String get_apple_embedded_platform_cpp_code() const;
+	Vector<AppleEmbeddedSPMPackage> get_apple_embedded_platform_spm_packages() const;
 	const Vector<String> &get_macos_plugin_files() const;
 	Variant get_option(const StringName &p_name) const;
 };

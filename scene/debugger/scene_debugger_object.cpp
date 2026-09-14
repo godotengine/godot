@@ -197,6 +197,23 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 		Array prop = { pi.name, pi.type };
 		PropertyHint hint = pi.hint;
 		String hint_string = pi.hint_string;
+
+		if (res.is_valid()) {
+			hint_string = res->get_class();
+			// Check the script to see if there's a custom class name.
+			ScriptInstance *si = res->get_script_instance();
+			if (si) {
+				Ref<Script> script = si->get_script();
+				while (script.is_valid()) {
+					if (!script->get_global_name().is_empty()) {
+						hint_string = script->get_global_name();
+						break;
+					}
+					script = script->get_base_script();
+				}
+			}
+		}
+
 		if (res.is_valid() && !res->get_path().is_empty()) {
 			// HACK: Overwrite `PropertyInfo` with the current runtime type.
 			// This allows untyped variables to be displayed correctly.
@@ -280,7 +297,6 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 	List<Node *> stack;
 	stack.push_back(p_root);
 	bool is_root = true;
-	const StringName &is_visible_sn = SNAME("is_visible");
 	const StringName &is_visible_in_tree_sn = SNAME("is_visible_in_tree");
 	while (stack.size()) {
 		Node *n = stack.front()->get();
@@ -295,8 +311,8 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 		if (is_root) {
 			// Prevent root window visibility from being changed.
 			is_root = false;
-		} else if (n->has_method(is_visible_sn)) {
-			const Variant visible = n->call(is_visible_sn);
+		} else if (n->has_method(SceneStringName(is_visible))) {
+			const Variant visible = n->call(SceneStringName(is_visible));
 			if (visible.get_type() == Variant::BOOL) {
 				view_flags = RemoteNode::VIEW_HAS_VISIBLE_METHOD;
 				view_flags |= uint8_t(visible) * RemoteNode::VIEW_VISIBLE;
