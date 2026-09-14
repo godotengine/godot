@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,8 +25,8 @@
 extern bool RAWINPUT_IsEnabled(void);
 
 // Registers for input events
-extern int RAWINPUT_RegisterNotifications(HWND hWnd);
-extern int RAWINPUT_UnregisterNotifications(void);
+extern bool RAWINPUT_RegisterNotifications(HWND hWnd);
+extern bool RAWINPUT_UnregisterNotifications(void);
 
 // Returns 0 if message was handled
 extern LRESULT CALLBACK RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
