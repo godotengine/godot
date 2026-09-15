@@ -145,8 +145,10 @@ void ShaderCreateDialog::_create_new() {
 	// We need duplicate code paths for includes vs non-includes, so just check for the string "Include".
 	if (type_menu->get_item_text(type_index).contains("Include")) {
 		shader_inc = shader_lang->create_new_shader_include();
+		EditorNode::get_editor_data().instantiate_object_properties(shader_inc.ptr());
 	} else {
 		shader = shader_lang->create_new_shader(0, Shader::Mode(current_mode), current_template);
+		EditorNode::get_editor_data().instantiate_object_properties(shader.ptr());
 	}
 
 	if (shader.is_null()) {
