@@ -497,4 +497,26 @@ TEST_CASE("[Vector2] Finite number checks") {
 	}
 }
 
+TEST_CASE("[Vector2] Orthogonal and identity methods") {
+	CHECK_MESSAGE(
+			Vector2(1, 2).orthogonal() == Vector2(2, -1),
+			"Vector2(1, 2).orthogonal() should return the vector rotated 90 degrees clockwise.");
+	CHECK_MESSAGE(
+			Vector2(0, 0).orthogonal() == Vector2(0, 0),
+			"Vector2(0, 0).orthogonal() should return the zero vector.");
+	CHECK_MESSAGE(
+			Vector2(-3, 4).orthogonal() == Vector2(4, 3),
+			"Vector2(-3, 4).orthogonal() should return the vector rotated 90 degrees clockwise.");
+
+	CHECK_MESSAGE(
+			Vector2(1, 2).is_same(Vector2(1, 2)),
+			"Vector2::is_same() should return true for identical vectors.");
+	CHECK_FALSE_MESSAGE(
+			Vector2(1, 2).is_same(Vector2(1, 3)),
+			"Vector2::is_same() should return false for different vectors.");
+	CHECK_MESSAGE(
+			Vector2(Math::NaN, 1).is_same(Vector2(Math::NaN, 1)),
+			"Vector2::is_same() should treat two NaN components as equal, unlike the == operator.");
+}
+
 } // namespace TestVector2
