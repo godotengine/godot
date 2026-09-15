@@ -1021,32 +1021,55 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (p_event->is_action("ui_page_up", true)) {
 			search_string = ""; //any mousepress cancels
 
-			for (int i = 4; i > 0; i--) {
-				int index = current - current_columns * i;
-				if (index >= 0 && index < items.size() && CAN_SELECT(index)) {
-					set_current(index);
+			if (current != -1) {
+				int prev = current;
+				int cur_height = items[current].rect_cache.size.height;
+				int page_height = scroll_bar_v->get_page();
+				while (cur_height < page_height) {
+					int index = prev - current_columns;
+					if (index >= 0) {
+						prev = index;
+					} else {
+						break;
+					}
+					cur_height += items[index].rect_cache.size.height;
+				}
+
+				if (prev >= 0 && prev < items.size() && CAN_SELECT(prev)) {
+					set_current(prev);
+					scroll_bar_v->scroll(-scroll_bar_v->get_page());
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SceneStringName(item_selected), current);
 					}
 					accept_event();
-					break;
 				}
 			}
 		} else if (p_event->is_action("ui_page_down", true)) {
 			search_string = ""; //any mousepress cancels
 
-			for (int i = 4; i > 0; i--) {
-				int index = current + current_columns * i;
-				if (index >= 0 && index < items.size() && CAN_SELECT(index)) {
-					set_current(index);
+			if (current != -1) {
+				int next = current;
+				int cur_height = items[current].rect_cache.size.height;
+				int page_height = scroll_bar_v->get_page();
+				while (cur_height < page_height) {
+					int index = next + current_columns;
+					if (index < items.size()) {
+						next = index;
+					} else {
+						break;
+					}
+					cur_height += items[index].rect_cache.size.height;
+				}
+
+				if (next >= 0 && next < items.size() && CAN_SELECT(next)) {
+					set_current(next);
+					scroll_bar_v->scroll(scroll_bar_v->get_page());
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SceneStringName(item_selected), current);
 					}
 					accept_event();
-
-					break;
 				}
 			}
 		}
