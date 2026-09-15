@@ -1,4 +1,5 @@
 const Preloader = /** @constructor */ function () { // eslint-disable-line no-unused-vars
+	const filesWithInvalidTotal = {};
 	function getTrackedResponse(response, load_status) {
 		function onloadprogress(reader, controller) {
 			return reader.read().then(function (result) {
@@ -75,6 +76,10 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 				progressIsFinal = false;
 			}
 			if (!totalIsValid || stat.total === 0) {
+				if (stat.total === 0 && !(file in filesWithInvalidTotal)) {
+					console.error(`File ${file} doesn't have a valid file size established.`); // eslint-disable-line no-console
+					filesWithInvalidTotal[file] = true;
+				}
 				totalIsValid = false;
 				total = 0;
 			} else {
