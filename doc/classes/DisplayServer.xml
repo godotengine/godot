@@ -2428,6 +2428,7 @@
 				Sets the [param callback] that should be called when files are dropped from the operating system's file manager to the window specified by [param window_id]. [param callback] should take one [PackedStringArray] argument, which is the list of dropped files.
 				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 				[b]Note:[/b] This method is implemented on Windows, macOS, Linux (X11/Wayland), and Web.
+				[b]Note:[/b] On the web platform, the files are dropped to a temporary folder and will be removed automatically after the callback.
 			</description>
 		</method>
 		<method name="window_set_exclusive">
