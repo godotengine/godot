@@ -53,6 +53,8 @@ public:
 	bool file_exists(const String &p_path, bool p_case_sensitive);
 	int get_compression_level(const String &p_path, bool p_case_sensitive);
 
+	static Error decompress(const String &p_input_path, const String &p_output_path);
+
 	ZIPReader();
 	~ZIPReader();
 };
