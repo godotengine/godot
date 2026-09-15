@@ -3944,6 +3944,10 @@ static void _process_doc_line(const String &p_line, String &r_text, const String
 			} else if (!r_text.ends_with("\n") && line.is_empty()) {
 				line_join = "\n";
 			} else if (!r_text.ends_with("\n")) {
+				if (line.is_empty()) {
+					r_text += "\n";
+					return;
+				}
 				line_join = " ";
 			}
 		} else {
