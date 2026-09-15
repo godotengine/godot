@@ -73,6 +73,7 @@ private:
 	HashMap<uint64_t, ScreenshotCB> screenshot_callbacks;
 
 	bool _msg_get_screenshot(const Array &p_args);
+	bool _msg_show_toaster(const Array &p_args);
 
 protected:
 	static void _bind_methods();

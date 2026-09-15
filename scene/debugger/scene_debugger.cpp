@@ -36,6 +36,7 @@
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
 #include "core/io/dir_access.h"
+#include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/math_fieldwise.h"
@@ -770,8 +771,17 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 		prop_name = p_property;
 	}
 
+	bool is_object = obj->get_static_property_type(prop_name) == Variant::OBJECT;
+	if (is_object) {
+		Ref<EncodedObjectAsID> obj_id = p_value;
+		if (obj_id.is_valid()) {
+			RuntimeNodeSelect::get_singleton()->_show_toaster(RTR("Can't set a remote property's value using an object that is not present at runtime."), 2);
+			return;
+		}
+	}
+
 	Variant value = p_value;
-	if (p_value.is_string() && (obj->get_static_property_type(prop_name) == Variant::OBJECT || p_property == "script")) {
+	if (p_value.is_string() && (is_object || p_property == "script")) {
 		value = ResourceLoader::load(p_value);
 	}
 

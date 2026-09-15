@@ -162,6 +162,7 @@ private:
 	void _root_window_input(const Ref<InputEvent> &p_event);
 	void _items_popup_index_pressed(int p_index, PopupMenu *p_popup);
 	void _update_input_state();
+	void _show_toaster(const String &p_message, int p_level);
 
 	void _process_frame();
 	void _physics_frame();
