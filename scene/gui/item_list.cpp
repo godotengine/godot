@@ -929,7 +929,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		}
 		// Shift Up Selection.
 		if (select_mode == SELECT_MULTI && p_event->is_action("ui_up", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
-			int next = MAX(current - max_columns, 0);
+			int next = MAX(current - current_columns, 0);
 			_shift_range_select(current, next);
 			accept_event();
 		}
@@ -976,7 +976,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 		// Shift Down Selection.
 		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_down", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
-			int next = MIN(current + max_columns, items.size() - 1);
+			int next = MIN(current + current_columns, items.size() - 1);
 			_shift_range_select(current, next);
 			accept_event();
 		}
