@@ -1385,7 +1385,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	default_style = make_flat_stylebox(Color(1, 0.365, 0.365), 4, 4, 4, 4, 0, false, 2);
 }
 
-void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_font_subpixel, TextServer::Hinting p_font_hinting, TextServer::FontAntialiasing p_font_antialiasing, bool p_font_msdf, bool p_font_generate_mipmaps) {
+void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPositioning p_font_subpixel, TextServer::Hinting p_font_hinting, TextServer::FontAntialiasing p_font_antialiasing, TextServer::FontRenderMode p_font_mode, bool p_font_generate_mipmaps) {
 	Ref<Theme> t;
 	t.instantiate();
 
@@ -1411,7 +1411,7 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 		dynamic_font->set_subpixel_positioning(p_font_subpixel);
 		dynamic_font->set_hinting(p_font_hinting);
 		dynamic_font->set_antialiasing(p_font_antialiasing);
-		dynamic_font->set_multichannel_signed_distance_field(p_font_msdf);
+		dynamic_font->set_render_mode(p_font_mode);
 		dynamic_font->set_generate_mipmaps(p_font_generate_mipmaps);
 #endif
 		default_font = dynamic_font;

@@ -54,6 +54,12 @@ public:
 		FONT_ANTIALIASING_LCD,
 	};
 
+	enum FontRenderMode {
+		FONT_RENDER_RASTER,
+		FONT_RENDER_MSDF,
+		FONT_RENDER_HB_SLUG,
+	};
+
 	enum FontLCDSubpixelLayout {
 		FONT_LCD_SUBPIXEL_LAYOUT_NONE,
 		FONT_LCD_SUBPIXEL_LAYOUT_HRGB,
@@ -189,6 +195,8 @@ public:
 		FEATURE_USE_SUPPORT_DATA = 1 << 12,
 		FEATURE_UNICODE_IDENTIFIERS = 1 << 13,
 		FEATURE_UNICODE_SECURITY = 1 << 14,
+		FEATURE_FONT_SLUG = 1 << 15,
+		FEATURE_FONT_SHADER_CODE = 1 << 16,
 	};
 
 	enum ContourPointTag {
@@ -263,7 +271,6 @@ public:
 	virtual bool save_support_data(const String &p_filename) const = 0;
 	virtual PackedByteArray get_support_data() const = 0;
 	virtual bool is_locale_using_support_data(const String &p_locale) const { return false; }
-
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 
 	virtual int64_t name_to_tag(const String &p_name) const;
@@ -307,14 +314,25 @@ public:
 	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) = 0;
 	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const = 0;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void font_set_multichannel_signed_distance_field(const RID &p_font_rid, bool p_msdf) = 0;
 	virtual bool font_is_multichannel_signed_distance_field(const RID &p_font_rid) const = 0;
+#endif
+
+	virtual void font_set_render_mode(const RID &p_font_rid, FontRenderMode p_render_mode) = 0;
+	virtual FontRenderMode font_get_render_mode(const RID &p_font_rid) const = 0;
+
+	virtual bool font_has_color_paint(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_msdf_pixel_range(const RID &p_font_rid, int64_t p_msdf_pixel_range) = 0;
 	virtual int64_t font_get_msdf_pixel_range(const RID &p_font_rid) const = 0;
 
+#ifndef DISABLE_DEPRECATED
 	virtual void font_set_msdf_size(const RID &p_font_rid, int64_t p_msdf_size) = 0;
 	virtual int64_t font_get_msdf_size(const RID &p_font_rid) const = 0;
+#endif
+	virtual void font_set_source_size(const RID &p_font_rid, int64_t p_source_size) = 0;
+	virtual int64_t font_get_source_size(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_fixed_size(const RID &p_font_rid, int64_t p_fixed_size) = 0;
 	virtual int64_t font_get_fixed_size(const RID &p_font_rid) const = 0;
@@ -413,6 +431,9 @@ public:
 
 	virtual Rect2 font_get_glyph_uv_rect(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const = 0;
 	virtual void font_set_glyph_uv_rect(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, const Rect2 &p_uv_rect) = 0;
+
+	virtual int64_t font_get_glyph_data_offset(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const = 0;
+	virtual void font_set_glyph_data_offset(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_offset) = 0;
 
 	virtual int64_t font_get_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const = 0;
 	virtual void font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) = 0;
@@ -704,6 +725,7 @@ public:
 #define TS TextServerManager::get_singleton()->get_primary_interface()
 
 VARIANT_ENUM_CAST(TextServer::VisibleCharactersBehavior);
+VARIANT_ENUM_CAST(TextServer::FontRenderMode);
 VARIANT_ENUM_CAST(TextServer::AutowrapMode);
 VARIANT_ENUM_CAST(TextServer::OverrunBehavior);
 VARIANT_ENUM_CAST(TextServer::Direction);

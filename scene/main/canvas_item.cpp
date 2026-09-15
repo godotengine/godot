@@ -1006,6 +1006,13 @@ void CanvasItem::draw_msdf_texture_rect_region(RequiredParam<Texture2D> p_textur
 	RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(canvas_item, p_rect, texture->get_rid(), p_src_rect, p_modulate, p_outline, p_pixel_range, p_scale);
 }
 
+void CanvasItem::draw_slug_texture(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, uint32_t p_offset, const Rect2 &p_src_rect, const Color &p_modulate, double p_scale, bool p_color) {
+	ERR_THREAD_GUARD;
+	ERR_DRAW_GUARD;
+	EXTRACT_PARAM_OR_FAIL(texture, p_texture);
+	RenderingServer::get_singleton()->canvas_item_add_slug_texture(canvas_item, p_rect, texture->get_rid(), p_offset, p_src_rect, p_modulate, p_scale, p_color);
+}
+
 void CanvasItem::draw_lcd_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
@@ -1498,6 +1505,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect_region", "texture", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &CanvasItem::draw_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("draw_msdf_texture_rect_region", "texture", "rect", "src_rect", "modulate", "outline", "pixel_range", "scale"), &CanvasItem::draw_msdf_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0.0), DEFVAL(4.0), DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("draw_slug_texture", "texture", "rect", "offset", "src_rect", "modulate", "scale", "color"), &CanvasItem::draw_slug_texture, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_lcd_texture_rect_region", "texture", "rect", "src_rect", "modulate"), &CanvasItem::draw_lcd_texture_rect_region, DEFVAL(Color(1, 1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_style_box", "style_box", "rect"), &CanvasItem::draw_style_box);
 	ClassDB::bind_method(D_METHOD("draw_primitive", "points", "colors", "uvs", "texture"), &CanvasItem::draw_primitive, DEFVAL(Ref<Texture2D>()));
@@ -1949,6 +1957,21 @@ Ref<Texture2D> CanvasTexture::get_specular_texture() const {
 	return specular_texture;
 }
 
+void CanvasTexture::set_slug_texture(const Ref<Texture2D> &p_slug) {
+	ERR_FAIL_COND_MSG(Object::cast_to<CanvasTexture>(p_slug.ptr()) != nullptr, "Can't self-assign a CanvasTexture");
+	if (slug_texture == p_slug) {
+		return;
+	}
+	slug_texture = p_slug;
+	RID tex_rid = slug_texture.is_valid() ? slug_texture->get_rid() : RID();
+	RS::get_singleton()->canvas_texture_set_channel(canvas_texture, RSE::CANVAS_TEXTURE_CHANNEL_SLUG, tex_rid);
+	emit_changed();
+}
+
+Ref<Texture2D> CanvasTexture::get_slug_texture() const {
+	return slug_texture;
+}
+
 void CanvasTexture::set_specular_color(const Color &p_color) {
 	if (specular == p_color) {
 		return;
@@ -2052,6 +2075,9 @@ void CanvasTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_specular_texture", "texture"), &CanvasTexture::set_specular_texture);
 	ClassDB::bind_method(D_METHOD("get_specular_texture"), &CanvasTexture::get_specular_texture);
 
+	ClassDB::bind_method(D_METHOD("set_slug_texture", "texture"), &CanvasTexture::set_slug_texture);
+	ClassDB::bind_method(D_METHOD("get_slug_texture"), &CanvasTexture::get_slug_texture);
+
 	ClassDB::bind_method(D_METHOD("set_specular_color", "color"), &CanvasTexture::set_specular_color);
 	ClassDB::bind_method(D_METHOD("get_specular_color"), &CanvasTexture::get_specular_color);
 
@@ -2072,6 +2098,8 @@ void CanvasTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "specular_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_specular_texture", "get_specular_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "specular_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_specular_color", "get_specular_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "specular_shininess", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_specular_shininess", "get_specular_shininess");
+	ADD_GROUP("SLUG", "slug_");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "slug_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_slug_texture", "get_slug_texture");
 	ADD_GROUP("Texture", "texture_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Inherit,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_repeat", PROPERTY_HINT_ENUM, "Inherit,Disabled,Enabled,Mirror"), "set_texture_repeat", "get_texture_repeat");
