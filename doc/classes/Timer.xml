@@ -65,6 +65,7 @@
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
 			The time required for the timer to end, in seconds. This property can also be set every time [method start] is called.
 			[b]Note:[/b] Timers can only process once per physics or process frame (depending on the [member process_callback]). An unstable framerate may cause the timer to end inconsistently, which is especially noticeable if the wait time is lower than roughly [code]0.05[/code] seconds. For very short timers, it is recommended to write your own code instead of using a [Timer] node. Timers are also affected by [member Engine.time_scale].
+			[b]Note:[/b] Adjusting [code skip-lint]wait_time[/code] while the timer is running will not change the [member time_left]. The timer will still end according to the [code skip-lint]wait_time[/code] as it was set on start. However this change will affect the next iteration of the timer.
 		</member>
 	</members>
 	<signals>
