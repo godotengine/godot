@@ -53,10 +53,10 @@
 		<member name="brake" type="float" setter="set_brake" getter="get_brake" default="0.0">
 			Slows down the wheel by applying a braking force. The wheel is only slowed down if it is in contact with a surface. The force you need to apply to adequately slow down your vehicle depends on the [member RigidBody3D.mass] of the vehicle. For a vehicle with a mass set to 1000, try a value in the 25 - 30 range for hard braking.
 		</member>
-		<member name="damping_compression" type="float" setter="set_damping_compression" getter="get_damping_compression" default="0.83">
+		<member name="damping_compression" type="float" setter="set_damping_compression" getter="get_damping_compression" default="0.3">
 			The damping applied to the suspension spring when being compressed, meaning when the wheel is moving up relative to the vehicle. It is measured in Newton-seconds per millimeter (N⋅s/mm), or megagrams per second (Mg/s). This value should be between 0.0 (no damping) and 1.0, but may be more. A value of 0.0 means the car will keep bouncing as the spring keeps its energy. A good value for this is around 0.3 for a normal car, 0.5 for a race car.
 		</member>
-		<member name="damping_relaxation" type="float" setter="set_damping_relaxation" getter="get_damping_relaxation" default="0.88">
+		<member name="damping_relaxation" type="float" setter="set_damping_relaxation" getter="get_damping_relaxation" default="0.5">
 			The damping applied to the suspension spring when rebounding or extending, meaning when the wheel is moving down relative to the vehicle. It is measured in Newton-seconds per millimeter (N⋅s/mm), or megagrams per second (Mg/s). This value should be between 0.0 (no damping) and 1.0, but may be more. This value should always be slightly higher than the [member damping_compression] property. For a [member damping_compression] value of 0.3, try a relaxation value of 0.5.
 		</member>
 		<member name="engine_force" type="float" setter="set_engine_force" getter="get_engine_force" default="0.0">
@@ -71,7 +71,7 @@
 		<member name="suspension_max_force" type="float" setter="set_suspension_max_force" getter="get_suspension_max_force" default="6000.0">
 			The maximum force the spring can resist. This value should be higher than a quarter of the [member RigidBody3D.mass] of the [VehicleBody3D] or the spring will not carry the weight of the vehicle. Good results are often obtained by a value that is about 3× to 4× this number.
 		</member>
-		<member name="suspension_stiffness" type="float" setter="set_suspension_stiffness" getter="get_suspension_stiffness" default="5.88">
+		<member name="suspension_stiffness" type="float" setter="set_suspension_stiffness" getter="get_suspension_stiffness" default="50.0">
 			The stiffness of the suspension, measured in Newtons per millimeter (N/mm), or megagrams per second squared (Mg/s²). Use a value lower than 50 for an off-road car, a value between 50 and 100 for a race car and try something around 200 for something like a Formula 1 car.
 		</member>
 		<member name="suspension_travel" type="float" setter="set_suspension_travel" getter="get_suspension_travel" default="0.2">
@@ -83,11 +83,11 @@
 		<member name="use_as_traction" type="bool" setter="set_use_as_traction" getter="is_used_as_traction" default="false">
 			If [code]true[/code], this wheel transfers engine force to the ground to propel the vehicle forward. This value is used in conjunction with [member VehicleBody3D.engine_force] and ignored if you are using the per-wheel [member engine_force] value instead.
 		</member>
-		<member name="wheel_friction_slip" type="float" setter="set_friction_slip" getter="get_friction_slip" default="10.5">
+		<member name="wheel_friction_slip" type="float" setter="set_friction_slip" getter="get_friction_slip" default="1.0">
 			This determines how much grip this wheel has. It is combined with the friction setting of the surface the wheel is in contact with. 0.0 means no grip, 1.0 is normal grip. For a drift car setup, try setting the grip of the rear wheels slightly lower than the front wheels, or use a lower value to simulate tire wear.
 			It's best to set this to 1.0 when starting out.
 		</member>
-		<member name="wheel_radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
+		<member name="wheel_radius" type="float" setter="set_radius" getter="get_radius" default="0.3">
 			The radius of the wheel in meters.
 		</member>
 		<member name="wheel_rest_length" type="float" setter="set_suspension_rest_length" getter="get_suspension_rest_length" default="0.15">
