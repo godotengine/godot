@@ -31,10 +31,9 @@
 #pragma once
 
 #include "../snapshot_data.h"
-#include "shared_controls.h"
 #include "snapshot_view.h"
 
-class Tree;
+class TreeSortAndFilterBar;
 
 // When diffing in split view, we have two trees/filters
 // so this struct is used to group their properties together.
