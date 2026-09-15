@@ -33,12 +33,13 @@
 #include "core/math/random_pcg.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/navigation_3d/navigation_server_3d_debug.h"
 
 NavigationRegion3DGizmoPlugin::NavigationRegion3DGizmoPlugin() {
-	create_material("face_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color(), false, false, true);
-	create_material("face_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color(), false, false, true);
-	create_material("edge_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_color());
-	create_material("edge_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_color());
+	create_material("face_material", NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_color(), false, false, true);
+	create_material("face_material_disabled", NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_disabled_color(), false, false, true);
+	create_material("edge_material", NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_edge_color());
+	create_material("edge_material_disabled", NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_edge_disabled_color());
 
 	Color baking_aabb_material_color = Color(0.8, 0.5, 0.7);
 	baking_aabb_material_color.a = 0.1;
@@ -161,9 +162,9 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	// if enabled add vertex colors to colorize each face individually
 	RandomPCG rand;
-	bool enabled_geometry_face_random_color = NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
+	bool enabled_geometry_face_random_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
 	if (enabled_geometry_face_random_color) {
-		Color debug_navigation_geometry_face_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		Color debug_navigation_geometry_face_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_color();
 		Color polygon_color = debug_navigation_geometry_face_color;
 
 		Vector<Color> face_color_array;
@@ -186,13 +187,13 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const String face_material_name = navigationregion->is_enabled() ? "face_material" : "face_material_disabled";
 	Ref<StandardMaterial3D> face_material = get_material(face_material_name, p_gizmo);
 	if (navigationregion->is_enabled()) {
-		Color mat_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+		Color mat_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_color();
 		if (!p_gizmo->is_selected()) {
 			mat_color.a *= 0.3;
 		}
 		face_material->set_albedo(mat_color);
 	} else {
-		Color mat_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color();
+		Color mat_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_face_disabled_color();
 		if (!p_gizmo->is_selected()) {
 			mat_color.a *= 0.3;
 		}
@@ -201,7 +202,7 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_mesh(debug_mesh, face_material);
 
 	// if enabled build geometry edge line surface
-	bool enabled_edge_lines = NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
+	bool enabled_edge_lines = NavigationServer3DDebug::get_singleton()->get_debug_navigation_enable_edge_lines();
 	if (enabled_edge_lines) {
 		Vector<Vector3> line_vertex_array;
 		line_vertex_array.resize(polygon_count * 6);
@@ -220,13 +221,13 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		const String line_material_name = navigationregion->is_enabled() ? "edge_material" : "edge_material_disabled";
 		Ref<StandardMaterial3D> line_material = get_material(line_material_name, p_gizmo);
 		if (navigationregion->is_enabled()) {
-			Color mat_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_color();
+			Color mat_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_edge_color();
 			if (!p_gizmo->is_selected()) {
 				mat_color.a *= 0.3;
 			}
 			line_material->set_albedo(mat_color);
 		} else {
-			Color mat_color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_color();
+			Color mat_color = NavigationServer3DDebug::get_singleton()->get_debug_navigation_geometry_edge_disabled_color();
 			if (!p_gizmo->is_selected()) {
 				mat_color.a *= 0.3;
 			}
