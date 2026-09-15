@@ -2195,7 +2195,7 @@ FRAGMENT_SHADER_CODE
 	vec3 diffuse_light;
 #ifdef USE_VERTEX_LIGHTING //ubershader-runtime
 
-	specular_light = specular_light_interp.rgb;
+	specular_light = vec3(0.0, 0.0, 0.0);
 	diffuse_light = diffuse_light_interp.rgb;
 #else //ubershader-runtime
 
@@ -2535,11 +2535,14 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_VERTEX_LIGHTING //ubershader-runtime
 	diffuse_light *= mix(vec3(1.0), light_attenuation, diffuse_light_interp.a);
-	specular_light *= mix(vec3(1.0), light_attenuation, specular_light_interp.a);
+	specular_light += specular_light_interp.rgb * mix(vec3(1.0), light_attenuation, specular_light_interp.a) * F;
 #else //ubershader-runtime
 	light_compute(normal, -light_direction_attenuation.xyz, eye_vec, binormal, tangent, light_color_energy.rgb, light_attenuation, albedo, transmission, light_params.z * specular_blob_intensity, roughness, metallic, specular, rim, rim_tint, clearcoat, clearcoat_gloss, anisotropy, diffuse_light, specular_light, alpha);
 #endif //ubershader-runtime
-
+#else
+#ifdef USE_VERTEX_LIGHTING //ubershader-runtime
+	specular_light += specular_light_interp.rgb * F;
+#endif //ubershader-runtime
 #endif //#USE_LIGHT_DIRECTIONAL //ubershader-runtime
 
 #ifdef USE_VERTEX_LIGHTING //ubershader-runtime
