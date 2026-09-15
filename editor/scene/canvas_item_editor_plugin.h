@@ -214,7 +214,6 @@ private:
 
 	// Used for secondary menu items which are displayed depending on the currently selected node
 	// (such as MeshInstance's "Mesh" menu).
-	PanelContainer *context_toolbar_panel = nullptr;
 	HBoxContainer *context_toolbar_hbox = nullptr;
 	HashMap<Control *, VSeparator *> context_toolbar_separators;
 
