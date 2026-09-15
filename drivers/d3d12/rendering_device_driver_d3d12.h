@@ -356,8 +356,6 @@ public:
 	/**** SAMPLER ****/
 	/*****************/
 private:
-	LocalVector<D3D12_SAMPLER_DESC> samplers;
-
 	struct SamplerDescriptorHeapAllocation : DescriptorHeap::Allocation {
 		uint32_t key = 0;
 		uint32_t use_count = 1;
@@ -966,9 +964,9 @@ private:
 
 	using VersatileResource = VersatileResourceTemplate<
 			BufferInfo,
+			BufferDynamicInfo,
 			TextureInfo,
-			TextureInfo,
-			TextureInfo,
+			D3D12_SAMPLER_DESC,
 			VertexFormatInfo,
 			CommandBufferInfo,
 			FramebufferInfo,

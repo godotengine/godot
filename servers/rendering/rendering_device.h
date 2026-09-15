@@ -1795,18 +1795,35 @@ private:
 	// nature of the GPU. They will get deleted
 	// when the frame is cycled.
 
-	struct Frame {
+	struct ResourcesToDisposeOf {
 		// List in usage order, from last to free to first to free.
-		List<Buffer> buffers_to_dispose_of;
-		List<Texture> textures_to_dispose_of;
-		List<Framebuffer> framebuffers_to_dispose_of;
-		List<RDD::SamplerID> samplers_to_dispose_of;
-		List<Shader> shaders_to_dispose_of;
-		List<UniformSet> uniform_sets_to_dispose_of;
-		List<RenderPipeline> render_pipelines_to_dispose_of;
-		List<ComputePipeline> compute_pipelines_to_dispose_of;
-		List<AccelerationStructure> acceleration_structures_to_dispose_of;
-		List<RaytracingPipeline> raytracing_pipelines_to_dispose_of;
+		LocalVector<RDD::BufferID> buffers;
+		LocalVector<RDD::TextureID> textures;
+		LocalVector<RDG::FramebufferCache *> framebuffer_caches;
+		LocalVector<RDD::SamplerID> samplers;
+		LocalVector<RDD::AccelerationStructureID> acceleration_structures;
+		LocalVector<RDD::ShaderID> shaders;
+		LocalVector<RDD::UniformSetID> uniform_sets;
+		LocalVector<RDD::PipelineID> pipelines;
+		LocalVector<RDD::RaytracingPipelineID> raytracing_pipelines;
+
+		_FORCE_INLINE_ bool is_empty() const {
+			return buffers.is_empty() &&
+					textures.is_empty() &&
+					framebuffer_caches.is_empty() &&
+					samplers.is_empty() &&
+					acceleration_structures.is_empty() &&
+					shaders.is_empty() &&
+					uniform_sets.is_empty() &&
+					pipelines.is_empty() &&
+					raytracing_pipelines.is_empty();
+		}
+	};
+
+	void _free_pending_resources(ResourcesToDisposeOf &p_resources_to_dispose_of);
+
+	struct Frame {
+		ResourcesToDisposeOf resources_to_dispose_of;
 
 		// Pending asynchronous data transfer for buffers.
 		LocalVector<RDD::BufferID> download_buffer_staging_buffers;
@@ -1869,6 +1886,15 @@ private:
 	TightLocalVector<Frame> frames;
 	uint64_t frames_drawn = 0;
 
+	struct ResourceDisposeTask {
+		RenderingDevice *rendering_device = nullptr;
+		WorkerThreadPool::TaskID id = WorkerThreadPool::INVALID_TASK_ID;
+		ResourcesToDisposeOf resources_to_dispose_of;
+	};
+	TightLocalVector<ResourceDisposeTask> resource_dispose_tasks; // Per frame.
+
+	static void _free_pending_resources(void *p_userdata);
+
 	// Whenever logic/physics request a graphics operation (not just deleting a resource) that requires
 	// us to flush all graphics commands, we must set frames_pending_resources_for_processing = frames.size().
 	// This is important for when the user requested for the logic loop to still be updated while
@@ -1880,7 +1906,7 @@ public:
 	bool has_pending_resources_for_processing() const { return frames_pending_resources_for_processing != 0u; }
 
 private:
-	void _free_pending_resources(int p_frame);
+	void _free_pending_resources(int p_frame, bool p_async);
 
 	SafeNumeric<uint64_t> texture_memory;
 	SafeNumeric<uint64_t> buffer_memory;
