@@ -6111,7 +6111,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		desc = "[ul]";
 		desc += vformat(TTR("[b]Default:[/b] Place in Geometry's Material Override slot.") +
 						"\n" + TTR("[b]Hold %s:[/b] Place in Mesh's Surface Material Override slot."),
-				keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
+				keycode_get_string(Key::CTRL));
 	}
 	desc += "[/ul]";
 
