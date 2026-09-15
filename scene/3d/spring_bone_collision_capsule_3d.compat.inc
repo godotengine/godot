@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  spring_bone_collision_sphere_3d.cpp                                   */
+/*  spring_bone_collision_capsule_3d.compat.inc                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,52 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "spring_bone_collision_sphere_3d.h"
-#include "spring_bone_collision_sphere_3d.compat.inc"
+#ifndef DISABLE_DEPRECATED
+
+#include "spring_bone_collision_capsule_3d.h"
 
 #include "core/object/class_db.h"
-#include "scene/3d/spring_bone_simulator_3d.h"
 
-void SpringBoneCollisionSphere3D::set_radius(float p_radius) {
-	radius = p_radius;
-#ifdef TOOLS_ENABLED
-	update_gizmos();
-#endif // TOOLS_ENABLED
+void SpringBoneCollisionCapsule3D::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_inside", "inside"), &SpringBoneCollisionCapsule3D::_set_inside_bind_compat_122560);
+	ClassDB::bind_compatibility_method(D_METHOD("is_inside"), &SpringBoneCollisionCapsule3D::_is_inside_bind_compat_122560);
+}
+void SpringBoneCollisionCapsule3D::_set_inside_bind_compat_122560(bool p_enabled) {
+	return (set_collide_mode(p_enabled ? SpringBoneCollision3D::COLLIDE_MODE_INSIDE : SpringBoneCollision3D::COLLIDE_MODE_JOINT));
+}
+bool SpringBoneCollisionCapsule3D::_is_inside_bind_compat_122560() const {
+	return (get_collide_mode() == SpringBoneCollision3D::COLLIDE_MODE_INSIDE);
 }
 
-float SpringBoneCollisionSphere3D::get_radius() const {
-	return radius;
-}
-
-SpringBoneCollision3D::CollideMode SpringBoneCollisionSphere3D::get_collide_mode() const {
-	return collide_mode;
-}
-
-void SpringBoneCollisionSphere3D::set_collide_mode(CollideMode p_collide_mode) {
-	collide_mode = p_collide_mode;
-#ifdef TOOLS_ENABLED
-	update_gizmos();
-	SpringBoneSimulator3D *parent = Object::cast_to<SpringBoneSimulator3D>(get_parent());
-	if (parent) {
-		parent->update_gizmos();
-	}
-#endif // TOOLS_ENABLED
-}
-
-void SpringBoneCollisionSphere3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &SpringBoneCollisionSphere3D::set_radius);
-	ClassDB::bind_method(D_METHOD("get_radius"), &SpringBoneCollisionSphere3D::get_radius);
-	ClassDB::bind_method(D_METHOD("set_collide_mode", "collide_mode"), &SpringBoneCollisionSphere3D::set_collide_mode);
-	ClassDB::bind_method(D_METHOD("get_collide_mode"), &SpringBoneCollisionSphere3D::get_collide_mode);
-
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"), "set_radius", "get_radius");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collide_mode", PROPERTY_HINT_ENUM, "Joint,Inside,Chain"), "set_collide_mode", "get_collide_mode");
-}
-
-Vector3 SpringBoneCollisionSphere3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const {
-	Vector3 origin = get_transform_from_skeleton(p_center).origin;
-	if (collide_mode == COLLIDE_MODE_CHAIN) {
-		return _collide_sphere_taper(origin, radius, p_bone_radius, p_bone_length, p_current_origin, p_bone_origin_radius, p_current);
-	}
-	return _collide_sphere(origin, radius, (collide_mode == COLLIDE_MODE_INSIDE), p_bone_radius, p_current);
-}
+#endif // DISABLE_DEPRECATED

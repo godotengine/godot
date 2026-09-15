@@ -37,12 +37,18 @@ class SpringBoneCollisionCapsule3D : public SpringBoneCollision3D {
 
 	float radius = 0.1;
 	float height = 0.5;
-	bool inside = false;
+	CollideMode collide_mode = COLLIDE_MODE_JOINT;
 
 protected:
 	static void _bind_methods();
 
-	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const override;
+	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current_origin, float p_bone_origin_radius, const Vector3 &p_current) const override;
+
+#ifndef DISABLE_DEPRECATED
+	void _set_inside_bind_compat_122560(bool p_enabled);
+	bool _is_inside_bind_compat_122560() const;
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	void set_radius(float p_radius);
@@ -51,8 +57,8 @@ public:
 	float get_height() const;
 	void set_mid_height(real_t p_mid_height);
 	real_t get_mid_height() const;
-	void set_inside(bool p_enabled);
-	bool is_inside() const;
+	void set_collide_mode(CollideMode p_collide_mode);
+	CollideMode get_collide_mode() const;
 
 	// Helper.
 	Pair<Vector3, Vector3> get_head_and_tail(const Transform3D &p_center) const;
