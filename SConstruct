@@ -732,8 +732,6 @@ if not env["rendering_device"] or not (env["forward_mobile_renderer"] or env["fo
 detect.configure(env)
 
 platform_string = env["platform"]
-if env.get("simulator"):
-    platform_string += " (simulator)"
 print(f'Building for platform "{platform_string}", architecture "{env["arch"]}", target "{env["target"]}".')
 
 if env.dev_build:
