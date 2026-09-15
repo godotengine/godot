@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -28,24 +29,28 @@ namespace Godot
         /// X component of the quaternion (imaginary <c>i</c> axis part).
         /// Quaternion components should usually not be manipulated directly.
         /// </summary>
+        [JsonInclude]
         public real_t X;
 
         /// <summary>
         /// Y component of the quaternion (imaginary <c>j</c> axis part).
         /// Quaternion components should usually not be manipulated directly.
         /// </summary>
+        [JsonInclude]
         public real_t Y;
 
         /// <summary>
         /// Z component of the quaternion (imaginary <c>k</c> axis part).
         /// Quaternion components should usually not be manipulated directly.
         /// </summary>
+        [JsonInclude]
         public real_t Z;
 
         /// <summary>
         /// W component of the quaternion (real part).
         /// Quaternion components should usually not be manipulated directly.
         /// </summary>
+        [JsonInclude]
         public real_t W;
 
         /// <summary>
@@ -60,6 +65,7 @@ namespace Godot
         /// <c>[2]</c> is equivalent to <see cref="Z"/>,
         /// <c>[3]</c> is equivalent to <see cref="W"/>.
         /// </value>
+        [JsonIgnore]
         public real_t this[int index]
         {
             readonly get
