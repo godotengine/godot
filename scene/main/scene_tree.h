@@ -205,6 +205,7 @@ private:
 	ObjectID pending_new_scene_id;
 
 	Color debug_collisions_color;
+	real_t debug_collisions_color_3d_modulate_alpha;
 	Color debug_collision_contact_color;
 	Color debug_paths_color;
 	float debug_paths_width = 1.0f;
@@ -389,6 +390,9 @@ public:
 
 	void set_debug_collisions_color(const Color &p_color);
 	Color get_debug_collisions_color() const;
+
+	void set_debug_collisions_color_3d_modulate_alpha(real_t p_modulate_alpha);
+	real_t get_debug_collisions_color_3d_modulate_alpha() const;
 
 	void set_debug_collision_contact_color(const Color &p_color);
 	Color get_debug_collision_contact_color() const;
