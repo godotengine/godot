@@ -279,9 +279,10 @@ void Array::assign(const Array &p_array) {
 
 void Array::push_back(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "push_back"));
-	_p->array.push_back(std::move(value));
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "push_back");
+	ERR_FAIL_COND(!valid);
+	_p->array.push_back(value.value_or(p_value));
 }
 
 void Array::append_array(const Array &p_array) {
@@ -294,8 +295,13 @@ void Array::append_array(const Array &p_array) {
 
 	Vector<Variant> validated_array = p_array._p->array;
 	Variant *write = validated_array.ptrw();
+	bool valid;
 	for (int i = 0; i < validated_array.size(); ++i) {
-		ERR_FAIL_COND(!_p->typed.validate(write[i], "append_array"));
+		std::optional<Variant> value = _p->typed.coerce(write[i], valid, "append_array");
+		ERR_FAIL_COND(!valid);
+		if (value.has_value()) {
+			write[i] = *value;
+		}
 	}
 
 	_p->array.append_array(validated_array);
@@ -322,8 +328,9 @@ Error Array::reserve(int p_new_size) {
 
 Error Array::insert(int p_pos, const Variant &p_value) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, ERR_LOCKED, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "insert"), ERR_INVALID_PARAMETER);
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "insert");
+	ERR_FAIL_COND_V(!valid, ERR_INVALID_PARAMETER);
 
 	if (p_pos < 0) {
 		// Relative offset from the end.
@@ -332,21 +339,27 @@ Error Array::insert(int p_pos, const Variant &p_value) {
 
 	ERR_FAIL_INDEX_V_MSG(p_pos, _p->array.size() + 1, ERR_INVALID_PARAMETER, vformat("The calculated index %d is out of bounds (the array has %d elements). Leaving the array untouched.", p_pos, _p->array.size()));
 
-	return _p->array.insert(p_pos, std::move(value));
+	return _p->array.insert(p_pos, value.value_or(p_value));
 }
 
 void Array::fill(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "fill"));
-	_p->array.fill(std::move(value));
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "fill");
+	ERR_FAIL_COND(!valid);
+	_p->array.fill(value.value_or(p_value));
 }
 
 void Array::erase(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "erase"));
-	_p->array.erase(value);
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "erase");
+	ERR_FAIL_COND(!valid);
+	if (value.has_value()) {
+		_p->array.erase(*value);
+	} else {
+		_p->array.erase(p_value);
+	}
 }
 
 Variant Array::front() const {
@@ -368,8 +381,9 @@ int Array::find(const Variant &p_value, int p_from) const {
 	if (_p->array.is_empty()) {
 		return -1;
 	}
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "find"), -1);
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "find");
+	ERR_FAIL_COND_V(!valid, -1);
 
 	int ret = -1;
 
@@ -377,10 +391,20 @@ int Array::find(const Variant &p_value, int p_from) const {
 		return ret;
 	}
 
-	for (int i = p_from; i < size(); i++) {
-		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
-			ret = i;
-			break;
+	// Loop unrolling
+	if (value.has_value()) {
+		for (int i = p_from; i < size(); i++) {
+			if (StringLikeVariantComparator::compare(_p->array[i], *value)) {
+				ret = i;
+				break;
+			}
+		}
+	} else {
+		for (int i = p_from; i < size(); i++) {
+			if (StringLikeVariantComparator::compare(_p->array[i], p_value)) {
+				ret = i;
+				break;
+			}
 		}
 	}
 
@@ -419,8 +443,9 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 	if (_p->array.is_empty()) {
 		return -1;
 	}
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "rfind"), -1);
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "rfind");
+	ERR_FAIL_COND_V(!valid, -1);
 
 	if (p_from < 0) {
 		// Relative offset from the end
@@ -431,9 +456,18 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 		p_from = _p->array.size() - 1;
 	}
 
-	for (int i = p_from; i >= 0; i--) {
-		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
-			return i;
+	// Loop unrolling
+	if (value.has_value()) {
+		for (int i = p_from; i >= 0; i--) {
+			if (StringLikeVariantComparator::compare(_p->array[i], *value)) {
+				return i;
+			}
+		}
+	} else {
+		for (int i = p_from; i >= 0; i--) {
+			if (StringLikeVariantComparator::compare(_p->array[i], p_value)) {
+				return i;
+			}
 		}
 	}
 
@@ -476,16 +510,26 @@ int Array::rfind_custom(const Callable &p_callable, int p_from) const {
 }
 
 int Array::count(const Variant &p_value) const {
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "count"), 0);
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "count");
+	ERR_FAIL_COND_V(!valid, 0);
 	if (_p->array.is_empty()) {
 		return 0;
 	}
 
 	int amount = 0;
-	for (int i = 0; i < _p->array.size(); i++) {
-		if (StringLikeVariantComparator::compare(_p->array[i], value)) {
-			amount++;
+	// Loop unrolling
+	if (value.has_value()) {
+		for (int i = 0; i < _p->array.size(); i++) {
+			if (StringLikeVariantComparator::compare(_p->array[i], *value)) {
+				amount++;
+			}
+		}
+	} else {
+		for (int i = 0; i < _p->array.size(); i++) {
+			if (StringLikeVariantComparator::compare(_p->array[i], p_value)) {
+				amount++;
+			}
 		}
 	}
 
@@ -493,10 +537,11 @@ int Array::count(const Variant &p_value) const {
 }
 
 bool Array::has(const Variant &p_value) const {
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "use 'has' with"), false);
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "use 'has' with");
+	ERR_FAIL_COND_V(!valid, false);
 
-	return find(value) != -1;
+	return (value.has_value() ? find(*value) : find(p_value)) != -1;
 }
 
 void Array::remove_at(int p_pos) {
@@ -514,10 +559,15 @@ void Array::remove_at(int p_pos) {
 
 void Array::set(int p_idx, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "set"));
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "set");
+	ERR_FAIL_COND(!valid);
 
-	_p->array.write[p_idx] = std::move(value);
+	if (value.has_value()) {
+		_p->array.write[p_idx] = *value;
+	} else {
+		_p->array.write[p_idx] = p_value;
+	}
 }
 
 const Variant &Array::get(int p_idx) const {
@@ -752,16 +802,19 @@ void Array::shuffle() {
 }
 
 int Array::bsearch(const Variant &p_value, bool p_before) const {
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "binary search using"), -1);
-	return _p->array.span().bisect<_ArrayVariantSort>(value, p_before);
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "binary search using");
+	ERR_FAIL_COND_V(!valid, -1);
+	return value.has_value() ? _p->array.span().bisect<_ArrayVariantSort>(*value, p_before) : _p->array.span().bisect<_ArrayVariantSort>(p_value, p_before);
 }
 
 int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before) const {
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed.validate(value, "binary search with a custom comparator using"), -1);
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "binary search with a custom comparator using");
 
-	return _p->array.bsearch_custom<CallableComparator>(value, p_before, p_callable);
+	ERR_FAIL_COND_V(!valid, -1);
+
+	return value.has_value() ? _p->array.bsearch_custom<CallableComparator>(*value, p_before, p_callable) : _p->array.bsearch_custom<CallableComparator>(p_value, p_before, p_callable);
 }
 
 void Array::reverse() {
@@ -771,9 +824,10 @@ void Array::reverse() {
 
 void Array::push_front(const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	Variant value = p_value;
-	ERR_FAIL_COND(!_p->typed.validate(value, "push_front"));
-	_p->array.insert(0, std::move(value));
+	bool valid;
+	std::optional<Variant> value = _p->typed.coerce(p_value, valid, "push_front");
+	ERR_FAIL_COND(!valid);
+	_p->array.insert(0, value.value_or(p_value));
 }
 
 Variant Array::pop_back() {
