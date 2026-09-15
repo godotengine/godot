@@ -166,3 +166,13 @@ public:
 	virtual bool handles(const Ref<Resource> &p_resource) const override;
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
 };
+
+class ShaderConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(ShaderConversionPlugin, EditorResourceConversionPlugin);
+
+public:
+	virtual String converts_to() const override;
+	virtual bool handles(const Ref<Resource> &p_resource) const override;
+	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
+	virtual bool replaces_source() const override;
+};
