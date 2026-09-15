@@ -45,12 +45,12 @@ void EditorSceneFormatImporterFBX2GLTF::get_extensions(List<String> *r_extension
 
 Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
-		List<String> *r_missing_deps, Error *r_err) {
+		List<String> *r_missing_deps, ImportMeta *r_meta, Error *r_err) {
 	// FIXME: Hack to work around GH-86309.
 	if (p_options.has("fbx/importer") && int(p_options["fbx/importer"]) == EditorSceneFormatImporterUFBX::FBX_IMPORTER_UFBX) {
 		Ref<EditorSceneFormatImporterUFBX> fbx2gltf_importer;
 		fbx2gltf_importer.instantiate();
-		Node *scene = fbx2gltf_importer->import_scene(p_path, p_flags, p_options, r_missing_deps, r_err);
+		Node *scene = fbx2gltf_importer->import_scene(p_path, p_flags, p_options, r_missing_deps, r_meta, r_err);
 		if (r_err && *r_err == OK) {
 			return scene;
 		} else {
@@ -115,6 +115,26 @@ Node *EditorSceneFormatImporterFBX2GLTF::import_scene(const String &p_path, uint
 			*r_err = FAILED;
 		}
 		return nullptr;
+	}
+
+	// Record meta
+	if (r_meta != nullptr) {
+		// Texture sizes
+		Vector<Ref<Texture2D>> images = state->get_images();
+		r_meta->texture_sizes.resize(images.size());
+		for (int i = 0; i < images.size(); i++) {
+			Size2 img_size = images[i]->get_size();
+			r_meta->texture_sizes.set(i, img_size.x * img_size.y);
+		}
+
+		// Tris count
+		Vector<Ref<GLTFMesh>> meshes = state->get_meshes();
+		for (const Ref<GLTFMesh> &mesh : meshes) {
+			Ref<ArrayMesh> arr_mesh = mesh->get_mesh()->get_mesh();
+			for (int i = 0; i < arr_mesh->get_surface_count(); i++) {
+				r_meta->tris_count += arr_mesh->surface_get_array_index_len(i) / 3;
+			}
+		}
 	}
 
 #ifndef DISABLE_DEPRECATED

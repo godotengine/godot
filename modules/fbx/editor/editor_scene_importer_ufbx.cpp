@@ -42,12 +42,12 @@ void EditorSceneFormatImporterUFBX::get_extensions(List<String> *r_extensions) c
 
 Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
-		List<String> *r_missing_deps, Error *r_err) {
+		List<String> *r_missing_deps, ImportMeta *r_meta, Error *r_err) {
 	// FIXME: Hack to work around GH-86309.
 	if (p_options.has("fbx/importer") && int(p_options["fbx/importer"]) == FBX_IMPORTER_FBX2GLTF && GLOBAL_GET_CACHED(bool, "filesystem/import/fbx2gltf/enabled")) {
 		Ref<EditorSceneFormatImporterFBX2GLTF> fbx2gltf_importer;
 		fbx2gltf_importer.instantiate();
-		Node *scene = fbx2gltf_importer->import_scene(p_path, p_flags, p_options, r_missing_deps, r_err);
+		Node *scene = fbx2gltf_importer->import_scene(p_path, p_flags, p_options, r_missing_deps, r_meta, r_err);
 		if (r_err && *r_err == OK) {
 			return scene;
 		} else {
@@ -84,6 +84,35 @@ Node *EditorSceneFormatImporterUFBX::import_scene(const String &p_path, uint32_t
 		}
 		return nullptr;
 	}
+
+	// Record meta
+	if (r_meta != nullptr) {
+		// Texture sizes
+		if (p_options.has("fbx/embedded_image_handling")) {
+			int32_t image_handle_mode = p_options["fbx/embedded_image_handling"];
+			bool uses_embed_image = image_handle_mode == GLTFState::HandleBinaryImageMode::HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU ||
+					image_handle_mode == GLTFState::HandleBinaryImageMode::HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED;
+
+			if (uses_embed_image) {
+				Vector<Ref<Texture2D>> images = state->get_images();
+				r_meta->texture_sizes.resize(images.size());
+				for (int i = 0; i < images.size(); i++) {
+					Size2 img_size = images[i]->get_size();
+					r_meta->texture_sizes.set(i, img_size.x * img_size.y);
+				}
+			}
+		}
+
+		// Tris count
+		Vector<Ref<GLTFMesh>> meshes = state->get_meshes();
+		for (const Ref<GLTFMesh> &mesh : meshes) {
+			Ref<ArrayMesh> arr_mesh = mesh->get_mesh()->get_mesh();
+			for (int i = 0; i < arr_mesh->get_surface_count(); i++) {
+				r_meta->tris_count += arr_mesh->surface_get_array_index_len(i) / 3;
+			}
+		}
+	}
+
 	return fbx->generate_scene(state, state->get_bake_fps(), (bool)p_options["animation/trimming"], false);
 }
 

@@ -46,6 +46,12 @@ class AnimationPlayer;
 class ImporterMesh;
 class Material;
 
+class ImportMeta {
+public:
+	uint32_t tris_count = 0;
+	PackedInt32Array texture_sizes;
+};
+
 class EditorSceneFormatImporter : public RefCounted {
 	GDCLASS(EditorSceneFormatImporter, RefCounted);
 
@@ -76,7 +82,9 @@ public:
 	void add_import_option(const String &p_name, const Variant &p_default_value);
 	void add_import_option_advanced(Variant::Type p_type, const String &p_name, const Variant &p_default_value, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = String(), int p_usage_flags = PROPERTY_USAGE_DEFAULT);
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
+			const HashMap<StringName, Variant> &p_options,
+			List<String> *r_missing_deps, ImportMeta *r_meta = nullptr, Error *r_err = nullptr);
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option, const HashMap<StringName, Variant> &p_options);
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {}
@@ -314,7 +322,9 @@ class EditorSceneFormatImporterESCN : public EditorSceneFormatImporter {
 
 public:
 	virtual void get_extensions(List<String> *r_extensions) const override;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr) override;
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
+			const HashMap<StringName, Variant> &p_options,
+			List<String> *r_missing_deps, ImportMeta *r_meta = nullptr, Error *r_err = nullptr) override;
 };
 
 template <typename M>
