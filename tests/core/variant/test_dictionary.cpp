@@ -739,6 +739,28 @@ TEST_CASE("[Dictionary] Object value init") {
 	memdelete(b);
 }
 
+TEST_CASE("[Dictionary] Iteration with freed object keys") {
+	Object *a = memnew(Object);
+	Object *b = memnew(Object);
+	Dictionary dict;
+	dict[a] = 1;
+	dict[b] = 2;
+	CHECK_EQ(dict.size(), 2);
+
+	memdelete(a);
+	memdelete(b);
+
+	// Verify iteration terminates and visits all entries.
+	int count = 0;
+	const Variant *key = dict.next(nullptr);
+	while (key) {
+		count++;
+		key = dict.next(key);
+		REQUIRE(count <= dict.size()); // Guard: fail instead of hang if bug present.
+	}
+	CHECK_EQ(count, 2);
+}
+
 TEST_CASE("[Dictionary] RefCounted value init") {
 	Ref<RefCounted> a = memnew(RefCounted);
 	Ref<RefCounted> b = memnew(RefCounted);
