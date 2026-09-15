@@ -294,7 +294,7 @@ void OpenXRCompositionLayer::update_transform() {
 		}
 
 		Transform3D xf;
-		if (parent_is_xr_origin || parent_is_xr_camera) {
+		if (parent_is_xr_origin || parent_is_xr_camera || !is_inside_tree()) {
 			xf = get_transform();
 		} else {
 			if (ancestor_camera) {
