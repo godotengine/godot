@@ -2499,6 +2499,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_MENU_EDIT_SCENE_IN_INSPECTOR: {
+			if (p_selected.size() == 1) {
+				EditorNode::get_singleton()->load_resource(p_selected[0]);
+			}
+		} break;
+
 		case FILE_MENU_INHERIT: {
 			// Create a new scene inherited from the selected one.
 			if (p_selected.size() == 1) {
@@ -3461,6 +3467,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 		if (all_files_scenes) {
 			if (filenames.size() == 1) {
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open Scene"), FILE_MENU_OPEN);
+				p_popup->add_item(TTRC("Edit Scene in Inspector"), FILE_MENU_EDIT_SCENE_IN_INSPECTOR);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("Play")), TTRC("Play Scene"), FILE_MENU_RUN_SCENE);
 				p_popup->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTRC("New Inherited Scene"), FILE_MENU_INHERIT);
 				if (main_scene_path != filenames[0]) {
