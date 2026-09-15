@@ -346,7 +346,7 @@ private:
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
-	void _clear();
+	void _clear(bool p_clear_undo_history = false);
 	void _update_caches(bool p_invalidate_all = false);
 
 	void _close_ime_window();
@@ -748,6 +748,7 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	void _clear_bind_compat_122377();
 	void _set_selection_mode_bind_compat_86978(SelectionMode p_mode, int p_line = -1, int p_column = -1, int p_caret = 0);
 	Point2i _get_line_column_at_pos_bind_compat_100913(const Point2i &p_pos, bool p_allow_out_of_bounds = true) const;
 	static void _bind_compatibility_methods();
@@ -920,7 +921,7 @@ public:
 	bool is_empty_selection_clipboard_enabled() const;
 
 	// Text manipulation
-	void clear();
+	void clear(bool p_clear_undo_history = false);
 
 	void _set_text(const String &p_text, bool p_emit_signal = false);
 	void set_text(const String &p_text);
