@@ -4572,9 +4572,9 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			bool current = view_display_menu->get_popup()->is_item_checked(idx);
 			current = !current;
 			uint32_t layers = camera->get_cull_mask();
-			layers &= ~(1 << GIZMO_EDIT_LAYER);
+			layers &= ~(1u << GIZMO_EDIT_LAYER);
 			if (current) {
-				layers |= (1 << GIZMO_EDIT_LAYER);
+				layers |= (1u << GIZMO_EDIT_LAYER);
 			}
 			camera->set_cull_mask(layers);
 			view_display_menu->get_popup()->set_item_checked(idx, current);
@@ -4611,9 +4611,9 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			bool current = view_display_menu->get_popup()->is_item_checked(idx);
 			current = !current;
 			uint32_t layers = camera->get_cull_mask();
-			layers &= ~(1 << GIZMO_GRID_LAYER);
+			layers &= ~(1u << GIZMO_GRID_LAYER);
 			if (current) {
-				layers |= (1 << GIZMO_GRID_LAYER);
+				layers |= (1u << GIZMO_GRID_LAYER);
 			}
 			camera->set_cull_mask(layers);
 			view_display_menu->get_popup()->set_item_checked(idx, current);
