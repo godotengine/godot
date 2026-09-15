@@ -358,13 +358,17 @@ void MeshInstance3DEditor::_create_collision_shape() {
 			break;
 	}
 
-	List<Node *> selection = editor_selection->get_top_selected_node_list();
+	List<Node *> selection = editor_selection->get_full_selected_node_list();
 
 	bool verbose = false;
 	if (selection.is_empty()) {
 		selection.push_back(node);
 		verbose = true;
+	} else if (selection.size() == 1 && selection.front()->get() == node) {
+		verbose = true;
 	}
+
+	Vector<Node *> created_nodes;
 
 	for (Node *E : selection) {
 		if (placement_option == SHAPE_PLACEMENT_SIBLING && E == get_tree()->get_edited_scene_root()) {
@@ -380,6 +384,24 @@ void MeshInstance3DEditor::_create_collision_shape() {
 
 		Ref<Mesh> m = instance->get_mesh();
 		if (m.is_null()) {
+			if (verbose) {
+				err_dialog->set_text(TTR("MeshInstance3D lacks a Mesh."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		if (m->get_surface_count() == 0) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Mesh has no surfaces."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		} else if (m->get_surface_count() == 1 && m->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES."));
+				err_dialog->popup_centered();
+			}
 			continue;
 		}
 
@@ -407,6 +429,8 @@ void MeshInstance3DEditor::_create_collision_shape() {
 			}
 			ur->add_do_reference(body);
 			ur->add_undo_method(instance, "remove_child", body);
+
+			created_nodes.push_back(body);
 		} else {
 			for (Ref<Shape3D> shape : shapes) {
 				CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -418,21 +442,23 @@ void MeshInstance3DEditor::_create_collision_shape() {
 				ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), cshape);
 				ur->add_do_reference(cshape);
 				ur->add_undo_method(instance->get_parent(), "remove_child", cshape);
+
+				created_nodes.push_back(cshape);
 			}
 		}
 	}
 
 	ur->commit_action();
+
+	if (!created_nodes.is_empty()) {
+		editor_selection->clear();
+		for (Node *n : created_nodes) {
+			editor_selection->add_node(n);
+		}
+	}
 }
 
 void MeshInstance3DEditor::_menu_option(int p_option) {
-	Ref<Mesh> mesh = node->get_mesh();
-	if (mesh.is_null()) {
-		err_dialog->set_text(TTR("Mesh is empty!"));
-		err_dialog->popup_centered();
-		return;
-	}
-
 	switch (p_option) {
 		case MENU_OPTION_CREATE_COLLISION_SHAPE: {
 			shape_dialog->popup_centered();
@@ -446,120 +472,14 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			outline_dialog->popup_centered(Vector2(200, 90));
 		} break;
 		case MENU_OPTION_CREATE_DEBUG_TANGENTS: {
-			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Create Debug Tangents"));
-
-			MeshInstance3D *tangents = node->create_debug_tangents_node();
-
-			if (tangents) {
-				Node *owner = get_tree()->get_edited_scene_root();
-
-				ur->add_do_reference(tangents);
-				ur->add_do_method(node, "add_child", tangents, true);
-				ur->add_do_method(tangents, "set_owner", owner);
-
-				ur->add_undo_method(node, "remove_child", tangents);
-			}
-
-			ur->commit_action();
+			_create_debug_tangents();
 		} break;
 		case MENU_OPTION_CREATE_UV2: {
-			Ref<Mesh> mesh2 = node->get_mesh();
-			if (mesh.is_null()) {
-				err_dialog->set_text(TTR("No mesh to unwrap."));
-				err_dialog->popup_centered();
-				return;
-			}
-
-			// Test if we are allowed to unwrap this mesh resource.
-			String path = mesh2->get_path();
-			int srpos = path.find("::");
-			if (srpos != -1) {
-				String base = path.substr(0, srpos);
-				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
-					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
-						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it does not belong to the edited scene. Make it unique first."));
-						err_dialog->popup_centered();
-						return;
-					}
-				} else {
-					if (FileAccess::exists(path + ".import")) {
-						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it belongs to another resource which was imported from another file type. Make it unique first."));
-						err_dialog->popup_centered();
-						return;
-					}
-				}
-			} else {
-				if (FileAccess::exists(path + ".import")) {
-					err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it was imported from another file type. Make it unique first."));
-					err_dialog->popup_centered();
-					return;
-				}
-			}
-
-			Ref<PrimitiveMesh> primitive_mesh = mesh2;
-			if (primitive_mesh.is_valid()) {
-				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-				ur->create_action(TTR("Unwrap UV2"));
-				ur->add_do_method(*primitive_mesh, "set_add_uv2", true);
-				ur->add_undo_method(*primitive_mesh, "set_add_uv2", primitive_mesh->get_add_uv2());
-				ur->commit_action();
-			} else {
-				Ref<ArrayMesh> array_mesh = mesh2;
-				if (array_mesh.is_null()) {
-					err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
-					err_dialog->popup_centered();
-					return;
-				}
-
-				// Preemptively evaluate common fail cases for lightmap unwrapping.
-				{
-					if (array_mesh->get_blend_shape_count() > 0) {
-						err_dialog->set_text(TTR("Can't unwrap mesh with blend shapes."));
-						err_dialog->popup_centered();
-						return;
-					}
-
-					for (int i = 0; i < array_mesh->get_surface_count(); i++) {
-						Mesh::PrimitiveType primitive = array_mesh->surface_get_primitive_type(i);
-
-						if (primitive != Mesh::PRIMITIVE_TRIANGLES) {
-							err_dialog->set_text(TTR("Only triangles are supported for lightmap unwrap."));
-							err_dialog->popup_centered();
-							return;
-						}
-
-						uint64_t format = array_mesh->surface_get_format(i);
-						if (!(format & Mesh::ArrayFormat::ARRAY_FORMAT_NORMAL)) {
-							err_dialog->set_text(TTR("Normals are required for lightmap unwrap."));
-							err_dialog->popup_centered();
-							return;
-						}
-					}
-				}
-
-				Ref<ArrayMesh> unwrapped_mesh = array_mesh->duplicate(false);
-
-				Error err = unwrapped_mesh->lightmap_unwrap(node->get_global_transform());
-				if (err != OK) {
-					err_dialog->set_text(TTR("UV Unwrap failed, mesh may not be manifold?"));
-					err_dialog->popup_centered();
-					return;
-				}
-
-				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-				ur->create_action(TTR("Unwrap UV2"));
-
-				ur->add_do_method(node, "set_mesh", unwrapped_mesh);
-				ur->add_do_reference(unwrapped_mesh.ptr());
-				ur->add_undo_method(node, "set_mesh", array_mesh);
-
-				ur->commit_action();
-			}
+			_create_uv2();
 		} break;
 		case MENU_OPTION_DEBUG_UV1: {
-			Ref<Mesh> mesh2 = node->get_mesh();
-			if (mesh2.is_null()) {
+			Ref<Mesh> mesh = node->get_mesh();
+			if (mesh.is_null()) {
 				err_dialog->set_text(TTR("No mesh to debug."));
 				err_dialog->popup_centered();
 				return;
@@ -567,8 +487,8 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			_create_uv_lines(0);
 		} break;
 		case MENU_OPTION_DEBUG_UV2: {
-			Ref<Mesh> mesh2 = node->get_mesh();
-			if (mesh2.is_null()) {
+			Ref<Mesh> mesh = node->get_mesh();
+			if (mesh.is_null()) {
 				err_dialog->set_text(TTR("No mesh to debug."));
 				err_dialog->popup_centered();
 				return;
@@ -707,82 +627,393 @@ void MeshInstance3DEditor::_debug_uv_draw() {
 }
 
 void MeshInstance3DEditor::_create_navigation_mesh() {
-	Ref<Mesh> mesh = node->get_mesh();
-	if (mesh.is_null()) {
-		return;
-	}
-
-	Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
-
-	if (nmesh.is_null()) {
-		return;
-	}
-
-	nmesh->create_from_mesh(mesh);
-	NavigationRegion3D *nmi = memnew(NavigationRegion3D);
-	nmi->set_navigation_mesh(nmesh);
-
-	Node *owner = get_tree()->get_edited_scene_root();
-
+	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+
 	ur->create_action(TTR("Create Navigation Mesh"));
 
-	ur->add_do_method(node, "add_child", nmi, true);
-	ur->add_do_method(nmi, "set_owner", owner);
-	ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), nmi);
+	List<Node *> selection = editor_selection->get_full_selected_node_list();
 
-	ur->add_do_reference(nmi);
-	ur->add_undo_method(node, "remove_child", nmi);
+	bool verbose = false;
+	if (selection.is_empty()) {
+		selection.push_back(node);
+		verbose = true;
+	} else if (selection.size() == 1 && selection.front()->get() == node) {
+		verbose = true;
+	}
+
+	Vector<Node *> created_nodes;
+
+	for (Node *E : selection) {
+		MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E);
+		if (!instance) {
+			continue;
+		}
+
+		Ref<Mesh> m = instance->get_mesh();
+		if (m.is_null()) {
+			if (verbose) {
+				err_dialog->set_text(TTR("MeshInstance3D lacks a Mesh."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		if (m->get_surface_count() == 0) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Mesh has no surfaces."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		} else if (m->get_surface_count() == 1 && m->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
+
+		if (nmesh.is_null()) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Could not create NavigationMesh."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		nmesh->create_from_mesh(m);
+		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
+		nmi->set_navigation_mesh(nmesh);
+
+		created_nodes.push_back(nmi);
+
+		Node *owner = get_tree()->get_edited_scene_root();
+
+		ur->add_do_method(instance, "add_child", nmi, true);
+		ur->add_do_method(nmi, "set_owner", owner);
+		ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), nmi);
+		ur->add_do_reference(nmi);
+		ur->add_undo_method(instance, "remove_child", nmi);
+	}
+
 	ur->commit_action();
+
+	if (!created_nodes.is_empty()) {
+		editor_selection->clear();
+		for (Node *n : created_nodes) {
+			editor_selection->add_node(n);
+		}
+	}
 }
 
 void MeshInstance3DEditor::_create_outline_mesh() {
-	Ref<Mesh> mesh = node->get_mesh();
-	if (mesh.is_null()) {
-		err_dialog->set_text(TTR("MeshInstance3D lacks a Mesh."));
-		err_dialog->popup_centered();
-		return;
-	}
-
-	if (mesh->get_surface_count() == 0) {
-		err_dialog->set_text(TTR("Mesh has no surface to create outlines from."));
-		err_dialog->popup_centered();
-		return;
-	} else if (mesh->get_surface_count() == 1 && mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
-		err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES."));
-		err_dialog->popup_centered();
-		return;
-	}
-
-	Ref<Mesh> mesho = mesh->create_outline(outline_size->get_value());
-
-	if (mesho.is_null()) {
-		err_dialog->set_text(TTR("Could not create outline."));
-		err_dialog->popup_centered();
-		return;
-	}
-
-	MeshInstance3D *mi = memnew(MeshInstance3D);
-	mi->set_mesh(mesho);
-
-	Node *skeleton = node->get_node_or_null(node->get_skeleton_path());
-	if (skeleton && node->get_skin().is_valid()) {
-		mi->set_skin(node->get_skin());
-		mi->set_skeleton_path("../" + String(node->get_path_to(skeleton)));
-	}
-
-	Node *owner = get_tree()->get_edited_scene_root();
-
+	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 	ur->create_action(TTR("Create Outline"));
 
-	ur->add_do_method(node, "add_child", mi, true);
-	ur->add_do_method(mi, "set_owner", owner);
-	ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), mi);
+	List<Node *> selection = editor_selection->get_full_selected_node_list();
 
-	ur->add_do_reference(mi);
-	ur->add_undo_method(node, "remove_child", mi);
+	bool verbose = false;
+	if (selection.is_empty()) {
+		selection.push_back(node);
+		verbose = true;
+	} else if (selection.size() == 1 && selection.front()->get() == node) {
+		verbose = true;
+	}
+
+	Vector<Node *> created_nodes;
+
+	for (Node *E : selection) {
+		MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E);
+		if (!instance) {
+			continue;
+		}
+
+		Ref<Mesh> m = instance->get_mesh();
+		if (m.is_null()) {
+			if (verbose) {
+				err_dialog->set_text(TTR("MeshInstance3D lacks a Mesh."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		if (m->get_surface_count() == 0) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Mesh has no surfaces."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		} else if (m->get_surface_count() == 1 && m->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		Ref<Mesh> mesho = m->create_outline(outline_size->get_value());
+
+		if (mesho.is_null()) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Could not create outline."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		MeshInstance3D *mi = memnew(MeshInstance3D);
+		mi->set_mesh(mesho);
+		created_nodes.push_back(mi);
+
+		Node *skeleton = instance->get_node_or_null(instance->get_skeleton_path());
+		if (skeleton && instance->get_skin().is_valid()) {
+			mi->set_skin(instance->get_skin());
+			mi->set_skeleton_path("../" + String(instance->get_path_to(skeleton)));
+		}
+
+		Node *owner = get_tree()->get_edited_scene_root();
+
+		ur->add_do_method(instance, "add_child", mi, true);
+		ur->add_do_method(mi, "set_owner", owner);
+		ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), mi);
+		ur->add_do_reference(mi);
+		ur->add_undo_method(instance, "remove_child", mi);
+	}
+
+	ur->commit_action();
+
+	if (!created_nodes.is_empty()) {
+		editor_selection->clear();
+		for (Node *n : created_nodes) {
+			editor_selection->add_node(n);
+		}
+	}
+}
+
+void MeshInstance3DEditor::_create_debug_tangents() {
+	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+
+	ur->create_action(TTR("Create Debug Tangents"));
+
+	List<Node *> selection = editor_selection->get_full_selected_node_list();
+
+	bool verbose = false;
+	if (selection.is_empty()) {
+		selection.push_back(node);
+		verbose = true;
+	} else if (selection.size() == 1 && selection.front()->get() == node) {
+		verbose = true;
+	}
+
+	Vector<Node *> created_nodes;
+
+	for (Node *E : selection) {
+		MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E);
+		if (!instance) {
+			continue;
+		}
+
+		Ref<Mesh> m = instance->get_mesh();
+		if (m.is_null()) {
+			if (verbose) {
+				err_dialog->set_text(TTR("MeshInstance3D lacks a Mesh."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		if (m->get_surface_count() == 0) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Mesh has no surfaces."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		} else if (m->get_surface_count() == 1 && m->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Mesh primitive type is not PRIMITIVE_TRIANGLES."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		MeshInstance3D *tangents = instance->create_debug_tangents_node();
+
+		if (!tangents) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Could not create debug tangents."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		created_nodes.push_back(tangents);
+
+		Node *owner = get_tree()->get_edited_scene_root();
+
+		ur->add_do_method(instance, "add_child", tangents, true);
+		ur->add_do_method(tangents, "set_owner", owner);
+		ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), tangents);
+		ur->add_do_reference(tangents);
+		ur->add_undo_method(instance, "remove_child", tangents);
+	}
+
+	ur->commit_action();
+
+	if (!created_nodes.is_empty()) {
+		editor_selection->clear();
+		for (Node *n : created_nodes) {
+			editor_selection->add_node(n);
+		}
+	}
+}
+
+void MeshInstance3DEditor::_create_uv2() {
+	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+
+	ur->create_action(TTR("Unwrap UV2"));
+
+	List<Node *> selection = editor_selection->get_full_selected_node_list();
+
+	bool verbose = false;
+	if (selection.is_empty()) {
+		selection.push_back(node);
+		verbose = true;
+	} else if (selection.size() == 1 && selection.front()->get() == node) {
+		verbose = true;
+	}
+
+	for (Node *E : selection) {
+		MeshInstance3D *instance = Object::cast_to<MeshInstance3D>(E);
+		if (!instance) {
+			continue;
+		}
+
+		Ref<Mesh> m = instance->get_mesh();
+		if (m.is_null()) {
+			if (verbose) {
+				err_dialog->set_text(TTR("MeshInstance3D lacks a Mesh."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		if (m->get_surface_count() == 0) {
+			if (verbose) {
+				err_dialog->set_text(TTR("Mesh has no surfaces."));
+				err_dialog->popup_centered();
+			}
+			continue;
+		}
+
+		String path = m->get_path();
+		int srpos = path.find("::");
+		if (srpos != -1) {
+			String base = path.substr(0, srpos);
+			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+				if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
+					if (verbose) {
+						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it does not belong to the edited scene. Make it unique first."));
+						err_dialog->popup_centered();
+					}
+					continue;
+				}
+			} else {
+				if (FileAccess::exists(path + ".import")) {
+					if (verbose) {
+						err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it belongs to another resource which was imported from another file type. Make it unique first."));
+						err_dialog->popup_centered();
+					}
+					continue;
+				}
+			}
+		} else {
+			if (FileAccess::exists(path + ".import")) {
+				if (verbose) {
+					err_dialog->set_text(TTR("Mesh cannot unwrap UVs because it was imported from another file type. Make it unique first."));
+					err_dialog->popup_centered();
+				}
+				continue;
+			}
+		}
+
+		Ref<PrimitiveMesh> primitive_mesh = m;
+		if (primitive_mesh.is_valid()) {
+			ur->add_do_method(*primitive_mesh, "set_add_uv2", true);
+			ur->add_undo_method(*primitive_mesh, "set_add_uv2", primitive_mesh->get_add_uv2());
+		} else {
+			Ref<ArrayMesh> array_mesh = m;
+			if (array_mesh.is_null()) {
+				if (verbose) {
+					err_dialog->set_text(TTR("Contained Mesh is not of type ArrayMesh."));
+					err_dialog->popup_centered();
+				}
+				continue;
+			}
+
+			// Preemptively evaluate common fail cases for lightmap unwrapping.
+			{
+				if (array_mesh->get_blend_shape_count() > 0) {
+					if (verbose) {
+						err_dialog->set_text(TTR("Can't unwrap mesh with blend shapes."));
+						err_dialog->popup_centered();
+					}
+					continue;
+				}
+
+				bool failed = false;
+
+				for (int i = 0; i < array_mesh->get_surface_count(); i++) {
+					Mesh::PrimitiveType primitive = array_mesh->surface_get_primitive_type(i);
+
+					if (primitive != Mesh::PRIMITIVE_TRIANGLES) {
+						if (verbose) {
+							err_dialog->set_text(TTR("Only triangles are supported for lightmap unwrap."));
+							err_dialog->popup_centered();
+						}
+						failed = true;
+						break;
+					}
+
+					uint64_t format = array_mesh->surface_get_format(i);
+					if (!(format & Mesh::ArrayFormat::ARRAY_FORMAT_NORMAL)) {
+						if (verbose) {
+							err_dialog->set_text(TTR("Normals are required for lightmap unwrap."));
+							err_dialog->popup_centered();
+						}
+						failed = true;
+						break;
+					}
+				}
+
+				if (failed) {
+					continue;
+				}
+			}
+
+			Ref<ArrayMesh> unwrapped_mesh = array_mesh->duplicate(false);
+
+			Error err = unwrapped_mesh->lightmap_unwrap(instance->get_global_transform());
+			if (err != OK) {
+				if (verbose) {
+					err_dialog->set_text(TTR("UV Unwrap failed, mesh may not be manifold?"));
+					err_dialog->popup_centered();
+				}
+				continue;
+			}
+
+			ur->add_do_method(instance, "set_mesh", unwrapped_mesh);
+			ur->add_do_reference(unwrapped_mesh.ptr());
+			ur->add_do_method(Node3DEditor::get_singleton(), SceneStringName(_request_gizmo), instance);
+			ur->add_undo_method(instance, "set_mesh", m);
+		}
+	}
+
 	ur->commit_action();
 }
 
