@@ -2683,6 +2683,13 @@ void CSGPolygon3D::_notification(int p_what) {
 			path->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
 			path = nullptr;
 		}
+	} else if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (mode == MODE_PATH && !is_using_collision()) {
+			// Force an update when the CSGPolygon3D re-enters the tree to make sure it still follows the Path3D's current state.
+			// This is not needed when collision is enabled, as having collision
+			// enabled will automatically trigger an update.
+			_make_dirty();
+		}
 	}
 }
 
