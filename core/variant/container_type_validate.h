@@ -150,8 +150,8 @@ private:
 	}
 
 public:
-	_FORCE_INLINE_ bool validate(Variant &r_inout_variant, const char *p_operation = "use") const {
-		return _internal_validate(r_inout_variant, p_operation, true);
+	_FORCE_INLINE_ bool validate(Variant &r_inout_variant, const char *p_operation = "use", bool p_output_errors = true) const {
+		return _internal_validate(r_inout_variant, p_operation, p_output_errors);
 	}
 
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
