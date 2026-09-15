@@ -112,6 +112,18 @@
 				Returns the transform from the Viewport's coordinates to the screen coordinates of the containing window manager window.
 			</description>
 		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the viewport size.
+			</description>
+		</method>
+		<method name="get_size_2d_override" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the viewport size 2d override.
+			</description>
+		</method>
 		<method name="get_stretch_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
