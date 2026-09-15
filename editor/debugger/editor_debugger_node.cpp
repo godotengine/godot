@@ -395,13 +395,20 @@ void EditorDebuggerNode::_notification(int p_what) {
 
 			// Remote scene tree update.
 			if (!remote_scene_tree_wait) {
-				remote_scene_tree_timeout -= get_process_delta_time();
-				if (remote_scene_tree_timeout < 0) {
-					remote_scene_tree_timeout = EDITOR_GET("debugger/remote_scene_tree_refresh_interval");
-
+				if (remote_scene_tree_queue_update) {
 					if (remote_scene_tree->is_visible_in_tree()) {
-						remote_scene_tree_wait = true;
-						get_current_debugger()->request_remote_tree();
+						remote_scene_tree_queue_update = false;
+						request_remote_tree();
+					}
+				} else {
+					remote_scene_tree_timeout -= get_process_delta_time();
+					if (remote_scene_tree_timeout < 0) {
+						remote_scene_tree_timeout = EDITOR_GET("debugger/remote_scene_tree_refresh_interval");
+
+						if (remote_scene_tree->is_visible_in_tree()) {
+							remote_scene_tree_wait = true;
+							get_current_debugger()->request_remote_tree();
+						}
 					}
 				}
 			}
@@ -518,7 +525,12 @@ void EditorDebuggerNode::_debugger_stopped(int p_id) {
 			found = true;
 		}
 	});
-	if (!found) {
+
+	if (found) {
+		if (!get_current_debugger()->is_session_active()) {
+			remote_scene_tree->clear();
+		}
+	} else {
 		EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
 		EditorRunBar::get_singleton()->get_pause_button()->set_disabled(true);
 		SceneTreeDock *dock = SceneTreeDock::get_singleton();
@@ -545,9 +557,17 @@ void EditorDebuggerNode::_debugger_changed(int p_tab) {
 		prev_debug->clear_inspector();
 		_text_editor_stack_clear(prev_debug);
 	}
-	if (remote_scene_tree->is_visible_in_tree()) {
-		get_current_debugger()->request_remote_tree();
+
+	if (get_current_debugger()->is_session_active()) {
+		if (remote_scene_tree->is_visible_in_tree()) {
+			request_remote_tree();
+		} else {
+			remote_scene_tree_queue_update = true;
+		}
+	} else {
+		remote_scene_tree->clear();
 	}
+
 	if (get_current_debugger()->is_breaked()) {
 		_text_editor_stack_goto(get_current_debugger());
 	}
@@ -721,11 +741,14 @@ String EditorDebuggerNode::get_var_value(const String &p_var) const {
 
 // LiveEdit/Inspector
 void EditorDebuggerNode::request_remote_tree() {
+	remote_scene_tree_wait = true;
+	remote_scene_tree_timeout = EDITOR_GET("debugger/remote_scene_tree_refresh_interval");
 	get_current_debugger()->request_remote_tree();
 }
 
 void EditorDebuggerNode::set_remote_selection(const TypedArray<int64_t> &p_ids, int p_debugger) {
-	stop_waiting_inspection();
+	inspect_edited_object_wait = true;
+	inspect_edited_object_timeout = EDITOR_GET("debugger/remote_inspect_refresh_interval");
 	get_debugger(p_debugger)->request_remote_objects(p_ids);
 }
 
@@ -779,7 +802,7 @@ void EditorDebuggerNode::_remote_tree_button_pressed(Object *p_item, int p_colum
 		ObjectID obj_id = item->get_metadata(0);
 		ERR_FAIL_COND(obj_id.is_null());
 		get_current_debugger()->update_remote_object(obj_id, "visible", !item->get_meta("visible"));
-		get_current_debugger()->request_remote_tree();
+		request_remote_tree();
 	}
 }
 
@@ -804,7 +827,8 @@ void EditorDebuggerNode::_remote_objects_requested(const TypedArray<uint64_t> &p
 	if (p_debugger != tabs->get_current_tab()) {
 		return;
 	}
-	stop_waiting_inspection();
+	inspect_edited_object_wait = true;
+	inspect_edited_object_timeout = EDITOR_GET("debugger/remote_inspect_refresh_interval");
 	get_current_debugger()->request_remote_objects(p_ids);
 }
 
