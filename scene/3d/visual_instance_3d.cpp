@@ -505,6 +505,30 @@ GeometryInstance3D::GIMode GeometryInstance3D::get_gi_mode() const {
 	return gi_mode;
 }
 
+void GeometryInstance3D::set_lightmap_receive(bool p_enabled) {
+	lightmap_receive = p_enabled;
+}
+
+bool GeometryInstance3D::is_lightmap_receive_enabled() const {
+	return lightmap_receive;
+}
+
+void GeometryInstance3D::set_lightmap_contribute(bool p_enabled) {
+	lightmap_contribute = p_enabled;
+}
+
+bool GeometryInstance3D::is_lightmap_contribute_enabled() const {
+	return lightmap_contribute;
+}
+
+void GeometryInstance3D::set_lightmap_emissive(bool p_enabled) {
+	lightmap_emissive = p_enabled;
+}
+
+bool GeometryInstance3D::is_lightmap_emissive_enabled() const {
+	return lightmap_emissive;
+}
+
 void GeometryInstance3D::set_ignore_occlusion_culling(bool p_enabled) {
 	ignore_occlusion_culling = p_enabled;
 	RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, ignore_occlusion_culling);
@@ -589,6 +613,12 @@ void GeometryInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_lightmap_texel_scale", "scale"), &GeometryInstance3D::set_lightmap_texel_scale);
 	ClassDB::bind_method(D_METHOD("get_lightmap_texel_scale"), &GeometryInstance3D::get_lightmap_texel_scale);
+	ClassDB::bind_method(D_METHOD("set_lightmap_receive", "enabled"), &GeometryInstance3D::set_lightmap_receive);
+	ClassDB::bind_method(D_METHOD("is_lightmap_receive_enabled"), &GeometryInstance3D::is_lightmap_receive_enabled);
+	ClassDB::bind_method(D_METHOD("set_lightmap_contribute", "enabled"), &GeometryInstance3D::set_lightmap_contribute);
+	ClassDB::bind_method(D_METHOD("is_lightmap_contribute_enabled"), &GeometryInstance3D::is_lightmap_contribute_enabled);
+	ClassDB::bind_method(D_METHOD("set_lightmap_emissive", "enabled"), &GeometryInstance3D::set_lightmap_emissive);
+	ClassDB::bind_method(D_METHOD("is_lightmap_emissive_enabled"), &GeometryInstance3D::is_lightmap_emissive_enabled);
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_lightmap_scale", "scale"), &GeometryInstance3D::set_lightmap_scale);
@@ -604,11 +634,13 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &GeometryInstance3D::get_custom_aabb);
 
+	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance3D::get_aabb);
+
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_overlay", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT), "set_material_overlay", "get_material_overlay");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "transparency", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_transparency", "get_transparency");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only,Shadows Only Double-Sided"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01,suffix:m"), "set_extra_cull_margin", "get_extra_cull_margin");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
@@ -616,6 +648,9 @@ void GeometryInstance3D::_bind_methods() {
 
 	ADD_GROUP("Global Illumination", "gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static,Dynamic"), "set_gi_mode", "get_gi_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gi_lightmap_receive"), "set_lightmap_receive", "is_lightmap_receive_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gi_lightmap_contribute"), "set_lightmap_contribute", "is_lightmap_contribute_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gi_lightmap_emissive"), "set_lightmap_emissive", "is_lightmap_emissive_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gi_lightmap_texel_scale", PROPERTY_HINT_RANGE, "0.01,10,0.0001,or_greater"), "set_lightmap_texel_scale", "get_lightmap_texel_scale");
 #ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×"), PROPERTY_USAGE_NONE), "set_lightmap_scale", "get_lightmap_scale");
@@ -632,6 +667,7 @@ void GeometryInstance3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_ON);
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_DOUBLE_SIDED);
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_SHADOWS_ONLY_DOUBLE_SIDED);
 
 	BIND_ENUM_CONSTANT(GI_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(GI_MODE_STATIC);
