@@ -52,6 +52,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	ED_SHORTCUT("debugger/break", TTRC("Break"));
 	ED_SHORTCUT("debugger/continue", TTRC("Continue"), Key::F12);
 	ED_SHORTCUT("debugger/debug_with_external_editor", TTRC("Debug with External Editor"));
+	ED_SHORTCUT("debugger/skip_breakpoints", TTRC("Skip Breakpoints"));
 
 	// File Server for deploy with remote filesystem.
 	file_server = memnew(EditorFileServer);
