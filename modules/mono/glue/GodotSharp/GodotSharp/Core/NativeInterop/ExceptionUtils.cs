@@ -100,6 +100,12 @@ namespace Godot.NativeInterop
             }
         }
 
+        private static void PushErrorToLoggers(string message)
+        {
+            using godot_string nMessage = Marshaling.ConvertStringToNative(message);
+            NativeFuncs.godotsharp_internal_os_print_error(nMessage, godot_error_handler_type.ERR_HANDLER_ERROR);
+        }
+
         public static void LogException(Exception e)
         {
             try
@@ -107,6 +113,7 @@ namespace Godot.NativeInterop
                 if (NativeFuncs.godotsharp_internal_script_debugger_is_active().ToBool())
                 {
                     SendToScriptDebugger(e);
+                    PushErrorToLoggers(e.ToString());
                 }
                 else
                 {
@@ -126,10 +133,12 @@ namespace Godot.NativeInterop
                 if (NativeFuncs.godotsharp_internal_script_debugger_is_active().ToBool())
                 {
                     SendToScriptDebugger(e);
+                    PushErrorToLoggers("Unhandled exception\n" + e);
                 }
-
-                // In this case, print it as well in addition to sending it to the script debugger
-                GD.PushError("Unhandled exception\n" + e);
+                else
+                {
+                    GD.PushError("Unhandled exception\n" + e);
+                }
             }
             catch (Exception unexpected)
             {
