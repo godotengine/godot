@@ -681,6 +681,25 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("pressed_joystick", "VirtualJoystick", style_joystick);
 	theme->set_stylebox("pressed_tip", "VirtualJoystick", style_joystick_tip);
 
+	// Virtual Controller
+
+	Ref<StyleBoxFlat> style_virtual_controller_button = make_flat_stylebox(style_normal_color, 0, 0, 0, 0, 10000, false, 4 * scale);
+	style_virtual_controller_button->set_corner_detail(24 * scale);
+
+	Ref<StyleBoxFlat> style_virtual_controller_button_pressed = make_flat_stylebox(style_pressed_color, 0, 0, 0, 0, 10000, true, 4 * scale);
+	style_virtual_controller_button_pressed->set_corner_detail(24 * scale);
+
+	theme->set_stylebox("button_normal", "VirtualController", style_virtual_controller_button);
+	theme->set_stylebox("button_pressed", "VirtualController", style_virtual_controller_button_pressed);
+	theme->set_stylebox("left_normal_joystick", "VirtualController", style_joystick);
+	theme->set_stylebox("left_normal_tip", "VirtualController", style_joystick_tip);
+	theme->set_stylebox("left_pressed_joystick", "VirtualController", style_joystick);
+	theme->set_stylebox("left_pressed_tip", "VirtualController", style_joystick_tip);
+	theme->set_stylebox("right_normal_joystick", "VirtualController", style_joystick);
+	theme->set_stylebox("right_normal_tip", "VirtualController", style_joystick_tip);
+	theme->set_stylebox("right_pressed_joystick", "VirtualController", style_joystick);
+	theme->set_stylebox("right_pressed_tip", "VirtualController", style_joystick_tip);
+
 	// Window
 
 	theme->set_stylebox("embedded_border", "Window", sb_expand(make_flat_stylebox(style_popup_color, 10, 28, 10, 8), 8, 32, 8, 6));
