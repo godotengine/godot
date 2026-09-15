@@ -147,7 +147,7 @@ static void _rasterBlendingPolygonImageSegment(SwSurface* surface, const SwImage
                     if (feather < 255) px = ALPHA_BLEND(px, feather);
                 }
 
-                *buf = INTERPOLATE(surface->blender(rasterUnpremultiply(px), *buf), *buf, MULTIPLY(opacity, A(px)));
+                *buf = INTERPOLATE(surface->blender(surface, rasterUnpremultiply(px), *buf), *buf, MULTIPLY(opacity, A(px)));
                 ++buf;
 
                 //Step UV horizontally

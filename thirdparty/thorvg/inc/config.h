@@ -1,7 +1,7 @@
 #ifndef THORVG_CONFIG_H
 #define THORVG_CONFIG_H
 
-#define THORVG_SW_RASTER_SUPPORT
+#define THORVG_CPU_ENGINE_SUPPORT
 #define THORVG_SVG_LOADER_SUPPORT
 #define THORVG_PNG_LOADER_SUPPORT
 #ifndef WEB_ENABLED
@@ -15,5 +15,5 @@
 // For internal debugging:
 //#define THORVG_LOG_ENABLED
 
-#define THORVG_VERSION_STRING "1.0.3"
+#define THORVG_VERSION_STRING "1.1.1"
 #endif

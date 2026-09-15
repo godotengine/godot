@@ -32,6 +32,7 @@ struct Canvas::Impl
     Scene* scene;
     RenderMethod* renderer;
     RenderRegion vport = {{0, 0}, {INT32_MAX, INT32_MAX}};
+    Array<RenderData> clips;
     Status status = Status::Synced;
 
     Impl() : scene(Scene::gen())
@@ -82,13 +83,14 @@ struct Canvas::Impl
             return Result::InsufficientCondition;
         }
 
-        Array<RenderData> clips;
         auto flag = RenderUpdateFlag::None;
 
         //TODO: All is too harsh, can be optimized.
         if (status == Status::Damaged) flag = RenderUpdateFlag::All;
 
         if (!renderer->preUpdate()) return Result::InsufficientCondition;
+
+        clips.clear();
 
         auto m = tvg::identity();
         PAINT(scene)->update(renderer, m, clips, 255, flag);
