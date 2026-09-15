@@ -3921,24 +3921,39 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			OPCODE(OPCODE_LINE) {
 				CHECK_SPACE(2);
 
+				const int previous_line = line;
 				line = _code_ptr[ip + 1];
 				ip += 2;
 
 				if (EngineDebugger::is_active()) {
 					// line
 					bool do_break = false;
+					ScriptDebugger *script_debugger = EngineDebugger::get_script_debugger();
 
-					if (unlikely(EngineDebugger::get_script_debugger()->get_lines_left() > 0)) {
-						if (EngineDebugger::get_script_debugger()->get_depth() <= 0) {
-							EngineDebugger::get_script_debugger()->set_lines_left(EngineDebugger::get_script_debugger()->get_lines_left() - 1);
+					if (unlikely(script_debugger->get_lines_left() > 0)) {
+						if (script_debugger->get_depth() <= 0) {
+							script_debugger->set_lines_left(script_debugger->get_lines_left() - 1);
 						}
-						if (EngineDebugger::get_script_debugger()->get_lines_left() <= 0) {
+						if (script_debugger->get_lines_left() <= 0) {
 							do_break = true;
 						}
 					}
 
-					if (EngineDebugger::get_script_debugger()->is_breakpoint(line, source)) {
+					if (script_debugger->is_breakpoint(line, source)) {
 						do_break = true;
+					} else if (!script_debugger->get_breakpoints().is_empty()) {
+						int snap_from = previous_line;
+#ifdef TOOLS_ENABLED
+						if (_script) {
+							const int prev_exec = _script->_get_previous_executable_line(line);
+							if (prev_exec >= 0) {
+								snap_from = prev_exec;
+							}
+						}
+#endif
+						if (script_debugger->is_breakpoint_between(snap_from, line, source)) {
+							do_break = true;
+						}
 					}
 
 					if (unlikely(do_break)) {
