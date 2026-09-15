@@ -52,6 +52,8 @@ class EditorInspectorPluginAnimationNodeAnimation;
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
 
+	Ref<Theme> blend_msdf_fonts_theme;
+
 	Ref<AnimationNodeBlendTree> blend_tree;
 
 	bool read_only = false;
