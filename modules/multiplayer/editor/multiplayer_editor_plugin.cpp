@@ -37,8 +37,6 @@
 #include "core/object/callable_mp.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
-#include "editor/editor_node.h"
-#include "scene/main/scene_tree.h"
 
 void MultiplayerEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(Variant::STRING, "path")));
@@ -119,7 +117,6 @@ MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 	repl_editor = memnew(ReplicationEditor);
 	EditorDockManager::get_singleton()->add_dock(repl_editor);
 	repl_editor->close();
-	repl_editor->get_pin()->connect(SceneStringName(pressed), callable_mp(this, &MultiplayerEditorPlugin::_pinned));
 	debugger.instantiate();
 	debugger->connect("open_request", callable_mp(this, &MultiplayerEditorPlugin::_open_request));
 }
@@ -131,7 +128,6 @@ void MultiplayerEditorPlugin::_open_request(const String &p_path) {
 void MultiplayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			get_tree()->connect("node_removed", callable_mp(this, &MultiplayerEditorPlugin::_node_removed));
 			add_debugger_plugin(debugger);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -140,26 +136,20 @@ void MultiplayerEditorPlugin::_notification(int p_what) {
 	}
 }
 
-void MultiplayerEditorPlugin::_node_removed(Node *p_node) {
-	if (p_node && p_node == repl_editor->get_current()) {
-		repl_editor->edit(nullptr);
-		repl_editor->close();
-		repl_editor->get_pin()->set_pressed(false);
-	}
-}
-
-void MultiplayerEditorPlugin::_pinned() {
-	if (!repl_editor->get_pin()->is_pressed() && repl_editor->get_current() == nullptr) {
-		repl_editor->close();
-	}
-}
-
 void MultiplayerEditorPlugin::edit(Object *p_object) {
-	repl_editor->edit(Object::cast_to<MultiplayerSynchronizer>(p_object));
+	repl_editor->edit(p_object);
 }
 
 bool MultiplayerEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("MultiplayerSynchronizer");
+	MultiplayerSynchronizer *multiplayer_synchronizer = Object::cast_to<MultiplayerSynchronizer>(p_object);
+	if (multiplayer_synchronizer && *multiplayer_synchronizer->get_replication_config()) {
+		return true;
+	}
+	SceneReplicationConfig *replication_config = Object::cast_to<SceneReplicationConfig>(p_object);
+	if (replication_config) {
+		return true;
+	}
+	return false;
 }
 
 void MultiplayerEditorPlugin::make_visible(bool p_visible) {
