@@ -551,7 +551,9 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					Vector2 pos = mtx.affine_inverse().xform(snap_point(mb->get_position()));
 
 					previous_polygon.push_back(pos);
-					previous_uv.push_back(pos);
+					if (previous_uv.size()) {
+						previous_uv.push_back(pos);
+					}
 					if (previous_colors.size()) {
 						previous_colors.push_back(Color(1, 1, 1));
 					}
@@ -608,7 +610,9 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					}
 
 					previous_polygon.remove_at(closest);
-					previous_uv.remove_at(closest);
+					if (previous_uv.size()) {
+						previous_uv.remove_at(closest);
+					}
 					if (previous_colors.size()) {
 						previous_colors.remove_at(closest);
 					}
