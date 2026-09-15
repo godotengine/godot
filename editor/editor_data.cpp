@@ -31,6 +31,7 @@
 #include "editor_data.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
@@ -726,6 +727,13 @@ void EditorData::set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene) 
 	EditedScene &scene_info = edited_scene.write[p_idx];
 
 	scene_info.scene = p_scene;
+}
+
+Ref<PackedScene> EditorData::get_scene_resource(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), Ref<PackedScene>());
+
+	const EditedScene &scene_info = edited_scene.get(p_idx);
+	return scene_info.scene;
 }
 
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths) {

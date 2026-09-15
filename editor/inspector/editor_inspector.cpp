@@ -50,6 +50,7 @@
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/scene/editor_scene_tabs.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
@@ -5823,6 +5824,9 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
 		undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
 		undo_redo->commit_action();
+		if (ClassDB::is_parent_class(object->get_class_name(), "PackedScene")) {
+			EditorSceneTabs::get_singleton()->update_scene_tabs();
+		}
 	}
 
 	if (editor_property_map.has(p_name)) {
