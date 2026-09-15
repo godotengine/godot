@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  image_loader_dds.cpp                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,49 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
-
 #include "image_loader_dds.h"
-#include "image_saver_dds.h"
-#include "texture_loader_dds.h"
 
-#include "core/io/resource_loader.h"
-#include "core/object/class_db.h"
-#include "scene/resources/texture.h"
-
-static Ref<ImageLoaderDDS> image_loader_dds;
-static Ref<ResourceFormatDDS> resource_loader_dds;
-
-void initialize_dds_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	Image::save_dds_func = save_dds;
-	Image::save_dds_buffer_func = save_dds_buffer;
-
-	image_loader_dds.instantiate();
-	ImageLoader::add_image_format_loader(image_loader_dds);
-
-	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
-		resource_loader_dds.instantiate();
-		ResourceLoader::add_resource_format_loader(resource_loader_dds);
-	}
+Error ImageLoaderDDS::load_image(Ref<Image> p_image, Ref<FileAccess> file, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
+	Ref<Image> dds_image = load_file_dds(file);
+	p_image->copy_internals_from(dds_image);
+	return OK;
 }
 
-void uninitialize_dds_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_dds);
-		resource_loader_dds.unref();
-	}
-
-	Image::save_dds_func = nullptr;
-	Image::save_dds_buffer_func = nullptr;
-
-	ImageLoader::remove_image_format_loader(image_loader_dds);
-	image_loader_dds.unref();
+void ImageLoaderDDS::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("dds");
 }
