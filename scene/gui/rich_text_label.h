@@ -568,6 +568,7 @@ private:
 	Variant current_meta;
 
 	Array custom_effects;
+	float effect_speed_scale = 1.0;
 
 	HashMap<RID, Rect2> ac_element_bounds_cache;
 
@@ -880,6 +881,9 @@ public:
 	void clear();
 
 	void set_offset(int p_pixel);
+
+	void set_effect_speed_scale(float p_effect_speed_scale);
+	float get_effect_speed_scale() const;
 
 	void set_meta_underline(bool p_underline);
 	bool is_meta_underlined() const;
