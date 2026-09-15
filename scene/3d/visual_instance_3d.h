@@ -145,6 +145,7 @@ private:
 	bool ignore_occlusion_culling = false;
 
 	const StringName *_instance_uniform_get_remap(const StringName &p_name) const;
+	void _update_material_property_list_connection(const Ref<Material> &p_old_material, const Ref<Material> &p_new_material);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
