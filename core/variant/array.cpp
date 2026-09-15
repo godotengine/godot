@@ -869,6 +869,13 @@ const void *Array::id() const {
 	return _p;
 }
 
+Array::Array(const Array &p_from, const ContainerType &p_element_type) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	set_typed(p_element_type);
+	assign(p_from);
+}
+
 Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
@@ -907,12 +914,8 @@ bool Array::is_same_instance(const Array &p_other) const {
 	return _p == p_other._p;
 }
 
-ContainerType Array::get_element_type() const {
-	ContainerType type;
-	type.variant_type = _p->typed.variant_type;
-	type.class_name = _p->typed.class_name;
-	type.script = _p->typed.script;
-	return type;
+const ContainerType &Array::get_element_type() const {
+	return _p->typed;
 }
 
 uint32_t Array::get_typed_builtin() const {
