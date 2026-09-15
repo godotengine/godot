@@ -46,7 +46,7 @@ protected:
 	public:
 		virtual bool handles(ScriptEditorBase *p_seb) override { return Object::cast_to<TextEditor>(p_seb); }
 
-		EditMenusTEB(ScriptEditor *p_se) : EditMenus(p_se) {}
+		EditMenusTEB(DocumentEditorContainer *p_document_editor_container) : EditMenus(p_document_editor_container) {}
 	};
 
 	virtual void _validate_script() override;
@@ -54,7 +54,7 @@ protected:
 public:
 	virtual void apply_code() override;
 
-	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) override { return memnew(EditMenusTEB(p_se)); }
+	virtual EditMenusBase *create_edit_menu(DocumentEditorContainer *p_document_editor_container) override { return memnew(EditMenusTEB(p_document_editor_container)); }
 
 	static void register_editor();
 
