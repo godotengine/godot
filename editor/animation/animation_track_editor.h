@@ -370,8 +370,6 @@ class AnimationMarkerEdit : public Control {
 
 	AnimationTrackEditor *editor = nullptr;
 
-	HBoxContainer *_create_hbox_labeled_control(const String &p_text, Control *p_control) const;
-
 	void _update_key_edit();
 	void _clear_key_edit();
 
