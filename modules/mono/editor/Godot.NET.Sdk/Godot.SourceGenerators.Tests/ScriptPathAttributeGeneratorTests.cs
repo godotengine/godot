@@ -30,7 +30,7 @@ public class ScriptPathAttributeGeneratorTests
             new string[] { "ScriptBoilerplate_ScriptPath.generated.cs" }
         );
         verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::ScriptBoilerplate" }));
-        await verifier.RunAsync();
+        await verifier.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class ScriptPathAttributeGeneratorTests
             new string[] { "Foo_ScriptPath.generated.cs", "Bar_ScriptPath.generated.cs" }
         );
         verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::Foo", "global::Bar" }));
-        await verifier.RunAsync();
+        await verifier.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class ScriptPathAttributeGeneratorTests
             new string[] { "Generic(Of T)_ScriptPath.generated.cs" }
         );
         verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::Generic<>" }));
-        await verifier.RunAsync();
+        await verifier.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class ScriptPathAttributeGeneratorTests
         );
         verifier.TestState.Sources.Add(("Generic.cs", File.ReadAllText(Path.Combine(Constants.SourceFolderPath, "Generic.GD0003.cs"))));
         verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::Generic<>", "global::Generic<,>", "global::Generic" }));
-        await verifier.RunAsync();
+        await verifier.RunAsync(TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -76,6 +76,6 @@ public class ScriptPathAttributeGeneratorTests
         );
         verifier.TestState.Sources.Add(("SameName.cs", File.ReadAllText(Path.Combine(Constants.SourceFolderPath, "SameName.GD0003.cs"))));
         verifier.TestState.GeneratedSources.Add(MakeAssemblyScriptTypesGeneratedSource(new string[] { "global::NamespaceA.SameName", "global::NamespaceB.SameName" }));
-        await verifier.RunAsync();
+        await verifier.RunAsync(TestContext.Current.CancellationToken);
     }
 }
