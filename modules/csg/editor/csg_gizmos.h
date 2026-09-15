@@ -38,6 +38,7 @@
 
 class AcceptDialog;
 class Gizmo3DHelper;
+class HBoxContainer;
 class MenuButton;
 
 class CSGShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -71,12 +72,22 @@ class CSGShapeEditor : public Control {
 
 	CSGShape3D *node = nullptr;
 	MenuButton *options = nullptr;
+	HBoxContainer *hbox = nullptr;
+	Button *rebuild_csg = nullptr;
+	Button *cubemap_uvs = nullptr;
+	Button *cylinder_uvs = nullptr;
+	Button *global_uv_toggle = nullptr;
+	// TODO Add a SpinBox to set uv_scale when applying uv.
 	AcceptDialog *err_dialog = nullptr;
 
 	void _menu_option(int p_option);
 
 	void _create_baked_mesh_instance();
 	void _create_baked_collision_shape();
+
+	void _rebuild_brush();
+	void _make_cube_uv();
+	void _make_cylinder_uv();
 
 protected:
 	void _node_removed(Node *p_node);
