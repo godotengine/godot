@@ -498,7 +498,7 @@ public:
 
 	/* NOTIFICATIONS */
 
-	virtual DisplayServerEnums::NotificationID send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback);
+	virtual DisplayServerEnums::NotificationID send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image = Ref<Texture2D>(), const Callable &p_callback = Callable());
 	virtual void hide_toast_notification(DisplayServerEnums::NotificationID p_id);
 
 	/* DIALOGS */
