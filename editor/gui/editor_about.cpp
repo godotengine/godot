@@ -254,6 +254,7 @@ EditorAbout::EditorAbout() {
 		ScrollContainer *sc = memnew(ScrollContainer);
 		sc->set_name(TTRC("Authors"));
 		sc->set_v_size_flags(Control::SIZE_EXPAND);
+		sc->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 		tc->add_child(sc);
 
 		VBoxContainer *vb = memnew(VBoxContainer);
@@ -272,6 +273,7 @@ EditorAbout::EditorAbout() {
 		ScrollContainer *sc = memnew(ScrollContainer);
 		sc->set_name(TTRC("Donors"));
 		sc->set_v_size_flags(Control::SIZE_EXPAND);
+		sc->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 		tc->add_child(sc);
 
 		VBoxContainer *vb = memnew(VBoxContainer);
