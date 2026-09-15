@@ -72,13 +72,13 @@ namespace GodotPlugins
             }
         }
 
-        private static readonly List<AssemblyName> SharedAssemblies = new();
-        private static readonly Assembly CoreApiAssembly = typeof(global::Godot.GodotObject).Assembly;
+        private static readonly List<AssemblyName> _sharedAssemblies = new();
+        private static readonly Assembly _coreApiAssembly = typeof(Godot.GodotObject).Assembly;
         private static Assembly? _editorApiAssembly;
         private static PluginLoadContextWrapper? _projectLoadContext;
-        private static bool _editorHint = false;
+        private static bool _editorHint;
 
-        private static readonly AssemblyLoadContext MainLoadContext =
+        private static readonly AssemblyLoadContext _mainLoadContext =
             AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()) ??
             AssemblyLoadContext.Default;
 
@@ -88,7 +88,7 @@ namespace GodotPlugins
         [UnmanagedCallersOnly]
         // ReSharper disable once UnusedMember.Local
         private static unsafe godot_bool InitializeFromEngine(IntPtr godotDllHandle, godot_bool editorHint,
-            PluginsCallbacks* pluginsCallbacks, ManagedCallbacks* managedCallbacks,
+            PluginsCallbacks* pluginsCallbacks, IntPtr managedCallbacks,
             IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             try
@@ -97,16 +97,18 @@ namespace GodotPlugins
 
                 _dllImportResolver = new GodotDllImportResolver(godotDllHandle).OnResolveDllImport;
 
-                SharedAssemblies.Add(CoreApiAssembly.GetName());
-                NativeLibrary.SetDllImportResolver(CoreApiAssembly, _dllImportResolver);
+                _sharedAssemblies.Add(_coreApiAssembly.GetName());
+                NativeLibrary.SetDllImportResolver(_coreApiAssembly, _dllImportResolver);
 
                 AlcReloadCfg.Configure(alcReloadEnabled: _editorHint);
                 NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
 
+                ScriptManagerBridge.InitializeNativeClassConstructors();
+
                 if (_editorHint)
                 {
                     _editorApiAssembly = Assembly.Load("GodotSharpEditor");
-                    SharedAssemblies.Add(_editorApiAssembly.GetName());
+                    _sharedAssemblies.Add(_editorApiAssembly.GetName());
                     NativeLibrary.SetDllImportResolver(_editorApiAssembly, _dllImportResolver);
                 }
 
@@ -117,7 +119,7 @@ namespace GodotPlugins
                     UnloadProjectPluginCallback = &UnloadProjectPlugin,
                 };
 
-                *managedCallbacks = ManagedCallbacks.Create();
+                ManagedCallbacks.CreateForToolsBuild(managedCallbacks);
 
                 return godot_bool.True;
             }
@@ -151,7 +153,22 @@ namespace GodotPlugins
                 string loadedAssemblyPath = _projectLoadContext.AssemblyLoadedPath ?? assemblyPath;
                 *outLoadedAssemblyPath = Marshaling.ConvertStringToNative(loadedAssemblyPath);
 
-                ScriptManagerBridge.LookupScriptsInAssembly(projectAssembly);
+                var collectScriptTypesMethod = projectAssembly
+                    .GetType("GodotPlugins.Game.Main")?
+                    .GetMethod("RegisterScriptTypes");
+
+                if (collectScriptTypesMethod != null)
+                {
+                    collectScriptTypesMethod.Invoke(null, null);
+                }
+                else
+                {
+                    // LookupScriptsInAssembly is kept for compatibility with legacy code, and so is this line.
+                    // If they're ever removed, both would be removed at the same time.
+#pragma warning disable CS0618 // Type or member is obsolete
+                    ScriptManagerBridge.LookupScriptsInAssembly(projectAssembly);
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
 
                 return godot_bool.True;
             }
@@ -204,7 +221,7 @@ namespace GodotPlugins
 
             var sharedAssemblies = new List<string>();
 
-            foreach (var sharedAssembly in SharedAssemblies)
+            foreach (var sharedAssembly in _sharedAssemblies)
             {
                 string? sharedAssemblyName = sharedAssembly.Name;
                 if (sharedAssemblyName != null)
@@ -212,7 +229,7 @@ namespace GodotPlugins
             }
 
             return PluginLoadContextWrapper.CreateAndLoadFromAssemblyName(
-                new AssemblyName(assemblyName), assemblyPath, sharedAssemblies, MainLoadContext, isCollectible);
+                new AssemblyName(assemblyName), assemblyPath, sharedAssemblies, _mainLoadContext, isCollectible);
         }
 
         [UnmanagedCallersOnly]

@@ -180,7 +180,7 @@ namespace Godot.NativeInterop
 
             if (string.IsNullOrEmpty(methodstr))
             {
-                methodstr = StringName.CreateTakingOwnershipOfDisposableValue(method);
+                methodstr = StringName.CreateConsuming(method);
             }
 
             return $"function '{methodstr}' in base '{basestr}'";

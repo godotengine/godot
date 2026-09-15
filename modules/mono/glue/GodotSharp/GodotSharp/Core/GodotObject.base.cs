@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Godot.Bridge;
 using Godot.NativeInterop;
+using JetBrains.Annotations;
 
 #nullable enable
 
@@ -13,12 +13,12 @@ namespace Godot
     public partial class GodotObject : IDisposable
     {
         private bool _disposed;
-        private static readonly Type _cachedType = typeof(GodotObject);
 
-        private static readonly Dictionary<Type, StringName?> _nativeNames = new Dictionary<Type, StringName?>();
+        [PublicAPI("Source generators depend on this for type registration.")]
+        public static readonly Type CachedType = typeof(GodotObject);
 
         internal IntPtr NativePtr;
-        private bool _memoryOwn;
+        private readonly bool _memoryOwn;
 
         private WeakReference<GodotObject>? _weakReferenceToSelf;
 
@@ -29,7 +29,7 @@ namespace Godot
         {
             unsafe
             {
-                ConstructAndInitialize(NativeCtor, NativeName, _cachedType, refCounted: false);
+                ConstructAndInitialize(NativeCtor, NativeName, CachedType, refCounted: false);
             }
         }
 
@@ -40,7 +40,7 @@ namespace Godot
             NativePtr = nativePtr;
             unsafe
             {
-                ConstructAndInitialize(NativeCtor, NativeName, _cachedType, refCounted: false);
+                ConstructAndInitialize(NativeCtor, NativeName, CachedType, refCounted: false);
             }
         }
 
@@ -78,6 +78,7 @@ namespace Godot
         /// <summary>
         /// The pointer to the native instance of this <see cref="GodotObject"/>.
         /// </summary>
+        [PublicAPI]
         public IntPtr NativeInstance => NativePtr;
 
         internal static IntPtr GetPtr(GodotObject? instance)
@@ -112,6 +113,7 @@ namespace Godot
         /// <summary>
         /// Disposes implementation of this <see cref="GodotObject"/>.
         /// </summary>
+        [PublicAPI]
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -189,61 +191,10 @@ namespace Godot
         /// A <see cref="SignalAwaiter"/> that completes when
         /// <paramref name="source"/> emits the <paramref name="signal"/>.
         /// </returns>
+        [PublicAPI]
         public SignalAwaiter ToSignal(GodotObject source, StringName signal)
         {
             return new SignalAwaiter(source, signal, this);
-        }
-
-        internal static bool IsNativeClass(Type t)
-        {
-            if (ReferenceEquals(t.Assembly, typeof(GodotObject).Assembly))
-            {
-                return true;
-            }
-
-            if (ReflectionUtils.IsEditorHintCached)
-            {
-                return t.Assembly.GetName().Name == "GodotSharpEditor";
-            }
-
-            return false;
-        }
-
-        internal static Type InternalGetClassNativeBase(Type t)
-        {
-            while (!IsNativeClass(t))
-            {
-                Debug.Assert(t.BaseType is not null, "Script types must derive from a native Godot type.");
-
-                t = t.BaseType;
-            }
-
-            return t;
-        }
-
-        internal static StringName? InternalGetClassNativeBaseName(Type t)
-        {
-            if (_nativeNames.TryGetValue(t, out var name))
-            {
-                return name;
-            }
-
-            var baseType = InternalGetClassNativeBase(t);
-
-            if (_nativeNames.TryGetValue(baseType, out name))
-            {
-                return name;
-            }
-
-            var field = baseType.GetField("NativeName",
-                BindingFlags.DeclaredOnly | BindingFlags.Static |
-                BindingFlags.Public | BindingFlags.NonPublic);
-
-            name = field?.GetValue(null) as StringName;
-
-            _nativeNames[baseType] = name;
-
-            return name;
         }
 
         // ReSharper disable once VirtualMemberNeverOverridden.Global
@@ -255,7 +206,7 @@ namespace Godot
         /// <param name="name">Name of the property to set.</param>
         /// <param name="value">Value to set the property to if it was found.</param>
         /// <returns><see langword="true"/> if a property with the given name was found.</returns>
-        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         protected internal virtual bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
         {
             return false;
@@ -270,7 +221,7 @@ namespace Godot
         /// <param name="name">Name of the property to get.</param>
         /// <param name="value">Value of the property if it was found.</param>
         /// <returns><see langword="true"/> if a property with the given name was found.</returns>
-        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         protected internal virtual bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
         {
             value = default;
@@ -285,29 +236,18 @@ namespace Godot
         /// </summary>
         /// <param name="signal">Name of the signal to raise.</param>
         /// <param name="args">Arguments to use with the raised signal.</param>
-        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         protected internal virtual void RaiseGodotClassSignalCallbacks(in godot_string_name signal,
             NativeVariantPtrArgs args)
         {
-        }
-
-        internal static IntPtr ClassDB_get_method(StringName type, StringName method)
-        {
-            var typeSelf = (godot_string_name)type.NativeValue;
-            var methodSelf = (godot_string_name)method.NativeValue;
-            IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method(typeSelf, methodSelf);
-
-            if (methodBind == IntPtr.Zero)
-                throw new NativeMethodBindNotFoundException(type + "." + method);
-
-            return methodBind;
         }
 
         internal static IntPtr ClassDB_get_method_with_compatibility(StringName type, StringName method, ulong hash)
         {
             var typeSelf = (godot_string_name)type.NativeValue;
             var methodSelf = (godot_string_name)method.NativeValue;
-            IntPtr methodBind = NativeFuncs.godotsharp_method_bind_get_method_with_compatibility(typeSelf, methodSelf, hash);
+            IntPtr methodBind =
+                NativeFuncs.godotsharp_method_bind_get_method_with_compatibility(typeSelf, methodSelf, hash);
 
             if (methodBind == IntPtr.Zero)
                 throw new NativeMethodBindNotFoundException(type + "." + method);
@@ -333,19 +273,28 @@ namespace Godot
         /// To add data to be saved and restored, implement <see cref="ISerializationListener"/>.
         /// </summary>
         /// <param name="info">Object used to save the data.</param>
-        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [RequiresUnreferencedCode("This method is for use by the Godot editor only. "
+                                  + "The overriding methods might not be compatible with trimming.")]
+        [RequiresDynamicCode("This method is for use by the Godot editor only. The overriding methods might "
+                             + "require dynamic code, for which native code might not be available at runtime.")]
+        [PublicAPI]
         protected internal virtual void SaveGodotObjectData(GodotSerializationInfo info)
         {
         }
 
-        // TODO: Should this be a constructor overload?
         /// <summary>
         /// Restores this instance's state after reloading assemblies.
         /// Do not call or override this method.
         /// To add data to be saved and restored, implement <see cref="ISerializationListener"/>.
         /// </summary>
         /// <param name="info">Object that contains the previously saved data.</param>
-        [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [RequiresUnreferencedCode("This method is for use by the Godot editor only. "
+                                  + "The overriding methods might not be compatible with trimming.")]
+        [RequiresDynamicCode("This method is for use by the Godot editor only. The overriding methods might "
+                             + "require dynamic code, for which native code might not be available at runtime.")]
+        [PublicAPI]
         protected internal virtual void RestoreGodotObjectData(GodotSerializationInfo info)
         {
         }

@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Godot;
 using Godot.NativeInterop;
@@ -89,10 +91,34 @@ namespace GodotTools.Internals
                 throw new InvalidOperationException("Already initialized.");
             initialized = true;
 
+            // GodotTools-specific unmanaged callbacks.
+
             if (unmanagedCallbacksSize != sizeof(InternalUnmanagedCallbacks))
                 throw new ArgumentException("Unmanaged callbacks size mismatch.", nameof(unmanagedCallbacksSize));
 
             _unmanagedCallbacks = Unsafe.AsRef<InternalUnmanagedCallbacks>((void*)unmanagedCallbacks);
+
+            // Initialize the constructors mapping for editor-only native types (required for instantiating them from C++).
+
+            var populateConstructorMethod =
+                AppDomain.CurrentDomain
+                    .GetAssemblies()
+                    .First(x => x.GetName().Name == "GodotSharpEditor")
+                    .GetType("Godot.EditorConstructors")?
+                    .GetMethod("AddEditorConstructors",
+                        BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+
+            if (populateConstructorMethod == null)
+            {
+                throw new MissingMethodException("Godot.EditorConstructors",
+                    "AddEditorConstructors");
+            }
+
+            populateConstructorMethod.Invoke(null, null);
+
+            // Register GodotTools script types (RegisterScriptTypes is generated).
+
+            GodotPlugins.Tools.Main.RegisterScriptTypes();
         }
 
         private partial struct InternalUnmanagedCallbacks

@@ -15,9 +15,13 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <!-- Needed for our source generators to work despite this not being a Godot game project -->
   <PropertyGroup>
+    <!-- Needed for our source generators to work despite this not being a Godot game project. -->
     <IsGodotToolsProject>true</IsGodotToolsProject>
+    <!-- Tells our source generators not to register script type/path associations. Required since GodotTools does not define GodotProjectDir. -->
+    <GodotRegisterScriptPaths>false</GodotRegisterScriptPaths>
+    <!-- Source generators put some editor-only code inside TOOLS. -->
+    <DefineConstants>TOOLS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -13,37 +13,36 @@ partial class AbstractGenericNode<T>
         /// </summary>
         public new static readonly global::Godot.StringName @MyArray = "MyArray";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
+    protected new static partial class GodotInternal
     {
-        if (name == PropertyName.@MyArray) {
-            this.@MyArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<T>(value);
-            return true;
+        private static unsafe void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_MyArray(object godotObject)
+            {
+                var ret = ((global::AbstractGenericNode<T>)godotObject).@MyArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromArray(ret);
+            }
+            static void trampoline_set_MyArray(object godotObject, in godot_variant value)
+            {
+                ((global::AbstractGenericNode<T>)godotObject).@MyArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<T>(value);
+            }
+            collector.TryAdd(PropertyName.@MyArray, (new(&trampoline_get_MyArray), new(&trampoline_set_MyArray)));
         }
-        return base.SetGodotClassPropertyValue(name, value);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
-    {
-        if (name == PropertyName.@MyArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.@MyArray);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
-    }
-    /// <summary>
-    /// Get the property information for all the properties declared in this class.
-    /// This method is used by Godot to register the available properties in the editor.
-    /// Do not call this method.
-    /// </summary>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    internal new static global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo> GetGodotPropertyList()
-    {
-        var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
+        /// <summary>
+        /// Get the property information for all the properties declared in this class.
+        /// This method is used by Godot to register the available properties in the editor.
+        /// Do not call this method.
+        /// </summary>
+        public static
+#nullable enable
+            global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>?
+#nullable restore
+            GetGodotPropertyList()
+        {
+            var properties = new global::System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>();
         properties.Add(new(type: (global::Godot.Variant.Type)28, name: PropertyName.@MyArray, hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)4102, exported: true));
-        return properties;
+            return properties;
+        }
     }
 #pragma warning restore CS0109
 }

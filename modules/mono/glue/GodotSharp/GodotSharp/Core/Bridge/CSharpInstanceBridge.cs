@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Godot.NativeInterop;
 
@@ -7,8 +8,8 @@ namespace Godot.Bridge
     internal static class CSharpInstanceBridge
     {
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool Call(IntPtr godotObjectGCHandle, godot_string_name* method,
-            godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* ret)
+        internal static unsafe godot_bool LegacyCall(IntPtr godotObjectGCHandle, godot_string_name* method,
+            godot_variant** args, int argCount, godot_variant_call_error* refCallError, godot_variant* outRet)
         {
             try
             {
@@ -16,7 +17,7 @@ namespace Godot.Bridge
 
                 if (godotObject == null)
                 {
-                    *ret = default;
+                    *outRet = default;
                     (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;
                     return godot_bool.False;
                 }
@@ -26,33 +27,34 @@ namespace Godot.Bridge
 
                 if (!methodInvoked)
                 {
-                    *ret = default;
+                    *outRet = default;
                     // This is important, as it tells Object::call that no method was called.
                     // Otherwise, it would prevent Object::call from calling native methods.
                     (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD;
                     return godot_bool.False;
                 }
 
-                *ret = retValue;
+                *outRet = retValue;
                 return godot_bool.True;
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                *ret = default;
+                *outRet = default;
                 return godot_bool.False;
             }
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool Set(IntPtr godotObjectGCHandle, godot_string_name* name, godot_variant* value)
+        internal static unsafe godot_bool LegacySet(IntPtr godotObjectGCHandle,
+            godot_string_name* name, godot_variant* value)
         {
             try
             {
                 var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("Godot Object instance is null.");
 
                 if (godotObject.SetGodotClassPropertyValue(CustomUnsafe.AsRef(name), CustomUnsafe.AsRef(value)))
                 {
@@ -64,7 +66,7 @@ namespace Godot.Bridge
                     return godot_bool.False;
                 }
 
-                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
+                var nameManaged = StringName.CreateConsuming(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
                 Variant valueManaged = Variant.CreateCopyingBorrowed(*value);
@@ -79,15 +81,15 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool Get(IntPtr godotObjectGCHandle, godot_string_name* name,
-            godot_variant* outRet)
+        internal static unsafe godot_bool LegacyGet(IntPtr godotObjectGCHandle,
+            godot_string_name* name, godot_variant* outRet)
         {
             try
             {
                 var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
-                    throw new InvalidOperationException();
+                    throw new InvalidOperationException("Godot Object instance is null.");
 
                 // Properties
                 if (godotObject.GetGodotClassPropertyValue(CustomUnsafe.AsRef(name), out godot_variant outRetValue))
@@ -99,7 +101,8 @@ namespace Godot.Bridge
                 // Signals
                 if (godotObject.HasGodotClassSignal(CustomUnsafe.AsRef(name)))
                 {
-                    godot_signal signal = new godot_signal(NativeFuncs.godotsharp_string_name_new_copy(*name), godotObject.GetInstanceId());
+                    godot_signal signal = new godot_signal(NativeFuncs.godotsharp_string_name_new_copy(*name),
+                        godotObject.GetInstanceId());
                     *outRet = VariantUtils.CreateFromSignalTakingOwnershipOfDisposableValue(signal);
                     return godot_bool.True;
                 }
@@ -107,7 +110,8 @@ namespace Godot.Bridge
                 // Methods
                 if (godotObject.HasGodotClassMethod(CustomUnsafe.AsRef(name)))
                 {
-                    godot_callable method = new godot_callable(NativeFuncs.godotsharp_string_name_new_copy(*name), godotObject.GetInstanceId());
+                    godot_callable method = new godot_callable(NativeFuncs.godotsharp_string_name_new_copy(*name),
+                        godotObject.GetInstanceId());
                     *outRet = VariantUtils.CreateFromCallableTakingOwnershipOfDisposableValue(method);
                     return godot_bool.True;
                 }
@@ -117,7 +121,7 @@ namespace Godot.Bridge
                     return godot_bool.False;
                 }
 
-                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
+                var nameManaged = StringName.CreateConsuming(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
                 Variant ret = godotObject._Get(nameManaged);
@@ -129,6 +133,79 @@ namespace Godot.Bridge
                 }
 
                 *outRet = ret.CopyNativeVariant();
+                return godot_bool.True;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outRet = default;
+                return godot_bool.False;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool CallViaTrampoline(
+            MethodTrampolineDelegate methodTrampoline,
+            IntPtr godotObjectGCHandle, godot_variant** args, int argCount,
+            godot_variant_call_error* refCallError, godot_variant* outRet)
+        {
+            try
+            {
+                object godotObject = GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                {
+                    *outRet = default;
+                    (*refCallError).Error = godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL;
+                    return godot_bool.False;
+                }
+
+                *outRet = methodTrampoline(godotObject, new NativeVariantPtrArgs(args, argCount), ref *refCallError);
+                return godot_bool.True;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                *outRet = default;
+                return godot_bool.False;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool SetViaTrampoline(
+            PropertySetterTrampolineDelegate setterTrampoline,
+            IntPtr godotObjectGCHandle, godot_variant* value)
+        {
+            try
+            {
+                object godotObject = GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                    throw new InvalidOperationException("Godot Object instance is null.");
+
+                setterTrampoline(godotObject, *value);
+                return godot_bool.True;
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                return godot_bool.False;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        internal static unsafe godot_bool GetViaTrampoline(
+            PropertyGetterTrampolineDelegate getterTrampoline,
+            IntPtr godotObjectGCHandle, godot_variant* outRet)
+        {
+            try
+            {
+                object godotObject = GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                if (godotObject == null)
+                    throw new InvalidOperationException("Godot Object instance is null.");
+
+                *outRet = getterTrampoline(godotObject);
                 return godot_bool.True;
             }
             catch (Exception e)
@@ -173,13 +250,6 @@ namespace Godot.Bridge
 
                 var resultStr = self.ToString();
 
-                if (resultStr == null)
-                {
-                    *outRes = default;
-                    *outValid = godot_bool.False;
-                    return;
-                }
-
                 *outRes = Marshaling.ConvertStringToNative(resultStr);
                 *outValid = godot_bool.True;
             }
@@ -192,7 +262,8 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe godot_bool HasMethodUnknownParams(IntPtr godotObjectGCHandle, godot_string_name* method)
+        internal static unsafe godot_bool LegacyHasMethodUnknownParams(IntPtr godotObjectGCHandle,
+            godot_string_name* method)
         {
             try
             {
@@ -210,70 +281,112 @@ namespace Godot.Bridge
             }
         }
 
-        [UnmanagedCallersOnly]
-        internal static unsafe void SerializeState(
-            IntPtr godotObjectGCHandle,
-            godot_dictionary* propertiesState,
-            godot_dictionary* signalEventsState
-        )
+        /// <summary>
+        /// Provides trimmer-safe access to unmanaged callables annotated with <see cref="RequiresUnreferencedCodeAttribute"/>.
+        /// </summary>
+        /// <remarks>
+        /// The trimmer analyzer doesn't warn when unsafely taking the address of a method that's
+        /// annotated with <see cref="RequiresUnreferencedCodeAttribute"/>. By wrapping that method
+        /// with private access inside this class, we make it impossible to take its address.
+        /// Instead, we provide a getter method that's annotated with <see cref="RequiresUnreferencedCodeAttribute"/>.
+        /// </remarks>
+        internal static class ToolsBuildUnmanagedCallables
         {
-            try
+            [RequiresUnreferencedCode(
+                "This method is for use by the Godot editor only. "
+                + "It calls a virtual method whose overrides might not be compatible with trimming.")]
+            [RequiresDynamicCode(
+                "This method is for use by the Godot editor only. It calls a virtual method whose "
+                + "overrides might require dynamic code, for which native code might not be available at runtime.")]
+            [UnmanagedCallersOnly]
+            private static unsafe void SerializeState(
+                IntPtr godotObjectGCHandle,
+                godot_dictionary* propertiesState,
+                godot_dictionary* signalEventsState
+            )
             {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                try
+                {
+                    var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
-                if (godotObject == null)
-                    return;
+                    if (godotObject == null)
+                        return;
 
-                // Call OnBeforeSerialize
+                    // Call OnBeforeSerialize
 
-                // ReSharper disable once SuspiciousTypeConversion.Global
-                if (godotObject is ISerializationListener serializationListener)
-                    serializationListener.OnBeforeSerialize();
+                    // ReSharper disable once SuspiciousTypeConversion.Global
+                    if (godotObject is ISerializationListener serializationListener)
+                        serializationListener.OnBeforeSerialize();
 
-                // Save instance state
+                    // Save instance state
 
-                using var info = GodotSerializationInfo.CreateCopyingBorrowed(
-                    *propertiesState, *signalEventsState);
+                    using var info = GodotSerializationInfo.CreateCopyingBorrowed(
+                        *propertiesState, *signalEventsState);
 
-                godotObject.SaveGodotObjectData(info);
+                    godotObject.SaveGodotObjectData(info);
+                }
+                catch (Exception e)
+                {
+                    ExceptionUtils.LogException(e);
+                }
             }
-            catch (Exception e)
+
+            [RequiresUnreferencedCode(
+                "This method is for use by the Godot editor only. "
+                + "It calls a virtual method whose overrides might not be compatible with trimming.")]
+            [RequiresDynamicCode(
+                "This method is for use by the Godot editor only. It calls a virtual method whose "
+                + "overrides might require dynamic code, for which native code might not be available at runtime.")]
+            [UnmanagedCallersOnly]
+            private static unsafe void DeserializeState(
+                IntPtr godotObjectGCHandle,
+                godot_dictionary* propertiesState,
+                godot_dictionary* signalEventsState
+            )
             {
-                ExceptionUtils.LogException(e);
+                try
+                {
+                    var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+
+                    if (godotObject == null)
+                        return;
+
+                    // Restore instance state
+
+                    using var info = GodotSerializationInfo.CreateCopyingBorrowed(
+                        *propertiesState, *signalEventsState);
+
+                    godotObject.RestoreGodotObjectData(info);
+
+                    // Call OnAfterDeserialize
+
+                    // ReSharper disable once SuspiciousTypeConversion.Global
+                    if (godotObject is ISerializationListener serializationListener)
+                        serializationListener.OnAfterDeserialize();
+                }
+                catch (Exception e)
+                {
+                    ExceptionUtils.LogException(e);
+                }
             }
-        }
 
-        [UnmanagedCallersOnly]
-        internal static unsafe void DeserializeState(
-            IntPtr godotObjectGCHandle,
-            godot_dictionary* propertiesState,
-            godot_dictionary* signalEventsState
-        )
-        {
-            try
-            {
-                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+            [RequiresUnreferencedCode(
+                "This method is for internal use by the Godot editor only. "
+                + "The returned delegate points to a method that calls a virtual "
+                + "method where the overrides might not be compatible with trimming.")]
+            public static unsafe
+                delegate* unmanaged<IntPtr, godot_dictionary*, godot_dictionary*, void>
+                GetAddressOfSerializeState()
+                => &SerializeState;
 
-                if (godotObject == null)
-                    return;
-
-                // Restore instance state
-
-                using var info = GodotSerializationInfo.CreateCopyingBorrowed(
-                    *propertiesState, *signalEventsState);
-
-                godotObject.RestoreGodotObjectData(info);
-
-                // Call OnAfterDeserialize
-
-                // ReSharper disable once SuspiciousTypeConversion.Global
-                if (godotObject is ISerializationListener serializationListener)
-                    serializationListener.OnAfterDeserialize();
-            }
-            catch (Exception e)
-            {
-                ExceptionUtils.LogException(e);
-            }
+            [RequiresUnreferencedCode(
+                "This method is for internal use by the Godot editor only. "
+                + "The returned delegate points to a method that calls a virtual "
+                + "method where the overrides might not be compatible with trimming.")]
+            public static unsafe
+                delegate* unmanaged<IntPtr, godot_dictionary*, godot_dictionary*, void>
+                GetAddressOfDeserializeState()
+                => &DeserializeState;
         }
     }
 }

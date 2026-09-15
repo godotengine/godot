@@ -117,7 +117,7 @@ namespace Godot
                 godot_variant ret = NativeFuncs.godotsharp_callable_call(callable,
                     (godot_variant**)argsPtr, argc, out godot_variant_call_error vcall_error);
                 ExceptionUtils.DebugCheckCallError(callable, (godot_variant**)argsPtr, argc, vcall_error);
-                return Variant.CreateTakingOwnershipOfDisposableValue(ret);
+                return Variant.CreateConsuming(ret);
             }
         }
 
