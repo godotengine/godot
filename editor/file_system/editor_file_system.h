@@ -373,6 +373,8 @@ class EditorFileSystem : public Node {
 
 	void _register_global_class_script(const String &p_search_path, const String &p_target_path, const ScriptClassInfoUpdate &p_script_update);
 
+	bool _should_create_uid_file(const String &p_path);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
