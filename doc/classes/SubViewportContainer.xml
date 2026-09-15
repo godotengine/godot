@@ -20,7 +20,13 @@
 		</method>
 	</methods>
 	<members>
+		<member name="fixed_resolution" type="Vector2i" setter="set_fixed_resolution" getter="get_fixed_resolution" default="Vector2i(512, 512)">
+			Determines the method that is used to set the resolution of the [SubViewport].
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="1" />
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="SubViewportContainer.ResolutionMode" default="0">
+			Determines the method that is used to set the resolution of the [SubViewport].
+		</member>
 		<member name="mouse_target" type="bool" setter="set_mouse_target" getter="is_mouse_target_enabled" default="false">
 			Configure, if either the [SubViewportContainer] or alternatively the [Control] nodes of its [SubViewport] children should be available as targets of mouse-related functionalities, like identifying the drop target in drag-and-drop operations or cursor shape of hovered [Control] node.
 			If [code]false[/code], the [Control] nodes inside its [SubViewport] children are considered as targets.
@@ -31,9 +37,17 @@
 			[b]Note:[/b] If [code]true[/code], this will prohibit changing [member SubViewport.size] of its children manually.
 		</member>
 		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink" default="1">
-			Divides the sub-viewport's effective resolution by this value while preserving its scale. This can be used to speed up rendering.
+			If [member mode] is [constant RESOLUTION_MODE_SHRINK], divides the sub-viewport's effective resolution by this value while preserving its scale. This can be used to speed up rendering.
 			For example, a 1280×720 sub-viewport with [member stretch_shrink] set to [code]2[/code] will be rendered at 640×360 while occupying the same size in the container.
 			[b]Note:[/b] [member stretch] must be [code]true[/code] for this property to work.
 		</member>
 	</members>
+	<constants>
+		<constant name="RESOLUTION_MODE_SHRINK" value="0" enum="ResolutionMode">
+			Use the [member stretch_shrink] value to calculate the effective resolution of the [SubViewport].
+		</constant>
+		<constant name="RESOLUTION_MODE_FIXED" value="1" enum="ResolutionMode">
+			Use the [member fixed_resolution] value to determine the effective resolution of the [SubViewport].
+		</constant>
+	</constants>
 </class>
