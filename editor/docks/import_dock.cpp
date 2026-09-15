@@ -45,6 +45,7 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/rich_text_label.h"
 
 class ImportDockParameters : public Object {
 	GDCLASS(ImportDockParameters, Object);
@@ -158,7 +159,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 	content->show();
 	select_a_resource->hide();
 
-	imported->set_text(p_path.get_file());
+	_update_imported(p_path.get_file(), p_path);
 }
 
 void ImportDock::_add_keep_import_option(const String &p_importer_name) {
@@ -349,7 +350,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	content->show();
 	select_a_resource->hide();
 
-	imported->set_text(vformat(TTR("%d Files"), p_paths.size()));
+	_update_imported(vformat(TTR("%d Files"), p_paths.size()), p_paths.size() == 1 ? p_paths[0] : String());
 
 	if (params->paths.size() == 1 && params->importer->has_advanced_options()) {
 		advanced->show();
@@ -527,6 +528,19 @@ static bool _find_owners(EditorFileSystemDirectory *efsd, const String &p_path) 
 	}
 
 	return false;
+}
+
+void ImportDock::_update_imported(const String &p_text, const String &p_path) {
+	imported->clear();
+
+	if (!p_path.is_empty()) {
+		String type = EditorFileSystem::get_singleton()->get_file_type(p_path);
+		Ref<Texture2D> icon = has_theme_icon(type, EditorStringName(EditorIcons)) ? get_editor_theme_icon(type) : get_editor_theme_icon(SNAME("File"));
+		imported->add_image(icon);
+		imported->add_text("  ");
+	}
+
+	imported->add_text(p_text);
 }
 
 void ImportDock::_reimport_pressed() {
@@ -761,10 +775,9 @@ ImportDock::ImportDock() {
 	main_vb->add_child(content);
 	content->hide();
 
-	imported = memnew(Label);
+	imported = memnew(RichTextLabel);
 	imported->set_focus_mode(FOCUS_ACCESSIBILITY);
-	imported->add_theme_style_override(CoreStringName(normal), EditorNode::get_singleton()->get_editor_theme()->get_stylebox(CoreStringName(normal), SNAME("LineEdit")));
-	imported->set_clip_text(true);
+	imported->set_fit_content(true);
 	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	content->add_margin_child(TTRC("Import As:"), hb);
