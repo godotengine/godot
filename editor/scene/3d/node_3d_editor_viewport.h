@@ -551,6 +551,7 @@ public:
 	void update_surface() { surface->queue_redraw(); }
 	void update_transform_gizmo_view();
 	void update_transform_gizmo_highlight();
+	void set_display_mode_normal() { _menu_option(VIEW_DISPLAY_NORMAL); }
 
 	void set_can_preview(Camera3D *p_preview);
 	void switch_preview_camera(Camera3D *p_new_camera);
