@@ -68,6 +68,10 @@
 			<param index="0" name="modification_stack" type="SkeletonModificationStack2D" />
 			<description>
 				Sets the [SkeletonModificationStack2D] attached to this skeleton.
+				[b]Note:[/b] The [SkeletonModificationStack2D] is a [Resource] and is shared between instances by default.
+				If the same stack is assigned to multiple [Skeleton2D] nodes (for example, when the scene is instantiated more than once),
+				enable [member Resource.resource_local_to_scene] on it so each node receives a unique copy.
+				Otherwise the instances conflict, producing errors and incorrect behavior.
 			</description>
 		</method>
 	</methods>
