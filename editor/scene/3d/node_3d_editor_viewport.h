@@ -157,6 +157,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_REAR,
 		VIEW_CENTER_TO_ORIGIN,
 		VIEW_CENTER_TO_SELECTION,
+		VIEW_FOCUS_AABB,
 		VIEW_ALIGN_TRANSFORM_WITH_VIEW,
 		VIEW_ALIGN_ROTATION_WITH_VIEW,
 		VIEW_PERSPECTIVE,
@@ -563,6 +564,7 @@ public:
 	Point2 point_to_screen(const Vector3 &p_point);
 
 	void focus_selection();
+	void focus_aabb();
 
 	void assign_pending_data_pointers(
 			Node3D *p_preview_node,
