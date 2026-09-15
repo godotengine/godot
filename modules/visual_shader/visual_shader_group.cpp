@@ -150,21 +150,21 @@ void VisualShaderGroup::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "group_name"), "set_group_name", "get_group_name");
 	ADD_PROPERTY_DEFAULT("group_name", "NodeGroup");
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_port_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Input Ports,input_port_,swap_method=move_input_port,add_button_text=" + String(TTRC("Add Port"))), "set_input_port_count", "get_input_port_count");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_port_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Output Ports,output_port_,swap_method=move_output_port,add_button_text=" + String(TTRC("Add Port"))), "set_output_port_count", "get_output_port_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_port_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, String(PNAME("Input Ports")) + ",input_port_,swap_method=move_input_port,add_button_text=" + String(TTRC("Add Port"))), "set_input_port_count", "get_input_port_count");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_port_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, String(PNAME("Output Ports")) + ",output_port_,swap_method=move_output_port,add_button_text=" + String(TTRC("Add Port"))), "set_output_port_count", "get_output_port_count");
 
 	const String port_type_hint = "Float,Int,UInt,Vector2,Vector3,Vector4,Boolean,Transform,Sampler";
 
 	input_port_base_property_helper.set_prefix("input_port_");
 	input_port_base_property_helper.set_array_length_getter(&VisualShaderGroup::get_input_port_count);
-	input_port_base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), String(), &VisualShaderGroup::set_input_port_name, &VisualShaderGroup::get_input_port_name);
-	input_port_base_property_helper.register_property(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_ENUM, port_type_hint), VisualShaderNode::PORT_TYPE_SCALAR, &VisualShaderGroup::set_input_port_type, &VisualShaderGroup::get_input_port_type);
+	input_port_base_property_helper.register_property(PropertyInfo(Variant::STRING, PNAME("name")), String(), &VisualShaderGroup::set_input_port_name, &VisualShaderGroup::get_input_port_name);
+	input_port_base_property_helper.register_property(PropertyInfo(Variant::INT, PNAME("type"), PROPERTY_HINT_ENUM, port_type_hint), VisualShaderNode::PORT_TYPE_SCALAR, &VisualShaderGroup::set_input_port_type, &VisualShaderGroup::get_input_port_type);
 	PropertyListHelper::register_base_helper(get_class_static(), &input_port_base_property_helper);
 
 	output_port_base_property_helper.set_prefix("output_port_");
 	output_port_base_property_helper.set_array_length_getter(&VisualShaderGroup::get_output_port_count);
-	output_port_base_property_helper.register_property(PropertyInfo(Variant::STRING, "name"), String(), &VisualShaderGroup::set_output_port_name, &VisualShaderGroup::get_output_port_name);
-	output_port_base_property_helper.register_property(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_ENUM, port_type_hint), VisualShaderNode::PORT_TYPE_SCALAR, &VisualShaderGroup::set_output_port_type, &VisualShaderGroup::get_output_port_type);
+	output_port_base_property_helper.register_property(PropertyInfo(Variant::STRING, PNAME("name")), String(), &VisualShaderGroup::set_output_port_name, &VisualShaderGroup::get_output_port_name);
+	output_port_base_property_helper.register_property(PropertyInfo(Variant::INT, PNAME("type"), PROPERTY_HINT_ENUM, port_type_hint), VisualShaderNode::PORT_TYPE_SCALAR, &VisualShaderGroup::set_output_port_type, &VisualShaderGroup::get_output_port_type);
 	PropertyListHelper::register_base_helper(get_class_static(), &output_port_base_property_helper);
 }
 
