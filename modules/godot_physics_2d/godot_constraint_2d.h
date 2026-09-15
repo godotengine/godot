@@ -32,6 +32,8 @@
 
 #include "godot_body_2d.h"
 
+#include "modules/godot_physics_2d/godot_collision_object_2d.h"
+
 class GodotConstraint2D {
 	GodotBody2D **_body_ptr;
 	int _body_count;
@@ -58,6 +60,13 @@ public:
 
 	_FORCE_INLINE_ void disable_collisions_between_bodies(const bool p_disabled) { disabled_collisions_between_bodies = p_disabled; }
 	_FORCE_INLINE_ bool is_disabled_collisions_between_bodies() const { return disabled_collisions_between_bodies; }
+
+	virtual void refresh_pair(GodotCollisionObject2D *p_source) {
+		for (int i = 0; i < _body_count; i++) {
+			GodotCollisionObject2D *body = _body_ptr[i];
+			body->refresh_pair(p_source);
+		}
+	}
 
 	virtual bool setup(real_t p_step) = 0;
 	virtual bool pre_solve(real_t p_step) = 0;
