@@ -1017,7 +1017,7 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	int ac = areas.size();
 	if (ac) {
 		areas.sort();
-		const AreaCMP *aa = &areas[0];
+		const AreaCMP *aa = areas.ptr();
 		for (int i = ac - 1; i >= 0; i--) {
 			if (!gravity_done) {
 				PS3DE::AreaSpaceOverrideMode area_gravity_mode = (PS3DE::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
