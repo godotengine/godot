@@ -4,6 +4,7 @@ import argparse
 import contextlib
 import os
 import socket
+import ssl
 import subprocess
 import sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -40,8 +41,43 @@ def serve(root, port, run_browser):
 
     address = ("", port)
     httpd = DualStackServer(address, CORSRequestHandler)
+    if not os.path.exists("cert.pem") or not os.path.exists("key.pem"):
+        try:
+            subprocess.run(
+                [
+                    "openssl",
+                    "req",
+                    "-x509",
+                    "-newkey",
+                    "rsa:4096",
+                    "-nodes",
+                    "-days",
+                    "32850",
+                    "-keyout",
+                    "key.pem",
+                    "-out",
+                    "cert.pem",
+                    "-subj=/CN=godot_web",
+                ],
+                stderr=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+            )
+        except Exception:
+            pass
 
-    url = f"http://127.0.0.1:{port}"
+    if os.path.exists("cert.pem") and os.path.exists("key.pem"):
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(certfile="cert.pem", keyfile="key.pem")
+        httpd.socket = context.wrap_socket(httpd.socket, server_side=True)
+        url = f"https://127.0.0.1:{port}"
+        print("Serving as HTTPS using cert.pem and key.pem in the `bin` folder.")
+    else:
+        print(
+            "Serving as plain HTTP. Secure context will not be available outside of localhost access, which means threads won't work when accessing this server remotely. To serve as HTTPS, run this command in the `bin` folder then restart this script:\n"
+        )
+        print("    openssl req -x509 -newkey rsa:4096 -nodes -days 365 -keyout key.pem -out cert.pem\n")
+        url = f"http://127.0.0.1:{port}"
+
     if run_browser:
         # Open the served page in the user's default browser.
         print(f"Opening the served URL in the default browser (use `--no-browser` or `-n` to disable this): {url}")
