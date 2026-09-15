@@ -1,0 +1,25 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 1: Assigned value for constant "TEST_TYPE" isn't a constant expression.
+>> ERROR at line 2: Assigned value for constant "TEST_TYPE_ARRAY" isn't a constant expression.
+>> ERROR at line 3: Assigned value for constant "TEST_TYPE_DICT_KEY" isn't a constant expression.
+>> ERROR at line 4: Assigned value for constant "TEST_TYPE_DICT_VALUE" isn't a constant expression.
+>> ERROR at line 6: Assigned value for constant "TEST_INITIALIZER" isn't a constant expression.
+>> ERROR at line 7: Assigned value for constant "TEST_INITIALIZER_INFER" isn't a constant expression.
+>> ERROR at line 8: Assigned value for constant "TEST_INITIALIZER_NESTED" isn't a constant expression.
+>> ERROR at line 9: Assigned value for constant "TEST_INITIALIZER_NESTED_INFER" isn't a constant expression.
+>> ERROR at line 11: Assigned value for constant "TEST_INITIALIZER_ARRAY" isn't a constant expression.
+>> ERROR at line 12: Assigned value for constant "TEST_INITIALIZER_INFER_ARRAY" isn't a constant expression.
+>> ERROR at line 13: Assigned value for constant "TEST_INITIALIZER_NESTED_ARRAY" isn't a constant expression.
+>> ERROR at line 14: Assigned value for constant "TEST_INITIALIZER_NESTED_INFER_ARRAY" isn't a constant expression.
+>> ERROR at line 16: Assigned value for constant "TEST_INITIALIZER_ADICT_KEY" isn't a constant expression.
+>> ERROR at line 17: Assigned value for constant "TEST_INITIALIZER_INFER_DICT_KEY" isn't a constant expression.
+>> ERROR at line 18: Assigned value for constant "TEST_INITIALIZER_NESTED_DICT_KEY" isn't a constant expression.
+>> ERROR at line 19: Assigned value for constant "TEST_INITIALIZER_NESTED_INFER_DICT_KEY" isn't a constant expression.
+>> ERROR at line 21: Assigned value for constant "TEST_INITIALIZER_ADICT_VALUE" isn't a constant expression.
+>> ERROR at line 22: Assigned value for constant "TEST_INITIALIZER_INFER_DICT_VALUE" isn't a constant expression.
+>> ERROR at line 23: Assigned value for constant "TEST_INITIALIZER_NESTED_DICT_VALUE" isn't a constant expression.
+>> ERROR at line 24: Assigned value for constant "TEST_INITIALIZER_NESTED_INFER_DICT_VALUE" isn't a constant expression.
+>> ERROR at line 26: Assigned value for constant "TEST_EXPLICIT_CONSTRUCTOR" isn't a constant expression.
+>> ERROR at line 27: Assigned value for constant "TEST_EXPLICIT_CONSTRUCTOR_ARRAY" isn't a constant expression.
+>> ERROR at line 31: Assigned value for constant "TEST_EXPLICIT_CONSTRUCTOR_DICT_KEY" isn't a constant expression.
+>> ERROR at line 36: Assigned value for constant "TEST_EXPLICIT_CONSTRUCTOR_DICT_VALUE" isn't a constant expression.
