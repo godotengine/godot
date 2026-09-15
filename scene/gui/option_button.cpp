@@ -62,7 +62,7 @@ Size2 OptionButton::get_minimum_size() const {
 
 	if (has_theme_icon(SNAME("arrow"))) {
 		const Size2 padding = _get_largest_stylebox_size();
-		const Size2 arrow_size = theme_cache.arrow_icon->get_size();
+		const Size2 arrow_size = _get_arrow_minimum_size();
 
 		Size2 content_size = minsize - padding;
 		content_size.width += arrow_size.width + MAX(0, theme_cache.h_separation);
@@ -79,6 +79,115 @@ Size2 OptionButton::get_minimum_size() const {
 	return minsize;
 }
 
+Size2 OptionButton::_get_arrow_minimum_size() const {
+	Size2 size = theme_cache.arrow->get_size();
+
+	if (theme_cache.arrow_hover.is_valid()) {
+		size = size.max(theme_cache.arrow_hover->get_size());
+	}
+	if (theme_cache.arrow_pressed.is_valid()) {
+		size = size.max(theme_cache.arrow_pressed->get_size());
+	}
+	if (theme_cache.arrow_hover_pressed.is_valid()) {
+		size = size.max(theme_cache.arrow_hover_pressed->get_size());
+	}
+	if (theme_cache.arrow_disabled.is_valid()) {
+		size = size.max(theme_cache.arrow_disabled->get_size());
+	}
+
+	return size;
+}
+
+std::tuple<Ref<Texture2D>, Ref<Texture2D>> OptionButton::_get_current_arrow() const {
+#define APPLY_ARROW(state_name) \
+	if (has_theme_icon(SNAME(#state_name))) \
+		arrow = theme_cache.state_name; \
+	if (has_theme_icon(SNAME(#state_name "_focus"))) \
+		arrow_focus = theme_cache.state_name##_focus;
+
+	Ref<Texture2D> arrow;
+	Ref<Texture2D> arrow_focus;
+
+	APPLY_ARROW(arrow)
+
+	switch (get_draw_mode()) {
+		case DRAW_NORMAL:
+			if (is_pressing()) {
+				APPLY_ARROW(arrow_pressed)
+			}
+			break;
+		case DRAW_HOVER:
+			if (is_pressing()) {
+				APPLY_ARROW(arrow_hover_pressed)
+			} else {
+				APPLY_ARROW(arrow_hover)
+			}
+			break;
+		case DRAW_PRESSED:
+			APPLY_ARROW(arrow_pressed)
+			break;
+		case DRAW_HOVER_PRESSED:
+			APPLY_ARROW(arrow_hover_pressed)
+			break;
+		case DRAW_DISABLED:
+			APPLY_ARROW(arrow_disabled)
+			break;
+	}
+
+#undef APPLY_ARROW
+
+	return std::make_tuple(arrow, arrow_focus);
+}
+
+Color OptionButton::_get_current_arrow_color() const {
+	Color color = Color(1, 1, 1);
+
+	if (has_theme_color("font_color")) {
+		color = theme_cache.font_color;
+	}
+	if (has_focus(true) && has_theme_color("font_focus_color")) {
+		color = theme_cache.font_focus_color;
+	}
+
+	switch (get_draw_mode()) {
+		case DRAW_NORMAL:
+			if (is_pressing()) {
+				if (has_theme_color("font_pressed_color")) {
+					color = theme_cache.font_pressed_color;
+				}
+			}
+			break;
+		case DRAW_HOVER:
+			if (is_pressing()) {
+				if (has_theme_color("font_hover_pressed_color")) {
+					color = theme_cache.font_hover_pressed_color;
+				}
+			} else {
+				if (has_theme_color("font_hover_color")) {
+					color = theme_cache.font_hover_color;
+				}
+			}
+			break;
+		case DRAW_PRESSED:
+			if (has_theme_color("font_pressed_color")) {
+				color = theme_cache.font_pressed_color;
+			}
+			break;
+		case DRAW_HOVER_PRESSED:
+			if (has_theme_color("font_hover_pressed_color")) {
+				color = theme_cache.font_hover_pressed_color;
+			}
+			break;
+		case DRAW_DISABLED:
+			if (has_theme_color("font_disabled_color")) {
+				color = theme_cache.font_disabled_color;
+			}
+			break;
+	}
+
+	return color;
+}
+
 void OptionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -92,10 +201,11 @@ void OptionButton::_notification(int p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			_refresh_size_cache();
 			if (has_theme_icon(SNAME("arrow"))) {
+				Size2 arrow_size = _get_arrow_minimum_size();
 				if (is_layout_rtl()) {
-					_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
+					_set_internal_margin(SIDE_LEFT, arrow_size.width);
 				} else {
-					_set_internal_margin(SIDE_RIGHT, theme_cache.arrow_icon->get_width());
+					_set_internal_margin(SIDE_RIGHT, arrow_size.width);
 				}
 			}
 		} break;
@@ -106,39 +216,24 @@ void OptionButton::_notification(int p_what) {
 			}
 
 			RID ci = get_canvas_item();
-			Color clr = Color(1, 1, 1);
-			if (theme_cache.modulate_arrow) {
-				switch (get_draw_mode()) {
-					case DRAW_PRESSED:
-						clr = theme_cache.font_pressed_color;
-						break;
-					case DRAW_HOVER:
-						clr = theme_cache.font_hover_color;
-						break;
-					case DRAW_HOVER_PRESSED:
-						clr = theme_cache.font_hover_pressed_color;
-						break;
-					case DRAW_DISABLED:
-						clr = theme_cache.font_disabled_color;
-						break;
-					default:
-						if (has_focus(true)) {
-							clr = theme_cache.font_focus_color;
-						} else {
-							clr = theme_cache.font_color;
-						}
-				}
-			}
+			std::tuple<Ref<Texture2D>, Ref<Texture2D>> icons = _get_current_arrow();
+			Ref<Texture2D> arrow_icon = std::get<0>(icons);
+			Ref<Texture2D> arrow_icon_focus = std::get<1>(icons);
 
-			Size2 size = get_size();
+			Color arrow_color = _get_current_arrow_color();
 
 			Point2 ofs;
+			Size2 arrow_size = _get_arrow_minimum_size();
+			Size2 size = get_size();
 			if (is_layout_rtl()) {
-				ofs = Point2(theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
+				ofs = Point2(theme_cache.arrow_margin, int(Math::abs((size.height - arrow_size.height) / 2)));
 			} else {
-				ofs = Point2(size.width - theme_cache.arrow_icon->get_width() - theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
+				ofs = Point2(size.width - arrow_size.width - theme_cache.arrow_margin, int(Math::abs((size.height - arrow_size.height) / 2)));
 			}
-			theme_cache.arrow_icon->draw(ci, ofs, clr);
+			arrow_icon->draw(ci, ofs, arrow_color);
+			if (has_focus(true) && arrow_icon_focus.is_valid() && !arrow_icon_focus.is_null()) {
+				arrow_icon_focus->draw(ci, ofs, arrow_color);
+			}
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -148,12 +243,13 @@ void OptionButton::_notification(int p_what) {
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 			if (has_theme_icon(SNAME("arrow"))) {
+				Size2 arrow_size = _get_arrow_minimum_size();
 				if (is_layout_rtl()) {
-					_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
+					_set_internal_margin(SIDE_LEFT, arrow_size.width);
 					_set_internal_margin(SIDE_RIGHT, 0.f);
 				} else {
 					_set_internal_margin(SIDE_LEFT, 0.f);
-					_set_internal_margin(SIDE_RIGHT, theme_cache.arrow_icon->get_width());
+					_set_internal_margin(SIDE_RIGHT, arrow_size.height);
 				}
 			}
 			_refresh_size_cache();
@@ -672,7 +768,17 @@ void OptionButton::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, h_separation);
 
-	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, OptionButton, arrow_icon, "arrow");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow_hover);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow_hover_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow_pressed_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow_hover_pressed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow_hover_pressed_focus);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow_disabled);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, OptionButton, arrow_disabled_focus);
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, arrow_margin);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, OptionButton, modulate_arrow);
 
