@@ -284,14 +284,20 @@ int GPUParticles3D::get_draw_passes() const {
 void GPUParticles3D::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 	ERR_FAIL_INDEX(p_pass, draw_passes.size());
 
-	if (Engine::get_singleton()->is_editor_hint() && draw_passes.write[p_pass].is_valid()) {
-		draw_passes.write[p_pass]->disconnect_changed(callable_mp((Node *)this, &Node::update_configuration_warnings));
+	if (draw_passes.write[p_pass].is_valid()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			draw_passes.write[p_pass]->disconnect_changed(callable_mp((Node *)this, &Node::update_configuration_warnings));
+		}
+		draw_passes.write[p_pass]->disconnect_changed(callable_mp(this, &GPUParticles3D::_skinning_changed));
 	}
 
 	draw_passes.write[p_pass] = p_mesh;
 
-	if (Engine::get_singleton()->is_editor_hint() && draw_passes.write[p_pass].is_valid()) {
-		draw_passes.write[p_pass]->connect_changed(callable_mp((Node *)this, &Node::update_configuration_warnings), CONNECT_DEFERRED);
+	if (draw_passes.write[p_pass].is_valid()) {
+		if (Engine::get_singleton()->is_editor_hint()) {
+			draw_passes.write[p_pass]->connect_changed(callable_mp((Node *)this, &Node::update_configuration_warnings), CONNECT_DEFERRED);
+		}
+		draw_passes.write[p_pass]->connect_changed(callable_mp(this, &GPUParticles3D::_skinning_changed));
 	}
 
 	RID mesh_rid;
