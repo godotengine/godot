@@ -34,6 +34,7 @@
 #include "drivers/metal/metal_device_properties.h"
 #include "drivers/metal/metal_utils.h"
 #include "drivers/metal/pixel_formats.h"
+#include "drivers/metal/rendering_shader_container_metal.h"
 #include "drivers/metal/sha256_digest.h"
 
 #ifdef DEBUG_ENABLED
@@ -86,6 +87,15 @@ struct ClearAttKey {
 	_FORCE_INLINE_ void enable_layered_rendering() { flags::set(flags, CLEAR_FLAGS_LAYERED); }
 
 	_FORCE_INLINE_ bool is_enabled(uint32_t p_idx) const { return pixel_formats[p_idx] != 0; }
+
+	_FORCE_INLINE_ bool has_color_attachment() const {
+		for (uint32_t i = 0; i < COLOR_COUNT; i++) {
+			if (is_enabled(i)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	_FORCE_INLINE_ bool is_depth_enabled() const { return pixel_formats[DEPTH_INDEX] != 0; }
 	_FORCE_INLINE_ bool is_stencil_enabled() const { return pixel_formats[STENCIL_INDEX] != 0; }
 	_FORCE_INLINE_ bool is_layered_rendering_enabled() const { return flags::any(flags, CLEAR_FLAGS_LAYERED); }
@@ -554,13 +564,11 @@ struct RenderStateBase {
 		DIRTY_PIPELINE = 1 << 0,
 		DIRTY_UNIFORMS = 1 << 1,
 		DIRTY_PUSH     = 1 << 2,
-		DIRTY_DEPTH    = 1 << 3,
-		DIRTY_VERTEX   = 1 << 4,
-		DIRTY_VIEWPORT = 1 << 5,
-		DIRTY_SCISSOR  = 1 << 6,
-		DIRTY_BLEND    = 1 << 7,
-		DIRTY_RASTER   = 1 << 8,
-		DIRTY_ALL      = (1 << 9) - 1,
+		DIRTY_VERTEX   = 1 << 3,
+		DIRTY_VIEWPORT = 1 << 4,
+		DIRTY_SCISSOR  = 1 << 5,
+		DIRTY_RASTER   = 1 << 6,
+		DIRTY_ALL      = (1 << 7) - 1,
 	};
 	// clang-format on
 	BitField<DirtyFlag> dirty = DIRTY_NONE;
@@ -578,7 +586,7 @@ protected:
 
 	uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE] = {};
 	uint32_t push_constant_data_len = 0;
-	uint32_t push_constant_binding = UINT32_MAX;
+	MetalPushConstantBinding push_constant_binding;
 
 	::RenderingDeviceDriverMetal *device_driver = nullptr;
 
@@ -774,6 +782,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) UniformS
 	LocalVector<UniformInfo> uniforms;
 	LocalVector<uint32_t> dynamic_uniforms;
 	uint32_t buffer_size = 0;
+	BitField<RDD::ShaderStage> active_stages = {};
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) DynamicOffsetLayout {
@@ -884,8 +893,7 @@ public:
 	CharString name;
 	Vector<UniformSet> sets;
 	struct {
-		BitField<RDD::ShaderStage> stages = {};
-		uint32_t binding = UINT32_MAX;
+		MetalPushConstantBinding stage_binding;
 		uint32_t size = 0;
 	} push_constants;
 	DynamicOffsetLayout dynamic_offset_layout;
@@ -979,10 +987,13 @@ public:
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDRenderPipeline final : public MDPipeline {
 public:
 	NS::SharedPtr<MTL::RenderPipelineState> state;
-	NS::SharedPtr<MTL::DepthStencilState> depth_stencil;
 	SampleCount sample_count = SampleCount1;
 
-	struct {
+	struct RasterState {
+		// Not owned: the pipeline holds the reference, and RenderingDevice defers pipeline frees
+		// until the frame using it has completed, so an encoder never outlives it. Keeping a raw
+		// pointer makes the struct trivially copyable, which matters on every pipeline bind.
+		MTL::DepthStencilState *depth_stencil = nullptr;
 		MTL::CullMode cull_mode = MTL::CullModeNone;
 		MTL::TriangleFillMode fill_mode = MTL::TriangleFillModeFill;
 		MTL::DepthClipMode clip_mode = MTL::DepthClipModeClip;
@@ -993,7 +1004,7 @@ public:
 			bool enabled = false;
 		} depth_test;
 
-		struct {
+		struct DepthBias {
 			bool enabled = false;
 			float depth_bias = 0.0;
 			float slope_scale = 0.0;
@@ -1001,14 +1012,28 @@ public:
 
 			template <typename T>
 			_FORCE_INLINE_ void apply(T *p_enc) const {
-				if (!enabled) {
-					return;
+				if (enabled) {
+					p_enc->setDepthBias(depth_bias, slope_scale, clamp);
+				} else {
+					// When disabled, the bias must be returned to the default value.
+					p_enc->setDepthBias(0.0, 0.0, 0.0);
 				}
-				p_enc->setDepthBias(depth_bias, slope_scale, clamp);
+			}
+
+			_FORCE_INLINE_ bool operator==(const DepthBias &p_rhs) const {
+				if (!enabled && !p_rhs.enabled) {
+					return true;
+				}
+				return enabled == p_rhs.enabled && depth_bias == p_rhs.depth_bias &&
+						slope_scale == p_rhs.slope_scale && clamp == p_rhs.clamp;
+			}
+
+			_FORCE_INLINE_ bool operator!=(const DepthBias &p_rhs) const {
+				return !(*this == p_rhs);
 			}
 		} depth_bias;
 
-		struct {
+		struct Stencil {
 			bool enabled = false;
 			uint32_t front_reference = 0;
 			uint32_t back_reference = 0;
@@ -1020,9 +1045,17 @@ public:
 				}
 				p_enc->setStencilReferenceValues(front_reference, back_reference);
 			}
+
+			_FORCE_INLINE_ bool operator==(const Stencil &p_rhs) const {
+				return front_reference == p_rhs.front_reference && back_reference == p_rhs.back_reference;
+			}
+
+			_FORCE_INLINE_ bool operator!=(const Stencil &p_rhs) const {
+				return !(*this == p_rhs);
+			}
 		} stencil;
 
-		struct {
+		struct Blend {
 			bool enabled = false;
 			float r = 0.0;
 			float g = 0.0;
@@ -1033,20 +1066,64 @@ public:
 			_FORCE_INLINE_ void apply(T *p_enc) const {
 				p_enc->setBlendColor(r, g, b, a);
 			}
+
+			_FORCE_INLINE_ void set_color(const Color &p_color) {
+				r = p_color.r;
+				g = p_color.g;
+				b = p_color.b;
+				a = p_color.a;
+			}
+
+			_FORCE_INLINE_ bool operator==(const Blend &p_rhs) const {
+				return r == p_rhs.r && g == p_rhs.g && b == p_rhs.b && a == p_rhs.a;
+			}
+
+			_FORCE_INLINE_ bool operator!=(const Blend &p_rhs) const {
+				return !(*this == p_rhs);
+			}
 		} blend;
 
+		// Encodes only the state whose value differs from r_last, which describes the existing state
+		// of the encoder. r_last is updated to match the new state.
 		template <typename T>
-		_FORCE_INLINE_ void apply(T *p_enc) const {
-			p_enc->setCullMode(cull_mode);
-			p_enc->setTriangleFillMode(fill_mode);
-			p_enc->setDepthClipMode(clip_mode);
-			p_enc->setFrontFacingWinding(winding);
-			depth_bias.apply(p_enc);
-			stencil.apply(p_enc);
-			blend.apply(p_enc);
+		_FORCE_INLINE_ void apply(T *p_enc, RasterState &r_last) const {
+			if (depth_stencil != r_last.depth_stencil) {
+				p_enc->setDepthStencilState(depth_stencil);
+				r_last.depth_stencil = depth_stencil;
+			}
+			if (cull_mode != r_last.cull_mode) {
+				p_enc->setCullMode(cull_mode);
+				r_last.cull_mode = cull_mode;
+			}
+			if (fill_mode != r_last.fill_mode) {
+				p_enc->setTriangleFillMode(fill_mode);
+				r_last.fill_mode = fill_mode;
+			}
+			if (clip_mode != r_last.clip_mode) {
+				p_enc->setDepthClipMode(clip_mode);
+				r_last.clip_mode = clip_mode;
+			}
+			if (winding != r_last.winding) {
+				p_enc->setFrontFacingWinding(winding);
+				r_last.winding = winding;
+			}
+			if (depth_bias != r_last.depth_bias) {
+				depth_bias.apply(p_enc);
+				r_last.depth_bias = depth_bias;
+			}
+			if (stencil.enabled && stencil != r_last.stencil) {
+				stencil.apply(p_enc);
+				r_last.stencil = stencil;
+			}
+			if (blend != r_last.blend) {
+				blend.apply(p_enc);
+				r_last.blend = blend;
+			}
 		}
+	};
 
-	} raster_state;
+	RasterState raster_state;
+	NS::SharedPtr<MTL::DepthStencilState> depth_stencil; ///< Owns raster_state.depth_stencil.
 
 	MDRenderShader *shader = nullptr;
 
