@@ -64,12 +64,14 @@ namespace Godot.Bridge
                     return godot_bool.False;
                 }
 
-                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
+                var nameManaged = Pools.StringNamePoolInstance.Rent(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
                 Variant valueManaged = Variant.CreateCopyingBorrowed(*value);
 
-                return godotObject._Set(nameManaged, valueManaged).ToGodotBool();
+                var result = godotObject._Set(nameManaged, valueManaged).ToGodotBool();
+                Pools.StringNamePoolInstance.Return(nameManaged);
+                return result;
             }
             catch (Exception e)
             {
@@ -117,10 +119,12 @@ namespace Godot.Bridge
                     return godot_bool.False;
                 }
 
-                var nameManaged = StringName.CreateTakingOwnershipOfDisposableValue(
+                var nameManaged = Pools.StringNamePoolInstance.Rent(
                     NativeFuncs.godotsharp_string_name_new_copy(CustomUnsafe.AsRef(name)));
 
                 Variant ret = godotObject._Get(nameManaged);
+
+                Pools.StringNamePoolInstance.Return(nameManaged);
 
                 if (ret.VariantType == Variant.Type.Nil)
                 {
