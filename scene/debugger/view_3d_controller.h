@@ -30,7 +30,7 @@
 
 #pragma once
 
-#ifndef _3D_DISABLED
+#if defined(DEBUG_ENABLED) && !defined(_3D_DISABLED)
 
 #include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
@@ -259,8 +259,6 @@ private:
 		}
 	};
 
-	bool _is_shortcut_pressed(const ShortcutName p_name, const bool p_true_if_empty = false);
-	bool _is_shortcut_empty(const ShortcutName p_name);
 	NavigationMode _get_nav_mode_from_shortcuts(NavigationMouseButton p_mouse_button, const Vector<ShortcutCheck> &p_shortcut_checks, bool p_not_empty);
 
 public:
@@ -342,4 +340,4 @@ public:
 	int get_zoom_failed_attempts_count() const { return zoom_failed_attempts_count; }
 };
 
-#endif // _3D_DISABLED
+#endif // DEBUG_ENABLED && _3D_DISABLED

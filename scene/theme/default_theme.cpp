@@ -1378,6 +1378,14 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("resizer", "GraphEditMinimap", icons["resizer_nw"]);
 	theme->set_color("resizer_color", "GraphEditMinimap", Color(1, 1, 1, 0.85));
 
+	// Debug
+
+#ifdef DEBUG_ENABLED
+	theme->set_icon("pivot", "Debug", icons["debug_pivot"]);
+	theme->set_icon("resize", "Debug", icons["debug_resize"]);
+	theme->set_icon("anchor", "Debug", icons["debug_anchor"]);
+#endif
+
 	// Theme
 
 	default_icon = icons["error_icon"];

@@ -241,13 +241,13 @@ class ControlEditorToolbar : public HBoxContainer {
 	void _update_anchor_selection_ui(bool p_pressed);
 	void _update_container_sizing_selection_ui(bool p_pressed);
 
-	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
-	bool _is_node_locked(const Node *p_node);
 	List<Control *> _get_edited_controls();
 	void _selection_changed();
 
 protected:
 	void _notification(int p_notification);
+
+	static void _bind_methods();
 
 	static ControlEditorToolbar *singleton;
 

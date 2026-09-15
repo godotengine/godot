@@ -111,7 +111,7 @@ bool Camera2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		pos = CanvasItemEditor::get_singleton()->get_canvas_transform().affine_inverse().xform(pos);
-		pos = CanvasItemEditor::get_singleton()->snap_point(pos);
+		pos = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->snap_point(pos);
 
 		switch (drag_type) {
 			case Drag::LEFT: {
@@ -211,7 +211,7 @@ void Camera2DEditor::_update_overlays_if_needed(Camera2D *p_camera) {
 }
 
 void Camera2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
-	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SELECT) {
+	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemManipulator::TOOL_SELECT) {
 		hover_type = Drag::NONE;
 		CanvasItemEditor::get_singleton()->set_cursor_shape_override();
 		return;

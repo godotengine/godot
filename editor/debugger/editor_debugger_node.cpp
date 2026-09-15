@@ -731,7 +731,7 @@ void EditorDebuggerNode::set_remote_selection(const TypedArray<int64_t> &p_ids, 
 
 void EditorDebuggerNode::clear_remote_tree_selection() {
 	remote_scene_tree->clear_selection();
-	get_debugger(remote_scene_tree->get_current_debugger())->clear_inspector();
+	get_debugger(remote_scene_tree->get_current_debugger())->clear_inspector(clear_remote_selection);
 }
 
 void EditorDebuggerNode::stop_waiting_inspection() {
@@ -785,7 +785,11 @@ void EditorDebuggerNode::_remote_tree_button_pressed(Object *p_item, int p_colum
 
 void EditorDebuggerNode::_remote_objects_updated(EditorDebuggerRemoteObjects *p_remote_objects) {
 	if (p_remote_objects->debugger_id == tabs->get_current_tab() && p_remote_objects != InspectorDock::get_inspector_singleton()->get_edited_object()) {
+		// Pushing an item to the inspector also clears it, which sends a message to clear the remote selection.
+		// We workaround it by temporarily not sending messages when this happens.
+		clear_remote_selection = false;
 		EditorNode::get_singleton()->push_item(p_remote_objects);
+		clear_remote_selection = true;
 	}
 }
 
