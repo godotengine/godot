@@ -94,23 +94,25 @@ Variant Dictionary::get_value_at_index(int p_index) const {
 // WARNING: This operator does not validate the value type. For scripting/extensions this is
 // done in `variant_setget.cpp`. Consider using `set()` if the data might be invalid.
 Variant &Dictionary::operator[](const Variant &p_key) {
-	Variant key = p_key;
-	if (unlikely(!_p->typed_key.validate(key, "use `operator[]`"))) {
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "use `operator[]`");
+
+	if (unlikely(!key)) {
 		if (unlikely(!_p->typed_fallback)) {
 			_p->typed_fallback = memnew(Variant);
 		}
 		VariantInternal::initialize(_p->typed_fallback, _p->typed_value.variant_type);
 		return *_p->typed_fallback;
 	} else if (unlikely(_p->read_only)) {
-		if (likely(_p->variant_map.has(key))) {
-			*_p->read_only = _p->variant_map[key];
+		if (likely(_p->variant_map.has(*key))) {
+			*_p->read_only = _p->variant_map[*key];
 		} else {
 			VariantInternal::initialize(_p->read_only, _p->typed_value.variant_type);
 		}
 		return *_p->read_only;
 	} else {
 		const uint32_t old_size = _p->variant_map.size();
-		Variant &value = _p->variant_map[key];
+		Variant &value = _p->variant_map[*key];
 		if (_p->variant_map.size() > old_size) {
 			VariantInternal::initialize(&value, _p->typed_value.variant_type);
 		}
@@ -119,8 +121,10 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 }
 
 const Variant &Dictionary::operator[](const Variant &p_key) const {
-	Variant key = p_key;
-	if (unlikely(!_p->typed_key.validate(key, "use `operator[]`"))) {
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "use `operator[]`");
+
+	if (unlikely(!key)) {
 		if (unlikely(!_p->typed_fallback)) {
 			_p->typed_fallback = memnew(Variant);
 		}
@@ -128,18 +132,18 @@ const Variant &Dictionary::operator[](const Variant &p_key) const {
 		return *_p->typed_fallback;
 	} else {
 		static Variant empty;
-		const Variant *value = _p->variant_map.getptr(key);
-		ERR_FAIL_COND_V_MSG(!value, empty, vformat(R"(Bug: Dictionary::operator[] used when there was no value for the given key "%s". Please report.)", key));
+		const Variant *value = _p->variant_map.getptr(*key);
+		ERR_FAIL_COND_V_MSG(!value, empty, vformat(R"(Bug: Dictionary::operator[] used when there was no value for the given key "%s". Please report.)", *key));
 		return *value;
 	}
 }
 
 const Variant *Dictionary::getptr(const Variant &p_key) const {
-	Variant key = p_key;
-	if (unlikely(!_p->typed_key.validate(key, "getptr"))) {
-		return nullptr;
-	}
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "getptr");
+	ERR_FAIL_NULL_V(key, nullptr);
+
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(*key));
 	if (!E) {
 		return nullptr;
 	}
@@ -148,11 +152,11 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 
 // WARNING: This method does not validate the value type.
 Variant *Dictionary::getptr(const Variant &p_key) {
-	Variant key = p_key;
-	if (unlikely(!_p->typed_key.validate(key, "getptr"))) {
-		return nullptr;
-	}
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E(_p->variant_map.find(key));
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "getptr");
+	ERR_FAIL_NULL_V(key, nullptr);
+
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E(_p->variant_map.find(*key));
 	if (!E) {
 		return nullptr;
 	}
@@ -165,9 +169,11 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 }
 
 Variant Dictionary::get_valid(const Variant &p_key) const {
-	Variant key = p_key;
-	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get_valid"), Variant());
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(key));
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "get_valid");
+	ERR_FAIL_NULL_V(key, Variant());
+
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(*key));
 
 	if (!E) {
 		return Variant();
@@ -176,9 +182,11 @@ Variant Dictionary::get_valid(const Variant &p_key) const {
 }
 
 Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
-	Variant key = p_key;
-	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get"), p_default);
-	const Variant *result = getptr(key);
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "get");
+	ERR_FAIL_NULL_V(key, p_default);
+
+	const Variant *result = getptr(*key);
 	if (!result) {
 		return p_default;
 	}
@@ -187,25 +195,32 @@ Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 }
 
 Variant Dictionary::get_or_add(const Variant &p_key, const Variant &p_default) {
-	Variant key = p_key;
-	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "get"), p_default);
-	const Variant *result = getptr(key);
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "get_or_add");
+	ERR_FAIL_NULL_V(key, p_default);
+
+	const Variant *result = getptr(*key);
 	if (!result) {
-		Variant value = p_default;
-		ERR_FAIL_COND_V(!_p->typed_value.validate(value, "add"), value);
-		operator[](key) = value;
-		return value;
+		Variant tmpv;
+		const Variant *value = _p->typed_value.validate(p_default, tmpv, "add");
+		ERR_FAIL_NULL_V(value, p_default);
+
+		operator[](*key) = *value;
+		return *value;
 	}
 	return *result;
 }
 
 bool Dictionary::set(const Variant &p_key, const Variant &p_value) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, false, "Dictionary is in read-only state.");
-	Variant key = p_key;
-	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "set"), false);
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed_value.validate(value, "set"), false);
-	_p->variant_map[key] = value;
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "set");
+	ERR_FAIL_NULL_V(key, false);
+	Variant tmpv;
+	const Variant *value = _p->typed_value.validate(p_value, tmpv, "set");
+	ERR_FAIL_NULL_V(value, false);
+
+	_p->variant_map[*key] = *value;
 	return true;
 }
 
@@ -218,16 +233,19 @@ bool Dictionary::is_empty() const {
 }
 
 bool Dictionary::has(const Variant &p_key) const {
-	Variant key = p_key;
-	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has'"), false);
-	return _p->variant_map.has(key);
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "use 'has'");
+	ERR_FAIL_NULL_V(key, false);
+	return _p->variant_map.has(*key);
 }
 
 bool Dictionary::has_all(const Array &p_keys) const {
 	for (int i = 0; i < p_keys.size(); i++) {
-		Variant key = p_keys[i];
-		ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has_all'"), false);
-		if (!_p->variant_map.has(key)) {
+		Variant tmpk;
+		const Variant *key = _p->typed_key.validate(p_keys[i], tmpk, "use 'has_all'");
+		ERR_FAIL_NULL_V(key, false);
+
+		if (!_p->variant_map.has(*key)) {
 			return false;
 		}
 	}
@@ -235,10 +253,12 @@ bool Dictionary::has_all(const Array &p_keys) const {
 }
 
 Variant Dictionary::find_key(const Variant &p_value) const {
-	Variant value = p_value;
-	ERR_FAIL_COND_V(!_p->typed_value.validate(value, "find_key"), Variant());
+	Variant tmpv;
+	const Variant *value = _p->typed_value.validate(p_value, tmpv, "find_key");
+	ERR_FAIL_NULL_V(value, Variant());
+
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-		if (E.value == value) {
+		if (E.value == *value) {
 			return E.key;
 		}
 	}
@@ -246,10 +266,12 @@ Variant Dictionary::find_key(const Variant &p_value) const {
 }
 
 bool Dictionary::erase(const Variant &p_key) {
-	Variant key = p_key;
-	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "erase"), false);
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(p_key, tmpk, "erase");
+	ERR_FAIL_NULL_V(key, false);
+
 	ERR_FAIL_COND_V_MSG(_p->read_only, false, "Dictionary is in read-only state.");
-	return _p->variant_map.erase(key);
+	return _p->variant_map.erase(*key);
 }
 
 bool Dictionary::operator==(const Dictionary &p_dictionary) const {
@@ -332,12 +354,16 @@ void Dictionary::sort() {
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	for (const KeyValue<Variant, Variant> &E : p_dictionary._p->variant_map) {
-		Variant key = E.key;
-		Variant value = E.value;
-		ERR_FAIL_COND(!_p->typed_key.validate(key, "merge"));
-		ERR_FAIL_COND(!_p->typed_value.validate(value, "merge"));
-		if (p_overwrite || !has(key)) {
-			operator[](key) = value;
+		Variant tmpk;
+		const Variant *key = _p->typed_key.validate(E.key, tmpk, "merge");
+		ERR_FAIL_NULL(key);
+
+		Variant tmpv;
+		const Variant *value = _p->typed_value.validate(E.value, tmpv, "merge");
+		ERR_FAIL_NULL(value);
+
+		if (p_overwrite || !has(*key)) {
+			operator[](*key) = *value;
 		}
 	}
 }
@@ -567,9 +593,11 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 		}
 		return nullptr;
 	}
-	Variant key = *p_key;
-	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "next"), nullptr);
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E = _p->variant_map.find(key);
+	Variant tmpk;
+	const Variant *key = _p->typed_key.validate(*p_key, tmpk, "next");
+	ERR_FAIL_NULL_V(key, nullptr);
+
+	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E = _p->variant_map.find(*key);
 
 	if (!E) {
 		return nullptr;
