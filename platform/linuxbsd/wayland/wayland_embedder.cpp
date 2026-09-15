@@ -860,6 +860,11 @@ void WaylandEmbedder::cleanup_socket(int p_socket) {
 		}
 	}
 
+	// prevent unclaimed FDs received from SCM_RIGHTS from leaking
+	for (int fd : client.fds) {
+		close(fd);
+	}
+
 	uint32_t eclient_id = client.embedded_client_id;
 
 	clients.erase(client.socket);
@@ -2762,6 +2767,12 @@ void WaylandEmbedder::shutdown() {
 		}
 	}
 
+	// Prevent unclaimed FD leak
+	for (int fd : compositor_fds) {
+		close(fd);
+	}
+	compositor_fds.clear();
+
 	close(compositor_socket);
 	compositor_socket = -1;
 
@@ -3029,120 +3040,126 @@ Error WaylandEmbedder::handle_sock(int p_fd) {
 	ERR_FAIL_COND_V(p_fd < 0, ERR_INVALID_PARAMETER);
 
 	struct msg_info info = {};
+	info.direction = p_fd != compositor_socket ? ProxyDirection::COMPOSITOR : ProxyDirection::CLIENT;
 
-	{
-		struct msghdr head_msg = {};
-		uint32_t header[2];
-		struct iovec vec = { header, sizeof header };
+	// Header is two 32-bit words: first is ID, second has size in most
+	// significant half and opcode in the other half. Make sure msg_buf can
+	// hold at least that much before we know the full message size.
+	if (msg_buf.size() < 2) {
+		msg_buf.resize(2);
+	}
 
-		head_msg.msg_iov = &vec;
-		head_msg.msg_iovlen = 1;
+	struct msghdr msg = {};
+	struct iovec vec = {};
+	msg.msg_iov = &vec;
+	msg.msg_iovlen = 1;
 
-		ssize_t head_rec = recvmsg(p_fd, &head_msg, MSG_PEEK);
+	// Read the header first, then keep going until the whole message (as
+	// declared by the header) has arrived, growing msg_buf once the size is
+	// known. Deliberately never uses MSG_PEEK. Combined with MSG_WAITALL, it
+	// isn't reliable on AF_UNIX SOCK_STREAM sockets and can return short
+	// reads that never grow no matter how many times it's retried.
+	// SCM_RIGHTS data can arrive attached to whatever chunk carried it, so
+	// it's handled on every iteration with header.
+	size_t total_rec = 0;
+	size_t target_size = WL_WORD_SIZE * 2;
+	while (total_rec < target_size) {
+		vec.iov_base = (uint8_t *)msg_buf.ptr() + total_rec;
+		vec.iov_len = target_size - total_rec;
+		msg.msg_control = ancillary_buf.ptr();
+		msg.msg_controllen = ancillary_buf.size();
 
-		if (head_rec == 0) {
-			// Client disconnected.
-			return ERR_CONNECTION_ERROR;
-		}
+		// MSG_CMSG_CLOEXEC sets FD_CLOEXEC on any FDs received via
+		// SCM_RIGHTS on creation to prevent it from leaking into child
+		// if this process forks+execs before its manually closed.
+		ssize_t rec = recvmsg(p_fd, &msg, MSG_WAITALL | MSG_CMSG_CLOEXEC);
 
-		if (head_rec == -1) {
-			if (errno == ECONNRESET) {
-				// No need to print the error, the client forcefully disconnected, that's
-				// fine.
-				return ERR_CONNECTION_ERROR;
+		if (rec == -1) {
+			if (errno == EINTR) {
+				continue;
 			}
 
-			ERR_FAIL_V_MSG(FAILED, vformat("Can't read message header: %s", strerror(errno)));
-		}
-
-		ERR_FAIL_COND_V_MSG(((size_t)head_rec) != vec.iov_len, ERR_CONNECTION_ERROR, vformat("Should've received %d bytes, instead got %d bytes", vec.iov_len, head_rec));
-
-		// Header is two 32-bit words: first is ID, second has size in most significant
-		// half and opcode in the other half.
-		info.raw_id = header[0];
-		info.size = header[1] >> 16;
-		info.opcode = header[1] & 0xFFFF;
-		info.direction = p_fd != compositor_socket ? ProxyDirection::COMPOSITOR : ProxyDirection::CLIENT;
-	}
-
-	if (msg_buf.size() < info.words()) {
-		msg_buf.resize(info.words());
-	}
-
-	ERR_FAIL_COND_V_MSG(info.size % WL_WORD_SIZE != 0, ERR_CONNECTION_ERROR, "Invalid message length.");
-
-	struct msghdr full_msg = {};
-	struct iovec vec = { msg_buf.ptr(), info.size };
-	{
-		full_msg.msg_iov = &vec;
-		full_msg.msg_iovlen = 1;
-		full_msg.msg_control = ancillary_buf.ptr();
-		full_msg.msg_controllen = ancillary_buf.size();
-
-		ssize_t full_rec = recvmsg(p_fd, &full_msg, 0);
-
-		if (full_rec == -1) {
+			// No need to print the error, the client forcefully disconnected, that's
+			// fine.
 			if (errno == ECONNRESET) {
-				// No need to print the error, the client forcefully disconnected, that's
-				// fine.
 				return ERR_CONNECTION_ERROR;
 			}
 
 			ERR_FAIL_V_MSG(FAILED, vformat("Can't read message: %s", strerror(errno)));
 		}
 
-		ERR_FAIL_COND_V_MSG(((size_t)full_rec) != info.size, ERR_CONNECTION_ERROR, "Invalid message length.");
-
-		DEBUG_LOG_WAYLAND_EMBED_VERBOSE(" === START PACKET === ");
-
-#ifdef WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
-		printf("[PROXY] Received bytes: ");
-		for (ssize_t i = 0; i < full_rec; ++i) {
-			printf("%.2x", ((const uint8_t *)msg_buf.ptr())[i]);
+		if (rec == 0) {
+			// Client disconnected.
+			return ERR_CONNECTION_ERROR;
 		}
-		printf("\n");
-#endif
-	}
 
-	if (full_msg.msg_controllen > 0) {
-		struct cmsghdr *cmsg = CMSG_FIRSTHDR(&full_msg);
-		while (cmsg) {
-			// TODO: Check for validity of message fields.
-			size_t data_len = cmsg->cmsg_len - sizeof *cmsg;
+		if (msg.msg_controllen > 0) {
+			struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
+			while (cmsg) {
+				// TODO: Check for validity of message fields.
+				size_t data_len = cmsg->cmsg_len - sizeof *cmsg;
 
-			if (cmsg->cmsg_type == SCM_RIGHTS) {
-				// NOTE: Linux docs say that we can't just cast data to pointer type because
-				// of alignment concerns. So we have to memcpy into a new buffer.
-				int *cmsg_fds = (int *)malloc(data_len);
-				memcpy(cmsg_fds, CMSG_DATA(cmsg), data_len);
+				if (cmsg->cmsg_type == SCM_RIGHTS) {
+					// NOTE: Linux docs say that we can't just cast data to pointer type because
+					// of alignment concerns. So we have to memcpy into a new buffer.
+					int *cmsg_fds = (int *)malloc(data_len);
+					memcpy(cmsg_fds, CMSG_DATA(cmsg), data_len);
 
-				size_t cmsg_fds_count = data_len / sizeof *cmsg_fds;
-				for (size_t i = 0; i < cmsg_fds_count; ++i) {
-					int fd = cmsg_fds[i];
+					size_t cmsg_fds_count = data_len / sizeof *cmsg_fds;
+					for (size_t i = 0; i < cmsg_fds_count; ++i) {
+						int fd = cmsg_fds[i];
 
-					if (info.direction == ProxyDirection::COMPOSITOR) {
-						clients[p_fd].fds.push_back(fd);
-					} else {
-						compositor_fds.push_back(fd);
+						if (info.direction == ProxyDirection::COMPOSITOR) {
+							clients[p_fd].fds.push_back(fd);
+						} else {
+							compositor_fds.push_back(fd);
+						}
 					}
-				}
 
 #ifdef WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
-				printf("[PROXY] Received %ld file descriptors: ", cmsg_fds_count);
-				for (size_t i = 0; i < cmsg_fds_count; ++i) {
-					printf("%d ", cmsg_fds[i]);
-				}
-				printf("\n");
+					printf("[PROXY] Received %ld file descriptors: ", cmsg_fds_count);
+					for (size_t i = 0; i < cmsg_fds_count; ++i) {
+						printf("%d ", cmsg_fds[i]);
+					}
+					printf("\n");
 #endif
 
-				free(cmsg_fds);
+					free(cmsg_fds);
+				}
+
+				cmsg = CMSG_NXTHDR(&msg, cmsg);
+			}
+		}
+
+		total_rec += rec;
+
+		if (total_rec == WL_WORD_SIZE * 2 && target_size == WL_WORD_SIZE * 2) {
+			// Header fully read. Parse and extend target to cover rest of message.
+			info.raw_id = msg_buf[0];
+			info.size = msg_buf[1] >> 16;
+			info.opcode = msg_buf[1] & 0xFFFF;
+
+			ERR_FAIL_COND_V_MSG(info.size % WL_WORD_SIZE != 0, ERR_CONNECTION_ERROR, "Invalid message length.");
+
+			if (msg_buf.size() < info.words()) {
+				msg_buf.resize(info.words());
 			}
 
-			cmsg = CMSG_NXTHDR(&full_msg, cmsg);
+			target_size = info.size;
 		}
 	}
-	full_msg.msg_control = nullptr;
-	full_msg.msg_controllen = 0;
+	msg.msg_control = nullptr;
+	msg.msg_controllen = 0;
+
+	DEBUG_LOG_WAYLAND_EMBED_VERBOSE(" === START PACKET === ");
+
+#ifdef WAYLAND_EMBED_VERBOSE_LOGS_ENABLED
+	printf("[PROXY] Received bytes: ");
+	for (size_t i = 0; i < info.size; ++i) {
+		printf("%.2x", ((const uint8_t *)msg_buf.ptr())[i]);
+	}
+	printf("\n");
+#endif
 
 	Client *client = nullptr;
 	if (p_fd == compositor_socket) {
@@ -3332,7 +3349,10 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 	if (p_fd == compositor_socket && p_revents & POLLIN) {
 		Error err = handle_sock(p_fd);
 
-		if (err == ERR_BUG) {
+		if (err != OK) {
+			// No clientside cleanup_socket equivalent exists so any error here
+			// must bring the whole embedder down rather than silently keep
+			// polling a socket that may be desynced or closed now.
 			ERR_PRINT("Unexpected error while handling socket, shutting down.");
 			shutdown();
 			return;
