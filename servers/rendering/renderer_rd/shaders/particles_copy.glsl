@@ -23,27 +23,23 @@ struct ParticleData {
 
 layout(set = 0, binding = 1, std430) restrict readonly buffer Particles {
 	ParticleData data[];
-}
-particles;
+} particles;
 
 layout(set = 0, binding = 2, std430) restrict writeonly buffer Transforms {
 	vec4 data[];
-}
-instances;
+} instances;
 
 #ifdef USE_SORT_BUFFER
 
 layout(set = 1, binding = 0, std430) restrict buffer SortBuffer {
 	vec2 data[];
-}
-sort_buffer;
+} sort_buffer;
 
 #endif // USE_SORT_BUFFER
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer TrailBindPoses {
 	mat4 data[];
-}
-trail_bind_poses;
+} trail_bind_poses;
 
 #define PARAMS_FLAG_ORDER_BY_LIFETIME 1
 #define PARAMS_FLAG_COPY_MODE_2D 2
@@ -71,8 +67,7 @@ layout(push_constant, std430) uniform Params {
 	uint align_axis;
 	uint pad1;
 	uint pad2;
-}
-params;
+} params;
 
 #define ALIGN_DISABLED 0
 #define ALIGN_BILLBOARD 1

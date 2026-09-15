@@ -47,8 +47,7 @@ layout(OCTMAP_FORMAT, set = 2, binding = 5) uniform restrict writeonly image2D d
 layout(push_constant, std430) uniform Params {
 	vec2 border_size;
 	vec2 pad;
-}
-params;
+} params;
 
 #define BASE_RESOLUTION 320
 

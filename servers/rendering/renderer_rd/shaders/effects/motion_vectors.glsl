@@ -32,8 +32,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 resolution;
 	uint force_derive_from_depth;
 	uint pad;
-}
-params;
+} params;
 
 // Based on distance to line segment from https://www.shadertoy.com/view/3tdSDj
 

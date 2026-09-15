@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-/* clang-format off */
 #[vertex]
 
 #version 450
@@ -29,11 +28,9 @@ layout(push_constant, std430) uniform Params {
 	vec2 border_size;
 	int mip_level;
 	int pad;
-}
-params;
+} params;
 
 layout(location = 0) out vec2 uv_interp;
-/* clang-format on */
 
 void main() {
 	vec2 base_arr[3] = vec2[](vec2(-1.0, -3.0), vec2(-1.0, 1.0), vec2(3.0, 1.0));
@@ -41,7 +38,6 @@ void main() {
 	gl_Position = vec4(uv_interp, 0.0, 1.0);
 }
 
-/* clang-format off */
 #[fragment]
 
 #version 450
@@ -54,15 +50,12 @@ layout(push_constant, std430) uniform Params {
 	vec2 border_size;
 	int mip_level;
 	int pad;
-}
-params;
+} params;
 
 layout(set = 0, binding = 0) uniform sampler2D source_octmap;
 
 layout(location = 0) in vec2 uv_interp;
 layout(location = 0) out vec4 frag_color;
-
-/* clang-format on */
 
 #ifdef USE_HIGH_QUALITY
 #define NUM_TAPS 32

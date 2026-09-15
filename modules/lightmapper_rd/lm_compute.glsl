@@ -39,8 +39,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(set = 1, binding = 0, std430) restrict buffer LightProbeData {
 	vec4 data[];
-}
-light_probes;
+} light_probes;
 
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
 layout(set = 1, binding = 2) uniform texture2D environment;
@@ -90,8 +89,7 @@ layout(set = 1, binding = 4) uniform DenoiseParams {
 	int half_search_window;
 	float filter_strength;
 	uint slice_count;
-}
-denoise_params;
+} denoise_params;
 #endif
 
 layout(push_constant, std430) uniform Params {
@@ -103,8 +101,7 @@ layout(push_constant, std430) uniform Params {
 	ivec2 region_ofs;
 	uint probe_count;
 	uint denoiser_range;
-}
-params;
+} params;
 
 //check it, but also return distance and barycentric coords (for uv lookup)
 bool ray_hits_triangle(vec3 from, vec3 dir, float max_dist, vec3 p0, vec3 p1, vec3 p2, out float r_distance, out vec3 r_barycentric) {

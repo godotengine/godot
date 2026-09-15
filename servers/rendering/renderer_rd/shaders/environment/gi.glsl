@@ -74,8 +74,7 @@ layout(set = 0, binding = 15, std140) uniform SDFGI {
 	uint pad5;
 
 	ProbeCascadeData cascades[SDFGI_MAX_CASCADES];
-}
-sdfgi;
+} sdfgi;
 
 #define MAX_VOXEL_GI_INSTANCES 8
 
@@ -96,8 +95,7 @@ struct VoxelGIData {
 
 layout(set = 0, binding = 16, std140) uniform VoxelGIs {
 	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
-}
-voxel_gi_instances;
+} voxel_gi_instances;
 
 layout(set = 0, binding = 17) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
@@ -109,8 +107,7 @@ layout(set = 0, binding = 18, std140) uniform SceneData {
 	ivec2 screen_size;
 	float pad1;
 	float pad2;
-}
-scene_data;
+} scene_data;
 
 #ifdef USE_VRS
 layout(r8ui, set = 0, binding = 19) uniform restrict readonly uimage2D vrs_buffer;
@@ -128,8 +125,7 @@ layout(push_constant, std430) uniform Params {
 	float z_far;
 	float pad2;
 	float pad3;
-}
-params;
+} params;
 
 vec2 octahedron_wrap(vec2 v) {
 	vec2 signVal;

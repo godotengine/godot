@@ -68,8 +68,7 @@ layout(push_constant, std430) uniform Params {
 	vec4 modulation;
 	uvec4 lights;
 #endif
-}
-params;
+} params;
 
 // Specialization constants.
 
@@ -132,8 +131,7 @@ layout(set = 0, binding = 1, std140) uniform CanvasData {
 	float tex_to_sdf;
 	float shadow_pixel_size;
 	uint flags;
-}
-canvas_data;
+} canvas_data;
 
 #define LIGHT_FLAGS_BLEND_MASK (3 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_ADD (0 << 16)
@@ -166,8 +164,7 @@ struct Light {
 
 layout(set = 0, binding = 2, std430) restrict readonly buffer LightData {
 	Light data[];
-}
-light_array;
+} light_array;
 
 layout(set = 0, binding = 3) uniform texture2D atlas_texture;
 layout(set = 0, binding = 4) uniform texture2D shadow_atlas_texture;
@@ -181,8 +178,7 @@ layout(set = 0, binding = 7) uniform texture2D sdf_texture;
 
 layout(set = 0, binding = 9, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
-}
-global_shader_uniforms;
+} global_shader_uniforms;
 
 /* SET1: Is reserved for the material */
 
@@ -192,8 +188,7 @@ global_shader_uniforms;
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {
 	vec4 data[];
-}
-transforms;
+} transforms;
 
 /* SET3: Texture */
 

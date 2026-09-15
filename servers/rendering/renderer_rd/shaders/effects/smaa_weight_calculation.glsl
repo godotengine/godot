@@ -38,8 +38,7 @@ layout(push_constant, std430) uniform Params {
 	ivec2 size;
 
 	vec4 subsample_indices;
-}
-params;
+} params;
 
 #define SMAA_MAX_SEARCH_STEPS 32
 
@@ -79,8 +78,7 @@ layout(push_constant, std430) uniform Params {
 	ivec2 size;
 
 	vec4 subsample_indices;
-}
-params;
+} params;
 
 #define SMAA_MAX_SEARCH_STEPS 32
 #define SMAA_MAX_SEARCH_STEPS_DIAG 16
