@@ -4,7 +4,7 @@
 		A mathematical curve.
 	</brief_description>
 	<description>
-		This resource describes a mathematical curve by defining a set of points and tangents at each point. By default, it ranges between [code]0[/code] and [code]1[/code] on the X and Y axes, but these ranges can be changed.
+		This resource describes a mathematical curve by defining a set of points and tangents (slopes) at each point. By default, it ranges between [code]0[/code] and [code]1[/code] on the X and Y axes, but these ranges can be changed.
 		Please note that many resources and nodes assume they are given [i]unit curves[/i]. A unit curve is a curve whose domain (the X axis) is between [code]0[/code] and [code]1[/code]. Some examples of unit curve usage are [member CPUParticles2D.angle_curve] and [member Line2D.width_curve].
 	</description>
 	<tutorials>
@@ -56,7 +56,7 @@
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the left tangent angle (in degrees) for the point at [param index].
+				Returns the left tangent (slope) for the point at [param index].
 			</description>
 		</method>
 		<method name="get_point_position" qualifiers="const">
@@ -77,7 +77,7 @@
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the right tangent angle (in degrees) for the point at [param index].
+				Returns the right tangent (slope) for the point at [param index].
 			</description>
 		</method>
 		<method name="get_value_range" qualifiers="const">
@@ -120,7 +120,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="tangent" type="float" />
 			<description>
-				Sets the left tangent angle for the point at [param index] to [param tangent].
+				Sets the left tangent for the point at [param index] to [param tangent].  The tangent value is the slope of the curve to the left of this point.
 			</description>
 		</method>
 		<method name="set_point_offset">
@@ -144,7 +144,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="tangent" type="float" />
 			<description>
-				Sets the right tangent angle for the point at [param index] to [param tangent].
+				Sets the right tangent for the point at [param index] to [param tangent].  The tangent value is the slope of the curve to the right of this point.
 			</description>
 		</method>
 		<method name="set_point_value">
@@ -180,7 +180,7 @@
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
 		<member name="point_{index}/left_tangent" type="float" setter="" getter="" default="0.0">
-			The left tangent angle (in degrees) for the point at [code]index[/code].
+			The left tangent (slope) for the point at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
 		<member name="point_{index}/position" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
@@ -192,7 +192,7 @@
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
 		<member name="point_{index}/right_tangent" type="float" setter="" getter="" default="0.0">
-			The right tangent angle (in degrees) for the point at [code]index[/code].
+			The right tangent (slope) for the point at [code]index[/code].
 			[b]Note:[/b] [code]index[/code] is a value in the [code]0 .. point_count - 1[/code] range.
 		</member>
 	</members>
