@@ -223,7 +223,7 @@ Error SceneDebugger::_msg_next_frame(const Array &p_args) {
 Error SceneDebugger::_msg_speed_changed(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	double time_scale_user = p_args[0];
-	Engine::get_singleton()->set_user_time_scale(time_scale_user);
+	OS::get_singleton()->set_wall_clock_time_scale(time_scale_user);
 	return OK;
 }
 
