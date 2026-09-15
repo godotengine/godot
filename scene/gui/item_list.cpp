@@ -2190,7 +2190,7 @@ bool ItemList::is_anything_selected() {
 	return false;
 }
 
-Size2 ItemList::get_minimum_size() const {
+Size2 ItemList::_get_minimum_size() const {
 	Size2 min_size;
 	if (auto_width) {
 		min_size.x = auto_width_value;

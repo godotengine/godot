@@ -89,10 +89,9 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	Size2 _fit_icon_size(const Size2 &p_size, int p_max_size) const;
 	static void _bind_methods();
+	virtual Size2 _get_minimum_size() const override;
 
 public:
-	virtual Size2 get_minimum_size() const override;
-
 	void set_custom_step(double p_custom_step);
 	double get_custom_step() const;
 

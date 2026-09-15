@@ -336,8 +336,8 @@ void ScriptEditorDebugger::_video_mem_export() {
 	file_dialog->popup_file_dialog();
 }
 
-Size2 ScriptEditorDebugger::get_minimum_size() const {
-	Size2 ms = MarginContainer::get_minimum_size();
+Size2 ScriptEditorDebugger::_get_minimum_size() const {
+	Size2 ms = MarginContainer::_get_minimum_size();
 	ms.y = MAX(ms.y, 250 * EDSCALE);
 	return ms;
 }

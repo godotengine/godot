@@ -121,11 +121,11 @@ private:
 	bool child_has_focus();
 
 	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+	virtual Size2 _get_minimum_size() const override;
 
 	Rect2 _get_local_visible_rect() const;
 
 protected:
-	Size2 get_minimum_size() const override;
 	Size2 get_desired_size() const override;
 	Size2 get_inner_combined_maximum_size() const override;
 

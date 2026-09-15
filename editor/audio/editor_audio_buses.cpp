@@ -1682,7 +1682,7 @@ void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_va
 	notches.push_back(AudioNotch(p_normalized_offset, p_db_value, p_render_value));
 }
 
-Size2 EditorAudioMeterNotches::get_minimum_size() const {
+Size2 EditorAudioMeterNotches::_get_minimum_size() const {
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	float font_height = font->get_height(font_size);

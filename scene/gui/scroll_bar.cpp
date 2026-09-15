@@ -530,7 +530,7 @@ double ScrollBar::get_grabber_offset() const {
 	return get_area_size() * get_as_ratio();
 }
 
-Size2 ScrollBar::get_minimum_size() const {
+Size2 ScrollBar::_get_minimum_size() const {
 	Ref<Texture2D> incr = theme_cache.increment_icon;
 	Ref<Texture2D> decr = theme_cache.decrement_icon;
 	Size2 incr_size = _fit_icon_size(incr->get_size()).round();

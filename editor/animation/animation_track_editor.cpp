@@ -1742,7 +1742,7 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 	queue_redraw();
 }
 
-Size2 AnimationTimelineEdit::get_minimum_size() const {
+Size2 AnimationTimelineEdit::_get_minimum_size() const {
 	Size2 ms = filter_track->get_minimum_size();
 	const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
@@ -2769,7 +2769,7 @@ NodePath AnimationTrackEdit::get_path() const {
 	return node_path;
 }
 
-Size2 AnimationTrackEdit::get_minimum_size() const {
+Size2 AnimationTrackEdit::_get_minimum_size() const {
 	Ref<Texture2D> texture = get_editor_theme_icon(SNAME("Object"));
 	const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
@@ -4021,7 +4021,7 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 	update_minimum_size();
 }
 
-Size2 AnimationTrackEditGroup::get_minimum_size() const {
+Size2 AnimationTrackEditGroup::_get_minimum_size() const {
 	const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	const int separation = get_theme_constant(SNAME("v_separation"), SNAME("ItemList"));
@@ -9521,7 +9521,7 @@ void AnimationMarkerEdit::set_animation(const Ref<Animation> &p_animation, bool 
 	queue_redraw();
 }
 
-Size2 AnimationMarkerEdit::get_minimum_size() const {
+Size2 AnimationMarkerEdit::_get_minimum_size() const {
 	Ref<Texture2D> texture = get_editor_theme_icon(SNAME("Object"));
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));

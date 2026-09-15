@@ -920,7 +920,7 @@ void AnimationBezierTrackEdit::set_animation_and_track(const Ref<Animation> &p_a
 	queue_redraw();
 }
 
-Size2 AnimationBezierTrackEdit::get_minimum_size() const {
+Size2 AnimationBezierTrackEdit::_get_minimum_size() const {
 	return Vector2(1, 1);
 }
 

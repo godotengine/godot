@@ -32,7 +32,7 @@
 
 #include "scene/theme/theme_db.h"
 
-Size2 PanelContainer::get_minimum_size() const {
+Size2 PanelContainer::_get_minimum_size() const {
 	Size2 ms = Container::_get_minimum_size();
 
 	if (theme_cache.panel_style.is_valid()) {

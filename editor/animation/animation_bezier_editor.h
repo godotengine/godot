@@ -207,6 +207,8 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	static float get_bezier_key_value(Array p_bezier_key_array);
 
@@ -215,7 +217,6 @@ public:
 	Ref<Animation> get_animation() const;
 
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
-	virtual Size2 get_minimum_size() const override;
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	void set_timeline(AnimationTimelineEdit *p_timeline);

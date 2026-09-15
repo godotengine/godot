@@ -62,6 +62,8 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	Control *add_spacer(bool p_begin = false);
 
@@ -74,7 +76,6 @@ public:
 	void set_reverse_sort(bool p_reverse_sort);
 	bool is_reverse_sort() const;
 
-	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_desired_size() const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;

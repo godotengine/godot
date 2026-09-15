@@ -4002,7 +4002,7 @@ void TextEdit::_show_virtual_keyboard() {
 }
 
 /* General overrides. */
-Size2 TextEdit::get_minimum_size() const {
+Size2 TextEdit::_get_minimum_size() const {
 	Size2 ms = _get_current_stylebox()->get_minimum_size();
 	if (fit_content_height) {
 		ms.height += content_size_cache.height;

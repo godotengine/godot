@@ -43,6 +43,7 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
+	virtual Size2 _get_minimum_size() const override;
 
 public:
 	enum FillMode {
@@ -96,8 +97,6 @@ public:
 
 	void set_tint_over(const Color &p_tint);
 	Color get_tint_over() const;
-
-	Size2 get_minimum_size() const override;
 
 	TextureProgressBar();
 

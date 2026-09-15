@@ -223,7 +223,7 @@ String EditorProperty::get_tooltip_string(const String &p_string) const {
 	return p_string.left(TOOLTIP_MAX_LENGTH).strip_edges() + String((p_string.length() > TOOLTIP_MAX_LENGTH) ? "..." : "");
 }
 
-Size2 EditorProperty::get_minimum_size() const {
+Size2 EditorProperty::_get_minimum_size() const {
 	if (theme_cache.font.is_null()) {
 		// Too early.
 		return Vector2();
@@ -2049,7 +2049,7 @@ void EditorInspectorCategory::set_color_level(int p_color_level) {
 	queue_redraw();
 }
 
-Size2 EditorInspectorCategory::get_minimum_size() const {
+Size2 EditorInspectorCategory::_get_minimum_size() const {
 	Size2 ms;
 	if (theme_cache.bold_font.is_valid()) {
 		ms.height = theme_cache.bold_font->get_height(theme_cache.bold_font_size);
@@ -2551,7 +2551,7 @@ void EditorInspectorSection::_notification(int p_what) {
 	}
 }
 
-Size2 EditorInspectorSection::get_minimum_size() const {
+Size2 EditorInspectorSection::_get_minimum_size() const {
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
