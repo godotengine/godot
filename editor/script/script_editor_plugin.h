@@ -434,6 +434,7 @@ class ScriptEditor : public EditorDock {
 	HashSet<String> textfile_extensions;
 	Ref<TextFile> _load_text_file(const String &p_path, Error *r_error) const;
 	Error _save_text_file(Ref<TextFile> p_text_file, const String &p_path);
+	void _saved_reimport(const String &p_path);
 
 	void _on_find_in_files_result_selected(const String &p_path, int p_line_number, int p_begin, int p_end);
 	void _on_find_in_files_modified_files();
