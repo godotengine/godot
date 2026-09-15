@@ -5,7 +5,7 @@ import shutil
 import subprocess
 
 from methods import get_version_info
-from platform_methods import lipo
+from platform_methods import lipo, lipo_find_archs
 
 
 def generate_bundle(target, source, env):
@@ -20,11 +20,20 @@ def generate_bundle(target, source, env):
             prefix += ".double"
 
         # Lipo editor executable.
-        target_bin = lipo(bin_dir + "/" + prefix, env.extra_suffix + env.module_version_string)
+        if env["generate_bundle_universal"]:
+            target_archs = lipo_find_archs(bin_dir + "/" + prefix, env.extra_suffix + env.module_version_string)
+            target_bin = lipo(bin_dir + "/" + prefix, env.extra_suffix + env.module_version_string)
+            arch_suffix = ""
+        else:
+            target_archs = [env["arch"]]
+            target_bin = bin_dir + "/" + prefix + "." + env["arch"] + env.extra_suffix + env.module_version_string
+            arch_suffix = "_" + env["arch"]
+            if env.extra_suffix + env.module_version_string != "":
+                arch_suffix += "_"
 
         # Assemble .app bundle and update version info.
         app_dir = env.Dir(
-            "#bin/" + (prefix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app"
+            "#bin/" + (prefix + arch_suffix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app"
         ).abspath
         templ = env.Dir("#misc/dist/macos_tools.app").abspath
         if os.path.exists(app_dir):
@@ -48,7 +57,15 @@ def generate_bundle(target, source, env):
         version = get_version_info("", True)
         with open(env.Dir("#misc/dist/macos").abspath + "/editor_info_plist.template", "rt", encoding="utf-8") as fin:
             with open(app_dir + "/Contents/Info.plist", "wt", encoding="utf-8", newline="\n") as fout:
+                min_ver_string = ""
+                for arch in target_archs:
+                    min_ver_string += "\t\t<key>" + arch + "</key>\n"
+                    if arch == "x86_64":
+                        min_ver_string += "\t\t<string>11.0</string>\n"
+                    else:
+                        min_ver_string += "\t\t<string>13.0</string>\n"
                 for line in fin:
+                    line = line.replace("$min_version_info", min_ver_string)
                     line = line.replace("$version", "{major}.{minor}.{patch}.{status}.{build}".format(**version))
                     line = line.replace("$short_version", "{major}.{minor}.{patch}".format(**version))
                     if version["build"] != "official" and version["build"] != "steam":
