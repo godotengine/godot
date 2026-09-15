@@ -15,8 +15,8 @@
 			<param index="1" name="thread_id" type="int" default="0" />
 			<description>
 				Sets the thread type of the given thread, so that the XR runtime can adjust its scheduling priority accordingly.
-				[param thread_id] refers to the OS thread id (ie from [code]gettid()[/code]). When [param thread_id] is [code]0[/code], it will set the thread type of the current thread.
-				[b]NOTE:[/b] The id returned by [method Thread.get_id] is incompatible with [param thread_id].
+				[param thread_id] refers to the OS thread ID (i.e., from [code]gettid()[/code]). If [param thread_id] is [code]0[/code], it will set the thread type of the current thread.
+				[b]Note:[/b] The ID returned by [method Thread.get_id] is incompatible with [param thread_id].
 			</description>
 		</method>
 	</methods>
