@@ -108,6 +108,8 @@ class JoltContactListener3D final
 
 	JoltSpace3D *space = nullptr;
 
+	std::atomic_int contact_pair_count = 0;
+
 #ifdef DEBUG_ENABLED
 	PackedVector3Array debug_contacts;
 	std::atomic_int debug_contact_count = 0;
@@ -156,6 +158,8 @@ public:
 
 	void pre_step();
 	void post_step();
+
+	int get_contact_pair_count() const { return contact_pair_count.load(std::memory_order_acquire); }
 
 #ifdef DEBUG_ENABLED
 	const PackedVector3Array &get_debug_contacts() const { return debug_contacts; }

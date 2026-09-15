@@ -78,10 +78,17 @@ void JoltSpace3D::_pre_step(float p_step) {
 	const JPH::BodyID *active_rigid_bodies = physics_system->GetActiveBodiesUnsafe(JPH::EBodyType::RigidBody);
 	const JPH::uint32 active_rigid_body_count = physics_system->GetNumActiveBodies(JPH::EBodyType::RigidBody);
 
+	active_body_count = 0;
+
 	for (JPH::uint32 i = 0; i < active_rigid_body_count; i++) {
 		JPH::Body *jolt_body = lock_iface.TryGetBody(active_rigid_bodies[i]);
 		JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
 		object->pre_step(p_step);
+
+		// What `Performance.PHYSICS_3D_ACTIVE_OBJECTS` reports: awake rigid bodies (and soft bodies below), like GodotPhysics, but not kinematic bodies or areas.
+		if (const JoltBody3D *body = object->as_body(); body != nullptr && body->is_rigid()) {
+			active_body_count++;
+		}
 	}
 
 	const JPH::BodyID *active_soft_bodies = physics_system->GetActiveBodiesUnsafe(JPH::EBodyType::SoftBody);
@@ -91,6 +98,8 @@ void JoltSpace3D::_pre_step(float p_step) {
 		JPH::Body *jolt_body = lock_iface.TryGetBody(active_soft_bodies[i]);
 		JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
 		object->pre_step(p_step);
+
+		active_body_count++;
 	}
 
 	physics_system->SetBodyActivationListener(body_activation_listener);
@@ -550,6 +559,10 @@ void JoltSpace3D::remove_joint(JPH::Constraint *p_jolt_ref) {
 
 void JoltSpace3D::remove_joint(JoltJoint3D *p_joint) {
 	remove_joint(p_joint->get_jolt_ref());
+}
+
+int JoltSpace3D::get_contact_pair_count() const {
+	return contact_listener->get_contact_pair_count();
 }
 
 #ifdef DEBUG_ENABLED

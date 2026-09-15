@@ -83,6 +83,8 @@ class JoltSpace3D {
 
 	float last_step = 0.0f;
 
+	int active_body_count = 0;
+
 	uint16_t default_area_changed_count = 0;
 
 	bool active = false;
@@ -140,6 +142,9 @@ public:
 	uint16_t get_default_area_changed_count() const { return default_area_changed_count; }
 
 	float get_last_step() const { return last_step; }
+
+	int get_active_body_count() const { return active_body_count; }
+	int get_contact_pair_count() const;
 
 	JPH::Body *add_object(const JoltObject3D &p_object, const JPH::BodyCreationSettings &p_settings, bool p_sleeping = false);
 	JPH::Body *add_object(const JoltObject3D &p_object, const JPH::SoftBodyCreationSettings &p_settings, bool p_sleeping = false);

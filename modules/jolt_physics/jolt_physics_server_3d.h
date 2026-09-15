@@ -56,6 +56,9 @@ class JoltPhysicsServer3D final : public PhysicsServer3D {
 
 	HashSet<JoltSpace3D *> active_spaces;
 
+	int active_objects = 0;
+	int collision_pairs = 0;
+
 	JoltJobSystem *job_system = nullptr;
 	JoltTempAllocator *temp_allocator = nullptr;
 

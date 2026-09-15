@@ -195,9 +195,11 @@
 		</constant>
 		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="21" enum="Monitor">
 			Number of collision pairs in the 3D physics engine. [i]Lower is better.[/i]
+			[b]Note:[/b] With Jolt Physics, this counts narrow-phase contacts rather than broad-phase pairs.
 		</constant>
 		<constant name="PHYSICS_3D_ISLAND_COUNT" value="22" enum="Monitor">
 			Number of islands in the 3D physics engine. [i]Lower is better.[/i]
+			[b]Note:[/b] Always [code]0[/code] with Jolt Physics, as it does not expose its island count.
 		</constant>
 		<constant name="AUDIO_OUTPUT_LATENCY" value="23" enum="Monitor">
 			Output latency of the [AudioServer]. Equivalent to calling [method AudioServer.get_output_latency], it is not recommended to call this every frame.

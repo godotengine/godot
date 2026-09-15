@@ -1645,12 +1645,18 @@ void JoltPhysicsServer3D::step(real_t p_step) {
 		return;
 	}
 
+	active_objects = 0;
+	collision_pairs = 0;
+
 	for (JoltSpace3D *active_space : active_spaces) {
 		job_system->pre_step();
 
 		active_space->step((float)p_step);
 
 		job_system->post_step();
+
+		active_objects += active_space->get_active_body_count();
+		collision_pairs += active_space->get_contact_pair_count();
 	}
 }
 
@@ -1685,6 +1691,19 @@ bool JoltPhysicsServer3D::is_flushing_queries() const {
 }
 
 int JoltPhysicsServer3D::get_process_info(PS3DE::ProcessInfo p_process_info) {
+	switch (p_process_info) {
+		case PS3DE::INFO_ACTIVE_OBJECTS: {
+			return active_objects;
+		} break;
+		case PS3DE::INFO_COLLISION_PAIRS: {
+			return collision_pairs;
+		} break;
+		case PS3DE::INFO_ISLAND_COUNT: {
+			// Jolt does not expose its island count.
+			return 0;
+		} break;
+	}
+
 	return 0;
 }
 

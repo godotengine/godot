@@ -43,6 +43,8 @@
 #include <Jolt/Physics/SoftBody/SoftBodyManifold.h>
 
 void JoltContactListener3D::OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
+	contact_pair_count.fetch_add(1, std::memory_order_relaxed);
+
 	_try_override_collision_response(p_body1, p_body2, p_settings);
 	_try_apply_surface_velocities(p_body1, p_body2, p_settings);
 	_try_add_contacts(p_body1, p_body2, p_manifold, p_settings);
@@ -54,6 +56,8 @@ void JoltContactListener3D::OnContactAdded(const JPH::Body &p_body1, const JPH::
 }
 
 void JoltContactListener3D::OnContactPersisted(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) {
+	contact_pair_count.fetch_add(1, std::memory_order_relaxed);
+
 	_try_override_collision_response(p_body1, p_body2, p_settings);
 	_try_apply_surface_velocities(p_body1, p_body2, p_settings);
 	_try_add_contacts(p_body1, p_body2, p_manifold, p_settings);
@@ -573,6 +577,8 @@ void JoltContactListener3D::_dispatch_area_exit(const JPH::SubShapeIDPair &p_sha
 }
 
 void JoltContactListener3D::pre_step() {
+	contact_pair_count = 0;
+
 #ifdef DEBUG_ENABLED
 	debug_contact_count = 0;
 #endif
