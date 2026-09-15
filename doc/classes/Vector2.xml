@@ -221,6 +221,12 @@
 				[b]Note:[/b] The length of the returned [Vector2] is [i]approximately[/i] [code]1.0[/code], but is is not guaranteed to be exactly [code]1.0[/code] due to floating-point precision issues. Call [method normalized] on the returned [Vector2] if you require a unit vector.
 			</description>
 		</method>
+		<method name="inverse" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the inverse of the vector. This is the same as [code]Vector2(1.0 / v.x, 1.0 / v.y)[/code].
+			</description>
+		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="to" type="Vector2" />
