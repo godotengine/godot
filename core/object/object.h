@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/extension/gdextension_interface.gen.h"
-#include "core/object/gdtype.h"
 #include "core/object/method_info.h"
+#include "core/object/object_gdtype.h"
 #include "core/object/object_id.h"
 #include "core/object/property_info.h"
 #include "core/os/mutex.h"
@@ -132,7 +132,7 @@ struct ObjectGDExtension {
 	/// A type for this Object extension.
 	/// This is not exposed through the GDExtension API (yet) so it is inferred from above parameters.
 	/// The GDType's lifetime is (usually) owned by ClassDB.
-	const GDType *gdtype = nullptr;
+	const ObjectGDType *gdtype = nullptr;
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
@@ -248,8 +248,8 @@ private: \
 	void operator=(const m_class &p_rval) = delete; \
 	friend class ::ClassDB; \
 \
-	static GDType &get_gdtype_static_mutable() { \
-		static GDType *gdtype = nullptr; \
+	static ObjectGDType &get_gdtype_static_mutable() { \
+		static ObjectGDType *gdtype = nullptr; \
 		static bool initialized = false; \
 		if (likely(initialized)) { \
 			return *gdtype; \
@@ -260,17 +260,17 @@ private: \
 		if (initialized) { \
 			return *gdtype; \
 		} \
-		gdtype = memnew(GDType(&super_type::get_gdtype_static(), StringName(#m_class))); \
+		gdtype = memnew(ObjectGDType(&super_type::get_gdtype_static(), StringName(#m_class))); \
 		m_class::autorelease_gdtype(&gdtype); \
 		initialized = true; \
 		return *gdtype; \
 	} \
 \
 public: \
-	virtual const GDType &_get_typev() const override { \
+	virtual const ObjectGDType &_get_typev() const override { \
 		return get_gdtype_static(); \
 	} \
-	static const GDType &get_gdtype_static() { \
+	static const ObjectGDType &get_gdtype_static() { \
 		return get_gdtype_static_mutable(); \
 	} \
 	static const StringName &get_class_static() { \
@@ -451,11 +451,11 @@ private:
 #endif
 	ScriptInstance *script_instance = nullptr;
 	HashMap<StringName, Variant> metadata;
-	mutable const GDType *_gdtype_ptr = nullptr;
+	mutable const ObjectGDType *_gdtype_ptr = nullptr;
 	void _reset_gdtype() const;
 
-	static GDType &get_gdtype_static_mutable() {
-		static GDType *gdtype = nullptr;
+	static ObjectGDType &get_gdtype_static_mutable() {
+		static ObjectGDType *gdtype = nullptr;
 		static bool initialized = false;
 		if (likely(initialized)) {
 			return *gdtype;
@@ -466,7 +466,7 @@ private:
 		if (initialized) {
 			return *gdtype;
 		}
-		gdtype = memnew(GDType(nullptr, StringName("Object")));
+		gdtype = memnew(ObjectGDType(nullptr, StringName("Object")));
 		autorelease_gdtype(&gdtype);
 		initialized = true;
 		return *gdtype;
@@ -580,9 +580,9 @@ protected:
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
-	static void autorelease_gdtype(GDType **r_type);
+	static void autorelease_gdtype(ObjectGDType **r_type);
 
-	virtual const GDType &_get_typev() const { return get_gdtype_static(); }
+	virtual const ObjectGDType &_get_typev() const { return get_gdtype_static(); }
 
 	TypedArray<StringName> _get_meta_list_bind() const;
 	TypedArray<Dictionary> _get_property_list_bind() const;
@@ -593,7 +593,7 @@ protected:
 	friend class ::ClassDB;
 	friend class PlaceholderExtensionInstance;
 
-	static void _add_class_to_classdb(GDType &p_class, const GDType *p_inherits);
+	static void _add_class_to_classdb(ObjectGDType &p_class, const ObjectGDType *p_inherits);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
@@ -666,9 +666,9 @@ public:
 	};
 
 	/* TYPE API */
-	static const GDType &get_gdtype_static() { return get_gdtype_static_mutable(); }
+	static const ObjectGDType &get_gdtype_static() { return get_gdtype_static_mutable(); }
 
-	const GDType &get_gdtype() const;
+	const ObjectGDType &get_gdtype() const;
 
 	static const StringName &get_class_static() { return get_gdtype_static().get_name(); }
 
