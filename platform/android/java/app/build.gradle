@@ -222,6 +222,10 @@ android {
         }
 
         release {
+            minifyEnabled shouldMinify()
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
             // Signing and zip-aligning are skipped for prebuilt builds, but
             // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
