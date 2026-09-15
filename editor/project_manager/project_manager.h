@@ -75,6 +75,12 @@ class ProjectManager : public Control {
 
 	// Main layout.
 
+	bool compact_mode = false;
+	int compact_mode_default_threshold = 0;
+	int compact_mode_threshold = 0;
+	void _reset_compact_mode_threshold();
+	void _update_compact_mode();
+
 	Ref<Theme> theme;
 
 	void _update_size_limits();
@@ -94,9 +100,6 @@ class ProjectManager : public Control {
 	HBoxContainer *main_view_toggles = nullptr;
 	Button *quick_settings_button = nullptr;
 	VBoxContainer *project_list_sidebar = nullptr;
-
-	int compact_mode_threshold = 0;
-	void _update_compact_mode(bool p_reset_threshold = false);
 
 	enum MainViewTab {
 		MAIN_VIEW_PROJECTS,
@@ -272,6 +275,9 @@ class ProjectManager : public Control {
 
 	void _files_dropped(PackedStringArray p_files);
 
+	// Editor Settings.
+	void _update_project_manager_settings();
+
 protected:
 	void _notification(int p_what);
 
@@ -289,6 +295,11 @@ public:
 	// Project tag management.
 
 	void add_new_tag(const String &p_tag);
+
+	// Compact mode.
+
+	bool is_project_list_sidebar_visible();
+	Vector2 get_project_list_sidebar_size();
 
 	// Theme.
 	Ref<Theme> get_theme() const { return theme; }
