@@ -123,6 +123,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+	String _get_property_warning(const StringName &p_name) const;
 
 	void _queue_changed(const StringName &p_name);
 	void _emit_changed();
@@ -243,6 +244,15 @@ public:
 
 	// Testing a version allows fast cached GET_GLOBAL macros.
 	uint32_t get_version() const { return _version; }
+
+	enum AppIDType {
+		APP_ID_FREEDESKTOP,
+		APP_ID_APPLE,
+		APP_ID_WINDOWS,
+	};
+
+	bool validate_app_id(const String &p_id, AppIDType p_type, String *r_error) const;
+	String app_id_from_name(const String &p_id, AppIDType p_type) const;
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
