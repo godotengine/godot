@@ -296,8 +296,11 @@
 		<member name="ssil_radius" type="float" setter="set_ssil_radius" getter="get_ssil_radius" default="5.0">
 			The distance that bounced lighting can travel when using the screen space indirect lighting effect. A larger value will result in light bouncing further in a scene, but may result in under-sampling artifacts which look like long spikes surrounding light sources.
 		</member>
-		<member name="ssil_sharpness" type="float" setter="set_ssil_sharpness" getter="get_ssil_sharpness" default="0.98">
+		<member name="ssil_sharpness" type="float" setter="set_ssil_sharpness" getter="get_ssil_sharpness" default="0.95">
 			The amount that the screen-space indirect lighting effect is allowed to blur over the edges of objects. Setting too high will result in aliasing around the edges of objects. Setting too low will make object edges appear blurry.
+		</member>
+		<member name="ssil_thickness" type="float" setter="set_ssil_thickness" getter="get_ssil_thickness" default="0.5">
+			The perceived thickness of geometry when calculating screen-space indirect lighting, which assumes a fixed thickness behind all geometry rather than an infinite thickness, preventing false occlusion and haloing artifacts on thin objects, such as fences. Higher values may lead to more false occlusion and artifacts.
 		</member>
 		<member name="ssr_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.5">
 			The depth tolerance for screen-space reflections.

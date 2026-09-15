@@ -24,18 +24,44 @@
 
 #VERSION_DEFINES
 
+// pre-calculated weights and offsets to speed up rendering
+
+const int SAMPLE_COUNT = 8;
+
+const float OFFSETS[8] = float[8](
+    -6.4550869992703435,
+    -4.468862236297167,
+    -2.4826862657413393,
+    -0.49653490850373416,
+    1.4896094314876247,
+    3.475769408144678,
+    5.461967313484028,
+    7
+);
+
+const float WEIGHTS[8] = float[8](
+    0.09383640732003992,
+    0.12701373852860326,
+    0.153999313783728,
+    0.16725375352955418,
+    0.1627132872924349,
+    0.14179514673861507,
+    0.1106846237774379,
+    0.042703729029586635
+);
+
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(set = 0, binding = 0) uniform sampler2D source_ssil;
 
-layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
+layout(rgba16, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
 
 layout(r8, set = 2, binding = 0) uniform restrict readonly image2D source_edges;
 
 layout(push_constant, std430) uniform Params {
-	float edge_sharpness;
-	float pad;
-	vec2 half_screen_pixel_size;
+    float edge_sharpness;
+    int blur_dir;
+    vec2 half_screen_pixel_size;
 }
 params;
 
@@ -57,7 +83,31 @@ void add_sample(vec4 p_ssil_value, float p_edge_value, inout vec4 r_sum, inout f
 	r_sum_weight += weight;
 }
 
-#ifdef MODE_WIDE
+// vec4 bilateral_blur(ivec2 p_pos, vec2 p_uv) {
+//     vec2 blur_offset = params.blur_dir == 0 ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+//     float blur_scale = 1.0;
+
+// 	float weight_total = 0.0;
+// 	vec4 result = vec4(0.0);
+
+// 	for (int i = 0; i < SAMPLE_COUNT; ++i) {
+// 		vec2 sample_uv = p_uv + ((blur_offset * OFFSETS[i]) * params.half_screen_pixel_size);
+//         ivec2 sample_uvi = p_pos + ivec2(blur_offset * OFFSETS[i]);
+
+// 		float packed_edges = imageLoad(source_edges, sample_uvi).r;
+//         vec2 edge_weights = unpack_edges(packed_edges);
+//         float edge_weight = (OFFSETS[i] > 0.0) ? edge_weights.y : edge_weights.x;
+
+// 		vec4 sample_color = textureLod(source_ssil, sample_uv, 0.0);
+// 		float weight = ((WEIGHTS[i]) * edge_weight);
+// 		weight_total += weight;
+// 		result += weight * sample_color;
+// 	}
+
+// 	return weight_total > 0.0 ? result / weight_total : textureLod(source_ssil, p_uv, 0.0);
+// }
+
+#ifdef SSIL_BLUR_ACCURATE
 vec4 sample_blurred_wide(ivec2 p_pos, vec2 p_coord) {
 	vec4 ssil_value = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 0));
 	vec4 ssil_valueL = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(-2, 0));
@@ -87,7 +137,7 @@ vec4 sample_blurred_wide(ivec2 p_pos, vec2 p_coord) {
 }
 #endif
 
-#ifdef MODE_SMART
+#ifdef SSIL_BLUR_FAST
 vec4 sample_blurred(ivec2 p_pos, vec2 p_coord) {
 	vec4 vC = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(0, 0));
 	vec4 vL = textureLodOffset(source_ssil, vec2(p_coord), 0.0, ivec2(-1, 0));
@@ -115,30 +165,16 @@ vec4 sample_blurred(ivec2 p_pos, vec2 p_coord) {
 #endif
 
 void main() {
-	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 
-#ifdef MODE_NON_SMART
+	//vec2 uv = (vec2(ssC) + 0.5) * params.half_screen_pixel_size;
 
-	vec2 half_pixel = params.half_screen_pixel_size * 0.5;
-
-	vec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size;
-
-	vec4 center = textureLod(source_ssil, uv, 0.0);
-
-	vec4 value = textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x * 3, -half_pixel.y)), 0.0) * 0.2;
-	value += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x, -half_pixel.y * 3)), 0.0) * 0.2;
-	value += textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x, +half_pixel.y * 3)), 0.0) * 0.2;
-	value += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x * 3, +half_pixel.y)), 0.0) * 0.2;
-
-	vec4 sampled = value + center * 0.2;
-
+	//vec4 blurred_ssilvb = bilateral_blur(ssC, uv);
+#ifdef SSIL_BLUR_ACCURATE
+    vec4 sampled = sample_blurred_wide(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
 #else
-#ifdef MODE_SMART
 	vec4 sampled = sample_blurred(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
-#else // MODE_WIDE
-	vec4 sampled = sample_blurred_wide(ssC, (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size);
 #endif
-#endif // MODE_NON_SMART
+
 	imageStore(dest_image, ssC, sampled);
 }
