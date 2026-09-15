@@ -30,8 +30,6 @@
 
 #include "joint_limitation_3d.h"
 
-#include "scene/3d/skeleton_modifier_3d.h"
-
 Quaternion JointLimitation3D::make_space(const Vector3 &p_local_forward_vector, const Vector3 &p_local_right_vector, const Quaternion &p_rotation_offset) const {
 	const double ALMOST_ONE = 1.0 - CMP_EPSILON;
 	// The default is to interpret the forward vector as the +Y axis.

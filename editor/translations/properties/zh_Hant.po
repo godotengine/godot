@@ -725,6 +725,9 @@ msgstr "大端序"
 msgid "Blocking Mode Enabled"
 msgstr "啟用阻塞模式"
 
+msgid "Connection"
+msgstr "連線"
+
 msgid "Read Chunk Size"
 msgstr "讀取區塊大小"
 
@@ -905,12 +908,6 @@ msgstr "終點偏移"
 msgid "Easing"
 msgstr "緩入緩出"
 
-msgid "Asset Library"
-msgstr "素材庫"
-
-msgid "Available URLs"
-msgstr "可用 URL"
-
 msgid "Debug Adapter"
 msgstr "除錯工具"
 
@@ -994,6 +991,9 @@ msgstr "僅匯出專案"
 
 msgid "Delete Old Export Files Unconditionally"
 msgstr "無條件刪除舊的匯出檔案"
+
+msgid "Camera"
+msgstr "攝影機"
 
 msgid "Plugins"
 msgstr "外掛程式"
@@ -1406,6 +1406,9 @@ msgstr "根名稱"
 msgid "Root Script"
 msgstr "根腳本"
 
+msgid "Mesh Library"
+msgstr "網格庫"
+
 msgid "Apply Root Scale"
 msgstr "套用根縮放"
 
@@ -1628,6 +1631,12 @@ msgstr "飽和度"
 msgid "Color Map"
 msgstr "色彩映射"
 
+msgid "Fix Alpha Border"
+msgstr "修復 Alpha 邊框"
+
+msgid "Premult Alpha"
+msgstr "預乘 Alpha"
+
 msgid "Normal Map"
 msgstr "法線貼圖"
 
@@ -1654,12 +1663,6 @@ msgstr "藍"
 
 msgid "Alpha"
 msgstr "Alpha"
-
-msgid "Fix Alpha Border"
-msgstr "修復 Alpha 邊框"
-
-msgid "Premult Alpha"
-msgstr "預乘 Alpha"
 
 msgid "Normal Map Invert Y"
 msgstr "法線貼圖反轉 Y"
@@ -1866,8 +1869,35 @@ msgstr "小工具顏色"
 msgid "Particles Emission Shape"
 msgstr "粒子發射形狀"
 
+msgid "Mesh"
+msgstr "網格"
+
+msgid "Mesh Transform"
+msgstr "網格變換"
+
+msgid "Mesh Cast Shadow"
+msgstr "網格投射陰影"
+
+msgid "Shapes"
+msgstr "形狀"
+
+msgid "Navigation Mesh"
+msgstr "導航網格"
+
+msgid "Navigation Mesh Transform"
+msgstr "導航網格變換"
+
+msgid "Navigation Layers"
+msgstr "導航圖層"
+
+msgid "Preview"
+msgstr "預覽"
+
 msgid "Interface"
 msgstr "界面"
+
+msgid "Localization"
+msgstr "當地語系化"
 
 msgid "Editor Language"
 msgstr "編輯器語言"
@@ -1875,14 +1905,23 @@ msgstr "編輯器語言"
 msgid "Use Threads"
 msgstr "使用執行緒"
 
+msgid "Available URLs"
+msgstr "可用 URL"
+
 msgid "Localize Settings"
 msgstr "在地化設定"
+
+msgid "Docks"
+msgstr "停靠面板"
 
 msgid "Dock Tab Style"
 msgstr "停靠面板標籤樣式"
 
 msgid "UI Layout Direction"
 msgstr "介面排列方向"
+
+msgid "Appearance"
+msgstr "外觀"
 
 msgid "Display Scale"
 msgstr "顯示縮放"
@@ -1893,14 +1932,14 @@ msgstr "自訂顯示縮放"
 msgid "Editor Screen"
 msgstr "編輯器螢幕"
 
+msgid "Input"
+msgstr "輸入"
+
 msgid "Tablet Driver"
 msgstr "繪圖板驅動程式"
 
 msgid "Project Manager Screen"
 msgstr "專案管理員"
-
-msgid "Connection"
-msgstr "連線"
 
 msgid "Check for Updates"
 msgstr "檢查更新"
@@ -1953,6 +1992,9 @@ msgstr "主要字體粗體"
 msgid "Code Font"
 msgstr "程式碼字體"
 
+msgid "Behavior"
+msgstr "行為"
+
 msgid "Separate Distraction Mode"
 msgstr "將專注模式分離"
 
@@ -1998,14 +2040,8 @@ msgstr "持續更新"
 msgid "Collapse Main Menu"
 msgstr "收合主選單"
 
-msgid "Show Scene Tree Root Selection"
-msgstr "顯示場景樹的根選擇"
-
 msgid "Derive Script Globals by Name"
 msgstr "依照名稱來推斷腳本的全域變數"
-
-msgid "Docks"
-msgstr "停靠面板"
 
 msgid "Scene Tree"
 msgstr "場景樹"
@@ -2322,9 +2358,6 @@ msgstr "警告列表"
 msgid "Notice List"
 msgstr "注意列表"
 
-msgid "Appearance"
-msgstr "外觀"
-
 msgid "Enable Inline Color Picker"
 msgstr "啟用行內顏色選擇器"
 
@@ -2402,9 +2435,6 @@ msgstr "繪製空格"
 
 msgid "Line Spacing"
 msgstr "行間距"
-
-msgid "Behavior"
-msgstr "行為"
 
 msgid "Empty Selection Clipboard"
 msgstr "清空選取剪貼簿"
@@ -2612,9 +2642,6 @@ msgstr "AABB"
 
 msgid "Stream Player 3D"
 msgstr "StreamPlayer3D"
-
-msgid "Camera"
-msgstr "攝影機"
 
 msgid "Decal"
 msgstr "裝飾"
@@ -3030,6 +3057,21 @@ msgstr "啟用 TLS 1.0"
 msgid "Remote Host"
 msgstr "遠端主機"
 
+msgid "Language Server"
+msgstr "語言伺服器"
+
+msgid "Enable Smart Resolve"
+msgstr "啟用智慧解析"
+
+msgid "Show Native Symbols in Editor"
+msgstr "在編輯器中顯示原生符號"
+
+msgid "Use Thread"
+msgstr "使用執行緒"
+
+msgid "Poll Limit (µsec)"
+msgstr "輪詢限制 (微秒)"
+
 msgid "Debugger"
 msgstr "除錯工具"
 
@@ -3068,9 +3110,6 @@ msgstr "SSH公鑰路徑"
 
 msgid "SSH Private Key Path"
 msgstr "SSH私鑰路徑"
-
-msgid "Input"
-msgstr "輸入"
 
 msgid "Buffering"
 msgstr "緩衝"
@@ -3576,9 +3615,6 @@ msgstr "碰撞優先順序"
 msgid "Flip Faces"
 msgstr "翻轉表面"
 
-msgid "Mesh"
-msgstr "網格"
-
 msgid "Material"
 msgstr "材質"
 
@@ -3809,21 +3845,6 @@ msgstr "未使用 onready 即存取節點預設值"
 
 msgid "Onready With Export"
 msgstr "onready 與 export 同時使用"
-
-msgid "Language Server"
-msgstr "語言伺服器"
-
-msgid "Enable Smart Resolve"
-msgstr "啟用智慧解析"
-
-msgid "Show Native Symbols in Editor"
-msgstr "在編輯器中顯示原生符號"
-
-msgid "Use Thread"
-msgstr "使用執行緒"
-
-msgid "Poll Limit (µsec)"
-msgstr "輪詢限制 (微秒)"
 
 msgid "Copyright"
 msgstr "版權"
@@ -4133,9 +4154,6 @@ msgstr "包裹 S"
 
 msgid "Wrap T"
 msgstr "包裹 T"
-
-msgid "Mesh Library"
-msgstr "網格庫"
 
 msgid "Physics Material"
 msgstr "物理材質"
@@ -4680,6 +4698,126 @@ msgstr "IGD 我方地址"
 msgid "IGD Status"
 msgstr "IGD 狀態"
 
+msgid "Output Port for Preview"
+msgstr "預覽輸出埠"
+
+msgid "Modes"
+msgstr "模式"
+
+msgid "Flags"
+msgstr "旗標"
+
+msgid "Stencil"
+msgstr "模版"
+
+msgid "Reference"
+msgstr "參考值"
+
+msgid "Stencil Modes"
+msgstr "模版模式"
+
+msgid "Stencil Flags"
+msgstr "模版旗標"
+
+msgid "Input Name"
+msgstr "輸入名稱"
+
+msgid "Parameter Name"
+msgstr "參數名稱"
+
+msgid "Qualifier"
+msgstr "修飾符"
+
+msgid "Tint Color Enabled"
+msgstr "啟用色調顏色"
+
+msgid "Tint Color"
+msgstr "色調顏色"
+
+msgid "Autoshrink"
+msgstr "自動縮減"
+
+msgid "Expression"
+msgstr "設定表示式"
+
+msgid "Varying Name"
+msgstr "Varying 名稱"
+
+msgid "Varying Type"
+msgstr "Varying 型別"
+
+msgid "Op Type"
+msgstr "操作型別"
+
+msgid "Constant"
+msgstr "常數"
+
+msgid "Source"
+msgstr "來源"
+
+msgid "Texture Type"
+msgstr "紋理貼圖型別"
+
+msgid "Texture Array"
+msgstr "紋理貼圖陣列"
+
+msgid "Cube Map"
+msgstr "立方體貼圖"
+
+msgid "Operator"
+msgstr "運算子"
+
+msgid "Function"
+msgstr "函式"
+
+msgid "Hint"
+msgstr "提示"
+
+msgid "Step"
+msgstr "步長"
+
+msgid "Default Value Enabled"
+msgstr "啟用預設值"
+
+msgid "Default Value"
+msgstr "預設值"
+
+msgid "Enum Names"
+msgstr "列舉名稱"
+
+msgid "Color Default"
+msgstr "顏色預設"
+
+msgid "Texture Filter"
+msgstr "紋理篩選"
+
+msgid "Texture Repeat"
+msgstr "紋理重複"
+
+msgid "Texture Source"
+msgstr "紋理源"
+
+msgid "Condition"
+msgstr "條件"
+
+msgid "Billboard Type"
+msgstr "佈告欄型別"
+
+msgid "Keep Scale"
+msgstr "保持比例"
+
+msgid "Mode 2D"
+msgstr "2D 模式"
+
+msgid "Use All Surfaces"
+msgstr "使用所有表面"
+
+msgid "Surface Index"
+msgstr "表面索引"
+
+msgid "Degrees Mode"
+msgstr "度數模式"
+
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -4763,6 +4901,9 @@ msgstr "遠端除錯使用 Wi-Fi"
 
 msgid "Wi-Fi Remote Debug Host"
 msgstr "Wi-Fi 遠端除錯主機"
+
+msgid "Background Color"
+msgstr "背景顏色"
 
 msgid "Launcher Icons"
 msgstr "啟動器圖示"
@@ -4887,9 +5028,6 @@ msgstr "支援 Large"
 msgid "Support Xlarge"
 msgstr "支援 Xlarge"
 
-msgid "Background Color"
-msgstr "背景顏色"
-
 msgid "User Data Backup"
 msgstr "使用者資料備份"
 
@@ -4901,15 +5039,6 @@ msgstr "命令列"
 
 msgid "Extra Args"
 msgstr "額外參數"
-
-msgid "APK Expansion"
-msgstr "APK 擴展"
-
-msgid "Salt"
-msgstr "Salt"
-
-msgid "Public Key"
-msgstr "公開金鑰"
 
 msgid "Permissions"
 msgstr "許可權"
@@ -5808,9 +5937,6 @@ msgstr "目標期望距離"
 msgid "Path Max Distance"
 msgstr "路徑最大距離"
 
-msgid "Navigation Layers"
-msgstr "導航圖層"
-
 msgid "Pathfinding Algorithm"
 msgstr "尋路演算法"
 
@@ -6533,9 +6659,6 @@ msgstr "確定"
 msgid "Pixel Size"
 msgstr "像素大小"
 
-msgid "Flags"
-msgstr "旗標"
-
 msgid "Billboard"
 msgstr "佈告欄"
 
@@ -6565,9 +6688,6 @@ msgstr "Alpha 抗鋸齒模式"
 
 msgid "Alpha Antialiasing Edge"
 msgstr "邊緣 Alpha 抗鋸齒"
-
-msgid "Texture Filter"
-msgstr "紋理篩選"
 
 msgid "Render Priority"
 msgstr "算繪優先順序"
@@ -6855,9 +6975,6 @@ msgid "Keep Y Velocity"
 msgstr "保持 Y 軸速度"
 
 msgid "NavigationMesh"
-msgstr "導航網格"
-
-msgid "Navigation Mesh"
 msgstr "導航網格"
 
 msgid "Quaternion"
@@ -7481,12 +7598,6 @@ msgstr "切換模式"
 msgid "Advance"
 msgstr "前進"
 
-msgid "Condition"
-msgstr "條件"
-
-msgid "Expression"
-msgstr "設定表示式"
-
 msgid "State Machine Type"
 msgstr "狀態機型別"
 
@@ -7700,14 +7811,11 @@ msgstr "字體大小"
 msgid "Styles"
 msgstr "樣式"
 
-msgid "Clip Contents"
-msgstr "裁剪內容"
-
 msgid "Custom Minimum Size"
 msgstr "自訂最小尺寸"
 
-msgid "Layout Direction"
-msgstr "佈局方向"
+msgid "Clip Contents"
+msgstr "裁剪內容"
 
 msgid "Layout Mode"
 msgstr "佈局模式"
@@ -7733,11 +7841,11 @@ msgstr "容器大小"
 msgid "Stretch Ratio"
 msgstr "拉伸比例"
 
-msgid "Localization"
-msgstr "當地語系化"
-
 msgid "Localize Numeral System"
 msgstr "當地語系化記數系統"
+
+msgid "Layout Direction"
+msgstr "佈局方向"
 
 msgid "Tooltip"
 msgstr "工具提示"
@@ -7958,12 +8066,6 @@ msgstr "自動縮減邊距"
 msgid "Drag Margin"
 msgstr "拖曳邊距"
 
-msgid "Tint Color Enabled"
-msgstr "啟用色調顏色"
-
-msgid "Tint Color"
-msgstr "色調顏色"
-
 msgid "Ignore Invalid Connection Type"
 msgstr "忽略無效連接類型"
 
@@ -8180,9 +8282,6 @@ msgstr "最小值"
 msgid "Max Value"
 msgstr "最大值"
 
-msgid "Step"
-msgstr "步長"
-
 msgid "Page"
 msgstr "頁"
 
@@ -8371,9 +8470,6 @@ msgstr "分頁標籤位置"
 
 msgid "Tabs Visible"
 msgstr "分頁可見"
-
-msgid "All Tabs in Front"
-msgstr "所有分頁前置"
 
 msgid "Use Hidden Tabs for Min Size"
 msgstr "最小大小考慮隱藏分頁"
@@ -8622,9 +8718,6 @@ msgstr "除錯導航提示"
 msgid "Multiplayer Poll"
 msgstr "多人輪詢"
 
-msgid "Shapes"
-msgstr "形狀"
-
 msgid "Shape Color"
 msgstr "形狀顏色"
 
@@ -8843,6 +8936,9 @@ msgstr "2D 大小覆蓋"
 
 msgid "Size 2D Override Stretch"
 msgstr "2D 大小覆蓋拉伸"
+
+msgid "View Count"
+msgstr "視圖數量"
 
 msgid "Render Target"
 msgstr "算繪目標"
@@ -9159,18 +9255,6 @@ msgstr "地圖資料"
 msgid "Item"
 msgstr "項目"
 
-msgid "Mesh Transform"
-msgstr "網格變換"
-
-msgid "Mesh Cast Shadow"
-msgstr "網格投射陰影"
-
-msgid "Navigation Mesh Transform"
-msgstr "導航網格變換"
-
-msgid "Preview"
-msgstr "預覽"
-
 msgid "Add UV2"
 msgstr "新增 UV2"
 
@@ -9461,9 +9545,6 @@ msgstr "自訂 FOV"
 
 msgid "Ambient Light"
 msgstr "環境光"
-
-msgid "Source"
-msgstr "來源"
 
 msgid "Sky Contribution"
 msgstr "天空貢獻"
@@ -9765,9 +9846,6 @@ msgstr "金屬度"
 msgid "Texture Channel"
 msgstr "紋理通道"
 
-msgid "Operator"
-msgstr "運算子"
-
 msgid "On UV2"
 msgstr "使用 UV2"
 
@@ -9852,9 +9930,6 @@ msgstr "停用接收陰影"
 msgid "Shadow to Opacity"
 msgstr "陰影到不透明度"
 
-msgid "Keep Scale"
-msgstr "保持比例"
-
 msgid "Particles Anim"
 msgstr "粒子動畫"
 
@@ -9897,14 +9972,8 @@ msgstr "MSDF"
 msgid "Pixel Range"
 msgstr "像素範圍"
 
-msgid "Stencil"
-msgstr "模版"
-
 msgid "Compare"
 msgstr "比較"
-
-msgid "Reference"
-msgstr "參考值"
 
 msgid "Outline Thickness"
 msgstr "外框粗細"
@@ -10223,90 +10292,6 @@ msgstr "預設字體大小"
 
 msgid "File"
 msgstr "檔案"
-
-msgid "Output Port for Preview"
-msgstr "預覽輸出埠"
-
-msgid "Modes"
-msgstr "模式"
-
-msgid "Stencil Modes"
-msgstr "模版模式"
-
-msgid "Stencil Flags"
-msgstr "模版旗標"
-
-msgid "Input Name"
-msgstr "輸入名稱"
-
-msgid "Parameter Name"
-msgstr "參數名稱"
-
-msgid "Qualifier"
-msgstr "修飾符"
-
-msgid "Autoshrink"
-msgstr "自動縮減"
-
-msgid "Varying Name"
-msgstr "Varying 名稱"
-
-msgid "Varying Type"
-msgstr "Varying 型別"
-
-msgid "Op Type"
-msgstr "操作型別"
-
-msgid "Constant"
-msgstr "常數"
-
-msgid "Texture Type"
-msgstr "紋理貼圖型別"
-
-msgid "Texture Array"
-msgstr "紋理貼圖陣列"
-
-msgid "Cube Map"
-msgstr "立方體貼圖"
-
-msgid "Function"
-msgstr "函式"
-
-msgid "Hint"
-msgstr "提示"
-
-msgid "Default Value Enabled"
-msgstr "啟用預設值"
-
-msgid "Default Value"
-msgstr "預設值"
-
-msgid "Enum Names"
-msgstr "列舉名稱"
-
-msgid "Color Default"
-msgstr "顏色預設"
-
-msgid "Texture Repeat"
-msgstr "紋理重複"
-
-msgid "Texture Source"
-msgstr "紋理源"
-
-msgid "Billboard Type"
-msgstr "佈告欄型別"
-
-msgid "Mode 2D"
-msgstr "2D 模式"
-
-msgid "Use All Surfaces"
-msgstr "使用所有表面"
-
-msgid "Surface Index"
-msgstr "表面索引"
-
-msgid "Degrees Mode"
-msgstr "度數模式"
 
 msgid "Font Pressed Color"
 msgstr "字體顏色按下"
@@ -11487,9 +11472,6 @@ msgstr "房間大小"
 msgid "High-pass"
 msgstr "高通"
 
-msgid "Tap Back Pos"
-msgstr "回拍位置"
-
 msgid "Pan Pullout"
 msgstr "平移撤離"
 
@@ -12170,9 +12152,6 @@ msgstr "內部大小"
 
 msgid "Target Size"
 msgstr "目標大小"
-
-msgid "View Count"
-msgstr "視圖數量"
 
 msgid "Default Font Antialiasing"
 msgstr "預設字體抗鋸齒"

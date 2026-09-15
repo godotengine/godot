@@ -171,7 +171,7 @@ bool AABB::find_intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, bool
 
 		// Prevent float error by making sure the point is exactly
 		// on the AABB border on the relevant axis.
-		r_intersection_point->coord[axis] = (p_dir[axis] >= 0) ? position.coord[axis] : end.coord[axis];
+		(*r_intersection_point)[axis] = (p_dir[axis] >= 0) ? position[axis] : end[axis];
 	}
 	if (r_normal) {
 		*r_normal = Vector3();

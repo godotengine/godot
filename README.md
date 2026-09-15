@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://godotengine.org">
-    <img src="logo_outlined.svg" width="400" alt="Godot Engine logo">
+    <img src="misc/logo/logo_outlined.svg" width="400" alt="Godot Engine logo">
   </a>
 </p>
 
@@ -64,7 +64,7 @@ The [class reference](https://docs.godotengine.org/en/latest/classes/)
 is also accessible from the Godot editor.
 
 We also maintain official demos in their own [GitHub repository](https://github.com/godotengine/godot-demo-projects)
-as well as a list of [awesome Godot community resources](https://github.com/godotengine/awesome-godot).
+as well as the [Asset Store](https://store.godotengine.org/).
 
 There are also a number of other
 [learning resources](https://docs.godotengine.org/en/latest/community/tutorials.html)

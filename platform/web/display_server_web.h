@@ -30,11 +30,11 @@
 
 #pragma once
 
+#include "godot_js.h"
+
 #include "core/input/input_enums.h"
 #include "core/os/keyboard.h"
 #include "servers/display/display_server.h"
-
-#include "godot_js.h"
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -67,7 +67,7 @@ private:
 	HashMap<int64_t, CharString> utterance_ids;
 
 	DisplayServerEnums::WindowMode window_mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
-	ObjectID window_attached_instance_id = {};
+	ObjectID window_attached_instance_id;
 
 	Callable rect_changed_callback;
 	Callable window_event_callback;

@@ -34,12 +34,12 @@
 
 #include "core/object/class_db.h"
 
-void SplitContainer::_clamp_split_offset_compat_90411() {
+void SplitContainer::_clamp_split_offset_bind_compat_90411() {
 	clamp_split_offset(0);
 }
 
 void SplitContainer::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("clamp_split_offset"), &SplitContainer::_clamp_split_offset_compat_90411);
+	ClassDB::bind_compatibility_method(D_METHOD("clamp_split_offset"), &SplitContainer::_clamp_split_offset_bind_compat_90411);
 }
 
 #endif // DISABLE_DEPRECATED

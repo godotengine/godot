@@ -30,7 +30,7 @@
 
 #include "rendering_shader_container_vulkan.h"
 
-#include "thirdparty/misc/smolv.h"
+#include <thirdparty/misc/smolv.h>
 
 // RenderingShaderContainerVulkan
 

@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/main/scene_tree.h"
+#include "servers/rendering/rendering_server.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
@@ -46,8 +47,11 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
-#include "servers/rendering/rendering_server.h"
+#endif // NAVIGATION_3D_DISABLED
 
+#include <cfloat> // FLT_EPSILON
+
+#ifndef NAVIGATION_3D_DISABLED
 Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MeshInstance3D::_navmesh_source_geometry_parser;
 #endif // NAVIGATION_3D_DISABLED
@@ -66,8 +70,8 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 
-	if (p_name.operator String().begins_with("surface_material_override/")) {
-		int idx = p_name.operator String().get_slicec('/', 1).to_int();
+	if (p_name.string().begins_with("surface_material_override/")) {
+		int idx = p_name.string().get_slicec('/', 1).to_int();
 
 		if (idx >= surface_override_materials.size() || idx < 0) {
 			return false;
@@ -91,8 +95,8 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 
-	if (p_name.operator String().begins_with("surface_material_override/")) {
-		int idx = p_name.operator String().get_slicec('/', 1).to_int();
+	if (p_name.string().begins_with("surface_material_override/")) {
+		int idx = p_name.string().get_slicec('/', 1).to_int();
 		if (idx >= surface_override_materials.size() || idx < 0) {
 			return false;
 		}
@@ -929,7 +933,10 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bake_mesh_from_current_blend_shape_mix", "existing"), &MeshInstance3D::bake_mesh_from_current_blend_shape_mix, DEFVAL(Ref<ArrayMesh>()));
 	ClassDB::bind_method(D_METHOD("bake_mesh_from_current_skeleton_pose", "existing"), &MeshInstance3D::bake_mesh_from_current_skeleton_pose, DEFVAL(Ref<ArrayMesh>()));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), "set_mesh", "get_mesh");
+	// Specify all types for explicit ordering in the inspector,
+	// but list generic Mesh last to allow extended types to show up at the end.
+	// Keep the order in sync with MeshInstance2D's `mesh` property.
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "BoxMesh,SphereMesh,CapsuleMesh,CylinderMesh,PrismMesh,TorusMesh,PlaneMesh,QuadMesh,TextMesh,RibbonTrailMesh,TubeTrailMesh,PointMesh,ArrayMesh,ImmediateMesh,PlaceholderMesh,Mesh", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_mesh", "get_mesh");
 	ADD_GROUP("Skeleton", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, Skin::get_class_static()), "set_skin", "get_skin");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_skeleton_path", "get_skeleton_path");

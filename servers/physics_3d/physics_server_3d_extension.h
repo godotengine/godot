@@ -116,9 +116,9 @@ public:
 	PhysicsDirectBodyState3DExtension();
 };
 
-typedef PhysicsDirectSpaceState3D::RayResult PhysicsServer3DExtensionRayResult;
-typedef PhysicsDirectSpaceState3D::ShapeResult PhysicsServer3DExtensionShapeResult;
-typedef PhysicsDirectSpaceState3D::ShapeRestInfo PhysicsServer3DExtensionShapeRestInfo;
+typedef PS3DT::RayResult PhysicsServer3DExtensionRayResult;
+typedef PS3DT::ShapeResult PhysicsServer3DExtensionShapeResult;
+typedef PS3DT::ShapeRestInfo PhysicsServer3DExtensionShapeRestInfo;
 
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionRayResult)
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionShapeResult)
@@ -142,42 +142,42 @@ protected:
 	GDVIRTUAL2RC_REQUIRED(Vector3, _get_closest_point_to_object_volume, RID, const Vector3 &)
 
 public:
-	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override {
+	virtual bool intersect_ray(const PS3DT::RayParameters &p_parameters, PS3DT::RayResult &r_result) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
 		GDVIRTUAL_CALL(_intersect_ray, p_parameters.from, p_parameters.to, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.hit_from_inside, p_parameters.hit_back_faces, p_parameters.pick_ray, &r_result, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override {
+	virtual int intersect_point(const PS3DT::PointParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) override {
 		exclude = &p_parameters.exclude;
 		int ret = false;
 		GDVIRTUAL_CALL(_intersect_point, p_parameters.position, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_results, p_result_max, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) override {
+	virtual int intersect_shape(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeResult *r_results, int p_result_max) override {
 		exclude = &p_parameters.exclude;
 		int ret = 0;
 		GDVIRTUAL_CALL(_intersect_shape, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.margin, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_results, p_result_max, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, ShapeRestInfo *r_info = nullptr) override {
+	virtual bool cast_motion(const PS3DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe, PS3DT::ShapeRestInfo *r_info = nullptr) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
 		GDVIRTUAL_CALL(_cast_motion, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.margin, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, &p_closest_safe, &p_closest_unsafe, r_info, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) override {
+	virtual bool collide_shape(const PS3DT::ShapeParameters &p_parameters, Vector3 *r_results, int p_result_max, int &r_result_count) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
 		GDVIRTUAL_CALL(_collide_shape, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.margin, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_results, p_result_max, &r_result_count, ret);
 		exclude = nullptr;
 		return ret;
 	}
-	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) override {
+	virtual bool rest_info(const PS3DT::ShapeParameters &p_parameters, PS3DT::ShapeRestInfo *r_info) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
 		GDVIRTUAL_CALL(_rest_info, p_parameters.shape_rid, p_parameters.transform, p_parameters.motion, p_parameters.margin, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, r_info, ret);
@@ -194,8 +194,8 @@ public:
 	PhysicsDirectSpaceState3DExtension();
 };
 
-typedef PhysicsServer3D::MotionCollision PhysicsServer3DExtensionMotionCollision;
-typedef PhysicsServer3D::MotionResult PhysicsServer3DExtensionMotionResult;
+typedef PS3DT::MotionCollision PhysicsServer3DExtensionMotionCollision;
+typedef PS3DT::MotionResult PhysicsServer3DExtensionMotionResult;
 
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionMotionCollision)
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionMotionResult)
@@ -228,7 +228,7 @@ public:
 	EXBIND2(shape_set_margin, RID, real_t)
 	EXBIND1RC(real_t, shape_get_margin, RID)
 
-	EXBIND1RC(ShapeType, shape_get_type, RID)
+	EXBIND1RC(PS3DE::ShapeType, shape_get_type, RID)
 	EXBIND1RC(Variant, shape_get_data, RID)
 	EXBIND1RC(real_t, shape_get_custom_solver_bias, RID)
 
@@ -238,8 +238,8 @@ public:
 	EXBIND2(space_set_active, RID, bool)
 	EXBIND1RC(bool, space_is_active, RID)
 
-	EXBIND3(space_set_param, RID, SpaceParameter, real_t)
-	EXBIND2RC(real_t, space_get_param, RID, SpaceParameter)
+	EXBIND3(space_set_param, RID, PS3DE::SpaceParameter, real_t)
+	EXBIND2RC(real_t, space_get_param, RID, PS3DE::SpaceParameter)
 
 	EXBIND1R(PhysicsDirectSpaceState3D *, space_get_direct_state, RID)
 
@@ -270,10 +270,10 @@ public:
 	EXBIND2(area_attach_object_instance_id, RID, ObjectID)
 	EXBIND1RC(ObjectID, area_get_object_instance_id, RID)
 
-	EXBIND3(area_set_param, RID, AreaParameter, const Variant &)
+	EXBIND3(area_set_param, RID, PS3DE::AreaParameter, const Variant &)
 	EXBIND2(area_set_transform, RID, const Transform3D &)
 
-	EXBIND2RC(Variant, area_get_param, RID, AreaParameter)
+	EXBIND2RC(Variant, area_get_param, RID, PS3DE::AreaParameter)
 	EXBIND1RC(Transform3D, area_get_transform, RID)
 
 	EXBIND2(area_set_collision_layer, RID, uint32_t)
@@ -296,8 +296,8 @@ public:
 	EXBIND2(body_set_space, RID, RID)
 	EXBIND1RC(RID, body_get_space, RID)
 
-	EXBIND2(body_set_mode, RID, BodyMode)
-	EXBIND1RC(BodyMode, body_get_mode, RID)
+	EXBIND2(body_set_mode, RID, PS3DE::BodyMode)
+	EXBIND1RC(PS3DE::BodyMode, body_get_mode, RID)
 
 	EXBIND4(body_add_shape, RID, RID, const Transform3D &, bool)
 	EXBIND3(body_set_shape, RID, int, RID)
@@ -329,13 +329,13 @@ public:
 	EXBIND2(body_set_user_flags, RID, uint32_t)
 	EXBIND1RC(uint32_t, body_get_user_flags, RID)
 
-	EXBIND3(body_set_param, RID, BodyParameter, const Variant &)
-	EXBIND2RC(Variant, body_get_param, RID, BodyParameter)
+	EXBIND3(body_set_param, RID, PS3DE::BodyParameter, const Variant &)
+	EXBIND2RC(Variant, body_get_param, RID, PS3DE::BodyParameter)
 
 	EXBIND1(body_reset_mass_properties, RID)
 
-	EXBIND3(body_set_state, RID, BodyState, const Variant &)
-	EXBIND2RC(Variant, body_get_state, RID, BodyState)
+	EXBIND3(body_set_state, RID, PS3DE::BodyState, const Variant &)
+	EXBIND2RC(Variant, body_get_state, RID, PS3DE::BodyState)
 
 	EXBIND2(body_apply_central_impulse, RID, const Vector3 &)
 	EXBIND3(body_apply_impulse, RID, const Vector3 &, const Vector3 &)
@@ -357,8 +357,8 @@ public:
 
 	EXBIND2(body_set_axis_velocity, RID, const Vector3 &)
 
-	EXBIND3(body_set_axis_lock, RID, BodyAxis, bool)
-	EXBIND2RC(bool, body_is_axis_locked, RID, BodyAxis)
+	EXBIND3(body_set_axis_lock, RID, PS3DE::BodyAxis, bool)
+	EXBIND2RC(bool, body_is_axis_locked, RID, PS3DE::BodyAxis)
 
 	EXBIND2(body_add_collision_exception, RID, RID)
 	EXBIND2(body_remove_collision_exception, RID, RID)
@@ -395,7 +395,7 @@ public:
 	bool body_test_motion_is_excluding_body(RID p_body) const;
 	bool body_test_motion_is_excluding_object(ObjectID p_object) const;
 
-	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
+	bool body_test_motion(RID p_body, const PS3DT::MotionParameters &p_parameters, PS3DT::MotionResult *r_result = nullptr) override {
 		bool ret = false;
 		exclude_bodies = &p_parameters.exclude_bodies;
 		exclude_objects = &p_parameters.exclude_objects;
@@ -437,8 +437,8 @@ public:
 		}
 	}
 
-	EXBIND3(soft_body_set_state, RID, BodyState, const Variant &)
-	EXBIND2RC(Variant, soft_body_get_state, RID, BodyState)
+	EXBIND3(soft_body_set_state, RID, PS3DE::BodyState, const Variant &)
+	EXBIND2RC(Variant, soft_body_get_state, RID, PS3DE::BodyState)
 
 	EXBIND2(soft_body_set_transform, RID, const Transform3D &)
 
@@ -486,8 +486,8 @@ public:
 
 	EXBIND5(joint_make_pin, RID, RID, const Vector3 &, RID, const Vector3 &)
 
-	EXBIND3(pin_joint_set_param, RID, PinJointParam, real_t)
-	EXBIND2RC(real_t, pin_joint_get_param, RID, PinJointParam)
+	EXBIND3(pin_joint_set_param, RID, PS3DE::PinJointParam, real_t)
+	EXBIND2RC(real_t, pin_joint_get_param, RID, PS3DE::PinJointParam)
 
 	EXBIND2(pin_joint_set_local_a, RID, const Vector3 &)
 	EXBIND1RC(Vector3, pin_joint_get_local_a, RID)
@@ -498,31 +498,34 @@ public:
 	EXBIND5(joint_make_hinge, RID, RID, const Transform3D &, RID, const Transform3D &)
 	EXBIND7(joint_make_hinge_simple, RID, RID, const Vector3 &, const Vector3 &, RID, const Vector3 &, const Vector3 &)
 
-	EXBIND3(hinge_joint_set_param, RID, HingeJointParam, real_t)
-	EXBIND2RC(real_t, hinge_joint_get_param, RID, HingeJointParam)
+	EXBIND3(hinge_joint_set_param, RID, PS3DE::HingeJointParam, real_t)
+	EXBIND2RC(real_t, hinge_joint_get_param, RID, PS3DE::HingeJointParam)
 
-	EXBIND3(hinge_joint_set_flag, RID, HingeJointFlag, bool)
-	EXBIND2RC(bool, hinge_joint_get_flag, RID, HingeJointFlag)
+	EXBIND3(hinge_joint_set_flag, RID, PS3DE::HingeJointFlag, bool)
+	EXBIND2RC(bool, hinge_joint_get_flag, RID, PS3DE::HingeJointFlag)
 
 	EXBIND5(joint_make_slider, RID, RID, const Transform3D &, RID, const Transform3D &)
 
-	EXBIND3(slider_joint_set_param, RID, SliderJointParam, real_t)
-	EXBIND2RC(real_t, slider_joint_get_param, RID, SliderJointParam)
+	EXBIND3(slider_joint_set_param, RID, PS3DE::SliderJointParam, real_t)
+	EXBIND2RC(real_t, slider_joint_get_param, RID, PS3DE::SliderJointParam)
 
 	EXBIND5(joint_make_cone_twist, RID, RID, const Transform3D &, RID, const Transform3D &)
 
-	EXBIND3(cone_twist_joint_set_param, RID, ConeTwistJointParam, real_t)
-	EXBIND2RC(real_t, cone_twist_joint_get_param, RID, ConeTwistJointParam)
+	EXBIND3(cone_twist_joint_set_param, RID, PS3DE::ConeTwistJointParam, real_t)
+	EXBIND2RC(real_t, cone_twist_joint_get_param, RID, PS3DE::ConeTwistJointParam)
 
 	EXBIND5(joint_make_generic_6dof, RID, RID, const Transform3D &, RID, const Transform3D &)
 
-	EXBIND4(generic_6dof_joint_set_param, RID, Vector3::Axis, G6DOFJointAxisParam, real_t)
-	EXBIND3RC(real_t, generic_6dof_joint_get_param, RID, Vector3::Axis, G6DOFJointAxisParam)
+	EXBIND4(generic_6dof_joint_set_param, RID, Vector3::Axis, PS3DE::G6DOFJointAxisParam, real_t)
+	EXBIND3RC(real_t, generic_6dof_joint_get_param, RID, Vector3::Axis, PS3DE::G6DOFJointAxisParam)
 
-	EXBIND4(generic_6dof_joint_set_flag, RID, Vector3::Axis, G6DOFJointAxisFlag, bool)
-	EXBIND3RC(bool, generic_6dof_joint_get_flag, RID, Vector3::Axis, G6DOFJointAxisFlag)
+	EXBIND4(generic_6dof_joint_set_flag, RID, Vector3::Axis, PS3DE::G6DOFJointAxisFlag, bool)
+	EXBIND3RC(bool, generic_6dof_joint_get_flag, RID, Vector3::Axis, PS3DE::G6DOFJointAxisFlag)
 
-	EXBIND1RC(JointType, joint_get_type, RID)
+	EXBIND2(generic_6dof_joint_set_angular_target_rotation, RID, const Quaternion &)
+	EXBIND1RC(Quaternion, generic_6dof_joint_get_angular_target_rotation, RID)
+
+	EXBIND1RC(PS3DE::JointType, joint_get_type, RID)
 
 	EXBIND2(joint_set_solver_priority, RID, int)
 	EXBIND1RC(int, joint_get_solver_priority, RID)
@@ -547,7 +550,7 @@ public:
 	EXBIND0(finish)
 
 	EXBIND0RC(bool, is_flushing_queries)
-	EXBIND1R(int, get_process_info, ProcessInfo)
+	EXBIND1R(int, get_process_info, PS3DE::ProcessInfo)
 
 	PhysicsServer3DExtension();
 	~PhysicsServer3DExtension();

@@ -32,17 +32,24 @@
 
 #include "core/io/resource.h"
 #include "core/templates/rb_map.h"
+#include "scene/property_list_helper.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/navigation_mesh.h"
 #include "servers/rendering/rendering_server_enums.h"
 
 #ifndef PHYSICS_3D_DISABLED
-#include "shape_3d.h"
+#include "scene/resources/3d/shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 class MeshLibrary : public Resource {
 	GDCLASS(MeshLibrary, Resource);
 	RES_BASE_EXTENSION("meshlib");
+
+	static inline PropertyListHelper base_property_helper;
+	PropertyListHelper property_helper;
+	bool init_property = false;
+
+	bool _validate_index(int p_idx);
 
 public:
 #ifndef PHYSICS_3D_DISABLED
@@ -51,8 +58,10 @@ public:
 		Transform3D local_transform;
 	};
 #endif // PHYSICS_3D_DISABLED
+
 	struct Item {
 		String name;
+		StringName category;
 		Ref<Mesh> mesh;
 		Transform3D mesh_transform;
 		RSE::ShadowCastingSetting mesh_cast_shadow = RSE::SHADOW_CASTING_SETTING_ON;
@@ -65,17 +74,21 @@ public:
 		uint32_t navigation_layers = 1;
 	};
 
-	RBMap<int, Item> item_map;
-
+// Version used by scripts.
 #ifndef PHYSICS_3D_DISABLED
 	void _set_item_shapes(int p_item, const Array &p_shapes);
 	Array _get_item_shapes(int p_item) const;
 #endif // PHYSICS_3D_DISABLED
 
+private:
+	RBMap<int, Item> item_map;
+
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 
 	virtual void reset_state() override;
 	static void _bind_methods();
@@ -83,17 +96,23 @@ protected:
 public:
 	void create_item(int p_item);
 	void set_item_name(int p_item, const String &p_name);
+	void set_item_category(int p_item, const StringName &p_category);
 	void set_item_mesh(int p_item, const Ref<Mesh> &p_mesh);
 	void set_item_mesh_transform(int p_item, const Transform3D &p_transform);
 	void set_item_mesh_cast_shadow(int p_item, RSE::ShadowCastingSetting p_shadow_casting_setting);
+#ifndef NAVIGATION_3D_DISABLED
 	void set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh);
 	void set_item_navigation_mesh_transform(int p_item, const Transform3D &p_transform);
 	void set_item_navigation_layers(int p_item, uint32_t p_navigation_layers);
+#endif // NAVIGATION_3D_DISABLED
+
 #ifndef PHYSICS_3D_DISABLED
 	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
 #endif // PHYSICS_3D_DISABLED
 	void set_item_preview(int p_item, const Ref<Texture2D> &p_preview);
+
 	String get_item_name(int p_item) const;
+	StringName get_item_category(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
 	Transform3D get_item_mesh_transform(int p_item) const;
 	RSE::ShadowCastingSetting get_item_mesh_cast_shadow(int p_item) const;
@@ -113,8 +132,8 @@ public:
 	int find_item_by_name(const String &p_name) const;
 
 	Vector<int> get_item_list() const;
+	int get_item_count() const { return item_map.size(); }
 	int get_last_unused_item_id() const;
 
 	MeshLibrary();
-	~MeshLibrary();
 };

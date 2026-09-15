@@ -41,7 +41,6 @@
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/alt_codes.h"
-#include "core/string/translation_server.h"
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -1102,6 +1101,12 @@ Variant LineEdit::get_drag_data(const Point2 &p_point) {
 		l->set_text(t);
 		l->set_focus_mode(FOCUS_ACCESSIBILITY);
 		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
+		l->add_theme_font_override(SceneStringName(font), theme_cache.font);
+		l->add_theme_font_size_override(SceneStringName(font_size), theme_cache.font_size);
+		l->add_theme_constant_override(SNAME("outline_size"), theme_cache.font_outline_size);
+		l->add_theme_color_override(SceneStringName(font_color), theme_cache.font_color);
+		l->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
+		l->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty())); // Ensure that the label has no margins inherited from the theme.
 		set_drag_preview(l);
 		return t;
 	}
@@ -1215,6 +1220,15 @@ void LineEdit::_accessibility_action_menu(const Variant &p_data) {
 	menu->grab_focus();
 }
 
+String LineEdit::_get_accessibility_name() const {
+	const String &ac_name = Control::_get_accessibility_name();
+	if (!placeholder.is_empty() && ac_name.is_empty()) {
+		return atr(placeholder);
+	} else {
+		return ac_name;
+	}
+}
+
 void LineEdit::_notification(int p_what) {
 	switch (p_what) {
 #ifdef TOOLS_ENABLED
@@ -1242,9 +1256,6 @@ void LineEdit::_notification(int p_what) {
 			bool using_placeholder = text.is_empty() && ime_text.is_empty();
 			if (using_placeholder && !placeholder.is_empty()) {
 				AccessibilityServer::get_singleton()->update_set_placeholder(ae, atr(placeholder));
-			}
-			if (!placeholder.is_empty() && get_accessibility_name().is_empty()) {
-				AccessibilityServer::get_singleton()->update_set_name(ae, atr(placeholder));
 			}
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_READONLY, !editable);
 
@@ -1681,6 +1692,8 @@ void LineEdit::_notification(int p_what) {
 			if (editing) {
 				unedit();
 				emit_signal(SNAME("editing_toggled"), false);
+			} else if (deselect_on_focus_loss_enabled && !selection.drag_attempt) {
+				deselect();
 			}
 		} break;
 
@@ -2270,6 +2283,7 @@ void LineEdit::set_placeholder(String p_text) {
 	placeholder_translated = atr(placeholder);
 	_shape();
 	queue_redraw();
+	update_configuration_warnings();
 }
 
 String LineEdit::get_placeholder() const {
@@ -2469,12 +2483,16 @@ Size2 LineEdit::get_minimum_size() const {
 	int icon_max_width = 0;
 	if (right_icon.is_valid()) {
 		Point2 right_icon_size = _get_right_icon_size(right_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = right_icon_size.width;
 	}
 	if (clear_button_enabled) {
 		Point2 right_icon_size = _get_right_icon_size(theme_cache.clear_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = MAX(icon_max_width, right_icon_size.width);
 	}
 	min_size.width += icon_max_width;

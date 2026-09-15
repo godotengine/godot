@@ -34,7 +34,8 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/audio/audio_stream_player_internal.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream.h"
+#include "servers/audio/audio_server.h"
 #include "servers/display/accessibility_server.h"
 
 void AudioStreamPlayer::_notification(int p_what) {
@@ -194,7 +195,7 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 
 	// Set the volume vector up according to the speaker mode and mix target.
 	// TODO do we need to scale the volume down when we output to more channels?
-	if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
+	if (AudioServer::get_singleton()->get_speaker_mode() == AuSE::SPEAKER_MODE_STEREO) {
 		volume_vector.write[0] = AudioFrame(volume_linear, volume_linear);
 	} else {
 		switch (mix_target) {
@@ -217,10 +218,6 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 	return volume_vector;
 }
 
-void AudioStreamPlayer::_validate_property(PropertyInfo &p_property) const {
-	internal->validate_property(p_property);
-}
-
 bool AudioStreamPlayer::has_stream_playback() {
 	return internal->has_stream_playback();
 }
@@ -229,11 +226,11 @@ Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {
 	return internal->get_stream_playback();
 }
 
-AudioServer::PlaybackType AudioStreamPlayer::get_playback_type() const {
+AuSE::PlaybackType AudioStreamPlayer::get_playback_type() const {
 	return internal->get_playback_type();
 }
 
-void AudioStreamPlayer::set_playback_type(AudioServer::PlaybackType p_playback_type) {
+void AudioStreamPlayer::set_playback_type(AuSE::PlaybackType p_playback_type) {
 	internal->set_playback_type(p_playback_type);
 }
 
@@ -281,7 +278,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_playback_type"), &AudioStreamPlayer::get_playback_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static()), "set_stream", "get_stream");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,or_greater,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
@@ -289,7 +286,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_target", PROPERTY_HINT_ENUM, "Stereo,Surround,Center"), "set_mix_target", "get_mix_target");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_AUDIO_BUS), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");
 
 	ADD_SIGNAL(MethodInfo("finished"));

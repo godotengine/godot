@@ -289,7 +289,7 @@ struct hb_ot_font_t
 
   void check_serial (hb_font_t *font) const
   {
-    int font_serial = font->serial_coords.get_acquire ();
+    int font_serial = font->serial.get_acquire ();
     if (cached_serial.get_acquire () != font_serial)
     {
       /* These caches are dependent on scale and synthetic settings.
@@ -644,6 +644,8 @@ hb_ot_get_glyph_v_origins (hb_font_t *font,
   const hb_ot_font_t *ot_font = (const hb_ot_font_t *) font_data;
   const hb_ot_face_t *ot_face = ot_font->ot_face;
 
+  ot_font->check_serial (font);
+
   /* First, set all the x values to half the advance width. */
   font->get_glyph_h_advances (count,
 			      first_glyph, glyph_stride,
@@ -897,31 +899,29 @@ hb_ot_draw_glyph_or_fail (hb_font_t *font,
 {
   const hb_ot_font_t *ot_font = (const hb_ot_font_t *) font_data;
   hb_draw_session_t draw_session {draw_funcs, draw_data};
-  bool ret = false;
 
   OT::hb_scalar_cache_t *gvar_cache = nullptr;
+#ifndef HB_NO_VAR
   if (font->num_coords)
   {
     ot_font->check_serial (font);
     gvar_cache = ot_font->draw.acquire_gvar_cache (*ot_font->ot_face->gvar);
   }
+#endif
+  HB_SCOPE_GUARD (ot_font->draw.release_gvar_cache (gvar_cache));
 
 #ifndef HB_NO_VAR_COMPOSITES
-  if (font->face->table.VARC->get_path (font, glyph, draw_session)) { ret = true; goto done; }
+  if (font->face->table.VARC->get_path (font, glyph, draw_session)) return true;
 #endif
   // Keep the following in synch with VARC::get_path_at()
-  if (font->face->table.glyf->get_path (font, glyph, draw_session, gvar_cache)) { ret = true; goto done; }
+  if (font->face->table.glyf->get_path (font, glyph, draw_session, gvar_cache)) return true;
 
 #ifndef HB_NO_CFF
-  if (font->face->table.cff2->get_path (font, glyph, draw_session)) { ret = true; goto done; }
-  if (font->face->table.cff1->get_path (font, glyph, draw_session)) { ret = true; goto done; }
+  if (font->face->table.cff2->get_path (font, glyph, draw_session)) return true;
+  if (font->face->table.cff1->get_path (font, glyph, draw_session)) return true;
 #endif
 
-done:
-
-  ot_font->draw.release_gvar_cache (gvar_cache);
-
-  return ret;
+  return false;
 }
 #endif
 
@@ -937,7 +937,9 @@ hb_ot_paint_glyph_or_fail (hb_font_t *font,
 {
 #ifndef HB_NO_COLOR
   if (font->face->table.COLR->paint_glyph (font, glyph, paint_funcs, paint_data, palette, foreground)) return true;
+#ifndef HB_NO_SVG
   if (font->face->table.SVG->paint_glyph (font, glyph, paint_funcs, paint_data)) return true;
+#endif
 #ifndef HB_NO_OT_FONT_BITMAP
   if (font->face->table.CBDT->paint_glyph (font, glyph, paint_funcs, paint_data)) return true;
   if (font->face->table.sbix->paint_glyph (font, glyph, paint_funcs, paint_data)) return true;

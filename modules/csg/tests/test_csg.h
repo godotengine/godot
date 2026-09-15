@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "../csg.h"
 #include "../csg_shape.h"
-#include "scene/main/scene_tree.h"
 
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
 #include "tests/test_macros.h"
 
 namespace TestCSG {

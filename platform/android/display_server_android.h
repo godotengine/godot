@@ -139,8 +139,8 @@ public:
 	virtual Color get_accent_color() const override;
 	virtual Color get_base_color() const override;
 
-	virtual TypedArray<Rect2> get_display_cutouts() const override;
-	virtual Rect2i get_display_safe_area() const override;
+	virtual TypedArray<Rect2> get_display_cutouts(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Rect2i get_display_safe_area(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
@@ -231,6 +231,7 @@ public:
 	void process_gravity(const Vector3 &p_gravity);
 	void process_magnetometer(const Vector3 &p_magnetometer);
 	void process_gyroscope(const Vector3 &p_gyroscope);
+	void process_device_orientation(const Quaternion &p_orientation);
 
 	void _cursor_set_shape_helper(DisplayServerEnums::CursorShape p_shape, bool force = false);
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
@@ -268,6 +269,11 @@ public:
 	virtual void set_icon(const Ref<Image> &p_icon) override;
 
 	virtual bool is_window_transparency_available() const override;
+
+	virtual bool is_in_pip_mode(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void pip_mode_enter(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void pip_mode_set_aspect_ratio(int p_numerator, int p_denominator, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual void pip_mode_set_auto_enter_on_background(bool p_auto_enter_on_background, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
 	DisplayServerAndroid(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerAndroid();

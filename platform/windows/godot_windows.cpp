@@ -34,7 +34,6 @@
 #include "main/main.h"
 
 #include <clocale>
-#include <cstdio>
 
 // For export templates, add a section; the exporter will patch it to enclose
 // the data appended to the executable (bundled PCK).
@@ -68,6 +67,13 @@ char *wc_to_utf8(const wchar_t *wc) {
 
 int widechar_main(int argc, wchar_t **argv) {
 	godot_init_profiler();
+
+	// Prevent Windows from replacing the window with a "ghost" when the main
+	// thread briefly stalls (e.g. during editor startup or focus transitions).
+	// The ghost window intercepts click-backs, so the editor never receives
+	// WM_ACTIVATEAPP and gets permanently stuck at the unfocused throttle.
+	// Must be called before any window is created.
+	DisableProcessWindowsGhosting();
 
 	OS_Windows os(nullptr);
 

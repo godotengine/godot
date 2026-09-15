@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "shader_editor.h"
+#include "scene/resources/shader.h"
 
 class EditorShaderLanguagePlugin : public RefCounted {
 	GDCLASS(EditorShaderLanguagePlugin, RefCounted);
@@ -46,10 +46,6 @@ public:
 	static Ref<EditorShaderLanguagePlugin> get_shader_language_for_index(int p_index);
 	static String get_file_extension_for_index(int p_index);
 
-	virtual bool handles_shader(const Ref<Shader> &p_shader) const = 0;
-	virtual bool handles_shader_include(const Ref<ShaderInclude> &p_shader_inc) const { return false; }
-	virtual ShaderEditor *edit_shader(const Ref<Shader> &p_shader) = 0;
-	virtual ShaderEditor *edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) { return nullptr; }
 	virtual Ref<Shader> create_new_shader(int p_variation_index, Shader::Mode p_shader_mode, int p_template_index) = 0;
 	virtual Ref<ShaderInclude> create_new_shader_include() { return Ref<ShaderInclude>(); }
 	virtual PackedStringArray get_language_variations() const = 0;

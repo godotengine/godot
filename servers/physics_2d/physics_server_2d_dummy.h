@@ -30,7 +30,9 @@
 
 #pragma once
 
-#include "physics_server_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_body_state_2d.h"
+#include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 class PhysicsDirectBodyState2DDummy : public PhysicsDirectBodyState2D {
 	GDCLASS(PhysicsDirectBodyState2DDummy, PhysicsDirectBodyState2D);
@@ -114,14 +116,14 @@ class PhysicsDirectSpaceState2DDummy : public PhysicsDirectSpaceState2D {
 	GDCLASS(PhysicsDirectSpaceState2DDummy, PhysicsDirectSpaceState2D);
 
 public:
-	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override { return false; }
+	virtual bool intersect_ray(const PS2DT::RayParameters &p_parameters, PS2DT::RayResult &r_result) override { return false; }
 
-	virtual int intersect_point(const PointParameters &p_parameters, ShapeResult *r_results, int p_result_max) override { return 0; }
+	virtual int intersect_point(const PS2DT::PointParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) override { return 0; }
 
-	virtual int intersect_shape(const ShapeParameters &p_parameters, ShapeResult *r_results, int p_result_max) override { return 0; }
-	virtual bool cast_motion(const ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) override { return false; }
-	virtual bool collide_shape(const ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) override { return false; }
-	virtual bool rest_info(const ShapeParameters &p_parameters, ShapeRestInfo *r_info) override { return false; }
+	virtual int intersect_shape(const PS2DT::ShapeParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) override { return 0; }
+	virtual bool cast_motion(const PS2DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) override { return false; }
+	virtual bool collide_shape(const PS2DT::ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) override { return false; }
+	virtual bool rest_info(const PS2DT::ShapeParameters &p_parameters, PS2DT::ShapeRestInfo *r_info) override { return false; }
 };
 
 class PhysicsServer2DDummy : public PhysicsServer2D {
@@ -143,7 +145,7 @@ public:
 	virtual void shape_set_data(RID p_shape, const Variant &p_data) override {}
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias) override {}
 
-	virtual ShapeType shape_get_type(RID p_shape) const override { return ShapeType::SHAPE_CIRCLE; }
+	virtual PS2DE::ShapeType shape_get_type(RID p_shape) const override { return PS2DE::ShapeType::SHAPE_CIRCLE; }
 	virtual Variant shape_get_data(RID p_shape) const override { return Variant(); }
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const override { return 0; }
 
@@ -155,8 +157,8 @@ public:
 	virtual void space_set_active(RID p_space, bool p_active) override {}
 	virtual bool space_is_active(RID p_space) const override { return false; }
 
-	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) override {}
-	virtual real_t space_get_param(RID p_space, SpaceParameter p_param) const override { return 0; }
+	virtual void space_set_param(RID p_space, PS2DE::SpaceParameter p_param, real_t p_value) override {}
+	virtual real_t space_get_param(RID p_space, PS2DE::SpaceParameter p_param) const override { return 0; }
 
 	virtual PhysicsDirectSpaceState2D *space_get_direct_state(RID p_space) override { return space_state_dummy; }
 
@@ -190,10 +192,10 @@ public:
 	virtual void area_attach_canvas_instance_id(RID p_area, ObjectID p_id) override {}
 	virtual ObjectID area_get_canvas_instance_id(RID p_area) const override { return ObjectID(); }
 
-	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) override {}
+	virtual void area_set_param(RID p_area, PS2DE::AreaParameter p_param, const Variant &p_value) override {}
 	virtual void area_set_transform(RID p_area, const Transform2D &p_transform) override {}
 
-	virtual Variant area_get_param(RID p_parea, AreaParameter p_param) const override { return Variant(); }
+	virtual Variant area_get_param(RID p_parea, PS2DE::AreaParameter p_param) const override { return Variant(); }
 	virtual Transform2D area_get_transform(RID p_area) const override { return Transform2D(); }
 
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) override {}
@@ -215,8 +217,8 @@ public:
 	virtual void body_set_space(RID p_body, RID p_space) override {}
 	virtual RID body_get_space(RID p_body) const override { return RID(); }
 
-	virtual void body_set_mode(RID p_body, BodyMode p_mode) override {}
-	virtual BodyMode body_get_mode(RID p_body) const override { return BodyMode::BODY_MODE_STATIC; }
+	virtual void body_set_mode(RID p_body, PS2DE::BodyMode p_mode) override {}
+	virtual PS2DE::BodyMode body_get_mode(RID p_body) const override { return PS2DE::BodyMode::BODY_MODE_STATIC; }
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false) override {}
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) override {}
@@ -238,8 +240,8 @@ public:
 	virtual void body_attach_canvas_instance_id(RID p_body, ObjectID p_id) override {}
 	virtual ObjectID body_get_canvas_instance_id(RID p_body) const override { return ObjectID(); }
 
-	virtual void body_set_continuous_collision_detection_mode(RID p_body, CCDMode p_mode) override {}
-	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const override { return CCDMode::CCD_MODE_DISABLED; }
+	virtual void body_set_continuous_collision_detection_mode(RID p_body, PS2DE::CCDMode p_mode) override {}
+	virtual PS2DE::CCDMode body_get_continuous_collision_detection_mode(RID p_body) const override { return PS2DE::CCDMode::CCD_MODE_DISABLED; }
 
 	virtual void body_set_collision_layer(RID p_body, uint32_t p_layer) override {}
 	virtual uint32_t body_get_collision_layer(RID p_body) const override { return 0; }
@@ -250,13 +252,13 @@ public:
 	virtual void body_set_collision_priority(RID p_body, real_t p_priority) override {}
 	virtual real_t body_get_collision_priority(RID p_body) const override { return 0; }
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, const Variant &p_value) override {}
-	virtual Variant body_get_param(RID p_body, BodyParameter p_param) const override { return Variant(); }
+	virtual void body_set_param(RID p_body, PS2DE::BodyParameter p_param, const Variant &p_value) override {}
+	virtual Variant body_get_param(RID p_body, PS2DE::BodyParameter p_param) const override { return Variant(); }
 
 	virtual void body_reset_mass_properties(RID p_body) override {}
 
-	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) override {}
-	virtual Variant body_get_state(RID p_body, BodyState p_state) const override { return Variant(); }
+	virtual void body_set_state(RID p_body, PS2DE::BodyState p_state, const Variant &p_variant) override {}
+	virtual Variant body_get_state(RID p_body, PS2DE::BodyState p_state) const override { return Variant(); }
 
 	virtual void body_apply_central_impulse(RID p_body, const Vector2 &p_impulse) override {}
 	virtual void body_apply_torque_impulse(RID p_body, real_t p_torque) override {}
@@ -300,7 +302,7 @@ public:
 
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) override { return body_state_dummy; }
 
-	virtual bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override { return false; }
+	virtual bool body_test_motion(RID p_body, const PS2DT::MotionParameters &p_parameters, PS2DT::MotionResult *r_result = nullptr) override { return false; }
 
 	/* JOINT API */
 
@@ -308,8 +310,8 @@ public:
 
 	virtual void joint_clear(RID p_joint) override {}
 
-	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value) override {}
-	virtual real_t joint_get_param(RID p_joint, JointParam p_param) const override { return 0; }
+	virtual void joint_set_param(RID p_joint, PS2DE::JointParam p_param, real_t p_value) override {}
+	virtual real_t joint_get_param(RID p_joint, PS2DE::JointParam p_param) const override { return 0; }
 
 	virtual void joint_disable_collisions_between_bodies(RID p_joint, const bool p_disable) override {}
 	virtual bool joint_is_disabled_collisions_between_bodies(RID p_joint) const override { return false; }
@@ -318,16 +320,16 @@ public:
 	virtual void joint_make_groove(RID p_joint, const Vector2 &p_a_groove1, const Vector2 &p_a_groove2, const Vector2 &p_b_anchor, RID p_body_a, RID p_body_b) override {}
 	virtual void joint_make_damped_spring(RID p_joint, const Vector2 &p_anchor_a, const Vector2 &p_anchor_b, RID p_body_a, RID p_body_b = RID()) override {}
 
-	virtual void pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) override {}
-	virtual real_t pin_joint_get_param(RID p_joint, PinJointParam p_param) const override { return 0; }
+	virtual void pin_joint_set_param(RID p_joint, PS2DE::PinJointParam p_param, real_t p_value) override {}
+	virtual real_t pin_joint_get_param(RID p_joint, PS2DE::PinJointParam p_param) const override { return 0; }
 
-	virtual void pin_joint_set_flag(RID p_joint, PinJointFlag p_flag, bool p_enabled) override {}
-	virtual bool pin_joint_get_flag(RID p_joint, PinJointFlag p_flag) const override { return false; }
+	virtual void pin_joint_set_flag(RID p_joint, PS2DE::PinJointFlag p_flag, bool p_enabled) override {}
+	virtual bool pin_joint_get_flag(RID p_joint, PS2DE::PinJointFlag p_flag) const override { return false; }
 
-	virtual void damped_spring_joint_set_param(RID p_joint, DampedSpringParam p_param, real_t p_value) override {}
-	virtual real_t damped_spring_joint_get_param(RID p_joint, DampedSpringParam p_param) const override { return 0; }
+	virtual void damped_spring_joint_set_param(RID p_joint, PS2DE::DampedSpringParam p_param, real_t p_value) override {}
+	virtual real_t damped_spring_joint_get_param(RID p_joint, PS2DE::DampedSpringParam p_param) const override { return 0; }
 
-	virtual JointType joint_get_type(RID p_joint) const override { return JointType::JOINT_TYPE_PIN; }
+	virtual PS2DE::JointType joint_get_type(RID p_joint) const override { return PS2DE::JointType::JOINT_TYPE_PIN; }
 
 	/* MISC */
 
@@ -349,5 +351,5 @@ public:
 
 	virtual bool is_flushing_queries() const override { return false; }
 
-	virtual int get_process_info(ProcessInfo p_info) override { return 0; }
+	virtual int get_process_info(PS2DE::ProcessInfo p_info) override { return 0; }
 };

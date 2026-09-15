@@ -30,16 +30,16 @@
 
 #pragma once
 
-#include "../effects/vrs.h"
-#ifdef METAL_ENABLED
-#include "../effects/metal_fx.h"
-#endif
-
 #include "core/templates/hash_map.h"
+#include "servers/rendering/renderer_rd/effects/vrs.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
+
+#ifdef METAL_ENABLED
+#include "servers/rendering/renderer_rd/effects/metal_fx.h"
+#endif
 
 #define RB_SCOPE_BUFFERS SNAME("render_buffers")
 #define RB_SCOPE_VRS SNAME("VRS")
@@ -48,8 +48,12 @@
 #define RB_TEX_COLOR SNAME("color")
 #define RB_TEX_COLOR_MSAA SNAME("color_msaa")
 #define RB_TEX_COLOR_UPSCALED SNAME("color_upscaled")
+#define RB_TEX_COLOR_SUBSAMPLED SNAME("color_subsampled")
+#define RB_TEX_COLOR_MSAA_SUBSAMPLED SNAME("color_msaa_subsampled")
 #define RB_TEX_DEPTH SNAME("depth")
 #define RB_TEX_DEPTH_MSAA SNAME("depth_msaa")
+#define RB_TEX_DEPTH_SUBSAMPLED SNAME("depth_subsampled")
+#define RB_TEX_DEPTH_MSAA_SUBSAMPLED SNAME("depth_msaa_subsampled")
 #define RB_TEX_VELOCITY SNAME("velocity")
 #define RB_TEX_VELOCITY_MSAA SNAME("velocity_msaa")
 
@@ -123,9 +127,10 @@ private:
 		uint32_t mipmap;
 		uint32_t mipmaps;
 		RD::TextureView texture_view;
+		RD::TextureSliceType slice_type;
 
 		bool operator==(const NTSliceKey &p_val) const {
-			return (layer == p_val.layer) && (layers == p_val.layers) && (mipmap == p_val.mipmap) && (mipmaps == p_val.mipmaps) && (texture_view == p_val.texture_view);
+			return (layer == p_val.layer) && (layers == p_val.layers) && (mipmap == p_val.mipmap) && (mipmaps == p_val.mipmaps) && (texture_view == p_val.texture_view) && (slice_type == p_val.slice_type);
 		}
 
 		static uint32_t hash(const NTSliceKey &p_val) {
@@ -138,16 +143,18 @@ private:
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_g, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_b, h);
 			h = hash_murmur3_one_32(p_val.texture_view.swizzle_a, h);
+			h = hash_murmur3_one_32(p_val.slice_type, h);
 			return hash_fmix32(h);
 		}
 
 		NTSliceKey() {}
-		NTSliceKey(uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps, RD::TextureView p_texture_view) {
+		NTSliceKey(uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps, RD::TextureView p_texture_view, RD::TextureSliceType p_slice_type) {
 			layer = p_layer;
 			layers = p_layers;
 			mipmap = p_mipmap;
 			mipmaps = p_mipmaps;
 			texture_view = p_texture_view;
+			slice_type = p_slice_type;
 		}
 	};
 
@@ -281,6 +288,11 @@ public:
 	RID get_depth_msaa(uint32_t p_layer) {
 		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH_MSAA, p_layer, 0);
 	}
+
+	RID get_color_subsampled();
+	RID get_color_msaa_subsampled();
+	RID get_depth_subsampled();
+	RID get_depth_msaa_subsampled();
 
 	// back buffer (color)
 	RID get_back_buffer_texture() const {
@@ -432,12 +444,12 @@ private:
 
 #ifndef DISABLE_DEPRECATED
 
-	RID _get_color_texture_compat_80214();
-	RID _get_color_layer_compat_80214(const uint32_t p_layer);
-	RID _get_depth_texture_compat_80214();
-	RID _get_depth_layer_compat_80214(const uint32_t p_layer);
-	RID _get_velocity_texture_compat_80214();
-	RID _get_velocity_layer_compat_80214(const uint32_t p_layer);
+	RID _get_color_texture_bind_compat_80214();
+	RID _get_color_layer_bind_compat_80214(const uint32_t p_layer);
+	RID _get_depth_texture_bind_compat_80214();
+	RID _get_depth_layer_bind_compat_80214(const uint32_t p_layer);
+	RID _get_velocity_texture_bind_compat_80214();
+	RID _get_velocity_layer_bind_compat_80214(const uint32_t p_layer);
 
 	RID _create_texture_bind_compat_98670(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples, const Size2i p_size, const uint32_t p_layers, const uint32_t p_mipmaps, bool p_unique);
 

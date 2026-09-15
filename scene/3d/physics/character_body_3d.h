@@ -70,7 +70,7 @@ public:
 	virtual Vector3 get_linear_velocity() const override;
 
 	int get_slide_collision_count() const;
-	PhysicsServer3D::MotionResult get_slide_collision(int p_bounce) const;
+	PS3DT::MotionResult get_slide_collision(int p_bounce) const;
 
 	void set_safe_margin(real_t p_margin);
 	real_t get_safe_margin() const;
@@ -161,7 +161,7 @@ private:
 	Vector3 previous_position;
 	Vector3 real_velocity;
 
-	Vector<PhysicsServer3D::MotionResult> motion_results;
+	Vector<PS3DT::MotionResult> motion_results;
 	Vector<Ref<KinematicCollision3D>> slide_colliders;
 
 	void _move_and_slide_floating(double p_delta);
@@ -172,8 +172,8 @@ private:
 	const Vector3 &get_up_direction() const;
 	bool _on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_facing_up);
 	void set_up_direction(const Vector3 &p_up_direction);
-	void _set_collision_direction(const PhysicsServer3D::MotionResult &p_result, CollisionState &r_state, CollisionState p_apply_state = CollisionState(true, true, true));
-	void _set_platform_data(const PhysicsServer3D::MotionCollision &p_collision);
+	void _set_collision_direction(const PS3DT::MotionResult &p_result, CollisionState &r_state, CollisionState p_apply_state = CollisionState(true, true, true));
+	void _set_platform_data(const PS3DT::MotionCollision &p_collision);
 	void _snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up);
 
 protected:

@@ -1,5 +1,3 @@
-GH-81070
---------
 Validate extension JSON: API was removed: classes/TileMap/methods/get_quadrant_size
 Validate extension JSON: API was removed: classes/TileMap/methods/set_quadrant_size
 Validate extension JSON: API was removed: classes/TileMap/properties/cell_quadrant_size

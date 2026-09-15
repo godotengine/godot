@@ -290,6 +290,6 @@ void ProgressBar::_bind_methods() {
 }
 
 ProgressBar::ProgressBar() {
-	set_v_size_flags(0);
+	set_v_size_flags(SIZE_SHRINK_BEGIN);
 	set_step(0.01);
 }

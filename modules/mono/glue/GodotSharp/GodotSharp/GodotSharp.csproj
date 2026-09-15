@@ -19,7 +19,7 @@
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>GodotSharp</PackageId>
-    <Version>4.7.0</Version>
+    <Version>4.8.0</Version>
     <PackageVersion>$(PackageVersion_GodotSharp)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/glue/GodotSharp/GodotSharp</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
@@ -74,6 +74,7 @@
     <Compile Include="Core\Attributes\ScriptPathAttribute.cs" />
     <Compile Include="Core\Attributes\SignalAttribute.cs" />
     <Compile Include="Core\Attributes\ToolAttribute.cs" />
+    <Compile Include="Core\Attributes\IgnoreMemberAttribute.cs" />
     <Compile Include="Core\Basis.cs" />
     <Compile Include="Core\Bridge\CSharpInstanceBridge.cs" />
     <Compile Include="Core\Bridge\GCHandleBridge.cs" />

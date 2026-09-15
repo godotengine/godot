@@ -264,13 +264,13 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
 				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-				panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+				panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 			}
 		} break;
 
 		case NOTIFICATION_READY: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(this, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			bezier_icon = get_editor_theme_icon(SNAME("KeyBezierPoint"));
@@ -662,7 +662,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
-				if (selected_track >= 0 && track_count > 0 && !hidden_tracks.has(selected_track)) {
+				if (selected_track >= 0 && track_count > 0 && !is_filtered && !hidden_tracks.has(selected_track)) {
 					// Draw edited curve.
 					_draw_track(selected_track, selected_track_color);
 				}
@@ -911,6 +911,9 @@ Ref<Animation> AnimationBezierTrackEdit::get_animation() const {
 }
 
 void AnimationBezierTrackEdit::set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only) {
+	if (p_animation != animation) {
+		selection.clear();
+	}
 	animation = p_animation;
 	read_only = p_read_only;
 	selected_track = p_track;
@@ -2638,6 +2641,9 @@ void AnimationBezierTrackEdit::paste_keys(real_t p_ofs, bool p_ofs_valid) {
 
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, dst_time, value, key.transition);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, dst_time);
+			if (key.track_type == Animation::TYPE_BEZIER) {
+				undo_redo->add_do_method(editor, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), selected_track, dst_time, key.handle_mode);
+			}
 
 			Pair<int, float> p;
 			p.first = selected_track;

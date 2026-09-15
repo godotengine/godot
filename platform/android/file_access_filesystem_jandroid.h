@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "java_godot_lib_jni.h"
-
 #include "core/io/file_access.h"
+
+#include <jni.h>
 
 class FileAccessFilesystemJAndroid : public FileAccess {
 	GDSOFTCLASS(FileAccessFilesystemJAndroid, FileAccess);

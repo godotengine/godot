@@ -154,6 +154,9 @@ public:
 		CUSTOMIZATION_LAYOUT,
 		CUSTOMIZATION_OVERWRITE_WARNING,
 		CUSTOMIZATION_DELETE,
+		CUSTOMIZATION_NAVIGATION_BUTTONS,
+		CUSTOMIZATION_DRIVE_SELECTOR,
+		CUSTOMIZATION_FILTERS,
 		CUSTOMIZATION_MAX
 	};
 
@@ -214,7 +217,8 @@ private:
 	Button *dir_up = nullptr;
 
 	HBoxContainer *drives_container = nullptr;
-	OptionButton *drives = nullptr;
+	MenuButton *drives = nullptr;
+	int selected_drive = 0;
 	LineEdit *directory_edit = nullptr;
 	HBoxContainer *shortcuts_container = nullptr;
 

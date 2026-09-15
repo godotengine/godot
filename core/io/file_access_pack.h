@@ -32,6 +32,7 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_uid.h"
 #include "core/string/print_string.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
@@ -118,6 +119,15 @@ private:
 
 	void _free_packed_dirs(PackedDir *p_dir);
 	void _get_file_paths(PackedDir *p_dir, const String &p_parent_dir, HashSet<String> &r_paths) const;
+
+	_FORCE_INLINE_ PathMD5 _get_simplified_path(const String &p_path) {
+		String simplified_path = p_path;
+		if (simplified_path.begins_with("uid://")) {
+			simplified_path = ResourceUID::uid_to_path(simplified_path);
+		}
+		simplified_path = simplified_path.simplify_path().trim_prefix("res://");
+		return PathMD5(simplified_path.md5_buffer());
+	}
 
 public:
 	void add_pack_source(PackSource *p_source);
@@ -222,9 +232,7 @@ public:
 };
 
 int64_t PackedData::get_size(const String &p_path) {
-	String simplified_path = p_path.simplify_path();
-	PathMD5 pmd5(simplified_path.md5_buffer());
-	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
+	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(_get_simplified_path(p_path));
 	if (!E) {
 		return -1; // File not found.
 	}
@@ -235,9 +243,7 @@ int64_t PackedData::get_size(const String &p_path) {
 }
 
 Ref<FileAccess> PackedData::try_open_path(const String &p_path, const Vector<uint8_t> &p_decryption_key) {
-	String simplified_path = p_path.simplify_path().trim_prefix("res://");
-	PathMD5 pmd5(simplified_path.md5_buffer());
-	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
+	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(_get_simplified_path(p_path));
 	if (!E) {
 		return nullptr; // Not found.
 	}
@@ -246,7 +252,7 @@ Ref<FileAccess> PackedData::try_open_path(const String &p_path, const Vector<uin
 }
 
 bool PackedData::has_path(const String &p_path) {
-	return files.has(PathMD5(p_path.simplify_path().trim_prefix("res://").md5_buffer()));
+	return files.has(_get_simplified_path(p_path));
 }
 
 bool PackedData::has_directory(const String &p_path) {

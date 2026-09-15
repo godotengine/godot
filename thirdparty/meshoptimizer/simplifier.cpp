@@ -941,7 +941,7 @@ static void quadricFromAttributes(Quadric& Q, QuadricGrad* G, const Vector3& p0,
 
 		Q.c += w * (gw * gw);
 
-		// the only remaining sum components are ones that depend on attr; these will be addded during error evaluation, see quadricError
+		// the only remaining sum components are ones that depend on attr; these will be added during error evaluation, see quadricError
 		G[k].gx = w * gx;
 		G[k].gy = w * gy;
 		G[k].gz = w * gz;
@@ -1081,18 +1081,22 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, QuadricGrad* volume_gradi
 	}
 }
 
-static void fillVertexQuadrics(Quadric* vertex_quadrics, const Vector3* vertex_positions, size_t vertex_count, const unsigned int* remap, unsigned int options)
+static void fillVertexQuadrics(Quadric* vertex_quadrics, const Vector3* vertex_positions, size_t vertex_count, const unsigned int* remap, const unsigned char* vertex_lock, const unsigned int* sparse_remap, unsigned int options)
 {
 	// by default, we use a very small weight to improve triangulation and numerical stability without affecting the shape or error
-	float factor = (options & meshopt_SimplifyRegularize) ? 1e-1f : 1e-7f;
+	float factor = (options & meshopt_SimplifyRegularizeLight) ? 1e-2f : ((options & meshopt_SimplifyRegularize) ? 1e-1f : 1e-7f);
 
 	for (size_t i = 0; i < vertex_count; ++i)
 	{
 		if (remap[i] != i)
 			continue;
 
+		// increase regularization weight for vertices marked as priority; for now we only examine the primary vertex
+		unsigned int ri = sparse_remap ? sparse_remap[i] : unsigned(i);
+		bool priority = vertex_lock && (vertex_lock[ri] & meshopt_SimplifyVertex_Priority) != 0;
+
 		const Vector3& p = vertex_positions[i];
-		float w = vertex_quadrics[i].w * factor;
+		float w = vertex_quadrics[i].w * (priority ? 1.0f : factor);
 
 		Quadric Q;
 		quadricFromPoint(Q, p.x, p.y, p.z, w);
@@ -2346,7 +2350,6 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
 	assert(vertex_positions_stride % sizeof(float) == 0);
 	assert(target_index_count <= index_count);
 	assert(target_error >= 0);
-	assert((options & ~(meshopt_SimplifyLockBorder | meshopt_SimplifySparse | meshopt_SimplifyErrorAbsolute | meshopt_SimplifyPrune | meshopt_SimplifyRegularize | meshopt_SimplifyPermissive | meshopt_SimplifyInternalSolve | meshopt_SimplifyInternalDebug)) == 0);
 	assert(vertex_attributes_stride >= attribute_count * sizeof(float) && vertex_attributes_stride <= 256);
 	assert(vertex_attributes_stride % sizeof(float) == 0);
 	assert(attribute_count <= kMaxAttributes);
@@ -2440,7 +2443,7 @@ size_t meshopt_simplifyEdge(unsigned int* destination, const unsigned int* indic
 	}
 
 	fillFaceQuadrics(vertex_quadrics, volume_gradients, result, index_count, vertex_positions, remap);
-	fillVertexQuadrics(vertex_quadrics, vertex_positions, vertex_count, remap, options);
+	fillVertexQuadrics(vertex_quadrics, vertex_positions, vertex_count, remap, vertex_lock, sparse_remap, options);
 	fillEdgeQuadrics(vertex_quadrics, result, index_count, vertex_positions, remap, vertex_kind, loop, loopback);
 
 	if (attribute_count)
@@ -2649,6 +2652,7 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
 	assert(vertex_positions_stride % sizeof(float) == 0);
 	assert(target_index_count <= index_count);
+	assert(target_error >= 0);
 
 	// we expect to get ~2 triangles/vertex in the output
 	size_t target_cell_count = target_index_count / 6;
@@ -2847,7 +2851,7 @@ size_t meshopt_simplifyPoints(unsigned int* destination, const float* vertex_pos
 	size_t min_vertices = 0;
 	size_t max_vertices = vertex_count;
 
-	// instead of starting in the middle, let's guess as to what the answer might be! triangle count usually grows as a square of grid size...
+	// instead of starting in the middle, let's guess as to what the answer might be! surface point count usually grows as a square of grid size...
 	int next_grid_size = int(sqrtf(float(target_cell_count)) + 0.5f);
 
 	for (int pass = 0; pass < 10 + kInterpolationPasses; ++pass)

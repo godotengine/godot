@@ -300,7 +300,7 @@ public:
 		GROUP_CALL_UNIQUE = 4,
 	};
 
-	_FORCE_INLINE_ Window *get_root() const { return root; }
+	RequiredResult<Window> get_root() const;
 
 	void call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
@@ -409,7 +409,7 @@ public:
 
 	int get_node_count() const;
 
-	void queue_delete(RequiredParam<Object> rp_object);
+	void queue_delete(RequiredParam<Object> p_object);
 
 	Vector<Node *> get_nodes_in_group(const StringName &p_group);
 	Node *get_first_node_in_group(const StringName &p_group);
@@ -425,8 +425,8 @@ public:
 	void set_current_scene(Node *p_scene);
 	Node *get_current_scene() const;
 	Error change_scene_to_file(const String &p_path);
-	Error change_scene_to_packed(RequiredParam<PackedScene> rp_scene);
-	Error change_scene_to_node(RequiredParam<Node> rp_node);
+	Error change_scene_to_packed(RequiredParam<PackedScene> p_scene);
+	Error change_scene_to_node(RequiredParam<Node> p_node);
 	Error reload_current_scene();
 	void unload_current_scene();
 
@@ -446,7 +446,7 @@ public:
 
 	//network API
 
-	Ref<MultiplayerAPI> get_multiplayer(const NodePath &p_for_path = NodePath()) const;
+	RequiredResult<MultiplayerAPI> get_multiplayer(const NodePath &p_for_path = NodePath()) const;
 	void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePath &p_root_path = NodePath());
 	void set_multiplayer_poll_enabled(bool p_enabled);
 	bool is_multiplayer_poll_enabled() const;

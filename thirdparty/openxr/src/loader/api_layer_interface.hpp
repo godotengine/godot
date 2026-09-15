@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025 The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -37,10 +37,10 @@ class ApiLayerInterface {
                       PFN_xrCreateApiLayerInstance create_api_layer_instance);
     virtual ~ApiLayerInterface();
 
-    PFN_xrGetInstanceProcAddr GetInstanceProcAddrFuncPointer() { return _get_instance_proc_addr; }
-    PFN_xrCreateApiLayerInstance GetCreateApiLayerInstanceFuncPointer() { return _create_api_layer_instance; }
+    PFN_xrGetInstanceProcAddr GetInstanceProcAddrFuncPointer() const { return _get_instance_proc_addr; }
+    PFN_xrCreateApiLayerInstance GetCreateApiLayerInstanceFuncPointer() const { return _create_api_layer_instance; }
 
-    std::string LayerName() { return _layer_name; }
+    const std::string& LayerName() const { return _layer_name; }
 
     // Generated methods
     bool SupportsExtension(const std::string& extension_name) const;

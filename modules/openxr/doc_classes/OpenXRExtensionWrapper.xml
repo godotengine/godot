@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRExtensionWrapper" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRExtensionWrapper" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Allows implementing OpenXR extensions with GDExtension.
 	</brief_description>
@@ -14,6 +14,23 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_camera_offsets" qualifiers="virtual">
+			<return type="Transform3D[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<description>
+				Returns an array of offsets for each view rendered for the given camera, if this camera is handled by this extension. [param tracker_name] refers to the camera tracker for which we're retrieving this.
+			</description>
+		</method>
+		<method name="_get_camera_projections" qualifiers="virtual">
+			<return type="Projection[]" />
+			<param index="0" name="tracker_name" type="StringName" />
+			<param index="1" name="aspect" type="float" />
+			<param index="2" name="z_near" type="float" />
+			<param index="3" name="z_far" type="float" />
+			<description>
+				Returns an array of projections for each view rendered for the given camera, if this camera is handled by this extension. [param tracker_name] refers to the camera tracker for which we're retrieving this.
+			</description>
+		</method>
 		<method name="_get_composition_layer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
@@ -136,6 +153,7 @@
 		</method>
 		<method name="_on_register_metadata" qualifiers="virtual">
 			<return type="void" />
+			<param index="0" name="interaction_profile_metadata" type="OpenXRInteractionProfileMetadata" />
 			<description>
 				Allows extensions to register additional controller metadata. This function is called even when the OpenXR API is not constructed as the metadata needs to be available to the editor.
 				Extensions should also provide metadata regardless of whether they are supported on the host system. The controller data is used to setup action maps for users who may have access to the relevant hardware.
@@ -306,6 +324,24 @@
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
 				Add additional data structures when the OpenXR session is created.
+			</description>
+		</method>
+		<method name="_set_spatial_container_create_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="spatial_container" type="RID" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures when the spatial container is created.
+			</description>
+		</method>
+		<method name="_set_spatial_container_views_locate_info_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="spatial_container" type="RID" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures to [code]XrSpatialContainerViewsLocateInfoEXT[/code] for the spatial container specified by [param spatial_container].
+				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_frame_info_extension].
+				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
 			</description>
 		</method>
 		<method name="_set_swapchain_create_info_and_get_next_pointer" qualifiers="virtual">

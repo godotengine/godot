@@ -31,6 +31,7 @@
 #include "resource_importer_obj.h"
 
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
@@ -227,10 +228,16 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 	const int first_bytes = f->get_16();
 	static const Vector<int> coff_header_machines{
 		0x0, // IMAGE_FILE_MACHINE_UNKNOWN
-		0x8664, // IMAGE_FILE_MACHINE_AMD64
-		0x1c0, // IMAGE_FILE_MACHINE_ARM
-		0x14c, // IMAGE_FILE_MACHINE_I386
-		0x200, // IMAGE_FILE_MACHINE_IA64
+		0x8664, // IMAGE_FILE_MACHINE_AMD64 (x86_64)
+		0x1c0, // IMAGE_FILE_MACHINE_ARM (old arm32)
+		0x1c4, // IMAGE_FILE_MACHINE_ARMNT (new arm32)
+		0x14c, // IMAGE_FILE_MACHINE_I386 (x86_32)
+		0x200, // IMAGE_FILE_MACHINE_IA64 (Itanium)
+		0x5064, // IMAGE_FILE_MACHINE_RISCV64 (rv64)
+		0x5128, // IMAGE_FILE_MACHINE_RISCV128 (rv128)
+		0xa641, // IMAGE_FILE_MACHINE_ARM64EC (arm64ec)
+		0xa64e, // IMAGE_FILE_MACHINE_ARM64X (hybrid: both arm64 and arm64ec)
+		0xaa64, // IMAGE_FILE_MACHINE_ARM64 (arm64)
 	};
 	ERR_FAIL_COND_V_MSG(coff_header_machines.has(first_bytes), ERR_FILE_CORRUPT, vformat("Couldn't read OBJ file '%s', it seems to be binary, corrupted, or empty.", p_path));
 	f->seek(0);
@@ -291,6 +298,9 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				c.r = v[4].to_float();
 				c.g = v[5].to_float();
 				c.b = v[6].to_float();
+				if (v.size() >= 8) {
+					c.a = v[7].to_float();
+				}
 				colors.push_back(c);
 			} else if (!colors.is_empty()) {
 				colors.push_back(Color(1.0, 1.0, 1.0));
@@ -679,7 +689,6 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 		if (f.is_valid()) {
 			f->store_32(mesh_lightmap_caches.size());
 			for (int i = 0; i < mesh_lightmap_caches.size(); i++) {
-				String md5 = String::md5(mesh_lightmap_caches[i].ptr());
 				f->store_buffer(mesh_lightmap_caches[i].ptr(), mesh_lightmap_caches[i].size());
 			}
 		}

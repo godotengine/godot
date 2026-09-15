@@ -39,7 +39,7 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 
-#include "thirdparty/misc/r128.h"
+#include <thirdparty/misc/r128.h>
 
 class Delaunay3D {
 	struct Simplex;

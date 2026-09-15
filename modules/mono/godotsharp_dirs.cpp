@@ -31,16 +31,24 @@
 #include "godotsharp_dirs.h"
 
 #include "mono_gd/gd_mono.h"
-#include "utils/path_utils.h"
 
-#include "core/config/engine.h"
+#ifndef TOOLS_ENABLED
+#include "utils/path_utils.h"
+#endif
+
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
-#include "core/version.h"
 #include "editor/file_system/editor_paths.h"
+#endif
+
+#ifndef TOOLS_ENABLED
+#include "core/config/engine.h"
+#ifndef ANDROID_ENABLED
+#include "core/io/file_access.h"
+#endif
 #endif
 
 namespace GodotSharpDirs {
@@ -149,7 +157,9 @@ private:
 #endif
 
 		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
+#ifdef MACOS_ENABLED
 		String res_dir = OS::get_singleton()->get_bundle_resource_dir();
+#endif
 
 #ifdef TOOLS_ENABLED
 		String data_dir_root = exe_dir.path_join("GodotSharp");

@@ -30,6 +30,7 @@
 
 #include "post_import_plugin_skeleton_track_organizer.h"
 
+#include "core/io/resource_importer.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/bone_map.h"

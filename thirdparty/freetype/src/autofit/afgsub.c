@@ -4,7 +4,7 @@
  *
  *   Auto-fitter routines to parse the GSUB table (body).
  *
- * Copyright (C) 2025 by
+ * Copyright (C) 2025-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -15,14 +15,15 @@
  *
  */
 
-#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
-
 
 #include <freetype/freetype.h>
 #include <freetype/tttables.h>
 #include <freetype/tttags.h>
 
 #include <freetype/internal/ftstream.h>
+
+
+#ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
 
 #include "afglobal.h"
 #include "afgsub.h"
@@ -363,11 +364,13 @@
     }
 
     globals->gsub                          = gsub;
+    globals->gsub_lookup_count             = lookupCount;
     globals->gsub_lookups_single_alternate = gsub_lookups_single_alternate;
 
     return;
 
   Fail:
+    globals->gsub_lookup_count = 0;
     FT_FREE( gsub );
     FT_FREE( gsub_lookups_single_alternate );
   }

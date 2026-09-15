@@ -1,7 +1,7 @@
 /* zlib.h -- interface of the 'zlib' general purpose compression library
-  version 1.3.1.2, December 8th, 2025
+  version 1.3.2, February 17th, 2026
 
-  Copyright (C) 1995-2025 Jean-loup Gailly and Mark Adler
+  Copyright (C) 1995-2026 Jean-loup Gailly and Mark Adler
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,12 +41,12 @@
 extern "C" {
 #endif
 
-#define ZLIB_VERSION "1.3.1.2-audit"
-#define ZLIB_VERNUM 0x1312
+#define ZLIB_VERSION "1.3.2"
+#define ZLIB_VERNUM 0x1320
 #define ZLIB_VER_MAJOR 1
 #define ZLIB_VER_MINOR 3
-#define ZLIB_VER_REVISION 1
-#define ZLIB_VER_SUBREVISION 2
+#define ZLIB_VER_REVISION 2
+#define ZLIB_VER_SUBREVISION 0
 
 /*
     The 'zlib' compression library provides in-memory compression and
@@ -765,8 +765,8 @@ ZEXTERN int ZEXPORT deflateTune(z_streamp strm,
    returns Z_OK on success, or Z_STREAM_ERROR for an invalid deflate stream.
  */
 
-ZEXTERN uLong ZEXPORT deflateBound(z_streamp strm,
-                                   uLong sourceLen);
+ZEXTERN uLong ZEXPORT deflateBound(z_streamp strm, uLong sourceLen);
+ZEXTERN z_size_t ZEXPORT deflateBound_z(z_streamp strm, z_size_t sourceLen);
 /*
      deflateBound() returns an upper bound on the compressed size after
    deflation of sourceLen bytes.  It must be called after deflateInit() or
@@ -778,6 +778,9 @@ ZEXTERN uLong ZEXPORT deflateBound(z_streamp strm,
    to return Z_STREAM_END.  Note that it is possible for the compressed size to
    be larger than the value returned by deflateBound() if flush options other
    than Z_FINISH or Z_NO_FLUSH are used.
+
+     delfateBound_z() is the same, but takes and returns a size_t length.  Note
+   that a long is 32 bits on Windows.
 */
 
 ZEXTERN int ZEXPORT deflatePending(z_streamp strm,
@@ -792,7 +795,10 @@ ZEXTERN int ZEXPORT deflatePending(z_streamp strm,
    or bits are Z_NULL, then those values are not set.
 
      deflatePending returns Z_OK if success, or Z_STREAM_ERROR if the source
-   stream state was inconsistent.
+   stream state was inconsistent.  If an int is 16 bits and memLevel is 9, then
+   it is possible for the number of pending bytes to not fit in an unsigned. In
+   that case Z_BUF_ERROR is returned and *pending is set to the maximum value
+   of an unsigned.
  */
 
 ZEXTERN int ZEXPORT deflateUsed(z_streamp strm,
@@ -1239,13 +1245,14 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags(void);
      21: FASTEST -- deflate algorithm with only one, lowest compression level
      22,23: 0 (reserved)
 
-    The sprintf variant used by gzprintf (zero is best):
+    The sprintf variant used by gzprintf (all zeros is best):
      24: 0 = vs*, 1 = s* -- 1 means limited to 20 arguments after the format
-     25: 0 = *nprintf, 1 = *printf -- 1 means gzprintf() not secure!
+     25: 0 = *nprintf, 1 = *printf -- 1 means gzprintf() is not secure!
      26: 0 = returns value, 1 = void -- 1 means inferred string length returned
+     27: 0 = gzprintf() present, 1 = not -- 1 means gzprintf() returns an error
 
     Remainder:
-     27-31: 0 (reserved)
+     28-31: 0 (reserved)
  */
 
 #ifndef Z_SOLO
@@ -1257,11 +1264,14 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags(void);
    stream-oriented functions.  To simplify the interface, some default options
    are assumed (compression level and memory usage, standard memory allocation
    functions).  The source code of these utility functions can be modified if
-   you need special options.
+   you need special options.  The _z versions of the functions use the size_t
+   type for lengths.  Note that a long is 32 bits on Windows.
 */
 
-ZEXTERN int ZEXPORT compress(Bytef *dest,   uLongf *destLen,
+ZEXTERN int ZEXPORT compress(Bytef *dest, uLongf *destLen,
                              const Bytef *source, uLong sourceLen);
+ZEXTERN int ZEXPORT compress_z(Bytef *dest, z_size_t *destLen,
+                               const Bytef *source, z_size_t sourceLen);
 /*
      Compresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1275,9 +1285,12 @@ ZEXTERN int ZEXPORT compress(Bytef *dest,   uLongf *destLen,
    buffer.
 */
 
-ZEXTERN int ZEXPORT compress2(Bytef *dest,   uLongf *destLen,
+ZEXTERN int ZEXPORT compress2(Bytef *dest, uLongf *destLen,
                               const Bytef *source, uLong sourceLen,
                               int level);
+ZEXTERN int ZEXPORT compress2_z(Bytef *dest, z_size_t *destLen,
+                                const Bytef *source, z_size_t sourceLen,
+                                int level);
 /*
      Compresses the source buffer into the destination buffer.  The level
    parameter has the same meaning as in deflateInit.  sourceLen is the byte
@@ -1292,21 +1305,24 @@ ZEXTERN int ZEXPORT compress2(Bytef *dest,   uLongf *destLen,
 */
 
 ZEXTERN uLong ZEXPORT compressBound(uLong sourceLen);
+ZEXTERN z_size_t ZEXPORT compressBound_z(z_size_t sourceLen);
 /*
      compressBound() returns an upper bound on the compressed size after
    compress() or compress2() on sourceLen bytes.  It would be used before a
    compress() or compress2() call to allocate the destination buffer.
 */
 
-ZEXTERN int ZEXPORT uncompress(Bytef *dest,   uLongf *destLen,
+ZEXTERN int ZEXPORT uncompress(Bytef *dest, uLongf *destLen,
                                const Bytef *source, uLong sourceLen);
+ZEXTERN int ZEXPORT uncompress_z(Bytef *dest, z_size_t *destLen,
+                                 const Bytef *source, z_size_t sourceLen);
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
-   the byte length of the source buffer.  Upon entry, destLen is the total size
+   the byte length of the source buffer.  On entry, *destLen is the total size
    of the destination buffer, which must be large enough to hold the entire
    uncompressed data.  (The size of the uncompressed data must have been saved
    previously by the compressor and transmitted to the decompressor by some
-   mechanism outside the scope of this compression library.) Upon exit, destLen
+   mechanism outside the scope of this compression library.)  On exit, *destLen
    is the actual size of the uncompressed data.
 
      uncompress returns Z_OK if success, Z_MEM_ERROR if there was not
@@ -1316,8 +1332,10 @@ ZEXTERN int ZEXPORT uncompress(Bytef *dest,   uLongf *destLen,
    buffer with the uncompressed data up to that point.
 */
 
-ZEXTERN int ZEXPORT uncompress2(Bytef *dest,   uLongf *destLen,
+ZEXTERN int ZEXPORT uncompress2(Bytef *dest, uLongf *destLen,
                                 const Bytef *source, uLong *sourceLen);
+ZEXTERN int ZEXPORT uncompress2_z(Bytef *dest, z_size_t *destLen,
+                                  const Bytef *source, z_size_t *sourceLen);
 /*
      Same as uncompress, except that sourceLen is a pointer, where the
    length of the source is *sourceLen.  On return, *sourceLen is the number of
@@ -1527,7 +1545,11 @@ ZEXTERN z_size_t ZEXPORT gzfwrite(voidpc buf, z_size_t size,
    gzwrite() instead.
 */
 
+#if defined(STDC) || defined(Z_HAVE_STDARG_H)
 ZEXTERN int ZEXPORTVA gzprintf(gzFile file, const char *format, ...);
+#else
+ZEXTERN int ZEXPORTVA gzprintf();
+#endif
 /*
      Convert, format, compress, and write the arguments (...) to file under
    control of the string format, as in fprintf.  gzprintf returns the number of
@@ -1535,11 +1557,16 @@ ZEXTERN int ZEXPORTVA gzprintf(gzFile file, const char *format, ...);
    of error.  The number of uncompressed bytes written is limited to 8191, or
    one less than the buffer size given to gzbuffer().  The caller should assure
    that this limit is not exceeded.  If it is exceeded, then gzprintf() will
-   return an error (0) with nothing written.  In this case, there may also be a
-   buffer overflow with unpredictable consequences, which is possible only if
-   zlib was compiled with the insecure functions sprintf() or vsprintf(),
-   because the secure snprintf() or vsnprintf() functions were not available.
-   This can be determined using zlibCompileFlags().
+   return an error (0) with nothing written.
+
+     In that last case, there may also be a buffer overflow with unpredictable
+   consequences, which is possible only if zlib was compiled with the insecure
+   functions sprintf() or vsprintf(), because the secure snprintf() and
+   vsnprintf() functions were not available. That would only be the case for
+   a non-ANSI C compiler. zlib may have been built without gzprintf() because
+   secure functions were not available and having gzprintf() be insecure was
+   not an option, in which case, gzprintf() returns Z_STREAM_ERROR. All of
+   these possibilities can be determined using zlibCompileFlags().
 
      If a Z_BUF_ERROR is returned, then nothing was written due to a stall on
    the non-blocking write destination.
@@ -1802,7 +1829,8 @@ ZEXTERN uLong ZEXPORT adler32(uLong adler, const Bytef *buf, uInt len);
 ZEXTERN uLong ZEXPORT adler32_z(uLong adler, const Bytef *buf,
                                 z_size_t len);
 /*
-     Same as adler32(), but with a size_t length.
+     Same as adler32(), but with a size_t length.  Note that a long is 32 bits
+   on Windows.
 */
 
 /*
@@ -1838,7 +1866,8 @@ ZEXTERN uLong ZEXPORT crc32(uLong crc, const Bytef *buf, uInt len);
 ZEXTERN uLong ZEXPORT crc32_z(uLong crc, const Bytef *buf,
                               z_size_t len);
 /*
-     Same as crc32(), but with a size_t length.
+     Same as crc32(), but with a size_t length.  Note that a long is 32 bits on
+   Windows.
 */
 
 /*
@@ -1848,14 +1877,14 @@ ZEXTERN uLong ZEXPORT crc32_combine(uLong crc1, uLong crc2, z_off_t len2);
    seq1 and seq2 with lengths len1 and len2, CRC-32 check values were
    calculated for each, crc1 and crc2.  crc32_combine() returns the CRC-32
    check value of seq1 and seq2 concatenated, requiring only crc1, crc2, and
-   len2. len2 must be non-negative.
+   len2. len2 must be non-negative, otherwise zero is returned.
 */
 
 /*
 ZEXTERN uLong ZEXPORT crc32_combine_gen(z_off_t len2);
 
      Return the operator corresponding to length len2, to be used with
-   crc32_combine_op(). len2 must be non-negative.
+   crc32_combine_op(). len2 must be non-negative, otherwise zero is returned.
 */
 
 ZEXTERN uLong ZEXPORT crc32_combine_op(uLong crc1, uLong crc2, uLong op);

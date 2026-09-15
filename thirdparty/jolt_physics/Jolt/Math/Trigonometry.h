@@ -58,7 +58,7 @@ JPH_INLINE float ACosApproximate(float inX)
 	// So we observe that the form of the Taylor expansion is f(x) = sqrt(1 - x) * (a + b x) and we fit the function so that f(0) = pi / 2
 	// this gives us a = pi / 2. f(1) = 0 regardless of b. We search for a constant b that minimizes the error in the range [0, 1].
 	float abs_x = min(abs(inX), 1.0f); // Ensure that we don't get a value larger than 1
-	float val = sqrt(1.0f - abs_x) * (JPH_PI / 2 - 0.175394f * abs_x);
+	float val = Sqrt(1.0f - abs_x) * (JPH_PI / 2 - 0.175394f * abs_x);
 
 	// Our approximation is valid in the range [0, 1], extend it to the range [-1, 1]
 	return inX < 0? JPH_PI - val : val;

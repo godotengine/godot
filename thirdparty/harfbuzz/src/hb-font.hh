@@ -158,12 +158,12 @@ struct hb_font_t
   /* Convert from font-space to user-space */
   int64_t dir_mult (hb_direction_t direction)
   { return HB_DIRECTION_IS_VERTICAL(direction) ? y_mult : x_mult; }
-  hb_position_t em_scale_x (int16_t v) { return em_mult (v, x_mult); }
-  hb_position_t em_scale_y (int16_t v) { return em_mult (v, y_mult); }
+  hb_position_t em_scale_x (int32_t v) { return em_mult (v, x_mult); }
+  hb_position_t em_scale_y (int32_t v) { return em_mult (v, y_mult); }
   hb_position_t em_scalef_x (float v) { return em_multf (v, x_multf); }
   hb_position_t em_scalef_y (float v) { return em_multf (v, y_multf); }
-  float em_fscale_x (int16_t v) { return em_fmult (v, x_multf); }
-  float em_fscale_y (int16_t v) { return em_fmult (v, y_multf); }
+  float em_fscale_x (int32_t v) { return em_fmult (v, x_multf); }
+  float em_fscale_y (int32_t v) { return em_fmult (v, y_multf); }
   float em_fscalef_x (float v) { return em_fmultf (v, x_multf); }
   float em_fscalef_y (float v) { return em_fmultf (v, y_multf); }
   hb_position_t em_scale_dir (int16_t v, hb_direction_t direction)
@@ -172,13 +172,13 @@ struct hb_font_t
   /* Convert from parent-font user-space to our user-space */
   hb_position_t parent_scale_x_distance (hb_position_t v)
   {
-    if (unlikely (parent && parent->x_scale != x_scale))
+    if (unlikely (parent && parent->x_scale && parent->x_scale != x_scale))
       return (hb_position_t) (v * (int64_t) this->x_scale / this->parent->x_scale);
     return v;
   }
   hb_position_t parent_scale_y_distance (hb_position_t v)
   {
-    if (unlikely (parent && parent->y_scale != y_scale))
+    if (unlikely (parent && parent->y_scale && parent->y_scale != y_scale))
       return (hb_position_t) (v * (int64_t) this->y_scale / this->parent->y_scale);
     return v;
   }
@@ -200,15 +200,15 @@ struct hb_font_t
 
   void scale_glyph_extents (hb_glyph_extents_t *extents)
   {
-    float x1 = em_scale_x (extents->x_bearing);
-    float y1 = em_scale_y (extents->y_bearing);
-    float x2 = em_scale_x (extents->x_bearing + extents->width);
-    float y2 = em_scale_y (extents->y_bearing + extents->height);
+    float x1 = em_fscale_x (extents->x_bearing);
+    float y1 = em_fscale_y (extents->y_bearing);
+    float x2 = em_fscale_x (extents->x_bearing + extents->width);
+    float y2 = em_fscale_y (extents->y_bearing + extents->height);
 
-    extents->x_bearing = roundf (x1);
-    extents->y_bearing = roundf (y1);
-    extents->width = roundf (x2) - extents->x_bearing;
-    extents->height = roundf (y2) - extents->y_bearing;
+    extents->x_bearing = floorf (x1);
+    extents->y_bearing = floorf (y1);
+    extents->width = ceilf (x2) - extents->x_bearing;
+    extents->height = ceilf (y2) - extents->y_bearing;
   }
 
   void synthetic_glyph_extents (hb_glyph_extents_t *extents)
@@ -903,15 +903,11 @@ struct hb_font_t
 	}
 	else
 	{
-	  for (unsigned j = 0; j < n; j++)
-	  {
-	    origins[j].x = 0;
-	    origins[j].y = 0;
-	  }
+	  mult = 0; /* Indicates all origins[].x and origins[].y values are 0, therefore we can skip adjusting offsets below */
 	}
       }
 
-      assert (mult == -1 || mult == +1);
+      assert (mult == -1 || mult == +1 || mult == 0);
       if (mult == +1)
         for (unsigned j = 0; j < n; j++)
 	{
@@ -919,13 +915,14 @@ struct hb_font_t
 	  add_offset (&pos->x_offset, &pos->y_offset,
 		      origins[j].x, origins[j].y);
 	}
-      else /* mult == -1 */
+      else if (mult == -1)
 	for (unsigned j = 0; j < n; j++)
 	{
 	  hb_glyph_position_t *pos = &buf->pos[offset + j];
 	  subtract_offset (&pos->x_offset, &pos->y_offset,
 			   origins[j].x, origins[j].y);
 	}
+      /* else if (mult == 0) --> Do nothing */
 
       offset += n;
     }
@@ -970,15 +967,11 @@ struct hb_font_t
 	}
 	else
 	{
-	  for (unsigned j = 0; j < n; j++)
-	  {
-	    origins[j].x = 0;
-	    origins[j].y = 0;
-	  }
+	  mult = 0; /* Indicates all origins[].x and origins[].y values are 0, therefore we can skip adjusting offsets below */
 	}
       }
 
-      assert (mult == -1 || mult == +1);
+      assert (mult == -1 || mult == +1 || mult == 0);
       if (mult == +1)
         for (unsigned j = 0; j < n; j++)
 	{
@@ -986,13 +979,14 @@ struct hb_font_t
 	  add_offset (&pos->x_offset, &pos->y_offset,
 		      origins[j].x, origins[j].y);
 	}
-      else /* mult == -1 */
+      else if (mult == -1)
 	for (unsigned j = 0; j < n; j++)
 	{
 	  hb_glyph_position_t *pos = &buf->pos[offset + j];
 	  subtract_offset (&pos->x_offset, &pos->y_offset,
 			   origins[j].x, origins[j].y);
 	}
+      /* else if (mult == 0) --> Do nothing */
 
       offset += n;
     }
@@ -1150,10 +1144,8 @@ struct hb_font_t
 
     x_multf = x_scale / upem;
     y_multf = y_scale / upem;
-    bool x_neg = x_scale < 0;
-    x_mult = (x_neg ? -((int64_t) -x_scale << 16) : ((int64_t) x_scale << 16)) / upem;
-    bool y_neg = y_scale < 0;
-    y_mult = (y_neg ? -((int64_t) -y_scale << 16) : ((int64_t) y_scale << 16)) / upem;
+    x_mult = (int64_t) x_scale * 0x10000 / upem;
+    y_mult = (int64_t) y_scale * 0x10000 / upem;
 
     is_synthetic =  x_embolden || y_embolden || slant;
 
@@ -1167,13 +1159,13 @@ struct hb_font_t
     serial++;
   }
 
-  hb_position_t em_mult (int16_t v, int64_t mult)
+  hb_position_t em_mult (int32_t v, int64_t mult)
   { return (hb_position_t) ((v * mult + 32768) >> 16); }
   hb_position_t em_multf (float v, float mult)
   { return (hb_position_t) roundf (em_fmultf (v, mult)); }
   float em_fmultf (float v, float mult)
   { return v * mult; }
-  float em_fmult (int16_t v, float mult)
+  float em_fmult (int32_t v, float mult)
   { return (float) v * mult; }
 };
 DECLARE_NULL_INSTANCE (hb_font_t);

@@ -33,7 +33,6 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
-#include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/variant/array.h"
 

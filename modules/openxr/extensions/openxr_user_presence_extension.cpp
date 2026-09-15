@@ -31,6 +31,7 @@
 #include "openxr_user_presence_extension.h"
 
 #include "../openxr_interface.h"
+
 #include "core/config/project_settings.h"
 
 OpenXRUserPresenceExtension *OpenXRUserPresenceExtension::singleton = nullptr;

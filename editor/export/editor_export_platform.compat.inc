@@ -38,7 +38,12 @@ Vector<String> EditorExportPlatform::_get_forced_export_files_bind_compat_71542(
 	return get_forced_export_files(Ref<EditorExportPreset>());
 }
 
+Error EditorExportPlatform::_export_project_bind_compat_118787(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+	return export_project(p_preset, p_debug, p_path, p_flags, true);
+}
+
 void EditorExportPlatform::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("export_project", "preset", "debug", "path", "flags"), &EditorExportPlatform::_export_project_bind_compat_118787, DEFVAL(0));
 	ClassDB::bind_compatibility_static_method("EditorExportPlatform", D_METHOD("get_forced_export_files"), &EditorExportPlatform::_get_forced_export_files_bind_compat_71542);
 }
 

@@ -140,6 +140,47 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			r_translations->push_back({ tooltip_text });
 		}
 
+		// Handle the `format` property of SpinBox.
+		{
+			String format_text;
+			String plural_format_text;
+			bool format_auto_translating = false;
+			int found = 0;
+
+			for (int j = 0; j < state->get_node_property_count(i); j++) {
+				if (found == 3) {
+					break;
+				}
+				const StringName property = state->get_node_property_name(i, j);
+				if (property == SNAME("format")) {
+					format_text = state->get_node_property_value(i, j);
+					found++;
+					continue;
+				}
+				if (property == SNAME("plural_format")) {
+					plural_format_text = state->get_node_property_value(i, j);
+					found++;
+					continue;
+				}
+				if (property == SNAME("format_auto_translate_mode")) {
+					int mode = state->get_node_property_value(i, j);
+					switch (mode) {
+						case Node::AUTO_TRANSLATE_MODE_ALWAYS: {
+							format_auto_translating = true;
+						} break;
+						case Node::AUTO_TRANSLATE_MODE_INHERIT: {
+							format_auto_translating = auto_translating;
+						} break;
+					}
+					found++;
+					continue;
+				}
+			}
+			if (format_auto_translating && !format_text.is_empty()) {
+				r_translations->push_back(PackedStringArray{ format_text, String(), plural_format_text });
+			}
+		}
+
 		// Parse the names of children of `TabContainer`s, as they are used for tab titles.
 		if (!tabcontainer_paths.is_empty()) {
 			if (!parent_path.begins_with(tabcontainer_paths[tabcontainer_paths.size() - 1])) {
@@ -154,6 +195,19 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		}
 		if (!auto_translating) {
 			continue;
+		}
+
+		// Handle translation context
+		String translation_context;
+		if (ClassDB::is_parent_class(node_type, "Control")) {
+			for (int j = 0; j < state->get_node_property_count(i); j++) {
+				String property_name = state->get_node_property_name(i, j);
+
+				if (property_name == "translation_context") {
+					translation_context = String(state->get_node_property_value(i, j));
+					break;
+				}
+			}
 		}
 
 		if (node_type == "TabContainer") {
@@ -192,7 +246,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 				String str_value = String(property_value);
 				// Prevent reading text containing only spaces.
 				if (!str_value.strip_edges().is_empty()) {
-					r_translations->push_back({ str_value });
+					r_translations->push_back({ str_value, translation_context });
 				}
 			}
 		}

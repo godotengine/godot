@@ -32,12 +32,6 @@
 
 #include "accessibility_server_accesskit.h"
 
-#ifdef ACCESSKIT_DYNAMIC
-#include "core/config/engine.h"
-#include "core/io/file_access.h"
-#include "core/os/os.h"
-#endif
-
 #include "servers/text/text_server.h"
 
 _FORCE_INLINE_ accesskit_role AccessibilityServerAccessKit::_accessibility_role(AccessibilityServerEnums::AccessibilityRole p_role) const {
@@ -714,8 +708,8 @@ _FORCE_INLINE_ void AccessibilityServerAccessKit::_ensure_node(const RID &p_id, 
 
 		// Re-apply stored name if any, so nodes recreated by _ensure_node
 		// retain their label even if the caller doesn't re-set all properties.
-		if (!p_ae->name.is_empty() || !p_ae->name_extra_info.is_empty()) {
-			String full_name = p_ae->name + " " + p_ae->name_extra_info;
+		String full_name = (p_ae->name + " " + p_ae->name_extra_info).strip_edges();
+		if (!full_name.is_empty()) {
 			accesskit_node_set_label(p_ae->node, full_name.utf8().ptr());
 		}
 	}
@@ -770,7 +764,7 @@ void AccessibilityServerAccessKit::update_set_name(const RID &p_id, const String
 	_ensure_node(p_id, ae);
 
 	ae->name = p_name;
-	String full_name = ae->name + " " + ae->name_extra_info;
+	String full_name = (ae->name + " " + ae->name_extra_info).strip_edges();
 	if (!full_name.is_empty()) {
 		accesskit_node_set_label(ae->node, full_name.utf8().ptr());
 	} else {
@@ -814,7 +808,7 @@ void AccessibilityServerAccessKit::update_set_extra_info(const RID &p_id, const 
 	_ensure_node(p_id, ae);
 
 	ae->name_extra_info = p_name_extra_info;
-	String full_name = ae->name + " " + ae->name_extra_info;
+	String full_name = (ae->name + " " + ae->name_extra_info).strip_edges();
 	if (!full_name.is_empty()) {
 		accesskit_node_set_label(ae->node, full_name.utf8().ptr());
 	} else {
@@ -1707,64 +1701,6 @@ void AccessibilityServerAccessKit::update_set_foreground_color(const RID &p_id, 
 }
 
 AccessibilityServer *AccessibilityServerAccessKit::create_func(Error &r_error) {
-#ifdef ACCESSKIT_DYNAMIC
-#ifdef DEBUG_ENABLED
-	int dylibloader_verbose = 1;
-#else
-	int dylibloader_verbose = 0;
-#endif
-	void *library_handle = nullptr;
-	String path;
-	String arch = Engine::get_singleton()->get_architecture_name();
-#ifdef LINUXBSD_ENABLED
-	path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libaccesskit." + arch + ".so");
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../lib").path_join("libaccesskit." + arch + ".so");
-	}
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libaccesskit.so");
-	}
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../lib").path_join("libaccesskit.so");
-	}
-	if (!FileAccess::exists(path)) {
-		r_error = ERR_CANT_CREATE;
-		return nullptr;
-	}
-#endif
-#ifdef MACOS_ENABLED
-	path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libaccesskit." + arch + ".dylib");
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../Frameworks").path_join("libaccesskit." + arch + ".dylib");
-	}
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libaccesskit.dylib");
-	}
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../Frameworks").path_join("libaccesskit.dylib");
-	}
-	if (!FileAccess::exists(path)) {
-		r_error = ERR_CANT_CREATE;
-		return nullptr;
-	}
-#endif
-#ifdef WINDOWS_ENABLED
-	path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("accesskit." + arch + ".dll");
-	if (!FileAccess::exists(path)) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("accesskit.dll");
-	}
-	if (!FileAccess::exists(path)) {
-		r_error = ERR_CANT_CREATE;
-		return nullptr;
-	}
-#endif
-
-	Error err = OS::get_singleton()->open_dynamic_library(path, library_handle);
-	if (err != OK || initialize_libaccesskit(dylibloader_verbose, library_handle) != 0) {
-		r_error = ERR_CANT_CREATE;
-		return nullptr;
-	}
-#endif
 	print_verbose("Accessibility: AccessKit driver loaded.");
 	r_error = OK;
 	return memnew(AccessibilityServerAccessKit);

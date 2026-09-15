@@ -30,12 +30,10 @@
 
 #pragma once
 
-#include "gdscript_language_protocol.h"
-
 #include "editor/plugins/editor_plugin.h"
 
 class GDScriptLanguageServer : public EditorPlugin {
-	GDCLASS(GDScriptLanguageServer, EditorPlugin);
+	GDSOFTCLASS(GDScriptLanguageServer, EditorPlugin);
 
 	Thread thread;
 	bool thread_running = false;

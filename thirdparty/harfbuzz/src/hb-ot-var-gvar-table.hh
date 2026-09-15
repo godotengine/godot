@@ -150,6 +150,9 @@ struct glyph_variations_t
       contour_point_vector_t *all_points;
       if (!plan->new_gid_contour_points_map.has (new_gid, &all_points))
         return false;
+      /* avar2 partial instancing: cull unreachable tuples. */
+      if (plan->has_avar2 && plan->avar2_reachable_ranges.get_population ())
+	glyph_variations[i].cull_unreachable (plan->avar2_reachable_ranges);
       if (!glyph_variations[i].instantiate (plan->axes_location, plan->axes_triple_distances, scratch, &pool, all_points, iup_optimize))
         return false;
     }
@@ -444,22 +447,55 @@ struct gvar_GVAR
     unsigned int num_glyphs = c->plan->num_output_glyphs ();
     out->glyphCountX = hb_min (0xFFFFu, num_glyphs);
 
+    /* avar2 partial instancing: cull tuple variations whose region falls
+     * outside the reachable old-space final-coord ranges. Rewritten glyph
+     * data is cached per new gid; untouched glyphs are copied verbatim. */
+    hb_vector_t<hb_vector_t<char>> culled_vars;
+    hb_set_t culled_gids;
+    if (c->plan->has_avar2 && c->plan->avar2_reachable_ranges.get_population ())
+    {
+      hb_array_t<const F2DOT14> shared_tuples_array =
+	  (this+sharedTuples).as_array ((unsigned) sharedTupleCount * (unsigned) axisCount);
+      if (unlikely (!culled_vars.resize (num_glyphs))) return_trace (false);
+      auto cull_it = hb_iter (c->plan->new_to_old_gid_list);
+      if (cull_it->first == 0 && !(c->plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
+	cull_it++;
+      for (auto &_ : cull_it)
+      {
+	hb_bytes_t var_data_bytes = get_glyph_var_data_bytes (c->source_blob, glyph_count, _.second);
+	if (var_data_bytes.length < GlyphVariationData::min_size) continue;
+	bool changed = false;
+	if (unlikely (!var_data_bytes.as<GlyphVariationData> ()
+		      ->cull_tuple_variations (var_data_bytes, axisCount,
+					       shared_tuples_array,
+					       &c->plan->axes_old_index_tag_map,
+					       c->plan->avar2_reachable_ranges,
+					       culled_vars[_.first], &changed)))
+	  return_trace (false);
+	if (changed) culled_gids.add (_.first);
+      }
+      if (unlikely (culled_gids.in_error ())) return_trace (false);
+    }
+
     auto it = hb_iter (c->plan->new_to_old_gid_list);
     if (it->first == 0 && !(c->plan->flags & HB_SUBSET_FLAGS_NOTDEF_OUTLINE))
       it++;
-    unsigned int subset_data_size = 0;
+    unsigned subset_data_size = 0;
     unsigned padding_size = 0;
     for (auto &_ : it)
     {
       hb_codepoint_t old_gid = _.second;
-      unsigned glyph_data_size = get_glyph_var_data_bytes (c->source_blob, glyph_count, old_gid).length;
+      unsigned glyph_data_size = culled_gids.has (_.first)
+				 ? culled_vars[_.first].length
+				 : get_glyph_var_data_bytes (c->source_blob, glyph_count, old_gid).length;
       if (glyph_data_size % 2)
       {
         glyph_data_size++;
         padding_size++;
       }
 
-      subset_data_size += glyph_data_size;
+      if (unlikely (hb_unsigned_add_overflows (subset_data_size, glyph_data_size, &subset_data_size)))
+	return_trace (false);
     }
 
     /* According to the spec: If the short format (Offset16) is used for offsets,
@@ -523,9 +559,12 @@ struct gvar_GVAR
 	for (; last < gid; last++)
 	  ((HBUINT16 *) subset_offsets)[last] = glyph_offset / 2;
 
-      hb_bytes_t var_data_bytes = get_glyph_var_data_bytes (c->source_blob,
-							    glyph_count,
-							    old_gid);
+      hb_bytes_t var_data_bytes = culled_gids.has (gid)
+				  ? hb_bytes_t (culled_vars[gid].arrayZ,
+						culled_vars[gid].length)
+				  : get_glyph_var_data_bytes (c->source_blob,
+							      glyph_count,
+							      old_gid);
 
       hb_memcpy (subset_data, var_data_bytes.arrayZ, var_data_bytes.length);
       unsigned glyph_data_size = var_data_bytes.length;
@@ -588,7 +627,8 @@ struct gvar_GVAR
 
     hb_scalar_cache_t *create_cache () const
     {
-      return hb_scalar_cache_t::create (table->sharedTupleCount);
+      return hb_scalar_cache_t::create (hb_min ((unsigned) table->sharedTupleCount,
+						+TupleVariationHeader::max_shared_tuple_count));
     }
 
     static void destroy_cache (hb_scalar_cache_t *cache)
@@ -634,6 +674,83 @@ struct gvar_GVAR
     static unsigned int next_index (unsigned int i, unsigned int start, unsigned int end)
     { return (i >= end) ? start : (i + 1); }
 
+#ifndef HB_OPTIMIZE_SIZE
+    template <bool is_x>
+#endif
+    static bool decompile_deltas_add_to_points (const HBUINT8 *&p /* IN/OUT */,
+						hb_array_t<contour_point_t> points,
+						float scalar,
+						const HBUINT8 *end,
+						unsigned start
+#ifdef HB_OPTIMIZE_SIZE
+						, bool is_x
+#endif
+						)
+    {
+      unsigned i = 0;
+      unsigned count = points.length;
+      while (i < count)
+      {
+	if (unlikely (p + 1 > end)) return false;
+	unsigned control = *p++;
+	unsigned run_count = (control & TupleValues::VALUE_RUN_COUNT_MASK) + 1;
+	unsigned stop = i + run_count;
+	if (unlikely (stop > count)) return false;
+
+	unsigned skip = i < start ? hb_min (start - i, run_count) : 0;
+	i += skip;
+
+	switch (control & TupleValues::VALUES_SIZE_MASK)
+	{
+	  case TupleValues::VALUES_ARE_ZEROS:
+	    i = stop;
+	    break;
+	  case TupleValues::VALUES_ARE_WORDS:
+	  {
+	    if (unlikely (p + run_count * HBINT16::static_size > end)) return false;
+	    p += skip * HBINT16::static_size;
+	    const auto *pp = (const HBINT16 *) p;
+	    for (; i < stop; i++)
+	    {
+	      float v = *pp++ * scalar;
+	      if (is_x) points.arrayZ[i].x += v;
+	      else points.arrayZ[i].y += v;
+	    }
+	    p = (const HBUINT8 *) pp;
+	  }
+	  break;
+	  case TupleValues::VALUES_ARE_LONGS:
+	  {
+	    if (unlikely (p + run_count * HBINT32::static_size > end)) return false;
+	    p += skip * HBINT32::static_size;
+	    const auto *pp = (const HBINT32 *) p;
+	    for (; i < stop; i++)
+	    {
+	      float v = *pp++ * scalar;
+	      if (is_x) points.arrayZ[i].x += v;
+	      else points.arrayZ[i].y += v;
+	    }
+	    p = (const HBUINT8 *) pp;
+	  }
+	  break;
+	  case TupleValues::VALUES_ARE_BYTES:
+	  {
+	    if (unlikely (p + run_count > end)) return false;
+	    p += skip * HBINT8::static_size;
+	    const auto *pp = (const HBINT8 *) p;
+	    for (; i < stop; i++)
+	    {
+	      float v = *pp++ * scalar;
+	      if (is_x) points.arrayZ[i].x += v;
+	      else points.arrayZ[i].y += v;
+	    }
+	    p = (const HBUINT8 *) pp;
+	  }
+	  break;
+	}
+      }
+      return true;
+    }
     public:
     bool apply_deltas_to_points (hb_codepoint_t glyph,
 				 hb_array_t<const int> coords,
@@ -643,6 +760,9 @@ struct gvar_GVAR
 				 bool phantom_only = false) const
     {
       if (unlikely (glyph >= glyphCount)) return true;
+      hb_scalar_cache_t *scalar_cache = gvar_cache ?
+					gvar_cache :
+					(hb_scalar_cache_t *) &Null(hb_scalar_cache_t);
 
       hb_bytes_t var_data_bytes = table->get_glyph_var_data_bytes (table.get_blob (), glyphCount, glyph);
       if (!var_data_bytes.as<GlyphVariationData> ()->has_data ()) return true;
@@ -655,6 +775,9 @@ struct gvar_GVAR
 						   var_data_bytes.arrayZ,
 						   shared_indices, &iterator))
 	return true; /* so isn't applied at all */
+
+      bool any_private_points = false;
+      bool private_points_checked = false;
 
       /* Save original points for inferred delta calculation */
       auto &orig_points_vec = scratch.orig_points;
@@ -679,9 +802,23 @@ struct gvar_GVAR
       do
       {
 	float scalar = iterator.current_tuple->calculate_scalar (coords, num_coords, shared_tuples,
-								 gvar_cache);
+								 scalar_cache);
 
 	if (scalar == 0.f) continue;
+
+	if (!private_points_checked)
+	{
+	  auto scan = iterator;
+	  do
+	  {
+	    if (scan.current_tuple->has_private_points ())
+	    {
+	      any_private_points = true;
+	      break;
+	    }
+	  } while (scan.move_to_next ());
+	  private_points_checked = true;
+	}
 	const HBUINT8 *p = iterator.get_serialized_data ();
 	unsigned int length = iterator.current_tuple->get_data_size ();
 	if (unlikely (!iterator.var_data_bytes.check_range (p, length)))
@@ -706,6 +843,19 @@ struct gvar_GVAR
 	bool apply_to_all = (indices.length == 0);
 	unsigned num_deltas = apply_to_all ? points.length : indices.length;
 	unsigned start_deltas = (apply_to_all && phantom_only && num_deltas >= 4 ? num_deltas - 4 : 0);
+
+	if (apply_to_all && !any_private_points)
+	{
+#ifdef HB_OPTIMIZE_SIZE
+	  if (unlikely (!decompile_deltas_add_to_points (p, points, scalar, end, start_deltas, true))) return false;
+	  if (unlikely (!decompile_deltas_add_to_points (p, points, scalar, end, start_deltas, false))) return false;
+#else
+	  if (unlikely (!decompile_deltas_add_to_points<true> (p, points, scalar, end, start_deltas))) return false;
+	  if (unlikely (!decompile_deltas_add_to_points<false> (p, points, scalar, end, start_deltas))) return false;
+#endif
+	  continue;
+	}
+
 	if (unlikely (!x_deltas.resize_dirty  (num_deltas))) return false;
 	if (unlikely (!GlyphVariationData::decompile_deltas (p, x_deltas, end, false, start_deltas))) return false;
 	if (unlikely (!y_deltas.resize_dirty  (num_deltas))) return false;
@@ -724,8 +874,6 @@ struct gvar_GVAR
 	  {
 	    for (unsigned int i = phantom_only ? count - 4 : 0; i < count; i++)
 	      points.arrayZ[i].translate (deltas.arrayZ[i]);
-	    flush = false;
-
 	  }
 	  hb_memset (deltas.arrayZ + (phantom_only ? count - 4 : 0), 0,
 		     (phantom_only ? 4 : count) * sizeof (deltas[0]));

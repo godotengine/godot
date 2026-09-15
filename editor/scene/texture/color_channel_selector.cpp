@@ -31,12 +31,11 @@
 #include "color_channel_selector.h"
 
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel_container.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/style_box.h"
 
 ColorChannelSelector::ColorChannelSelector() {
 	toggle_button = memnew(Button);

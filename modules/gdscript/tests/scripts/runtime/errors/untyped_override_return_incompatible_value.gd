@@ -11,7 +11,11 @@ class B extends A:
 	func return_node(variant: Variant): return variant
 
 func output(value: Variant) -> void:
-	print(var_to_str(value).replace("\n", ""))
+	if value is Object:
+		var object: Object = value
+		print("<%s>" % object.get_class())
+	else:
+		print(var_to_str(value).replace("\n", ""))
 
 func test():
 	var b := B.new()
@@ -20,3 +24,20 @@ func test():
 	output(b.return_int_array("abc"))
 	output(b.return_int_dict("abc"))
 	output(b.return_node("abc"))
+
+	var resource := Resource.new()
+
+	output(b.return_int(resource))
+	output(b.return_int_array(resource))
+	output(b.return_int_dict(resource))
+	output(b.return_node(resource))
+
+	var untyped_array: Array
+	var string_array: Array[String]
+	var untyped_dict: Dictionary
+	var string_dict: Dictionary[String, String]
+
+	output(b.return_int_array(untyped_array))
+	output(b.return_int_array(string_array))
+	output(b.return_int_dict(untyped_dict))
+	output(b.return_int_dict(string_dict))

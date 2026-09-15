@@ -30,8 +30,6 @@
 
 #pragma once
 
-#include "audio_stream_mp3.h"
-
 #include "core/io/resource_importer.h"
 
 class ResourceImporterMP3 : public ResourceImporter {

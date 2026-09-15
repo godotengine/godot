@@ -48,7 +48,6 @@ public:
 	};
 
 private:
-	RID probe;
 	float intensity = 1.0;
 	float blend_distance = 1.0;
 	float max_distance = 0.0;

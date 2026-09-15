@@ -36,7 +36,7 @@
 #include "scene/resources/material.h"
 #include "servers/rendering/rendering_server.h"
 
-#include "thirdparty/misc/ok_color_shader.h"
+#include <thirdparty/misc/ok_color_shader.h>
 
 void ColorPickerShape::init_shaders() {
 	wheel_shader.instantiate();
@@ -745,7 +745,7 @@ void ColorPickerShapeWheel::_wheel_input(const Ref<InputEvent> &p_event) {
 
 	if (is_click && !spinning) {
 		real_t dist = center.distance_to(event_position);
-		if (dist >= center.x * WHEEL_RADIUS * 2.0 && dist <= center.x) {
+		if (dist >= center.x * (WHEEL_RADIUS * 2.0f) && dist <= center.x) {
 			spinning = true;
 			if (!wheel_focused) {
 				cursor_editing = true;

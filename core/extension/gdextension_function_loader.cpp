@@ -30,7 +30,7 @@
 
 #include "gdextension_function_loader.h"
 
-#include "gdextension.h"
+#include "core/extension/gdextension.h"
 
 Error GDExtensionFunctionLoader::open_library(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(!p_path.begins_with("libgodot://"), ERR_FILE_NOT_FOUND, "Function based GDExtensions should have a path starting with libgodot://");

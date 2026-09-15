@@ -9,9 +9,11 @@ def make_splash(target, source, env):
     with methods.generated_wrapper(str(target[0])) as file:
         # Use a neutral gray color to better fit various kinds of projects.
         file.write(f"""\
+#include "core/math/color.h"
+
 static const Color boot_splash_bg_color = Color(0.14, 0.14, 0.14);
 inline constexpr const unsigned char boot_splash_png[] = {{
-	{methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};
 """)
 
@@ -23,9 +25,11 @@ def make_splash_editor(target, source, env):
         # The editor splash background color is taken from the default editor theme's background color.
         # This helps achieve a visually "smoother" transition between the splash screen and the editor.
         file.write(f"""\
+#include "core/math/color.h"
+
 static const Color boot_splash_editor_bg_color = Color(0.125, 0.145, 0.192);
 inline constexpr const unsigned char boot_splash_editor_png[] = {{
-	{methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};
 """)
 
@@ -37,6 +41,6 @@ def make_app_icon(target, source, env):
         # Use a neutral gray color to better fit various kinds of projects.
         file.write(f"""\
 inline constexpr const unsigned char app_icon_png[] = {{
-	{methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};
 """)

@@ -30,7 +30,6 @@
 
 #include "jolt_area_3d.h"
 
-#include "../jolt_project_settings.h"
 #include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../shapes/jolt_shape_3d.h"
@@ -135,15 +134,15 @@ bool JoltArea3D::_remove_shape_pair(Overlap &p_overlap, const JPH::SubShapeID &p
 	return true;
 }
 
-void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callback) {
+void JoltArea3D::_flush_events(OverlapsById &p_objects, Callable &p_callback) {
 	for (OverlapsById::Iterator E = p_objects.begin(); E;) {
 		Overlap &overlap = E->value;
 
-		if (p_callback.is_valid()) {
+		if (!p_callback.is_null()) {
 			for (const ShapeIndexPair &shape_indices : overlap.pending_added) {
 				int &ref_count = overlap.ref_counts[shape_indices];
 				if (ref_count++ == 0) {
-					_report_event(p_callback, PhysicsServer3D::AREA_BODY_ADDED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
+					_report_event(p_callback, PS3DE::AREA_BODY_ADDED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
 				}
 			}
 
@@ -151,7 +150,7 @@ void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callba
 				int &ref_count = overlap.ref_counts[shape_indices];
 				ERR_CONTINUE(ref_count <= 0);
 				if (--ref_count == 0) {
-					_report_event(p_callback, PhysicsServer3D::AREA_BODY_REMOVED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
+					_report_event(p_callback, PS3DE::AREA_BODY_REMOVED, overlap.rid, overlap.instance_id, shape_indices.other, shape_indices.self);
 					overlap.ref_counts.erase(shape_indices);
 				}
 			}
@@ -171,8 +170,10 @@ void JoltArea3D::_flush_events(OverlapsById &p_objects, const Callable &p_callba
 	}
 }
 
-void JoltArea3D::_report_event(const Callable &p_callback, PhysicsServer3D::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index) const {
-	ERR_FAIL_COND(!p_callback.is_valid());
+void JoltArea3D::_report_event(Callable &p_callback, PS3DE::AreaBodyStatus p_status, const RID &p_other_rid, ObjectID p_other_instance_id, int p_other_shape_index, int p_self_shape_index) {
+	if (unlikely(p_callback.is_null())) {
+		return;
+	}
 
 	const Variant arg1 = p_status;
 	const Variant arg2 = p_other_rid;
@@ -186,7 +187,13 @@ void JoltArea3D::_report_event(const Callable &p_callback, PhysicsServer3D::Area
 	p_callback.callp(args, 5, ret, ce);
 
 	if (unlikely(ce.error != Callable::CallError::CALL_OK)) {
-		ERR_PRINT_ONCE(vformat("Failed to call area monitor callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(p_callback, args, 5, ce)));
+		if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
+			// Godot Physics effectively silences this error by virtue of doing a `Callable::is_valid` check before the call, so we silently ignore this for compatibility.
+			// There's no point in trying to call this callback again though, so we clear it.
+			p_callback = Callable();
+		} else {
+			ERR_PRINT_ONCE(vformat("Failed to call area monitor callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(p_callback, args, 5, ce)));
+		}
 	}
 }
 
@@ -203,6 +210,22 @@ void JoltArea3D::_notify_body_exited(const JPH::BodyID &p_body_id) {
 		body->remove_area(this);
 	} else if (JoltSoftBody3D *soft_body = space->try_get_soft_body(p_body_id)) {
 		soft_body->remove_area(this);
+	}
+}
+
+void JoltArea3D::_notify_bodies_updated(bool p_priority_changed) {
+	if (unlikely(!in_space())) {
+		return;
+	}
+
+	if (space->get_default_area() == this) {
+		space->increment_default_area_changed_count();
+	} else {
+		for (KeyValue<JPH::BodyID, Overlap> &E : bodies_by_id) {
+			if (JoltBody3D *body = space->try_get_body(E.key)) {
+				body->update_area(this, p_priority_changed);
+			}
+		}
 	}
 }
 
@@ -285,49 +308,49 @@ void JoltArea3D::set_transform(Transform3D p_transform) {
 	}
 }
 
-Variant JoltArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
+Variant JoltArea3D::get_param(PS3DE::AreaParameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE: {
 			return get_gravity_mode();
 		}
-		case PhysicsServer3D::AREA_PARAM_GRAVITY: {
+		case PS3DE::AREA_PARAM_GRAVITY: {
 			return get_gravity();
 		}
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR: {
+		case PS3DE::AREA_PARAM_GRAVITY_VECTOR: {
 			return get_gravity_vector();
 		}
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT: {
+		case PS3DE::AREA_PARAM_GRAVITY_IS_POINT: {
 			return is_point_gravity();
 		}
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE: {
+		case PS3DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE: {
 			return get_point_gravity_distance();
 		}
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE: {
 			return get_linear_damp_mode();
 		}
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP: {
+		case PS3DE::AREA_PARAM_LINEAR_DAMP: {
 			return get_linear_damp();
 		}
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE: {
 			return get_angular_damp_mode();
 		}
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP: {
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP: {
 			return get_angular_damp();
 		}
-		case PhysicsServer3D::AREA_PARAM_PRIORITY: {
+		case PS3DE::AREA_PARAM_PRIORITY: {
 			return get_priority();
 		}
-		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
+		case PS3DE::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
 			// This parameter is named incorrectly. It's actually a pressure.
 			return get_wind_pressure();
 		}
-		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
+		case PS3DE::AREA_PARAM_WIND_SOURCE: {
 			return get_wind_source();
 		}
-		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
+		case PS3DE::AREA_PARAM_WIND_DIRECTION: {
 			return get_wind_direction();
 		}
-		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
+		case PS3DE::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
 			return get_wind_attenuation_factor();
 		}
 		default: {
@@ -336,49 +359,49 @@ Variant JoltArea3D::get_param(PhysicsServer3D::AreaParameter p_param) const {
 	}
 }
 
-void JoltArea3D::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value) {
+void JoltArea3D::set_param(PS3DE::AreaParameter p_param, const Variant &p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE: {
 			set_gravity_mode((OverrideMode)(int)p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY: {
+		case PS3DE::AREA_PARAM_GRAVITY: {
 			set_gravity(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR: {
+		case PS3DE::AREA_PARAM_GRAVITY_VECTOR: {
 			set_gravity_vector(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT: {
+		case PS3DE::AREA_PARAM_GRAVITY_IS_POINT: {
 			set_point_gravity(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE: {
+		case PS3DE::AREA_PARAM_GRAVITY_POINT_UNIT_DISTANCE: {
 			set_point_gravity_distance(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE: {
 			set_linear_damp_mode((OverrideMode)(int)p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_LINEAR_DAMP: {
-			set_area_linear_damp(p_value);
+		case PS3DE::AREA_PARAM_LINEAR_DAMP: {
+			set_linear_damp(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE: {
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE: {
 			set_angular_damp_mode((OverrideMode)(int)p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP: {
-			set_area_angular_damp(p_value);
+		case PS3DE::AREA_PARAM_ANGULAR_DAMP: {
+			set_angular_damp(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_PRIORITY: {
+		case PS3DE::AREA_PARAM_PRIORITY: {
 			set_priority(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
+		case PS3DE::AREA_PARAM_WIND_FORCE_MAGNITUDE: {
 			// This parameter is named incorrectly. It's actually a pressure.
 			set_wind_pressure(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_WIND_SOURCE: {
+		case PS3DE::AREA_PARAM_WIND_SOURCE: {
 			set_wind_source(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_WIND_DIRECTION: {
+		case PS3DE::AREA_PARAM_WIND_DIRECTION: {
 			set_wind_direction(p_value);
 		} break;
-		case PhysicsServer3D::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
+		case PS3DE::AREA_PARAM_WIND_ATTENUATION_FACTOR: {
 			set_wind_attenuation_factor(p_value);
 		} break;
 		default: {
@@ -439,6 +462,106 @@ bool JoltArea3D::can_interact_with(const JoltSoftBody3D &p_other) const {
 
 bool JoltArea3D::can_interact_with(const JoltArea3D &p_other) const {
 	return can_monitor(p_other) || p_other.can_monitor(*this);
+}
+
+void JoltArea3D::set_priority(float p_priority) {
+	if (p_priority == priority) {
+		return;
+	}
+
+	priority = p_priority;
+
+	_notify_bodies_updated(true);
+}
+
+void JoltArea3D::set_gravity(float p_gravity) {
+	if (p_gravity == gravity) {
+		return;
+	}
+
+	gravity = p_gravity;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_point_gravity(bool p_enabled) {
+	if (p_enabled == point_gravity) {
+		return;
+	}
+
+	point_gravity = p_enabled;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_point_gravity_distance(float p_distance) {
+	if (p_distance == point_gravity_distance) {
+		return;
+	}
+
+	point_gravity_distance = p_distance;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_linear_damp(float p_damp) {
+	if (p_damp == linear_damp) {
+		return;
+	}
+
+	linear_damp = p_damp;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_angular_damp(float p_damp) {
+	if (p_damp == angular_damp) {
+		return;
+	}
+
+	angular_damp = p_damp;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_gravity_mode(OverrideMode p_mode) {
+	if (p_mode == gravity_mode) {
+		return;
+	}
+
+	gravity_mode = p_mode;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_linear_damp_mode(OverrideMode p_mode) {
+	if (p_mode == linear_damp_mode) {
+		return;
+	}
+
+	linear_damp_mode = p_mode;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_angular_damp_mode(OverrideMode p_mode) {
+	if (p_mode == angular_damp_mode) {
+		return;
+	}
+
+	angular_damp_mode = p_mode;
+
+	_notify_bodies_updated();
+}
+
+void JoltArea3D::set_gravity_vector(const Vector3 &p_vector) {
+	if (p_vector == gravity_vector) {
+		return;
+	}
+
+	gravity_vector = p_vector;
+
+	_notify_bodies_updated();
 }
 
 Vector3 JoltArea3D::compute_gravity(const Vector3 &p_position) const {
@@ -502,50 +625,6 @@ bool JoltArea3D::area_shape_exited(const JPH::BodyID &p_body_id, const JPH::SubS
 
 bool JoltArea3D::shape_exited(const JPH::BodyID &p_body_id, const JPH::SubShapeID &p_other_shape_id, const JPH::SubShapeID &p_self_shape_id) {
 	return body_shape_exited(p_body_id, p_other_shape_id, p_self_shape_id) || area_shape_exited(p_body_id, p_other_shape_id, p_self_shape_id);
-}
-
-void JoltArea3D::body_exited(const JPH::BodyID &p_body_id, bool p_notify) {
-	Overlap *overlap = bodies_by_id.getptr(p_body_id);
-	if (unlikely(overlap == nullptr)) {
-		return;
-	}
-
-	if (unlikely(overlap->shape_pairs.is_empty())) {
-		return;
-	}
-
-	for (const KeyValue<ShapeIDPair, ShapeIndexPair> &E : overlap->shape_pairs) {
-		overlap->pending_added.erase(E.value);
-		overlap->pending_removed.push_back(E.value);
-	}
-
-	_events_changed();
-
-	overlap->shape_pairs.clear();
-
-	if (p_notify) {
-		_notify_body_exited(p_body_id);
-	}
-}
-
-void JoltArea3D::area_exited(const JPH::BodyID &p_body_id) {
-	Overlap *overlap = areas_by_id.getptr(p_body_id);
-	if (unlikely(overlap == nullptr)) {
-		return;
-	}
-
-	if (unlikely(overlap->shape_pairs.is_empty())) {
-		return;
-	}
-
-	for (const KeyValue<ShapeIDPair, ShapeIndexPair> &E : overlap->shape_pairs) {
-		overlap->pending_added.erase(E.value);
-		overlap->pending_removed.push_back(E.value);
-	}
-
-	_events_changed();
-
-	overlap->shape_pairs.clear();
 }
 
 void JoltArea3D::call_queries() {

@@ -47,7 +47,6 @@
 
 #include "core/object/object.h"
 #include "core/templates/paged_allocator.h"
-#include "core/variant/type_info.h"
 #include "servers/rendering/rendering_context_driver.h"
 #include "servers/rendering/rendering_device_commons.h"
 
@@ -71,7 +70,7 @@ class RenderingShaderContainerFormat;
 template <typename... RESOURCE_TYPES>
 struct VersatileResourceTemplate {
 	static constexpr size_t RESOURCE_SIZES[] = { sizeof(RESOURCE_TYPES)... };
-	static constexpr size_t MAX_RESOURCE_SIZE = Span(RESOURCE_SIZES).max();
+	static constexpr size_t MAX_RESOURCE_SIZE = Span<size_t>(RESOURCE_SIZES).max();
 	uint8_t data[MAX_RESOURCE_SIZE];
 
 	template <typename T>
@@ -158,6 +157,7 @@ public:
 	enum MemoryAllocationType {
 		MEMORY_ALLOCATION_TYPE_CPU, // For images, CPU allocation also means linear, GPU is tiling optimal.
 		MEMORY_ALLOCATION_TYPE_GPU,
+		MEMORY_ALLOCATION_TYPE_GPU_MAPPABLE, // Supported on UMA devices or discrete devices with ReBAR.
 	};
 
 	/*****************/
@@ -485,6 +485,9 @@ public:
 	// Retrieve the color space used by the swap chain's framebuffers.
 	virtual ColorSpace swap_chain_get_color_space(SwapChainID p_swap_chain) = 0;
 
+	// Retrieve whether the swapchain supports our preferred HDR formats.
+	virtual bool swap_chain_get_hdr_output_supported(SwapChainID p_swap_chain) = 0;
+
 	// Tells the swapchain the max_fps so it can use the proper frame pacing.
 	// Android uses this with Swappy library. Some implementations or platforms may ignore this hint.
 	virtual void swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {}
@@ -725,6 +728,9 @@ public:
 
 	// ----- COMMANDS -----
 
+	virtual void command_begin_compute_pass(CommandBufferID p_cmd_buffer);
+	virtual void command_end_compute_pass(CommandBufferID p_cmd_buffer);
+
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) = 0;
 	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
@@ -743,34 +749,70 @@ public:
 
 	// ----- ACCELERATION STRUCTURE -----
 
-	enum AccelerationStructureType {
-		ACCELERATION_STRUCTURE_TYPE_BLAS,
-		ACCELERATION_STRUCTURE_TYPE_TLAS,
+	struct AccelerationStructureGeometry {
+		BitField<AccelerationStructureGeometryFlagBits> flags = {};
+		BufferID vertex_buffer;
+		uint32_t vertex_offset = 0;
+		uint32_t vertex_stride = 0;
+		uint32_t vertex_count = 0;
+		DataFormat vertex_format = DATA_FORMAT_MAX;
+		BufferID index_buffer;
+		uint32_t index_offset = 0;
+		uint32_t index_count = 0;
+		IndexBufferFormat index_format = {};
 	};
 
-	enum AccelerationStructureGeometryBits {
-		ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE = 1 << 0,
-		ACCELERATION_STRUCTURE_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION = 1 << 1,
+	virtual AccelerationStructureID blas_create(VectorView<AccelerationStructureGeometry> p_geometries, BitField<AccelerationStructureFlagBits> p_flags) = 0;
+
+	struct AccelerationStructureInstance {
+		Transform3D transform;
+		uint32_t id = 0;
+		uint8_t mask = 0;
+		uint32_t hit_sbt_offset = 0;
+		BitField<AccelerationStructureInstanceFlagBits> flags = {};
+		AccelerationStructureID blas;
 	};
 
-	virtual AccelerationStructureID blas_create(BufferID p_vertex_buffer, uint64_t p_vertex_offset, VertexFormatID p_vertex_format, uint32_t p_vertex_count, uint32_t p_position_attribute_location, BufferID p_index_buffer, IndexBufferFormat p_index_format, uint64_t p_index_offset, uint32_t p_index_count, BitField<AccelerationStructureGeometryBits> p_geometry_bits) = 0;
-	virtual uint32_t tlas_instances_buffer_get_size_bytes(uint32_t p_instance_count) = 0;
-	virtual void tlas_instances_buffer_fill(BufferID p_instances_buffer, VectorView<AccelerationStructureID> p_blases, VectorView<Transform3D> p_transforms) = 0;
-	virtual AccelerationStructureID tlas_create(BufferID p_instances_buffer) = 0;
+	virtual AccelerationStructureID tlas_create(uint32_t p_max_instance_count, BitField<AccelerationStructureFlagBits> p_flags) = 0;
+	virtual void acceleration_structure_instance_write(uint8_t *r_driver_instance, const AccelerationStructureInstance &p_instance) = 0;
+
 	virtual void acceleration_structure_free(AccelerationStructureID p_acceleration_structure) = 0;
 	virtual uint32_t acceleration_structure_get_scratch_size_bytes(AccelerationStructureID p_acceleration_structure) = 0;
 
 	// ----- PIPELINE -----
 
-	virtual RaytracingPipelineID raytracing_pipeline_create(ShaderID p_shader, VectorView<PipelineSpecializationConstant> p_specialization_constants) = 0;
+	struct PipelineShader {
+		ShaderID shader;
+		VectorView<PipelineSpecializationConstant> specialization_constants;
+		ShaderStage shader_stage = {};
+	};
+
+	struct HitGroup {
+		uint32_t closest_hit_shader_index = UINT32_MAX;
+		uint32_t any_hit_shader_index = UINT32_MAX;
+		uint32_t intersection_shader_index = UINT32_MAX;
+	};
+
+	virtual RaytracingPipelineID raytracing_pipeline_create(VectorView<PipelineShader> p_shaders, VectorView<uint32_t> p_raygen_shader_indices, VectorView<uint32_t> p_miss_shader_indices, VectorView<HitGroup> p_hit_groups, uint32_t p_max_trace_recursion_depth, ShaderID p_layout_defining_shader) = 0;
 	virtual void raytracing_pipeline_free(RaytracingPipelineID p_pipeline) = 0;
+
+	virtual bool raytracing_pipeline_get_shader_group_handles(RaytracingPipelineID p_pipeline, uint32_t p_group_index_offset, VectorView<uint32_t> p_group_indices, uint8_t *r_data, uint32_t p_data_stride_bytes) = 0;
 
 	// ----- COMMANDS -----
 
-	virtual void command_build_acceleration_structure(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) = 0;
+	virtual void command_build_blas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer) = 0;
+	virtual void command_build_tlas(CommandBufferID p_cmd_buffer, AccelerationStructureID p_acceleration_structure, BufferID p_scratch_buffer, BufferID p_instance_buffer, uint32_t p_instance_offset, uint32_t p_instance_count) = 0;
 	virtual void command_bind_raytracing_pipeline(CommandBufferID p_cmd_buffer, RaytracingPipelineID p_pipeline) = 0;
 	virtual void command_bind_raytracing_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) = 0;
-	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, uint32_t p_width, uint32_t p_height) = 0;
+
+	struct ShaderBindingTable {
+		BufferID buffer;
+		uint32_t offset = 0;
+		uint32_t stride = 0;
+		uint32_t size = 0;
+	};
+
+	virtual void command_trace_rays(CommandBufferID p_cmd_buffer, const ShaderBindingTable &p_raygen_sbt, const ShaderBindingTable &p_miss_sbt, const ShaderBindingTable &p_hit_sbt, uint32_t p_width, uint32_t p_height, uint32_t p_depth) = 0;
 
 	/******************/
 	/**** CALLBACK ****/
@@ -800,6 +842,12 @@ public:
 
 	virtual void command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) = 0;
 	virtual void command_end_label(CommandBufferID p_cmd_buffer) = 0;
+
+	// Marks the start/end of a coherent batch of commands. Drivers may use this
+	// to flush incidental encoder state (e.g. a still-open blit encoder used for
+	// housekeeping copies) so subsequent commands start fresh. Default no-op.
+	virtual void command_group_begin(CommandBufferID p_cmd_buffer) {}
+	virtual void command_group_end(CommandBufferID p_cmd_buffer) {}
 
 	/****************/
 	/**** DEBUG *****/
@@ -862,10 +910,16 @@ public:
 		API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT,
 		API_TRAIT_TEXTURE_DATA_ROW_PITCH_STEP,
 		API_TRAIT_SECONDARY_VIEWPORT_SCISSOR,
-		API_TRAIT_CLEARS_WITH_COPY_ENGINE,
+		API_TRAIT_BUFFER_CLEARS_WITH_COPY_ENGINE,
+		API_TRAIT_TEXTURE_CLEARS_WITH_COPY_ENGINE,
 		API_TRAIT_USE_GENERAL_IN_COPY_QUEUES,
 		API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS,
+		API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS,
 		API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS,
+		API_TRAIT_ACCELERATION_STRUCTURE_INSTANCE_SIZE,
+		API_TRAIT_SHADER_GROUP_HANDLE_SIZE,
+		API_TRAIT_SHADER_GROUP_BASE_ALIGNMENT,
+		API_TRAIT_SHADER_GROUP_HANDLE_ALIGNMENT,
 	};
 
 	enum ShaderChangeInvalidation {
@@ -907,6 +961,8 @@ public:
 	virtual const RenderingShaderContainerFormat &get_shader_container_format() const = 0;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const { return false; }
+
+	virtual DriverWorkarounds get_driver_workarounds() const { return DriverWorkarounds(); }
 
 	/******************/
 

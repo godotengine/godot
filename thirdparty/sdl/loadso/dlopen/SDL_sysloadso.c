@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -65,8 +65,8 @@ SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
         symbol = dlsym(handle, _name);
         SDL_small_free(_name, isstack);
         if (!symbol) {
-            //SDL_SetError("Failed loading %s: %s", name,
-            //             (const char *)dlerror());
+            // SDL_SetError("Failed loading %s: %s", name,
+            //              (const char *)dlerror());
         }
     }
     return symbol;

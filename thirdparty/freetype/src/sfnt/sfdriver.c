@@ -4,7 +4,7 @@
  *
  *   High-level SFNT driver interface (body).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1142,12 +1142,7 @@
     FT_Error         error;
 
 
-    /* XXX: I don't know whether this is correct, since
-     *      tt_face_find_bdf_prop only returns something correct if we have
-     *      previously selected a size that is listed in the BDF table.
-     *      Should we change the BDF table format to include single offsets
-     *      for `CHARSET_REGISTRY' and `CHARSET_ENCODING'?
-     */
+    /* We expect that a bitmap strike has been selected. */
     error = tt_face_find_bdf_prop( face, "CHARSET_REGISTRY", &registry );
     if ( !error )
     {

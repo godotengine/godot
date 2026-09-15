@@ -165,10 +165,13 @@ public:
 
 		Type type = EMPTY;
 		Variant literal;
-		int start_line = 0;
-		int start_column = 0;
-		int end_line = 0;
-		int end_column = 0;
+		// The parser positions errors based on the previous token. This needs to
+		// be default initialized so that errors on the first token don't access
+		// uninitialized memory.
+		int start_line = 1;
+		int start_column = 1;
+		int end_line = 1;
+		int end_column = 1;
 		CursorPlace cursor_place = CURSOR_NONE;
 		String source;
 
@@ -227,16 +230,16 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	String source;
 	const char32_t *_source = nullptr;
 	const char32_t *_current = nullptr;
-	int line = 0;
-	int column = 0;
+	int line = 1;
+	int column = 1;
 	int cursor_line = -1;
 	int cursor_column = -1;
 	int tab_size = 4;
 
 	// Keep track of multichar tokens.
 	const char32_t *_start = nullptr;
-	int start_line = 0;
-	int start_column = 0;
+	int start_line = 1;
+	int start_column = 1;
 
 	// Info cache.
 	bool line_continuation = false; // Whether this line is a continuation of the previous, like when using '\'.

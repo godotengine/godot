@@ -371,8 +371,15 @@ uint32_t GPUParticles2D::get_seed() const {
 	return seed;
 }
 
-void GPUParticles2D::request_particles_process(real_t p_requested_process_time) {
-	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time);
+void GPUParticles2D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_residual) {
+	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time, p_request_process_time_residual);
+	if (p_requested_process_time > 0.0) {
+		emitting = true;
+		RS::get_singleton()->particles_set_emitting(particles, true);
+	}
+	if (p_request_process_time_residual > 0.0) {
+		emitting = false;
+	}
 }
 
 PackedStringArray GPUParticles2D::get_configuration_warnings() const {
@@ -779,13 +786,13 @@ void GPUParticles2D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (one_shot) {
 				time += get_process_delta_time();
-				if (time > emission_time) {
+				if ((time * speed_scale) > emission_time) {
 					emitting = false;
 					if (!active) {
 						set_process_internal(false);
 					}
 				}
-				if (time > active_time) {
+				if ((time * speed_scale) > active_time) {
 					if (active && !signal_canceled) {
 						emit_signal(SceneStringName(finished));
 					}
@@ -884,7 +891,7 @@ void GPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_base_size", "size"), &GPUParticles2D::set_collision_base_size);
 	ClassDB::bind_method(D_METHOD("set_interp_to_end", "interp"), &GPUParticles2D::set_interp_to_end);
 
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles2D::request_particles_process);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time", "process_time_residual"), &GPUParticles2D::request_particles_process, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &GPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &GPUParticles2D::get_amount);
@@ -974,7 +981,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_trail_sections", "get_trail_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_section_subdivisions", PROPERTY_HINT_RANGE, "1,1024,1"), "set_trail_section_subdivisions", "get_trail_section_subdivisions");
 	ADD_GROUP("Process Material", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_process_material", "get_process_material");
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_REVERSE_LIFETIME);

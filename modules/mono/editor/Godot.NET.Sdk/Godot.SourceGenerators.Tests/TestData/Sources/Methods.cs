@@ -2,6 +2,11 @@ using Godot;
 
 public partial class Methods : GodotObject
 {
+    [IgnoreMember]
+    private void IgnoredMethod()
+    {
+    }
+
     private void MethodWithOverload()
     {
     }

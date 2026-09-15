@@ -30,6 +30,7 @@
 
 #include "skeleton_modifier_3d.h"
 
+#include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 
 PackedStringArray SkeletonModifier3D::get_configuration_warnings() const {
@@ -89,6 +90,10 @@ void SkeletonModifier3D::_force_update_skeleton_skin() {
 		return;
 	}
 	skeleton->force_update_deferred();
+}
+
+bool SkeletonModifier3D::should_check_node_path() {
+	return (bool)GLOBAL_GET_CACHED(bool, "animation/warnings/check_invalid_skeleton_modifier_node_paths") && is_inside_tree();
 }
 
 /* Process */

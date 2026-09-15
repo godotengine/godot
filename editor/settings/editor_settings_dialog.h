@@ -47,6 +47,8 @@ class TreeItem;
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
+	static inline EditorSettingsDialog *singleton = nullptr;
+
 	TabContainer *tabs = nullptr;
 	Control *tab_general = nullptr;
 	Control *tab_shortcuts = nullptr;
@@ -107,7 +109,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);
 	String _get_shortcut_button_string(const String &p_shortcut_name);
 
-	bool _should_display_shortcut(const String &p_name, const Array &p_events, bool p_match_localized_name) const;
+	bool _should_display_shortcut(const String &p_path, const Array &p_events, const String &p_name = String()) const;
 
 	void _update_shortcuts();
 	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx, MouseButton p_button = MouseButton::LEFT);
@@ -115,6 +117,9 @@ class EditorSettingsDialog : public AcceptDialog {
 	static void _set_shortcut_input(const String &p_name, Ref<InputEventKey> &p_event);
 
 	static void _undo_redo_callback(void *p_self, const String &p_name);
+
+	void _create_setting_override(const String &p_setting, const Variant p_value);
+	void _remove_setting_override(const String &p_setting);
 
 	Label *restart_label = nullptr;
 	TextureRect *restart_icon = nullptr;
@@ -130,11 +135,13 @@ protected:
 
 public:
 	void popup_edit_settings();
-	static void update_navigation_preset();
+	static void update_3d_navigation_preset();
 	void set_current_section(const String &p_section);
 	void set_advanced_mode_enabled(bool p_enabled);
+	static EditorSettingsDialog *get_singleton() { return singleton; }
 
 	EditorSettingsDialog();
+	~EditorSettingsDialog();
 };
 
 class EditorSettingsPropertyWrapper : public EditorProperty {
@@ -162,8 +169,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	static inline Callable restart_request_callback;
-
 	virtual void update_property() override;
 	void setup(const String &p_property, EditorProperty *p_editor_property, PropertyHint p_hint, const String &p_hint_text, uint32_t p_usage);
 };

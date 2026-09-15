@@ -30,9 +30,10 @@
 
 #pragma once
 
-#include "../godotsharp_defs.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 
-#include "core/io/config_file.h"
+#include <cstdint>
 
 #ifndef GD_CLR_STDCALL
 #ifdef WIN32
@@ -162,7 +163,7 @@ protected:
 public:
 	static GodotSharp *get_singleton() { return singleton; }
 
-	void reload_assemblies(bool p_soft_reload);
+	void reload_assemblies();
 
 	GodotSharp();
 	~GodotSharp();

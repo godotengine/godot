@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRAPIExtension" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRAPIExtension" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Makes the OpenXR API available for GDExtension.
 	</brief_description>
@@ -101,6 +101,12 @@
 			<return type="int" />
 			<description>
 				Returns the predicted display timing for the current frame.
+			</description>
+		</method>
+		<method name="get_primary_view_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the view count for the primary viewport.
 			</description>
 		</method>
 		<method name="get_projection_layer">

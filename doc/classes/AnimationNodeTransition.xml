@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeTransition" inherits="AnimationNodeSync" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationNodeTransition" inherits="AnimationNodeSync" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A transition within an [AnimationTree] connecting two [AnimationNode]s.
 	</brief_description>
@@ -33,6 +33,17 @@
 
 		// Get current state index (read-only).
 		animationTree.Get("parameters/Transition/current_index");
+		[/csharp]
+		[/codeblocks]
+		Optionally, signals can be used by setting an [AnimationNodeObserverTransition] through [AnimationTree].
+		[codeblocks]
+		[gdscript]
+		var observer = animation_tree.get("parameters/Transition/observer")
+		observer.state_started.connect(on_state_started)
+		[/gdscript]
+		[csharp]
+		var observer = animationTree.Get("parameters/Transition/observer").As&lt;AnimationNodeObserverTransition&gt;();
+		observer.StateStarted += OnStateStarted;
 		[/csharp]
 		[/codeblocks]
 	</description>

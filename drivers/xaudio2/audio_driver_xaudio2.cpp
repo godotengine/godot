@@ -97,7 +97,7 @@ void AudioDriverXAudio2::thread_func(void *p_udata) {
 			ad->stop_counting_ticks();
 			ad->unlock();
 
-			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
+			for (int i = 0; i < ad->buffer_size * ad->channels; i++) {
 				ad->samples_out[ad->current_buffer][i] = ad->samples_in[i] >> 16;
 			}
 
@@ -174,7 +174,7 @@ void AudioDriverXAudio2::finish() {
 
 AudioDriverXAudio2::AudioDriverXAudio2() {
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
-		xaudio_buffer[i] = { 0 };
-		samples_out[i] = 0;
+		xaudio_buffer[i] = {};
+		samples_out[i] = nullptr;
 	}
 }

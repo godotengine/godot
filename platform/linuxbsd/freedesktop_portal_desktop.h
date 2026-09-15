@@ -33,8 +33,9 @@
 #ifdef DBUS_ENABLED
 
 #include "core/object/object.h"
+#include "core/os/mutex.h"
 #include "core/os/thread.h"
-#include "core/os/thread_safe.h"
+#include "core/templates/safe_refcount.h"
 #include "servers/display/display_server_enums.h"
 
 struct DBusMessage;

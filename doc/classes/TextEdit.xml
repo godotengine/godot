@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextEdit" inherits="Control" keywords="textarea" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TextEdit" inherits="Control" api_type="core" keywords="textarea" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A multiline text editor.
 	</brief_description>
@@ -11,6 +11,7 @@
 		- To enter Windows codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (Windows 0225), hold [kbd]Alt[/kbd] and type [kbd]0[/kbd], [kbd]2[/kbd], [kbd]2[/kbd], [kbd]5[/kbd] on the numpad. The leading zero here must [b]not[/b] be omitted, as this is how Windows codepoints are distinguished from OEM codepoints.
 		[b]Note:[/b] Most viewport, caret, and edit methods contain a [code]caret_index[/code] argument for [member caret_multiple] support. The argument should be one of the following: [code]-1[/code] for all carets, [code]0[/code] for the main caret, or greater than [code]0[/code] for secondary carets in the order they were created.
 		[b]Note:[/b] When holding down [kbd]Alt[/kbd], the vertical scroll wheel will scroll 5 times as fast as it would normally do. This also works in the Godot script editor.
+		[note]Line and column numbers are [i]zero-based[/i], like elements of an array. For example, the first line of text can be retrieved by [code]get_line(0)[/code], the second line by [code]get_line(1)[/code], and so on.[/note]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -190,7 +191,7 @@
 			<return type="void" />
 			<param index="0" name="caret_index" type="int" default="-1" />
 			<description>
-				Cut's the current selection. Can be overridden with [method _cut].
+				Cuts the current selection. Can be overridden with [method _cut].
 			</description>
 		</method>
 		<method name="delete_selection">
@@ -675,7 +676,7 @@
 		<method name="get_tab_size" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the [TextEdit]'s' tab size.
+				Returns the [TextEdit]'s tab size.
 			</description>
 		</method>
 		<method name="get_total_gutter_width" qualifiers="const">
@@ -1375,10 +1376,10 @@
 			Text shown when the [TextEdit] is empty. It is [b]not[/b] the [TextEdit]'s default value (see [member text]).
 		</member>
 		<member name="scroll_fit_content_height" type="bool" setter="set_fit_content_height_enabled" getter="is_fit_content_height_enabled" default="false">
-			If [code]true[/code], [TextEdit] will disable vertical scroll and fit minimum height to the number of visible lines. When both this property and [member scroll_fit_content_width] are [code]true[/code], no scrollbars will be displayed.
+			If [code]true[/code], [TextEdit] fits its minimum height to the number of visible lines instead of scrolling vertically. If a maximum height is set (for example via [member Control.custom_maximum_size]) and content exceeds it, a vertical scrollbar is shown.
 		</member>
 		<member name="scroll_fit_content_width" type="bool" setter="set_fit_content_width_enabled" getter="is_fit_content_width_enabled" default="false">
-			If [code]true[/code], [TextEdit] will disable horizontal scroll and fit minimum width to the widest line in the text. When both this property and [member scroll_fit_content_height] are [code]true[/code], no scrollbars will be displayed.
+			If [code]true[/code], [TextEdit] fits its minimum width to the widest line instead of scrolling horizontally. If a maximum width is set (for example via [member Control.custom_maximum_size]) and content exceeds it, a horizontal scrollbar is shown.
 		</member>
 		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
 			If there is a horizontal scrollbar, this determines the current horizontal scroll value in pixels.
@@ -1398,6 +1399,9 @@
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
 			If [code]true[/code], text can be selected.
 			If [code]false[/code], text can not be selected by the user or by the [method select] or [method select_all] methods.
+		</member>
+		<member name="selection_handle_enabled" type="bool" setter="set_selection_handle_enabled" getter="is_selection_handle_enabled" default="true">
+			If [code]true[/code], enables the handles used for text selection. These handles are only visible on touchscreen and can be dragged to adjust the selected text range.
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
 			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.

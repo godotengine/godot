@@ -35,17 +35,20 @@
 #include "../managed_callable.h"
 #include "../mono_gd/gd_mono_cache.h"
 #include "../signal_awaiter_utils.h"
-#include "../utils/path_utils.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/compression.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "core/object/method_bind.h"
 #include "core/os/os.h"
 #include "core/string/string_name.h"
+#include "core/variant/variant_parser.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/file_system/editor_file_system.h"
@@ -64,11 +67,11 @@ bool godotsharp_dotnet_module_is_initialized() {
 	return GDMono::get_singleton()->is_initialized();
 }
 
-MethodBind *godotsharp_method_bind_get_method(const StringName *p_classname, const StringName *p_methodname) {
+const MethodBind *godotsharp_method_bind_get_method(const StringName *p_classname, const StringName *p_methodname) {
 	return ClassDB::get_method(*p_classname, *p_methodname);
 }
 
-MethodBind *godotsharp_method_bind_get_method_with_compatibility(const StringName *p_classname, const StringName *p_methodname, uint64_t p_hash) {
+const MethodBind *godotsharp_method_bind_get_method_with_compatibility(const StringName *p_classname, const StringName *p_methodname, uint64_t p_hash) {
 	return ClassDB::get_method_with_compatibility(*p_classname, *p_methodname, p_hash);
 }
 
@@ -276,7 +279,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	CRASH_COND(script_binding.type_name == StringName());
 #endif
 
-	bool parent_is_object_class = ClassDB::is_parent_class(p_unmanaged->get_class_name(), script_binding.type_name);
+	bool parent_is_object_class = p_unmanaged->is_class(script_binding.type_name);
 	ERR_FAIL_COND_V_MSG(!parent_is_object_class, { nullptr },
 			"Type inherits from native type '" + script_binding.type_name + "', so it can't be instantiated in object of type: '" + p_unmanaged->get_class() + "'.");
 
@@ -354,7 +357,7 @@ void godotsharp_array_filter_godot_objects_by_native(StringName *p_native_name, 
 	memnew_placement(r_output, Array);
 
 	for (int i = 0; i < p_input->size(); ++i) {
-		if (ClassDB::is_parent_class(((Object *)(*p_input)[i])->get_class(), *p_native_name)) {
+		if (((Object *)(*p_input)[i])->is_class(*p_native_name)) {
 			r_output->push_back(p_input[i]);
 		}
 	}
@@ -389,7 +392,7 @@ void godotsharp_node_path_new_from_string(NodePath *r_dest, const String *p_name
 }
 
 void godotsharp_string_name_as_string(String *r_dest, const StringName *p_name) {
-	memnew_placement(r_dest, String(p_name->operator String()));
+	memnew_placement(r_dest, String(p_name->string()));
 }
 
 void godotsharp_node_path_as_string(String *r_dest, const NodePath *p_np) {
@@ -1116,10 +1119,8 @@ void godotsharp_array_make_read_only(Array *p_self) {
 }
 
 void godotsharp_array_set_typed(Array *p_self, uint32_t p_elem_type, const StringName *p_elem_class_name, const Ref<CSharpScript> *p_elem_script) {
-	Variant elem_script_variant;
 	StringName elem_class_name = *p_elem_class_name;
 	if (p_elem_script && p_elem_script->is_valid()) {
-		elem_script_variant = Variant(p_elem_script->ptr());
 		elem_class_name = p_elem_script->ptr()->get_instance_base_type();
 	}
 	p_self->set_typed(p_elem_type, elem_class_name, p_elem_script->ptr());
@@ -1280,16 +1281,12 @@ void godotsharp_dictionary_make_read_only(Dictionary *p_self) {
 }
 
 void godotsharp_dictionary_set_typed(Dictionary *p_self, uint32_t p_key_type, const StringName *p_key_class_name, const Ref<CSharpScript> *p_key_script, uint32_t p_value_type, const StringName *p_value_class_name, const Ref<CSharpScript> *p_value_script) {
-	Variant key_script_variant;
 	StringName key_class_name = *p_key_class_name;
 	if (p_key_script && p_key_script->is_valid()) {
-		key_script_variant = Variant(p_key_script->ptr());
 		key_class_name = p_key_script->ptr()->get_instance_base_type();
 	}
-	Variant value_script_variant;
 	StringName value_class_name = *p_value_class_name;
 	if (p_value_script && p_value_script->is_valid()) {
-		value_script_variant = Variant(p_value_script->ptr());
 		value_class_name = p_value_script->ptr()->get_instance_base_type();
 	}
 	p_self->set_typed(p_key_type, key_class_name, p_key_script->ptr(), p_value_type, value_class_name, p_value_script->ptr());
@@ -1434,7 +1431,7 @@ void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
 		return;
 	}
 
-	Ref<WeakRef> wref;
+	Ref<CoreBind::WeakRef> wref;
 	RefCounted *rc = Object::cast_to<RefCounted>(p_ptr);
 
 	if (rc) {

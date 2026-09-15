@@ -88,8 +88,24 @@ void EditorVCSInterface::discard_file(const String &p_file_path) {
 	GDVIRTUAL_CALL(_discard_file, p_file_path);
 }
 
-void EditorVCSInterface::commit(const String &p_msg) {
-	GDVIRTUAL_CALL(_commit, p_msg);
+void EditorVCSInterface::commit(const String &p_msg, bool p_amend) {
+	if (GDVIRTUAL_CALL(_commit, p_msg, p_amend)) {
+		return;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (GDVIRTUAL_CALL(_commit_bind_compat_117968, p_msg)) {
+		return;
+	}
+#endif
+
+	ERR_PRINT_ONCE("Required virtual method " + get_class() + "::_commit must be overridden before calling.");
+}
+
+bool EditorVCSInterface::allow_amends() {
+	bool result = false;
+	GDVIRTUAL_CALL(_allow_amends, result);
+	return result;
 }
 
 List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_diff(const String &p_identifier, TreeArea p_area) {
@@ -313,7 +329,8 @@ void EditorVCSInterface::_bind_methods() {
 	GDVIRTUAL_BIND(_stage_file, "file_path");
 	GDVIRTUAL_BIND(_unstage_file, "file_path");
 	GDVIRTUAL_BIND(_discard_file, "file_path");
-	GDVIRTUAL_BIND(_commit, "msg");
+	GDVIRTUAL_BIND(_commit, "msg", "amend");
+	GDVIRTUAL_BIND(_allow_amends);
 	GDVIRTUAL_BIND(_get_diff, "identifier", "area");
 	GDVIRTUAL_BIND(_shut_down);
 	GDVIRTUAL_BIND(_get_vcs_name);
@@ -330,6 +347,10 @@ void EditorVCSInterface::_bind_methods() {
 	GDVIRTUAL_BIND(_push, "remote", "force");
 	GDVIRTUAL_BIND(_fetch, "remote");
 	GDVIRTUAL_BIND(_get_line_diff, "file_path", "text");
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_commit_bind_compat_117968, "msg");
+#endif
 
 	ClassDB::bind_method(D_METHOD("create_diff_line", "new_line_no", "old_line_no", "content", "status"), &EditorVCSInterface::create_diff_line);
 	ClassDB::bind_method(D_METHOD("create_diff_hunk", "old_start", "new_start", "old_lines", "new_lines"), &EditorVCSInterface::create_diff_hunk);

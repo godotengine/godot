@@ -35,7 +35,7 @@
 #include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "core/variant/container_type_validate.h"
+#include "core/variant/container_type_validate.h" // IWYU pragma: keep.
 #include "scene/main/node.h" //only so casting works
 
 void Resource::register_custom_data_to_otdb() {
@@ -758,11 +758,14 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("duplicate", "deep"), &Resource::duplicate, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("duplicate_deep", "deep_subresources_mode"), &Resource::_duplicate_deep_bind, DEFVAL(RESOURCE_DEEP_DUPLICATE_INTERNAL));
 
+	// TODO: Once we can break compatibility, change the binding to "copy_from". For now, we have to avoid clashing with the method from `Image`.
+	ClassDB::bind_method(D_METHOD("copy_from_resource", "resource"), &Resource::copy_from);
+
 	// For the bindings, it's much more natural to expose this enum from the Variant realm via Resource.
 	// Therefore, we can't use BIND_ENUM_CONSTANT here because we need some customization.
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
-	ClassDB::bind_integer_constant(get_class_static(), StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_NONE", RESOURCE_DEEP_DUPLICATE_NONE);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_INTERNAL", RESOURCE_DEEP_DUPLICATE_INTERNAL);
+	get_gdtype_static_mutable().bind_integer_constant(StringName("DeepDuplicateMode"), "DEEP_DUPLICATE_ALL", RESOURCE_DEEP_DUPLICATE_ALL);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 	ADD_SIGNAL(MethodInfo("setup_local_to_scene_requested"));

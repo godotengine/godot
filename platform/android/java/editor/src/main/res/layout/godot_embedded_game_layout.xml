@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<FrameLayout
+		android:id="@+id/game_menu_fragment_container"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentTop="true"
+		/>
+
+	<FrameLayout
+		android:id="@+id/godot_fragment_container"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_below="@+id/game_menu_fragment_container"/>
+
+	<CheckBox
+		android:id="@+id/lockAspectRatioCheckBox"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:layout_marginTop="60dp"
+		android:background="#CC000000"
+		android:padding="8dp"
+		android:text="Lock Aspect Ratio"
+		android:textColor="#FFFFFF"
+		android:buttonTint="#FFFFFF"
+		android:checked="true"
+		android:visibility="gone" />
+
+	<View
+		android:id="@+id/handleTopLeft"
+		android:layout_width="80px"
+		android:layout_height="80px"
+		android:layout_alignParentStart="true"
+		android:layout_alignParentTop="true"
+		android:background="@drawable/resize_handle"
+		android:rotation="180"
+		android:visibility="gone" />
+
+	<View
+		android:id="@+id/handleTopRight"
+		android:layout_width="80px"
+		android:layout_height="80px"
+		android:layout_alignParentEnd="true"
+		android:layout_alignParentTop="true"
+		android:background="@drawable/resize_handle"
+		android:rotation="270"
+		android:visibility="gone" />
+
+	<View
+		android:id="@+id/handleBottomLeft"
+		android:layout_width="80px"
+		android:layout_height="80px"
+		android:layout_alignParentStart="true"
+		android:layout_alignParentBottom="true"
+		android:background="@drawable/resize_handle"
+		android:rotation="90"
+		android:visibility="gone" />
+
+	<View
+		android:id="@+id/handleBottomRight"
+		android:layout_width="80px"
+		android:layout_height="80px"
+		android:layout_alignParentEnd="true"
+		android:layout_alignParentBottom="true"
+		android:background="@drawable/resize_handle"
+		android:visibility="gone" />
+
+</RelativeLayout>

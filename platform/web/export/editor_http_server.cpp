@@ -30,7 +30,9 @@
 
 #include "editor_http_server.h"
 
+#include "core/io/file_access.h"
 #include "core/os/os.h"
+#include "editor/file_system/editor_paths.h"
 
 void EditorHTTPServer::_server_thread_poll(void *data) {
 	EditorHTTPServer *web_server = static_cast<EditorHTTPServer *>(data);

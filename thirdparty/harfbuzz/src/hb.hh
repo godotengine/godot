@@ -138,6 +138,7 @@
 
 /* Ignored intentionally. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
+#pragma GCC diagnostic ignored "-Warray-bounds" // https://github.com/harfbuzz/harfbuzz/issues/5738
 #pragma GCC diagnostic ignored "-Wclass-memaccess"
 #pragma GCC diagnostic ignored "-Wcast-function-type-strict" // https://github.com/harfbuzz/harfbuzz/pull/3859#issuecomment-1295409126
 #pragma GCC diagnostic ignored "-Wdangling-reference" // https://github.com/harfbuzz/harfbuzz/issues/4043
@@ -150,6 +151,7 @@
 #pragma GCC diagnostic ignored "-Wrange-loop-analysis" // https://github.com/harfbuzz/harfbuzz/issues/2834
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #pragma GCC diagnostic ignored "-Wtype-limits"
+#pragma GCC diagnostic ignored "-Wunused-template"
 #pragma GCC diagnostic ignored "-Wc++11-compat" // only gcc raises it
 #endif
 
@@ -202,6 +204,7 @@
 #define HB_OT_H_IN
 #include "hb-aat.h"
 #define HB_AAT_H_IN
+#define HB_SUBSET_H_IN
 
 #include <cassert>
 #include <cfloat>
@@ -278,7 +281,7 @@
 #if defined(__GNUC__) && (__GNUC__ >= 4) || (__clang__)
 #define HB_UNUSED	__attribute__((unused))
 #elif defined(_MSC_VER) /* https://github.com/harfbuzz/harfbuzz/issues/635 */
-#define HB_UNUSED __pragma(warning(suppress: 4100 4101))
+#define HB_UNUSED __pragma(warning(suppress: 4100 4101 4189))
 #else
 #define HB_UNUSED
 #endif
@@ -323,6 +326,14 @@
 #define HB_ALWAYS_INLINE __forceinline
 #else
 #define HB_ALWAYS_INLINE __attribute__((always_inline)) inline
+#endif
+#endif
+
+#ifndef HB_NEVER_INLINE
+#if defined(_MSC_VER)
+#define HB_NEVER_INLINE __declspec(noinline)
+#else
+#define HB_NEVER_INLINE __attribute__((noinline))
 #endif
 #endif
 
@@ -373,16 +384,6 @@
 #else
 #  define HB_NODISCARD
 #endif
-
-/* https://github.com/harfbuzz/harfbuzz/issues/1852 */
-#if defined(__clang__) && !(defined(_AIX) && (defined(__IBMCPP__) || defined(__ibmxl__)))
-/* Disable certain sanitizer errors. */
-/* https://github.com/harfbuzz/harfbuzz/issues/1247 */
-#define HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW __attribute__((no_sanitize("signed-integer-overflow")))
-#else
-#define HB_NO_SANITIZE_SIGNED_INTEGER_OVERFLOW
-#endif
-
 
 #ifdef _WIN32
    /* We need Windows Vista for both Uniscribe backend and for
@@ -526,7 +527,7 @@ static_assert ((sizeof (hb_var_int_t) == 4), "");
 
 /* Pie time. */
 // https://github.com/harfbuzz/harfbuzz/issues/4166
-#define HB_PI 3.14159265358979f
+#define HB_PI 3.14159265358979323846f
 #define HB_2_PI (2.f * HB_PI)
 
 /* Compile-time custom allocator support. */
@@ -568,6 +569,13 @@ extern "C" void  hb_free_impl(void *ptr);
 #include "hb-array.hh"	// Requires: hb-algs hb-iter hb-null
 #include "hb-vector.hh"	// Requires: hb-array hb-null
 #include "hb-object.hh"	// Requires: hb-atomic hb-mutex hb-vector
+
+
+/* Library-internal alias for hb::unique_ptr defined in hb-cplusplus.hh.
+ * Unique-ownership RAII wrapper around an HB object; destroys on scope exit
+ * via the type's hb_*_destroy() function.  Usage: hb_unique_ptr_t<hb_blob_t>.
+ * Matches the hb_*_t naming used elsewhere in internal code. */
+template <typename T> using hb_unique_ptr_t = hb::unique_ptr<T>;
 
 
 /* Our src/test-*.cc use hb_assert(), such that it's not compiled out under NDEBUG.

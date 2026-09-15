@@ -29,12 +29,13 @@
 /**************************************************************************/
 
 #include "utilities.h"
-#include "../environment/fog.h"
-#include "../environment/gi.h"
-#include "light_storage.h"
-#include "mesh_storage.h"
-#include "particles_storage.h"
-#include "texture_storage.h"
+
+#include "servers/rendering/renderer_rd/environment/fog.h"
+#include "servers/rendering/renderer_rd/environment/gi.h"
+#include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 
 using namespace RendererRD;
 
@@ -254,6 +255,7 @@ void Utilities::update_dirty_resources() {
 	MeshStorage::get_singleton()->_update_dirty_multimeshes();
 	MeshStorage::get_singleton()->_update_dirty_skeletons();
 	TextureStorage::get_singleton()->update_decal_atlas();
+	TextureStorage::get_singleton()->update_area_light_atlas();
 }
 
 bool Utilities::has_os_feature(const String &p_feature) const {

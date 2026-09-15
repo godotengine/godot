@@ -8,15 +8,17 @@ if env["platform"] in ["macos", "windows", "linuxbsd"]:
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = ["gl.c"]
 
-    if not env.get("angle_libs"):
-        thirdparty_sources += ["egl.c"]
-
-    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
-
     env.Prepend(CPPPATH=[thirdparty_dir])
 
     env.Append(CPPDEFINES=["GLAD_ENABLED"])
-    env.Append(CPPDEFINES=["EGL_ENABLED"])
+    if env["platform"] == "linuxbsd":
+        thirdparty_sources += ["egl.c"]
+        env.Append(CPPDEFINES=["EGL_ENABLED", "GLAD_GLES2"])
+    else:
+        if env["angle"]:
+            env.Append(CPPDEFINES=["EGL_ENABLED", "GLAD_GLES2"])
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_thirdparty = env.Clone()
     env_thirdparty.disable_warnings()

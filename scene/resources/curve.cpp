@@ -33,6 +33,8 @@
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
 
+#include <cfloat> // FLT_EPSILON
+
 const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
 const char *Curve::SIGNAL_DOMAIN_CHANGED = "domain_changed";
 
@@ -51,8 +53,10 @@ void Curve::set_point_count(int p_count) {
 		_points.resize(p_count);
 		mark_dirty();
 	} else {
+		const real_t default_offset = old_size == 0 ? CLAMP((real_t)0.0, _min_domain, _max_domain) : _max_domain;
+		const real_t default_value = CLAMP((real_t)0.0, _min_value, _max_value);
 		for (int i = p_count - old_size; i > 0; i--) {
-			_add_point(Vector2());
+			_add_point(Vector2(default_offset, default_value));
 		}
 	}
 	notify_property_list_changed();
@@ -660,7 +664,7 @@ void Curve::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "left_mode", PROPERTY_HINT_ENUM, mode_hint, PROPERTY_USAGE_EDITOR), defaults.left_mode, &Curve::set_point_left_mode, &Curve::get_point_left_mode);
 	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "right_tangent", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.right_tangent, &Curve::set_point_right_tangent, &Curve::get_point_right_tangent);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, "right_mode", PROPERTY_HINT_ENUM, mode_hint, PROPERTY_USAGE_EDITOR), defaults.right_mode, &Curve::set_point_right_mode, &Curve::get_point_right_mode);
-	PropertyListHelper::register_base_helper(&base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
 int Curve2D::get_point_count() const {
@@ -1342,7 +1346,7 @@ void Curve2D::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.position, &Curve2D::set_point_position, &Curve2D::get_point_position);
 	base_property_helper.register_property(PropertyInfo(Variant::VECTOR2, "in", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.in, &Curve2D::set_point_in, &Curve2D::get_point_in);
 	base_property_helper.register_property(PropertyInfo(Variant::VECTOR2, "out", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.out, &Curve2D::set_point_out, &Curve2D::get_point_out);
-	PropertyListHelper::register_base_helper(&base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
 Curve2D::Curve2D() {
@@ -2282,10 +2286,10 @@ Vector<RBMap<real_t, Vector3>> Curve3D::_tessellate_even_length(int p_max_stages
 }
 
 bool Curve3D::_filter_property(const String &p_name, int p_index) const {
-	if (p_index == 0) {
+	if (!closed && p_index == 0) {
 		return p_name != "in";
 	}
-	if (p_index == get_point_count() - 1) {
+	if (!closed && p_index == get_point_count() - 1) {
 		return p_name != "out";
 	}
 	return true;
@@ -2386,7 +2390,7 @@ void Curve3D::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::VECTOR3, "in", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.in, &Curve3D::set_point_in, &Curve3D::get_point_in);
 	base_property_helper.register_property(PropertyInfo(Variant::VECTOR3, "out", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.out, &Curve3D::set_point_out, &Curve3D::get_point_out);
 	base_property_helper.register_property(PropertyInfo(Variant::FLOAT, "tilt", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), defaults.tilt, &Curve3D::set_point_tilt, &Curve3D::get_point_tilt);
-	PropertyListHelper::register_base_helper(&base_property_helper);
+	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }
 
 Curve3D::Curve3D() {

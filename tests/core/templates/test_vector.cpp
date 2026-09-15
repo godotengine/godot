@@ -692,6 +692,8 @@ struct CyclicVectorHolder {
 	}
 };
 
+// Disable this test with ASAN, it will otherwise (rightfully) complain about use-after-poison.
+#ifndef ASAN_ENABLED
 TEST_CASE("[Vector] Cyclic Reference") {
 	// Create a stack-space vector.
 	Vector<CyclicVectorHolder> vector;
@@ -703,5 +705,6 @@ TEST_CASE("[Vector] Cyclic Reference") {
 	vector.ptrw()[0].is_destructing = true;
 	// The vector goes out of scope and destructs, calling CyclicVectorHolder's destructor.
 }
+#endif
 
 } // namespace TestVector

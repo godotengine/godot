@@ -140,6 +140,8 @@ public:
 	void clear_shadowmask_textures();
 	bool has_shadowmask_textures();
 
+	void update_specular_intensity(float p_intensity);
+
 	virtual RID get_rid() const override;
 	LightmapGIData();
 	~LightmapGIData();
@@ -208,6 +210,7 @@ private:
 	LightmapGIData::ShadowmaskMode shadowmask_mode = LightmapGIData::SHADOWMASK_MODE_NONE;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
+	float specular_intensity = 0.0f;
 
 	Ref<LightmapGIData> light_data;
 	Node *last_owner = nullptr;
@@ -215,6 +218,11 @@ private:
 	struct LightsFound {
 		Transform3D xform;
 		Light3D *light = nullptr;
+	};
+
+	struct AreaLightAtlasTexture {
+		Rect2 texture_rect;
+		float max_mipmap;
 	};
 
 	struct MeshesFound {
@@ -261,9 +269,7 @@ private:
 		GenProbesOctree *children[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		~GenProbesOctree() {
 			for (int i = 0; i < 8; i++) {
-				if (children[i] != nullptr) {
-					memdelete(children[i]);
-				}
+				memdelete(children[i]);
 			}
 		}
 	};
@@ -272,6 +278,7 @@ private:
 	void _gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool> &positions_used, const AABB &p_bounds);
 
 	BakeError _save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, bool p_is_shadowmask = false) const;
+	void _build_area_light_texture_atlas(const Vector<LightmapGI::LightsFound> &lights_found, HashMap<Ref<Texture2D>, AreaLightAtlasTexture> &r_texture_rects, Size2i &r_atlas_size, int &r_mipmaps) const;
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -344,6 +351,9 @@ public:
 
 	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
 	Ref<CameraAttributes> get_camera_attributes() const;
+
+	float get_specular_intensity() const;
+	void set_specular_intensity(float p_strength);
 
 	AABB get_aabb() const override;
 

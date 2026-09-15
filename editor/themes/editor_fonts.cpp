@@ -181,7 +181,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 			var_suffix = { "TC", "HK", "SC", "KR", "JP" };
 		} else if (locale.begins_with("ko")) {
 			var_suffix = { "KR", "HK", "SC", "TC", "JP" };
-		} else if (locale.begins_with("ko")) {
+		} else if (locale.begins_with("ja")) {
 			var_suffix = { "JP", "HK", "KR", "SC", "TC" };
 		} else {
 			var_suffix = { "HK", "KR", "SC", "TC", "JP" };
@@ -263,6 +263,8 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	default_font_bold_msdf->set_fallbacks(fallbacks_bold);
 
 	Ref<FontFile> default_font_mono = load_internal_font(_font_JetBrainsMono_Regular, _font_JetBrainsMono_Regular_size, font_mono_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
+	default_font_mono->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
+	default_font_mono->set_keep_rounding_remainders(false);
 	default_font_mono->set_fallbacks(fallbacks);
 
 	// Init base font configs and load custom fonts.
@@ -389,6 +391,8 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	mono_fc.instantiate();
 	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path_source, font_mono_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
+		custom_font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
+		custom_font->set_keep_rounding_remainders(false);
 		{
 			TypedArray<Font> fallback_custom = { default_font_mono };
 			custom_font->set_fallbacks(fallback_custom);
@@ -498,6 +502,10 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 
 	p_theme->set_font("title", EditorStringName(EditorFonts), bold_fc);
 	p_theme->set_font_size("title_size", EditorStringName(EditorFonts), default_font_size + 1 * EDSCALE);
+
+	p_theme->set_type_variation("MainScreenContainer", "TabContainer");
+	p_theme->set_font(SceneStringName(font), "MainScreenContainer", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "MainScreenContainer", default_font_size + 2 * EDSCALE);
 
 	p_theme->set_type_variation("MainScreenButton", "Button");
 	p_theme->set_font(SceneStringName(font), "MainScreenButton", bold_fc);

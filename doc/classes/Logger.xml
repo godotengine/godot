@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Logger" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Logger" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Custom logger to receive messages from the internal error/warning stream.
 	</brief_description>
@@ -7,6 +7,7 @@
 		Custom logger to receive messages from the internal error/warning stream. Loggers are registered via [method OS.add_logger].
 	</description>
 	<tutorials>
+		<link title="Logging">$DOCS_URL/tutorials/scripting/logging.html</link>
 	</tutorials>
 	<methods>
 		<method name="_log_error" qualifiers="virtual">
@@ -24,7 +25,7 @@
 				The type of error provided by [param error_type] is described in the [enum ErrorType] enumeration.
 				Additionally, [param script_backtraces] provides backtraces for each of the script languages. These will only contain stack frames in editor builds and debug builds by default. To enable them for release builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks].
 				[b]Warning:[/b] This method will be called from threads other than the main thread, possibly at the same time, so you will need to have some kind of thread-safety in your implementation of it, like a [Mutex].
-				[b]Note:[/b] [param script_backtraces] will not contain any captured variables, due to its prohibitively high cost. To get those you will need to capture the backtraces yourself, from within the [Logger] virtual methods, using [method Engine.capture_script_backtraces].
+				[b]Note:[/b] [param script_backtraces] will not contain any captured variables, due to its prohibitively high cost. To get those, you will need to capture the backtraces yourself, from within the [Logger] virtual methods, using [method Engine.capture_script_backtraces].
 				[b]Note:[/b] Logging errors from this method using functions like [method @GlobalScope.push_error] or [method @GlobalScope.push_warning] is not supported, as it could cause infinite recursion. These errors will only show up in the console output.
 			</description>
 		</method>

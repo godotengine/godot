@@ -114,6 +114,17 @@ _hb_buffer_serialize_glyphs_json (hb_buffer_t *buffer,
 
   *buf_consumed = 0;
   hb_position_t x = 0, y = 0;
+
+  /* Calculate the advance of the previous glyphs */
+  if (pos && (flags & HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES))
+  {
+    for (unsigned int i = 0; i < start; i++)
+    {
+      x = hb_saturate_add (x, pos[i].x_advance);
+      y = hb_saturate_add (y, pos[i].y_advance);
+    }
+  }
+
   for (unsigned int i = start; i < end; i++)
   {
     char b[1024];
@@ -151,10 +162,12 @@ _hb_buffer_serialize_glyphs_json (hb_buffer_t *buffer,
       p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), ",\"cl\":%u", info[i].cluster));
     }
 
-    if (!(flags & HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS))
+    if (pos && !(flags & HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS))
     {
+      hb_position_t dx = hb_saturate_add (x, pos[i].x_offset);
+      hb_position_t dy = hb_saturate_add (y, pos[i].y_offset);
       p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), ",\"dx\":%d,\"dy\":%d",
-		   x+pos[i].x_offset, y+pos[i].y_offset));
+		   dx, dy));
       if (!(flags & HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES))
         p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), ",\"ax\":%d,\"ay\":%d",
 		     pos[i].x_advance, pos[i].y_advance));
@@ -195,8 +208,8 @@ _hb_buffer_serialize_glyphs_json (hb_buffer_t *buffer,
 
     if (pos && (flags & HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES))
     {
-      x += pos[i].x_advance;
-      y += pos[i].y_advance;
+      x = hb_saturate_add (x, pos[i].x_advance);
+      y = hb_saturate_add (y, pos[i].y_advance);
     }
   }
 
@@ -272,6 +285,17 @@ _hb_buffer_serialize_glyphs_text (hb_buffer_t *buffer,
 
   *buf_consumed = 0;
   hb_position_t x = 0, y = 0;
+
+  /* Calculate the advance of the previous glyphs */
+  if (pos && (flags & HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES))
+  {
+    for (unsigned int i = 0; i < start; i++)
+    {
+      x = hb_saturate_add (x, pos[i].x_advance);
+      y = hb_saturate_add (y, pos[i].y_advance);
+    }
+  }
+
   for (unsigned int i = start; i < end; i++)
   {
     char b[1024];
@@ -297,10 +321,12 @@ _hb_buffer_serialize_glyphs_text (hb_buffer_t *buffer,
       p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), "=%u", info[i].cluster));
     }
 
-    if (!(flags & HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS))
+    if (pos && !(flags & HB_BUFFER_SERIALIZE_FLAG_NO_POSITIONS))
     {
-      if (x+pos[i].x_offset || y+pos[i].y_offset)
-        p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), "@%d,%d", x+pos[i].x_offset, y+pos[i].y_offset));
+      hb_position_t dx = hb_saturate_add (x, pos[i].x_offset);
+      hb_position_t dy = hb_saturate_add (y, pos[i].y_offset);
+      if (dx || dy)
+        p += hb_max (0, snprintf (p, ARRAY_LENGTH (b) - (p - b), "@%d,%d", dx, dy));
 
       if (!(flags & HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES))
       {
@@ -341,8 +367,8 @@ _hb_buffer_serialize_glyphs_text (hb_buffer_t *buffer,
 
     if (pos && (flags & HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES))
     {
-      x += pos[i].x_advance;
-      y += pos[i].y_advance;
+      x = hb_saturate_add (x, pos[i].x_advance);
+      y = hb_saturate_add (y, pos[i].y_advance);
     }
   }
 
@@ -417,9 +443,9 @@ _hb_buffer_serialize_unicode_text (hb_buffer_t *buffer,
  * A human-readable, plain text format.
  * The serialized glyphs will look something like:
  *
- * ```
+ * |[<!-- language="plain" -->
  * [uni0651=0@518,0+0|uni0628=0+1897]
- * ```
+ * ]|
  *
  * - The serialized glyphs are delimited with `[` and `]`.
  * - Glyphs are separated with `|`
@@ -435,10 +461,10 @@ _hb_buffer_serialize_unicode_text (hb_buffer_t *buffer,
  * A machine-readable, structured format.
  * The serialized glyphs will look something like:
  *
- * ```
+ * |[<!-- language="plain" -->
  * [{"g":"uni0651","cl":0,"dx":518,"dy":0,"ax":0,"ay":0},
- * {"g":"uni0628","cl":0,"dx":0,"dy":0,"ax":1897,"ay":0}]
- * ```
+ *  {"g":"uni0628","cl":0,"dx":0,"dy":0,"ax":1897,"ay":0}]
+ * ]|
  *
  * Each glyph is a JSON object, with the following properties:
  * - `g`: the glyph name or glyph index if
@@ -530,9 +556,9 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
  * A human-readable, plain text format.
  * The serialized codepoints will look something like:
  *
- * ```
+ * |[<!-- language="plain" -->
  *  <U+0651=0|U+0628=1>
- * ```
+ * ]|
  *
  * - Glyphs are separated with `|`
  * - Unicode codepoints are expressed as zero-padded four (or more)
@@ -550,9 +576,9 @@ hb_buffer_serialize_glyphs (hb_buffer_t *buffer,
  *
  * For example:
  *
- * ```
+ * |[<!-- language="plain" -->
  * [{u:1617,cl:0},{u:1576,cl:1}]
- * ```
+ * ]|
  *
  * Return value:
  * The number of serialized items.
@@ -774,19 +800,19 @@ hb_buffer_deserialize_glyphs (hb_buffer_t *buffer,
     return false;
   }
 
-  hb_buffer_set_content_type (buffer, HB_BUFFER_CONTENT_TYPE_GLYPHS);
-
   if (!font)
     font = hb_font_get_empty ();
 
   switch (format)
   {
     case HB_BUFFER_SERIALIZE_FORMAT_TEXT:
+      hb_buffer_set_content_type (buffer, HB_BUFFER_CONTENT_TYPE_GLYPHS);
       return _hb_buffer_deserialize_text_glyphs (buffer,
 						 buf, buf_len, end_ptr,
 						 font);
 
     case HB_BUFFER_SERIALIZE_FORMAT_JSON:
+      hb_buffer_set_content_type (buffer, HB_BUFFER_CONTENT_TYPE_GLYPHS);
       return _hb_buffer_deserialize_json (buffer,
                                           buf, buf_len, end_ptr,
                                           font);
@@ -845,18 +871,18 @@ hb_buffer_deserialize_unicode (hb_buffer_t *buffer,
     return false;
   }
 
-  hb_buffer_set_content_type (buffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
-
   hb_font_t* font = hb_font_get_empty ();
 
   switch (format)
   {
     case HB_BUFFER_SERIALIZE_FORMAT_TEXT:
+      hb_buffer_set_content_type (buffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
       return _hb_buffer_deserialize_text_unicode (buffer,
 						  buf, buf_len, end_ptr,
 						  font);
 
     case HB_BUFFER_SERIALIZE_FORMAT_JSON:
+      hb_buffer_set_content_type (buffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
       return _hb_buffer_deserialize_json (buffer,
                                           buf, buf_len, end_ptr,
                                           font);

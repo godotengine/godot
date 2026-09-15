@@ -30,12 +30,12 @@
 
 #pragma once
 
+#include "core/templates/hashfuncs.h"
+#include "core/templates/local_vector.h"
+
 #include <CommonCrypto/CommonDigest.h>
 #include <simd/simd.h>
 #include <zlib.h>
-
-#include "core/templates/hashfuncs.h"
-#include "core/templates/local_vector.h"
 
 struct SHA256Digest {
 	unsigned char data[CC_SHA256_DIGEST_LENGTH];

@@ -30,6 +30,9 @@
 
 #include "gltf_document_extension_physics.h"
 
+#include "gltf_physics_body.h"
+#include "gltf_physics_shape.h"
+
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/rigid_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
@@ -580,7 +583,6 @@ Array _get_or_create_state_shapes_in_state(const Ref<GLTFState> &p_state) {
 GLTFShapeIndex _export_node_shape(const Ref<GLTFState> &p_state, const Ref<GLTFPhysicsShape> &p_physics_shape) {
 	Array state_shapes = _get_or_create_state_shapes_in_state(p_state);
 	GLTFShapeIndex size = state_shapes.size();
-	Dictionary shape_property;
 	Dictionary shape_dict = p_physics_shape->to_dictionary();
 	for (GLTFShapeIndex i = 0; i < size; i++) {
 		Dictionary other = state_shapes[i];

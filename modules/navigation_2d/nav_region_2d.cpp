@@ -30,11 +30,11 @@
 
 #include "nav_region_2d.h"
 
-#include "nav_map_2d.h"
-
 #include "2d/nav_mesh_queries_2d.h"
 #include "2d/nav_region_builder_2d.h"
 #include "2d/nav_region_iteration_2d.h"
+#include "nav_map_2d.h"
+
 #include "core/config/project_settings.h"
 
 using namespace Nav2D;
@@ -185,7 +185,7 @@ Rect2 NavRegion2D::get_bounds() const {
 	return iteration->get_bounds();
 }
 
-LocalVector<Nav2D::Polygon> const &NavRegion2D::get_polygons() const {
+const LocalVector<Nav2D::Polygon> &NavRegion2D::get_polygons() const {
 	RWLockRead read_lock(iteration_rwlock);
 	return iteration->get_navmesh_polygons();
 }

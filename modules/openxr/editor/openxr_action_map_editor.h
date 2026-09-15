@@ -64,6 +64,7 @@ private:
 	Button *save_as = nullptr;
 	Button *_default = nullptr;
 	TabContainer *tabs = nullptr;
+	MarginContainer *actionsets_mc = nullptr;
 	ScrollContainer *actionsets_scroll = nullptr;
 	VBoxContainer *actionsets_vb = nullptr;
 	OpenXRSelectInteractionProfileDialog *select_interaction_profile_dialog = nullptr;
@@ -80,6 +81,7 @@ private:
 	void _set_focus_on_action_set(OpenXRActionSetEditor *p_action_set_editor);
 	void _on_remove_action_set(Object *p_action_set_editor);
 	void _on_action_removed(const Ref<OpenXRAction> &p_action);
+	void _on_action_renamed(const Ref<OpenXRAction> &p_action);
 
 	void _on_add_interaction_profile();
 	void _on_interaction_profile_selected(const String &p_path);
@@ -94,6 +96,8 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 	void _clear_action_map();
 

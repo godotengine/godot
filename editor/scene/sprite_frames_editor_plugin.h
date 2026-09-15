@@ -64,7 +64,7 @@ public:
 	String name;
 	Vector<ClipboardSpriteFrames::Frame> frames;
 	float speed = 1.0f;
-	bool loop = false;
+	SpriteFrames::LoopMode loop = SpriteFrames::LOOP_LINEAR;
 
 	static Ref<ClipboardAnimation> from_sprite_frames(const Ref<SpriteFrames> &p_frames, const String &p_anim);
 };
@@ -239,10 +239,12 @@ class SpriteFramesEditor : public EditorDock {
 	void _animation_remove();
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
-	void _animation_loop_changed();
+	void _animation_loop_pressed();
 	void _animation_speed_resized();
 	void _animation_speed_changed(double p_value);
 	void _animation_remove_undo_redo(const StringName &p_action_name, const Vector<ClipboardSpriteFrames::Frame> *p_frames = nullptr);
+
+	void _update_anim_loop_button();
 
 	StringName _find_next_animation();
 	String _generate_unique_animation_name(const String &p_base_name) const;
@@ -319,7 +321,6 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 
 public:
 	virtual String get_plugin_name() const override { return "SpriteFrames"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

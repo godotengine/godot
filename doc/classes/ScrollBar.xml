@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScrollBar" inherits="Range" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ScrollBar" inherits="Range" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Abstract base class for scrollbars.
 	</brief_description>
@@ -23,6 +23,9 @@
 		</signal>
 	</signals>
 	<theme_items>
+		<theme_item name="icon_max_size" data_type="constant" type="int" default="0">
+			The maximum allowed size of the [ScrollBar]'s increment and decrement icons. The texture is scaled down so its widest axis is [theme_item icon_max_size] and the other axis is scaled keeping the original ratio.
+		</theme_item>
 		<theme_item name="decrement" data_type="icon" type="Texture2D">
 			Icon used as a button to scroll the [ScrollBar] left/up. Supports custom step using the [member ScrollBar.custom_step] property.
 		</theme_item>

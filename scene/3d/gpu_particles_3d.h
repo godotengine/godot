@@ -48,10 +48,11 @@ public:
 	};
 
 	enum TransformAlign {
-		TRANSFORM_ALIGN_DISABLED,
-		TRANSFORM_ALIGN_Z_BILLBOARD,
-		TRANSFORM_ALIGN_Y_TO_VELOCITY,
-		TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY
+		TRANSFORM_ALIGN_DISABLED = RSE::PARTICLES_TRANSFORM_ALIGN_DISABLED,
+		TRANSFORM_ALIGN_Z_BILLBOARD = RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD,
+		TRANSFORM_ALIGN_Y_TO_VELOCITY = RSE::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY,
+		TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY = RSE::PARTICLES_TRANSFORM_ALIGN_Z_BILLBOARD_Y_TO_VELOCITY,
+		TRANSFORM_ALIGN_LOCAL_BILLBOARD = RSE::PARTICLES_TRANSFORM_ALIGN_LOCAL_BILLBOARD,
 	};
 
 	enum {
@@ -86,6 +87,9 @@ private:
 	double trail_lifetime = 0.3;
 
 	TransformAlign transform_align = TRANSFORM_ALIGN_DISABLED;
+	RSE::ParticlesTransformAlignCustomSrc transform_align_channel_filter = RSE::ParticlesTransformAlignCustomSrc::PARTICLES_ALIGN_CHANNEL_FILTER_X;
+	RSE::ParticlesTransformAlignAxis transform_align_axis = RSE::ParticlesTransformAlignAxis::PARTICLES_ALIGN_AXIS_Y;
+	bool transform_align_use_velocity = true;
 
 	Ref<Material> process_material;
 
@@ -112,6 +116,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	void _restart_bind_compat_92089();
+	void _request_particles_process_bind_compat_109142(real_t p_time);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -183,6 +188,12 @@ public:
 	void set_transform_align(TransformAlign p_align);
 	TransformAlign get_transform_align() const;
 
+	void set_transform_align_channel_filter(RSE::ParticlesTransformAlignCustomSrc p_align_channel_filter);
+	RSE::ParticlesTransformAlignCustomSrc get_transform_align_channel_filter() const;
+
+	void set_transform_align_axis(RSE::ParticlesTransformAlignAxis p_axis);
+	RSE::ParticlesTransformAlignAxis get_transform_align_axis() const;
+
 	void restart(bool p_keep_seed = false);
 
 	void set_use_fixed_seed(bool p_use_fixed_seed);
@@ -190,7 +201,7 @@ public:
 
 	void set_seed(uint32_t p_seed);
 	uint32_t get_seed() const;
-	void request_particles_process(real_t p_requested_process_time);
+	void request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_residual = 0.0f);
 
 	enum EmitFlags {
 		EMIT_FLAG_POSITION = RSE::PARTICLES_EMIT_FLAG_POSITION,

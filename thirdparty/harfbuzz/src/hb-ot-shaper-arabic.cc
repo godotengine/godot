@@ -77,8 +77,8 @@ enum hb_arabic_joining_type_t {
   JOINING_GROUP_DALATH_RISH	= 5,
   NUM_STATE_MACHINE_COLS	= 6,
 
-  JOINING_TYPE_T = 7,
-  JOINING_TYPE_X = 8  /* means: use general-category to choose between U or T. */
+  JOINING_TYPE_T = 6,
+  JOINING_TYPE_X = 7  /* means: use general-category to choose between U or T. */
 };
 
 #include "hb-ot-shaper-arabic-table.hh"
@@ -534,12 +534,12 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	hb_position_t width = font->get_glyph_h_advance (info[i].codepoint);
 	if (info[i].arabic_shaping_action() == STCH_FIXED)
 	{
-	  w_fixed += width;
+	  w_fixed = hb_saturate_add (w_fixed, width);
 	  n_fixed++;
 	}
 	else
 	{
-	  w_repeating += width;
+	  w_repeating = hb_saturate_add (w_repeating, width);
 	  n_repeating++;
 	}
       }
@@ -551,7 +551,7 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	      HB_ARABIC_GENERAL_CATEGORY_IS_WORD (_hb_glyph_info_get_general_category (&info[context - 1]))))
       {
 	context--;
-	w_total += pos[context].x_advance;
+	w_total = hb_saturate_add (w_total, pos[context].x_advance);
       }
       i++; // Don't touch i again.
 
@@ -561,31 +561,55 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
       DEBUG_MSG (ARABIC, nullptr, "fixed tiles:     count=%d width=%" PRId32, n_fixed, w_fixed);
       DEBUG_MSG (ARABIC, nullptr, "repeating tiles: count=%d width=%" PRId32, n_repeating, w_repeating);
 
-      /* Number of additional times to repeat each repeating tile. */
-      int n_copies = 0;
+      static constexpr unsigned STCH_MAX_GLYPHS = 256;
 
-      hb_position_t w_remaining = w_total - w_fixed;
-      if (sign * w_remaining > sign * w_repeating && sign * w_repeating > 0)
-	n_copies = (sign * w_remaining) / (sign * w_repeating) - 1;
+      /* Number of additional times to repeat each repeating tile. */
+      unsigned int n_copies = 0;
+
+      int64_t w_remaining_signed = (int64_t) w_total - w_fixed;
+      int64_t w_repeating_signed = w_repeating;
+      if (sign < 0)
+      {
+	w_remaining_signed = -w_remaining_signed;
+	w_repeating_signed = -w_repeating_signed;
+      }
+      hb_position_t w_remaining = hb_saturate_sub (w_total, w_fixed);
+      if (w_remaining_signed > w_repeating_signed && w_repeating_signed > 0)
+	n_copies = w_remaining_signed / w_repeating_signed - 1;
 
       /* See if we can improve the fit by adding an extra repeat and squeezing them together a bit. */
       hb_position_t extra_repeat_overlap = 0;
-      hb_position_t shortfall = sign * w_remaining - sign * w_repeating * (n_copies + 1);
+      int64_t shortfall = w_remaining_signed - w_repeating_signed * (n_copies + 1);
       if (shortfall > 0 && n_repeating > 0)
       {
 	++n_copies;
-	hb_position_t excess = (n_copies + 1) * sign * w_repeating - sign * w_remaining;
+	int64_t excess = (n_copies + 1) * w_repeating_signed - w_remaining_signed;
 	if (excess > 0)
 	{
-	  extra_repeat_overlap = excess / (n_copies * n_repeating);
+	  extra_repeat_overlap = hb_clamp_to<hb_position_t> (excess / ((int64_t) n_copies * (int64_t) n_repeating));
 	  w_remaining = 0;
 	}
       }
 
+      unsigned int max_copies = 0;
+      if (n_repeating > 0)
+      {
+	unsigned int base_glyphs = n_fixed + n_repeating;
+	if (base_glyphs < STCH_MAX_GLYPHS)
+	  max_copies = (STCH_MAX_GLYPHS - base_glyphs) / n_repeating;
+      }
+      n_copies = hb_min (n_copies, max_copies);
+
       if (step == MEASURE)
       {
-	extra_glyphs_needed += n_copies * n_repeating;
-	DEBUG_MSG (ARABIC, nullptr, "will add extra %d copies of repeating tiles", n_copies);
+	unsigned int added_glyphs = 0;
+	if (unlikely (hb_unsigned_mul_overflows (n_copies, n_repeating, &added_glyphs) ||
+		      hb_unsigned_add_overflows (extra_glyphs_needed, added_glyphs, &extra_glyphs_needed)))
+	{
+	  extra_glyphs_needed = UINT_MAX;
+	  break;
+	}
+	DEBUG_MSG (ARABIC, nullptr, "will add extra %u copies of repeating tiles", n_copies);
       }
       else
       {
@@ -606,9 +630,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 	  {
 	    if (rtl)
 	    {
-	      x_offset -= width;
+	      x_offset = hb_saturate_sub (x_offset, width);
 	      if (n > 0)
-		x_offset += extra_repeat_overlap;
+		x_offset = hb_saturate_add (x_offset, extra_repeat_overlap);
 	    }
 	    pos[k - 1].x_offset = x_offset;
 	    /* Append copy. */
@@ -618,9 +642,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
 	    if (!rtl)
 	    {
-	      x_offset += width;
+	      x_offset = hb_saturate_add (x_offset, width);
 	      if (n > 0)
-		x_offset -= extra_repeat_overlap;
+		x_offset = hb_saturate_sub (x_offset, extra_repeat_overlap);
 	    }
 	  }
 	}
@@ -629,7 +653,9 @@ apply_stch (const hb_ot_shape_plan_t *plan HB_UNUSED,
 
     if (step == MEASURE)
     {
-      if (unlikely (!buffer->ensure (count + extra_glyphs_needed)))
+      unsigned int total_glyphs = 0;
+      if (unlikely (hb_unsigned_add_overflows (count, extra_glyphs_needed, &total_glyphs) ||
+		    !buffer->ensure (total_glyphs)))
 	break;
     }
     else

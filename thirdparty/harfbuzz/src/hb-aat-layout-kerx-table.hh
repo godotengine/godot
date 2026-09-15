@@ -258,6 +258,7 @@ struct KerxSubTableFormat1
 	depth (0),
 	crossStream (table->header.coverage & table->header.CrossStream) {}
 
+    HB_AAT_TRANSITION_INLINE
     void transition (hb_buffer_t *buffer,
 		     StateTableDriver<Types, EntryData, Flags> *driver,
 		     const Entry<EntryData> &entry)
@@ -322,15 +323,15 @@ struct KerxSubTableFormat1
 	      }
 	      else if (o.attach_type())
 	      {
-		o.y_offset += c->font->em_scale_y (v);
+		o.y_offset = hb_saturate_add (o.y_offset, c->font->em_scale_y (v));
 		buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
 	      }
 	    }
 	    else if (buffer->info[idx].mask & kern_mask)
 	    {
 	      auto scaled = c->font->em_scale_x (v);
-	      o.x_advance += scaled;
-	      o.x_offset += scaled;
+	      o.x_advance = hb_saturate_add (o.x_advance, scaled);
+	      o.x_offset = hb_saturate_add (o.x_offset, scaled);
 	    }
 	  }
 	  else
@@ -346,14 +347,15 @@ struct KerxSubTableFormat1
 	      }
 	      else if (o.attach_type())
 	      {
-		o.x_offset += c->font->em_scale_x (v);
+		o.x_offset = hb_saturate_add (o.x_offset, c->font->em_scale_x (v));
 		buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
 	      }
 	    }
 	    else if (buffer->info[idx].mask & kern_mask)
 	    {
-	      o.y_advance += c->font->em_scale_y (v);
-	      o.y_offset += c->font->em_scale_y (v);
+	      auto scaled = c->font->em_scale_y (v);
+	      o.y_advance = hb_saturate_add (o.y_advance, scaled);
+	      o.y_offset = hb_saturate_add (o.y_offset, scaled);
 	    }
 	  }
 	}
@@ -550,6 +552,7 @@ struct KerxSubTableFormat4
 	mark_set (false),
 	mark (0) {}
 
+    HB_AAT_TRANSITION_INLINE
     void transition (hb_buffer_t *buffer,
 		     StateTableDriver<Types, EntryData, Flags> *driver,
 		     const Entry<EntryData> &entry)
@@ -583,8 +586,8 @@ struct KerxSubTableFormat4
 							      &currX, &currY))
 	      return;
 
-	    o.x_offset = markX - currX;
-	    o.y_offset = markY - currY;
+	    o.x_offset = hb_saturate_sub (markX, currX);
+	    o.y_offset = hb_saturate_sub (markY, currY);
 	  }
 	  break;
 
@@ -605,8 +608,10 @@ struct KerxSubTableFormat4
 								  currAnchorPoint,
 								  c->sanitizer.get_num_glyphs ());
 
-	    o.x_offset = c->font->em_scale_x (markAnchor.xCoordinate) - c->font->em_scale_x (currAnchor.xCoordinate);
-	    o.y_offset = c->font->em_scale_y (markAnchor.yCoordinate) - c->font->em_scale_y (currAnchor.yCoordinate);
+	    o.x_offset = hb_saturate_sub (c->font->em_scale_x (markAnchor.xCoordinate),
+					  c->font->em_scale_x (currAnchor.xCoordinate));
+	    o.y_offset = hb_saturate_sub (c->font->em_scale_y (markAnchor.yCoordinate),
+					  c->font->em_scale_y (currAnchor.yCoordinate));
 	  }
 	  break;
 
@@ -622,8 +627,8 @@ struct KerxSubTableFormat4
 	    int currX = *data++;
 	    int currY = *data++;
 
-	    o.x_offset = c->font->em_scale_x (markX) - c->font->em_scale_x (currX);
-	    o.y_offset = c->font->em_scale_y (markY) - c->font->em_scale_y (currY);
+	    o.x_offset = hb_saturate_sub (c->font->em_scale_x (markX), c->font->em_scale_x (currX));
+	    o.y_offset = hb_saturate_sub (c->font->em_scale_y (markY), c->font->em_scale_y (currY));
 	  }
 	  break;
 	}
@@ -861,7 +866,7 @@ struct KerxSubTable
 {
   friend struct kerx;
 
-  unsigned int get_size () const { return u.header.length; }
+  size_t get_size () const { return u.header.length; }
   unsigned int get_type () const { return u.header.coverage & u.header.SubtableType; }
 
   template <typename context_t, typename ...Ts>
@@ -870,11 +875,11 @@ struct KerxSubTable
     unsigned int subtable_type = get_type ();
     TRACE_DISPATCH (this, subtable_type);
     switch (subtable_type) {
-    case 0:	return_trace (c->dispatch (u.format0, std::forward<Ts> (ds)...));
-    case 1:	return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
-    case 2:	return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
-    case 4:	return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
-    case 6:	return_trace (c->dispatch (u.format6, std::forward<Ts> (ds)...));
+    case 0:	hb_barrier (); return_trace (c->dispatch (u.format0, std::forward<Ts> (ds)...));
+    case 1:	hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 2:	hb_barrier (); return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
+    case 4:	hb_barrier (); return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
+    case 6:	hb_barrier (); return_trace (c->dispatch (u.format6, std::forward<Ts> (ds)...));
     default:	return_trace (c->default_return_value ());
     }
   }
@@ -884,11 +889,11 @@ struct KerxSubTable
   {
     unsigned int subtable_type = get_type ();
     switch (subtable_type) {
-    case 0:	u.format0.collect_glyphs (first_set, second_set, num_glyphs); return;
-    case 1:	u.format1.collect_glyphs (first_set, second_set, num_glyphs); return;
-    case 2:	u.format2.collect_glyphs (first_set, second_set, num_glyphs); return;
-    case 4:	u.format4.collect_glyphs (first_set, second_set, num_glyphs); return;
-    case 6:	u.format6.collect_glyphs (first_set, second_set, num_glyphs); return;
+    case 0:	hb_barrier (); u.format0.collect_glyphs (first_set, second_set, num_glyphs); return;
+    case 1:	hb_barrier (); u.format1.collect_glyphs (first_set, second_set, num_glyphs); return;
+    case 2:	hb_barrier (); u.format2.collect_glyphs (first_set, second_set, num_glyphs); return;
+    case 4:	hb_barrier (); u.format4.collect_glyphs (first_set, second_set, num_glyphs); return;
+    case 6:	hb_barrier (); u.format6.collect_glyphs (first_set, second_set, num_glyphs); return;
     default:	return;
     }
   }

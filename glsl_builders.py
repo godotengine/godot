@@ -176,6 +176,19 @@ def include_file_in_rd_header(filename: str, header_data: RDHeaderStruct, depth:
     return header_data
 
 
+def build_rd_header_lines_for_raytracing_stage(lines, stage: str):
+    if lines:
+        return f"""\
+		static const char _{stage}_code[] = {{
+{to_raw_cstring(lines)}
+		}};
+"""
+    else:
+        return f"""\
+		static const char *_{stage}_code = nullptr;
+"""
+
+
 def build_rd_header(filename: str, shader: str) -> None:
     include_file_in_rd_header(shader, header_data := RDHeaderStruct(), 0)
     class_name = os.path.basename(shader).replace(".glsl", "").title().replace("_", "").replace(".", "") + "ShaderRD"
@@ -189,23 +202,19 @@ public:
 	{class_name}() {{
 """)
 
-        if header_data.raygen_lines:
+        if (
+            header_data.raygen_lines
+            or header_data.any_hit_lines
+            or header_data.closest_hit_lines
+            or header_data.miss_lines
+            or header_data.intersection_lines
+        ):
+            file.write(build_rd_header_lines_for_raytracing_stage(header_data.raygen_lines, "raygen"))
+            file.write(build_rd_header_lines_for_raytracing_stage(header_data.any_hit_lines, "any_hit"))
+            file.write(build_rd_header_lines_for_raytracing_stage(header_data.closest_hit_lines, "closest_hit"))
+            file.write(build_rd_header_lines_for_raytracing_stage(header_data.miss_lines, "miss"))
+            file.write(build_rd_header_lines_for_raytracing_stage(header_data.intersection_lines, "intersection"))
             file.write(f"""\
-		static const char _raygen_code[] = {{
-{to_raw_cstring(header_data.raygen_lines)}
-		}};
-		static const char _any_hit_code[] = {{
-{to_raw_cstring(header_data.any_hit_lines)}
-		}};
-		static const char _closest_hit_code[] = {{
-{to_raw_cstring(header_data.closest_hit_lines)}
-		}};
-		static const char _miss_code[] = {{
-{to_raw_cstring(header_data.miss_lines)}
-		}};
-		static const char _intersection_code[] = {{
-{to_raw_cstring(header_data.intersection_lines)}
-		}};
 		setup_raytracing(_raygen_code, _any_hit_code, _closest_hit_code, _miss_code, _intersection_code, "{class_name}");
 """)
         elif header_data.compute_lines:

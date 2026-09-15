@@ -62,6 +62,12 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #define GD_HAS_FEATURE(m_feature) 0
 #endif
 
+#if defined(__has_cpp_attribute)
+#define GD_HAS_CPP_ATTRIBUTE(m_feature) __has_cpp_attribute(m_feature)
+#else
+#define GD_HAS_CPP_ATTRIBUTE(m_feature) 0
+#endif
+
 #if (GD_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)) && !defined(ASAN_ENABLED)
 #error Address sanitizer was enabled without defining `ASAN_ENABLED`
 #endif
@@ -127,6 +133,18 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #define _ALLOW_DISCARD_ (void)
 #endif
 
+#if GD_HAS_CPP_ATTRIBUTE(clang::lifetimebound)
+#define _LIFETIME_BOUND_ [[clang::lifetimebound]]
+#elif GD_HAS_CPP_ATTRIBUTE(gnu::lifetimebound)
+#define _LIFETIME_BOUND_ [[gnu::lifetimebound]]
+#elif GD_HAS_CPP_ATTRIBUTE(msvc::lifetimebound)
+#define _LIFETIME_BOUND_ [[msvc::lifetimebound]]
+#elif GD_HAS_CPP_ATTRIBUTE(lifetimebound)
+#define _LIFETIME_BOUND_ [[lifetimebound]]
+#else
+#define _LIFETIME_BOUND_
+#endif
+
 // Make room for our constexpr's below by overriding potential system-specific macros.
 #undef SIGN
 #undef MIN
@@ -134,23 +152,23 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #undef CLAMP
 
 template <typename T>
-constexpr const T SIGN(const T m_v) {
-	return m_v > 0 ? +1.0f : (m_v < 0 ? -1.0f : 0.0f);
+constexpr const T SIGN(const T p_value) {
+	return p_value > 0 ? +1.0f : (p_value < 0 ? -1.0f : 0.0f);
 }
 
 template <typename T, typename T2>
-constexpr auto MIN(const T m_a, const T2 m_b) {
-	return m_a < m_b ? m_a : m_b;
+constexpr auto MIN(const T p_left, const T2 p_right) {
+	return p_left < p_right ? p_left : p_right;
 }
 
 template <typename T, typename T2>
-constexpr auto MAX(const T m_a, const T2 m_b) {
-	return m_a > m_b ? m_a : m_b;
+constexpr auto MAX(const T p_left, const T2 p_right) {
+	return p_left > p_right ? p_left : p_right;
 }
 
 template <typename T, typename T2, typename T3>
-constexpr auto CLAMP(const T m_a, const T2 m_min, const T3 m_max) {
-	return m_a < m_min ? m_min : (m_a > m_max ? m_max : m_a);
+constexpr auto CLAMP(const T p_value, const T2 p_min, const T3 p_max) {
+	return p_value < p_min ? p_min : (p_value > p_max ? p_max : p_value);
 }
 
 // Like std::size, but without requiring any additional includes.
@@ -266,6 +284,13 @@ struct is_zero_constructible<const volatile T> : is_zero_constructible<T> {};
 template <typename T>
 inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 
+#if GD_HAS_CPP_ATTRIBUTE(gnu::warn_unused)
+// https://gcc.gnu.org/onlinedocs/gcc/C_002b_002b-Attributes.html#index-warn_005funused
+#define _WARN_UNUSED_ [[gnu::warn_unused]]
+#else
+#define _WARN_UNUSED_
+#endif
+
 // Warning suppression helper macros.
 #if defined(__clang__)
 #define GODOT_CLANG_PRAGMA(m_content) _Pragma(#m_content)
@@ -307,6 +332,22 @@ inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
 #define GODOT_MSVC_WARNING_IGNORE(m_warning)
 #define GODOT_MSVC_WARNING_POP
 #define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif
+
+// Deprecation warning suppression helper macros.
+#if defined(__clang__)
+#define GODOT_PUSH_IGNORE_DEPRECATION() GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
+#define GODOT_POP_IGNORE_DEPRECATION() GODOT_CLANG_WARNING_POP
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+#define GODOT_PUSH_IGNORE_DEPRECATION() GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
+#define GODOT_POP_IGNORE_DEPRECATION() GODOT_GCC_WARNING_POP
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#define GODOT_PUSH_IGNORE_DEPRECATION() GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4996)
+#define GODOT_POP_IGNORE_DEPRECATION() GODOT_MSVC_WARNING_POP
 #endif
 
 template <typename T, typename = void>

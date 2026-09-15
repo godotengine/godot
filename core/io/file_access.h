@@ -88,11 +88,7 @@ public:
 	typedef void (*FileCloseFailNotify)(const String &);
 
 	typedef Ref<FileAccess> (*CreateFunc)();
-#ifdef BIG_ENDIAN_ENABLED
-	bool big_endian = true;
-#else
 	bool big_endian = false;
-#endif
 	bool real_is_double = false;
 
 	virtual BitField<UnixPermissionFlags> _get_unix_permissions(const String &p_file) = 0;
@@ -111,6 +107,7 @@ public:
 protected:
 	static void _bind_methods();
 
+	friend class Main;
 	AccessType get_access_type() const;
 	virtual String fix_path(const String &p_path) const;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) = 0; ///< open a file
@@ -123,7 +120,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	static Ref<FileAccess> _open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
-	static Ref<FileAccess> _create_temp_compat_114053(int p_mode_flags, const String &p_prefix = "", const String &p_extension = "", bool p_keep = false);
+	static Ref<FileAccess> _create_temp_bind_compat_114053(int p_mode_flags, const String &p_prefix = "", const String &p_extension = "", bool p_keep = false);
 
 	void store_8_bind_compat_78289(uint8_t p_dest);
 	void store_16_bind_compat_78289(uint16_t p_dest);

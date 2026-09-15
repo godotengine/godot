@@ -128,6 +128,7 @@ private:
 	HashMap<String, String> compat_map;
 	void _handle_setting_compatibility();
 	void _rename_setting(const String &p_old_name, const String &p_new_name);
+	void _rename_shortcut(const String &p_old_path, const String &p_new_path);
 #endif
 
 	// Bind helpers.
@@ -146,6 +147,7 @@ public:
 	static String get_newest_settings_path();
 
 	static void create();
+	void init_shortcuts();
 	void setup_language(bool p_initial_setup);
 	void setup_network();
 	static void save();
@@ -213,7 +215,9 @@ public:
 
 	void notify_changes();
 
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	EditorSettings();
 };

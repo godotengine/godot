@@ -31,10 +31,10 @@
 #include "label_3d.h"
 
 #include "core/config/engine.h"
+#include "core/math/triangle_mesh.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/main/window.h"
-#include "scene/resources/mesh.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering/rendering_server.h"
@@ -356,7 +356,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 		gl_of = Vector2(0, -gl_sz.y);
 	}
 
-	if (gl_uv.size.x <= 2 || gl_uv.size.y <= 2) {
+	if (p_glyph.font_rid.is_valid() && tex.is_null()) {
 		r_offset.x += p_glyph.advance * pixel_size * p_glyph.repeat; // Nothing to draw.
 		return;
 	}

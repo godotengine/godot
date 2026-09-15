@@ -204,6 +204,7 @@ public:
 		Vector2i texture_size;
 		Vector2i dest_texture_size;
 		uint32_t view_count = 1;
+		bool bilinear_filtering = true;
 
 		bool convert_to_srgb = false;
 	};

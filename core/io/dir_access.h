@@ -91,6 +91,7 @@ public:
 
 	virtual int get_drive_count() = 0;
 	virtual String get_drive(int p_drive) = 0;
+	virtual String get_drive_label(int p_drive) { return String(); }
 	virtual int get_current_drive();
 	virtual bool drives_are_shortcuts();
 
@@ -145,7 +146,8 @@ public:
 	static Ref<DirAccess> create_temp(const String &p_prefix = "", bool p_keep = false, Error *r_error = nullptr);
 
 	static int _get_drive_count();
-	static String get_drive_name(int p_idx);
+	static String _get_drive_name(int p_idx);
+	static String _get_drive_label(int p_idx);
 
 	static Error make_dir_absolute(const String &p_dir);
 	static Error make_dir_recursive_absolute(const String &p_dir);

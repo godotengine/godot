@@ -81,6 +81,8 @@ protected:
 	void _accessibility_action_dec(const Variant &p_data);
 	void _accessibility_action_set_value(const Variant &p_data);
 
+	virtual String _get_accessibility_name() const override;
+
 public:
 	int dragger_index = -1;
 
@@ -167,6 +169,8 @@ private:
 	void _update_nested_ancestors(bool p_remove = false);
 	void _update_all_nested_descendents(Control *p_control, Control *p_first_child = nullptr);
 
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
 protected:
 	bool is_fixed = false;
 
@@ -179,7 +183,7 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
-	void _clamp_split_offset_compat_90411();
+	void _clamp_split_offset_bind_compat_90411();
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
@@ -205,6 +209,7 @@ public:
 	bool is_dragging_enabled() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;

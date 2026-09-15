@@ -85,6 +85,9 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_egl_window *wl_egl_window = nullptr;
 #endif
 
+		// Whether a `WaylandThread` equivalent exists or not.
+		bool created = false;
+
 		// Flags whether we have allocated a buffer through the video drivers.
 		bool visible = false;
 
@@ -93,6 +96,9 @@ class DisplayServerWayland : public DisplayServer {
 		uint32_t flags = 0;
 
 		DisplayServerEnums::WindowMode mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
+
+		bool hdr_requested = false;
+		WaylandThread::ColorProfile color_profile;
 
 		Callable rect_changed_callback;
 		Callable window_event_callback;
@@ -115,12 +121,16 @@ class DisplayServerWayland : public DisplayServer {
 		CAPABILITY, // New "suspended" wm_capability flag.
 	};
 
+	Point2 mouse_pos;
+
 	DisplayServerEnums::CursorShape cursor_shape = DisplayServerEnums::CURSOR_ARROW;
 	DisplayServerEnums::MouseMode mouse_mode = DisplayServerEnums::MOUSE_MODE_VISIBLE;
 	DisplayServerEnums::MouseMode mouse_mode_base = DisplayServerEnums::MOUSE_MODE_VISIBLE;
 	DisplayServerEnums::MouseMode mouse_mode_override = DisplayServerEnums::MOUSE_MODE_VISIBLE;
 	bool mouse_mode_override_enabled = false;
 	void _mouse_update_mode();
+
+	DisplayServerEnums::WindowID hovered_window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 	HashMap<DisplayServerEnums::CursorShape, CustomCursor> custom_cursors;
 
@@ -138,6 +148,7 @@ class DisplayServerWayland : public DisplayServer {
 	// track of all the generic floating window concept.
 	List<DisplayServerEnums::WindowID> popup_menu_list;
 	BitField<MouseButtonMask> last_mouse_monitor_mask = MouseButtonMask::NONE;
+	bool last_touch_monitor_pressed = false;
 
 	String ime_text;
 	Vector2i ime_selection;
@@ -174,7 +185,11 @@ class DisplayServerWayland : public DisplayServer {
 	static void dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 
+	void _delete_window(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID);
 	void _update_window_rect(const Rect2i &p_rect, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID);
+	void _hover_window(DisplayServerEnums::WindowID p_window_id);
+
+	void _window_update_hdr_state(WindowData &p_window);
 
 	void try_suspend();
 
@@ -222,6 +237,7 @@ public:
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
 	virtual Ref<Image> clipboard_get_image() const override;
+	virtual bool clipboard_has_image() const override;
 	virtual void clipboard_set_primary(const String &p_text) override;
 	virtual String clipboard_get_primary() const override;
 
@@ -233,6 +249,8 @@ public:
 	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+
+	virtual bool is_touchscreen_available() const override;
 
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
@@ -288,6 +306,8 @@ public:
 	virtual void window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
+	virtual void window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
+
 	virtual bool window_is_maximize_allowed(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_flag(DisplayServerEnums::WindowFlags p_flag, bool p_enabled, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) override;
@@ -316,6 +336,22 @@ public:
 
 	virtual void window_start_drag(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual void window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window) override;
+
+	virtual bool window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual void window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual bool window_is_hdr_output_requested(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual bool window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_reference_luminance(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) override;
+	virtual float window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+	virtual float window_get_hdr_output_current_max_luminance(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual float window_get_output_max_linear_value(DisplayServerEnums::WindowID p_window_id = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 
 	virtual void cursor_set_shape(DisplayServerEnums::CursorShape p_shape) override;
 	virtual DisplayServerEnums::CursorShape cursor_get_shape() const override;

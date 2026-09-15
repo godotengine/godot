@@ -202,6 +202,8 @@ private:
 
 		CanvasTexture *canvas_texture = nullptr;
 
+		RID streaming_state;
+
 		void cleanup();
 	};
 
@@ -249,6 +251,45 @@ private:
 	};
 
 	void _texture_format_from_rd(RD::DataFormat p_rd_format, TextureFromRDFormat &r_format);
+
+	/* AREA LIGHT ATLAS API */
+
+	struct AreaLightAtlas {
+		struct Texture {
+			int users;
+			Rect2 uv_rect;
+		};
+
+		struct SortItem {
+			RID texture;
+			Size2i pixel_size;
+			Size2i size;
+			Point2i pos;
+
+			bool operator<(const SortItem &p_item) const {
+				//sort larger to smaller
+				if (size.height == p_item.size.height) {
+					return size.width > p_item.size.width;
+				} else {
+					return size.height > p_item.size.height;
+				}
+			}
+		};
+
+		HashMap<RID, Texture> textures;
+		bool dirty = true;
+		int mipmaps = 8;
+
+		RID texture;
+		struct MipMap {
+			RID fb;
+			RID texture;
+			Size2i size;
+		};
+		Vector<MipMap> texture_mipmaps;
+
+		Size2i size;
+	} area_light_atlas;
 
 	/* DECAL API */
 
@@ -404,6 +445,8 @@ private:
 		RID vrs_texture;
 
 		Rect2i render_region;
+		bool subsampled_enabled = false;
+		bool subsampled_allowed = true;
 
 		// overridden textures
 		struct RTOverridden {
@@ -581,6 +624,7 @@ public:
 	virtual RID texture_drawable_get_default_material() const override;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) override;
+	virtual void texture_replace_compatible(RID p_texture, RID p_by_texture) override;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) override;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) override;
@@ -599,6 +643,7 @@ public:
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
 	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type = RSE::TEXTURE_LAYERED_2D_ARRAY) override;
+
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override;
 
@@ -632,6 +677,33 @@ public:
 		}
 		return Size2i(tex->width_2d, tex->height_2d);
 	}
+
+	/* AREA LIGHT API */
+	void update_area_light_atlas();
+
+	RID area_light_atlas_get_texture() const;
+
+	_FORCE_INLINE_ Rect2 area_light_atlas_get_texture_rect(RID p_texture) {
+		AreaLightAtlas::Texture *t = area_light_atlas.textures.getptr(p_texture);
+		if (!t) {
+			return Rect2();
+		}
+
+		return t->uv_rect;
+	}
+
+	_FORCE_INLINE_ int area_light_atlas_get_mipmaps() {
+		return area_light_atlas.mipmaps;
+	}
+	_FORCE_INLINE_ Size2i area_light_atlas_get_size() {
+		return area_light_atlas.size;
+	}
+
+	void area_light_atlas_mark_dirty_on_texture(RID p_texture);
+	void area_light_atlas_remove_texture(RID p_texture);
+
+	virtual void texture_add_to_area_light_atlas(RID p_texture) override;
+	virtual void texture_remove_from_area_light_atlas(RID p_texture) override;
 
 	/* DECAL API */
 
@@ -839,6 +911,12 @@ public:
 	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) override;
 	virtual Rect2i render_target_get_render_region(RID p_render_target) const override;
 
+	virtual void render_target_set_subsampled_enabled(RID p_render_target, bool p_enabled) override;
+	virtual bool render_target_is_subsampled_enabled(RID p_render_target) const override;
+
+	virtual void render_target_set_subsampled_allowed(RID p_render_target, bool p_allowed) override;
+	virtual bool render_target_is_subsampled_allowed(RID p_render_target) const override;
+
 	virtual RID render_target_get_texture(RID p_render_target) override;
 
 	virtual void render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) override {}
@@ -859,6 +937,8 @@ public:
 
 	static RD::DataFormat render_target_get_color_format(bool p_use_hdr, bool p_srgb);
 	static uint32_t render_target_get_color_usage_bits(bool p_msaa);
+
+	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) override;
 };
 
 } // namespace RendererRD

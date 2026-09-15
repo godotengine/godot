@@ -37,7 +37,6 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/mesh.h"
@@ -899,6 +898,7 @@ Path2DEditor::Path2DEditor() {
 	toolbar->add_child(curve_clear_points);
 
 	clear_points_dialog = memnew(ConfirmationDialog);
+	clear_points_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	clear_points_dialog->set_title(TTR("Please Confirm..."));
 	clear_points_dialog->set_text(TTR("Remove all curve points?"));
 	clear_points_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CLEAR_POINTS));

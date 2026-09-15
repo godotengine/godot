@@ -48,7 +48,7 @@
 #define libdecor_state_free libdecor_state_free_dylibloader_orig_libdecor
 #define libdecor_configuration_get_content_size libdecor_configuration_get_content_size_dylibloader_orig_libdecor
 #define libdecor_configuration_get_window_state libdecor_configuration_get_window_state_dylibloader_orig_libdecor
-#include "./thirdparty/linuxbsd_headers/libdecor-0/libdecor.h"
+#include "./thirdparty/linuxbsd_headers/libdecor-0/libdecor.h" // IWYU pragma: export.
 #undef libdecor_unref
 #undef libdecor_new
 #undef libdecor_get_fd

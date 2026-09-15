@@ -31,10 +31,17 @@
 #include "openxr_visibility_mask_extension.h"
 
 #include "../openxr_api.h"
+
 #include "core/string/print_string.h"
 #include "core/variant/array.h"
 #include "core/variant/variant.h"
 #include "servers/rendering/rendering_server.h"
+
+// Note: if foveated inset rendering is used, our visibility mask should only
+// be applied to our context view.
+// This code is correct and will only supply data for the primary view.
+// But user will need to setup visual layers accordingly.
+// Need to document this!
 
 static const char *VISIBILITY_MASK_SHADER_CODE =
 		"shader_type spatial;\n"
@@ -101,7 +108,7 @@ void OpenXRVisibilityMaskExtension::on_session_created(const XrSession p_instanc
 		rendering_server->material_set_render_priority(material, 99);
 
 		// Get our initial mesh data.
-		mesh_count = openxr_api->get_view_count(); // We need a mesh for each view.
+		mesh_count = openxr_api->get_view_count(); // We need a mesh for each primary view.
 		for (uint32_t i = 0; i < mesh_count; i++) {
 			_update_mesh_data(i);
 		}
