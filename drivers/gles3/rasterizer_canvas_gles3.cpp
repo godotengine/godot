@@ -1726,10 +1726,12 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 			shadow_render.shader.version_set_uniform(CanvasOcclusionShaderGLES3::MODELVIEW2, modelview.columns[0][1], modelview.columns[1][1], 0, modelview.columns[2][1], shadow_render.shader_version, variant);
 
 			if (co->cull_mode != cull_mode) {
-				if (co->cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED) {
+				if (co->cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED ||
+						co->cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_SOLID) {
 					glDisable(GL_CULL_FACE);
 				} else {
-					if (cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED) {
+					if (cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED ||
+							cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_SOLID) {
 						// Last time was disabled, so enable and set proper face.
 						glEnable(GL_CULL_FACE);
 					}
@@ -1746,6 +1748,31 @@ void RasterizerCanvasGLES3::light_update_shadow(RID p_rid, int p_shadow_index, c
 	}
 
 	glBindVertexArray(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_SCISSOR_TEST);
+}
+
+void RasterizerCanvasGLES3::light_clear_shadow(RID p_rid, int p_shadow_index, float p_far) {
+	CanvasLight *cl = canvas_light_owner.get_or_null(p_rid);
+	ERR_FAIL_COND(!cl->shadow.enabled);
+
+	_update_shadow_atlas();
+
+	cl->shadow.z_far = p_far;
+	cl->shadow.y_offset = float(p_shadow_index * 2 + 1) / float(data.max_lights_per_render * 2);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, state.shadow_fb);
+	glViewport(0, p_shadow_index * 2, state.shadow_texture_size, 2);
+
+	glDepthMask(GL_TRUE);
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(0, p_shadow_index * 2, state.shadow_texture_size, 2);
+	glClearColor(0, 0, 0, 1.0);
+	RasterizerUtilGLES3::clear_depth(1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);
@@ -1829,10 +1856,12 @@ void RasterizerCanvasGLES3::light_update_directional_shadow(RID p_rid, int p_sha
 		shadow_render.shader.version_set_uniform(CanvasOcclusionShaderGLES3::MODELVIEW2, modelview.columns[0][1], modelview.columns[1][1], 0, modelview.columns[2][1], shadow_render.shader_version, variant);
 
 		if (co->cull_mode != cull_mode) {
-			if (co->cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED) {
+			if (co->cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED ||
+					co->cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_SOLID) {
 				glDisable(GL_CULL_FACE);
 			} else {
-				if (cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED) {
+				if (cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED ||
+						cull_mode == RSE::CANVAS_OCCLUDER_POLYGON_CULL_SOLID) {
 					// Last time was disabled, so enable and set proper face.
 					glEnable(GL_CULL_FACE);
 				}

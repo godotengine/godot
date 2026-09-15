@@ -2452,6 +2452,9 @@ void RendererCanvasCull::canvas_occluder_polygon_set_shape(RID p_occluder_polygo
 		}
 	}
 
+	occluder_poly->points = p_shape;
+	occluder_poly->closed = p_closed;
+
 	RSG::canvas_render->occluder_polygon_set_shape(occluder_poly->occluder, p_shape, p_closed);
 
 	for (RendererCanvasRender::LightOccluderInstance *E : occluder_poly->owners) {
@@ -2467,6 +2470,50 @@ void RendererCanvasCull::canvas_occluder_polygon_set_cull_mode(RID p_occluder_po
 	for (RendererCanvasRender::LightOccluderInstance *E : occluder_poly->owners) {
 		E->cull_cache = p_mode;
 	}
+}
+
+bool RendererCanvasCull::is_light_inside_solid_occluder(
+		const Vector2 &p_light_pos,
+		RendererCanvasRender::LightOccluderInstance *p_occluders) {
+	// Small margin (in local-space units) so that lights exactly on or
+	// very near the polygon boundary are treated as "inside."  This
+	// prevents the single-frame light leak that happens when the
+	// point-in-polygon test returns false for an edge point.
+	static constexpr real_t EDGE_MARGIN = 2.0;
+
+	RendererCanvasRender::LightOccluderInstance *instance = p_occluders;
+	while (instance) {
+		if (instance->cull_cache == RSE::CANVAS_OCCLUDER_POLYGON_CULL_SOLID) {
+			const LightOccluderPolygon *poly =
+					canvas_light_occluder_polygon_owner.get_or_null(instance->polygon);
+			if (poly && poly->closed && poly->points.size() >= 3) {
+				// Transform light position into occluder local space.
+				Vector2 local_pos = instance->xform_cache.affine_inverse().xform(p_light_pos);
+				// Expanded AABB pre-check with margin.
+				Rect2 expanded_aabb = poly->aabb.grow(EDGE_MARGIN);
+				if (!expanded_aabb.has_point(local_pos)) {
+					instance = instance->next;
+					continue;
+				}
+				// Strictly inside the polygon — fast path.
+				if (Geometry2D::is_point_in_polygon(local_pos, poly->points)) {
+					return true;
+				}
+				// On or near an edge — check distance to each segment.
+				const Vector2 *pts = poly->points.ptr();
+				int count = poly->points.size();
+				for (int i = 0; i < count; i++) {
+					int next = (i + 1) % count;
+					real_t dist = Geometry2D::get_distance_to_segment(local_pos, pts[i], pts[next]);
+					if (dist <= EDGE_MARGIN) {
+						return true;
+					}
+				}
+			}
+		}
+		instance = instance->next;
+	}
+	return false;
 }
 
 void RendererCanvasCull::canvas_set_shadow_texture_size(int p_size) {
