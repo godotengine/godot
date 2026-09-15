@@ -31,6 +31,8 @@
 #include "editor_title_bar.h"
 
 #include "core/object/callable_mp.h"
+#include "editor/editor_main_screen.h"
+#include "editor/editor_node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "servers/display/display_server.h"
@@ -163,6 +165,16 @@ void EditorTitleBar::_notification(int p_what) {
 
 				int center = title_size.x / 2;
 				int width = MIN(center - prev->get_position().x, next->get_position().x + next->get_size().x - center) * 1.9;
+				if (EditorNode::get_singleton()) {
+					EditorMainScreen *main_screen = EditorNode::get_editor_main_screen();
+					if (!main_screen->is_compact_mode() && width < c_size.x) {
+						size_before_compact = c_size.x;
+						main_screen->set_compact_mode(true);
+					} else if (main_screen->is_compact_mode() && width > size_before_compact) {
+						main_screen->set_compact_mode(false);
+					}
+				}
+
 				fit_child_in_rect(base, Rect2i(center - width / 2, 0, width, title_size.height));
 			}
 		} break;
