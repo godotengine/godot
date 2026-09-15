@@ -38,6 +38,9 @@
 #include "utils/naming_utils.h"
 #include "utils/string_utils.h"
 
+#include "core/object/property_info.h"
+#include "core/templates/vector.h"
+
 #ifdef GD_MONO_HOT_RELOAD
 #include "managed_callable.h"
 #include "utils/path_utils.h"
@@ -1689,6 +1692,24 @@ int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *
 		*r_is_valid = false;
 	}
 	return 0;
+}
+
+MethodInfo CSharpInstance::get_method_info(const StringName &p_method) const {
+	MethodInfo mi;
+	if (!script->is_script_valid() || !script->valid) {
+		return mi;
+	}
+
+	const CSharpScript *top = script.ptr();
+	while (top != nullptr) {
+		mi = top->get_method_info(p_method);
+		if (!(mi == MethodInfo())) {
+			return mi;
+		}
+		top = top->base_script.ptr();
+	}
+
+	return mi;
 }
 
 Variant CSharpInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {

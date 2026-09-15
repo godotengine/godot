@@ -179,6 +179,13 @@
 				Returns the name of the method represented by this [Callable]. If the callable is a GDScript lambda function, returns the function's name or [code]"&lt;anonymous lambda&gt;"[/code].
 			</description>
 		</method>
+		<method name="get_method_info" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns signature of the method represented by this [Callable] as [Dictionary].
+				[b]Note:[/b] Due to the implementation, the [Dictionary] is formatted very similarly to the returned values of [method Object.get_method_list].
+			</description>
+		</method>
 		<method name="get_object" qualifiers="const">
 			<return type="Object" />
 			<description>

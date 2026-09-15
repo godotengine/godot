@@ -32,6 +32,11 @@
 
 #include "core/templates/hashfuncs.h"
 
+#include <core/error/error_macros.h>
+#include <core/object/method_info.h>
+#include <core/templates/vector.h>
+#include <core/variant/variant.h>
+
 bool VariantCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	return p_a->hash() == p_b->hash();
 }
@@ -69,12 +74,20 @@ ObjectID VariantCallable::get_object() const {
 }
 
 int VariantCallable::get_argument_count(bool &r_is_valid) const {
-	if (!Variant::has_builtin_method(variant.get_type(), method)) {
+	if (!is_valid()) {
 		r_is_valid = false;
 		return 0;
 	}
 	r_is_valid = true;
 	return Variant::get_builtin_method_argument_count(variant.get_type(), method);
+}
+
+void VariantCallable::get_method_info(MethodInfo &r_method_info) const {
+	print_line("VariantCallable::get_arguments called!");
+	if (!is_valid()) {
+		return;
+	}
+	r_method_info = Variant::get_builtin_method_info(variant.get_type(), method);
 }
 
 void VariantCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

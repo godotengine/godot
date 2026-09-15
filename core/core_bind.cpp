@@ -47,6 +47,7 @@
 #include "core/os/process_id.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 
 namespace CoreBind {
 
@@ -1718,6 +1719,15 @@ int ClassDB::class_get_method_argument_count(const StringName &p_class, const St
 	return ::ClassDB::get_method_argument_count(p_class, p_method, nullptr, p_no_inheritance);
 }
 
+Dictionary ClassDB::class_get_method_info(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) const {
+	MethodInfo mi;
+	bool is_method_found = ::ClassDB::get_method_info(p_class, p_method, &mi, p_no_inheritance);
+	if (is_method_found) {
+		return mi.operator Dictionary();
+	}
+	return Dictionary();
+}
+
 TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class, bool p_no_inheritance) const {
 	List<MethodInfo> methods;
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
@@ -1872,6 +1882,7 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &ClassDB::class_has_method, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_argument_count", "class", "method", "no_inheritance"), &ClassDB::class_get_method_argument_count, DEFVAL(false));
+	::ClassDB::bind_method(D_METHOD("class_get_method_info", "class", "method", "no_inheritance"), &ClassDB::class_get_method_info, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("class_get_method_list", "class", "no_inheritance"), &ClassDB::class_get_method_list, DEFVAL(false));
 

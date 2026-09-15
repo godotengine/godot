@@ -663,6 +663,14 @@
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
+		<method name="get_method_info" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="method" type="StringName" />
+			<description>
+				Returns signature of [param method] as [Dictionary].
+				[b]Note:[/b] Due to the implementation, the [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
+			</description>
+		</method>
 		<method name="get_method_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<description>
