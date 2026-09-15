@@ -87,6 +87,9 @@ public:
 
 	static Node *(*_get_local_scene_func)(); //used by editor
 
+	virtual void before_save() const {};
+	virtual void after_save() const {};
+
 	virtual bool editor_can_reload_from_file();
 	virtual void reload_from_file();
 
