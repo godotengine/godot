@@ -78,6 +78,14 @@
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
 
+#ifdef WEB_ENABLED
+#include "core/os/time.h"
+#include "editor/export/project_zip_packer.h"
+extern "C" {
+extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
+}
+#endif // WEB_ENABLED
+
 Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
 	TreeItem *item = get_item_at_position(get_local_mouse_position());
 	if (!item) {
@@ -2288,6 +2296,43 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			OS::get_singleton()->shell_show_in_file_manager(dir, true);
 		} break;
 
+		case FILE_MENU_DOWNLOAD: {
+#ifdef WEB_ENABLED
+			String fpath = ProjectSettings::get_singleton()->globalize_path(current_path);
+			const bool is_directory = DirAccess::dir_exists_absolute(fpath);
+			if (is_directory) {
+				String output_name;
+				if (current_path == "res://") {
+					output_name = ProjectZIPPacker::get_project_zip_safe_name();
+				} else {
+					output_name = fpath.rstrip("/").get_file();
+					output_name = output_name.to_lower().replace_char(' ', '_') + ".zip";
+				}
+				const String output_path = String("/tmp").path_join(output_name);
+				ProjectZIPPacker::pack_zip_absolute_path(output_path, fpath);
+
+				{
+					Ref<FileAccess> f = FileAccess::open(output_path, FileAccess::READ);
+					ERR_FAIL_COND_MSG(f.is_null(), "Unable to create ZIP file.");
+					LocalVector<uint8_t> buf;
+					buf.resize(f->get_length());
+					f->get_buffer(buf.ptr(), buf.size());
+					godot_js_os_download_buffer(buf.ptr(), buf.size(), output_name.utf8().get_data(), "application/zip");
+				}
+
+				// Remove the temporary file since it was sent to the user's native filesystem as a download.
+				DirAccess::remove_file_or_error(output_path);
+			} else {
+				Ref<FileAccess> f = FileAccess::open(current_path, FileAccess::READ);
+				ERR_FAIL_COND_MSG(f.is_null(), vformat("Failed to open file %s", current_path));
+				LocalVector<uint8_t> buf;
+				buf.resize(f->get_length());
+				f->get_buffer(buf.ptr(), buf.size());
+				godot_js_os_download_buffer(buf.ptr(), buf.size(), current_path.get_file().utf8().get_data(), "application/octet-stream");
+			}
+#endif // WEB_ENABLED
+		} break;
+
 		case FILE_MENU_OPEN_EXTERNAL: {
 			for (const String &fpath : p_selected) {
 				if (fpath.ends_with("/")) {
@@ -2810,6 +2855,10 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_OPEN_EXTERNAL;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_key)) {
 		return FILE_MENU_OPEN_IN_TERMINAL;
+#endif
+#ifdef WEB_ENABLED
+	} else if (ED_IS_SHORTCUT("filesystem_dock/download_source", p_key)) {
+		return FILE_MENU_DOWNLOAD;
 #endif
 	} else if (ED_IS_SHORTCUT("filesystem_dock/focus_path", p_key)) {
 		return EXTRA_FOCUS_PATH;
@@ -3669,19 +3718,27 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			p_popup->add_separator();
 			added_separator = true;
 		}
+		{
+			// Opening the system file manager is not supported on the Android and web editors.
+			const bool is_directory = fpath.ends_with("/");
 
-		// Opening the system file manager is not supported on the Android and web editors.
-		const bool is_directory = fpath.ends_with("/");
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
+			p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_OPEN_IN_TERMINAL), is_directory ? TTRC("Open in Terminal") : TTRC("Open Folder in Terminal"));
 
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_OPEN_IN_TERMINAL), is_directory ? TTRC("Open in Terminal") : TTRC("Open Folder in Terminal"));
+			if (!is_directory) {
+				p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_MENU_OPEN_EXTERNAL);
+			}
 
-		if (!is_directory) {
-			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_MENU_OPEN_EXTERNAL);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
+			p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_SHOW_IN_EXPLORER), is_directory ? OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN) : OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW));
 		}
-
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_SHOW_IN_EXPLORER), is_directory ? OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN) : OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW));
+#endif
+#ifdef WEB_ENABLED
+		{
+			const bool is_directory = fpath.ends_with("/");
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Download")), ED_GET_SHORTCUT("filesystem_dock/download_source"), FILE_MENU_DOWNLOAD);
+			p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_DOWNLOAD), is_directory ? TTRC("Download as a ZIP...") : TTRC("Download file..."));
+		}
 #endif
 
 		current_path = fpath;
@@ -4518,7 +4575,9 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTRC("Open in External Program"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::E);
 	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTRC("Open in Terminal"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
 #endif
-
+#ifdef WEB_ENABLED
+	ED_SHORTCUT("filesystem_dock/download_source", TTRC("Download File(s)..."), Key::NONE);
+#endif
 	ED_SHORTCUT("filesystem_dock/focus_path", TTRC("Focus Path"), KeyModifierMask::CMD_OR_CTRL | Key::L);
 	// Allow both Cmd + L and Cmd + Shift + G to match Safari's and Finder's shortcuts respectively.
 	ED_SHORTCUT_OVERRIDE_ARRAY("filesystem_dock/focus_path", "macos",
