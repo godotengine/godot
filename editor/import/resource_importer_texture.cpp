@@ -386,7 +386,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 	}
 }
 
-void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressProfile p_vram_compression_profile, bool p_mipmaps, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel, bool p_preserve_alpha_test_coverage, float p_alpha_test_coverage) {
+void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, Image::CompressProfile p_vram_compression_profile, bool p_mipmaps, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, int p_mipmap_limit, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel, bool p_preserve_alpha_test_coverage, float p_alpha_test_coverage) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 
@@ -418,7 +418,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 	}
 
 	f->store_32(flags);
-	f->store_32(p_limit_mipmap);
+	f->store_32(p_mipmap_limit);
 
 	// Reserved.
 	f->store_32(0);
@@ -433,7 +433,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 
 	if (p_mipmaps) {
 		if (!image->has_mipmaps() || p_force_normal) {
-			image->generate_mipmaps(p_force_normal, p_preserve_alpha_test_coverage, p_alpha_test_coverage);
+			image->generate_mipmaps(p_force_normal, p_preserve_alpha_test_coverage, p_alpha_test_coverage, p_mipmap_limit);
 		}
 
 	} else {
@@ -741,7 +741,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 
 	// Mipmaps.
 	const bool mipmaps = p_options["mipmaps/generate"];
-	const uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
+	const int mipmap_limit = int(p_options["mipmaps/limit"]);
 	const bool mipmaps_preserve_alpha_test_coverage = p_options["mipmaps/preserve_alpha_test_coverage"];
 	const float mipmaps_alpha_test_threshold = p_options["mipmaps/alpha_test_threshold"];
 

@@ -376,7 +376,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f) {
 				}
 			}
 
-			image->set_data(w, h, true, mipmap_images[0]->get_format(), img_data);
+			image->set_data(w, h, true, mipmap_images[0]->get_format(), img_data, mipmaps);
 			return image;
 		}
 
@@ -396,12 +396,12 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f) {
 		format = img->get_format();
 		return img;
 	} else if (data_format == DATA_FORMAT_IMAGE) {
-		int64_t size = Image::get_image_data_size(w, h, format, mipmaps > 0);
+		int64_t size = Image::get_image_data_size(w, h, format, true, mipmaps);
 		Vector<uint8_t> data;
 		data.resize(size);
 		f->get_buffer(data.ptrw(), size);
 
-		return Image::create_from_data(w, h, mipmaps > 0, format, data);
+		return Image::create_from_data(w, h, true, format, data, mipmaps);
 	}
 
 	return Ref<Image>();
@@ -453,15 +453,15 @@ Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &
 	f->get_32(); // ignored (data format)
 
 	f->get_32(); //ignored
-	int mipmap_count = f->get_32();
+	int mm_count = f->get_32();
 	f->get_32(); //ignored
 	f->get_32(); //ignored
 
-	r_mipmaps = mipmap_count != 0;
+	r_mipmaps = mm_count != 0;
 
 	r_data.clear();
 
-	for (int i = 0; i < (r_depth + mipmap_count); i++) {
+	for (int i = 0; i < (r_depth + mm_count); i++) {
 		Ref<Image> image = CompressedTexture2D::load_image_from_file(f);
 		ERR_FAIL_COND_V(image.is_null() || image->is_empty(), ERR_CANT_OPEN);
 		if (i == 0) {
@@ -494,8 +494,8 @@ Error CompressedTexture3D::load(const String &p_path) {
 	w = tw;
 	h = th;
 	d = td;
-	mipmaps = tmm;
 	format = tfmt;
+	mipmap_count = tmm ? Image::get_image_required_mipmaps(w, h, format) : 0;
 
 	path_to_file = p_path;
 
@@ -526,7 +526,11 @@ int CompressedTexture3D::get_depth() const {
 }
 
 bool CompressedTexture3D::has_mipmaps() const {
-	return mipmaps;
+	return mipmap_count > 0;
+}
+
+int CompressedTexture3D::get_mipmap_count() const {
+	return mipmap_count;
 }
 
 RID CompressedTexture3D::get_rid() const {
@@ -641,7 +645,7 @@ Error CompressedTextureLayered::load(const String &p_path) {
 
 	w = images[0]->get_width();
 	h = images[0]->get_height();
-	mipmaps = images[0]->has_mipmaps();
+	mipmap_count = images[0]->get_mipmap_count();
 	format = images[0]->get_format();
 	layers = images.size();
 
@@ -674,7 +678,11 @@ int CompressedTextureLayered::get_layers() const {
 }
 
 bool CompressedTextureLayered::has_mipmaps() const {
-	return mipmaps;
+	return mipmap_count > 0;
+}
+
+int CompressedTextureLayered::get_mipmap_count() const {
+	return mipmap_count;
 }
 
 TextureLayered::LayeredType CompressedTextureLayered::get_layered_type() const {
