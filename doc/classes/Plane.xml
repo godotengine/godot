@@ -139,7 +139,7 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Plane" />
 			<description>
-				Returns a copy of the plane, with normalized [member normal] (so it's a unit vector). Returns [code]Plane(0, 0, 0, 0)[/code] if [member normal] can't be normalized (it has zero length).
+				Returns a copy of the plane, with normalized [member normal] (so it's a unit vector). Returns [code]Plane(0, 0, 0, 0)[/code] if [member normal] can't be normalized (it has almost zero length). See also [method Vector3.is_zero_approx].
 			</description>
 		</method>
 		<method name="project" qualifiers="const">
