@@ -31,6 +31,7 @@
 #include "resource_format_text.h"
 
 #include "core/config/project_settings.h"
+#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
@@ -306,59 +307,22 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(const Ref<PackedScene> &p_c
 				}
 			}
 		} else if (next_tag.name == "connection") {
-			if (!next_tag.fields.has("from")) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Missing 'from' field from connection tag";
-				ERR_FAIL_V_MSG(Ref<PackedScene>(), _get_error_string());
-			}
+			GET_FIELD_OR_ERROR_V(NodePath, from, ERR_FILE_CORRUPT, Ref<PackedScene>());
+			GET_FIELD_OR_ERROR_V(NodePath, to, ERR_FILE_CORRUPT, Ref<PackedScene>());
 
-			if (!next_tag.fields.has("to")) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Missing 'to' field from connection tag";
-				ERR_FAIL_V_MSG(Ref<PackedScene>(), _get_error_string());
-			}
+			GET_FIELD_OR_ERROR_V(StringName, signal, ERR_FILE_CORRUPT, Ref<PackedScene>());
+			GET_FIELD_OR_ERROR_V(StringName, method, ERR_FILE_CORRUPT, Ref<PackedScene>());
 
-			if (!next_tag.fields.has("signal")) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Missing 'signal' field from connection tag";
-				ERR_FAIL_V_MSG(Ref<PackedScene>(), _get_error_string());
-			}
+			GET_FIELD(PackedInt32Array, from_uid_path);
+			GET_FIELD(PackedInt32Array, to_uid_path);
 
-			if (!next_tag.fields.has("method")) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Missing 'method' field from connection tag";
-				ERR_FAIL_V_MSG(Ref<PackedScene>(), _get_error_string());
-			}
+			GET_FIELD(Array, binds);
 
-			NodePath from = next_tag.fields["from"];
-			NodePath to = next_tag.fields["to"];
-			StringName method = next_tag.fields["method"];
-			StringName signal = next_tag.fields["signal"];
 			int flags = Object::CONNECT_PERSIST;
+			get_field("flags", flags);
+
 			int unbinds = 0;
-			Array binds;
-
-			PackedInt32Array from_id;
-			if (next_tag.fields.has("from_uid_path")) {
-				from_id = next_tag.fields["from_uid_path"];
-			}
-
-			PackedInt32Array to_id;
-			if (next_tag.fields.has("to_uid_path")) {
-				to_id = next_tag.fields["to_uid_path"];
-			}
-
-			if (next_tag.fields.has("flags")) {
-				flags = next_tag.fields["flags"];
-			}
-
-			if (next_tag.fields.has("binds")) {
-				binds = next_tag.fields["binds"];
-			}
-
-			if (next_tag.fields.has("unbinds")) {
-				unbinds = next_tag.fields["unbinds"];
-			}
+			get_field("unbinds", unbinds);
 
 			Vector<int> bind_ints;
 			for (const Variant &bind : binds) {
@@ -366,8 +330,8 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(const Ref<PackedScene> &p_c
 			}
 
 			p_current_scene->get_state()->add_connection(
-					p_current_scene->get_state()->add_node_path(from.simplified(), from_id),
-					p_current_scene->get_state()->add_node_path(to.simplified(), to_id),
+					p_current_scene->get_state()->add_node_path(from.simplified(), from_uid_path),
+					p_current_scene->get_state()->add_node_path(to.simplified(), to_uid_path),
 					p_current_scene->get_state()->add_name(signal),
 					p_current_scene->get_state()->add_name(method),
 					flags,
@@ -382,13 +346,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(const Ref<PackedScene> &p_c
 				return p_current_scene;
 			}
 		} else if (next_tag.name == "editable") {
-			if (!next_tag.fields.has("path")) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Missing 'path' field from editable tag";
-				ERR_FAIL_V_MSG(Ref<PackedScene>(), _get_error_string());
-			}
-
-			NodePath path = next_tag.fields["path"];
+			GET_FIELD_OR_ERROR_V(NodePath, path, ERR_FILE_CORRUPT, Ref<PackedScene>());
 
 			p_current_scene->get_state()->add_editable_instance(path.simplified());
 
@@ -453,27 +411,9 @@ Error ResourceLoaderText::load() {
 			break;
 		}
 
-		if (!next_tag.fields.has("path")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'path' in external resource tag";
-			ERR_FAIL_V_MSG(error, _get_error_string());
-		}
-
-		if (!next_tag.fields.has("type")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'type' in external resource tag";
-			ERR_FAIL_V_MSG(error, _get_error_string());
-		}
-
-		if (!next_tag.fields.has("id")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'id' in external resource tag";
-			ERR_FAIL_V_MSG(error, _get_error_string());
-		}
-
-		String path = next_tag.fields["path"];
-		String type = next_tag.fields["type"];
-		String id = next_tag.fields["id"];
+		GET_FIELD_OR_ERROR(String, path, ERR_FILE_CORRUPT);
+		GET_FIELD_OR_ERROR(String, type, ERR_FILE_CORRUPT);
+		GET_FIELD_OR_ERROR(String, id, ERR_FILE_CORRUPT);
 
 		if (next_tag.fields.has("uid")) {
 			String uidt = next_tag.fields["uid"];
@@ -532,20 +472,8 @@ Error ResourceLoaderText::load() {
 			break;
 		}
 
-		if (!next_tag.fields.has("type")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'type' in external resource tag";
-			ERR_FAIL_V_MSG(error, _get_error_string());
-		}
-
-		if (!next_tag.fields.has("id")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'id' in external resource tag";
-			ERR_FAIL_V_MSG(error, _get_error_string());
-		}
-
-		String type = next_tag.fields["type"];
-		String id = next_tag.fields["id"];
+		GET_FIELD_OR_ERROR(String, type, ERR_FILE_CORRUPT);
+		GET_FIELD_OR_ERROR(String, id, ERR_FILE_CORRUPT);
 
 		String path = local_path + "::" + id;
 
@@ -922,22 +850,9 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 	ERR_FAIL_COND(error != OK);
 
 	while (next_tag.name == "ext_resource") {
-		if (!next_tag.fields.has("type")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'type' in external resource tag";
-			ERR_PRINT(_get_error_string());
-			return;
-		}
+		GET_FIELD_OR_PRINT_ERR(String, type, ERR_FILE_CORRUPT);
+		GET_FIELD_OR_PRINT_ERR(String, path, ERR_FILE_CORRUPT);
 
-		if (!next_tag.fields.has("id")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'id' in external resource tag";
-			ERR_PRINT(_get_error_string());
-			return;
-		}
-
-		String path = next_tag.fields["path"];
-		String type = next_tag.fields["type"];
 		String fallback_path;
 
 		bool using_uid = false;
@@ -1034,14 +949,9 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 				}
 			}
 
-			if (!next_tag.fields.has("path") || !next_tag.fields.has("id") || !next_tag.fields.has("type")) {
-				error = ERR_FILE_CORRUPT;
-				ERR_FAIL_V(error);
-			}
-
-			String path = next_tag.fields["path"];
-			String id = next_tag.fields["id"];
-			String type = next_tag.fields["type"];
+			GET_FIELD_OR_ERROR(String, path, ERR_FILE_CORRUPT);
+			GET_FIELD_OR_ERROR(String, id, ERR_FILE_CORRUPT);
+			GET_FIELD_OR_ERROR(String, type, ERR_FILE_CORRUPT);
 
 			if (next_tag.fields.has("uid")) {
 				String uidt = next_tag.fields["uid"];
@@ -1217,16 +1127,15 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 
 	while (next_tag.name == "sub_resource" || next_tag.name == "resource") {
 		if (next_tag.name == "sub_resource") {
-			if (!next_tag.fields.has("type")) {
-				error = ERR_FILE_CORRUPT;
-				error_text = "Missing 'type' in external resource tag";
-				ERR_FAIL_V_MSG(error, _get_error_string());
-			}
-
-			r_classes->insert(next_tag.fields["type"]);
+			GET_FIELD_OR_ERROR(StringName, type, ERR_FILE_CORRUPT);
+			r_classes->insert(type);
 
 		} else {
-			r_classes->insert(next_tag.fields["res_type"]);
+			StringName current_type;
+			if (unlikely(!get_field("res_type", current_type))) {
+				ERR_SET_MSG(ERR_FILE_CORRUPT, "Missing 'res_type' field from " + next_tag.name + "tag")
+			}
+			r_classes->insert(current_type);
 		}
 
 		while (true) {
