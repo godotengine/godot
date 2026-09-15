@@ -1490,6 +1490,12 @@ void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<
 			if (ClassDB::class_exists(obj_name)) {
 				r_classes->insert(obj_name);
 			}
+
+			// A little hack to fetch classes from built-in GDScripts as well.
+			if (obj_name == SNAME("GDScript")) {
+				const Resource *res = Object::cast_to<Resource>(obj);
+				ResourceLoader::get_classes_used(res->get_path(), r_classes);
+			}
 		}
 	}
 }
