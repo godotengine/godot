@@ -68,7 +68,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			c.r = v[1].to_float();
 			c.g = v[2].to_float();
 			c.b = v[3].to_float();
-			current->set_albedo(c);
+			current->set_albedo(c.linear_to_srgb());
 		} else if (l.begins_with("Ks ")) {
 			// Specular color.
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
