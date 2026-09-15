@@ -75,6 +75,7 @@ class SceneTreeEditor : public Control {
 
 		// To know whether to update children or not.
 		bool can_process = false;
+		bool editable_instance = false;
 
 		CachedNode() = delete; // Always an error.
 		CachedNode(Node *p_node, TreeItem *p_item) :
@@ -203,6 +204,7 @@ class SceneTreeEditor : public Control {
 	void _process_selection_update();
 	void _update_selection(TreeItem *item);
 	void _node_script_changed(Node *p_node);
+	void _node_property_list_changed(Node *p_node);
 	void _node_visibility_changed(Node *p_node);
 	void _update_visibility_color(Node *p_node, TreeItem *p_item);
 	void _set_item_custom_color(TreeItem *p_item, Color p_color);
