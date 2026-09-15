@@ -127,6 +127,7 @@ private:
 #ifndef DISABLE_DEPRECATED
 	HashMap<String, String> compat_map;
 	void _handle_setting_compatibility();
+	void _convert_setting_3d_navigation_sensitivity_to_factor(const String &p_setting_old, const String &p_setting_new, float p_default_sensitivity);
 	void _rename_setting(const String &p_old_name, const String &p_new_name);
 	void _rename_shortcut(const String &p_old_path, const String &p_new_path);
 #endif

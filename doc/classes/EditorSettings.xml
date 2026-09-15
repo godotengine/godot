@@ -404,6 +404,10 @@
 		<member name="editors/3d/freelook/freelook_base_speed" type="float" setter="" getter="">
 			The base 3D freelook speed in units per second. This can be adjusted by using the mouse wheel while in freelook mode, or by holding down the "fast" or "slow" modifier keys ([kbd]Shift[/kbd] and [kbd]Alt[/kbd] by default, respectively).
 		</member>
+		<member name="editors/3d/freelook/freelook_factor" type="float" setter="" getter="">
+			The rotation factor to use when using freelook in the 3D editor. Higher values make the camera rotate faster.
+			See also [member editors/3d/navigation_feel/pan_factor] and [member editors/3d/navigation_feel/orbit_factor].
+		</member>
 		<member name="editors/3d/freelook/freelook_inertia" type="float" setter="" getter="">
 			The inertia of the 3D freelook camera. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>
@@ -416,9 +420,6 @@
 			- [b]Partially Axis-Locked:[/b] The "Freelook Forward" and "Freelook Backward" keys will move relative to the camera, taking its pitch angle into account for the movement. The "Freelook Up" and "Freelook Down" keys will move in an "absolute" manner, [i]not[/i] taking the camera's pitch angle into account for the movement.
 			- [b]Fully Axis-Locked:[/b] The "Freelook Forward", "Freelook Backward", "Freelook Up" and "Freelook Down" keys will move in an "absolute" manner, [i]not[/i] taking the camera's pitch angle into account for the movement.
 			See also [member editors/3d/navigation/navigation_scheme].
-		</member>
-		<member name="editors/3d/freelook/freelook_sensitivity" type="float" setter="" getter="">
-			The mouse sensitivity to use while freelook mode is active in the 3D editor. See also [member editors/3d/navigation_feel/orbit_sensitivity].
 		</member>
 		<member name="editors/3d/freelook/freelook_speed_zoom_link" type="bool" setter="" getter="">
 			If [code]true[/code], freelook speed is linked to the zoom value used in the camera orbit mode in the 3D editor.
@@ -497,17 +498,19 @@
 		<member name="editors/3d/navigation_feel/angle_snap_threshold" type="float" setter="" getter="">
 			The angle threshold for snapping camera rotation to 45-degree angles while orbiting with [kbd]Alt[/kbd] held.
 		</member>
+		<member name="editors/3d/navigation_feel/orbit_factor" type="float" setter="" getter="">
+			The rotation factor to use when orbiting in the 3D editor. Higher values make the camera rotate faster.
+			See also [member editors/3d/navigation_feel/pan_factor] (panning) and [member editors/3d/freelook/freelook_factor].
+		</member>
 		<member name="editors/3d/navigation_feel/orbit_inertia" type="float" setter="" getter="">
 			The inertia to use when orbiting in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
 		</member>
-		<member name="editors/3d/navigation_feel/orbit_sensitivity" type="float" setter="" getter="">
-			The mouse sensitivity to use when orbiting in the 3D editor. See also [member editors/3d/freelook/freelook_sensitivity].
+		<member name="editors/3d/navigation_feel/pan_factor" type="float" setter="" getter="">
+			The translation factor to use when panning in the 3D editor. Higher values make the camera pan faster.
+			See also [member editors/3d/navigation_feel/orbit_factor] and [member editors/3d/freelook/freelook_factor].
 		</member>
-		<member name="editors/3d/navigation_feel/translation_inertia" type="float" setter="" getter="">
+		<member name="editors/3d/navigation_feel/pan_inertia" type="float" setter="" getter="">
 			The inertia to use when panning in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
-		</member>
-		<member name="editors/3d/navigation_feel/translation_sensitivity" type="float" setter="" getter="">
-			The mouse sensitivity to use when panning in the 3D editor.
 		</member>
 		<member name="editors/3d/navigation_feel/zoom_inertia" type="float" setter="" getter="">
 			The inertia to use when zooming in the 3D editor. Higher values make the camera start and stop slower, which looks smoother but adds latency.
