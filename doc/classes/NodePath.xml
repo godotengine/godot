@@ -35,7 +35,7 @@
 		[b]Note:[/b] In a boolean context, a [NodePath] will evaluate to [code]false[/code] if it is empty ([code]NodePath("")[/code]). Otherwise, a [NodePath] will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
-		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://store.godotengine.org/asset/godot-foundation/role-playing-game-demo/</link>
 	</tutorials>
 	<constructors>
 		<constructor name="NodePath">
