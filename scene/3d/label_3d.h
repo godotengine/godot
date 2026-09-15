@@ -133,17 +133,24 @@ private:
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
-	RID text_rid;
-	Vector<RID> lines_rid;
-
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
 	StandardMaterial3D::TextureFilter texture_filter = StandardMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 
 	bool pending_update = false;
 
-	bool dirty_lines = true;
-	bool dirty_font = true;
-	bool dirty_text = true;
+	struct Paragraph {
+		bool lines_dirty = true;
+		bool dirty = true;
+		int start = 0;
+
+		String text;
+		RID text_rid;
+		Vector<RID> lines_rid;
+	};
+	mutable bool font_dirty = true;
+	mutable bool text_dirty = true;
+	mutable Vector<Paragraph> paragraphs;
+	String paragraph_separator = "\\n";
 
 	void _generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, const Color &p_modulate, int p_priority = 0, int p_outline_size = 0);
 
