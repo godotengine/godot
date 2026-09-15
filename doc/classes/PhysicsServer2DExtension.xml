@@ -299,6 +299,14 @@
 				Overridable version of [method PhysicsServer2D.body_apply_force].
 			</description>
 		</method>
+		<method name="_body_apply_force_at_position" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector2" />
+			<param index="2" name="global_position" type="Vector2" />
+			<description>
+			</description>
+		</method>
 		<method name="_body_apply_impulse" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -306,6 +314,14 @@
 			<param index="2" name="position" type="Vector2" />
 			<description>
 				Overridable version of [method PhysicsServer2D.body_apply_impulse].
+			</description>
+		</method>
+		<method name="_body_apply_impulse_at_position" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector2" />
+			<param index="2" name="global_position" type="Vector2" />
+			<description>
 			</description>
 		</method>
 		<method name="_body_apply_torque" qualifiers="virtual required">

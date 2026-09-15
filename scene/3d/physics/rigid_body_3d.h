@@ -226,10 +226,12 @@ public:
 
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3());
+	void apply_impulse_at_position(const Vector3 &p_impulse, const Vector3 &p_global_position = Vector3());
 	void apply_torque_impulse(const Vector3 &p_impulse);
 
 	void apply_central_force(const Vector3 &p_force);
 	void apply_force(const Vector3 &p_force, const Vector3 &p_position = Vector3());
+	void apply_force_at_position(const Vector3 &p_force, const Vector3 &p_global_position = Vector3());
 	void apply_torque(const Vector3 &p_torque);
 
 	void add_constant_central_force(const Vector3 &p_force);
