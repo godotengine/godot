@@ -30,9 +30,11 @@
 
 #include "particles_2d_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -46,6 +48,42 @@
 #include "scene/gui/spin_box.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
+
+void GPUParticles2DEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorInterface::get_singleton()->connect("object_created_in_editor", callable_mp(this, &GPUParticles2DEditorPlugin::_object_created_in_editor));
+		} break;
+	}
+}
+
+void GPUParticles2DEditorPlugin::_object_created_in_editor(Object *p_object) {
+	GPUParticles2D *gpu_particles_2d = Object::cast_to<GPUParticles2D>(p_object);
+	if (gpu_particles_2d) {
+		// Increase the particle amount somewhat to make moving particle systems more visible out of the box.
+		gpu_particles_2d->set_amount(30);
+
+		// Simulate particles at the render framerate to avoid issues with interpolation.
+		// Enabling trails will internally force fixed FPS to 30 anyway (without changing the value of the property).
+		gpu_particles_2d->set_fixed_fps(0);
+
+		gpu_particles_2d->set_process_material(get_material_for_object_created_in_editor());
+		Ref<ParticleProcessMaterial> process_material = gpu_particles_2d->get_process_material();
+		if (process_material.is_valid()) {
+			// Set gravity according to the 2D project settings.
+			const float default_gravity = GLOBAL_GET("physics/2d/default_gravity");
+			const Vector2 default_gravity_vector = GLOBAL_GET("physics/2d/default_gravity_vector");
+			process_material->set_gravity(Vector3(default_gravity_vector.x, default_gravity_vector.y, 0.0) * default_gravity);
+
+			// Emit particles upwards, so that they are visible even when the particles node is placed on the ground.
+			// Adjust for the default gravity, so that particles are emitted upwards even when gravity is set to a high value.
+			process_material->set_direction(Vector3(0, -1, 0));
+			process_material->set_param_min(ParticleProcessMaterial::PARAM_INITIAL_LINEAR_VELOCITY, MAX(100.0, default_gravity * 0.4));
+		}
+
+		gpu_particles_2d->set_texture(get_texture_for_object_created_in_editor());
+	}
+}
 
 void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 	if (p_idx == MENU_GENERATE_VISIBILITY_RECT) {
@@ -672,6 +710,57 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin() {
 	EditorNode::get_singleton()->get_gui_base()->add_child(generate_visibility_rect);
 
 	generate_visibility_rect->connect(SceneStringName(confirmed), callable_mp(this, &GPUParticles2DEditorPlugin::_generate_visibility_rect));
+}
+
+void CPUParticles2DEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			EditorInterface::get_singleton()->connect("object_created_in_editor", callable_mp(this, &CPUParticles2DEditorPlugin::_object_created_in_editor));
+		} break;
+	}
+}
+
+void CPUParticles2DEditorPlugin::_object_created_in_editor(Object *p_object) {
+	CPUParticles2D *cpu_particles_2d = Object::cast_to<CPUParticles2D>(p_object);
+	if (cpu_particles_2d) {
+		// Increase the particle amount somewhat to make moving particle systems more visible out of the box.
+		cpu_particles_2d->set_amount(30);
+
+		// Reduce particle spread to make the particle node's rotation easier to notice.
+		cpu_particles_2d->set_spread(5.0);
+
+		// Randomize initial particle rotation.
+		cpu_particles_2d->set_param_min(CPUParticles2D::PARAM_ANGLE, 0.0);
+		cpu_particles_2d->set_param_max(CPUParticles2D::PARAM_ANGLE, 360.0);
+
+		// Scale particles up and down as the lifetime progresses.
+		Ref<Curve> curve = memnew(Curve);
+		// The wind-up occurs significantly faster than the fade-out.
+		curve->add_point(Vector2(0.0, 0.0));
+		curve->add_point(Vector2(0.1, 1.0));
+		curve->add_point(Vector2(1.0, 0.0));
+		cpu_particles_2d->set_param_curve(CPUParticles2D::PARAM_SCALE, curve);
+
+		// Fade particles with transparency as the lifetime progresses.
+		Ref<Gradient> gradient = memnew(Gradient);
+		// The fade-in occurs significantly faster than the fade-out.
+		gradient->set_color(0, Color(1, 1, 1, 0));
+		gradient->set_color(1, Color(1, 1, 1, 0));
+		gradient->add_point(0.1, Color(1, 1, 1, 1));
+		cpu_particles_2d->set_color_ramp(gradient);
+
+		// Set gravity according to the 2d project settings.
+		const float default_gravity = GLOBAL_GET("physics/2d/default_gravity");
+		const Vector2 default_gravity_vector = GLOBAL_GET("physics/2d/default_gravity_vector");
+		cpu_particles_2d->set_gravity(default_gravity_vector * default_gravity);
+
+		// Emit particles upwards, so that they are visible even when the particles node is placed on the ground.
+		// Adjust for the default gravity, so that particles are emitted upwards even when gravity is set to a high value.
+		cpu_particles_2d->set_direction(Vector2(0, -1));
+		cpu_particles_2d->set_param_min(CPUParticles2D::PARAM_INITIAL_LINEAR_VELOCITY, MAX(100.0, default_gravity * 0.4));
+
+		cpu_particles_2d->set_texture(get_texture_for_object_created_in_editor());
+	}
 }
 
 Node *CPUParticles2DEditorPlugin::_convert_particles() {
