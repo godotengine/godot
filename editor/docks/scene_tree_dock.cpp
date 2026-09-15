@@ -1080,7 +1080,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 			if (!_validate_no_foreign_selected(selection)) {
 				break;
 			}
@@ -1097,7 +1097,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 			ERR_FAIL_COND(selection.size() != 1);
 
 			Node *node = selection.front()->get();
@@ -1183,7 +1183,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 			if (selection.is_empty()) {
 				return;
@@ -2048,7 +2048,7 @@ void SceneTreeDock::_fill_path_renames(Vector<StringName> base_path, Vector<Stri
 	}
 }
 
-bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const {
+bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, const List<Node *> &p_to_delete) const {
 	// Skip if this node will be deleted.
 	for (const Node *F : p_to_delete) {
 		if (F == p_node || F->is_ancestor_of(p_node)) {
