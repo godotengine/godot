@@ -123,7 +123,6 @@ private:
 	Error error = OK;
 
 	Ref<Resource> resource;
-	Ref<PackedScene> packed_scene;
 
 	Ref<PackedScene> _parse_node_tag(const Ref<PackedScene> &p_current_scene, VariantParser::ResourceParser &p_parser);
 
