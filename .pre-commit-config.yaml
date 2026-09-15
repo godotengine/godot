@@ -46,7 +46,7 @@ repos:
         stages: [manual]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.20
+    rev: v0.16.3
     hooks:
       - id: ruff-check
         args: [--color=always]
@@ -58,7 +58,7 @@ repos:
         types_or: [text]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
+    rev: v2.3.1
     hooks:
       - id: mypy
         files: \.py$
