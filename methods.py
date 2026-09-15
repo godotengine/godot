@@ -14,8 +14,8 @@ from io import StringIO
 from pathlib import Path
 from typing import Generator, TextIO, cast
 
+import platform_methods
 from misc.utility.color import print_error, print_info, print_warning
-from platform_methods import detect_arch
 
 # Get the "Godot" folder name ahead of time
 base_folder = Path(__file__).resolve().parent
@@ -109,6 +109,29 @@ def redirect_emitter(target, source, env):
             print_warning(f'Failed to redirect "{path}"')
         redirected_targets.append(item)
     return redirected_targets, source
+
+
+def nocache_emitter(target, source, env):
+    """
+    An emitter that ensures the provided target will never be cached. Useful when setting up
+    builders whose output shouldn't be cached, without needing to apply the `NoCache` wrapper
+    on all output.
+    """
+
+    return env.NoCache(target), source
+
+
+def generate_dependency_emitter(dependencies):
+    """
+    Generates an emitter that automatically assigns the provided dependencies. Useful when
+    setting up builders whose output relies on a specific dependency, without needing to
+    apply the `Depends` wrapper on all output.
+    """
+
+    def _generated_dependency_emitter(target, source, env):
+        return env.Depends(target, dependencies), source
+
+    return _generated_dependency_emitter
 
 
 def disable_warnings(self):
@@ -1087,7 +1110,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
     platform = env["platform"]
     target = env["target"]
     arch = env["arch"]
-    host_arch = detect_arch()
+    host_arch = platform_methods.detect_arch()
 
     host_platform = "windows"
     if (
