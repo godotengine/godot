@@ -3443,6 +3443,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &Window::set_exclusive);
 	ClassDB::bind_method(D_METHOD("is_exclusive"), &Window::is_exclusive);
 
+	ClassDB::bind_method(D_METHOD("set_clamp_to_embedder", "clamp_to_embedder"), &Window::set_clamp_to_embedder);
+	ClassDB::bind_method(D_METHOD("is_clamped_to_embedder"), &Window::is_clamped_to_embedder);
+
 	ClassDB::bind_method(D_METHOD("set_unparent_when_invisible", "unparent"), &Window::set_unparent_when_invisible);
 
 	ClassDB::bind_method(D_METHOD("can_draw"), &Window::can_draw);
@@ -3591,6 +3594,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient"), "set_transient", "is_transient");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transient_to_focused"), "set_transient_to_focused", "is_transient_to_focused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "is_exclusive");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clamp_to_embedder"), "set_clamp_to_embedder", "is_clamped_to_embedder");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unresizable"), "set_flag", "get_flag", FLAG_RESIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "borderless"), "set_flag", "get_flag", FLAG_BORDERLESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "always_on_top"), "set_flag", "get_flag", FLAG_ALWAYS_ON_TOP);
