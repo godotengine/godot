@@ -277,6 +277,7 @@ private:
 	bool transforming = false;
 	bool transform_gizmo_visible = true;
 	bool collision_reposition = false;
+	bool use_separate_thread = false;
 	real_t gizmo_scale;
 
 	bool vertex_snap_mode = false;
@@ -510,6 +511,7 @@ private:
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
+	void _update_collision_reposition_and_preview();
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
