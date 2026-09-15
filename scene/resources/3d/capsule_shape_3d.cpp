@@ -69,7 +69,11 @@ Vector<Vector3> CapsuleShape3D::get_debug_mesh_lines() const {
 	return points;
 }
 
-Ref<ArrayMesh> CapsuleShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+Ref<ArrayMesh> CapsuleShape3D::get_debug_arraymesh_faces(const Color &p_modulate) {
+	if (debug_mesh_faces_cache.is_valid()) {
+		return debug_mesh_faces_cache;
+	}
+	print_line("CapsuleShape3D Cache Miss");
 	Array capsule_array;
 	capsule_array.resize(RSE::ARRAY_MAX);
 	CapsuleMesh::create_mesh_array(capsule_array, radius, height, 32, 8);
@@ -84,6 +88,8 @@ Ref<ArrayMesh> CapsuleShape3D::get_debug_arraymesh_faces(const Color &p_modulate
 	Ref<ArrayMesh> capsule_mesh = memnew(ArrayMesh);
 	capsule_array[RSE::ARRAY_COLOR] = colors;
 	capsule_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, capsule_array);
+
+	debug_mesh_faces_cache = capsule_mesh;
 	return capsule_mesh;
 }
 
