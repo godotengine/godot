@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorRangeDial" inherits="Range" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_zoom_from_mouse_dist">
+			<return type="void" />
+			<param index="0" name="relative" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="scale_diff">
+			<return type="float" />
+			<param index="0" name="diff" type="float" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="highlighting_range" type="bool" setter="set_highlighting_range" getter="is_highlighting_range" default="false">
+		</member>
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="1" />
+		<member name="step" type="float" setter="set_step" getter="get_step" overrides="Range" default="1.0" />
+		<member name="zoom" type="float" setter="set_zoom" getter="get_zoom" default="1.0">
+		</member>
+	</members>
+	<signals>
+		<signal name="zoom_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+</class>
