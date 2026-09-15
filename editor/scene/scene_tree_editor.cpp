@@ -78,12 +78,14 @@ PackedStringArray SceneTreeEditor::_get_node_configuration_warnings(Node *p_node
 				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
 			}
 		}
+#ifndef _3D_DISABLED
 		Node3D *node_3d = Object::cast_to<Node3D>(p_node);
 		if (node_3d) {
 			if (!node_3d->get_position().is_zero_approx()) {
 				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
 			}
 		}
+#endif // _3D_DISABLED
 	}
 	return warnings;
 }
@@ -237,6 +239,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		if (Object::cast_to<CanvasItem>(n)) {
 			undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
 			undo_redo->add_undo_method(CanvasItemEditor::get_singleton(), "emit_signal", "item_lock_status_changed");
+#ifndef _3D_DISABLED
 		} else if (Object::cast_to<Node3D>(n)) {
 			Node3DEditor *node_3d_editor = Node3DEditor::get_singleton();
 			undo_redo->add_do_method(node_3d_editor, "emit_signal", "item_lock_status_changed");
@@ -245,6 +248,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			undo_redo->add_undo_method(node_3d_editor, "_refresh_menu_icons");
 			undo_redo->add_do_method(node_3d_editor, "update_transform_gizmo");
 			undo_redo->add_undo_method(node_3d_editor, "update_transform_gizmo");
+#endif // _3D_DISABLED
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {

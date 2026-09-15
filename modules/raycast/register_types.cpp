@@ -41,7 +41,7 @@ void initialize_raycast_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) && !defined(_3D_DISABLED)
 	LightmapRaycasterEmbree::make_default_raycaster();
 	StaticRaycasterEmbree::make_default_raycaster();
 #endif

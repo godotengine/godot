@@ -43,14 +43,18 @@
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#ifndef _3D_DISABLED
 #include "scene/3d/mesh_instance_3d.h"
+#endif // _3D_DISABLED
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/shader.h"
+#ifndef _3D_DISABLED
 #include "scene/resources/sky.h"
+#endif // _3D_DISABLED
 #include "scene/resources/style_box_flat.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -208,12 +212,14 @@ HashMap<String, String> TextShaderPreview::builtin_canvas_types = {
 };
 
 TextShaderPreview::TextShaderPreview() {
+#ifndef _3D_DISABLED
 	env.instantiate();
 	Ref<Sky> sky = memnew(Sky);
 	env->set_sky(sky);
 	env->set_background(Environment::BG_COLOR);
 	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
 	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
+#endif // _3D_DISABLED
 
 	shader_material.instantiate();
 
@@ -566,7 +572,11 @@ void TextShaderPreview::_reset_shader_parameters(Ref<ShaderMaterial> &p_target) 
 }
 
 void TextShaderPreview::_show_error(const String &p_error) {
+#ifndef _3D_DISABLED
 	surface->edit(Ref<Material>(), env);
+#else
+	surface->edit(Ref<Material>());
+#endif // _3D_DISABLED
 	error_label->set_text(p_error);
 	surface_container->hide();
 	error_container->show();
@@ -596,6 +606,7 @@ Ref<ShaderMaterial> TextShaderPreview::_get_source_material() const {
 		return Ref<ShaderMaterial>();
 	}
 
+#ifndef _3D_DISABLED
 	const GeometryInstance3D *gi = Object::cast_to<GeometryInstance3D>(object);
 	if (gi) {
 		const Ref<ShaderMaterial> material_overlay = gi->get_material_overlay();
@@ -623,6 +634,7 @@ Ref<ShaderMaterial> TextShaderPreview::_get_source_material() const {
 			}
 		}
 	}
+#endif // _3D_DISABLED
 
 	return Ref<ShaderMaterial>();
 }
@@ -725,7 +737,11 @@ void TextShaderPreview::set_shader_code(const String &p_code, int p_line, bool p
 
 	error_container->hide();
 	surface_container->show();
+#ifndef _3D_DISABLED
 	surface->edit(shader_material.ptr(), env);
+#else
+	surface->edit(shader_material.ptr());
+#endif // _3D_DISABLED
 	surface->show(); // Edit may have called hide() earlier on failed compilation.
 }
 
