@@ -1355,10 +1355,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GDScript *gdscript = Object::cast_to<GDScript>(_class->operator Object *());
 				GD_ERR_BREAK(!gdscript);
 
-				int index = _code_ptr[ip + 3];
-				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+				uint32_t index = _code_ptr[ip + 3];
+				GD_ERR_BREAK(index >= gdscript->static_variables.size());
 
-				gdscript->static_variables.write[index] = *value;
+				gdscript->static_variables[index] = *value;
 
 				ip += 4;
 			}
@@ -1373,8 +1373,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GDScript *gdscript = Object::cast_to<GDScript>(_class->operator Object *());
 				GD_ERR_BREAK(!gdscript);
 
-				int index = _code_ptr[ip + 3];
-				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+				uint32_t index = _code_ptr[ip + 3];
+				GD_ERR_BREAK(index >= gdscript->static_variables.size());
 
 				*target = gdscript->static_variables[index];
 
@@ -2620,7 +2620,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					// First `FIXED_ADDRESSES_MAX` stack addresses are special, so we just skip them here.
 					for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
-						memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(stack[i]));
+						memnew_placement(&gdfs->state.stack[sizeof(Variant) * i], Variant(stack[i]));
 					}
 					gdfs->state.stack_size = _stack_size;
 					gdfs->state.ip = ip + 2;
@@ -2697,14 +2697,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(lambda_index < 0 || lambda_index >= _lambdas_count);
 				GDScriptFunction *lambda = _lambdas_ptr[lambda_index];
 
-				Vector<Variant> captures;
+				TightLocalVector<Variant> captures;
 				captures.resize(captures_count);
 				for (int i = 0; i < captures_count; i++) {
 					GET_INSTRUCTION_ARG(arg, i);
-					captures.write[i] = *arg;
+					captures[i] = *arg;
 				}
 
-				GDScriptLambdaCallable *callable = memnew(GDScriptLambdaCallable(Ref<GDScript>(script), lambda, captures));
+				GDScriptLambdaCallable *callable = memnew(GDScriptLambdaCallable(Ref<GDScript>(script), lambda, std::move(captures)));
 
 				GET_INSTRUCTION_ARG(result, captures_count);
 				*result = Callable(callable);
@@ -2728,18 +2728,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(lambda_index < 0 || lambda_index >= _lambdas_count);
 				GDScriptFunction *lambda = _lambdas_ptr[lambda_index];
 
-				Vector<Variant> captures;
+				TightLocalVector<Variant> captures;
 				captures.resize(captures_count);
 				for (int i = 0; i < captures_count; i++) {
 					GET_INSTRUCTION_ARG(arg, i);
-					captures.write[i] = *arg;
+					captures[i] = *arg;
 				}
 
 				GDScriptLambdaSelfCallable *callable;
 				if (Object::cast_to<RefCounted>(p_instance->owner)) {
-					callable = memnew(GDScriptLambdaSelfCallable(Ref<RefCounted>(Object::cast_to<RefCounted>(p_instance->owner)), lambda, captures));
+					callable = memnew(GDScriptLambdaSelfCallable(Ref<RefCounted>(Object::cast_to<RefCounted>(p_instance->owner)), lambda, std::move(captures)));
 				} else {
-					callable = memnew(GDScriptLambdaSelfCallable(p_instance->owner, lambda, captures));
+					callable = memnew(GDScriptLambdaSelfCallable(p_instance->owner, lambda, std::move(captures)));
 				}
 
 				GET_INSTRUCTION_ARG(result, captures_count);

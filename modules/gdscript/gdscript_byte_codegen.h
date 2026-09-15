@@ -41,7 +41,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	struct StackSlot {
 		Variant::Type type = Variant::NIL;
 		bool can_contain_object = true;
-		Vector<int> bytecode_indices;
+		LocalVector<int> bytecode_indices;
 
 		StackSlot() = default;
 		StackSlot(Variant::Type p_type, bool p_can_contain_object) :
@@ -78,16 +78,16 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	bool ended = false;
 	GDScriptFunction *function = nullptr;
 
-	Vector<int> opcodes;
+	LocalVector<int> opcodes;
 	List<RBMap<StringName, int>> stack_id_stack;
 	RBMap<StringName, int> stack_identifiers;
 	List<int> stack_identifiers_counts;
 	RBMap<StringName, int> local_constants;
 
-	Vector<StackSlot> locals;
+	LocalVector<StackSlot> locals;
 	HashSet<int> dirty_locals;
 
-	Vector<StackSlot> temporaries;
+	LocalVector<StackSlot> temporaries;
 	List<int> used_temporaries;
 	HashSet<int> temporaries_pending_clear;
 	RBMap<Variant::Type, List<int>> temporaries_pool;
@@ -96,7 +96,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<RBMap<StringName, int>> block_identifier_stack;
 	RBMap<StringName, int> block_identifiers;
 
-	int max_locals = 0;
+	uint32_t max_locals = 0;
 	int current_line = 0;
 	int instr_args_max = 0;
 
@@ -191,7 +191,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			ERR_PRINT("Leaving block with non-zero temporary variables: " + itos(used_temporaries.size()));
 		}
 #endif
-		for (int i = current_locals; i < locals.size(); i++) {
+		for (uint32_t i = current_locals; i < locals.size(); i++) {
 			dirty_locals.insert(i + GDScriptFunction::FIXED_ADDRESSES_MAX);
 		}
 		locals.resize(current_locals);
@@ -362,7 +362,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 			case Address::FUNCTION_PARAMETER:
 				return p_address.address | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
 			case Address::TEMPORARY:
-				temporaries.write[p_address.address].bytecode_indices.push_back(opcodes.size());
+				temporaries[p_address.address].bytecode_indices.push_back(opcodes.size());
 				return -1;
 			case Address::NIL:
 				return GDScriptFunction::ADDR_NIL;
@@ -445,7 +445,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	void patch_jump(int p_address) {
-		opcodes.write[p_address] = opcodes.size();
+		opcodes[p_address] = opcodes.size();
 	}
 
 public:
@@ -495,8 +495,8 @@ public:
 	virtual void write_get_named(const Address &p_target, const StringName &p_name, const Address &p_source) override;
 	virtual void write_set_member(const Address &p_value, const StringName &p_name) override;
 	virtual void write_get_member(const Address &p_target, const StringName &p_name) override;
-	virtual void write_set_static_variable(const Address &p_value, const Address &p_class, int p_index) override;
-	virtual void write_get_static_variable(const Address &p_target, const Address &p_class, int p_index) override;
+	virtual void write_set_static_variable(const Address &p_value, const Address &p_class, uint32_t p_index) override;
+	virtual void write_get_static_variable(const Address &p_target, const Address &p_class, uint32_t p_index) override;
 	virtual void write_assign(const Address &p_target, const Address &p_source) override;
 	virtual void write_assign_with_conversion(const Address &p_target, const Address &p_source) override;
 	virtual void write_assign_null(const Address &p_target) override;
