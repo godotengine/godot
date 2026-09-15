@@ -839,6 +839,7 @@
 					print(files)
 				[/codeblock]
 				[b]Note:[/b] This signal only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
+				[b]Note:[/b] On the web platform, the files are dropped to a temporary folder and will be removed automatically after the signal is emitted. Process them immediately, or move them to a separate possibly persistent location (e.g. [code]user://[/code]) to preserve them.
 			</description>
 		</signal>
 		<signal name="focus_entered">

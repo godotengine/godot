@@ -120,11 +120,6 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		persistentPaths: ['/userfs'],
 		/**
 		 * @ignore
-		 * @type {boolean}
-		 */
-		persistentDrops: false,
-		/**
-		 * @ignore
 		 * @type {Array.<string>}
 		 */
 		gdextensionLibs: [],
@@ -263,7 +258,6 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.locale = parse('locale', this.locale);
 		this.canvasResizePolicy = parse('canvasResizePolicy', this.canvasResizePolicy);
 		this.persistentPaths = parse('persistentPaths', this.persistentPaths);
-		this.persistentDrops = parse('persistentDrops', this.persistentDrops);
 		this.experimentalVK = parse('experimentalVK', this.experimentalVK);
 		this.focusCanvas = parse('focusCanvas', this.focusCanvas);
 		this.serviceWorker = parse('serviceWorker', this.serviceWorker);
@@ -361,7 +355,6 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'canvas': this.canvas,
 			'canvasResizePolicy': this.canvasResizePolicy,
 			'locale': locale,
-			'persistentDrops': this.persistentDrops,
 			'virtualKeyboard': this.experimentalVK,
 			'godotPoolSize': this.godotPoolSize,
 			'focusCanvas': this.focusCanvas,
