@@ -225,16 +225,20 @@
 #define CMD_TYPE(N) Command##N<T, M COMMA(N) COMMA_SEP_LIST(TYPE_ARG, N)>
 #define CMD_ASSIGN_PARAM(N) cmd->p##N = p##N
 
-#define DECL_PUSH(N)                                                         \
-	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>       \
-	void push(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) { \
-		CMD_TYPE(N) *cmd = allocate_and_lock<CMD_TYPE(N)>();                 \
-		cmd->instance = p_instance;                                          \
-		cmd->method = p_method;                                              \
-		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                 \
-		unlock();                                                            \
-		if (sync)                                                            \
-			sync->post();                                                    \
+#define DECL_PUSH(N)                                                                    \
+	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>                  \
+	void push(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) {            \
+		if (unlikely(is_bypass_enabled_for_thread && is_bypass_enabled_for_thread())) { \
+			(p_instance->*p_method)(COMMA_SEP_LIST(ARG, N));                            \
+			return;                                                                     \
+		}                                                                               \
+		CMD_TYPE(N) *cmd = allocate_and_lock<CMD_TYPE(N)>();                            \
+		cmd->instance = p_instance;                                                     \
+		cmd->method = p_method;                                                         \
+		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                            \
+		unlock();                                                                       \
+		if (sync)                                                                       \
+			sync->post();                                                               \
 	}
 
 #define CMD_RET_TYPE(N) CommandRet##N<T, M, COMMA_SEP_LIST(TYPE_ARG, N) COMMA(N) R>
@@ -242,6 +246,10 @@
 #define DECL_PUSH_AND_RET(N)                                                                   \
 	template <class T, class M, COMMA_SEP_LIST(TYPE_PARAM, N) COMMA(N) class R>                \
 	void push_and_ret(T *p_instance, M p_method, COMMA_SEP_LIST(PARAM, N) COMMA(N) R *r_ret) { \
+		if (unlikely(is_bypass_enabled_for_thread && is_bypass_enabled_for_thread())) {        \
+			*r_ret = (p_instance->*p_method)(COMMA_SEP_LIST(ARG, N));                          \
+			return;                                                                            \
+		}                                                                                      \
 		SyncSemaphore *ss = _alloc_sync_sem();                                                 \
 		CMD_RET_TYPE(N) *cmd = allocate_and_lock<CMD_RET_TYPE(N)>();                           \
 		cmd->instance = p_instance;                                                            \
@@ -258,20 +266,24 @@
 
 #define CMD_SYNC_TYPE(N) CommandSync##N<T, M COMMA(N) COMMA_SEP_LIST(TYPE_ARG, N)>
 
-#define DECL_PUSH_AND_SYNC(N)                                                         \
-	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>                \
-	void push_and_sync(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) { \
-		SyncSemaphore *ss = _alloc_sync_sem();                                        \
-		CMD_SYNC_TYPE(N) *cmd = allocate_and_lock<CMD_SYNC_TYPE(N)>();                \
-		cmd->instance = p_instance;                                                   \
-		cmd->method = p_method;                                                       \
-		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                          \
-		cmd->sync_sem = ss;                                                           \
-		unlock();                                                                     \
-		if (sync)                                                                     \
-			sync->post();                                                             \
-		ss->sem.wait();                                                               \
-		ss->in_use = false;                                                           \
+#define DECL_PUSH_AND_SYNC(N)                                                           \
+	template <class T, class M COMMA(N) COMMA_SEP_LIST(TYPE_PARAM, N)>                  \
+	void push_and_sync(T *p_instance, M p_method COMMA(N) COMMA_SEP_LIST(PARAM, N)) {   \
+		if (unlikely(is_bypass_enabled_for_thread && is_bypass_enabled_for_thread())) { \
+			(p_instance->*p_method)(COMMA_SEP_LIST(ARG, N));                            \
+			return;                                                                     \
+		}                                                                               \
+		SyncSemaphore *ss = _alloc_sync_sem();                                          \
+		CMD_SYNC_TYPE(N) *cmd = allocate_and_lock<CMD_SYNC_TYPE(N)>();                  \
+		cmd->instance = p_instance;                                                     \
+		cmd->method = p_method;                                                         \
+		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                            \
+		cmd->sync_sem = ss;                                                             \
+		unlock();                                                                       \
+		if (sync)                                                                       \
+			sync->post();                                                               \
+		ss->sem.wait();                                                                 \
+		ss->in_use = false;                                                             \
 	}
 
 #define MAX_CMD_PARAMS 13
@@ -322,6 +334,7 @@ class CommandQueueMT {
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex mutex;
 	Semaphore *sync;
+	bool (*is_bypass_enabled_for_thread)();
 
 	template <class T>
 	T *allocate() {
@@ -487,7 +500,7 @@ public:
 		unlock();
 	}
 
-	CommandQueueMT(bool p_sync);
+	CommandQueueMT(bool p_sync, bool (*is_bypass_enabled_for_thread)() = nullptr);
 	~CommandQueueMT();
 };
 
