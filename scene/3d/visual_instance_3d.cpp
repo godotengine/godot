@@ -375,6 +375,21 @@ void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+bool GeometryInstance3D::_property_can_revert(const StringName &p_name) const {
+	return _instance_uniform_get_remap(p_name) != nullptr;
+}
+
+bool GeometryInstance3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	const StringName *param_name = _instance_uniform_get_remap(p_name);
+	if (param_name) {
+		r_property = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), *param_name);
+		return true;
+	}
+	return false;
+}
+#endif // TOOLS_ENABLED
+
 void GeometryInstance3D::set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting) {
 	shadow_casting_setting = p_shadow_casting_setting;
 
