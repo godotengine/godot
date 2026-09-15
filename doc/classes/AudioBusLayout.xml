@@ -4,8 +4,22 @@
 		Stores information about the audio buses.
 	</brief_description>
 	<description>
-		Stores position, muting, solo, bypass, effects, effect position, volume, and the connections between buses. See [AudioServer] for usage.
+		Stores position, muting, solo, bypass, effects, effect position, volume, and the connections between buses.
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="generate_from_server_bus_layout">
+			<return type="void" />
+			<description>
+				Clears and generates the layout based on the current buses of the [AudioServer].
+			</description>
+		</method>
+		<method name="set_server_bus_layout">
+			<return type="void" />
+			<description>
+				Applies the layout to the [AudioServer] buses.
+			</description>
+		</method>
+	</methods>
 </class>
