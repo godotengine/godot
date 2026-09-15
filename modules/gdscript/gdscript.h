@@ -52,6 +52,8 @@ public:
 	GDScriptNativeClass(const StringName &p_name);
 };
 
+class GDScriptOptimizer;
+
 class GDScript : public Script {
 	GDCLASS(GDScript, Script);
 	bool tool;
@@ -110,6 +112,21 @@ class GDScript : public Script {
 	String name;
 	String fully_qualified_name;
 	SelfList<GDScript> script_list;
+
+public:
+	enum OptimizationOption {
+		OPTIMIZATION_OPTION_LICM,
+		OPTIMIZATION_OPTION_CONSTANT_FOLDING,
+		OPTIMIZATION_OPTION_DEAD_CODE_ELIMINATION,
+		OPTIMIZATION_OPTION_INLINING,
+		OPTIMIZATION_OPTION_LOOP_UNROLLING,
+		OPTIMIZATION_OPTION_MAX,
+	};
+
+private:
+	bool _optimize = true;
+	bool optimization_options[OPTIMIZATION_OPTION_MAX];
+	void _script_optimizer_set_local_options(GDScriptOptimizer &r_optimizer) const;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 	void _clear_pending_func_states();
@@ -192,6 +209,11 @@ public:
 	Error load_source_code(const String &p_path);
 	Error load_byte_code(const String &p_path);
 
+	void set_optimization_option(OptimizationOption p_option, bool p_enabled);
+	bool get_optimization_option(OptimizationOption p_option) const;
+	void set_optimization_enabled(bool p_enabled) { _optimize = p_enabled; }
+	bool is_optimization_enabled() const { return _optimize; }
+
 	Vector<uint8_t> get_as_byte_code() const;
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
@@ -223,6 +245,8 @@ public:
 	GDScript();
 	~GDScript();
 };
+
+VARIANT_ENUM_CAST(GDScript::OptimizationOption);
 
 class GDScriptInstance : public ScriptInstance {
 	friend class GDScript;

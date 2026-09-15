@@ -41,7 +41,12 @@ struct GDScriptDataType;
 struct GDScriptWarning;
 
 class GDScriptParser {
+	friend class GDScriptOptimizer;
+
 public:
+	static const char *_control_flow_type_strings[];
+	static const char *_node_type_strings[];
+
 	struct ClassNode;
 
 	struct DataType {
@@ -124,6 +129,7 @@ public:
 			TYPE_ASSERT,
 			TYPE_BREAKPOINT,
 			TYPE_NEWLINE,
+			TYPE_INLINE_BLOCK,
 		};
 
 		Node *next;
@@ -172,6 +178,7 @@ public:
 		struct Constant {
 			Node *expression;
 			DataType type;
+			String name;
 		};
 
 		struct Signal {
@@ -189,7 +196,7 @@ public:
 		Vector<Signal> _signals;
 		BlockNode *initializer;
 		BlockNode *ready;
-		ClassNode *owner;
+		ClassNode *owner = nullptr;
 		//Vector<Node*> initializers;
 		int end_line;
 
@@ -204,10 +211,11 @@ public:
 	};
 
 	struct FunctionNode : public Node {
-		bool _static;
+		bool _static = false;
+		bool _inline_func = false;
 		MultiplayerAPI::RPCMode rpc_mode;
-		bool has_yield;
-		bool has_unreachable_code;
+		bool has_yield = false;
+		bool has_unreachable_code = false;
 		StringName name;
 		DataType return_type;
 		Vector<StringName> arguments;
@@ -224,10 +232,7 @@ public:
 
 		FunctionNode() {
 			type = TYPE_FUNCTION;
-			_static = false;
 			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
-			has_yield = false;
-			has_unreachable_code = false;
 		}
 	};
 
@@ -251,6 +256,13 @@ public:
 			end_line = -1;
 			parent_block = nullptr;
 			parent_class = nullptr;
+		}
+	};
+
+	struct InlineBlockNode : public Node {
+		Vector<Node *> statements;
+		InlineBlockNode() {
+			type = TYPE_INLINE_BLOCK;
 		}
 	};
 
@@ -410,7 +422,7 @@ public:
 
 		PatternType pt_type;
 
-		Node *constant;
+		Node *constant = nullptr;
 		StringName bind;
 		Map<ConstantNode *, PatternNode *> dictionary;
 		Vector<PatternNode *> array;
@@ -448,8 +460,9 @@ public:
 		Vector<Node *> arguments;
 		BlockNode *body;
 		BlockNode *body_else;
+		bool _unroll = false;
 
-		MatchNode *match;
+		MatchNode *match = nullptr;
 
 		ControlFlowNode *_else; //used for if
 		ControlFlowNode() {
@@ -522,6 +535,7 @@ private:
 	template <class T>
 	T *alloc_node();
 
+	bool _requests_optimization = false;
 	bool validating;
 	bool for_completion;
 	int parenthesis;
@@ -666,6 +680,7 @@ public:
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode, const String &p_base_path = "", const String &p_self_path = "");
 
 	bool is_tool_script() const;
+	bool requests_optimization() { return _requests_optimization; }
 	const Node *get_parse_tree() const;
 
 	//completion info
