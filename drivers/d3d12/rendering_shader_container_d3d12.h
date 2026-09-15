@@ -74,6 +74,8 @@ class RenderingShaderContainerD3D12 : public RenderingShaderContainer {
 	GDSOFTCLASS(RenderingShaderContainerD3D12, RenderingShaderContainer);
 
 public:
+	bool use_nir_opt_peephole = false;
+
 	static constexpr uint32_t REQUIRED_SHADER_MODEL = 0x62; // D3D_SHADER_MODEL_6_2
 	static constexpr uint32_t ROOT_CONSTANT_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RenderingDeviceCommons::MAX_UNIFORM_SETS + 1);
 	static constexpr uint32_t RUNTIME_DATA_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RenderingDeviceCommons::MAX_UNIFORM_SETS + 2);
@@ -127,9 +129,21 @@ protected:
 	uint32_t root_signature_crc = 0;
 
 #if NIR_ENABLED
-	bool _convert_spirv_to_nir(Span<ReflectShaderStage> p_spirv, const nir_shader_compiler_options *p_compiler_options, HashMap<int, nir_shader *> &r_stages_nir_shaders, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed);
-	bool _convert_nir_to_dxil(const HashMap<int, nir_shader *> &p_stages_nir_shaders, BitField<RenderingDeviceCommons::ShaderStage> p_stages_processed, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs);
-	bool _convert_spirv_to_dxil(Span<ReflectShaderStage> p_spirv, HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs, Vector<RenderingDeviceCommons::ShaderStage> &r_stages, BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed);
+	bool _convert_spirv_to_nir(
+			Span<ReflectShaderStage> p_spirv,
+			const nir_shader_compiler_options *p_compiler_options,
+			HashMap<int, nir_shader *> &r_stages_nir_shaders,
+			Vector<RenderingDeviceCommons::ShaderStage> &r_stages,
+			BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed);
+	bool _convert_nir_to_dxil(const HashMap<int, nir_shader *> &p_stages_nir_shaders,
+			BitField<RenderingDeviceCommons::ShaderStage> p_stages_processed,
+			HashMap<RenderingDeviceCommons::ShaderStage, Vector<uint8_t>> &r_dxil_blobs);
+	bool _convert_spirv_to_dxil(
+			Span<ReflectShaderStage> p_spirv,
+			HashMap<RenderingDeviceCommons::ShaderStage,
+					Vector<uint8_t>> &r_dxil_blobs,
+			Vector<RenderingDeviceCommons::ShaderStage> &r_stages,
+			BitField<RenderingDeviceCommons::ShaderStage> &r_stages_processed);
 	bool _generate_root_signature(BitField<RenderingDeviceCommons::ShaderStage> p_stages_processed);
 
 	// GodotNirCallbacks.

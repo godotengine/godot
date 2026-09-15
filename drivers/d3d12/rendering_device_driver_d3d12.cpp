@@ -6634,6 +6634,16 @@ Error RenderingDeviceDriverD3D12::_initialize_command_signatures() {
 	return OK;
 }
 
+void RenderingDeviceDriverD3D12::_check_driver_workarounds() {
+	// Divergent shaders on Intel GPU's cause EU to hang (indefinitely in some cases).
+	// This option applies shader optimization resulting in less divergent shader code.
+	if (this->context_device.vendor == RenderingContextDriver::Vendor::VENDOR_INTEL) {
+		shader_container_format.driver_workarounds.use_nir_opt_peephole = true;
+	};
+	// Synk with RenderingDeviceDriver::get_driver_workarounds
+	driver_workarounds = shader_container_format.driver_workarounds;
+}
+
 Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p_frame_count) {
 	glsl_type_singleton_init_or_ref();
 
@@ -6666,6 +6676,8 @@ Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p
 
 	err = _initialize_command_signatures();
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+
+	_check_driver_workarounds();
 
 	return OK;
 }
