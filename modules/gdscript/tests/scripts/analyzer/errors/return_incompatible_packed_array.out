@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 3: Cannot return value of type "PackedInt32Array" because the function return type is "Array[String]".
