@@ -51,6 +51,7 @@ class StyleBoxFlat : public StyleBox {
 	int corner_detail = 8;
 	int shadow_size = 0;
 	Point2 shadow_offset;
+	bool anti_aliased_force = false;
 	real_t aa_size = 1;
 
 protected:
@@ -106,6 +107,8 @@ public:
 	bool is_anti_aliased() const;
 	void set_aa_size(const real_t p_aa_size);
 	real_t get_aa_size() const;
+	void set_anti_aliased_force(const bool &p_anti_aliased_force);
+	bool is_anti_aliased_force_enabled() const;
 
 	virtual Rect2 get_draw_rect(const Rect2 &p_rect) const override;
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override;

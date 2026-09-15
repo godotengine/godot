@@ -46,7 +46,7 @@ void StyleBoxFlat::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (!anti_aliased && p_property.name == "anti_aliasing_size") {
+	if (!anti_aliased && (p_property.name == "anti_aliasing_force" || p_property.name == "anti_aliasing_size")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -226,6 +226,15 @@ void StyleBoxFlat::set_aa_size(const real_t p_aa_size) {
 
 real_t StyleBoxFlat::get_aa_size() const {
 	return aa_size;
+}
+
+void StyleBoxFlat::set_anti_aliased_force(const bool &p_anti_aliased_force) {
+	anti_aliased_force = p_anti_aliased_force;
+	emit_changed();
+}
+
+bool StyleBoxFlat::is_anti_aliased_force_enabled() const {
+	return anti_aliased_force;
 }
 
 inline void set_inner_corner_radius(const Rect2 style_rect, const Rect2 inner_rect, const real_t corner_radius[4], real_t *inner_corner_radius) {
@@ -471,7 +480,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	const bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
 	// Only enable antialiasing if it is actually needed. This improves performance
 	// and maximizes sharpness for non-skewed StyleBoxes with sharp corners.
-	const bool aa_on = (rounded_corners || !skew.is_zero_approx()) && anti_aliased;
+	const bool aa_on = (anti_aliased_force || rounded_corners || !skew.is_zero_approx()) && anti_aliased;
 
 	const bool blend_on = blend_border && draw_border;
 
@@ -690,6 +699,9 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_anti_aliased", "anti_aliased"), &StyleBoxFlat::set_anti_aliased);
 	ClassDB::bind_method(D_METHOD("is_anti_aliased"), &StyleBoxFlat::is_anti_aliased);
 
+	ClassDB::bind_method(D_METHOD("set_anti_aliased_force", "anti_aliased_force"), &StyleBoxFlat::set_anti_aliased_force);
+	ClassDB::bind_method(D_METHOD("is_anti_aliased_force_enabled"), &StyleBoxFlat::is_anti_aliased_force_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_aa_size", "size"), &StyleBoxFlat::set_aa_size);
 	ClassDB::bind_method(D_METHOD("get_aa_size"), &StyleBoxFlat::get_aa_size);
 
@@ -733,5 +745,6 @@ void StyleBoxFlat::_bind_methods() {
 
 	ADD_GROUP("Anti Aliasing", "anti_aliasing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "anti_aliasing"), "set_anti_aliased", "is_anti_aliased");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "anti_aliasing_force"), "set_anti_aliased_force", "is_anti_aliased_force_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anti_aliasing_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,suffix:px"), "set_aa_size", "get_aa_size");
 }
