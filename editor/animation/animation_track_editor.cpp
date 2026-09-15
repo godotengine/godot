@@ -2213,23 +2213,12 @@ void AnimationTrackEdit::_notification(int p_what) {
 					node = root->get_node_or_null(anim_path);
 				}
 
-				String text;
 				Color text_color = color;
 				if (node && EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
 					text_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 				}
 
 				if (in_group) {
-					if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-						text = TTR("Functions:");
-					} else if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
-						text = TTR("Audio Clips:");
-					} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
-						text = TTR("Animation Clips:");
-					} else {
-						text += anim_path.get_concatenated_subnames();
-					}
-
 					bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
 					if (animation->track_get_type(track) == Animation::TYPE_VALUE && use_monospace_font) {
 						font_to_use = source_font;
@@ -2245,23 +2234,18 @@ void AnimationTrackEdit::_notification(int p_what) {
 					draw_texture_rect(icon, icon_rect);
 					icon_cache = icon;
 
-					text = String() + node->get_name() + ":" + anim_path.get_concatenated_subnames();
 					ofs += h_separation;
 					ofs += icon_size.x;
 
 				} else {
 					icon_cache = key_type_icon;
-
-					text = String(anim_path);
 				}
-
-				path_cache = text;
 
 				path_rect = Rect2(ofs, 0, limit - ofs - h_separation, get_size().height);
 
 				Vector2 string_pos = Point2(ofs, (get_size().height - font_to_use->get_height(font_size_to_use)) / 2 + font_to_use->get_ascent(font_size_to_use));
 				string_pos = string_pos.floor();
-				draw_string(font_to_use, string_pos, text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - h_separation, font_size_to_use, text_color);
+				draw_string(font_to_use, string_pos, track_text, HORIZONTAL_ALIGNMENT_LEFT, limit - ofs - h_separation, font_size_to_use, text_color);
 
 				draw_line(Point2(limit, 0), Point2(limit, get_size().height), h_line_color, Math::round(EDSCALE));
 			}
@@ -2779,6 +2763,29 @@ Size2 AnimationTrackEdit::get_minimum_size() const {
 	max_h = MAX(max_h, get_key_height());
 
 	return Vector2(1, max_h + separation);
+}
+
+void AnimationTrackEdit::update_text() {
+	const Node *node = nullptr;
+	if (root) {
+		node = root->get_node_or_null(node_path);
+	}
+
+	if (in_group) {
+		if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
+			track_text = TTR("Functions:");
+		} else if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
+			track_text = TTR("Audio Clips:");
+		} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
+			track_text = TTR("Animation Clips:");
+		} else {
+			track_text = node_path.get_concatenated_subnames();
+		}
+	} else if (node) {
+		track_text = String() + node->get_name() + ":" + node_path.get_concatenated_subnames();
+	} else {
+		track_text = (String)animation->track_get_path(track);
+	}
 }
 
 void AnimationTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
@@ -3508,7 +3515,7 @@ Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
 
 	Button *tb = memnew(Button);
 	tb->set_flat(true);
-	tb->set_text(path_cache);
+	tb->set_text(track_text);
 	tb->set_button_icon(icon_cache);
 	tb->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tb->add_theme_constant_override("icon_max_width", get_theme_constant("class_icon_size", EditorStringName(Editor)));
@@ -5367,6 +5374,8 @@ void AnimationTrackEditor::_update_tracks() {
 		track_edit->set_play_position(timeline->get_play_position());
 		track_edit->set_editor(this);
 
+		track_edit->update_text();
+
 		if (selected == i) {
 			selected_track_edit = track_edit;
 		}
@@ -5396,7 +5405,7 @@ void AnimationTrackEditor::_update_tracks() {
 				bool operator()(const VBoxContainer *p_lhs, const VBoxContainer *p_rhs) const {
 					String lhs_node_name = Object::cast_to<AnimationTrackEditGroup>(p_lhs->get_child(0))->get_node_name();
 					String rhs_node_name = Object::cast_to<AnimationTrackEditGroup>(p_rhs->get_child(0))->get_node_name();
-					return lhs_node_name < rhs_node_name;
+					return NaturalNoCaseComparator()(lhs_node_name, rhs_node_name);
 				}
 			};
 
@@ -5418,9 +5427,7 @@ void AnimationTrackEditor::_update_tracks() {
 		if (use_alphabetic_sorting) {
 			struct TrackAlphaCompare {
 				bool operator()(const AnimationTrackEdit *p_lhs, const AnimationTrackEdit *p_rhs) const {
-					String lhs_leaf = (String)p_lhs->get_path().slice(-p_lhs->get_path().get_subname_count() - 1);
-					String rhs_leaf = (String)p_rhs->get_path().slice(-p_rhs->get_path().get_subname_count() - 1);
-					return lhs_leaf < rhs_leaf;
+					return NaturalNoCaseComparator()(p_lhs->get_text(), p_rhs->get_text());
 				}
 			};
 
