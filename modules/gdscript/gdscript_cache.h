@@ -103,12 +103,8 @@ class GDScriptCache {
 
 public:
 	static const int BINARY_MUTEX_TAG = 2;
-
-private:
 	static SafeBinaryMutex<BINARY_MUTEX_TAG> mutex;
-	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_gdscript_cache_mutex();
 
-public:
 	static void move_script(const String &p_from, const String &p_to);
 	static void remove_script(const String &p_path);
 	static Ref<GDScriptParserRef> get_parser(const String &p_path, GDScriptParserRef::Status status, Error &r_error, const String &p_owner = String());
