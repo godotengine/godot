@@ -143,6 +143,8 @@ public:
 	void set_viewport(Node3DEditorViewport *p_viewport);
 };
 
+class ViewportBookmarkManager;
+
 class Node3DEditorViewport : public Control {
 	GDCLASS(Node3DEditorViewport, Control);
 	friend class Node3DEditor;
@@ -270,6 +272,8 @@ private:
 
 	MenuButton *view_display_menu = nullptr;
 	PopupMenu *display_submenu = nullptr;
+	PopupMenu *bookmarks_menu = nullptr;
+	ViewportBookmarkManager *bookmark_manager = nullptr;
 
 	Control *surface = nullptr;
 	SubViewport *viewport = nullptr;
@@ -316,6 +320,10 @@ private:
 	};
 
 	void _view_state_changed();
+	void _prepare_bookmarks_menu();
+	void _bookmark_menu_pressed(int p_id);
+	Dictionary _capture_bookmark() const;
+	void _activate_bookmark(const Dictionary &p_bookmark);
 
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
