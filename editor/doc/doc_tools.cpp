@@ -360,11 +360,14 @@ void DocTools::remove_doc(const String &p_class_name) {
 }
 
 void DocTools::remove_script_doc_by_path(const String &p_path) {
+	LocalVector<String> to_remove;
 	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
 		if (E.value.is_script_doc && E.value.script_path == p_path) {
-			remove_doc(E.key);
-			return;
+			to_remove.push_back(E.key);
 		}
+	}
+	for (const String &E : to_remove) {
+		remove_doc(E);
 	}
 }
 
