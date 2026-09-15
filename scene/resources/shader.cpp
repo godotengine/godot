@@ -52,7 +52,15 @@ Shader::Mode Shader::get_mode() const {
 void Shader::_check_shader_rid() const {
 	MutexLock lock(shader_rid_mutex);
 	if (shader_rid.is_null() && !preprocessed_code.is_empty()) {
-		shader_rid = RenderingServer::get_singleton()->shader_create_from_code(preprocessed_code, get_path());
+		String shader_to_compile;
+		String path;
+		if (preprocessor_result == OK) {
+			shader_to_compile = preprocessed_code;
+			path = get_path();
+		} else {
+			_err_print_error(nullptr, get_path().utf8().get_data(), 0, preprocessor_error_string, true, ERR_HANDLER_SHADER);
+		}
+		shader_rid = RenderingServer::get_singleton()->shader_create_from_code(shader_to_compile, path);
 		preprocessed_code = String();
 	}
 }
@@ -98,8 +106,19 @@ void Shader::set_code(const String &p_code) {
 		// 2) Server does not do interaction with Resource filetypes, this is a scene level feature.
 		HashSet<Ref<ShaderInclude>> new_include_dependencies;
 		ShaderPreprocessor preprocessor;
-		Error result = preprocessor.preprocess(p_code, path, preprocessed_code, &new_include_dependencies);
-		if (result == OK) {
+#ifdef TOOLS_ENABLED
+		preprocessor_result = preprocessor.preprocess_for_editor(
+				p_code,
+				path,
+				preprocessed_code,
+				&preprocessor_error_string,
+				nullptr,
+				nullptr,
+				&new_include_dependencies);
+#else
+		preprocessor_result = preprocessor.preprocess(p_code, path, preprocessed_code, &new_include_dependencies);
+#endif // TOOLS_ENABLED
+		if (preprocessor_result == OK) {
 			// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
 			include_dependencies = new_include_dependencies;
 		}
@@ -127,8 +146,12 @@ void Shader::set_code(const String &p_code) {
 	}
 
 	if (shader_rid.is_valid()) {
-		RenderingServer::get_singleton()->shader_set_code(shader_rid, preprocessed_code);
-		preprocessed_code = String();
+		if (preprocessor_result == OK) {
+			RenderingServer::get_singleton()->shader_set_code(shader_rid, preprocessed_code);
+			preprocessed_code = String();
+		} else {
+			_err_print_error(nullptr, get_path().utf8().get_data(), 0, preprocessor_error_string, true, ERR_HANDLER_SHADER);
+		}
 	}
 
 	emit_changed();

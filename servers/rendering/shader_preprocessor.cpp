@@ -1377,7 +1377,7 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 }
 
 #ifdef TOOLS_ENABLED
-Error ShaderPreprocessor::preprocess_for_editor(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, List<EditorLanguage::CompletionOption> *r_completion_options, List<EditorLanguage::CompletionOption> *r_completion_defines, IncludeCompletionFunction p_include_completion_func) {
+Error ShaderPreprocessor::preprocess_for_editor(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<EditorLanguage::CompletionOption> *r_completion_options, List<EditorLanguage::CompletionOption> *r_completion_defines, IncludeCompletionFunction p_include_completion_func) {
 	State pp_state;
 	_prepare_state(pp_state, p_filename, r_regions != nullptr);
 	Error err = preprocess(&pp_state, p_code, r_result);
@@ -1392,6 +1392,9 @@ Error ShaderPreprocessor::preprocess_for_editor(const String &p_code, const Stri
 	}
 	if (r_regions) {
 		*r_regions = pp_state.regions[p_filename];
+	}
+	if (r_includes) {
+		*r_includes = pp_state.shader_includes;
 	}
 
 	if (r_completion_defines) {
