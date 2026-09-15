@@ -1,10 +1,10 @@
 var _typed_array: Array[int]
 
-func weak_param_func(weak_param = _typed_array):
+func weak_param_func(weak_param = _typed_array) -> Array:
 	weak_param = [11] # Don't treat the literal as typed!
 	return weak_param
 
-func hard_param_func(hard_param := _typed_array):
+func hard_param_func(hard_param := _typed_array) -> Array:
 	hard_param = [12]
 	return hard_param
 
