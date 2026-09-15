@@ -633,7 +633,7 @@ void View3DController::scale_cursor_distance(const float p_scale) {
 }
 
 Key View3DController::emulate_numpad_key(const Key p_code) const {
-	if (emulate_numpad && p_code >= Key::KEY_0 && p_code <= Key::KEY_9) {
+	if (emulate_numpad && p_code >= Key::KEY_0 && p_code <= Key::KEY_9 && SceneTree::get_singleton()->get_edited_scene_root() != nullptr) {
 		return p_code - Key::KEY_0 + Key::KP_0;
 	}
 	return p_code;
