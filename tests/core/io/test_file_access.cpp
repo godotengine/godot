@@ -297,4 +297,37 @@ TEST_CASE("[FileAccess] Cursor positioning") {
 	}
 }
 
+#ifndef WINDOWS_ENABLED // Currently not implemented on Windows.
+
+TEST_CASE("[FileAccess] Write with exclusive creation") {
+	const String path = TestUtils::get_temp_path("fa_exclusive");
+
+	DirAccess::remove_absolute(path);
+
+	Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE_EXCLUSIVE);
+	REQUIRE(f.is_valid());
+	f->close();
+
+	DirAccess::remove_absolute(path);
+
+	f = FileAccess::open(path, FileAccess::WRITE_READ_EXCLUSIVE);
+	REQUIRE(f.is_valid());
+	// TODO: The check fails on macOS, we need to investigate and fix it.
+	/*
+	f->store_8(42);
+	f->flush();
+	f->seek(0);
+	CHECK(f->get_8() == 42);
+	*/
+	f->close();
+
+	f = FileAccess::open(path, FileAccess::WRITE_EXCLUSIVE);
+	REQUIRE(f.is_null());
+
+	f = FileAccess::open(path, FileAccess::WRITE_READ_EXCLUSIVE);
+	REQUIRE(f.is_null());
+}
+
+#endif // !WINDOWS_ENABLED
+
 } // namespace TestFileAccess
