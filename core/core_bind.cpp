@@ -41,6 +41,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -2178,76 +2179,123 @@ void Engine::_bind_methods() {
 
 ////// EngineDebugger //////
 
+#if defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
+
 bool EngineDebugger::is_active() {
+#ifdef DEBUG_ENABLED
 	return ::EngineDebugger::is_active();
+#else
+	return false;
+#endif
 }
 
 void EngineDebugger::register_profiler(const StringName &p_name, Ref<EngineProfiler> p_profiler) {
 	ERR_FAIL_COND(p_profiler.is_null());
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(p_profiler->is_bound(), "Profiler already registered.");
+#endif
 	ERR_FAIL_COND_MSG(profilers.has(p_name) || has_profiler(p_name), vformat("Profiler name already in use: '%s'.", p_name));
+#ifdef DEBUG_ENABLED
 	Error err = p_profiler->bind(p_name);
 	ERR_FAIL_COND_MSG(err != OK, vformat("Profiler failed to register with error: %d.", err));
+#endif
 	profilers.insert(p_name, p_profiler);
 }
 
 void EngineDebugger::unregister_profiler(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!profilers.has(p_name), vformat("Profiler not registered: '%s'.", p_name));
+#ifdef DEBUG_ENABLED
 	profilers[p_name]->unbind();
+#endif
 	profilers.erase(p_name);
 }
 
 bool EngineDebugger::is_profiling(const StringName &p_name) {
+#ifdef DEBUG_ENABLED
 	return ::EngineDebugger::is_profiling(p_name);
+#else
+	return false;
+#endif
 }
 
 bool EngineDebugger::has_profiler(const StringName &p_name) {
+#ifdef DEBUG_ENABLED
 	return ::EngineDebugger::has_profiler(p_name);
+#else
+	return profilers.has(p_name);
+#endif
 }
 
 void EngineDebugger::profiler_add_frame_data(const StringName &p_name, const Array &p_data) {
+#ifdef DEBUG_ENABLED
 	::EngineDebugger::profiler_add_frame_data(p_name, p_data);
+#else
+	ERR_FAIL_COND_MSG(!profilers.has(p_name), vformat("Can't add frame data, no profiler: '%s'.", p_name));
+#endif
 }
 
 void EngineDebugger::profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts) {
+#ifdef DEBUG_ENABLED
 	if (::EngineDebugger::get_singleton()) {
 		::EngineDebugger::get_singleton()->profiler_enable(p_name, p_enabled, p_opts);
 	}
+#endif
 }
 
 void EngineDebugger::register_message_capture(const StringName &p_name, const Callable &p_callable) {
 	ERR_FAIL_COND_MSG(captures.has(p_name) || has_capture(p_name), vformat("Capture already registered: '%s'.", p_name));
 	captures.insert(p_name, p_callable);
+#ifdef DEBUG_ENABLED
 	Callable &c = captures[p_name];
 	::EngineDebugger::Capture capture(&c, &EngineDebugger::call_capture);
 	::EngineDebugger::register_message_capture(p_name, capture);
+#endif
 }
 
 void EngineDebugger::unregister_message_capture(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(!captures.has(p_name), vformat("Capture not registered: '%s'.", p_name));
+#ifdef DEBUG_ENABLED
 	::EngineDebugger::unregister_message_capture(p_name);
+#endif
 	captures.erase(p_name);
 }
 
 bool EngineDebugger::has_capture(const StringName &p_name) {
+#ifdef DEBUG_ENABLED
 	return ::EngineDebugger::has_capture(p_name);
+#else
+	return captures.has(p_name);
+#endif
 }
 
 void EngineDebugger::send_message(const String &p_msg, const Array &p_data) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::is_active(), "Can't send message. No active debugger");
 	::EngineDebugger::get_singleton()->send_message(p_msg, p_data);
+#else
+	ERR_FAIL_MSG("Can't send message. No active debugger");
+#endif
 }
 
 void EngineDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::is_active(), "Can't send debug. No active debugger");
 	::EngineDebugger::get_singleton()->debug(p_can_continue, p_is_error_breakpoint);
+#else
+	ERR_FAIL_MSG("Can't send debug. No active debugger");
+#endif
 }
 
 void EngineDebugger::script_debug(ScriptLanguage *p_lang, bool p_can_continue, bool p_is_error_breakpoint) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't send debug. No active debugger");
 	::EngineDebugger::get_script_debugger()->debug(p_lang, p_can_continue, p_is_error_breakpoint);
+#else
+	ERR_FAIL_MSG("Can't send debug. No active debugger");
+#endif
 }
 
+#ifdef DEBUG_ENABLED
 Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
 	Callable &capture = *(Callable *)p_user;
 	if (!capture.is_valid()) {
@@ -2263,61 +2311,104 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 	r_captured = retval;
 	return OK;
 }
+#endif
 
 void EngineDebugger::line_poll() {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::is_active(), "Can't poll. No active debugger");
 	::EngineDebugger::get_singleton()->line_poll();
+#else
+	ERR_FAIL_MSG("Can't poll. No active debugger");
+#endif
 }
 
 void EngineDebugger::set_lines_left(int p_lines) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't set lines left. No active debugger");
 	::EngineDebugger::get_script_debugger()->set_lines_left(p_lines);
+#else
+	ERR_FAIL_MSG("Can't set lines left. No active debugger");
+#endif
 }
 
 int EngineDebugger::get_lines_left() const {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), 0, "Can't get lines left. No active debugger");
 	return ::EngineDebugger::get_script_debugger()->get_lines_left();
+#else
+	ERR_FAIL_V_MSG(0, "Can't get lines left. No active debugger");
+#endif
 }
 
 void EngineDebugger::set_depth(int p_depth) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't set depth. No active debugger");
 	::EngineDebugger::get_script_debugger()->set_depth(p_depth);
+#else
+	ERR_FAIL_MSG("Can't set depth. No active debugger");
+#endif
 }
 
 int EngineDebugger::get_depth() const {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), 0, "Can't get depth. No active debugger");
 	return ::EngineDebugger::get_script_debugger()->get_depth();
+#else
+	ERR_FAIL_V_MSG(0, "Can't get depth. No active debugger");
+#endif
 }
 
 bool EngineDebugger::is_breakpoint(int p_line, const StringName &p_source) const {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), false, "Can't check breakpoint. No active debugger");
 	return ::EngineDebugger::get_script_debugger()->is_breakpoint(p_line, p_source);
+#else
+	ERR_FAIL_V_MSG(false, "Can't check breakpoint. No active debugger");
+#endif
 }
 
 bool EngineDebugger::is_skipping_breakpoints() const {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_V_MSG(!::EngineDebugger::get_script_debugger(), false, "Can't check skipping breakpoint. No active debugger");
 	return ::EngineDebugger::get_script_debugger()->is_skipping_breakpoints();
+#else
+	ERR_FAIL_V_MSG(false, "Can't check skipping breakpoint. No active debugger");
+#endif
 }
 
 void EngineDebugger::insert_breakpoint(int p_line, const StringName &p_source) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't insert breakpoint. No active debugger");
 	::EngineDebugger::get_script_debugger()->insert_breakpoint(p_line, p_source);
+#else
+	ERR_FAIL_MSG("Can't insert breakpoint. No active debugger");
+#endif
 }
 
 void EngineDebugger::remove_breakpoint(int p_line, const StringName &p_source) {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't remove breakpoint. No active debugger");
 	::EngineDebugger::get_script_debugger()->remove_breakpoint(p_line, p_source);
+#else
+	ERR_FAIL_MSG("Can't remove breakpoint. No active debugger");
+#endif
 }
 
 void EngineDebugger::clear_breakpoints() {
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!::EngineDebugger::get_script_debugger(), "Can't clear breakpoints. No active debugger");
 	::EngineDebugger::get_script_debugger()->clear_breakpoints();
+#else
+	ERR_FAIL_MSG("Can't clear breakpoints. No active debugger");
+#endif
 }
 
 EngineDebugger::~EngineDebugger() {
+#ifdef DEBUG_ENABLED
 	for (const KeyValue<StringName, Callable> &E : captures) {
 		::EngineDebugger::unregister_message_capture(E.key);
 	}
+#endif
 	captures.clear();
 }
 
@@ -2355,6 +2446,8 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_breakpoint", "line", "source"), &EngineDebugger::remove_breakpoint);
 	ClassDB::bind_method(D_METHOD("clear_breakpoints"), &EngineDebugger::clear_breakpoints);
 }
+
+#endif // defined(DEBUG_ENABLED) || !defined(DISABLE_DEPRECATED)
 
 Variant WeakRef::get_ref() const {
 	if (ref.is_null()) {
