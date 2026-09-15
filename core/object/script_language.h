@@ -224,6 +224,36 @@ public:
 	virtual String get_extension() const = 0;
 	virtual void finish() = 0;
 
+	struct TextEdit {
+		String new_text;
+		int start_line = -1;
+		int start_column;
+		int end_line;
+		int end_column;
+
+		_FORCE_INLINE_ bool is_set() const { return start_line != -1; }
+
+		const Dictionary to_dict() const {
+			Dictionary out;
+			out["start_line"] = start_line;
+			out["start_column"] = start_column;
+			out["end_line"] = end_line;
+			out["end_column"] = end_column;
+			out["new_text"] = new_text;
+			return out;
+		}
+
+		static TextEdit from_dict(const Dictionary &p_dict) {
+			TextEdit out;
+			out.start_line = p_dict["start_line"];
+			out.start_column = p_dict["start_column"];
+			out.end_line = p_dict["end_line"];
+			out.end_column = p_dict["end_column"];
+			out.new_text = p_dict["new_text"];
+			return out;
+		}
+	};
+
 	/* EDITOR FUNCTIONS */
 #ifdef TOOLS_ENABLED
 	// Must not return `nullptr`. `EditorLanguage` can be used as default implementation for languages without editor support.
