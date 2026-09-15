@@ -63,6 +63,117 @@
 #include "scene/resources/style_box_flat.h"
 #include "servers/rendering/rendering_server.h"
 
+TreeItem *ScriptEditorDiagnosticPanel::add_warning(const String &p_message) {
+	TreeItem *item = create_item();
+	item->set_text(0, p_message);
+	item->set_icon(0, get_editor_theme_icon(SNAME("NodeWarning")));
+	item->set_custom_color(0, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	item->add_button(0, get_editor_theme_icon(SNAME("ActionCopy")), ACTION_COPY, false, TTR("Copy this diagnostic."));
+	return item;
+}
+
+TreeItem *ScriptEditorDiagnosticPanel::add_warning(const EditorLanguage::Warning &p_warning) {
+	TreeItem *item = create_item();
+	item->set_text(0, vformat("%s: %s [Line %s, Col %s]", p_warning.string_code, p_warning.message, p_warning.start_line, p_warning.start_column));
+	item->set_icon(0, get_editor_theme_icon(SNAME("NodeWarning")));
+	item->set_custom_color(0, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+	item->add_button(0, get_editor_theme_icon(SNAME("Close")), ACTION_IGNORE_WARNING, false, "Ignore this warning.");
+	item->add_button(0, get_editor_theme_icon(SNAME("ActionCopy")), ACTION_COPY, false, TTR("Copy this diagnostic."));
+
+	Dictionary location_data;
+	location_data["line"] = p_warning.start_line - 1;
+	location_data["column"] = p_warning.start_column - 1;
+	item->set_meta(SNAME("location"), location_data);
+	item->set_meta(SNAME("diagnostic_code"), p_warning.string_code);
+
+	return item;
+}
+
+TreeItem *ScriptEditorDiagnosticPanel::add_error(const String &p_message) {
+	TreeItem *item = create_item();
+	item->set_text(0, p_message);
+	item->set_icon(0, get_editor_theme_icon(SNAME("StatusError")));
+	item->set_custom_color(0, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+	item->add_button(0, get_editor_theme_icon(SNAME("ActionCopy")), ACTION_COPY, false, TTR("Copy this diagnostic."));
+	return item;
+}
+
+TreeItem *ScriptEditorDiagnosticPanel::add_error(const EditorLanguage::ScriptError &p_error) {
+	TreeItem *item = create_item();
+	item->set_text(0, vformat("%s [Line %s, Col %s]", p_error.message, p_error.start_line, p_error.start_column));
+	item->set_icon(0, get_editor_theme_icon(SNAME("StatusError")));
+	item->set_custom_color(0, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+	item->add_button(0, get_editor_theme_icon(SNAME("ActionCopy")), ACTION_COPY, false, TTR("Copy this diagnostic."));
+
+	Dictionary location_data;
+	location_data["line"] = p_error.start_line - 1;
+	location_data["column"] = p_error.start_column - 1;
+	item->set_meta(SNAME("location"), location_data);
+
+	return item;
+}
+
+TreeItem *ScriptEditorDiagnosticPanel::add_suberror(TreeItem *p_parent_item, const EditorLanguage::ScriptError &p_error) {
+	TreeItem *new_subitem = p_parent_item->create_child();
+	new_subitem->set_text(0, vformat("%s [Line %s, Col %s]", p_error.message, p_error.start_line, p_error.start_column));
+	new_subitem->set_custom_color(0, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+	new_subitem->add_button(0, get_editor_theme_icon(SNAME("ActionCopy")), -1, false, "Copy this error.");
+
+	// TODO: Error location data.
+
+	return new_subitem;
+}
+
+void ScriptEditorDiagnosticPanel::_on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index) {
+	switch (p_id) {
+		case ACTION_IGNORE_WARNING: {
+			if (!p_item->has_meta(SNAME("location")) || !p_item->has_meta(SNAME("diagnostic_code"))) {
+				return;
+			}
+			Dictionary data = p_item->get_meta(SNAME("location"));
+			data["operation"] = "ignore";
+			data["code"] = p_item->get_meta(SNAME("diagnostic_code"));
+			emit_signal(SNAME("action_requested"), data);
+			break;
+		}
+		case ACTION_COPY: {
+			DisplayServer::get_singleton()->clipboard_set(p_item->get_text(0));
+			break;
+		}
+	}
+}
+
+void ScriptEditorDiagnosticPanel::_on_item_activated() {
+	TreeItem *current_item = get_selected();
+	if (!current_item->has_meta(SNAME("location"))) {
+		return;
+	}
+
+	Dictionary data = current_item->get_meta(SNAME("location"));
+	data["operation"] = "goto";
+	emit_signal(SNAME("action_requested"), data);
+}
+
+void ScriptEditorDiagnosticPanel::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("action_requested", PropertyInfo(Variant::DICTIONARY, "location")));
+}
+
+void ScriptEditorDiagnosticPanel::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY:
+			connect("button_clicked", callable_mp(this, &ScriptEditorDiagnosticPanel::_on_button_clicked));
+			connect("item_activated", callable_mp(this, &ScriptEditorDiagnosticPanel::_on_item_activated));
+			break;
+		default:
+			break;
+	}
+}
+
+ScriptEditorDiagnosticPanel::ScriptEditorDiagnosticPanel() {
+	set_hide_root(true);
+	create_item();
+}
+
 void ConnectionInfoDialog::ok_pressed() {
 }
 
@@ -359,6 +470,8 @@ void ScriptTextEditor::_show_errors_panel(bool p_show) {
 
 bool ScriptTextEditor::_warning_clicked(const Variant &p_line) {
 	if (CodeEditorBase::_warning_clicked(p_line)) {
+		CodeEdit *text_edit = code_editor->get_text_editor();
+		text_edit->grab_focus();
 		return true;
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
@@ -962,6 +1075,7 @@ void ScriptTextEditor::_validate_script() {
 void ScriptTextEditor::_update_warnings() {
 	int warning_nb = warnings.size();
 	warnings_panel->clear();
+	warnings_panel_tree->clear();
 
 	bool has_connections_table = false;
 	// Add missing connections.
@@ -980,6 +1094,8 @@ void ScriptTextEditor::_update_warnings() {
 				warnings_panel->add_text(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."), connection.callable.get_method(), connection.signal.get_name(), source_path, target_path));
 				warnings_panel->pop(); // Color.
 				warnings_panel->pop(); // Cell.
+
+				warnings_panel_tree->add_warning(vformat(TTR("Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."), connection.callable.get_method(), connection.signal.get_name(), source_path, target_path));
 			}
 			warnings_panel->pop(); // Table.
 
@@ -1020,6 +1136,9 @@ void ScriptTextEditor::_update_warnings() {
 		warnings_panel->add_text(w.message);
 		warnings_panel->add_newline();
 		warnings_panel->pop(); // Cell.
+
+		warnings_panel_tree->add_warning(w);
+		// warnings_panel_tree->add_diagnostic(vformat("%s [Line %s, Col %s]", w.message, w.start_line, w.start_column));
 	}
 	warnings_panel->pop(); // Table.
 }
@@ -1042,6 +1161,8 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->add_text(err.message);
 		errors_panel->add_newline();
 		errors_panel->pop(); // Cell.
+
+		warnings_panel_tree->add_error(err);
 	}
 	errors_panel->pop(); // Table
 
@@ -1056,6 +1177,8 @@ void ScriptTextEditor::_update_errors() {
 		errors_panel->add_text(vformat(R"(%s:)", KV.key));
 		errors_panel->pop(); // Meta goto.
 		errors_panel->add_newline();
+
+		TreeItem *new_item = warnings_panel_tree->add_error(KV.key);
 
 		errors_panel->push_indent(1);
 		errors_panel->push_table(2);
@@ -1076,6 +1199,8 @@ void ScriptTextEditor::_update_errors() {
 			errors_panel->push_cell();
 			errors_panel->add_text(err.message);
 			errors_panel->pop(); // Cell.
+
+			warnings_panel_tree->add_suberror(new_item, err);
 		}
 		errors_panel->pop(); // Table
 		errors_panel->pop(); // Indent.
@@ -2727,6 +2852,7 @@ void ScriptTextEditor::_on_hover_tooltip_timer_timeout() {
 ScriptTextEditor::ScriptTextEditor() {
 	editor_box->add_child(code_editor);
 	editor_box->add_child(warnings_panel);
+	editor_box->add_child(warnings_panel_tree);
 
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
