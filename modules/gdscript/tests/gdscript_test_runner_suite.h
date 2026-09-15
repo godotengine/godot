@@ -40,6 +40,7 @@
 #include "tests/test_utils.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #endif
 
@@ -56,8 +57,28 @@ public:
 	}
 };
 
-// TODO: Handle some cases failing on release builds. See: https://github.com/godotengine/godot/pull/88452
 #ifdef TOOLS_ENABLED
+static void write_test_script(const String &p_path, const String &p_source) {
+	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::ModeFlags::WRITE);
+	REQUIRE(fa.is_valid());
+	fa->store_string(p_source);
+	fa->close();
+}
+
+static PropertyInfo find_script_property(const Ref<GDScript> &p_script, const StringName &p_property) {
+	List<PropertyInfo> properties;
+	p_script->get_script_property_list(&properties);
+
+	for (const PropertyInfo &property : properties) {
+		if (property.name == p_property) {
+			return property;
+		}
+	}
+
+	return PropertyInfo();
+}
+
+// TODO: Handle some cases failing on release builds. See: https://github.com/godotengine/godot/pull/88452
 TEST_SUITE("[Modules][GDScript]") {
 	TEST_CASE("Script compilation and runtime") {
 		bool print_filenames = OS::get_singleton()->get_cmdline_args().find("--print-filenames") != nullptr;
@@ -112,6 +133,63 @@ TEST_CASE("[Modules][GDScript] Loading keeps ResourceCache and GDScriptCache in 
 	CHECK(!TestGDScriptCacheAccessor::has_shallow(path));
 	CHECK(TestGDScriptCacheAccessor::has_full(path));
 }
+
+#ifdef TOOLS_ENABLED
+TEST_CASE("[Modules][GDScript] Reloading a script refreshes dependent enum exports") {
+	GDScriptLanguage::get_singleton()->init();
+
+	const String provider_path = TestUtils::get_temp_path("gdscript_external_enum_provider.gd");
+	const String consumer_path = TestUtils::get_temp_path("gdscript_external_enum_consumer.gd");
+	const StringName provider_class_name = SNAME("ExternalTestEnum");
+	ScriptServer::remove_global_class(provider_class_name);
+
+	write_test_script(provider_path, R"(
+class_name ExternalTestEnum
+extends Resource
+
+enum Kind { First, Second }
+)");
+
+	String base_type;
+	bool is_abstract = false;
+	bool is_tool = false;
+	String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(provider_path, &base_type, nullptr, &is_abstract, &is_tool);
+	REQUIRE(class_name == provider_class_name);
+	ScriptServer::add_global_class(provider_class_name, base_type, GDScriptLanguage::get_singleton()->get_name(), provider_path, is_abstract, is_tool);
+
+	write_test_script(consumer_path, R"(
+extends Resource
+
+@export var external_enum: ExternalTestEnum.Kind
+)");
+
+	Ref<GDScript> provider = ResourceLoader::load(provider_path);
+	Ref<GDScript> consumer = ResourceLoader::load(consumer_path);
+	REQUIRE(provider.is_valid());
+	REQUIRE(consumer.is_valid());
+
+	const PropertyInfo original_property = find_script_property(consumer, SNAME("external_enum"));
+	CHECK(original_property.hint == PROPERTY_HINT_ENUM);
+	CHECK(original_property.hint_string == "First:0,Second:1");
+
+	write_test_script(provider_path, R"(
+class_name ExternalTestEnum
+extends Resource
+
+enum Kind { First, Second, Third }
+)");
+
+	GDScriptLanguage::get_singleton()->reload_tool_script(provider, true);
+
+	const PropertyInfo updated_property = find_script_property(consumer, SNAME("external_enum"));
+	CHECK(updated_property.hint == PROPERTY_HINT_ENUM);
+	CHECK(updated_property.hint_string == "First:0,Second:1,Third:2");
+
+	ScriptServer::remove_global_class(provider_class_name);
+	GDScriptCache::remove_script(consumer_path);
+	GDScriptCache::remove_script(provider_path);
+}
+#endif // TOOLS_ENABLED
 
 TEST_CASE("[Modules][GDScript] Validate built-in API") {
 	GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
