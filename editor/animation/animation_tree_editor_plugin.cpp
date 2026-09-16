@@ -593,6 +593,11 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	error_scroll->hide();
 }
 
+AnimationTreeEditor::~AnimationTreeEditor() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 void AnimationTreeEditorPlugin::edit(Object *p_object) {
 	anim_tree_editor->edit(Object::cast_to<AnimationTree>(p_object));
 }

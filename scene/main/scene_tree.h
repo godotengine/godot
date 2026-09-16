@@ -452,6 +452,7 @@ public:
 	bool is_multiplayer_poll_enabled() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
+	static void reset_idle_callbacks();
 
 	void set_disable_node_threading(bool p_disable);
 	//default texture settings

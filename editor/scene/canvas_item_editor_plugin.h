@@ -631,6 +631,7 @@ public:
 	EditorSelection *editor_selection = nullptr;
 
 	CanvasItemEditor();
+	~CanvasItemEditor();
 };
 
 class CanvasItemEditorPlugin : public EditorPlugin {

@@ -8401,7 +8401,10 @@ DisplayServerWindows::~DisplayServerWindows() {
 #endif
 	if (tts) {
 		memdelete(tts);
+		tts = nullptr;
 	}
+
+	UnregisterClassW(wc.lpszClassName, wc.hInstance);
 
 	OleUninitialize();
 }

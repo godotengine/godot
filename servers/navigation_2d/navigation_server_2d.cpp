@@ -678,4 +678,5 @@ void NavigationServer2DManager::initialize_server_manager() {
 void NavigationServer2DManager::finalize_server_manager() {
 	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
+	singleton = nullptr;
 }

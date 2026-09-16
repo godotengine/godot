@@ -157,6 +157,7 @@ public:
 	void remove_dock(EditorDock *p_dock);
 
 	EditorDockManager();
+	~EditorDockManager();
 };
 
 class DockSlotGrid : public Control {

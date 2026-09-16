@@ -218,4 +218,5 @@ public:
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
 
 	ResourceFormatSaverText();
+	~ResourceFormatSaverText();
 };

@@ -926,17 +926,35 @@ void SkyRD::set_texture_format(RD::DataFormat p_texture_format) {
 SkyRD::~SkyRD() {
 	// cleanup anything created in init...
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	if (material_storage) {
+		material_storage->free_shader_type_resources(RendererRD::MaterialStorage::SHADER_TYPE_SKY);
+	}
 
-	SkyMaterialData *md = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
-	sky_shader.shader.version_free(md->shader_data->version);
+	SkyMaterialData *md = nullptr;
+	if (material_storage && material_storage->owns_material(sky_shader.default_material)) {
+		md = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
+	}
+	if (md != nullptr && md->shader_data != nullptr && md->shader_data->version.is_valid()) {
+		sky_shader.shader.version_free(md->shader_data->version);
+	}
 	RD::get_singleton()->free_rid(sky_scene_state.directional_light_buffer);
 	RD::get_singleton()->free_rid(sky_scene_state.uniform_buffer);
 	memdelete_arr(sky_scene_state.directional_lights);
 	memdelete_arr(sky_scene_state.last_frame_directional_lights);
-	material_storage->shader_free(sky_shader.default_shader);
-	material_storage->material_free(sky_shader.default_material);
-	material_storage->shader_free(sky_scene_state.fog_shader);
-	material_storage->material_free(sky_scene_state.fog_material);
+	if (material_storage) {
+		if (material_storage->owns_shader(sky_shader.default_shader)) {
+			material_storage->shader_free(sky_shader.default_shader);
+		}
+		if (material_storage->owns_material(sky_shader.default_material)) {
+			material_storage->material_free(sky_shader.default_material);
+		}
+		if (material_storage->owns_shader(sky_scene_state.fog_shader)) {
+			material_storage->shader_free(sky_scene_state.fog_shader);
+		}
+		if (material_storage->owns_material(sky_scene_state.fog_material)) {
+			material_storage->material_free(sky_scene_state.fog_material);
+		}
+	}
 
 	if (RD::get_singleton()->uniform_set_is_valid(sky_scene_state.uniform_set)) {
 		RD::get_singleton()->free_rid(sky_scene_state.uniform_set);

@@ -85,6 +85,7 @@ public:
 
 	static void add_writer(MovieWriter *p_writer);
 	static MovieWriter *find_writer_for_file(const String &p_file);
+	static void reset();
 
 	void begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path);
 	void add_frame();

@@ -2366,6 +2366,28 @@ void MaterialStorage::shader_set_data_request_function(ShaderType p_shader_type,
 	shader_data_request_func[p_shader_type] = p_function;
 }
 
+void MaterialStorage::free_shader_type_resources(ShaderType p_shader_type) {
+	ERR_FAIL_INDEX(p_shader_type, SHADER_TYPE_MAX);
+
+	const LocalVector<RID> materials = material_owner.get_owned_list();
+	for (const RID &material_rid : materials) {
+		Material *material = material_owner.get_or_null(material_rid);
+		if (material == nullptr || material->shader_type != p_shader_type) {
+			continue;
+		}
+		material_free(material_rid);
+	}
+
+	const LocalVector<RID> shaders = shader_owner.get_owned_list();
+	for (const RID &shader_rid : shaders) {
+		Shader *shader = shader_owner.get_or_null(shader_rid);
+		if (shader == nullptr || shader->type != p_shader_type) {
+			continue;
+		}
+		shader_free(shader_rid);
+	}
+}
+
 MaterialStorage::ShaderData *MaterialStorage::shader_get_data(RID p_shader) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_NULL_V(shader, nullptr);

@@ -337,6 +337,9 @@ void EGLManager::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	GLDisplay &gldisplay = displays[glwindow.gldisplay_id];
 
 	if (glwindow.egl_surface != EGL_NO_SURFACE) {
+		if (current_window && current_window->egl_surface) {
+			release_current();
+		}
 		eglDestroySurface(gldisplay.egl_display, glwindow.egl_surface);
 		glwindow.egl_surface = nullptr;
 	}
@@ -536,9 +539,18 @@ EGLManager::EGLManager() {
 }
 
 EGLManager::~EGLManager() {
+	for (unsigned int i = 0; i < windows.size(); i++) {
+		window_destroy(i);
+	}
+	windows.reset();
+
 	for (unsigned int i = 0; i < displays.size(); i++) {
+		eglDestroyContext(displays[i].egl_display, displays[i].egl_context);
 		eglTerminate(displays[i].egl_display);
 	}
+	displays.reset();
+
+	current_window = nullptr;
 }
 
 #endif // EGL_ENABLED

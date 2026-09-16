@@ -168,7 +168,5 @@ public:
 	ExtendGDScriptParser *get_parse_result(const String &p_path);
 
 	GDScriptLanguageProtocol();
-	~GDScriptLanguageProtocol() {
-		clients.clear();
-	}
+	~GDScriptLanguageProtocol();
 };

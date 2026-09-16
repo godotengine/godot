@@ -153,6 +153,7 @@ public:
 	static Performance *get_singleton() { return singleton; }
 
 	Performance();
+	~Performance();
 
 private:
 	class MonitorCall {

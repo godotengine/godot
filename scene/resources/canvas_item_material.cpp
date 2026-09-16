@@ -51,8 +51,10 @@ void CanvasItemMaterial::init_shaders() {
 void CanvasItemMaterial::finish_shaders() {
 	dirty_materials.clear();
 
-	memdelete(shader_names);
-	shader_names = nullptr;
+	if (shader_names) {
+		memdelete(shader_names);
+		shader_names = nullptr;
+	}
 }
 
 void CanvasItemMaterial::_update_shader() {

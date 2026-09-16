@@ -256,3 +256,7 @@ AudioStreamPreviewGenerator::AudioStreamPreviewGenerator() {
 	singleton = this;
 	set_process(true);
 }
+
+AudioStreamPreviewGenerator::~AudioStreamPreviewGenerator() {
+	singleton = nullptr;
+}

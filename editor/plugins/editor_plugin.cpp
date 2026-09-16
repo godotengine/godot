@@ -754,7 +754,3 @@ void EditorPlugin::_bind_methods() {
 EditorUndoRedoManager *EditorPlugin::get_undo_redo() {
 	return EditorUndoRedoManager::get_singleton();
 }
-
-EditorPluginCreateFunc EditorPlugins::creation_funcs[MAX_CREATE_FUNCS];
-
-int EditorPlugins::creation_func_count = 0;

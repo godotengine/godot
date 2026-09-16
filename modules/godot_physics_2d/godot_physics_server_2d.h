@@ -300,5 +300,5 @@ public:
 	int get_process_info(ProcessInfo p_info) override;
 
 	GodotPhysicsServer2D(bool p_using_threads = false);
-	~GodotPhysicsServer2D() {}
+	~GodotPhysicsServer2D();
 };

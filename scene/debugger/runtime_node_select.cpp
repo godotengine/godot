@@ -81,6 +81,9 @@ RuntimeNodeSelect::~RuntimeNodeSelect() {
 		RS::get_singleton()->free_rid(srect_ci);
 		RS::get_singleton()->free_rid(draw_canvas);
 	}
+
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }
 
 void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {

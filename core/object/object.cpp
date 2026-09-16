@@ -2525,7 +2525,12 @@ void ObjectDB::remove_instance(Object *p_object) {
 }
 
 void ObjectDB::setup() {
-	//nothing to do now
+	spin_lock.lock();
+	slot_count = 0;
+	slot_max = 0;
+	object_slots = nullptr;
+	validator_counter = 0;
+	spin_lock.unlock();
 }
 
 void ObjectDB::cleanup() {
@@ -2569,7 +2574,10 @@ void ObjectDB::cleanup() {
 
 	if (object_slots) {
 		memfree(object_slots);
+		object_slots = nullptr;
 	}
-
+	slot_count = 0;
+	slot_max = 0;
+	validator_counter = 0;
 	spin_lock.unlock();
 }
