@@ -290,7 +290,7 @@ protected:
 public:
 	enum {
 		// Keep in sync with CanvasItem and Node3D.
-		NOTIFICATION_TRANSFORM_CHANGED = 2000
+		NOTIFICATION_GLOBAL_TRANSFORM_CHANGED = 2000
 	};
 
 	enum GroupCallFlags {
