@@ -268,6 +268,18 @@ Error OS_Web::pwa_update() {
 	return godot_js_pwa_update() ? FAILED : OK;
 }
 
+Error OS_Web::move_to_trash(const String &p_path) {
+	if (DirAccess::dir_exists_absolute(p_path)) {
+		Ref<DirAccess> da = DirAccess::open(p_path);
+		ERR_FAIL_COND_V(da.is_null(), ERR_BUG);
+		Error err = da->erase_contents_recursive();
+		if (err) {
+			return err;
+		}
+	}
+	return DirAccess::remove_absolute(p_path);
+}
+
 bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
 }
