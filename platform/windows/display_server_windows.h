@@ -317,7 +317,6 @@ class DisplayServerWindows : public DisplayServer {
 		bool was_maximized = false;
 		bool always_on_top = false;
 		bool no_focus = false;
-		bool exclusive = false;
 		bool rendering_context_window_created = false;
 		bool gl_native_window_created = false;
 #ifdef ANGLE_ENABLED
