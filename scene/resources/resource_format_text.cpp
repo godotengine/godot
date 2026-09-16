@@ -862,7 +862,7 @@ Error ResourceLoaderText::load() {
 	//for scene files
 
 	if (next_tag.name == "node") {
-		Ref<PackedScene> packed_scene = Object::cast_to<PackedScene>(resource.ptr());
+		Ref<PackedScene> packed_scene = resource;
 		packed_scene = _parse_node_tag(packed_scene, rp);
 
 		if (packed_scene.is_null()) {
@@ -880,7 +880,7 @@ Error ResourceLoaderText::load() {
 			packed_scene->set_path_cache(res_path);
 		}
 
-		resource = Object::cast_to<Resource>(packed_scene.ptr());
+		resource = packed_scene;
 		resource_current++;
 
 		if (progress && resources_total > 0) {

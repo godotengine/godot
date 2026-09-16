@@ -210,11 +210,7 @@ bool validate_nested_scene(const Ref<PackedScene> &loaded_scene) {
 
 bool validate_simple_scene(const Ref<PackedScene> &loaded_scene) {
 	bool is_valid = loaded_scene.is_valid();
-	CHECK(is_valid);
-
-	if (!is_valid) {
-		return false;
-	}
+	REQUIRE(is_valid);
 
 	Node *instanced_node = static_cast<Node *>(loaded_scene->instantiate());
 	CHECK_MESSAGE(
