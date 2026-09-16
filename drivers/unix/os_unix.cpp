@@ -1127,7 +1127,6 @@ String OS_Unix::get_executable_path() const {
 	}
 
 	b.append_utf8(buf, strnlen(buf, sizeof(buf)));
-	WARN_PRINT(vformat("DEBUG: get_executable_path: %s", b));
 
 	return b;
 #elif defined(__NetBSD__)
