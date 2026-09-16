@@ -31,16 +31,16 @@
 #include "foliage_spawner_3d.h"
 
 #include "core/io/image.h"
+#include "core/math/face3.h"
 #include "core/math/math_funcs.h"
 #include "core/math/random_pcg.h"
 #include "core/object/class_db.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
-#include "scene/resources/3d/world_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/texture.h"
-#include "servers/physics_3d/physics_server_3d.h"
 
 void FoliageSpawner3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &FoliageSpawner3D::set_mesh);
@@ -70,11 +70,11 @@ void FoliageSpawner3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mask_invert", "invert"), &FoliageSpawner3D::set_mask_invert);
 	ClassDB::bind_method(D_METHOD("is_mask_inverted"), &FoliageSpawner3D::is_mask_inverted);
 
-	ClassDB::bind_method(D_METHOD("set_project_on_collision", "project"), &FoliageSpawner3D::set_project_on_collision);
-	ClassDB::bind_method(D_METHOD("is_projecting_on_collision"), &FoliageSpawner3D::is_projecting_on_collision);
+	ClassDB::bind_method(D_METHOD("set_project_on_mesh", "project"), &FoliageSpawner3D::set_project_on_mesh);
+	ClassDB::bind_method(D_METHOD("is_projecting_on_mesh"), &FoliageSpawner3D::is_projecting_on_mesh);
 
-	ClassDB::bind_method(D_METHOD("set_collision_mask", "mask"), &FoliageSpawner3D::set_collision_mask);
-	ClassDB::bind_method(D_METHOD("get_collision_mask"), &FoliageSpawner3D::get_collision_mask);
+	ClassDB::bind_method(D_METHOD("set_ground_mesh_path", "path"), &FoliageSpawner3D::set_ground_mesh_path);
+	ClassDB::bind_method(D_METHOD("get_ground_mesh_path"), &FoliageSpawner3D::get_ground_mesh_path);
 
 	ClassDB::bind_method(D_METHOD("set_max_slope_degrees", "degrees"), &FoliageSpawner3D::set_max_slope_degrees);
 	ClassDB::bind_method(D_METHOD("get_max_slope_degrees"), &FoliageSpawner3D::get_max_slope_degrees);
@@ -117,8 +117,8 @@ void FoliageSpawner3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mask_invert"), "set_mask_invert", "is_mask_inverted");
 
 	ADD_GROUP("Ground Projection", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "project_on_collision"), "set_project_on_collision", "is_projecting_on_collision");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "project_on_mesh"), "set_project_on_mesh", "is_projecting_on_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "ground_mesh_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "MeshInstance3D"), "set_ground_mesh_path", "get_ground_mesh_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_slope_degrees", PROPERTY_HINT_RANGE, "0,90,0.1,suffix:°"), "set_max_slope_degrees", "get_max_slope_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "align_to_normal"), "set_align_to_normal", "is_aligned_to_normal");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "align_to_normal_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_align_to_normal_amount", "get_align_to_normal_amount");
@@ -224,21 +224,22 @@ bool FoliageSpawner3D::is_mask_inverted() const {
 	return mask_invert;
 }
 
-void FoliageSpawner3D::set_project_on_collision(bool p_project) {
-	project_on_collision = p_project;
-	notify_property_list_changed();
+void FoliageSpawner3D::set_project_on_mesh(bool p_project) {
+	project_on_mesh = p_project;
+	update_configuration_warnings();
 }
 
-bool FoliageSpawner3D::is_projecting_on_collision() const {
-	return project_on_collision;
+bool FoliageSpawner3D::is_projecting_on_mesh() const {
+	return project_on_mesh;
 }
 
-void FoliageSpawner3D::set_collision_mask(uint32_t p_mask) {
-	collision_mask = p_mask;
+void FoliageSpawner3D::set_ground_mesh_path(const NodePath &p_path) {
+	ground_mesh_path = p_path;
+	update_configuration_warnings();
 }
 
-uint32_t FoliageSpawner3D::get_collision_mask() const {
-	return collision_mask;
+NodePath FoliageSpawner3D::get_ground_mesh_path() const {
+	return ground_mesh_path;
 }
 
 void FoliageSpawner3D::set_max_slope_degrees(float p_degrees) {
@@ -329,49 +330,6 @@ bool FoliageSpawner3D::_sample_mask(const Ref<Image> &p_image, const Vector2 &p_
 	return p_rng.randf() <= value;
 }
 
-bool FoliageSpawner3D::_project_point(const Vector3 &p_local_xz_top, Vector3 &r_local_position, Vector3 &r_world_normal) const {
-	Ref<World3D> world = get_world_3d();
-	if (world.is_null()) {
-		return false;
-	}
-
-	PhysicsServer3D *physics_server = PhysicsServer3D::get_singleton();
-	if (physics_server == nullptr) {
-		return false;
-	}
-
-	PhysicsDirectSpaceState3D *dss = physics_server->space_get_direct_state(world->get_space());
-	if (dss == nullptr) {
-		return false;
-	}
-
-	const Transform3D gt = get_global_transform();
-	const Vector3 local_bottom = p_local_xz_top - Vector3(0, volume_size.y, 0);
-
-	PS3DT::RayParameters ray_params;
-	ray_params.from = gt.xform(p_local_xz_top);
-	ray_params.to = gt.xform(local_bottom);
-	ray_params.collision_mask = collision_mask;
-	ray_params.collide_with_bodies = true;
-	ray_params.collide_with_areas = false;
-
-	PS3DT::RayResult result;
-	if (!dss->intersect_ray(ray_params, result)) {
-		return false;
-	}
-
-	if (max_slope_degrees < 90.0f) {
-		const float angle = Math::rad_to_deg(Math::acos(CLAMP(result.normal.dot(Vector3(0, 1, 0)), -1.0f, 1.0f)));
-		if (angle > max_slope_degrees) {
-			return false;
-		}
-	}
-
-	r_local_position = gt.affine_inverse().xform(result.position);
-	r_world_normal = result.normal;
-	return true;
-}
-
 void FoliageSpawner3D::regenerate() {
 	if (mesh.is_null()) {
 		set_multimesh(Ref<MultiMesh>());
@@ -397,6 +355,60 @@ void FoliageSpawner3D::regenerate() {
 
 	const Transform3D gt = get_global_transform();
 	const Transform3D gt_inv = gt.affine_inverse();
+
+	LocalVector<Face3> local_faces;
+	HashMap<Vector2i, LocalVector<uint32_t>> face_grid;
+	float face_cell_size = 1.0f;
+
+	if (project_on_mesh) {
+		MeshInstance3D *ground = Object::cast_to<MeshInstance3D>(is_inside_tree() ? get_node_or_null(ground_mesh_path) : nullptr);
+		Ref<Mesh> ground_mesh = ground != nullptr ? ground->get_mesh() : Ref<Mesh>();
+		Vector<Face3> faces = ground_mesh.is_valid() ? ground_mesh->get_faces() : Vector<Face3>();
+
+		if (faces.is_empty()) {
+			set_multimesh(Ref<MultiMesh>());
+			update_configuration_warnings();
+			return;
+		}
+
+		const Transform3D ground_to_local = gt_inv * ground->get_global_transform();
+		local_faces.resize(faces.size());
+		for (int i = 0; i < faces.size(); i++) {
+			local_faces[i] = Face3(
+					ground_to_local.xform(faces[i].vertex[0]),
+					ground_to_local.xform(faces[i].vertex[1]),
+					ground_to_local.xform(faces[i].vertex[2]));
+		}
+
+		face_cell_size = MAX((volume_size.x + volume_size.z) * 0.03125f, 0.25f);
+		const int cell_min_x = int(Math::floor(-half.x / face_cell_size));
+		const int cell_max_x = int(Math::floor(half.x / face_cell_size));
+		const int cell_min_z = int(Math::floor(-half.z / face_cell_size));
+		const int cell_max_z = int(Math::floor(half.z / face_cell_size));
+
+		for (uint32_t i = 0; i < local_faces.size(); i++) {
+			const Face3 &face = local_faces[i];
+			const float min_x = MIN(face.vertex[0].x, MIN(face.vertex[1].x, face.vertex[2].x));
+			const float max_x = MAX(face.vertex[0].x, MAX(face.vertex[1].x, face.vertex[2].x));
+			const float min_z = MIN(face.vertex[0].z, MIN(face.vertex[1].z, face.vertex[2].z));
+			const float max_z = MAX(face.vertex[0].z, MAX(face.vertex[1].z, face.vertex[2].z));
+
+			if (max_x < -half.x || min_x > half.x || max_z < -half.z || min_z > half.z) {
+				continue; // Outside the volume's footprint; cannot be sampled.
+			}
+
+			const int cx0 = MAX(cell_min_x, int(Math::floor(min_x / face_cell_size)));
+			const int cx1 = MIN(cell_max_x, int(Math::floor(max_x / face_cell_size)));
+			const int cz0 = MAX(cell_min_z, int(Math::floor(min_z / face_cell_size)));
+			const int cz1 = MIN(cell_max_z, int(Math::floor(max_z / face_cell_size)));
+
+			for (int cx = cx0; cx <= cx1; cx++) {
+				for (int cz = cz0; cz <= cz1; cz++) {
+					face_grid[Vector2i(cx, cz)].push_back(i);
+				}
+			}
+		}
+	}
 
 	const float cell_size = MAX(min_distance, 0.001f);
 	const float min_distance_sq = min_distance * min_distance;
@@ -446,10 +458,53 @@ void FoliageSpawner3D::regenerate() {
 		Vector3 local_pos;
 		Vector3 world_normal(0, 1, 0);
 
-		if (project_on_collision) {
-			if (!_project_point(Vector3(lx, half.y, lz), local_pos, world_normal)) {
+		if (project_on_mesh) {
+			const Vector2i fcell(int(Math::floor(lx / face_cell_size)), int(Math::floor(lz / face_cell_size)));
+			const LocalVector<uint32_t> *face_indices = face_grid.getptr(fcell);
+			if (face_indices == nullptr) {
 				continue;
 			}
+
+			const Vector3 seg_from(lx, half.y, lz);
+			const Vector3 seg_to(lx, -half.y, lz);
+
+			bool hit_found = false;
+			Vector3 best_point;
+			Vector3 best_normal(0, 1, 0);
+			float best_y = 0.0f;
+
+			for (uint32_t face_index : *face_indices) {
+				const Face3 &face = local_faces[face_index];
+				Vector3 point;
+				if (!face.intersects_segment(seg_from, seg_to, &point)) {
+					continue;
+				}
+				if (!hit_found || point.y > best_y) {
+					hit_found = true;
+					best_y = point.y;
+					best_point = point;
+					Vector3 n = face.get_plane().normal;
+					if (n.dot(Vector3(0, -1, 0)) > 0.0f) {
+						n = -n;
+					}
+					best_normal = n;
+				}
+			}
+
+			if (!hit_found) {
+				continue;
+			}
+
+			const Vector3 hit_world_normal = gt.basis.xform(best_normal).normalized();
+			if (max_slope_degrees < 90.0f) {
+				const float angle = Math::rad_to_deg(Math::acos(CLAMP(hit_world_normal.dot(Vector3(0, 1, 0)), -1.0f, 1.0f)));
+				if (angle > max_slope_degrees) {
+					continue;
+				}
+			}
+
+			local_pos = best_point;
+			world_normal = hit_world_normal;
 		} else {
 			const float ly = rng.random(-half.y, half.y);
 			local_pos = Vector3(lx, ly, lz);
@@ -516,10 +571,21 @@ PackedStringArray FoliageSpawner3D::get_configuration_warnings() const {
 
 	if (mesh.is_null()) {
 		warnings.push_back(RTR("No Mesh assigned. Set a Mesh and press Regenerate to scatter instances."));
-	} else {
+	}
+
+	if (project_on_mesh) {
+		MeshInstance3D *ground = Object::cast_to<MeshInstance3D>(is_inside_tree() ? get_node_or_null(ground_mesh_path) : nullptr);
+		if (ground == nullptr) {
+			warnings.push_back(RTR("Project On Mesh is enabled, but Ground Mesh Path does not point to a MeshInstance3D. Assign one, or disable Project On Mesh."));
+		} else if (ground->get_mesh().is_null()) {
+			warnings.push_back(RTR("The MeshInstance3D referenced by Ground Mesh Path has no Mesh assigned."));
+		}
+	}
+
+	if (mesh.is_valid()) {
 		Ref<MultiMesh> mm = get_multimesh();
 		if (mm.is_null() || mm->get_instance_count() == 0) {
-			warnings.push_back(RTR("No instances have been generated yet (or none matched the current settings). Press Regenerate after adjusting Density, Min Distance, the Distribution Mask, or the Collision Mask."));
+			warnings.push_back(RTR("No instances have been generated yet (or none matched the current settings). Press Regenerate after adjusting Density, Min Distance, the Distribution Mask, or the ground projection settings."));
 		}
 	}
 

@@ -40,7 +40,7 @@ class Texture2D;
 // Scatters instances of a mesh inside a configurable box volume, similar in spirit
 // to Unreal Engine's Procedural Foliage Spawner: it fills the volume according to
 // density/spacing rules, an optional grayscale distribution mask, and can project
-// the instances onto physics colliders below them (e.g. terrain).
+// the instances onto the actual surface geometry of another mesh below them (e.g. terrain).
 class FoliageSpawner3D : public MultiMeshInstance3D {
 	GDCLASS(FoliageSpawner3D, MultiMeshInstance3D);
 
@@ -61,8 +61,8 @@ class FoliageSpawner3D : public MultiMeshInstance3D {
 	bool mask_invert = false;
 
 	// Ground projection.
-	bool project_on_collision = true;
-	uint32_t collision_mask = 1;
+	bool project_on_mesh = true;
+	NodePath ground_mesh_path;
 	float max_slope_degrees = 45.0;
 	bool align_to_normal = true;
 	float align_to_normal_amount = 1.0;
@@ -75,7 +75,6 @@ class FoliageSpawner3D : public MultiMeshInstance3D {
 
 	Ref<Image> _get_mask_image() const;
 	bool _sample_mask(const Ref<Image> &p_image, const Vector2 &p_uv, RandomPCG &p_rng) const;
-	bool _project_point(const Vector3 &p_local_xz_top, Vector3 &r_local_position, Vector3 &r_world_normal) const;
 	Callable _get_regenerate_button() const;
 
 protected:
@@ -110,11 +109,11 @@ public:
 	void set_mask_invert(bool p_invert);
 	bool is_mask_inverted() const;
 
-	void set_project_on_collision(bool p_project);
-	bool is_projecting_on_collision() const;
+	void set_project_on_mesh(bool p_project);
+	bool is_projecting_on_mesh() const;
 
-	void set_collision_mask(uint32_t p_mask);
-	uint32_t get_collision_mask() const;
+	void set_ground_mesh_path(const NodePath &p_path);
+	NodePath get_ground_mesh_path() const;
 
 	void set_max_slope_degrees(float p_degrees);
 	float get_max_slope_degrees() const;

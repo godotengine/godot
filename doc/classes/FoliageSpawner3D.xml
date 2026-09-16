@@ -6,8 +6,8 @@
 	<description>
 		[FoliageSpawner3D] fills a box-shaped volume with randomly placed and oriented copies of [member mesh], similar to Unreal Engine's Procedural Foliage Spawner. It is a specialized [MultiMeshInstance3D]: the generated instances are stored and rendered as a [MultiMesh], but that [MultiMesh] is created automatically and should not be edited directly.
 		The volume to fill is defined by [member volume_size], centered on the node's origin. Placement is controlled by [member density] (points per square meter of the volume's footprint) and [member min_distance] (a minimum spacing enforced between instances so they don't overlap). A grayscale [member distribution_mask] can be assigned to bias or forbid placement in specific areas, and [member seed] makes generation reproducible.
-		If [member project_on_collision] is enabled (the default), each candidate point is projected straight down onto the closest physics collider within the volume (e.g. terrain), and points whose surface is steeper than [member max_slope_degrees] are discarded; otherwise points are distributed freely throughout the volume's height. Instances can optionally be tilted to align with the surface normal ([member align_to_normal]) and receive random rotation, extra random tilt, and random uniform scale for natural-looking variation.
-		Nothing is generated automatically: call [method regenerate] (or press the [b]Regenerate[/b] button in the Inspector) whenever the volume, mesh, or any distribution setting changes. The resulting [MultiMesh] is then saved with the scene, so no extra runtime cost is paid on load. To scatter several kinds of vegetation in the same area, add multiple [FoliageSpawner3D] nodes, one per [Mesh].
+		If [member project_on_mesh] is enabled (the default), each candidate point is projected straight down onto the actual triangle surface of the [MeshInstance3D] referenced by [member ground_mesh_path] (e.g. terrain), and points whose surface is steeper than [member max_slope_degrees] are discarded; otherwise points are distributed freely throughout the volume's height. Placement only looks at that node's [Mesh] geometry, never at a [CollisionShape3D] or other physics collider, since a collider can differ noticeably in shape from the mesh it is meant to represent. Instances can optionally be tilted to align with the surface normal ([member align_to_normal]) and receive random rotation, extra random tilt, and random uniform scale for natural-looking variation.
+		Nothing is generated automatically: call [method regenerate] (or press the [b]Regenerate[/b] button in the Inspector) whenever the volume, mesh, ground mesh, or any distribution setting changes. The resulting [MultiMesh] is then saved with the scene, so no extra runtime cost is paid on load. To scatter several kinds of vegetation in the same area, add multiple [FoliageSpawner3D] nodes, one per [Mesh].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,25 +15,25 @@
 		<method name="regenerate">
 			<return type="void" />
 			<description>
-				Discards the current instances and generates a new set according to the node's current settings, using [member seed] to seed the random number generator. This can be called both in the editor and at runtime; it requires the node to be inside the [SceneTree] when [member project_on_collision] is enabled, since it performs physics ray queries against the current [World3D].
+				Discards the current instances and generates a new set according to the node's current settings, using [member seed] to seed the random number generator. This can be called both in the editor and at runtime; it requires the node to be inside the [SceneTree] when [member project_on_mesh] is enabled, since it needs to resolve [member ground_mesh_path] and read the referenced node's [Mesh] geometry.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="align_to_normal" type="bool" setter="set_align_to_normal" getter="is_aligned_to_normal" default="true">
-			If [code]true[/code], instances are tilted so their up axis follows the surface normal returned by [member project_on_collision] (blended in by [member align_to_normal_amount]). Has no effect when [member project_on_collision] is [code]false[/code].
+			If [code]true[/code], instances are tilted so their up axis follows the surface normal found by [member project_on_mesh] (blended in by [member align_to_normal_amount]). Has no effect when [member project_on_mesh] is [code]false[/code].
 		</member>
 		<member name="align_to_normal_amount" type="float" setter="set_align_to_normal_amount" getter="get_align_to_normal_amount" default="1.0">
 			Blends each instance's up axis between world up ([code]0.0[/code]) and the surface normal ([code]1.0[/code]) when [member align_to_normal] is enabled.
 		</member>
-		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
-			The physics layers that are checked when [member project_on_collision] is enabled. Only colliders matching this mask can receive foliage instances.
-		</member>
 		<member name="density" type="float" setter="set_density" getter="get_density" default="1.0">
-			The target number of instances per square meter of the volume's XZ footprint ([member volume_size].x × [member volume_size].z). The actual instance count is also limited by [member max_instances], [member min_distance], [member distribution_mask], and [member project_on_collision].
+			The target number of instances per square meter of the volume's XZ footprint ([member volume_size].x × [member volume_size].z). The actual instance count is also limited by [member max_instances], [member min_distance], [member distribution_mask], and [member project_on_mesh].
 		</member>
 		<member name="distribution_mask" type="Texture2D" setter="set_distribution_mask" getter="get_distribution_mask">
 			An optional grayscale mask sampled across the volume's XZ footprint (black = 0.0, white = 1.0) and used as the probability that a given candidate point is kept. Set [member mask_invert] to flip which areas are favored.
+		</member>
+		<member name="ground_mesh_path" type="NodePath" setter="set_ground_mesh_path" getter="get_ground_mesh_path" default="NodePath(&quot;&quot;)">
+			The path to a [MeshInstance3D] whose [Mesh] geometry candidate points are projected onto when [member project_on_mesh] is enabled. Only that node's mesh surface is used; its collision shape (if any) is ignored.
 		</member>
 		<member name="mask_invert" type="bool" setter="set_mask_invert" getter="is_mask_inverted" default="false">
 			If [code]true[/code], inverts the values sampled from [member distribution_mask] (white areas become forbidden, black areas become favored).
@@ -48,7 +48,7 @@
 			The upper bound of the random uniform scale applied to each instance. See also [member min_scale].
 		</member>
 		<member name="max_slope_degrees" type="float" setter="set_max_slope_degrees" getter="get_max_slope_degrees" default="45.0">
-			When [member project_on_collision] is enabled, candidate points whose surface normal is tilted more than this many degrees from world up are discarded.
+			When [member project_on_mesh] is enabled, candidate points whose surface normal is tilted more than this many degrees from world up are discarded.
 		</member>
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] to scatter throughout the volume. [FoliageSpawner3D] generates nothing until this is set.
@@ -59,8 +59,8 @@
 		<member name="min_scale" type="float" setter="set_min_scale" getter="get_min_scale" default="0.9">
 			The lower bound of the random uniform scale applied to each instance. See also [member max_scale].
 		</member>
-		<member name="project_on_collision" type="bool" setter="set_project_on_collision" getter="is_projecting_on_collision" default="true">
-			If [code]true[/code], each candidate point is placed by casting a ray straight down (in the volume's local space) from the top of [member volume_size] and snapping to the first collider hit, honoring [member collision_mask] and [member max_slope_degrees]. Points that hit nothing are discarded. If [code]false[/code], points are instead placed at a random height inside the volume without any collision check.
+		<member name="project_on_mesh" type="bool" setter="set_project_on_mesh" getter="is_projecting_on_mesh" default="true">
+			If [code]true[/code], each candidate point is placed by casting a ray straight down (in the volume's local space) from the top of [member volume_size] and snapping to the closest triangle hit on the [Mesh] of the [MeshInstance3D] referenced by [member ground_mesh_path], honoring [member max_slope_degrees]. This only looks at mesh geometry; no physics or collision shapes are involved. Points that hit nothing are discarded. If [code]false[/code], points are instead placed at a random height inside the volume without any projection.
 		</member>
 		<member name="random_rotation" type="bool" setter="set_random_rotation" getter="is_random_rotation_enabled" default="true">
 			If [code]true[/code], each instance receives a random rotation around its up axis.
