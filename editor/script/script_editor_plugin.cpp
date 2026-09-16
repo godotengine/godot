@@ -2717,6 +2717,16 @@ Vector<Control *> DocumentEditorContainer::get_all_editors() const {
 	return editors;
 }
 
+void DocumentEditorContainer::focus_active_editor() {
+	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(get_active_editor());
+	EditorHelp *eh = Object::cast_to<EditorHelp>(get_active_editor());
+	if (seb) {
+		seb->get_base_editor()->grab_focus();
+	} else if (eh) {
+		eh->set_focused();
+	}
+}
+
 PackedStringArray DocumentEditorContainer::get_unsaved_scripts() const {
 	PackedStringArray unsaved_list;
 
@@ -4307,15 +4317,7 @@ bool ScriptEditor::should_use_external_editor(const Ref<Script> &p_for_script) {
 }
 
 void ScriptEditor::focus_editor() {
-	EditorDockManager::get_singleton()->focus_dock(this);
-	Control *active_editor = script_container->get_active_editor();
-	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(active_editor);
-	EditorHelp *eh = Object::cast_to<EditorHelp>(active_editor);
-	if (seb) {
-		seb->get_base_editor()->grab_focus();
-	} else if (eh) {
-		eh->set_focused();
-	}
+	EditorDockManager::get_singleton()->force_focus_dock(this);
 }
 
 void ScriptEditor::focus_script_editor(const Ref<Resource> &p_for_resource) {
@@ -4531,6 +4533,7 @@ ScriptEditor::ScriptEditor() {
 	script_container = memnew(DocumentEditorContainer(true, "ScriptEditor", "script_editor_cache.cfg"));
 	script_container->set_handled_resource_types({ "GDScript", "Script", "JSON" });
 	add_child(script_container);
+	connect("_focused", callable_mp(script_container, &DocumentEditorContainer::focus_active_editor));
 
 	help_search_dialog = memnew(EditorHelpSearch);
 	add_child(help_search_dialog);

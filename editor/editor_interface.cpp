@@ -445,7 +445,7 @@ SubViewport *EditorInterface::get_editor_viewport_3d(int p_idx) const {
 void EditorInterface::set_main_screen_editor(const String &p_name) {
 	EditorDock *dock = EditorNode::get_singleton()->get_editor_main_screen()->get_dock_by_name(p_name);
 	ERR_FAIL_NULL_MSG(dock, "The editor name '" + p_name + "' was not found.");
-	EditorDockManager::get_singleton()->focus_dock(dock);
+	EditorDockManager::get_singleton()->force_focus_dock(dock);
 }
 #endif
 
