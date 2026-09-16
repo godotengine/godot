@@ -100,7 +100,7 @@ void EditorPropertyVariant::_change_type(int p_to_type) {
 
 void EditorPropertyVariant::_popup_edit_menu() {
 	if (change_type == nullptr) {
-		change_type = memnew(EditorVariantTypePopupMenu(false));
+		change_type = memnew(EditorVariantTypePopupMenu(false, disabled_types, renames));
 		change_type->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyVariant::_change_type));
 		content->add_child(change_type);
 	}
@@ -112,6 +112,24 @@ void EditorPropertyVariant::_popup_edit_menu() {
 
 void EditorPropertyVariant::_object_id_selected(const StringName &p_property, ObjectID p_id) {
 	emit_signal(SNAME("object_id_selected"), p_property, p_id);
+}
+
+void EditorPropertyVariant::set_disabled_types(const LocalVector<Variant::Type> &p_disabled_types) {
+	disabled_types = p_disabled_types;
+
+	if (change_type) {
+		change_type->queue_free();
+		change_type = nullptr;
+	}
+}
+
+void EditorPropertyVariant::set_renames(const HashMap<Variant::Type, String> &p_renames) {
+	renames = p_renames;
+
+	if (change_type) {
+		change_type->queue_free();
+		change_type = nullptr;
+	}
 }
 
 void EditorPropertyVariant::_set_read_only(bool p_read_only) {
