@@ -1868,7 +1868,12 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			int page_len = 24; // API's default batch size.
 			int total_items = d["count"];
-			int pages = MAX(1, total_items / page_len);
+
+			int pages = 1;
+			if (total_items > page_len) {
+				pages = Math::ceil(total_items / (float)page_len);
+			}
+
 			current_page = MIN(current_page, pages);
 			Array result = d["hits"];
 
