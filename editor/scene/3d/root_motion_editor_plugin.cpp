@@ -33,11 +33,14 @@
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+
+#ifndef _3D_DISABLED
+#include "scene/3d/skeleton_3d.h"
+#endif // _3D_DISABLED
 
 void EditorPropertyRootMotion::_confirmed() {
 	TreeItem *ti = filters->get_selected();
@@ -122,6 +125,7 @@ void EditorPropertyRootMotion::_node_assign() {
 			continue; //no node, can't edit
 		}
 
+#ifndef _3D_DISABLED
 		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
 		if (skeleton) {
 			HashMap<int, TreeItem *> items;
@@ -151,6 +155,7 @@ void EditorPropertyRootMotion::_node_assign() {
 				joint_item->set_collapsed(true);
 			}
 		}
+#endif // _3D_DISABLED
 	}
 
 	filters->ensure_cursor_is_visible();

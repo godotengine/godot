@@ -32,20 +32,24 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/option_button.h"
 
 class AcceptDialog;
 class AspectRatioContainer;
 class ConfirmationDialog;
 class MenuButton;
+class OptionButton;
 class SpinBox;
 
 class MeshInstance3DEditor : public Control {
 	GDCLASS(MeshInstance3DEditor, Control);
 
 	enum Menu {
+#ifndef PHYSICS_3D_DISABLED
 		MENU_OPTION_CREATE_COLLISION_SHAPE,
+#endif
+#ifndef NAVIGATION_3D_DISABLED
 		MENU_OPTION_CREATE_NAVMESH,
+#endif
 		MENU_OPTION_CREATE_OUTLINE_MESH,
 		MENU_OPTION_CREATE_DEBUG_TANGENTS,
 		MENU_OPTION_CREATE_UV2,
@@ -53,6 +57,7 @@ class MeshInstance3DEditor : public Control {
 		MENU_OPTION_DEBUG_UV2,
 	};
 
+#ifndef PHYSICS_3D_DISABLED
 	enum ShapePlacement {
 		SHAPE_PLACEMENT_SIBLING,
 		SHAPE_PLACEMENT_STATIC_BODY_CHILD,
@@ -76,6 +81,7 @@ class MeshInstance3DEditor : public Control {
 		SHAPE_AXIS_Z,
 		SHAPE_AXIS_LONGEST,
 	};
+#endif // PHYSICS_3D_DISABLED
 
 	MeshInstance3D *node = nullptr;
 
@@ -84,12 +90,14 @@ class MeshInstance3DEditor : public Control {
 	ConfirmationDialog *outline_dialog = nullptr;
 	SpinBox *outline_size = nullptr;
 
+#ifndef PHYSICS_3D_DISABLED
 	ConfirmationDialog *shape_dialog = nullptr;
 	OptionButton *shape_type = nullptr;
 	OptionButton *shape_placement = nullptr;
 	Label *shape_axis_label = nullptr;
 	OptionButton *shape_axis = nullptr;
 	Transform3D shape_offset_transform;
+#endif // PHYSICS_3D_DISABLED
 
 	AcceptDialog *err_dialog = nullptr;
 
@@ -98,15 +106,23 @@ class MeshInstance3DEditor : public Control {
 	Control *debug_uv = nullptr;
 	Vector<Vector2> uv_lines;
 
+#ifndef NAVIGATION_3D_DISABLED
 	ConfirmationDialog *navigation_mesh_dialog = nullptr;
+#endif // NAVIGATION_3D_DISABLED
 
+#ifndef PHYSICS_3D_DISABLED
 	void _shape_dialog_about_to_popup();
 	void _shape_type_selected(int p_option);
 	void _create_collision_shape();
 	Vector<Ref<Shape3D>> create_shape_from_mesh(Ref<Mesh> p_mesh, int p_option, bool p_verbose);
+#endif // PHYSICS_3D_DISABLED
+
 	void _menu_option(int p_option);
 	void _create_outline_mesh();
+
+#ifndef NAVIGATION_3D_DISABLED
 	void _create_navigation_mesh();
+#endif // NAVIGATION_3D_DISABLED
 
 	void _create_uv_lines(int p_layer);
 	friend class MeshInstance3DEditorPlugin;

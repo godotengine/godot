@@ -37,10 +37,8 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
-#include "editor/settings/editor_feature_profile.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
-#include "scene/3d/node_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
@@ -48,12 +46,19 @@
 #include "scene/gui/option_button.h"
 #include "scene/resources/packed_scene.h"
 
+#ifndef _3D_DISABLED
+#include "editor/settings/editor_feature_profile.h"
+#include "scene/3d/node_3d.h"
+#endif // _3D_DISABLED
+
 void SceneCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			select_node_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
 			node_type_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
+#ifndef _3D_DISABLED
 			node_type_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
+#endif // _3D_DISABLED
 			node_type_gui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			node_type_other->add_theme_icon_override(SNAME("icon"), get_editor_theme_icon(SNAME("Node")));
 		} break;
@@ -71,11 +76,13 @@ void SceneCreateDialog::config(const String &p_dir, const String &p_scene_name) 
 	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred(false);
 	validation_panel->update();
 
+#ifndef _3D_DISABLED
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 	node_type_3d->set_visible(profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 	if (!node_type_3d->is_visible() && node_type_3d->is_pressed()) {
 		node_type_2d->set_pressed(true);
 	}
+#endif // _3D_DISABLED
 }
 
 void SceneCreateDialog::accept_create() {
@@ -172,9 +179,11 @@ Node *SceneCreateDialog::create_scene_root() {
 		case ROOT_2D_SCENE:
 			root = memnew(Node2D);
 			break;
+#ifndef _3D_DISABLED
 		case ROOT_3D_SCENE:
 			root = memnew(Node3D);
 			break;
+#endif // _3D_DISABLED
 		case ROOT_USER_INTERFACE: {
 			Control *gui_ctl = memnew(Control);
 			// Making the root control full rect by default is more useful for resizable UIs.
@@ -223,12 +232,14 @@ SceneCreateDialog::SceneCreateDialog() {
 		node_type_2d->set_meta(type_meta, ROOT_2D_SCENE);
 		node_type_2d->set_pressed(true);
 
+#ifndef _3D_DISABLED
 		node_type_3d = memnew(CheckBox);
 		vb->add_child(node_type_3d);
 		node_type_3d->set_text(TTR("3D Scene"));
 		node_type_3d->set_theme_type_variation("CheckBoxNoIconTint");
 		node_type_3d->set_button_group(node_type_group);
 		node_type_3d->set_meta(type_meta, ROOT_3D_SCENE);
+#endif // _3D_DISABLED
 
 		node_type_gui = memnew(CheckBox);
 		vb->add_child(node_type_gui);

@@ -42,24 +42,30 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
-#include "scene/3d/physics/area_3d.h"
-#include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/physics/static_body_3d.h"
-#include "scene/3d/physics/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
-#include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/3d/mesh_library.h"
-#include "scene/resources/3d/separation_ray_shape_3d.h"
-#include "scene/resources/3d/sphere_shape_3d.h"
-#include "scene/resources/3d/world_boundary_shape_3d.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/bone_map.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/physics_material.h"
 #include "scene/resources/resource_format_text.h"
+
+#ifndef NAVIGATION_3D_DISABLED
+#include "scene/3d/navigation/navigation_region_3d.h"
+#endif // NAVIGATION_3D_DISABLED
+
+#ifndef PHYSICS_3D_DISABLED
+#include "scene/3d/physics/area_3d.h"
+#include "scene/3d/physics/collision_shape_3d.h"
+#include "scene/3d/physics/static_body_3d.h"
+#include "scene/3d/physics/vehicle_body_3d.h"
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/separation_ray_shape_3d.h"
+#include "scene/resources/3d/sphere_shape_3d.h"
+#include "scene/resources/3d/world_boundary_shape_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 void EditorSceneFormatImporter::get_extensions(List<String> *r_extensions) const {
 	Vector<String> arr;
@@ -470,6 +476,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return what;
 }
 
+#ifndef PHYSICS_3D_DISABLED
 static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_COND_MSG(mesh.is_null(), "Cannot generate shape list with null mesh value.");
 	if (!p_convex) {
@@ -485,6 +492,7 @@ static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r
 		}
 	}
 }
+#endif // PHYSICS_3D_DISABLED
 
 struct ScalableNodeCollection {
 	HashSet<Node3D *> node_3ds;
@@ -855,6 +863,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			ERR_FAIL_V_MSG(nullptr, vformat("Skipped node `%s` because its name is empty after removing the suffix.", name));
 		}
 
+#ifndef PHYSICS_3D_DISABLED
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
 		if (mi) {
 			Ref<ImporterMesh> mesh = mi->get_mesh();
@@ -990,6 +999,57 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				_add_shapes(col, shapes);
 			}
 		}
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef NAVIGATION_3D_DISABLED
+	} else if (_teststr(name, "navmesh") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		if (isroot) {
+			return p_node;
+		}
+
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+
+		Ref<ImporterMesh> mesh = mi->get_mesh();
+		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
+		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
+
+		nmi->set_name(_fixstr(name, "navmesh"));
+		Ref<NavigationMesh> nmesh = mesh->create_navigation_mesh();
+		nmi->set_navigation_mesh(nmesh);
+		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
+		_copy_meta(p_node, nmi);
+		p_node->replace_by(nmi);
+		p_node->set_owner(nullptr);
+		memdelete(p_node);
+		p_node = nmi;
+#endif // NAVIGATION_3D_DISABLED
+	} else if (_teststr(name, "occ") || _teststr(name, "occonly")) {
+		if (isroot) {
+			return p_node;
+		}
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+		if (mi) {
+			Ref<ImporterMesh> mesh = mi->get_mesh();
+
+			if (mesh.is_valid()) {
+				if (r_occluder_arrays) {
+					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
+				}
+				if (_teststr(name, "occ")) {
+					String fixed_name = _fixstr(name, "occ");
+					if (!fixed_name.is_empty()) {
+						if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
+							mi->set_name(fixed_name);
+						}
+					}
+				} else {
+					p_node->set_owner(nullptr);
+					memdelete(p_node);
+					p_node = nullptr;
+				}
+			}
+		}
+#ifndef PHYSICS_3D_DISABLED
 	} else if (_teststr(name, "vehicle")) {
 		if (isroot) {
 			return p_node;
@@ -1063,6 +1123,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				_add_shapes(col, shapes);
 			}
 		}
+#endif // PHYSICS_3D_DISABLED
 	}
 
 	if (p_node) {
@@ -1714,6 +1775,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 				r_scanned_meshes.insert(m);
 			}
 
+#ifndef PHYSICS_3D_DISABLED
 			if (node_settings.has("generate/physics")) {
 				int mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_DISABLED;
 
@@ -1832,9 +1894,11 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					}
 				}
 			}
+#endif // PHYSICS_3D_DISABLED
 		}
 	}
 
+#ifndef NAVIGATION_3D_DISABLED
 	//navmesh (node may have changed type above)
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
@@ -1866,6 +1930,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 			}
 		}
 	}
+#endif // NAVIGATION_3D_DISABLED
 
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
@@ -2947,6 +3012,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 	return p_node;
 }
 
+#ifndef PHYSICS_3D_DISABLED
 void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes) {
 	for (const Ref<Shape3D> &E : p_shapes) {
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -2956,6 +3022,7 @@ void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>>
 		cshape->set_owner(p_node->get_owner());
 	}
 }
+#endif // PHYSICS_3D_DISABLED
 
 void ResourceImporterScene::_copy_meta(Object *p_src_object, Object *p_dst_object) {
 	List<StringName> meta_list;
