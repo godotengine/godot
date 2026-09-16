@@ -715,6 +715,7 @@ void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus
 	if (p_dock->dock_window) {
 		if (p_grab_focus) {
 			p_dock->get_window()->grab_focus();
+			p_dock->_dock_focused();
 		}
 		return;
 	}
@@ -726,6 +727,7 @@ void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus
 
 	if (p_grab_focus) {
 		tab_container->get_tab_bar()->grab_focus(true);
+		p_dock->_dock_focused();
 	}
 
 	if (!p_dock->is_visible_in_tree()) {
