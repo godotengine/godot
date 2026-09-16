@@ -4,7 +4,7 @@
  *
  *   Type 1 tokenizer (specification).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -33,7 +33,7 @@
                    T1_FIELD_DICT_FONTDICT )
 
   /* we use pointers to detect modifications made by synthetic fonts */
-  T1_FIELD_NUM   ( "ItalicAngle",        italic_angle,
+  T1_FIELD_FIXED ( "ItalicAngle",        italic_angle,
                    T1_FIELD_DICT_FONTDICT )
   T1_FIELD_BOOL  ( "isFixedPitch",       is_fixed_pitch,
                    T1_FIELD_DICT_FONTDICT )

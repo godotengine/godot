@@ -30,25 +30,45 @@
 
 #include "editor_spin_slider.h"
 
+#include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/math/expression.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "core/string/translation_server.h"
+#include "editor/editor_string_names.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
-	String value = get_text_value() + suffix;
+	const String base_tooltip = Range::get_tooltip(p_pos);
+
+	const String value = get_text_value() + suffix;
 	if (!read_only && grabber->is_visible()) {
 		String tooltip = value;
-		Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
+		if (!base_tooltip.is_empty()) {
+			tooltip += "\n" + TTR(base_tooltip);
+		}
+
 		if (!editing_integer) {
-			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), find_keycode_name(key));
+			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), keycode_get_string(Key::CMD_OR_CTRL));
 		}
 		return tooltip + "\n" + TTR("Hold Shift for more precise changes.");
 	}
 	return value;
+}
+
+Size2 EditorSpinSlider::get_minimum_size() const {
+	Size2 ms = theme_cache.normal->get_minimum_size();
+	Ref<Texture2D> updown = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
+	ms.width += updown->get_width();
+
+	ms.height += theme_cache.font->get_height(theme_cache.font_size);
+	ms.height = MAX(ms.height, theme_cache.inspector_property_height);
+
+	return ms;
 }
 
 String EditorSpinSlider::get_text_value() const {
@@ -78,7 +98,12 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				_grab_start();
 			} else {
+				bool grabbing = grabbing_spinner;
 				_grab_end();
+
+				if (deferred_drag_mode && grabbing) {
+					_notify_shared_value_changed(); // Need to be emitted at the end, since the signal doesn't emitted in `set_value_no_signal` method.
+				}
 			}
 		} else if (mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed() && is_grabbing()) {
@@ -102,7 +127,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			grabbing_spinner_dist_cache += diff_x * grabbing_spinner_speed;
 
 			if (!grabbing_spinner && Math::abs(grabbing_spinner_dist_cache) > 4 * grabbing_spinner_speed * EDSCALE) {
-				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+				Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
 				grabbing_spinner = true;
 			}
 
@@ -115,8 +140,17 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					pre_grab_value = get_max();
 				}
 
-				double new_value = pre_grab_value + get_step() * grabbing_spinner_dist_cache;
-				set_value((mm->is_command_or_control_pressed() && !editing_integer) ? Math::round(new_value) : new_value);
+				// Prevent dragging properties with very precise steps from being agonizingly slow.
+				const double default_float_step = EDITOR_GET("interface/inspector/default_float_step");
+				const double drag_step = MAX(get_step(), default_float_step);
+				const double new_value = pre_grab_value + drag_step * grabbing_spinner_dist_cache;
+
+				double val = (mm->is_command_or_control_pressed() && !editing_integer) ? Math::round(new_value) : new_value;
+				if (deferred_drag_mode) {
+					set_value_no_signal(val);
+				} else {
+					set_value(val);
+				}
 			}
 		} else if (updown_offset != -1) {
 			bool new_hover = (!is_layout_rtl() && mm->get_position().x > updown_offset) || (is_layout_rtl() && mm->get_position().x < updown_offset);
@@ -153,7 +187,7 @@ void EditorSpinSlider::_grab_start() {
 void EditorSpinSlider::_grab_end() {
 	if (grabbing_spinner_attempt) {
 		if (grabbing_spinner) {
-			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 			Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
 			mouse_over_grabber = true;
 			queue_redraw();
@@ -275,9 +309,9 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 			} break;
 			case Key::ESCAPE: {
 				value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
-				if (value_input_popup) {
+				if (value_input) {
 					value_input_focus_visible = value_input->has_focus(true);
-					value_input_popup->hide();
+					value_input->hide();
 				}
 			} break;
 			default:
@@ -294,15 +328,10 @@ void EditorSpinSlider::_update_value_input_stylebox() {
 	// Add a left margin to the stylebox to make the number align with the Label
 	// when it's edited. The LineEdit "focus" stylebox uses the "normal" stylebox's
 	// default margins.
-	Ref<StyleBox> stylebox = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"))->duplicate();
-	// EditorSpinSliders with a label have more space on the left, so add an
-	// higher margin to match the location where the text begins.
-	// The margin values below were determined by empirical testing.
-	if (is_layout_rtl()) {
-		stylebox->set_content_margin(SIDE_RIGHT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
-	} else {
-		stylebox->set_content_margin(SIDE_LEFT, (!get_label().is_empty() ? 23 : 16) * EDSCALE);
-	}
+	Ref<StyleBox> stylebox = theme_cache.normal->duplicate();
+	// TODO: Handle this internally instead of relying on the theme.
+	int margin = get_label().is_empty() ? theme_cache.line_edit_margin_empty : theme_cache.line_edit_margin;
+	stylebox->set_content_margin(is_layout_rtl() ? SIDE_RIGHT : SIDE_LEFT, margin);
 
 	value_input->add_theme_style_override(CoreStringName(normal), stylebox);
 }
@@ -314,39 +343,35 @@ void EditorSpinSlider::_draw_spin_slider() {
 	bool rtl = is_layout_rtl();
 	Vector2 size = get_size();
 
-	Ref<StyleBox> sb = get_theme_stylebox(read_only ? SNAME("read_only") : CoreStringName(normal), SNAME("LineEdit"));
+	Ref<StyleBox> sb = read_only ? theme_cache.read_only : theme_cache.normal;
 	if (!flat) {
 		draw_style_box(sb, Rect2(Vector2(), size));
 	}
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
+	Ref<Font> font = theme_cache.font;
+	int font_size = theme_cache.font_size;
 	int sep_base = 4 * EDSCALE;
 	int sep = sep_base + sb->get_offset().x; //make it have the same margin on both sides, looks better
 
 	int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
 
-	Ref<Texture2D> updown = get_theme_icon(read_only ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
-
 	String numstr = get_text_value();
 
 	int vofs = (size.height - font->get_height(font_size)) / 2 + font->get_ascent(font_size);
 
-	Color fc = get_theme_color(read_only ? SNAME("font_uneditable_color") : SceneStringName(font_color), SNAME("LineEdit"));
-	Color lc = get_theme_color(read_only ? SNAME("read_only_label_color") : SNAME("label_color"));
+	Color fc = read_only ? theme_cache.font_uneditable_color : theme_cache.font_color;
+	Color lc = read_only ? theme_cache.read_only_label_color : theme_cache.label_color;
 
 	if (flat && !label.is_empty()) {
-		Ref<StyleBox> label_bg = get_theme_stylebox(SNAME("label_bg"), SNAME("EditorSpinSlider"));
 		if (rtl) {
-			draw_style_box(label_bg, Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
+			draw_style_box(theme_cache.label_bg, Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
 		} else {
-			draw_style_box(label_bg, Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
+			draw_style_box(theme_cache.label_bg, Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
 		}
 	}
 
 	if (has_focus(true)) {
-		Ref<StyleBox> focus = get_theme_stylebox(SNAME("focus"), SNAME("LineEdit"));
-		draw_style_box(focus, Rect2(Vector2(), size));
+		draw_style_box(theme_cache.focus, Rect2(Vector2(), size));
 	}
 
 	if (rtl) {
@@ -424,7 +449,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
-			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+			bool display_grabber = !read_only && (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input && value_input->is_visible());
 			if (grabber->is_visible() != display_grabber) {
 				grabber->set_visible(display_grabber);
 			}
@@ -432,9 +457,9 @@ void EditorSpinSlider::_draw_spin_slider() {
 			if (display_grabber) {
 				Ref<Texture2D> grabber_tex;
 				if (mouse_over_grabber || grabbing_grabber) {
-					grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
+					grabber_tex = theme_cache.grabber_highlight;
 				} else {
-					grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
+					grabber_tex = theme_cache.grabber;
 				}
 
 				if (grabber->get_texture() != grabber_tex) {
@@ -458,7 +483,6 @@ void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			grabbing_spinner_speed = editing_integer ? EDITOR_GET("interface/inspector/integer_drag_speed") : EDITOR_GET("interface/inspector/float_drag_speed");
-			_update_value_input_stylebox();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -485,7 +509,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (grabbing_spinner) {
 				grabber->hide();
-				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+				Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
 				Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
 				grabbing_spinner = false;
 				grabbing_spinner_attempt = false;
@@ -512,19 +536,8 @@ void EditorSpinSlider::_notification(int p_what) {
 }
 
 LineEdit *EditorSpinSlider::get_line_edit() {
-	_ensure_input_popup();
+	_ensure_value_input();
 	return value_input;
-}
-
-Size2 EditorSpinSlider::get_minimum_size() const {
-	Ref<StyleBox> sb = get_theme_stylebox(CoreStringName(normal), SNAME("LineEdit"));
-	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
-	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
-
-	Size2 ms = sb->get_minimum_size();
-	ms.height += font->get_height(font_size);
-
-	return ms;
 }
 
 void EditorSpinSlider::set_control_state(ControlState p_state) {
@@ -563,7 +576,11 @@ bool EditorSpinSlider::is_editing_integer() const {
 }
 
 void EditorSpinSlider::set_label(const String &p_label) {
+	if (label == p_label) {
+		return;
+	}
 	label = p_label;
+	_update_value_input_stylebox();
 	queue_redraw();
 }
 
@@ -581,6 +598,10 @@ String EditorSpinSlider::get_suffix() const {
 }
 
 void EditorSpinSlider::_evaluate_input_text() {
+	if (value_input->get_text().is_empty()) {
+		set_value(0);
+		return;
+	}
 	const String &lang = _get_locale();
 
 	Ref<Expression> expr;
@@ -610,24 +631,21 @@ void EditorSpinSlider::_evaluate_input_text() {
 	set_value(v);
 }
 
-//text_submitted signal
 void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
-	if (value_input_popup) {
+	if (value_input) {
 		value_input_focus_visible = value_input->has_focus(true);
-		value_input_popup->hide();
+		value_input->hide();
 	}
 }
 
-//modal_closed signal
-void EditorSpinSlider::_value_input_closed() {
+void EditorSpinSlider::_value_input_hidden() {
 	_evaluate_input_text();
 	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 }
 
-//focus_exited signal
 void EditorSpinSlider::_value_focus_exited() {
-	// discontinue because the focus_exit was caused by right-click context menu
+	// Discontinue because the focus_exit was caused by right-click context menu.
 	if (value_input->is_menu_visible()) {
 		return;
 	}
@@ -638,15 +656,14 @@ void EditorSpinSlider::_value_focus_exited() {
 	}
 
 	_evaluate_input_text();
-	// focus is not on the same element after the value_input was exited
-	// -> focus is on next element
-	// -> TAB was pressed
-	// -> modal_close was not called
-	// -> need to close/hide manually
+	// Focus is not on the same element after the value_input was hidden.
+	// -> Focus is on next element.
+	// -> TAB was pressed.
+	// -> Need to close/hide manually.
 	if (!is_visible_in_tree() || value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
 		// Hidden or something else took focus.
-		if (value_input_popup) {
-			value_input_popup->hide();
+		if (value_input) {
+			value_input->hide();
 		}
 	} else {
 		// Enter or Esc was pressed. Keep showing the focus if already present.
@@ -693,17 +710,24 @@ bool EditorSpinSlider::is_grabbing() const {
 	return grabbing_grabber || grabbing_spinner;
 }
 
+void EditorSpinSlider::set_deferred_drag_mode_enabled(bool p_enabled) {
+	deferred_drag_mode = p_enabled;
+}
+
+bool EditorSpinSlider::is_deferred_drag_mode_enabled() const {
+	return deferred_drag_mode;
+}
+
 void EditorSpinSlider::_focus_entered(bool p_hide_focus) {
 	if (read_only) {
 		return;
 	}
 
-	_ensure_input_popup();
+	_ensure_value_input();
 	value_input->set_text(get_text_value());
-	value_input_popup->set_size(get_size());
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
 	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
-	callable_mp((CanvasItem *)value_input_popup, &CanvasItem::show).call_deferred();
+	callable_mp((CanvasItem *)value_input, &CanvasItem::show).call_deferred();
 	callable_mp((Control *)value_input, &Control::grab_focus).call_deferred(p_hide_focus);
 	callable_mp(value_input, &LineEdit ::select_all).call_deferred();
 	emit_signal("value_focus_entered");
@@ -732,6 +756,9 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editing_integer", "editing_integer"), &EditorSpinSlider::set_editing_integer);
 	ClassDB::bind_method(D_METHOD("is_editing_integer"), &EditorSpinSlider::is_editing_integer);
 
+	ClassDB::bind_method(D_METHOD("set_deferred_drag_mode_enabled", "enabled"), &EditorSpinSlider::set_deferred_drag_mode_enabled, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("is_deferred_drag_mode_enabled"), &EditorSpinSlider::is_deferred_drag_mode_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
@@ -741,6 +768,7 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
 #endif
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editing_integer"), "set_editing_integer", "is_editing_integer");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_drag_mode"), "set_deferred_drag_mode_enabled", "is_deferred_drag_mode_enabled");
 
 	BIND_ENUM_CONSTANT(CONTROL_STATE_DEFAULT);
 	BIND_ENUM_CONSTANT(CONTROL_STATE_PREFER_SLIDER);
@@ -752,25 +780,41 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("value_focus_entered"));
 	ADD_SIGNAL(MethodInfo("value_focus_exited"));
 
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_CONSTANT, EditorSpinSlider, inspector_property_height, "inspector_property_height", "Editor");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, EditorSpinSlider, line_edit_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, EditorSpinSlider, line_edit_margin_empty);
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, EditorSpinSlider, font_color, "font_color", "LineEdit");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_COLOR, EditorSpinSlider, font_uneditable_color, "font_uneditable_color", "LineEdit");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, EditorSpinSlider, label_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, EditorSpinSlider, read_only_label_color);
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_FONT, EditorSpinSlider, font, "font", "LineEdit");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_FONT_SIZE, EditorSpinSlider, font_size, "font_size", "LineEdit");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, normal, "normal", "LineEdit");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, read_only, "read_only", "LineEdit");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, focus, "focus", "LineEdit");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, label_bg);
+
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_icon, "updown");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_disabled_icon, "updown_disabled");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, EditorSpinSlider, grabber_highlight, "grabber_highlight", "HSlider");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_ICON, EditorSpinSlider, grabber, "grabber", "HSlider");
 }
 
-void EditorSpinSlider::_ensure_input_popup() {
-	if (value_input_popup) {
+void EditorSpinSlider::_ensure_value_input() {
+	if (value_input) {
 		return;
 	}
-
-	value_input_popup = memnew(Control);
-	value_input_popup->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	add_child(value_input_popup);
 
 	value_input = memnew(LineEdit);
 	value_input->set_emoji_menu_enabled(false);
 	value_input->set_focus_mode(FOCUS_CLICK);
-	value_input_popup->add_child(value_input);
+	value_input->add_theme_constant_override(SNAME("minimum_character_width"), 0);
+	add_child(value_input);
 	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	value_input_popup->connect(SceneStringName(hidden), callable_mp(this, &EditorSpinSlider::_value_input_closed));
+	value_input->connect(SceneStringName(hidden), callable_mp(this, &EditorSpinSlider::_value_input_hidden));
 	value_input->connect(SceneStringName(text_submitted), callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect(SceneStringName(focus_exited), callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect(SceneStringName(gui_input), callable_mp(this, &EditorSpinSlider::_value_input_gui_input));

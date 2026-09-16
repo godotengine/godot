@@ -104,6 +104,7 @@ class EditorPropertySizeFlags : public EditorProperty {
 
 	OptionButton *flag_presets = nullptr;
 	CheckBox *flag_expand = nullptr;
+	CheckBox *flag_maximize = nullptr;
 	VBoxContainer *flag_options = nullptr;
 	Vector<CheckBox *> flag_checks;
 
@@ -113,6 +114,7 @@ class EditorPropertySizeFlags : public EditorProperty {
 
 	void _preset_selected(int p_which);
 	void _expand_toggled();
+	void _maximize_toggled();
 	void _flag_toggled();
 
 protected:
@@ -170,6 +172,7 @@ protected:
 
 	void _add_row_button(HBoxContainer *p_row, const int p_preset, const String &p_name);
 	void _add_separator(BoxContainer *p_box, Separator *p_separator);
+	void _update_preset_button_state(int p_preset);
 };
 
 class AnchorPresetPicker : public ControlEditorPresetPicker {
@@ -182,6 +185,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_selected_preset(int p_preset);
+
 	AnchorPresetPicker();
 };
 
@@ -189,11 +194,13 @@ class SizeFlagPresetPicker : public ControlEditorPresetPicker {
 	GDCLASS(SizeFlagPresetPicker, ControlEditorPresetPicker);
 
 	CheckButton *expand_button = nullptr;
+	CheckButton *maximize_button = nullptr;
 
 	bool vertical = false;
 
 	virtual void _preset_button_pressed(const int p_preset) override;
 	void _expand_button_pressed();
+	void _maximize_button_pressed();
 
 protected:
 	void _notification(int p_notification);
@@ -201,7 +208,9 @@ protected:
 
 public:
 	void set_allowed_flags(Vector<SizeFlags> &p_flags);
+	void set_selected_preset(int p_preset);
 	void set_expand_flag(bool p_expand);
+	void set_maximize_flag(bool p_maximize);
 
 	SizeFlagPresetPicker(bool p_vertical);
 };
@@ -214,6 +223,9 @@ class ControlEditorToolbar : public HBoxContainer {
 	ControlEditorPopupButton *anchors_button = nullptr;
 	ControlEditorPopupButton *containers_button = nullptr;
 	Button *anchor_mode_button = nullptr;
+	CheckBox *reposition_button = nullptr;
+
+	AnchorPresetPicker *anchors_picker = nullptr;
 
 	SizeFlagPresetPicker *container_h_picker = nullptr;
 	SizeFlagPresetPicker *container_v_picker = nullptr;
@@ -225,6 +237,9 @@ class ControlEditorToolbar : public HBoxContainer {
 	void _anchor_mode_toggled(bool p_status);
 	void _container_flags_selected(int p_flags, bool p_vertical);
 	void _expand_flag_toggled(bool p_expand, bool p_vertical);
+	void _maximize_flag_toggled(bool p_maximize, bool p_vertical);
+	void _update_anchor_selection_ui(bool p_pressed);
+	void _update_container_sizing_selection_ui(bool p_pressed);
 
 	Vector2 _position_to_anchor(const Control *p_control, Vector2 position);
 	bool _is_node_locked(const Node *p_node);
@@ -244,14 +259,36 @@ public:
 	ControlEditorToolbar();
 };
 
+class ControlOffsetTransformPreview : public Control {
+	GDCLASS(ControlOffsetTransformPreview, Control);
+
+	EditorPlugin *plugin = nullptr;
+	Control *selected_control = nullptr;
+
+	friend class ControlEditorPlugin;
+
+public:
+	void edit(Control *p_control);
+
+	void forward_canvas_draw_over_viewport(Control *p_overlay) const;
+
+	ControlOffsetTransformPreview(EditorPlugin *p_plugin);
+};
+
 // Editor plugin.
 class ControlEditorPlugin : public EditorPlugin {
 	GDCLASS(ControlEditorPlugin, EditorPlugin);
 
 	ControlEditorToolbar *toolbar = nullptr;
+	ControlOffsetTransformPreview *offset_transform_preview = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "Control"; }
+
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
 	ControlEditorPlugin();
 };

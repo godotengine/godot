@@ -31,13 +31,16 @@
 #include "editor_profiler.h"
 
 #include "core/io/image.h"
+#include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/color_rect.h"
 #include "scene/gui/flow_container.h"
+#include "scene/gui/label.h"
 #include "scene/resources/image_texture.h"
 
 void EditorProfiler::_make_metric_ptrs(Metric &m) {
@@ -49,7 +52,7 @@ void EditorProfiler::_make_metric_ptrs(Metric &m) {
 	}
 }
 
-EditorProfiler::Metric EditorProfiler::_get_frame_metric(int index) {
+const EditorProfiler::Metric &EditorProfiler::_get_frame_metric(int index) const {
 	return frame_metrics[(frame_metrics.size() + last_metric - (total_metrics - 1) + index) % frame_metrics.size()];
 }
 
@@ -186,6 +189,20 @@ void EditorProfiler::_item_edited() {
 	_update_plot();
 }
 
+void EditorProfiler::_item_collapsed(TreeItem *p_item) {
+	if (!p_item) {
+		return;
+	}
+	StringName signature = p_item->get_metadata(0);
+	bool collapsed = p_item->is_collapsed();
+
+	if (collapsed) {
+		collapsed_categories.insert(signature);
+	} else {
+		collapsed_categories.erase(signature);
+	}
+}
+
 void EditorProfiler::_update_plot() {
 	const int w = MAX(1, graph->get_size().width); // Clamp to 1 to prevent from crashing when profiler is autostarted.
 	const int h = MAX(1, graph->get_size().height);
@@ -205,7 +222,7 @@ void EditorProfiler::_update_plot() {
 		wr[i + 0] = Math::fast_ftoi(background_color.r * 255);
 		wr[i + 1] = Math::fast_ftoi(background_color.g * 255);
 		wr[i + 2] = Math::fast_ftoi(background_color.b * 255);
-		wr[i + 3] = 255;
+		wr[i + 3] = Math::fast_ftoi(background_color.a * 255);
 	}
 
 	//find highest value
@@ -322,7 +339,7 @@ void EditorProfiler::_update_plot() {
 				wr[widx + 0] = is_filled ? red : Math::fast_ftoi(background_color.r * 255);
 				wr[widx + 1] = is_filled ? green : Math::fast_ftoi(background_color.g * 255);
 				wr[widx + 2] = is_filled ? blue : Math::fast_ftoi(background_color.b * 255);
-				wr[widx + 3] = 255;
+				wr[widx + 3] = is_filled ? 255 : Math::fast_ftoi(background_color.a * 255);
 			}
 		}
 	}
@@ -361,6 +378,10 @@ void EditorProfiler::_update_frame() {
 		category->set_text(0, String(m.categories[i].name));
 		category->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		category->set_text(1, _get_time_as_text(m, m.categories[i].total_time, 1));
+
+		if (collapsed_categories.has(m.categories[i].signature)) {
+			category->set_collapsed(true);
+		}
 
 		if (plot_sigs.has(m.categories[i].signature)) {
 			category->set_checked(0, true);
@@ -450,6 +471,7 @@ void EditorProfiler::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
+			graph_background->set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
 
 			theme_cache.seek_line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 			theme_cache.seek_line_color.a = 0.8;
@@ -755,7 +777,6 @@ EditorProfiler::EditorProfiler() {
 
 	variables = memnew(Tree);
 	variables->set_custom_minimum_size(Size2(320, 0) * EDSCALE);
-	variables->set_hide_folding(true);
 	h_split->add_child(variables);
 	variables->set_hide_root(true);
 	variables->set_columns(3);
@@ -774,16 +795,21 @@ EditorProfiler::EditorProfiler() {
 	variables->set_column_custom_minimum_width(2, 50 * EDSCALE);
 	variables->set_theme_type_variation("TreeSecondary");
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
+	variables->connect("item_collapsed", callable_mp(this, &EditorProfiler::_item_collapsed));
+
+	graph_background = memnew(ColorRect);
+	h_split->add_child(graph_background);
 
 	graph = memnew(TextureRect);
 	graph->set_custom_minimum_size(Size2(250 * EDSCALE, 0));
 	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	graph->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	graph->connect(SceneStringName(draw), callable_mp(this, &EditorProfiler::_graph_tex_draw));
 	graph->connect(SceneStringName(gui_input), callable_mp(this, &EditorProfiler::_graph_tex_input));
 	graph->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorProfiler::_graph_tex_mouse_exit));
 
-	h_split->add_child(graph);
+	graph_background->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);

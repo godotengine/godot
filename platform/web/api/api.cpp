@@ -33,6 +33,7 @@
 #include "javascript_bridge_singleton.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 static JavaScriptBridge *javascript_bridge_singleton;
 

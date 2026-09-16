@@ -35,7 +35,6 @@
 // While this is an FB extension it has been adopted by most runtimes and
 // will likely become core in the near future.
 
-#include "../openxr_api.h"
 #include "../util.h"
 #include "openxr_extension_wrapper.h"
 

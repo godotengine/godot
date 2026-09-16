@@ -45,7 +45,7 @@ private:
 	String endpoint;
 
 public:
-	static EditorDebuggerServer *create(const String &p_protocol);
+	static Ref<EditorDebuggerServer> create(const String &p_protocol);
 
 	void _peer_connected(int p_peer, const String &p_protocol);
 	void _peer_disconnected(int p_peer, bool p_was_clean);

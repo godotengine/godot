@@ -1274,14 +1274,17 @@ typedef enum ktx_pack_astc_block_dimension_e {
 
 /**
  * @~English
- * @brief Options specifying ASTC encoder profile mode
- *        This and function is used later to derive the profile.
+ * @brief Options specifying ASTC encoder mode.
  */
 typedef enum ktx_pack_astc_encoder_mode_e {
     KTX_PACK_ASTC_ENCODER_MODE_DEFAULT,
+        /*!< Selects LDR mode if component size is <= 8-bit, HDR otherwise. */
     KTX_PACK_ASTC_ENCODER_MODE_LDR,
+        /*!< Always encode in low dynamic range mode. */
     KTX_PACK_ASTC_ENCODER_MODE_HDR,
+        /*!< Always encode in high dynamic range mode. */
     KTX_PACK_ASTC_ENCODER_MODE_MAX = KTX_PACK_ASTC_ENCODER_MODE_HDR
+        /*!< Indicates the maximum permissible value. */
 } ktx_pack_astc_encoder_mode_e;
 
 extern KTX_API const ktx_uint32_t KTX_ETC1S_DEFAULT_COMPRESSION_LEVEL;
@@ -1800,7 +1803,13 @@ KTX_API KTX_error_code KTX_APIENTRY ktxPrintInfoForNamedFile(const char* const f
 KTX_API KTX_error_code KTX_APIENTRY ktxPrintInfoForMemory(const ktx_uint8_t* bytes, ktx_size_t size);
 
 /*===========================================================*
- * Utilities for printing info about a KTX2 file.            *
+ * Utilities for printing info about a KTX v1 file.          *
+ *===========================================================*/
+
+ KTX_API KTX_error_code KTX_APIENTRY ktxPrintKTX1InfoTextForStream(ktxStream* stream);
+
+/*===========================================================*
+ * Utilities for printing info about a KTX v2 file.          *
  *===========================================================*/
 
 KTX_API KTX_error_code KTX_APIENTRY ktxPrintKTX2InfoTextForMemory(const ktx_uint8_t* bytes, ktx_size_t size);

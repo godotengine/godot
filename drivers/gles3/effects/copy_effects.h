@@ -65,6 +65,7 @@ public:
 	void copy_with_lens_distortion(const Rect2 &p_rect, float p_layer, const Vector2 &p_eye_center, float p_k1, float p_k2, float p_upscale, float p_aspect_ration, bool p_linear_to_srgb = false);
 	void copy_to_and_from_rect(const Rect2 &p_rect);
 	void copy_screen(float p_multiply = 1.0);
+	void copy_with_exposure(float p_exposure, float p_multiply);
 	void copy_cube_to_rect(const Rect2 &p_rect);
 	void copy_cube_to_panorama(float p_mip_level);
 	void bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region);

@@ -30,12 +30,9 @@
 
 #include "editor_script.h"
 
+#include "core/object/class_db.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_undo_redo_manager.h"
-#include "editor/scene/editor_scene_tabs.h"
-#include "scene/main/node.h"
-#include "scene/resources/packed_scene.h"
 
 #ifndef DISABLE_DEPRECATED
 void EditorScript::add_root_node(Node *p_node) {
@@ -66,9 +63,7 @@ void EditorScript::run() {
 void EditorScript::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorScript::add_root_node);
-
 	ClassDB::bind_method(D_METHOD("get_scene"), &EditorScript::get_scene);
-
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorScript::get_editor_interface);
 #endif // DISABLE_DEPRECATED
 

@@ -40,6 +40,7 @@ class EngineUpdateLabel : public LinkButton {
 public:
 	enum class UpdateMode {
 		DISABLED,
+		AUTO,
 		NEWEST_UNSTABLE,
 		NEWEST_STABLE,
 		NEWEST_PATCH,
@@ -79,14 +80,18 @@ private:
 	bool checked_update = false;
 	String available_newer_version;
 
+	String current_message;
+	Variant message_argument;
+
 	bool _can_check_updates() const;
 	void _check_update();
 	void _http_request_completed(int p_result, int p_response_code, const PackedStringArray &p_headers, const PackedByteArray &p_body);
 
-	void _set_message(const String &p_message, const Color &p_color);
+	void _set_message(const String &p_message, const Color &p_color, const Variant &p_message_argument = Variant());
 	void _set_status(UpdateStatus p_status);
+	void _update_message();
 
-	VersionType _get_version_type(const String &p_string, int *r_index) const;
+	VersionType _get_version_type(const String &p_string, int *r_index = nullptr) const;
 	String _extract_sub_string(const String &p_line) const;
 
 protected:

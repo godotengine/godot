@@ -42,6 +42,10 @@ struct SceneData {
 	vec2 shadow_atlas_pixel_size;
 	vec2 directional_shadow_pixel_size;
 
+	float radiance_pixel_size;
+	float radiance_border_size;
+	vec2 reflection_atlas_border_size;
+
 	uint directional_light_count;
 	float dual_paraboloid_side;
 	float z_far;

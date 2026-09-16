@@ -17,7 +17,8 @@
 #include <sys/auxv.h>
 
 #define LA_HWCAP_LSX    (1<<4)
-static int png_has_lsx(void)
+static int
+png_has_lsx(void)
 {
     int flags = 0;
     int flag  = (int)getauxval(AT_HWCAP);

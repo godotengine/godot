@@ -169,6 +169,9 @@ struct hb_subset_plan_t
   // whether GDEF ItemVariationStore is retained
   mutable bool has_gdef_varstore;
 
+  // whether we're doing avar2 partial instancing
+  bool has_avar2;
+
 #define HB_SUBSET_PLAN_MEMBER(Type, Name) Type Name;
 #include "hb-subset-plan-member-list.hh"
 #undef HB_SUBSET_PLAN_MEMBER
@@ -236,6 +239,18 @@ struct hb_subset_plan_t
   glyphset_gsub () const
   {
     return &_glyphset_gsub;
+  }
+
+  /*
+   * Old-to-new glyph id mapping for GSUB glyphs, through the flat
+   * array; returns HB_MAP_VALUE_INVALID for glyphs not retained.
+   */
+  inline hb_codepoint_t
+  map_gsub_glyph (hb_codepoint_t old_gid) const
+  {
+    return old_gid < glyph_map_gsub_flat.length
+	 ? glyph_map_gsub_flat.arrayZ[old_gid]
+	 : HB_MAP_VALUE_INVALID;
   }
 
   /*
@@ -333,7 +348,7 @@ generate_varstore_inner_maps (const hb_set_t& varidx_set,
                               unsigned subtable_count,
                               hb_vector_t<hb_inc_bimap_t> &inner_maps /* OUT */);
 
-HB_INTERNAL void
+HB_INTERNAL bool
 normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan);
 
 HB_INTERNAL void

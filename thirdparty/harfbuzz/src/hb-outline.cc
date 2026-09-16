@@ -84,6 +84,15 @@ void hb_outline_t::replay (hb_draw_funcs_t *pen, void *pen_data) const
   }
 }
 
+void hb_outline_t::translate (float dx, float dy)
+{
+  for (auto &p : points)
+  {
+    p.x += dx;
+    p.y += dy;
+  }
+}
+
 void hb_outline_t::slant (float slant_xy)
 {
   for (auto &p : points)

@@ -30,6 +30,7 @@
 
 #include "joint_3d_gizmo_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/3d/physics/joints/cone_twist_joint_3d.h"
@@ -655,12 +656,12 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 				break;
 		}
 
-#define ADD_VTX(x, y, z)                                         \
-	{                                                            \
-		Vector3 v;                                               \
-		v[a1] = (x);                                             \
-		v[a2] = (y);                                             \
-		v[a3] = (z);                                             \
+#define ADD_VTX(x, y, z) \
+	{ \
+		Vector3 v; \
+		v[a1] = (x); \
+		v[a2] = (y); \
+		v[a3] = (z); \
 		r_points.push_back(p_offset.translated_local(v).origin); \
 	}
 

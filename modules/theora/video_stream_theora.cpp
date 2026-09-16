@@ -32,9 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/image.h"
+#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
-#include "thirdparty/misc/yuv2rgb.h"
+#include <thirdparty/misc/yuv2rgb.h>
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);
@@ -420,7 +421,16 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 			ogg_stream_clear(&to);
 		}
 		file.unref();
-		return;
+
+		vorbis_comment_clear(&vc);
+		vorbis_info_clear(&vi);
+		if (!ogg_stream_check(&vo)) {
+			ogg_stream_clear(&vo);
+		}
+
+		has_video = false;
+		has_audio = false;
+		ERR_FAIL_MSG("File '" + p_file + "' has no video stream.");
 	}
 
 	/* And now we have it all. Initialize decoders. */
@@ -798,7 +808,8 @@ Ref<Resource> ResourceFormatLoaderTheora::load(const String &p_path, const Strin
 		return Ref<Resource>();
 	}
 
-	VideoStreamTheora *stream = memnew(VideoStreamTheora);
+	Ref<VideoStreamTheora> stream;
+	stream.instantiate();
 	stream->set_file(p_path);
 
 	Ref<VideoStreamTheora> ogv_stream = Ref<VideoStreamTheora>(stream);

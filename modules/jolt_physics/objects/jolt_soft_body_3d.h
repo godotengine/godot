@@ -32,26 +32,30 @@
 
 #include "jolt_object_3d.h"
 
-#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_enums.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/SoftBody/SoftBodyCreationSettings.h"
-#include "Jolt/Physics/SoftBody/SoftBodySharedSettings.h"
+#include <Jolt/Physics/SoftBody/SoftBodyCreationSettings.h>
+#include <Jolt/Physics/SoftBody/SoftBodySharedSettings.h>
 
+class JoltArea3D;
 class JoltSpace3D;
+class PhysicsServer3DRenderingServerHandler;
 
 class JoltSoftBody3D final : public JoltObject3D {
 	HashSet<int> pinned_vertices;
-	LocalVector<RID> exceptions;
+
+	LocalVector<int> mesh_to_physics;
+	LocalVector<JoltArea3D *> areas;
 	LocalVector<Vector3> normals;
+	LocalVector<RID> exceptions;
 
 	RID mesh;
-	LocalVector<int> mesh_to_physics;
 
 	JPH::SoftBodyCreationSettings *jolt_settings = new JPH::SoftBodyCreationSettings();
 
-	float mass = 0.0f;
+	float mass = 1.0f;
 	float pressure = 0.0f;
 	float linear_damping = 0.01f;
 	float stiffness_coefficient = 0.5f;
@@ -68,6 +72,8 @@ class JoltSoftBody3D final : public JoltObject3D {
 	virtual void _add_to_space() override;
 
 	JPH::SoftBodySharedSettings *_create_shared_settings();
+
+	void _apply_environmental_forces(float p_step);
 
 	void _update_mass();
 	void _update_pressure();
@@ -86,6 +92,8 @@ class JoltSoftBody3D final : public JoltObject3D {
 	void _vertices_changed();
 	void _exceptions_changed();
 	void _motion_changed();
+	void _transform_changed();
+	void _areas_changed();
 
 public:
 	JoltSoftBody3D();
@@ -97,6 +105,9 @@ public:
 
 	const LocalVector<RID> &get_collision_exceptions() const { return exceptions; }
 
+	void add_area(JoltArea3D *p_area);
+	void remove_area(JoltArea3D *p_area);
+
 	virtual bool can_interact_with(const JoltBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltSoftBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltArea3D &p_other) const override;
@@ -104,6 +115,8 @@ public:
 	virtual bool reports_contacts() const override { return false; }
 
 	virtual Vector3 get_velocity_at_position(const Vector3 &p_position) const override;
+
+	virtual void pre_step(float p_step) override;
 
 	void set_mesh(const RID &p_mesh);
 
@@ -140,8 +153,8 @@ public:
 	float get_drag() const;
 	void set_drag(float p_drag);
 
-	Variant get_state(PhysicsServer3D::BodyState p_state) const;
-	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_value);
+	Variant get_state(PS3DE::BodyState p_state) const;
+	void set_state(PS3DE::BodyState p_state, const Variant &p_value);
 
 	Transform3D get_transform() const;
 	void set_transform(const Transform3D &p_transform);

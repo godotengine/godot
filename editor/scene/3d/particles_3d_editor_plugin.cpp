@@ -30,6 +30,8 @@
 
 #include "particles_3d_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/scene_tree_editor.h"

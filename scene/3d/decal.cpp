@@ -30,6 +30,10 @@
 
 #include "decal.h"
 
+#include "core/object/class_db.h"
+#include "core/os/os.h"
+#include "servers/rendering/rendering_server.h"
+
 void Decal::set_size(const Vector3 &p_size) {
 	size = p_size.maxf(0.001);
 	RS::get_singleton()->decal_set_size(decal, size);
@@ -58,7 +62,7 @@ void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
 	}
 #endif
 
-	RS::get_singleton()->decal_set_texture(decal, RS::DecalTexture(p_type), texture_rid);
+	RS::get_singleton()->decal_set_texture(decal, RSE::DecalTexture(p_type), texture_rid);
 	update_configuration_warnings();
 }
 
@@ -166,11 +170,17 @@ AABB Decal::get_aabb() const {
 	return aabb;
 }
 
+void Decal::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "sorting_offset") {
+		p_property.usage = PROPERTY_USAGE_DEFAULT;
+	}
+}
+
 PackedStringArray Decal::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
-		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile renderers."));
+	if (OS::get_singleton()->get_current_rendering_method() == "dummy") {
+		warnings.push_back(RTR("Decals are not available when using the dummy renderer."));
 		return warnings;
 	}
 
@@ -230,7 +240,7 @@ void Decal::_bind_methods() {
 
 	ADD_GROUP("Textures", "texture_");
 	// Only allow texture types that display correctly.
-	const String texture_hint = "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture";
+	const String texture_hint = "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture,-StreamedTexture2D";
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_ALBEDO);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_NORMAL);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_orm", PROPERTY_HINT_RESOURCE_TYPE, texture_hint), "set_texture", "get_texture", TEXTURE_ORM);

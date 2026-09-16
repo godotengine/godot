@@ -34,7 +34,6 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
-#include "servers/display/display_server.h"
 
 #import <AppKit/AppKit.h>
 
@@ -44,18 +43,14 @@
 #import <AVFoundation/AVFoundation.h>
 #endif
 
+struct TTSUtterance;
+
 @interface TTS_MacOS : NSObject <AVSpeechSynthesizerDelegate> {
-	// AVSpeechSynthesizer
 	bool speaking;
 	HashMap<id, int64_t> ids;
 
-	// NSSpeechSynthesizer
-	bool paused;
-	bool have_utterance;
-	int64_t last_utterance;
-
-	id synth; // NSSpeechSynthesizer or AVSpeechSynthesizer
-	List<DisplayServer::TTSUtterance> queue;
+	id synth;
+	List<TTSUtterance> queue;
 }
 
 - (void)pauseSpeaking;

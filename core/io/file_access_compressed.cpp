@@ -30,6 +30,8 @@
 
 #include "file_access_compressed.h"
 
+#include "core/math/math_funcs_binary.h"
+
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, uint32_t p_block_size) {
 	magic = p_magic.ascii().get_data();
 	magic = (magic + "    ").substr(0, 4);
@@ -320,7 +322,7 @@ bool FileAccessCompressed::store_buffer(const uint8_t *p_src, uint64_t p_length)
 		write_max = write_pos + (p_length);
 	}
 	if (write_max > write_buffer_size) {
-		write_buffer_size = next_power_of_2(write_max);
+		write_buffer_size = Math::next_power_of_2(write_max);
 		ERR_FAIL_COND_V(buffer.resize(write_buffer_size) != OK, false);
 		write_ptr = buffer.ptrw();
 	}

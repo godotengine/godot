@@ -30,6 +30,11 @@
 
 #include "editor_title_bar.h"
 
+#include "core/object/callable_mp.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
+#include "servers/display/display_server.h"
+
 void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 	if (!can_move) {
 		return;
@@ -54,7 +59,7 @@ void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 		if (w) {
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (mb->is_pressed()) {
-					if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WINDOW_DRAG)) {
+					if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_WINDOW_DRAG)) {
 						DisplayServer::get_singleton()->window_start_drag(w->get_window_id());
 					} else {
 						click_pos = DisplayServer::get_singleton()->mouse_get_position() - w->get_position();
@@ -82,6 +87,10 @@ void EditorTitleBar::gui_input(const Ref<InputEvent> &p_event) {
 
 void EditorTitleBar::set_center_control(Control *p_center_control) {
 	center_control = p_center_control;
+
+	if (center_control->get_parent() != this) {
+		center_control->reparent(this);
+	}
 }
 
 Control *EditorTitleBar::get_center_control() const {
@@ -150,8 +159,11 @@ void EditorTitleBar::_notification(int p_what) {
 				offset = CLAMP(offset, min_offset, max_offset);
 
 				fit_child_in_rect(prev, Rect2i(prev->get_position().x, 0, offset - prev->get_position().x, title_size.height));
-				fit_child_in_rect(base, Rect2i(offset, 0, c_size.width, title_size.height));
 				fit_child_in_rect(next, Rect2i(offset + c_size.width, 0, next->get_position().x + next->get_size().x - (offset + c_size.width), title_size.height));
+
+				int center = title_size.x / 2;
+				int width = MIN(center - prev->get_position().x, next->get_position().x + next->get_size().x - center) * 1.9;
+				fit_child_in_rect(base, Rect2i(center - width / 2, 0, width, title_size.height));
 			}
 		} break;
 	}

@@ -31,7 +31,7 @@
 #pragma once
 
 #include "scene/main/node.h"
-#include "servers/audio/audio_server.h"
+#include "servers/audio/audio_server_enums.h"
 
 struct AudioFrame;
 class AudioStream;
@@ -59,7 +59,6 @@ private:
 	Vector<AudioFrame> _get_volume_vector();
 
 protected:
-	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -109,8 +108,8 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-	AudioServer::PlaybackType get_playback_type() const;
-	void set_playback_type(AudioServer::PlaybackType p_playback_type);
+	AuSE::PlaybackType get_playback_type() const;
+	void set_playback_type(AuSE::PlaybackType p_playback_type);
 
 	AudioStreamPlayer();
 	~AudioStreamPlayer();

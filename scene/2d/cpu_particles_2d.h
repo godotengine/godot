@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/2d/node_2d.h"
+#include "scene/resources/curve.h"
 #include "scene/resources/gradient.h"
 
 class RandomNumberGenerator;
@@ -122,21 +123,14 @@ private:
 		}
 	};
 
-	struct SortAxis {
-		const Particle *particles = nullptr;
-		Vector2 axis;
-		bool operator()(int p_a, int p_b) const {
-			return axis.dot(particles[p_a].transform[2]) < axis.dot(particles[p_b].transform[2]);
-		}
-	};
-
 	//
 
 	bool one_shot = false;
 
 	double lifetime = 1.0;
 	double pre_process_time = 0.0;
-	double _requested_process_time = 0.0;
+	real_t _request_process_time = 0.0;
+	real_t _request_process_time_residual = 0.0;
 	real_t explosiveness_ratio = 0.0;
 	real_t randomness_ratio = 0.0;
 	double lifetime_randomness = 0.0;
@@ -178,7 +172,6 @@ private:
 	Vector<Vector2> emission_points;
 	Vector<Vector2> emission_normals;
 	Vector<Color> emission_colors;
-	int emission_point_count = 0;
 	real_t emission_ring_inner_radius = 0.8;
 	real_t emission_ring_radius = 1.0;
 
@@ -226,6 +219,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	void _restart_bind_compat_92089();
+	void _request_particles_process_bind_compat_109142(real_t p_time);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -273,7 +267,7 @@ public:
 #endif
 	uint32_t get_seed() const;
 
-	void request_particles_process(real_t p_requested_process_time);
+	void request_particles_process(real_t p_requested_process_time, real_t p_requested_process_time_residual = 0.);
 
 	///////////////////
 

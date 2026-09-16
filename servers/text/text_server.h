@@ -251,6 +251,7 @@ public:
 
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
+	virtual String get_short_name() const = 0;
 	virtual int64_t get_features() const = 0;
 
 	virtual void free_rid(const RID &p_rid) = 0;
@@ -261,6 +262,7 @@ public:
 	virtual String get_support_data_info() const = 0;
 	virtual bool save_support_data(const String &p_filename) const = 0;
 	virtual PackedByteArray get_support_data() const = 0;
+	virtual bool is_locale_using_support_data(const String &p_locale) const { return false; }
 
 	virtual bool is_locale_right_to_left(const String &p_locale) const = 0;
 
@@ -330,6 +332,14 @@ public:
 
 	virtual void font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) = 0;
 	virtual bool font_is_modulate_color_glyphs(const RID &p_font_rid) const = 0;
+
+	virtual int64_t font_get_palette_count(const RID &p_font_rid) const = 0;
+	virtual String font_get_palette_name(const RID &p_font_rid, int64_t p_index) const = 0;
+	virtual Vector<Color> font_get_palette_colors(const RID &p_font_rid, int64_t p_index) const = 0;
+	virtual void font_set_palette_custom_colors(const RID &p_font_rid, const Vector<Color> &p_colors) = 0;
+	virtual Vector<Color> font_get_palette_custom_colors(const RID &p_font_rid) const = 0;
+	virtual int64_t font_get_used_palette(const RID &p_font_rid) const = 0;
+	virtual void font_set_used_palette(const RID &p_font_rid, int64_t p_index) = 0;
 
 	virtual void font_set_hinting(const RID &p_font_rid, Hinting p_hinting) = 0;
 	virtual Hinting font_get_hinting(const RID &p_font_rid) const = 0;
@@ -506,6 +516,7 @@ public:
 	virtual int64_t shaped_get_run_count(const RID &p_shaped) const = 0;
 	virtual String shaped_get_run_text(const RID &p_shaped, int64_t p_index) const = 0;
 	virtual Vector2i shaped_get_run_range(const RID &p_shaped, int64_t p_index) const = 0;
+	virtual Vector2i shaped_get_run_glyph_range(const RID &p_shaped, int64_t p_index) const = 0;
 	virtual RID shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const = 0;
 	virtual int shaped_get_run_font_size(const RID &p_shaped, int64_t p_index) const = 0;
 	virtual String shaped_get_run_language(const RID &p_shaped, int64_t p_index) const = 0;

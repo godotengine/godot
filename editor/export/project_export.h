@@ -30,11 +30,13 @@
 
 #pragma once
 
+#include "core/templates/rb_set.h"
 #include "editor/export/editor_export_preset.h"
 #include "scene/gui/dialogs.h"
 
 class CheckBox;
 class CheckButton;
+class HSplitContainer;
 class EditorFileDialog;
 class EditorFileSystemDirectory;
 class EditorInspector;
@@ -72,6 +74,7 @@ public:
 class ProjectExportDialog : public ConfirmationDialog {
 	GDCLASS(ProjectExportDialog, ConfirmationDialog);
 
+	HSplitContainer *main_split = nullptr;
 	TabContainer *sections = nullptr;
 
 	MenuButton *add_preset = nullptr;
@@ -81,6 +84,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	VBoxContainer *settings_vb = nullptr;
 	LineEdit *name = nullptr;
+	LineEdit *options_filter = nullptr;
 	EditorPropertyPath *export_path = nullptr;
 	EditorInspector *parameters = nullptr;
 	CheckButton *runnable = nullptr;
@@ -88,7 +92,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	Label *empty_label = nullptr;
 
-	Button *button_export = nullptr;
 	bool updating = false;
 
 	RichTextLabel *result_dialog_log = nullptr;
@@ -131,14 +134,22 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 	ProjectExportTextureFormatError *export_texture_format_error = nullptr;
 	Label *export_error = nullptr;
+	Label *export_error2 = nullptr;
 	Label *export_warning = nullptr;
 	HBoxContainer *export_templates_error = nullptr;
+
+#ifndef ANDROID_ENABLED
+	HBoxContainer *android_sdk_error_container = nullptr;
+	LinkButton *setup_android_java_sdk = nullptr;
+	void _update_android_sdk_error_container();
+#endif
 
 	String default_filename;
 
 	bool exporting = false;
 
 	void _advanced_options_pressed();
+	void _options_filter_changed(const String &p_filter);
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
@@ -199,7 +210,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _export_pck_zip();
 	void _export_pck_zip_selected(const String &p_path);
 
-	void _validate_export_path(const String &p_path);
 	void _export_project();
 	void _export_project_to_path(const String &p_path);
 	void _export_all_dialog();
@@ -220,7 +230,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _script_encryption_key_visibility_changed(bool p_visible);
 	bool _validate_script_encryption_key(const String &p_key);
 
-	void _script_export_mode_changed(int p_mode);
+	void _script_export_mode_changed(EditorExportPreset::ScriptExportMode p_mode);
 
 	void _open_key_help_link();
 
@@ -229,6 +239,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void popup_export();

@@ -30,13 +30,13 @@
 
 #pragma once
 
+#include "core/object/object.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/variant/array.h"
-#include "servers/display/display_server.h"
 
 #ifdef SOWRAP_ENABLED
 #include "speechd-so_wrap.h"
@@ -44,11 +44,13 @@
 #include <libspeechd.h>
 #endif
 
+struct TTSUtterance;
+
 class TTS_Linux : public Object {
 	GDSOFTCLASS(TTS_Linux, Object);
 	_THREAD_SAFE_CLASS_
 
-	List<DisplayServer::TTSUtterance> queue;
+	List<TTSUtterance> queue;
 	SPDConnection *synth = nullptr;
 	bool speaking = false;
 	bool paused = false;

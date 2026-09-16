@@ -32,9 +32,9 @@
 
 #ifdef WEB_ENABLED
 
-#include "servers/xr/xr_controller_tracker.h"
-#include "servers/xr/xr_hand_tracker.h"
 #include "webxr_interface.h"
+
+#include "core/templates/rb_map.h"
 
 /**
 	The WebXR interface is a VR/AR interface that can be used on the web.
@@ -43,6 +43,8 @@
 namespace GLES3 {
 class TextureStorage;
 }
+
+class XRHandTracker;
 
 class WebXRInterfaceJS : public WebXRInterface {
 	GDCLASS(WebXRInterfaceJS, WebXRInterface);
@@ -129,10 +131,14 @@ public:
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name) override;
+#ifndef DISABLE_DEPRECATED
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+#endif
 	virtual bool pre_draw_viewport(RID p_render_target) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual RID get_color_texture() override;
 	virtual RID get_depth_texture() override;
 	virtual RID get_velocity_texture() override;

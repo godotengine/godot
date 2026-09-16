@@ -52,6 +52,13 @@ MeshInstance3D *GLTFDocumentExtensionConvertImporterMesh::convert_importer_mesh_
 	mesh_instance_node_3d->set_skin(p_importer_mesh_instance_3d->get_skin());
 	mesh_instance_node_3d->set_skeleton_path(p_importer_mesh_instance_3d->get_skeleton_path());
 	mesh_instance_node_3d->set_visible(p_importer_mesh_instance_3d->is_visible());
+	mesh_instance_node_3d->set_layer_mask(p_importer_mesh_instance_3d->get_layer_mask());
+	mesh_instance_node_3d->set_cast_shadows_setting(p_importer_mesh_instance_3d->get_cast_shadows_setting());
+	mesh_instance_node_3d->set_visibility_range_begin(p_importer_mesh_instance_3d->get_visibility_range_begin());
+	mesh_instance_node_3d->set_visibility_range_begin_margin(p_importer_mesh_instance_3d->get_visibility_range_begin_margin());
+	mesh_instance_node_3d->set_visibility_range_end(p_importer_mesh_instance_3d->get_visibility_range_end());
+	mesh_instance_node_3d->set_visibility_range_end_margin(p_importer_mesh_instance_3d->get_visibility_range_end_margin());
+	mesh_instance_node_3d->set_visibility_range_fade_mode(p_importer_mesh_instance_3d->get_visibility_range_fade_mode());
 	p_importer_mesh_instance_3d->replace_by(mesh_instance_node_3d);
 	_copy_meta(p_importer_mesh_instance_3d, mesh_instance_node_3d);
 	// Convert the mesh data in the mesh resource.

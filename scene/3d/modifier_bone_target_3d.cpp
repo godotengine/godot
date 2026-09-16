@@ -30,6 +30,10 @@
 
 #include "modifier_bone_target_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
+
 void ModifierBoneTarget3D::_validate_bone_names() {
 	// Prior bone name.
 	if (!bone_name.is_empty()) {
@@ -37,6 +41,16 @@ void ModifierBoneTarget3D::_validate_bone_names() {
 	} else if (bone != -1) {
 		set_bone(bone);
 	}
+}
+
+PackedStringArray ModifierBoneTarget3D::get_configuration_warnings() const {
+	PackedStringArray warnings = SkeletonModifier3D::get_configuration_warnings();
+
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+		warnings.push_back(RTR("ModifierBoneTarget3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
+	}
+
+	return warnings;
 }
 
 void ModifierBoneTarget3D::set_bone_name(const String &p_bone_name) {
@@ -56,7 +70,7 @@ void ModifierBoneTarget3D::set_bone(int p_bone) {
 	Skeleton3D *sk = get_skeleton();
 	if (sk) {
 		if (bone <= -1 || bone >= sk->get_bone_count()) {
-			WARN_PRINT("Bone index out of range!");
+			WARN_PRINT_ED("Bone index '" + itos(p_bone) + "' is out of range!");
 			bone = -1;
 		} else {
 			bone_name = sk->get_bone_name(bone);
@@ -104,4 +118,8 @@ void ModifierBoneTarget3D::_process_modification(double p_delta) {
 	}
 
 	set_transform(skeleton->get_bone_global_pose(bone));
+}
+
+ModifierBoneTarget3D::ModifierBoneTarget3D() {
+	set_physics_interpolation_mode(PHYSICS_INTERPOLATION_MODE_OFF);
 }

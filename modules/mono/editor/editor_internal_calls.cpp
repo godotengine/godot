@@ -30,18 +30,23 @@
 
 #include "editor_internal_calls.h"
 
-#include "../csharp_script.h"
 #include "../godotsharp_dirs.h"
 #include "../interop_types.h"
-#include "../utils/macos_utils.h"
 #include "../utils/path_utils.h"
 #include "code_completion.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "../csharp_script.h"
+#endif
+
+#ifdef MACOS_ENABLED
+#include "../utils/macos_utils.h"
+#endif
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/export/lipo.h"
 #include "editor/file_system/editor_paths.h"
@@ -50,6 +55,10 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
+
+#ifdef GD_MONO_HOT_RELOAD
+#include "core/object/callable_mp.h"
+#endif
 
 #ifdef UNIX_ENABLED
 #include <unistd.h> // access
@@ -142,9 +151,9 @@ bool godot_icall_Internal_IsAssembliesReloadingNeeded() {
 #endif
 }
 
-void godot_icall_Internal_ReloadAssemblies(bool p_soft_reload) {
+void godot_icall_Internal_ReloadAssemblies() {
 #ifdef GD_MONO_HOT_RELOAD
-	callable_mp(MonoBind::GodotSharp::get_singleton(), &MonoBind::GodotSharp::reload_assemblies).call_deferred(p_soft_reload);
+	callable_mp(MonoBind::GodotSharp::get_singleton(), &MonoBind::GodotSharp::reload_assemblies).call_deferred();
 #endif
 }
 
@@ -158,7 +167,7 @@ bool godot_icall_Internal_ScriptEditorEdit(Resource *p_resource, int32_t p_line,
 }
 
 void godot_icall_Internal_EditorNodeShowScriptScreen() {
-	EditorNode::get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+	ScriptEditor::get_singleton()->focus_editor();
 }
 
 void godot_icall_Internal_EditorRunPlay() {

@@ -84,11 +84,6 @@ public:
 					unbinds = ccu->get_unbinds();
 					base_callable = ccu->get_callable();
 				}
-
-				// The source object may already be bound, ignore it to prevent display of the source object.
-				if ((flags & CONNECT_APPEND_SOURCE_OBJECT) && (source == binds[0])) {
-					binds.remove_at(0);
-				}
 			} else {
 				base_callable = p_connection.callable;
 			}
@@ -166,7 +161,7 @@ private:
 
 	void _unbind_count_changed(double p_count);
 	void _add_bind();
-	void _remove_bind();
+	void _remove_bind(const String &p_bind);
 	void _advanced_pressed();
 	void _update_ok_enabled();
 	void _update_warning_label();
@@ -278,6 +273,8 @@ class ConnectionsDock : public VBoxContainer {
 	void _slot_menu_about_to_popup();
 	void _tree_gui_input(const Ref<InputEvent> &p_event);
 	void _close();
+
+	void _changed_callback();
 
 protected:
 	void _connect_pressed();

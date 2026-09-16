@@ -46,7 +46,7 @@ struct Coverage
 
   protected:
   union {
-  HBUINT16                      format;         /* Format identifier */
+  struct { HBUINT16 v; }        format;         /* Format identifier */
   CoverageFormat1_3<SmallTypes> format1;
   CoverageFormat2_4<SmallTypes> format2;
 #ifndef HB_NO_BEYOND_64K
@@ -55,7 +55,7 @@ struct Coverage
 #endif
   } u;
   public:
-  DEFINE_SIZE_UNION (2, format);
+  DEFINE_SIZE_UNION (2, format.v);
 
 #ifndef HB_OPTIMIZE_SIZE
   HB_ALWAYS_INLINE
@@ -63,15 +63,15 @@ struct Coverage
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
-    if (!u.format.sanitize (c)) return_trace (false);
+    if (!u.format.v.sanitize (c)) return_trace (false);
     hb_barrier ();
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return_trace (u.format1.sanitize (c));
-    case 2: return_trace (u.format2.sanitize (c));
+    case 1: hb_barrier (); return_trace (u.format1.sanitize (c));
+    case 2: hb_barrier (); return_trace (u.format2.sanitize (c));
 #ifndef HB_NO_BEYOND_64K
-    case 3: return_trace (u.format3.sanitize (c));
-    case 4: return_trace (u.format4.sanitize (c));
+    case 3: hb_barrier (); return_trace (u.format3.sanitize (c));
+    case 4: hb_barrier (); return_trace (u.format4.sanitize (c));
 #endif
     default:return_trace (true);
     }
@@ -86,12 +86,12 @@ struct Coverage
   unsigned int get (hb_codepoint_t k) const { return get_coverage (k); }
   unsigned int get_coverage (hb_codepoint_t glyph_id) const
   {
-    switch (u.format) {
-    case 1: return u.format1.get_coverage (glyph_id);
-    case 2: return u.format2.get_coverage (glyph_id);
+    switch (u.format.v) {
+    case 1: hb_barrier (); return u.format1.get_coverage (glyph_id);
+    case 2: hb_barrier (); return u.format2.get_coverage (glyph_id);
 #ifndef HB_NO_BEYOND_64K
-    case 3: return u.format3.get_coverage (glyph_id);
-    case 4: return u.format4.get_coverage (glyph_id);
+    case 3: hb_barrier (); return u.format3.get_coverage (glyph_id);
+    case 4: hb_barrier (); return u.format4.get_coverage (glyph_id);
 #endif
     default:return NOT_COVERED;
     }
@@ -111,14 +111,29 @@ struct Coverage
     return coverage;
   }
 
+  unsigned int get_coverage_binary (hb_codepoint_t glyph_id,
+				    hb_ot_layout_binary_cache_t *cache) const
+  {
+    unsigned coverage;
+    if (cache && cache->get (glyph_id, &coverage)) return coverage < cache->MAX_VALUE ? coverage : NOT_COVERED;
+    coverage = get_coverage (glyph_id);
+    if (cache) {
+      if (coverage == NOT_COVERED)
+	cache->set_unchecked (glyph_id, cache->MAX_VALUE);
+      else
+	cache->set_unchecked (glyph_id, 0);
+    }
+    return coverage;
+  }
+
   unsigned get_population () const
   {
-    switch (u.format) {
-    case 1: return u.format1.get_population ();
-    case 2: return u.format2.get_population ();
+    switch (u.format.v) {
+    case 1: hb_barrier (); return u.format1.get_population ();
+    case 2: hb_barrier (); return u.format2.get_population ();
 #ifndef HB_NO_BEYOND_64K
-    case 3: return u.format3.get_population ();
-    case 4: return u.format4.get_population ();
+    case 3: hb_barrier (); return u.format3.get_population ();
+    case 4: hb_barrier (); return u.format4.get_population ();
 #endif
     default:return NOT_COVERED;
     }
@@ -145,11 +160,11 @@ struct Coverage
       last = g;
       if (g > max) max = g;
     }
-    u.format = !unsorted && count <= num_ranges * 3 ? 1 : 2;
+    u.format.v = !unsorted && count <= num_ranges * 3 ? 1 : 2;
 
 #ifndef HB_NO_BEYOND_64K
     if (max > 0xFFFFu)
-      u.format += 2;
+      u.format.v += 2;
     if (unlikely (max > 0xFFFFFFu))
 #else
     if (unlikely (max > 0xFFFFu))
@@ -159,13 +174,13 @@ struct Coverage
       return_trace (false);
     }
 
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return_trace (u.format1.serialize (c, glyphs));
-    case 2: return_trace (u.format2.serialize (c, glyphs));
+    case 1: hb_barrier (); return_trace (u.format1.serialize (c, glyphs));
+    case 2: hb_barrier (); return_trace (u.format2.serialize (c, glyphs));
 #ifndef HB_NO_BEYOND_64K
-    case 3: return_trace (u.format3.serialize (c, glyphs));
-    case 4: return_trace (u.format4.serialize (c, glyphs));
+    case 3: hb_barrier (); return_trace (u.format3.serialize (c, glyphs));
+    case 4: hb_barrier (); return_trace (u.format4.serialize (c, glyphs));
 #endif
     default:return_trace (false);
     }
@@ -174,10 +189,13 @@ struct Coverage
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
+    const hb_subset_plan_t *plan = c->plan;
     auto it =
     + iter ()
-    | hb_take (c->plan->source->get_num_glyphs ())
-    | hb_map_retains_sorting (c->plan->glyph_map_gsub)
+    | hb_take (plan->source->get_num_glyphs ())
+    | hb_map_retains_sorting ([plan] (hb_codepoint_t g) {
+	return plan->map_gsub_glyph (g);
+      })
     | hb_filter ([] (hb_codepoint_t glyph) { return glyph != HB_MAP_VALUE_INVALID; })
     ;
 
@@ -190,26 +208,26 @@ struct Coverage
 
   bool intersects (const hb_set_t *glyphs) const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return u.format1.intersects (glyphs);
-    case 2: return u.format2.intersects (glyphs);
+    case 1: hb_barrier (); return u.format1.intersects (glyphs);
+    case 2: hb_barrier (); return u.format2.intersects (glyphs);
 #ifndef HB_NO_BEYOND_64K
-    case 3: return u.format3.intersects (glyphs);
-    case 4: return u.format4.intersects (glyphs);
+    case 3: hb_barrier (); return u.format3.intersects (glyphs);
+    case 4: hb_barrier (); return u.format4.intersects (glyphs);
 #endif
     default:return false;
     }
   }
   bool intersects_coverage (const hb_set_t *glyphs, unsigned int index) const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return u.format1.intersects_coverage (glyphs, index);
-    case 2: return u.format2.intersects_coverage (glyphs, index);
+    case 1: hb_barrier (); return u.format1.intersects_coverage (glyphs, index);
+    case 2: hb_barrier (); return u.format2.intersects_coverage (glyphs, index);
 #ifndef HB_NO_BEYOND_64K
-    case 3: return u.format3.intersects_coverage (glyphs, index);
-    case 4: return u.format4.intersects_coverage (glyphs, index);
+    case 3: hb_barrier (); return u.format3.intersects_coverage (glyphs, index);
+    case 4: hb_barrier (); return u.format4.intersects_coverage (glyphs, index);
 #endif
     default:return false;
     }
@@ -217,7 +235,7 @@ struct Coverage
 
   unsigned cost () const
   {
-    switch (u.format) {
+    switch (u.format.v) {
     case 1: hb_barrier (); return u.format1.cost ();
     case 2: hb_barrier (); return u.format2.cost ();
 #ifndef HB_NO_BEYOND_64K
@@ -233,13 +251,13 @@ struct Coverage
   template <typename set_t>
   bool collect_coverage (set_t *glyphs) const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return u.format1.collect_coverage (glyphs);
-    case 2: return u.format2.collect_coverage (glyphs);
+    case 1: hb_barrier (); return u.format1.collect_coverage (glyphs);
+    case 2: hb_barrier (); return u.format2.collect_coverage (glyphs);
 #ifndef HB_NO_BEYOND_64K
-    case 3: return u.format3.collect_coverage (glyphs);
-    case 4: return u.format4.collect_coverage (glyphs);
+    case 3: hb_barrier (); return u.format3.collect_coverage (glyphs);
+    case 4: hb_barrier (); return u.format4.collect_coverage (glyphs);
 #endif
     default:return false;
     }
@@ -249,13 +267,13 @@ struct Coverage
 	    hb_requires (hb_is_sink_of (IterableOut, hb_codepoint_t))>
   void intersect_set (const hb_set_t &glyphs, IterableOut&& intersect_glyphs) const
   {
-    switch (u.format)
+    switch (u.format.v)
     {
-    case 1: return u.format1.intersect_set (glyphs, intersect_glyphs);
-    case 2: return u.format2.intersect_set (glyphs, intersect_glyphs);
+    case 1: hb_barrier (); return u.format1.intersect_set (glyphs, intersect_glyphs);
+    case 2: hb_barrier (); return u.format2.intersect_set (glyphs, intersect_glyphs);
 #ifndef HB_NO_BEYOND_64K
-    case 3: return u.format3.intersect_set (glyphs, intersect_glyphs);
-    case 4: return u.format4.intersect_set (glyphs, intersect_glyphs);
+    case 3: hb_barrier (); return u.format3.intersect_set (glyphs, intersect_glyphs);
+    case 4: hb_barrier (); return u.format4.intersect_set (glyphs, intersect_glyphs);
 #endif
     default:return ;
     }
@@ -267,14 +285,14 @@ struct Coverage
     iter_t (const Coverage &c_ = Null (Coverage))
     {
       hb_memset (this, 0, sizeof (*this));
-      format = c_.u.format;
+      format = c_.u.format.v;
       switch (format)
       {
-      case 1: u.format1.init (c_.u.format1); return;
-      case 2: u.format2.init (c_.u.format2); return;
+      case 1: hb_barrier (); u.format1.init (c_.u.format1); return;
+      case 2: hb_barrier (); u.format2.init (c_.u.format2); return;
 #ifndef HB_NO_BEYOND_64K
-      case 3: u.format3.init (c_.u.format3); return;
-      case 4: u.format4.init (c_.u.format4); return;
+      case 3: hb_barrier (); u.format3.init (c_.u.format3); return;
+      case 4: hb_barrier (); u.format4.init (c_.u.format4); return;
 #endif
       default:                               return;
       }
@@ -283,11 +301,11 @@ struct Coverage
     {
       switch (format)
       {
-      case 1: return u.format1.__more__ ();
-      case 2: return u.format2.__more__ ();
+      case 1: hb_barrier (); return u.format1.__more__ ();
+      case 2: hb_barrier (); return u.format2.__more__ ();
 #ifndef HB_NO_BEYOND_64K
-      case 3: return u.format3.__more__ ();
-      case 4: return u.format4.__more__ ();
+      case 3: hb_barrier (); return u.format3.__more__ ();
+      case 4: hb_barrier (); return u.format4.__more__ ();
 #endif
       default:return false;
       }
@@ -296,11 +314,11 @@ struct Coverage
     {
       switch (format)
       {
-      case 1: u.format1.__next__ (); break;
-      case 2: u.format2.__next__ (); break;
+      case 1: hb_barrier (); u.format1.__next__ (); break;
+      case 2: hb_barrier (); u.format2.__next__ (); break;
 #ifndef HB_NO_BEYOND_64K
-      case 3: u.format3.__next__ (); break;
-      case 4: u.format4.__next__ (); break;
+      case 3: hb_barrier (); u.format3.__next__ (); break;
+      case 4: hb_barrier (); u.format4.__next__ (); break;
 #endif
       default:                   break;
       }
@@ -312,11 +330,11 @@ struct Coverage
     {
       switch (format)
       {
-      case 1: return u.format1.get_glyph ();
-      case 2: return u.format2.get_glyph ();
+      case 1: hb_barrier (); return u.format1.get_glyph ();
+      case 2: hb_barrier (); return u.format2.get_glyph ();
 #ifndef HB_NO_BEYOND_64K
-      case 3: return u.format3.get_glyph ();
-      case 4: return u.format4.get_glyph ();
+      case 3: hb_barrier (); return u.format3.get_glyph ();
+      case 4: hb_barrier (); return u.format4.get_glyph ();
 #endif
       default:return 0;
       }
@@ -326,11 +344,11 @@ struct Coverage
       if (unlikely (format != o.format)) return true;
       switch (format)
       {
-      case 1: return u.format1 != o.u.format1;
-      case 2: return u.format2 != o.u.format2;
+      case 1: hb_barrier (); return u.format1 != o.u.format1;
+      case 2: hb_barrier (); return u.format2 != o.u.format2;
 #ifndef HB_NO_BEYOND_64K
-      case 3: return u.format3 != o.u.format3;
-      case 4: return u.format4 != o.u.format4;
+      case 3: hb_barrier (); return u.format3 != o.u.format3;
+      case 4: hb_barrier (); return u.format4 != o.u.format4;
 #endif
       default:return false;
       }
@@ -341,11 +359,11 @@ struct Coverage
       it.format = format;
       switch (format)
       {
-      case 1: it.u.format1 = u.format1.__end__ (); break;
-      case 2: it.u.format2 = u.format2.__end__ (); break;
+      case 1: hb_barrier (); it.u.format1 = u.format1.__end__ (); break;
+      case 2: hb_barrier (); it.u.format2 = u.format2.__end__ (); break;
 #ifndef HB_NO_BEYOND_64K
-      case 3: it.u.format3 = u.format3.__end__ (); break;
-      case 4: it.u.format4 = u.format4.__end__ (); break;
+      case 3: hb_barrier (); it.u.format3 = u.format3.__end__ (); break;
+      case 4: hb_barrier (); it.u.format4 = u.format4.__end__ (); break;
 #endif
       default: break;
       }

@@ -31,6 +31,8 @@
 #include "particles_2d_editor_plugin.h"
 
 #include "core/io/image_loader.h"
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -39,7 +41,6 @@
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/margin_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/spin_box.h"
@@ -341,12 +342,13 @@ void Particles2DEditorPlugin::_selection_changed() {
 	}
 
 	// Turn gizmos on for nodes that are newly selected.
-	HashSet<const Node *> nodes_in_current_selection;
+	HashSet<ObjectID> nodes_in_current_selection;
 	for (Node *node : current_selection) {
-		nodes_in_current_selection.insert(node);
-		if (!selected_particles.has(node)) {
+		ObjectID nid = node->get_instance_id();
+		nodes_in_current_selection.insert(nid);
+		if (!selected_particles.has(nid)) {
 			_set_show_gizmos(node, true);
-			selected_particles.insert(node);
+			selected_particles.insert(nid);
 		}
 	}
 
@@ -358,21 +360,24 @@ void Particles2DEditorPlugin::_selection_changed() {
 	direction_img_path_line_edit->set_text("");
 
 	// Turn gizmos off for nodes that are no longer selected.
-	LocalVector<Node *> to_erase;
-	for (Node *node : selected_particles) {
-		if (!nodes_in_current_selection.has(node)) {
-			_set_show_gizmos(node, false);
-			to_erase.push_back(node);
+	LocalVector<ObjectID> to_erase;
+	for (const ObjectID &nid : selected_particles) {
+		if (!nodes_in_current_selection.has(nid)) {
+			Node *node = ObjectDB::get_instance<Node>(nid);
+			if (node) {
+				_set_show_gizmos(node, false);
+			}
+			to_erase.push_back(nid);
 		}
 	}
 
-	for (Node *node : to_erase) {
-		selected_particles.erase(node);
+	for (const ObjectID &nid : to_erase) {
+		selected_particles.erase(nid);
 	}
 }
 
 void Particles2DEditorPlugin::_node_removed(Node *p_node) {
-	if (selected_particles.erase(p_node)) {
+	if (p_node && selected_particles.erase(p_node->get_instance_id())) {
 		_set_show_gizmos(p_node, false);
 	}
 }

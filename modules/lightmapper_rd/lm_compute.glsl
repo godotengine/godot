@@ -14,6 +14,8 @@ pack_coeffs = "#define MODE_PACK_L1_COEFFS";
 
 #VERSION_DEFINES
 
+#define M_PI 3.14159265359
+
 #extension GL_EXT_samplerless_texture_functions : enable
 
 // One 2D local group focusing in one layer at a time, though all
@@ -30,6 +32,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #endif
 
+#include "lm_area_lights_inc.glsl"
 #include "lm_common_inc.glsl"
 
 #ifdef MODE_LIGHT_PROBES
@@ -64,6 +67,10 @@ layout(rgba16f, set = 1, binding = 4) uniform restrict image2DArray accum_light;
 layout(rgba8, set = 1, binding = 5) uniform restrict writeonly image2DArray shadowmask;
 #elif defined(MODE_BOUNCE_LIGHT)
 layout(set = 1, binding = 5) uniform texture2D environment;
+#endif
+
+#if defined(MODE_DIRECT_LIGHT) || defined(MODE_BOUNCE_LIGHT) || defined(MODE_LIGHT_PROBES)
+layout(set = 1, binding = 6) uniform texture2D area_light_atlas;
 #endif
 
 #if defined(MODE_DILATE) || defined(MODE_DENOISE) || defined(MODE_PACK_L1_COEFFS)
@@ -435,17 +442,61 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	float dist;
 	float attenuation;
 	float soft_shadowing_disk_size;
+	vec3 light_texture_color = vec3(1.0);
+	vec3 shadow_dir;
 	Light light_data = lights.data[p_light_index];
 	if (light_data.type == LIGHT_TYPE_DIRECTIONAL) {
 		vec3 light_vec = light_data.direction;
 		light_pos = p_position - light_vec * length(bake_params.world_size);
 		r_light_dir = normalize(light_pos - p_position);
+		shadow_dir = r_light_dir;
 		dist = length(bake_params.world_size);
 		attenuation = 1.0;
+		attenuation *= max(0.0, dot(p_normal, r_light_dir));
 		soft_shadowing_disk_size = light_data.size;
+	} else if (light_data.type == LIGHT_TYPE_AREA) {
+		r_light_dir = vec3(0.0); // has to be initialized!
+		if (dot(light_data.direction, p_position - light_data.position) <= 0) {
+			return;
+		}
+		vec3 area_width = light_data.area_width.xyz;
+		vec3 area_height = light_data.area_height.xyz;
+		vec3 h_area_width = area_width / 2.0;
+		vec3 h_area_height = area_height / 2.0;
+		vec3 area_width_norm = normalize(area_width);
+		vec3 area_height_norm = normalize(area_height);
+		float a_half_len = length(area_width) / 2.0;
+		float b_half_len = length(area_height) / 2.0;
+
+		vec3 points[4];
+		points[0] = light_data.position - h_area_width - h_area_height - p_position;
+		points[1] = light_data.position + h_area_width - h_area_height - p_position;
+		points[2] = light_data.position + h_area_width + h_area_height - p_position;
+		points[3] = light_data.position - h_area_width + h_area_height - p_position;
+
+		float ltc_diffuse;
+		ltc_evaluate_diff(p_normal, points, light_data.area_texture_rect, light_data.cos_spot_angle, area_light_atlas, area_light_atlas_sampler, ltc_diffuse, light_texture_color);
+
+		vec3 light_to_vert = p_position - light_data.position;
+		vec3 pos_local_to_light = vec3(dot(light_to_vert, area_width_norm), dot(light_to_vert, area_height_norm), dot(light_to_vert, -light_data.direction)); // p_position in LIGHT SPACE
+
+		vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
+		dist = max(0.0001, distance(closest_point_local_to_light, pos_local_to_light));
+		if (dist > light_data.range) {
+			return;
+		}
+		// set light pos to closest point
+		light_pos = light_data.position;
+		vec3 closest_point = light_data.position + closest_point_local_to_light.x * area_width_norm + closest_point_local_to_light.y * area_height_norm;
+		r_light_dir = normalize(closest_point - p_position);
+		shadow_dir = normalize(light_pos - p_position);
+		attenuation = get_omni_attenuation(dist, 1.0 / light_data.range, light_data.attenuation) * dist * dist; // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+		attenuation *= ltc_diffuse;
+		soft_shadowing_disk_size = light_data.size / dist;
 	} else {
 		light_pos = light_data.position;
 		r_light_dir = normalize(light_pos - p_position);
+		shadow_dir = r_light_dir;
 		dist = distance(p_position, light_pos);
 		if (dist > light_data.range) {
 			return;
@@ -468,10 +519,10 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
 			attenuation *= 1.0 - pow(spot_rim, light_data.inv_spot_attenuation);
 		}
+		attenuation *= max(0.0, dot(p_normal, r_light_dir));
 	}
 
-	attenuation *= max(0.0, dot(p_normal, r_light_dir));
-	if (attenuation <= 0.0001) {
+	if (attenuation * light_data.energy <= 0.0001) {
 		return;
 	}
 
@@ -491,7 +542,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		vec3 bitan = normalize(cross(p_normal, tangent));
 
 		// Setup light tangent pass to calculate samples over disk aligned towards the light
-		vec3 light_to_point = -r_light_dir;
+		vec3 light_to_point = -shadow_dir;
 		vec3 light_aux = light_to_point.y < 0.777 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
 		vec3 light_to_point_tan = normalize(cross(light_to_point, light_aux));
 		vec3 light_to_point_bitan = normalize(cross(light_to_point, light_to_point_tan));
@@ -533,7 +584,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					vec2 light_disk_sample = get_vogel_disk(vogel_index, a, shadowing_ray_count_sqrt) * soft_shadowing_disk_size * light_data.shadow_blur;
 					vec3 light_disk_to_point = normalize(light_to_point + light_disk_sample.x * light_to_point_tan + light_disk_sample.y * light_to_point_bitan);
 					float sample_penumbra = 0.0;
-					vec3 sample_penumbra_color = light_data.color.rgb;
+					vec3 sample_penumbra_color = light_data.color.rgb * light_texture_color;
 					bool sample_did_hit = false;
 
 					for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
@@ -560,7 +611,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 								sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
 								sample_penumbra *= 1.0 - hit_albedo.a;
 							}
-							origin = hit_position + r_light_dir * bake_params.bias;
+							origin = hit_position + shadow_dir * bake_params.bias;
 
 							if (sample_penumbra - EPSILON <= 0) {
 								break;
@@ -575,7 +626,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 
 			} else { // No soft shadows (size == 0).
 				float sample_penumbra = 0.0;
-				vec3 sample_penumbra_color = light_data.color.rgb;
+				vec3 sample_penumbra_color = light_data.color.rgb * light_texture_color;
 				bool sample_did_hit = false;
 				for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
 					vec4 hit_albedo = vec4(1.0);
@@ -598,7 +649,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 							sample_penumbra_color = mix(sample_penumbra_color, sample_penumbra_color * hit_albedo.rgb, hit_albedo.a);
 							sample_penumbra *= 1.0 - hit_albedo.a;
 						}
-						origin = hit_position + r_light_dir * bake_params.bias;
+						origin = hit_position + shadow_dir * bake_params.bias;
 
 						if (sample_penumbra - EPSILON <= 0) {
 							break;
@@ -617,11 +668,11 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 	} else { // No soft shadows and anti-aliasing (disabled via parameter).
 		bool did_hit = false;
 		penumbra = 0.0;
-		penumbra_color = light_data.color.rgb;
+		penumbra_color = light_data.color.rgb * light_texture_color;
 		for (uint iter = 0; iter < bake_params.transparency_rays; iter++) {
 			vec4 hit_albedo = vec4(1.0);
 			vec3 hit_position;
-			uint ret = trace_ray_closest_hit_triangle_albedo_alpha(p_position + r_light_dir * bake_params.bias, light_pos, hit_albedo, hit_position);
+			uint ret = trace_ray_closest_hit_triangle_albedo_alpha(p_position + shadow_dir * bake_params.bias, light_pos, hit_albedo, hit_position);
 			if (ret == RAY_MISS) {
 				if (!did_hit) {
 					penumbra = 1.0;
@@ -639,7 +690,7 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 					penumbra *= 1.0 - hit_albedo.a;
 				}
 
-				p_position = hit_position + r_light_dir * bake_params.bias;
+				p_position = hit_position + shadow_dir * bake_params.bias;
 
 				if (penumbra - EPSILON <= 0) {
 					break;
@@ -925,7 +976,7 @@ void main() {
 	imageStore(shadowmask, ivec3(atlas_pos, params.atlas_slice), vec4(shadowmask_value, shadowmask_value, shadowmask_value, 1.0));
 #endif
 
-#endif
+#endif // MODE_DIRECT_LIGHT
 
 #ifdef MODE_BOUNCE_LIGHT
 

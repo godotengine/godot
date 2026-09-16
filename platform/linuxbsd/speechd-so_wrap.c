@@ -80,7 +80,7 @@
 #define spd_execute_command_wo_mutex spd_execute_command_wo_mutex_dylibloader_orig_speechd
 #define spd_send_data spd_send_data_dylibloader_orig_speechd
 #define spd_send_data_wo_mutex spd_send_data_wo_mutex_dylibloader_orig_speechd
-#include "thirdparty/linuxbsd_headers/speechd/libspeechd.h"
+#include <thirdparty/linuxbsd_headers/speechd/libspeechd.h>
 #undef SPDConnectionAddress__free
 #undef spd_get_default_address
 #undef spd_open

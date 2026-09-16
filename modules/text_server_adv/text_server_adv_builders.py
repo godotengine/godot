@@ -16,6 +16,6 @@ def make_icu_data(target, source, env):
 
 extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = {len(buffer)};
 extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {{
-	{methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};
 """)

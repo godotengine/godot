@@ -111,6 +111,9 @@ public:
 	/// Get axis and angle that represents this quaternion, outAngle will always be in the range \f$[0, \pi]\f$
 	JPH_INLINE void				GetAxisAngle(Vec3 &outAxis, float &outAngle) const;
 
+	/// Calculate angular velocity given that this quaternion represents the rotation that is reached after inDeltaTime when starting from identity rotation
+	JPH_INLINE Vec3				GetAngularVelocity(float inDeltaTime) const;
+
 	/// Create quaternion that rotates a vector from the direction of inFrom to the direction of inTo along the shortest path
 	/// @see https://www.euclideanspace.com/maths/algebra/vectors/angleBetween/index.htm
 	JPH_INLINE static Quat		sFromTo(Vec3Arg inFrom, Vec3Arg inTo);
@@ -261,7 +264,7 @@ public:
 	Vec4						mValue;
 };
 
-static_assert(std::is_trivial<Quat>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<Quat>() && std::is_trivially_copyable<Quat>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

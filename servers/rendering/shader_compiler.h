@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/pair.h"
-#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/shader_language.h"
 
 class ShaderCompiler {
@@ -40,6 +40,11 @@ public:
 		STAGE_VERTEX,
 		STAGE_FRAGMENT,
 		STAGE_COMPUTE,
+		STAGE_RAYGEN,
+		STAGE_ANY_HIT,
+		STAGE_CLOSEST_HIT,
+		STAGE_MISS,
+		STAGE_INTERSECTION,
 		STAGE_MAX
 	};
 
@@ -90,6 +95,7 @@ public:
 	struct DefaultIdentifierActions {
 		HashMap<StringName, String> renames;
 		HashMap<StringName, String> render_mode_defines;
+		HashMap<StringName, String> stencil_mode_defines;
 		HashMap<StringName, String> usage_defines;
 		HashMap<StringName, String> custom_samplers;
 		ShaderLanguage::TextureFilter default_filter = ShaderLanguage::TextureFilter::FILTER_NEAREST;
@@ -121,6 +127,7 @@ private:
 	HashSet<StringName> used_name_defines;
 	HashSet<StringName> used_flag_pointers;
 	HashSet<StringName> used_rmode_defines;
+	HashSet<StringName> used_smode_defines;
 	HashSet<StringName> internal_functions;
 	HashSet<StringName> fragment_varyings;
 
@@ -129,7 +136,7 @@ private:
 	static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_name);
 
 public:
-	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
+	Error compile(RSE::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
 
 	void initialize(DefaultIdentifierActions p_actions);
 	ShaderCompiler();

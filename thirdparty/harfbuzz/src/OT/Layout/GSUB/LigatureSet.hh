@@ -54,6 +54,14 @@ struct LigatureSet
     ;
   }
 
+  void depend (hb_depend_context_t *c, hb_codepoint_t first) const
+  {
+    + hb_iter (ligature)
+    | hb_map (hb_add (this))
+    | hb_apply ([&] (const Ligature<Types> &_) { _.depend (c, first); })
+    ;
+  }
+
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
     + hb_iter (ligature)
@@ -105,7 +113,7 @@ struct LigatureSet
      *
      * This is replicated in ChainRuleSet and RuleSet. */
 
-    auto &skippy_iter = c->iter_input;
+    auto &skippy_iter = c->iter_context;
     skippy_iter.reset (c->buffer->idx);
     skippy_iter.set_match_func (match_always, nullptr);
     skippy_iter.set_glyph_data ((HBUINT16 *) nullptr);

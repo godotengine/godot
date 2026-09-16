@@ -208,6 +208,7 @@ static void splitPoints(unsigned int* destination, unsigned int* orderx, unsigne
 		partitionPoints(axis, temp, sides, split, count);
 	}
 
+	// recursion depth is logarithmic and bounded as we always split in approximately half
 	splitPoints(destination, orderx, ordery, orderz, keys, split, scratch, cluster_size);
 	splitPoints(destination + split, orderx + split, ordery + split, orderz + split, keys, count - split, scratch, cluster_size);
 }

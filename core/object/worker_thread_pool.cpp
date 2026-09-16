@@ -30,6 +30,8 @@
 
 #include "worker_thread_pool.h"
 
+#include "core/object/class_db.h"
+#include "core/object/message_queue.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/os/safe_binary_mutex.h"
@@ -670,9 +672,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 		group->done_semaphore.post();
 		group->tasks_used = 0;
 		p_tasks = 0;
-		if (p_template_userdata) {
-			memdelete(p_template_userdata);
-		}
+		memdelete(p_template_userdata);
 
 	} else {
 		group->tasks_used = p_tasks;

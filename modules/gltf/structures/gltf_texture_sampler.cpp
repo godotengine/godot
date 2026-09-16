@@ -30,6 +30,8 @@
 
 #include "gltf_texture_sampler.h"
 
+#include "core/object/class_db.h"
+
 void GLTFTextureSampler::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mag_filter"), &GLTFTextureSampler::get_mag_filter);
 	ClassDB::bind_method(D_METHOD("set_mag_filter", "filter_mode"), &GLTFTextureSampler::set_mag_filter);

@@ -30,6 +30,8 @@
 
 #include "uds_server.h"
 
+#include "core/object/class_db.h"
+
 void UDSServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("listen", "path"), &UDSServer::listen);
 	ClassDB::bind_method(D_METHOD("take_connection"), &UDSServer::take_connection);

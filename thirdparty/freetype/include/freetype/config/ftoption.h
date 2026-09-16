@@ -4,7 +4,7 @@
  *
  *   User-selectable configuration macros (specification only).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -759,7 +759,13 @@ FT_BEGIN_HEADER
   /**************************************************************************
    *
    * Define `TT_CONFIG_OPTION_BDF` if you want to include support for an
-   * embedded 'BDF~' table within SFNT-based bitmap formats.
+   * embedded 'BDF~' table within an SFNT-based `.otb` font file.  This table
+   * is an extension used by X11 to preserve BDF properties after conversion
+   * to SFNT containers.  See
+   *
+   *   https://fontforge.org/docs/techref/non-standard.html#non-standard-bdf
+   *
+   * for more details.
    */
 #define TT_CONFIG_OPTION_BDF
 

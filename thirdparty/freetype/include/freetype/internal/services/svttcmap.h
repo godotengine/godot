@@ -4,7 +4,7 @@
  *
  *   The FreeType TrueType/sfnt cmap extra information service.
  *
- * Copyright (C) 2003-2025 by
+ * Copyright (C) 2003-2026 by
  * Masatake YAMATO, Redhat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *

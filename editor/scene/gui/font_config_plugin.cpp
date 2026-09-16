@@ -30,6 +30,8 @@
 
 #include "font_config_plugin.h"
 
+#include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "core/string/translation_server.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/settings/editor_settings.h"
@@ -711,7 +713,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 		for (int i = 0; i < FGRP_MAX; i++) {
 			if (have_sub[i]) {
-				menu->add_submenu_node_item(TTRGET(group_names[i]), menu_sub[i]);
+				menu->add_submenu_node_item(TTR(group_names[i]), menu_sub[i]);
 			}
 		}
 
@@ -945,8 +947,6 @@ void FontPreview::_notification(int p_what) {
 		} break;
 	}
 }
-
-void FontPreview::_bind_methods() {}
 
 Size2 FontPreview::get_minimum_size() const {
 	return Vector2(64, 64) * EDSCALE;

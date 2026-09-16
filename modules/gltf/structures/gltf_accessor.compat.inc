@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "gltf_accessor.h"
+
+#include "core/object/class_db.h"
+
 // 32-bit versions for compatibility.
 
 GLTFBufferViewIndex GLTFAccessor::_get_buffer_view_bind_compat_106220() {

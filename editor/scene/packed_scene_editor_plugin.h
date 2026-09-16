@@ -34,6 +34,8 @@
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 
+class PackedScene;
+
 class PackedSceneEditor : public VBoxContainer {
 	GDCLASS(PackedSceneEditor, VBoxContainer);
 

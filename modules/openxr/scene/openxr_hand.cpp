@@ -33,6 +33,7 @@
 #include "../extensions/openxr_hand_tracking_extension.h"
 #include "../openxr_api.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/skeleton_3d.h"
 #include "servers/xr/xr_server.h"
 

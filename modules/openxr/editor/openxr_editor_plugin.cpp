@@ -31,11 +31,12 @@
 #include "openxr_editor_plugin.h"
 
 #include "../action_map/openxr_action_map.h"
+#include "../extensions/spatial_container/openxr_spatial_container_state.h"
 #include "../openxr_api.h"
 
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
-#include "editor/settings/editor_command_palette.h"
+
 #include "platform/android/export/export_plugin.h"
 
 #include <openxr/openxr.h>
@@ -54,6 +55,10 @@ bool OpenXRExportPlugin::is_openxr_mode() const {
 	int xr_mode_index = get_option("xr_features/xr_mode");
 
 	return openxr_enabled && xr_mode_index == XR_MODE_OPENXR;
+}
+
+bool OpenXRExportPlugin::is_spatial_container_enabled() const {
+	return (bool)get_export_platform()->get_project_setting(get_export_preset(), "xr/openxr/extensions/spatial_container/enabled");
 }
 
 String OpenXRExportPlugin::_get_export_option_warning(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const {
@@ -123,9 +128,22 @@ String OpenXRExportPlugin::get_android_manifest_element_contents(const Ref<Edito
         </intent>
 
     </queries>
-
-    <uses-feature android:name="android.hardware.vr.headtracking" android:required="false" android:version="1" />
 )n";
+
+#ifndef DISABLE_DEPRECATED
+	// This logic addresses the issue from https://github.com/GodotVR/godot_openxr_vendors/issues/429.
+	// The issue is caused by this plugin and the vendors plugin adding the same `uses-feature` tag to the generated
+	// manifest, causing a duplicate error at build time.
+	// In order to maintain backward compatibility, we fix the issue by disabling the addition of the `uses-feature`
+	// tag from this plugin when specific conditions are met.
+	bool meta_plugin_enabled = get_option("xr_features/enable_meta_plugin");
+	int meta_boundary_mode = get_option("meta_xr_features/boundary_mode");
+	if (!meta_plugin_enabled || meta_boundary_mode != 1 /* BOUNDARY_DISABLED_VALUE */) {
+#endif // DISABLE_DEPRECATED
+		contents += "    <uses-feature android:name=\"android.hardware.vr.headtracking\" android:required=\"false\" android:version=\"1\" />\n";
+#ifndef DISABLE_DEPRECATED
+	}
+#endif // DISABLE_DEPRECATED
 
 	return contents;
 }
@@ -137,15 +155,34 @@ String OpenXRExportPlugin::get_android_manifest_activity_element_contents(const 
 		return contents;
 	}
 
-	contents += R"n(
+	if (!is_spatial_container_enabled()) {
+		contents += R"n(
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
 				<category android:name="android.intent.category.DEFAULT" />
-
                 <category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
             </intent-filter>
 )n";
+	} else {
+		contents += R"n(
+                <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_USED_BOUNDS_MODES" android:value="" />
+)n";
+
+		// Get the initial bounds mode.
+		OpenXRSpatialContainerState::BoundsMode initial_bounds_mode = (OpenXRSpatialContainerState::BoundsMode)get_export_platform()->get_project_setting(get_export_preset(), "xr/openxr/extensions/spatial_container/bounds_mode");
+		String manifest_initial_bounds_mode_value = "XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_UNDEFINED";
+		switch (initial_bounds_mode) {
+			case OpenXRSpatialContainerState::BOUNDS_MODE_BOUNDED:
+				manifest_initial_bounds_mode_value = "XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_BOUNDED";
+				break;
+			case OpenXRSpatialContainerState::BOUNDS_MODE_IMMERSIVE:
+				manifest_initial_bounds_mode_value = "XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_IMMERSIVE";
+				break;
+		}
+		contents += vformat(
+				"                <property android:name=\"org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE\" android:value=\"%s\" />\n",
+				manifest_initial_bounds_mode_value);
+	}
 
 	return contents;
 }
@@ -176,7 +213,7 @@ OpenXREditorPlugin::OpenXREditorPlugin() {
 	// Only add our OpenXR action map editor if OpenXR is enabled for the whole project.
 	if (OpenXRAPI::openxr_is_enabled(false)) {
 		action_map_editor = memnew(OpenXRActionMapEditor);
-		EditorNode::get_bottom_panel()->add_item(TTRC("OpenXR Action Map"), action_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTRC("Toggle OpenXR Action Map Bottom Panel")));
+		EditorDockManager::get_singleton()->add_dock(action_map_editor);
 
 		binding_modifier_inspector_plugin = Ref<EditorInspectorPluginBindingModifier>(memnew(EditorInspectorPluginBindingModifier));
 		EditorInspector::add_inspector_plugin(binding_modifier_inspector_plugin);

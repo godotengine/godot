@@ -372,7 +372,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 		if (start_line == line) {
 			// Single line token.
 			if (cursor_line == start_line && cursor_column >= start_column && cursor_column <= last_column) {
-				token.cursor_position = cursor_column - start_column;
 				if (cursor_column == start_column) {
 					token.cursor_place = CURSOR_BEGINNING;
 				} else if (cursor_column < column) {
@@ -385,7 +384,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 			// Multi line token.
 			if (cursor_line == start_line && cursor_column >= start_column) {
 				// Is in first line.
-				token.cursor_position = cursor_column - start_column;
 				if (cursor_column == start_column) {
 					token.cursor_place = CURSOR_BEGINNING;
 				} else {
@@ -393,7 +391,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 				}
 			} else if (cursor_line == line && cursor_column <= last_column) {
 				// Is in last line.
-				token.cursor_position = cursor_column - start_column;
 				if (cursor_column < column) {
 					token.cursor_place = CURSOR_MIDDLE;
 				} else {
@@ -401,7 +398,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 				}
 			} else if (cursor_line > start_line && cursor_line < line) {
 				// Is in middle line.
-				token.cursor_position = CURSOR_MIDDLE;
+				token.cursor_place = CURSOR_MIDDLE;
 			}
 		}
 	}
@@ -486,66 +483,66 @@ GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
 	return annotation;
 }
 
-#define KEYWORDS(KEYWORD_GROUP, KEYWORD)     \
-	KEYWORD_GROUP('a')                       \
-	KEYWORD("as", Token::AS)                 \
-	KEYWORD("and", Token::AND)               \
-	KEYWORD("assert", Token::ASSERT)         \
-	KEYWORD("await", Token::AWAIT)           \
-	KEYWORD_GROUP('b')                       \
-	KEYWORD("break", Token::BREAK)           \
+#define KEYWORDS(KEYWORD_GROUP, KEYWORD) \
+	KEYWORD_GROUP('a') \
+	KEYWORD("as", Token::AS) \
+	KEYWORD("and", Token::AND) \
+	KEYWORD("assert", Token::ASSERT) \
+	KEYWORD("await", Token::AWAIT) \
+	KEYWORD_GROUP('b') \
+	KEYWORD("break", Token::BREAK) \
 	KEYWORD("breakpoint", Token::BREAKPOINT) \
-	KEYWORD_GROUP('c')                       \
-	KEYWORD("class", Token::CLASS)           \
+	KEYWORD_GROUP('c') \
+	KEYWORD("class", Token::CLASS) \
 	KEYWORD("class_name", Token::CLASS_NAME) \
-	KEYWORD("const", Token::TK_CONST)        \
-	KEYWORD("continue", Token::CONTINUE)     \
-	KEYWORD_GROUP('e')                       \
-	KEYWORD("elif", Token::ELIF)             \
-	KEYWORD("else", Token::ELSE)             \
-	KEYWORD("enum", Token::ENUM)             \
-	KEYWORD("extends", Token::EXTENDS)       \
-	KEYWORD_GROUP('f')                       \
-	KEYWORD("for", Token::FOR)               \
-	KEYWORD("func", Token::FUNC)             \
-	KEYWORD_GROUP('i')                       \
-	KEYWORD("if", Token::IF)                 \
-	KEYWORD("in", Token::TK_IN)              \
-	KEYWORD("is", Token::IS)                 \
-	KEYWORD_GROUP('m')                       \
-	KEYWORD("match", Token::MATCH)           \
-	KEYWORD_GROUP('n')                       \
-	KEYWORD("namespace", Token::NAMESPACE)   \
-	KEYWORD("not", Token::NOT)               \
-	KEYWORD_GROUP('o')                       \
-	KEYWORD("or", Token::OR)                 \
-	KEYWORD_GROUP('p')                       \
-	KEYWORD("pass", Token::PASS)             \
-	KEYWORD("preload", Token::PRELOAD)       \
-	KEYWORD_GROUP('r')                       \
-	KEYWORD("return", Token::RETURN)         \
-	KEYWORD_GROUP('s')                       \
-	KEYWORD("self", Token::SELF)             \
-	KEYWORD("signal", Token::SIGNAL)         \
-	KEYWORD("static", Token::STATIC)         \
-	KEYWORD("super", Token::SUPER)           \
-	KEYWORD_GROUP('t')                       \
-	KEYWORD("trait", Token::TRAIT)           \
-	KEYWORD_GROUP('v')                       \
-	KEYWORD("var", Token::VAR)               \
-	KEYWORD("void", Token::TK_VOID)          \
-	KEYWORD_GROUP('w')                       \
-	KEYWORD("while", Token::WHILE)           \
-	KEYWORD("when", Token::WHEN)             \
-	KEYWORD_GROUP('y')                       \
-	KEYWORD("yield", Token::YIELD)           \
-	KEYWORD_GROUP('I')                       \
-	KEYWORD("INF", Token::CONST_INF)         \
-	KEYWORD_GROUP('N')                       \
-	KEYWORD("NAN", Token::CONST_NAN)         \
-	KEYWORD_GROUP('P')                       \
-	KEYWORD("PI", Token::CONST_PI)           \
-	KEYWORD_GROUP('T')                       \
+	KEYWORD("const", Token::TK_CONST) \
+	KEYWORD("continue", Token::CONTINUE) \
+	KEYWORD_GROUP('e') \
+	KEYWORD("elif", Token::ELIF) \
+	KEYWORD("else", Token::ELSE) \
+	KEYWORD("enum", Token::ENUM) \
+	KEYWORD("extends", Token::EXTENDS) \
+	KEYWORD_GROUP('f') \
+	KEYWORD("for", Token::FOR) \
+	KEYWORD("func", Token::FUNC) \
+	KEYWORD_GROUP('i') \
+	KEYWORD("if", Token::IF) \
+	KEYWORD("in", Token::TK_IN) \
+	KEYWORD("is", Token::IS) \
+	KEYWORD_GROUP('m') \
+	KEYWORD("match", Token::MATCH) \
+	KEYWORD_GROUP('n') \
+	KEYWORD("namespace", Token::NAMESPACE) \
+	KEYWORD("not", Token::NOT) \
+	KEYWORD_GROUP('o') \
+	KEYWORD("or", Token::OR) \
+	KEYWORD_GROUP('p') \
+	KEYWORD("pass", Token::PASS) \
+	KEYWORD("preload", Token::PRELOAD) \
+	KEYWORD_GROUP('r') \
+	KEYWORD("return", Token::RETURN) \
+	KEYWORD_GROUP('s') \
+	KEYWORD("self", Token::SELF) \
+	KEYWORD("signal", Token::SIGNAL) \
+	KEYWORD("static", Token::STATIC) \
+	KEYWORD("super", Token::SUPER) \
+	KEYWORD_GROUP('t') \
+	KEYWORD("trait", Token::TRAIT) \
+	KEYWORD_GROUP('v') \
+	KEYWORD("var", Token::VAR) \
+	KEYWORD("void", Token::TK_VOID) \
+	KEYWORD_GROUP('w') \
+	KEYWORD("while", Token::WHILE) \
+	KEYWORD("when", Token::WHEN) \
+	KEYWORD_GROUP('y') \
+	KEYWORD("yield", Token::YIELD) \
+	KEYWORD_GROUP('I') \
+	KEYWORD("INF", Token::CONST_INF) \
+	KEYWORD_GROUP('N') \
+	KEYWORD("NAN", Token::CONST_NAN) \
+	KEYWORD_GROUP('P') \
+	KEYWORD("PI", Token::CONST_PI) \
+	KEYWORD_GROUP('T') \
 	KEYWORD("TAU", Token::CONST_TAU)
 
 #define MIN_KEYWORD_LENGTH 2
@@ -607,18 +604,18 @@ GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 
 	// Define some helper macros for the switch case.
 #define KEYWORD_GROUP_CASE(char) \
-	break;                       \
+	break; \
 	case char:
-#define KEYWORD(keyword, token_type)                                                                                      \
-	{                                                                                                                     \
-		const int keyword_length = sizeof(keyword) - 1;                                                                   \
-		static_assert(keyword_length <= MAX_KEYWORD_LENGTH, "There's a keyword longer than the defined maximum length");  \
+#define KEYWORD(keyword, token_type) \
+	{ \
+		const int keyword_length = sizeof(keyword) - 1; \
+		static_assert(keyword_length <= MAX_KEYWORD_LENGTH, "There's a keyword longer than the defined maximum length"); \
 		static_assert(keyword_length >= MIN_KEYWORD_LENGTH, "There's a keyword shorter than the defined minimum length"); \
-		if (keyword_length == len && name == keyword) {                                                                   \
-			Token kw = make_token(token_type);                                                                            \
-			kw.literal = name;                                                                                            \
-			return kw;                                                                                                    \
-		}                                                                                                                 \
+		if (keyword_length == len && name == keyword) { \
+			Token kw = make_token(token_type); \
+			kw.literal = name; \
+			return kw; \
+		} \
 	}
 
 	// Find if it's a keyword.
@@ -883,6 +880,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 	String result;
 	char32_t prev = 0;
 	int prev_pos = 0;
+	int prev_line = 0;
 
 	for (;;) {
 		// Consume actual string.
@@ -899,6 +897,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 			} else {
 				error = make_error("Invisible text direction control character present in the string, escape it (\"\\u" + String::num_int64(ch, 16) + "\") to avoid confusion.");
 			}
+			error.start_line = line;
 			error.start_column = column;
 			error.end_column = column + 1;
 			push_error(error);
@@ -993,6 +992,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 							} else {
 								// Make error, but keep parsing the string.
 								Token error = make_error("Invalid hexadecimal digit in unicode escape sequence.");
+								error.start_line = line;
 								error.start_column = column;
 								error.end_column = column + 1;
 								push_error(error);
@@ -1022,6 +1022,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 						break;
 					default:
 						Token error = make_error("Invalid escape in string.");
+						error.start_line = line;
 						error.start_column = column - 2;
 						push_error(error);
 						valid_escape = false;
@@ -1033,9 +1034,11 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 						if (prev == 0) {
 							prev = escaped;
 							prev_pos = column - 2;
+							prev_line = line;
 							continue;
 						} else {
 							Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate.");
+							error.start_line = line;
 							error.start_column = column - 2;
 							push_error(error);
 							valid_escape = false;
@@ -1044,6 +1047,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 					} else if ((escaped & 0xfffffc00) == 0xdc00) {
 						if (prev == 0) {
 							Token error = make_error("Invalid UTF-16 sequence in string, unpaired trail surrogate.");
+							error.start_line = line;
 							error.start_column = column - 2;
 							push_error(error);
 							valid_escape = false;
@@ -1054,7 +1058,10 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 					}
 					if (prev != 0) {
 						Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate.");
+						error.start_line = prev_line;
 						error.start_column = prev_pos;
+						error.end_line = prev_line;
+						error.end_column = prev_pos + 2;
 						push_error(error);
 						prev = 0;
 					}
@@ -1067,7 +1074,10 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 		} else if (ch == quote_char) {
 			if (prev != 0) {
 				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+				error.start_line = prev_line;
 				error.start_column = prev_pos;
+				error.end_line = prev_line;
+				error.end_column = prev_pos + 2;
 				push_error(error);
 				prev = 0;
 			}
@@ -1089,7 +1099,10 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 		} else {
 			if (prev != 0) {
 				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+				error.start_line = prev_line;
 				error.start_column = prev_pos;
+				error.end_line = prev_line;
+				error.end_column = prev_pos + 2;
 				push_error(error);
 				prev = 0;
 			}
@@ -1102,7 +1115,10 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 	}
 	if (prev != 0) {
 		Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+		error.start_line = prev_line;
 		error.start_column = prev_pos;
+		error.end_line = prev_line;
+		error.end_column = prev_pos + 2;
 		push_error(error);
 		prev = 0;
 	}
@@ -1167,8 +1183,8 @@ void GDScriptTokenizerText::check_indent() {
 		while (!_is_at_end()) {
 			char32_t space = _peek();
 			if (space == '\t') {
-				// Consider individual tab columns.
-				column += tab_size - 1;
+				// Counting tab indent with the configured tab size, allows error tolerant parsing in the editor,
+				// so that autocompletion still is functional when a file contains mixed indentation.
 				indent_count += tab_size;
 			} else if (space == ' ') {
 				indent_count += 1;
@@ -1310,12 +1326,8 @@ void GDScriptTokenizerText::_skip_whitespace() {
 		char32_t c = _peek();
 		switch (c) {
 			case ' ':
-				_advance();
-				break;
 			case '\t':
 				_advance();
-				// Consider individual tab columns.
-				column += tab_size - 1;
 				break;
 			case '\r':
 				_advance(); // Consume either way.

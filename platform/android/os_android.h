@@ -34,7 +34,6 @@
 
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio/audio_server.h"
 
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;
@@ -88,8 +87,8 @@ private:
 
 public:
 	static const char *ANDROID_EXEC_PATH;
-	static const int DEFAULT_WINDOW_WIDTH = 800;
-	static const int DEFAULT_WINDOW_HEIGHT = 600;
+	static const int DEFAULT_WINDOW_WIDTH = 760;
+	static const int DEFAULT_WINDOW_HEIGHT = 570;
 
 #ifdef TOOLS_ENABLED
 	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
@@ -105,8 +104,6 @@ public:
 	virtual void delete_main_loop() override;
 
 	virtual void finalize() override;
-
-	typedef int64_t ProcessID;
 
 	static OS_Android *get_singleton();
 	GodotJavaWrapper *get_godot_java();
@@ -154,6 +151,7 @@ public:
 	virtual String get_resource_dir() const override;
 	virtual String get_locale() const override;
 	virtual String get_model_name() const override;
+	virtual String get_processor_name() const override;
 
 	virtual String get_unique_id() const override;
 
@@ -170,6 +168,7 @@ public:
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual String get_system_ca_certificates() override;
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) override;
 
@@ -191,5 +190,6 @@ private:
 
 #ifdef TOOLS_ENABLED
 	static void _on_main_screen_changed(const String &p_screen_name);
+	static void _on_distraction_free_mode_changed(bool p_enable);
 #endif
 };

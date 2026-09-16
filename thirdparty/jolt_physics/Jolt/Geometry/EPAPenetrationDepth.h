@@ -124,7 +124,7 @@ public:
 		if (closest_points_dist_sq > 0.0f)
 		{
 			// Collision within convex radius, adjust points for convex radius
-			float v_len = sqrt(closest_points_dist_sq); // GetClosestPoints function returns |ioV|^2 when return value < FLT_MAX
+			float v_len = Sqrt(closest_points_dist_sq); // GetClosestPoints function returns |ioV|^2 when return value < FLT_MAX
 			outPointA += ioV * (inConvexRadiusA / v_len);
 			outPointB -= ioV * (inConvexRadiusB / v_len);
 			return EStatus::Colliding;
@@ -542,7 +542,7 @@ public:
 			AddConvexRadius add_convex_b(inB, inConvexRadiusB);
 			TransformedConvexObject transformed_a(inStart, add_convex_a);
 			if (!GetPenetrationDepthStepEPA(transformed_a, add_convex_b, inPenetrationTolerance, outContactNormal, outPointA, outPointB))
-				return false;
+				outContactNormal = inDirection; // Failed to get the deepest point, use points returned by GJK and use cast direction as normal
 		}
 		else if (contact_normal_invalid)
 		{

@@ -30,6 +30,8 @@
 
 #include "physics_server_2d_extension.h"
 
+#include "core/object/class_db.h"
+
 bool PhysicsDirectSpaceState2DExtension::is_body_excluded_from_query(const RID &p_body) const {
 	return exclude && exclude->has(p_body);
 }
@@ -39,12 +41,12 @@ thread_local const HashSet<RID> *PhysicsDirectSpaceState2DExtension::exclude = n
 void PhysicsDirectSpaceState2DExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_body_excluded_from_query", "body"), &PhysicsDirectSpaceState2DExtension::is_body_excluded_from_query);
 
-	GDVIRTUAL_BIND(_intersect_ray, "from", "to", "collision_mask", "collide_with_bodies", "collide_with_areas", "hit_from_inside", "result");
-	GDVIRTUAL_BIND(_intersect_point, "position", "canvas_instance_id", "collision_mask", "collide_with_bodies", "collide_with_areas", "results", "max_results");
-	GDVIRTUAL_BIND(_intersect_shape, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "result", "max_results");
-	GDVIRTUAL_BIND(_cast_motion, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "closest_safe", "closest_unsafe");
-	GDVIRTUAL_BIND(_collide_shape, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "results", "max_results", "result_count");
-	GDVIRTUAL_BIND(_rest_info, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "rest_info");
+	GDVIRTUAL_BIND(_intersect_ray, "from", "to", "collision_mask", "collide_with_bodies", "collide_with_areas", "hit_from_inside", "r_result");
+	GDVIRTUAL_BIND(_intersect_point, "position", "canvas_instance_id", "collision_mask", "collide_with_bodies", "collide_with_areas", "r_results", "max_results");
+	GDVIRTUAL_BIND(_intersect_shape, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "r_result", "max_results");
+	GDVIRTUAL_BIND(_cast_motion, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "r_closest_safe", "r_closest_unsafe");
+	GDVIRTUAL_BIND(_collide_shape, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "r_results", "max_results", "r_result_count");
+	GDVIRTUAL_BIND(_rest_info, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "r_rest_info");
 }
 
 PhysicsDirectSpaceState2DExtension::PhysicsDirectSpaceState2DExtension() {
@@ -150,7 +152,7 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_shape_get_type, "shape");
 	GDVIRTUAL_BIND(_shape_get_data, "shape");
 	GDVIRTUAL_BIND(_shape_get_custom_solver_bias, "shape");
-	GDVIRTUAL_BIND(_shape_collide, "shape_A", "xform_A", "motion_A", "shape_B", "xform_B", "motion_B", "results", "result_max", "result_count");
+	GDVIRTUAL_BIND(_shape_collide, "shape_A", "xform_A", "motion_A", "shape_B", "xform_B", "motion_B", "r_results", "result_max", "r_result_count");
 
 	/* SPACE API */
 
@@ -232,7 +234,7 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_body_get_shape_transform, "body", "shape_idx");
 
 	GDVIRTUAL_BIND(_body_set_shape_disabled, "body", "shape_idx", "disabled");
-	GDVIRTUAL_BIND(_body_set_shape_as_one_way_collision, "body", "shape_idx", "enable", "margin");
+	GDVIRTUAL_BIND(_body_set_shape_as_one_way_collision, "body", "shape_idx", "enable", "margin", "direction");
 
 	GDVIRTUAL_BIND(_body_remove_shape, "body", "shape_idx");
 	GDVIRTUAL_BIND(_body_clear_shapes, "body");
@@ -299,13 +301,13 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_body_set_state_sync_callback, "body", "callable");
 	GDVIRTUAL_BIND(_body_set_force_integration_callback, "body", "callable", "userdata");
 
-	GDVIRTUAL_BIND(_body_collide_shape, "body", "body_shape", "shape", "shape_xform", "motion", "results", "result_max", "result_count");
+	GDVIRTUAL_BIND(_body_collide_shape, "body", "body_shape", "shape", "shape_xform", "motion", "r_results", "result_max", "r_result_count");
 
 	GDVIRTUAL_BIND(_body_set_pickable, "body", "pickable");
 
 	GDVIRTUAL_BIND(_body_get_direct_state, "body");
 
-	GDVIRTUAL_BIND(_body_test_motion, "body", "from", "motion", "margin", "collide_separation_ray", "recovery_as_collision", "result");
+	GDVIRTUAL_BIND(_body_test_motion, "body", "from", "motion", "margin", "collide_separation_ray", "recovery_as_collision", "r_result");
 
 	/* JOINT API */
 
@@ -348,6 +350,10 @@ void PhysicsServer2DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_is_flushing_queries);
 	GDVIRTUAL_BIND(_get_process_info, "process_info");
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_body_set_shape_as_one_way_collision_bind_compat_104736, "body", "shape_idx", "enable", "margin");
+#endif
 }
 
 PhysicsServer2DExtension::PhysicsServer2DExtension() {

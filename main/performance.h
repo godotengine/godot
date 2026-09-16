@@ -30,8 +30,11 @@
 
 #pragma once
 
-#include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "core/templates/hash_map.h"
+#include "core/variant/type_info.h"
+
+#include "modules/modules_enabled.gen.h"
 
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
@@ -121,6 +124,9 @@ public:
 		NAVIGATION_3D_EDGE_FREE_COUNT,
 		NAVIGATION_3D_OBSTACLE_COUNT,
 #endif // _3D_DISABLED
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+		RENDER_STREAMING_TEXTURE_MEM_USED,
+#endif
 		MONITOR_MAX
 	};
 

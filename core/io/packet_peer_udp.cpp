@@ -32,6 +32,7 @@
 
 #include "core/io/ip.h"
 #include "core/io/udp_server.h"
+#include "core/object/class_db.h"
 
 void PacketPeerUDP::set_blocking_mode(bool p_enable) {
 	blocking = p_enable;
@@ -97,10 +98,7 @@ int PacketPeerUDP::get_available_packet_count() const {
 }
 
 Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-	Error err = _poll();
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_poll());
 	if (queue_count == 0) {
 		return ERR_UNAVAILABLE;
 	}
@@ -201,7 +199,7 @@ Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_rec
 		_sock->close();
 		return err;
 	}
-	rb.resize(nearest_shift((uint32_t)p_recv_buffer_size));
+	rb.resize(Math::nearest_shift((uint32_t)p_recv_buffer_size));
 	return OK;
 }
 

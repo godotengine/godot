@@ -31,18 +31,21 @@
 #ifdef ANDROID_ENABLED
 #include "android_editor_gradle_runner.h"
 
+#include "../display_server_android.h"
+#include "../java_godot_wrapper.h"
+#include "../os_android.h"
+
+#include "core/object/callable_mp.h"
 #include "editor/editor_interface.h"
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/rich_text_label.h"
 
-#include "../java_godot_wrapper.h"
-#include "../os_android.h"
-
-void AndroidEditorGradleRunner::run_gradle(const String &p_project_path, const String &p_build_path, const String &p_output_path, const List<String> &p_gradle_build_args, const List<String> &p_gradle_copy_args) {
+void AndroidEditorGradleRunner::run_gradle(const String &p_project_path, const String &p_build_path, const String &p_output_path, const String &p_export_format, const List<String> &p_gradle_build_args, const List<String> &p_gradle_copy_args) {
 	project_path = p_project_path;
 	build_path = p_build_path;
 	output_path = p_output_path;
+	export_format = p_export_format;
 	gradle_build_args = p_gradle_build_args;
 	gradle_copy_args = p_gradle_copy_args;
 
@@ -57,7 +60,10 @@ void AndroidEditorGradleRunner::run_gradle(const String &p_project_path, const S
 		output_dialog->set_title(TTR("Building Android Project (gradle)"));
 		output_dialog->add_child(output_label);
 
+		output_dialog->add_button(TTR("Copy Output"), true, copy_output_action);
+
 		output_dialog->connect("canceled", callable_mp(this, &AndroidEditorGradleRunner::_android_gradle_build_cancel));
+		output_dialog->connect("custom_action", callable_mp(this, &AndroidEditorGradleRunner::_output_dialog_custom_action));
 	}
 
 	output_label->clear();
@@ -155,7 +161,7 @@ void AndroidEditorGradleRunner::_android_gradle_build_clean_project(bool p_was_s
 			output_dialog->hide();
 
 			bool prompt_apk_install = EDITOR_GET("export/android/install_exported_apk");
-			if (prompt_apk_install) {
+			if (prompt_apk_install && export_format == "apk") {
 				OS_Android::get_singleton()->shell_open(output_path);
 			}
 		} else {
@@ -193,6 +199,13 @@ void AndroidEditorGradleRunner::_android_gradle_build_cancel() {
 		GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 		godot_java->build_env_cancel(job_id);
 		_android_gradle_build_clean_project(false);
+	}
+}
+
+void AndroidEditorGradleRunner::_output_dialog_custom_action(const String &p_action) {
+	if (p_action == copy_output_action) {
+		String output = output_label->get_parsed_text();
+		DisplayServerAndroid::get_singleton()->clipboard_set(output);
 	}
 }
 

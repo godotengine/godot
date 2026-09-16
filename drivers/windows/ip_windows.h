@@ -35,7 +35,7 @@
 #include "core/io/ip.h"
 
 class IPWindows : public IP {
-	GDCLASS(IPWindows, IP);
+	GDSOFTCLASS(IPWindows, IP);
 
 	virtual void _resolve_hostname(List<IPAddress> &r_addresses, const String &p_hostname, Type p_type = TYPE_ANY) const override;
 

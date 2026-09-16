@@ -31,6 +31,8 @@
 #include "stream_peer_uds.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 
 void StreamPeerUDS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bind", "path"), &StreamPeerUDS::bind);
@@ -51,10 +53,7 @@ Error StreamPeerUDS::bind(const String &p_path) {
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 
 	IP::Type ip_type = IP::TYPE_NONE;
-	Error err = _sock->open(NetSocket::Family::UNIX, NetSocket::TYPE_NONE, ip_type);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_sock->open(NetSocket::Family::UNIX, NetSocket::TYPE_NONE, ip_type));
 	_sock->set_blocking_enabled(false);
 	NetSocket::Address addr(p_path);
 	return _sock->bind(addr);
@@ -67,10 +66,7 @@ Error StreamPeerUDS::connect_to_host(const String &p_path) {
 
 	if (!_sock->is_open()) {
 		IP::Type ip_type = IP::TYPE_NONE;
-		Error err = _sock->open(NetSocket::Family::UNIX, NetSocket::TYPE_NONE, ip_type);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_sock->open(NetSocket::Family::UNIX, NetSocket::TYPE_NONE, ip_type));
 		_sock->set_blocking_enabled(false);
 	}
 

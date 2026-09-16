@@ -30,6 +30,7 @@
 
 #include "ip.h"
 
+#include "core/object/class_db.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/hash_map.h"
@@ -106,8 +107,8 @@ struct _IP_ResolverPrivate {
 		}
 	}
 
-	static void _thread_function(void *self) {
-		_IP_ResolverPrivate *ipr = static_cast<_IP_ResolverPrivate *>(self);
+	static void _thread_function(void *p_self) {
+		_IP_ResolverPrivate *ipr = static_cast<_IP_ResolverPrivate *>(p_self);
 
 		while (!ipr->thread_abort.is_set()) {
 			ipr->sem.wait();
@@ -205,7 +206,7 @@ IPAddress IP::get_resolve_item_address(ResolverID p_id) const {
 		return IPAddress();
 	}
 
-	List<IPAddress> res = resolver->queue[p_id].response;
+	List<IPAddress> res(resolver->queue[p_id].response);
 
 	for (const IPAddress &E : res) {
 		if (E.is_valid()) {
@@ -224,7 +225,7 @@ Array IP::get_resolve_item_addresses(ResolverID p_id) const {
 		return Array();
 	}
 
-	List<IPAddress> res = resolver->queue[p_id].response;
+	List<IPAddress> res(resolver->queue[p_id].response);
 
 	Array result;
 	for (const IPAddress &E : res) {

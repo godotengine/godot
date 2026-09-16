@@ -34,6 +34,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
+#include "core/object/class_db.h"
 #include "scene/resources/image_texture.h"
 
 DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
@@ -75,7 +76,9 @@ DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 		case DXGI_R32_FLOAT: {
 			return DDS_R32F;
 		}
-		case DXGI_R8_UNORM:
+		case DXGI_R8_UNORM: {
+			return DDS_R8;
+		}
 		case DXGI_A8_UNORM: {
 			return DDS_LUMINANCE;
 		}
@@ -89,7 +92,7 @@ DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 			return DDS_R16I;
 		}
 		case DXGI_R8G8_UNORM: {
-			return DDS_LUMINANCE_ALPHA;
+			return DDS_RG8;
 		}
 		case DXGI_R9G9B9E5: {
 			return DDS_RGB9E5;
@@ -141,7 +144,7 @@ DDSFormat _dxgi_to_dds_format(uint32_t p_dxgi_format) {
 	}
 }
 
-static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format, uint32_t p_width, uint32_t p_height, uint32_t p_mipmaps, uint32_t p_pitch, uint32_t p_flags, Vector<uint8_t> &r_src_data) {
+static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format, uint32_t p_width, uint32_t p_height, uint32_t p_mipmaps, uint32_t p_pitch, uint32_t p_flags, Vector<uint8_t> &r_src_data, bool p_is_3d) {
 	const DDSFormatInfo &info = dds_format_info[p_dds_format];
 
 	uint32_t w = p_width;
@@ -151,19 +154,22 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 		// BC compressed.
 		w += w % info.divisor;
 		h += h % info.divisor;
-		if (w != p_width) {
-			WARN_PRINT(vformat("%s: DDS width '%d' is not divisible by %d. This is not allowed as per the DDS specification, attempting to load anyway.", p_file->get_path(), p_width, info.divisor));
-		}
-		if (h != p_height) {
-			WARN_PRINT(vformat("%s: DDS height '%d' is not divisible by %d. This is not allowed as per the DDS specification, attempting to load anyway.", p_file->get_path(), p_height, info.divisor));
-		}
 
 		uint32_t size = MAX(1u, (w + 3) / 4) * MAX(1u, (h + 3) / 4) * info.block_size;
 
-		if (p_flags & DDSD_LINEARSIZE) {
-			ERR_FAIL_COND_V_MSG(size != p_pitch, Ref<Resource>(), "DDS header flags specify that a linear size of the top-level image is present, but the specified size does not match the expected value.");
-		} else {
-			ERR_FAIL_COND_V_MSG(p_pitch != 0, Ref<Resource>(), "DDS header flags specify that no linear size will given for the top-level image, but a non-zero linear size value is present in the header.");
+		if (!p_is_3d) {
+			if (w != p_width) {
+				WARN_PRINT(vformat("%s: DDS width '%d' is not divisible by %d. This is not allowed as per the DDS specification, attempting to load anyway.", p_file->get_path(), p_width, info.divisor));
+			}
+			if (h != p_height) {
+				WARN_PRINT(vformat("%s: DDS height '%d' is not divisible by %d. This is not allowed as per the DDS specification, attempting to load anyway.", p_file->get_path(), p_height, info.divisor));
+			}
+
+			if (p_flags & DDSD_LINEARSIZE) {
+				ERR_FAIL_COND_V_MSG(size != p_pitch, Ref<Resource>(), "DDS header flags specify that a linear size of the top-level image is present, but the specified size does not match the expected value.");
+			} else {
+				ERR_FAIL_COND_V_MSG(p_pitch != 0, Ref<Resource>(), "DDS header flags specify that no linear size will given for the top-level image, but a non-zero linear size value is present in the header.");
+			}
 		}
 
 		for (uint32_t i = 1; i < p_mipmaps; i++) {
@@ -404,14 +410,33 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 	return memnew(Image(p_width, p_height, p_mipmaps > 1, info.format, r_src_data));
 }
 
-static Vector<Ref<Image>> _dds_load_images(Ref<FileAccess> p_f, DDSFormat p_dds_format, uint32_t p_width, uint32_t p_height, uint32_t p_mipmaps, uint32_t p_pitch, uint32_t p_flags, uint32_t p_layer_count) {
+static Vector<Ref<Image>> _dds_load_images(Ref<FileAccess> p_f, DDSFormat p_dds_format, uint32_t p_width, uint32_t p_height, uint32_t p_mipmaps, uint32_t p_pitch, uint32_t p_flags, uint32_t p_layer_count, bool p_is_3d) {
 	Vector<uint8_t> src_data;
 	Vector<Ref<Image>> images;
-	images.resize(p_layer_count);
 
-	for (uint32_t i = 0; i < p_layer_count; i++) {
-		images.write[i] = _dds_load_layer(p_f, p_dds_format, p_width, p_height, p_mipmaps, p_pitch, p_flags, src_data);
-		ERR_FAIL_COND_V(images.write[i].is_null(), Vector<Ref<Image>>());
+	if (p_is_3d) {
+		uint32_t width = p_width;
+		uint32_t height = p_height;
+		uint32_t depth = p_layer_count;
+
+		for (uint32_t mip = 0; mip < p_mipmaps; mip++) {
+			for (uint32_t i = 0; i < depth; i++) {
+				Ref<Image> slice = _dds_load_layer(p_f, p_dds_format, width, height, 1, p_pitch, p_flags, src_data, true);
+				ERR_FAIL_COND_V(slice.is_null(), Vector<Ref<Image>>());
+				images.push_back(slice);
+			}
+
+			width = MAX(1u, width >> 1);
+			height = MAX(1u, height >> 1);
+			depth = MAX(1u, depth >> 1);
+		}
+	} else {
+		images.resize(p_layer_count);
+
+		for (uint32_t i = 0; i < p_layer_count; i++) {
+			images.write[i] = _dds_load_layer(p_f, p_dds_format, p_width, p_height, p_mipmaps, p_pitch, p_flags, src_data, false);
+			ERR_FAIL_COND_V(images.write[i].is_null(), Vector<Ref<Image>>());
+		}
 	}
 
 	return images;
@@ -648,6 +673,10 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 				r_dds_format = DDS_BGRX8;
 			} else if (format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000) {
 				r_dds_format = DDS_RGBX8;
+			} else if (format_rgb_bits == 8 && format_red_mask == 0xff && format_green_mask == 0 && format_blue_mask == 0) {
+				r_dds_format = DDS_R8;
+			} else if (format_rgb_bits == 16 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0) {
+				r_dds_format = DDS_RG8;
 			}
 		}
 
@@ -693,7 +722,7 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 		r_mipmaps = 1;
 	}
 
-	return _dds_load_images(p_f, r_dds_format, r_width, r_height, r_mipmaps, r_pitch, r_flags, r_layer_count);
+	return _dds_load_images(p_f, r_dds_format, r_width, r_height, r_mipmaps, r_pitch, r_flags, r_layer_count, (r_dds_type & DDST_TYPE_MASK) == DDST_3D);
 }
 
 static Ref<Resource> _dds_load_from_buffer(Ref<FileAccess> p_f, Error *r_error, const String &p_path = "") {

@@ -31,6 +31,8 @@
 #include "core/io/stream_peer_gzip.h"
 
 #include "core/io/zip_io.h"
+#include "core/object/class_db.h"
+
 #include <zlib.h>
 
 void StreamPeerGZIP::_bind_methods() {
@@ -63,20 +65,20 @@ void StreamPeerGZIP::clear() {
 	buffer.clear();
 }
 
-Error StreamPeerGZIP::start_compression(bool p_is_deflate, int buffer_size) {
-	return _start(true, p_is_deflate, buffer_size);
+Error StreamPeerGZIP::start_compression(bool p_is_deflate, int p_buffer_size) {
+	return _start(true, p_is_deflate, p_buffer_size);
 }
 
-Error StreamPeerGZIP::start_decompression(bool p_is_deflate, int buffer_size) {
-	return _start(false, p_is_deflate, buffer_size);
+Error StreamPeerGZIP::start_decompression(bool p_is_deflate, int p_buffer_size) {
+	return _start(false, p_is_deflate, p_buffer_size);
 }
 
-Error StreamPeerGZIP::_start(bool p_compress, bool p_is_deflate, int buffer_size) {
+Error StreamPeerGZIP::_start(bool p_compress, bool p_is_deflate, int p_buffer_size) {
 	ERR_FAIL_COND_V(ctx != nullptr, ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V_MSG(buffer_size <= 0, ERR_INVALID_PARAMETER, "Invalid buffer size. It should be a positive integer.");
+	ERR_FAIL_COND_V_MSG(p_buffer_size <= 0, ERR_INVALID_PARAMETER, "Invalid buffer size. It should be a positive integer.");
 	clear();
 	compressing = p_compress;
-	rb.resize(nearest_shift(uint32_t(buffer_size - 1)));
+	rb.resize(Math::nearest_shift(uint32_t(p_buffer_size - 1)));
 	buffer.resize(1024);
 
 	// Create ctx.
@@ -121,10 +123,7 @@ Error StreamPeerGZIP::_process(uint8_t *p_dst, int p_dst_size, const uint8_t *p_
 
 Error StreamPeerGZIP::put_data(const uint8_t *p_data, int p_bytes) {
 	int wrote = 0;
-	Error err = put_partial_data(p_data, p_bytes, wrote);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(put_partial_data(p_data, p_bytes, wrote));
 	ERR_FAIL_COND_V(p_bytes != wrote, ERR_OUT_OF_MEMORY);
 	return OK;
 }
@@ -143,10 +142,7 @@ Error StreamPeerGZIP::put_partial_data(const uint8_t *p_data, int p_bytes, int &
 		int sent = 0;
 		int to_write = 0;
 		// Compress or decompress
-		Error err = _process(buffer.ptrw(), MIN(buffer.size(), rb.space_left()), p_data + r_sent, p_bytes - r_sent, sent, to_write);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_process(buffer.ptrw(), MIN(buffer.size(), rb.space_left()), p_data + r_sent, p_bytes - r_sent, sent, to_write));
 		// When decompressing, we might need to do another round.
 		r_sent += sent;
 
@@ -165,10 +161,7 @@ Error StreamPeerGZIP::put_partial_data(const uint8_t *p_data, int p_bytes, int &
 
 Error StreamPeerGZIP::get_data(uint8_t *p_buffer, int p_bytes) {
 	int received = 0;
-	Error err = get_partial_data(p_buffer, p_bytes, received);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(get_partial_data(p_buffer, p_bytes, received));
 	ERR_FAIL_COND_V(p_bytes != received, ERR_UNAVAILABLE);
 	return OK;
 }

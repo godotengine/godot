@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRAPIExtension" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRAPIExtension" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Makes the OpenXR API available for GDExtension.
 	</brief_description>
@@ -103,6 +103,12 @@
 				Returns the predicted display timing for the current frame.
 			</description>
 		</method>
+		<method name="get_primary_view_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the view count for the primary viewport.
+			</description>
+		</method>
 		<method name="get_projection_layer">
 			<return type="int" />
 			<description>
@@ -147,6 +153,18 @@
 			<return type="int" />
 			<description>
 				Returns the ID of the system, which is an [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSystemId.html]XrSystemId[/url] cast to an integer.
+			</description>
+		</method>
+		<method name="get_view_configuration" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the view configuration type, which is an [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrViewConfigurationType.html]XrViewConfigurationType[/url] cast to an integer.
+			</description>
+		</method>
+		<method name="get_view_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of views. It is usually two, one for each eye, but may differ with different view configurations.
 			</description>
 		</method>
 		<method name="insert_debug_label">
@@ -245,6 +263,14 @@
 				[b]Note:[/b] This cannot be called after the OpenXR session has started. However, it can be called in [method OpenXRExtensionWrapper._on_session_created].
 			</description>
 		</method>
+		<method name="register_projection_layer_extension">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Registers the given extension as modifying [code]XrCompositionLayerProjection[/code] via the [method OpenXRExtensionWrapper._set_projection_layer_and_get_next_pointer] virtual method.
+				[b]Note:[/b] This cannot be called after the OpenXR session has started. However, it can be called in [method OpenXRExtensionWrapper._on_session_created].
+			</description>
+		</method>
 		<method name="register_projection_views_extension">
 			<return type="void" />
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
@@ -324,6 +350,14 @@
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Unregisters the given extension as modifying frame info.
+				[b]Note:[/b] This cannot be called while the OpenXR session is still running.
+			</description>
+		</method>
+		<method name="unregister_projection_layer_extension">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Unregisters the given extension as modifying [code]XrCompositionLayerProjection[/code].
 				[b]Note:[/b] This cannot be called while the OpenXR session is still running.
 			</description>
 		</method>

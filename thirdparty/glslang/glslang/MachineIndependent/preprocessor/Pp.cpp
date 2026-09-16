@@ -153,12 +153,57 @@ int TPpContext::CPPdefine(TPpToken* ppToken)
         return token;
     }
 
+    int pendingPoundSymbols = 0;
+    TPpToken savePound;
     // record the definition of the macro
     while (token != '\n' && token != EndOfInput) {
-        mac.body.putToken(token, ppToken);
+        if (token == '#') {
+            pendingPoundSymbols++;
+            if (pendingPoundSymbols == 0) {
+                savePound = *ppToken;
+            }
+        } else if (pendingPoundSymbols == 0) {
+            mac.body.putToken(token, ppToken);
+        } else if (pendingPoundSymbols == 1) {
+            // A single #: stringify
+            parseContext.requireProfile(ppToken->loc, ~EEsProfile, "stringify (#)");
+            parseContext.profileRequires(ppToken->loc, ~EEsProfile, 130, nullptr, "stringify (#)");
+            bool isArg = false;
+            if (token == PpAtomIdentifier) {
+                for (int i = (int)mac.args.size() - 1; i >= 0; i--) {
+                    if (strcmp(atomStrings.getString(mac.args[i]), ppToken->name) == 0) {
+                        isArg = true;
+                        break;
+                    }
+                }
+            }
+            if (!isArg) {
+                parseContext.ppError(ppToken->loc, "'#' is not followed by a macro parameter.", "#", "");
+                return token;
+            }
+            mac.body.putToken(tStringifyLevelInput::PUSH, ppToken);
+            mac.body.putToken(token, ppToken);
+            mac.body.putToken(tStringifyLevelInput::POP, ppToken);
+            pendingPoundSymbols = 0;
+        } else if (pendingPoundSymbols % 2 == 0) {
+            // Any number of pastes '##' in a row: idempotent, just becomes one paste
+            parseContext.requireProfile(ppToken->loc, ~EEsProfile, "token pasting (##)");
+            parseContext.profileRequires(ppToken->loc, ~EEsProfile, 130, nullptr, "token pasting (##)");
+            for (int i = 0; i < pendingPoundSymbols / 2; i++) {
+                mac.body.putToken(PpAtomPaste, &savePound);
+            }
+            mac.body.putToken(token, ppToken);
+            pendingPoundSymbols = 0;
+        } else {
+            // An odd number of '#' i.e., mix of paste and stringify: does not give valid preprocessing token
+            parseContext.ppError(ppToken->loc, "Illegal sequence of paste (##) and stringify (#).", "#", "");
+            return token;
+        }
+
         token = scanToken(ppToken);
-        if (token != '\n' && ppToken->space)
-            mac.body.putToken(' ', ppToken);
+    }
+    if (pendingPoundSymbols != 0) {
+        parseContext.ppError(ppToken->loc, "Macro ended with incomplete '#' paste/stringify operators", "#", "");
     }
 
     // check for duplicate definition
@@ -241,6 +286,7 @@ int TPpContext::CPPundef(TPpToken* ppToken)
 */
 int TPpContext::CPPelse(int matchelse, TPpToken* ppToken)
 {
+    inElseSkip = true;
     int depth = 0;
     int token = scanToken(ppToken);
 
@@ -297,7 +343,7 @@ int TPpContext::CPPelse(int matchelse, TPpToken* ppToken)
                     elseSeen[elsetracker] = false;
                     --elsetracker;
                 }
-
+                inElseSkip = false;
                 return CPPif(ppToken);
             }
         } else if (nextAtom == PpAtomElse) {
@@ -311,7 +357,8 @@ int TPpContext::CPPelse(int matchelse, TPpToken* ppToken)
                 parseContext.ppError(ppToken->loc, "#elif after #else", "#elif", "");
         }
     }
-
+    
+    inElseSkip = false;
     return token;
 }
 
@@ -374,7 +421,7 @@ namespace {
     int op_div(int a, int b) { return a == INT_MIN && b == -1 ? 0 : a / b; }
     int op_mod(int a, int b) { return a == INT_MIN && b == -1 ? 0 : a % b; }
     int op_pos(int a) { return a; }
-    int op_neg(int a) { return -a; }
+    int op_neg(int a) { return a == INT_MIN ? INT_MIN : -a; }
     int op_cmpl(int a) { return ~a; }
     int op_not(int a) { return !a; }
 
@@ -1117,7 +1164,7 @@ int TPpContext::tMacroInput::scan(TPpToken* ppToken)
     }
 
     // see if are preceding a ##
-    if (mac->body.peekUntokenizedPasting()) {
+    if (mac->body.peekTokenizedPasting(false)) {
         prepaste = true;
         pasting = true;
     }

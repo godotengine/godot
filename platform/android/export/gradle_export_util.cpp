@@ -30,44 +30,49 @@
 
 #include "gradle_export_util.h"
 
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/os/os.h"
+#include "core/string/regex.h"
 #include "core/string/translation_server.h"
-#include "modules/regex/regex.h"
+#include "editor/export/editor_export.h"
+#include "editor/export/editor_export_plugin.h"
 
-int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation) {
+int _get_android_orientation_value(DisplayServerEnums::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
-		case DisplayServer::SCREEN_PORTRAIT:
+		case DisplayServerEnums::SCREEN_PORTRAIT:
 			return 1;
-		case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 			return 8;
-		case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+		case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 			return 9;
-		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 			return 11;
-		case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+		case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 			return 12;
-		case DisplayServer::SCREEN_SENSOR:
+		case DisplayServerEnums::SCREEN_SENSOR:
 			return 13;
-		case DisplayServer::SCREEN_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_LANDSCAPE:
 		default:
 			return 0;
 	}
 }
 
-String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_orientation) {
+String _get_android_orientation_label(DisplayServerEnums::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
-		case DisplayServer::SCREEN_PORTRAIT:
+		case DisplayServerEnums::SCREEN_PORTRAIT:
 			return "portrait";
-		case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_REVERSE_LANDSCAPE:
 			return "reverseLandscape";
-		case DisplayServer::SCREEN_REVERSE_PORTRAIT:
+		case DisplayServerEnums::SCREEN_REVERSE_PORTRAIT:
 			return "reversePortrait";
-		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE:
 			return "userLandscape";
-		case DisplayServer::SCREEN_SENSOR_PORTRAIT:
+		case DisplayServerEnums::SCREEN_SENSOR_PORTRAIT:
 			return "userPortrait";
-		case DisplayServer::SCREEN_SENSOR:
+		case DisplayServerEnums::SCREEN_SENSOR:
 			return "fullUser";
-		case DisplayServer::SCREEN_LANDSCAPE:
+		case DisplayServerEnums::SCREEN_LANDSCAPE:
 		default:
 			return "landscape";
 	}
@@ -138,10 +143,7 @@ Error create_directory(const String &p_dir) {
 // Note: this will overwrite the file at p_path if it already exists.
 Error store_file_at_path(const String &p_path, const Vector<uint8_t> &p_data) {
 	String dir = p_path.get_base_dir();
-	Error err = create_directory(dir);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(create_directory(dir));
 	Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 	fa->store_buffer(p_data.ptr(), p_data.size());
@@ -165,26 +167,28 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 	return OK;
 }
 
-// Implementation of EditorExportSaveFunction.
+// Implementation of EditorExportPlatform::SaveFileFunction.
 // This method will only be called as an input to export_project_files.
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when gradle build is enabled.
-Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta) {
+Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const EditorExportPlatform::SaveFileInfo &p_info, const Vector<uint8_t> &p_data) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 
-	const String simplified_path = EditorExportPlatform::simplify_path(p_path);
+	const String simplified_path = EditorExportPlatform::simplify_path(p_info.path);
 
 	Vector<uint8_t> enc_data;
 	EditorExportPlatform::SavedData sd;
-	Error err = _store_temp_file(simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, p_delta, enc_data, sd);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_store_temp_file(p_preset, simplified_path, p_data, enc_data, sd));
 
-	const String dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	String dst_path;
+	if (export_data->pd.salt.length() == 32) {
+		dst_path = export_data->assets_directory + String("/") + (simplified_path + export_data->pd.salt).sha256_text();
+	} else {
+		dst_path = export_data->assets_directory + String("/") + simplified_path.trim_prefix("res://");
+	}
 	print_verbose("Saving project files from " + simplified_path + " into " + dst_path);
-	err = store_file_at_path(dst_path, enc_data);
+	Error err = store_file_at_path(dst_path, enc_data);
 
 	export_data->pd.file_ofs.push_back(sd);
 	return err;
@@ -291,14 +295,17 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
 			const String contents = export_plugins[i]->get_android_manifest_activity_element_contents(p_export_platform, p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				export_plugins_activity_element_contents += "<!-- Start of manifest activity element contents from " + export_plugin_name + " -->\n";
 				export_plugins_activity_element_contents += contents;
 				export_plugins_activity_element_contents += "\n";
+				export_plugins_activity_element_contents += "<!-- End of manifest activity element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
 
 	// Update the GodotApp activity tag.
-	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
+	String orientation = _get_android_orientation_label(DisplayServerEnums::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\".GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
@@ -387,8 +394,11 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 		if (export_plugins[i]->supports_platform(p_export_platform)) {
 			const String contents = export_plugins[i]->get_android_manifest_application_element_contents(p_export_platform, p_debug);
 			if (!contents.is_empty()) {
+				const String export_plugin_name = export_plugins[i]->get_name();
+				manifest_application_text += "<!-- Start of manifest application element contents from " + export_plugin_name + " -->\n";
 				manifest_application_text += contents;
 				manifest_application_text += "\n";
+				manifest_application_text += "<!-- End of manifest application element contents from " + export_plugin_name + " -->\n";
 			}
 		}
 	}
@@ -398,7 +408,7 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 	return manifest_application_text;
 }
 
-Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p_data, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
+Error _store_temp_file(const Ref<EditorExportPreset> &p_preset, const String &p_simplified_path, const Vector<uint8_t> &p_data, Vector<uint8_t> &r_enc_data, EditorExportPlatform::SavedData &r_sd) {
 	Error err = OK;
 	Ref<FileAccess> ftmp = FileAccess::create_temp(FileAccess::WRITE_READ, "export", "tmp", false, &err);
 	if (err != OK) {
@@ -407,8 +417,7 @@ Error _store_temp_file(const String &p_simplified_path, const Vector<uint8_t> &p
 	r_sd.path_utf8 = p_simplified_path.trim_prefix("res://").utf8();
 	r_sd.ofs = 0;
 	r_sd.size = p_data.size();
-	r_sd.delta = p_delta;
-	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_simplified_path, p_data, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed, r_sd.encrypted);
+	err = EditorExportPlatform::_encrypt_and_store_data(ftmp, p_preset, p_simplified_path, p_data, r_sd.encrypted);
 	if (err != OK) {
 		return err;
 	}

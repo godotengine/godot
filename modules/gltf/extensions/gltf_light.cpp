@@ -31,7 +31,11 @@
 #include "gltf_light.h"
 
 #include "../structures/gltf_object_model_property.h"
+
+#include "core/object/class_db.h"
 #include "scene/3d/light_3d.h"
+
+#include <cfloat> // FLT_MAX
 
 void GLTFLight::_bind_methods() {
 	ClassDB::bind_static_method("GLTFLight", D_METHOD("from_node", "light_node"), &GLTFLight::from_node);
@@ -247,7 +251,7 @@ Dictionary GLTFLight::to_dictionary() const {
 }
 
 Variant GLTFLight::get_additional_data(const StringName &p_extension_name) {
-	return additional_data[p_extension_name];
+	return additional_data.get(p_extension_name, Variant());
 }
 
 void GLTFLight::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {

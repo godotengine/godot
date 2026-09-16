@@ -30,6 +30,8 @@
 
 #include "gltf_animation.h"
 
+#include "core/object/class_db.h"
+
 void GLTFAnimation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_original_name"), &GLTFAnimation::get_original_name);
 	ClassDB::bind_method(D_METHOD("set_original_name", "original_name"), &GLTFAnimation::set_original_name);
@@ -102,7 +104,7 @@ GLTFAnimation::GLTFAnimation() {
 }
 
 Variant GLTFAnimation::get_additional_data(const StringName &p_extension_name) {
-	return additional_data[p_extension_name];
+	return additional_data.get(p_extension_name, Variant());
 }
 
 void GLTFAnimation::set_additional_data(const StringName &p_extension_name, Variant p_additional_data) {

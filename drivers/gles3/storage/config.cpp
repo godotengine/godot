@@ -28,11 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifdef GLES3_ENABLED
-
 #include "config.h"
 
-#include "../rasterizer_gles3.h"
+#ifdef GLES3_ENABLED
+
+#include "core/config/project_settings.h"
+#include "core/os/os.h"
+#include "core/string/ustring.h"
+#include "drivers/gles3/rasterizer_util_gles3.h"
+
+#ifdef ANDROID_ENABLED
+#include <platform_egl.h>
+#endif
 
 #ifdef WEB_ENABLED
 #include <emscripten/html5_webgl.h>
@@ -83,7 +90,7 @@ Config::Config() {
 	astc_layered_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
 	astc_supported = astc_layered_supported || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
 
-	if (RasterizerGLES3::is_gles_over_gl()) {
+	if (RasterizerUtilGLES3::is_gles_over_gl()) {
 		float_texture_supported = true;
 		float_texture_linear_supported = true;
 		etc2_supported = false;
@@ -94,7 +101,11 @@ Config::Config() {
 	} else {
 		float_texture_supported = extensions.has("GL_EXT_color_buffer_float");
 		float_texture_linear_supported = extensions.has("GL_OES_texture_float_linear");
+#ifdef WEB_ENABLED
+		etc2_supported = extensions.has("WEBGL_compressed_texture_etc");
+#else
 		etc2_supported = true;
+#endif
 #if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
 		// Some Android devices report support for S3TC but we don't expect that and don't export the textures.
 		// This could be fixed but so few devices support it that it doesn't seem useful (and makes bigger APKs).
@@ -210,6 +221,7 @@ Config::Config() {
 	}
 
 	max_renderable_elements = GLOBAL_GET("rendering/limits/opengl/max_renderable_elements");
+	max_decals = GLOBAL_GET("rendering/limits/opengl/max_decals");
 	max_renderable_lights = GLOBAL_GET("rendering/limits/opengl/max_renderable_lights");
 	max_lights_per_object = GLOBAL_GET("rendering/limits/opengl/max_lights_per_object");
 

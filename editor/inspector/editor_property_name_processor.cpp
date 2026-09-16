@@ -50,7 +50,7 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_settings_sty
 	if (!EditorSettings::get_singleton()) {
 		return STYLE_LOCALIZED;
 	}
-	const bool translate = EDITOR_GET("interface/editor/localize_settings");
+	const bool translate = EDITOR_GET("interface/editor/localization/localize_settings");
 	return translate ? STYLE_LOCALIZED : STYLE_CAPITALIZED;
 }
 
@@ -150,6 +150,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["adb"] = "ADB";
 	capitalize_string_remaps["actool"] = "actool";
 	capitalize_string_remaps["ao"] = "AO";
+	capitalize_string_remaps["androidxr"] = "AndroidXR";
 	capitalize_string_remaps["api"] = "API";
 	capitalize_string_remaps["apk"] = "APK";
 	capitalize_string_remaps["arm32"] = "arm32";
@@ -167,6 +168,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["bptc"] = "BPTC";
 	capitalize_string_remaps["bvh"] = "BVH";
 	capitalize_string_remaps["ca"] = "CA";
+	capitalize_string_remaps["colr"] = "COLR";
 	capitalize_string_remaps["ccdik"] = "CCDIK";
 	capitalize_string_remaps["cd"] = "CD";
 	capitalize_string_remaps["cpu"] = "CPU";
@@ -255,6 +257,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["opentype"] = "OpenType";
 	capitalize_string_remaps["openxr"] = "OpenXR";
 	capitalize_string_remaps["osslsigncode"] = "osslsigncode";
+	capitalize_string_remaps["path3d"] = "Path3D";
 	capitalize_string_remaps["pck"] = "PCK";
 	capitalize_string_remaps["png"] = "PNG";
 	capitalize_string_remaps["po2"] = "(Power of 2)"; // Unit.
@@ -330,8 +333,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["yz"] = "YZ";
 
 	// Articles, conjunctions, prepositions.
-	// The following initialization is parsed in `editor/translations/scripts/common.py` with a regex.
-	// The word definition format should be kept synced with the regex.
+	// The following initialization is parsed in https://github.com/godotengine/godot-editor-l10n/blob/main/scripts/common.py
+	// with a regex. The word definition format should be kept synced with the regex.
 	stop_words = LocalVector<String>({
 			"a",
 			"an",
@@ -350,6 +353,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 			"the",
 			"then",
 			"to",
+			"with",
 	});
 
 	// Translation context associated with a name.
@@ -358,8 +362,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	// - `Class::full/property/path`
 	// In case a class name is needed to distinguish between usages, all usages should use the second format.
 	//
-	// The following initialization is parsed in `editor/translations/scripts/common.py` with a regex.
-	// The map name and value definition format should be kept synced with the regex.
+	// The following initialization is parsed in https://github.com/godotengine/godot-editor-l10n/blob/main/scripts/common.py
+	// with a regex. The map name and value definition format should be kept synced with the regex.
 	translation_contexts["force"]["constant_force"] = "Physics";
 	translation_contexts["force"]["force/8_bit"] = "Enforce";
 	translation_contexts["force"]["force/mono"] = "Enforce";

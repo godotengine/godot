@@ -30,10 +30,11 @@
 
 #pragma once
 
-#include "openxr_render_model.h"
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_GLTF_ENABLED
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/packed_scene.h"
 #include "servers/xr/xr_positional_tracker.h"
 
 #include <openxr/openxr.h>
@@ -82,3 +83,5 @@ protected:
 };
 
 VARIANT_ENUM_CAST(OpenXRRenderModelManager::RenderModelTracker);
+
+#endif // MODULE_GLTF_ENABLED

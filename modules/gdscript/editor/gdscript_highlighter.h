@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/script/script_editor_plugin.h"
+#include "editor/script/syntax_highlighters.h"
 
 class GDScriptSyntaxHighlighter : public EditorSyntaxHighlighter {
 	GDCLASS(GDScriptSyntaxHighlighter, EditorSyntaxHighlighter)
@@ -54,7 +54,7 @@ private:
 		bool is_string = false; // `TYPE_STRING` or `TYPE_MULTILINE_STRING`.
 		bool is_comment = false; // `TYPE_COMMENT` or `TYPE_CODE_REGION`.
 	};
-	Vector<ColorRegion> color_regions;
+	LocalVector<ColorRegion> color_regions;
 	HashMap<int, int> color_region_cache;
 
 	HashMap<StringName, Color> class_names;

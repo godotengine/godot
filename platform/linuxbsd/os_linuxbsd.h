@@ -32,22 +32,18 @@
 
 #include "crash_handler_linuxbsd.h"
 
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio/audio_server.h"
-
-#ifdef FONTCONFIG_ENABLED
-#ifdef SOWRAP_ENABLED
-#include "fontconfig-so_wrap.h"
-#else
-#include <fontconfig/fontconfig.h>
-#endif
-#endif
 
 class JoypadSDL;
+
+#ifdef FONTCONFIG_ENABLED
+typedef struct _FcConfig FcConfig;
+typedef struct _FcObjectSet FcObjectSet;
+#endif
 
 class OS_LinuxBSD : public OS_Unix {
 	virtual void delete_main_loop() override;
@@ -137,6 +133,7 @@ public:
 	virtual Error move_to_trash(const String &p_path) override;
 
 	virtual String get_system_ca_certificates() override;
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
 #ifdef TOOLS_ENABLED
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const override;

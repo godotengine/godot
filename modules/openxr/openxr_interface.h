@@ -53,12 +53,12 @@
 // As some data is setup before we start rendering, and cleaned up
 // after we've stopped, that is accessed directly from both threads.
 
-#include "action_map/openxr_action_map.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "openxr_api.h"
 
 #include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_vrs.h"
 
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
@@ -159,6 +159,8 @@ public:
 	void set_action_set_active(const String &p_action_set, bool p_active);
 	Array get_action_sets() const;
 
+	Size2 get_recommended_target_size() const;
+
 	double get_render_target_size_multiplier() const;
 	void set_render_target_size_multiplier(double multiplier);
 
@@ -170,6 +172,9 @@ public:
 	bool get_foveation_dynamic() const;
 	void set_foveation_dynamic(bool p_foveation_dynamic);
 
+	bool get_foveation_with_subsampled_images() const;
+	void set_foveation_with_subsampled_images(bool p_enabled);
+
 	float get_vrs_min_radius() const;
 	void set_vrs_min_radius(float p_vrs_min_radius);
 
@@ -179,8 +184,12 @@ public:
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name) override;
+#ifndef DISABLE_DEPRECATED
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+#endif
 
 	virtual Rect2i get_render_region() override;
 
@@ -193,7 +202,7 @@ public:
 	virtual void process() override;
 	virtual void pre_render() override;
 	bool pre_draw_viewport(RID p_render_target) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual void end_frame() override;
 
 	virtual bool is_passthrough_supported() override;
@@ -231,6 +240,21 @@ public:
 	};
 
 	SessionState get_session_state();
+
+	/** User presence. */
+	bool is_user_presence_supported() const;
+	bool is_user_present() const;
+
+	/** View configuration */
+	enum ViewConfiguration {
+		VIEW_CONFIGURATION_MONO = 0,
+		VIEW_CONFIGURATION_STEREO = 1,
+		VIEW_CONFIGURATION_STEREO_WITH_INSET = 2,
+		VIEW_CONFIGURATION_UNSET = 254,
+		VIEW_CONFIGURATION_UNKNOWN = 255,
+	};
+
+	ViewConfiguration get_active_view_configuration() const;
 
 	/** Hand tracking. */
 	enum Hand {
@@ -338,6 +362,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(OpenXRInterface::SessionState)
+VARIANT_ENUM_CAST(OpenXRInterface::ViewConfiguration)
 VARIANT_ENUM_CAST(OpenXRInterface::Hand)
 VARIANT_ENUM_CAST(OpenXRInterface::HandMotionRange)
 VARIANT_ENUM_CAST(OpenXRInterface::HandTrackedSource)

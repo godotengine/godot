@@ -32,6 +32,9 @@
 
 #include "api/java_class_wrapper.h"
 
+// Maximum recursion depth allowed when converting variants to jobjects or vice-versa.
+#define RECURSION_DEPTH_LIMIT 64
+
 static jobject android_class_loader = nullptr;
 static jmethodID load_class_method = nullptr;
 
@@ -93,12 +96,18 @@ String charsequence_to_string(JNIEnv *p_env, jobject p_charsequence) {
 jobject _variant_to_jobject(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, int p_depth) {
 	jobject ret = nullptr;
 
-	if (p_depth > Variant::MAX_RECURSION_DEPTH) {
+	if (p_depth > RECURSION_DEPTH_LIMIT) {
 		ERR_PRINT("Variant is too deep! Bailing.");
 		return ret;
 	}
 
 	env->PushLocalFrame(2);
+	if (env->ExceptionCheck()) {
+		env->ExceptionDescribe();
+		env->ExceptionClear();
+		return ret;
+	}
+
 	switch (p_type) {
 		case Variant::BOOL: {
 			jclass bclass = jni_find_class(env, "java/lang/Boolean");
@@ -271,7 +280,7 @@ String _get_class_name(JNIEnv *env, jclass cls, bool *array) {
 }
 
 Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
-	ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, Variant(), "Variant is too deep! Bailing.");
+	ERR_FAIL_COND_V_MSG(p_depth > RECURSION_DEPTH_LIMIT, Variant(), "Variant is too deep! Bailing.");
 
 	if (obj == nullptr) {
 		return Variant();
@@ -419,24 +428,45 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj, int p_depth) {
 		return varr;
 	}
 
-	if (name == "java.util.HashMap" || name == "org.godotengine.godot.Dictionary") {
+	if (name == "org.godotengine.godot.Dictionary") {
 		Dictionary ret;
 		jclass oclass = c;
-		jmethodID get_keys = env->GetMethodID(oclass, "get_keys", "()[Ljava/lang/String;");
-		jobjectArray arr = (jobjectArray)env->CallObjectMethod(obj, get_keys);
 
-		PackedStringArray keys = _jobject_to_variant(env, arr, p_depth + 1);
-		env->DeleteLocalRef(arr);
+		jmethodID entrySet = env->GetMethodID(oclass, "entrySet", "()Ljava/util/Set;");
+		jobject entrySetObj = env->CallObjectMethod(obj, entrySet);
 
-		jmethodID get_values = env->GetMethodID(oclass, "get_values", "()[Ljava/lang/Object;");
-		arr = (jobjectArray)env->CallObjectMethod(obj, get_values);
+		jclass setClass = env->GetObjectClass(entrySetObj);
+		jmethodID iterator = env->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
+		jobject iteratorObj = env->CallObjectMethod(entrySetObj, iterator);
 
-		Array vals = _jobject_to_variant(env, arr, p_depth + 1);
-		env->DeleteLocalRef(arr);
+		jclass iteratorClass = env->GetObjectClass(iteratorObj);
+		jmethodID hasNext = env->GetMethodID(iteratorClass, "hasNext", "()Z");
+		jmethodID next = env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
 
-		for (int i = 0; i < keys.size(); i++) {
-			ret[keys[i]] = vals[i];
+		jclass entryClass = jni_find_class(env, "java/util/Map$Entry");
+		jmethodID getKey = env->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
+		jmethodID getValue = env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
+
+		while (env->CallBooleanMethod(iteratorObj, hasNext)) {
+			jobject entry = env->CallObjectMethod(iteratorObj, next);
+
+			jobject jkey = env->CallObjectMethod(entry, getKey);
+			jobject jvalue = env->CallObjectMethod(entry, getValue);
+
+			Variant key = _jobject_to_variant(env, jkey, p_depth + 1);
+			Variant value = _jobject_to_variant(env, jvalue, p_depth + 1);
+			ret[key] = value;
+
+			env->DeleteLocalRef(entry);
+			env->DeleteLocalRef(jkey);
+			env->DeleteLocalRef(jvalue);
 		}
+
+		env->DeleteLocalRef(entrySetObj);
+		env->DeleteLocalRef(iteratorObj);
+		env->DeleteLocalRef(setClass);
+		env->DeleteLocalRef(iteratorClass);
+		env->DeleteLocalRef(entryClass);
 
 		return ret;
 	}

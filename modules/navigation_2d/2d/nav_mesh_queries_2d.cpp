@@ -36,6 +36,7 @@
 #include "nav_region_iteration_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "core/templates/rb_map.h"
 
 using namespace Nav2D;
 
@@ -401,7 +402,7 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
 		// unreachable.
 		if (traversable_polys.is_empty()) {
 			// Thus use the further reachable polygon
-			ERR_BREAK_MSG(is_reachable == false, "It's not expect to not find the most reachable polygons");
+			ERR_BREAK_MSG(is_reachable == false, "Invalid navigation index or connection pointers. Check preceding navmesh geometry or placement errors.");
 			is_reachable = false;
 			if (reachable_end == nullptr) {
 				// The path is not found and there is not a way out.

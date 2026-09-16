@@ -35,14 +35,13 @@
 #include "core/math/vector3.h"
 #include "core/object/object.h"
 #include "core/string/ustring.h"
-#include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 
-#include "Jolt/Jolt.h"
+#include <Jolt/Jolt.h>
 
-#include "Jolt/Physics/Body/Body.h"
-#include "Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h"
-#include "Jolt/Physics/Collision/ObjectLayer.h"
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
+#include <Jolt/Physics/Collision/ObjectLayer.h>
 
 class JoltArea3D;
 class JoltBody3D;
@@ -61,8 +60,6 @@ public:
 	};
 
 protected:
-	LocalVector<JoltShapeInstance3D> shapes;
-
 	RID rid;
 	ObjectID instance_id;
 	JoltSpace3D *space = nullptr;
@@ -119,7 +116,6 @@ public:
 
 	ObjectID get_instance_id() const { return instance_id; }
 	void set_instance_id(ObjectID p_id) { instance_id = p_id; }
-	Object *get_instance() const;
 
 	JPH::Body *get_jolt_body() const { return jolt_body; }
 	JPH::BodyID get_jolt_id() const { return jolt_body->GetID(); }
@@ -148,7 +144,7 @@ public:
 
 	virtual bool reports_contacts() const = 0;
 
-	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) {}
+	virtual void pre_step(float p_step) {}
 
 	String to_string() const;
 };

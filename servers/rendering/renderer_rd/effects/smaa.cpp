@@ -31,10 +31,9 @@
 #include "smaa.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/image_loader.h"
 #include "servers/rendering/renderer_rd/effects/smaa_area_tex.gen.h"
 #include "servers/rendering/renderer_rd/effects/smaa_search_tex.gen.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
@@ -147,7 +146,9 @@ SMAA::~SMAA() {
 }
 
 void SMAA::allocate_render_targets(Ref<RenderSceneBuffersRD> p_render_buffers) {
-	Size2i full_size = p_render_buffers->get_internal_size();
+	RSE::ViewportScaling3DType scaling_type = RSE::scaling_3d_mode_type(p_render_buffers->get_scaling_3d_mode());
+	bool use_upscaled_texture = p_render_buffers->has_upscaled_texture() && scaling_type == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL;
+	Size2i full_size = use_upscaled_texture ? p_render_buffers->get_target_size() : p_render_buffers->get_internal_size();
 
 	// As we're not clearing these, and render buffers will return the cached texture if it already exists,
 	// we don't first check has_texture here.
@@ -167,7 +168,9 @@ void SMAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_colo
 	memset(&smaa.weight_push_constant, 0, sizeof(SMAAWeightPushConstant));
 	memset(&smaa.blend_push_constant, 0, sizeof(SMAABlendPushConstant));
 
-	Size2i size = p_render_buffers->get_internal_size();
+	RSE::ViewportScaling3DType scaling_type = RSE::scaling_3d_mode_type(p_render_buffers->get_scaling_3d_mode());
+	bool use_upscaled_texture = p_render_buffers->has_upscaled_texture() && scaling_type == RSE::VIEWPORT_SCALING_3D_TYPE_TEMPORAL;
+	Size2i size = use_upscaled_texture ? p_render_buffers->get_target_size() : p_render_buffers->get_internal_size();
 	Size2 inv_size = Size2(1.0f / (float)size.x, 1.0f / (float)size.y);
 
 	smaa.edge_push_constant.inv_size[0] = inv_size.x;
@@ -183,7 +186,7 @@ void SMAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_colo
 	smaa.blend_push_constant.inv_size[1] = inv_size.y;
 	smaa.blend_push_constant.use_debanding = p_use_debanding;
 
-	RID linear_sampler = material_storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RID linear_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
 
 	allocate_render_targets(p_render_buffers);
 	RID edges_tex = p_render_buffers->get_texture(RB_SCOPE_SMAA, RB_EDGES);

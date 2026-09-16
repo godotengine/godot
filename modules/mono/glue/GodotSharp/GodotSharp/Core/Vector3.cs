@@ -525,7 +525,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Moves this vector toward <paramref name="to"/> by the fixed <paramref name="delta"/> amount.
+        /// Returns a new vector moved toward <paramref name="to"/> by the fixed <paramref name="delta"/> amount. Will not go past the final value.
         /// </summary>
         /// <param name="to">The vector to move towards.</param>
         /// <param name="delta">The amount to move towards by.</param>
@@ -949,6 +949,15 @@ namespace Godot
             left.Z -= right.Z;
             return left;
         }
+
+        /// <summary>
+        /// Returns the same value as if the <c>+</c> was not there.
+        /// Unary <c>+</c> does nothing, but sometimes it can make your
+        /// code more readable.
+        /// </summary>
+        /// <param name="vec">The vector to do nothing to.</param>
+        /// <returns>The original vector.</returns>
+        public static Vector3 operator +(Vector3 vec) => vec;
 
         /// <summary>
         /// Returns the negative value of the <see cref="Vector3"/>.

@@ -85,6 +85,7 @@ private:
 		Ref<Texture2D> folded_arrow_mirrored;
 
 		int h_separation = 0;
+		int icon_max_width = 0;
 	} theme_cache;
 
 	Ref<StyleBox> _get_title_style() const;
@@ -102,7 +103,9 @@ private:
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
+	virtual bool has_point(const Point2 &p_point) const override;
 	void _notification(int p_what);
+	Size2 _fit_icon_size(const Size2 &p_size) const;
 	static void _bind_methods();
 
 public:
@@ -135,11 +138,15 @@ public:
 
 	void add_title_bar_control(Control *p_control);
 	void remove_title_bar_control(Control *p_control);
+	Control *get_title_bar_control(int64_t p_index) const;
+	int get_title_bar_control_count() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
+	virtual Size2 get_inner_combined_maximum_size() const override;
 
-	virtual Vector<int> get_allowed_size_flags_horizontal() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END }; }
-	virtual Vector<int> get_allowed_size_flags_vertical() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END }; }
+	virtual Vector<int> get_allowed_size_flags_horizontal() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END, SIZE_MAXIMIZE }; }
+	virtual Vector<int> get_allowed_size_flags_vertical() const override { return { SIZE_FILL, SIZE_SHRINK_BEGIN, SIZE_SHRINK_CENTER, SIZE_SHRINK_END, SIZE_MAXIMIZE }; }
 
 	FoldableContainer(const String &p_text = String());
 	~FoldableContainer();

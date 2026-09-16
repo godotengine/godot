@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-EnsureSConsVersion(4, 0)
-EnsurePythonVersion(3, 8)
+EnsureSConsVersion(4, 4)
+EnsurePythonVersion(3, 9)
 
 # System
 import glob
@@ -194,15 +194,29 @@ opts.Add(
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompression and WOFF2 fonts support", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
+opts.Add(
+    BoolVariable(
+        "rendering_device",
+        "Enable RenderingDevice abstraction for modern graphics APIs (use the `vulkan`, `d3d12`, and `metal` options to toggle individual drivers)",
+        True,
+    )
+)
+opts.Add(BoolVariable("forward_plus_renderer", "Enable the Forward+ renderer (requires RenderingDevice)", True))
+opts.Add(BoolVariable("forward_mobile_renderer", "Enable the Mobile renderer (requires RenderingDevice)", True))
 opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
 opts.Add(BoolVariable("metal", "Enable the Metal rendering driver on supported platforms (Apple arm64 only)", False))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
-opts.Add(BoolVariable("accesskit", "Use AccessKit C SDK", True))
-opts.Add(("accesskit_sdk_path", "Path to the AccessKit C SDK", ""))
+opts.Add(BoolVariable("accesskit", "Enable the AccessKit driver for screen reader support", True))
+opts.Add(BoolVariable("angle", "Enable the ANGLE rendering driver for OpenGL ES 3.0 on supported platforms", True))
 opts.Add(BoolVariable("sdl", "Enable the SDL3 input driver", True))
-opts.Add(("profiler_path", "Path to the Profiler framework. Only tracy and perfetto are supported at the moment.", ""))
+opts.Add(
+    EnumVariable(
+        "profiler", "Specify the profiler to use", "none", ["none", "tracy", "perfetto", "instruments"], ignorecase=2
+    )
+)
+opts.Add(("profiler_path", "Path to the Profiler framework.", ""))
 opts.Add(
     BoolVariable(
         "profiler_sample_callstack",
@@ -210,6 +224,26 @@ opts.Add(
         False,
     )
 )
+opts.Add(
+    BoolVariable(
+        "profiler_track_memory",
+        "Profile memory allocations, if the profiler supports it.",
+        False,
+    )
+)
+opts.Add(
+    BoolVariable(
+        "profiler_record_on_demand",
+        "Record only when the profiler is connected, if the profiler supports it. In Tracy, this configures TRACY_ON_DEMAND, which has a performance impact if enabled.",
+        True,
+    )
+)
+opts.Add((
+    "profiler_broadcast_address",
+    "The broadcast IP address used for announcing the profiler application. In Tracy this configures TRACY_CLIENT_ADDRESS.",
+    "",
+))
+
 
 # Advanced options
 opts.Add(
@@ -223,6 +257,7 @@ opts.Add(BoolVariable("ninja", "Use the ninja backend for faster rebuilds", Fals
 opts.Add(BoolVariable("ninja_auto_run", "Run ninja automatically after generating the ninja file", True))
 opts.Add("ninja_file", "Path to the generated ninja file", "build.ninja")
 opts.Add(BoolVariable("compiledb", "Generate compilation DB (`compile_commands.json`) for external tools", False))
+opts.Add(BoolVariable("compiledb_gen_only", "Exit after building the compilation database", False))
 opts.Add(
     "num_jobs",
     "Use up to N jobs when compiling (equivalent to `-j N`). Defaults to max jobs - 1. Ignored if -j is used.",
@@ -240,6 +275,7 @@ opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
+opts.Add(BoolVariable("disable_2d", "Disable 2D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("disable_physics_2d", "Disable 2D physics nodes and server", False))
@@ -267,6 +303,11 @@ opts.Add(
 )
 opts.Add(BoolVariable("use_precise_math_checks", "Math checks use very precise epsilon (debug option)", False))
 opts.Add(BoolVariable("strict_checks", "Enforce stricter checks (debug option)", False))
+opts.Add(
+    BoolVariable(
+        "limit_transitive_includes", "Attempt to limit the amount of transitive includes in system headers", True
+    )
+)
 opts.Add(BoolVariable("scu_build", "Use single compilation unit build", False))
 opts.Add("scu_limit", "Max includes per SCU file when using scu_build (determines RAM use)", "0")
 opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the Project Manager", True))
@@ -630,8 +671,11 @@ if env["build_profile"] != "":
             dbo = ft["disabled_build_options"]
             for c in dbo:
                 env[c] = dbo[c]
-    except json.JSONDecodeError:
-        print_error(f'Failed to open feature build profile: "{env["build_profile"]}"')
+    except json.JSONDecodeError as err:
+        print_error(f'Failed to open feature build profile due to JSON decoding error: "{env["build_profile"]}"\n{err}')
+        Exit(255)
+    except FileNotFoundError:
+        print_error(f'Feature build profile not found at: "{env["build_profile"]}"')
         Exit(255)
 
 # 'dev_mode' and 'production' are aliases to set default options if they haven't been
@@ -667,6 +711,22 @@ if env["scu_build"]:
 
     methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
 
+if env["rendering_device"]:
+    if env["platform"] == "web":
+        # Not available in the web platform.
+        env["rendering_device"] = False
+    else:
+        env.Append(CPPDEFINES=["RD_ENABLED"])
+        if env["forward_mobile_renderer"]:
+            env.Append(CPPDEFINES=["MOBILE_RD_ENABLED"])
+        if env["forward_plus_renderer"]:
+            env.Append(CPPDEFINES=["FORWARD_RD_ENABLED"])
+# These need to be set before platform detection.
+if not env["rendering_device"] or not (env["forward_mobile_renderer"] or env["forward_plus_renderer"]):
+    env["d3d12"] = False
+    env["metal"] = False
+    env["vulkan"] = False
+
 # Must happen after the flags' definition, as configure is when most flags
 # are actually handled to change compile options, etc.
 detect.configure(env)
@@ -687,24 +747,17 @@ cc_version_metadata1 = cc_version["metadata1"]
 
 if cc_version_major == -1:
     print_warning(
-        "Couldn't detect compiler version, skipping version checks. "
-        "Build may fail if the compiler doesn't support C++17 fully."
+        "Couldn't detect compiler version, skipping version checks. Build may fail if the compiler doesn't support C++17 fully."
     )
 elif methods.using_gcc(env):
-    if cc_version_major < 9:
+    if cc_version_major < 11:
         print_error(
-            "Detected GCC version older than 9, which does not fully support "
-            "C++17, or has bugs when compiling Godot. Supported versions are 9 "
-            "and later. Use a newer GCC version, or Clang 6 or later by passing "
-            '"use_llvm=yes" to the SCons command line.'
+            f'Detected GCC version {cc_version_major} while Godot requires GCC 11 or newer. Use a newer GCC version, or Clang 9 or newer by passing "use_llvm=yes" to the SCons command line.'
         )
         Exit(255)
-    elif cc_version_metadata1 == "win32":
+    if cc_version_metadata1 == "win32":
         print_error(
-            "Detected mingw version is not using posix threads. Only posix "
-            "version of mingw is supported. "
-            'Use "update-alternatives --config x86_64-w64-mingw32-g++" '
-            "to switch to posix threads."
+            'Detected mingw version is not using posix threads. Only posix version of mingw is supported. Use "update-alternatives --config x86_64-w64-mingw32-g++" to switch to posix threads.'
         )
         Exit(255)
 elif methods.using_clang(env):
@@ -713,14 +766,13 @@ elif methods.using_clang(env):
     if methods.is_apple_clang(env):
         if cc_version_major < 16:
             print_error(
-                "Detected Apple Clang version older than 16, supported versions are Apple Clang 16 (Xcode 16) and later."
+                f"Detected Apple Clang version {cc_version_major} while Godot requires Apple Clang 16 (Xcode 16) or newer."
             )
             Exit(255)
     else:
-        if cc_version_major < 6:
+        if cc_version_major < 9:
             print_error(
-                "Detected Clang version older than 6, which does not fully support "
-                "C++17. Supported versions are Clang 6 and later."
+                f"Detected Clang version {cc_version_major} while Godot requires Clang 9 or newer. Use a newer Clang version, or GCC 11 or newer."
             )
             Exit(255)
         elif env["debug_paths_relative"] and cc_version_major < 10:
@@ -728,24 +780,18 @@ elif methods.using_clang(env):
             env["debug_paths_relative"] = False
 
 elif env.msvc:
-    # Ensure latest minor builds of Visual Studio 2017/2019.
-    # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
     if cc_version_major == 16 and cc_version_minor < 11:
+        # Ensure latest minor build of Visual Studio 2019.
+        # https://github.com/godotengine/godot/pull/94995#issuecomment-2336464574
         print_error(
             "Detected Visual Studio 2019 version older than 16.11, which has bugs "
-            "when compiling Godot. Use a newer VS2019 version, or VS2022."
+            "when compiling Godot. Use a newer VS2019 version, or VS2022+."
         )
         Exit(255)
-    if cc_version_major == 15 and cc_version_minor < 9:
+    elif cc_version_major < 16:
         print_error(
-            "Detected Visual Studio 2017 version older than 15.9, which has bugs "
-            "when compiling Godot. Use a newer VS2017 version, or VS2019/VS2022."
-        )
-        Exit(255)
-    if cc_version_major < 15:
-        print_error(
-            "Detected Visual Studio 2015 or earlier, which is unsupported in Godot. "
-            "Supported versions are Visual Studio 2017 and later."
+            "Detected Visual Studio 2017 or earlier, which is unsupported in Godot. "
+            "Supported versions are Visual Studio 2019 and later."
         )
         Exit(255)
 
@@ -777,6 +823,13 @@ elif methods.using_clang(env) or methods.using_emcc(env):
     env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if is_stderr_color() else "-fno-color-diagnostics"])
     if sys.platform == "win32":
         env.AppendUnique(CCFLAGS=["-fansi-escape-codes"])
+
+# Attempt to reduce transitive includes.
+if env["limit_transitive_includes"]:
+    if not env.msvc:
+        # FIXME: This define only affects `libcpp`, but lack of guaranteed, granular detection means
+        #  we're better off applying it universally.
+        env.AppendUnique(CPPDEFINES=["_LIBCPP_REMOVE_TRANSITIVE_INCLUDES"])
 
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
@@ -866,12 +919,9 @@ if not env.msvc:
     env.Prepend(CXXFLAGS=["-std=gnu++17"])
 else:
     # MSVC started offering C standard support with Visual Studio 2019 16.8, which covers all
-    # of our supported VS2019 & VS2022 versions; VS2017 will only pass the C++ standard.
+    # of our supported Visual Studio versions.
+    env.Prepend(CFLAGS=["/std:c17"])
     env.Prepend(CXXFLAGS=["/std:c++17"])
-    if cc_version_major < 16:
-        print_warning("Visual Studio 2017 cannot specify a C-Standard.")
-    else:
-        env.Prepend(CFLAGS=["/std:c17"])
     # MSVC is non-conforming with the C++ standard by default, so we enable more conformance.
     # Note that this is still not complete conformance, as certain Windows-related headers
     # don't compile under complete conformance.
@@ -939,6 +989,9 @@ else:  # GCC, Clang
             common_warnings += ["-Wno-return-type"]
         if cc_version_major >= 11:
             common_warnings += ["-Wenum-conversion"]
+        if cc_version_major >= 16:
+            # GCC 16 flags type-incompleteness assertions on their intended behavior, see GH-119269.
+            env.AppendUnique(CXXFLAGS=["-Wno-sfinae-incomplete"])
     elif methods.using_clang(env) or methods.using_emcc(env):
         common_warnings += ["-Wshadow-field-in-constructor", "-Wshadow-uncaptured-local"]
         # We often implement `operator<` for structs of pointers as a requirement
@@ -980,6 +1033,11 @@ else:  # GCC, Clang
 
     if env["werror"]:
         env.AppendUnique(CCFLAGS=["-Werror"])
+        if env["platform"] != "macos":
+            env.AppendUnique(LINKFLAGS=["-Wl,--fatal-warnings"])
+        elif env["arch"] != "x86_64":
+            # Disabled for x86-64 macOS build due to MoltenVK min. target version mismatch.
+            env.AppendUnique(LINKFLAGS=["-Wl,-fatal_warnings"])
 
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
@@ -1006,6 +1064,7 @@ sys.modules.pop("detect")
 if env.editor_build:
     unsupported_opts = []
     for disable_opt in [
+        "disable_2d",
         "disable_3d",
         "disable_advanced_gui",
         "disable_physics_2d",
@@ -1023,6 +1082,11 @@ if env.editor_build:
         )
         Exit(255)
 
+if env["disable_2d"]:
+    env.Append(CPPDEFINES=["_2D_DISABLED"])
+    env["disable_navigation_2d"] = True
+    env["disable_physics_2d"] = True
+    env["tests"] = False
 if env["disable_3d"]:
     env.Append(CPPDEFINES=["_3D_DISABLED"])
     env["disable_navigation_3d"] = True
@@ -1097,7 +1161,7 @@ methods.sort_module_list(env)
 
 if env.editor_build:
     # Add editor-specific dependencies to the dependency graph.
-    env.module_add_dependencies("editor", ["freetype", "regex", "svg"])
+    env.module_add_dependencies("editor", ["freetype", "svg"])
 
     # And check if they are met.
     if not env.module_check_dependencies("editor"):
@@ -1144,16 +1208,11 @@ env.Append(BUILDERS=GLSL_BUILDERS)
 
 if env["compiledb"]:
     env.Tool("compilation_db")
-    env.Alias("compiledb", env.CompilationDatabase())
     env.NoCache(env.CompilationDatabase())
     if not env["verbose"]:
         env["COMPILATIONDB_COMSTR"] = "$GENCOMSTR"
 
 if env["ninja"]:
-    if env.scons_version < (4, 2, 0):
-        print_error(f"The `ninja=yes` option requires SCons 4.2 or later, but your version is {scons_raw_version}.")
-        Exit(255)
-
     SetOption("experimental", "ninja")
     env["NINJA_FILE_NAME"] = env["ninja_file"]
     env["NINJA_DISABLE_AUTO_RUN"] = not env["ninja_auto_run"]
@@ -1204,6 +1263,12 @@ if env["vsproj"]:
 
 # Miscellaneous & post-build methods.
 if not env.GetOption("clean") and not env.GetOption("help"):
+    if env["compiledb"] and env["compiledb_gen_only"]:
+        from SCons.Tool.compilation_db import write_compilation_db
+
+        write_compilation_db([env.File("compile_commands.json")], [], env)
+        env.Exit()
+
     methods.dump(env)
     methods.show_progress(env)
     methods.prepare_purge(env)

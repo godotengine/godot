@@ -34,6 +34,7 @@
 #include "jni_singleton.h"
 
 #include "core/config/engine.h"
+#include "core/object/class_db.h"
 
 #if !defined(ANDROID_ENABLED)
 static JavaClassWrapper *java_class_wrapper = nullptr;
@@ -73,10 +74,16 @@ void JavaObject::_bind_methods() {
 void JavaClassWrapper::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wrap", "name"), &JavaClassWrapper::wrap);
 	ClassDB::bind_method(D_METHOD("get_exception"), &JavaClassWrapper::get_exception);
+	ClassDB::bind_method(D_METHOD("create_sam_callback", "sam_interface", "callable"), &JavaClassWrapper::create_sam_callback);
+	ClassDB::bind_method(D_METHOD("create_proxy", "object", "interfaces"), &JavaClassWrapper::create_proxy);
 }
 
 #if !defined(ANDROID_ENABLED)
 bool JavaClass::_get(const StringName &p_name, Variant &r_ret) const {
+	return false;
+}
+
+bool JavaClass::_set(const StringName &p_name, const Variant &p_property) {
 	return false;
 }
 
@@ -106,6 +113,14 @@ JavaClass::JavaClass() {
 JavaClass::~JavaClass() {
 }
 
+bool JavaObject::_get(const StringName &p_name, Variant &r_ret) const {
+	return false;
+}
+
+bool JavaObject::_set(const StringName &p_name, const Variant &p_property) {
+	return false;
+}
+
 Variant JavaObject::callp(const StringName &, const Variant **, int, Callable::CallError &) {
 	return Variant();
 }
@@ -122,6 +137,14 @@ JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
 
 Ref<JavaClass> JavaClassWrapper::_wrap(const String &, bool) {
 	return Ref<JavaClass>();
+}
+
+Ref<JavaObject> JavaClassWrapper::create_sam_callback(const String &p_interface, const Callable &p_callable) {
+	return Ref<JavaObject>();
+}
+
+Ref<JavaObject> JavaClassWrapper::create_proxy(const Object *p_object, const PackedStringArray &p_interfaces) {
+	return Ref<JavaObject>();
 }
 
 JavaClassWrapper::JavaClassWrapper() {

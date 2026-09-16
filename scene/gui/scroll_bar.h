@@ -74,11 +74,9 @@ class ScrollBar : public Range {
 	Vector2 drag_node_accum;
 	Vector2 drag_node_from;
 	Vector2 last_drag_node_accum;
-	float last_drag_node_time = 0.0;
 	float time_since_motion = 0.0;
 	bool drag_node_touching = false;
 	bool drag_node_touching_deaccel = false;
-	bool click_handled = false;
 
 	bool scrolling = false;
 	double target_scroll = 0.0;
@@ -86,6 +84,7 @@ class ScrollBar : public Range {
 
 	void _drag_node_exit();
 	void _drag_node_input(const Ref<InputEvent> &p_input);
+	Size2 _fit_icon_size(const Size2 &p_size) const;
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -109,6 +108,8 @@ protected:
 		int padding_top = 0;
 		int padding_right = 0;
 		int padding_bottom = 0;
+
+		int icon_max_size = 0;
 	} theme_cache;
 
 	void _notification(int p_what);
@@ -143,7 +144,7 @@ protected:
 
 public:
 	HScrollBar() :
-			ScrollBar(HORIZONTAL) { set_v_size_flags(0); }
+			ScrollBar(HORIZONTAL) { set_v_size_flags(SIZE_SHRINK_BEGIN); }
 };
 
 class VScrollBar : public ScrollBar {
@@ -154,5 +155,5 @@ protected:
 
 public:
 	VScrollBar() :
-			ScrollBar(VERTICAL) { set_h_size_flags(0); }
+			ScrollBar(VERTICAL) { set_h_size_flags(SIZE_SHRINK_BEGIN); }
 };

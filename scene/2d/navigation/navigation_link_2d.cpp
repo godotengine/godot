@@ -30,7 +30,9 @@
 
 #include "navigation_link_2d.h"
 
+#include "core/config/engine.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/class_db.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 
@@ -112,11 +114,6 @@ void NavigationLink2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			set_physics_process_internal(true);
-		} break;
-
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			set_physics_process_internal(false);
 			_link_update_transform();
 		} break;
 
@@ -245,7 +242,7 @@ void NavigationLink2D::set_start_position(Vector2 p_position) {
 		return;
 	}
 
-	NavigationServer2D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
+	NavigationServer2D::get_singleton()->link_set_start_position(link, get_global_transform().xform(start_position));
 
 	update_configuration_warnings();
 
@@ -265,7 +262,7 @@ void NavigationLink2D::set_end_position(Vector2 p_position) {
 		return;
 	}
 
-	NavigationServer2D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+	NavigationServer2D::get_singleton()->link_set_end_position(link, get_global_transform().xform(end_position));
 
 	update_configuration_warnings();
 
@@ -349,10 +346,8 @@ void NavigationLink2D::_link_enter_navigation_map() {
 		NavigationServer2D::get_singleton()->link_set_map(link, get_world_2d()->get_navigation_map());
 	}
 
-	current_global_transform = get_global_transform();
-
-	NavigationServer2D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
-	NavigationServer2D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+	NavigationServer2D::get_singleton()->link_set_start_position(link, get_global_transform().xform(start_position));
+	NavigationServer2D::get_singleton()->link_set_end_position(link, get_global_transform().xform(end_position));
 	NavigationServer2D::get_singleton()->link_set_enabled(link, enabled);
 
 	queue_redraw();
@@ -367,13 +362,10 @@ void NavigationLink2D::_link_update_transform() {
 		return;
 	}
 
-	Transform2D new_global_transform = get_global_transform();
-	if (current_global_transform != new_global_transform) {
-		current_global_transform = new_global_transform;
-		NavigationServer2D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
-		NavigationServer2D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
-		queue_redraw();
-	}
+	NavigationServer2D::get_singleton()->link_set_start_position(link, get_global_transform().xform(start_position));
+	NavigationServer2D::get_singleton()->link_set_end_position(link, get_global_transform().xform(end_position));
+
+	queue_redraw();
 }
 
 #ifdef DEBUG_ENABLED

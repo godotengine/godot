@@ -44,7 +44,7 @@ protected:
 		MENU_LOAD_EMISSION_MASK = 100,
 	};
 
-	HashSet<Node *> selected_particles;
+	HashSet<ObjectID> selected_particles;
 
 	enum EmissionMode {
 		EMISSION_MODE_SOLID,

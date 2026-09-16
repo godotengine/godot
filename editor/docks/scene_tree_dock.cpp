@@ -32,7 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
 #include "editor/animation/animation_player_editor_plugin.h"
@@ -52,6 +54,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/multi_node_edit.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_viewport.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/scene/rename_dialog.h"
 #include "editor/scene/reparent_dialog.h"
@@ -66,12 +69,18 @@
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/panel_container.h"
+#include "scene/main/missing_node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box_flat.h"
 #include "servers/display/display_server.h"
 
 void SceneTreeDock::_nodes_drag_begin() {
 	pending_click_select = nullptr;
+	edited_object_at_drag_start = InspectorDock::get_inspector_singleton()->get_edited_object();
+	scene_tree_drag_active = true;
 }
 
 void SceneTreeDock::_quick_open(const String &p_file_path) {
@@ -96,7 +105,6 @@ void SceneTreeDock::_inspect_hovered_node() {
 		return;
 	}
 
-	select_node_hovered_at_end_of_drag = true;
 	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
 
 	_restore_treeitem_custom_color(tree_item_inspected);
@@ -121,7 +129,7 @@ void SceneTreeDock::_handle_hover_to_inspect() {
 
 	if (item) {
 		const NodePath &np = item->get_metadata(0);
-		node_hovered_now = get_node_or_null(np);
+		node_hovered_now = edited_scene->get_node_or_null(np);
 		if (node_hovered_previously != node_hovered_now) {
 			inspect_hovered_node_delay->start();
 		}
@@ -177,7 +185,24 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (!p_event->is_pressed() || p_event->is_echo()) {
+	if (!p_event->is_pressed()) {
+		return;
+	}
+
+	// These shortcuts allow echo events for continuous execution.
+	if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
+		_tool_selected(TOOL_DUPLICATE);
+	} else if (ED_IS_SHORTCUT("scene_tree/move_up", p_event)) {
+		_tool_selected(TOOL_MOVE_UP);
+	} else if (ED_IS_SHORTCUT("scene_tree/move_down", p_event)) {
+		_tool_selected(TOOL_MOVE_DOWN);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node", p_event)) {
+		_tool_selected(TOOL_PASTE);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_sibling", p_event)) {
+		_tool_selected(TOOL_PASTE_AS_SIBLING);
+	}
+
+	if (p_event->is_echo()) {
 		return;
 	}
 
@@ -203,26 +228,22 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_CUT);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node", p_event)) {
 		_tool_selected(TOOL_COPY);
-	} else if (ED_IS_SHORTCUT("scene_tree/paste_node", p_event)) {
-		_tool_selected(TOOL_PASTE);
-	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_sibling", p_event)) {
-		_tool_selected(TOOL_PASTE_AS_SIBLING);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node_as_replacement", p_event)) {
+		_tool_selected(TOOL_PASTE_AS_REPLACEMENT);
 	} else if (ED_IS_SHORTCUT("scene_tree/change_node_type", p_event)) {
-		_tool_selected(TOOL_REPLACE);
-	} else if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
-		_tool_selected(TOOL_DUPLICATE);
+		_tool_selected(TOOL_CHANGE_TYPE);
 	} else if (ED_IS_SHORTCUT("scene_tree/attach_script", p_event)) {
 		_tool_selected(TOOL_ATTACH_SCRIPT);
+	} else if (ED_IS_SHORTCUT("scene_tree/extend_script", p_event)) {
+		_tool_selected(TOOL_EXTEND_SCRIPT);
 	} else if (ED_IS_SHORTCUT("scene_tree/detach_script", p_event)) {
 		_tool_selected(TOOL_DETACH_SCRIPT);
-	} else if (ED_IS_SHORTCUT("scene_tree/move_up", p_event)) {
-		_tool_selected(TOOL_MOVE_UP);
-	} else if (ED_IS_SHORTCUT("scene_tree/move_down", p_event)) {
-		_tool_selected(TOOL_MOVE_DOWN);
 	} else if (ED_IS_SHORTCUT("scene_tree/reparent", p_event)) {
 		_tool_selected(TOOL_REPARENT);
 	} else if (ED_IS_SHORTCUT("scene_tree/reparent_to_new_node", p_event)) {
 		_tool_selected(TOOL_REPARENT_TO_NEW_NODE);
+	} else if (ED_IS_SHORTCUT("scene_tree/make_root", p_event)) {
+		_tool_selected(TOOL_MAKE_ROOT);
 	} else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
 		_tool_selected(TOOL_NEW_SCENE_FROM);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
@@ -235,12 +256,23 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 	} else if (ED_IS_SHORTCUT("scene_tree/toggle_editable_children", p_event)) {
 		_tool_selected(TOOL_SCENE_EDITABLE_CHILDREN);
+	} else if (ED_IS_SHORTCUT("scene_tree/open_scene_in_editor", p_event)) {
+		_tool_selected(TOOL_SCENE_OPEN);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	} else {
-		Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_event);
+		const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_event);
 		if (custom_callback.is_valid()) {
-			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, _get_selection_array());
+			EditorContextMenuPlugin::OptionsData context_data = SceneTreeDock::_get_context_data(editor_selection->get_top_selected_node_list());
+
+#ifndef DISABLE_DEPRECATED
+			if (p_event->get_meta("_legacy_shortcut", false)) {
+				EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data["selected_nodes"]);
+				accept_event();
+				return;
+			}
+#endif
+			EditorContextMenuPluginManager::get_singleton()->invoke_callback(custom_callback, context_data);
 		} else {
 			return;
 		}
@@ -261,6 +293,36 @@ void SceneTreeDock::_scene_tree_gui_input(Ref<InputEvent> p_event) {
 		filter->grab_focus();
 		filter->select_all();
 		accept_event();
+	} else if (ED_IS_SHORTCUT("scene_tree/open_scene_in_editor", p_event)) {
+		_tool_selected(TOOL_SCENE_OPEN);
+		accept_event();
+	}
+}
+
+void SceneTreeDock::_scene_tree_draw() {
+	if (highlighted_item.is_null()) {
+		return;
+	}
+	Tree *tree = scene_tree->get_scene_tree();
+	TreeItem *item = ObjectDB::get_instance<TreeItem>(highlighted_item);
+	if (!item || item->get_tree() != tree) {
+		return;
+	}
+	Rect2 rect = tree->get_item_rect(item);
+	constexpr float shrink = 4;
+	rect.position.x += EDSCALE_RND(shrink);
+	rect.size.x -= EDSCALE_RND(shrink * 2);
+	theme_cache.item_highlight->set_border_color(Color(theme_cache.item_highlight->get_border_color(), MIN(highlight_timer, 1.0)));
+	tree->draw_style_box(theme_cache.item_highlight, rect);
+}
+
+void SceneTreeDock::_scene_tree_item_selected() {
+	if (highlighted_item.is_null()) {
+		return;
+	}
+	TreeItem *item = ObjectDB::get_instance<TreeItem>(highlighted_item);
+	if (item && scene_tree->get_scene_tree()->get_selected() == item) {
+		_cancel_highlight();
 	}
 }
 
@@ -323,7 +385,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 		if (!edited_scene->get_scene_file_path().is_empty()) {
 			if (_cyclical_dependency_exists(edited_scene->get_scene_file_path(), instantiated_scene)) {
 				accept->set_text(vformat(TTR("Cannot instantiate the scene '%s' because the current scene exists within one of its nodes."), p_files[i]));
-				accept->popup_centered();
+				callable_mp((Window *)accept, &Window::popup_centered).call_deferred(Size2i());
 				error = true;
 				break;
 			}
@@ -365,9 +427,6 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 
 	undo_redo->commit_action();
 	_push_item(instances[instances.size() - 1]);
-	for (int i = 0; i < instances.size(); i++) {
-		emit_signal(SNAME("node_created"), instances[i]);
-	}
 }
 
 void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p_files, Node *p_parent, int p_pos) {
@@ -439,9 +498,9 @@ void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p
 	undo_redo->commit_action();
 }
 
-void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base) {
+void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *p_base) {
 	// `move_child` + `get_index` doesn't really work for internal nodes.
-	ERR_FAIL_COND_MSG(base->is_internal(), "Trying to replace internal node, this is not supported.");
+	ERR_FAIL_COND_MSG(p_base->is_internal(), "Trying to replace internal node, this is not supported.");
 
 	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
 	if (sdata.is_null()) {
@@ -457,10 +516,10 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 		return;
 	}
 
-	instantiated_scene->set_unique_name_in_owner(base->is_unique_name_in_owner());
+	instantiated_scene->set_unique_name_in_owner(p_base->is_unique_name_in_owner());
 
 	Node2D *copy_2d = Object::cast_to<Node2D>(instantiated_scene);
-	Node2D *base_2d = Object::cast_to<Node2D>(base);
+	Node2D *base_2d = Object::cast_to<Node2D>(p_base);
 	if (copy_2d && base_2d) {
 		copy_2d->set_position(base_2d->get_position());
 		copy_2d->set_rotation(base_2d->get_rotation());
@@ -468,27 +527,55 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 	}
 
 	Node3D *copy_3d = Object::cast_to<Node3D>(instantiated_scene);
-	Node3D *base_3d = Object::cast_to<Node3D>(base);
+	Node3D *base_3d = Object::cast_to<Node3D>(p_base);
 	if (copy_3d && base_3d) {
 		copy_3d->set_position(base_3d->get_position());
 		copy_3d->set_rotation(base_3d->get_rotation());
 		copy_3d->set_scale(base_3d->get_scale());
 	}
 
+	// Ensure that local signals are still connected.
+	List<MethodInfo> signal_list;
+	p_base->get_signal_list(&signal_list);
+	for (const MethodInfo &meth : signal_list) {
+		List<Object::Connection> connection_list;
+		p_base->get_signal_connection_list(meth.name, &connection_list);
+
+		List<Object::Connection> other;
+		instantiated_scene->get_signal_connection_list(meth.name, &other);
+
+		for (const Object::Connection &con : connection_list) {
+			if (!(con.flags & Object::CONNECT_PERSIST)) {
+				continue;
+			}
+			// May be already connected if the connection was saved with the scene.
+			bool already_connected = false; // Can't use is_connected(), because of different targets.
+			for (const Object::Connection &otcon : other) {
+				if (otcon.signal.get_name() == con.signal.get_name() && otcon.callable.get_method() == con.callable.get_method()) {
+					already_connected = true;
+					break;
+				}
+			}
+			if (!already_connected) {
+				instantiated_scene->connect(con.signal.get_name(), con.callable, con.flags);
+			}
+		}
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Replace with Branch Scene"));
 
-	Node *parent = base->get_parent();
-	int pos = base->get_index(false);
-	undo_redo->add_do_method(parent, "remove_child", base);
+	Node *parent = p_base->get_parent();
+	int pos = p_base->get_index(false);
+	undo_redo->add_do_method(parent, "remove_child", p_base);
 	undo_redo->add_undo_method(parent, "remove_child", instantiated_scene);
 	undo_redo->add_do_method(parent, "add_child", instantiated_scene, true);
-	undo_redo->add_undo_method(parent, "add_child", base, true);
+	undo_redo->add_undo_method(parent, "add_child", p_base, true);
 	undo_redo->add_do_method(parent, "move_child", instantiated_scene, pos);
-	undo_redo->add_undo_method(parent, "move_child", base, pos);
+	undo_redo->add_undo_method(parent, "move_child", p_base, pos);
 
 	List<Node *> owned;
-	base->get_owned_by(base->get_owner(), &owned);
+	p_base->get_owned_by(p_base->get_owner(), &owned);
 	Array owners;
 	for (Node *F : owned) {
 		owners.push_back(F);
@@ -499,12 +586,12 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 	undo_redo->add_do_method(editor_selection, "clear");
 	undo_redo->add_undo_method(editor_selection, "clear");
 	undo_redo->add_do_method(editor_selection, "add_node", instantiated_scene);
-	undo_redo->add_undo_method(editor_selection, "add_node", base);
+	undo_redo->add_undo_method(editor_selection, "add_node", p_base);
 	undo_redo->add_do_property(scene_tree, "set_selected", instantiated_scene);
-	undo_redo->add_undo_property(scene_tree, "set_selected", base);
+	undo_redo->add_undo_property(scene_tree, "set_selected", p_base);
 
 	undo_redo->add_do_reference(instantiated_scene);
-	undo_redo->add_undo_reference(base);
+	undo_redo->add_undo_reference(p_base);
 	undo_redo->commit_action();
 }
 
@@ -567,7 +654,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 			if (editor_selection->get_selection().size() > 1) {
-				if (!_validate_no_foreign()) {
+				if (!_validate_no_foreign_selected(editor_selection->get_full_selected_node_list())) {
 					break;
 				}
 				rename_dialog->popup_centered();
@@ -579,15 +666,15 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 			Tree *tree = scene_tree->get_scene_tree();
 			if (tree->is_anything_selected()) {
-				if (!_validate_no_foreign()) {
+				if (!_validate_no_foreign_selected(editor_selection->get_full_selected_node_list())) {
 					break;
 				}
-				tree->grab_focus();
+				tree->grab_focus(!tree->has_focus(true));
 				tree->edit_selected();
 			}
 		} break;
 		case TOOL_REPARENT_TO_NEW_NODE:
-			if (!_validate_no_foreign()) {
+			if (!_validate_no_foreign_selected(editor_selection->get_top_selected_node_list())) {
 				break;
 			}
 			[[fallthrough]];
@@ -596,15 +683,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (reset_create_dialog && !p_confirm_override) {
-				create_dialog->set_base_type("Node");
-				reset_create_dialog = false;
-			}
-
 			// Prefer nodes that inherit from the current scene root.
 			Node *current_edited_scene_root = EditorNode::get_singleton()->get_edited_scene();
 			if (current_edited_scene_root) {
-				String root_class = current_edited_scene_root->get_class_name();
 				static Vector<String> preferred_types;
 				if (preferred_types.is_empty()) {
 					preferred_types.push_back("Control");
@@ -613,7 +694,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 
 				for (int i = 0; i < preferred_types.size(); i++) {
-					if (ClassDB::is_parent_class(root_class, preferred_types[i])) {
+					if (current_edited_scene_root->is_class(preferred_types[i])) {
 						create_dialog->set_preferred_search_result_type(preferred_types[i]);
 						break;
 					}
@@ -621,9 +702,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			create_dialog->popup_create(true);
-			if (!p_confirm_override) {
-				emit_signal(SNAME("add_node_used"));
-			}
 		} break;
 		case TOOL_INSTANTIATE: {
 			if (!profile_allow_editing) {
@@ -637,9 +715,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ "PackedScene" }, callable_mp(this, &SceneTreeDock::_quick_open));
-			if (!p_confirm_override) {
-				emit_signal(SNAME("add_node_used"));
-			}
 		} break;
 		case TOOL_EXPAND_COLLAPSE: {
 			Tree *tree = scene_tree->get_scene_tree();
@@ -660,11 +735,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_CUT:
 		case TOOL_COPY: {
-			if (!edited_scene || (p_tool == TOOL_CUT && !_validate_no_foreign())) {
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			if (!edited_scene || (p_tool == TOOL_CUT && !_validate_no_foreign_selected(selection))) {
 				break;
 			}
 
-			List<Node *> selection = editor_selection->get_top_selected_node_list();
 			if (selection.is_empty()) {
 				break;
 			}
@@ -725,28 +800,48 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_PASTE_AS_SIBLING: {
 			paste_nodes(true);
 		} break;
-		case TOOL_REPLACE: {
+		case TOOL_PASTE_AS_REPLACEMENT: {
 			if (!profile_allow_editing) {
 				break;
 			}
 
-			if (!_validate_no_foreign()) {
+			if (node_clipboard.is_empty()) {
 				break;
 			}
 
-			if (!_validate_no_instance()) {
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			if (!_validate_no_foreign_selected(selection)) {
 				break;
 			}
 
-			if (reset_create_dialog) {
-				create_dialog->set_base_type("Node");
-				reset_create_dialog = false;
+			for (const Node *node : selection) {
+				if (node == edited_scene) {
+					EditorNode::get_singleton()->show_warning(TTR("This operation can't be done on the tree root."));
+					return;
+				}
+			}
+
+			paste_node_as_replacement();
+		} break;
+		case TOOL_CHANGE_TYPE: {
+			if (!profile_allow_editing) {
+				break;
+			}
+
+			List<Node *> full_selection = editor_selection->get_full_selected_node_list();
+
+			if (!_validate_no_foreign_selected(full_selection)) {
+				break;
+			}
+
+			if (!_validate_no_instance_selected(full_selection)) {
+				break;
 			}
 
 			Node *selected = scene_tree->get_selected();
-			const List<Node *> &top_node_list = editor_selection->get_top_selected_node_list();
-			if (!selected && !top_node_list.is_empty()) {
-				selected = top_node_list.front()->get();
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			if (!selected && !selection.is_empty()) {
+				selected = selection.front()->get();
 			}
 
 			if (selected) {
@@ -772,7 +867,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Detach Script"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
-			undo_redo->add_do_method(EditorNode::get_singleton(), "push_item", (Script *)nullptr);
 
 			for (int i = 0; i < selection.size(); i++) {
 				Node *n = Object::cast_to<Node>(selection[i]);
@@ -814,21 +908,21 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (!_validate_no_foreign()) {
+			List<Node *> full_selection = editor_selection->get_full_selected_node_list();
+			if (!_validate_no_foreign_selected(full_selection)) {
 				break;
 			}
 
 			bool MOVING_DOWN = (p_tool == TOOL_MOVE_DOWN);
 			bool MOVING_UP = !MOVING_DOWN;
 
-			List<Node *> selection = editor_selection->get_full_selected_node_list();
-			selection.sort_custom<Node::Comparator>(); // sort by index
+			full_selection.sort_custom<Node::Comparator>(); // Sort by index.
 			if (MOVING_DOWN) {
-				selection.reverse();
+				full_selection.reverse();
 			}
 
 			bool is_nowhere_to_move = false;
-			for (Node *E : selection) {
+			for (Node *E : full_selection) {
 				// `move_child` + `get_index` doesn't really work for internal nodes.
 				ERR_FAIL_COND_MSG(E->is_internal(), "Trying to move internal node, this is not supported.");
 
@@ -842,14 +936,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-			if (selection.size() == 1) {
+			if (full_selection.size() == 1) {
 				undo_redo->create_action(TTR("Move Node in Parent"));
 			}
-			if (selection.size() > 1) {
+			if (full_selection.size() > 1) {
 				undo_redo->create_action(TTR("Move Nodes in Parent"));
 			}
 
-			for (List<Node *>::Element *top_E = selection.front(), *bottom_E = selection.back(); top_E && bottom_E; top_E = top_E->next(), bottom_E = bottom_E->prev()) {
+			for (List<Node *>::Element *top_E = full_selection.front(), *bottom_E = full_selection.back(); top_E && bottom_E; top_E = top_E->next(), bottom_E = bottom_E->prev()) {
 				Node *top_node = top_E->get();
 				Node *bottom_node = bottom_E->get();
 
@@ -865,7 +959,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			undo_redo->commit_action();
 
-			NodePath np = selection.front()->get()->get_path();
+			NodePath np = full_selection.front()->get()->get_path();
 			TreeItem *item = scene_tree->get_scene_tree()->get_item_with_metadata(np);
 			callable_mp(scene_tree->get_scene_tree(), &Tree::scroll_to_item).call_deferred(item, false);
 		} break;
@@ -907,6 +1001,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
+			HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &resources_local_to_scenes = clipboard_resource_remap[edited_scene->get_scene_file_path()];
+
 			for (Node *node : selection) {
 				Node *parent = node->get_parent();
 
@@ -922,7 +1018,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 
 				HashMap<const Node *, Node *> duplimap;
-				Node *dup = node->duplicate_from_editor(duplimap);
+				Node *dup = node->duplicate_from_editor(duplimap, edited_scene, resources_local_to_scenes);
 
 				ERR_CONTINUE(!dup);
 
@@ -956,6 +1052,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			undo_redo->commit_action();
 
+			for (KeyValue<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &KV : resources_local_to_scenes) {
+				for (KeyValue<Ref<Resource>, Ref<Resource>> &R : KV.value) {
+					if (R.value->is_local_to_scene()) {
+						R.value->setup_local_to_scene();
+					}
+				}
+			}
+
 			if (dupsingle) {
 				_push_item(dupsingle);
 			}
@@ -976,13 +1080,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (!_validate_no_foreign()) {
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			if (!_validate_no_foreign_selected(selection)) {
 				break;
 			}
 
-			List<Node *> nodes = editor_selection->get_top_selected_node_list();
 			HashSet<Node *> nodeset;
-			for (Node *E : nodes) {
+			for (Node *E : selection) {
 				nodeset.insert(E);
 			}
 			reparent_dialog->set_current(nodeset);
@@ -993,10 +1097,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			List<Node *> nodes = editor_selection->get_top_selected_node_list();
-			ERR_FAIL_COND(nodes.size() != 1);
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
+			ERR_FAIL_COND(selection.size() != 1);
 
-			Node *node = nodes.front()->get();
+			Node *node = selection.front()->get();
 			Node *root = get_tree()->get_edited_scene_root();
 
 			if (node == root) {
@@ -1063,8 +1167,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 			Ref<MultiNodeEdit> mne = memnew(MultiNodeEdit);
-			for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-				mne->add_node(root->get_path_to(E.key));
+			for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+				Node *node = ObjectDB::get_instance<Node>(E.key);
+				if (node) {
+					mne->add_node(root->get_path_to(node));
+				}
 			}
 
 			_push_item(mne.ptr());
@@ -1076,32 +1183,32 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			List<Node *> remove_list = editor_selection->get_top_selected_node_list();
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
 
-			if (remove_list.is_empty()) {
+			if (selection.is_empty()) {
 				return;
 			}
 
-			if (!_validate_no_foreign()) {
+			if (!_validate_no_foreign_selected(selection)) {
 				break;
 			}
 
 			bool allow_ask_delete_tracks = EDITOR_GET("docks/scene_tree/ask_before_deleting_related_animation_tracks").operator bool();
-			bool has_tracks_to_delete = allow_ask_delete_tracks && _has_tracks_to_delete(edited_scene, remove_list);
+			bool has_tracks_to_delete = allow_ask_delete_tracks && _has_tracks_to_delete(edited_scene, selection);
 			if (p_confirm_override && !has_tracks_to_delete) {
 				_delete_confirm();
 			} else {
 				String msg;
-				if (remove_list.size() > 1) {
+				if (selection.size() > 1) {
 					bool any_children = false;
-					for (List<Node *>::ConstIterator itr = remove_list.begin(); !any_children && itr != remove_list.end(); ++itr) {
+					for (List<Node *>::ConstIterator itr = selection.begin(); !any_children && itr != selection.end(); ++itr) {
 						any_children = (*itr)->get_child_count() > 0;
 					}
 
-					msg = vformat(any_children ? TTR("Delete %d nodes and any children?") : TTR("Delete %d nodes?"), remove_list.size());
+					msg = vformat(any_children ? TTR("Delete %d nodes and any children?") : TTR("Delete %d nodes?"), selection.size());
 				} else {
 					if (!p_confirm_override) {
-						Node *node = remove_list.front()->get();
+						Node *node = selection.front()->get();
 						if (node == editor_data->get_edited_scene_root()) {
 							msg = vformat(TTR("Delete the root node \"%s\"?"), node->get_name());
 						} else if (!node->is_instance() && node->get_child_count() > 0) {
@@ -1146,7 +1253,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
 
 			if (selection.size() != 1) {
 				accept->set_text(vformat(TTR("Saving the branch as a scene requires selecting only one node, but you have selected %d nodes."), selection.size()));
@@ -1203,11 +1310,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 			new_scene_from_dialog->set_current_path(existing);
 
-			new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
+			new_scene_from_dialog->set_title(TTRC("Save New Scene As..."));
 			new_scene_from_dialog->popup_file_dialog();
 		} break;
 		case TOOL_COPY_NODE_PATH: {
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
 			const List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
@@ -1219,7 +1326,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 		} break;
 		case TOOL_SHOW_IN_FILE_SYSTEM: {
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
 			const List<Node *>::Element *e = selection.front();
 			if (e) {
 				const Node *node = e->get();
@@ -1229,10 +1336,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 		} break;
 		case TOOL_OPEN_DOCUMENTATION: {
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-			for (const Node *node : selection) {
+			for (const Node *full_selection : editor_selection->get_full_selected_node_list()) {
 				String class_name;
-				Ref<Script> script_base = node->get_script();
+				Ref<Script> script_base = full_selection->get_script();
 				while (script_base.is_valid()) {
 					class_name = script_base->get_global_name();
 					if (!class_name.is_empty()) {
@@ -1241,12 +1347,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					script_base = script_base->get_base_script();
 				}
 				if (class_name.is_empty()) {
-					class_name = node->get_class();
+					class_name = full_selection->get_class();
 				}
 
 				ScriptEditor::get_singleton()->goto_help("class_name:" + class_name);
 			}
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+			ScriptEditor::get_singleton()->focus_editor();
 		} break;
 		case TOOL_AUTO_EXPAND: {
 			scene_tree->set_auto_expand_selected(!EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), true);
@@ -1265,7 +1371,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
 			if (selection.size() != 1) {
 				break;
 			}
@@ -1283,7 +1389,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
 
 					if (editable) {
-						editable_instance_remove_dialog->set_text(TTR("Disabling \"Editable Children\" will cause all properties of this subscene's descendant nodes to be reverted to their default."));
+						editable_instance_remove_dialog->set_text(TTRC("Disabling \"Editable Children\" will cause all properties of this subscene's descendant nodes to be reverted to their default."));
 						editable_instance_remove_dialog->popup_centered();
 						break;
 					}
@@ -1296,11 +1402,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (!_validate_no_foreign()) {
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
+			if (!_validate_no_foreign_selected(selection)) {
 				break;
 			}
 
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 			const List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
@@ -1310,19 +1416,24 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 					// Fire confirmation dialog when children are editable.
 					if (editable && !placeholder) {
-						placeholder_editable_instance_remove_dialog->set_text(TTR("Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
+						placeholder_editable_instance_remove_dialog->set_text(TTRC("Enabling \"Load as Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
 						placeholder_editable_instance_remove_dialog->popup_centered();
 						break;
 					}
 
+					EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
 					placeholder = !placeholder;
+
+					undo_redo->create_action(TTR("Toggle Load as Placeholder"));
+					undo_redo->add_undo_method(node, "set_scene_instance_load_placeholder", !placeholder);
+					undo_redo->add_do_method(node, "set_scene_instance_load_placeholder", placeholder);
 
 					if (placeholder) {
 						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
 					}
 
-					node->set_scene_instance_load_placeholder(placeholder);
-					scene_tree->update_tree();
+					undo_redo->commit_action();
 				}
 			}
 		} break;
@@ -1331,11 +1442,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			if (!_validate_no_foreign()) {
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
+			if (!_validate_no_foreign_selected(selection)) {
 				break;
 			}
 
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 			const List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
@@ -1361,11 +1472,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 		} break;
 		case TOOL_SCENE_OPEN: {
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
 			const List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
-				if (node) {
+				if (node && node->is_instance()) {
 					scene_tree->emit_signal(SNAME("open"), node->get_scene_file_path());
 				}
 			}
@@ -1382,7 +1493,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
 			const List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
@@ -1395,7 +1506,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 		} break;
 		case TOOL_SCENE_OPEN_INHERITED: {
-			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
 			const List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
@@ -1406,14 +1517,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_TOGGLE_SCENE_UNIQUE_NAME: {
 			// Enabling/disabling based on the same node based on which the checkbox in the menu is checked/unchecked.
-			const List<Node *>::Element *first_selected = editor_selection->get_top_selected_node_list().front();
+			const List<Node *> selection = editor_selection->get_top_selected_node_list();
+			Node *first_selected = selection.front() ? selection.front()->get() : nullptr;
 			if (first_selected == nullptr) {
 				return;
 			}
-			if (first_selected->get() == EditorNode::get_singleton()->get_edited_scene()) {
+			if (first_selected == EditorNode::get_singleton()->get_edited_scene()) {
 				// Exclude Root Node. It should never be unique name in its own scene!
-				editor_selection->remove_node(first_selected->get());
-				first_selected = editor_selection->get_top_selected_node_list().front();
+				editor_selection->remove_node(first_selected);
+				const List<Node *> selection1 = editor_selection->get_top_selected_node_list();
+				first_selected = selection1.front() ? selection1.front()->get() : nullptr;
 				if (first_selected == nullptr) {
 					return;
 				}
@@ -1435,7 +1548,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				return;
 			}
 
-			bool enabling = !first_selected->get()->is_unique_name_in_owner();
+			bool enabling = !first_selected->is_unique_name_in_owner();
 
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
@@ -1553,7 +1666,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 		default: {
 			if (p_tool >= EditorContextMenuPlugin::BASE_ID) {
-				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_tool, _get_selection_array());
+				EditorContextMenuPluginManager::get_singleton()->activate_custom_option(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_tool);
 				break;
 			}
 
@@ -1623,7 +1736,7 @@ void SceneTreeDock::_notification(int p_what) {
 			// create_root_dialog
 			HBoxContainer *top_row = memnew(HBoxContainer);
 			top_row->set_h_size_flags(SIZE_EXPAND_FILL);
-			Label *l = memnew(Label(TTR("Create Root Node:")));
+			Label *l = memnew(Label(TTRC("Create Root Node:")));
 			l->set_theme_type_variation("HeaderSmall");
 			top_row->add_child(l);
 			top_row->add_spacer();
@@ -1633,7 +1746,7 @@ void SceneTreeDock::_notification(int p_what) {
 			node_shortcuts_toggle->set_accessibility_name(TTRC("Favorite Nodes"));
 			node_shortcuts_toggle->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
 			node_shortcuts_toggle->set_toggle_mode(true);
-			node_shortcuts_toggle->set_tooltip_text(TTR("Toggle the display of favorite nodes."));
+			node_shortcuts_toggle->set_tooltip_text(TTRC("Toggle the display of favorite nodes."));
 			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
 			node_shortcuts_toggle->set_anchors_and_offsets_preset(Control::PRESET_CENTER_RIGHT);
 			node_shortcuts_toggle->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
@@ -1655,38 +1768,40 @@ void SceneTreeDock::_notification(int p_what) {
 
 			button_2d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_2d);
-			button_2d->set_text(TTR("2D Scene"));
+			button_2d->set_text(TTRC("2D Scene"));
 			button_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
 			button_2d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_2D_SCENE, false));
 
 			button_3d = memnew(Button);
 			beginner_node_shortcuts->add_child(button_3d);
-			button_3d->set_text(TTR("3D Scene"));
+			button_3d->set_text(TTRC("3D Scene"));
 			button_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
 			button_3d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_3D_SCENE, false));
 
 			button_ui = memnew(Button);
 			beginner_node_shortcuts->add_child(button_ui);
-			button_ui->set_text(TTR("User Interface"));
+			button_ui->set_text(TTRC("User Interface"));
 			button_ui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			button_ui->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_USER_INTERFACE, false));
 
 			favorite_node_shortcuts = memnew(VBoxContainer);
+			favorite_node_shortcuts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			node_shortcuts->add_child(favorite_node_shortcuts);
 
 			button_custom = memnew(Button);
 			node_shortcuts->add_child(button_custom);
-			button_custom->set_text(TTR("Other Node"));
+			button_custom->set_text(TTRC("Other Node"));
 			button_custom->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_custom->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_NEW, false));
 
 			button_clipboard = memnew(Button);
 			node_shortcuts->add_child(button_clipboard);
-			button_clipboard->set_text(TTR("Paste From Clipboard"));
+			button_clipboard->set_text(TTRC("Paste From Clipboard"));
 			button_clipboard->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
 			button_clipboard->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_PASTE, false));
 
 			_update_create_root_dialog(true);
+			_update_create_root_dialog_visibility();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1706,8 +1821,8 @@ void SceneTreeDock::_notification(int p_what) {
 				scene_tree->set_hide_filtered_out_parents(EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"), false);
 				scene_tree->set_accessibility_warnings(EDITOR_GET("docks/scene_tree/accessibility_warnings"), false);
 			}
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor")) {
-				inspect_hovered_node_delay->set_wait_time(EDITOR_GET("interface/editor/dragging_hover_wait_seconds"));
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/timers")) {
+				inspect_hovered_node_delay->set_wait_time(EDITOR_GET("interface/editor/timers/dragging_hover_wait_seconds"));
 			}
 		} break;
 
@@ -1739,20 +1854,14 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 
 			menu_subresources->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
-		} break;
 
-		case NOTIFICATION_PROCESS: {
-			bool show_create_root = bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) && get_tree()->get_edited_scene_root() == nullptr;
-
-			if (show_create_root != create_root_dialog->is_visible_in_tree() && !remote_tree->is_visible()) {
-				if (show_create_root) {
-					create_root_dialog->show();
-					scene_tree->hide();
-				} else {
-					create_root_dialog->hide();
-					scene_tree->show();
-				}
+			if (theme_cache.item_highlight.is_null()) {
+				theme_cache.item_highlight.instantiate();
+				theme_cache.item_highlight->set_draw_center(false);
+				theme_cache.item_highlight->set_border_width_all(EDSCALE_RND(2));
+				theme_cache.item_highlight->set_corner_radius_all(8);
 			}
+			theme_cache.item_highlight->set_border_color(get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -1760,30 +1869,49 @@ void SceneTreeDock::_notification(int p_what) {
 			if (tree_item_inspected) {
 				_restore_treeitem_custom_color(tree_item_inspected);
 				tree_item_inspected = nullptr;
-			} else {
+			}
+
+			if (!scene_tree_drag_active) {
 				return;
 			}
-			if (!hovered_but_reparenting) {
-				InspectorDock *inspector_dock = InspectorDock::get_singleton();
-				if (!inspector_dock->get_rect().has_point(inspector_dock->get_local_mouse_position())) {
-					List<Node *> full_selection = editor_selection->get_full_selected_node_list();
-					editor_selection->clear();
-					for (Node *E : full_selection) {
-						editor_selection->add_node(E);
-					}
+			scene_tree_drag_active = false;
+
+			InspectorDock *inspector_dock = InspectorDock::get_singleton();
+			if (!inspector_dock->get_rect().has_point(inspector_dock->get_local_mouse_position())) {
+				Node *node_edited = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+				if (editor_selection->get_full_selected_node_list().size() == 1 && !editor_selection->is_selected(node_edited)) {
+					Node *node_selected = scene_tree->get_selected();
+					EditorNode::get_singleton()->push_node_item(node_selected);
 					return;
 				}
-				if (select_node_hovered_at_end_of_drag) {
-					Node *node_inspected = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
-					if (node_inspected) {
-						editor_selection->clear();
-						editor_selection->add_node(node_inspected);
-						scene_tree->set_selected(node_inspected);
-						select_node_hovered_at_end_of_drag = false;
-					}
+				if (edited_object_at_drag_start) {
+					EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
+					editor_history->add_object(edited_object_at_drag_start->get_instance_id());
+					InspectorDock::get_inspector_singleton()->edit(edited_object_at_drag_start);
+					InspectorDock::get_singleton()->update(edited_object_at_drag_start);
 				}
+				return;
 			}
-			hovered_but_reparenting = false;
+
+			Node *node_edited = Object::cast_to<Node>(InspectorDock::get_inspector_singleton()->get_edited_object());
+			if (node_edited) {
+				editor_selection->clear();
+				editor_selection->add_node(node_edited);
+				scene_tree->set_selected(node_edited);
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			TreeItem *item = ObjectDB::get_instance<TreeItem>(highlighted_item);
+			if (!item) {
+				_cancel_highlight();
+			}
+			highlight_timer -= get_process_delta_time();
+			if (highlight_timer <= 0.0) {
+				_cancel_highlight();
+			} else if (highlight_timer < 1.0) {
+				scene_tree->get_scene_tree()->queue_redraw();
+			}
 		} break;
 	}
 }
@@ -1836,7 +1964,7 @@ void SceneTreeDock::_node_strip_signal_inheritance(Node *p_node) {
 }
 
 void SceneTreeDock::_load_request(const String &p_path) {
-	EditorNode::get_singleton()->load_scene(p_path);
+	EditorNode::get_singleton()->open_scene(p_path);
 	_local_tree_selected();
 }
 
@@ -1879,6 +2007,21 @@ void SceneTreeDock::_node_renamed() {
 	_node_selected();
 }
 
+void SceneTreeDock::_make_owners_map(Node *p_node, Dictionary &r_owners) {
+	r_owners[p_node] = p_node->get_owner();
+	for (Node *child : p_node->iterate_children()) {
+		_make_owners_map(child, r_owners);
+	}
+}
+
+void SceneTreeDock::_apply_owners_map(Node *p_node, const Dictionary &p_owners) {
+	Node *owner = Object::cast_to<Node>(p_owners[p_node]);
+	p_node->set_owner(owner);
+	for (Node *child : p_node->iterate_children()) {
+		_apply_owners_map(child, p_owners);
+	}
+}
+
 void SceneTreeDock::_set_owners(Node *p_owner, const Array &p_nodes) {
 	for (int i = 0; i < p_nodes.size(); i++) {
 		Node *n = Object::cast_to<Node>(p_nodes[i]);
@@ -1918,10 +2061,7 @@ bool SceneTreeDock::_has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delet
 	if (ap) {
 		Node *root = ap->get_node(ap->get_root_node());
 		if (root && !p_to_delete.find(root)) {
-			List<StringName> anims;
-			ap->get_animation_list(&anims);
-
-			for (const StringName &E : anims) {
+			for (const StringName &E : ap->get_sorted_animation_list()) {
 				Ref<Animation> anim = ap->get_animation(E);
 				if (anim.is_null()) {
 					continue;
@@ -1987,9 +2127,19 @@ bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, 
 	// Try to find the target node in modified node paths.
 	HashMap<Node *, NodePath>::Iterator found_node_path = p_renames->find(target_node);
 	if (found_node_path) {
+		if (found_node_path->value.is_empty()) {
+			r_node_path = found_node_path->value;
+			return true;
+		}
+
+		String old_subnames;
+		if (r_node_path.get_subname_count() > 0) {
+			old_subnames = ":" + r_node_path.get_concatenated_subnames();
+		}
+
 		HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(p_root_node);
 		NodePath root_path_new = found_root_path ? found_root_path->value : p_root_node->get_path();
-		r_node_path = root_path_new.rel_path_to(found_node_path->value);
+		r_node_path = NodePath(String(root_path_new.rel_path_to(found_node_path->value)) + old_subnames);
 
 		return true;
 	}
@@ -1999,9 +2149,14 @@ bool SceneTreeDock::_update_node_path(Node *p_root_node, NodePath &r_node_path, 
 	if (found_root_path) {
 		NodePath root_path_new = found_root_path->value;
 		if (!root_path_new.is_empty()) {
+			String old_subnames;
+			if (r_node_path.get_subname_count() > 0) {
+				old_subnames = ":" + r_node_path.get_concatenated_subnames();
+			}
+
 			NodePath old_abs_path = NodePath(String(p_root_node->get_path()).path_join(String(r_node_path)));
 			old_abs_path.simplify();
-			r_node_path = root_path_new.rel_path_to(old_abs_path);
+			r_node_path = NodePath(String(root_path_new.rel_path_to(old_abs_path)) + old_subnames);
 		}
 
 		return true;
@@ -2138,7 +2293,7 @@ bool SceneTreeDock::_check_node_path_recursive(Node *p_root_node, Variant &r_var
 	return false;
 }
 
-void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims) {
+void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims, LocalVector<Pair<StringName, StringName>> *r_folded_group_renames) {
 	HashMap<Ref<Animation>, HashSet<int>> rem_anims;
 	if (!r_rem_anims) {
 		r_rem_anims = &rem_anims;
@@ -2160,6 +2315,28 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 
 	bool autorename_animation_tracks = bool(EDITOR_GET("editors/animation/autorename_animation_tracks"));
 
+	// key.get_path() of p_renames is like:
+	//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheOldName
+	// value of p_renames is like:
+	//  /root/@EditorNode@18033/@Panel@14/.../Scene/TheNewName
+	LocalVector<Pair<StringName, StringName>> folded_group_renames;
+	if (!r_folded_group_renames) {
+		r_folded_group_renames = &folded_group_renames;
+		if (autorename_animation_tracks) {
+			for (const KeyValue<Node *, NodePath> &rename : *p_renames) {
+				if (rename.value.get_name_count() == 0) {
+					continue; // Node will be deleted (empty path), not renamed.
+				}
+				const StringName old_node_name = rename.key->get_name();
+				const StringName new_node_name = rename.value.get_name(rename.value.get_name_count() - 1);
+				if (old_node_name == new_node_name) {
+					continue; // Only the parent path changed; the name itself didn't.
+				}
+				r_folded_group_renames->push_back(Pair<StringName, StringName>(old_node_name, new_node_name));
+			}
+		}
+	}
+
 	AnimationMixer *mixer = Object::cast_to<AnimationMixer>(p_base);
 	if (autorename_animation_tracks && mixer) {
 		// Don't rename if we're an AnimationTree pointing to an AnimationPlayer
@@ -2173,15 +2350,13 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 		}
 
 		if (!points_to_other_animation_player) {
-			List<StringName> anims;
-			mixer->get_animation_list(&anims);
 			Node *root = mixer->get_node(mixer->get_root_node());
 
 			if (root) {
 				HashMap<Node *, NodePath>::Iterator found_root_path = p_renames->find(root);
 				NodePath new_root_path = found_root_path ? found_root_path->value : root->get_path();
 				if (!new_root_path.is_empty()) { // No renaming if root node is deleted.
-					for (const StringName &E : anims) {
+					for (const StringName &E : mixer->get_sorted_animation_list()) {
 						Ref<Animation> anim = mixer->get_animation(E);
 						if (!r_rem_anims->has(anim)) {
 							r_rem_anims->insert(anim, HashSet<int>());
@@ -2247,6 +2422,16 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 								}
 							}
 						}
+
+						// Prevent to rewrite an editable child's inner fold state by parent renaming.
+						if (p_base == edited_scene || (p_base->get_owner() == edited_scene && p_base->get_scene_file_path().is_empty())) {
+							for (const Pair<StringName, StringName> &group_rename : *r_folded_group_renames) {
+								if (anim->editor_is_group_folded(group_rename.first)) {
+									anim->editor_set_group_folded(group_rename.second, true);
+									anim->editor_set_group_folded(group_rename.first, false);
+								}
+							}
+						}
 					}
 				}
 			}
@@ -2257,7 +2442,7 @@ void SceneTreeDock::perform_node_renames(Node *p_base, HashMap<Node *, NodePath>
 	_check_object_properties_recursive(p_base, p_base, p_renames);
 
 	for (int i = 0; i < p_base->get_child_count(); i++) {
-		perform_node_renames(p_base->get_child(i), p_renames, r_rem_anims);
+		perform_node_renames(p_base->get_child(i), p_renames, r_rem_anims, r_folded_group_renames);
 	}
 }
 
@@ -2287,10 +2472,8 @@ void SceneTreeDock::_node_prerenamed(Node *p_node, const String &p_new_name) {
 	perform_node_renames(nullptr, &path_renames);
 }
 
-bool SceneTreeDock::_validate_no_foreign() {
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-
-	for (Node *E : selection) {
+bool SceneTreeDock::_validate_no_foreign_selected(const List<Node *> &p_selected) {
+	for (Node *E : p_selected) {
 		if (E != edited_scene && E->get_owner() != edited_scene) {
 			accept->set_text(TTR("Can't operate on nodes from a foreign scene!"));
 			accept->popup_centered();
@@ -2301,7 +2484,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 			// When edited_scene inherits from another one the root Node will be the parent Scene,
 			// we don't want to consider that Node a foreign one otherwise we would not be able to
 			// delete it.
-			if (edited_scene == E && current_option != TOOL_REPLACE) {
+			if (edited_scene == E && current_option != TOOL_CHANGE_TYPE) {
 				continue;
 			}
 
@@ -2316,10 +2499,8 @@ bool SceneTreeDock::_validate_no_foreign() {
 	return true;
 }
 
-bool SceneTreeDock::_validate_no_instance() {
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-
-	for (Node *E : selection) {
+bool SceneTreeDock::_validate_no_instance_selected(const List<Node *> &p_selected) {
+	for (Node *E : p_selected) {
 		if (E != edited_scene && E->is_instance()) {
 			accept->set_text(TTR("This operation can't be done on instantiated scenes."));
 			accept->popup_centered();
@@ -2334,7 +2515,7 @@ void SceneTreeDock::_node_reparent(NodePath p_path, bool p_keep_global_xform) {
 	Node *new_parent = scene_root->get_node(p_path);
 	ERR_FAIL_NULL(new_parent);
 
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> selection = editor_selection->get_top_selected_node_list();
 
 	if (selection.is_empty()) {
 		return; // Nothing to reparent.
@@ -2387,9 +2568,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		return; // Position and parent didn't change.
 	}
 
-	// Prevent selecting the hovered node and keep the reparented node(s) selected instead.
-	hovered_but_reparenting = true;
-
 	Node *validate = p_new_parent;
 	while (validate) {
 		ERR_FAIL_COND_MSG(p_nodes.has(validate), "Selection changed at some point. Can't reparent.");
@@ -2406,7 +2584,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	Vector<StringName> former_names;
 
 	int inc = 0;
-	bool need_edit = false;
 
 	for (int ni = 0; ni < p_nodes.size(); ni++) {
 		// No undo implemented for this yet.
@@ -2427,11 +2604,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			inc--; // If the child will generate a gap when moved, adjust.
 		}
 
-		if (same_parent) {
-			// When node is reparented to the same parent, EditorSelection does not change.
-			// After hovering another node, the inspector has to be manually updated in this case.
-			need_edit = select_node_hovered_at_end_of_drag;
-		} else {
+		if (!same_parent) {
 			undo_redo->add_do_method(node->get_parent(), "remove_child", node);
 			undo_redo->add_do_method(p_new_parent, "add_child", node, true);
 		}
@@ -2547,28 +2720,23 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 		undo_redo->add_undo_method(editor_selection, "add_node", E);
 	}
 
-	if (need_edit) {
-		EditorNode::get_singleton()->edit_current();
-		editor_selection->clear();
-	}
-
 	undo_redo->commit_action();
 }
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
-	const List<Node *> &selected = editor_selection->get_top_selected_node_list();
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
-	if (selected.is_empty()) {
+	if (selection.is_empty()) {
 		return;
 	}
 
 	if (p_script->is_built_in()) {
-		p_script->set_path(edited_scene->get_scene_file_path() + "::" + p_script->generate_scene_unique_id());
+		EditorNode::setup_built_in_resource(p_script, edited_scene->get_scene_file_path());
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, selected.front()->get());
-	for (Node *E : selected) {
+	undo_redo->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, selection.front()->get());
+	for (Node *E : selection) {
 		Ref<Script> existing = E->get_script();
 		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", E);
 		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", E);
@@ -2584,7 +2752,7 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	// Avoid changing the currently edited object.
 	Object *edited_object = InspectorDock::get_inspector_singleton()->get_edited_object();
 
-	_push_item(p_script.ptr());
+	EditorNode::get_singleton()->push_item_no_inspector(p_script.ptr());
 	_queue_update_script_button();
 
 	InspectorDock::get_inspector_singleton()->edit(edited_object);
@@ -2602,6 +2770,8 @@ void SceneTreeDock::_shader_created(Ref<Shader> p_shader) {
 	undo_redo->add_do_method(selected_shader_material.ptr(), "set_shader", p_shader);
 	undo_redo->add_undo_method(selected_shader_material.ptr(), "set_shader", existing);
 	undo_redo->commit_action();
+
+	EditorNode::get_singleton()->edit_item(p_shader.ptr(), this);
 }
 
 void SceneTreeDock::_script_creation_closed() {
@@ -2617,7 +2787,7 @@ void SceneTreeDock::_shader_creation_closed() {
 }
 
 void SceneTreeDock::_toggle_editable_children_from_selection() {
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> selection = editor_selection->get_top_selected_node_list();
 	const List<Node *>::Element *e = selection.front();
 
 	if (e) {
@@ -2626,7 +2796,7 @@ void SceneTreeDock::_toggle_editable_children_from_selection() {
 }
 
 void SceneTreeDock::_toggle_placeholder_from_selection() {
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> selection = editor_selection->get_top_selected_node_list();
 	const List<Node *>::Element *e = selection.front();
 
 	if (e) {
@@ -2761,15 +2931,15 @@ void SceneTreeDock::_toggle_editable_children(Node *p_node) {
 }
 
 void SceneTreeDock::_delete_confirm(bool p_cut) {
-	List<Node *> remove_list = editor_selection->get_top_selected_node_list();
+	List<Node *> selection = editor_selection->get_top_selected_node_list();
 
-	if (remove_list.is_empty()) {
+	if (selection.is_empty()) {
 		return;
 	}
 
 	bool entire_scene = false;
 
-	for (const Node *E : remove_list) {
+	for (const Node *E : selection) {
 		if (E == edited_scene) {
 			entire_scene = true;
 			break;
@@ -2777,7 +2947,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	}
 
 	if (!entire_scene) {
-		for (const Node *E : remove_list) {
+		for (const Node *E : selection) {
 			// `move_child` + `get_index` doesn't really work for internal nodes.
 			ERR_FAIL_COND_MSG(E->is_internal(), "Trying to remove internal node, this is not supported.");
 		}
@@ -2786,7 +2956,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	EditorNode::get_singleton()->hide_unused_editors(this);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(p_cut ? TTR("Cut Node(s)") : TTR("Remove Node(s)"), UndoRedo::MERGE_DISABLE, remove_list.front()->get());
+	undo_redo->create_action(p_cut ? TTR("Cut Node(s)") : TTR("Remove Node(s)"), UndoRedo::MERGE_DISABLE, selection.front()->get());
 
 	if (entire_scene) {
 		undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
@@ -2795,24 +2965,8 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 		undo_redo->add_undo_method(scene_tree, "update_tree");
 		undo_redo->add_undo_reference(edited_scene);
 	} else {
-		if (delete_tracks_checkbox->is_pressed() || p_cut) {
-			remove_list.sort_custom<Node::Comparator>(); // Sort nodes to keep positions.
-			HashMap<Node *, NodePath> path_renames;
-
-			//delete from animation
-			for (Node *n : remove_list) {
-				if (!n->is_inside_tree() || !n->get_parent()) {
-					continue;
-				}
-
-				fill_path_renames(n, nullptr, &path_renames);
-			}
-
-			perform_node_renames(nullptr, &path_renames);
-		}
-
-		//delete for read
-		for (Node *n : remove_list) {
+		// Delete nodes.
+		for (Node *n : selection) {
 			if (!n->is_inside_tree() || !n->get_parent()) {
 				continue;
 			}
@@ -2836,6 +2990,24 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 			EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 			undo_redo->add_do_method(ed, "live_debug_remove_and_keep_node", edited_scene->get_path_to(n), n->get_instance_id());
 			undo_redo->add_undo_method(ed, "live_debug_restore_node", n->get_instance_id(), edited_scene->get_path_to(n->get_parent()), n->get_index(false));
+		}
+
+		if (delete_tracks_checkbox->is_pressed() || p_cut) {
+			selection.sort_custom<Node::Comparator>(); // Sort nodes to keep positions.
+			HashMap<Node *, NodePath> path_renames;
+
+			// Delete from animations.
+			for (Node *n : selection) {
+				if (!n->is_inside_tree() || !n->get_parent()) {
+					continue;
+				}
+
+				fill_path_renames(n, nullptr, &path_renames);
+			}
+
+			// This must be done after node deletion, otherwise properties that rely
+			// on paths will be set before the nodes are added when undoing the action.
+			perform_node_renames(nullptr, &path_renames);
 		}
 	}
 	undo_redo->commit_action();
@@ -2912,13 +3084,25 @@ void SceneTreeDock::_queue_update_script_button() {
 	callable_mp(this, &SceneTreeDock::_update_script_button).call_deferred();
 }
 
+void SceneTreeDock::_cancel_highlight() {
+	if (highlighted_item.is_null()) {
+		return;
+	}
+	highlighted_item = ObjectID();
+	scene_tree->get_scene_tree()->queue_redraw();
+	set_process_internal(false);
+}
+
 void SceneTreeDock::_selection_changed() {
 	int selection_size = editor_selection->get_selection().size();
 	if (selection_size > 1) {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
 	} else if (selection_size == 1) {
-		_handle_select(editor_selection->get_selection().begin()->key);
+		Node *node = ObjectDB::get_instance<Node>(editor_selection->get_selection().begin()->key);
+		if (node) {
+			_handle_select(node);
+		}
 	} else if (selection_size == 0) {
 		_push_item(nullptr);
 	}
@@ -2928,17 +3112,18 @@ void SceneTreeDock::_selection_changed() {
 
 	// Track script changes in newly selected nodes.
 	node_previous_selection.reserve(editor_selection->get_selection().size());
-	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
-		Node *node = E.key;
-		node_previous_selection.push_back(node->get_instance_id());
-		node->connect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
+		Node *node = ObjectDB::get_instance<Node>(E.key);
+		if (node) {
+			node_previous_selection.push_back(E.key);
+			node->connect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+		}
 	}
 	_queue_update_script_button();
 }
 
 Node *SceneTreeDock::_do_create(Node *p_parent) {
-	Variant c = create_dialog->instantiate_selected();
-	Node *child = Object::cast_to<Node>(c);
+	Node *child = create_dialog->instantiate_selected<Node>();
 	ERR_FAIL_NULL_V(child, nullptr);
 
 	String new_name = p_parent->validate_child_name(child);
@@ -2993,8 +3178,6 @@ void SceneTreeDock::_post_do_create(Node *p_child) {
 		}
 		control->set_size(ms);
 	}
-
-	emit_signal(SNAME("node_created"), p_child);
 }
 
 void SceneTreeDock::_create() {
@@ -3016,27 +3199,24 @@ void SceneTreeDock::_create() {
 
 		_do_create(parent);
 
-	} else if (current_option == TOOL_REPLACE) {
-		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-		ERR_FAIL_COND(selection.is_empty());
+	} else if (current_option == TOOL_CHANGE_TYPE) {
+		const List<Node *> full_selection = editor_selection->get_full_selected_node_list();
+		ERR_FAIL_COND(full_selection.is_empty());
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, selection.front()->get());
+		ur->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, full_selection.front()->get());
 
-		for (Node *n : selection) {
+		for (Node *n : full_selection) {
 			ERR_FAIL_NULL(n);
 
-			Variant c = create_dialog->instantiate_selected();
-
-			ERR_FAIL_COND(!c);
-			Node *new_node = Object::cast_to<Node>(c);
+			Node *new_node = create_dialog->instantiate_selected<Node>();
 			ERR_FAIL_NULL(new_node);
 			replace_node(n, new_node);
 		}
 
 		ur->commit_action(false);
 	} else if (current_option == TOOL_REPARENT_TO_NEW_NODE) {
-		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+		const List<Node *> selection = editor_selection->get_top_selected_node_list();
 		ERR_FAIL_COND(selection.is_empty());
 
 		// Find top level node in selection
@@ -3068,6 +3248,9 @@ void SceneTreeDock::_create() {
 				} else if (smaller_path_to_top == path_length) {
 					if (only_one_top_node && top_node->get_parent() != n->get_parent()) {
 						only_one_top_node = false;
+					}
+					if (only_one_top_node && n->get_index(false) < top_node->get_index(false)) {
+						top_node = n;
 					}
 					if (center_parent) {
 						top_level_nodes.append(n);
@@ -3147,12 +3330,12 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, p_node);
 
-	ur->add_do_method(this, "replace_node", p_node, p_by_node, true, false);
+	ur->add_do_method(this, "replace_node", p_node, p_by_node, true);
 	ur->add_do_reference(p_by_node);
 
-	_replace_node(p_node, p_by_node, true, false);
+	_replace_node(p_node, p_by_node, true);
 
-	ur->add_undo_method(this, "replace_node", p_by_node, p_node, false, false);
+	ur->add_undo_method(this, "replace_node", p_by_node, p_node, false);
 	ur->add_undo_reference(p_node);
 
 	perform_node_replace(nullptr, p_node, p_by_node);
@@ -3160,7 +3343,7 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
 	ur->commit_action(false);
 }
 
-void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties, bool p_remove_old) {
+void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties) {
 	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "_replace_node() can't be called on a node outside of tree. You might have called it twice.");
 	Node *oldnode = p_node;
 	Node *newnode = p_by_node;
@@ -3222,7 +3405,7 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 			if (!(c.flags & Object::CONNECT_PERSIST)) {
 				continue;
 			}
-			newnode->connect(c.signal.get_name(), c.callable, Object::CONNECT_PERSIST);
+			newnode->connect(c.signal.get_name(), c.callable, c.flags);
 		}
 	}
 
@@ -3234,14 +3417,6 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 	}
 
 	String newname = oldnode->get_name();
-
-	List<Node *> to_erase;
-	for (int i = 0; i < oldnode->get_child_count(); i++) {
-		if (oldnode->get_child(i)->get_owner() == nullptr && oldnode->is_internal()) {
-			to_erase.push_back(oldnode->get_child(i));
-		}
-	}
-
 	if (oldnode == edited_scene) {
 		EditorNode::get_singleton()->set_edited_scene_root(newnode, false);
 	}
@@ -3258,22 +3433,9 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 		Node *c = newnode->get_child(i);
 		c->call("set_transform", c->call("get_transform"));
 	}
-	//p_remove_old was added to support undo
-	if (p_remove_old) {
-		EditorUndoRedoManager::get_singleton()->clear_history();
-	}
 	newnode->set_name(newname);
 
 	_push_item(newnode);
-
-	if (p_remove_old) {
-		memdelete(oldnode);
-
-		while (to_erase.front()) {
-			memdelete(to_erase.front()->get());
-			to_erase.pop_front();
-		}
-	}
 }
 
 void SceneTreeDock::perform_node_replace(Node *p_base, Node *p_node, Node *p_by_node) {
@@ -3355,14 +3517,16 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 
 void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
+	scene_tree->set_selected(nullptr, false);
+	_update_create_root_dialog_visibility();
 }
 
-static bool _is_same_selection(const Vector<Node *> &p_first, const HashMap<Node *, Object *> &p_second) {
+static bool _is_same_selection(const Vector<Node *> &p_first, const HashMap<ObjectID, Object *> &p_second) {
 	if (p_first.size() != p_second.size()) {
 		return false;
 	}
 	for (Node *node : p_first) {
-		if (!p_second.has(node)) {
+		if (!p_second.has(node->get_instance_id())) {
 			return false;
 		}
 	}
@@ -3394,8 +3558,27 @@ void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 	scene_tree->set_selected(p_node, p_emit_selected);
 }
 
+void SceneTreeDock::highlight_node(Node *p_node) {
+	TreeItem *item = scene_tree->get_node_item(p_node);
+	ERR_FAIL_NULL(item);
+
+	TreeItem *parent = item->get_parent();
+	while (parent) {
+		parent->set_collapsed(false);
+		parent = parent->get_parent();
+	}
+
+	Tree *tree = scene_tree->get_scene_tree();
+	tree->scroll_to_item(item);
+	tree->queue_redraw();
+	highlighted_item = item->get_instance_id();
+
+	highlight_timer = 3.5;
+	set_process_internal(true);
+}
+
 void SceneTreeDock::_new_scene_from(const String &p_file) {
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> selection = editor_selection->get_top_selected_node_list();
 
 	if (selection.size() != 1) {
 		accept->set_text(TTR("This operation requires a single selected node."));
@@ -3512,29 +3695,12 @@ static bool _is_node_visible(Node *p_node) {
 	return true;
 }
 
-static bool _has_visible_children(Node *p_node) {
-	bool collapsed = p_node->is_displayed_folded();
-	if (collapsed) {
-		return false;
-	}
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *child = p_node->get_child(i);
-		if (!_is_node_visible(child)) {
-			continue;
-		}
-
-		return true;
-	}
-
-	return false;
-}
-
 void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
+	// Drop as last child, by default.
 	to_pos = -1;
 
 	if (p_type == -1) {
-		//drop at above selected node
+		// Drop as sibling, above.
 		if (to_node == EditorNode::get_singleton()->get_edited_scene()) {
 			to_node = nullptr;
 			ERR_FAIL_MSG("Cannot perform drop above the root node!");
@@ -3542,51 +3708,37 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 
 		to_pos = to_node->get_index(false);
 		to_node = to_node->get_parent();
-
 	} else if (p_type == 1) {
-		//drop at below selected node
+		// Drop as child of root node if out of bounds.
 		if (to_node == EditorNode::get_singleton()->get_edited_scene()) {
-			//if at lower sibling of root node
-			to_pos = 0; //just insert at beginning of root node
+			to_pos = -1;
 			return;
 		}
 
+		// Drop as sibling, below, by using indent space or when children are collapsed.
 		Node *lower_sibling = nullptr;
 
-		if (_has_visible_children(to_node)) {
-			to_pos = 0;
-		} else {
-			for (int i = to_node->get_index(false) + 1; i < to_node->get_parent()->get_child_count(false); i++) {
-				Node *c = to_node->get_parent()->get_child(i, false);
-				if (_is_node_visible(c)) {
-					lower_sibling = c;
-					break;
-				}
+		for (int i = to_node->get_index(false) + 1; i < to_node->get_parent()->get_child_count(false); i++) {
+			Node *c = to_node->get_parent()->get_child(i, false);
+			if (_is_node_visible(c)) {
+				lower_sibling = c;
+				break;
 			}
-			if (lower_sibling) {
-				to_pos = lower_sibling->get_index(false);
-			}
-
-			to_node = to_node->get_parent();
 		}
+
+		if (lower_sibling) {
+			to_pos = lower_sibling->get_index(false);
+		}
+
+		to_node = to_node->get_parent();
+	} else if (p_type == 2) {
+		// Drop as first child, among others.
+		to_pos = 0;
 	}
 }
 
-Array SceneTreeDock::_get_selection_array() {
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-	TypedArray<Node> array;
-	array.resize(selection.size());
-
-	int i = 0;
-	for (const Node *E : selection) {
-		array[i++] = E;
-	}
-	return array;
-}
-
-void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type) {
-	Node *node = get_node(p_to);
-	ERR_FAIL_NULL(node);
+void SceneTreeDock::_files_dropped(const Vector<String> &p_files, Node *p_to_node, int p_type) {
+	ERR_FAIL_NULL(p_to_node);
 	ERR_FAIL_COND(p_files.is_empty());
 
 	const String &res_path = p_files[0];
@@ -3598,7 +3750,7 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 		List<String> valid_properties;
 
 		List<PropertyInfo> pinfo;
-		node->get_property_list(&pinfo);
+		p_to_node->get_property_list(&pinfo);
 
 		for (const PropertyInfo &p : pinfo) {
 			if (!(p.usage & PROPERTY_USAGE_EDITOR) || !(p.usage & PROPERTY_USAGE_STORAGE) || p.hint != PROPERTY_HINT_RESOURCE_TYPE) {
@@ -3615,13 +3767,13 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 		}
 
 		if (valid_properties.size() > 1) {
-			property_drop_node = node;
+			property_drop_node = p_to_node;
 			resource_drop_path = res_path;
 
 			const EditorPropertyNameProcessor::Style style = InspectorDock::get_singleton()->get_property_name_style();
 			menu_properties->clear();
 			for (const String &p : valid_properties) {
-				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style, p, node->get_class_name()));
+				menu_properties->add_item(EditorPropertyNameProcessor::get_singleton()->process_name(p, style, p, p_to_node->get_class_name()));
 				menu_properties->set_item_metadata(-1, p);
 			}
 
@@ -3631,29 +3783,26 @@ void SceneTreeDock::_files_dropped(const Vector<String> &p_files, NodePath p_to,
 			return;
 		}
 		if (!valid_properties.is_empty()) {
-			_perform_property_drop(node, valid_properties.front()->get(), ResourceLoader::load(res_path));
+			_perform_property_drop(p_to_node, valid_properties.front()->get(), ResourceLoader::load(res_path));
 			return;
 		}
 	}
 
 	// Either instantiate scenes or create AudioStreamPlayers.
 	int to_pos = -1;
-	_normalize_drop(node, to_pos, p_type);
+	_normalize_drop(p_to_node, to_pos, p_type);
 	if (is_dropping_scene) {
-		_perform_instantiate_scenes(p_files, node, to_pos);
+		_perform_instantiate_scenes(p_files, p_to_node, to_pos);
 	} else if (ClassDB::is_parent_class(res_type, "AudioStream")) {
-		_perform_create_audio_stream_players(p_files, node, to_pos);
+		_perform_create_audio_stream_players(p_files, p_to_node, to_pos);
 	}
 }
 
-void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
+void SceneTreeDock::_script_dropped(const String &p_file, Node *p_to_node) {
+	ERR_FAIL_NULL(p_to_node);
+
 	Ref<Script> scr = ResourceLoader::load(p_file);
 	ERR_FAIL_COND(scr.is_null());
-	Node *n = get_node(p_to);
-
-	if (!n) {
-		return;
-	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
@@ -3671,21 +3820,21 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 		new_node->set_script(scr);
 
 		undo_redo->create_action(TTR("Instantiate Script"));
-		undo_redo->add_do_method(n, "add_child", new_node, true);
+		undo_redo->add_do_method(p_to_node, "add_child", new_node, true);
 		undo_redo->add_do_method(new_node, "set_owner", edited_scene);
 		undo_redo->add_do_method(editor_selection, "clear");
 		undo_redo->add_do_method(editor_selection, "add_node", new_node);
 		undo_redo->add_do_reference(new_node);
-		undo_redo->add_undo_method(n, "remove_child", new_node);
+		undo_redo->add_undo_method(p_to_node, "remove_child", new_node);
 
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
-		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(n), new_node->get_class(), new_node->get_name());
-		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(n)).path_join(new_node->get_name())));
+		undo_redo->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_to_node), new_node->get_class(), new_node->get_name());
+		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_to_node)).path_join(new_node->get_name())));
 		undo_redo->commit_action();
 	} else {
 		// Check if dropped script is compatible.
-		if (n->has_meta(SceneStringName(_custom_type_script))) {
-			Ref<Script> ct_scr = PropertyUtils::get_custom_type_script(n);
+		if (p_to_node->has_meta(SceneStringName(_custom_type_script))) {
+			Ref<Script> ct_scr = PropertyUtils::get_custom_type_script(p_to_node);
 			if (!scr->inherits_script(ct_scr)) {
 				String custom_type_name = ct_scr->get_global_name();
 
@@ -3704,33 +3853,32 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 			}
 		}
 
-		undo_redo->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, n);
-		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", n);
-		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", n);
-		undo_redo->add_do_method(n, "set_script", scr);
-		undo_redo->add_undo_method(n, "set_script", n->get_script());
-		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", n);
-		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", n);
+		undo_redo->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, p_to_node);
+		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", p_to_node);
+		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", p_to_node);
+		undo_redo->add_do_method(p_to_node, "set_script", scr);
+		undo_redo->add_undo_method(p_to_node, "set_script", p_to_node->get_script());
+		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", p_to_node);
+		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", p_to_node);
 		undo_redo->add_do_method(this, "_queue_update_script_button");
 		undo_redo->add_undo_method(this, "_queue_update_script_button");
 		undo_redo->commit_action();
 	}
 }
 
-void SceneTreeDock::_nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type) {
-	if (!_validate_no_foreign()) {
+void SceneTreeDock::_nodes_dragged(const Array &p_nodes, Node *p_to_node, int p_type) {
+	if (!p_to_node) {
 		return;
 	}
 
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> selection = editor_selection->get_top_selected_node_list();
+
+	if (!_validate_no_foreign_selected(selection)) {
+		return;
+	}
 
 	if (selection.is_empty()) {
 		return; //nothing to reparent
-	}
-
-	Node *to_node = get_node(p_to);
-	if (!to_node) {
-		return;
 	}
 
 	Vector<Node *> nodes;
@@ -3740,8 +3888,8 @@ void SceneTreeDock::_nodes_dragged(const Array &p_nodes, NodePath p_to, int p_ty
 
 	int to_pos = -1;
 
-	_normalize_drop(to_node, to_pos, p_type);
-	_do_reparent(to_node, to_pos, nodes, !Input::get_singleton()->is_key_pressed(Key::SHIFT));
+	_normalize_drop(p_to_node, to_pos, p_type);
+	_do_reparent(p_to_node, to_pos, nodes, !Input::get_singleton()->is_key_pressed(Key::SHIFT));
 }
 
 void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
@@ -3771,7 +3919,7 @@ void SceneTreeDock::_add_children_to_popup(Object *p_obj, int p_depth) {
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
 		if (menu->get_item_count() == 0) {
-			menu->add_submenu_node_item(TTR("Sub-Resources"), menu_subresources);
+			menu->add_submenu_node_item(TTRC("Sub-Resources"), menu_subresources);
 		}
 		menu_subresources->add_icon_item(icon, E.name.capitalize(), EDIT_SUBRESOURCE_BASE + subresources.size());
 		menu_subresources->set_item_indent(-1, p_depth);
@@ -3785,8 +3933,10 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	ERR_FAIL_COND(!EditorNode::get_singleton()->get_edited_scene());
 	menu->clear(false);
 
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-	List<Node *> full_selection = editor_selection->get_full_selected_node_list(); // Above method only returns nodes with common parent.
+	const List<Node *> selection = editor_selection->get_top_selected_node_list(); // Only the top-level selected nodes.
+	List<Node *> full_selection = editor_selection->get_full_selected_node_list(); // All selected nodes.
+
+	scene_tree->get_scene_tree()->grab_focus(true);
 
 	if (selection.is_empty()) {
 		if (!profile_allow_editing) {
@@ -3795,6 +3945,13 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Add")), ED_GET_SHORTCUT("scene_tree/add_child_node"), TOOL_NEW);
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Instance")), ED_GET_SHORTCUT("scene_tree/instantiate_scene"), TOOL_INSTANTIATE);
+
+		if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE)) {
+			EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, SceneTreeDock::_get_context_data(List<Node *>()));
+#ifndef DISABLE_DEPRECATED
+			EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, PackedStringArray(), TypedArray<Node>(), 500);
+#endif
+		}
 
 		menu->reset_size();
 		menu->set_position(p_menu_pos);
@@ -3806,21 +3963,21 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	bool section_ended = false;
 
 // Marks beginning of a new separated section. When used multiple times in a row, only first use has effect.
-#define BEGIN_SECTION()            \
-	{                              \
-		if (section_ended) {       \
+#define BEGIN_SECTION() \
+	{ \
+		if (section_ended) { \
 			section_ended = false; \
 			menu->add_separator(); \
-		}                          \
-		section_started = true;    \
+		} \
+		section_started = true; \
 	}
 // Marks end of a section.
-#define END_SECTION()                \
-	{                                \
-		if (section_started) {       \
-			section_ended = true;    \
+#define END_SECTION() \
+	{ \
+		if (section_started) { \
+			section_ended = true; \
 			section_started = false; \
-		}                            \
+		} \
 	}
 
 	Ref<Script> existing_script;
@@ -3856,16 +4013,67 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		END_SECTION()
 	}
 
+	bool can_rename = true;
+	bool can_replace = true;
+
 	if (profile_allow_editing) {
+		for (Node *E : full_selection) {
+			if (E != edited_scene && E->is_instance()) {
+				// E is a scene instance.
+				can_replace = false;
+			}
+
+			if (E != edited_scene && E->get_owner() != edited_scene) {
+				// E is a foreign node (editable children).
+				can_replace = false;
+				can_rename = false;
+			}
+
+			if (edited_scene->get_scene_inherited_state().is_valid()) {
+				if (E == edited_scene) {
+					// E is the root node in an inherited scene.
+					can_replace = false;
+				} else if (edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
+					// E is a child node in an inherited scene.
+					can_replace = false;
+					can_rename = false;
+				}
+			}
+
+			if (!can_rename && !can_replace) {
+				break;
+			}
+		}
+
 		BEGIN_SECTION()
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCut")), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionCopy")), ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
-		if (selection.size() == 1 && !node_clipboard.is_empty()) {
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
-			if (selection.front()->get() == edited_scene) {
-				menu->set_item_disabled(-1, true);
+
+		if (!node_clipboard.is_empty()) {
+			bool is_paste_icon_added = false; // Only add an icon to the first "paste" option.
+
+			if (selection.size() == 1) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ActionPaste")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
+				is_paste_icon_added = true;
+
+				if (selection.front()->get() != edited_scene) {
+					menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_sibling"), TOOL_PASTE_AS_SIBLING);
+				}
 			}
+
+			if (selection.size() >= 1) {
+				if ((selection.front()->get() != edited_scene) && (can_rename || can_replace)) {
+					menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node_as_replacement"), TOOL_PASTE_AS_REPLACEMENT);
+					if (!is_paste_icon_added) {
+						menu->set_item_icon(-1, get_editor_theme_icon(SNAME("ActionPaste")));
+						is_paste_icon_added = true;
+					}
+				}
+			}
+		}
+
+		if (scene_tree->get_selected() != edited_scene) {
+			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Duplicate")), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
 		}
 		END_SECTION()
 	}
@@ -3902,25 +4110,18 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	}
 
 	if (profile_allow_editing) {
-		bool is_foreign = false;
-		for (Node *E : selection) {
-			if (E != edited_scene && (E->get_owner() != edited_scene || E->is_instance())) {
-				is_foreign = true;
-				break;
-			}
-
-			if (edited_scene->get_scene_inherited_state().is_valid()) {
-				if (E == edited_scene || edited_scene->get_scene_inherited_state()->find_node_by_path(edited_scene->get_path_to(E)) >= 0) {
-					is_foreign = true;
-					break;
+		if (can_rename || can_replace) {
+			BEGIN_SECTION()
+			if (can_rename) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
+				if (full_selection.size() > 1) {
+					menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
 				}
 			}
-		}
 
-		if (!is_foreign) {
-			BEGIN_SECTION()
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/rename"), TOOL_RENAME);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_REPLACE);
+			if (can_replace) {
+				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reload")), ED_GET_SHORTCUT("scene_tree/change_node_type"), TOOL_CHANGE_TYPE);
+			}
 			END_SECTION()
 		}
 
@@ -3928,7 +4129,6 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			BEGIN_SECTION()
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveUp")), ED_GET_SHORTCUT("scene_tree/move_up"), TOOL_MOVE_UP);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("MoveDown")), ED_GET_SHORTCUT("scene_tree/move_down"), TOOL_MOVE_DOWN);
-			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Duplicate")), ED_GET_SHORTCUT("scene_tree/duplicate"), TOOL_DUPLICATE);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Reparent")), ED_GET_SHORTCUT("scene_tree/reparent"), TOOL_REPARENT);
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ReparentToNewNode")), ED_GET_SHORTCUT("scene_tree/reparent_to_new_node"), TOOL_REPARENT_TO_NEW_NODE);
 			if (selection.size() == 1) {
@@ -3937,13 +4137,48 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			END_SECTION()
 		}
 	}
+
+	bool is_tool_scene_open_available = false;
+	bool is_tool_scene_open_inherited_available = false;
 	if (selection.size() == 1) {
 		if (profile_allow_editing) {
 			BEGIN_SECTION()
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
-			END_SECTION()
 		}
 
+		// Group "make_local" etc. with "save_branch_as_scene", if it is available.
+		bool is_external = selection.front()->get()->is_instance();
+		bool is_inherited = selection.front()->get()->get_scene_inherited_state().is_valid();
+		bool is_top_level = selection.front()->get()->get_owner() == nullptr;
+		if (is_inherited && is_top_level) {
+			if (profile_allow_editing) {
+				BEGIN_SECTION()
+				menu->add_item(TTRC("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
+			}
+			is_tool_scene_open_inherited_available = true;
+		}
+
+		if (is_external && !is_top_level) {
+			bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection.front()->get());
+			bool placeholder = selection.front()->get()->get_scene_instance_load_placeholder();
+			if (profile_allow_editing) {
+				BEGIN_SECTION()
+				menu->add_item(TTRC("Make Local"), TOOL_SCENE_MAKE_LOCAL);
+
+				menu->add_check_item(TTRC("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
+				menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/toggle_editable_children"));
+				menu->set_item_checked(-1, editable);
+
+				menu->add_check_item(TTRC("Load as Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
+				menu->set_item_checked(-1, placeholder);
+			}
+			is_tool_scene_open_available = true;
+		}
+
+		END_SECTION()
+	}
+
+	if (selection.size() == 1) {
 		if (full_selection.size() == 1) {
 			BEGIN_SECTION()
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("CopyNodePath")), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
@@ -3973,50 +4208,21 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		END_SECTION()
 	}
 
-	if (selection.size() == 1) {
-		bool is_external = selection.front()->get()->is_instance();
-		if (is_external) {
-			bool is_inherited = selection.front()->get()->get_scene_inherited_state().is_valid();
-			bool is_top_level = selection.front()->get()->get_owner() == nullptr;
-			if (is_inherited && is_top_level) {
-				BEGIN_SECTION()
-				if (profile_allow_editing) {
-					menu->add_item(TTR("Clear Inheritance"), TOOL_SCENE_CLEAR_INHERITANCE);
-				}
-				menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
-			} else if (!is_top_level) {
-				BEGIN_SECTION()
-				bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(selection.front()->get());
-				bool placeholder = selection.front()->get()->get_scene_instance_load_placeholder();
-				if (profile_allow_editing) {
-					menu->add_check_item(TTR("Editable Children"), TOOL_SCENE_EDITABLE_CHILDREN);
-					menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/toggle_editable_children"));
-
-					menu->add_check_item(TTR("Load as Placeholder"), TOOL_SCENE_USE_PLACEHOLDER);
-					menu->add_item(TTR("Make Local"), TOOL_SCENE_MAKE_LOCAL);
-				}
-				menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open in Editor"), TOOL_SCENE_OPEN);
-				if (profile_allow_editing) {
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Editable Children")), editable);
-					menu->set_item_checked(menu->get_item_idx_from_text(TTR("Load as Placeholder")), placeholder);
-				}
-			}
-		}
-		END_SECTION()
-	}
-
-	if (profile_allow_editing && selection.size() > 1) {
-		//this is not a commonly used action, it makes no sense for it to be where it was nor always present.
-		BEGIN_SECTION()
-		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Rename")), ED_GET_SHORTCUT("scene_tree/batch_rename"), TOOL_BATCH_RENAME);
-		END_SECTION()
-	}
 	BEGIN_SECTION()
+	// Group "open_in_editor" with "show_in_file_system", if it is available.
+	if (is_tool_scene_open_inherited_available) {
+		menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open in Editor"), TOOL_SCENE_OPEN_INHERITED);
+		menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/open_scene_in_editor"));
+	} else if (is_tool_scene_open_available) {
+		menu->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Open in Editor"), TOOL_SCENE_OPEN);
+		menu->set_item_shortcut(-1, ED_GET_SHORTCUT("scene_tree/open_scene_in_editor"));
+	}
+
 	if (full_selection.size() == 1 && selection.front()->get()->is_instance()) {
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ShowInFileSystem")), ED_GET_SHORTCUT("scene_tree/show_in_file_system"), TOOL_SHOW_IN_FILE_SYSTEM);
 	}
 
-	menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), TTR("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
+	menu->add_icon_item(get_editor_theme_icon(SNAME("Help")), TTRC("Open Documentation"), TOOL_OPEN_DOCUMENTATION);
 
 	if (profile_allow_editing) {
 		menu->add_separator();
@@ -4025,46 +4231,56 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	END_SECTION()
 
 #undef BEGIN_SECTION
-#undef END_SECTIOn
+#undef END_SECTION
 
-	Vector<String> p_paths;
-	Node *root = EditorNode::get_singleton()->get_edited_scene();
-	for (const List<Node *>::Element *E = selection.front(); E; E = E->next()) {
-		String node_path = String(root->get_path().rel_path_to(E->get()->get_path()));
-		p_paths.push_back(node_path);
+	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE)) {
+		EditorContextMenuPlugin::OptionsData context_data = SceneTreeDock::_get_context_data(selection);
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, context_data);
+
+#ifndef DISABLE_DEPRECATED
+		Vector<String> p_paths;
+		Node *root = EditorNode::get_singleton()->get_edited_scene();
+		for (const Node *node : selection) {
+			const String node_path = (String)root->get_path().rel_path_to(node->get_path());
+			p_paths.push_back(node_path);
+		}
+		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_paths, context_data["selected_nodes"], 500);
+#endif
 	}
-	EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCENE_TREE, p_paths);
 
 	menu->reset_size();
 	menu->set_position(p_menu_pos);
 	menu->popup();
 }
 
-void SceneTreeDock::_update_tree_menu() {
+void SceneTreeDock::_setup_tree_menu() {
 	PopupMenu *tree_menu = button_tree_menu->get_popup();
-	tree_menu->clear();
 
-	tree_menu->add_check_item(TTR("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
-	tree_menu->set_item_checked(-1, EDITOR_GET("docks/scene_tree/auto_expand_to_selected"));
+	tree_menu->add_check_item(TTRC("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
 
-	tree_menu->add_check_item(TTR("Center Node on Reparent"), TOOL_CENTER_PARENT);
-	tree_menu->set_item_checked(-1, EDITOR_GET("docks/scene_tree/center_node_on_reparent"));
-	tree_menu->set_item_tooltip(-1, TTR("If enabled, Reparent to New Node will create the new node in the center of the selected nodes, if possible."));
+	tree_menu->add_check_item(TTRC("Center Node on Reparent"), TOOL_CENTER_PARENT);
+	tree_menu->set_item_tooltip(-1, TTRC("If enabled, Reparent to New Node will create the new node in the center of the selected nodes, if possible."));
 
-	tree_menu->add_check_item(TTR("Hide Filtered Out Parents"), TOOL_HIDE_FILTERED_OUT_PARENTS);
-	tree_menu->set_item_checked(-1, EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"));
+	tree_menu->add_check_item(TTRC("Hide Filtered Out Parents"), TOOL_HIDE_FILTERED_OUT_PARENTS);
 
 	tree_menu->add_separator();
-	tree_menu->add_check_item(TTR("Show Accessibility Warnings"), TOOL_ACCESSIBILITY_WARNINGS);
-	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_ACCESSIBILITY_WARNINGS), EDITOR_GET("docks/scene_tree/accessibility_warnings"));
+	tree_menu->add_check_item(TTRC("Show Accessibility Warnings"), TOOL_ACCESSIBILITY_WARNINGS);
 
 	PopupMenu *resource_list = memnew(PopupMenu);
 	resource_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	resource_list->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_list_all_subresources).bind(resource_list));
 	resource_list->connect("index_pressed", callable_mp(this, &SceneTreeDock::_edit_subresource).bind(resource_list));
-	tree_menu->add_submenu_node_item(TTR("All Scene Sub-Resources"), resource_list);
+	tree_menu->add_submenu_node_item(TTRC("All Scene Sub-Resources"), resource_list);
 
 	_append_filter_options_to(tree_menu);
+}
+
+void SceneTreeDock::_update_tree_menu() {
+	PopupMenu *tree_menu = button_tree_menu->get_popup();
+	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_AUTO_EXPAND), EDITOR_GET("docks/scene_tree/auto_expand_to_selected"));
+	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_CENTER_PARENT), EDITOR_GET("docks/scene_tree/center_node_on_reparent"));
+	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_HIDE_FILTERED_OUT_PARENTS), EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"));
+	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_ACCESSIBILITY_WARNINGS), EDITOR_GET("docks/scene_tree/accessibility_warnings"));
 }
 
 void SceneTreeDock::_filter_changed(const String &p_filter) {
@@ -4076,7 +4292,7 @@ void SceneTreeDock::_filter_changed(const String &p_filter) {
 		filter->set_tooltip_text(warning);
 	} else {
 		filter->remove_theme_icon_override(SNAME("clear"));
-		filter->set_tooltip_text(TTR("Filter nodes by entering a part of their name, type (if prefixed with \"type:\" or \"t:\")\nor group (if prefixed with \"group:\" or \"g:\"). Filtering is case-insensitive."));
+		filter->set_tooltip_text(TTRC("Filter nodes by entering a part of their name, type (if prefixed with \"type:\" or \"t:\")\nor group (if prefixed with \"group:\" or \"g:\"). Filtering is case-insensitive."));
 	}
 }
 
@@ -4150,7 +4366,10 @@ void SceneTreeDock::save_branch_to_file(const String &p_directory) {
 
 void SceneTreeDock::_focus_node() {
 	Node *node = scene_tree->get_selected();
-	ERR_FAIL_NULL(node);
+	// This method handles the item_icon_double_clicked signal and there is no guarantee anything is actually selected.
+	if (!node) {
+		return;
+	}
 
 	if (node->is_class("CanvasItem")) {
 		CanvasItemEditorPlugin *editor = Object::cast_to<CanvasItemEditorPlugin>(editor_data->get_editor_by_name("2D"));
@@ -4171,7 +4390,7 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 		return;
 	}
 
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> selection = editor_selection->get_top_selected_node_list();
 	if (selection.is_empty()) {
 		return;
 	}
@@ -4195,12 +4414,12 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 
 	String inherits = selected->get_class();
 
-	if (p_extend && existing.is_valid()) {
+	if (p_extend && existing.is_valid() && !existing->is_built_in()) {
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *l = ScriptServer::get_language(i);
 			if (l->get_type() == existing->get_class()) {
 				String name = l->get_global_class_name(existing->get_path());
-				if (ScriptServer::is_global_class(name) && EDITOR_GET("interface/editors/derive_script_globals_by_name").operator bool()) {
+				if (ScriptServer::is_global_class(name) && EDITOR_GET("docks/scene_tree/derive_script_globals_by_name").operator bool()) {
 					inherits = name;
 				} else if (l->can_inherit_from_file()) {
 					inherits = "\"" + existing->get_path() + "\"";
@@ -4208,6 +4427,8 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 				break;
 			}
 		}
+	} else if (p_extend) {
+		return;
 	}
 
 	script_create_dialog->connect("script_created", callable_mp(this, &SceneTreeDock::_script_created));
@@ -4267,16 +4488,6 @@ void SceneTreeDock::open_shader_dialog(const Ref<ShaderMaterial> &p_for_material
 	attach_shader_to_selected(p_preferred_mode);
 }
 
-void SceneTreeDock::open_add_child_dialog() {
-	create_dialog->set_base_type("CanvasItem");
-	_tool_selected(TOOL_NEW, true);
-	reset_create_dialog = true;
-}
-
-void SceneTreeDock::open_instance_child_dialog() {
-	_tool_selected(TOOL_INSTANTIATE, true);
-}
-
 List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 	List<Node *> pasted_nodes;
 
@@ -4304,7 +4515,7 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 	Node *paste_parent = edited_scene;
 	Node *paste_sibling = nullptr;
 
-	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	const List<Node *> selection = editor_selection->get_top_selected_node_list();
 	if (selection.size() > 0) {
 		paste_parent = selection.back()->get();
 	}
@@ -4334,26 +4545,25 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 	}
 	ur->add_do_method(editor_selection, "clear");
 
-	HashMap<Ref<Resource>, Ref<Resource>> resource_remap;
 	String target_scene;
 	if (edited_scene) {
 		target_scene = edited_scene->get_scene_file_path();
 	}
+	HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &resources_local_to_scenes = clipboard_resource_remap[target_scene]; // Record the mappings in the sub-scene.
 	if (target_scene != clipboard_source_scene) {
-		if (!clipboard_resource_remap.has(target_scene)) {
+		if (!resources_local_to_scenes.has(nullptr)) {
 			HashMap<Ref<Resource>, Ref<Resource>> remap;
 			for (Node *E : node_clipboard) {
 				_create_remap_for_node(E, remap);
 			}
-			clipboard_resource_remap[target_scene] = remap;
+			resources_local_to_scenes[nullptr] = remap;
 		}
-		resource_remap = clipboard_resource_remap[target_scene];
 	}
 
 	for (Node *node : node_clipboard) {
 		HashMap<const Node *, Node *> duplimap;
 
-		Node *dup = node->duplicate_from_editor(duplimap, resource_remap);
+		Node *dup = node->duplicate_from_editor(duplimap, edited_scene, resources_local_to_scenes);
 		ERR_CONTINUE(!dup);
 
 		pasted_nodes.push_back(dup);
@@ -4365,6 +4575,9 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 			ur->add_do_method(EditorNode::get_singleton(), "set_edited_scene", dup);
 		} else {
 			ur->add_do_method(paste_parent, "add_child", dup, true);
+			if (paste_sibling) {
+				ur->add_do_method(paste_parent, "move_child", dup, paste_sibling->get_index() + 1);
+			}
 		}
 
 		for (KeyValue<const Node *, Node *> &E2 : duplimap) {
@@ -4372,7 +4585,7 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 			// When copying, all nodes that should have an owner assigned here were given nullptr as an owner
 			// and added to the node_clipboard_edited_scene_owned list.
 			if (d != dup && E2.key->get_owner() == nullptr) {
-				if (node_clipboard_edited_scene_owned.find(const_cast<Node *>(E2.key))) {
+				if (node_clipboard_edited_scene_owned.has(const_cast<Node *>(E2.key))) {
 					ur->add_do_method(d, "set_owner", owner);
 				}
 			}
@@ -4396,17 +4609,133 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 	}
 
 	ur->commit_action();
+
+	for (KeyValue<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &KV : resources_local_to_scenes) {
+		for (KeyValue<Ref<Resource>, Ref<Resource>> &R : KV.value) {
+			if (R.value->is_local_to_scene()) {
+				R.value->setup_local_to_scene();
+			}
+		}
+	}
+
 	return pasted_nodes;
 }
 
-List<Node *> SceneTreeDock::get_node_clipboard() const {
-	return node_clipboard;
+void SceneTreeDock::paste_node_as_replacement() {
+	List<Node *> selection = editor_selection->get_top_selected_node_list();
+	Node *clipboard_node = node_clipboard.front()->get();
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Paste Node(s) as Replacement"), UndoRedo::MERGE_DISABLE, edited_scene);
+
+	for (Node *selected : selection) {
+		HashMap<const Node *, Node *> duplimap;
+		Node *new_node = clipboard_node->duplicate_from_editor(duplimap);
+		if (!new_node) {
+			continue;
+		}
+		ur->add_do_reference(new_node);
+		ur->add_undo_reference(selected);
+
+		String old_scene_file_path = selected->get_scene_file_path();
+		String new_scene_file_path = clipboard_node->get_scene_file_path();
+
+		bool old_is_scene = !old_scene_file_path.is_empty();
+		bool new_is_scene = !new_scene_file_path.is_empty();
+
+		LocalVector<Node *> old_children;
+		Dictionary owners_map;
+
+		int child_count = selected->get_child_count();
+		for (int i = 0; i < child_count; i++) {
+			Node *child = selected->get_child(0);
+			_make_owners_map(child, owners_map);
+			old_children.push_back(child);
+
+			ur->add_do_method(selected, "remove_child", child);
+			selected->remove_child(child);
+		}
+
+		const bool is_missing_node_selected = Object::cast_to<MissingNode>(selected) != nullptr;
+		const CanvasItem *selected_canvas_item = Object::cast_to<CanvasItem>(selected);
+		const Node3D *selected_node_3d = Object::cast_to<Node3D>(selected);
+		Transform2D selected_transform_2d;
+		Transform3D selected_transform_3d;
+		if (selected_canvas_item) {
+			selected_transform_2d = selected_canvas_item->get_transform();
+		} else if (selected_node_3d) {
+			selected_transform_3d = selected_node_3d->get_transform();
+		}
+
+		if (selected_canvas_item) {
+			Node2D *new_node_2d = Object::cast_to<Node2D>(new_node);
+			Control *new_control = Object::cast_to<Control>(new_node);
+			if (new_node_2d) {
+				new_node_2d->set_transform(selected_transform_2d);
+			} else if (new_control) {
+				new_control->set_position(selected_transform_2d.get_origin());
+				new_control->set_rotation(selected_transform_2d.get_rotation());
+				new_control->set_scale(selected_transform_2d.get_scale());
+			}
+		} else if (selected_node_3d) {
+			Node3D *new_node_3d = Object::cast_to<Node3D>(new_node);
+			if (new_node_3d) {
+				new_node_3d->set_transform(selected_transform_3d);
+			}
+		}
+
+		for (Node *child : new_node->iterate_children()) {
+			ur->add_do_reference(child);
+			ur->add_do_method(new_node, "add_child", child);
+			ur->add_undo_method(new_node, "remove_child", child);
+		}
+
+		// Note that due to the new node possibly having child nodes, it's not possible to unify the operations to use only do methods.
+		_replace_node(selected, new_node, is_missing_node_selected);
+		ur->add_do_method(this, "replace_node", selected, new_node, false);
+		if (old_is_scene || new_is_scene) {
+			new_node->set_scene_file_path(new_scene_file_path);
+			ur->add_do_method(new_node, "set_scene_file_path", new_scene_file_path);
+		}
+
+		for (KeyValue<const Node *, Node *> &E2 : duplimap) {
+			Node *d = E2.value;
+			// When copying, all nodes that should have an owner assigned here were given nullptr as an owner
+			// and added to the node_clipboard_edited_scene_owned list.
+			if (d != new_node && E2.key->get_owner() == nullptr) {
+				if (node_clipboard_edited_scene_owned.has(const_cast<Node *>(E2.key))) {
+					d->set_owner(edited_scene);
+					ur->add_do_method(d, "set_owner", edited_scene);
+				}
+			}
+		}
+
+		ur->add_undo_method(this, "replace_node", new_node, selected, false);
+		if (old_is_scene || new_is_scene) {
+			ur->add_undo_method(selected, "set_scene_file_path", old_scene_file_path);
+		}
+
+		for (Node *child : old_children) {
+			ur->add_undo_method(selected, "add_child", child);
+			ur->add_undo_method(this, "_apply_owners_map", child, owners_map);
+			ur->add_undo_reference(child);
+		}
+	}
+	ur->commit_action(false);
+	// FIXME: This shouldn't be needed, but children of the pasted node do not appear immediately for some reason.
+	scene_tree->clear_cache();
+	scene_tree->update_tree();
 }
 
-void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
+List<Node *> SceneTreeDock::get_node_clipboard() const {
+	return List<Node *>(node_clipboard);
+}
+
+void SceneTreeDock::add_remote_tree_editor(Tree *p_remote) {
 	ERR_FAIL_COND(remote_tree != nullptr);
-	main_vbox->add_child(p_remote);
+	main_mc->add_child(p_remote);
 	remote_tree = p_remote;
+	remote_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	remote_tree->hide();
 	remote_tree->connect("open", callable_mp(this, &SceneTreeDock::_load_request));
 }
@@ -4420,14 +4749,15 @@ void SceneTreeDock::hide_remote_tree() {
 }
 
 void SceneTreeDock::show_tab_buttons() {
-	button_hb->show();
+	button_panel->show();
 }
 
 void SceneTreeDock::hide_tab_buttons() {
-	button_hb->hide();
+	button_panel->hide();
 }
 
 void SceneTreeDock::_remote_tree_selected() {
+	main_mc->set_theme_type_variation("NoBorderHorizontalBottom");
 	scene_tree->hide();
 	create_root_dialog->hide();
 	if (remote_tree) {
@@ -4440,14 +4770,27 @@ void SceneTreeDock::_remote_tree_selected() {
 }
 
 void SceneTreeDock::_local_tree_selected() {
-	if (!bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) || get_tree()->get_edited_scene_root() != nullptr) {
-		scene_tree->show();
-	}
 	if (remote_tree) {
 		remote_tree->hide();
 	}
+	_update_create_root_dialog_visibility();
 	edit_remote->set_pressed(false);
 	edit_local->set_pressed(true);
+}
+
+void SceneTreeDock::_update_create_root_dialog_visibility() {
+	if (remote_tree && remote_tree->is_visible()) {
+		return;
+	}
+	if (edited_scene == nullptr) {
+		main_mc->set_theme_type_variation("");
+		create_root_dialog->show();
+		scene_tree->hide();
+	} else {
+		main_mc->set_theme_type_variation("NoBorderBottomPanel");
+		create_root_dialog->hide();
+		scene_tree->show();
+	}
 }
 
 void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
@@ -4461,6 +4804,8 @@ void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
 			favorite_node_shortcuts->get_child(i)->queue_free();
 		}
 
+		bool favorite_node_shortcuts_empty = true;
+
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites.Node"), FileAccess::READ);
 		if (f.is_valid()) {
 			while (!f->eof_reached()) {
@@ -4469,6 +4814,7 @@ void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
 				if (!l.is_empty()) {
 					Button *button = memnew(Button);
 					favorite_node_shortcuts->add_child(button);
+					favorite_node_shortcuts_empty = false;
 					button->set_text(l);
 					button->set_clip_text(true);
 					String name = l.get_slicec(' ', 0);
@@ -4481,17 +4827,13 @@ void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
 			}
 		}
 
-		if (!favorite_node_shortcuts->is_visible_in_tree()) {
-			favorite_node_shortcuts->show();
-			beginner_node_shortcuts->hide();
-		}
+		favorite_node_shortcuts->set_visible(!favorite_node_shortcuts_empty);
+		beginner_node_shortcuts->hide();
 	} else {
-		if (!beginner_node_shortcuts->is_visible_in_tree()) {
-			beginner_node_shortcuts->show();
-			favorite_node_shortcuts->hide();
-		}
-		button_clipboard->set_visible(!node_clipboard.is_empty());
+		beginner_node_shortcuts->show();
+		favorite_node_shortcuts->hide();
 	}
+	button_clipboard->set_visible(!node_clipboard.is_empty());
 }
 
 void SceneTreeDock::_favorite_root_selected(const String &p_class) {
@@ -4692,6 +5034,7 @@ void SceneTreeDock::_edit_subresource(int p_idx, const PopupMenu *p_from_menu) {
 
 void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_post_do_create"), &SceneTreeDock::_post_do_create);
+	ClassDB::bind_method(D_METHOD("_apply_owners_map"), &SceneTreeDock::_apply_owners_map);
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_root"), &SceneTreeDock::_reparent_nodes_to_root);
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_paths_with_transform_and_name"), &SceneTreeDock::_reparent_nodes_to_paths_with_transform_and_name);
@@ -4703,8 +5046,6 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("replace_node"), &SceneTreeDock::_replace_node);
 
 	ADD_SIGNAL(MethodInfo("remote_tree_selected"));
-	ADD_SIGNAL(MethodInfo("add_node_used"));
-	ADD_SIGNAL(MethodInfo("node_created", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 }
 
 SceneTreeDock *SceneTreeDock::singleton = nullptr;
@@ -4715,18 +5056,29 @@ void SceneTreeDock::_update_configuration_warning() {
 	}
 }
 
+Dictionary SceneTreeDock::_get_context_data(const List<Node *> &p_selected_nodes) {
+	TypedArray<Node> selected_nodes;
+	selected_nodes.reserve(p_selected_nodes.size());
+	for (const Node *node : p_selected_nodes) {
+		selected_nodes.append(node);
+	}
+	EditorContextMenuPlugin::OptionsData context_data;
+	context_data["selected_nodes"] = selected_nodes;
+	return context_data;
+}
+
 SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data) {
 	set_name(TTRC("Scene"));
 	set_icon_name("PackedScene");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_scene", TTRC("Open Scene Dock")));
-	set_default_slot(DockConstants::DOCK_SLOT_LEFT_UR);
+	set_default_slot(EditorDock::DOCK_SLOT_LEFT_UR);
 
 	singleton = this;
 	editor_data = &p_editor_data;
 	editor_selection = p_editor_selection;
 	scene_root = p_scene_root;
 
-	main_vbox = memnew(VBoxContainer);
+	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox);
 
 	HBoxContainer *filter_hbc = memnew(HBoxContainer);
@@ -4743,8 +5095,9 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/expand_collapse_all", TTRC("Expand/Collapse Branch"));
 	ED_SHORTCUT("scene_tree/cut_node", TTRC("Cut"), KeyModifierMask::CMD_OR_CTRL | Key::X);
 	ED_SHORTCUT("scene_tree/copy_node", TTRC("Copy"), KeyModifierMask::CMD_OR_CTRL | Key::C);
-	ED_SHORTCUT("scene_tree/paste_node", TTRC("Paste"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("scene_tree/paste_node", TTRC("Paste (as Child)"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("scene_tree/paste_node_as_sibling", TTRC("Paste as Sibling"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::V);
+	ED_SHORTCUT("scene_tree/paste_node_as_replacement", TTRC("Paste as Replacement"), KeyModifierMask::ALT | Key::V);
 	ED_SHORTCUT("scene_tree/change_node_type", TTRC("Change Type..."));
 	ED_SHORTCUT("scene_tree/attach_script", TTRC("Attach Script..."));
 	ED_SHORTCUT("scene_tree/extend_script", TTRC("Extend Script..."));
@@ -4760,6 +5113,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/show_in_file_system", TTRC("Show in FileSystem"));
 	ED_SHORTCUT("scene_tree/toggle_unique_name", TTRC("Toggle Access as Unique Name"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::X);
 	ED_SHORTCUT("scene_tree/toggle_editable_children", TTRC("Toggle Editable Children"));
+	ED_SHORTCUT_ARRAY("scene_tree/open_scene_in_editor", TTRC("Open Scene in Editor"), { int32_t(Key::SLASH), int32_t(KeyModifierMask::SHIFT | Key::COLON) });
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTRC("Delete (No Confirm)"), KeyModifierMask::SHIFT | Key::KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTRC("Delete"), Key::KEY_DELETE);
 
@@ -4808,7 +5162,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_detach_script->hide();
 
 	button_extend_script = memnew(Button);
-	button_extend_script->set_flat(true);
+	button_extend_script->set_theme_type_variation("FlatMenuButton");
 	button_extend_script->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_EXTEND_SCRIPT, false));
 	button_extend_script->set_tooltip_text(TTRC("Extend the script of the selected node."));
 	button_extend_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/extend_script"));
@@ -4818,46 +5172,55 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_tree_menu = memnew(MenuButton);
 	button_tree_menu->set_flat(false);
 	button_tree_menu->set_theme_type_variation("FlatMenuButton");
-	button_tree_menu->set_tooltip_text(TTR("Extra scene options."));
+	button_tree_menu->set_tooltip_text(TTRC("Extra scene options."));
+	_setup_tree_menu();
 	button_tree_menu->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_update_tree_menu));
 	filter_hbc->add_child(button_tree_menu);
 
 	PopupMenu *tree_menu = button_tree_menu->get_popup();
 	tree_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
-	button_hb = memnew(HBoxContainer);
-	main_vbox->add_child(button_hb);
+	button_panel = memnew(PanelContainer);
+	button_panel->set_theme_type_variation("PanelContainerButtonGroup");
+	main_vbox->add_child(button_panel);
+
+	HBoxContainer *button_hb = memnew(HBoxContainer);
+	button_panel->add_child(button_hb);
 
 	edit_remote = memnew(Button);
 	edit_remote->set_theme_type_variation(SceneStringName(FlatButton));
 	edit_remote->set_h_size_flags(SIZE_EXPAND_FILL);
-	edit_remote->set_text(TTR("Remote"));
+	edit_remote->set_text(TTRC("Remote"));
 	edit_remote->set_toggle_mode(true);
-	edit_remote->set_tooltip_text(TTR("If selected, the Remote scene tree dock will cause the project to stutter every time it updates.\nSwitch back to the Local scene tree dock to improve performance."));
+	edit_remote->set_tooltip_text(TTRC("If selected, the Remote scene tree dock will cause the project to stutter every time it updates.\nSwitch back to the Local scene tree dock to improve performance."));
 	button_hb->add_child(edit_remote);
 	edit_remote->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_remote_tree_selected));
 
 	edit_local = memnew(Button);
 	edit_local->set_theme_type_variation(SceneStringName(FlatButton));
 	edit_local->set_h_size_flags(SIZE_EXPAND_FILL);
-	edit_local->set_text(TTR("Local"));
+	edit_local->set_text(TTRC("Local"));
 	edit_local->set_toggle_mode(true);
 	edit_local->set_pressed(true);
 	button_hb->add_child(edit_local);
 	edit_local->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_local_tree_selected));
 
 	remote_tree = nullptr;
-	button_hb->hide();
+	button_panel->hide();
+
+	main_mc = memnew(MarginContainer);
+	main_vbox->add_child(main_mc);
+	main_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	main_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	create_root_dialog = memnew(VBoxContainer);
-	main_vbox->add_child(create_root_dialog);
+	main_mc->add_child(create_root_dialog);
 	create_root_dialog->set_v_size_flags(SIZE_EXPAND_FILL);
 	create_root_dialog->hide();
 
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
-
-	main_vbox->add_child(scene_tree);
-	scene_tree->set_v_size_flags(SIZE_EXPAND | SIZE_FILL);
+	main_mc->add_child(scene_tree);
+	scene_tree->get_scene_tree()->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	scene_tree->connect("rmb_pressed", callable_mp(this, &SceneTreeDock::_tree_rmb));
 
 	scene_tree->connect("node_selected", callable_mp(this, &SceneTreeDock::_node_selected), CONNECT_DEFERRED);
@@ -4869,9 +5232,12 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("files_dropped", callable_mp(this, &SceneTreeDock::_files_dropped));
 	scene_tree->connect("script_dropped", callable_mp(this, &SceneTreeDock::_script_dropped));
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
-	scene_tree->get_scene_tree()->get_vscroll_bar()->connect("value_changed", callable_mp(this, &SceneTreeDock::_reset_hovering_timer).unbind(1));
+	scene_tree->get_scene_tree()->get_vscroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &SceneTreeDock::_reset_hovering_timer).unbind(1));
+	scene_tree->get_scene_tree()->get_vscroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &SceneTreeDock::_cancel_highlight).unbind(1));
 
 	scene_tree->get_scene_tree()->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
+	scene_tree->get_scene_tree()->connect(SceneStringName(draw), callable_mp(this, &SceneTreeDock::_scene_tree_draw));
+	scene_tree->get_scene_tree()->connect("cell_selected", callable_mp(this, &SceneTreeDock::_scene_tree_item_selected));
 	scene_tree->get_scene_tree()->connect("item_icon_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
 
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeDock::_selection_changed));
@@ -4902,7 +5268,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	reparent_dialog = memnew(ReparentDialog);
 	add_child(reparent_dialog);
-	reparent_dialog->connect("reparent", callable_mp(this, &SceneTreeDock::_node_reparent));
+	reparent_dialog->connect("reparent_requested", callable_mp(this, &SceneTreeDock::_node_reparent));
 
 	accept = memnew(AcceptDialog);
 	add_child(accept);
@@ -4910,6 +5276,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	set_process_shortcut_input(true);
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_ok_button_text(TTRC("Delete"));
 	add_child(delete_dialog);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_delete_confirm).bind(false));
 
@@ -4920,23 +5287,25 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	delete_dialog_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	vb->add_child(delete_dialog_label);
 
-	delete_tracks_checkbox = memnew(CheckBox(TTR("Delete Related Animation Tracks")));
+	delete_tracks_checkbox = memnew(CheckBox(TTRC("Delete Related Animation Tracks")));
 	delete_tracks_checkbox->set_pressed(true);
 	vb->add_child(delete_tracks_checkbox);
 
 	editable_instance_remove_dialog = memnew(ConfirmationDialog);
+	editable_instance_remove_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(editable_instance_remove_dialog);
 	editable_instance_remove_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_toggle_editable_children_from_selection));
 
 	placeholder_editable_instance_remove_dialog = memnew(ConfirmationDialog);
+	placeholder_editable_instance_remove_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(placeholder_editable_instance_remove_dialog);
 	placeholder_editable_instance_remove_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_toggle_placeholder_from_selection));
 
 	new_scene_from_dialog = memnew(EditorFileDialog);
 	new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	new_scene_from_dialog->add_option(TTR("Reset Position"), Vector<String>(), true);
-	new_scene_from_dialog->add_option(TTR("Reset Rotation"), Vector<String>(), false);
-	new_scene_from_dialog->add_option(TTR("Reset Scale"), Vector<String>(), false);
+	new_scene_from_dialog->add_option(TTRC("Reset Position"), Vector<String>(), true);
+	new_scene_from_dialog->add_option(TTRC("Reset Rotation"), Vector<String>(), false);
+	new_scene_from_dialog->add_option(TTRC("Reset Scale"), Vector<String>(), false);
 	add_child(new_scene_from_dialog);
 	new_scene_from_dialog->connect("file_selected", callable_mp(this, &SceneTreeDock::_new_scene_from));
 
@@ -4953,12 +5322,12 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	menu_properties->connect(SceneStringName(id_pressed), callable_mp(this, &SceneTreeDock::_property_selected));
 
 	clear_inherit_confirm = memnew(ConfirmationDialog);
-	clear_inherit_confirm->set_text(TTR("Clear Inheritance? (No Undo!)"));
-	clear_inherit_confirm->set_ok_button_text(TTR("Clear"));
+	clear_inherit_confirm->set_flag(Window::FLAG_RESIZE_DISABLED, true);
+	clear_inherit_confirm->set_text(TTRC("Clear Inheritance? (No Undo!)"));
+	clear_inherit_confirm->set_ok_button_text(TTRC("Clear"));
 	add_child(clear_inherit_confirm);
 
 	set_process_input(true);
-	set_process(true);
 
 	EDITOR_DEF("_use_favorites_root_selection", false);
 

@@ -50,6 +50,52 @@ class Float16 {
   uint16_t val;
 };
 
+class FloatE5M2 {
+ public:
+  FloatE5M2(uint8_t v) : val(v) {}
+  FloatE5M2() {}
+  static bool isNan(const FloatE5M2& val) {
+    return ((val.val & 0x7C) == 0x7C) && ((val.val & 0x3) != 0);
+  }
+  // Returns true if the given value is any kind of infinity.
+  static bool isInfinity(const FloatE5M2& val) {
+    return ((val.val & 0x7C) == 0x7C) && ((val.val & 0x3) == 0);
+  }
+  FloatE5M2(const FloatE5M2& other) { val = other.val; }
+  uint8_t get_value() const { return val; }
+
+  // Returns the maximum normal value.
+  static FloatE5M2 max() { return FloatE5M2(0x7B); }
+  // Returns the lowest normal value.
+  static FloatE5M2 lowest() { return FloatE5M2(0xFB); }
+
+ private:
+  uint8_t val;
+};
+
+class FloatE4M3 {
+ public:
+  FloatE4M3(uint8_t v) : val(v) {}
+  FloatE4M3() {}
+  static bool isNan(const FloatE4M3& val) {
+    return (val.val & 0x7F) == 0x7F;
+  }
+  // Returns true if the given value is any kind of infinity.
+  static bool isInfinity(const FloatE4M3&) {
+    return false;
+  }
+  FloatE4M3(const FloatE4M3& other) { val = other.val; }
+  uint8_t get_value() const { return val; }
+
+  // Returns the maximum normal value.
+  static FloatE4M3 max() { return FloatE4M3(0x7E); }
+  // Returns the lowest normal value.
+  static FloatE4M3 lowest() { return FloatE4M3(0xFE); }
+
+ private:
+  uint8_t val;
+};
+
 // To specialize this type, you must override uint_type to define
 // an unsigned integer that can fit your floating point type.
 // You must also add a isNan function that returns true if
@@ -93,6 +139,30 @@ struct FloatProxyTraits<Float16> {
   static Float16 max() { return Float16::max(); }
   // Returns the lowest normal value.
   static Float16 lowest() { return Float16::lowest(); }
+};
+
+template <>
+struct FloatProxyTraits<FloatE5M2> {
+  typedef uint8_t uint_type;
+  static bool isNan(FloatE5M2 f) { return FloatE5M2::isNan(f); }
+  // Returns true if the given value is any kind of infinity.
+  static bool isInfinity(FloatE5M2 f) { return FloatE5M2::isInfinity(f); }
+  // Returns the maximum normal value.
+  static FloatE5M2 max() { return FloatE5M2::max(); }
+  // Returns the lowest normal value.
+  static FloatE5M2 lowest() { return FloatE5M2::lowest(); }
+};
+
+template <>
+struct FloatProxyTraits<FloatE4M3> {
+  typedef uint8_t uint_type;
+  static bool isNan(FloatE4M3 f) { return FloatE4M3::isNan(f); }
+  // Returns true if the given value is any kind of infinity.
+  static bool isInfinity(FloatE4M3 f) { return FloatE4M3::isInfinity(f); }
+  // Returns the maximum normal value.
+  static FloatE4M3 max() { return FloatE4M3::max(); }
+  // Returns the lowest normal value.
+  static FloatE4M3 lowest() { return FloatE4M3::lowest(); }
 };
 
 // Since copying a floating point number (especially if it is NaN)
@@ -182,6 +252,7 @@ struct HexFloatTraits {
   // The bias of the exponent. (How much we need to subtract from the stored
   // value to get the correct value.)
   static const uint32_t exponent_bias = 0;
+  static bool supportsInfinity() { return true; }
 };
 
 // Traits for IEEE float.
@@ -196,6 +267,7 @@ struct HexFloatTraits<FloatProxy<float>> {
   static const uint_type num_exponent_bits = 8;
   static const uint_type num_fraction_bits = 23;
   static const uint_type exponent_bias = 127;
+  static bool supportsInfinity() { return true; }
 };
 
 // Traits for IEEE double.
@@ -210,6 +282,7 @@ struct HexFloatTraits<FloatProxy<double>> {
   static const uint_type num_exponent_bits = 11;
   static const uint_type num_fraction_bits = 52;
   static const uint_type exponent_bias = 1023;
+  static bool supportsInfinity() { return true; }
 };
 
 // Traits for IEEE half.
@@ -224,6 +297,33 @@ struct HexFloatTraits<FloatProxy<Float16>> {
   static const uint_type num_exponent_bits = 5;
   static const uint_type num_fraction_bits = 10;
   static const uint_type exponent_bias = 15;
+  static bool supportsInfinity() { return true; }
+};
+
+template <>
+struct HexFloatTraits<FloatProxy<FloatE5M2>> {
+  typedef uint8_t uint_type;
+  typedef int8_t int_type;
+  typedef uint8_t underlying_type;
+  typedef uint8_t native_type;
+  static const uint_type num_used_bits = 8;
+  static const uint_type num_exponent_bits = 5;
+  static const uint_type num_fraction_bits = 2;
+  static const uint_type exponent_bias = 15;
+  static bool supportsInfinity() { return true; }
+};
+
+template <>
+struct HexFloatTraits<FloatProxy<FloatE4M3>> {
+  typedef uint8_t uint_type;
+  typedef int8_t int_type;
+  typedef uint8_t underlying_type;
+  typedef uint8_t native_type;
+  static const uint_type num_used_bits = 8;
+  static const uint_type num_exponent_bits = 4;
+  static const uint_type num_fraction_bits = 3;
+  static const uint_type exponent_bias = 7;
+  static bool supportsInfinity() { return false; }
 };
 
 enum round_direction {
@@ -243,6 +343,7 @@ class HexFloat {
   typedef typename Traits::int_type int_type;
   typedef typename Traits::underlying_type underlying_type;
   typedef typename Traits::native_type native_type;
+  using Traits_T = Traits;
 
   explicit HexFloat(T f) : value_(f) {}
 
@@ -584,14 +685,22 @@ class HexFloat {
         (getBits() & exponent_mask) == exponent_mask && significand != 0;
     bool is_inf =
         !is_nan &&
-        ((exponent + carried) > static_cast<int_type>(other_T::exponent_bias) ||
+        (((exponent + carried) > static_cast<int_type>(other_T::exponent_bias) && other_T::Traits_T::supportsInfinity()) ||
+         ((exponent + carried) > static_cast<int_type>(other_T::exponent_bias + 1) && !other_T::Traits_T::supportsInfinity()) ||
          (significand == 0 && (getBits() & exponent_mask) == exponent_mask));
 
     // If we are Nan or Inf we should pass that through.
     if (is_inf) {
-      other.set_value(BitwiseCast<typename other_T::underlying_type>(
-          static_cast<typename other_T::uint_type>(
-              (negate ? other_T::sign_mask : 0) | other_T::exponent_mask)));
+      if (other_T::Traits_T::supportsInfinity()) {
+        // encode as +/-inf
+        other.set_value(BitwiseCast<typename other_T::underlying_type>(
+            static_cast<typename other_T::uint_type>(
+                (negate ? other_T::sign_mask : 0) | other_T::exponent_mask)));
+      } else {
+        // encode as +/-nan
+        other.set_value(BitwiseCast<typename other_T::underlying_type>(
+            static_cast<typename other_T::uint_type>(negate ? ~0 : ~other_T::sign_mask)));
+      }
       return;
     }
     if (is_nan) {

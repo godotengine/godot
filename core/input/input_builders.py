@@ -14,12 +14,20 @@ def make_default_controller_mappings(target, source, env):
 
 """)
 
+        PLATFORM_VARIABLES = {
+            "Linux": "LINUXBSD",
+            "Windows": "WINDOWS",
+            "Mac OS X": "MACOS",
+            "Android": "ANDROID",
+            "iOS": "APPLE_EMBEDDED",
+            "Web": "WEB",
+        }
+
         # ensure mappings have a consistent order
         platform_mappings = OrderedDict()
         for src_path in map(str, source):
             with open(src_path, "r", encoding="utf-8") as f:
-                # read mapping file and skip header
-                mapping_file_lines = f.readlines()[2:]
+                mapping_file_lines = f.readlines()
 
             current_platform = None
             for line in mapping_file_lines:
@@ -29,7 +37,10 @@ def make_default_controller_mappings(target, source, env):
                 if len(line) == 0:
                     continue
                 if line[0] == "#":
-                    current_platform = line[1:].strip()
+                    platform_or_header = line[1:].strip()
+                    if platform_or_header not in PLATFORM_VARIABLES:
+                        continue  # Header
+                    current_platform = platform_or_header
                     if current_platform not in platform_mappings:
                         platform_mappings[current_platform] = {}
                 elif current_platform:
@@ -42,15 +53,6 @@ def make_default_controller_mappings(target, source, env):
                             )
                         )
                     platform_mappings[current_platform][guid] = line
-
-        PLATFORM_VARIABLES = {
-            "Linux": "LINUXBSD",
-            "Windows": "WINDOWS",
-            "Mac OS X": "MACOS",
-            "Android": "ANDROID",
-            "iOS": "APPLE_EMBEDDED",
-            "Web": "WEB",
-        }
 
         file.write("const char *DefaultControllerMappings::mappings[] = {\n")
         for platform, mappings in platform_mappings.items():

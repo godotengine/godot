@@ -8,6 +8,7 @@
 		The [member x] and [member y] axes form a 2×2 matrix, known as the transform's [b]basis[/b]. The length of each axis ([method Vector2.length]) influences the transform's scale, while the direction of all axes influence the rotation. Usually, both axes are perpendicular to one another. However, when you rotate one axis individually, the transform becomes skewed. Applying a skewed transform to a 2D sprite will make the sprite appear distorted.
 		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
 		[b]Note:[/b] Unlike [Transform3D], there is no 2D equivalent to the [Basis] type. All mentions of "basis" refer to the [member x] and [member y] components of [Transform2D].
+		[b]Note:[/b] In a boolean context, a Transform2D will evaluate to [code]false[/code] if it's equal to [constant IDENTITY]. Otherwise, a Transform2D will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>

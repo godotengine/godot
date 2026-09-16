@@ -71,7 +71,7 @@ private:
 		float reprojection_matrix[16];
 		float resolution[2];
 		uint32_t force_derive_from_depth;
-		float pad;
+		uint32_t pad;
 	};
 
 	struct {

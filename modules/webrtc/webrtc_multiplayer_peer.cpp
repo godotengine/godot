@@ -30,6 +30,8 @@
 
 #include "webrtc_multiplayer_peer.h"
 
+#include "core/object/class_db.h"
+
 void WebRTCMultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_server", "channels_config"), &WebRTCMultiplayerPeer::create_server, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("create_client", "peer_id", "channels_config"), &WebRTCMultiplayerPeer::create_client, DEFVAL(Array()));

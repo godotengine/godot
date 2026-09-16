@@ -31,6 +31,7 @@
 #pragma once
 
 #include "scene/2d/node_2d.h"
+#include "scene/resources/curve.h"
 #include "scene/resources/gradient.h"
 
 class Line2D : public Node2D {

@@ -24,7 +24,7 @@ def get_opts():
     from SCons.Variables import BoolVariable
 
     return [
-        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
+        (("SWIFT_COMPILER", "SWIFT_FRONTEND"), "Path to the swiftc binary", ""),
         # APPLE_TOOLCHAIN_PATH Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
         ("APPLE_TOOLCHAIN_PATH", "Path to the Apple toolchain", ""),
         (("APPLE_SDK_PATH", "VISIONOS_SDK_PATH"), "Path to the visionOS SDK", ""),
@@ -114,6 +114,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-mtargetos=xros26.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
+    env.Append(CCFLAGS=["-ffp-contract=off"])
+
     if env["arch"] == "arm64":
         env.Append(
             CCFLAGS=(
@@ -136,7 +138,14 @@ def configure(env: "SConsEnvironment"):
     )
 
     env.Prepend(CPPPATH=["#platform/visionos"])
-    env.Append(CPPDEFINES=["VISIONOS_ENABLED", "APPLE_EMBEDDED_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
+    env.Append(
+        CPPDEFINES=[
+            "VISIONOS_ENABLED",
+            "APPLE_EMBEDDED_ENABLED",
+            "UNIX_ENABLED",
+            "COREAUDIO_ENABLED",
+        ]
+    )
 
     if env["vulkan"]:
         print_warning("The visionOS platform does not support the Vulkan rendering driver")
@@ -147,7 +156,7 @@ def configure(env: "SConsEnvironment"):
         env["metal"] = False
 
     if env["metal"]:
-        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED"])
         env.Prepend(
             CPPPATH=[
                 "$APPLE_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
@@ -160,3 +169,10 @@ def configure(env: "SConsEnvironment"):
     if env["opengl3"]:
         print_warning("The visionOS platform does not support the OpenGL rendering driver")
         env["opengl3"] = False
+
+    if env["sdl"]:
+        if env["builtin_sdl"]:
+            env.Append(CPPDEFINES=["SDL_ENABLED"])
+        else:
+            print_warning("`builtin_sdl` was explicitly disabled. Disabling SDL input driver support.")
+            env["sdl"] = False

@@ -30,17 +30,10 @@
 
 #pragma once
 
-/**
- * @class Vector
- * Vector container. Simple copy-on-write container.
- *
- * LocalVector is an alternative available for internal use when COW is not
- * required.
- */
-
 #include "core/error/error_macros.h"
 #include "core/templates/cowdata.h"
 #include "core/templates/sort_array.h"
+#include "core/typedefs.h"
 
 #include <initializer_list>
 
@@ -57,8 +50,14 @@ public:
 	}
 };
 
+/**
+ * Array-like container with copy-on-write semantics.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 template <typename T>
-class Vector {
+class _WARN_UNUSED_ Vector {
 	friend class VectorWriteProxy<T>;
 
 public:
@@ -87,19 +86,19 @@ public:
 
 	void reverse();
 
-	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
-	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ T *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
+	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
 	_FORCE_INLINE_ Size size() const { return _cowdata.size(); }
 	_FORCE_INLINE_ USize capacity() const { return _cowdata.capacity(); }
 
-	_FORCE_INLINE_ operator Span<T>() const { return _cowdata.span(); }
-	_FORCE_INLINE_ Span<T> span() const { return _cowdata.span(); }
+	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return _cowdata.span(); }
+	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return _cowdata.span(); }
 
 	_FORCE_INLINE_ void clear() { _cowdata.clear(); }
 	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
 
-	_FORCE_INLINE_ T get(Size p_index) { return _cowdata.get(p_index); }
-	_FORCE_INLINE_ const T &get(Size p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ T get(Size p_index) _LIFETIME_BOUND_ { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const T &get(Size p_index) const _LIFETIME_BOUND_ { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
 
 	/// Resize the vector.
@@ -108,30 +107,40 @@ public:
 		return _cowdata.template resize<!std::is_trivially_constructible_v<T>>(p_size);
 	}
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and set new values to 0 / false / nullptr.
 	/// This is only available for zero constructible types.
 	_FORCE_INLINE_ Error resize_initialized(Size p_size) {
 		return _cowdata.template resize<true>(p_size);
 	}
 
-	/// Resize and set all values to 0 / false / nullptr.
+	/// Resize and keep memory uninitialized.
+	/// This means that any newly added elements have an unknown value, and are expected to be set after the `resize_uninitialized` call.
 	/// This is only available for trivially destructible types (otherwise, trivial resize might be UB).
 	_FORCE_INLINE_ Error resize_uninitialized(Size p_size) {
 		// resize() statically asserts that T is compatible, no need to do it ourselves.
 		return _cowdata.template resize<false>(p_size);
 	}
 
+	/// Reserves capacity for at least p_size total elements.
+	/// You can use `reserve` before repeated insertions to improve performance.
+	/// The capacity grows in 1.5x increments when possible, and uses `p_size`
+	/// exactly otherwise.
 	Error reserve(Size p_size) {
 		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 		return _cowdata.reserve(p_size);
 	}
 
+	/// Reserves capacity for exactly p_size total elements.
+	/// This can be useful to reduce RAM use of large vectors, but wastes CPU
+	/// time if more than p_size elements are added after the `reserve_exact` call.
+	/// Prefer using `reserve`, unless the vector (or copies of it) will never
+	/// grow again after p_size elements are inserted.
 	Error reserve_exact(Size p_size) {
 		ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 		return _cowdata.reserve_exact(p_size);
 	}
 
-	_FORCE_INLINE_ const T &operator[](Size p_index) const { return _cowdata.get(p_index); }
+	_FORCE_INLINE_ const T &operator[](Size p_index) const _LIFETIME_BOUND_ { return _cowdata.get(p_index); }
 	// Must take a copy instead of a reference (see GH-31736).
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, std::move(p_val)); }
 	Size find(const T &p_val, Size p_from = 0) const {
@@ -154,8 +163,8 @@ public:
 	}
 	Size count(const T &p_val) const { return span().count(p_val); }
 
-	// Must take a copy instead of a reference (see GH-31736).
-	void append_array(Vector<T> p_other);
+	void append_array(const Vector<T> &p_other) { _cowdata.append(p_other._cowdata); }
+	void append_array(Span<T> p_other) { _cowdata.append(p_other); }
 
 	_FORCE_INLINE_ bool has(const T &p_val) const { return find(p_val) != -1; }
 
@@ -164,14 +173,14 @@ public:
 	}
 
 	template <typename Comparator, bool Validate = SORT_ARRAY_VALIDATE_ENABLED, typename... Args>
-	void sort_custom(Args &&...args) {
+	void sort_custom(Args &&...p_args) {
 		Size len = _cowdata.size();
 		if (len == 0) {
 			return;
 		}
 
 		T *data = ptrw();
-		SortArray<T, Comparator, Validate> sorter{ args... };
+		SortArray<T, Comparator, Validate> sorter{ p_args... };
 		sorter.sort(data, len);
 	}
 
@@ -180,8 +189,8 @@ public:
 	}
 
 	template <typename Comparator, typename Value, typename... Args>
-	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) const {
-		return span().bisect(p_value, p_before, Comparator{ args... });
+	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...p_args) const {
+		return span().bisect(p_value, p_before, Comparator{ p_args... });
 	}
 
 	Vector<T> duplicate() const {
@@ -189,13 +198,8 @@ public:
 	}
 
 	void ordered_insert(const T &p_val) {
-		Size i;
-		for (i = 0; i < _cowdata.size(); i++) {
-			if (p_val < operator[](i)) {
-				break;
-			}
-		}
-		insert(i, p_val);
+		int idx = span().bisect(p_val, false);
+		insert(idx, p_val);
 	}
 
 	void operator=(const Vector &p_from) { _cowdata = p_from._cowdata; }
@@ -259,8 +263,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return elem_ptr != b.elem_ptr; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return elem_ptr == p_other.elem_ptr; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return elem_ptr != p_other.elem_ptr; }
 
 		Iterator(T *p_ptr) { elem_ptr = p_ptr; }
 		Iterator() {}
@@ -284,8 +288,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return elem_ptr == b.elem_ptr; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return elem_ptr != b.elem_ptr; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return elem_ptr == p_other.elem_ptr; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return elem_ptr != p_other.elem_ptr; }
 
 		ConstIterator(const T *p_ptr) { elem_ptr = p_ptr; }
 		ConstIterator() {}
@@ -295,23 +299,25 @@ public:
 		const T *elem_ptr = nullptr;
 	};
 
-	_FORCE_INLINE_ Iterator begin() {
+	_FORCE_INLINE_ Iterator begin() _LIFETIME_BOUND_ {
 		return Iterator(ptrw());
 	}
-	_FORCE_INLINE_ Iterator end() {
+	_FORCE_INLINE_ Iterator end() _LIFETIME_BOUND_ {
 		return Iterator(ptrw() + size());
 	}
 
-	_FORCE_INLINE_ ConstIterator begin() const {
+	_FORCE_INLINE_ ConstIterator begin() const _LIFETIME_BOUND_ {
 		return ConstIterator(ptr());
 	}
-	_FORCE_INLINE_ ConstIterator end() const {
+	_FORCE_INLINE_ ConstIterator end() const _LIFETIME_BOUND_ {
 		return ConstIterator(ptr() + size());
 	}
 
 	_FORCE_INLINE_ Vector() {}
 	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
 			_cowdata(p_init) {}
+	_FORCE_INLINE_ explicit Vector(Span<T> p_span) :
+			_cowdata(p_span) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) = default;
 	_FORCE_INLINE_ Vector(Vector &&p_from) = default;
 };
@@ -321,20 +327,6 @@ void Vector<T>::reverse() {
 	T *p = ptrw();
 	for (Size i = 0; i < size() / 2; i++) {
 		SWAP(p[i], p[size() - i - 1]);
-	}
-}
-
-template <typename T>
-void Vector<T>::append_array(Vector<T> p_other) {
-	const Size ds = p_other.size();
-	if (ds == 0) {
-		return;
-	}
-	const Size bs = size();
-	resize(bs + ds);
-	T *p = ptrw();
-	for (Size i = 0; i < ds; ++i) {
-		p[bs + i] = p_other[i];
 	}
 }
 

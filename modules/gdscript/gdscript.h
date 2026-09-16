@@ -35,10 +35,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/doc_data.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
 #include "core/object/script_language.h"
-#include "core/templates/rb_set.h"
 
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);
@@ -72,15 +69,6 @@ class GDScript : public Script {
 		PropertyInfo property_info;
 	};
 
-	struct ClearData {
-		RBSet<GDScriptFunction *> functions;
-		RBSet<Ref<Script>> scripts;
-		void clear() {
-			functions.clear();
-			scripts.clear();
-		}
-	};
-
 	friend class GDScriptInstance;
 	friend class GDScriptFunction;
 	friend class GDScriptAnalyzer;
@@ -98,6 +86,9 @@ class GDScript : public Script {
 	// Members are just indices to the instantiated script.
 	HashMap<StringName, MemberInfo> member_indices; // Includes member info of all base GDScript classes.
 	HashSet<StringName> members; // Only members of the current class.
+#ifdef DEBUG_ENABLED
+	HashMap<StringName, MemberInfo> old_member_indices; // Used for hot reloading. Empty while not compiling.
+#endif // DEBUG_ENABLED
 
 	// Only static variables of the current class.
 	HashMap<StringName, MemberInfo> static_variables_indices;
@@ -174,7 +165,7 @@ private:
 	Error _static_init();
 	void _static_default_init(); // Initialize static variables with default values based on their types.
 
-	RBSet<Object *> instances;
+	SelfList<GDScriptInstance>::List instances;
 	bool destructing = false;
 	bool clearing = false;
 	//exported members
@@ -209,15 +200,11 @@ private:
 
 	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr, bool p_base_exports_changed = false);
 
-	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
+	void _save_orphaned_subclasses();
 
 	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
 	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
 	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
-
-	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
-	void _collect_function_dependencies(GDScriptFunction *p_func, RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
-	void _collect_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -240,12 +227,12 @@ public:
 
 	_FORCE_INLINE_ StringName get_local_name() const { return local_name; }
 
-	void clear(GDScript::ClearData *p_clear_data = nullptr);
+	void clear();
 
 	// Cancels all functions of the script that are are waiting to be resumed after using await.
 	void cancel_pending_functions(bool warn);
 
-	virtual bool is_valid() const override { return valid; }
+	virtual bool is_script_valid() const override { return valid; }
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
@@ -261,7 +248,6 @@ public:
 		CRASH_COND(!member_indices.has(p_member));
 		return member_indices[p_member].data_type;
 	}
-	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 
 	_FORCE_INLINE_ const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	_FORCE_INLINE_ const HashMap<GDScriptFunction *, LambdaInfo> &get_lambda_info() const { return lambda_info; }
@@ -269,10 +255,6 @@ public:
 	_FORCE_INLINE_ const GDScriptFunction *get_implicit_initializer() const { return implicit_initializer; }
 	_FORCE_INLINE_ const GDScriptFunction *get_implicit_ready() const { return implicit_ready; }
 	_FORCE_INLINE_ const GDScriptFunction *get_static_initializer() const { return static_initializer; }
-
-	RBSet<GDScript *> get_dependencies();
-	HashMap<GDScript *, RBSet<GDScript *>> get_all_dependencies();
-	RBSet<GDScript *> get_must_clear_dependencies();
 
 	virtual bool has_script_signal(const StringName &p_signal) const override;
 	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
@@ -295,7 +277,6 @@ public:
 	virtual StringName get_instance_base_type() const override; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) override;
 	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) override;
-	virtual bool instance_has(const Object *p_this) const override;
 
 	virtual bool has_source_code() const override;
 	virtual String get_source_code() const override;
@@ -310,6 +291,7 @@ public:
 
 	virtual Error reload(bool p_keep_state = false) override;
 
+	virtual void set_path_cache(const String &p_path) override;
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	String get_script_path() const;
 	Error load_source_code(const String &p_path);
@@ -341,12 +323,10 @@ public:
 		return -1;
 	}
 
-	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
-	virtual void get_members(HashSet<StringName> *p_members) override;
+	virtual void get_constants(HashMap<StringName, Variant> *r_constants) override;
+	virtual void get_members(HashSet<StringName> *r_members) override;
 
 	virtual const Variant get_rpc_config() const override;
-
-	void unload_static() const;
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_placeholder_fallback_enabled() const override { return placeholder_fallback_enabled; }
@@ -368,50 +348,49 @@ class GDScriptInstance : public ScriptInstance {
 	ObjectID owner_id;
 	Object *owner = nullptr;
 	Ref<GDScript> script;
-#ifdef DEBUG_ENABLED
-	HashMap<StringName, int> member_indices_cache; //used only for hot script reloading
-#endif
-	Vector<Variant> members;
+	TightLocalVector<Variant> members;
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
+
+	// Replacing `SelfList` with a better implementation could save 16bytes from the self and list pointer.
+	SelfList<GDScriptInstance> script_instance_list; // Linked list of instances with the same script.
 
 	void _call_implicit_ready_recursively(GDScript *p_script);
 
 public:
-	virtual Object *get_owner() { return owner; }
+	virtual Object *get_owner() override { return owner; }
 
-	virtual bool set(const StringName &p_name, const Variant &p_value);
-	virtual bool get(const StringName &p_name, Variant &r_ret) const;
-	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
-	virtual void validate_property(PropertyInfo &p_property) const;
+	virtual bool set(const StringName &p_name, const Variant &p_value) override;
+	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
+	virtual void get_property_list(List<PropertyInfo> *r_properties) const override;
+	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
+	virtual void validate_property(PropertyInfo &p_property) const override;
 
-	virtual bool property_can_revert(const StringName &p_name) const;
-	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const;
+	virtual bool property_can_revert(const StringName &p_name) const override;
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override;
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const;
-	virtual bool has_method(const StringName &p_method) const;
+	virtual void get_method_list(List<MethodInfo> *r_list) const override;
+	virtual bool has_method(const StringName &p_method) const override;
 
-	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
-	virtual void notification(int p_notification, bool p_reversed = false);
-	String to_string(bool *r_valid);
+	virtual void notification(int p_notification, bool p_reversed = false) override;
+	virtual String to_string(bool *r_valid) override;
 
-	virtual Ref<Script> get_script() const;
+	virtual Ref<Script> get_script() const override;
 
-	virtual ScriptLanguage *get_language();
-
-	void set_path(const String &p_path);
+	virtual ScriptLanguage *get_language() override;
 
 	void reload_members();
 
-	virtual const Variant get_rpc_config() const;
+	virtual const Variant get_rpc_config() const override;
 
-	GDScriptInstance() {}
+	GDScriptInstance() :
+			script_instance_list(this) {}
 	~GDScriptInstance();
 };
 
@@ -453,12 +432,18 @@ class GDScriptLanguage : public ScriptLanguage {
 	void _add_global(const StringName &p_name, const Variant &p_value);
 	void _remove_global(const StringName &p_name);
 
+	String _get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, LocalVector<String> &r_visited) const;
+
 	friend class GDScriptInstance;
 
 	Mutex mutex;
 
 	friend class GDScript;
 
+	/**
+	 * Linked list of all GDScripts.
+	 * When clearing a script GDScript gives up ownership of that script to whoever is holding the reference alive, thus cleared scripts do not appear in this list.
+	 */
 	SelfList<GDScript>::List script_list;
 	friend class GDScriptFunction;
 
@@ -596,6 +581,10 @@ public:
 	virtual void finish() override;
 
 	/* EDITOR FUNCTIONS */
+#ifdef TOOLS_ENABLED
+	virtual EditorLanguage *get_editor_language() override;
+#endif // TOOLS_ENABLED
+
 	virtual Vector<String> get_reserved_words() const override;
 	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
 	virtual Vector<String> get_comment_delimiters() const override;
@@ -604,19 +593,10 @@ public:
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
-	virtual bool validate(const String &p_script, const String &p_path = "", List<String> *r_functions = nullptr, List<ScriptLanguage::ScriptError> *r_errors = nullptr, List<ScriptLanguage::Warning> *r_warnings = nullptr, HashSet<int> *r_safe_lines = nullptr) const override;
-	virtual Script *create_script() const override;
 	virtual bool supports_builtin_mode() const override;
 	virtual bool supports_documentation() const override;
 	virtual bool can_inherit_from_file() const override { return true; }
-	virtual int find_function(const String &p_function, const String &p_code) const override;
 	virtual String make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const override;
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint) override;
-#ifdef TOOLS_ENABLED
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override;
-#endif
-	virtual String _get_indentation() const;
-	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const override;
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) override;
 	virtual void remove_named_global_constant(const StringName &p_name) override;
@@ -628,33 +608,29 @@ public:
 	virtual int debug_get_stack_level_line(int p_level) const override;
 	virtual String debug_get_stack_level_function(int p_level) const override;
 	virtual String debug_get_stack_level_source(int p_level) const override;
-	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
-	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_stack_level_locals(int p_level, List<String> *r_locals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_stack_level_members(int p_level, List<String> *r_members, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override;
 	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) override;
-	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_globals(List<String> *r_globals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) override;
 
 	virtual void reload_all_scripts() override;
-	virtual void reload_scripts(const Array &p_scripts, bool p_soft_reload) override;
-	virtual void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
+	virtual void reload_scripts(const Array &p_scripts) override;
+	virtual void reload_tool_script(const Ref<Script> &p_script) override;
 
 	virtual void frame() override;
 
-	virtual void get_public_functions(List<MethodInfo> *p_functions) const override;
-	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const override;
-	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override;
+	virtual void get_public_functions(List<MethodInfo> *r_functions) const override;
+	virtual void get_public_constants(List<Pair<String, Variant>> *r_constants) const override;
+	virtual void get_public_annotations(List<MethodInfo> *r_annotations) const override;
 
 	virtual void profiling_start() override;
 	virtual void profiling_stop() override;
 	virtual void profiling_set_save_native_calls(bool p_enable) override;
 	void profiling_collate_native_call_data(bool p_accumulated);
 
-	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override;
-	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override;
-
-	/* LOADER FUNCTIONS */
-
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual int profiling_get_accumulated_data(ProfilingInfo *r_info_arr, int p_info_max) override;
+	virtual int profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_info_max) override;
 
 	/* GLOBAL CLASSES */
 
@@ -664,29 +640,6 @@ public:
 	void add_orphan_subclass(const String &p_qualified_name, const ObjectID &p_subclass);
 	Ref<GDScript> get_orphan_subclass(const String &p_qualified_name);
 
-	Ref<GDScript> get_script_by_fully_qualified_name(const String &p_name);
-
 	GDScriptLanguage();
 	~GDScriptLanguage();
-};
-
-class ResourceFormatLoaderGDScript : public ResourceFormatLoader {
-	GDSOFTCLASS(ResourceFormatLoaderGDScript, ResourceFormatLoader);
-
-public:
-	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual bool handles_type(const String &p_type) const override;
-	virtual String get_resource_type(const String &p_path) const override;
-	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
-	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
-};
-
-class ResourceFormatSaverGDScript : public ResourceFormatSaver {
-	GDSOFTCLASS(ResourceFormatSaverGDScript, ResourceFormatSaver);
-
-public:
-	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
-	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
-	virtual bool recognize(const Ref<Resource> &p_resource) const override;
 };

@@ -49,9 +49,9 @@
        n - The size of the previous block.
 
    Using these size values we can go forward or backward on the block chain.
-   The unused blocks are stored in a chain list pointed by free_blocks. This
-   list is useful if we need to find a suitable memory area when the allocator
-   is called.
+   The unused blocks are stored in a chain list pointed by sljit_free_blocks.
+   This list is useful if we need to find a suitable memory area when the
+   allocator is called.
 
    When a block is freed, the new free block is connected to its adjacent free
    blocks if possible.
@@ -115,20 +115,20 @@ struct free_block {
 #define ALIGN_SIZE(size)	(((size) + sizeof(struct block_header) + 7u) & ~(sljit_uw)7)
 #define CHUNK_EXTRA_SIZE	(sizeof(struct block_header) + CHUNK_HEADER_SIZE)
 
-static struct free_block* free_blocks;
-static sljit_uw allocated_size;
-static sljit_uw total_size;
+static struct free_block* sljit_free_blocks;
+static sljit_uw sljit_allocated_size;
+static sljit_uw sljit_total_size;
 
 static SLJIT_INLINE void sljit_insert_free_block(struct free_block *free_block, sljit_uw size)
 {
 	free_block->header.size = 0;
 	free_block->size = size;
 
-	free_block->next = free_blocks;
+	free_block->next = sljit_free_blocks;
 	free_block->prev = NULL;
-	if (free_blocks)
-		free_blocks->prev = free_block;
-	free_blocks = free_block;
+	if (sljit_free_blocks)
+		sljit_free_blocks->prev = free_block;
+	sljit_free_blocks = free_block;
 }
 
 static SLJIT_INLINE void sljit_remove_free_block(struct free_block *free_block)
@@ -139,8 +139,8 @@ static SLJIT_INLINE void sljit_remove_free_block(struct free_block *free_block)
 	if (free_block->prev)
 		free_block->prev->next = free_block->next;
 	else {
-		SLJIT_ASSERT(free_blocks == free_block);
-		free_blocks = free_block->next;
+		SLJIT_ASSERT(sljit_free_blocks == free_block);
+		sljit_free_blocks = free_block->next;
 	}
 }
 
@@ -166,7 +166,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 	size = ALIGN_SIZE(size);
 
 	SLJIT_ALLOCATOR_LOCK();
-	free_block = free_blocks;
+	free_block = sljit_free_blocks;
 	while (free_block) {
 		if (free_block->size >= size) {
 			chunk_size = free_block->size;
@@ -186,7 +186,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 				header = (struct block_header*)free_block;
 				size = chunk_size;
 			}
-			allocated_size += size;
+			sljit_allocated_size += size;
 			header->size = size;
 			SLJIT_ALLOCATOR_UNLOCK();
 			return MEM_START(header);
@@ -207,7 +207,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 #endif /* SLJIT_HAS_EXECUTABLE_OFFSET */
 
 	chunk_size -= CHUNK_EXTRA_SIZE;
-	total_size += chunk_size;
+	sljit_total_size += chunk_size;
 
 	header = (struct block_header*)(((sljit_u8*)chunk_header) + CHUNK_HEADER_SIZE);
 
@@ -218,7 +218,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 
 	if (chunk_size > size + 64) {
 		/* Cut the allocated space into a free and a used block. */
-		allocated_size += size;
+		sljit_allocated_size += size;
 		header->size = size;
 		chunk_size -= size;
 
@@ -231,7 +231,7 @@ SLJIT_API_FUNC_ATTRIBUTE void* sljit_malloc_exec(sljit_uw size)
 		next_header = AS_BLOCK_HEADER(free_block, chunk_size);
 	} else {
 		/* All space belongs to this allocation. */
-		allocated_size += chunk_size;
+		sljit_allocated_size += chunk_size;
 		header->size = chunk_size;
 		next_header = AS_BLOCK_HEADER(header, chunk_size);
 	}
@@ -254,7 +254,7 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_exec(void *ptr)
 #ifdef SLJIT_HAS_EXECUTABLE_OFFSET
 	header = AS_BLOCK_HEADER(header, -header->executable_offset);
 #endif /* SLJIT_HAS_EXECUTABLE_OFFSET */
-	allocated_size -= header->size;
+	sljit_allocated_size -= header->size;
 
 	SLJIT_UPDATE_WX_FLAGS(NULL, NULL, 0);
 
@@ -282,9 +282,9 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_exec(void *ptr)
 
 	/* The whole chunk is free. */
 	if (SLJIT_UNLIKELY(!free_block->header.prev_size && header->size == 1)) {
-		/* If this block is freed, we still have (allocated_size / 2) free space. */
-		if (total_size - free_block->size > (allocated_size * 3 / 2)) {
-			total_size -= free_block->size;
+		/* If this block is freed, we still have (sljit_allocated_size / 2) free space. */
+		if (sljit_total_size - free_block->size > (sljit_allocated_size * 3 / 2)) {
+			sljit_total_size -= free_block->size;
 			sljit_remove_free_block(free_block);
 			free_chunk(free_block, free_block->size + CHUNK_EXTRA_SIZE);
 		}
@@ -302,19 +302,19 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_free_unused_memory_exec(void)
 	SLJIT_ALLOCATOR_LOCK();
 	SLJIT_UPDATE_WX_FLAGS(NULL, NULL, 0);
 
-	free_block = free_blocks;
+	free_block = sljit_free_blocks;
 	while (free_block) {
 		next_free_block = free_block->next;
 		if (!free_block->header.prev_size &&
 				AS_BLOCK_HEADER(free_block, free_block->size)->size == 1) {
-			total_size -= free_block->size;
+			sljit_total_size -= free_block->size;
 			sljit_remove_free_block(free_block);
 			free_chunk(free_block, free_block->size + CHUNK_EXTRA_SIZE);
 		}
 		free_block = next_free_block;
 	}
 
-	SLJIT_ASSERT(total_size || (!total_size && !free_blocks));
+	SLJIT_ASSERT(sljit_total_size || (!sljit_total_size && !sljit_free_blocks));
 	SLJIT_UPDATE_WX_FLAGS(NULL, NULL, 1);
 	SLJIT_ALLOCATOR_UNLOCK();
 }

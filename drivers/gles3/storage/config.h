@@ -32,11 +32,10 @@
 
 #ifdef GLES3_ENABLED
 
-#include "core/config/project_settings.h"
-#include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
 
-#include "platform_gl.h"
+#include <platform_gl.h>
+#undef ConnectFlags // Defined by windows.h through egl.h, breaks object.h.
 
 #ifdef ANDROID_ENABLED
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLint, GLsizei);
@@ -45,6 +44,8 @@ typedef void (*PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)(GLenum, GLenum, GLen
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei);
 typedef void (*PFNEGLIMAGETARGETTEXTURE2DOESPROC)(GLenum, void *);
 #endif
+
+class String;
 
 namespace GLES3 {
 
@@ -64,6 +65,7 @@ public:
 	GLint64 max_uniform_buffer_size = 0;
 	uint32_t max_shader_varyings = 0;
 
+	int64_t max_decals = 64;
 	int64_t max_renderable_elements = 0;
 	int64_t max_renderable_lights = 0;
 	int64_t max_lights_per_object = 0;

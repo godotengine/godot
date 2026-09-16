@@ -32,6 +32,8 @@
 
 #include "../openxr_api.h"
 
+#include "core/object/class_db.h"
+
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRFutureResult
 
@@ -43,7 +45,7 @@ void OpenXRFutureResult::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_result_value", "result_value"), &OpenXRFutureResult::set_result_value);
 	ClassDB::bind_method(D_METHOD("get_result_value"), &OpenXRFutureResult::get_result_value);
 
-	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::OBJECT, "result", PROPERTY_HINT_RESOURCE_TYPE, "OpenXRFutureResult")));
+	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::OBJECT, "result", PROPERTY_HINT_RESOURCE_TYPE, OpenXRFutureResult::get_class_static())));
 
 	BIND_ENUM_CONSTANT(RESULT_RUNNING);
 	BIND_ENUM_CONSTANT(RESULT_FINISHED);

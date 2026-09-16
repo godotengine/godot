@@ -38,10 +38,11 @@
 #include "core/version_generated.gen.h"
 
 #include <cstdarg>
+#include <cstdio>
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.thread.h"
+#include <thirdparty/mingw-std-threads/mingw.thread.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <thread>
@@ -74,9 +75,7 @@ double OS::get_unix_time() const {
 }
 
 void OS::_set_logger(CompositeLogger *p_logger) {
-	if (_logger) {
-		memdelete(_logger);
-	}
+	memdelete(_logger);
 	_logger = p_logger;
 }
 
@@ -360,6 +359,10 @@ String OS::get_resource_dir() const {
 // Access system-specific dirs like Documents, Downloads, etc.
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
+}
+
+String OS::expand_path(const String &p_path) const {
+	return p_path;
 }
 
 void OS::create_lock_file() {
@@ -654,7 +657,7 @@ bool OS::is_restart_on_exit_set() const {
 }
 
 List<String> OS::get_restart_on_exit_arguments() const {
-	return restart_commandline;
+	return List<String>(restart_commandline);
 }
 
 PackedStringArray OS::get_connected_midi_inputs() {
@@ -830,8 +833,6 @@ OS::OS() {
 }
 
 OS::~OS() {
-	if (_logger) {
-		memdelete(_logger);
-	}
+	memdelete(_logger);
 	singleton = nullptr;
 }

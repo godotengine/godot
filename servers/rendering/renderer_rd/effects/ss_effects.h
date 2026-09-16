@@ -31,6 +31,7 @@
 #pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_deferred_rd.h"
+#include "servers/rendering/renderer_rd/shaders/effects/screen_space_contact_shadows.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_downsample.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/screen_space_reflection_filter.glsl.gen.h"
@@ -46,13 +47,13 @@
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_importance_map.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/ssil_interleave.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/subsurface_scattering.glsl.gen.h"
-#include "servers/rendering/rendering_server.h"
 
 #define RB_SCOPE_SSLF SNAME("rb_sslf")
 #define RB_SCOPE_SSDS SNAME("rb_ssds")
 #define RB_SCOPE_SSIL SNAME("rb_ssil")
 #define RB_SCOPE_SSAO SNAME("rb_ssao")
 #define RB_SCOPE_SSR SNAME("rb_ssr")
+#define RB_SCOPE_SSCS SNAME("rb_sscs")
 
 #define RB_LINEAR_DEPTH SNAME("linear_depth")
 #define RB_FINAL SNAME("final")
@@ -67,6 +68,8 @@
 #define RB_HIZ SNAME("hiz")
 #define RB_SSR SNAME("ssr")
 #define RB_MIP_LEVEL SNAME("mip_level")
+
+#define RB_SSCS SNAME("sscs")
 
 class RenderSceneBuffersRD;
 
@@ -94,7 +97,7 @@ public:
 	void downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_view, const Projection &p_projection);
 
 	/* SSIL */
-	void ssil_set_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
+	void ssil_set_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
 
 	struct SSILRenderBuffers {
 		bool half_size = false;
@@ -117,7 +120,7 @@ public:
 	void screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_render_buffers, SSILRenderBuffers &p_ssil_buffers, uint32_t p_view, RID p_normal_buffer, const Projection &p_projection, const Projection &p_last_projection, const SSILSettings &p_settings);
 
 	/* SSAO */
-	void ssao_set_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
+	void ssao_set_quality(RSE::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to);
 
 	struct SSAORenderBuffers {
 		bool half_size = false;
@@ -154,23 +157,37 @@ public:
 	void screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffers, SSRRenderBuffers &p_ssr_buffers, const RID *p_normal_roughness_slices, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const Projection *p_projections, const Projection *p_reprojections, const Vector3 *p_eye_offsets, RendererRD::CopyEffects &p_copy_effects);
 
 	/* subsurface scattering */
-	void sss_set_quality(RS::SubSurfaceScatteringQuality p_quality);
-	RS::SubSurfaceScatteringQuality sss_get_quality() const;
+	void sss_set_quality(RSE::SubSurfaceScatteringQuality p_quality);
+	RSE::SubSurfaceScatteringQuality sss_get_quality() const;
 	void sss_set_scale(float p_scale, float p_depth_scale);
 
 	void sub_surface_scattering(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_diffuse, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size);
 
+	/* Screen Space Shadows */
+	struct SSCSRenderBuffers {
+		Size2i size;
+		uint32_t light_count = 0;
+	};
+
+	struct SSCSSettings {
+		RSE::ScreenSpaceContactShadowsLength quality = RSE::SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_MEDIUM;
+		float surface_thickness = 0.01f;
+	};
+
+	void sscs_allocate_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, uint32_t p_contact_shadow_count);
+	void screen_space_contact_shadows(Ref<RenderSceneBuffersRD> p_render_buffers, SSCSRenderBuffers &p_sscs_buffers, const SSCSSettings &p_settings, const Projection *p_projections, Vector3 p_light_direction, uint32_t p_light_index, float p_opacity, float p_blur, float p_taa_frame_count);
+
 private:
 	/* Settings */
 
-	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
+	RSE::EnvironmentSSAOQuality ssao_quality = RSE::ENV_SSAO_QUALITY_MEDIUM;
 	bool ssao_half_size = false;
 	float ssao_adaptive_target = 0.5;
 	int ssao_blur_passes = 2;
 	float ssao_fadeout_from = 50.0;
 	float ssao_fadeout_to = 300.0;
 
-	RS::EnvironmentSSILQuality ssil_quality = RS::ENV_SSIL_QUALITY_MEDIUM;
+	RSE::EnvironmentSSILQuality ssil_quality = RSE::ENV_SSIL_QUALITY_MEDIUM;
 	bool ssil_half_size = false;
 	float ssil_adaptive_target = 0.5;
 	int ssil_blur_passes = 4;
@@ -179,7 +196,7 @@ private:
 
 	bool ssr_half_size = false;
 
-	RS::SubSurfaceScatteringQuality sss_quality = RS::SUB_SURFACE_SCATTERING_QUALITY_MEDIUM;
+	RSE::SubSurfaceScatteringQuality sss_quality = RSE::SUB_SURFACE_SCATTERING_QUALITY_MEDIUM;
 	float sss_scale = 0.05;
 	float sss_depth_scale = 0.01;
 
@@ -497,6 +514,33 @@ private:
 		RID resolve_shader_version;
 		PipelineDeferredRD resolve_pipeline;
 	} ssr;
+
+	/* Screen Space Shadows */
+
+	enum ScreenSpaceContactShadowsMode {
+		SCREEN_SPACE_CONTACT_SHADOWS_LOW_QUALITY,
+		SCREEN_SPACE_CONTACT_SHADOWS_MEDIUM_QUALITY,
+		SCREEN_SPACE_CONTACT_SHADOWS_HIGH_QUALITY,
+		SCREEN_SPACE_CONTACT_SHADOWS_MAX
+	};
+
+	struct ScreenSpaceContactShadows {
+		ScreenSpaceContactShadowsShaderRD sscs_shader;
+		RID sscs_shader_version;
+		PipelineDeferredRD sscs_pipelines[SCREEN_SPACE_CONTACT_SHADOWS_MAX];
+		RID border_sampler;
+
+	} sscs;
+
+	struct ScreenSpaceContactShadowsPushConstant {
+		int32_t screen_size[2];
+		int32_t light_offset[2];
+		float light_coordinates[4];
+		float surface_thickness;
+		float opacity;
+		float blur;
+		float taa_frame_count;
+	};
 
 	/* Subsurface scattering */
 

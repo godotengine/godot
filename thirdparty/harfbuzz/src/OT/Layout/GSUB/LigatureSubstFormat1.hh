@@ -43,6 +43,18 @@ struct LigatureSubstFormat1_2
   bool may_have_non_1to1 () const
   { return true; }
 
+  void depend (hb_depend_context_t *c) const
+  {
+    + hb_zip (this+coverage, ligatureSet)
+    | hb_filter (c->parent_active_glyphs (), hb_first)
+    | hb_apply ([&] (const hb_pair_t<hb_codepoint_t, const typename Types::template OffsetTo<LigatureSet<Types>>&> &_)
+                {
+                  const LigatureSet<Types>& ls = this+_.second;
+                  ls.depend (c, _.first);
+                })
+    ;
+  }
+
   void closure (hb_closure_context_t *c) const
   {
     + hb_zip (this+coverage, ligatureSet)
@@ -107,10 +119,10 @@ struct LigatureSubstFormat1_2
 #ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
     external_cache_t *cache = (external_cache_t *) external_cache;
     const hb_set_digest_t *seconds = cache ? &cache->seconds : nullptr;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
+    unsigned int index = (this+coverage).get_coverage (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
 #else
     const hb_set_digest_t *seconds = nullptr;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
+    unsigned int index = (this+coverage).get_coverage (buffer->cur().codepoint);
 #endif
     if (index == NOT_COVERED) return_trace (false);
 

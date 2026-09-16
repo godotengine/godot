@@ -30,6 +30,8 @@
 
 #include "shortcut.h"
 
+#include "core/object/class_db.h"
+
 void Shortcut::set_events(const Array &p_events) {
 	for (int i = 0; i < p_events.size(); i++) {
 		Ref<InputEventShortcut> ies = p_events[i];

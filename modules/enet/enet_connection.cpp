@@ -34,6 +34,7 @@
 
 #include "core/io/compression.h"
 #include "core/io/ip.h"
+#include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
 void ENetConnection::broadcast(enet_uint8 p_channel, ENetPacket *p_packet) {

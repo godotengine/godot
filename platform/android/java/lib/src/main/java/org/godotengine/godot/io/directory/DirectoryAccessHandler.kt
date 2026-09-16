@@ -109,7 +109,7 @@ class DirectoryAccessHandler(context: Context) {
 						val accessTypeFromStorageScope = when (storageScope) {
 							StorageScope.ASSETS -> ACCESS_RESOURCES
 							StorageScope.APP, StorageScope.SHARED -> ACCESS_FILESYSTEM
-							StorageScope.UNKNOWN -> null
+							StorageScope.SAF, StorageScope.UNKNOWN -> null
 						}
 
 						if (accessTypeFromStorageScope != null) {

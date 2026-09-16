@@ -31,11 +31,18 @@
 #include "openxr_spatial_plane_tracking.h"
 
 #include "../../openxr_api.h"
+#include "openxr_spatial_entity_extension.h"
+
 #include "core/config/project_settings.h"
-#include "scene/resources/3d/box_shape_3d.h"
-#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/xr/xr_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "scene/resources/3d/box_shape_3d.h"
+#include "scene/resources/3d/concave_polygon_shape_3d.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialCapabilityConfigurationPlaneTracking
@@ -62,6 +69,8 @@ XrSpatialCapabilityConfigurationBaseHeaderEXT *OpenXRSpatialCapabilityConfigurat
 	if (capability->is_supported()) {
 		OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 		ERR_FAIL_NULL_V(se_extension, nullptr);
+
+		plane_enabled_components.clear();
 
 		// Guaranteed components:
 		plane_enabled_components.push_back(XR_SPATIAL_COMPONENT_TYPE_BOUNDED_2D_EXT);
@@ -202,6 +211,12 @@ Transform3D OpenXRSpatialComponentPolygon2DList::get_transform(int64_t p_index) 
 	return openxr_api->transform_from_pose(polygon2d_data[p_index].origin);
 }
 
+XrSpatialBufferIdEXT OpenXRSpatialComponentPolygon2DList::get_vertex_buffer_id(int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, polygon2d_data.size(), XR_NULL_SPATIAL_BUFFER_ID_EXT);
+
+	return polygon2d_data[p_index].vertexBuffer.bufferId;
+}
+
 PackedVector2Array OpenXRSpatialComponentPolygon2DList::get_vertices(RID p_snapshot, int64_t p_index) const {
 	ERR_FAIL_INDEX_V(p_index, polygon2d_data.size(), PackedVector2Array());
 
@@ -278,8 +293,12 @@ void OpenXRPlaneTracker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_mesh_data"), &OpenXRPlaneTracker::clear_mesh_data);
 
 	ClassDB::bind_method(D_METHOD("get_mesh_offset"), &OpenXRPlaneTracker::get_mesh_offset);
+	ClassDB::bind_method(D_METHOD("get_vertices"), &OpenXRPlaneTracker::get_vertices);
+	ClassDB::bind_method(D_METHOD("get_indices"), &OpenXRPlaneTracker::get_indices);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &OpenXRPlaneTracker::get_mesh);
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_shape", "thickness"), &OpenXRPlaneTracker::get_shape, DEFVAL(0.01));
+#endif
 
 	ADD_SIGNAL(MethodInfo("mesh_changed"));
 }
@@ -324,6 +343,10 @@ String OpenXRPlaneTracker::get_plane_label() const {
 }
 
 void OpenXRPlaneTracker::set_mesh_data(const Transform3D &p_origin, const PackedVector2Array &p_vertices, const PackedInt32Array &p_indices) {
+	set_mesh_data_with_buffer_ids(p_origin, p_vertices, p_indices, XR_NULL_SPATIAL_BUFFER_ID_EXT, XR_NULL_SPATIAL_BUFFER_ID_EXT);
+}
+
+void OpenXRPlaneTracker::set_mesh_data_with_buffer_ids(const Transform3D &p_origin, const PackedVector2Array &p_vertices, const PackedInt32Array &p_indices, XrSpatialBufferIdEXT p_vertex_buffer_id, XrSpatialBufferIdEXT p_index_buffer_id) {
 	if (p_vertices.size() < 3) {
 		if (mesh.has_mesh_data) {
 			clear_mesh_data();
@@ -337,15 +360,18 @@ void OpenXRPlaneTracker::set_mesh_data(const Transform3D &p_origin, const Packed
 
 		if (mesh.vertices.size() != p_vertices.size()) {
 			has_changed = true;
+		} else if (p_vertex_buffer_id != XR_NULL_SPATIAL_BUFFER_ID_EXT) {
+			has_changed = true;
 		} else {
 			// Compare the vertices with a bit of margin, we ignore small jittering on vertices.
 			for (uint32_t i = 0; i < p_vertices.size() && !has_changed; i++) {
 				const Vector2 &a = p_vertices[i];
 				const Vector2 &b = mesh.vertices[i];
-				has_changed = (Math::abs(a.x - b.x) > 0.001) || (Math::abs(a.y - b.y) > 0.001);
+				has_changed = !a.is_equal_approx(b);
 			}
 		}
 		if (has_changed) {
+			vertex_buffer_id = p_vertex_buffer_id;
 			mesh.vertices = p_vertices;
 		}
 
@@ -359,6 +385,7 @@ void OpenXRPlaneTracker::set_mesh_data(const Transform3D &p_origin, const Packed
 			// assume we don't need to rerun this.
 			if (has_changed || mesh.indices.size() != count) {
 				has_changed = true;
+				index_buffer_id = XR_NULL_SPATIAL_BUFFER_ID_EXT;
 
 				int offset = 1;
 				mesh.indices.resize(count);
@@ -372,19 +399,24 @@ void OpenXRPlaneTracker::set_mesh_data(const Transform3D &p_origin, const Packed
 		} else {
 			if (mesh.indices.size() != p_indices.size()) {
 				has_changed = true;
+			} else if (p_index_buffer_id != XR_NULL_SPATIAL_BUFFER_ID_EXT) {
+				has_changed = true;
 			} else {
 				for (uint32_t i = 0; i < p_indices.size() && !has_changed; i++) {
 					has_changed = mesh.indices[i] != p_indices[i];
 				}
 			}
 			if (has_changed) {
+				index_buffer_id = p_index_buffer_id;
 				mesh.indices = p_indices;
 			}
 		}
 
 		if (has_changed) {
 			mesh.mesh.unref();
+#ifndef PHYSICS_3D_DISABLED
 			mesh.shape3d.unref();
+#endif
 
 			emit_signal(SNAME("mesh_changed"));
 		}
@@ -393,7 +425,12 @@ void OpenXRPlaneTracker::set_mesh_data(const Transform3D &p_origin, const Packed
 
 void OpenXRPlaneTracker::clear_mesh_data() {
 	mesh.mesh.unref();
+#ifndef PHYSICS_3D_DISABLED
 	mesh.shape3d.unref();
+#endif
+
+	vertex_buffer_id = XR_NULL_SPATIAL_BUFFER_ID_EXT;
+	index_buffer_id = XR_NULL_SPATIAL_BUFFER_ID_EXT;
 
 	if (mesh.has_mesh_data) {
 		mesh.has_mesh_data = false;
@@ -447,9 +484,9 @@ Ref<Mesh> OpenXRPlaneTracker::get_mesh() {
 		}
 
 		// Build our array with data.
-		arr.resize(RS::ARRAY_MAX);
-		arr[RS::ARRAY_VERTEX] = vertices;
-		arr[RS::ARRAY_INDEX] = mesh.indices;
+		arr.resize(RSE::ARRAY_MAX);
+		arr[RSE::ARRAY_VERTEX] = vertices;
+		arr[RSE::ARRAY_INDEX] = mesh.indices;
 
 		// Create our array mesh.
 		array_mesh.instantiate();
@@ -473,6 +510,7 @@ Ref<Mesh> OpenXRPlaneTracker::get_mesh() {
 	return mesh.mesh;
 }
 
+#ifndef PHYSICS_3D_DISABLED
 Ref<Shape3D> OpenXRPlaneTracker::get_shape(real_t p_thickness) {
 	// We've already created this? Just return it!
 	if (mesh.shape3d.is_valid()) {
@@ -561,6 +599,7 @@ Ref<Shape3D> OpenXRPlaneTracker::get_shape(real_t p_thickness) {
 
 	return mesh.shape3d;
 }
+#endif // PHYSICS_3D_DISABLED
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialPlaneTrackingCapability
@@ -581,6 +620,11 @@ OpenXRSpatialPlaneTrackingCapability::~OpenXRSpatialPlaneTrackingCapability() {
 
 void OpenXRSpatialPlaneTrackingCapability::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_supported"), &OpenXRSpatialPlaneTrackingCapability::is_supported);
+	ClassDB::bind_method(D_METHOD("start_entity_discovery", "spatial_context", "component_data", "next_snapshot_create", "next_snapshot_query", "user_callback"), &OpenXRSpatialPlaneTrackingCapability::start_entity_discovery, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Callable()));
+
+	ClassDB::bind_method(D_METHOD("get_built_in_tracking_state"), &OpenXRSpatialPlaneTrackingCapability::get_built_in_tracking_state);
+	ClassDB::bind_method(D_METHOD("start_built_in_tracking"), &OpenXRSpatialPlaneTrackingCapability::start_built_in_tracking);
+	ClassDB::bind_method(D_METHOD("stop_built_in_tracking", "clear_trackers"), &OpenXRSpatialPlaneTrackingCapability::stop_built_in_tracking, DEFVAL(true));
 }
 
 HashMap<String, bool *> OpenXRSpatialPlaneTrackingCapability::get_requested_extensions(XrVersion p_version) {
@@ -610,8 +654,8 @@ void OpenXRSpatialPlaneTrackingCapability::on_session_created(const XrSession p_
 	se_extension->connect(SNAME("spatial_discovery_recommended"), callable_mp(this, &OpenXRSpatialPlaneTrackingCapability::_on_spatial_discovery_recommended));
 
 	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enable_builtin_plane_detection")) {
-		// Start by creating our spatial context
-		_create_spatial_context();
+		// Start our built in tracking.
+		start_built_in_tracking();
 	}
 }
 
@@ -623,20 +667,9 @@ void OpenXRSpatialPlaneTrackingCapability::on_session_destroyed() {
 
 	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 	ERR_FAIL_NULL(se_extension);
-	XRServer *xr_server = XRServer::get_singleton();
-	ERR_FAIL_NULL(xr_server);
 
-	// Free and unregister our anchors
-	for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRPlaneTracker>> &plane_tracker : plane_trackers) {
-		xr_server->remove_tracker(plane_tracker.value);
-	}
-	plane_trackers.clear();
-
-	// Free our spatial context
-	if (spatial_context.is_valid()) {
-		se_extension->free_spatial_context(spatial_context);
-		spatial_context = RID();
-	}
+	// Stop our built in tracking (if applicable), this will also clean up any planes previously detected.
+	stop_built_in_tracking();
 
 	se_extension->disconnect(SNAME("spatial_discovery_recommended"), callable_mp(this, &OpenXRSpatialPlaneTrackingCapability::_on_spatial_discovery_recommended));
 }
@@ -656,12 +689,128 @@ void OpenXRSpatialPlaneTrackingCapability::on_process() {
 		need_discovery = false;
 		discovery_cooldown = 60; // Set our cooldown to 60 frames, it doesn't need to be an exact science.
 
-		_start_entity_discovery();
+		if (plane_component_data.is_empty()) {
+			if (plane_configuration.is_null()) {
+				plane_configuration.instantiate();
+			}
+
+			// We always need a query result data object, and it must be first
+			Ref<OpenXRSpatialQueryResultData> query_result_data;
+			query_result_data.instantiate();
+			plane_component_data.push_back(query_result_data);
+
+			// Base our plane_component_data on the component types used in plane_configuration
+			XrSpatialCapabilityConfigurationBaseHeaderEXT *config = plane_configuration->get_configuration();
+			for (uint32_t i = 0; i < config->enabledComponentCount; ++i) {
+				switch (config->enabledComponents[i]) {
+					case XR_SPATIAL_COMPONENT_TYPE_BOUNDED_2D_EXT: {
+						Ref<OpenXRSpatialComponentBounded2DList> bounded2d_list;
+						bounded2d_list.instantiate();
+						plane_component_data.push_back(bounded2d_list);
+						break;
+					}
+					case XR_SPATIAL_COMPONENT_TYPE_PLANE_ALIGNMENT_EXT: {
+						Ref<OpenXRSpatialComponentPlaneAlignmentList> alignment_list;
+						alignment_list.instantiate();
+						plane_component_data.push_back(alignment_list);
+						break;
+					}
+					case XR_SPATIAL_COMPONENT_TYPE_MESH_2D_EXT: {
+						Ref<OpenXRSpatialComponentMesh2DList> mesh2d_list;
+						mesh2d_list.instantiate();
+						plane_component_data.push_back(mesh2d_list);
+						break;
+					}
+					case XR_SPATIAL_COMPONENT_TYPE_POLYGON_2D_EXT: {
+						Ref<OpenXRSpatialComponentPolygon2DList> poly2d_list;
+						poly2d_list.instantiate();
+						plane_component_data.push_back(poly2d_list);
+						break;
+					}
+					case XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT: {
+						Ref<OpenXRSpatialComponentPlaneSemanticLabelList> label_list;
+						label_list.instantiate();
+						plane_component_data.push_back(label_list);
+						break;
+					}
+					default:
+						WARN_PRINT("Unexpected plane component; ignoring");
+						break;
+				}
+			}
+		}
+
+		discovery_query_result = start_entity_discovery(spatial_context, plane_component_data);
 	}
+}
+
+Ref<OpenXRFutureResult> OpenXRSpatialPlaneTrackingCapability::start_entity_discovery(RID p_spatial_context, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_create, Ref<OpenXRStructureBase> p_next_snapshot_query, const Callable &p_user_callback) {
+	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
+	ERR_FAIL_NULL_V(se_extension, nullptr);
+	return se_extension->discover_spatial_entities_with_component_data(p_spatial_context, p_component_data, p_next_snapshot_create, callable_mp(this, &OpenXRSpatialPlaneTrackingCapability::_process_snapshot).bind(p_spatial_context, p_component_data, p_next_snapshot_query, p_user_callback));
 }
 
 bool OpenXRSpatialPlaneTrackingCapability::is_supported() {
 	return spatial_plane_tracking_supported;
+}
+
+bool OpenXRSpatialPlaneTrackingCapability::start_built_in_tracking() {
+	ERR_FAIL_COND_V(builtin_tracking_state > 0, false);
+
+	builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_SETTING_UP;
+
+	// Start by creating our spatial context
+	built_in_future = _create_spatial_context();
+	if (built_in_future.is_null()) {
+		builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_SETUP_FAILED;
+		return false;
+	}
+
+	return true;
+}
+
+void OpenXRSpatialPlaneTrackingCapability::stop_built_in_tracking(bool p_clear_trackers) {
+	// Reset our tracking state
+	builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_NOT_ACTIVE;
+
+	// Cancel any discovery query
+	if (discovery_query_result.is_valid()) {
+		if (discovery_query_result->get_status() == OpenXRFutureResult::RESULT_RUNNING) {
+			discovery_query_result->cancel_future();
+		}
+
+		discovery_query_result.unref();
+	}
+
+	// If we have our future object, clean it up.
+	if (built_in_future.is_valid()) {
+		if (built_in_future->get_status() == OpenXRFutureResult::RESULT_RUNNING) {
+			built_in_future->cancel_future();
+		}
+
+		built_in_future.unref();
+	}
+
+	// Free our spatial context
+	if (spatial_context.is_valid()) {
+		OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
+		ERR_FAIL_NULL(se_extension);
+
+		if (p_clear_trackers && plane_trackers.has(spatial_context)) {
+			XRServer *xr_server = XRServer::get_singleton();
+			ERR_FAIL_NULL(xr_server);
+
+			// Free and unregister our anchors
+			HashMap<XrSpatialEntityIdEXT, Ref<OpenXRPlaneTracker>> &planes = plane_trackers[spatial_context];
+			for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRPlaneTracker>> &plane_tracker : planes) {
+				xr_server->remove_tracker(plane_tracker.value);
+			}
+			plane_trackers.erase(spatial_context);
+		}
+
+		se_extension->free_spatial_context(spatial_context);
+		spatial_context = RID();
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -676,12 +825,36 @@ Ref<OpenXRFutureResult> OpenXRSpatialPlaneTrackingCapability::_create_spatial_co
 	plane_configuration.instantiate();
 	capability_configurations.push_back(plane_configuration);
 
-	return se_extension->create_spatial_context(capability_configurations, nullptr, callable_mp(this, &OpenXRSpatialPlaneTrackingCapability::_on_spatial_context_created));
+	return se_extension->create_spatial_context(capability_configurations, nullptr, callable_mp(this, &OpenXRSpatialPlaneTrackingCapability::_on_spatial_context_created), callable_mp(this, &OpenXRSpatialPlaneTrackingCapability::_on_spatial_context_creation_failed));
 }
 
 void OpenXRSpatialPlaneTrackingCapability::_on_spatial_context_created(RID p_spatial_context) {
+	builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_ENABLED;
 	spatial_context = p_spatial_context;
 	need_discovery = true;
+
+	// We don't need our future anymore.
+	built_in_future.unref();
+}
+
+void OpenXRSpatialPlaneTrackingCapability::_on_spatial_context_creation_failed(int p_xr_result, bool p_is_completion_failure) {
+	XrResult result = XrResult(p_xr_result);
+
+	switch (result) {
+		case XR_ERROR_PERMISSION_INSUFFICIENT:
+			builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_NO_PERMISSION;
+			break;
+		case XR_ERROR_SPATIAL_CAPABILITY_UNSUPPORTED_EXT:
+			builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_UNSUPPORTED_CAPABILITY;
+			break;
+		// We may wish to support additional error codes that are likely here.
+		default:
+			builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_SETUP_FAILED;
+			break;
+	}
+
+	// We don't need our future anymore.
+	built_in_future.unref();
 }
 
 void OpenXRSpatialPlaneTrackingCapability::_on_spatial_discovery_recommended(RID p_spatial_context) {
@@ -691,24 +864,11 @@ void OpenXRSpatialPlaneTrackingCapability::_on_spatial_discovery_recommended(RID
 	}
 }
 
-Ref<OpenXRFutureResult> OpenXRSpatialPlaneTrackingCapability::_start_entity_discovery() {
-	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
-	ERR_FAIL_NULL_V(se_extension, nullptr);
-
-	// Already running or ran discovery, cancel/clean up.
-	if (discovery_query_result.is_valid()) {
-		WARN_PRINT("OpenXR: Starting new discovery before previous discovery has been processed!");
-		discovery_query_result->cancel_future();
-		discovery_query_result.unref();
+void OpenXRSpatialPlaneTrackingCapability::_process_snapshot(RID p_snapshot, RID p_spatial_context, TypedArray<OpenXRSpatialComponentData> p_component_data, Ref<OpenXRStructureBase> p_next_snapshot_query, const Callable &p_user_callback) {
+	if (p_user_callback.is_valid()) {
+		p_user_callback.call(p_snapshot, false);
 	}
 
-	// Start our new snapshot.
-	discovery_query_result = se_extension->discover_spatial_entities(spatial_context, plane_configuration->get_enabled_components(), nullptr, callable_mp(this, &OpenXRSpatialPlaneTrackingCapability::_process_snapshot));
-
-	return discovery_query_result;
-}
-
-void OpenXRSpatialPlaneTrackingCapability::_process_snapshot(RID p_snapshot) {
 	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 	ERR_FAIL_NULL(se_extension);
 	XRServer *xr_server = XRServer::get_singleton();
@@ -718,49 +878,47 @@ void OpenXRSpatialPlaneTrackingCapability::_process_snapshot(RID p_snapshot) {
 
 	// Make a copy of the planes we have right now, so we know which ones to clean up.
 	LocalVector<XrSpatialEntityIdEXT> current_planes;
-	current_planes.resize(plane_trackers.size());
+	HashMap<XrSpatialEntityIdEXT, Ref<OpenXRPlaneTracker>> &planes = plane_trackers[p_spatial_context];
+	current_planes.resize(planes.size());
 	int p = 0;
-	for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRPlaneTracker>> &plane : plane_trackers) {
+	for (const KeyValue<XrSpatialEntityIdEXT, Ref<OpenXRPlaneTracker>> &plane : planes) {
 		current_planes[p++] = plane.key;
 	}
 
-	// Build our component data
-	TypedArray<OpenXRSpatialComponentData> component_data;
+	// The first must be OpenXRSpatialQueryResultData
+	Ref<OpenXRSpatialQueryResultData> query_result_data = p_component_data.is_empty() ? Variant() : p_component_data[0];
+	ERR_FAIL_COND(query_result_data.is_null());
 
-	// We always need a query result data object
-	Ref<OpenXRSpatialQueryResultData> query_result_data;
-	query_result_data.instantiate();
-	component_data.push_back(query_result_data);
-
-	// Add bounded2D
 	Ref<OpenXRSpatialComponentBounded2DList> bounded2d_list;
-	bounded2d_list.instantiate();
-	component_data.push_back(bounded2d_list);
-
-	// Plane alignment list
 	Ref<OpenXRSpatialComponentPlaneAlignmentList> alignment_list;
-	alignment_list.instantiate();
-	component_data.push_back(alignment_list);
-
 	Ref<OpenXRSpatialComponentMesh2DList> mesh2d_list;
 	Ref<OpenXRSpatialComponentPolygon2DList> poly2d_list;
-	if (plane_configuration->get_supports_mesh_2d()) {
-		mesh2d_list.instantiate();
-		component_data.push_back(mesh2d_list);
-	} else if (plane_configuration->get_supports_polygons()) {
-		poly2d_list.instantiate();
-		component_data.push_back(poly2d_list);
-	}
-
-	// Plane semantic label
 	Ref<OpenXRSpatialComponentPlaneSemanticLabelList> label_list;
-	if (plane_configuration->get_supports_labels()) {
-		label_list.instantiate();
-		component_data.push_back(label_list);
+	for (Ref<OpenXRSpatialComponentData> data : p_component_data) {
+		switch (data->get_component_type()) {
+			case XR_SPATIAL_COMPONENT_TYPE_BOUNDED_2D_EXT:
+				bounded2d_list = data;
+				break;
+			case XR_SPATIAL_COMPONENT_TYPE_PLANE_ALIGNMENT_EXT:
+				alignment_list = data;
+				break;
+			case XR_SPATIAL_COMPONENT_TYPE_MESH_2D_EXT:
+				mesh2d_list = data;
+				break;
+			case XR_SPATIAL_COMPONENT_TYPE_POLYGON_2D_EXT:
+				poly2d_list = data;
+				break;
+			case XR_SPATIAL_COMPONENT_TYPE_PLANE_SEMANTIC_LABEL_EXT:
+				label_list = data;
+				break;
+			default:
+				// Okay, maybe other data types are being queried that we don't know about
+				break;
+		}
 	}
 
-	if (se_extension->query_snapshot(p_snapshot, component_data, nullptr)) {
-		// Now loop through our data and update our anchors.
+	if (se_extension->query_snapshot(p_snapshot, p_component_data, p_next_snapshot_query)) {
+		// Now loop through our data and update our planes.
 		// Q we're assuming entity ID, size and state size are equal, is there ever a situation where they would not be?
 		int64_t size = query_result_data->get_capacity();
 		for (int64_t i = 0; i < size; i++) {
@@ -773,8 +931,8 @@ void OpenXRSpatialPlaneTrackingCapability::_process_snapshot(RID p_snapshot) {
 			if (entity_state == XR_SPATIAL_ENTITY_TRACKING_STATE_STOPPED_EXT) {
 				// We should only get this status on updates as a prelude to needing to remove this marker.
 				// So we just update the status.
-				if (plane_trackers.has(entity_id)) {
-					Ref<OpenXRPlaneTracker> plane_tracker = plane_trackers[entity_id];
+				if (planes.has(entity_id)) {
+					Ref<OpenXRPlaneTracker> plane_tracker = planes[entity_id];
 					plane_tracker->invalidate_pose(SNAME("default"));
 					plane_tracker->set_spatial_tracking_state(XR_SPATIAL_ENTITY_TRACKING_STATE_STOPPED_EXT);
 				}
@@ -783,14 +941,15 @@ void OpenXRSpatialPlaneTrackingCapability::_process_snapshot(RID p_snapshot) {
 				bool add_to_xr_server = false;
 				Ref<OpenXRPlaneTracker> plane_tracker;
 
-				if (plane_trackers.has(entity_id)) {
+				if (planes.has(entity_id)) {
 					// We know about this one already
-					plane_tracker = plane_trackers[entity_id];
+					plane_tracker = planes[entity_id];
 				} else {
 					// Create a new anchor
 					plane_tracker.instantiate();
+					plane_tracker->set_spatial_context(p_spatial_context);
 					plane_tracker->set_entity(se_extension->make_spatial_entity(se_extension->get_spatial_snapshot_context(p_snapshot), entity_id));
-					plane_trackers[entity_id] = plane_tracker;
+					planes[entity_id] = plane_tracker;
 
 					add_to_xr_server = true;
 				}
@@ -802,18 +961,29 @@ void OpenXRSpatialPlaneTrackingCapability::_process_snapshot(RID p_snapshot) {
 
 					// No further component data will be valid in this state, we need to ignore it!
 				} else if (entity_state == XR_SPATIAL_ENTITY_TRACKING_STATE_TRACKING_EXT) {
-					Transform3D transform = bounded2d_list->get_center_pose(i);
-					plane_tracker->set_pose(SNAME("default"), transform, Vector3(), Vector3());
-					plane_tracker->set_spatial_tracking_state(XR_SPATIAL_ENTITY_TRACKING_STATE_TRACKING_EXT);
+					if (bounded2d_list.is_valid()) {
+						Transform3D transform = bounded2d_list->get_center_pose(i);
+						plane_tracker->set_pose(SNAME("default"), transform, Vector3(), Vector3());
+						plane_tracker->set_spatial_tracking_state(XR_SPATIAL_ENTITY_TRACKING_STATE_TRACKING_EXT);
+					}
 
-					// Process our component data.
-					plane_tracker->set_bounds_size(bounded2d_list->get_size(i));
-					plane_tracker->set_plane_alignment((OpenXRSpatialComponentPlaneAlignmentList::PlaneAlignment)alignment_list->get_plane_alignment(i));
+					if (alignment_list.is_valid()) {
+						// Process our component data.
+						plane_tracker->set_bounds_size(bounded2d_list->get_size(i));
+						plane_tracker->set_plane_alignment((OpenXRSpatialComponentPlaneAlignmentList::PlaneAlignment)alignment_list->get_plane_alignment(i));
+					}
 
 					if (mesh2d_list.is_valid()) {
-						plane_tracker->set_mesh_data(mesh2d_list->get_transform(i), mesh2d_list->get_vertices(p_snapshot, i), mesh2d_list->get_indices(p_snapshot, i));
+						XrSpatialBufferIdEXT vertex_buffer_id = mesh2d_list->get_vertex_buffer_id(i);
+						XrSpatialBufferIdEXT index_buffer_id = mesh2d_list->get_index_buffer_id(i);
+						if (plane_tracker->get_vertex_buffer_id() != vertex_buffer_id || plane_tracker->get_index_buffer_id() != index_buffer_id) {
+							plane_tracker->set_mesh_data_with_buffer_ids(mesh2d_list->get_transform(i), mesh2d_list->get_vertices(p_snapshot, i), mesh2d_list->get_indices(p_snapshot, i), vertex_buffer_id, index_buffer_id);
+						}
 					} else if (poly2d_list.is_valid()) {
-						plane_tracker->set_mesh_data(poly2d_list->get_transform(i), poly2d_list->get_vertices(p_snapshot, i));
+						XrSpatialBufferIdEXT vertex_buffer_id = poly2d_list->get_vertex_buffer_id(i);
+						if (plane_tracker->get_vertex_buffer_id() != vertex_buffer_id || plane_tracker->get_index_buffer_id() != XR_NULL_SPATIAL_BUFFER_ID_EXT) {
+							plane_tracker->set_mesh_data_with_buffer_ids(poly2d_list->get_transform(i), poly2d_list->get_vertices(p_snapshot, i), PackedInt32Array(), vertex_buffer_id, XR_NULL_SPATIAL_BUFFER_ID_EXT);
+						}
 					} else {
 						// Just in case we set this before.
 						plane_tracker->clear_mesh_data();
@@ -852,8 +1022,8 @@ void OpenXRSpatialPlaneTrackingCapability::_process_snapshot(RID p_snapshot) {
 
 		// Remove any planes that are no longer there...
 		for (const XrSpatialEntityIdEXT &entity_id : current_planes) {
-			if (plane_trackers.has(entity_id)) {
-				Ref<OpenXRPlaneTracker> plane_tracker = plane_trackers[entity_id];
+			if (planes.has(entity_id)) {
+				Ref<OpenXRPlaneTracker> plane_tracker = planes[entity_id];
 
 				// Just in case there are still references out there to this marker,
 				// reset some stuff.
@@ -864,9 +1034,13 @@ void OpenXRSpatialPlaneTrackingCapability::_process_snapshot(RID p_snapshot) {
 				xr_server->remove_tracker(plane_tracker);
 
 				// Remove it from our trackers
-				plane_trackers.erase(entity_id);
+				planes.erase(entity_id);
 			}
 		}
+	}
+
+	if (p_user_callback.is_valid()) {
+		p_user_callback.call(p_snapshot, true);
 	}
 
 	// Now that we're done, clean up our snapshot!

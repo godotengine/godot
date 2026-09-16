@@ -34,6 +34,7 @@
 #include "editor_scene_importer_fbx2gltf.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_importer.h"
 
 void EditorSceneFormatImporterUFBX::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("fbx");
@@ -105,11 +106,5 @@ void EditorSceneFormatImporterUFBX::get_import_options(const String &p_path,
 void EditorSceneFormatImporterUFBX::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
 	if (!p_import_params.has("fbx/importer")) {
 		p_import_params["fbx/importer"] = EditorSceneFormatImporterUFBX::FBX_IMPORTER_FBX2GLTF;
-	}
-	if (!p_import_params.has("fbx/naming_version")) {
-		// If a .fbx's existing import file is missing the FBX
-		// naming compatibility version, we need to use version 1.
-		// Version 1 is the behavior before this option was added.
-		p_import_params["fbx/naming_version"] = 1;
 	}
 }

@@ -30,7 +30,6 @@
 
 #include "gd_mono.h"
 
-#include "../csharp_script.h"
 #include "../glue/runtime_interop.h"
 #include "../godotsharp_dirs.h"
 #include "../thirdparty/coreclr_delegates.h"
@@ -38,13 +37,17 @@
 #include "../utils/path_utils.h"
 #include "gd_mono_cache.h"
 
+#ifdef DEBUG_ENABLED
+#include "core/object/class_db.h"
+#endif
+
 #ifdef TOOLS_ENABLED
 #include "../editor/hostfxr_resolver.h"
 #include "../editor/semver.h"
 #endif
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
-#include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
@@ -741,6 +744,23 @@ void GDMono::_init_godot_api_hashes() {
 #endif // DEBUG_ENABLED
 }
 
+#ifdef DEBUG_ENABLED
+uint64_t GDMono::get_api_core_hash() {
+	if (api_core_hash == 0) {
+		api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
+	}
+	return api_core_hash;
+}
+#ifdef TOOLS_ENABLED
+uint64_t GDMono::get_api_editor_hash() {
+	if (api_editor_hash == 0) {
+		api_editor_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
+	}
+	return api_editor_hash;
+}
+#endif // TOOLS_ENABLED
+#endif // DEBUG_ENABLED
+
 #ifdef TOOLS_ENABLED
 bool GDMono::_load_project_assembly() {
 	String assembly_name = Path::get_csharp_project_name();
@@ -836,13 +856,13 @@ namespace MonoBind {
 
 GodotSharp *GodotSharp::singleton = nullptr;
 
-void GodotSharp::reload_assemblies(bool p_soft_reload) {
+void GodotSharp::reload_assemblies() {
 #ifdef GD_MONO_HOT_RELOAD
 	CRASH_COND(CSharpLanguage::get_singleton() == nullptr);
 	// This method may be called more than once with `call_deferred`, so we need to check
 	// again if reloading is needed to avoid reloading multiple times unnecessarily.
 	if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed()) {
-		CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
+		CSharpLanguage::get_singleton()->reload_assemblies();
 	}
 #endif
 }

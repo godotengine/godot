@@ -63,10 +63,11 @@ class BonePropertiesEditor : public VBoxContainer {
 	EditorInspectorSection *rest_section = nullptr;
 	EditorPropertyTransform3D *rest_matrix = nullptr;
 
+	EditorInspectorSection *skin_section = nullptr;
+	EditorPropertyVector3 *skin_scale_property = nullptr;
+
 	EditorInspectorSection *meta_section = nullptr;
 	AddMetadataDialog *add_meta_dialog = nullptr;
-
-	Rect2 background_rects[5];
 
 	Skeleton3D *skeleton = nullptr;
 	// String property;
@@ -99,6 +100,7 @@ public:
 	void set_target(const String &p_prop);
 	void set_label(const String &p_label) { label = p_label; }
 	void set_keyable(const bool p_keyable);
+	void set_skeleton(Skeleton3D *p_skeleton);
 
 	void _update_properties();
 };
@@ -113,6 +115,8 @@ class Skeleton3DEditor : public VBoxContainer {
 	enum SkeletonOption {
 		SKELETON_OPTION_RESET_ALL_POSES,
 		SKELETON_OPTION_RESET_SELECTED_POSES,
+		SKELETON_OPTION_RESET_ALL_POSES_AND_SKIN_SCALES,
+		SKELETON_OPTION_RESET_SELECTED_POSES_AND_SKIN_SCALES,
 		SKELETON_OPTION_ALL_POSES_TO_RESTS,
 		SKELETON_OPTION_SELECTED_POSES_TO_RESTS,
 		SKELETON_OPTION_CREATE_PHYSICAL_SKELETON,
@@ -176,7 +180,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	void create_editors();
 
-	void reset_pose(const bool p_all_bones);
+	void reset_pose(const bool p_all_bones, const bool p_reset_bone_skin_scale);
 	void pose_to_rest(const bool p_all_bones);
 
 	void _insert_keys(const bool p_all_bones);
@@ -218,6 +222,8 @@ class Skeleton3DEditor : public VBoxContainer {
 	void _update_properties();
 
 	void _subgizmo_selection_change();
+	void _disconnect_from_skeleton();
+	void _disconnect_from_tree();
 
 	int selected_bone = -1;
 
@@ -266,12 +272,11 @@ public:
 class Skeleton3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Skeleton3DEditorPlugin, EditorPlugin);
 
-	EditorInspectorPluginSkeleton *skeleton_plugin = nullptr;
+	Ref<EditorInspectorPluginSkeleton> skeleton_plugin;
 
 public:
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
-	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
 	virtual String get_plugin_name() const override { return "Skeleton3D"; }
@@ -290,15 +295,16 @@ class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 public:
 	static Ref<ArrayMesh> get_bones_mesh(Skeleton3D *p_skeleton, int p_selected, bool p_is_selected);
+	static int skeleton_intersect_ray(const Skeleton3D *p_skeleton, Camera3D *p_camera, const Vector2 &p_point);
 
 	bool has_gizmo(Node3D *p_spatial) override;
 	String get_gizmo_name() const override;
 	int get_priority() const override;
 
-	int subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const override;
-	Transform3D get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
-	void set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) override;
-	void commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) override;
+	virtual int subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const override;
+	virtual Transform3D get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const override;
+	virtual void set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) override;
+	virtual void commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) override;
 
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 

@@ -30,6 +30,7 @@
 
 #include "kinematic_collision_3d.h"
 
+#include "core/object/class_db.h"
 #include "scene/3d/physics/physics_body_3d.h"
 
 Vector3 KinematicCollision3D::get_travel() const {

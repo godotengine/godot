@@ -45,7 +45,6 @@ const emscriptenGlobals = {
 module.exports = [
 	pluginJs.configs.all,
 	stylistic.configs.customize({ jsx: false }),
-
 	{
 		rules: {
 			'consistent-this': ['error', 'me'], // enforce consistent naming when capturing the current execution context
@@ -157,6 +156,7 @@ module.exports = [
 				'GodotFS': true,
 				'GodotOS': true,
 				'GodotAudio': true,
+				'GodotInput': true,
 				'GodotRuntime': true,
 				'IDHandler': true,
 				'XRWebGLLayer': true,
@@ -198,6 +198,7 @@ module.exports = [
 		rules: {
 			...htmlPlugin.configs.recommended.rules,
 			'@html-eslint/indent': ['error', 'tab'],
+			'@html-eslint/attrs-newline': 'off',
 			'@html-eslint/require-closing-tags': ['error', { 'selfClosing': 'never' }],
 			'no-alert': 'off',
 			'no-console': 'off',

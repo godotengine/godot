@@ -4,7 +4,7 @@
  *
  *   Auto-fitter routines to adjust components based on charcode (body).
  *
- * Copyright (C) 2023-2025 by
+ * Copyright (C) 2023-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Craig White <gerzytet@gmail.com>.
@@ -1405,7 +1405,8 @@
         FT_TRACE4(( "  " ));
         idx = HB_SET_VALUE_INVALID;
         while ( hb( set_next )( gsub_lookups, &idx ) )
-          if ( globals->gsub_lookups_single_alternate[idx] )
+          if ( idx < globals->gsub_lookup_count            &&
+               globals->gsub_lookups_single_alternate[idx] )
           {
             have_idx = TRUE;
             FT_TRACE4(( "  %u", idx ));
@@ -1428,8 +1429,16 @@
       idx = HB_SET_VALUE_INVALID;
       while ( hb( set_next )( gsub_lookups, &idx ) )
       {
-        FT_UInt32  offset = globals->gsub_lookups_single_alternate[idx];
+        FT_UInt32  offset;
 
+
+        /* HarfBuzz only validates lookup indices while   */
+        /* processing lookups, not while collecting them, */
+        /* so we have to do that by ourselves.            */
+        if ( idx < globals->gsub_lookup_count )
+          offset = globals->gsub_lookups_single_alternate[idx];
+        else
+          offset = 0;
 
         /* Put all substitutions into a single hash table.  Note that   */
         /* the hash values usually contain more than a single character */

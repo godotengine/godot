@@ -33,6 +33,7 @@
 class EditorExportPlatform;
 
 #include "core/object/ref_counted.h"
+#include "core/variant/type_info.h"
 
 class EditorExportPreset : public RefCounted {
 	GDCLASS(EditorExportPreset, RefCounted);
@@ -69,7 +70,6 @@ private:
 	String exporter;
 	HashSet<String> selected_files;
 	HashMap<String, FileExportMode> customized_files;
-	bool runnable = false;
 	bool dedicated_server = false;
 
 	Vector<String> patches;
@@ -88,17 +88,22 @@ private:
 	HashMap<StringName, bool> update_visibility;
 
 	String name;
+	bool options_search_active = false;
 
 	String custom_features;
 
-	String enc_in_filters;
-	String enc_ex_filters;
+	String enc_in_filters_str;
+	String enc_ex_filters_str;
+	Vector<String> enc_in_filters;
+	Vector<String> enc_ex_filters;
 	bool enc_pck = false;
 	bool enc_directory = false;
 	uint64_t seed = 0;
 
 	String script_key;
-	int script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
+	Vector<uint8_t> script_key_resolved;
+	bool is_script_key_resolved = false;
+	ScriptExportMode script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -109,6 +114,11 @@ protected:
 
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	int _get_script_export_mode_bind_compat_107167() const;
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	Ref<EditorExportPlatform> get_platform() const;
 
@@ -118,6 +128,8 @@ public:
 	void update_value_overrides();
 
 	Vector<String> get_files_to_export() const;
+	HashSet<String> get_selected_files() const;
+	void set_selected_files(const HashSet<String> &p_files);
 	Dictionary get_customized_files() const;
 	int get_customized_files_count() const;
 	void set_customized_files(const Dictionary &p_files);
@@ -138,6 +150,7 @@ public:
 	bool is_runnable() const;
 
 	bool are_advanced_options_enabled() const;
+	void set_options_search_active(bool p_active);
 
 	void set_dedicated_server(bool p_enable);
 	bool is_dedicated_server() const;
@@ -181,11 +194,13 @@ public:
 	void set_export_path(const String &p_path);
 	String get_export_path() const;
 
-	void set_enc_in_filter(const String &p_filter);
-	String get_enc_in_filter() const;
+	void set_enc_in_filters_str(const String &p_filter);
+	String get_enc_in_filters_str() const;
+	Vector<String> get_enc_in_filters() const;
 
-	void set_enc_ex_filter(const String &p_filter);
-	String get_enc_ex_filter() const;
+	void set_enc_ex_filters_str(const String &p_filter);
+	String get_enc_ex_filters_str() const;
+	Vector<String> get_enc_ex_filters() const;
 
 	void set_seed(uint64_t p_seed);
 	uint64_t get_seed() const;
@@ -198,9 +213,10 @@ public:
 
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;
+	Vector<uint8_t> resolve_script_encryption_key();
 
-	void set_script_export_mode(int p_mode);
-	int get_script_export_mode() const;
+	void set_script_export_mode(ScriptExportMode p_mode);
+	ScriptExportMode get_script_export_mode() const;
 
 	Variant _get_or_env(const StringName &p_name, const String &p_env_var) const {
 		return get_or_env(p_name, p_env_var);

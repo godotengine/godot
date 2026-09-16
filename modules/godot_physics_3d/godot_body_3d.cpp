@@ -57,7 +57,7 @@ void GodotBody3D::update_mass_properties() {
 	// Update shapes and motions.
 
 	switch (mode) {
-		case PhysicsServer3D::BODY_MODE_RIGID: {
+		case PS3DE::BODY_MODE_RIGID: {
 			real_t total_area = 0;
 			for (int i = 0; i < get_shape_count(); i++) {
 				if (is_shape_disabled(i)) {
@@ -150,12 +150,12 @@ void GodotBody3D::update_mass_properties() {
 			}
 
 		} break;
-		case PhysicsServer3D::BODY_MODE_KINEMATIC:
-		case PhysicsServer3D::BODY_MODE_STATIC: {
+		case PS3DE::BODY_MODE_KINEMATIC:
+		case PS3DE::BODY_MODE_STATIC: {
 			_inv_inertia = Vector3();
 			_inv_mass = 0;
 		} break;
-		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
+		case PS3DE::BODY_MODE_RIGID_LINEAR: {
 			_inv_inertia_tensor.set_zero();
 			_inv_mass = 1.0 / mass;
 
@@ -179,7 +179,7 @@ void GodotBody3D::set_active(bool p_active) {
 	active = p_active;
 
 	if (active) {
-		if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
+		if (mode == PS3DE::BODY_MODE_STATIC) {
 			// Static bodies can't be active.
 			active = false;
 		} else if (get_space()) {
@@ -190,61 +190,61 @@ void GodotBody3D::set_active(bool p_active) {
 	}
 }
 
-void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Variant &p_value) {
+void GodotBody3D::set_param(PS3DE::BodyParameter p_param, const Variant &p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::BODY_PARAM_BOUNCE: {
+		case PS3DE::BODY_PARAM_BOUNCE: {
 			bounce = p_value;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_FRICTION: {
+		case PS3DE::BODY_PARAM_FRICTION: {
 			friction = p_value;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_MASS: {
+		case PS3DE::BODY_PARAM_MASS: {
 			real_t mass_value = p_value;
 			ERR_FAIL_COND(mass_value <= 0);
 			mass = mass_value;
-			if (mode >= PhysicsServer3D::BODY_MODE_RIGID) {
+			if (mode >= PS3DE::BODY_MODE_RIGID) {
 				_mass_properties_changed();
 			}
 		} break;
-		case PhysicsServer3D::BODY_PARAM_INERTIA: {
+		case PS3DE::BODY_PARAM_INERTIA: {
 			inertia = p_value;
 			if ((inertia.x <= 0.0) || (inertia.y <= 0.0) || (inertia.z <= 0.0)) {
 				calculate_inertia = true;
-				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+				if (mode == PS3DE::BODY_MODE_RIGID) {
 					_mass_properties_changed();
 				}
 			} else {
 				calculate_inertia = false;
-				if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+				if (mode == PS3DE::BODY_MODE_RIGID) {
 					principal_inertia_axes_local = Basis();
 					_inv_inertia = inertia.inverse();
 					_update_transform_dependent();
 				}
 			}
 		} break;
-		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
+		case PS3DE::BODY_PARAM_CENTER_OF_MASS: {
 			calculate_center_of_mass = false;
 			center_of_mass_local = p_value;
 			_update_transform_dependent();
 		} break;
-		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
+		case PS3DE::BODY_PARAM_GRAVITY_SCALE: {
 			if (Math::is_zero_approx(gravity_scale)) {
 				wakeup();
 			}
 			gravity_scale = p_value;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE: {
+		case PS3DE::BODY_PARAM_LINEAR_DAMP_MODE: {
 			int mode_value = p_value;
-			linear_damp_mode = (PhysicsServer3D::BodyDampMode)mode_value;
+			linear_damp_mode = (PS3DE::BodyDampMode)mode_value;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE: {
+		case PS3DE::BODY_PARAM_ANGULAR_DAMP_MODE: {
 			int mode_value = p_value;
-			angular_damp_mode = (PhysicsServer3D::BodyDampMode)mode_value;
+			angular_damp_mode = (PS3DE::BodyDampMode)mode_value;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP: {
+		case PS3DE::BODY_PARAM_LINEAR_DAMP: {
 			linear_damp = p_value;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP: {
+		case PS3DE::BODY_PARAM_ANGULAR_DAMP: {
 			angular_damp = p_value;
 		} break;
 		default: {
@@ -252,40 +252,40 @@ void GodotBody3D::set_param(PhysicsServer3D::BodyParameter p_param, const Varian
 	}
 }
 
-Variant GodotBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
+Variant GodotBody3D::get_param(PS3DE::BodyParameter p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::BODY_PARAM_BOUNCE: {
+		case PS3DE::BODY_PARAM_BOUNCE: {
 			return bounce;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_FRICTION: {
+		case PS3DE::BODY_PARAM_FRICTION: {
 			return friction;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_MASS: {
+		case PS3DE::BODY_PARAM_MASS: {
 			return mass;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_INERTIA: {
-			if (mode == PhysicsServer3D::BODY_MODE_RIGID) {
+		case PS3DE::BODY_PARAM_INERTIA: {
+			if (mode == PS3DE::BODY_MODE_RIGID) {
 				return _inv_inertia.inverse();
 			} else {
 				return Vector3();
 			}
 		} break;
-		case PhysicsServer3D::BODY_PARAM_CENTER_OF_MASS: {
+		case PS3DE::BODY_PARAM_CENTER_OF_MASS: {
 			return center_of_mass_local;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE: {
+		case PS3DE::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP_MODE: {
+		case PS3DE::BODY_PARAM_LINEAR_DAMP_MODE: {
 			return linear_damp_mode;
 		}
-		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP_MODE: {
+		case PS3DE::BODY_PARAM_ANGULAR_DAMP_MODE: {
 			return angular_damp_mode;
 		}
-		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP: {
+		case PS3DE::BODY_PARAM_LINEAR_DAMP: {
 			return linear_damp;
 		} break;
-		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP: {
+		case PS3DE::BODY_PARAM_ANGULAR_DAMP: {
 			return angular_damp;
 		} break;
 
@@ -296,27 +296,27 @@ Variant GodotBody3D::get_param(PhysicsServer3D::BodyParameter p_param) const {
 	return 0;
 }
 
-void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
-	PhysicsServer3D::BodyMode prev = mode;
+void GodotBody3D::set_mode(PS3DE::BodyMode p_mode) {
+	PS3DE::BodyMode prev = mode;
 	mode = p_mode;
 
 	switch (p_mode) {
-		case PhysicsServer3D::BODY_MODE_STATIC:
-		case PhysicsServer3D::BODY_MODE_KINEMATIC: {
+		case PS3DE::BODY_MODE_STATIC:
+		case PS3DE::BODY_MODE_KINEMATIC: {
 			_set_inv_transform(get_transform().affine_inverse());
 			_inv_mass = 0;
 			_inv_inertia = Vector3();
-			_set_static(p_mode == PhysicsServer3D::BODY_MODE_STATIC);
-			set_active(p_mode == PhysicsServer3D::BODY_MODE_KINEMATIC && contacts.size());
+			_set_static(p_mode == PS3DE::BODY_MODE_STATIC);
+			set_active(p_mode == PS3DE::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity = Vector3();
 			angular_velocity = Vector3();
-			if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC && prev != mode) {
+			if (mode == PS3DE::BODY_MODE_KINEMATIC && prev != mode) {
 				first_time_kinematic = true;
 			}
 			_update_transform_dependent();
 
 		} break;
-		case PhysicsServer3D::BODY_MODE_RIGID: {
+		case PS3DE::BODY_MODE_RIGID: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			if (!calculate_inertia) {
 				principal_inertia_axes_local = Basis();
@@ -328,7 +328,7 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			set_active(true);
 
 		} break;
-		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
+		case PS3DE::BODY_MODE_RIGID_LINEAR: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_inv_inertia = Vector3();
 			angular_velocity = Vector3();
@@ -339,7 +339,7 @@ void GodotBody3D::set_mode(PhysicsServer3D::BodyMode p_mode) {
 	}
 }
 
-PhysicsServer3D::BodyMode GodotBody3D::get_mode() const {
+PS3DE::BodyMode GodotBody3D::get_mode() const {
 	return mode;
 }
 
@@ -349,10 +349,10 @@ void GodotBody3D::_shapes_changed() {
 	wakeup_neighbours();
 }
 
-void GodotBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant) {
+void GodotBody3D::set_state(PS3DE::BodyState p_state, const Variant &p_variant) {
 	switch (p_state) {
-		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
-			if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
+		case PS3DE::BODY_STATE_TRANSFORM: {
+			if (mode == PS3DE::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
 				//wakeup_neighbours();
 				set_active(true);
@@ -362,7 +362,7 @@ void GodotBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p
 					first_time_kinematic = false;
 				}
 
-			} else if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
+			} else if (mode == PS3DE::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
 				wakeup_neighbours();
@@ -380,19 +380,19 @@ void GodotBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p
 			wakeup();
 
 		} break;
-		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
+		case PS3DE::BODY_STATE_LINEAR_VELOCITY: {
 			linear_velocity = p_variant;
 			constant_linear_velocity = linear_velocity;
 			wakeup();
 		} break;
-		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
+		case PS3DE::BODY_STATE_ANGULAR_VELOCITY: {
 			angular_velocity = p_variant;
 			constant_angular_velocity = angular_velocity;
 			wakeup();
 
 		} break;
-		case PhysicsServer3D::BODY_STATE_SLEEPING: {
-			if (mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
+		case PS3DE::BODY_STATE_SLEEPING: {
+			if (mode == PS3DE::BODY_MODE_STATIC || mode == PS3DE::BODY_MODE_KINEMATIC) {
 				break;
 			}
 			bool do_sleep = p_variant;
@@ -406,9 +406,9 @@ void GodotBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p
 				set_active(true);
 			}
 		} break;
-		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
+		case PS3DE::BODY_STATE_CAN_SLEEP: {
 			can_sleep = p_variant;
-			if (mode >= PhysicsServer3D::BODY_MODE_RIGID && !active && !can_sleep) {
+			if (mode >= PS3DE::BODY_MODE_RIGID && !active && !can_sleep) {
 				set_active(true);
 			}
 
@@ -416,21 +416,21 @@ void GodotBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p
 	}
 }
 
-Variant GodotBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
+Variant GodotBody3D::get_state(PS3DE::BodyState p_state) const {
 	switch (p_state) {
-		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
+		case PS3DE::BODY_STATE_TRANSFORM: {
 			return get_transform();
 		} break;
-		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
+		case PS3DE::BODY_STATE_LINEAR_VELOCITY: {
 			return linear_velocity;
 		} break;
-		case PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY: {
+		case PS3DE::BODY_STATE_ANGULAR_VELOCITY: {
 			return angular_velocity;
 		} break;
-		case PhysicsServer3D::BODY_STATE_SLEEPING: {
+		case PS3DE::BODY_STATE_SLEEPING: {
 			return !is_active();
 		} break;
-		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
+		case PS3DE::BODY_STATE_CAN_SLEEP: {
 			return can_sleep;
 		} break;
 	}
@@ -462,7 +462,7 @@ void GodotBody3D::set_space(GodotSpace3D *p_space) {
 	}
 }
 
-void GodotBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock) {
+void GodotBody3D::set_axis_lock(PS3DE::BodyAxis p_axis, bool lock) {
 	if (lock) {
 		locked_axis |= p_axis;
 	} else {
@@ -470,12 +470,12 @@ void GodotBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock) {
 	}
 }
 
-bool GodotBody3D::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
+bool GodotBody3D::is_axis_locked(PS3DE::BodyAxis p_axis) const {
 	return locked_axis & p_axis;
 }
 
 void GodotBody3D::integrate_forces(real_t p_step) {
-	if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
+	if (mode == PS3DE::BODY_MODE_STATIC) {
 		return;
 	}
 
@@ -500,20 +500,20 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 		const AreaCMP *aa = &areas[0];
 		for (int i = ac - 1; i >= 0 && !stopped; i--) {
 			if (!gravity_done) {
-				PhysicsServer3D::AreaSpaceOverrideMode area_gravity_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
-				if (area_gravity_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+				PS3DE::AreaSpaceOverrideMode area_gravity_mode = (PS3DE::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE);
+				if (area_gravity_mode != PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 					Vector3 area_gravity;
 					aa[i].area->compute_gravity(get_transform().get_origin(), area_gravity);
 					switch (area_gravity_mode) {
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+						case PS3DE::AREA_SPACE_OVERRIDE_COMBINE:
+						case PS3DE::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
 							gravity += area_gravity;
-							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+							gravity_done = area_gravity_mode == PS3DE::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
 						} break;
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+						case PS3DE::AREA_SPACE_OVERRIDE_REPLACE:
+						case PS3DE::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
 							gravity = area_gravity;
-							gravity_done = area_gravity_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+							gravity_done = area_gravity_mode == PS3DE::AREA_SPACE_OVERRIDE_REPLACE;
 						} break;
 						default: {
 						}
@@ -521,19 +521,19 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 				}
 			}
 			if (!linear_damp_done) {
-				PhysicsServer3D::AreaSpaceOverrideMode area_linear_damp_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE);
-				if (area_linear_damp_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+				PS3DE::AreaSpaceOverrideMode area_linear_damp_mode = (PS3DE::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE);
+				if (area_linear_damp_mode != PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 					real_t area_linear_damp = aa[i].area->get_linear_damp();
 					switch (area_linear_damp_mode) {
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+						case PS3DE::AREA_SPACE_OVERRIDE_COMBINE:
+						case PS3DE::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
 							total_linear_damp += area_linear_damp;
-							linear_damp_done = area_linear_damp_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+							linear_damp_done = area_linear_damp_mode == PS3DE::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
 						} break;
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+						case PS3DE::AREA_SPACE_OVERRIDE_REPLACE:
+						case PS3DE::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
 							total_linear_damp = area_linear_damp;
-							linear_damp_done = area_linear_damp_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+							linear_damp_done = area_linear_damp_mode == PS3DE::AREA_SPACE_OVERRIDE_REPLACE;
 						} break;
 						default: {
 						}
@@ -541,19 +541,19 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 				}
 			}
 			if (!angular_damp_done) {
-				PhysicsServer3D::AreaSpaceOverrideMode area_angular_damp_mode = (PhysicsServer3D::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE);
-				if (area_angular_damp_mode != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+				PS3DE::AreaSpaceOverrideMode area_angular_damp_mode = (PS3DE::AreaSpaceOverrideMode)(int)aa[i].area->get_param(PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE);
+				if (area_angular_damp_mode != PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 					real_t area_angular_damp = aa[i].area->get_angular_damp();
 					switch (area_angular_damp_mode) {
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
+						case PS3DE::AREA_SPACE_OVERRIDE_COMBINE:
+						case PS3DE::AREA_SPACE_OVERRIDE_COMBINE_REPLACE: {
 							total_angular_damp += area_angular_damp;
-							angular_damp_done = area_angular_damp_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
+							angular_damp_done = area_angular_damp_mode == PS3DE::AREA_SPACE_OVERRIDE_COMBINE_REPLACE;
 						} break;
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE:
-						case PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
+						case PS3DE::AREA_SPACE_OVERRIDE_REPLACE:
+						case PS3DE::AREA_SPACE_OVERRIDE_REPLACE_COMBINE: {
 							total_angular_damp = area_angular_damp;
-							angular_damp_done = area_angular_damp_mode == PhysicsServer3D::AREA_SPACE_OVERRIDE_REPLACE;
+							angular_damp_done = area_angular_damp_mode == PS3DE::AREA_SPACE_OVERRIDE_REPLACE;
 						} break;
 						default: {
 						}
@@ -586,20 +586,20 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 
 	// Override linear damping with body's value.
 	switch (linear_damp_mode) {
-		case PhysicsServer3D::BODY_DAMP_MODE_COMBINE: {
+		case PS3DE::BODY_DAMP_MODE_COMBINE: {
 			total_linear_damp += linear_damp;
 		} break;
-		case PhysicsServer3D::BODY_DAMP_MODE_REPLACE: {
+		case PS3DE::BODY_DAMP_MODE_REPLACE: {
 			total_linear_damp = linear_damp;
 		} break;
 	}
 
 	// Override angular damping with body's value.
 	switch (angular_damp_mode) {
-		case PhysicsServer3D::BODY_DAMP_MODE_COMBINE: {
+		case PS3DE::BODY_DAMP_MODE_COMBINE: {
 			total_angular_damp += angular_damp;
 		} break;
-		case PhysicsServer3D::BODY_DAMP_MODE_REPLACE: {
+		case PS3DE::BODY_DAMP_MODE_REPLACE: {
 			total_angular_damp = angular_damp;
 		} break;
 	}
@@ -612,7 +612,7 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 	Vector3 motion;
 	bool do_motion = false;
 
-	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
+	if (mode == PS3DE::BODY_MODE_KINEMATIC) {
 		//compute motion, angular and etc. velocities from prev transform
 		motion = new_transform.origin - get_transform().origin;
 		do_motion = true;
@@ -672,7 +672,7 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 }
 
 void GodotBody3D::integrate_velocities(real_t p_step) {
-	if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
+	if (mode == PS3DE::BODY_MODE_STATIC) {
 		return;
 	}
 
@@ -684,7 +684,7 @@ void GodotBody3D::integrate_velocities(real_t p_step) {
 
 	//apply axis lock linear
 	for (int i = 0; i < 3; i++) {
-		if (is_axis_locked((PhysicsServer3D::BodyAxis)(1 << i))) {
+		if (is_axis_locked((PS3DE::BodyAxis)(1 << i))) {
 			linear_velocity[i] = 0;
 			biased_linear_velocity[i] = 0;
 			new_transform.origin[i] = get_transform().origin[i];
@@ -692,13 +692,13 @@ void GodotBody3D::integrate_velocities(real_t p_step) {
 	}
 	//apply axis lock angular
 	for (int i = 0; i < 3; i++) {
-		if (is_axis_locked((PhysicsServer3D::BodyAxis)(1 << (i + 3)))) {
+		if (is_axis_locked((PS3DE::BodyAxis)(1 << (i + 3)))) {
 			angular_velocity[i] = 0;
 			biased_angular_velocity[i] = 0;
 		}
 	}
 
-	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
+	if (mode == PS3DE::BODY_MODE_KINEMATIC) {
 		_set_transform(new_transform, false);
 		_set_inv_transform(new_transform.affine_inverse());
 		if (contacts.is_empty() && linear_velocity == Vector3() && angular_velocity == Vector3()) {
@@ -748,7 +748,7 @@ void GodotBody3D::wakeup_neighbours() {
 				continue;
 			}
 			GodotBody3D *b = n[i];
-			if (b->mode < PhysicsServer3D::BODY_MODE_RIGID) {
+			if (b->mode < PS3DE::BODY_MODE_RIGID) {
 				continue;
 			}
 
@@ -781,7 +781,7 @@ void GodotBody3D::call_queries() {
 }
 
 bool GodotBody3D::sleep_test(real_t p_step) {
-	if (mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
+	if (mode == PS3DE::BODY_MODE_STATIC || mode == PS3DE::BODY_MODE_KINEMATIC) {
 		return true;
 	} else if (!can_sleep) {
 		return false;
@@ -833,10 +833,6 @@ GodotBody3D::GodotBody3D() :
 }
 
 GodotBody3D::~GodotBody3D() {
-	if (fi_callback_data) {
-		memdelete(fi_callback_data);
-	}
-	if (direct_state) {
-		memdelete(direct_state);
-	}
+	memdelete(fi_callback_data);
+	memdelete(direct_state);
 }

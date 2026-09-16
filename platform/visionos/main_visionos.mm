@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main.mm                                                               */
+/*  main_visionos.mm                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,11 +31,12 @@
 #import "os_visionos.h"
 
 #include "core/profiling/profiling.h"
-#import "drivers/apple_embedded/godot_app_delegate.h"
+#import "drivers/apple_embedded/godot_app_delegate_apple_embedded.h"
 #import "drivers/apple_embedded/main_utilities.h"
 #include "main/main.h"
 
 #import <UIKit/UIKit.h>
+
 #include <cstdio>
 
 static OS_VisionOS *os = nullptr;
@@ -69,5 +70,6 @@ int apple_embedded_main(int argc, char **argv) {
 
 void apple_embedded_finish() {
 	Main::cleanup();
+	godot_cleanup_profiler();
 	delete os;
 }

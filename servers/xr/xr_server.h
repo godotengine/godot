@@ -32,8 +32,8 @@
 
 #include "core/object/ref_counted.h"
 #include "core/os/thread_safe.h"
+#include "core/variant/type_info.h"
 #include "core/variant/variant.h"
-#include "servers/rendering/rendering_server.h"
 
 class XRInterface;
 class XRTracker;
@@ -63,7 +63,7 @@ public:
 	};
 
 	enum TrackerType {
-		TRACKER_HEAD = 0x01, /* tracks the position of the players head (or in case of handheld AR, location of the phone) */
+		TRACKER_CAMERA = 0x01, /* tracks the position of an XR camera (HMD, external camera, phone camera for phone based AR) */
 		TRACKER_CONTROLLER = 0x02, /* tracks a controller */
 		TRACKER_BASESTATION = 0x04, /* tracks location of a base station */
 		TRACKER_ANCHOR = 0x08, /* tracks an anchor point, used in AR to track a real live location */
@@ -73,7 +73,11 @@ public:
 		TRACKER_UNKNOWN = 0x80, /* unknown tracker */
 
 		TRACKER_ANY_KNOWN = 0x7f, /* all except unknown */
-		TRACKER_ANY = 0xff /* used by get_connected_trackers to return all types */
+		TRACKER_ANY = 0xff, /* used by get_connected_trackers to return all types */
+
+#ifndef DISABLE_DEPRECATED
+		TRACKER_HEAD = TRACKER_CAMERA /* Just for backwards compatibility */
+#endif
 	};
 
 	enum RotationMode {
@@ -85,7 +89,7 @@ public:
 private:
 	static XRMode xr_mode;
 
-	Vector<Ref<XRInterface>> interfaces;
+	LocalVector<Ref<XRInterface>> interfaces;
 	Dictionary trackers;
 
 	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
@@ -107,29 +111,9 @@ private:
 	static void _set_render_world_origin(const Transform3D &p_world_origin);
 	static void _set_render_reference_frame(const Transform3D &p_reference_frame);
 
-	_FORCE_INLINE_ void set_render_world_scale(double p_world_scale) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_world_scale).bind(p_world_scale));
-	}
-
-	_FORCE_INLINE_ void set_render_world_origin(const Transform3D &p_world_origin) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_world_origin).bind(p_world_origin));
-	}
-
-	_FORCE_INLINE_ void set_render_reference_frame(const Transform3D &p_reference_frame) {
-		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
-		RenderingServer *rendering_server = RenderingServer::get_singleton();
-		ERR_FAIL_NULL(rendering_server);
-
-		rendering_server->call_on_render_thread(callable_mp_static(&XRServer::_set_render_reference_frame).bind(p_reference_frame));
-	}
+	void set_render_world_scale(double p_world_scale);
+	void set_render_world_origin(const Transform3D &p_world_origin);
+	void set_render_reference_frame(const Transform3D &p_reference_frame);
 
 protected:
 	static XRServer *singleton;
@@ -224,6 +208,10 @@ public:
 	void remove_tracker(const Ref<XRTracker> &p_tracker);
 	Dictionary get_trackers(int p_tracker_types);
 	Ref<XRTracker> get_tracker(const StringName &p_name) const;
+
+	// For camera trackers only, we need access to additional information that can't be stored on the tracker itself.
+	TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far);
+	TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name);
 
 	/*
 		We don't know which trackers and actions will existing during runtime but we can request suggested names from our interfaces to help our IDE UI.

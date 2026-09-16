@@ -30,10 +30,9 @@
 
 #include "compression.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/zip_io.h"
 
-#include "thirdparty/misc/fastlz.h"
+#include <thirdparty/misc/fastlz.h>
 
 #include <zstd.h>
 
@@ -41,11 +40,34 @@
 #include <brotli/decode.h>
 #endif
 
-// Caches for zstd.
-static BinaryMutex mutex;
-static ZSTD_DCtx *current_zstd_d_ctx = nullptr;
-static bool current_zstd_long_distance_matching;
-static int current_zstd_window_log_size;
+namespace {
+struct ZstdDecompressorContext {
+	ZSTD_DCtx *zstd_d_ctx = nullptr;
+	bool zstd_long_distance_matching = false;
+	int zstd_window_log_size = 0;
+
+	~ZstdDecompressorContext() {
+		if (zstd_d_ctx) {
+			ZSTD_freeDCtx(zstd_d_ctx);
+		}
+	}
+
+	void invalidate(bool p_zstd_long_distance_matching, int p_zstd_window_log_size) {
+		if (!zstd_d_ctx || zstd_long_distance_matching != p_zstd_long_distance_matching || zstd_window_log_size != p_zstd_window_log_size) {
+			if (zstd_d_ctx) {
+				ZSTD_freeDCtx(zstd_d_ctx);
+			}
+
+			zstd_d_ctx = ZSTD_createDCtx();
+			if (p_zstd_long_distance_matching) {
+				ZSTD_DCtx_setParameter(zstd_d_ctx, ZSTD_d_windowLogMax, p_zstd_window_log_size);
+			}
+			zstd_long_distance_matching = p_zstd_long_distance_matching;
+			zstd_window_log_size = p_zstd_window_log_size;
+		}
+	}
+};
+} //namespace
 
 int64_t Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_src_size, Mode p_mode) {
 	switch (p_mode) {
@@ -198,22 +220,10 @@ int64_t Compression::decompress(uint8_t *p_dst, int64_t p_dst_max_size, const ui
 			return total;
 		} break;
 		case MODE_ZSTD: {
-			MutexLock lock(mutex);
+			thread_local ZstdDecompressorContext decompressor_ctx;
+			decompressor_ctx.invalidate(zstd_long_distance_matching, zstd_window_log_size);
 
-			if (!current_zstd_d_ctx || current_zstd_long_distance_matching != zstd_long_distance_matching || current_zstd_window_log_size != zstd_window_log_size) {
-				if (current_zstd_d_ctx) {
-					ZSTD_freeDCtx(current_zstd_d_ctx);
-				}
-
-				current_zstd_d_ctx = ZSTD_createDCtx();
-				if (zstd_long_distance_matching) {
-					ZSTD_DCtx_setParameter(current_zstd_d_ctx, ZSTD_d_windowLogMax, zstd_window_log_size);
-				}
-				current_zstd_long_distance_matching = zstd_long_distance_matching;
-				current_zstd_window_log_size = zstd_window_log_size;
-			}
-
-			size_t ret = ZSTD_decompressDCtx(current_zstd_d_ctx, p_dst, p_dst_max_size, p_src, p_src_size);
+			size_t ret = ZSTD_decompressDCtx(decompressor_ctx.zstd_d_ctx, p_dst, p_dst_max_size, p_src, p_src_size);
 			return (int64_t)ret;
 		} break;
 	}
@@ -292,7 +302,7 @@ int Compression::decompress_dynamic(Vector<uint8_t> *p_dst_vect, int64_t p_max_d
 #endif
 	} else {
 		// This function only supports GZip and Deflate.
-		ERR_FAIL_COND_V(p_mode != MODE_DEFLATE && p_mode != MODE_GZIP, Z_ERRNO);
+		ERR_FAIL_COND_V_MSG(p_mode != MODE_DEFLATE && p_mode != MODE_GZIP, Z_ERRNO, "Dynamic decompression is only supported with gzip, DEFLATE, and Brotli compression methods.");
 
 		int ret;
 		z_stream strm;

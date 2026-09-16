@@ -111,12 +111,14 @@ protected:
 	virtual void _menu_option(int p_option);
 	void _wip_changed();
 	void _wip_close();
+	bool _wip_undo();
 	void _wip_cancel();
 
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 
 	bool _commit_drag();
+	void _cancel_drag();
 
 	void remove_point(const Vertex &p_vertex);
 	Vertex get_active_point() const;
@@ -167,7 +169,6 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return polygon_editor->forward_gui_input(p_event); }
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { polygon_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
-	bool has_main_screen() const override { return false; }
 	virtual String get_plugin_name() const override { return klass; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

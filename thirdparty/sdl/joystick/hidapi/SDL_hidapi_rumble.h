@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@
 #ifdef SDL_THREAD_SAFETY_ANALYSIS
 extern SDL_Mutex *SDL_HIDAPI_rumble_lock;
 #endif
-bool SDL_HIDAPI_LockRumble(void) SDL_TRY_ACQUIRE(0, SDL_HIDAPI_rumble_lock);
+bool SDL_HIDAPI_LockRumble(void) SDL_TRY_ACQUIRE(true, SDL_HIDAPI_rumble_lock);
 bool SDL_HIDAPI_GetPendingRumbleLocked(SDL_HIDAPI_Device *device, Uint8 **data, int **size, int *maximum_size);
 int SDL_HIDAPI_SendRumbleAndUnlock(SDL_HIDAPI_Device *device, const Uint8 *data, int size) SDL_RELEASE(SDL_HIDAPI_rumble_lock);
 typedef void (*SDL_HIDAPI_RumbleSentCallback)(void *userdata);

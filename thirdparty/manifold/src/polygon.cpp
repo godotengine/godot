@@ -14,13 +14,13 @@
 
 #include "manifold/polygon.h"
 
-#include <functional>
 #include <map>
 #include <set>
 
 #include "manifold/manifold.h"
 #include "manifold/optional_assert.h"
 #include "parallel.h"
+#include "polygon_internal.h"
 #include "tree2d.h"
 #include "utils.h"
 
@@ -31,7 +31,7 @@
 namespace {
 using namespace manifold;
 
-constexpr int TRIANGULATOR_VERBOSE_LEVEL = 2;
+constexpr int TRIANGULATOR_VERBOSE_LEVEL = 3;
 
 constexpr double kBest = -std::numeric_limits<double>::infinity();
 
@@ -45,24 +45,11 @@ struct PolyEdge {
   int startVert, endVert;
 };
 
-std::vector<PolyEdge> Polygons2Edges(const PolygonsIdx& polys) {
+std::vector<PolyEdge> Halfedges2Edges(const HalfedgeTriangulation& result) {
   std::vector<PolyEdge> halfedges;
-  for (const auto& poly : polys) {
-    for (size_t i = 1; i < poly.size(); ++i) {
-      halfedges.push_back({poly[i - 1].idx, poly[i].idx});
-    }
-    halfedges.push_back({poly.back().idx, poly[0].idx});
-  }
-  return halfedges;
-}
-
-std::vector<PolyEdge> Triangles2Edges(const std::vector<ivec3>& triangles) {
-  std::vector<PolyEdge> halfedges;
-  halfedges.reserve(triangles.size() * 3);
-  for (const ivec3& tri : triangles) {
-    halfedges.push_back({tri[0], tri[1]});
-    halfedges.push_back({tri[1], tri[2]});
-    halfedges.push_back({tri[2], tri[0]});
+  halfedges.reserve(result.halfedges.size());
+  for (const Halfedge& edge : result.halfedges) {
+    halfedges.push_back({edge.startVert, edge.endVert});
   }
   return halfedges;
 }
@@ -102,14 +89,8 @@ void CheckTopology(const std::vector<PolyEdge>& halfedges) {
   }
 }
 
-void CheckTopology(const std::vector<ivec3>& triangles,
-                   const PolygonsIdx& polys) {
-  std::vector<PolyEdge> halfedges = Triangles2Edges(triangles);
-  std::vector<PolyEdge> openEdges = Polygons2Edges(polys);
-  for (PolyEdge e : openEdges) {
-    halfedges.push_back({e.endVert, e.startVert});
-  }
-  CheckTopology(halfedges);
+void CheckTopology(const HalfedgeTriangulation& result) {
+  CheckTopology(Halfedges2Edges(result));
 }
 
 void CheckGeometry(const std::vector<ivec3>& triangles,
@@ -126,6 +107,11 @@ void CheckGeometry(const std::vector<ivec3>& triangles,
                                         vertPos[tri[2]], epsilon) >= 0;
                            }),
                geometryErr, "triangulation is not entirely CCW!");
+}
+
+void CheckGeometry(const HalfedgeTriangulation& result,
+                   const PolygonsIdx& polys, double epsilon) {
+  CheckGeometry(result.Triangles(), polys, epsilon);
 }
 
 void Dump(const PolygonsIdx& polys, double epsilon) {
@@ -206,20 +192,21 @@ bool IsConvex(const PolygonsIdx& polys, double epsilon) {
  * Triangulates a set of convex polygons by alternating instead of a fan, to
  * avoid creating high-degree vertices.
  */
-std::vector<ivec3> TriangulateConvex(const PolygonsIdx& polys) {
+HalfedgeTriangulation TriangulateConvex(const PolygonsIdx& polys) {
   const size_t numTri = manifold::transform_reduce(
       polys.begin(), polys.end(), 0_uz,
       [](size_t a, size_t b) { return a + b; },
       [](const SimplePolygonIdx& poly) { return poly.size() - 2; });
-  std::vector<ivec3> triangles;
-  triangles.reserve(numTri);
+  HalfedgeTriangulation result;
+  result.AddContours(polys);
+  result.ReserveTriangles(numTri);
   for (const SimplePolygonIdx& poly : polys) {
     size_t i = 0;
     size_t k = poly.size() - 1;
     bool right = true;
     while (i + 1 < k) {
       const size_t j = right ? i + 1 : k - 1;
-      triangles.push_back({poly[i].idx, poly[j].idx, poly[k].idx});
+      result.AddTriangle(poly[i].idx, poly[j].idx, poly[k].idx);
       if (right) {
         i = j;
       } else {
@@ -228,7 +215,7 @@ std::vector<ivec3> TriangulateConvex(const PolygonsIdx& polys) {
       right = !right;
     }
   }
-  return triangles;
+  return result;
 }
 
 /**
@@ -265,7 +252,7 @@ class EarClip {
     }
   }
 
-  std::vector<ivec3> Triangulate() {
+  HalfedgeTriangulation Triangulate() {
     ZoneScoped;
 
     for (const VertItr start : holes_) {
@@ -276,7 +263,7 @@ class EarClip {
       TriangulatePoly(start);
     }
 
-    return triangles_;
+    return result_;
   }
 
   double GetPrecision() const { return epsilon_; }
@@ -309,8 +296,8 @@ class EarClip {
   std::map<VertItr, Rect> hole2BBox_;
   // A priority queue of valid ears - the multiset allows them to be updated.
   std::multiset<VertItr, MinCost> earsQueue_;
-  // The output triangulation.
-  std::vector<ivec3> triangles_;
+  // The output triangulation, represented directly as halfedges.
+  HalfedgeTriangulation result_;
   // Bounding box of the entire set of polygons
   Rect bBox_;
   // Working epsilon: max of float error and input value.
@@ -588,8 +575,8 @@ class EarClip {
         ear->right->mesh_idx != ear->left->mesh_idx) {
       // Filter out topological degenerates, which can form in bad
       // triangulations of polygons with holes, due to vert duplication.
-      triangles_.push_back(
-          {ear->left->mesh_idx, ear->mesh_idx, ear->right->mesh_idx});
+      result_.AddTriangle(ear->left->mesh_idx, ear->mesh_idx,
+                          ear->right->mesh_idx);
     } else {
       PRINT("Topological degenerate!");
     }
@@ -655,13 +642,16 @@ class EarClip {
 
     if (epsilon_ < 0) epsilon_ = bBox_.Scale() * kPrecision;
 
+    result_.AddContours(polys);
     // Slightly more than enough, since each hole can cause two extra triangles.
-    triangles_.reserve(polygon_.size() + 2 * starts.size());
+    result_.ReserveTriangles(polygon_.size() + 2 * starts.size());
     return starts;
   }
 
   // Find the actual rightmost starts after degenerate removal. Also calculate
-  // the polygon bounding boxes.
+  // the polygon bounding boxes. Only holes need rightmost starts, and the CCW
+  // check is to handle degenerate cases for them - the other contour starts are
+  // arbitrary.
   void FindStart(VertItr first) {
     const vec2 origin = first->pos;
 
@@ -680,7 +670,7 @@ class EarClip {
       areaCompensation += (area - t1) + area1;
       area = t1;
 
-      if (v->pos.x > maxX) {
+      if (v->pos.x > maxX && v->IsReflex(epsilon_)) {
         maxX = v->pos.x;
         start = v;
       }
@@ -935,40 +925,55 @@ namespace manifold {
  * triangulation if the input is convex, falling back to ear-clipping if not.
  * The triangle quality may be lower, so set to false to disable this
  * optimization.
- * @return std::vector<ivec3> The triangles, referencing the original
- * vertex indicies.
+ * @return HalfedgeTriangulation The contour and triangle halfedges,
+ * referencing the original vertex indicies.
  */
-std::vector<ivec3> TriangulateIdx(const PolygonsIdx& polys, double epsilon,
-                                  bool allowConvex) {
-  std::vector<ivec3> triangles;
+HalfedgeTriangulation TriangulateIdxHalfedges(const PolygonsIdx& polys,
+                                              double epsilon,
+                                              bool allowConvex) {
+  HalfedgeTriangulation result;
   double updatedEpsilon = epsilon;
 #ifdef MANIFOLD_DEBUG
   try {
 #endif
     if (allowConvex && IsConvex(polys, epsilon)) {  // fast path
-      triangles = TriangulateConvex(polys);
+      result = TriangulateConvex(polys);
     } else {
       EarClip triangulator(polys, epsilon);
-      triangles = triangulator.Triangulate();
+      result = triangulator.Triangulate();
       updatedEpsilon = triangulator.GetPrecision();
     }
+    result.epsilon = updatedEpsilon;
 #ifdef MANIFOLD_DEBUG
     if (ManifoldParams().intermediateChecks) {
-      CheckTopology(triangles, polys);
+      CheckTopology(result);
       if (!ManifoldParams().processOverlaps) {
-        CheckGeometry(triangles, polys, 2 * updatedEpsilon);
+        CheckGeometry(result, polys, 2 * updatedEpsilon);
       }
     }
+#endif
+    result.Finalize();
+#ifdef MANIFOLD_DEBUG
   } catch (const geometryErr& e) {
     if (!ManifoldParams().suppressErrors) {
+      std::vector<ivec3> triangles = result.Triangles();
       PrintFailure(e, polys, triangles, updatedEpsilon);
     }
     throw;
   } catch (const std::exception& e) {
+    std::vector<ivec3> triangles = result.Triangles();
     PrintFailure(e, polys, triangles, updatedEpsilon);
     throw;
   }
 #endif
+  return result;
+}
+
+std::vector<ivec3> TriangulateIdx(const PolygonsIdx& polys, double epsilon,
+                                  bool allowConvex) {
+  HalfedgeTriangulation result =
+      TriangulateIdxHalfedges(polys, epsilon, allowConvex);
+  std::vector<ivec3> triangles = result.Triangles();
   return triangles;
 }
 

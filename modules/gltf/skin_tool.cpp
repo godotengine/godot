@@ -30,6 +30,8 @@
 
 #include "skin_tool.h"
 
+#include "core/math/disjoint_set.h"
+
 SkinNodeIndex SkinTool::_find_highest_node(Vector<Ref<GLTFNode>> &r_nodes, const Vector<GLTFNodeIndex> &p_subset) {
 	int highest = -1;
 	SkinNodeIndex best_node = -1;

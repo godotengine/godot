@@ -48,6 +48,8 @@ protected:
 
 	Vector2 position_offset;
 
+	bool scaling_menus = false;
+
 	struct ThemeCache {
 		Ref<Texture2D> resizer;
 	} theme_cache;
@@ -62,6 +64,8 @@ protected:
 	static void _bind_methods();
 
 	virtual void _resort();
+
+	virtual Size2 get_minimum_size() const override;
 
 	void _validate_property(PropertyInfo &p_property) const;
 
@@ -84,7 +88,8 @@ public:
 	void set_selectable(bool p_selectable);
 	bool is_selectable();
 
-	virtual Size2 get_minimum_size() const override;
+	void set_scaling_menus(bool p_scaling_menus);
+	bool is_scaling_menus() const;
 
 	bool is_resizing() const {
 		return resizing;

@@ -29,6 +29,9 @@ layout(push_constant, std430) uniform Params {
 	float depth_tolerance;
 	bool orthogonal;
 	int view_index;
+	int pad1;
+	int pad2;
+	int pad3;
 }
 params;
 
@@ -131,7 +134,7 @@ void main() {
 		pos += geom_normal * (1.0 - pow(clamp(dot(normal, geom_normal), 0.0, 1.0), 8.0));
 		screen_pos = compute_screen_pos(pos);
 
-		vec3 view_dir = params.orthogonal ? vec3(0.0, 0.0, -1.0) : normalize(pos + scene_data.eye_offset[params.view_index].xyz);
+		vec3 view_dir = params.orthogonal ? vec3(0.0, 0.0, -1.0) : normalize(pos - scene_data.eye_offset[params.view_index].xyz);
 		vec3 ray_dir = normalize(reflect(view_dir, normal));
 
 		// Check if the ray is immediately intersecting with itself. If so, bounce!
@@ -308,7 +311,11 @@ void main() {
 				blur_radius = (a * (sqrt(a2 + fh2) - a)) / (4.0 * h);
 			}
 
-			mip_level = clamp(log2(blur_radius * max(params.screen_size.x, params.screen_size.y) / 16.0), 0, params.mipmaps - 1);
+			// We approximate the integration in world space with a blur in screen space,
+			// and use a mip bias, `log2(/* screen_space_blur_radius */ + 1.0)`, to approximate the screen space blur.
+			// This + 1.0 is needed because mip level is logarithmic to the diameter (in pixels) of sampling region,
+			// which is 1 pixel when no blur is applied (log2(1) = 0).
+			mip_level = clamp(log2(blur_radius * max(params.screen_size.x, params.screen_size.y) / 16.0 + 1.0), 0, params.mipmaps - 1);
 		}
 
 		// Because we still write mip level for invalid pixels to allow for smooth roughness transitions,

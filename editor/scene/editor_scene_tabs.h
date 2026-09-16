@@ -48,8 +48,12 @@ class EditorSceneTabs : public MarginContainer {
 
 public:
 	enum {
-		SCENE_SHOW_IN_FILESYSTEM = 1000, // Prevents conflicts with EditorNode options.
+		SCENE_SAVE_SCENE = 1000, // Prevents conflicts with EditorNode options.
+		SCENE_SAVE_AS_SCENE,
+		SCENE_SHOW_IN_FILESYSTEM,
 		SCENE_RUN,
+		SCENE_SET_AS_MAIN_SCENE,
+		SCENE_CLOSE,
 		SCENE_CLOSE_OTHERS,
 		SCENE_CLOSE_RIGHT,
 	};
@@ -79,14 +83,17 @@ private:
 
 	void _update_tab_titles();
 	void _reposition_active_tab(int p_to_index);
-	void _update_context_menu();
+	void _update_context_menu(int p_index);
 	void _custom_menu_option(int p_option);
 	void _update_scene_list();
 
 	void _tab_preview_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_tab);
+	static Dictionary _get_context_data(int p_current_tab);
 
 	void _global_menu_scene(const Variant &p_tag);
 	void _global_menu_new_window(const Variant &p_tag);
+
+	void _project_settings_changed();
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
@@ -102,6 +109,7 @@ public:
 
 	void set_current_tab(int p_tab);
 	int get_current_tab() const;
+	int get_option_tab() const;
 
 	void update_scene_tabs();
 

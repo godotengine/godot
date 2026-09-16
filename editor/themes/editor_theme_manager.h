@@ -77,14 +77,15 @@ public:
 		int class_icon_size = 16;
 		bool enable_touch_optimizations = false;
 		float gizmo_handle_scale = 1.0;
-		int color_picker_button_height = 28;
+		int inspector_property_height = 28;
 		float subresource_hue_tint = 0.0;
 		float dragging_hover_wait_msec = 0;
+		int max_sticky_tree_items = 5;
 
 		// Make sure to keep those in sync with the definitions in the editor settings.
 		const float default_icon_saturation = 2.0;
 		const int default_relationship_lines = RELATIONSHIP_SELECTED_ONLY;
-		const float default_contrast = 0.35;
+		const float default_contrast = 0.3;
 		const int default_corner_radius = 4;
 
 		// Generated properties.
@@ -110,6 +111,7 @@ public:
 		Color contrast_color_2;
 		Color highlight_color;
 		Color highlight_disabled_color;
+		Color info_color;
 		Color success_color;
 		Color warning_color;
 		Color error_color;
@@ -140,6 +142,7 @@ public:
 		Color icon_pressed_color;
 		Color icon_disabled_color;
 
+		Color surface_popup_color;
 		Color surface_lowest_color;
 		Color surface_lower_color;
 		Color surface_low_color;
@@ -155,6 +158,10 @@ public:
 		Color button_border_normal_color;
 		Color button_border_hover_color;
 		Color button_border_pressed_color;
+
+		Color flat_button_pressed_color;
+		Color flat_button_hover_pressed_color;
+		Color flat_button_hover_color;
 
 		Color shadow_color;
 		Color selection_color;
@@ -175,6 +182,7 @@ public:
 
 		Ref<StyleBoxFlat> flat_button;
 		Ref<StyleBoxFlat> flat_button_pressed;
+		Ref<StyleBoxFlat> flat_button_hover_pressed;
 		Ref<StyleBoxFlat> flat_button_hover;
 
 		Ref<StyleBoxFlat> popup_style;
@@ -204,7 +212,7 @@ public:
 
 private:
 	static Ref<EditorTheme> _create_base_theme(const Ref<EditorTheme> &p_old_theme = nullptr);
-	static ThemeConfiguration _create_theme_config(const Ref<EditorTheme> &p_theme);
+	static ThemeConfiguration _create_theme_config();
 
 	static void _populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 	static void _populate_visual_shader_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);

@@ -30,6 +30,8 @@
 
 #include "reparent_dialog.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "editor/scene/scene_tree_editor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
@@ -52,7 +54,7 @@ void ReparentDialog::_cancel() {
 
 void ReparentDialog::_reparent() {
 	if (tree->get_selected()) {
-		emit_signal(SNAME("reparent"), tree->get_selected()->get_path(), keep_transform->is_pressed());
+		emit_signal(SNAME("reparent_requested"), tree->get_selected()->get_path(), keep_transform->is_pressed());
 		hide();
 	}
 }
@@ -65,7 +67,7 @@ void ReparentDialog::set_current(const HashSet<Node *> &p_selection) {
 void ReparentDialog::_bind_methods() {
 	ClassDB::bind_method("_cancel", &ReparentDialog::_cancel);
 
-	ADD_SIGNAL(MethodInfo("reparent", PropertyInfo(Variant::NODE_PATH, "path"), PropertyInfo(Variant::BOOL, "keep_global_xform")));
+	ADD_SIGNAL(MethodInfo("reparent_requested", PropertyInfo(Variant::NODE_PATH, "path"), PropertyInfo(Variant::BOOL, "keep_global_xform")));
 }
 
 ReparentDialog::ReparentDialog() {

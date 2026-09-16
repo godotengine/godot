@@ -36,6 +36,8 @@
       This interface is derived from Chromium's
       zcr_linux_explicit_synchronization_v1.
 
+      Note: this protocol is superseded by linux-drm-syncobj.
+
       Warning! The protocol described in this file is experimental and
       backward incompatible changes may be made. Backward compatible changes
       may be added together with the corresponding interface version bump.

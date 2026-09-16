@@ -32,6 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/io/stream_peer_socket.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/io/stream_peer_uds.h"
 #include "core/os/os.h"
 
 bool RemoteDebuggerPeerTCP::is_peer_connected() {
@@ -126,6 +129,7 @@ void RemoteDebuggerPeerTCP::_write_out() {
 void RemoteDebuggerPeerTCP::_read_in() {
 	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_IN) == OK) {
 		uint8_t *buf = in_buf.ptrw();
+		Error err = OK;
 		if (in_left <= 0) {
 			if (in_queue.size() > max_queued_messages) {
 				break; // Too many messages already in queue.
@@ -135,18 +139,29 @@ void RemoteDebuggerPeerTCP::_read_in() {
 			}
 			uint32_t size = 0;
 			int read = 0;
-			Error err = tcp_client->get_partial_data((uint8_t *)&size, 4, read);
-			ERR_CONTINUE(read != 4 || err != OK || size > (uint32_t)in_buf.size());
+			err = tcp_client->get_partial_data((uint8_t *)&size, 4, read);
+			if (err != OK || read != 4) {
+				_disconnect_with_error("Remote debugger: Connection lost while reading packet size.");
+				return;
+			}
+			if (size > (uint32_t)in_buf.size()) {
+				_disconnect_with_error(vformat("Remote debugger: Packet too large (%s > %s bytes). Disconnecting.", String::num_uint64(size), String::num_int64(in_buf.size())));
+				return;
+			}
 			in_left = size;
 			in_pos = 0;
 		}
 		int read = 0;
-		tcp_client->get_partial_data(buf + in_pos, in_left, read);
+		err = tcp_client->get_partial_data(buf + in_pos, in_left, read);
+		if (err != OK || read == 0) {
+			_disconnect_with_error("Remote debugger: Connection lost while reading packet payload.");
+			return;
+		}
 		in_left -= read;
 		in_pos += read;
 		if (in_left == 0) {
 			Variant var;
-			Error err = decode_variant(var, buf, in_pos, &read);
+			err = decode_variant(var, buf, in_pos, &read);
 			ERR_CONTINUE(read != in_pos || err != OK);
 			ERR_CONTINUE_MSG(var.get_type() != Variant::ARRAY, "Malformed packet received, not an Array.");
 			MutexLock lock(mutex);
@@ -155,24 +170,24 @@ void RemoteDebuggerPeerTCP::_read_in() {
 	}
 }
 
-Error RemoteDebuggerPeerTCP::_try_connect(Ref<StreamPeerSocket> tcp_client) {
+Error RemoteDebuggerPeerTCP::_try_connect(Ref<StreamPeerSocket> p_tcp_client) {
 	const int tries = 6;
 	const int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
 
 	for (int i = 0; i < tries; i++) {
-		tcp_client->poll();
-		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
+		p_tcp_client->poll();
+		if (p_tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 			print_verbose("Remote Debugger: Connected!");
 			break;
 		} else {
 			const int ms = waits[i];
 			OS::get_singleton()->delay_usec(ms * 1000);
-			print_verbose("Remote Debugger: Connection failed with status: '" + String::num_int64(tcp_client->get_status()) + "', retrying in " + String::num_int64(ms) + " msec.");
+			print_verbose("Remote Debugger: Connection failed with status: '" + String::num_int64(p_tcp_client->get_status()) + "', retrying in " + String::num_int64(ms) + " msec.");
 		}
 	}
 
-	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-		ERR_PRINT(vformat("Remote Debugger: Unable to connect. Status: %s.", String::num_int64(tcp_client->get_status())));
+	if (p_tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
+		ERR_PRINT(vformat("Remote Debugger: Unable to connect. Status: %s.", String::num_int64(p_tcp_client->get_status())));
 		return FAILED;
 	}
 	return OK;
@@ -208,7 +223,7 @@ void RemoteDebuggerPeerTCP::_poll() {
 	}
 }
 
-RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create_tcp(const String &p_uri) {
+Ref<RemoteDebuggerPeer> RemoteDebuggerPeerTCP::create_tcp(const String &p_uri) {
 	ERR_FAIL_COND_V(!p_uri.begins_with("tcp://"), nullptr);
 
 	String debug_host = p_uri.replace("tcp://", "");
@@ -234,7 +249,7 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create_tcp(const String &p_uri) {
 	return memnew(RemoteDebuggerPeerTCP(stream));
 }
 
-RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create_unix(const String &p_uri) {
+Ref<RemoteDebuggerPeer> RemoteDebuggerPeerTCP::create_unix(const String &p_uri) {
 	ERR_FAIL_COND_V(!p_uri.begins_with("unix://"), nullptr);
 
 	String debug_path = p_uri.replace("unix://", "");
@@ -248,4 +263,9 @@ RemoteDebuggerPeer *RemoteDebuggerPeerTCP::create_unix(const String &p_uri) {
 
 RemoteDebuggerPeer::RemoteDebuggerPeer() {
 	max_queued_messages = (int)GLOBAL_GET("network/limits/debugger/max_queued_messages");
+}
+
+void RemoteDebuggerPeerTCP::_disconnect_with_error(const String &p_reason) {
+	ERR_PRINT(p_reason);
+	tcp_client->disconnect_from_host();
 }

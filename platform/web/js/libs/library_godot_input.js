@@ -482,9 +482,13 @@ mergeInto(LibraryManager.library, GodotInputDragDrop);
 const GodotInput = {
 	$GodotInput__deps: ['$GodotRuntime', '$GodotConfig', '$GodotEventListeners', '$GodotInputGamepads', '$GodotInputDragDrop', '$GodotIME'],
 	$GodotInput: {
+		inputKeyCallback: null,
+		setInputKeyData: null,
+
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
 		},
+
 		computePosition: function (evt, rect) {
 			const canvas = GodotConfig.canvas;
 			const rw = canvas.width / rect.width;
@@ -492,6 +496,20 @@ const GodotInput = {
 			const x = (evt.clientX - rect.x) * rw;
 			const y = (evt.clientY - rect.y) * rh;
 			return [x, y];
+		},
+
+		onKeyEvent: function (pIsPressed, pEvent) {
+			if (GodotInput.inputKeyCallback == null) {
+				throw new TypeError('GodotInput.onKeyEvent(): GodotInput.inputKeyCallback is null, cannot process key event.');
+			}
+			if (GodotInput.setInputKeyData == null) {
+				throw new TypeError('GodotInput.onKeyEvent(): GodotInput.setInputKeyData is null, cannot process key event.');
+			}
+
+			const modifiers = GodotInput.getModifiers(pEvent);
+			GodotInput.setInputKeyData(pEvent.code, pEvent.key);
+			GodotInput.inputKeyCallback(pIsPressed ? 1 : 0, pEvent.repeat, modifiers);
+			pEvent.preventDefault();
 		},
 	},
 
@@ -590,17 +608,14 @@ const GodotInput = {
 	 */
 	godot_js_input_key_cb__proxy: 'sync',
 	godot_js_input_key_cb__sig: 'viii',
-	godot_js_input_key_cb: function (callback, code, key) {
-		const func = GodotRuntime.get_func(callback);
-		function key_cb(pressed, evt) {
-			const modifiers = GodotInput.getModifiers(evt);
-			GodotRuntime.stringToHeap(evt.code, code, 32);
-			GodotRuntime.stringToHeap(evt.key, key, 32);
-			func(pressed, evt.repeat, modifiers);
-			evt.preventDefault();
-		}
-		GodotEventListeners.add(GodotConfig.canvas, 'keydown', key_cb.bind(null, 1), false);
-		GodotEventListeners.add(GodotConfig.canvas, 'keyup', key_cb.bind(null, 0), false);
+	godot_js_input_key_cb: function (pCallback, pCodePtr, pKeyPtr) {
+		GodotInput.inputKeyCallback = GodotRuntime.get_func(pCallback);
+		GodotInput.setInputKeyData = (pCode, pKey) => {
+			GodotRuntime.stringToHeap(pCode, pCodePtr, 32);
+			GodotRuntime.stringToHeap(pKey, pKeyPtr, 32);
+		};
+		GodotEventListeners.add(GodotConfig.canvas, 'keydown', GodotInput.onKeyEvent.bind(null, true), false);
+		GodotEventListeners.add(GodotConfig.canvas, 'keyup', GodotInput.onKeyEvent.bind(null, false), false);
 	},
 
 	/*

@@ -6,7 +6,7 @@
 
 #include <Jolt/Core/Reference.h>
 #include <Jolt/Physics/Collision/PhysicsMaterial.h>
-#include <Jolt/Core/StreamUtils.h>
+#include <Jolt/Core/ObjectToIDMap.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -130,7 +130,7 @@ public:
 
 		/// Constructor
 						Vertex() = default;
-						Vertex(const Float3 &inPosition, const Float3 &inVelocity = Float3(0, 0, 0), float inInvMass = 1.0f) : mPosition(inPosition), mVelocity(inVelocity), mInvMass(inInvMass) { }
+		explicit		Vertex(const Float3 &inPosition, const Float3 &inVelocity = Float3(0, 0, 0), float inInvMass = 1.0f) : mPosition(inPosition), mVelocity(inVelocity), mInvMass(inInvMass) { }
 
 		Float3			mPosition { 0, 0, 0 };						///< Initial position of the vertex
 		Float3			mVelocity { 0, 0, 0 };						///< Initial velocity of the vertex

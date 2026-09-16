@@ -32,9 +32,12 @@
 
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "editor/docks/editor_dock.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -52,20 +55,27 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/view_panner.h"
+#include "scene/main/scene_tree.h"
+#include "servers/rendering/rendering_server.h"
 
 Node2D *Polygon2DEditor::_get_node() const {
 	return node;
 }
 
 void Polygon2DEditor::_set_node(Node *p_polygon) {
+	CanvasItem *ci_editor_control = CanvasItemEditor::get_singleton()->get_viewport_control();
+
 	CanvasItem *draw = Object::cast_to<CanvasItem>(canvas);
 	if (node) {
 		node->disconnect(SceneStringName(draw), callable_mp(draw, &CanvasItem::queue_redraw));
 		node->disconnect(SceneStringName(draw), callable_mp(this, &Polygon2DEditor::_update_available_modes));
+		node->disconnect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
 	}
+
 	node = Object::cast_to<Polygon2D>(p_polygon);
 	_update_polygon_editing_state();
 	canvas->queue_redraw();
+
 	if (node) {
 		canvas->set_texture_filter(node->get_texture_filter_in_tree());
 
@@ -81,6 +91,8 @@ void Polygon2DEditor::_set_node(Node *p_polygon) {
 		// Whenever polygon gets redrawn, there's possible changes for the editor as well.
 		node->connect(SceneStringName(draw), callable_mp(draw, &CanvasItem::queue_redraw));
 		node->connect(SceneStringName(draw), callable_mp(this, &Polygon2DEditor::_update_available_modes));
+		// Update the canvas overlay.
+		node->connect(SceneStringName(draw), callable_mp(ci_editor_control, &CanvasItem::queue_redraw));
 	}
 }
 
@@ -106,7 +118,7 @@ void Polygon2DEditor::_notification(int p_what) {
 		}
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+			panner->setup_warped_panning(polygon_edit, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -140,13 +152,9 @@ void Polygon2DEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				dock_button->show();
-				EditorNode::get_bottom_panel()->make_item_visible(polygon_edit);
+				polygon_edit->make_visible();
 			} else {
-				dock_button->hide();
-				if (polygon_edit->is_visible_in_tree()) {
-					EditorNode::get_bottom_panel()->hide_bottom_panel();
-				}
+				polygon_edit->close();
 			}
 		} break;
 	}
@@ -605,6 +613,30 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 						previous_colors.remove_at(closest);
 					}
 
+					Array polygons = node->get_polygons().duplicate(); // Copy because it's a reference.
+					for (int i = polygons.size() - 1; i >= 0; --i) {
+						Vector<int> points = polygons[i];
+
+						bool uses_removed_vertex = false;
+						bool modified = false;
+						for (int j = 0; j < points.size(); ++j) {
+							if (points[j] == closest) {
+								uses_removed_vertex = true;
+								break;
+							}
+							if (points[j] > closest) {
+								points.set(j, points[j] - 1);
+								modified = true;
+							}
+						}
+
+						if (uses_removed_vertex) {
+							polygons.remove_at(i);
+						} else if (modified) {
+							polygons[i] = points;
+						}
+					}
+
 					undo_redo->create_action(TTR("Remove Internal Vertex"));
 					undo_redo->add_do_method(node, "set_uv", previous_uv);
 					undo_redo->add_undo_method(node, "set_uv", node->get_uv());
@@ -612,6 +644,8 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 					undo_redo->add_undo_method(node, "set_polygon", node->get_polygon());
 					undo_redo->add_do_method(node, "set_vertex_colors", previous_colors);
 					undo_redo->add_undo_method(node, "set_vertex_colors", node->get_vertex_colors());
+					undo_redo->add_do_method(node, "set_polygons", polygons);
+					undo_redo->add_undo_method(node, "set_polygons", node->get_polygons());
 					for (int i = 0; i < node->get_bone_count(); i++) {
 						Vector<float> bonew = node->get_bone_weights(i);
 						bonew.remove_at(closest);
@@ -687,6 +721,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 							polygon_create.clear();
 						} else if (!polygon_create.has(closest)) {
+							create_to = mtx.affine_inverse().xform(mb->get_position());
 							//add temporarily if not exists
 							polygon_create.push_back(closest);
 						}
@@ -1065,8 +1100,6 @@ void Polygon2DEditor::_canvas_draw() {
 
 	Ref<Texture2D> base_tex = node->get_texture();
 
-	String warning;
-
 	Transform2D mtx;
 	mtx.columns[2] = -draw_offset * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
@@ -1337,7 +1370,21 @@ Polygon2DEditor::Polygon2DEditor() {
 	snap_show_grid = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "show_grid", false);
 
 	selected_action = ACTION_EDIT_POINT;
-	polygon_edit = memnew(VBoxContainer);
+
+	polygon_edit = memnew(EditorDock);
+	polygon_edit->set_name(TTRC("Polygon"));
+	polygon_edit->set_icon_name("PolygonDock");
+	polygon_edit->set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTRC("Toggle Polygon Dock")));
+	polygon_edit->set_default_slot(EditorDock::DOCK_SLOT_BOTTOM);
+	polygon_edit->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
+	polygon_edit->set_global(false);
+	polygon_edit->set_transient(true);
+	EditorDockManager::get_singleton()->add_dock(polygon_edit);
+	polygon_edit->close();
+
+	VBoxContainer *edit_vbox = memnew(VBoxContainer);
+	polygon_edit->add_child(edit_vbox);
+
 	HBoxContainer *toolbar = memnew(HBoxContainer);
 
 	Ref<ButtonGroup> mode_button_group;
@@ -1356,7 +1403,7 @@ Polygon2DEditor::Polygon2DEditor() {
 
 	toolbar->add_child(memnew(VSeparator));
 
-	polygon_edit->add_child(toolbar);
+	edit_vbox->add_child(toolbar);
 	for (int i = 0; i < ACTION_MAX; i++) {
 		action_buttons[i] = memnew(Button);
 		action_buttons[i]->set_theme_type_variation(SceneStringName(FlatButton));
@@ -1369,9 +1416,8 @@ Polygon2DEditor::Polygon2DEditor() {
 	action_buttons[ACTION_CREATE]->set_tooltip_text(TTR("Create Polygon"));
 	action_buttons[ACTION_CREATE_INTERNAL]->set_tooltip_text(TTR("Create Internal Vertex"));
 	action_buttons[ACTION_REMOVE_INTERNAL]->set_tooltip_text(TTR("Remove Internal Vertex"));
-	Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 	// TRANSLATORS: %s is Control or Command key name.
-	action_buttons[ACTION_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), find_keycode_name(key)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), find_keycode_name(key)));
+	action_buttons[ACTION_EDIT_POINT]->set_tooltip_text(TTR("Move Points") + "\n" + vformat(TTR("%s: Rotate"), keycode_get_string(Key::CMD_OR_CTRL)) + "\n" + TTR("Shift: Move All") + "\n" + vformat(TTR("%s + Shift: Scale"), keycode_get_string(Key::CMD_OR_CTRL)));
 	action_buttons[ACTION_MOVE]->set_tooltip_text(TTR("Move Polygon"));
 	action_buttons[ACTION_ROTATE]->set_tooltip_text(TTR("Rotate Polygon"));
 	action_buttons[ACTION_SCALE]->set_tooltip_text(TTR("Scale Polygon"));
@@ -1414,7 +1460,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	bone_paint_radius->set_accessibility_name(TTRC("Radius:"));
 
 	HSplitContainer *uv_main_hsc = memnew(HSplitContainer);
-	polygon_edit->add_child(uv_main_hsc);
+	edit_vbox->add_child(uv_main_hsc);
 	uv_main_hsc->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	canvas_background = memnew(Panel);
@@ -1480,7 +1526,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_x->set_max(256);
 	sb_off_x->set_step(1);
 	sb_off_x->set_value(snap_offset.x);
-	sb_off_x->set_suffix("px");
+	sb_off_x->set_format("%s px");
 	sb_off_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_x));
 	sb_off_x->set_accessibility_name(TTRC("Grid Offset X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset X:"), sb_off_x);
@@ -1490,7 +1536,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_off_y->set_max(256);
 	sb_off_y->set_step(1);
 	sb_off_y->set_value(snap_offset.y);
-	sb_off_y->set_suffix("px");
+	sb_off_y->set_format("%s px");
 	sb_off_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_off_y));
 	sb_off_y->set_accessibility_name(TTRC("Grid Offset Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Offset Y:"), sb_off_y);
@@ -1500,7 +1546,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_x->set_max(256);
 	sb_step_x->set_step(1);
 	sb_step_x->set_value(snap_step.x);
-	sb_step_x->set_suffix("px");
+	sb_step_x->set_format("%s px");
 	sb_step_x->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_x));
 	sb_step_x->set_accessibility_name(TTRC("Grid Step X:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step X:"), sb_step_x);
@@ -1510,7 +1556,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	sb_step_y->set_max(256);
 	sb_step_y->set_step(1);
 	sb_step_y->set_value(snap_step.y);
-	sb_step_y->set_suffix("px");
+	sb_step_y->set_format("%s px");
 	sb_step_y->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_set_snap_step_y));
 	sb_step_y->set_accessibility_name(TTRC("Grid Step Y:"));
 	grid_settings_vb->add_margin_child(TTR("Grid Step Y:"), sb_step_y);
@@ -1518,23 +1564,23 @@ Polygon2DEditor::Polygon2DEditor() {
 	zoom_widget = memnew(EditorZoomWidget);
 	canvas->add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
-	zoom_widget->connect("zoom_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(true));
+	zoom_widget->connect("zoom_changed", callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).bind(true).unbind(1));
 	zoom_widget->set_shortcut_context(nullptr);
 
 	vscroll = memnew(VScrollBar);
 	vscroll->set_step(0.001);
 	canvas->add_child(vscroll);
-	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 	hscroll = memnew(HScrollBar);
 	hscroll->set_step(0.001);
 	canvas->add_child(hscroll);
-	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &Polygon2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 
 	bone_scroll_main_vb = memnew(VBoxContainer);
 	bone_scroll_main_vb->set_custom_minimum_size(Size2(150 * EDSCALE, 0));
 	sync_bones = memnew(Button(TTR("Sync Bones to Polygon")));
 	bone_scroll_main_vb->add_child(sync_bones);
-	sync_bones->set_h_size_flags(0);
+	sync_bones->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	sync_bones->connect(SceneStringName(pressed), callable_mp(this, &Polygon2DEditor::_sync_bones));
 	uv_main_hsc->add_child(bone_scroll_main_vb);
 	bone_scroll = memnew(ScrollContainer);
@@ -1554,10 +1600,8 @@ Polygon2DEditor::Polygon2DEditor() {
 	canvas->set_focus_mode(FOCUS_CLICK);
 
 	error = memnew(AcceptDialog);
+	error->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(error);
-
-	dock_button = EditorNode::get_bottom_panel()->add_item(TTRC("Polygon"), polygon_edit, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTR("Toggle Polygon Bottom Panel")));
-	dock_button->hide();
 }
 
 Polygon2DEditorPlugin::Polygon2DEditorPlugin() :

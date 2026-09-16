@@ -33,7 +33,6 @@
 #include "../nav_utils_3d.h"
 
 #include "core/templates/a_hash_map.h"
-
 #include "servers/nav_heap.h"
 #include "servers/navigation_3d/navigation_constants_3d.h"
 #include "servers/navigation_3d/navigation_path_query_parameters_3d.h"

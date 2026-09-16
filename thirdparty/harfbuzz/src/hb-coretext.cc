@@ -84,37 +84,36 @@ _hb_cg_get_table_tags (const hb_face_t *face HB_UNUSED,
   CTFontRef ct_font = create_ct_font (cg_font, (CGFloat) HB_CORETEXT_DEFAULT_FONT_SIZE);
 
   auto arr = CTFontCopyAvailableTables (ct_font, kCTFontTableOptionNoOptions);
+  HB_SCOPE_GUARD (CFRelease (arr));
+  HB_SCOPE_GUARD (CFRelease (ct_font));
 
   unsigned population = (unsigned) CFArrayGetCount (arr);
-  unsigned end_offset;
 
   if (!table_count)
-    goto done;
+    return population;
 
   if (unlikely (start_offset >= population))
   {
     *table_count = 0;
-    goto done;
+    return population;
   }
 
-  end_offset = start_offset + *table_count;
+  unsigned end_offset = start_offset + *table_count;
   if (unlikely (end_offset < start_offset))
   {
     *table_count = 0;
-    goto done;
+    return population;
   }
-  end_offset= hb_min (end_offset, (unsigned) population);
+  end_offset = hb_min (end_offset, (unsigned) population);
 
   *table_count = end_offset - start_offset;
-  for (unsigned i = start_offset; i < end_offset; i++)
-  {
-    CTFontTableTag tag = (CTFontTableTag)(uintptr_t) CFArrayGetValueAtIndex (arr, i);
-    table_tags[i - start_offset] = tag;
-  }
+  if (table_tags)
+    for (unsigned i = start_offset; i < end_offset; i++)
+    {
+      CTFontTableTag tag = (CTFontTableTag)(uintptr_t) CFArrayGetValueAtIndex (arr, i);
+      table_tags[i - start_offset] = tag;
+    }
 
-done:
-  CFRelease (arr);
-  CFRelease (ct_font);
   return population;
 }
 
@@ -448,7 +447,7 @@ hb_coretext_face_create_from_file_or_fail (const char   *file_name,
  * Creates an #hb_face_t face object from the specified
  * blob and face index.
  *
- * This is similar in functionality to hb_face_create_from_blob_or_fail(),
+ * This is similar in functionality to hb_face_create_or_fail(),
  * but uses the CoreText library for loading the font data.
  *
  * Return value: (transfer full): The new face object, or `NULL` if
@@ -525,30 +524,29 @@ hb_coretext_font_create (CTFontRef ct_font)
   CFDictionaryRef variations = CTFontCopyVariation (ct_font);
   if (variations)
   {
+    HB_SCOPE_GUARD (CFRelease (variations));
+
     hb_vector_t<hb_variation_t> vars;
     hb_vector_t<CFTypeRef> keys;
     hb_vector_t<CFTypeRef> values;
 
     CFIndex count = CFDictionaryGetCount (variations);
-    if (unlikely (!vars.alloc_exact (count) || !keys.resize_exact (count) || !values.resize_exact (count)))
-      goto done;
-
-    // Fetch them one by one and collect in a vector of our own.
-    CFDictionaryGetKeysAndValues (variations, keys.arrayZ, values.arrayZ);
-    for (CFIndex i = 0; i < count; i++)
+    if (likely (vars.alloc_exact (count) && keys.resize_exact (count) && values.resize_exact (count)))
     {
-      int tag;
-      float value;
-      CFNumberGetValue ((CFNumberRef) keys.arrayZ[i], kCFNumberIntType, &tag);
-      CFNumberGetValue ((CFNumberRef) values.arrayZ[i], kCFNumberFloatType, &value);
+      // Fetch them one by one and collect in a vector of our own.
+      CFDictionaryGetKeysAndValues (variations, keys.arrayZ, values.arrayZ);
+      for (CFIndex i = 0; i < count; i++)
+      {
+	int tag;
+	float value;
+	CFNumberGetValue ((CFNumberRef) keys.arrayZ[i], kCFNumberIntType, &tag);
+	CFNumberGetValue ((CFNumberRef) values.arrayZ[i], kCFNumberFloatType, &value);
 
-      hb_variation_t var = {tag, value};
-      vars.push (var);
+	hb_variation_t var = {tag, value};
+	vars.push (var);
+      }
+      hb_font_set_variations (font, vars.arrayZ, vars.length);
     }
-    hb_font_set_variations (font, vars.arrayZ, vars.length);
-
-done:
-    CFRelease (variations);
   }
 
   /* Let there be dragons here... */

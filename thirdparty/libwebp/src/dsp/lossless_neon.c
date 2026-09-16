@@ -19,6 +19,7 @@
 
 #include "src/dsp/lossless.h"
 #include "src/dsp/neon.h"
+#include "src/webp/format_constants.h"
 
 //------------------------------------------------------------------------------
 // Colorspace conversion functions
@@ -551,15 +552,15 @@ static void TransformColorInverse_NEON(const VP8LMultipliers* const m,
 // sign-extended multiplying constants, pre-shifted by 6.
 #define CST(X)  (((int16_t)(m->X << 8)) >> 6)
   const int16_t rb[8] = {
-    CST(green_to_blue_), CST(green_to_red_),
-    CST(green_to_blue_), CST(green_to_red_),
-    CST(green_to_blue_), CST(green_to_red_),
-    CST(green_to_blue_), CST(green_to_red_)
+    CST(green_to_blue), CST(green_to_red),
+    CST(green_to_blue), CST(green_to_red),
+    CST(green_to_blue), CST(green_to_red),
+    CST(green_to_blue), CST(green_to_red)
   };
   const int16x8_t mults_rb = vld1q_s16(rb);
   const int16_t b2[8] = {
-    0, CST(red_to_blue_), 0, CST(red_to_blue_),
-    0, CST(red_to_blue_), 0, CST(red_to_blue_),
+    0, CST(red_to_blue), 0, CST(red_to_blue),
+    0, CST(red_to_blue), 0, CST(red_to_blue),
   };
   const int16x8_t mults_b2 = vld1q_s16(b2);
 #undef CST

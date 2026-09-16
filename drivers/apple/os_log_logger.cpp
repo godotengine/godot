@@ -31,9 +31,10 @@
 #include "os_log_logger.h"
 
 #include "core/object/script_backtrace.h"
+#include "core/os/memory.h"
 #include "core/string/print_string.h"
 
-#include <cstdlib> // For malloc/free
+#include <cstdio> // For vsnprintf.
 
 OsLogLogger::OsLogLogger(const char *p_subsystem) {
 	const char *subsystem = p_subsystem;

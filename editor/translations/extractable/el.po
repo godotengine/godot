@@ -18,9 +18,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1-dev\n"
 
-msgid "All Recognized"
-msgstr "Όλα τα αναγνωρισμένα"
-
 msgid "Save"
 msgstr "Αποθήκευση"
 
@@ -41,6 +38,9 @@ msgstr "Επιλογή τρέχοντα φακέλου"
 
 msgid "Select This Folder"
 msgstr "Επιλογή αυτού του φακέλου"
+
+msgid "All Recognized"
+msgstr "Όλα τα αναγνωρισμένα"
 
 msgid "Open a File"
 msgstr "Άνοιγμα αρχείου"

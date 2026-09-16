@@ -73,7 +73,7 @@ public:
 
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
 #endif
-	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
+	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true) override;
 
 	void set_position(const Point2 &p_pos);
 	void set_rotation(real_t p_radians);
@@ -111,10 +111,10 @@ public:
 	void look_at(const Vector2 &p_pos);
 	real_t get_angle_to(const Vector2 &p_pos) const;
 
-	Point2 to_local(Point2 p_global) const;
-	Point2 to_global(Point2 p_local) const;
+	Point2 to_local(const Point2 &p_global) const;
+	Point2 to_global(const Point2 &p_local) const;
 
-	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
+	Transform2D get_relative_transform_to_parent(RequiredParam<const Node> p_parent) const;
 
 	Transform2D get_transform() const override;
 

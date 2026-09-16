@@ -31,8 +31,8 @@
 #include "core/string/ustring.h"
 
 #import <UIKit/UIKit.h>
-
 #include <unistd.h>
+
 #include <cstdio>
 
 void change_to_launch_dir(char **p_args) {
@@ -50,19 +50,6 @@ void change_to_launch_dir(char **p_args) {
 		path[len] = 0;
 		chdir(path);
 	}
-}
-
-int add_path(int p_argc, char **p_args) {
-	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
-	if (!str) {
-		return p_argc;
-	}
-
-	p_args[p_argc++] = (char *)"--path";
-	p_args[p_argc++] = (char *)[str cStringUsingEncoding:NSUTF8StringEncoding];
-	p_args[p_argc] = nullptr;
-
-	return p_argc;
 }
 
 int add_cmdline(int p_argc, char **p_args) {
@@ -89,7 +76,6 @@ int process_args(int p_argc, char **p_args, char **r_args) {
 		r_args[i] = p_args[i];
 	}
 	r_args[p_argc] = nullptr;
-	p_argc = add_path(p_argc, r_args);
 	p_argc = add_cmdline(p_argc, r_args);
 	return p_argc;
 }

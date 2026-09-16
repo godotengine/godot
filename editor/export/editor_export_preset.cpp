@@ -29,9 +29,12 @@
 /**************************************************************************/
 
 #include "editor_export_preset.h"
+#include "editor_export_preset.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "editor/export/editor_export.h"
 #include "editor/settings/editor_settings.h"
 
@@ -108,11 +111,12 @@ void EditorExportPreset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_features"), &EditorExportPreset::get_custom_features);
 	ClassDB::bind_method(D_METHOD("get_patches"), &EditorExportPreset::get_patches);
 	ClassDB::bind_method(D_METHOD("get_export_path"), &EditorExportPreset::get_export_path);
-	ClassDB::bind_method(D_METHOD("get_encryption_in_filter"), &EditorExportPreset::get_enc_in_filter);
-	ClassDB::bind_method(D_METHOD("get_encryption_ex_filter"), &EditorExportPreset::get_enc_ex_filter);
+	ClassDB::bind_method(D_METHOD("get_encryption_in_filter"), &EditorExportPreset::get_enc_in_filters_str);
+	ClassDB::bind_method(D_METHOD("get_encryption_ex_filter"), &EditorExportPreset::get_enc_ex_filters_str);
 	ClassDB::bind_method(D_METHOD("get_encrypt_pck"), &EditorExportPreset::get_enc_pck);
 	ClassDB::bind_method(D_METHOD("get_encrypt_directory"), &EditorExportPreset::get_enc_directory);
 	ClassDB::bind_method(D_METHOD("get_encryption_key"), &EditorExportPreset::get_script_encryption_key);
+	ClassDB::bind_method(D_METHOD("resolve_encryption_key"), &EditorExportPreset::resolve_script_encryption_key);
 	ClassDB::bind_method(D_METHOD("get_script_export_mode"), &EditorExportPreset::get_script_export_mode);
 
 	ClassDB::bind_method(D_METHOD("get_or_env", "name", "env_var"), &EditorExportPreset::_get_or_env);
@@ -258,6 +262,14 @@ Vector<String> EditorExportPreset::get_files_to_export() const {
 	return files;
 }
 
+HashSet<String> EditorExportPreset::get_selected_files() const {
+	return HashSet<String>(selected_files);
+}
+
+void EditorExportPreset::set_selected_files(const HashSet<String> &p_files) {
+	selected_files = p_files;
+}
+
 Dictionary EditorExportPreset::get_customized_files() const {
 	Dictionary files;
 	for (const KeyValue<String, FileExportMode> &E : customized_files) {
@@ -310,17 +322,28 @@ String EditorExportPreset::get_name() const {
 }
 
 void EditorExportPreset::set_runnable(bool p_enable) {
-	runnable = p_enable;
-	EditorExport::singleton->emit_presets_runnable_changed();
-	EditorExport::singleton->save_presets();
+	if (p_enable) {
+		EditorExport::singleton->set_runnable_preset(this);
+	} else {
+		EditorExport::singleton->unset_runnable_preset(this);
+	}
 }
 
 bool EditorExportPreset::is_runnable() const {
-	return runnable;
+	return EditorExport::singleton->get_runnable_preset_for_platform(platform).ptr() == this;
 }
 
 bool EditorExportPreset::are_advanced_options_enabled() const {
-	return EDITOR_GET("_export_preset_advanced_mode");
+	return options_search_active || EDITOR_GET("_export_preset_advanced_mode");
+}
+
+void EditorExportPreset::set_options_search_active(bool p_active) {
+	if (options_search_active == p_active) {
+		return;
+	}
+
+	options_search_active = p_active;
+	notify_property_list_changed();
 }
 
 void EditorExportPreset::set_dedicated_server(bool p_enable) {
@@ -495,21 +518,47 @@ String EditorExportPreset::get_custom_features() const {
 	return custom_features;
 }
 
-void EditorExportPreset::set_enc_in_filter(const String &p_filter) {
-	enc_in_filters = p_filter;
+void EditorExportPreset::set_enc_in_filters_str(const String &p_filter) {
+	enc_in_filters_str = p_filter;
+
+	enc_in_filters.clear();
+	for (const String &filter : enc_in_filters_str.split(",")) {
+		String stripped_filter = filter.strip_edges();
+		if (!stripped_filter.is_empty()) {
+			enc_in_filters.push_back(stripped_filter);
+		}
+	}
+
 	EditorExport::singleton->save_presets();
 }
 
-String EditorExportPreset::get_enc_in_filter() const {
+String EditorExportPreset::get_enc_in_filters_str() const {
+	return enc_in_filters_str;
+}
+
+Vector<String> EditorExportPreset::get_enc_in_filters() const {
 	return enc_in_filters;
 }
 
-void EditorExportPreset::set_enc_ex_filter(const String &p_filter) {
-	enc_ex_filters = p_filter;
+void EditorExportPreset::set_enc_ex_filters_str(const String &p_filter) {
+	enc_ex_filters_str = p_filter;
+
+	enc_ex_filters.clear();
+	for (const String &filter : enc_ex_filters_str.split(",")) {
+		String stripped_filter = filter.strip_edges();
+		if (!stripped_filter.is_empty()) {
+			enc_ex_filters.push_back(stripped_filter);
+		}
+	}
+
 	EditorExport::singleton->save_presets();
 }
 
-String EditorExportPreset::get_enc_ex_filter() const {
+String EditorExportPreset::get_enc_ex_filters_str() const {
+	return enc_ex_filters_str;
+}
+
+Vector<String> EditorExportPreset::get_enc_ex_filters() const {
 	return enc_ex_filters;
 }
 
@@ -542,6 +591,7 @@ bool EditorExportPreset::get_enc_directory() const {
 
 void EditorExportPreset::set_script_encryption_key(const String &p_key) {
 	script_key = p_key;
+	is_script_key_resolved = false;
 	EditorExport::singleton->save_presets();
 }
 
@@ -549,12 +599,58 @@ String EditorExportPreset::get_script_encryption_key() const {
 	return script_key;
 }
 
-void EditorExportPreset::set_script_export_mode(int p_mode) {
+Vector<uint8_t> EditorExportPreset::resolve_script_encryption_key() {
+	if (is_script_key_resolved) {
+		return script_key_resolved;
+	}
+
+	String key;
+	const String from_env = OS::get_singleton()->get_environment(ENV_SCRIPT_ENCRYPTION_KEY);
+	if (!from_env.is_empty()) {
+		key = from_env.to_lower();
+	} else {
+		key = script_key.to_lower();
+	}
+
+	script_key_resolved.clear();
+	if (key.length() == 64) {
+		script_key_resolved.resize(32);
+		for (int i = 0; i < 32; i++) {
+			int v = 0;
+			if (i * 2 < key.length()) {
+				char32_t ct = key[i * 2];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct << 4;
+			}
+
+			if (i * 2 + 1 < key.length()) {
+				char32_t ct = key[i * 2 + 1];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct;
+			}
+			script_key_resolved.write[i] = v;
+		}
+	}
+
+	is_script_key_resolved = true;
+
+	return script_key_resolved;
+}
+
+void EditorExportPreset::set_script_export_mode(ScriptExportMode p_mode) {
 	script_mode = p_mode;
 	EditorExport::singleton->save_presets();
 }
 
-int EditorExportPreset::get_script_export_mode() const {
+EditorExportPreset::ScriptExportMode EditorExportPreset::get_script_export_mode() const {
 	return script_mode;
 }
 
@@ -587,10 +683,14 @@ String EditorExportPreset::get_version(const StringName &p_preset_string, bool p
 		// Split and validate version number components.
 		const PackedStringArray result_split = result.split(".", false);
 		bool valid_version = !result_split.is_empty();
-		for (const String &E : result_split) {
-			if (!_check_digits(E)) {
-				valid_version = false;
-				break;
+
+		// Android supports non-numeric characters for version name.
+		if (!platform->is_class("EditorExportPlatformAndroid")) {
+			for (const String &E : result_split) {
+				if (!_check_digits(E)) {
+					valid_version = false;
+					break;
+				}
 			}
 		}
 

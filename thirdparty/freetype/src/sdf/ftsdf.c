@@ -4,7 +4,7 @@
  *
  *   Signed Distance Field support for outline fonts (body).
  *
- * Copyright (C) 2020-2025 by
+ * Copyright (C) 2020-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * Written by Anuj Verma.
@@ -3281,8 +3281,12 @@
       goto Exit;
     }
 
-    if ( FT_ALLOC( dists,
-                   bitmap->width * bitmap->rows * sizeof ( *dists ) ) )
+    if ( bitmap->rows > FT_INT_MAX / bitmap->width )
+    {
+      error = FT_THROW( Array_Too_Large );
+      goto Exit;
+    }
+    if ( FT_NEW_ARRAY( dists, bitmap->rows * bitmap->width ) )
       goto Exit;
 
     contours = shape->contours;
@@ -3597,13 +3601,11 @@
     }
 
     /* allocate the bitmaps to generate SDF for separate contours */
-    if ( FT_ALLOC( bitmaps,
-                   (FT_UInt)num_contours * sizeof ( *bitmaps ) ) )
+    if ( FT_NEW_ARRAY( bitmaps, num_contours ) )
       goto Exit;
 
     /* allocate array to hold orientation for all contours */
-    if ( FT_ALLOC( orientations,
-                   (FT_UInt)num_contours * sizeof ( *orientations ) ) )
+    if ( FT_NEW_ARRAY( orientations, num_contours ) )
       goto Exit;
 
     contour = shape->contours;
@@ -3621,8 +3623,7 @@
       bitmaps[i].pixel_mode = bitmap->pixel_mode;
 
       /* allocate memory for the buffer */
-      if ( FT_ALLOC( bitmaps[i].buffer,
-                     bitmap->rows * (FT_UInt)bitmap->pitch ) )
+      if ( FT_ALLOC_MULT( bitmaps[i].buffer, bitmap->rows, bitmap->pitch ) )
         goto Exit;
 
       /* determine the orientation */

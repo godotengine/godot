@@ -39,7 +39,7 @@ class FogVolume : public VisualInstance3D {
 
 	Vector3 size = Vector3(2, 2, 2);
 	Ref<Material> material;
-	RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
+	RSE::FogVolumeShape shape = RSE::FOG_VOLUME_SHAPE_BOX;
 
 	RID volume;
 
@@ -56,8 +56,8 @@ public:
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
 
-	void set_shape(RS::FogVolumeShape p_type);
-	RS::FogVolumeShape get_shape() const;
+	void set_shape(RSE::FogVolumeShape p_type);
+	RSE::FogVolumeShape get_shape() const;
 
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;

@@ -33,6 +33,8 @@
 
 #include "../gltf_state.h"
 
+#include "core/object/class_db.h"
+
 void GLTFAccessor::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(TYPE_VEC2);

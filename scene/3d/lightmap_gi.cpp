@@ -30,18 +30,33 @@
 
 #include "lightmap_gi.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/delaunay_3d.h"
+#include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "core/object/object.h"
+#include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
+#include "servers/rendering/rendering_server.h"
 
-#include "modules/modules_enabled.gen.h" // For lightmapper_rd.
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For lightmapper_rd.
+
+#ifdef MODULE_LIGHTMAPPER_RD_ENABLED
+#include "servers/display/display_server.h"
+#endif
+
+#if defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+#include "core/os/os.h"
+#endif
 
 void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
 	User user;
@@ -212,11 +227,15 @@ bool LightmapGIData::_is_using_packed_directional() const {
 }
 
 void LightmapGIData::update_shadowmask_mode(ShadowmaskMode p_mode) {
-	RS::get_singleton()->lightmap_set_shadowmask_mode(lightmap, (RS::ShadowmaskMode)p_mode);
+	RS::get_singleton()->lightmap_set_shadowmask_mode(lightmap, (RSE::ShadowmaskMode)p_mode);
 }
 
 LightmapGIData::ShadowmaskMode LightmapGIData::get_shadowmask_mode() const {
 	return (ShadowmaskMode)RS::get_singleton()->lightmap_get_shadowmask_mode(lightmap);
+}
+
+void LightmapGIData::update_specular_intensity(float p_intensity) {
+	RS::get_singleton()->lightmap_set_specular_intensity(lightmap, p_intensity);
 }
 
 void LightmapGIData::set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure, uint32_t p_lightprobe_hash) {
@@ -361,7 +380,7 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_light_textures_data", "data"), &LightmapGIData::_set_light_textures_data);
 	ClassDB::bind_method(D_METHOD("_get_light_textures_data"), &LightmapGIData::_get_light_textures_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, "TextureLayered", PROPERTY_USAGE_NONE), "set_light_texture", "get_light_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_texture", PROPERTY_HINT_RESOURCE_TYPE, TextureLayered::get_class_static(), PROPERTY_USAGE_NONE), "set_light_texture", "get_light_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "light_textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "_set_light_textures_data", "_get_light_textures_data");
 #endif
 
@@ -827,8 +846,9 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 	const int slice_count = images.size();
 	const int slice_width = images[0]->get_width();
 	const int slice_height = images[0]->get_height();
+	const int slice_pixels = slice_width * slice_height;
 
-	const int slices_per_texture = Image::MAX_HEIGHT / slice_height;
+	const int slices_per_texture = Image::MAX_PIXELS / slice_pixels;
 	const int texture_count = Math::ceil(slice_count / (float)slices_per_texture);
 	const int last_count = slice_count % slices_per_texture;
 
@@ -891,6 +911,155 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 	}
 
 	return LightmapGI::BAKE_ERROR_OK;
+}
+
+void LightmapGI::_build_area_light_texture_atlas(const Vector<LightmapGI::LightsFound> &lights_found, HashMap<Ref<Texture2D>, AreaLightAtlasTexture> &r_textures, Size2i &r_atlas_size, int &r_mipmaps) const {
+	if (RenderingServer::get_singleton()->get_current_rendering_method() != "gl_compatibility") { // area light textures unsupported in compat
+		r_mipmaps = 8;
+		r_atlas_size = Size2i(pow(2, r_mipmaps), pow(2, r_mipmaps));
+
+		for (int i = 0; i < lights_found.size(); i++) {
+			Light3D *light = lights_found[i].light;
+			if (Object::cast_to<AreaLight3D>(light)) {
+				AreaLight3D *l = Object::cast_to<AreaLight3D>(light);
+				if (l->get_area_texture().is_valid() && !r_textures.has(l->get_area_texture())) {
+					r_textures[l->get_area_texture()] = AreaLightAtlasTexture();
+				}
+			}
+		}
+	}
+
+	if (r_textures.size() == 0) {
+		r_mipmaps = 1;
+		r_atlas_size = Size2i(1, 1);
+		return;
+	}
+
+	struct SortItem {
+		Ref<Texture2D> texture;
+		Size2i pixel_size;
+		Size2i size;
+		Point2i pos;
+
+		bool operator<(const SortItem &p_item) const {
+			//sort larger to smaller
+			if (size.height == p_item.size.height) {
+				return size.width > p_item.size.width;
+			} else {
+				return size.height > p_item.size.height;
+			}
+		}
+	};
+
+	//generate atlas
+	Vector<SortItem> itemsv;
+	itemsv.resize(r_textures.size());
+	uint32_t base_size = 1;
+
+	int idx = 0;
+	int border = 1 << (r_mipmaps - 1);
+
+	for (const KeyValue<Ref<Texture2D>, AreaLightAtlasTexture> &E : r_textures) {
+		Ref<Texture2D> tex = E.key;
+		Size2i tex_size = Size2i(tex->get_width(), tex->get_height());
+
+		SortItem &si = itemsv.write[idx];
+
+		Vector2i b_size = Vector2i(Math::ceil(float(tex_size.width) / border), Math::ceil(float(tex_size.height) / border));
+		si.size.width = b_size.width + 1;
+		si.size.height = b_size.height + 1;
+		si.pixel_size = b_size * border; // components are either small powers of 2 or N * border
+		if (tex_size.width < border) {
+			si.pixel_size.width = Math::nearest_power_of_2_templated(tex_size.width);
+		}
+		if (tex_size.height < border) {
+			si.pixel_size.height = Math::nearest_power_of_2_templated(tex_size.height);
+		}
+
+		if (base_size < (uint32_t)si.size.width) {
+			base_size = Math::nearest_power_of_2_templated(si.size.width);
+		}
+
+		si.texture = tex;
+		idx++;
+	}
+
+	//sort items by size
+	itemsv.sort();
+
+	//attempt to create atlas
+	int item_count = itemsv.size();
+	SortItem *items = itemsv.ptrw();
+
+	int atlas_height = 0;
+
+	while (true) {
+		Vector<int> v_offsetsv;
+		v_offsetsv.resize(base_size);
+
+		int *v_offsets = v_offsetsv.ptrw();
+		memset(v_offsets, 0, sizeof(int) * base_size);
+
+		int max_height = 0;
+
+		for (int i = 0; i < item_count; i++) {
+			//best fit
+			SortItem &si = items[i];
+			int best_idx = -1;
+			int best_height = 0x7FFFFFFF;
+			for (uint32_t j = 0; j <= base_size - si.size.width; j++) {
+				int height = 0;
+				for (int k = 0; k < si.size.width; k++) {
+					int h = v_offsets[k + j];
+					if (h > height) {
+						height = h;
+						if (height > best_height) {
+							break; //already bad
+						}
+					}
+				}
+
+				if (height < best_height) {
+					best_height = height;
+					best_idx = j;
+				}
+			}
+
+			//update
+			for (int k = 0; k < si.size.width; k++) {
+				v_offsets[k + best_idx] = best_height + si.size.height;
+			}
+
+			si.pos.x = best_idx;
+			si.pos.y = best_height;
+
+			if (si.pos.y + si.size.height > max_height) {
+				max_height = si.pos.y + si.size.height;
+			}
+		}
+
+		if ((uint32_t)max_height <= base_size * 2) {
+			atlas_height = max_height;
+			break; //good ratio, break;
+		}
+
+		base_size *= 2;
+	}
+
+	r_atlas_size.width = base_size * border;
+	r_atlas_size.height = Math::nearest_power_of_2_templated(atlas_height * border);
+
+	for (int i = 0; i < item_count; i++) {
+		Rect2 uv_rect;
+		uv_rect.position = items[i].pos * border;
+		uv_rect.size = items[i].pixel_size;
+
+		uv_rect.position /= Size2(r_atlas_size);
+		uv_rect.size /= Size2(r_atlas_size);
+		r_textures[items[i].texture].texture_rect = uv_rect;
+		float max_mipmap = MIN(Math::floor(Math::log2(MAX(MIN(items[i].pixel_size.x, items[i].pixel_size.y), 1.0f))), r_mipmaps) - 1.0f;
+		r_textures[items[i].texture].max_mipmap = max_mipmap;
+	}
 }
 
 LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
@@ -961,8 +1130,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			ERR_FAIL_COND_V(images.is_empty(), BAKE_ERROR_CANT_CREATE_IMAGE);
 
-			Ref<Image> albedo = images[RS::BAKE_CHANNEL_ALBEDO_ALPHA];
-			Ref<Image> orm = images[RS::BAKE_CHANNEL_ORM];
+			Ref<Image> albedo = images[RSE::BAKE_CHANNEL_ALBEDO_ALPHA];
+			Ref<Image> orm = images[RSE::BAKE_CHANNEL_ORM];
 
 			//multiply albedo by metal
 
@@ -1005,7 +1174,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				md.albedo_on_uv2->set_data(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
 			}
 
-			md.emission_on_uv2 = images[RS::BAKE_CHANNEL_EMISSION];
+			md.emission_on_uv2 = images[RSE::BAKE_CHANNEL_EMISSION];
 			if (md.emission_on_uv2->get_format() != Image::FORMAT_RGBAH) {
 				md.emission_on_uv2->convert(Image::FORMAT_RGBAH);
 			}
@@ -1124,10 +1293,11 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		GenProbesOctree octree;
 		octree.size = subdiv;
 
-		for (int i = 0; i < mesh_data.size(); i++) {
+		const int mesh_data_size = mesh_data.size();
+		for (int i = 0; i < mesh_data_size; i++) {
 			if (p_bake_step) {
-				float p = (float)(i) / mesh_data.size();
-				p_bake_step(0.3 + p * 0.1, vformat(RTR("Creating probes from mesh %d/%d"), i, mesh_data.size()), p_bake_userdata, false);
+				float p = (float)(i) / mesh_data_size;
+				p_bake_step(0.3 + p * 0.1, vformat(RTR("Creating probes from mesh %d/%d"), i, mesh_data_size), p_bake_userdata, false);
 			}
 
 			for (int j = 0; j < mesh_data[i].points.size(); j += 3) {
@@ -1173,6 +1343,24 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	}
 
 	{
+		Size2i area_light_atlas_size;
+		int area_light_atlas_mipmaps = 1;
+		HashMap<Ref<Texture2D>, AreaLightAtlasTexture> area_light_atlas_textures;
+		PackedByteArray area_light_atlas_data;
+		_build_area_light_texture_atlas(lights_found, area_light_atlas_textures, area_light_atlas_size, area_light_atlas_mipmaps);
+		if (area_light_atlas_textures.size() > 0) {
+			TypedArray<RID> area_light_textures;
+			TypedArray<Rect2> area_light_texture_rects;
+			for (const KeyValue<Ref<Texture2D>, AreaLightAtlasTexture> &E : area_light_atlas_textures) {
+				area_light_textures.push_back(E.key->get_rid());
+				area_light_texture_rects.push_back(E.value.texture_rect);
+			}
+			area_light_atlas_data = RS::get_singleton()->bake_render_area_light_atlas(area_light_textures, area_light_texture_rects, area_light_atlas_size, area_light_atlas_mipmaps);
+		} else {
+			area_light_atlas_data.resize_initialized(4); // 1 pixel
+		}
+		lightmapper->add_area_light_atlas(area_light_atlas_size, area_light_atlas_mipmaps, area_light_atlas_data);
+
 		for (int i = 0; i < mesh_data.size(); i++) {
 			lightmapper->add_mesh(mesh_data[i]);
 		}
@@ -1193,6 +1381,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			if (use_physical_light_units) {
 				energy *= light->get_param(Light3D::PARAM_INTENSITY);
 				linear_color *= light->get_correlated_color().srgb_to_linear();
+				energy *= 1.0 / Math::PI;
 			}
 
 			if (Object::cast_to<DirectionalLight3D>(light)) {
@@ -1212,6 +1401,22 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					energy *= (1.0 / Math::PI);
 				}
 				lightmapper->add_spot_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SPOT_ANGLE), l->get_param(Light3D::PARAM_SPOT_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
+			} else if (Object::cast_to<AreaLight3D>(light)) {
+				AreaLight3D *l = Object::cast_to<AreaLight3D>(light);
+				if (use_physical_light_units) {
+					energy *= (1.0 / Math::PI * 2.0);
+				}
+				Vector3 area_vec_x = xf.basis.get_column(Vector3::AXIS_X).normalized() * l->get_area_size().x;
+				Vector3 area_vec_y = xf.basis.get_column(Vector3::AXIS_Y).normalized() * l->get_area_size().y;
+				if (l->is_area_normalizing_energy()) {
+					float surface_area = l->get_area_size().x * l->get_area_size().y;
+					energy /= surface_area;
+				}
+				AreaLightAtlasTexture tex;
+				if (l->get_area_texture().is_valid()) {
+					tex = area_light_atlas_textures[l->get_area_texture()];
+				}
+				lightmapper->add_area_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), area_vec_x, area_vec_y, l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR), tex.texture_rect, tex.max_mipmap);
 			}
 		}
 		for (int i = 0; i < probes_found.size(); i++) {
@@ -1602,6 +1807,7 @@ void LightmapGI::set_light_data(const Ref<LightmapGIData> &p_data) {
 			_assign_lightmaps();
 		}
 		light_data->update_shadowmask_mode(shadowmask_mode);
+		light_data->update_specular_intensity(specular_intensity);
 	}
 
 	update_gizmos();
@@ -1650,6 +1856,8 @@ int LightmapGI::get_denoiser_range() const {
 
 void LightmapGI::set_directional(bool p_enable) {
 	directional = p_enable;
+
+	notify_property_list_changed();
 }
 
 bool LightmapGI::is_directional() const {
@@ -1800,6 +2008,18 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+float LightmapGI::get_specular_intensity() const {
+	return specular_intensity;
+}
+
+void LightmapGI::set_specular_intensity(float p_strength) {
+	specular_intensity = p_strength;
+
+	if (light_data.is_valid()) {
+		light_data->update_specular_intensity(p_strength);
+	}
+}
+
 PackedStringArray LightmapGI::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
@@ -1826,23 +2046,35 @@ void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "supersampling_factor" && !supersampling_enabled) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "supersampling_factor") {
+		if (!supersampling_enabled) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "environment_custom_sky") {
+		if (environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "environment_custom_color") {
+		if (environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "environment_custom_energy") {
+		if (environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "denoiser_strength") {
+		if (!use_denoiser) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	} else if (p_property.name == "denoiser_range") {
+		if (!use_denoiser) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
-	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "denoiser_strength" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if (p_property.name == "denoiser_range" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "specular_intensity") {
+		if (!directional) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
 	}
 }
 
@@ -1913,6 +2145,9 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &LightmapGI::set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &LightmapGI::get_camera_attributes);
 
+	ClassDB::bind_method(D_METHOD("set_specular_intensity", "specular_intensity"), &LightmapGI::set_specular_intensity);
+	ClassDB::bind_method(D_METHOD("get_specular_intensity"), &LightmapGI::get_specular_intensity);
+
 	//	ClassDB::bind_method(D_METHOD("bake", "from_node"), &LightmapGI::bake, DEFVAL(Variant()));
 
 	ADD_GROUP("Tweaks", "");
@@ -1922,6 +2157,7 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounces", PROPERTY_HINT_RANGE, "0,6,1,or_greater"), "set_bounces", "get_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce_indirect_energy", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_bounce_indirect_energy", "get_bounce_indirect_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional"), "set_directional", "is_directional");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "specular_intensity", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_specular_intensity", "get_specular_intensity");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadowmask_mode", PROPERTY_HINT_ENUM, "None,Replace,Overlay"), "set_shadowmask_mode", "get_shadowmask_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_texture_for_bounces"), "set_use_texture_for_bounces", "is_using_texture_for_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
@@ -1933,14 +2169,15 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_texture_size", PROPERTY_HINT_RANGE, "2048,16384,1"), "set_max_texture_size", "get_max_texture_size");
 	ADD_GROUP("Environment", "environment_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "environment_mode", PROPERTY_HINT_ENUM, "Disabled,Scene,Custom Sky,Custom Color"), "set_environment_mode", "get_environment_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment_custom_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_environment_custom_sky", "get_environment_custom_sky");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment_custom_sky", PROPERTY_HINT_RESOURCE_TYPE, Sky::get_class_static()), "set_environment_custom_sky", "get_environment_custom_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "environment_custom_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_environment_custom_color", "get_environment_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "environment_custom_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_environment_custom_energy", "get_environment_custom_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
+
 	ADD_GROUP("Gen Probes", "generate_probes_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "generate_probes_subdiv", PROPERTY_HINT_ENUM, "Disabled,4,8,16,32"), "set_generate_probes", "get_generate_probes");
 	ADD_GROUP("Data", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, "LightmapGIData"), "set_light_data", "get_light_data");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_data", PROPERTY_HINT_RESOURCE_TYPE, LightmapGIData::get_class_static()), "set_light_data", "get_light_data");
 
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(BAKE_QUALITY_MEDIUM);

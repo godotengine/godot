@@ -29,10 +29,14 @@
 /**************************************************************************/
 
 #include "openxr_spatial_entity_extension.h"
+#include "openxr_spatial_entity_extension.compat.inc"
 
 #include "../../openxr_api.h"
+#include "../../openxr_util.h"
+
 #include "core/config/project_settings.h"
-#include "servers/xr/xr_server.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 
 ////////////////////////////////////////////////////////////////////////////
 // OpenXRSpatialEntityExtension
@@ -47,7 +51,7 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("supports_capability", "capability"), &OpenXRSpatialEntityExtension::_supports_capability);
 	ClassDB::bind_method(D_METHOD("supports_component_type", "capability", "component_type"), &OpenXRSpatialEntityExtension::_supports_component_type);
 
-	ClassDB::bind_method(D_METHOD("create_spatial_context", "capability_configurations", "next", "user_callback"), &OpenXRSpatialEntityExtension::create_spatial_context, DEFVAL(Variant()), DEFVAL(Callable()));
+	ClassDB::bind_method(D_METHOD("create_spatial_context", "capability_configurations", "next", "user_callback", "failed_callback"), &OpenXRSpatialEntityExtension::create_spatial_context, DEFVAL(Variant()), DEFVAL(Callable()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("get_spatial_context_ready", "spatial_context"), &OpenXRSpatialEntityExtension::get_spatial_context_ready);
 	ClassDB::bind_method(D_METHOD("free_spatial_context", "spatial_context"), &OpenXRSpatialEntityExtension::free_spatial_context);
 	ClassDB::bind_method(D_METHOD("get_spatial_context_handle", "spatial_context"), &OpenXRSpatialEntityExtension::_get_spatial_context_handle);
@@ -55,6 +59,7 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("spatial_discovery_recommended", PropertyInfo(Variant::RID, "spatial_context")));
 
 	// Component_types should be an int array typed to ComponentType(XrSpatialComponentTypeEXT), but we currently don't support that.
+	ClassDB::bind_method(D_METHOD("discover_spatial_entities_with_component_data", "spatial_context", "component_data", "next", "user_callback"), &OpenXRSpatialEntityExtension::discover_spatial_entities_with_component_data, DEFVAL(Variant()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("discover_spatial_entities", "spatial_context", "component_types", "next", "user_callback"), &OpenXRSpatialEntityExtension::_discover_spatial_entities, DEFVAL(Variant()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("update_spatial_entities", "spatial_context", "entities", "component_types", "next"), &OpenXRSpatialEntityExtension::_update_spatial_entities, DEFVAL(Variant()));
 
@@ -96,6 +101,13 @@ void OpenXRSpatialEntityExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_MARKER);
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_ANCHOR);
 	BIND_ENUM_CONSTANT(COMPONENT_TYPE_PERSISTENCE);
+
+	BIND_ENUM_CONSTANT(TRACKING_UNSUPPORTED_CAPABILITY);
+	BIND_ENUM_CONSTANT(TRACKING_NO_PERMISSION);
+	BIND_ENUM_CONSTANT(TRACKING_SETUP_FAILED);
+	BIND_ENUM_CONSTANT(TRACKING_NOT_ACTIVE);
+	BIND_ENUM_CONSTANT(TRACKING_SETTING_UP);
+	BIND_ENUM_CONSTANT(TRACKING_ENABLED);
 }
 
 OpenXRSpatialEntityExtension::OpenXRSpatialEntityExtension() {
@@ -365,7 +377,7 @@ bool OpenXRSpatialEntityExtension::on_event_polled(const XrEventDataBuffer &even
 ////////////////////////////////////////////////////////////////////////////
 // Spatial contexts
 
-Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::create_spatial_context(const TypedArray<OpenXRSpatialCapabilityConfigurationBaseHeader> &p_capability_configurations, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback) {
+Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::create_spatial_context(const TypedArray<OpenXRSpatialCapabilityConfigurationBaseHeader> &p_capability_configurations, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback, const Callable &p_failure_callback) {
 	if (!get_active()) {
 		return nullptr;
 	}
@@ -406,12 +418,12 @@ Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::create_spatial_context(con
 	}
 
 	// Create our future result
-	Ref<OpenXRFutureResult> future_result = future_api->register_future(future, callable_mp(this, &OpenXRSpatialEntityExtension::_on_context_creation_ready).bind(p_user_callback));
+	Ref<OpenXRFutureResult> future_result = future_api->register_future(future, callable_mp(this, &OpenXRSpatialEntityExtension::_on_context_creation_ready).bind(p_user_callback, p_failure_callback));
 
 	return future_result;
 }
 
-void OpenXRSpatialEntityExtension::_on_context_creation_ready(Ref<OpenXRFutureResult> p_future_result, const Callable &p_user_callback) {
+void OpenXRSpatialEntityExtension::_on_context_creation_ready(Ref<OpenXRFutureResult> p_future_result, const Callable &p_user_callback, const Callable &p_failure_callback) {
 	// Complete context creation...
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 	ERR_FAIL_NULL(openxr_api);
@@ -424,10 +436,18 @@ void OpenXRSpatialEntityExtension::_on_context_creation_ready(Ref<OpenXRFutureRe
 	};
 	XrResult result = xrCreateSpatialContextCompleteEXT(openxr_api->get_session(), p_future_result->get_future(), &completion);
 	if (XR_FAILED(result)) { // Did our xrCreateSpatialContextCompleteEXT call fail?
+		if (p_failure_callback.is_valid()) {
+			p_failure_callback.call(int(result), false);
+		}
+
 		// Log issue and fail.
 		ERR_FAIL_MSG("OpenXR: Failed to complete spatial context create future [" + openxr_api->get_error_string(result) + "]");
 	}
 	if (XR_FAILED(completion.futureResult)) { // Did our completion fail?
+		if (p_failure_callback.is_valid()) {
+			p_failure_callback.call(int(completion.futureResult), true);
+		}
+
 		// Log issue and fail.
 		ERR_FAIL_MSG("OpenXR: Failed to complete spatial context creation [" + openxr_api->get_error_string(completion.futureResult) + "]");
 	}
@@ -489,6 +509,27 @@ uint64_t OpenXRSpatialEntityExtension::_get_spatial_context_handle(RID p_spatial
 
 ////////////////////////////////////////////////////////////////////////////
 // Discovery queries
+
+Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::discover_spatial_entities_with_component_data(RID p_spatial_context, const TypedArray<OpenXRSpatialComponentData> &p_component_data, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback) {
+	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
+	ERR_FAIL_NULL_V(se_extension, nullptr);
+	ERR_FAIL_COND_V(p_component_data.is_empty(), nullptr);
+
+	// The first should be OpenXRSpatialQueryResultData
+	Ref<OpenXRSpatialQueryResultData> query_result_data = p_component_data[0];
+	ERR_FAIL_COND_V_MSG(query_result_data.is_null(), nullptr, "OpenXR: The first component must be of type OpenXRSpatialQueryResultData");
+
+	// Skip OpenXRSpatialQueryResultData and copy the other component types
+	Vector<XrSpatialComponentTypeEXT> component_types;
+	component_types.resize(p_component_data.size() - 1);
+	XrSpatialComponentTypeEXT *dst = component_types.ptrw();
+	for (int i = 0; i < component_types.size(); ++i) {
+		Ref<OpenXRSpatialComponentData> ele = p_component_data[i + 1];
+		dst[i] = ele->get_component_type();
+	}
+
+	return discover_spatial_entities(p_spatial_context, component_types, p_next, p_user_callback);
+}
 
 Ref<OpenXRFutureResult> OpenXRSpatialEntityExtension::discover_spatial_entities(RID p_spatial_context, const Vector<XrSpatialComponentTypeEXT> &p_component_types, Ref<OpenXRStructureBase> p_next, const Callable &p_user_callback) {
 	if (!get_active()) {
@@ -746,6 +787,8 @@ bool OpenXRSpatialEntityExtension::query_snapshot(RID p_spatial_snapshot, const 
 	query_condition.componentTypes = component_types.ptr();
 
 	XrSpatialComponentDataQueryResultEXT *query_result = (XrSpatialComponentDataQueryResultEXT *)query_result_data->get_structure_data(nullptr);
+	query_result->entityIdCapacityInput = 0;
+	query_result->entityStateCapacityInput = 0;
 	XrResult result = xrQuerySpatialComponentDataEXT(snapshot_data->spatial_snapshot, &query_condition, query_result);
 	if (XR_FAILED(result)) {
 		ERR_FAIL_V_MSG(false, "OpenXR: Failed to query snapshot count [" + openxr_api->get_error_string(result) + "]");
@@ -753,6 +796,13 @@ bool OpenXRSpatialEntityExtension::query_snapshot(RID p_spatial_snapshot, const 
 
 	// Nothing to do?
 	if (query_result->entityIdCountOutput == 0) {
+		// Ensure the component data reflects this result.
+		for (Ref<OpenXRSpatialComponentData> component_data : p_component_data) {
+			if (component_data.is_valid()) {
+				component_data->set_capacity(0);
+			}
+		}
+
 		return true;
 	}
 
@@ -1169,7 +1219,7 @@ RID OpenXRSpatialEntityExtension::_make_entity(RID p_spatial_context, uint64_t p
 
 XrSpatialEntityIdEXT OpenXRSpatialEntityExtension::get_spatial_entity_id(RID p_entity) const {
 	SpatialEntityData *entity_data = spatial_entity_owner.get_or_null(p_entity);
-	ERR_FAIL_NULL_V(entity_data, XR_NULL_ENTITY);
+	ERR_FAIL_NULL_V(entity_data, XR_NULL_SPATIAL_ENTITY_ID_EXT);
 
 	return entity_data->entity_id;
 }

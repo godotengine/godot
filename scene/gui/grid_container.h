@@ -42,6 +42,10 @@ class GridContainer : public Container {
 		int v_separation = 0;
 	} theme_cache;
 
+private:
+	void _resort();
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -50,6 +54,7 @@ public:
 	void set_columns(int p_columns);
 	int get_columns() const;
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	int get_h_separation() const;
 };

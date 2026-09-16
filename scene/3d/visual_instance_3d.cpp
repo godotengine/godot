@@ -30,7 +30,14 @@
 
 #include "visual_instance_3d.h"
 
-#include "core/config/project_settings.h"
+STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
+
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
+#include "scene/main/scene_tree.h"
+#include "scene/resources/material.h"
+#include "servers/rendering/rendering_server.h"
 
 AABB VisualInstance3D::get_aabb() const {
 	AABB ret;
@@ -178,6 +185,11 @@ void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sorting_use_aabb_center", "enabled"), &VisualInstance3D::set_sorting_use_aabb_center);
 	ClassDB::bind_method(D_METHOD("is_sorting_use_aabb_center"), &VisualInstance3D::is_sorting_use_aabb_center);
 
+	// TODO Note: This used to be bound in GeometryInstance3D::_bind_methods, indicating it
+	//            was originally meant to be exposed to GeometryInstance3D instead of VisualInstance3D.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("get_aabb"), &VisualInstance3D::get_aabb);
+
 	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 
@@ -244,7 +256,7 @@ float GeometryInstance3D::get_transparency() const {
 
 void GeometryInstance3D::set_visibility_range_begin(float p_dist) {
 	visibility_range_begin = p_dist;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -254,7 +266,7 @@ float GeometryInstance3D::get_visibility_range_begin() const {
 
 void GeometryInstance3D::set_visibility_range_end(float p_dist) {
 	visibility_range_end = p_dist;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -264,7 +276,7 @@ float GeometryInstance3D::get_visibility_range_end() const {
 
 void GeometryInstance3D::set_visibility_range_begin_margin(float p_dist) {
 	visibility_range_begin_margin = p_dist;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -274,7 +286,7 @@ float GeometryInstance3D::get_visibility_range_begin_margin() const {
 
 void GeometryInstance3D::set_visibility_range_end_margin(float p_dist) {
 	visibility_range_end_margin = p_dist;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -284,7 +296,7 @@ float GeometryInstance3D::get_visibility_range_end_margin() const {
 
 void GeometryInstance3D::set_visibility_range_fade_mode(VisibilityRangeFadeMode p_mode) {
 	visibility_range_fade_mode = p_mode;
-	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RS::VisibilityRangeFadeMode)visibility_range_fade_mode);
+	RS::get_singleton()->instance_geometry_set_visibility_range(get_instance(), visibility_range_begin, visibility_range_end, visibility_range_begin_margin, visibility_range_end_margin, (RSE::VisibilityRangeFadeMode)visibility_range_fade_mode);
 	update_configuration_warnings();
 }
 
@@ -366,7 +378,7 @@ void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 void GeometryInstance3D::set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting) {
 	shadow_casting_setting = p_shadow_casting_setting;
 
-	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(get_instance(), (RS::ShadowCastingSetting)p_shadow_casting_setting);
+	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(get_instance(), (RSE::ShadowCastingSetting)p_shadow_casting_setting);
 }
 
 GeometryInstance3D::ShadowCastingSetting GeometryInstance3D::get_cast_shadows_setting() const {
@@ -397,7 +409,7 @@ void GeometryInstance3D::set_instance_shader_parameter(const StringName &p_name,
 	if (p_value.get_type() == Variant::NIL) {
 		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_name);
 		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_name, def_value);
-		instance_shader_parameters.erase(p_value);
+		instance_shader_parameters.erase(p_name);
 	} else {
 		instance_shader_parameters[p_name] = p_value;
 		if (p_value.get_type() == Variant::OBJECT) {
@@ -472,17 +484,17 @@ GeometryInstance3D::LightmapScale GeometryInstance3D::get_lightmap_scale() const
 void GeometryInstance3D::set_gi_mode(GIMode p_mode) {
 	switch (p_mode) {
 		case GI_MODE_DISABLED: {
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 		} break;
 		case GI_MODE_STATIC: {
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, true);
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, true);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 
 		} break;
 		case GI_MODE_DYNAMIC: {
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
-			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, true);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_USE_DYNAMIC_GI, true);
 		} break;
 	}
 
@@ -495,7 +507,7 @@ GeometryInstance3D::GIMode GeometryInstance3D::get_gi_mode() const {
 
 void GeometryInstance3D::set_ignore_occlusion_culling(bool p_enabled) {
 	ignore_occlusion_culling = p_enabled;
-	RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, ignore_occlusion_culling);
+	RS::get_singleton()->instance_geometry_set_flag(get_instance(), RSE::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, ignore_occlusion_culling);
 }
 
 bool GeometryInstance3D::is_ignoring_occlusion_culling() {
@@ -522,11 +534,11 @@ PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
 	}
 
 	if (!Math::is_zero_approx(transparency) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		warnings.push_back(RTR("GeometryInstance3D transparency is only available when using the Forward+ rendering method."));
+		warnings.push_back(RTR("GeometryInstance3D transparency is only available when using the Forward+ renderer."));
 	}
 
 	if ((visibility_range_fade_mode == VISIBILITY_RANGE_FADE_SELF || visibility_range_fade_mode == VISIBILITY_RANGE_FADE_DEPENDENCIES) && OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
-		warnings.push_back(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ rendering method."));
+		warnings.push_back(RTR("GeometryInstance3D visibility range transparency fade is only available when using the Forward+ renderer."));
 	}
 
 	return warnings;
@@ -591,8 +603,6 @@ void GeometryInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &GeometryInstance3D::get_custom_aabb);
-
-	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance3D::get_aabb);
 
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT), "set_material_override", "get_material_override");

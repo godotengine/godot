@@ -53,6 +53,7 @@ class AndroidEditorGradleRunner : public Object {
 	String project_path;
 	String build_path;
 	String output_path;
+	String export_format;
 	List<String> gradle_build_args;
 	List<String> gradle_copy_args;
 	int64_t job_id;
@@ -70,8 +71,11 @@ class AndroidEditorGradleRunner : public Object {
 	void _android_gradle_build_failed(const String &p_msg = String());
 	void _android_gradle_build_cancel();
 
+	const String copy_output_action = "copy_output";
+	void _output_dialog_custom_action(const String &p_action);
+
 public:
-	void run_gradle(const String &p_project_path, const String &p_build_path, const String &p_output_path, const List<String> &p_gradle_build_args, const List<String> &p_gradle_copy_args);
+	void run_gradle(const String &p_project_path, const String &p_build_path, const String &p_output_path, const String &p_export_format, const List<String> &p_gradle_build_args, const List<String> &p_gradle_copy_args);
 };
 
 #endif // ANDROID_ENABLED

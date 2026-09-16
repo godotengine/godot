@@ -30,6 +30,7 @@
 
 #include "sub_viewport_preview_editor_plugin.h"
 
+#include "core/object/callable_mp.h"
 #include "scene/main/viewport.h"
 
 bool EditorInspectorPluginSubViewportPreview::can_handle(Object *p_object) {

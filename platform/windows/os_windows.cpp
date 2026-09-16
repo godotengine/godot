@@ -34,10 +34,11 @@
 #include "lang_table.h"
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
+#include "winrt_utils.h"
 
+#include "core/config/engine.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/marshalls.h"
 #include "core/os/main_loop.h"
 #include "core/profiling/profiling.h"
 #include "core/version_generated.gen.h"
@@ -48,14 +49,12 @@
 #include "drivers/windows/net_socket_winsock.h"
 #include "drivers/windows/thread_windows.h"
 #include "main/main.h"
-#include "servers/audio/audio_server.h"
-#include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/text/text_server.h"
 
 #include <avrt.h>
 #include <bcrypt.h>
 #include <direct.h>
-#include <hidsdi.h>
 #include <knownfolders.h>
 #include <process.h>
 #include <psapi.h>
@@ -64,6 +63,15 @@
 #include <wbemcli.h>
 #include <wincrypt.h>
 #include <winternl.h>
+
+// Workaround missing `extern "C"` in MinGW-w64 < 12.0.0.
+#if defined(__MINGW32__) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 12)
+extern "C" {
+#include <hidsdi.h>
+}
+#else
+#include <hidsdi.h>
+#endif
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
@@ -74,7 +82,7 @@
 #endif
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_windows.h"
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif
 #if defined(D3D12_ENABLED)
 #include "drivers/d3d12/rendering_context_driver_d3d12.h"
@@ -90,8 +98,10 @@
 #endif
 
 extern "C" {
+#ifdef ENABLE_PREFER_HIGH_PERFORMANCE_GPU
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+#endif // ENABLE_PREFER_HIGH_PERFORMANCE_GPU
 __declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 }
 
@@ -194,7 +204,7 @@ bool OS_Windows::is_using_con_wrapper() const {
 	DWORD count = GetConsoleProcessList(&pids[0], 256);
 	for (DWORD i = 0; i < count; i++) {
 		HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pids[i]);
-		if (process != NULL) {
+		if (process != nullptr) {
 			WCHAR proc_name[MAX_PATH];
 			DWORD len = MAX_PATH;
 			if (QueryFullProcessImageNameW(process, 0, &proc_name[0], &len)) {
@@ -336,9 +346,7 @@ void OS_Windows::initialize() {
 }
 
 void OS_Windows::delete_main_loop() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 	main_loop = nullptr;
 }
 
@@ -367,9 +375,7 @@ void OS_Windows::finalize() {
 	driver_midi.close();
 #endif
 
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 
 	main_loop = nullptr;
 }
@@ -472,11 +478,10 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdextension can load .dll files from within the executable path
 		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
+		ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 	}
 	// Path to load from may be different from original if we make copies.
 	String load_path = path;
-
-	ERR_FAIL_COND_V(!FileAccess::exists(path), ERR_FILE_NOT_FOUND);
 
 	// Here we want a copy to be loaded.
 	// This is so the original file isn't locked and can be updated by a compiler.
@@ -1277,23 +1282,23 @@ Dictionary OS_Windows::get_memory_info() const {
 }
 
 Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
-#define CLEAN_PIPES               \
-	if (pipe_in[0] != 0) {        \
-		CloseHandle(pipe_in[0]);  \
-	}                             \
-	if (pipe_in[1] != 0) {        \
-		CloseHandle(pipe_in[1]);  \
-	}                             \
-	if (pipe_out[0] != 0) {       \
+#define CLEAN_PIPES \
+	if (pipe_in[0] != 0) { \
+		CloseHandle(pipe_in[0]); \
+	} \
+	if (pipe_in[1] != 0) { \
+		CloseHandle(pipe_in[1]); \
+	} \
+	if (pipe_out[0] != 0) { \
 		CloseHandle(pipe_out[0]); \
-	}                             \
-	if (pipe_out[1] != 0) {       \
+	} \
+	if (pipe_out[1] != 0) { \
 		CloseHandle(pipe_out[1]); \
-	}                             \
-	if (pipe_err[0] != 0) {       \
+	} \
+	if (pipe_err[0] != 0) { \
 		CloseHandle(pipe_err[0]); \
-	}                             \
-	if (pipe_err[1] != 0) {       \
+	} \
+	if (pipe_err[1] != 0) { \
 		CloseHandle(pipe_err[1]); \
 	}
 
@@ -1937,7 +1942,7 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 
 	Vector<String> ret;
 	for (UINT32 i = 0; i < number_of_files; i++) {
-		void const *reference_key = nullptr;
+		const void *reference_key = nullptr;
 		UINT32 reference_key_size = 0;
 		ComAutoreleaseRef<IDWriteLocalFontFileLoader> loader;
 
@@ -2016,7 +2021,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 	}
 
 	for (UINT32 i = 0; i < number_of_files; i++) {
-		void const *reference_key = nullptr;
+		const void *reference_key = nullptr;
 		UINT32 reference_key_size = 0;
 		ComAutoreleaseRef<IDWriteLocalFontFileLoader> loader;
 
@@ -2112,7 +2117,7 @@ PackedByteArray OS_Windows::get_stdin_buffer(int64_t p_buffer_size) {
 
 OS_Windows::StdHandleType OS_Windows::get_stdin_type() const {
 	HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
-	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+	if (h == nullptr || h == INVALID_HANDLE_VALUE) {
 		return STD_HANDLE_INVALID;
 	}
 	DWORD ftype = GetFileType(h);
@@ -2143,7 +2148,7 @@ OS_Windows::StdHandleType OS_Windows::get_stdin_type() const {
 
 OS_Windows::StdHandleType OS_Windows::get_stdout_type() const {
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+	if (h == nullptr || h == INVALID_HANDLE_VALUE) {
 		return STD_HANDLE_INVALID;
 	}
 	DWORD ftype = GetFileType(h);
@@ -2169,7 +2174,7 @@ OS_Windows::StdHandleType OS_Windows::get_stdout_type() const {
 
 OS_Windows::StdHandleType OS_Windows::get_stderr_type() const {
 	HANDLE h = GetStdHandle(STD_ERROR_HANDLE);
-	if (h == 0 || h == INVALID_HANDLE_VALUE) {
+	if (h == nullptr || h == INVALID_HANDLE_VALUE) {
 		return STD_HANDLE_INVALID;
 	}
 	DWORD ftype = GetFileType(h);
@@ -2282,6 +2287,14 @@ String OS_Windows::get_locale() const {
 	}
 
 	return "en";
+}
+
+Vector<String> OS_Windows::get_preferred_locales() const {
+	Vector<String> out = WinRTUtils::get_preferred_locales();
+	if (out.is_empty()) {
+		out.push_back(get_locale());
+	}
+	return out;
 }
 
 String OS_Windows::get_model_name() const {
@@ -2500,6 +2513,49 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 
 String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
 	return get_data_path().path_join(p_user_dir).replace_char('\\', '/');
+}
+
+String OS_Windows::expand_path(const String &p_path) const {
+	String path = p_path;
+
+	if (path.begins_with("~/") || path.begins_with("~\\") || path == "~") {
+		String home = get_environment("USERPROFILE");
+		if (!home.is_empty()) {
+			path = home + path.substr(1);
+		}
+	}
+
+	int pos = 0;
+
+	while (true) {
+		int left = path.find_char('%', pos);
+		if (left == -1) {
+			break;
+		}
+
+		int right = path.find_char('%', left + 1);
+		if (right == -1) {
+			break;
+		}
+
+		String var = path.substr(left + 1, right - left - 1);
+
+		if (var.is_empty()) {
+			pos = right + 1;
+			continue;
+		}
+
+		String value = get_environment(var);
+
+		if (!value.is_empty()) {
+			path = path.substr(0, left) + value + path.substr(right + 1);
+			pos = left + value.length();
+		} else {
+			pos = right + 1;
+		}
+	}
+
+	return path;
 }
 
 String OS_Windows::get_unique_id() const {
@@ -2721,7 +2777,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	bool ok = true;
 #ifdef GLES3_ENABLED
 	GLManagerNative_Windows *test_gl_manager_native = memnew(GLManagerNative_Windows);
-	if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
+	if (test_gl_manager_native->window_create(DisplayServerEnums::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
 		RasterizerGLES3::make_current(true);
 	} else {
 		ok = false;
@@ -2739,15 +2795,19 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	}
 
 #ifdef GLES3_ENABLED
-	if (test_gl_manager_native) {
-		memdelete(test_gl_manager_native);
-	}
+	memdelete(test_gl_manager_native);
 #endif
 
 	DestroyWindow(hWnd);
 	UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
 	return ok;
 }
+#endif
+
+#ifdef _MSC_VER
+#define IAT_HOOK_CALL __declspec(guard(nocf))
+#else
+#define IAT_HOOK_CALL
 #endif
 
 using GetProcAddressType = FARPROC(__stdcall *)(HMODULE, LPCSTR);
@@ -2785,7 +2845,7 @@ bool _hid_is_controller(HANDLE p_hid_handle) {
 	return false;
 }
 
-BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, ULONG p_buffer_length) {
+IAT_HOOK_CALL BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, ULONG p_buffer_length) {
 	constexpr const wchar_t unknown_product_string[] = L"Unknown HID Device";
 	constexpr size_t unknown_product_length = sizeof(unknown_product_string);
 
@@ -2803,7 +2863,7 @@ BOOLEAN __stdcall Hook_HidD_GetProductString(HANDLE p_object, void *p_buffer, UL
 	return FALSE;
 }
 
-FARPROC __stdcall Hook_GetProcAddress(HMODULE p_module, LPCSTR p_name) {
+IAT_HOOK_CALL FARPROC __stdcall Hook_GetProcAddress(HMODULE p_module, LPCSTR p_name) {
 	if (String(p_name) == "HidD_GetProductString") {
 		return (FARPROC)(LPVOID)Hook_HidD_GetProductString;
 	}
@@ -2876,6 +2936,8 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
+	WinRTUtils::init();
+
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);
 #endif
@@ -2905,5 +2967,6 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 }
 
 OS_Windows::~OS_Windows() {
+	WinRTUtils::cleanup();
 	CoUninitialize();
 }

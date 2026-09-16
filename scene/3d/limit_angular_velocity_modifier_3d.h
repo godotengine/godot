@@ -53,7 +53,7 @@ private:
 	double max_angular_velocity = Math::TAU;
 
 	LocalVector<Chain> chains;
-	RBMap<int, StringName> joints;
+	LocalVector<BoneJoint> joints;
 	LocalVector<BoneRot> bones;
 
 	bool joints_dirty = false;
@@ -76,9 +76,9 @@ protected:
 
 	void _make_joints_dirty();
 	void _update_joints();
+	bool _is_joint_contained(int p_bone);
 
 	// For editor.
-	String _get_joint_bone_name(int p_bone) const;
 	int _get_joint_count() const;
 
 	virtual void _process_modification(double p_delta) override;
@@ -93,6 +93,9 @@ public:
 	String get_end_bone_name(int p_index) const;
 	void set_end_bone(int p_index, int p_bone);
 	int get_end_bone(int p_index) const;
+
+	String get_joint_bone_name(int p_index) const;
+	int get_joint_bone(int p_index) const;
 
 	void set_chain_count(int p_count);
 	int get_chain_count() const;

@@ -1,5 +1,5 @@
 diff --git a/thirdparty/minizip/ioapi.c b/thirdparty/minizip/ioapi.c
-index 782d32469a..2e393aca2d 100644
+index 3dbefe48c2..b072ecdcc2 100644
 --- a/thirdparty/minizip/ioapi.c
 +++ b/thirdparty/minizip/ioapi.c
 @@ -75,9 +75,12 @@ void fill_zlib_filefunc64_32_def_from_filefunc32(zlib_filefunc64_32_def* p_filef
@@ -22,10 +22,10 @@ index 782d32469a..2e393aca2d 100644
 +
 +#endif
 diff --git a/thirdparty/minizip/ioapi.h b/thirdparty/minizip/ioapi.h
-index a2d2e6e60d..556dd8ad18 100644
+index 6b9968c732..be64d7db45 100644
 --- a/thirdparty/minizip/ioapi.h
 +++ b/thirdparty/minizip/ioapi.h
-@@ -155,6 +155,8 @@ typedef struct zlib_filefunc_def_s
+@@ -128,6 +128,8 @@ typedef struct zlib_filefunc_def_s
      close_file_func     zclose_file;
      testerror_file_func zerror_file;
      voidpf              opaque;
@@ -34,7 +34,7 @@ index a2d2e6e60d..556dd8ad18 100644
  } zlib_filefunc_def;
  
  typedef ZPOS64_T (ZCALLBACK *tell64_file_func)    (voidpf opaque, voidpf stream);
-@@ -171,6 +173,8 @@ typedef struct zlib_filefunc64_def_s
+@@ -144,6 +146,8 @@ typedef struct zlib_filefunc64_def_s
      close_file_func     zclose_file;
      testerror_file_func zerror_file;
      voidpf              opaque;
@@ -44,10 +44,10 @@ index a2d2e6e60d..556dd8ad18 100644
  
  void fill_fopen64_filefunc(zlib_filefunc64_def* pzlib_filefunc_def);
 diff --git a/thirdparty/minizip/unzip.c b/thirdparty/minizip/unzip.c
-index ea05b7d62a..7e8a6ac2d3 100644
+index e9088bd542..98a568e098 100644
 --- a/thirdparty/minizip/unzip.c
 +++ b/thirdparty/minizip/unzip.c
-@@ -152,6 +152,7 @@ typedef struct
+@@ -148,6 +148,7 @@ typedef struct
      uLong compression_method;   /* compression method (0==store) */
      ZPOS64_T byte_before_the_zipfile;/* byte before the zipfile, (>0 for sfx)*/
      int   raw;
@@ -55,7 +55,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
  } file_in_zip64_read_info_s;
  
  
-@@ -513,9 +514,9 @@ local unzFile unzOpenInternal(const void *path,
+@@ -509,9 +510,9 @@ local unzFile unzOpenInternal(const void *path,
      us.z_filefunc.zseek32_file = NULL;
      us.z_filefunc.ztell32_file = NULL;
      if (pzlib_filefunc64_32_def==NULL)
@@ -68,7 +68,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
      us.is64bitOpenFunction = is64bitOpenFunction;
  
  
-@@ -703,6 +704,15 @@ extern unzFile ZEXPORT unzOpen64(const void *path) {
+@@ -699,6 +700,15 @@ extern unzFile ZEXPORT unzOpen64(const void *path) {
      return unzOpenInternal(path, NULL, 1);
  }
  
@@ -84,7 +84,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
  /*
    Close a ZipFile opened with unzOpen.
    If there is files inside the .Zip opened with unzOpenCurrentFile (see later),
-@@ -905,10 +915,19 @@ local int unz64local_GetCurrentFileInfoInternal(unzFile file,
+@@ -901,10 +911,19 @@ local int unz64local_GetCurrentFileInfoInternal(unzFile file,
  
          if (lSeek!=0)
          {
@@ -108,7 +108,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
          }
  
          while(acc < file_info.size_file_extra)
-@@ -1446,8 +1465,8 @@ extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int* method,
+@@ -1442,8 +1461,8 @@ extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int* method,
      }
      else if ((s->cur_file_info.compression_method==Z_DEFLATED) && (!raw))
      {
@@ -119,7 +119,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
        pfile_in_zip_read_info->stream.opaque = (voidpf)0;
        pfile_in_zip_read_info->stream.next_in = 0;
        pfile_in_zip_read_info->stream.avail_in = 0;
-@@ -1480,6 +1499,7 @@ extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int* method,
+@@ -1476,6 +1495,7 @@ extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int* method,
                iSizeVar;
  
      pfile_in_zip_read_info->stream.avail_in = (uInt)0;
@@ -127,7 +127,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
  
      s->pfile_in_zip_read = pfile_in_zip_read_info;
                  s->encrypted = 0;
-@@ -1510,6 +1530,84 @@ extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int* method,
+@@ -1506,6 +1526,84 @@ extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int* method,
      return UNZ_OK;
  }
  
@@ -213,7 +213,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
      return unzOpenCurrentFile3(file, NULL, NULL, 0, NULL);
  }
 diff --git a/thirdparty/minizip/unzip.h b/thirdparty/minizip/unzip.h
-index 5cfc9c6274..37ff29b22a 100644
+index ceb614e783..d515cdafce 100644
 --- a/thirdparty/minizip/unzip.h
 +++ b/thirdparty/minizip/unzip.h
 @@ -202,6 +202,8 @@ extern int ZEXPORT unzClose(unzFile file);
@@ -225,7 +225,7 @@ index 5cfc9c6274..37ff29b22a 100644
  extern int ZEXPORT unzGetGlobalInfo(unzFile file,
                                      unz_global_info *pglobal_info);
  
-@@ -390,6 +392,11 @@ extern int ZEXPORT unzReadCurrentFile(unzFile file,
+@@ -394,6 +396,11 @@ extern int ZEXPORT unzReadCurrentFile(unzFile file,
      (UNZ_ERRNO for IO error, or zLib error for uncompress error)
  */
  
@@ -238,10 +238,10 @@ index 5cfc9c6274..37ff29b22a 100644
  
  extern ZPOS64_T ZEXPORT unztell64(unzFile file);
 diff --git a/thirdparty/minizip/zip.c b/thirdparty/minizip/zip.c
-index 60bdffac34..078a0a82ec 100644
+index 103f325d37..4fd193e1f3 100644
 --- a/thirdparty/minizip/zip.c
 +++ b/thirdparty/minizip/zip.c
-@@ -820,9 +820,9 @@ extern zipFile ZEXPORT zipOpen3(const void *pathname, int append, zipcharpc* glo
+@@ -1061,9 +1061,9 @@ extern zipFile ZEXPORT zipOpen3(const void *pathname, int append, zipcharpc* glo
  
      ziinit.z_filefunc.zseek32_file = NULL;
      ziinit.z_filefunc.ztell32_file = NULL;
@@ -254,7 +254,7 @@ index 60bdffac34..078a0a82ec 100644
          ziinit.z_filefunc = *pzlib_filefunc64_32_def;
  
      ziinit.filestream = ZOPEN64(ziinit.z_filefunc,
-@@ -1182,8 +1182,8 @@ extern int ZEXPORT zipOpenNewFileInZip4_64(zipFile file, const char* filename, c
+@@ -1423,8 +1423,8 @@ extern int ZEXPORT zipOpenNewFileInZip4_64(zipFile file, const char* filename, c
      {
          if(zi->ci.method == Z_DEFLATED)
          {

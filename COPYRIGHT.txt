@@ -45,14 +45,6 @@ Copyright: 2014-present, Godot Engine contributors
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
-Files: icon.png
- icon.svg
- logo.png
- logo.svg
-Comment: Godot Engine logo
-Copyright: 2017, Andrea Calabró
-License: CC-BY-4.0
-
 Files: core/math/convex_hull.cpp
  core/math/convex_hull.h
 Comment: Bullet Continuous Collision Detection and Physics Library
@@ -65,6 +57,11 @@ Files: misc/dist/linux/org.godotengine.Godot.appdata.xml
 Comment: Linux AppStream Metadata File
 Copyright: 2017-2022, Rémi Verschelde
 License: CC0-1.0
+
+Files: misc/logo/*
+Comment: Godot Engine logo
+Copyright: 2017, Andrea Calabró
+License: CC-BY-4.0
 
 Files: modules/betsy/alpha_stitch.glsl
  modules/betsy/bc1.glsl
@@ -147,6 +144,12 @@ Copyright: 2001, Robert Penner
  2007-2014, Juan Linietsky, Ariel Manzur
 License: Expat
 
+Files: scene/3d/trail_3d.cpp
+ scene/3d/trail_3d.h
+Comment: CozyCubeGames' trail and lines plugin
+Copyright: 2024, CozyCubeGames
+License: Expat
+
 Files: servers/audio/effects/audio_effect_pitch_shift.cpp
 Copyright: 2014-present Godot Engine contributors
  2007-2014 Juan Linietsky, Ariel Manzur
@@ -224,7 +227,7 @@ Comment: Brotli
 Copyright: 2009, 2010, 2013-2016 by the Brotli Authors.
 License: Expat
 
-Files: thirdparty/certs/ca-certificates.crt
+Files: thirdparty/certs/ca-bundle.crt
 Comment: CA certificates
 Copyright: Mozilla Contributors
 License: MPL-2.0
@@ -254,6 +257,11 @@ Files: thirdparty/doctest/*
 Comment: doctest
 Copyright: 2016-2023, Viktor Kirilov
 License: Expat
+
+Files: thirdparty/dr_libs/*
+Comment: dr_libs
+Copyright: 2020, David Reid
+License: Unlicense or MIT-0
 
 Files: thirdparty/embree/*
 Comment: Embree
@@ -304,6 +312,11 @@ Files: thirdparty/freetype/*
 Comment: The FreeType Project
 Copyright: 1996-2025, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
+
+Files: thirdparty/gamepadmotionhelpers/*
+Comment: GamepadMotionHelpers
+Copyright: 2020-2023, Julian "Jibb" Smart
+License: Expat
 
 Files: thirdparty/glad/*
 Comment: glad
@@ -367,7 +380,7 @@ License: BSD-3-clause
 
 Files: thirdparty/libjpeg-turbo/*
 Comment: libjpeg-turbo
-Copyright: 2009-2024, D. R. Commander
+Copyright: 2009-2025, D. R. Commander
  2015, Viktor Szathmáry.
  1991-2020, Thomas G. Lane, Guido Vollbeding
 License: BSD-3-clause and IJG
@@ -385,8 +398,8 @@ License: BSD-3-clause
 
 Files: thirdparty/libpng/*
 Comment: libpng
-Copyright: 1995-2025, The PNG Reference Library Authors.
- 2018-2025, Cosmin Truta.
+Copyright: 1995-2026, The PNG Reference Library Authors.
+ 2018-2026, Cosmin Truta.
  2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
  1996-1997, Andreas Dilger.
  1995-1996, Guy Eric Schalnat, Group 42, Inc.
@@ -409,7 +422,7 @@ License: BSD-3-clause
 
 Files: thirdparty/manifold/*
 Comment: Manifold
-Copyright: 2020-2025, The Manifold Authors
+Copyright: 2020-2026, The Manifold Authors
 License: Apache-2.0
 
 Files: thirdparty/mbedtls/*
@@ -419,18 +432,18 @@ License: Apache-2.0
 
 Files: thirdparty/meshoptimizer/*
 Comment: meshoptimizer
-Copyright: 2016-2024, Arseny Kapoulkine
+Copyright: 2016-2026, Arseny Kapoulkine
 License: Expat
+
+Files: thirdparty/metal-cpp/*
+Comment: metal-cpp
+Copyright: 2024, Apple Inc.
+License: Apache-2.0
 
 Files: thirdparty/mingw-std-threads/*
 Comment: mingw-std-threads
 Copyright: 2016, Mega Limited
 License: BSD-2-clause
-
-Files: thirdparty/minimp3/*
-Comment: MiniMP3
-Copyright: lieff
-License: CC0-1.0
 
 Files: thirdparty/miniupnpc/*
 Comment: MiniUPnP Project
@@ -439,7 +452,7 @@ License: BSD-3-clause
 
 Files: thirdparty/minizip/*
 Comment: MiniZip
-Copyright: 1998-2010, Gilles Vollant
+Copyright: 1998-2026, Gilles Vollant
  2007-2008, Even Rouault
  2009-2010, Mathias Svensson
 License: Zlib
@@ -465,17 +478,16 @@ Comment: FastNoise Lite
 Copyright: 2023, Jordan Peck and contributors
 License: Expat
 
+Files: thirdparty/misc/gamemode_client.h
+Comment: GameMode client
+Copyright: 2017-2024, Feral Interactive
+License: BSD-3-clause
+
 Files: thirdparty/misc/ifaddrs-android.cc
  thirdparty/misc/ifaddrs-android.h
 Comment: libjingle
 Copyright: 2012-2013, Google Inc.
 License: BSD-3-clause
-
-Files: thirdparty/misc/mikktspace.c
- thirdparty/misc/mikktspace.h
-Comment: Tangent Space Normal Maps implementation
-Copyright: 2011, Morten S. Mikkelsen
-License: Zlib
 
 Files: thirdparty/misc/nvapi_minimal.h
 Comment: NVIDIA NVAPI (minimal excerpt)
@@ -538,6 +550,11 @@ Comment: Multi-channel signed distance field generator
 Copyright: 2014-2025, Viktor Chlumsky
 License: Expat
 
+Files: thirdparty/offset_allocator/*
+Comment: OffsetAllocator
+Copyright: 2023, Sebastian Aaltonen
+License: Expat
+
 Files: thirdparty/openxr/*
 Comment: OpenXR Loader
 Copyright: 2020-2025, The Khronos Group Inc.
@@ -574,6 +591,11 @@ Comment: SPIRV-Cross
 Copyright: 2015-2021, Arm Limited
 License: Apache-2.0 or Expat
 
+Files: thirdparty/spirv-headers/*
+Comment: SPIRV-Headers
+Copyright: 2015-2024, The Khronos Group Inc.
+License: Expat
+
 Files: thirdparty/spirv-reflect/*
 Comment: SPIRV-Reflect
 Copyright: 2017-2022, Google Inc.
@@ -586,7 +608,7 @@ License: Apache-2.0
 
 Files: thirdparty/thorvg/*
 Comment: ThorVG
-Copyright: 2020-2024, The ThorVG Project
+Copyright: 2020-2026, The ThorVG Project
 License: Expat
 
 Files: thirdparty/tinyexr/*
@@ -608,19 +630,19 @@ License: BSD-3-clause
 
 Files: thirdparty/volk/*
 Comment: volk
-Copyright: 2018-2024, Arseny Kapoulkine
+Copyright: 2018-2025, Arseny Kapoulkine
 License: Expat
 
 Files: thirdparty/vulkan/*
 Comment: Vulkan Headers
-Copyright: 2014-2024, The Khronos Group Inc.
-  2014-2024, Valve Corporation
-  2014-2024, LunarG, Inc.
+Copyright: 2015-2025, The Khronos Group Inc.
+  2015-2025, Valve Corporation
+  2015-2025, LunarG, Inc.
 License: Apache-2.0
 
 Files: thirdparty/vulkan/vk_mem_alloc.h
 Comment: Vulkan Memory Allocator
-Copyright: 2017-2024, Advanced Micro Devices, Inc.
+Copyright: 2017-2025, Advanced Micro Devices, Inc.
 License: Expat
 
 Files: thirdparty/wayland/*
@@ -663,7 +685,7 @@ License: Expat
 
 Files: thirdparty/zlib/*
 Comment: zlib
-Copyright: 1995-2024, Jean-loup Gailly and Mark Adler
+Copyright: 1995-2026, Jean-loup Gailly and Mark Adler
 License: Zlib
 
 Files: thirdparty/zstd/*
@@ -2157,6 +2179,22 @@ License: MPL-2.0
  .
    This Source Code Form is "Incompatible With Secondary Licenses", as
    defined by the Mozilla Public License, v. 2.0.
+
+License: MIT-0
+ Permission is hereby granted, free of charge, to any person obtaining
+ a copy of this software and associated documentation files (the
+ "Software"), to deal in the Software without restriction, including
+ without limitation the rights to use, copy, modify, merge, publish,
+ distribute, sublicense, and/or sell copies of the Software, and to
+ permit persons to whom the Software is furnished to do so.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 License: OFL-1.1
  PREAMBLE

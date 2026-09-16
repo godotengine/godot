@@ -55,7 +55,7 @@
 #include "core/templates/local_vector.h"
 
 template <typename T, typename U = uint32_t, bool force_trivial = false, bool zero_on_first_request = false>
-class PooledList {
+class _WARN_UNUSED_ PooledList {
 	LocalVector<T, U> list;
 	LocalVector<U, U> freelist;
 

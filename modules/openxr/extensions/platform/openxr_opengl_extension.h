@@ -32,14 +32,13 @@
 
 #ifdef GLES3_ENABLED
 
-#include "../../openxr_api.h"
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 
 #include "core/templates/vector.h"
 
 // Always include this as late as possible.
-#include "../../openxr_platform_inc.h"
+#include "../../openxr_platform_inc.h" // IWYU pragma: keep.
 
 class OpenXROpenGLExtension : public OpenXRGraphicsExtensionWrapper {
 public:
@@ -84,7 +83,7 @@ private:
 
 	bool check_graphics_api_support(XrVersion p_desired_version);
 
-#ifdef ANDROID_ENABLED
+#ifdef XR_USE_GRAPHICS_API_OPENGL_ES
 	EXT_PROTO_XRRESULT_FUNC3(xrGetOpenGLESGraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsOpenGLESKHR *), p_graphics_requirements)
 #else
 	EXT_PROTO_XRRESULT_FUNC3(xrGetOpenGLGraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsOpenGLKHR *), p_graphics_requirements)
