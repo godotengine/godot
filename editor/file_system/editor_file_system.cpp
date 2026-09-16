@@ -1167,8 +1167,15 @@ int EditorFileSystem::_scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da)
 		}
 
 		if (da->current_is_dir()) {
-			if (f.begins_with(".")) { // Ignore special and . / ..
+			if (f == "." || f == "..") { // Ignore . / ..
 				continue;
+			}
+
+			if (f.begins_with(".")) { // Ignore special
+				singleton->mark_folder_hidden(cd.path_join(f), true);
+				if (!singleton->is_showing_hidden_folders()) {
+					continue;
+				}
 			}
 
 			if (_should_skip_directory(cd.path_join(f))) {
@@ -1463,8 +1470,15 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, ScanPr
 			}
 
 			if (da->current_is_dir()) {
-				if (f.begins_with(".")) { // Ignore special and . / ..
+				if (f == "." || f == "..") { // Ignore . / ..
 					continue;
+				}
+
+				if (f.begins_with(".")) { // Ignore special
+					singleton->mark_folder_hidden(cd.path_join(f), true);
+					if (!singleton->is_showing_hidden_folders()) {
+						continue;
+					}
 				}
 
 				int idx = p_dir->find_dir_index(f);
@@ -1896,9 +1910,17 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	EditorFileSystemDirectory *fs = filesystem;
 
 	for (const String &path_bit : path) {
-		if (path_bit.begins_with(".")) {
-			return false;
+		if (path_bit == "." || path_bit == "..") {
+			continue;
 		}
+
+		if (path_bit.begins_with(".")) {
+			singleton->mark_folder_hidden(fs->get_path().path_join(path_bit), true);
+			if (!singleton->is_showing_hidden_folders()) {
+				return false;
+			}
+		}
+
 		const String path_bit_lower = path_bit.to_lower();
 
 		int idx = -1;
@@ -3481,7 +3503,8 @@ bool EditorFileSystem::_should_skip_directory(const String &p_path) {
 
 	if (FileAccess::exists(p_path.path_join(".gdignore"))) {
 		// Skip if a `.gdignore` file is inside this.
-		return true;
+		singleton->mark_folder_hidden(p_path, true);
+		return !singleton->is_showing_hidden_folders();
 	}
 
 	return false;
@@ -3646,6 +3669,66 @@ Error EditorFileSystem::copy_directory(const String &p_from, const String &p_to)
 	return success ? OK : FAILED;
 }
 
+void EditorFileSystem::mark_folder_hidden(const String &p_path, bool p_hidden, bool p_update) {
+	MutexLock hidden_folders_lock(hidden_folders_mutex);
+	const String path = p_path.trim_suffix("/");
+	const String gdignore = path.path_join(".gdignore");
+	bool is_hidden = FileAccess::exists(gdignore);
+	bool is_marked_hidden = hidden_folders.has(path);
+	bool is_read_only = p_path.begins_with(".");
+	if (!is_read_only) {
+		if (is_hidden && !p_hidden) {
+			DirAccess::remove_absolute(gdignore);
+		} else if (!is_hidden && p_hidden) {
+			FileAccess::open(gdignore, FileAccess::WRITE);
+		}
+	}
+
+	if (p_hidden && !is_marked_hidden) {
+		hidden_folders.insert(path);
+	} else if (!p_hidden && is_marked_hidden) {
+		hidden_folders.erase(path);
+	}
+
+	if (p_update) {
+		ScanProgress sp;
+		EditorFileSystemDirectory *parent = get_filesystem_path(path.get_base_dir());
+		if (parent) {
+			parent->force_update();
+			_scan_fs_changes(parent, sp, false);
+		}
+
+		_update_scan_actions();
+		_queue_refresh_filesystem();
+	}
+}
+
+void EditorFileSystem::set_show_hidden_folders(bool p_show) {
+	show_hidden_folders = p_show;
+	ScanProgress sp;
+	HashSet<ObjectID> scanned;
+	for (const String &path : hidden_folders) {
+		EditorFileSystemDirectory *parent = get_filesystem_path(path.get_base_dir());
+		if (parent && !scanned.has(parent->get_instance_id())) {
+			parent->force_update();
+			_scan_fs_changes(parent, sp, false);
+			scanned.insert(parent->get_instance_id());
+		}
+	}
+
+	_update_scan_actions();
+	_queue_refresh_filesystem();
+}
+
+bool EditorFileSystem::is_showing_hidden_folders() const {
+	return show_hidden_folders;
+}
+
+bool EditorFileSystem::is_folder_hidden(const String &p_path) const {
+	MutexLock hidden_folders_lock(hidden_folders_mutex);
+	return hidden_folders.has(p_path.trim_suffix("/"));
+}
+
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
 	if (!p_path.is_resource_file() || p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
 		// Saved externally (configuration file) or internal file, do not assign an ID.
@@ -3777,6 +3860,7 @@ EditorFileSystem::EditorFileSystem() {
 	// See GH-112072 for details.
 	use_threads = true;
 #endif
+	show_hidden_folders = EDITOR_GET("filesystem/file_dialog/show_hidden_files");
 
 	ResourceLoader::import = _resource_import;
 	reimport_on_missing_imported_files = GLOBAL_GET("editor/import/reimport_missing_imported_files");

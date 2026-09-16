@@ -130,6 +130,7 @@ private:
 		FILE_MENU_COPY_PATH,
 		FILE_MENU_COPY_ABSOLUTE_PATH,
 		FILE_MENU_COPY_UID,
+		FILE_MENU_TOGGLE_FOLDER,
 		FILE_MENU_EXPAND_ALL,
 		FILE_MENU_COLLAPSE_ALL,
 		FILE_MENU_NEW_RESOURCE,
@@ -175,12 +176,14 @@ private:
 	HBoxContainer *toolbar2_hbc = nullptr;
 	LineEdit *tree_search_box = nullptr;
 	MenuButton *tree_button_sort = nullptr;
+	Button *tree_button_toggle_folders = nullptr;
 
 	HBoxContainer *bottom_toolbar_hbc = nullptr;
 	HSlider *thumbnail_size_slider = nullptr;
 
 	LineEdit *file_list_search_box = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
+	Button *file_list_button_toggle_folders = nullptr;
 
 	PackedStringArray searched_tokens;
 	Vector<String> uncollapsed_paths_before_search;
@@ -399,6 +402,8 @@ private:
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 	void _on_open_editor_settings_file_exts();
+
+	void _toggle_folders_visibility(bool p_toggled);
 
 private:
 	inline static FileSystemDock *singleton = nullptr;

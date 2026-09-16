@@ -346,6 +346,10 @@ class EditorFileSystem : public Node {
 	bool refresh_queued = false;
 	HashSet<ObjectID> folders_to_sort;
 
+	bool show_hidden_folders = false;
+	Mutex hidden_folders_mutex;
+	HashSet<String> hidden_folders;
+
 	Error _copy_file(const String &p_from, const String &p_to);
 	bool _copy_directory(const String &p_from, const String &p_to, HashMap<String, String> *p_files);
 	void _queue_refresh_filesystem();
@@ -413,6 +417,11 @@ public:
 	Error make_dir_recursive(const String &p_path, const String &p_base_path = String());
 	Error copy_file(const String &p_from, const String &p_to);
 	Error copy_directory(const String &p_from, const String &p_to);
+
+	void mark_folder_hidden(const String &p_path, bool p_hidden, bool p_update = false);
+	void set_show_hidden_folders(bool p_show);
+	bool is_showing_hidden_folders() const;
+	bool is_folder_hidden(const String &p_path) const;
 
 	static bool _should_skip_directory(const String &p_path);
 
