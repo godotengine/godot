@@ -100,7 +100,7 @@ void FoliageSpawner3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("regenerate"), &FoliageSpawner3D::regenerate);
 	ClassDB::bind_method(D_METHOD("get_regenerate_button"), &FoliageSpawner3D::_get_regenerate_button);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "BoxMesh,SphereMesh,CapsuleMesh,CylinderMesh,PrismMesh,TorusMesh,PlaneMesh,QuadMesh,TextMesh,RibbonTrailMesh,TubeTrailMesh,PointMesh,ArrayMesh,ImmediateMesh,PlaceholderMesh,Mesh", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_mesh", "get_mesh");
 
 	ADD_GROUP("Volume", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "volume_size", PROPERTY_HINT_RANGE, "0.01,4096,0.01,or_greater,suffix:m"), "set_volume_size", "get_volume_size");
