@@ -1536,7 +1536,7 @@ void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buf
 	ss_effects->screen_space_reflection(p_render_buffers, rb_data->ss_effects_data.ssr, p_normal_slices, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), p_projections, reprojections, p_eye_offsets, *copy_effects);
 }
 
-void RenderForwardClustered::_process_sscs(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection *p_projections, const Transform3D &p_transform, const LocalVector<int> &p_contact_shadows, const RenderShadowData *p_render_shadows, const float p_taa_frame_count) {
+void RenderForwardClustered::_process_sscs(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection *p_projections, const Transform3D &p_transform, const LocalVector<RID> &p_contact_shadow_lights, const float p_taa_frame_count) {
 	ERR_FAIL_NULL(ss_effects);
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
@@ -1553,14 +1553,11 @@ void RenderForwardClustered::_process_sscs(Ref<RenderSceneBuffersRD> p_render_bu
 
 	Transform3D inverse_transform = p_transform.affine_inverse();
 
-	ss_effects->sscs_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.sscs, p_contact_shadows.size());
+	ss_effects->sscs_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.sscs, p_contact_shadow_lights.size());
 
-	for (uint32_t i = 0; i < p_contact_shadows.size(); i++) {
-		RID light_instance = p_render_shadows[p_contact_shadows[i]].light;
+	for (uint32_t i = 0; i < p_contact_shadow_lights.size(); i++) {
+		RID light_instance = p_contact_shadow_lights[i];
 		RID base = light_storage->light_instance_get_base_light(light_instance);
-		if (!light_storage->light_get_allow_contact_shadows(base)) {
-			continue;
-		}
 
 		Transform3D light_transform = light_storage->light_instance_get_base_transform(light_instance);
 		Vector3 light_direction = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(0, 0, 1))).normalized();
@@ -1607,9 +1604,37 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	p_render_data->cube_shadows.clear();
 	p_render_data->shadows.clear();
 	p_render_data->directional_shadows.clear();
-	p_render_data->contact_shadows.clear();
+	p_render_data->contact_shadow_lights.clear();
 
 	float lod_distance_multiplier = p_render_data->scene_data->cam_projection.get_lod_multiplier();
+
+	if (rb_data.is_valid() && ss_effects && p_render_data->lights) {
+		// Screen space shadows are computed straight from the depth buffer, so they don't require
+		// the light to have a real-time shadow map rendered this frame. Gather every directional
+		// light that opts in, independently of the shadow-casting lights below.
+		// This mirrors the filtering LightStorage::update_light_buffers() applies when it assigns
+		// each directional light's sscs_index, so the two stay in sync.
+		uint32_t directional_light_count = 0;
+		uint32_t max_directional_lights = light_storage->get_max_directional_lights();
+		for (int i = 0; i < (int)p_render_data->lights->size(); i++) {
+			RID li = (*p_render_data->lights)[i];
+			RID base = light_storage->light_instance_get_base_light(li);
+
+			if (light_storage->light_get_type(base) != RSE::LIGHT_DIRECTIONAL || light_storage->light_directional_get_sky_mode(base) == RSE::LIGHT_DIRECTIONAL_SKY_MODE_SKY_ONLY) {
+				continue;
+			}
+
+			if (directional_light_count >= max_directional_lights) {
+				break;
+			}
+			directional_light_count++;
+
+			if (light_storage->light_get_allow_contact_shadows(base)) {
+				p_render_data->contact_shadow_lights.push_back(li);
+			}
+		}
+	}
+
 	{
 		for (int i = 0; i < p_render_data->render_shadow_count; i++) {
 			RID li = p_render_data->render_shadows[i].light;
@@ -1617,15 +1642,6 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 
 			if (light_storage->light_get_type(base) == RSE::LIGHT_DIRECTIONAL) {
 				p_render_data->directional_shadows.push_back(i);
-
-				if (rb_data.is_valid() && ss_effects) {
-					// Add contact shadows to be processed
-					if (p_render_data->render_shadows[i].pass == 0 && light_storage->light_get_allow_contact_shadows(base)) {
-						// Contact shadows only need one pass
-						p_render_data->contact_shadows.push_back(i);
-					}
-				}
-
 			} else if (light_storage->light_get_type(base) == RSE::LIGHT_OMNI && light_storage->light_omni_get_shadow_mode(base) == RSE::LIGHT_OMNI_SHADOW_CUBE) {
 				p_render_data->cube_shadows.push_back(i);
 			} else {
@@ -1712,7 +1728,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		}
 
 		if (p_use_sscs) {
-			_process_sscs(rb, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform, p_render_data->contact_shadows, p_render_data->render_shadows, p_render_data->scene_data->taa_frame_count);
+			_process_sscs(rb, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform, p_render_data->contact_shadow_lights, p_render_data->scene_data->taa_frame_count);
 		}
 
 		if (p_use_ssr) {
