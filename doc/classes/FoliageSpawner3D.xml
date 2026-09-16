@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FoliageSpawner3D" inherits="MultiMeshInstance3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Scatters instances of a [Mesh] procedurally inside a configurable box volume.
+	</brief_description>
+	<description>
+		[FoliageSpawner3D] fills a box-shaped volume with randomly placed and oriented copies of [member mesh], similar to Unreal Engine's Procedural Foliage Spawner. It is a specialized [MultiMeshInstance3D]: the generated instances are stored and rendered as a [MultiMesh], but that [MultiMesh] is created automatically and should not be edited directly.
+		The volume to fill is defined by [member volume_size], centered on the node's origin. Placement is controlled by [member density] (points per square meter of the volume's footprint) and [member min_distance] (a minimum spacing enforced between instances so they don't overlap). A grayscale [member distribution_mask] can be assigned to bias or forbid placement in specific areas, and [member seed] makes generation reproducible.
+		If [member project_on_collision] is enabled (the default), each candidate point is projected straight down onto the closest physics collider within the volume (e.g. terrain), and points whose surface is steeper than [member max_slope_degrees] are discarded; otherwise points are distributed freely throughout the volume's height. Instances can optionally be tilted to align with the surface normal ([member align_to_normal]) and receive random rotation, extra random tilt, and random uniform scale for natural-looking variation.
+		Nothing is generated automatically: call [method regenerate] (or press the [b]Regenerate[/b] button in the Inspector) whenever the volume, mesh, or any distribution setting changes. The resulting [MultiMesh] is then saved with the scene, so no extra runtime cost is paid on load. To scatter several kinds of vegetation in the same area, add multiple [FoliageSpawner3D] nodes, one per [Mesh].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="regenerate">
+			<return type="void" />
+			<description>
+				Discards the current instances and generates a new set according to the node's current settings, using [member seed] to seed the random number generator. This can be called both in the editor and at runtime; it requires the node to be inside the [SceneTree] when [member project_on_collision] is enabled, since it performs physics ray queries against the current [World3D].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="align_to_normal" type="bool" setter="set_align_to_normal" getter="is_aligned_to_normal" default="true">
+			If [code]true[/code], instances are tilted so their up axis follows the surface normal returned by [member project_on_collision] (blended in by [member align_to_normal_amount]). Has no effect when [member project_on_collision] is [code]false[/code].
+		</member>
+		<member name="align_to_normal_amount" type="float" setter="set_align_to_normal_amount" getter="get_align_to_normal_amount" default="1.0">
+			Blends each instance's up axis between world up ([code]0.0[/code]) and the surface normal ([code]1.0[/code]) when [member align_to_normal] is enabled.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The physics layers that are checked when [member project_on_collision] is enabled. Only colliders matching this mask can receive foliage instances.
+		</member>
+		<member name="density" type="float" setter="set_density" getter="get_density" default="1.0">
+			The target number of instances per square meter of the volume's XZ footprint ([member volume_size].x × [member volume_size].z). The actual instance count is also limited by [member max_instances], [member min_distance], [member distribution_mask], and [member project_on_collision].
+		</member>
+		<member name="distribution_mask" type="Texture2D" setter="set_distribution_mask" getter="get_distribution_mask">
+			An optional grayscale mask sampled across the volume's XZ footprint (black = 0.0, white = 1.0) and used as the probability that a given candidate point is kept. Set [member mask_invert] to flip which areas are favored.
+		</member>
+		<member name="mask_invert" type="bool" setter="set_mask_invert" getter="is_mask_inverted" default="false">
+			If [code]true[/code], inverts the values sampled from [member distribution_mask] (white areas become forbidden, black areas become favored).
+		</member>
+		<member name="max_attempts_factor" type="int" setter="set_max_attempts_factor" getter="get_max_attempts_factor" default="30">
+			A multiplier on the target instance count used to bound how many candidate points [method regenerate] will try before giving up. Increase this if strict [member min_distance] or [member distribution_mask] settings are preventing [member density] from being reached; decrease it to bound worst-case generation time.
+		</member>
+		<member name="max_instances" type="int" setter="set_max_instances" getter="get_max_instances" default="2048">
+			A hard cap on the number of instances that can be generated, regardless of [member density] and the volume's size.
+		</member>
+		<member name="max_scale" type="float" setter="set_max_scale" getter="get_max_scale" default="1.1">
+			The upper bound of the random uniform scale applied to each instance. See also [member min_scale].
+		</member>
+		<member name="max_slope_degrees" type="float" setter="set_max_slope_degrees" getter="get_max_slope_degrees" default="45.0">
+			When [member project_on_collision] is enabled, candidate points whose surface normal is tilted more than this many degrees from world up are discarded.
+		</member>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+			The [Mesh] to scatter throughout the volume. [FoliageSpawner3D] generates nothing until this is set.
+		</member>
+		<member name="min_distance" type="float" setter="set_min_distance" getter="get_min_distance" default="0.5">
+			The minimum horizontal distance enforced between any two instances, measured on the volume's XZ footprint. Set to [code]0.0[/code] to disable spacing checks.
+		</member>
+		<member name="min_scale" type="float" setter="set_min_scale" getter="get_min_scale" default="0.9">
+			The lower bound of the random uniform scale applied to each instance. See also [member max_scale].
+		</member>
+		<member name="project_on_collision" type="bool" setter="set_project_on_collision" getter="is_projecting_on_collision" default="true">
+			If [code]true[/code], each candidate point is placed by casting a ray straight down (in the volume's local space) from the top of [member volume_size] and snapping to the first collider hit, honoring [member collision_mask] and [member max_slope_degrees]. Points that hit nothing are discarded. If [code]false[/code], points are instead placed at a random height inside the volume without any collision check.
+		</member>
+		<member name="random_rotation" type="bool" setter="set_random_rotation" getter="is_random_rotation_enabled" default="true">
+			If [code]true[/code], each instance receives a random rotation around its up axis.
+		</member>
+		<member name="random_tilt_degrees" type="float" setter="set_random_tilt_degrees" getter="get_random_tilt_degrees" default="0.0">
+			The maximum random tilt, in degrees, applied on top of [member align_to_normal] for natural-looking variation.
+		</member>
+		<member name="regenerate_button" type="Callable" setter="" getter="get_regenerate_button">
+			Pressing this button in the Inspector calls [method regenerate]. It is not meant to be read or assigned from code; use [method regenerate] directly instead.
+		</member>
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
+			The seed used to initialize the random number generator during [method regenerate]. Using the same seed with the same settings always produces the same result.
+		</member>
+		<member name="volume_size" type="Vector3" setter="set_volume_size" getter="get_volume_size" default="Vector3(10, 4, 10)">
+			The size of the box volume that instances are scattered within, centered on the node's origin.
+		</member>
+	</members>
+</class>

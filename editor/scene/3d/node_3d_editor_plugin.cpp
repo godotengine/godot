@@ -58,6 +58,7 @@
 #include "editor/scene/3d/gizmos/cpu_particles_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/decal_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/fog_volume_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/foliage_spawner_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/geometry_instance_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/gpu_particles_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/gpu_particles_collision_3d_gizmo_plugin.h"
@@ -3022,6 +3023,7 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<LightmapGIGizmoPlugin>(memnew(LightmapGIGizmoPlugin)));
 	add_gizmo_plugin(Ref<LightmapProbeGizmoPlugin>(memnew(LightmapProbeGizmoPlugin)));
 	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));
+	add_gizmo_plugin(Ref<FoliageSpawner3DGizmoPlugin>(memnew(FoliageSpawner3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<TwoBoneIK3DGizmoPlugin>(memnew(TwoBoneIK3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<ChainIK3DGizmoPlugin>(memnew(ChainIK3DGizmoPlugin)));
 	// Physics gizmo plugins.
