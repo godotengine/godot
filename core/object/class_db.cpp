@@ -1875,6 +1875,8 @@ HashMap<StringName, HashMap<StringName, Variant>> ClassDB::default_values;
 HashSet<StringName> ClassDB::default_values_cached;
 
 Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid) {
+	Locker::Lock lock(Locker::STATE_WRITE);
+
 	if (!default_values_cached.has(p_class)) {
 		if (!default_values.has(p_class)) {
 			default_values[p_class] = HashMap<StringName, Variant>();
