@@ -1180,7 +1180,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 	TextureToRDFormat ret_format;
 	Image::Format validated_format = Image::FORMAT_MAX;
 	Vector<uint8_t> all_data;
-	uint32_t mipmap_count = 0;
+	uint32_t mipmap_count = 1;
 	Vector<Texture::BufferSlice3D> slices;
 	{
 		Vector<Ref<Image>> images;
@@ -1199,7 +1199,6 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 
 		all_data.resize(all_data_size); //consolidate all data here
 		uint32_t offset = 0;
-		Size2i prev_size;
 		for (int i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
 
@@ -1215,10 +1214,21 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 			offset += s;
 
 			Size2i img_size(images[i]->get_width(), images[i]->get_height());
-			if (img_size != prev_size) {
+		}
+
+		// Calculate the mipmap count again.
+		if (p_mipmaps) {
+			int mmw = p_width;
+			int mmh = p_height;
+			int mmd = p_depth;
+
+			while (mmw > 1 || mmh > 1 || mmd > 1) {
 				mipmap_count++;
+
+				mmw = MAX(1, mmw >> 1);
+				mmh = MAX(1, mmh >> 1);
+				mmd = MAX(1, mmd >> 1);
 			}
-			prev_size = img_size;
 		}
 	}
 
