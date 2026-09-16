@@ -632,7 +632,7 @@ Error ResourceLoaderBinary::load() {
 
 		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path = ProjectSettings::get_singleton()->localize_path(path.get_base_dir().path_join(external_resources[i].path));
+			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().path_join(path));
 		}
 
 		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
