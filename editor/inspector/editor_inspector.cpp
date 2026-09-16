@@ -5104,7 +5104,15 @@ void EditorInspector::update_tree() {
 
 		// Search for the inspector plugin that will handle the properties. Then add the correct property editor to it.
 		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
-			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
+			Variant::Type type = p.type;
+			BitField<PropertyUsageFlags> usage = p.usage;
+			// Make metadata properties use `EditorPropertyVariant`.
+			if (p.name.begins_with("metadata/")) {
+				type = Variant::NIL;
+				usage.set_flag(PROPERTY_USAGE_NIL_IS_VARIANT);
+			}
+
+			bool exclusive = ped->parse_property(object, type, p.name, p.hint, p.hint_string, usage, wide_editors);
 
 			for (const EditorInspectorPlugin::AddedEditor &F : ped->added_editors) {
 				if (F.add_to_end) {
@@ -5154,6 +5162,12 @@ void EditorInspector::update_tree() {
 							_default = PropertyUtils::get_property_default_value(node, p.name, nullptr, &sstack, false, nullptr, nullptr);
 						}
 						ep_deletable = _default == Variant();
+
+						EditorPropertyVariant *epvar = Object::cast_to<EditorPropertyVariant>(ep);
+						if (epvar) {
+							epvar->set_disabled_types({ Variant::NIL });
+							epvar->set_renames({ { Variant::OBJECT, "Resource" } });
+						}
 					}
 				}
 
