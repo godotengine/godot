@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A camera node which automatically positions itself based on XR tracking data.
-		In contrast to [XRController3D], the render thread has access to more up-to-date tracking data, and the location of the [XRCamera3D] node can lag a few milliseconds behind what is used for rendering.
+		[b]Note:[/b] due to the nature of headsets, camera positioning needs to update every frame even when your game is paused. [member Node.process_mode] must be set to [constant Node.PROCESS_MODE_ALWAYS].
 	</description>
 	<tutorials>
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
