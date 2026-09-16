@@ -45,6 +45,12 @@ void AudioDriver::set_singleton() {
 	singleton = this;
 }
 
+AudioDriver::~AudioDriver() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
+
 #ifdef DEBUG_ENABLED
 void AudioDriver::start_counting_ticks() {
 	prof_ticks.set(OS::get_singleton()->get_ticks_usec());
@@ -248,4 +254,9 @@ void AudioDriverManager::initialize(int p_driver) {
 AudioDriver *AudioDriverManager::get_driver(int p_driver) {
 	ERR_FAIL_INDEX_V(p_driver, driver_count, nullptr);
 	return drivers[p_driver];
+}
+
+void AudioDriverManager::reset() {
+	drivers[0] = &AudioDriverManager::dummy_driver;
+	driver_count = 1;
 }

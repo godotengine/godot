@@ -103,4 +103,5 @@ public:
 	static ResourceUID *get_singleton() { return singleton; }
 
 	ResourceUID();
+	~ResourceUID();
 };

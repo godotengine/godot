@@ -1492,3 +1492,8 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	singleton = this;
 }
+
+EditorBuildProfileManager::~EditorBuildProfileManager() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}

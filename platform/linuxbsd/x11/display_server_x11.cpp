@@ -7573,9 +7573,11 @@ DisplayServerX11::~DisplayServerX11() {
 	if (xkb_loaded_v05p) {
 		if (dead_tbl) {
 			xkb_compose_table_unref(dead_tbl);
+			dead_tbl = nullptr;
 		}
 		if (xkb_ctx) {
 			xkb_context_unref(xkb_ctx);
+			xkb_ctx = nullptr;
 		}
 	}
 #endif
@@ -7594,6 +7596,7 @@ DisplayServerX11::~DisplayServerX11() {
 #endif
 
 #ifdef GLES3_ENABLED
+	release_rendering_thread();
 	if (gl_manager) {
 		memdelete(gl_manager);
 		gl_manager = nullptr;
@@ -7606,6 +7609,7 @@ DisplayServerX11::~DisplayServerX11() {
 
 	if (xrandr_handle) {
 		dlclose(xrandr_handle);
+		xrandr_handle = nullptr;
 	}
 
 	for (int i = 0; i < DisplayServerEnums::CURSOR_MAX; i++) {
@@ -7614,26 +7618,41 @@ DisplayServerX11::~DisplayServerX11() {
 		}
 		if (cursor_img[i] != nullptr) {
 			XcursorImageDestroy(cursor_img[i]);
+			cursor_img[i] = nullptr;
 		}
 	}
 
 	if (xim) {
 		XCloseIM(xim);
+		xim = nullptr;
 	}
 
 	XCloseDisplay(x11_display);
+	x11_display = nullptr;
 	if (xmbstring) {
 		memfree(xmbstring);
+		xmbstring = nullptr;
 	}
-
 #ifdef SPEECHD_ENABLED
-	memdelete(tts);
+	if (tts) {
+		memdelete(tts);
+		tts = nullptr;
+	}
 #endif
 
 #ifdef DBUS_ENABLED
-	memdelete(screensaver);
-	memdelete(portal_desktop);
-	memdelete(atspi_monitor);
+	if (screensaver) {
+		memdelete(screensaver);
+		screensaver = nullptr;
+	}
+	if (portal_desktop) {
+		memdelete(portal_desktop);
+		portal_desktop = nullptr;
+	}
+	if (atspi_monitor) {
+		memdelete(atspi_monitor);
+		atspi_monitor = nullptr;
+	}
 #endif
 }
 

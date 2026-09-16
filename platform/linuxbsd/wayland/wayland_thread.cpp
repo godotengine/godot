@@ -3845,7 +3845,11 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 		wl_display_flush(data->wl_display);
 
 		// Wait for the event file descriptor to have new data.
+#ifndef LIBGODOT_ENABLED
 		poll(&poll_fd, 1, -1);
+#else
+		poll(&poll_fd, 1, 60000);
+#endif
 
 		if (data->thread_done.is_set()) {
 			wl_display_cancel_read(data->wl_display);

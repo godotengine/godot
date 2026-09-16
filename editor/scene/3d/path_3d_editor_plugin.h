@@ -185,6 +185,7 @@ public:
 	void set_handle_clicked(bool clicked) { handle_clicked = clicked; }
 
 	Path3DEditorPlugin();
+	~Path3DEditorPlugin();
 
 private:
 	struct EditData {

@@ -650,8 +650,10 @@ void BaseMaterial3D::finish_shaders() {
 
 	dirty_materials.clear();
 
-	memdelete(shader_names);
-	shader_names = nullptr;
+	if (shader_names) {
+		memdelete(shader_names);
+		shader_names = nullptr;
+	}
 }
 
 void BaseMaterial3D::_update_shader() {
