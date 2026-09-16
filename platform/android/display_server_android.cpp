@@ -788,7 +788,7 @@ void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
 
 void DisplayServerAndroid::notify_application_paused() {
 #if defined(RD_ENABLED)
-	if (rendering_device) {
+	if (rendering_device && rendering_device->is_pipeline_cache_enabled()) {
 		rendering_device->update_pipeline_cache();
 	}
 #endif // defined(RD_ENABLED)

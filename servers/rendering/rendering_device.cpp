@@ -8873,6 +8873,8 @@ Vector<uint8_t> RenderingDevice::_load_pipeline_cache() {
 }
 
 void RenderingDevice::update_pipeline_cache(bool p_closing) {
+	ERR_FAIL_COND(!pipeline_cache_enabled);
+
 	_THREAD_SAFE_METHOD_
 
 	{
