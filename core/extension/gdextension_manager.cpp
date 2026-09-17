@@ -47,7 +47,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 		if (!p_first_load) {
 			minimum_level = p_extension->get_minimum_library_initialization_level();
 			if (minimum_level < MIN(level, GDExtension::INITIALIZATION_LEVEL_SCENE)) {
-				return LOAD_STATUS_NEEDS_RESTART;
+				return LoadStatus::NEEDS_RESTART;
 			}
 		}
 		// Initialize up to current level.
@@ -60,7 +60,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 		gdextension_class_icon_paths[kv.key] = kv.value;
 	}
 
-	return LOAD_STATUS_OK;
+	return LoadStatus::OK;
 }
 
 void GDExtensionManager::_finish_load_extension(const Ref<GDExtension> &p_extension) {
@@ -109,12 +109,12 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 	p_extension->shutdown_callback = nullptr;
 	p_extension->frame_callback = nullptr;
 
-	return LOAD_STATUS_OK;
+	return LoadStatus::OK;
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &p_path) {
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
-		return LOAD_STATUS_FAILED;
+		return LoadStatus::FAILED;
 	}
 
 	Ref<GDExtensionLibraryLoader> loader;
@@ -133,7 +133,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	DEV_ASSERT(p_loader.is_valid());
 
 	if (gdextension_map.has(p_path)) {
-		return LOAD_STATUS_ALREADY_LOADED;
+		return LoadStatus::ALREADY_LOADED;
 	}
 
 	Ref<GDExtension> extension;
@@ -141,13 +141,13 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	Error err = extension->open_library(p_path, p_loader);
 	if (err != OK) {
 		if (err == ERR_SKIP) {
-			return LOAD_STATUS_NOT_LOADED;
+			return LoadStatus::NOT_LOADED;
 		}
-		return LOAD_STATUS_FAILED;
+		return LoadStatus::FAILED;
 	}
 
 	LoadStatus status = _load_extension_internal(extension, true);
-	if (status != LOAD_STATUS_OK) {
+	if (status != LoadStatus::OK) {
 		return status;
 	}
 
@@ -155,25 +155,25 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 
 	extension->set_path(p_path);
 	gdextension_map[p_path] = extension;
-	return LOAD_STATUS_OK;
+	return LoadStatus::OK;
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String &p_path) {
 #ifndef TOOLS_ENABLED
-	ERR_FAIL_V_MSG(LOAD_STATUS_FAILED, "GDExtensions can only be reloaded in an editor build.");
+	ERR_FAIL_V_MSG(LoadStatus::FAILED, "GDExtensions can only be reloaded in an editor build.");
 #else
-	ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->is_extension_reloading_enabled(), LOAD_STATUS_FAILED, "GDExtension reloading is disabled.");
+	ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->is_extension_reloading_enabled(), LoadStatus::FAILED, "GDExtension reloading is disabled.");
 
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
-		return LOAD_STATUS_FAILED;
+		return LoadStatus::FAILED;
 	}
 
 	if (!gdextension_map.has(p_path)) {
-		return LOAD_STATUS_NOT_LOADED;
+		return LoadStatus::NOT_LOADED;
 	}
 
 	Ref<GDExtension> extension = gdextension_map[p_path];
-	ERR_FAIL_COND_V_MSG(!extension->is_reloadable(), LOAD_STATUS_FAILED, vformat("This GDExtension is not marked as 'reloadable' or doesn't support reloading: %s.", p_path));
+	ERR_FAIL_COND_V_MSG(!extension->is_reloadable(), LoadStatus::FAILED, vformat("This GDExtension is not marked as 'reloadable' or doesn't support reloading: %s.", p_path));
 
 	LoadStatus status;
 
@@ -183,7 +183,7 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 	// change that broke loading in a previous hot-reload attempt.
 	if (extension->is_library_open()) {
 		status = _unload_extension_internal(extension);
-		if (status != LOAD_STATUS_OK) {
+		if (status != LoadStatus::OK) {
 			// We need to clear these no matter what.
 			extension->clear_instance_bindings();
 			return status;
@@ -196,13 +196,13 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 	Error err = extension->open_library(p_path, extension->loader);
 	if (err != OK) {
 		if (err == ERR_SKIP) {
-			return LOAD_STATUS_NOT_LOADED;
+			return LoadStatus::NOT_LOADED;
 		}
-		return LOAD_STATUS_FAILED;
+		return LoadStatus::FAILED;
 	}
 
 	status = _load_extension_internal(extension, false);
-	if (status != LOAD_STATUS_OK) {
+	if (status != LoadStatus::OK) {
 		return status;
 	}
 
@@ -212,28 +212,28 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 	// extension classes are in a consistent state.
 	_finish_load_extension(extension);
 
-	return LOAD_STATUS_OK;
+	return LoadStatus::OK;
 #endif
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::unload_extension(const String &p_path) {
 	if (Engine::get_singleton()->is_recovery_mode_hint()) {
-		return LOAD_STATUS_FAILED;
+		return LoadStatus::FAILED;
 	}
 
 	if (!gdextension_map.has(p_path)) {
-		return LOAD_STATUS_NOT_LOADED;
+		return LoadStatus::NOT_LOADED;
 	}
 
 	Ref<GDExtension> extension = gdextension_map[p_path];
 
 	LoadStatus status = _unload_extension_internal(extension);
-	if (status != LOAD_STATUS_OK) {
+	if (status != LoadStatus::OK) {
 		return status;
 	}
 
 	gdextension_map.erase(p_path);
-	return LOAD_STATUS_OK;
+	return LoadStatus::OK;
 }
 
 bool GDExtensionManager::is_extension_loaded(const String &p_path) const {
@@ -336,7 +336,7 @@ void GDExtensionManager::load_extensions() {
 		String s = f->get_line().strip_edges();
 		if (!s.is_empty()) {
 			LoadStatus err = load_extension(s);
-			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, vformat("Error loading extension: '%s'.", s));
+			ERR_CONTINUE_MSG(err == LoadStatus::FAILED, vformat("Error loading extension: '%s'.", s));
 		}
 	}
 
@@ -413,11 +413,11 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 #endif
 	for (const String &extension : extensions_added) {
 		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->load_extension(extension);
-		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+		if (st == GDExtensionManager::LoadStatus::NEEDS_RESTART) {
 			needs_restart = true;
 		}
 #ifdef TOOLS_ENABLED
-		if (st == GDExtensionManager::LOAD_STATUS_OK) {
+		if (st == GDExtensionManager::LoadStatus::OK) {
 			trigger_reload = true;
 		}
 #endif
@@ -425,11 +425,11 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 
 	for (const String &extension : extensions_removed) {
 		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->unload_extension(extension);
-		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
+		if (st == GDExtensionManager::LoadStatus::NEEDS_RESTART) {
 			needs_restart = true;
 		}
 #ifdef TOOLS_ENABLED
-		if (st == GDExtensionManager::LOAD_STATUS_OK) {
+		if (st == GDExtensionManager::LoadStatus::OK) {
 			trigger_reload = true;
 		}
 #endif
@@ -493,11 +493,11 @@ void GDExtensionManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_loaded_extensions"), &GDExtensionManager::get_loaded_extensions);
 	ClassDB::bind_method(D_METHOD("get_extension", "path"), &GDExtensionManager::get_extension);
 
-	BIND_ENUM_CONSTANT(LOAD_STATUS_OK);
-	BIND_ENUM_CONSTANT(LOAD_STATUS_FAILED);
-	BIND_ENUM_CONSTANT(LOAD_STATUS_ALREADY_LOADED);
-	BIND_ENUM_CONSTANT(LOAD_STATUS_NOT_LOADED);
-	BIND_ENUM_CONSTANT(LOAD_STATUS_NEEDS_RESTART);
+	BIND_ENUM_CONSTANT_EXT(LoadStatus::OK, LOAD_STATUS_OK);
+	BIND_ENUM_CONSTANT_EXT(LoadStatus::FAILED, LOAD_STATUS_FAILED);
+	BIND_ENUM_CONSTANT_EXT(LoadStatus::ALREADY_LOADED, LOAD_STATUS_ALREADY_LOADED);
+	BIND_ENUM_CONSTANT_EXT(LoadStatus::NOT_LOADED, LOAD_STATUS_NOT_LOADED);
+	BIND_ENUM_CONSTANT_EXT(LoadStatus::NEEDS_RESTART, LOAD_STATUS_NEEDS_RESTART);
 
 	ADD_SIGNAL(MethodInfo("extensions_reloaded"));
 	ADD_SIGNAL(MethodInfo("extension_loaded", PropertyInfo(Variant::OBJECT, "extension", PROPERTY_HINT_RESOURCE_TYPE, GDExtension::get_class_static())));
