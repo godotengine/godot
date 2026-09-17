@@ -67,11 +67,16 @@ bool GodotInstance::start() {
 	if (err != OK) {
 		return false;
 	}
-	started = Main::start() == EXIT_SUCCESS;
-	if (started) {
-		OS::get_singleton()->get_main_loop()->initialize();
+	if (Main::start() != EXIT_SUCCESS) {
+		return false;
 	}
-	return started;
+
+	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
+	if (main_loop) {
+		started = true;
+		main_loop->initialize();
+	}
+	return true;
 }
 
 bool GodotInstance::is_started() {
