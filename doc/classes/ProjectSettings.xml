@@ -1724,10 +1724,10 @@
 			On Wear OS devices, defines which axis of the mouse wheel rotary input is mapped to. This rotary input is usually performed by rotating the physical or virtual (touch-based) bezel on a smartwatch.
 		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen.
+			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen. The original touch events are still sent. The created mouse events will use [constant InputEvent.DEVICE_ID_EMULATION] to distinguish them. This can be used to support touch input for controls that only support mouse events.
 		</member>
 		<member name="input_devices/pointing/emulate_touch_from_mouse" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], sends touch input events when clicking or dragging the mouse.
+			If [code]true[/code], sends touch input events when clicking or dragging the mouse. The original mouse events are still sent. The created touch events will use [constant InputEvent.DEVICE_ID_EMULATION] to distinguish them. This can be used to support mouse input for controls that only support touch events.
 		</member>
 		<member name="input_devices/sensors/enable_accelerometer" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the accelerometer sensor is enabled and [method Input.get_accelerometer] returns valid data.
