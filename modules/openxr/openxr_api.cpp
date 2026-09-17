@@ -1963,19 +1963,7 @@ Size2 OpenXRAPI::get_render_target_size() {
 	return get_recommended_target_size();
 }
 
-void OpenXRAPI::update_head_tracking() {
-	XrResult result;
-
-	if (!running) {
-		return;
-	}
-
-	// Get display time
-	XrTime display_time = get_predicted_display_time();
-	if (display_time == 0) {
-		return;
-	}
-
+void OpenXRAPI::update_head_transform(XrTime p_display_time) {
 	// Get head location first by checking the relationship between our view and play space.
 	XrSpaceVelocity velocity = {
 		XR_TYPE_SPACE_VELOCITY, // type
@@ -1995,7 +1983,7 @@ void OpenXRAPI::update_head_tracking() {
 		} // pose
 	};
 
-	result = xrLocateSpace(view_space, play_space, display_time, &location);
+	XrResult result = xrLocateSpace(view_space, play_space, p_display_time, &location);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: Failed to locate view space in play space [", get_error_string(result), "]");
 		return;
@@ -2026,19 +2014,25 @@ void OpenXRAPI::update_head_tracking() {
 			print_verbose("OpenVR Head pose now tracking with high confidence");
 		}
 	}
+}
+
+void OpenXRAPI::update_head_tracking() {
+	XrResult result;
+
+	if (!running) {
+		return;
+	}
+
+	// Get display time
+	XrTime display_time = get_predicted_display_time();
+	if (display_time == 0) {
+		return;
+	}
 
 	// Make sure we can store the data we're keeping for the main thread.
 	uint32_t view_count = view_configuration_views.size();
 	view_offsets.resize(view_count);
 	view_fovs.resize(view_count);
-
-	// Reserve some local buffers to store intermediate data in.
-	thread_local PackedVector4Array orientations;
-	thread_local PackedVector3Array positions;
-	thread_local PackedVector4Array fovs;
-	orientations.resize(view_count);
-	positions.resize(view_count);
-	fovs.resize(view_count);
 
 	// Now get eye poses in view space...
 	thread_local LocalVector<XrView> views;
@@ -2062,7 +2056,20 @@ void OpenXRAPI::update_head_tracking() {
 			print_line("OpenXR: Couldn't locate spatial container views [", get_error_string(result), "]");
 			return;
 		}
+
+		// For some reason we can't rely on our head transform data, so we distill it from our views.
+		XrQuaternionf_Lerp(&head_pose.orientation, &views[0].pose.orientation, &views[1].pose.orientation, 0.5);
+		XrVector3f_Lerp(&head_pose.position, &views[0].pose.position, &views[1].pose.position, 0.5);
+
+		head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_HIGH;
+		head_transform = transform_from_pose(head_pose);
+		head_linear_velocity = Vector3();
+		head_angular_velocity = Vector3();
 	} else {
+		// First get our head transform.
+		update_head_transform(display_time);
+
+		// Now get our view data.
 		void *view_locate_info_next_pointer = nullptr;
 		for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
 			void *np = extension->set_view_locate_info_and_get_next_pointer(view_locate_info_next_pointer);
@@ -2076,7 +2083,7 @@ void OpenXRAPI::update_head_tracking() {
 			view_locate_info_next_pointer, // next
 			view_configuration, // viewConfigurationType
 			display_time, // displayTime
-			view_space // space
+			play_space // space
 		};
 
 		XrViewState view_state = {
@@ -2095,26 +2102,39 @@ void OpenXRAPI::update_head_tracking() {
 		view_pose_valid = (view_state.viewStateFlags != 0);
 	}
 
+	// Our rendering engine wants our offset local to the head.
+	XrPosef inv_head_pose;
+	XrPosef_Invert(&inv_head_pose, &head_pose);
+
+	// Reserve buffers we can use to pass data to rendering thread.
+	PackedVector4Array orientations;
+	PackedVector3Array positions;
+	PackedVector4Array fovs;
+	orientations.resize(view_count);
+	positions.resize(view_count);
+	fovs.resize(view_count);
+
 	Vector4 *o = orientations.ptrw();
 	Vector3 *p = positions.ptrw();
 	Vector4 *f = fovs.ptrw();
 	for (uint32_t v = 0; v < view_count; v++) {
-		view_offsets[v] = transform_from_pose(views[v].pose);
+		const XrPosef *view_pose = &views[v].pose;
+
+		XrPosef local_view_pose;
+		XrPosef_Multiply(&local_view_pose, &inv_head_pose, view_pose);
+		view_offsets[v] = transform_from_pose(local_view_pose);
+
 		view_fovs[v] = views[v].fov;
 
-		// For submitting our layer, we need to combine head and view pose
-		XrPosef combined_pose;
-		XrPosef_Multiply(&combined_pose, &head_pose, &views[v].pose);
-
 		// We use Vector3 and Vector4 as a go between as we can't use XrPosef and XrFovf directly.
-		o[v].x = combined_pose.orientation.x;
-		o[v].y = combined_pose.orientation.y;
-		o[v].z = combined_pose.orientation.z;
-		o[v].w = combined_pose.orientation.w;
+		o[v].x = view_pose->orientation.x;
+		o[v].y = view_pose->orientation.y;
+		o[v].z = view_pose->orientation.z;
+		o[v].w = view_pose->orientation.w;
 
-		p[v].x = combined_pose.position.x;
-		p[v].y = combined_pose.position.y;
-		p[v].z = combined_pose.position.z;
+		p[v].x = view_pose->position.x;
+		p[v].y = view_pose->position.y;
+		p[v].z = view_pose->position.z;
 
 		f[v].x = view_fovs[v].angleLeft;
 		f[v].y = view_fovs[v].angleRight;
