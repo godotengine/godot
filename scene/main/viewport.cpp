@@ -2310,10 +2310,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			Control *tooltip_control = gui.tooltip_control;
 			_gui_cancel_tooltip();
 			if (gui.tooltip_popup) {
+				// Some platforms send a mouse motion event when the tooltip is destroyed under the cursor.
+				// Remember the tooltip control, so that the tooltip timer is not immediately restarted
+				// by a mouse event triggered upon the tooltip closing.
+				gui.tooltip_control = tooltip_control;
 				// If a tooltip was hidden, prevent other actions associated with `ui_cancel` from occurring.
 				// For instance, this prevents the node from being deselected when pressing Escape
 				// to hide a documentation tooltip in the inspector.
-				gui.tooltip_control = tooltip_control;
 				set_input_as_handled();
 				return;
 			}
