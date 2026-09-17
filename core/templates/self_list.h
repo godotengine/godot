@@ -124,6 +124,66 @@ public:
 			sorter.sort(_first, _last);
 		}
 
+		struct ConstIterator {
+			_FORCE_INLINE_ const T &operator*() const { return *E->self(); }
+			_FORCE_INLINE_ const T *operator->() const { return E->self(); }
+
+			_FORCE_INLINE_ ConstIterator &operator++() {
+				E = E->next();
+				return *this;
+			}
+
+			_FORCE_INLINE_ ConstIterator &operator--() {
+				E = E->prev();
+				return *this;
+			}
+
+			_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return E == p_other.E; }
+			_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return E != p_other.E; }
+
+			_FORCE_INLINE_ ConstIterator(const SelfList<T> *p_elem) { E = p_elem; }
+			_FORCE_INLINE_ ConstIterator() {}
+			_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+
+		private:
+			const SelfList<T> *E = nullptr;
+		};
+
+		struct Iterator {
+			_FORCE_INLINE_ T &operator*() const { return *E->self(); }
+			_FORCE_INLINE_ T *operator->() const { return E->self(); }
+
+			_FORCE_INLINE_ Iterator &operator++() {
+				E = E->next();
+				return *this;
+			}
+
+			_FORCE_INLINE_ Iterator &operator--() {
+				E = E->prev();
+				return *this;
+			}
+
+			_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return E == p_other.E; }
+			_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return E != p_other.E; }
+
+			Iterator(SelfList<T> *p_elem) { E = p_elem; }
+			Iterator() {}
+			Iterator(const Iterator &p_it) { E = p_it.E; }
+
+			operator ConstIterator() const {
+				return ConstIterator(E);
+			}
+
+		private:
+			SelfList<T> *E = nullptr;
+		};
+
+		_FORCE_INLINE_ Iterator begin() { return Iterator(first()); }
+		_FORCE_INLINE_ Iterator end() { return Iterator(nullptr); }
+
+		_FORCE_INLINE_ ConstIterator begin() const { return ConstIterator(first()); }
+		_FORCE_INLINE_ ConstIterator end() const { return ConstIterator(nullptr); }
+
 		_FORCE_INLINE_ SelfList<T> *first() { return _first; }
 		_FORCE_INLINE_ const SelfList<T> *first() const { return _first; }
 
