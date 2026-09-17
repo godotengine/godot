@@ -37,6 +37,12 @@
 class SpinBoxLineEdit : public LineEdit {
 	GDCLASS(SpinBoxLineEdit, LineEdit);
 
+	friend class SpinBox;
+
+	int format_begin = -1;
+	int format_end = -1;
+	Color *affix_color = nullptr;
+
 protected:
 	void _notification(int p_what);
 
@@ -80,6 +86,7 @@ class SpinBox : public Range {
 	String plural_format;
 	AutoTranslateMode format_auto_translate_mode = AUTO_TRANSLATE_MODE_DISABLED;
 	String _get_xl_format() const;
+	String _format_text(const Variant &p_source_value);
 
 	bool use_default_format = false;
 #ifndef DISABLE_DEPRECATED
@@ -114,6 +121,10 @@ class SpinBox : public Range {
 	inline void _compute_sizes();
 	inline int _get_widest_button_icon_width();
 
+	void _mouse_exited();
+	void _update_buttons_state_for_current_value();
+
+protected:
 	struct ThemeCache {
 		Ref<Texture2D> up_icon;
 		Ref<Texture2D> up_hover_icon;
@@ -133,6 +144,7 @@ class SpinBox : public Range {
 		Ref<StyleBox> down_pressed_stylebox;
 		Ref<StyleBox> down_disabled_stylebox;
 
+		Color affix_color;
 		Color up_icon_modulate;
 		Color up_hover_icon_modulate;
 		Color up_pressed_icon_modulate;
@@ -156,10 +168,6 @@ class SpinBox : public Range {
 #endif
 	} theme_cache;
 
-	void _mouse_exited();
-	void _update_buttons_state_for_current_value();
-
-protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _value_changed(double p_value) override;
 	virtual PackedStringArray get_configuration_warnings() const override;

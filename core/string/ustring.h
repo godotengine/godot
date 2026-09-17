@@ -446,7 +446,7 @@ public:
 	String trim_suffix(const char *p_suffix) const;
 	String lpad(int p_min_length, const String &p_character = " ") const;
 	String rpad(int p_min_length, const String &p_character = " ") const;
-	String sprintf(const Span<Variant> &p_values, bool *r_error) const;
+	String sprintf(const Span<Variant> &p_values, bool *r_error, int *r_format_begin = nullptr, int *r_format_end = nullptr) const;
 	String quote(const String &p_quotechar = "\"") const;
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);

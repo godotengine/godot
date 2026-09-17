@@ -103,7 +103,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	const Color control_font_lower_color = Color(0.65, 0.65, 0.65);
 	const Color control_font_hover_color = Color(0.95, 0.95, 0.95);
 	const Color control_font_focus_color = Color(0.95, 0.95, 0.95);
-	const Color control_font_disabled_color = control_font_color * Color(1, 1, 1, 0.5);
+	const Color control_font_disabled_color = Color(control_font_color, 0.5);
 	const Color control_font_placeholder_color = Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.6f);
 	const Color control_font_pressed_color = Color(1, 1, 1);
 	const Color control_selection_color = Color(0.5, 0.5, 0.5);
@@ -631,6 +631,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("down_background_pressed", "SpinBox", button_pressed);
 	theme->set_stylebox("down_background_disabled", "SpinBox", make_empty_stylebox());
 
+	theme->set_color("affix_color", "SpinBox", control_font_disabled_color);
 	theme->set_color("up_icon_modulate", "SpinBox", control_font_color);
 	theme->set_color("up_hover_icon_modulate", "SpinBox", control_font_hover_color);
 	theme->set_color("up_pressed_icon_modulate", "SpinBox", control_font_hover_color);

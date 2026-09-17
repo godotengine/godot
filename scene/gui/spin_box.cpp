@@ -87,6 +87,117 @@ void SpinBoxLineEdit::_notification(int p_what) {
 				AccessibilityServer::get_singleton()->update_add_action(ae, AccessibilityServerEnums::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &SpinBoxLineEdit::_accessibility_action_inc));
 			}
 		} break;
+
+		case NOTIFICATION_DRAW: {
+			if (!hide_text) {
+				return;
+			}
+			// This code is copied from LineEdit and should be kept in sync.
+			// FIXME: Is there a way to avoid duplication?
+			int width, height;
+			bool rtl = is_layout_rtl();
+
+			Size2 size = get_size();
+			width = size.width;
+			height = size.height;
+
+			RID ci = get_canvas_item();
+
+			Ref<StyleBox> style = theme_cache.normal;
+			if (!is_editable()) {
+				style = theme_cache.read_only;
+			}
+
+			Ref<Font> font = theme_cache.font;
+
+			int x_ofs = 0;
+			float text_width = TS->shaped_text_get_size(text_rid).x;
+			float text_height = TS->shaped_text_get_size(text_rid).y;
+
+			switch (get_horizontal_alignment()) {
+				case HORIZONTAL_ALIGNMENT_FILL:
+				case HORIZONTAL_ALIGNMENT_LEFT: {
+					if (rtl) {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
+					} else {
+						x_ofs = style->get_margin(SIDE_LEFT);
+					}
+				} break;
+				case HORIZONTAL_ALIGNMENT_CENTER: {
+					if (!Math::is_zero_approx(scroll_offset)) {
+						x_ofs = style->get_margin(SIDE_LEFT);
+					} else {
+						int total_margin = style->get_margin(SIDE_LEFT) + style->get_margin(SIDE_RIGHT);
+						int centered = int((size.width - total_margin - text_width)) / 2;
+						x_ofs = style->get_margin(SIDE_LEFT) + MAX(0, centered);
+					}
+				} break;
+				case HORIZONTAL_ALIGNMENT_RIGHT: {
+					if (rtl) {
+						x_ofs = style->get_margin(SIDE_LEFT);
+					} else {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - Math::ceil(style->get_margin(SIDE_RIGHT) + (text_width))));
+					}
+				} break;
+			}
+
+			int ofs_max = width - style->get_margin(SIDE_RIGHT);
+
+			int y_area = height - style->get_minimum_size().height;
+			int y_ofs = style->get_offset().y + (y_area - text_height) / 2;
+
+			Color font_color;
+			Color affix_font_color;
+			if (is_editable()) {
+				font_color = theme_cache.font_color;
+				affix_font_color = *affix_color;
+			} else {
+				font_color = theme_cache.font_uneditable_color;
+				affix_font_color = theme_cache.font_uneditable_color;
+			}
+
+			// Draw selections rects.
+			Vector2 ofs = Point2(x_ofs + scroll_offset, y_ofs);
+
+			const Glyph *glyphs = TS->shaped_text_get_glyphs(text_rid);
+			int gl_size = TS->shaped_text_get_glyph_count(text_rid);
+
+			ofs.y += TS->shaped_text_get_ascent(text_rid);
+			Color font_outline_color = theme_cache.font_outline_color;
+			int outline_size = theme_cache.font_outline_size;
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				Vector2 oofs = ofs;
+				for (int i = 0; i < gl_size; i++) {
+					for (int j = 0; j < glyphs[i].repeat; j++) {
+						if (std::ceil(oofs.x) >= x_ofs && (oofs.x + glyphs[i].advance) <= ofs_max) {
+							if (glyphs[i].font_rid != RID()) {
+								TS->font_draw_glyph_outline(glyphs[i].font_rid, ci, glyphs[i].font_size, outline_size, oofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, font_outline_color);
+							}
+						}
+						oofs.x += glyphs[i].advance;
+					}
+					if (oofs.x >= ofs_max) {
+						break;
+					}
+				}
+			}
+			for (int i = 0; i < gl_size; i++) {
+				bool is_affix = format_begin > -1 && (glyphs[i].start < format_begin || glyphs[i].end > format_end);
+				for (int j = 0; j < glyphs[i].repeat; j++) {
+					if (std::ceil(ofs.x) >= x_ofs && (ofs.x + glyphs[i].advance) <= ofs_max) {
+						if (glyphs[i].font_rid != RID()) {
+							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, is_affix ? affix_font_color : font_color);
+						} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
+							TS->draw_hex_code_box(ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, is_affix ? affix_font_color : font_color);
+						}
+					}
+					ofs.x += glyphs[i].advance;
+				}
+				if (ofs.x >= ofs_max) {
+					break;
+				}
+			}
+		} break;
 	}
 }
 
@@ -98,14 +209,7 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	if (!line_edit->is_editing() && !format.is_empty() && !use_default_format) {
-		const Variant current_value = get_value();
-		bool error = false;
-		const String text = _get_xl_format().sprintf(Span(&current_value, 1), &error);
-		if (error) {
-			line_edit->set_text_with_selection(RTR("<Invalid>"));
-			return;
-		}
-		line_edit->set_text_with_selection(text);
+		line_edit->set_text_with_selection(_format_text(get_value()));
 		return;
 	}
 
@@ -122,13 +226,7 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 
 	if (!line_edit->is_editing()) {
 		if (!format.is_empty()) {
-			const Variant current_value = value;
-			bool error = false;
-			value = _get_xl_format().sprintf(Span(&current_value, 1), &error);
-			if (error) {
-				line_edit->set_text_with_selection(RTR("<Invalid>"));
-				return;
-			}
+			value = _format_text(value);
 #ifndef DISABLE_DEPRECATED
 		} else {
 			if (!prefix.is_empty()) {
@@ -225,6 +323,16 @@ String SpinBox::_get_xl_format() const {
 		return tr(format);
 	}
 	return tr_n(format, plural_format, get_value());
+}
+
+String SpinBox::_format_text(const Variant &p_source_value) {
+	bool error = false;
+	const String value = _get_xl_format().sprintf(Span(&p_source_value, 1), &error, &line_edit->format_begin, &line_edit->format_end);
+	if (error) {
+		line_edit->format_begin = -1;
+		return RTR("<Invalid>");
+	}
+	return value;
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -413,6 +521,7 @@ void SpinBox::_line_edit_editing_toggled(bool p_toggled_on) {
 		if (line_edit->is_select_all_on_focus() && !Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
 			line_edit->select_all();
 		}
+		line_edit->set_hide_text(false);
 	} else {
 		accepted = true;
 
@@ -422,6 +531,7 @@ void SpinBox::_line_edit_editing_toggled(bool p_toggled_on) {
 			_update_text(true); // Update text in case value was changed this frame (e.g. on `focus_exited`).
 			_text_submitted(line_edit->get_text());
 		}
+		line_edit->set_hide_text(true);
 	}
 }
 
@@ -620,6 +730,9 @@ void SpinBox::set_format(const String &p_format) {
 	}
 	format = p_format;
 	use_default_format = p_format.contains("%s");
+	if (p_format.is_empty()) {
+		line_edit->format_begin = -1;
+	}
 
 	_update_text();
 	update_configuration_warnings();
@@ -863,6 +976,7 @@ void SpinBox::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, SpinBox, down_pressed_stylebox, "down_background_pressed");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, SpinBox, down_disabled_stylebox, "down_background_disabled");
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, SpinBox, affix_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, SpinBox, up_icon_modulate, "up_icon_modulate");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, SpinBox, up_hover_icon_modulate, "up_hover_icon_modulate");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_COLOR, SpinBox, up_pressed_icon_modulate, "up_pressed_icon_modulate");
@@ -882,6 +996,8 @@ SpinBox::SpinBox() {
 	line_edit = memnew(SpinBoxLineEdit);
 	line_edit->set_emoji_menu_enabled(false);
 	line_edit->set_use_parent_material(true);
+	line_edit->set_hide_text(true); // SpinBoxLineEdit does the drawing when not editing.
+	line_edit->affix_color = &theme_cache.affix_color;
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
 	line_edit->set_theme_type_variation("SpinBoxInnerLineEdit");

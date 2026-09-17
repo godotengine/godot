@@ -5193,7 +5193,7 @@ String String::lpad(int p_min_length, const String &p_character) const {
 //   "fish %s pie" % "frog"
 //   "fish %s %d pie" % ["frog", 12]
 // In case of an error, the string returned is the error description and "error" is true.
-String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
+String String::sprintf(const Span<Variant> &p_values, bool *r_error, int *r_format_begin, int *r_format_end) const {
 	static const String ZERO("0");
 	static const String SPACE(" ");
 	static const String MINUS("-");
@@ -5218,6 +5218,12 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 		*r_error = true;
 	}
 
+#define END_FORMAT \
+	if (r_format_end) { \
+		*r_format_end = formatted.size() - 1; \
+		r_format_end = nullptr; \
+	}
+
 	for (; *self; self++) {
 		const char32_t c = *self;
 
@@ -5225,6 +5231,7 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 			switch (c) {
 				case '%': { // Replace %% with %
 					formatted += c;
+					END_FORMAT
 					in_format = false;
 					break;
 				}
@@ -5297,6 +5304,8 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					}
 
 					formatted += str;
+					END_FORMAT
+
 					if (selected_index == -1) {
 						++value_index;
 					}
@@ -5347,6 +5356,8 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					}
 
 					formatted += str;
+					END_FORMAT
+
 					if (selected_index == -1) {
 						++value_index;
 					}
@@ -5421,6 +5432,8 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					str += ")";
 
 					formatted += str;
+					END_FORMAT
+
 					if (selected_index == -1) {
 						++value_index;
 					}
@@ -5443,6 +5456,8 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					}
 
 					formatted += str;
+					END_FORMAT
+
 					if (selected_index == -1) {
 						++value_index;
 					}
@@ -5485,6 +5500,8 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					}
 
 					formatted += str;
+					END_FORMAT
+
 					if (selected_index == -1) {
 						++value_index;
 					}
@@ -5593,6 +5610,11 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 					show_sign = false;
 					in_decimals = false;
 					selected_index = -1;
+					if (r_format_begin) {
+						*r_format_begin = formatted.is_empty() ? 0 : formatted.size() - 1;
+						// Unassign the variable after first use, in case of multiple placeholders.
+						r_format_begin = nullptr;
+					}
 					break;
 				default:
 					formatted += c;
@@ -5613,6 +5635,8 @@ String String::sprintf(const Span<Variant> &p_values, bool *r_error) const {
 	if (r_error) {
 		*r_error = false;
 	}
+
+#undef END_FORMAT
 	return formatted;
 }
 
