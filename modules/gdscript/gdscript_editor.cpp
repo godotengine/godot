@@ -54,6 +54,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
+#include "editor/script/editor_language_metadata.h"
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -3081,9 +3082,9 @@ static void _list_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					if (base.get_type() == Variant::OBJECT) {
 						obj = base.operator Object *();
 					}
-					List<ClassDB::StaticArgOptionGetter> options_getters;
-					ClassDB::get_argument_options_getters(class_name, &options_getters);
-					for (ClassDB::StaticArgOptionGetter options_getter : options_getters) {
+					List<EditorLanguageMetadata::StaticArgOptionGetter> options_getters;
+					EditorLanguageMetadata::get_argument_options_getters(class_name, &options_getters);
+					for (EditorLanguageMetadata::StaticArgOptionGetter options_getter : options_getters) {
 						options.append_array(options_getter(obj, method, p_argidx));
 					}
 					const GDScriptParser::Node *existing_node = p_call->arguments.size() > p_argidx ? p_call->arguments[p_argidx] : nullptr;

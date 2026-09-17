@@ -58,6 +58,10 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
+#ifdef TOOLS_ENABLED
+#include "editor/script/editor_language_metadata.h"
+#endif
+
 
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
@@ -1962,7 +1966,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
 
 #ifdef TOOLS_ENABLED
-	ClassDB::register_argument_options_getters("SceneTree", &SceneTree::get_argument_options);
+	EditorLanguageMetadata::register_argument_options_getters("SceneTree", &SceneTree::get_argument_options);
 #endif
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
