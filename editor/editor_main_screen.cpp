@@ -172,21 +172,11 @@ EditorPlugin *EditorMainScreen::get_selected_plugin() const {
 }
 
 bool EditorMainScreen::can_auto_switch_screens() const {
-	if (selected_plugin == nullptr) {
+	if (get_current_tab() == -1) {
 		return true;
 	}
-	// Only allow auto-switching if the selected tab is to the left of the Script tab, or is not in the TabBar.
-	bool was_script_tab = false;
-	for (int i = 0; i < get_tab_count(); i++) {
-		EditorDock *dock = get_dock(i);
-		if (dock == ScriptEditor::get_singleton()) {
-			was_script_tab = true;
-		}
-		if (dock->get_display_title() == selected_plugin->get_plugin_name()) {
-			return !was_script_tab;
-		}
-	}
-	return true;
+	EditorDock *dock = get_dock(get_current_tab());
+	return dock->is_allow_switch_screen();
 }
 
 #ifndef DISABLE_DEPRECATED

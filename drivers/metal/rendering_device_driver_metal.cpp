@@ -150,8 +150,6 @@ RDD::BufferID RenderingDeviceDriverMetal::buffer_create(uint64_t p_size, BitFiel
 	}
 	*static_cast<MetalBuffer *>(buf_info) = buffer;
 
-	_track_resource(buf_info->buffer.get());
-
 	return BufferID(buf_info);
 }
 
@@ -162,8 +160,6 @@ bool RenderingDeviceDriverMetal::buffer_set_texel_format(BufferID p_buffer, Data
 
 void RenderingDeviceDriverMetal::buffer_free(BufferID p_buffer) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
-
-	_untrack_resource(buf_info->buffer.get());
 
 	allocator->free_buffer(*buf_info);
 
@@ -431,12 +427,6 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 		ERR_FAIL_V_MSG(TextureID(), "Unable to create texture.");
 	}
 
-	// Track after the error path, so a failed create leaves nothing in the residency list.
-	if (tex_info->linear_backing.buffer) {
-		_track_resource(tex_info->linear_backing.buffer.get());
-	}
-	_track_resource(tex_info->texture.get());
-
 	return TextureID(tex_info);
 }
 
@@ -453,6 +443,8 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_from_extension(uint64_
 		return TextureID(tex_info);
 	}
 
+	tex_info->imported = true;
+
 	// If the requested format is different, we need to create a view.
 	MTL::PixelFormat format = (MTL::PixelFormat)pixel_formats->getMTLPixelFormat(p_format);
 	if (res->pixelFormat() != format) {
@@ -467,7 +459,15 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_from_extension(uint64_
 		tex_info->texture = NS::RetainPtr(res);
 	}
 
-	_track_resource(tex_info->texture.get());
+	{
+		MutexLock lock(imported_textures_mutex);
+		imported_textures.push_back(tex_info->texture.get());
+	}
+
+	if (main_residency_set) {
+		main_residency_set->addAllocation(tex_info->texture.get());
+		main_residency_set->commit();
+	}
 
 	return TextureID(tex_info);
 }
@@ -511,7 +511,6 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_ori
 #undef SWIZZLE
 	MTL::Texture *obj = src_texture->newTextureView(format, src_texture->textureType(), NS::Range::Make(0, src_texture->mipmapLevelCount()), NS::Range::Make(0, slices), swizzle);
 	ERR_FAIL_NULL_V_MSG(obj, TextureID(), "Unable to create shared texture");
-	_track_resource(obj);
 
 	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
 	tex_info->texture = NS::TransferPtr(obj);
@@ -572,7 +571,6 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared_from_slice(Text
 #undef SWIZZLE
 	MTL::Texture *obj = src_texture->newTextureView(format, textureType, NS::Range::Make(p_mipmap, p_mipmaps), NS::Range::Make(p_layer, p_layers), swizzle);
 	ERR_FAIL_NULL_V_MSG(obj, TextureID(), "Unable to create shared texture");
-	_track_resource(obj);
 
 	TextureInfo *tex_info = VersatileResource::allocate<TextureInfo>(resources_allocator);
 	tex_info->texture = NS::TransferPtr(obj);
@@ -581,10 +579,13 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared_from_slice(Text
 
 void RenderingDeviceDriverMetal::texture_free(TextureID p_texture) {
 	TextureInfo *tex_info = (TextureInfo *)p_texture.id;
-	if (!tex_info->rasterization_rate_map) {
-		_untrack_resource(tex_info->texture.get());
-		if (tex_info->linear_backing.buffer) {
-			_untrack_resource(tex_info->linear_backing.buffer.get());
+	if (tex_info->imported) {
+		MutexLock lock(imported_textures_mutex);
+		imported_textures.erase(tex_info->texture.get());
+
+		if (main_residency_set) {
+			main_residency_set->removeAllocation(tex_info->texture.get());
+			main_residency_set->commit();
 		}
 	}
 	allocator->free_texture(*tex_info);
@@ -965,10 +966,10 @@ void RenderingDeviceDriverMetal::_swap_chain_release_buffers(SwapChain *p_swap_c
 
 RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextDriver::SurfaceID p_surface) {
 	const RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(p_surface);
-	if (use_barriers) {
-		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-		add_residency_set_to_main_queue(surface->get_residency_set());
-		GODOT_CLANG_WARNING_POP
+	if (sync_mode != HazardTracking) {
+		if (__builtin_available(macOS 26.0, iOS 26.0, tvOS 26.0, visionOS 26.0, *)) {
+			add_residency_set_to_main_queue(surface->get_residency_set());
+		}
 	}
 
 	SwapChain *swap_chain = memnew(SwapChain);
@@ -1063,11 +1064,11 @@ void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain
 
 void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
-	if (use_barriers) {
-		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-		RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
-		remove_residency_set_to_main_queue(surface->get_residency_set());
-		GODOT_CLANG_WARNING_POP
+	if (sync_mode != HazardTracking) {
+		if (__builtin_available(macOS 26.0, iOS 26.0, tvOS 26.0, visionOS 26.0, *)) {
+			RenderingContextDriverMetal::Surface *surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
+			remove_residency_set_to_main_queue(surface->get_residency_set());
+		}
 	}
 	_swap_chain_release(swap_chain);
 	memdelete(swap_chain);
@@ -1101,7 +1102,7 @@ RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p
 		}
 	}
 
-	MDFrameBuffer *fb = memnew(MDFrameBuffer(textures, Size2i(p_width, p_height)));
+	MDFrameBufferTexture *fb = memnew(MDFrameBufferTexture(textures, Size2i(p_width, p_height)));
 	fb->rasterization_rate_map = rasterization_rate_map;
 	return FramebufferID(fb);
 }
@@ -1392,7 +1393,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 			}
 		};
 #define ADD_USAGE(res, stage, usage) \
-	if (!use_barriers) { \
+	if (sync_mode == HazardTracking) { \
 		add_usage(res, stage, usage); \
 	}
 
@@ -1489,7 +1490,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 
 #undef ADD_USAGE
 
-		if (!use_barriers) {
+		if (sync_mode == HazardTracking) {
 			for (const KeyValue<MTL::Resource *, StageResourceUsage> &keyval : bound_resources) {
 				ResourceVector *resources = set->usage_to_resources.getptr(keyval.value);
 				if (resources == nullptr) {
@@ -1509,7 +1510,6 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 			snprintf(label, sizeof(label), "Uniform Set %u", p_set_index);
 			set->arg_buffer.buffer->setLabel(NS::String::string(label, NS::UTF8StringEncoding));
 #endif
-			_track_resource(set->arg_buffer.buffer.get());
 			_copy_queue_copy_to_buffer(arg_buffer_data, set->arg_buffer.buffer.get());
 		} else {
 			// Store the arg buffer data for dynamic uniform sets.
@@ -1531,9 +1531,6 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 
 void RenderingDeviceDriverMetal::uniform_set_free(UniformSetID p_uniform_set) {
 	MDUniformSet *obj = (MDUniformSet *)p_uniform_set.id;
-	if (obj->arg_buffer.buffer) {
-		_untrack_resource(obj->arg_buffer.buffer.get());
-	}
 	allocator->free_buffer(obj->arg_buffer);
 	memdelete(obj);
 }
@@ -1687,10 +1684,21 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 
 	size_t subpass_count = p_subpasses.size();
 
-	Vector<MDSubpass> subpasses;
+#ifdef DEV_ENABLED
+	// This loop validates the assumption that Godot configures subpass N is
+	// dependent on all prior subpasses (transitively).
+	for (uint32_t i = 0; i < p_subpass_dependencies.size(); i++) {
+		const SubpassDependency &dep = p_subpass_dependencies[i];
+		// If this asserts, then MDCommandBuffer::render_next_subpass will need
+		// to be updated, as it assumes subpass N must complete before N+1 starts.
+		DEV_ASSERT(dep.src_subpass < dep.dst_subpass && "unimplemented: subpass dependency not covered by the sequential subpass fence chain");
+	}
+#endif
+
+	LocalVector<MDSubpass> subpasses;
 	subpasses.resize(subpass_count);
 	for (uint32_t i = 0; i < subpass_count; i++) {
-		MDSubpass &subpass = subpasses.write[i];
+		MDSubpass &subpass = subpasses[i];
 		subpass.subpass_index = i;
 		subpass.view_count = p_view_count;
 		subpass.input_references = p_subpasses[i].input_references;
@@ -1711,12 +1719,12 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		MTL::StoreActionDontCare, // ATTACHMENT_STORE_OP_DONT_CARE
 	};
 
-	Vector<MDAttachment> attachments;
+	LocalVector<MDAttachment> attachments;
 	attachments.resize(p_attachments.size());
 
 	for (uint32_t i = 0; i < p_attachments.size(); i++) {
 		const Attachment &a = p_attachments[i];
-		MDAttachment &mda = attachments.write[i];
+		MDAttachment &mda = attachments[i];
 		MTL::PixelFormat format = pf.getMTLPixelFormat(a.format);
 		mda.format = format;
 		if (a.samples > TEXTURE_SAMPLES_1) {
@@ -1738,7 +1746,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 			mda.type |= MDAttachmentType::Color;
 		}
 	}
-	MDRenderPass *obj = memnew(MDRenderPass(attachments, subpasses));
+	MDRenderPass *obj = memnew(MDRenderPass(std::move(attachments), std::move(subpasses)));
 	return RenderPassID(obj);
 }
 
@@ -2276,6 +2284,16 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 
 // ----- COMMANDS -----
 
+void RenderingDeviceDriverMetal::command_begin_compute_pass(CommandBufferID p_cmd_buffer) {
+	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
+	cb->compute_begin_pass();
+}
+
+void RenderingDeviceDriverMetal::command_end_compute_pass(CommandBufferID p_cmd_buffer) {
+	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
+	cb->compute_end_pass();
+}
+
 void RenderingDeviceDriverMetal::command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) {
 	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
 	cb->bind_pipeline(p_pipeline);
@@ -2454,6 +2472,14 @@ void RenderingDeviceDriverMetal::command_end_label(CommandBufferID p_cmd_buffer)
 	cb->end_label();
 }
 
+void RenderingDeviceDriverMetal::command_group_end(CommandBufferID p_cmd_buffer) {
+	MDCommandBufferBase *cb = (MDCommandBufferBase *)(p_cmd_buffer.id);
+	// Closing the encoder here is what guarantees no encoder straddles a level
+	// boundary, which is what makes per-encoder fences sufficient.
+	cb->end();
+	cb->advance_sync_level();
+}
+
 #pragma mark - Debug
 
 void RenderingDeviceDriverMetal::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
@@ -2586,7 +2612,6 @@ void RenderingDeviceDriverMetal::_copy_queue_copy_to_buffer(Span<uint8_t> p_src_
 
 	memcpy(_copy_queue_buffer_ptr(), p_src_data.ptr(), p_src_data.size());
 
-	copy_queue_rs.get()->addAllocation(p_dst_buffer);
 	blit_encoder->copyFromBuffer(copy_queue_buffer.buffer.get(), copy_queue_buffer_offset, p_dst_buffer, p_dst_offset, p_src_data.size());
 
 	_copy_queue_buffer_consume(p_src_data.size());
@@ -2597,16 +2622,12 @@ void RenderingDeviceDriverMetal::_copy_queue_flush() {
 		return;
 	}
 
-	copy_queue_rs.get()->addAllocation(copy_queue_buffer.buffer.get());
-	copy_queue_rs.get()->commit();
-
 	copy_queue_blit_encoder.get()->endEncoding();
 	copy_queue_blit_encoder.reset();
 	copy_queue_command_buffer.get()->commit();
 	copy_queue_command_buffer.get()->waitUntilCompleted();
 	copy_queue_command_buffer.reset();
 	copy_queue_buffer_offset = 0;
-	copy_queue_rs.get()->removeAllAllocations();
 }
 
 Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
@@ -2619,18 +2640,6 @@ Error RenderingDeviceDriverMetal::_copy_queue_initialize() {
 	// Reserve 64 KiB for copy commands. If the buffer fills, it will be flushed automatically.
 	copy_queue_buffer = allocator->new_buffer(64 * 1024, MTL::ResourceStorageModeShared | MTL::ResourceHazardTrackingModeUntracked);
 	copy_queue_buffer.buffer.get()->setLabel(MTLSTR("Copy Command Scratch Buffer"));
-
-	if (__builtin_available(macOS 15.0, iOS 18.0, tvOS 18.0, visionOS 1.0, *)) {
-		if (device_properties->features.supports_residency_sets) {
-			MTL::ResidencySetDescriptor *rs_desc = MTL::ResidencySetDescriptor::alloc()->init();
-			rs_desc->setInitialCapacity(2);
-			rs_desc->setLabel(MTLSTR("Copy Queue Residency Set"));
-			NS::Error *error = nullptr;
-			copy_queue_rs = NS::TransferPtr(device->newResidencySet(rs_desc, &error));
-			rs_desc->release();
-			copy_queue.get()->addResidencySet(copy_queue_rs.get());
-		}
-	}
 
 	return OK;
 }
@@ -2765,8 +2774,12 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 	switch (p_trait) {
 		case API_TRAIT_HONORS_PIPELINE_BARRIERS:
-			return use_barriers;
-		case API_TRAIT_CLEARS_WITH_COPY_ENGINE:
+			return sync_mode == Barriers;
+		case API_TRAIT_BUFFER_CLEARS_WITH_COPY_ENGINE:
+			return true;
+		case API_TRAIT_TEXTURE_CLEARS_WITH_COPY_ENGINE:
+			return false;
+		case API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS:
 			return false;
 		default:
 			return RenderingDeviceDriver::api_trait_get(p_trait);
@@ -2856,6 +2869,12 @@ RenderingDeviceDriverMetal::RenderingDeviceDriverMetal(RenderingContextDriverMet
 		archive_fail_on_miss = true;
 	}
 
+	// Barriers is the default; "none" selects native hazard tracking.
+	// Unrecognized values intentionally keep the default.
+	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SYNC_MODE"); res == U"none") {
+		sync_mode = HazardTracking;
+	}
+
 #if TARGET_OS_OSX
 	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SHADER_LOAD_STRATEGY"); res == U"lazy") {
 		_shader_load_strategy = ShaderLoadStrategy::LAZY;
@@ -2909,15 +2928,17 @@ Error RenderingDeviceDriverMetal::_create_device() {
 	return OK;
 }
 
-void RenderingDeviceDriverMetal::_track_resource(MTL::Resource *p_resource) {
-	if (use_barriers) {
-		_residency_add.push_back(p_resource);
+void RenderingDeviceDriverMetal::encode_imported_resources(MTL::RenderCommandEncoder *p_enc) {
+	MutexLock lock(imported_textures_mutex);
+	if (!imported_textures.is_empty()) {
+		p_enc->useResources((const MTL::Resource *const *)imported_textures.ptr(), imported_textures.size(), MTL::ResourceUsageRead, MTL::RenderStageVertex | MTL::RenderStageFragment);
 	}
 }
 
-void RenderingDeviceDriverMetal::_untrack_resource(MTL::Resource *p_resource) {
-	if (use_barriers) {
-		_residency_del.push_back(p_resource);
+void RenderingDeviceDriverMetal::encode_imported_resources(MTL::ComputeCommandEncoder *p_enc) {
+	MutexLock lock(imported_textures_mutex);
+	if (!imported_textures.is_empty()) {
+		p_enc->useResources((const MTL::Resource *const *)imported_textures.ptr(), imported_textures.size(), MTL::ResourceUsageRead);
 	}
 }
 
@@ -2990,7 +3011,19 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 	Error err = _create_device();
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
-	allocator = MetalAllocator::create(device, false);
+	// Must be resolved before the allocator is created, so use_heaps sees the
+	// final sync_mode.
+	_resolve_sync_mode();
+
+	// Must be created before _copy_queue_initialize(), which sources its scratch
+	// buffer from the allocator. Barriers mode implies heap suballocation:
+	// on Metal 3 it is the residency mechanism (useHeaps), and Metal 4 always
+	// runs barriers.
+	bool use_heaps = sync_mode == Barriers;
+	allocator = MetalAllocator::create(device, use_heaps);
+	if (use_heaps) {
+		print_verbose("Metal: heap suballocation enabled.");
+	}
 
 	device_properties = memnew(MetalDeviceProperties(device));
 	pixel_formats = memnew(PixelFormats(device, device_properties->features));

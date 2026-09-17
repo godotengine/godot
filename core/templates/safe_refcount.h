@@ -42,12 +42,13 @@
 // Design goals for these classes:
 // - No automatic conversions or arithmetic operators,
 //   to keep explicit the use of atomics everywhere.
-// - Using acquire-release semantics, even to set the first value.
-//   The first value may be set relaxedly in many cases, but adding the distinction
-//   between relaxed and unrelaxed operation to the interface would make it needlessly
-//   flexible. There's negligible waste in having release semantics for the initial
-//   value and, as an important benefit, you can be sure the value is properly synchronized
-//   even with threads that are already running.
+// - The first initialization is performed without
+//   release semantics to avoid static initialization
+//   race conditions. This trades for theoretical
+//   initial synchronization issues, but it's the same
+//   trade the stdlib made, and should occur only
+//   in "fairly contrived scenarios" (compare LWG 846
+//   and LWG 1478 via open-std.org).
 
 // These are used in very specific areas of the engine where it's critical that these guarantees are held
 #define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type) \
@@ -145,9 +146,8 @@ public:
 		}
 	}
 
-	_ALWAYS_INLINE_ explicit SafeNumeric(T p_value = static_cast<T>(0)) {
-		set(p_value);
-	}
+	_ALWAYS_INLINE_ explicit constexpr SafeNumeric(T p_value = static_cast<T>(0)) :
+			value(p_value) {}
 };
 
 class SafeFlag {
@@ -180,9 +180,8 @@ public:
 		flag.store(p_value, std::memory_order_release);
 	}
 
-	_ALWAYS_INLINE_ explicit SafeFlag(bool p_value = false) {
-		set_to(p_value);
-	}
+	_ALWAYS_INLINE_ explicit constexpr SafeFlag(bool p_value = false) :
+			flag(p_value) {}
 };
 
 class SafeRefCount {

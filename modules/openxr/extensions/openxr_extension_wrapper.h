@@ -81,6 +81,7 @@ public:
 	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we interrogate OpenXR's system abilities.
 	virtual void *set_instance_create_info_and_get_next_pointer(XrVersion p_xr_version, void *p_next_pointer); // Add additional data structures when we create our OpenXR instance.
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when we create our OpenXR session.
+	virtual void *set_spatial_container_create_info_and_get_next_pointer(RID p_spatial_container, void *p_next_pointer); // Add additional data structures when we create a spatial container.
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when creating OpenXR swap chains.
 	virtual void *set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer);
 	virtual void *set_projection_views_and_get_next_pointer(int p_view_index, void *p_next_pointer);
@@ -88,6 +89,7 @@ public:
 	// These will only be called for extensions registered via OpenXRApi::register_frame_info_extension().
 	virtual void *set_frame_wait_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrWaitFrame
 	virtual void *set_view_locate_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrLocateViews
+	virtual void *set_spatial_container_views_locate_info_and_get_next_pointer(RID p_spatial_container, void *p_next_pointer); // Add additional data structures when calling xrLocateSpatialContainerViewsEXT
 	virtual void *set_frame_end_info_and_get_next_pointer(void *p_next_pointer); // Add additional data structures when calling xrEndFrame
 	// This will only be called for extensions registered via OpenXRAPI::register_projection_layer_extension().
 	virtual void *set_projection_layer_and_get_next_pointer(void *p_next_pointer); // Add additional data structures to XrCompositionLayerProjection
@@ -95,6 +97,9 @@ public:
 	virtual void prepare_view_configuration(uint32_t p_view_count);
 	virtual void *set_view_configuration_and_get_next_pointer(uint32_t p_view, void *p_next_pointer); // Add additional data structures when calling xrEnumerateViewConfiguration
 	virtual void print_view_configuration_info(uint32_t p_view) const;
+
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far);
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name);
 
 	//TODO workaround as GDExtensionPtr<void> return type results in build error in godot-cpp
 	GDVIRTUAL1R(uint64_t, _set_system_properties_and_get_next_pointer, GDExtensionPtr<void>);
@@ -108,12 +113,17 @@ public:
 	GDVIRTUAL1R(uint64_t, _set_projection_layer_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL1R(uint64_t, _set_view_locate_info_and_get_next_pointer, GDExtensionPtr<void>);
 	GDVIRTUAL2R(uint64_t, _set_reference_space_create_info_and_get_next_pointer, int, GDExtensionPtr<void>);
+	GDVIRTUAL2R(uint64_t, _set_spatial_container_create_info_and_get_next_pointer, RID, GDExtensionPtr<void>);
+	GDVIRTUAL2R(uint64_t, _set_spatial_container_views_locate_info_and_get_next_pointer, RID, GDExtensionPtr<void>);
 	GDVIRTUAL0R(int, _get_composition_layer_count);
 	GDVIRTUAL1R(uint64_t, _get_composition_layer, int);
 	GDVIRTUAL1R(int, _get_composition_layer_order, int);
 	GDVIRTUAL1(_prepare_view_configuration, int);
 	GDVIRTUAL2R(uint64_t, _set_view_configuration_and_get_next_pointer, uint32_t, GDExtensionPtr<void>);
 	GDVIRTUAL1C(_print_view_configuration_info, int);
+
+	GDVIRTUAL4R(TypedArray<Projection>, _get_camera_projections, const StringName &, double, double, double);
+	GDVIRTUAL1R(TypedArray<Transform3D>, _get_camera_offsets, const StringName &);
 
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0R_COMPAT(_get_requested_extensions_bind_compat_109302, Dictionary, _get_requested_extensions);
@@ -148,6 +158,7 @@ public:
 	virtual void on_main_swapchains_created(); // `on_main_swapchains_created` is called right after our main swapchains are (re)created.
 	virtual void on_pre_draw_viewport(RID p_render_target); // `on_pre_draw_viewport` is called right before we start rendering this viewport
 	virtual void on_post_draw_viewport(RID p_render_target); // `on_port_draw_viewport` is called right after we start rendering this viewport (note that on Vulkan draw commands may only be queued)
+	virtual void on_post_render() {} // `on_post_render` is called right before we submit our XR viewports to the XR compositor.
 
 	GDVIRTUAL1(_on_register_metadata, OpenXRInteractionProfileMetadata *);
 	GDVIRTUAL0(_on_before_instance_created);

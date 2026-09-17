@@ -37,6 +37,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/string/translation_server.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -66,6 +67,7 @@
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/sky.h"
+#include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
 
 #include "modules/modules_enabled.gen.h"
@@ -1669,8 +1671,8 @@ void EditorPropertyObjectID::update_property() {
 
 	const ObjectID id = _get_object_id();
 	if (id.is_valid()) {
-		edit->set_text(type + ": " + uitos(id));
-		edit->set_tooltip_text(type + ": " + uitos(id));
+		edit->set_text(type + ": " + itos(id));
+		edit->set_tooltip_text(type + ": " + itos(id));
 		edit->set_disabled(false);
 		edit->set_button_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
@@ -3089,15 +3091,37 @@ void EditorPropertyNodePath::_assign_draw() {
 	}
 }
 
-void EditorPropertyNodePath::_update_menu() {
+void EditorPropertyNodePath::_popup_menu(const Vector2i &p_pos) {
+	if (!menu) {
+		menu = memnew(PopupMenu);
+		menu->add_item(TTRC("Clear"), ACTION_CLEAR);
+		menu->add_item(TTRC("Copy as Text"), ACTION_COPY);
+		menu->add_item(TTRC("Edit"), ACTION_EDIT);
+		menu->add_item(TTRC("Show Node in Tree"), ACTION_SELECT);
+		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyNodePath::_menu_option));
+		add_child(menu);
+		notification(NOTIFICATION_THEME_CHANGED); // Update menu icons.
+	}
+
 	const NodePath &np = _get_node_path();
 
-	menu->get_popup()->set_item_disabled(ACTION_CLEAR, np.is_empty() || is_read_only());
-	menu->get_popup()->set_item_disabled(ACTION_COPY, np.is_empty());
-	menu->get_popup()->set_item_disabled(ACTION_EDIT, is_read_only());
+	menu->set_item_disabled(ACTION_CLEAR, np.is_empty() || is_read_only());
+	menu->set_item_disabled(ACTION_COPY, np.is_empty());
+	menu->set_item_disabled(ACTION_EDIT, is_read_only());
 
 	Node *edited_node = Object::cast_to<Node>(get_edited_object());
-	menu->get_popup()->set_item_disabled(ACTION_SELECT, !edited_node || !edited_node->has_node(np));
+	menu->set_item_disabled(ACTION_SELECT, !edited_node || !edited_node->has_node(np));
+
+	menu->reset_size();
+
+	if (p_pos.x >= 0) {
+		menu->set_position(p_pos);
+	} else {
+		int ms = menu->get_contents_minimum_size().width;
+		Vector2 popup_pos = menu_button->get_screen_rect().get_end() - Vector2(ms, 0);
+		menu->set_position(popup_pos);
+	}
+	menu->popup();
 }
 
 void EditorPropertyNodePath::_menu_option(int p_idx) {
@@ -3133,7 +3157,8 @@ void EditorPropertyNodePath::_menu_option(int p_idx) {
 			Node *target_node = edited_node->get_node_or_null(np);
 			ERR_FAIL_NULL(target_node);
 
-			SceneTreeDock::get_singleton()->set_selected(target_node);
+			SceneTreeDock::get_singleton()->make_visible();
+			callable_mp(SceneTreeDock::get_singleton(), &SceneTreeDock::highlight_node).call_deferred(target_node);
 		} break;
 	}
 }
@@ -3147,7 +3172,6 @@ void EditorPropertyNodePath::_text_submitted(const String &p_text) {
 	_node_selected(np, false);
 	edit->hide();
 	assign->show();
-	menu->show();
 }
 
 const NodePath EditorPropertyNodePath::_get_node_path() const {
@@ -3166,6 +3190,14 @@ const NodePath EditorPropertyNodePath::_get_node_path() const {
 		}
 	} else {
 		return val;
+	}
+}
+
+void EditorPropertyNodePath::_button_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		_popup_menu(assign->get_screen_position() + mb->get_position());
 	}
 }
 
@@ -3269,11 +3301,13 @@ void EditorPropertyNodePath::setup(const Vector<StringName> &p_valid_types, bool
 void EditorPropertyNodePath::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-			menu->get_popup()->set_item_icon(ACTION_CLEAR, get_editor_theme_icon(SNAME("Clear")));
-			menu->get_popup()->set_item_icon(ACTION_COPY, get_editor_theme_icon(SNAME("ActionCopy")));
-			menu->get_popup()->set_item_icon(ACTION_EDIT, get_editor_theme_icon(SNAME("Edit")));
-			menu->get_popup()->set_item_icon(ACTION_SELECT, get_editor_theme_icon(SNAME("ExternalLink")));
+			menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			if (menu) {
+				menu->set_item_icon(ACTION_CLEAR, get_editor_theme_icon(SNAME("Clear")));
+				menu->set_item_icon(ACTION_COPY, get_editor_theme_icon(SNAME("ActionCopy")));
+				menu->set_item_icon(ACTION_EDIT, get_editor_theme_icon(SNAME("Edit")));
+				menu->set_item_icon(ACTION_SELECT, get_editor_theme_icon(SNAME("ExternalLink")));
+			}
 
 			// Use a constant width for the icon to avoid sizing issues or blurry icons.
 			assign->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
@@ -3320,8 +3354,12 @@ Node *EditorPropertyNodePath::get_base_node() {
 		return base_node;
 	}
 
-	if (get_edited_object()->has_method("get_root_path")) {
-		return Object::cast_to<Node>(get_edited_object()->call("get_root_path"));
+	{
+		Callable::CallError err;
+		Object *root_node = get_edited_object()->callp(SNAME("get_root_path"), nullptr, 0, err);
+		if (err.error == Callable::CallError::CALL_OK) {
+			return Object::cast_to<Node>(root_node);
+		}
 	}
 
 	if (!base_node) {
@@ -3354,19 +3392,14 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_expand_icon(true);
 	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	assign->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyNodePath::_assign_draw));
+	assign->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyNodePath::_button_input));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
 	hbc->add_child(assign);
 
-	menu = memnew(MenuButton);
-	menu->set_flat(true);
-	menu->connect(SNAME("about_to_popup"), callable_mp(this, &EditorPropertyNodePath::_update_menu));
-	hbc->add_child(menu);
-
-	menu->get_popup()->add_item(TTR("Clear"), ACTION_CLEAR);
-	menu->get_popup()->add_item(TTR("Copy as Text"), ACTION_COPY);
-	menu->get_popup()->add_item(TTR("Edit"), ACTION_EDIT);
-	menu->get_popup()->add_item(TTR("Show Node in Tree"), ACTION_SELECT);
-	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyNodePath::_menu_option));
+	menu_button = memnew(Button);
+	menu_button->set_button_mask(MouseButtonMask::LEFT | MouseButtonMask::RIGHT);
+	menu_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_popup_menu).bind(Vector2i(-1, -1)));
+	hbc->add_child(menu_button);
 
 	edit = memnew(LineEdit);
 	edit->set_accessibility_name(TTRC("Node Path"));
@@ -3931,7 +3964,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 	return hint;
 }
 
-static EditorProperty *get_input_action_editor(const String &p_hint_text, bool is_string_name) {
+static EditorProperty *_get_input_action_editor(const String &p_hint_text, bool is_string_name) {
 	// TODO: Should probably use a better editor GUI with a search bar.
 	// Said GUI could also handle showing builtin options, requiring 1 less hint.
 	EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
@@ -3960,6 +3993,16 @@ static EditorProperty *get_input_action_editor(const String &p_hint_text, bool i
 	}
 	options.append_array(builtin_options);
 	editor->setup(options, Vector<String>(), is_string_name, hints.has("loose_mode"));
+	return editor;
+}
+
+static EditorProperty *_get_audio_bus_editor(bool is_string_name) {
+	EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
+	Vector<String> options;
+	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
+		options.append(AudioServer::get_singleton()->get_bus_name(i));
+	}
+	editor->setup(options, Vector<String>(), is_string_name, false);
 	return editor;
 }
 
@@ -4081,7 +4124,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				editor->setup(options, option_names, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
-				return get_input_action_editor(p_hint_text, false);
+				return _get_input_action_editor(p_hint_text, false);
+			} else if (p_hint == PROPERTY_HINT_AUDIO_BUS) {
+				return _get_audio_bus_editor(false);
 			} else if (p_hint == PROPERTY_HINT_MULTILINE_TEXT) {
 				Vector<String> options = p_hint_text.split(",", false);
 				EditorPropertyMultilineText *editor = memnew(EditorPropertyMultilineText(false));
@@ -4245,7 +4290,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				editor->setup(options, Vector<String>(), true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
-				return get_input_action_editor(p_hint_text, true);
+				return _get_input_action_editor(p_hint_text, true);
+			} else if (p_hint == PROPERTY_HINT_AUDIO_BUS) {
+				return _get_audio_bus_editor(true);
 			} else {
 				EditorPropertyText *editor = memnew(EditorPropertyText);
 				if (p_hint == PROPERTY_HINT_PLACEHOLDER_TEXT) {

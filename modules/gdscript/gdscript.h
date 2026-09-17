@@ -248,7 +248,6 @@ public:
 		CRASH_COND(!member_indices.has(p_member));
 		return member_indices[p_member].data_type;
 	}
-	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 
 	_FORCE_INLINE_ const HashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	_FORCE_INLINE_ const HashMap<GDScriptFunction *, LambdaInfo> &get_lambda_info() const { return lambda_info; }
@@ -324,8 +323,8 @@ public:
 		return -1;
 	}
 
-	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
-	virtual void get_members(HashSet<StringName> *p_members) override;
+	virtual void get_constants(HashMap<StringName, Variant> *r_constants) override;
+	virtual void get_members(HashSet<StringName> *r_members) override;
 
 	virtual const Variant get_rpc_config() const override;
 
@@ -359,38 +358,36 @@ class GDScriptInstance : public ScriptInstance {
 	void _call_implicit_ready_recursively(GDScript *p_script);
 
 public:
-	virtual Object *get_owner() { return owner; }
+	virtual Object *get_owner() override { return owner; }
 
-	virtual bool set(const StringName &p_name, const Variant &p_value);
-	virtual bool get(const StringName &p_name, Variant &r_ret) const;
-	virtual void get_property_list(List<PropertyInfo> *p_properties) const;
-	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const;
-	virtual void validate_property(PropertyInfo &p_property) const;
+	virtual bool set(const StringName &p_name, const Variant &p_value) override;
+	virtual bool get(const StringName &p_name, Variant &r_ret) const override;
+	virtual void get_property_list(List<PropertyInfo> *r_properties) const override;
+	virtual Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid = nullptr) const override;
+	virtual void validate_property(PropertyInfo &p_property) const override;
 
-	virtual bool property_can_revert(const StringName &p_name) const;
-	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const;
+	virtual bool property_can_revert(const StringName &p_name) const override;
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override;
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const;
-	virtual bool has_method(const StringName &p_method) const;
+	virtual void get_method_list(List<MethodInfo> *r_list) const override;
+	virtual bool has_method(const StringName &p_method) const override;
 
-	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const;
+	virtual int get_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 
-	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
 
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
-	virtual void notification(int p_notification, bool p_reversed = false);
-	String to_string(bool *r_valid);
+	virtual void notification(int p_notification, bool p_reversed = false) override;
+	virtual String to_string(bool *r_valid) override;
 
-	virtual Ref<Script> get_script() const;
+	virtual Ref<Script> get_script() const override;
 
-	virtual ScriptLanguage *get_language();
-
-	void set_path(const String &p_path);
+	virtual ScriptLanguage *get_language() override;
 
 	void reload_members();
 
-	virtual const Variant get_rpc_config() const;
+	virtual const Variant get_rpc_config() const override;
 
 	GDScriptInstance() :
 			script_instance_list(this) {}
@@ -611,10 +608,10 @@ public:
 	virtual int debug_get_stack_level_line(int p_level) const override;
 	virtual String debug_get_stack_level_function(int p_level) const override;
 	virtual String debug_get_stack_level_source(int p_level) const override;
-	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
-	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_stack_level_locals(int p_level, List<String> *r_locals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_stack_level_members(int p_level, List<String> *r_members, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override;
 	virtual ScriptInstance *debug_get_stack_level_instance(int p_level) override;
-	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override;
+	virtual void debug_get_globals(List<String> *r_globals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override;
 	virtual String debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems = -1, int p_max_depth = -1) override;
 
 	virtual void reload_all_scripts() override;
@@ -623,17 +620,17 @@ public:
 
 	virtual void frame() override;
 
-	virtual void get_public_functions(List<MethodInfo> *p_functions) const override;
-	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const override;
-	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override;
+	virtual void get_public_functions(List<MethodInfo> *r_functions) const override;
+	virtual void get_public_constants(List<Pair<String, Variant>> *r_constants) const override;
+	virtual void get_public_annotations(List<MethodInfo> *r_annotations) const override;
 
 	virtual void profiling_start() override;
 	virtual void profiling_stop() override;
 	virtual void profiling_set_save_native_calls(bool p_enable) override;
 	void profiling_collate_native_call_data(bool p_accumulated);
 
-	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override;
-	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override;
+	virtual int profiling_get_accumulated_data(ProfilingInfo *r_info_arr, int p_info_max) override;
+	virtual int profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_info_max) override;
 
 	/* GLOBAL CLASSES */
 

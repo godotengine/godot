@@ -46,7 +46,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_icon_manager.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/editor_toolbar_group.h"
 #include "editor/plugins/editor_plugin_list.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/scene/3d/gizmos/audio_listener_3d_gizmo_plugin.h"
@@ -93,12 +95,15 @@
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
@@ -109,6 +114,10 @@
 #include "scene/resources/surface_tool.h"
 #include "servers/physics_3d/physics_server_3d_types.h"
 #include "servers/rendering/rendering_server.h"
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+#include "modules/texture_streaming/texture_streaming.h"
+#endif
 
 using namespace Node3DEditorConstants;
 
@@ -779,13 +788,13 @@ void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 	const int state = gizmos_menu->get_item_state(idx);
 	switch (state) {
 		case EditorNode3DGizmoPlugin::VISIBLE:
-			gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+			gizmos_menu->set_item_icon(idx, EditorIconManager::get_icon(SNAME("GuiVisibilityVisible")));
 			break;
 		case EditorNode3DGizmoPlugin::ON_TOP:
-			gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityXray")));
+			gizmos_menu->set_item_icon(idx, EditorIconManager::get_icon(SNAME("GuiVisibilityXray")));
 			break;
 		case EditorNode3DGizmoPlugin::HIDDEN:
-			gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
+			gizmos_menu->set_item_icon(idx, EditorIconManager::get_icon(SNAME("GuiVisibilityHidden")));
 			break;
 	}
 
@@ -1723,13 +1732,13 @@ void Node3DEditor::_update_gizmos_menu() {
 				TTR("Click to toggle between visibility states.\n\nOpen eye: Gizmo is visible.\nClosed eye: Gizmo is hidden.\nHalf-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."));
 		switch (plugin_state) {
 			case EditorNode3DGizmoPlugin::VISIBLE:
-				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+				gizmos_menu->set_item_icon(idx, EditorIconManager::get_icon(SNAME("GuiVisibilityVisible")));
 				break;
 			case EditorNode3DGizmoPlugin::ON_TOP:
-				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityXray")));
+				gizmos_menu->set_item_icon(idx, EditorIconManager::get_icon(SNAME("GuiVisibilityXray")));
 				break;
 			case EditorNode3DGizmoPlugin::HIDDEN:
-				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
+				gizmos_menu->set_item_icon(idx, EditorIconManager::get_icon(SNAME("GuiVisibilityHidden")));
 				break;
 		}
 	}
@@ -1744,13 +1753,13 @@ void Node3DEditor::_update_gizmos_menu_theme() {
 		const int idx = gizmos_menu->get_item_index(i);
 		switch (plugin_state) {
 			case EditorNode3DGizmoPlugin::VISIBLE:
-				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
+				gizmos_menu->set_item_icon(idx, EditorIconManager::get_icon(SNAME("GuiVisibilityVisible")));
 				break;
 			case EditorNode3DGizmoPlugin::ON_TOP:
-				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityXray")));
+				gizmos_menu->set_item_icon(idx, EditorIconManager::get_icon(SNAME("GuiVisibilityXray")));
 				break;
 			case EditorNode3DGizmoPlugin::HIDDEN:
-				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
+				gizmos_menu->set_item_icon(idx, EditorIconManager::get_icon(SNAME("GuiVisibilityHidden")));
 				break;
 		}
 	}
@@ -2314,6 +2323,164 @@ void Node3DEditor::_sun_environ_settings_pressed() {
 	sun_environ_popup->grab_focus();
 }
 
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+void Node3DEditor::_textures_button_pressed() {
+	if (textures_button->is_disabled()) {
+		return;
+	}
+
+	Vector2 pos = textures_button->get_screen_position();
+	pos.y += +textures_button->get_size().y;
+	textures_popup->set_position(pos);
+	textures_popup->reset_size();
+	textures_popup->popup();
+}
+
+void Node3DEditor::_textures_button_update_state() {
+	const bool texture_streaming_enabled = GLOBAL_GET("rendering/textures/streaming/enabled");
+	textures_button->set_disabled(!texture_streaming_enabled);
+
+	if (!texture_streaming_enabled) {
+		textures_popup->hide();
+	}
+}
+
+void Node3DEditor::_textures_preset_pressed(int p_preset) {
+	textures_very_low->set_pressed(false);
+	textures_low->set_pressed(false);
+	textures_medium->set_pressed(false);
+	textures_high->set_pressed(false);
+	textures_very_high->set_pressed(false);
+	textures_max->set_pressed(false);
+
+	switch (p_preset) {
+		case TEXTURE_QUALITY_VERY_LOW:
+			textures_very_low->set_pressed(true);
+			textures_min_lod_slider->set_value(4);
+			textures_max_lod_slider->set_value(8);
+			break;
+		case TEXTURE_QUALITY_LOW:
+			textures_low->set_pressed(true);
+			textures_min_lod_slider->set_value(3);
+			textures_max_lod_slider->set_value(7);
+			break;
+		case TEXTURE_QUALITY_MEDIUM:
+			textures_medium->set_pressed(true);
+			textures_min_lod_slider->set_value(2);
+			textures_max_lod_slider->set_value(6);
+			break;
+		case TEXTURE_QUALITY_HIGH:
+			textures_high->set_pressed(true);
+			textures_min_lod_slider->set_value(1);
+			textures_max_lod_slider->set_value(5);
+			break;
+		case TEXTURE_QUALITY_VERY_HIGH:
+			textures_very_high->set_pressed(true);
+			textures_min_lod_slider->set_value(0);
+			textures_max_lod_slider->set_value(4);
+			break;
+		case TEXTURE_QUALITY_MAX:
+			textures_max->set_pressed(true);
+			textures_min_lod_slider->set_value(0);
+			textures_max_lod_slider->set_value(0);
+			break;
+	}
+}
+
+void Node3DEditor::_textures_max_lod_changed(float p_value) {
+	float max_value = textures_min_lod_slider->get_value();
+	if (p_value < max_value) {
+		textures_min_lod_slider->set_value(p_value);
+	}
+	_textures_apply_settings();
+}
+void Node3DEditor::_textures_min_lod_changed(float p_value) {
+	float min_value = textures_max_lod_slider->get_value();
+	if (p_value > min_value) {
+		textures_max_lod_slider->set_value(p_value);
+	}
+	_textures_apply_settings();
+}
+
+void Node3DEditor::_textures_budget_toggled(bool p_enabled) {
+	if (p_enabled) {
+		// textures_budget_enable->set_pressed(true);
+		textures_budget_slider->set_read_only(false);
+	} else {
+		// textures_budget_enable->set_pressed(false);
+		textures_budget_slider->set_read_only(true);
+	}
+
+	_textures_apply_settings();
+}
+
+void Node3DEditor::_textures_budget_changed(float p_value) {
+	_textures_apply_settings();
+}
+
+void Node3DEditor::_textures_save_pressed() {
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/min_lod", int(textures_min_lod_slider->get_value()));
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/max_lod", int(textures_max_lod_slider->get_value()));
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/memory_budget_mb", int(textures_budget_slider->get_value()));
+	const bool budget_enabled = textures_budget_enable->is_pressed();
+	ProjectSettings::get_singleton()->set_setting("rendering/textures/streaming/memory_budget_enabled", budget_enabled);
+	ProjectSettings::get_singleton()->save();
+	textures_popup->hide();
+}
+
+void Node3DEditor::_textures_load_settings() {
+	int min_lod = GLOBAL_GET("rendering/textures/streaming/min_lod");
+	int max_lod = GLOBAL_GET("rendering/textures/streaming/max_lod");
+	int budget_size = GLOBAL_GET("rendering/textures/streaming/memory_budget_mb");
+	bool budget_enabled = GLOBAL_GET("rendering/textures/streaming/memory_budget_enabled");
+
+	textures_max_lod_slider->set_value(max_lod);
+	textures_min_lod_slider->set_value(min_lod);
+	textures_budget_slider->set_value(budget_size);
+	textures_budget_enable->set_pressed(budget_enabled);
+
+	_textures_max_lod_changed(textures_max_lod_slider->get_value());
+	_textures_min_lod_changed(textures_min_lod_slider->get_value());
+	_textures_budget_changed(textures_budget_slider->get_value());
+
+	textures_very_low->set_pressed(false);
+	textures_low->set_pressed(false);
+	textures_medium->set_pressed(false);
+	textures_high->set_pressed(false);
+	textures_very_high->set_pressed(false);
+	textures_max->set_pressed(false);
+
+	if (min_lod == 0 && max_lod == 0) {
+		textures_max->set_pressed(true);
+	} else if (min_lod == 0 && max_lod == 4) {
+		textures_very_high->set_pressed(true);
+	} else if (min_lod == 1 && max_lod == 5) {
+		textures_high->set_pressed(true);
+	} else if (min_lod == 2 && max_lod == 6) {
+		textures_medium->set_pressed(true);
+	} else if (min_lod == 3 && max_lod == 7) {
+		textures_low->set_pressed(true);
+	} else if (min_lod == 4 && max_lod == 8) {
+		textures_very_low->set_pressed(true);
+	}
+}
+
+void Node3DEditor::_textures_apply_settings() {
+	int min_lod = textures_min_lod_slider->get_value();
+	int max_lod = textures_max_lod_slider->get_value();
+
+	TextureStreaming::get_singleton()->set_min_lod_override(min_lod);
+	TextureStreaming::get_singleton()->set_max_lod_override(max_lod);
+	const int budget_size = textures_budget_slider->get_value();
+	const bool budget_enabled = textures_budget_enable->is_pressed();
+	if (budget_enabled) {
+		TextureStreaming::get_singleton()->set_memory_budget_mb_override(budget_size);
+	} else {
+		TextureStreaming::get_singleton()->set_memory_budget_mb_override(0);
+	}
+}
+#endif
+
 void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	sun_environ_popup->hide();
 
@@ -2378,34 +2545,6 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 }
 
 void Node3DEditor::_update_theme() {
-	tool_button[TOOL_MODE_TRANSFORM]->set_button_icon(get_editor_theme_icon(SNAME("ToolTransform")));
-	tool_button[TOOL_MODE_MOVE]->set_button_icon(get_editor_theme_icon(SNAME("ToolMove")));
-	tool_button[TOOL_MODE_ROTATE]->set_button_icon(get_editor_theme_icon(SNAME("ToolRotate")));
-	tool_button[TOOL_MODE_SCALE]->set_button_icon(get_editor_theme_icon(SNAME("ToolScale")));
-	tool_button[TOOL_MODE_SELECT]->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-	tool_button[TOOL_MODE_LIST_SELECT]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
-	tool_button[TOOL_LOCK_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Lock")));
-	tool_button[TOOL_UNLOCK_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Unlock")));
-	tool_button[TOOL_GROUP_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Group")));
-	tool_button[TOOL_UNGROUP_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Ungroup")));
-	tool_button[TOOL_RULER]->set_button_icon(get_editor_theme_icon(SNAME("Ruler")));
-
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_button_icon(get_editor_theme_icon(SNAME("Object")));
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_button_icon(get_editor_theme_icon(SNAME("Snap")));
-	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_button_icon(get_editor_theme_icon(SNAME("Trackball")));
-	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
-
-	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), get_editor_theme_icon(SNAME("Panels1")));
-	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), get_editor_theme_icon(SNAME("Panels2")));
-	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), get_editor_theme_icon(SNAME("Panels2Alt")));
-	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), get_editor_theme_icon(SNAME("Panels3")));
-	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), get_editor_theme_icon(SNAME("Panels3Alt")));
-	view_layout_menu->get_popup()->set_item_icon(view_layout_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), get_editor_theme_icon(SNAME("Panels4")));
-
-	sun_button->set_button_icon(get_editor_theme_icon(SNAME("PreviewSun")));
-	environ_button->set_button_icon(get_editor_theme_icon(SNAME("PreviewEnvironment")));
-	sun_environ_settings->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-
 	sun_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 	environ_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 
@@ -2443,6 +2582,10 @@ void Node3DEditor::_notification(int p_what) {
 
 			_update_preview_environment();
 
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+			_textures_button_update_state();
+#endif
+
 			sun_state->set_custom_minimum_size(sun_vb->get_combined_minimum_size());
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 
@@ -2471,6 +2614,17 @@ void Node3DEditor::_notification(int p_what) {
 			_update_gizmos_menu_theme();
 			sun_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 			environ_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible_in_tree()) {
+				set_process(true);
+				set_physics_process(true);
+				refresh_dirty_gizmos();
+			} else {
+				set_process(false);
+				set_physics_process(false);
+			}
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -3233,6 +3387,7 @@ Node3DEditor::Node3DEditor() {
 	set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN | EditorDock::DOCK_LAYOUT_FLOATING);
 	set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
 	set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_3d"));
+	set_allow_switch_screen(true);
 
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
@@ -3258,8 +3413,7 @@ Node3DEditor::Node3DEditor() {
 	// Main toolbars.
 	// Split into separate `HBoxContainer` so they can wrap onto multiple lines as the window width decreases (the parent is a `FlowContainer`).
 	// These are not grouped by any particular criteria. Only some of the end children are grouped separately, based on their separators.
-	HBoxContainer *tool_button_hbox = memnew(HBoxContainer);
-	main_flow->add_child(tool_button_hbox);
+	HBoxContainer *tool_button_hbox = EditorToolbarGroup::create(main_flow);
 
 	tool_button[TOOL_MODE_TRANSFORM] = memnew(Button);
 	tool_button_hbox->add_child(tool_button[TOOL_MODE_TRANSFORM]);
@@ -3270,6 +3424,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_TRANSFORM]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_transform", TTRC("Transform Mode"), Key::Q, true));
 	tool_button[TOOL_MODE_TRANSFORM]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_TRANSFORM]->set_accessibility_name(TTRC("Transform Mode"));
+	tool_button[TOOL_MODE_TRANSFORM]->set_button_icon(EditorIconManager::get_icon(SNAME("ToolTransform")));
 
 	tool_button[TOOL_MODE_MOVE] = memnew(Button);
 	tool_button_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
@@ -3281,6 +3436,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_MOVE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_move", TTRC("Move Mode"), Key::W, true));
 	tool_button[TOOL_MODE_MOVE]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_MOVE]->set_accessibility_name(TTRC("Move Mode"));
+	tool_button[TOOL_MODE_MOVE]->set_button_icon(EditorIconManager::get_icon(SNAME("ToolMove")));
 
 	tool_button[TOOL_MODE_ROTATE] = memnew(Button);
 	tool_button_hbox->add_child(tool_button[TOOL_MODE_ROTATE]);
@@ -3291,6 +3447,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_ROTATE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_rotate", TTRC("Rotate Mode"), Key::E, true));
 	tool_button[TOOL_MODE_ROTATE]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_ROTATE]->set_accessibility_name(TTRC("Rotate Mode"));
+	tool_button[TOOL_MODE_ROTATE]->set_button_icon(EditorIconManager::get_icon(SNAME("ToolRotate")));
 
 	tool_button[TOOL_MODE_SCALE] = memnew(Button);
 	tool_button_hbox->add_child(tool_button[TOOL_MODE_SCALE]);
@@ -3301,6 +3458,7 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SCALE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scale", TTRC("Scale Mode"), Key::R, true));
 	tool_button[TOOL_MODE_SCALE]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_SCALE]->set_accessibility_name(TTRC("Scale Mode"));
+	tool_button[TOOL_MODE_SCALE]->set_button_icon(EditorIconManager::get_icon(SNAME("ToolScale")));
 
 	tool_button[TOOL_MODE_SELECT] = memnew(Button);
 	tool_button_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
@@ -3311,8 +3469,11 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::V, true));
 	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_SELECT]->set_accessibility_name(TTRC("Select Mode"));
+	tool_button[TOOL_MODE_SELECT]->set_button_icon(EditorIconManager::get_icon(SNAME("ToolSelect")));
 
-	tool_button_hbox->add_child(memnew(VSeparator));
+	VSeparator *vsep = memnew(VSeparator);
+	vsep->set_theme_type_variation("VSeparatorButtonGroup");
+	tool_button_hbox->add_child(vsep);
 
 	tool_button[TOOL_MODE_LIST_SELECT] = memnew(Button);
 	tool_button_hbox->add_child(tool_button[TOOL_MODE_LIST_SELECT]);
@@ -3321,83 +3482,90 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_LIST_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_LIST_SELECT));
 	tool_button[TOOL_MODE_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + vformat(TTR("%s+RMB: Show list of all nodes at position clicked, including locked."), keycode_get_string((Key)KeyModifierMask::ALT)));
 	tool_button[TOOL_MODE_LIST_SELECT]->set_accessibility_name(TTRC("Show List of Selectable Nodes"));
+	tool_button[TOOL_MODE_LIST_SELECT]->set_button_icon(EditorIconManager::get_icon(SNAME("ListSelect")));
+
+	tool_button[TOOL_RULER] = memnew(Button);
+	tool_button_hbox->add_child(tool_button[TOOL_RULER]);
+	tool_button[TOOL_RULER]->set_toggle_mode(true);
+	tool_button[TOOL_RULER]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_button[TOOL_RULER]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_RULER));
+	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
+	tool_button[TOOL_RULER]->set_shortcut(ED_SHORTCUT("spatial_editor/measure", TTRC("Ruler Mode"), Key::M));
+	tool_button[TOOL_RULER]->set_accessibility_name(TTRC("Ruler Mode"));
+	tool_button[TOOL_RULER]->set_button_icon(EditorIconManager::get_icon(SNAME("Ruler")));
+
+	main_flow->add_child(memnew(VSeparator));
+
+	HBoxContainer *lock_group_hbox = memnew(HBoxContainer);
+	main_flow->add_child(lock_group_hbox);
 
 	tool_button[TOOL_LOCK_SELECTED] = memnew(Button);
-	tool_button_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);
+	lock_group_hbox->add_child(tool_button[TOOL_LOCK_SELECTED]);
 	tool_button[TOOL_LOCK_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_LOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_LOCK_SELECTED));
 	tool_button[TOOL_LOCK_SELECTED]->set_tooltip_text(TTRC("Lock selected node, preventing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_LOCK_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/lock_selected_nodes"));
 	tool_button[TOOL_LOCK_SELECTED]->set_accessibility_name(TTRC("Lock"));
+	tool_button[TOOL_LOCK_SELECTED]->set_button_icon(EditorIconManager::get_icon(SNAME("Lock")));
 
 	tool_button[TOOL_UNLOCK_SELECTED] = memnew(Button);
-	tool_button_hbox->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
+	lock_group_hbox->add_child(tool_button[TOOL_UNLOCK_SELECTED]);
 	tool_button[TOOL_UNLOCK_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_UNLOCK_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNLOCK_SELECTED));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_tooltip_text(TTRC("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_UNLOCK_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/unlock_selected_nodes"));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_accessibility_name(TTRC("Unlock"));
+	tool_button[TOOL_UNLOCK_SELECTED]->set_button_icon(EditorIconManager::get_icon(SNAME("Unlock")));
 
 	tool_button[TOOL_GROUP_SELECTED] = memnew(Button);
-	tool_button_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
+	lock_group_hbox->add_child(tool_button[TOOL_GROUP_SELECTED]);
 	tool_button[TOOL_GROUP_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_GROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_GROUP_SELECTED));
 	tool_button[TOOL_GROUP_SELECTED]->set_tooltip_text(TTRC("Groups the selected node with its children. This selects the parent when any child node is clicked in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_GROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/group_selected_nodes"));
 	tool_button[TOOL_GROUP_SELECTED]->set_accessibility_name(TTRC("Group"));
+	tool_button[TOOL_GROUP_SELECTED]->set_button_icon(EditorIconManager::get_icon(SNAME("Group")));
 
 	tool_button[TOOL_UNGROUP_SELECTED] = memnew(Button);
-	tool_button_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
+	lock_group_hbox->add_child(tool_button[TOOL_UNGROUP_SELECTED]);
 	tool_button[TOOL_UNGROUP_SELECTED]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_button[TOOL_UNGROUP_SELECTED]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_UNGROUP_SELECTED));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_tooltip_text(TTRC("Ungroups the selected node from its children. Child nodes will be individual items in 2D and 3D view."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	tool_button[TOOL_UNGROUP_SELECTED]->set_shortcut(ED_GET_SHORTCUT("editor/ungroup_selected_nodes"));
 	tool_button[TOOL_UNGROUP_SELECTED]->set_accessibility_name(TTRC("Ungroup"));
+	tool_button[TOOL_UNGROUP_SELECTED]->set_button_icon(EditorIconManager::get_icon(SNAME("Ungroup")));
 
-	tool_button[TOOL_RULER] = memnew(Button);
-	tool_button_hbox->add_child(tool_button[TOOL_RULER]);
-	tool_button[TOOL_RULER]->set_toggle_mode(true);
-	tool_button[TOOL_RULER]->set_theme_type_variation("FlatButton");
-	tool_button[TOOL_RULER]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_RULER));
-	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
-	tool_button[TOOL_RULER]->set_shortcut(ED_SHORTCUT("spatial_editor/measure", TTRC("Ruler Mode"), Key::M));
-	tool_button[TOOL_RULER]->set_accessibility_name(TTRC("Ruler Mode"));
+	main_flow->add_child(memnew(VSeparator));
 
-	tool_button_hbox->add_child(memnew(VSeparator));
+	HBoxContainer *misc_hbox = memnew(HBoxContainer);
+	main_flow->add_child(misc_hbox);
 
 	tool_option_button[TOOL_OPT_LOCAL_COORDS] = memnew(Button);
-	tool_button_hbox->add_child(tool_option_button[TOOL_OPT_LOCAL_COORDS]);
+	misc_hbox->add_child(tool_option_button[TOOL_OPT_LOCAL_COORDS]);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_LOCAL_COORDS));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTRC("Use Local Space"), Key::T));
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut_context(this);
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_accessibility_name(TTRC("Use Local Space"));
-
-	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
-	tool_button_hbox->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_theme_type_variation(SceneStringName(FlatButton));
-	tool_option_button[TOOL_OPT_USE_SNAP]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_USE_SNAP));
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTRC("Use Snap"), Key::Y));
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut_context(this);
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_accessibility_name(TTRC("Use Snap"));
+	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_button_icon(EditorIconManager::get_icon(SNAME("Object")));
 
 	tool_option_button[TOOL_OPT_USE_TRACKBALL] = memnew(Button);
-	tool_button_hbox->add_child(tool_option_button[TOOL_OPT_USE_TRACKBALL]);
+	misc_hbox->add_child(tool_option_button[TOOL_OPT_USE_TRACKBALL]);
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_USE_TRACKBALL));
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_shortcut(ED_SHORTCUT("spatial_editor/trackball", TTRC("Use Trackball"), Key::U));
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_shortcut_context(this);
 	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_accessibility_name(TTRC("Use Trackball"));
+	tool_option_button[TOOL_OPT_USE_TRACKBALL]->set_button_icon(EditorIconManager::get_icon(SNAME("Trackball")));
 
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM] = memnew(Button);
-	tool_button_hbox->add_child(tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]);
+	misc_hbox->add_child(tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]);
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_toggle_mode(true);
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_PRESERVE_CHILDREN_TRANSFORM));
@@ -3405,11 +3573,47 @@ Node3DEditor::Node3DEditor() {
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_shortcut_context(this);
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_accessibility_name(TTRC("Preserve Children Transform"));
 	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_tooltip_text(TTRC("When enabled, transforming a node will preserve the global transform of its children.\nThis also applies when editing transform properties in the Inspector."));
+	tool_option_button[TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->set_button_icon(EditorIconManager::get_icon(SNAME("Pin")));
 
-	tool_button_hbox->add_child(memnew(VSeparator));
+	main_flow->add_child(memnew(VSeparator));
 
-	HBoxContainer *environment_hbox = memnew(HBoxContainer);
-	main_flow->add_child(environment_hbox);
+	HBoxContainer *snap_hbox = EditorToolbarGroup::create(main_flow);
+
+	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(Button);
+	snap_hbox->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_toggle_mode(true);
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_option_button[TOOL_OPT_USE_SNAP]->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_menu_item_toggled).bind(MENU_TOOL_USE_SNAP));
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTRC("Use Snap"), Key::Y));
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut_context(this);
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_accessibility_name(TTRC("Use Snap"));
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_button_icon(EditorIconManager::get_icon(SNAME("Snap")));
+
+	snap_menu = memnew(MenuButton);
+	snap_hbox->add_child(snap_menu);
+	snap_menu->set_flat(false);
+	snap_menu->set_theme_type_variation("FlatMenuButtonNoIconTint");
+	snap_menu->set_h_size_flags(SIZE_SHRINK_END);
+	snap_menu->set_tooltip_text(TTRC("Selection options."));
+	snap_menu->set_button_icon(EditorIconManager::get_icon(SNAME("GuiDropdown")));
+
+	PopupMenu *snap_p = snap_menu->get_popup();
+	snap_p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
+	snap_p->set_item_checked(snap_p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
+	snap_p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
+
+	snap_p->add_separator();
+	snap_p->add_radio_check_item(TTRC("Snap to Mesh Vertices"), MENU_VERTEX_SNAP_SOURCE_MESH);
+	snap_p->set_item_checked(snap_p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH), true);
+	snap_p->add_radio_check_item(TTRC("Snap to Collision Vertices"), MENU_VERTEX_SNAP_SOURCE_COLLISION);
+
+	snap_p->add_separator();
+	snap_p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTRC("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
+	snap_p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
+
+	main_flow->add_child(memnew(VSeparator));
+
+	HBoxContainer *environment_hbox = EditorToolbarGroup::create(main_flow);
 
 	sun_button = memnew(Button);
 	sun_button->set_tooltip_text(TTRC("Toggle preview sunlight.\nIf a DirectionalLight3D node is added to the scene, preview sunlight is disabled."));
@@ -3419,6 +3623,7 @@ Node3DEditor::Node3DEditor() {
 	sun_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	sun_button->set_pressed(true);
+	sun_button->set_button_icon(EditorIconManager::get_icon(SNAME("PreviewSun")));
 
 	environment_hbox->add_child(sun_button);
 
@@ -3430,6 +3635,7 @@ Node3DEditor::Node3DEditor() {
 	environ_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	environ_button->set_pressed(true);
+	environ_button->set_button_icon(EditorIconManager::get_icon(SNAME("PreviewEnvironment")));
 
 	environment_hbox->add_child(environ_button);
 
@@ -3437,10 +3643,11 @@ Node3DEditor::Node3DEditor() {
 	sun_environ_settings->set_tooltip_text(TTRC("Edit Sun and Environment settings."));
 	sun_environ_settings->set_theme_type_variation(SceneStringName(FlatButton));
 	sun_environ_settings->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_sun_environ_settings_pressed));
+	sun_environ_settings->set_button_icon(EditorIconManager::get_icon(SNAME("GuiDropdown")));
 
 	environment_hbox->add_child(sun_environ_settings);
 
-	environment_hbox->add_child(memnew(VSeparator));
+	main_flow->add_child(memnew(VSeparator));
 
 	HBoxContainer *transform_view_hbox = memnew(HBoxContainer);
 	main_flow->add_child(transform_view_hbox);
@@ -3490,21 +3697,8 @@ Node3DEditor::Node3DEditor() {
 	p = transform_menu->get_popup();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/snap_to_floor", TTRC("Snap Object to Floor"), Key::PAGEDOWN), MENU_SNAP_TO_FLOOR);
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTRC("Transform Dialog...")), MENU_TRANSFORM_DIALOG);
-
-	p->add_separator();
 	ED_SHORTCUT("spatial_editor/vertex_snap", TTRC("Vertex Snap"), Key::B);
-	p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
-	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
-	p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
-
-	p->add_separator();
-	p->add_radio_check_item(TTRC("Snap to Mesh Vertices"), MENU_VERTEX_SNAP_SOURCE_MESH);
-	p->set_item_checked(p->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH), true);
-	p->add_radio_check_item(TTRC("Snap to Collision Vertices"), MENU_VERTEX_SNAP_SOURCE_COLLISION);
 	_update_vertex_snap_tooltips();
-
-	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("spatial_editor/configure_snap", TTRC("Configure Snap...")), MENU_TRANSFORM_CONFIGURE_SNAP);
 
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed));
 
@@ -3516,8 +3710,18 @@ Node3DEditor::Node3DEditor() {
 	view_layout_menu->set_switch_on_hover(true);
 	view_layout_menu->set_shortcut_context(this);
 	transform_view_hbox->add_child(view_layout_menu);
-
 	transform_view_hbox->add_child(memnew(VSeparator));
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	textures_button = memnew(Button);
+	textures_button->set_text(TTRC("Textures"));
+	textures_button->set_tooltip_text(TTRC("Edit texture streaming quality settings."));
+	textures_button->set_theme_type_variation(SceneStringName(FlatButton));
+	textures_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_button_pressed));
+
+	main_flow->add_child(textures_button);
+	main_flow->add_child(memnew(VSeparator));
+#endif
 
 	context_toolbar_panel = memnew(PanelContainer);
 	context_toolbar_hbox = memnew(HBoxContainer);
@@ -3537,6 +3741,12 @@ Node3DEditor::Node3DEditor() {
 	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/3_viewports", TTRC("3 Viewports"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_3, true), MENU_VIEW_USE_3_VIEWPORTS);
 	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/3_viewports_alt", TTRC("3 Viewports (Alt)"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::KEY_3, true), MENU_VIEW_USE_3_VIEWPORTS_ALT);
 	p->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/4_viewports", TTRC("4 Viewports"), KeyModifierMask::CMD_OR_CTRL + Key::KEY_4, true), MENU_VIEW_USE_4_VIEWPORTS);
+	p->set_item_icon(p->get_item_index(MENU_VIEW_USE_1_VIEWPORT), EditorIconManager::get_icon(SNAME("Panels1")));
+	p->set_item_icon(p->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), EditorIconManager::get_icon(SNAME("Panels2")));
+	p->set_item_icon(p->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), EditorIconManager::get_icon(SNAME("Panels2Alt")));
+	p->set_item_icon(p->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), EditorIconManager::get_icon(SNAME("Panels3")));
+	p->set_item_icon(p->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), EditorIconManager::get_icon(SNAME("Panels3Alt")));
+	p->set_item_icon(p->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), EditorIconManager::get_icon(SNAME("Panels4")));
 	p->add_separator();
 
 	gizmos_menu = memnew(PopupMenu);
@@ -3928,6 +4138,120 @@ void fragment() {
 		_load_default_preview_settings();
 		_preview_settings_changed();
 	}
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	{
+		textures_popup = memnew(PopupPanel);
+		add_child(textures_popup);
+
+		VBoxContainer *textures_vb = memnew(VBoxContainer);
+		textures_vb->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
+		textures_vb->add_theme_constant_override("separation", 10);
+		textures_popup->add_child(textures_vb);
+
+		// Presets
+		HBoxContainer *presets_hb = memnew(HBoxContainer);
+		presets_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_very_low = memnew(Button);
+		textures_very_low->set_text(TTRC("Very Low"));
+		textures_very_low->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_very_low->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_very_low->set_toggle_mode(true);
+		textures_very_low->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_VERY_LOW), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_very_low);
+
+		textures_low = memnew(Button);
+		textures_low->set_text(TTRC("Low"));
+		textures_low->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_low->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_low->set_toggle_mode(true);
+		textures_low->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_LOW), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_low);
+
+		textures_medium = memnew(Button);
+		textures_medium->set_text(TTRC("Medium"));
+		textures_medium->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_medium->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_medium->set_toggle_mode(true);
+		textures_medium->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_MEDIUM), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_medium);
+
+		textures_high = memnew(Button);
+		textures_high->set_text(TTRC("High"));
+		textures_high->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_high->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_high->set_toggle_mode(true);
+		textures_high->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_HIGH), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_high);
+
+		textures_very_high = memnew(Button);
+		textures_very_high->set_text(TTRC("Very High"));
+		textures_very_high->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_very_high->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_very_high->set_toggle_mode(true);
+		textures_very_high->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_VERY_HIGH), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_very_high);
+
+		textures_max = memnew(Button);
+		textures_max->set_text(TTRC("Max"));
+		textures_max->set_theme_type_variation(SceneStringName(FlatButton));
+		textures_max->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_max->set_toggle_mode(true);
+		textures_max->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_preset_pressed).bind(TextureQualityPreset::TEXTURE_QUALITY_MAX), CONNECT_DEFERRED);
+		presets_hb->add_child(textures_max);
+
+		textures_vb->add_margin_child(TTRC("Quality Presets"), presets_hb);
+
+		textures_max_lod_slider = memnew(EditorSpinSlider);
+		textures_max_lod_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_max_lod_slider->set_min(0);
+		textures_max_lod_slider->set_max(13);
+		textures_max_lod_slider->set_step(1);
+		textures_max_lod_slider->set_label(TTRC("Max LOD"));
+		textures_max_lod_slider->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_textures_max_lod_changed), CONNECT_DEFERRED);
+		textures_vb->add_child(textures_max_lod_slider);
+
+		textures_min_lod_slider = memnew(EditorSpinSlider);
+		textures_min_lod_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_min_lod_slider->set_min(0);
+		textures_min_lod_slider->set_max(13);
+		textures_min_lod_slider->set_step(1);
+		textures_min_lod_slider->set_label(TTRC("Min LOD"));
+		textures_min_lod_slider->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_textures_min_lod_changed), CONNECT_DEFERRED);
+		textures_vb->add_child(textures_min_lod_slider);
+
+		VBoxContainer *textures_budget_vb = memnew(VBoxContainer);
+		textures_budget_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+
+		textures_budget_enable = memnew(CheckBox);
+		textures_budget_enable->set_text(TTRC("Limit Maximum Texture Memory Budget"));
+		textures_budget_enable->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_budget_enable->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditor::_textures_budget_toggled), CONNECT_DEFERRED);
+		textures_budget_vb->add_child(textures_budget_enable);
+
+		textures_budget_slider = memnew(EditorSpinSlider);
+		textures_budget_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+		textures_budget_slider->set_min(1);
+		textures_budget_slider->set_max(8192); // 8 GB
+		textures_budget_slider->set_suffix(" MiB");
+		textures_budget_slider->set_step(1);
+		textures_budget_slider->set_label(TTRC("Memory Budget:"));
+		textures_budget_slider->connect(SceneStringName(value_changed), callable_mp(this, &Node3DEditor::_textures_budget_changed), CONNECT_DEFERRED);
+		textures_budget_vb->add_child(textures_budget_slider);
+
+		textures_vb->add_margin_child(TTRC("Memory Budget:"), textures_budget_vb);
+
+		Button *textures_save = memnew(Button);
+		textures_save->set_text(TTRC("Save to Project Settings"));
+		textures_save->set_anchors_preset(LayoutPreset::PRESET_CENTER_RIGHT);
+		textures_save->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_save_pressed), CONNECT_DEFERRED);
+		textures_vb->add_child(textures_save);
+
+		_textures_button_update_state();
+		_textures_load_settings();
+		_textures_apply_settings();
+	}
+#endif
 	clear(); // Make sure values are initialized. Will call _snap_update() for us.
 }
 Node3DEditor::~Node3DEditor() {
@@ -3954,13 +4278,6 @@ void Node3DEditorPlugin::edited_scene_changed() {
 void Node3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		spatial_editor->make_visible();
-		spatial_editor->set_process(true);
-		spatial_editor->set_physics_process(true);
-		spatial_editor->refresh_dirty_gizmos();
-	} else {
-		spatial_editor->hide();
-		spatial_editor->set_process(false);
-		spatial_editor->set_physics_process(false);
 	}
 }
 

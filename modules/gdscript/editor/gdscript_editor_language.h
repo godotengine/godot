@@ -38,7 +38,7 @@ class GDScriptEditorLanguage final : public EditorLanguage {
 public:
 	_FORCE_INLINE_ static GDScriptEditorLanguage *get_singleton() { return singleton; }
 
-	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override;
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<EditorLanguage::CompletionOption> *r_options, bool &r_force, String &r_call_hint) override;
 
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) override;
 

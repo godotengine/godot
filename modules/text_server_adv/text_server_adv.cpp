@@ -907,6 +907,11 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 
 #ifdef MODULE_MSDFGEN_ENABLED
 
+// FreeType outline coordinates are 26.6 fixed point, so one pixel is 64 units.
+// Godot versions before 4.8 used an incorrect divisor of 60, which can be
+// restored via the `gui/fonts/compatibility/msdf_legacy_scaling` project setting.
+static double ft_units_per_pixel = 64.0;
+
 struct MSContext {
 	msdfgen::Point2 position;
 	msdfgen::Shape *shape = nullptr;
@@ -935,7 +940,7 @@ struct MSDFThreadData {
 };
 
 static msdfgen::Point2 ft_point2(const FT_Vector &vector) {
-	return msdfgen::Point2(vector.x / 60.0f, vector.y / 60.0f);
+	return msdfgen::Point2(vector.x / ft_units_per_pixel, vector.y / ft_units_per_pixel);
 }
 
 static int ft_move_to(const FT_Vector *to, void *user) {
@@ -1022,8 +1027,9 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 	chr.advance = p_advance;
 
 	if (shape.validate() && shape.contours.size() > 0) {
-		int w = (bounds.r - bounds.l);
-		int h = (bounds.t - bounds.b);
+		// Round the glyph size up to whole pixels so the bitmap fully covers the shape.
+		int w = Math::ceil(bounds.r - bounds.l);
+		int h = Math::ceil(bounds.t - bounds.b);
 
 		if (w == 0 || h == 0) {
 			chr.texture_idx = -1;
@@ -1080,8 +1086,9 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 		chr.texture_idx = tex_pos.index;
 
 		chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w + p_rect_margin * 2, h + p_rect_margin * 2);
-		chr.rect.position = Vector2(bounds.l - p_rect_margin, -bounds.t - p_rect_margin);
-
+		// Derive the glyph position from the same bottom-left anchor the rasterizer uses,
+		// rather than top-left, so the two agree about glyph placement.
+		chr.rect.position = Vector2(bounds.l - p_rect_margin, -(bounds.b + h) - p_rect_margin);
 		chr.rect.size = chr.uv_rect.size;
 	}
 	return chr;
@@ -8446,6 +8453,11 @@ TextServerAdvanced::TextServerAdvanced() {
 	_bmp_create_font_funcs();
 	_update_settings();
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerAdvanced::_update_settings));
+#if defined(MODULE_MSDFGEN_ENABLED) && !defined(DISABLE_DEPRECATED)
+	if (GLOBAL_GET("gui/fonts/compatibility/msdf_legacy_scaling")) {
+		ft_units_per_pixel = 60.0;
+	}
+#endif
 }
 
 void TextServerAdvanced::_font_clear_system_fallback_cache() {

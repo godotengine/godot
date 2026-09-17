@@ -422,7 +422,7 @@ License: BSD-3-clause
 
 Files: thirdparty/manifold/*
 Comment: Manifold
-Copyright: 2020-2025, The Manifold Authors
+Copyright: 2020-2026, The Manifold Authors
 License: Apache-2.0
 
 Files: thirdparty/mbedtls/*
@@ -477,6 +477,11 @@ Files: thirdparty/misc/FastNoiseLite.h
 Comment: FastNoise Lite
 Copyright: 2023, Jordan Peck and contributors
 License: Expat
+
+Files: thirdparty/misc/gamemode_client.h
+Comment: GameMode client
+Copyright: 2017-2024, Feral Interactive
+License: BSD-3-clause
 
 Files: thirdparty/misc/ifaddrs-android.cc
  thirdparty/misc/ifaddrs-android.h
@@ -543,6 +548,11 @@ License: BSD-2-clause
 Files: thirdparty/msdfgen/*
 Comment: Multi-channel signed distance field generator
 Copyright: 2014-2025, Viktor Chlumsky
+License: Expat
+
+Files: thirdparty/offset_allocator/*
+Comment: OffsetAllocator
+Copyright: 2023, Sebastian Aaltonen
 License: Expat
 
 Files: thirdparty/openxr/*

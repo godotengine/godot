@@ -67,6 +67,7 @@ protected:
 	virtual void update_visibility() override { show(); } // Never hide main screen.
 	virtual TabStyle get_tab_style() const override;
 	virtual Rect2 get_drag_hint_rect() const override;
+	virtual bool can_switch_dock() const override { return true; } // Main Screen is not affected by distraction-free mode.
 
 public:
 #ifndef DISABLE_DEPRECATED

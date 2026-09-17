@@ -1624,8 +1624,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	vec3 light = L;
 	vec3 view = V;
 	bool is_area = false;
-	float area_diffuse = 1.0;
-	float area_specular = 1.0;
+	vec3 area_diffuse = vec3(1.0);
+	vec3 area_specular = vec3(1.0);
 	vec3 area_diffuse_tex_color = vec3(1.0);
 	vec3 area_specular_tex_color = vec3(1.0);
 

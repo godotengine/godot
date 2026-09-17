@@ -627,7 +627,7 @@ void JSON::_bind_methods() {
 #define PROPS "props"
 
 static bool _encode_container_type(Dictionary &r_dict, const String &p_key, const ContainerType &p_type, bool p_full_objects) {
-	if (p_type.builtin_type != Variant::NIL) {
+	if (p_type.variant_type != Variant::NIL) {
 		if (p_type.script.is_valid()) {
 			ERR_FAIL_COND_V(!p_full_objects, false);
 			const String path = p_type.script->get_path();
@@ -638,7 +638,7 @@ static bool _encode_container_type(Dictionary &r_dict, const String &p_key, cons
 			r_dict[p_key] = String(p_type.class_name);
 		} else {
 			// No need to check `p_full_objects` since `class_name` should be non-empty for `builtin_type == Variant::OBJECT`.
-			r_dict[p_key] = Variant::get_type_name(p_type.builtin_type);
+			r_dict[p_key] = Variant::get_type_name(p_type.variant_type);
 		}
 	}
 	return true;
@@ -1004,14 +1004,14 @@ static bool _decode_container_type(const Dictionary &p_dict, const String &p_key
 
 	const Variant::Type builtin_type = Variant::get_type_by_name(type_name);
 	if (builtin_type < Variant::VARIANT_MAX && builtin_type != Variant::OBJECT) {
-		r_type.builtin_type = builtin_type;
+		r_type.variant_type = builtin_type;
 		return true;
 	}
 
 	if (ClassDB::class_exists(type_name)) {
 		ERR_FAIL_COND_V(!p_allow_objects, false);
 
-		r_type.builtin_type = Variant::OBJECT;
+		r_type.variant_type = Variant::OBJECT;
 		r_type.class_name = type_name;
 		return true;
 	}
@@ -1023,7 +1023,7 @@ static bool _decode_container_type(const Dictionary &p_dict, const String &p_key
 		const Ref<Script> script = ResourceLoader::load(type_name, "Script");
 		ERR_FAIL_COND_V_MSG(script.is_null(), false, vformat(R"(Can't load script at path "%s".)", type_name));
 
-		r_type.builtin_type = Variant::OBJECT;
+		r_type.variant_type = Variant::OBJECT;
 		r_type.class_name = script->get_instance_base_type();
 		r_type.script = script;
 		return true;
@@ -1288,7 +1288,7 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 
 					Dictionary ret;
 
-					if (key_type.builtin_type != Variant::NIL || value_type.builtin_type != Variant::NIL) {
+					if (key_type.variant_type != Variant::NIL || value_type.variant_type != Variant::NIL) {
 						ret.set_typed(key_type, value_type);
 					}
 
@@ -1311,7 +1311,7 @@ Variant JSON::_to_native(const Variant &p_json, bool p_allow_objects, int p_dept
 
 					Array ret;
 
-					if (elem_type.builtin_type != Variant::NIL) {
+					if (elem_type.variant_type != Variant::NIL) {
 						ret.set_typed(elem_type);
 					}
 

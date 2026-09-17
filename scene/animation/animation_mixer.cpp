@@ -1955,7 +1955,7 @@ void AnimationMixer::_blend_apply() {
 						return;
 					}
 					if (t->loc_used && t->rot_used && t->scale_used) {
-						Transform3D transform = Transform3D(Basis(t->rot).scaled(t->scale), t->loc);
+						Transform3D transform = Transform3D(Basis(t->rot).scaled_local(t->scale), t->loc);
 						t_node_3d->set_transform(transform);
 					} else {
 						if (t->loc_used) {

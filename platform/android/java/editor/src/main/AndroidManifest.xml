@@ -163,6 +163,37 @@
             android:resizeableActivity="false"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
 
+        <activity
+            android:name=".GodotSpatialContainerGame0"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:process=":GodotSpatialContainerGame0"
+            android:icon="@mipmap/ic_play_window"
+            android:label="@string/godot_game_activity_name"
+            android:exported="false"
+            android:autoRemoveFromRecents="true"
+            android:screenOrientation="landscape"
+            android:resizeableActivity="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+
+            <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_USED_BOUNDS_MODES" android:value="" />
+            <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE" android:value="XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_UNDEFINED" />
+        </activity>
+        <activity
+            android:name=".GodotSpatialContainerGame1"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:process=":GodotSpatialContainerGame1"
+            android:icon="@mipmap/ic_play_window"
+            android:label="@string/godot_game_activity_name"
+            android:exported="false"
+            android:autoRemoveFromRecents="true"
+            android:screenOrientation="landscape"
+            android:resizeableActivity="false"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" >
+
+            <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_USED_BOUNDS_MODES" android:value="" />
+            <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE" android:value="XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_UNDEFINED" />
+        </activity>
+
         <!--
         We remove this meta-data originating from the vendors plugin as we only need the loader for
         now since the project being edited provides its own version of the vendors plugin.

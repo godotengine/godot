@@ -46,7 +46,7 @@ static bool _profile_count_as_native(const Object *p_base_obj, const StringName 
 	if ((p_methodname == SNAME("new") && cname == GDScript::get_class_static()) || p_methodname == CoreStringName(call)) {
 		return false;
 	}
-	return ClassDB::class_exists(cname) && ClassDB::has_method(cname, p_methodname, false);
+	return ClassDB::has_method(cname, p_methodname, false);
 }
 
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {

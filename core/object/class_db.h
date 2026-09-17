@@ -116,8 +116,6 @@ public:
 
 		ObjectGDExtension *gdextension = nullptr;
 
-		HashMap<StringName, LocalVector<MethodBind *>> method_map_compatibility;
-
 #ifdef DEBUG_ENABLED
 		List<MethodInfo> virtual_methods;
 		HashMap<StringName, MethodInfo> virtual_methods_map;
@@ -215,7 +213,6 @@ private:
 	// Non-locking variants of get_parent_class and is_parent_class.
 	static StringName _get_parent_class(const StringName &p_class);
 	static bool _is_parent_class(const StringName &p_class, const StringName &p_inherits);
-	static void _bind_compatibility(ClassInfo *r_type, MethodBind *p_method);
 	static MethodBind *_bind_vararg_method(MethodBind *p_bind, const StringName &p_name, const Vector<Variant> &p_default_args, bool p_compatibility);
 	static void _bind_method_custom(const StringName &p_class, MethodBind *p_method, bool p_compatibility, bool p_take_ownership = true);
 

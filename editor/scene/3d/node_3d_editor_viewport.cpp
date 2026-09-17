@@ -70,6 +70,7 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
+#include "scene/property_utils.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/packed_scene.h"
@@ -3271,7 +3272,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			set_physics_process(vp_visible);
 
 			if (vp_visible) {
-				view_3d_controller->set_orthogonal(view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL)));
+				bool orthogonal_checked = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
+				if (view_3d_controller->is_orthogonal() != orthogonal_checked) {
+					view_3d_controller->set_orthogonal(orthogonal_checked);
+				}
 				view_3d_controller->update_camera();
 				_update_name();
 			} else {
@@ -5008,7 +5012,7 @@ void Node3DEditorViewport::switch_preview_camera(Camera3D *p_new_camera) {
 }
 
 void Node3DEditorViewport::update_transform_gizmo_view() {
-	if (!is_visible_in_tree()) {
+	if (!camera->is_inside_tree()) {
 		return;
 	}
 
@@ -5629,6 +5633,19 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 			preview_node->add_child(sprite);
 			add_preview = true;
 		}
+
+		Ref<Script> script = res;
+		if (script.is_valid()) {
+			String class_name = script->get_global_name();
+			String base_type = script->get_instance_base_type();
+			Sprite3D *sprite = memnew(Sprite3D);
+			sprite->set_texture(EditorNode::get_singleton()->get_class_icon(
+					class_name.is_empty() ? base_type : class_name));
+			sprite->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+			sprite->set_pixel_size(0.005);
+			preview_node->add_child(sprite);
+			add_preview = true;
+		}
 	}
 	if (add_preview) {
 		EditorNode::get_singleton()->get_scene_root()->add_child(preview_node);
@@ -5881,6 +5898,59 @@ bool Node3DEditorViewport::_create_audio_node(Node *p_parent, const String &p_pa
 	return true;
 }
 
+bool Node3DEditorViewport::_create_script_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
+	Ref<Script> script = ResourceLoader::load(p_path);
+	if (script.is_null()) {
+		return false;
+	}
+
+	String class_name = script->get_global_name();
+	String base_type = script->get_instance_base_type();
+	Object *ob = ClassDB::instantiate(base_type);
+	Node *instantiated_node = Object::cast_to<Node>(ob);
+	if (!instantiated_node) { // Error on instantiation.
+		return false;
+	}
+	if (class_name.is_empty()) {
+		const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
+		if (!node_name.is_empty()) {
+			instantiated_node->set_name(node_name);
+		}
+	} else {
+		instantiated_node->set_name(class_name);
+		PropertyUtils::assign_custom_type_script(ob, script);
+	}
+	instantiated_node->set_script(script);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(p_parent, "add_child", instantiated_node, true);
+	undo_redo->add_do_method(instantiated_node, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_reference(instantiated_node);
+	undo_redo->add_undo_method(p_parent, "remove_child", instantiated_node);
+	undo_redo->add_do_method(editor_selection, "add_node", instantiated_node);
+
+	const String new_name = p_parent->validate_child_name(instantiated_node);
+	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+	undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), instantiated_node->get_class(), new_name);
+	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
+
+	Transform3D parent_tf;
+	Node3D *parent_node3d = Object::cast_to<Node3D>(p_parent);
+	if (parent_node3d) {
+		parent_tf = parent_node3d->get_global_gizmo_transform();
+	}
+
+	if (ClassDB::has_property(instantiated_node->get_class(), "transform")) {
+		Transform3D new_tf = instantiated_node->get("transform");
+		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + instantiated_node->get("position"));
+		new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+
+		undo_redo->add_do_method(instantiated_node, "set_transform", new_tf);
+	}
+
+	return true;
+}
+
 void Node3DEditorViewport::_perform_drop_data() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (spatial_editor->get_preview_material_target().is_valid()) {
@@ -5927,6 +5997,13 @@ void Node3DEditorViewport::_perform_drop_data() {
 		Ref<AudioStream> audio = res;
 		if (audio.is_valid()) {
 			if (!_create_audio_node(target_node, path, drop_pos)) {
+				error_files.push_back(path.get_file());
+			}
+		}
+
+		Ref<Script> script = res;
+		if (script.is_valid()) {
+			if (!_create_script_node(target_node, path, drop_pos)) {
 				error_files.push_back(path.get_file());
 			}
 		}
@@ -5992,12 +6069,18 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		AUDIO = 1 << 2,
 		MESH = 1 << 3,
 		MATERIAL = 1 << 4,
+		SCRIPT = 1 << 5,
 	};
 	int instantiate_type = 0;
 
 	// Track whether a type other than PackedScene is valid to stop checking them and only
 	// continue to check if the rest of the scenes are valid (don't have cyclic dependencies).
 	bool is_other_valid = false;
+
+	String error_message;
+
+	StringName script_node_type;
+
 	// Check if at least one of the dragged files is a mesh, material, texture, or scene.
 	for (int i = 0; i < files.size(); i++) {
 		const String &res_type = ResourceLoader::get_resource_type(files[i]);
@@ -6006,8 +6089,9 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		bool is_material = ClassDB::is_parent_class(res_type, "Material");
 		bool is_texture = ClassDB::is_parent_class(res_type, "Texture");
 		bool is_audio = ClassDB::is_parent_class(res_type, "AudioStream");
+		bool is_script = ClassDB::is_parent_class(res_type, "Script");
 
-		if (is_mesh || is_scene || is_material || is_texture || is_audio) {
+		if (is_mesh || is_scene || is_material || is_texture || is_audio || is_script) {
 			Ref<Resource> res = ResourceLoader::load(files[i]);
 			if (res.is_null()) {
 				continue;
@@ -6017,6 +6101,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			Ref<Material> mat = res;
 			Ref<Texture2D> tex = res;
 			Ref<AudioStream> audio = res;
+			Ref<Script> script = res;
 			if (scn.is_valid()) {
 				Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 				if (!instantiated_scene) {
@@ -6059,6 +6144,16 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			} else if (!is_other_valid && audio.is_valid()) {
 				is_other_valid = true;
 				instantiate_type |= AUDIO;
+			} else if (!is_other_valid && script.is_valid()) {
+				StringName base_type = script->get_instance_base_type();
+				if (ClassDB::is_parent_class(base_type, "Node")) {
+					StringName global_name = script->get_global_name();
+					script_node_type = global_name.is_empty() ? base_type : global_name;
+					is_other_valid = true;
+					instantiate_type |= SCRIPT;
+				} else {
+					error_message = TTR("This script is not a valid node.");
+				}
 			} else {
 				continue;
 			}
@@ -6066,6 +6161,11 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	}
 
 	String title = TTRN("Can't drop the file...", "Can't drop the files...", files.size());
+	if (!error_message.is_empty()) {
+		_show_tooltip(title, error_message);
+		return false;
+	}
+
 	if (is_cyclical_dep) {
 		_show_tooltip(title, vformat(TTR("Circular dependency found at %s."), error_file));
 		return false;
@@ -6109,6 +6209,8 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		desc += vformat(TTR("[b]Default:[/b] Place in Geometry's Material Override slot.") +
 						"\n" + TTR("[b]Hold %s:[/b] Place in Mesh's Surface Material Override slot."),
 				keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
+	} else if (instantiate_type & SCRIPT) {
+		title = vformat(TTR("Dropping a Script as a %s node..."), script_node_type);
 	}
 	desc += "[/ul]";
 
@@ -7203,6 +7305,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(ruler_label_z);
 
 	view_3d_controller.instantiate();
+	view_3d_controller->set_auto_orthogonal_allowed(view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL)));
 	view_3d_controller->connect("view_state_changed", callable_mp(this, &Node3DEditorViewport::_view_state_changed));
 	view_3d_controller->connect("fov_scaled", callable_mp((CanvasItem *)surface, &CanvasItem::queue_redraw));
 	view_3d_controller->connect("freelook_changed", callable_mp(this, &Node3DEditorViewport::_freelook_changed));

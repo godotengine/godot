@@ -89,6 +89,7 @@ static Vector3 accelerometer;
 static Vector3 gravity;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
+static Quaternion device_orientation;
 
 static void _terminate(JNIEnv *env, bool p_restart = false) {
 	if (step.get() == STEP_TERMINATED) {
@@ -346,6 +347,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		dsa->process_gravity(gravity);
 		dsa->process_magnetometer(magnetometer);
 		dsa->process_gyroscope(gyroscope);
+		dsa->process_device_orientation(device_orientation);
 	}
 
 	bool should_swap_buffers = false;
@@ -357,16 +359,16 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchMouseEvent(JNIEnv *env, jclass clazz, jint p_event_type, jint p_button_mask, jfloat p_x, jfloat p_y, jfloat p_delta_x, jfloat p_delta_y, jboolean p_double_click, jboolean p_source_mouse_relative, jfloat p_pressure, jfloat p_tilt_x, jfloat p_tilt_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchMouseEvent(JNIEnv *env, jclass clazz, jint p_event_type, jint p_button_mask, jfloat p_x, jfloat p_y, jfloat p_delta_x, jfloat p_delta_y, jboolean p_double_click, jboolean p_source_mouse_relative, jfloat p_pressure, jfloat p_tilt_x, jfloat p_tilt_y, jboolean p_emulated) {
 	if (step.get() <= STEP_SETUP) {
 		return;
 	}
 
-	input_handler->process_mouse_event(p_event_type, p_button_mask, Point2(p_x, p_y), Vector2(p_delta_x, p_delta_y), p_double_click, p_source_mouse_relative, p_pressure, Vector2(p_tilt_x, p_tilt_y));
+	input_handler->process_mouse_event(p_event_type, p_button_mask, Point2(p_x, p_y), Vector2(p_delta_x, p_delta_y), p_double_click, p_source_mouse_relative, p_pressure, Vector2(p_tilt_x, p_tilt_y), p_emulated);
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint pointer_count, jfloatArray position, jboolean p_double_tap) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint pointer_count, jfloatArray position, jboolean p_double_tap, jboolean p_long_press) {
 	if (step.get() <= STEP_SETUP) {
 		return;
 	}
@@ -381,6 +383,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JN
 		tp.pressure = p[3];
 		tp.tilt = Vector2(p[4], p[5]);
 		tp.double_tap = p_double_tap;
+		tp.long_press = p_long_press;
 		points.push_back(tp);
 	}
 
@@ -495,6 +498,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_magnetometer(JNIEnv *
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_gyroscope(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z) {
 	gyroscope = Vector3(x, y, z);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_deviceOrientation(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z, jfloat w) {
+	device_orientation = Quaternion(x, y, z, w);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_focusin(JNIEnv *env, jclass clazz) {

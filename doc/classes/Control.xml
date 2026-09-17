@@ -1015,7 +1015,7 @@
 		<method name="update_maximum_size">
 			<return type="void" />
 			<description>
-				Invalidates the maximum size cache in this node and in parent nodes up to top level. Intended to be used with [method get_maximum_size] when the return value is changed. Setting [member custom_maximum_size] directly calls this method automatically.
+				Invalidates the maximum size cache in this node and in child nodes with [member CanvasItem.top_level] set to [code]false[/code]. Intended to be used with [method get_maximum_size] when the return value is changed. Setting [member custom_maximum_size] directly calls this method automatically.
 				[b]Note:[/b] Calling this method also calls [method update_minimum_size] since the combined minimum size may be affected by the maximum size change.
 			</description>
 		</method>

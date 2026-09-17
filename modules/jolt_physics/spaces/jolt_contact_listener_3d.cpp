@@ -37,6 +37,8 @@
 #include "../objects/jolt_soft_body_3d.h"
 #include "jolt_space_3d.h"
 
+#include "core/templates/a_hash_map.h"
+
 #include <Jolt/Physics/Collision/EstimateCollisionResponse.h>
 #include <Jolt/Physics/SoftBody/SoftBodyManifold.h>
 
@@ -63,13 +65,7 @@ void JoltContactListener3D::OnContactPersisted(const JPH::Body &p_body1, const J
 }
 
 void JoltContactListener3D::OnContactRemoved(const JPH::SubShapeIDPair &p_shape_pair) {
-	if (_try_remove_contacts(p_shape_pair)) {
-		return;
-	}
-
-	if (_try_remove_area_overlap(p_shape_pair)) {
-		return;
-	}
+	_try_remove_area_overlap(p_shape_pair);
 }
 
 JPH::SoftBodyValidateResult JoltContactListener3D::OnSoftBodyContactValidate(const JPH::Body &p_soft_body, const JPH::Body &p_other_body, JPH::SoftBodyContactSettings &p_settings) {
@@ -189,23 +185,14 @@ bool JoltContactListener3D::_try_add_contacts(const JPH::Body &p_jolt_body1, con
 		return false;
 	}
 
-	const JPH::SubShapeIDPair shape_pair(p_jolt_body1.GetID(), p_manifold.mSubShapeID1, p_jolt_body2.GetID(), p_manifold.mSubShapeID2);
-
-	Manifold &manifold = [&]() -> Manifold & {
-		const MutexLock write_lock(write_mutex);
-		return manifolds_by_shape_pair[shape_pair];
-	}();
-
-	if (unlikely(!manifold.contacts1.is_empty())) {
-		// CCD collisions can result in two contact callbacks for the same shape pair, one in the earlier discrete stage and one in the later CCD stage.
-		// We want the manifolds from the discrete stage, as the bodies still have their original velocities at that point, so we early-out if we've already stored something.
-		return false;
-	}
+	LocalVector<Manifold> &manifolds = _get_thread_locals().manifolds;
+	manifolds.resize(manifolds.size() + 1);
+	Manifold &manifold = manifolds[manifolds.size() - 1];
 
 	const JPH::uint contact_count = p_manifold.mRelativeContactPointsOn1.size();
 
-	manifold.contacts1.reserve((uint32_t)contact_count);
-	manifold.contacts2.reserve((uint32_t)contact_count);
+	manifold.shape_pair = JPH::SubShapeIDPair(p_jolt_body1.GetID(), p_manifold.mSubShapeID1, p_jolt_body2.GetID(), p_manifold.mSubShapeID2);
+	manifold.normal1 = to_godot(-p_manifold.mWorldSpaceNormal);
 	manifold.depth = p_manifold.mPenetrationDepth;
 
 	JPH::CollisionEstimationResult collision;
@@ -213,6 +200,8 @@ bool JoltContactListener3D::_try_add_contacts(const JPH::Body &p_jolt_body1, con
 
 	const JPH::Vec3 friction_impulse1 = contact_count > 0 ? (collision.mTangent1 * collision.mFrictionImpulse1) / contact_count : JPH::Vec3::sZero();
 	const JPH::Vec3 friction_impulse2 = contact_count > 0 ? (collision.mTangent2 * collision.mFrictionImpulse2) / contact_count : JPH::Vec3::sZero();
+
+	manifold.contacts.resize(contact_count);
 
 	for (JPH::uint i = 0; i < contact_count; ++i) {
 		const JPH::RVec3 relative_point1 = JPH::RVec3(p_manifold.mRelativeContactPointsOn1[i]);
@@ -227,23 +216,12 @@ bool JoltContactListener3D::_try_add_contacts(const JPH::Body &p_jolt_body1, con
 		const JPH::Vec3 contact_impulse = p_manifold.mWorldSpaceNormal * collision.mContactImpulse[i];
 		const JPH::Vec3 combined_impulse = contact_impulse + friction_impulse1 + friction_impulse2;
 
-		Contact contact1;
-		contact1.point_self = to_godot(world_point1);
-		contact1.point_other = to_godot(world_point2);
-		contact1.normal = to_godot(-p_manifold.mWorldSpaceNormal);
-		contact1.velocity_self = to_godot(velocity1);
-		contact1.velocity_other = to_godot(velocity2);
-		contact1.impulse = to_godot(-combined_impulse);
-		manifold.contacts1.push_back(contact1);
-
-		Contact contact2;
-		contact2.point_self = to_godot(world_point2);
-		contact2.point_other = to_godot(world_point1);
-		contact2.normal = to_godot(p_manifold.mWorldSpaceNormal);
-		contact2.velocity_self = to_godot(velocity2);
-		contact2.velocity_other = to_godot(velocity1);
-		contact2.impulse = to_godot(combined_impulse);
-		manifold.contacts2.push_back(contact2);
+		Contact &contact = manifold.contacts[i];
+		contact.point1 = to_godot(world_point1);
+		contact.point2 = to_godot(world_point2);
+		contact.velocity1 = to_godot(velocity1);
+		contact.velocity2 = to_godot(velocity2);
+		contact.impulse1 = to_godot(-combined_impulse);
 	}
 
 	return true;
@@ -285,29 +263,16 @@ bool JoltContactListener3D::_try_evaluate_area_overlap(const JPH::Body &p_body1,
 	return true;
 }
 
-bool JoltContactListener3D::_try_remove_contacts(const JPH::SubShapeIDPair &p_shape_pair) {
-	const MutexLock write_lock(write_mutex);
-	return manifolds_by_shape_pair.erase(p_shape_pair);
-}
-
-bool JoltContactListener3D::_try_remove_area_overlap(const JPH::SubShapeIDPair &p_shape_pair) {
+void JoltContactListener3D::_try_remove_area_overlap(const JPH::SubShapeIDPair &p_shape_pair) {
 	const JPH::SubShapeIDPair swapped_shape_pair(p_shape_pair.GetBody2ID(), p_shape_pair.GetSubShapeID2(), p_shape_pair.GetBody1ID(), p_shape_pair.GetSubShapeID1());
 
-	const MutexLock write_lock(write_mutex);
-
-	bool removed = false;
-
-	if (area_overlaps.erase(p_shape_pair)) {
-		area_exits.insert(p_shape_pair);
-		removed = true;
+	if (area_overlaps.has(p_shape_pair)) {
+		_get_thread_locals().area_exits.push_back(p_shape_pair);
 	}
 
-	if (area_overlaps.erase(swapped_shape_pair)) {
-		area_exits.insert(swapped_shape_pair);
-		removed = true;
+	if (area_overlaps.has(swapped_shape_pair)) {
+		_get_thread_locals().area_exits.push_back(swapped_shape_pair);
 	}
-
-	return removed;
 }
 
 #ifdef DEBUG_ENABLED
@@ -403,165 +368,220 @@ bool JoltContactListener3D::_has_shape_shifted(const JoltShapedObject3D &p_objec
 }
 
 void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, const JoltArea3D &p_other_area, const JPH::SubShapeIDPair &p_shape_pair) {
-	const MutexLock write_lock(write_mutex);
-
 	if (p_area.can_monitor(p_other_area)) {
 		if (!area_overlaps.has(p_shape_pair)) {
-			area_overlaps.insert(p_shape_pair);
-			area_enters.insert(p_shape_pair);
+			_get_thread_locals().area_enters.push_back(p_shape_pair);
 		} else if (_has_shape_shifted(p_area, p_shape_pair.GetSubShapeID1()) || _has_shape_shifted(p_other_area, p_shape_pair.GetSubShapeID2())) {
 			// A shape has taken on the `JPH::SubShapeID` value of another shape, likely because of the other shape having been replaced or moved
 			// in some way, so we force the area to refresh its internal mappings by exiting and entering this shape pair.
-			area_exits.insert(p_shape_pair);
-			area_enters.insert(p_shape_pair);
+			ThreadLocals &tl = _get_thread_locals();
+			tl.area_exits.push_back(p_shape_pair);
+			tl.area_enters.push_back(p_shape_pair);
 		}
 	} else {
-		if (area_overlaps.erase(p_shape_pair)) {
-			area_exits.insert(p_shape_pair);
+		if (area_overlaps.has(p_shape_pair)) {
+			_get_thread_locals().area_exits.push_back(p_shape_pair);
 		}
 	}
 }
 
 void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, const JoltBody3D &p_body, const JPH::SubShapeIDPair &p_shape_pair) {
-	const MutexLock write_lock(write_mutex);
-
 	if (p_area.can_monitor(p_body)) {
 		if (!area_overlaps.has(p_shape_pair)) {
-			area_overlaps.insert(p_shape_pair);
-			area_enters.insert(p_shape_pair);
+			_get_thread_locals().area_enters.push_back(p_shape_pair);
 		} else if (_has_shape_shifted(p_area, p_shape_pair.GetSubShapeID1()) || _has_shape_shifted(p_body, p_shape_pair.GetSubShapeID2())) {
 			// A shape has taken on the `JPH::SubShapeID` value of another shape, likely because of the other shape having been replaced or moved
 			// in some way, so we force the area to refresh its internal mappings by exiting and entering this shape pair.
-			area_exits.insert(p_shape_pair);
-			area_enters.insert(p_shape_pair);
+			ThreadLocals &tl = _get_thread_locals();
+			tl.area_exits.push_back(p_shape_pair);
+			tl.area_enters.push_back(p_shape_pair);
 		}
 	} else {
-		if (area_overlaps.erase(p_shape_pair)) {
-			area_exits.insert(p_shape_pair);
+		if (area_overlaps.has(p_shape_pair)) {
+			_get_thread_locals().area_exits.push_back(p_shape_pair);
 		}
 	}
 }
 
 void JoltContactListener3D::_evaluate_area_overlap(const JoltArea3D &p_area, const JoltSoftBody3D &p_body, const JPH::SubShapeIDPair &p_shape_pair) {
-	const MutexLock write_lock(write_mutex);
-
 	if (p_area.can_monitor(p_body)) {
-		area_soft_body_overlaps.push_back(p_shape_pair);
-		if (!area_exits.erase(p_shape_pair)) {
-			area_enters.insert(p_shape_pair);
-		}
+		_get_thread_locals().area_soft_body_overlaps.push_back(p_shape_pair);
 	}
 }
 
 void JoltContactListener3D::_flush_contacts() {
-	for (KeyValue<JPH::SubShapeIDPair, Manifold> &E : manifolds_by_shape_pair) {
+	thread_local AHashMap<JPH::SubShapeIDPair, Manifold *, ShapePairHasher> deepest_manifolds;
+
+	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
+		for (Manifold &manifold : tl->self()->manifolds) {
+			Manifold *&deepest_manifold = deepest_manifolds[manifold.shape_pair];
+			if (deepest_manifold == nullptr || manifold.depth > deepest_manifold->depth) {
+				deepest_manifold = &manifold;
+			}
+		}
+	}
+
+	for (const KeyValue<JPH::SubShapeIDPair, Manifold *> &E : deepest_manifolds) {
 		const JPH::SubShapeIDPair &shape_pair = E.key;
-		Manifold &manifold = E.value;
+		const Manifold &manifold = *E.value;
 
 		JoltBody3D *body1 = space->try_get_body(shape_pair.GetBody1ID());
-		ERR_FAIL_NULL(body1);
+		ERR_CONTINUE(body1 == nullptr);
 
 		JoltBody3D *body2 = space->try_get_body(shape_pair.GetBody2ID());
-		ERR_FAIL_NULL(body2);
+		ERR_CONTINUE(body2 == nullptr);
 
 		const int shape_index1 = body1->find_shape_index(shape_pair.GetSubShapeID1());
 		const int shape_index2 = body2->find_shape_index(shape_pair.GetSubShapeID2());
 
-		for (const Contact &contact : manifold.contacts1) {
-			body1->add_contact(body2, manifold.depth, shape_index1, shape_index2, contact.normal, contact.point_self, contact.point_other, contact.velocity_self, contact.velocity_other, contact.impulse);
+		for (const Contact &contact : manifold.contacts) {
+			body1->add_contact(body2, manifold.depth, shape_index1, shape_index2, manifold.normal1, contact.point1, contact.point2, contact.velocity1, contact.velocity2, contact.impulse1);
+			body2->add_contact(body1, manifold.depth, shape_index2, shape_index1, -manifold.normal1, contact.point2, contact.point1, contact.velocity2, contact.velocity1, -contact.impulse1);
 		}
+	}
 
-		for (const Contact &contact : manifold.contacts2) {
-			body2->add_contact(body1, manifold.depth, shape_index2, shape_index1, contact.normal, contact.point_self, contact.point_other, contact.velocity_self, contact.velocity_other, contact.impulse);
-		}
+	deepest_manifolds.clear();
 
-		manifold.contacts1.clear();
-		manifold.contacts2.clear();
+	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
+		tl->self()->manifolds.clear();
 	}
 }
 
-void JoltContactListener3D::_flush_area_enters() {
-	for (const JPH::SubShapeIDPair &shape_pair : area_enters) {
-		const JPH::BodyID &body_id1 = shape_pair.GetBody1ID();
-		const JPH::BodyID &body_id2 = shape_pair.GetBody2ID();
-
-		JoltObject3D *object1 = space->try_get_object(body_id1);
-		JoltObject3D *object2 = space->try_get_object(body_id2);
-
-		if (object1 == nullptr || object2 == nullptr) {
-			continue;
-		}
-
-		JoltArea3D *area1 = object1->as_area();
-		JoltArea3D *area2 = object2->as_area();
-
-		const JPH::SubShapeID &sub_shape_id1 = shape_pair.GetSubShapeID1();
-		const JPH::SubShapeID &sub_shape_id2 = shape_pair.GetSubShapeID2();
-
-		if (area1 != nullptr && area2 != nullptr) {
-			area1->area_shape_entered(body_id2, sub_shape_id2, sub_shape_id1);
-		} else if (area1 != nullptr && area2 == nullptr) {
-			area1->body_shape_entered(body_id2, sub_shape_id2, sub_shape_id1);
-		} else if (area1 == nullptr && area2 != nullptr) {
-			area2->body_shape_entered(body_id1, sub_shape_id1, sub_shape_id2);
-		}
+void JoltContactListener3D::_flush_area_body_events() {
+	uint32_t new_overlap_count = area_overlaps.size();
+	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
+		new_overlap_count -= tl->self()->area_exits.size();
+		new_overlap_count += tl->self()->area_enters.size();
 	}
 
-	area_enters.clear();
+	// Exits must be dispatched before enters, as shape-shifting relies on it.
+
+	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
+		for (const JPH::SubShapeIDPair &shape_pair : tl->self()->area_exits) {
+			area_overlaps.erase(shape_pair);
+			_dispatch_area_exit(shape_pair);
+		}
+
+		tl->self()->area_exits.clear();
+	}
+
+	area_overlaps.reserve(new_overlap_count);
+
+	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
+		for (const JPH::SubShapeIDPair &shape_pair : tl->self()->area_enters) {
+			area_overlaps.insert(shape_pair);
+			_dispatch_area_enter(shape_pair);
+		}
+
+		tl->self()->area_enters.clear();
+	}
 }
 
-void JoltContactListener3D::_flush_area_exits() {
-	for (const JPH::SubShapeIDPair &shape_pair : area_exits) {
-		const JPH::BodyID &body_id1 = shape_pair.GetBody1ID();
-		const JPH::BodyID &body_id2 = shape_pair.GetBody2ID();
-
-		JoltObject3D *object1 = space->try_get_object(body_id1);
-		JoltObject3D *object2 = space->try_get_object(body_id2);
-
-		JoltArea3D *area1 = object1 != nullptr ? object1->as_area() : nullptr;
-		JoltArea3D *area2 = object2 != nullptr ? object2->as_area() : nullptr;
-
-		const JoltBody3D *body1 = object1 != nullptr ? object1->as_body() : nullptr;
-		const JoltBody3D *body2 = object2 != nullptr ? object2->as_body() : nullptr;
-
-		const JPH::SubShapeID &sub_shape_id1 = shape_pair.GetSubShapeID1();
-		const JPH::SubShapeID &sub_shape_id2 = shape_pair.GetSubShapeID2();
-
-		if (area1 != nullptr && area2 != nullptr) {
-			area1->area_shape_exited(body_id2, sub_shape_id2, sub_shape_id1);
-		} else if (area1 != nullptr && body2 != nullptr) {
-			area1->body_shape_exited(body_id2, sub_shape_id2, sub_shape_id1);
-		} else if (body1 != nullptr && area2 != nullptr) {
-			area2->body_shape_exited(body_id1, sub_shape_id1, sub_shape_id2);
-		} else if (area1 != nullptr) {
-			area1->shape_exited(body_id2, sub_shape_id2, sub_shape_id1);
-		} else if (area2 != nullptr) {
-			area2->shape_exited(body_id1, sub_shape_id1, sub_shape_id2);
+void JoltContactListener3D::_flush_area_soft_body_events() {
+	int current_count = area_soft_body_overlaps.size();
+	int persisting_count = 0;
+	int entered_count = 0;
+	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
+		for (const JPH::SubShapeIDPair &shape_pair : tl->self()->area_soft_body_overlaps) {
+			if (area_soft_body_overlaps.has(shape_pair)) {
+				persisting_count += 1;
+			} else {
+				area_soft_body_overlaps.insert(shape_pair);
+				_dispatch_area_enter(shape_pair);
+				entered_count += 1;
+			}
 		}
 	}
 
-	area_exits.clear();
-}
+	int exited_count = current_count - persisting_count;
+	if (exited_count > 0) {
+		HashSet<JPH::SubShapeIDPair, ShapePairHasher> new_overlaps;
+		new_overlaps.reserve(persisting_count + entered_count);
 
-void JoltContactListener3D::_clear_area_soft_body_overlaps() {
-	area_exits.reserve(area_soft_body_overlaps.size());
-	for (const JPH::SubShapeIDPair &shape_pair : area_soft_body_overlaps) {
-		area_exits.insert(shape_pair);
+		for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
+			for (const JPH::SubShapeIDPair &shape_pair : tl->self()->area_soft_body_overlaps) {
+				new_overlaps.insert(shape_pair);
+			}
+		}
+
+		for (const JPH::SubShapeIDPair &shape_pair : area_soft_body_overlaps) {
+			if (!new_overlaps.has(shape_pair)) {
+				_dispatch_area_exit(shape_pair);
+			}
+		}
+
+		area_soft_body_overlaps = std::move(new_overlaps);
+	} else if (unlikely(exited_count < 0)) {
+		ERR_PRINT_ONCE("Duplicate area soft body overlaps found. This should not happen. Please report this.");
 	}
 
-	area_soft_body_overlaps.clear();
+	for (SelfList<ThreadLocals> *tl = ThreadLocals::instances.first(); tl != nullptr; tl = tl->next()) {
+		tl->self()->area_soft_body_overlaps.clear();
+	}
+}
+
+void JoltContactListener3D::_dispatch_area_enter(const JPH::SubShapeIDPair &p_shape_pair) {
+	const JPH::BodyID &body_id1 = p_shape_pair.GetBody1ID();
+	const JPH::BodyID &body_id2 = p_shape_pair.GetBody2ID();
+
+	JoltObject3D *object1 = space->try_get_object(body_id1);
+	JoltObject3D *object2 = space->try_get_object(body_id2);
+
+	if (object1 == nullptr || object2 == nullptr) {
+		return;
+	}
+
+	JoltArea3D *area1 = object1->as_area();
+	JoltArea3D *area2 = object2->as_area();
+
+	const JPH::SubShapeID &sub_shape_id1 = p_shape_pair.GetSubShapeID1();
+	const JPH::SubShapeID &sub_shape_id2 = p_shape_pair.GetSubShapeID2();
+
+	if (area1 != nullptr && area2 != nullptr) {
+		area1->area_shape_entered(body_id2, sub_shape_id2, sub_shape_id1);
+	} else if (area1 != nullptr && area2 == nullptr) {
+		area1->body_shape_entered(body_id2, sub_shape_id2, sub_shape_id1);
+	} else if (area1 == nullptr && area2 != nullptr) {
+		area2->body_shape_entered(body_id1, sub_shape_id1, sub_shape_id2);
+	}
+}
+
+void JoltContactListener3D::_dispatch_area_exit(const JPH::SubShapeIDPair &p_shape_pair) {
+	const JPH::BodyID &body_id1 = p_shape_pair.GetBody1ID();
+	const JPH::BodyID &body_id2 = p_shape_pair.GetBody2ID();
+
+	JoltObject3D *object1 = space->try_get_object(body_id1);
+	JoltObject3D *object2 = space->try_get_object(body_id2);
+
+	JoltArea3D *area1 = object1 != nullptr ? object1->as_area() : nullptr;
+	JoltArea3D *area2 = object2 != nullptr ? object2->as_area() : nullptr;
+
+	const JPH::SubShapeID &sub_shape_id1 = p_shape_pair.GetSubShapeID1();
+	const JPH::SubShapeID &sub_shape_id2 = p_shape_pair.GetSubShapeID2();
+
+	if (area1 != nullptr && area2 != nullptr) {
+		area1->area_shape_exited(body_id2, sub_shape_id2, sub_shape_id1);
+	} else if (area1 != nullptr && object2 != nullptr) {
+		area1->body_shape_exited(body_id2, sub_shape_id2, sub_shape_id1);
+	} else if (object1 != nullptr && area2 != nullptr) {
+		area2->body_shape_exited(body_id1, sub_shape_id1, sub_shape_id2);
+	} else if (area1 != nullptr) {
+		area1->shape_exited(body_id2, sub_shape_id2, sub_shape_id1);
+	} else if (area2 != nullptr) {
+		area2->shape_exited(body_id1, sub_shape_id1, sub_shape_id2);
+	}
 }
 
 void JoltContactListener3D::pre_step() {
-	_clear_area_soft_body_overlaps();
-
 #ifdef DEBUG_ENABLED
 	debug_contact_count = 0;
 #endif
 }
 
 void JoltContactListener3D::post_step() {
+	const MutexLock lock(ThreadLocals::instances_mutex);
+
 	_flush_contacts();
-	_flush_area_exits();
-	_flush_area_enters();
+	_flush_area_soft_body_events();
+	_flush_area_body_events();
 }

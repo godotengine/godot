@@ -44,6 +44,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_toolbar_group.h"
 #include "editor/gui/window_wrapper.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/embedded_process.h"
@@ -1492,9 +1493,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
 	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
-	toolbar_margin->add_theme_constant_override("margin_top", 1 * EDSCALE);
-	toolbar_margin->add_theme_constant_override("margin_bottom", 1 * EDSCALE);
-	toolbar_margin->set_custom_maximum_size(Size2(-1, 36 * EDSCALE));
 	add_child(toolbar_margin);
 
 	// FIXME: Turn this back into a FlowContainer once GH-115523 is fixed.
@@ -1538,12 +1536,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	process_hb->add_child(memnew(VSeparator));
 
-	PanelContainer *input_panel = memnew(PanelContainer);
-	input_panel->set_theme_type_variation("PanelContainerButtonGroup");
-	main_menu_fc->add_child(input_panel);
-
-	HBoxContainer *input_hb = memnew(HBoxContainer);
-	input_panel->add_child(input_hb);
+	HBoxContainer *input_hb = EditorToolbarGroup::create(main_menu_fc);
 
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE] = memnew(Button);
 	input_hb->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]);
@@ -1572,12 +1565,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	main_menu_fc->add_child(memnew(VSeparator));
 
-	PanelContainer *selection_panel = memnew(PanelContainer);
-	selection_panel->set_theme_type_variation("PanelContainerButtonGroup");
-	main_menu_fc->add_child(selection_panel);
-
-	HBoxContainer *selection_hb = memnew(HBoxContainer);
-	selection_panel->add_child(selection_hb);
+	HBoxContainer *selection_hb = EditorToolbarGroup::create(main_menu_fc);
 
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE] = memnew(Button);
 	selection_hb->add_child(select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]);
@@ -1623,12 +1611,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 	main_menu_fc->add_child(memnew(VSeparator));
 
-	PanelContainer *camera_panel = memnew(PanelContainer);
-	camera_panel->set_theme_type_variation("PanelContainerButtonGroup");
-	main_menu_fc->add_child(camera_panel);
-
-	HBoxContainer *camera_hb = memnew(HBoxContainer);
-	camera_panel->add_child(camera_hb);
+	HBoxContainer *camera_hb = EditorToolbarGroup::create(main_menu_fc);
 
 	camera_override_button = memnew(Button);
 	camera_hb->add_child(camera_override_button);
@@ -1669,15 +1652,9 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	embedding_hb->set_alignment(ALIGNMENT_END);
 	main_menu_fc->add_child(embedding_hb);
 
-	PanelContainer *embed_panel = memnew(PanelContainer);
-	embed_panel->set_theme_type_variation("PanelContainerButtonGroup");
-
 	game_size_label = memnew(Label());
-	game_hb = memnew(HBoxContainer);
-
 	embedding_hb->add_child(game_size_label);
-	embedding_hb->add_child(embed_panel);
-	embed_panel->add_child(game_hb);
+	game_hb = EditorToolbarGroup::create(embedding_hb);
 	game_size_label->hide();
 	// Setting the minimum size prevents the game workspace from resizing indefinitely
 	// due to the label size oscillating by a few pixels when the game is in stretch mode
@@ -1852,7 +1829,10 @@ void GameViewPluginBase::_focus_another_editor() {
 		if (last_editor.is_empty() || (last_editor == "Script" && ScriptEditor::get_singleton()->get_current_layout() == EditorDock::DOCK_LAYOUT_FLOATING)) {
 			CanvasItemEditor::get_singleton()->make_visible();
 		} else {
-			EditorInterface::get_singleton()->set_main_screen_editor(last_editor);
+			EditorDock *last_dock = EditorDockManager::get_singleton()->get_dock_by_name(last_editor);
+			if (last_dock && last_dock->get_current_layout() == EditorDock::DOCK_LAYOUT_MAIN_SCREEN) {
+				last_dock->make_visible();
+			}
 		}
 	}
 }

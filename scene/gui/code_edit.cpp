@@ -2483,10 +2483,10 @@ void CodeEdit::request_code_completion(bool p_force) {
 	/* Don't re-query if all existing options are quoted types, eg path, signal. */
 	bool ignored = code_completion_active && !code_completion_options.is_empty();
 	if (ignored) {
-		ScriptLanguage::CodeCompletionKind kind = ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT;
-		const ScriptLanguage::CodeCompletionOption *previous_option = nullptr;
+		CodeCompletionKind kind = CodeCompletionKind::KIND_PLAIN_TEXT;
+		const CodeCompletionOption *previous_option = nullptr;
 		for (int i = 0; i < code_completion_options.size(); i++) {
-			const ScriptLanguage::CodeCompletionOption &current_option = code_completion_options[i];
+			const CodeCompletionOption &current_option = code_completion_options[i];
 			if (!previous_option) {
 				previous_option = &current_option;
 				kind = current_option.kind;
@@ -2496,7 +2496,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 				break;
 			}
 		}
-		ignored = ignored && (kind == ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH || kind == ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH || kind == ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL);
+		ignored = ignored && (kind == CodeCompletionKind::KIND_FILE_PATH || kind == CodeCompletionKind::KIND_NODE_PATH || kind == CodeCompletionKind::KIND_SIGNAL);
 	}
 
 	if (ignored) {
@@ -2520,8 +2520,8 @@ void CodeEdit::request_code_completion(bool p_force) {
 }
 
 void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value, int p_location) {
-	ScriptLanguage::CodeCompletionOption completion_option;
-	completion_option.kind = (ScriptLanguage::CodeCompletionKind)p_type;
+	CodeCompletionOption completion_option;
+	completion_option.kind = (CodeCompletionKind)p_type;
 	completion_option.display = p_display_text;
 	completion_option.insert_text = p_insert_text;
 	completion_option.font_color = p_text_color;
@@ -3805,6 +3805,52 @@ TypedArray<String> CodeEdit::_get_delimiters(DelimiterType p_type) const {
 }
 
 /* Code Completion */
+TypedArray<int> CodeEdit::CodeCompletionOption::get_option_characteristics(const String &p_base) {
+	// Return characteristics of the match found by order of importance.
+	// Matches will be ranked by a lexicographical order on the vector returned by this function.
+	// The lower values indicate better matches and that they should go before in the order of appearance.
+	if (!matches_dirty) {
+		return charac;
+	}
+	charac.clear();
+	// Ensure base is not empty and at the same time that matches is not empty too.
+	if (p_base.length() == 0) {
+		matches_dirty = false;
+		charac.push_back(location);
+		return charac;
+	}
+	charac.push_back(matches.size());
+	charac.push_back((matches[0].first == 0) ? 0 : 1);
+	const char32_t *target_char = &p_base[0];
+	int bad_case = 0;
+	for (const Pair<int, int> &match_segment : matches) {
+		const char32_t *string_to_complete_char = &display[match_segment.first];
+		for (int j = 0; j < match_segment.second; j++, string_to_complete_char++, target_char++) {
+			if (*string_to_complete_char != *target_char) {
+				bad_case++;
+			}
+		}
+	}
+	charac.push_back(bad_case);
+	charac.push_back(location);
+	charac.push_back(matches[0].first);
+	matches_dirty = false;
+	return charac;
+}
+
+void CodeEdit::CodeCompletionOption::clear_characteristics() {
+	charac = TypedArray<int>();
+}
+
+TypedArray<int> CodeEdit::CodeCompletionOption::get_option_cached_characteristics() const {
+	// Only returns the cached value and warns if it was not updated since the last change of matches.
+	if (matches_dirty) {
+		WARN_PRINT("Characteristics are not up to date.");
+	}
+
+	return charac;
+}
+
 void CodeEdit::_update_scroll_selected_line(float p_mouse_y) {
 	float percent = (float)(p_mouse_y - code_completion_scroll_rect.position.y) / code_completion_scroll_rect.size.height;
 	percent = CLAMP(percent, 0.0f, 1.0f);
@@ -3823,14 +3869,14 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	ERR_FAIL_INDEX_MSG(caret_column, line.length() + 1, "Caret column exceeds line length.");
 
 	if (GDVIRTUAL_IS_OVERRIDDEN(_filter_code_completion_candidates)) {
-		Vector<ScriptLanguage::CodeCompletionOption> code_completion_options_new;
+		Vector<CodeCompletionOption> code_completion_options_new;
 		code_completion_base = "";
 
 		/* Build options argument. */
 		TypedArray<Dictionary> completion_options_sources;
 		completion_options_sources.resize(code_completion_option_sources.size());
 		int i = 0;
-		for (const ScriptLanguage::CodeCompletionOption &E : code_completion_option_sources) {
+		for (const CodeCompletionOption &E : code_completion_option_sources) {
 			Dictionary option;
 			option["kind"] = E.kind;
 			option["display_text"] = E.display;
@@ -3856,8 +3902,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		/* Convert back into options. */
 		int max_width = 0;
 		for (i = 0; i < completion_options.size(); i++) {
-			ScriptLanguage::CodeCompletionOption option;
-			option.kind = (ScriptLanguage::CodeCompletionKind)(int)completion_options[i].get("kind");
+			CodeCompletionOption option;
+			option.kind = (CodeCompletionKind)(int)completion_options[i].get("kind");
 			option.display = completion_options[i].get("display_text");
 			option.insert_text = completion_options[i].get("insert_text");
 			option.font_color = completion_options[i].get("font_color");
@@ -3962,7 +4008,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	/* For now handle only traditional quoted strings. */
 	bool single_quote = in_string != -1 && first_quote_col > 0 && delimiters[in_string].start_key == "'";
 
-	Vector<ScriptLanguage::CodeCompletionOption> code_completion_options_new;
+	Vector<CodeCompletionOption> code_completion_options_new;
 	code_completion_base = string_to_complete;
 
 	/* Don't autocomplete setting numerical values. */
@@ -3974,7 +4020,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	int max_width = 0;
 	String string_to_complete_lower = string_to_complete.to_lower();
 
-	for (ScriptLanguage::CodeCompletionOption &option : code_completion_option_sources) {
+	for (CodeCompletionOption &option : code_completion_option_sources) {
 		option.matches.clear();
 		option.matches_dirty = true;
 		if (single_quote && option.display.is_quoted()) {
@@ -4067,7 +4113,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			all_possible_subsequence_matches = all_possible_subsequence_matches.slice(1);
 			if (all_possible_subsequence_matches.size() > 0) {
 				CodeCompletionOptionCompare compare;
-				ScriptLanguage::CodeCompletionOption compared_option = option;
+				CodeCompletionOption compared_option = option;
 				compared_option.clear_characteristics();
 				for (Vector<Pair<int, int>> &matches : all_possible_subsequence_matches) {
 					compared_option.matches = matches;
@@ -4123,7 +4169,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 }
 
 // Assumes both the new_options and the code_completion_options are sorted.
-bool CodeEdit::_should_reset_selected_option_for_new_options(const Vector<ScriptLanguage::CodeCompletionOption> &p_new_options) {
+bool CodeEdit::_should_reset_selected_option_for_new_options(const Vector<CodeCompletionOption> &p_new_options) {
 	if (code_completion_current_selected >= p_new_options.size()) {
 		return true;
 	}
@@ -4285,7 +4331,7 @@ CodeEdit::~CodeEdit() {
 }
 
 // Return true if l should come before r
-bool CodeCompletionOptionCompare::operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const {
+bool CodeEdit::CodeCompletionOptionCompare::operator()(const CodeCompletionOption &l, const CodeCompletionOption &r) const {
 	TypedArray<int> lcharac = l.get_option_cached_characteristics();
 	TypedArray<int> rcharac = r.get_option_cached_characteristics();
 

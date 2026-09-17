@@ -31,6 +31,20 @@
 				Folds the container and emits [signal folding_changed].
 			</description>
 		</method>
+		<method name="get_title_bar_control" qualifiers="const">
+			<return type="Control" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the title bar [Control] at the given [param index], or [code]null[/code] if the index is out of bounds.
+				Use [method get_title_bar_control_count] to get the total number of title bar controls.
+			</description>
+		</method>
+		<method name="get_title_bar_control_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of controls added to the title bar via [method add_title_bar_control].
+			</description>
+		</method>
 		<method name="remove_title_bar_control">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
@@ -98,6 +112,9 @@
 		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="2">
 			The horizontal separation between the title's icon and text, and between title bar controls.
+		</theme_item>
+		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
+			The maximum allowed width of the [FoldableContainer]'s icon. The height is adjusted according to the icon's ratio.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The title's font outline size.

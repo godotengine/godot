@@ -40,11 +40,14 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/container_type_validate.h"
-#include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
+
+#ifndef _2D_DISABLED
+#include "scene/2d/node_2d.h"
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
@@ -104,7 +107,7 @@ Variant SceneState::_duplicate_recursive(const Variant &p_variant, HashMap<Node 
 				if (fallback.is_typed()) {
 					const ContainerType &fallback_type = fallback.get_element_type();
 					has_fallback =
-							scr_type.builtin_type == fallback_type.builtin_type &&
+							scr_type.variant_type == fallback_type.variant_type &&
 							scr_type.class_name == fallback_type.class_name &&
 							scr_type.script == fallback_type.script;
 				}
@@ -409,8 +412,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
 						if (Object::cast_to<Control>(ret_nodes[n.parent])) {
 							obj = memnew(Control);
+#ifndef _2D_DISABLED
 						} else if (Object::cast_to<Node2D>(ret_nodes[n.parent])) {
 							obj = memnew(Node2D);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 						} else if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
 							obj = memnew(Node3D);

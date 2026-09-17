@@ -728,6 +728,17 @@ Error Main::test_setup() {
 	NavigationServer3DManager::initialize_server_manager();
 #endif // NAVIGATION_3D_DISABLED
 
+	bool tests_exist = DirAccess::dir_exists_absolute(OS::get_singleton()->get_cwd().path_join("tests").path_join("data"));
+	if (!tests_exist) {
+		if (OS::get_singleton()->get_cwd().ends_with("bin")) {
+			// Likely running from `bin`, try changing cwd:
+			OS::get_singleton()->set_cwd(OS::get_singleton()->get_cwd().get_base_dir());
+			tests_exist = DirAccess::dir_exists_absolute(OS::get_singleton()->get_cwd().path_join("tests").path_join("data"));
+		}
+		ERR_FAIL_COND_V_MSG(!tests_exist, FAILED, "Test data not found, tests should be run from the Godot source repository root.");
+		WARN_PRINT("Tests should be run from the Godot source repository root, working directory was changed to " + OS::get_singleton()->get_cwd());
+	}
+
 	// From `Main::setup2()`.
 	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
@@ -2452,8 +2463,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Start with RenderingDevice-based backends.
 #ifdef RD_ENABLED
-	renderer_hints = "forward_plus,mobile";
+#ifdef FORWARD_RD_ENABLED
+	renderer_hints = "forward_plus";
+#endif // FORWARD_RD_ENABLED
+
+#ifdef MOBILE_RD_ENABLED
+	if (!renderer_hints.is_empty()) {
+		renderer_hints += ",";
+	}
+	renderer_hints += "mobile";
 	default_renderer_mobile = "mobile";
+#endif // MOBILE_RD_ENABLED
 #endif
 
 	// And Compatibility next, or first if Vulkan is disabled.
@@ -2561,6 +2581,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// Now validate whether the selected driver matches with the renderer.
 		bool valid_combination = false;
 		Vector<String> available_drivers;
+#ifdef RD_ENABLED
 		if (rendering_method == "forward_plus" || rendering_method == "mobile") {
 #ifdef VULKAN_ENABLED
 			available_drivers.push_back("vulkan");
@@ -2572,6 +2593,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			available_drivers.push_back("metal");
 #endif
 		}
+#endif // RD_ENABLED
+
 #ifdef GLES3_ENABLED
 		if (rendering_method == "gl_compatibility") {
 			available_drivers.push_back("opengl3");
@@ -2838,13 +2861,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "xr/openxr/target_api_version"), "");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"), "res://openxr_action_map.tres");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"), "0");
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo"), "1"); // "Mono,Stereo,Quad,Observer"
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo,Stereo with Foveated Inset"), "1");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage,Local Floor"), "1");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/environment_blend_mode", PROPERTY_HINT_ENUM, "Opaque,Additive,Alpha"), "0");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/foveation_level", PROPERTY_HINT_ENUM, "Off,Low,Medium,High"), "0");
 	GLOBAL_DEF_BASIC("xr/openxr/foveation_dynamic", false);
 	GLOBAL_DEF_BASIC("xr/openxr/foveation_eye_tracked", true);
 	GLOBAL_DEF_BASIC("xr/openxr/foveation_with_subsampled_images", true);
+	GLOBAL_DEF_BASIC("xr/openxr/create_default_foveated_inset_viewport", true);
 
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
 	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
@@ -2878,6 +2902,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_unobstructed_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_container/enabled", false);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/extensions/spatial_container/bounds_mode", PROPERTY_HINT_ENUM, "Bounded,Immersive"), "0");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::VECTOR3, "xr/openxr/extensions/spatial_container/bounds", PROPERTY_HINT_NONE, ""), Vector3(0.5f, 0.5f, 0.5f));
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enabled", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_spatial_anchors", false);
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/spatial_entity/enable_persistent_anchors", false);
@@ -2899,6 +2926,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// visionOS settings
 	GLOBAL_DEF_BASIC("xr/visionos/enable_hand_tracking", false);
 	GLOBAL_DEF_BASIC("xr/visionos/enable_controller_tracking", false);
+	// Dynamic render quality, to be used at runtime depending on the complexity of your scene, see https://developer.apple.com/documentation/compositorservices/defining-layer-renderer-quality.
+	GLOBAL_DEF_BASIC("xr/visionos/dynamic_render_quality/enable", false);
+	// The default value of 0.38 is equivalent to https://developer.apple.com/documentation/compositorservices/layerrenderer/capabilities/defaultrenderquality.
+	// Do not set this value higher than the maximum value you're planning to use at runtime, or your app will use more memory than necessary.
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "xr/visionos/dynamic_render_quality/maximum_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.38);
+	// Initial values of the corresponding VisionOSXRInterface properties, applied when the immersive scene is created.
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/visionos/upper_limb_visibility", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/visionos/persistent_system_overlays", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), 0);
 
 #ifdef TOOLS_ENABLED
 	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
@@ -3429,11 +3464,13 @@ Error Main::setup2(bool p_show_boot_logo) {
 		OS::get_singleton()->benchmark_end_measure("Servers", "Display");
 	}
 
+#ifdef RD_ENABLED
 	// Max FPS needs to be set after the DisplayServer is created.
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (rd) {
 		rd->_set_max_fps(engine->get_max_fps());
 	}
+#endif // RD_ENABLED
 
 #ifdef TOOLS_ENABLED
 	// If the editor is running in windowed mode, ensure the window rect fits
@@ -5036,7 +5073,11 @@ bool Main::iteration() {
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	GodotProfileZoneGrouped(_profile_zone, "RenderingServer::draw");
+#ifdef RD_ENABLED
 	const bool has_pending_resources_for_processing = RD::get_singleton() && RD::get_singleton()->has_pending_resources_for_processing();
+#else
+	const bool has_pending_resources_for_processing = false;
+#endif // RD_ENABLED
 	bool wants_present = (DisplayServer::get_singleton()->can_any_window_draw() ||
 								 DisplayServer::get_singleton()->has_additional_outputs()) &&
 			RenderingServer::get_singleton()->is_render_loop_enabled();

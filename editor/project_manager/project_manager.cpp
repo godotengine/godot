@@ -1876,12 +1876,12 @@ ProjectManager::ProjectManager() {
 		ask_update_label->set_v_size_flags(SIZE_EXPAND_FILL);
 		ask_update_vb->add_child(ask_update_label);
 		ask_update_backup = memnew(CheckBox);
-		ask_update_backup->set_text(TTRC("Backup project first"));
+		ask_update_backup->set_text(TTRC("Back Up Project First"));
 		ask_update_backup->set_h_size_flags(SIZE_SHRINK_CENTER);
 		ask_update_vb->add_child(ask_update_backup);
 		ask_upgrade_tool = memnew(CheckBox);
 		ask_upgrade_tool->set_text(TTRC("Upgrade All Project Files"));
-		ask_upgrade_tool->set_tooltip_text(TTRC("Automatically runs the upgrade tool. This may take a while to finish. The project will be restarted once in the process."));
+		ask_upgrade_tool->set_tooltip_text(TTRC("Automatically runs the upgrade tool. This may take a while to finish. The editor may restart during the process."));
 		ask_upgrade_tool->set_h_size_flags(SIZE_SHRINK_CENTER);
 		ask_update_vb->add_child(ask_upgrade_tool);
 		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));

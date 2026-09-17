@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "editor/editor_node.h"
@@ -1028,14 +1029,14 @@ void CodeTextEditor::_code_complete_timer_timeout() {
 }
 
 void CodeTextEditor::_complete_request() {
-	List<ScriptLanguage::CodeCompletionOption> entries;
+	List<EditorLanguage::CompletionOption> entries;
 	String ctext = text_editor->get_text_for_code_completion();
 	bool forced = false;
 	if (code_complete_func) {
 		code_complete_func(code_complete_ud, ctext, &entries, forced);
 	}
 
-	for (const ScriptLanguage::CodeCompletionOption &e : entries) {
+	for (const EditorLanguage::CompletionOption &e : entries) {
 		Color font_color = completion_font_color;
 		if (!e.theme_color_name.is_empty() && EDITOR_GET("text_editor/completion/colorize_suggestions")) {
 			font_color = get_theme_color(e.theme_color_name, SNAME("Editor"));
@@ -1055,10 +1056,10 @@ void CodeTextEditor::_complete_request() {
 	text_editor->update_code_completion_options(forced);
 }
 
-Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCompletionOption &p_option) {
+Ref<Texture2D> CodeTextEditor::_get_completion_icon(const EditorLanguage::CompletionOption &p_option) {
 	Ref<Texture2D> tex;
 	switch (p_option.kind) {
-		case ScriptLanguage::CODE_COMPLETION_KIND_CLASS: {
+		case EditorLanguage::CompletionKind::CLASS: {
 			const String formatted_class_name = p_option.display.unquote();
 			if (has_theme_icon(formatted_class_name, EditorStringName(EditorIcons))) {
 				tex = get_editor_theme_icon(formatted_class_name);
@@ -1069,34 +1070,34 @@ Ref<Texture2D> CodeTextEditor::_get_completion_icon(const ScriptLanguage::CodeCo
 				}
 			}
 		} break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
+		case EditorLanguage::CompletionKind::ENUM:
 			tex = get_editor_theme_icon(SNAME("Enum"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
+		case EditorLanguage::CompletionKind::FILE_PATH:
 			tex = get_editor_theme_icon(SNAME("File"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
+		case EditorLanguage::CompletionKind::NODE_PATH:
 			tex = get_editor_theme_icon(SNAME("NodePath"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
+		case EditorLanguage::CompletionKind::VARIABLE:
 			tex = get_editor_theme_icon(SNAME("LocalVariable"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
+		case EditorLanguage::CompletionKind::CONSTANT:
 			tex = get_editor_theme_icon(SNAME("MemberConstant"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
+		case EditorLanguage::CompletionKind::MEMBER_VARIABLE:
 			tex = get_editor_theme_icon(SNAME("MemberProperty"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
+		case EditorLanguage::CompletionKind::SIGNAL:
 			tex = get_editor_theme_icon(SNAME("MemberSignal"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
+		case EditorLanguage::CompletionKind::FUNCTION:
 			tex = get_editor_theme_icon(SNAME("MemberMethod"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
+		case EditorLanguage::CompletionKind::KEYWORD:
 			tex = get_editor_theme_icon(SNAME("Keyword"));
 			break;
-		case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
+		case EditorLanguage::CompletionKind::PLAIN_TEXT:
 			tex = get_editor_theme_icon(SNAME("BoxMesh"));
 			break;
 		default:
@@ -1326,6 +1327,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	text_editor->begin_multicaret_edit();
 
 	Vector<Point2i> line_ranges = text_editor->get_line_ranges_from_carets();
+	Vector<Point2i> selection_ranges = text_editor->get_line_ranges_from_carets(true);
 	int folded_to = 0;
 	for (Point2i line_range : line_ranges) {
 		int from_line = line_range.x;
@@ -1354,6 +1356,21 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		// Special case for commenting empty lines, treat it/them as uncommented lines.
 		is_commented = is_commented && !is_all_empty;
 
+		bool is_multiline_selection = from_line != to_line && selection_ranges.has(line_range);
+
+		int min_indent = INT_MAX;
+		if (!is_commented && is_multiline_selection) {
+			for (int line = from_line; line <= to_line; line++) {
+				if (text_editor->get_line(line).strip_edges().is_empty()) {
+					continue;
+				}
+				min_indent = MIN(min_indent, text_editor->get_first_non_whitespace_column(line));
+			}
+			if (min_indent == INT_MAX) {
+				min_indent = 0;
+			}
+		}
+
 		// Comment/uncomment.
 		for (int line = from_line; line <= to_line; line++) {
 			if (is_all_empty) {
@@ -1367,7 +1384,10 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 					text_editor->remove_text(line, delimiter_column, line, delimiter_column + delimiter.length());
 				}
 			} else {
-				text_editor->insert_text(delimiter, line, text_editor->get_first_non_whitespace_column(line));
+				int col = is_multiline_selection
+						? MIN(min_indent, text_editor->get_line(line).length())
+						: text_editor->get_first_non_whitespace_column(line);
+				text_editor->insert_text(delimiter, line, col);
 			}
 		}
 	}

@@ -412,7 +412,9 @@ void EditorExportPlatformAppleEmbedded::_fix_config_file(const Ref<EditorExportP
 
 String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) {
 	String strnew;
-	if (p_line.contains("$binary")) {
+	if (p_line.contains("$application_supports_multiple_scenes")) {
+		strnew += p_line.replace("$application_supports_multiple_scenes", "<false/>") + "\n";
+	} else if (p_line.contains("$binary")) {
 		strnew += p_line.replace("$binary", p_config.binary_name) + "\n";
 	} else if (p_line.contains("$modules_buildfile")) {
 		strnew += p_line.replace("$modules_buildfile", p_config.modules_buildfile) + "\n";
@@ -1736,7 +1738,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 	bool export_project_only = p_preset->get("application/export_project_only");
 	if (p_oneclick) {
-		export_project_only = false; // Skip for one-click deploy.
+		export_project_only = false; // Skip for remote deploy.
 	}
 
 	EditorProgress ep("export", export_project_only ? TTR("Exporting for " + get_name() + " (Project Files Only)") : TTR("Exporting for " + get_name() + ""), export_project_only ? 2 : 5, true);

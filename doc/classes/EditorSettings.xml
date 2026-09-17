@@ -247,6 +247,10 @@
 		<member name="asset_store/available_urls" type="Dictionary" setter="" getter="">
 			A list of the available URLs that can be chosen in the Asset Store to fetch asset data. With the key being the name, and the value being the URL.
 		</member>
+		<member name="asset_store/show_incompatible_assets" type="bool" setter="" getter="">
+			If [code]true[/code], the Asset Store will show asset releases that are not compatible with the current engine version.
+			[b]Warning:[/b] Using such assets may result in errors and crashes.
+		</member>
 		<member name="asset_store/use_threads" type="bool" setter="" getter="">
 			If [code]true[/code], the Asset Store uses multiple threads for its HTTP requests. This prevents the Asset Store from blocking the main thread for every loaded asset.
 		</member>
@@ -1119,7 +1123,7 @@
 		</member>
 		<member name="interface/editor/localization/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface. If set to [b]Auto[/b], the language is automatically determined based on the system locale. See also [method EditorInterface.get_editor_language].
-			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
+			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/development/translations.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/localization/localize_settings" type="bool" setter="" getter="">
 			If [code]true[/code], setting names in the editor are localized when possible.
@@ -1499,6 +1503,9 @@
 		<member name="text_editor/appearance/whitespace/line_spacing" type="int" setter="" getter="">
 			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying fewer lines on screen. Negative values allow for even more compact text, but may look broken with certain fonts.
 		</member>
+		<member name="text_editor/behavior/diagnostics/enable_tooltips" type="bool" setter="" getter="">
+			If [code]true[/code], warning and error messages will appear in tooltips when hovering over code.
+		</member>
 		<member name="text_editor/behavior/documentation/enable_tooltips" type="bool" setter="" getter="">
 			If [code]true[/code], documentation tooltips will appear when hovering over a symbol.
 		</member>
@@ -1577,7 +1584,7 @@
 			If [code]true[/code], uses the characters in [member text_editor/behavior/navigation/custom_word_separators] as word separators for word navigation and operations. This is in addition to the default characters if [member text_editor/behavior/navigation/use_default_word_separators] is also enabled. Word navigation and operations include double-clicking on a word or holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS) while pressing [kbd]left[/kbd], [kbd]right[/kbd], [kbd]backspace[/kbd], or [kbd]delete[/kbd].
 		</member>
 		<member name="text_editor/behavior/navigation/use_default_word_separators" type="bool" setter="" getter="">
-			If [code]true[/code], uses the characters in [code]`!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^`{|}~[/code], the Unicode General Punctuation table, and the Unicode CJK Punctuation table as word separators for word navigation and operations. If [code]false[/code], a subset of these characters are used and does not include the characters [code]&lt;&gt;$~^=+|[/code]. This is in addition to custom characters if [member text_editor/behavior/navigation/use_custom_word_separators] is also enabled. These characters are used to determine where a word stops. Word navigation and operations include double-clicking on a word or holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS) while pressing [kbd]left[/kbd], [kbd]right[/kbd], [kbd]backspace[/kbd], or [kbd]delete[/kbd].
+			If [code]true[/code], uses the characters in [code]!"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^`{|}~[/code], the Unicode General Punctuation table, and the Unicode CJK Punctuation table as word separators for word navigation and operations. If [code]false[/code], a subset of these characters are used and does not include the characters [code]&lt;&gt;$~^=+|[/code]. This is in addition to custom characters if [member text_editor/behavior/navigation/use_custom_word_separators] is also enabled. These characters are used to determine where a word stops. Word navigation and operations include double-clicking on a word or holding [kbd]Ctrl[/kbd] ([kbd]Cmd[/kbd] on macOS) while pressing [kbd]left[/kbd], [kbd]right[/kbd], [kbd]backspace[/kbd], or [kbd]delete[/kbd].
 		</member>
 		<member name="text_editor/behavior/navigation/v_scroll_speed" type="int" setter="" getter="">
 			The speed of scrolling in lines per second when [member text_editor/behavior/navigation/smooth_scrolling] is [code]true[/code]. Higher values make the script scroll by faster when using the mouse wheel.

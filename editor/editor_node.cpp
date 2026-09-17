@@ -79,7 +79,6 @@
 #include "editor/export/project_export.h"
 #include "editor/export/project_zip_packer.h"
 #include "editor/export/register_exporters.h"
-#include "editor/export/shader_baker_export_plugin.h"
 #include "editor/file_system/dependency_editor.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_about.h"
@@ -106,6 +105,7 @@
 #include "editor/import/resource_importer_imagefont.h"
 #include "editor/import/resource_importer_layered_texture.h"
 #include "editor/import/resource_importer_shader_file.h"
+#include "editor/import/resource_importer_streamed_texture.h"
 #include "editor/import/resource_importer_svg.h"
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
@@ -159,6 +159,7 @@
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_bar.h"
@@ -184,8 +185,12 @@
 #include "servers/display/display_server_enums.h"
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "servers/navigation_3d/navigation_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
+
+#ifdef RD_ENABLED
+#include "editor/export/shader_baker/shader_baker_export_plugin.h"
 
 #ifdef VULKAN_ENABLED
 #include "editor/shader/shader_baker/shader_baker_export_plugin_platform_vulkan.h"
@@ -198,6 +203,7 @@
 #ifdef METAL_ENABLED
 #include "editor/shader/shader_baker/shader_baker_export_plugin_platform_metal.h"
 #endif
+#endif // RD_ENABLED
 
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_2d/physics_server_2d.h"
@@ -595,6 +601,7 @@ void EditorNode::_update_from_settings() {
 	}
 
 	ResourceImporterTexture::get_singleton()->update_imports();
+	ResourceImporterStreamedTexture::get_singleton()->update_imports();
 
 	_update_translations();
 
@@ -945,6 +952,7 @@ void EditorNode::_notification(int p_what) {
 			editor_selection->update();
 
 			ResourceImporterTexture::get_singleton()->update_imports();
+			ResourceImporterStreamedTexture::get_singleton()->update_imports();
 
 			if (requested_first_scan) {
 				requested_first_scan = false;
@@ -3183,18 +3191,15 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding, false);
 	}
 
-	bool is_resource = current_obj->is_class("Resource");
-	bool is_node = current_obj->is_class("Node");
-	bool stay_in_script_editor_on_node_selected = bool(EDITOR_GET("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected"));
+	bool is_resource = Object::cast_to<Resource>(current_obj);
+	bool is_node = Object::cast_to<Node>(current_obj);
 	bool skip_main_plugin = false;
 
 	String editable_info; // None by default.
 	bool info_is_warning = false;
 
-	if (current_obj->has_method("_is_read_only")) {
-		if (current_obj->call("_is_read_only")) {
-			editable_info = TTR("This object is marked as read-only, so it's not editable.");
-		}
+	if (current_obj->call(SNAME("_is_read_only")).operator bool()) {
+		editable_info = TTR("This object is marked as read-only, so it's not editable.");
 	}
 
 	if (is_resource) {
@@ -3241,11 +3246,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
 			if (!inspector_only && !skip_main_plugin) {
-				if ((ScriptEditor::get_singleton()->get_current_layout() != EditorDock::DOCK_LAYOUT_FLOATING) && ScriptEditor::get_singleton()->is_visible_in_tree()) {
-					skip_main_plugin = stay_in_script_editor_on_node_selected;
-				} else {
-					skip_main_plugin = !editor_main_screen->can_auto_switch_screens();
-				}
+				skip_main_plugin = !editor_main_screen->can_auto_switch_screens();
 			}
 		} else {
 			SignalsDock::get_singleton()->set_object(nullptr);
@@ -3500,7 +3501,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SCENE_OPEN_PREV: {
 			if (!prev_closed_scenes.is_empty()) {
-				open_scene(prev_closed_scenes.back()->get());
+				String path = prev_closed_scenes[prev_closed_scenes.size() - 1];
+				path = ResourceUID::ensure_path_nocheck(path);
+				if (!path.is_empty() && ResourceLoader::exists(path)) {
+					open_scene(path);
+				} else {
+					prev_closed_scenes.resize(prev_closed_scenes.size() - 1);
+				}
 			}
 		} break;
 		case EditorSceneTabs::SCENE_CLOSE_OTHERS: {
@@ -4071,7 +4078,6 @@ void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
-	img->convert(Image::FORMAT_RGBA8);
 #ifdef RD_ENABLED
 	RenderingDevice *rendering_device = RD::get_singleton();
 	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
@@ -4082,7 +4088,7 @@ void EditorNode::_save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h
 	Ref<Image> overlay = Image::load_from_file(p_emb_path);
 	DirAccess::remove_absolute(p_emb_path);
 	ERR_FAIL_COND_MSG(overlay.is_null(), "Cannot get an image from a embedded process.");
-	overlay->convert(Image::FORMAT_RGBA8);
+	overlay->convert(img->get_format());
 	overlay->resize(p_rect.size.x, p_rect.size.y);
 	img->blend_rect(overlay, Rect2i(0, 0, p_w, p_h), p_rect.position);
 	Error error = img->save_png(p_path);
@@ -4100,7 +4106,6 @@ void EditorNode::_save_screenshot(const String &p_path) {
 	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
 	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
-	img->convert(Image::FORMAT_RGBA8);
 #ifdef RD_ENABLED
 	RenderingDevice *rendering_device = RD::get_singleton();
 	if (rendering_device && RenderingServer::get_singleton()->viewport_is_using_hdr_2d(viewport->get_viewport_rid())) {
@@ -4446,9 +4451,11 @@ void EditorNode::replace_resources_in_scenes(const Vector<Ref<Resource>> &p_sour
 }
 
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
+#ifndef DISABLE_DEPRECATED
 	if (p_editor->has_main_screen()) {
 		singleton->editor_main_screen->add_main_plugin(p_editor);
 	}
+#endif
 	singleton->editor_data.add_editor_plugin(p_editor);
 	singleton->add_child(p_editor);
 	if (p_config_changed) {
@@ -4457,9 +4464,11 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 }
 
 void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
+#ifndef DISABLE_DEPRECATED
 	if (p_editor->has_main_screen()) {
 		singleton->editor_main_screen->remove_main_plugin(p_editor);
 	}
+#endif
 	p_editor->make_visible(false);
 	p_editor->clear();
 	if (p_config_changed) {
@@ -5027,6 +5036,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		idx = editor_data.add_edited_scene(-1);
 	}
 	editor_data.set_scene_root(idx, new_scene);
+	editor_data.set_scene_resource(idx, sdata);
 
 	const Ref<ConfigFile> editor_state_cf = _load_scene_config(lpath);
 	if (editor_state_cf->has_section("editor_states")) {
@@ -5519,10 +5529,11 @@ void EditorNode::_show_messages() {
 
 void EditorNode::_update_prev_closed_scenes(const String &p_scene_path, bool p_add_scene) {
 	if (!p_scene_path.is_empty()) {
+		const String scene_uid = ResourceUID::path_to_uid(p_scene_path);
 		if (p_add_scene) {
-			prev_closed_scenes.push_back(p_scene_path);
+			prev_closed_scenes.push_back(scene_uid);
 		} else {
-			prev_closed_scenes.erase(p_scene_path);
+			prev_closed_scenes.erase(scene_uid);
 		}
 		file_menu->set_item_disabled(file_menu->get_item_index(SCENE_OPEN_PREV), prev_closed_scenes.is_empty());
 	}
@@ -5530,22 +5541,27 @@ void EditorNode::_update_prev_closed_scenes(const String &p_scene_path, bool p_a
 
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
+	const String scene_uid = ResourceUID::path_to_uid(p_scene);
+
+#ifndef DISABLE_DEPRECATED
 	if (rc.has(p_scene)) {
 		rc.erase(p_scene);
 	}
-	rc.push_front(p_scene);
+#endif
+	if (rc.has(scene_uid)) {
+		rc.erase(scene_uid);
+	}
+	rc.push_front(scene_uid);
 	if (rc.size() > 10) {
 		rc.resize(10);
 	}
 
 	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", rc);
-	_update_recent_scenes();
 }
 
 void EditorNode::_open_recent_scene(int p_idx) {
 	if (p_idx == recent_scenes->get_item_count() - 1) {
 		EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", Array());
-		callable_mp(this, &EditorNode::_update_recent_scenes).call_deferred();
 	} else {
 		Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 		ERR_FAIL_INDEX(p_idx, rc.size());
@@ -5553,7 +5569,6 @@ void EditorNode::_open_recent_scene(int p_idx) {
 		if (open_scene(rc[p_idx]) != OK) {
 			rc.remove_at(p_idx);
 			EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", rc);
-			_update_recent_scenes();
 		}
 	}
 }
@@ -5562,18 +5577,33 @@ void EditorNode::_update_recent_scenes() {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 	recent_scenes->clear();
 
+	LocalVector<int> missing_scenes;
 	if (rc.size() == 0) {
 		recent_scenes->add_item(TTRC("No Recent Scenes"), -1);
 		recent_scenes->set_item_disabled(-1, true);
 	} else {
-		String path;
 		for (int i = 0; i < rc.size(); i++) {
-			path = rc[i];
-			recent_scenes->add_item(path.replace("res://", ""), i);
+			const String path = ResourceUID::ensure_path_nocheck(rc[i]);
+			if (!path.is_empty() && ResourceLoader::exists(path)) {
+				recent_scenes->add_item(path.trim_prefix("res://"), i);
+			} else {
+				missing_scenes.push_back(i);
+			}
 		}
 
 		recent_scenes->add_separator();
 		recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTRC("Clear Recent Scenes")));
+
+		if (!missing_scenes.is_empty()) {
+			// Some scenes are missing, so update the stored list.
+			Array new_scenes;
+			for (int i = 0; i < rc.size(); i++) {
+				if (!missing_scenes.has(i)) {
+					new_scenes.push_back(rc[i]);
+				}
+			}
+			EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", new_scenes);
+		}
 	}
 	recent_scenes->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 	recent_scenes->reset_size();
@@ -5862,8 +5892,10 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 				bool instantiable = false;
 
 				// If the class doesn't exist or isn't global, then it's not instantiable
-				if (ClassDB::class_exists(p_class) || ScriptServer::is_global_class(p_class)) {
+				if (ClassDB::class_exists(p_class)) {
 					instantiable = !ClassDB::is_virtual(p_class) && ClassDB::can_instantiate(p_class);
+				} else if (ScriptServer::is_global_class(p_class)) {
+					instantiable = !ScriptServer::is_global_class_abstract(p_class);
 				}
 
 				return _get_class_or_script_icon(base_type, "", "", false, p_skip_fallback_virtual || instantiable);
@@ -6108,8 +6140,9 @@ String EditorNode::_get_system_info() const {
 
 	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name();
 
-	RenderingDeviceEnums::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
 	String device_type_string;
+#ifdef RD_ENABLED
+	RenderingDeviceEnums::DeviceType device_type = RenderingServer::get_singleton()->get_video_adapter_type();
 	switch (device_type) {
 		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_INTEGRATED_GPU:
 			device_type_string = "integrated";
@@ -6127,6 +6160,7 @@ String EditorNode::_get_system_info() const {
 		case RenderingDeviceEnums::DeviceType::DEVICE_TYPE_MAX:
 			break; // Can't happen, but silences warning for DEVICE_TYPE_MAX
 	}
+#endif // RD_ENABLED
 
 	const Vector<String> video_adapter_driver_info = OS::get_singleton()->get_video_adapter_driver_info();
 
@@ -7194,9 +7228,7 @@ void EditorNode::_notify_nodes_scene_reimported(Node *p_node, Array p_reimported
 		}
 	}
 
-	if (p_node->has_method("_nodes_scene_reimported")) {
-		p_node->call("_nodes_scene_reimported", p_reimported_nodes);
-	}
+	p_node->call(SNAME("_nodes_scene_reimported"), p_reimported_nodes);
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_notify_nodes_scene_reimported(p_node->get_child(i), p_reimported_nodes);
@@ -7223,7 +7255,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	// Reload scene.
 	_remove_scene(scene_idx, false);
-	Error err = load_scene(p_path, true, false, false, false);
+	Error err = load_scene(p_path, true, false, true, false);
 	if (err != OK) {
 		return;
 	}
@@ -8090,6 +8122,7 @@ void EditorNode::_build_file_menu(bool p_dark_mode) {
 	if (!recent_scenes) {
 		recent_scenes = memnew(PopupMenu);
 		recent_scenes->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		recent_scenes->connect("about_to_popup", callable_mp(this, &EditorNode::_update_recent_scenes));
 		recent_scenes->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_open_recent_scene));
 	}
 	file_menu->add_submenu_node_item(TTRC("Open Recent"), recent_scenes, SCENE_OPEN_RECENT);
@@ -8430,8 +8463,9 @@ HashMap<String, Variant> EditorNode::get_initial_settings() {
 	HashMap<String, Variant> settings;
 	settings["display/window/stretch/aspect"] = "expand";
 	settings["display/window/stretch/mode"] = "canvas_items";
+	settings["gui/common/auto_focus_strategy"] = Control::AutoFocusStrategy::STRATEGY_BALLOON;
 	settings["input_devices/joypads/ignore_joypad_on_unfocused_application"] = true;
-	settings["physics/3d/physics_engine"] = "Jolt Physics";
+	settings["physics/3d/physics_engine"] = PhysicsServer3DManager::JOLT_PHYSICS_NAME;
 	settings["rendering/rendering_device/driver.windows"] = "d3d12";
 	settings["rendering/lights_and_shadows/multi_bounce_occlusion/enabled"] = true;
 	return settings;
@@ -8595,8 +8629,13 @@ EditorNode::EditorNode() {
 
 	{
 		// Register importers at the beginning, so dialogs are created with the right extensions.
-		Ref<ResourceImporterTexture> import_texture = memnew(ResourceImporterTexture(true));
+		Ref<ResourceImporterTexture> import_texture;
+		import_texture.instantiate(true);
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
+
+		Ref<ResourceImporterStreamedTexture> import_streamed_texture;
+		import_streamed_texture.instantiate(true);
+		ResourceFormatImporter::get_singleton()->add_importer(import_streamed_texture);
 
 		Ref<ResourceImporterLayeredTexture> import_cubemap;
 		import_cubemap.instantiate();
@@ -9217,12 +9256,7 @@ EditorNode::EditorNode() {
 	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	title_bar->add_child(right_menu_hb);
 
-	// FIXME: There has to be a simpler way to determine correct index.
-#ifdef ANDROID_ENABLED
-	title_bar->move_child(editor_main_screen->get_internal_container(), title_bar->get_child_count() / 2);
-#else
-	title_bar->move_child(editor_main_screen->get_internal_container(), left_menu_spacer ? 3 : 2);
-#endif
+	title_bar->move_child(editor_main_screen->get_internal_container(), left_spacer->get_index());
 
 	renderer = memnew(OptionButton);
 	renderer->set_flat(true);
@@ -9588,6 +9622,7 @@ EditorNode::EditorNode() {
 
 	EditorExport::get_singleton()->add_export_plugin(dedicated_server_export_plugin);
 
+#ifdef RD_ENABLED
 	Ref<ShaderBakerExportPlugin> shader_baker_export_plugin;
 	shader_baker_export_plugin.instantiate();
 
@@ -9610,6 +9645,7 @@ EditorNode::EditorNode() {
 #endif
 
 	EditorExport::get_singleton()->add_export_plugin(shader_baker_export_plugin);
+#endif // RD_ENABLED
 
 	Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
 	packed_scene_translation_parser_plugin.instantiate();

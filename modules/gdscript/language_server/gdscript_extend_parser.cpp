@@ -32,6 +32,7 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
+#include "../gdscript_linter.h"
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
 
@@ -811,7 +812,7 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 	ERR_FAIL_NULL_V(p_func, Dictionary());
 	Dictionary func;
 	func["name"] = p_func->identifier->name;
-	func["return_type"] = p_func->return_type_constraint.to_string();
+	func["return_type"] = p_func->return_type_constraint.to_string_strict();
 	func["rpc_config"] = p_func->rpc_config;
 	Array parameters;
 	for (ParameterNode *param : p_func->parameters) {
@@ -970,6 +971,11 @@ void ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
 	if (parse_result == OK) {
 		parse_result = analyzer.analyze();
 	}
+	if (parse_result == OK) {
+		GDScriptLinter linter(*this);
+		parse_result = linter.lint();
+	}
+
 	update_diagnostics();
 	update_symbols();
 	update_document_links(p_code);

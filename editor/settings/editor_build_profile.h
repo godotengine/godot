@@ -40,6 +40,7 @@ class EditorBuildProfile : public RefCounted {
 
 public:
 	enum BuildOption {
+		BUILD_OPTION_2D,
 		BUILD_OPTION_3D,
 		BUILD_OPTION_NAVIGATION_2D,
 		BUILD_OPTION_NAVIGATION_3D,

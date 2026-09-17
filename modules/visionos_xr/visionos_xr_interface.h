@@ -64,9 +64,22 @@ public:
 		VISIONOS_XR_SIGNAL_MAX,
 	};
 
+	enum ImmersionStyle {
+		IMMERSION_STYLE_FULL,
+		IMMERSION_STYLE_MIXED,
+		IMMERSION_STYLE_PROGRESSIVE,
+	};
+
+	enum Visibility {
+		VISIBILITY_AUTOMATIC,
+		VISIBILITY_VISIBLE,
+		VISIBILITY_HIDDEN,
+	};
+
 private:
 	bool initialized = false;
 	XRInterface::TrackingStatus tracking_state;
+	float minimum_supported_near_plane = 0.0;
 
 	RenderingServer *rendering_server;
 
@@ -119,14 +132,17 @@ private:
 		bool initialized = false;
 		RenderingDevice *rendering_device = nullptr;
 		PixelFormats *pixel_formats = nullptr;
+		Mutex mutex;
 
-		float minimum_supported_near_plane = 0;
+		float minimum_supported_near_plane = 0.0;
 
 		// RenderThread must query the device anchor again,
 		// because ar_device_anchor_t objects cannot be safely shared between threads
 		ar_device_anchor_t current_device_anchor = nullptr;
 		ar_world_tracking_provider_t world_tracking_provider = nullptr;
 		Transform3D origin_from_head;
+		double scaled_z_near = 0.1;
+		double scaled_z_far = 4096.0;
 
 		cp_frame_t current_frame = nullptr;
 		cp_drawable_t current_drawable = nullptr;
@@ -142,9 +158,22 @@ private:
 		SafeNumeric<uint32_t> cached_render_target_width{ 0 };
 		SafeNumeric<uint32_t> cached_render_target_height{ 0 };
 
+		// Wraps cp_drawable_encode_present in a drawable render context with a no-op pass,
+		// required by Compositor Services when the layer supports progressive immersion.
+		// p_command_buffer is an id<MTLCommandBuffer> bridge-cast to void *, since this header
+		// is included from non-Objective-C++ translation units.
+		static void encode_drawable_no_op_and_present(cp_drawable_t p_drawable, cp_frame_t p_frame, void *p_command_buffer);
+
+		// Set in pre_render on render thread,
+		// retrieved in main thread when obtaining view info.
+		bool has_view_data = false;
+		Projection view_projections[2];
+		Transform3D view_offsets[2];
+
 	public:
 		void initialize();
 		void uninitialize();
+		void prepare_screen();
 
 		void set_minimum_supported_near_plane(float p_minimum_supported_near_plane);
 		// p_current_frame should be an cp_frame_t pointer casted to uint64_t
@@ -152,6 +181,10 @@ private:
 
 		// Expects an ar_world_tracking_provider_t
 		void set_world_tracking_provider(uint64_t p_world_tracking_provider);
+
+		void set_near_and_far(double p_scaled_z_near, double p_scaled_z_far);
+		Projection get_view_projection(uint32_t p_view);
+		Transform3D get_view_offset(uint32_t p_view);
 
 		// Safe to be called from the game thread
 		void start_frame_update();
@@ -161,8 +194,10 @@ private:
 		// Only safe to be called from the render thread
 		uint32_t get_view_count();
 		Transform3D get_camera_transform();
+#ifndef DISABLE_DEPRECATED
 		Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform);
 		Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far);
+#endif
 		Rect2i get_render_region();
 
 		void pre_render();
@@ -217,9 +252,23 @@ public:
 	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;
 	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
 
+	float get_current_render_quality();
+	void set_current_render_quality(float p_render_quality);
+
+	ImmersionStyle get_immersion_style();
+	void set_immersion_style(ImmersionStyle p_immersion_style);
+
+	Visibility get_upper_limb_visibility();
+	void set_upper_limb_visibility(Visibility p_upper_limb_visibility);
+
+	Visibility get_persistent_system_overlays();
+	void set_persistent_system_overlays(Visibility p_persistent_system_overlays);
+
 	// Methods called from the game thread
 	virtual void process() override;
 	virtual Size2 get_render_target_size() override;
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name) override;
 
 	// Methods only called from the render thread
 	virtual uint32_t get_view_count() override {
@@ -228,12 +277,14 @@ public:
 	virtual Transform3D get_camera_transform() override {
 		return rt.get_camera_transform();
 	}
+#ifndef DISABLE_DEPRECATED
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override {
 		return rt.get_transform_for_view(p_view, p_cam_transform);
 	}
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override {
 		return rt.get_projection_for_view(p_view, p_aspect, p_z_near, p_z_far);
 	}
+#endif
 	virtual Rect2i get_render_region() override {
 		return rt.get_render_region();
 	}
@@ -260,5 +311,8 @@ public:
 		return rt.get_vrs_texture();
 	}
 };
+
+VARIANT_ENUM_CAST(VisionOSXRInterface::ImmersionStyle);
+VARIANT_ENUM_CAST(VisionOSXRInterface::Visibility);
 
 #endif // VISIONOS_ENABLED

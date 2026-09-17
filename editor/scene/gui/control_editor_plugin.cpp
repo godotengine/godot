@@ -700,6 +700,7 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	add_child(main_vb);
 
 	HBoxContainer *top_row = memnew(HBoxContainer);
+	top_row->set_layout_direction(LayoutDirection::LAYOUT_DIRECTION_LTR);
 	top_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	top_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(top_row);
@@ -711,6 +712,7 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	_add_row_button(top_row, PRESET_TOP_WIDE, TTRC("Top Wide"));
 
 	HBoxContainer *mid_row = memnew(HBoxContainer);
+	mid_row->set_layout_direction(LayoutDirection::LAYOUT_DIRECTION_LTR);
 	mid_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	mid_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(mid_row);
@@ -722,6 +724,7 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	_add_row_button(mid_row, PRESET_HCENTER_WIDE, TTRC("HCenter Wide"));
 
 	HBoxContainer *bot_row = memnew(HBoxContainer);
+	bot_row->set_layout_direction(LayoutDirection::LAYOUT_DIRECTION_LTR);
 	bot_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	bot_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(bot_row);
@@ -735,6 +738,7 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	_add_separator(main_vb, memnew(HSeparator));
 
 	HBoxContainer *extra_row = memnew(HBoxContainer);
+	extra_row->set_layout_direction(LayoutDirection::LAYOUT_DIRECTION_LTR);
 	extra_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	extra_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(extra_row);

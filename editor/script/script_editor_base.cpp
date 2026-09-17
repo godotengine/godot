@@ -573,14 +573,14 @@ void TextEditorBase::_saved_update() {
 }
 
 void TextEditorBase::_emit_request_save_new_history() {
-	Dictionary state = get_edit_state();
+	Dictionary state = get_navigation_state();
 	state["ensure_caret_visible"] = true;
 	previous_history_line = state["row"];
 	emit_signal(SNAME("_request_save_new_history"), state);
 }
 
 void TextEditorBase::_emit_request_save_previous_state() {
-	Dictionary state = get_edit_state();
+	Dictionary state = get_navigation_state();
 	state["ensure_caret_visible"] = true;
 	previous_history_line = state["row"];
 	emit_signal(SNAME("_request_save_previous_state"), state);
@@ -846,7 +846,7 @@ void CodeEditorBase::_make_context_menu(bool p_selection, bool p_foldable, const
 	}
 }
 
-void CodeEditorBase::_code_complete_scripts(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void CodeEditorBase::_code_complete_scripts(void *p_ud, const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) {
 	CodeEditorBase *ste = (CodeEditorBase *)p_ud;
 	ste->_code_complete_script(p_code, r_options, r_force);
 }

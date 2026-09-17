@@ -54,9 +54,13 @@ static const char *ANDROID_SDK_PACKAGES[] = {
 	"platform-tools",
 	"build-tools/36.1.0", // Should match the value in 'platform/android/java/app/config.gradle#buildTools'.
 	"platforms/android-36",
+	"cmdline-tools/latest",
+	nullptr
+};
+// Android NDK packages.
+static const char *ANDROID_NDK_PACKAGES[] = {
 	"ndk/29.0.14206865", // Should match the value in 'platform/android/java/app/config.gradle#ndkVersion'.
 	"cmake/3.22.1",
-	"cmdline-tools/latest",
 	nullptr
 };
 
@@ -320,15 +324,23 @@ void AndroidSDKManager::_install_android_sdk_packages() {
 	cli_args.push_back("sdk");
 	cli_args.push_back("install");
 
-	const char **packages = ANDROID_SDK_PACKAGES;
-	while (*packages) {
-		String package = String(*packages);
+	const char **sdk_packages = ANDROID_SDK_PACKAGES;
+	while (*sdk_packages) {
+		String package = String(*sdk_packages);
 		print_verbose("Requesting Android SDK package " + package);
 		cli_args.push_back(package);
-		packages++;
+		sdk_packages++;
 	}
 
-	print_verbose("Installing Android SDK packages to " + default_android_sdk_path);
+	const char **ndk_packages = ANDROID_NDK_PACKAGES;
+	while (*ndk_packages) {
+		String package = String(*ndk_packages);
+		print_verbose("Requesting Android NDK package " + package);
+		cli_args.push_back(package);
+		ndk_packages++;
+	}
+
+	print_verbose("Installing Android SDK / NDK packages to " + default_android_sdk_path);
 	setup_process_data = OS::get_singleton()->execute_with_pipe(cli_bin, cli_args, false);
 	if (!setup_process_data.has("pid") || setup_process_data["pid"].operator int() <= 0) {
 		ERR_PRINT("Installation of Android SDK packages failed.");

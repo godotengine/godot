@@ -150,6 +150,10 @@ bool sc_use_lightmap_specular() {
 	return ((sc_packed_1() >> 6) & 1U) != 0;
 }
 
+bool sc_material_feedback() {
+	return ((sc_packed_1() >> 7) & 1U) != 0;
+}
+
 float sc_luminance_multiplier() {
 	// Not used in clustered renderer but we share some code with the mobile renderer that requires this.
 	return 1.0;
@@ -197,6 +201,7 @@ layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL (1 << 1)
 #define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSR (1 << 2)
 #define SCREEN_SPACE_EFFECTS_FLAGS_RESOLVE_SSR (1 << 3)
+#define SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS (1 << 4)
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer OmniLights {
 	LightData data[];
@@ -356,7 +361,8 @@ implementation_data_block;
 struct InstanceData {
 	mat3x4 transform;
 	vec4 compressed_aabb_position_pad; // Only .xyz is used. .w is padding.
-	vec4 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	vec3 compressed_aabb_size_pad; // Only .xyz is used. .w is padding.
+	uint material_feedback_index; // Index into the material feedback buffer.
 	vec4 uv_scale;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
@@ -478,10 +484,12 @@ layout(set = 1, binding = 33) uniform texture3D volumetric_fog_texture;
 layout(set = 1, binding = 34) uniform texture2DArray ssil_buffer;
 layout(set = 1, binding = 35) uniform texture2DArray ssr_buffer;
 layout(set = 1, binding = 36) uniform texture2DArray ssr_mip_level_buffer;
+layout(set = 1, binding = 37) uniform texture2DArray sscs_buffer;
 #else
 layout(set = 1, binding = 34) uniform texture2D ssil_buffer;
 layout(set = 1, binding = 35) uniform texture2D ssr_buffer;
 layout(set = 1, binding = 36) uniform texture2D ssr_mip_level_buffer;
+layout(set = 1, binding = 37) uniform texture2DArray sscs_buffer;
 #endif // USE_MULTIVIEW
 
 #endif
@@ -506,6 +514,14 @@ vec2 prefiltered_dfg(float lod, float NoV) {
 vec3 get_energy_compensation(vec3 f0, float env) {
 	return 1.0 + f0 * (1.0 / env - 1.0);
 }
+
+#ifdef TEXTURE_STREAMING
+// Texture streaming material feedback buffer access
+layout(set = 1, binding = 38, std430) buffer restrict MaterialFeedbackBuffer {
+	uint data[];
+}
+material_feedback;
+#endif
 
 /* Set 2 Skeleton & Instancing (can change per item) */
 

@@ -846,6 +846,32 @@ void main() {
 
 /* Varyings */
 
+#if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_UV_USED))
+// When texture streaming is enabled subgroupElect is needed to properly handle texture feedback.
+#extension GL_KHR_shader_subgroup_basic : enable
+
+#extension GL_KHR_shader_subgroup_arithmetic : enable
+
+// Since material feedback writes to a ssbo buffer, early fragment tests likely get disabled by the
+// driver so unless we want bad performance, we need to force enable it again when we can.
+//
+// To Early-Z, or Not To Early-Z
+//  - https://therealmjp.github.io/posts/to-earlyz-or-not-to-earlyz/#uavsstorage-texturesstorage-buffers
+#if defined(ALPHA_SCISSOR_USED) || defined(ALPHA_HASH_USED) || defined(ENABLE_CLIP_ALPHA) || defined(UBERSHADER) || defined(DISCARD_USED)
+#define TEXTURE_STREAMING_MAY_DISCARD
+#endif
+
+#if defined(DEPTH_TEST_DISABLED_USED) || defined(DEPTH_DRAW_NEVER_USED)
+#define TEXTURE_STREAMING_NO_DEPTH_WRITE
+#endif
+
+#if !defined(DEPTH_USED) && (!defined(TEXTURE_STREAMING_MAY_DISCARD) || (defined(TEXTURE_STREAMING_NO_DEPTH_WRITE) && !defined(STENCIL_WRITE_USED)))
+layout(early_fragment_tests) in;
+#define EARLY_Z_ON
+#endif // early fragment tests are safe
+
+#endif // TEXTURE_STREAMING
+
 // All interpolators are intentionally kept at full precision as storageInputOutput16 is not
 // checked for support. Devices with Adreno GPUs don't usually support this capability.
 
@@ -861,6 +887,10 @@ layout(location = 2) in vec4 color_interp;
 
 #ifdef UV_USED
 layout(location = 3) in vec2 uv_interp;
+#endif
+
+#if defined(TEXTURE_STREAMING)
+vec2 streaming_uv;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
@@ -889,64 +919,7 @@ layout(location = 13) in highp vec4 prev_screen_position;
 #endif
 
 #ifdef USE_LIGHTMAP
-// w0, w1, w2, and w3 are the four cubic B-spline basis functions
-float w0(float a) {
-	return (1.0 / 6.0) * (a * (a * (-a + 3.0) - 3.0) + 1.0);
-}
-
-float w1(float a) {
-	return (1.0 / 6.0) * (a * a * (3.0 * a - 6.0) + 4.0);
-}
-
-float w2(float a) {
-	return (1.0 / 6.0) * (a * (a * (-3.0 * a + 3.0) + 3.0) + 1.0);
-}
-
-float w3(float a) {
-	return (1.0 / 6.0) * (a * a * a);
-}
-
-// g0 and g1 are the two amplitude functions
-float g0(float a) {
-	return w0(a) + w1(a);
-}
-
-float g1(float a) {
-	return w2(a) + w3(a);
-}
-
-// h0 and h1 are the two offset functions
-float h0(float a) {
-	return -1.0 + w1(a) / (w0(a) + w1(a));
-}
-
-float h1(float a) {
-	return 1.0 + w3(a) / (w2(a) + w3(a));
-}
-
-vec4 textureArray_bicubic(texture2DArray tex, vec3 uv, vec2 texture_size) {
-	vec2 texel_size = vec2(1.0) / texture_size;
-
-	uv.xy = uv.xy * texture_size + vec2(0.5);
-
-	vec2 iuv = floor(uv.xy);
-	vec2 fuv = fract(uv.xy);
-
-	float g0x = g0(fuv.x);
-	float g1x = g1(fuv.x);
-	float h0x = h0(fuv.x);
-	float h1x = h1(fuv.x);
-	float h0y = h0(fuv.y);
-	float h1y = h1(fuv.y);
-
-	vec2 p0 = (vec2(iuv.x + h0x, iuv.y + h0y) - vec2(0.5)) * texel_size;
-	vec2 p1 = (vec2(iuv.x + h1x, iuv.y + h0y) - vec2(0.5)) * texel_size;
-	vec2 p2 = (vec2(iuv.x + h0x, iuv.y + h1y) - vec2(0.5)) * texel_size;
-	vec2 p3 = (vec2(iuv.x + h1x, iuv.y + h1y) - vec2(0.5)) * texel_size;
-
-	return (g0(fuv.y) * (g0x * texture(sampler2DArray(tex, SAMPLER_LINEAR_CLAMP), vec3(p0, uv.z)) + g1x * texture(sampler2DArray(tex, SAMPLER_LINEAR_CLAMP), vec3(p1, uv.z)))) +
-			(g1(fuv.y) * (g0x * texture(sampler2DArray(tex, SAMPLER_LINEAR_CLAMP), vec3(p2, uv.z)) + g1x * texture(sampler2DArray(tex, SAMPLER_LINEAR_CLAMP), vec3(p3, uv.z))));
-}
+#include "../bicubic_filter_inc.glsl"
 #endif //USE_LIGHTMAP
 
 #ifdef USE_MULTIVIEW
@@ -1367,6 +1340,46 @@ void main() {
 #endif // MODE_RENDER_MATERIAL
 #endif // ALPHA_SCISSOR_USED
 
+#if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_UV_USED))
+	if (sc_material_feedback()) {
+		// Instance has materials which require feedback.
+#if !defined(STREAMING_UV_USED)
+		vec2 streaming_uv = uv_interp;
+#endif
+		vec2 uv_dx = dFdx(streaming_uv);
+		vec2 uv_dy = dFdy(streaming_uv);
+
+		if (!gl_HelperInvocation) {
+			// Calculate the mip level needed for the current fragment based on UV derivatives.
+			float px_sq = dot(uv_dx, uv_dx);
+			float py_sq = dot(uv_dy, uv_dy);
+			float min_sq = min(px_sq, py_sq);
+			float max_sq = max(px_sq, py_sq);
+
+			// Anisotropic filtering allows using the mip level of the minor axis (min_sq),
+			// but limited by the max anisotropy (usually 16x).
+			// If the anisotropy ratio exceeds 16, we are forced to use a lower res mip.
+			const float MAX_ANISOTROPY = 16.0;
+			float lod_sq = max(min_sq, max_sq / (MAX_ANISOTROPY * MAX_ANISOTROPY));
+
+			// Bitwise NOT inverts the ordering so that smaller lod_sq (higher quality)
+			// maps to larger uint values, allowing atomicMax with a 0-cleared buffer.
+			uint required_mip = ~floatBitsToUint(lod_sq);
+
+			// Reduce atomic contention using subgroup operations.
+			// Find maximum inverted mip level across all invocations in the subgroup, then only
+			// one invocation performs the atomic write.
+			// Right now this assumes all invocations will have the same instance index.
+			// If that is not true then probably need a subgroupAllEqual check first + fallback.
+			uint subgroup_max_mip = subgroupMax(required_mip);
+			if (subgroupElect()) {
+				const uint material_feedback_index = instances.data[draw_call.instance_index].material_feedback_index;
+				atomicMax(material_feedback.data[material_feedback_index], subgroup_max_mip);
+			}
+		}
+	}
+#endif //TEXTURE_STREAMING
+
 // alpha hash can be used in unison with alpha antialiasing
 #ifdef ALPHA_HASH_USED
 	vec3 object_pos = (inverse(read_model_matrix) * inv_view_matrix * vec4(vertex, 1.0)).xyz;
@@ -1731,10 +1744,10 @@ void main() {
 			hvec3 lm_light_l1p1;
 
 			if (sc_use_lightmap_bicubic_filter()) {
-				lm_light_l0 = hvec3(textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 0.0), lightmaps.data[ofs].light_texture_size).rgb);
-				lm_light_l1n1 = hvec3((textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 1.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0);
-				lm_light_l1_0 = hvec3((textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 2.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0);
-				lm_light_l1p1 = hvec3((textureArray_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 3.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0);
+				lm_light_l0 = hvec3(texture_array_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 0.0), lightmaps.data[ofs].light_texture_size).rgb);
+				lm_light_l1n1 = hvec3((texture_array_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 1.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0);
+				lm_light_l1_0 = hvec3((texture_array_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 2.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0);
+				lm_light_l1p1 = hvec3((texture_array_bicubic(lightmap_textures[ofs], uvw + vec3(0.0, 0.0, 3.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0);
 			} else {
 				lm_light_l0 = hvec3(textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 0.0), 0.0).rgb);
 				lm_light_l1n1 = hvec3((textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb - vec3(0.5)) * 2.0);
@@ -1806,7 +1819,7 @@ void main() {
 
 		} else {
 			if (sc_use_lightmap_bicubic_filter()) {
-				ambient_light += hvec3(textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization);
+				ambient_light += hvec3(texture_array_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization);
 			} else {
 				ambient_light += hvec3(textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb * lightmaps.data[ofs].exposure_normalization);
 			}
@@ -2002,7 +2015,7 @@ void main() {
 				const vec3 uvw = vec3(scaled_uv, float(slice));
 
 				if (sc_use_lightmap_bicubic_filter()) {
-					shadowmask = half(textureArray_bicubic(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], uvw, lightmaps.data[ofs].light_texture_size).x);
+					shadowmask = half(texture_array_bicubic(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], uvw, lightmaps.data[ofs].light_texture_size).x);
 				} else {
 					shadowmask = half(textureLod(sampler2DArray(lightmap_textures[MAX_LIGHTMAP_TEXTURES + ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).x);
 				}

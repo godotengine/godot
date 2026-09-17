@@ -202,7 +202,9 @@ void TabContainer::_notification(int p_what) {
 				popup_button->set_button_icon(theme_cache.menu_icon);
 				internal_container->move_child(popup_button, is_layout_rtl() ? 0 : 1);
 			}
+
 			_update_margins();
+			callable_mp(this, &TabContainer::_repaint).call_deferred();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -252,6 +254,10 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), theme_cache.outline_size);
 
 	tab_bar->end_bulk_theme_override();
+
+	if (popup_button) {
+		popup_button->set_button_icon(theme_cache.menu_icon);
+	}
 
 	_update_margins();
 	if (get_tab_count() > 0) {

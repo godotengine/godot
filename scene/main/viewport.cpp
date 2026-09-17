@@ -51,16 +51,17 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/text_line.h"
+#include "scene/resources/world_2d.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-// 2D.
+#ifndef _2D_DISABLED
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/2d/camera_2d.h"
-#include "scene/resources/world_2d.h"
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_listener_3d.h"
@@ -900,6 +901,8 @@ void Viewport::_process_picking() {
 			pos = st->get_position();
 		}
 
+		// Avoid unused variable warning if 2D and 3D are both disabled.
+		(void)is_mouse;
 #ifndef PHYSICS_2D_DISABLED
 		if (ss2d) {
 			// Send to 2D.
@@ -932,8 +935,11 @@ void Viewport::_process_picking() {
 				if (physics_object_picking_sort) {
 					struct ComparatorCollisionObjects {
 						bool operator()(const PS2DT::ShapeResult &p_a, const PS2DT::ShapeResult &p_b) const {
-							CollisionObject2D *a = Object::cast_to<CollisionObject2D>(p_a.collider);
-							CollisionObject2D *b = Object::cast_to<CollisionObject2D>(p_b.collider);
+							if (!p_a.collider_id.is_valid() || !p_b.collider_id.is_valid()) {
+								return false;
+							}
+							CollisionObject2D *a = ObjectDB::get_instance<CollisionObject2D>(p_a.collider_id);
+							CollisionObject2D *b = ObjectDB::get_instance<CollisionObject2D>(p_b.collider_id);
 							if (!a || !b) {
 								return false;
 							}
@@ -952,8 +958,8 @@ void Viewport::_process_picking() {
 					if (is_input_handled()) {
 						break;
 					}
-					if (res[i].collider_id.is_valid() && res[i].collider) {
-						CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
+					if (res[i].collider_id.is_valid()) {
+						CollisionObject2D *co = ObjectDB::get_instance<CollisionObject2D>(res[i].collider_id);
 						if (co && co->can_process()) {
 							bool send_event = true;
 							if (is_mouse) {
@@ -1040,7 +1046,7 @@ void Viewport::_process_picking() {
 
 					bool col = space->intersect_ray(ray_params, result);
 					ObjectID new_collider;
-					CollisionObject3D *co = col ? Object::cast_to<CollisionObject3D>(result.collider) : nullptr;
+					CollisionObject3D *co = col && result.collider_id.is_valid() ? ObjectDB::get_instance<CollisionObject3D>(result.collider_id) : nullptr;
 					if (co && co->can_process()) {
 						new_collider = result.collider_id;
 						if (!capture_object) {
@@ -2868,12 +2874,10 @@ void Viewport::_push_text_input(const String &p_text, bool p_emit_signal) {
 		gui.subwindow_focused->push_text_input(p_text);
 		return;
 	}
-
-	StringName set_text_method = SNAME("_set_text");
-	if (!gui.key_focus || !gui.key_focus->has_method(set_text_method)) {
+	if (!gui.key_focus) {
 		return;
 	}
-	gui.key_focus->call(set_text_method, p_text, p_emit_signal);
+	gui.key_focus->call(SNAME("_set_text"), p_text, p_emit_signal);
 }
 
 void Viewport::push_text_input(const String &p_text) {
@@ -4469,6 +4473,7 @@ void Viewport::_update_audio_listener_2d() {
 	}
 }
 
+#ifndef _2D_DISABLED
 void Viewport::_audio_listener_2d_set(AudioListener2D *p_audio_listener) {
 	if (audio_listener_2d == p_audio_listener) {
 		return;
@@ -4643,6 +4648,7 @@ Camera2D *Viewport::get_override_camera_2d() const {
 	return camera_2d_override.is_enabled() ? get_camera_2d() : nullptr;
 }
 #endif // DEBUG_ENABLED
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 AudioListener3D *Viewport::get_audio_listener_3d() const {
@@ -5318,10 +5324,12 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_process_picking"), &Viewport::_process_picking);
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
+#ifndef _2D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("get_audio_listener_2d"), &Viewport::get_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_world_3d", "world_3d"), &Viewport::set_world_3d);
@@ -5407,7 +5415,9 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap,Inherit"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror,Inherit"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
 	ADD_GROUP("Audio Listener", "audio_listener_");
+#ifndef _2D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_2d"), "set_as_audio_listener_2d", "is_audio_listener_2d");
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_3d"), "set_as_audio_listener_3d", "is_audio_listener_3d");
 #endif // _3D_DISABLED
@@ -5914,7 +5924,9 @@ T *Viewport::CameraOverride<T>::get_overridden_camera() const {
 
 // Explicit template instantiation to allow template definitions inside cpp file
 // and prevent instantiation using other than the desired camera types.
+#ifndef _2D_DISABLED
 template class Viewport::CameraOverride<Camera2D>;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 template class Viewport::CameraOverride<Camera3D>;
 #endif // _3D_DISABLED

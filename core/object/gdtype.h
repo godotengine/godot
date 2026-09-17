@@ -51,68 +51,93 @@ public:
 		bool is_bitfield = false;
 	};
 
-	struct Property {
+	struct Member {
 		enum class Type {
-			SETGET,
+			PROPERTY,
 			INTEGER_CONSTANT,
+			ENUM,
 			METHOD,
 			SIGNAL
 		};
 
-		struct SetGet {
+		struct Property {
 			const PropertyInfo *property_info;
 			const MethodBind *setter;
 			const MethodBind *getter;
 			int index;
 		};
 
+		struct IntegerConstant {
+			int64_t value;
+			const EnumInfo *enum_info;
+		};
+
 		union Payload {
-			int64_t integer = 0;
-			SetGet setget;
+			Property property;
+			IntegerConstant integer_constant;
+			const EnumInfo *enum_info;
+			const MethodBind *method;
+			const MethodInfo *signal;
 		};
 
 		Type type;
 		Payload payload;
 
-		Property &operator=(const Property &p) = default;
+		Member &operator=(const Member &) = default;
 
-		Property(const Property &) = default;
-		Property(Type p_type, const SetGet &p_pointer) : type(p_type) {
-			payload.setget = p_pointer;
+		static Member create_property(const Property &p_property) {
+			Payload payload;
+			payload.property = p_property;
+			return Member(Type::PROPERTY, payload);
 		}
-		Property(Type p_type, int64_t p_int) : type(p_type) {
-			payload.integer = p_int;
+
+		static Member create_integer_constant(IntegerConstant p_constant) {
+			Payload payload;
+			payload.integer_constant = p_constant;
+			return Member(Type::INTEGER_CONSTANT, payload);
 		}
-		Property(Type p_type) : type(p_type) {}
+
+		static Member create_enum(const EnumInfo *p_enum_info) {
+			Payload payload;
+			payload.enum_info = p_enum_info;
+			return Member(Type::ENUM, payload);
+		}
+
+		static Member create_method(const MethodBind *p_method) {
+			Payload payload;
+			payload.method = p_method;
+			return Member(Type::METHOD, payload);
+		}
+
+		static Member create_signal(const MethodInfo *p_method) {
+			Payload payload;
+			payload.signal = p_method;
+			return Member(Type::SIGNAL, payload);
+		}
+
+		Member(const Member &) = default;
+		Member(Type p_type, const Payload &p_payload) : type(p_type), payload(p_payload) {}
 	};
 
 protected:
 	const GDType *super_type;
 	mutable InitState init_state = InitState::UNINITIALIZED;
+	uint64_t owning_thread_id = 0;
 
 	StringName name;
 	/// Contains all the class names in order:
 	/// `name` is the first element and `Object` is the last (for `Object` types).
 	Vector<StringName> name_hierarchy;
 
-	AHashMap<StringName, int64_t> constant_map;
-	AHashMap<StringName, int64_t> self_constant_map;
-
-	AHashMap<StringName, const EnumInfo *> enum_map;
-	AHashMap<StringName, const EnumInfo *> self_enum_map;
-
-	AHashMap<StringName, const MethodInfo *> signal_map;
-	AHashMap<StringName, const MethodInfo *> self_signal_map;
-
-	AHashMap<StringName, const MethodBind *> method_map;
-	AHashMap<StringName, const MethodBind *> self_method_map;
-	// This is deliberately not the same as self_method_map because
-	// bind_method supports binding non-owned methods.
+	/// This needs to be tracked separately because
+	/// bind_method supports binding non-owned methods.
 	LocalVector<MethodBind *> owned_method_map;
 
-	/// Contains all properties that can be obtained or set with `object.property`.
-	AHashMap<StringName, Property> property_map;
-	AHashMap<StringName, Property> self_property_map;
+	AHashMap<StringName, LocalVector<MethodBind *>> self_compatibility_method_map;
+
+	/// Contains all members that can be obtained or set with dot notation (`object.member`).
+	AHashMap<StringName, Member> _members;
+	AHashMap<StringName, Member> _self_members;
 	LocalVector<const PropertyInfo *> ordered_self_properties;
 
 public:
@@ -130,20 +155,23 @@ public:
 	}
 	const Vector<StringName> &get_name_hierarchy() const { return name_hierarchy; }
 
+	// Binding
 	void bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
-	const AHashMap<StringName, int64_t> &get_integer_constant_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_constant_map : constant_map; }
-	const AHashMap<StringName, const EnumInfo *> &get_enum_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_enum_map : enum_map; }
-	const EnumInfo *get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance = false) const;
 
 	void add_signal(MethodInfo p_signal);
-	const AHashMap<StringName, const MethodInfo *> &get_signal_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_signal_map : signal_map; }
 
 	bool bind_method(MethodBind *p_method, bool p_take_ownership = true);
+
 	void set_method_flags(const StringName &p_method, int p_flags);
-	const AHashMap<StringName, const MethodBind *> &get_method_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_method_map : method_map; }
+
+	bool bind_compatibility_method(MethodBind *p_method);
+	const AHashMap<StringName, LocalVector<MethodBind *>> &get_self_compatibility_method_map() const { return self_compatibility_method_map; }
 
 	void add_property(const PropertyInfo &p_pinfo, const StringName &p_setter, const StringName &p_getter, int p_index);
 	void add_to_ordered_properties(const PropertyInfo &p_pinfo);
-	const AHashMap<StringName, Property> &get_property_map(bool p_no_inheritance = false) const { return p_no_inheritance ? self_property_map : property_map; }
 	const LocalVector<const PropertyInfo *> &get_ordered_self_properties() const { return ordered_self_properties; }
+
+	// Access
+	const AHashMap<StringName, Member> &members(bool p_no_inheritance = false) const { return p_no_inheritance ? _self_members : _members; }
+	const EnumInfo *get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance = false) const;
 };

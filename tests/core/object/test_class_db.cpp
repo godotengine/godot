@@ -711,12 +711,15 @@ void add_exposed_classes(Context &r_context) {
 
 		// Add signals
 
-		const AHashMap<StringName, const MethodInfo *> &signal_map = class_info->gdtype->get_signal_map(true);
+		const AHashMap<StringName, GDType::Member> &property_map = class_info->gdtype->members(true);
 
-		for (const KeyValue<StringName, const MethodInfo *> &K : signal_map) {
+		for (const KeyValue<StringName, GDType::Member> &K : property_map) {
+			if (K.value.type != GDType::Member::Type::SIGNAL) {
+				continue;
+			}
 			SignalData signal;
 
-			const MethodInfo &method_info = *signal_map.get(K.key);
+			const MethodInfo &method_info = *K.value.payload.signal;
 
 			signal.name = method_info.name;
 			TEST_FAIL_COND(!String(signal.name).is_valid_ascii_identifier(),
@@ -764,25 +767,26 @@ void add_exposed_classes(Context &r_context) {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(class_name, &constants, true);
 
-		const AHashMap<StringName, const GDType::EnumInfo *> &enum_map = class_info->gdtype->get_enum_map(true);
-
-		for (const KeyValue<StringName, const GDType::EnumInfo *> &kv_enum : enum_map) {
+		for (const KeyValue<StringName, GDType::Member> &kv_enum : property_map) {
+			if (kv_enum.value.type != GDType::Member::Type::ENUM) {
+				continue;
+			}
 			EnumData enum_;
 			enum_.name = kv_enum.key;
 
-			for (const KeyValue<StringName, int64_t> &kv_case : kv_enum.value->values) {
+			for (const KeyValue<StringName, int64_t> &kv_case : kv_enum.value.payload.enum_info->values) {
 				const StringName &constant_name = kv_case.key;
 				TEST_FAIL_COND(String(constant_name).contains("::"),
 						"Enum constant contains '::', check bindings to remove the scope: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
-				const int64_t *value = class_info->gdtype->get_integer_constant_map(false).getptr(constant_name);
-				TEST_FAIL_COND(!value, "Missing enum constant value: '",
+				const GDType::Member *constant_member = property_map.getptr(constant_name);
+				TEST_FAIL_COND(!constant_member, "Missing enum constant value: '",
 						String(class_name), ".", String(enum_.name), ".", String(constant_name), "'.");
 				constants.erase(constant_name);
 
 				ConstantData constant;
 				constant.name = constant_name;
-				constant.value = *value;
+				constant.value = constant_member->payload.integer_constant.value;
 
 				enum_.constants.push_back(constant);
 			}
@@ -797,12 +801,12 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(constant_name.contains("::"),
 					"Constant contains '::', check bindings to remove the scope: '",
 					String(class_name), ".", constant_name, "'.");
-			const int64_t *value = class_info->gdtype->get_integer_constant_map(false).getptr(StringName(E));
-			TEST_FAIL_COND(!value, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
+			const GDType::Member *constant_member = property_map.getptr(constant_name);
+			TEST_FAIL_COND(!constant_member, "Missing constant value: '", String(class_name), ".", String(constant_name), "'.");
 
 			ConstantData constant;
 			constant.name = constant_name;
-			constant.value = *value;
+			constant.value = constant_member->payload.integer_constant.value;
 
 			exposed_class.constants.push_back(constant);
 		}

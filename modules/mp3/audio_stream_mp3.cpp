@@ -202,6 +202,10 @@ Ref<AudioStreamPlayback> AudioStreamMP3::instantiate_playback() {
 
 	int success = drmp3_init_memory(&mp3s->mp3d, data.ptr(), data.size(), (drmp3_allocation_callbacks *)&dr_alloc_calls);
 
+	if (success && !seek_table.is_empty()) {
+		drmp3_bind_seek_table(&mp3s->mp3d, seek_table.size(), seek_table.ptr());
+	}
+
 	mp3s->frames_mixed = 0;
 	mp3s->active = false;
 	mp3s->loops = 0;
@@ -219,9 +223,20 @@ void AudioStreamMP3::set_data(const Vector<uint8_t> &p_data) {
 		ERR_FAIL_MSG("Failed to decode mp3 file. Make sure it is a valid mp3 audio file.");
 	}
 
+	drmp3_uint64 pcm_frames;
+	drmp3_uint64 mp3_frames;
+	drmp3_get_mp3_and_pcm_frame_count(mp3d, &mp3_frames, &pcm_frames);
+
 	channels = mp3d->channels;
 	sample_rate = mp3d->sampleRate;
-	length = float(drmp3_get_pcm_frame_count(mp3d)) / (mp3d->sampleRate);
+	length = float(pcm_frames) / (mp3d->sampleRate);
+
+	// Initialize seek table.
+	drmp3_uint32 seek_count = mp3_frames / 20;
+	seek_table.resize(seek_count);
+	if (!drmp3_calculate_seek_points(mp3d, &seek_count, seek_table.ptr())) {
+		seek_table.reset();
+	}
 
 	drmp3_uninit(mp3d);
 	memdelete(mp3d);

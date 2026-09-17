@@ -379,8 +379,19 @@ TEST_CASE("[Image] Modifying pixels of an image") {
 		CHECK_MESSAGE(gray_image->get_pixel(1, 1).is_equal_approx(Color(1, 1, 1, 1)), "convert() RGBA to L8 should be white.");
 		CHECK_MESSAGE(gray_image->get_pixel(1, 2).is_equal_approx(Color(0.250980407, 0.250980407, 0.250980407, 1)), "convert() RGBA to L8 should be around 0.250980407 (64).");
 		CHECK_MESSAGE(gray_image->get_pixel(2, 0).is_equal_approx(Color(0, 0, 0, 1)), "convert() RGBA to L8 should be black.");
-		CHECK_MESSAGE(gray_image->get_pixel(2, 1).is_equal_approx(Color(0.121568628, 0.121568628, 0.121568628, 1)), "convert() RGBA to L8 should be around 0.121568628 (31).");
+		CHECK_MESSAGE(gray_image->get_pixel(2, 1).is_equal_approx(Color(0.125490203, 0.125490203, 0.125490203, 1)), "convert() RGBA to L8 should be around 0.125490203 (32).");
 		CHECK_MESSAGE(gray_image->get_pixel(2, 2).is_equal_approx(Color(0.266666681, 0.266666681, 0.266666681, 1)), "convert() RGBA to L8 should be around 0.266666681 (68).");
+	}
+}
+
+TEST_CASE("[Image] Color rounding") {
+	Ref<Image> image = memnew(Image(1, 1, false, Image::FORMAT_R8));
+	for (int i = 0; i < 1024; i++) {
+		float expected_value = i / 1023.0f;
+		image->set_pixel(0, 0, Color(expected_value, 0.0f, 0.0f));
+
+		uint8_t expected_value_int = CLAMP(Math::round(expected_value * 255.0f), 0, 255);
+		CHECK_MESSAGE(image->get_data()[0] == expected_value_int, vformat("Pixel's r channel should be around %d", expected_value_int));
 	}
 }
 

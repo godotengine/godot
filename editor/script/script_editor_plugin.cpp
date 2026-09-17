@@ -682,6 +682,9 @@ void DocumentOutline::_notification(int p_what) {
 }
 
 void DocumentOutline::_tree_selected() {
+	if (updating_outline) {
+		return;
+	}
 	Control *active_editor = script_editor->get_active_editor();
 	int line = tree->get_selected()->get_metadata(0);
 	if (TextEditorBase *teb = Object::cast_to<TextEditorBase>(active_editor)) {
@@ -713,6 +716,8 @@ void DocumentOutline::update_outline() {
 		selected = ""; // Script/doc changed, forget the last selection.
 	}
 	current_editor = active_editor;
+
+	updating_outline = true;
 
 	tree->clear();
 	tree->create_item();
@@ -818,6 +823,7 @@ void DocumentOutline::update_outline() {
 			}
 		}
 	}
+	updating_outline = false;
 }
 
 void DocumentOutline::update_visibility() {
@@ -3116,6 +3122,8 @@ void ScriptEditor::_apply_editor_settings() {
 	if (highlight_scene_scripts && !previous_highlight_scene_scripts) {
 		_connect_to_scene();
 	}
+
+	set_allow_switch_screen(!bool(EDITOR_GET("text_editor/behavior/navigation/stay_in_script_editor_on_node_selected")));
 
 	document_list->update_editor_settings();
 

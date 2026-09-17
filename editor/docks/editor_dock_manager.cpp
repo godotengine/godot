@@ -570,6 +570,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 				if (closed_docks.has(name)) {
 					dock->is_open = false;
 					dock->hide();
+					dock->emit_signal(SNAME("closed"));
 					_move_dock(dock, closed_dock_parent);
 				} else {
 					dock->is_open = true;
@@ -658,6 +659,8 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 	}
 
 	p_dock->is_open = false;
+	p_dock->emit_signal(SNAME("closed"));
+
 	DockTabContainer *parent_container = p_dock->get_parent_container();
 	if (parent_container) {
 		parent_container->dock_closed(p_dock);
@@ -722,7 +725,7 @@ void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus
 	}
 
 	if (p_grab_focus) {
-		tab_container->get_tab_bar()->grab_focus();
+		tab_container->get_tab_bar()->grab_focus(true);
 	}
 
 	if (!p_dock->is_visible_in_tree()) {
@@ -909,7 +912,6 @@ void DockContextPopup::_tab_move_right() {
 
 void DockContextPopup::_close_dock() {
 	hide();
-	context_dock->emit_signal("closed");
 	dock_manager->close_dock(context_dock);
 }
 

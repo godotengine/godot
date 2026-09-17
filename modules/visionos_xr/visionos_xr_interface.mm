@@ -39,6 +39,7 @@
 #include "core/input/input.h"
 #include "core/math/transform_3d.h"
 #include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/string/print_string.h"
@@ -85,6 +86,28 @@ void VisionOSXRInterface::_bind_methods() {
 	for (int i = 0; i < VISIONOS_XR_SIGNAL_MAX; i++) {
 		ADD_SIGNAL(MethodInfo(get_signal_name((SignalEnum)i)));
 	}
+
+	ClassDB::bind_method(D_METHOD("get_current_render_quality"), &VisionOSXRInterface::get_current_render_quality);
+	ClassDB::bind_method(D_METHOD("set_current_render_quality", "render_quality"), &VisionOSXRInterface::set_current_render_quality);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "current_render_quality"), "set_current_render_quality", "get_current_render_quality");
+
+	BIND_ENUM_CONSTANT(IMMERSION_STYLE_FULL);
+	BIND_ENUM_CONSTANT(IMMERSION_STYLE_MIXED);
+	BIND_ENUM_CONSTANT(IMMERSION_STYLE_PROGRESSIVE);
+	ClassDB::bind_method(D_METHOD("get_immersion_style"), &VisionOSXRInterface::get_immersion_style);
+	ClassDB::bind_method(D_METHOD("set_immersion_style", "immersion_style"), &VisionOSXRInterface::set_immersion_style);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "immersion_style", PROPERTY_HINT_ENUM, "Full,Mixed,Progressive"), "set_immersion_style", "get_immersion_style");
+
+	BIND_ENUM_CONSTANT(VISIBILITY_AUTOMATIC);
+	BIND_ENUM_CONSTANT(VISIBILITY_VISIBLE);
+	BIND_ENUM_CONSTANT(VISIBILITY_HIDDEN);
+	ClassDB::bind_method(D_METHOD("get_upper_limb_visibility"), &VisionOSXRInterface::get_upper_limb_visibility);
+	ClassDB::bind_method(D_METHOD("set_upper_limb_visibility", "upper_limb_visibility"), &VisionOSXRInterface::set_upper_limb_visibility);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "upper_limb_visibility", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), "set_upper_limb_visibility", "get_upper_limb_visibility");
+
+	ClassDB::bind_method(D_METHOD("get_persistent_system_overlays"), &VisionOSXRInterface::get_persistent_system_overlays);
+	ClassDB::bind_method(D_METHOD("set_persistent_system_overlays", "persistent_system_overlays"), &VisionOSXRInterface::set_persistent_system_overlays);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "persistent_system_overlays", PROPERTY_HINT_ENUM, "Automatic,Visible,Hidden"), "set_persistent_system_overlays", "get_persistent_system_overlays");
 }
 
 VisionOSXRInterface::VisionOSXRInterface() {}
@@ -142,6 +165,8 @@ bool VisionOSXRInterface::initialize() {
 
 		float minimum_supported_near_plane = cp_layer_renderer_capabilities_supported_minimum_near_plane_distance(cs.layer_renderer_capabilities);
 		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_minimum_supported_near_plane).bind(minimum_supported_near_plane));
+
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::prepare_screen));
 
 		// Make this our primary interface, since it's used for rendering
 		xr_server->set_primary_interface(this);
@@ -252,6 +277,13 @@ void VisionOSXRInterface::RenderThread::initialize() {
 	initialized = true;
 }
 
+void VisionOSXRInterface::RenderThread::prepare_screen() {
+	ERR_NOT_ON_RENDER_THREAD;
+
+	// Trigger the swap-chain resize so the format is initialized; must happen outside any submission.
+	rendering_device->screen_prepare_for_drawing(DisplayServerEnums::MAIN_WINDOW_ID);
+}
+
 void VisionOSXRInterface::RenderThread::uninitialize() {
 	ERR_NOT_ON_RENDER_THREAD;
 	if (current_color_texture_id != RID()) {
@@ -297,6 +329,98 @@ XRInterface::PlayAreaMode VisionOSXRInterface::get_play_area_mode() const {
 
 bool VisionOSXRInterface::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {
 	return p_mode == XR_PLAY_AREA_ROOMSCALE;
+}
+
+float VisionOSXRInterface::get_current_render_quality() {
+	return cp_layer_renderer_get_render_quality(cs.layer_renderer);
+}
+
+void VisionOSXRInterface::set_current_render_quality(float p_render_quality) {
+	ERR_FAIL_COND_MSG(!GDTAppDelegateServiceVisionOS.isDynamicRenderQualityEnabled, "Attempting to set current render quality but Dynamic Render Quality has not been enabled in Project Settings.");
+	float maxRenderQuality = GDTAppDelegateServiceVisionOS.maxRenderQuality;
+	ERR_FAIL_COND_MSG(p_render_quality > GDTAppDelegateServiceVisionOS.maxRenderQuality, vformat("Attempting to set a current render quality higher than the Max Render Quality configured in Project Settings (%f).", maxRenderQuality));
+	cp_layer_renderer_set_render_quality(cs.layer_renderer, p_render_quality);
+}
+
+VisionOSXRInterface::ImmersionStyle VisionOSXRInterface::get_immersion_style() {
+	switch (GDTAppDelegateServiceVisionOS.immersionStyle) {
+		case GDTImmersionStyleFull:
+			return IMMERSION_STYLE_FULL;
+		case GDTImmersionStyleMixed:
+			return IMMERSION_STYLE_MIXED;
+		case GDTImmersionStyleProgressive:
+			return IMMERSION_STYLE_PROGRESSIVE;
+		default:
+			return IMMERSION_STYLE_FULL;
+	}
+}
+
+void VisionOSXRInterface::set_immersion_style(ImmersionStyle p_immersion_style) {
+	switch (p_immersion_style) {
+		case IMMERSION_STYLE_FULL:
+			GDTAppDelegateServiceVisionOS.immersionStyle = GDTImmersionStyleFull;
+			break;
+		case IMMERSION_STYLE_MIXED:
+			GDTAppDelegateServiceVisionOS.immersionStyle = GDTImmersionStyleMixed;
+			break;
+		case IMMERSION_STYLE_PROGRESSIVE:
+			GDTAppDelegateServiceVisionOS.immersionStyle = GDTImmersionStyleProgressive;
+			break;
+	}
+}
+
+VisionOSXRInterface::Visibility VisionOSXRInterface::get_upper_limb_visibility() {
+	switch (GDTAppDelegateServiceVisionOS.upperLimbVisibility) {
+		case GDTVisibilityAutomatic:
+			return VISIBILITY_AUTOMATIC;
+		case GDTVisibilityVisible:
+			return VISIBILITY_VISIBLE;
+		case GDTVisibilityHidden:
+			return VISIBILITY_HIDDEN;
+		default:
+			return VISIBILITY_AUTOMATIC;
+	}
+}
+
+void VisionOSXRInterface::set_upper_limb_visibility(Visibility p_upper_limb_visibility) {
+	switch (p_upper_limb_visibility) {
+		case VISIBILITY_AUTOMATIC:
+			GDTAppDelegateServiceVisionOS.upperLimbVisibility = GDTVisibilityAutomatic;
+			break;
+		case VISIBILITY_VISIBLE:
+			GDTAppDelegateServiceVisionOS.upperLimbVisibility = GDTVisibilityVisible;
+			break;
+		case VISIBILITY_HIDDEN:
+			GDTAppDelegateServiceVisionOS.upperLimbVisibility = GDTVisibilityHidden;
+			break;
+	}
+}
+
+VisionOSXRInterface::Visibility VisionOSXRInterface::get_persistent_system_overlays() {
+	switch (GDTAppDelegateServiceVisionOS.persistentSystemOverlays) {
+		case GDTVisibilityAutomatic:
+			return VISIBILITY_AUTOMATIC;
+		case GDTVisibilityVisible:
+			return VISIBILITY_VISIBLE;
+		case GDTVisibilityHidden:
+			return VISIBILITY_HIDDEN;
+		default:
+			return VISIBILITY_AUTOMATIC;
+	}
+}
+
+void VisionOSXRInterface::set_persistent_system_overlays(Visibility p_persistent_system_overlays) {
+	switch (p_persistent_system_overlays) {
+		case VISIBILITY_AUTOMATIC:
+			GDTAppDelegateServiceVisionOS.persistentSystemOverlays = GDTVisibilityAutomatic;
+			break;
+		case VISIBILITY_VISIBLE:
+			GDTAppDelegateServiceVisionOS.persistentSystemOverlays = GDTVisibilityVisible;
+			break;
+		case VISIBILITY_HIDDEN:
+			GDTAppDelegateServiceVisionOS.persistentSystemOverlays = GDTVisibilityHidden;
+			break;
+	}
 }
 
 void VisionOSXRInterface::set_head_pose_from_arkit() {
@@ -479,6 +603,88 @@ Size2 VisionOSXRInterface::get_render_target_size() {
 	return rt.get_render_target_size();
 }
 
+TypedArray<Projection> VisionOSXRInterface::get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) {
+	TypedArray<Projection> ret;
+
+	if (!initialized) {
+		return ret;
+	}
+
+	if (p_tracker_name == XR_TRACKER_HEAD) {
+		XRServer *xr_server = XRServer::get_singleton();
+		ERR_FAIL_NULL_V(xr_server, ret);
+
+		float world_scale = xr_server->get_world_scale();
+		double scaled_z_near = p_z_near / world_scale;
+		double scaled_z_far = p_z_far / world_scale;
+
+		ERR_FAIL_COND_V_MSG(scaled_z_near < minimum_supported_near_plane, ret, "Your XRCamera3D Near value is lower than the minimum value supported by the visionOS platform. Make sure that Near divided by XROrigin's World Scale is higher than or equal to the value returned by LayerRender.Capabilities.supportedMinimumNearPlaneDistance. This value is 0.1 for Apple Vision Pro.");
+
+		// We can't get/set data around our projection matrix until our render thread
+		// starts processing our frame.
+		// So our first frame will have an incorrect projection matrix
+		// and our subsequent frames use last frames projection matrix.
+		// Unless our IPD changes, or our near/far changes,
+		// our projection matrices should not change.
+
+		rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL_V(rendering_server, ret);
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_near_and_far).bind(scaled_z_near, scaled_z_far));
+
+		// Godot renderers work in the normalized [-1, 1] depth space, and they do a final z remap of the projection matrixes to the [0, 1] depth space in RenderSceneDataRD::update_ubo().
+		// Compositor Services projection matrices are already in the [0, 1] depth space, so we need to apply the inverse z remap before passing them to the renderer.
+		Projection normalized_depth_correction;
+		normalized_depth_correction.set_depth_correction(false, false, true);
+		normalized_depth_correction = normalized_depth_correction.inverse();
+
+		// Correct depth by world_scale
+		Projection reverse_z;
+		real_t *m = &reverse_z.columns[0][0];
+		m[10] = -1.0;
+		m[14] = 1.0;
+
+		Projection world_scale_correction;
+		world_scale_correction.make_scale(Vector3(1, 1, world_scale));
+		world_scale_correction = reverse_z.inverse() * world_scale_correction * reverse_z;
+
+		for (uint32_t v = 0; v < 2; v++) {
+			Projection view_projection = rt.get_view_projection(v);
+			ret.push_back(normalized_depth_correction * world_scale_correction * view_projection);
+		}
+	}
+
+	return ret;
+}
+
+TypedArray<Transform3D> VisionOSXRInterface::get_camera_offsets(const StringName &p_tracker_name) {
+	TypedArray<Transform3D> ret;
+
+	if (!initialized) {
+		return ret;
+	}
+
+	if (p_tracker_name == XR_TRACKER_HEAD) {
+		// We can't get/set data around our offsets until our render thread
+		// starts processing our frame.
+		// So our first frame will have an incorrect offsets
+		// and our subsequent frames use last frames offsets.
+		// Unless our IPD changes, our offsets should not change.
+
+		XRServer *xr_server = XRServer::get_singleton();
+		ERR_FAIL_NULL_V(xr_server, ret);
+
+		float world_scale = xr_server->get_world_scale();
+
+		for (uint32_t v = 0; v < 2; v++) {
+			Transform3D offset = rt.get_view_offset(v);
+			offset.origin *= world_scale;
+			ret.push_back(offset);
+		}
+	}
+
+	return ret;
+}
+
 void VisionOSXRInterface::RenderThread::set_minimum_supported_near_plane(float p_minimum_supported_near_plane) {
 	ERR_NOT_ON_RENDER_THREAD;
 	minimum_supported_near_plane = p_minimum_supported_near_plane;
@@ -499,6 +705,45 @@ void VisionOSXRInterface::RenderThread::set_current_frame(uint64_t p_current_fra
 
 	simd_float4x4 origin_from_head_simd = ar_anchor_get_origin_from_anchor_transform(current_device_anchor);
 	origin_from_head = MTL::simd_to_transform3D(origin_from_head_simd);
+}
+
+void VisionOSXRInterface::RenderThread::set_near_and_far(double p_scaled_z_near, double p_scaled_z_far) {
+	ERR_NOT_ON_RENDER_THREAD;
+
+	scaled_z_near = p_scaled_z_near;
+	scaled_z_far = p_scaled_z_far;
+}
+
+Projection VisionOSXRInterface::RenderThread::get_view_projection(uint32_t p_view) {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, 2, Projection());
+
+	if (!has_view_data) {
+		// We want to return a valid projection matrix even if it doesn't match our device.
+		// This will prevent error spam at startup.
+		return Projection::create_for_hmd(p_view + 1, 1.0, 6.0, 15.0, 4.0, 1.0, 0.1, 1000.0);
+	}
+
+	mutex.lock();
+	Projection ret = view_projections[p_view];
+	mutex.unlock();
+
+	return ret;
+}
+
+Transform3D VisionOSXRInterface::RenderThread::get_view_offset(uint32_t p_view) {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, 2, Transform3D());
+
+	if (!has_view_data) {
+		// We want to return a valid transform even if it doesn't match our device.
+		// This will prevent error spam at startup.
+		return Transform3D(Basis(), Vector3(p_view == 0 ? -0.03 : 0.03, 0.0, 0.0));
+	}
+
+	mutex.lock();
+	Transform3D ret = view_offsets[p_view];
+	mutex.unlock();
+
+	return ret;
 }
 
 uint32_t VisionOSXRInterface::RenderThread::get_view_count() {
@@ -523,6 +768,7 @@ Transform3D VisionOSXRInterface::RenderThread::get_camera_transform() {
 	return camera_transform;
 }
 
+#ifndef DISABLE_DEPRECATED
 Transform3D VisionOSXRInterface::RenderThread::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	Transform3D origin_from_eye;
 	ERR_NOT_ON_RENDER_THREAD_V(origin_from_eye);
@@ -591,6 +837,7 @@ Projection VisionOSXRInterface::RenderThread::get_projection_for_view(uint32_t p
 	eye_projection = normalized_depth_correction.inverse() * reverse_z.inverse() * world_scale_correction * reverse_z * eye_projection;
 	return eye_projection;
 }
+#endif
 
 // The render region is the logical texture size. With foveated rendering, it's bigger than the
 // physical texture size. This value is equivalent to rasterizationRateMap.screenSize.
@@ -677,6 +924,23 @@ void VisionOSXRInterface::RenderThread::pre_render() {
 	} else {
 		ERR_PRINT("Current device anchor is nil, will present drawable without a device anchor.");
 	}
+
+	simd_float2 depth_range = simd_make_float2(scaled_z_far, scaled_z_near);
+	cp_drawable_set_depth_range(current_drawable, depth_range);
+
+	mutex.lock();
+
+	for (uint32_t v = 0; v < 2; v++) {
+		simd_float4x4 eye_simd_projection = cp_drawable_compute_projection(current_drawable, cp_axis_direction_convention_right_up_forward, v);
+		view_projections[v] = MTL::simd_to_projection(eye_simd_projection);
+
+		cp_view_t view = cp_drawable_get_view(current_drawable, v);
+		simd_float4x4 view_offset_simd = cp_view_get_transform(view);
+		view_offsets[v] = MTL::simd_to_transform3D(view_offset_simd);
+	}
+	has_view_data = true;
+
+	mutex.unlock();
 }
 
 Vector<RenderingServerTypes::BlitToScreen> VisionOSXRInterface::RenderThread::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
@@ -692,6 +956,42 @@ Vector<RenderingServerTypes::BlitToScreen> VisionOSXRInterface::RenderThread::po
 	return Vector<RenderingServerTypes::BlitToScreen>();
 }
 
+// Wraps cp_drawable_encode_present in a drawable render context with a no-op load/store pass,
+// which Compositor Services requires whenever the layer supports progressive immersion.
+void VisionOSXRInterface::RenderThread::encode_drawable_no_op_and_present(cp_drawable_t p_drawable, cp_frame_t p_frame, void *p_command_buffer) {
+	id<MTLCommandBuffer> command_buffer = (__bridge id<MTLCommandBuffer>)p_command_buffer;
+	// A nil command buffer makes the Compositor Services API fail.
+	ERR_FAIL_NULL_MSG(command_buffer, "Command buffer is nil, cannot add a drawable render context.");
+	cp_drawable_render_context_t drawable_render_context = cp_drawable_add_render_context(p_drawable, command_buffer);
+
+	id<MTLTexture> color_texture = cp_drawable_get_color_texture(p_drawable, 0);
+	id<MTLTexture> depth_texture = cp_drawable_get_depth_texture(p_drawable, 0);
+
+	MTLRenderPassDescriptor *render_pass_descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
+	render_pass_descriptor.colorAttachments[0].texture = color_texture;
+	render_pass_descriptor.colorAttachments[0].loadAction = MTLLoadActionLoad;
+	render_pass_descriptor.colorAttachments[0].storeAction = MTLStoreActionStore;
+	// Compositor Services' compositing pipeline has no stencil attachment.
+	render_pass_descriptor.depthAttachment.texture = depth_texture;
+	render_pass_descriptor.depthAttachment.loadAction = MTLLoadActionLoad;
+	render_pass_descriptor.depthAttachment.storeAction = MTLStoreActionStore;
+	render_pass_descriptor.renderTargetArrayLength = cp_frame_get_drawable_target_view_count(p_frame, cp_drawable_get_target(p_drawable));
+	size_t count = cp_drawable_get_rasterization_rate_map_count(p_drawable);
+	if (count > 0) {
+		id<MTLRasterizationRateMap> rasterization_rate_map = cp_drawable_get_rasterization_rate_map(p_drawable, 0);
+		MTLSize logical_size = rasterization_rate_map.screenSize;
+		render_pass_descriptor.rasterizationRateMap = rasterization_rate_map;
+		render_pass_descriptor.renderTargetWidth = logical_size.width;
+		render_pass_descriptor.renderTargetHeight = logical_size.height;
+	}
+
+	id<MTLRenderCommandEncoder> command_encoder = [command_buffer renderCommandEncoderWithDescriptor:render_pass_descriptor];
+
+	cp_drawable_render_context_end_encoding(drawable_render_context, command_encoder);
+
+	cp_drawable_encode_present(p_drawable, command_buffer);
+}
+
 void VisionOSXRInterface::RenderThread::encode_present(MTL3::MDCommandBuffer *p_cmd_buffer) {
 	ERR_NOT_ON_RENDER_THREAD;
 
@@ -700,7 +1000,7 @@ void VisionOSXRInterface::RenderThread::encode_present(MTL3::MDCommandBuffer *p_
 	}
 
 	ERR_FAIL_NULL_MSG(current_drawable, "Current drawable is nil, process() has probably not been called.");
-	cp_drawable_encode_present(current_drawable, (__bridge id<MTLCommandBuffer>)p_cmd_buffer->get_command_buffer());
+	encode_drawable_no_op_and_present(current_drawable, current_frame, p_cmd_buffer->get_command_buffer());
 	current_drawable = nullptr;
 }
 

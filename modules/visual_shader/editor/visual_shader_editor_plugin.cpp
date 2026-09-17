@@ -2277,9 +2277,10 @@ Dictionary VisualShaderEditor::get_custom_node_data(Ref<VisualShaderNodeCustom> 
 	category = category.rstrip("/");
 	category = category.lstrip("/");
 	category = "Addons/" + category;
-	if (p_custom_node->has_method("_get_subcategory")) {
-		String subcategory = (String)p_custom_node->call("_get_subcategory");
-		if (!subcategory.is_empty()) {
+	{
+		Callable::CallError err;
+		const String subcategory = p_custom_node->callp("_get_subcategory", nullptr, 0, err);
+		if (err.error == Callable::CallError::CALL_OK && !subcategory.is_empty()) {
 			category += "/" + subcategory;
 		}
 	}
@@ -7316,7 +7317,7 @@ void VisualShaderEditor::_update_preview() {
 		String error_pp;
 		List<ShaderPreprocessor::FilePosition> err_positions;
 		ShaderPreprocessor preprocessor;
-		Error err = preprocessor.preprocess(code, path, preprocessed_code, &error_pp, &err_positions);
+		Error err = preprocessor.preprocess_for_editor(code, path, preprocessed_code, &error_pp, &err_positions);
 		if (err != OK) {
 			ERR_FAIL_COND(err_positions.is_empty());
 
@@ -8316,7 +8317,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	// CONSTANTS
 
 	for (int i = 0; i < MAX_FLOAT_CONST_DEFS; i++) {
-		add_options.push_back(AddOption(float_constant_defs[i].name, "Scalar/Constants", "VisualShaderNodeFloatConstant", TTRGET(float_constant_defs[i].desc_key), { float_constant_defs[i].value }, VisualShaderNode::PORT_TYPE_SCALAR));
+		add_options.push_back(AddOption(float_constant_defs[i].name, "Scalar/Constants", "VisualShaderNodeFloatConstant", TTR(float_constant_defs[i].desc_key), { float_constant_defs[i].value }, VisualShaderNode::PORT_TYPE_SCALAR));
 	}
 	// FUNCTIONS
 

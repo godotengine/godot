@@ -2170,6 +2170,9 @@ bool Node::is_ancestor_of(RequiredParam<const Node> p_node) const {
 	EXTRACT_PARAM_OR_FAIL_V(node, p_node, false);
 
 	const Node *n = node;
+	if (n == this) {
+		return false;
+	}
 
 	if (is_inside_tree() && node->data.tree == data.tree) {
 		const int depth = data.depth;

@@ -109,7 +109,7 @@ Files extracted from upstream source:
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle
-- Version: git (cc4096bef208d35e2884571046c75a726185c358, 2025)
+- Version: git (38fe30abb189fb714e8b1f1b354c6c4caffbe6dc, 2026)
 - License: MPL 2.0
 
 Files extracted from upstream source:
@@ -436,6 +436,7 @@ Patches:
 
 - `0001-apple-disable-absolute-paths.patch` ([GH-92010](https://github.com/godotengine/godot/pull/92010))
 - `0002-apple-m1-msaa-fix.patch` ([GH-115893](https://github.com/godotengine/godot/issues/115893))
+- `0003-preprocessor-token-name-memcpy.patch` ([GH-123319](https://github.com/godotengine/godot/pull/123319))
 
 
 ## graphite
@@ -469,7 +470,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 14.2.0 (b0ffab42d473eb380ad0fcf42730e0f1868cbc97, 2026)
+- Version: 14.4.0 (36cb489cb02ce4b92099669ba9f9bea348eff93f, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -667,13 +668,17 @@ See `linuxbsd_headers/README.md`.
 ## manifold
 
 - Upstream: https://github.com/elalish/manifold
-- Version: 3.3.2 (798d83c8d7fabcddd23c1617097b95ba40f2597c, 2025)
+- Version: 3.5.2 (11235e6b8ebea2dbed8aec4285685aafd3d95667, 2026)
 - License: Apache 2.0
 
 File extracted from upstream source:
 
-- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.h` and `meshIO.{cpp,h}`
+- `src/` and `include/`, except from `CMakeLists.txt`, `cross_section.h`
 - `AUTHORS`, `LICENSE`
+
+Patches:
+
+- `0001-missing-include.patch` ([GH-120018](https://github.com/godotengine/godot/pull/120018))
 
 
 ## mbedtls
@@ -708,6 +713,10 @@ Update instructions:
 
 - Download latest metal-cpp ZIP from https://developer.apple.com/metal/cpp/:
 - Run `update-metal-cpp.sh <path to the downloaded zip>` to extract the relevant files and apply patches.
+
+Patches:
+
+* 0002-sharedptr-nil-safe-retain-release.patch ([GH-123439](https://github.com/godotengine/godot/pull/123439))
 
 
 ## meshoptimizer
@@ -800,6 +809,10 @@ Collection of single-file libraries used in Godot components.
   * License: MIT
   * Patches:
     - `FastNoiseLite-0001-namespace-warnings.patch` ([GH-88526](https://github.com/godotengine/godot/pull/88526))
+- `gamemode_client.h`
+  * Upstream: https://github.com/FeralInteractive/gamemode (`lib/gamemode_client.h`)
+  * Version: 1.8.2
+  * License: BSD-3-Clause
 - `ifaddrs-android.{cc,h}`
   * Upstream: https://chromium.googlesource.com/external/webrtc/stable/talk/+/master/base/ifaddrs-android.h
   * Version: git (5976650443d68ccfadf1dea24999ee459dd2819d, 2013)
@@ -878,10 +891,22 @@ Patches:
 - `0001-remove-unused-save-features.patch` ([GH-113965](https://github.com/godotengine/godot/issues/113965))
 
 
+## offset_allocator
+
+- Upstream: https://github.com/sebbbi/OffsetAllocator
+- Version: git (3610a7377088b1e8c8f1525f458c96038a4e6fc0, 2026)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `offsetAllocator.cpp`, `offsetAllocator.hpp`
+- `LICENSE`
+
+
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.1.60 (64f2b37c8c6da3d83c9b4d11865ba1fb752cb8ec, 2026)
+- Version: 1.1.63 (f2448a8797c85814aa892efc1ab8707900fbcc78, 2026)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -908,10 +933,13 @@ Exclude:
 Additional:
 - Update `openxrLoaderVersion` in `platform/android/java/app/config.gradle`
 
+Patches:
+
+- `0001-remove-try-catch.patch` ([GH-123123](https://github.com/godotengine/godot/pull/123123))
 
 ## pcre2
 
-- Upstream: http://www.pcre.org
+- Upstream: https://pcre2project.github.io/pcre2/
 - Version: 10.47 (f454e231fe5006dd7ff8f4693fd2b8eb94333429, 2025)
 - License: BSD-3-Clause
 
@@ -991,7 +1019,7 @@ Files extracted from upstream source:
 ## sdl
 
 - Upstream: https://github.com/libsdl-org/SDL
-- Version: 3.2.28 (7f3ae3d57459e59943a4ecfefc8f6277ec6bf540, 2025)
+- Version: 3.4.12 (f87239e71e42da91ca317a12eefb82cfbf3393eb, 2026)
 - License: Zlib
 - Vendored: hidapi 0.14.0, license BSD-3-Clause
 
@@ -1006,9 +1034,7 @@ Patches:
 - `0004-errno-include.patch` ([GH-108354](https://github.com/godotengine/godot/pull/108354))
 - `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
 - `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
-- `0007-shield-duplicate-macos.patch` ([GH-115510](https://github.com/godotengine/godot/pull/115510))
-- `0008-fix-linux-joycon-serial-num.patch` ([GH-113873](https://github.com/godotengine/godot/pull/113873))
-- `0009-update-device-blocklist.patch` ([GH-119403](https://github.com/godotengine/godot/pull/119403))
+- `0007-ios-accelerometer.patch` ([GH-120373](https://github.com/godotengine/godot/pull/120373))
 
 
 ## spirv-cross

@@ -41,16 +41,19 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
+	"disable_2d",
 	"disable_3d",
 	"disable_navigation_2d",
 	"disable_navigation_3d",
@@ -62,7 +65,7 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"x11",
 	"pulseaudio",
 	"alsa",
-	"rendering_device", // FIXME: There's no scons option to disable rendering device.
+	"rendering_device",
 	"forward_plus_renderer",
 	"forward_mobile_renderer",
 	"vulkan",
@@ -84,6 +87,7 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 
 const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
+	false, // 2D
 	false, // 3D
 	false, // NAVIGATION_2D
 	false, // NAVIGATION_3D
@@ -117,6 +121,7 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 
 const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
+	true, // 2D
 	true, // 3D
 	true, // NAVIGATION_2D
 	true, // NAVIGATION_3D
@@ -150,6 +155,7 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 
 // Options that require some resource explicitly asking for them when detecting from the project.
 const bool EditorBuildProfile::build_option_explicit_use[BUILD_OPTION_MAX] = {
+	false, // 2D
 	false, // 3D
 	false, // NAVIGATION_2D
 	false, // NAVIGATION_3D
@@ -182,6 +188,7 @@ const bool EditorBuildProfile::build_option_explicit_use[BUILD_OPTION_MAX] = {
 };
 
 const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_category[BUILD_OPTION_MAX] = {
+	BUILD_OPTION_CATEGORY_GENERAL, // 2D
 	BUILD_OPTION_CATEGORY_GENERAL, // 3D
 	BUILD_OPTION_CATEGORY_GENERAL, // NAVIGATION_2D
 	BUILD_OPTION_CATEGORY_GENERAL, // NAVIGATION_3D
@@ -262,6 +269,13 @@ const HashMap<EditorBuildProfile::BuildOption, LocalVector<EditorBuildProfile::B
 
 // Should also contain classes not derived from either `Resource` or `Node`.
 const HashMap<EditorBuildProfile::BuildOption, LocalVector<String>> EditorBuildProfile::build_option_classes = {
+	{ BUILD_OPTION_2D, {
+			"Curve2D",
+			"Node2D",
+			"OccluderPolygon2D",
+			"SkeletonModificationStack2D",
+			"SkeletonModification2D",
+	} },
 	{ BUILD_OPTION_3D, {
 			"Node3D",
 	} },
@@ -407,6 +421,7 @@ String EditorBuildProfile::get_force_detect_classes() const {
 String EditorBuildProfile::get_build_option_name(BuildOption p_build_option) {
 	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, String());
 	const char *build_option_names[BUILD_OPTION_MAX] = {
+		TTRC("2D Engine"),
 		TTRC("3D Engine"),
 		TTRC("Navigation (2D)"),
 		TTRC("Navigation (3D)"),
@@ -437,13 +452,14 @@ String EditorBuildProfile::get_build_option_name(BuildOption p_build_option) {
 		TTRC("SIL Graphite Fonts"),
 		TTRC("Multi-channel Signed Distance Field Font Rendering"),
 	};
-	return TTRGET(build_option_names[p_build_option]);
+	return TTR(build_option_names[p_build_option]);
 }
 
 String EditorBuildProfile::get_build_option_description(BuildOption p_build_option) {
 	ERR_FAIL_INDEX_V(p_build_option, BUILD_OPTION_MAX, String());
 
 	const char *build_option_descriptions[BUILD_OPTION_MAX] = {
+		TTRC("2D Nodes for 2D games. Does not include Control nodes, which are always available."),
 		TTRC("3D Nodes as well as RenderingServer access to 3D features.\nNote that the Geometry3D singleton remains available even with this item disabled."),
 		TTRC("NavigationServer and capabilities for 2D."),
 		TTRC("NavigationServer and capabilities for 3D."),
@@ -475,7 +491,7 @@ String EditorBuildProfile::get_build_option_description(BuildOption p_build_opti
 		TTRC("Multi-channel signed distance field font rendering support using msdfgen library (pre-rendered MSDF fonts can be used even if this option is disabled)."),
 	};
 
-	return TTRGET(build_option_descriptions[p_build_option]);
+	return TTR(build_option_descriptions[p_build_option]);
 }
 
 String EditorBuildProfile::get_build_option_identifier(BuildOption p_build_option) {
@@ -513,7 +529,7 @@ String EditorBuildProfile::get_build_option_category_name(BuildOptionCategory p_
 		TTRC("Text Rendering and Font Options:"),
 	};
 
-	return TTRGET(build_option_subcategories[p_build_option_category]);
+	return TTR(build_option_subcategories[p_build_option_category]);
 }
 
 Error EditorBuildProfile::save_to_file(const String &p_path) {
@@ -620,6 +636,7 @@ void EditorBuildProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_to_file", "path"), &EditorBuildProfile::save_to_file);
 	ClassDB::bind_method(D_METHOD("load_from_file", "path"), &EditorBuildProfile::load_from_file);
 
+	BIND_ENUM_CONSTANT(BUILD_OPTION_2D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_3D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_NAVIGATION_2D);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_NAVIGATION_3D);
@@ -717,12 +734,12 @@ EditorBuildProfile::EditorBuildProfile() {
 	build_option_settings.insert(BUILD_OPTION_OPENGL, settings_opengl);
 
 	HashMap<String, LocalVector<Variant>> settings_phy_godot_3d = {
-		{ "physics/3d/physics_engine", { "DEFAULT", "GodotPhysics3D" } },
+		{ "physics/3d/physics_engine", { "DEFAULT", PhysicsServer3DManager::GODOT_PHYSICS_3D_NAME } },
 	};
 	build_option_settings.insert(BUILD_OPTION_PHYSICS_GODOT_3D, settings_phy_godot_3d);
 
 	HashMap<String, LocalVector<Variant>> settings_jolt = {
-		{ "physics/3d/physics_engine", { "Jolt Physics" } },
+		{ "physics/3d/physics_engine", { PhysicsServer3DManager::JOLT_PHYSICS_NAME } },
 	};
 	build_option_settings.insert(BUILD_OPTION_PHYSICS_JOLT, settings_jolt);
 
@@ -1214,7 +1231,7 @@ void EditorBuildProfileManager::_class_list_item_selected() {
 		description_bit->parse_symbol("class|" + md.operator String() + "|");
 	} else if (md.get_type() == Variant::INT) {
 		String build_option_description = EditorBuildProfile::get_build_option_description(EditorBuildProfile::BuildOption((int)md));
-		description_bit->set_custom_text(TTR(item->get_text(0)), String(), TTRGET(build_option_description));
+		description_bit->set_custom_text(TTR(item->get_text(0)), String(), TTR(build_option_description));
 	}
 }
 
@@ -1340,7 +1357,12 @@ bool EditorBuildProfileManager::_import_profile(const String &p_path) {
 	Error err = profile->load_from_file(p_path);
 	String basefile = p_path.get_file();
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("File '%s' format is invalid, import aborted."), basefile));
+		// Avoid throwing an error if this is called when the dialog is still hidden, like in the ready notification.
+		if (is_visible()) {
+			EditorNode::get_singleton()->show_warning(vformat(TTR("File '%s' format is invalid, import aborted."), basefile));
+		} else {
+			EditorToaster::get_singleton()->popup_str(vformat(TTR("Can't load build profile. File '%s' is invalid."), basefile), EditorToaster::SEVERITY_ERROR);
+		}
 		return false;
 	}
 

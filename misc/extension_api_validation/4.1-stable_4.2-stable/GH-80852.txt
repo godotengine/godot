@@ -1,5 +1,3 @@
-GH-80852
---------
 Validate extension JSON: API was removed: classes/GDScriptEditorTranslationParserPlugin
 Validate extension JSON: API was removed: classes/GDScriptNativeClass
 Validate extension JSON: API was removed: classes/GodotPhysicsServer2D

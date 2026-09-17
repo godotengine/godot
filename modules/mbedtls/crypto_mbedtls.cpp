@@ -308,7 +308,7 @@ String X509CertificateMbedTLS::save_to_string() {
 		ERR_FAIL_COND_V_MSG(ret != 0 || wrote == 0, String(), "Error saving the certificate.");
 
 		// PEM is base64, aka ascii
-		buffer += String::ascii(Span((char *)w, wrote));
+		buffer += String::ascii(Span((char *)w, wrote - 1));
 		crt = crt->next;
 	}
 	if (buffer.length() <= PEM_MIN_SIZE) {

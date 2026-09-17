@@ -199,19 +199,19 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(Dictionary, _get_constants)
 
-	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override {
+	virtual void get_constants(HashMap<StringName, Variant> *r_constants) override {
 		Dictionary constants;
 		GDVIRTUAL_CALL(_get_constants, constants);
 		for (const KeyValue<Variant, Variant> &kv : constants) {
-			p_constants->insert(kv.key, kv.value);
+			r_constants->insert(kv.key, kv.value);
 		}
 	}
 	GDVIRTUAL0RC_REQUIRED(TypedArray<StringName>, _get_members)
-	virtual void get_members(HashSet<StringName> *p_members) override {
+	virtual void get_members(HashSet<StringName> *r_members) override {
 		TypedArray<StringName> members;
 		GDVIRTUAL_CALL(_get_members, members);
 		for (int i = 0; i < members.size(); i++) {
-			p_members->insert(members[i]);
+			r_members->insert(members[i]);
 		}
 	}
 
@@ -237,6 +237,30 @@ GDVIRTUAL_NATIVE_PTR(ScriptLanguageExtensionProfilingInfo)
 class ScriptLanguageExtension : public ScriptLanguage {
 	GDCLASS(ScriptLanguageExtension, ScriptLanguage)
 protected:
+	// See CodeEdit::CodeCompletionKind and EditorLanguage::CompletionKind.
+	enum CodeCompletionKind {
+		CODE_COMPLETION_KIND_CLASS,
+		CODE_COMPLETION_KIND_FUNCTION,
+		CODE_COMPLETION_KIND_SIGNAL,
+		CODE_COMPLETION_KIND_VARIABLE,
+		CODE_COMPLETION_KIND_MEMBER,
+		CODE_COMPLETION_KIND_ENUM,
+		CODE_COMPLETION_KIND_CONSTANT,
+		CODE_COMPLETION_KIND_NODE_PATH,
+		CODE_COMPLETION_KIND_FILE_PATH,
+		CODE_COMPLETION_KIND_PLAIN_TEXT,
+		CODE_COMPLETION_KIND_KEYWORD,
+		CODE_COMPLETION_KIND_MAX
+	};
+
+	// See CodeEdit::CodeCompletionLocation and EditorLanguage::CompletionLocation.
+	enum CodeCompletionLocation {
+		LOCATION_LOCAL = 0,
+		LOCATION_PARENT_MASK = 1 << 8,
+		LOCATION_OTHER_USER_CODE = 1 << 9,
+		LOCATION_OTHER = 1 << 10,
+	};
+
 	// See `EditorLanguage::LookupResult::Type`.
 	enum LookupResultType {
 		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.
@@ -271,7 +295,7 @@ private:
 		ScriptLanguageExtension *script_language = nullptr;
 
 	public:
-		virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
+		virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<EditorLanguage::CompletionOption> *r_options, bool &r_force, String &r_call_hint) override {
 			return script_language->complete_code(p_code, p_path, p_owner, r_options, r_force, r_call_hint);
 		}
 
@@ -469,7 +493,7 @@ public:
 	GDVIRTUAL3RC_REQUIRED(Dictionary, _complete_code, const String &, const String &, Object *)
 
 #ifdef TOOLS_ENABLED
-	Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) {
+	Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<EditorLanguage::CompletionOption> *r_options, bool &r_force, String &r_call_hint) {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_complete_code, p_code, p_path, p_owner, ret);
 		if (!ret.has("result")) {
@@ -480,29 +504,17 @@ public:
 			Array options = ret["options"];
 			for (const Variant &var : options) {
 				Dictionary op = var;
-				CodeCompletionOption option;
+				EditorLanguage::CompletionOption option;
 				ERR_CONTINUE(!op.has("kind"));
-				option.kind = CodeCompletionKind(int(op["kind"]));
+				option.kind = EditorLanguage::CompletionKind(int(op["kind"]));
 				ERR_CONTINUE(!op.has("display"));
 				option.display = op["display"];
 				ERR_CONTINUE(!op.has("insert_text"));
 				option.insert_text = op["insert_text"];
-				ERR_CONTINUE(!op.has("font_color"));
-				option.font_color = op["font_color"];
-				ERR_CONTINUE(!op.has("icon"));
-				option.icon = op["icon"];
 				ERR_CONTINUE(!op.has("default_value"));
 				option.default_value = op["default_value"];
 				ERR_CONTINUE(!op.has("location"));
 				option.location = op["location"];
-				if (op.has("matches")) {
-					PackedInt32Array matches = op["matches"];
-					ERR_CONTINUE(matches.size() & 1);
-					for (int j = 0; j < matches.size(); j += 2) {
-						option.matches.push_back(Pair<int, int>(matches[j], matches[j + 1]));
-					}
-				}
-				option.matches_dirty = true;
 				r_options->push_back(option);
 			}
 		}
@@ -602,22 +614,22 @@ public:
 		}
 	}
 	GDVIRTUAL3R_REQUIRED(Dictionary, _debug_get_stack_level_members, int, int, int)
-	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
+	virtual void debug_get_stack_level_members(int p_level, List<String> *r_members, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_stack_level_members, p_level, p_max_subitems, p_max_depth, ret);
 		if (ret.is_empty()) {
 			return;
 		}
-		if (p_members != nullptr && ret.has("members")) {
+		if (r_members != nullptr && ret.has("members")) {
 			PackedStringArray strings = ret["members"];
 			for (int i = 0; i < strings.size(); i++) {
-				p_members->push_back(strings[i]);
+				r_members->push_back(strings[i]);
 			}
 		}
-		if (p_values != nullptr && ret.has("values")) {
+		if (r_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
 			for (const Variant &value : values) {
-				p_values->push_back(value);
+				r_values->push_back(value);
 			}
 		}
 	}
@@ -629,22 +641,22 @@ public:
 		return reinterpret_cast<ScriptInstance *>(ret.operator void *());
 	}
 	GDVIRTUAL2R_REQUIRED(Dictionary, _debug_get_globals, int, int)
-	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
+	virtual void debug_get_globals(List<String> *r_globals, List<Variant> *r_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_globals, p_max_subitems, p_max_depth, ret);
 		if (ret.is_empty()) {
 			return;
 		}
-		if (p_globals != nullptr && ret.has("globals")) {
+		if (r_globals != nullptr && ret.has("globals")) {
 			PackedStringArray strings = ret["globals"];
 			for (int i = 0; i < strings.size(); i++) {
-				p_globals->push_back(strings[i]);
+				r_globals->push_back(strings[i]);
 			}
 		}
-		if (p_values != nullptr && ret.has("values")) {
+		if (r_values != nullptr && ret.has("values")) {
 			Array values = ret["values"];
 			for (const Variant &value : values) {
-				p_values->push_back(value);
+				r_values->push_back(value);
 			}
 		}
 	}
@@ -686,32 +698,32 @@ public:
 #endif
 
 	GDVIRTUAL0RC_REQUIRED(TypedArray<Dictionary>, _get_public_functions)
-	virtual void get_public_functions(List<MethodInfo> *p_functions) const override {
+	virtual void get_public_functions(List<MethodInfo> *r_functions) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_CALL(_get_public_functions, ret);
 		for (const Variant &var : ret) {
 			MethodInfo mi = MethodInfo::from_dict(var);
-			p_functions->push_back(mi);
+			r_functions->push_back(mi);
 		}
 	}
 	GDVIRTUAL0RC_REQUIRED(Dictionary, _get_public_constants)
-	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const override {
+	virtual void get_public_constants(List<Pair<String, Variant>> *r_constants) const override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_get_public_constants, ret);
 		for (int i = 0; i < ret.size(); i++) {
 			Dictionary d = ret[i];
 			ERR_CONTINUE(!d.has("name"));
 			ERR_CONTINUE(!d.has("value"));
-			p_constants->push_back(Pair<String, Variant>(d["name"], d["value"]));
+			r_constants->push_back(Pair<String, Variant>(d["name"], d["value"]));
 		}
 	}
 	GDVIRTUAL0RC_REQUIRED(TypedArray<Dictionary>, _get_public_annotations)
-	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override {
+	virtual void get_public_annotations(List<MethodInfo> *r_annotations) const override {
 		TypedArray<Dictionary> ret;
 		GDVIRTUAL_CALL(_get_public_annotations, ret);
 		for (const Variant &var : ret) {
 			MethodInfo mi = MethodInfo::from_dict(var);
-			p_annotations->push_back(mi);
+			r_annotations->push_back(mi);
 		}
 	}
 
@@ -721,17 +733,17 @@ public:
 
 	GDVIRTUAL2R_REQUIRED(int, _profiling_get_accumulated_data, GDExtensionPtr<ScriptLanguageExtensionProfilingInfo>, int)
 
-	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override {
+	virtual int profiling_get_accumulated_data(ProfilingInfo *r_info_arr, int p_info_max) override {
 		int ret = 0;
-		GDVIRTUAL_CALL(_profiling_get_accumulated_data, p_info_arr, p_info_max, ret);
+		GDVIRTUAL_CALL(_profiling_get_accumulated_data, r_info_arr, p_info_max, ret);
 		return ret;
 	}
 
 	GDVIRTUAL2R_REQUIRED(int, _profiling_get_frame_data, GDExtensionPtr<ScriptLanguageExtensionProfilingInfo>, int)
 
-	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override {
+	virtual int profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_info_max) override {
 		int ret = 0;
-		GDVIRTUAL_CALL(_profiling_get_frame_data, p_info_arr, p_info_max, ret);
+		GDVIRTUAL_CALL(_profiling_get_frame_data, r_info_arr, p_info_max, ret);
 		return ret;
 	}
 
@@ -800,7 +812,7 @@ public:
 		}
 		return false;
 	}
-	virtual void get_property_list(List<PropertyInfo> *p_list) const override {
+	virtual void get_property_list(List<PropertyInfo> *r_list) const override {
 		if (native_info->get_property_list_func) {
 			uint32_t pcount;
 			const GDExtensionPropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
@@ -810,19 +822,19 @@ public:
 				if (native_info->get_class_category_func) {
 					GDExtensionPropertyInfo gdext_class_category;
 					if (native_info->get_class_category_func(instance, &gdext_class_category)) {
-						p_list->push_back(PropertyInfo(gdext_class_category));
+						r_list->push_back(PropertyInfo(gdext_class_category));
 					}
 				} else {
 					Ref<Script> script = get_script();
 					if (script.is_valid()) {
-						p_list->push_back(script->get_class_category());
+						r_list->push_back(script->get_class_category());
 					}
 				}
 			}
 #endif // TOOLS_ENABLED
 
 			for (uint32_t i = 0; i < pcount; i++) {
-				p_list->push_back(PropertyInfo(pinfo[i]));
+				r_list->push_back(PropertyInfo(pinfo[i]));
 			}
 			if (native_info->free_property_list_func) {
 				native_info->free_property_list_func(instance, pinfo, pcount);
@@ -898,12 +910,12 @@ public:
 		ScriptInstance::get_property_state(r_state);
 	}
 
-	virtual void get_method_list(List<MethodInfo> *p_list) const override {
+	virtual void get_method_list(List<MethodInfo> *r_list) const override {
 		if (native_info->get_method_list_func) {
 			uint32_t mcount;
 			const GDExtensionMethodInfo *minfo = native_info->get_method_list_func(instance, &mcount);
 			for (uint32_t i = 0; i < mcount; i++) {
-				p_list->push_back(MethodInfo(minfo[i]));
+				r_list->push_back(MethodInfo(minfo[i]));
 			}
 			if (native_info->free_method_list_func) {
 				native_info->free_method_list_func(instance, minfo, mcount);

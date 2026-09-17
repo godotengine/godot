@@ -53,7 +53,7 @@
 
 namespace GDScriptTests {
 
-static bool match_option(const Dictionary p_expected, const ScriptLanguage::CodeCompletionOption p_got) {
+static bool match_option(const Dictionary p_expected, const EditorLanguage::CompletionOption p_got) {
 	if (p_expected.get("display", p_got.display) != p_got.display) {
 		return false;
 	}
@@ -140,7 +140,7 @@ static void test_directory(const String &p_dir) {
 			List<Dictionary> exclude;
 			to_dict_list(conf.get_value("output", "exclude", Array()), exclude);
 
-			List<ScriptLanguage::CodeCompletionOption> options;
+			List<EditorLanguage::CompletionOption> options;
 			String call_hint;
 			bool forced;
 
@@ -189,7 +189,7 @@ static void test_directory(const String &p_dir) {
 			ERR_PRINT_ON;
 
 			String contains_excluded;
-			for (ScriptLanguage::CodeCompletionOption &option : options) {
+			for (EditorLanguage::CompletionOption &option : options) {
 				for (const Dictionary &E : exclude) {
 					if (match_option(E, option)) {
 						contains_excluded = option.display;

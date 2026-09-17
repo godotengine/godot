@@ -194,6 +194,15 @@ opts.Add(
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompression and WOFF2 fonts support", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
+opts.Add(
+    BoolVariable(
+        "rendering_device",
+        "Enable RenderingDevice abstraction for modern graphics APIs (use the `vulkan`, `d3d12`, and `metal` options to toggle individual drivers)",
+        True,
+    )
+)
+opts.Add(BoolVariable("forward_plus_renderer", "Enable the Forward+ renderer (requires RenderingDevice)", True))
+opts.Add(BoolVariable("forward_mobile_renderer", "Enable the Mobile renderer (requires RenderingDevice)", True))
 opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
@@ -229,6 +238,11 @@ opts.Add(
         True,
     )
 )
+opts.Add((
+    "profiler_broadcast_address",
+    "The broadcast IP address used for announcing the profiler application. In Tracy this configures TRACY_CLIENT_ADDRESS.",
+    "",
+))
 
 
 # Advanced options
@@ -261,6 +275,7 @@ opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
+opts.Add(BoolVariable("disable_2d", "Disable 2D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("disable_physics_2d", "Disable 2D physics nodes and server", False))
@@ -696,6 +711,22 @@ if env["scu_build"]:
 
     methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
 
+if env["rendering_device"]:
+    if env["platform"] == "web":
+        # Not available in the web platform.
+        env["rendering_device"] = False
+    else:
+        env.Append(CPPDEFINES=["RD_ENABLED"])
+        if env["forward_mobile_renderer"]:
+            env.Append(CPPDEFINES=["MOBILE_RD_ENABLED"])
+        if env["forward_plus_renderer"]:
+            env.Append(CPPDEFINES=["FORWARD_RD_ENABLED"])
+# These need to be set before platform detection.
+if not env["rendering_device"] or not (env["forward_mobile_renderer"] or env["forward_plus_renderer"]):
+    env["d3d12"] = False
+    env["metal"] = False
+    env["vulkan"] = False
+
 # Must happen after the flags' definition, as configure is when most flags
 # are actually handled to change compile options, etc.
 detect.configure(env)
@@ -1033,6 +1064,7 @@ sys.modules.pop("detect")
 if env.editor_build:
     unsupported_opts = []
     for disable_opt in [
+        "disable_2d",
         "disable_3d",
         "disable_advanced_gui",
         "disable_physics_2d",
@@ -1050,6 +1082,11 @@ if env.editor_build:
         )
         Exit(255)
 
+if env["disable_2d"]:
+    env.Append(CPPDEFINES=["_2D_DISABLED"])
+    env["disable_navigation_2d"] = True
+    env["disable_physics_2d"] = True
+    env["tests"] = False
 if env["disable_3d"]:
     env.Append(CPPDEFINES=["_3D_DISABLED"])
     env["disable_navigation_3d"] = True

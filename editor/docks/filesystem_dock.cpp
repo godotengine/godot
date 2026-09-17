@@ -1870,12 +1870,12 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 	}
 }
 
-void FileSystemDock::_rename_operation_confirm() {
+void FileSystemDock::_rename_operation_confirm(bool p_from_tree) {
 	String new_name;
 	TreeItem *ti = tree->get_edited();
 	int col_index = tree->get_edited_column();
 
-	if (ti) {
+	if (p_from_tree) {
 		new_name = ti->get_text(col_index).strip_edges();
 	} else {
 		new_name = files->get_edit_text().strip_edges();
@@ -2303,7 +2303,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 					external_program = EDITOR_GET("text_editor/external/exec_path");
 				} else if (extension == "res" || extension == "scn") {
 					// Binary resources have no meaningful editor outside Godot, so just fallback to something default.
-				} else if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
+				} else if (resource_type == "CompressedTexture2D" || resource_type == "StreamedTexture2D" || resource_type == "Image") {
 					if (extension == "svg" || extension == "svgz") {
 						external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
 					} else {
@@ -4632,7 +4632,7 @@ FileSystemDock::FileSystemDock() {
 	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_tree_gui_input));
 	tree->connect(SceneStringName(mouse_exited), callable_mp(this, &FileSystemDock::_tree_mouse_exited));
-	tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
+	tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm).bind(true));
 
 	file_list_vb = memnew(VBoxContainer);
 	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -4695,7 +4695,7 @@ FileSystemDock::FileSystemDock() {
 	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
 	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
-	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
+	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm).bind(false));
 	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	files->set_allow_rmb_select(true);
 	files_mc->add_child(files);

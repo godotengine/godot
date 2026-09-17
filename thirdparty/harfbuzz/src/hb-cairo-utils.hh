@@ -75,6 +75,11 @@ _hb_paint_composite_mode_to_cairo (hb_paint_composite_mode_t mode)
     }
 }
 
+HB_INTERNAL void
+_hb_cairo_set_source_color (hb_cairo_context_t *c,
+			    hb_bool_t use_foreground,
+			    hb_color_t color);
+
 HB_INTERNAL hb_bool_t
 _hb_cairo_paint_glyph_image (hb_cairo_context_t *c,
 			     hb_blob_t *blob,

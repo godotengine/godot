@@ -111,6 +111,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 		}
 	}
 
+#ifndef ANDROID_ENABLED
 	WindowPlacement window_placement = get_window_placement();
 	if (window_placement.position != Point2i(INT_MAX, INT_MAX)) {
 		args.push_back("--position");
@@ -122,6 +123,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 	} else if (window_placement.force_fullscreen) {
 		args.push_back("--fullscreen");
 	}
+#endif
 
 	List<String> breakpoints;
 	EditorNode::get_editor_data().get_editor_breakpoints(&breakpoints);

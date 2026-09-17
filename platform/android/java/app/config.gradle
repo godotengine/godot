@@ -1,5 +1,5 @@
 ext.versions = [
-    androidGradlePlugin: '8.6.1',
+    androidGradlePlugin: '8.9.1',
     compileSdk         : 36,
     // Also update:
     // - 'editor/export/android_sdk_manager.h#DEFAULT_MIN_SDK_VERSION'
@@ -15,13 +15,13 @@ ext.versions = [
     // Also update 'editor/export/android_sdk_manager.h#DEFAULT_JAVA_VERSION'.
     javaVersion        : JavaVersion.VERSION_17,
     // Also update:
-    // - 'editor/export/android_sdk_manager.cpp#ANDROID_SDK_PACKAGES[ndk]'
+    // - 'editor/export/android_sdk_manager.cpp#ANDROID_NDK_PACKAGES[ndk]'
     // - 'platform/android/detect.py#get_ndk_version()'
     ndkVersion         : '29.0.14206865',
     splashscreenVersion: '1.0.1',
     // 'openxrLoaderVersion' should be set to XR_CURRENT_API_VERSION, see 'thirdparty/openxr'
-    openxrLoaderVersion: '1.1.53',
-    openxrVendorsVersion: '4.3.0-stable',
+    openxrLoaderVersion: '1.1.63',
+    openxrVendorsVersion: '5.1.0-stable',
     junitVersion       : '1.3.0',
     espressoCoreVersion: '3.7.0',
     kotlinTestVersion  : '1.3.11',

@@ -100,6 +100,7 @@ static inline char* ImplGetSecureEnv(const char* name) {
 #elif defined(HAVE___SECURE_GETENV)
     return __secure_getenv(name);
 #else
+// NOLINTNEXTLINE(clang-diagnostic-#pragma-messages)
 #pragma message(                                                    \
     "Warning:  Falling back to non-secure getenv for environmental" \
     "lookups!  Consider updating to a different libc.")

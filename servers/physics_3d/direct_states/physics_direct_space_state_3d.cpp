@@ -48,7 +48,7 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(RequiredParam<PhysicsRayQue
 	d["normal"] = result.normal;
 	d["face_index"] = result.face_index;
 	d["collider_id"] = result.collider_id;
-	d["collider"] = result.collider;
+	d["collider"] = result.get_collider();
 	d["shape"] = result.shape;
 	d["rid"] = result.rid;
 
@@ -73,7 +73,7 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(RequiredParam
 		Dictionary d;
 		d["rid"] = ret[i].rid;
 		d["collider_id"] = ret[i].collider_id;
-		d["collider"] = ret[i].collider;
+		d["collider"] = ret[i].get_collider();
 		d["shape"] = ret[i].shape;
 		r[i] = d;
 	}
@@ -92,7 +92,7 @@ TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_shape(RequiredParam
 		Dictionary d;
 		d["rid"] = sr[i].rid;
 		d["collider_id"] = sr[i].collider_id;
-		d["collider"] = sr[i].collider;
+		d["collider"] = sr[i].get_collider();
 		d["shape"] = sr[i].shape;
 		ret[i] = d;
 	}

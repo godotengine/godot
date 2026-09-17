@@ -923,12 +923,12 @@
 			<description>
 				Returns the ID of the window at the specified screen [param position] (in pixels). On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
-				* (0, 0)        +-------+
-				                |       |
-				+-------------+ |       |
-				|             | |       |
-				|             | |       |
-				+-------------+ +-------+
+				* (0, 0)        ┌───────┐
+				                │       │
+				┌─────────────┐ │       │
+				│             │ │       │
+				│             │ │       │
+				└─────────────┘ └───────┘
 				[/codeblock]
 			</description>
 		</method>
@@ -1827,12 +1827,12 @@
 			<description>
 				Returns the screen's top-left corner position in pixels. Returns [constant Vector2i.ZERO] if [param screen] is invalid. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin might be located outside any display like this:
 				[codeblock lang=text]
-				* (0, 0)        +-------+
-				                |       |
-				+-------------+ |       |
-				|             | |       |
-				|             | |       |
-				+-------------+ +-------+
+				* (0, 0)        ┌───────┐
+				                │       │
+				┌─────────────┐ │       │
+				│             │ │       │
+				│             │ │       │
+				└─────────────┘ └───────┘
 				[/codeblock]
 				See also [method screen_get_size].
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
@@ -2589,12 +2589,12 @@
 			<description>
 				Sets the position of the given window to [param position]. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
 				[codeblock lang=text]
-				* (0, 0)        +-------+
-				                |       |
-				+-------------+ |       |
-				|             | |       |
-				|             | |       |
-				+-------------+ +-------+
+				* (0, 0)        ┌───────┐
+				                │       │
+				┌─────────────┐ │       │
+				│             │ │       │
+				│             │ │       │
+				└─────────────┘ └───────┘
 				[/codeblock]
 				See also [method window_get_position] and [method window_set_size].
 				[b]Note:[/b] It's recommended to change this value using [member Window.position] instead.
@@ -2708,10 +2708,9 @@
 	</methods>
 	<signals>
 		<signal name="orientation_changed">
-			<param index="0" name="orientation" type="int" />
+			<param index="0" name="orientation" type="int" enum="DisplayServer.SensorOrientation" />
 			<description>
-				Emitted when the device orientation changes. [param orientation] is the new orientation.
-				Returns [code]1[/code] for portrait, [code]2[/code] for landscape, and [code]0[/code] if the orientation is undefined.
+				Emitted when the screen orientation changes. [param orientation] is the new orientation.
 				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</signal>
@@ -3189,6 +3188,15 @@
 		</constant>
 		<constant name="SCREEN_SENSOR" value="6" enum="ScreenOrientation">
 			Automatic landscape or portrait orientation (default or reverse depending on sensor).
+		</constant>
+		<constant name="SENSOR_ORIENTATION_UNDEFINED" value="0" enum="SensorOrientation">
+			Unspecified screen sensor orientation.
+		</constant>
+		<constant name="SENSOR_ORIENTATION_PORTRAIT" value="1" enum="SensorOrientation">
+			Portrait orientation (either standard portrait or reverse portrait).
+		</constant>
+		<constant name="SENSOR_ORIENTATION_LANDSCAPE" value="2" enum="SensorOrientation">
+			Landscape orientation (either standard landscape or reverse landscape).
 		</constant>
 		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">
 			Default text virtual keyboard.

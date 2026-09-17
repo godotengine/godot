@@ -265,7 +265,7 @@ fragment void fullscreenNoopFrag(float4 gl_FragCoord [[position]]) {
 		*p_error = err;
 	}
 
-	if (mtlLib.get() == nullptr) {
+	if (!mtlLib) {
 		return {};
 	}
 
@@ -415,14 +415,106 @@ bool MDAttachment::shouldClear(const MDSubpass &p_subpass, bool p_is_stencil) co
 	return (p_is_stencil ? stencilLoadAction : loadAction) == MTL::LoadActionClear;
 }
 
-MDRenderPass::MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses) :
-		attachments(p_attachments), subpasses(p_subpasses) {
+MDRenderPass::MDRenderPass(LocalVector<MDAttachment> &&p_attachments, LocalVector<MDSubpass> &&p_subpasses) :
+		attachments(std::move(p_attachments)), subpasses(std::move(p_subpasses)) {
 	for (MDAttachment &att : attachments) {
 		att.linkToSubpass(*this);
 	}
 }
 
 #pragma mark - Command Buffer Base
+
+MDCommandBufferBase::~MDCommandBufferBase() {
+	release_resources();
+}
+
+void MDCommandBufferBase::_create_level_fences(MTL::Device *p_device) {
+	for (uint32_t i = 0; i < 2; i++) {
+		_fences[i] = NS::TransferPtr(p_device->newFence());
+#ifdef DEV_ENABLED
+		_fences[i]->setLabel(i == 0 ? MTLSTR("Level Fence 0") : MTLSTR("Level Fence 1"));
+#endif
+	}
+}
+
+MTL::Fence *MDCommandBufferBase::_fence_to_wait() {
+	if (!_fences[0]) {
+		return nullptr;
+	}
+	uint32_t i = _fence_wait_current_level ? (_fence_level & 1) : ((_fence_level + 1) & 1);
+	_fence_wait_current_level = false;
+#ifdef DEV_ENABLED
+	_fence_wait_issued = true;
+#endif
+	return _fence_updated[i] ? _fences[i].get() : nullptr;
+}
+
+MTL::Fence *MDCommandBufferBase::_fence_to_update() {
+	if (!_fences[0]) {
+		return nullptr;
+	}
+#ifdef DEV_ENABLED
+	DEV_ASSERT(_fence_wait_issued);
+	_fence_wait_issued = false;
+#endif
+	uint32_t i = _fence_level & 1;
+	_fence_updated[i] = true;
+	_fence_level_dirty = true;
+	return _fences[i].get();
+}
+
+void MDCommandBufferBase::advance_sync_level() {
+	// No encoder may straddle a level boundary: per-encoder fences are only
+	// sufficient if every encoder in level k closed before level k + 1 opens.
+	DEV_ASSERT(type == MDCommandBufferStateType::None);
+	// Must stay a no-op on a clean level: external_pass_fence() relies on the
+	// next level still waiting F_prev when nothing here updated F_cur.
+	if (!_fence_level_dirty) {
+		return;
+	}
+	_fence_level_dirty = false;
+	_fence_level++;
+}
+
+MTL::Fence *MDCommandBufferBase::external_pass_fence() {
+	// _fence_level_dirty only reflects closed encoders.
+	DEV_ASSERT(type == MDCommandBufferStateType::None);
+	if (!_fences[0]) {
+		return nullptr;
+	}
+	// MetalFX exposes a single fence that it both waits for and updates, which
+	// the alternating pair cannot express directly.
+	if (_fence_level_dirty) {
+		// An encoder in this level already waited F_prev and updated F_cur, so
+		// waiting F_cur transitively covers the prior level, and updating F_cur
+		// is what the next level waits on.
+#ifdef DEV_ENABLED
+		_fence_wait_issued = true; // The pass waits F_cur itself.
+#endif
+		return _fence_to_update();
+	}
+	// Nothing in this level has updated F_cur yet, so the pass joins the prior
+	// level from the fence's point of view: it waits F_prev and updates F_prev.
+	// Any later encoder in this level waits F_prev and so orders after the
+	// pass; if the level stays clean, the next level is still this one and
+	// waits F_prev too.
+	uint32_t i = (_fence_level + 1) & 1;
+	_fence_updated[i] = true;
+	return _fences[i].get();
+}
+
+void MDCommandBufferBase::begin() {
+	_begin();
+}
+
+void MDCommandBufferBase::commit() {
+	_commit();
+	advance_sync_level();
+}
+
+void MDCommandBufferBase::end() {
+	_end();
+}
 
 void MDCommandBufferBase::retain_resource(CFTypeRef p_resource) {
 	CFRetain(p_resource);
@@ -618,13 +710,19 @@ void MDCommandBufferBase::encode_push_constant_data(RDD::ShaderID p_shader, Vect
 			}
 			push_constant_binding = shader->push_constants.binding;
 			const void *ptr = p_data.ptr();
-			push_constant_data_len = p_data.size() * sizeof(uint32_t);
+			uint32_t data_len = p_data.size() * sizeof(uint32_t);
+			// Round buffer length up to 16 bytes. SPIRV-Cross's MSL backend pads the
+			// generated push struct to its strictest member alignment (typically vec4 → 16),
+			// so Metal validates the bound buffer length against sizeof(struct), not the
+			// caller's unpadded data size. The trailing bytes are never read by the shader.
+			push_constant_data_len = (data_len + 15u) & ~15u;
 			DEV_ASSERT(push_constant_data_len <= sizeof(push_constant_data));
-			memcpy(push_constant_data, ptr, push_constant_data_len);
+			memcpy(push_constant_data, ptr, data_len);
 			if (push_constant_data_len > 0) {
 				mark_push_constants_dirty();
 			}
 		} break;
+		case MDCommandBufferStateType::InlineRender:
 		case MDCommandBufferStateType::Blit:
 		case MDCommandBufferStateType::None:
 			return;

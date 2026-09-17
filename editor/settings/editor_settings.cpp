@@ -49,6 +49,7 @@
 #include "core/string/translation_server.h"
 #include "core/templates/rb_set.h"
 #include "core/version.h"
+#include "editor/docks/dock_tab_container.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/inspector/editor_property_name_processor.h"
@@ -465,6 +466,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Asset Store */
 
 	_initial_set("asset_store/use_threads", true);
+	_initial_set("asset_store/show_incompatible_assets", false);
 
 	Dictionary default_urls;
 	default_urls["godotengine.org (Official)"] = "https://store.godotengine.org/api/v1";
@@ -472,12 +474,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	/* Interface */
 
+	bool is_android_editor = false;
+#ifdef ANDROID_ENABLED
+	if (!OS::get_singleton()->has_feature("xr_editor")) {
+		is_android_editor = true;
+	}
+#endif
+
 	// Editor
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/localization/localize_settings", true, "")
 	const String dock_tab_style_hint = "Text Only,Icon Only,Text and Icon";
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", 0, dock_tab_style_hint)
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", 0, dock_tab_style_hint)
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/main_screen_dock_tab_style", 2, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/dock_tab_style", DockTabContainer::TabStyle::TEXT_ONLY, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/bottom_dock_tab_style", DockTabContainer::TabStyle::TEXT_ONLY, dock_tab_style_hint)
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/docks/main_screen_dock_tab_style", is_android_editor ? DockTabContainer::TabStyle::ICON_ONLY : DockTabContainer::TabStyle::TEXT_AND_ICON, dock_tab_style_hint)
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/localization/ui_layout_direction", 0, "Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	// Display what the Auto display scale setting effectively corresponds to.
@@ -572,12 +581,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display/vsync_mode", 1, "Disabled,Enabled,Adaptive,Mailbox")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/display/update_continuously", false, "")
 
-	bool is_android_editor = false;
-#ifdef ANDROID_ENABLED
-	if (!OS::get_singleton()->has_feature("xr_editor")) {
-		is_android_editor = true;
-	}
-#endif
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/collapse_main_menu", is_android_editor, "")
 
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/appearance/show_renderer_selector", false, "")
@@ -869,6 +872,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/files/open_dominant_script_on_scene_change", false, true);
 	_initial_set("text_editor/behavior/files/drop_preload_resources_as_uid", true, true);
 
+	// Behavior: Diagnostics
+	_initial_set("text_editor/behavior/diagnostics/enable_tooltips", true, true);
+
 	// Behavior: Documentation
 	_initial_set("text_editor/behavior/documentation/enable_tooltips", true, true);
 
@@ -1154,7 +1160,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Network */
 
 	// General
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/network_mode", 0, "Offline,Online");
+	int network_mode = 0;
+#ifdef ANDROID_ENABLED
+	network_mode = 1;
+#endif
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/network_mode", network_mode, "Offline,Online");
 
 	// HTTP Proxy
 	_initial_set("network/http_proxy/host", "");
@@ -1205,11 +1215,13 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 #if defined(WEB_ENABLED)
 	// Web platform only supports `gl_compatibility`.
 	const String default_renderer = "gl_compatibility";
-#elif defined(ANDROID_ENABLED)
-	// Use more suitable rendering method by default.
+#elif defined(FORWARD_RD_ENABLED) && (!defined(ANDROID_ENABLED) || !defined(MOBILE_RD_ENABLED))
+	const String default_renderer = "forward_plus";
+#elif defined(MOBILE_RD_ENABLED)
 	const String default_renderer = "mobile";
 #else
-	const String default_renderer = "forward_plus";
+	// No other options.
+	const String default_renderer = "gl_compatibility";
 #endif
 	EDITOR_SETTING_BASIC(Variant::STRING, PROPERTY_HINT_ENUM, "project_manager/default_renderer", default_renderer, "forward_plus,mobile,gl_compatibility")
 
@@ -1567,9 +1579,14 @@ void EditorSettings::save() {
 	if (!singleton.ptr()) {
 		return;
 	}
+	// Only save if a setting has been changed or
+	// the setting file for this version does not exist yet.
+	// Fixes issues when multiple editor instances are open.
+	if (singleton->changed_settings.is_empty() && FileAccess::exists(singleton->get_path())) {
+		return;
+	}
 
 	Error err = ResourceSaver::save(singleton);
-
 	if (err != OK) {
 		ERR_PRINT("Error saving editor settings to " + singleton->get_path());
 	} else {

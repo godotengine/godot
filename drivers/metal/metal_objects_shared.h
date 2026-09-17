@@ -36,6 +36,10 @@
 #include "drivers/metal/pixel_formats.h"
 #include "drivers/metal/sha256_digest.h"
 
+#ifdef DEBUG_ENABLED
+#include "core/os/os.h"
+#endif
+
 #include <CoreFoundation/CoreFoundation.h>
 
 #include <memory>
@@ -142,21 +146,16 @@ private:
 	MetalAllocator *allocator = nullptr;
 	LocalVector<MetalBuffer> segments;
 	LocalVector<MDCachedBuffer> cached_buffers;
-	// Mirror of the raw `MTL::Buffer *` of each segment, for encoder residency.
-	LocalVector<MTL::Buffer *> buffers;
 	LocalVector<uint32_t> heads;
 	uint32_t current_segment = 0;
 	uint32_t buffer_size = DEFAULT_BUFFER_SIZE;
-	bool changed = false;
 
 	_FORCE_INLINE_ uint32_t alloc_segment() {
 		MetalBuffer segment = allocator->new_buffer(buffer_size, MTL::ResourceStorageModeShared | MTL::ResourceHazardTrackingModeUntracked);
 		MTL::Buffer *buffer = segment.buffer.get();
 		segments.push_back(segment);
 		cached_buffers.push_back(MDCachedBuffer(buffer));
-		buffers.push_back(buffer);
 		heads.push_back(0);
-		changed = true;
 
 		return cached_buffers.size() - 1;
 	}
@@ -221,22 +220,6 @@ public:
 			head = 0;
 		}
 		current_segment = 0;
-	}
-
-	/// Returns true if buffers were added or removed since last clear_changed().
-	_FORCE_INLINE_ bool is_changed() const { return changed; }
-
-	/// Clears the changed flag.
-	_FORCE_INLINE_ void clear_changed() { changed = false; }
-
-	/// Returns a Span of all backing buffers.
-	_FORCE_INLINE_ Span<MTL::Buffer *const> get_buffers() const {
-		return Span<MTL::Buffer *const>(buffers.ptr(), buffers.size());
-	}
-
-	/// Returns the number of buffer segments currently allocated.
-	_FORCE_INLINE_ uint32_t get_segment_count() const {
-		return buffers.size();
 	}
 };
 
@@ -309,42 +292,45 @@ _FORCE_INLINE_ static uint32_t to_index(RDD::ShaderStage p_s) {
 }
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDFrameBuffer {
-	Vector<MTL::Texture *> textures;
-
 public:
 	Size2i size;
 	MTL::RasterizationRateMap *rasterization_rate_map = nullptr;
 
-	MDFrameBuffer(Vector<MTL::Texture *> p_textures, Size2i p_size) :
-			textures(p_textures), size(p_size) {}
-	MDFrameBuffer() {}
+	virtual MTL::Texture *get_texture(uint32_t p_idx) const = 0;
+	virtual bool has_texture(uint32_t p_idx) const = 0;
 
-	/// Returns the texture at the given index.
-	_ALWAYS_INLINE_ MTL::Texture *get_texture(uint32_t p_idx) const {
+	virtual ~MDFrameBuffer() = default;
+};
+
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDFrameBufferTexture : public MDFrameBuffer {
+	Vector<MTL::Texture *> textures;
+
+public:
+	MDFrameBufferTexture(Vector<MTL::Texture *> p_textures, Size2i p_size) {
+		textures = p_textures;
+		size = p_size;
+	}
+	MDFrameBufferTexture() {}
+
+	MTL::Texture *get_texture(uint32_t p_idx) const override {
 		return textures[p_idx];
 	}
 
-	/// Returns true if the texture at the given index is not nil.
-	_ALWAYS_INLINE_ bool has_texture(uint32_t p_idx) const {
+	bool has_texture(uint32_t p_idx) const override {
 		return textures[p_idx] != nullptr;
 	}
 
-	/// Set the texture at the given index.
-	_ALWAYS_INLINE_ void set_texture(uint32_t p_idx, MTL::Texture *p_texture) {
+	void set_texture(uint32_t p_idx, MTL::Texture *p_texture) {
 		textures.write[p_idx] = p_texture;
 	}
 
-	/// Unset or nil the texture at the given index.
-	_ALWAYS_INLINE_ void unset_texture(uint32_t p_idx) {
+	void unset_texture(uint32_t p_idx) {
 		textures.write[p_idx] = nullptr;
 	}
 
-	/// Resizes buffers to the specified size.
-	_ALWAYS_INLINE_ void set_texture_count(uint32_t p_size) {
+	void set_texture_count(uint32_t p_size) {
 		textures.resize(p_size);
 	}
-
-	virtual ~MDFrameBuffer() = default;
 };
 
 template <>
@@ -505,14 +491,14 @@ public:
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDRenderPass {
 public:
-	Vector<MDAttachment> attachments;
-	Vector<MDSubpass> subpasses;
+	LocalVector<MDAttachment> attachments;
+	LocalVector<MDSubpass> subpasses;
 
 	uint32_t get_sample_count() const {
 		return attachments.is_empty() ? 1 : attachments[0].samples;
 	}
 
-	MDRenderPass(Vector<MDAttachment> &p_attachments, Vector<MDSubpass> &p_subpasses);
+	MDRenderPass(LocalVector<MDAttachment> &&p_attachments, LocalVector<MDSubpass> &&p_subpasses);
 };
 
 #pragma mark - Command Buffer Helpers
@@ -546,97 +532,14 @@ _FORCE_INLINE_ static bool operator==(MTL::Size p_a, MTL::Size p_b) {
 	return p_a.width == p_b.width && p_a.height == p_b.height && p_a.depth == p_b.depth;
 }
 
-#pragma mark - Pipeline Stage Conversion
-
-GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
-
-_FORCE_INLINE_ static MTL::Stages convert_src_pipeline_stages_to_metal(BitField<RDD::PipelineStageBits> p_stages) {
-	p_stages.clear_flag(RDD::PIPELINE_STAGE_TOP_OF_PIPE_BIT);
-
-	// BOTTOM_OF_PIPE or ALL_COMMANDS means "all prior work must complete".
-	if (p_stages & (RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT | RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT)) {
-		return MTL::StageAll;
-	}
-
-	MTL::Stages mtlStages = 0;
-
-	// Vertex stage mappings.
-	if (p_stages & (RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT | RDD::PIPELINE_STAGE_VERTEX_INPUT_BIT | RDD::PIPELINE_STAGE_VERTEX_SHADER_BIT | RDD::PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT | RDD::PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | RDD::PIPELINE_STAGE_GEOMETRY_SHADER_BIT)) {
-		mtlStages |= MTL::StageVertex;
-	}
-
-	// Fragment stage mappings.
-	// Includes resolve and clear_storage, which on Metal use the render pipeline.
-	if (p_stages & (RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT | RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT | RDD::PIPELINE_STAGE_RESOLVE_BIT | RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT)) {
-		mtlStages |= MTL::StageFragment;
-	}
-
-	// Compute stage.
-	if (p_stages & RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT) {
-		mtlStages |= MTL::StageDispatch;
-	}
-
-	// Blit stage (transfer operations).
-	if (p_stages & RDD::PIPELINE_STAGE_COPY_BIT) {
-		mtlStages |= MTL::StageBlit;
-	}
-
-	// ALL_GRAPHICS_BIT special case.
-	if (p_stages & RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT) {
-		mtlStages |= (MTL::StageVertex | MTL::StageFragment);
-	}
-
-	return mtlStages;
-}
-
-_FORCE_INLINE_ static MTL::Stages convert_dst_pipeline_stages_to_metal(BitField<RDD::PipelineStageBits> p_stages) {
-	p_stages.clear_flag(RDD::PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
-
-	// TOP_OF_PIPE or ALL_COMMANDS means "wait before any work starts".
-	if (p_stages & (RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT | RDD::PIPELINE_STAGE_TOP_OF_PIPE_BIT)) {
-		return MTL::StageAll;
-	}
-
-	MTL::Stages mtlStages = 0;
-
-	// Vertex stage mappings.
-	if (p_stages & (RDD::PIPELINE_STAGE_DRAW_INDIRECT_BIT | RDD::PIPELINE_STAGE_VERTEX_INPUT_BIT | RDD::PIPELINE_STAGE_VERTEX_SHADER_BIT | RDD::PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT | RDD::PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT | RDD::PIPELINE_STAGE_GEOMETRY_SHADER_BIT)) {
-		mtlStages |= MTL::StageVertex;
-	}
-
-	// Fragment stage mappings.
-	// Includes resolve and clear_storage, which on Metal use the render pipeline.
-	if (p_stages & (RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT | RDD::PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | RDD::PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT | RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT | RDD::PIPELINE_STAGE_RESOLVE_BIT | RDD::PIPELINE_STAGE_CLEAR_STORAGE_BIT)) {
-		mtlStages |= MTL::StageFragment;
-	}
-
-	// Compute stage.
-	if (p_stages & RDD::PIPELINE_STAGE_COMPUTE_SHADER_BIT) {
-		mtlStages |= MTL::StageDispatch;
-	}
-
-	// Blit stage (transfer operations).
-	if (p_stages & RDD::PIPELINE_STAGE_COPY_BIT) {
-		mtlStages |= MTL::StageBlit;
-	}
-
-	// ALL_GRAPHICS_BIT special case.
-	if (p_stages & RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT) {
-		mtlStages |= (MTL::StageVertex | MTL::StageFragment);
-	}
-
-	return mtlStages;
-}
-
-GODOT_CLANG_WARNING_POP
-
 #pragma mark - Command Buffer Base
 
 enum class MDCommandBufferStateType {
-	None,
-	Render,
-	Compute,
-	Blit, // Only used by Metal 3
+	None, // No encoder is currently active.
+	Render, // A render pass encoder opened by the regular render-pass flow is active.
+	InlineRender, // A one-off render encoder for clear/resolve helper commands is active.
+	Compute, // A compute encoder is active.
+	Blit, // A blit-style encoder is active.
 };
 
 /// Base struct for render state shared between MTL3 and MTL4 implementations.
@@ -673,16 +576,56 @@ protected:
 
 	MDCommandBufferStateType type = MDCommandBufferStateType::None;
 
-	uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE];
+	uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE] = {};
 	uint32_t push_constant_data_len = 0;
 	uint32_t push_constant_binding = UINT32_MAX;
 
 	::RenderingDeviceDriverMetal *device_driver = nullptr;
 
+	// Tracks where each begin_label() pushed its debug group, so that end_label()
+	// can pop from the matching place. When an encoder is closed it pops every
+	// label still on it (keeping the encoder balanced) and flags those entries
+	// stale so the matching end_label() consumes the stack as a no-op.
+	struct LabelStackEntry {
+		MDCommandBufferStateType type;
+		bool stale;
+	};
+	LocalVector<LabelStackEntry> label_stack;
+
 	void release_resources();
+
+#pragma mark - Level Fences
+
+	// Alternating fences between render graph levels.
+	// Every encoder in level k waits on _fences[(k + 1) & 1]
+	// and updates _fences[k & 1]. _fence_level is used for k.
+	//
+	// Unused for hazard tracking
+	NS::SharedPtr<MTL::Fence> _fences[2];
+	uint32_t _fence_level = 0;
+	// true when a fence was updated in the prior level and therefore must be
+	// waited in the current level.
+	bool _fence_updated[2] = { false, false };
+	bool _fence_level_dirty = false;
+	// true when the next encoder continues the encoder just closed and must
+	// therefore wait F_cur rather than F_prev. Metal does not order encoders, so
+	// subpasses split across encoders require an explicit dependency.
+	bool _fence_wait_current_level = false;
+#ifdef DEV_ENABLED
+	// Set by _fence_to_wait(), consumed by _fence_to_update(): every encoder
+	// that updates F_cur must have waited F_prev, or the level chain breaks.
+	bool _fence_wait_issued = false;
+#endif
+
+	void _create_level_fences(MTL::Device *p_device);
+	MTL::Fence *_fence_to_wait();
+	MTL::Fence *_fence_to_update();
 
 	/// Called when push constants are modified to mark the appropriate dirty flags.
 	virtual void mark_push_constants_dirty() = 0;
+	virtual void _begin() = 0;
+	virtual void _commit() = 0;
+	virtual void _end() = 0;
 
 	/// Returns a reference to the render state base for viewport/scissor/blend operations.
 	virtual RenderStateBase &get_render_state_base() = 0;
@@ -704,11 +647,18 @@ protected:
 	void _render_clear_render_area();
 
 public:
-	virtual ~MDCommandBufferBase() { release_resources(); }
+	virtual ~MDCommandBufferBase();
 
-	virtual void begin() = 0;
-	virtual void commit() = 0;
-	virtual void end() = 0;
+	void begin();
+	void commit();
+	void end();
+
+	/// Closes the current level (command group) and opens the next one.
+	void advance_sync_level();
+
+	/// Returns the fence an externally encoded pass (MetalFX) must wait for and
+	/// update, or nullptr under hazard tracking.
+	MTL::Fence *external_pass_fence();
 
 	virtual void bind_pipeline(RDD::PipelineID p_pipeline) = 0;
 	void encode_push_constant_data(RDD::ShaderID p_shader, VectorView<uint32_t> p_data);
@@ -750,6 +700,8 @@ public:
 
 #pragma mark - Compute Commands
 
+	virtual void compute_begin_pass() = 0;
+	virtual void compute_end_pass() = 0;
 	virtual void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) = 0;
 	virtual void compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
 	virtual void compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset) = 0;
@@ -812,6 +764,8 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) UniformI
 				return slot;
 			case IndexType::ARG:
 				return arg_buffer;
+			default:
+				CRASH_NOW_MSG("Invalid IndexType");
 		}
 	}
 };
@@ -1026,8 +980,6 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDRenderP
 public:
 	NS::SharedPtr<MTL::RenderPipelineState> state;
 	NS::SharedPtr<MTL::DepthStencilState> depth_stencil;
-	uint32_t push_constant_size = 0;
-	uint32_t push_constant_stages_mask = 0;
 	SampleCount sample_count = SampleCount1;
 
 	struct {
@@ -1100,7 +1052,7 @@ public:
 
 	MDRenderPipeline() :
 			MDPipeline(MDPipelineType::Render) {}
-	~MDRenderPipeline() final = default;
+	~MDRenderPipeline() override = default;
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0), visionos(2.0)) MDComputePipeline final : public MDPipeline {
@@ -1114,5 +1066,5 @@ public:
 
 	explicit MDComputePipeline(NS::SharedPtr<MTL::ComputePipelineState> p_state) :
 			MDPipeline(MDPipelineType::Compute), state(std::move(p_state)) {}
-	~MDComputePipeline() final = default;
+	~MDComputePipeline() override = default;
 };
