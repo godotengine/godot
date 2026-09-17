@@ -9,6 +9,7 @@ pluginManagement {
         id 'org.jetbrains.kotlin.android' version versions.kotlinVersion
         id 'io.github.gradle-nexus.publish-plugin' version versions.nexusPublishVersion
         id 'com.android.test' version versions.androidGradlePlugin
+        id 'com.android.fused-library' version versions.androidGradlePlugin
     }
     repositories {
         google()
@@ -21,11 +22,19 @@ pluginManagement {
 
 rootProject.name = "Godot"
 
+// App modules
 include ':app'
-include ':lib'
-include ':nativeSrcsConfigs'
-include ':editor'
-
 include ':assetPackInstallTime'
 project(':assetPackInstallTime').projectDir = file("app/assetPackInstallTime")
+include ':dataLib'
+project(':dataLib').projectDir = file("app/dataLib")
+include ':fusedDepsLib'
+project(':fusedDepsLib').projectDir = file("app/fusedDepsLib")
+
+// Editor modules
+include ':editor'
 include ':editor:macrobenchmark'
+
+// Godot Android library modules
+include ':lib'
+include ':nativeSrcsConfigs'

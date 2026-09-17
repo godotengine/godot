@@ -34,7 +34,6 @@ import org.godotengine.godot.Godot;
 import org.godotengine.godot.GodotActivity;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.core.splashscreen.SplashScreen;
@@ -44,18 +43,6 @@ import androidx.core.splashscreen.SplashScreen;
  * Feel free to extend and modify this class for your custom logic.
  */
 public class GodotApp extends GodotActivity {
-	static {
-		// .NET libraries.
-		if (BuildConfig.FLAVOR.equals("mono")) {
-			try {
-				Log.v("GODOT", "Loading System.Security.Cryptography.Native.Android library");
-				System.loadLibrary("System.Security.Cryptography.Native.Android");
-			} catch (UnsatisfiedLinkError e) {
-				Log.e("GODOT", "Unable to load System.Security.Cryptography.Native.Android library");
-			}
-		}
-	}
-
 	private final Runnable updateWindowAppearance = () -> {
 		Godot godot = getGodot();
 		if (godot != null) {
@@ -91,7 +78,7 @@ public class GodotApp extends GodotActivity {
 
 	@Override
 	public void onGodotForceQuit(Godot instance) {
-		if (!BuildConfig.FLAVOR.equals("instrumented")) {
+		if (!getPackageName().equals("com.godot.game.instrumented")) {
 			// For instrumented builds, we disable force-quitting to allow the instrumented tests to complete
 			// successfully, otherwise they fail when the process crashes.
 			super.onGodotForceQuit(instance);

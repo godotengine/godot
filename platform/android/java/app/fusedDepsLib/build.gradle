@@ -1,0 +1,25 @@
+plugins {
+    id 'com.android.fused-library'
+}
+
+androidFusedLibrary {
+    namespace = 'com.godot.game.fuseddeps'
+    minSdk = versions.minSdk
+}
+
+dependencies {
+    include project(":dataLib")
+
+    // Godot user plugins remote dependencies
+    String[] remoteDeps = getGodotPluginsRemoteBinaries()
+    if (remoteDeps != null && remoteDeps.size() > 0) {
+        def platformPattern = /^\s*(platform|enforcedPlatform)\s*\(\s*['"]*(\S+)['"]*\s*\)$/
+        for (String dep : remoteDeps) {
+            def matcher = dep =~ platformPattern
+            if (!matcher) {
+                logger.lifecycle("Including dep $dep")
+                include dep
+            }
+        }
+    }
+}
