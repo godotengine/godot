@@ -1998,19 +1998,17 @@ GDScriptParser::SuiteNode *GDScriptParser::parse_suite(const String &p_context, 
 		switch (statement->type) {
 			case Node::VARIABLE: {
 				VariableNode *variable = static_cast<VariableNode *>(statement);
-				const SuiteNode::Local &local = current_suite->get_local(variable->identifier->name);
-				if (local.type != SuiteNode::Local::UNDEFINED) {
-					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), variable->identifier->name), variable->identifier);
+				if (const SuiteNode::Local *local = current_suite->get_local(variable->identifier->name)) {
+					push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local->get_name(), variable->identifier->name), variable->identifier);
 				}
 				current_suite->add_local(variable, current_function);
 				break;
 			}
 			case Node::CONSTANT: {
 				ConstantNode *constant = static_cast<ConstantNode *>(statement);
-				const SuiteNode::Local &local = current_suite->get_local(constant->identifier->name);
-				if (local.type != SuiteNode::Local::UNDEFINED) {
+				if (const SuiteNode::Local *local = current_suite->get_local(constant->identifier->name)) {
 					String name;
-					if (local.type == SuiteNode::Local::CONSTANT) {
+					if (local->type == SuiteNode::Local::CONSTANT) {
 						name = "constant";
 					} else {
 						name = "variable";
@@ -2353,9 +2351,8 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (n_for->variable) {
-		const SuiteNode::Local &local = current_suite->get_local(n_for->variable->name);
-		if (local.type != SuiteNode::Local::UNDEFINED) {
-			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), n_for->variable->name), n_for->variable);
+		if (const SuiteNode::Local *local = current_suite->get_local(n_for->variable->name)) {
+			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local->get_name(), n_for->variable->name), n_for->variable);
 		}
 		suite->add_local(SuiteNode::Local(n_for->variable, current_function));
 	}
@@ -2608,8 +2605,8 @@ GDScriptParser::PatternNode *GDScriptParser::parse_match_pattern(PatternNode *p_
 				}
 			}
 
-			if (current_suite->has_local(pattern->bind->name)) {
-				push_error(vformat(R"(There's already a %s named "%s" in this scope.)", current_suite->get_local(pattern->bind->name).get_name(), pattern->bind->name));
+			if (const SuiteNode::Local *local = current_suite->get_local(pattern->bind->name)) {
+				push_error(vformat(R"(There's already a %s named "%s" in this scope.)", local->get_name(), pattern->bind->name));
 				complete_extents(pattern);
 				return nullptr;
 			}
@@ -2846,33 +2843,29 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode 
 	}
 	identifier->suite = current_suite;
 
-	if (current_suite != nullptr && current_suite->has_local(identifier->name)) {
-		const SuiteNode::Local &declaration = current_suite->get_local(identifier->name);
-
-		identifier->source_function = declaration.source_function;
-		switch (declaration.type) {
+	if (const SuiteNode::Local *declaration = current_suite ? current_suite->get_local(identifier->name) : nullptr) {
+		identifier->source_function = declaration->source_function;
+		switch (declaration->type) {
 			case SuiteNode::Local::CONSTANT:
 				identifier->source = IdentifierNode::LOCAL_CONSTANT;
-				identifier->constant_source = declaration.constant;
+				identifier->constant_source = declaration->constant;
 				break;
 			case SuiteNode::Local::VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_VARIABLE;
-				identifier->variable_source = declaration.variable;
+				identifier->variable_source = declaration->variable;
 				break;
 			case SuiteNode::Local::PARAMETER:
 				identifier->source = IdentifierNode::FUNCTION_PARAMETER;
-				identifier->parameter_source = declaration.parameter;
+				identifier->parameter_source = declaration->parameter;
 				break;
 			case SuiteNode::Local::FOR_VARIABLE:
 				identifier->source = IdentifierNode::LOCAL_ITERATOR;
-				identifier->bind_source = declaration.bind;
+				identifier->bind_source = declaration->bind;
 				break;
 			case SuiteNode::Local::PATTERN_BIND:
 				identifier->source = IdentifierNode::LOCAL_BIND;
-				identifier->bind_source = declaration.bind;
+				identifier->bind_source = declaration->bind;
 				break;
-			case SuiteNode::Local::UNDEFINED:
-				ERR_FAIL_V_MSG(nullptr, "Undefined local found.");
 		}
 	}
 
@@ -4362,24 +4355,14 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 	return &rules[p_token_type];
 }
 
-bool GDScriptParser::SuiteNode::has_local(const StringName &p_name) const {
+const GDScriptParser::SuiteNode::Local *GDScriptParser::SuiteNode::get_local(const StringName &p_name) const {
 	if (locals_indices.has(p_name)) {
-		return true;
-	}
-	if (parent_block != nullptr) {
-		return parent_block->has_local(p_name);
-	}
-	return false;
-}
-
-const GDScriptParser::SuiteNode::Local &GDScriptParser::SuiteNode::get_local(const StringName &p_name) const {
-	if (locals_indices.has(p_name)) {
-		return locals[locals_indices[p_name]];
+		return &locals[locals_indices[p_name]];
 	}
 	if (parent_block != nullptr) {
 		return parent_block->get_local(p_name);
 	}
-	return empty;
+	return nullptr;
 }
 
 bool GDScriptParser::AnnotationNode::apply(GDScriptParser *p_this, Node *p_target, ClassNode *p_class) {
@@ -5303,8 +5286,6 @@ GDScriptParser::DataType GDScriptParser::SuiteNode::Local::get_datatype() const 
 		case FOR_VARIABLE:
 		case PATTERN_BIND:
 			return bind->type_constraint;
-		case UNDEFINED:
-			return DataType();
 	}
 	return DataType();
 }
@@ -5321,8 +5302,6 @@ String GDScriptParser::SuiteNode::Local::get_name() const {
 			return "for loop iterator";
 		case SuiteNode::Local::PATTERN_BIND:
 			return "pattern bind";
-		case SuiteNode::Local::UNDEFINED:
-			return "<undefined>";
 		default:
 			return String();
 	}

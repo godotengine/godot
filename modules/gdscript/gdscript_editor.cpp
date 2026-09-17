@@ -2420,29 +2420,27 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 			break;
 	}
 
-	if (can_be_local && suite && suite->has_local(p_identifier->name)) {
-		const GDScriptParser::SuiteNode::Local &local = suite->get_local(p_identifier->name);
-
-		id_type.type = local.get_datatype();
+	if (const GDScriptParser::SuiteNode::Local *local = (can_be_local && suite) ? suite->get_local(p_identifier->name) : nullptr) {
+		id_type.type = local->get_datatype();
 
 		// Check initializer as the first assignment.
-		switch (local.type) {
+		switch (local->type) {
 			case GDScriptParser::SuiteNode::Local::VARIABLE:
-				if (local.variable->initializer) {
-					last_assign_line = local.variable->initializer->end_line;
-					last_assigned_expression = local.variable->initializer;
+				if (local->variable->initializer) {
+					last_assign_line = local->variable->initializer->end_line;
+					last_assigned_expression = local->variable->initializer;
 				}
 				break;
 			case GDScriptParser::SuiteNode::Local::CONSTANT:
-				if (local.constant->initializer) {
-					last_assign_line = local.constant->initializer->end_line;
-					last_assigned_expression = local.constant->initializer;
+				if (local->constant->initializer) {
+					last_assign_line = local->constant->initializer->end_line;
+					last_assigned_expression = local->constant->initializer;
 				}
 				break;
 			case GDScriptParser::SuiteNode::Local::PARAMETER:
-				if (local.parameter->initializer) {
-					last_assign_line = local.parameter->initializer->end_line;
-					last_assigned_expression = local.parameter->initializer;
+				if (local->parameter->initializer) {
+					last_assign_line = local->parameter->initializer->end_line;
+					last_assigned_expression = local->parameter->initializer;
 				}
 				is_function_parameter = true;
 				break;
@@ -3315,16 +3313,20 @@ static bool _get_subscript_type(GDScriptParser::CompletionContext &p_context, co
 				} break;
 				case GDScriptParser::IdentifierNode::Source::LOCAL_VARIABLE: {
 					// TODO: Do basic assignment flow analysis like in `_guess_expression_type`.
-					const GDScriptParser::SuiteNode::Local local = identifier_node->suite->get_local(identifier_node->name);
-					switch (local.type) {
+					const GDScriptParser::SuiteNode::Local *local = identifier_node->suite->get_local(identifier_node->name);
+					if (!local) {
+						break;
+					}
+
+					switch (local->type) {
 						case GDScriptParser::SuiteNode::Local::CONSTANT: {
-							if (local.constant->initializer && local.constant->initializer->type == GDScriptParser::Node::GET_NODE) {
-								get_node = static_cast<GDScriptParser::GetNodeNode *>(local.constant->initializer);
+							if (local->constant->initializer && local->constant->initializer->type == GDScriptParser::Node::GET_NODE) {
+								get_node = static_cast<GDScriptParser::GetNodeNode *>(local->constant->initializer);
 							}
 						} break;
 						case GDScriptParser::SuiteNode::Local::VARIABLE: {
-							if (local.variable->initializer && local.variable->initializer->type == GDScriptParser::Node::GET_NODE) {
-								get_node = static_cast<GDScriptParser::GetNodeNode *>(local.variable->initializer);
+							if (local->variable->initializer && local->variable->initializer->type == GDScriptParser::Node::GET_NODE) {
+								get_node = static_cast<GDScriptParser::GetNodeNode *>(local->variable->initializer);
 							}
 						} break;
 						default: {
@@ -4443,32 +4445,28 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				// Lookup local variables.
 				const GDScriptParser::SuiteNode *suite = context.current_suite;
 				while (suite) {
-					if (suite->has_local(p_symbol)) {
-						const GDScriptParser::SuiteNode::Local &local = suite->get_local(p_symbol);
-
-						switch (local.type) {
-							case GDScriptParser::SuiteNode::Local::UNDEFINED:
-								return ERR_BUG;
+					if (const GDScriptParser::SuiteNode::Local *local = suite->get_local(p_symbol)) {
+						switch (local->type) {
 							case GDScriptParser::SuiteNode::Local::CONSTANT:
 								r_result.type = LookupResult::Type::LOCAL_CONSTANT;
-								r_result.description = local.constant->doc_data.description;
-								r_result.is_deprecated = local.constant->doc_data.is_deprecated;
-								r_result.deprecated_message = local.constant->doc_data.deprecated_message;
-								r_result.is_experimental = local.constant->doc_data.is_experimental;
-								r_result.experimental_message = local.constant->doc_data.experimental_message;
-								if (local.constant->initializer != nullptr) {
-									r_result.value = GDScriptDocGen::docvalue_from_expression(local.constant->initializer);
+								r_result.description = local->constant->doc_data.description;
+								r_result.is_deprecated = local->constant->doc_data.is_deprecated;
+								r_result.deprecated_message = local->constant->doc_data.deprecated_message;
+								r_result.is_experimental = local->constant->doc_data.is_experimental;
+								r_result.experimental_message = local->constant->doc_data.experimental_message;
+								if (local->constant->initializer != nullptr) {
+									r_result.value = GDScriptDocGen::docvalue_from_expression(local->constant->initializer);
 								}
 								break;
 							case GDScriptParser::SuiteNode::Local::VARIABLE:
 								r_result.type = LookupResult::Type::LOCAL_VARIABLE;
-								r_result.description = local.variable->doc_data.description;
-								r_result.is_deprecated = local.variable->doc_data.is_deprecated;
-								r_result.deprecated_message = local.variable->doc_data.deprecated_message;
-								r_result.is_experimental = local.variable->doc_data.is_experimental;
-								r_result.experimental_message = local.variable->doc_data.experimental_message;
-								if (local.variable->initializer != nullptr) {
-									r_result.value = GDScriptDocGen::docvalue_from_expression(local.variable->initializer);
+								r_result.description = local->variable->doc_data.description;
+								r_result.is_deprecated = local->variable->doc_data.is_deprecated;
+								r_result.deprecated_message = local->variable->doc_data.deprecated_message;
+								r_result.is_experimental = local->variable->doc_data.is_experimental;
+								r_result.experimental_message = local->variable->doc_data.experimental_message;
+								if (local->variable->initializer != nullptr) {
+									r_result.value = GDScriptDocGen::docvalue_from_expression(local->variable->initializer);
 								}
 								break;
 							case GDScriptParser::SuiteNode::Local::PARAMETER:
@@ -4478,10 +4476,10 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 								break;
 						}
 
-						GDScriptDocGen::doctype_from_datatype(local.get_datatype(), r_result.doc_type, r_result.enumeration);
+						GDScriptDocGen::doctype_from_datatype(local->get_datatype(), r_result.doc_type, r_result.enumeration);
 
 						r_result.script_path = base_type.script_path;
-						r_result.location = local.start_line;
+						r_result.location = local->start_line;
 						return OK;
 					}
 					suite = suite->parent_block;

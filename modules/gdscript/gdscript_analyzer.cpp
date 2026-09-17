@@ -702,10 +702,9 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	StringName first = first_id->name;
 	bool type_found = false;
 
-	if (first_id->suite && first_id->suite->has_local(first)) {
-		const GDScriptParser::SuiteNode::Local &local = first_id->suite->get_local(first);
-		if (local.type == GDScriptParser::SuiteNode::Local::CONSTANT) {
-			result = local.get_datatype();
+	if (const GDScriptParser::SuiteNode::Local *local = first_id->suite ? first_id->suite->get_local(first) : nullptr) {
+		if (local->type == GDScriptParser::SuiteNode::Local::CONSTANT) {
+			result = local->get_datatype();
 			if (!result.is_set()) {
 				// Don't try to resolve it as the constant can be declared below.
 				push_error(vformat(R"(Local constant "%s" is not resolved at this point.)", first), first_id);
@@ -713,8 +712,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			}
 			if (result.is_meta_type) {
 				type_found = true;
-			} else if (Ref<Script>(local.constant->initializer->reduced_value).is_valid()) {
-				Ref<GDScript> gdscript = local.constant->initializer->reduced_value;
+			} else if (Ref<Script>(local->constant->initializer->reduced_value).is_valid()) {
+				Ref<GDScript> gdscript = local->constant->initializer->reduced_value;
 				if (gdscript.is_valid()) {
 					Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(gdscript->get_script_path());
 					if (ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
@@ -723,7 +722,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 					}
 					result = ref->get_parser()->head->self_type;
 				} else {
-					result = make_script_meta_type(local.constant->initializer->reduced_value);
+					result = make_script_meta_type(local->constant->initializer->reduced_value);
 				}
 				type_found = true;
 			} else {
@@ -731,7 +730,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				return bad_type;
 			}
 		} else {
-			push_error(vformat(R"(Local %s "%s" cannot be used as a type.)", local.get_name(), first), first_id);
+			push_error(vformat(R"(Local %s "%s" cannot be used as a type.)", local->get_name(), first), first_id);
 			return bad_type;
 		}
 	}
@@ -2150,9 +2149,8 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 
 #ifdef DEBUG_ENABLED
 	if (p_assignable->identifier != nullptr && p_assignable->identifier->suite != nullptr && p_assignable->identifier->suite->parent_block != nullptr) {
-		if (p_assignable->identifier->suite->parent_block->has_local(p_assignable->identifier->name)) {
-			const GDScriptParser::SuiteNode::Local &local = p_assignable->identifier->suite->parent_block->get_local(p_assignable->identifier->name);
-			parser->push_warning(p_assignable->identifier, GDScriptWarning::CONFUSABLE_LOCAL_DECLARATION, local.get_name(), p_assignable->identifier->name);
+		if (const GDScriptParser::SuiteNode::Local *local = p_assignable->identifier->suite->parent_block->get_local(p_assignable->identifier->name)) {
+			parser->push_warning(p_assignable->identifier, GDScriptWarning::CONFUSABLE_LOCAL_DECLARATION, local->get_name(), p_assignable->identifier->name);
 		}
 	}
 #endif // DEBUG_ENABLED
@@ -4522,7 +4520,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 #ifdef DEBUG_ENABLED
-	if (!found_source && p_identifier->suite != nullptr && p_identifier->suite->has_local(p_identifier->name)) {
+	if (!found_source && p_identifier->suite != nullptr && p_identifier->suite->get_local(p_identifier->name)) {
 		parser->push_warning(p_identifier, GDScriptWarning::CONFUSABLE_LOCAL_USAGE, p_identifier->name);
 	}
 #endif // DEBUG_ENABLED
