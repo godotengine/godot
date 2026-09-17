@@ -12,6 +12,7 @@
     <Configurations>Debug;ExportDebug;ExportRelease</Configurations>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
 
+    <!-- GodotProjectDir and GodotProjectDirBase64 are visible to source generators. -->
     <GodotProjectDir Condition=" '$(GodotProjectDir)' == '' ">$(MSBuildProjectDirectory)</GodotProjectDir>
     <GodotProjectDir>$([MSBuild]::EnsureTrailingSlash('$(GodotProjectDir)'))</GodotProjectDir>
     <GodotProjectDirBase64 Condition=" $([MSBuild]::VersionGreaterThanOrEquals($(MSBuildAssemblyVersion), '17.3')) ">$([MSBuild]::ConvertToBase64('$(GodotProjectDir)'))</GodotProjectDirBase64>
@@ -28,6 +29,25 @@
 
     <!-- Do not append the target framework name to the output path. -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- $(GodotRegisterScriptPaths) is visible to source generators. -->
+    <!--
+    This makes it possible to use C# script resource files.
+    It can be disabled in projects that don't need this, such as libraries that are distributed as NuGet packages.
+    -->
+    <GodotRegisterScriptPaths>true</GodotRegisterScriptPaths>
+
+    <!-- $(GodotSupportLegacyNonTrimSafeAPIs) is visible to source generators. -->
+    <!--
+    Enable this to support using script types from assemblies that use legacy APIs that are
+    not compatible with trimming. The default value is "true", to avoid breaking compatibility.
+
+    If your project doesn't depend on any assembly or package that rely on such legacy APIs,
+    you can disable this to benefit from trimming.
+    -->
+    <GodotSupportLegacyNonTrimSafeAPIs>true</GodotSupportLegacyNonTrimSafeAPIs>
   </PropertyGroup>
 
   <Target Condition=" $([MSBuild]::VersionLessThan($(MSBuildAssemblyVersion), '17.3')) " Name="GodotProjectDir" BeforeTargets="Build">

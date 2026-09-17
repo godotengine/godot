@@ -21,7 +21,7 @@ namespace Godot
         {
             using var varBytes = Marshaling.ConvertSystemArrayToNativePackedByteArray(bytes);
             NativeFuncs.godotsharp_bytes_to_var(varBytes, godot_bool.False, out godot_variant ret);
-            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
+            return Variant.CreateConsuming(ret);
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Godot
         {
             using var varBytes = Marshaling.ConvertSystemArrayToNativePackedByteArray(bytes);
             NativeFuncs.godotsharp_bytes_to_var(varBytes, godot_bool.True, out godot_variant ret);
-            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
+            return Variant.CreateConsuming(ret);
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Godot
         public static Variant Convert(Variant what, Variant.Type type)
         {
             NativeFuncs.godotsharp_convert((godot_variant)what.NativeVar, (int)type, out godot_variant ret);
-            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
+            return Variant.CreateConsuming(ret);
         }
 
         /// <summary>
@@ -620,7 +620,7 @@ namespace Godot
         {
             using var godotStr = Marshaling.ConvertStringToNative(str);
             NativeFuncs.godotsharp_str_to_var(godotStr, out godot_variant ret);
-            return Variant.CreateTakingOwnershipOfDisposableValue(ret);
+            return Variant.CreateConsuming(ret);
         }
 
         /// <summary>

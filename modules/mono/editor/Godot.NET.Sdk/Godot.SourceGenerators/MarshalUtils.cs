@@ -125,8 +125,11 @@ namespace Godot.SourceGenerators
 
                     if (typeKind == TypeKind.Struct)
                     {
-                        if (type.ContainingAssembly?.Name == "GodotSharp" &&
-                            type.ContainingNamespace?.Name == "Godot")
+                        if (type is
+                            {
+                                ContainingAssembly.Name: "GodotSharp",
+                                ContainingNamespace: { Name: "Godot", ContainingNamespace.IsGlobalNamespace: true }
+                            })
                         {
                             return type switch
                             {
@@ -182,8 +185,11 @@ namespace Godot.SourceGenerators
                         if (elementType.SimpleDerivesFrom(typeCache.GodotObjectType))
                             return MarshalType.GodotObjectOrDerivedArray;
 
-                        if (elementType.ContainingAssembly?.Name == "GodotSharp" &&
-                            elementType.ContainingNamespace?.Name == "Godot")
+                        if (elementType is
+                            {
+                                ContainingAssembly.Name: "GodotSharp",
+                                ContainingNamespace: { Name: "Godot", ContainingNamespace.IsGlobalNamespace: true }
+                            })
                         {
                             switch (elementType)
                             {
@@ -213,27 +219,32 @@ namespace Godot.SourceGenerators
 
                         if (type.ContainingAssembly?.Name == "GodotSharp")
                         {
-                            switch (type.ContainingNamespace?.Name)
+                            switch (type.ContainingNamespace)
                             {
-                                case "Godot":
+                                // Godot
+                                case { Name: "Godot", ContainingNamespace.IsGlobalNamespace: true }:
                                     return type switch
                                     {
                                         { Name: "StringName" } => MarshalType.StringName,
                                         { Name: "NodePath" } => MarshalType.NodePath,
                                         _ => null
                                     };
-                                case "Collections"
-                                    when type.ContainingNamespace?.FullQualifiedNameOmitGlobal() == "Godot.Collections":
+                                // Godot.Collections
+                                case
+                                {
+                                    Name: "Collections",
+                                    ContainingNamespace: { Name: "Godot", ContainingNamespace.IsGlobalNamespace: true }
+                                }:
                                     return type switch
                                     {
                                         { Name: "Dictionary" } =>
-                                            type is INamedTypeSymbol { IsGenericType: false } ?
-                                                MarshalType.GodotDictionary :
-                                                MarshalType.GodotGenericDictionary,
+                                            type is INamedTypeSymbol { IsGenericType: false }
+                                                ? MarshalType.GodotDictionary
+                                                : MarshalType.GodotGenericDictionary,
                                         { Name: "Array" } =>
-                                            type is INamedTypeSymbol { IsGenericType: false } ?
-                                                MarshalType.GodotArray :
-                                                MarshalType.GodotGenericArray,
+                                            type is INamedTypeSymbol { IsGenericType: false }
+                                                ? MarshalType.GodotArray
+                                                : MarshalType.GodotGenericArray,
                                         _ => null
                                     };
                             }
@@ -308,10 +319,14 @@ namespace Godot.SourceGenerators
             string c, string d, string e, string f, string g, string h)
             => source.Append(a).Append(b).Append(c).Append(d).Append(e).Append(f).Append(g).Append(h);
 
+        private static StringBuilder Append(this StringBuilder source, string a, string b,
+            string c, string d, string e, string f, string g, string h, string i)
+            => source.Append(a).Append(b).Append(c).Append(d).Append(e).Append(f).Append(g).Append(h).Append(i);
+
         private const string VariantUtils = "global::Godot.NativeInterop.VariantUtils";
 
         public static StringBuilder AppendNativeVariantToManagedExpr(this StringBuilder source,
-            string inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
+            (string firstHalf, string secondHalf) inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
         {
             return marshalType switch
             {
@@ -319,38 +334,62 @@ namespace Godot.SourceGenerators
                 MarshalType.GodotObjectOrDerivedArray =>
                     source.Append(VariantUtils, ".ConvertToSystemArrayOfGodotObject<",
                         ((IArrayTypeSymbol)typeSymbol).ElementType.FullQualifiedNameIncludeGlobal(), ">(",
-                        inputExpr, ")"),
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
                 // We need a special case for generic Godot collections and GodotObjectOrDerived[], because VariantUtils.ConvertTo<T> is slower
                 MarshalType.GodotGenericDictionary =>
                     source.Append(VariantUtils, ".ConvertToDictionary<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ", ",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[1].FullQualifiedNameIncludeGlobal(), ">(",
-                        inputExpr, ")"),
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
                 MarshalType.GodotGenericArray =>
                     source.Append(VariantUtils, ".ConvertToArray<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ">(",
-                        inputExpr, ")"),
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
                 _ => source.Append(VariantUtils, ".ConvertTo<",
-                    typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr, ")"),
+                    typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr.firstHalf, inputExpr.secondHalf, ")"),
+            };
+        }
+
+        public static StringBuilder AppendNativeVariantToManagedExpr(this StringBuilder source,
+            string inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
+        {
+            return AppendNativeVariantToManagedExpr(source, ("", inputExpr), typeSymbol, marshalType);
+        }
+
+        public static StringBuilder AppendManagedToNativeVariantExpr(this StringBuilder source,
+            (string firstHalf, string secondHalf) inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
+        {
+            return marshalType switch
+            {
+                // We need a special case for GodotObjectOrDerived[], because it's not supported by VariantUtils.CreateFrom<T>
+                MarshalType.GodotObjectOrDerivedArray =>
+                    source.Append(VariantUtils, ".CreateFromSystemArrayOfGodotObject(",
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
+                // We need a special case for generic Godot collections and GodotObjectOrDerived[], because VariantUtils.CreateFrom<T> is slower
+                MarshalType.GodotGenericDictionary =>
+                    source.Append(VariantUtils, ".CreateFromDictionary(",
+                        inputExpr.firstHalf, inputExpr.secondHalf, ")"),
+                MarshalType.GodotGenericArray =>
+                    source.Append(VariantUtils, ".CreateFromArray(", inputExpr.firstHalf, inputExpr.secondHalf, ")"),
+                _ => ((Func<StringBuilder>)(() =>
+                {
+                    if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+                        source.Append("(", inputExpr.firstHalf, inputExpr.secondHalf,
+                            " == null ? new godot_variant() : ");
+                    source.Append(VariantUtils, ".CreateFrom<",
+                        typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr.firstHalf, inputExpr.secondHalf,
+                        ")");
+                    if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+                        source.Append(")");
+                    return source;
+                }))(),
             };
         }
 
         public static StringBuilder AppendManagedToNativeVariantExpr(this StringBuilder source,
             string inputExpr, ITypeSymbol typeSymbol, MarshalType marshalType)
         {
-            return marshalType switch
-            {
-                // We need a special case for GodotObjectOrDerived[], because it's not supported by VariantUtils.CreateFrom<T>
-                MarshalType.GodotObjectOrDerivedArray =>
-                    source.Append(VariantUtils, ".CreateFromSystemArrayOfGodotObject(", inputExpr, ")"),
-                // We need a special case for generic Godot collections and GodotObjectOrDerived[], because VariantUtils.CreateFrom<T> is slower
-                MarshalType.GodotGenericDictionary =>
-                    source.Append(VariantUtils, ".CreateFromDictionary(", inputExpr, ")"),
-                MarshalType.GodotGenericArray =>
-                    source.Append(VariantUtils, ".CreateFromArray(", inputExpr, ")"),
-                _ => source.Append(VariantUtils, ".CreateFrom<",
-                    typeSymbol.FullQualifiedNameIncludeGlobal(), ">(", inputExpr, ")"),
-            };
+            return AppendManagedToNativeVariantExpr(source, ("", inputExpr), typeSymbol, marshalType);
         }
 
         public static StringBuilder AppendVariantToManagedExpr(this StringBuilder source,

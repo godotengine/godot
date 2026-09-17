@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using Godot.NativeInterop;
+using JetBrains.Annotations;
 
 namespace Godot;
 
@@ -84,8 +85,13 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     // Explicit name to make it very clear
-    public static Variant CreateTakingOwnershipOfDisposableValue(in godot_variant nativeValueToOwn) =>
+    public static Variant CreateConsuming(in godot_variant nativeValueToOwn) =>
         new(nativeValueToOwn);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [PublicAPI("ABI compatibility with legacy code.")]
+    public static Variant CreateTakingOwnershipOfDisposableValue(in godot_variant nativeValueToOwn) =>
+        CreateConsuming(nativeValueToOwn);
 
     // Explicit name to make it very clear
     public static Variant CreateCopyingBorrowed(in godot_variant nativeValueToOwn) =>
@@ -158,7 +164,7 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant From<[MustBeVariant] T>(in T from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFrom(from));
+        CreateConsuming(VariantUtils.CreateFrom(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T As<[MustBeVariant] T>() =>
@@ -660,11 +666,11 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom<[MustBeVariant] TKey, [MustBeVariant] TValue>(Collections.Dictionary<TKey, TValue> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromDictionary(from));
+        CreateConsuming(VariantUtils.CreateFromDictionary(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom<[MustBeVariant] T>(Collections.Array<T> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromArray(from));
+        CreateConsuming(VariantUtils.CreateFromArray(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Span<StringName> from) => from;
@@ -697,127 +703,127 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(bool from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromBool(from));
+        CreateConsuming(VariantUtils.CreateFromBool(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(char from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromInt(from));
+        CreateConsuming(VariantUtils.CreateFromInt(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(sbyte from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromInt(from));
+        CreateConsuming(VariantUtils.CreateFromInt(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(short from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromInt(from));
+        CreateConsuming(VariantUtils.CreateFromInt(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(int from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromInt(from));
+        CreateConsuming(VariantUtils.CreateFromInt(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(long from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromInt(from));
+        CreateConsuming(VariantUtils.CreateFromInt(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(byte from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromInt(from));
+        CreateConsuming(VariantUtils.CreateFromInt(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(ushort from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromInt(from));
+        CreateConsuming(VariantUtils.CreateFromInt(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(uint from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromInt(from));
+        CreateConsuming(VariantUtils.CreateFromInt(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(ulong from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromInt(from));
+        CreateConsuming(VariantUtils.CreateFromInt(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(float from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromFloat(from));
+        CreateConsuming(VariantUtils.CreateFromFloat(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(double from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromFloat(from));
+        CreateConsuming(VariantUtils.CreateFromFloat(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(string from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromString(from));
+        CreateConsuming(VariantUtils.CreateFromString(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Vector2 from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector2(from));
+        CreateConsuming(VariantUtils.CreateFromVector2(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Vector2I from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector2I(from));
+        CreateConsuming(VariantUtils.CreateFromVector2I(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Rect2 from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromRect2(from));
+        CreateConsuming(VariantUtils.CreateFromRect2(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Rect2I from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromRect2I(from));
+        CreateConsuming(VariantUtils.CreateFromRect2I(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Transform2D from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromTransform2D(from));
+        CreateConsuming(VariantUtils.CreateFromTransform2D(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Vector3 from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector3(from));
+        CreateConsuming(VariantUtils.CreateFromVector3(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Vector3I from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector3I(from));
+        CreateConsuming(VariantUtils.CreateFromVector3I(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Basis from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromBasis(from));
+        CreateConsuming(VariantUtils.CreateFromBasis(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Quaternion from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromQuaternion(from));
+        CreateConsuming(VariantUtils.CreateFromQuaternion(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Transform3D from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromTransform3D(from));
+        CreateConsuming(VariantUtils.CreateFromTransform3D(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Vector4 from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector4(from));
+        CreateConsuming(VariantUtils.CreateFromVector4(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Vector4I from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector4I(from));
+        CreateConsuming(VariantUtils.CreateFromVector4I(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Projection from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromProjection(from));
+        CreateConsuming(VariantUtils.CreateFromProjection(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Aabb from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromAabb(from));
+        CreateConsuming(VariantUtils.CreateFromAabb(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Color from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromColor(from));
+        CreateConsuming(VariantUtils.CreateFromColor(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Plane from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPlane(from));
+        CreateConsuming(VariantUtils.CreateFromPlane(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Callable from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromCallable(from));
+        CreateConsuming(VariantUtils.CreateFromCallable(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Signal from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSignal(from));
+        CreateConsuming(VariantUtils.CreateFromSignal(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(byte[] from) =>
@@ -861,7 +867,7 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(GodotObject[] from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfGodotObject(from));
+        CreateConsuming(VariantUtils.CreateFromSystemArrayOfGodotObject(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(StringName[] from) =>
@@ -877,77 +883,77 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<byte> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedByteArray(from));
+        CreateConsuming(VariantUtils.CreateFromPackedByteArray(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<int> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedInt32Array(from));
+        CreateConsuming(VariantUtils.CreateFromPackedInt32Array(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<long> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedInt64Array(from));
+        CreateConsuming(VariantUtils.CreateFromPackedInt64Array(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<float> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedFloat32Array(from));
+        CreateConsuming(VariantUtils.CreateFromPackedFloat32Array(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<double> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedFloat64Array(from));
+        CreateConsuming(VariantUtils.CreateFromPackedFloat64Array(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<string> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedStringArray(from));
+        CreateConsuming(VariantUtils.CreateFromPackedStringArray(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<Vector2> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedVector2Array(from));
+        CreateConsuming(VariantUtils.CreateFromPackedVector2Array(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<Vector3> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedVector3Array(from));
+        CreateConsuming(VariantUtils.CreateFromPackedVector3Array(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<Vector4> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedVector4Array(from));
+        CreateConsuming(VariantUtils.CreateFromPackedVector4Array(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<Color> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromPackedColorArray(from));
+        CreateConsuming(VariantUtils.CreateFromPackedColorArray(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<StringName> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfStringName(from));
+        CreateConsuming(VariantUtils.CreateFromSystemArrayOfStringName(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<NodePath> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfNodePath(from));
+        CreateConsuming(VariantUtils.CreateFromSystemArrayOfNodePath(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Span<Rid> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfRid(from));
+        CreateConsuming(VariantUtils.CreateFromSystemArrayOfRid(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(GodotObject from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromGodotObject(from));
+        CreateConsuming(VariantUtils.CreateFromGodotObject(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(StringName from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromStringName(from));
+        CreateConsuming(VariantUtils.CreateFromStringName(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(NodePath from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromNodePath(from));
+        CreateConsuming(VariantUtils.CreateFromNodePath(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Rid from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromRid(from));
+        CreateConsuming(VariantUtils.CreateFromRid(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Collections.Dictionary from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromDictionary(from));
+        CreateConsuming(VariantUtils.CreateFromDictionary(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Collections.Array from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromArray(from));
+        CreateConsuming(VariantUtils.CreateFromArray(from));
 }

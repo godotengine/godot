@@ -103,6 +103,16 @@ namespace Godot.NativeInterop
             readonly get => (Godot.Variant.Type)expected;
             set => expected = (int)value;
         }
+
+        public static godot_variant_call_error CreateInvalidArgumentCountError(int expected, int provided)
+        {
+            return new godot_variant_call_error
+            {
+                error = provided < expected
+                    ? godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_TOO_FEW_ARGUMENTS
+                    : godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_TOO_MANY_ARGUMENTS
+            };
+        }
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -722,6 +732,7 @@ namespace Godot.NativeInterop
         [FieldOffset(8)] private ulong _objectId;
         [FieldOffset(8)] private IntPtr _custom;
 
+        // ReSharper disable once ConvertToPrimaryConstructor
         public godot_callable(godot_string_name method, ulong objectId) : this()
         {
             _method = method;

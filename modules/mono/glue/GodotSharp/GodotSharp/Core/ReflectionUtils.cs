@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -57,6 +58,7 @@ internal class ReflectionUtils
         };
     }
 
+    [RequiresUnreferencedCode("Searching for a type in an assembly at runtime is not compatible with trimming.")]
     public static Type? FindTypeInLoadedAssemblies(string assemblyName, string typeFullName)
     {
         return AppDomain.CurrentDomain.GetAssemblies()
@@ -162,6 +164,7 @@ internal class ReflectionUtils
                         genericArgs = nextTuple.GenericTypeArguments;
                     }
                 }
+
                 sb.Append(')');
                 return;
             }

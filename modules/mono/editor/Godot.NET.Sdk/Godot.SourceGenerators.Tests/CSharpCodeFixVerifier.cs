@@ -41,6 +41,7 @@ public static class CSharpCodeFixVerifier<TCodeFix, TAnalyzer>
         verifier.TestState.AnalyzerConfigFiles.Add(("/.globalconfig", $"""
         is_global = true
         build_property.GodotProjectDir = {Constants.ExecutingAssemblyPath}
+        build_property.EnableTrimAnalyzer = true
         """));
 
         return verifier;
