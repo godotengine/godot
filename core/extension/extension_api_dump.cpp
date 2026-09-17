@@ -31,13 +31,18 @@
 #include "extension_api_dump.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/templates/pair.h"
 #include "core/version.h"
+
+#include <iostream>
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc/editor_help.h"
@@ -1324,6 +1329,181 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		}
 
 		api_dump["native_structures"] = native_structures;
+	}
+
+	{
+		// global classes
+		Array global_classes;
+
+		TypedArray<Dictionary> global_class_list = ProjectSettings::get_singleton()->get_global_class_list();
+
+		for (Dictionary class_data : global_class_list) {
+			Dictionary d;
+			d["name"] = class_data["class"];
+			d["inherits"] = class_data["base"];
+
+			String script_path = class_data["path"];
+
+			Ref<Script> class_definition = ResourceLoader::load(script_path, "Script");
+
+			{
+				// methods
+				List<MethodInfo> method_list;
+				class_definition->get_script_method_list(&method_list);
+
+				Array methods;
+				for (const MethodInfo &method_info : method_list) {
+					Dictionary method;
+					method["name"] = method_info.name;
+					method["is_static"] = method_info.is_static;
+
+					bool has_return = method_info.return_val.type != Variant::NIL || (method_info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
+					if (has_return) {
+						Dictionary return_type;
+						return_type["type"] = get_property_info_type_name(method_info.return_val);
+
+						method["return_value"] = return_type;
+					}
+
+					Array arguments;
+					for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+						const PropertyInfo &argument = method_info.arguments[i];
+						Dictionary argument_info;
+
+						argument_info["name"] = argument.name;
+						argument_info["type"] = get_property_info_type_name(argument);
+
+						int64_t default_arg_index = i - (method_info.arguments.size() - method_info.default_arguments.size());
+						if (default_arg_index >= 0) {
+							Variant default_arg = method_info.default_arguments[default_arg_index];
+							argument_info["default_value"] = default_arg.get_construct_string();
+						}
+
+						arguments.push_back(argument_info);
+					}
+
+					if (arguments.size()) {
+						method["arguments"] = arguments;
+					}
+
+					methods.push_back(method);
+				}
+
+				d["methods"] = methods;
+			}
+
+			{
+				// signals
+				List<MethodInfo> signal_list;
+				class_definition->get_script_signal_list(&signal_list);
+
+				Array signals;
+				for (const MethodInfo &signal_info : signal_list) {
+					StringName signal_name = signal_info.name;
+					Dictionary signal;
+					signal["name"] = String(signal_name);
+
+					signals.push_back(signal);
+				}
+
+				if (signals.size()) {
+					d["signals"] = signals;
+				}
+			}
+
+			{
+				// properties
+				List<PropertyInfo> property_list;
+				class_definition->get_script_property_list(&property_list);
+
+				Array properties;
+				for (const PropertyInfo &property_info : property_list) {
+					if (property_info.usage & PROPERTY_USAGE_CATEGORY || property_info.usage & PROPERTY_USAGE_GROUP || property_info.usage & PROPERTY_USAGE_SUBGROUP || (property_info.type == Variant::NIL && property_info.usage & PROPERTY_USAGE_ARRAY)) {
+						continue; //not real properties
+					}
+					if (property_info.name.begins_with("_")) {
+						continue; //hidden property
+					}
+					if (property_info.name.contains("/")) {
+						// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
+						continue;
+					}
+					StringName property_name = property_info.name;
+					Dictionary property;
+					property["type"] = get_property_info_type_name(property_info);
+					property["name"] = String(property_name);
+
+					properties.push_back(property);
+				}
+
+				if (properties.size()) {
+					d["properties"] = properties;
+				}
+			}
+
+			global_classes.push_back(d);
+		}
+
+		api_dump["global_classes"] = global_classes;
+	}
+
+	{
+		// autoload classes
+		Array autoload_classes;
+
+		const HashMap<StringName, ProjectSettings::AutoloadInfo> &autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+
+		for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : autoloads) {
+			const ProjectSettings::AutoloadInfo &info = E.value;
+			if (!info.path.ends_with(".gd")) {
+				continue;
+			}
+
+			Dictionary d;
+			d["name"] = info.name;
+
+			String script_path = info.path;
+
+			Ref<Script> class_definition = ResourceLoader::load(script_path, "Script");
+			{
+				// enums
+				Array enums;
+
+				Dictionary script_constant_map = class_definition->_get_script_constant_map();
+				for (String key : script_constant_map.keys()) {
+					//print_line(key, " = ", script_constant_map[key]);
+
+					Dictionary enum_entries = script_constant_map[key];
+					if (enum_entries == Dictionary()) {
+						continue;
+					}
+
+					Dictionary enum_data;
+
+					enum_data["name"] = key;
+
+					Array enum_values;
+					for (String enum_entry : enum_entries.keys()) {
+						Dictionary enum_value;
+						enum_value["name"] = enum_entry;
+						enum_value["value"] = enum_entries[enum_entry];
+
+						enum_values.push_back(enum_value);
+					}
+					enum_data["values"] = enum_values;
+
+					enums.push_back(enum_data);
+				}
+
+				if (enums.size()) {
+					d["enums"] = enums;
+				}
+			}
+
+			autoload_classes.push_back(d);
+		}
+
+		api_dump["autoload_classes"] = autoload_classes;
 	}
 
 	return api_dump;

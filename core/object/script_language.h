@@ -129,7 +129,6 @@ protected:
 	TypedArray<Dictionary> _get_script_property_list();
 	TypedArray<Dictionary> _get_script_method_list();
 	TypedArray<Dictionary> _get_script_signal_list();
-	Dictionary _get_script_constant_map();
 
 	void _set_debugger_break_language();
 
@@ -139,6 +138,7 @@ protected:
 
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::SCRIPT;
+	Dictionary _get_script_constant_map();
 
 	virtual void reload_from_file() override;
 
