@@ -3417,7 +3417,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 	emit_signal(SNAME("folder_color_changed"));
 }
 
-void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options) {
+void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options, bool p_show_expand_options) {
 	Vector<String> filenames;
 	Vector<String> foldernames;
 
@@ -3510,14 +3510,16 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	bool root_path_not_selected = !no_paths && p_paths[0] != "res://" && (p_paths.size() <= 1 || p_paths[1] != "res://");
 
 	if (all_folders && foldernames.size() > 0) {
-		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
+		if (p_show_expand_options) {
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
 
-		if (foldernames.size() == 1) {
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
+			if (foldernames.size() == 1) {
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
+			}
+
+			p_popup->add_separator();
 		}
-
-		p_popup->add_separator();
 
 		// Only add the 'Set Folder Color...' option if the root path is not selected.
 		if (root_path_not_selected) {
@@ -3814,7 +3816,7 @@ void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, M
 	// Popup.
 	if (!paths.is_empty()) {
 		file_list_popup->clear();
-		_file_and_folders_fill_popup(file_list_popup, paths, searched_tokens.is_empty());
+		_file_and_folders_fill_popup(file_list_popup, paths, searched_tokens.is_empty(), false);
 		file_list_popup->set_position(files->get_screen_position() + p_pos);
 		file_list_popup->reset_size();
 		file_list_popup->popup();
