@@ -385,6 +385,18 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		}
 	} else if (p_select.begins_with("http:") || p_select.begins_with("https:")) {
 		OS::get_singleton()->shell_open(p_select);
+	} else if (p_select.begins_with("open-script:")) {
+		const String file = p_select.trim_prefix("open-script:");
+		if (!ResourceLoader::exists(file)) {
+			EditorNode::get_singleton()->show_warning(TTR("File doesn't exist:") + "\n" + file, TTR("Error!"));
+			return;
+		}
+		Ref<Resource> scr = ResourceLoader::load(file);
+		if (scr.is_null()) {
+			EditorNode::get_singleton()->show_warning(TTR("Cannot load file:") + "\n" + file, TTR("Error!"));
+			return;
+		}
+		ScriptEditor::get_singleton()->edit(scr);
 	} else if (p_select.begins_with("^")) { // Copy button.
 		DisplayServer::get_singleton()->clipboard_set(p_select.substr(1));
 		EditorToaster::get_singleton()->popup_str(TTR("Code snippet copied to clipboard."), EditorToaster::SEVERITY_INFO);
@@ -1025,6 +1037,21 @@ void EditorHelp::_update_doc() {
 	if (cd.is_experimental) {
 		class_desc->add_newline();
 		EXPERIMENTAL_DOC_MSG(HANDLE_DOC(cd.experimental_message), TTR("This class may be changed or removed in future versions."));
+	}
+
+	// Clickable path for user scripts
+	if (cd.is_script_doc) {
+		class_desc->add_newline();
+
+		_push_normal_font();
+		class_desc->push_color(theme_cache.title_color);
+
+		class_desc->add_text("Script: ");
+
+		_add_script_link(cd.script_path, "\"", "\"");
+
+		class_desc->pop(); // color
+		_pop_normal_font();
 	}
 
 	// Inheritance tree
@@ -3012,6 +3039,24 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 void EditorHelp::_add_text(const String &p_bbcode) {
 	_add_text_to_rt(p_bbcode, class_desc, this, edited_class);
+}
+
+void EditorHelp::_add_script_link(const String &p_script_path, const String &p_prefix, const String &p_suffix) {
+	class_desc->push_color(theme_cache.type_color);
+
+	if (!p_prefix.is_empty()) {
+		class_desc->add_text(p_prefix);
+	}
+
+	class_desc->push_meta("open-script:" + p_script_path, RichTextLabel::META_UNDERLINE_ON_HOVER, TTR("Open in Script Editor"));
+	class_desc->add_text(p_script_path);
+	class_desc->pop(); // meta
+
+	if (!p_suffix.is_empty()) {
+		class_desc->add_text(p_suffix);
+	}
+
+	class_desc->pop(); // color
 }
 
 void EditorHelp::_wait_for_thread(Thread &p_thread) {
