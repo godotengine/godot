@@ -52,8 +52,8 @@
 			render_mode blend_mix, depth_draw_never, unshaded, skip_vertex_transform, cull_disabled;
 
 			void vertex() {
-				// Billboarding code for trails
-				// CUSTOM0 contains the tangent of the trail and the width.
+				// Billboarding code for trails.
+				// `CUSTOM0` contains the tangent and width of the trail.
 				if (dot(CUSTOM0.xyz, CUSTOM0.xyz) &gt; 0.0) {
 					vec3 p = (inverse(MODELVIEW_MATRIX) * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 					p = VERTEX - p;
