@@ -457,6 +457,10 @@ void FileDialog::_push_history() {
 }
 
 void FileDialog::_action_pressed() {
+	if (_is_open_should_be_disabled()) {
+		return;
+	}
+
 	if (mode == FILE_MODE_OPEN_FILES) {
 		const Vector<String> files = get_selected_files();
 		if (!files.is_empty()) {
@@ -1578,6 +1582,7 @@ void FileDialog::_invalidate() {
 	}
 
 	update_file_list();
+	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 
 	if (ensure_visible_after_invalidating) {
 		file_list->ensure_current_is_visible();

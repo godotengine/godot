@@ -97,6 +97,8 @@ void Container::_sort_children() {
 		return;
 	}
 
+	update_minimum_size();
+
 	notification(NOTIFICATION_PRE_SORT_CHILDREN);
 	emit_signal(SceneStringName(pre_sort_children));
 

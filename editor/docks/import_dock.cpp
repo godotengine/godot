@@ -64,7 +64,6 @@ public:
 			values[p_name] = p_value;
 			if (checking) {
 				checked.insert(p_name);
-				notify_property_list_changed();
 			}
 			return true;
 		}
