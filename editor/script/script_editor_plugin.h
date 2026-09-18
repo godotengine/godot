@@ -386,7 +386,7 @@ class ScriptEditor : public EditorDock {
 	void _auto_format_text(ScriptEditorBase *p_seb);
 
 	void _connect_to_scene();
-	void _connect_to_scene_recursive(Node *p_current, Node *p_base);
+	void _connect_to_scene_recursive(Node *p_current);
 	void _update_document_list();
 	void _queue_update_list();
 

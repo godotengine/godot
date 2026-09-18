@@ -2374,14 +2374,10 @@ void ScriptEditor::_connect_to_scene() {
 	if (!edited_scene) {
 		return;
 	}
-	_connect_to_scene_recursive(edited_scene, edited_scene);
+	_connect_to_scene_recursive(edited_scene);
 }
 
-void ScriptEditor::_connect_to_scene_recursive(Node *p_current, Node *p_base) {
-	if (p_current != p_base && p_current->get_owner() != p_base) {
-		return;
-	}
-
+void ScriptEditor::_connect_to_scene_recursive(Node *p_current) {
 	_queue_update_list();
 	const Callable update_callable = callable_mp(this, &ScriptEditor::_queue_update_list);
 	if (p_current->is_connected(CoreStringName(script_changed), update_callable)) {
@@ -2389,11 +2385,8 @@ void ScriptEditor::_connect_to_scene_recursive(Node *p_current, Node *p_base) {
 	}
 	p_current->connect(CoreStringName(script_changed), update_callable);
 	p_current->connect(SceneStringName(tree_exited), update_callable);
-	p_current->connect(SNAME("child_entered_tree"), callable_mp(this, &ScriptEditor::_connect_to_scene_recursive).bind(p_base), CONNECT_DEFERRED);
-
-	for (Node *child : p_current->iterate_children()) {
-		_connect_to_scene_recursive(child, p_base);
-	}
+	// Use `child_entered_tree` to recursively connect to children.
+	p_current->connect(SNAME("child_entered_tree"), callable_mp(this, &ScriptEditor::_connect_to_scene_recursive));
 }
 
 void ScriptEditor::_update_document_list() {
