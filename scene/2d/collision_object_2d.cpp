@@ -69,6 +69,11 @@ void CollisionObject2D::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_update_pickable();
 		} break;
+
+		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
+			_fti_physics_reset_requested = true;
+		} break;
+
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {
 				return;
@@ -400,6 +405,13 @@ void CollisionObject2D::_mouse_exit() {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
 	}
 	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+}
+
+void CollisionObject2D::_on_physics_callback() {
+	if (_fti_physics_reset_requested) {
+		reset_physics_interpolation();
+		_fti_physics_reset_requested = false;
+	}
 }
 
 void CollisionObject2D::set_only_update_transform_changes(bool p_enable) {
