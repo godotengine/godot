@@ -165,8 +165,6 @@ class CodeTextEditor : public VBoxContainer {
 	FindReplaceBar *find_replace_bar = nullptr;
 	HBoxContainer *status_bar = nullptr;
 
-	Button *toggle_files_button = nullptr;
-	Control *toggle_files_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
@@ -223,8 +221,6 @@ class CodeTextEditor : public VBoxContainer {
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
 	void _zoom_popup_id_pressed(int p_idx);
-
-	void _toggle_files_pressed();
 
 protected:
 	void _text_changed_idle_timeout();
@@ -303,10 +299,6 @@ public:
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 
 	void validate_script();
-
-	void set_toggle_list_control(Control *p_toggle_list_control);
-	void show_toggle_files_button();
-	void update_toggle_files_button();
 
 	CodeTextEditor();
 };
