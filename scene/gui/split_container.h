@@ -59,7 +59,7 @@ public:
 };
 
 class SplitContainerDragger : public Control {
-	GDCLASS(SplitContainerDragger, Control);
+	GDSOFTCLASS(SplitContainerDragger, Control);
 	friend class SplitContainer;
 
 	bool dragging = false;
