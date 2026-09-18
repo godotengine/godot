@@ -147,7 +147,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 			break;
 		default:
 			font_hinting = TextServer::HINTING_NORMAL;
-			font_mono_hinting = TextServer::HINTING_LIGHT;
+			font_mono_hinting = TextServer::HINTING_NORMAL;
 			break;
 	}
 
