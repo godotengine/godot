@@ -103,9 +103,9 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 		}
 
 		if (p_name == "application/bundle_identifier") {
-			String identifier = p_preset->get("application/bundle_identifier");
+			String identifier = _get_app_id(Ref<EditorExportPreset>(p_preset));
 			String pn_err;
-			if (!is_package_name_valid(identifier, &pn_err)) {
+			if (!ProjectSettings::get_singleton()->validate_app_id(identifier, ProjectSettings::APP_ID_APPLE, &pn_err)) {
 				return TTR("Invalid bundle identifier:") + " " + pn_err;
 			}
 		}
@@ -842,6 +842,14 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 	}
 }
 
+String EditorExportPlatformMacOS::_get_app_id(const Ref<EditorExportPreset> &p_preset) const {
+	String id = p_preset->get("application/bundle_identifier");
+	if (id.is_empty()) {
+		id = get_project_setting(p_preset, "application/config/id");
+	}
+	return ProjectSettings::get_singleton()->app_id_from_name(id, ProjectSettings::APP_ID_APPLE);
+}
+
 void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary, bool p_lg_icon_exported, const String &p_lg_icon) {
 	String str = String::utf8((const char *)plist.ptr(), plist.size());
 	String strnew;
@@ -852,7 +860,7 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 		} else if (lines[i].contains("$name")) {
 			strnew += lines[i].replace("$name", get_project_setting(p_preset, "application/config/name").operator String().xml_escape(true)) + "\n";
 		} else if (lines[i].contains("$bundle_identifier")) {
-			strnew += lines[i].replace("$bundle_identifier", p_preset->get("application/bundle_identifier")) + "\n";
+			strnew += lines[i].replace("$bundle_identifier", _get_app_id(p_preset)) + "\n";
 		} else if (lines[i].contains("$short_version")) {
 			strnew += lines[i].replace("$short_version", p_preset->get_version("application/short_version")) + "\n";
 		} else if (lines[i].contains("$version")) {
@@ -1228,7 +1236,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 			args.push_back("runtime");
 
 			if (p_set_id) {
-				String app_id = p_preset->get("application/bundle_identifier");
+				String app_id = _get_app_id(p_preset);
 				args.push_back("--binary-identifier");
 				args.push_back(app_id);
 			}
@@ -1293,7 +1301,7 @@ void EditorExportPlatformMacOS::_code_sign(const Ref<EditorExportPreset> &p_pres
 			}
 
 			if (p_set_id) {
-				String app_id = p_preset->get("application/bundle_identifier");
+				String app_id = _get_app_id(p_preset);
 				args.push_back("-i");
 				args.push_back(app_id);
 			}
@@ -1423,7 +1431,7 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\": Info.plist missing or invalid, new Info.plist generated."), p_src_path.get_file()));
 			// Generate Info.plist
 			String lib_name = p_src_path.get_basename().get_file();
-			String lib_id = p_preset->get("application/bundle_identifier");
+			String lib_id = _get_app_id(p_preset);
 			String lib_clean_name = lib_name;
 			for (int i = 0; i < lib_clean_name.length(); i++) {
 				if (!is_ascii_alphanumeric_char(lib_clean_name[i]) && lib_clean_name[i] != '.' && lib_clean_name[i] != '-') {
@@ -2190,7 +2198,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				if (dist_type == 2) {
 					String pprof = p_preset->get_or_env("codesign/provisioning_profile", ENV_MAC_CODESIGN_PROFILE);
 					String teamid = p_preset->get("codesign/apple_team_id");
-					String bid = p_preset->get("application/bundle_identifier");
+					String bid = _get_app_id(p_preset);
 					if (!pprof.is_empty() && !teamid.is_empty()) {
 						ent_f->store_line("<key>com.apple.developer.team-identifier</key>");
 						ent_f->store_line("<string>" + teamid + "</string>");
