@@ -2,7 +2,7 @@
 from misc.utility.scons_hints import *
 
 EnsureSConsVersion(4, 4)
-EnsurePythonVersion(3, 9)
+EnsurePythonVersion(3, 10)
 
 # System
 import glob

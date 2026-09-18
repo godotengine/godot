@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import atexit
 import contextlib
 import glob
@@ -24,7 +22,7 @@ compiler_version_cache = None
 
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
-_scu_folders = set()
+_scu_folders = set[str]()
 
 
 def set_scu_folders(scu_folders):

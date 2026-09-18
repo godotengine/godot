@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
-
 import fnmatch
 import math
 import os
@@ -138,7 +136,7 @@ class ClassStatusProgress:
         self.described: int = described
         self.total: int = total
 
-    def __add__(self, other: ClassStatusProgress):
+    def __add__(self, other: "ClassStatusProgress"):
         return ClassStatusProgress(self.described + other.described, self.total + other.total)
 
     def increment(self, described: bool):
@@ -189,7 +187,7 @@ class ClassStatus:
             "constructors": ClassStatusProgress(),
         }
 
-    def __add__(self, other: ClassStatus):
+    def __add__(self, other: "ClassStatus"):
         new_status = ClassStatus()
         new_status.name = self.name
         new_status.has_brief_description = self.has_brief_description and other.has_brief_description
