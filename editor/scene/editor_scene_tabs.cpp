@@ -209,6 +209,8 @@ void EditorSceneTabs::_update_context_menu(int p_index) {
 		DISABLE_LAST_OPTION_IF(!ResourceLoader::exists(scene_path));
 		scene_tabs_context_menu->add_item(TTR("Play This Scene"), SCENE_RUN);
 		DISABLE_LAST_OPTION_IF(no_root_node);
+		scene_tabs_context_menu->add_item(TTR("Edit Scene in Inspector"), EditorNode::SCENE_EDIT_IN_INSPECTOR);
+		DISABLE_LAST_OPTION_IF(no_root_node);
 		scene_tabs_context_menu->add_item(TTR("Set as Main Scene"), SCENE_SET_AS_MAIN_SCENE);
 		DISABLE_LAST_OPTION_IF(no_root_node || (!main_scene_path.is_empty() && ResourceUID::ensure_path(main_scene_path) == scene_path));
 
