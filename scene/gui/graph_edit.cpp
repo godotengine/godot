@@ -2470,6 +2470,7 @@ float GraphEdit::get_zoom() const {
 void GraphEdit::set_zoom_step(float p_zoom_step) {
 	p_zoom_step = std::abs(p_zoom_step);
 	ERR_FAIL_COND(!std::isfinite(p_zoom_step));
+	ERR_FAIL_COND_MSG(p_zoom_step < 1.0, "GraphEdit's zoom step must be greater than or equal to 1.0.");
 	if (zoom_step == p_zoom_step) {
 		return;
 	}
