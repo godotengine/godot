@@ -1115,7 +1115,7 @@ if env["brotli"]:
 if not env["disable_overrides"]:
     env.Append(CPPDEFINES=["OVERRIDE_ENABLED"])
 
-if env.editor_build or not env["disable_path_overrides"]:
+if env.editor_build or not env["disable_path_overrides"] or env["library_type"] != "executable":
     env.Append(CPPDEFINES=["OVERRIDE_PATH_ENABLED"])
 
 if not env["verbose"]:

@@ -40,6 +40,12 @@
 static JavaClassWrapper *java_class_wrapper = nullptr;
 #endif
 
+void register_core_android_api() {
+}
+
+void unregister_core_android_api() {
+}
+
 void register_android_api() {
 #if !defined(ANDROID_ENABLED)
 	// On Android platforms, the `java_class_wrapper` instantiation occurs in
