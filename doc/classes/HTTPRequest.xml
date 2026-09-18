@@ -247,8 +247,8 @@
 			Maximum allowed size for response bodies. If the response body is compressed, this will be used as the maximum allowed size for the decompressed body.
 		</member>
 		<member name="download_chunk_size" type="int" setter="set_download_chunk_size" getter="get_download_chunk_size" default="65536">
-			The size of the buffer used and maximum bytes to read per iteration. See [member HTTPClient.read_chunk_size].
-			Set this to a lower value (e.g. 4096 for 4 KiB) when downloading small files to decrease memory usage at the cost of download speeds.
+			The size of the internal buffer and maximum bytes to read per iteration when processing response data.
+			Lowering this reduces memory usage, while increasing it reduces the number of read operations needed (see [member read_time_limit], which can negate the impact this has on download speed).
 		</member>
 		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file" default="&quot;&quot;">
 			The file to download into. Will output any received file into it.
@@ -259,6 +259,11 @@
 		</member>
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of allowed redirects.
+		</member>
+		<member name="read_time_limit" type="int" setter="set_read_time_limit" getter="get_read_time_limit" default="3300">
+			Maximum amount of time (in microseconds) this [HTTPRequest] may spend per frame reading buffered HTTP data, when [member use_threads] is [code]false[/code].
+			Higher values allow more buffered data to be processed each frame, improving download throughput at the cost of increased main thread usage.
+			One chunk read is guaranteed to happen, even if set to [code]0[/code] or another very low value.
 		</member>
 		<member name="timeout" type="float" setter="set_timeout" getter="get_timeout" default="0.0">
 			The duration to wait before a request times out, in seconds (independent of [member Engine.time_scale]). If [member timeout] is set to [code]0.0[/code], the request will never time out.
