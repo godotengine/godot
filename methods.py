@@ -105,8 +105,6 @@ def redirect_emitter(target, source, env):
             item = env.File(f"#bin/obj/{path.relative_to(base_folder)}")
         elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
             item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
-        else:
-            print_warning(f'Failed to redirect "{path}"')
         redirected_targets.append(item)
     return redirected_targets, source
 
