@@ -454,6 +454,7 @@ class AnimationTrackEdit : public Control {
 	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
 	float play_position_pos = 0.0f;
 	NodePath node_path;
+	String track_text;
 
 	Ref<Animation> animation;
 	bool read_only = false;
@@ -480,7 +481,6 @@ class AnimationTrackEdit : public Control {
 	void _zoom_changed();
 
 	Ref<Texture2D> icon_cache;
-	String path_cache;
 
 	void _menu_selected(int p_index);
 	void _popup_key_context_menu(int p_hovering_key_idx, Vector2 p_popup_pos);
@@ -543,6 +543,9 @@ public:
 	NodePath get_path() const;
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
+
+	String get_text() const { return track_text; }
+	void update_text();
 
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
