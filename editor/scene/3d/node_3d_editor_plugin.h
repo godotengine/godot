@@ -51,7 +51,6 @@ class EditorSpinSlider;
 class HSlider;
 class HSplitContainer;
 class Label;
-class LineEdit;
 class MenuButton;
 class Node3DEditorViewport;
 class Node3DEditorViewportContainer;
@@ -245,9 +244,9 @@ private:
 
 	bool trackball_enabled = false;
 
-	LineEdit *xform_translate[3];
-	LineEdit *xform_rotate[3];
-	LineEdit *xform_scale[3];
+	SpinBox *xform_translate[3];
+	SpinBox *xform_rotate[3];
+	SpinBox *xform_scale[3];
 	OptionButton *xform_type = nullptr;
 
 	VBoxContainer *settings_vbc = nullptr;
