@@ -72,6 +72,16 @@ TEST_CASE("[SceneTree][ImageTexture] set_image") {
 	CHECK(image_texture->get_format() == image_texture->get_image()->get_format());
 }
 
+TEST_CASE("[SceneTree][ImageTexture] clear_image") {
+	Ref<Image> image = memnew(Image(16, 8, true, Image::FORMAT_RGBA8));
+	Ref<ImageTexture> image_texture = ImageTexture::create_from_image(image);
+	image_texture->clear_image();
+	CHECK(image_texture->get_width() == 0);
+	CHECK(image_texture->get_height() == 0);
+	CHECK(image_texture->get_format() == Image::FORMAT_L8);
+	CHECK(image_texture->has_alpha() == false);
+}
+
 TEST_CASE("[SceneTree][ImageTexture] set_size_override") {
 	Ref<Image> image = memnew(Image(16, 8, false, Image::FORMAT_RGB8));
 	Ref<ImageTexture> image_texture = ImageTexture::create_from_image(image);

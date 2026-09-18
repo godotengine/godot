@@ -39,12 +39,11 @@ class ImageTexture : public Texture2D {
 	RES_BASE_EXTENSION("tex");
 
 	mutable RID texture;
+	mutable Ref<BitMap> alpha_cache;
 	Image::Format format = Image::FORMAT_L8;
-	bool mipmaps = false;
 	int w = 0;
 	int h = 0;
-	Size2 size_override;
-	mutable Ref<BitMap> alpha_cache;
+	bool mipmaps = false;
 	bool image_stored = false;
 
 protected:
@@ -52,8 +51,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_image(const Ref<Image> &p_image);
 	static Ref<ImageTexture> create_from_image(const Ref<Image> &p_image);
+	void set_image(const Ref<Image> &p_image);
+	void clear_image();
 
 	virtual Image::Format get_format() const override;
 
