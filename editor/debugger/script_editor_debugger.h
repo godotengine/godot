@@ -81,6 +81,7 @@ private:
 		ACTION_DELETE_BREAKPOINT,
 		ACTION_DELETE_BREAKPOINTS_IN_FILE,
 		ACTION_DELETE_ALL_BREAKPOINTS,
+		ACTION_SKIP_BREAKPOINTS,
 	};
 
 	enum VMemMenu {
@@ -294,6 +295,7 @@ private:
 
 	void _set_breakpoint(const String &p_path, const int &p_line, const bool &p_enabled);
 	void _clear_breakpoints();
+	void _skip_breakpoints();
 
 	void _breakpoint_tree_clicked();
 
