@@ -3193,7 +3193,6 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 
 	bool is_resource = Object::cast_to<Resource>(current_obj);
 	bool is_node = Object::cast_to<Node>(current_obj);
-	bool skip_main_plugin = false;
 
 	String editable_info; // None by default.
 	bool info_is_warning = false;
@@ -3245,9 +3244,6 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 			SceneTreeDock::get_singleton()->set_selected(current_node);
 			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
-			if (!inspector_only && !skip_main_plugin) {
-				skip_main_plugin = !editor_main_screen->can_auto_switch_screens();
-			}
 		} else {
 			SignalsDock::get_singleton()->set_object(nullptr);
 			GroupsDock::get_singleton()->set_selection(Vector<Node *>());
@@ -3316,9 +3312,6 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	// Take care of the main editor plugin.
 
 	if (!inspector_only) {
-		if (!skip_main_plugin) {
-			editor_main_screen->edit(current_obj);
-		}
 		edit_item(current_obj, editor_owner);
 	}
 
@@ -4749,17 +4742,6 @@ Dictionary EditorNode::_get_main_scene_state() {
 }
 
 void EditorNode::_set_main_scene_state(const Dictionary &p_state) {
-	if (get_edited_scene()) {
-		if (!restoring_scenes && editor_main_screen->can_auto_switch_screens()) {
-			// Switch between 2D and 3D if currently in 2D or 3D.
-			Node *selected_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
-			if (!selected_node) {
-				selected_node = get_edited_scene();
-			}
-			editor_main_screen->edit(selected_node);
-		}
-	}
-
 	if (p_state.has("scene_tree_offset")) {
 		SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_value(p_state["scene_tree_offset"]);
 	}
