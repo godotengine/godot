@@ -34,6 +34,7 @@
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
 #include "scene/main/viewport.h"
+#include "servers/display/display_server.h"
 
 bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) {
 	Ref<InputEventMouseButton> mb = p_event;
@@ -58,7 +59,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 						panning = Vector2(panning.x + panning.y, 0);
 					} else if (pan_axis == PAN_AXIS_VERTICAL) {
 						panning = Vector2(0, panning.x + panning.y);
-					} else if (mb->is_shift_pressed()) {
+					} else if (!DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed()) {
 						panning = Vector2(panning.y, panning.x);
 					}
 					pan_callback.call(-panning * scroll_speed, p_event);
@@ -71,7 +72,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 						panning = Vector2(panning.x + panning.y, 0);
 					} else if (pan_axis == PAN_AXIS_VERTICAL) {
 						panning = Vector2(0, panning.x + panning.y);
-					} else if (mb->is_shift_pressed()) {
+					} else if (!DisplayServer::get_singleton()->shift_swaps_scroll_axis() && mb->is_shift_pressed()) {
 						panning = Vector2(panning.y, panning.x);
 					}
 					pan_callback.call(-panning * scroll_speed, p_event);
