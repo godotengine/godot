@@ -1,8 +1,14 @@
 """Functions used to generate source files during build time"""
 
+import argparse
 import os.path
+import sys
 
-from methods import generated_wrapper, print_error, to_raw_cstring
+try:
+    sys.path.insert(0, "./")
+    from methods import generated_wrapper, print_error, to_raw_cstring
+except ImportError:
+    raise SystemExit(f'Generator script "{__file__}" must be run from repository root!')
 
 
 class RDHeaderStruct:
@@ -244,12 +250,6 @@ public:
 """)
 
 
-def build_rd_headers(target, source, env):
-    env.NoCache(target)
-    for src in source:
-        build_rd_header(f"{src}.gen.h", str(src))
-
-
 class RAWHeaderStruct:
     def __init__(self):
         self.code = ""
@@ -283,7 +283,26 @@ static const char {os.path.basename(shader).replace(".glsl", "_shader_glsl")}[] 
 """)
 
 
-def build_raw_headers(target, source, env):
-    env.NoCache(target)
-    for src in source:
-        build_raw_header(f"{src}.gen.h", str(src))
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    rd_glsl_parser = subparsers.add_parser("rd_glsl")
+    rd_glsl_parser.add_argument("target")
+    rd_glsl_parser.add_argument("shader")
+
+    glsl_header_parser = subparsers.add_parser("glsl_header")
+    glsl_header_parser.add_argument("target")
+    glsl_header_parser.add_argument("shader")
+
+    args = parser.parse_args()
+    if args.command == "rd_glsl":
+        build_rd_header(args.target, args.shader)
+    if args.command == "glsl_header":
+        build_raw_header(args.target, args.shader)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
