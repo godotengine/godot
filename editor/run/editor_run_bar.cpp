@@ -725,3 +725,8 @@ EditorRunBar::EditorRunBar() {
 	write_movie_button->set_accessibility_name(TTRC("Enable Movie Maker Mode"));
 	write_movie_button->set_flat(false);
 }
+
+EditorRunBar::~EditorRunBar() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}

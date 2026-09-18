@@ -562,3 +562,8 @@ ShaderTypes::ShaderTypes() {
 		shader_types.insert(type);
 	}
 }
+
+ShaderTypes::~ShaderTypes() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}

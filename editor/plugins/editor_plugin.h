@@ -283,8 +283,8 @@ class EditorPlugins {
 		MAX_CREATE_FUNCS = 128
 	};
 
-	static EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];
-	static int creation_func_count;
+	static inline EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];
+	static inline int creation_func_count = 0;
 
 	template <typename T>
 	static EditorPlugin *creator() {
@@ -306,5 +306,13 @@ public:
 	static void add_create_func(EditorPluginCreateFunc p_func) {
 		ERR_FAIL_COND(creation_func_count >= MAX_CREATE_FUNCS);
 		creation_funcs[creation_func_count++] = p_func;
+	}
+
+	static void reset() {
+		for (int i = 0; i < creation_func_count; i++) {
+			creation_funcs[i] = nullptr;
+		}
+
+		creation_func_count = 0;
 	}
 };

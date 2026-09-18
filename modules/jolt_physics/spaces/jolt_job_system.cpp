@@ -164,6 +164,10 @@ JoltJobSystem::JoltJobSystem() :
 	jobs.Init(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsJobs);
 }
 
+JoltJobSystem::~JoltJobSystem() {
+	_reclaim_jobs();
+}
+
 void JoltJobSystem::pre_step() {
 	// Nothing to do.
 }

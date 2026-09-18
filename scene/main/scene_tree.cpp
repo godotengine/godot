@@ -2012,6 +2012,14 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 	idle_callbacks[idle_callback_count++] = p_callback;
 }
 
+void SceneTree::reset_idle_callbacks() {
+	for (int i = 0; i < idle_callback_count; i++) {
+		idle_callbacks[i] = nullptr;
+	}
+
+	idle_callback_count = 0;
+}
+
 #ifdef TOOLS_ENABLED
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	bool add_options = false;
@@ -2255,6 +2263,8 @@ SceneTree::~SceneTree() {
 	}
 
 	memdelete(process_group_call_queue_allocator);
+	_physics_interpolation_enabled = false;
+	_physics_interpolation_enabled_in_project = false;
 
 	if (singleton == this) {
 		singleton = nullptr;

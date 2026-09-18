@@ -30,7 +30,9 @@
 
 #pragma once
 
+#include "core/os/mutex.h"
 #include "core/string/ustring.h"
+#include "core/templates/paged_allocator.h"
 #include "core/templates/safe_refcount.h"
 
 #define UNIQUE_NODE_PREFIX "%"
@@ -47,8 +49,6 @@ class Main;
  * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  */
 class [[nodiscard]] _WARN_UNUSED_ StringName {
-	struct Table;
-
 	struct _Data {
 		SafeRefCount refcount;
 		SafeNumeric<uint32_t> static_count;
@@ -60,6 +60,20 @@ class [[nodiscard]] _WARN_UNUSED_ StringName {
 		uint32_t hash = 0;
 		_Data *prev = nullptr;
 		_Data *next = nullptr;
+	};
+
+	struct Table {
+		constexpr static uint32_t TABLE_BITS = 16;
+		constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;
+		constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
+
+		struct Allocator : public PagedAllocator<_Data> {
+			~Allocator();
+		};
+
+		static inline _Data *table[TABLE_LEN];
+		static inline BinaryMutex mutex;
+		static inline Allocator allocator;
 	};
 
 	_Data *_data = nullptr;

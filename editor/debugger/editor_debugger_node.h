@@ -127,6 +127,7 @@ private:
 	friend class DebugAdapterParser;
 	static EditorDebuggerNode *singleton;
 	EditorDebuggerNode();
+	~EditorDebuggerNode();
 
 protected:
 	void _debugger_stopped(int p_id);

@@ -387,9 +387,15 @@ void unregister_server_types() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Unregister Extensions");
 
 	ServersDebugger::deinitialize();
-	memdelete(shader_types);
-	if constexpr (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
-		memdelete(writer_pngwav);
+	if (shader_types) {
+		memdelete(shader_types);
+		shader_types = nullptr;
+	}
+	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+		if (writer_pngwav) {
+			memdelete(writer_pngwav);
+			writer_pngwav = nullptr;
+		}
 	}
 
 	OS::get_singleton()->benchmark_end_measure("Servers", "Unregister Extensions");

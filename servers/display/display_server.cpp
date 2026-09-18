@@ -2071,6 +2071,18 @@ DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driv
 	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error);
 }
 
+void DisplayServer::reset() {
+	server_create_functions[0] = { "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func };
+
+	for (int i = 1; i < server_create_count; i++) {
+		server_create_functions[i].name = nullptr;
+		server_create_functions[i].create_function = nullptr;
+		server_create_functions[i].get_rendering_drivers_function = nullptr;
+	}
+
+	server_create_count = 1;
+}
+
 void DisplayServer::_input_set_mouse_mode(InputClassEnums::MouseMode p_mode) {
 	singleton->mouse_set_mode(DisplayServerEnums::MouseMode(p_mode));
 }

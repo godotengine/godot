@@ -152,9 +152,10 @@ void ParticleProcessMaterial::init_shaders() {
 
 void ParticleProcessMaterial::finish_shaders() {
 	dirty_materials.clear();
-
-	memdelete(shader_names);
-	shader_names = nullptr;
+	if (shader_names) {
+		memdelete(shader_names);
+		shader_names = nullptr;
+	}
 }
 
 void ParticleProcessMaterial::_update_shader() {

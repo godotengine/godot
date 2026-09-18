@@ -685,6 +685,12 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	set_method("initialized", callable_mp(this, &GDScriptLanguageProtocol::initialized));
 }
 
+GDScriptLanguageProtocol::~GDScriptLanguageProtocol() {
+	clients.clear();
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
+
 #undef SET_DOCUMENT_METHOD
 #undef SET_COMPLETION_METHOD
 #undef SET_WORKSPACE_METHOD

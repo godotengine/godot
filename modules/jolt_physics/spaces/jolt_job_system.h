@@ -93,6 +93,7 @@ class JoltJobSystem final : public JPH::JobSystemWithBarrier {
 
 public:
 	JoltJobSystem();
+	~JoltJobSystem();
 
 	void pre_step();
 	void post_step();

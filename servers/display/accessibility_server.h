@@ -158,6 +158,7 @@ public:
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);
 	static AccessibilityServer *create(int p_index, Error &r_error);
+	static void reset();
 
 	AccessibilityServer();
 	virtual ~AccessibilityServer();

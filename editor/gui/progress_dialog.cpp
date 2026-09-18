@@ -327,5 +327,6 @@ ProgressDialog::ProgressDialog() {
 }
 
 ProgressDialog::~ProgressDialog() {
+	ERR_FAIL_COND(singleton != this);
 	singleton = nullptr;
 }
