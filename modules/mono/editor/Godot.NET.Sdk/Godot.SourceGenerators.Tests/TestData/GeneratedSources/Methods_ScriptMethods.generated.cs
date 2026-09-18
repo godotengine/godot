@@ -12,6 +12,10 @@ partial class Methods
         /// Cached name for the 'MethodWithOverload' method.
         /// </summary>
         public new static readonly global::Godot.StringName @MethodWithOverload = "MethodWithOverload";
+        /// <summary>
+        /// Cached name for the 'MethodWithDefaultValues' method.
+        /// </summary>
+        public new static readonly global::Godot.StringName @MethodWithDefaultValues = "MethodWithDefaultValues";
     }
     /// <summary>
     /// Get the method information for all the methods declared in this class.
@@ -21,10 +25,11 @@ partial class Methods
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
     internal new static global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo> GetGodotMethodList()
     {
-        var methods = new global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>(3);
+        var methods = new global::System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>(4);
         methods.Add(new(name: MethodName.@MethodWithOverload, returnVal: new(type: (global::Godot.Variant.Type)0, name: "", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), flags: (global::Godot.MethodFlags)1, arguments: null, defaultArguments: null));
         methods.Add(new(name: MethodName.@MethodWithOverload, returnVal: new(type: (global::Godot.Variant.Type)0, name: "", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), flags: (global::Godot.MethodFlags)1, arguments: new() { new(type: (global::Godot.Variant.Type)2, name: "a", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false),  }, defaultArguments: null));
         methods.Add(new(name: MethodName.@MethodWithOverload, returnVal: new(type: (global::Godot.Variant.Type)0, name: "", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), flags: (global::Godot.MethodFlags)1, arguments: new() { new(type: (global::Godot.Variant.Type)2, name: "a", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), new(type: (global::Godot.Variant.Type)2, name: "b", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false),  }, defaultArguments: null));
+        methods.Add(new(name: MethodName.@MethodWithDefaultValues, returnVal: new(type: (global::Godot.Variant.Type)0, name: "", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), flags: (global::Godot.MethodFlags)1, arguments: new() { new(type: (global::Godot.Variant.Type)2, name: "a", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), new(type: (global::Godot.Variant.Type)2, name: "b", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false),  }, defaultArguments: null));
         return methods;
     }
 #pragma warning restore CS0109
@@ -47,6 +52,16 @@ partial class Methods
             ret = default;
             return true;
         }
+        if (method == MethodName.@MethodWithDefaultValues && args.Count == 1) {
+            @MethodWithDefaultValues(global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[0]));
+            ret = default;
+            return true;
+        }
+        if (method == MethodName.@MethodWithDefaultValues && args.Count == 2) {
+            @MethodWithDefaultValues(global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[0]), global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[1]));
+            ret = default;
+            return true;
+        }
         return base.InvokeGodotClassMethod(method, args, out ret);
     }
     /// <inheritdoc/>
@@ -54,6 +69,9 @@ partial class Methods
     protected override bool HasGodotClassMethod(in godot_string_name method)
     {
         if (method == MethodName.@MethodWithOverload) {
+           return true;
+        }
+        if (method == MethodName.@MethodWithDefaultValues) {
            return true;
         }
         return base.HasGodotClassMethod(method);
