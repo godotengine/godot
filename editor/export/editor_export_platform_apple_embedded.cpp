@@ -752,7 +752,8 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += "\t</array>\n";
 	} else if (p_line.contains("$sdkroot")) {
 		strnew += p_line.replace("$sdkroot", get_sdk_name()) + "\n";
-
+	} else if (p_line.contains("$gamemode")) {
+		strnew += "\n";
 	} else {
 		strnew += p_line + "\n";
 	}

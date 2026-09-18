@@ -50,6 +50,7 @@ $usage_descriptions
 	<string>NSApplication</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.$app_category</string>
+$gamemode
 	<key>LSArchitecturePriority</key>
 	<array>
 		<string>arm64</string>
