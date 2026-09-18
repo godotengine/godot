@@ -52,7 +52,9 @@ void initialize_multiplayer_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(SceneMultiplayer);
 		if constexpr (GD_IS_CLASS_ENABLED(MultiplayerAPI)) {
 			MultiplayerAPI::set_default_interface("SceneMultiplayer");
+#ifdef DEBUG_ENABLED
 			MultiplayerDebugger::initialize();
+#endif
 		}
 	}
 #ifdef TOOLS_ENABLED
@@ -63,7 +65,9 @@ void initialize_multiplayer_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_multiplayer_module(ModuleInitializationLevel p_level) {
+#ifdef DEBUG_ENABLED
 	if constexpr (GD_IS_CLASS_ENABLED(MultiplayerAPI)) {
 		MultiplayerDebugger::deinitialize();
 	}
+#endif
 }

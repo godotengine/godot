@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
@@ -140,3 +142,5 @@ public:
 
 	virtual ~EngineDebugger();
 };
+
+#endif // DEBUG_ENABLED

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #ifndef _3D_DISABLED
 
 #include "core/object/ref_counted.h"
@@ -343,3 +345,5 @@ public:
 };
 
 #endif // _3D_DISABLED
+
+#endif // DEBUG_ENABLED
