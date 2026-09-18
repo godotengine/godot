@@ -89,8 +89,10 @@ GODOT_CLANG_WARNING_POP
 #include <hb-ot.h>
 #endif
 
+#include <hb-gpu.h>
 #include <hb-icu.h>
 #include <hb.h>
+
 #if HB_VERSION_ATLEAST(13, 0, 0)
 #include <hb-raster.h>
 #endif
@@ -176,12 +178,10 @@ class TextServerAdvanced : public TextServerExtension {
 	};
 
 	struct ShelfPackTexture {
-		int32_t texture_w = 1024;
-		int32_t texture_h = 1024;
+		int32_t texture_w = 4096;
+		int32_t texture_h = 4096;
 
-		Ref<Image> image;
 		Ref<ImageTexture> texture;
-		bool dirty = true;
 
 		List<Shelf> shelves;
 
@@ -231,7 +231,7 @@ class TextServerAdvanced : public TextServerExtension {
 		Rect2 rect;
 		Rect2 uv_rect;
 		Vector2 advance;
-		bool fix_edge = false;
+		int64_t offset = 0;
 	};
 
 	struct FontAdvanced;
@@ -292,10 +292,10 @@ class TextServerAdvanced : public TextServerExtension {
 		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 		bool disable_embedded_bitmaps = true;
 		bool mipmaps = false;
-		bool msdf = false;
+		TextServer::FontRenderMode mode = TextServer::FONT_RENDER_RASTER;
 		int msdf_range = 14;
 		FixedSizeScaleMode fixed_size_scale_mode = FIXED_SIZE_SCALE_DISABLE;
-		int msdf_source_size = 48;
+		int source_size = 48;
 		int fixed_size = 0;
 		bool allow_system_fallback = true;
 		bool force_autohinter = false;
@@ -327,6 +327,8 @@ class TextServerAdvanced : public TextServerExtension {
 
 		hb_raster_paint_t *hb_rdr = nullptr;
 		hb_raster_draw_t *hb_mono = nullptr;
+		hb_gpu_paint_t *hb_gpu_rdr = nullptr;
+		hb_gpu_draw_t *hb_gpu_mono = nullptr;
 #endif
 
 		bool face_init = false;
@@ -361,6 +363,12 @@ class TextServerAdvanced : public TextServerExtension {
 			if (hb_mono != nullptr) {
 				hb_raster_draw_destroy(hb_mono);
 			}
+			if (hb_gpu_rdr != nullptr) {
+				hb_gpu_paint_destroy(hb_gpu_rdr);
+			}
+			if (hb_gpu_mono != nullptr) {
+				hb_gpu_draw_destroy(hb_gpu_mono);
+			}
 #endif
 #ifdef MODULE_FREETYPE_ENABLED
 			if (face != nullptr) {
@@ -370,12 +378,13 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 	};
 
-	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
+	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeAdvanced *p_data, Image::Format p_image_format, int p_width, int p_height) const;
 #ifdef MODULE_MSDFGEN_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *p_outline, const Vector2 &p_advance) const;
 #endif
+	_FORCE_INLINE_ FontGlyph encode_hb(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_glyph_id, const Vector2 &p_advance, FT_Outline *p_outline) const;
 #ifdef MODULE_FREETYPE_ENABLED
-	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const;
+	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra, bool p_fix_edge) const;
 #if HB_VERSION_ATLEAST(13, 0, 0)
 	_FORCE_INLINE_ FontGlyph rasterize_hb_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, hb_raster_image_t *p_image, const hb_raster_extents_t &p_ext, const Vector2 &p_advance, bool p_bgra) const;
 #endif
@@ -387,8 +396,8 @@ class TextServerAdvanced : public TextServerExtension {
 	static void _generateMTSDF_threaded(void *p_td, uint32_t p_y);
 
 	_FORCE_INLINE_ Vector2i _get_size(const FontAdvanced *p_font_data, int p_size) const {
-		if (p_font_data->msdf) {
-			return Vector2i(p_font_data->msdf_source_size * 64, 0);
+		if (p_font_data->mode == FONT_RENDER_MSDF || p_font_data->mode == FONT_RENDER_HB_SLUG) {
+			return Vector2i(p_font_data->source_size * 64, 0);
 		} else if (p_font_data->fixed_size > 0) {
 			return Vector2i(p_font_data->fixed_size * 64, 0);
 		} else {
@@ -397,8 +406,10 @@ class TextServerAdvanced : public TextServerExtension {
 	}
 
 	_FORCE_INLINE_ Vector2i _get_size_outline(const FontAdvanced *p_font_data, const Vector2i &p_size) const {
-		if (p_font_data->msdf) {
-			return Vector2i(p_font_data->msdf_source_size * 64, 0);
+		if (p_font_data->mode == FONT_RENDER_MSDF) {
+			return Vector2i(p_font_data->source_size * 64, 0);
+		} else if (p_font_data->mode == FONT_RENDER_HB_SLUG) {
+			return Vector2i(p_font_data->source_size * 64, p_size.y);
 		} else if (p_font_data->fixed_size > 0) {
 			return Vector2i(p_font_data->fixed_size * 64, MIN(p_size.y, 1));
 		} else {
@@ -597,12 +608,12 @@ class TextServerAdvanced : public TextServerExtension {
 		bool disable_embedded_bitmaps = true;
 		bool italic = false;
 		bool mipmaps = false;
-		bool msdf = false;
+		TextServer::FontRenderMode mode = TextServer::FONT_RENDER_RASTER;
 		bool force_autohinter = false;
 		int weight = 400;
 		int stretch = 100;
 		int msdf_range = 14;
-		int msdf_source_size = 48;
+		int source_size = 48;
 		int fixed_size = 0;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
@@ -614,7 +625,7 @@ class TextServerAdvanced : public TextServerExtension {
 		double baseline_offset = 0.0;
 
 		bool operator==(const SystemFontKey &p_b) const {
-			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (keep_rounding_remainders == p_b.keep_rounding_remainders) && (variation_coordinates == p_b.variation_coordinates) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
+			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (mode == p_b.mode) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (source_size == p_b.source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (keep_rounding_remainders == p_b.keep_rounding_remainders) && (variation_coordinates == p_b.variation_coordinates) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
 		}
 
 		SystemFontKey(const String &p_font_name, bool p_italic, int p_weight, int p_stretch, RID p_font, const TextServerAdvanced *p_fb) {
@@ -625,9 +636,9 @@ class TextServerAdvanced : public TextServerExtension {
 			antialiasing = p_fb->_font_get_antialiasing(p_font);
 			disable_embedded_bitmaps = p_fb->_font_get_disable_embedded_bitmaps(p_font);
 			mipmaps = p_fb->_font_get_generate_mipmaps(p_font);
-			msdf = p_fb->_font_is_multichannel_signed_distance_field(p_font);
+			mode = p_fb->_font_get_render_mode(p_font);
 			msdf_range = p_fb->_font_get_msdf_pixel_range(p_font);
-			msdf_source_size = p_fb->_font_get_msdf_size(p_font);
+			source_size = p_fb->_font_get_source_size(p_font);
 			fixed_size = p_fb->_font_get_fixed_size(p_font);
 			force_autohinter = p_fb->_font_is_force_autohinter(p_font);
 			hinting = p_fb->_font_get_hinting(p_font);
@@ -661,7 +672,7 @@ class TextServerAdvanced : public TextServerExtension {
 			hash = hash_murmur3_one_32(p_a.weight, hash);
 			hash = hash_murmur3_one_32(p_a.stretch, hash);
 			hash = hash_murmur3_one_32(p_a.msdf_range, hash);
-			hash = hash_murmur3_one_32(p_a.msdf_source_size, hash);
+			hash = hash_murmur3_one_32(p_a.source_size, hash);
 			hash = hash_murmur3_one_32(p_a.fixed_size, hash);
 			hash = hash_murmur3_one_double(p_a.embolden, hash);
 			hash = hash_murmur3_one_real(p_a.transform[0].x, hash);
@@ -673,7 +684,7 @@ class TextServerAdvanced : public TextServerExtension {
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_SPACE], hash);
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_GLYPH], hash);
 			hash = hash_murmur3_one_double(p_a.baseline_offset, hash);
-			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12) | ((int)p_a.disable_embedded_bitmaps << 14) | ((int)p_a.keep_rounding_remainders << 15), hash));
+			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.mode << 1) | ((int)p_a.italic << 3) | ((int)p_a.force_autohinter << 4) | ((int)p_a.hinting << 5) | ((int)p_a.subpixel_positioning << 9) | ((int)p_a.antialiasing << 13) | ((int)p_a.disable_embedded_bitmaps << 15) | ((int)p_a.keep_rounding_remainders << 16), hash));
 		}
 	};
 	mutable HashMap<SystemFontKey, SystemFontCache, SystemFontKeyHasher> system_fonts;
@@ -772,7 +783,7 @@ class TextServerAdvanced : public TextServerExtension {
 
 	// HarfBuzz bitmap font interface.
 
-	static hb_font_funcs_t *funcs;
+	static hb_font_funcs_t *bitmap_font_funcs;
 
 	struct bmp_font_t {
 		TextServerAdvanced::FontForSizeAdvanced *face = nullptr;
@@ -874,14 +885,20 @@ public:
 	MODBIND2(font_set_generate_mipmaps, const RID &, bool);
 	MODBIND1RC(bool, font_get_generate_mipmaps, const RID &);
 
+#ifndef DISABLE_DEPRECATED
 	MODBIND2(font_set_multichannel_signed_distance_field, const RID &, bool);
 	MODBIND1RC(bool, font_is_multichannel_signed_distance_field, const RID &);
+#endif
+
+	MODBIND2(font_set_render_mode, const RID &, TextServer::FontRenderMode);
+	MODBIND1RC(TextServer::FontRenderMode, font_get_render_mode, const RID &);
+	MODBIND1RC(bool, font_has_color_paint, const RID &);
 
 	MODBIND2(font_set_msdf_pixel_range, const RID &, int64_t);
 	MODBIND1RC(int64_t, font_get_msdf_pixel_range, const RID &);
 
-	MODBIND2(font_set_msdf_size, const RID &, int64_t);
-	MODBIND1RC(int64_t, font_get_msdf_size, const RID &);
+	MODBIND2(font_set_source_size, const RID &, int64_t);
+	MODBIND1RC(int64_t, font_get_source_size, const RID &);
 
 	MODBIND2(font_set_fixed_size, const RID &, int64_t);
 	MODBIND1RC(int64_t, font_get_fixed_size, const RID &);
@@ -979,6 +996,9 @@ public:
 
 	MODBIND3RC(Rect2, font_get_glyph_uv_rect, const RID &, const Vector2i &, int64_t);
 	MODBIND4(font_set_glyph_uv_rect, const RID &, const Vector2i &, int64_t, const Rect2 &);
+
+	MODBIND3RC(int64_t, font_get_glyph_data_offset, const RID &, const Vector2i &, int64_t);
+	MODBIND4(font_set_glyph_data_offset, const RID &, const Vector2i &, int64_t, int64_t);
 
 	MODBIND3RC(int64_t, font_get_glyph_texture_idx, const RID &, const Vector2i &, int64_t);
 	MODBIND4(font_set_glyph_texture_idx, const RID &, const Vector2i &, int64_t, int64_t);

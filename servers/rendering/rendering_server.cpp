@@ -43,6 +43,9 @@
 
 RenderingServer *RenderingServer::singleton = nullptr;
 RenderingServer *(*RenderingServer::create_func)() = nullptr;
+HashMap<String, String> RenderingServer::module_fragment_code;
+HashMap<String, String> RenderingServer::module_vertex_code;
+HashMap<String, String> RenderingServer::module_compute_code;
 
 RenderingServer *RenderingServer::get_singleton() {
 	return singleton;
@@ -2274,6 +2277,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("texture_2d_update", "texture", "image", "layer"), &RenderingServer::texture_2d_update);
 	ClassDB::bind_method(D_METHOD("texture_3d_update", "texture", "data"), &RenderingServer::_texture_3d_update);
+	ClassDB::bind_method(D_METHOD("texture_2d_update_partial", "texture", "offset", "image", "layer"), &RenderingServer::texture_2d_update_partial);
 	ClassDB::bind_method(D_METHOD("texture_proxy_update", "texture", "proxy_to"), &RenderingServer::texture_proxy_update);
 
 	ClassDB::bind_method(D_METHOD("texture_drawable_blit_rect", "textures", "rect", "material", "modulate", "source_textures", "to_mipmap"), &RenderingServer::texture_drawable_blit_rect, DEFVAL(0));
@@ -3324,6 +3328,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RSE::CANVAS_TEXTURE_CHANNEL_DIFFUSE);
 	BIND_ENUM_CONSTANT(RSE::CANVAS_TEXTURE_CHANNEL_NORMAL);
 	BIND_ENUM_CONSTANT(RSE::CANVAS_TEXTURE_CHANNEL_SPECULAR);
+	BIND_ENUM_CONSTANT(RSE::CANVAS_TEXTURE_CHANNEL_SLUG);
 
 	/* CANVAS ITEM */
 
@@ -3355,6 +3360,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_add_ellipse", "item", "pos", "major", "minor", "color", "antialiased"), &RenderingServer::canvas_item_add_ellipse, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_texture_rect", "item", "rect", "texture", "tile", "modulate", "transpose"), &RenderingServer::canvas_item_add_texture_rect, DEFVAL(false), DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_msdf_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate", "outline_size", "px_range", "scale"), &RenderingServer::canvas_item_add_msdf_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(1.0), DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("canvas_item_add_slug_texture", "item", "rect", "texture", "offset", "scr_rect", "modulate", "scale", "color"), &RenderingServer::canvas_item_add_slug_texture, DEFVAL(Color(1, 1, 1)), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_lcd_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate"), &RenderingServer::canvas_item_add_lcd_texture_rect_region);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate", "transpose", "clip_uv"), &RenderingServer::canvas_item_add_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_nine_patch", "item", "rect", "source", "texture", "topleft", "bottomright", "x_axis_mode", "y_axis_mode", "draw_center", "modulate"), &RenderingServer::canvas_item_add_nine_patch, DEFVAL(RSE::NINE_PATCH_STRETCH), DEFVAL(RSE::NINE_PATCH_STRETCH), DEFVAL(true), DEFVAL(Color(1, 1, 1)));

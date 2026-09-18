@@ -744,7 +744,7 @@ PackedStringArray Label::get_configuration_warnings() const {
 	}
 
 	Ref<FontFile> ff = font;
-	if (ff.is_valid() && ff->is_multichannel_signed_distance_field()) {
+	if (ff.is_valid() && ff->get_render_mode() == TextServer::FONT_RENDER_MSDF) {
 		bool has_settings = settings.is_valid();
 		int font_size = get_rendered_font_size();
 		int outline_size = has_settings ? settings->get_outline_size() : theme_cache.font_outline_size;
@@ -770,7 +770,7 @@ PackedStringArray Label::get_configuration_warnings() const {
 				}
 			}
 		}
-		float scale = (float)font_size / (float)ff->get_msdf_size();
+		float scale = (float)font_size / (float)ff->get_source_size();
 		float ol = (float)max_outline_draw_size / scale / 4.0;
 		float pxr = (float)ff->get_msdf_pixel_range() / 2.0 - 1.0;
 		float r_pxr = (ol + 1.0) * 2.0;

@@ -923,7 +923,7 @@ hb_ft_draw_glyph_or_fail (hb_font_t *font,
   const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font_data;
   _hb_ft_hb_font_check_changed (font, ft_font);
 
-  hb_lock_t lock (ft_font->lock);
+  //hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
 
   if (unlikely (FT_Load_Glyph (ft_face, glyph,
