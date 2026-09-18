@@ -163,7 +163,11 @@ protected:
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;
-		int scroll_bar_h_separation = 0;
+		int scrollbar_margin_left = -1;
+		int scrollbar_margin_top = -1;
+		int scrollbar_margin_right = -1;
+		int scrollbar_margin_bottom = -1;
+		int scrollbar_h_separation = 0;
 
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
