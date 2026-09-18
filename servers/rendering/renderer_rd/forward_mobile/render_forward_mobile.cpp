@@ -948,14 +948,6 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		light_storage->update_reflection_probe_buffer(p_render_data, *p_render_data->reflection_probes, p_render_data->scene_data->cam_transform.affine_inverse(), p_render_data->environment);
 	}
 
-	// Update light and decal buffer first so we know what lights and decals are safe to pair with.
-	uint32_t directional_light_count = 0;
-	uint32_t positional_light_count = 0;
-	light_storage->update_light_buffers(p_render_data, *p_render_data->lights, p_render_data->scene_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
-	texture_storage->update_decal_buffer(*p_render_data->decals, p_render_data->scene_data->cam_transform);
-
-	p_render_data->directional_light_count = directional_light_count;
-
 	// Lightmaps need to be set up before _fill_render_list as it depends on them.
 	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->scene_data->cam_transform);
 
@@ -1182,6 +1174,15 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	_process_compositor_effects(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_PRE_OPAQUE, p_render_data);
 
 	_pre_opaque_render(p_render_data);
+
+	// Update light and decal buffer first so we know what lights and decals are safe to pair with.
+	// Counterintuitive as it may be, light buffers for opaque draw must be updated after _pre_opaque_render (which renders shadowmaps).
+	uint32_t directional_light_count = 0;
+	uint32_t positional_light_count = 0;
+	light_storage->update_light_buffers(p_render_data, *p_render_data->lights, p_render_data->scene_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
+	texture_storage->update_decal_buffer(*p_render_data->decals, p_render_data->scene_data->cam_transform);
+
+	p_render_data->directional_light_count = directional_light_count;
 
 	SceneShaderForwardMobile::ShaderSpecialization base_specialization = scene_shader.default_specialization;
 
@@ -1492,13 +1493,30 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 		Rect2 atlas_rect_norm = atlas_rect;
 		atlas_rect_norm.position /= directional_shadow_size;
 		atlas_rect_norm.size /= directional_shadow_size;
-		light_storage->light_instance_set_directional_shadow_atlas_rect(p_light, p_pass, atlas_rect_norm);
 
 		zfar = RSG::light_storage->light_get_param(base, RSE::LIGHT_PARAM_RANGE);
 
 		render_fb = light_storage->direction_shadow_get_fb();
 		render_texture = RID();
 		flip_y = true;
+
+		Rect2 norm_draw_rect = light_storage->light_instance_get_directional_shadow_draw_norm_rect(p_light, p_pass);
+		Rect2 draw_rect_norm;
+		draw_rect_norm.position = atlas_rect_norm.position + atlas_rect_norm.size * norm_draw_rect.position;
+		draw_rect_norm.size = atlas_rect_norm.size * norm_draw_rect.size;
+		light_storage->light_instance_set_directional_shadow_atlas_rect(p_light, p_pass, draw_rect_norm);
+
+		Rect2 draw_rect = draw_rect_norm;
+		draw_rect.position *= directional_shadow_size;
+		draw_rect.size *= directional_shadow_size;
+
+		// This MUST be rounding and not, say, floor or ceil.
+		// Using anything other than round will lead to flickering in directional shadows when the tightened draw area is resized by camera rotations.
+		atlas_rect = Rect2i(
+				Vector2i(
+						(int32_t)Math::round(draw_rect.position.x), (int32_t)Math::round(draw_rect.position.y)),
+				Vector2i(
+						(int32_t)Math::round(draw_rect.size.x), (int32_t)Math::round(draw_rect.size.y)));
 
 	} else {
 		//set from shadow atlas
