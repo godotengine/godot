@@ -1802,7 +1802,6 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_EVALUATE:
 		case EDIT_CREATE_CODE_REGION:
 		case SHOW_TOOLTIP_AT_CARET:
-		case EDIT_COMPLETE:
 		case EDIT_TOGGLE_COMMENT: {
 			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		}
@@ -2716,8 +2715,7 @@ void ScriptTextEditor::_on_hover_tooltip_timer_timeout() {
 	const int line = hover_tooltip_pos.y;
 	const int column = hover_tooltip_pos.x;
 
-	bool is_mouse_over_code_completion_popup = ce->get_code_completion_selected_index() != -1 && ce->get_code_completion_rect().has_point(get_local_mouse_position());
-	if (line < 0 || column < 0 || Input::get_singleton()->is_anything_pressed() || is_mouse_over_code_completion_popup) {
+	if (line < 0 || column < 0 || Input::get_singleton()->is_anything_pressed() || ce->is_mouse_over_code_completion()) {
 		return;
 	}
 

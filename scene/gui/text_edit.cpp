@@ -1006,7 +1006,10 @@ void TextEdit::_notification(int p_what) {
 
 			Size2 size = get_size();
 			bool rtl = is_layout_rtl();
-			if ((!has_focus() && !(menu && menu->has_focus())) || !window_has_focus) {
+			if (!window_has_focus) {
+				draw_caret = false;
+			}
+			if (!draw_caret_without_focus && !has_focus() && (!menu || !menu->has_focus())) {
 				draw_caret = false;
 			}
 
@@ -2141,7 +2144,7 @@ void TextEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
-			if (caret_blink_enabled) {
+			if (caret_blink_enabled && !draw_caret_without_focus) {
 				caret_blink_timer->stop();
 			}
 
@@ -8923,7 +8926,7 @@ void TextEdit::_reset_caret_blink_timer() {
 
 void TextEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible_in_tree() && has_focus() && window_has_focus) {
+	if (window_has_focus && is_visible_in_tree() && (draw_caret_without_focus || has_focus())) {
 		queue_redraw();
 	}
 }

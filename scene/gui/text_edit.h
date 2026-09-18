@@ -753,6 +753,8 @@ protected:
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
+	bool draw_caret_without_focus = false;
+
 	virtual void _draw_guidelines() {}
 	virtual void _update_theme_item_cache() override;
 
