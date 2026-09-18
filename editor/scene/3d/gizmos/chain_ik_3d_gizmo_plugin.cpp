@@ -103,7 +103,7 @@ void ChainIK3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<ArrayMesh> skeleton_mesh;
 	Ref<ArrayMesh> mesh;
 	get_joints_mesh(skeleton, ik, p_gizmo->is_selected(), skeleton_mesh, mesh);
-	Transform3D skel_tr = ik->get_global_transform().inverse() * skeleton->get_global_transform();
+	Transform3D skel_tr = ik->get_global_transform().affine_inverse() * skeleton->get_global_transform();
 	p_gizmo->add_mesh(skeleton_mesh, Ref<Material>(), skel_tr, skeleton->register_skin(skeleton->create_skin_from_rest_transforms()));
 	p_gizmo->add_mesh(mesh, Ref<Material>(), skel_tr);
 }
