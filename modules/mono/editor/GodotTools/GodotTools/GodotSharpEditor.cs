@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using GodotTools.Build;
 using GodotTools.Ides;
 using GodotTools.Ides.Rider;
@@ -44,8 +45,9 @@ namespace GodotTools
         private AcceptDialog _errorDialog;
         private ConfirmationDialog _confirmCreateSlnDialog;
 
-        private Button _bottomPanelBtn;
+        private HBoxContainer _toolBarBuildContainer;
         private Button _toolBarBuildButton;
+        private ProgressBar _toolBarBuildProgress;
 
         // TODO Use WeakReference once we have proper serialization.
         private WeakRef _exportPluginWeak;
@@ -151,7 +153,21 @@ namespace GodotTools
                     return; // Failed to create project.
             }
 
-            Instance.MSBuildPanel.BuildProject();
+            _ = Instance.MSBuildPanel.BuildProject();
+        }
+
+        public void BuildStarted()
+        {
+            EditorInterface.Singleton.SetPlayingEnabled(false);
+            _toolBarBuildProgress.Show();
+            _toolBarBuildButton.Disabled = true;
+        }
+
+        public void BuildEnded()
+        {
+            _toolBarBuildProgress.Hide();
+            _toolBarBuildButton.Disabled = false;
+            EditorInterface.Singleton.SetPlayingEnabled(true);
         }
 
         private enum MenuOptions
@@ -456,6 +472,43 @@ namespace GodotTools
             }
         }
 
+        private void SetupToolbar()
+        {
+            // Create a container specific for Dotnet, should additional elements be added they'll be grouped properly.
+            _toolBarBuildContainer = new HBoxContainer();
+            Internal.EditorPlugin_AddControlToEditorRunBar(_toolBarBuildContainer);
+
+            // Move Build container so it appears to the left of the Play button.
+            _toolBarBuildContainer.GetParent().MoveChild(_toolBarBuildContainer, 0);
+
+            _toolBarBuildProgress = new ProgressBar
+            {
+                Indeterminate = true,
+                ShowBehindParent = true,
+                SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+                SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+                MouseFilter = Control.MouseFilterEnum.Ignore,
+            };
+
+            _toolBarBuildButton = new Button
+            {
+                Flat = false,
+                Icon = EditorInterface.Singleton.GetEditorTheme().GetIcon("BuildCSharp", "EditorIcons"),
+                FocusMode = Control.FocusModeEnum.None,
+                Shortcut = EditorDefShortcut("mono/build_solution", "Build Project".TTR(), (Key)KeyModifierMask.MaskAlt | Key.B),
+                ShortcutInTooltip = true,
+                ThemeTypeVariation = "RunBarButton",
+            };
+            EditorShortcutOverride("mono/build_solution", "macos", (Key)KeyModifierMask.MaskMeta | (Key)KeyModifierMask.MaskCtrl | Key.B);
+
+            _toolBarBuildButton.Pressed += BuildProjectPressed;
+            _toolBarBuildContainer.AddChild(_toolBarBuildButton);
+
+            _toolBarBuildButton.AddChild(_toolBarBuildProgress);
+            _toolBarBuildProgress.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+            _toolBarBuildProgress.Hide();
+        }
+
         public override void _EnablePlugin()
         {
             base._EnablePlugin();
@@ -517,21 +570,7 @@ namespace GodotTools
 
             AddToolSubmenuItem("C#", _menuPopup);
 
-            _toolBarBuildButton = new Button
-            {
-                Flat = false,
-                Icon = EditorInterface.Singleton.GetEditorTheme().GetIcon("BuildCSharp", "EditorIcons"),
-                FocusMode = Control.FocusModeEnum.None,
-                Shortcut = EditorDefShortcut("mono/build_solution", "Build Project".TTR(), (Key)KeyModifierMask.MaskAlt | Key.B),
-                ShortcutInTooltip = true,
-                ThemeTypeVariation = "RunBarButton",
-            };
-            EditorShortcutOverride("mono/build_solution", "macos", (Key)KeyModifierMask.MaskMeta | (Key)KeyModifierMask.MaskCtrl | Key.B);
-
-            _toolBarBuildButton.Pressed += BuildProjectPressed;
-            Internal.EditorPlugin_AddControlToEditorRunBar(_toolBarBuildButton);
-            // Move Build button so it appears to the left of the Play button.
-            _toolBarBuildButton.GetParent().MoveChild(_toolBarBuildButton, 0);
+            SetupToolbar();
 
             EditorInterface.Singleton.GetCommandPalette().AddCommand("Build C# project".TTR(), "dotnet/build_solution", Callable.From(BuildProjectPressed), _toolBarBuildButton.Shortcut.GetAsText());
 
