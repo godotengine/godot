@@ -43,6 +43,9 @@ protected:
 	Rect2 region; // Only for property value.
 	Rect2 rounded_region; // Region with rounded size (image size is always integer).
 	Rect2 margin;
+	int snap_mode;
+	Vector2i separation;
+	Vector2i offset;
 	bool filter_clip = false;
 
 	static void _bind_methods();
@@ -62,6 +65,15 @@ public:
 
 	void set_margin(const Rect2 &p_margin);
 	Rect2 get_margin() const;
+
+	void set_snap_mode(const int p_mode);
+	int get_snap_mode() const;
+
+	void set_separation(const Vector2i p_sep);
+	Vector2i get_separation() const;
+
+	void set_offset(const Vector2i p_offset);
+	Vector2i get_offset() const;
 
 	void set_filter_clip(const bool p_enable);
 	bool has_filter_clip() const;
