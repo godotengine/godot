@@ -365,9 +365,17 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	flat_button_pressed->set_bg_color(style_pressed_color * Color(1, 1, 1, 0.85));
 
 	theme->set_stylebox(CoreStringName(normal), SceneStringName(FlatButton), flat_button_normal);
+	theme->set_stylebox("focus", SceneStringName(FlatButton), flat_button_normal);
 	theme->set_stylebox(SceneStringName(hover), SceneStringName(FlatButton), flat_button_normal);
+	theme->set_stylebox("focus_hover", SceneStringName(FlatButton), flat_button_normal);
 	theme->set_stylebox(SceneStringName(pressed), SceneStringName(FlatButton), flat_button_pressed);
+	theme->set_stylebox("focus_pressed", SceneStringName(FlatButton), flat_button_pressed);
+	theme->set_stylebox("hover_pressed", SceneStringName(FlatButton), flat_button_pressed);
+	theme->set_stylebox("focus_hover_pressed", SceneStringName(FlatButton), flat_button_pressed);
 	theme->set_stylebox("disabled", SceneStringName(FlatButton), flat_button_normal);
+	theme->set_stylebox("focus_disabled", SceneStringName(FlatButton), flat_button_normal);
+	theme->set_stylebox("disabled_pressed", SceneStringName(FlatButton), flat_button_normal);
+	theme->set_stylebox("focus_disabled_pressed", SceneStringName(FlatButton), flat_button_normal);
 
 	theme->set_stylebox(CoreStringName(normal), "FlatMenuButton", flat_button_normal);
 	theme->set_stylebox(SceneStringName(hover), "FlatMenuButton", flat_button_normal);
