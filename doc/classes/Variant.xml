@@ -18,7 +18,7 @@
 		var foo = 2; // Foo is a 32-bit integer (int). Be cautious, integers in GDScript are 64-bit and the direct C# equivalent is `long`.
 		// foo = "foo was and will always be an integer. It cannot be turned into a string!";
 		var boo = "Boo is a string!";
-		var ref = new RefCounted(); // var is especially useful when used together with a constructor.
+		var @ref = new RefCounted(); // var is especially useful when used together with a constructor.
 
 		// Godot also provides a Variant type that works like a union of all the Variant-compatible types.
 		Variant fooVar = 2; // fooVar is dynamically an integer (stored as a `long` in the Variant type).
