@@ -359,7 +359,7 @@
 			<return type="Node[]" />
 			<param index="0" name="include_internal" type="bool" default="false" />
 			<description>
-				Returns all children of this node inside an [Array].
+				Returns all children of this node inside an [Array], in scene hierarchy order.
 				If [param include_internal] is [code]false[/code], excludes internal children from the returned array (see [method add_child]'s [code]internal[/code] parameter).
 			</description>
 		</method>
