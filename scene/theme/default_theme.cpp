@@ -475,11 +475,181 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("word_highlighted_color", "TextEdit", Color(0.5, 0.5, 0.5, 0.25));
 	theme->set_color("search_result_color", "TextEdit", Color(0.3, 0.3, 0.3));
 	theme->set_color("search_result_border_color", "TextEdit", Color(0.3, 0.3, 0.3, 0.4));
+	theme->set_color("link_color", "RichTextEdit", Color::html("60a5fa"));
+	theme->set_font("bold_font", "RichTextEdit", bold_font);
+	theme->set_font("italics_font", "RichTextEdit", italics_font);
+	theme->set_font("bold_italics_font", "RichTextEdit", bold_italics_font);
+	theme->set_font("mono_font", "RichTextEdit", Ref<Font>());
+	theme->set_color("link_hover_color", "RichTextEdit", Color::html("3b82f6"));
+	theme->set_color("link_visited_color", "RichTextEdit", Color::html("a78bfa"));
+	theme->set_color("link_active_color", "RichTextEdit", Color::html("ff0000"));
+	theme->set_color("tooltip_font_color", "RichTextEdit", control_font_color);
+	theme->set_color("quote_color", "RichTextEdit", Color::html("7d7d7d"));
+	theme->set_color("quote_border_color", "RichTextEdit", Color::html("7d7d7d"));
+	theme->set_color("divider_color", "RichTextEdit", Color::html("7d7d7d"));
+	theme->set_stylebox("tooltip_panel", "RichTextEdit",
+			make_flat_stylebox(Color(0, 0, 0, 0.5), 2 * default_margin, 0.5 * default_margin, 2 * default_margin, 0.5 * default_margin));
+	theme->set_font("tooltip_font", "RichTextEdit", Ref<Font>());
+	theme->set_font_size("tooltip_font_size", "RichTextEdit", -1);
+
+	// RichTextEdit uses a light document background by default, unlike the
+	// dark editor chrome the base TextEdit styles assume.
+	theme->set_stylebox(CoreStringName(normal), "RichTextEdit", make_flat_stylebox(Color::html("ffffff")));
+	theme->set_color(SceneStringName(font_color), "RichTextEdit", Color::html("000000"));
+	theme->set_color("caret_color", "RichTextEdit", Color::html("000000"));
 
 	theme->set_constant("line_spacing", "TextEdit", Math::round(4 * scale));
+	theme->set_constant("quote_margin_top", "RichTextEdit", Math::round(6 * scale));
+	theme->set_constant("quote_margin_bottom", "RichTextEdit", Math::round(6 * scale));
+	theme->set_constant("quote_border_width", "RichTextEdit", Math::round(3 * scale));
+	theme->set_constant("quote_padding", "RichTextEdit", Math::round(16 * scale));
+	theme->set_constant("divider_margin_top", "RichTextEdit", Math::round(7 * scale));
+	theme->set_constant("divider_margin_bottom", "RichTextEdit", Math::round(7 * scale));
+	theme->set_constant("divider_width", "RichTextEdit", Math::round(1 * scale));
 	theme->set_constant("outline_size", "TextEdit", 0);
 	theme->set_constant("caret_width", "TextEdit", 1);
 	theme->set_constant("wrap_offset", "TextEdit", 10);
+
+	theme->set_icon("bold", "RichTextEditToolbar", icons["bold"]);
+	theme->set_icon("italic", "RichTextEditToolbar", icons["italic"]);
+	theme->set_icon("underline", "RichTextEditToolbar", icons["underline"]);
+	theme->set_icon("strikethrough", "RichTextEditToolbar", icons["strikethrough"]);
+	theme->set_icon("overline", "RichTextEditToolbar", icons["overline"]);
+	theme->set_icon("quote", "RichTextEditToolbar", icons["quote"]);
+	theme->set_icon("horizontal_rule", "RichTextEditToolbar", icons["horizontal-rule"]);
+	theme->set_icon("align", "RichTextEditToolbar", icons["align"]);
+	theme->set_icon("align_left", "RichTextEditToolbar", icons["align-left"]);
+	theme->set_icon("align_center", "RichTextEditToolbar", icons["align-center"]);
+	theme->set_icon("align_right", "RichTextEditToolbar", icons["align-right"]);
+	theme->set_icon("indent_decrease", "RichTextEditToolbar", icons["indent-decrease"]);
+	theme->set_icon("indent_increase", "RichTextEditToolbar", icons["indent-increase"]);
+	theme->set_icon("link", "RichTextEditToolbar", icons["link"]);
+	theme->set_icon("ordered_list", "RichTextEditToolbar", icons["list-numbered"]);
+	theme->set_icon("unordered_list", "RichTextEditToolbar", icons["list-bulleted"]);
+	theme->set_icon("font_color", "RichTextEditToolbar", icons["font-color"]);
+	theme->set_icon("background_color", "RichTextEditToolbar", icons["background-color"]);
+	theme->set_icon("outline", "RichTextEditToolbar", icons["outline"]);
+	theme->set_icon("dropdown_caret", "RichTextEditToolbar", icons["caret-down"]);
+	theme->set_icon("color_checkerboard", "RichTextEditToolbar", icons["color-none"]);
+	theme->set_icon("image", "RichTextEditToolbar", icons["image"]);
+	theme->set_icon("line_height", "RichTextEditToolbar", icons["line-height"]);
+	theme->set_icon("lock", "RichTextEdit", icons["lock"]);
+
+	const Color rich_text_edit_toolbar_accent = Color::html("5fb2f0");
+	const Color rich_text_edit_toolbar_border = Color::html("1a1c1f");
+	const Color rich_text_edit_toolbar_font = Color::html("dfe1e4");
+	const Color rich_text_edit_toolbar_muted_font = Color::html("9a9ea3");
+	const Color rich_text_edit_toolbar_hover = Color::html("42464d");
+	const Color rich_text_edit_toolbar_selected = Color(rich_text_edit_toolbar_accent, 0.2);
+	const Color rich_text_edit_toolbar_field_color = Color::html("232629");
+
+	theme->set_color("accent_color", "RichTextEditToolbar", rich_text_edit_toolbar_accent);
+	theme->set_color("button_font_color", "RichTextEditToolbar", rich_text_edit_toolbar_font);
+	theme->set_color("muted_font_color", "RichTextEditToolbar", rich_text_edit_toolbar_muted_font);
+	theme->set_color("dropdown_font_color", "RichTextEditToolbar", rich_text_edit_toolbar_font);
+	theme->set_color("dropdown_label_color", "RichTextEditToolbar", rich_text_edit_toolbar_muted_font);
+	theme->set_color("apply_button_font_color", "RichTextEditToolbar", Color::html("12181c"));
+	theme->set_color("tooltip_font_color", "RichTextEditToolbar", Color::html("e7e9eb"));
+
+	theme->set_font_size("dropdown_label_font_size", "RichTextEditToolbar", Math::round(10 * scale));
+	theme->set_font_size("input_font_size", "RichTextEditToolbar", Math::round(12 * scale));
+	theme->set_font_size("menu_item_font_size", "RichTextEditToolbar", Math::round(12 * scale));
+	theme->set_font_size("action_button_font_size", "RichTextEditToolbar", Math::round(11 * scale));
+	theme->set_font_size("tooltip_font_size", "RichTextEditToolbar", Math::round(11 * scale));
+
+	// The 4px gap between groups is HBoxContainer's inherited `separation`.
+	theme->set_constant("button_size", "RichTextEditToolbar", Math::round(28 * scale));
+	theme->set_constant("icon_max_width", "RichTextEditToolbar", Math::round(16 * scale));
+
+	// Toolbar and dropdown surfaces.
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_panel = make_flat_stylebox(Color::html("2b2e33"), 8, 6, 8, 6, 5, true, 1);
+	rich_text_edit_toolbar_panel->set_border_color(rich_text_edit_toolbar_border);
+	theme->set_stylebox(SceneStringName(panel), "RichTextEditToolbar", rich_text_edit_toolbar_panel);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_dropdown = make_flat_stylebox(Color::html("33373d"), 10, 10, 10, 10, 5, true, 1);
+	rich_text_edit_toolbar_dropdown->set_border_color(rich_text_edit_toolbar_border);
+	theme->set_stylebox("dropdown_panel", "RichTextEditToolbar", rich_text_edit_toolbar_dropdown);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_menu = make_flat_stylebox(Color::html("33373d"), 6, 6, 6, 6, 5, true, 1);
+	rich_text_edit_toolbar_menu->set_border_color(rich_text_edit_toolbar_border);
+	theme->set_stylebox("menu_panel", "RichTextEditToolbar", rich_text_edit_toolbar_menu);
+
+	// Toolbar buttons. `button_pressed` doubles as the selected state of the
+	// formatting toggles and of the buttons whose dropdown is open.
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_button_normal = make_flat_stylebox(Color(0, 0, 0, 0), 0, 0, 0, 0, 3, true, 1);
+	rich_text_edit_toolbar_button_normal->set_border_color(Color(0, 0, 0, 0));
+	theme->set_stylebox("button_normal", "RichTextEditToolbar", rich_text_edit_toolbar_button_normal);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_button_hover = make_flat_stylebox(rich_text_edit_toolbar_hover, 0, 0, 0, 0, 3, true, 1);
+	rich_text_edit_toolbar_button_hover->set_border_color(Color(0, 0, 0, 0));
+	theme->set_stylebox("button_hover", "RichTextEditToolbar", rich_text_edit_toolbar_button_hover);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_button_pressed = make_flat_stylebox(rich_text_edit_toolbar_selected, 0, 0, 0, 0, 3, true, 1);
+	rich_text_edit_toolbar_button_pressed->set_border_color(rich_text_edit_toolbar_accent);
+	theme->set_stylebox("button_pressed", "RichTextEditToolbar", rich_text_edit_toolbar_button_pressed);
+	// Drawn on top of the state stylebox, and expanded so the ring sits just
+	// outside the button like the reference design's `outline-offset`.
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_button_focus = make_flat_stylebox(Color(0, 0, 0, 0), 0, 0, 0, 0, 4, false, 2);
+	rich_text_edit_toolbar_button_focus->set_border_color(rich_text_edit_toolbar_accent);
+	rich_text_edit_toolbar_button_focus->set_expand_margin_all(Math::round(1 * scale));
+	theme->set_stylebox("button_focus", "RichTextEditToolbar", rich_text_edit_toolbar_button_focus);
+
+	// Rows inside the alignment dropdown.
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_menu_item_normal = make_flat_stylebox(Color(0, 0, 0, 0), 8, 4.25, 8, 4.25, 3, true, 1);
+	rich_text_edit_toolbar_menu_item_normal->set_border_color(Color(0, 0, 0, 0));
+	theme->set_stylebox("menu_item_normal", "RichTextEditToolbar", rich_text_edit_toolbar_menu_item_normal);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_menu_item_hover = make_flat_stylebox(rich_text_edit_toolbar_hover, 8, 4.25, 8, 4.25, 3, true, 1);
+	rich_text_edit_toolbar_menu_item_hover->set_border_color(Color(0, 0, 0, 0));
+	theme->set_stylebox("menu_item_hover", "RichTextEditToolbar", rich_text_edit_toolbar_menu_item_hover);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_menu_item_pressed = make_flat_stylebox(rich_text_edit_toolbar_selected, 8, 4.25, 8, 4.25, 3, true, 1);
+	rich_text_edit_toolbar_menu_item_pressed->set_border_color(Color(0, 0, 0, 0));
+	theme->set_stylebox("menu_item_pressed", "RichTextEditToolbar", rich_text_edit_toolbar_menu_item_pressed);
+
+	// Number fields (font size, outline width) and the URL field.
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_field = make_flat_stylebox(rich_text_edit_toolbar_field_color, 1, 1, 1, 1, 3, true, 1);
+	rich_text_edit_toolbar_field->set_border_color(rich_text_edit_toolbar_border);
+	theme->set_stylebox("field_panel", "RichTextEditToolbar", rich_text_edit_toolbar_field);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_text_field = make_flat_stylebox(rich_text_edit_toolbar_field_color, 8, 5, 8, 5, 3, true, 1);
+	rich_text_edit_toolbar_text_field->set_border_color(rich_text_edit_toolbar_border);
+	theme->set_stylebox("text_field_panel", "RichTextEditToolbar", rich_text_edit_toolbar_text_field);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_field_focus = make_flat_stylebox(Color(0, 0, 0, 0), 0, 0, 0, 0, 3, false, 2);
+	rich_text_edit_toolbar_field_focus->set_border_color(rich_text_edit_toolbar_accent);
+	theme->set_stylebox("field_focus", "RichTextEditToolbar", rich_text_edit_toolbar_field_focus);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_field_separator = make_flat_stylebox(rich_text_edit_toolbar_border, 0, 0, 0, 0, 0);
+	theme->set_stylebox("field_separator", "RichTextEditToolbar", rich_text_edit_toolbar_field_separator);
+
+	// Cancel / Apply buttons in the URL dropdown.
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_cancel = make_flat_stylebox(Color(0, 0, 0, 0), 10, 4, 10, 4, 3, true, 1);
+	rich_text_edit_toolbar_cancel->set_border_color(rich_text_edit_toolbar_border);
+	theme->set_stylebox("cancel_button_normal", "RichTextEditToolbar", rich_text_edit_toolbar_cancel);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_cancel_hover = make_flat_stylebox(rich_text_edit_toolbar_hover, 10, 4, 10, 4, 3, true, 1);
+	rich_text_edit_toolbar_cancel_hover->set_border_color(rich_text_edit_toolbar_border);
+	theme->set_stylebox("cancel_button_hover", "RichTextEditToolbar", rich_text_edit_toolbar_cancel_hover);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_apply = make_flat_stylebox(rich_text_edit_toolbar_accent, 10, 4, 10, 4, 3, true, 1);
+	rich_text_edit_toolbar_apply->set_border_color(rich_text_edit_toolbar_accent);
+	theme->set_stylebox("apply_button_normal", "RichTextEditToolbar", rich_text_edit_toolbar_apply);
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_apply_hover = make_flat_stylebox(rich_text_edit_toolbar_accent.lightened(0.1), 10, 4, 10, 4, 3, true, 1);
+	rich_text_edit_toolbar_apply_hover->set_border_color(rich_text_edit_toolbar_accent.lightened(0.1));
+	theme->set_stylebox("apply_button_hover", "RichTextEditToolbar", rich_text_edit_toolbar_apply_hover);
+
+	// Group separators.
+	Ref<StyleBoxLine> rich_text_edit_toolbar_separator = memnew(StyleBoxLine);
+	rich_text_edit_toolbar_separator->set_vertical(true);
+	rich_text_edit_toolbar_separator->set_thickness(Math::round(scale));
+	rich_text_edit_toolbar_separator->set_color(Color(1, 1, 1, 0.09));
+	rich_text_edit_toolbar_separator->set_grow_begin(0);
+	rich_text_edit_toolbar_separator->set_grow_end(0);
+	theme->set_stylebox("separator", "RichTextEditToolbar", rich_text_edit_toolbar_separator);
+	theme->set_constant("separator_height", "RichTextEditToolbar", Math::round(20 * scale));
+	Ref<StyleBoxLine> rich_text_edit_toolbar_menu_separator = memnew(StyleBoxLine);
+	rich_text_edit_toolbar_menu_separator->set_thickness(Math::round(scale));
+	rich_text_edit_toolbar_menu_separator->set_color(rich_text_edit_toolbar_border);
+	rich_text_edit_toolbar_menu_separator->set_grow_begin(0);
+	rich_text_edit_toolbar_menu_separator->set_grow_end(0);
+	theme->set_stylebox("menu_separator", "RichTextEditToolbar", rich_text_edit_toolbar_menu_separator);
+
+	// The custom tooltip is nested inside the default `TooltipPanel` popup, so
+	// the expand margins let it paint over that popup's frame entirely.
+	Ref<StyleBoxFlat> rich_text_edit_toolbar_tooltip = make_flat_stylebox(Color::html("16181a"), 8, 4, 8, 4, 3, true, 1);
+	rich_text_edit_toolbar_tooltip->set_border_color(rich_text_edit_toolbar_border);
+	rich_text_edit_toolbar_tooltip->set_expand_margin_individual(2 * default_margin * scale, 0.5 * default_margin * scale, 2 * default_margin * scale, 0.5 * default_margin * scale);
+	theme->set_stylebox("tooltip_panel", "RichTextEditToolbar", rich_text_edit_toolbar_tooltip);
 
 	// CodeEdit
 
