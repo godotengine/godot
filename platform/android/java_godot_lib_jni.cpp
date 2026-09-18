@@ -467,7 +467,7 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getEditorSetting(J
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
-	Object *obj = ObjectDB::get_instance(ID);
+	Object *obj = ObjectDB::get_instance(ObjectID(ID));
 	ERR_FAIL_NULL(obj);
 
 	int res = env->PushLocalFrame(16);
@@ -497,7 +497,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
-	Object *obj = ObjectDB::get_instance(ID);
+	Object *obj = ObjectDB::get_instance(ObjectID(ID));
 	ERR_FAIL_NULL(obj);
 
 	int res = env->PushLocalFrame(16);

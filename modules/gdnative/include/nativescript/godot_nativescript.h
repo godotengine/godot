@@ -91,6 +91,7 @@ typedef enum {
 	GODOT_PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
 	GODOT_PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
 	GODOT_PROPERTY_HINT_LOCALE_ID,
+	GODOT_PROPERTY_HINT_INT_IS_OBJECTID,
 	GODOT_PROPERTY_HINT_MAX,
 } godot_property_hint;
 
