@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  project_settings_gdextension.h                                        */
+/*  gdextension_create_dialog.h                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,34 +30,48 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 
-class GDExtensionCreateDialog;
-class Tree;
+class CheckBox;
+class EditorValidationPanel;
+class GDExtensionCreatorPlugin;
+class OptionButton;
 
-class ProjectSettingsGDExtension : public VBoxContainer {
-	GDCLASS(ProjectSettingsGDExtension, VBoxContainer);
+class GDExtensionCreateDialog : public ConfirmationDialog {
+	GDCLASS(GDExtensionCreateDialog, ConfirmationDialog);
 
+	// Unbounded enum. Individual GDExtension creators may add more message IDs.
 	enum {
-		COLUMN_PATH,
-		COLUMN_MIN_VERSION,
-		COLUMN_MAX_VERSION,
-		COLUMN_RELOAD,
-		COLUMN_MAX,
+		MSG_ID_BASE_NAME,
+		MSG_ID_LIBRARY_NAME,
+		MSG_ID_PATH,
+		MSG_ID_MAX,
 	};
 
-	GDExtensionCreateDialog *create_dialog = nullptr;
-	Tree *extension_list = nullptr;
+	LineEdit *base_name_edit = nullptr;
+	LineEdit *library_name_edit = nullptr;
+	LineEdit *path_edit = nullptr;
+	OptionButton *language_option = nullptr;
+	CheckBox *compile_checkbox = nullptr;
 
-	void _cell_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
-	void _on_create_gdextension_pressed();
-	void _on_gdextension_created();
-	void _on_item_activated();
-	void _update_extension_tree();
+	EditorValidationPanel *validation_panel = nullptr;
+	Vector<Ref<GDExtensionCreatorPlugin>> plugin_creators;
+	Vector<Vector2i> language_option_index_map;
+
+	void _clear_fields();
+	void _on_canceled();
+	void _on_confirmed();
+	void _on_required_text_changed();
+
+	String _get_valid_base_name();
+	String _get_valid_library_name(const String &p_valid_base_name);
+	String _get_valid_path(const String &p_valid_base_name);
 
 protected:
+	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	ProjectSettingsGDExtension();
+	void load_plugin_creators(const Vector<Ref<GDExtensionCreatorPlugin>> &p_plugin_creators);
+	GDExtensionCreateDialog();
 };
