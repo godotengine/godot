@@ -14,5 +14,16 @@
 		<member name="polyphony" type="int" setter="set_polyphony" getter="get_polyphony" default="32">
 			Maximum amount of simultaneous streams that can be played.
 		</member>
+		<member name="polyphony_mode" type="int" setter="set_polyphony_mode" getter="get_polyphony_mode" enum="AudioStreamPolyphonic.PolyphonyMode" default="0">
+			Determines the polyphony behavior if [method AudioStreamPlaybackPolyphonic.play_stream] is called when the number of active streams is equal to [member polyphony].
+		</member>
 	</members>
+	<constants>
+		<constant name="PREVENT_NEW" value="0" enum="PolyphonyMode">
+			Prevents new streams from playing. See [member polyphony_mode].
+		</constant>
+		<constant name="STOP_OLDEST" value="1" enum="PolyphonyMode">
+			Stops the oldest active stream. See [member polyphony_mode].
+		</constant>
+	</constants>
 </class>
