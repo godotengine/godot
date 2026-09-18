@@ -129,23 +129,24 @@ public:
 		for (int i = 0; i < TEST_MAX; i++) {
 			test_valid[i] = false;
 		}
+		// `Math::rand()` returns uint32_t, so explicitly cast to test_num's type (int).
 		//regular
-		test_num = Math::rand();
+		test_num = (int)Math::rand();
 		call("test_method");
-		test_num = Math::rand();
+		test_num = (int)Math::rand();
 		call("test_method_args", test_num);
-		test_num = Math::rand();
+		test_num = (int)Math::rand();
 		call("test_methodc");
-		test_num = Math::rand();
+		test_num = (int)Math::rand();
 		call("test_methodc_args", test_num);
 		//return
-		test_num = Math::rand();
+		test_num = (int)Math::rand();
 		test_valid[TEST_METHODR] = int(call("test_methodr")) == test_num && test_valid[TEST_METHODR];
-		test_num = Math::rand();
+		test_num = (int)Math::rand();
 		test_valid[TEST_METHODR_ARGS] = int(call("test_methodr_args", test_num)) == test_num && test_valid[TEST_METHODR_ARGS];
-		test_num = Math::rand();
+		test_num = (int)Math::rand();
 		test_valid[TEST_METHODRC] = int(call("test_methodrc")) == test_num && test_valid[TEST_METHODRC];
-		test_num = Math::rand();
+		test_num = (int)Math::rand();
 		test_valid[TEST_METHODRC_ARGS] = int(call("test_methodrc_args", test_num)) == test_num && test_valid[TEST_METHODRC_ARGS];
 
 		call("test_method_default_args", 1, 2, 3, 4);
