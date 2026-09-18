@@ -414,7 +414,19 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			return; // Peer does not support blocking IO. We could at least send the error though.
 		}
 
-		threads_in_break.insert(Thread::get_caller_id());
+		Thread::ID caller_id = Thread::get_caller_id();
+		if (threads_in_break.has(caller_id)) {
+			// We're already in `RemoteDebugger::debug`. It can happen when the object is selected in the remote inspector,
+			// and there is a breakpoint or an error in the getter. See GH-122339.
+			// TODO: Figure out a better way to deal with this?
+			if (!threads_in_break[caller_id]) {
+				String thread_name = Thread::is_main_thread() ? "main thread" : "thread " + itos(caller_id);
+				WARN_PRINT(vformat("The %s tried to enter debugger when it is already in the debugger.", thread_name));
+				threads_in_break[caller_id] = true;
+			}
+			return;
+		}
+		threads_in_break.insert(caller_id, false);
 	}
 
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
