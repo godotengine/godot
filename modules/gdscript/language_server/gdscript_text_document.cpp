@@ -368,6 +368,39 @@ Variant GDScriptTextDocument::signatureHelp(const Dictionary &p_params) {
 	return ret;
 }
 
+Array GDScriptTextDocument::documentColor(const Dictionary &p_params) {
+	Dictionary textDocument = p_params["textDocument"];
+	String uri = textDocument["uri"];
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(uri);
+
+	Array arr;
+
+	ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+	if (parser) {
+		for (const LSP::ColorInformation &color_info : parser->get_colors()) {
+			arr.push_back(color_info.to_json());
+		}
+	}
+	return arr;
+}
+
+Array GDScriptTextDocument::colorPresentation(const Dictionary &p_params) {
+	LSP::ColorPresentationParams params;
+	params.load(p_params);
+
+	LSP::ColorPresentation presentation;
+
+	if (params.color.a == 1.0) {
+		presentation.label = vformat("Color(%.2f, %.2f, %.2f)", params.color.r, params.color.g, params.color.b);
+	} else {
+		presentation.label = vformat("Color(%.2f, %.2f, %.2f, %.2f)", params.color.r, params.color.g, params.color.b, params.color.a);
+	}
+
+	Array arr;
+	arr.push_back(presentation.to_json());
+	return arr;
+}
+
 GDScriptTextDocument::GDScriptTextDocument() {
 	file_checker = FileAccess::create(FileAccess::ACCESS_RESOURCES);
 }
