@@ -344,6 +344,7 @@ public:
 	void draw_texture(RequiredParam<Texture2D> p_texture, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1, 1));
 	void draw_texture_rect(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false);
 	void draw_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false);
+	void draw_texture_rotated(const Ref<Texture2D> &p_texture, const Point2 &p_pos, real_t p_rotation, const Vector2 &p_origin = Vector2(0.5, 0.5), const Rect2 &p_texture_region = Rect2(), const Color &p_modulate = Color(1, 1, 1, 1));
 	void draw_msdf_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), double p_outline = 0.0, double p_pixel_range = 4.0, double p_scale = 1.0);
 	void draw_lcd_texture_rect_region(RequiredParam<Texture2D> p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1));
 	void draw_style_box(RequiredParam<StyleBox> p_style_box, const Rect2 &p_rect);
