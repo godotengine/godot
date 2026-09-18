@@ -173,6 +173,12 @@ String GDScriptWarning::get_message() const {
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
 		case ONREADY_WITH_CAST:
 			return vformat(R"("as" will silently return "null" if the type of "%s" is wrong. Prefer assigning the node directly to an explicitly typed variable to get an error in such cases.)", symbols[0]);
+		case SET_GET_GRADUALLY_TYPED:
+			CHECK_SYMBOLS(5);
+			return vformat(R"(Mixing %s "%s" and %s "%s" is likely to produce runtime errors. Consider using static typing for "%s".)", symbols[0], symbols[1], symbols[2], symbols[3], symbols[4]);
+		case SET_GET_COROUTINE:
+			CHECK_SYMBOLS(3);
+			return vformat(R"(Using a coroutine as %s can lead to crashes, unexpected behavior, and might corrupt scenes in the editor. Consider accessing "%s" directly and launching a separate coroutine from the %s.)", symbols[0], symbols[1], symbols[2]);
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
@@ -252,6 +258,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("GET_NODE_DEFAULT_WITHOUT_ONREADY"),
 		PNAME("ONREADY_WITH_EXPORT"),
 		PNAME("ONREADY_WITH_CAST"),
+		PNAME("SET_GET_GRADUALLY_TYPED"),
+		PNAME("SET_GET_COROUTINE"),
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
