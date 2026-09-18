@@ -51,7 +51,7 @@
 #include "core/string/string_builder.h"
 #endif
 
-class GDScriptParser {
+class GDScriptParser final {
 	struct AnnotationInfo;
 
 public:

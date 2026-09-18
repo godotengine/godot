@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_extend_parser.h                                              */
+/*  lsp_parse_result.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -102,7 +102,9 @@ struct GodotRange {
 	}
 };
 
-class ExtendGDScriptParser : public GDScriptParser {
+class LSPParseResult final {
+	GDScriptParser parser;
+
 	String path;
 	Vector<String> lines;
 
@@ -127,12 +129,12 @@ class ExtendGDScriptParser : public GDScriptParser {
 	const LSP::DocumentSymbol *search_symbol_defined_at_line(int p_line, const LSP::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;
 
 public:
-	_FORCE_INLINE_ const String &get_path() const { return path; }
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
 	_FORCE_INLINE_ const LSP::DocumentSymbol &get_symbols() const { return class_symbol; }
 	_FORCE_INLINE_ const Vector<LSP::Diagnostic> &get_diagnostics() const { return diagnostics; }
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
+	const List<GDScriptParser::ParserError> &get_errors() const { return parser.get_errors(); }
 	Error parse_result;
 
 	Error get_left_function_call(const LSP::Position &p_position, LSP::Position &r_func_pos, int &r_arg_index) const;
