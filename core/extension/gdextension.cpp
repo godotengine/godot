@@ -67,13 +67,6 @@ class GDExtensionMethodBind : public MethodBind {
 #endif
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
-		if (p_arg < 0) {
-			return return_value_info.type;
-		} else {
-			return arguments_info.get(p_arg).type;
-		}
-	}
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg < 0) {
 			return return_value_info;
@@ -220,7 +213,14 @@ public:
 		_set_const(p_method_info->method_flags & GDEXTENSION_METHOD_FLAG_CONST);
 		_set_static(p_method_info->method_flags & GDEXTENSION_METHOD_FLAG_STATIC);
 #ifdef DEBUG_ENABLED
-		_generate_argument_types(p_method_info->argument_count);
+		Variant::Type *argt = memnew_arr(Variant::Type, p_method_info->argument_count + 1);
+		argt[0] = return_value_info.type; // return type
+
+		for (int i = 0; i < (int)p_method_info->argument_count; i++) {
+			argt[i + 1] = arguments_info.get(i).type;
+		}
+
+		argument_types = argt;
 #endif // DEBUG_ENABLED
 		set_argument_count(p_method_info->argument_count);
 
