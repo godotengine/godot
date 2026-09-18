@@ -69,6 +69,69 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
+        internal static unsafe void GetMethodInfo(IntPtr delegateGCHandle, godot_dictionary* outMethodInfoDictionary)
+        {
+            try
+            {
+                Console.WriteLine("GetMethodInfo was called!");
+                var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
+                var method = @delegate?.Method;
+                if (method is null)
+                {
+                    return;
+                }
+
+                var methodInfo = new Collections.Dictionary();
+
+                methodInfo.Add("name", method.Name ?? "");
+
+                var returnVal = new Collections.Dictionary()
+                {
+                    { "name", method.ReturnParameter.Name ?? "" },
+                    { "type", (int)GD.TypeToVariantType(method.ReturnType) }
+                };
+                methodInfo.Add("return_val", returnVal);
+
+                var methodParams = new Collections.Array();
+                var methodDefaultParams = new Collections.Array();
+                var parameters = method.GetParameters();
+                if (parameters.Length != 0)
+                {
+                    foreach (var param in parameters)
+                    {
+                        var pinfo = new Collections.Dictionary()
+                        {
+                            { "name", param.Name ?? "" },
+                            { "type", (int)GD.TypeToVariantType(param.ParameterType) }
+                        };
+
+                        if (param.HasDefaultValue) {
+                            methodDefaultParams.Add(param.RawDefaultValue?.ToString() ?? "null");
+                        }
+
+                        methodParams.Add(pinfo);
+                    }
+                }
+                methodInfo.Add("args", methodParams);
+                methodInfo.Add("default_args", methodDefaultParams);
+
+                MethodFlags flags = MethodFlags.Default;
+                flags |= method.IsStatic ? MethodFlags.Static : 0;
+                flags |= method.IsVirtual ? MethodFlags.Virtual : 0;
+                flags |= method.IsAbstract ? MethodFlags.VirtualRequired : 0;
+                methodInfo.Add("flags", (int)flags);
+
+                *outMethodInfoDictionary = NativeFuncs.godotsharp_dictionary_new_copy(
+                    (godot_dictionary)methodInfo.NativeValue);
+            }
+            catch (Exception e)
+            {
+                ExceptionUtils.LogException(e);
+                return;
+            }
+        }
+
+        [UnmanagedCallersOnly]
         internal static unsafe void InvokeWithVariantArgs(IntPtr delegateGCHandle, void* trampoline,
             godot_variant** args, int argc, godot_variant* outRet)
         {

@@ -37,6 +37,9 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant_callable.h"
 
+#include <core/string/print_string.h>
+#include <core/variant/dictionary.h>
+
 void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const {
 	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount, true);
 }
@@ -222,6 +225,23 @@ Array Callable::get_bound_arguments() const {
 		ret[i] = arr[i];
 	}
 	return ret;
+}
+
+void Callable::get_method_info_ref(MethodInfo &r_method_info) const {
+	if (is_custom()) {
+		custom->get_method_info(r_method_info);
+	} else if (is_valid()) {
+		r_method_info = get_object()->get_method_info(method);
+	} else {
+		r_method_info = MethodInfo();
+	}
+}
+
+Dictionary Callable::get_method_info() const {
+	print_line("Callable::get_arguments called!");
+	MethodInfo mi;
+	get_method_info_ref(mi);
+	return mi.operator Dictionary();
 }
 
 int Callable::get_unbound_arguments_count() const {
@@ -467,6 +487,11 @@ const Callable *CallableCustom::get_base_comparator() const {
 int CallableCustom::get_argument_count(bool &r_is_valid) const {
 	r_is_valid = false;
 	return 0;
+}
+
+void CallableCustom::get_method_info(MethodInfo &r_method_info) const {
+	print_line("CallableCustom::get_arguments is called!");
+	r_method_info = MethodInfo();
 }
 
 int CallableCustom::get_bound_arguments_count() const {
