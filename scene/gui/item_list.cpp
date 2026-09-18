@@ -443,7 +443,7 @@ void ItemList::select(int p_idx, bool p_single) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (p_single || select_mode == SELECT_SINGLE) {
-		if (!items[p_idx].selectable || items[p_idx].disabled) {
+		if (!items[p_idx].selectable || (items[p_idx].disabled && select_mode != SELECT_SINGLE)) {
 			return;
 		}
 
@@ -473,6 +473,9 @@ void ItemList::deselect(int p_idx) {
 		items.write[p_idx].selected = false;
 		current = -1;
 	} else {
+		if (items[p_idx].disabled) {
+			return;
+		}
 		items.write[p_idx].selected = false;
 	}
 	items.write[p_idx].accessibility_item_dirty = true;
@@ -752,6 +755,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 #define CAN_SELECT(i) (items[i].selectable && !items[i].disabled)
+#define CAN_FOCUS(i) (items[i].selectable)
 #define IS_SAME_ROW(i, row) (i / current_columns == row)
 
 	double prev_scroll_v = scroll_bar_v->get_value();
@@ -798,7 +802,17 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			int i = closest;
 
 			if (items[i].disabled) {
-				// Don't emit any signal or do any action with clicked item when disabled.
+				if (select_mode == SELECT_SINGLE) {
+					if (items[i].selectable && (!items[i].selected || allow_reselect)) {
+						select(i, true);
+						emit_signal(SceneStringName(item_selected), i);
+					}
+					emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
+				} else {
+					current = i;
+					queue_accessibility_update();
+					queue_redraw();
+				}
 				return;
 			}
 
@@ -954,7 +968,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current - 1; i >= 0; i--) {
-						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
+						if (CAN_FOCUS(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
@@ -971,7 +985,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (current >= current_columns) {
 				int next = current - current_columns;
-				while (next >= 0 && !CAN_SELECT(next)) {
+				while (next >= 0 && !CAN_FOCUS(next)) {
 					next = next - current_columns;
 				}
 				if (next < 0) {
@@ -1001,7 +1015,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (diff < uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec")) * 2) {
 					for (int i = current + 1; i < items.size(); i++) {
-						if (CAN_SELECT(i) && items[i].text.begins_with(search_string)) {
+						if (CAN_FOCUS(i) && items[i].text.begins_with(search_string)) {
 							set_current(i);
 							ensure_current_is_visible();
 							if (select_mode == SELECT_SINGLE) {
@@ -1017,7 +1031,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (current < items.size() - current_columns) {
 				int next = current + current_columns;
-				while (next < items.size() && !CAN_SELECT(next)) {
+				while (next < items.size() && !CAN_FOCUS(next)) {
 					next = next + current_columns;
 				}
 				if (next >= items.size()) {
@@ -1036,7 +1050,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 			for (int i = 4; i > 0; i--) {
 				int index = current - current_columns * i;
-				if (index >= 0 && index < items.size() && CAN_SELECT(index)) {
+				if (index >= 0 && index < items.size() && CAN_FOCUS(index)) {
 					set_current(index);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
@@ -1051,7 +1065,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 			for (int i = 4; i > 0; i--) {
 				int index = current + current_columns * i;
-				if (index >= 0 && index < items.size() && CAN_SELECT(index)) {
+				if (index >= 0 && index < items.size() && CAN_FOCUS(index)) {
 					set_current(index);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
@@ -1077,7 +1091,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (current % current_columns != 0) {
 				int current_row = current / current_columns;
 				int next = current - 1;
-				while (next >= 0 && !CAN_SELECT(next)) {
+				while (next >= 0 && !CAN_FOCUS(next)) {
 					next = next - 1;
 				}
 				if (next < 0 || !IS_SAME_ROW(next, current_row)) {
@@ -1106,7 +1120,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
 				int current_row = current / current_columns;
 				int next = current + 1;
-				while (next < items.size() && !CAN_SELECT(next)) {
+				while (next < items.size() && !CAN_FOCUS(next)) {
 					next = next + 1;
 				}
 				if (items.size() <= next || !IS_SAME_ROW(next, current_row)) {
@@ -1123,7 +1137,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (p_event->is_action("ui_cancel", true)) {
 			search_string = "";
 		} else if (p_event->is_action("ui_select", true) && (select_mode == SELECT_MULTI || select_mode == SELECT_TOGGLE)) {
-			if (current >= 0 && current < items.size()) {
+			if (current >= 0 && current < items.size() && !items[current].disabled) {
 				if (CAN_SELECT(current) && !items[current].selected) {
 					select(current, false);
 					emit_signal(SNAME("multi_selected"), current, true);
@@ -1193,6 +1207,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 #undef CAN_SELECT
+#undef CAN_FOCUS
 #undef IS_SAME_ROW
 }
 
@@ -2019,6 +2034,9 @@ void ItemList::_shift_range_select(int p_from, int p_to) {
 	}
 
 	for (int i = 0; i < items.size(); i++) {
+		if (!items[i].selectable || items[i].disabled) {
+			continue;
+		}
 		if (i >= MIN(shift_anchor, p_to) && i <= MAX(shift_anchor, p_to)) {
 			if (!is_selected(i)) {
 				select(i, false);
