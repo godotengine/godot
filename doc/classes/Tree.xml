@@ -614,6 +614,9 @@
 		<theme_item name="draw_relationship_lines" data_type="constant" type="int" default="0">
 			Draws the relationship lines if not zero, this acts as a boolean. Relationship lines are drawn at the start of child items to show hierarchy.
 		</theme_item>
+		<theme_item name="row_stripes_visible" data_type="constant" type="int" default="0">
+			Draws the [theme_item row_stripes] style box behind every second row if not zero, this acts as a boolean. Useful when the [Tree] has multiple columns to improve readability.
+		</theme_item>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
 			The horizontal space between item cells. This is also used as the margin at the start of an item when folding is disabled.
 		</theme_item>
@@ -767,6 +770,9 @@
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The background style for the [Tree].
+		</theme_item>
+		<theme_item name="row_stripes" data_type="style" type="StyleBox">
+			[StyleBox] drawn behind every second row when [theme_item row_stripes_visible] is not zero.
 		</theme_item>
 		<theme_item name="selected" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [Tree] is not being focused.

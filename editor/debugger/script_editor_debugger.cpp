@@ -2439,6 +2439,7 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_vb->add_child(vmem_mc);
 
 		vmem_tree = memnew(Tree);
+		vmem_tree->add_theme_constant_override("row_stripes_visible", 1);
 		vmem_vb->set_name(TTRC("Video RAM"));
 		vmem_tree->set_columns(4);
 		vmem_tree->set_column_titles_visible(true);
