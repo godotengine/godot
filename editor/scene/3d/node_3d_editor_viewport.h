@@ -232,6 +232,8 @@ private:
 	Node3D *ruler_end_point = nullptr;
 	Ref<ImmediateMesh> geometry;
 	Ref<ImmediateMesh> geometry_xray;
+	Ref<ImmediateMesh> triangle_mesh;
+	Ref<ImmediateMesh> triangle_mesh_xray;
 	MeshInstance3D *ruler_line = nullptr;
 	MeshInstance3D *ruler_line_xray = nullptr;
 	Label *ruler_label = nullptr;
