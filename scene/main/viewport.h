@@ -435,6 +435,7 @@ private:
 
 	bool disable_input = false;
 	bool disable_input_override = false;
+	bool local_focus = false;
 
 	void _gui_call_input(Control *p_control, const Ref<InputEvent> &p_input);
 	void _gui_call_notification(Control *p_control, int p_what);
@@ -631,6 +632,10 @@ public:
 	void _push_text_input(const String &p_text, bool p_emit_text_changed_signal = false);
 	void push_text_input(const String &p_text);
 	void push_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
+
+	void set_local_focus(bool p_local_focus);
+	bool get_local_focus() const;
+
 #ifndef DISABLE_DEPRECATED
 	void push_unhandled_input(RequiredParam<InputEvent> p_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
