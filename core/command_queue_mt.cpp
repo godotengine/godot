@@ -94,7 +94,7 @@ tryagain:
 	return true;
 }
 
-CommandQueueMT::CommandQueueMT(bool p_sync) {
+CommandQueueMT::CommandQueueMT(bool p_sync, bool (*p_is_bypass_enabled_for_thread)()) {
 	read_ptr_and_epoch = 0;
 	write_ptr_and_epoch = 0;
 	dealloc_ptr = 0;
@@ -108,8 +108,10 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 		sync_sems[i].in_use = false;
 	}
 	if (p_sync) {
+		is_bypass_enabled_for_thread = p_is_bypass_enabled_for_thread;
 		sync = memnew(Semaphore);
 	} else {
+		DEV_ASSERT(!p_is_bypass_enabled_for_thread);
 		sync = nullptr;
 	}
 }
