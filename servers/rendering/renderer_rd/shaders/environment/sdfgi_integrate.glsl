@@ -77,6 +77,9 @@ layout(push_constant, std430) uniform Params {
 	vec3 sky_color_or_orientation;
 	float y_mult;
 
+	vec3 ambient_color;
+	float ambient_color_sky_mix;
+
 	vec2 sky_irradiance_border_size;
 	bool store_ambient_texture;
 	uint pad;
@@ -268,26 +271,24 @@ void main() {
 				}
 			}
 
-		} else if (bool(params.sky_flags & SKY_FLAGS_MODE_SKY)) {
-			// Reconstruct sky orientation as quaternion and rotate ray_dir before sampling.
-			float sky_sign = bool(params.sky_flags & SKY_FLAGS_ORIENTATION_SIGN) ? 1.0 : -1.0;
-			vec4 sky_quat = vec4(params.sky_color_or_orientation, sky_sign * sqrt(1.0 - dot(params.sky_color_or_orientation, params.sky_color_or_orientation)));
-			vec3 sky_dir = cross(sky_quat.xyz, ray_dir);
-			sky_dir = ray_dir + ((sky_dir * sky_quat.w) + cross(sky_quat.xyz, sky_dir)) * 2.0;
-#ifdef USE_RADIANCE_OCTMAP_ARRAY
-			light.rgb = textureLod(sampler2DArray(sky_irradiance, linear_sampler_mipmaps), vec3(vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
-#else
-			light.rgb = textureLod(sampler2D(sky_irradiance, linear_sampler_mipmaps), vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
-#endif
-			light.rgb *= params.sky_energy;
-			light.a = 0.0;
-
-		} else if (bool(params.sky_flags & SKY_FLAGS_MODE_COLOR)) {
-			light.rgb = params.sky_color_or_orientation;
-			light.rgb *= params.sky_energy;
-			light.a = 0.0;
 		} else {
-			light = vec4(0, 0, 0, 0);
+			light = vec4(params.ambient_color, 0.0);
+
+			if (bool(params.sky_flags & SKY_FLAGS_MODE_SKY)) {
+				// Reconstruct sky orientation as quaternion and rotate ray_dir before sampling.
+				float sky_sign = bool(params.sky_flags & SKY_FLAGS_ORIENTATION_SIGN) ? 1.0 : -1.0;
+				vec4 sky_quat = vec4(params.sky_color_or_orientation, sky_sign * sqrt(1.0 - dot(params.sky_color_or_orientation, params.sky_color_or_orientation)));
+				vec3 sky_dir = cross(sky_quat.xyz, ray_dir);
+				sky_dir = ray_dir + ((sky_dir * sky_quat.w) + cross(sky_quat.xyz, sky_dir)) * 2.0;
+#ifdef USE_RADIANCE_OCTMAP_ARRAY
+				vec3 sky_light = textureLod(sampler2DArray(sky_irradiance, linear_sampler_mipmaps), vec3(vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 0.0), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
+#else
+				vec3 sky_light = textureLod(sampler2D(sky_irradiance, linear_sampler_mipmaps), vec3_to_oct_with_border(sky_dir, params.sky_irradiance_border_size), 2.0).rgb; // Use second mipmap because we don't usually throw a lot of rays, so this compensates.
+#endif
+				light.rgb = mix(light.rgb, sky_light * params.sky_energy, params.ambient_color_sky_mix);
+			} else if (bool(params.sky_flags & SKY_FLAGS_MODE_COLOR)) {
+				light.rgb = mix(light.rgb, params.sky_color_or_orientation * params.sky_energy, params.ambient_color_sky_mix);
+			}
 		}
 
 		vec3 ray_dir2 = ray_dir * ray_dir;
