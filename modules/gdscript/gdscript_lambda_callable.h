@@ -33,7 +33,6 @@
 #include "gdscript.h"
 
 #include "core/object/ref_counted.h"
-#include "core/templates/vector.h"
 #include "core/variant/callable.h"
 #include "core/variant/variant.h"
 
@@ -48,7 +47,7 @@ class GDScriptLambdaCallable : public CallableCustom {
 	GDScript::UpdatableFuncPtr function;
 	uint32_t h;
 
-	Vector<Variant> captures;
+	TightLocalVector<Variant> captures;
 
 	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
 	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
@@ -66,7 +65,7 @@ public:
 
 	GDScriptLambdaCallable(GDScriptLambdaCallable &) = delete;
 	GDScriptLambdaCallable(const GDScriptLambdaCallable &) = delete;
-	GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures);
+	GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, TightLocalVector<Variant> &&p_captures);
 	virtual ~GDScriptLambdaCallable() = default;
 };
 
@@ -77,7 +76,7 @@ class GDScriptLambdaSelfCallable : public CallableCustom {
 	Object *object = nullptr; // For non RefCounted objects, use a direct pointer.
 	uint32_t h;
 
-	Vector<Variant> captures;
+	TightLocalVector<Variant> captures;
 
 	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
 	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
@@ -95,7 +94,7 @@ public:
 
 	GDScriptLambdaSelfCallable(GDScriptLambdaSelfCallable &) = delete;
 	GDScriptLambdaSelfCallable(const GDScriptLambdaSelfCallable &) = delete;
-	GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures);
-	GDScriptLambdaSelfCallable(Object *p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures);
+	GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, GDScriptFunction *p_function, TightLocalVector<Variant> &&p_captures);
+	GDScriptLambdaSelfCallable(Object *p_self, GDScriptFunction *p_function, TightLocalVector<Variant> &&p_captures);
 	virtual ~GDScriptLambdaSelfCallable() = default;
 };
