@@ -1265,7 +1265,11 @@ void CSGPrimitive3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_faces", "flip_faces"), &CSGPrimitive3D::set_flip_faces);
 	ClassDB::bind_method(D_METHOD("get_flip_faces"), &CSGPrimitive3D::get_flip_faces);
 
+	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGPrimitive3D::set_material);
+	ClassDB::bind_method(D_METHOD("get_material"), &CSGPrimitive3D::get_material);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGPrimitive3D::set_flip_faces(bool p_invert) {
@@ -1280,6 +1284,20 @@ void CSGPrimitive3D::set_flip_faces(bool p_invert) {
 
 bool CSGPrimitive3D::get_flip_faces() {
 	return flip_faces;
+}
+
+void CSGPrimitive3D::set_material(const Ref<Material> &p_material) {
+	if (material == p_material) {
+		return;
+	}
+
+	material = p_material;
+
+	_make_dirty();
+}
+
+Ref<Material> CSGPrimitive3D::get_material() const {
+	return material;
 }
 
 CSGPrimitive3D::CSGPrimitive3D() {
@@ -1441,28 +1459,12 @@ void CSGMesh3D::_mesh_changed() {
 	callable_mp((Node3D *)this, &Node3D::update_gizmos).call_deferred();
 }
 
-void CSGMesh3D::set_material(const Ref<Material> &p_material) {
-	if (material == p_material) {
-		return;
-	}
-	material = p_material;
-	_make_dirty();
-}
-
-Ref<Material> CSGMesh3D::get_material() const {
-	return material;
-}
-
 void CSGMesh3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &CSGMesh3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &CSGMesh3D::get_mesh);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGMesh3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGMesh3D::get_material);
-
 	// Hide PrimitiveMeshes that are always non-manifold and therefore can't be used as CSG meshes.
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh,-PlaneMesh,-PointMesh,-QuadMesh,-RibbonTrailMesh"), "set_mesh", "get_mesh");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
@@ -1630,14 +1632,10 @@ void CSGSphere3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGSphere3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGSphere3D::get_smooth_faces);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGSphere3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGSphere3D::get_material);
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.001,100.0,0.001,suffix:m"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "radial_segments", PROPERTY_HINT_RANGE, "1,100,1"), "set_radial_segments", "get_radial_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rings", PROPERTY_HINT_RANGE, "1,100,1"), "set_rings", "get_rings");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGSphere3D::set_radius(const float p_radius) {
@@ -1678,15 +1676,6 @@ void CSGSphere3D::set_smooth_faces(const bool p_smooth_faces) {
 
 bool CSGSphere3D::get_smooth_faces() const {
 	return smooth_faces;
-}
-
-void CSGSphere3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-}
-
-Ref<Material> CSGSphere3D::get_material() const {
-	return material;
 }
 
 CSGSphere3D::CSGSphere3D() {
@@ -1803,11 +1792,7 @@ void CSGBox3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &CSGBox3D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &CSGBox3D::get_size);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGBox3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGBox3D::get_material);
-
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_NONE, "suffix:m"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGBox3D::set_size(const Vector3 &p_size) {
@@ -1843,16 +1828,6 @@ bool CSGBox3D::_set(const StringName &p_name, const Variant &p_value) {
 	}
 }
 #endif
-
-void CSGBox3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-	update_gizmos();
-}
-
-Ref<Material> CSGBox3D::get_material() const {
-	return material;
-}
 
 ///////////////
 
@@ -2004,9 +1979,6 @@ void CSGCylinder3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cone", "cone"), &CSGCylinder3D::set_cone);
 	ClassDB::bind_method(D_METHOD("is_cone"), &CSGCylinder3D::is_cone);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGCylinder3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGCylinder3D::get_material);
-
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGCylinder3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGCylinder3D::get_smooth_faces);
 
@@ -2015,7 +1987,6 @@ void CSGCylinder3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cone"), "set_cone", "is_cone");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGCylinder3D::set_radius(const float p_radius) {
@@ -2066,15 +2037,6 @@ void CSGCylinder3D::set_smooth_faces(const bool p_smooth_faces) {
 
 bool CSGCylinder3D::get_smooth_faces() const {
 	return smooth_faces;
-}
-
-void CSGCylinder3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-}
-
-Ref<Material> CSGCylinder3D::get_material() const {
-	return material;
 }
 
 CSGCylinder3D::CSGCylinder3D() {
@@ -2229,9 +2191,6 @@ void CSGTorus3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ring_sides", "sides"), &CSGTorus3D::set_ring_sides);
 	ClassDB::bind_method(D_METHOD("get_ring_sides"), &CSGTorus3D::get_ring_sides);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGTorus3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGTorus3D::get_material);
-
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGTorus3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGTorus3D::get_smooth_faces);
 
@@ -2240,7 +2199,6 @@ void CSGTorus3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_sides", "get_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ring_sides", PROPERTY_HINT_RANGE, "3,64,1"), "set_ring_sides", "get_ring_sides");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGTorus3D::set_inner_radius(const float p_inner_radius) {
@@ -2292,15 +2250,6 @@ void CSGTorus3D::set_smooth_faces(const bool p_smooth_faces) {
 
 bool CSGTorus3D::get_smooth_faces() const {
 	return smooth_faces;
-}
-
-void CSGTorus3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-}
-
-Ref<Material> CSGTorus3D::get_material() const {
-	return material;
 }
 
 CSGTorus3D::CSGTorus3D() {
@@ -2753,9 +2702,6 @@ void CSGPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_joined", "enable"), &CSGPolygon3D::set_path_joined);
 	ClassDB::bind_method(D_METHOD("is_path_joined"), &CSGPolygon3D::is_path_joined);
 
-	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGPolygon3D::set_material);
-	ClassDB::bind_method(D_METHOD("get_material"), &CSGPolygon3D::get_material);
-
 	ClassDB::bind_method(D_METHOD("set_smooth_faces", "smooth_faces"), &CSGPolygon3D::set_smooth_faces);
 	ClassDB::bind_method(D_METHOD("get_smooth_faces"), &CSGPolygon3D::get_smooth_faces);
 
@@ -2778,7 +2724,6 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_u_distance", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater,suffix:m"), "set_path_u_distance", "get_path_u_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_joined"), "set_path_joined", "is_path_joined");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_faces"), "set_smooth_faces", "get_smooth_faces");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 
 	BIND_ENUM_CONSTANT(MODE_DEPTH);
 	BIND_ENUM_CONSTANT(MODE_SPIN);
@@ -2952,15 +2897,6 @@ void CSGPolygon3D::set_smooth_faces(const bool p_smooth_faces) {
 
 bool CSGPolygon3D::get_smooth_faces() const {
 	return smooth_faces;
-}
-
-void CSGPolygon3D::set_material(const Ref<Material> &p_material) {
-	material = p_material;
-	_make_dirty();
-}
-
-Ref<Material> CSGPolygon3D::get_material() const {
-	return material;
 }
 
 bool CSGPolygon3D::_is_editable_3d_polygon() const {
