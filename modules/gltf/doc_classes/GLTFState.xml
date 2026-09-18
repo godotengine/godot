@@ -308,7 +308,7 @@
 			The binary buffer attached to a .glb file.
 		</member>
 		<member name="handle_binary_image_mode" type="int" setter="set_handle_binary_image_mode" getter="get_handle_binary_image_mode" enum="GLTFState.HandleBinaryImageMode" default="1">
-			When importing a glTF file with unimported raw binary images embedded inside of binary blob buffers, in data URIs, or separate files not imported by Godot, this controls how the images are handled. Images can be discarded, saved as separate files, or embedded in the scene lossily or losslessly. See [enum HandleBinaryImageMode] for options.
+			When importing a glTF file with unimported raw binary images embedded inside of binary blob buffers, in data URIs, or separate files not imported by Godot, this controls how the images are handled. Images can be discarded, saved as separate files, or embedded in the scene lossily or losslessly.
 			This property does nothing for image files in the [code]res://[/code] folder imported by Godot, as those are handled by Godot's image importer directly, and then the Godot scene generated from the glTF file will use the images as Godot imported them.
 		</member>
 		<member name="import_as_skeleton_bones" type="bool" setter="set_import_as_skeleton_bones" getter="get_import_as_skeleton_bones" default="false">

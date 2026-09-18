@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="instance_index" type="int" setter="set_instance_index" getter="get_instance_index" default="0">
-			The index within 0-15 range, which is used to avoid clashes when shader used on multiple materials.
+			The index used to avoid clashes when the shader is used on multiple materials, ranging from [code]0[/code] to [code]15[/code].
 		</member>
 		<member name="parameter_name" type="String" setter="set_parameter_name" getter="get_parameter_name" default="&quot;&quot;">
 			Name of the parameter, by which it can be accessed through the [ShaderMaterial] properties.

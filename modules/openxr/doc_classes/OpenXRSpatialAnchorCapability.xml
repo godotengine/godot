@@ -133,7 +133,7 @@
 			Provides the application with read-only access (i.e. application cannot modify this scope) to spatial entities persisted and managed by the system. The application can use the UUID in the persistence component for this scope to correlate entities across spatial contexts and device reboots.
 		</constant>
 		<constant name="PERSISTENCE_SCOPE_LOCAL_ANCHORS" value="1000781000" enum="PersistenceScope">
-			Persistence operations and data access is limited to spatial anchors, on the same device, for the same user and same app (using [method persist_anchor] and [method unpersist_anchor] functions)
+			Persistence operations and data access is limited to spatial anchors, on the same device, for the same user and same app (using [method persist_anchor] and [method unpersist_anchor] functions).
 		</constant>
 	</constants>
 </class>
