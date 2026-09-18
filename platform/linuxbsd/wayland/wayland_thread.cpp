@@ -4586,6 +4586,29 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	_window_hover();
 }
 
+void WaylandThread::window_set_visible(DisplayServerEnums::WindowID p_window_id, bool p_visible) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowState &ws = windows[p_window_id];
+
+	if (ws.visible == p_visible) {
+		return;
+	}
+
+	ws.visible = p_visible;
+
+	if (!p_visible) {
+		ws.ready = false;
+
+		wl_surface_attach(ws.wl_surface, nullptr, 0, 0);
+		wl_surface_commit(ws.wl_surface);
+	} else {
+		ws.last_frame_time = OS::get_singleton()->get_ticks_usec();
+
+		set_frame();
+		wl_surface_commit(ws.wl_surface);
+	}
+}
+
 bool WaylandThread::window_exists(DisplayServerEnums::WindowID p_window_id) const {
 	if (p_window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
 		return false;
