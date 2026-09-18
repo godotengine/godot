@@ -157,7 +157,7 @@ private:
 		bool ssil_enabled = false;
 		float ssil_radius = 5.0;
 		float ssil_intensity = 1.0;
-		float ssil_sharpness = 0.95;
+		float ssil_sharpness = 0.98;
 		float ssil_thickness = 0.5;
 		float ssil_normal_rejection = 1.0;
 

@@ -4003,10 +4003,10 @@ void RenderForwardClustered::environment_set_ssao_quality(RSE::EnvironmentSSAOQu
 	ss_effects->ssao_set_quality(p_quality, p_half_size, p_adaptive_target, p_blur_passes, p_fadeout_from, p_fadeout_to);
 }
 
-void RenderForwardClustered::environment_set_ssil_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, [[maybe_unused]] float p_adaptive_target, [[maybe_unused]] int p_blur_passes, [[maybe_unused]] float p_fadeout_from, [[maybe_unused]] float p_fadeout_to) {
+void RenderForwardClustered::environment_set_ssil_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, [[maybe_unused]] float p_adaptive_target, [[maybe_unused]] int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
 	ERR_FAIL_NULL(ss_effects);
 	ERR_FAIL_COND(p_quality < RSE::EnvironmentSSILQuality::ENV_SSIL_QUALITY_VERY_LOW || p_quality > RSE::EnvironmentSSILQuality::ENV_SSIL_QUALITY_ULTRA);
-	ss_effects->ssil_set_quality(p_quality, p_half_size);
+	ss_effects->ssil_set_quality(p_quality, p_half_size, p_fadeout_from, p_fadeout_to);
 }
 
 void RenderForwardClustered::environment_set_ssr_half_size(bool p_half_size) {

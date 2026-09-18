@@ -94,7 +94,7 @@ public:
 	void downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uint32_t p_view, const Projection &p_projection);
 
 	/* SSIL */
-	void ssil_set_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size);
+	void ssil_set_quality(RSE::EnvironmentSSILQuality p_quality, bool p_half_size, float p_fadeout_from, float p_fadeout_to);
 
 	struct SSILRenderBuffers {
 		bool half_size = false;
@@ -174,6 +174,8 @@ private:
 
 	RSE::EnvironmentSSILQuality ssil_quality = RSE::ENV_SSIL_QUALITY_MEDIUM;
 	bool ssil_half_size = false;
+	float ssil_fadeout_from = 50.0;
+	float ssil_fadeout_to = 300.0;
 	bool ssr_half_size = false;
 
 	RSE::SubSurfaceScatteringQuality sss_quality = RSE::SUB_SURFACE_SCATTERING_QUALITY_MEDIUM;
@@ -243,7 +245,11 @@ private:
 
 		float intensity;
 		float normal_rejection;
-		float pad;
+		float fade_out_add;
+		float fade_out_mul;
+
+		float pad1[2];
+		float pad2;
 		uint32_t is_orthogonal;
 
 		float NDC_to_view_mul[2];
