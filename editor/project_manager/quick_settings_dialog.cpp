@@ -33,6 +33,7 @@
 #include "core/object/callable_mp.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/editor_settings_dialog.h"
@@ -128,6 +129,7 @@ void QuickSettingsDialog::_update_current_values() {
 	// Scale options.
 	{
 		const int current_scale = EDITOR_GET("interface/editor/appearance/display_scale");
+		const bool use_custom_scale = current_scale == editor_scales.size() - 1;
 
 		for (int i = 0; i < editor_scales.size(); i++) {
 			const String &scale_value = editor_scales[i];
@@ -136,6 +138,9 @@ void QuickSettingsDialog::_update_current_values() {
 				scale_option_button->select(i);
 			}
 		}
+
+		custom_scale_slider->set_value_no_signal(EDITOR_GET("interface/editor/appearance/custom_display_scale"));
+		custom_scale_container->set_visible(use_custom_scale);
 	}
 
 	// Network mode options.
@@ -216,6 +221,11 @@ void QuickSettingsDialog::_theme_selected(int p_id) {
 
 void QuickSettingsDialog::_scale_selected(int p_id) {
 	_set_setting_value("interface/editor/appearance/display_scale", p_id, true);
+	custom_scale_container->set_visible(p_id == editor_scales.size() - 1);
+}
+
+void QuickSettingsDialog::_custom_scale_changed(double p_value) {
+	_set_setting_value("interface/editor/appearance/custom_display_scale", p_value, true);
 }
 
 void QuickSettingsDialog::_network_mode_selected(int p_id) {
@@ -383,6 +393,25 @@ QuickSettingsDialog::QuickSettingsDialog() {
 			}
 
 			_add_setting_control(TTRC("Display Scale"), "interface/editor/appearance/display_scale", scale_option_button);
+
+			custom_scale_container = memnew(HBoxContainer);
+
+			const char *custom_scale_label = TTRC("Custom Display Scale");
+			Label *label = memnew(SettingLabel(custom_scale_label, "interface/editor/appearance/custom_display_scale"));
+			label->set_text(custom_scale_label);
+			label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
+			custom_scale_container->add_child(label);
+
+			custom_scale_slider = memnew(EditorSpinSlider);
+			custom_scale_slider->set_min(0.5);
+			custom_scale_slider->set_max(3.0);
+			custom_scale_slider->set_step(0.01);
+			custom_scale_slider->connect(SceneStringName(value_changed), callable_mp(this, &QuickSettingsDialog::_custom_scale_changed));
+			custom_scale_slider->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+			custom_scale_container->add_child(custom_scale_slider);
+
+			settings_list->add_child(custom_scale_container);
 		}
 
 		// Network mode options.
