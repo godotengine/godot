@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -14,13 +15,16 @@ namespace Godot
     [StructLayout(LayoutKind.Sequential)]
     public struct Rect2I : IEquatable<Rect2I>
     {
+        [JsonIgnore]
         private Vector2I _position;
+        [JsonIgnore]
         private Vector2I _size;
 
         /// <summary>
         /// Beginning corner. Typically has values lower than <see cref="End"/>.
         /// </summary>
         /// <value>Directly uses a private field.</value>
+        [JsonInclude]
         public Vector2I Position
         {
             readonly get { return _position; }
@@ -32,6 +36,7 @@ namespace Godot
         /// If the size is negative, you can use <see cref="Abs"/> to fix it.
         /// </summary>
         /// <value>Directly uses a private field.</value>
+        [JsonInclude]
         public Vector2I Size
         {
             readonly get { return _size; }
@@ -46,6 +51,7 @@ namespace Godot
         /// Getting is equivalent to <paramref name="value"/> = <see cref="Position"/> + <see cref="Size"/>,
         /// setting is equivalent to <see cref="Size"/> = <paramref name="value"/> - <see cref="Position"/>
         /// </value>
+        [JsonIgnore]
         public Vector2I End
         {
             readonly get { return _position + _size; }
@@ -56,6 +62,7 @@ namespace Godot
         /// The area of this <see cref="Rect2I"/>.
         /// See also <see cref="HasArea"/>.
         /// </summary>
+        [JsonIgnore]
         public readonly int Area
         {
             get { return _size.X * _size.Y; }
