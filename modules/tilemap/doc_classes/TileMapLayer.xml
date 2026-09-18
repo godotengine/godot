@@ -11,13 +11,13 @@
 	</description>
 	<tutorials>
 		<link title="Using Tilemaps">$DOCS_URL/tutorials/2d/using_tilemaps.html</link>
-		<link title="2D Platformer Demo">https://godotengine.org/asset-library/asset/2727</link>
-		<link title="2D Isometric Demo">https://godotengine.org/asset-library/asset/2718</link>
-		<link title="2D Hexagonal Demo">https://godotengine.org/asset-library/asset/2717</link>
-		<link title="2D Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
-		<link title="2D Role Playing Game (RPG) Demo">https://godotengine.org/asset-library/asset/2729</link>
-		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
-		<link title="2D Dynamic TileMap Layers Demo">https://godotengine.org/asset-library/asset/2713</link>
+		<link title="2D Platformer Demo">https://store.godotengine.org/asset/godot-foundation/platformer-2d-demo/</link>
+		<link title="2D Isometric Demo">https://store.godotengine.org/asset/godot-foundation/isometric-game-demo/</link>
+		<link title="2D Hexagonal Demo">https://store.godotengine.org/asset/godot-foundation/hexagonal-game-demo/</link>
+		<link title="2D Grid-based Navigation with AStarGrid2D Demo">https://store.godotengine.org/asset/godot-foundation/grid-based-navigation-with-astargrid2d-demo/</link>
+		<link title="2D Role Playing Game (RPG) Demo">https://store.godotengine.org/asset/godot-foundation/role-playing-game-demo/</link>
+		<link title="2D Kinematic Character Demo">https://store.godotengine.org/asset/godot-foundation/kinematic-character-2d-demo/</link>
+		<link title="2D Dynamic TileMap Layers Demo">https://store.godotengine.org/asset/godot-foundation/dynamic-tilemap-layers-demo/</link>
 	</tutorials>
 	<methods>
 		<method name="_tile_data_runtime_update" qualifiers="virtual">
