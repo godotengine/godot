@@ -1188,9 +1188,8 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 	ObjectSignalLock signal_lock(this);
 
 	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), vformat("Trying to add already existing signal '%s'.", p_signal.name));
-	SignalData s;
-	s.user = p_signal;
-	signal_map[p_signal.name] = s;
+	SignalData &signal_data = signal_map[p_signal.name];
+	signal_data.user_signal_info = ValuePtr<MethodInfo>::make(p_signal);
 }
 
 bool Object::_has_user_signal(const StringName &p_name) const {
@@ -1199,7 +1198,7 @@ bool Object::_has_user_signal(const StringName &p_name) const {
 	if (!signal_map.has(p_name)) {
 		return false;
 	}
-	return signal_map[p_name].user.name.length() > 0;
+	return signal_map[p_name].user_signal_info;
 }
 
 void Object::_remove_user_signal(const StringName &p_name) {
@@ -1513,9 +1512,9 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	//find maybe usersignals?
 
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
-		if (!E.value.user.name.is_empty()) {
+		if (E.value.user_signal_info) {
 			//user signal
-			p_signals->push_back(E.value.user);
+			p_signals->push_back(*E.value.user_signal_info);
 		}
 	}
 }
