@@ -120,7 +120,6 @@ private:
 	String ime_text;
 	Point2 ime_selection;
 
-	RID text_rid;
 	RID accessibility_text_root_element;
 	float full_width = 0.0;
 
@@ -138,7 +137,6 @@ private:
 	bool caret_mid_grapheme_enabled = false;
 
 	int caret_column = 0;
-	float scroll_offset = 0.0;
 	int max_length = 0; // 0 for no maximum.
 
 	String language;
@@ -204,31 +202,6 @@ private:
 	bool pending_select_all_on_focus = false;
 	bool select_all_on_focus = false;
 
-	struct ThemeCache {
-		Ref<StyleBox> normal;
-		Ref<StyleBox> read_only;
-		Ref<StyleBox> focus;
-
-		Ref<Font> font;
-		int font_size = 0;
-		Color font_color;
-		Color font_uneditable_color;
-		Color font_selected_color;
-		int font_outline_size;
-		Color font_outline_color;
-		Color font_placeholder_color;
-		int caret_width = 0;
-		Color caret_color;
-		int minimum_character_width = 0;
-		Color selection_color;
-
-		Ref<Texture2D> clear_icon;
-		Color clear_button_color;
-		Color clear_button_color_pressed;
-
-		float base_scale = 1.0;
-	} theme_cache;
-
 	void _close_ime_window();
 	void _update_ime_window_position();
 
@@ -276,6 +249,35 @@ private:
 	Point2 _get_right_icon_size(Ref<Texture2D> p_right_icon) const;
 
 protected:
+	struct ThemeCache {
+		Ref<StyleBox> normal;
+		Ref<StyleBox> read_only;
+		Ref<StyleBox> focus;
+
+		Ref<Font> font;
+		int font_size = 0;
+		Color font_color;
+		Color font_uneditable_color;
+		Color font_selected_color;
+		int font_outline_size;
+		Color font_outline_color;
+		Color font_placeholder_color;
+		int caret_width = 0;
+		Color caret_color;
+		int minimum_character_width = 0;
+		Color selection_color;
+
+		Ref<Texture2D> clear_icon;
+		Color clear_button_color;
+		Color clear_button_color_pressed;
+
+		float base_scale = 1.0;
+	} theme_cache;
+
+	RID text_rid;
+	float scroll_offset = 0.0;
+	bool hide_text = false;
+
 	bool _is_over_clear_button(const Point2 &p_pos) const;
 
 	virtual void _update_theme_item_cache() override;
@@ -349,6 +351,7 @@ public:
 	void set_text(String p_text);
 	String get_text() const;
 	void set_text_with_selection(const String &p_text); // Set text, while preserving selection.
+	void set_hide_text(bool p_hide);
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;

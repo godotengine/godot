@@ -89,6 +89,9 @@
 		</member>
 	</members>
 	<theme_items>
+		<theme_item name="affix_color" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
+			Color of the extra non-numeric text provided by [member format]. Not used if [member editable] is disabled.
+		</theme_item>
 		<theme_item name="down_disabled_icon_modulate" data_type="color" type="Color" default="Color(0.875, 0.875, 0.875, 0.5)">
 			Down button icon modulation color, when the button is disabled.
 		</theme_item>
