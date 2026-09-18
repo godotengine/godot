@@ -1286,6 +1286,7 @@ public:
 
 	void window_create(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size, DisplayServerEnums::WindowID p_parent_id = DisplayServerEnums::INVALID_WINDOW_ID);
 	void window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect);
+	void window_popup_set_position(DisplayServerEnums::WindowID p_window_id, const Vector2i &p_pos);
 	void window_destroy(DisplayServerEnums::WindowID p_window_Id);
 
 	// Checks if a window exists for this ID (NOT if its data is valid). Useful to
