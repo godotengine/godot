@@ -71,6 +71,9 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 #ifdef LINUXBSD_ENABLED
 		accesskit_unix_adapter *adapter = nullptr;
 #endif
+#ifdef APPLE_EMBEDDED_ENABLED
+		accesskit_ios_subclassing_adapter *adapter = nullptr;
+#endif
 
 		RID root_id;
 		bool initial_update_completed = false;
