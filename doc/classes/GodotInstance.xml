@@ -51,5 +51,11 @@
 				Finishes this instance's startup sequence. Returns [code]true[/code] on success.
 			</description>
 		</method>
+		<method name="stop">
+			<return type="void" />
+			<description>
+				Stops this instance's main loop. Has no effect if the instance has not been started.
+			</description>
+		</method>
 	</methods>
 </class>
