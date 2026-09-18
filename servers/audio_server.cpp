@@ -705,6 +705,12 @@ int AudioServer::thread_find_bus_index(const StringName &p_name) {
 	}
 }
 
+void AudioServer::_update_bus_index_cache() {
+	for (int i = 0; i < buses.size(); i++) {
+		buses[i]->index_cache = i;
+	}
+}
+
 void AudioServer::set_bus_count(int p_count) {
 	ERR_FAIL_COND(p_count < 1);
 	ERR_FAIL_INDEX(p_count, 256);
@@ -760,6 +766,8 @@ void AudioServer::set_bus_count(int p_count) {
 		bus_map[attempt] = buses[i];
 	}
 
+	_update_bus_index_cache();
+
 	unlock();
 
 	emit_signal("bus_layout_changed");
@@ -775,6 +783,9 @@ void AudioServer::remove_bus(int p_index) {
 	bus_map.erase(buses[p_index]->name);
 	memdelete(buses[p_index]);
 	buses.remove(p_index);
+
+	_update_bus_index_cache();
+
 	unlock();
 
 	emit_signal("bus_layout_changed");
@@ -831,6 +842,8 @@ void AudioServer::add_bus(int p_at_pos) {
 		buses.insert(p_at_pos, bus);
 	}
 
+	_update_bus_index_cache();
+
 	emit_signal("bus_layout_changed");
 }
 
@@ -854,6 +867,8 @@ void AudioServer::move_bus(int p_bus, int p_to_pos) {
 	} else {
 		buses.insert(p_to_pos - 1, bus);
 	}
+
+	_update_bus_index_cache();
 
 	emit_signal("bus_layout_changed");
 }
