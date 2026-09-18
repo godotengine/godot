@@ -84,6 +84,10 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	void _fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary, bool p_lg_icon_exported, const String &p_lg_icon);
 	void _make_icon(const Ref<EditorExportPreset> &p_preset, const Ref<Image> &p_icon, Vector<uint8_t> &p_data);
 
+	Error _unzip_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_zip_path, const String &p_app_name, bool p_debug);
+	Error _copy_debugsymbols_recursively(Ref<DirAccess> &p_da, const String &p_path, const String &p_src_path, const String &p_app_name, bool p_debug);
+	bool _copy_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_symbols_path, const String &p_app_name, bool p_debug, Error &r_err);
+
 	Error _export_liquid_glass_icon(const Ref<EditorExportPreset> &p_preset, const String &p_app_path, const String &p_icon_path);
 	Error _notarize(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 	void _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_ent_path, bool p_warn = true, bool p_set_id = false);

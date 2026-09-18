@@ -480,6 +480,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_debug_symbols", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/liquid_glass_icon", PROPERTY_HINT_FILE, "*.icon"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
@@ -1623,6 +1624,143 @@ Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPres
 	return OK;
 }
 
+Error EditorExportPlatformMacOS::_unzip_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_zip_path, const String &p_app_name, bool p_debug) {
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	unzFile src_pkg_zip = unzOpen2(p_zip_path.utf8().get_data(), &io);
+	if (!src_pkg_zip) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Prepare Templates"), vformat(TTR("Could not find debug symbols to export: \"%s\"."), p_zip_path));
+		return ERR_FILE_NOT_FOUND;
+	}
+
+	String template_name = p_debug ? "template_debug" : "template_release";
+	int ret = unzGoToFirstFile(src_pkg_zip);
+	while (ret == UNZ_OK) {
+		// Get filename.
+		unz_file_info info;
+		char fname[16384];
+		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		if (ret != UNZ_OK) {
+			break;
+		}
+		String file = String::utf8(fname);
+		file = file.trim_prefix("out/macos/templates/");
+		if (file.begins_with(vformat("godot.macos.%s.universal.dSYM/", template_name))) {
+			file = file.trim_prefix(vformat("godot.macos.%s.universal.dSYM/", template_name));
+			file = file.replace(vformat("godot.macos.%s.universal", template_name), p_app_name);
+
+			Vector<uint8_t> data;
+			data.resize(info.uncompressed_size);
+
+			// Read.
+			unzOpenCurrentFile(src_pkg_zip);
+			unzReadCurrentFile(src_pkg_zip, data.ptrw(), data.size());
+			unzCloseCurrentFile(src_pkg_zip);
+
+			if (data.size() > 0) {
+				print_verbose("ADDING: " + file + " size: " + itos(data.size()));
+
+				file = p_path.path_join(file);
+				Error err = p_da->make_dir_recursive(file.get_base_dir());
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Could not create directory \"%s\"."), file.get_base_dir()));
+				}
+				if (err == OK) {
+					Ref<FileAccess> f = FileAccess::open(file, FileAccess::WRITE);
+					if (f.is_valid()) {
+						f->store_buffer(data.ptr(), data.size());
+						f.unref();
+					} else {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Could not open \"%s\"."), file));
+						err = ERR_CANT_CREATE;
+					}
+				}
+			}
+		}
+
+		ret = unzGoToNextFile(src_pkg_zip);
+	}
+
+	// We're done with our source zip.
+	unzClose(src_pkg_zip);
+
+	return OK;
+}
+
+Error EditorExportPlatformMacOS::_copy_debugsymbols_recursively(Ref<DirAccess> &p_da, const String &p_path, const String &p_src_path, const String &p_app_name, bool p_debug) {
+	List<String> dirs;
+
+	Ref<DirAccess> src_da = DirAccess::create_for_path(p_src_path);
+	if (!p_da->dir_exists(p_path)) {
+		Error err = p_da->make_dir(p_path);
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Cannot create directory \"%s\"."), p_path));
+			return err;
+		}
+	}
+
+	Error err = src_da->change_dir(p_src_path);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Cannot change current directory to \"%s\"."), p_src_path));
+		return err;
+	}
+
+	String template_name = p_debug ? "template_debug" : "template_release";
+	src_da->list_dir_begin();
+	String n = src_da->get_next();
+	while (!n.is_empty()) {
+		if (n != "." && n != "..") {
+			if (src_da->current_is_dir()) {
+				dirs.push_back(n);
+			} else {
+				const String &rel_path = n.replace(vformat("godot.macos.%s.universal", template_name), p_app_name);
+				if (!n.is_relative_path()) {
+					src_da->list_dir_end();
+					if (err != OK) {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("\"%s\" is not a relative path."), n));
+						return err;
+					}
+				}
+				print_verbose("ADDING: " + rel_path);
+
+				err = p_da->copy(src_da->get_current_dir().path_join(n), p_path.path_join(rel_path));
+				if (err) {
+					src_da->list_dir_end();
+					if (err != OK) {
+						add_message(EXPORT_MESSAGE_WARNING, TTR("Export"), vformat(TTR("Failed to copy file \"%s\"."), n));
+						return err;
+					}
+				}
+			}
+		}
+
+		n = src_da->get_next();
+	}
+
+	src_da->list_dir_end();
+
+	for (const String &rel_path : dirs) {
+		err = _copy_debugsymbols_recursively(p_da, p_path.path_join(rel_path), p_src_path.path_join(rel_path), p_app_name, p_debug);
+		if (err != OK) {
+			return err;
+		}
+	}
+
+	return OK;
+}
+
+bool EditorExportPlatformMacOS::_copy_debugsymbols(Ref<DirAccess> &p_da, const String &p_path, const String &p_symbols_path, const String &p_app_name, bool p_debug, Error &r_err) {
+	if (DirAccess::exists(p_symbols_path.get_basename() + ".dSYM")) {
+		r_err = _copy_debugsymbols_recursively(p_da, p_path.simplify_path(), p_symbols_path.simplify_path().get_basename() + ".dSYM", p_app_name, p_debug);
+	} else if (FileAccess::exists(p_symbols_path.get_basename() + ".dSYM.zip")) {
+		r_err = _unzip_debugsymbols(p_da, p_path.simplify_path(), p_symbols_path.simplify_path().get_basename() + ".dSYM.zip", p_app_name, p_debug);
+	} else {
+		return false;
+	}
+	return r_err == OK;
+}
+
 Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
@@ -1698,14 +1836,17 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	String tmp_base_path_name;
 	String tmp_app_path_name;
 	String scr_path;
+	String dbg_name;
 	if (export_format == "app") {
 		tmp_base_path_name = p_path.get_base_dir();
 		tmp_app_path_name = p_path;
 		scr_path = p_path.get_basename() + ".command";
+		dbg_name = p_path.get_file().get_basename();
 	} else {
 		tmp_base_path_name = EditorPaths::get_singleton()->get_temp_dir().path_join(pkg_name);
 		tmp_app_path_name = tmp_base_path_name.path_join(tmp_app_dir_name);
 		scr_path = tmp_base_path_name.path_join(pkg_name + ".command");
+		dbg_name = pkg_name;
 	}
 
 	print_verbose("Exporting to " + tmp_app_path_name);
@@ -1727,6 +1868,14 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			tmp_app_dir->erase_contents_recursive();
 			tmp_app_dir->change_dir(old_dir);
 		}
+	}
+
+	int debug_symbols_mode = p_preset->get("debug/export_debug_symbols");
+	bool copy_debug_symbols = (debug_symbols_mode == 1 && p_debug) || (debug_symbols_mode == 2);
+
+	if (copy_debug_symbols) {
+		print_verbose("Exporting debug symbols to " + tmp_app_path_name + ".dSYM");
+		_copy_debugsymbols(tmp_app_dir, tmp_app_path_name + ".dSYM", src_pkg_name, dbg_name, p_debug, err);
 	}
 
 	Array helpers = p_preset->get("codesign/entitlements/app_sandbox/helper_executables");
