@@ -39,7 +39,7 @@ int PluralRules::_eq_test(const Array &p_input_val, const Ref<EQNode> &p_node, c
 
 	static const Vector<String> input_name = { "n" };
 
-	Error err = expr->parse(p_node->regex, input_name);
+	Error err = expr->parse(p_node->regex, input_name, Expression::FUNC_TYPE_MATH | Expression::FUNC_TYPE_RANDOM);
 	ERR_FAIL_COND_V_MSG(err != OK, 0, vformat("Cannot parse expression \"%s\". Error: %s", p_node->regex, expr->get_error_text()));
 
 	Variant result = expr->execute(p_input_val);
