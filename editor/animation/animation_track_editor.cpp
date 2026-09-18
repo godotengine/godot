@@ -579,6 +579,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 
 			if (hint.type != Variant::NIL) {
 				PropertyInfo pi = hint;
+				pi.usage |= PROPERTY_USAGE_EDITOR; // Ensure the value can be edited in the inspector.
 				pi.name = PNAME("value");
 				p_list->push_back(pi);
 			} else {
