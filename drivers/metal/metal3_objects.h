@@ -360,6 +360,7 @@ private:
 
 	void _render_set_dirty_state();
 	void _render_bind_uniform_sets();
+	void _set_arg_buffer(MTL::RenderCommandEncoder *p_enc, const UniformSet &p_shader_set, MTL::Buffer *p_buffer, uint32_t p_offset, uint32_t p_set_index);
 	void _bind_uniforms_argument_buffers(MDUniformSet *p_set, MDShader *p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets);
 	void _bind_uniforms_direct(MDUniformSet *p_set, MDShader *p_shader, DirectEncoder p_enc, uint32_t p_set_index, uint32_t p_dynamic_offsets);
 
@@ -405,6 +406,33 @@ public:
 		uint32_t dynamic_offsets = 0;
 		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
 		uint64_t uniform_set_mask = 0;
+
+		// Top-level argument buffer bound to each stage for each set, so that re-binding an
+		// unchanged set does not re-encode it. A pipeline change marks every set dirty, because
+		// shader variants differ in which stages declare a set, but the argument buffer index is
+		// always the set index, so a hit here is safe for the lifetime of one encoder.
+		enum ArgBufferStage {
+			ARG_BUFFER_STAGE_VERTEX,
+			ARG_BUFFER_STAGE_FRAGMENT,
+			ARG_BUFFER_STAGE_MAX,
+		};
+		BindingCache arg_buffer_cache[ARG_BUFFER_STAGE_MAX];
+
+		// Mirror of the raster state currently programmed into the active encoder. A freshly
+		// created render command encoder starts at Metal's defaults (fill Fill, clip Clip,
+		// winding Clockwise, cull None, bias 0, stencil ref 0, blend 0), which are exactly the
+		// defaults of RasterState, so no "valid" flag is needed. Reset it whenever a new
+		// encoder is created, and update it anywhere raster state is written directly.
+		MDRenderPipeline::RasterState encoder_raster;
+
+		// Raster state for the next draw: the bound pipeline's, with dynamic state overlaid.
+		MDRenderPipeline::RasterState raster_state;
+
+		_FORCE_INLINE_ void clear_arg_buffer_cache() {
+			for (BindingCache &cache : arg_buffer_cache) {
+				cache.clear();
+			}
+		}
 
 		_FORCE_INLINE_ void reset();
 		void end_encoding();
@@ -457,13 +485,6 @@ public:
 				}
 			}
 			dirty.set_flag(DirtyFlag::DIRTY_UNIFORMS);
-		}
-
-		_FORCE_INLINE_ void mark_blend_dirty() {
-			if (!blend_constants.has_value()) {
-				return;
-			}
-			dirty.set_flag(DirtyFlag::DIRTY_BLEND);
 		}
 
 		MTL::ScissorRect clip_to_render_area(MTL::ScissorRect p_rect) const {
