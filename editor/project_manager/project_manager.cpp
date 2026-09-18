@@ -113,6 +113,16 @@ void ProjectManager::_notification(int p_what) {
 			_update_list_placeholder();
 			_titlebar_resized();
 			_update_compact_mode(true);
+
+			const int sidebar_size = project_list_sidebar->get_size().x;
+			const int root_padding = root_container->get_margin_size(SIDE_LEFT) + root_container->get_margin_size(SIDE_RIGHT);
+			const int pl_width = project_list->get_size().x;
+			const int pl_edge_width = pl_width - project_list->largest_project_title_and_tags_fullsize;
+			Ref<StyleBox> project_list_stylebox = get_theme_stylebox("project_list", "ProjectManager");
+			const int project_list_h_margin = project_list_stylebox.is_valid() ? project_list_stylebox->get_content_margin(SIDE_LEFT) + project_list_stylebox->get_content_margin(SIDE_RIGHT) : 0;
+			project_list->title_and_tags_size_cache = root_container->get_size().x - pl_edge_width - sidebar_size - root_padding - project_list_h_margin;
+
+			project_list->resize_project_titles();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {

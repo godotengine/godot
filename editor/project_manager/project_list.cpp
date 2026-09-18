@@ -424,72 +424,60 @@ void ProjectListItemControl::set_is_grayed(bool p_grayed) {
 	}
 }
 
-void ProjectListItemControl::set_project_title_index(int p_title_index) {
-	project_title_index = p_title_index;
-}
-
 void ProjectListItemControl::set_project_title_autowrap() {
+	ProjectList *pl = get_list();
 	title_fullsize_cache = project_title->get_size().x;
-	window_size_cache = get_window()->get_size().x;
 
 	int tag_size = 0;
 	int tag_maxsize = 0;
 	for (Node *child : tag_container->iterate_children()) {
 		ProjectTag *tag = Object::cast_to<ProjectTag>(child);
-		tag_size += tag->get_size().x;
-
-		if (tag_maxsize == 0) {
-			tag_maxsize = tag->get_custom_maximum_size().x;
+		int temp_tag_size = tag->get_size().x;
+		tag_size += temp_tag_size;
+		if (temp_tag_size > tag_maxsize) {
+			tag_maxsize = temp_tag_size;
 		}
 	}
+	tag_fullsize_cache = tag_size;
 	tag_size_cache = MIN(tag_size, tag_maxsize);
-	int &title_size_cache = get_list()->title_size_cache[project_title_index];
 
-	int size_check = 800 * EDSCALE;
-	if (title_size_cache == 0) {
-		title_size_cache = size_check;
+	const int project_title_and_tags_fullsize = title_fullsize_cache + tag_size;
+	int &largest_project_title_and_tags_fullsize = pl->largest_project_title_and_tags_fullsize;
+	if (project_title_and_tags_fullsize > largest_project_title_and_tags_fullsize) {
+		largest_project_title_and_tags_fullsize = project_title_and_tags_fullsize;
 	}
 
-	if (title_fullsize_cache > size_check - tag_size_cache) {
-		resize_project_title();
+	int &abs_title_and_tags_minsize = pl->abs_title_and_tags_minsize_cache;
+	if (abs_title_and_tags_minsize == 0) {
+		ProjectTag *tag = memnew(ProjectTag("dummy"));
+		const int abs_tag_maxsize = tag->get_custom_maximum_size().x;
+		memdelete(tag);
+		abs_title_and_tags_minsize = (200 * EDSCALE) + abs_tag_maxsize;
+	}
+
+	int &title_and_tags_size = pl->title_and_tags_size_cache;
+
+	if (title_fullsize_cache > title_and_tags_size - tag_size && !pl->before_ready) {
+		resize_project_title(title_and_tags_size, abs_title_and_tags_minsize);
 	}
 }
 
-void ProjectListItemControl::resize_project_title() {
-	if (get_window() == nullptr) {
+void ProjectListItemControl::resize_project_title(int p_title_and_tags_size, int p_abs_title_and_tags_minsize) {
+	if (p_title_and_tags_size >= title_fullsize_cache + tag_fullsize_cache) {
+		if (project_title->get_autowrap_mode() != TextServer::AUTOWRAP_OFF) {
+			project_title->set_custom_maximum_size(Vector2(-1, -1));
+			project_title->set_custom_minimum_size(Vector2(0, 0));
+			project_title->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
+		}
 		return;
 	}
 
-	int window_size = get_window()->get_size().x;
-	int difference = window_size - window_size_cache;
-	window_size_cache = window_size;
-
-	int &title_size_cache = get_list()->title_size_cache[project_title_index];
-	title_size_cache += difference;
-
-	if (title_size_cache > title_fullsize_cache + tag_size_cache) {
-		project_title->set_custom_maximum_size(Vector2(-1, -1));
-		project_title->set_custom_minimum_size(Vector2(0, 0));
-		project_title->set_autowrap_mode(TextServer::AUTOWRAP_OFF);
-
-		return;
-	}
-	ProjectTag tag = ProjectTag("dummy");
-	int tag_maxsize = tag.get_custom_maximum_size().x;
-	int title_maxsize = title_size_cache - tag_size_cache;
-	int title_minsize = title_size_cache - tag_maxsize;
-
-	int abs_minsize = (200 * EDSCALE);
-	if (title_fullsize_cache > abs_minsize) {
-		if (title_minsize < abs_minsize) {
-			title_minsize = abs_minsize + tag_maxsize - tag_size_cache;
-		}
-		if (title_maxsize < title_minsize) {
-			project_title->set_custom_maximum_size(Vector2(title_minsize, -1));
-		} else {
-			project_title->set_custom_maximum_size(Vector2(title_maxsize, -1));
-		}
-		project_title->set_custom_minimum_size(Vector2(title_minsize, 0));
+	const int abs_title_minsize = p_abs_title_and_tags_minsize - tag_size_cache;
+	if (title_fullsize_cache >= abs_title_minsize) {
+		const int title_maxsize = p_title_and_tags_size - tag_size_cache;
+		const int title_size = MAX(title_maxsize, abs_title_minsize);
+		project_title->set_custom_maximum_size(Vector2(title_size, -1));
+		project_title->set_custom_minimum_size(Vector2(title_size, 0));
 		project_title->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	}
 }
@@ -703,7 +691,12 @@ void ProjectList::_notification(int p_what) {
 			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_LIST_BOX);
 			AccessibilityServer::get_singleton()->update_set_list_item_count(ae, _projects.size());
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_MULTISELECTABLE, false);
-		}
+		} break;
+
+		case NOTIFICATION_READY: {
+			window_size_cache = get_window()->get_size().x;
+			before_ready = false;
+		} break;
 	}
 }
 
@@ -936,14 +929,12 @@ void ProjectList::update_project_list() {
 	// If you have 150 projects, it may read through 150 files on your disk at once + load 150 icons.
 	// FIXME: Does it really have to be a full, hard reload? Runtime updates should be made much cheaper.
 
-	int temp_title_index = -1;
 	if (ProjectManager::get_singleton()->is_initialized()) {
 		// Clear whole list
 		for (int i = 0; i < _projects.size(); ++i) {
 			Item &project = _projects.write[i];
 			CRASH_COND(project.control == nullptr);
 
-			temp_title_index = project.project_title_index;
 			memdelete(project.control); // Why not queue_free()?
 		}
 
@@ -956,9 +947,6 @@ void ProjectList::update_project_list() {
 
 	// Create controls
 	for (int i = 0; i < _projects.size(); ++i) {
-		Item &item = _projects.write[i];
-		item.project_title_index = temp_title_index;
-
 		_create_project_item_control(i);
 	}
 
@@ -1146,14 +1134,10 @@ int ProjectList::refresh_project(const String &dir_path) {
 
 	bool was_selected = _selected_project_paths.has(dir_path);
 
-	int temp_title_index = -1;
-
 	// Remove item in any case
 	for (int i = 0; i < _projects.size(); ++i) {
 		const Item &existing_item = _projects[i];
 		if (existing_item.path == dir_path) {
-			temp_title_index = existing_item.project_title_index;
-
 			_remove_project(i, false);
 			break;
 		}
@@ -1165,7 +1149,6 @@ int ProjectList::refresh_project(const String &dir_path) {
 
 		Item item = load_project_data(dir_path, is_favorite);
 
-		item.project_title_index = temp_title_index;
 		_projects.push_back(item);
 		_create_project_item_control(_projects.size() - 1);
 
@@ -1232,15 +1215,6 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->connect("explore_pressed", callable_mp(this, &ProjectList::_on_explore_pressed).bind(item.path));
 #endif
 	hb->connect("request_menu", callable_mp(this, &ProjectList::_open_menu).bind(hb));
-
-	if (item.project_title_index == -1) {
-		project_title_index_count++;
-		title_size_cache[project_title_index_count] = 0;
-		item.project_title_index = project_title_index_count;
-		hb->set_project_title_index(project_title_index_count);
-	} else {
-		hb->set_project_title_index(item.project_title_index);
-	}
 
 	project_list_vbox->add_child(hb);
 }
@@ -1597,8 +1571,18 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 // Resize project titles.
 
 void ProjectList::resize_project_titles() {
+	Window *win = get_window();
+	if (win == nullptr) {
+		return;
+	}
+
+	const int window_size = win->get_size().x;
+	const int difference = window_size - window_size_cache;
+	window_size_cache = window_size;
+	title_and_tags_size_cache += difference;
+
 	for (Item &item : _projects) {
-		item.control->resize_project_title();
+		item.control->resize_project_title(title_and_tags_size_cache, abs_title_and_tags_minsize_cache);
 	}
 }
 
