@@ -13,7 +13,7 @@ on:
 jobs:
   static-checks:
     name: Code style, file formatting, and docs
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     outputs:
       changed-files: '"${{ steps.changed-files.outputs.clangd_all_changed_files }}"' # Wrap with quotes to bookend internal quote separators.
