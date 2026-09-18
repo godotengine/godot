@@ -35,7 +35,7 @@ def generate_test_data_files(reftag: str):
     """
     gdextension_reference_json = download_gdextension_api(reftag)
 
-    with open(CLASS_METHODS_FILE, "w") as classes_file:
+    with open(CLASS_METHODS_FILE, "w", encoding="utf-8", newline="\n") as classes_file:
         classes_file.writelines([
             f"{klass['name']} {func['name']} {func['hash']}\n"
             for (klass, func) in itertools.chain(
@@ -60,7 +60,7 @@ def generate_test_data_files(reftag: str):
     if not variant_types:
         return
 
-    with open(BUILTIN_METHODS_FILE, "w") as f:
+    with open(BUILTIN_METHODS_FILE, "w", encoding="utf-8", newline="\n") as f:
         f.writelines([
             f"{variant_types[klass['name'].lower()]} {func['name']} {func['hash']}\n"
             for (klass, func) in itertools.chain(
@@ -72,7 +72,7 @@ def generate_test_data_files(reftag: str):
             )
         ])
 
-    with open(UTILITY_FUNCTIONS_FILE, "w") as f:
+    with open(UTILITY_FUNCTIONS_FILE, "w", encoding="utf-8", newline="\n") as f:
         f.writelines([f"{func['name']} {func['hash']}\n" for func in gdextension_reference_json["utility_functions"]])
 
 
@@ -120,7 +120,7 @@ def process_compatibility_test(proc: subprocess.Popen[bytes], timeout: int = 5) 
                 errors.extend(err)
             break
 
-    return errors.decode("utf-8") if errors else None
+    return errors.decode("utf-8", errors="replace") if errors else None
 
 
 def compatibility_check(godot4_bin: str) -> bool:
