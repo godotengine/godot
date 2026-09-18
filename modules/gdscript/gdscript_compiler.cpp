@@ -404,7 +404,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 								// No getter or inside getter: direct variable access.
 								GDScriptCodeGenerator::Address temp = codegen.add_temporary(scr->static_variables_indices[identifier].data_type);
 								GDScriptCodeGenerator::Address _class = codegen.add_constant(scr);
-								int index = scr->static_variables_indices[identifier].index;
+								uint32_t index = scr->static_variables_indices[identifier].index;
 								gen->write_get_static_variable(temp, _class, index);
 								return temp;
 							}
@@ -1010,7 +1010,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				bool member_property_is_in_setter = false;
 				bool is_static = false;
 				GDScriptCodeGenerator::Address static_var_class;
-				int static_var_index = 0;
+				uint32_t static_var_index = 0;
 				GDScriptDataType static_var_data_type;
 				StringName var_name;
 				StringName member_property_setter_function;
@@ -1293,7 +1293,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				bool is_in_setter = false;
 				bool is_static = false;
 				GDScriptCodeGenerator::Address static_var_class;
-				int static_var_index = 0;
+				uint32_t static_var_index = 0;
 				GDScriptDataType static_var_data_type;
 				StringName var_name;
 				StringName setter_function;
@@ -3185,7 +3185,7 @@ GDScriptCompiler::FunctionLambdaInfo GDScriptCompiler::_get_function_replacement
 Vector<GDScriptCompiler::FunctionLambdaInfo> GDScriptCompiler::_get_function_lambda_replacement_info(GDScriptFunction *p_func, int p_depth, GDScriptFunction *p_parent_func) {
 	Vector<FunctionLambdaInfo> result;
 	// Only scrape the lambdas inside p_func.
-	for (int i = 0; i < p_func->lambdas.size(); ++i) {
+	for (uint32_t i = 0; i < p_func->lambdas.size(); ++i) {
 		result.push_back(_get_function_replacement_info(p_func->lambdas[i], i, p_depth + 1, p_func));
 	}
 	return result;
