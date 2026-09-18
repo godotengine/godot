@@ -115,6 +115,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="binary_format_mode" type="int" setter="set_binary_format_mode" getter="get_binary_format_mode" enum="GLTFDocument.BinaryFormatMode" default="0">
+			When exporting a binary glTF (.glb), this determines the binary format to use: 32-bit, 64-bit, or automatic selection between the two. This option has no effect when exporting a text glTF (.gltf).
+		</member>
 		<member name="fallback_image_format" type="String" setter="set_fallback_image_format" getter="get_fallback_image_format" default="&quot;None&quot;">
 			The user-friendly name of the fallback image format. This is used when exporting the glTF file, including writing to a file and writing to a byte array.
 			This property may only be one of "None", "PNG", or "JPEG", and is only used when the [member image_format] is not one of "None", "PNG", or "JPEG". If having multiple extension image formats is desired, that can be done using a [GLTFDocumentExtension] class - this property only covers the use case of providing a base glTF fallback image when using a custom image format.
@@ -141,6 +144,15 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="BINARY_FORMAT_MODE_AUTO" value="0" enum="BinaryFormatMode">
+			Use the binary glTF format with the minimum size for the file being exported. If the file being exported exceeds the limits of the 32-bit format, the 64-bit format will be used. See [constant BINARY_FORMAT_MODE_32_BIT] and [constant BINARY_FORMAT_MODE_64_BIT] for more details.
+		</constant>
+		<constant name="BINARY_FORMAT_MODE_32_BIT" value="1" enum="BinaryFormatMode">
+			Use the binary glTF format with 32-bit file size and chunk sizes as defined in the glTF 2.0 specification. If the file being exported exceeds the limits of the 32-bit format, either a separate buffer will be written, or the export will fail.
+		</constant>
+		<constant name="BINARY_FORMAT_MODE_64_BIT" value="2" enum="BinaryFormatMode">
+			Use the binary glTF format with 64-bit file size and chunk sizes as defined in the glTF 2.1 specification. This format is not compatible with older glTF importers, but allows for larger files to be exported.
+		</constant>
 		<constant name="ROOT_NODE_MODE_SINGLE_ROOT" value="0" enum="RootNodeMode">
 			Treat the Godot scene's root node as the root node of the glTF file, and mark it as the single root node via the [code]GODOT_single_root[/code] glTF extension. This will be parsed the same as [constant ROOT_NODE_MODE_KEEP_ROOT] if the implementation does not support [code]GODOT_single_root[/code].
 		</constant>
