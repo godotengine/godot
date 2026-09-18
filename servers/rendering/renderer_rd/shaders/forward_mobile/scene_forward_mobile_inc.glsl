@@ -21,7 +21,7 @@ layout(push_constant, std430) uniform DrawCall {
 #ifdef UBERSHADER
 	uint sc_packed_0;
 	uint sc_packed_1;
-	float sc_packed_2;
+	uint sc_packed_2;
 	uint uc_packed_0;
 #endif
 }
@@ -44,7 +44,7 @@ uint sc_packed_1() {
 	return draw_call.sc_packed_1;
 }
 
-float sc_packed_2() {
+uint sc_packed_2() {
 	return draw_call.sc_packed_2;
 }
 
@@ -57,7 +57,7 @@ uint uc_cull_mode() {
 // Pull the constants from the pipeline's specialization constants.
 layout(constant_id = 0) const uint pso_sc_packed_0 = 0;
 layout(constant_id = 1) const uint pso_sc_packed_1 = 0;
-layout(constant_id = 2) const float pso_sc_packed_2 = 2.0;
+layout(constant_id = 2) const uint pso_sc_packed_2 = 0;
 
 uint sc_packed_0() {
 	return pso_sc_packed_0;
@@ -67,7 +67,7 @@ uint sc_packed_1() {
 	return pso_sc_packed_1;
 }
 
-float sc_packed_2() {
+uint sc_packed_2() {
 	return pso_sc_packed_2;
 }
 
@@ -225,8 +225,12 @@ bool sc_use_lightmap_specular() {
 	return ((sc_packed_1() >> 31) & 1U) != 0;
 }
 
+bool sc_use_directional_projector() {
+	return ((sc_packed_2() >> 0) & 1U) != 0;
+}
+
 half sc_luminance_multiplier() {
-	return half(sc_packed_2());
+    return half(unpackHalf2x16(sc_packed_2() >> 16).x);
 }
 
 layout(constant_id = 3) const bool sc_emulate_point_size = false;
