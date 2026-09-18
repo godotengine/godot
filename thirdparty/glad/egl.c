@@ -359,7 +359,15 @@ static GLADapiproc glad_egl_get_proc(void *vuserptr, const char* name) {
 
 static void* _egl_handle = NULL;
 
-static void* glad_egl_dlopen_handle(void) {
+static const char** _egl_names = NULL;
+static int _egl_count = 0;
+
+void gladSetupEGL(int eglc, const char* eglnames[]) {
+    _egl_count = eglc;
+    _egl_names = eglnames;
+}
+
+static void* glad_egl_dlopen_handle() {
 #if GLAD_PLATFORM_APPLE
     static const char *NAMES[] = {"libEGL.dylib"};
 #elif GLAD_PLATFORM_WIN32
@@ -369,7 +377,11 @@ static void* glad_egl_dlopen_handle(void) {
 #endif
 
     if (_egl_handle == NULL) {
-        _egl_handle = glad_get_dlopen_handle(NAMES, sizeof(NAMES) / sizeof(NAMES[0]));
+        if (_egl_count == 0) {
+            _egl_count = sizeof(NAMES) / sizeof(NAMES[0]);
+            _egl_names = NAMES;
+        }
+        _egl_handle = glad_get_dlopen_handle(_egl_names, _egl_count);
     }
 
     return _egl_handle;
@@ -407,9 +419,62 @@ int gladLoaderLoadEGL(EGLDisplay display) {
 
 
 void gladLoaderUnloadEGL(void) {
+    glad_eglBindAPI = NULL;
+    glad_eglBindTexImage = NULL;
+    glad_eglChooseConfig = NULL;
+    glad_eglClientWaitSync = NULL;
+    glad_eglCopyBuffers = NULL;
+    glad_eglCreateContext = NULL;
+    glad_eglCreateImage = NULL;
+    glad_eglCreatePbufferFromClientBuffer = NULL;
+    glad_eglCreatePbufferSurface = NULL;
+    glad_eglCreatePixmapSurface = NULL;
+    glad_eglCreatePlatformPixmapSurface = NULL;
+    glad_eglCreatePlatformPixmapSurfaceEXT = NULL;
+    glad_eglCreatePlatformWindowSurface = NULL;
+    glad_eglCreatePlatformWindowSurfaceEXT = NULL;
+    glad_eglCreateSync = NULL;
+    glad_eglCreateWindowSurface = NULL;
+    glad_eglDestroyContext = NULL;
+    glad_eglDestroyImage = NULL;
+    glad_eglDestroySurface = NULL;
+    glad_eglDestroySync = NULL;
+    glad_eglGetConfigAttrib = NULL;
+    glad_eglGetConfigs = NULL;
+    glad_eglGetCurrentContext = NULL;
+    glad_eglGetCurrentDisplay = NULL;
+    glad_eglGetCurrentSurface = NULL;
+    glad_eglGetDisplay = NULL;
+    glad_eglGetError = NULL;
+    glad_eglGetPlatformDisplay = NULL;
+    glad_eglGetPlatformDisplayEXT = NULL;
+    glad_eglGetProcAddress = NULL;
+    glad_eglGetSyncAttrib = NULL;
+    glad_eglInitialize = NULL;
+    glad_eglMakeCurrent = NULL;
+    glad_eglQueryAPI = NULL;
+    glad_eglQueryContext = NULL;
+    glad_eglQueryString = NULL;
+    glad_eglQuerySurface = NULL;
+    glad_eglReleaseTexImage = NULL;
+    glad_eglReleaseThread = NULL;
+    glad_eglSetBlobCacheFuncsANDROID = NULL;
+    glad_eglSurfaceAttrib = NULL;
+    glad_eglSwapBuffers = NULL;
+    glad_eglSwapInterval = NULL;
+    glad_eglTerminate = NULL;
+    glad_eglWaitClient = NULL;
+    glad_eglWaitGL = NULL;
+    glad_eglWaitNative = NULL;
+    glad_eglWaitSync = NULL;
+
     if (_egl_handle != NULL) {
         glad_close_dlopen_handle(_egl_handle);
         _egl_handle = NULL;
+    }
+    if (_egl_count != 0) {
+        _egl_count = 0;
+        _egl_names = NULL;
     }
 }
 
