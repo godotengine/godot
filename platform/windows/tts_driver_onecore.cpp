@@ -30,6 +30,8 @@
 
 #include "tts_driver_onecore.h"
 
+#include "winrt_utils.h"
+
 #include "core/object/callable_mp.h"
 #include "servers/display/display_server.h"
 
