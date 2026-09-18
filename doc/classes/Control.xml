@@ -129,8 +129,7 @@
 			<return type="Vector2" />
 			<description>
 				Virtual method to be implemented by the user. Returns the maximum size for this control. Alternative to [member custom_maximum_size] for controlling maximum size via code. The actual maximum size will be the max value of these two (in each axis separately).
-				If not overridden, defaults to [constant Vector2.ZERO].
-				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its maximum size (e.g. [ScrollContainer]).
+				If not overridden, defaults to [code]Vector2(-1, -1)[/code].
 				[b]Note:[/b] It is recommended to use [method get_bound_minimum_size] instead of [method get_combined_minimum_size] when implementing this method, as the former respects maximum size limits when calculating the minimum size, while the latter does not.
 			</description>
 		</method>
@@ -139,7 +138,6 @@
 			<description>
 				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member custom_minimum_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
 				If not overridden, defaults to [constant Vector2.ZERO].
-				[b]Note:[/b] This method will not be called when the script is attached to a [Control] node that already overrides its minimum size (e.g. [Label], [Button], [PanelContainer] etc.). It can only be used with most basic GUI nodes, like [Control], [Container], [Panel] etc.
 			</description>
 		</method>
 		<method name="_get_tooltip" qualifiers="virtual const">

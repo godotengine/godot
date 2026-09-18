@@ -108,6 +108,8 @@ protected:
 	Size2 _fit_icon_size(const Size2 &p_size) const;
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	void fold();
 	void expand();
@@ -141,7 +143,6 @@ public:
 	Control *get_title_bar_control(int64_t p_index) const;
 	int get_title_bar_control_count() const;
 
-	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_desired_size() const override;
 	virtual Size2 get_inner_combined_maximum_size() const override;
 

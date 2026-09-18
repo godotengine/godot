@@ -34,7 +34,7 @@
 #include "core/object/class_db.h"
 #include "scene/main/viewport.h"
 
-Size2 SubViewportContainer::get_minimum_size() const {
+Size2 SubViewportContainer::_get_minimum_size() const {
 	if (stretch) {
 		return Size2();
 	}

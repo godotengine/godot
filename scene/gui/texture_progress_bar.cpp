@@ -84,7 +84,7 @@ bool TextureProgressBar::get_nine_patch_stretch() const {
 	return nine_patch_stretch;
 }
 
-Size2 TextureProgressBar::get_minimum_size() const {
+Size2 TextureProgressBar::_get_minimum_size() const {
 	if (nine_patch_stretch) {
 		return Size2(stretch_margin[SIDE_LEFT] + stretch_margin[SIDE_RIGHT], stretch_margin[SIDE_TOP] + stretch_margin[SIDE_BOTTOM]);
 	}

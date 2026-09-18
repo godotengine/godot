@@ -284,6 +284,8 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 #ifndef DISABLE_DEPRECATED
 	void _edit_bind_compat_111117();
 	static void _bind_compatibility_methods();
@@ -407,8 +409,6 @@ public:
 
 	void set_secret_character(const String &p_string);
 	String get_secret_character() const;
-
-	virtual Size2 get_minimum_size() const override;
 
 	void set_expand_to_text_length_enabled(bool p_enabled);
 	bool is_expand_to_text_length_enabled() const;

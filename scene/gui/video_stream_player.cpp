@@ -233,7 +233,7 @@ void VideoStreamPlayer::texture_changed(const Ref<Texture2D> &p_texture) {
 	}
 }
 
-Size2 VideoStreamPlayer::get_minimum_size() const {
+Size2 VideoStreamPlayer::_get_minimum_size() const {
 	if (!expand && texture.is_valid()) {
 		return texture_size;
 	} else {

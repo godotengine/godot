@@ -341,6 +341,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual Size2 _get_minimum_size() const override;
 
 public:
 	uint32_t value = 0;
@@ -350,7 +351,6 @@ public:
 	Vector<String> tooltips;
 
 	void set_read_only(bool p_read_only);
-	virtual Size2 get_minimum_size() const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 	void gui_input(const Ref<InputEvent> &p_ev) override;
 	void set_flag(uint32_t p_flag);

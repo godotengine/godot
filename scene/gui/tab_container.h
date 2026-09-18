@@ -153,6 +153,7 @@ private:
 	void _popup_button_pressed();
 
 	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
+	virtual Size2 _get_minimum_size() const override;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value) { return property_helper.property_set_value(p_name, p_value); }
@@ -241,7 +242,6 @@ public:
 	Control *get_tab_control(int p_idx) const;
 	Control *get_current_tab_control() const;
 
-	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_inner_combined_maximum_size() const override;
 	virtual Size2 get_desired_size() const override;
 

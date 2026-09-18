@@ -56,6 +56,8 @@ protected:
 
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 	double indeterminate_min_speed = 200.0;
 
 public:
@@ -79,7 +81,6 @@ public:
 	void set_editor_preview_indeterminate(bool p_indeterminate_preview);
 	bool is_editor_preview_indeterminate_enabled() const;
 
-	Size2 get_minimum_size() const override;
 	ProgressBar();
 
 private:

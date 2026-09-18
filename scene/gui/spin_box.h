@@ -168,11 +168,10 @@ protected:
 	void _notification(int p_what);
 	Size2 _fit_icon_size(const Size2 &p_size) const;
 	static void _bind_methods();
+	virtual Size2 _get_minimum_size() const override;
 
 public:
 	LineEdit *get_line_edit();
-
-	virtual Size2 get_minimum_size() const override;
 
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;

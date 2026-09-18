@@ -60,7 +60,7 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	return value;
 }
 
-Size2 EditorSpinSlider::get_minimum_size() const {
+Size2 EditorSpinSlider::_get_minimum_size() const {
 	Size2 ms = theme_cache.normal->get_minimum_size();
 	Ref<Texture2D> updown = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
 	ms.width += updown->get_width();

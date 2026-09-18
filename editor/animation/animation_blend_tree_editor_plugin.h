@@ -155,13 +155,13 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	static AnimationNodeBlendTreeEditor *get_singleton() { return singleton; }
 
 	void add_custom_type(const String &p_name, const Ref<Script> &p_script);
 	void remove_custom_type(const Ref<Script> &p_script);
-
-	virtual Size2 get_minimum_size() const override;
 
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;

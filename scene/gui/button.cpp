@@ -36,7 +36,7 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 
-Size2 Button::get_minimum_size() const {
+Size2 Button::_get_minimum_size() const {
 	Ref<Texture2D> _icon = icon;
 	if (_icon.is_null() && has_theme_icon(SNAME("icon"))) {
 		_icon = theme_cache.icon;

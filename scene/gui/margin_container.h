@@ -46,8 +46,9 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
-	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_desired_size() const override;
 	virtual Size2 get_inner_combined_maximum_size() const override;
 

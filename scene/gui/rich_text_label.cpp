@@ -8456,7 +8456,7 @@ int RichTextLabel::get_total_glyph_count() const {
 	return tg;
 }
 
-Size2 RichTextLabel::get_minimum_size() const {
+Size2 RichTextLabel::_get_minimum_size() const {
 	Size2 sb_min_size = theme_cache.normal_style->get_minimum_size();
 	Size2 min_size;
 	bool wrap_with_max_width = autowrap_mode != TextServer::AUTOWRAP_OFF && get_combined_maximum_size().x > 0.0;
