@@ -15,8 +15,20 @@ func subtest_freed_object():
 	node.free()
 	print(node as Node2D)
 
+func subtest_wrong_typed_array():
+	var string_array: Array[String] = []
+	var array: Array = string_array
+	print(array as Array[RID])
+
+func subtest_wrong_typed_dict():
+	var string_dict: Dictionary[String, String] = {}
+	var dict: Dictionary = string_dict
+	print(dict as Dictionary[RID, RID])
+
 func test():
 	subtest_wrong_builtin()
 	subtest_builtin_as_object()
 	subtest_object_as_builtin()
 	subtest_freed_object()
+	subtest_wrong_typed_array()
+	subtest_wrong_typed_dict()
