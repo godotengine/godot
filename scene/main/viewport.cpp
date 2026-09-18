@@ -2313,8 +2313,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		if (p_event->is_action_pressed(SNAME("ui_cancel"))) {
 			// Cancel tooltip timer or hide tooltip when pressing Escape (this is standard behavior in most applications).
+			Control *tooltip_control = gui.tooltip_control;
 			_gui_cancel_tooltip();
 			if (gui.tooltip_popup) {
+				// Some platforms send a mouse motion event when the tooltip is destroyed under the cursor.
+				// Remember the tooltip control, so that the tooltip timer is not immediately restarted
+				// by a mouse event triggered upon the tooltip closing.
+				gui.tooltip_control = tooltip_control;
 				// If a tooltip was hidden, prevent other actions associated with `ui_cancel` from occurring.
 				// For instance, this prevents the node from being deselected when pressing Escape
 				// to hide a documentation tooltip in the inspector.
