@@ -1548,6 +1548,25 @@ void AnimationTimelineEdit::_notification(int p_what) {
 							time_max = end;
 						}
 					}
+
+					// If the bezier editor is enabled, check for the handles to make sure they are included in the time_min and time_max to make editing them possible
+					if (editor->bezier_mc->is_visible() && animation->track_get_type(i) == Animation::TYPE_BEZIER) {
+						for (int j = 0; j < animation->track_get_key_count(i); j++) {
+							Vector2 left_handle = animation->bezier_track_get_key_in_handle(i, j);
+							Vector2 right_handle = animation->bezier_track_get_key_out_handle(i, j);
+							float key_time = animation->track_get_key_time(i, j);
+
+							float left_handle_time = key_time + left_handle.x;
+							if (left_handle_time < time_min) {
+								time_min = left_handle_time;
+							}
+
+							float right_handle_time = key_time + right_handle.x;
+							if (right_handle_time > time_max) {
+								time_max = right_handle_time;
+							}
+						}
+					}
 				}
 
 				PackedStringArray markers = animation->get_marker_names();
