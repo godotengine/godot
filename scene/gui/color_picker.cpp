@@ -44,7 +44,6 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
@@ -64,7 +63,8 @@
 
 #ifdef MACOS_ENABLED
 #include "core/os/os.h"
-#endif
+#include "scene/gui/link_button.h"
+#endif // MACOS_ENABLED
 
 static inline bool is_color_overbright(const Color &color) {
 	return (color.r > 1.0) || (color.g > 1.0) || (color.b > 1.0);
@@ -356,6 +356,10 @@ void ColorPicker::_set_pick_color(const Color &p_color, bool p_update_sliders, b
 }
 
 void ColorPicker::set_pick_color(const Color &p_color) {
+	if (p_color == color) {
+		return;
+	}
+
 	_set_pick_color(p_color, true, true); // Because setters can't have more arguments.
 }
 
@@ -1888,7 +1892,7 @@ void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
 }
 
 void ColorPicker::_html_focus_exit() {
-	if (c_text->is_menu_visible()) {
+	if (c_text->is_menu_visible() || !text_changed) {
 		return;
 	}
 
@@ -2324,6 +2328,7 @@ ColorPicker::ColorPicker() {
 	btn_add_preset->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);
 
+#ifdef MACOS_ENABLED
 	perm_hb = memnew(HBoxContainer);
 	perm_hb->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 
@@ -2334,13 +2339,14 @@ ColorPicker::ColorPicker() {
 	perm_hb->add_child(perm_link);
 	real_vbox->add_child(perm_hb);
 	perm_hb->set_visible(false);
+#endif // MACOS_ENABLED
 }
 
-void ColorPicker::_req_permission() {
 #ifdef MACOS_ENABLED
+void ColorPicker::_req_permission() {
 	OS::get_singleton()->request_permission("macos.permission.RECORD_SCREEN");
-#endif
 }
+#endif // MACOS_ENABLED
 
 ColorPicker::~ColorPicker() {
 	for (ColorMode *mode : modes) {
@@ -2458,7 +2464,7 @@ void ColorPickerButton::_notification(int p_what) {
 			draw_texture_rect(theme_cache.background_icon, r, true);
 			draw_rect(r, color);
 
-			if (color.r > 1 || color.g > 1 || color.b > 1) {
+			if (is_color_overbright(color)) {
 				// Draw an indicator to denote that the color is "overbright" and can't be displayed accurately in the preview
 				draw_texture(theme_cache.overbright_indicator, theme_cache.normal_style->get_offset());
 			}
@@ -2679,7 +2685,4 @@ ColorPresetButton::ColorPresetButton(Color p_color, int p_size, bool p_recent) {
 	set_custom_minimum_size(Size2(p_size, p_size));
 	set_accessibility_name(vformat(atr(ETR("Color: %s")), color_to_string(p_color, p_color.a < 1)));
 	set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-}
-
-ColorPresetButton::~ColorPresetButton() {
 }
