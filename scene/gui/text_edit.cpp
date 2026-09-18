@@ -7091,6 +7091,10 @@ HScrollBar *TextEdit::get_h_scroll_bar() const {
 
 void TextEdit::set_v_scroll(double p_scroll) {
 	v_scroll->set_value(p_scroll);
+	int max_v_scroll = v_scroll->get_max() - v_scroll->get_page();
+	if (p_scroll >= max_v_scroll - 1.0) {
+		_scroll_moved(v_scroll->get_value());
+	}
 }
 
 double TextEdit::get_v_scroll() const {
