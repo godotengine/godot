@@ -142,14 +142,14 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_dropcap_size"), &TextParagraph::get_dropcap_size);
 	ClassDB::bind_method(D_METHOD("get_dropcap_lines"), &TextParagraph::get_dropcap_lines);
 
-	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color", "dc_color", "oversampling"), &TextParagraph::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
-	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color", "dc_color", "oversampling"), &TextParagraph::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw", "canvas", "position", "color", "dropcap_color", "oversampling"), &TextParagraph::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "position", "outline_size", "color", "dropcap_color", "oversampling"), &TextParagraph::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 
-	ClassDB::bind_method(D_METHOD("draw_line", "canvas", "pos", "line", "color", "oversampling"), &TextParagraph::draw_line, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
-	ClassDB::bind_method(D_METHOD("draw_line_outline", "canvas", "pos", "line", "outline_size", "color", "oversampling"), &TextParagraph::draw_line_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_line", "canvas", "position", "line", "color", "oversampling"), &TextParagraph::draw_line, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_line_outline", "canvas", "position", "line", "outline_size", "color", "oversampling"), &TextParagraph::draw_line_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 
-	ClassDB::bind_method(D_METHOD("draw_dropcap", "canvas", "pos", "color", "oversampling"), &TextParagraph::draw_dropcap, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
-	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color", "oversampling"), &TextParagraph::draw_dropcap_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_dropcap", "canvas", "position", "color", "oversampling"), &TextParagraph::draw_dropcap, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "position", "outline_size", "color", "oversampling"), &TextParagraph::draw_dropcap_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextParagraph::hit_test);
 }
@@ -838,7 +838,7 @@ int TextParagraph::get_dropcap_lines() const {
 	return dropcap_lines;
 }
 
-void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color, const Color &p_dc_color, float p_oversampling) const {
+void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color, const Color &p_dropcap_color, float p_oversampling) const {
 	_THREAD_SAFE_METHOD_
 
 	_shape_lines();
@@ -861,7 +861,7 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 				dc_off.y += l_width - h_offset;
 			}
 		}
-		TS->shaped_text_draw(dropcap_rid, p_canvas, dc_off + Vector2(0, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.size.y + dropcap_margins.position.y / 2), -1, -1, p_dc_color, p_oversampling);
+		TS->shaped_text_draw(dropcap_rid, p_canvas, dc_off + Vector2(0, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.size.y + dropcap_margins.position.y / 2), -1, -1, p_dropcap_color, p_oversampling);
 	}
 
 	int lines_visible = (max_lines_visible >= 0) ? MIN(max_lines_visible, (int)lines_rid.size()) : (int)lines_rid.size();
@@ -942,7 +942,7 @@ void TextParagraph::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_colo
 	}
 }
 
-void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color, const Color &p_dc_color, float p_oversampling) const {
+void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color, const Color &p_dropcap_color, float p_oversampling) const {
 	_THREAD_SAFE_METHOD_
 
 	_shape_lines();
@@ -966,7 +966,7 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 				dc_off.y += l_width - h_offset;
 			}
 		}
-		TS->shaped_text_draw_outline(dropcap_rid, p_canvas, dc_off + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_dc_color, p_oversampling);
+		TS->shaped_text_draw_outline(dropcap_rid, p_canvas, dc_off + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_dropcap_color, p_oversampling);
 	}
 
 	for (int i = 0; i < (int)lines_rid.size(); i++) {
