@@ -40,6 +40,8 @@ class EditorTitleBar : public HBoxContainer {
 	bool can_move = false;
 	Control *center_control = nullptr;
 
+	real_t size_before_compact = 0;
+
 protected:
 	void _notification(int p_what);
 

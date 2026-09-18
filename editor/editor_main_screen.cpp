@@ -112,7 +112,11 @@ void EditorMainScreen::_notification(int p_what) {
 }
 
 DockTabContainer::TabStyle EditorMainScreen::get_tab_style() const {
-	return (TabStyle)EDITOR_GET("interface/editor/docks/main_screen_dock_tab_style").operator int();
+	if (compact_mode) {
+		return TabStyle::ICON_ONLY;
+	} else {
+		return (TabStyle)EDITOR_GET("interface/editor/docks/main_screen_dock_tab_style").operator int();
+	}
 }
 
 Rect2 EditorMainScreen::get_drag_hint_rect() const {
@@ -202,6 +206,14 @@ void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 	editor_table.erase(p_editor);
 }
 #endif
+
+void EditorMainScreen::set_compact_mode(bool p_compact) {
+	if (compact_mode == p_compact) {
+		return;
+	}
+	compact_mode = p_compact;
+	EditorDockManager::get_singleton()->update_tab_styles();
+}
 
 EditorMainScreen::EditorMainScreen() :
 		DockTabContainer(EditorDock::DOCK_SLOT_MAIN_SCREEN) {

@@ -59,6 +59,8 @@ private:
 #endif
 	EditorPlugin *selected_plugin = nullptr;
 
+	bool compact_mode = false;
+
 	void _on_tab_changed(int p_tab);
 
 protected:
@@ -83,6 +85,9 @@ public:
 	void select_prev();
 	EditorPlugin *get_selected_plugin() const;
 	bool can_auto_switch_screens() const;
+
+	void set_compact_mode(bool p_compact);
+	bool is_compact_mode() const { return compact_mode; }
 
 	EditorMainScreen();
 };
