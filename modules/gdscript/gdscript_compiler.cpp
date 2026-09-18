@@ -1314,12 +1314,9 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 	}
 }
 
-Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::BlockNode *p_block, int p_stack_level, int p_break_addr, int p_continue_addr) {
-	codegen.push_stack_identifiers();
-	codegen.current_line = p_block->line;
-
-	for (int i = 0; i < p_block->statements.size(); i++) {
-		const GDScriptParser::Node *s = p_block->statements[i];
+Error GDScriptCompiler::_parse_statements(CodeGen &codegen, const Vector<GDScriptParser::Node *> &p_statements, int p_stack_level, int p_break_addr, int p_continue_addr) {
+	for (int i = 0; i < p_statements.size(); i++) {
+		const GDScriptParser::Node *s = p_statements[i];
 
 		switch (s->type) {
 			case GDScriptParser::Node::TYPE_NEWLINE: {
@@ -1329,6 +1326,11 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 				codegen.opcodes.push_back(nl->line);
 				codegen.current_line = nl->line;
 #endif
+			} break;
+			case GDScriptParser::Node::TYPE_INLINE_BLOCK: {
+				// Not supported within the compiler, these inline blocks should be removed by the optimizer
+				// before calling the compiler!
+				ERR_FAIL_V_MSG(FAILED, "InlineBlocks should be removed by the optimizer prior to compiling, please report.");
 			} break;
 			case GDScriptParser::Node::TYPE_CONTROL_FLOW: {
 				// try subblocks
@@ -1613,6 +1615,19 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 			} break;
 		}
 	}
+
+	return OK;
+}
+
+Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::BlockNode *p_block, int p_stack_level, int p_break_addr, int p_continue_addr) {
+	codegen.push_stack_identifiers();
+	codegen.current_line = p_block->line;
+
+	Error result = _parse_statements(codegen, p_block->statements, p_stack_level, p_break_addr, p_continue_addr);
+	if (result != OK) {
+		return result;
+	}
+
 	codegen.pop_stack_identifiers();
 	return OK;
 }
@@ -1737,6 +1752,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 
 	if (p_func) {
 		gdfunc->_static = p_func->_static;
+		gdfunc->_inline_func = p_func->_inline_func;
 		gdfunc->rpc_mode = p_func->rpc_mode;
 		gdfunc->argument_types.resize(p_func->argument_types.size());
 		for (int i = 0; i < p_func->argument_types.size(); i++) {
