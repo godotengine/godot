@@ -54,12 +54,7 @@
 extern "C" EGLAPI void EGLAPIENTRY eglSetBlobCacheFuncsANDROID(EGLDisplay dpy, EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID get);
 extern "C" EGLAPI EGLDisplay EGLAPIENTRY eglGetPlatformDisplayEXT(EGLenum platform, void *native_display, const EGLint *attrib_list);
 #undef KHRONOS_STATIC
-
 #endif // defined(EGL_STATIC)
-
-#ifndef EGL_EXT_platform_base
-#define GLAD_EGL_EXT_platform_base 0
-#endif
 
 #ifdef WINDOWS_ENABLED
 // Unofficial ANGLE extension: EGL_ANGLE_surface_orientation
@@ -70,6 +65,30 @@ extern "C" EGLAPI EGLDisplay EGLAPIENTRY eglGetPlatformDisplayEXT(EGLenum platfo
 #define EGL_SURFACE_ORIENTATION_INVERT_Y_ANGLE 0x0002
 #endif
 #endif
+
+static const char *getEGLErrorMessage(EGLint errorCode) {
+	switch (errorCode) {
+		case EGL_SUCCESS:
+			return "Success";
+		case EGL_NOT_INITIALIZED:
+			return "Not initialized";
+		case EGL_BAD_ALLOC:
+			return "Bad alloc";
+		case EGL_BAD_DISPLAY:
+			return "Bad display";
+		case EGL_BAD_PARAMETER:
+			return "Bad parameter";
+		case EGL_BAD_SURFACE:
+			return "Bad surface";
+		case EGL_BAD_NATIVE_WINDOW:
+			return "Bad native window";
+		case EGL_CONTEXT_LOST:
+			return "Context lost";
+		// Add more cases as needed
+		default:
+			return "Unknown error";
+	}
+}
 
 // Creates and caches a GLDisplay. Returns -1 on error.
 int EGLManager::_get_gldisplay_id(void *p_display) {
@@ -101,11 +120,15 @@ int EGLManager::_get_gldisplay_id(void *p_display) {
 		new_gldisplay.egl_display = eglGetPlatformDisplayEXT(_get_platform_extension_enum(), new_gldisplay.display, (attribs.size() > 0) ? attribs.ptr() : nullptr);
 #endif // EGL_EXT_platform_base
 	} else {
-		NativeDisplayType *native_display_type = (NativeDisplayType *)new_gldisplay.display;
-		new_gldisplay.egl_display = eglGetDisplay(*native_display_type);
-	}
+		EGLNativeDisplayType native_display_type = EGL_DEFAULT_DISPLAY;
 
-	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, -1);
+		if (new_gldisplay.display != nullptr) {
+			native_display_type = *((EGLNativeDisplayType *)new_gldisplay.display);
+		}
+		new_gldisplay.egl_display = eglGetDisplay(native_display_type);
+	}
+	EGLint eglErr = eglGetError();
+	ERR_FAIL_COND_V_MSG(eglErr != EGL_SUCCESS, -1, vformat("Can't create an EGL display: %d", eglErr));
 
 	ERR_FAIL_COND_V_MSG(new_gldisplay.egl_display == EGL_NO_DISPLAY, -1, "Can't create an EGL display.");
 
@@ -185,43 +208,124 @@ EGLsizeiANDROID EGLManager::_get_cache(const void *p_key, EGLsizeiANDROID p_key_
 }
 #endif
 
-Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
-	EGLint attribs[] = {
-		EGL_RED_SIZE,
-		1,
-		EGL_BLUE_SIZE,
-		1,
-		EGL_GREEN_SIZE,
-		1,
-		EGL_DEPTH_SIZE,
-		24,
-		EGL_NONE,
-	};
+typedef struct EGLConfigRequirements {
+	EGLint red_size;
+	EGLint green_size;
+	EGLint blue_size;
+	EGLint alpha_size;
+	EGLint depth_size;
+	EGLint stencil_size;
+} EGLConfigRequirements;
 
-	EGLint attribs_layered[] = {
-		EGL_RED_SIZE,
-		8,
-		EGL_GREEN_SIZE,
-		8,
-		EGL_GREEN_SIZE,
-		8,
-		EGL_ALPHA_SIZE,
-		8,
-		EGL_DEPTH_SIZE,
-		24,
-		EGL_NONE,
-	};
+const EGLConfigRequirements config_reqs[] = {
+	{ 8, 8, 8, 8, 24, 0 },
+	{ 8, 8, 8, 8, 16, 0 },
+};
 
-	EGLint config_count = 0;
+EGLint config_attribs[] = {
+	EGL_RED_SIZE, 4,
+	EGL_GREEN_SIZE, 4,
+	EGL_BLUE_SIZE, 4,
+	EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+	EGL_NONE
+};
 
-	if (OS::get_singleton()->is_layered_allowed()) {
-		eglChooseConfig(p_gldisplay.egl_display, attribs_layered, &p_gldisplay.egl_config, 1, &config_count);
-	} else {
-		eglChooseConfig(p_gldisplay.egl_display, attribs, &p_gldisplay.egl_config, 1, &config_count);
+static EGLint findConfigAttrib(EGLDisplay p_display, EGLConfig p_config, int p_attribute, int p_default_value) {
+	EGLint value;
+	if (eglGetConfigAttrib(p_display, p_config, p_attribute, &value)) {
+		return value;
 	}
+	return p_default_value;
+}
 
-	ERR_FAIL_COND_V(eglGetError() != EGL_SUCCESS, ERR_BUG);
-	ERR_FAIL_COND_V(config_count == 0, ERR_UNCONFIGURED);
+static int findMatchingConfig(EGLDisplay p_display, EGLConfigRequirements req, Vector<EGLConfig> configs) {
+	int result = -1;
+	for (EGLConfig cfg : configs) {
+		result++;
+
+		EGLint d = findConfigAttrib(p_display, cfg, EGL_DEPTH_SIZE, 0);
+		EGLint s = findConfigAttrib(p_display, cfg, EGL_STENCIL_SIZE, 0);
+
+		if (d < req.depth_size || s < req.stencil_size) {
+			continue;
+		}
+
+		EGLint r = findConfigAttrib(p_display, cfg, EGL_RED_SIZE, 0);
+		EGLint g = findConfigAttrib(p_display, cfg, EGL_GREEN_SIZE, 0);
+		EGLint b = findConfigAttrib(p_display, cfg, EGL_BLUE_SIZE, 0);
+		EGLint a = findConfigAttrib(p_display, cfg, EGL_ALPHA_SIZE, 0);
+
+		if (r == req.red_size && g == req.green_size && b == req.blue_size && a == req.alpha_size) {
+			return result;
+		}
+	}
+	return -1;
+}
+
+Error EGLManager::_gldisplay_create_context(GLDisplay &p_gldisplay) {
+	// EGLint attribs[] = {
+	// 	EGL_RED_SIZE,
+	// 	1,
+	// 	EGL_BLUE_SIZE,
+	// 	1,
+	// 	EGL_GREEN_SIZE,
+	// 	1,
+	// 	EGL_DEPTH_SIZE,
+	// 	24,
+	// 	EGL_NONE,
+	// };
+
+	// EGLint attribs_layered[] = {
+	// 	EGL_RED_SIZE,
+	// 	8,
+	// 	EGL_GREEN_SIZE,
+	// 	8,
+	// 	EGL_GREEN_SIZE,
+	// 	8,
+	// 	EGL_ALPHA_SIZE,
+	// 	8,
+	// 	EGL_DEPTH_SIZE,
+	// 	24,
+	// 	EGL_NONE,
+	// };
+
+	// EGLint config_count = 0;
+
+	// if (OS::get_singleton()->is_layered_allowed()) {
+	// 	eglChooseConfig(p_gldisplay.egl_display, attribs_layered, &p_gldisplay.egl_config, 1, &config_count);
+	// } else {
+	// 	eglChooseConfig(p_gldisplay.egl_display, attribs, &p_gldisplay.egl_config, 1, &config_count);
+	// }
+
+	{
+		EGLint numConfigs;
+		if (!eglChooseConfig(p_gldisplay.egl_display, config_attribs, nullptr, 0, &numConfigs)) {
+			int error = eglGetError();
+			ERR_FAIL_V_MSG(ERR_BUG, vformat("Unable to retrieve the count of matching configs: %d", error));
+		}
+		if (numConfigs < 1) {
+			ERR_FAIL_V_MSG(ERR_BUG, "No matching configs retrieved");
+		}
+
+		Vector<EGLConfig> configs;
+		configs.resize(numConfigs);
+		if (!eglChooseConfig(p_gldisplay.egl_display, config_attribs, configs.ptrw(), numConfigs, &numConfigs)) {
+			int error = eglGetError();
+			ERR_FAIL_V_MSG(ERR_BUG, vformat("Unable to retrieve the matching configs: %d", error));
+		}
+
+		int matchingConfig = -1;
+		for (EGLConfigRequirements req : config_reqs) {
+			matchingConfig = findMatchingConfig(p_gldisplay.egl_display, req, configs);
+			if (matchingConfig >= 0) {
+				break;
+			}
+		}
+		if (matchingConfig < 0) {
+			ERR_FAIL_V_MSG(ERR_BUG, "Unable to find a matching configuration.");
+		}
+		p_gldisplay.egl_config = configs[matchingConfig];
+	}
 
 	Vector<EGLint> context_attribs = _get_platform_context_attribs();
 	p_gldisplay.egl_context = eglCreateContext(p_gldisplay.egl_display, p_gldisplay.egl_config, EGL_NO_CONTEXT, (context_attribs.size() > 0) ? context_attribs.ptr() : nullptr);
@@ -252,6 +356,11 @@ int EGLManager::display_get_native_visual_id(void *p_display) {
 	}
 
 	return native_visual_id;
+}
+
+Error EGLManager::window_create(DisplayServerEnums::WindowID p_window_id, Ref<RenderingNativeSurface> p_native_surface, int p_width, int p_height) {
+	ERR_FAIL_COND_V_MSG(!p_native_surface.is_valid(), FAILED, "Invalid native surface");
+	return window_create(p_window_id, nullptr, p_native_surface->get_native_id(), p_width, p_height);
 }
 
 Error EGLManager::window_create(DisplayServerEnums::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height) {
@@ -293,12 +402,13 @@ Error EGLManager::window_create(DisplayServerEnums::WindowID p_window_id, void *
 	if (GLAD_EGL_VERSION_1_5) {
 		glwindow.egl_surface = eglCreatePlatformWindowSurface(gldisplay.egl_display, gldisplay.egl_config, p_native_window, egl_attribs.ptr());
 	} else {
-		EGLNativeWindowType *native_window_type = (EGLNativeWindowType *)p_native_window;
-		glwindow.egl_surface = eglCreateWindowSurface(gldisplay.egl_display, gldisplay.egl_config, *native_window_type, nullptr);
+		EGLNativeWindowType native_window_type = (EGLNativeWindowType)p_native_window;
+		glwindow.egl_surface = eglCreateWindowSurface(gldisplay.egl_display, gldisplay.egl_config, native_window_type, nullptr);
 	}
 
 	if (glwindow.egl_surface == EGL_NO_SURFACE) {
-		return ERR_CANT_CREATE;
+		EGLint error = eglGetError();
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, vformat("Unable to create window surface: 0x%x (%s)", error, getEGLErrorMessage(error)));
 	}
 
 	glwindow.initialized = true;
@@ -337,6 +447,9 @@ void EGLManager::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	GLDisplay &gldisplay = displays[glwindow.gldisplay_id];
 
 	if (glwindow.egl_surface != EGL_NO_SURFACE) {
+		if (current_window && current_window->egl_surface) {
+			release_current();
+		}
 		eglDestroySurface(gldisplay.egl_display, glwindow.egl_surface);
 		glwindow.egl_surface = nullptr;
 	}
@@ -468,9 +581,14 @@ Error EGLManager::initialize(void *p_native_display) {
 		tmp_display = eglGetPlatformDisplayEXT(_get_platform_extension_enum(), p_native_display, attribs.ptr());
 #endif // EGL_EXT_platform_base
 	} else {
-		WARN_PRINT("EGL: EGL_EXT_platform_base not found during init, using default platform.");
-		EGLNativeDisplayType *native_display_type = (EGLNativeDisplayType *)p_native_display;
-		tmp_display = eglGetDisplay(*native_display_type);
+		print_verbose("EGL: EGL_EXT_platform_base not found during init, using default platform.");
+
+		EGLNativeDisplayType native_display_type = EGL_DEFAULT_DISPLAY;
+
+		if (p_native_display != nullptr) {
+			native_display_type = *((EGLNativeDisplayType *)p_native_display);
+		}
+		tmp_display = eglGetDisplay(native_display_type);
 	}
 
 	if (tmp_display == EGL_NO_DISPLAY) {
@@ -537,9 +655,35 @@ EGLManager::EGLManager() {
 }
 
 EGLManager::~EGLManager() {
-	for (unsigned int i = 0; i < displays.size(); i++) {
-		eglTerminate(displays[i].egl_display);
+	for (unsigned int i = 0; i < windows.size(); i++) {
+		GLWindow &glwindow = windows[i];
+
+		if (!glwindow.initialized) {
+			continue;
+		}
+
+		glwindow.initialized = false;
+
+		if (glwindow.gldisplay_id >= 0 && glwindow.gldisplay_id < (int)displays.size()) {
+			GLDisplay &gldisplay = displays[glwindow.gldisplay_id];
+			eglMakeCurrent(gldisplay.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+			if (glwindow.egl_surface != EGL_NO_SURFACE) {
+				eglDestroySurface(gldisplay.egl_display, glwindow.egl_surface);
+				glwindow.egl_surface = nullptr;
+			}
+		}
 	}
+	for (unsigned int i = 0; i < displays.size(); i++) {
+		GLDisplay disp = displays[i];
+		eglMakeCurrent(disp.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+		if (disp.egl_context) {
+			eglDestroyContext(disp.egl_display, disp.egl_context);
+		}
+		eglTerminate(disp.egl_display);
+	}
+	windows.reset();
+	displays.reset();
+	current_window = nullptr;
 }
 
 #endif // EGL_ENABLED

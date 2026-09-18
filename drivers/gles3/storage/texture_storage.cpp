@@ -3894,7 +3894,7 @@ bool TextureStorage::render_target_get_transparent(RID p_render_target) const {
 	return rt->is_transparent;
 }
 
-void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) {
+void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen, DisplayServerEnums::WindowID p_direct_to_screen_id) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 
@@ -3905,6 +3905,7 @@ void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, boo
 	// those functions change how they operate depending on the value of DIRECT_TO_SCREEN
 	_clear_render_target(rt);
 	rt->direct_to_screen = p_direct_to_screen;
+	rt->direct_to_screen_id = p_direct_to_screen_id;
 	if (rt->direct_to_screen) {
 		rt->overridden.color = RID();
 		rt->overridden.depth = RID();

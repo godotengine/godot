@@ -38,6 +38,7 @@
 #include "core/io/image.h"
 #include "core/os/os.h"
 #include "drivers/gles3/rasterizer_util_gles3.h"
+#include "drivers/gles3/storage/utilities.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_types.h"
@@ -257,7 +258,23 @@ RasterizerGLES3::RasterizerGLES3() {
 			glad_loaded = true;
 		}
 	} else {
-		if (has_egl && !glad_loaded && gladLoadGLES2((GLADloadfunc)&_egl_load_function_wrapper)) {
+		if (has_egl && !glad_loaded) {
+			int version = gladLoadGLES2((GLADloadfunc)&_egl_load_function_wrapper);
+			if (version <= 0) {
+				if (version == -1) {
+					CRASH_NOW_MSG("Could not load glGetString");
+				}
+				if (version == -2) {
+					CRASH_NOW_MSG("glGetString(GL_VERSION) returns NULL");
+				}
+				if (version == -3) {
+					CRASH_NOW_MSG("Could not load GLES extensions");
+				}
+				if (version == 0) {
+					CRASH_NOW_MSG("Could not parse GL_VERSION string");
+				}
+				CRASH_NOW_MSG(vformat("gladLoadGLES2: Unknown error: %d", version));
+			}
 			glad_loaded = true;
 		}
 	}
@@ -275,10 +292,9 @@ RasterizerGLES3::RasterizerGLES3() {
 #endif
 	}
 
-	// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
-	// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
-	// or we need to actually test for this situation before constructing this.
-	ERR_FAIL_COND_MSG(!glad_loaded, "Error initializing GLAD.");
+	if (!glad_loaded) {
+		CRASH_NOW_MSG("Error initializing GLAD.");
+	}
 #endif // GLAD_ENABLED
 
 #ifdef GL_DEBUG_CALLBACK
@@ -400,7 +416,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServerEnums::WindowID
 	ERR_FAIL_NULL(rt);
 
 	// We normally render to the render target upside down, so flip Y when blitting to the screen.
-	bool flip_y = true;
+	bool flip_y = DisplayServer::get_singleton()->is_rendering_flipped();
 	bool linear_to_srgb = false;
 	if (rt->overridden.color.is_valid()) {
 		// If we've overridden the render target's color texture, that means we
@@ -422,7 +438,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServerEnums::WindowID
 	}
 #endif
 
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::OPENGL_FBO, p_screen));
 
 	if (p_first) {
 		if (p_blit.dst_rect.position != Vector2() || p_blit.dst_rect.size != rt->size) {
@@ -475,14 +491,19 @@ void RasterizerGLES3::blit_render_targets_to_screen(DisplayServerEnums::WindowID
 	}
 }
 
-void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, bool p_use_filter) {
+void RasterizerGLES3::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RSE::SplashStretchMode p_stretch_mode, DisplayServerEnums::WindowID p_screen, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
 
-	Size2i win_size = DisplayServer::get_singleton()->window_get_size();
+	Size2i win_size = DisplayServer::get_singleton()->window_get_size(p_screen);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		// This is currently needed for GLES to keep the current window being rendered to up to date
+		DisplayServer::get_singleton()->gl_window_make_current(p_screen);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, DisplayServer::get_singleton()->window_get_native_handle(DisplayServerEnums::OPENGL_FBO, p_screen));
 	glViewport(0, 0, win_size.width, win_size.height);
 	glEnable(GL_BLEND);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
