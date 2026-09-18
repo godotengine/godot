@@ -221,7 +221,7 @@ Ref<Texture2D> FileSystemDock::_get_tree_item_icon(bool p_is_valid, const String
 		}
 	}
 
-	if (!p_is_valid) {
+	if (!p_is_valid || p_file_type.is_empty()) {
 		return get_editor_theme_icon(SNAME("ImportFail"));
 	} else if (has_theme_icon(p_file_type, EditorStringName(EditorIcons))) {
 		return get_editor_theme_icon(p_file_type);
