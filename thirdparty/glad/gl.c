@@ -2348,7 +2348,7 @@ int gladLoadGLES2UserPtr( GLADuserptrloadfunc load, void *userptr) {
     int version;
 
     glad_glGetString = (PFNGLGETSTRINGPROC) load(userptr, "glGetString");
-    if(glad_glGetString == NULL) return 0;
+    if(glad_glGetString == NULL) return -1; // Could not load glGetString
     version = glad_gl_find_core_gles2();
 
     glad_gl_load_GL_ES_VERSION_2_0(load, userptr);
@@ -2356,7 +2356,7 @@ int gladLoadGLES2UserPtr( GLADuserptrloadfunc load, void *userptr) {
     glad_gl_load_GL_ES_VERSION_3_1(load, userptr);
     glad_gl_load_GL_ES_VERSION_3_2(load, userptr);
 
-    if (!glad_gl_find_extensions_gles2()) return 0;
+    if (!glad_gl_find_extensions_gles2()) return -3; // Could not load extensions
     glad_gl_load_GL_OVR_multiview(load, userptr);
 
 
@@ -2650,6 +2650,14 @@ static GLADapiproc glad_gles2_get_proc(void *vuserptr, const char* name) {
 
 static void* _glad_GLES2_loader_handle = NULL;
 
+static const char** _gl_names = NULL;
+static int _gl_count = 0;
+
+void gladSetupGLES2(int glc, const char* glnames[]) {
+    _gl_count = glc;
+    _gl_names = glnames;
+}
+
 static void* glad_gles2_dlopen_handle(void) {
 #if GLAD_PLATFORM_EMSCRIPTEN
 #elif GLAD_PLATFORM_APPLE
@@ -2665,7 +2673,11 @@ static void* glad_gles2_dlopen_handle(void) {
     return NULL;
 #else
     if (_glad_GLES2_loader_handle == NULL) {
-        _glad_GLES2_loader_handle = glad_get_dlopen_handle(NAMES, sizeof(NAMES) / sizeof(NAMES[0]));
+        if (_gl_count == 0) {
+            _gl_count = sizeof(NAMES) / sizeof(NAMES[0]);
+            _gl_names = NAMES;
+        }
+        _glad_GLES2_loader_handle = glad_get_dlopen_handle(_gl_names, _gl_count);
     }
 
     return _glad_GLES2_loader_handle;
@@ -2710,7 +2722,7 @@ int gladLoaderLoadGLES2(void) {
 
         version = gladLoadGLES2UserPtr(glad_gles2_get_proc, &userptr);
 
-        if (!version && did_load) {
+        if (version <= 0 && did_load) {
             gladLoaderUnloadGLES2();
         }
     }
@@ -2725,6 +2737,10 @@ void gladLoaderUnloadGLES2(void) {
     if (_glad_GLES2_loader_handle != NULL) {
         glad_close_dlopen_handle(_glad_GLES2_loader_handle);
         _glad_GLES2_loader_handle = NULL;
+    }
+    if (_gl_count != 0) {
+        _gl_count = 0;
+        _gl_names = NULL;
     }
 }
 
