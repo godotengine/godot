@@ -215,11 +215,14 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_emulating_mouse_from_touch"), &Input::is_emulating_mouse_from_touch);
 	ClassDB::bind_method(D_METHOD("set_emulate_touch_from_mouse", "enable"), &Input::set_emulate_touch_from_mouse);
 	ClassDB::bind_method(D_METHOD("is_emulating_touch_from_mouse"), &Input::is_emulating_touch_from_mouse);
+	ClassDB::bind_method(D_METHOD("set_emulate_swap_mouse_and_touch", "enable"), &Input::set_emulate_swap_mouse_and_touch);
+	ClassDB::bind_method(D_METHOD("is_emulating_swap_mouse_and_touch"), &Input::is_emulating_swap_mouse_and_touch);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_mode"), "set_mouse_mode", "get_mouse_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_accumulated_input"), "set_use_accumulated_input", "is_using_accumulated_input");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_mouse_from_touch"), "set_emulate_mouse_from_touch", "is_emulating_mouse_from_touch");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_touch_from_mouse"), "set_emulate_touch_from_mouse", "is_emulating_touch_from_mouse");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emulate_swap_mouse_and_touch"), "set_emulate_swap_mouse_and_touch", "is_emulating_swap_mouse_and_touch");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_joypad_on_unfocused_application"), "set_ignore_joypad_on_unfocused_application", "is_ignoring_joypad_on_unfocused_application");
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
@@ -928,7 +931,8 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			set_mouse_position(pos);
 		}
 
-		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mb->get_button_index() == MouseButton::LEFT) {
+		bool send_emulated_event = emulate_swap_mouse_and_touch ? (!p_is_emulated || emulate_touch_from_mouse) : (event_dispatch_function && emulate_touch_from_mouse);
+		if (send_emulated_event && p_event->get_device() != InputEvent::DEVICE_ID_EMULATION && mb->get_button_index() == MouseButton::LEFT) {
 			Ref<InputEventScreenTouch> touch_event;
 			touch_event.instantiate();
 			touch_event->set_pressed(mb->is_pressed());
@@ -936,10 +940,19 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
 			touch_event->set_window_id(mb->get_window_id());
-			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
-			_THREAD_SAFE_UNLOCK_
-			event_dispatch_function(touch_event);
-			_THREAD_SAFE_LOCK_
+			if (!emulate_swap_mouse_and_touch || p_is_emulated) {
+				touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			}
+			if (emulate_swap_mouse_and_touch) {
+				_parse_input_event_impl(touch_event, true);
+			} else {
+				_THREAD_SAFE_UNLOCK_
+				event_dispatch_function(touch_event);
+				_THREAD_SAFE_LOCK_
+			}
+		}
+		if (emulate_swap_mouse_and_touch && !p_is_emulated) {
+			return;
 		}
 	}
 
@@ -954,7 +967,8 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		Vector2 screen_relative = mm->get_relative_screen_position();
 		mouse_velocity_track.update(relative, screen_relative);
 
-		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
+		bool send_emulated_event = emulate_swap_mouse_and_touch ? (!p_is_emulated || emulate_touch_from_mouse) : (event_dispatch_function && emulate_touch_from_mouse);
+		if (send_emulated_event && p_event->get_device() != InputEvent::DEVICE_ID_EMULATION && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instantiate();
 
@@ -966,11 +980,19 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			drag_event->set_pressure(mm->get_pressure());
 			drag_event->set_velocity(get_last_mouse_velocity());
 			drag_event->set_screen_velocity(get_last_mouse_screen_velocity());
-			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
-
-			_THREAD_SAFE_UNLOCK_
-			event_dispatch_function(drag_event);
-			_THREAD_SAFE_LOCK_
+			if (!emulate_swap_mouse_and_touch || p_is_emulated) {
+				drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			}
+			if (emulate_swap_mouse_and_touch) {
+				_parse_input_event_impl(drag_event, true);
+			} else {
+				_THREAD_SAFE_UNLOCK_
+				event_dispatch_function(drag_event);
+				_THREAD_SAFE_LOCK_
+			}
+		}
+		if (emulate_swap_mouse_and_touch && !p_is_emulated) {
+			return;
 		}
 	}
 
@@ -986,7 +1008,8 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_velocity_track.erase(st->get_index());
 		}
 
-		if (emulate_mouse_from_touch) {
+		bool send_emulated_event = emulate_swap_mouse_and_touch ? (!p_is_emulated || emulate_mouse_from_touch) : emulate_mouse_from_touch;
+		if (send_emulated_event && p_event->get_device() != InputEvent::DEVICE_ID_EMULATION) {
 			bool translate = false;
 			if (st->is_pressed()) {
 				if (mouse_from_touch_index == -1) {
@@ -1004,7 +1027,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				Ref<InputEventMouseButton> button_event;
 				button_event.instantiate();
 
-				button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+				if (!emulate_swap_mouse_and_touch || p_is_emulated) {
+					button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+				}
 				button_event->set_position(st->get_position());
 				button_event->set_global_position(st->get_position());
 				button_event->set_pressed(st->is_pressed());
@@ -1023,6 +1048,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 				_parse_input_event_impl(button_event, true);
 			}
+			if (emulate_swap_mouse_and_touch && !p_is_emulated) {
+				return;
+			}
 		}
 	}
 
@@ -1034,11 +1062,14 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		sd->set_velocity(track.velocity);
 		sd->set_screen_velocity(track.screen_velocity);
 
-		if (emulate_mouse_from_touch && sd->get_index() == mouse_from_touch_index) {
+		bool send_emulated_event = emulate_swap_mouse_and_touch ? (!p_is_emulated || emulate_mouse_from_touch) : emulate_mouse_from_touch;
+		if (send_emulated_event && p_event->get_device() != InputEvent::DEVICE_ID_EMULATION && sd->get_index() == mouse_from_touch_index) {
 			Ref<InputEventMouseMotion> motion_event;
 			motion_event.instantiate();
 
-			motion_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			if (!emulate_swap_mouse_and_touch || p_is_emulated) {
+				motion_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+			}
 			motion_event->set_tilt(sd->get_tilt());
 			motion_event->set_pen_inverted(sd->get_pen_inverted());
 			motion_event->set_pressure(sd->get_pressure());
@@ -1052,6 +1083,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event->set_window_id(sd->get_window_id());
 
 			_parse_input_event_impl(motion_event, true);
+		}
+		if (emulate_swap_mouse_and_touch && !p_is_emulated) {
+			return;
 		}
 	}
 
@@ -1565,7 +1599,9 @@ void Input::ensure_touch_mouse_raised() {
 		Ref<InputEventMouseButton> button_event;
 		button_event.instantiate();
 
-		button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+		if (!emulate_swap_mouse_and_touch) {
+			button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
+		}
 		button_event->set_position(mouse_pos);
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
@@ -1584,6 +1620,14 @@ void Input::set_emulate_mouse_from_touch(bool p_emulate) {
 
 bool Input::is_emulating_mouse_from_touch() const {
 	return emulate_mouse_from_touch;
+}
+
+void Input::set_emulate_swap_mouse_and_touch(bool p_enabled) {
+	emulate_swap_mouse_and_touch = p_enabled;
+}
+
+bool Input::is_emulating_swap_mouse_and_touch() const {
+	return emulate_swap_mouse_and_touch;
 }
 
 Input::CursorShape Input::get_default_cursor_shape() const {
