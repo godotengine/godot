@@ -1771,7 +1771,7 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 			k.time = p_time;
 			k.transition = p_transition;
 			k.method = d["method"];
-			k.params = d["args"];
+			k.params = d["args"].to<Vector<Variant>>();
 
 			ret = _insert(p_time, mt->methods, k);
 
@@ -2300,7 +2300,7 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 				mt->methods[p_key_idx].method = d["method"];
 			}
 			if (d.has("args")) {
-				mt->methods[p_key_idx].params = d["args"];
+				mt->methods[p_key_idx].params = d["args"].to<Vector<Variant>>();
 			}
 
 		} break;
