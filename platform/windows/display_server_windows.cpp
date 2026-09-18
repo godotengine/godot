@@ -2598,7 +2598,9 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, DisplayServerEnu
 		h += (rect.bottom - rect.top) - (crect.bottom - crect.top);
 	}
 
+	wd.programmatic_resize_in_progress = true;
 	MoveWindow(wd.hWnd, rect.left, rect.top, w, h, TRUE);
+	wd.programmatic_resize_in_progress = false;
 }
 
 Size2i DisplayServerWindows::window_get_size(DisplayServerEnums::WindowID p_window) const {
@@ -2676,32 +2678,18 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 			}
 		}
 	} else {
-		if (p_resizable) {
-			if (p_minimized) {
-				r_style = WS_OVERLAPPEDWINDOW | WS_MINIMIZE;
-			} else if (p_maximized) {
-				r_style = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
-			} else {
-				r_style = WS_OVERLAPPEDWINDOW;
-			}
-			if (p_no_min_btn) {
-				r_style &= ~WS_MINIMIZEBOX;
-			}
-			if (p_no_max_btn) {
-				r_style &= ~WS_MAXIMIZEBOX;
-			}
+		if (p_minimized) {
+			r_style = WS_OVERLAPPEDWINDOW | WS_MINIMIZE;
+		} else if (p_maximized) {
+			r_style = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
 		} else {
-			if (p_minimized) {
-				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZE;
-			} else {
-				r_style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
-			}
-			if (!p_no_min_btn) {
-				r_style |= WS_MINIMIZEBOX;
-			}
-			if (!p_no_max_btn) {
-				r_style |= WS_MAXIMIZEBOX;
-			}
+			r_style = WS_OVERLAPPEDWINDOW;
+		}
+		if (p_no_min_btn) {
+			r_style &= ~WS_MINIMIZEBOX;
+		}
+		if (p_no_max_btn) {
+			r_style &= ~WS_MAXIMIZEBOX;
 		}
 	}
 
@@ -2778,6 +2766,8 @@ void DisplayServerWindows::window_set_mode(DisplayServerEnums::WindowMode p_mode
 		print_line("Embedded window only supports Windowed mode.");
 		return;
 	}
+
+	wd.programmatic_resize_in_progress = true;
 
 	bool was_fullscreen = wd.fullscreen;
 	wd.was_fullscreen_pre_min = false;
@@ -2914,6 +2904,7 @@ void DisplayServerWindows::window_set_mode(DisplayServerEnums::WindowMode p_mode
 		}
 	}
 	_update_window_mouse_passthrough(p_window);
+	wd.programmatic_resize_in_progress = false;
 }
 
 DisplayServerEnums::WindowMode DisplayServerWindows::window_get_mode(DisplayServerEnums::WindowID p_window) const {
@@ -5780,6 +5771,27 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (windows[window_id].mpass) {
 				return HTTRANSPARENT;
 			}
+			if (!windows[window_id].resizable && !windows[window_id].fullscreen && !windows[window_id].borderless) {
+				// When the window is not resizable, bypass the resize-edge hit tests,
+				// that would normally spawn the resize arrows. This makes it impossible to resize the window
+				// using the mouse
+				LRESULT hit = user_proc ? CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam) : DefWindowProcW(hWnd, uMsg, wParam, lParam);
+				switch (hit) {
+					case HTLEFT:
+					case HTRIGHT:
+					case HTTOP:
+					case HTTOPLEFT:
+					case HTTOPRIGHT:
+					case HTBOTTOM:
+					case HTBOTTOMLEFT:
+					case HTBOTTOMRIGHT: {
+						return HTBORDER;
+					} break;
+					default: {
+						return hit;
+					} break;
+				}
+			}
 		} break;
 		case WM_MOUSEACTIVATE: {
 			if (windows[window_id].no_focus || windows[window_id].is_popup) {
@@ -5822,18 +5834,27 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			return 0;
 		} break;
 		case WM_GETMINMAXINFO: {
-			if (windows[window_id].resizable && !windows[window_id].fullscreen) {
+			if (!windows[window_id].fullscreen) {
 				// Size of window decorations.
 				Size2 decor = window_get_size_with_decorations(window_id) - window_get_size(window_id);
 
 				MINMAXINFO *min_max_info = (MINMAXINFO *)lParam;
-				if (windows[window_id].min_size != Size2()) {
-					min_max_info->ptMinTrackSize.x = windows[window_id].min_size.x + decor.x;
-					min_max_info->ptMinTrackSize.y = windows[window_id].min_size.y + decor.y;
-				}
-				if (windows[window_id].max_size != Size2()) {
-					min_max_info->ptMaxTrackSize.x = windows[window_id].max_size.x + decor.x;
-					min_max_info->ptMaxTrackSize.y = windows[window_id].max_size.y + decor.y;
+				if (windows[window_id].resizable) {
+					if (windows[window_id].min_size != Size2()) {
+						min_max_info->ptMinTrackSize.x = windows[window_id].min_size.x + decor.x;
+						min_max_info->ptMinTrackSize.y = windows[window_id].min_size.y + decor.y;
+					}
+					if (windows[window_id].max_size != Size2()) {
+						min_max_info->ptMaxTrackSize.x = windows[window_id].max_size.x + decor.x;
+						min_max_info->ptMaxTrackSize.y = windows[window_id].max_size.y + decor.y;
+					}
+				} else if (!windows[window_id].programmatic_resize_in_progress) {
+					// Enforce the current window size, when it is set to be non-resizable.
+					Size2 current_size = window_get_size(window_id);
+					min_max_info->ptMinTrackSize.x = current_size.x + decor.x;
+					min_max_info->ptMinTrackSize.y = current_size.y + decor.y;
+					min_max_info->ptMaxTrackSize.x = current_size.x + decor.x;
+					min_max_info->ptMaxTrackSize.y = current_size.y + decor.y;
 				}
 				if (windows[window_id].borderless) {
 					Rect2i screen_rect = screen_get_usable_rect(window_get_current_screen(window_id));
