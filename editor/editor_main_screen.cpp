@@ -126,23 +126,12 @@ Rect2 EditorMainScreen::get_drag_hint_rect() const {
 	return final_rect;
 }
 
-void EditorMainScreen::edit(Object *p_object) {
-	EditorPlugin *handling_plugin = EditorNode::get_editor_data().get_handling_main_editor(p_object);
-	if (selected_plugin) {
-		if (handling_plugin == selected_plugin) {
-			selected_plugin->edit(p_object);
-		} else {
-			selected_plugin->edit(nullptr);
-			if (handling_plugin) {
-				selected_plugin->make_visible(false);
-			}
-		}
+bool EditorMainScreen::can_switch_dock() const {
+	if (get_current_tab() == -1) {
+		return true;
 	}
-	selected_plugin = handling_plugin;
-	if (selected_plugin) {
-		selected_plugin->edit(p_object);
-		selected_plugin->make_visible(true);
-	}
+	EditorDock *dock = get_dock(get_current_tab());
+	return dock->is_allow_switch_screen();
 }
 
 void EditorMainScreen::select_next() {
@@ -167,18 +156,6 @@ void EditorMainScreen::select_prev() {
 	}
 }
 
-EditorPlugin *EditorMainScreen::get_selected_plugin() const {
-	return selected_plugin;
-}
-
-bool EditorMainScreen::can_auto_switch_screens() const {
-	if (get_current_tab() == -1) {
-		return true;
-	}
-	EditorDock *dock = get_dock(get_current_tab());
-	return dock->is_allow_switch_screen();
-}
-
 #ifndef DISABLE_DEPRECATED
 VBoxContainer *EditorMainScreen::get_control() const {
 	return main_screen_vbox;
@@ -189,9 +166,6 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 }
 
 void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
-	if (selected_plugin == p_editor) {
-		selected_plugin = nullptr;
-	}
 	if (p_editor->has_meta("_dock")) {
 		EditorDock *dock = Object::cast_to<EditorDock>(p_editor->get_meta("_dock").get_validated_object());
 		if (dock) {
