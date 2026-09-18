@@ -301,13 +301,16 @@ double Range::get_page() const {
 void Range::set_as_ratio(double p_value) {
 	double v;
 
-	if (shared->exp_ratio && get_min() >= 0) {
-		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
-		double exp_max = Math::log(get_max()) / Math::log((double)2);
-		v = Math::pow(2, exp_min + (exp_max - exp_min) * p_value);
+	if (shared->exp_ratio && get_min() >= 0.0) {
+		const double shift = get_min() == 0.0 ? EXP_RATIO_ZERO_SHIFT : 0.0;
+
+		double exp_min = Math::log2(get_min() + shift);
+		double exp_max = Math::log2(get_max() + shift);
+
+		v = Math::pow(2.0, exp_min + (exp_max - exp_min) * p_value) - shift;
 	} else {
 		double percent = (get_max() - get_min()) * p_value;
-		if (get_step() > 0) {
+		if (get_step() > 0.0) {
 			double steps = std::round(percent / get_step());
 			v = steps * get_step() + get_min();
 		} else {
@@ -319,21 +322,24 @@ void Range::set_as_ratio(double p_value) {
 }
 
 double Range::get_as_ratio() const {
+	return CLAMP(_get_as_ratio_unclamped(), 0, 1);
+}
+
+double Range::_get_as_ratio_unclamped() const {
 	if (Math::is_equal_approx(get_max(), get_min())) {
 		// Avoid division by zero.
 		return 1.0;
 	}
 
-	if (shared->exp_ratio && get_min() >= 0) {
-		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
-		double exp_max = Math::log(get_max()) / Math::log((double)2);
-		double value = CLAMP(get_value(), shared->min, shared->max);
-		double v = Math::log(value) / Math::log((double)2);
+	if (shared->exp_ratio && get_min() >= 0.0 && get_value() >= 0.0) {
+		const double shift = get_min() == 0.0 ? EXP_RATIO_ZERO_SHIFT : 0.0;
 
-		return CLAMP((v - exp_min) / (exp_max - exp_min), 0, 1);
+		double exp_min = Math::log2(get_min() + shift);
+		double exp_max = Math::log2(get_max() + shift);
+		double exp_value = Math::log2(get_value() + shift);
+		return (exp_value - exp_min) / (exp_max - exp_min);
 	} else {
-		double value = CLAMP(get_value(), shared->min, shared->max);
-		return CLAMP((value - get_min()) / (get_max() - get_min()), 0, 1);
+		return (get_value() - get_min()) / (get_max() - get_min());
 	}
 }
 
