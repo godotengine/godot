@@ -59,7 +59,6 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	Button *tool_select = nullptr;
 	Button *tool_create = nullptr;
 	Button *tool_triangle = nullptr;
-	VSeparator *tool_erase_sep = nullptr;
 	Button *tool_erase = nullptr;
 	Button *snap = nullptr;
 	SpinBox *snap_x = nullptr;
@@ -69,6 +68,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	OptionButton *interpolation = nullptr;
 
 	Button *auto_triangles = nullptr;
+	Button *reset_triangles = nullptr;
 
 	LineEdit *label_x = nullptr;
 	LineEdit *label_y = nullptr;
@@ -78,6 +78,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	SpinBox *min_y_value = nullptr;
 
 	HBoxContainer *edit_hb = nullptr;
+	HBoxContainer *selected_hb = nullptr;
 	SpinBox *edit_x = nullptr;
 	SpinBox *edit_y = nullptr;
 	Button *open_editor = nullptr;
@@ -148,6 +149,7 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	void _show_indices_with_cooldown();
 
 	void _auto_triangles_toggled();
+	void _reset_triangles();
 
 	StringName get_blend_position_path() const;
 	String _get_safe_name(const Ref<AnimationNodeBlendSpace2D> &p_blend_space, const String &p_name);
