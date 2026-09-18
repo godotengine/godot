@@ -1904,6 +1904,8 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("navigation/3d/warnings/navmesh_cell_size_mismatch", true);
 #endif // NAVIGATION_3D_DISABLED
 
+	GLOBAL_DEF_RST("memory/limits/rid/max_rid_allocate", 262144);
+
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }
 
