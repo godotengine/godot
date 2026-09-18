@@ -1544,11 +1544,8 @@ void ResourceLoader::reload_translation_remaps() {
 
 	{
 		MutexLock lock(ResourceCache::lock);
-		SelfList<Resource> *E = remapped_list.first();
-
-		while (E) {
-			to_reload.push_back(E->self());
-			E = E->next();
+		for (Resource &remapped : remapped_list) {
+			to_reload.push_back(&remapped);
 		}
 	}
 

@@ -2303,20 +2303,18 @@ void GDScriptLanguage::profiling_start() {
 #ifdef DEBUG_ENABLED
 	MutexLock lock(mutex);
 
-	SelfList<GDScriptFunction> *elem = function_list.first();
-	while (elem) {
-		elem->self()->profile.call_count.set(0);
-		elem->self()->profile.self_time.set(0);
-		elem->self()->profile.total_time.set(0);
-		elem->self()->profile.frame_call_count.set(0);
-		elem->self()->profile.frame_self_time.set(0);
-		elem->self()->profile.frame_total_time.set(0);
-		elem->self()->profile.last_frame_call_count = 0;
-		elem->self()->profile.last_frame_self_time = 0;
-		elem->self()->profile.last_frame_total_time = 0;
-		elem->self()->profile.native_calls.clear();
-		elem->self()->profile.last_native_calls.clear();
-		elem = elem->next();
+	for (GDScriptFunction &func : function_list) {
+		func.profile.call_count.set(0);
+		func.profile.self_time.set(0);
+		func.profile.total_time.set(0);
+		func.profile.frame_call_count.set(0);
+		func.profile.frame_self_time.set(0);
+		func.profile.frame_total_time.set(0);
+		func.profile.last_frame_call_count = 0;
+		func.profile.last_frame_self_time = 0;
+		func.profile.last_frame_total_time = 0;
+		func.profile.native_calls.clear();
+		func.profile.last_native_calls.clear();
 	}
 
 	profiling = true;
@@ -2345,20 +2343,20 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *r_info_arr, 
 	MutexLock lock(mutex);
 
 	profiling_collate_native_call_data(true);
-	SelfList<GDScriptFunction> *elem = function_list.first();
-	while (elem) {
+
+	for (const GDScriptFunction &func : function_list) {
 		if (current >= p_info_max) {
 			break;
 		}
 		int last_non_internal = current;
-		r_info_arr[current].call_count = elem->self()->profile.call_count.get();
-		r_info_arr[current].self_time = elem->self()->profile.self_time.get();
-		r_info_arr[current].total_time = elem->self()->profile.total_time.get();
-		r_info_arr[current].signature = elem->self()->profile.signature;
+		r_info_arr[current].call_count = func.profile.call_count.get();
+		r_info_arr[current].self_time = func.profile.self_time.get();
+		r_info_arr[current].total_time = func.profile.total_time.get();
+		r_info_arr[current].signature = func.profile.signature;
 		current++;
 
 		int nat_time = 0;
-		HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = elem->self()->profile.native_calls.begin();
+		HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = func.profile.native_calls.begin();
 		while (nat_calls) {
 			r_info_arr[current].call_count = nat_calls->value.call_count;
 			r_info_arr[current].total_time = nat_calls->value.total_time;
@@ -2369,7 +2367,6 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *r_info_arr, 
 			++nat_calls;
 		}
 		r_info_arr[last_non_internal].internal_time = nat_time;
-		elem = elem->next();
 	}
 #endif
 
@@ -2383,21 +2380,21 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_
 	MutexLock lock(mutex);
 
 	profiling_collate_native_call_data(false);
-	SelfList<GDScriptFunction> *elem = function_list.first();
-	while (elem) {
+
+	for (const GDScriptFunction &func : function_list) {
 		if (current >= p_info_max) {
 			break;
 		}
-		if (elem->self()->profile.last_frame_call_count > 0) {
+		if (func.profile.last_frame_call_count > 0) {
 			int last_non_internal = current;
-			r_info_arr[current].call_count = elem->self()->profile.last_frame_call_count;
-			r_info_arr[current].self_time = elem->self()->profile.last_frame_self_time;
-			r_info_arr[current].total_time = elem->self()->profile.last_frame_total_time;
-			r_info_arr[current].signature = elem->self()->profile.signature;
+			r_info_arr[current].call_count = func.profile.last_frame_call_count;
+			r_info_arr[current].self_time = func.profile.last_frame_self_time;
+			r_info_arr[current].total_time = func.profile.last_frame_total_time;
+			r_info_arr[current].signature = func.profile.signature;
 			current++;
 
 			int nat_time = 0;
-			HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = elem->self()->profile.last_native_calls.begin();
+			HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = func.profile.last_native_calls.begin();
 			while (nat_calls) {
 				r_info_arr[current].call_count = nat_calls->value.call_count;
 				r_info_arr[current].total_time = nat_calls->value.total_time;
@@ -2410,7 +2407,6 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_
 			}
 			r_info_arr[last_non_internal].internal_time = nat_time;
 		}
-		elem = elem->next();
 	}
 #endif
 
@@ -2422,9 +2418,8 @@ void GDScriptLanguage::profiling_collate_native_call_data(bool p_accumulated) {
 	// The same native call can be called from multiple functions, so join them together here.
 	// Only use the name of the function (ie signature.split[2]).
 	HashMap<String, GDScriptFunction::Profile::NativeProfile *> seen_nat_calls;
-	SelfList<GDScriptFunction> *elem = function_list.first();
-	while (elem) {
-		HashMap<String, GDScriptFunction::Profile::NativeProfile> *nat_calls = p_accumulated ? &elem->self()->profile.native_calls : &elem->self()->profile.last_native_calls;
+	for (GDScriptFunction &func : function_list) {
+		HashMap<String, GDScriptFunction::Profile::NativeProfile> *nat_calls = p_accumulated ? &func.profile.native_calls : &func.profile.last_native_calls;
 		HashMap<String, GDScriptFunction::Profile::NativeProfile>::Iterator it = nat_calls->begin();
 
 		while (it != nat_calls->end()) {
@@ -2433,13 +2428,12 @@ void GDScriptLanguage::profiling_collate_native_call_data(bool p_accumulated) {
 			if (already_found) {
 				already_found->value->total_time += it->value.total_time;
 				already_found->value->call_count += it->value.call_count;
-				elem->self()->profile.last_native_calls.remove(it);
+				func.profile.last_native_calls.remove(it);
 			} else {
 				seen_nat_calls.insert(sig[2], &it->value);
 			}
 			++it;
 		}
-		elem = elem->next();
 	}
 #endif
 }
@@ -2471,13 +2465,11 @@ void GDScriptLanguage::reload_all_scripts() {
 	{
 		MutexLock lock(mutex);
 
-		SelfList<GDScript> *elem = script_list.first();
-		while (elem) {
-			if (elem->self()->get_path().is_resource_file()) {
-				print_verbose("GDScript: Found: " + elem->self()->get_path());
-				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+		for (GDScript &script : script_list) {
+			if (script.get_path().is_resource_file()) {
+				print_verbose("GDScript: Found: " + script.get_path());
+				scripts.push_back(Ref<GDScript>(&script)); //cast to gdscript to avoid being erased by accident
 			}
-			elem = elem->next();
 		}
 
 #ifdef TOOLS_ENABLED
@@ -2505,13 +2497,11 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts) {
 	{
 		MutexLock lock(mutex);
 
-		SelfList<GDScript> *elem = script_list.first();
-		while (elem) {
+		for (GDScript &script : script_list) {
 			// Scripts will reload all subclasses, so only reload root scripts.
-			if (elem->self()->is_root_script() && !elem->self()->get_path().is_empty()) {
-				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+			if (script.is_root_script() && !script.get_path().is_empty()) {
+				scripts.push_back(Ref<GDScript>(&script)); //cast to gdscript to avoid being erased by accident
 			}
-			elem = elem->next();
 		}
 	}
 
@@ -2602,17 +2592,15 @@ void GDScriptLanguage::frame() {
 	if (profiling) {
 		MutexLock lock(mutex);
 
-		SelfList<GDScriptFunction> *elem = function_list.first();
-		while (elem) {
-			elem->self()->profile.last_frame_call_count = elem->self()->profile.frame_call_count.get();
-			elem->self()->profile.last_frame_self_time = elem->self()->profile.frame_self_time.get();
-			elem->self()->profile.last_frame_total_time = elem->self()->profile.frame_total_time.get();
-			elem->self()->profile.last_native_calls = elem->self()->profile.native_calls;
-			elem->self()->profile.frame_call_count.set(0);
-			elem->self()->profile.frame_self_time.set(0);
-			elem->self()->profile.frame_total_time.set(0);
-			elem->self()->profile.native_calls.clear();
-			elem = elem->next();
+		for (GDScriptFunction &func : function_list) {
+			func.profile.last_frame_call_count = func.profile.frame_call_count.get();
+			func.profile.last_frame_self_time = func.profile.frame_self_time.get();
+			func.profile.last_frame_total_time = func.profile.frame_total_time.get();
+			func.profile.last_native_calls = func.profile.native_calls;
+			func.profile.frame_call_count.set(0);
+			func.profile.frame_self_time.set(0);
+			func.profile.frame_total_time.set(0);
+			func.profile.native_calls.clear();
 		}
 	}
 
