@@ -542,7 +542,6 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 
 			files->set_theme_type_variation("ItemListSecondary");
 			files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_DISABLED);
-			files_mc->set_theme_type_variation("");
 
 			toolbar2_hbc->hide();
 			button_file_list_display_mode->show();
@@ -817,8 +816,8 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 		return;
 	}
 
-	// Unfold all folders along the path.
-	TreeItem *ti = *directory_ptr;
+	// Unfold all folders along the path (minus itself).
+	TreeItem *ti = (*directory_ptr)->get_parent();
 	while (ti) {
 		ti->set_collapsed(false);
 		ti = ti->get_parent();
@@ -3417,7 +3416,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 	emit_signal(SNAME("folder_color_changed"));
 }
 
-void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options) {
+void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options, bool p_show_expand_options) {
 	Vector<String> filenames;
 	Vector<String> foldernames;
 
@@ -3510,14 +3509,16 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	bool root_path_not_selected = !no_paths && p_paths[0] != "res://" && (p_paths.size() <= 1 || p_paths[1] != "res://");
 
 	if (all_folders && foldernames.size() > 0) {
-		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
+		if (p_show_expand_options) {
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
 
-		if (foldernames.size() == 1) {
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
+			if (foldernames.size() == 1) {
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
+			}
+
+			p_popup->add_separator();
 		}
-
-		p_popup->add_separator();
 
 		// Only add the 'Set Folder Color...' option if the root path is not selected.
 		if (root_path_not_selected) {
@@ -3814,7 +3815,7 @@ void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, M
 	// Popup.
 	if (!paths.is_empty()) {
 		file_list_popup->clear();
-		_file_and_folders_fill_popup(file_list_popup, paths, searched_tokens.is_empty());
+		_file_and_folders_fill_popup(file_list_popup, paths, searched_tokens.is_empty(), false);
 		file_list_popup->set_position(files->get_screen_position() + p_pos);
 		file_list_popup->reset_size();
 		file_list_popup->popup();
@@ -4653,11 +4654,6 @@ FileSystemDock::FileSystemDock() {
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);
 
-	files_mc = memnew(MarginContainer);
-	file_list_vb->add_child(files_mc);
-	files_mc->set_theme_type_variation("NoBorderHorizontalBottom");
-	files_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
 	bottom_toolbar_hbc = memnew(HBoxContainer);
 	bottom_toolbar_hbc->set_alignment(BoxContainer::ALIGNMENT_END);
 	file_list_vb->add_child(bottom_toolbar_hbc);
@@ -4690,15 +4686,16 @@ FileSystemDock::FileSystemDock() {
 	files->set_accessibility_name(TTRC("Files"));
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
+	files->set_allow_rmb_select(true);
+	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
+	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
 	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
 	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
 	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
 	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm).bind(false));
-	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
-	files->set_allow_rmb_select(true);
-	files_mc->add_child(files);
+	file_list_vb->add_child(files);
 
 	scanning_vb = memnew(VBoxContainer);
 	scanning_vb->hide();

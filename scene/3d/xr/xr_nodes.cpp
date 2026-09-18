@@ -192,6 +192,11 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 		if (parent && origin == nullptr) {
 			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
+
+		// Warn if process mode is not set to always
+		if (get_process_mode() != PROCESS_MODE_ALWAYS) {
+			warnings.push_back(RTR("XRCamera3Ds process mode must be set to always to ensure camera tracking is active even when your game is paused."));
+		}
 	}
 
 	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
@@ -311,6 +316,9 @@ XRCamera3D::XRCamera3D() {
 
 	// Run internal process at runtime.
 	set_desired_process_modes(!Engine::get_singleton()->is_editor_hint(), false);
+
+	// Even when paused, we must run our internal process.
+	set_process_mode(PROCESS_MODE_ALWAYS);
 
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
