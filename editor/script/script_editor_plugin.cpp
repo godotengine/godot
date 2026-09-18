@@ -146,24 +146,6 @@ void ScriptEditorQuickOpen::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("goto_line", PropertyInfo(Variant::INT, "line")));
 }
 
-void ScriptEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
-	if (this == bottom_script_editor) {
-		return;
-	}
-	begin_bulk_theme_override();
-	if (p_layout == DOCK_LAYOUT_FLOATING) {
-		remove_theme_constant_override("margin_left");
-		remove_theme_constant_override("margin_right");
-		remove_theme_constant_override("margin_bottom");
-	} else {
-		int margin = EditorNode::get_singleton()->get_editor_theme()->get_constant("base_margin", EditorStringName(Editor));
-		add_theme_constant_override("margin_left", margin);
-		add_theme_constant_override("margin_right", margin);
-		add_theme_constant_override("margin_bottom", margin);
-	}
-	end_bulk_theme_override();
-}
-
 ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	set_ok_button_text(TTRC("Open"));
 	get_ok_button()->set_disabled(true);
@@ -2351,13 +2333,6 @@ void ScriptEditor::ensure_select_current() {
 
 void ScriptEditor::focus_editor() {
 	EditorDockManager::get_singleton()->focus_dock(this);
-	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(get_active_editor());
-	EditorHelp *eh = Object::cast_to<EditorHelp>(get_active_editor());
-	if (seb) {
-		seb->get_base_editor()->grab_focus();
-	} else if (eh) {
-		eh->set_focused();
-	}
 }
 
 void ScriptEditor::focus_script_editor(const Ref<Resource> &p_for_resource) {
@@ -4092,6 +4067,34 @@ void ScriptEditor::_set_script_zoom_factor(float p_zoom_factor) {
 void ScriptEditor::_update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor) {
 	if (p_code_text_editor && p_code_text_editor->is_visible_in_tree() && zoom_factor != p_code_text_editor->get_zoom_factor()) {
 		p_code_text_editor->set_zoom_factor(zoom_factor);
+	}
+}
+
+void ScriptEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	if (this == bottom_script_editor) {
+		return;
+	}
+	begin_bulk_theme_override();
+	if (p_layout == DOCK_LAYOUT_FLOATING) {
+		remove_theme_constant_override("margin_left");
+		remove_theme_constant_override("margin_right");
+		remove_theme_constant_override("margin_bottom");
+	} else {
+		int margin = EditorNode::get_singleton()->get_editor_theme()->get_constant("base_margin", EditorStringName(Editor));
+		add_theme_constant_override("margin_left", margin);
+		add_theme_constant_override("margin_right", margin);
+		add_theme_constant_override("margin_bottom", margin);
+	}
+	end_bulk_theme_override();
+}
+
+void ScriptEditor::_dock_focused() {
+	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(get_active_editor());
+	EditorHelp *eh = Object::cast_to<EditorHelp>(get_active_editor());
+	if (seb) {
+		seb->get_base_editor()->grab_focus();
+	} else if (eh) {
+		eh->set_focused();
 	}
 }
 

@@ -453,6 +453,7 @@ protected:
 	static void _bind_methods();
 
 	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
+	virtual void _dock_focused() override;
 
 public:
 	static ScriptEditor *get_singleton() { return script_editor; }

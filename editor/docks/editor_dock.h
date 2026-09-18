@@ -116,6 +116,8 @@ protected:
 	GDVIRTUAL1(_update_layout, int)
 #endif
 
+	virtual void _dock_focused() {}
+
 public:
 	void open();
 	void make_visible();
