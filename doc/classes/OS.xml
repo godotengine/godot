@@ -465,7 +465,8 @@
 		<method name="get_processor_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of [i]logical[/i] CPU cores available on the host machine. On CPUs with HyperThreading enabled, this number will be greater than the number of [i]physical[/i] CPU cores.
+				Returns the number of [i]logical[/i] CPU cores available on the host machine. On CPUs with HyperThreading or SMT enabled, this number will be greater than the number of [i]physical[/i] CPU cores.
+				[b]Note:[/b] On the Web platform, the value returned by [method get_processor_count] is limited to [code]2[/code] at most.
 			</description>
 		</method>
 		<method name="get_processor_name" qualifiers="const">
