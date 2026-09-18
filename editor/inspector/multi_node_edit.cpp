@@ -102,16 +102,10 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 
 		if (p_undo_redo) {
 			ur->add_undo_property(n, name, n->get(name));
-			Variant old_value = n->get(p_name);
-			Variant::Type type = old_value.get_type();
-			if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && old_value != new_value) {
-				ur->add_do_method(EditorNode::get_singleton(), "update_node_reference", old_value, n, true);
-				ur->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, n, false);
-				// Perhaps an inefficient way of updating the resource count.
-				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-				ur->add_undo_method(EditorNode::get_singleton(), "update_node_reference", new_value, n, true);
-				ur->add_undo_method(EditorNode::get_singleton(), "update_node_reference", old_value, n, false);
-			}
+			ur->add_do_method(EditorNode::get_singleton(), "mark_node_resource_usage_dirty", n);
+			ur->add_undo_method(EditorNode::get_singleton(), "mark_node_resource_usage_dirty", n);
+		} else {
+			EditorNode::get_singleton()->mark_node_resource_usage_dirty(n);
 		}
 	}
 
