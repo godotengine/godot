@@ -660,8 +660,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	memnew_placement(&stack[ADDR_STACK_CLASS], Variant);
 	VariantInternal::object_assign_without_ref_unsafe(&stack[ADDR_STACK_CLASS], script);
 
-	memnew_placement(&stack[ADDR_STACK_NIL], Variant);
-
 #ifdef DEBUG_ENABLED
 	String err_text;
 #endif
@@ -4025,7 +4023,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	// We deliberately avoid calling the destructor for `ADDR_STACK_CLASS`, since we initialized it
 	// without incrementing any reference count that it might have.
 	stack[ADDR_STACK_SELF].~Variant();
-	stack[ADDR_STACK_NIL].~Variant();
 
 	for (int i = FIXED_ADDRESSES_MAX; i < _stack_size; i++) {
 		stack[i].~Variant();
