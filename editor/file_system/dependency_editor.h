@@ -41,6 +41,7 @@ class TreeItem;
 class VBoxContainer;
 class LineEdit;
 class MenuButton;
+struct EditorProgress;
 
 enum class DependencyEditorSortBy {
 	TYPE,
@@ -105,7 +106,10 @@ class DependencyEditorOwners : public AcceptDialog {
 	PopupMenu *file_options = nullptr;
 	String editing;
 
-	void _fill_owners(EditorFileSystemDirectory *efsd);
+	void _fill_owners(EditorFileSystemDirectory *efsd, ResourceUID::ID p_editing_uid);
+	void _search_script_references(EditorFileSystemDirectory *efsd, ResourceUID::ID p_editing_uid, EditorProgress *p_progress, int &r_current_step);
+
+	void _count_script_files(EditorFileSystemDirectory *efsd, int &r_count);
 
 	void _list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _select_file(int p_idx);
@@ -118,7 +122,7 @@ private:
 	};
 
 public:
-	void show(const String &p_path);
+	void show(const String &p_path, bool p_search_deep = false);
 	DependencyEditorOwners();
 };
 
