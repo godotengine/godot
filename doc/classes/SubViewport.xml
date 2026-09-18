@@ -32,9 +32,11 @@
 		</member>
 		<member name="size_2d_override" type="Vector2i" setter="set_size_2d_override" getter="get_size_2d_override" default="Vector2i(0, 0)">
 			The 2D size override of the sub-viewport. If either the width or height is [code]0[/code], the override is disabled.
+			[b]Note:[/b] If the parent node is a [SubViewportContainer] and its [member SubViewportContainer.stretch] is [code]true[/code], the viewport 2D size override cannot be changed manually.
 		</member>
 		<member name="size_2d_override_stretch" type="bool" setter="set_size_2d_override_stretch" getter="is_size_2d_override_stretch_enabled" default="false">
 			If [code]true[/code], the 2D size override affects stretch as well.
+			[b]Note:[/b] If the parent node is a [SubViewportContainer] and its [member SubViewportContainer.stretch] is [code]true[/code], the 2D size override must affect stretch and cannot be changed manually.
 		</member>
 		<member name="view_count" type="int" setter="set_view_count" getter="get_view_count" default="1">
 			The number of view layers we are rendering to. Set this to [code]2[/code] to enable stereo rendering.
