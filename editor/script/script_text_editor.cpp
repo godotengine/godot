@@ -952,6 +952,18 @@ void ScriptTextEditor::_validate_script() {
 	_update_errors();
 	_update_background_color();
 
+	code_editor->clear_code_action_groups();
+	for (const EditorLanguage::Warning &w : warnings) {
+		for (int line = w.start_line; line <= w.end_line; line++) {
+			code_editor->add_code_action_group_for_line(line - 1, w.code_actions);
+		}
+	}
+	for (const EditorLanguage::ScriptError &e : errors) {
+		for (int line = e.start_line; line <= e.end_line; line++) {
+			code_editor->add_code_action_group_for_line(line - 1, e.code_actions);
+		}
+	}
+
 	if (!pending_dragged_exports.is_empty()) {
 		_assign_dragged_export_variables();
 	}
