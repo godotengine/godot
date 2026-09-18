@@ -1502,6 +1502,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["FLAG_EMIT_COLOR"] = "uint(8)";
 		actions.renames["FLAG_EMIT_CUSTOM"] = "uint(16)";
 		actions.renames["emit_subparticle"] = "emit_subparticle";
+		actions.renames["get_bone_transform"] = "get_bone_transform";
 		actions.usage_defines["emit_subparticle"] = "\nbool emit_subparticle(mat4 p_xform, vec3 p_velocity, vec4 p_color, vec4 p_custom, uint p_flags) {\n\treturn false;\n}\n";
 
 		actions.render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
@@ -3374,7 +3375,7 @@ void ParticleProcessMaterialData::bind_uniforms() {
 	// Bind Material Uniforms
 	glBindBufferBase(GL_UNIFORM_BUFFER, GLES3::PARTICLES_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
-	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 1); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
+	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 2); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
 }
 
 /* TextureBlit SHADER */
