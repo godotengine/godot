@@ -130,7 +130,6 @@ env.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 
 env.__class__.add_shared_library = methods.add_shared_library
 env.__class__.add_library = methods.add_library
-env.__class__.add_program = methods.add_program
 env.__class__.CommandNoCache = methods.CommandNoCache
 env.__class__.Run = methods.Run
 env.__class__.disable_warnings = methods.disable_warnings
@@ -233,6 +232,14 @@ opts.Add(
 
 # Advanced options
 opts.Add(
+    EnumVariable(
+        "library_type",
+        "Build library type",
+        "executable",
+        ("executable", "static_library", "shared_library"),
+    )
+)
+opts.Add(
     BoolVariable(
         "dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes strict_checks=yes", False
     )
@@ -306,15 +313,6 @@ opts.Add(
         True,
     )
 )
-opts.Add(
-    EnumVariable(
-        "library_type",
-        "Build library type",
-        "executable",
-        ("executable", "static_library", "shared_library"),
-    )
-)
-
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
 opts.Add(BoolVariable("builtin_certs", "Use the built-in SSL certificates bundles", True))
@@ -379,6 +377,15 @@ if env["import_env_vars"]:
             env["ENV"][env_var] = os.environ[env_var]
 
 # Platform selection: validate input, and add options.
+
+if env["library_type"] == "static_library":
+    env.Append(CPPDEFINES=["LIBGODOT_ENABLED"])
+elif env["library_type"] == "shared_library":
+    env.Append(CPPDEFINES=["LIBGODOT_ENABLED"])
+    env.Append(CCFLAGS=["-fPIC"])
+    env.Append(STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME=True)
+else:
+    env.__class__.add_program = methods.add_program
 
 if not env["platform"]:
     # Missing `platform` argument, try to detect platform automatically
@@ -1098,7 +1105,7 @@ if env["brotli"]:
 if not env["disable_overrides"]:
     env.Append(CPPDEFINES=["OVERRIDE_ENABLED"])
 
-if env.editor_build or not env["disable_path_overrides"]:
+if env.editor_build or not env["disable_path_overrides"] or env["library_type"] != "executable":
     env.Append(CPPDEFINES=["OVERRIDE_PATH_ENABLED"])
 
 if not env["verbose"]:

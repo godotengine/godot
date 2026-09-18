@@ -41,6 +41,7 @@ void GodotInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start"), &GodotInstance::start);
 	ClassDB::bind_method(D_METHOD("is_started"), &GodotInstance::is_started);
 	ClassDB::bind_method(D_METHOD("iteration"), &GodotInstance::iteration);
+	ClassDB::bind_method(D_METHOD("stop"), &GodotInstance::stop);
 	ClassDB::bind_method(D_METHOD("focus_in"), &GodotInstance::focus_in);
 	ClassDB::bind_method(D_METHOD("focus_out"), &GodotInstance::focus_out);
 	ClassDB::bind_method(D_METHOD("pause"), &GodotInstance::pause);
