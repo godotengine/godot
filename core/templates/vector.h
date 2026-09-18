@@ -53,6 +53,8 @@ public:
 /**
  * Array-like container with copy-on-write semantics.
  *
+ * Elements are relocated by naive memory moves; they must not store their own address (see GH-100509).
+ *
  * Core container guidance:
  * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  */
