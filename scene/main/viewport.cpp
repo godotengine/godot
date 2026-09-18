@@ -299,7 +299,7 @@ void Viewport::_sub_window_update_order() {
 		SubWindow sw = gui.sub_windows[index];
 		Window *parent_window = sw.window->get_parent_visible_window();
 		bool parent_is_always_on_top = (parent_window != nullptr) && parent_window->get_flag(Window::FLAG_ALWAYS_ON_TOP);
-		if (sw.window->get_flag(Window::FLAG_ALWAYS_ON_TOP) || (parent_is_always_on_top && sw.window->is_exclusive())) {
+		if (sw.window->get_flag(Window::FLAG_ALWAYS_ON_TOP) || parent_is_always_on_top) {
 			if (index != insert_index) {
 				gui.sub_windows.remove_at(index);
 				gui.sub_windows.insert(insert_index, sw);
