@@ -77,6 +77,22 @@ Error MIDIDriverWinMidi::open() {
 		}
 	}
 
+	device_index = 0;
+	connected_sinks.resize(midiOutGetNumDevs());
+	MIDIOUTCAPS mic;
+	for (UINT i = 0; i < midiOutGetNumDevs(); i++) {
+		MMRESULT open_res = midiOutOpen(&connected_sinks.ptrw()[device_index], i, 0, (DWORD_PTR)device_index, CALLBACK_NULL);
+		printf("%d of %d %d\n", i, (int)midiOutGetNumDevs(), (int)open_res);
+		if (open_res == MMSYSERR_NOERROR) {
+			if (!midiOutGetDevCaps(i, &mic, sizeof(MIDIOUTCAPS))) {
+				connected_output_names.push_back(mic.szPname);
+			} else {
+				connected_output_names.push_back("ERROR");
+			}
+			device_index++;
+		}
+	}
+
 	return OK;
 }
 
@@ -86,8 +102,37 @@ void MIDIDriverWinMidi::close() {
 		midiInStop(midi_in);
 		midiInClose(midi_in);
 	}
+	for (int i = 0; i < connected_sinks.size(); i++) {
+		HMIDIOUT midi_out = connected_sinks[i];
+		midiOutReset(midi_out);
+		midiOutClose(midi_out);
+	}
 	connected_sources.clear();
+	connected_sinks.clear();
 	connected_input_names.clear();
+	connected_output_names.clear();
+}
+
+Error MIDIDriverWinMidi::send(Ref<InputEventMIDI> p_event) {
+	ERR_FAIL_COND_V(p_event.is_null(), ERR_INVALID_PARAMETER);
+	int device_id = p_event->get_device();
+	ERR_FAIL_INDEX_V(device_id, connected_sinks.size(), ERR_PARAMETER_RANGE_ERROR);
+	DWORD message = 0;
+	PackedByteArray packet = p_event->get_midi_bytes();
+	memcpy(&message, packet.ptr(), MIN(sizeof(message), size_t(packet.size())));
+	MMRESULT send_ok = midiOutShortMsg(connected_sinks[device_id], message);
+	switch (send_ok) {
+		case MMSYSERR_NOERROR:
+			return OK;
+		case MIDIERR_BADOPENMODE:
+			return ERR_UNCONFIGURED;
+		case MIDIERR_NOTREADY:
+			return ERR_BUSY;
+		case MMSYSERR_INVALHANDLE:
+			return ERR_DOES_NOT_EXIST;
+		default:
+			return FAILED;
+	}
 }
 
 MIDIDriverWinMidi::~MIDIDriverWinMidi() {
