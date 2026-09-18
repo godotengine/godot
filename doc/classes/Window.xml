@@ -90,6 +90,13 @@
 				Requests an update of the [Window] size to fit underlying [Control] nodes.
 			</description>
 		</method>
+		<method name="drag_files">
+			<return type="void" />
+			<param index="0" name="files" type="PackedStringArray" />
+			<description>
+				Starts operating system's drag-and-drop, must be called after user presses mouse button. [param files] is the list of absolute filepaths of files to drag.
+			</description>
+		</method>
 		<method name="end_bulk_theme_override">
 			<return type="void" />
 			<description>
