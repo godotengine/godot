@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/math/math_funcs.h"
+#include "core/variant/container_type_validate.h"
 #include "core/variant/method_ptrcall.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant.h"
@@ -710,7 +711,7 @@ public:
 		int bsize = p_array_right.size();
 
 		if (p_array_left.is_typed() && p_array_left.is_same_typed(p_array_right)) {
-			r_sum.set_typed(p_array_left.get_typed_builtin(), p_array_left.get_typed_class_name(), p_array_left.get_typed_script());
+			r_sum.set_typed(p_array_left.get_element_type());
 		}
 
 		r_sum.resize(asize + bsize);

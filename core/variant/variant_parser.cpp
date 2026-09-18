@@ -36,6 +36,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/string/string_buffer.h"
+#include "core/variant/container_type_validate.h"
 
 char32_t VariantParser::Stream::get_char() {
 	// is within buffer?
@@ -2114,61 +2115,11 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			if (dict.is_typed()) {
 				p_store_string_func(p_store_string_ud, "Dictionary[");
 
-				Variant::Type key_builtin_type = (Variant::Type)dict.get_typed_key_builtin();
-				StringName key_class_name = dict.get_typed_key_class_name();
-				Ref<Script> key_script = dict.get_typed_key_script();
-
-				if (key_script.is_valid()) {
-					String resource_text;
-					if (p_encode_res_func) {
-						resource_text = p_encode_res_func(p_encode_res_ud, key_script);
-					}
-					if (resource_text.is_empty() && key_script->get_path().is_resource_file()) {
-						resource_text = encode_resource_reference(key_script->get_path());
-					}
-
-					if (!resource_text.is_empty()) {
-						p_store_string_func(p_store_string_ud, resource_text);
-					} else {
-						ERR_PRINT("Failed to encode a path to a custom script for a dictionary key type.");
-						p_store_string_func(p_store_string_ud, key_class_name);
-					}
-				} else if (key_class_name != StringName()) {
-					p_store_string_func(p_store_string_ud, key_class_name);
-				} else if (key_builtin_type == Variant::NIL) {
-					p_store_string_func(p_store_string_ud, "Variant");
-				} else {
-					p_store_string_func(p_store_string_ud, Variant::get_type_name(key_builtin_type));
-				}
+				write_container_type(dict.get_key_type(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
 
 				p_store_string_func(p_store_string_ud, ", ");
 
-				Variant::Type value_builtin_type = (Variant::Type)dict.get_typed_value_builtin();
-				StringName value_class_name = dict.get_typed_value_class_name();
-				Ref<Script> value_script = dict.get_typed_value_script();
-
-				if (value_script.is_valid()) {
-					String resource_text;
-					if (p_encode_res_func) {
-						resource_text = p_encode_res_func(p_encode_res_ud, value_script);
-					}
-					if (resource_text.is_empty() && value_script->get_path().is_resource_file()) {
-						resource_text = encode_resource_reference(value_script->get_path());
-					}
-
-					if (!resource_text.is_empty()) {
-						p_store_string_func(p_store_string_ud, resource_text);
-					} else {
-						ERR_PRINT("Failed to encode a path to a custom script for a dictionary value type.");
-						p_store_string_func(p_store_string_ud, value_class_name);
-					}
-				} else if (value_class_name != StringName()) {
-					p_store_string_func(p_store_string_ud, value_class_name);
-				} else if (value_builtin_type == Variant::NIL) {
-					p_store_string_func(p_store_string_ud, "Variant");
-				} else {
-					p_store_string_func(p_store_string_ud, Variant::get_type_name(value_builtin_type));
-				}
+				write_container_type(dict.get_value_type(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
 
 				p_store_string_func(p_store_string_ud, "](");
 			}
@@ -2213,30 +2164,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			if (array.is_typed()) {
 				p_store_string_func(p_store_string_ud, "Array[");
 
-				Variant::Type builtin_type = (Variant::Type)array.get_typed_builtin();
-				StringName class_name = array.get_typed_class_name();
-				Ref<Script> script = array.get_typed_script();
-
-				if (script.is_valid()) {
-					String resource_text = String();
-					if (p_encode_res_func) {
-						resource_text = p_encode_res_func(p_encode_res_ud, script);
-					}
-					if (resource_text.is_empty() && script->get_path().is_resource_file()) {
-						resource_text = encode_resource_reference(script->get_path());
-					}
-
-					if (!resource_text.is_empty()) {
-						p_store_string_func(p_store_string_ud, resource_text);
-					} else {
-						ERR_PRINT("Failed to encode a path to a custom script for an array type.");
-						p_store_string_func(p_store_string_ud, class_name);
-					}
-				} else if (class_name != StringName()) {
-					p_store_string_func(p_store_string_ud, class_name);
-				} else {
-					p_store_string_func(p_store_string_ud, Variant::get_type_name(builtin_type));
-				}
+				write_container_type(array.get_element_type(), p_store_string_func, p_store_string_ud, p_encode_res_func, p_encode_res_ud);
 
 				p_store_string_func(p_store_string_ud, "](");
 			}
@@ -2429,6 +2357,32 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 	}
 
 	return OK;
+}
+
+void VariantWriter::write_container_type(const ContainerType &p_type, StoreStringFunc p_store_string_func, void *p_store_string_ud,
+		EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud) {
+	if (p_type.script.is_valid()) {
+		String resource_text;
+		if (p_encode_res_func) {
+			resource_text = p_encode_res_func(p_encode_res_ud, p_type.script);
+		}
+		if (resource_text.is_empty() && p_type.script->get_path().is_resource_file()) {
+			resource_text = encode_resource_reference(p_type.script->get_path());
+		}
+
+		if (!resource_text.is_empty()) {
+			p_store_string_func(p_store_string_ud, resource_text);
+		} else {
+			ERR_PRINT("Failed to encode a path to a custom script for a container type.");
+			p_store_string_func(p_store_string_ud, p_type.class_name);
+		}
+	} else if (p_type.class_name != StringName()) {
+		p_store_string_func(p_store_string_ud, p_type.class_name);
+	} else if (p_type.variant_type == Variant::NIL) {
+		p_store_string_func(p_store_string_ud, "Variant");
+	} else {
+		p_store_string_func(p_store_string_ud, Variant::get_type_name(p_type.variant_type));
+	}
 }
 
 static Error _write_to_str(void *p_ud, const String &p_string) {

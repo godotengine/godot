@@ -160,5 +160,6 @@ public:
 	typedef String (*EncodeResourceFunc)(void *p_ud, const Ref<Resource> &p_resource);
 
 	static Error write(const Variant &p_variant, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud, bool p_pretty_print = true, int p_recursion_count = 0, bool p_compat = true);
+	static void write_container_type(const ContainerType &p_type, StoreStringFunc p_store_string_func, void *p_store_string_ud, EncodeResourceFunc p_encode_res_func, void *p_encode_res_ud);
 	static Error write_to_string(const Variant &p_variant, String &r_string, bool p_pretty_print = true, EncodeResourceFunc p_encode_res_func = nullptr, void *p_encode_res_ud = nullptr, bool p_compat = true);
 };
