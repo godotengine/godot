@@ -199,7 +199,7 @@ Transform2D Camera2D::get_camera_transform() {
 		if (position_smoothing_enabled && !is_part_of_edited_scene()) {
 			bool physics_process = (process_callback == CAMERA2D_PROCESS_PHYSICS) || is_physics_interpolated_and_enabled();
 			real_t delta = physics_process ? get_physics_process_delta_time() : get_process_delta_time();
-			real_t c = position_smoothing_speed * delta;
+			real_t c = MIN(1.0, position_smoothing_speed * delta);
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
 			//camera_pos=camera_pos*(1.0-position_smoothing_speed)+new_camera_pos*position_smoothing_speed;
@@ -216,7 +216,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	if (!ignore_rotation) {
 		if (rotation_smoothing_enabled && !is_part_of_edited_scene()) {
-			real_t step = rotation_smoothing_speed * (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
+			real_t step = MIN(1.0, rotation_smoothing_speed * (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time()));
 			camera_angle = Math::lerp_angle(camera_angle, get_global_rotation(), step);
 		} else {
 			camera_angle = get_global_rotation();
@@ -978,7 +978,7 @@ void Camera2D::_bind_methods() {
 
 	ADD_GROUP("Position Smoothing", "position_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE), "set_position_smoothing_speed", "get_position_smoothing_speed");
 
 	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");
