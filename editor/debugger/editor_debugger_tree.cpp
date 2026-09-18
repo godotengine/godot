@@ -124,6 +124,7 @@ void EditorDebuggerTree::_scene_tree_selection_changed(TreeItem *p_item, int p_c
 			p_item->deselect(0);
 		} else if (!inspected_object_ids.has(id)) {
 			inspected_object_ids.append(id);
+			inspected_object_ids.sort();
 		}
 	} else if (inspected_object_ids.has(id)) {
 		inspected_object_ids.erase(id);
@@ -403,6 +404,10 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 }
 
 void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
+	if (inspected_object_ids == p_ids) {
+		return;
+	}
+
 	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
 	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
