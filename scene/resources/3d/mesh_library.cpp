@@ -117,6 +117,8 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<int, Item> &E : item_map) {
 		property_helper.add_properties_for_index(E.key, p_list);
 	}
+
+	p_list->push_back(PropertyInfo(Variant::STRING, PNAME("source_scene"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 }
 
 void MeshLibrary::create_item(int p_item) {
