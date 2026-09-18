@@ -478,9 +478,7 @@ void EditorProfiler::_notification(int p_what) {
 			theme_cache.seek_line_hover_color = theme_cache.seek_line_color;
 			theme_cache.seek_line_hover_color.a = 0.4;
 
-			if (total_metrics > 0) {
-				_update_plot();
-			}
+			_update_plot();
 		} break;
 	}
 }

@@ -482,9 +482,7 @@ void EditorVisualProfiler::_notification(int p_what) {
 			clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 			graph_background->set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
 
-			if (last_metric > -1) {
-				_update_plot();
-			}
+			_update_plot();
 		} break;
 	}
 }
