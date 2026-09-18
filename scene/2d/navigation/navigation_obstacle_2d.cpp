@@ -280,9 +280,9 @@ void NavigationObstacle2D::set_avoidance_layer_value(int p_layer_number, bool p_
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Avoidance layer number must be between 1 and 32 inclusive.");
 	uint32_t avoidance_layers_new = get_avoidance_layers();
 	if (p_value) {
-		avoidance_layers_new |= 1 << (p_layer_number - 1);
+		avoidance_layers_new |= 1u << (p_layer_number - 1);
 	} else {
-		avoidance_layers_new &= ~(1 << (p_layer_number - 1));
+		avoidance_layers_new &= ~(1u << (p_layer_number - 1));
 	}
 	set_avoidance_layers(avoidance_layers_new);
 }
@@ -290,7 +290,7 @@ void NavigationObstacle2D::set_avoidance_layer_value(int p_layer_number, bool p_
 bool NavigationObstacle2D::get_avoidance_layer_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Avoidance layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Avoidance layer number must be between 1 and 32 inclusive.");
-	return get_avoidance_layers() & (1 << (p_layer_number - 1));
+	return get_avoidance_layers() & (1u << (p_layer_number - 1));
 }
 
 void NavigationObstacle2D::set_avoidance_enabled(bool p_enabled) {

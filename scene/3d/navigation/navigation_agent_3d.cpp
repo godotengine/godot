@@ -472,9 +472,9 @@ void NavigationAgent3D::set_navigation_layer_value(int p_layer_number, bool p_va
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
 	uint32_t _navigation_layers = get_navigation_layers();
 	if (p_value) {
-		_navigation_layers |= 1 << (p_layer_number - 1);
+		_navigation_layers |= 1u << (p_layer_number - 1);
 	} else {
-		_navigation_layers &= ~(1 << (p_layer_number - 1));
+		_navigation_layers &= ~(1u << (p_layer_number - 1));
 	}
 	set_navigation_layers(_navigation_layers);
 }
@@ -482,7 +482,7 @@ void NavigationAgent3D::set_navigation_layer_value(int p_layer_number, bool p_va
 bool NavigationAgent3D::get_navigation_layer_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
-	return get_navigation_layers() & (1 << (p_layer_number - 1));
+	return get_navigation_layers() & (1u << (p_layer_number - 1));
 }
 
 void NavigationAgent3D::set_pathfinding_algorithm(const NavigationPathQueryParameters3D::PathfindingAlgorithm p_pathfinding_algorithm) {
@@ -1028,9 +1028,9 @@ void NavigationAgent3D::set_avoidance_layer_value(int p_layer_number, bool p_val
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Avoidance layer number must be between 1 and 32 inclusive.");
 	uint32_t avoidance_layers_new = get_avoidance_layers();
 	if (p_value) {
-		avoidance_layers_new |= 1 << (p_layer_number - 1);
+		avoidance_layers_new |= 1u << (p_layer_number - 1);
 	} else {
-		avoidance_layers_new &= ~(1 << (p_layer_number - 1));
+		avoidance_layers_new &= ~(1u << (p_layer_number - 1));
 	}
 	set_avoidance_layers(avoidance_layers_new);
 }
@@ -1038,7 +1038,7 @@ void NavigationAgent3D::set_avoidance_layer_value(int p_layer_number, bool p_val
 bool NavigationAgent3D::get_avoidance_layer_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Avoidance layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Avoidance layer number must be between 1 and 32 inclusive.");
-	return get_avoidance_layers() & (1 << (p_layer_number - 1));
+	return get_avoidance_layers() & (1u << (p_layer_number - 1));
 }
 
 void NavigationAgent3D::set_avoidance_mask_value(int p_mask_number, bool p_value) {
@@ -1046,9 +1046,9 @@ void NavigationAgent3D::set_avoidance_mask_value(int p_mask_number, bool p_value
 	ERR_FAIL_COND_MSG(p_mask_number > 32, "Avoidance mask number must be between 1 and 32 inclusive.");
 	uint32_t mask = get_avoidance_mask();
 	if (p_value) {
-		mask |= 1 << (p_mask_number - 1);
+		mask |= 1u << (p_mask_number - 1);
 	} else {
-		mask &= ~(1 << (p_mask_number - 1));
+		mask &= ~(1u << (p_mask_number - 1));
 	}
 	set_avoidance_mask(mask);
 }
@@ -1056,7 +1056,7 @@ void NavigationAgent3D::set_avoidance_mask_value(int p_mask_number, bool p_value
 bool NavigationAgent3D::get_avoidance_mask_value(int p_mask_number) const {
 	ERR_FAIL_COND_V_MSG(p_mask_number < 1, false, "Avoidance mask number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_mask_number > 32, false, "Avoidance mask number must be between 1 and 32 inclusive.");
-	return get_avoidance_mask() & (1 << (p_mask_number - 1));
+	return get_avoidance_mask() & (1u << (p_mask_number - 1));
 }
 
 void NavigationAgent3D::set_avoidance_priority(real_t p_priority) {
