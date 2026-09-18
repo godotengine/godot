@@ -42,10 +42,10 @@
 		<member name="compress/mode" type="int" setter="" getter="" default="1">
 			The compression mode to use. Each compression mode provides a different tradeoff:
 			[b]Lossless[/b]: Original quality, high memory usage, high size on disk, fast import.
-			[b]Lossy:[/b] Reduced quality, high memory usage, low size on disk, fast import.
-			[b]VRAM Compressed:[/b] Reduced quality, low memory usage, low size on disk, slowest import. Only use for textures in 3D scenes, not for 2D elements.
+			[b]Lossy:[/b] Reduced quality, high memory usage, low size on disk, fast import. Should not be used for pixel art, as it will noticeably degrade quality while actually [i]increasing[/i] file size.
+			[b]VRAM Compressed:[/b] Reduced quality, low memory usage, low size on disk, slow import. This mode is preferred for non-pixel art textures in 3D. In 2D, this mode should generally be avoided unless absolutely needed to keep memory utilization to a reasonable level, as VRAM compression artifacts tend to be more visible in 2D. Enabling the High Quality option after switching the compression mode can help reduce artifacting in 2D. This mode compresses to a platform-specific format, which may look slightly different across platforms, and may require exports targeting multiple platforms (like web) to ship multiple formats, increasing the size on disk.
 			[b]VRAM Uncompressed:[/b] Original quality, high memory usage, highest size on disk, fastest import.
-			[b]Basis Universal:[/b] Reduced quality, low memory usage, lowest size on disk, slow import. Only use for textures in 3D scenes, not for 2D elements.
+			[b]Basis Universal:[/b] Reduced quality, low memory usage, lowest size on disk, slowest import. Similar to VRAM Compressed, but compresses to a universal format and transcodes it to a platform-specific format at runtime. This makes textures slower to load, but avoids the need to ship multiple platform-specific formats in some exports (like web).
 			See [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#compress-mode]Compress mode[/url] in the manual for more details.
 		</member>
 		<member name="compress/rdo_quality_loss" type="float" setter="" getter="" default="0.0">
