@@ -1868,7 +1868,7 @@ void ThemeItemEditorDialog::_open_rename_theme_item_dialog(Theme::DataType p_dat
 }
 
 void ThemeItemEditorDialog::_confirm_edit_theme_item() {
-	const String new_item_name = theme_item_name->get_text().strip_edges().validate_ascii_identifier();
+	const String new_item_name = theme_item_name->get_text().strip_edges().validate_unicode_identifier();
 
 	if (item_popup_mode == CREATE_THEME_ITEM) {
 		_add_theme_item(edit_item_data_type, new_item_name, edited_item_type);
@@ -3021,7 +3021,7 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 		return;
 	}
 
-	const String item_name = le->get_text().strip_edges().validate_ascii_identifier();
+	const String item_name = le->get_text().strip_edges().validate_unicode_identifier();
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Add Theme Item"));
@@ -3190,7 +3190,7 @@ void ThemeTypeEditor::_item_rename_confirmed(int p_data_type, String p_item_name
 		return;
 	}
 
-	const String new_name = le->get_text().strip_edges().validate_ascii_identifier();
+	const String new_name = le->get_text().strip_edges().validate_unicode_identifier();
 	if (new_name == p_item_name) {
 		_item_rename_canceled(p_data_type, p_item_name, p_control);
 		return;
