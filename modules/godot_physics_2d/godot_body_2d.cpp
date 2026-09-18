@@ -314,6 +314,7 @@ void GodotBody2D::set_state(PS2DE::BodyState p_state, const Variant &p_variant) 
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
 				wakeup_neighbours();
+				_update_transform_dependent();
 			} else {
 				Transform2D t = p_variant;
 				t.orthonormalize();
