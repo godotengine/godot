@@ -57,7 +57,6 @@ namespace GodotTools.Utils
             public const string Android = "android";
             public const string LinuxBionic = "linux-bionic";
             public const string iOS = "ios";
-            public const string iOSSimulator = "iossimulator";
             public const string Browser = "browser";
         }
 
