@@ -953,7 +953,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<EditorLa
 	if (!complete_from_path.ends_with("/")) {
 		complete_from_path += "/";
 	}
-	preprocessor.preprocess_for_editor(p_code, resource_path, code, nullptr, nullptr, nullptr, &pp_options, &pp_defines, _complete_include_paths);
+	preprocessor.preprocess_for_editor(p_code, resource_path, code, nullptr, nullptr, nullptr, nullptr, &pp_options, &pp_defines, _complete_include_paths);
 	complete_from_path = String();
 	if (pp_options.size()) {
 		for (const EditorLanguage::CompletionOption &E : pp_options) {
