@@ -141,6 +141,7 @@ private:
 	bool fullscreen_shortcut_enabled = false;
 	bool transient = false;
 	bool transient_to_focused = false;
+	bool return_to_transient = false;
 	bool exclusive = false;
 	bool wrap_controls = false;
 	bool updating_child_controls = false;
@@ -377,6 +378,9 @@ public:
 	void set_transient_to_focused(bool p_transient_to_focused);
 	bool is_transient_to_focused() const;
 
+	void set_return_to_transient(bool p_return_to_transient);
+	bool is_return_to_transient() const;
+
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
 
@@ -428,6 +432,7 @@ public:
 	Window *get_parent_visible_window() const;
 	Window *get_non_popup_window() const;
 	Viewport *get_parent_viewport() const;
+	Window *get_transient_parent() const;
 
 	void popup(const Rect2i &p_screen_rect = Rect2i());
 	void popup_on_parent(const Rect2i &p_parent_rect);
