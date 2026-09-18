@@ -27,47 +27,35 @@
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static inline bool _onlyShifted(const Matrix& m)
+static SwOutline* _genOutline(SwImage& image, SwMpool* mpool, unsigned tid)
 {
-    if (tvg::equal(m.e11, 1.0f) && tvg::equal(m.e22, 1.0f) && tvg::zero(m.e12) && tvg::zero(m.e21)) return true;
-    return false;
-}
-
-
-static bool _genOutline(SwImage& image, const Matrix& transform, SwMpool* mpool, unsigned tid)
-{
-    image.outline = mpool->outline(tid);
-    auto outline = image.outline;
-
-    outline->pts.reserve(5);
+    auto outline = mpool->outline(tid);
+    outline->in.reserve(5);
     outline->types.reserve(5);
     outline->cntrs.reserve(1);
     outline->closed.reserve(1);
 
-    Point to[4];
     auto w = static_cast<float>(image.w);
     auto h = static_cast<float>(image.h);
-    to[0] = {0, 0};
-    to[1] = {w, 0};
-    to[2] = {w, h};
-    to[3] = {0, h};
 
-    for (int i = 0; i < 4; i++) {
-        outline->pts.push(mathTransform(&to[i], transform));
-        outline->types.push(SW_CURVE_TYPE_POINT);
-    }
+    outline->in.push({0.0f, 0.0f});
+    outline->in.push({w, 0.0f});
+    outline->in.push({w, h});
+    outline->in.push({0.0f, h});
+    outline->in.push({0.0f, 0.0f});
 
-    outline->pts.push(outline->pts[0]);
     outline->types.push(SW_CURVE_TYPE_POINT);
-    outline->cntrs.push(outline->pts.count - 1);
+    outline->types.push(SW_CURVE_TYPE_POINT);
+    outline->types.push(SW_CURVE_TYPE_POINT);
+    outline->types.push(SW_CURVE_TYPE_POINT);
+    outline->types.push(SW_CURVE_TYPE_POINT);
+    outline->cntrs.push(outline->in.count - 1);
     outline->closed.push(true);
 
-    image.outline = outline;
-    image.outline->fillRule = FillRule::NonZero;
+    outline->fillRule = FillRule::NonZero;
 
-    return true;
+    return outline;
 }
-
 
 /************************************************************************/
 /* External Class Implementation                                        */
@@ -75,46 +63,36 @@ static bool _genOutline(SwImage& image, const Matrix& transform, SwMpool* mpool,
 
 bool imagePrepare(SwImage& image, const Matrix& transform, const RenderRegion& clipBox, RenderRegion& renderBox, SwMpool* mpool, unsigned tid)
 {
-    image.direct = _onlyShifted(transform);
+    // only shifted
+    image.direct = tvg::equal(transform.e11, 1.0f) && tvg::equal(transform.e22, 1.0f) && tvg::zero(transform.e12) && tvg::zero(transform.e21);
 
-    //Fast track: Non-transformed image but just shifted.
+    // fast track: Non-transformed image but just shifted.
     if (image.direct) {
         image.ox = -static_cast<int32_t>(nearbyint(transform.e13));
         image.oy = -static_cast<int32_t>(nearbyint(transform.e23));
-    //Figure out the scale factor by transform matrix
+    // figure out the scale factor by transform matrix
     } else {
-        auto scaleX = sqrtf((transform.e11 * transform.e11) + (transform.e21 * transform.e21));
-        auto scaleY = sqrtf((transform.e22 * transform.e22) + (transform.e12 * transform.e12));
-        image.scale = (fabsf(scaleX - scaleY) > 0.01f) ? 1.0f : scaleX;
-
-        if (tvg::zero(transform.e12) && tvg::zero(transform.e21)) image.scaled = true;
-        else image.scaled = false;
+        image.scale = scaling(transform);
+        image.scaled = (tvg::zero(transform.e12) && tvg::zero(transform.e21)) ? true : false;
     }
+    image.outline = _genOutline(image, mpool, tid);
+    if (!image.outline) return false;
 
-    if (!_genOutline(image, transform, mpool, tid)) return false;
-    return mathUpdateOutlineBBox(image.outline, clipBox, renderBox, image.direct);
+    BBox bbox;
+    utilExport(image.outline, transform, bbox);
+    return utilBBox(bbox, clipBox, renderBox, image.direct);
 }
-
 
 bool imageGenRle(SwImage& image, const RenderRegion& renderBox, SwMpool* mpool, unsigned tid, bool antiAlias)
 {
-    if ((image.rle = rleRender(image.rle, image.outline, renderBox, mpool, tid, antiAlias))) return true;
-
-    return false;
+    image.rle = rleRender(image.rle, image.outline, renderBox, mpool, tid, antiAlias);
+    return image.rle ? true : false;
 }
-
-
-void imageDelOutline(SwImage& image, SwMpool* mpool, uint32_t tid)
-{
-    image.outline = nullptr;
-}
-
 
 void imageReset(SwImage& image)
 {
     rleReset(image.rle);
 }
-
 
 void imageFree(SwImage& image)
 {

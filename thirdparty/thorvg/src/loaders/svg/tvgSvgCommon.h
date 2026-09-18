@@ -27,6 +27,7 @@
 #include "tvgArray.h"
 #include "tvgInlist.h"
 #include "tvgColor.h"
+#include "tvgAccessor.h"
 
 using SvgColor = tvg::RGB;
 
@@ -57,7 +58,7 @@ struct SvgNode;
 struct SvgStyleGradient;
 
 //NOTE: Please update simpleXmlNodeTypeToString() as well.
-enum class SvgNodeType
+enum struct SvgNodeType : uint16_t
 {
     Doc,
     G,
@@ -83,25 +84,13 @@ enum class SvgNodeType
     Symbol,
     Filter,
     GaussianBlur,
+    Pattern,
     Unknown
 };
 
-/*
-// TODO - remove?
-enum class SvgLengthType
+enum struct SvgFillFlags : uint8_t
 {
-    Percent,
-    Px,
-    Pc,
-    Pt,
-    Mm,
-    Cm,
-    In,
-};
-*/
-
-enum class SvgFillFlags
-{
+    None = 0x0,
     Paint = 0x01,
     Opacity = 0x02,
     Gradient = 0x04,
@@ -124,7 +113,7 @@ constexpr void operator|=(SvgFillFlags& a, const SvgFillFlags b)
     a = SvgFillFlags(int(a) | int(b));
 }
 
-enum class SvgStrokeFlags
+enum struct SvgStrokeFlags : uint16_t
 {
     Paint = 0x1,
     Opacity = 0x2,
@@ -153,14 +142,15 @@ constexpr void operator|=(SvgStrokeFlags& a, const SvgStrokeFlags b)
     a = SvgStrokeFlags(int(a) | int(b));
 }
 
-enum class SvgGradientType
+enum struct SvgGradientType : uint8_t
 {
     Linear,
     Radial
 };
 
-enum class SvgStyleFlags
+enum struct SvgStyleFlags
 {
+    None = 0x0,
     Color = 0x01,
     Fill = 0x02,
     FillRule = 0x04,
@@ -180,7 +170,14 @@ enum class SvgStyleFlags
     PaintOrder = 0x10000,
     StrokeMiterlimit = 0x20000,
     StrokeDashOffset = 0x40000,
-    Filter = 0x80000
+    Filter = 0x80000,
+    BlendMode = 0x100000,
+    TextAnchor = 0x200000,
+    AlignmentBaseline = 0x400000,
+    DominantBaseline = 0x800000,
+    FontWeight = 0x1000000,
+    LetterSpacing = 0x2000000,
+    WordSpacing = 0x4000000
 };
 
 constexpr bool operator&(SvgStyleFlags a, SvgStyleFlags b)
@@ -198,7 +195,7 @@ constexpr void operator|=(SvgStyleFlags& a, const SvgStyleFlags b)
     a = SvgStyleFlags(int(a) | int(b));
 }
 
-enum class SvgStopStyleFlags
+enum struct SvgStopStyleFlags : uint8_t
 {
     StopDefault = 0x0,
     StopOpacity = 0x01,
@@ -215,7 +212,7 @@ constexpr SvgStopStyleFlags operator|(SvgStopStyleFlags a, SvgStopStyleFlags b)
     return SvgStopStyleFlags(int(a) | int(b));
 }
 
-enum class SvgGradientFlags
+enum struct SvgGradientFlags : uint16_t
 {
     None = 0x0,
     GradientUnits = 0x1,
@@ -242,13 +239,13 @@ constexpr SvgGradientFlags operator |(SvgGradientFlags a, SvgGradientFlags b)
     return SvgGradientFlags(int(a) | int(b));
 }
 
-enum class SvgMaskType
+enum struct SvgMaskType : uint8_t
 {
     Luminance = 0,
     Alpha
 };
 
-enum class SvgXmlSpace
+enum struct SvgXmlSpace : uint8_t
 {
     None,
     Default,
@@ -256,21 +253,21 @@ enum class SvgXmlSpace
 };
 
 //Length type to recalculate %, pt, pc, mm, cm etc
-enum class SvgParserLengthType
+enum struct SvgParserLengthType : uint8_t
 {
     Vertical,
     Horizontal,
     Diagonal,
-    //In case of, for example, radius of radial gradient
+    // In case of, for example, radius of radial gradient
     Other
 };
 
-enum class SvgViewFlag
+enum struct SvgViewFlag : uint8_t
 {
     None = 0x0,
-    Width = 0x01,   //viewPort width
-    Height = 0x02,  //viewPort height
-    Viewbox = 0x04,  //viewBox x,y,w,h - used only if all 4 are correctly set
+    Width = 0x01,    // viewPort width
+    Height = 0x02,   // viewPort height
+    Viewbox = 0x04,  // viewBox x,y,w,h - used only if all 4 are correctly set
     WidthInPercent = 0x08,
     HeightInPercent = 0x10
 };
@@ -290,7 +287,7 @@ constexpr SvgViewFlag operator ^(SvgViewFlag a, SvgViewFlag b)
     return SvgViewFlag(int(a) ^ int(b));
 }
 
-enum class AspectRatioAlign
+enum struct AspectRatioAlign : uint16_t
 {
     None,
     XMinYMin,
@@ -304,7 +301,7 @@ enum class AspectRatioAlign
     XMaxYMax
 };
 
-enum class AspectRatioMeetOrSlice
+enum struct AspectRatioMeetOrSlice : uint8_t
 {
     Meet,
     Slice
@@ -314,11 +311,11 @@ struct SvgDocNode
 {
     float w, h;   //unit: point or in percentage see: SvgViewFlag
     Box vbox;
-    SvgViewFlag viewFlag;
     SvgNode* defs;
     SvgNode* style;
     AspectRatioAlign align;
     AspectRatioMeetOrSlice meetOrSlice;
+    SvgViewFlag viewFlag;
 };
 
 struct SvgGNode
@@ -345,9 +342,9 @@ struct SvgSymbolNode
 struct SvgUseNode
 {
     float x, y, w, h;
+    SvgNode* symbol;
     bool isWidthSet;
     bool isHeightSet;
-    SvgNode* symbol;
 };
 
 struct SvgEllipseNode
@@ -394,8 +391,11 @@ struct SvgClipNode
 
 struct SvgMaskNode
 {
+    Box box;
+    bool isPercentage[4];
     SvgMaskType type;
     bool userSpace;
+    bool maskContentUserSpace;
 };
 
 struct SvgCssStyleNode
@@ -407,6 +407,7 @@ struct SvgTextNode
     char* text;
     char* fontFamily;
     float x, y;
+    float dx, dy;
     float fontSize;
 };
 
@@ -425,6 +426,18 @@ struct SvgFilterNode
     bool isPercentage[4];
     bool filterUserSpace;
     bool primitiveUserSpace;
+};
+
+struct SvgPatternNode
+{
+    Box box;
+    Box vbox;
+    Matrix* transform;
+    bool isPercentage[4];
+    bool patternUserSpace;
+    bool contentUserSpace;
+    bool hasViewBox;
+    bool applying;
 };
 
 struct SvgLinearGradient
@@ -457,6 +470,7 @@ struct SvgComposite
 struct SvgPaint
 {
     SvgStyleGradient* gradient;
+    SvgNode* pattern;
     char *url;
     SvgColor color;
     bool none;
@@ -471,23 +485,23 @@ struct SvgDash
 
 struct SvgStyleGradient
 {
-    SvgGradientType type;
     char* id;
     char* ref;
-    FillSpread spread;
-    SvgRadialGradient* radial;
-    SvgLinearGradient* linear;
+    union {
+        SvgRadialGradient radial;
+        SvgLinearGradient linear;
+    };
     Matrix* transform;
     Array<Fill::ColorStop> stops;
     SvgGradientFlags flags;
+    SvgGradientType type;
+    FillSpread spread;
     bool userSpace;
 
     void clear()
     {
         stops.reset();
         tvg::free(transform);
-        tvg::free(radial);
-        tvg::free(linear);
         tvg::free(ref);
         tvg::free(id);
     }
@@ -495,9 +509,9 @@ struct SvgStyleGradient
 
 struct SvgStyleFill
 {
-    SvgFillFlags flags;
     SvgPaint paint;
     int opacity;
+    SvgFillFlags flags;
     FillRule fillRule;
 };
 
@@ -509,16 +523,45 @@ struct SvgStyleStroke
     float scale;
     float width;
     float centered;
-    StrokeCap cap;
-    StrokeJoin join;
     float miterlimit;
     SvgDash dash;
+    StrokeCap cap;
+    StrokeJoin join;
 };
 
 struct SvgFilter
 {
     char *url;
     SvgNode* node;
+};
+
+enum class SvgBaseline : uint8_t
+{
+    Auto = 0,
+    Alphabetic,
+    BeforeEdge,
+    AfterEdge,
+    Central,
+    Middle,
+    Hanging,
+    Mathematical
+};
+
+enum class SvgFontWeight : int16_t
+{
+    Invalid = 0,
+    Inherit = -1,
+    Bolder = -2,
+    Lighter = -3,
+    Weight100 = 100,
+    Weight200 = 200,
+    Weight300 = 300,
+    Normal = 400,
+    Weight500 = 500,
+    Weight600 = 600,
+    Bold = 700,
+    Weight800 = 800,
+    Weight900 = 900
 };
 
 struct SvgStyleProperty
@@ -531,11 +574,20 @@ struct SvgStyleProperty
     int opacity;
     SvgColor color;
     char* cssClass;
+    float textAnchor;  // 0=start, 0.5=middle, 1=end
+    SvgBaseline alignmentBaseline;
+    SvgBaseline dominantBaseline;
+    SvgFontWeight fontWeight;
+    float letterSpacing;
+    float wordSpacing;
     SvgStyleFlags flags;
     SvgStyleFlags flagsImportance; //indicates the importance of the flag - if set, higher priority is applied (https://drafts.csswg.org/css-cascade-4/#importance)
     bool curColorSet;
     bool paintOrder; //true if default (fill, stroke), false otherwise
     bool display;
+    bool letterSpacingRelative;
+    bool wordSpacingRelative;
+    BlendMethod blendMode;
 };
 
 struct SvgNode
@@ -566,6 +618,7 @@ struct SvgNode
         SvgTextNode text;
         SvgFilterNode filter;
         SvgGaussianBlurNode gaussianBlur;
+        SvgPatternNode pattern;
     } node;
     SvgXmlSpace xmlSpace = SvgXmlSpace::None;
     ~SvgNode();
@@ -575,9 +628,9 @@ struct SvgParser
 {
     SvgNode* node;
     SvgStyleGradient* styleGrad;
+    Box global;
     Fill::ColorStop gradStop;
     SvgStopStyleFlags flags;
-    Box global;
     struct
     {
         bool parsedFx;
@@ -601,30 +654,36 @@ struct FontFace
     char* decoded = nullptr;
 };
 
-enum class OpenedTagType : uint8_t
+enum struct OpenedTagType : uint8_t
 {
     Other = 0,
     Style,
     Text
 };
 
-struct SvgLoaderData
+struct SvgParserContext
 {
-    Array<SvgNode*> stack;
+    SvgParser* parser = nullptr;
     SvgNode* doc = nullptr;
     SvgNode* def = nullptr; //also used to store nested graphic nodes
     SvgNode* cssStyle = nullptr;
+    SvgNode* currentGraphicsNode = nullptr;
+    Inlist<SvgNodeIdPair> cloneNodes;
+    Array<SvgNode*> stack;
     Array<SvgStyleGradient*> gradients;
     Array<SvgStyleGradient*> gradientStack; //For stops
-    SvgParser* svgParse = nullptr;
-    Inlist<SvgNodeIdPair> cloneNodes;
     Array<SvgNodeIdPair> nodesToStyle;
     Array<char*> images;        //embedded images
     Array<FontFace> fonts;
-    int level = 0;
-    bool result = false;
+
+    // TODO: We can remove map and directly use the name instead of id in ThorVG v2
+    // TODO: Maybe we can replace this with std::map. Currently, ArrayList seems fast enough.
+    Array<AccessorEntity> access;
+
     OpenedTagType openedTag = OpenedTagType::Other;
-    SvgNode* currentGraphicsNode = nullptr;
+    bool accessible;  // allow the Accessor to retain the SVG node names
+
+    void clear(bool all);
 };
 
 #endif

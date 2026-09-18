@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - 2026 ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,22 +20,41 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_SAVE_MODULE_H_
-#define _TVG_SAVE_MODULE_H_
+#include "tvgSwCommon.h"
 
-#include "tvgCommon.h"
+/************************************************************************/
+/* Internal Class Implementation                                        */
+/************************************************************************/
 
-namespace tvg
+static thread_local SwMpool* _pool = nullptr;
+static Array<SwMpool*> _pools;
+static uint32_t _threads = 0;
+static StrictKey _key;
+
+/************************************************************************/
+/* External Class Implementation                                        */
+/************************************************************************/
+
+SwMpool* mpoolReq()
 {
-
-struct SaveModule
-{
-    virtual ~SaveModule() {}
-    virtual bool save(Paint* paint, Paint* bg, const char* filename, uint32_t quality) = 0;
-    virtual bool save(Animation* animation, Paint* bg, const char* filename, uint32_t quality, uint32_t fps) = 0;
-    virtual bool close() = 0;
-};
-
+    if (!_pool) {
+        _pool = new SwMpool(_threads);
+        ScopedLock lock(_key);
+        _pools.push(_pool);
+    }
+    return _pool;
 }
 
-#endif //_TVG_SAVE_MODULE_H_
+void mpoolInit(uint32_t threads)
+{
+    _threads = threads;
+}
+
+void mpoolTerm()
+{
+    for (auto p : _pools) {
+        delete p;
+        _pool = nullptr;
+    }
+    _pools.reset();
+}

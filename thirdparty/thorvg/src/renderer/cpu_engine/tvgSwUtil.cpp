@@ -20,41 +20,38 @@
  * SOFTWARE.
  */
 
+#include "tvgMath.h"
 #include "tvgSwCommon.h"
-
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
-
-static thread_local SwMpool* _pool = nullptr;
-static Array<SwMpool*> _pools;
-static uint32_t _threads = 0;
-static Key _key;
 
 /************************************************************************/
 /* External Class Implementation                                        */
 /************************************************************************/
 
-SwMpool* mpoolReq()
+void utilExport(SwOutline* outline, const Matrix& transform, BBox& bbox)
 {
-    if (!_pool) {
-        _pool = new SwMpool(_threads);
-        ScopedLock lock(_key);
-        _pools.push(_pool);
+    outline->out.reserve(outline->in.count);
+
+    bbox = {{FLT_MAX, FLT_MAX}, {-FLT_MAX, -FLT_MAX}};
+
+    ARRAY_FOREACH(pt, outline->in) {
+        auto t = *pt * transform;
+        if (bbox.min.x > t.x) bbox.min.x = t.x;
+        if (bbox.max.x < t.x) bbox.max.x = t.x;
+        if (bbox.min.y > t.y) bbox.min.y = t.y;
+        if (bbox.max.y < t.y) bbox.max.y = t.y;
+        outline->out.push({int32_t(t.x * 64.0f), int32_t(t.y * 64.0f)});
     }
-    return _pool;
 }
 
-void mpoolInit(uint32_t threads)
+bool utilBBox(const BBox& bbox, const RenderRegion& clipBox, RenderRegion& renderBox, bool fastTrack)
 {
-    _threads = threads;
-}
-
-void mpoolTerm()
-{
-    for (auto p : _pools) {
-        delete p;
-        _pool = nullptr;
+    if (fastTrack) {
+        renderBox.min = {(int32_t)round(bbox.min.x), (int32_t)round(bbox.min.y)};
+        renderBox.max = {(int32_t)round(bbox.max.x), (int32_t)round(bbox.max.y)};
+    } else {
+        renderBox.min = {(int32_t)floorf(bbox.min.x), (int32_t)floorf(bbox.min.y)};
+        renderBox.max = {(int32_t)ceilf(bbox.max.x), (int32_t)ceilf(bbox.max.y)};
     }
-    _pools.reset();
+    renderBox.intersect(clipBox);
+    return renderBox.valid();
 }
