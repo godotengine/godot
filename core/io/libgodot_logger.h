@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  libgodot_macos.mm                                                     */
+/*  libgodot_logger.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,52 +28,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "os_macos.h"
+#pragma once
 
-#include "core/extension/godot_instance.h"
+#ifdef LIBGODOT_ENABLED
+
 #include "core/extension/libgodot.h"
-#include "core/io/libgodot_logger.h"
-#include "main/main.h"
+#include "core/io/logger.h"
+#include "core/object/script_backtrace.h"
 
-static OS_MacOS *os = nullptr;
+class LibGodotLogger : public Logger {
+public:
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) override;
+	void set_callback_function(LogCallbackFunction p_log_func, LogCallbackData p_log_data);
 
-static GodotInstance *instance = nullptr;
+private:
+	void forward_log(const String &p_msg, bool p_err);
+	LogCallbackFunction log_func = nullptr;
+	LogCallbackData log_data = nullptr;
+};
 
-GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func, LogCallbackFunction p_log_func, LogCallbackData p_log_data) {
-	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created.");
-
-	uint32_t remaining_args = p_argc - 1;
-	os = new OS_MacOS_NSApp(p_argv[0], remaining_args, remaining_args > 0 ? &p_argv[1] : nullptr);
-	if (p_log_func != nullptr && p_log_data != nullptr) {
-		LibGodotLogger *logger = memnew(LibGodotLogger);
-		logger->set_callback_function(p_log_func, p_log_data);
-		os->add_logger(logger);
-	}
-
-	@autoreleasepool {
-		Error err = Main::setup(p_argv[0], remaining_args, remaining_args > 0 ? &p_argv[1] : nullptr, false);
-		if (err != OK) {
-			return nullptr;
-		}
-
-		instance = memnew(GodotInstance);
-		if (!instance->initialize(p_init_func)) {
-			memdelete(instance);
-			instance = nullptr;
-			return nullptr;
-		}
-
-		return (GDExtensionObjectPtr)instance;
-	}
-}
-
-void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
-	GodotInstance *godot_instance = (GodotInstance *)p_godot_instance;
-	if (instance == godot_instance) {
-		godot_instance->stop();
-		memdelete(godot_instance);
-		// Note: When Godot Engine supports reinitialization, clear the instance pointer here.
-		//instance = nullptr;
-		Main::cleanup();
-	}
-}
+#endif // LIBGODOT_ENABLED
