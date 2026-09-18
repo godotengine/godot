@@ -452,7 +452,9 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		shadow_dir = r_light_dir;
 		dist = length(bake_params.world_size);
 		attenuation = 1.0;
+#ifndef MODE_LIGHT_PROBES
 		attenuation *= max(0.0, dot(p_normal, r_light_dir));
+#endif // MODE_LIGHT_PROBES
 		soft_shadowing_disk_size = light_data.size;
 	} else if (light_data.type == LIGHT_TYPE_AREA) {
 		r_light_dir = vec3(0.0); // has to be initialized!
@@ -491,7 +493,9 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 		r_light_dir = normalize(closest_point - p_position);
 		shadow_dir = normalize(light_pos - p_position);
 		attenuation = get_omni_attenuation(dist, 1.0 / light_data.range, light_data.attenuation) * dist * dist; // LTC integral already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+#ifndef MODE_LIGHT_PROBES
 		attenuation *= ltc_diffuse;
+#endif // MODE_LIGHT_PROBES
 		soft_shadowing_disk_size = light_data.size / dist;
 	} else {
 		light_pos = light_data.position;
@@ -519,9 +523,12 @@ void trace_direct_light(vec3 p_position, vec3 p_normal, uint p_light_index, bool
 			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cos_spot_angle));
 			attenuation *= 1.0 - pow(spot_rim, light_data.inv_spot_attenuation);
 		}
+#ifndef MODE_LIGHT_PROBES
 		attenuation *= max(0.0, dot(p_normal, r_light_dir));
+#endif // MODE_LIGHT_PROBES
 	}
 
+	//attenuation *= max(0.0, dot(p_normal, r_light_dir));
 	if (attenuation * light_data.energy <= 0.0001) {
 		return;
 	}
@@ -859,6 +866,26 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 
 #endif
 
+#ifdef MODE_LIGHT_PROBES
+void accumilate_probe_light(vec3 p_light_dir, vec3 p_light, inout vec4 r_probe_sh_accum[9]) {
+	float c[9] = float[](
+			0.282095, //l0
+			0.488603 * p_light_dir.y, //l1n1
+			0.488603 * p_light_dir.z, //l1n0
+			0.488603 * p_light_dir.x, //l1p1
+			1.092548 * p_light_dir.x * p_light_dir.y, //l2n2
+			1.092548 * p_light_dir.y * p_light_dir.z, //l2n1
+			0.315392 * (3.0 * p_light_dir.z * p_light_dir.z - 1.0), //l20
+			1.092548 * p_light_dir.x * p_light_dir.z, //l2p1
+			0.546274 * (p_light_dir.x * p_light_dir.x - p_light_dir.y * p_light_dir.y) //l2p2
+	);
+
+	for (uint j = 0; j < 9; j++) {
+		r_probe_sh_accum[j].rgb += p_light * c[j];
+	}
+}
+#endif // MODE_LIGHT_PROBES
+
 void main() {
 	// Check if invocation is out of bounds.
 #ifdef MODE_LIGHT_PROBES
@@ -911,7 +938,7 @@ void main() {
 		float shadow;
 		trace_direct_light(position, normal, i, true, light, light_dir, noise, texel_size_world_space, shadow);
 
-		if (lights.data[i].static_bake) {
+		if (lights.data[i].bake_mode == LIGHT_BAKE_STATIC || lights.data[i].bake_mode == LIGHT_BAKE_FULL) {
 			light_for_texture += light;
 
 #ifdef USE_SH_LIGHTMAPS
@@ -1109,21 +1136,7 @@ void main() {
 		vec3 ray_dir = generate_sphere_uniform_direction(noise);
 		vec3 light = trace_indirect_light(position, ray_dir, noise, 0.0);
 
-		float c[9] = float[](
-				0.282095, //l0
-				0.488603 * ray_dir.y, //l1n1
-				0.488603 * ray_dir.z, //l1n0
-				0.488603 * ray_dir.x, //l1p1
-				1.092548 * ray_dir.x * ray_dir.y, //l2n2
-				1.092548 * ray_dir.y * ray_dir.z, //l2n1
-				0.315392 * (3.0 * ray_dir.z * ray_dir.z - 1.0), //l20
-				1.092548 * ray_dir.x * ray_dir.z, //l2p1
-				0.546274 * (ray_dir.x * ray_dir.x - ray_dir.y * ray_dir.y) //l2p2
-		);
-
-		for (uint j = 0; j < 9; j++) {
-			probe_sh_accum[j].rgb += light * c[j];
-		}
+		accumilate_probe_light(ray_dir, light, probe_sh_accum);
 	}
 
 	if (params.ray_from > 0) {
@@ -1135,6 +1148,16 @@ void main() {
 	if (params.ray_to == params.ray_count) {
 		for (uint j = 0; j < 9; j++) { //accum from existing
 			probe_sh_accum[j] *= 4.0 / float(params.ray_count);
+		}
+
+		for (uint i = 0; i < bake_params.light_count; i++) {
+			if (lights.data[i].bake_mode == LIGHT_BAKE_FULL) {
+				vec3 light_dir;
+				vec3 light;
+				float shadow;
+				trace_direct_light(position, vec3(0.0), i, false, light, light_dir, noise, 1.0, shadow);
+				accumilate_probe_light(light_dir, light, probe_sh_accum);
+			}
 		}
 	}
 
