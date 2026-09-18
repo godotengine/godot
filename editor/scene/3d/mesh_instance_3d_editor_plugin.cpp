@@ -30,8 +30,10 @@
 
 #include "mesh_instance_3d_editor_plugin.h"
 
+#include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
+#include "core/variant/variant.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -603,23 +605,26 @@ struct MeshInstance3DEditorEdgeSort {
 	}
 };
 
-void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
-	Ref<Mesh> mesh = node->get_mesh();
-	ERR_FAIL_COND(mesh.is_null());
+// Get the UV lines from a specific p_mesh.
+// p_layer selects the UV layer. 0 = UV 1 = UV2
+//
+// Returns Error::FAILED if p_mesh is null.
+// Returns Error::ERR_DOES_NOT_EXIST if p_layer does not exist.
+// Returns Error::OK if everything is okay.
+Error MeshInstance3DEditor::get_uv_lines(Ref<Mesh> p_mesh, int p_layer, PackedVector2Array *r_output) {
+	ERR_FAIL_COND_V(p_mesh.is_null(), Error::FAILED);
 
 	HashSet<MeshInstance3DEditorEdgeSort, MeshInstance3DEditorEdgeSort> edges;
-	uv_lines.clear();
-	for (int i = 0; i < mesh->get_surface_count(); i++) {
-		if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
+
+	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
 		}
-		Array a = mesh->surface_get_arrays(i);
+		Array a = p_mesh->surface_get_arrays(i);
 
 		Vector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
 		if (uv.is_empty()) {
-			err_dialog->set_text(vformat(TTR("Mesh has no UV in layer %d."), p_layer + 1));
-			err_dialog->popup_centered();
-			return;
+			return Error::ERR_DOES_NOT_EXIST;
 		}
 
 		const Vector2 *r = uv.ptr();
@@ -651,11 +656,26 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 					continue;
 				}
 
-				uv_lines.push_back(edge.a);
-				uv_lines.push_back(edge.b);
+				r_output->push_back(edge.a);
+				r_output->push_back(edge.b);
 				edges.insert(edge);
 			}
 		}
+	}
+
+	return Error::OK;
+}
+
+void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
+	Ref<Mesh> mesh = node->get_mesh();
+	ERR_FAIL_COND(mesh.is_null());
+
+	uv_lines.clear();
+	Error result = get_uv_lines(mesh, p_layer, &uv_lines);
+	if (result == Error::ERR_DOES_NOT_EXIST) {
+		err_dialog->set_text(vformat(TTR("Mesh has no UV in layer %d."), p_layer + 1));
+		err_dialog->popup_centered();
+		return;
 	}
 
 	debug_uv_dialog->popup_centered();
