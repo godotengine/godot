@@ -11,13 +11,13 @@ from typing import Final
 
 IS_CI: Final[bool] = bool(os.environ.get("CI"))
 NO_COLOR: Final[bool] = bool(os.environ.get("NO_COLOR"))
-CLICOLOR_FORCE: Final[bool] = bool(os.environ.get("CLICOLOR_FORCE"))
+FORCE_COLOR: Final[bool] = bool(os.environ.get("FORCE_COLOR"))
 STDOUT_TTY: Final[bool] = bool(sys.stdout.isatty())
 STDERR_TTY: Final[bool] = bool(sys.stderr.isatty())
 
 
-_STDOUT_ORIGINAL: Final[bool] = False if NO_COLOR else CLICOLOR_FORCE or IS_CI or STDOUT_TTY
-_STDERR_ORIGINAL: Final[bool] = False if NO_COLOR else CLICOLOR_FORCE or IS_CI or STDERR_TTY
+_STDOUT_ORIGINAL: Final[bool] = False if NO_COLOR else FORCE_COLOR or IS_CI or STDOUT_TTY
+_STDERR_ORIGINAL: Final[bool] = False if NO_COLOR else FORCE_COLOR or IS_CI or STDERR_TTY
 _stdout_override: bool = _STDOUT_ORIGINAL
 _stderr_override: bool = _STDERR_ORIGINAL
 
@@ -35,7 +35,7 @@ def force_stdout_color(value: bool) -> None:
     Explicitly set `stdout` support for ANSI escape codes.
     If environment overrides exist, does nothing.
     """
-    if not NO_COLOR or not CLICOLOR_FORCE:
+    if not NO_COLOR or not FORCE_COLOR:
         global _stdout_override
         _stdout_override = value
 
@@ -45,7 +45,7 @@ def force_stderr_color(value: bool) -> None:
     Explicitly set `stderr` support for ANSI escape codes.
     If environment overrides exist, does nothing.
     """
-    if not NO_COLOR or not CLICOLOR_FORCE:
+    if not NO_COLOR or not FORCE_COLOR:
         global _stderr_override
         _stderr_override = value
 
