@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <windows.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#ifdef _MSC_VER
-#include <intrin.h> // For builtin __cpuid/__cpuidex.
-#else
+#if defined(__x86_64) || defined(__x86_64__)
 void __cpuid(int *r_cpuinfo, int p_info) {
 	// Note: Some compilers have a buggy `__cpuid` intrinsic, using inline assembly (based on LLVM-20 implementation) instead.
 	__asm__ __volatile__(
@@ -52,7 +52,6 @@ void __cpuidex(int *r_cpuinfo, int p_info, int p_count) {
 			: "=a"(r_cpuinfo[0]), "=r"(r_cpuinfo[1]), "=c"(r_cpuinfo[2]), "=d"(r_cpuinfo[3])
 			: "0"(p_info), "2"(p_count));
 }
-#endif
 
 #ifndef _STR
 #define _STR(m_x) #m_x
@@ -60,20 +59,20 @@ void __cpuidex(int *r_cpuinfo, int p_info, int p_count) {
 #endif
 
 #define ARCH_EXT_ERROR(m_ext) \
-	MessageBoxW(NULL, L"A CPU with " _STR(m_ext) " instruction set support is required.", L"Godot Engine", MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
+	printf("A CPU with " _STR(m_ext) " instruction set support is required.\n"); \
+	int ret = system("zenity --warning --title \"Godot Engine\" --text \"A CPU with " _STR(m_ext) " instruction set support is required.\" 2> /dev/null"); \
+	if (ret != 0) { \
+		ret = system("kdialog --title \"Godot Engine\" --sorry \"A CPU with " _STR(m_ext) " instruction set support is required.\" 2> /dev/null"); \
+	} \
+	if (ret != 0) { \
+		ret = system("Xdialog --title \"Godot Engine\" --msgbox \"A CPU with " _STR(m_ext) " instruction set support is required.\" 0 0 2> /dev/null"); \
+	} \
+	if (ret != 0) { \
+		ret = system("xmessage -center -title \"Godot Engine\" \"A CPU with " _STR(m_ext) " instruction set support is required.\" 2> /dev/null"); \
+	}
 
-#ifdef WINDOWS_SUBSYSTEM_CONSOLE
-extern int WINAPI mainCRTStartup();
-#else
-extern int WINAPI WinMainCRTStartup();
-#endif
-
-#if defined(__GNUC__) || defined(__clang__)
-extern int WINAPI ShimMainCRTStartup() __attribute__((used));
-#endif
-
-extern int WINAPI ShimMainCRTStartup() {
-	BOOL cpuid_supported = FALSE;
+__attribute__((constructor)) void cpu_validation_shim() {
+	bool cpuid_supported = false;
 
 #if defined(GODOT_SSE42)
 	int cpuinfo[4];
@@ -96,7 +95,7 @@ extern int WINAPI ShimMainCRTStartup() {
 	__cpuidex(cpuinfo, 0x07, 0x00);
 	cpuid_supported = cpuid_supported && (cpuinfo[1] & (1 << 16)) && (cpuinfo[1] & (1 << 17)) && (cpuinfo[1] & (1 << 31)) && (cpuinfo[1] & (1 << 3)) && (cpuinfo[1] & (1 << 8)); // AVX512-F + AVX512-DQ + AVX512-VL + BMI + BMI2
 #else
-	cpuid_supported = TRUE;
+	cpuid_supported = true;
 #endif
 
 	if (!cpuid_supported) {
@@ -109,12 +108,7 @@ extern int WINAPI ShimMainCRTStartup() {
 #elif defined(GODOT_AVX512)
 		ARCH_EXT_ERROR("AVX512");
 #endif
-		return -1;
-	} else {
-#ifdef WINDOWS_SUBSYSTEM_CONSOLE
-		return mainCRTStartup();
-#else
-		return WinMainCRTStartup();
-#endif
+		abort();
 	}
 }
+#endif
