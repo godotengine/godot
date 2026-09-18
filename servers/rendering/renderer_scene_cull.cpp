@@ -763,7 +763,9 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				geom->geometry_instance->set_use_dynamic_gi(instance->dynamic_gi);
 				geom->geometry_instance->set_use_lightmap(RID(), instance->lightmap_uv_scale, instance->lightmap_slice_index);
 				geom->geometry_instance->set_instance_shader_uniforms_offset(instance->instance_uniforms.location());
-				geom->geometry_instance->set_cast_double_sided_shadows(instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+				geom->geometry_instance->set_cast_double_sided_shadows(
+						instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_DOUBLE_SIDED ||
+						instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY_DOUBLE_SIDED);
 				if (instance->lightmap_sh.size() == 9) {
 					geom->geometry_instance->set_lightmap_capture(instance->lightmap_sh.ptr());
 				}
@@ -1356,7 +1358,8 @@ void RendererSceneCull::instance_geometry_set_cast_shadows_setting(RID p_instanc
 			idata.flags &= ~InstanceData::FLAG_CAST_SHADOWS;
 		}
 
-		if (instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
+		if (instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY ||
+				instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY_DOUBLE_SIDED) {
 			idata.flags |= InstanceData::FLAG_CAST_SHADOWS_ONLY;
 		} else {
 			idata.flags &= ~InstanceData::FLAG_CAST_SHADOWS_ONLY;
@@ -1367,7 +1370,10 @@ void RendererSceneCull::instance_geometry_set_cast_shadows_setting(RID p_instanc
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
 
-		geom->geometry_instance->set_cast_double_sided_shadows(instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+		const bool double_sided =
+				instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_DOUBLE_SIDED ||
+				instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY_DOUBLE_SIDED;
+		geom->geometry_instance->set_cast_double_sided_shadows(double_sided);
 	}
 
 	_instance_queue_update(instance, false, true);
@@ -1847,7 +1853,8 @@ void RendererSceneCull::_update_instance(Instance *p_instance) const {
 		if (p_instance->cast_shadows != RSE::SHADOW_CASTING_SETTING_OFF) {
 			idata.flags |= InstanceData::FLAG_CAST_SHADOWS;
 		}
-		if (p_instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY) {
+		if (p_instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY ||
+				p_instance->cast_shadows == RSE::SHADOW_CASTING_SETTING_SHADOWS_ONLY_DOUBLE_SIDED) {
 			idata.flags |= InstanceData::FLAG_CAST_SHADOWS_ONLY;
 		}
 		if (p_instance->redraw_if_visible) {
