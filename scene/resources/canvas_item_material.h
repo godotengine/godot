@@ -58,6 +58,7 @@ private:
 			uint32_t light_mode : 4;
 			uint32_t particles_animation : 1;
 			uint32_t invalid_key : 1;
+			uint32_t particles_anim_resize : 1;
 		};
 
 		uint32_t key = 0;
@@ -93,6 +94,7 @@ private:
 		mk.blend_mode = blend_mode;
 		mk.light_mode = light_mode;
 		mk.particles_animation = particles_animation;
+		mk.particles_anim_resize = particles_anim_resize;
 		return mk;
 	}
 
@@ -111,6 +113,7 @@ private:
 	int particles_anim_h_frames = 0;
 	int particles_anim_v_frames = 0;
 	bool particles_anim_loop = false;
+	bool particles_anim_resize = true;
 
 protected:
 	static void _bind_methods();
@@ -133,6 +136,8 @@ public:
 
 	void set_particles_anim_loop(bool p_loop);
 	bool get_particles_anim_loop() const;
+	void set_particles_anim_resize(bool p_resize);
+	bool get_particles_anim_resize() const;
 
 	static void init_shaders();
 	static void finish_shaders();
