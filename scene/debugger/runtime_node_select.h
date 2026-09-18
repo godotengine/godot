@@ -159,6 +159,7 @@ private:
 
 	void _set_camera_override_enabled(bool p_enabled);
 
+	void _root_ready();
 	void _root_window_input(const Ref<InputEvent> &p_event);
 	void _items_popup_index_pressed(int p_index, PopupMenu *p_popup);
 	void _update_input_state();

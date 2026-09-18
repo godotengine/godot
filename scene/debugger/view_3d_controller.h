@@ -34,6 +34,7 @@
 
 #include "core/object/ref_counted.h"
 #include "core/os/keyboard.h"
+#include "scene/main/viewport.h"
 
 namespace View3DControllerConsts {
 constexpr float DISTANCE_DEFAULT = 4;
@@ -192,6 +193,8 @@ protected:
 	static void _bind_methods();
 
 private:
+	Viewport *viewport = nullptr;
+
 	HashMap<int, Ref<Shortcut>> inputs;
 
 	NavigationScheme navigation_scheme = NAV_SCHEME_GODOT;
@@ -200,7 +203,7 @@ private:
 	NavigationMouseButton pan_mouse_button = NAV_MOUSE_BUTTON_MIDDLE;
 
 	NavigationMouseButton orbit_mouse_button = NAV_MOUSE_BUTTON_MIDDLE;
-	float orbit_sensitivity = 0;
+	float orbit_factor = 0;
 	float orbit_inertia = 0;
 
 	bool freelook = false;
@@ -208,7 +211,7 @@ private:
 	float freelook_speed = 0;
 	float freelook_base_speed = 0;
 	float freelook_speed_zoom_link = 0;
-	float freelook_sensitivity = 0;
+	float freelook_factor = 0;
 	float freelook_inertia = 0;
 	bool freelook_invert_y_axis = false;
 
@@ -217,8 +220,8 @@ private:
 	float zoom_inertia = 0;
 	int zoom_failed_attempts_count = 0;
 
-	float translation_sensitivity = 0;
-	float translation_inertia = 0;
+	float pan_factor = 0;
+	float pan_inertia = 0;
 
 	float angle_snap_threshold = 0;
 	bool warped_mouse_panning = false;
@@ -264,6 +267,13 @@ private:
 	NavigationMode _get_nav_mode_from_shortcuts(NavigationMouseButton p_mouse_button, const Vector<ShortcutCheck> &p_shortcut_checks, bool p_not_empty);
 
 public:
+	void set_viewport(Viewport *p_viewport) {
+		viewport = p_viewport;
+	}
+	Viewport *get_viewport() const {
+		return viewport;
+	}
+
 	bool gui_input(const Ref<InputEvent> &p_event, const Rect2 &p_surface_rect);
 	bool is_navigating() const { return navigating; }
 
@@ -294,7 +304,7 @@ public:
 
 	void set_pan_mouse_button(const NavigationMouseButton p_button) { pan_mouse_button = p_button; }
 
-	void set_orbit_sensitivity(const float p_sensitivity) { orbit_sensitivity = p_sensitivity; }
+	void set_orbit_factor(const float p_factor) { orbit_factor = p_factor; }
 	void set_orbit_inertia(const float p_inertia) { orbit_inertia = p_inertia; }
 	void set_orbit_mouse_button(const NavigationMouseButton p_button) { orbit_mouse_button = p_button; }
 
@@ -304,7 +314,7 @@ public:
 	FreelookScheme get_freelook_scheme() const { return freelook_scheme; }
 	void set_freelook_base_speed(const float p_speed);
 	float get_freelook_speed() const { return freelook_speed; }
-	void set_freelook_sensitivity(const float p_sensitivity) { freelook_sensitivity = p_sensitivity; }
+	void set_freelook_factor(const float p_factor) { freelook_factor = p_factor; }
 	void set_freelook_inertia(const float p_inertia) { freelook_inertia = p_inertia; }
 	void set_freelook_speed_zoom_link(const bool p_enabled) { freelook_speed_zoom_link = p_enabled; }
 	void set_freelook_invert_y_axis(const bool p_enabled) { freelook_invert_y_axis = p_enabled; }
@@ -313,8 +323,8 @@ public:
 	void set_zoom_inertia(const float p_inertia) { zoom_inertia = p_inertia; }
 	void set_zoom_mouse_button(const NavigationMouseButton p_button) { zoom_mouse_button = p_button; }
 
-	void set_translation_sensitivity(const float p_sensitivity) { translation_sensitivity = p_sensitivity; }
-	void set_translation_inertia(const float p_inertia) { translation_inertia = p_inertia; }
+	void set_pan_factor(const float p_factor) { pan_factor = p_factor; }
+	void set_pan_inertia(const float p_inertia) { pan_inertia = p_inertia; }
 
 	void set_angle_snap_threshold(const float p_threshold) { angle_snap_threshold = p_threshold; }
 
