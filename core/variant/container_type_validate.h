@@ -64,7 +64,7 @@ private:
 				Variant::construct(variant_type, converted_to, &converted_from, 1, call_error);
 
 				if (call_error.error == Callable::CallError::CALL_OK) {
-					r_inout_variant = converted_to;
+					r_inout_variant = std::move(converted_to);
 					return true;
 				}
 			}
@@ -150,8 +150,8 @@ private:
 	}
 
 public:
-	_FORCE_INLINE_ bool validate(Variant &r_inout_variant, const char *p_operation = "use") const {
-		return _internal_validate(r_inout_variant, p_operation, true);
+	_FORCE_INLINE_ bool validate(Variant &r_inout_variant, const char *p_operation = "use", bool p_output_errors = true) const {
+		return _internal_validate(r_inout_variant, p_operation, p_output_errors);
 	}
 
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
