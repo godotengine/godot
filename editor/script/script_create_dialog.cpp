@@ -609,22 +609,22 @@ void ScriptCreateDialog::_update_dialog() {
 	// "Add Script Dialog" GUI logic and script checks.
 	_update_template_menu();
 
-	// Is script path/name valid (order from top to bottom)?
+	// Is inherited parent valid?
 
-	if (!is_built_in && !is_path_valid) {
-		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Invalid path."), EditorValidationPanel::MSG_ERROR);
+	if (!is_parent_name_valid) {
+		validation_panel->set_message(MSG_ID_INHERITED_PARENT, TTRC("Invalid inherited parent name or path."), EditorValidationPanel::MSG_ERROR);
 	}
 
-	if (!is_parent_name_valid && is_new_script_created) {
-		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Invalid inherited parent name or path."), EditorValidationPanel::MSG_ERROR);
-	}
+	// Is script path valid?
 
-	if (validation_panel->is_valid() && !is_new_script_created) {
-		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
-	}
-
-	if (!is_built_in && !path_error.is_empty()) {
+	if (is_built_in) {
+		// Hide the message if built-in, as it will be displayed in MSG_ID_SCRIPT.
+		validation_panel->set_message(MSG_ID_PATH, "", EditorValidationPanel::MSG_OK);
+	} else if (!path_error.is_empty()) {
 		validation_panel->set_message(MSG_ID_PATH, path_error, EditorValidationPanel::MSG_ERROR);
+	} else if (!is_path_valid) {
+		// This should never happen, as when is_path_valid is false, path_error shouldn't be empty.
+		validation_panel->set_message(MSG_ID_PATH, TTRC("Script path is invalid."), EditorValidationPanel::MSG_ERROR);
 	}
 
 	// Is script Built-in?
@@ -669,18 +669,14 @@ void ScriptCreateDialog::_update_dialog() {
 	String button_text = is_new_file ? TTR("Create") : TTR("Load");
 	set_ok_button_text(button_text);
 
-	if (is_new_file) {
-		if (is_built_in) {
-			validation_panel->set_message(MSG_ID_PATH, TTRC("Built-in script (into scene file)."), EditorValidationPanel::MSG_OK);
-		}
-	} else {
-		template_inactive_message = TTRC("Using existing script file.");
+	if (is_built_in) {
+		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Built-in script (into scene file)."), EditorValidationPanel::MSG_OK);
+	} else if (!is_new_script_created) {
 		if (load_enabled) {
-			if (is_path_valid) {
-				validation_panel->set_message(MSG_ID_PATH, TTRC("Will load an existing script file."), EditorValidationPanel::MSG_OK);
-			}
+			template_inactive_message = TTRC("Using existing script file.");
+			validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Will load an existing script file."), EditorValidationPanel::MSG_OK);
 		} else {
-			validation_panel->set_message(MSG_ID_PATH, TTRC("Script file already exists."), EditorValidationPanel::MSG_ERROR);
+			validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Script file already exists."), EditorValidationPanel::MSG_ERROR);
 		}
 	}
 
@@ -691,7 +687,7 @@ void ScriptCreateDialog::_update_dialog() {
 			template_inactive_message = TTRC("No suitable template.");
 		}
 	} else {
-		template_inactive_message = TTRC("Empty");
+		template_inactive_message = TTRC("Disabled");
 	}
 
 	if (!template_inactive_message.is_empty()) {
@@ -853,8 +849,9 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	/* Information Messages Field */
 
 	validation_panel = memnew(EditorValidationPanel);
-	validation_panel->add_line(MSG_ID_SCRIPT, TTRC("Script path/name is valid."));
-	validation_panel->add_line(MSG_ID_PATH, TTRC("Will create a new script file."));
+	validation_panel->add_line(MSG_ID_INHERITED_PARENT, TTRC("Valid inherited parent name or path."));
+	validation_panel->add_line(MSG_ID_PATH, TTRC("Script path is valid."));
+	validation_panel->add_line(MSG_ID_SCRIPT, TTRC("Will create a new script file."));
 	validation_panel->add_line(MSG_ID_BUILT_IN);
 	validation_panel->add_line(MSG_ID_TEMPLATE);
 	validation_panel->set_update_callback(callable_mp(this, &ScriptCreateDialog::_update_dialog));
