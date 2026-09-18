@@ -803,7 +803,7 @@ float RendererEnvironmentStorage::environment_get_ssil_intensity(RID p_env) cons
 
 float RendererEnvironmentStorage::environment_get_ssil_sharpness(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_NULL_V(env, 0.95);
+	ERR_FAIL_NULL_V(env, 0.98);
 	return env->ssil_sharpness;
 }
 

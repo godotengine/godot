@@ -59,7 +59,11 @@ layout(push_constant, std430) uniform Params {
 
 	float intensity;
 	float normal_rejection;
-	float pad;
+	float fade_out_add;
+	float fade_out_mul;
+
+	vec2 pad1;
+	float pad2;
 	bool is_orthogonal;
 
 	vec2 NDC_to_view_mul;
@@ -140,37 +144,6 @@ float ign(vec2 p_uv, uint p_n) {
 	return mod(52.9829189 * mod(0.06711056 * p_uv.x + 0.00583715 * p_uv.y, 1.0), 1.0);
 }
 
-vec2 hash23(vec3 p3)
-{
-	p3 = fract(p3 * vec3(.1031, .1030, .0973));
-    p3 += dot(p3, p3.yzx+33.33);
-    return fract((p3.xx+p3.yz)*p3.zy);
-}
-
-vec2 r2_modified(float idx, vec2 seed)
-{
-    return fract(seed + float(idx) * vec2(0.245122333753, 0.430159709002));
-}
-
-float GetBayerFromCoordLevel(vec2 pixelpos)
-{
-    ivec2 ppos = ivec2(pixelpos);
-    int sum = 0;
-    for(int i = 0; i<4; i++)
-    {
-         ivec2 t = ppos & 1;
-         sum = sum * 4 | (t.x ^ t.y) * 2 | t.x;
-         ppos /= 2;
-    }    
-    return float(sum) / float(1 << (2 * 4));
-}
-
-float ReshapeUniformToTriangle(float v) {
-    v = v * 2.0 - 1.0;
-    v = sign(v) * (1.0 - sqrt(max(0.0, 1.0 - abs(v)))); // [-1, 1], max prevents NaNs
-    return v + 0.5; // [-0.5, 1.5]
-}
-
 float PhiNoise(uvec3 uvw)
 {
     // flip every other tile to reduce anisotropy
@@ -219,9 +192,12 @@ void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, const int p_quality)
 
 	vec3 vs_normal = load_normal(full_res_uvi);
 
+	// Calculate fadeout (1 close, gradient, 0 far)
+	float fade_out = clamp(pix_z * params.fade_out_mul + params.fade_out_add, 0.0, 1.0);
+
 	vec3 vs_pos = clipspace_to_viewspace(p_pos, pix_z);
 	const vec2 pixel_size_at_center = clipspace_to_viewspace(p_pos + (1.0 / vec2(params.screen_size)), pix_z).xy - vs_pos.xy;
-	const float s = pow(params.radius / pixel_size_at_center.x, 1.0 / float(count));
+	const float s = pow(((0.85 * params.radius) / pixel_size_at_center.x) * fade_out, 1.0 / float(count));
 
 	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
 	vs_pos *= 0.99;
@@ -246,7 +222,6 @@ void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, const int p_quality)
 	for (uint i = 0u; i < dir_count; ++i) {
 		uint n = frame * dir_count + i;
 		float rnd01 = ign(floor(p_pos * vec2(params.screen_size)), n);
-		//rnd01 = ReshapeUniformToTriangle(rnd01);
 
 		vec3 sample_dir_vs;
 		vec2 dir;
@@ -288,9 +263,7 @@ void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, const int p_quality)
 		const float global_mip_offset = SSIL_DEPTH_MIPS_GLOBAL_OFFSET;
 		float mip_offset = (log2(s) + global_mip_offset);
 
-		//vec2 b_rnd01_vc2 = vec2(GetBayerFromCoordLevel(p_pos * vec2(params.screen_size)), fract(GetBayerFromCoordLevel(p_pos * vec2(params.screen_size))) + 0.6180339887);
-		//vec2 rnd01_vc2 = vec2(ReshapeUniformToTriangle(b_rnd01_vc2.x), ReshapeUniformToTriangle(b_rnd01_vc2.y));
-		vec2 rnd01_vc2 = vec2(PhiNoise(uvec3(p_pos * vec2(params.screen_size), n)), GetBayerFromCoordLevel(p_pos * vec2(params.screen_size)));
+		vec2 rnd01_vc2 = vec2(PhiNoise(uvec3(p_pos * vec2(params.screen_size), n)), PhiNoise(uvec3(p_pos * vec2(params.screen_size), n + 34u)));
 
 		for (float d = -1.0; d <= 1.0; d += 2.0) {
 			vec2 ray_dir0 = dir * d;
@@ -397,7 +370,12 @@ void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, const int p_quality)
 	gi /= 1.0 - dot(gi, vec3(0.299, 0.587, 0.114));
 	gi = params.intensity * gi;
 
+	gi *= fade_out;
+
 	ao *= norm;
+	ao = clamp((ao) * params.intensity, 0.0, 1.0);
+
+	ao *= fade_out;
 
 	r_color = vec4(gi, ao);
 	r_edges = edgesLRTB;
