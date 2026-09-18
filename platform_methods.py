@@ -74,6 +74,18 @@ def get_build_version(short):
     return v
 
 
+def lipo_find_archs(prefix, suffix):
+    from pathlib import Path
+
+    target_archs = []
+    for arch in architectures:
+        bin_name = prefix + "." + arch + suffix
+        if Path(bin_name).is_file():
+            target_archs += [arch]
+
+    return target_archs
+
+
 def lipo(prefix, suffix):
     from pathlib import Path
 
