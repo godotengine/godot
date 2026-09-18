@@ -666,6 +666,7 @@ function startEditor(zip) {
 		'unloadAfterInit': false,
 		'canvas': gameCanvas,
 		'canvasResizePolicy': 1,
+		'debugPort': null,
 		'onExit': function () {
 			gameCanvas = replaceCanvas(gameCanvas);
 			setGameTabEnabled(false);
@@ -693,11 +694,14 @@ function startEditor(zip) {
 				return;
 			}
 			setGameTabEnabled(true);
+			const channel = new MessageChannel();
+			gameConfig['debugPort'] = channel.port1;
 			game = new Engine(gameConfig);
 			showTab('game');
 			game.init().then(function () {
 				requestAnimationFrame(function () {
 					game.start({ 'args': args, 'canvas': gameCanvas }).then(function () {
+						editor.addDebuggerSession(channel.port2);
 						gameCanvas.focus();
 					});
 				});
