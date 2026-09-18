@@ -348,6 +348,7 @@ DockTabContainer::DockTabContainer(int p_slot) {
 	ERR_FAIL_INDEX(p_slot, EditorDock::DOCK_SLOT_MAX);
 	dock_slot = p_slot;
 
+	set_continuous_scroll_enabled(true);
 	set_drag_to_rearrange_enabled(true);
 	set_tabs_rearrange_group(1);
 	hide();
