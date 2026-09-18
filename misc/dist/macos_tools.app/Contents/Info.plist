@@ -54,6 +54,8 @@
 		<key>x86_64</key>
 		<string>11.0</string>
 	</dict>
+	<key>LSUIElement</key>
+	<true/>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>CFBundleDocumentTypes</key>
