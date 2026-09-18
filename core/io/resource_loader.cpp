@@ -1443,29 +1443,20 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 	String new_path = p_path;
 
 	if (translation_remaps.has(p_path)) {
-		// translation_remaps has the following format:
-		//   { "res://path.png": PackedStringArray( "res://path-ru.png:ru", "res://path-de.png:de" ) }
-
-		// To find the path of the remapped resource, we extract the locale name after
-		// the last ':' to match the project locale.
-
+		// To find the path of the remapped resource, we match the project locale.
 		// An extra remap may still be necessary afterwards due to the text -> binary converter on export.
 
-		String locale = TranslationServer::get_singleton()->get_locale();
-		ERR_FAIL_COND_V_MSG(locale.length() < 2, p_path, vformat("Could not remap path '%s' for translation as configured locale '%s' is invalid.", p_path, locale));
+		const String current_locale = TranslationServer::get_singleton()->get_locale();
+		ERR_FAIL_COND_V_MSG(current_locale.length() < 2, p_path, vformat("Could not remap path '%s' for translation as configured locale '%s' is invalid.", p_path, current_locale));
 
-		Vector<String> &res_remaps = *translation_remaps.getptr(new_path);
+		const LocalVector<Pair<String, String>> &res_remaps = *translation_remaps.getptr(new_path);
 
 		int best_score = 0;
-		for (int i = 0; i < res_remaps.size(); i++) {
-			int split = res_remaps[i].rfind_char(':');
-			if (split == -1) {
-				continue;
-			}
-			String l = res_remaps[i].substr(split + 1).strip_edges();
-			int score = TranslationServer::get_singleton()->compare_locales(locale, l);
+		for (const Pair<String, String> &locale_path : res_remaps) {
+			const String locale = locale_path.first;
+			int score = TranslationServer::get_singleton()->compare_locales(current_locale, locale);
 			if (score > 0 && score >= best_score) {
-				new_path = res_remaps[i].left(split);
+				new_path = locale_path.second;
 				best_score = score;
 				if (score == 10) {
 					break; // Exact match, skip the rest.
@@ -1566,14 +1557,18 @@ void ResourceLoader::load_translation_remaps() {
 
 	Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 	for (const KeyValue<Variant, Variant> &kv : remaps) {
-		Array langs = kv.value;
-		Vector<String> lang_remaps;
-		lang_remaps.resize(langs.size());
-		String *lang_remaps_ptrw = lang_remaps.ptrw();
-		for (const Variant &lang : langs) {
-			*lang_remaps_ptrw++ = lang;
-		}
+		const PackedStringArray langs = kv.value;
+		LocalVector<Pair<String, String>> lang_remaps;
 
+		for (const String &lang : langs) {
+			int split = lang.rfind_char(':');
+			if (split == -1) {
+				continue;
+			}
+			const String path = lang.left(split);
+			const String locale = lang.substr(split + 1).strip_edges();
+			lang_remaps.push_back({ locale, path });
+		}
 		translation_remaps[String(kv.key)] = lang_remaps;
 	}
 }
@@ -1803,6 +1798,5 @@ bool ResourceLoader::cleaning_tasks = false;
 HashMap<String, ResourceLoader::LoadToken *> ResourceLoader::user_load_tokens;
 
 SelfList<Resource>::List ResourceLoader::remapped_list;
-HashMap<String, Vector<String>> ResourceLoader::translation_remaps;
 
 ResourceLoaderImport ResourceLoader::import = nullptr;
