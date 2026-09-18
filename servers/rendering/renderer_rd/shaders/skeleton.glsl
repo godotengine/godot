@@ -83,7 +83,8 @@ vec4 decode_uint_oct_to_tang(uint base) {
 	vec2 oct_sign_encoded = uint_to_vec2(base);
 	// Binormal sign encoded in y component
 	vec2 oct = vec2(oct_sign_encoded.x, abs(oct_sign_encoded.y) * 2.0 - 1.0);
-	return vec4(oct_to_vec3(oct), sign(oct_sign_encoded.y));
+	float binormal_sign = oct_sign_encoded.y >= 0.0 ? 1.0 : -1.0;
+	return vec4(oct_to_vec3(oct), binormal_sign);
 }
 
 vec2 signNotZero(vec2 v) {
@@ -107,15 +108,13 @@ uint encode_norm_to_uint_oct(vec3 base) {
 
 uint encode_tang_to_uint_oct(vec4 base) {
 	vec2 oct = vec3_to_oct(base.xyz);
+
+	// 0.5 cannot be represented in UNORM16
+	oct.y = clamp(oct.y, 1.0 / 65535.0, 65534.0 / 65535.0);
+
 	// Encode binormal sign in y component
 	oct.y = oct.y * 0.5f + 0.5f;
 	oct.y = base.w >= 0.0f ? oct.y : 1 - oct.y;
-
-	if (oct.x == 0.0 && oct.y == 1.0) {
-		// (1, 1) and (0, 1) decode to the same value, but (0, 1) messes with our compression detection.
-		// So we sanitize here.
-		oct.x = 1.0;
-	}
 
 	return vec2_to_uint(oct);
 }
