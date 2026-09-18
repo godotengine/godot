@@ -351,6 +351,12 @@ const GodotInputDragDrop = {
 							'size': file.size,
 							'data': reader.result,
 						};
+						if (GodotConfig.persistent_drops) {
+							f['path'] = entry.fullPath;
+							if (f['path'].startsWith('/')) {
+								f['path'] = f['path'].slice(1); // Remove initial slash
+							}
+						}
 						if (!f['path']) {
 							f['path'] = f['name'];
 						}
@@ -402,35 +408,89 @@ const GodotInputDragDrop = {
 			}
 			new Promise(GodotInputDragDrop.process).then(function () {
 				const DROP = `/tmp/drop-${parseInt(Math.random() * (1 << 30), 10)}/`;
+				const FS_ROOT = '/home/web_user/';
 				const drops = [];
 				const files = [];
-				FS.mkdir(DROP.slice(0, -1)); // Without trailing slash
+				const valid_project_paths = [];
+				const zip_templates = [];
+				if (GodotConfig.persistent_drops) {
+					// This only happens in the ProjectManager
+					// Find only valid projects in the contents of the dropped files
+					GodotInputDragDrop.pending_files.forEach((elem) => {
+						const path = elem['path'];
+						if (path.indexOf('/') === -1) {
+							// dragging contents of a project is unsupported, should drag the entire folder
+							if (path.split('.').pop() == 'zip') {
+								// only exception is dragging a zip file to be installed
+								zip_templates.push(path);
+							} else {
+								elem['skip'] = true;
+							}
+							return;
+						}
+						const fileName = path.split('/').pop();
+						if (fileName == 'project.godot') {
+							const dir = path.substring(0, path.lastIndexOf('/'));
+							valid_project_paths.push(dir);
+						}
+					});
+				}
+				try {
+					FS.mkdir(DROP.slice(0, -1)); // Without trailing slash
+					FS.mkdir(FS_ROOT.slice(0, -1)); // Without trailing slash
+				} catch (e) {
+					// dir exists, nevermind
+				}
 				GodotInputDragDrop.pending_files.forEach((elem) => {
-					const path = elem['path'];
-					GodotFS.copy_to_fs(DROP + path, elem['data']);
+					if (elem['skip']) {
+						return;
+					}
+					let path = elem['path'];
+					let isProjectFile = false;
+					if (GodotConfig.persistent_drops) {
+						// Installing a project folder
+						for (let i = 0; i < valid_project_paths.length; i++) {
+							if (path.startsWith(valid_project_paths[i])) {
+								const projectDirName = valid_project_paths[i].split('/').at(-1);
+								path = `${projectDirName}/${path.slice(valid_project_paths[i].length)}`;
+								isProjectFile = true;
+								break;
+							}
+						}
+						if (!isProjectFile && !zip_templates.includes(path)) {
+							return;
+						}
+					}
+					const COPY_TO = isProjectFile ? FS_ROOT : DROP;
+					GodotFS.copy_to_fs(COPY_TO + path, elem['data']);
 					let idx = path.indexOf('/');
 					if (idx === -1) {
-						// Root file
-						drops.push(DROP + path);
+						drops.push(COPY_TO + path);
 					} else {
 						// Subdir
 						const sub = path.substr(0, idx);
 						idx = sub.indexOf('/');
-						if (idx < 0 && drops.indexOf(DROP + sub) === -1) {
-							drops.push(DROP + sub);
+						if (idx < 0 && drops.indexOf(COPY_TO + path) === -1) {
+							drops.push(COPY_TO + sub);
 						}
 					}
-					files.push(DROP + path);
+					files.push(COPY_TO + path);
 				});
 				GodotInputDragDrop.promises = [];
 				GodotInputDragDrop.pending_files = [];
 				callback(drops);
 				if (GodotConfig.persistent_drops) {
-					// Delay removal at exit.
-					GodotOS.atexit(function (resolve, reject) {
-						GodotInputDragDrop.remove_drop(files, DROP);
-						resolve();
-					});
+					// Only delete temp zip files, but do it when application closes
+					if (zip_templates.length > 0) {
+						GodotOS.atexit(function (resolve, reject) {
+							try {
+								GodotInputDragDrop.remove_drop(zip_templates, DROP);
+							} catch (err) {
+								// Likely file has been already deleted
+							}
+							resolve();
+						});
+					}
 				} else {
 					GodotInputDragDrop.remove_drop(files, DROP);
 				}
