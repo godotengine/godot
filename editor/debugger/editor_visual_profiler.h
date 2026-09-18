@@ -112,6 +112,9 @@ private:
 	void _activate_pressed();
 	void _clear_pressed();
 	void _autostart_toggled(bool p_toggled_on);
+	void _export_csv_pressed();
+	void _copy_pressed();
+	void _export_json_pressed();
 
 	String _get_time_as_text(float p_time);
 
@@ -150,6 +153,8 @@ public:
 	void clear();
 
 	Vector<Vector<String>> get_data_as_csv() const;
+	String get_data_as_json() const;
+	String get_frame_as_text();
 
 	EditorVisualProfiler();
 };

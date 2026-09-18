@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/variant/dictionary.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
@@ -40,6 +41,11 @@
 #include "scene/gui/tree.h"
 
 class ImageTexture;
+
+// Shared by EditorProfiler and EditorVisualProfiler to serialize the
+// CSV-shaped data (first row = column names, following rows = values)
+// as a JSON object with "columns" and "rows" (row objects keyed by column).
+Dictionary profiler_data_to_json(const Vector<Vector<String>> &p_data);
 
 class EditorProfiler : public VBoxContainer {
 	GDCLASS(EditorProfiler, VBoxContainer);
@@ -179,6 +185,8 @@ public:
 	void clear();
 
 	Vector<Vector<String>> get_data_as_csv() const;
+	String get_data_as_json() const;
+	String get_frame_as_text();
 
 	EditorProfiler();
 };

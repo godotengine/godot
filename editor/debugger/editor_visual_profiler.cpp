@@ -31,8 +31,10 @@
 #include "editor_visual_profiler.h"
 
 #include "core/io/image.h"
+#include "core/io/json.h"
 #include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
+#include "editor/debugger/editor_profiler.h"
 #include "editor/editor_string_names.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/settings/editor_settings.h"
@@ -40,6 +42,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/resources/image_texture.h"
+#include "servers/display/display_server.h"
 
 void EditorVisualProfiler::set_hardware_info(const String &p_cpu_name, const String &p_gpu_name) {
 	cpu_name = p_cpu_name;
@@ -693,6 +696,8 @@ void EditorVisualProfiler::_combo_changed(int) {
 
 void EditorVisualProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
+	ADD_SIGNAL(MethodInfo("export_csv_requested"));
+	ADD_SIGNAL(MethodInfo("export_json_requested"));
 }
 
 void EditorVisualProfiler::_update_button_text() {
@@ -721,28 +726,18 @@ bool EditorVisualProfiler::is_profiling() {
 
 Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 	Vector<Vector<String>> res;
-#if 0
+
 	if (frame_metrics.is_empty()) {
 		return res;
 	}
 
-	// signatures
-	Vector<String> signatures;
-	const Vector<EditorFrameProfiler::Metric::Category> &categories = frame_metrics[0].categories;
-
-	for (int j = 0; j < categories.size(); j++) {
-		const EditorFrameProfiler::Metric::Category &c = categories[j];
-		signatures.push_back(c.signature);
-
-		for (int k = 0; k < c.items.size(); k++) {
-			signatures.push_back(c.items[k].signature);
-		}
-	}
-	res.push_back(signatures);
-
-	// values
-	Vector<String> values;
-	values.resize(signatures.size());
+	// Header.
+	Vector<String> header;
+	header.push_back("frame_number");
+	header.push_back("name");
+	header.push_back("cpu_time");
+	header.push_back("gpu_time");
+	res.push_back(header);
 
 	int index = last_metric;
 
@@ -753,24 +748,74 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 			index = 0;
 		}
 
-		if (!frame_metrics[index].valid) {
+		const Metric &m = frame_metrics[index];
+		if (!m.valid) {
 			continue;
 		}
-		int it = 0;
-		const Vector<EditorFrameProfiler::Metric::Category> &frame_cat = frame_metrics[index].categories;
 
-		for (int j = 0; j < frame_cat.size(); j++) {
-			const EditorFrameProfiler::Metric::Category &c = frame_cat[j];
-			values.write[it++] = String::num_real(c.total_time);
-
-			for (int k = 0; k < c.items.size(); k++) {
-				values.write[it++] = String::num_real(c.items[k].total);
+		// Mirror _update_frame: skip the first/last sentinel areas and the
+		// "<"/">" group markers, and emit per-area deltas (areas[i + 1] - areas[i]).
+		for (int j = 1; j < m.areas.size() - 1; j++) {
+			const String &name = m.areas[j].name;
+			if (name.begins_with(">") || name.begins_with("<")) {
+				continue;
 			}
+
+			Vector<String> values;
+			values.push_back(itos(m.frame_number));
+			values.push_back(name);
+			values.push_back(String::num_real(m.areas[j + 1].cpu_time - m.areas[j].cpu_time));
+			values.push_back(String::num_real(m.areas[j + 1].gpu_time - m.areas[j].gpu_time));
+			res.push_back(values);
 		}
-		res.push_back(values);
 	}
-#endif
+
 	return res;
+}
+
+String EditorVisualProfiler::get_data_as_json() const {
+	// Rows span all recorded frames, each carrying its own "frame_number".
+	return JSON::stringify(profiler_data_to_json(get_data_as_csv()), "  ");
+}
+
+String EditorVisualProfiler::get_frame_as_text() {
+	if (frame_metrics.is_empty() || last_metric < 0) {
+		return String();
+	}
+
+	const Metric &m = frame_metrics[_get_cursor_index()];
+
+	String text = vformat(TTR("Frame %d"), int(m.frame_number)) + "\n";
+	// Mirror _update_frame: skip the sentinel areas and group markers, and
+	// report the same per-area deltas shown in the tree.
+	for (int i = 1; i < m.areas.size() - 1; i++) {
+		const String &name = m.areas[i].name;
+		if (name.begins_with(">") || name.begins_with("<")) {
+			continue;
+		}
+
+		float cpu_time = m.areas[i + 1].cpu_time - m.areas[i].cpu_time;
+		float gpu_time = m.areas[i + 1].gpu_time - m.areas[i].gpu_time;
+		text += name + " - " + _get_time_as_text(cpu_time) + " " + TTR("CPU") + ", " + _get_time_as_text(gpu_time) + " " + TTR("GPU") + "\n";
+	}
+
+	return text;
+}
+
+void EditorVisualProfiler::_export_csv_pressed() {
+	emit_signal(SNAME("export_csv_requested"));
+}
+
+void EditorVisualProfiler::_copy_pressed() {
+	String text = get_frame_as_text();
+	if (text.is_empty()) {
+		return;
+	}
+	DisplayServer::get_singleton()->clipboard_set(text);
+}
+
+void EditorVisualProfiler::_export_json_pressed() {
+	emit_signal(SNAME("export_json_requested"));
 }
 
 EditorVisualProfiler::EditorVisualProfiler() {
@@ -796,6 +841,18 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	clear_button->set_disabled(true);
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_clear_pressed));
 	container->add_child(clear_button);
+
+	Button *export_csv_button = memnew(Button(TTRC("Export as CSV")));
+	export_csv_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_export_csv_pressed));
+	container->add_child(export_csv_button);
+
+	Button *copy_button = memnew(Button(TTRC("Copy Reading at Frame")));
+	copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_copy_pressed));
+	container->add_child(copy_button);
+
+	Button *export_json_button = memnew(Button(TTRC("Export Readings as JSON...")));
+	export_json_button->connect(SceneStringName(pressed), callable_mp(this, &EditorVisualProfiler::_export_json_pressed));
+	container->add_child(export_json_button);
 
 	CheckBox *autostart_checkbox = memnew(CheckBox);
 	autostart_checkbox->set_text(TTRC("Autostart"));

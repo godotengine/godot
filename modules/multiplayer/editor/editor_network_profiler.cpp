@@ -30,9 +30,12 @@
 
 #include "editor_network_profiler.h"
 
+#include "core/io/file_access.h"
+#include "core/io/json.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_file_dialog.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -41,6 +44,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/split_container.h"
 #include "scene/main/timer.h"
+#include "servers/display/display_server.h"
 
 void EditorNetworkProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
@@ -244,6 +248,90 @@ void EditorNetworkProfiler::_clear_pressed() {
 	clear_button->set_disabled(true);
 }
 
+void EditorNetworkProfiler::_copy_reading() {
+	// NOTE: Network profiler data is cumulative (aggregated per node over the
+	// whole profiling session), not a per-frame timeline. "Copy Reading at
+	// Frame" therefore copies a snapshot of the current cumulative tables.
+	String text;
+
+	text += TTR("Node") + "\t" + TTR("Incoming RPC") + "\t" + TTR("Outgoing RPC") + "\n";
+	for (const KeyValue<ObjectID, RPCNodeInfo> &E : rpc_data) {
+		text += E.value.node_path + "\t" + itos(E.value.incoming_rpc) + "\t" + itos(E.value.outgoing_rpc) + "\n";
+	}
+
+	text += "\n" + TTR("Root") + "\t" + TTR("Synchronizer") + "\t" + TTR("Config") + "\t" + TTR("Count") + "\t" + TTR("Size") + "\n";
+	for (const KeyValue<ObjectID, SyncInfo> &E : sync_data) {
+		const NodeInfo *root_info = node_data.getptr(E.value.root_node);
+		const NodeInfo *sync_info = node_data.getptr(E.value.synchronizer);
+		const NodeInfo *cfg_info = node_data.getptr(E.value.config);
+		text += (root_info ? root_info->path.get_file() : String()) + "\t";
+		text += (sync_info ? sync_info->path.get_file() : String()) + "\t";
+		text += (cfg_info ? cfg_info->path.get_file() : String()) + "\t";
+		text += vformat("%d - %d", E.value.incoming_syncs, E.value.outgoing_syncs) + "\t";
+		text += vformat("%d - %d", E.value.incoming_size, E.value.outgoing_size) + "\n";
+	}
+
+	DisplayServer::get_singleton()->clipboard_set(text);
+}
+
+void EditorNetworkProfiler::_export_json() {
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->clear_filters();
+	file_dialog->add_filter("*.json", TTRC("JSON File"));
+	file_dialog->popup_file_dialog();
+}
+
+void EditorNetworkProfiler::_file_selected(const String &p_file) {
+	Error err;
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+
+	if (err != OK) {
+		ERR_PRINT("Failed to open " + p_file);
+		return;
+	}
+	file->store_string(_get_data_as_json());
+}
+
+String EditorNetworkProfiler::_get_data_as_json() const {
+	Dictionary root;
+
+	Array rpc_rows;
+	for (const KeyValue<ObjectID, RPCNodeInfo> &E : rpc_data) {
+		Dictionary row;
+		row["node"] = E.value.node_path;
+		row["incoming_rpc"] = E.value.incoming_rpc;
+		row["incoming_size"] = E.value.incoming_size;
+		row["outgoing_rpc"] = E.value.outgoing_rpc;
+		row["outgoing_size"] = E.value.outgoing_size;
+		rpc_rows.push_back(row);
+	}
+	root["rpc"] = rpc_rows;
+
+	Array sync_rows;
+	for (const KeyValue<ObjectID, SyncInfo> &E : sync_data) {
+		const NodeInfo *root_info = node_data.getptr(E.value.root_node);
+		const NodeInfo *sync_info = node_data.getptr(E.value.synchronizer);
+		const NodeInfo *cfg_info = node_data.getptr(E.value.config);
+
+		Dictionary row;
+		row["root"] = root_info ? root_info->path : String::num_int64((int64_t)E.value.root_node);
+		row["synchronizer"] = sync_info ? sync_info->path : String::num_int64((int64_t)E.value.synchronizer);
+		row["config"] = cfg_info ? cfg_info->path : String::num_int64((int64_t)E.value.config);
+		row["incoming_syncs"] = E.value.incoming_syncs;
+		row["incoming_size"] = E.value.incoming_size;
+		row["outgoing_syncs"] = E.value.outgoing_syncs;
+		row["outgoing_size"] = E.value.outgoing_size;
+		sync_rows.push_back(row);
+	}
+	root["synchronization"] = sync_rows;
+
+	root["incoming_bandwidth"] = incoming_bandwidth;
+	root["outgoing_bandwidth"] = outgoing_bandwidth;
+
+	return JSON::stringify(root, "  ");
+}
+
 void EditorNetworkProfiler::_autostart_toggled(bool p_toggled_on) {
 	EditorSettings::get_singleton()->set_project_metadata("debug_options", "autostart_network_profiler", p_toggled_on);
 	EditorRunBar::get_singleton()->update_profiler_autostart_indicator();
@@ -336,6 +424,14 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	clear_button->set_disabled(true);
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_clear_pressed));
 	container->add_child(clear_button);
+
+	Button *copy_reading = memnew(Button(TTRC("Copy Reading at Frame")));
+	copy_reading->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_copy_reading));
+	container->add_child(copy_reading);
+
+	Button *export_json = memnew(Button(TTRC("Export Readings as JSON...")));
+	export_json->connect(SceneStringName(pressed), callable_mp(this, &EditorNetworkProfiler::_export_json));
+	container->add_child(export_json);
 
 	CheckBox *autostart_checkbox = memnew(CheckBox);
 	autostart_checkbox->set_text(TTRC("Autostart"));
@@ -446,4 +542,8 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	refresh_timer->set_wait_time(0.5);
 	refresh_timer->connect("timeout", callable_mp(this, &EditorNetworkProfiler::_refresh));
 	add_child(refresh_timer);
+
+	file_dialog = memnew(EditorFileDialog);
+	file_dialog->connect("file_selected", callable_mp(this, &EditorNetworkProfiler::_file_selected));
+	add_child(file_dialog);
 }

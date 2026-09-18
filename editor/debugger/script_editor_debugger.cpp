@@ -231,6 +231,51 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 				file->store_csv_line(profiler_data[i]);
 			}
 		} break;
+		case SAVE_PROFILER_JSON: {
+			if (!profiler) {
+				return;
+			}
+
+			Error err;
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+
+			if (err != OK) {
+				ERR_PRINT("Failed to open " + p_file);
+				return;
+			}
+			file->store_string(profiler->get_data_as_json());
+		} break;
+		case SAVE_VISUAL_PROFILER_CSV: {
+			if (!visual_profiler) {
+				return;
+			}
+
+			Error err;
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+
+			if (err != OK) {
+				ERR_PRINT("Failed to open " + p_file);
+				return;
+			}
+			Vector<Vector<String>> visual_profiler_data = visual_profiler->get_data_as_csv();
+			for (int i = 0; i < visual_profiler_data.size(); i++) {
+				file->store_csv_line(visual_profiler_data[i]);
+			}
+		} break;
+		case SAVE_VISUAL_PROFILER_JSON: {
+			if (!visual_profiler) {
+				return;
+			}
+
+			Error err;
+			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+
+			if (err != OK) {
+				ERR_PRINT("Failed to open " + p_file);
+				return;
+			}
+			file->store_string(visual_profiler->get_data_as_json());
+		} break;
 		case SAVE_VRAM_CSV: {
 			Error err;
 			Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
@@ -767,6 +812,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	if (warning_count == 0 && error_count == 0) {
 		expand_all_button->set_disabled(false);
 		collapse_all_button->set_disabled(false);
+		copy_all_errors_button->set_disabled(false);
 		clear_button->set_disabled(false);
 	}
 
@@ -1409,7 +1455,48 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 void ScriptEditorDebugger::_export_csv() {
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->clear_filters();
+	file_dialog->add_filter("*.csv", TTRC("CSV File"));
 	file_dialog_purpose = SAVE_MONITORS_CSV;
+	file_dialog->popup_file_dialog();
+}
+
+void ScriptEditorDebugger::_copy_profiler_reading() {
+	if (!profiler) {
+		return;
+	}
+
+	String text = profiler->get_frame_as_text();
+	if (text.is_empty()) {
+		return;
+	}
+	DisplayServer::get_singleton()->clipboard_set(text);
+}
+
+void ScriptEditorDebugger::_export_profiler_json() {
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->clear_filters();
+	file_dialog->add_filter("*.json", TTRC("JSON File"));
+	file_dialog_purpose = SAVE_PROFILER_JSON;
+	file_dialog->popup_file_dialog();
+}
+
+void ScriptEditorDebugger::_export_visual_profiler_csv() {
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->clear_filters();
+	file_dialog->add_filter("*.csv", TTRC("CSV File"));
+	file_dialog_purpose = SAVE_VISUAL_PROFILER_CSV;
+	file_dialog->popup_file_dialog();
+}
+
+void ScriptEditorDebugger::_export_visual_profiler_json() {
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->clear_filters();
+	file_dialog->add_filter("*.json", TTRC("JSON File"));
+	file_dialog_purpose = SAVE_VISUAL_PROFILER_JSON;
 	file_dialog->popup_file_dialog();
 }
 
@@ -1841,6 +1928,54 @@ void ScriptEditorDebugger::_collapse_errors_list() {
 	}
 }
 
+String ScriptEditorDebugger::_get_error_item_text(TreeItem *p_item) const {
+	if (!p_item) {
+		return String();
+	}
+
+	String type;
+
+	if (p_item->has_meta("_is_warning")) {
+		type = "W ";
+	} else if (p_item->has_meta("_is_error")) {
+		type = "E ";
+	}
+
+	String text = p_item->get_text(0) + "   ";
+	int rpad_len = text.length();
+
+	text = type + text + p_item->get_text(1) + "\n";
+	TreeItem *ci = p_item->get_first_child();
+	while (ci) {
+		text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
+		ci = ci->get_next();
+	}
+
+	return text;
+}
+
+void ScriptEditorDebugger::_copy_all_errors() {
+	if (!error_tree) {
+		return;
+	}
+
+	TreeItem *root = error_tree->get_root();
+	if (!root) {
+		return;
+	}
+
+	String text;
+	for (TreeItem *ti = root->get_first_child(); ti; ti = ti->get_next()) {
+		text += _get_error_item_text(ti);
+	}
+
+	if (text.is_empty()) {
+		return;
+	}
+
+	DisplayServer::get_singleton()->clipboard_set(text);
+}
+
 void ScriptEditorDebugger::_vmem_item_activated() {
 	TreeItem *selected = vmem_tree->get_selected();
 	if (!selected) {
@@ -1901,6 +2036,7 @@ void ScriptEditorDebugger::_clear_errors_list() {
 
 	expand_all_button->set_disabled(true);
 	collapse_all_button->set_disabled(true);
+	copy_all_errors_button->set_disabled(true);
 	clear_button->set_disabled(true);
 }
 
@@ -1950,29 +2086,14 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 	switch (p_option) {
 		case ACTION_COPY_ERROR: {
 			TreeItem *ti = error_tree->get_selected();
+			if (!ti) {
+				break;
+			}
 			while (ti->get_parent() != error_tree->get_root()) {
 				ti = ti->get_parent();
 			}
 
-			String type;
-
-			if (ti->has_meta("_is_warning")) {
-				type = "W ";
-			} else if (ti->has_meta("_is_error")) {
-				type = "E ";
-			}
-
-			String text = ti->get_text(0) + "   ";
-			int rpad_len = text.length();
-
-			text = type + text + ti->get_text(1) + "\n";
-			TreeItem *ci = ti->get_first_child();
-			while (ci) {
-				text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
-				ci = ci->get_next();
-			}
-
-			DisplayServer::get_singleton()->clipboard_set(text);
+			DisplayServer::get_singleton()->clipboard_set(_get_error_item_text(ti));
 		} break;
 
 		case ACTION_OPEN_SOURCE: {
@@ -2295,6 +2416,12 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		collapse_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_collapse_errors_list));
 		error_hbox->add_child(collapse_all_button);
 
+		copy_all_errors_button = memnew(Button);
+		copy_all_errors_button->set_text(TTRC("Copy All Errors"));
+		copy_all_errors_button->set_disabled(true);
+		copy_all_errors_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_copy_all_errors));
+		error_hbox->add_child(copy_all_errors_button);
+
 		Control *space = memnew(Control);
 		space->set_h_size_flags(SIZE_EXPAND_FILL);
 		error_hbox->add_child(space);
@@ -2360,6 +2487,8 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		visual_profiler->set_name(TTRC("Visual Profiler"));
 		tabs->add_child(visual_profiler);
 		visual_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_VISUAL));
+		visual_profiler->connect("export_csv_requested", callable_mp(this, &ScriptEditorDebugger::_export_visual_profiler_csv));
+		visual_profiler->connect("export_json_requested", callable_mp(this, &ScriptEditorDebugger::_export_visual_profiler_json));
 	}
 
 	{ //monitors
@@ -2497,6 +2626,14 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		export_csv = memnew(Button(TTRC("Export measures as CSV")));
 		export_csv->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_export_csv));
 		buttons->add_child(export_csv);
+
+		Button *copy_profiler_reading = memnew(Button(TTRC("Copy Reading at Frame")));
+		copy_profiler_reading->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_copy_profiler_reading));
+		buttons->add_child(copy_profiler_reading);
+
+		Button *export_profiler_json = memnew(Button(TTRC("Export Profiler Readings as JSON...")));
+		export_profiler_json->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_export_profiler_json));
+		buttons->add_child(export_profiler_json);
 
 		misc->add_child(buttons);
 	}

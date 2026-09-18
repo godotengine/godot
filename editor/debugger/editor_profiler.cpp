@@ -31,6 +31,7 @@
 #include "editor_profiler.h"
 
 #include "core/io/image.h"
+#include "core/io/json.h"
 #include "core/object/callable_mp.h"
 #include "core/string/translation_server.h"
 #include "editor/editor_string_names.h"
@@ -666,6 +667,74 @@ Vector<Vector<String>> EditorProfiler::get_data_as_csv() const {
 	}
 
 	return res;
+}
+
+Dictionary profiler_data_to_json(const Vector<Vector<String>> &p_data) {
+	Dictionary root;
+
+	if (p_data.is_empty()) {
+		return root;
+	}
+
+	Array columns;
+	for (int i = 0; i < p_data[0].size(); i++) {
+		columns.push_back(p_data[0][i]);
+	}
+	root["columns"] = columns;
+
+	Array rows;
+	for (int i = 1; i < p_data.size(); i++) {
+		Dictionary row;
+		for (int j = 0; j < p_data[i].size() && j < p_data[0].size(); j++) {
+			row[p_data[0][j]] = p_data[i][j];
+		}
+		rows.push_back(row);
+	}
+	root["rows"] = rows;
+
+	return root;
+}
+
+String EditorProfiler::get_data_as_json() const {
+	Dictionary root = profiler_data_to_json(get_data_as_csv());
+
+	if (!frame_metrics.is_empty() && last_metric >= 0) {
+		const Metric &m = _get_frame_metric(cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number);
+		root["frame"] = int(m.frame_number);
+		root["frame_time"] = m.frame_time;
+	}
+
+	return JSON::stringify(root, "  ");
+}
+
+String EditorProfiler::get_frame_as_text() {
+	if (frame_metrics.is_empty() || last_metric < 0) {
+		return String();
+	}
+
+	const Metric &m = _get_frame_metric(cursor_metric_edit->get_value() - _get_frame_metric(0).frame_number);
+	int dtime = display_time->get_selected();
+
+	String text = vformat(TTR("Frame %d"), int(m.frame_number)) + " (" + _get_time_as_text(m, m.frame_time, 1) + ")\n";
+	for (int i = 0; i < m.categories.size(); i++) {
+		text += "\n" + String(m.categories[i].name) + " - " + _get_time_as_text(m, m.categories[i].total_time, 1) + "\n";
+
+		for (int j = 0; j < m.categories[i].items.size(); j++) {
+			const Metric::Category::Item &it = m.categories[i].items[j];
+
+			if (it.internal == it.total && !display_internal_profiles->is_pressed() && m.categories[i].name == "Script Functions") {
+				continue;
+			}
+
+			float time = dtime == DISPLAY_SELF_TIME ? it.self : it.total;
+			if (dtime == DISPLAY_SELF_TIME && !display_internal_profiles->is_pressed()) {
+				time += it.internal;
+			}
+			text += "  " + it.name + " - " + _get_time_as_text(m, time, it.calls) + "\n";
+		}
+	}
+
+	return text;
 }
 
 EditorProfiler::EditorProfiler() {

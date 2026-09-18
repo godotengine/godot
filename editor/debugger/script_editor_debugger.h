@@ -102,6 +102,7 @@ private:
 	Tree *error_tree = nullptr;
 	Button *expand_all_button = nullptr;
 	Button *collapse_all_button = nullptr;
+	Button *copy_all_errors_button = nullptr;
 	Button *clear_button = nullptr;
 	PopupMenu *item_menu = nullptr;
 
@@ -112,6 +113,9 @@ private:
 	enum FileDialogPurpose {
 		SAVE_MONITORS_CSV,
 		SAVE_VRAM_CSV,
+		SAVE_PROFILER_JSON,
+		SAVE_VISUAL_PROFILER_CSV,
+		SAVE_VISUAL_PROFILER_JSON,
 	};
 	FileDialogPurpose file_dialog_purpose = SAVE_MONITORS_CSV;
 
@@ -272,6 +276,8 @@ private:
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
+	void _copy_all_errors();
+	String _get_error_item_text(TreeItem *p_item) const;
 
 	void _vmem_item_activated();
 	void _vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
@@ -289,6 +295,11 @@ private:
 
 	void _put_msg(const String &p_message, const Array &p_data, uint64_t p_thread_id = Thread::MAIN_ID);
 	void _export_csv();
+
+	void _copy_profiler_reading();
+	void _export_profiler_json();
+	void _export_visual_profiler_csv();
+	void _export_visual_profiler_json();
 
 	void _clear_execution();
 	void _stop_and_notify();

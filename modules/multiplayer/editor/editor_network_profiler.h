@@ -39,6 +39,7 @@
 #include "scene/gui/tree.h"
 
 class Timer;
+class EditorFileDialog;
 
 class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)
@@ -68,6 +69,7 @@ private:
 	LineEdit *incoming_bandwidth_text = nullptr;
 	LineEdit *outgoing_bandwidth_text = nullptr;
 	Tree *replication_display = nullptr;
+	EditorFileDialog *file_dialog = nullptr;
 
 	Label *up_label = nullptr;
 	Label *down_label = nullptr;
@@ -102,6 +104,11 @@ private:
 	void _refresh();
 	void _update_button_text();
 	void _replication_button_clicked(TreeItem *p_item, int p_column, int p_idx, MouseButton p_button);
+
+	void _copy_reading();
+	void _export_json();
+	void _file_selected(const String &p_file);
+	String _get_data_as_json() const;
 
 protected:
 	virtual void _update_theme_item_cache() override;
