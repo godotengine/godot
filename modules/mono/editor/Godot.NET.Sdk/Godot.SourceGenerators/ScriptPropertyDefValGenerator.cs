@@ -115,22 +115,42 @@ namespace Godot.SourceGenerators
                 .Where(m => !m.GetAttributes()
                     .Any(a => a.AttributeClass?.IsGodotIgnoreMemberAttribute() ?? false));
 
-            var exportedProperties = members
-                .Where(s => s.Kind == SymbolKind.Property)
-                .Cast<IPropertySymbol>()
-                .Where(s => s.GetAttributes()
-                    .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false))
+            var godotProperties = members
+                .WhereIsSortedGodotProperties(
+                    typeCache,
+                    static members => members
+                        .Where(s => s.Kind == SymbolKind.Property)
+                        .Cast<IPropertySymbol>()
+                        .Where(s => s.GetAttributes()
+                            .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false))
+                    ,
+                    static members => members
+                        .Where(s => s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
+                        .Cast<IFieldSymbol>()
+                        .Where(s => s.GetAttributes()
+                            .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false))
+                    ,
+                    true)
                 .ToArray();
 
-            var exportedFields = members
-                .Where(s => s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
-                .Cast<IFieldSymbol>()
-                .Where(s => s.GetAttributes()
-                    .Any(a => a.AttributeClass?.IsGodotExportAttribute() ?? false))
-                .ToArray();
-
-            foreach (var property in exportedProperties)
+            foreach (var embed in godotProperties.Where(data => data.PropertyType == PropertyType.Embed))
             {
+                if (!embed.PropertyTypeSymbol.IsReferenceType)
+                    continue;
+
+                exportedMembers.Add(new ExportedPropertyMetadata(
+                    $"{embed.PropertyName}_nonnull",
+                    MarshalType.Boolean,
+                    context.Compilation.GetSpecialType(SpecialType.System_Boolean),
+                    null
+                ));
+            }
+
+            foreach (var godotProperty in godotProperties.Where(data => data.PropertyType == PropertyType.Property || data.PropertyType == PropertyType.Unallowed))
+            {
+                if (godotProperty.Symbol is not IPropertySymbol property)
+                    continue;
+
                 if (property.IsStatic)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
@@ -186,9 +206,9 @@ namespace Godot.SourceGenerators
                 }
 
                 var propertyType = property.Type;
-                var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(propertyType, typeCache);
+                var marshalType = godotProperty.MarshalType;
 
-                if (marshalType == null)
+                if (godotProperty.PropertyType == PropertyType.Unallowed || godotProperty.PropertyType == PropertyType.Embed)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         Common.ExportedMemberTypeIsNotSupportedRule,
@@ -198,7 +218,7 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                if (!isNode && MemberHasNodeType(propertyType, marshalType.Value))
+                if (!isNode && MemberHasNodeType(propertyType, marshalType))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         Common.OnlyNodesShouldExportNodesRule,
@@ -278,11 +298,14 @@ namespace Godot.SourceGenerators
                 }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
-                    property.Name, marshalType.Value, propertyType, value));
+                    godotProperty.PropertyName, marshalType, propertyType, value));
             }
 
-            foreach (var field in exportedFields)
+            foreach (var godotField in godotProperties.Where(data => data.PropertyType == PropertyType.Field || data.PropertyType == PropertyType.Unallowed))
             {
+                if (godotField.Symbol is not IFieldSymbol field)
+                    continue;
+
                 if (field.IsStatic)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
@@ -306,9 +329,9 @@ namespace Godot.SourceGenerators
                 }
 
                 var fieldType = field.Type;
-                var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(fieldType, typeCache);
+                var marshalType = godotField.MarshalType;
 
-                if (marshalType == null)
+                if (godotField.PropertyType == PropertyType.Unallowed || godotField.PropertyType == PropertyType.Embed)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         Common.ExportedMemberTypeIsNotSupportedRule,
@@ -318,7 +341,7 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                if (!isNode && MemberHasNodeType(fieldType, marshalType.Value))
+                if (!isNode && MemberHasNodeType(fieldType, marshalType))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         Common.OnlyNodesShouldExportNodesRule,
@@ -346,7 +369,7 @@ namespace Godot.SourceGenerators
                 }
 
                 exportedMembers.Add(new ExportedPropertyMetadata(
-                    field.Name, marshalType.Value, fieldType, value));
+                    godotField.PropertyName, marshalType, fieldType, value));
             }
 
             // Generate GetGodotExportedProperties

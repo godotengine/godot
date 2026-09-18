@@ -114,25 +114,24 @@ namespace Godot.SourceGenerators
                 .Where(m => !m.GetAttributes()
                     .Any(a => a.AttributeClass?.IsGodotIgnoreMemberAttribute() ?? false));
 
-            var propertySymbols = members
-                .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
-                .Cast<IPropertySymbol>()
-                .Where(s => !s.IsIndexer && s.ExplicitInterfaceImplementations.Length == 0);
-
-            var fieldSymbols = members
-                .Where(s => !s.IsStatic && s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
-                .Cast<IFieldSymbol>();
-
-            // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
-            // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
-            var godotClassProperties = propertySymbols
-                .Where(property => !(property.IsReadOnly || property.IsWriteOnly) && property.SetMethodOrBaseSetMethod() is { IsInitOnly: false })
-                .WhereIsGodotCompatibleType(typeCache)
+            var godotProperties = members
+                .WhereIsSortedGodotProperties(
+                    typeCache,
+                    static members => members
+                        .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
+                        .Cast<IPropertySymbol>()
+                        .Where(s => !s.IsIndexer && s.ExplicitInterfaceImplementations.Length == 0)
+                        // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
+                        // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
+                        .Where(property => !(property.IsReadOnly || property.IsWriteOnly) && property.SetMethodOrBaseSetMethod() is { IsInitOnly: false })
+                    ,
+                    static members => members
+                        .Where(s => !s.IsStatic && s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)
+                        .Cast<IFieldSymbol>()
+                        // TODO: Restore read-only properties.
+                        .Where(property => !property.IsReadOnly))
                 .ToArray();
-            var godotClassFields = fieldSymbols
-                .Where(property => !property.IsReadOnly)
-                .WhereIsGodotCompatibleType(typeCache)
-                .ToArray();
+
 
             var signalDelegateSymbols = members
                 .Where(s => s.Kind == SymbolKind.NamedType)
@@ -167,31 +166,45 @@ namespace Godot.SourceGenerators
                 "    protected override void SaveGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.SaveGodotObjectData(info);\n");
 
+            // Save embedded nullables
+
+            foreach (var embed in godotProperties.Where(data => data.PropertyType == PropertyType.Embed))
+            {
+                if (!embed.PropertyTypeSymbol.IsReferenceType)
+                    continue;
+                {
+                    source.Append("        info.AddProperty(PropertyName.@")
+                        .Append(embed.PropertyName)
+                        .Append("_nonnull, ")
+                        .AppendManagedToVariantExpr(string.Concat("this.@", embed.MemberNameNullable, " is not null"),
+                            context.Compilation.GetSpecialType(SpecialType.System_Boolean), MarshalType.Boolean)
+                        .Append(");\n");
+                }
+            }
+
             // Save properties
 
-            foreach (var property in godotClassProperties)
+            foreach (var property in godotProperties.Where(data => data.PropertyType == PropertyType.Property))
             {
-                string propertyName = property.PropertySymbol.Name;
-
                 source.Append("        info.AddProperty(PropertyName.@")
-                    .Append(propertyName)
+                    .Append(property.PropertyName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.@", propertyName),
-                        property.PropertySymbol.Type, property.Type)
+                    .AppendManagedToVariantExpr(
+                        string.Concat("this.@", property.MemberNameNullable, property.InNullable ? " ?? default" : ""),
+                        property.PropertyTypeSymbol, property.MarshalType)
                     .Append(");\n");
             }
 
             // Save fields
 
-            foreach (var field in godotClassFields)
+            foreach (var field in godotProperties.Where(data => data.PropertyType == PropertyType.Field))
             {
-                string fieldName = field.FieldSymbol.Name;
-
                 source.Append("        info.AddProperty(PropertyName.@")
-                    .Append(fieldName)
+                    .Append(field.PropertyName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.@", fieldName),
-                        field.FieldSymbol.Type, field.Type)
+                    .AppendManagedToVariantExpr(
+                        string.Concat("this.@", field.MemberNameNullable, field.InNullable ? " ?? default" : ""),
+                        field.PropertyTypeSymbol, field.MarshalType)
                     .Append(");\n");
             }
 
@@ -216,41 +229,69 @@ namespace Godot.SourceGenerators
                 "    protected override void RestoreGodotObjectData(global::Godot.Bridge.GodotSerializationInfo info)\n    {\n");
             source.Append("        base.RestoreGodotObjectData(info);\n");
 
+            // Restore embedded nullables
+
+            foreach (var embed in godotProperties.Where(data => data.PropertyType == PropertyType.Embed))
+            {
+                if (!embed.PropertyTypeSymbol.IsReferenceType)
+                    continue;
+                source.Append("        if (");
+                if (embed.InNullable)
+                    source.Append("this.@").Append(embed.ContainingProperty.MemberNameNullable).Append(" is not null && ");
+                source.Append("info.TryGetProperty(PropertyName.@")
+                    .Append(embed.PropertyName)
+                    .Append("_nonnull, out var _value_")
+                    .Append(embed.PropertyName)
+                    .Append("_nonnull))\n")
+                    .Append("            this.@")
+                    .Append(embed.MemberName)
+                    .Append(" = ")
+                    .AppendVariantToManagedExpr(string.Concat("_value_", embed.PropertyName, "_nonnull"),
+                        context.Compilation.GetSpecialType(SpecialType.System_Boolean), MarshalType.Boolean)
+                    .Append(" ? ")
+                    .Append("this.@")
+                    .Append(embed.MemberName)
+                    .Append(" ?? new() : null;\n");
+            }
+
             // Restore properties
 
-            foreach (var property in godotClassProperties)
+            foreach (var property in godotProperties.Where(data => data.PropertyType == PropertyType.Property))
             {
-                string propertyName = property.PropertySymbol.Name;
-
-                source.Append("        if (info.TryGetProperty(PropertyName.@")
-                    .Append(propertyName)
+                source.Append("        if (");
+                if (property.InNullable)
+                    source.Append("this.@").Append(property.ContainingProperty.MemberNameNullable).Append(" is not null && ");
+                source.Append("info.TryGetProperty(PropertyName.@")
+                    .Append(property.PropertyName)
                     .Append(", out var _value_")
-                    .Append(propertyName)
-                    .Append("))\n")
+                    .Append(property.PropertyName)
+                    .Append(")");
+                source.Append(")\n")
                     .Append("            this.@")
-                    .Append(propertyName)
+                    .Append(property.MemberName)
                     .Append(" = ")
-                    .AppendVariantToManagedExpr(string.Concat("_value_", propertyName),
-                        property.PropertySymbol.Type, property.Type)
+                    .AppendVariantToManagedExpr(string.Concat("_value_", property.PropertyName),
+                        property.PropertyTypeSymbol, property.MarshalType)
                     .Append(";\n");
             }
 
             // Restore fields
 
-            foreach (var field in godotClassFields)
+            foreach (var field in godotProperties.Where(data => data.PropertyType == PropertyType.Field))
             {
-                string fieldName = field.FieldSymbol.Name;
-
-                source.Append("        if (info.TryGetProperty(PropertyName.@")
-                    .Append(fieldName)
+                source.Append("        if (");
+                if (field.InNullable)
+                    source.Append("this.@").Append(field.ContainingProperty.MemberNameNullable).Append(" is not null && ");
+                source.Append("info.TryGetProperty(PropertyName.@")
+                    .Append(field.PropertyName)
                     .Append(", out var _value_")
-                    .Append(fieldName)
+                    .Append(field.PropertyName)
                     .Append("))\n")
                     .Append("            this.@")
-                    .Append(fieldName)
+                    .Append(field.MemberName)
                     .Append(" = ")
-                    .AppendVariantToManagedExpr(string.Concat("_value_", fieldName),
-                        field.FieldSymbol.Type, field.Type)
+                    .AppendVariantToManagedExpr(string.Concat("_value_", field.PropertyName),
+                        field.PropertyTypeSymbol, field.MarshalType)
                     .Append(";\n");
             }
 
