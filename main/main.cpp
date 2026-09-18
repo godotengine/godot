@@ -975,6 +975,7 @@ void Main::test_cleanup() {
 		memdelete(physics_server_2d_manager);
 	}
 #endif // PHYSICS_2D_DISABLED
+	GlobalGetCachedRegistry::cleanup();
 	if (globals) {
 		memdelete(globals);
 		globals = nullptr;
@@ -5413,6 +5414,7 @@ void Main::cleanup(bool p_force) {
 		memdelete(physics_server_2d_manager);
 	}
 #endif // PHYSICS_2D_DISABLED
+	GlobalGetCachedRegistry::cleanup();
 	if (globals) {
 		memdelete(globals);
 		globals = nullptr;
