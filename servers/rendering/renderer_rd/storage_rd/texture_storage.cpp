@@ -1743,6 +1743,7 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) {
 	ERR_FAIL_COND_MSG(!tex_blit_shader.initialized, "Texture Blit shader & materials not yet initialized.");
 	ERR_FAIL_COND_MSG(p_textures.is_empty() || p_source_textures.is_empty(), "Blit Rect texture output and source arrays must contain at least 1 texture.");
+	ERR_FAIL_COND_MSG(p_to_mipmap < 0, "Cannot target a negative MipMap level.");
 	const RID default_tex_rid = texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
