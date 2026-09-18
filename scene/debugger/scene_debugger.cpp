@@ -36,6 +36,7 @@
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
 #include "core/io/dir_access.h"
+#include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/math_fieldwise.h"
@@ -770,14 +771,29 @@ void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property
 		prop_name = p_property;
 	}
 
+	bool is_object = obj->get_static_property_type(prop_name) == Variant::OBJECT;
 	Variant value = p_value;
-	if (p_value.is_string() && (obj->get_static_property_type(prop_name) == Variant::OBJECT || p_property == "script")) {
+
+	if (p_value.is_string() && (is_object || p_property == "script")) {
 		value = ResourceLoader::load(p_value);
 	}
 
 	if (!p_field.is_empty()) {
 		// Only one specific field.
 		value = fieldwise_assign(obj->get(prop_name), value, p_field);
+	}
+
+	if (is_object && value.get_type() != Variant::NIL) {
+		bool is_invalid = value.is_null();
+		if (!is_invalid) {
+			Ref<EncodedObjectAsID> obj_id = p_value;
+			is_invalid = obj_id.is_valid(); // We can use an encoded object as a value.
+		}
+
+		if (is_invalid) {
+			RuntimeNodeSelect::get_singleton()->_show_toaster(RTR("Can't set a remote property's value using an object that is not present at runtime."), 2);
+			return;
+		}
 	}
 
 	obj->set(prop_name, value);
