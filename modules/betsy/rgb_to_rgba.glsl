@@ -18,8 +18,7 @@ layout(std430, binding = 0) buffer Source {
 #else
 	uint data[];
 #endif
-}
-source;
+} source;
 
 #if defined(VER_FLOAT)
 layout(binding = 1, rgba32f) uniform writeonly image2D dest;
@@ -35,8 +34,7 @@ layout(push_constant, std430) uniform Params {
 	uint p_width;
 	uint p_height;
 	uint p_padding[2];
-}
-params;
+} params;
 
 void main() {
 	// gl_GlobalInvocationID is equivalent to the current texel coordinates.

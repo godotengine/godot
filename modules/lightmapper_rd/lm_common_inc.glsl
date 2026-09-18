@@ -19,8 +19,7 @@ layout(set = 0, binding = 0) uniform BakeParameters {
 	int shadowmask_light_idx;
 	uint transparency_rays;
 	float supersampling_factor;
-}
-bake_params;
+} bake_params;
 
 struct Vertex {
 	vec3 position;
@@ -31,8 +30,7 @@ struct Vertex {
 
 layout(set = 0, binding = 1, std430) restrict readonly buffer Vertices {
 	Vertex data[];
-}
-vertices;
+} vertices;
 
 #define CULL_DISABLED 0
 #define CULL_FRONT 1
@@ -56,13 +54,11 @@ struct ClusterAABB {
 
 layout(set = 0, binding = 2, std430) restrict readonly buffer Triangles {
 	Triangle data[];
-}
-triangles;
+} triangles;
 
 layout(set = 0, binding = 3, std430) restrict readonly buffer TriangleIndices {
 	uint data[];
-}
-triangle_indices;
+} triangle_indices;
 
 #define LIGHT_TYPE_DIRECTIONAL 0
 #define LIGHT_TYPE_OMNI 1
@@ -96,8 +92,7 @@ struct Light {
 
 layout(set = 0, binding = 4, std430) restrict readonly buffer Lights {
 	Light data[];
-}
-lights;
+} lights;
 
 struct Seam {
 	uvec2 a;
@@ -106,13 +101,11 @@ struct Seam {
 
 layout(set = 0, binding = 5, std430) restrict readonly buffer Seams {
 	Seam data[];
-}
-seams;
+} seams;
 
 layout(set = 0, binding = 6, std430) restrict readonly buffer Probes {
 	vec4 data[];
-}
-probe_positions;
+} probe_positions;
 
 layout(set = 0, binding = 7) uniform utexture3D grid;
 
@@ -124,13 +117,11 @@ layout(set = 0, binding = 11) uniform sampler area_light_atlas_sampler;
 
 layout(set = 0, binding = 12, std430) restrict readonly buffer ClusterIndices {
 	uint data[];
-}
-cluster_indices;
+} cluster_indices;
 
 layout(set = 0, binding = 13, std430) restrict readonly buffer ClusterAABBs {
 	ClusterAABB data[];
-}
-cluster_aabbs;
+} cluster_aabbs;
 
 // Fragment action constants
 const uint FA_NONE = 0;

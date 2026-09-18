@@ -41,8 +41,7 @@ layout(push_constant, std430) uniform Params {
 	vec2 octmap_border_size;
 
 	vec4 set_color;
-}
-params;
+} params;
 
 #ifdef MODE_OCTMAP_ARRAY_TO_PANORAMA
 layout(set = 0, binding = 0) uniform sampler2DArray source_color;

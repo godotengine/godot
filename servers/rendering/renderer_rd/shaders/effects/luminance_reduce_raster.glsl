@@ -1,4 +1,3 @@
-/* clang-format off */
 #[vertex]
 
 #version 450
@@ -8,7 +7,6 @@
 #include "luminance_reduce_raster_inc.glsl"
 
 layout(location = 0) out vec2 uv_interp;
-/* clang-format on */
 
 void main() {
 	vec2 base_arr[3] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
@@ -16,7 +14,6 @@ void main() {
 	uv_interp = clamp(gl_Position.xy, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 }
 
-/* clang-format off */
 #[fragment]
 
 #version 450
@@ -26,7 +23,6 @@ void main() {
 #include "luminance_reduce_raster_inc.glsl"
 
 layout(location = 0) in vec2 uv_interp;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform sampler2D source_exposure;
 

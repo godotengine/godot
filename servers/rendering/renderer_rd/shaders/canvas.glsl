@@ -105,11 +105,9 @@ layout(location = 15) in uvec4 attrib_H;
 #endif // USE_ATTRIBUTES
 
 #ifdef MATERIAL_UNIFORMS_USED
-/* clang-format off */
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
-/* clang-format on */
 #endif
 
 #GLOBALS
@@ -356,11 +354,9 @@ layout(location = 8) in vec2 pixel_size_interp;
 layout(location = 0) out vec4 frag_color;
 
 #ifdef MATERIAL_UNIFORMS_USED
-/* clang-format off */
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
-/* clang-format on */
 #endif
 
 vec2 screen_uv_to_sdf(vec2 p_uv) {

@@ -237,14 +237,12 @@ struct SceneData {
 // The containing data block is for historic reasons.
 layout(std140) uniform SceneDataBlock { // ubo:2
 	SceneData data;
-}
-scene_data_block;
+} scene_data_block;
 
 #ifdef RENDER_MOTION_VECTORS
 layout(std140) uniform PrevSceneDataBlock { // ubo:13
 	SceneData data;
-}
-prev_scene_data_block;
+} prev_scene_data_block;
 #endif
 
 #ifndef RENDER_MOTION_VECTORS
@@ -487,14 +485,12 @@ struct MultiviewData {
 
 layout(std140) uniform MultiviewDataBlock { // ubo:9
 	MultiviewData data;
-}
-multiview_data_block;
+} multiview_data_block;
 
 #ifdef RENDER_MOTION_VECTORS
 layout(std140) uniform PrevMultiviewDataBlock { // ubo:14
 	MultiviewData data;
-}
-prev_multiview_data_block;
+} prev_multiview_data_block;
 #endif // RENDER_MOTION_VECTORS
 
 #endif // USE_MULTIVIEW
@@ -557,17 +553,11 @@ out highp vec4 shadow_coord4;
 
 #ifdef MATERIAL_UNIFORMS_USED
 
-/* clang-format off */
 layout(std140) uniform MaterialUniforms { // ubo:3
-
 #MATERIAL_UNIFORMS
-
 };
-/* clang-format on */
 
 #endif
-
-/* clang-format off */
 
 #if defined(RENDER_MOTION_VECTORS)
 out highp vec4 clip_position;
@@ -576,7 +566,6 @@ out highp vec4 prev_clip_position;
 
 #GLOBALS
 
-/* clang-format on */
 invariant gl_Position;
 
 void vertex_shader(vec4 vertex_angle_attrib_input,
@@ -1002,7 +991,6 @@ void main() {
 	gl_Position = clip_position;
 }
 
-/* clang-format off */
 #[fragment]
 
 // Default to SPECULAR_SCHLICK_GGX.
@@ -1010,7 +998,7 @@ void main() {
 #define SPECULAR_SCHLICK_GGX
 #endif
 
-#if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) ||defined(LIGHT_CLEARCOAT_USED)
+#if !defined(MODE_RENDER_DEPTH) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED) || defined(LIGHT_CLEARCOAT_USED)
 #ifndef NORMAL_USED
 #define NORMAL_USED
 #endif
@@ -1193,13 +1181,9 @@ layout(std140) uniform GlobalShaderUniformData { //ubo:1
 /* Material Uniforms */
 #ifdef MATERIAL_UNIFORMS_USED
 
-/* clang-format off */
 layout(std140) uniform MaterialUniforms { // ubo:3
-
 #MATERIAL_UNIFORMS
-
 };
-/* clang-format on */
 
 #endif
 
@@ -1255,8 +1239,7 @@ struct SceneData {
 
 layout(std140) uniform SceneDataBlock { // ubo:2
 	SceneData data;
-}
-scene_data_block;
+} scene_data_block;
 
 #ifdef USE_MULTIVIEW
 struct MultiviewData {
@@ -1267,8 +1250,7 @@ struct MultiviewData {
 
 layout(std140) uniform MultiviewDataBlock { // ubo:9
 	MultiviewData data;
-}
-multiview_data_block;
+} multiview_data_block;
 #endif
 
 uniform highp mat4 world_transform;
@@ -1543,11 +1525,7 @@ layout(location = 0) out vec4 motion_vectors;
 
 #endif // !RENDER_MATERIAL
 
-/* clang-format off */
-
 #GLOBALS
-
-/* clang-format on */
 
 #ifndef RENDER_MOTION_VECTORS
 vec3 F0(float metallic, float specular, vec3 albedo) {
@@ -1629,11 +1607,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 	vec3 area_diffuse_tex_color = vec3(1.0);
 	vec3 area_specular_tex_color = vec3(1.0);
 
-	/* clang-format off */
-
 #CODE : LIGHT
-
-	/* clang-format on */
 
 #else
 	float NdotL = min(A + dot(N, L), 1.0);
@@ -1735,7 +1709,6 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		float D = D_GGX(cNdotH, alpha_ggx);
 		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif // LIGHT_ANISOTROPY_USED
-	   // F
 #if !defined(LIGHT_CLEARCOAT_USED)
 		float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
@@ -1895,11 +1868,7 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 	vec3 area_specular = ltc_specular * fresnel_color;
 	float attenuation = light_attenuation_ltc;
 
-	/* clang-format off */
-
 #CODE : LIGHT
-
-	/* clang-format on */
 
 #else
 	float area = a_len * b_len;
@@ -3158,7 +3127,6 @@ void main() {
 				specular_light);
 	} else {
 #endif // !USE_VERTEX_LIGHTING
-	   // Just apply shadows to vertex lighting.
 		diffuse_light *= directional_shadow;
 		specular_light *= directional_shadow;
 #ifndef USE_VERTEX_LIGHTING
