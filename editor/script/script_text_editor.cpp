@@ -60,7 +60,9 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/main/scene_tree.h"
+#include "scene/resources/style_box.h"
 #include "scene/resources/style_box_flat.h"
+#include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
 void ConnectionInfoDialog::ok_pressed() {
@@ -1384,43 +1386,70 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 	}
 }
 
+Vector<EditorHelpBitTooltip::DiagnosticEntry> ScriptTextEditor::_get_diagnostics_for_tooltip(int p_row, int p_column) const {
+	Vector<EditorHelpBitTooltip::DiagnosticEntry> diagnostics;
+
+	if (p_row == -1 && p_column == -1) {
+		for (const EditorLanguage::ScriptError &e : errors) {
+			EditorHelpBitTooltip::DiagnosticEntry entry;
+			entry.severity = EditorHelpBitTooltip::DiagnosticEntry::SEVERITY_ERROR;
+			entry.text = e.message;
+			entry.start_line = e.start_line;
+			entry.start_column = e.start_column;
+			entry.end_line = e.end_line;
+			entry.end_column = e.end_column;
+			diagnostics.push_back(entry);
+		}
+		for (const EditorLanguage::Warning &w : warnings) {
+			EditorHelpBitTooltip::DiagnosticEntry entry;
+			entry.severity = EditorHelpBitTooltip::DiagnosticEntry::SEVERITY_WARNING;
+			entry.code = w.string_code;
+			entry.text = w.message;
+			entry.start_line = w.start_line;
+			entry.start_column = w.start_column;
+			entry.end_line = w.end_line;
+			entry.end_column = w.end_column;
+			diagnostics.push_back(entry);
+		}
+	} else {
+		for (const EditorLanguage::ScriptError &e : errors) {
+			if (_is_line_col_in_range(p_row + 1, p_column + 1, e.start_line, e.start_column, e.end_line, e.end_column)) {
+				EditorHelpBitTooltip::DiagnosticEntry entry;
+				entry.severity = EditorHelpBitTooltip::DiagnosticEntry::SEVERITY_ERROR;
+				entry.text = e.message;
+				entry.start_line = e.start_line;
+				entry.start_column = e.start_column;
+				entry.end_line = e.end_line;
+				entry.end_column = e.end_column;
+				diagnostics.push_back(entry);
+			}
+		}
+
+		for (const EditorLanguage::Warning &w : warnings) {
+			if (_is_line_col_in_range(p_row + 1, p_column + 1, w.start_line, w.start_column, w.end_line, w.end_column)) {
+				EditorHelpBitTooltip::DiagnosticEntry entry;
+				entry.severity = EditorHelpBitTooltip::DiagnosticEntry::SEVERITY_WARNING;
+				entry.code = w.string_code;
+				entry.text = w.message;
+				entry.start_line = w.start_line;
+				entry.start_column = w.start_column;
+				entry.end_line = w.end_line;
+				entry.end_column = w.end_column;
+				diagnostics.push_back(entry);
+			}
+		}
+	}
+
+	return diagnostics;
+}
+
 void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut) {
 	bool enable_docs = EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize();
 	bool enable_diagnostics = EDITOR_GET("text_editor/behavior/diagnostics/enable_tooltips").booleanize();
 
-	String diagnostic_strings_concatenated;
-	if (enable_diagnostics) {
-		// Look for any errors that include this location.
-		PackedStringArray error_strings;
-		for (const EditorLanguage::ScriptError &e : errors) {
-			if (_is_line_col_in_range(p_row + 1, p_column + 1, e.start_line, e.start_column, e.end_line, e.end_column)) {
-				error_strings.append(e.message);
-			}
-		}
-
-		// Look for any warnings that include this location.
-		PackedStringArray warning_strings;
-		for (const EditorLanguage::Warning &w : warnings) {
-			if (_is_line_col_in_range(p_row + 1, p_column + 1, w.start_line, w.start_column, w.end_line, w.end_column)) {
-				warning_strings.append(vformat("%s: %s", w.string_code, w.message));
-			}
-		}
-
-		if (!error_strings.is_empty()) {
-			const Color error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
-			diagnostic_strings_concatenated += vformat("[color=%s]", error_color.to_html());
-			diagnostic_strings_concatenated += String("\n").join(error_strings).replace("[", "[lb]");
-			diagnostic_strings_concatenated += "[/color]";
-		}
-		if (!error_strings.is_empty() && !warning_strings.is_empty()) {
-			diagnostic_strings_concatenated += "\n";
-		}
-		if (!warning_strings.is_empty()) {
-			const Color warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
-			diagnostic_strings_concatenated += vformat("[color=%s]", warning_color.to_html());
-			diagnostic_strings_concatenated += String("\n").join(warning_strings).replace("[", "[lb]");
-			diagnostic_strings_concatenated += "[/color]";
-		}
+	Vector<EditorHelpBitTooltip::DiagnosticEntry> diagnostics;
+	if (enable_diagnostics && EditorHelpBitTooltip::can_show_new_tooltip(p_shortcut)) {
+		diagnostics = _get_diagnostics_for_tooltip(p_row, p_column);
 	}
 
 	// If documentation tooltips aren't enabled, there's no need to process the rest of the method.
@@ -1428,14 +1457,14 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 	// to do anything at all).
 	if (!enable_docs || p_symbol.is_empty()) {
 		if (enable_diagnostics) {
-			Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), String(), String(), true, p_shortcut, diagnostic_strings_concatenated);
+			Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), String(), String(), true, p_shortcut, diagnostics);
 			memdelete(tmp);
 		}
 		return;
 	}
 
 	if (p_symbol.begins_with("res://") || p_symbol.begins_with("uid://")) {
-		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol, String(), false, false, diagnostic_strings_concatenated);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol, String(), false, false, diagnostics);
 		memdelete(tmp);
 		return;
 	}
@@ -1547,8 +1576,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 		debug_value = TTR("Current value: ") + debug_value.replace("[", "[lb]");
 	}
 
-	if (!doc_symbol.is_empty() || !debug_value.is_empty() || !diagnostic_strings_concatenated.is_empty()) {
-		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true, p_shortcut, diagnostic_strings_concatenated);
+	if (!doc_symbol.is_empty() || !debug_value.is_empty() || !diagnostics.is_empty()) {
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true, p_shortcut, diagnostics);
 		memdelete(tmp);
 	}
 }

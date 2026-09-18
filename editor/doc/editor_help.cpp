@@ -5075,31 +5075,27 @@ void EditorHelpBitTooltip::_notification(int p_what) {
 	}
 }
 
-Control *EditorHelpBitTooltip::make_tooltip(
-		Control *p_target,
-		const String &p_symbol,
-		const String &p_prologue,
-		bool p_use_class_prefix,
-		bool p_shortcut,
-		const String &p_diagnostics) {
+bool EditorHelpBitTooltip::can_show_new_tooltip(bool p_shortcut) {
+	return !_is_tooltip_visible && (p_shortcut || !Input::get_singleton()->is_anything_pressed());
+}
+
+Control *EditorHelpBitTooltip::make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue, bool p_use_class_prefix, bool p_shortcut, const Vector<DiagnosticEntry> &p_diagnostics) {
 	ERR_FAIL_NULL_V(p_target, _make_invisible_control());
 
 	// Show the custom tooltip only if it is not already visible.
 	// The viewport will retrigger `make_custom_tooltip()` every few seconds
 	// because the return control is not visible even if the custom tooltip is displayed.
-	if (_is_tooltip_visible || (!p_shortcut && Input::get_singleton()->is_anything_pressed())) {
+	if (!can_show_new_tooltip(p_shortcut)) {
 		return _make_invisible_control();
 	}
 
 	EditorHelpBitTooltip *tooltip = memnew(EditorHelpBitTooltip(p_target, p_shortcut));
 
-	bool has_diagnostics = !p_diagnostics.is_empty();
 	bool has_doc_tooltip = !p_symbol.is_empty() || !p_prologue.is_empty();
 
-	if (has_diagnostics) {
-		tooltip->diagnostics_label->set_text(p_diagnostics);
-	} else {
-		tooltip->diagnostics_label->hide();
+	Control *diagnostics_list = _build_diagnostics_list(p_diagnostics);
+	if (diagnostics_list) {
+		tooltip->vbox->add_child(diagnostics_list);
 	}
 
 	if (has_doc_tooltip) {
@@ -5118,6 +5114,28 @@ Control *EditorHelpBitTooltip::make_tooltip(
 	}
 
 	return _make_invisible_control();
+}
+
+Control *EditorHelpBitTooltip::_build_diagnostics_list(const Vector<DiagnosticEntry> &p_diagnostics) {
+	if (p_diagnostics.is_empty()) {
+		return nullptr;
+	}
+
+	DiagnosticListContainer *diag_vbox = memnew(DiagnosticListContainer);
+	for (const DiagnosticEntry &entry : p_diagnostics) {
+		DiagnosticItemRow *row = memnew(DiagnosticItemRow);
+		row->set_entry(entry);
+		diag_vbox->add_child(row);
+	}
+
+	MarginContainer *diag_margin = memnew(MarginContainer);
+	diag_margin->add_theme_constant_override("margin_left", 8 * EDSCALE);
+	diag_margin->add_theme_constant_override("margin_right", 8 * EDSCALE);
+	diag_margin->add_theme_constant_override("margin_top", 6 * EDSCALE);
+	diag_margin->add_theme_constant_override("margin_bottom", 6 * EDSCALE);
+	diag_margin->add_child(diag_vbox);
+
+	return diag_margin;
 }
 
 // Copy-paste from `Viewport::_gui_show_tooltip()`.
@@ -5172,17 +5190,7 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target, bool p_shortcut) {
 
 	set_theme_type_variation("TooltipPanel");
 
-	diagnostics_label = memnew(RichTextLabel);
-	diagnostics_label->set_theme_type_variation("EditorHelpBitTooltipTitle");
-	diagnostics_label->set_custom_minimum_size(Size2(640 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
-	diagnostics_label->set_fit_content(true);
-	diagnostics_label->set_selection_enabled(true);
-	diagnostics_label->set_context_menu_enabled(false);
-	diagnostics_label->set_use_bbcode(true);
-
 	vbox = memnew(VBoxContainer);
-	vbox->add_child(diagnostics_label);
-
 	add_child(vbox);
 
 	timer = memnew(Timer);
@@ -5193,6 +5201,193 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target, bool p_shortcut) {
 	p_target->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorHelpBitTooltip::_start_timer));
 	p_target->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelpBitTooltip::_target_gui_input));
 
+	set_process_internal(true);
+}
+
+/// DiagnosticItemRow ///
+
+String DiagnosticItemRow::_get_diagnostic_title() const {
+	if (entry.severity == EditorHelpBitTooltip::DiagnosticEntry::SEVERITY_ERROR) {
+		return TTR("Error:");
+	}
+	return entry.code.is_empty() ? TTR("Warning:") : vformat(TTR("%s:"), entry.code);
+}
+
+void DiagnosticItemRow::_copy_pressed() {
+	DisplayServer::get_singleton()->clipboard_set(_get_diagnostic_title() + " " + entry.text);
+}
+
+void DiagnosticItemRow::_update_content() {
+	if (entry.text.is_empty()) {
+		return;
+	}
+
+	msg_label->clear();
+
+	Color color;
+	Ref<Texture2D> icon;
+
+	if (entry.severity == EditorHelpBitTooltip::DiagnosticEntry::SEVERITY_ERROR) {
+		color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+		icon = get_editor_theme_icon(SNAME("StatusError"));
+	} else {
+		color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+		icon = get_editor_theme_icon(SNAME("NodeWarning"));
+	}
+
+	msg_label->add_image(icon, icon->get_width(), icon->get_height());
+	msg_label->add_text("  ");
+
+	msg_label->push_color(color);
+	msg_label->push_bold();
+	msg_label->add_text(_get_diagnostic_title());
+	msg_label->pop();
+	msg_label->pop();
+
+	msg_label->add_text(" ");
+	msg_label->add_text(entry.text);
+
+	copy_btn->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+
+	Ref<Font> main_font = get_theme_font(SNAME("main"), EditorStringName(EditorFonts));
+	int font_size = get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts));
+	Ref<Font> bold_font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
+
+	float text_width = main_font->get_string_size(entry.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+	float title_width = bold_font->get_string_size(_get_diagnostic_title() + "  ", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+	float total_width = text_width + title_width + (60 * EDSCALE);
+	float max_width = 640 * EDSCALE;
+
+	msg_label->set_custom_minimum_size(Size2(MIN(total_width, max_width), 0));
+}
+
+void DiagnosticItemRow::_notification(int p_what) {
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		_update_content();
+	}
+}
+
+void DiagnosticItemRow::set_entry(const EditorHelpBitTooltip::DiagnosticEntry &p_entry) {
+	entry = p_entry;
+	_update_content();
+}
+
+void DiagnosticItemRow::set_copy_button_visible(bool p_visible) {
+	copy_btn->set_modulate(Color(1, 1, 1, p_visible ? 1 : 0));
+	copy_btn->set_mouse_filter(p_visible ? Control::MOUSE_FILTER_STOP : Control::MOUSE_FILTER_IGNORE);
+}
+
+bool DiagnosticItemRow::is_copy_button_hovered(const Point2 &p_global) const {
+	return copy_btn && copy_btn->get_global_rect().has_point(p_global);
+}
+
+DiagnosticItemRow::DiagnosticItemRow() {
+	add_theme_constant_override("separation", 8 * EDSCALE);
+
+	msg_label = memnew(RichTextLabel);
+	msg_label->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty));
+	msg_label->set_use_bbcode(true);
+	msg_label->set_selection_enabled(false);
+	msg_label->set_context_menu_enabled(false);
+	msg_label->set_fit_content(true);
+	msg_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	msg_label->set_h_size_flags(SIZE_EXPAND_FILL);
+	msg_label->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	add_child(msg_label);
+
+	copy_btn = memnew(Button);
+	copy_btn->set_modulate(Color(1, 1, 1, 0));
+	copy_btn->set_flat(true);
+	copy_btn->set_focus_mode(FOCUS_NONE);
+	copy_btn->set_tooltip_text(TTR("Click to copy."));
+	copy_btn->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	copy_btn->connect(SceneStringName(pressed), callable_mp(this, &DiagnosticItemRow::_copy_pressed));
+	add_child(copy_btn);
+}
+
+/// DiagnosticListContainer ///
+
+void DiagnosticListContainer::_update_hovered_row() {
+	int new_hovered_row = -1;
+	const int child_count = get_child_count();
+
+	if (is_visible_in_tree() && child_count > 0) {
+		const Point2 mouse_pos = get_global_mouse_position();
+		const Rect2 list_rect = get_global_rect();
+
+		Rect2 hover_rect = list_rect;
+		if (Control *parent = Object::cast_to<Control>(get_parent())) {
+			hover_rect = parent->get_global_rect();
+		}
+
+		const bool mouse_in_hover_area = hover_rect.has_point(mouse_pos);
+
+		for (int i = 0; i < child_count; i++) {
+			DiagnosticItemRow *row = Object::cast_to<DiagnosticItemRow>(get_child(i));
+			ERR_CONTINUE(!row);
+
+			if (row->is_copy_button_hovered(mouse_pos)) {
+				new_hovered_row = i;
+				break;
+			}
+
+			if (!mouse_in_hover_area) {
+				continue;
+			}
+
+			const float row_top = row->get_global_position().y;
+			const float row_bottom = row_top + row->get_size().y;
+
+			float zone_top = hover_rect.position.y;
+			if (i > 0) {
+				DiagnosticItemRow *prev_row = Object::cast_to<DiagnosticItemRow>(get_child(i - 1));
+				const float prev_bottom = prev_row->get_global_position().y + prev_row->get_size().y;
+				zone_top = (prev_bottom + row_top) / 2.0;
+			}
+
+			float zone_bottom = hover_rect.position.y + hover_rect.size.y;
+			if (i < child_count - 1) {
+				DiagnosticItemRow *next_row = Object::cast_to<DiagnosticItemRow>(get_child(i + 1));
+				const float next_top = next_row->get_global_position().y;
+				zone_bottom = (row_bottom + next_top) / 2.0;
+			}
+
+			if (mouse_pos.y >= zone_top && mouse_pos.y < zone_bottom) {
+				new_hovered_row = i;
+				break;
+			}
+		}
+	}
+
+	if (new_hovered_row == hovered_row) {
+		return;
+	}
+
+	if (hovered_row >= 0 && hovered_row < get_child_count()) {
+		DiagnosticItemRow *prev_hovered = Object::cast_to<DiagnosticItemRow>(get_child(hovered_row));
+		if (prev_hovered) {
+			prev_hovered->set_copy_button_visible(false);
+		}
+	}
+
+	hovered_row = new_hovered_row;
+
+	if (hovered_row >= 0) {
+		DiagnosticItemRow *cur_hovered = Object::cast_to<DiagnosticItemRow>(get_child(hovered_row));
+		if (cur_hovered) {
+			cur_hovered->set_copy_button_visible(true);
+		}
+	}
+}
+
+void DiagnosticListContainer::_notification(int p_what) {
+	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
+		_update_hovered_row();
+	}
+}
+
+DiagnosticListContainer::DiagnosticListContainer() {
+	add_theme_constant_override("separation", 8 * EDSCALE);
 	set_process_internal(true);
 }
 
