@@ -50,6 +50,7 @@ class EditorFileDialog;
 class EditorInspector;
 class SceneImportSettingsData;
 class Timer;
+class TreeSortAndFilterBar;
 
 class SceneImportSettingsDialog : public ConfirmationDialog {
 	GDCLASS(SceneImportSettingsDialog, ConfirmationDialog)
@@ -70,6 +71,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	Tree *scene_tree = nullptr;
 	Tree *mesh_tree = nullptr;
 	Tree *material_tree = nullptr;
+
+	TreeSortAndFilterBar *tree_filter_bar = nullptr;
 
 	EditorInspector *inspector = nullptr;
 
@@ -198,6 +201,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _on_light_1_switch_pressed();
 	void _on_light_2_switch_pressed();
 	void _on_light_rotate_switch_pressed();
+	void _on_tree_tab_changed(int p_tab_id);
 
 	void _viewport_input(const Ref<InputEvent> &p_input);
 
