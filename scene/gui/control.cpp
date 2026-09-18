@@ -3607,6 +3607,13 @@ real_t Control::_focus_strategy_balloon_candidate_score(const Vector2 &p_start, 
 	}
 
 	Vector2 hit = touch - p_start;
+
+	// If the hit vector is zero, then the next control's border coincides with ours. In this case
+	// return maximum score instead, to prevent NaN from division by zero
+	if (hit.is_zero_approx()) {
+		return 1.0;
+	}
+
 	return p_dir.dot(hit) / hit.length_squared();
 }
 
