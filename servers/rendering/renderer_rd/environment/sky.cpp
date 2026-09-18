@@ -1231,13 +1231,16 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 
 	float custom_fov = RendererSceneRenderRD::get_singleton()->environment_get_sky_custom_fov(p_render_data->environment);
 
-	if (custom_fov && sky_scene_state.view_count == 1) {
-		// With custom fov we don't support stereo...
+	if ((custom_fov || projection.is_orthogonal()) && sky_scene_state.view_count == 1) {
+		// Use a very low FOV when using orthogonal projection.
+		// This is more technically correct compared to drawing a stretched out sky.
+
+		// With custom FOV we don't support stereo...
 		float near_plane = projection.get_z_near();
 		float far_plane = projection.get_z_far();
 		float aspect = projection.get_aspect();
 
-		projection.set_perspective(custom_fov, aspect, near_plane, far_plane);
+		projection.set_perspective(MAX(0.1, custom_fov), aspect, near_plane, far_plane);
 	}
 
 	sky_scene_state.cam_projection = correction * projection;
