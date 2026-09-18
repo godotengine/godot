@@ -1427,8 +1427,11 @@ private:
 	bool is_script_ignoring_warnings = false;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
 	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
-	HashSet<int> unsafe_lines;
 #endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	HashSet<int> unsafe_lines;
+#endif
 
 	GDScriptTokenizer *tokenizer = nullptr;
 	GDScriptTokenizer::Token previous;
@@ -1704,14 +1707,15 @@ public:
 #ifdef DEBUG_ENABLED
 	static void update_project_settings();
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
-	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
-	int get_last_line_number() const { return current.end_line; }
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;
 
 	HashMap<int, GDScriptTokenizer::CommentData> comment_data;
+
+	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }
+	int get_last_line_number() const { return current.end_line; }
 #endif // TOOLS_ENABLED
 
 	GDScriptParser();
