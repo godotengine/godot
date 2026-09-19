@@ -144,7 +144,6 @@ private:
 
 	Vector<EditedScene> edited_scene;
 	int current_edited_scene = -1;
-	int last_created_scene = 1;
 
 	bool _find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths);
 
@@ -203,7 +202,6 @@ public:
 	int add_edited_scene(int p_at_pos);
 	void remove_scene(int p_idx);
 	void set_scene_root(int p_idx, Node *p_root);
-	void set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node *p_root);
 	int get_edited_scene() const;
@@ -211,6 +209,9 @@ public:
 	Node *get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;
 	Vector<EditedScene> get_edited_scenes() const;
+
+	void set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene);
+	Ref<PackedScene> get_scene_resource(int p_idx) const;
 
 	String get_scene_title(int p_idx, bool p_always_strip_extension = false) const;
 	String get_scene_path(int p_idx) const;
