@@ -283,6 +283,7 @@
 				Duplicates the node, returning a new node with all of its properties, signals, groups, and children copied from the original, recursively. The behavior can be tweaked through the [param flags] (see [enum DuplicateFlags]). Internal nodes are not duplicated.
 				[b]Note:[/b] For nodes with a [Script] attached, if [method Object._init] has been defined with required parameters, the duplicated node will not have a [Script].
 				[b]Note:[/b] By default, this method will duplicate only properties marked for serialization (i.e. using [constant @GlobalScope.PROPERTY_USAGE_STORAGE], or in GDScript, [annotation @GDScript.@export]). If you want to duplicate all properties, use [constant DUPLICATE_INTERNAL_STATE].
+				[b]Note:[/b] By default, if the node comes from an instantiated scene saved on disk, the original children structure will be used for the copy. If nodes in the structure have been removed or reparented at runtime, this can result in properties being set with wrong values and errors. In such cases, use this method without [constant DUPLICATE_USE_INSTANTIATION].
 			</description>
 		</method>
 		<method name="find_child" qualifiers="const">
@@ -531,6 +532,14 @@
 				Returns the relative [NodePath] from this node to the specified [param node]. Both nodes must be in the same [SceneTree] or scene hierarchy, otherwise this method fails and returns an empty [NodePath].
 				If [param use_unique_path] is [code]true[/code], returns the shortest path accounting for this node's unique name (see [member unique_name_in_owner]).
 				[b]Note:[/b] If you get a relative path which starts from a unique node, the path may be longer than a normal relative path, due to the addition of the unique node's name.
+				[b]Note:[/b] If [param node] is guaranteed to be a descendant of this node, prefer using [method get_path_to_descendant] instead, as it's faster in comparison.
+			</description>
+		</method>
+		<method name="get_path_to_descendant" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Returns the relative [NodePath] from this node to the specified [param node]. This node must be in the same [SceneTree] or scene hierarchy, and [param node] must also be a descendant of this node, otherwise this method fails and returns an empty [NodePath].
 			</description>
 		</method>
 		<method name="get_physics_process_delta_time" qualifiers="const">
