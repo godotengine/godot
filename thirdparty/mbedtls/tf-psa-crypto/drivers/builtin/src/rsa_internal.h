@@ -93,6 +93,59 @@ int mbedtls_rsa_write_key(const mbedtls_rsa_context *rsa, unsigned char *start,
 int mbedtls_rsa_write_pubkey(const mbedtls_rsa_context *rsa, unsigned char *start,
                              unsigned char **p);
 
+#if defined(MBEDTLS_PKCS1_V15)
+/**
+ * \brief          This function performs a PKCS#1 v1.5 decryption
+ *                 operation (RSAES-PKCS1-v1_5-DECRYPT).
+ *
+ * \warning        This is an inherently dangerous function (CWE-242). Unless
+ *                 it is used in a side channel free and safe way, the calling
+ *                 code is vulnerable.
+ *
+ * \note           The output buffer length \c output_max_len should be
+ *                 as large as the size \p ctx->len of \p ctx->N, for example,
+ *                 128 Bytes if RSA-1024 is used, to be able to hold an
+ *                 arbitrary decrypted message. If it is not large enough to
+ *                 hold the decryption of the particular ciphertext provided,
+ *                 the function returns #PSA_ERROR_BUFFER_TOO_SMALL.
+ *
+ * \param ctx      The initialized RSA context to use.
+ * \param f_rng    The RNG function. This is used for blinding and is
+ *                 mandatory; see mbedtls_rsa_private() for more.
+ * \param p_rng    The RNG context to be passed to \p f_rng. This may be
+ *                 \c NULL if \p f_rng doesn't need a context.
+ * \param olen     The address at which to store the length of
+ *                 the plaintext. This must not be \c NULL.
+ * \param input    The ciphertext buffer. This must be a readable buffer
+ *                 of length \c ctx->len Bytes. For example, \c 256 Bytes
+ *                 for an 2048-bit RSA modulus.
+ * \param output   The buffer used to hold the plaintext. This must
+ *                 be a writable buffer of length \p output_max_len Bytes.
+ * \param output_max_len The length in Bytes of the output buffer \p output.
+ * \param sensitive_ret
+ *                 If this function returns \c 0, this is set to either 0 for
+ *                 success, or #PSA_ERROR_INVALID_PADDING if the padding
+ *                 was invalid, or #PSA_ERROR_BUFFER_TOO_SMALL if the
+ *                 padding was valid but resulted in a plaintext larger than the
+ *                 output buffer.
+ *                 If this function returns non-zero this is set to \c 0.
+ *
+ * \return         \c 0 on success, or when the only error is invalid padding,
+ *                 or valid padding that results in a plaintext larger than the
+ *                 output buffer.
+ * \return         An \c MBEDTLS_ERR_RSA_XXX error code on other failure.
+ *
+ */
+int mbedtls_rsa_rsaes_pkcs1_v15_decrypt_ext(mbedtls_rsa_context *ctx,
+                                            int (*f_rng)(void *, unsigned char *, size_t),
+                                            void *p_rng,
+                                            size_t *olen,
+                                            const unsigned char *input,
+                                            unsigned char *output,
+                                            size_t output_max_len,
+                                            int *sensitive_ret);
+#endif
+
 #if defined(MBEDTLS_PKCS1_V21)
 /**
  * \brief This function is analogue to \c mbedtls_rsa_rsassa_pss_sign_ext().

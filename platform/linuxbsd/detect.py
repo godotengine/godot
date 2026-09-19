@@ -162,6 +162,10 @@ def configure(env: "SConsEnvironment"):
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
 
+        if not env["use_llvm"] and env["arch"] == "x86_64":
+            env.Append(CCFLAGS=["-mcmodel=medium"])
+            env.Append(LINKFLAGS=["-mcmodel=medium"])
+
         if env["use_ubsan"]:
             env.Append(CPPDEFINES=["UBSAN_ENABLED"])
             env.Append(
@@ -237,7 +241,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
 
     if env["wayland"]:
-        if subprocess.run(["wayland-scanner", "-v"], capture_output=True, shell=True).returncode != 0:
+        if not env.WhereIs("wayland-scanner"):
             print_warning("wayland-scanner not found. Disabling Wayland support.")
             env["wayland"] = False
 
@@ -529,14 +533,14 @@ def configure(env: "SConsEnvironment"):
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
                 f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
-                "See the documentation for more information:\n"
-                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html\n"
-                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+                "See the documentation for more information:\n\t"
+                "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html#compiling-with-accesskit-support"
+                "\nAlternatively, disable this driver by compiling with `accesskit=no` explicitly."
             )
             env["accesskit"] = False
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:

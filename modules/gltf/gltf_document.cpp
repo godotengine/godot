@@ -1162,17 +1162,6 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 					attributes["COLOR_0"] = GLTFAccessor::encode_new_accessor_from_colors(p_state, a, GLTFBufferView::TARGET_ARRAY_BUFFER);
 				}
 			}
-			HashMap<int, int> joint_i_to_bone_i;
-			for (GLTFNodeIndex node_i = 0; node_i < p_state->nodes.size(); node_i++) {
-				GLTFSkinIndex skin_i = -1;
-				if (p_state->nodes[node_i]->mesh == gltf_mesh_i) {
-					skin_i = p_state->nodes[node_i]->skin;
-				}
-				if (skin_i != -1) {
-					joint_i_to_bone_i = p_state->skins[skin_i]->joint_i_to_bone_i;
-					break;
-				}
-			}
 			{
 				const Array &a = array[Mesh::ARRAY_BONES];
 				const Vector<Vector3> &vertex_array = array[Mesh::ARRAY_VERTEX];
@@ -1307,7 +1296,6 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 					Dictionary t;
 					Vector<Vector3> varr = array_morph[Mesh::ARRAY_VERTEX];
 					Vector<Vector3> src_varr = array[Mesh::ARRAY_VERTEX];
-					Array mesh_arrays = import_mesh->get_surface_arrays(surface_i);
 					if (varr.size() && varr.size() == src_varr.size()) {
 						if (shape_mode == ArrayMesh::BlendShapeMode::BLEND_SHAPE_MODE_NORMALIZED) {
 							const int max_idx = src_varr.size();
@@ -1466,6 +1454,10 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			uint64_t flags = RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			Dictionary mesh_prim = primitives[j];
 
+			ERR_FAIL_COND_V(!mesh_prim.has("attributes"), ERR_PARSE_ERROR);
+			const Dictionary a = mesh_prim["attributes"];
+			has_vertex_color = a.has("COLOR_0");
+
 			// Read the material.
 			Ref<Material> mat;
 			String mat_name;
@@ -1501,6 +1493,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					if (has_vertex_color) {
 						mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 					}
+					mat3d->set_name(_gen_unique_name(p_state, vformat("%s_%s", mesh_name, itos(j + 1))));
 					mat = mat3d;
 				}
 				ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
@@ -1511,10 +1504,6 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			// Read the mesh primitive data into Godot ArrayMesh array data.
 			Array array;
 			array.resize(Mesh::ARRAY_MAX);
-
-			ERR_FAIL_COND_V(!mesh_prim.has("attributes"), ERR_PARSE_ERROR);
-
-			Dictionary a = mesh_prim["attributes"];
 
 			Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;
 			if (mesh_prim.has("mode")) {
@@ -1666,9 +1655,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 				}
 			}
-			if (a.has("COLOR_0")) {
+			if (has_vertex_color) {
 				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], indices_mapping);
-				has_vertex_color = true;
 			}
 			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
 				PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
@@ -4253,8 +4241,10 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 #endif // TOOLS_ENABLED
 	Ref<GLTFNode> gltf_node;
 	gltf_node.instantiate();
-	if (p_current->has_method("is_visible")) {
-		bool visible = p_current->call("is_visible");
+
+	Callable::CallError err;
+	bool visible = p_current->callp(SceneStringName(is_visible), nullptr, 0, err);
+	if (err.error == Callable::CallError::CALL_OK) {
 		if (!visible && _visibility_mode == VISIBILITY_MODE_EXCLUDE) {
 			return;
 		}
@@ -5131,6 +5121,7 @@ NodePath GLTFDocument::_find_material_node_path(Ref<GLTFState> p_state, const Re
 }
 
 Ref<GLTFObjectModelProperty> GLTFDocument::import_object_model_property(Ref<GLTFState> p_state, const String &p_json_pointer) {
+	ERR_FAIL_COND_V_MSG(p_state.is_null(), Ref<GLTFObjectModelProperty>(), "Cannot import object model property because GLTFState is null.");
 	if (p_state->object_model_properties.has(p_json_pointer)) {
 		return p_state->object_model_properties[p_json_pointer];
 	}
@@ -5978,7 +5969,6 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 		Ref<Skin> skin = mi->get_skin();
 		Ref<GLTFSkin> gltf_skin;
 		gltf_skin.instantiate();
-		Array json_joints;
 		if (p_state->skeleton3d_to_gltf_skeleton.has(godot_skeleton->get_instance_id())) {
 			// This is a skinned mesh. If the mesh has no ARRAY_WEIGHTS or ARRAY_BONES, it will be invisible.
 			const GLTFSkeletonIndex skeleton_gltf_i = p_state->skeleton3d_to_gltf_skeleton[godot_skeleton->get_instance_id()];
@@ -6024,6 +6014,8 @@ void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> p_state) {
 					if (bind_name == StringName()) {
 						bind_name = godot_skeleton->get_bone_name(bone_i);
 					}
+					Vector3 skin_scale = godot_skeleton->get_bone_skin_scale(bone_i);
+					bind_pose = bind_pose.scaled(skin_scale);
 					GLTFNodeIndex skeleton_bone_i = gltf_skeleton->joints[bone_i];
 					gltf_skin->joints_original.push_back(skeleton_bone_i);
 					gltf_skin->joints.push_back(skeleton_bone_i);
@@ -7250,11 +7242,8 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	p_state->set_base_path(p_path.get_base_dir());
 	p_state->filename = p_path.get_file();
-	Error err = _serialize(p_state);
-	if (err != OK) {
-		return err;
-	}
-	err = _serialize_file(p_state, p_path);
+	RETURN_IF_ERROR(_serialize(p_state));
+	Error err = _serialize_file(p_state, p_path);
 	if (err != OK) {
 		return Error::FAILED;
 	}

@@ -123,6 +123,7 @@ void ScriptLanguageExtension::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_create_script);
 	GDVIRTUAL_BIND(_has_named_classes);
+	GDVIRTUAL_BIND(_get_recognized_extensions);
 #endif
 	GDVIRTUAL_BIND(_supports_builtin_mode);
 	GDVIRTUAL_BIND(_supports_documentation);
@@ -162,7 +163,6 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_reload_scripts, "scripts", "soft_reload");
 	GDVIRTUAL_BIND(_reload_tool_script, "script", "soft_reload");
 
-	GDVIRTUAL_BIND(_get_recognized_extensions);
 	GDVIRTUAL_BIND(_get_public_functions);
 	GDVIRTUAL_BIND(_get_public_constants);
 	GDVIRTUAL_BIND(_get_public_annotations);

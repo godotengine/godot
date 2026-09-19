@@ -33,10 +33,10 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/filter_line_edit.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -189,7 +189,7 @@ void EditorHelpSearch::_confirmed() {
 	}
 
 	// Activate the script editor and emit the signal with the documentation link to display.
-	EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+	ScriptEditor::get_singleton()->focus_editor();
 
 	emit_signal(SNAME("go_to_help"), item->get_metadata(0));
 
@@ -1250,7 +1250,7 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 	TreeItem *item = nullptr;
 	if (_find_or_create_item(p_parent, item_meta, item)) {
 		item->set_icon(0, ui_service->get_editor_theme_icon(p_icon));
-		item->set_text(1, TTRGET(p_type));
+		item->set_text(1, TTR(p_type));
 		item->set_tooltip_text(0, p_tooltip);
 		item->set_tooltip_text(1, p_tooltip);
 		item->set_metadata(0, item_meta);

@@ -35,6 +35,17 @@
 		animationTree.Get("parameters/Transition/current_index");
 		[/csharp]
 		[/codeblocks]
+		Optionally, signals can be used by setting an [AnimationNodeObserverTransition] through [AnimationTree].
+		[codeblocks]
+		[gdscript]
+		var observer = animation_tree.get("parameters/Transition/observer")
+		observer.state_started.connect(on_state_started)
+		[/gdscript]
+		[csharp]
+		var observer = animationTree.Get("parameters/Transition/observer").As&lt;AnimationNodeObserverTransition&gt;();
+		observer.StateStarted += OnStateStarted;
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>

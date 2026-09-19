@@ -274,6 +274,8 @@ class ConnectionsDock : public VBoxContainer {
 	void _tree_gui_input(const Ref<InputEvent> &p_event);
 	void _close();
 
+	void _changed_callback();
+
 protected:
 	void _connect_pressed();
 	void _notification(int p_what);

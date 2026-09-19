@@ -253,7 +253,7 @@ static const char *mbedtls_high_level_strerr(int error_code)
             return( "X509 - Read/write of file failed" );
         case -(MBEDTLS_ERR_X509_FATAL_ERROR):
             return( "X509 - A fatal error occurred, eg the chain is too long or the vrfy callback failed" );
-#endif /* MBEDTLS_X509_USE_C ||
+#endif /* MBEDTLS_X509_USE_C || 
           MBEDTLS_X509_CREATE_C */
 
 #if defined(MBEDTLS_CIPHER_C)

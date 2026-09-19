@@ -38,7 +38,11 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "scene/resources/surface_tool.h"
-#include "servers/rendering/rendering_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/rendering/rendering_server.h" // Only used for debug collision shapes.
+#endif // PHYSICS_3D_DISABLED
 
 #ifdef DEV_ENABLED
 #include "core/io/json.h"
@@ -106,8 +110,8 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision) {
 		root_collision_shape.instantiate();
 		root_collision_body = PhysicsServer3D::get_singleton()->body_create();
-		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PhysicsServer3D::BODY_MODE_STATIC);
-		PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+		PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PS3DE::BODY_MODE_STATIC);
+		PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 		PhysicsServer3D::get_singleton()->body_add_shape(root_collision_body, root_collision_shape->get_rid());
 		PhysicsServer3D::get_singleton()->body_set_space(root_collision_body, get_world_3d()->get_space());
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_body, get_instance_id());
@@ -206,6 +210,7 @@ void CSGShape3D::set_collision_priority(real_t p_priority) {
 real_t CSGShape3D::get_collision_priority() const {
 	return collision_priority;
 }
+#endif // PHYSICS_3D_DISABLED
 
 void CSGShape3D::set_autosmooth(bool p_smooth) {
 	autosmooth = p_smooth;
@@ -225,8 +230,6 @@ void CSGShape3D::set_smoothing_angle(const float p_angle) {
 float CSGShape3D::get_smoothing_angle() const {
 	return smoothing_angle;
 }
-
-#endif // PHYSICS_3D_DISABLED
 
 bool CSGShape3D::is_root_shape() const {
 	return !parent_shape;
@@ -485,9 +488,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	if (!dirty) {
 		return brush;
 	}
-	if (brush) {
-		memdelete(brush);
-	}
+	memdelete(brush);
 	brush = nullptr;
 	CSGBrush *n = _build_brush();
 	HashMap<int32_t, Ref<Material>> mesh_materials;
@@ -520,9 +521,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	}
 	if (!manifolds.empty()) {
 		manifold::Manifold manifold_result = manifold::Manifold::BatchBoolean(manifolds, current_op);
-		if (n) {
-			memdelete(n);
-		}
+		memdelete(n);
 		n = memnew(CSGBrush);
 		_unpack_manifold(manifold_result, mesh_materials, n);
 	}
@@ -1035,8 +1034,8 @@ void CSGShape3D::_notification(int p_what) {
 			if (use_collision && is_root_shape()) {
 				root_collision_shape.instantiate();
 				root_collision_body = PhysicsServer3D::get_singleton()->body_create();
-				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PhysicsServer3D::BODY_MODE_STATIC);
-				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+				PhysicsServer3D::get_singleton()->body_set_mode(root_collision_body, PS3DE::BODY_MODE_STATIC);
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 				PhysicsServer3D::get_singleton()->body_add_shape(root_collision_body, root_collision_shape->get_rid());
 				PhysicsServer3D::get_singleton()->body_set_space(root_collision_body, get_world_3d()->get_space());
 				PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_body, get_instance_id());
@@ -1059,9 +1058,17 @@ void CSGShape3D::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (use_collision && is_root_shape() && root_collision_body.is_valid()) {
-				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
+				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 			_on_transform_changed();
+		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			if (_is_debug_collision_shape_visible()) {
+				_update_debug_collision_shape();
+			} else {
+				_clear_debug_collision_shape();
+			}
 		} break;
 #endif // PHYSICS_3D_DISABLED
 	}

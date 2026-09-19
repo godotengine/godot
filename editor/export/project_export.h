@@ -138,6 +138,12 @@ class ProjectExportDialog : public ConfirmationDialog {
 	Label *export_warning = nullptr;
 	HBoxContainer *export_templates_error = nullptr;
 
+#ifndef ANDROID_ENABLED
+	HBoxContainer *android_sdk_error_container = nullptr;
+	LinkButton *setup_android_java_sdk = nullptr;
+	void _update_android_sdk_error_container();
+#endif
+
 	String default_filename;
 
 	bool exporting = false;

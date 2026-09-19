@@ -452,11 +452,10 @@ void ScriptEditorDebugger::_msg_scene_scene_tree(uint64_t p_thread_id, const Arr
 
 void ScriptEditorDebugger::_msg_scene_inspect_objects(uint64_t p_thread_id, const Array &p_data) {
 	ERR_FAIL_COND(p_data.is_empty());
-	EditorDebuggerRemoteObjects *objs = inspector->set_objects(p_data);
-	if (objs && EditorDebuggerNode::get_singleton()->match_remote_selection(objs->remote_object_ids)) {
+	EditorDebuggerRemoteObjects *robjs = inspector->set_objects(p_data, get_current_debugger_tab());
+	if (robjs && EditorDebuggerNode::get_singleton()->match_remote_selection(robjs->remote_object_ids)) {
 		EditorDebuggerNode::get_singleton()->stop_waiting_inspection();
-
-		emit_signal(SNAME("remote_objects_updated"), objs);
+		emit_signal(SNAME("remote_objects_updated"), robjs);
 	}
 }
 
@@ -497,7 +496,7 @@ void ScriptEditorDebugger::_msg_servers_memory_usage(uint64_t p_thread_id, const
 		// If it does not have a theme icon, just go up the inheritance tree until we find one.
 		if (!has_theme_icon(type, EditorStringName(EditorIcons))) {
 			StringName base_type = type;
-			while (base_type != "Resource" || base_type != "") {
+			while (base_type != "Resource" && base_type != "") {
 				base_type = ClassDB::get_parent_class(base_type);
 				if (has_theme_icon(base_type, EditorStringName(EditorIcons))) {
 					type = base_type;
@@ -911,12 +910,16 @@ void ScriptEditorDebugger::_msg_request_quit(uint64_t p_thread_id, const Array &
 
 void ScriptEditorDebugger::_msg_remote_objects_selected(uint64_t p_thread_id, const Array &p_data) {
 	ERR_FAIL_COND(p_data.is_empty());
-	EditorDebuggerRemoteObjects *objs = inspector->set_objects(p_data);
-	if (objs) {
-		EditorDebuggerNode::get_singleton()->stop_waiting_inspection();
+	EditorDebuggerNode *dbg = EditorDebuggerNode::get_singleton();
+	EditorDebuggerRemoteObjects *robjs = inspector->set_objects(p_data, dbg->get_debugger_id(this));
+	if (robjs) {
+		dbg->stop_waiting_inspection();
+		if (dbg->get_current_debugger() != this) {
+			dbg->set_current_debugger(robjs->debugger_id);
+		}
 
-		emit_signal(SNAME("remote_objects_updated"), objs);
-		emit_signal(SNAME("remote_tree_select_requested"), objs->remote_object_ids.duplicate());
+		emit_signal(SNAME("remote_objects_updated"), robjs);
+		emit_signal(SNAME("remote_tree_select_requested"), robjs->remote_object_ids.duplicate());
 	}
 }
 
@@ -1714,6 +1717,11 @@ void ScriptEditorDebugger::_mute_audio_on_break(bool p_mute) {
 	audio_muted_on_break = p_mute;
 }
 
+void ScriptEditorDebugger::set_debug_collisions(bool p_enable) {
+	Array msg = { p_enable };
+	_put_msg("scene:set_debug_collisions", msg);
+}
+
 CameraOverride ScriptEditorDebugger::get_camera_override() const {
 	return camera_override;
 }
@@ -2312,7 +2320,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 
 		clear_button = memnew(Button);
 		clear_button->set_text(TTRC("Clear"));
-		clear_button->set_h_size_flags(0);
+		clear_button->set_h_size_flags(SIZE_SHRINK_BEGIN);
 		clear_button->set_disabled(true);
 		clear_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_clear_errors_list));
 		error_hbox->add_child(clear_button);
@@ -2511,9 +2519,6 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 
 		misc->add_child(buttons);
 	}
-
-	msgdialog = memnew(AcceptDialog);
-	add_child(msgdialog);
 
 	_update_buttons_state();
 }

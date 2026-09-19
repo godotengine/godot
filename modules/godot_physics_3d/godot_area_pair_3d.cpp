@@ -41,11 +41,11 @@ bool GodotAreaPair3D::setup(real_t p_step) {
 	process_collision = false;
 	has_space_override = false;
 	if (result != colliding) {
-		if ((int)area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		if ((int)area->get_param(PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			has_space_override = true;
-		} else if ((int)area->get_param(PhysicsServer3D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE) != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		} else if ((int)area->get_param(PS3DE::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE) != PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			has_space_override = true;
-		} else if ((int)area->get_param(PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE) != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		} else if ((int)area->get_param(PS3DE::AREA_PARAM_ANGULAR_DAMP_OVERRIDE_MODE) != PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			has_space_override = true;
 		}
 		process_collision = has_space_override;
@@ -99,7 +99,7 @@ GodotAreaPair3D::GodotAreaPair3D(GodotBody3D *p_body, int p_body_shape, GodotAre
 	area_shape = p_area_shape;
 	body->add_constraint(this, 0);
 	area->add_constraint(this);
-	if (p_body->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
+	if (p_body->get_mode() == PS3DE::BODY_MODE_KINEMATIC) {
 		p_body->set_active(true);
 	}
 }
@@ -222,7 +222,7 @@ bool GodotAreaSoftBodyPair3D::setup(real_t p_step) {
 	process_collision = false;
 	has_space_override = false;
 	if (result != colliding) {
-		if ((int)area->get_param(PhysicsServer3D::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
+		if ((int)area->get_param(PS3DE::AREA_PARAM_GRAVITY_OVERRIDE_MODE) != PS3DE::AREA_SPACE_OVERRIDE_DISABLED) {
 			has_space_override = true;
 		} else if (area->get_wind_force_magnitude() > CMP_EPSILON) {
 			has_space_override = true;

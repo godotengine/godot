@@ -6,7 +6,7 @@
 	<description>
 		A 3D heightmap shape, intended for use in physics to provide a shape for a [CollisionShape3D]. This type is most commonly used for terrain with vertices placed in a fixed-width grid.
 		The heightmap is represented as a 2D grid of height values, which represent the position of grid points on the Y axis. Grid points are spaced 1 unit apart on the X and Z axes, and the grid is centered on the origin of the [CollisionShape3D] node. Internally, each grid square is divided into two triangles.
-		Due to the nature of the heightmap, it cannot be used to model overhangs or caves, which would require multiple vertices at the same vertical location. Holes can be punched through the collision by assigning [constant @GDScript.NAN] to the height of the desired vertices (this is supported in both GodotPhysics3D and Jolt Physics). You could then insert meshes with their own separate collision to provide overhangs, caves, and so on.
+		Due to the nature of the heightmap, it cannot be used to model overhangs or caves, which would require multiple vertices at the same vertical location. Holes can be punched through the collision by assigning [constant @GDScript.NAN] to the height of the desired vertices. You could then insert meshes with their own separate collision to provide overhangs, caves, and so on.
 		[b]Performance:[/b] [HeightMapShape3D] is faster to check collisions against than [ConcavePolygonShape3D], but it is significantly slower than primitive shapes like [BoxShape3D].
 		A heightmap collision shape can also be built by using an [Image] reference:
 		[codeblocks]

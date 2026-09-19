@@ -209,7 +209,7 @@ struct CPAL
     hb_array_t<const BGRAColor> all_colors ((this+colorRecordsZ).arrayZ, numColorRecords);
     hb_array_t<const BGRAColor> palette_colors = all_colors.sub_array (start_index,
 								       numColors);
-    if (color_count)
+    if (color_count && colors)
     {
       + palette_colors.sub_array (start_offset, color_count)
       | hb_sink (hb_array (colors, *color_count))

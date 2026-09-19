@@ -1025,6 +1025,7 @@ int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
  *
  * \param X        The MPI to check for primality.
  *                 This must point to an initialized MPI.
+ *                 The value must be larger than 997.
  * \param rounds   The number of bases to perform the Miller-Rabin primality
  *                 test for. The probability of returning 0 on a composite is
  *                 at most 2<sup>-2*\p rounds </sup>.
@@ -1036,6 +1037,7 @@ int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
  * \return         \c 0 if successful, i.e. \p X is probably prime.
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
  * \return         #MBEDTLS_ERR_MPI_NOT_ACCEPTABLE if \p X is not prime.
+ * \return         #MBEDTLS_ERR_MPI_BAD_INPUT_DATA if \p X is too small.
  * \return         Another negative error code on other kinds of failure.
  */
 int mbedtls_mpi_is_prime_ext(const mbedtls_mpi *X, int rounds,
@@ -1058,7 +1060,7 @@ typedef enum {
  * \param X        The destination MPI to store the generated prime in.
  *                 This must point to an initialized MPi.
  * \param nbits    The required size of the destination MPI in bits.
- *                 This must be between \c 3 and #MBEDTLS_MPI_MAX_BITS.
+ *                 This must be between \c 12 and #MBEDTLS_MPI_MAX_BITS.
  * \param flags    A mask of flags of type #mbedtls_mpi_gen_prime_flag_t.
  * \param f_rng    The RNG function to use. This must not be \c NULL.
  * \param p_rng    The RNG parameter to be passed to \p f_rng.
@@ -1069,7 +1071,7 @@ typedef enum {
  *                 probably prime number.
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if a memory allocation failed.
  * \return         #MBEDTLS_ERR_MPI_BAD_INPUT_DATA if `nbits` is not between
- *                 \c 3 and #MBEDTLS_MPI_MAX_BITS.
+ *                 \c 12 and #MBEDTLS_MPI_MAX_BITS.
  */
 int mbedtls_mpi_gen_prime(mbedtls_mpi *X, size_t nbits, int flags,
                           int (*f_rng)(void *, unsigned char *, size_t),

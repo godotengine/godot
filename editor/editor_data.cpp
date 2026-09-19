@@ -640,7 +640,9 @@ void EditorData::instantiate_object_properties(Object *p_object) {
 
 	for (const PropertyInfo &pi : pinfo) {
 		if (pi.type == Variant::OBJECT && pi.usage & PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT) {
-			Object *prop = ClassDB::instantiate(pi.class_name);
+			// For comma-separated lists, instantiate the first item in the list (which is assumed to cover the most common use case).
+			// This is a situation where listing a subclass before a parent class makes sense (e.g. "NoiseTexture2D,Texture2D").
+			Object *prop = ClassDB::instantiate(String(pi.class_name).get_slicec(',', 0));
 			p_object->set(pi.name, prop);
 		}
 	}
@@ -717,6 +719,13 @@ void EditorData::set_scene_root(int p_idx, Node *p_root) {
 	if (!scene_info.path.is_empty()) {
 		scene_info.file_modified_time = FileAccess::get_modified_time(scene_info.path);
 	}
+}
+
+void EditorData::set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene) {
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	EditedScene &scene_info = edited_scene.write[p_idx];
+
+	scene_info.scene = p_scene;
 }
 
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths) {
@@ -1015,9 +1024,7 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 
 void EditorData::clear_edited_scenes() {
 	for (int i = 0; i < edited_scene.size(); i++) {
-		if (edited_scene[i].root) {
-			memdelete(edited_scene[i].root);
-		}
+		memdelete(edited_scene[i].root);
 	}
 	edited_scene.clear();
 	SceneTree::get_singleton()->set_edited_scene_root(nullptr);
@@ -1274,7 +1281,7 @@ void EditorSelection::_node_removed(Node *p_node) {
 	}
 
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 	changed = true;
 	node_list_changed = true;
@@ -1292,7 +1299,7 @@ void EditorSelection::add_node(Node *p_node) {
 	node_list_changed = true;
 	Object *meta = nullptr;
 	for (Object *E : editor_plugins) {
-		meta = E->call("_get_editor_data", p_node);
+		meta = E->call(SNAME("_get_editor_data"), p_node);
 		if (meta) {
 			break;
 		}
@@ -1312,7 +1319,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	changed = true;
 	node_list_changed = true;
 	Object *meta = selection[nid];
-	memdelete_notnull(meta);
+	memdelete(meta);
 	selection.erase(nid);
 
 	p_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &EditorSelection::_node_removed));

@@ -232,6 +232,8 @@ private:
 	Node3D *ruler_end_point = nullptr;
 	Ref<ImmediateMesh> geometry;
 	Ref<ImmediateMesh> geometry_xray;
+	Ref<ImmediateMesh> triangle_mesh;
+	Ref<ImmediateMesh> triangle_mesh_xray;
 	MeshInstance3D *ruler_line = nullptr;
 	MeshInstance3D *ruler_line_xray = nullptr;
 	Label *ruler_label = nullptr;
@@ -509,6 +511,7 @@ private:
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) const;
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
+	bool _create_script_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
 
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
@@ -540,6 +543,8 @@ private:
 
 	void _set_lock_view_rotation(bool p_lock_rotation);
 	void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
+
+	real_t _screen_space_selection_cost(const Vector3 &p_center, const float p_radius, const Vector3 &p_pos);
 
 protected:
 	void _notification(int p_what);

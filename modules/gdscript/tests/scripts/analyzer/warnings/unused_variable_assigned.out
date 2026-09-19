@@ -1,0 +1,4 @@
+GDTEST_OK
+~~ WARNING at line 4: (UNUSED_PARAMETER) The parameter "param" is never used in the function "param_test()". If this is intended, prefix it with an underscore: "_param".
+~~ WARNING at line 11: (UNUSED_VARIABLE) The local variable "a" is declared but never used in the block. If this is intended, prefix it with an underscore: "_a".
+~~ WARNING at line 14: (UNUSED_VARIABLE) The local variable "b" is declared but never used in the block. If this is intended, prefix it with an underscore: "_b".

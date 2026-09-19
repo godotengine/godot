@@ -35,18 +35,18 @@
 #include "core/templates/hashfuncs.h"
 
 /**
- * Implementation of Set using a bidi indexed hash map.
- * Use RBSet instead of this only if the following conditions are met:
+ * Set container using robin hood hashing.
  *
- * - You need to keep an iterator or const pointer to Key and you intend to add/remove elements in the meantime.
- * - Iteration order does matter (via operator<)
+ * Elements are not pointer stable.
+ * The element order is arbitrary.
  *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  */
-
 template <typename TKey,
 		typename Hasher = HashMapHasherDefault,
 		typename Comparator = HashMapComparatorDefault<TKey>>
-class HashSet {
+class _WARN_UNUSED_ HashSet {
 public:
 	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
 	static constexpr float MAX_OCCUPANCY = 0.75;
@@ -350,8 +350,8 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return _keys == b._keys && _key_idx == b._key_idx; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return _keys != b._keys || _key_idx != b._key_idx; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return _keys == p_other._keys && _key_idx == p_other._key_idx; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return _keys != p_other._keys || _key_idx != p_other._key_idx; }
 
 		_FORCE_INLINE_ explicit operator bool() const {
 			return _keys != nullptr;
@@ -489,7 +489,7 @@ public:
 		return !(*this == p_other);
 	}
 
-	HashSet(uint32_t p_initial_capacity) {
+	explicit HashSet(uint32_t p_initial_capacity) {
 		// Capacity can't be 0.
 		_capacity_idx = 0;
 		reserve(p_initial_capacity);

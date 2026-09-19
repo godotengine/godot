@@ -31,7 +31,7 @@
 #import "apple_embedded.h"
 
 #include "core/object/class_db.h"
-#import "drivers/apple_embedded/app_delegate_service.h"
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_controller.h"
 
 #import <CoreHaptics/CoreHaptics.h>
@@ -106,12 +106,22 @@ void AppleEmbedded::vibrate_haptic_engine(float p_duration_seconds, float p_ampl
 					};
 				}
 
-				NSError *error;
+				NSError *error = nil;
 				CHHapticPattern *pattern = [[CHHapticPattern alloc] initWithDictionary:hapticDict error:&error];
-
-				[[cur_haptic_engine createPlayerWithPattern:pattern error:&error] startAtTime:0 error:&error];
-
-				NSLog(@"Could not vibrate using haptic engine: %@", error);
+				if (error) {
+					NSLog(@"Could not vibrate using haptic engine: %@", error);
+					return;
+				}
+				id player = [cur_haptic_engine createPlayerWithPattern:pattern error:&error];
+				if (error) {
+					NSLog(@"Could not vibrate using haptic engine: %@", error);
+					return;
+				}
+				[player startAtTime:0 error:&error];
+				if (error) {
+					NSLog(@"Could not vibrate using haptic engine: %@", error);
+					return;
+				}
 			}
 
 			return;

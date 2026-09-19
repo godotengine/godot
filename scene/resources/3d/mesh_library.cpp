@@ -67,6 +67,7 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 		return false;
 	}
 
+#ifndef NAVIGATION_3D_DISABLED
 	int index = components[1].to_int();
 	if (components[2] == "navmesh") { // Renamed in 4.0 beta 9.
 		set_item_navigation_mesh(index, p_value);
@@ -75,6 +76,7 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 		set_item_navigation_mesh_transform(index, p_value);
 		return true;
 	}
+#endif // NAVIGATION_3D_DISABLED
 #endif // DISABLE_DEPRECATED
 
 	return false;
@@ -96,6 +98,7 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 		return false;
 	}
 
+#ifndef NAVIGATION_3D_DISABLED
 	int index = components[1].to_int();
 	if (components[2] == "navmesh") { // Renamed in 4.0 beta 9.
 		r_ret = get_item_navigation_mesh(index);
@@ -104,6 +107,7 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_item_navigation_mesh_transform(index);
 		return true;
 	}
+#endif // NAVIGATION_3D_DISABLED
 #endif // DISABLE_DEPRECATED
 
 	return false;
@@ -168,6 +172,7 @@ void MeshLibrary::set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes)
 }
 #endif // PHYSICS_3D_DISABLED
 
+#ifndef NAVIGATION_3D_DISABLED
 void MeshLibrary::set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh) {
 	if (_validate_index(p_item)) {
 		item_map[p_item].navigation_mesh = p_navigation_mesh;
@@ -188,6 +193,7 @@ void MeshLibrary::set_item_navigation_layers(int p_item, uint32_t p_navigation_l
 		emit_changed();
 	}
 }
+#endif // NAVIGATION_3D_DISABLED
 
 void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {
 	if (_validate_index(p_item)) {
@@ -228,6 +234,7 @@ Vector<MeshLibrary::ShapeData> MeshLibrary::get_item_shapes(int p_item) const {
 }
 #endif // PHYSICS_3D_DISABLED
 
+#ifndef NAVIGATION_3D_DISABLED
 Ref<NavigationMesh> MeshLibrary::get_item_navigation_mesh(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<NavigationMesh>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].navigation_mesh;
@@ -242,6 +249,7 @@ uint32_t MeshLibrary::get_item_navigation_layers(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), 0, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].navigation_layers;
 }
+#endif // NAVIGATION_3D_DISABLED
 
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture2D>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
@@ -356,24 +364,34 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_mesh", "id", "mesh"), &MeshLibrary::set_item_mesh);
 	ClassDB::bind_method(D_METHOD("set_item_mesh_transform", "id", "mesh_transform"), &MeshLibrary::set_item_mesh_transform);
 	ClassDB::bind_method(D_METHOD("set_item_mesh_cast_shadow", "id", "shadow_casting_setting"), &MeshLibrary::set_item_mesh_cast_shadow);
+
+#ifndef NAVIGATION_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_item_navigation_mesh", "id", "navigation_mesh"), &MeshLibrary::set_item_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("set_item_navigation_mesh_transform", "id", "navigation_mesh"), &MeshLibrary::set_item_navigation_mesh_transform);
 	ClassDB::bind_method(D_METHOD("set_item_navigation_layers", "id", "navigation_layers"), &MeshLibrary::set_item_navigation_layers);
+#endif // NAVIGATION_3D_DISABLED
+
 #ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
 #endif // PHYSICS_3D_DISABLED
+
 	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
 	ClassDB::bind_method(D_METHOD("get_item_category", "id"), &MeshLibrary::get_item_category);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_transform", "id"), &MeshLibrary::get_item_mesh_transform);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_cast_shadow", "id"), &MeshLibrary::get_item_mesh_cast_shadow);
+
+#ifndef NAVIGATION_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_item_navigation_mesh", "id"), &MeshLibrary::get_item_navigation_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_navigation_mesh_transform", "id"), &MeshLibrary::get_item_navigation_mesh_transform);
 	ClassDB::bind_method(D_METHOD("get_item_navigation_layers", "id"), &MeshLibrary::get_item_navigation_layers);
+#endif // NAVIGATION_3D_DISABLED
+
 #ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_item_shapes", "id"), &MeshLibrary::_get_item_shapes);
 #endif // PHYSICS_3D_DISABLED
+
 	ClassDB::bind_method(D_METHOD("get_item_preview", "id"), &MeshLibrary::get_item_preview);
 	ClassDB::bind_method(D_METHOD("remove_item", "id"), &MeshLibrary::remove_item);
 	ClassDB::bind_method(D_METHOD("find_item_by_name", "name"), &MeshLibrary::find_item_by_name);
@@ -392,12 +410,17 @@ void MeshLibrary::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static(), PROPERTY_USAGE_NO_EDITOR), defaults.mesh, &MeshLibrary::set_item_mesh, &MeshLibrary::get_item_mesh);
 	base_property_helper.register_property(PropertyInfo(Variant::TRANSFORM3D, PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR), defaults.mesh_transform, &MeshLibrary::set_item_mesh_transform, &MeshLibrary::get_item_mesh_transform);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, PNAME("mesh_cast_shadow"), PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only", PROPERTY_USAGE_NO_EDITOR), defaults.mesh_cast_shadow, &MeshLibrary::set_item_mesh_cast_shadow, &MeshLibrary::get_item_mesh_cast_shadow);
+
 #ifndef PHYSICS_3D_DISABLED
 	base_property_helper.register_property(PropertyInfo(Variant::ARRAY, PNAME("shapes"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Array(), &MeshLibrary::_set_item_shapes, &MeshLibrary::_get_item_shapes);
 #endif // PHYSICS_3D_DISABLED
+
+#ifndef NAVIGATION_3D_DISABLED
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static(), PROPERTY_USAGE_NO_EDITOR), defaults.navigation_mesh, &MeshLibrary::set_item_navigation_mesh, &MeshLibrary::get_item_navigation_mesh);
 	base_property_helper.register_property(PropertyInfo(Variant::TRANSFORM3D, PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR), defaults.navigation_mesh_transform, &MeshLibrary::set_item_mesh_transform, &MeshLibrary::get_item_mesh_transform);
 	base_property_helper.register_property(PropertyInfo(Variant::INT, PNAME("navigation_layers"), PROPERTY_HINT_LAYERS_3D_NAVIGATION, "", PROPERTY_USAGE_NO_EDITOR), defaults.navigation_layers, &MeshLibrary::set_item_navigation_layers, &MeshLibrary::get_item_navigation_layers);
+#endif // NAVIGATION_3D_DISABLED
+
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_NO_EDITOR), defaults.preview, &MeshLibrary::set_item_preview, &MeshLibrary::get_item_preview);
 	PropertyListHelper::register_base_helper(get_class_static(), &base_property_helper);
 }

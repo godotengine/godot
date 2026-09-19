@@ -99,7 +99,7 @@ public:
 	void set_navigation_mesh(Ref<NavigationPolygon> p_navigation_mesh);
 	Ref<NavigationPolygon> get_navigation_mesh() const { return navmesh; }
 
-	LocalVector<Nav2D::Polygon> const &get_polygons() const;
+	const LocalVector<Nav2D::Polygon> &get_polygons() const;
 
 	Nav2D::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
 	Vector2 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;

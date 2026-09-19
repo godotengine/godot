@@ -1101,6 +1101,12 @@ Variant LineEdit::get_drag_data(const Point2 &p_point) {
 		l->set_text(t);
 		l->set_focus_mode(FOCUS_ACCESSIBILITY);
 		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate user input.
+		l->add_theme_font_override(SceneStringName(font), theme_cache.font);
+		l->add_theme_font_size_override(SceneStringName(font_size), theme_cache.font_size);
+		l->add_theme_constant_override(SNAME("outline_size"), theme_cache.font_outline_size);
+		l->add_theme_color_override(SceneStringName(font_color), theme_cache.font_color);
+		l->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
+		l->add_theme_style_override(CoreStringName(normal), memnew(StyleBoxEmpty())); // Ensure that the label has no margins inherited from the theme.
 		set_drag_preview(l);
 		return t;
 	}
@@ -2477,12 +2483,16 @@ Size2 LineEdit::get_minimum_size() const {
 	int icon_max_width = 0;
 	if (right_icon.is_valid()) {
 		Point2 right_icon_size = _get_right_icon_size(right_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = right_icon_size.width;
 	}
 	if (clear_button_enabled) {
 		Point2 right_icon_size = _get_right_icon_size(theme_cache.clear_icon);
-		min_size.height = MAX(min_size.height, right_icon_size.height);
+		if (icon_expand_mode != LineEdit::EXPAND_MODE_FIT_TO_LINE_EDIT) {
+			min_size.height = MAX(min_size.height, right_icon_size.height);
+		}
 		icon_max_width = MAX(icon_max_width, right_icon_size.width);
 	}
 	min_size.width += icon_max_width;

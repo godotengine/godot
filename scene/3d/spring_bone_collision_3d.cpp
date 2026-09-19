@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/object/class_db.h"
 #include "scene/3d/spring_bone_simulator_3d.h"
+#include "scene/main/scene_tree.h"
 
 PackedStringArray SpringBoneCollision3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
@@ -40,6 +41,10 @@ PackedStringArray SpringBoneCollision3D::get_configuration_warnings() const {
 	SpringBoneSimulator3D *parent = Object::cast_to<SpringBoneSimulator3D>(get_parent());
 	if (!parent) {
 		warnings.push_back(RTR("Parent node should be a SpringBoneSimulator3D node."));
+	}
+
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+		warnings.push_back(RTR("SpringBoneCollision3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 	}
 
 	return warnings;
@@ -199,4 +204,8 @@ Vector3 SpringBoneCollision3D::collide(const Transform3D &p_center, float p_bone
 
 Vector3 SpringBoneCollision3D::_collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const {
 	return Vector3(0, 0, 0);
+}
+
+SpringBoneCollision3D::SpringBoneCollision3D() {
+	set_physics_interpolation_mode(PHYSICS_INTERPOLATION_MODE_OFF);
 }

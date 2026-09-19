@@ -35,10 +35,10 @@
 #include "core/object/class_db.h"
 
 void OpenXRSpatialAnchorCapability::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("create_new_anchor", "transform", "spatial_context"), &OpenXRSpatialAnchorCapability::_create_new_anchor_compat_118128, DEFVAL(RID()));
+	ClassDB::bind_compatibility_method(D_METHOD("create_new_anchor", "transform", "spatial_context"), &OpenXRSpatialAnchorCapability::_create_new_anchor_bind_compat_118128, DEFVAL(RID()));
 }
 
-Ref<OpenXRAnchorTracker> OpenXRSpatialAnchorCapability::_create_new_anchor_compat_118128(const Transform3D &p_transform, RID p_spatial_context) {
+Ref<OpenXRAnchorTracker> OpenXRSpatialAnchorCapability::_create_new_anchor_bind_compat_118128(const Transform3D &p_transform, RID p_spatial_context) {
 	return create_new_anchor(p_transform, p_spatial_context, Ref<OpenXRStructureBase>());
 }
 

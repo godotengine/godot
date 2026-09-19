@@ -111,12 +111,12 @@ public class GodotLib {
 	/**
 	 * Forward touch events.
 	 */
-	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap);
+	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap, boolean longPress);
 
 	/**
 	 * Dispatch mouse events
 	 */
-	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY);
+	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY, boolean emulated);
 
 	public static native void magnify(float x, float y, float factor);
 
@@ -145,6 +145,12 @@ public class GodotLib {
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void gyroscope(float x, float y, float z);
+
+	/**
+	 * Forward device orientation (rotation vector) events as a quaternion.
+	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
+	 */
+	public static native void deviceOrientation(float x, float y, float z, float w);
 
 	/**
 	 * Forward regular key events.

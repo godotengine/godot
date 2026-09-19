@@ -229,6 +229,7 @@ private:
 	ConfigFile _config;
 
 	Vector<Item> _projects;
+	static inline HashMap<String, int> modified_time_cache;
 
 	int _icon_load_index = 0;
 	bool project_opening_initiated = false;
@@ -270,6 +271,7 @@ private:
 	// Project list items.
 
 	void _create_project_item_control(int p_index);
+	void _update_project_control_translatable_fields(const Item &item);
 	void _toggle_project(int p_index);
 	void _remove_project(int p_index, bool p_update_settings);
 

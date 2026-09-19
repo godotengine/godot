@@ -74,7 +74,7 @@ public:
 		}
 		return false;
 	}
-	void get_property_list(List<PropertyInfo> *p_properties) const override {
+	void get_property_list(List<PropertyInfo> *r_properties) const override {
 	}
 	Variant::Type get_property_type(const StringName &p_name, bool *r_is_valid) const override {
 		return Variant::PACKED_FLOAT32_ARRAY;
@@ -87,7 +87,7 @@ public:
 	bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
 		return false;
 	}
-	void get_method_list(List<MethodInfo> *p_list) const override {
+	void get_method_list(List<MethodInfo> *r_list) const override {
 	}
 	bool has_method(const StringName &p_method) const override {
 		return false;
@@ -653,9 +653,9 @@ TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
 			"Object was tail-deleted without crashes.");
 }
 
-int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &rp_required) {
-	EXTRACT_PARAM_OR_FAIL_V(p_required, rp_required, false);
-	ERR_FAIL_COND_V(p_ref->get_reference_count() != p_required->get_reference_count(), -1);
+int required_param_compare(const Ref<RefCounted> &p_ref, const RequiredParam<RefCounted> &p_required) {
+	EXTRACT_PARAM_OR_FAIL_V(required, p_required, false);
+	ERR_FAIL_COND_V(p_ref->get_reference_count() != required->get_reference_count(), -1);
 	return p_ref->get_reference_count();
 }
 

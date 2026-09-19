@@ -163,6 +163,11 @@ int mbedtls_chachapoly_update(mbedtls_chachapoly_context *ctx,
         return MBEDTLS_ERR_CHACHAPOLY_BAD_STATE;
     }
 
+    ret = mbedtls_chacha20_check_counter_wrap(&ctx->chacha20_ctx, len);
+    if (ret != 0) {
+        return ret;
+    }
+
     if (ctx->state == CHACHAPOLY_STATE_AAD) {
         ctx->state = CHACHAPOLY_STATE_CIPHERTEXT;
 

@@ -38,6 +38,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/color_rect.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/resources/image_texture.h"
@@ -221,7 +222,7 @@ void EditorProfiler::_update_plot() {
 		wr[i + 0] = Math::fast_ftoi(background_color.r * 255);
 		wr[i + 1] = Math::fast_ftoi(background_color.g * 255);
 		wr[i + 2] = Math::fast_ftoi(background_color.b * 255);
-		wr[i + 3] = 255;
+		wr[i + 3] = Math::fast_ftoi(background_color.a * 255);
 	}
 
 	//find highest value
@@ -338,7 +339,7 @@ void EditorProfiler::_update_plot() {
 				wr[widx + 0] = is_filled ? red : Math::fast_ftoi(background_color.r * 255);
 				wr[widx + 1] = is_filled ? green : Math::fast_ftoi(background_color.g * 255);
 				wr[widx + 2] = is_filled ? blue : Math::fast_ftoi(background_color.b * 255);
-				wr[widx + 3] = 255;
+				wr[widx + 3] = is_filled ? 255 : Math::fast_ftoi(background_color.a * 255);
 			}
 		}
 	}
@@ -470,6 +471,7 @@ void EditorProfiler::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
+			graph_background->set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
 
 			theme_cache.seek_line_color = get_theme_color(SceneStringName(font_color), EditorStringName(Editor));
 			theme_cache.seek_line_color.a = 0.8;
@@ -795,15 +797,19 @@ EditorProfiler::EditorProfiler() {
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 	variables->connect("item_collapsed", callable_mp(this, &EditorProfiler::_item_collapsed));
 
+	graph_background = memnew(ColorRect);
+	h_split->add_child(graph_background);
+
 	graph = memnew(TextureRect);
 	graph->set_custom_minimum_size(Size2(250 * EDSCALE, 0));
 	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	graph->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	graph->connect(SceneStringName(draw), callable_mp(this, &EditorProfiler::_graph_tex_draw));
 	graph->connect(SceneStringName(gui_input), callable_mp(this, &EditorProfiler::_graph_tex_input));
 	graph->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorProfiler::_graph_tex_mouse_exit));
 
-	h_split->add_child(graph);
+	graph_background->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);

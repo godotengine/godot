@@ -44,7 +44,7 @@
 void GodotStep3D::_populate_island(GodotBody3D *p_body, LocalVector<GodotBody3D *> &p_body_island, LocalVector<GodotConstraint3D *> &p_constraint_island) {
 	p_body->set_island_step(_step);
 
-	if (p_body->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC) {
+	if (p_body->get_mode() > PS3DE::BODY_MODE_KINEMATIC) {
 		// Only rigid bodies are tested for activation.
 		p_body_island.push_back(p_body);
 	}
@@ -68,7 +68,7 @@ void GodotStep3D::_populate_island(GodotBody3D *p_body, LocalVector<GodotBody3D 
 			if (other_body->get_island_step() == _step) {
 				continue; // Already processed.
 			}
-			if (other_body->get_mode() == PhysicsServer3D::BODY_MODE_STATIC) {
+			if (other_body->get_mode() == PS3DE::BODY_MODE_STATIC) {
 				continue; // Static bodies don't connect islands.
 			}
 			_populate_island(other_body, p_body_island, p_constraint_island);
@@ -104,7 +104,7 @@ void GodotStep3D::_populate_island_soft_body(GodotSoftBody3D *p_soft_body, Local
 			if (body->get_island_step() == _step) {
 				continue; // Already processed.
 			}
-			if (body->get_mode() == PhysicsServer3D::BODY_MODE_STATIC) {
+			if (body->get_mode() == PS3DE::BODY_MODE_STATIC) {
 				continue; // Static bodies don't connect islands.
 			}
 			_populate_island(body, p_body_island, p_constraint_island);

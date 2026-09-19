@@ -61,7 +61,7 @@ public:
 	Vector2 get_constant_linear_velocity() const;
 	real_t get_constant_angular_velocity() const;
 
-	StaticBody2D(PhysicsServer2D::BodyMode p_mode = PhysicsServer2D::BODY_MODE_STATIC);
+	StaticBody2D(PS2DE::BodyMode p_mode = PS2DE::BODY_MODE_STATIC);
 
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;

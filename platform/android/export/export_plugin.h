@@ -51,9 +51,6 @@ const String ENV_ANDROID_KEYSTORE_RELEASE_PATH = "GODOT_ANDROID_KEYSTORE_RELEASE
 const String ENV_ANDROID_KEYSTORE_RELEASE_USER = "GODOT_ANDROID_KEYSTORE_RELEASE_USER";
 const String ENV_ANDROID_KEYSTORE_RELEASE_PASS = "GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD";
 
-const String DEFAULT_ANDROID_KEYSTORE_DEBUG_USER = "androiddebugkey";
-const String DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD = "android";
-
 struct LauncherIcon {
 	const char *export_path;
 	int dimensions = 0;
@@ -159,9 +156,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Error save_apk_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
-	static Error save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
+	static Error save_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
 
-	static Error ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed, bool p_delta);
+	static Error ignore_apk_file(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
 
 	static Error copy_gradle_so(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const SharedObject &p_so);
 
@@ -197,8 +194,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			const Ref<Image> &p_splash_icon,
 			const Ref<Image> &p_splash_branding_image);
 
-	static void _create_editor_debug_keystore_if_needed();
-
 	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
 	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
@@ -209,8 +204,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed);
-
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 
 	virtual void get_export_options(List<ExportOption> *r_options) const override;
@@ -248,14 +241,6 @@ public:
 #endif // ANDROID_ENABLED
 
 	virtual Ref<Texture2D> get_run_icon() const override;
-
-	static String get_adb_path();
-
-	static String get_apksigner_path(int p_target_sdk = -1, bool p_check_executes = false);
-
-	static String get_java_path();
-
-	static String get_keytool_path();
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;

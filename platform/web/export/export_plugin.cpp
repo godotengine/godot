@@ -794,23 +794,14 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 			switch (p_option) {
 				// Run in Browser.
 				case 0: {
-					Error err = _export_project(p_preset, p_debug_flags);
-					if (err != OK) {
-						return err;
-					}
-					err = _start_server(bind_host, bind_port, use_tls);
-					if (err != OK) {
-						return err;
-					}
+					RETURN_IF_ERROR(_export_project(p_preset, p_debug_flags));
+					RETURN_IF_ERROR(_start_server(bind_host, bind_port, use_tls));
 					return _launch_browser(bind_host, bind_port, use_tls);
 				} break;
 
 				// Start HTTP Server.
 				case 1: {
-					Error err = _export_project(p_preset, p_debug_flags);
-					if (err != OK) {
-						return err;
-					}
+					RETURN_IF_ERROR(_export_project(p_preset, p_debug_flags));
 					return _start_server(bind_host, bind_port, use_tls);
 				} break;
 
@@ -824,10 +815,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 			switch (p_option) {
 				// Run in Browser.
 				case 0: {
-					Error err = _export_project(p_preset, p_debug_flags);
-					if (err != OK) {
-						return err;
-					}
+					RETURN_IF_ERROR(_export_project(p_preset, p_debug_flags));
 					return _launch_browser(bind_host, bind_port, use_tls);
 				} break;
 
@@ -926,10 +914,10 @@ void EditorExportPlatformWeb::initialize() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG::create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _web_logo_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		logo = ImageTexture::create_from_image(img);
 
-		ImageLoaderSVG::create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _web_run_icon_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		run_icon = ImageTexture::create_from_image(img);
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();

@@ -47,14 +47,27 @@
 #pragma language=extended
 #define MBEDTLS_POP_IAR_LANGUAGE_PRAGMA
 /* IAR recommend this technique for accessing unaligned data in
- * https://www.iar.com/knowledge/support/technical-notes/compiler/accessing-unaligned-data
+ * https://mypages.iar.com/s/article/Accessing-Unaligned-Data
  * This results in a single load / store instruction (if unaligned access is supported).
  * According to that document, this is only supported on certain architectures.
  */
-    #define UINT_UNALIGNED
+#define UINT_UNALIGNED
+/* Some products, like Zephyr, defines __packed as a macro for attribute(packed) and
+ * that does not work with typedefs, so if __packed is defined, undef it for the
+ * typedefs and restore it afterwards.
+ */
+#ifdef __packed
+#pragma push_macro("__packed")
+#undef __packed
+#define MBEDTLS_IAR_PACKED_MACRO_USED
+#endif
 typedef uint16_t __packed mbedtls_uint16_unaligned_t;
 typedef uint32_t __packed mbedtls_uint32_unaligned_t;
 typedef uint64_t __packed mbedtls_uint64_unaligned_t;
+#ifdef MBEDTLS_IAR_PACKED_MACRO_USED
+#undef MBEDTLS_IAR_PACKED_MACRO_USED
+#pragma pop_macro("__packed")
+#endif
 #elif defined(MBEDTLS_COMPILER_IS_GCC) && (MBEDTLS_GCC_VERSION >= 40504) && \
     ((MBEDTLS_GCC_VERSION < 60300) || (!defined(MBEDTLS_EFFICIENT_UNALIGNED_ACCESS)))
 /*

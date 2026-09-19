@@ -87,8 +87,8 @@ private:
 
 public:
 	static const char *ANDROID_EXEC_PATH;
-	static const int DEFAULT_WINDOW_WIDTH = 800;
-	static const int DEFAULT_WINDOW_HEIGHT = 600;
+	static const int DEFAULT_WINDOW_WIDTH = 760;
+	static const int DEFAULT_WINDOW_HEIGHT = 570;
 
 #ifdef TOOLS_ENABLED
 	Error sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password);
@@ -168,6 +168,7 @@ public:
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
 	virtual Error kill(const ProcessID &p_pid) override;
 	virtual String get_system_ca_certificates() override;
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) override;
 

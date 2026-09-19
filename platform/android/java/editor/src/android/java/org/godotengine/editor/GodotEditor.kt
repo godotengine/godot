@@ -30,12 +30,159 @@
 
 package org.godotengine.editor
 
+import android.app.ActivityOptions
+import android.content.Intent
+import android.os.Build
+import android.os.Handler
+import android.util.Log
+import androidx.xr.runtime.Session
+import androidx.xr.runtime.SessionCreateSuccess
+import androidx.xr.runtime.math.FloatSize3d
+import androidx.xr.runtime.math.IntSize2d
+import androidx.xr.runtime.math.Pose
+import androidx.xr.runtime.math.Quaternion
+import androidx.xr.runtime.math.Vector3
+import androidx.xr.scenecore.ActivityPanelEntity
+import androidx.xr.scenecore.MovableComponent
+import androidx.xr.scenecore.PanelEntity
+import androidx.xr.scenecore.ResizableComponent
+import androidx.xr.scenecore.ResizeEvent
+import androidx.xr.scenecore.SpatialCapability
+import androidx.xr.scenecore.scene
+import java.util.LinkedList
+import java.util.function.Consumer
+
 /**
  * Primary window of the Godot Editor.
  *
  * This is the implementation of the editor used when running on Android devices.
  */
 open class GodotEditor : BaseGodotEditor() {
+
+	companion object {
+		private val TAG = GodotEditor::class.java.simpleName
+
+		private val MAIN_WINDOW_PANEL_MIN_SIZE = FloatSize3d(0.45f, 0.25f, 0.0f)
+		private val SPATIAL_CONTAINER_PANEL_MIN_SIZE = FloatSize3d(0.05f, 0.05f, 0.0f)
+	}
+
+	private val handler = Handler()
+
+	private var pendingFullSpaceRequest = false
+	private val pendingSpatialContainerLaunches = LinkedList<Intent>()
+
+	private val spatialCapabilitiesChangedListener = Consumer<Set<SpatialCapability>> {
+		if (canEmbedActivity()) {
+			pendingFullSpaceRequest = false
+
+			// Launch any queued spatial containers.
+			Log.v(TAG, "Launching pending spatial container launches..")
+			for (pendingLaunch in pendingSpatialContainerLaunches) {
+				startSpatialContainerActivity(pendingLaunch)
+			}
+			pendingSpatialContainerLaunches.clear()
+		} else {
+			// Already in HSM, so remove any request to transition.
+			handler.removeCallbacks(requestHomeSpaceRunnable)
+		}
+	}
+
+	private val session: Session? by lazy {
+		val result = Session.create(this)
+		if (result is SessionCreateSuccess) {
+			result.session.scene.apply{
+				addSpatialCapabilitiesChangedListener(spatialCapabilitiesChangedListener)
+				mainPanelEntity.addComponent(MovableComponent.createSystemMovable(result.session))
+				mainPanelEntity.addComponent(ResizableComponent.create(result.session, MAIN_WINDOW_PANEL_MIN_SIZE) { resizePanelEntity(it) })
+			}
+			return@lazy result.session
+		} else {
+			return@lazy null
+		}
+	}
+
+	private val requestHomeSpaceRunnable: Runnable = Runnable {
+		val scene = session?.scene ?: return@Runnable
+
+		handler.removeCallbacks(requestHomeSpaceRunnable)
+		if (canEmbedActivity()) {
+			scene.requestHomeSpace()
+		}
+	}
+
+	private fun canEmbedActivity(): Boolean {
+		val scene = session?.scene ?: return false
+		return scene.spatialCapabilities.contains(SpatialCapability.EMBED_ACTIVITY)
+	}
+
+	private fun launchSpatialContainerUsingSceneCore(newInstance: Intent, activityOptions: ActivityOptions?): Boolean {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			try {
+				if (session != null) {
+					val scene = session!!.scene
+
+					handler.removeCallbacks(requestHomeSpaceRunnable)
+					if (canEmbedActivity()) {
+						Log.v(TAG, "Launching spatial container in FSM")
+						startSpatialContainerActivity(newInstance)
+					} else {
+						pendingSpatialContainerLaunches.push(newInstance)
+						if (!pendingFullSpaceRequest) {
+							Log.v(TAG, "Requesting full space")
+							scene.requestFullSpace()
+							pendingFullSpaceRequest = true
+						}
+					}
+					return true
+				}
+			} catch (e: Exception) {
+				Log.e(TAG, "Unable to launch spatial container", e)
+			}
+		}
+		return false
+	}
+
+	private fun resizePanelEntity(resizeEvent: ResizeEvent) {
+		if (resizeEvent.entity is PanelEntity && resizeEvent.resizeState == ResizeEvent.ResizeState.END) {
+			Log.v(TAG, "Resizing panel entity ${resizeEvent.entity} to ${resizeEvent.newSize}")
+			(resizeEvent.entity as PanelEntity).size = resizeEvent.newSize.to2d()
+		}
+	}
+
+	private fun startSpatialContainerActivity(newInstance: Intent) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			val scene = session!!.scene
+
+			val activityPanel = ActivityPanelEntity.create(
+				session!!,
+				IntSize2d(500, 500),
+				"Godot Spatial Container Panel for $newInstance",
+				Pose(Vector3(0.0f, -scene.mainPanelEntity.size.height, 0.05f), Quaternion.Identity),
+				scene.activitySpace
+			)
+			activityPanel.addComponent(MovableComponent.createSystemMovable(session!!))
+			val spatialContainerPanelResizeComponent = ResizableComponent.create(session!!, SPATIAL_CONTAINER_PANEL_MIN_SIZE) { resizePanelEntity(it) }
+			spatialContainerPanelResizeComponent.isFixedAspectRatioEnabled = true
+			activityPanel.addComponent(spatialContainerPanelResizeComponent)
+
+			// We remove the 'NEW_TASK' flag as launching in a new task prevents embedding.
+			newInstance.removeFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			activityPanel.startActivity(newInstance)
+		}
+	}
+
+	private fun exitFullSpaceUsingSceneCore() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			handler.postDelayed(requestHomeSpaceRunnable, 250L)
+
+			session?.scene?.activitySpace?.children?.forEach { child ->
+				if (child is ActivityPanelEntity) {
+					Log.d(TAG, "Removing entity $child from the scene graph.")
+					child.parent = null
+				}
+			}
+		}
+	}
 
 	override fun getXRRuntimePermissions(): MutableSet<String> {
 		val xrRuntimePermissions = super.getXRRuntimePermissions()
@@ -44,5 +191,30 @@ open class GodotEditor : BaseGodotEditor() {
 		xrRuntimePermissions.add("android.permission.HAND_TRACKING")
 
 		return xrRuntimePermissions
+	}
+
+	override fun dispatchNewInstance(
+		editorWindowInfo: EditorWindowInfo,
+		newInstance: Intent,
+		activityOptions: ActivityOptions?
+	) {
+		if (isSpatialContainerRunGameInfo(editorWindowInfo) && launchSpatialContainerUsingSceneCore(newInstance, activityOptions)) {
+			return
+		}
+		super.dispatchNewInstance(editorWindowInfo, newInstance, activityOptions)
+	}
+
+	override fun onEditorDisconnected(editorId: Int) {
+		if (isSpatialContainerRunGameInfoWindowId(editorId)) {
+			val spatialContainersRunning =
+				(SPATIAL_CONTAINER_RUN_GAME_INFO_0.windowId != editorId && editorMessageDispatcher.hasEditorConnection(SPATIAL_CONTAINER_RUN_GAME_INFO_0)) ||
+					(SPATIAL_CONTAINER_RUN_GAME_INFO_1.windowId != editorId && editorMessageDispatcher.hasEditorConnection(SPATIAL_CONTAINER_RUN_GAME_INFO_1))
+			if (!spatialContainersRunning) {
+				// No spatial container is running, time to exit FSM.
+				Log.v(TAG, "Exiting FSM.")
+				exitFullSpaceUsingSceneCore()
+			}
+		}
+		super.onEditorDisconnected(editorId)
 	}
 }

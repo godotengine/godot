@@ -358,6 +358,11 @@ void EditorFeatureProfileManager::_notification(int p_what) {
 			_update_profile_list(current_profile);
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// Update `EditorHelpBit` in case it contains custom text.
+			_class_list_item_selected();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			// Make sure that the icons are correctly adjusted if the theme's lightness was switched.
 			_update_selected_profile();
@@ -586,7 +591,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 		description_bit->parse_symbol("class|" + md.operator String() + "|");
 	} else if (md.get_type() == Variant::INT) {
 		String feature_description = EditorFeatureProfile::get_feature_description(EditorFeatureProfile::Feature((int)md));
-		description_bit->set_custom_text(TTR(item->get_text(0)), String(), TTRGET(feature_description));
+		description_bit->set_custom_text(TTR(item->get_text(0)), String(), TTR(feature_description));
 		return;
 	} else {
 		return;
@@ -800,7 +805,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 			last_feature = feature;
 		}
 		feature->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		feature->set_text(0, TTRGET(EditorFeatureProfile::get_feature_name(EditorFeatureProfile::Feature(i))));
+		feature->set_text(0, TTR(EditorFeatureProfile::get_feature_name(EditorFeatureProfile::Feature(i))));
 		feature->set_selectable(0, true);
 		feature->set_editable(0, true);
 		feature->set_metadata(0, i);

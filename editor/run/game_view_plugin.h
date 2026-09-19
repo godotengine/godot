@@ -41,6 +41,7 @@ class EmbeddedProcessBase;
 class VSeparator;
 class WindowWrapper;
 class ScriptEditorDebugger;
+class EditorDock;
 
 class GameViewDebugger : public EditorDebuggerPlugin {
 	GDCLASS(GameViewDebugger, EditorDebuggerPlugin);
@@ -163,6 +164,7 @@ class GameView : public VBoxContainer {
 
 	Ref<GameViewDebugger> debugger;
 	WindowWrapper *window_wrapper = nullptr;
+	EditorDock *game_dock = nullptr;
 
 	bool is_feature_enabled = true;
 	int active_sessions = 0;
@@ -206,7 +208,7 @@ class GameView : public VBoxContainer {
 	EmbeddedProcessBase *embedded_process = nullptr;
 	Label *state_label = nullptr;
 
-	int const DEFAULT_TIME_SCALE_INDEX = 5;
+	const int DEFAULT_TIME_SCALE_INDEX = 5;
 	Array time_scale_range = { 0.0625f, 0.125f, 0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f, 4.0f, 8.0f, 16.0f };
 	Array time_scale_label = { "1/16", "1/8", "1/4", "1/2", "3/4", "1.0", "1.25", "1.5", "1.75", "2.0", "4.0", "8.0", "16.0" };
 	int time_scale_index = DEFAULT_TIME_SCALE_INDEX;
@@ -274,7 +276,7 @@ class GameView : public VBoxContainer {
 	void _update_floating_window_settings();
 	void _attach_script_debugger();
 	void _detach_script_debugger();
-	void _remote_window_title_changed(String title);
+	void _remote_window_title_changed(const String &p_title);
 
 	void _debugger_breaked(bool p_breaked, bool p_can_debug);
 
@@ -284,8 +286,12 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void set_state(const Dictionary &p_state);
-	Dictionary get_state() const;
+	static EditorDock *get_dock() {
+		if (singleton) {
+			return singleton->game_dock;
+		}
+		return nullptr;
+	}
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
@@ -307,6 +313,9 @@ class GameViewPluginBase : public EditorPlugin {
 
 #ifndef ANDROID_ENABLED
 	void _window_visibility_changed(bool p_visible);
+#else
+	int previous_tab = 0;
+	void _main_screen_tab_changed(EditorDock *game_dock);
 #endif // ANDROID_ENABLED
 	void _save_last_editor(const String &p_editor);
 	void _focus_another_editor();
@@ -316,20 +325,20 @@ protected:
 	void _notification(int p_what);
 #ifndef ANDROID_ENABLED
 	void setup(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process);
+#else
+	void setup_android();
 #endif
 
 public:
-	virtual String get_plugin_name() const override { return TTRC("Game"); }
-	bool has_main_screen() const override { return true; }
+	virtual String get_plugin_name() const override { return "Game"; }
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }
-	virtual void selected_notify() override;
 
 	Ref<GameViewDebugger> get_debugger() const { return debugger; }
 
-#ifndef ANDROID_ENABLED
 	virtual void make_visible(bool p_visible) override;
 
+#ifndef ANDROID_ENABLED
 	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
 	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 #endif // ANDROID_ENABLED

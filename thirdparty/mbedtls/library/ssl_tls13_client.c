@@ -404,14 +404,18 @@ static int ssl_tls13_parse_hrr_key_share_ext(mbedtls_ssl_context *ssl,
      * then the client MUST abort the handshake with an "illegal_parameter" alert.
      */
     for (; *group_list != 0; group_list++) {
+        if (*group_list != selected_group) {
+            continue;
+        }
 #if defined(PSA_WANT_ALG_ECDH)
         if (mbedtls_ssl_tls13_named_group_is_ecdhe(*group_list)) {
-            if ((mbedtls_ssl_get_psa_curve_info_from_tls_id(
-                     *group_list, NULL, NULL) == PSA_ERROR_NOT_SUPPORTED) ||
-                *group_list != selected_group) {
-                found = 1;
-                break;
+            if (mbedtls_ssl_get_psa_curve_info_from_tls_id(
+                    *group_list, NULL, NULL) == PSA_ERROR_NOT_SUPPORTED) {
+                continue;
             }
+            /* Found only if psa_curve is supported and group_list == selected_group */
+            found = 1;
+            break;
         }
 #endif /* PSA_WANT_ALG_ECDH */
 #if defined(PSA_WANT_ALG_FFDH)
@@ -2012,6 +2016,19 @@ static int ssl_tls13_process_server_hello(mbedtls_ssl_context *ssl)
         goto cleanup;
     }
 
+    /*
+     * TLS 1.3 is negotiated. Check that ServerHello/HRR ends at a record
+     * boundary. For HRR, which does not trigger a key update, this checks
+     * that HRR terminates the server flight.
+     */
+    if (ssl->in_hslen != ssl->in_msglen) {
+        MBEDTLS_SSL_DEBUG_MSG(1, ("ServerHello end not aligned with a record boundary"));
+        ret = MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE;
+        MBEDTLS_SSL_PEND_FATAL_ALERT(MBEDTLS_SSL_ALERT_MSG_UNEXPECTED_MESSAGE,
+                                     MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE);
+        goto cleanup;
+    }
+
     MBEDTLS_SSL_PROC_CHK(ssl_tls13_parse_server_hello(ssl, buf,
                                                       buf + buf_len,
                                                       is_hrr));
@@ -2800,6 +2817,7 @@ static int ssl_tls13_parse_new_session_ticket_exts(mbedtls_ssl_context *ssl,
                     MBEDTLS_SSL_DEBUG_RET(
                         1, "ssl_tls13_parse_new_session_ticket_early_data_ext",
                         ret);
+                    return ret;
                 }
                 break;
 #endif /* MBEDTLS_SSL_EARLY_DATA */

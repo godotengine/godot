@@ -252,6 +252,11 @@ public:
 		virtual ~SkyMaterialData();
 	};
 
+private:
+	SkyMaterialData *_get_sky_material_data(RID p_env);
+	SkyMaterialData *_get_flat_color_sky_material_data(RID p_env);
+
+public:
 	struct Sky {
 		static inline const int REAL_TIME_SIZE = 256;
 		static inline const int REAL_TIME_ROUGHNESS_LAYERS = 7;
@@ -280,9 +285,16 @@ public:
 		float baked_exposure = 1.0;
 
 		// State to track when radiance octmap needs updating.
-		SkyMaterialData *prev_material = nullptr;
+		SkyMaterialData *prev_material_data = nullptr;
 		Vector3 prev_position;
 		float prev_time;
+		float prev_fog_aerial_perspective = 0.0;
+		Color prev_fog_light_color;
+		float prev_fog_sun_scatter = 0.0;
+		bool prev_fog_enabled = false;
+		float prev_fog_density = 0.0;
+		float prev_fog_sky_affect = 0.0;
+		float prev_fog_light_energy = 0.0;
 
 		void free_radiance();
 
@@ -293,7 +305,7 @@ public:
 		int get_radiance_size() const;
 		bool set_mode(RSE::SkyMode p_mode);
 		bool set_material(RID p_material);
-		Ref<Image> bake_panorama(float p_energy, int p_roughness_layers, const Size2i &p_size);
+		Ref<Image> bake_panorama(float p_energy, int p_roughness_layers, bool p_use_array, const Size2i &p_size);
 	};
 
 	uint32_t sky_ggx_samples_quality;

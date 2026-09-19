@@ -86,6 +86,7 @@
 #include "core/os/time.h"
 #include "core/string/fuzzy_search.h"
 #include "core/string/optimized_translation.h"
+#include "core/string/regex.h"
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
 #ifndef DISABLE_DEPRECATED
@@ -146,7 +147,7 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(Object);
 	GDREGISTER_CLASS(RefCounted);
-	GDREGISTER_CLASS(WeakRef);
+	GDREGISTER_CLASS(CoreBind::WeakRef);
 	GDREGISTER_CLASS(Resource);
 
 	GDREGISTER_CLASS(Time);
@@ -275,6 +276,8 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
+	GDREGISTER_CLASS(RegExMatch);
+	GDREGISTER_CLASS(RegEx);
 
 	GDREGISTER_CLASS(ConfigFile);
 
@@ -347,7 +350,6 @@ void register_core_types() {
 	_engine_debugger = memnew(CoreBind::EngineDebugger);
 
 	GDREGISTER_NATIVE_STRUCT(ObjectID, "uint64_t id = 0");
-	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 
 	worker_thread_pool = memnew(WorkerThreadPool);
@@ -439,9 +441,7 @@ void unregister_core_types() {
 
 	memdelete(resource_uid);
 
-	if (ip) {
-		memdelete(ip);
-	}
+	memdelete(ip);
 
 	if constexpr (GD_IS_CLASS_ENABLED(Image)) {
 		ResourceLoader::remove_resource_format_loader(resource_format_image);

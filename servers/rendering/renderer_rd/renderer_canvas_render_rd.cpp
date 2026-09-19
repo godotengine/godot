@@ -3005,7 +3005,7 @@ void RendererCanvasRenderRD::_canvas_texture_invalidation_callback(bool p_delete
 	}
 }
 
-void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasShaderData *p_shader_data, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, Batch const *p_batch, RenderingServerTypes::RenderInfo *r_render_info) {
+void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasShaderData *p_shader_data, RenderingDevice::FramebufferFormatID p_framebuffer_format, Light *p_lights, const Batch *p_batch, RenderingServerTypes::RenderInfo *r_render_info) {
 	{
 		RendererRD::TextureStorage *ts = RendererRD::TextureStorage::get_singleton();
 
@@ -3399,7 +3399,10 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 
 	state.instance_buffers.uninit();
 
-	// Disable the callback, as we're tearing everything down
+	// Disable the callback for all canvas textures, as we're tearing everything down
+	for (const KeyValue<RID, TightLocalVector<RID>> &E : canvas_texture_to_uniform_set) {
+		texture_storage->canvas_texture_set_invalidation_callback(E.key, nullptr, nullptr);
+	}
 	texture_storage->canvas_texture_set_invalidation_callback(default_canvas_texture, nullptr, nullptr);
 	texture_storage->canvas_texture_free(default_canvas_texture);
 	//pipelines don't need freeing, they are all gone after shaders are gone

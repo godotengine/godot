@@ -32,6 +32,7 @@
 #include "bignum_internal.h"
 #include "rsa_alt_helpers.h"
 #include "rsa_internal.h"
+#include "rsa_invasive.h"
 #include "crypto_oid.h"
 #include "mbedtls/asn1write.h"
 #include "mbedtls/platform_util.h"
@@ -47,6 +48,10 @@
 #endif
 
 #include "mbedtls/platform.h"
+
+#if defined(MBEDTLS_TEST_HOOKS)
+void (*mbedtls_rsa_cf_secret)(const void *ptr, size_t size) = NULL;
+#endif
 
 /*
  * Wrapper around mbedtls_asn1_get_mpi() that rejects zero.
@@ -374,37 +379,12 @@ end_of_export:
 
 #if defined(MBEDTLS_PKCS1_V15) && defined(MBEDTLS_RSA_C)
 
-/** This function performs the unpadding part of a PKCS#1 v1.5 decryption
- *  operation (EME-PKCS1-v1_5 decoding).
- *
- * \note The return value from this function is a sensitive value
- *       (this is unusual). #MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE shouldn't happen
- *       in a well-written application, but 0 vs #MBEDTLS_ERR_RSA_INVALID_PADDING
- *       is often a situation that an attacker can provoke and leaking which
- *       one is the result is precisely the information the attacker wants.
- *
- * \param input          The input buffer which is the payload inside PKCS#1v1.5
- *                       encryption padding, called the "encoded message EM"
- *                       by the terminology.
- * \param ilen           The length of the payload in the \p input buffer.
- * \param output         The buffer for the payload, called "message M" by the
- *                       PKCS#1 terminology. This must be a writable buffer of
- *                       length \p output_max_len bytes.
- * \param olen           The address at which to store the length of
- *                       the payload. This must not be \c NULL.
- * \param output_max_len The length in bytes of the output buffer \p output.
- *
- * \return      \c 0 on success.
- * \return      #MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE
- *              The output buffer is too small for the unpadded payload.
- * \return      #MBEDTLS_ERR_RSA_INVALID_PADDING
- *              The input doesn't contain properly formatted padding.
+/*
+ * EME-PKCS1-v1_5 decoding, see documentation in rsa_internal.h
  */
-static int mbedtls_ct_rsaes_pkcs1_v15_unpadding(unsigned char *input,
-                                                size_t ilen,
-                                                unsigned char *output,
-                                                size_t output_max_len,
-                                                size_t *olen)
+MBEDTLS_STATIC_TESTABLE int mbedtls_ct_rsaes_pkcs1_v15_unpadding(
+    unsigned char *input, size_t ilen,
+    unsigned char *output, size_t output_max_len, size_t *olen)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t i, plaintext_max_size;
@@ -475,8 +455,8 @@ static int mbedtls_ct_rsaes_pkcs1_v15_unpadding(unsigned char *input,
      * - 0 if the padding is correct. */
     ret = mbedtls_ct_error_if(
         bad,
-        MBEDTLS_ERR_RSA_INVALID_PADDING,
-        mbedtls_ct_error_if_else_0(output_too_large, MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE)
+        PSA_ERROR_INVALID_PADDING,
+        mbedtls_ct_error_if_else_0(output_too_large, PSA_ERROR_BUFFER_TOO_SMALL)
         );
 
     /* If the padding is bad or the plaintext is too large, zero the
@@ -644,7 +624,7 @@ int mbedtls_rsa_set_padding(mbedtls_rsa_context *ctx, int padding,
             break;
 #endif
         default:
-            return MBEDTLS_ERR_RSA_INVALID_PADDING;
+            return PSA_ERROR_INVALID_PADDING;
     }
 
 #if defined(MBEDTLS_PKCS1_V21)
@@ -652,7 +632,7 @@ int mbedtls_rsa_set_padding(mbedtls_rsa_context *ctx, int padding,
         (hash_id != MBEDTLS_MD_NONE)) {
         /* Just make sure this hash is supported in this build. */
         if (mbedtls_md_info_from_type(hash_id) == NULL) {
-            return MBEDTLS_ERR_RSA_INVALID_PADDING;
+            return PSA_ERROR_INVALID_PADDING;
         }
     }
 #endif /* MBEDTLS_PKCS1_V21 */
@@ -1599,7 +1579,7 @@ int mbedtls_rsa_pkcs1_encrypt(mbedtls_rsa_context *ctx,
 #endif
 
         default:
-            return MBEDTLS_ERR_RSA_INVALID_PADDING;
+            return PSA_ERROR_INVALID_PADDING;
     }
 }
 
@@ -1707,12 +1687,12 @@ int mbedtls_rsa_rsaes_oaep_decrypt(mbedtls_rsa_context *ctx,
      * the different error conditions.
      */
     if (bad != MBEDTLS_CT_FALSE) {
-        ret = MBEDTLS_ERR_RSA_INVALID_PADDING;
+        ret = PSA_ERROR_INVALID_PADDING;
         goto cleanup;
     }
 
     if (ilen - ((size_t) (p - buf)) > output_max_len) {
-        ret = MBEDTLS_ERR_RSA_OUTPUT_TOO_LARGE;
+        ret = PSA_ERROR_BUFFER_TOO_SMALL;
         goto cleanup;
     }
 
@@ -1734,19 +1714,22 @@ cleanup:
 /*
  * Implementation of the PKCS#1 v2.1 RSAES-PKCS1-V1_5-DECRYPT function
  */
-int mbedtls_rsa_rsaes_pkcs1_v15_decrypt(mbedtls_rsa_context *ctx,
-                                        int (*f_rng)(void *, unsigned char *, size_t),
-                                        void *p_rng,
-                                        size_t *olen,
-                                        const unsigned char *input,
-                                        unsigned char *output,
-                                        size_t output_max_len)
+int mbedtls_rsa_rsaes_pkcs1_v15_decrypt_ext(mbedtls_rsa_context *ctx,
+                                            int (*f_rng)(void *, unsigned char *, size_t),
+                                            void *p_rng,
+                                            size_t *olen,
+                                            const unsigned char *input,
+                                            unsigned char *output,
+                                            size_t output_max_len,
+                                            int *sensitive_ret)
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
     size_t ilen;
     unsigned char buf[MBEDTLS_MPI_MAX_SIZE];
 
     ilen = ctx->len;
+
+    *sensitive_ret = 0;
 
     if (ctx->padding != MBEDTLS_RSA_PKCS_V15) {
         return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
@@ -1757,18 +1740,39 @@ int mbedtls_rsa_rsaes_pkcs1_v15_decrypt(mbedtls_rsa_context *ctx,
     }
 
     ret = mbedtls_rsa_private(ctx, f_rng, p_rng, input, buf);
-
     if (ret != 0) {
         goto cleanup;
     }
 
-    ret = mbedtls_ct_rsaes_pkcs1_v15_unpadding(buf, ilen,
-                                               output, output_max_len, olen);
+#if defined(MBEDTLS_TEST_HOOKS)
+    if (mbedtls_rsa_cf_secret != NULL) {
+        mbedtls_rsa_cf_secret(buf, sizeof(buf));
+    }
+#endif
+
+    *sensitive_ret = mbedtls_ct_rsaes_pkcs1_v15_unpadding(
+        buf, ilen, output, output_max_len, olen);
 
 cleanup:
     mbedtls_platform_zeroize(buf, sizeof(buf));
 
     return ret;
+}
+
+int mbedtls_rsa_rsaes_pkcs1_v15_decrypt(mbedtls_rsa_context *ctx,
+                                        int (*f_rng)(void *, unsigned char *, size_t),
+                                        void *p_rng,
+                                        size_t *olen,
+                                        const unsigned char *input,
+                                        unsigned char *output,
+                                        size_t output_max_len)
+{
+    int sensitive_ret = 0;
+    int ret = mbedtls_rsa_rsaes_pkcs1_v15_decrypt_ext(ctx, f_rng, p_rng, olen,
+                                                      input, output,
+                                                      output_max_len,
+                                                      &sensitive_ret);
+    return ret | sensitive_ret;
 }
 #endif /* MBEDTLS_PKCS1_V15 */
 
@@ -1798,7 +1802,7 @@ int mbedtls_rsa_pkcs1_decrypt(mbedtls_rsa_context *ctx,
 #endif
 
         default:
-            return MBEDTLS_ERR_RSA_INVALID_PADDING;
+            return PSA_ERROR_INVALID_PADDING;
     }
 }
 
@@ -2198,7 +2202,7 @@ int mbedtls_rsa_pkcs1_sign(mbedtls_rsa_context *ctx,
 #endif
 
         default:
-            return MBEDTLS_ERR_RSA_INVALID_PADDING;
+            return PSA_ERROR_INVALID_PADDING;
     }
 }
 
@@ -2242,7 +2246,7 @@ int mbedtls_rsa_rsassa_pss_verify_ext(mbedtls_rsa_context *ctx,
     p = buf;
 
     if (buf[siglen - 1] != 0xBC) {
-        return MBEDTLS_ERR_RSA_INVALID_PADDING;
+        return PSA_ERROR_INVALID_PADDING;
     }
 
     if (md_alg != MBEDTLS_MD_NONE) {
@@ -2294,14 +2298,14 @@ int mbedtls_rsa_rsassa_pss_verify_ext(mbedtls_rsa_context *ctx,
     }
 
     if (*p++ != 0x01) {
-        return MBEDTLS_ERR_RSA_INVALID_PADDING;
+        return PSA_ERROR_INVALID_PADDING;
     }
 
     observed_salt_len = (size_t) (hash_start - p);
 
     if (expected_salt_len != MBEDTLS_RSA_SALT_LEN_ANY &&
         observed_salt_len != (size_t) expected_salt_len) {
-        return MBEDTLS_ERR_RSA_INVALID_PADDING;
+        return PSA_ERROR_INVALID_PADDING;
     }
 
     /*
@@ -2425,7 +2429,7 @@ int mbedtls_rsa_pkcs1_verify(mbedtls_rsa_context *ctx,
 #endif
 
         default:
-            return MBEDTLS_ERR_RSA_INVALID_PADDING;
+            return PSA_ERROR_INVALID_PADDING;
     }
 }
 

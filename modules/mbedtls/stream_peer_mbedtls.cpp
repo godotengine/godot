@@ -84,6 +84,8 @@ Error StreamPeerMbedTLS::_do_handshake() {
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		// Handshake is still in progress, will retry via poll later.
 		return OK;
+	} else if (ret == MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET) {
+		return OK; // Re-connection cookies are not currently supported, ignore them.
 	} else if (ret != 0) {
 		// An error occurred.
 		ERR_PRINT("TLS handshake error: " + itos(ret));
@@ -252,6 +254,8 @@ void StreamPeerMbedTLS::poll() {
 
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		// Nothing to read/write (non blocking IO)
+	} else if (ret == MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET) {
+		// Re-connection cookies are not currently supported, ignore them.
 	} else if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
 		// Clean close (disconnect)
 		disconnect_from_stream();

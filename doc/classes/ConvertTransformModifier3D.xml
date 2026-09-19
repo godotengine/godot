@@ -14,7 +14,7 @@
 		- Extract reference pose absolutely and add it to the apply bone's pose.
 		[b]Not Relative + Not Additive:[/b]
 		- Extract reference pose absolutely and the apply bone's pose is replaced with it.
-		[b]Note:[/b] The relative option is only available when [method BoneConstraint3D.get_reference_type] is [constant BoneConstraint3D.REFERENCE_TYPE_BONE]. See also [enum BoneConstraint3D.ReferenceType].
+		[b]Note:[/b] The relative and global options are only available when [method BoneConstraint3D.get_reference_type] is [constant BoneConstraint3D.REFERENCE_TYPE_BONE]. See also [enum BoneConstraint3D.ReferenceType].
 		[b]Note:[/b] If there is a rotation greater than [code]180[/code] degrees with constrained axes, flipping may occur.
 	</description>
 	<tutorials>
@@ -83,6 +83,13 @@
 				Returns [code]true[/code] if the additive option is enabled in the setting at [param index].
 			</description>
 		</method>
+		<method name="is_global" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns [code]true[/code] if the global option is enabled in the setting at [param index].
+			</description>
+		</method>
 		<method name="is_relative" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="index" type="int" />
@@ -96,8 +103,8 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets additive option in the setting at [param index] to [param enabled]. This mainly affects the process of applying transform to the [method BoneConstraint3D.set_apply_bone].
-				If sets [param enabled] to [code]true[/code], the processed transform is added to the pose of the current apply bone.
-				If sets [param enabled] to [code]false[/code], the pose of the current apply bone is replaced with the processed transform. However, if set [method set_relative] to [code]true[/code], the transform is relative to rest.
+				If [param enabled] is [code]true[/code], the processed transform is added to the pose of the current apply bone.
+				If [param enabled] is [code]false[/code], the pose of the current apply bone is replaced with the processed transform. However, if set [method set_relative] to [code]true[/code], the transform is relative to rest.
 			</description>
 		</method>
 		<method name="set_apply_axis">
@@ -130,6 +137,17 @@
 			<param index="1" name="transform_mode" type="int" enum="ConvertTransformModifier3D.TransformMode" />
 			<description>
 				Sets the operation of the remapping destination transform.
+			</description>
+		</method>
+		<method name="set_global">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Sets the global option in the setting at [param index] to [param enabled].
+				If [param enabled] is [code]true[/code], the global pose of the reference bone is used as the remapping source.
+				If [param enabled] is [code]false[/code], the local pose of the reference bone is used as the remapping source.
+				[b]Note:[/b] If the parent of the reference bone has a non-uniform scale, the reference bone is sheared as seen from global space. Since the local pose cannot bring in the shear, the scale may not be applied as intended.
 			</description>
 		</method>
 		<method name="set_reference_axis">
@@ -170,8 +188,8 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Sets relative option in the setting at [param index] to [param enabled].
-				If sets [param enabled] to [code]true[/code], the extracted and applying transform is relative to the rest.
-				If sets [param enabled] to [code]false[/code], the extracted transform is absolute.
+				If [param enabled] is [code]true[/code], the extracted and applying transform is relative to the rest.
+				If [param enabled] is [code]false[/code], the extracted transform is absolute.
 			</description>
 		</method>
 	</methods>

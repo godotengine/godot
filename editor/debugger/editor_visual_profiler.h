@@ -40,6 +40,7 @@
 #include "scene/gui/tree.h"
 
 class ImageTexture;
+class ColorRect;
 
 class EditorVisualProfiler : public VBoxContainer {
 	GDCLASS(EditorVisualProfiler, VBoxContainer);
@@ -73,6 +74,7 @@ private:
 	TextureRect *graph = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
+	ColorRect *graph_background = nullptr;
 	Tree *variables = nullptr;
 	HSplitContainer *h_split = nullptr;
 	CheckBox *frame_relative = nullptr;

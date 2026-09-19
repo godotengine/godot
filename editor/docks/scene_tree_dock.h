@@ -45,6 +45,7 @@ class ReparentDialog;
 class Shader;
 class ShaderCreateDialog;
 class ShaderMaterial;
+class StyleBoxFlat;
 class TextureRect;
 class VBoxContainer;
 
@@ -100,9 +101,11 @@ class SceneTreeDock : public EditorDock {
 		EDIT_SUBRESOURCE_BASE = 100
 	};
 
-	Vector<ObjectID> subresources;
+	struct ThemeCache {
+		Ref<StyleBoxFlat> item_highlight;
+	} theme_cache;
 
-	bool reset_create_dialog = false;
+	Vector<ObjectID> subresources;
 
 	int current_option = 0;
 
@@ -205,6 +208,12 @@ class SceneTreeDock : public EditorDock {
 		MODE_UNDO
 	};
 
+	enum ItemCheckState {
+		STATE_INDETERMINATE = -1,
+		STATE_UNCHECKED = 0,
+		STATE_CHECKED = 1,
+	};
+
 	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode = MODE_BIDI);
 	void _node_strip_signal_inheritance(Node *p_node);
 	void _load_request(const String &p_path);
@@ -229,7 +238,14 @@ class SceneTreeDock : public EditorDock {
 
 	void _reparent_nodes_to_root(Node *p_root, const Array &p_nodes, Node *p_owner);
 	void _reparent_nodes_to_paths_with_transform_and_name(Node *p_root, const Array &p_nodes, const Array &p_paths, const Array &p_transforms, const Array &p_names, Node *p_owner);
-	void _toggle_editable_children(Node *p_node);
+	void _toggle_editable_children(List<Node *> &p_nodes, ItemCheckState p_current_state = STATE_INDETERMINATE);
+
+	bool _is_external(Node *p_node) const;
+	bool _is_top_level(Node *p_node) const;
+
+	ItemCheckState _is_editable_children(List<Node *> &p_nodes);
+	ItemCheckState _is_placeholder(List<Node *> &p_nodes);
+	ItemCheckState _is_unique_name(List<Node *> &p_nodes);
 
 	void _toggle_placeholder_from_selection();
 
@@ -247,9 +263,14 @@ class SceneTreeDock : public EditorDock {
 	Object *edited_object_at_drag_start = nullptr;
 	bool scene_tree_drag_active = false;
 
+	ObjectID highlighted_item;
+	float highlight_timer = 0;
+
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _scene_tree_gui_input(Ref<InputEvent> p_event);
+	void _scene_tree_draw();
+	void _scene_tree_item_selected();
 
 	void _new_scene_from(const String &p_file);
 	void _set_node_owner_recursive(Node *p_node, Node *p_owner, const HashMap<const Node *, Node *> &p_inverse_duplimap);
@@ -259,16 +280,16 @@ class SceneTreeDock : public EditorDock {
 	void _selection_changed();
 	void _update_script_button();
 	void _queue_update_script_button();
+	void _cancel_highlight();
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, HashMap<Node *, NodePath> *p_renames);
 	bool _has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const;
 
 	void _normalize_drop(Node *&to_node, int &to_pos, int p_type);
-	Array _get_selection_array();
 
-	void _nodes_dragged(const Array &p_nodes, NodePath p_to, int p_type);
-	void _files_dropped(const Vector<String> &p_files, NodePath p_to, int p_type);
-	void _script_dropped(const String &p_file, NodePath p_to);
+	void _nodes_dragged(const Array &p_nodes, Node *p_to_node, int p_type);
+	void _files_dropped(const Vector<String> &p_files, Node *p_to_node, int p_type);
+	void _script_dropped(const String &p_file, Node *p_to_node);
 	void _quick_open(const String &p_file_path);
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
@@ -306,6 +327,7 @@ class SceneTreeDock : public EditorDock {
 	bool determine_path_automatically = true;
 
 	static void _update_configuration_warning();
+	static Dictionary _get_context_data(const List<Node *> &p_selected_nodes);
 
 	bool _update_node_path(Node *p_root_node, NodePath &r_node_path, HashMap<Node *, NodePath> *p_renames) const;
 	void _check_object_properties_recursive(Node *p_root_node, Object *p_obj, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
@@ -337,6 +359,7 @@ public:
 	void clear_previous_node_selection();
 	void set_selection(const Vector<Node *> &p_nodes);
 	void set_selected(Node *p_node, bool p_emit_selected = false);
+	void highlight_node(Node *p_node);
 	void fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<Node *, NodePath> *p_renames);
 	void perform_node_renames(Node *p_base, HashMap<Node *, NodePath> *p_renames, HashMap<Ref<Animation>, HashSet<int>> *r_rem_anims = nullptr, LocalVector<Pair<StringName, StringName>> *r_folded_group_renames = nullptr);
 	void perform_node_replace(Node *p_base, Node *p_node, Node *p_by_node);
@@ -356,9 +379,6 @@ public:
 
 	void attach_shader_to_selected(int p_preferred_mode = -1);
 	void open_shader_dialog(const Ref<ShaderMaterial> &p_for_material, int p_preferred_mode = -1);
-
-	void open_add_child_dialog();
-	void open_instance_child_dialog();
 
 	List<Node *> paste_nodes(bool p_paste_as_sibling = false);
 	void paste_node_as_replacement();

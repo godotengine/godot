@@ -34,27 +34,27 @@
 
 #include "core/object/class_db.h"
 
-RID RenderSceneBuffersRD::_get_color_texture_compat_80214() {
+RID RenderSceneBuffersRD::_get_color_texture_bind_compat_80214() {
 	return _get_color_texture(msaa_3d != RSE::VIEWPORT_MSAA_DISABLED);
 }
 
-RID RenderSceneBuffersRD::_get_color_layer_compat_80214(const uint32_t p_layer) {
+RID RenderSceneBuffersRD::_get_color_layer_bind_compat_80214(const uint32_t p_layer) {
 	return _get_color_layer(p_layer, msaa_3d != RSE::VIEWPORT_MSAA_DISABLED);
 }
 
-RID RenderSceneBuffersRD::_get_depth_texture_compat_80214() {
+RID RenderSceneBuffersRD::_get_depth_texture_bind_compat_80214() {
 	return _get_depth_texture(msaa_3d != RSE::VIEWPORT_MSAA_DISABLED);
 }
 
-RID RenderSceneBuffersRD::_get_depth_layer_compat_80214(const uint32_t p_layer) {
+RID RenderSceneBuffersRD::_get_depth_layer_bind_compat_80214(const uint32_t p_layer) {
 	return _get_depth_layer(p_layer, msaa_3d != RSE::VIEWPORT_MSAA_DISABLED);
 }
 
-RID RenderSceneBuffersRD::_get_velocity_texture_compat_80214() {
+RID RenderSceneBuffersRD::_get_velocity_texture_bind_compat_80214() {
 	return _get_velocity_texture(msaa_3d != RSE::VIEWPORT_MSAA_DISABLED);
 }
 
-RID RenderSceneBuffersRD::_get_velocity_layer_compat_80214(const uint32_t p_layer) {
+RID RenderSceneBuffersRD::_get_velocity_layer_bind_compat_80214(const uint32_t p_layer) {
 	return _get_velocity_layer(p_layer, msaa_3d != RSE::VIEWPORT_MSAA_DISABLED);
 }
 
@@ -63,12 +63,12 @@ RID RenderSceneBuffersRD::_create_texture_bind_compat_98670(const StringName &p_
 }
 
 void RenderSceneBuffersRD::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("get_color_texture"), &RenderSceneBuffersRD::_get_color_texture_compat_80214);
-	ClassDB::bind_compatibility_method(D_METHOD("get_color_layer", "layer"), &RenderSceneBuffersRD::_get_color_layer_compat_80214);
-	ClassDB::bind_compatibility_method(D_METHOD("get_depth_texture"), &RenderSceneBuffersRD::_get_depth_texture_compat_80214);
-	ClassDB::bind_compatibility_method(D_METHOD("get_depth_layer", "layer"), &RenderSceneBuffersRD::_get_depth_layer_compat_80214);
-	ClassDB::bind_compatibility_method(D_METHOD("get_velocity_texture"), &RenderSceneBuffersRD::_get_velocity_texture_compat_80214);
-	ClassDB::bind_compatibility_method(D_METHOD("get_velocity_layer", "layer"), &RenderSceneBuffersRD::_get_velocity_layer_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_color_texture"), &RenderSceneBuffersRD::_get_color_texture_bind_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_color_layer", "layer"), &RenderSceneBuffersRD::_get_color_layer_bind_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_depth_texture"), &RenderSceneBuffersRD::_get_depth_texture_bind_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_depth_layer", "layer"), &RenderSceneBuffersRD::_get_depth_layer_bind_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_velocity_texture"), &RenderSceneBuffersRD::_get_velocity_texture_bind_compat_80214);
+	ClassDB::bind_compatibility_method(D_METHOD("get_velocity_layer", "layer"), &RenderSceneBuffersRD::_get_velocity_layer_bind_compat_80214);
 
 	ClassDB::bind_compatibility_method(D_METHOD("create_texture", "context", "name", "data_format", "usage_bits", "texture_samples", "size", "layers", "mipmaps", "unique"), &RenderSceneBuffersRD::_create_texture_bind_compat_98670);
 }

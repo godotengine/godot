@@ -161,7 +161,7 @@ void RendererMeshStorage::multimesh_instance_set_color(RID p_multimesh, int p_in
 
 		if (mmi->_vf_size_color == 4) {
 			for (int n = 0; n < 4; n++) {
-				ptr[n] = p_color.components[n];
+				ptr[n] = p_color[n];
 			}
 		} else {
 #ifdef DEV_ENABLED
@@ -188,7 +188,7 @@ void RendererMeshStorage::multimesh_instance_set_custom_data(RID p_multimesh, in
 
 		if (mmi->_vf_size_data == 4) {
 			for (int n = 0; n < 4; n++) {
-				ptr[n] = p_color.components[n];
+				ptr[n] = p_color[n];
 			}
 		} else {
 #ifdef DEV_ENABLED

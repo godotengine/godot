@@ -454,7 +454,9 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		}
 
 		tf_render.format = RD::DATA_FORMAT_R32_UINT;
+		tf_render.usage_bits |= RD::TEXTURE_USAGE_STORAGE_ATOMIC_BIT;
 		render_geom_facing = create_clear_texture(tf_render, "SDFGI Render Geometry Facing");
+		tf_render.usage_bits &= ~RD::TEXTURE_USAGE_STORAGE_ATOMIC_BIT;
 
 		tf_render.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
 		render_sdf[0] = create_clear_texture(tf_render, "SDFGI Render SDF 0");

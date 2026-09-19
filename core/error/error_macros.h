@@ -30,6 +30,13 @@
 
 #pragma once
 
+/*
+ * This file contains macros for error handling.
+ *
+ * For an overview, see:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/common_engine_methods_and_macros.html#error-macros
+ */
+
 #include "core/typedefs.h"
 
 class String;
@@ -78,8 +85,8 @@ _NO_INLINE_ void _err_print_error(const char *p_function, const char *p_file, in
 _NO_INLINE_ void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const String &p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
 _NO_INLINE_ void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, const String &p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
 void _err_print_error_asap(const String &p_error, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
-_NO_INLINE_ void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message = "", bool p_editor_notify = false, bool fatal = false);
-_NO_INLINE_ void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify = false, bool fatal = false);
+_NO_INLINE_ void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message = "", bool p_editor_notify = false, bool p_fatal = false);
+_NO_INLINE_ void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify = false, bool p_fatal = false);
 _NO_INLINE_ void _err_flush_stdout();
 
 void _physics_interpolation_warning(const char *p_function, const char *p_file, int p_line, ObjectID p_id, const char *p_warn_string);
@@ -118,6 +125,16 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
  * The if wrappers are used to ensure that the macro replacement does not trigger unexpected
  * issues when expanded e.g. after an `if (cond) ERR_FAIL();` without braces.
  */
+
+/**
+ * Evaluate the expression. If it results in an Error != OK, silently return the error.
+ */
+#define RETURN_IF_ERROR(m_exp) \
+	if (Error _err_propagate_error = (m_exp); unlikely(_err_propagate_error != OK)) { \
+		static_assert(std::is_same_v<std::decay_t<decltype(m_exp)>, Error>, "RETURN_IF_ERROR expects an Error-returning expression"); \
+		return _err_propagate_error; \
+	} else \
+		((void)0)
 
 // Index out of bounds error macros.
 // These macros should be used instead of `ERR_FAIL_COND` for bounds checking.
@@ -857,4 +874,4 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, m_object_id, m_string)
 
 #define PHYSICS_INTERPOLATION_WARNING(m_string) \
-	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID(UINT64_MAX), m_string)
+	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID((uint64_t)UINT64_MAX), m_string)

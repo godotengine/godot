@@ -146,6 +146,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["NORMAL_MAP_DEPTH"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["BENT_NORMAL_MAP"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
+	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["STREAMING_UV"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["UV2"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["ALBEDO"] = ShaderLanguage::TYPE_VEC3;
@@ -545,7 +546,7 @@ ShaderTypes::ShaderTypes() {
 
 	// Texture Blit Modes
 	{
-		shader_modes[RSE::SHADER_TEXTURE_BLIT].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul", "disabled" });
+		shader_modes[RSE::SHADER_TEXTURE_BLIT].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul", "disabled", "premul_alpha" });
 	}
 
 	// Must be kept in sync with the Shader::Mode enum.
