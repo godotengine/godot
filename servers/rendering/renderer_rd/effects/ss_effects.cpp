@@ -926,7 +926,6 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			RD::get_singleton()->compute_list_add_barrier(compute_list);
 		}
 
-
 		// SECOND PASS
 		ssil.blur_push_constant.half_screen_pixel_size[0] = (1.0 / p_ssil_buffers.buffer_width);
 		ssil.blur_push_constant.half_screen_pixel_size[1] = (1.0 / p_ssil_buffers.buffer_height);
@@ -936,6 +935,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			ssil.blur_push_constant.half_screen_pixel_size[1] *= 2.0;
 		}
 
+		blur_type = SSIL_BLUR_ACCURATE;
 		ssil.blur_push_constant.blur_dir = 0;
 
 		if(ssil_half_size) {
