@@ -4798,18 +4798,6 @@ FileSystemDock::FileSystemDock() {
 	Button *settings_button = unrecognized_ext_dialog->add_button(TTRC("Open Editor Settings"), false, "open_editor_settings_docks_filesystem");
 	settings_button->connect("pressed", callable_mp(this, &FileSystemDock::_on_open_editor_settings_file_exts));
 
-	uncollapsed_paths_before_search = Vector<String>();
-
-	tree_update_id = 0;
-
-	history_pos = 0;
-	history_max_size = 20;
-	history.push_back("res://");
-
-	display_mode = DISPLAY_MODE_TREE_ONLY;
-	old_display_mode = DISPLAY_MODE_TREE_ONLY;
-	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
-
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_project_settings_changed));
 	EditorSettings::get_singleton()->connect("_favorites_changed", callable_mp(this, &FileSystemDock::update_all));
 	main_scene_path = ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"));
