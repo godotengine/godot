@@ -6,6 +6,9 @@
 	<description>
 		A singleton used to load resource files from the filesystem.
 		It uses the many [ResourceFormatLoader] classes registered in the engine (either built-in or from a plugin) to load files into memory and convert them to a format that can be used by the engine.
+		Methods that take the path of a resource file, such as [method load], [method exists], and [method get_resource_type], also accept the [code]uid://[/code] identifier of that resource (see [ResourceUID]). The identifier is resolved to the path it currently points to, which makes it possible to keep referencing a resource that was renamed or moved. An identifier that is unregistered or malformed cannot be resolved: [method load] fails, while the other methods behave as if the resource did not exist.
+		[b]Note:[/b] [method load_threaded_get] and [method load_threaded_get_status] look the request up by the exact string given to [method load_threaded_request], so all three must be passed the same path or identifier.
+		[b]Note:[/b] [method list_directory] takes the path of a directory rather than of a resource, and does not accept an identifier.
 		[b]Note:[/b] You have to import the files into the engine first to load them using [method load]. If you want to load [Image]s at run-time, you may use [method Image.load]. If you want to import audio files, you can use the snippet described in [member AudioStreamMP3.data].
 		[b]Note:[/b] Non-resource files such as plain text files cannot be read using [ResourceLoader]. Use [FileAccess] for those files instead, and be aware that non-resource files are not exported by default (see notes in the [FileAccess] class description for instructions on exporting them).
 	</description>
