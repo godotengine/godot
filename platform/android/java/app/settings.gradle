@@ -5,14 +5,19 @@ pluginManagement {
     plugins {
         id 'com.android.application' version versions.androidGradlePlugin
         id 'org.jetbrains.kotlin.android' version versions.kotlinVersion
+        id 'com.android.fused-library' version versions.androidGradlePlugin
+        id 'com.android.library' version versions.androidGradlePlugin
+        id 'com.android.asset-pack' version versions.androidGradlePlugin
     }
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
+        maven { url = "https://plugins.gradle.org/m2/" }
+        maven { url = "https://central.sonatype.com/repository/maven-snapshots/"}
     }
 }
 
 include ':assetPackInstallTime'
+include ':dataLib'
+include ':fusedDepsLib'

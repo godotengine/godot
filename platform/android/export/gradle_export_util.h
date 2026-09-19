@@ -59,6 +59,11 @@ static const int APP_CATEGORY_UNDEFINED = 9;
 static const int XR_MODE_REGULAR = 0;
 static const int XR_MODE_OPENXR = 1;
 
+// Supported export format
+static const int EXPORT_FORMAT_APK = 0;
+static const int EXPORT_FORMAT_AAB = 1;
+static const int EXPORT_FORMAT_AAR = 2;
+
 struct CustomExportData {
 	EditorExportPlatform::PackData pd;
 	String assets_directory;

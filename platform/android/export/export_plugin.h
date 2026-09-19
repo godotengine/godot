@@ -200,6 +200,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	Error _generate_sparse_pck_metadata(const Ref<EditorExportPreset> &p_preset, PackData &p_pack_data, Vector<uint8_t> &r_data);
 
+	static String _get_export_format_extension(int p_export_format);
+
 protected:
 	void _notification(int p_what);
 
