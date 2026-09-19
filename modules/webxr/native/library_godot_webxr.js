@@ -35,7 +35,9 @@ const GodotWebXR = {
 
 		session: null,
 		gl_binding: null,
+		disable_webxr_layers: false,
 		layer: null,
+		read_fbo: null,
 		space: null,
 		frame: null,
 		pose: null,
@@ -88,24 +90,34 @@ const GodotWebXR = {
 			const new_view_count = (GodotWebXR.pose) ? GodotWebXR.pose.views.length : 1;
 			let layer = GodotWebXR.layer;
 
-			// If the view count hasn't changed since creating this layer, then
-			// we can simply return it.
-			if (layer && GodotWebXR.view_count === new_view_count) {
+			if (layer && (GodotWebXR.disable_webxr_layers || GodotWebXR.view_count === new_view_count)) {
 				return layer;
 			}
 
-			if (!GodotWebXR.session || !GodotWebXR.gl_binding || !GodotWebXR.gl_binding.createProjectionLayer) {
+			if (!GodotWebXR.session) {
 				return null;
 			}
 
 			const gl = GodotWebXR.gl;
 
-			layer = GodotWebXR.gl_binding.createProjectionLayer({
-				textureType: new_view_count > 1 ? 'texture-array' : 'texture',
-				colorFormat: gl.RGBA8,
-				depthFormat: gl.DEPTH_COMPONENT24,
-			});
-			GodotWebXR.session.updateRenderState({ layers: [layer] });
+			if (GodotWebXR.disable_webxr_layers) {
+				layer = new XRWebGLLayer(GodotWebXR.session, gl, {
+					antialias: false,
+					depth: false,
+				});
+				GodotWebXR.session.updateRenderState({ baseLayer: layer });
+			} else {
+				if (!GodotWebXR.gl_binding || !GodotWebXR.gl_binding.createProjectionLayer) {
+					return null;
+				}
+
+				layer = GodotWebXR.gl_binding.createProjectionLayer({
+					textureType: new_view_count > 1 ? 'texture-array' : 'texture',
+					colorFormat: gl.RGBA8,
+					depthFormat: gl.DEPTH_COMPONENT24,
+				});
+				GodotWebXR.session.updateRenderState({ layers: [layer] });
+			}
 
 			GodotWebXR.layer = layer;
 			GodotWebXR.view_count = new_view_count;
@@ -113,7 +125,7 @@ const GodotWebXR = {
 		},
 
 		getSubImage: () => {
-			if (!GodotWebXR.pose) {
+			if (!GodotWebXR.pose || GodotWebXR.disable_webxr_layers) {
 				return null;
 			}
 			const layer = GodotWebXR.getLayer();
@@ -125,6 +137,24 @@ const GodotWebXR = {
 			// when there is only 1 view, it should be safe to only grab the
 			// subimage for the first view.
 			return GodotWebXR.gl_binding.getViewSubImage(layer, GodotWebXR.pose.views[0]);
+		},
+
+		getViewport: () => {
+			if (!GodotWebXR.pose) {
+				return null;
+			}
+			if (GodotWebXR.disable_webxr_layers) {
+				const layer = GodotWebXR.getLayer();
+				if (layer === null) {
+					return null;
+				}
+				return layer.getViewport(GodotWebXR.pose.views[0]);
+			}
+			const subimage = GodotWebXR.getSubImage();
+			if (subimage === null) {
+				return null;
+			}
+			return subimage.viewport;
 		},
 
 		getTextureId: (texture) => {
@@ -234,8 +264,8 @@ const GodotWebXR = {
 
 	godot_webxr_initialize__deps: ['emscripten_webgl_get_current_context'],
 	godot_webxr_initialize__proxy: 'sync',
-	godot_webxr_initialize__sig: 'viiiiiiiii',
-	godot_webxr_initialize: function (p_session_mode, p_required_features, p_optional_features, p_requested_reference_spaces, p_on_session_started, p_on_session_ended, p_on_session_failed, p_on_input_event, p_on_simple_event) {
+	godot_webxr_initialize__sig: 'viiiiiiiiii',
+	godot_webxr_initialize: function (p_session_mode, p_required_features, p_optional_features, p_requested_reference_spaces, p_disable_webxr_layers, p_on_session_started, p_on_session_ended, p_on_session_failed, p_on_input_event, p_on_simple_event) {
 		GodotWebXR.monkeyPatchRequestAnimationFrame(true);
 
 		const session_mode = GodotRuntime.parseString(p_session_mode);
@@ -247,6 +277,8 @@ const GodotWebXR = {
 		const onfailed = GodotRuntime.get_func(p_on_session_failed);
 		const oninputevent = GodotRuntime.get_func(p_on_input_event);
 		const onsimpleevent = GodotRuntime.get_func(p_on_simple_event);
+
+		let disable_webxr_layers = !!p_disable_webxr_layers || typeof XRWebGLBinding === 'undefined';
 
 		const session_init = {};
 		if (required_features.length > 0) {
@@ -293,23 +325,22 @@ const GodotWebXR = {
 			GodotWebXR.gl = gl;
 
 			gl.makeXRCompatible().then(function () {
-				const throwNoWebXRLayersError = () => {
-					throw new Error('This browser doesn\'t support WebXR Layers (which Godot requires) nor is the polyfill in use. If you are the developer of this application, please consider including the polyfill.');
-				};
-
-				try {
-					GodotWebXR.gl_binding = new XRWebGLBinding(session, gl);
-				} catch (error) {
-					// We'll end up here for browsers that don't have XRWebGLBinding at all, or if the browser does support WebXR Layers,
-					// but is using the WebXR polyfill, so calling native XRWebGLBinding with the polyfilled XRSession won't work.
-					throwNoWebXRLayersError();
+				if (!disable_webxr_layers) {
+					try {
+						GodotWebXR.gl_binding = new XRWebGLBinding(session, gl);
+					} catch (error) {
+						console.log('WebXR: Unable to create XRWebGLBinding (disabling WebXR Layers): ', error); // eslint-disable-line no-console
+						disable_webxr_layers = true;
+					}
 				}
 
-				if (!GodotWebXR.gl_binding.createProjectionLayer) {
-					// On other browsers, XRWebGLBinding exists and works, but it doesn't support creating projection layers (which is
-					// contrary to the spec, which says this MUST be supported) and so the polyfill is required.
-					throwNoWebXRLayersError();
+				if (!disable_webxr_layers && !GodotWebXR.gl_binding.createProjectionLayer) {
+					console.log('WebXR: XRWebGLBinding.createProjectionLayer is missing (disabling WebXR Layers)'); // eslint-disable-line no-console
+					disable_webxr_layers = true;
+					GodotWebXR.gl_binding = null;
 				}
+
+				GodotWebXR.disable_webxr_layers = disable_webxr_layers;
 
 				// This will trigger the layer to get created.
 				const layer = GodotWebXR.getLayer();
@@ -389,6 +420,12 @@ const GodotWebXR = {
 				.catch((e) => { });
 		}
 
+		if (GodotWebXR.read_fbo !== null) {
+			GodotWebXR.gl.deleteFramebuffer(GodotWebXR.read_fbo);
+			GodotWebXR.read_fbo = null;
+		}
+		GodotWebXR.disable_webxr_layers = false;
+
 		GodotWebXR.session = null;
 		GodotWebXR.gl_binding = null;
 		GodotWebXR.layer = null;
@@ -419,13 +456,13 @@ const GodotWebXR = {
 	godot_webxr_get_render_target_size__proxy: 'sync',
 	godot_webxr_get_render_target_size__sig: 'ii',
 	godot_webxr_get_render_target_size: function (r_size) {
-		const subimage = GodotWebXR.getSubImage();
-		if (subimage === null) {
+		const viewport = GodotWebXR.getViewport();
+		if (viewport === null) {
 			return false;
 		}
 
-		GodotRuntime.setHeapValue(r_size + 0, subimage.viewport.width, 'i32');
-		GodotRuntime.setHeapValue(r_size + 4, subimage.viewport.height, 'i32');
+		GodotRuntime.setHeapValue(r_size + 0, viewport.width, 'i32');
+		GodotRuntime.setHeapValue(r_size + 4, viewport.height, 'i32');
 
 		return true;
 	},
@@ -502,6 +539,58 @@ const GodotWebXR = {
 			return 0;
 		}
 		return GodotWebXR.getTextureId(subimage.motionVectorTexture);
+	},
+
+	godot_webxr_commit_render_target__proxy: 'sync',
+	godot_webxr_commit_render_target__sig: 'viiii',
+	godot_webxr_commit_render_target: function (p_texture_id, p_width, p_height, p_layer_count) {
+		if (!GodotWebXR.session || !GodotWebXR.pose || !GodotWebXR.disable_webxr_layers) {
+			return;
+		}
+
+		const layer = GodotWebXR.getLayer();
+		const texture = GL.textures[p_texture_id];
+		if (layer === null || !texture) {
+			return;
+		}
+
+		const gl = GodotWebXR.gl;
+		if (GodotWebXR.read_fbo === null) {
+			GodotWebXR.read_fbo = gl.createFramebuffer();
+		}
+
+		const orig_read_framebuffer = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING);
+		const orig_draw_framebuffer = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING);
+		const scissor_enabled = gl.isEnabled(gl.SCISSOR_TEST);
+		if (scissor_enabled) {
+			gl.disable(gl.SCISSOR_TEST);
+		}
+
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, GodotWebXR.read_fbo);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, layer.framebuffer);
+
+		GodotWebXR.pose.views.forEach((view, view_index) => {
+			if (p_layer_count > 1) {
+				gl.framebufferTextureLayer(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, texture, 0, view_index);
+			} else {
+				gl.framebufferTexture2D(gl.READ_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+			}
+
+			// Godot renders its own render targets upside down, so the destination Y is swapped.
+			const viewport = layer.getViewport(view);
+			gl.blitFramebuffer(
+				0, 0, p_width, p_height,
+				viewport.x, viewport.y + viewport.height, viewport.x + viewport.width, viewport.y,
+				gl.COLOR_BUFFER_BIT,
+				gl.NEAREST
+			);
+		});
+
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, orig_read_framebuffer);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, orig_draw_framebuffer);
+		if (scissor_enabled) {
+			gl.enable(gl.SCISSOR_TEST);
+		}
 	},
 
 	godot_webxr_update_input_source__proxy: 'sync',
