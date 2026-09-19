@@ -201,6 +201,9 @@ private:
 	double caret_blink_timer = 0.0;
 	bool caret_can_draw = false;
 
+	// Used to avoid spamming `caret_move_rejected_sound` when key repeat is enabled.
+	bool last_key_is_echo = false;
+
 	bool pending_select_all_on_focus = false;
 	bool select_all_on_focus = false;
 
@@ -225,6 +228,13 @@ private:
 		Ref<Texture2D> clear_icon;
 		Color clear_button_color;
 		Color clear_button_color_pressed;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> caret_moved_sound;
+		Ref<AudioStream> caret_move_rejected_sound;
+		Ref<AudioStream> text_submitted_sound;
+		Ref<AudioStream> text_changed_sound;
+		Ref<AudioStream> text_change_rejected_sound;
 
 		float base_scale = 1.0;
 	} theme_cache;
@@ -271,6 +281,7 @@ private:
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _texture_changed();
+	void _play_caret_moved_sound(bool p_valid);
 
 	void _edit(bool p_show_virtual_keyboard = true, bool p_hide_focus = false);
 	Point2 _get_right_icon_size(Ref<Texture2D> p_right_icon) const;
