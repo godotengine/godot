@@ -717,8 +717,12 @@ public:
 
 	virtual RID camera_attributes_create() = 0;
 
-	virtual void camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality p_quality, bool p_use_jitter) = 0;
+	virtual void camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, float p_velocity_multiplier_object, float p_velocity_multiplier_camera_movement, float p_velocity_multiplier_camera_rotation, float p_velocity_threshold_lower, float p_velocity_threshold_upper) = 0;
 
+	virtual void camera_attributes_set_motion_blur_show_in_editor(bool p_enabled) = 0;
+	virtual void camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality) = 0;
+
+	virtual void camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality p_quality, bool p_use_jitter) = 0;
 	virtual void camera_attributes_set_dof_blur_bokeh_shape(RSE::DOFBokehShape p_shape) = 0;
 
 	virtual void camera_attributes_set_dof_blur(RID p_camera_attributes, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
@@ -1165,6 +1169,7 @@ VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIRayCount, RenderingServer::Environmen
 VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIFramesToUpdateLight, RenderingServer::EnvironmentSDFGIFramesToUpdateLight);
 VARIANT_ENUM_CAST_EXT(RSE::EnvironmentSDFGIYScale, RenderingServer::EnvironmentSDFGIYScale);
 VARIANT_ENUM_CAST_EXT(RSE::SubSurfaceScatteringQuality, RenderingServer::SubSurfaceScatteringQuality);
+VARIANT_ENUM_CAST_EXT(RSE::MotionBlurQuality, RenderingServer::MotionBlurQuality);
 VARIANT_ENUM_CAST_EXT(RSE::DOFBlurQuality, RenderingServer::DOFBlurQuality);
 VARIANT_ENUM_CAST_EXT(RSE::DOFBokehShape, RenderingServer::DOFBokehShape);
 VARIANT_ENUM_CAST_EXT(RSE::ShadowQuality, RenderingServer::ShadowQuality);

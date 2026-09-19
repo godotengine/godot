@@ -111,6 +111,34 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="camera_attributes_set_motion_blur">
+			<return type="void" />
+			<param index="0" name="camera_attributes" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<param index="2" name="intensity" type="float" />
+			<param index="3" name="velocity_multiplier_object" type="float" />
+			<param index="4" name="velocity_multiplier_camera_movement" type="float" />
+			<param index="5" name="velocity_multiplier_camera_rotation" type="float" />
+			<param index="6" name="velocity_threshold_lower" type="float" />
+			<param index="7" name="velocity_threshold_upper" type="float" />
+			<description>
+				Configures the motion blur effect on the specified [param camera_attributes] resource. See properties in [CameraAttributesPractical] starting from [member CameraAttributesPractical.motion_blur_enabled] for details on each parameter.
+			</description>
+		</method>
+		<method name="camera_attributes_set_motion_blur_quality">
+			<return type="void" />
+			<param index="0" name="quality" type="int" enum="RenderingServer.MotionBlurQuality" />
+			<description>
+				Sets the quality for the motion blur effect. See also [member ProjectSettings.rendering/camera/motion_blur/motion_blur_quality].
+			</description>
+		</method>
+		<method name="camera_attributes_set_motion_blur_show_in_editor">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], and motion blur is enabled, it will be applied in the editor scene view as well. When [code]false[/code], the motion blur will only be applied at runtime. See also [member EditorSettings.editors/3d/viewport_visuals/show_motion_blur_in_editor]
+			</description>
+		</method>
 		<method name="camera_create">
 			<return type="RID" />
 			<description>
@@ -5987,6 +6015,15 @@
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_HIGH" value="3" enum="DOFBlurQuality">
 			Highest quality DOF blur. Results in the smoothest looking blur by taking the most samples, but is also significantly slower.
+		</constant>
+		<constant name="MOTION_BLUR_QUALITY_STANDARD" value="0" enum="MotionBlurQuality">
+			Standard quality for the motion blur effect (cheaper on the GPU).
+		</constant>
+		<constant name="MOTION_BLUR_QUALITY_HIGH" value="1" enum="MotionBlurQuality">
+			High quality for the motion blur effect (more expensive on the GPU).
+		</constant>
+		<constant name="MOTION_BLUR_QUALITY_CINEMATIC" value="2" enum="MotionBlurQuality">
+			Cinematic quality for the motion blur effect (very expensive on the GPU).
 		</constant>
 		<constant name="INSTANCE_NONE" value="0" enum="InstanceType">
 			The instance does not have a type.
