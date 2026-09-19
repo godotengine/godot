@@ -165,6 +165,19 @@ float PhiNoise(uvec3 uvw)
     return float(l + h) * (1.0 / 4294967296.0);
 }
 
+float GetBayerFromCoordLevel(vec2 pixelpos)
+{
+    ivec2 ppos = ivec2(pixelpos);
+    int sum = 0;
+    for(int i = 0; i<4; i++)
+    {
+         ivec2 t = ppos & 1;
+         sum = sum * 4 | (t.x ^ t.y) * 2 | t.x;
+         ppos /= 2;
+    }    
+    return float(sum) / float(1 << (2 * 4));
+}
+
 void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, const int p_quality) {
 	ivec2 uvi = ivec2(p_pos * vec2(params.screen_size));
 	ivec2 full_res_uvi = ivec2(p_pos * vec2(params.full_screen_size));
@@ -373,9 +386,6 @@ void ssilvb(out vec4 r_color, out vec4 r_edges, vec2 p_pos, const int p_quality)
 	gi *= fade_out;
 
 	ao *= norm;
-	ao = clamp((ao) * params.intensity, 0.0, 1.0);
-
-	ao *= fade_out;
 
 	r_color = vec4(gi, ao);
 	r_edges = edgesLRTB;
