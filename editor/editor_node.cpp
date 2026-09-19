@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/extension/gdextension_manager.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
@@ -3654,6 +3655,12 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			} else {
 				project_run_bar->play_custom_scene(scene_path);
 			}
+		} break;
+
+		case SCENE_EDIT_IN_INSPECTOR: {
+			Ref<PackedScene> scene = editor_data.get_scene_resource(scene_tabs->get_option_tab());
+
+			InspectorDock::get_singleton()->edit_resource(scene);
 		} break;
 
 		case PROJECT_EXPORT: {
@@ -8103,9 +8110,17 @@ void EditorNode::set_unfocused_low_processor_usage_mode_enabled(bool p_enabled) 
 }
 
 void EditorNode::_build_file_menu(bool p_dark_mode) {
+#define DISABLE_LAST_OPTION_IF(m_condition) \
+	if (m_condition) { \
+		file_menu->set_item_disabled(-1, true); \
+	}
+
 	if (!file_menu) {
 		return;
 	}
+
+	bool cant_instantiate = !(editor_data.get_edited_scene() > -1 && editor_data.get_scene_resource(-1)->can_instantiate());
+
 	file_menu->clear(false);
 
 	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("CreateNewSceneFrom"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/new_scene"), SCENE_NEW_SCENE);
@@ -8142,6 +8157,8 @@ void EditorNode::_build_file_menu(bool p_dark_mode) {
 	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("RotateLeft"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("ui_undo"), SCENE_UNDO, false, true);
 	file_menu->add_shortcut(ED_GET_SHORTCUT("ui_redo"), SCENE_REDO, false, true);
 	file_menu->add_separator();
+	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/edit_scene_in_inspector"), SCENE_EDIT_IN_INSPECTOR);
+	DISABLE_LAST_OPTION_IF(cant_instantiate)
 
 	file_menu->add_shortcut(ED_GET_SHORTCUT("editor/reload_saved_scene"), SCENE_RELOAD_SAVED_SCENE);
 	file_menu->add_icon_shortcut(get_editor_theme_native_menu_icon(SNAME("CloseScene"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode), ED_GET_SHORTCUT("editor/close_scene"), SCENE_CLOSE);
@@ -9111,6 +9128,7 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT("editor/export_as_mesh_library", TTRC("MeshLibrary..."));
 
+	ED_SHORTCUT_AND_COMMAND("editor/edit_scene_in_inspector", TTRC("Edit Scene in Inspector"));
 	ED_SHORTCUT_AND_COMMAND("editor/reload_saved_scene", TTRC("Reload Saved Scene"));
 	ED_SHORTCUT_AND_COMMAND("editor/close_scene", TTRC("Close Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::W);
 	ED_SHORTCUT_AND_COMMAND("editor/close_all_scenes", TTRC("Close All Scenes"));
