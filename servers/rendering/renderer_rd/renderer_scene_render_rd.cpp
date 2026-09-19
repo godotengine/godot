@@ -493,6 +493,18 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	bool dest_is_msaa_2d = rb->get_view_count() == 1 && texture_storage->render_target_get_msaa(render_target) != RSE::VIEWPORT_MSAA_DISABLED;
 
+	bool using_motion_blur = RSG::camera_attributes->camera_attributes_uses_motion_blur(p_render_data->camera_attributes);
+
+	if (using_motion_blur && !can_use_storage) {
+		WARN_PRINT_ONCE("Motion blur requires storage support in shader. Disabling motion blur.");
+		using_motion_blur = false;
+	}
+
+	if (can_use_effects && using_motion_blur) {
+		RENDER_TIMESTAMP("Motion Blur");
+		motion_blur->motion_blur_compute(rb, p_render_data->camera_attributes, p_render_data->scene_data, p_render_data->transparent_bg, time_step, copy_effects);
+	}
+
 	bool using_dof = RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes);
 
 	if (using_dof && p_render_data->transparent_bg) {
@@ -549,18 +561,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			}
 		}
 		RD::get_singleton()->draw_command_end_label();
-	}
-
-	bool using_motion_blur = RSG::camera_attributes->camera_attributes_uses_motion_blur(p_render_data->camera_attributes);
-
-	if (using_motion_blur && !can_use_storage) {
-		WARN_PRINT_ONCE("Motion blur requires storage support in shader. Disabling motion blur.");
-		using_motion_blur = false;
-	}
-
-	if (can_use_effects && using_motion_blur) {
-		RENDER_TIMESTAMP("Motion Blur");
-		motion_blur->motion_blur_compute(rb, p_render_data->camera_attributes, p_render_data->scene_data, p_render_data->transparent_bg, time_step, copy_effects);
 	}
 
 	float auto_exposure_scale = 1.0;
