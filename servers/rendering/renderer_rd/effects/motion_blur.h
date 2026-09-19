@@ -62,12 +62,12 @@ private:
 	};
 
 	struct MotionBlurPreprocessPushConstant {
-		float rotation_velocity_multiplier;
-		float movement_velocity_multiplier;
-		float object_velocity_multiplier;
-		float velocity_lower_threshold;
+		float velocity_multiplier_camera_rotation;
+		float velocity_multiplier_camera_movement;
+		float velocity_multiplier_object;
+		float velocity_threshold_lower;
 
-		float velocity_upper_threshold;
+		float velocity_threshold_upper;
 		float support_fsr2;
 		float motion_blur_intensity;
 		float pad1;

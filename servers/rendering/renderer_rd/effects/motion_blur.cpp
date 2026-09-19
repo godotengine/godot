@@ -230,15 +230,15 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 				break;
 		}
 
-		float velocity_lower_threshold = CLAMP(RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_lower_threshold(p_camera_attributes) / 100.0f, 0.0f, 1.0f);
-		float velocity_upper_threshold = CLAMP(RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_upper_threshold(p_camera_attributes) / 100.0f, 0.0f, 1.0f);
+		float velocity_threshold_lower = CLAMP(RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_threshold_lower(p_camera_attributes) / 100.0f, 0.0f, 1.0f);
+		float velocity_threshold_upper = CLAMP(RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_threshold_upper(p_camera_attributes) / 100.0f, 0.0f, 1.0f);
 
 		// TODO: add these multipliers to settings
-		motion_blur.preprocess_push_constant.movement_velocity_multiplier = RSG::camera_attributes->camera_attributes_get_motion_blur_movement_velocity_multiplier(p_camera_attributes);
-		motion_blur.preprocess_push_constant.rotation_velocity_multiplier = RSG::camera_attributes->camera_attributes_get_motion_blur_rotation_velocity_multiplier(p_camera_attributes);
-		motion_blur.preprocess_push_constant.object_velocity_multiplier = RSG::camera_attributes->camera_attributes_get_motion_blur_object_velocity_multiplier(p_camera_attributes);
-		motion_blur.preprocess_push_constant.velocity_lower_threshold = velocity_lower_threshold;
-		motion_blur.preprocess_push_constant.velocity_upper_threshold = velocity_upper_threshold;
+		motion_blur.preprocess_push_constant.velocity_multiplier_camera_movement = RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_multiplier_camera_movement(p_camera_attributes);
+		motion_blur.preprocess_push_constant.velocity_multiplier_camera_rotation = RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_multiplier_camera_rotation(p_camera_attributes);
+		motion_blur.preprocess_push_constant.velocity_multiplier_object = RSG::camera_attributes->camera_attributes_get_motion_blur_velocity_multiplier_object(p_camera_attributes);
+		motion_blur.preprocess_push_constant.velocity_threshold_lower = velocity_threshold_lower;
+		motion_blur.preprocess_push_constant.velocity_threshold_upper = velocity_threshold_upper;
 		motion_blur.preprocess_push_constant.motion_blur_intensity = RSG::camera_attributes->camera_attributes_get_motion_blur_intensity(p_camera_attributes);
 		motion_blur.preprocess_push_constant.support_fsr2 = p_render_buffers->get_scaling_3d_mode() == RSE::ViewportScaling3DMode::VIEWPORT_SCALING_3D_MODE_FSR2 ? 1.0 : 0.0;
 

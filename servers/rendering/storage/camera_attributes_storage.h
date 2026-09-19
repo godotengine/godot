@@ -52,11 +52,11 @@ private:
 
 		bool motion_blur_enabled = false;
 		float motion_blur_intensity = 1.0;
-		float motion_blur_object_velocity_multiplier = 1.0;
-		float motion_blur_movement_velocity_multiplier = 1.0;
-		float motion_blur_rotation_velocity_multiplier = 0.1;
-		float motion_blur_velocity_lower_threshold = 2;
-		float motion_blur_velocity_upper_threshold = 3.5;
+		float motion_blur_velocity_multiplier_object = 1.0;
+		float motion_blur_velocity_multiplier_camera_movement = 1.0;
+		float motion_blur_velocity_multiplier_camera_rotation = 0.1;
+		float motion_blur_velocity_threshold_lower = 2;
+		float motion_blur_velocity_threshold_upper = 3.5;
 
 		bool dof_blur_far_enabled = false;
 		float dof_blur_far_distance = 10;
@@ -94,13 +94,13 @@ public:
 	void camera_attributes_set_motion_blur_show_in_editor(bool p_enabled);
 	void camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality);
 
-	void camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, float p_object_velocity_multiplier, float p_movement_velocity_multiplier, float p_rotation_velocity_multiplier, float p_velocity_lower_threshold, float p_velocity_upper_threshold);
+	void camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, float p_velocity_multiplier_object, float p_velocity_multiplier_camera_movement, float p_velocity_multiplier_camera_rotation, float p_velocity_threshold_lower, float p_velocity_threshold_upper);
 	float camera_attributes_get_motion_blur_intensity(RID p_camera_attributes);
-	float camera_attributes_get_motion_blur_object_velocity_multiplier(RID p_camera_attributes);
-	float camera_attributes_get_motion_blur_movement_velocity_multiplier(RID p_camera_attributes);
-	float camera_attributes_get_motion_blur_rotation_velocity_multiplier(RID p_camera_attributes);
-	float camera_attributes_get_motion_blur_velocity_lower_threshold(RID p_camera_attributes);
-	float camera_attributes_get_motion_blur_velocity_upper_threshold(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_multiplier_object(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_multiplier_camera_movement(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_multiplier_camera_rotation(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_threshold_lower(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_threshold_upper(RID p_camera_attributes);
 
 	_FORCE_INLINE_ bool camera_attributes_uses_motion_blur(RID p_camera_attributes) {
 		CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);

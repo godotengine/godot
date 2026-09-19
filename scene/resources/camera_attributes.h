@@ -81,11 +81,11 @@ private:
 	// Motion blur
 	bool motion_blur_enabled = false;
 	float motion_blur_intensity = 1.0;
-	float motion_blur_object_velocity_multiplier = 1.0;
-	float motion_blur_movement_velocity_multiplier = 1.0;
-	float motion_blur_rotation_velocity_multiplier = 0.1;
-	float motion_blur_velocity_lower_threshold = 2;
-	float motion_blur_velocity_upper_threshold = 3.5;
+	float motion_blur_velocity_multiplier_object = 1.0;
+	float motion_blur_velocity_multiplier_camera_movement = 1.0;
+	float motion_blur_velocity_multiplier_camera_rotation = 0.1;
+	float motion_blur_velocity_threshold_lower = 2;
+	float motion_blur_velocity_threshold_upper = 3.5;
 	void _update_motion_blur();
 
 	// DOF blur
@@ -112,16 +112,16 @@ public:
 	bool is_motion_blur_enabled() const;
 	void set_motion_blur_intensity(float p_intensity);
 	float get_motion_blur_intensity() const;
-	void set_motion_blur_object_velocity_multiplier(float p_multiplier);
-	float get_motion_blur_object_velocity_multiplier() const;
-	void set_motion_blur_movement_velocity_multiplier(float p_multiplier);
-	float get_motion_blur_movement_velocity_multiplier() const;
-	void set_motion_blur_rotation_velocity_multiplier(float p_multiplier);
-	float get_motion_blur_rotation_velocity_multiplier() const;
-	void set_motion_blur_velocity_lower_threshold(float p_threshold);
-	float get_motion_blur_velocity_lower_threshold() const;
-	void set_motion_blur_velocity_upper_threshold(float p_threshold);
-	float get_motion_blur_velocity_upper_threshold() const;
+	void set_motion_blur_velocity_multiplier_object(float p_multiplier);
+	float get_motion_blur_velocity_multiplier_object() const;
+	void set_motion_blur_velocity_multiplier_camera_movement(float p_multiplier);
+	float get_motion_blur_velocity_multiplier_camera_movement() const;
+	void set_motion_blur_velocity_multiplier_camera_rotation(float p_multiplier);
+	float get_motion_blur_velocity_multiplier_camera_rotation() const;
+	void set_motion_blur_velocity_threshold_lower(float p_threshold);
+	float get_motion_blur_velocity_threshold_lower() const;
+	void set_motion_blur_velocity_threshold_upper(float p_threshold);
+	float get_motion_blur_velocity_threshold_upper() const;
 
 	// DOF blur
 	void set_dof_blur_far_enabled(bool p_enabled);

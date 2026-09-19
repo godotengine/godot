@@ -67,9 +67,9 @@ layout(set = 0, binding = 3, std140) uniform SceneDataBlock {
 scene;
 
 layout(push_constant, std430) uniform Params {
-	float rotation_velocity_multiplier;
-	float movement_velocity_multiplier;
-	float object_velocity_multiplier;
+	float velocity_multiplier_camera_rotation;
+	float velocity_multiplier_camera_movement;
+	float velocity_multiplier_object;
 	float velocity_threshold_lower;
 
 	float velocity_threshold_upper;
@@ -182,7 +182,7 @@ void main() {
 	// Now that we have the 3 components that make the original motion vectors isolated, we
 	// can put them back together after tuning them however we like.
 	// We assume that component magnitudes are between 0 and 1. This must be enforced on the editor interface level.
-	vec3 total_velocity = camera_rotation_uv_change * params.rotation_velocity_multiplier + camera_movement_uv_change * params.movement_velocity_multiplier + object_uv_change * params.object_velocity_multiplier;
+	vec3 total_velocity = camera_rotation_uv_change * params.velocity_multiplier_camera_rotation + camera_movement_uv_change * params.velocity_multiplier_camera_movement + object_uv_change * params.velocity_multiplier_object;
 
 	// If depth == 0 (skybox), or the objcet is not static (has some object uv change), clear z velocity.
 	// The z velocity was manually extracted using view matrices and thus can only be safely assumed for static environment.
@@ -210,9 +210,9 @@ void main() {
 	// The same logic can be applied in the other direction. If the resulting velocity somehow collapses to a smaller value than the
 	// minimum multiplier's fraction of the original velocity, we can fallback to such original velocity times the minimum multiplier.
 	// ---------------------------------------------------
-	float max_component_multiplier = max(params.rotation_velocity_multiplier, max(params.movement_velocity_multiplier, params.object_velocity_multiplier));
+	float max_component_multiplier = max(params.velocity_multiplier_camera_rotation, max(params.velocity_multiplier_camera_movement, params.velocity_multiplier_object));
 
-	float min_component_multiplier = min(params.rotation_velocity_multiplier, min(params.movement_velocity_multiplier, params.object_velocity_multiplier));
+	float min_component_multiplier = min(params.velocity_multiplier_camera_rotation, min(params.velocity_multiplier_camera_movement, params.velocity_multiplier_object));
 
 	vec3 max_fallback_velocity = base_velocity * max_component_multiplier;
 
