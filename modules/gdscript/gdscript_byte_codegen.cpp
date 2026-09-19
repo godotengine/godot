@@ -1155,7 +1155,8 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 	} else if (p_arguments.size() == Variant::get_utility_function_argument_count(p_function)) {
 		bool all_types_exact = true;
 		for (int i = 0; i < p_arguments.size(); i++) {
-			if (!IS_BUILTIN_TYPE(p_arguments[i], Variant::get_utility_function_argument_type(p_function, i))) {
+			const Variant::Type argument_type = Variant::get_utility_function_argument_type(p_function, i);
+			if (!HAS_BUILTIN_TYPE(p_arguments[i]) || argument_type == Variant::NIL || !Variant::can_convert_strict(p_arguments[i].type.builtin_type, argument_type)) {
 				all_types_exact = false;
 				break;
 			}
