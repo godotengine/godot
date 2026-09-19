@@ -62,6 +62,7 @@
 	<members>
 		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed" default="false">
 			If [code]true[/code], the MultiplayerAPI will allow encoding and decoding of object during RPCs.
+			[b]Note:[/b] Not all properties of an encoded object are included. Only the ones configured with the [constant @GlobalScope.PROPERTY_USAGE_STORAGE] flag are serialized (i.e. in GDScript, most commonly the ones declared with [annotation @GDScript.@export]). The receiver instantiates the object and reattaches its script, then applies those properties, so every other member keeps the value it is initialized with rather than the one the sender had. The script is referenced by its [code]res://[/code] path: encoding an object whose script has no such path, or decoding one whose script cannot be loaded on the receiver, fails instead.
 			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threat such as remote code execution.
 		</member>
 		<member name="auth_callback" type="Callable" setter="set_auth_callback" getter="get_auth_callback" default="Callable()">
