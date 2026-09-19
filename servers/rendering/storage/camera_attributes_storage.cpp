@@ -61,25 +61,15 @@ void RendererCameraAttributes::camera_attributes_free(RID p_rid) {
 	camera_attributes_owner.free(p_rid);
 }
 
-void RendererCameraAttributes::camera_attributes_set_motion_blur_framerate_mode(RSE::MotionBlurFramerateMode p_mode, int p_reference_framerate) {
-	motion_blur_framerate_mode = p_mode;
-	// Ensure it's at least 1 to prevent division by zero
-	motion_blur_reference_framerate = MAX(1, p_reference_framerate);
-}
-
-void RendererCameraAttributes::camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality) {
-	motion_blur_quality = p_quality;
-}
-
-void RendererCameraAttributes::camera_attributes_set_motion_blur_tile_size(RSE::MotionBlurTileSize p_tile_size) {
-	motion_blur_tile_size = p_tile_size;
-}
-
 void RendererCameraAttributes::camera_attributes_set_motion_blur_show_in_editor(bool p_enabled) {
 	if (motion_blur_show_in_editor == p_enabled) {
 		return;
 	}
 	motion_blur_show_in_editor = p_enabled;
+}
+
+void RendererCameraAttributes::camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality) {
+	motion_blur_quality = p_quality;
 }
 
 void RendererCameraAttributes::camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, float p_object_velocity_multiplier, float p_movement_velocity_multiplier, float p_rotation_velocity_multiplier, float p_velocity_lower_threshold, float p_velocity_upper_threshold) {

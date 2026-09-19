@@ -34,31 +34,7 @@
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-RendererRD::MotionBlur::MotionBlur(RSE::MotionBlurTileSize p_tile_size_level) {
-	// Init tile size (changes require restart)
-	switch (p_tile_size_level) {
-		// NOTE @sphynx-owner: Velocities in the neighbor_max texture are stored
-		// in R8G8_SINT format, so they are capped at -128->127,
-		// and since we blur half their length in each direction,
-		// 64 is the maximum sensible tile size.
-		case RSE::MOTION_BLUR_TILE_SIZE_SMALL:
-			tile_size = 16;
-			break;
-		case RSE::MOTION_BLUR_TILE_SIZE_MEDIUM:
-			tile_size = 32;
-			break;
-		case RSE::MOTION_BLUR_TILE_SIZE_LARGE:
-			tile_size = 48;
-			break;
-		case RSE::MOTION_BLUR_TILE_SIZE_EXTRA_LARGE:
-			tile_size = 64;
-			break;
-		default:
-			WARN_PRINT_ONCE("Unknown motion blur tile size.");
-			tile_size = 40;
-			break;
-	}
-
+RendererRD::MotionBlur::MotionBlur() {
 	RD::SamplerState sampler;
 	sampler.mag_filter = RD::SAMPLER_FILTER_NEAREST;
 	sampler.min_filter = RD::SAMPLER_FILTER_NEAREST;
@@ -68,17 +44,12 @@ RendererRD::MotionBlur::MotionBlur(RSE::MotionBlurTileSize p_tile_size_level) {
 	sampler.repeat_w = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
 	motion_blur.nearest_sampler = RD::get_singleton()->sampler_create(sampler);
 
-	sampler.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-	sampler.min_filter = RD::SAMPLER_FILTER_LINEAR;
-	sampler.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-	motion_blur.linear_sampler = RD::get_singleton()->sampler_create(sampler);
-
 	// Use macros to define TILE_SIZE to enable loop unrolling.
 	// This improves runtime performance significantly.
 	Vector<String> tile_size_defs;
 	tile_size_defs.push_back(vformat("\n#define TILE_SIZE %d\n", tile_size));
 
-	motion_blur.preprocess_shader.initialize({ "\n" });
+	motion_blur.preprocess_shader.initialize(tile_size_defs);
 	motion_blur.preprocess_shader_version = motion_blur.preprocess_shader.version_create();
 	motion_blur.pipelines[MOTION_BLUR_PREPROCESS].create_compute_pipeline(motion_blur.preprocess_shader.version_get_shader(motion_blur.preprocess_shader_version, 0));
 
@@ -111,7 +82,6 @@ RendererRD::MotionBlur::~MotionBlur() {
 	motion_blur.blur_shader.version_free(motion_blur.blur_shader_version);
 
 	RD::get_singleton()->free_rid(motion_blur.nearest_sampler);
-	RD::get_singleton()->free_rid(motion_blur.linear_sampler);
 }
 
 void RendererRD::MotionBlur::motion_blur_process(const MotionBlurBuffers &p_buffers) {
@@ -243,40 +213,19 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 	buffers.tiled_size = tiled_size;
 
 	{
-		int reference_framerate = RSG::camera_attributes->camera_attributes_get_motion_blur_reference_framerate();
-		const double time_scale = Engine::get_singleton()->get_effective_time_scale();
-		float time_step = 0.0f;
-		float intensity = RSG::camera_attributes->camera_attributes_get_motion_blur_intensity(p_camera_attributes);
-		if (time_scale > 0.00001) {
-			time_step = p_time_step / (float)time_scale;
-			switch (RSG::camera_attributes->camera_attributes_get_motion_blur_framerate_mode()) {
-				case RSE::MOTION_BLUR_FRAMERATE_MODE_NATIVE:
-					break;
-				case RSE::MOTION_BLUR_FRAMERATE_MODE_CAPPED:
-					intensity *= MIN(1.f / reference_framerate, time_step) / time_step;
-					break;
-				case RSE::MOTION_BLUR_FRAMERATE_MODE_FIXED:
-					intensity /= reference_framerate * time_step;
-					break;
-			}
-		} else {
-			// If frozen, we effectively have no movement, so we can set intensity to 0 to avoid math issues
-			intensity = 0.0f;
-		}
-
 		int sample_count;
 		switch (RSG::camera_attributes->camera_attributes_get_motion_blur_quality()) {
-			case RSE::MOTION_BLUR_QUALITY_LOW:
-				sample_count = 1;
-				break;
-			case RSE::MOTION_BLUR_QUALITY_MEDIUM:
+			case RSE::MOTION_BLUR_QUALITY_STANDARD:
 				sample_count = 2;
 				break;
 			case RSE::MOTION_BLUR_QUALITY_HIGH:
 				sample_count = 4;
 				break;
+			case RSE::MOTION_BLUR_QUALITY_CINEMATIC:
+				sample_count = 8;
+				break;
 			default:
-				WARN_PRINT_ONCE("Unknown motion blur quality setting, defaulting to medium.");
+				WARN_PRINT_ONCE("Unknown motion blur quality setting, defaulting to standard.");
 				sample_count = 2;
 				break;
 		}
@@ -290,11 +239,9 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 		motion_blur.preprocess_push_constant.object_velocity_multiplier = RSG::camera_attributes->camera_attributes_get_motion_blur_object_velocity_multiplier(p_camera_attributes);
 		motion_blur.preprocess_push_constant.velocity_lower_threshold = velocity_lower_threshold;
 		motion_blur.preprocess_push_constant.velocity_upper_threshold = velocity_upper_threshold;
-		motion_blur.preprocess_push_constant.motion_blur_intensity = intensity;
-		motion_blur.preprocess_push_constant.support_fsr2 = p_render_buffers->get_scaling_3d_mode() == RSE::ViewportScaling3DMode::VIEWPORT_SCALING_3D_MODE_FSR2;
-		motion_blur.preprocess_push_constant.tile_size = tile_size;
+		motion_blur.preprocess_push_constant.motion_blur_intensity = RSG::camera_attributes->camera_attributes_get_motion_blur_intensity(p_camera_attributes);
+		motion_blur.preprocess_push_constant.support_fsr2 = p_render_buffers->get_scaling_3d_mode() == RSE::ViewportScaling3DMode::VIEWPORT_SCALING_3D_MODE_FSR2 ? 1.0 : 0.0;
 
-		motion_blur.blur_push_constant.tile_size = tile_size;
 		motion_blur.blur_push_constant.sample_count = sample_count;
 		// from https://blog.demofox.org/2022/01/01/interleaved-gradient-noise-a-different-kind-of-low-discrepancy-sequence/ (section: Derivation Of IGN And Extensions) for animation of the noise.
 		motion_blur.blur_push_constant.frame = Engine::get_singleton()->get_frames_drawn() % 64;

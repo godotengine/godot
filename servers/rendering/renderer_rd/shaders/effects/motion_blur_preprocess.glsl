@@ -75,7 +75,7 @@ layout(push_constant, std430) uniform Params {
 	float velocity_upper_threshold;
 	float support_fsr2;
 	float motion_blur_intensity;
-	float tile_size;
+	float pad1;
 }
 params;
 
@@ -238,7 +238,7 @@ void main() {
 	// symmetrically forwards and backwards so its radius is half its magnitude.
 	// NOTE @sphynx-owner: this clamp also handles the asymptotical behavior of near-clip-plane velocities.
 	// ---------------------------------------------------
-	clamp_length(total_velocity, total_velocity.xy, params.tile_size * 2);
+	clamp_length(total_velocity, total_velocity.xy, TILE_SIZE * 2);
 	// ---------------------------------------------------
 
 	// total_velocity up to this point was backwards, because it was derived using UV differences, which were vectors

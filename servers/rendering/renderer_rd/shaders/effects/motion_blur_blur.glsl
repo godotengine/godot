@@ -49,10 +49,10 @@ layout(set = 0, binding = 2) uniform isampler2D neighbor_max;
 layout(rgba16f, set = 0, binding = 3) uniform writeonly image2D output_color;
 
 layout(push_constant, std430) uniform Params {
-	int tile_size;
 	int sample_count;
 	int frame;
 	int transparent_bg;
+	int pad1;
 }
 params;
 
@@ -91,7 +91,7 @@ ivec2 jitter_tile(ivec2 uvi) {
 	float angle = interleaved_gradient_noise(uvi * 4) * M_PI * 2;
 	rx = cos(angle);
 	ry = sin(angle);
-	return ivec2(vec2(rx, ry) * params.tile_size / 4);
+	return ivec2(vec2(rx, ry) * TILE_SIZE / 4);
 }
 // ----------------------------------------------------------
 
@@ -273,7 +273,7 @@ void main() {
 
 	// get the target neighbor_max tile (pixel) to sample from, add jitter between tiles
 	// to hide the seams.
-	ivec2 neighbor_max_uvi = (x + jitter_tile(x)) / params.tile_size;
+	ivec2 neighbor_max_uvi = (x + jitter_tile(x)) / TILE_SIZE;
 
 	// We get the neighbor-max velocity.
 	vec2 vn = texelFetch(neighbor_max, neighbor_max_uvi, 0).xy;

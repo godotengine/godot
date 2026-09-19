@@ -52,7 +52,7 @@ namespace RendererRD {
 
 class MotionBlur {
 private:
-	enum MotionBlurMode {
+	enum MotionBlurStage {
 		MOTION_BLUR_PREPROCESS,
 		MOTION_BLUR_TILE_MAX_X,
 		MOTION_BLUR_TILE_MAX_Y,
@@ -70,14 +70,14 @@ private:
 		float velocity_upper_threshold;
 		float support_fsr2;
 		float motion_blur_intensity;
-		float tile_size;
+		float pad1;
 	};
 
 	struct MotionBlurBlurPushConstant {
-		int32_t tile_size;
 		int32_t sample_count;
 		int32_t frame;
 		int32_t transparent_bg;
+		int32_t pad1;
 	};
 
 	struct {
@@ -100,7 +100,6 @@ private:
 		RID blur_shader_version;
 
 		PipelineDeferredRD pipelines[MOTION_BLUR_MAX];
-		RID linear_sampler;
 		RID nearest_sampler;
 	} motion_blur;
 
@@ -120,11 +119,11 @@ private:
 		RID blur_output_texture;
 	};
 
-	int tile_size;
+	int tile_size = 48;
 	void motion_blur_process(const MotionBlurBuffers &p_buffers);
 
 public:
-	MotionBlur(RSE::MotionBlurTileSize p_tile_size_level);
+	MotionBlur();
 	~MotionBlur();
 
 	void motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool p_transparent_bg, float p_time_step, CopyEffects *p_copy_effects);

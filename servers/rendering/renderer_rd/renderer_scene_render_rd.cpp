@@ -1836,9 +1836,7 @@ void RendererSceneRenderRD::init() {
 		RendererRD::Fog::get_singleton()->init_fog_shader(RendererRD::LightStorage::get_singleton()->get_max_directional_lights(), get_roughness_layers(), is_using_radiance_octmap_array());
 	}
 
-	RSG::camera_attributes->camera_attributes_set_motion_blur_framerate_mode(RSE::MotionBlurFramerateMode(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_framerate_mode"))), int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_reference_framerate")));
 	RSG::camera_attributes->camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_quality"))));
-	RSG::camera_attributes->camera_attributes_set_motion_blur_tile_size(RSE::MotionBlurTileSize(int(GLOBAL_GET("rendering/camera/motion_blur/motion_blur_tile_size"))));
 
 	RSG::camera_attributes->camera_attributes_set_dof_blur_bokeh_shape(RSE::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape"))));
 	RSG::camera_attributes->camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
@@ -1888,7 +1886,7 @@ void RendererSceneRenderRD::init() {
 	}
 
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
-	motion_blur = memnew(RendererRD::MotionBlur(RSG::camera_attributes->camera_attributes_get_motion_blur_tile_size()));
+	motion_blur = memnew(RendererRD::MotionBlur());
 	copy_effects = memnew(RendererRD::CopyEffects(raster_effects));
 	debug_effects = memnew(RendererRD::DebugEffects);
 	luminance = memnew(RendererRD::Luminance(!can_use_storage));
@@ -1909,33 +1907,15 @@ void RendererSceneRenderRD::init() {
 RendererSceneRenderRD::~RendererSceneRenderRD() {
 	memdelete(forward_id_storage);
 
-	if (bokeh_dof) {
-		memdelete(bokeh_dof);
-	}
-	if (motion_blur) {
-		memdelete(motion_blur);
-	}
-	if (copy_effects) {
-		memdelete(copy_effects);
-	}
-	if (debug_effects) {
-		memdelete(debug_effects);
-	}
-	if (luminance) {
-		memdelete(luminance);
-	}
-	if (smaa) {
-		memdelete(smaa);
-	}
-	if (tone_mapper) {
-		memdelete(tone_mapper);
-	}
-	if (vrs) {
-		memdelete(vrs);
-	}
-	if (fsr) {
-		memdelete(fsr);
-	}
+	memdelete(motion_blur);
+	memdelete(bokeh_dof);
+	memdelete(copy_effects);
+	memdelete(debug_effects);
+	memdelete(luminance);
+	memdelete(smaa);
+	memdelete(tone_mapper);
+	memdelete(vrs);
+	memdelete(fsr);
 #ifdef METAL_ENABLED
 	memdelete(mfx_spatial);
 #endif
