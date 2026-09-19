@@ -2459,6 +2459,28 @@ NodePath Node::get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_p
 	return NodePath(path, false);
 }
 
+NodePath Node::get_path_to_descendant(RequiredParam<const Node> p_node) const {
+	EXTRACT_PARAM_OR_FAIL_V(node, p_node, NodePath());
+
+	if (this == node) {
+		return NodePath(".");
+	}
+
+	Vector<StringName> path;
+	while (node) {
+		path.push_back(node->get_name());
+		node = node->data.parent;
+		if (this == node) {
+			break;
+		}
+	}
+	ERR_FAIL_NULL_V_MSG(node, NodePath(), "Target node is not a descendant of this node.");
+
+	path.reverse();
+
+	return NodePath(path, false);
+}
+
 NodePath Node::get_path() const {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), NodePath(), "Cannot get path of node as it is not in a scene tree.");
 
@@ -3096,8 +3118,8 @@ void Node::_duplicate_scripts(const Node *p_original, Node *p_copy, int p_flags)
 	for (int i = 0; i < p_original->get_child_count(false); i++) {
 		Node *original = p_original->get_child(i, false);
 		// If using instantiation and the child structure changed, getting it by index will result in
-		// fetching values from the wrong nodes. So use the slower (but more accurate) path method.
-		Node *copy = instantiated ? p_copy->get_node(get_path_to(original)) : p_copy->get_child(i, false);
+		// fetching values from the wrong nodes. So use a path method instead, which is more accurate.
+		Node *copy = instantiated ? p_copy->get_node(get_path_to_descendant(original)) : p_copy->get_child(i, false);
 		ERR_FAIL_NULL_MSG(copy, "Child node disappeared while duplicating.");
 		_duplicate_scripts(original, copy, p_flags);
 	}
@@ -3826,6 +3848,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_greater_than", "node"), &Node::is_greater_than);
 	ClassDB::bind_method(D_METHOD("get_path"), &Node::get_path);
 	ClassDB::bind_method(D_METHOD("get_path_to", "node", "use_unique_path"), &Node::get_path_to, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_path_to_descendant", "node"), &Node::get_path_to_descendant);
 	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_from_group", "group"), &Node::remove_from_group);
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
