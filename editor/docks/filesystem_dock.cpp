@@ -4141,39 +4141,12 @@ void FileSystemDock::_update_import_dock() {
 		_get_imported_files(fpath, extension, efiles);
 	}
 
-	// Check import.
-	Vector<String> imports;
-	String import_type;
-	for (int i = 0; i < efiles.size(); i++) {
-		const String &fpath = efiles[i];
-		Ref<ConfigFile> cf;
-		cf.instantiate();
-		Error err = cf->load(fpath + ".import");
-		if (err != OK) {
-			imports.clear();
-			break;
-		}
-
-		String type;
-		if (cf->has_section_key("remap", "type")) {
-			type = cf->get_value("remap", "type");
-		}
-		if (import_type.is_empty()) {
-			import_type = type;
-		} else if (import_type != type) {
-			// All should be the same type.
-			imports.clear();
-			break;
-		}
-		imports.push_back(fpath);
-	}
-
-	if (imports.is_empty()) {
+	if (efiles.is_empty()) {
 		ImportDock::get_singleton()->clear();
-	} else if (imports.size() == 1) {
-		ImportDock::get_singleton()->set_edit_path(imports[0]);
+	} else if (efiles.size() == 1) {
+		ImportDock::get_singleton()->set_edit_path(efiles[0]);
 	} else {
-		ImportDock::get_singleton()->set_edit_multiple_paths(imports);
+		ImportDock::get_singleton()->set_edit_multiple_paths(efiles);
 	}
 
 	import_dock_needs_update = false;
