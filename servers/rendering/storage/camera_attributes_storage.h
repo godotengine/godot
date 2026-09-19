@@ -36,6 +36,7 @@
 class RendererCameraAttributes {
 private:
 	static RendererCameraAttributes *singleton;
+	int num_camera_attributes_with_motion_blur = 0;
 
 	struct CameraAttributes {
 		float exposure_multiplier = 1.0;
@@ -81,6 +82,7 @@ private:
 
 public:
 	static RendererCameraAttributes *get_singleton() { return singleton; }
+	int get_num_camera_attributes_with_motion_blur() const { return num_camera_attributes_with_motion_blur; }
 
 	RendererCameraAttributes();
 	~RendererCameraAttributes();

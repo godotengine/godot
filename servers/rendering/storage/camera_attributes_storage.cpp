@@ -54,6 +54,10 @@ void RendererCameraAttributes::camera_attributes_initialize(RID p_rid) {
 }
 
 void RendererCameraAttributes::camera_attributes_free(RID p_rid) {
+	if (camera_attributes_uses_motion_blur(p_rid)) {
+		num_camera_attributes_with_motion_blur--;
+	}
+
 	camera_attributes_owner.free(p_rid);
 }
 
@@ -86,6 +90,14 @@ void RendererCameraAttributes::camera_attributes_set_motion_blur(RID p_camera_at
 		WARN_PRINT_ONCE_ED("Motion blur is only available when using the Forward+ renderer.");
 	}
 #endif
+	if (cam_attributes->motion_blur_enabled != p_enable) {
+		if (p_enable) {
+			num_camera_attributes_with_motion_blur++;
+		} else {
+			num_camera_attributes_with_motion_blur--;
+		}
+	}
+
 	cam_attributes->motion_blur_enabled = p_enable;
 	cam_attributes->motion_blur_intensity = p_intensity;
 	cam_attributes->motion_blur_object_velocity_multiplier = p_object_velocity_multiplier;
