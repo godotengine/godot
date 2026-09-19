@@ -54,9 +54,9 @@ private:
 		float motion_blur_intensity = 1.0;
 		float motion_blur_object_velocity_multiplier = 1.0;
 		float motion_blur_movement_velocity_multiplier = 1.0;
-		float motion_blur_rotation_velocity_multiplier = 1.0;
-		float motion_blur_velocity_lower_threshold = 0.0;
-		float motion_blur_velocity_upper_threshold = 0.0;
+		float motion_blur_rotation_velocity_multiplier = 0.1;
+		float motion_blur_velocity_lower_threshold = 2;
+		float motion_blur_velocity_upper_threshold = 3.5;
 
 		bool dof_blur_far_enabled = false;
 		float dof_blur_far_distance = 10;
