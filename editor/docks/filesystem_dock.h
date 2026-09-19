@@ -186,9 +186,9 @@ private:
 
 	HBoxContainer *path_hb = nullptr;
 
-	FileListDisplayMode file_list_display_mode;
-	DisplayMode display_mode;
-	DisplayMode old_display_mode;
+	DisplayMode display_mode = DISPLAY_MODE_TREE_ONLY;
+	DisplayMode old_display_mode = DISPLAY_MODE_TREE_ONLY;
+	FileListDisplayMode file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
 	bool horizontal = false;
 	bool touches_bottom = false;
@@ -249,16 +249,16 @@ private:
 	Vector<String> to_convert;
 	int selected_conversion_id = 0;
 
-	Vector<String> history;
-	int history_pos;
-	int history_max_size;
+	Vector<String> history = { "res://" };
+	int history_pos = 0;
+	static constexpr int history_max_size = 20;
 
 	String current_path = "res://";
 	String select_after_scan;
 	String main_scene_path;
 
 	bool updating_tree = false;
-	int tree_update_id;
+	int tree_update_id = 0;
 	FileSystemTree *tree = nullptr;
 	FileSystemList *files = nullptr;
 	bool import_dock_needs_update = false;
