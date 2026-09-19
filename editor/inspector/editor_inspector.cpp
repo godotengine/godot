@@ -50,6 +50,7 @@
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/inspector/editor_resource_picker.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/scene/editor_scene_tabs.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_feature_profile.h"
 #include "editor/settings/editor_settings.h"
@@ -5830,6 +5831,8 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			E->update_editor_property_status();
 		}
 	}
+
+	_update_tabs_if_scene();
 }
 
 void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing, bool p_update_all) {
@@ -5907,6 +5910,13 @@ void EditorInspector::_property_deleted(const String &p_path) {
 		emit_signal(SNAME("restart_requested"));
 	}
 	emit_signal(SNAME("property_deleted"), p_path);
+	_update_tabs_if_scene();
+}
+
+void EditorInspector::_update_tabs_if_scene() const {
+	if (Object::cast_to<PackedScene>(object)) {
+		EditorSceneTabs::get_singleton()->update_scene_tabs();
+	}
 }
 
 void EditorInspector::_property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance) {
@@ -6406,6 +6416,8 @@ void EditorInspector::_add_meta_confirm() {
 	undo_redo->add_do_method(object, "set_meta", name, add_meta_dialog->get_meta_defval());
 	undo_redo->add_undo_method(object, "remove_meta", name);
 	undo_redo->commit_action();
+
+	_update_tabs_if_scene();
 }
 
 EditorInspector *EditorInspector::_get_control_parent_inspector(Control *p_control) {

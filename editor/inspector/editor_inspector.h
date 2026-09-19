@@ -913,6 +913,8 @@ private:
 	void _add_section_in_tree(EditorInspectorSection *p_section, VBoxContainer *p_current_vbox);
 	static EditorInspector *_get_control_parent_inspector(Control *p_control);
 
+	void _update_tabs_if_scene() const;
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
