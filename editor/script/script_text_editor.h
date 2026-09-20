@@ -110,6 +110,7 @@ class ScriptTextEditor : public CodeEditorBase {
 		SHOW_TOOLTIP_AT_CARET,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
+		RENAME_SYMBOL,
 	};
 
 	class EditMenusScTE : public EditMenusCEB {
@@ -134,6 +135,19 @@ class ScriptTextEditor : public CodeEditorBase {
 		String class_name;
 	};
 
+	struct RenamePosition {
+		int line;
+		int column;
+	};
+
+	ConfirmationDialog *rename_dialog = nullptr;
+	LineEdit *rename_line_edit = nullptr;
+
+	Vector<RenamePosition> rename_positions;
+	String rename_old_name;
+
+	void _rename_symbol_confirm();
+
 	LocalVector<DraggedExport> pending_dragged_exports;
 	Vector<ObjectID> _get_objects_for_export_assignment() const;
 	String _get_dropped_resource_as_exported_member(const Ref<Resource> &p_resource, const Vector<ObjectID> &p_script_instance_obj_ids);
@@ -150,6 +164,8 @@ class ScriptTextEditor : public CodeEditorBase {
 	}
 
 	static ScriptEditorBase *create_editor(const Ref<Resource> &p_resource);
+
+	void _rename_symbol();
 
 protected:
 	virtual void _breakpoint_toggled(int p_row) override;
@@ -195,6 +211,7 @@ protected:
 	String _get_absolute_path(const String &rel_path);
 
 	void _goto_line(int p_line);
+	void rename_symbol();
 
 	void _make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, const Vector2 &p_pos);
 	Dictionary _get_context_data() const;

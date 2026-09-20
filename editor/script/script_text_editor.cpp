@@ -55,13 +55,18 @@
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/style_box_flat.h"
 #include "servers/rendering/rendering_server.h"
+
+#include "modules/gdscript/gdscript_parser.h"
 
 void ConnectionInfoDialog::ok_pressed() {
 }
@@ -1908,6 +1913,9 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				_lookup_symbol(text, tx->get_caret_line(0), tx->get_caret_column(0));
 			}
 		} break;
+		case RENAME_SYMBOL: {
+			_rename_symbol();
+		} break;
 		default: {
 			if (CodeEditorBase::_edit_option(p_op)) {
 				return true;
@@ -2600,6 +2608,8 @@ void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bo
 		}
 	}
 
+	context_menu->add_item(TTR("Rename Symbol"), RENAME_SYMBOL);
+
 	if (EditorContextMenuPluginManager::get_singleton()->has_plugins_for_slot(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE)) {
 		EditorContextMenuPluginManager::get_singleton()->add_options_from_plugins(context_menu, EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, _get_context_data());
 #ifndef DISABLE_DEPRECATED
@@ -2797,6 +2807,24 @@ ScriptTextEditor::ScriptTextEditor() {
 	set_process_shortcut_input(true);
 
 	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
+
+	// Initialize Rename Symbol Dialog
+	rename_dialog = memnew(ConfirmationDialog);
+	rename_dialog->set_title(TTR("Rename Symbol"));
+	add_child(rename_dialog);
+
+	VBoxContainer *rename_vb = memnew(VBoxContainer);
+	rename_dialog->add_child(rename_vb);
+
+	rename_line_edit = memnew(LineEdit);
+	rename_line_edit->set_custom_minimum_size(Size2(300, 0));
+	rename_vb->add_child(rename_line_edit);
+
+	// Make pressing Enter inside the LineEdit click the "OK" button
+	rename_dialog->register_text_enter(rename_line_edit);
+
+	// Connect the OK button to our new C++ function
+	rename_dialog->connect("confirmed", callable_mp(this, &ScriptTextEditor::_rename_symbol_confirm));
 }
 
 ScriptTextEditor::~ScriptTextEditor() {
@@ -2811,4 +2839,425 @@ ScriptEditorBase *ScriptTextEditor::create_editor(const Ref<Resource> &p_resourc
 		return memnew(ScriptTextEditor);
 	}
 	return nullptr;
+}
+
+void ScriptTextEditor::_rename_symbol() {
+	CodeEdit *text_edit = code_editor->get_text_editor();
+
+	const String old_name = text_edit->get_word_under_caret();
+	if (old_name.is_empty()) {
+		return;
+	}
+
+	GDScriptParser parser;
+	Error err = parser.parse(text_edit->get_text(), "local://dummy.gd", false);
+
+	if (err != OK) {
+		print_line("Rename: parser failed.");
+		return;
+	}
+
+	GDScriptParser::ClassNode *tree = parser.get_tree();
+	if (tree == nullptr) {
+		print_line("Rename: AST is null.");
+		return;
+	}
+
+	const int caret_line = text_edit->get_caret_line() + 1;
+	const int caret_column = text_edit->get_caret_column();
+
+	GDScriptParser::IdentifierNode *target_identifier = nullptr;
+	GDScriptParser::VariableNode *target_variable = nullptr;
+
+	// ------------------------------------------------------------
+	// Expression visitor
+	// ------------------------------------------------------------
+
+	auto find_target =
+			[&](GDScriptParser::ExpressionNode *expr,
+					auto &&self) -> void {
+		if (expr == nullptr || target_identifier != nullptr) {
+			return;
+		}
+
+		switch (expr->type) {
+			case GDScriptParser::Node::IDENTIFIER: {
+				auto *identifier =
+						static_cast<GDScriptParser::IdentifierNode *>(expr);
+
+				if (identifier->name == old_name &&
+						caret_line >= identifier->start_line &&
+						caret_line <= identifier->end_line &&
+						caret_column >= identifier->start_column - 1 &&
+						caret_column <= identifier->end_column - 1) {
+					target_identifier = identifier;
+				}
+				break;
+			}
+
+			case GDScriptParser::Node::ASSIGNMENT: {
+				auto *node =
+						static_cast<GDScriptParser::AssignmentNode *>(expr);
+
+				self(node->assignee, self);
+				self(node->assigned_value, self);
+				break;
+			}
+
+			case GDScriptParser::Node::BINARY_OPERATOR: {
+				auto *node =
+						static_cast<GDScriptParser::BinaryOpNode *>(expr);
+
+				self(node->left_operand, self);
+				self(node->right_operand, self);
+				break;
+			}
+
+			case GDScriptParser::Node::CALL: {
+				auto *node =
+						static_cast<GDScriptParser::CallNode *>(expr);
+
+				self(node->callee, self);
+
+				for (auto *argument : node->arguments) {
+					self(argument, self);
+				}
+				break;
+			}
+
+			default:
+				break;
+		}
+	};
+
+	// ------------------------------------------------------------
+	// 1. Check GLOBAL / MEMBER variable declarations
+	// ------------------------------------------------------------
+
+	for (const GDScriptParser::ClassNode::Member &member : tree->members) {
+		if (member.type != GDScriptParser::ClassNode::Member::VARIABLE) {
+			continue;
+		}
+
+		GDScriptParser::VariableNode *variable = member.variable;
+
+		if (variable == nullptr || variable->identifier == nullptr) {
+			continue;
+		}
+
+		GDScriptParser::IdentifierNode *identifier = variable->identifier;
+
+		if (identifier->name == old_name &&
+				caret_line >= identifier->start_line &&
+				caret_line <= identifier->end_line &&
+				caret_column >= identifier->start_column - 1 &&
+				caret_column <= identifier->end_column - 1) {
+			target_identifier = identifier;
+			target_variable = variable;
+
+			print_line("Rename target: global/member variable " + String(old_name));
+			break;
+		}
+	}
+
+	// ------------------------------------------------------------
+	// 2. Check function-local variable declarations + expressions
+	// ------------------------------------------------------------
+
+	if (target_identifier == nullptr) {
+		for (const GDScriptParser::ClassNode::Member &member : tree->members) {
+			if (member.type != GDScriptParser::ClassNode::Member::FUNCTION) {
+				continue;
+			}
+
+			GDScriptParser::FunctionNode *function = member.function;
+
+			if (function == nullptr || function->body == nullptr) {
+				continue;
+			}
+
+			for (GDScriptParser::Node *statement : function->body->statements) {
+				if (statement == nullptr) {
+					continue;
+				}
+
+				// Local variable declaration.
+				if (statement->type == GDScriptParser::Node::VARIABLE) {
+					auto *variable =
+							static_cast<GDScriptParser::VariableNode *>(statement);
+
+					if (variable->identifier != nullptr &&
+							variable->identifier->name == old_name &&
+							caret_line >= variable->identifier->start_line &&
+							caret_line <= variable->identifier->end_line &&
+							caret_column >= variable->identifier->start_column - 1 &&
+							caret_column <= variable->identifier->end_column - 1) {
+						target_identifier = variable->identifier;
+						target_variable = variable;
+						break;
+					}
+
+					find_target(variable->initializer, find_target);
+				}
+
+				// Normal expression statement.
+				if (statement->is_expression()) {
+					find_target(
+							static_cast<GDScriptParser::ExpressionNode *>(statement),
+							find_target);
+				}
+
+				if (target_identifier != nullptr) {
+					break;
+				}
+			}
+
+			if (target_identifier != nullptr) {
+				break;
+			}
+		}
+	}
+
+	// ------------------------------------------------------------
+	// Could not find anything under cursor
+	// ------------------------------------------------------------
+
+	if (target_identifier == nullptr) {
+		print_line("Rename: could not find identifier under cursor.");
+		return;
+	}
+
+	print_line("Rename target: " + String(target_identifier->name));
+
+	// ------------------------------------------------------------
+	// 3. Resolve declaration from semantic information
+	// ------------------------------------------------------------
+
+	if (target_variable == nullptr) {
+		if (target_identifier->source ==
+						GDScriptParser::IdentifierNode::LOCAL_VARIABLE ||
+				target_identifier->source ==
+						GDScriptParser::IdentifierNode::MEMBER_VARIABLE) {
+			target_variable = target_identifier->variable_source;
+		}
+	}
+
+	// If the identifier is the declaration itself, variable_source
+	// may not be populated. Search local declarations.
+	if (target_variable == nullptr) {
+		for (const GDScriptParser::ClassNode::Member &member : tree->members) {
+			if (member.type != GDScriptParser::ClassNode::Member::FUNCTION) {
+				continue;
+			}
+
+			GDScriptParser::FunctionNode *function = member.function;
+
+			if (function == nullptr || function->body == nullptr) {
+				continue;
+			}
+
+			for (GDScriptParser::Node *statement : function->body->statements) {
+				if (statement == nullptr ||
+						statement->type != GDScriptParser::Node::VARIABLE) {
+					continue;
+				}
+
+				auto *variable =
+						static_cast<GDScriptParser::VariableNode *>(statement);
+
+				if (variable->identifier == target_identifier) {
+					target_variable = variable;
+					break;
+				}
+			}
+
+			if (target_variable != nullptr) {
+				break;
+			}
+		}
+	}
+
+	if (target_variable == nullptr && target_identifier != nullptr) {
+		for (const GDScriptParser::ClassNode::Member &member : tree->members) {
+			if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+				GDScriptParser::VariableNode *variable = member.variable;
+				if (variable != nullptr && variable->identifier != nullptr && variable->identifier->name == target_identifier->name) {
+					target_variable = variable;
+					break;
+				}
+			}
+		}
+	}
+
+	// ------------------------------------------------------------
+	// Still unresolved
+	// ------------------------------------------------------------
+
+	if (target_variable == nullptr) {
+		print_line("Rename: could not resolve variable declaration.");
+		return;
+	}
+
+	// ------------------------------------------------------------
+	// 4. Collect semantic references
+	// ------------------------------------------------------------
+
+	Vector<RenamePosition> positions;
+
+	auto collect =
+			[&](GDScriptParser::ExpressionNode *expr,
+					auto &&self) -> void {
+		if (expr == nullptr) {
+			return;
+		}
+
+		switch (expr->type) {
+			case GDScriptParser::Node::IDENTIFIER: {
+				auto *identifier = static_cast<GDScriptParser::IdentifierNode *>(expr);
+
+				bool is_match = false;
+
+				// 1. Strict semantic match (works well for local variables)
+				if (identifier->variable_source == target_variable) {
+					is_match = true;
+				}
+				// 2. Name-based fallback (Required for global variables across functions)
+				else if (identifier->name == old_name) {
+					is_match = true;
+				}
+
+				if (is_match) {
+					positions.push_back({ identifier->start_line, identifier->start_column });
+				}
+				break;
+			}
+
+			case GDScriptParser::Node::ASSIGNMENT: {
+				auto *node =
+						static_cast<GDScriptParser::AssignmentNode *>(expr);
+
+				self(node->assignee, self);
+				self(node->assigned_value, self);
+				break;
+			}
+
+			case GDScriptParser::Node::BINARY_OPERATOR: {
+				auto *node =
+						static_cast<GDScriptParser::BinaryOpNode *>(expr);
+
+				self(node->left_operand, self);
+				self(node->right_operand, self);
+				break;
+			}
+
+			case GDScriptParser::Node::CALL: {
+				auto *node =
+						static_cast<GDScriptParser::CallNode *>(expr);
+
+				self(node->callee, self);
+
+				for (auto *argument : node->arguments) {
+					self(argument, self);
+				}
+
+				break;
+			}
+
+			default:
+				break;
+		}
+	};
+
+	// ------------------------------------------------------------
+	// 5. Add declaration itself
+	// ------------------------------------------------------------
+
+	if (target_variable->identifier != nullptr) {
+		positions.push_back({ target_variable->identifier->start_line,
+				target_variable->identifier->start_column });
+	}
+
+	// ------------------------------------------------------------
+	// 6. Search all functions for references
+	// ------------------------------------------------------------
+
+	for (const GDScriptParser::ClassNode::Member &member : tree->members) {
+		if (member.type != GDScriptParser::ClassNode::Member::FUNCTION) {
+			continue;
+		}
+
+		GDScriptParser::FunctionNode *function = member.function;
+
+		if (function == nullptr || function->body == nullptr) {
+			continue;
+		}
+
+		for (GDScriptParser::Node *statement : function->body->statements) {
+			if (statement == nullptr) {
+				continue;
+			}
+
+			if (statement->type == GDScriptParser::Node::VARIABLE) {
+				auto *variable =
+						static_cast<GDScriptParser::VariableNode *>(statement);
+
+				collect(variable->initializer, collect);
+			}
+
+			if (statement->is_expression()) {
+				collect(
+						static_cast<GDScriptParser::ExpressionNode *>(statement),
+						collect);
+			}
+		}
+	}
+
+	// ------------------------------------------------------------
+	// 7. Rename backwards
+	// ------------------------------------------------------------
+
+	// ------------------------------------------------------------
+	// 7. Save state and Show UI
+	// ------------------------------------------------------------
+	print_line("Semantic references found: " + itos(positions.size()));
+
+	// Save the data to the class variables we declared in the header
+	rename_positions = positions;
+	rename_old_name = old_name;
+
+	// Populate the LineEdit with the old name and highlight it
+	rename_line_edit->set_text(old_name);
+	rename_line_edit->select_all();
+
+	// Show the popup in the middle of the screen
+	rename_dialog->popup_centered();
+	rename_line_edit->grab_focus(); // Put the blinking cursor inside the box
+
+	print_line("Rename complete.");
+}
+
+void ScriptTextEditor::_rename_symbol_confirm() {
+	String new_name = rename_line_edit->get_text();
+
+	// Abort if they didn't type anything or left it the same
+	if (new_name.is_empty() || new_name == rename_old_name) {
+		return;
+	}
+
+	CodeEdit *text_edit = code_editor->get_text_editor();
+	text_edit->begin_complex_operation();
+
+	// Loop backwards using our saved positions
+	for (int i = rename_positions.size() - 1; i >= 0; --i) {
+		const RenamePosition &pos = rename_positions[i];
+
+		const int line = pos.line - 1;
+		const int column = pos.column - 1;
+
+		text_edit->remove_text(line, column, line, column + rename_old_name.length());
+		text_edit->insert_text(new_name, line, column, false, false);
+	}
+
+	text_edit->end_complex_operation();
+	print_line("Successfully renamed to: " + new_name);
 }
