@@ -41,6 +41,7 @@
 
 // Optional physics interpolation warnings try to include the path to the relevant node.
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "scene/main/node.h"
 #endif
@@ -255,3 +256,24 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 	}
 #endif
 }
+
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED)
+void _per_physics_tick_allocation_warning(const char32_t *p_class_name, uint64_t &r_consecutive_allocs, uint64_t &r_last_alloc_tick, bool &r_warning_shown) {
+	uint64_t curr_alloc_tick = Engine::get_singleton()->get_physics_frames();
+	if (curr_alloc_tick == r_last_alloc_tick + 1) {
+		r_consecutive_allocs++;
+	} else if (curr_alloc_tick != r_last_alloc_tick) {
+		r_consecutive_allocs = 0;
+	}
+	r_last_alloc_tick = curr_alloc_tick;
+	if (r_consecutive_allocs >= 60) {
+		r_warning_shown = true;
+		if (GLOBAL_GET_CACHED(bool, "debug/settings/allocations/enable_warnings")) {
+			WARN_PRINT(vformat("At least one new %s was created every physics tick, for the past 60 ticks. "
+							   "Create and initialize a variable of type %s once (outside of methods such as _physics_process) "
+							   "and reuse it (e.g. inside methods such as _physics_process), to avoid excessive heap allocations.",
+					p_class_name, p_class_name));
+		}
+	}
+}
+#endif

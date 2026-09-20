@@ -71,3 +71,7 @@ void PhysicsIntersectRayResult2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
 }
+
+PhysicsIntersectRayResult2D::PhysicsIntersectRayResult2D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsIntersectRayResult2D);
+}

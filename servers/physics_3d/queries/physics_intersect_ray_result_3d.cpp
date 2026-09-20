@@ -77,3 +77,7 @@ void PhysicsIntersectRayResult3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_shape"), "", "get_collider_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collider_face_index"), "", "get_collider_face_index");
 }
+
+PhysicsIntersectRayResult3D::PhysicsIntersectRayResult3D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsIntersectRayResult3D);
+}

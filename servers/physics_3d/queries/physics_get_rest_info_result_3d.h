@@ -50,4 +50,6 @@ public:
 	ObjectID get_collider_id() const;
 	int get_collider_shape() const;
 	Vector3 get_collider_velocity() const;
+
+	PhysicsGetRestInfoResult3D();
 };

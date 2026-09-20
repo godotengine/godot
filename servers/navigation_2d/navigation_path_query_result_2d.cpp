@@ -147,3 +147,7 @@ void NavigationPathQueryResult2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_REGION);
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_LINK);
 }
+
+NavigationPathQueryResult2D::NavigationPathQueryResult2D() {
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(NavigationPathQueryResult2D);
+}
