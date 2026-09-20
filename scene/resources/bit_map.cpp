@@ -999,7 +999,8 @@ void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, Lis
 	// Get the index of the ends of both chains in the original list
 	int ch1_idx = list_index(result, ch1_end_node);
 	int ch2_idx = list_index(result, ch2_end_node);
-		ERR_FAIL_COND_MSG(ch1_idx == -1 || ch2_idx == -1, "Failed to find chain end index in polygon point map.");
+
+	ERR_FAIL_COND_MSG(ch1_idx == -1 || ch2_idx == -1, "Failed to find chain end index in polygon point map.");
 
 	PackedInt64Array edges = {
 		mapped_result[ch1_idx - 1], // First chain edges
@@ -1014,8 +1015,7 @@ void iterative_refinement(List<List<Vector2>::Element *>::Element *ch1_list, Lis
 		find_furthest_perp_point_from_edge(pl, edges[2], edges[3]) // Point addition for the second chain
 	};
 
-		ERR_FAIL_COND_MSG(pnt_additions[0] == -1 && pnt_additions[1] == -1,  "There are no points available to fix the polygon. The original polygon may be invalid.");
-	}
+	ERR_FAIL_COND_MSG(pnt_additions[0] == -1 && pnt_additions[1] == -1, "There are no points available to fix the polygon. The original polygon may be invalid.");
 
 	// Add the points
 	Vector<List<Vector2>::Element *> new_chain_end_nodes; // List that stores if the chain intersects. [first_new_chain, second_new_chain].
