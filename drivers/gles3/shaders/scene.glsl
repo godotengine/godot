@@ -148,7 +148,9 @@ layout(std140) uniform DirectionalLightData { //ubo:3
 	mediump vec4 shadow_split_offsets;
 
 	mediump float fade_from;
-	mediump vec3 pad;
+	mediump float pad0;
+	mediump float pad1;
+	mediump float pad2;
 };
 
 #endif //ubershader-skip
