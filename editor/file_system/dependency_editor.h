@@ -72,7 +72,7 @@ class DependencyEditor : public AcceptDialog {
 
 	DependencyEditorSortBy sort_by = DependencyEditorSortBy::PATH;
 	String replacing;
-	String editing;
+	Vector<String> editing;
 	List<String> missing;
 
 	void _fix_and_find(EditorFileSystemDirectory *efsd, HashMap<String, HashMap<String, String>> &candidates);
@@ -85,13 +85,14 @@ class DependencyEditor : public AcceptDialog {
 
 	void _update_menu_sort();
 	void _sort_option_selected(int p_id);
-	void _update_file();
+	void _update_files();
 
 protected:
 	void _notification(int p_what);
 
 public:
 	void edit(const String &p_path);
+	void edit(const Vector<String> &p_paths);
 	DependencyEditor();
 };
 

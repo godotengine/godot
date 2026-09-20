@@ -2559,8 +2559,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_MENU_DEPENDENCIES: {
 			// Checkout the file dependencies.
 			if (!p_selected.is_empty()) {
-				const String &fpath = p_selected[0];
-				deps_editor->edit(fpath);
+				deps_editor->edit(p_selected);
 			}
 		} break;
 
@@ -3485,11 +3484,11 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			p_popup->add_separator();
 		}
 
+		p_popup->add_item(TTRC("Edit Dependencies..."), FILE_MENU_DEPENDENCIES);
 		if (filenames.size() == 1) {
-			p_popup->add_item(TTRC("Edit Dependencies..."), FILE_MENU_DEPENDENCIES);
 			p_popup->add_item(TTRC("View Owners..."), FILE_MENU_OWNERS);
-			p_popup->add_separator();
 		}
+		p_popup->add_separator();
 	}
 
 	if (no_paths) {

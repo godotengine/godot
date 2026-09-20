@@ -96,10 +96,12 @@ void DependencyEditor::_searched(const String &p_path) {
 	HashMap<String, String> dep_rename;
 	dep_rename[replacing] = p_path;
 
-	ResourceLoader::rename_dependencies(editing, dep_rename);
+	for (const String &path : editing) {
+		ResourceLoader::rename_dependencies(path, dep_rename);
+	}
 
 	_update_list();
-	_update_file();
+	_update_files();
 }
 
 void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button, MouseButton p_mouse_button) {
@@ -194,15 +196,17 @@ void DependencyEditor::_fix_all() {
 	}
 
 	if (remaps.size()) {
-		ResourceLoader::rename_dependencies(editing, remaps);
+		for (const String &path : editing) {
+			ResourceLoader::rename_dependencies(path, remaps);
+		}
 
 		_update_list();
-		_update_file();
+		_update_files();
 	}
 }
 
-void DependencyEditor::_update_file() {
-	EditorFileSystem::get_singleton()->update_file(editing);
+void DependencyEditor::_update_files() {
+	EditorFileSystem::get_singleton()->update_files(editing);
 }
 
 void DependencyEditor::_notification(int p_what) {
@@ -259,7 +263,16 @@ List<String> DependencyEditor::_filter_deps(const List<String> &p_deps) {
 
 void DependencyEditor::_update_list() {
 	List<String> deps;
-	ResourceLoader::get_dependencies(editing, &deps, true);
+	for (const String &path : editing) {
+		List<String> new_deps;
+		ResourceLoader::get_dependencies(path, &new_deps, true);
+
+		for (const String &new_path : new_deps) {
+			if (deps.find(new_path) == nullptr) {
+				deps.push_back(new_path);
+			}
+		}
+	}
 	deps = _filter_deps(deps);
 
 	switch (sort_by) {
@@ -328,7 +341,7 @@ void DependencyEditor::_update_list() {
 }
 
 void DependencyEditor::edit(const String &p_path) {
-	editing = p_path;
+	editing.push_back(p_path);
 	set_title(TTR("Dependencies For:") + " " + p_path.get_file());
 
 	filter->set_text("");
@@ -344,6 +357,30 @@ void DependencyEditor::edit(const String &p_path) {
 		warning_label->set_text(vformat(TTR("Resource \"%s\" is in use. Changes will only take effect when reloaded."), p_path.get_file()));
 	} else {
 		warning_label->hide();
+	}
+	popup_centered_ratio(0.4);
+}
+
+void DependencyEditor::edit(const Vector<String> &p_paths) {
+	editing = p_paths;
+	String title_paths = p_paths[0].get_file() + (p_paths.size() > 1 ? ", ..." : "");
+	set_title(TTR("Dependencies For:") + " " + title_paths);
+
+	filter->set_text("");
+
+	_update_menu_sort();
+	_update_list();
+
+	for (const String &path : p_paths) {
+		if (EditorNode::get_singleton()->is_scene_open(path)) {
+			warning_label->show();
+			warning_label->set_text(vformat(TTR("Scene \"%s\" is currently being edited. Changes will only take effect when reloaded."), path.get_file()));
+		} else if (ResourceCache::has(path)) {
+			warning_label->show();
+			warning_label->set_text(vformat(TTR("Resource \"%s\" is in use. Changes will only take effect when reloaded."), path.get_file()));
+		} else {
+			warning_label->hide();
+		}
 	}
 	popup_centered_ratio(0.4);
 }
