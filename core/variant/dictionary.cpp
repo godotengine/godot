@@ -638,7 +638,7 @@ Dictionary Dictionary::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMod
 }
 
 void Dictionary::set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type) {
-	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, p_value_type.builtin_type, p_value_type.class_name, p_key_type.script);
+	set_typed(p_key_type.builtin_type, p_key_type.class_name, p_key_type.script, p_value_type.builtin_type, p_value_type.class_name, p_value_type.script);
 }
 
 void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {

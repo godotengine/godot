@@ -153,6 +153,9 @@ void EditorPropertyVariant::update_property() {
 		}
 		ERR_FAIL_NULL(sub_property);
 
+		// Doesn't affect foldable property types, since they don't start with a bottom editor.
+		set_bottom_editor(sub_property->get_bottom_editor() ? content : nullptr);
+
 		sub_property->set_object_and_property(get_edited_object(), get_edited_property());
 		sub_property->set_name_split_ratio(0);
 		sub_property->set_selectable(false);
@@ -3655,6 +3658,10 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 			add_focusable(b);
 		}
 	}
+}
+
+void EditorPropertyResource::make_passthrough(bool p_passthrough) {
+	resource_picker->make_passthrough(p_passthrough);
 }
 
 void EditorPropertyResource::update_property() {
