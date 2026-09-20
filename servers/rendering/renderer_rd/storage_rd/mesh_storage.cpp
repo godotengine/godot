@@ -1064,6 +1064,16 @@ void MeshStorage::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int 
 	//will be eventually updated
 }
 
+void MeshStorage::mesh_instance_set_skinning_method(RID p_mesh_instance, RSE::MeshSkinningMethod p_method) {
+	MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
+	ERR_FAIL_NULL(mi);
+	if (mi->skinning_method == p_method) {
+		return;
+	}
+	mi->skinning_method = p_method;
+	mi->dirty = true;
+}
+
 void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
 	while (mi->surfaces.size()) {
 		_mesh_instance_remove_surface(mi, mi->surfaces.size() - 1);
@@ -1275,7 +1285,7 @@ void MeshStorage::update_mesh_instances() {
 
 			push_constant.blend_shape_count = mi->mesh->blend_shape_count;
 			push_constant.normalized_blend_shapes = mi->mesh->blend_shape_mode == RSE::BLEND_SHAPE_MODE_NORMALIZED;
-			push_constant.pad1 = 0;
+			push_constant.skinning_method = mi->skinning_method;
 
 			RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(SkeletonShader::PushConstant));
 

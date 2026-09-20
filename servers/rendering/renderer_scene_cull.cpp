@@ -600,6 +600,7 @@ void RendererSceneCull::_instance_update_mesh_instance(Instance *p_instance) con
 
 	if (p_instance->mesh_instance.is_valid()) {
 		RSG::mesh_storage->mesh_instance_set_skeleton(p_instance->mesh_instance, p_instance->skeleton);
+		RSG::mesh_storage->mesh_instance_set_skinning_method(p_instance->mesh_instance, p_instance->skinning_method);
 	}
 }
 
@@ -1049,6 +1050,21 @@ void RendererSceneCull::instance_set_blend_shape_weight(RID p_instance, int p_sh
 	}
 
 	_instance_queue_update(instance, false, false);
+}
+
+void RendererSceneCull::instance_set_skinning_method(RID p_instance, RSE::MeshSkinningMethod p_method) {
+    Instance *instance = instance_owner.get_or_null(p_instance);
+    ERR_FAIL_NULL(instance);
+
+    if (instance->skinning_method == p_method) {
+        return;
+    }
+
+    instance->skinning_method = p_method;
+
+    if (instance->mesh_instance.is_valid()) {
+        RSG::mesh_storage->mesh_instance_set_skinning_method(instance->mesh_instance, p_method);
+    }
 }
 
 void RendererSceneCull::instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material) {
