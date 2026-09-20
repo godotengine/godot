@@ -114,6 +114,17 @@ class EditorHelp : public VBoxContainer {
 	inline static DocTools *doc = nullptr;
 	inline static DocTools *ext_doc = nullptr;
 
+	class EditorHelpDocOwner : public Object {
+	public:
+		void generate_doc(bool p_use_cache, bool p_use_script_cache) { EditorHelp::generate_doc(p_use_cache, p_use_script_cache); }
+		void _gen_extensions_docs() { EditorHelp::_gen_extensions_docs(); }
+		void load_script_doc_cache() { EditorHelp::load_script_doc_cache(); }
+		void regenerate_script_doc_cache() { EditorHelp::regenerate_script_doc_cache(); }
+	};
+
+	// Keeps deferred documentation callbacks from running after cleanup.
+	inline static EditorHelpDocOwner *doc_owner = nullptr;
+
 	LineEdit *search = nullptr;
 	FindBar *find_bar = nullptr;
 	HBoxContainer *status_bar = nullptr;

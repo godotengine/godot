@@ -3106,13 +3106,13 @@ void EditorHelp::_load_doc_thread(void *p_udata) {
 			doc->add_doc(DocData::ClassDoc::from_dict(classes[i]));
 		}
 		if (use_script_cache) {
-			callable_mp_static(&EditorHelp::load_script_doc_cache).call_deferred();
+			callable_mp(doc_owner, &EditorHelpDocOwner::load_script_doc_cache).call_deferred();
 		}
 		// Extensions' docs are not cached. Generate them now (on the main thread).
-		callable_mp_static(&EditorHelp::_gen_extensions_docs).call_deferred();
+		callable_mp(doc_owner, &EditorHelpDocOwner::_gen_extensions_docs).call_deferred();
 	} else {
 		// We have to go back to the main thread to start from scratch, bypassing any possibly existing cache.
-		callable_mp_static(&EditorHelp::generate_doc).call_deferred(false, use_script_cache);
+		callable_mp(doc_owner, &EditorHelpDocOwner::generate_doc).call_deferred(false, use_script_cache);
 	}
 
 	OS::get_singleton()->benchmark_end_measure("EditorHelp", vformat("Generate Documentation (Run %d)", doc_generation_count));
@@ -3145,7 +3145,7 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 	// Load script docs after native ones are cached so native cache doesn't contain script docs.
 	bool use_script_cache = (bool)p_udata;
 	if (use_script_cache) {
-		callable_mp_static(&EditorHelp::load_script_doc_cache).call_deferred();
+		callable_mp(doc_owner, &EditorHelpDocOwner::load_script_doc_cache).call_deferred();
 	}
 
 	OS::get_singleton()->benchmark_end_measure("EditorHelp", vformat("Generate Documentation (Run %d)", doc_generation_count));
@@ -3213,7 +3213,7 @@ void EditorHelp::_load_script_doc_cache_thread(void *p_udata) {
 	if (script_doc_cache_res.is_null()) {
 		print_verbose("Script doc cache is corrupted. Regenerating it instead.");
 		_delete_script_doc_cache();
-		callable_mp_static(EditorHelp::regenerate_script_doc_cache).call_deferred();
+		callable_mp(doc_owner, &EditorHelpDocOwner::regenerate_script_doc_cache).call_deferred();
 		return;
 	}
 
@@ -3331,6 +3331,9 @@ void EditorHelp::generate_doc(bool p_use_cache, bool p_use_script_cache) {
 
 	if (!doc) {
 		doc = memnew(DocTools);
+	}
+	if (!doc_owner) {
+		doc_owner = memnew(EditorHelpDocOwner);
 	}
 
 	if (doc_version_hash.is_empty()) {
@@ -3450,6 +3453,8 @@ Dictionary EditorHelp::get_state() {
 
 void EditorHelp::cleanup_doc() {
 	_wait_for_thread();
+	memdelete(doc_owner);
+	doc_owner = nullptr;
 	memdelete(doc);
 	doc = nullptr;
 }
