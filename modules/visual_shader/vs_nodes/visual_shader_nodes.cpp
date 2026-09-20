@@ -31,9 +31,12 @@
 #include "visual_shader_nodes.h"
 #include "visual_shader_nodes.compat.inc"
 
+#include "core/config/project_settings.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "servers/rendering/rendering_server.h"
+
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For texture_streaming.
 
 ////////////// Vector Base
 
@@ -6842,6 +6845,16 @@ String VisualShaderNodeTextureParameterTriplanar::generate_code(Shader::Mode p_m
 	} else {
 		code += "	" + p_output_vars[0] + " = triplanar_texture(" + id + ", " + p_input_vars[0] + ", " + p_input_vars[1] + ");\n";
 	}
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	bool streaming_enabled = GLOBAL_GET_CACHED(bool, "rendering/textures/streaming/enabled");
+	if (!p_for_preview && p_mode == Shader::MODE_SPATIAL && p_type == VisualShader::TYPE_FRAGMENT && streaming_enabled) {
+		// Should match the equivalent in BaseMaterial3D.
+		const String weights = p_input_vars[0].is_empty() ? String("triplanar_power_normal") : p_input_vars[0];
+		const String pos = p_input_vars[1].is_empty() ? String("triplanar_pos") : p_input_vars[1];
+		code += "	STREAMING_LOD = streaming_lod_planar(dFdx(" + pos + "), dFdy(" + pos + "), " + weights + ");\n";
+	}
+#endif
 
 	return code;
 }

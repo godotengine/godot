@@ -722,7 +722,11 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["BINORMAL"] = "binormal";
 		actions.renames["POSITION"] = "position";
 		actions.renames["UV"] = "uv_interp";
-		actions.renames["STREAMING_UV"] = "streaming_uv";
+		actions.renames["STREAMING_LOD"] = "streaming_lod";
+		actions.renames["streaming_lod_uv"] = "streaming_lod_uv";
+		actions.renames["streaming_lod_grad"] = "streaming_lod_grad";
+		actions.renames["streaming_lod_planar"] = "streaming_lod_planar";
+		actions.renames["streaming_lod_level"] = "streaming_lod_level";
 		actions.renames["UV2"] = "uv2_interp";
 		actions.renames["COLOR"] = "color_interp";
 		actions.renames["POINT_SIZE"] = "point_size";
@@ -824,7 +828,6 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.usage_defines["AO"] = "#define AO_USED\n";
 		actions.usage_defines["AO_LIGHT_AFFECT"] = "#define AO_USED\n";
 		actions.usage_defines["UV"] = "#define UV_USED\n";
-		actions.usage_defines["STREAMING_UV"] = "#define STREAMING_UV_USED\n";
 		actions.usage_defines["UV2"] = "#define UV2_USED\n";
 		actions.usage_defines["BONE_INDICES"] = "#define BONES_USED\n";
 		actions.usage_defines["BONE_WEIGHTS"] = "#define WEIGHTS_USED\n";
@@ -866,6 +869,8 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 
 		actions.usage_defines["DISCARD"] = "#define DISCARD_USED\n";
 		actions.usage_defines["DEPTH"] = "#define DEPTH_USED\n";
+
+		actions.usage_defines["STREAMING_LOD"] = "#define STREAMING_LOD_USED\n";
 
 		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 		actions.render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";

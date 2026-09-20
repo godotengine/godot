@@ -1543,6 +1543,24 @@ layout(location = 0) out vec4 motion_vectors;
 
 #endif // !RENDER_MATERIAL
 
+// Texture streaming feedback is not implemented in the compatibility renderer.
+// These prevent shader compile errors if the shader is used from compatibility.
+float streaming_lod_grad(vec2 ddx, vec2 ddy) {
+	return 0.0;
+}
+
+float streaming_lod_uv(vec2 uv) {
+	return 0.0;
+}
+
+float streaming_lod_planar(vec3 pos_ddx, vec3 pos_ddy, vec3 weights) {
+	return 0.0;
+}
+
+float streaming_lod_level(float level, float texture_size) {
+	return 0.0;
+}
+
 /* clang-format off */
 
 #GLOBALS
@@ -2315,6 +2333,11 @@ void main() {
 	vec2 screen_uv = gl_FragCoord.xy * scene_data_block.data.screen_pixel_size;
 
 	float sss_strength = 0.0;
+
+#ifdef STREAMING_LOD_USED
+	// Not used, but needed so shaders that write STREAMING_LOD still compile.
+	float streaming_lod = 0.0;
+#endif
 
 #ifdef ALPHA_SCISSOR_USED
 	float alpha_scissor_threshold = 1.0;

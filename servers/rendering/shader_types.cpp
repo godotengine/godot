@@ -146,7 +146,6 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["NORMAL_MAP_DEPTH"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["BENT_NORMAL_MAP"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["UV"] = constt(ShaderLanguage::TYPE_VEC2);
-	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["STREAMING_UV"] = ShaderLanguage::TYPE_VEC2;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["UV2"] = constt(ShaderLanguage::TYPE_VEC2);
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["COLOR"] = constt(ShaderLanguage::TYPE_VEC4);
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["ALBEDO"] = ShaderLanguage::TYPE_VEC3;
@@ -201,6 +200,48 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_HASH_SCALE"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_ANTIALIASING_EDGE"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_TEXTURE_COORDINATE"] = ShaderLanguage::TYPE_VEC2;
+
+	// texture streaming
+	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["STREAMING_LOD"] = ShaderLanguage::TYPE_FLOAT;
+	{
+		// LOD from UV coordinates.
+		ShaderLanguage::StageFunctionInfo func;
+		func.skip_function = "vertex";
+		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("uv", ShaderLanguage::TYPE_VEC2));
+		func.return_type = ShaderLanguage::TYPE_FLOAT;
+		shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].stage_functions["streaming_lod_uv"] = func;
+	}
+
+	{
+		// LOD from explicit derivatives.
+		ShaderLanguage::StageFunctionInfo func;
+		func.skip_function = "vertex";
+		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("ddx", ShaderLanguage::TYPE_VEC2));
+		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("ddy", ShaderLanguage::TYPE_VEC2));
+		func.return_type = ShaderLanguage::TYPE_FLOAT;
+		shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].stage_functions["streaming_lod_grad"] = func;
+	}
+
+	{
+		// LOD for planar/triplanar mapping.
+		ShaderLanguage::StageFunctionInfo func;
+		func.skip_function = "vertex";
+		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("pos_ddx", ShaderLanguage::TYPE_VEC3));
+		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("pos_ddy", ShaderLanguage::TYPE_VEC3));
+		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("weights", ShaderLanguage::TYPE_VEC3));
+		func.return_type = ShaderLanguage::TYPE_FLOAT;
+		shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].stage_functions["streaming_lod_planar"] = func;
+	}
+
+	{
+		// Converts a mip level to STREAMING_LOD's reference scale.
+		ShaderLanguage::StageFunctionInfo func;
+		func.skip_function = "vertex";
+		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("level", ShaderLanguage::TYPE_FLOAT));
+		func.arguments.push_back(ShaderLanguage::StageFunctionInfo::Argument("texture_size", ShaderLanguage::TYPE_FLOAT));
+		func.return_type = ShaderLanguage::TYPE_FLOAT;
+		shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].stage_functions["streaming_lod_level"] = func;
+	}
 
 	shader_modes[RSE::SHADER_SPATIAL].functions["light"].built_ins["MODEL_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RSE::SHADER_SPATIAL].functions["light"].built_ins["VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
