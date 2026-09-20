@@ -30,6 +30,9 @@
 
 #include "physics_testmotion_query_result_3d.h"
 
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+#include "core/config/engine.h"
+#endif
 #include "core/object/class_db.h"
 
 Vector3 PhysicsTestMotionResult3D::get_travel() const {
@@ -112,4 +115,10 @@ void PhysicsTestMotionResult3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collider_shape", "collision_index"), &PhysicsTestMotionResult3D::get_collider_shape, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_collision_local_shape", "collision_index"), &PhysicsTestMotionResult3D::get_collision_local_shape, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_collision_depth", "collision_index"), &PhysicsTestMotionResult3D::get_collision_depth, DEFVAL(0));
+}
+
+PhysicsTestMotionResult3D::PhysicsTestMotionResult3D() {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsTestMotionResult3D, Engine::get_singleton()->get_physics_frames());
+#endif
 }

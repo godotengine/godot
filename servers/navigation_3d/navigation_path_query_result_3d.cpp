@@ -30,6 +30,9 @@
 
 #include "navigation_path_query_result_3d.h"
 
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+#include "core/config/engine.h"
+#endif
 #include "core/object/class_db.h"
 
 void NavigationPathQueryResult3D::set_path(const Vector<Vector3> &p_path) {
@@ -146,4 +149,10 @@ void NavigationPathQueryResult3D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_REGION);
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_LINK);
+}
+
+NavigationPathQueryResult3D::NavigationPathQueryResult3D() {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(NavigationPathQueryResult3D, Engine::get_singleton()->get_physics_frames());
+#endif
 }

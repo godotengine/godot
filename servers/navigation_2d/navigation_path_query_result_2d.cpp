@@ -30,6 +30,9 @@
 
 #include "navigation_path_query_result_2d.h"
 
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+#include "core/config/engine.h"
+#endif
 #include "core/object/class_db.h"
 
 void NavigationPathQueryResult2D::set_path(const Vector<Vector2> &p_path) {
@@ -146,4 +149,10 @@ void NavigationPathQueryResult2D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_REGION);
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_LINK);
+}
+
+NavigationPathQueryResult2D::NavigationPathQueryResult2D() {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(NavigationPathQueryResult2D, Engine::get_singleton()->get_physics_frames());
+#endif
 }

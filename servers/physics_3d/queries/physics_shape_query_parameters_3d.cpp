@@ -30,6 +30,9 @@
 
 #include "physics_shape_query_parameters_3d.h"
 
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+#include "core/config/engine.h"
+#endif
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
@@ -105,4 +108,10 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform"), "set_transform", "get_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
+}
+
+PhysicsShapeQueryParameters3D::PhysicsShapeQueryParameters3D() {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsShapeQueryParameters3D, Engine::get_singleton()->get_physics_frames());
+#endif
 }

@@ -875,3 +875,29 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 
 #define PHYSICS_INTERPOLATION_WARNING(m_string) \
 	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID((uint64_t)UINT64_MAX), m_string)
+
+/**
+ * Per-physics-tick allocation warnings.
+ */
+
+#define PER_PHYSICS_TICK_ALLOCATION_WARNING(m_class, m_curr_alloc_tick) \
+	_per_physics_tick_allocation_warning<m_class>(m_curr_alloc_tick)
+
+template <typename T>
+static void _per_physics_tick_allocation_warning(uint64_t p_curr_alloc_tick) {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	static uint64_t consecutive_allocs = 0;
+	static uint64_t last_alloc_tick = UINT64_MAX;
+	if (p_curr_alloc_tick == last_alloc_tick + 1) {
+		consecutive_allocs++;
+	} else if (p_curr_alloc_tick != last_alloc_tick) {
+		consecutive_allocs = 0;
+	}
+	last_alloc_tick = p_curr_alloc_tick;
+	if (consecutive_allocs >= 60) {
+		WARN_PRINT_ONCE(vformat("%s are being created every physics tick (for the past 60 ticks). "
+								"Try to create the object once and reuse it by updating its members.",
+				T::get_class_static()));
+	}
+#endif
+}
