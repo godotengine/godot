@@ -45,9 +45,11 @@
 		[self->synth setDelegate:self];
 		print_verbose("Text-to-Speech: AVSpeechSynthesizer initialized.");
 	} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 140000
 		self->synth = [[NSSpeechSynthesizer alloc] init];
 		[self->synth setDelegate:self];
 		print_verbose("Text-to-Speech: NSSpeechSynthesizer initialized.");
+#endif
 	}
 	return self;
 }
@@ -90,6 +92,8 @@
 
 // NSSpeechSynthesizer callback (macOS 10.4+)
 
+// Deprecated in macOS 14.0, needs to be removed when compiling with min macOS 14.0.
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 140000
 - (void)speechSynthesizer:(NSSpeechSynthesizer *)ns_synth willSpeakWord:(NSRange)characterRange ofString:(NSString *)string {
 	if (!paused && have_utterance) {
 		// Convert from UTF-16 to UTF-32 position.
@@ -118,6 +122,7 @@
 	speaking = false;
 	[self update];
 }
+#endif
 
 - (void)update {
 	if (!speaking && queue.size() > 0) {
@@ -138,6 +143,7 @@
 			ids[new_utterance] = message.id;
 			[av_synth speakUtterance:new_utterance];
 		} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 140000
 			NSSpeechSynthesizer *ns_synth = synth;
 			[ns_synth setObject:nil forProperty:NSSpeechResetProperty error:nil];
 			[ns_synth setVoice:[NSString stringWithUTF8String:message.voice.utf8().get_data()]];
@@ -149,6 +155,7 @@
 			last_utterance = message.id;
 			have_utterance = true;
 			[ns_synth startSpeakingString:[NSString stringWithUTF8String:message.text.utf8().get_data()]];
+#endif
 		}
 		DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_STARTED, message.id);
 		queue.pop_front();
@@ -162,8 +169,10 @@
 		AVSpeechSynthesizer *av_synth = synth;
 		[av_synth pauseSpeakingAtBoundary:AVSpeechBoundaryImmediate];
 	} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 140000
 		NSSpeechSynthesizer *ns_synth = synth;
 		[ns_synth pauseSpeakingAtBoundary:NSSpeechImmediateBoundary];
+#endif
 	}
 	paused = true;
 }
@@ -173,8 +182,10 @@
 		AVSpeechSynthesizer *av_synth = synth;
 		[av_synth continueSpeaking];
 	} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 140000
 		NSSpeechSynthesizer *ns_synth = synth;
 		[ns_synth continueSpeaking];
+#endif
 	}
 	paused = false;
 }
@@ -188,11 +199,13 @@
 		AVSpeechSynthesizer *av_synth = synth;
 		[av_synth stopSpeakingAtBoundary:AVSpeechBoundaryImmediate];
 	} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 140000
 		NSSpeechSynthesizer *ns_synth = synth;
 		if (have_utterance) {
 			DisplayServer::get_singleton()->tts_post_utterance_event(DisplayServerEnums::TTS_UTTERANCE_CANCELED, last_utterance);
 		}
 		[ns_synth stopSpeaking];
+#endif
 	}
 	have_utterance = false;
 	speaking = false;
@@ -252,6 +265,7 @@
 			list.push_back(voice_d);
 		}
 	} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 140000
 		for (NSString *voiceIdentifierString in [NSSpeechSynthesizer availableVoices]) {
 			NSString *voiceLocaleIdentifier = [[NSSpeechSynthesizer attributesForVoice:voiceIdentifierString] objectForKey:NSVoiceLocaleIdentifier];
 			NSString *voiceName = [[NSSpeechSynthesizer attributesForVoice:voiceIdentifierString] objectForKey:NSVoiceName];
@@ -261,6 +275,7 @@
 			voice_d["language"] = String([voiceLocaleIdentifier UTF8String]);
 			list.push_back(voice_d);
 		}
+#endif
 	}
 	return list;
 }

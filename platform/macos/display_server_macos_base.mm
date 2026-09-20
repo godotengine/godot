@@ -408,10 +408,12 @@ Color DisplayServerMacOSBase::get_accent_color() const {
 				color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
 			}
 		} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
 			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
 			color = [[NSColor controlAccentColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
 			[NSAppearance setCurrentAppearance:saved_appearance];
+#endif
 		}
 		if (color) {
 			CGFloat components[4];
@@ -436,10 +438,12 @@ Color DisplayServerMacOSBase::get_base_color() const {
 				color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
 			}
 		} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
 			[NSAppearance setCurrentAppearance:[NSApp effectiveAppearance]];
 			color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
 			[NSAppearance setCurrentAppearance:saved_appearance];
+#endif
 		}
 		if (color) {
 			CGFloat components[4];
