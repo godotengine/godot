@@ -35,7 +35,7 @@
 
 bool RefCounted::init_ref() {
 	if (reference()) {
-		if (!is_referenced() && refcount_init.unref()) {
+		if (negative_refcount.get() > 0 && negative_refcount.decrement() == 0) {
 			unreference(); // first referencing is already 1, so compensate for the ref above
 		}
 
@@ -46,18 +46,10 @@ bool RefCounted::init_ref() {
 }
 
 void RefCounted::deinit_ref() {
-	// Somewhat unsafe since we're doing tests in sync, but it's probably fine
-	// since this function is called from the creation thread, so nobody else should have access.
-
-	// If this succeeds, refcount_init is 2 (or more).
-	// This would be unexpected, since callers should already have consumed it, or never established it.
-	// It's a little unsafe to bring it above 1, since it means init_ref must be called more than once,
+	// It's a little unsafe to bring negative_refcount above 1, since it means init_ref must be called more than once,
 	// but the alternative would be decrementing refcount instead, which is also unsafe since the object
 	// might unexpectedly destruct early. Better to risk zombying than to risk a crash.
-	if (!refcount_init.ref()) {
-		// refcount_init already dead, must re-establish (expected).
-		refcount_init.init(1);
-	}
+	negative_refcount.increment();
 }
 
 void RefCounted::_bind_methods() {
@@ -130,6 +122,4 @@ RefCounted::RefCounted() :
 		Object(true) {
 	_define_ancestry(AncestralClass::REF_COUNTED);
 	refcount.init();
-	refcount_init.init();
-	dereference_count.set(0);
 }

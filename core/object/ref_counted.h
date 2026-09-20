@@ -33,11 +33,19 @@
 #include "core/object/object.h"
 #include "core/templates/safe_refcount.h"
 
+/// Note: RefCounted initializes with a refcount of 1, which íts creator
+///       is expected to overtake. Normal creation pathways (e.g. `memnew`)
+///       do this automatically.
 class RefCounted : public Object {
 	GDCLASS(RefCounted, Object);
 	SafeRefCount refcount;
-	SafeRefCount refcount_init;
-	SafeNumeric<uint32_t> dereference_count;
+	/// For legacy purposes. Every ref in `negative_refcount` decreases the refcount of
+	/// this `RefCounted` effectively by 1. This is used to set the refcount to an
+	/// "effective 0", since some legacy APIs expect `RefCounted` to initialize with a
+	/// refcount 0 of without it destructing itself. `negative_refcount` is ignored in
+	/// `reference()`; when relying on this behavior, use `init_ref`.
+	SafeNumeric<uint32_t> negative_refcount{ 0 };
+	SafeNumeric<uint32_t> dereference_count{ 0 };
 
 protected:
 	static void _bind_methods();
@@ -45,7 +53,6 @@ protected:
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::REF_COUNTED;
 
-	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() != 1; }
 	bool init_ref();
 	void deinit_ref(); // Effectively decrements refcount by increasing refcount_init by one.
 	bool reference(); // returns false if refcount is at zero and didn't get increased
@@ -171,6 +178,16 @@ public:
 		ref_pointer<true>(Object::cast_to<T>(p_ptr));
 	}
 
+	/// Allocates a ref without increasing the object's refcount.
+	/// It still decreases the refcount when destructing, so this
+	/// is only legal to call if the object already has a refcount
+	/// in the name of this ref (or this Ref overtakes one).
+	static Ref assume_ownership(T *p_object) {
+		Ref ref;
+		ref.reference = p_object;
+		return ref;
+	}
+
 	Ref(const Ref &p_from) {
 		this->operator=(p_from);
 	}
@@ -231,12 +248,12 @@ public:
 template <typename T>
 struct memnew_result<T, std::enable_if_t<std::is_base_of_v<RefCounted, T>>> {
 	using class_name = Ref<T>;
-};
 
-template <typename T>
-void postinitialize_handler(Ref<T> &p_object) {
-	postinitialize_handler(p_object.ptr());
-}
+	static Ref<T> wrap(T *p_object) {
+		// Ref starts with a refcount of one. This is where we appropriate it as the caller.
+		return Ref<T>::assume_ownership(p_object);
+	}
+};
 
 // Zero-constructing Ref initializes reference to nullptr (and thus empty).
 template <typename T>
