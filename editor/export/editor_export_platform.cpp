@@ -1473,6 +1473,8 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	// We initialize index to -1 to allow us to increment the index at the beginning of the loop instead.
 	save_info.file_index = save_info.file_count > 0 ? -1 : 0;
 
+	HashSet<String> exported_paths;
+
 	for (const String &path : paths) {
 		save_info.source_path = path;
 		save_info.file_index++;
@@ -1539,6 +1541,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		if (!do_export) {
 			continue;
 		}
+		exported_paths.insert(path);
 
 		save_info.source_path = path; // Set it again, in case a plugin extra file changed it.
 
@@ -1687,6 +1690,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 		}
 	}
+
+	// Exclude skipped paths.
+	paths = exported_paths;
 
 	if (convert_text_to_binary || !customize_resources_plugins.is_empty() || !customize_scenes_plugins.is_empty()) {
 		// End scene customization
