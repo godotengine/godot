@@ -252,7 +252,7 @@ void EditorDockManager::_docks_menu_option(int p_id) {
 		ERR_FAIL_NULL(parent_menu);
 		parent_menu->hide();
 	}
-	focus_dock(dock);
+	force_focus_dock(dock);
 }
 
 void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
@@ -720,7 +720,7 @@ void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus
 	}
 
 	DockTabContainer *tab_container = p_dock->get_parent_container();
-	if (!tab_container || !tab_container->can_switch_dock()) {
+	if (!tab_container || (!forced_focus && !tab_container->can_switch_dock())) {
 		return;
 	}
 
@@ -748,6 +748,12 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 	}
 
 	_make_dock_visible(p_dock, true);
+}
+
+void EditorDockManager::force_focus_dock(EditorDock *p_dock) {
+	forced_focus = true;
+	focus_dock(p_dock);
+	forced_focus = false;
 }
 
 void EditorDockManager::add_dock(EditorDock *p_dock) {
@@ -1029,7 +1035,7 @@ void DockShortcutHandler::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (dock_shortcut.is_valid() && dock_shortcut->matches_event(p_event)) {
 			bool was_visible = dock->is_visible();
 			if (!dock->transient || dock->is_open) {
-				EditorDockManager::get_singleton()->focus_dock(dock);
+				EditorDockManager::get_singleton()->force_focus_dock(dock);
 			}
 			DockTabContainer *dock_container = dock->get_parent_container();
 			if (dock_container) {
