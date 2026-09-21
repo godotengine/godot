@@ -39,6 +39,8 @@ class EditorFileDialog : public FileDialog {
 
 	DependencyRemoveDialog *dependency_remove_dialog = nullptr;
 
+	void _hidden_files_toggled(bool p_show);
+
 protected:
 	virtual void _item_menu_id_pressed(int p_option) override;
 	virtual void _dir_contents_changed() override;
@@ -58,4 +60,6 @@ public:
 	void set_disable_overwrite_warning(bool p_disable) { set_customization_flag_enabled(CUSTOMIZATION_OVERWRITE_WARNING, !p_disable); }
 	bool is_overwrite_warning_disabled() const { return !is_customization_flag_enabled(CUSTOMIZATION_OVERWRITE_WARNING); }
 #endif
+
+	EditorFileDialog();
 };
