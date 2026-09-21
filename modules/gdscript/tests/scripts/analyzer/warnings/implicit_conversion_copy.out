@@ -1,3 +1,8 @@
 GDTEST_OK
-~~ WARNING at line 13: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedByteArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
+~~ WARNING at line 11: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedByteArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
 ~~ WARNING at line 14: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedByteArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
+~~ WARNING at line 18: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedByteArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
+~~ WARNING at line 22: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedByteArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
+~~ WARNING at line 28: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedByteArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
+~~ WARNING at line 29: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedByteArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
+~~ WARNING at line 30: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedStringArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
