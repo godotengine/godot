@@ -267,10 +267,11 @@ void Gizmo3DHelper::cylinder_commit_handle(int p_id, const String &p_radius_acti
 
 Vector<Vector3> Gizmo3DHelper::tapered_capsule_cylinder_get_handles(real_t p_top_radius, real_t p_bottom_radius, real_t p_height, bool cylinder) {
 	Vector<Vector3> handles;
-	handles.push_back(Vector3(p_top_radius, p_height * 0.5, 0)); // Radius Top handle on cylinder lip
-	handles.push_back(Vector3(p_bottom_radius, -p_height * 0.5, 0)); // Radius Bottom handle on cylinder lip
+	handles.reserve(4);
 	handles.push_back(Vector3((p_top_radius + p_bottom_radius) / 2, 0, 0)); //mid handle for global radius control
 	handles.push_back(Vector3(0, p_height * 0.5 + (cylinder ? 0 : p_top_radius), 0));
+	handles.push_back(Vector3(p_top_radius, p_height * 0.5, 0)); // Radius Top handle
+	handles.push_back(Vector3(p_bottom_radius, -p_height * 0.5, 0)); // Radius Bottom handle
 	return handles;
 }
 

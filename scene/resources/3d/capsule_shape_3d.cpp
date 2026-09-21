@@ -151,20 +151,35 @@ real_t CapsuleShape3D::get_enclosing_radius() const {
 
 void CapsuleShape3D::_update_shape() {
 	Dictionary d;
-	d.reserve(6);
+	d.reserve(is_tapered() ? 6 : 3);
 
-	d["radius_top"] = get_top_radius();
-	d["radius_bottom"] = get_bottom_radius();
 	d["mid_height"] = get_mid_height();
 	d["radius"] = get_radius();
 	d["height"] = get_height();
-	d["tapered"] = is_tapered();
+	if (is_tapered()) {
+		d["tapered"] = is_tapered();
+		d["radius_top"] = get_top_radius();
+		d["radius_bottom"] = get_bottom_radius();
+	}
 
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
 
+void CapsuleShape3D::_validate_property(PropertyInfo &p_property) const {
+	if ((p_property.name == "top_radius") || (p_property.name == "bottom_radius")) {
+		p_property.usage = is_tapered() ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NONE;
+	}
+	if (p_property.name == "radius") {
+		p_property.usage = is_tapered() ? PROPERTY_USAGE_NONE : PROPERTY_USAGE_DEFAULT;
+	}
+}
+
 void CapsuleShape3D::set_top_radius(real_t p_top_radius) {
+	if (!tapered) {
+		return set_radius(p_top_radius);
+	}
+
 	ERR_FAIL_COND_MSG(p_top_radius <= 0.0f, "CapsuleShape3D top_radius must be positive.");
 	top_radius = MAX(p_top_radius, CMP_EPSILON);
 	_update_shape();
@@ -176,6 +191,10 @@ real_t CapsuleShape3D::get_top_radius() const {
 }
 
 void CapsuleShape3D::set_bottom_radius(real_t p_bottom_radius) {
+	if (!tapered) {
+		return set_radius(p_bottom_radius);
+	}
+
 	ERR_FAIL_COND_MSG(p_bottom_radius <= 0.0f, "CapsuleShape3D bottom_radius must be positive.");
 	bottom_radius = MAX(p_bottom_radius, CMP_EPSILON);
 	_update_shape();
@@ -220,6 +239,22 @@ real_t CapsuleShape3D::get_height() const {
 	return mid_height + top_radius + bottom_radius;
 }
 
+void CapsuleShape3D::set_tapered(bool value) {
+	tapered = value;
+	if (!tapered) {
+		float rad = get_radius();
+		top_radius = rad;
+		bottom_radius = rad;
+	}
+	notify_property_list_changed();
+	_update_shape();
+	emit_changed();
+}
+
+bool CapsuleShape3D::is_tapered() const {
+	return tapered;
+}
+
 void CapsuleShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_top_radius", "top_radius"), &CapsuleShape3D::set_top_radius);
 	ClassDB::bind_method(D_METHOD("get_top_radius"), &CapsuleShape3D::get_top_radius);
@@ -233,13 +268,14 @@ void CapsuleShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &CapsuleShape3D::get_height);
 
 	ClassDB::bind_method(D_METHOD("is_tapered"), &CapsuleShape3D::is_tapered);
+	ClassDB::bind_method(D_METHOD("set_tapered", "taper"), &CapsuleShape3D::set_tapered);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, ""), "set_tapered", "is_tapered");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mid_height", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_mid_height", "get_mid_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m", PROPERTY_USAGE_EDITOR), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "is_tapered");
 
 	ADD_LINKED_PROPERTY("top_radius", "height");
 	ADD_LINKED_PROPERTY("mid_height", "height");
