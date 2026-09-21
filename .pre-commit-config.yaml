@@ -1,17 +1,17 @@
+# See https://prek.j178.dev for more information.
+# yaml-language-server: $schema=https://www.schemastore.org/prek.json
+
 default_language_version:
   python: python3
 
-exclude: |
-  (?x)^(
-    .*thirdparty/.*|
-    .*-(dll|dylib|so)_wrap\.[ch]|
-    platform/android/java/editor/src/main/java/com/android/.*|
-    platform/android/java/lib/src/main/java/com/google/.*
-  )$
+exclude:
+  glob:
+    - "**/*-{dll,dylib,so}_wrap.[ch]"
+    - "**/thirdparty/**"
+    - platform/android/java/editor/src/main/java/com/**
 
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+  - repo: builtin
     hooks:
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
@@ -173,14 +173,11 @@ repos:
         language: python
         entry: python misc/scripts/copyright_headers.py
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
-        exclude: |
-          (?x)^(
-            core/math/bvh_.*\.inc|
-            platform/(?!android|ios|linuxbsd|macos|visionos|web|windows)\w+/.*|
-            platform/android/java/lib/src/main/java/org/godotengine/godot/gl/GLSurfaceView\.java|
-            platform/android/java/lib/src/main/java/org/godotengine/godot/gl/EGLLogWrapper\.java|
-            platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix\.java
-          )$
+        exclude:
+          glob:
+            - core/math/bvh_*.inc
+            - platform/android/java/lib/src/main/java/org/godotengine/godot/gl/{EGLLogWrapper,GLSurfaceView}.java
+            - platform/android/java/lib/src/main/java/org/godotengine/godot/utils/ProcessPhoenix.java
 
       - id: header-guards
         name: header-guards
@@ -193,17 +190,13 @@ repos:
         language: python
         entry: python misc/scripts/file_format.py
         types_or: [text]
-        exclude: |
-          (?x)^(
-            .*\.test\.txt|
-            .*\.svg|
-            .*\.patch|
-            .*\.out|
-            modules/gdscript/tests/scripts/parser/features/mixed_indentation_on_blank_lines\.gd|
-            modules/gdscript/tests/scripts/parser/warnings/empty_file_newline_comment\.norun\.gd|
-            modules/gdscript/tests/scripts/parser/warnings/empty_file_newline\.norun\.gd|
-            tests/data/.*\.bin
-          )$
+        exclude:
+          glob:
+            - "**/*.out"
+            - modules/gdscript/tests/scripts/parser/features/mixed_indentation_on_blank_lines.gd
+            - modules/gdscript/tests/scripts/parser/warnings/empty_file_newline*.norun.gd
+            - tests/data/**/*.bin
+            - tests/data/line_endings_*.test.txt
 
       - id: dotnet-format
         name: dotnet-format
