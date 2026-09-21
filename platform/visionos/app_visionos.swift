@@ -116,6 +116,59 @@ public final class GDTSwiftBridge: NSObject {
 	}
 }
 
+/// ObjC-accessible version of SwiftUI's "SpatialEventCollection.Event".
+/// https://developer.apple.com/documentation/swiftui/spatialeventcollection/event
+@MainActor
+@objc
+public final class SpatialEventObjC: NSObject {
+
+    // Ray
+    @objc var hasRay: Bool = false
+    @objc var rayOrigin: simd_double3 = .init()
+    @objc var rayDirection: simd_double3  = .init()
+
+    // Hand
+    @objc enum Chirality: Int {
+        case none, left, right
+    }
+    @objc var chirality: Chirality
+    @objc var handPose: simd_double4x4
+
+    // Phase
+    @objc enum Phase: Int {
+        case unknown, active, cancelled, ended
+    }
+    @objc var phase: Phase
+
+    init(_ event: SpatialEventCollection.Event) {
+        if let ray = event.selectionRay {
+            hasRay = true
+            rayOrigin = ray.origin.vector
+            rayDirection = ray.direction.vector
+        }
+
+        chirality = event.chirality.map {
+            switch $0 {
+            case .left: return .left
+            case .right: return .right
+            }
+        } ?? .none
+
+        handPose = event.inputDevicePose.map {
+            return $0.pose3D.matrix
+        } ?? .init(diagonal: SIMD4<Double>(repeating: 1.0))
+
+        phase = {
+            switch event.phase {
+            case .active: return .active
+            case .cancelled: return .cancelled
+            case .ended: return .ended
+            default: return .unknown
+            }
+        }()
+    }
+}
+
 // MARK: Compositor Services Scene
 
 struct ContentStageConfiguration: CompositorLayerConfiguration {
@@ -205,6 +258,12 @@ struct CompositorServicesImmersiveSpace: Scene {
 				GDTAppDelegateServiceVisionOS.layerRenderer = layerRenderer
 				renderer = GDTCompositorServicesRenderer(layerRenderer: layerRenderer,
                                                          capabilities: GDTAppDelegateServiceVisionOS.layerRendererCapabilities)
+
+                layerRenderer.onSpatialEvent = { events in
+                    for event in events {
+                        renderer.onSpatialEvent(.init(event))
+                    }
+                }
 
                 let signposter = OSSignposter(subsystem: "org.godotengine.godot.compositorservices", category: "loading")
                 let signpostID = signposter.makeSignpostID()
