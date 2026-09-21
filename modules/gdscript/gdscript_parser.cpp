@@ -5025,13 +5025,20 @@ bool GDScriptParser::export_custom_annotation(AnnotationNode *p_annotation, Node
 		return false;
 	}
 
-	variable->exported = true;
-
 	DataType export_type = variable->type_constraint;
 
 	variable->export_info.type = export_type.builtin_type;
 	variable->export_info.hint = static_cast<PropertyHint>(p_annotation->resolved_arguments[0].operator int64_t());
 	variable->export_info.hint_string = p_annotation->resolved_arguments[1];
+
+	const String hint_string = p_annotation->resolved_arguments[1];
+	bool class_valid = ClassDB::class_exists(hint_string) || ProjectSettings::get_singleton()->global_class_exists(hint_string);
+	if (variable->export_info.hint == PROPERTY_HINT_TYPE_STRING && variable->export_info.type == Variant::STRING && !class_valid) {
+		push_error(vformat(R"(Argument 1 of annotation "%s" contains enum flag "PROPERTY_HINT_TYPE_STRING", which must have a valid class as argument 2 when variable is typed as "String.)", p_annotation->name), p_annotation);
+		return false;
+	}
+
+	variable->exported = true;
 
 	if (p_annotation->resolved_arguments.size() >= 3) {
 		variable->export_info.usage = p_annotation->resolved_arguments[2].operator int64_t();

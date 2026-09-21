@@ -1486,6 +1486,17 @@ String ProjectSettings::get_global_class_list_path() const {
 	return get_project_data_path().path_join("global_script_class_cache.cfg");
 }
 
+bool ProjectSettings::global_class_exists(const StringName &p_class) {
+	Array script_classes = get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		const Dictionary c = script_classes[i];
+		if (c["class"] == Variant(p_class)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void ProjectSettings::store_global_class_list(const Array &p_classes) {
 	Ref<ConfigFile> cf;
 	cf.instantiate();

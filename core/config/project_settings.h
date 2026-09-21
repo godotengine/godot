@@ -173,6 +173,7 @@ public:
 	void refresh_global_class_list();
 	void store_global_class_list(const Array &p_classes);
 	String get_global_class_list_path() const;
+	bool global_class_exists(const StringName &p_class);
 
 	bool has_setting(const String &p_var) const;
 	String localize_path(const String &p_path) const;
