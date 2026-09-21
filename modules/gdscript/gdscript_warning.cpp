@@ -174,7 +174,7 @@ String GDScriptWarning::get_message() const {
 		case ONREADY_WITH_CAST:
 			return vformat(R"("as" will silently return "null" if the type of "%s" is wrong. Prefer assigning the node directly to an explicitly typed variable to get an error in such cases.)", symbols[0]);
 		case IMPLICIT_CONVERSION_CAUSES_COPY:
-			return vformat(R"*(Implicit conversion from "%s" to "%s" causes value to be copied.)*", symbols[0], symbols[1]);
+			return vformat(R"*(Implicit conversion from "%s" to "%s" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.)*", symbols[0], symbols[1]);
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.

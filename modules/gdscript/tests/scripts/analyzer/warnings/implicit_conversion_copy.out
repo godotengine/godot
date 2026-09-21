@@ -1,9 +1,3 @@
 GDTEST_OK
->> WARNING
->> Line: 13
->> IMPLICIT_CONVERSION_CAUSES_COPY
->> Implicit conversion from "PackedByteArray" to "Array" causes value to be copied.
->> WARNING
->> Line: 14
->> IMPLICIT_CONVERSION_CAUSES_COPY
->> Implicit conversion from "PackedByteArray" to "Array" causes value to be copied.
+~~ WARNING at line 13: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedByteArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
+~~ WARNING at line 14: (IMPLICIT_CONVERSION_CAUSES_COPY) Implicit conversion from "PackedByteArray" to "Array" causes value to be copied, rather than passed by reference. Changes to one value will not be reflected in the other.
