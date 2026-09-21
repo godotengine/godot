@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  visionos_definitions.h                                                */
+/*  visionos_spatial_events.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,57 +32,64 @@
 
 #ifdef VISIONOS_ENABLED
 
-#include "core/templates/safe_refcount.h"
-#include "drivers/metal/metal_objects_shared.h"
-#include "drivers/metal/rendering_context_driver_metal.h"
-#include "drivers/metal/rendering_device_driver_metal.h"
-#include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server.h"
+#include "visionos_definitions.h"
+
+#include "core/math/transform_3d.h"
 #include "servers/xr/xr_controller_tracker.h"
-#include "servers/xr/xr_hand_tracker.h"
-#include "servers/xr/xr_interface.h"
-#include "servers/xr/xr_positional_tracker.h"
-#include "servers/xr/xr_vrs.h"
 
-#ifdef __OBJC__
-// When compiling as Objective-C++, include the actual headers
-#import <ARKit/ARKit.h>
-#else // __OBJC__
-// When compiling as C++, use forward declarations for ARKit and CompositorServices types (opaque pointers)
-typedef struct ar_world_tracking_provider *ar_world_tracking_provider_t;
-typedef struct ar_hand_tracking_provider *ar_hand_tracking_provider_t;
-typedef struct ar_accessory_tracking_provider *ar_accessory_tracking_provider_t;
-typedef struct ar_data_providers *ar_data_providers_t;
-typedef struct ar_data_provider *ar_data_provider_t;
-;
-typedef struct ar_authorization_results *ar_authorization_results_t;
-typedef struct ar_session *ar_session_t;
-typedef struct ar_device_anchor *ar_device_anchor_t;
-typedef struct ar_hand_anchor *ar_hand_anchor_t;
-typedef struct ar_accessories *ar_accessories_t;
-typedef struct ar_accessory_anchor *ar_accessory_anchor_t;
-#endif // __OBJC__
+// Equivalent to https://developer.apple.com/documentation/swiftui/spatialeventcollection/event
+struct VisionOSSpatialEvent {
+	// Ray
+	bool has_ray;
+	Transform3D ray;
 
-// Equivalent to ARKit's `ar_authorization_status`
-enum class VisionOSAuthorizationStatus {
-	NOT_DETERMINED,
-	ALLOWED,
-	DENIED,
+	// Hand
+	enum class Chirality : int {
+		none = 0,
+		left = 1,
+		right = 2
+	};
+	Chirality chirality;
+	Transform3D hand_pose;
+
+	// Phase
+	enum class Phase : int {
+		unknown = 0,
+		active = 1,
+		cancelled = 2,
+		ended = 3
+	};
+	Phase phase;
 };
 
-// Trackers used by both VisionOSControllerTracking and VisionOSSpatialEventTracking.
-struct VisionOSSharedController {
-	Ref<XRControllerTracker> tracker;
+// Godot representation of visionOS spatial events.
+struct VisionOSSpatialEventTracking {
+	// Ray from center of the head to
+	// the direction of the eyes, when a
+	// pinch gesture begins.
+	Ref<XRControllerTracker> eyes_ray;
 
-	enum class Source {
-		None,
-		SpatialEvent,
-		Controller
+	struct Hand {
+		// Hand pose when pinching and dragging.
+		VisionOSSharedController *controller = nullptr;
+
+		// Update the ray only once per gesture.
+		bool ray_submitted = false;
+
+		// Correcting the transforms from each hand to
+		// map to the Godot and OpenXR convention:
+		// https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_EXT_hand_interaction
+		Transform3D transform_correction;
 	};
 
-	// Spatial Events override controllers, when active.
-	Source source = Source::None;
+	// Left and right hands.
+	Hand left_hand, right_hand;
+
+	void initialize(XRServer *p_xr_server, VisionOSSharedController &p_left_hand,
+			VisionOSSharedController &p_right_hand);
+	void uninitialize(XRServer *p_xr_server);
+
+	void on_spatial_event(const VisionOSSpatialEvent &);
 };
 
 #endif // VISIONOS_ENABLED
