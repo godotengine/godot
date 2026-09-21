@@ -738,6 +738,14 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			RenderingServerDefault::redraw_request();
 		}
 
+		bool sun_scatter_enabled = environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
+		Basis sky_orientation = environment_get_sky_orientation(p_render_data->environment);
+		if ((shader_data->uses_light || sun_scatter_enabled) && (sky_orientation != sky->prev_orientation)) {
+			sky->prev_orientation = sky_orientation;
+			sky->reflection_dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
 		if (environment_get_fog_aerial_perspective(p_render_data->environment) != sky->prev_fog_aerial_perspective) {
 			sky->prev_fog_aerial_perspective = environment_get_fog_aerial_perspective(p_render_data->environment);
 			sky->reflection_dirty = true;
@@ -799,6 +807,9 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 	bool sun_scatter_enabled = environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
 	glBindBufferBase(GL_UNIFORM_BUFFER, SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, sky_globals.directional_light_buffer);
 	if (shader_data->uses_light || sun_scatter_enabled) {
+		Basis sky_transform = environment_get_sky_orientation(p_render_data->environment);
+		sky_transform.invert();
+
 		sky_globals.directional_light_count = 0;
 		for (int i = 0; i < (int)p_lights.size(); i++) {
 			GLES3::LightInstance *li = GLES3::LightStorage::get_singleton()->get_light_instance(p_lights[i]);
@@ -813,7 +824,8 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 			if (type == RSE::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RSE::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
 				DirectionalLightData &sky_light_data = sky_globals.directional_lights[sky_globals.directional_light_count];
 				Transform3D light_transform = li->transform;
-				Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+				Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1));
+				world_direction = sky_transform.xform(world_direction).normalized();
 
 				sky_light_data.direction[0] = world_direction.x;
 				sky_light_data.direction[1] = world_direction.y;
@@ -1049,8 +1061,11 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		scene_state.set_gl_cull_mode(RSE::CULL_MODE_DISABLED);
 		scene_state.enable_gl_blend(false);
 
+		Basis sky_transform = environment_get_sky_orientation(p_env);
+		sky_transform.invert();
+
 		for (int i = 0; i < 6; i++) {
-			Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
+			Basis local_view = sky_transform * Basis::looking_at(view_normals[i], view_up[i]);
 			material_storage->shaders.sky_shader.version_set_uniform(SkyShaderGLES3::ORIENTATION, local_view, shader_data->version, SkyShaderGLES3::MODE_CUBEMAP);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, sky->raw_radiance, 0);
 			glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -1655,9 +1670,7 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 			scene_state.data.ambient_light_color_energy[1] = color.g * energy;
 			scene_state.data.ambient_light_color_energy[2] = color.b * energy;
 
-			Basis sky_transform = environment_get_sky_orientation(p_render_data->environment);
-			sky_transform = sky_transform.inverse() * p_render_data->cam_transform.basis;
-			GLES3::MaterialStorage::store_transform_3x3(sky_transform, scene_state.data.radiance_inverse_xform);
+			GLES3::MaterialStorage::store_transform_3x3(p_render_data->cam_transform.basis, scene_state.data.radiance_inverse_xform);
 			scene_state.data.use_ambient_cubemap = (ambient_src == RSE::ENV_AMBIENT_SOURCE_BG && env_bg == RSE::ENV_BG_SKY) || ambient_src == RSE::ENV_AMBIENT_SOURCE_SKY;
 			scene_state.data.use_ambient_light = scene_state.data.use_ambient_cubemap || ambient_src == RSE::ENV_AMBIENT_SOURCE_COLOR;
 		}

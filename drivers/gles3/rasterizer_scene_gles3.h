@@ -855,6 +855,7 @@ protected:
 		//State to track when radiance cubemap needs updating
 		GLES3::SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position = Vector3(0.0, 0.0, 0.0);
+		Basis prev_orientation = Basis();
 		float prev_time = 0.0f;
 		float prev_fog_aerial_perspective = 0.0;
 		Color prev_fog_light_color;

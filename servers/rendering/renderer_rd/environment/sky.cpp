@@ -1043,6 +1043,14 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 			RenderingServerDefault::redraw_request();
 		}
 
+		bool sun_scatter_enabled = RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_render_data->environment) && RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
+		Basis sky_orientation = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_render_data->environment);
+		if ((shader_data->uses_light || sun_scatter_enabled) && (sky_orientation != sky->prev_orientation)) {
+			sky->prev_orientation = sky_orientation;
+			sky->reflection.dirty = true;
+			RenderingServerDefault::redraw_request();
+		}
+
 		if (RendererSceneRenderRD::get_singleton()->environment_get_fog_aerial_perspective(p_render_data->environment) != sky->prev_fog_aerial_perspective) {
 			sky->prev_fog_aerial_perspective = RendererSceneRenderRD::get_singleton()->environment_get_fog_aerial_perspective(p_render_data->environment);
 			sky->reflection.dirty = true;
@@ -1104,6 +1112,9 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 	bool sun_scatter_enabled = RendererSceneRenderRD::get_singleton()->environment_get_fog_enabled(p_render_data->environment) && RendererSceneRenderRD::get_singleton()->environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
 	sky_scene_state.ubo.directional_light_count = 0;
 	if (shader_data->uses_light || sun_scatter_enabled) {
+		Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_render_data->environment);
+		sky_transform.invert();
+
 		const PagedArray<RID> &lights = *p_render_data->lights;
 		// Run through the list of lights in the scene and pick out the Directional Lights.
 		// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
@@ -1120,7 +1131,8 @@ void SkyRD::setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_s
 			if (type == RSE::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RSE::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
 				SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
 				Transform3D light_transform = light_storage->light_instance_get_base_transform(lights[i]);
-				Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
+				Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1));
+				world_direction = sky_transform.xform(world_direction).normalized();
 
 				sky_light_data.direction[0] = world_direction.x;
 				sky_light_data.direction[1] = world_direction.y;
@@ -1309,7 +1321,8 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 		correction.set_depth_correction(false);
 		cm = correction * cm;
 
-		// Note, we ignore environment_get_sky_orientation here as this is applied when we do our lookup in our scene shader.
+		Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
+		sky_transform.invert();
 
 		if (shader_data->uses_quarter_res && roughness_layers >= 3) {
 			RD::get_singleton()->draw_command_begin_label("Render Sky to Quarter-Resolution Cubemap");
@@ -1322,7 +1335,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 			RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_OCTMAP_QUARTER_RES, sky_shader.default_shader_rd, false, p_render_buffers);
 
 			octmap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[2].framebuffer, RD::DRAW_IGNORE_COLOR_ALL);
-			_render_sky(octmap_draw_list, p_time, sky->reflection.layers[0].mipmaps[2].framebuffer, pipeline, material_data->uniform_set, texture_uniform_set, cm, Basis(), p_global_pos, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
+			_render_sky(octmap_draw_list, p_time, sky->reflection.layers[0].mipmaps[2].framebuffer, pipeline, material_data->uniform_set, texture_uniform_set, cm, sky_transform, p_global_pos, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
 			RD::get_singleton()->draw_list_end();
 
 			RD::get_singleton()->draw_command_end_label();
@@ -1341,7 +1354,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 			RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_OCTMAP_HALF_RES, sky_shader.default_shader_rd, false, p_render_buffers);
 
 			octmap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[1].framebuffer, RD::DRAW_IGNORE_COLOR_ALL);
-			_render_sky(octmap_draw_list, p_time, sky->reflection.layers[0].mipmaps[1].framebuffer, pipeline, material_data->uniform_set, texture_uniform_set, cm, Basis(), p_global_pos, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
+			_render_sky(octmap_draw_list, p_time, sky->reflection.layers[0].mipmaps[1].framebuffer, pipeline, material_data->uniform_set, texture_uniform_set, cm, sky_transform, p_global_pos, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
 			RD::get_singleton()->draw_list_end();
 
 			RD::get_singleton()->draw_command_end_label();
@@ -1357,7 +1370,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 		RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_OCTMAP, sky_shader.default_shader_rd, false, p_render_buffers);
 
 		octmap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffer, RD::DRAW_IGNORE_COLOR_ALL, Vector<Color>(), 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::SKY_PASS);
-		_render_sky(octmap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffer, pipeline, material_data->uniform_set, texture_uniform_set, cm, Basis(), p_global_pos, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
+		_render_sky(octmap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffer, pipeline, material_data->uniform_set, texture_uniform_set, cm, sky_transform, p_global_pos, p_luminance_multiplier, p_brightness_multiplier, sky->uv_border_size);
 		RD::get_singleton()->draw_list_end();
 
 		RD::get_singleton()->draw_command_end_label();
