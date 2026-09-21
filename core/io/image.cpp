@@ -4811,10 +4811,9 @@ void Image::renormalize_uint8(uint8_t *p_rgb) {
 	n.normalize();
 	n += Vector3(1, 1, 1);
 	n *= 0.5;
-	n *= 255;
-	p_rgb[0] = CLAMP(int(Math::round(n.x)), 0, 255);
-	p_rgb[1] = CLAMP(int(Math::round(n.y)), 0, 255);
-	p_rgb[2] = CLAMP(int(Math::round(n.z)), 0, 255);
+	p_rgb[0] = _quantize_unorm_fast<uint8_t>(n.x, 255.0f);
+	p_rgb[1] = _quantize_unorm_fast<uint8_t>(n.y, 255.0f);
+	p_rgb[2] = _quantize_unorm_fast<uint8_t>(n.z, 255.0f);
 }
 
 void Image::renormalize_float(float *p_rgb) {
@@ -4848,10 +4847,9 @@ void Image::renormalize_uint16(uint16_t *p_rgb) {
 	n.normalize();
 	n += Vector3(1, 1, 1);
 	n *= 0.5;
-	n *= 65535;
-	p_rgb[0] = CLAMP(int(Math::round(n.x)), 0, 65535);
-	p_rgb[1] = CLAMP(int(Math::round(n.y)), 0, 65535);
-	p_rgb[2] = CLAMP(int(Math::round(n.z)), 0, 65535);
+	p_rgb[0] = _quantize_unorm_fast<uint16_t>(n.x, 65535.0f);
+	p_rgb[1] = _quantize_unorm_fast<uint16_t>(n.y, 65535.0f);
+	p_rgb[2] = _quantize_unorm_fast<uint16_t>(n.z, 65535.0f);
 }
 
 Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
