@@ -67,6 +67,13 @@ void EditorExportPlatformVisionOS::get_export_options(List<ExportOption> *r_opti
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_back_layer_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
 }
 
+bool EditorExportPlatformVisionOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (p_option == "capabilities/performance_a12" || p_option == "capabilities/performance_gaming_tier") {
+		return false;
+	}
+	return EditorExportPlatformAppleEmbedded::get_export_option_visibility(p_preset, p_option);
+}
+
 Vector<EditorExportPlatformAppleEmbedded::IconInfo> EditorExportPlatformVisionOS::get_icon_infos() const {
 	// Layered icons don't fit IconInfo; _export_icons emits them directly.
 	return Vector<EditorExportPlatformAppleEmbedded::IconInfo>();

@@ -532,11 +532,13 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		if ((bool)p_preset->get("capabilities/access_wifi") && !capabilities_list.has("wifi")) {
 			capabilities_list.push_back("wifi");
 		}
-		if ((bool)p_preset->get("capabilities/performance_gaming_tier") && !capabilities_list.has("iphone-performance-gaming-tier")) {
-			capabilities_list.push_back("iphone-performance-gaming-tier");
-		}
-		if (((bool)p_preset->get("capabilities/performance_a12") || rendering_method == "forward_plus" || rendering_method == "mobile") && !capabilities_list.has("iphone-ipad-minimum-performance-a12")) {
-			capabilities_list.push_back("iphone-ipad-minimum-performance-a12");
+		if (get_platform_name() == "ios") {
+			if ((bool)p_preset->get("capabilities/performance_gaming_tier") && !capabilities_list.has("iphone-performance-gaming-tier")) {
+				capabilities_list.push_back("iphone-performance-gaming-tier");
+			}
+			if (((bool)p_preset->get("capabilities/performance_a12") || rendering_method == "forward_plus" || rendering_method == "mobile") && !capabilities_list.has("iphone-ipad-minimum-performance-a12")) {
+				capabilities_list.push_back("iphone-ipad-minimum-performance-a12");
+			}
 		}
 		for (const String &capability : capabilities_list) {
 			capabilities += "<string>" + capability + "</string>\n";
