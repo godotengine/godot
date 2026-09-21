@@ -7837,7 +7837,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 				}
 				if (second_invalid < to_line) {
 					int total_chars = main->lines[second_invalid].char_offset;
-					total_height = _shape_line(main, second_invalid, theme_cache.normal_font,  (resize_font_to_fit) ? current_fitted_font_size : theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+					total_height = _shape_line(main, second_invalid, theme_cache.normal_font, (resize_font_to_fit) ? current_fitted_font_size : theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
 				}
 			}
 			for (int i = second_invalid + 1; i < to_line; i++) {
