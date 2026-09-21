@@ -3770,7 +3770,25 @@ void TileMapLayerEditor::_notification(int p_what) {
 
 				const TileMapLayer *edited_layer = _get_edited_layer();
 				if (edited_layer && custom_overlay) {
-					custom_overlay->set_texture_filter(edited_layer->get_texture_filter_in_tree());
+					CanvasItem::TextureFilter filter = edited_layer->get_texture_filter_in_tree();
+
+					if (filter == CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
+						// custom_overlay's texture_filter should not inherit from its actual parent. 
+						// It should use the inherited value that edited_layer actually ends up using after inheriting.
+						CanvasItem *parent = Object::cast_to<CanvasItem>(edited_layer->get_parent());
+						while (parent && parent->get_texture_filter_in_tree() == CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
+							parent = Object::cast_to<CanvasItem>(parent->get_parent());
+						}
+
+						if (parent) {
+							filter = parent->get_texture_filter_in_tree();
+						} else {
+							const Viewport *vp = edited_layer->get_viewport();
+							filter = CanvasItem::TextureFilter(vp ? vp->get_texture_filter_in_tree() : RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT);
+						}
+					}
+
+					custom_overlay->set_texture_filter(filter);
 				}
 
 				CanvasItemEditor::get_singleton()->update_viewport();
