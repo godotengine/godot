@@ -391,9 +391,6 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 	}
 }
 
-void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
-}
-
 void EditorHelp::_class_desc_resized(bool p_force_update_theme) {
 	// Add extra horizontal margins for better readability.
 	// The margins increase as the width of the editor help container increases.
@@ -3536,7 +3533,6 @@ EditorHelp::EditorHelp() {
 
 	class_desc->connect(SceneStringName(finished), callable_mp(this, &EditorHelp::_class_desc_finished));
 	class_desc->connect("meta_clicked", callable_mp(this, &EditorHelp::_class_desc_select));
-	class_desc->connect(SceneStringName(gui_input), callable_mp(this, &EditorHelp::_class_desc_input));
 	class_desc->connect(SceneStringName(resized), callable_mp(this, &EditorHelp::_class_desc_resized).bind(false));
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
