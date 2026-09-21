@@ -476,7 +476,7 @@ void RendererSceneRenderRD::_render_buffers_motion_blur(const RenderDataRD *p_re
 
 	if (can_use_effects && using_motion_blur) {
 		RENDER_TIMESTAMP("Motion Blur");
-		motion_blur->motion_blur_compute(rb, p_render_data->camera_attributes, p_render_data->scene_data, p_render_data->transparent_bg, copy_effects);
+		motion_blur->motion_blur_compute(rb, p_render_data->camera_attributes, p_render_data->scene_data, p_render_data->transparent_bg, time_step, copy_effects);
 	}
 }
 

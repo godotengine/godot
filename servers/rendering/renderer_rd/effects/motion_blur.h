@@ -70,7 +70,7 @@ private:
 		float velocity_threshold_upper;
 		float support_fsr2;
 		float motion_blur_intensity;
-		float pad1;
+		float framerate_normalization_factor;
 	};
 
 	struct MotionBlurBlurPushConstant {
@@ -126,6 +126,6 @@ public:
 	MotionBlur();
 	~MotionBlur();
 
-	void motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool p_transparent_bg, CopyEffects *p_copy_effects);
+	void motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool p_transparent_bg, float p_time_step, CopyEffects *p_copy_effects);
 };
 } //namespace RendererRD
