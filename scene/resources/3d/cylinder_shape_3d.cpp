@@ -76,7 +76,7 @@ Vector<Vector3> CylinderShape3D::get_debug_mesh_lines() const {
 Ref<ArrayMesh> CylinderShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
 	Array cylinder_array;
 	cylinder_array.resize(RSE::ARRAY_MAX);
-	CylinderMesh::create_mesh_array(cylinder_array, top_radius, bottom_radius, height, 32);
+	CylinderMesh::create_mesh_array(cylinder_array, get_top_radius(), get_bottom_radius(), get_height(), 32);
 
 	Vector<Color> colors;
 	const PackedVector3Array &verts = cylinder_array[RSE::ARRAY_VERTEX];
@@ -97,17 +97,32 @@ real_t CylinderShape3D::get_enclosing_radius() const {
 
 void CylinderShape3D::_update_shape() {
 	Dictionary d;
-	d.reserve(5);
-	d["radius_top"] = get_top_radius();
-	d["radius_bottom"] = get_bottom_radius();
+	d.reserve(is_tapered() ? 5 : 2);
 	d["radius"] = get_radius();
 	d["height"] = get_height();
-	d["tapered"] = is_tapered();
+	if (is_tapered()) {
+		d["tapered"] = is_tapered();
+		d["radius_top"] = get_top_radius();
+		d["radius_bottom"] = get_bottom_radius();
+	}
 	PhysicsServer3D::get_singleton()->shape_set_data(get_shape(), d);
 	Shape3D::_update_shape();
 }
 
+void CylinderShape3D::_validate_property(PropertyInfo &p_property) const {
+	if ((p_property.name == "top_radius") || (p_property.name == "bottom_radius")) {
+		p_property.usage = is_tapered() ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NONE;
+	}
+	if (p_property.name == "radius") {
+		p_property.usage = is_tapered() ? PROPERTY_USAGE_NONE : PROPERTY_USAGE_DEFAULT;
+	}
+}
+
 void CylinderShape3D::set_top_radius(real_t p_top_radius) {
+	if (!tapered) {
+		return set_radius(p_top_radius);
+	}
+
 	ERR_FAIL_COND_MSG(p_top_radius < 0, "CylinderShape3D top_radius cannot be negative.");
 	top_radius = MAX(p_top_radius, 0);
 	_update_shape();
@@ -119,6 +134,10 @@ real_t CylinderShape3D::get_top_radius() const {
 }
 
 void CylinderShape3D::set_bottom_radius(real_t p_bottom_radius) {
+	if (!tapered) {
+		return set_radius(p_bottom_radius);
+	}
+
 	ERR_FAIL_COND_MSG(p_bottom_radius < 0, "CylinderShape3D bottom_radius cannot be negative.");
 	bottom_radius = MAX(p_bottom_radius, 0);
 	_update_shape();
@@ -152,6 +171,22 @@ real_t CylinderShape3D::get_height() const {
 	return height;
 }
 
+void CylinderShape3D::set_tapered(bool value) {
+	tapered = value;
+	if (!tapered) {
+		float rad = get_radius();
+		top_radius = rad;
+		bottom_radius = rad;
+	}
+	notify_property_list_changed();
+	_update_shape();
+	emit_changed();
+}
+
+bool CylinderShape3D::is_tapered() const {
+	return tapered;
+}
+
 void CylinderShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_top_radius", "top_radius"), &CylinderShape3D::set_top_radius);
 	ClassDB::bind_method(D_METHOD("get_top_radius"), &CylinderShape3D::get_top_radius);
@@ -163,12 +198,13 @@ void CylinderShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &CylinderShape3D::get_height);
 
 	ClassDB::bind_method(D_METHOD("is_tapered"), &CylinderShape3D::is_tapered);
+	ClassDB::bind_method(D_METHOD("set_tapered", "taper"), &CylinderShape3D::set_tapered);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, ""), "set_tapered", "is_tapered");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "top_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_top_radius", "get_top_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bottom_radius", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_bottom_radius", "get_bottom_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater,suffix:m"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tapered", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_READ_ONLY), "", "is_tapered");
 
 	ADD_LINKED_PROPERTY("radius", "top_radius");
 	ADD_LINKED_PROPERTY("radius", "bottom_radius");

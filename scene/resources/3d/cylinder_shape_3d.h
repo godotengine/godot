@@ -40,10 +40,14 @@ class CylinderShape3D : public Shape3D {
 	real_t bottom_radius = 0.5;
 	real_t height = 2.0;
 
+	bool tapered = false;
+
 protected:
 	static void _bind_methods();
 
 	virtual void _update_shape() override;
+
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_top_radius(real_t p_radius_top);
@@ -58,7 +62,8 @@ public:
 	void set_height(real_t p_height);
 	real_t get_height() const;
 
-	bool is_tapered() const { return top_radius != bottom_radius; }
+	void set_tapered(bool value);
+	bool is_tapered() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;

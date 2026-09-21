@@ -88,10 +88,10 @@ public:
 	// Tapered Capsule and Cylinder
 
 	enum tapered_revolution_handle {
-		RADIUS_TOP,
-		RADIUS_BOTTOM,
 		RADIUS,
 		HEIGHT,
+		RADIUS_TOP,
+		RADIUS_BOTTOM,
 	};
 
 	Vector<Vector3> tapered_capsule_cylinder_get_handles(real_t p_top_radius, real_t p_bottom_radius, real_t p_height, bool cylinder);
