@@ -46,6 +46,7 @@
 		<member name="motion_blur_enabled" type="bool" setter="set_motion_blur_enabled" getter="is_motion_blur_enabled" default="false">
 			If [code]true[/code], enables a motion blur effect when the camera moves, rotates, or when an object on screen moves. This has a moderate performance impact.
 			[b]Note:[/b] Motion blur can result in motion sickness among some players. When implementing motion blur in a game, consider exposing an option to reduce its intensity or turn it off.
+			[b]Note:[/b] The effect is limited to a maximum of 48 pixels of blur radius. Properties like [member motion_blur_intensity] and the velocity multipliers and thresholds are applied to the source velocities first and if the results exceed this radius they are clamped before they are used for blurring.
 		</member>
 		<member name="motion_blur_intensity" type="float" setter="set_motion_blur_intensity" getter="get_motion_blur_intensity" default="1.0">
 			Defines the amount of motion blur to apply given the object's velocity. At 1.0, the object's velocity will be blurred in full (blur fills in the motion step fully). An intensity of 0.5 can be interpreted as a 180 degrees shutter.
@@ -59,12 +60,12 @@
 		<member name="motion_blur_velocity_multiplier_object" type="float" setter="set_motion_blur_velocity_multiplier_object" getter="get_motion_blur_velocity_multiplier_object" default="1.0">
 			Defines the intensity of blur similar to [member motion_blur_intensity], but only for the part of the motion caused by object movement.
 		</member>
-		<member name="motion_blur_velocity_threshold_lower" type="float" setter="set_motion_blur_velocity_threshold_lower" getter="get_motion_blur_velocity_threshold_lower" default="2.0">
+		<member name="motion_blur_velocity_threshold_lower" type="float" setter="set_motion_blur_velocity_threshold_lower" getter="get_motion_blur_velocity_threshold_lower" default="1.75">
 			Defines a magnitude of motion beyond which motion would start getting blurred. Works in tandem with [member motion_blur_velocity_threshold_upper] to define a seamless transition between non-blurred motion, and fully blurred motion given the motion's magnitude.
 			The value is treated in terms of screen height percentage. Setting it to 50 means that blurring starts at motion that's visually larger than half the screen's height in one frame.
 			You can use these thresholds to create a less intrusive motion blur effect, where below certain movement speeds details stay crisp.
 		</member>
-		<member name="motion_blur_velocity_threshold_upper" type="float" setter="set_motion_blur_velocity_threshold_upper" getter="get_motion_blur_velocity_threshold_upper" default="3.5">
+		<member name="motion_blur_velocity_threshold_upper" type="float" setter="set_motion_blur_velocity_threshold_upper" getter="get_motion_blur_velocity_threshold_upper" default="3.0">
 			Defines a magnitude of motion beyond which motion will be blurred fully. Works in tandem with [member motion_blur_velocity_threshold_lower] to define a seamless transition between non-blurred motion, and fully blurred motion given the motion's magnitude.
 			The value is treated in terms of screen height percentage. Setting it to 50 means that motion that's visually larger than half the screen's height in one frame is blurred in full.
 			You can use these thresholds to create a less intrusive motion blur effect, where below certain movement speeds details stay crisp.

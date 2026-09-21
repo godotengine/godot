@@ -187,7 +187,7 @@ void RendererRD::MotionBlur::motion_blur_process(const MotionBlurBuffers &p_buff
 	RD::get_singleton()->compute_list_end();
 }
 
-void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool p_transparent_bg, float p_time_step, CopyEffects *p_copy_effects) {
+void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_camera_attributes, RenderSceneDataRD *p_scene_data, bool p_transparent_bg, CopyEffects *p_copy_effects) {
 	if (!RSG::camera_attributes->camera_attributes_get_motion_blur_show_in_editor() && Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
@@ -240,7 +240,7 @@ void RendererRD::MotionBlur::motion_blur_compute(Ref<RenderSceneBuffersRD> p_ren
 		motion_blur.preprocess_push_constant.velocity_threshold_lower = velocity_threshold_lower;
 		motion_blur.preprocess_push_constant.velocity_threshold_upper = velocity_threshold_upper;
 		motion_blur.preprocess_push_constant.motion_blur_intensity = RSG::camera_attributes->camera_attributes_get_motion_blur_intensity(p_camera_attributes);
-		motion_blur.preprocess_push_constant.support_fsr2 = p_render_buffers->get_scaling_3d_mode() == RSE::ViewportScaling3DMode::VIEWPORT_SCALING_3D_MODE_FSR2 ? 1.0 : 0.0;
+		motion_blur.preprocess_push_constant.support_fsr2 = (p_render_buffers->get_scaling_3d_mode() == RSE::ViewportScaling3DMode::VIEWPORT_SCALING_3D_MODE_FSR2) ? 1.0 : 0.0;
 
 		motion_blur.blur_push_constant.sample_count = sample_count;
 		// from https://blog.demofox.org/2022/01/01/interleaved-gradient-noise-a-different-kind-of-low-discrepancy-sequence/ (section: Derivation Of IGN And Extensions) for animation of the noise.

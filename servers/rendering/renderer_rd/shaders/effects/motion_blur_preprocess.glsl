@@ -237,7 +237,9 @@ void main() {
 
 	total_velocity.xy *= thresholds_multiplier * render_size * (view_past_ndc_cache.w < 0 ? -1 : 1) * params.motion_blur_intensity;
 
-	// Now we clamp the velocity magnitudes to the tile size.
+	// Now we clamp the velocity magnitudes to the tile size. This avoids saturating tiles and
+	// revealing the seams between them. It also tames the velocities in general, otherwise
+	// causing abnoxious blurring at high movement speeds or at lower framerates.
 	// We multiply the tile size by 2 because we blur the velocity
 	// symmetrically forwards and backwards so its radius is half its magnitude.
 	// NOTE @sphynx-owner: this clamp also handles the asymptotical behavior of near-clip-plane velocities.

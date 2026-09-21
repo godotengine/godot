@@ -2488,6 +2488,12 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_process_compositor_effects(RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT, p_render_data);
 	}
 
+	if (rb_data.is_valid()) {
+		RENDER_TIMESTAMP("Motion Blur");
+
+		_render_buffers_motion_blur(p_render_data);
+	}
+
 	if (rb_data.is_valid() && (using_upscaling || using_taa)) {
 		if (scale_type == SCALE_FSR2) {
 			rb_data->ensure_fsr2(fsr2_effect);

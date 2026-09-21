@@ -407,9 +407,9 @@ void CameraAttributesPractical::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_intensity", PROPERTY_HINT_RANGE, "0.0,1.0,0.01,or_greater"), "set_motion_blur_intensity", "get_motion_blur_intensity");
 
 	ADD_SUBGROUP("Velocity Multipliers", "motion_blur_velocity_multiplier_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_object", PROPERTY_HINT_RANGE, "0.0,1.0,0.01,or_greater"), "set_motion_blur_velocity_multiplier_object", "get_motion_blur_velocity_multiplier_object");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_movement", PROPERTY_HINT_RANGE, "0.0,1.0,0.01,or_greater"), "set_motion_blur_velocity_multiplier_camera_movement", "get_motion_blur_velocity_multiplier_camera_movement");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_rotation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01,or_greater"), "set_motion_blur_velocity_multiplier_camera_rotation", "get_motion_blur_velocity_multiplier_camera_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_object", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_motion_blur_velocity_multiplier_object", "get_motion_blur_velocity_multiplier_object");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_movement", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_motion_blur_velocity_multiplier_camera_movement", "get_motion_blur_velocity_multiplier_camera_movement");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_rotation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_motion_blur_velocity_multiplier_camera_rotation", "get_motion_blur_velocity_multiplier_camera_rotation");
 
 	ADD_SUBGROUP("Velocity Thresholds", "motion_blur_velocity_threshold_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_threshold_lower", PROPERTY_HINT_RANGE, "0.0,100.0,0.01"), "set_motion_blur_velocity_threshold_lower", "get_motion_blur_velocity_threshold_lower");
