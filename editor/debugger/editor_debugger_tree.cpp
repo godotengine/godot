@@ -425,6 +425,10 @@ void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 }
 
 void EditorDebuggerTree::clear_selection() {
+	if (inspected_object_ids.is_empty()) {
+		return;
+	}
+
 	inspected_object_ids.clear();
 
 	if (!updating_scene_tree) {

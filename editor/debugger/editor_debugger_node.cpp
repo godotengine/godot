@@ -757,6 +757,11 @@ String EditorDebuggerNode::get_var_value(const String &p_var) const {
 
 // LiveEdit/Inspector
 void EditorDebuggerNode::request_remote_tree() {
+	if (!get_current_debugger()->is_session_active()) {
+		remote_scene_tree_queue_update = true;
+		return;
+	}
+
 	remote_scene_tree_wait = true;
 	remote_scene_tree_timeout = EDITOR_GET("debugger/remote_scene_tree_refresh_interval");
 	get_current_debugger()->request_remote_tree();
