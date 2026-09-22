@@ -1276,9 +1276,6 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 		bool keycode_handled = true;
 
 		switch (k->get_keycode()) {
-			case Key::ENTER: {
-				_open_selected_projects_check_recovery_mode();
-			} break;
 			case Key::HOME: {
 				if (project_list->get_project_count() > 0) {
 					project_list->ensure_project_visible(0);

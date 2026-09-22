@@ -1329,6 +1329,14 @@ void ProjectList::_list_item_input(const Ref<InputEvent> &p_ev, Control *p_hb) {
 
 	if (kev.is_valid() && kev->is_pressed()) {
 		switch (kev->get_keycode()) {
+			case Key::ENTER: {
+				if (p_hb->has_focus()) {
+					if (!project_opening_initiated) {
+						emit_signal(SNAME(SIGNAL_PROJECT_ASK_OPEN));
+					}
+					accept_event();
+				}
+			} break;
 			case Key::E: {
 				_on_explore_pressed(clicked_project.path);
 				accept_event();
