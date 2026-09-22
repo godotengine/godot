@@ -62,4 +62,53 @@ TEST_CASE("[AnimationPlayer] get & set blend_time") {
 	memdelete(animation_player);
 }
 
+TEST_CASE("[AnimationPlayer] queue, get_queue, clear_queue") {
+	String anim1 = "animation1";
+	String anim2 = "animation2";
+	String anim3 = "animation3";
+	const Ref<Animation> animation1 = memnew(Animation);
+	const Ref<Animation> animation2 = memnew(Animation);
+	const Ref<Animation> animation3 = memnew(Animation);
+	const Ref<AnimationLibrary> animation_library = memnew(AnimationLibrary);
+	animation_library->add_animation(anim1, animation1);
+	animation_library->add_animation(anim2, animation2);
+	animation_library->add_animation(anim3, animation3);
+
+	AnimationPlayer *animation_player = memnew(AnimationPlayer);
+	animation_player->add_animation_library("", animation_library);
+
+	// queue() while nothing is playing should start playback immediately
+	// rather than enqueue, so the queue should stay empty.
+	animation_player->queue(anim1);
+	CHECK(animation_player->is_playing());
+	CHECK(animation_player->get_queue().is_empty());
+
+	// Now that something is playing, further queue() calls should
+	// append rather than play immediately.
+	animation_player->queue(anim2);
+	animation_player->queue(anim3);
+
+	TypedArray<StringName> queued = animation_player->get_queue();
+	CHECK(queued.size() == 2);
+	CHECK(StringName(queued[0]) == anim2);
+	CHECK(StringName(queued[1]) == anim3);
+
+	animation_player->clear_queue();
+	CHECK(animation_player->get_queue().is_empty());
+
+	memdelete(animation_player);
+}
+
+TEST_CASE("[AnimationPlayer] get_queue on an empty queue") {
+	AnimationPlayer *animation_player = memnew(AnimationPlayer);
+
+	// No animations have been queued, so the internal list is empty
+	// and the for loop inside get_queue() should not execute at all.
+	TypedArray<StringName> queue = animation_player->get_queue();
+	CHECK(queue.is_empty());
+	CHECK(queue.size() == 0);
+
+	memdelete(animation_player);
+}
+
 } // namespace TestAnimationPlayer
