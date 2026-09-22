@@ -205,8 +205,8 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				const GDType::Member::Property &psg = property.payload.property;
 
 				property_dict["name"] = F;
-				property_dict["setter"] = psg.setter;
-				property_dict["getter"] = psg.getter;
+				property_dict["setter"] = psg.setter ? psg.setter->get_name() : StringName();
+				property_dict["getter"] = psg.getter ? psg.getter->get_name() : StringName();
 			}
 
 			if (!properties.is_empty()) {
