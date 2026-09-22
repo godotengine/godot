@@ -65,6 +65,17 @@
 // which clashes with GLAD.
 #import "macos_quartz_core_spi.h"
 
+// The embedded display server reports back to the editor over the debugger
+// connection. When the engine is started with `--embedded` without a debugger
+// (i.e. not spawned by the editor), there is no `EngineDebugger` singleton, so
+// these messages have to be dropped rather than sent. `OS_MacOS_Embedded::alert()`
+// already guards its own message this way.
+static void _send_embedded_message(const String &p_message, const Array &p_args) {
+	if (EngineDebugger::get_singleton()) {
+		EngineDebugger::get_singleton()->send_message(p_message, p_args);
+	}
+}
+
 DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, Error &r_error) {
 	EmbeddedDebugger::initialize(this);
 
@@ -218,7 +229,7 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 
 	{
 		Array arr = { ca_context.contextId };
-		EngineDebugger::get_singleton()->send_message("game_view:set_context_id", arr);
+		_send_embedded_message("game_view:set_context_id", arr);
 	}
 }
 
@@ -277,7 +288,7 @@ void DisplayServerMacOSEmbedded::register_embedded_driver() {
 // MARK: - Mouse
 
 void DisplayServerMacOSEmbedded::_mouse_apply_mode(DisplayServerEnums::MouseMode p_prev_mode, DisplayServerEnums::MouseMode p_new_mode) {
-	EngineDebugger::get_singleton()->send_message("game_view:mouse_set_mode", { p_new_mode });
+	_send_embedded_message("game_view:mouse_set_mode", { p_new_mode });
 }
 
 void DisplayServerMacOSEmbedded::warp_mouse(const Point2i &p_position) {
@@ -285,7 +296,7 @@ void DisplayServerMacOSEmbedded::warp_mouse(const Point2i &p_position) {
 	Input::get_singleton()->set_mouse_position(p_position);
 	// Convert from game pixels to points for the editor.
 	float inv_scale = 1.0f / screen_get_max_scale();
-	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { Point2i(Vector2(p_position) * inv_scale) });
+	_send_embedded_message("game_view:warp_mouse", { Point2i(Vector2(p_position) * inv_scale) });
 }
 
 Point2i DisplayServerMacOSEmbedded::mouse_get_position() const {
@@ -689,14 +700,14 @@ bool DisplayServerMacOSEmbedded::can_any_window_draw() const {
 }
 
 void DisplayServerMacOSEmbedded::window_set_ime_active(const bool p_active, DisplayServerEnums::WindowID p_window) {
-	EngineDebugger::get_singleton()->send_message("game_view:window_set_ime_active", { p_active });
+	_send_embedded_message("game_view:window_set_ime_active", { p_active });
 }
 
 void DisplayServerMacOSEmbedded::window_set_ime_position(const Point2i &p_pos, DisplayServerEnums::WindowID p_window) {
 	if (p_pos == ime_last_position) {
 		return;
 	}
-	EngineDebugger::get_singleton()->send_message("game_view:window_set_ime_position", { p_pos });
+	_send_embedded_message("game_view:window_set_ime_position", { p_pos });
 	ime_last_position = p_pos;
 }
 
@@ -787,7 +798,7 @@ DisplayServerEnums::VSyncMode DisplayServerMacOSEmbedded::window_get_vsync_mode(
 
 void DisplayServerMacOSEmbedded::cursor_set_shape(DisplayServerEnums::CursorShape p_shape) {
 	cursor_shape = p_shape;
-	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_shape", { p_shape });
+	_send_embedded_message("game_view:cursor_set_shape", { p_shape });
 }
 
 void DisplayServerMacOSEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, DisplayServerEnums::CursorShape p_shape, const Vector2 &p_hotspot) {
@@ -798,7 +809,7 @@ void DisplayServerMacOSEmbedded::cursor_set_custom_image(const Ref<Resource> &p_
 			data = image->save_png_to_buffer();
 		}
 	}
-	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_custom_image", { data, p_shape, p_hotspot });
+	_send_embedded_message("game_view:cursor_set_custom_image", { data, p_shape, p_hotspot });
 }
 
 void DisplayServerMacOSEmbedded::swap_buffers() {
