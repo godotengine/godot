@@ -43,6 +43,7 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/filter_line_edit.h"
 #include "editor/gui/progress_dialog.h"
@@ -2014,8 +2015,16 @@ void ThemeItemEditorDialog::_edit_theme_item_gui_input(const Ref<InputEvent> &p_
 	}
 }
 
-void ThemeItemEditorDialog::_open_select_another_theme() {
-	import_another_theme_dialog->popup_file_dialog();
+void ThemeItemEditorDialog::_open_select_another_theme(bool p_quick) {
+	if (p_quick) {
+		quick_open_dialog->popup_dialog({ "Theme" }, callable_mp(this, &ThemeItemEditorDialog::_select_another_theme_cbk_deferred));
+	} else {
+		import_another_theme_dialog->popup_file_dialog();
+	}
+}
+
+void ThemeItemEditorDialog::_select_another_theme_cbk_deferred(const String &p_path) {
+	callable_mp(this, &ThemeItemEditorDialog::_select_another_theme_cbk).call_deferred(p_path);
 }
 
 void ThemeItemEditorDialog::_select_another_theme_cbk(const String &p_path) {
@@ -2055,6 +2064,10 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 
 			edit_add_type_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 
+			Ref<StyleBox> line_edit_style = get_theme_stylebox(CoreStringName(normal), "LineEdit")->duplicate();
+			line_edit_style->set_content_margin_all(0);
+			select_theme_panel_container->add_theme_style_override(SceneStringName(panel), line_edit_style);
+			import_another_theme_quick_button->set_button_icon(get_editor_theme_icon("LoadQuick"));
 			import_another_theme_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 	}
@@ -2264,15 +2277,31 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	VBoxContainer *import_another_theme_vb = memnew(VBoxContainer);
 
+	select_theme_panel_container = memnew(PanelContainer);
+	import_another_theme_vb->add_child(select_theme_panel_container);
+
 	HBoxContainer *import_another_file_hb = memnew(HBoxContainer);
-	import_another_theme_vb->add_child(import_another_file_hb);
-	import_another_theme_value = memnew(LineEdit);
+	select_theme_panel_container->add_child(import_another_file_hb);
+
+	import_another_theme_value = memnew(Button);
 	import_another_theme_value->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	import_another_theme_value->set_editable(false);
+	import_another_theme_value->set_theme_type_variation(SceneStringName(FlatButton));
+	import_another_theme_value->set_flat(true);
+	import_another_theme_value->set_text(TTRC("Select a Theme"));
+	import_another_theme_value->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_select_another_theme).bind(true));
 	import_another_file_hb->add_child(import_another_theme_value);
+
+	import_another_theme_quick_button = memnew(Button);
+	import_another_theme_quick_button->set_tooltip_text(TTRC("Quick Load"));
+	import_another_theme_quick_button->set_theme_type_variation(SceneStringName(FlatButton));
+	import_another_theme_quick_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_select_another_theme).bind(true));
+	import_another_file_hb->add_child(import_another_theme_quick_button);
+
 	import_another_theme_button = memnew(Button);
+	import_another_theme_button->set_tooltip_text(TTRC("Load"));
+	import_another_theme_button->set_theme_type_variation(SceneStringName(FlatButton));
+	import_another_theme_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_select_another_theme).bind(false));
 	import_another_file_hb->add_child(import_another_theme_button);
-	import_another_theme_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_select_another_theme));
 
 	import_another_theme_dialog = memnew(EditorFileDialog);
 	import_another_theme_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -2284,6 +2313,9 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	}
 	import_another_file_hb->add_child(import_another_theme_dialog);
 	import_another_theme_dialog->connect("file_selected", callable_mp(this, &ThemeItemEditorDialog::_select_another_theme_cbk));
+
+	quick_open_dialog = memnew(EditorQuickOpenDialog);
+	add_child(quick_open_dialog);
 
 	import_other_theme_items = memnew(ThemeItemImportTree);
 	import_other_theme_items->set_v_size_flags(Control::SIZE_EXPAND_FILL);
