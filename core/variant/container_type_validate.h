@@ -38,12 +38,16 @@ struct ContainerType {
 	Variant::Type variant_type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
+
+	_FORCE_INLINE_ bool operator==(const ContainerType &p_type) const {
+		return variant_type == p_type.variant_type && class_name == p_type.class_name && script == p_type.script;
+	}
+	_FORCE_INLINE_ bool operator!=(const ContainerType &p_type) const {
+		return variant_type != p_type.variant_type || class_name != p_type.class_name || script != p_type.script;
+	}
 };
 
-struct ContainerTypeValidate {
-	Variant::Type variant_type = Variant::NIL;
-	StringName class_name;
-	Ref<Script> script;
+struct ContainerTypeValidate : ContainerType {
 	const char *where = "container";
 
 private:
@@ -105,12 +109,5 @@ public:
 		}
 
 		return true;
-	}
-
-	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
-		return variant_type == p_type.variant_type && class_name == p_type.class_name && script == p_type.script;
-	}
-	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return variant_type != p_type.variant_type || class_name != p_type.class_name || script != p_type.script;
 	}
 };
