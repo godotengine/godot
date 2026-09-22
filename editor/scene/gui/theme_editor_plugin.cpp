@@ -2057,6 +2057,12 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 
 			import_another_theme_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "theme_item_manager", Rect2(get_position(), get_size()));
+			}
+		} break;
 	}
 }
 
@@ -3949,7 +3955,12 @@ void ThemeEditor::_theme_save_button_cbk(bool p_save_as) {
 }
 
 void ThemeEditor::_theme_edit_button_cbk() {
-	theme_edit_dialog->popup_centered_clamped(Size2(850, 700) * EDSCALE, 0.8);
+	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "theme_item_manager", Rect2());
+	if (saved_size != Rect2()) {
+		theme_edit_dialog->popup(saved_size);
+	} else {
+		theme_edit_dialog->popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+	}
 }
 
 void ThemeEditor::_theme_close_button_cbk() {
