@@ -93,6 +93,9 @@ void ThemeItemImportTree::_update_items_tree() {
 		return;
 	}
 
+	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+	Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+
 	String filter_text = import_items_filter->get_text();
 
 	List<StringName> types;
@@ -129,6 +132,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 		TreeItem *type_node = import_items_tree->create_item(root);
 		type_node->set_meta("_can_be_imported", false);
+		type_node->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		type_node->set_collapsed(true);
 		type_node->set_icon(0, type_icon);
 		type_node->set_text(0, type_name);
@@ -248,6 +252,7 @@ void ThemeItemImportTree::_update_items_tree() {
 			for (const StringName &F : filtered_names) {
 				TreeItem *item_node = import_items_tree->create_item(data_type_node);
 				item_node->set_meta("_can_be_imported", true);
+				item_node->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 				item_node->set_text(0, F);
 				item_node->set_cell_mode(IMPORT_ITEM, TreeItem::CELL_MODE_CHECK);
 				item_node->set_checked(IMPORT_ITEM, false);
@@ -255,6 +260,9 @@ void ThemeItemImportTree::_update_items_tree() {
 				item_node->set_cell_mode(IMPORT_ITEM_DATA, TreeItem::CELL_MODE_CHECK);
 				item_node->set_checked(IMPORT_ITEM_DATA, false);
 				item_node->set_editable(IMPORT_ITEM_DATA, true);
+				if (use_monospace_font) {
+					item_node->set_custom_font(0, monospace_font);
+				}
 
 				_restore_selected_item(item_node);
 				item_node->propagate_check(IMPORT_ITEM, false);
@@ -278,8 +286,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (color_amount > 0) {
-		Array arr = { color_amount };
-		select_colors_label->set_text(TTRN("1 color", "{num} colors", color_amount).format(arr, "{num}"));
+		select_colors_label->set_text(vformat(TTRN("%d color", "%d colors", color_amount), color_amount));
 		select_all_colors_button->set_visible(true);
 		select_full_colors_button->set_visible(true);
 		deselect_all_colors_button->set_visible(true);
@@ -291,8 +298,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (constant_amount > 0) {
-		Array arr = { constant_amount };
-		select_constants_label->set_text(TTRN("1 constant", "{num} constants", constant_amount).format(arr, "{num}"));
+		select_constants_label->set_text(vformat(TTRN("%d constant", "%d constants", constant_amount), constant_amount));
 		select_all_constants_button->set_visible(true);
 		select_full_constants_button->set_visible(true);
 		deselect_all_constants_button->set_visible(true);
@@ -304,8 +310,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (font_amount > 0) {
-		Array arr = { font_amount };
-		select_fonts_label->set_text(TTRN("1 font", "{num} fonts", font_amount).format(arr, "{num}"));
+		select_fonts_label->set_text(vformat(TTRN("%d font", "%d fonts", font_amount), font_amount));
 		select_all_fonts_button->set_visible(true);
 		select_full_fonts_button->set_visible(true);
 		deselect_all_fonts_button->set_visible(true);
@@ -317,8 +322,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (font_size_amount > 0) {
-		Array arr = { font_size_amount };
-		select_font_sizes_label->set_text(TTRN("1 font size", "{num} font sizes", font_size_amount).format(arr, "{num}"));
+		select_font_sizes_label->set_text(vformat(TTRN("%d font size", "%d font sizes", font_size_amount), font_size_amount));
 		select_all_font_sizes_button->set_visible(true);
 		select_full_font_sizes_button->set_visible(true);
 		deselect_all_font_sizes_button->set_visible(true);
@@ -330,8 +334,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (icon_amount > 0) {
-		Array arr = { icon_amount };
-		select_icons_label->set_text(TTRN("1 icon", "{num} icons", icon_amount).format(arr, "{num}"));
+		select_icons_label->set_text(vformat(TTRN("%d icon", "%d icons", icon_amount), icon_amount));
 		select_all_icons_button->set_visible(true);
 		select_full_icons_button->set_visible(true);
 		deselect_all_icons_button->set_visible(true);
@@ -345,8 +348,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (stylebox_amount > 0) {
-		Array arr = { stylebox_amount };
-		select_styleboxes_label->set_text(TTRN("1 stylebox", "{num} styleboxes", stylebox_amount).format(arr, "{num}"));
+		select_styleboxes_label->set_text(vformat(TTRN("%d stylebox", "%d styleboxes", stylebox_amount), stylebox_amount));
 		select_all_styleboxes_button->set_visible(true);
 		select_full_styleboxes_button->set_visible(true);
 		deselect_all_styleboxes_button->set_visible(true);
@@ -509,8 +511,7 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 	if (count == 0) {
 		total_selected_items_label->hide();
 	} else {
-		Array arr = { count };
-		total_selected_items_label->set_text(TTRN("{num} currently selected", "{num} currently selected", count).format(arr, "{num}"));
+		total_selected_items_label->set_text(vformat(TTRN("%d currently selected", "%d currently selected", count), count));
 		total_selected_items_label->show();
 	}
 }
@@ -989,7 +990,6 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	add_child(import_main_hb);
 
 	import_items_tree = memnew(Tree);
-	import_items_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	import_items_tree->set_hide_root(true);
 	import_items_tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	import_main_hb->add_child(import_items_tree);
