@@ -116,8 +116,6 @@ class EditorHelp : public VBoxContainer {
 
 	LineEdit *search = nullptr;
 	FindBar *find_bar = nullptr;
-	HBoxContainer *status_bar = nullptr;
-	Button *toggle_files_button = nullptr;
 
 	struct ThemeCache {
 		Ref<StyleBox> background_style;
@@ -185,8 +183,6 @@ class EditorHelp : public VBoxContainer {
 
 	void _request_help(const String &p_string);
 	void _search(bool p_search_previous = false);
-
-	void _toggle_files_pressed();
 
 	inline static int doc_generation_count = 0;
 	inline static String doc_version_hash;
@@ -266,8 +262,6 @@ public:
 
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
-
-	void update_toggle_files_button();
 
 	static void init_gdext_pointers();
 
