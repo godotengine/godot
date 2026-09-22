@@ -1571,6 +1571,11 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 		types.insert(E.key);
 	}
 
+	// If it's the default theme, ask also ThemeDB, in case some types don't have assigned items.
+	if (ThemeDB::get_singleton()->get_default_theme() == this) {
+		ThemeDB::get_singleton()->get_class_list(types);
+	}
+
 	for (const StringName &E : types) {
 		p_list->push_back(E);
 	}
