@@ -636,9 +636,10 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	item_clickable_area.size.y -= theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM);
 	item_clickable_area.size *= win_scale;
 
-	Ref<InputEventMouseButton> b = p_event;
+	int event_device_id = p_event->get_device();
 
-	if (b.is_valid()) {
+	Ref<InputEventMouseButton> b = p_event;
+	if (b.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		MouseButton button_idx = b->get_button_index();
 		// Activate the item on release of either the left mouse button or
 		// any mouse button held down when the popup was opened.
@@ -723,8 +724,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseMotion> m = p_event;
-
-	if (m.is_valid()) {
+	if (m.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		if (m->get_velocity().is_zero_approx() || m->get_relative() == Vector2(0, 0)) {
 			return;
 		}
@@ -763,6 +763,98 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			return;
 		}
 		_mouse_over_update(m->get_position());
+	}
+
+	Ref<InputEventScreenTouch> touch = p_event;
+	if (touch.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		Point2 pos = touch->get_position();
+
+		if (touch->is_pressed()) {
+			touch_dragging = false;
+			touch_drag_accum = Vector2();
+			touch_pressed_item = -1;
+			activated_by_keyboard = false;
+
+			// Check scrollbar hit.
+			is_scrolling = is_layout_rtl() ? pos.x < item_clickable_area.position.x - item_clickable_area.size.width : pos.x > item_clickable_area.size.width + item_clickable_area.position.x;
+
+			// Hide it if the shadows have been clicked.
+			if (get_flag(FLAG_POPUP)) {
+				Rect2 panel_area = panel->get_global_rect();
+				panel_area.position *= win_scale;
+				panel_area.size *= win_scale;
+				if (!panel_area.has_point(pos)) {
+					_close_pressed();
+					return;
+				}
+			}
+
+			if (!item_clickable_area.has_point(pos)) {
+				if (mouse_over >= 0) {
+					_mouse_over_update(pos);
+				}
+				return;
+			}
+
+			int over = _get_mouse_over(pos);
+			if (over < 0 || items[over].separator || items[over].disabled || (items[over].submenu && items[over].submenu->is_visible())) {
+				return;
+			}
+
+			touch_pressed_item = over;
+			_mouse_over_update(pos);
+		}
+
+		if (touch->is_released()) {
+			if (is_scrolling || touch_dragging) {
+				is_scrolling = false;
+				touch_dragging = false;
+				return;
+			}
+
+			if (!item_clickable_area.has_point(pos)) {
+				return;
+			}
+
+			int over = _get_mouse_over(pos);
+			if (over < 0 || items[over].separator || items[over].disabled) {
+				return;
+			}
+
+			// Verify tap released on the same item it started on.
+			if (over == touch_pressed_item) {
+				if (items[over].submenu) {
+					if (!items[over].submenu->is_visible()) {
+						_activate_submenu(over);
+					}
+					return;
+				}
+				activate_item(over);
+			}
+
+			touch_pressed_item = -1;
+		}
+	}
+
+	Ref<InputEventScreenDrag> drag = p_event;
+	if (drag.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
+		if (is_scrolling) {
+			// Scrollbar is active; no need to perform drag-scroll.
+			return;
+		}
+
+		Vector2 relative = drag->get_relative();
+		if (!touch_dragging) {
+			touch_drag_accum += relative;
+			if (touch_drag_accum.length() > DRAG_THRESHOLD) {
+				touch_dragging = true;
+				touch_pressed_item = -1;
+			}
+		}
+
+		if (touch_dragging) {
+			scroll_container->set_v_scroll(scroll_container->get_v_scroll() - relative.y);
+		}
 	}
 
 	Ref<InputEventKey> k = p_event;
