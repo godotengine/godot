@@ -2360,7 +2360,6 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 			cull.shadows[p_shadow_index].cascades[i].range_begin = light_view_frustum_rect_max.z - light_basis_z.dot(p_cam_transform.origin);
 			if (USE_TIGHTER_DRAW_RECT) {
 				Vector2 draw_ratio = view_space_draw_size / light_view_fullrect_size;
-				//cull.shadows[p_shadow_index].cascades[i].normalized_render_bounds = Rect2(Vector2(0.25f, 0.25f), Vector2(0.5f, 0.5f));
 				cull.shadows[p_shadow_index].cascades[i].normalized_render_bounds = Rect2((Vector2(1, 1) - draw_ratio) / 2, draw_ratio);
 			} else {
 				cull.shadows[p_shadow_index].cascades[i].normalized_render_bounds = Rect2(Vector2(0, 0), Vector2(1, 1));
