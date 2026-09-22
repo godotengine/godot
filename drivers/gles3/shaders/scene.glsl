@@ -2131,10 +2131,8 @@ void reflection_process(samplerCube reflection_map,
 	if (exterior) {
 		reflection.rgb = mix(skybox, reflection.rgb, blend);
 	}
-	reflection.rgb *= intensity;
-	reflection.a = blend;
-	reflection.rgb *= blend;
-
+	reflection.a = blend * intensity;
+	reflection.rgb *= reflection.a;
 	reflection_accum += reflection;
 
 #ifndef USE_LIGHTMAP
@@ -2147,8 +2145,8 @@ void reflection_process(samplerCube reflection_map,
 			ambient_out.rgb = mix(ambient, ambient_out.rgb, blend);
 		}
 
-		ambient_out.a = blend;
-		ambient_out.rgb *= blend;
+		ambient_out.a = blend * intensity;
+		ambient_out.rgb *= ambient_out.a;
 		ambient_accum += ambient_out;
 	} else if (ref_ambient_mode == REFLECTION_AMBIENT_COLOR) {
 		vec4 ambient_out;
@@ -2157,8 +2155,8 @@ void reflection_process(samplerCube reflection_map,
 			ambient_out.rgb = mix(ambient, ambient_out.rgb, blend);
 		}
 
-		ambient_out.a = blend;
-		ambient_out.rgb *= blend;
+		ambient_out.a = blend * intensity;
+		ambient_out.rgb *= ambient_out.a;
 		ambient_accum += ambient_out;
 	}
 #endif // USE_LIGHTMAP
@@ -2589,7 +2587,7 @@ void main() {
 #endif // SECOND_REFLECTION_PROBE
 
 		if (reflection_accum.a > 0.0) {
-			specular_light = reflection_accum.rgb / reflection_accum.a;
+			specular_light = mix(specular_light, reflection_accum.rgb / reflection_accum.a, reflection_accum.a);
 		}
 	}
 #endif // DISABLE_REFLECTION_PROBE
