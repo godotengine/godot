@@ -215,6 +215,22 @@ bool SnapshotDataObject::is_class(const String &p_base_class) {
 	return ClassDB::is_parent_class(type_name, p_base_class);
 }
 
+bool SnapshotDataObject::did_change(const SnapshotDataObject *p_compare_with) const {
+	ERR_FAIL_COND_V_MSG(remote_object_id != p_compare_with->remote_object_id, true, "Attempted to compare two objects with different Remote IDs");
+	if (prop_values.size() != p_compare_with->prop_values.size()) {
+		return true;
+	}
+	for (const KeyValue<StringName, Variant> &kv : prop_values) {
+		if (!p_compare_with->prop_values.has(kv.key)) {
+			return true;
+		} else if (p_compare_with->prop_values[kv.key] != kv.value) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 HashSet<ObjectID> SnapshotDataObject::_unique_references(const HashMap<String, ObjectID> &p_refs) {
 	HashSet<ObjectID> obj_set;
 
