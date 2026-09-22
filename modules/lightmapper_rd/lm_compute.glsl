@@ -252,17 +252,8 @@ uint trace_ray(vec3 p_from, vec3 p_to, bool p_any_hit, out float r_distance, out
 								}
 
 								if (distance < best_distance) {
-									switch (triangle.cull_mode) {
-										case CULL_DISABLED:
-											backface = false;
-											break;
-										case CULL_FRONT:
-											backface = !backface;
-											break;
-										case CULL_BACK: // Default behavior.
-											break;
-									}
-
+									// The side is geometric. The callers that shade a hit apply the triangle's cull mode
+									// (apply_cull_mode()); the unocclude pass needs the geometric side whatever the cull mode is.
 									hit = backface ? RAY_BACK : RAY_FRONT;
 									best_distance = distance;
 									r_distance = distance;
@@ -314,6 +305,19 @@ uint trace_ray_closest_hit_triangle(vec3 p_from, vec3 p_to, out uint r_triangle,
 	return trace_ray(p_from, p_to, false, distance, normal, r_triangle, r_barycentric);
 }
 
+// The side of a hit as the triangle's material shows it: with CULL_DISABLED both geometric sides are front
+// faces, with CULL_FRONT the geometric back is the front face.
+uint apply_cull_mode(uint p_hit, uint p_cull_mode) {
+	switch (p_cull_mode) {
+		case CULL_DISABLED:
+			return RAY_FRONT;
+		case CULL_FRONT:
+			return p_hit == RAY_BACK ? RAY_FRONT : RAY_BACK;
+		default: // CULL_BACK
+			return p_hit;
+	}
+}
+
 uint trace_ray_closest_hit_triangle_albedo_alpha(vec3 p_from, vec3 p_to, out vec4 albedo_alpha, out vec3 hit_position) {
 	float distance;
 	vec3 normal;
@@ -322,6 +326,8 @@ uint trace_ray_closest_hit_triangle_albedo_alpha(vec3 p_from, vec3 p_to, out vec
 
 	uint ret = trace_ray(p_from, p_to, false, distance, normal, tidx, barycentric);
 	if (ret != RAY_MISS) {
+		ret = apply_cull_mode(ret, triangles.data[tidx].cull_mode);
+
 		Vertex vert0 = vertices.data[triangles.data[tidx].indices.x];
 		Vertex vert1 = vertices.data[triangles.data[tidx].indices.y];
 		Vertex vert2 = vertices.data[triangles.data[tidx].indices.z];
@@ -731,6 +737,11 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 		uint tidx;
 		vec3 barycentric;
 		uint trace_result = trace_ray_closest_hit_triangle(position + ray_dir * bake_params.bias, position + ray_dir * length(bake_params.world_size), tidx, barycentric);
+		bool geometric_back = trace_result == RAY_BACK;
+		if (trace_result != RAY_MISS) {
+			trace_result = apply_cull_mode(trace_result, triangles.data[tidx].cull_mode);
+		}
+
 		if (trace_result == RAY_FRONT) {
 			Vertex vert0 = vertices.data[triangles.data[tidx].indices.x];
 			Vertex vert1 = vertices.data[triangles.data[tidx].indices.y];
@@ -745,9 +756,22 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			vec3 norm2 = vec3(vert2.normal_xy, vert2.normal_z);
 			vec3 normal = barycentric.x * norm0 + barycentric.y * norm1 + barycentric.z * norm2;
 
+			vec4 albedo_alpha = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0).rgba;
+
+			// An opaque triangle hit on its geometric back (cull mode disabled or front) is shaded on the side the
+			// ray came from, as the renderer flips the normal of a back-facing fragment. Otherwise a ray that starts
+			// inside a double-sided volume bounces out of it and collects light the surface hides.
+			bool opaque_back = geometric_back && albedo_alpha.a >= 1.0;
+			if (opaque_back) {
+				normal = -normal;
+			}
+
 			vec3 direct_light = vec3(0.0f);
 #ifdef USE_LIGHT_TEXTURE_FOR_BOUNCES
-			direct_light += textureLod(sampler2DArray(source_light, linear_sampler), uvw, 0.0).rgb;
+			if (!opaque_back) {
+				// The light texture holds the direct light of the front side only.
+				direct_light += textureLod(sampler2DArray(source_light, linear_sampler), uvw, 0.0).rgb;
+			}
 #else
 			// Trace the lights directly. Significantly more expensive but more accurate in scenarios
 			// where the lightmap texture isn't reliable.
@@ -762,7 +786,6 @@ vec3 trace_indirect_light(vec3 p_position, vec3 p_ray_dir, inout uint r_noise, f
 			direct_light *= bake_params.exposure_normalization;
 #endif
 
-			vec4 albedo_alpha = textureLod(sampler2DArray(albedo_tex, linear_sampler), uvw, 0).rgba;
 			vec3 emissive = textureLod(sampler2DArray(emission_tex, linear_sampler), uvw, 0).rgb;
 			emissive *= bake_params.exposure_normalization;
 
