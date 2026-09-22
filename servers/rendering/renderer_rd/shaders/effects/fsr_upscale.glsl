@@ -62,8 +62,7 @@ layout(push_constant, std430) uniform Params {
 	int pass;
 	int pad1;
 	int pad2;
-}
-params;
+} params;
 
 AU4 Const0, Const1, Const2, Const3;
 

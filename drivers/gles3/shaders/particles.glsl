@@ -18,19 +18,15 @@ USERDATA6_USED = false
 #define SDF_MAX_LENGTH 16384.0
 
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
+	/* clang-format on */
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };
 
-// This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED
-layout(std140) uniform MaterialUniforms{ //ubo:2
-
+layout(std140) uniform MaterialUniforms { //ubo:2
 #MATERIAL_UNIFORMS
-
 };
 #endif
-
-/* clang-format on */
 
 #define MAX_ATTRACTORS 32
 
@@ -504,9 +500,7 @@ void main() {
 	out_velocity_flags.w = uintBitsToFloat(flags);
 }
 
-/* clang-format off */
 #[fragment]
 
 void main() {
 }
-/* clang-format on */

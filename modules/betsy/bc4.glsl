@@ -17,8 +17,7 @@ layout(binding = 1, rg32ui) uniform restrict writeonly uimage2D dstTexture;
 layout(push_constant, std430) uniform Params {
 	uint p_channelIdx;
 	uint p_padding[3];
-}
-params;
+} params;
 
 layout(local_size_x = 4, //
 		local_size_y = 4, //

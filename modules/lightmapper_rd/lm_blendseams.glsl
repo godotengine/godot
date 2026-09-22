@@ -18,8 +18,7 @@ layout(push_constant, std430) uniform Params {
 	bool debug;
 	float blend;
 	uint pad[2];
-}
-params;
+} params;
 
 layout(location = 0) out vec3 uv_interp;
 
@@ -85,8 +84,7 @@ layout(push_constant, std430) uniform Params {
 	bool debug;
 	float blend;
 	uint pad[2];
-}
-params;
+} params;
 
 layout(location = 0) in vec3 uv_interp;
 

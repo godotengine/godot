@@ -44,15 +44,13 @@ shared vec2 g_LDS[SORT_SIZE];
 
 layout(set = 1, binding = 0, std430) restrict buffer SortBuffer {
 	vec2 data[];
-}
-sort_buffer;
+} sort_buffer;
 
 layout(push_constant, std430) uniform Params {
 	uint total_elements;
 	uint pad[3];
 	ivec4 job_params;
-}
-params;
+} params;
 
 void main() {
 #ifdef MODE_SORT_BLOCK

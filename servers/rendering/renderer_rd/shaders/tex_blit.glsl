@@ -1,5 +1,3 @@
-/* clang-format off */
-
 #[vertex]
 
 #version 450
@@ -21,7 +19,7 @@ void main() {
 	uv = base_arr[gl_VertexIndex];
 	// gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);
 
-	gl_Position = vec4( (data.offset + (uv * data.size)) * 2.0 - 1.0, 1.0, 1.0);
+	gl_Position = vec4((data.offset + (uv * data.size)) * 2.0 - 1.0, 1.0, 1.0);
 }
 
 #[fragment]
@@ -56,18 +54,18 @@ layout(set = 0, binding = 3) uniform texture2D source3;
 
 layout(location = 0) in vec2 uv;
 
-layout (location = 0) out vec4 out_color0;
+layout(location = 0) out vec4 out_color0;
 
 #ifdef USE_OUTPUT1
-layout (location = 1) out vec4 out_color1;
+layout(location = 1) out vec4 out_color1;
 #endif
 
 #ifdef USE_OUTPUT2
-layout (location = 2) out vec4 out_color2;
+layout(location = 2) out vec4 out_color2;
 #endif
 
 #ifdef USE_OUTPUT3
-layout (location = 3) out vec4 out_color3;
+layout(location = 3) out vec4 out_color3;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED

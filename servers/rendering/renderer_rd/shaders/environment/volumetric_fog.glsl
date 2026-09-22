@@ -21,8 +21,7 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 layout(set = 0, binding = 2, std430) restrict readonly buffer GlobalShaderUniformData {
 	vec4 data[];
-}
-global_shader_uniforms;
+} global_shader_uniforms;
 
 layout(push_constant, std430) uniform Params {
 	vec3 position;
@@ -35,8 +34,7 @@ layout(push_constant, std430) uniform Params {
 	uint shape;
 
 	mat4 transform;
-}
-params;
+} params;
 
 #ifdef NO_IMAGE_ATOMICS
 layout(set = 1, binding = 1) volatile buffer emissive_only_map_buffer {
@@ -65,8 +63,7 @@ layout(set = 1, binding = 2, std140) uniform SceneParams {
 
 	mat4 to_prev_view;
 	mat4 transform;
-}
-scene_params;
+} scene_params;
 
 #ifdef NO_IMAGE_ATOMICS
 layout(set = 1, binding = 3) volatile buffer density_only_map_buffer {
@@ -81,11 +78,9 @@ layout(r32ui, set = 1, binding = 4) volatile uniform uimage3D light_only_map;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-/* clang-format off */
 layout(set = 2, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
-/* clang-format on */
 #endif
 
 #GLOBALS

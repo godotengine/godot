@@ -36,16 +36,14 @@ layout(r8, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
 #ifdef PROCESS_MAPB
 layout(set = 2, binding = 0, std430) buffer Counter {
 	uint sum;
-}
-counter;
+} counter;
 #endif
 
 layout(push_constant, std430) uniform Params {
 	vec2 half_screen_pixel_size;
 	float intensity;
 	float pad;
-}
-params;
+} params;
 
 void main() {
 	// Pixel being shaded

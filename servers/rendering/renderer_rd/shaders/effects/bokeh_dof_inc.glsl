@@ -26,8 +26,7 @@ layout(push_constant, std430) uniform Params {
 	float blur_size_near;
 	float blur_size_far;
 	uint pad[2];
-}
-params;
+} params;
 
 //used to work around downsampling filter
 #define DEPTH_GAP 0.0

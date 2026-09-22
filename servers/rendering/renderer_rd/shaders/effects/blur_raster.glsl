@@ -1,4 +1,3 @@
-/* clang-format off */
 #[vertex]
 
 #version 450
@@ -8,7 +7,6 @@
 #include "blur_raster_inc.glsl"
 
 layout(location = 0) out vec2 uv_interp;
-/* clang-format on */
 
 void main() {
 	// old code, ARM driver bug on Mali-GXXx GPUs and Vulkan API 1.3.xxx
@@ -29,7 +27,6 @@ void main() {
 	uv_interp = clamp(vertex_base, vec2(0.0, 0.0), vec2(1.0, 1.0)) * 2.0; // saturate(x) * 2.0
 }
 
-/* clang-format off */
 #[fragment]
 
 #version 450
@@ -39,7 +36,6 @@ void main() {
 #include "blur_raster_inc.glsl"
 
 layout(location = 0) in vec2 uv_interp;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 

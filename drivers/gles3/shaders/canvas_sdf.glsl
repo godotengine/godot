@@ -24,21 +24,20 @@ void main() {
 	gl_Position = vec4(vertex_attrib, 1.0, 1.0);
 }
 
-/* clang-format off */
 #[fragment]
 
 #define SDF_MAX_LENGTH 16384.0
 
 #if defined(MODE_LOAD) || defined(MODE_LOAD_SHRINK)
-uniform lowp sampler2D src_pixels;//texunit:0
+uniform lowp sampler2D src_pixels; //texunit:0
 #else
-uniform highp isampler2D src_process;//texunit:0
+uniform highp isampler2D src_process; //texunit:0
 #endif
 
-uniform	ivec2 size;
-uniform	int stride;
-uniform	int shift;
-uniform	ivec2 base_size;
+uniform ivec2 size;
+uniform int stride;
+uniform int shift;
+uniform ivec2 base_size;
 
 #if defined(MODE_LOAD) || defined(MODE_LOAD_SHRINK) || defined(MODE_PROCESS)
 layout(location = 0) out ivec4 distance_field;
@@ -47,7 +46,7 @@ layout(location = 0) out vec4 distance_field;
 #endif
 
 vec4 float_to_vec4(float p_float) {
-    highp vec4 comp = fract(p_float * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
+	highp vec4 comp = fract(p_float * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
 	return comp;
 }
@@ -175,7 +174,7 @@ void main() {
 
 	d /= SDF_MAX_LENGTH;
 	d = clamp(d, -1.0, 1.0);
-	distance_field = float_to_vec4(d*0.5+0.5);
+	distance_field = float_to_vec4(d * 0.5 + 0.5);
 
 #endif
 
@@ -199,7 +198,7 @@ void main() {
 	}
 	d /= SDF_MAX_LENGTH;
 	d = clamp(d, -1.0, 1.0);
-	distance_field = float_to_vec4(d*0.5+0.5);
+	distance_field = float_to_vec4(d * 0.5 + 0.5);
 
 #endif
 }

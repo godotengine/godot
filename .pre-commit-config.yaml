@@ -26,6 +26,7 @@ repos:
       - id: clang-format
         name: clang-format-glsl
         files: \.glsl$
+        exclude: drivers/gles3/shaders/scene.glsl # See https://github.com/llvm/llvm-project/issues/142426.
         types_or: [text]
         args: [-style=file:misc/utility/clang_format_glsl.yml]
 
