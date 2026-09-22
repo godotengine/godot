@@ -34,6 +34,19 @@ struct AlternateSubstFormat1_2
   bool may_have_non_1to1 () const
   { return false; }
 
+  void depend (hb_depend_context_t *c) const
+  {
+    // Filter by parent_active_glyphs like closure does
+    + hb_zip (this+coverage, alternateSet)
+    | hb_filter (c->parent_active_glyphs (), hb_first)
+    | hb_apply ([&] (const hb_pair_t<hb_codepoint_t, const typename Types::template OffsetTo<AlternateSet<Types>>&> &_)
+                {
+                  const AlternateSet<Types>& as = this+_.second;
+                  as.depend (c, _.first);
+                })
+    ;
+  }
+
   void closure (hb_closure_context_t *c) const
   {
     + hb_zip (this+coverage, alternateSet)
@@ -68,6 +81,19 @@ struct AlternateSubstFormat1_2
                         hb_codepoint_t *alternate_glyphs /* OUT.     May be NULL. */) const
   { return (this+alternateSet[(this+coverage).get_coverage (gid)])
            .get_alternates (start_offset, alternate_count, alternate_glyphs); }
+
+  void
+  collect_glyph_alternates (hb_map_t  *alternate_count /* IN/OUT */,
+			    hb_map_t  *alternate_glyphs /* IN/OUT */) const
+  {
+    + hb_iter (alternateSet)
+    | hb_map (hb_add (this))
+    | hb_zip (this+coverage)
+    | hb_apply ([&] (const hb_pair_t<const AlternateSet<Types> &, hb_codepoint_t> _) {
+		  _.first.collect_alternates (_.second, alternate_count, alternate_glyphs);
+		})
+    ;
+  }
 
   bool apply (hb_ot_apply_context_t *c) const
   {

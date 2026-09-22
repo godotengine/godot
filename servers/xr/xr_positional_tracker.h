@@ -32,14 +32,16 @@
 
 #include "core/os/thread_safe.h"
 #include "servers/xr/xr_pose.h"
+#include "servers/xr/xr_server.h"
 #include "servers/xr/xr_tracker.h"
-#include "servers/xr_server.h"
 
 /**
 	The positional tracker object as an object that represents the position and orientation of a tracked object like a controller or headset.
 	An AR/VR Interface will registered the trackers it manages with our AR/VR server and update its position and orientation.
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
 */
+
+#define XR_TRACKER_HEAD SNAME("head")
 
 class XRPositionalTracker : public XRTracker {
 	GDCLASS(XRPositionalTracker, XRTracker);

@@ -36,6 +36,7 @@
 #include "hb-ot-name-table.hh"
 #include "hb-ot-post-table.hh"
 #include "OT/Color/CBDT/CBDT.hh"
+#include "OT/Color/COLR/COLR.hh"
 #include "OT/Color/sbix/sbix.hh"
 #include "OT/Color/svg/svg.hh"
 #include "hb-ot-layout-gdef-table.hh"

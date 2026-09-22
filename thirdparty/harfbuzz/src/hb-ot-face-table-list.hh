@@ -136,11 +136,13 @@ HB_OT_TABLE (AAT, feat)
 
 /* OpenType color fonts. */
 #ifndef HB_NO_COLOR
-HB_OT_CORE_TABLE (OT, COLR)
+HB_OT_ACCELERATOR (OT, COLR)
 HB_OT_CORE_TABLE (OT, CPAL)
 HB_OT_ACCELERATOR (OT, CBDT)
 HB_OT_ACCELERATOR (OT, sbix)
+#ifndef HB_NO_SVG
 HB_OT_ACCELERATOR (OT, SVG)
+#endif
 #endif
 
 /* OpenType math. */

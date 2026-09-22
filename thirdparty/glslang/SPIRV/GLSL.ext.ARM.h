@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2022 ARM Limited
+** Copyright (c) 2022, 2025 ARM Limited
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and/or associated documentation files (the "Materials"),
@@ -28,8 +28,10 @@
 #define GLSLextARM_H
 
 static const int GLSLextARMVersion = 100;
-static const int GLSLextARMRevision = 1;
+static const int GLSLextARMRevision = 2;
 
-static const char * const E_SPV_ARM_core_builtins = "SPV_ARM_core_builtins";
+static const char* const E_SPV_ARM_core_builtins = "SPV_ARM_core_builtins";
+static const char* const E_SPV_ARM_cooperative_matrix_layouts = "SPV_ARM_cooperative_matrix_layouts";
+static const char* const E_SPV_ARM_tensors = "SPV_ARM_tensors";
 
 #endif  // #ifndef GLSLextARM_H

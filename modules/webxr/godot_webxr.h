@@ -34,8 +34,6 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
-
 enum WebXRInputEvent {
 	WEBXR_INPUT_EVENT_SELECTSTART,
 	WEBXR_INPUT_EVENT_SELECTEND,
@@ -58,6 +56,7 @@ extern void godot_webxr_initialize(
 		const char *p_required_features,
 		const char *p_optional_features,
 		const char *p_requested_reference_space_types,
+		bool p_disable_webxr_layers,
 		GodotWebXRStartedCallback p_on_session_started,
 		GodotWebXREndedCallback p_on_session_ended,
 		GodotWebXRFailedCallback p_on_session_failed,
@@ -72,6 +71,7 @@ extern bool godot_webxr_get_projection_for_view(int p_view, float *r_transform);
 extern unsigned int godot_webxr_get_color_texture();
 extern unsigned int godot_webxr_get_depth_texture();
 extern unsigned int godot_webxr_get_velocity_texture();
+extern void godot_webxr_commit_render_target(unsigned int p_texture_id, int p_layer_count);
 
 extern bool godot_webxr_update_input_source(
 		int p_input_source_id,

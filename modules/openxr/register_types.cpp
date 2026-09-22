@@ -39,29 +39,35 @@
 #include "openxr_api_extension.h"
 #include "openxr_interface.h"
 
+#include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
+
+#include "modules/modules_enabled.gen.h"
+
 #ifndef DISABLE_DEPRECATED
 #include "extensions/openxr_extension_wrapper_extension.h"
+
+#include "scene/openxr_hand.h"
 #endif // DISABLE_DEPRECATED
 
-#include "scene/openxr_composition_layer.h"
-#include "scene/openxr_composition_layer_cylinder.h"
-#include "scene/openxr_composition_layer_equirect.h"
-#include "scene/openxr_composition_layer_quad.h"
-#include "scene/openxr_hand.h"
-#include "scene/openxr_visibility_mask.h"
-
+#include "extensions/openxr_android_thread_settings_extension.h"
 #include "extensions/openxr_composition_layer_depth_extension.h"
 #include "extensions/openxr_composition_layer_extension.h"
 #include "extensions/openxr_debug_utils_extension.h"
 #include "extensions/openxr_dpad_binding_extension.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
+#include "extensions/openxr_foveated_inset_extension.h"
+#include "extensions/openxr_frame_synthesis_extension.h"
 #include "extensions/openxr_future_extension.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_controller_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 #include "extensions/openxr_huawei_controller_extension.h"
+#include "extensions/openxr_khr_generic_controller_extension.h"
 #include "extensions/openxr_local_floor_extension.h"
 #include "extensions/openxr_meta_controller_extension.h"
 #include "extensions/openxr_ml2_controller_extension.h"
@@ -69,9 +75,32 @@
 #include "extensions/openxr_palm_pose_extension.h"
 #include "extensions/openxr_performance_settings_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
+#include "extensions/openxr_user_presence_extension.h"
 #include "extensions/openxr_valve_analog_threshold_extension.h"
+#include "extensions/openxr_valve_controller_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
+#include "extensions/spatial_container/openxr_spatial_container_extension.h"
+#include "extensions/spatial_container/openxr_spatial_container_self_rendering_extension.h"
+#include "extensions/spatial_container/openxr_spatial_container_state.h"
+#include "extensions/spatial_entities/openxr_spatial_anchor.h"
+#include "extensions/spatial_entities/openxr_spatial_entity_extension.h"
+#include "extensions/spatial_entities/openxr_spatial_marker_tracking.h"
+#include "extensions/spatial_entities/openxr_spatial_plane_tracking.h"
+
+#include "scene/openxr_composition_layer.h"
+#include "scene/openxr_composition_layer_cylinder.h"
+#include "scene/openxr_composition_layer_equirect.h"
+#include "scene/openxr_composition_layer_quad.h"
+#include "scene/openxr_foveated_inset_viewport.h"
+#include "scene/openxr_visibility_mask.h"
+
+#ifdef MODULE_GLTF_ENABLED
+#include "extensions/openxr_render_model_extension.h"
+
+#include "scene/openxr_render_model.h"
+#include "scene/openxr_render_model_manager.h"
+#endif
 
 #ifdef TOOLS_ENABLED
 #include "editor/openxr_editor_plugin.h"
@@ -81,35 +110,48 @@
 #include "extensions/platform/openxr_android_extension.h"
 #endif
 
-#include "core/config/project_settings.h"
-#include "main/main.h"
-
 #ifdef TOOLS_ENABLED
-#include "editor/editor_node.h"
-
 #include "editor/openxr_binding_modifier_editor.h"
 #include "editor/openxr_interaction_profile_editor.h"
-
+//
+#include "editor/editor_node.h"
 #endif
 
 static OpenXRAPI *openxr_api = nullptr;
 static OpenXRInteractionProfileMetadata *openxr_interaction_profile_metadata = nullptr;
 static Ref<OpenXRInterface> openxr_interface;
 
+struct ExtensionSingleton {
+	String class_name;
+	OpenXRExtensionWrapper *extension;
+	bool registered_with_openxr;
+	bool registered_as_singleton;
+};
+
+static Vector<ExtensionSingleton> extensions_singletons;
+static inline void _register_extension(OpenXRExtensionWrapper *p_extension, bool p_register_with_openxr = true, bool p_register_as_singleton = false) {
+	String class_name = p_extension->get_class();
+	if (p_register_with_openxr) {
+		OpenXRAPI::register_extension_wrapper(p_extension);
+	}
+	if (p_register_as_singleton) {
+		Engine::get_singleton()->add_singleton(Engine::Singleton(class_name, p_extension));
+	}
+	extensions_singletons.push_back({ class_name, p_extension, p_register_with_openxr, p_register_as_singleton });
+}
+
 #ifdef TOOLS_ENABLED
 static void _editor_init() {
 	if (OpenXRAPI::openxr_is_enabled(false)) {
-		// Only add our OpenXR action map editor if OpenXR is enabled for our project
-
 		if (openxr_interaction_profile_metadata == nullptr) {
 			// If we didn't initialize our actionmap metadata at startup, we initialize it now.
 			openxr_interaction_profile_metadata = memnew(OpenXRInteractionProfileMetadata);
 			ERR_FAIL_NULL(openxr_interaction_profile_metadata);
 		}
-
-		OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
-		EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 	}
+
+	OpenXREditorPlugin *openxr_plugin = memnew(OpenXREditorPlugin());
+	EditorNode::get_singleton()->add_editor_plugin(openxr_plugin);
 }
 #endif
 
@@ -119,9 +161,15 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 #ifndef DISABLE_DEPRECATED
 		GDREGISTER_VIRTUAL_CLASS(OpenXRExtensionWrapperExtension);
 #endif // DISABLE_DEPRECATED
+		GDREGISTER_CLASS(OpenXRInteractionProfileMetadata);
 		GDREGISTER_ABSTRACT_CLASS(OpenXRFutureResult); // Declared abstract, should never be instantiated by a user (Q or should this be internal?)
+		GDREGISTER_CLASS(OpenXRFrameSynthesisExtension);
 		GDREGISTER_CLASS(OpenXRFutureExtension);
 		GDREGISTER_CLASS(OpenXRAPIExtension);
+#ifdef MODULE_GLTF_ENABLED
+		GDREGISTER_CLASS(OpenXRRenderModelExtension);
+#endif
+		GDREGISTER_CLASS(OpenXRAndroidThreadSettingsExtension);
 
 		// Note, we're not registering all wrapper classes here, there is no point in exposing them
 		// if there isn't specific logic to expose.
@@ -132,48 +180,68 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			// Always register our extension wrappers even if we don't initialize OpenXR.
 			// Some of these wrappers will add functionality to our editor.
 #ifdef ANDROID_ENABLED
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRAndroidExtension));
+			_register_extension(memnew(OpenXRAndroidExtension));
 #endif
 
 			// register our other extensions
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPalmPoseExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRLocalFloorExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPicoControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRCompositionLayerDepthExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRCompositionLayerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHuaweiControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRDisplayRefreshRateExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRWMRControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRML2ControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMetaControllerExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXREyeGazeInteractionExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandInteractionExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMxInkExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
-			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
+			_register_extension(memnew(OpenXRPalmPoseExtension));
+			_register_extension(memnew(OpenXRLocalFloorExtension));
+			_register_extension(memnew(OpenXRPicoControllerExtension));
+			_register_extension(memnew(OpenXRCompositionLayerDepthExtension));
+			_register_extension(memnew(OpenXRCompositionLayerExtension));
+			_register_extension(memnew(OpenXRHTCControllerExtension));
+			_register_extension(memnew(OpenXRHTCViveTrackerExtension));
+			_register_extension(memnew(OpenXRHuaweiControllerExtension));
+			_register_extension(memnew(OpenXRDisplayRefreshRateExtension));
+			_register_extension(memnew(OpenXRWMRControllerExtension));
+			_register_extension(memnew(OpenXRML2ControllerExtension));
+			_register_extension(memnew(OpenXRMetaControllerExtension));
+			_register_extension(memnew(OpenXREyeGazeInteractionExtension));
+			_register_extension(memnew(OpenXRHandInteractionExtension));
+			_register_extension(memnew(OpenXRMxInkExtension));
+			_register_extension(memnew(OpenXRVisibilityMaskExtension));
+			_register_extension(memnew(OpenXRPerformanceSettingsExtension));
+			_register_extension(memnew(OpenXRValveControllerExtension));
+			_register_extension(memnew(OpenXRKHRGenericController));
+			_register_extension(memnew(OpenXRFoveatedInsetExtension));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
-			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);
-			OpenXRAPI::register_extension_wrapper(future_extension);
-			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRFutureExtension", future_extension));
+			_register_extension(memnew(OpenXRFutureExtension), true, true);
+
+			// Register render model extension as a singleton.
+#ifdef MODULE_GLTF_ENABLED
+			_register_extension(memnew(OpenXRRenderModelExtension), true, true);
+#endif
+
+			// Register spatial entity extensions
+			_register_extension(memnew(OpenXRSpatialEntityExtension), true, true);
+			_register_extension(memnew(OpenXRSpatialAnchorCapability), true, true);
+			_register_extension(memnew(OpenXRSpatialPlaneTrackingCapability), true, true);
+			_register_extension(memnew(OpenXRSpatialMarkerTrackingCapability), true, true);
+
+			// Register frame synthesis extension as a singleton.
+			_register_extension(memnew(OpenXRFrameSynthesisExtension), true, true);
+
+			// Register android thread settings extension as a singleton.
+			_register_extension(memnew(OpenXRAndroidThreadSettingsExtension), true, true);
+
+			// Register user presence extension as a singleton
+			_register_extension(memnew(OpenXRUserPresenceExtension), true, true);
 
 			// register gated extensions
-			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXRDebugUtilsExtension));
-			}
-			if (GLOBAL_GET("xr/openxr/extensions/hand_tracking")) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandTrackingExtension));
-			}
+			_register_extension(memnew(OpenXRDebugUtilsExtension), int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0);
+			_register_extension(memnew(OpenXRHandTrackingExtension), GLOBAL_GET("xr/openxr/extensions/hand_tracking"));
+
+			// Spatial container extensions
+			bool spatial_container_enabled = GLOBAL_GET("xr/openxr/extensions/spatial_container/enabled");
+			_register_extension(memnew(OpenXRSpatialContainerExtension), spatial_container_enabled, true);
+			// For now we gate the self rendering extension under the same preference as the spatial_container extension.
+			// TODO: When we add support for system rendering, gate self rendering under a different project setting.
+			_register_extension(memnew(OpenXRSpatialContainerSelfRenderingExtension), spatial_container_enabled, true);
 
 			// register gated binding modifiers
-			if (GLOBAL_GET("xr/openxr/binding_modifiers/analog_threshold")) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXRValveAnalogThresholdExtension));
-			}
-			if (GLOBAL_GET("xr/openxr/binding_modifiers/dpad_binding")) {
-				OpenXRAPI::register_extension_wrapper(memnew(OpenXRDPadBindingExtension));
-			}
+			_register_extension(memnew(OpenXRValveAnalogThresholdExtension), GLOBAL_GET("xr/openxr/binding_modifiers/analog_threshold"));
+			_register_extension(memnew(OpenXRDPadBindingExtension), GLOBAL_GET("xr/openxr/binding_modifiers/dpad_binding"));
 		}
 
 		if (OpenXRAPI::openxr_is_enabled()) {
@@ -182,12 +250,16 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			openxr_api = memnew(OpenXRAPI);
 			ERR_FAIL_NULL(openxr_api);
 
-			if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
+			if (!openxr_api->initialize(OS::get_singleton()->get_current_rendering_driver_name())) {
 				const char *init_error_message =
 						"OpenXR was requested but failed to start.\n"
-						"Please check if your HMD is connected.\n"
+						"HMD was not detected or a required feature was not supported.\n\n"
+#ifdef TOOLS_ENABLED
+						// Editor only message - this is useful for app developer, but not user
+						"Check logged errors in debugger for more details.\n\n"
+#endif
 #ifdef WINDOWS_ENABLED
-						"When using Windows Mixed Reality, note that WMR only has DirectX support. Make sure SteamVR is your default OpenXR runtime.\n"
+						"When using Windows Mixed Reality, note that WMR only has DirectX support. Make sure SteamVR is your default OpenXR runtime.\n\n"
 #endif
 						"Godot will start in normal mode.\n";
 
@@ -211,7 +283,6 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRAction);
 		GDREGISTER_CLASS(OpenXRActionSet);
 		GDREGISTER_CLASS(OpenXRActionMap);
-		GDREGISTER_CLASS(OpenXRInteractionProfileMetadata);
 		GDREGISTER_CLASS(OpenXRIPBinding);
 		GDREGISTER_CLASS(OpenXRInteractionProfile);
 
@@ -229,9 +300,53 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(OpenXRCompositionLayerCylinder);
 		GDREGISTER_CLASS(OpenXRCompositionLayerQuad);
 
+#ifndef DISABLE_DEPRECATED
 		GDREGISTER_CLASS(OpenXRHand);
+#endif
 
 		GDREGISTER_CLASS(OpenXRVisibilityMask);
+#ifdef MODULE_GLTF_ENABLED
+		GDREGISTER_CLASS(OpenXRRenderModel);
+		GDREGISTER_CLASS(OpenXRRenderModelManager);
+#endif
+		GDREGISTER_CLASS(OpenXRFoveatedInsetViewport);
+
+		GDREGISTER_CLASS(OpenXRSpatialContainerExtension);
+		GDREGISTER_CLASS(OpenXRSpatialContainerSelfRenderingExtension);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialContainerState);
+
+		GDREGISTER_CLASS(OpenXRSpatialEntityExtension);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialEntityTracker);
+		GDREGISTER_CLASS(OpenXRAnchorTracker);
+		GDREGISTER_CLASS(OpenXRPlaneTracker);
+		GDREGISTER_CLASS(OpenXRMarkerTracker);
+
+		GDREGISTER_VIRTUAL_CLASS(OpenXRStructureBase);
+
+		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialCapabilityConfigurationBaseHeader);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationAnchor);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationQrCode);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationMicroQrCode);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationAruco);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationAprilTag);
+		GDREGISTER_CLASS(OpenXRSpatialContextPersistenceConfig);
+		GDREGISTER_CLASS(OpenXRSpatialCapabilityConfigurationPlaneTracking);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRSpatialComponentData);
+		GDREGISTER_CLASS(OpenXRSpatialComponentBounded2DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentBounded3DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentParentList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentMesh2DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentMesh3DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentPlaneAlignmentList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentPolygon2DList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentPlaneSemanticLabelList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentMarkerList);
+		GDREGISTER_CLASS(OpenXRSpatialQueryResultData);
+		GDREGISTER_CLASS(OpenXRSpatialComponentAnchorList);
+		GDREGISTER_CLASS(OpenXRSpatialComponentPersistenceList);
+		GDREGISTER_CLASS(OpenXRSpatialAnchorCapability);
+		GDREGISTER_CLASS(OpenXRSpatialPlaneTrackingCapability);
+		GDREGISTER_CLASS(OpenXRSpatialMarkerTrackingCapability);
 
 		XRServer *xr_server = XRServer::get_singleton();
 		if (xr_server) {
@@ -247,8 +362,8 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_ABSTRACT_CLASS(OpenXRInteractionProfileEditorBase);
-		GDREGISTER_CLASS(OpenXRInteractionProfileEditor);
-		GDREGISTER_CLASS(OpenXRBindingModifierEditor);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRInteractionProfileEditor);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRBindingModifierEditor);
 
 		EditorNode::add_init_callback(_editor_init);
 	}
@@ -259,6 +374,17 @@ void uninitialize_openxr_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+
+	for (const ExtensionSingleton &extension_singleton : extensions_singletons) {
+		if (extension_singleton.registered_as_singleton) {
+			Engine::get_singleton()->remove_singleton(extension_singleton.class_name);
+		}
+		if (!extension_singleton.registered_with_openxr) {
+			// OpenXRAPI handles the cleanup for registered extensions.
+			memdelete(extension_singleton.extension);
+		}
+	}
+	extensions_singletons.clear();
 
 	if (openxr_interface.is_valid()) {
 		// uninitialize just in case

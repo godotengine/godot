@@ -32,14 +32,13 @@
 
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/object/script_backtrace.h"
 #include "core/os/time.h"
+#include "core/string/regex.h"
 #include "core/templates/rb_set.h"
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
-#endif // MODULE_REGEX_ENABLED
+#include <cstdio>
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
@@ -49,35 +48,16 @@ bool Logger::should_log(bool p_err) {
 	return (!p_err || CoreGlobals::print_error_enabled) && (p_err || CoreGlobals::print_line_enabled);
 }
 
-bool Logger::_flush_stdout_on_print = true;
-
-void Logger::set_flush_stdout_on_print(bool value) {
-	_flush_stdout_on_print = value;
+void Logger::set_flush_stdout_on_print(bool p_value) {
+	_flush_stdout_on_print = p_value;
 }
 
-void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
 
-	const char *err_type = "ERROR";
-	switch (p_type) {
-		case ERR_ERROR:
-			err_type = "ERROR";
-			break;
-		case ERR_WARNING:
-			err_type = "WARNING";
-			break;
-		case ERR_SCRIPT:
-			err_type = "SCRIPT ERROR";
-			break;
-		case ERR_SHADER:
-			err_type = "SHADER ERROR";
-			break;
-		default:
-			ERR_PRINT("Unknown error type");
-			break;
-	}
+	const char *err_type = error_type_string(p_type);
 
 	const char *err_details;
 	if (p_rationale && *p_rationale) {
@@ -88,6 +68,12 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 
 	logf_error("%s: %s\n", err_type, err_details);
 	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
+
+	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+		if (!backtrace->is_empty()) {
+			logf_error("%s\n", backtrace->format(3).utf8().get_data());
+		}
+	}
 }
 
 void Logger::logf(const char *p_format, ...) {
@@ -155,7 +141,7 @@ void RotatedFileLogger::rotate_file() {
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {
-			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
+			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace_char(':', '.');
 			String backup_name = base_path.get_basename() + timestamp;
 			if (!base_path.get_extension().is_empty()) {
 				backup_name += "." + base_path.get_extension();
@@ -175,6 +161,7 @@ void RotatedFileLogger::rotate_file() {
 	}
 
 	file = FileAccess::open(base_path, FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(file.is_null(), "Failed to open log file for writing: " + base_path);
 	file->detach_from_objectdb(); // Note: This FileAccess instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
 }
 
@@ -183,11 +170,9 @@ RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files)
 		max_files(p_max_files > 0 ? p_max_files : 1) {
 	rotate_file();
 
-#ifdef MODULE_REGEX_ENABLED
 	strip_ansi_regex.instantiate();
 	strip_ansi_regex->detach_from_objectdb(); // Note: This RegEx instance will exist longer than ObjectDB, therefore can't be registered in ObjectDB.
 	strip_ansi_regex->compile("\u001b\\[((?:\\d|;)*)([a-zA-Z])");
-#endif // MODULE_REGEX_ENABLED
 }
 
 void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
@@ -208,14 +193,10 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		}
 		va_end(list_copy);
 
-#ifdef MODULE_REGEX_ENABLED
 		// Strip ANSI escape codes (such as those inserted by `print_rich()`)
 		// before writing to file, as text editors cannot display those
 		// correctly.
 		file->store_string(strip_ansi_regex->sub(String::utf8(buf), "", true));
-#else
-		file->store_buffer((uint8_t *)buf, len);
-#endif // MODULE_REGEX_ENABLED
 
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);
@@ -263,13 +244,13 @@ void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
-void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
 
 	for (int i = 0; i < loggers.size(); ++i) {
-		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type, p_script_backtraces);
 	}
 }
 

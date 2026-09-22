@@ -41,19 +41,24 @@ class XRCamera3D : public Camera3D {
 	GDCLASS(XRCamera3D, Camera3D);
 
 protected:
-	// The name and pose for our HMD tracker is currently the only hardcoded bit.
-	// If we ever are able to support multiple HMDs we may need to make this settable.
-	StringName tracker_name = "head";
+	StringName tracker_name = XR_TRACKER_HEAD;
 	StringName pose_name = SceneStringName(default_);
 	Ref<XRPositionalTracker> tracker;
-	Transform3D pose_offset;
+
+	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
+	void _notification(int p_what);
+
+	virtual void _update_camera_mode() override;
+	virtual void fti_update_servers_property() override;
+	void _update_projections();
 
 	void _bind_tracker();
 	void _unbind_tracker();
 	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);
 	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
 	void _pose_changed(const Ref<XRPose> &p_pose);
-	void _notification(int p_what);
+	virtual void _physics_interpolated_changed() override;
 
 public:
 	PackedStringArray get_configuration_warnings() const override;
@@ -62,6 +67,9 @@ public:
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
 	virtual Vector3 project_position(const Point2 &p_point, real_t p_z_depth) const override;
 	virtual Vector<Plane> get_frustum() const override;
+
+	void set_tracker(const StringName &p_tracker_name);
+	StringName get_tracker() const;
 
 	XRCamera3D();
 	~XRCamera3D();
@@ -81,7 +89,6 @@ private:
 	StringName pose_name = SceneStringName(default_);
 	bool has_tracking_data = false;
 	bool show_when_tracked = false;
-	Transform3D pose_offset;
 
 protected:
 	Ref<XRPositionalTracker> tracker;
@@ -98,7 +105,7 @@ protected:
 	void _set_has_tracking_data(bool p_has_tracking_data);
 
 	void _update_visibility();
-	void _notification(int p_what);
+	virtual void _physics_interpolated_changed() override;
 
 public:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -153,9 +160,6 @@ public:
 	Vector2 get_vector2(const StringName &p_name) const;
 
 	XRPositionalTracker::TrackerHand get_tracker_hand() const;
-
-	XRController3D() {}
-	~XRController3D() {}
 };
 
 /*
@@ -175,9 +179,6 @@ protected:
 public:
 	Vector3 get_size() const;
 	Plane get_plane() const;
-
-	XRAnchor3D() {}
-	~XRAnchor3D() {}
 };
 
 /*
@@ -211,7 +212,4 @@ public:
 
 	void set_current(bool p_enabled);
 	bool is_current() const;
-
-	XROrigin3D() {}
-	~XROrigin3D() {}
 };

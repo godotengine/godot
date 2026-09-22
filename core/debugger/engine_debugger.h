@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
@@ -47,7 +48,7 @@ public:
 
 	typedef Error (*CaptureFunc)(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 
-	typedef RemoteDebuggerPeer *(*CreatePeerFunc)(const String &p_uri);
+	typedef Ref<RemoteDebuggerPeer> (*CreatePeerFunc)(const String &p_uri);
 
 	class Profiler {
 		friend class EngineDebugger;
@@ -91,12 +92,12 @@ private:
 	uint32_t poll_every = 0;
 
 protected:
-	static EngineDebugger *singleton;
-	static ScriptDebugger *script_debugger;
+	static inline EngineDebugger *singleton = nullptr;
+	static inline ScriptDebugger *script_debugger = nullptr;
 
-	static HashMap<StringName, Profiler> profilers;
-	static HashMap<StringName, Capture> captures;
-	static HashMap<String, CreatePeerFunc> protocols;
+	static inline HashMap<StringName, Profiler> profilers;
+	static inline HashMap<StringName, Capture> captures;
+	static inline HashMap<String, CreatePeerFunc> protocols;
 
 	static void (*allow_focus_steal_fn)();
 

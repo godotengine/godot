@@ -1,0 +1,7 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 3: Invalid color code "".
+>> ERROR at line 4: Invalid color code "invalid".
+>> ERROR at line 7: Invalid argument for "char()" function: -1 is not a valid character code.
+>> ERROR at line 8: Invalid argument for "char()" function: 0 is not a valid character code.
+>> ERROR at line 9: Invalid argument for "char()" function: 55296 is not a valid character code.
+>> ERROR at line 10: Invalid argument for "char()" function: 1114112 is not a valid character code.

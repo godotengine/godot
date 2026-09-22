@@ -36,17 +36,16 @@
 #include "ip_web.h"
 #include "net_socket_web.h"
 
-#include "core/config/project_settings.h"
-#include "core/debugger/engine_debugger.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/profiling/profiling.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 
-#include "modules/modules_enabled.gen.h" // For websocket.
-
 #include <dlfcn.h>
 #include <emscripten.h>
-#include <stdlib.h>
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
 	godot_js_display_alert(p_alert.utf8().get_data());
@@ -77,6 +76,8 @@ void OS_Web::fs_sync_callback() {
 }
 
 bool OS_Web::main_loop_iterate() {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_Web::main_loop_iterate");
 	if (is_userfs_persistent() && idb_needs_sync && !idb_is_syncing) {
 		idb_is_syncing = true;
 		idb_needs_sync = false;
@@ -89,9 +90,7 @@ bool OS_Web::main_loop_iterate() {
 }
 
 void OS_Web::delete_main_loop() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 	main_loop = nullptr;
 }
 
@@ -129,7 +128,7 @@ Error OS_Web::kill(const ProcessID &p_pid) {
 }
 
 int OS_Web::get_process_id() const {
-	ERR_FAIL_V_MSG(0, "OS::get_process_id() is not available on the Web platform.");
+	return 0;
 }
 
 bool OS_Web::is_process_running(const ProcessID &p_pid) const {
@@ -148,10 +147,34 @@ String OS_Web::get_unique_id() const {
 	ERR_FAIL_V_MSG("", "OS::get_unique_id() is not available on the Web platform.");
 }
 
+int OS_Web::get_default_thread_pool_size() const {
+#ifdef THREADS_ENABLED
+	return godot_js_os_thread_pool_size_get();
+#else // No threads.
+	return 1;
+#endif
+}
+
 bool OS_Web::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "web") {
 		return true;
 	}
+
+	if (p_feature == "web_extensions") {
+#ifdef WEB_DLINK_ENABLED
+		return true;
+#else
+		return false;
+#endif
+	}
+	if (p_feature == "web_noextensions") {
+#ifdef WEB_DLINK_ENABLED
+		return false;
+#else
+		return true;
+#endif
+	}
+
 	if (godot_js_os_has_feature(p_feature.utf8().get_data())) {
 		return true;
 	}
@@ -172,9 +195,9 @@ String OS_Web::get_name() const {
 	return "Web";
 }
 
-void OS_Web::add_frame_delay(bool p_can_draw) {
+void OS_Web::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 #ifndef PROXY_TO_PTHREAD_ENABLED
-	OS::add_frame_delay(p_can_draw);
+	OS::add_frame_delay(p_can_draw, p_wake_for_events);
 #endif
 }
 
@@ -184,7 +207,7 @@ void OS_Web::vibrate_handheld(int p_duration_ms, float p_amplitude) {
 
 String OS_Web::get_user_data_dir(const String &p_user_dir) const {
 	String userfs = "/userfs";
-	return userfs.path_join(p_user_dir).replace("\\", "/");
+	return userfs.path_join(p_user_dir).replace_char('\\', '/');
 }
 
 String OS_Web::get_cache_path() const {
@@ -245,8 +268,32 @@ Error OS_Web::pwa_update() {
 	return godot_js_pwa_update() ? FAILED : OK;
 }
 
+Error OS_Web::move_to_trash(const String &p_path) {
+	if (DirAccess::dir_exists_absolute(p_path)) {
+		Ref<DirAccess> da = DirAccess::open(p_path);
+		ERR_FAIL_COND_V(da.is_null(), ERR_BUG);
+		Error err = da->erase_contents_recursive();
+		if (err) {
+			return err;
+		}
+	}
+	return DirAccess::remove_absolute(p_path);
+}
+
 bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
+}
+
+Error OS_Web::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int left = p_bytes;
+	int ofs = 0;
+	do {
+		int chunk = MIN(left, 256);
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+		left -= chunk;
+		ofs += chunk;
+	} while (left > 0);
+	return OK;
 }
 
 Error OS_Web::open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data) {

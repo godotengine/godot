@@ -30,10 +30,11 @@
 
 #pragma once
 
+#include "core/math/color.h"
 #include "core/math/rect2.h"
 #include "core/math/transform_3d.h"
 #include "core/templates/rid.h"
-#include "storage/utilities.h"
+#include "servers/rendering/storage/utilities.h"
 
 // API definition for our RenderGeometryInstance class so we can expose this through GDExtension in the near future
 class RenderGeometryInstance {
@@ -61,10 +62,13 @@ public:
 	virtual void set_instance_shader_uniforms_offset(int32_t p_offset) = 0;
 	virtual void set_cast_double_sided_shadows(bool p_enable) = 0;
 
+	virtual void reset_motion_vectors() = 0;
+
 	virtual Transform3D get_transform() = 0;
 	virtual AABB get_aabb() = 0;
 
-	virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) = 0;
+	virtual void clear_light_instances() = 0;
+	virtual void pair_light_instance(const RID p_light_instance, RSE::LightType light_type, uint32_t placement_idx) = 0;
 	virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) = 0;
 	virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) = 0;
 	virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) = 0;
@@ -110,7 +114,7 @@ public:
 	struct Data {
 		//data used less often goes into regular heap
 		RID base;
-		RS::InstanceType base_type;
+		RSE::InstanceType base_type;
 
 		RID skeleton;
 		Vector<RID> surface_materials;
@@ -144,6 +148,8 @@ public:
 	virtual void set_use_dynamic_gi(bool p_enable) override;
 	virtual void set_instance_shader_uniforms_offset(int32_t p_offset) override;
 	virtual void set_cast_double_sided_shadows(bool p_enable) override;
+
+	virtual void reset_motion_vectors() override;
 
 	virtual Transform3D get_transform() override;
 	virtual AABB get_aabb() override;

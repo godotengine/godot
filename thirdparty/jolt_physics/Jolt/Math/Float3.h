@@ -42,7 +42,7 @@ public:
 
 using VertexList = Array<Float3>;
 
-static_assert(std::is_trivial<Float3>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<Float3>() && std::is_trivially_copyable<Float3>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

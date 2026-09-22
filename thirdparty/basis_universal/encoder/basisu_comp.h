@@ -18,10 +18,11 @@
 #include "basisu_basis_file.h"
 #include "../transcoder/basisu_transcoder.h"
 #include "basisu_uastc_enc.h"
-#include "basisu_astc_hdr_enc.h"
+#include "basisu_uastc_hdr_4x4_enc.h"
+#include "basisu_astc_hdr_6x6_enc.h"
 
-#define BASISU_LIB_VERSION 150
-#define BASISU_LIB_VERSION_STRING "1.50"
+#define BASISU_LIB_VERSION 160
+#define BASISU_LIB_VERSION_STRING "1.60"
 
 #ifndef BASISD_SUPPORT_KTX2
 	#error BASISD_SUPPORT_KTX2 is undefined
@@ -76,6 +77,8 @@ namespace basisu
 			m_height = 0;
 						
 			m_basis_rgb_avg_psnr = 0.0f;
+			m_basis_rgb_avg_log2_psnr = 0.0f;
+
 			m_basis_rgba_avg_psnr = 0.0f;
 			m_basis_a_avg_psnr = 0.0f;
 			m_basis_luma_709_psnr = 0.0f;
@@ -83,6 +86,7 @@ namespace basisu
 			m_basis_luma_709_ssim = 0.0f;
 
 			m_basis_rgb_avg_bc6h_psnr = 0.0f;
+			m_basis_rgb_avg_bc6h_log2_psnr = 0.0f;
 
 			m_bc7_rgb_avg_psnr = 0.0f;
 			m_bc7_rgba_avg_psnr = 0.0f;
@@ -105,6 +109,8 @@ namespace basisu
 
 		// .basis/.ktx2 compressed (LDR: ETC1S or UASTC statistics, HDR: transcoded BC6H statistics)
 		float m_basis_rgb_avg_psnr;
+		float m_basis_rgb_avg_log2_psnr;
+
 		float m_basis_rgba_avg_psnr;
 		float m_basis_a_avg_psnr;
 		float m_basis_luma_709_psnr;
@@ -113,6 +119,7 @@ namespace basisu
 
 		// UASTC HDR only.
 		float m_basis_rgb_avg_bc6h_psnr;
+		float m_basis_rgb_avg_bc6h_log2_psnr;
 
 		// LDR: BC7 statistics
 		float m_bc7_rgb_avg_psnr;
@@ -129,6 +136,17 @@ namespace basisu
 		float m_best_etc1s_luma_709_ssim;
 
 		bool m_opencl_failed;
+	};
+
+	enum class hdr_modes
+	{
+		// standard but constrained ASTC HDR 4x4 tex data that can be rapidly transcoded to BC6H
+		cUASTC_HDR_4X4, 
+		// standard RDO optimized or non-RDO (highest quality) ASTC HDR 6x6 tex data that can be rapidly re-encoded to BC6H
+		cASTC_HDR_6X6,
+		// a custom intermediate format based off ASTC HDR that can be rapidly decoded straight to ASTC HDR or re-encoded to BC6H
+		cASTC_HDR_6X6_INTERMEDIATE,
+		cTotal
 	};
 
 	template<bool def>
@@ -220,21 +238,23 @@ namespace basisu
 			m_endpoint_rdo_thresh(BASISU_DEFAULT_ENDPOINT_RDO_THRESH, 0.0f, 1e+10f),
 			m_mip_scale(1.0f, .000125f, 4.0f),
 			m_mip_smallest_dimension(1, 1, 16384),
-			m_max_endpoint_clusters(512),
-			m_max_selector_clusters(512),
-			m_quality_level(-1),
-			m_pack_uastc_flags(cPackUASTCLevelDefault),
-			m_rdo_uastc_quality_scalar(1.0f, 0.001f, 50.0f),
-			m_rdo_uastc_dict_size(BASISU_RDO_UASTC_DICT_SIZE_DEFAULT, BASISU_RDO_UASTC_DICT_SIZE_MIN, BASISU_RDO_UASTC_DICT_SIZE_MAX),
-			m_rdo_uastc_max_smooth_block_error_scale(UASTC_RDO_DEFAULT_SMOOTH_BLOCK_MAX_ERROR_SCALE, 1.0f, 300.0f),
-			m_rdo_uastc_smooth_block_max_std_dev(UASTC_RDO_DEFAULT_MAX_SMOOTH_BLOCK_STD_DEV, .01f, 65536.0f),
-			m_rdo_uastc_max_allowed_rms_increase_ratio(UASTC_RDO_DEFAULT_MAX_ALLOWED_RMS_INCREASE_RATIO, .01f, 100.0f),
-			m_rdo_uastc_skip_block_rms_thresh(UASTC_RDO_DEFAULT_SKIP_BLOCK_RMS_THRESH, .01f, 100.0f),
+			m_etc1s_max_endpoint_clusters(512),
+			m_etc1s_max_selector_clusters(512),
+			m_etc1s_quality_level(-1),
+			m_pack_uastc_ldr_4x4_flags(cPackUASTCLevelDefault),
+			m_rdo_uastc_ldr_4x4_quality_scalar(1.0f, 0.001f, 50.0f),
+			m_rdo_uastc_ldr_4x4_dict_size(BASISU_RDO_UASTC_DICT_SIZE_DEFAULT, BASISU_RDO_UASTC_DICT_SIZE_MIN, BASISU_RDO_UASTC_DICT_SIZE_MAX),
+			m_rdo_uastc_ldr_4x4_max_smooth_block_error_scale(UASTC_RDO_DEFAULT_SMOOTH_BLOCK_MAX_ERROR_SCALE, 1.0f, 300.0f),
+			m_rdo_uastc_ldr_4x4_smooth_block_max_std_dev(UASTC_RDO_DEFAULT_MAX_SMOOTH_BLOCK_STD_DEV, .01f, 65536.0f),
+			m_rdo_uastc_ldr_4x4_max_allowed_rms_increase_ratio(UASTC_RDO_DEFAULT_MAX_ALLOWED_RMS_INCREASE_RATIO, .01f, 100.0f),
+			m_rdo_uastc_ldr_4x4_skip_block_rms_thresh(UASTC_RDO_DEFAULT_SKIP_BLOCK_RMS_THRESH, .01f, 100.0f),
 			m_resample_width(0, 1, 16384),
 			m_resample_height(0, 1, 16384),
 			m_resample_factor(0.0f, .00125f, 100.0f),
 			m_ktx2_uastc_supercompression(basist::KTX2_SS_NONE),
 			m_ktx2_zstd_supercompression_level(6, INT_MIN, INT_MAX),
+			m_ldr_hdr_upconversion_nit_multiplier(0.0f, 0.0f, basist::MAX_HALF_FLOAT),
+			m_ldr_hdr_upconversion_black_bias(0.0f, 0.0f, 1.0f),
 			m_pJob_pool(nullptr)
 		{
 			clear();
@@ -243,6 +263,9 @@ namespace basisu
 		void clear()
 		{
 			m_uastc.clear();
+			m_hdr.clear();
+			m_hdr_mode = hdr_modes::cUASTC_HDR_4X4;
+
 			m_use_opencl.clear();
 			m_status_output.clear();
 
@@ -290,24 +313,24 @@ namespace basisu
 			m_mip_fast.clear();
 			m_mip_smallest_dimension.clear();
 
-			m_max_endpoint_clusters = 0;
-			m_max_selector_clusters = 0;
-			m_quality_level = -1;
+			m_etc1s_max_endpoint_clusters = 0;
+			m_etc1s_max_selector_clusters = 0;
+			m_etc1s_quality_level = -1;
 
 			m_tex_type = basist::cBASISTexType2D;
 			m_userdata0 = 0;
 			m_userdata1 = 0;
 			m_us_per_frame = 0;
 
-			m_pack_uastc_flags = cPackUASTCLevelDefault;
-			m_rdo_uastc.clear();
-			m_rdo_uastc_quality_scalar.clear();
-			m_rdo_uastc_max_smooth_block_error_scale.clear();
-			m_rdo_uastc_smooth_block_max_std_dev.clear();
-			m_rdo_uastc_max_allowed_rms_increase_ratio.clear();
-			m_rdo_uastc_skip_block_rms_thresh.clear();
-			m_rdo_uastc_favor_simpler_modes_in_rdo_mode.clear();
-			m_rdo_uastc_multithreading.clear();
+			m_pack_uastc_ldr_4x4_flags = cPackUASTCLevelDefault;
+			m_rdo_uastc_ldr_4x4.clear();
+			m_rdo_uastc_ldr_4x4_quality_scalar.clear();
+			m_rdo_uastc_ldr_4x4_max_smooth_block_error_scale.clear();
+			m_rdo_uastc_ldr_4x4_smooth_block_max_std_dev.clear();
+			m_rdo_uastc_ldr_4x4_max_allowed_rms_increase_ratio.clear();
+			m_rdo_uastc_ldr_4x4_skip_block_rms_thresh.clear();
+			m_rdo_uastc_ldr_4x4_favor_simpler_modes_in_rdo_mode.clear();
+			m_rdo_uastc_ldr_4x4_multithreading.clear();
 
 			m_resample_width.clear();
 			m_resample_height.clear();
@@ -323,19 +346,80 @@ namespace basisu
 
 			m_validate_output_data.clear();
 
-			m_hdr_ldr_srgb_to_linear_conversion.clear();
+			m_ldr_hdr_upconversion_srgb_to_linear.clear();
 
 			m_hdr_favor_astc.clear();
 			
+			m_uastc_hdr_4x4_options.init();
+			m_astc_hdr_6x6_options.clear();
+
+			m_ldr_hdr_upconversion_nit_multiplier.clear();
+			m_ldr_hdr_upconversion_black_bias.clear();
+			
 			m_pJob_pool = nullptr;
 		}
-						
+
+		// Configures the compressor's mode by setting the proper parameters (which were preserved for backwards compatibility with old code).
+		void set_format_mode(basist::basis_tex_format m)
+		{
+			switch (m)
+			{
+			case basist::basis_tex_format::cETC1S:
+			{
+				m_hdr = false;
+				m_uastc = false;
+				m_hdr_mode = hdr_modes::cUASTC_HDR_4X4; // doesn't matter
+				break;
+			}
+			case basist::basis_tex_format::cUASTC4x4:
+			{
+				m_hdr = false;
+				m_uastc = true;
+				m_hdr_mode = hdr_modes::cUASTC_HDR_4X4; // doesn't matter
+				break;
+			}
+			case basist::basis_tex_format::cUASTC_HDR_4x4:
+			{
+				m_hdr = true;
+				m_uastc = true;
+				m_hdr_mode = hdr_modes::cUASTC_HDR_4X4;
+				break;
+			}
+			case basist::basis_tex_format::cASTC_HDR_6x6:
+			{
+				m_hdr = true;
+				m_uastc = true;
+				m_hdr_mode = hdr_modes::cASTC_HDR_6X6;
+				break;
+			}
+			case basist::basis_tex_format::cASTC_HDR_6x6_INTERMEDIATE:
+			{
+				m_hdr = true;
+				m_uastc = true;
+				m_hdr_mode = hdr_modes::cASTC_HDR_6X6_INTERMEDIATE;
+				break;
+			}
+			default:
+				assert(0);
+				break;
+			}
+		}
+
+		// By default we generate LDR ETC1S data. 
+		// if m_uastc is true but m_hdr is not true, we generate UASTC 4x4 LDR data (8bpp with or without RDO).
+		// if m_uastc is true and m_hdr is true, we generate 4x4 or 6x6 HDR data (either standard ASTC, constrained ASTC, RDO ASTC, or intermediate), controlled by m_hdr_mode.
+		
 		// True to generate UASTC .basis/.KTX2 file data, otherwise ETC1S.
+		// Should be true for any non-ETC1S format (UASTC 4x4 LDR, UASTC 4x4 HDR, RDO ASTC 6x6 HDR, and ASTC 6x6 HDR intermediate).
 		bool_param<false> m_uastc;
 
-		// Set m_hdr to true to switch to UASTC HDR mode.
+		// Set m_hdr to true to switch to UASTC HDR mode. m_hdr_mode then controls which format is output.
+		// m_hdr_mode then controls which format is output (4x4, 6x6, or 6x6 intermediate).
 		bool_param<false> m_hdr;
 
+		// If m_hdr is true, this specifies which mode we operate in (currently UASTC 4x4 HDR or ASTC 6x6 HDR). Defaults to UASTC 4x4 HDR for backwards compatibility.
+		hdr_modes m_hdr_mode;
+				
 		bool_param<false> m_use_opencl;
 
 		// If m_read_source_images is true, m_source_filenames (and optionally m_source_alpha_filenames) contains the filenames of PNG etc. images to read. 
@@ -426,30 +510,31 @@ namespace basisu
 		bool_param<true> m_mip_fast;
 		param<int> m_mip_smallest_dimension;
 						
-		// Codebook size (quality) control. 
-		// If m_quality_level != -1, it controls the quality level. It ranges from [1,255] or [BASISU_QUALITY_MIN, BASISU_QUALITY_MAX].
+		// ETC1S codebook size (quality) control. 
+		// If m_etc1s_quality_level != -1, it controls the quality level. It ranges from [1,255] or [BASISU_QUALITY_MIN, BASISU_QUALITY_MAX].
 		// Otherwise m_max_endpoint_clusters/m_max_selector_clusters controls the codebook sizes directly.
-		uint32_t m_max_endpoint_clusters;
-		uint32_t m_max_selector_clusters;
-		int m_quality_level;
+		uint32_t m_etc1s_max_endpoint_clusters;
+		uint32_t m_etc1s_max_selector_clusters;
+		int m_etc1s_quality_level;
 		
-		// m_tex_type, m_userdata0, m_userdata1, m_framerate - These fields go directly into the Basis file header.
+		// m_tex_type, m_userdata0, m_userdata1, m_framerate - These fields go directly into the .basis file header.
 		basist::basis_texture_type m_tex_type;
 		uint32_t m_userdata0;
 		uint32_t m_userdata1;
 		uint32_t m_us_per_frame;
 
+		// UASTC LDR 4x4 parameters
 		// cPackUASTCLevelDefault, etc.
-		uint32_t m_pack_uastc_flags;
-		bool_param<false> m_rdo_uastc;
-		param<float> m_rdo_uastc_quality_scalar;
-		param<int> m_rdo_uastc_dict_size;
-		param<float> m_rdo_uastc_max_smooth_block_error_scale;
-		param<float> m_rdo_uastc_smooth_block_max_std_dev;
-		param<float> m_rdo_uastc_max_allowed_rms_increase_ratio;
-		param<float> m_rdo_uastc_skip_block_rms_thresh;
-		bool_param<true> m_rdo_uastc_favor_simpler_modes_in_rdo_mode;
-		bool_param<true> m_rdo_uastc_multithreading;
+		uint32_t m_pack_uastc_ldr_4x4_flags;
+		bool_param<false> m_rdo_uastc_ldr_4x4;
+		param<float> m_rdo_uastc_ldr_4x4_quality_scalar;
+		param<int> m_rdo_uastc_ldr_4x4_dict_size;
+		param<float> m_rdo_uastc_ldr_4x4_max_smooth_block_error_scale;
+		param<float> m_rdo_uastc_ldr_4x4_smooth_block_max_std_dev;
+		param<float> m_rdo_uastc_ldr_4x4_max_allowed_rms_increase_ratio;
+		param<float> m_rdo_uastc_ldr_4x4_skip_block_rms_thresh;
+		bool_param<true> m_rdo_uastc_ldr_4x4_favor_simpler_modes_in_rdo_mode;
+		bool_param<true> m_rdo_uastc_ldr_4x4_multithreading;
 
 		param<int> m_resample_width;
 		param<int> m_resample_height;
@@ -465,13 +550,26 @@ namespace basisu
 		param<int> m_ktx2_zstd_supercompression_level;
 		bool_param<false> m_ktx2_srgb_transfer_func;
 
-		astc_hdr_codec_options m_uastc_hdr_options;
+		uastc_hdr_4x4_codec_options m_uastc_hdr_4x4_options;
+		astc_6x6_hdr::astc_hdr_6x6_global_config m_astc_hdr_6x6_options;
 
 		bool_param<false> m_validate_output_data;
 
-		// If true, LDR images (such as PNG) will be converted to normalized [0,1] linear light (via a sRGB->Linear conversion) and then processed as HDR. 
-		// Otherwise, LDR images will be processed as HDR as-is.
-		bool_param<true> m_hdr_ldr_srgb_to_linear_conversion;
+		// LDR->HDR upconversion parameters.
+		// 
+		// If true, LDR images (such as PNG) will be converted to normalized [0,1] linear light (via a sRGB->Linear conversion), or absolute luminance (nits or candelas per meter squared), and then processed as HDR. 
+		// Otherwise, LDR images are assumed to already be in linear light (i.e. they don't use the sRGB transfer function).
+		bool_param<true> m_ldr_hdr_upconversion_srgb_to_linear;
+		
+		// m_ldr_hdr_upconversion_nit_multiplier is only used when loading SDR/LDR images and compressing to an HDR output format.
+		// By default m_ldr_hdr_upconversion_nit_multiplier is 0. It's an override for the default.
+		// When loading LDR images, a default multiplier of 1.0 will be used in UASTC 4x4 HDR mode. Partially for backwards compatibility with previous library releases, and also because it doesn't really matter with this encoder what the multiplier is.
+		// With the 6x6 HDR encoder it does matter because it expects inputs in absolute nits, so the LDR upconversion luminance multiplier default will be 100 nits. (Most SDR monitors were/are 80-100 nits or so.)
+		param<float> m_ldr_hdr_upconversion_nit_multiplier;
+
+		// The optional sRGB space bias to use during LDR->HDR upconversion. Should be between [0,.49] or so. Only applied on black (0.0) color components.
+		// Defaults to no bias (0.0f).
+		param<float> m_ldr_hdr_upconversion_black_bias;
 
 		// If true, ASTC HDR quality is favored more than BC6H quality. Otherwise it's a rough balance.
 		bool_param<false> m_hdr_favor_astc;
@@ -526,8 +624,10 @@ namespace basisu
 								
 	private:
 		basis_compressor_params m_params;
-
+				
 		opencl_context_ptr m_pOpenCL_context;
+
+		basist::basis_tex_format m_fmt_mode;
 		
 		basisu::vector<image> m_slice_images;
 		basisu::vector<imagef> m_slice_images_hdr;
@@ -543,6 +643,7 @@ namespace basisu
 		
 		basisu_frontend m_frontend;
 
+		// These are 4x4 blocks.
 		pixel_block_vec m_source_blocks;
 		pixel_block_hdr_vec m_source_blocks_hdr;
 
@@ -572,6 +673,15 @@ namespace basisu
 		basisu::vector<gpu_image> m_uastc_slice_textures;
 		basisu_backend_output m_uastc_backend_output;
 
+		// The amount the HDR input has to be scaled up in case it had to be rescaled to fit into half floats.
+		float m_hdr_image_scale; 
+		
+		// The upconversion multiplier used to load LDR images in HDR mode.
+		float m_ldr_to_hdr_upconversion_nit_multiplier;
+		
+		// True if any loaded source images were LDR and upconverted to HDR.
+		bool m_upconverted_any_ldr_images;
+
 		bool m_any_source_image_has_alpha;
 
 		bool m_opencl_failed;
@@ -588,14 +698,48 @@ namespace basisu
 		bool create_basis_file_and_transcode();
 		bool write_hdr_debug_images(const char* pBasename, const imagef& img, uint32_t width, uint32_t height);
 		bool write_output_files_and_compute_stats();
-		error_code encode_slices_to_uastc_hdr();
-		error_code encode_slices_to_uastc();
+		error_code encode_slices_to_astc_6x6_hdr();
+		error_code encode_slices_to_uastc_4x4_hdr();
+		error_code encode_slices_to_uastc_4x4_ldr();
 		bool generate_mipmaps(const imagef& img, basisu::vector<imagef>& mips, bool has_alpha);
 		bool generate_mipmaps(const image &img, basisu::vector<image> &mips, bool has_alpha);
 		bool validate_texture_type_constraints();
 		bool validate_ktx2_constraints();
-		void get_dfd(uint8_vec& dfd, const basist::ktx2_header& hdr);
+		bool get_dfd(uint8_vec& dfd, const basist::ktx2_header& hdr);
 		bool create_ktx2_file();
+		void pick_format_mode();
+
+		uint32_t get_block_width() const
+		{
+			if (m_params.m_hdr)
+			{
+				switch (m_params.m_hdr_mode)
+				{
+				case hdr_modes::cASTC_HDR_6X6:
+				case hdr_modes::cASTC_HDR_6X6_INTERMEDIATE:
+					return 6;
+				default:
+					break;
+				}
+			}
+			return 4;
+		}
+
+		uint32_t get_block_height() const
+		{
+			if (m_params.m_hdr)
+			{
+				switch (m_params.m_hdr_mode)
+				{
+				case hdr_modes::cASTC_HDR_6X6:
+				case hdr_modes::cASTC_HDR_6X6_INTERMEDIATE:
+					return 6;
+				default:
+					break;
+				}
+			}
+			return 4;
+		}
 	};
 				
 	// Alternative simple C-style wrapper API around the basis_compressor class. 
@@ -628,21 +772,19 @@ namespace basisu
 		cFlagKTX2UASTCSuperCompression = 1 << 12, // use KTX2 Zstd supercompression on UASTC files
 
 		cFlagSRGB = 1 << 13,			// input texture is sRGB, use perceptual colorspace metrics, also use sRGB filtering during mipmap gen, and also sets KTX2 output transfer func to sRGB
-		cFlagGenMipsClamp = 1 << 14,  // generate mipmaps with clamp addressing
-		cFlagGenMipsWrap = 1 << 15,  // generate mipmaps with wrap addressing
+		cFlagGenMipsClamp = 1 << 14,	// generate mipmaps with clamp addressing
+		cFlagGenMipsWrap = 1 << 15,		// generate mipmaps with wrap addressing
 		
-		cFlagYFlip = 1 << 16,		// flip source image on Y axis before compression
+		cFlagYFlip = 1 << 16,			// flip source image on Y axis before compression
 		
-		cFlagUASTC = 1 << 17,		// use UASTC compression vs. ETC1S
-		cFlagUASTCRDO = 1 << 18,		// use RDO postprocessing when generating UASTC files (must set uastc_rdo_quality to the quality scalar)
+		cFlagUASTCRDO = 1 << 17,		// use RDO postprocessing when generating UASTC files (must set uastc_rdo_quality to the quality scalar)
 		
-		cFlagPrintStats = 1 << 19,	// print image stats to stdout
-		cFlagPrintStatus = 1 << 20,	// print status to stdout
+		cFlagPrintStats = 1 << 18,		// print image stats to stdout
+		cFlagPrintStatus = 1 << 19,		// print status to stdout
 		
-		cFlagHDR = 1 << 21,			// Force encoder into HDR mode, even if source image is LDR.
-		cFlagHDRLDRImageSRGBToLinearConversion = 1 << 22, // In HDR mode, convert LDR source images to linear before encoding.
-		
-		cFlagDebugImages = 1 << 23	// enable status output
+		cFlagDebugImages = 1 << 20,		// enable status output
+
+		cFlagREC2020 = 1 << 21			// ASTC 6x6 modes: treat input as REC 2020 vs. the default 709
 	};
 
 	// This function accepts an array of source images. 
@@ -652,6 +794,7 @@ namespace basisu
 	// basisu_encoder_init() MUST be called first!
 	// LDR version. To compress the LDR source image as HDR: Use the cFlagHDR flag.
 	void* basis_compress(
+		basist::basis_tex_format mode,
 		const basisu::vector<image> &source_images,
 		uint32_t flags_and_quality, float uastc_rdo_quality,
 		size_t* pSize,
@@ -660,14 +803,16 @@ namespace basisu
 	// HDR-only version.
 	// Important: The returned block MUST be manually freed using basis_free_data().
 	void* basis_compress(
+		basist::basis_tex_format mode,
 		const basisu::vector<imagef>& source_images_hdr,
-		uint32_t flags_and_quality, 
+		uint32_t flags_and_quality, float lambda,
 		size_t* pSize,
 		image_stats* pStats = nullptr);
 
 	// This function only accepts a single LDR source image. It's just a wrapper for basis_compress() above.
 	// Important: The returned block MUST be manually freed using basis_free_data().
 	void* basis_compress(
+		basist::basis_tex_format mode,
 		const uint8_t* pImageRGBA, uint32_t width, uint32_t height, uint32_t pitch_in_pixels,
 		uint32_t flags_and_quality, float uastc_rdo_quality,
 		size_t* pSize,

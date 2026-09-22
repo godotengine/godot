@@ -19,6 +19,8 @@
 #include "basisu_bc7enc.h"
 #include "../transcoder/basisu_astc_hdr_core.h"
 
+#define BASISU_USE_GOOGLE_ASTC_DECODER (1)
+
 namespace basisu
 {
 	//------------------------------------------------------------------------------------------------
@@ -1421,6 +1423,7 @@ namespace basisu
 		case texture_format::cBC6HUnsigned:
 		case texture_format::cASTC_HDR_4x4:
 		case texture_format::cUASTC_HDR_4x4:
+		case texture_format::cASTC_HDR_6x6:
 		{
 			// Can't unpack HDR blocks in unpack_block() because it returns 32bpp pixel data.
 			assert(0);
@@ -1487,15 +1490,44 @@ namespace basisu
 	{
 		switch (fmt)
 		{
+			case texture_format::cASTC_HDR_6x6:
+			{
+#if BASISU_USE_GOOGLE_ASTC_DECODER
+				bool status = basisu_astc::astc::decompress_hdr(&pPixels[0][0], (uint8_t*)pBlock, 6, 6);
+				assert(status);
+				if (!status)
+					return false;
+#else
+				// Use our decoder
+				basist::half_float half_block[6 * 6][4];
+
+				astc_helpers::log_astc_block log_blk;
+				if (!astc_helpers::unpack_block(pBlock, log_blk, 6, 6))
+					return false;
+				if (!astc_helpers::decode_block(log_blk, half_block, 6, 6, astc_helpers::cDecodeModeHDR16))
+					return false;
+
+				for (uint32_t p = 0; p < (6 * 6); p++)
+				{
+					pPixels[p][0] = basist::half_to_float(half_block[p][0]);
+					pPixels[p][1] = basist::half_to_float(half_block[p][1]);
+					pPixels[p][2] = basist::half_to_float(half_block[p][2]);
+					pPixels[p][3] = basist::half_to_float(half_block[p][3]);
+				}
+#endif
+				return true;
+			}
 			case texture_format::cASTC_HDR_4x4:
 			case texture_format::cUASTC_HDR_4x4:
 			{
-#if 1
+#if BASISU_USE_GOOGLE_ASTC_DECODER
+				// Use Google's decoder
 				bool status = basisu_astc::astc::decompress_hdr(&pPixels[0][0], (uint8_t*)pBlock, 4, 4);
 				assert(status);
 				if (!status)
 					return false;
 #else
+				// Use our decoder
 				basist::half_float half_block[16][4];
 				
 				astc_helpers::log_astc_block log_blk;
@@ -1592,10 +1624,8 @@ namespace basisu
 
 	bool gpu_image::unpack_hdr(imagef& img) const
 	{
-		if ((m_fmt != texture_format::cASTC_HDR_4x4) && 
-			(m_fmt != texture_format::cUASTC_HDR_4x4) &&
-			(m_fmt != texture_format::cBC6HUnsigned) &&
-			(m_fmt != texture_format::cBC6HSigned))
+		if ((m_fmt != texture_format::cASTC_HDR_4x4) && (m_fmt != texture_format::cUASTC_HDR_4x4) && (m_fmt != texture_format::cASTC_HDR_6x6) &&
+			(m_fmt != texture_format::cBC6HUnsigned) &&	(m_fmt != texture_format::cBC6HSigned))
 		{
 			// Can't call on LDR images, at least currently. (Could unpack the LDR data and convert to float.)
 			assert(0);
@@ -1643,6 +1673,7 @@ namespace basisu
 		KTX_RG = 0x8227,
 		KTX_RGB = 0x1907,
 		KTX_RGBA = 0x1908,
+
 		KTX_COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0,
 		KTX_COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3,
 		KTX_COMPRESSED_RED_RGTC1_EXT = 0x8DBB,
@@ -1655,11 +1686,42 @@ namespace basisu
 		KTX_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT = 0x8E8F,
 		KTX_COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00,
 		KTX_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02,
+		
 		KTX_COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0,
+		KTX_COMPRESSED_RGBA_ASTC_5x4_KHR = 0x93B1,
+		KTX_COMPRESSED_RGBA_ASTC_5x5_KHR = 0x93B2,
+		KTX_COMPRESSED_RGBA_ASTC_6x5_KHR = 0x93B3,
+		KTX_COMPRESSED_RGBA_ASTC_6x6_KHR = 0x93B4,
+		KTX_COMPRESSED_RGBA_ASTC_8x5_KHR = 0x93B5,
+		KTX_COMPRESSED_RGBA_ASTC_8x6_KHR = 0x93B6,
+		KTX_COMPRESSED_RGBA_ASTC_8x8_KHR = 0x93B7,
+		KTX_COMPRESSED_RGBA_ASTC_10x5_KHR = 0x93B8,
+		KTX_COMPRESSED_RGBA_ASTC_10x6_KHR = 0x93B9,
+		KTX_COMPRESSED_RGBA_ASTC_10x8_KHR = 0x93BA,
+		KTX_COMPRESSED_RGBA_ASTC_10x10_KHR = 0x93BB,
+		KTX_COMPRESSED_RGBA_ASTC_12x10_KHR = 0x93BC,
+		KTX_COMPRESSED_RGBA_ASTC_12x12_KHR = 0x93BD,
+
 		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 0x93D0,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR = 0x93D1,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR = 0x93D2,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR = 0x93D3,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR = 0x93D4,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR = 0x93D5,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR = 0x93D6,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR = 0x93D7,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR = 0x93D8,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR = 0x93D9,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR = 0x93DA,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = 0x93DB,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 0x93DC,
+		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 0x93DD,
+
 		KTX_COMPRESSED_RGBA_UASTC_4x4_KHR = 0x94CC, // TODO - Use proper value!
+
 		KTX_ATC_RGB_AMD = 0x8C92,
 		KTX_ATC_RGBA_INTERPOLATED_ALPHA_AMD = 0x87EE,
+
 		KTX_COMPRESSED_RGB_FXT1_3DFX = 0x86B0,
 		KTX_COMPRESSED_RGBA_FXT1_3DFX = 0x86B1,
 		KTX_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG = 0x9138,
@@ -1834,6 +1896,13 @@ namespace basisu
 		{
 			internal_fmt = KTX_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
 			base_internal_fmt = KTX_RGBA;
+			break;
+		}
+		case texture_format::cASTC_HDR_6x6:
+		{
+			internal_fmt = KTX_COMPRESSED_RGBA_ASTC_6x6_KHR;
+			// TODO: should we write RGB? We don't support generating HDR 6x6 with alpha.
+			base_internal_fmt = KTX_RGBA; 
 			break;
 		}
 		// We use different enums for HDR vs. LDR ASTC, but internally they are both just ASTC.

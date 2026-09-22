@@ -69,7 +69,6 @@ SOFTWARE.
 #include "core/os/os.h"
 
 #ifdef WINDOWS_ENABLED
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
@@ -82,7 +81,7 @@ namespace {
 String get_hostfxr_file_name() {
 #if defined(WINDOWS_ENABLED)
 	return "hostfxr.dll";
-#elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+#elif defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	return "libhostfxr.dylib";
 #else
 	return "libhostfxr.so";
@@ -130,19 +129,11 @@ bool get_latest_fxr(const String &fxr_root, String &r_fxr_path) {
 }
 
 #ifdef WINDOWS_ENABLED
-typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
-
 BOOL is_wow64() {
 	BOOL wow64 = FALSE;
-
-	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
-
-	if (fnIsWow64Process) {
-		if (!fnIsWow64Process(GetCurrentProcess(), &wow64)) {
-			wow64 = FALSE;
-		}
+	if (!IsWow64Process(GetCurrentProcess(), &wow64)) {
+		wow64 = FALSE;
 	}
-
 	return wow64;
 }
 #endif
@@ -262,7 +253,7 @@ bool get_dotnet_self_registered_dir(String &r_dotnet_root) {
 		return false;
 	}
 
-	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr()).replace("\\", "/");
+	r_dotnet_root = String::utf16((const char16_t *)buffer.ptr()).replace_char('\\', '/');
 	RegCloseKey(hkey);
 	return true;
 #else

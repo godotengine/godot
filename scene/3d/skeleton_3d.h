@@ -54,7 +54,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	// Public for use with callable_mp.
+	// Public for use as signal callback.
 	void _skin_changed();
 
 	RID get_skeleton() const;
@@ -65,9 +65,11 @@ public:
 class Skeleton3D : public Node3D {
 	GDCLASS(Skeleton3D, Node3D);
 
+	const Vector3 DEFAULT_SKIN_SCALE = Vector3(1, 1, 1);
+
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif //TOOLS_ENABLED
+#endif // TOOLS_ENABLED
 
 #if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 	bool animate_physical_bones = true;
@@ -79,6 +81,7 @@ public:
 	enum ModifierCallbackModeProcess {
 		MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS,
 		MODIFIER_CALLBACK_MODE_PROCESS_IDLE,
+		MODIFIER_CALLBACK_MODE_PROCESS_MANUAL,
 	};
 
 private:
@@ -93,6 +96,7 @@ private:
 	void _update_deferred(UpdateFlag p_update_flag = UPDATE_FLAG_POSE);
 	uint8_t update_flags = UPDATE_FLAG_NONE;
 	bool updating = false; // Is updating now?
+	double update_delta = 0.0;
 
 	struct Bone {
 		String name;
@@ -110,8 +114,17 @@ private:
 		Quaternion pose_rotation;
 		Vector3 pose_scale = Vector3(1, 1, 1);
 		Transform3D global_pose;
+		Vector3 skin_scale = Vector3(1, 1, 1);
+		bool is_skin_scaled = false;
 		int nested_set_offset = 0; // Offset in nested set of bone hierarchy.
 		int nested_set_span = 0; // Subtree span in nested set of bone hierarchy.
+
+		bool modifier_applied = false;
+		Transform3D modifier_pose_cache;
+		void make_bone_modified() {
+			modifier_applied = true;
+			modifier_pose_cache = pose_cache;
+		}
 
 		void update_pose_cache() {
 			if (pose_cache_dirty) {
@@ -186,6 +199,7 @@ private:
 	void _process_modifiers();
 	void _process_changed();
 	void _make_modifiers_dirty();
+	bool modifier_updating = false; // Is modifier updating now?
 
 	// Global bone pose calculation.
 	mutable LocalVector<int> nested_set_offset_to_bone_index; // Map from Bone::nested_set_offset to bone index.
@@ -198,6 +212,8 @@ private:
 
 #ifndef DISABLE_DEPRECATED
 	void _add_bone_bind_compat_88791(const String &p_name);
+	void _reset_bone_pose_compat_120609(int p_bone);
+	void _reset_bone_poses_compat_120609();
 
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
@@ -206,7 +222,8 @@ protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _validate_property(PropertyInfo &p_property) const;
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 	void _notification(int p_what);
 	TypedArray<StringName> _get_bone_meta_list_bind(int p_bone) const;
 	static void _bind_methods();
@@ -223,7 +240,6 @@ public:
 	// Skeleton creation API
 	uint64_t get_version() const;
 	int add_bone(const String &p_name);
-	void remove_bone(int p_bone);
 	int find_bone(const String &p_name) const;
 	String get_bone_name(int p_bone) const;
 	void set_bone_name(int p_bone, const String &p_name);
@@ -271,11 +287,14 @@ public:
 	void set_bone_pose_rotation(int p_bone, const Quaternion &p_rotation);
 	void set_bone_pose_scale(int p_bone, const Vector3 &p_scale);
 
+	void set_bone_skin_scale(int p_bone, const Vector3 &p_skin_scale);
+	Vector3 get_bone_skin_scale(int p_bone) const;
+
 	Transform3D get_bone_global_pose(int p_bone) const;
 	void set_bone_global_pose(int p_bone, const Transform3D &p_pose);
 
-	void reset_bone_pose(int p_bone);
-	void reset_bone_poses();
+	void reset_bone_pose(int p_bone, bool p_reset_bone_skin_scale = false);
+	void reset_bone_poses(bool p_reset_bone_skin_scale = false);
 
 	void localize_rests(); // Used for loaders and tools.
 
@@ -293,6 +312,8 @@ public:
 
 	void set_modifier_callback_mode_process(ModifierCallbackModeProcess p_mode);
 	ModifierCallbackModeProcess get_modifier_callback_mode_process() const;
+
+	void advance(double p_delta);
 
 #ifndef DISABLE_DEPRECATED
 	Transform3D get_bone_global_pose_no_override(int p_bone) const;

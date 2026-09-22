@@ -31,9 +31,8 @@
 #pragma once
 
 #include "core/string/ustring.h"
-#include "core/variant/variant.h"
 
-#include <stdarg.h>
+#include <cstdarg>
 
 String sformat(const String &p_text, const String &p1 = String(), const String &p2 = String(),
 		const String &p3 = String(), const String &p4 = String(), const String &p5 = String(), const String &p6 = String());

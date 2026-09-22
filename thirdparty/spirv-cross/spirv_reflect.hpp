@@ -34,6 +34,7 @@ class Stream;
 
 namespace SPIRV_CROSS_NAMESPACE
 {
+using namespace SPIRV_CROSS_SPV_HEADER_NAMESPACE;
 class CompilerReflection : public CompilerGLSL
 {
 	using Parent = CompilerGLSL;
@@ -67,7 +68,7 @@ public:
 	std::string compile() override;
 
 private:
-	static std::string execution_model_to_str(spv::ExecutionModel model);
+	static std::string execution_model_to_str(ExecutionModel model);
 
 	void emit_entry_points();
 	void emit_types();

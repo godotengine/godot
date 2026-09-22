@@ -113,6 +113,8 @@ namespace basisu
 			Resample_Real filter_scale,
 			Resample_Real src_ofs);
 
+		static void free_clist(Contrib_List* p) { if (p) { free(p->p); free(p); } }
+
 	private:
 		Resampler();
 		Resampler(const Resampler &o);

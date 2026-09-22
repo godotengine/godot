@@ -13,16 +13,26 @@
 // limitations under the License.
 #pragma once
 
+#include <cstddef>
 #include <iterator>
+#include <optional>
 #include <type_traits>
 
 namespace manifold {
+
+/**
+ * Stand-in for C++23's operator""uz (P0330R8)[https://wg21.link/P0330R8].
+ */
+[[nodiscard]] constexpr std::size_t operator""_uz(
+    unsigned long long n) noexcept {
+  return n;
+}
 
 template <typename F, typename Iter>
 struct TransformIterator {
  private:
   Iter iter;
-  F f;
+  std::optional<F> f;
 
  public:
   using pointer = void;
@@ -36,16 +46,28 @@ struct TransformIterator {
 
   constexpr TransformIterator(Iter iter, F f) : iter(iter), f(f) {}
 
+  TransformIterator(const TransformIterator& other)
+      : iter(other.iter), f(other.f) {}
+
+  TransformIterator(TransformIterator&& other) : iter(other.iter), f(other.f) {}
+
   TransformIterator& operator=(const TransformIterator& other) {
     if (this == &other) return *this;
-    // don't copy function, should be the same
     iter = other.iter;
+    f.emplace(*other.f);
     return *this;
   }
 
-  constexpr reference operator*() const { return f(*iter); }
+  TransformIterator& operator=(TransformIterator&& other) {
+    if (this == &other) return *this;
+    iter = other.iter;
+    f.emplace(*other.f);
+    return *this;
+  }
 
-  constexpr reference operator[](size_t i) const { return f(iter[i]); }
+  constexpr reference operator*() const { return (*f)(*iter); }
+
+  constexpr reference operator[](size_t i) const { return (*f)(iter[i]); }
 
   // prefix increment
   TransformIterator& operator++() {
@@ -74,7 +96,7 @@ struct TransformIterator {
   }
 
   constexpr TransformIterator operator+(size_t n) const {
-    return TransformIterator(iter + n, f);
+    return TransformIterator(iter + n, *f);
   }
 
   TransformIterator& operator+=(size_t n) {
@@ -83,7 +105,7 @@ struct TransformIterator {
   }
 
   constexpr TransformIterator operator-(size_t n) const {
-    return TransformIterator(iter - n, f);
+    return TransformIterator(iter - n, *f);
   }
 
   TransformIterator& operator-=(size_t n) {
@@ -108,7 +130,7 @@ struct TransformIterator {
   }
 
   constexpr operator TransformIterator<F, const Iter>() const {
-    return TransformIterator(f, iter);
+    return TransformIterator(*f, iter);
   }
 };
 
@@ -195,7 +217,8 @@ struct CountingIterator {
   }
 };
 
-constexpr CountingIterator<size_t> countAt(size_t i) {
+template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+constexpr CountingIterator<T> countAt(T i) {
   return CountingIterator(i);
 }
 

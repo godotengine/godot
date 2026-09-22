@@ -57,16 +57,18 @@ public:
 	};
 
 	virtual void is_session_supported(const String &p_session_mode) = 0;
-	virtual void set_session_mode(String p_session_mode) = 0;
+	virtual void set_session_mode(const String &p_session_mode) = 0;
 	virtual String get_session_mode() const = 0;
-	virtual void set_required_features(String p_required_features) = 0;
+	virtual void set_required_features(const String &p_required_features) = 0;
 	virtual String get_required_features() const = 0;
-	virtual void set_optional_features(String p_optional_features) = 0;
+	virtual void set_optional_features(const String &p_optional_features) = 0;
 	virtual String get_optional_features() const = 0;
-	virtual void set_requested_reference_space_types(String p_requested_reference_space_types) = 0;
+	virtual void set_requested_reference_space_types(const String &p_requested_reference_space_types) = 0;
 	virtual String get_requested_reference_space_types() const = 0;
 	virtual String get_reference_space_type() const = 0;
 	virtual String get_enabled_features() const = 0;
+	virtual void set_disable_webxr_layers(bool p_disable_webxr_layers) = 0;
+	virtual bool get_disable_webxr_layers() const = 0;
 	virtual bool is_input_source_active(int p_input_source_id) const = 0;
 	virtual Ref<XRControllerTracker> get_input_source_tracker(int p_input_source_id) const = 0;
 	virtual TargetRayMode get_input_source_target_ray_mode(int p_input_source_id) const = 0;

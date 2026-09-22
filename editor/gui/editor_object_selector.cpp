@@ -30,16 +30,16 @@
 
 #include "editor_object_selector.h"
 
+#include "core/object/callable_mp.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"
 
 Size2 EditorObjectSelector::get_minimum_size() const {
-	Ref<Font> font = get_theme_font(SceneStringName(font));
-	int font_size = get_theme_font_size(SceneStringName(font_size));
-	return Button::get_minimum_size() + Size2(0, font->get_height(font_size));
+	return main_mc->get_minimum_size();
 }
 
 void EditorObjectSelector::_add_children_to_popup(Object *p_obj, int p_depth) {
@@ -95,14 +95,12 @@ void EditorObjectSelector::_show_popup() {
 
 	sub_objects_menu->clear();
 
-	Size2 size = get_size();
-	Point2 gp = get_screen_position();
-	gp.y += size.y;
+	Rect2 rect = get_screen_rect();
+	rect.position.y += rect.size.height;
+	rect.size.height = 0;
 
-	sub_objects_menu->set_position(gp);
-	sub_objects_menu->set_size(Size2(size.width, 1));
-
-	sub_objects_menu->popup();
+	sub_objects_menu->set_min_size(Size2(0, 0));
+	sub_objects_menu->popup(rect);
 }
 
 void EditorObjectSelector::_about_to_show() {
@@ -133,32 +131,9 @@ void EditorObjectSelector::update_path() {
 		}
 
 		if (i == history->get_path_size() - 1) {
-			String name;
-			if (obj->has_method("_get_editor_name")) {
-				name = obj->call("_get_editor_name");
-			} else if (Object::cast_to<Resource>(obj)) {
-				Resource *r = Object::cast_to<Resource>(obj);
-				if (r->get_path().is_resource_file()) {
-					name = r->get_path().get_file();
-				} else {
-					name = r->get_name();
-				}
-
-				if (name.is_empty()) {
-					name = r->get_class();
-				}
-			} else if (obj->is_class("EditorDebuggerRemoteObjects")) {
-				name = obj->call("get_title");
-			} else if (Object::cast_to<Node>(obj)) {
-				name = Object::cast_to<Node>(obj)->get_name();
-			} else if (Object::cast_to<Resource>(obj) && !Object::cast_to<Resource>(obj)->get_name().is_empty()) {
-				name = Object::cast_to<Resource>(obj)->get_name();
-			} else {
-				name = obj->get_class();
-			}
-
+			const String name = InspectorDock::get_object_display_name(obj);
 			current_object_label->set_text(name);
-			set_tooltip_text(obj->get_class());
+			set_tooltip_text(name + "\n" + vformat(TTR("Type: %s"), obj->get_class()) + "\n" + TTR("Click to open a list of sub-resources."));
 		}
 	}
 }
@@ -190,16 +165,19 @@ void EditorObjectSelector::_id_pressed(int p_idx) {
 
 void EditorObjectSelector::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 
 			int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
 			current_object_icon->set_custom_minimum_size(Size2(icon_size, icon_size));
-			current_object_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("main"), EditorStringName(EditorFonts)));
+			current_object_label->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("bold"), EditorStringName(EditorFonts)));
 			sub_objects_icon->set_texture(get_theme_icon(SNAME("arrow"), SNAME("OptionButton")));
 			sub_objects_menu->add_theme_constant_override("icon_max_width", icon_size);
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			update_path();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -211,10 +189,9 @@ void EditorObjectSelector::_notification(int p_what) {
 EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	history = p_history;
 
-	MarginContainer *main_mc = memnew(MarginContainer);
+	main_mc = memnew(MarginContainer);
+	main_mc->set_theme_type_variation("ObjectSelectorMargin");
 	main_mc->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	main_mc->add_theme_constant_override("margin_left", 4 * EDSCALE);
-	main_mc->add_theme_constant_override("margin_right", 6 * EDSCALE);
 	add_child(main_mc);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
@@ -223,13 +200,14 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	current_object_icon = memnew(TextureRect);
 	current_object_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 	current_object_icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	current_object_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	main_hb->add_child(current_object_icon);
 
 	current_object_label = memnew(Label);
+	current_object_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	current_object_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	current_object_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	current_object_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	current_object_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	main_hb->add_child(current_object_label);
 
 	sub_objects_icon = memnew(TextureRect);
@@ -238,10 +216,10 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	main_hb->add_child(sub_objects_icon);
 
 	sub_objects_menu = memnew(PopupMenu);
-	sub_objects_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	sub_objects_menu->set_shrink_width(false);
 	add_child(sub_objects_menu);
 	sub_objects_menu->connect("about_to_popup", callable_mp(this, &EditorObjectSelector::_about_to_show));
 	sub_objects_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorObjectSelector::_id_pressed));
 
-	set_tooltip_text(TTR("Open a list of sub-resources."));
+	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 }

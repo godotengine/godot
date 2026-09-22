@@ -33,7 +33,6 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_allocator.h"
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_device_binds.h"
 
 class UniformSetCacheRD : public Object {
 	GDCLASS(UniformSetCacheRD, Object)
@@ -107,16 +106,6 @@ class UniformSetCacheRD : public Object {
 		return _compare_args(idx + 1, uniforms, args...);
 	}
 
-	_FORCE_INLINE_ void _create_args(Vector<RD::Uniform> &uniforms, const RD::Uniform &arg) {
-		uniforms.push_back(arg);
-	}
-
-	template <typename... Args>
-	_FORCE_INLINE_ void _create_args(Vector<RD::Uniform> &uniforms, const RD::Uniform &arg, Args... args) {
-		uniforms.push_back(arg);
-		_create_args(uniforms, args...);
-	}
-
 	static UniformSetCacheRD *singleton;
 
 	uint32_t cache_instances_used = 0;
@@ -176,10 +165,7 @@ public:
 
 		// Not in cache, create:
 
-		Vector<RD::Uniform> uniforms;
-		_create_args(uniforms, args...);
-
-		return _allocate_from_uniforms(p_shader, p_set, h, table_idx, uniforms);
+		return _allocate_from_uniforms(p_shader, p_set, h, table_idx, Vector<RD::Uniform>{ args... });
 	}
 
 	template <typename... Args>
@@ -219,6 +205,16 @@ public:
 	}
 
 	static RID get_cache_array(RID p_shader, uint32_t p_set, const TypedArray<RDUniform> &p_uniforms);
+
+	// Re-keys a cache entry after a texture RID was replaced in its uniforms.
+	// Called by RenderingDevice::texture_replace_rid() to keep the cache consistent.
+	// p_cache_userdata is the invalidated_callback_userdata from the UniformSet (the Cache*).
+	void texture_replaced_in_uniform_set(void *p_cache_userdata, RID p_old_texture, RID p_new_texture);
+
+	// Returns true if the given callback is the one used by this cache.
+	bool is_cache_invalidation_callback(void (*p_callback)(void *)) const {
+		return p_callback == _uniform_set_invalidation_callback;
+	}
 
 	static UniformSetCacheRD *get_singleton() { return singleton; }
 

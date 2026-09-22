@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Geometry2D" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Geometry2D" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Provides methods for some common 2D geometric operations.
 	</brief_description>
@@ -18,8 +18,8 @@
 				Example code to draw a line between two [Marker2D] nodes using a series of [method CanvasItem.draw_rect] calls:
 				[codeblock]
 				func _draw():
-				    for pixel in Geometry2D.bresenham_line($MarkerA.position, $MarkerB.position):
-				        draw_rect(Rect2(pixel, Vector2.ONE), Color.WHITE)
+					for pixel in Geometry2D.bresenham_line($MarkerA.position, $MarkerB.position):
+						draw_rect(Rect2(pixel, Vector2.ONE), Color.WHITE)
 				[/codeblock]
 			</description>
 		</method>
@@ -141,7 +141,7 @@
 			<param index="3" name="dir_b" type="Vector2" />
 			<description>
 				Returns the point of intersection between the two lines ([param from_a], [param dir_a]) and ([param from_b], [param dir_b]). Returns a [Vector2], or [code]null[/code] if the lines are parallel.
-				[code]from[/code] and [code]dir[/code] are [i]not[/i] endpoints of a line segment or ray but the slope ([code]dir[/code]) and a known point ([code]from[/code]) on that line.
+				[code]from[/code] and [code]dir[/code] are [i]not[/i] endpoints of a line segment or ray but the slope ([code]dir[/code]) and a known point ([code]from[/code]) on that line. To get the intersection between two line segments, use [method segment_intersects_segment].
 				[codeblocks]
 				[gdscript]
 				var from_a = Vector2.ZERO
@@ -193,7 +193,7 @@
 			<param index="2" name="join_type" type="int" enum="Geometry2D.PolyJoinType" default="0" />
 			<description>
 				Inflates or deflates [param polygon] by [param delta] units (pixels). If [param delta] is positive, makes the polygon grow outward. If [param delta] is negative, shrinks the polygon inward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. Returns an empty array if [param delta] is negative and the absolute value of it approximately exceeds the minimum bounding rectangle dimensions of the polygon.
-				Each polygon's vertices will be rounded as determined by [param join_type], see [enum PolyJoinType].
+				Each polygon's vertices will be rounded as determined by [param join_type].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 				[b]Note:[/b] To translate the polygon's vertices specifically, multiply them to a [Transform2D]:
 				[codeblocks]
@@ -220,8 +220,8 @@
 			<param index="3" name="end_type" type="int" enum="Geometry2D.PolyEndType" default="3" />
 			<description>
 				Inflates or deflates [param polyline] by [param delta] units (pixels), producing polygons. If [param delta] is positive, makes the polyline grow outward. Returns an array of polygons because inflating/deflating may result in multiple discrete polygons. If [param delta] is negative, returns an empty array.
-				Each polygon's vertices will be rounded as determined by [param join_type], see [enum PolyJoinType].
-				Each polygon's endpoints will be rounded as determined by [param end_type], see [enum PolyEndType].
+				Each polygon's vertices will be rounded as determined by [param join_type].
+				Each polygon's endpoints will be rounded as determined by [param end_type].
 				The operation may result in an outer polygon (boundary) and inner polygon (hole) produced which could be distinguished by calling [method is_polygon_clockwise].
 			</description>
 		</method>
@@ -252,7 +252,7 @@
 			<param index="2" name="from_b" type="Vector2" />
 			<param index="3" name="to_b" type="Vector2" />
 			<description>
-				Checks if the two segments ([param from_a], [param to_a]) and ([param from_b], [param to_b]) intersect. If yes, return the point of intersection as [Vector2]. If no intersection takes place, returns [code]null[/code].
+				Checks if two line segments intersect, with line [code]a[/code] between [param from_a] and [param to_a] and line [code]b[/code] between [param from_b] and [param to_b]. If the line segments intersect, the point of intersection is returned as a [Vector2]. If no intersection takes place, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="triangulate_delaunay">

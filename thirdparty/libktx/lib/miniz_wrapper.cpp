@@ -9,7 +9,7 @@
 
 /**
  * @internal
- * @file miniz_wrapper.c
+ * @file
  * @~English
  *
  * @brief Wrapper functions for ZLIB compression/decompression using miniz.

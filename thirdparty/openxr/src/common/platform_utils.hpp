@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -71,6 +71,8 @@
 #define XR_ARCH_ABI "riscv64"
 #elif defined(__sparc__) && defined(__arch64__)
 #define XR_ARCH_ABI "sparc64"
+#elif defined(__loongarch64)
+#define XR_ARCH_ABI "loongarch64"
 #else
 #error "No architecture string known!"
 #endif
@@ -98,6 +100,7 @@ static inline char* ImplGetSecureEnv(const char* name) {
 #elif defined(HAVE___SECURE_GETENV)
     return __secure_getenv(name);
 #else
+// NOLINTNEXTLINE(clang-diagnostic-#pragma-messages)
 #pragma message(                                                    \
     "Warning:  Falling back to non-secure getenv for environmental" \
     "lookups!  Consider updating to a different libc.")
@@ -359,7 +362,7 @@ static inline bool PlatformGetGlobalRuntimeFileName(uint16_t major_version, std:
     return false;
 }
 
-// Android system properties are sufficiently different from environment variables that we are not re-using
+// Android system properties are sufficiently different from environment variables that we are not reusing
 // PlatformUtilsGetEnv for this purpose
 static inline std::string PlatformUtilsGetAndroidSystemProperty(const char* name) {
     std::string result;

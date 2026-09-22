@@ -30,6 +30,9 @@
 
 #include "retarget_modifier_3d.h"
 
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+
 PackedStringArray RetargetModifier3D::get_configuration_warnings() const {
 	PackedStringArray warnings = SkeletonModifier3D::get_configuration_warnings();
 	if (child_skeletons.is_empty()) {
@@ -161,7 +164,7 @@ Vector<RetargetModifier3D::RetargetBoneInfo> RetargetModifier3D::cache_bone_rest
 
 void RetargetModifier3D::_update_child_skeleton_rests(int p_child_skeleton_idx) {
 	ERR_FAIL_INDEX(p_child_skeleton_idx, child_skeletons.size());
-	Skeleton3D *c = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(child_skeletons[p_child_skeleton_idx].skeleton_id));
+	Skeleton3D *c = ObjectDB::get_instance<Skeleton3D>(child_skeletons[p_child_skeleton_idx].skeleton_id);
 	if (!c) {
 		return;
 	}
@@ -192,7 +195,7 @@ void RetargetModifier3D::_update_child_skeletons() {
 
 void RetargetModifier3D::_reset_child_skeleton_poses() {
 	for (const RetargetInfo &E : child_skeletons) {
-		Skeleton3D *c = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(E.skeleton_id));
+		Skeleton3D *c = ObjectDB::get_instance<Skeleton3D>(E.skeleton_id);
 		if (!c) {
 			continue;
 		}
@@ -203,7 +206,7 @@ void RetargetModifier3D::_reset_child_skeleton_poses() {
 			if (F.bone_id < 0) {
 				continue;
 			}
-			c->reset_bone_pose(F.bone_id);
+			c->reset_bone_pose(F.bone_id, copy_bone_skin_scale);
 		}
 	}
 }
@@ -216,7 +219,7 @@ void RetargetModifier3D::_reset_child_skeletons() {
 #ifdef TOOLS_ENABLED
 void RetargetModifier3D::_force_update_child_skeletons() {
 	for (const RetargetInfo &E : child_skeletons) {
-		Skeleton3D *c = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(E.skeleton_id));
+		Skeleton3D *c = ObjectDB::get_instance<Skeleton3D>(E.skeleton_id);
 		if (!c) {
 			continue;
 		}
@@ -249,7 +252,7 @@ void RetargetModifier3D::remove_child_notify(Node *p_child) {
 
 void RetargetModifier3D::_validate_property(PropertyInfo &p_property) const {
 	if (use_global_pose) {
-		if (p_property.name == "enable_flags") {
+		if (p_property.name == "enable") {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
@@ -258,6 +261,8 @@ void RetargetModifier3D::_validate_property(PropertyInfo &p_property) const {
 void RetargetModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_profile", "profile"), &RetargetModifier3D::set_profile);
 	ClassDB::bind_method(D_METHOD("get_profile"), &RetargetModifier3D::get_profile);
+	ClassDB::bind_method(D_METHOD("set_copy_bone_skin_scale", "enabled"), &RetargetModifier3D::set_copy_bone_skin_scale);
+	ClassDB::bind_method(D_METHOD("is_copying_bone_skin_scale"), &RetargetModifier3D::is_copying_bone_skin_scale);
 	ClassDB::bind_method(D_METHOD("set_use_global_pose", "use_global_pose"), &RetargetModifier3D::set_use_global_pose);
 	ClassDB::bind_method(D_METHOD("is_using_global_pose"), &RetargetModifier3D::is_using_global_pose);
 	ClassDB::bind_method(D_METHOD("set_enable_flags", "enable_flags"), &RetargetModifier3D::set_enable_flags);
@@ -270,7 +275,8 @@ void RetargetModifier3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scale_enabled", "enabled"), &RetargetModifier3D::set_scale_enabled);
 	ClassDB::bind_method(D_METHOD("is_scale_enabled"), &RetargetModifier3D::is_scale_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonProfile"), "set_profile", "get_profile");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, SkeletonProfile::get_class_static()), "set_profile", "get_profile");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "copy_bone_skin_scale"), "set_copy_bone_skin_scale", "is_copying_bone_skin_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_global_pose"), "set_use_global_pose", "is_using_global_pose");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "enable", PROPERTY_HINT_FLAGS, "Position,Rotation,Scale"), "set_enable_flags", "get_enable_flags");
 
@@ -304,7 +310,7 @@ void RetargetModifier3D::_retarget_global_pose() {
 	}
 
 	for (const RetargetInfo &E : child_skeletons) {
-		Skeleton3D *target_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(E.skeleton_id));
+		Skeleton3D *target_skeleton = ObjectDB::get_instance<Skeleton3D>(E.skeleton_id);
 		if (!target_skeleton) {
 			continue;
 		}
@@ -338,24 +344,20 @@ void RetargetModifier3D::_retarget_pose() {
 	}
 
 	for (const RetargetInfo &E : child_skeletons) {
-		Skeleton3D *target_skeleton = Object::cast_to<Skeleton3D>(ObjectDB::get_instance(E.skeleton_id));
+		Skeleton3D *target_skeleton = ObjectDB::get_instance<Skeleton3D>(E.skeleton_id);
 		if (!target_skeleton) {
 			continue;
 		}
 		float motion_scale_ratio = target_skeleton->get_motion_scale() / source_skeleton->get_motion_scale();
 		for (int i = 0; i < source_bone_ids.size(); i++) {
 			int target_bone_id = E.humanoid_bone_rests[i].bone_id;
-			if (target_bone_id < 0) {
-				continue;
-			}
-			int source_bone_id = source_bone_ids[i];
-			if (source_bone_id < 0) {
+			if (target_bone_id < 0 || source_bone_ids[i] < 0) {
 				continue;
 			}
 
 			Transform3D extracted_transform = source_poses[i];
 			extracted_transform.basis = E.humanoid_bone_rests[i].pre_basis * extracted_transform.basis * E.humanoid_bone_rests[i].post_basis;
-			extracted_transform.origin = E.humanoid_bone_rests[i].pre_basis.xform((extracted_transform.origin - source_skeleton->get_bone_rest(source_bone_id).origin) * motion_scale_ratio) + target_skeleton->get_bone_rest(target_bone_id).origin;
+			extracted_transform.origin = E.humanoid_bone_rests[i].pre_basis.xform((extracted_transform.origin - source_skeleton->get_bone_rest(source_bone_ids[i]).origin) * motion_scale_ratio) + target_skeleton->get_bone_rest(target_bone_id).origin;
 
 			if (enable_flags.has_flag(TRANSFORM_FLAG_POSITION)) {
 				target_skeleton->set_bone_pose_position(target_bone_id, extracted_transform.origin);
@@ -370,11 +372,51 @@ void RetargetModifier3D::_retarget_pose() {
 	}
 }
 
-void RetargetModifier3D::_process_modification() {
+void RetargetModifier3D::_retarget_skin_scale() {
+	Skeleton3D *source_skeleton = get_skeleton();
+	if (profile.is_null() || !source_skeleton) {
+		return;
+	}
+
+	LocalVector<Vector3> source_skin_scales;
+	for (int source_bone_id : source_bone_ids) {
+		Vector3 skin_scale = source_bone_id < 0 ? DEFAULT_SKIN_SCALE : source_skeleton->get_bone_skin_scale(source_bone_id);
+		source_skin_scales.push_back(influence < 1.0 ? DEFAULT_SKIN_SCALE.lerp(skin_scale, influence) : skin_scale);
+	}
+
+	for (const RetargetInfo &E : child_skeletons) {
+		Skeleton3D *target_skeleton = ObjectDB::get_instance<Skeleton3D>(E.skeleton_id);
+		if (!target_skeleton) {
+			continue;
+		}
+		for (int i = 0; i < source_bone_ids.size(); i++) {
+			int target_bone_id = E.humanoid_bone_rests[i].bone_id;
+			if (target_bone_id < 0 || source_bone_ids[i] < 0) {
+				continue;
+			}
+
+			Vector3 skin_scale = source_skin_scales[i];
+			if (!skin_scale.is_equal_approx(DEFAULT_SKIN_SCALE)) {
+				Basis to_target = E.humanoid_bone_rests[i].post_basis.orthonormalized();
+				if (!to_target.is_equal_approx(Basis())) {
+					skin_scale = (to_target.transposed() * Basis().scaled(skin_scale) * to_target).get_scale();
+				}
+			}
+			if (!target_skeleton->get_bone_skin_scale(target_bone_id).is_equal_approx(skin_scale)) {
+				target_skeleton->set_bone_skin_scale(target_bone_id, skin_scale);
+			}
+		}
+	}
+}
+
+void RetargetModifier3D::_process_modification(double p_delta) {
 	if (use_global_pose) {
 		_retarget_global_pose();
 	} else {
 		_retarget_pose();
+	}
+	if (copy_bone_skin_scale) {
+		_retarget_skin_scale();
 	}
 }
 
@@ -387,6 +429,17 @@ void RetargetModifier3D::set_profile(Ref<SkeletonProfile> p_profile) {
 
 Ref<SkeletonProfile> RetargetModifier3D::get_profile() const {
 	return profile;
+}
+
+void RetargetModifier3D::set_copy_bone_skin_scale(bool p_enabled) {
+	if (copy_bone_skin_scale != p_enabled) {
+		_reset_child_skeleton_poses();
+	}
+	copy_bone_skin_scale = p_enabled;
+}
+
+bool RetargetModifier3D::is_copying_bone_skin_scale() const {
+	return copy_bone_skin_scale;
 }
 
 void RetargetModifier3D::set_use_global_pose(bool p_use_global_pose) {

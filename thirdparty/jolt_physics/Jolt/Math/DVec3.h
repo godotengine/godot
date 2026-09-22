@@ -50,6 +50,9 @@ public:
 	/// Vector with all zeros
 	static JPH_INLINE DVec3		sZero();
 
+	/// Vector with all ones
+	static JPH_INLINE DVec3		sOne();
+
 	/// Vectors with the principal axis
 	static JPH_INLINE DVec3		sAxisX()										{ return DVec3(1, 0, 0); }
 	static JPH_INLINE DVec3		sAxisY()										{ return DVec3(0, 1, 0); }
@@ -271,8 +274,8 @@ public:
 	static JPH_INLINE Type		sFixW(TypeArg inValue);
 
 	/// Representations of true and false for boolean operations
-	inline static const double	cTrue = BitCast<double>(~uint64(0));
-	inline static const double	cFalse = 0.0;
+	inline static constexpr double	cTrue = BitCast<double>(~uint64(0));
+	inline static constexpr double	cFalse = 0.0;
 
 	union
 	{
@@ -281,7 +284,7 @@ public:
 	};
 };
 
-static_assert(std::is_trivial<DVec3>(), "Is supposed to be a trivial type!");
+static_assert(std::is_trivially_default_constructible<DVec3>() && std::is_trivially_copyable<DVec3>(), "Is supposed to be a trivial type!");
 
 JPH_NAMESPACE_END
 

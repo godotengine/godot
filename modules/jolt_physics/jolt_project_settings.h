@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 enum JoltJointWorldNode : int {
 	JOLT_JOINT_WORLD_NODE_A,
@@ -42,7 +42,6 @@ public:
 	inline static int simulation_velocity_steps;
 	inline static int simulation_position_steps;
 	inline static bool use_enhanced_internal_edge_removal_for_bodies;
-	inline static bool areas_detect_static_bodies;
 	inline static bool generate_all_kinematic_contacts;
 	inline static float penetration_slop;
 	inline static float speculative_contact_distance;

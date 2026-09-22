@@ -1,6 +1,6 @@
 /* pngget.c - retrieval of values from info struct
  *
- * Copyright (c) 2018-2024 Cosmin Truta
+ * Copyright (c) 2018-2025 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -122,8 +122,8 @@ png_get_compression_type(png_const_structrp png_ptr, png_const_inforp info_ptr)
 }
 
 png_uint_32 PNGAPI
-png_get_x_pixels_per_meter(png_const_structrp png_ptr, png_const_inforp
-   info_ptr)
+png_get_x_pixels_per_meter(png_const_structrp png_ptr,
+    png_const_inforp info_ptr)
 {
 #ifdef PNG_pHYs_SUPPORTED
    png_debug(1, "in png_get_x_pixels_per_meter");
@@ -143,8 +143,8 @@ png_get_x_pixels_per_meter(png_const_structrp png_ptr, png_const_inforp
 }
 
 png_uint_32 PNGAPI
-png_get_y_pixels_per_meter(png_const_structrp png_ptr, png_const_inforp
-    info_ptr)
+png_get_y_pixels_per_meter(png_const_structrp png_ptr,
+    png_const_inforp info_ptr)
 {
 #ifdef PNG_pHYs_SUPPORTED
    png_debug(1, "in png_get_y_pixels_per_meter");
@@ -186,8 +186,8 @@ png_get_pixels_per_meter(png_const_structrp png_ptr, png_const_inforp info_ptr)
 
 #ifdef PNG_FLOATING_POINT_SUPPORTED
 float PNGAPI
-png_get_pixel_aspect_ratio(png_const_structrp png_ptr, png_const_inforp
-   info_ptr)
+png_get_pixel_aspect_ratio(png_const_structrp png_ptr,
+    png_const_inforp info_ptr)
 {
 #ifdef PNG_READ_pHYs_SUPPORTED
    png_debug(1, "in png_get_pixel_aspect_ratio");
@@ -737,7 +737,6 @@ png_get_iCCP(png_const_structrp png_ptr, png_inforp info_ptr,
    }
 
    return 0;
-
 }
 #endif
 

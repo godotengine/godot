@@ -30,17 +30,17 @@
 
 #pragma once
 
-#include "core/math/projection.h"
-#include "core/os/mutex.h"
-#include "core/string/string_builder.h"
+#ifdef GLES3_ENABLED
+
+#include "core/templates/a_hash_map.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server_types.h"
 
-#ifdef GLES3_ENABLED
+#include <platform_gl.h>
 
-#include "platform_gl.h"
+class StringBuilder;
 
 class ShaderGLES3 {
 public:
@@ -102,10 +102,8 @@ private:
 			}
 		};
 
-		LocalVector<OAHashMap<uint64_t, Specialization>> variants;
+		LocalVector<AHashMap<uint64_t, Specialization>> variants;
 	};
-
-	Mutex variant_set_mutex;
 
 	void _get_uniform_locations(Version::Specialization &spec, Version *p_version);
 	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
@@ -188,29 +186,29 @@ protected:
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_NULL_V(version, false);
 
-		if (version->variants.size() == 0) {
+		if (version->variants.is_empty()) {
 			_initialize_version(version); //may lack initialization
 		}
 
-		Version::Specialization *spec = version->variants[p_variant].lookup_ptr(p_specialization);
+		Version::Specialization *spec = version->variants[p_variant].getptr(p_specialization);
 		if (!spec) {
 			if (false) {
 				// Queue load this specialization and use defaults in the meantime (TODO)
 
-				spec = version->variants[p_variant].lookup_ptr(specialization_default_mask);
+				spec = version->variants[p_variant].getptr(specialization_default_mask);
 			} else {
 				// Compile on the spot
 				Version::Specialization s;
 				_compile_specialization(s, p_variant, version, p_specialization);
 				version->variants[p_variant].insert(p_specialization, s);
-				spec = version->variants[p_variant].lookup_ptr(p_specialization);
+				spec = version->variants[p_variant].getptr(p_specialization);
 				if (shader_cache_dir_valid) {
 					_save_to_cache(version);
 				}
 			}
 		} else if (spec->build_queued) {
 			// Still queued, wait
-			spec = version->variants[p_variant].lookup_ptr(specialization_default_mask);
+			spec = version->variants[p_variant].getptr(specialization_default_mask);
 		}
 
 		if (!spec || !spec->ok) {
@@ -228,7 +226,7 @@ protected:
 		Version *version = version_owner.get_or_null(p_version);
 		ERR_FAIL_NULL_V(version, -1);
 		ERR_FAIL_INDEX_V(p_variant, int(version->variants.size()), -1);
-		Version::Specialization *spec = version->variants[p_variant].lookup_ptr(p_specialization);
+		Version::Specialization *spec = version->variants[p_variant].getptr(p_specialization);
 		ERR_FAIL_NULL_V(spec, -1);
 		ERR_FAIL_INDEX_V(p_which, int(spec->uniform_location.size()), -1);
 		return spec->uniform_location[p_which];
@@ -250,7 +248,7 @@ public:
 	static void set_shader_cache_save_compressed_zstd(bool p_enable);
 	static void set_shader_cache_save_debug(bool p_enable);
 
-	RS::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
+	RenderingServerTypes::ShaderNativeSourceCode version_get_native_source_code(RID p_version);
 
 	void initialize(const String &p_general_defines = "", int p_base_texture_index = 0);
 	virtual ~ShaderGLES3();

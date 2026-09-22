@@ -31,8 +31,9 @@
 #include <windows.h>
 
 #include <shlwapi.h>
-#include <stdio.h>
-#include <stdlib.h>
+
+#include <cstdlib>
+#include <cwchar>
 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4

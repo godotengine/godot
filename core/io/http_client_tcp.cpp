@@ -32,7 +32,10 @@
 
 #include "http_client_tcp.h"
 
+#include "core/io/stream_peer_tcp.h"
 #include "core/io/stream_peer_tls.h"
+#include "core/object/class_db.h"
+#include "core/os/os.h"
 #include "core/version.h"
 
 HTTPClient *HTTPClientTCP::_create_func(bool p_notify_postinitialize) {
@@ -153,10 +156,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(connection.is_null(), ERR_INVALID_DATA);
 
-	Error err = verify_headers(p_headers);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(verify_headers(p_headers));
 
 	String uri = p_url;
 	if (tls_options.is_null() && http_proxy_port != -1) {
@@ -483,8 +483,7 @@ Error HTTPClientTCP::poll() {
 						(rs >= 4 && response_str[rs - 4] == '\r' && response_str[rs - 3] == '\n' && response_str[rs - 2] == '\r' && response_str[rs - 1] == '\n')) {
 					// End of response, parse.
 					response_str.push_back(0);
-					String response;
-					response.append_utf8((const char *)response_str.ptr(), response_str.size());
+					String response = String::utf8((const char *)response_str.ptr(), response_str.size());
 					Vector<String> responses = response.split("\n");
 					body_size = -1;
 					chunked = false;

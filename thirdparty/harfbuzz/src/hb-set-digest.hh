@@ -31,11 +31,10 @@
 #include "hb-machinery.hh"
 
 /*
- * The set-digests here implement various "filters" that support
- * "approximate member query".  Conceptually these are like Bloom
- * Filter and Quotient Filter, however, much smaller, faster, and
- * designed to fit the requirements of our uses for glyph coverage
- * queries.
+ * The set-digests implement "filters" that support "approximate
+ * member query".  Conceptually these are like Bloom Filter and
+ * Quotient Filter, however, much smaller, faster, and designed
+ * to fit the requirements of our uses for glyph coverage queries.
  *
  * Our filters are highly accurate if the lookup covers fairly local
  * set of glyphs, but fully flooded and ineffective if coverage is
@@ -56,11 +55,11 @@
  *   - For each glyph, if it doesn't match the subtable digest,
  *     skip it.
  *
- * The main filter we use is a combination of four bits-pattern
+ * The filter we use is a combination of three bits-pattern
  * filters. A bits-pattern filter checks a number of bits (5 or 6)
- * of the input number (glyph-id in this case) and checks whether
+ * of the input number (glyph-id in most cases) and checks whether
  * its pattern is amongst the patterns of any of the accepted values.
- * The accepted patterns are represented as a "long" integer. The
+ * The accepted patterns are represented as a "long" integer. Each
  * check is done using four bitwise operations only.
  */
 

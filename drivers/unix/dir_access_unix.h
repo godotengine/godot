@@ -40,6 +40,7 @@
 #include <unistd.h>
 
 class DirAccessUnix : public DirAccess {
+	GDSOFTCLASS(DirAccessUnix, DirAccess);
 	DIR *dir_stream = nullptr;
 
 	bool _cisdir = false;
@@ -49,6 +50,7 @@ protected:
 	String current_dir;
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }
 	virtual bool is_hidden(const String &p_name);
+	virtual String fix_path(const String &p_path) const override;
 
 public:
 	typedef void (*RemoveNotificationFunc)(const String &p_file);

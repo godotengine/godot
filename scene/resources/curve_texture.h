@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "scene/resources/curve.h"
 #include "scene/resources/texture.h"
 
 class CurveTexture : public Texture2D {
@@ -71,7 +72,6 @@ public:
 	virtual int get_height() const override { return 1; }
 	virtual bool has_alpha() const override { return false; }
 
-	CurveTexture();
 	~CurveTexture();
 };
 
@@ -114,6 +114,5 @@ public:
 	virtual int get_height() const override { return 1; }
 	virtual bool has_alpha() const override { return false; }
 
-	CurveXYZTexture();
 	~CurveXYZTexture();
 };

@@ -8,13 +8,14 @@ pluginManagement {
         id 'com.android.asset-pack' version versions.androidGradlePlugin
         id 'org.jetbrains.kotlin.android' version versions.kotlinVersion
         id 'io.github.gradle-nexus.publish-plugin' version versions.nexusPublishVersion
+        id 'com.android.test' version versions.androidGradlePlugin
     }
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
     }
 }
 
@@ -25,5 +26,6 @@ include ':lib'
 include ':nativeSrcsConfigs'
 include ':editor'
 
-include ':assetPacks:installTime'
-project(':assetPacks:installTime').projectDir = file("app/assetPacks/installTime")
+include ':assetPackInstallTime'
+project(':assetPackInstallTime').projectDir = file("app/assetPackInstallTime")
+include ':editor:macrobenchmark'

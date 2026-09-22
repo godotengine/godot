@@ -51,12 +51,6 @@
 
 /* g++ didn't like older gtype.h gcc-only code path. */
 #include <glib.h>
-#if !GLIB_CHECK_VERSION(2,29,16)
-#undef __GNUC__
-#undef __GNUC_MINOR__
-#define __GNUC__ 2
-#define __GNUC_MINOR__ 6
-#endif
 
 #include "hb-gobject.h"
 

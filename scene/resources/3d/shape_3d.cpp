@@ -30,9 +30,12 @@
 
 #include "shape_3d.h"
 
+#include "core/config/project_settings.h"
+#include "core/object/class_db.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_manager.h"
 
 void Shape3D::add_vertices_to_array(Vector<Vector3> &array, const Transform3D &p_xform) {
 	Vector<Vector3> toadd = get_debug_mesh_lines();
@@ -107,36 +110,30 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 	debug_mesh_cache.instantiate();
 
 	if (!lines.is_empty()) {
-		//make mesh
-		Vector<Vector3> array;
-		array.resize(lines.size());
-		Vector3 *v = array.ptrw();
-
-		Vector<Color> arraycol;
-		arraycol.resize(lines.size());
-		Color *c = arraycol.ptrw();
-
-		for (int i = 0; i < lines.size(); i++) {
-			v[i] = lines[i];
-			c[i] = debug_color;
-		}
+		Vector<Color> colors;
+		colors.resize(lines.size());
+		colors.fill(debug_color);
 
 		Array lines_array;
 		lines_array.resize(Mesh::ARRAY_MAX);
-		lines_array[Mesh::ARRAY_VERTEX] = array;
-		lines_array[Mesh::ARRAY_COLOR] = arraycol;
-
-		Ref<StandardMaterial3D> material = get_debug_collision_material();
+		lines_array[Mesh::ARRAY_VERTEX] = lines;
+		lines_array[Mesh::ARRAY_COLOR] = colors;
 
 		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, lines_array);
-		debug_mesh_cache->surface_set_material(0, material);
+
+		SceneTree *scene_tree = SceneTree::get_singleton();
+		if (scene_tree) {
+			debug_mesh_cache->surface_set_material(0, scene_tree->get_debug_collision_material());
+		}
 
 		if (debug_fill) {
 			Ref<ArrayMesh> array_mesh = get_debug_arraymesh_faces(debug_color * Color(1.0, 1.0, 1.0, 0.0625));
 			if (array_mesh.is_valid() && array_mesh->get_surface_count() > 0) {
 				Array solid_array = array_mesh->surface_get_arrays(0);
 				debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, solid_array);
-				debug_mesh_cache->surface_set_material(1, material);
+				if (scene_tree) {
+					debug_mesh_cache->surface_set_material(1, scene_tree->get_debug_collision_material());
+				}
 			}
 		}
 	}
@@ -144,29 +141,23 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 	return debug_mesh_cache;
 }
 
-Ref<Material> Shape3D::get_debug_collision_material() {
-	if (collision_material.is_valid()) {
-		return collision_material;
-	}
-
-	Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
-	material->set_albedo(Color(1.0, 1.0, 1.0));
-	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
-	material->set_cull_mode(StandardMaterial3D::CULL_BACK);
-	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-
-	collision_material = material;
-
-	return collision_material;
-}
-
 void Shape3D::_update_shape() {
 	emit_changed();
 	debug_mesh_cache.unref();
+}
+
+void Shape3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "custom_solver_bias" && GLOBAL_GET(PhysicsServer3DManager::setting_property_name) == PhysicsServer3DManager::JOLT_PHYSICS_NAME) {
+		// This property is not used by Jolt Physics. Hide it from the editor to avoid confusion.
+		// Third-party physics engines may make use of this property, so we leave it visible for those.
+		p_property.usage = PROPERTY_USAGE_STORAGE;
+	}
+
+	if (p_property.name == "margin" && GLOBAL_GET(PhysicsServer3DManager::setting_property_name) == PhysicsServer3DManager::GODOT_PHYSICS_3D_NAME) {
+		// This property is not used by GodotPhysics3D. Hide it from the editor to avoid confusion.
+		// Third-party physics engines may make use of this property, so we leave it visible for those.
+		p_property.usage = PROPERTY_USAGE_STORAGE;
+	}
 }
 
 void Shape3D::_bind_methods() {
@@ -191,5 +182,5 @@ Shape3D::Shape3D(RID p_shape) :
 
 Shape3D::~Shape3D() {
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
-	PhysicsServer3D::get_singleton()->free(shape);
+	PhysicsServer3D::get_singleton()->free_rid(shape);
 }

@@ -32,15 +32,6 @@
 
 #include "core/variant/variant.h"
 
-CryptoCore::RandomGenerator *FileAccessEncrypted::_fae_static_rng = nullptr;
-
-void FileAccessEncrypted::deinitialize() {
-	if (_fae_static_rng) {
-		memdelete(_fae_static_rng);
-		_fae_static_rng = nullptr;
-	}
-}
-
 Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic, const Vector<uint8_t> &p_iv) {
 	ERR_FAIL_COND_V_MSG(file.is_valid(), ERR_ALREADY_IN_USE, vformat("Can't open file while another file from path '%s' is open.", file->get_path_absolute()));
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
@@ -56,15 +47,7 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 		key = p_key;
 		if (p_iv.is_empty()) {
 			iv.resize(16);
-			if (unlikely(!_fae_static_rng)) {
-				_fae_static_rng = memnew(CryptoCore::RandomGenerator);
-				if (_fae_static_rng->init() != OK) {
-					memdelete(_fae_static_rng);
-					_fae_static_rng = nullptr;
-					ERR_FAIL_V_MSG(FAILED, "Failed to initialize random number generator.");
-				}
-			}
-			Error err = _fae_static_rng->get_random_bytes(iv.ptrw(), 16);
+			Error err = CryptoCore::generate_random(iv.ptrw(), 16);
 			ERR_FAIL_COND_V(err != OK, err);
 		} else {
 			ERR_FAIL_COND_V(p_iv.size() != 16, ERR_INVALID_PARAMETER);
@@ -98,13 +81,7 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 		uint64_t blen = p_base->get_buffer(data.ptrw(), ds);
 		ERR_FAIL_COND_V(blen != ds, ERR_FILE_CORRUPT);
 
-		{
-			CryptoCore::AESContext ctx;
-
-			ctx.set_encode_key(key.ptrw(), 256); // Due to the nature of CFB, same key schedule is used for both encryption and decryption!
-			ctx.decrypt_cfb(ds, iv.ptrw(), data.ptrw(), data.ptrw());
-		}
-
+		CryptoCore::decrypt_cfb(data.ptrw(), data.ptrw(), ds, key.ptrw(), key.size(), iv.ptrw());
 		data.resize(length);
 
 		unsigned char hash[16];
@@ -140,7 +117,7 @@ void FileAccessEncrypted::_close() {
 	}
 
 	if (writing) {
-		Vector<uint8_t> compressed;
+		LocalVector<uint8_t> compressed;
 		uint64_t len = data.size();
 		if (len % 16) {
 			len += 16 - (len % 16);
@@ -150,13 +127,10 @@ void FileAccessEncrypted::_close() {
 		ERR_FAIL_COND(CryptoCore::md5(data.ptr(), data.size(), hash) != OK); // Bug?
 
 		compressed.resize(len);
-		memset(compressed.ptrw(), 0, len);
-		for (int i = 0; i < data.size(); i++) {
-			compressed.write[i] = data[i];
-		}
-
-		CryptoCore::AESContext ctx;
-		ctx.set_encode_key(key.ptrw(), 256);
+		memcpy(compressed.ptr(), data.ptr(), data.size());
+		memset(compressed.ptr() + data.size(), 0, len - data.size());
+		Error err = CryptoCore::encrypt_cfb(compressed.ptr(), compressed.ptr(), len, key.ptr(), key.size(), iv.ptr());
+		ERR_FAIL_COND_MSG(err, "Error encrypting file data: " + itos(err));
 
 		if (use_magic) {
 			file->store_32(ENCRYPTED_HEADER_MAGIC);
@@ -165,8 +139,6 @@ void FileAccessEncrypted::_close() {
 		file->store_buffer(hash, 16);
 		file->store_64(data.size());
 		file->store_buffer(iv.ptr(), 16);
-
-		ctx.encrypt_cfb(len, iv.ptrw(), compressed.ptrw(), compressed.ptrw());
 
 		file->store_buffer(compressed.ptr(), compressed.size());
 		data.clear();

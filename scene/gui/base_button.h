@@ -34,6 +34,7 @@
 #include "scene/gui/control.h"
 
 class ButtonGroup;
+class Timer;
 
 class BaseButton : public Control {
 	GDCLASS(BaseButton, Control);
@@ -45,6 +46,15 @@ public:
 	};
 
 private:
+	struct ThemeCache {
+		int click_margin = 0;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> hover_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
+	} theme_cache;
+
 	BitField<MouseButtonMask> button_mask = MouseButtonMask::LEFT;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;
@@ -62,7 +72,7 @@ private:
 		bool pressing_inside = false;
 		bool pressed_down_with_focus = false;
 		bool disabled = false;
-
+		int touch_index = -1;
 	} status;
 
 	Ref<ButtonGroup> button_group;
@@ -86,6 +96,7 @@ protected:
 	void _notification(int p_what);
 
 	bool _was_pressed_by_mouse() const;
+	void _accessibility_action_click(const Variant &p_data);
 
 	GDVIRTUAL0(_pressed)
 	GDVIRTUAL1(_toggled, bool)
@@ -101,14 +112,16 @@ public:
 
 	DrawMode get_draw_mode() const;
 
-	/* Signals */
+	virtual bool has_point(const Point2 &p_point) const override;
 
 	bool is_pressed() const; ///< return whether button is pressed (toggled in)
 	bool is_pressing() const; ///< return whether button is pressed (toggled in)
 	bool is_hovered() const;
 
+	void press();
 	void set_pressed(bool p_pressed); // Only works in toggle mode.
 	void set_pressed_no_signal(bool p_pressed);
+
 	void set_toggle_mode(bool p_on);
 	bool is_toggle_mode() const;
 

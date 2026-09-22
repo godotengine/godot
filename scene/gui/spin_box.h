@@ -34,10 +34,22 @@
 #include "scene/gui/range.h"
 #include "scene/main/timer.h"
 
+class SpinBoxLineEdit : public LineEdit {
+	GDCLASS(SpinBoxLineEdit, LineEdit);
+
+protected:
+	void _notification(int p_what);
+
+	void _accessibility_action_inc(const Variant &p_data);
+	void _accessibility_action_dec(const Variant &p_data);
+
+	virtual String _get_accessibility_name() const override;
+};
+
 class SpinBox : public Range {
 	GDCLASS(SpinBox, Range);
 
-	LineEdit *line_edit = nullptr;
+	SpinBoxLineEdit *line_edit = nullptr;
 	bool update_on_text_changed = false;
 	bool accepted = true;
 
@@ -57,16 +69,26 @@ class SpinBox : public Range {
 	Timer *range_click_timer = nullptr;
 	void _range_click_timeout();
 	void _release_mouse_from_drag_mode();
+	void _arrow_clicked(bool p_up);
 
 	void _update_text(bool p_only_update_if_value_changed = false);
+	void _set_error(const String &p_error);
 	void _text_submitted(const String &p_string);
 	void _text_changed(const String &p_string);
 
+	String format;
+	String plural_format;
+	AutoTranslateMode format_auto_translate_mode = AUTO_TRANSLATE_MODE_DISABLED;
+	String _get_xl_format() const;
+
+	bool use_default_format = false;
+#ifndef DISABLE_DEPRECATED
 	String prefix;
 	String suffix;
+#endif
 	String last_text_value;
 	double custom_arrow_step = 0.0;
-	bool use_custom_arrow_step = false;
+	bool custom_arrow_round = false;
 
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
@@ -93,7 +115,6 @@ class SpinBox : public Range {
 	inline int _get_widest_button_icon_width();
 
 	struct ThemeCache {
-		Ref<Texture2D> updown_icon;
 		Ref<Texture2D> up_icon;
 		Ref<Texture2D> up_hover_icon;
 		Ref<Texture2D> up_pressed_icon;
@@ -127,21 +148,32 @@ class SpinBox : public Range {
 		int buttons_vertical_separation = 0;
 		int field_and_buttons_separation = 0;
 		int buttons_width = 0;
+		int icon_max_width = 0;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
+
 #ifndef DISABLE_DEPRECATED
+		Ref<Texture2D> updown_icon;
+		bool is_updown_assigned = false;
 		bool set_min_buttons_width_from_icons = false;
 #endif
 	} theme_cache;
 
 	void _mouse_exited();
 	void _update_buttons_state_for_current_value();
-	void _set_step_no_signal(double p_step);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _value_changed(double p_value) override;
-	void _validate_property(PropertyInfo &p_property) const;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+	Size2 _fit_icon_size(const Size2 &p_size) const;
 	static void _bind_methods();
 
 public:
@@ -155,11 +187,24 @@ public:
 	void set_editable(bool p_enabled);
 	bool is_editable() const;
 
+	void set_format(const String &p_format);
+	String get_format() const;
+
+	void set_plural_format(const String &p_format);
+	String get_plural_format() const { return plural_format; }
+
+	void set_format_with_plural(const String &p_format, const String &p_plural);
+
+	void set_format_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_format_auto_translate_mode() const { return format_auto_translate_mode; }
+
+#ifndef DISABLE_DEPRECATED
 	void set_suffix(const String &p_suffix);
 	String get_suffix() const;
 
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+#endif
 
 	void set_update_on_text_changed(bool p_enabled);
 	bool get_update_on_text_changed() const;
@@ -170,6 +215,9 @@ public:
 	void apply();
 	void set_custom_arrow_step(const double p_custom_arrow_step);
 	double get_custom_arrow_step() const;
+
+	void set_custom_arrow_round(bool p_round);
+	bool is_custom_arrow_rounding() const;
 
 	SpinBox();
 };

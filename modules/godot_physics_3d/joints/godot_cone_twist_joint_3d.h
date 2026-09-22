@@ -79,7 +79,7 @@ public:
 	real_t m_biasFactor = 0.3;
 	real_t m_relaxationFactor = 1.0;
 
-	real_t m_swingSpan1 = Math_TAU / 8.0;
+	real_t m_swingSpan1 = Math::TAU / 8.0;
 	real_t m_swingSpan2 = 0.0;
 	real_t m_twistSpan = 0.0;
 
@@ -101,7 +101,7 @@ public:
 	bool m_solveSwingLimit = false;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_CONE_TWIST; }
+	virtual PS3DE::JointType get_type() const override { return PS3DE::JOINT_TYPE_CONE_TWIST; }
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
@@ -134,6 +134,6 @@ public:
 		return m_twistLimitSign;
 	}
 
-	void set_param(PhysicsServer3D::ConeTwistJointParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer3D::ConeTwistJointParam p_param) const;
+	void set_param(PS3DE::ConeTwistJointParam p_param, real_t p_value);
+	real_t get_param(PS3DE::ConeTwistJointParam p_param) const;
 };

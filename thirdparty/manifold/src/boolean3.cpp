@@ -12,184 +12,108 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "./boolean3.h"
+#include "boolean3.h"
 
 #include <limits>
+#include <unordered_set>
 
-#include "./parallel.h"
+#include "disjoint_sets.h"
+#include "parallel.h"
+
+#if (MANIFOLD_PAR == 1)
+#include <tbb/combinable.h>
+#endif
 
 using namespace manifold;
 
 namespace {
 
-// These two functions (Interpolate and Intersect) are the only places where
-// floating-point operations take place in the whole Boolean function. These
-// are carefully designed to minimize rounding error and to eliminate it at edge
-// cases to ensure consistency.
+// `Intersect` stays local to the Boolean3 kernel cascade; the lower-level
+// symbolic perturbation primitives it uses live in shared.h.
 
-vec2 Interpolate(vec3 pL, vec3 pR, double x) {
-  const double dxL = x - pL.x;
-  const double dxR = x - pR.x;
-  DEBUG_ASSERT(dxL * dxR <= 0, logicErr,
-               "Boolean manifold error: not in domain");
-  const bool useL = fabs(dxL) < fabs(dxR);
-  const vec3 dLR = pR - pL;
-  const double lambda = (useL ? dxL : dxR) / dLR.x;
-  if (!std::isfinite(lambda) || !std::isfinite(dLR.y) || !std::isfinite(dLR.z))
-    return vec2(pL.y, pL.z);
-  vec2 yz;
-  yz[0] = fma(lambda, dLR.y, useL ? pL.y : pR.y);
-  yz[1] = fma(lambda, dLR.z, useL ? pL.z : pR.z);
-  return yz;
-}
-
-vec4 Intersect(const vec3 &pL, const vec3 &pR, const vec3 &qL, const vec3 &qR) {
-  const double dyL = qL.y - pL.y;
-  const double dyR = qR.y - pR.y;
+vec4 Intersect(const vec3& aL, const vec3& aR, const vec3& bL, const vec3& bR) {
+  const double dyL = bL.y - aL.y;
+  const double dyR = bR.y - aR.y;
   DEBUG_ASSERT(dyL * dyR <= 0, logicErr,
                "Boolean manifold error: no intersection");
   const bool useL = fabs(dyL) < fabs(dyR);
-  const double dx = pR.x - pL.x;
+  const double dx = aR.x - aL.x;
   double lambda = (useL ? dyL : dyR) / (dyL - dyR);
   if (!std::isfinite(lambda)) lambda = 0.0;
   vec4 xyzz;
-  xyzz.x = fma(lambda, dx, useL ? pL.x : pR.x);
-  const double pDy = pR.y - pL.y;
-  const double qDy = qR.y - qL.y;
-  const bool useP = fabs(pDy) < fabs(qDy);
-  xyzz.y = fma(lambda, useP ? pDy : qDy,
-               useL ? (useP ? pL.y : qL.y) : (useP ? pR.y : qR.y));
-  xyzz.z = fma(lambda, pR.z - pL.z, useL ? pL.z : pR.z);
-  xyzz.w = fma(lambda, qR.z - qL.z, useL ? qL.z : qR.z);
+  xyzz.x = lambda * dx + (useL ? aL.x : aR.x);
+  const double aDy = aR.y - aL.y;
+  const double bDy = bR.y - bL.y;
+  const bool useA = fabs(aDy) < fabs(bDy);
+  xyzz.y = lambda * (useA ? aDy : bDy) +
+           (useL ? (useA ? aL.y : bL.y) : (useA ? aR.y : bR.y));
+  xyzz.z = lambda * (aR.z - aL.z) + (useL ? aL.z : aR.z);
+  xyzz.w = lambda * (bR.z - bL.z) + (useL ? bL.z : bR.z);
   return xyzz;
 }
 
-template <const bool inverted>
-struct CopyFaceEdges {
-  const SparseIndices &p1q1;
-  // x can be either vert or edge (0 or 1).
-  SparseIndices &pXq1;
-  VecView<const Halfedge> halfedgesQ;
-  const size_t offset;
-
-  void operator()(const size_t i) {
-    int idx = 3 * (i + offset);
-    int pX = p1q1.Get(i, inverted);
-    int q2 = p1q1.Get(i, !inverted);
-
-    for (const int j : {0, 1, 2}) {
-      const int q1 = 3 * q2 + j;
-      const Halfedge edge = halfedgesQ[q1];
-      int a = pX;
-      int b = edge.IsForward() ? q1 : edge.pairedHalfedge;
-      if (inverted) std::swap(a, b);
-      pXq1.Set(idx + static_cast<size_t>(j), a, b);
-    }
-  }
+struct FaceEdge {
+  int edge;
+  int start;
+  int end;
+  bool isForward;
 };
 
-SparseIndices Filter11(const Manifold::Impl &inP, const Manifold::Impl &inQ,
-                       const SparseIndices &p1q2, const SparseIndices &p2q1) {
-  ZoneScoped;
-  SparseIndices p1q1(3 * p1q2.size() + 3 * p2q1.size());
-  for_each_n(autoPolicy(p1q2.size(), 1e5), countAt(0_uz), p1q2.size(),
-             CopyFaceEdges<false>({p1q2, p1q1, inQ.halfedge_, 0_uz}));
-  for_each_n(autoPolicy(p2q1.size(), 1e5), countAt(0_uz), p2q1.size(),
-             CopyFaceEdges<true>({p2q1, p1q1, inP.halfedge_, p1q2.size()}));
-  p1q1.Unique();
-  return p1q1;
+inline void LoadFaceEdges(const Halfedges& halfedges, int tri,
+                          FaceEdge edge[3]) {
+  for (const int i : {0, 1, 2}) {
+    const int halfedge = 3 * tri + i;
+    const int start = halfedges.Start(halfedge);
+    const int end = halfedges.Start(3 * tri + Next3(i));
+    if (start < end) {
+      edge[i] = {halfedge, start, end, true};
+    } else {
+      edge[i] = {halfedges.Pair(halfedge), end, start, false};
+    }
+  }
 }
 
-inline bool Shadows(double p, double q, double dir) {
-  return p == q ? dir < 0 : p < q;
-}
-
-inline std::pair<int, vec2> Shadow01(
-    const int p0, const int q1, VecView<const vec3> vertPosP,
-    VecView<const vec3> vertPosQ, VecView<const Halfedge> halfedgeQ,
-    const double expandP, VecView<const vec3> normalP, const bool reverse) {
-  const int q1s = halfedgeQ[q1].startVert;
-  const int q1e = halfedgeQ[q1].endVert;
-  const double p0x = vertPosP[p0].x;
-  const double q1sx = vertPosQ[q1s].x;
-  const double q1ex = vertPosQ[q1e].x;
-  int s01 = reverse ? Shadows(q1sx, p0x, expandP * normalP[q1s].x) -
-                          Shadows(q1ex, p0x, expandP * normalP[q1e].x)
-                    : Shadows(p0x, q1ex, expandP * normalP[p0].x) -
-                          Shadows(p0x, q1sx, expandP * normalP[p0].x);
+template <bool expandP, bool forward>
+inline std::pair<int, vec2> Shadow01(const int a0, const int b1, const int b1s,
+                                     const int b1e, const Manifold::Impl& inA,
+                                     const Manifold::Impl& inB) {
+  const double a0x = inA.vertPos_[a0].x;
+  const double b1sx = inB.vertPos_[b1s].x;
+  const double b1ex = inB.vertPos_[b1e].x;
+  const double a0xp = inA.vertNormal_[a0].x;
+  const double b1sxp = inB.vertNormal_[b1s].x;
+  const double b1exp = inB.vertNormal_[b1e].x;
+  int s01 = forward ? Shadows(a0x, b1ex, withSign(expandP, a0xp) - b1exp) -
+                          Shadows(a0x, b1sx, withSign(expandP, a0xp) - b1sxp)
+                    : Shadows(b1sx, a0x, withSign(expandP, b1sxp) - a0xp) -
+                          Shadows(b1ex, a0x, withSign(expandP, b1exp) - a0xp);
   vec2 yz01(NAN);
 
   if (s01 != 0) {
-    yz01 = Interpolate(vertPosQ[q1s], vertPosQ[q1e], vertPosP[p0].x);
-    if (reverse) {
-      vec3 diff = vertPosQ[q1s] - vertPosP[p0];
-      const double start2 = la::dot(diff, diff);
-      diff = vertPosQ[q1e] - vertPosP[p0];
-      const double end2 = la::dot(diff, diff);
-      const double dir = start2 < end2 ? normalP[q1s].y : normalP[q1e].y;
-      if (!Shadows(yz01[0], vertPosP[p0].y, expandP * dir)) s01 = 0;
+    yz01 =
+        Interpolate(inB.vertPos_[b1s], inB.vertPos_[b1e], inA.vertPos_[a0].x);
+    const int b1pair = inB.halfedge_.Pair(b1);
+    const double dir =
+        inB.faceNormal_[b1 / 3].y + inB.faceNormal_[b1pair / 3].y;
+    if (forward) {
+      if (!Shadows(inA.vertPos_[a0].y, yz01[0], -dir)) s01 = 0;
     } else {
-      if (!Shadows(vertPosP[p0].y, yz01[0], expandP * normalP[p0].y)) s01 = 0;
+      if (!Shadows(yz01[0], inA.vertPos_[a0].y, withSign(expandP, dir)))
+        s01 = 0;
     }
   }
   return std::make_pair(s01, yz01);
 }
 
-// https://github.com/scandum/binary_search/blob/master/README.md
-// much faster than standard binary search on large arrays
-size_t monobound_quaternary_search(VecView<const int64_t> array, int64_t key) {
-  if (array.size() == 0) {
-    return std::numeric_limits<size_t>::max();
-  }
-  size_t bot = 0;
-  size_t top = array.size();
-  while (top >= 65536) {
-    size_t mid = top / 4;
-    top -= mid * 3;
-    if (key < array[bot + mid * 2]) {
-      if (key >= array[bot + mid]) {
-        bot += mid;
-      }
-    } else {
-      bot += mid * 2;
-      if (key >= array[bot + mid]) {
-        bot += mid;
-      }
-    }
-  }
-
-  while (top > 3) {
-    size_t mid = top / 2;
-    if (key >= array[bot + mid]) {
-      bot += mid;
-    }
-    top -= mid;
-  }
-
-  while (top--) {
-    if (key == array[bot + top]) {
-      return bot + top;
-    }
-  }
-  return -1;
-}
-
+template <bool expandP>
 struct Kernel11 {
-  VecView<vec4> xyzz;
-  VecView<int> s;
-  VecView<const vec3> vertPosP;
-  VecView<const vec3> vertPosQ;
-  VecView<const Halfedge> halfedgeP;
-  VecView<const Halfedge> halfedgeQ;
-  const double expandP;
-  VecView<const vec3> normalP;
-  const SparseIndices &p1q1;
+  const Manifold::Impl& inP;
+  const Manifold::Impl& inQ;
 
-  void operator()(const size_t idx) {
-    const int p1 = p1q1.Get(idx, false);
-    const int q1 = p1q1.Get(idx, true);
-    vec4 &xyzz11 = xyzz[idx];
-    int &s11 = s[idx];
+  std::pair<int, vec4> operator()(int p1, int p1s, int p1e, int q1, int q1s,
+                                  int q1e) {
+    vec4 xyzz11 = vec4(NAN);
+    int s11 = 0;
 
     // For pRL[k], qRL[k], k==0 is the left and k==1 is the right.
     int k = 0;
@@ -199,36 +123,32 @@ struct Kernel11 {
     bool shadows = false;
     s11 = 0;
 
-    const int p0[2] = {halfedgeP[p1].startVert, halfedgeP[p1].endVert};
+    const int p0[2] = {p1s, p1e};
     for (int i : {0, 1}) {
-      const auto syz01 = Shadow01(p0[i], q1, vertPosP, vertPosQ, halfedgeQ,
-                                  expandP, normalP, false);
-      const int s01 = syz01.first;
-      const vec2 yz01 = syz01.second;
+      const auto [s01, yz01] =
+          Shadow01<expandP, true>(p0[i], q1, q1s, q1e, inP, inQ);
       // If the value is NaN, then these do not overlap.
       if (std::isfinite(yz01[0])) {
         s11 += s01 * (i == 0 ? -1 : 1);
         if (k < 2 && (k == 0 || (s01 != 0) != shadows)) {
           shadows = s01 != 0;
-          pRL[k] = vertPosP[p0[i]];
+          pRL[k] = inP.vertPos_[p0[i]];
           qRL[k] = vec3(pRL[k].x, yz01.x, yz01.y);
           ++k;
         }
       }
     }
 
-    const int q0[2] = {halfedgeQ[q1].startVert, halfedgeQ[q1].endVert};
+    const int q0[2] = {q1s, q1e};
     for (int i : {0, 1}) {
-      const auto syz10 = Shadow01(q0[i], p1, vertPosQ, vertPosP, halfedgeP,
-                                  expandP, normalP, true);
-      const int s10 = syz10.first;
-      const vec2 yz10 = syz10.second;
+      const auto [s10, yz10] =
+          Shadow01<expandP, false>(q0[i], p1, p1s, p1e, inQ, inP);
       // If the value is NaN, then these do not overlap.
       if (std::isfinite(yz10[0])) {
         s11 += s10 * (i == 0 ? -1 : 1);
         if (k < 2 && (k == 0 || (s10 != 0) != shadows)) {
           shadows = s10 != 0;
-          qRL[k] = vertPosQ[q0[i]];
+          qRL[k] = inQ.vertPos_[q0[i]];
           pRL[k] = vec3(qRL[k].x, yz10.x, yz10.y);
           ++k;
         }
@@ -241,52 +161,33 @@ struct Kernel11 {
       DEBUG_ASSERT(k == 2, logicErr, "Boolean manifold error: s11");
       xyzz11 = Intersect(pRL[0], pRL[1], qRL[0], qRL[1]);
 
-      const int p1s = halfedgeP[p1].startVert;
-      const int p1e = halfedgeP[p1].endVert;
-      vec3 diff = vertPosP[p1s] - vec3(xyzz11);
-      const double start2 = la::dot(diff, diff);
-      diff = vertPosP[p1e] - vec3(xyzz11);
-      const double end2 = la::dot(diff, diff);
-      const double dir = start2 < end2 ? normalP[p1s].z : normalP[p1e].z;
-
-      if (!Shadows(xyzz11.z, xyzz11.w, expandP * dir)) s11 = 0;
+      const int p1pair = inP.halfedge_.Pair(p1);
+      const double dirP =
+          inP.faceNormal_[p1 / 3].z + inP.faceNormal_[p1pair / 3].z;
+      const int q1pair = inQ.halfedge_.Pair(q1);
+      const double dirQ =
+          inQ.faceNormal_[q1 / 3].z + inQ.faceNormal_[q1pair / 3].z;
+      if (!Shadows(xyzz11.z, xyzz11.w, withSign(expandP, dirP) - dirQ)) s11 = 0;
     }
+
+    return std::make_pair(s11, xyzz11);
   }
 };
 
-std::tuple<Vec<int>, Vec<vec4>> Shadow11(SparseIndices &p1q1,
-                                         const Manifold::Impl &inP,
-                                         const Manifold::Impl &inQ,
-                                         double expandP) {
-  ZoneScoped;
-  Vec<int> s11(p1q1.size());
-  Vec<vec4> xyzz11(p1q1.size());
-
-  for_each_n(autoPolicy(p1q1.size(), 1e4), countAt(0_uz), p1q1.size(),
-             Kernel11({xyzz11, s11, inP.vertPos_, inQ.vertPos_, inP.halfedge_,
-                       inQ.halfedge_, expandP, inP.vertNormal_, p1q1}));
-
-  p1q1.KeepFinite(xyzz11, s11);
-
-  return std::make_tuple(s11, xyzz11);
-};
-
+template <bool expandP, bool forward>
 struct Kernel02 {
-  VecView<int> s;
-  VecView<double> z;
-  VecView<const vec3> vertPosP;
-  VecView<const Halfedge> halfedgeQ;
-  VecView<const vec3> vertPosQ;
-  const double expandP;
-  VecView<const vec3> vertNormalP;
-  const SparseIndices &p0q2;
-  const bool forward;
+  const Manifold::Impl& inA;
+  const Manifold::Impl& inB;
 
-  void operator()(const size_t idx) {
-    const int p0 = p0q2.Get(idx, !forward);
-    const int q2 = p0q2.Get(idx, forward);
-    int &s02 = s[idx];
-    double &z02 = z[idx];
+  std::pair<int, double> operator()(int a0, int b2) {
+    FaceEdge edgeB[3];
+    LoadFaceEdges(inB.halfedge_, b2, edgeB);
+    return (*this)(a0, b2, edgeB);
+  }
+
+  std::pair<int, double> operator()(int a0, int b2, const FaceEdge edgeB[3]) {
+    int s02 = 0;
+    double z02 = 0.0;
 
     // For yzzLR[k], k==0 is the left and k==1 is the right.
     int k = 0;
@@ -294,33 +195,15 @@ struct Kernel02 {
     // Either the left or right must shadow, but not both. This ensures the
     // intersection is between the left and right.
     bool shadows = false;
-    int closestVert = -1;
-    double minMetric = std::numeric_limits<double>::infinity();
-    s02 = 0;
 
-    const vec3 posP = vertPosP[p0];
     for (const int i : {0, 1, 2}) {
-      const int q1 = 3 * q2 + i;
-      const Halfedge edge = halfedgeQ[q1];
-      const int q1F = edge.IsForward() ? q1 : edge.pairedHalfedge;
-
-      if (!forward) {
-        const int qVert = halfedgeQ[q1F].startVert;
-        const vec3 diff = posP - vertPosQ[qVert];
-        const double metric = la::dot(diff, diff);
-        if (metric < minMetric) {
-          minMetric = metric;
-          closestVert = qVert;
-        }
-      }
-
-      const auto syz01 = Shadow01(p0, q1F, vertPosP, vertPosQ, halfedgeQ,
-                                  expandP, vertNormalP, !forward);
+      const auto syz01 = Shadow01<expandP, forward>(
+          a0, edgeB[i].edge, edgeB[i].start, edgeB[i].end, inA, inB);
       const int s01 = syz01.first;
       const vec2 yz01 = syz01.second;
       // If the value is NaN, then these do not overlap.
       if (std::isfinite(yz01[0])) {
-        s02 += s01 * (forward == edge.IsForward() ? -1 : 1);
+        s02 += s01 * (forward == edgeB[i].isForward ? -1 : 1);
         if (k < 2 && (k == 0 || (s01 != 0) != shadows)) {
           shadows = s01 != 0;
           yzzRL[k++] = vec3(yz01[0], yz01[1], yz01[1]);
@@ -332,57 +215,29 @@ struct Kernel02 {
       z02 = NAN;
     } else {
       DEBUG_ASSERT(k == 2, logicErr, "Boolean manifold error: s02");
-      vec3 vertPos = vertPosP[p0];
-      z02 = Interpolate(yzzRL[0], yzzRL[1], vertPos.y)[1];
+      vec3 vertPosA = inA.vertPos_[a0];
+      z02 = Interpolate(yzzRL[0], yzzRL[1], vertPosA.y)[1];
       if (forward) {
-        if (!Shadows(vertPos.z, z02, expandP * vertNormalP[p0].z)) s02 = 0;
+        if (!Shadows(vertPosA.z, z02, -inB.faceNormal_[b2].z)) s02 = 0;
       } else {
-        // DEBUG_ASSERT(closestVert != -1, topologyErr, "No closest vert");
-        if (!Shadows(z02, vertPos.z, expandP * vertNormalP[closestVert].z))
+        if (!Shadows(z02, vertPosA.z, withSign(expandP, inB.faceNormal_[b2].z)))
           s02 = 0;
       }
     }
+    return std::make_pair(s02, z02);
   }
 };
 
-std::tuple<Vec<int>, Vec<double>> Shadow02(const Manifold::Impl &inP,
-                                           const Manifold::Impl &inQ,
-                                           SparseIndices &p0q2, bool forward,
-                                           double expandP) {
-  ZoneScoped;
-  Vec<int> s02(p0q2.size());
-  Vec<double> z02(p0q2.size());
-
-  auto vertNormalP = forward ? inP.vertNormal_ : inQ.vertNormal_;
-  for_each_n(autoPolicy(p0q2.size(), 1e4), countAt(0_uz), p0q2.size(),
-             Kernel02({s02, z02, inP.vertPos_, inQ.halfedge_, inQ.vertPos_,
-                       expandP, vertNormalP, p0q2, forward}));
-
-  p0q2.KeepFinite(z02, s02);
-
-  return std::make_tuple(s02, z02);
-};
-
+template <bool expandP, bool forward>
 struct Kernel12 {
-  VecView<int> x;
-  VecView<vec3> v;
-  VecView<const int64_t> p0q2;
-  VecView<const int> s02;
-  VecView<const double> z02;
-  VecView<const int64_t> p1q1;
-  VecView<const int> s11;
-  VecView<const vec4> xyzz11;
-  VecView<const Halfedge> halfedgesP;
-  VecView<const Halfedge> halfedgesQ;
-  VecView<const vec3> vertPosP;
-  const bool forward;
-  const SparseIndices &p1q2;
+  const Manifold::Impl& inA;
+  const Manifold::Impl& inB;
+  Kernel02<expandP, forward> k02;
+  Kernel11<expandP> k11;
 
-  void operator()(const size_t idx) {
-    int p1 = p1q2.Get(idx, !forward);
-    int q2 = p1q2.Get(idx, forward);
-    int &x12 = x[idx];
-    vec3 &v12 = v[idx];
+  std::pair<int, vec3> operator()(int a1, int b2) {
+    int x12 = 0;
+    vec3 v12 = vec3(NAN);
 
     // For xzyLR-[k], k==0 is the left and k==1 is the right.
     int k = 0;
@@ -393,41 +248,36 @@ struct Kernel12 {
     bool shadows = false;
     x12 = 0;
 
-    const Halfedge edge = halfedgesP[p1];
+    const int edgeAStart = inA.halfedge_.Start(a1);
+    const int edgeAEnd = inA.halfedge_.End(a1);
+    FaceEdge edgeB[3];
+    LoadFaceEdges(inB.halfedge_, b2, edgeB);
 
-    for (int vert : {edge.startVert, edge.endVert}) {
-      const int64_t key = forward ? SparseIndices::EncodePQ(vert, q2)
-                                  : SparseIndices::EncodePQ(q2, vert);
-      const size_t idx = monobound_quaternary_search(p0q2, key);
-      if (idx != std::numeric_limits<size_t>::max()) {
-        const int s = s02[idx];
-        x12 += s * ((vert == edge.startVert) == forward ? 1 : -1);
+    for (int vertA : {edgeAStart, edgeAEnd}) {
+      const auto [s, z] = k02(vertA, b2, edgeB);
+      if (std::isfinite(z)) {
+        x12 += s * ((vertA == edgeAStart) == forward ? 1 : -1);
         if (k < 2 && (k == 0 || (s != 0) != shadows)) {
           shadows = s != 0;
-          xzyLR0[k] = vertPosP[vert];
+          xzyLR0[k] = inA.vertPos_[vertA];
           std::swap(xzyLR0[k].y, xzyLR0[k].z);
           xzyLR1[k] = xzyLR0[k];
-          xzyLR1[k][1] = z02[idx];
+          xzyLR1[k][1] = z;
           k++;
         }
       }
     }
 
     for (const int i : {0, 1, 2}) {
-      const int q1 = 3 * q2 + i;
-      const Halfedge edge = halfedgesQ[q1];
-      const int q1F = edge.IsForward() ? q1 : edge.pairedHalfedge;
-      const int64_t key = forward ? SparseIndices::EncodePQ(p1, q1F)
-                                  : SparseIndices::EncodePQ(q1F, p1);
-      const size_t idx = monobound_quaternary_search(p1q1, key);
-      if (idx !=
-          std::numeric_limits<size_t>::max()) {  // s is implicitly zero for
-                                                 // anything not found
-        const int s = s11[idx];
-        x12 -= s * (edge.IsForward() ? 1 : -1);
+      const auto [s, xyzz] = forward
+                                 ? k11(a1, edgeAStart, edgeAEnd, edgeB[i].edge,
+                                       edgeB[i].start, edgeB[i].end)
+                                 : k11(edgeB[i].edge, edgeB[i].start,
+                                       edgeB[i].end, a1, edgeAStart, edgeAEnd);
+      if (std::isfinite(xyzz[0])) {
+        x12 -= s * (edgeB[i].isForward ? 1 : -1);
         if (k < 2 && (k == 0 || (s != 0) != shadows)) {
           shadows = s != 0;
-          const vec4 xyzz = xyzz11[idx];
           xzyLR0[k][0] = xyzz.x;
           xzyLR0[k][1] = xyzz.z;
           xzyLR0[k][2] = xyzz.y;
@@ -448,60 +298,213 @@ struct Kernel12 {
       v12.y = xzyy[2];
       v12.z = xzyy[1];
     }
+    return std::make_pair(x12, v12);
   }
 };
 
-std::tuple<Vec<int>, Vec<vec3>> Intersect12(
-    const Manifold::Impl &inP, const Manifold::Impl &inQ, const Vec<int> &s02,
-    const SparseIndices &p0q2, const Vec<int> &s11, const SparseIndices &p1q1,
-    const Vec<double> &z02, const Vec<vec4> &xyzz11, SparseIndices &p1q2,
-    bool forward) {
-  ZoneScoped;
-  Vec<int> x12(p1q2.size());
-  Vec<vec3> v12(p1q2.size());
+template <bool expandP, bool forward>
+struct Kernel12Recorder {
+  using Local = Intersections;
+  Kernel12<expandP, forward>& k12;
 
-  for_each_n(
-      autoPolicy(p1q2.size(), 1e4), countAt(0_uz), p1q2.size(),
-      Kernel12({x12, v12, p0q2.AsVec64(), s02, z02, p1q1.AsVec64(), s11, xyzz11,
-                inP.halfedge_, inQ.halfedge_, inP.vertPos_, forward, p1q2}));
+#if MANIFOLD_PAR == 1
+  tbb::combinable<Intersections> store;
+  Local& local() { return store.local(); }
+#else
+  Intersections localStore;
+  Local& local() { return localStore; }
+#endif
 
-  p1q2.KeepFinite(v12, x12);
+  void record(int queryIdx, int leafIdx, Local& tmp) {
+    const auto [x12, v12] = k12(queryIdx, leafIdx);
+    if (std::isfinite(v12[0])) {
+      if (forward)
+        tmp.p1q2.push_back({queryIdx, leafIdx});
+      else
+        tmp.p1q2.push_back({leafIdx, queryIdx});
+      tmp.x12.push_back(x12);
+      tmp.v12.push_back(v12);
+    }
+  }
 
-  return std::make_tuple(x12, v12);
+  Intersections get() {
+#if MANIFOLD_PAR == 1
+    Intersections result;
+    std::vector<Intersections> tmps;
+    store.combine_each(
+        [&](Intersections& data) { tmps.emplace_back(std::move(data)); });
+    std::vector<size_t> sizes;
+    size_t total_size = 0;
+    for (const auto& tmp : tmps) {
+      sizes.push_back(total_size);
+      total_size += tmp.x12.size();
+    }
+    result.p1q2.resize(total_size);
+    result.x12.resize(total_size);
+    result.v12.resize(total_size);
+    for_each_n(ExecutionPolicy::Seq, countAt(0), tmps.size(), [&](size_t i) {
+      std::copy(tmps[i].p1q2.begin(), tmps[i].p1q2.end(),
+                result.p1q2.begin() + sizes[i]);
+      std::copy(tmps[i].x12.begin(), tmps[i].x12.end(),
+                result.x12.begin() + sizes[i]);
+      std::copy(tmps[i].v12.begin(), tmps[i].v12.end(),
+                result.v12.begin() + sizes[i]);
+    });
+    return result;
+#else
+    return localStore;
+#endif
+  }
 };
 
-Vec<int> Winding03(const Manifold::Impl &inP, Vec<int> &vertices, Vec<int> &s02,
-                   bool reverse) {
+template <bool expandP, bool forward>
+Intersections Intersect12_(const Manifold::Impl& inP, const Manifold::Impl& inQ,
+                           ExecutionContext::Impl* ctx) {
   ZoneScoped;
-  // verts that are not shadowed (not in p0q2) have winding number zero.
-  Vec<int> w03(inP.NumVert(), 0);
-  if (vertices.size() <= 1e5) {
-    for_each_n(ExecutionPolicy::Seq, countAt(0), s02.size(),
-               [&w03, &vertices, &s02, reverse](const int i) {
-                 w03[vertices[i]] += s02[i] * (reverse ? -1 : 1);
-               });
-  } else {
-    for_each_n(ExecutionPolicy::Par, countAt(0), s02.size(),
-               [&w03, &vertices, &s02, reverse](const int i) {
-                 AtomicAdd(w03[vertices[i]], s02[i] * (reverse ? -1 : 1));
-               });
+  // Invariant: every ctx-passing parallel op is followed by IsCancelled to
+  // keep partial output from feeding unconditional downstream consumers.
+  // a: 1 (edge), b: 2 (face)
+  const Manifold::Impl& a = forward ? inP : inQ;
+  const Manifold::Impl& b = forward ? inQ : inP;
+
+  Kernel02<expandP, forward> k02{a, b};
+  Kernel11<expandP> k11{inP, inQ};
+
+  Kernel12<expandP, forward> k12{a, b, k02, k11};
+  Kernel12Recorder<expandP, forward> recorder{k12, {}};
+  auto f = [&a](int i) {
+    const int start = a.halfedge_.Start(i);
+    const int end = a.halfedge_.End(i);
+    return start < end ? Box(a.vertPos_[start], a.vertPos_[end]) : Box();
+  };
+  b.collider_.Collisions<false>(recorder, f, a.halfedge_.size(), true, ctx);
+  if (IsCancelled(ctx)) return Intersections{};
+
+  Intersections result = recorder.get();
+  auto& p1q2 = result.p1q2;
+  // sort p1q2 according to edges
+  Vec<size_t> i12(p1q2.size());
+  sequence(i12.begin(), i12.end());
+
+  int index = forward ? 0 : 1;
+  stable_sort(i12.begin(), i12.end(), [&](auto a, auto b) {
+    return p1q2[a][index] < p1q2[b][index] ||
+           (p1q2[a][index] == p1q2[b][index] &&
+            p1q2[a][1 - index] < p1q2[b][1 - index]);
+  });
+  Permute(p1q2, i12);
+  Permute(result.x12, i12);
+  Permute(result.v12, i12);
+  return result;
+};
+
+template <bool forward>
+Intersections Intersect12(const Manifold::Impl& inP, const Manifold::Impl& inQ,
+                          bool expandP, ExecutionContext::Impl* ctx) {
+  if (expandP)
+    return Intersect12_<true, forward>(inP, inQ, ctx);
+  else
+    return Intersect12_<false, forward>(inP, inQ, ctx);
+}
+
+template <bool expandP, bool forward>
+Vec<int> Winding03_(const Manifold::Impl& inP, const Manifold::Impl& inQ,
+                    const VecView<std::array<int, 2>> p1q2,
+                    ExecutionContext::Impl* ctx) {
+  ZoneScoped;
+  // a: 0 (vert), b: 2 (face)
+  const Manifold::Impl& a = forward ? inP : inQ;
+  const Manifold::Impl& b = forward ? inQ : inP;
+  Vec<int> brokenHalfedges;
+  int index = forward ? 0 : 1;
+
+  // Invariant: every ctx-passing parallel op is followed by IsCancelled to
+  // keep partial output from feeding unconditional downstream consumers.
+  DisjointSets uA(a.vertPos_.size());
+  for_each(autoPolicy(a.halfedge_.size()), countAt(0),
+           countAt(static_cast<int>(a.halfedge_.size())), ctx, [&](int edge) {
+             const int start = a.halfedge_.Start(edge);
+             const int end = a.halfedge_.End(edge);
+             if (start >= end) return;
+             // check if the edge is broken
+             auto it = std::lower_bound(
+                 p1q2.begin(), p1q2.end(), edge,
+                 [index](const std::array<int, 2>& collisionPair, int e) {
+                   return collisionPair[index] < e;
+                 });
+             if (it == p1q2.end() || (*it)[index] != edge) uA.unite(start, end);
+           });
+  if (IsCancelled(ctx)) return Vec<int>{};
+
+  // find components, the hope is the number of components should be small
+  std::unordered_set<size_t> components;
+#if (MANIFOLD_PAR == 1)
+  if (a.vertPos_.size() > 1e5) {
+    tbb::combinable<std::unordered_set<size_t>> componentsShared;
+    for_each(autoPolicy(a.vertPos_.size()), countAt(0_uz),
+             countAt(a.vertPos_.size()), ctx,
+             [&](size_t v) { componentsShared.local().insert(uA.find(v)); });
+    componentsShared.combine_each([&](const std::unordered_set<size_t>& data) {
+      components.insert(data.begin(), data.end());
+    });
+  } else
+#endif
+  {
+    for (size_t v = 0; v < a.vertPos_.size(); v++)
+      components.insert(uA.find(v));
   }
+  if (IsCancelled(ctx)) return Vec<int>{};
+  Vec<int> verts;
+  verts.reserve(components.size());
+  for (size_t c : components) verts.push_back(static_cast<int>(c));
+
+  Vec<int> w03(a.NumVert(), 0);
+  Kernel02<expandP, forward> k02{a, b};
+  auto recorderf = [&](int i, int b) {
+    const auto [s02, z02] = k02(verts[i], b);
+    // note that i is distinct on each thread, and verts contains unique
+    // elements, so this does not require atomics
+    if (std::isfinite(z02)) w03[verts[i]] += s02 * (forward ? 1 : -1);
+  };
+  auto recorder = MakeSimpleRecorder(recorderf);
+  auto f = [&](int i) { return a.vertPos_[verts[i]]; };
+  b.collider_.Collisions<false>(recorder, f, verts.size(), true, ctx);
+  if (IsCancelled(ctx)) return Vec<int>{};
+  // flood fill
+  for_each(autoPolicy(w03.size()), countAt(0_uz), countAt(w03.size()), ctx,
+           [&](size_t i) {
+             size_t root = uA.find(i);
+             if (root == i) return;
+             w03[i] = w03[root];
+           });
+  if (IsCancelled(ctx)) return Vec<int>{};
   return w03;
-};
+}
+
+template <bool forward>
+Vec<int> Winding03(const Manifold::Impl& inP, const Manifold::Impl& inQ,
+                   const VecView<std::array<int, 2>> p1q2, bool expandP,
+                   ExecutionContext::Impl* ctx) {
+  if (expandP)
+    return Winding03_<true, forward>(inP, inQ, p1q2, ctx);
+  else
+    return Winding03_<false, forward>(inP, inQ, p1q2, ctx);
+}
 }  // namespace
 
 namespace manifold {
-Boolean3::Boolean3(const Manifold::Impl &inP, const Manifold::Impl &inQ,
-                   OpType op)
-    : inP_(inP), inQ_(inQ), expandP_(op == OpType::Add ? 1.0 : -1.0) {
+Boolean3::Boolean3(const Manifold::Impl& inP, const Manifold::Impl& inQ,
+                   OpType op, ExecutionContext::Impl* ctx)
+    : inP_(inP), inQ_(inQ), expandP_(op == OpType::Add), ctx_(ctx) {
+  ZoneScoped;
   // Symbolic perturbation:
-  // Union -> expand inP
-  // Difference, Intersection -> contract inP
+  // Union -> expand inP, expand inQ
+  // Difference, Intersection -> contract inP, expand inQ
+  // Technically Intersection should contract inQ, but doing it this way makes
+  // Split faster and any suboptimal cases seem pretty rare.
 
-#ifdef MANIFOLD_DEBUG
-  Timer broad;
-  broad.Start();
-#endif
+  constexpr size_t INT_MAX_SZ =
+      static_cast<size_t>(std::numeric_limits<int>::max());
 
   if (inP.IsEmpty() || inQ.IsEmpty() || !inP.bBox_.DoesOverlap(inQ.bBox_)) {
     PRINT("No overlap, early out");
@@ -510,90 +513,128 @@ Boolean3::Boolean3(const Manifold::Impl &inP, const Manifold::Impl &inQ,
     return;
   }
 
-  // Level 3
-  // Find edge-triangle overlaps (broad phase)
-  p1q2_ = inQ_.EdgeCollisions(inP_);
-  p2q1_ = inP_.EdgeCollisions(inQ_, true);  // inverted
-
-  p1q2_.Sort();
-  PRINT("p1q2 size = " << p1q2_.size());
-
-  p2q1_.Sort();
-  PRINT("p2q1 size = " << p2q1_.size());
-
-  // Level 2
-  // Find vertices that overlap faces in XY-projection
-  SparseIndices p0q2 = inQ.VertexCollisionsZ(inP.vertPos_);
-  p0q2.Sort();
-  PRINT("p0q2 size = " << p0q2.size());
-
-  SparseIndices p2q0 = inP.VertexCollisionsZ(inQ.vertPos_, true);  // inverted
-  p2q0.Sort();
-  PRINT("p2q0 size = " << p2q0.size());
-
-  // Find involved edge pairs from Level 3
-  SparseIndices p1q1 = Filter11(inP_, inQ_, p1q2_, p2q1_);
-  PRINT("p1q1 size = " << p1q1.size());
-
-#ifdef MANIFOLD_DEBUG
-  broad.Stop();
+  // Phase-boundary fast-path: skip launching the next phase if cancel fired
+  // between phases. The per-phase invariant is enforced inside the called
+  // functions (Intersect12_, Winding03_).
+#if defined(MANIFOLD_DEBUG) || defined(MANIFOLD_TIMING)
   Timer intersections;
   intersections.Start();
+  Timer intersect12P, intersect12Q, winding03P, winding03Q;
+  intersect12P.Start();
 #endif
-
-  // Level 2
-  // Build up XY-projection intersection of two edges, including the z-value for
-  // each edge, keeping only those whose intersection exists.
-  Vec<int> s11;
-  Vec<vec4> xyzz11;
-  std::tie(s11, xyzz11) = Shadow11(p1q1, inP, inQ, expandP_);
-  PRINT("s11 size = " << s11.size());
-
-  // Build up Z-projection of vertices onto triangles, keeping only those that
-  // fall inside the triangle.
-  Vec<int> s02;
-  Vec<double> z02;
-  std::tie(s02, z02) = Shadow02(inP, inQ, p0q2, true, expandP_);
-  PRINT("s02 size = " << s02.size());
-
-  Vec<int> s20;
-  Vec<double> z20;
-  std::tie(s20, z20) = Shadow02(inQ, inP, p2q0, false, expandP_);
-  PRINT("s20 size = " << s20.size());
 
   // Level 3
   // Build up the intersection of the edges and triangles, keeping only those
   // that intersect, and record the direction the edge is passing through the
   // triangle.
-  std::tie(x12_, v12_) =
-      Intersect12(inP, inQ, s02, p0q2, s11, p1q1, z02, xyzz11, p1q2_, true);
-  PRINT("x12 size = " << x12_.size());
+  if (IsCancelled(ctx_)) return;
+  xv12_ = Intersect12<true>(inP, inQ, expandP_, ctx_);
+#if defined(MANIFOLD_DEBUG) || defined(MANIFOLD_TIMING)
+  intersect12P.Stop();
+  intersect12Q.Start();
+#endif
+  if (IsCancelled(ctx_)) return;
+  xv21_ = Intersect12<false>(inP, inQ, expandP_, ctx_);
+#if defined(MANIFOLD_DEBUG) || defined(MANIFOLD_TIMING)
+  intersect12Q.Stop();
+#endif
 
-  std::tie(x21_, v21_) =
-      Intersect12(inQ, inP, s20, p2q0, s11, p1q1, z20, xyzz11, p2q1_, false);
-  PRINT("x21 size = " << x21_.size());
+  if (xv12_.x12.size() > INT_MAX_SZ || xv21_.x12.size() > INT_MAX_SZ) {
+    valid = false;
+    return;
+  }
 
-  s11.clear();
-  xyzz11.clear();
-  z02.clear();
-  z20.clear();
+  // Compute winding numbers of all vertices using flood fill
+  // Vertices on the same connected component have the same winding number
+#if defined(MANIFOLD_DEBUG) || defined(MANIFOLD_TIMING)
+  winding03P.Start();
+#endif
+  if (IsCancelled(ctx_)) return;
+  w03_ = Winding03<true>(inP, inQ, xv12_.p1q2, expandP_, ctx_);
+#if defined(MANIFOLD_DEBUG) || defined(MANIFOLD_TIMING)
+  winding03P.Stop();
+  winding03Q.Start();
+#endif
+  if (IsCancelled(ctx_)) return;
+  w30_ = Winding03<false>(inP, inQ, xv21_.p1q2, expandP_, ctx_);
+  // No trailing check: Winding03_ already returns empty on cancel and
+  // Boolean3::Result re-checks on entry.
 
-  Vec<int> p0 = p0q2.Copy(false);
-  p0q2.Resize(0);
-  Vec<int> q0 = p2q0.Copy(true);
-  p2q0.Resize(0);
-  // Sum up the winding numbers of all vertices.
-  w03_ = Winding03(inP, p0, s02, false);
-
-  w30_ = Winding03(inQ, q0, s20, true);
-
-#ifdef MANIFOLD_DEBUG
+#if defined(MANIFOLD_DEBUG) || defined(MANIFOLD_TIMING)
+  winding03Q.Stop();
   intersections.Stop();
 
-  if (ManifoldParams().verbose) {
-    broad.Print("Broad phase");
-    intersections.Print("Intersections");
+  if (ManifoldParams().verbose >= 2) {
+    intersect12P.Print("  Intersect12 P->Q");
+    intersect12Q.Print("  Intersect12 Q->P");
+    winding03P.Print("  Winding03 P");
+    winding03Q.Print("  Winding03 Q");
+    intersections.Print("Intersections (total)");
   }
 #endif
 }
+std::vector<RayHit> Manifold::Impl::RayCast(vec3 origin, vec3 endpoint) const {
+  ZoneScoped;
+  if (IsEmpty()) return {};
+  const vec3 dir = endpoint - origin;
+  if (la::dot(dir, dir) == 0.0) return {};
+
+  // Build a minimal single-edge Impl representing the ray segment.
+  // Kernel12 treats inA as an edge mesh. Halfedges derives endVert from the
+  // next edge in a triangle, so this helper uses a padded degenerate face:
+  // edge 0 is the forward ray, edge 1 is its reverse, and edge 2 only closes
+  // the local storage loop. Zero vertex normals and face normal mean the ray
+  // contributes nothing to perturbation tiebreakers; consistency at shared
+  // edges/vertices depends entirely on the mesh's own normals.
+  Impl rayImpl;
+  rayImpl.vertPos_.resize(2);
+  rayImpl.vertPos_[0] = origin;
+  rayImpl.vertPos_[1] = endpoint;
+  rayImpl.vertNormal_.resize(2);
+  rayImpl.vertNormal_[0] = vec3(0.0);
+  rayImpl.vertNormal_[1] = vec3(0.0);
+  rayImpl.halfedge_.resize(3);
+  rayImpl.halfedge_.Set(0, 0, 1, 0);  // forward: vert 0 → 1
+  rayImpl.halfedge_.Set(1, 1, 0, 0);  // backward: vert 1 → 0
+  rayImpl.halfedge_.Set(2, -1, -1, 0);
+  rayImpl.faceNormal_.resize(1);
+  rayImpl.faceNormal_[0] = vec3(0.0);
+
+  // expandP=false with zero vertNormal means the ray-side perturbation is
+  // zero. forward=true means we project along +Z for the lower-dimensional
+  // kernel cascade (Shadow01 → Kernel02 → Kernel11 → Kernel12).
+  Kernel02<false, true> k02{rayImpl, *this};
+  Kernel11<false> k11{rayImpl, *this};
+  Kernel12<false, true> k12{rayImpl, *this, k02, k11};
+
+  // Use the component with largest magnitude for stable t computation.
+  const vec3 absDir = la::abs(dir);
+  const int tAxis = absDir.x > absDir.y && absDir.x > absDir.z ? 0
+                    : absDir.y > absDir.z                      ? 1
+                                                               : 2;
+
+  std::vector<RayHit> hits;
+  // Query the BVH with the ray's AABB.
+  const Box rayBox(la::min(origin, endpoint), la::max(origin, endpoint));
+  auto recorderf = [&](int /*queryIdx*/, int tri) {
+    const auto [s, v] = k12(0, tri);  // halfedge 0 vs triangle tri
+    if (s != 0 && std::isfinite(v.x)) {
+      // v is the 3D intersection point computed by Kernel12.
+      // Compute parametric t ∈ [0,1] along the ray segment.
+      const double t = (v[tAxis] - origin[tAxis]) / dir[tAxis];
+      if (t >= 0.0 && t <= 1.0) {
+        hits.push_back({static_cast<uint64_t>(tri), t, v, faceNormal_[tri]});
+      }
+    }
+  };
+  auto recorder = MakeSimpleRecorder(recorderf);
+  auto f = [&rayBox](int) { return rayBox; };
+  collider_.Collisions<false>(recorder, f, 1, false);
+
+  std::sort(hits.begin(), hits.end(), [](const RayHit& a, const RayHit& b) {
+    return a.distance < b.distance;
+  });
+  return hits;
+}
+
 }  // namespace manifold

@@ -32,13 +32,14 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
+#include "core/templates/hashfuncs.h"
 #include "core/typedefs.h"
 
 class String;
 struct Vector4i;
 
 struct [[nodiscard]] Vector4 {
-	static const int AXIS_COUNT = 4;
+	static constexpr int AXIS_COUNT = 4;
 
 	enum Axis {
 		AXIS_X,
@@ -47,25 +48,26 @@ struct [[nodiscard]] Vector4 {
 		AXIS_W,
 	};
 
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			real_t x;
-			real_t y;
-			real_t z;
-			real_t w;
-		};
-		real_t coord[4] = { 0, 0, 0, 0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
+	real_t x = 0.0f;
+	real_t y = 0.0f;
+	real_t z = 0.0f;
+	real_t w = 0.0f;
 
-	_FORCE_INLINE_ real_t &operator[](int p_axis) {
+	constexpr real_t &operator[](int p_axis) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(Vector4, x) == 0 * sizeof(real_t));
+		static_assert(offsetof(Vector4, y) == 1 * sizeof(real_t));
+		static_assert(offsetof(Vector4, z) == 2 * sizeof(real_t));
+		static_assert(offsetof(Vector4, w) == 3 * sizeof(real_t));
+		static_assert(sizeof(Vector4) == 4 * sizeof(real_t));
+
 		DEV_ASSERT((unsigned int)p_axis < 4);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
-	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
+	constexpr const real_t &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 4);
-		return coord[p_axis];
+		return (&x)[p_axis];
 	}
 
 	Vector4::Axis min_axis_index() const;
@@ -96,6 +98,8 @@ struct [[nodiscard]] Vector4 {
 	void normalize();
 	Vector4 normalized() const;
 	bool is_normalized() const;
+
+	void zero() { x = y = z = w = 0; }
 
 	real_t distance_to(const Vector4 &p_to) const;
 	real_t distance_squared_to(const Vector4 &p_to) const;
@@ -143,11 +147,18 @@ struct [[nodiscard]] Vector4 {
 	constexpr bool operator>=(const Vector4 &p_vec4) const;
 	constexpr bool operator<=(const Vector4 &p_vec4) const;
 
-	operator String() const;
+	explicit operator String() const;
 	operator Vector4i() const;
 
-	constexpr Vector4() :
-			x(0), y(0), z(0), w(0) {}
+	uint32_t hash() const {
+		uint32_t h = hash_murmur3_one_real(x);
+		h = hash_murmur3_one_real(y, h);
+		h = hash_murmur3_one_real(z, h);
+		h = hash_murmur3_one_real(w, h);
+		return hash_fmix32(h);
+	}
+
+	constexpr Vector4() = default;
 	constexpr Vector4(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x), y(p_y), z(p_z), w(p_w) {}
 };
@@ -195,7 +206,10 @@ constexpr void Vector4::operator*=(real_t p_s) {
 }
 
 constexpr void Vector4::operator/=(real_t p_s) {
-	*this *= (1 / p_s);
+	x /= p_s;
+	y /= p_s;
+	z /= p_s;
+	w /= p_s;
 }
 
 constexpr Vector4 Vector4::operator+(const Vector4 &p_vec4) const {
@@ -223,7 +237,7 @@ constexpr Vector4 Vector4::operator*(real_t p_s) const {
 }
 
 constexpr Vector4 Vector4::operator/(real_t p_s) const {
-	return *this * (1 / p_s);
+	return Vector4(x / p_s, y / p_s, z / p_s, w / p_s);
 }
 
 constexpr bool Vector4::operator==(const Vector4 &p_vec4) const {

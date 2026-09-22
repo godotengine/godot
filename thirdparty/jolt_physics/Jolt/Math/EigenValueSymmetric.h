@@ -30,7 +30,7 @@ bool EigenValueSymmetric(const Matrix &inMatrix, Matrix &outEigVec, Vector &outE
 {
 	// This algorithm can generate infinite values, see comment below
 	FPExceptionDisableInvalid disable_invalid;
-	(void)disable_invalid;
+	JPH_UNUSED(disable_invalid);
 
 	// Maximum number of sweeps to make
 	const int cMaxSweeps = 50;
@@ -127,11 +127,11 @@ bool EigenValueSymmetric(const Matrix &inMatrix, Matrix &outEigVec, Vector &outE
 					else
 					{
 						float theta = 0.5f * h / a_pq; // Warning: Can become infinite if a(ip, iq) is very small which may trigger an invalid float exception
-						t = 1.0f / (abs(theta) + sqrt(1.0f + theta * theta)); // If theta becomes inf, t will be 0 so the infinite is not a problem for the algorithm
+						t = 1.0f / (abs(theta) + Sqrt(1.0f + theta * theta)); // If theta becomes inf, t will be 0 so the infinite is not a problem for the algorithm
 						if (theta < 0.0f) t = -t;
 					}
 
-					float c = 1.0f / sqrt(1.0f + t * t);
+					float c = 1.0f / Sqrt(1.0f + t * t);
 					float s = t * c;
 					float tau = s / (1.0f + c);
 					h = t * a_pq;

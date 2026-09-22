@@ -32,12 +32,12 @@
 
 #include "audio_driver_wasapi.h"
 
-#include "core/config/project_settings.h"
+#include "core/config/engine.h"
 #include "core/os/os.h"
 
 #include <functiondiscoverykeys.h>
-
 #include <wrl/client.h>
+
 using Microsoft::WRL::ComPtr;
 
 // Define IAudioClient3 if not already defined by MinGW headers
@@ -110,10 +110,10 @@ const IID IID_IAudioClient3 = __uuidof(IAudioClient3);
 const IID IID_IAudioRenderClient = __uuidof(IAudioRenderClient);
 const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
 
-#define SAFE_RELEASE(memory)   \
+#define SAFE_RELEASE(memory) \
 	if ((memory) != nullptr) { \
-		(memory)->Release();   \
-		(memory) = nullptr;    \
+		(memory)->Release(); \
+		(memory) = nullptr; \
 	}
 
 #define REFTIMES_PER_SEC 10000000
@@ -126,11 +126,7 @@ static bool default_input_device_changed = false;
 static int output_reinit_countdown = 0;
 static int input_reinit_countdown = 0;
 
-// Silence warning due to a COM API weirdness (GH-35194).
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness (GH-35194).
 
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef = 1;
@@ -196,9 +192,7 @@ public:
 	}
 };
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
 static CMMNotificationClient notif_client;
 
@@ -548,6 +542,10 @@ Error AudioDriverWASAPI::init_output_device(bool p_reinit) {
 }
 
 Error AudioDriverWASAPI::init_input_device(bool p_reinit) {
+	if (audio_input.active.is_set()) {
+		return ERR_ALREADY_IN_USE;
+	}
+
 	Error err = audio_device_init(&audio_input, true, p_reinit);
 	if (err != OK) {
 		// We've tried to init the device, but have failed. Time to clean up.
@@ -756,9 +754,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			if (ad->audio_output.active.is_set()) {
 				ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
 			} else {
-				for (int i = 0; i < ad->samples_in.size(); i++) {
-					ad->samples_in.write[i] = 0;
-				}
+				ad->samples_in.fill(0);
 			}
 
 			avail_frames = ad->buffer_frames;
@@ -776,74 +772,77 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			UINT32 cur_frames;
 			bool invalidated = false;
 			HRESULT hr = ad->audio_output.audio_client->GetBufferSize(&buffer_size);
-			if (hr != S_OK) {
-				ERR_PRINT("WASAPI: GetBufferSize error");
-			}
-			hr = ad->audio_output.audio_client->GetCurrentPadding(&cur_frames);
 			if (hr == S_OK) {
-				// Check how much frames are available on the WASAPI buffer
-				UINT32 write_frames = MIN(buffer_size - cur_frames, avail_frames);
-				if (write_frames > 0) {
-					BYTE *buffer = nullptr;
-					hr = ad->audio_output.render_client->GetBuffer(write_frames, &buffer);
-					if (hr == S_OK) {
-						// We're using WASAPI Shared Mode so we must convert the buffer
-						if (ad->channels == ad->audio_output.channels) {
-							for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
-								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i, ad->samples_in.write[write_ofs++]);
-							}
-						} else if (ad->channels == ad->audio_output.channels + 1) {
-							// Pass all channels except the last two as-is, and then mix the last two
-							// together as one channel. E.g. stereo -> mono, or 3.1 -> 2.1.
-							unsigned int last_chan = ad->audio_output.channels - 1;
-							for (unsigned int i = 0; i < write_frames; i++) {
-								for (unsigned int j = 0; j < last_chan; j++) {
-									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
+				hr = ad->audio_output.audio_client->GetCurrentPadding(&cur_frames);
+				if (hr == S_OK) {
+					// Check how much frames are available on the WASAPI buffer
+					UINT32 write_frames = MIN(buffer_size - cur_frames, avail_frames);
+					if (write_frames > 0) {
+						BYTE *buffer = nullptr;
+						hr = ad->audio_output.render_client->GetBuffer(write_frames, &buffer);
+						if (hr == S_OK) {
+							// We're using WASAPI Shared Mode so we must convert the buffer
+							if (ad->channels == ad->audio_output.channels) {
+								for (unsigned int i = 0; i < write_frames * ad->channels; i++) {
+									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i, ad->samples_in[write_ofs++]);
 								}
-								int32_t l = ad->samples_in.write[write_ofs++];
-								int32_t r = ad->samples_in.write[write_ofs++];
-								int32_t c = (int32_t)(((int64_t)l + (int64_t)r) / 2);
-								ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + last_chan, c);
-							}
-						} else {
-							for (unsigned int i = 0; i < write_frames; i++) {
-								for (unsigned int j = 0; j < MIN(ad->channels, ad->audio_output.channels); j++) {
-									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in.write[write_ofs++]);
+							} else if (ad->channels == ad->audio_output.channels + 1) {
+								// Pass all channels except the last two as-is, and then mix the last two
+								// together as one channel. E.g. stereo -> mono, or 3.1 -> 2.1.
+								unsigned int last_chan = ad->audio_output.channels - 1;
+								for (unsigned int i = 0; i < write_frames; i++) {
+									for (unsigned int j = 0; j < last_chan; j++) {
+										ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in[write_ofs++]);
+									}
+									int32_t l = ad->samples_in[write_ofs++];
+									int32_t r = ad->samples_in[write_ofs++];
+									int32_t c = (int32_t)(((int64_t)l + (int64_t)r) / 2);
+									ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + last_chan, c);
 								}
-								if (ad->audio_output.channels > ad->channels) {
-									for (unsigned int j = ad->channels; j < ad->audio_output.channels; j++) {
-										ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, 0);
+							} else {
+								for (unsigned int i = 0; i < write_frames; i++) {
+									for (unsigned int j = 0; j < MIN(ad->channels, ad->audio_output.channels); j++) {
+										ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, ad->samples_in[write_ofs++]);
+									}
+									if (ad->audio_output.channels > ad->channels) {
+										for (unsigned int j = ad->channels; j < ad->audio_output.channels; j++) {
+											ad->write_sample(ad->audio_output.format_tag, ad->audio_output.bits_per_sample, buffer, i * ad->audio_output.channels + j, 0);
+										}
 									}
 								}
 							}
-						}
 
-						hr = ad->audio_output.render_client->ReleaseBuffer(write_frames, 0);
-						if (hr != S_OK) {
-							ERR_PRINT("WASAPI: Release buffer error");
-						}
+							hr = ad->audio_output.render_client->ReleaseBuffer(write_frames, 0);
+							if (hr != S_OK) {
+								ERR_PRINT("WASAPI: Release buffer error");
+							}
 
-						avail_frames -= write_frames;
-						written_frames += write_frames;
-					} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
-						// output_device is not valid anymore, reopen it
+							avail_frames -= write_frames;
+							written_frames += write_frames;
+						} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
+							// output_device is not valid anymore, reopen it
 
-						Error err = ad->finish_output_device();
-						if (err != OK) {
-							ERR_PRINT("WASAPI: finish_output_device error");
+							Error err = ad->finish_output_device();
+							if (err != OK) {
+								ERR_PRINT("WASAPI: finish_output_device error");
+							} else {
+								// We reopened the output device and samples_in may have resized, so invalidate the current avail_frames
+								avail_frames = 0;
+							}
 						} else {
-							// We reopened the output device and samples_in may have resized, so invalidate the current avail_frames
-							avail_frames = 0;
+							ERR_PRINT("WASAPI: Get buffer error");
+							ad->exit_thread.set();
 						}
-					} else {
-						ERR_PRINT("WASAPI: Get buffer error");
-						ad->exit_thread.set();
 					}
+				} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
+					invalidated = true;
+				} else {
+					ERR_PRINT("WASAPI: GetCurrentPadding error");
 				}
 			} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
 				invalidated = true;
 			} else {
-				ERR_PRINT("WASAPI: GetCurrentPadding error");
+				ERR_PRINT("WASAPI: GetBufferSize error");
 			}
 
 			if (invalidated) {
@@ -906,14 +905,14 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 
 					// fixme: Only works for floating point atm
 					for (UINT32 j = 0; j < num_frames_available; j++) {
-						int32_t l, r;
+						int32_t l = 0, r = 0;
 
 						if (flags & AUDCLNT_BUFFERFLAGS_SILENT) {
 							l = r = 0;
 						} else {
-							if (ad->audio_input.channels == 2) {
-								l = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2);
-								r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * 2 + 1);
+							if (ad->audio_input.channels >= 2) {
+								l = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * ad->audio_input.channels);
+								r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j * ad->audio_input.channels + 1);
 							} else if (ad->audio_input.channels == 1) {
 								l = r = read_sample(ad->audio_input.format_tag, ad->audio_input.bits_per_sample, data, j);
 							} else {
@@ -1029,11 +1028,9 @@ Error AudioDriverWASAPI::input_stop() {
 	if (audio_input.active.is_set()) {
 		audio_input.audio_client->Stop();
 		audio_input.active.clear();
-
-		return OK;
 	}
 
-	return FAILED;
+	return OK;
 }
 
 PackedStringArray AudioDriverWASAPI::get_input_device_list() {

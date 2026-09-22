@@ -5,12 +5,14 @@
 #pragma once
 
 #include <Jolt/Physics/Character/CharacterBase.h>
+#include <Jolt/Physics/Character/CharacterID.h>
 #include <Jolt/Physics/Body/MotionType.h>
 #include <Jolt/Physics/Body/BodyFilter.h>
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/TransformedShape.h>
 #include <Jolt/Core/STLTempAllocator.h>
+#include <Jolt/Core/UnorderedMap.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -22,6 +24,14 @@ class JPH_EXPORT CharacterVirtualSettings : public CharacterBaseSettings
 {
 public:
 	JPH_OVERRIDE_NEW_DELETE
+
+	/// Constructor
+										CharacterVirtualSettings() = default;
+										CharacterVirtualSettings(const CharacterVirtualSettings &) = default;
+	CharacterVirtualSettings &			operator = (const CharacterVirtualSettings &) = default;
+
+	/// ID to give to this character. This is used for deterministically sorting and as an identifier to represent the character in the contact removal callback.
+	CharacterID							mID = CharacterID::sNextCharacterID();
 
 	/// Character mass (kg). Used to push down objects with gravity when the character is standing on top.
 	float								mMass = 70.0f;
@@ -50,12 +60,16 @@ public:
 	/// - Fast moving objects of motion quality LinearCast will not be able to pass through the CharacterVirtual in 1 time step
 	RefConst<Shape>						mInnerBodyShape;
 
+	/// For a deterministic simulation, it is important to have a deterministic body ID. When set and when mInnerBodyShape is specified,
+	/// the inner body will be created with this specified ID instead of a generated ID.
+	BodyID								mInnerBodyIDOverride;
+
 	/// Layer that the inner rigid body will be added to
 	ObjectLayer							mInnerBodyLayer = 0;
 };
 
 /// This class contains settings that allow you to override the behavior of a character's collision response
-class CharacterContactSettings
+class JPH_EXPORT CharacterContactSettings
 {
 public:
 	/// True when the object can push the virtual character.
@@ -67,7 +81,77 @@ public:
 	bool								mCanReceiveImpulses = true;
 };
 
+/// Uniquely identifies a contact between a character and another body or character
+class JPH_EXPORT CharacterContactKey
+{
+public:
+	/// Constructor
+										CharacterContactKey() = default;
+										CharacterContactKey(const CharacterContactKey &inContact) = default;
+										CharacterContactKey(const BodyID &inBodyB, const SubShapeID &inSubShapeID) : mBodyB(inBodyB), mSubShapeIDB(inSubShapeID) { }
+										CharacterContactKey(const CharacterID &inCharacterIDB, const SubShapeID &inSubShapeID) : mCharacterIDB(inCharacterIDB), mSubShapeIDB(inSubShapeID) { }
+	CharacterContactKey &				operator = (const CharacterContactKey &inContact) = default;
+
+	/// Checks if two contacts refer to the same body (or virtual character)
+	inline bool							IsSameBody(const CharacterContactKey &inOther) const
+	{
+		return mBodyB == inOther.mBodyB && mCharacterIDB == inOther.mCharacterIDB;
+	}
+
+	/// Equality operator
+	inline bool							operator == (const CharacterContactKey &inRHS) const
+	{
+		return mBodyB == inRHS.mBodyB && mCharacterIDB == inRHS.mCharacterIDB && mSubShapeIDB == inRHS.mSubShapeIDB;
+	}
+
+	inline bool							operator != (const CharacterContactKey &inRHS) const
+	{
+		return !(*this == inRHS);
+	}
+
+	/// Hash of this structure
+	inline uint64						GetHash() const
+	{
+		static_assert(sizeof(BodyID) + sizeof(CharacterID) + sizeof(SubShapeID) == sizeof(CharacterContactKey), "No padding expected");
+		return HashBytes(this, sizeof(CharacterContactKey));
+	}
+
+	// Saving / restoring state for replay
+	void								SaveState(StateRecorder &inStream) const;
+	void								RestoreState(StateRecorder &inStream);
+
+	BodyID								mBodyB;													///< ID of body we're colliding with (if not invalid)
+	CharacterID							mCharacterIDB;											///< Character we're colliding with (if not invalid)
+	SubShapeID							mSubShapeIDB;											///< Sub shape ID of body or character we're colliding with
+};
+
+/// Encapsulates a collision contact between a character and another rigid body / character
+class JPH_EXPORT CharacterContact : public CharacterContactKey
+{
+public:
+	// Saving / restoring state for replay
+	void								SaveState(StateRecorder &inStream) const;
+	void								RestoreState(StateRecorder &inStream);
+
+	RVec3								mPosition;												///< Position where the character makes contact
+	Vec3								mLinearVelocity;										///< Velocity of the contact point
+	Vec3								mContactNormal;											///< Contact normal, pointing towards the character
+	Vec3								mSurfaceNormal;											///< Surface normal of the contact. Has been flipped if the contact is back facing (mIsBackFacingContact) and is equal to the contact normal if the contact normal is pointing up more.
+	float								mDistance;												///< Distance to the contact <= 0 means that it is an actual contact, > 0 means predictive
+	float								mFraction;												///< Fraction along the path where this contact takes place
+	EMotionType							mMotionTypeB;											///< Motion type of B, used to determine the priority of the contact
+	bool								mIsSensorB;												///< If B is a sensor
+	const CharacterVirtual *			mCharacterB = nullptr;									///< Character we're colliding with (if not nullptr). Note that this may be a dangling pointer when accessed through GetActiveContacts(), use mCharacterIDB instead.
+	uint64								mUserData;												///< User data of B
+	const PhysicsMaterial *				mMaterial;												///< Material of B
+	bool								mHadCollision = false;									///< If the character actually collided with the contact (can be false if a predictive contact never becomes a real one)
+	bool								mWasDiscarded = false;									///< If the contact validate callback chose to discard this contact or when the body is a sensor
+	bool								mCanPushCharacter = true;								///< When true, the velocity of the contact point can push the character
+	bool								mIsBackFacingContact = false;							///< If this contact came from a back facing triangle / collision shape
+};
+
 /// This class receives callbacks when a virtual character hits something.
+/// Once created, register it on a CharacterVirtual by using the character's SetListener method.
 class JPH_EXPORT CharacterContactListener
 {
 public:
@@ -79,22 +163,39 @@ public:
 	virtual void						OnAdjustBodyVelocity(const CharacterVirtual *inCharacter, const Body &inBody2, Vec3 &ioLinearVelocity, Vec3 &ioAngularVelocity) { /* Do nothing, the linear and angular velocity are already filled in */ }
 
 	/// Checks if a character can collide with specified body. Return true if the contact is valid.
-	virtual bool						OnContactValidate(const CharacterVirtual *inCharacter, const BodyID &inBodyID2, const SubShapeID &inSubShapeID2) { return true; }
+	virtual bool						OnContactValidate(const CharacterVirtual *inCharacter, const CharacterContact &inContact) { return true; }
 
-	/// Same as OnContactValidate but when colliding with a CharacterVirtual
-	virtual bool						OnCharacterContactValidate(const CharacterVirtual *inCharacter, const CharacterVirtual *inOtherCharacter, const SubShapeID &inSubShapeID2) { return true; }
+	/// Called whenever the character collides with a body for the first time.
+	/// @param inCharacter Character that is being solved
+	/// @param inContact Contact that we're colliding against
+	/// @param ioSettings Settings returned by the contact callback to indicate how the character should behave
+	virtual void						OnContactAdded(const CharacterVirtual *inCharacter, const CharacterContact &inContact, CharacterContactSettings &ioSettings) { /* Default do nothing */ }
 
-	/// Called whenever the character collides with a body.
+	/// Called whenever the character persists colliding with a body.
+	/// @param inCharacter Character that is being solved
+	/// @param inContact Contact that we're colliding against
+	/// @param ioSettings Settings returned by the contact callback to indicate how the character should behave
+	virtual void						OnContactPersisted(const CharacterVirtual *inCharacter, const CharacterContact &inContact, CharacterContactSettings &ioSettings) { /* Default do nothing */ }
+
+	/// Called whenever the character loses contact with a body.
+	/// Note that there is no guarantee that the body or its sub shape still exists at this point. The body may have been deleted since the last update.
 	/// @param inCharacter Character that is being solved
 	/// @param inBodyID2 Body ID of body that is being hit
 	/// @param inSubShapeID2 Sub shape ID of shape that is being hit
-	/// @param inContactPosition World space contact position
-	/// @param inContactNormal World space contact normal
-	/// @param ioSettings Settings returned by the contact callback to indicate how the character should behave
-	virtual void						OnContactAdded(const CharacterVirtual *inCharacter, const BodyID &inBodyID2, const SubShapeID &inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings &ioSettings) { /* Default do nothing */ }
+	virtual void						OnContactRemoved(const CharacterVirtual *inCharacter, const BodyID &inBodyID2, const SubShapeID &inSubShapeID2) { /* Default do nothing */ }
+
+	/// Same as OnContactValidate but when colliding with a CharacterVirtual
+	virtual bool						OnCharacterContactValidate(const CharacterVirtual *inCharacter, const CharacterContact &inContact) { return true; }
 
 	/// Same as OnContactAdded but when colliding with a CharacterVirtual
-	virtual void						OnCharacterContactAdded(const CharacterVirtual *inCharacter, const CharacterVirtual *inOtherCharacter, const SubShapeID &inSubShapeID2, RVec3Arg inContactPosition, Vec3Arg inContactNormal, CharacterContactSettings &ioSettings) { /* Default do nothing */ }
+	virtual void						OnCharacterContactAdded(const CharacterVirtual *inCharacter, const CharacterContact &inContact, CharacterContactSettings &ioSettings) { /* Default do nothing */ }
+
+	/// Same as OnContactPersisted but when colliding with a CharacterVirtual
+	virtual void						OnCharacterContactPersisted(const CharacterVirtual *inCharacter, const CharacterContact &inContact, CharacterContactSettings &ioSettings) { /* Default do nothing */ }
+
+	/// Same as OnContactRemoved but when colliding with a CharacterVirtual
+	/// Note that inOtherCharacterID can be the ID of a character that has been deleted. This happens if the character was in contact with this character during the last update, but has been deleted since.
+	virtual void						OnCharacterContactRemoved(const CharacterVirtual *inCharacter, const CharacterID &inOtherCharacterID, const SubShapeID &inSubShapeID2) { /* Default do nothing */ }
 
 	/// Called whenever a contact is being used by the solver. Allows the listener to override the resulting character velocity (e.g. by preventing sliding along certain surfaces).
 	/// @param inCharacter Character that is being solved
@@ -139,6 +240,8 @@ public:
 };
 
 /// Simple collision checker that loops over all registered characters.
+/// This is a brute force checking algorithm. If you have a lot of characters you may want to store your characters
+/// in a hierarchical structure to make this more efficient.
 /// Note that this is not thread safe, so make sure that only one CharacterVirtual is checking collision at a time.
 class JPH_EXPORT CharacterVsCharacterCollisionSimple : public CharacterVsCharacterCollision
 {
@@ -159,8 +262,9 @@ public:
 /// Runtime character object.
 /// This object usually represents the player. Contrary to the Character class it doesn't use a rigid body but moves doing collision checks only (hence the name virtual).
 /// The advantage of this is that you can determine when the character moves in the frame (usually this has to happen at a very particular point in the frame)
-/// but the downside is that other objects don't see this virtual character. In order to make this work it is recommended to pair a CharacterVirtual with a Character that
-/// moves along. This Character should be keyframed (or at least have no gravity) and move along with the CharacterVirtual so that other rigid bodies can collide with it.
+/// but the downside is that other objects don't see this virtual character. To make a CharacterVirtual visible to the simulation, you can optionally create an inner
+/// rigid body through CharacterVirtualSettings::mInnerBodyShape. A CharacterVirtual is not tracked by the PhysicsSystem so you need to update it yourself. This also means
+/// that a call to PhysicsSystem::SaveState will not save its state, you need to call CharacterVirtual::SaveState yourself.
 class JPH_EXPORT CharacterVirtual : public CharacterBase
 {
 public:
@@ -179,6 +283,9 @@ public:
 
 	/// Destructor
 	virtual								~CharacterVirtual() override;
+
+	/// The ID of this character
+	inline const CharacterID &			GetID() const											{ return mID; }
 
 	/// Set the contact listener
 	void								SetListener(CharacterContactListener *inListener)		{ mListener = inListener; }
@@ -265,6 +372,15 @@ public:
 	/// @param inDesiredVelocity Velocity to clamp against steep walls
 	/// @return A new velocity vector that won't make the character move up steep slopes
 	Vec3								CancelVelocityTowardsSteepSlopes(Vec3Arg inDesiredVelocity) const;
+
+	/// This function is internally called by Update, WalkStairs, StickToFloor and ExtendedUpdate and is responsible for tracking if contacts are added, persisted or removed.
+	/// If you want to do multiple operations on a character (e.g. first Update then WalkStairs), you can surround the code with a StartTrackingContactChanges and FinishTrackingContactChanges pair
+	/// to only receive a single callback per contact on the CharacterContactListener. If you don't do this then you could for example receive a contact added callback during the Update and a
+	/// contact persisted callback during WalkStairs.
+	void								StartTrackingContactChanges();
+
+	/// This call triggers contact removal callbacks and is used in conjunction with StartTrackingContactChanges.
+	void								FinishTrackingContactChanges();
 
 	/// This is the main update function. It moves the character according to its current velocity (the character is similar to a kinematic body in the sense
 	/// that you set the velocity and the character will follow unless collision is blocking the way). Note it's your own responsibility to apply gravity to the character velocity!
@@ -373,6 +489,9 @@ public:
 	/// @param inShapeFilter Filter that is used to check if a character collides with a subshape.
 	void								CheckCollision(RVec3Arg inPosition, QuatArg inRotation, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) const;
 
+	/// Get the character settings that can recreate this character
+	CharacterVirtualSettings			GetCharacterVirtualSettings() const;
+
 	// Saving / restoring state for replay
 	virtual void						SaveState(StateRecorder &inStream) const override;
 	virtual void						RestoreState(StateRecorder &inStream) override;
@@ -381,89 +500,62 @@ public:
 	static inline bool					sDrawConstraints = false;								///< Draw the current state of the constraints for iteration 0 when creating them
 	static inline bool					sDrawWalkStairs = false;								///< Draw the state of the walk stairs algorithm
 	static inline bool					sDrawStickToFloor = false;								///< Draw the state of the stick to floor algorithm
+	static inline bool					sDrawSupportingVolume = false;							///< Draw the supporting volume plane
 #endif
 
-	// Encapsulates a collision contact
-	struct Contact
-	{
-		// Saving / restoring state for replay
-		void							SaveState(StateRecorder &inStream) const;
-		void							RestoreState(StateRecorder &inStream);
-
-		// Checks if two contacts refer to the same body (or virtual character)
-		inline bool						IsSameBody(const Contact &inOther) const				{ return mBodyB == inOther.mBodyB && mCharacterB == inOther.mCharacterB; }
-
-		RVec3							mPosition;												///< Position where the character makes contact
-		Vec3							mLinearVelocity;										///< Velocity of the contact point
-		Vec3							mContactNormal;											///< Contact normal, pointing towards the character
-		Vec3							mSurfaceNormal;											///< Surface normal of the contact
-		float							mDistance;												///< Distance to the contact <= 0 means that it is an actual contact, > 0 means predictive
-		float							mFraction;												///< Fraction along the path where this contact takes place
-		BodyID							mBodyB;													///< ID of body we're colliding with (if not invalid)
-		CharacterVirtual *				mCharacterB = nullptr;									///< Character we're colliding with (if not null)
-		SubShapeID						mSubShapeIDB;											///< Sub shape ID of body we're colliding with
-		EMotionType						mMotionTypeB;											///< Motion type of B, used to determine the priority of the contact
-		bool							mIsSensorB;												///< If B is a sensor
-		uint64							mUserData;												///< User data of B
-		const PhysicsMaterial *			mMaterial;												///< Material of B
-		bool							mHadCollision = false;									///< If the character actually collided with the contact (can be false if a predictive contact never becomes a real one)
-		bool							mWasDiscarded = false;									///< If the contact validate callback chose to discard this contact
-		bool							mCanPushCharacter = true;								///< When true, the velocity of the contact point can push the character
-	};
-
-	using TempContactList = Array<Contact, STLTempAllocator<Contact>>;
-	using ContactList = Array<Contact>;
+	using TempContactList = Array<CharacterContact, STLTempAllocator<CharacterContact>>;
+	using ContactList = Array<CharacterContact>;
 
 	/// Access to the internal list of contacts that the character has found.
+	/// Note that only contacts that have their mHadCollision flag set are actual contacts.
 	const ContactList &					GetActiveContacts() const								{ return mActiveContacts; }
 
-	/// Check if the character is currently in contact with or has collided with another body in the last time step
+	/// Check if the character is currently in contact with or has collided with another body in the last operation (e.g. Update or WalkStairs)
 	bool								HasCollidedWith(const BodyID &inBody) const
 	{
-		for (const CharacterVirtual::Contact &c : mActiveContacts)
+		for (const CharacterContact &c : mActiveContacts)
 			if (c.mHadCollision && c.mBodyB == inBody)
 				return true;
 		return false;
 	}
 
-	/// Check if the character is currently in contact with or has collided with another character in the last time step
-	bool								HasCollidedWith(const CharacterVirtual *inCharacter) const
+	/// Check if the character is currently in contact with or has collided with another character in the last time step (e.g. Update or WalkStairs)
+	bool								HasCollidedWith(const CharacterID &inCharacterID) const
 	{
-		for (const CharacterVirtual::Contact &c : mActiveContacts)
-			if (c.mHadCollision && c.mCharacterB == inCharacter)
+		for (const CharacterContact &c : mActiveContacts)
+			if (c.mHadCollision && c.mCharacterIDB == inCharacterID)
 				return true;
 		return false;
+	}
+
+	/// Check if the character is currently in contact with or has collided with another character in the last time step (e.g. Update or WalkStairs)
+	bool								HasCollidedWith(const CharacterVirtual *inCharacter) const
+	{
+		return HasCollidedWith(inCharacter->GetID());
 	}
 
 private:
 	// Sorting predicate for making contact order deterministic
 	struct ContactOrderingPredicate
 	{
-		inline bool						operator () (const Contact &inLHS, const Contact &inRHS) const
+		inline bool						operator () (const CharacterContact &inLHS, const CharacterContact &inRHS) const
 		{
 			if (inLHS.mBodyB != inRHS.mBodyB)
 				return inLHS.mBodyB < inRHS.mBodyB;
+
+			if (inLHS.mCharacterIDB != inRHS.mCharacterIDB)
+				return inLHS.mCharacterIDB < inRHS.mCharacterIDB;
 
 			return inLHS.mSubShapeIDB.GetValue() < inRHS.mSubShapeIDB.GetValue();
 		}
 	};
 
-	// A contact that needs to be ignored
-	struct IgnoredContact
-	{
-										IgnoredContact() = default;
-										IgnoredContact(const BodyID &inBodyID, const SubShapeID &inSubShapeID) : mBodyID(inBodyID), mSubShapeID(inSubShapeID) { }
-
-		BodyID							mBodyID;												///< ID of body we're colliding with
-		SubShapeID						mSubShapeID;											///< Sub shape of body we're colliding with
-	};
-
-	using IgnoredContactList = Array<IgnoredContact, STLTempAllocator<IgnoredContact>>;
+	using IgnoredContactList = Array<CharacterContactKey, STLTempAllocator<CharacterContactKey>>;
 
 	// A constraint that limits the movement of the character
 	struct Constraint
 	{
-		Contact *						mContact;												///< Contact that this constraint was generated from
+		CharacterContact *				mContact;												///< Contact that this constraint was generated from
 		float							mTOI;													///< Calculated time of impact (can be negative if penetrating)
 		float							mProjectedVelocity;										///< Velocity of the contact projected on the contact normal (negative if separating)
 		Vec3							mLinearVelocity;										///< Velocity of the contact (can contain a corrective velocity to resolve penetration)
@@ -495,10 +587,11 @@ private:
 	};
 
 	// A collision collector that collects hits for CastShape
+	template <bool IgnoreInitialOverlap>
 	class ContactCastCollector : public CastShapeCollector
 	{
 	public:
-										ContactCastCollector(PhysicsSystem *inSystem, const CharacterVirtual *inCharacter, Vec3Arg inDisplacement, Vec3Arg inUp, const IgnoredContactList &inIgnoredContacts, RVec3Arg inBaseOffset, Contact &outContact) : mBaseOffset(inBaseOffset), mDisplacement(inDisplacement), mUp(inUp), mSystem(inSystem), mCharacter(inCharacter), mIgnoredContacts(inIgnoredContacts), mContact(outContact) { }
+										ContactCastCollector(PhysicsSystem *inSystem, const CharacterVirtual *inCharacter, Vec3Arg inDisplacement, Vec3Arg inUp, const IgnoredContactList &inIgnoredContacts, RVec3Arg inBaseOffset, CharacterContact &outContact) : mBaseOffset(inBaseOffset), mDisplacement(inDisplacement), mUp(inUp), mSystem(inSystem), mCharacter(inCharacter), mIgnoredContacts(inIgnoredContacts), mContact(outContact) { }
 
 		virtual void					SetUserData(uint64 inUserData) override					{ mOtherCharacter = reinterpret_cast<CharacterVirtual *>(inUserData); }
 
@@ -511,26 +604,26 @@ private:
 		const CharacterVirtual *		mCharacter;
 		CharacterVirtual *				mOtherCharacter = nullptr;
 		const IgnoredContactList &		mIgnoredContacts;
-		Contact &						mContact;
+		CharacterContact &				mContact;
 	};
 
 	// Helper function to convert a Jolt collision result into a contact
 	template <class taCollector>
-	inline static void					sFillContactProperties(const CharacterVirtual *inCharacter, Contact &outContact, const Body &inBody, Vec3Arg inUp, RVec3Arg inBaseOffset, const taCollector &inCollector, const CollideShapeResult &inResult);
-	inline static void					sFillCharacterContactProperties(Contact &outContact, CharacterVirtual *inOtherCharacter, RVec3Arg inBaseOffset, const CollideShapeResult &inResult);
+	inline static void					sFillContactProperties(const CharacterVirtual *inCharacter, CharacterContact &outContact, const Body &inBody, Vec3Arg inUp, RVec3Arg inBaseOffset, const taCollector &inCollector, const CollideShapeResult &inResult);
+	inline static void					sFillCharacterContactProperties(CharacterContact &outContact, const CharacterVirtual *inOtherCharacter, RVec3Arg inBaseOffset, const CollideShapeResult &inResult);
 
 	// Move the shape from ioPosition and try to displace it by inVelocity * inDeltaTime, this will try to slide the shape along the world geometry
 	void								MoveShape(RVec3 &ioPosition, Vec3Arg inVelocity, float inDeltaTime, ContactList *outActiveContacts, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator
 	#ifdef JPH_DEBUG_RENDERER
 		, bool inDrawConstraints = false
 	#endif // JPH_DEBUG_RENDERER
-		) const;
+		);
 
 	// Ask the callback if inContact is a valid contact point
-	bool								ValidateContact(const Contact &inContact) const;
+	bool								ValidateContact(const CharacterContact &inContact) const;
 
 	// Trigger the contact callback for inContact and get the contact settings
-	void								ContactAdded(const Contact &inContact, CharacterContactSettings &ioSettings) const;
+	void								ContactAdded(const CharacterContact &inContact, CharacterContactSettings &ioSettings);
 
 	// Tests the shape for collision around inPosition
 	void								GetContactsAtPosition(RVec3Arg inPosition, Vec3Arg inMovementDirection, const Shape *inShape, TempContactList &outContacts, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) const;
@@ -546,7 +639,7 @@ private:
 	#ifdef JPH_DEBUG_RENDERER
 		, bool inDrawConstraints = false
 	#endif // JPH_DEBUG_RENDERER
-		) const;
+		);
 
 	// Get the velocity of a body adjusted by the contact listener
 	void								GetAdjustedBodyVelocity(const Body& inBody, Vec3 &outLinearVelocity, Vec3 &outAngularVelocity) const;
@@ -557,10 +650,17 @@ private:
 	Vec3								CalculateCharacterGroundVelocity(RVec3Arg inCenterOfMass, Vec3Arg inLinearVelocity, Vec3Arg inAngularVelocity, float inDeltaTime) const;
 
 	// Handle contact with physics object that we're colliding against
-	bool								HandleContact(Vec3Arg inVelocity, Constraint &ioConstraint, float inDeltaTime) const;
+	bool								HandleContact(Vec3Arg inVelocity, Constraint &ioConstraint, float inDeltaTime);
 
-	// Does a swept test of the shape from inPosition with displacement inDisplacement, returns true if there was a collision
-	bool								GetFirstContactForSweep(RVec3Arg inPosition, Vec3Arg inDisplacement, Contact &outContact, const IgnoredContactList &inIgnoredContacts, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) const;
+	// Does a swept test of the shape from inPosition with displacement inDisplacement, returns true if there was a collision.
+	// This sweeps to see if there is enough space for the character to move. Character padding is only applied in the movement direction of the character.
+	// Ignores collisions when they already exist at the start of the movement.
+	bool								ValidateMovement(RVec3Arg inPosition, Vec3Arg inDisplacement, CharacterContact &outContact, const IgnoredContactList &inIgnoredContacts, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) const;
+
+	// Does a swept test of the shape from inPosition with displacement inDisplacement, returns true if there was a collision.
+	// This does a full sweep of character including character padding.
+	// Includes collisions when they already exist at the start of the movement.
+	bool								GetFirstContactForSweep(RVec3Arg inPosition, Vec3Arg inDisplacement, CharacterContact &outContact, const IgnoredContactList &inIgnoredContacts, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter) const;
 
 	// Store contacts so that we have proper ground information
 	void								StoreActiveContacts(const TempContactList &inContacts, TempAllocator &inAllocator);
@@ -569,7 +669,7 @@ private:
 	void								UpdateSupportingContact(bool inSkipContactVelocityCheck, TempAllocator &inAllocator);
 
 	/// This function can be called after moving the character to a new colliding position
-	void								MoveToContact(RVec3Arg inPosition, const Contact &inContact, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator);
+	void								MoveToContact(RVec3Arg inPosition, const CharacterContact &inContact, const BroadPhaseLayerFilter &inBroadPhaseLayerFilter, const ObjectLayerFilter &inObjectLayerFilter, const BodyFilter &inBodyFilter, const ShapeFilter &inShapeFilter, TempAllocator &inAllocator);
 
 	// This function returns the actual center of mass of the shape, not corrected for the character padding
 	inline RMat44						GetCenterOfMassTransform(RVec3Arg inPosition, QuatArg inRotation, const Shape *inShape) const
@@ -585,6 +685,9 @@ private:
 
 	// Move the inner rigid body to the current position
 	void								UpdateInnerBodyTransform();
+
+	// ID
+	CharacterID							mID;
 
 	// Our main listener for contacts
 	CharacterContactListener *			mListener = nullptr;
@@ -625,6 +728,22 @@ private:
 
 	// List of contacts that were active in the last frame
 	ContactList							mActiveContacts;
+
+	// Remembers how often we called StartTrackingContactChanges
+	int									mTrackingContactChanges = 0;
+
+	// View from a contact listener perspective on which contacts have been added/removed
+	struct ListenerContactValue
+	{
+										ListenerContactValue() = default;
+		explicit						ListenerContactValue(const CharacterContactSettings &inSettings) : mSettings(inSettings) { }
+
+		CharacterContactSettings		mSettings;
+		int								mCount = 0;
+	};
+
+	using ListenerContacts = UnorderedMap<CharacterContactKey, ListenerContactValue>;
+	ListenerContacts					mListenerContacts;
 
 	// Remembers the delta time of the last update
 	float								mLastDeltaTime = 1.0f / 60.0f;

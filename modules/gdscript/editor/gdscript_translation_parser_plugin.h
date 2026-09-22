@@ -35,10 +35,10 @@
 
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
-#include "editor/editor_translation_parser.h"
+#include "editor/translations/editor_translation_parser.h"
 
 class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
-	GDCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);
+	GDSOFTCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);
 
 	const HashMap<int, GDScriptTokenizer::CommentData> *comment_data = nullptr;
 

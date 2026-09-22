@@ -32,8 +32,12 @@
 
 #include "scene/3d/physics/physics_body_3d.h"
 
+class PhysicsMaterial;
+
+#ifndef NAVIGATION_3D_DISABLED
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
+#endif // NAVIGATION_3D_DISABLED
 
 class StaticBody3D : public PhysicsBody3D {
 	GDCLASS(StaticBody3D, PhysicsBody3D);
@@ -57,15 +61,17 @@ public:
 	Vector3 get_constant_linear_velocity() const;
 	Vector3 get_constant_angular_velocity() const;
 
-	StaticBody3D(PhysicsServer3D::BodyMode p_mode = PhysicsServer3D::BODY_MODE_STATIC);
+	StaticBody3D(PS3DE::BodyMode p_mode = PS3DE::BODY_MODE_STATIC);
 
 private:
 	void _reload_physics_characteristics();
 
+#ifndef NAVIGATION_3D_DISABLED
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
 
 public:
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_3D_DISABLED
 };

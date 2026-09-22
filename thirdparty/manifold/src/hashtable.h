@@ -16,13 +16,49 @@
 
 #include <atomic>
 
-#include "./utils.h"
-#include "./vec.h"
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
+#include "utils.h"
+#include "vec.h"
 
 namespace {
-typedef unsigned long long int Uint64;
-typedef Uint64 (*hash_fun_t)(Uint64);
-inline constexpr Uint64 kOpen = std::numeric_limits<Uint64>::max();
+using hash_fun_t = uint64_t(uint64_t);
+inline constexpr uint64_t kOpen = std::numeric_limits<uint64_t>::max();
+
+inline uint32_t ClzSizeT(size_t value) {
+#ifdef _MSC_VER
+#if defined(_WIN64)
+  unsigned long index = 0;
+  if (_BitScanReverse64(&index, static_cast<uint64_t>(value))) {
+    return 63u - index;
+  }
+  return 64u;
+#else
+  unsigned long index = 0;
+  if (_BitScanReverse(&index, static_cast<unsigned long>(value))) {
+    return 31u - index;
+  }
+  return 32u;
+#endif
+#else
+  if (value == 0) return 8u * static_cast<uint32_t>(sizeof(size_t));
+#if SIZE_MAX == UINT64_MAX
+  return static_cast<uint32_t>(
+      __builtin_clzll(static_cast<unsigned long long>(value)));
+#else
+  return static_cast<uint32_t>(__builtin_clz(static_cast<unsigned int>(value)));
+#endif
+#endif
+}
+
+inline uint32_t CeilLog2(size_t value) {
+  if (value <= 1) return 0;
+  const size_t x = value - 1;
+  const uint32_t width = 8u * static_cast<uint32_t>(sizeof(size_t));
+  return width - ClzSizeT(x);
+}
 
 template <typename T>
 T AtomicCAS(T& target, T compare, T val) {
@@ -45,13 +81,6 @@ T AtomicLoad(const T& target) {
   return tar.load(std::memory_order_acquire);
 }
 
-// https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
-inline Uint64 hash64bit(Uint64 x) {
-  x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ull;
-  x = (x ^ (x >> 27)) * 0x94d049bb133111ebull;
-  x = x ^ (x >> 31);
-  return x;
-}
 }  // namespace
 
 namespace manifold {
@@ -59,7 +88,7 @@ namespace manifold {
 template <typename V, hash_fun_t H = hash64bit>
 class HashTableD {
  public:
-  HashTableD(Vec<Uint64>& keys, Vec<V>& values, std::atomic<size_t>& used,
+  HashTableD(Vec<uint64_t>& keys, Vec<V>& values, std::atomic<size_t>& used,
              uint32_t step = 1)
       : step_{step}, keys_{keys}, values_{values}, used_{used} {}
 
@@ -70,12 +99,12 @@ class HashTableD {
            static_cast<size_t>(Size());
   }
 
-  void Insert(Uint64 key, const V& val) {
+  void Insert(uint64_t key, const V& val) {
     uint32_t idx = H(key) & (Size() - 1);
     while (1) {
       if (Full()) return;
-      Uint64& k = keys_[idx];
-      const Uint64 found = AtomicCAS(k, kOpen, key);
+      uint64_t& k = keys_[idx];
+      const uint64_t found = AtomicCAS(k, kOpen, key);
       if (found == kOpen) {
         used_.fetch_add(1, std::memory_order_relaxed);
         values_[idx] = val;
@@ -86,10 +115,10 @@ class HashTableD {
     }
   }
 
-  V& operator[](Uint64 key) {
+  V& operator[](uint64_t key) {
     uint32_t idx = H(key) & (Size() - 1);
     while (1) {
-      const Uint64 k = AtomicLoad(keys_[idx]);
+      const uint64_t k = AtomicLoad(keys_[idx]);
       if (k == key || k == kOpen) {
         return values_[idx];
       }
@@ -97,10 +126,10 @@ class HashTableD {
     }
   }
 
-  const V& operator[](Uint64 key) const {
+  const V& operator[](uint64_t key) const {
     uint32_t idx = H(key) & (Size() - 1);
     while (1) {
-      const Uint64 k = AtomicLoad(keys_[idx]);
+      const uint64_t k = AtomicLoad(keys_[idx]);
       if (k == key || k == kOpen) {
         return values_[idx];
       }
@@ -108,13 +137,13 @@ class HashTableD {
     }
   }
 
-  Uint64 KeyAt(int idx) const { return AtomicLoad(keys_[idx]); }
+  uint64_t KeyAt(int idx) const { return AtomicLoad(keys_[idx]); }
   V& At(int idx) { return values_[idx]; }
   const V& At(int idx) const { return values_[idx]; }
 
  private:
   uint32_t step_;
-  VecView<Uint64> keys_;
+  VecView<uint64_t> keys_;
   VecView<V> values_;
   std::atomic<size_t>& used_;
 };
@@ -123,8 +152,8 @@ template <typename V, hash_fun_t H = hash64bit>
 class HashTable {
  public:
   HashTable(size_t size, uint32_t step = 1)
-      : keys_{size == 0 ? 0 : 1_uz << (int)ceil(log2(size)), kOpen},
-        values_{size == 0 ? 0 : 1_uz << (int)ceil(log2(size)), {}},
+      : keys_{size == 0 ? 0 : 1_uz << static_cast<int>(CeilLog2(size)), kOpen},
+        values_{size == 0 ? 0 : 1_uz << static_cast<int>(CeilLog2(size)), {}},
         step_(step) {}
 
   HashTable(const HashTable& other)
@@ -157,10 +186,10 @@ class HashTable {
 
   Vec<V>& GetValueStore() { return values_; }
 
-  static Uint64 Open() { return kOpen; }
+  static uint64_t Open() { return kOpen; }
 
  private:
-  Vec<Uint64> keys_;
+  Vec<uint64_t> keys_;
   Vec<V> values_;
   std::atomic<size_t> used_ = 0;
   uint32_t step_;

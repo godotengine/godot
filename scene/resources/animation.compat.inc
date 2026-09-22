@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+#include "animation.h"
+
+#include "core/object/class_db.h"
+
 Vector3 Animation::_position_track_interpolate_bind_compat_86629(int p_track, double p_time) const {
 	return position_track_interpolate(p_track, p_time, false);
 }

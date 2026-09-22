@@ -15,14 +15,14 @@ JPH_INLINE float RayTriangle(Vec3Arg inOrigin, Vec3Arg inDirection, Vec3Arg inV0
 
 	// Zero & one
 	Vec3 zero = Vec3::sZero();
-	Vec3 one = Vec3::sReplicate(1.0f);
+	Vec3 one = Vec3::sOne();
 
 	// Find vectors for two edges sharing inV0
 	Vec3 e1 = inV1 - inV0;
 	Vec3 e2 = inV2 - inV0;
 
 	// Begin calculating determinant - also used to calculate u parameter
-	Vec3 p = inDirection.Cross(e2);
+	Vec3 p = inDirection.CrossPrecise(e2);
 
 	// if determinant is near zero, ray lies in plane of triangle
 	Vec3 det = Vec3::sReplicate(e1.Dot(p));
@@ -31,7 +31,7 @@ JPH_INLINE float RayTriangle(Vec3Arg inOrigin, Vec3Arg inDirection, Vec3Arg inV0
 	UVec4 det_near_zero = Vec3::sLess(det.Abs(), epsilon);
 
 	// When the determinant is near zero, set it to one to avoid dividing by zero
-	det = Vec3::sSelect(det, Vec3::sReplicate(1.0f), det_near_zero);
+	det = Vec3::sSelect(det, Vec3::sOne(), det_near_zero);
 
 	// Calculate distance from inV0 to ray origin
 	Vec3 s = inOrigin - inV0;
@@ -40,7 +40,7 @@ JPH_INLINE float RayTriangle(Vec3Arg inOrigin, Vec3Arg inDirection, Vec3Arg inV0
 	Vec3 u = Vec3::sReplicate(s.Dot(p)) / det;
 
 	// Prepare to test v parameter
-	Vec3 q = s.Cross(e1);
+	Vec3 q = s.CrossPrecise(e1);
 
 	// Calculate v parameter
 	Vec3 v = Vec3::sReplicate(inDirection.Dot(q)) / det;
@@ -95,9 +95,9 @@ JPH_INLINE Vec4 RayTriangle4(Vec3Arg inOrigin, Vec3Arg inDirection, Vec4Arg inV0
 	Vec4 dz = inDirection.SplatZ();
 
 	// Begin calculating determinant - also used to calculate u parameter
-	Vec4 px = dy * e2z - dz * e2y;
-	Vec4 py = dz * e2x - dx * e2z;
-	Vec4 pz = dx * e2y - dy * e2x;
+	Vec4 px = Vec4::sDifferenceOfProducts(dy, e2z, dz, e2y);
+	Vec4 py = Vec4::sDifferenceOfProducts(dz, e2x, dx, e2z);
+	Vec4 pz = Vec4::sDifferenceOfProducts(dx, e2y, dy, e2x);
 
 	// if determinant is near zero, ray lies in plane of triangle
 	Vec4 det = e1x * px + e1y * py + e1z * pz;
@@ -110,7 +110,7 @@ JPH_INLINE Vec4 RayTriangle4(Vec3Arg inOrigin, Vec3Arg inDirection, Vec4Arg inV0
 	UVec4 det_near_zero = Vec4::sLess(det, epsilon);
 
 	// Set components of the determinant to 1 that are near zero to avoid dividing by zero
-	det = Vec4::sSelect(det, Vec4::sReplicate(1.0f), det_near_zero);
+	det = Vec4::sSelect(det, Vec4::sOne(), det_near_zero);
 
 	// Calculate distance from inV0 to ray origin
 	Vec4 sx = inOrigin.SplatX() - inV0X;
@@ -121,9 +121,9 @@ JPH_INLINE Vec4 RayTriangle4(Vec3Arg inOrigin, Vec3Arg inDirection, Vec4Arg inV0
 	Vec4 u = Vec4::sXor(sx * px + sy * py + sz * pz, det_sign);
 
 	// Prepare to test v parameter
-	Vec4 qx = sy * e1z - sz * e1y;
-	Vec4 qy = sz * e1x - sx * e1z;
-	Vec4 qz = sx * e1y - sy * e1x;
+	Vec4 qx = Vec4::sDifferenceOfProducts(sy, e1z, sz, e1y);
+	Vec4 qy = Vec4::sDifferenceOfProducts(sz, e1x, sx, e1z);
+	Vec4 qz = Vec4::sDifferenceOfProducts(sx, e1y, sy, e1x);
 
 	// Calculate v parameter and flip sign if determinant was negative
 	Vec4 v = Vec4::sXor(dx * qx + dy * qy + dz * qz, det_sign);

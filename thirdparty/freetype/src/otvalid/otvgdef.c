@@ -4,7 +4,7 @@
  *
  *   OpenType GDEF table validation (body).
  *
- * Copyright (C) 2004-2024 by
+ * Copyright (C) 2004-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -41,7 +41,7 @@
 #define AttachListFunc    otv_O_x_Ox
 #define LigCaretListFunc  otv_O_x_Ox
 
-  /* sets valid->extra1 (0)           */
+  /* sets otvalid->extra1 (0)           */
 
   static void
   otv_O_x_Ox( FT_Bytes       table,
@@ -59,7 +59,7 @@
     Coverage   = table + FT_NEXT_USHORT( p );
     GlyphCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (GlyphCount = %d)\n", GlyphCount ));
+    OTV_TRACE(( " (GlyphCount = %u)\n", GlyphCount ));
 
     otv_Coverage_validate( Coverage, otvalid, (FT_Int)GlyphCount );
     if ( GlyphCount != otv_Coverage_get_count( Coverage ) )
@@ -104,7 +104,7 @@
 
     CaretValueFormat = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (format = %d)\n", CaretValueFormat ));
+    OTV_TRACE(( " (format = %u)\n", CaretValueFormat ));
 
     switch ( CaretValueFormat )
     {
@@ -156,7 +156,7 @@
     OTV_LIMIT_CHECK( 2 );
     MarkGlyphSetCount = FT_NEXT_USHORT( p );
 
-    OTV_TRACE(( " (MarkGlyphSetCount = %d)\n", MarkGlyphSetCount ));
+    OTV_TRACE(( " (MarkGlyphSetCount = %u)\n", MarkGlyphSetCount ));
 
     OTV_LIMIT_CHECK( MarkGlyphSetCount * 4 );      /* CoverageOffsets */
 

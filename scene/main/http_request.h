@@ -31,12 +31,12 @@
 #pragma once
 
 #include "core/io/http_client.h"
-#include "core/io/stream_peer_gzip.h"
-#include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
 
+class Thread;
 class Timer;
+class StreamPeerGZIP;
 
 class HTTPRequest : public Node {
 	GDCLASS(HTTPRequest, Node);
@@ -62,6 +62,7 @@ public:
 
 private:
 	bool requesting = false;
+	bool download_complete = false;
 
 	String request_string;
 	String url;
@@ -83,6 +84,8 @@ private:
 	Vector<String> response_headers;
 
 	String download_to_file;
+	bool keep_partial_download = false;
+	bool append_to_download_file = false;
 
 	Ref<StreamPeerGZIP> decompressor;
 	Ref<FileAccess> file;
@@ -101,6 +104,11 @@ private:
 	double timeout = 0;
 
 	void _redirect_request(const String &p_new_url);
+
+	bool _is_content_header(const String &p_header) const;
+	bool _is_method_safe() const;
+	Error _get_redirect_headers(Vector<String> *r_headers);
+	bool _is_automatic_redirect() const;
 
 	bool _handle_response(bool *ret_value);
 
@@ -137,6 +145,12 @@ public:
 
 	void set_download_file(const String &p_file);
 	String get_download_file() const;
+
+	void set_keep_partial_download(bool p_keep);
+	bool is_keeping_partial_download() const;
+
+	void set_append_to_download_file(bool p_append);
+	bool is_appending_to_download_file() const;
 
 	void set_download_chunk_size(int p_chunk_size);
 	int get_download_chunk_size() const;

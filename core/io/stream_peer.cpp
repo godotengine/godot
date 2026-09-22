@@ -31,6 +31,7 @@
 #include "stream_peer.h"
 
 #include "core/io/marshalls.h"
+#include "core/object/class_db.h"
 
 Error StreamPeer::_put_data(const Vector<uint8_t> &p_data) {
 	int len = p_data.size();
@@ -383,9 +384,7 @@ String StreamPeer::get_utf8_string(int p_bytes) {
 	err = get_data(buf.ptrw(), p_bytes);
 	ERR_FAIL_COND_V(err != OK, String());
 
-	String ret;
-	ret.append_utf8((const char *)buf.ptr(), buf.size());
-	return ret;
+	return String::utf8((const char *)buf.ptr(), buf.size());
 }
 
 Variant StreamPeer::get_var(bool p_allow_objects) {
@@ -491,8 +490,8 @@ Error StreamPeerExtension::put_partial_data(const uint8_t *p_data, int p_bytes, 
 void StreamPeerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_data, "r_buffer", "r_bytes", "r_received");
 	GDVIRTUAL_BIND(_get_partial_data, "r_buffer", "r_bytes", "r_received");
-	GDVIRTUAL_BIND(_put_data, "p_data", "p_bytes", "r_sent");
-	GDVIRTUAL_BIND(_put_partial_data, "p_data", "p_bytes", "r_sent");
+	GDVIRTUAL_BIND(_put_data, "data", "bytes", "r_sent");
+	GDVIRTUAL_BIND(_put_partial_data, "data", "bytes", "r_sent");
 	GDVIRTUAL_BIND(_get_available_bytes);
 }
 
@@ -594,7 +593,7 @@ void StreamPeerBuffer::set_data_array(const Vector<uint8_t> &p_data) {
 	pointer = 0;
 }
 
-Vector<uint8_t> StreamPeerBuffer::get_data_array() const {
+const Vector<uint8_t> &StreamPeerBuffer::get_data_array() const {
 	return data;
 }
 

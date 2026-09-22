@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include "gltf_accessor.h"
+
 #include "core/math/expression.h"
 #include "core/variant/typed_array.h"
-#include "gltf_accessor.h"
 
 // Object model: https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/ObjectModel.adoc
 // KHR_animation_pointer: https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_animation_pointer
@@ -71,16 +72,17 @@ public:
 	void append_path_to_property(const NodePath &p_node_path, const StringName &p_prop_name);
 
 	GLTFAccessor::GLTFAccessorType get_accessor_type() const;
+	GLTFAccessor::GLTFComponentType get_component_type(const Vector<Variant> &p_values) const;
 
 	Ref<Expression> get_gltf_to_godot_expression() const;
-	void set_gltf_to_godot_expression(Ref<Expression> p_gltf_to_godot_expr);
+	void set_gltf_to_godot_expression(const Ref<Expression> &p_gltf_to_godot_expr);
 
 	Ref<Expression> get_godot_to_gltf_expression() const;
-	void set_godot_to_gltf_expression(Ref<Expression> p_godot_to_gltf_expr);
+	void set_godot_to_gltf_expression(const Ref<Expression> &p_godot_to_gltf_expr);
 
 	TypedArray<NodePath> get_node_paths() const;
 	bool has_node_paths() const;
-	void set_node_paths(TypedArray<NodePath> p_node_paths);
+	void set_node_paths(const TypedArray<NodePath> &p_node_paths);
 
 	GLTFObjectModelType get_object_model_type() const;
 	void set_object_model_type(GLTFObjectModelType p_type);

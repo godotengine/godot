@@ -37,6 +37,8 @@
 class GraphEdit;
 
 class GraphEditArranger : public RefCounted {
+	GDSOFTCLASS(GraphEditArranger, RefCounted);
+
 	enum SET_OPERATIONS {
 		IS_EQUAL,
 		IS_SUBSET,

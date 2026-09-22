@@ -31,9 +31,31 @@
 #pragma once
 
 #include "scene/3d/node_3d.h"
+#include "scene/3d/velocity_tracker_3d.h"
 
 class AudioListener3D : public Node3D {
 	GDCLASS(AudioListener3D, Node3D);
+
+public:
+	enum DopplerTracking {
+		DOPPLER_TRACKING_DISABLED,
+		DOPPLER_TRACKING_IDLE_STEP,
+		DOPPLER_TRACKING_PHYSICS_STEP,
+	};
+
+	void make_current();
+	void clear_current();
+	bool is_current() const;
+
+	virtual Transform3D get_listener_transform() const;
+
+	void set_doppler_tracking(DopplerTracking p_tracking);
+	DopplerTracking get_doppler_tracking() const;
+
+	Vector3 get_doppler_tracked_velocity() const;
+
+	AudioListener3D();
+	~AudioListener3D();
 
 private:
 	bool force_change = false;
@@ -43,6 +65,9 @@ private:
 
 	friend class Viewport;
 	void _update_audio_listener_state();
+
+	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
+	Ref<VelocityTracker3D> velocity_tracker;
 
 protected:
 	void _update_listener();
@@ -54,14 +79,6 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-
-public:
-	void make_current();
-	void clear_current();
-	bool is_current() const;
-
-	virtual Transform3D get_listener_transform() const;
-
-	AudioListener3D();
-	~AudioListener3D();
 };
+
+VARIANT_ENUM_CAST(AudioListener3D::DopplerTracking);

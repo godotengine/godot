@@ -674,8 +674,8 @@ namespace Godot
         {
             Projection proj = this;
             int i, j, k;
-            int[] pvt_i = new int[4];
-            int[] pvt_j = new int[4]; /* Locations of pivot matrix */
+            Span<int> pvt_i = stackalloc int[4];
+            Span<int> pvt_j = stackalloc int[4]; /* Locations of pivot matrix */
             real_t pvt_val; /* Value of current pivot element */
             real_t hold; /* Temporary storage */
             real_t determinant = 1.0f;

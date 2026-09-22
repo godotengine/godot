@@ -30,6 +30,11 @@
 
 #include "visible_on_screen_notifier_3d.h"
 
+#include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 void VisibleOnScreenNotifier3D::_visibility_enter() {
 	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
 		return;
@@ -98,7 +103,7 @@ VisibleOnScreenNotifier3D::~VisibleOnScreenNotifier3D() {
 	RID base_old = get_base();
 	set_base(RID());
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(base_old);
+	RS::get_singleton()->free_rid(base_old);
 }
 
 //////////////////////////////////////
@@ -144,7 +149,7 @@ NodePath VisibleOnScreenEnabler3D::get_enable_node_path() {
 }
 
 void VisibleOnScreenEnabler3D::_update_enable_mode(bool p_enable) {
-	Node *node = static_cast<Node *>(ObjectDB::get_instance(node_id));
+	Node *node = ObjectDB::get_instance<Node>(node_id);
 	if (node) {
 		if (p_enable) {
 			switch (enable_mode) {

@@ -95,6 +95,7 @@ struct [[nodiscard]] Projection {
 	static Projection create_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far);
 	static Projection create_frustum_aspect(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov = false);
 	static Projection create_fit_aabb(const AABB &p_aabb);
+	static Projection create_combined_projection(const Transform3D &p_center, const Projection &p_projection_a, const Transform3D &p_offset_a, const Projection &p_projection_b, const Transform3D &p_offset_b);
 	Projection perspective_znear_adjusted(real_t p_new_znear) const;
 	Plane get_projection_plane(Planes p_plane) const;
 	Projection flipped_y() const;
@@ -127,7 +128,7 @@ struct [[nodiscard]] Projection {
 	Vector4 xform(const Vector4 &p_vec4) const;
 	Vector4 xform_inv(const Vector4 &p_vec4) const;
 
-	operator String() const;
+	explicit operator String() const;
 
 	void scale_translate_to_fit(const AABB &p_aabb);
 	void add_jitter_offset(const Vector2 &p_offset);

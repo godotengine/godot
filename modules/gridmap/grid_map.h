@@ -32,10 +32,6 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/mesh_library.h"
-#include "scene/resources/multimesh.h"
-
-//heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
-//should scale better with hardware that supports instancing
 
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
@@ -45,6 +41,12 @@ class PhysicsMaterial;
 
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
+
+	enum DebugVisibilityMode {
+		DEBUG_VISIBILITY_MODE_DEFAULT,
+		DEBUG_VISIBILITY_MODE_FORCE_SHOW,
+		DEBUG_VISIBILITY_MODE_FORCE_HIDE,
+	};
 
 	enum {
 		MAP_DIRTY_TRANSFORMS = 1,
@@ -72,6 +74,8 @@ class GridMap : public Node3D {
 		_FORCE_INLINE_ operator Vector3i() const {
 			return Vector3i(x, y, z);
 		}
+
+		uint32_t hash() const { return operator Vector3i().hash(); }
 
 		IndexKey(Vector3i p_vector) {
 			x = (int16_t)p_vector.x;
@@ -152,10 +156,14 @@ class GridMap : public Node3D {
 		OctantKey() {}
 	};
 
+	OctantKey get_octant_key_from_index_key(const IndexKey &p_index_key) const;
+	OctantKey get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const;
+
 #ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
+	DebugVisibilityMode collision_visibility_mode = DEBUG_VISIBILITY_MODE_DEFAULT;
 	Ref<PhysicsMaterial> physics_material;
 #endif // PHYSICS_3D_DISABLED
 	bool bake_navigation = false;
@@ -181,10 +189,10 @@ class GridMap : public Node3D {
 	void _recreate_octant_data();
 
 	struct BakeLight {
-		RS::LightType type = RS::LightType::LIGHT_DIRECTIONAL;
+		RSE::LightType type = RSE::LightType::LIGHT_DIRECTIONAL;
 		Vector3 pos;
 		Vector3 dir;
-		float param[RS::LIGHT_PARAM_MAX] = {};
+		float param[RSE::LIGHT_PARAM_MAX] = {};
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {
@@ -200,11 +208,11 @@ class GridMap : public Node3D {
 	bool _octant_update(const OctantKey &p_key);
 	void _octant_clean_up(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	void _update_octant_navigation_debug_edge_connections_mesh(const OctantKey &p_key);
 	void _navigation_map_changed(RID p_map);
 	void _update_navigation_debug_edge_connections();
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	bool awaiting_update = false;
 
 	void _queue_octants_dirty();
@@ -224,6 +232,27 @@ class GridMap : public Node3D {
 	};
 
 	Vector<BakedMesh> baked_meshes;
+
+	bool debug_show_octants = false;
+	Color debug_octant_color = Color(1.0, 1.0, 1.0, 1.0);
+#ifdef DEBUG_ENABLED
+	bool debug_dirty = false;
+	Ref<StandardMaterial3D> debug_octant_line_material;
+
+	void _debug_update();
+	void _debug_update_octants();
+	void _debug_clear_octants();
+
+	RID debug_octant_line_mesh_rid;
+
+	struct OctantDebug {
+		RID debug_line_mesh_rid;
+		RID debug_line_instance_rid;
+	};
+	HashMap<OctantKey, OctantDebug *, OctantKey> debug_octant_map;
+
+	Array _build_octant_line_mesh_arrays() const;
+#endif // DEBUG_ENABLED
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -255,6 +284,9 @@ public:
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
 
+	void set_collision_visibility_mode(DebugVisibilityMode p_visibility_mode);
+	DebugVisibilityMode get_collision_visibility_mode() const;
+
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
 
@@ -264,8 +296,10 @@ public:
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
 
+#ifndef NAVIGATION_3D_DISABLED
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
+#endif // NAVIGATION_3D_DISABLED
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
@@ -299,6 +333,25 @@ public:
 	TypedArray<Vector3i> get_used_cells() const;
 	TypedArray<Vector3i> get_used_cells_by_item(int p_item) const;
 
+	TypedArray<Vector3i> get_used_octants() const;
+	TypedArray<Vector3i> get_used_octants_by_item(int p_item) const;
+
+	TypedArray<Vector3i> get_used_cells_in_octant(const Vector3i &p_octant_coords) const;
+	TypedArray<Vector3i> get_used_cells_in_octant_by_item(const Vector3i &p_octant_coords, int p_item) const;
+
+	// Fastpath functions for native modules that do not use Variant/TypedArray.
+	LocalVector<IndexKey> get_index_keys_in_bounds(const AABB &p_bounds, bool p_used_only = true) const;
+	LocalVector<OctantKey> get_octant_keys_in_bounds(const AABB &p_bounds, bool p_used_only = true) const;
+
+	TypedArray<Vector3i> get_octants_in_bounds(const AABB &p_bounds) const;
+	TypedArray<Vector3i> get_used_octants_in_bounds(const AABB &p_bounds) const;
+
+	Vector3i get_octant_coords_from_cell_coords(const Vector3i &p_cell_coords) const;
+
+#ifndef PHYSICS_3D_DISABLED
+	RID get_physics_body_from_octant_coord(const Vector3i &p_octant_coords) const;
+#endif
+
 	Array get_meshes() const;
 
 	void clear_baked_meshes();
@@ -309,14 +362,26 @@ public:
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
 
+	void set_debug_show_octants(bool p_enable);
+	bool get_debug_show_octants() const;
+
+	void set_debug_octant_color(const Color &p_color);
+	Color get_debug_octant_color() const;
+
+#ifndef NAVIGATION_3D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 public:
+#ifndef NAVIGATION_3D_DISABLED
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_3D_DISABLED
 
 	GridMap();
 	~GridMap();
 };
+
+VARIANT_ENUM_CAST(GridMap::DebugVisibilityMode);

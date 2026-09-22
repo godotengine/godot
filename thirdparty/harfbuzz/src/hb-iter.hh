@@ -460,7 +460,22 @@ struct hb_filter_iter_t :
   __item_t__ __item__ () const { return *it; }
   bool __more__ () const { return bool (it); }
   void __next__ () { do ++it; while (it && !hb_has (p.get (), hb_get (f.get (), *it))); }
-  void __prev__ () { do --it; while (it && !hb_has (p.get (), hb_get (f.get (), *it))); }
+  void __prev__ ()
+  {
+    unsigned count = 0;
+    do
+    {
+      Iter old = it;
+      --it;
+      if (!(it != old))
+      {
+	it += count;
+	return;
+      }
+      count++;
+    }
+    while (!hb_has (p.get (), hb_get (f.get (), *it)));
+  }
   hb_filter_iter_t __end__ () const { return hb_filter_iter_t (it._end (), p, f); }
   bool operator != (const hb_filter_iter_t& o) const
   { return it != o.it; }
@@ -772,8 +787,9 @@ struct hb_iota_iter_t :
   template <typename S2 = S>
   auto
   inc (hb_type_identity<S2> s, hb_priority<1>)
-    -> hb_void_t<decltype (hb_invoke (std::forward<S2> (s), hb_declval<T&> ()))>
-  { v = hb_invoke (std::forward<S2> (s), v); }
+    -> hb_void_t<decltype (hb_invoke (std::forward<hb_type_identity<S2>> (s),
+                                      hb_declval<T&> ()))>
+  { v = hb_invoke (std::forward<hb_type_identity<S2>> (s), v); }
 
   void
   inc (S s, hb_priority<0>)
@@ -972,7 +988,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (!hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
+      if (!hb_match (p, hb_get (f, *it)))
 	return false;
     return true;
   }
@@ -989,7 +1005,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
+      if (hb_match (p, hb_get (f, *it)))
 	return true;
     return false;
   }
@@ -1006,7 +1022,7 @@ struct
 		    Proj&& f = hb_identity) const
   {
     for (auto it = hb_iter (c); it; ++it)
-      if (hb_match (std::forward<Pred> (p), hb_get (std::forward<Proj> (f), *it)))
+      if (hb_match (p, hb_get (f, *it)))
 	return false;
     return true;
   }

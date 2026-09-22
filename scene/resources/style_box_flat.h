@@ -109,7 +109,4 @@ public:
 
 	virtual Rect2 get_draw_rect(const Rect2 &p_rect) const override;
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override;
-
-	StyleBoxFlat();
-	~StyleBoxFlat();
 };

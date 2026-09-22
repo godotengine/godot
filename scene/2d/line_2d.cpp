@@ -31,14 +31,17 @@
 #include "line_2d.h"
 
 #include "core/math/geometry_2d.h"
-#include "line_builder.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/2d/line_builder.h"
+#include "servers/rendering/rendering_server.h"
 
 Line2D::Line2D() {
 }
 
 #ifdef DEBUG_ENABLED
 Rect2 Line2D::_edit_get_rect() const {
-	if (_points.size() == 0) {
+	if (_points.is_empty()) {
 		return Rect2(0, 0, 0, 0);
 	}
 	Vector2 min = _points[0];
@@ -58,14 +61,14 @@ bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	const real_t d = _width / 2 + p_tolerance;
 	const Vector2 *points = _points.ptr();
 	for (int i = 0; i < _points.size() - 1; i++) {
-		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, &points[i]);
+		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, points[i], points[i + 1]);
 		if (p_point.distance_to(p) <= d) {
 			return true;
 		}
 	}
+	// Closing segment between the first and last point.
 	if (_closed && _points.size() > 2) {
-		const Vector2 closing_segment[2] = { points[0], points[_points.size() - 1] };
-		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, closing_segment);
+		Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, points[0], points[_points.size() - 1]);
 		if (p_point.distance_to(p) <= d) {
 			return true;
 		}
@@ -293,7 +296,7 @@ void Line2D::_draw() {
 
 	RID texture_rid;
 	if (_texture.is_valid()) {
-		texture_rid = _texture->get_rid();
+		texture_rid = _texture->get_scaled_rid();
 
 		lb.tile_aspect = _texture->get_size().aspect();
 	}
@@ -394,11 +397,11 @@ void Line2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "closed"), "set_closed", "is_closed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_curve", "get_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()), "set_curve", "get_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");
 	ADD_GROUP("Fill", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, Gradient::get_class_static()), "set_gradient", "get_gradient");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "None,Tile,Stretch"), "set_texture_mode", "get_texture_mode");
 	ADD_GROUP("Capping", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_mode", PROPERTY_HINT_ENUM, "Sharp,Bevel,Round"), "set_joint_mode", "get_joint_mode");

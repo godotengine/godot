@@ -34,6 +34,8 @@
 #include "core/io/resource_saver.h"
 
 class ResourceSaverWebP : public ResourceFormatSaver {
+	GDSOFTCLASS(ResourceSaverWebP, ResourceFormatSaver);
+
 public:
 	static Error save_image(const String &p_path, const Ref<Image> &p_img, const bool p_lossy = false, const float p_quality = 0.75f);
 	static Vector<uint8_t> save_image_to_buffer(const Ref<Image> &p_img, const bool p_lossy = false, const float p_quality = 0.75f);

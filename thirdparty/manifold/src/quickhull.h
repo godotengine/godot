@@ -58,8 +58,8 @@
 #include <deque>
 #include <vector>
 
-#include "./shared.h"
-#include "./vec.h"
+#include "shared.h"
+#include "vec.h"
 
 namespace manifold {
 
@@ -150,7 +150,7 @@ class MeshBuilder {
 
   // Mesh data
   std::vector<Face> faces;
-  Vec<Halfedge> halfedges;
+  SharedVec<Halfedge> halfedges;
   Vec<int> halfedgeToFace;
   Vec<int> halfedgeNext;
 
@@ -202,7 +202,7 @@ class HalfEdgeMesh {
   Vec<vec3> vertices;
   // Index of one of the half edges of the faces
   std::vector<size_t> halfEdgeIndexFaces;
-  Vec<Halfedge> halfedges;
+  SharedVec<Halfedge> halfedges;
   Vec<int> halfedgeToFace;
   Vec<int> halfedgeNext;
 
@@ -223,7 +223,7 @@ class QuickHull {
   double m_epsilon, epsilonSquared, scale;
   bool planar;
   Vec<vec3> planarPointCloudTemp;
-  VecView<vec3> originalVertexData;
+  VecView<const vec3> originalVertexData;
   MeshBuilder mesh;
   std::array<size_t, 6> extremeValues;
   size_t failedHorizonEdges = 0;
@@ -275,14 +275,15 @@ class QuickHull {
  public:
   // This function assumes that the pointCloudVec data resides in memory in the
   // following format: x_0,y_0,z_0,x_1,y_1,z_1,...
-  QuickHull(VecView<vec3> pointCloudVec)
+  QuickHull(VecView<const vec3> pointCloudVec)
       : originalVertexData(VecView(pointCloudVec)) {}
 
   // Computes convex hull for a given point cloud. Params: eps: minimum distance
   // to a plane to consider a point being on positive side of it (for a point
   // cloud with scale 1) Returns: Convex hull of the point cloud as halfEdge
   // vector and vertex vector
-  std::pair<Vec<Halfedge>, Vec<vec3>> buildMesh(double eps = defaultEps());
+  std::pair<SharedVec<Halfedge>, Vec<vec3>> buildMesh(
+      double eps = defaultEps());
 };
 
 }  // namespace manifold

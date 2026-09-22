@@ -7,7 +7,7 @@ used by this platform.
 
 ## Documentation
 
-- [Compiling for Linux/*BSD](https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_linuxbsd.html)
+- [Compiling for Linux/*BSD](https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html)
   - Instructions on building this platform port from source.
 - [Exporting for Linux/*BSD](https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_linux.html)
   - Instructions on using the compiled export templates to export a project.

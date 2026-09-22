@@ -64,8 +64,22 @@ hb_face_create_or_fail (hb_blob_t    *blob,
 			unsigned int  index);
 
 HB_EXTERN hb_face_t *
+hb_face_create_or_fail_using (hb_blob_t    *blob,
+			      unsigned int  index,
+			      const char   *loader_name);
+
+HB_EXTERN hb_face_t *
 hb_face_create_from_file_or_fail (const char   *file_name,
 				  unsigned int  index);
+
+HB_EXTERN hb_face_t *
+hb_face_create_from_file_or_fail_using (const char   *file_name,
+					unsigned int  index,
+					const char   *loader_name);
+
+HB_EXTERN const char **
+hb_face_list_loaders (void);
+
 
 /**
  * hb_reference_table_func_t:
@@ -117,7 +131,7 @@ HB_EXTERN void
 hb_face_make_immutable (hb_face_t *face);
 
 HB_EXTERN hb_bool_t
-hb_face_is_immutable (const hb_face_t *face);
+hb_face_is_immutable (hb_face_t *face);
 
 
 HB_EXTERN hb_blob_t *
@@ -155,7 +169,7 @@ hb_face_get_glyph_count (const hb_face_t *face);
  * @start_offset: The index of first table tag to retrieve
  * @table_count: (inout): Input = the maximum number of table tags to return;
  *                Output = the actual number of table tags returned (may be zero)
- * @table_tags: (out) (array length=table_count): The array of table tags found
+ * @table_tags: (out) (array length=table_count) (nullable): The array of table tags found
  * @user_data: User data pointer passed by the caller
  *
  * Callback function for hb_face_get_table_tags().

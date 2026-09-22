@@ -33,9 +33,8 @@
 #ifdef UNIX_ENABLED
 
 #include "core/os/os.h"
-#include "drivers/unix/ip_unix.h"
 
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 #include <iconv.h>
 #include <langinfo.h>
 #define gd_iconv_t iconv_t
@@ -47,7 +46,7 @@ typedef void *gd_iconv_t;
 typedef gd_iconv_t (*PIConvOpen)(const char *, const char *);
 typedef size_t (*PIConv)(gd_iconv_t, char **, size_t *, char **, size_t *);
 typedef int (*PIConvClose)(gd_iconv_t);
-typedef const char *(*PIConvLocaleCharset)(void);
+typedef const char *(*PIConvLocaleCharset)();
 #endif
 
 class OS_Unix : public OS {
@@ -58,7 +57,7 @@ class OS_Unix : public OS {
 	HashMap<ProcessID, ProcessInfo> *process_map = nullptr;
 	Mutex process_map_mutex;
 
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 	bool _iconv_ok = true;
 #else
 	bool _iconv_ok = false;
@@ -70,6 +69,9 @@ class OS_Unix : public OS {
 
 	void _load_iconv();
 #endif
+
+	static int _wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid = nullptr);
+	bool _check_pid_is_running(const pid_t p_pid, int *r_status) const;
 
 protected:
 	// UNIX only handles the core functions.
@@ -91,13 +93,12 @@ public:
 	virtual StdHandleType get_stdout_type() const override;
 	virtual StdHandleType get_stderr_type() const override;
 
-	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
-
 	virtual Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String &p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
 	virtual Error set_cwd(const String &p_cwd) override;
+	virtual String get_cwd() const override;
 
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
@@ -137,11 +138,13 @@ public:
 
 	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir(const String &p_user_dir) const override;
+
+	virtual String expand_path(const String &p_path) const override;
 };
 
 class UnixTerminalLogger : public StdLogger {
 public:
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR) override;
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
 	virtual ~UnixTerminalLogger();
 };
 

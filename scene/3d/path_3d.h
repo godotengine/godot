@@ -32,6 +32,9 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/curve.h"
+#include "scene/resources/material.h"
+
+class ArrayMesh;
 
 class Path3D : public Node3D {
 	GDCLASS(Path3D, Node3D);
@@ -63,9 +66,6 @@ public:
 	const Color &get_debug_custom_color() const;
 	void set_debug_custom_color(const Color &p_color);
 
-	bool get_debug_show() const;
-	void set_debug_show(bool p_show);
-
 	Ref<StandardMaterial3D> get_debug_material();
 
 	Path3D();
@@ -92,7 +92,6 @@ private:
 	bool cubic = true;
 	bool loop = true;
 	bool tilt_enabled = true;
-	bool transform_dirty = true;
 	bool use_model_front = false;
 	RotationMode rotation_mode = ROTATION_XYZ;
 
@@ -136,8 +135,6 @@ public:
 	void update_transform();
 
 	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
-
-	PathFollow3D() {}
 };
 
 VARIANT_ENUM_CAST(PathFollow3D::RotationMode);

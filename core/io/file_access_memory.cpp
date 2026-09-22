@@ -98,12 +98,14 @@ bool FileAccessMemory::is_open() const {
 
 void FileAccessMemory::seek(uint64_t p_position) {
 	ERR_FAIL_NULL(data);
+	ERR_FAIL_COND(p_position > length);
 	pos = p_position;
 }
 
 void FileAccessMemory::seek_end(int64_t p_position) {
 	ERR_FAIL_NULL(data);
-	pos = length + p_position;
+	ERR_FAIL_COND((int64_t)length + p_position < 0);
+	seek(length + p_position);
 }
 
 uint64_t FileAccessMemory::get_position() const {

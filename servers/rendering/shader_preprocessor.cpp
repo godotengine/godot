@@ -29,7 +29,10 @@
 /**************************************************************************/
 
 #include "shader_preprocessor.h"
-#include "core/math/expression.h"
+
+#include "core/io/resource_loader.h"
+#include "core/os/os.h"
+#include "servers/rendering/shader_expression.h"
 
 const char32_t CURSOR = 0xFFFF;
 
@@ -133,7 +136,7 @@ void ShaderPreprocessor::Tokenizer::skip_whitespace() {
 
 bool ShaderPreprocessor::Tokenizer::consume_empty_line() {
 	// Read until newline and return true if the content was all whitespace/empty.
-	return tokens_to_string(advance('\n')).strip_edges().size() == 0;
+	return tokens_to_string(advance('\n')).strip_edges().is_empty();
 }
 
 String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_started) {
@@ -358,7 +361,7 @@ String ShaderPreprocessor::vector_to_string(const LocalVector<char32_t> &p_v, in
 	const int count = stop - p_start;
 
 	String result;
-	result.resize(count + 1);
+	result.resize_uninitialized(count + 1);
 	for (int i = 0; i < count; i++) {
 		result[i] = p_v[p_start + i];
 	}
@@ -491,7 +494,7 @@ void ShaderPreprocessor::process_elif(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Expression expression;
+	ShaderExpression expression;
 	Vector<String> names;
 	error = expression.parse(body, names);
 	if (error != OK) {
@@ -552,7 +555,8 @@ void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
 	if (skip) {
 		Vector<String> ends;
 		ends.push_back("endif");
-		next_directive(p_tokenizer, ends);
+		// Legacy return value.
+		_ALLOW_DISCARD_ next_directive(p_tokenizer, ends);
 	}
 }
 
@@ -611,7 +615,7 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Expression expression;
+	ShaderExpression expression;
 	Vector<String> names;
 	error = expression.parse(body, names);
 	if (error != OK) {
@@ -635,11 +639,16 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 
 void ShaderPreprocessor::process_ifdef(Tokenizer *p_tokenizer) {
 	const int line = p_tokenizer->get_line();
+	bool is_cursor = false;
 
-	String label = p_tokenizer->get_identifier();
+	String label = p_tokenizer->get_identifier(&is_cursor);
 	if (label.is_empty()) {
 		set_error(RTR("Invalid macro name."), line);
 		return;
+	}
+
+	if (is_cursor) {
+		state->completion_show_defines = true;
 	}
 
 	if (!p_tokenizer->consume_empty_line()) {
@@ -847,7 +856,8 @@ void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_s
 		ends.push_back("elif");
 		ends.push_back("else");
 		ends.push_back("endif");
-		next_directive(p_tokenizer, ends);
+		// Legacy return value.
+		_ALLOW_DISCARD_ next_directive(p_tokenizer, ends);
 	}
 }
 
@@ -874,6 +884,7 @@ Error ShaderPreprocessor::expand_condition(const String &p_string, int p_line, S
 			switch (p_string[i]) {
 				case CURSOR:
 					state->completion_type = COMPLETION_TYPE_CONDITION;
+					state->completion_show_defines = true;
 					break;
 				case '(':
 					bracket_start_count++;
@@ -1330,11 +1341,10 @@ Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, Strin
 	return OK;
 }
 
-Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, List<ScriptLanguage::CodeCompletionOption> *r_completion_defines, IncludeCompletionFunction p_include_completion_func) {
-	State pp_state;
+void ShaderPreprocessor::_prepare_state(ShaderPreprocessor::State &rp_state, const String &p_filename, bool p_save_regions) {
 	if (!p_filename.is_empty()) {
-		pp_state.current_filename = p_filename;
-		pp_state.save_regions = r_regions != nullptr;
+		rp_state.current_filename = p_filename;
+		rp_state.save_regions = p_save_regions;
 	}
 
 	// Built-in defines.
@@ -1342,19 +1352,36 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 		const String rendering_method = OS::get_singleton()->get_current_rendering_method();
 
 		if (rendering_method == "forward_plus") {
-			insert_builtin_define("CURRENT_RENDERER", _MKSTR(2), pp_state);
+			insert_builtin_define("CURRENT_RENDERER", _MKSTR(2), rp_state);
 		} else if (rendering_method == "mobile") {
-			insert_builtin_define("CURRENT_RENDERER", _MKSTR(1), pp_state);
+			insert_builtin_define("CURRENT_RENDERER", _MKSTR(1), rp_state);
 		} else { // gl_compatibility
-			insert_builtin_define("CURRENT_RENDERER", _MKSTR(0), pp_state);
+			insert_builtin_define("CURRENT_RENDERER", _MKSTR(0), rp_state);
 		}
 
-		insert_builtin_define("RENDERER_COMPATIBILITY", _MKSTR(0), pp_state);
-		insert_builtin_define("RENDERER_MOBILE", _MKSTR(1), pp_state);
-		insert_builtin_define("RENDERER_FORWARD_PLUS", _MKSTR(2), pp_state);
+		insert_builtin_define("RENDERER_COMPATIBILITY", _MKSTR(0), rp_state);
+		insert_builtin_define("RENDERER_MOBILE", _MKSTR(1), rp_state);
+		insert_builtin_define("RENDERER_FORWARD_PLUS", _MKSTR(2), rp_state);
 	}
+}
 
+Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, HashSet<Ref<ShaderInclude>> *r_includes) {
+	State pp_state;
+	_prepare_state(pp_state, p_filename, false);
 	Error err = preprocess(&pp_state, p_code, r_result);
+	if (r_includes) {
+		*r_includes = pp_state.shader_includes;
+	}
+	clear_state();
+	return err;
+}
+
+#ifdef TOOLS_ENABLED
+Error ShaderPreprocessor::preprocess_for_editor(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, List<EditorLanguage::CompletionOption> *r_completion_options, List<EditorLanguage::CompletionOption> *r_completion_defines, IncludeCompletionFunction p_include_completion_func) {
+	State pp_state;
+	_prepare_state(pp_state, p_filename, r_regions != nullptr);
+	Error err = preprocess(&pp_state, p_code, r_result);
+
 	if (err != OK) {
 		if (r_error_text) {
 			*r_error_text = pp_state.error;
@@ -1366,13 +1393,10 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 	if (r_regions) {
 		*r_regions = pp_state.regions[p_filename];
 	}
-	if (r_includes) {
-		*r_includes = pp_state.shader_includes;
-	}
 
 	if (r_completion_defines) {
 		for (const KeyValue<String, Define *> &E : state->defines) {
-			ScriptLanguage::CodeCompletionOption option(E.key, ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
+			EditorLanguage::CompletionOption option(E.key, EditorLanguage::CompletionKind::CONSTANT);
 			r_completion_defines->push_back(option);
 		}
 	}
@@ -1384,7 +1408,7 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 				get_keyword_list(&options, true, true);
 
 				for (const String &E : options) {
-					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					EditorLanguage::CompletionOption option(E, EditorLanguage::CompletionKind::PLAIN_TEXT);
 					r_completion_options->push_back(option);
 				}
 
@@ -1394,13 +1418,13 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 				ShaderPreprocessor::get_pragma_list(&options);
 
 				for (const String &E : options) {
-					ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					EditorLanguage::CompletionOption option(E, EditorLanguage::CompletionKind::PLAIN_TEXT);
 					r_completion_options->push_back(option);
 				}
 
 			} break;
 			case COMPLETION_TYPE_CONDITION: {
-				ScriptLanguage::CodeCompletionOption option("defined", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				EditorLanguage::CompletionOption option("defined", EditorLanguage::CompletionKind::PLAIN_TEXT);
 				r_completion_options->push_back(option);
 
 			} break;
@@ -1415,10 +1439,18 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 		}
 	}
 
+	if (state->completion_show_defines) {
+		for (const KeyValue<String, Define *> &E : state->defines) {
+			EditorLanguage::CompletionOption option(E.key, EditorLanguage::CompletionKind::CONSTANT);
+			r_completion_options->push_back(option);
+		}
+	}
+
 	clear_state();
 
 	return err;
 }
+#endif
 
 void ShaderPreprocessor::get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords) {
 	r_keywords->push_back("define");

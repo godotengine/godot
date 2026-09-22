@@ -32,8 +32,9 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
-#include "editor/plugins/shader_file_editor_plugin.h"
+#include "editor/shader/shader_file_editor_plugin.h"
 #include "servers/rendering/rendering_device_binds.h"
 
 String ResourceImporterShaderFile::get_importer_name() const {
@@ -71,6 +72,7 @@ bool ResourceImporterShaderFile::get_option_visibility(const String &p_path, con
 	return true;
 }
 
+#ifdef RD_ENABLED
 static String _include_function(const String &p_path, void *userpointer) {
 	Error err;
 
@@ -87,12 +89,10 @@ static String _include_function(const String &p_path, void *userpointer) {
 	}
 	return file_inc->get_as_utf8_string();
 }
+#endif // RD_ENABLED
 
 Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	/* STEP 1, Read shader code */
-	ERR_FAIL_COND_V_EDMSG((OS::get_singleton()->get_current_rendering_method() == "gl_compatibility"), ERR_UNAVAILABLE, "Cannot import custom .glsl shaders when using the Compatibility renderer. Please switch to the Forward+ or Mobile renderer to use custom shaders.");
-	ERR_FAIL_COND_V_EDMSG((DisplayServer::get_singleton()->get_name() == "headless"), ERR_UNAVAILABLE, "Cannot import custom .glsl shaders when running in headless mode.");
-
+#ifdef RD_ENABLED
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_source_file, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
@@ -113,4 +113,7 @@ Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const Stri
 	ResourceSaver::save(shader_file, p_save_path + ".res");
 
 	return OK;
+#else
+	ERR_FAIL_V_MSG(ERR_CANT_OPEN, "RenderingDevice not available.");
+#endif // RD_ENABLED
 }

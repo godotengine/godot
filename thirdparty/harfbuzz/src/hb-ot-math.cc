@@ -87,6 +87,20 @@ hb_position_t
 hb_ot_math_get_constant (hb_font_t *font,
 			 hb_ot_math_constant_t constant)
 {
+  /* https://github.com/harfbuzz/harfbuzz/issues/4653
+   * Cambria Math has incorrect value for displayOperatorMinHeight, and
+   * apparently Microsoft implementation swaps displayOperatorMinHeight and
+   * delimitedSubFormulaMinHeight, so we do the same if we detect Cambria Math
+   * with the swapped values. */
+  if ((constant == HB_OT_MATH_CONSTANT_DISPLAY_OPERATOR_MIN_HEIGHT ||
+       constant == HB_OT_MATH_CONSTANT_DELIMITED_SUB_FORMULA_MIN_HEIGHT) &&
+      font->face->table.MATH->is_bad_cambria (font))
+  {
+    if (constant == HB_OT_MATH_CONSTANT_DISPLAY_OPERATOR_MIN_HEIGHT)
+      constant = HB_OT_MATH_CONSTANT_DELIMITED_SUB_FORMULA_MIN_HEIGHT;
+    else
+      constant = HB_OT_MATH_CONSTANT_DISPLAY_OPERATOR_MIN_HEIGHT;
+  }
   return font->face->table.MATH->get_constant(constant, font);
 }
 
@@ -192,7 +206,7 @@ hb_ot_math_get_glyph_kerning (hb_font_t *font,
  * @start_offset: offset of the first kern entry to retrieve
  * @entries_count: (inout) (optional): Input = the maximum number of kern entries to return;
  *                                     Output = the actual number of kern entries returned
- * @kern_entries: (out caller-allocates) (array length=entries_count): array of kern entries returned
+ * @kern_entries: (out caller-allocates) (array length=entries_count) (nullable): array of kern entries returned
  *
  * Fetches the raw MathKern (cut-in) data for the specified font, glyph index,
  * and @kern. The corresponding list of kern values and correction heights is
@@ -237,7 +251,7 @@ hb_ot_math_get_glyph_kernings (hb_font_t *font,
  * @start_offset: offset of the first variant to retrieve
  * @variants_count: (inout): Input = the maximum number of variants to return;
  *                           Output = the actual number of variants returned
- * @variants: (out) (array length=variants_count): array of variants returned
+ * @variants: (out) (array length=variants_count) (nullable): array of variants returned
  *
  * Fetches the MathGlyphConstruction for the specified font, glyph index, and
  * direction. The corresponding list of size variants is returned as a list of
@@ -299,7 +313,7 @@ hb_ot_math_get_min_connector_overlap (hb_font_t *font,
  * @start_offset: offset of the first glyph part to retrieve
  * @parts_count: (inout): Input = maximum number of glyph parts to return;
  *               Output = actual number of parts returned
- * @parts: (out) (array length=parts_count): the glyph parts returned
+ * @parts: (out) (array length=parts_count) (nullable): the glyph parts returned
  * @italics_correction: (out): italics correction of the glyph assembly
  *
  * Fetches the GlyphAssembly for the specified font, glyph index, and direction.

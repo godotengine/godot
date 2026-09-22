@@ -34,13 +34,13 @@
 #include "../objects/jolt_body_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
-#include "Jolt/Physics/Constraints/SwingTwistConstraint.h"
+#include <Jolt/Physics/Constraints/SwingTwistConstraint.h>
 
 namespace {
 
-constexpr double DEFAULT_BIAS = 0.3;
-constexpr double DEFAULT_SOFTNESS = 0.8;
-constexpr double DEFAULT_RELAXATION = 1.0;
+constexpr double CONE_TWIST_DEFAULT_BIAS = 0.3;
+constexpr double CONE_TWIST_DEFAULT_SOFTNESS = 0.8;
+constexpr double CONE_TWIST_DEFAULT_RELAXATION = 1.0;
 
 } // namespace
 
@@ -78,7 +78,6 @@ JPH::Constraint *JoltConeTwistJoint3D::_build_swing_twist(JPH::Body *p_jolt_body
 	constraint_settings.mPosition2 = to_jolt_r(p_shifted_ref_b.origin);
 	constraint_settings.mTwistAxis2 = to_jolt(p_shifted_ref_b.basis.get_column(Vector3::AXIS_X));
 	constraint_settings.mPlaneAxis2 = to_jolt(p_shifted_ref_b.basis.get_column(Vector3::AXIS_Z));
-	constraint_settings.mSwingType = JPH::ESwingType::Pyramid;
 
 	if (p_jolt_body_a == nullptr) {
 		return constraint_settings.Create(JPH::Body::sFixedToWorld, *p_jolt_body_b);
@@ -159,22 +158,22 @@ JoltConeTwistJoint3D::JoltConeTwistJoint3D(const JoltJoint3D &p_old_joint, JoltB
 	rebuild();
 }
 
-double JoltConeTwistJoint3D::get_param(PhysicsServer3D::ConeTwistJointParam p_param) const {
+double JoltConeTwistJoint3D::get_param(PS3DE::ConeTwistJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN: {
+		case PS3DE::CONE_TWIST_JOINT_SWING_SPAN: {
 			return swing_limit_span;
 		}
-		case PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN: {
+		case PS3DE::CONE_TWIST_JOINT_TWIST_SPAN: {
 			return twist_limit_span;
 		}
-		case PhysicsServer3D::CONE_TWIST_JOINT_BIAS: {
-			return DEFAULT_BIAS;
+		case PS3DE::CONE_TWIST_JOINT_BIAS: {
+			return CONE_TWIST_DEFAULT_BIAS;
 		}
-		case PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS: {
-			return DEFAULT_SOFTNESS;
+		case PS3DE::CONE_TWIST_JOINT_SOFTNESS: {
+			return CONE_TWIST_DEFAULT_SOFTNESS;
 		}
-		case PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION: {
-			return DEFAULT_RELAXATION;
+		case PS3DE::CONE_TWIST_JOINT_RELAXATION: {
+			return CONE_TWIST_DEFAULT_RELAXATION;
 		}
 		default: {
 			ERR_FAIL_V_MSG(0.0, vformat("Unhandled cone twist joint parameter: '%d'. This should not happen. Please report this.", p_param));
@@ -182,28 +181,28 @@ double JoltConeTwistJoint3D::get_param(PhysicsServer3D::ConeTwistJointParam p_pa
 	}
 }
 
-void JoltConeTwistJoint3D::set_param(PhysicsServer3D::ConeTwistJointParam p_param, double p_value) {
+void JoltConeTwistJoint3D::set_param(PS3DE::ConeTwistJointParam p_param, double p_value) {
 	switch (p_param) {
-		case PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN: {
+		case PS3DE::CONE_TWIST_JOINT_SWING_SPAN: {
 			swing_limit_span = p_value;
 			_limits_changed();
 		} break;
-		case PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN: {
+		case PS3DE::CONE_TWIST_JOINT_TWIST_SPAN: {
 			twist_limit_span = p_value;
 			_limits_changed();
 		} break;
-		case PhysicsServer3D::CONE_TWIST_JOINT_BIAS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_BIAS)) {
+		case PS3DE::CONE_TWIST_JOINT_BIAS: {
+			if (!Math::is_equal_approx(p_value, CONE_TWIST_DEFAULT_BIAS)) {
 				WARN_PRINT(vformat("Cone twist joint bias is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::CONE_TWIST_JOINT_SOFTNESS: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_SOFTNESS)) {
+		case PS3DE::CONE_TWIST_JOINT_SOFTNESS: {
+			if (!Math::is_equal_approx(p_value, CONE_TWIST_DEFAULT_SOFTNESS)) {
 				WARN_PRINT(vformat("Cone twist joint softness is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
-		case PhysicsServer3D::CONE_TWIST_JOINT_RELAXATION: {
-			if (!Math::is_equal_approx(p_value, DEFAULT_RELAXATION)) {
+		case PS3DE::CONE_TWIST_JOINT_RELAXATION: {
+			if (!Math::is_equal_approx(p_value, CONE_TWIST_DEFAULT_RELAXATION)) {
 				WARN_PRINT(vformat("Cone twist joint relaxation is not supported when using Jolt Physics. Any such value will be ignored. This joint connects %s.", _bodies_to_string()));
 			}
 		} break;
@@ -348,21 +347,12 @@ void JoltConeTwistJoint3D::rebuild() {
 	destroy();
 
 	JoltSpace3D *space = get_space();
-
 	if (space == nullptr) {
 		return;
 	}
 
-	const JPH::BodyID body_ids[2] = {
-		body_a != nullptr ? body_a->get_jolt_id() : JPH::BodyID(),
-		body_b != nullptr ? body_b->get_jolt_id() : JPH::BodyID()
-	};
-
-	const JoltWritableBodies3D jolt_bodies = space->write_bodies(body_ids, 2);
-
-	JPH::Body *jolt_body_a = static_cast<JPH::Body *>(jolt_bodies[0]);
-	JPH::Body *jolt_body_b = static_cast<JPH::Body *>(jolt_bodies[1]);
-
+	JPH::Body *jolt_body_a = body_a != nullptr ? body_a->get_jolt_body() : nullptr;
+	JPH::Body *jolt_body_b = body_b != nullptr ? body_b->get_jolt_body() : nullptr;
 	ERR_FAIL_COND(jolt_body_a == nullptr && jolt_body_b == nullptr);
 
 	Transform3D shifted_ref_a;
@@ -374,8 +364,8 @@ void JoltConeTwistJoint3D::rebuild() {
 
 	space->add_joint(this);
 
-	_update_enabled();
-	_update_iterations();
+	_update_joint();
+
 	_update_swing_motor_state();
 	_update_twist_motor_state();
 	_update_motor_velocity();

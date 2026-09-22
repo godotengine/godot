@@ -6,12 +6,12 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id$
 
  ********************************************************************/
 
@@ -134,28 +134,33 @@ static int oc_comment_unpack(oc_pack_buf *_opb,th_comment *_tc){
     _tc->comments=0;
     return TH_EBADHEADER;
   }
-  _tc->comment_lengths=(int *)_ogg_malloc(
-   _tc->comments*sizeof(_tc->comment_lengths[0]));
-  _tc->user_comments=(char **)_ogg_malloc(
-   _tc->comments*sizeof(_tc->user_comments[0]));
-  if(_tc->comment_lengths==NULL||_tc->user_comments==NULL){
-    _tc->comments=0;
-    return TH_EFAULT;
-  }
-  for(i=0;i<_tc->comments;i++){
-    len=oc_unpack_length(_opb);
-    if(len<0||len>oc_pack_bytes_left(_opb)){
-      _tc->comments=i;
-      return TH_EBADHEADER;
-    }
-    _tc->comment_lengths[i]=len;
-    _tc->user_comments[i]=_ogg_malloc((size_t)len+1);
-    if(_tc->user_comments[i]==NULL){
-      _tc->comments=i;
+  if(0<_tc->comments){
+    _tc->comment_lengths=(int *)_ogg_malloc(
+     _tc->comments*sizeof(_tc->comment_lengths[0]));
+    _tc->user_comments=(char **)_ogg_malloc(
+     _tc->comments*sizeof(_tc->user_comments[0]));
+    if(_tc->comment_lengths==NULL||_tc->user_comments==NULL){
+      _tc->comments=0;
       return TH_EFAULT;
     }
-    oc_unpack_octets(_opb,_tc->user_comments[i],len);
-    _tc->user_comments[i][len]='\0';
+    for(i=0;i<_tc->comments;i++){
+      len=oc_unpack_length(_opb);
+      if(len<0||len>oc_pack_bytes_left(_opb)){
+        _tc->comments=i;
+        return TH_EBADHEADER;
+      }
+      _tc->comment_lengths[i]=len;
+      _tc->user_comments[i]=_ogg_malloc((size_t)len+1);
+      if(_tc->user_comments[i]==NULL){
+        _tc->comments=i;
+        return TH_EFAULT;
+      }
+      oc_unpack_octets(_opb,_tc->user_comments[i],len);
+      _tc->user_comments[i][len]='\0';
+    }
+  } else {
+    _tc->comment_lengths=NULL;
+    _tc->user_comments=NULL;
   }
   return oc_pack_bytes_left(_opb)<0?TH_EBADHEADER:0;
 }
@@ -217,7 +222,7 @@ static int oc_dec_headerin(oc_pack_buf *_opb,th_info *_info,
     /*Comment header.*/
     case 0x81:{
       if(_tc==NULL)return TH_EFAULT;
-      /*We shoud have already decoded the info header, and should not yet have
+      /*We should have already decoded the info header, and should not yet have
          decoded the comment header.*/
       if(_info->frame_width==0||_tc->vendor!=NULL)return TH_EBADHEADER;
       ret=oc_comment_unpack(_opb,_tc);

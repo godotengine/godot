@@ -30,8 +30,7 @@
 
 #include "dtls_server.h"
 
-DTLSServer *(*DTLSServer::_create)(bool p_notify_postinitialize) = nullptr;
-bool DTLSServer::available = false;
+#include "core/object/class_db.h"
 
 DTLSServer *DTLSServer::create(bool p_notify_postinitialize) {
 	if (_create) {

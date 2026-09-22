@@ -13,7 +13,6 @@ namespace embree
   /*! Instanced acceleration structure */
   struct InstanceArray : public Geometry
   {
-    //ALIGNED_STRUCT_(16);
     static const Geometry::GTypeMask geom_type = Geometry::MTY_INSTANCE_ARRAY;
 
   public:
@@ -48,7 +47,7 @@ namespace embree
   public:
 
     virtual void setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num) override;
-    virtual void* getBuffer(RTCBufferType type, unsigned int slot) override;
+    virtual void* getBufferData(RTCBufferType type, unsigned int slot, BufferDataPointerType pointerType) override;
     virtual void updateBuffer(RTCBufferType type, unsigned int slot) override;
 
     virtual void setNumTimeSteps (unsigned int numTimeSteps) override;
@@ -59,6 +58,8 @@ namespace embree
     virtual void build() {}
     virtual void addElementsToCount (GeometryCounts & counts) const override;
     virtual void commit() override;
+    size_t getGeometryDataDeviceByteSize() const override;
+    void convertToDeviceRepresentation(size_t offset, char* data_host, char* data_device) const override;
 
   public:
 

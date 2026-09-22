@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class JoltBody3D;
 
@@ -90,6 +90,12 @@ public:
 	virtual void set_sleep_state(bool p_enabled) override;
 	virtual bool is_sleeping() const override;
 
+	virtual void set_collision_layer(uint32_t p_layer) override;
+	virtual uint32_t get_collision_layer() const override;
+
+	virtual void set_collision_mask(uint32_t p_mask) override;
+	virtual uint32_t get_collision_mask() const override;
+
 	virtual int get_contact_count() const override;
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const override;
@@ -109,5 +115,5 @@ public:
 
 	virtual void integrate_forces() override;
 
-	virtual PhysicsDirectSpaceState3D *get_space_state() override;
+	virtual RequiredResult<PhysicsDirectSpaceState3D> get_space_state() override;
 };

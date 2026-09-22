@@ -30,9 +30,10 @@
 
 #pragma once
 
+#include "scene/resources/curve.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 
 ///@TODO probably should change a few integers to unsigned integers...
 
@@ -152,8 +153,6 @@ public:
 
 	void set_rings(const int p_rings);
 	int get_rings() const;
-
-	CapsuleMesh();
 };
 
 /**
@@ -188,8 +187,6 @@ public:
 
 	void set_subdivide_depth(const int p_divisions);
 	int get_subdivide_depth() const;
-
-	BoxMesh();
 };
 
 /**
@@ -237,8 +234,6 @@ public:
 
 	void set_cap_bottom(bool p_cap_bottom);
 	bool is_cap_bottom() const;
-
-	CylinderMesh();
 };
 
 /*
@@ -282,8 +277,6 @@ public:
 
 	void set_orientation(const Orientation p_orientation);
 	Orientation get_orientation() const;
-
-	PlaneMesh();
 };
 
 VARIANT_ENUM_CAST(PlaneMesh::Orientation)
@@ -335,8 +328,6 @@ public:
 
 	void set_subdivide_depth(const int p_divisions);
 	int get_subdivide_depth() const;
-
-	PrismMesh();
 };
 
 /**
@@ -375,8 +366,6 @@ public:
 
 	void set_is_hemisphere(const bool p_is_hemisphere);
 	bool get_is_hemisphere() const;
-
-	SphereMesh();
 };
 
 /**
@@ -409,8 +398,6 @@ public:
 
 	void set_ring_segments(const int p_ring_segments);
 	int get_ring_segments() const;
-
-	TorusMesh();
 };
 
 /**
@@ -581,8 +568,8 @@ private:
 		Vector<Vector2> triangles;
 		Vector<Vector<ContourPoint>> contours;
 		Vector<ContourInfo> contours_info;
-		Vector2 min_p = Vector2(INFINITY, INFINITY);
-		Vector2 max_p = Vector2(-INFINITY, -INFINITY);
+		Vector2 min_p = Vector2(Math::INF, Math::INF);
+		Vector2 max_p = Vector2(-Math::INF, -Math::INF);
 	};
 	mutable HashMap<GlyphMeshKey, GlyphMeshData, GlyphMeshKeyHasher> cache;
 
@@ -667,7 +654,7 @@ public:
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;
 
-	void set_structured_text_bidi_override_options(Array p_args);
+	void set_structured_text_bidi_override_options(const Array &p_args);
 	Array get_structured_text_bidi_override_options() const;
 
 	void set_uppercase(bool p_uppercase);

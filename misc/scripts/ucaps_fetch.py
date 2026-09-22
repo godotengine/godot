@@ -4,10 +4,11 @@
 # the Unicode Character Database to the `ucaps.h` file.
 # NOTE: This script is deliberately not integrated into the build system;
 # you should run it manually whenever you want to update the data.
+from __future__ import annotations
 
 import os
 import sys
-from typing import Final, List, Tuple
+from typing import Final
 from urllib.request import urlopen
 
 if __name__ == "__main__":
@@ -15,18 +16,18 @@ if __name__ == "__main__":
 
 from methods import generate_copyright_header
 
-URL: Final[str] = "https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt"
+URL: Final[str] = "https://www.unicode.org/Public/17.0.0/ucd/UnicodeData.txt"
 
 
-lower_to_upper: List[Tuple[str, str]] = []
-upper_to_lower: List[Tuple[str, str]] = []
+lower_to_upper: list[tuple[str, str]] = []
+upper_to_lower: list[tuple[str, str]] = []
 
 
 def parse_unicode_data() -> None:
-    lines: List[str] = [line.decode("utf-8") for line in urlopen(URL)]
+    lines: list[str] = [line.decode("utf-8") for line in urlopen(URL)]
 
     for line in lines:
-        split_line: List[str] = line.split(";")
+        split_line: list[str] = line.split(";")
 
         code_value: str = split_line[0].strip()
         uppercase_mapping: str = split_line[12].strip()
@@ -38,7 +39,7 @@ def parse_unicode_data() -> None:
             upper_to_lower.append((f"0x{code_value}", f"0x{lowercase_mapping}"))
 
 
-def make_cap_table(table_name: str, len_name: str, table: List[Tuple[str, str]]) -> str:
+def make_cap_table(table_name: str, len_name: str, table: list[tuple[str, str]]) -> str:
     result: str = f"static const int {table_name}[{len_name}][2] = {{\n"
 
     for first, second in table:
@@ -65,7 +66,7 @@ def generate_ucaps_fetch() -> None:
     source += make_cap_table("caps_table", "LTU_LEN", lower_to_upper)
     source += make_cap_table("reverse_caps_table", "UTL_LEN", upper_to_lower)
 
-    source += """static int _find_upper(int ch) {
+    source += """static int _find_upper(int p_char) {
 \tint low = 0;
 \tint high = LTU_LEN - 1;
 \tint middle;
@@ -73,19 +74,19 @@ def generate_ucaps_fetch() -> None:
 \twhile (low <= high) {
 \t\tmiddle = (low + high) / 2;
 
-\t\tif (ch < caps_table[middle][0]) {
+\t\tif (p_char < caps_table[middle][0]) {
 \t\t\thigh = middle - 1; // Search low end of array.
-\t\t} else if (caps_table[middle][0] < ch) {
+\t\t} else if (caps_table[middle][0] < p_char) {
 \t\t\tlow = middle + 1; // Search high end of array.
 \t\t} else {
 \t\t\treturn caps_table[middle][1];
 \t\t}
 \t}
 
-\treturn ch;
+\treturn p_char;
 }
 
-static int _find_lower(int ch) {
+static int _find_lower(int p_char) {
 \tint low = 0;
 \tint high = UTL_LEN - 1;
 \tint middle;
@@ -93,16 +94,16 @@ static int _find_lower(int ch) {
 \twhile (low <= high) {
 \t\tmiddle = (low + high) / 2;
 
-\t\tif (ch < reverse_caps_table[middle][0]) {
+\t\tif (p_char < reverse_caps_table[middle][0]) {
 \t\t\thigh = middle - 1; // Search low end of array.
-\t\t} else if (reverse_caps_table[middle][0] < ch) {
+\t\t} else if (reverse_caps_table[middle][0] < p_char) {
 \t\t\tlow = middle + 1; // Search high end of array.
 \t\t} else {
 \t\t\treturn reverse_caps_table[middle][1];
 \t\t}
 \t}
 
-\treturn ch;
+\treturn p_char;
 }
 """
 

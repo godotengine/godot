@@ -31,14 +31,20 @@
 #include "core_bind.h"
 #include "core_bind.compat.inc"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
+#include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/os/process_id.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
@@ -46,17 +52,17 @@ namespace CoreBind {
 
 ////// ResourceLoader //////
 
-ResourceLoader *ResourceLoader::singleton = nullptr;
-
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, CacheMode p_cache_mode) {
 	return ::ResourceLoader::load_threaded_request(p_path, p_type_hint, p_use_sub_threads, ResourceFormatLoader::CacheMode(p_cache_mode));
 }
 
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, Array r_progress) {
-	float progress = 0;
-	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, &progress);
+	// Progress being the default array indicates the user hasn't requested for it to be computed.
 	// Default array should never be modified, it causes the hash of the method to change.
-	if (!ClassDB::is_default_array_arg(r_progress)) {
+	const bool return_progress = !ClassDB::is_default_array_arg(r_progress);
+	float progress = 0;
+	::ResourceLoader::ThreadLoadStatus tls = ::ResourceLoader::load_threaded_get_status(p_path, return_progress ? &progress : nullptr);
+	if (return_progress) {
 		r_progress.resize(1);
 		r_progress[0] = progress;
 	}
@@ -88,12 +94,14 @@ Vector<String> ResourceLoader::get_recognized_extensions_for_type(const String &
 	return ret;
 }
 
-void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
-	::ResourceLoader::add_resource_format_loader(p_format_loader, p_at_front);
+void ResourceLoader::add_resource_format_loader(RequiredParam<ResourceFormatLoader> p_format_loader, bool p_at_front) {
+	EXTRACT_PARAM_OR_FAIL(format_loader, p_format_loader);
+	::ResourceLoader::add_resource_format_loader(format_loader, p_at_front);
 }
 
-void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader) {
-	::ResourceLoader::remove_resource_format_loader(p_format_loader);
+void ResourceLoader::remove_resource_format_loader(RequiredParam<ResourceFormatLoader> p_format_loader) {
+	EXTRACT_PARAM_OR_FAIL(format_loader, p_format_loader);
+	::ResourceLoader::remove_resource_format_loader(format_loader);
 }
 
 void ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
@@ -130,6 +138,10 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ::ResourceLoader::get_resource_uid(p_path);
 }
 
+String ResourceLoader::get_resource_type(const String &p_path) {
+	return ::ResourceLoader::get_resource_type(p_path);
+}
+
 Vector<String> ResourceLoader::list_directory(const String &p_directory) {
 	return ::ResourceLoader::list_directory(p_directory);
 }
@@ -149,6 +161,7 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cached_ref", "path"), &ResourceLoader::get_cached_ref);
 	ClassDB::bind_method(D_METHOD("exists", "path", "type_hint"), &ResourceLoader::exists, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_resource_uid", "path"), &ResourceLoader::get_resource_uid);
+	ClassDB::bind_method(D_METHOD("get_resource_type", "path"), &ResourceLoader::get_resource_type);
 	ClassDB::bind_method(D_METHOD("list_directory", "directory_path"), &ResourceLoader::list_directory);
 
 	BIND_ENUM_CONSTANT(THREAD_LOAD_INVALID_RESOURCE);
@@ -165,13 +178,18 @@ void ResourceLoader::_bind_methods() {
 
 ////// ResourceSaver //////
 
-Error ResourceSaver::save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
+Error ResourceSaver::save(RequiredParam<Resource> p_resource, const String &p_path, BitField<SaverFlags> p_flags) {
 	return ::ResourceSaver::save(p_resource, p_path, p_flags);
 }
 
-Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_resource) {
+Error ResourceSaver::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	return ::ResourceSaver::set_uid(p_path, p_uid);
+}
+
+Vector<String> ResourceSaver::get_recognized_extensions(RequiredParam<Resource> p_resource) {
+	EXTRACT_PARAM_OR_FAIL_V(resource, p_resource, Vector<String>());
 	List<String> exts;
-	::ResourceSaver::get_recognized_extensions(p_resource, &exts);
+	::ResourceSaver::get_recognized_extensions(resource, &exts);
 	Vector<String> ret;
 	for (const String &E : exts) {
 		ret.push_back(E);
@@ -179,22 +197,23 @@ Vector<String> ResourceSaver::get_recognized_extensions(const Ref<Resource> &p_r
 	return ret;
 }
 
-void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
-	::ResourceSaver::add_resource_format_saver(p_format_saver, p_at_front);
+void ResourceSaver::add_resource_format_saver(RequiredParam<ResourceFormatSaver> p_format_saver, bool p_at_front) {
+	EXTRACT_PARAM_OR_FAIL(format_saver, p_format_saver);
+	::ResourceSaver::add_resource_format_saver(format_saver, p_at_front);
 }
 
-void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
-	::ResourceSaver::remove_resource_format_saver(p_format_saver);
+void ResourceSaver::remove_resource_format_saver(RequiredParam<ResourceFormatSaver> p_format_saver) {
+	EXTRACT_PARAM_OR_FAIL(format_saver, p_format_saver);
+	::ResourceSaver::remove_resource_format_saver(format_saver);
 }
 
 ResourceUID::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bool p_generate) {
 	return ::ResourceSaver::get_resource_id_for_path(p_path, p_generate);
 }
 
-ResourceSaver *ResourceSaver::singleton = nullptr;
-
 void ResourceSaver::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save", "resource", "path", "flags"), &ResourceSaver::save, DEFVAL(""), DEFVAL((uint32_t)FLAG_NONE));
+	ClassDB::bind_method(D_METHOD("set_uid", "resource", "uid"), &ResourceSaver::set_uid);
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &ResourceSaver::get_recognized_extensions);
 	ClassDB::bind_method(D_METHOD("add_resource_format_saver", "format_saver", "at_front"), &ResourceSaver::add_resource_format_saver, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_resource_format_saver", "format_saver"), &ResourceSaver::remove_resource_format_saver);
@@ -210,7 +229,70 @@ void ResourceSaver::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_REPLACE_SUBRESOURCE_PATHS);
 }
 
+////// Logger ///////
+
+void Logger::_bind_methods() {
+	GDVIRTUAL_BIND(_log_error, "function", "file", "line", "code", "rationale", "editor_notify", "error_type", "script_backtraces");
+	GDVIRTUAL_BIND(_log_message, "message", "error");
+	BIND_ENUM_CONSTANT(ERROR_TYPE_ERROR);
+	BIND_ENUM_CONSTANT(ERROR_TYPE_WARNING);
+	BIND_ENUM_CONSTANT(ERROR_TYPE_SCRIPT);
+	BIND_ENUM_CONSTANT(ERROR_TYPE_SHADER);
+}
+
+void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const TypedArray<ScriptBacktrace> &p_script_backtraces) {
+	GDVIRTUAL_CALL(_log_error, String::utf8(p_function), String::utf8(p_file), p_line, String::utf8(p_code), String::utf8(p_rationale), p_editor_notify, p_type, p_script_backtraces);
+}
+
+void Logger::log_message(const String &p_text, bool p_error) {
+	GDVIRTUAL_CALL(_log_message, p_text, p_error);
+}
+
 ////// OS //////
+
+void OS::LoggerBind::logv(const char *p_format, va_list p_list, bool p_err) {
+	if (!should_log(p_err)) {
+		return;
+	}
+
+	constexpr int static_buf_size = 1024;
+	char static_buf[static_buf_size] = { '\0' };
+	char *buf = static_buf;
+	va_list list_copy;
+	va_copy(list_copy, p_list);
+	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
+	if (len >= static_buf_size) {
+		buf = (char *)Memory::alloc_static(len + 1);
+		vsnprintf(buf, len + 1, p_format, list_copy);
+	}
+	va_end(list_copy);
+
+	String str;
+	str.append_utf8(buf, len);
+	for (Ref<CoreBind::Logger> &logger : loggers) {
+		logger->log_message(str, p_err);
+	}
+
+	if (len >= static_buf_size) {
+		Memory::free_static(buf);
+	}
+}
+
+void OS::LoggerBind::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
+	if (!should_log(true)) {
+		return;
+	}
+
+	TypedArray<ScriptBacktrace> backtraces;
+	backtraces.resize(p_script_backtraces.size());
+	for (int i = 0; i < p_script_backtraces.size(); i++) {
+		backtraces[i] = p_script_backtraces[i];
+	}
+
+	for (Ref<CoreBind::Logger> &logger : loggers) {
+		logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, CoreBind::Logger::ErrorType(p_type), backtraces);
+	}
+}
 
 PackedByteArray OS::get_entropy(int p_bytes) {
 	PackedByteArray pba;
@@ -357,7 +439,7 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
-	::OS::ProcessID pid = 0;
+	ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_instance(args, &pid);
 	if (err != OK) {
 		return -1;
@@ -365,12 +447,20 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 	return pid;
 }
 
+Error OS::open_with_program(const String &p_program_path, const Vector<String> &p_paths) {
+	List<String> paths;
+	for (const String &path : p_paths) {
+		paths.push_back(path);
+	}
+	return ::OS::get_singleton()->open_with_program(p_program_path, paths);
+}
+
 int OS::create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console) {
 	List<String> args;
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
-	::OS::ProcessID pid = 0;
+	ProcessID pid = 0;
 	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console);
 	if (err != OK) {
 		return -1;
@@ -475,6 +565,10 @@ Vector<String> OS::get_restart_on_exit_arguments() const {
 
 String OS::get_locale() const {
 	return ::OS::get_singleton()->get_locale();
+}
+
+Vector<String> OS::get_preferred_locales() const {
+	return ::OS::get_singleton()->get_preferred_locales();
 }
 
 String OS::get_locale_language() const {
@@ -589,7 +683,7 @@ bool OS::is_debug_build() const {
 	return true;
 #else
 	return false;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
@@ -628,7 +722,44 @@ String OS::get_unique_id() const {
 	return ::OS::get_singleton()->get_unique_id();
 }
 
-OS *OS::singleton = nullptr;
+void OS::add_logger(RequiredParam<Logger> p_logger) {
+	EXTRACT_PARAM_OR_FAIL(logger, p_logger);
+
+	if (!logger_bind) {
+		logger_bind = memnew(LoggerBind);
+		::OS::get_singleton()->add_logger(logger_bind);
+	}
+
+	ERR_FAIL_COND_MSG(logger_bind->loggers.find(logger) != -1, "Could not add logger, as it has already been added.");
+	logger_bind->loggers.push_back(logger);
+}
+
+void OS::remove_logger(RequiredParam<Logger> p_logger) {
+	EXTRACT_PARAM_OR_FAIL(logger, p_logger);
+	ERR_FAIL_COND_MSG(!logger_bind || logger_bind->loggers.find(logger) == -1, "Could not remove logger, as it hasn't been added.");
+	logger_bind->loggers.erase(logger);
+}
+
+void OS::remove_script_loggers(const ScriptLanguage *p_script) {
+	if (logger_bind) {
+		LocalVector<Ref<CoreBind::Logger>> to_remove;
+		for (const Ref<CoreBind::Logger> &logger : logger_bind->loggers) {
+			if (logger.is_null()) {
+				continue;
+			}
+			ScriptInstance *si = logger->get_script_instance();
+			if (!si) {
+				continue;
+			}
+			if (si->get_language() == p_script) {
+				to_remove.push_back(logger);
+			}
+		}
+		for (const Ref<CoreBind::Logger> &logger : to_remove) {
+			logger_bind->loggers.erase(logger);
+		}
+	}
+}
 
 void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_entropy", "size"), &OS::get_entropy);
@@ -667,6 +798,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("execute_with_pipe", "path", "arguments", "blocking"), &OS::execute_with_pipe, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
+	ClassDB::bind_method(D_METHOD("open_with_program", "program_path", "paths"), &OS::open_with_program);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
 	ClassDB::bind_method(D_METHOD("shell_show_in_file_manager", "file_or_dir_path", "open_folder"), &OS::shell_show_in_file_manager, DEFVAL(true));
@@ -695,6 +827,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("delay_usec", "usec"), &OS::delay_usec);
 	ClassDB::bind_method(D_METHOD("delay_msec", "msec"), &OS::delay_msec);
 	ClassDB::bind_method(D_METHOD("get_locale"), &OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_preferred_locales"), &OS::get_preferred_locales);
 	ClassDB::bind_method(D_METHOD("get_locale_language"), &OS::get_locale_language);
 	ClassDB::bind_method(D_METHOD("get_model_name"), &OS::get_model_name);
 
@@ -734,6 +867,9 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &OS::get_granted_permissions);
 	ClassDB::bind_method(D_METHOD("revoke_granted_permissions"), &OS::revoke_granted_permissions);
 
+	ClassDB::bind_method(D_METHOD("add_logger", "logger"), &OS::add_logger);
+	ClassDB::bind_method(D_METHOD("remove_logger", "logger"), &OS::remove_logger);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "delta_smoothing"), "set_delta_smoothing", "is_delta_smoothing_enabled");
@@ -743,10 +879,12 @@ void OS::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
 	ADD_PROPERTY_DEFAULT("low_processor_usage_mode_sleep_usec", 6900);
 
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_VULKAN);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_OPENGL3);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_D3D12);
 	BIND_ENUM_CONSTANT(RENDERING_DRIVER_METAL);
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DESKTOP);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DCIM);
@@ -764,9 +902,21 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(STD_HANDLE_UNKNOWN);
 }
 
-////// Geometry2D //////
+OS::OS() {
+	singleton = this;
+}
 
-Geometry2D *Geometry2D::singleton = nullptr;
+OS::~OS() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+
+	if (logger_bind) {
+		logger_bind->clear();
+	}
+}
+
+////// Geometry2D //////
 
 Geometry2D *Geometry2D::get_singleton() {
 	return singleton;
@@ -798,25 +948,23 @@ Variant Geometry2D::line_intersects_line(const Vector2 &p_from_a, const Vector2 
 	}
 }
 
-Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
+Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p_p1, const Vector2 &p_q1, const Vector2 &p_p2, const Vector2 &p_q2) {
 	Vector2 r1, r2;
-	::Geometry2D::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
+	::Geometry2D::get_closest_points_between_segments(p_p1, p_q1, p_p2, p_q2, r1, r2);
 	Vector<Vector2> r = { r1, r2 };
 	return r;
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
-bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
-	return ::Geometry2D::is_point_in_triangle(s, a, b, c);
+bool Geometry2D::point_is_inside_triangle(const Vector2 &p_s, const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c) const {
+	return ::Geometry2D::is_point_in_triangle(p_s, p_a, p_b, p_c);
 }
 
 bool Geometry2D::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
@@ -1029,8 +1177,6 @@ void Geometry2D::_bind_methods() {
 
 ////// Geometry3D //////
 
-Geometry3D *Geometry3D::singleton = nullptr;
-
 Geometry3D *Geometry3D::get_singleton() {
 	return singleton;
 }
@@ -1061,21 +1207,19 @@ TypedArray<Plane> Geometry3D::build_capsule_planes(float p_radius, float p_heigh
 	return ret;
 }
 
-Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
+Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p_p1, const Vector3 &p_p2, const Vector3 &p_q1, const Vector3 &p_q2) {
 	Vector3 r1, r2;
-	::Geometry3D::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
+	::Geometry3D::get_closest_points_between_segments(p_p1, p_p2, p_q1, p_q2, r1, r2);
 	Vector<Vector3> r = { r1, r2 };
 	return r;
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
@@ -1174,8 +1318,6 @@ void Geometry3D::_bind_methods() {
 }
 
 ////// Marshalls //////
-
-Marshalls *Marshalls::singleton = nullptr;
 
 Marshalls *Marshalls::get_singleton() {
 	return singleton;
@@ -1321,8 +1463,8 @@ void Mutex::_bind_methods() {
 
 ////// Thread //////
 
-void Thread::_start_func(void *ud) {
-	Ref<Thread> *tud = (Ref<Thread> *)ud;
+void Thread::_start_func(void *p_ud) {
+	Ref<Thread> *tud = (Ref<Thread> *)p_ud;
 	Ref<Thread> t = *tud;
 	memdelete(tud);
 
@@ -1343,6 +1485,7 @@ void Thread::_start_func(void *ud) {
 	// When the call returns, we will reference the thread again if possible.
 	ObjectID th_instance_id = t->get_instance_id();
 	Callable target_callable = t->target_callable;
+	String id = t->get_id();
 	t = Ref<Thread>();
 
 	Callable::CallError ce;
@@ -1350,7 +1493,7 @@ void Thread::_start_func(void *ud) {
 	target_callable.callp(nullptr, 0, ret, ce);
 	// If script properly kept a reference to the thread, we should be able to re-reference it now
 	// (well, or if the call failed, since we had to break chains anyway because the outcome isn't known upfront).
-	t = Ref<Thread>(ObjectDB::get_instance(th_instance_id));
+	t = ObjectDB::get_ref<Thread>(th_instance_id);
 	if (t.is_valid()) {
 		t->ret = ret;
 		t->running.clear();
@@ -1360,7 +1503,7 @@ void Thread::_start_func(void *ud) {
 	}
 
 	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %d: %s.", func_name, t->get_id(), Variant::get_callable_error_text(t->target_callable, nullptr, 0, ce)));
+		ERR_FAIL_MSG(vformat("Could not call function '%s' to start thread %s: %s.", func_name, id, Variant::get_callable_error_text(target_callable, nullptr, 0, ce)));
 	}
 }
 
@@ -1408,6 +1551,10 @@ void Thread::set_thread_safety_checks_enabled(bool p_enabled) {
 	set_current_thread_safe_for_nodes(!p_enabled);
 }
 
+bool Thread::is_main_thread() {
+	return ::Thread::is_main_thread();
+}
+
 void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start", "callable", "priority"), &Thread::start, DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
@@ -1416,6 +1563,7 @@ void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
 
 	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
+	ClassDB::bind_static_method("Thread", D_METHOD("is_main_thread"), &Thread::is_main_thread);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
@@ -1427,22 +1575,24 @@ namespace Special {
 ////// ClassDB //////
 
 PackedStringArray ClassDB::get_class_list() const {
-	List<StringName> classes;
-	::ClassDB::get_class_list(&classes);
+	LocalVector<StringName> classes;
+	::ClassDB::get_class_list(classes);
 
 	PackedStringArray ret;
 	ret.resize(classes.size());
+	String *ptrw = ret.ptrw();
 	int idx = 0;
-	for (const StringName &E : classes) {
-		ret.set(idx++, E);
+	for (const StringName &cls : classes) {
+		ptrw[idx] = cls;
+		idx++;
 	}
 
 	return ret;
 }
 
 PackedStringArray ClassDB::get_inheriters_from_class(const StringName &p_class) const {
-	List<StringName> classes;
-	::ClassDB::get_inheriters_from_class(p_class, &classes);
+	LocalVector<StringName> classes;
+	::ClassDB::get_inheriters_from_class(p_class, classes);
 
 	PackedStringArray ret;
 	ret.resize(classes.size());
@@ -1533,16 +1683,17 @@ StringName ClassDB::class_get_property_setter(const StringName &p_class, const S
 	return ::ClassDB::get_property_setter(p_class, p_property);
 }
 
-Variant ClassDB::class_get_property(Object *p_object, const StringName &p_property) const {
+Variant ClassDB::class_get_property(RequiredParam<Object> p_object, const StringName &p_property) const {
+	EXTRACT_PARAM_OR_FAIL_V(object, p_object, Variant());
 	Variant ret;
-	::ClassDB::get_property(p_object, p_property, ret);
+	::ClassDB::get_property(object, p_property, ret);
 	return ret;
 }
 
-Error ClassDB::class_set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const {
-	Variant ret;
+Error ClassDB::class_set_property(RequiredParam<Object> p_object, const StringName &p_property, const Variant &p_value) const {
+	EXTRACT_PARAM_OR_FAIL_V(object, p_object, ERR_INVALID_PARAMETER);
 	bool valid;
-	if (!::ClassDB::set_property(p_object, p_property, p_value, &valid)) {
+	if (!::ClassDB::set_property(object, p_property, p_value, &valid)) {
 		return ERR_UNAVAILABLE;
 	} else if (!valid) {
 		return ERR_INVALID_DATA;
@@ -1572,14 +1723,8 @@ TypedArray<Dictionary> ClassDB::class_get_method_list(const StringName &p_class,
 	::ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	TypedArray<Dictionary> ret;
 
-	for (const MethodInfo &E : methods) {
-#ifdef DEBUG_METHODS_ENABLED
-		ret.push_back(E.operator Dictionary());
-#else
-		Dictionary dict;
-		dict["name"] = E.name;
-		ret.push_back(dict);
-#endif
+	for (const MethodInfo &method : methods) {
+		ret.push_back(method.operator Dictionary());
 	}
 
 	return ret;
@@ -1673,6 +1818,10 @@ bool ClassDB::is_class_enabled(const StringName &p_class) const {
 	return ::ClassDB::is_class_enabled(p_class);
 }
 
+bool ClassDB::is_class_exposed(const StringName &p_class) const {
+	return ::ClassDB::is_class_exposed(p_class);
+}
+
 #ifdef TOOLS_ENABLED
 void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
@@ -1685,11 +1834,15 @@ void ClassDB::get_argument_options(const StringName &p_function, int p_idx, List
 				pf == "class_has_method" || pf == "class_get_method_list" ||
 				pf == "class_get_integer_constant_list" || pf == "class_has_integer_constant" || pf == "class_get_integer_constant" ||
 				pf == "class_has_enum" || pf == "class_get_enum_list" || pf == "class_get_enum_constants" || pf == "class_get_integer_constant_enum" ||
-				pf == "is_class_enabled" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
+				pf == "is_class_enabled" || pf == "is_class_exposed" || pf == "is_class_enum_bitfield" || pf == "class_get_api_type");
 	}
 	if (first_argument_is_class || pf == "is_parent_class") {
-		for (const String &E : get_class_list()) {
-			r_options->push_back(E.quote());
+		LocalVector<StringName> classes;
+		::ClassDB::get_class_list(classes);
+		for (const StringName &E : classes) {
+			if (::ClassDB::is_class_exposed(E)) {
+				r_options->push_back(E.string().quote());
+			}
 		}
 	}
 
@@ -1741,6 +1894,7 @@ void ClassDB::_bind_methods() {
 	::ClassDB::bind_method(D_METHOD("is_class_enum_bitfield", "class", "enum", "no_inheritance"), &ClassDB::is_class_enum_bitfield, DEFVAL(false));
 
 	::ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &ClassDB::is_class_enabled);
+	::ClassDB::bind_method(D_METHOD("is_class_exposed", "class"), &ClassDB::is_class_exposed);
 
 	BIND_ENUM_CONSTANT(API_CORE);
 	BIND_ENUM_CONSTANT(API_EDITOR);
@@ -1858,13 +2012,14 @@ Object *Engine::get_singleton_object(const StringName &p_name) const {
 	return ::Engine::get_singleton()->get_singleton_object(p_name);
 }
 
-void Engine::register_singleton(const StringName &p_name, Object *p_object) {
+void Engine::register_singleton(const StringName &p_name, RequiredParam<Object> p_instance) {
+	EXTRACT_PARAM_OR_FAIL(object, p_instance);
 	ERR_FAIL_COND_MSG(has_singleton(p_name), vformat("Singleton already registered: '%s'.", String(p_name)));
 	ERR_FAIL_COND_MSG(!String(p_name).is_valid_ascii_identifier(), vformat("Singleton name is not a valid identifier: '%s'.", p_name));
 	::Engine::Singleton s;
 	s.class_name = p_name;
 	s.name = p_name;
-	s.ptr = p_object;
+	s.ptr = object;
 	s.user_created = true;
 	::Engine::get_singleton()->add_singleton(s);
 }
@@ -1885,12 +2040,14 @@ Vector<String> Engine::get_singleton_list() const {
 	return ret;
 }
 
-Error Engine::register_script_language(ScriptLanguage *p_language) {
-	return ScriptServer::register_language(p_language);
+Error Engine::register_script_language(RequiredParam<ScriptLanguage> p_language) {
+	EXTRACT_PARAM_OR_FAIL_V(language, p_language, ERR_INVALID_PARAMETER);
+	return ScriptServer::register_language(language);
 }
 
-Error Engine::unregister_script_language(const ScriptLanguage *p_language) {
-	return ScriptServer::unregister_language(p_language);
+Error Engine::unregister_script_language(RequiredParam<const ScriptLanguage> p_language) {
+	EXTRACT_PARAM_OR_FAIL_V(language, p_language, ERR_INVALID_PARAMETER);
+	return ScriptServer::unregister_language(language);
 }
 
 int Engine::get_script_language_count() {
@@ -1899,6 +2056,16 @@ int Engine::get_script_language_count() {
 
 ScriptLanguage *Engine::get_script_language(int p_index) const {
 	return ScriptServer::get_language(p_index);
+}
+
+TypedArray<ScriptBacktrace> Engine::capture_script_backtraces(bool p_include_variables) const {
+	Vector<Ref<ScriptBacktrace>> backtraces = ScriptServer::capture_script_backtraces(p_include_variables);
+	TypedArray<ScriptBacktrace> result;
+	result.resize(backtraces.size());
+	for (int i = 0; i < backtraces.size(); i++) {
+		result[i] = backtraces[i];
+	}
+	return result;
 }
 
 void Engine::set_editor_hint(bool p_enabled) {
@@ -1988,6 +2155,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_script_language", "language"), &Engine::unregister_script_language);
 	ClassDB::bind_method(D_METHOD("get_script_language_count"), &Engine::get_script_language_count);
 	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
+	ClassDB::bind_method(D_METHOD("capture_script_backtraces", "include_variables"), &Engine::capture_script_backtraces, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_embedded_in_editor"), &Engine::is_embedded_in_editor);
@@ -2007,9 +2175,11 @@ void Engine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
-}
 
-Engine *Engine::singleton = nullptr;
+	// Those default values need to be specified for the docs generator,
+	// to avoid using values from a `--quiet` run.
+	ADD_PROPERTY_DEFAULT("print_to_stdout", true);
+}
 
 ////// EngineDebugger //////
 
@@ -2156,8 +2326,6 @@ EngineDebugger::~EngineDebugger() {
 	captures.clear();
 }
 
-EngineDebugger *EngineDebugger::singleton = nullptr;
-
 void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &EngineDebugger::is_active);
 
@@ -2191,6 +2359,35 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("insert_breakpoint", "line", "source"), &EngineDebugger::insert_breakpoint);
 	ClassDB::bind_method(D_METHOD("remove_breakpoint", "line", "source"), &EngineDebugger::remove_breakpoint);
 	ClassDB::bind_method(D_METHOD("clear_breakpoints"), &EngineDebugger::clear_breakpoints);
+}
+
+Variant WeakRef::get_ref() const {
+	if (ref.is_null()) {
+		return Variant();
+	}
+
+	Object *obj = ObjectDB::get_instance(ref);
+	if (!obj) {
+		return Variant();
+	}
+	RefCounted *r = cast_to<RefCounted>(obj);
+	if (r) {
+		return Ref<RefCounted>(r);
+	}
+
+	return obj;
+}
+
+void WeakRef::set_obj(Object *p_object) {
+	ref = p_object ? p_object->get_instance_id() : ObjectID();
+}
+
+void WeakRef::set_ref(const Ref<RefCounted> &p_ref) {
+	ref = p_ref.is_valid() ? p_ref->get_instance_id() : ObjectID();
+}
+
+void WeakRef::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_ref"), &WeakRef::get_ref);
 }
 
 } // namespace CoreBind

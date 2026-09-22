@@ -1583,19 +1583,13 @@ static inline vmask4 get_u8_component_mask(
 	astcenc_profile decode_mode,
 	const image_block& blk
 ) {
-	vmask4 u8_mask(false);
-	// Decode mode writing to a unorm8 output value
-	if (blk.decode_unorm8)
+	// Decode mode or sRGB forces writing to unorm8 output value
+	if (blk.decode_unorm8 || decode_mode == ASTCENC_PRF_LDR_SRGB)
 	{
-		u8_mask = vmask4(true);
-	}
-	// SRGB writing to a unorm8 RGB value
-	else if (decode_mode == ASTCENC_PRF_LDR_SRGB)
-	{
-		u8_mask = vmask4(true, true, true, false);
+		return vmask4(true);
 	}
 
-	return u8_mask;
+	return vmask4(false);
 }
 
 /**

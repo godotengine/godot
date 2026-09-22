@@ -38,8 +38,13 @@
 #include "gltf_state.h"
 #include "structures/gltf_object_model_property.h"
 
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+
 #ifndef PHYSICS_3D_DISABLED
 #include "extensions/physics/gltf_document_extension_physics.h"
+#include "extensions/physics/gltf_physics_body.h"
+#include "extensions/physics/gltf_physics_shape.h"
 #endif // PHYSICS_3D_DISABLED
 
 #ifdef TOOLS_ENABLED
@@ -47,10 +52,10 @@
 #include "editor/editor_scene_exporter_gltf_plugin.h"
 #include "editor/editor_scene_importer_blend.h"
 #include "editor/editor_scene_importer_gltf.h"
-
+//
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 static void _editor_init() {
 	Ref<EditorSceneFormatImporterGLTF> import_gltf;
@@ -61,7 +66,7 @@ static void _editor_init() {
 
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender_path");
 	if (blender_path.is_empty() && EditorSettings::get_singleton()->has_setting("filesystem/import/blender/blender3_path")) {
-		blender_path = EditorSettings::get_singleton()->get("filesystem/import/blender/blender3_path");
+		blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
 
 		if (!blender_path.is_empty()) {
 #if defined(MACOS_ENABLED)
@@ -99,8 +104,8 @@ static void _editor_init() {
 #endif // TOOLS_ENABLED
 
 #define GLTF_REGISTER_DOCUMENT_EXTENSION(m_doc_ext_class) \
-	Ref<m_doc_ext_class> extension_##m_doc_ext_class;     \
-	extension_##m_doc_ext_class.instantiate();            \
+	Ref<m_doc_ext_class> extension_##m_doc_ext_class; \
+	extension_##m_doc_ext_class.instantiate(); \
 	GLTFDocument::register_gltf_document_extension(extension_##m_doc_ext_class);
 
 void initialize_gltf_module(ModuleInitializationLevel p_level) {

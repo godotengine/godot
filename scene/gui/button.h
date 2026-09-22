@@ -105,6 +105,7 @@ private:
 
 	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "") const;
 	void _texture_changed();
+	void _update_style_margins(const Ref<StyleBox> &p_stylebox);
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -118,6 +119,8 @@ protected:
 	Size2 _get_largest_stylebox_size() const;
 	void _notification(int p_what);
 	static void _bind_methods();
+
+	virtual String _get_accessibility_name() const override;
 
 public:
 	virtual Size2 get_minimum_size() const override;

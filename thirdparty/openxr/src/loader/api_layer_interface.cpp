@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -11,6 +11,7 @@
 
 #include "loader_init_data.hpp"
 #include "loader_logger.hpp"
+#include "loader_properties.hpp"
 #include "loader_platform.hpp"
 #include "manifest_file.hpp"
 #include "platform_utils.hpp"
@@ -18,7 +19,9 @@
 #include <openxr/openxr.h>
 #include <openxr/openxr_loader_negotiation.h>
 
+#include <algorithm>
 #include <cstring>
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -29,7 +32,7 @@
 
 // Add any layers defined in the loader layer environment variable.
 static void AddEnvironmentApiLayers(std::vector<std::string>& enabled_layers) {
-    std::string layers = PlatformUtilsGetEnv(OPENXR_ENABLE_LAYERS_ENV_VAR);
+    std::string layers = LoaderProperty::Get(OPENXR_ENABLE_LAYERS_ENV_VAR);
 
     std::size_t last_found = 0;
     std::size_t found = layers.find_first_of(PATH_SEPARATOR);
@@ -68,6 +71,8 @@ XrResult ApiLayerInterface::GetApiLayerProperties(const std::string& openxr_comm
     // "Independent of elementCapacityInput or elements parameters, elementCountOutput must be a valid pointer,
     // and the function sets elementCountOutput." - 2.11
     if (nullptr == outgoing_count) {
+        LoaderLogger::LogErrorMessage(openxr_command,
+                                      "VUID-xrEnumerateApiLayerProperties-propertyCountOutput-parameter: null propertyCountOutput");
         return XR_ERROR_VALIDATION_FAILURE;
     }
 
@@ -90,11 +95,6 @@ XrResult ApiLayerInterface::GetApiLayerProperties(const std::string& openxr_comm
     }
 
     manifest_count = static_cast<uint32_t>(manifest_files.size());
-    if (nullptr == outgoing_count) {
-        LoaderLogger::LogErrorMessage("xrEnumerateInstanceExtensionProperties",
-                                      "VUID-xrEnumerateApiLayerProperties-propertyCountOutput-parameter: null propertyCountOutput");
-        return XR_ERROR_VALIDATION_FAILURE;
-    }
 
     *outgoing_count = manifest_count;
     if (0 == incoming_count) {
@@ -103,14 +103,13 @@ XrResult ApiLayerInterface::GetApiLayerProperties(const std::string& openxr_comm
     }
     if (nullptr == api_layer_properties) {
         // incoming_count is not 0 BUT the api_layer_properties is NULL
-        LoaderLogger::LogErrorMessage("xrEnumerateInstanceExtensionProperties",
+        LoaderLogger::LogErrorMessage(openxr_command,
                                       "VUID-xrEnumerateApiLayerProperties-properties-parameter: non-zero capacity but null array");
         return XR_ERROR_VALIDATION_FAILURE;
     }
     if (incoming_count < manifest_count) {
         LoaderLogger::LogErrorMessage(
-            "xrEnumerateInstanceExtensionProperties",
-            "VUID-xrEnumerateApiLayerProperties-propertyCapacityInput-parameter: insufficient space in array");
+            openxr_command, "VUID-xrEnumerateApiLayerProperties-propertyCapacityInput-parameter: insufficient space in array");
         return XR_ERROR_SIZE_INSUFFICIENT;
     }
 
@@ -285,7 +284,7 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
             LoaderLogger::LogWarningMessage(openxr_command, warning_message);
             continue;
         }
-#ifdef XR_KHR_LOADER_INIT_SUPPORT
+#if defined(XR_HAS_REQUIRED_PLATFORM_LOADER_INIT_STRUCT)  // Cannot proceed without mandatory xrInitializeLoaderKHR call.
         if (!LoaderInitData::instance().initialized()) {
             LoaderLogger::LogErrorMessage(openxr_command, "ApiLayerInterface::LoadApiLayers skipping manifest file " +
                                                               manifest_file->Filename() +
@@ -294,8 +293,10 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
             LoaderPlatformLibraryClose(layer_library);
             return XR_ERROR_VALIDATION_FAILURE;
         }
+#endif
+
         bool forwardedInitLoader = false;
-        {
+        if (LoaderInitData::instance().getPlatformParam() != nullptr) {
             // If we have xrInitializeLoaderKHR exposed as an export, forward call to it.
             const auto function_name = manifest_file->GetFunctionName("xrInitializeLoaderKHR");
             auto initLoader =
@@ -305,7 +306,7 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
                 LoaderLogger::LogInfoMessage(openxr_command,
                                              "ApiLayerInterface::LoadApiLayers forwarding xrInitializeLoaderKHR call to API layer "
                                              "before calling xrNegotiateLoaderApiLayerInterface.");
-                XrResult res = initLoader(LoaderInitData::instance().getParam());
+                XrResult res = initLoader(LoaderInitData::instance().getPlatformParam());
                 if (!XR_SUCCEEDED(res)) {
                     LoaderLogger::LogErrorMessage(
                         openxr_command, "ApiLayerInterface::LoadApiLayers forwarded call to xrInitializeLoaderKHR failed.");
@@ -316,7 +317,6 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
                 forwardedInitLoader = true;
             }
         }
-#endif
 
         // Get and settle on an layer interface version (using any provided name if required).
         std::string function_name = manifest_file->GetFunctionName("xrNegotiateLoaderApiLayerInterface");
@@ -360,8 +360,7 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
             res = XR_ERROR_FILE_CONTENTS_INVALID;
         }
 
-#ifdef XR_KHR_LOADER_INIT_SUPPORT
-        if (XR_SUCCEEDED(res) && !forwardedInitLoader) {
+        if (XR_SUCCEEDED(res) && !forwardedInitLoader && LoaderInitData::instance().getPlatformParam() != nullptr) {
             // Forward initialize loader call, where possible and if we did not do so before.
             PFN_xrVoidFunction initializeVoid = nullptr;
             PFN_xrInitializeLoaderKHR initialize = nullptr;
@@ -382,14 +381,13 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
                 LoaderLogger::LogInfoMessage(openxr_command,
                                              "ApiLayerInterface::LoadApiLayers forwarding xrInitializeLoaderKHR call to API layer "
                                              "after calling xrNegotiateLoaderApiLayerInterface.");
-                res = initialize(LoaderInitData::instance().getParam());
+                res = initialize(LoaderInitData::instance().getPlatformParam());
                 if (!XR_SUCCEEDED(res)) {
                     LoaderLogger::LogErrorMessage(
                         openxr_command, "ApiLayerInterface::LoadApiLayers forwarded call to xrInitializeLoaderKHR failed.");
                 }
             }
         }
-#endif
 
         if (XR_FAILED(res)) {
             if (!any_loaded) {
@@ -422,9 +420,9 @@ XrResult ApiLayerInterface::LoadApiLayers(const std::string& openxr_command, uin
         }
 
         // Add this API layer to the vector
-        api_layer_interfaces.emplace_back(new ApiLayerInterface(manifest_file->LayerName(), layer_library, supported_extensions,
-                                                                api_layer_info.getInstanceProcAddr,
-                                                                api_layer_info.createApiLayerInstance));
+        auto iface = std::make_unique<ApiLayerInterface>(manifest_file->LayerName(), layer_library, supported_extensions,
+                                                         api_layer_info.getInstanceProcAddr, api_layer_info.createApiLayerInstance);
+        api_layer_interfaces.emplace_back(std::move(iface));
 
         // If we load one, clear all errors.
         any_loaded = true;

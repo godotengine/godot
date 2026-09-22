@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CPUParticles3D" inherits="GeometryInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="CPUParticles3D" inherits="GeometryInstance3D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A CPU-based 3D particle emitter.
 	</brief_description>
@@ -49,15 +49,16 @@
 			<return type="bool" />
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
 			<description>
-				Returns the enabled state of the given particle flag (see [enum ParticleFlags] for options).
+				Returns the enabled state of the given particle flag.
 			</description>
 		</method>
 		<method name="request_particles_process">
 			<return type="void" />
 			<param index="0" name="process_time" type="float" />
+			<param index="1" name="process_time_residual" type="float" default="0.0" />
 			<description>
 				Requests the particles to process for extra process time during a single frame.
-				Useful for particle playback, if used in combination with [member use_fixed_seed] or by calling [method restart] with parameter [code]keep_seed[/code] set to [code]true[/code].
+				[param process_time] defines the time that the particles will process while emitting is on. [param process_time_residual] defines the time that particles will process with emitting turned off for the simulation. When combined with [member speed_scale] set to [code]0.0[/code], this is useful to be able to seek a particle system timeline.
 			</description>
 		</method>
 		<method name="restart">
@@ -97,7 +98,7 @@
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles3D.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Enables or disables the given particle flag (see [enum ParticleFlags] for options).
+				Enables or disables the given particle flag.
 			</description>
 		</method>
 	</methods>
@@ -166,7 +167,7 @@
 			Unit vector specifying the particles' emission direction.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles3D.DrawOrder" default="0">
-			Particle draw order. Uses [enum DrawOrder] values.
+			Particle draw order.
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
 			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_BOX].
@@ -198,7 +199,7 @@
 			The radius of the ring when using the emitter [constant EMISSION_SHAPE_RING].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles3D.EmissionShape" default="0">
-			Particles will be emitted inside this region. See [enum EmissionShape] for possible values.
+			Particles will be emitted inside this region.
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
 			The sphere's radius if [enum EmissionShape] is set to [constant EMISSION_SHAPE_SPHERE].

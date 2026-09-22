@@ -3,9 +3,6 @@ from misc.utility.scons_hints import *
 
 Import("env")
 
-env.add_source_files(env.scene_sources, "navigation_mesh_source_geometry_data_2d.cpp")
-env.add_source_files(env.scene_sources, "navigation_polygon.cpp")
-env.add_source_files(env.scene_sources, "polygon_path_finder.cpp")
 env.add_source_files(env.scene_sources, "tile_set.cpp")
 
 if not env["disable_physics_2d"]:
@@ -18,5 +15,9 @@ if not env["disable_physics_2d"]:
     env.add_source_files(env.scene_sources, "separation_ray_shape_2d.cpp")
     env.add_source_files(env.scene_sources, "shape_2d.cpp")
     env.add_source_files(env.scene_sources, "world_boundary_shape_2d.cpp")
+if not env["disable_navigation_2d"]:
+    env.add_source_files(env.scene_sources, "navigation_mesh_source_geometry_data_2d.cpp")
+    env.add_source_files(env.scene_sources, "navigation_polygon.cpp")
+    env.add_source_files(env.scene_sources, "polygon_path_finder.cpp")
 
 SConscript("skeleton/SCsub")

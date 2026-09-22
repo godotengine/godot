@@ -31,19 +31,16 @@
 #include "path_utils.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #ifdef WINDOWS_ENABLED
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #define ENV_PATH_SEP ";"
 #else
-#include <limits.h>
 #include <unistd.h>
 
 #define ENV_PATH_SEP ":"
@@ -87,13 +84,12 @@ String cwd() {
 	const DWORD expected_size = ::GetCurrentDirectoryW(0, nullptr);
 
 	Char16String buffer;
-	buffer.resize((int)expected_size);
+	buffer.resize_uninitialized((int)expected_size);
 	if (::GetCurrentDirectoryW(expected_size, (wchar_t *)buffer.ptrw()) == 0) {
 		return ".";
 	}
 
-	String result;
-	result.append_utf16(buffer.ptr());
+	String result = String::utf16(buffer.ptr());
 	if (result.is_empty()) {
 		return ".";
 	}
@@ -140,13 +136,12 @@ String realpath(const String &p_path) {
 	}
 
 	Char16String buffer;
-	buffer.resize((int)expected_size);
+	buffer.resize_uninitialized((int)expected_size);
 	::GetFinalPathNameByHandleW(hFile, (wchar_t *)buffer.ptrw(), expected_size, FILE_NAME_NORMALIZED);
 
 	::CloseHandle(hFile);
 
-	String result;
-	result.append_utf16(buffer.ptr());
+	String result = String::utf16(buffer.ptr());
 	if (result.is_empty()) {
 		return p_path;
 	}

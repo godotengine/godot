@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConfirmationDialog" inherits="AcceptDialog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ConfirmationDialog" inherits="AcceptDialog" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A dialog used for confirmation of actions.
 	</brief_description>
 	<description>
 		A dialog used for confirmation of actions. This window is similar to [AcceptDialog], but pressing its Cancel button can have a different outcome from pressing the OK button. The order of the two buttons varies depending on the host OS.
+		[b]Note:[/b] The dialog controls the size of its buttons, any manual size changes will be overridden. Use the [theme_item AcceptDialog.buttons_min_width] and [theme_item AcceptDialog.buttons_min_height] theme constants instead.
 		To get cancel action, you can use:
 		[codeblocks]
 		[gdscript]
@@ -14,6 +15,7 @@
 		GetCancelButton().Pressed += OnCanceled;
 		[/csharp]
 		[/codeblocks]
+		[b]Note:[/b] [AcceptDialog] is invisible by default. To make it visible, call one of the [code]popup_*[/code] methods from [Window] on the node, such as [method Window.popup_centered_clamped].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -32,6 +34,5 @@
 		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" overrides="Window" default="Vector2i(200, 70)" />
 		<member name="size" type="Vector2i" setter="set_size" getter="get_size" overrides="Window" default="Vector2i(200, 100)" />
-		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Please Confirm...&quot;" />
 	</members>
 </class>

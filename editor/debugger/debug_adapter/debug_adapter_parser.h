@@ -32,8 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/remote_debugger.h"
-#include "debug_adapter_protocol.h"
-#include "debug_adapter_types.h"
+#include "editor/debugger/debug_adapter/debug_adapter_types.h"
 
 struct DAPeer;
 class DebugAdapterProtocol;
@@ -48,7 +47,7 @@ private:
 		// If path contains \, it's a Windows path, so we need to convert it to /, and check as case-insensitive.
 		if (p_path.contains_char('\\')) {
 			String project_path = ProjectSettings::get_singleton()->get_resource_path();
-			String path = p_path.replace("\\", "/");
+			String path = p_path.replace_char('\\', '/');
 			return path.containsn(project_path);
 		}
 		return p_path.begins_with(ProjectSettings::get_singleton()->get_resource_path());
@@ -86,6 +85,7 @@ public:
 	Dictionary req_godot_put_msg(const Dictionary &p_params) const;
 
 	// Internal requests
+	Vector<String> _extract_play_arguments(const Dictionary &p_args) const;
 	Dictionary _launch_process(const Dictionary &p_params) const;
 
 	// Events

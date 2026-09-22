@@ -32,8 +32,6 @@
 
 #if defined(STEAMAPI_ENABLED)
 
-#include "core/os/os.h"
-
 // SteamTracker is used to load SteamAPI dynamic library and initialize
 // the interface, this notifies Steam that Godot editor is running and
 // allow tracking of the usage time of child instances of the engine

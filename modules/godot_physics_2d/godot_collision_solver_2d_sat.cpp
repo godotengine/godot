@@ -66,7 +66,7 @@ _FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2 *p_points
 	ERR_FAIL_COND(p_point_count_B != 2);
 #endif
 
-	Vector2 closest_B = Geometry2D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
+	Vector2 closest_B = Geometry2D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B[0], p_points_B[1]);
 	p_collector->call(*p_points_A, closest_B);
 }
 
@@ -374,9 +374,9 @@ public:
 
 /****** SAT TESTS *******/
 
-#define TEST_POINT(m_a, m_b)                                                                \
-	((!separator.test_axis(((m_a) - (m_b)).normalized())) ||                                \
-			(castA && !separator.test_axis(((m_a) + p_motion_a - (m_b)).normalized())) ||   \
+#define TEST_POINT(m_a, m_b) \
+	((!separator.test_axis(((m_a) - (m_b)).normalized())) || \
+			(castA && !separator.test_axis(((m_a) + p_motion_a - (m_b)).normalized())) || \
 			(castB && !separator.test_axis(((m_a) - ((m_b) + p_motion_b)).normalized())) || \
 			(castA && castB && !separator.test_axis(((m_a) + p_motion_a - ((m_b) + p_motion_b)).normalized())))
 
@@ -1104,16 +1104,16 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape2D *p_a, co
 ////////
 
 bool sat_2d_calculate_penetration(const GodotShape2D *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const GodotShape2D *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, GodotCollisionSolver2D::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector2 *sep_axis, real_t p_margin_A, real_t p_margin_B) {
-	PhysicsServer2D::ShapeType type_A = p_shape_A->get_type();
+	PS2DE::ShapeType type_A = p_shape_A->get_type();
 
-	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_WORLD_BOUNDARY, false);
-	ERR_FAIL_COND_V(type_A == PhysicsServer2D::SHAPE_SEPARATION_RAY, false);
+	ERR_FAIL_COND_V(type_A == PS2DE::SHAPE_WORLD_BOUNDARY, false);
+	ERR_FAIL_COND_V(type_A == PS2DE::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_A->is_concave(), false);
 
-	PhysicsServer2D::ShapeType type_B = p_shape_B->get_type();
+	PS2DE::ShapeType type_B = p_shape_B->get_type();
 
-	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_WORLD_BOUNDARY, false);
-	ERR_FAIL_COND_V(type_B == PhysicsServer2D::SHAPE_SEPARATION_RAY, false);
+	ERR_FAIL_COND_V(type_B == PS2DE::SHAPE_WORLD_BOUNDARY, false);
+	ERR_FAIL_COND_V(type_B == PS2DE::SHAPE_SEPARATION_RAY, false);
 	ERR_FAIL_COND_V(p_shape_B->is_concave(), false);
 
 	static const CollisionFunc collision_table[5][5] = {

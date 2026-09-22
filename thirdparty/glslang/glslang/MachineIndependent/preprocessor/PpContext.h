@@ -125,6 +125,14 @@ public:
     char name[MaxTokenLength + 1];
 };
 
+inline void SetPpTokenName(TPpToken& ppToken, const char* src, size_t len)
+{
+    if (len >= sizeof(ppToken.name))
+        len = sizeof(ppToken.name) - 1;
+    memcpy(ppToken.name, src, len);
+    ppToken.name[len] = '\0';
+}
+
 class TStringAtomMap {
 //
 // Implementation is in PpAtom.cpp
@@ -156,6 +164,7 @@ public:
 
     // Map atom -> string.
     const char* getString(int atom) const { return stringMap[atom]->c_str(); }
+    const TString* getTString(int atom) const { return stringMap[atom]; }
 
 protected:
     TStringAtomMap(TStringAtomMap&);
@@ -261,7 +270,7 @@ public:
                 ppToken.clear();
                 ppToken.space = space;
                 ppToken.i64val = i64val;
-                snprintf(ppToken.name, sizeof(ppToken.name), "%s", name.c_str());
+                SetPpTokenName(ppToken, name.c_str(), name.size());
                 return atom;
             }
             bool isAtom(int a) const { return atom == a; }
@@ -311,7 +320,6 @@ public:
         int getToken(TParseContextBase&, TPpToken*);
         bool atEnd() { return currentPos >= stream.size(); }
         bool peekTokenizedPasting(bool lastTokenPastes);
-        bool peekUntokenizedPasting();
         void reset() { currentPos = 0; }
 
     protected:
@@ -371,24 +379,8 @@ protected:
                 break;
             popInput();
         }
-        if (!inputStack.empty() && inputStack.back()->isStringInput()) {
+        if (!inputStack.empty() && inputStack.back()->isStringInput() && !inElseSkip) {
             if (token == '\n') {
-                bool seenNumSign = false;
-                for (int i = 0; i < (int)lastLineTokens.size() - 1;) {
-                    int curPos = i;
-                    int curToken = lastLineTokens[i++];
-                    if (curToken == '#' && lastLineTokens[i] == '#') {
-                        curToken = PpAtomPaste;
-                        i++;
-                    }
-                    if (curToken == '#') {
-                        if (seenNumSign) {
-                            parseContext.ppError(lastLineTokenLocs[curPos], "(#) can be preceded in its line only by spaces or horizontal tabs", "#", "");
-                        } else {
-                            seenNumSign = true;
-                        }
-                    }
-                }
                 lastLineTokens.clear();
                 lastLineTokenLocs.clear();
             } else {
@@ -456,6 +448,38 @@ protected:
         virtual int getch() override { assert(0); return EndOfInput; }
         virtual void ungetch() override { assert(0); }
         static const int marker = -3;
+    };
+
+    class tStringifyLevelInput : public tInput {
+        int what;
+        tStringifyLevelInput(TPpContext* pp) : tInput(pp) { }
+    public:
+        static tStringifyLevelInput popMarker(TPpContext* pp)
+        {
+            tStringifyLevelInput sl(pp);
+            sl.what = POP;
+            return sl;
+        }
+
+        static tStringifyLevelInput pushMarker(TPpContext* pp)
+        {
+            tStringifyLevelInput sl(pp);
+            sl.what = PUSH;
+            return sl;
+        }
+
+        int scan(TPpToken*) override
+        {
+            if (done)
+                return EndOfInput;
+            done = true;
+
+            return what;
+        }
+        virtual int getch() override { assert(0); return EndOfInput; }
+        virtual void ungetch() override { assert(0); }
+        static const int PUSH = -4;
+        static const int POP = -5;
     };
 
     class tZeroInput : public tInput {
@@ -732,6 +756,9 @@ protected:
 
     std::istringstream strtodStream;
     bool disableEscapeSequences;
+    // True if we're skipping a section enclosed by #if/#ifdef/#elif/#else which was evaluated to
+    // be inactive, e.g. #if 0
+    bool inElseSkip;
 };
 
 } // end namespace glslang

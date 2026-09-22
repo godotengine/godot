@@ -8,10 +8,10 @@
 #endif
 
 #define RTC_VERSION_MAJOR 4
-#define RTC_VERSION_MINOR 3
-#define RTC_VERSION_PATCH 1
-#define RTC_VERSION 40301
-#define RTC_VERSION_STRING "4.3.1"
+#define RTC_VERSION_MINOR 4
+#define RTC_VERSION_PATCH 0
+#define RTC_VERSION 40400
+#define RTC_VERSION_STRING "4.4.0"
 
 #define RTC_MAX_INSTANCE_LEVEL_COUNT 1
 
@@ -36,6 +36,7 @@
 #  define RTC_NAMESPACE_END }
 #  define RTC_NAMESPACE_USE using namespace;
 #  define RTC_API_EXTERN_C
+#  define RTC_API_EXTERN_CPP
 #  undef EMBREE_API_NAMESPACE
 #else
 #  define RTC_NAMESPACE_BEGIN
@@ -43,6 +44,7 @@
 #  define RTC_NAMESPACE_USE
 #  if defined(__cplusplus)
 #    define RTC_API_EXTERN_C extern "C"
+#    define RTC_API_EXTERN_CPP extern "C++"
 #  else
 #    define RTC_API_EXTERN_C
 #  endif
@@ -62,10 +64,30 @@
 #  define RTC_API_EXPORT RTC_API_EXTERN_C __attribute__ ((visibility ("default")))
 #endif
 
+#if defined(ISPC)
+#  define RTC_API_IMPORT_CPP extern "C++" unmasked
+#  define RTC_API_EXPORT_CPP extern "C++" unmasked
+#elif defined(EMBREE_STATIC_LIB)
+#  define RTC_API_IMPORT_CPP RTC_API_EXTERN_CPP
+#  define RTC_API_EXPORT_CPP RTC_API_EXTERN_CPP
+#elif defined(_WIN32)
+#  define RTC_API_IMPORT_CPP RTC_API_EXTERN_CPP __declspec(dllimport)
+#  define RTC_API_EXPORT_CPP RTC_API_EXTERN_CPP __declspec(dllexport)
+#else
+#  define RTC_API_IMPORT_CPP RTC_API_EXTERN_CPP
+#  define RTC_API_EXPORT_CPP RTC_API_EXTERN_CPP __attribute__ ((visibility ("default")))
+#endif
+
 #if defined(RTC_EXPORT_API)
 #  define RTC_API RTC_API_EXPORT
 #else
 #  define RTC_API RTC_API_IMPORT
+#endif
+
+#if defined(RTC_EXPORT_API)
+#  define RTC_API_CPP RTC_API_EXPORT_CPP
+#else
+#  define RTC_API_CPP RTC_API_IMPORT_CPP
 #endif
 
 #if defined(ISPC)

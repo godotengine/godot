@@ -30,6 +30,8 @@
 
 #include "http_client.h"
 
+#include "core/object/class_db.h"
+
 const char *HTTPClient::_methods[METHOD_MAX] = {
 	"GET",
 	"HEAD",
@@ -70,10 +72,9 @@ Error HTTPClient::_request(Method p_method, const String &p_url, const Vector<St
 
 String HTTPClient::query_string_from_dict(const Dictionary &p_dict) {
 	String query = "";
-	Array keys = p_dict.keys();
-	for (int i = 0; i < keys.size(); ++i) {
-		String encoded_key = String(keys[i]).uri_encode();
-		const Variant &value = p_dict[keys[i]];
+	for (const KeyValue<Variant, Variant> &kv : p_dict) {
+		String encoded_key = String(kv.key).uri_encode();
+		const Variant &value = kv.value;
 		switch (value.get_type()) {
 			case Variant::ARRAY: {
 				// Repeat the key with every values
@@ -168,7 +169,7 @@ void HTTPClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("query_string_from_dict", "fields"), &HTTPClient::query_string_from_dict);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_mode_enabled"), "set_blocking_mode", "is_blocking_mode_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "StreamPeer", PROPERTY_USAGE_NONE), "set_connection", "get_connection");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, StreamPeer::get_class_static(), PROPERTY_USAGE_NONE), "set_connection", "get_connection");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "read_chunk_size", PROPERTY_HINT_RANGE, "256,16777216"), "set_read_chunk_size", "get_read_chunk_size");
 
 	BIND_ENUM_CONSTANT(METHOD_GET);

@@ -30,6 +30,8 @@
 
 #include "remote_transform_3d.h"
 
+#include "core/object/class_db.h"
+
 void RemoteTransform3D::_update_cache() {
 	cache = ObjectID();
 	if (has_node(remote_node)) {
@@ -51,7 +53,7 @@ void RemoteTransform3D::_update_remote() {
 		return;
 	}
 
-	Node3D *target_node = Object::cast_to<Node3D>(ObjectDB::get_instance(cache));
+	Node3D *target_node = ObjectDB::get_instance<Node3D>(cache);
 	if (!target_node) {
 		return;
 	}
@@ -108,7 +110,7 @@ void RemoteTransform3D::_notification(int p_what) {
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
 			if (cache.is_valid()) {
 				_update_remote();
-				Node3D *n = Object::cast_to<Node3D>(ObjectDB::get_instance(cache));
+				Node3D *n = ObjectDB::get_instance<Node3D>(cache);
 				if (n) {
 					n->reset_physics_interpolation();
 				}

@@ -30,9 +30,12 @@
 
 #include "style_box_flat.h"
 
-#include "scene/main/scene_tree.h"
-#include "scene/main/window.h"
-#include "servers/rendering_server.h"
+#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/text/text_server.h"
+
+#include <cfloat> // FLT_EPSILON
 
 float StyleBoxFlat::get_style_margin(Side p_side) const {
 	ERR_FAIL_INDEX_V((int)p_side, 4, 0.0);
@@ -40,6 +43,9 @@ float StyleBoxFlat::get_style_margin(Side p_side) const {
 }
 
 void StyleBoxFlat::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (!anti_aliased && p_property.name == "anti_aliasing_size") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -345,7 +351,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 
 	// If the center is filled, we do not draw the border and directly use the inner ring as reference. Because all calls to this
 	// method either draw a ring or a filled rounded rectangle, but not both.
-	const real_t quarter_arc_rad = Math_PI / 2.0;
+	const real_t quarter_arc_rad = Math::PI / 2.0;
 	const Point2 style_rect_center = style_rect.get_center();
 
 	const int colors_size = colors.size();
@@ -364,7 +370,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 				idx_ofs *= 2;
 			}
 
-			const real_t pt_angle = (corner_idx + detail / (double)adapted_corner_detail) * quarter_arc_rad + Math_PI;
+			const real_t pt_angle = (corner_idx + detail / (double)adapted_corner_detail) * quarter_arc_rad + Math::PI;
 			const real_t angle_cosine = Math::cos(pt_angle);
 			const real_t angle_sine = Math::sin(pt_angle);
 
@@ -433,7 +439,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 inline void adapt_values(int p_index_a, int p_index_b, real_t *adapted_values, const real_t *p_values, const real_t p_width, const real_t p_max_a, const real_t p_max_b) {
 	real_t value_a = p_values[p_index_a];
 	real_t value_b = p_values[p_index_b];
-	real_t factor = MIN(1.0, p_width / (value_a + value_b));
+	real_t factor = (value_a + value_b == 0.0) ? 1.0 : MIN(1.0, p_width / (value_a + value_b));
 	adapted_values[p_index_a] = MIN(MIN(value_a * factor, p_max_a), adapted_values[p_index_a]);
 	adapted_values[p_index_b] = MIN(MIN(value_b * factor, p_max_b), adapted_values[p_index_b]);
 }
@@ -473,9 +479,24 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Color border_color_blend = (draw_center ? bg_color : border_color_alpha);
 	Color border_color_inner = blend_on ? border_color_blend : border_color;
 
+	real_t aa_size_scaled = 1.0f;
+	if (aa_on) {
+		real_t scale_factor = TextServer::get_current_drawn_item_oversampling();
+		if (scale_factor == 0.0) {
+			scale_factor = 1.0;
+		}
+
+		// Adjust AA feather size to account for the 2D scale factor, so that
+		// antialiasing doesn't become blurry at viewport resolutions higher
+		// than the default when using the `canvas_items` stretch mode
+		// (or when using `oversampling` values different than `1.0`).
+		aa_size_scaled = aa_size / scale_factor;
+	}
+
 	// Adapt borders (prevent weird overlapping/glitchy drawings).
-	real_t width = MAX(style_rect.size.width, 0);
-	real_t height = MAX(style_rect.size.height, 0);
+	real_t aa_shrink = aa_on ? aa_size_scaled * 2 : 0;
+	real_t width = MAX(style_rect.size.width - aa_shrink, 0);
+	real_t height = MAX(style_rect.size.height - aa_shrink, 0);
 	real_t adapted_border[4] = { 1000000.0, 1000000.0, 1000000.0, 1000000.0 };
 	adapt_values(SIDE_TOP, SIDE_BOTTOM, adapted_border, border_width, height, height, height);
 	adapt_values(SIDE_LEFT, SIDE_RIGHT, adapted_border, border_width, width, width, width);
@@ -490,23 +511,6 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Rect2 infill_rect = style_rect.grow_individual(-adapted_border[SIDE_LEFT], -adapted_border[SIDE_TOP], -adapted_border[SIDE_RIGHT], -adapted_border[SIDE_BOTTOM]);
 
 	Rect2 border_style_rect = style_rect;
-
-	real_t aa_size_scaled = 1.0f;
-	if (aa_on) {
-		real_t scale_factor = 1.0f;
-		const SceneTree *tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
-		if (tree) {
-			const Window *window = tree->get_root();
-			const Vector2 stretch_scale = window->get_stretch_transform().get_scale();
-			scale_factor = MIN(stretch_scale.x, stretch_scale.y);
-		}
-
-		// Adjust AA feather size to account for the 2D scale factor, so that
-		// antialiasing doesn't become blurry at viewport resolutions higher
-		// than the default when using the `canvas_items` stretch mode
-		// (or when using `content_scale_factor` values different than `1.0`).
-		aa_size_scaled = aa_size / scale_factor;
-	}
 
 	if (aa_on) {
 		for (int i = 0; i < 4; i++) {
@@ -731,7 +735,3 @@ void StyleBoxFlat::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "anti_aliasing"), "set_anti_aliased", "is_anti_aliased");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anti_aliasing_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,suffix:px"), "set_aa_size", "get_aa_size");
 }
-
-StyleBoxFlat::StyleBoxFlat() {}
-
-StyleBoxFlat::~StyleBoxFlat() {}

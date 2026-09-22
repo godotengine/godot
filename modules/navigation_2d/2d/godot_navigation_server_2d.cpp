@@ -32,48 +32,51 @@
 
 #include "core/os/mutex.h"
 #include "scene/main/node.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+
+#include <cstdint>
 
 #ifdef CLIPPER2_ENABLED
 #include "nav_mesh_generator_2d.h"
 #endif // CLIPPER2_ENABLED
 
-#define COMMAND_1(F_NAME, T_0, D_0)                                     \
-	struct MERGE(F_NAME, _command_2d) : public SetCommand2D {           \
-		T_0 d_0;                                                        \
-		MERGE(F_NAME, _command_2d)                                      \
-		(T_0 p_d_0) :                                                   \
-				d_0(p_d_0) {}                                           \
+#define COMMAND_1(F_NAME, T_0, D_0) \
+	struct MERGE(F_NAME, _command_2d) : public SetCommand2D { \
+		T_0 d_0; \
+		MERGE(F_NAME, _command_2d) \
+		(T_0 p_d_0) : \
+				d_0(p_d_0) {} \
 		virtual void exec(GodotNavigationServer2D *p_server) override { \
-			p_server->MERGE(_cmd_, F_NAME)(d_0);                        \
-		}                                                               \
-	};                                                                  \
-	void GodotNavigationServer2D::F_NAME(T_0 D_0) {                     \
-		auto cmd = memnew(MERGE(F_NAME, _command_2d)(                   \
-				D_0));                                                  \
-		add_command(cmd);                                               \
-	}                                                                   \
+			p_server->MERGE(_cmd_, F_NAME)(d_0); \
+		} \
+	}; \
+	void GodotNavigationServer2D::F_NAME(T_0 D_0) { \
+		auto cmd = memnew(MERGE(F_NAME, _command_2d)( \
+				D_0)); \
+		add_command(cmd); \
+	} \
 	void GodotNavigationServer2D::MERGE(_cmd_, F_NAME)(T_0 D_0)
 
-#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)                           \
-	struct MERGE(F_NAME, _command_2d) : public SetCommand2D {           \
-		T_0 d_0;                                                        \
-		T_1 d_1;                                                        \
-		MERGE(F_NAME, _command_2d)                                      \
-		(                                                               \
-				T_0 p_d_0,                                              \
-				T_1 p_d_1) :                                            \
-				d_0(p_d_0),                                             \
-				d_1(p_d_1) {}                                           \
+#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1) \
+	struct MERGE(F_NAME, _command_2d) : public SetCommand2D { \
+		T_0 d_0; \
+		T_1 d_1; \
+		MERGE(F_NAME, _command_2d) \
+		( \
+				T_0 p_d_0, \
+				T_1 p_d_1) : \
+				d_0(p_d_0), \
+				d_1(p_d_1) {} \
 		virtual void exec(GodotNavigationServer2D *p_server) override { \
-			p_server->MERGE(_cmd_, F_NAME)(d_0, d_1);                   \
-		}                                                               \
-	};                                                                  \
-	void GodotNavigationServer2D::F_NAME(T_0 D_0, T_1 D_1) {            \
-		auto cmd = memnew(MERGE(F_NAME, _command_2d)(                   \
-				D_0,                                                    \
-				D_1));                                                  \
-		add_command(cmd);                                               \
-	}                                                                   \
+			p_server->MERGE(_cmd_, F_NAME)(d_0, d_1); \
+		} \
+	}; \
+	void GodotNavigationServer2D::F_NAME(T_0 D_0, T_1 D_1) { \
+		auto cmd = memnew(MERGE(F_NAME, _command_2d)( \
+				D_0, \
+				D_1)); \
+		add_command(cmd); \
+	} \
 	void GodotNavigationServer2D::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
 void GodotNavigationServer2D::init() {
@@ -81,7 +84,7 @@ void GodotNavigationServer2D::init() {
 	navmesh_generator_2d = memnew(NavMeshGenerator2D);
 	ERR_FAIL_NULL_MSG(navmesh_generator_2d, "Failed to init NavMeshGenerator2D.");
 	RWLockRead read_lock(geometry_parser_rwlock);
-	navmesh_generator_2d->set_generator_parsers(generator_parsers);
+	navmesh_generator_2d->set_generator_parsers(LocalVector<NavMeshGeometryParser2D *>(generator_parsers));
 #endif // CLIPPER2_ENABLED
 	// TODO
 }
@@ -193,11 +196,12 @@ void GodotNavigationServer2D::add_command(SetCommand2D *p_command) {
 
 TypedArray<RID> GodotNavigationServer2D::get_maps() const {
 	TypedArray<RID> all_map_rids;
-	List<RID> maps_owned;
-	map_owner.get_owned_list(&maps_owned);
-	if (maps_owned.size()) {
-		for (const RID &E : maps_owned) {
-			all_map_rids.push_back(E);
+	LocalVector<RID> maps_owned = map_owner.get_owned_list();
+	uint32_t map_count = maps_owned.size();
+	if (map_count) {
+		all_map_rids.resize(map_count);
+		for (uint32_t i = 0; i < map_count; i++) {
+			all_map_rids[i] = maps_owned[i];
 		}
 	}
 	return all_map_rids;
@@ -249,7 +253,7 @@ TypedArray<RID> GodotNavigationServer2D::map_get_obstacles(RID p_map) const {
 	TypedArray<RID> obstacles_rids;
 	const NavMap2D *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, obstacles_rids);
-	const LocalVector<NavObstacle2D *> obstacles = map->get_obstacles();
+	const LocalVector<NavObstacle2D *> obstacles(map->get_obstacles());
 	obstacles_rids.resize(obstacles.size());
 	for (uint32_t i = 0; i < obstacles.size(); i++) {
 		obstacles_rids[i] = obstacles[i]->get_self();
@@ -293,13 +297,11 @@ COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 	if (p_active) {
 		if (!map_is_active(p_map)) {
 			active_maps.push_back(map);
-			active_maps_iteration_id.push_back(map->get_iteration_id());
 		}
 	} else {
 		int map_index = active_maps.find(map);
 		ERR_FAIL_COND(map_index < 0);
 		active_maps.remove_at(map_index);
-		active_maps_iteration_id.remove_at(map_index);
 	}
 }
 
@@ -351,6 +353,20 @@ real_t GodotNavigationServer2D::map_get_cell_size(RID p_map) const {
 	ERR_FAIL_NULL_V(map, 0);
 
 	return map->get_cell_size();
+}
+
+COMMAND_2(map_set_merge_rasterizer_cell_scale, RID, p_map, float, p_value) {
+	NavMap2D *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL(map);
+
+	map->set_merge_rasterizer_cell_scale(p_value);
+}
+
+float GodotNavigationServer2D::map_get_merge_rasterizer_cell_scale(RID p_map) const {
+	NavMap2D *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL_V(map, false);
+
+	return map->get_merge_rasterizer_cell_scale();
 }
 
 COMMAND_2(map_set_use_edge_connections, RID, p_map, bool, p_enabled) {
@@ -448,6 +464,26 @@ RID GodotNavigationServer2D::region_create() {
 	NavRegion2D *reg = region_owner.get_or_null(rid);
 	reg->set_self(rid);
 	return rid;
+}
+
+uint32_t GodotNavigationServer2D::region_get_iteration_id(RID p_region) const {
+	NavRegion2D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, 0);
+
+	return region->get_iteration_id();
+}
+
+COMMAND_2(region_set_use_async_iterations, RID, p_region, bool, p_enabled) {
+	NavRegion2D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL(region);
+	region->set_use_async_iterations(p_enabled);
+}
+
+bool GodotNavigationServer2D::region_get_use_async_iterations(RID p_region) const {
+	NavRegion2D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, false);
+
+	return region->get_use_async_iterations();
 }
 
 COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled) {
@@ -574,7 +610,7 @@ void GodotNavigationServer2D::region_set_navigation_polygon(RID p_region, Ref<Na
 	NavRegion2D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
 
-	region->set_navigation_polygon(p_navigation_polygon);
+	region->set_navigation_mesh(p_navigation_polygon);
 }
 
 int GodotNavigationServer2D::region_get_connections_count(RID p_region) const {
@@ -635,6 +671,13 @@ RID GodotNavigationServer2D::link_create() {
 	NavLink2D *link = link_owner.get_or_null(rid);
 	link->set_self(rid);
 	return rid;
+}
+
+uint32_t GodotNavigationServer2D::link_get_iteration_id(RID p_link) const {
+	NavLink2D *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_NULL_V(link, 0);
+
+	return link->get_iteration_id();
 }
 
 COMMAND_2(link_set_map, RID, p_link, RID, p_map) {
@@ -1138,8 +1181,6 @@ Vector<Vector2> GodotNavigationServer2D::obstacle_get_vertices(RID p_obstacle) c
 }
 
 void GodotNavigationServer2D::flush_queries() {
-	// In c++ we can't be sure that this is performed in the main thread
-	// even with mutable functions.
 	MutexLock lock(commands_mutex);
 	MutexLock lock2(operations_mutex);
 
@@ -1150,7 +1191,7 @@ void GodotNavigationServer2D::flush_queries() {
 	commands.clear();
 }
 
-COMMAND_1(free, RID, p_object) {
+COMMAND_1(free_rid, RID, p_object) {
 	if (geometry_parser_owner.owns(p_object)) {
 		RWLockWrite write_lock(geometry_parser_rwlock);
 
@@ -1158,7 +1199,7 @@ COMMAND_1(free, RID, p_object) {
 		ERR_FAIL_NULL(parser);
 
 		generator_parsers.erase(parser);
-#ifndef CLIPPER2_ENABLED
+#ifdef CLIPPER2_ENABLED
 		NavMeshGenerator2D::get_singleton()->set_generator_parsers(generator_parsers);
 #endif
 		geometry_parser_owner.free(parser->self);
@@ -1194,7 +1235,6 @@ COMMAND_1(free, RID, p_object) {
 		int map_index = active_maps.find(map);
 		if (map_index >= 0) {
 			active_maps.remove_at(map_index);
-			active_maps_iteration_id.remove_at(map_index);
 		}
 		map_owner.free(p_object);
 
@@ -1259,7 +1299,23 @@ void GodotNavigationServer2D::internal_free_obstacle(RID p_object) {
 	}
 }
 
-void GodotNavigationServer2D::process(real_t p_delta_time) {
+void GodotNavigationServer2D::process(double p_delta_time) {
+	// Called for each main loop iteration AFTER node and user script process() and BEFORE RenderingServer sync.
+	// Will run reliably every rendered frame independent of the physics tick rate.
+	// Use for things that (only) need to update once per main loop iteration and rendered frame or is visible to the user.
+	// E.g. (final) sync of objects for this main loop iteration, updating rendered debug visuals, updating debug statistics, ...
+
+	sync();
+}
+
+void GodotNavigationServer2D::physics_process(double p_delta_time) {
+	// Called for each physics process step AFTER node and user script physics_process() and BEFORE PhysicsServer sync.
+	// Will NOT run reliably every rendered frame. If there is no physics step this function will not run.
+	// Use for physics or step depending calculations and updates where the result affects the next step calculation.
+	// E.g. anything physics sync related, avoidance simulations, physics space state queries, ...
+	// If physics process needs to play catchup this function will be called multiple times per frame so it should not hold
+	// costly updates that are not important outside the stepped calculations to avoid causing a physics performance death spiral.
+
 	flush_queries();
 
 	if (!active) {
@@ -1276,8 +1332,6 @@ void GodotNavigationServer2D::process(real_t p_delta_time) {
 	int _new_pm_edge_free_count = 0;
 	int _new_pm_obstacle_count = 0;
 
-	// In c++ we can't be sure that this is performed in the main thread
-	// even with mutable functions.
 	MutexLock lock(operations_mutex);
 	for (uint32_t i(0); i < active_maps.size(); i++) {
 		active_maps[i]->sync();
@@ -1293,13 +1347,6 @@ void GodotNavigationServer2D::process(real_t p_delta_time) {
 		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
 		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
 		_new_pm_obstacle_count += active_maps[i]->get_pm_obstacle_count();
-
-		// Emit a signal if a map changed.
-		const uint32_t new_map_iteration_id = active_maps[i]->get_iteration_id();
-		if (new_map_iteration_id != active_maps_iteration_id[i]) {
-			emit_signal(SNAME("map_changed"), active_maps[i]->get_self());
-			active_maps_iteration_id[i] = new_map_iteration_id;
-		}
 	}
 
 	pm_region_count = _new_pm_region_count;

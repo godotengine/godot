@@ -36,28 +36,18 @@
 #include "stream_peer_mbedtls.h"
 
 #include "core/config/project_settings.h"
+#include "core/os/os.h"
 
-#if MBEDTLS_VERSION_MAJOR >= 3
 #include <psa/crypto.h>
-#endif
-
-#ifdef TESTS_ENABLED
-#include "tests/test_crypto_mbedtls.h"
-#endif
 
 static bool godot_mbedtls_initialized = false;
 
 void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
 		return;
 	}
 
 	GLOBAL_DEF("network/tls/enable_tls_v1.3", true);
-
-#if MBEDTLS_VERSION_MAJOR >= 3
-	int status = psa_crypto_init();
-	ERR_FAIL_COND_MSG(status != PSA_SUCCESS, "Failed to initialize psa crypto. The mbedTLS modules will not work.");
-#endif
 
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->is_stdout_verbose()) {
@@ -74,17 +64,13 @@ void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_mbedtls_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
 		return;
 	}
 
 	if (!godot_mbedtls_initialized) {
 		return;
 	}
-
-#if MBEDTLS_VERSION_MAJOR >= 3
-	mbedtls_psa_crypto_free();
-#endif
 
 	DTLSServerMbedTLS::finalize();
 	PacketPeerMbedDTLS::finalize_dtls();

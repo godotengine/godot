@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, The Khronos Group Inc.
+// Copyright (c) 2017-2026 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 // Copyright (c) 2019 Collabora, Ltd.
@@ -21,10 +21,12 @@
 #include <string>
 #include <stdint.h>
 
-inline std::string to_hex(const uint8_t* const data, size_t bytes) {
-    std::string out(2 + bytes * 2, '?');
-    out[0] = '0';
-    out[1] = 'x';
+inline std::string to_hex(const uint8_t* const data, size_t bytes, bool prefix = true) {
+    std::string out(bytes * 2 + (prefix ? 2 : 0), '?');
+    if (prefix) {
+        out[0] = '0';
+        out[1] = 'x';
+    }
     static const char* hex = "0123456789abcdef";
     auto ch = out.end();
     for (size_t i = 0; i < bytes; ++i) {
@@ -37,7 +39,12 @@ inline std::string to_hex(const uint8_t* const data, size_t bytes) {
 
 template <typename T>
 inline std::string to_hex(const T& data) {
-    return to_hex(reinterpret_cast<const uint8_t* const>(&data), sizeof(data));
+    return to_hex(reinterpret_cast<const uint8_t* const>(&data), sizeof(T));
+}
+
+template <typename T>
+inline std::string to_hex(T* const data) {
+    return to_hex(reinterpret_cast<const uint8_t* const>(&data), sizeof(T*));
 }
 
 #if XR_PTR_SIZE == 8

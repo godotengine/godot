@@ -30,6 +30,7 @@
 #include "hb-open-type.hh"
 #include "hb-ot-layout-common.hh"
 #include "hb-ot-math.h"
+#include "hb-depend-data.hh"
 
 namespace OT {
 
@@ -37,9 +38,9 @@ namespace OT {
 struct MathValueRecord
 {
   hb_position_t get_x_value (hb_font_t *font, const void *base) const
-  { return font->em_scale_x (value) + (base+deviceTable).get_x_delta (font); }
+  { return hb_saturate_add (font->em_scale_x (value), (base+deviceTable).get_x_delta (font)); }
   hb_position_t get_y_value (hb_font_t *font, const void *base) const
-  { return font->em_scale_y (value) + (base+deviceTable).get_y_delta (font); }
+  { return hb_saturate_add (font->em_scale_y (value), (base+deviceTable).get_y_delta (font)); }
 
   MathValueRecord* copy (hb_serialize_context_t *c, const void *base) const
   {
@@ -69,6 +70,8 @@ struct MathValueRecord
 
 struct MathConstants
 {
+  friend struct MATH;
+
   MathConstants* copy (hb_serialize_context_t *c) const
   {
     TRACE_SERIALIZE (this);
@@ -353,7 +356,10 @@ struct MathKern
     unsigned int pos;
     auto cmp = +[](const void* key, const void* p,
                    int sign, hb_font_t* font, const MathKern* mathKern) -> int {
-      return sign * *(hb_position_t*)key - sign * ((MathValueRecord*)p)->get_y_value(font, mathKern);
+      hb_position_t a = *(hb_position_t *) key;
+      hb_position_t b = ((MathValueRecord *) p)->get_y_value (font, mathKern);
+      if (a == b) return 0;
+      return sign > 0 ? (a < b ? -1 : +1) : (b < a ? -1 : +1);
     };
     unsigned int i = hb_bsearch_impl(&pos, correction_height, correctionHeight,
                                      heightCount, MathValueRecord::static_size,
@@ -370,7 +376,7 @@ struct MathKern
     const MathValueRecord* kernValue = mathValueRecordsZ.arrayZ + heightCount;
     const unsigned int entriesCount = heightCount + 1;
 
-    if (entries_count)
+    if (entries_count && kern_entries)
     {
       unsigned int start = hb_min (start_offset, entriesCount);
       unsigned int end = hb_min (start + *entries_count, entriesCount);
@@ -660,6 +666,9 @@ struct MathGlyphVariantRecord
     return_trace (c->check_struct (this));
   }
 
+  void depend (hb_depend_data_builder_t *depend_data, unsigned source) const
+  { depend_data->add_depend(source, HB_OT_TAG_MATH, variantGlyph); }
+
   void closure_glyphs (hb_set_t *variant_glyphs) const
   { variant_glyphs->add (variantGlyph); }
 
@@ -721,6 +730,9 @@ struct MathGlyphPartRecord
 		(partFlags & PartFlags::Defined);
   }
 
+  void depend (hb_depend_data_builder_t *depend_data, unsigned source) const
+  { depend_data->add_depend(source, HB_OT_TAG_MATH, glyph); }
+
   void closure_glyphs (hb_set_t *variant_glyphs) const
   { variant_glyphs->add (glyph); }
 
@@ -774,7 +786,7 @@ struct MathGlyphAssembly
 			  hb_ot_math_glyph_part_t *parts /* OUT */,
 			  hb_position_t *italics_correction /* OUT */) const
   {
-    if (parts_count)
+    if (parts_count && parts)
     {
       int64_t mult = font->dir_mult (direction);
       for (auto _ : hb_zip (partRecords.as_array ().sub_array (start_offset, parts_count),
@@ -786,6 +798,12 @@ struct MathGlyphAssembly
       *italics_correction = italicsCorrection.get_x_value (font, this);
 
     return partRecords.len;
+  }
+
+  void depend (hb_depend_data_builder_t *depend_data, unsigned source) const
+  {
+    for (const auto& _ : partRecords.iter ())
+      _.depend (depend_data, source);
   }
 
   void closure_glyphs (hb_set_t *variant_glyphs) const
@@ -843,7 +861,7 @@ struct MathGlyphConstruction
 			     unsigned int *variants_count, /* IN/OUT */
 			     hb_ot_math_glyph_variant_t *variants /* OUT */) const
   {
-    if (variants_count)
+    if (variants_count && variants)
     {
       int64_t mult = font->dir_mult (direction);
       for (auto _ : hb_zip (mathGlyphVariantRecord.as_array ().sub_array (start_offset, variants_count),
@@ -851,6 +869,14 @@ struct MathGlyphConstruction
 	_.second = {_.first.variantGlyph, font->em_mult (_.first.advanceMeasurement, mult)};
     }
     return mathGlyphVariantRecord.len;
+  }
+
+  void depend (hb_depend_data_builder_t *depend_data, unsigned source) const
+  {
+    (this+glyphAssembly).depend (depend_data, source);
+
+    for (const auto& _ : mathGlyphVariantRecord.iter ())
+      _.depend (depend_data, source);
   }
 
   void closure_glyphs (hb_set_t *variant_glyphs) const
@@ -875,6 +901,34 @@ struct MathGlyphConstruction
 
 struct MathVariants
 {
+  void depend (hb_depend_data_builder_t *depend_data) const
+  {
+    const hb_array_t<const Offset16To<MathGlyphConstruction>> glyph_construction_offsets = glyphConstruction.as_array (vertGlyphCount + horizGlyphCount);
+
+    if (vertGlyphCoverage)
+    {
+      const auto vert_offsets = glyph_construction_offsets.sub_array (0, vertGlyphCount);
+      + hb_zip (this+vertGlyphCoverage, vert_offsets)
+      | hb_apply ([&] (const hb_pair_t<hb_codepoint_t, const Offset16To<MathGlyphConstruction>&> &_)
+                  {
+                    const MathGlyphConstruction &mgc = this+_.second;
+                    mgc.depend (depend_data, _.first);
+                  })
+      ;
+    }
+    if (horizGlyphCoverage)
+    {
+      const auto hori_offsets = glyph_construction_offsets.sub_array (vertGlyphCount, horizGlyphCount);
+      + hb_zip (this+horizGlyphCoverage, hori_offsets)
+      | hb_apply ([&] (const hb_pair_t<hb_codepoint_t, const Offset16To<MathGlyphConstruction>&> &_)
+                  {
+                    const MathGlyphConstruction &mgc = this+_.second;
+                    mgc.depend (depend_data, _.first);
+                  })
+      ;
+    }
+  }
+
   void closure_glyphs (const hb_set_t *glyph_set,
                        hb_set_t *variant_glyphs) const
   {
@@ -929,7 +983,7 @@ struct MathVariants
   bool subset (hb_subset_context_t *c) const
   {
     TRACE_SUBSET (this);
-    const hb_set_t &glyphset = c->plan->_glyphset_mathed;
+    const hb_set_t &glyphset = c->plan->_glyphset_cmaped;
     const hb_map_t &glyph_map = *c->plan->glyph_map;
 
     auto *out = c->serializer->start_embed (*this);
@@ -1071,6 +1125,12 @@ struct MATH
 
   bool has_data () const { return version.to_int (); }
 
+  void depend (hb_depend_data_builder_t *depend_data) const
+  {
+    if (mathVariants)
+      (this+mathVariants).depend (depend_data);
+  }
+
   void closure_glyphs (hb_set_t *glyph_set) const
   {
     if (mathVariants)
@@ -1102,6 +1162,24 @@ struct MATH
 		  mathConstants.sanitize (c, this) &&
 		  mathGlyphInfo.sanitize (c, this) &&
 		  mathVariants.sanitize (c, this));
+  }
+
+  // https://github.com/harfbuzz/harfbuzz/issues/4653
+  HB_INTERNAL bool is_bad_cambria (hb_font_t *font) const
+  {
+#ifndef HB_NO_MATH
+    switch HB_CODEPOINT_ENCODE3 (font->face->table.MATH.get_blob ()->length,
+                                 (this+mathConstants).minHeight[1], // displayOperatorMinHeight
+                                 (this+mathConstants).minHeight[0]) // delimitedSubFormulaMinHeight
+    {
+      /* sha1sum:ab4a4fe054d23061f3c039493d6f665cfda2ecf5  cambria.ttc
+       * sha1sum:086855301bff644f9d8827b88491fcf73a6d4cb9  cambria.ttc
+       * sha1sum:b1e5a3feaca2ea3dfcf79ccb377de749ecf60343  cambria.ttc */
+      case HB_CODEPOINT_ENCODE3 (25722, 2500, 3000):
+        return true;
+    }
+#endif
+    return false;
   }
 
   hb_position_t get_constant (hb_ot_math_constant_t  constant,

@@ -30,9 +30,13 @@
 
 #pragma once
 
+#ifndef __cplusplus
+#include <stddef.h>
 #include <stdint.h>
+#else
+#include <cstddef>
+#include <cstdint>
 
-#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -51,6 +55,10 @@ typedef struct GodotNirCallbacks {
 	void (*report_sc_bit_offset_fn)(uint32_t p_sc_id, uint64_t p_bit_offset, void *p_data);
 	void (*report_bitcode_bit_offset_fn)(uint64_t p_bit_offset, void *p_data);
 } GodotNirCallbacks;
+
+extern void *godot_nir_malloc(size_t p_size);
+extern void *godot_nir_realloc(void *p_block, size_t p_size);
+extern void godot_nir_free(void *p_block);
 
 #ifdef __cplusplus
 }

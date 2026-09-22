@@ -30,24 +30,123 @@
 
 #include "xr_nodes.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void XRCamera3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_tracker", "tracker_name"), &XRCamera3D::set_tracker);
+	ClassDB::bind_method(D_METHOD("get_tracker"), &XRCamera3D::get_tracker);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tracker", PROPERTY_HINT_ENUM_SUGGESTION), "set_tracker", "get_tracker");
+}
+
+void XRCamera3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	// Hide properties that are managed by XRInterface or otherwise not applicable for XRCamera3D.
+	if (p_property.name == "fov" || p_property.name == "projection" || p_property.name == "size" || p_property.name == "frustum_offset" || p_property.name == "keep_aspect") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	} else if (p_property.name == "tracker") {
+		// Set to our default head tracker.
+		String hint_string = "head";
+		p_property.hint_string = hint_string;
+	}
+}
+
+void XRCamera3D::set_tracker(const StringName &p_tracker_name) {
+	if (tracker.is_valid() && tracker->get_tracker_name() == p_tracker_name) {
+		// didn't change
+		return;
+	}
+
+	// just in case
+	_unbind_tracker();
+
+	// copy the name
+	tracker_name = p_tracker_name;
+	pose_name = SceneStringName(default_);
+
+	// see if it's already available
+	_bind_tracker();
+
+	update_configuration_warnings();
+	notify_property_list_changed();
+}
+
+StringName XRCamera3D::get_tracker() const {
+	return tracker_name;
+}
+
+void XRCamera3D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_current()) {
+				_update_projections();
+			}
+		} break;
+	}
+}
+
+void XRCamera3D::_update_camera_mode() {
+	// Ignore this here, we are setting our projection matrices later.
+}
+
+void XRCamera3D::fti_update_servers_property() {
+	// Skip the logic in Camera3D.
+	Node3D::fti_update_servers_property();
+}
+
+void XRCamera3D::_update_projections() {
+	if (tracker.is_null()) {
+		return;
+	}
+
+	RenderingServer *rendering_server = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rendering_server);
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL(xr_server);
+	Viewport *vp = get_viewport();
+	ERR_FAIL_NULL(vp);
+
+	Size2 viewport_size = vp->get_visible_rect().size;
+
+	rendering_server->camera_set_xr_projections(
+			get_camera(),
+			xr_server->get_camera_projections(tracker_name, viewport_size.aspect(), get_near(), get_far()),
+			xr_server->get_camera_offsets(tracker_name));
+
+	return;
+}
 
 void XRCamera3D::_bind_tracker() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	tracker = xr_server->get_tracker(tracker_name);
-	if (tracker.is_valid()) {
-		tracker->connect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
+	Ref<XRTracker> new_tracker = xr_server->get_tracker(tracker_name);
+	if (new_tracker.is_null()) {
+		// Fail silently, tracker does not yet exist.
+		return;
+	} else if (tracker == new_tracker) {
+		// Already bound?
+		return;
+	}
 
-		Ref<XRPose> pose = tracker->get_pose(pose_name);
-		if (pose.is_valid()) {
-			set_transform(pose->get_adjusted_transform());
-		}
+	// Assign our new tracker
+	tracker = new_tracker;
+	tracker->connect("pose_changed", callable_mp(this, &XRCamera3D::_pose_changed));
+
+	// Update our initial pose
+	Ref<XRPose> pose = tracker->get_pose(pose_name);
+	if (pose.is_valid()) {
+		set_transform(pose->get_adjusted_transform());
 	}
 }
 
@@ -60,6 +159,8 @@ void XRCamera3D::_unbind_tracker() {
 
 void XRCamera3D::_changed_tracker(const StringName &p_tracker_name, int p_tracker_type) {
 	if (p_tracker_name == tracker_name) {
+		// Rebind it.
+		_unbind_tracker();
 		_bind_tracker();
 	}
 }
@@ -72,36 +173,13 @@ void XRCamera3D::_removed_tracker(const StringName &p_tracker_name, int p_tracke
 
 void XRCamera3D::_pose_changed(const Ref<XRPose> &p_pose) {
 	if (p_pose->get_name() == pose_name) {
-		Node3D *parent = Object::cast_to<Node3D>(get_parent());
-
-		if (is_inside_tree() && parent && parent->is_physics_interpolated_and_enabled() && !is_set_as_top_level() && !is_physics_interpolated()) {
-			pose_offset = p_pose->get_adjusted_transform();
-		} else {
-			set_transform(p_pose->get_adjusted_transform());
-		}
+		set_transform(p_pose->get_adjusted_transform());
 	}
 }
 
-void XRCamera3D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (!Engine::get_singleton()->is_editor_hint()) {
-				set_desired_process_modes(true, false);
-			}
-		} break;
-
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (!is_inside_tree() || is_physics_interpolated() || Engine::get_singleton()->is_editor_hint()) {
-				break;
-			}
-
-			Node3D *parent = Object::cast_to<Node3D>(get_parent());
-
-			if (parent && parent->is_physics_interpolated_and_enabled() && !is_set_as_top_level()) {
-				set_global_transform(parent->get_global_transform_interpolated() * pose_offset);
-			}
-		} break;
-	}
+void XRCamera3D::_physics_interpolated_changed() {
+	Camera3D::_physics_interpolated_changed();
+	update_configuration_warnings();
 }
 
 PackedStringArray XRCamera3D::get_configuration_warnings() const {
@@ -114,6 +192,15 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 		if (parent && origin == nullptr) {
 			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
+
+		// Warn if process mode is not set to always
+		if (get_process_mode() != PROCESS_MODE_ALWAYS) {
+			warnings.push_back(RTR("XRCamera3Ds process mode must be set to always to ensure camera tracking is active even when your game is paused."));
+		}
+	}
+
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+		warnings.push_back(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 	}
 
 	return warnings;
@@ -227,6 +314,12 @@ XRCamera3D::XRCamera3D() {
 	// XRCamera3D gets its transform updated every render frame and shouldn't be interpolated.
 	set_physics_interpolation_mode(Node::PHYSICS_INTERPOLATION_MODE_OFF);
 
+	// Run internal process at runtime.
+	set_desired_process_modes(!Engine::get_singleton()->is_editor_hint(), false);
+
+	// Even when paused, we must run our internal process.
+	set_process_mode(PROCESS_MODE_ALWAYS);
+
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -274,6 +367,9 @@ void XRNode3D::_bind_methods() {
 }
 
 void XRNode3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -431,13 +527,7 @@ void XRNode3D::_removed_tracker(const StringName &p_tracker_name, int p_tracker_
 
 void XRNode3D::_pose_changed(const Ref<XRPose> &p_pose) {
 	if (p_pose.is_valid() && p_pose->get_name() == pose_name) {
-		Node3D *parent = Object::cast_to<Node3D>(get_parent());
-
-		if (is_inside_tree() && parent && parent->is_physics_interpolated_and_enabled() && !is_set_as_top_level() && !is_physics_interpolated()) {
-			pose_offset = p_pose->get_adjusted_transform();
-		} else {
-			set_transform(p_pose->get_adjusted_transform());
-		}
+		set_transform(p_pose->get_adjusted_transform());
 		_set_has_tracking_data(p_pose->get_has_tracking_data());
 	}
 }
@@ -477,26 +567,8 @@ void XRNode3D::_update_visibility() {
 	}
 }
 
-void XRNode3D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (!Engine::get_singleton()->is_editor_hint()) {
-				set_process_internal(true);
-			}
-		} break;
-
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (!is_inside_tree() || is_physics_interpolated() || Engine::get_singleton()->is_editor_hint()) {
-				break;
-			}
-
-			Node3D *parent = Object::cast_to<Node3D>(get_parent());
-
-			if (parent && parent->is_physics_interpolated_and_enabled() && !is_set_as_top_level()) {
-				set_global_transform(parent->get_global_transform_interpolated() * pose_offset);
-			}
-		} break;
-	}
+void XRNode3D::_physics_interpolated_changed() {
+	update_configuration_warnings();
 }
 
 XRNode3D::XRNode3D() {
@@ -542,6 +614,10 @@ PackedStringArray XRNode3D::get_configuration_warnings() const {
 		}
 	}
 
+	if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+		warnings.push_back(RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
+	}
+
 	return warnings;
 }
 
@@ -556,10 +632,10 @@ void XRController3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tracker_hand"), &XRController3D::get_tracker_hand);
 
-	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "name")));
-	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::FLOAT, "value")));
-	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::VECTOR2, "value")));
+	ADD_SIGNAL(MethodInfo("button_pressed", PropertyInfo(Variant::STRING, "action_name")));
+	ADD_SIGNAL(MethodInfo("button_released", PropertyInfo(Variant::STRING, "action_name")));
+	ADD_SIGNAL(MethodInfo("input_float_changed", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::FLOAT, "value")));
+	ADD_SIGNAL(MethodInfo("input_vector2_changed", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::VECTOR2, "value")));
 	ADD_SIGNAL(MethodInfo("profile_changed", PropertyInfo(Variant::STRING, "role")));
 }
 
@@ -717,9 +793,12 @@ PackedStringArray XROrigin3D::get_configuration_warnings() const {
 				has_camera = true;
 			}
 		}
-
 		if (!has_camera) {
 			warnings.push_back(RTR("XROrigin3D requires an XRCamera3D child node."));
+		}
+
+		if (!get_scale().is_equal_approx(Vector3(1, 1, 1))) {
+			warnings.push_back(RTR("Changing the scale on the XROrigin3D node is not supported. Change the World Scale instead."));
 		}
 	}
 

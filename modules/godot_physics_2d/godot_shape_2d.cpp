@@ -32,6 +32,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/templates/sort_array.h"
+#include "core/variant/variant.h"
 
 void GodotShape2D::configure(const Rect2 &p_aabb) {
 	aabb = p_aabb;
@@ -665,7 +666,7 @@ bool GodotConcavePolygonShape2D::contains_point(const Vector2 &p_point) const {
 }
 
 bool GodotConcavePolygonShape2D::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
-	if (segments.size() == 0 || points.size() == 0) {
+	if (segments.is_empty() || points.is_empty()) {
 		return false;
 	}
 
@@ -919,7 +920,7 @@ void GodotConcavePolygonShape2D::cull(const Rect2 &p_local_aabb, QueryCallback p
 		stack[i]=0;
 	*/
 
-	if (segments.size() == 0 || points.size() == 0 || bvh.size() == 0) {
+	if (segments.is_empty() || points.is_empty() || bvh.is_empty()) {
 		return;
 	}
 

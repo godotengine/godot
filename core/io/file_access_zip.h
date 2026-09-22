@@ -34,26 +34,24 @@
 
 #include "core/io/file_access_pack.h"
 
-#include "thirdparty/minizip/unzip.h"
+#include <thirdparty/minizip/unzip.h>
 
 class ZipArchive : public PackSource {
 public:
 	struct File {
 		int package = -1;
 		unz_file_pos file_pos;
-		File() {}
 	};
 
 private:
 	struct Package {
 		String filename;
-		unzFile zfile = nullptr;
 	};
 	Vector<Package> packages;
 
 	HashMap<String, File> files;
 
-	static ZipArchive *instance;
+	static inline ZipArchive *instance = nullptr;
 
 public:
 	void close_handle(unzFile p_file) const;
@@ -63,8 +61,8 @@ public:
 
 	bool file_exists(const String &p_name) const;
 
-	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) override;
-	Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file) override;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
+	Ref<FileAccess> get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key = Vector<uint8_t>()) override;
 
 	static ZipArchive *get_singleton();
 
@@ -73,6 +71,7 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
+	GDSOFTCLASS(FileAccessZip, FileAccess);
 	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 

@@ -44,7 +44,6 @@ class Shape3D : public Resource {
 	real_t margin = 0.04;
 
 	Ref<ArrayMesh> debug_mesh_cache;
-	Ref<Material> collision_material;
 
 	// Not wrapped in `#ifdef DEBUG_ENABLED` as it is used for rendering.
 	Color debug_color = Color(0.0, 0.0, 0.0, 0.0);
@@ -55,11 +54,10 @@ class Shape3D : public Resource {
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	_FORCE_INLINE_ RID get_shape() const { return shape; }
 	Shape3D(RID p_shape);
-
-	Ref<Material> get_debug_collision_material();
 
 	virtual void _update_shape();
 

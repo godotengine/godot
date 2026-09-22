@@ -45,7 +45,9 @@ bool GDScriptLambdaCallable::compare_less(const CallableCustom *p_a, const Calla
 }
 
 bool GDScriptLambdaCallable::is_valid() const {
-	return CallableCustom::is_valid() && function != nullptr;
+	// Don't need to call CallableCustom::is_valid():
+	// It just verifies our script exists, which we know to be true because it is RefCounted.
+	return function != nullptr;
 }
 
 uint32_t GDScriptLambdaCallable::hash() const {
@@ -57,7 +59,7 @@ String GDScriptLambdaCallable::get_as_text() const {
 		return "<invalid lambda>";
 	}
 	if (function->get_name() != StringName()) {
-		return function->get_name().operator String() + "(lambda)";
+		return function->get_name().string() + "(lambda)";
 	}
 	return "(anonymous lambda)";
 }
@@ -181,7 +183,7 @@ String GDScriptLambdaSelfCallable::get_as_text() const {
 		return "<invalid self lambda>";
 	}
 	if (function->get_name() != StringName()) {
-		return function->get_name().operator String() + "(self lambda)";
+		return function->get_name().string() + "(self lambda)";
 	}
 	return "(anonymous self lambda)";
 }

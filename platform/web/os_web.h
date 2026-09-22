@@ -31,13 +31,11 @@
 #pragma once
 
 #include "audio_driver_web.h"
+#include "godot_js.h"
 #include "webmidi_driver.h"
 
-#include "godot_js.h"
-
-#include "core/input/input.h"
+#include "core/input/input_event.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/audio_server.h"
 
 #include <emscripten/html5.h>
 
@@ -91,7 +89,7 @@ public:
 	int get_process_exit_code(const ProcessID &p_pid) const override;
 	int get_processor_count() const override;
 	String get_unique_id() const override;
-	int get_default_thread_pool_size() const override { return 1; }
+	int get_default_thread_pool_size() const override;
 
 	String get_executable_path() const override;
 	Error shell_open(const String &p_uri) override;
@@ -99,7 +97,7 @@ public:
 
 	// Override default OS implementation which would block the main thread with delay_usec.
 	// Implemented in web_main.cpp loop callback instead.
-	void add_frame_delay(bool p_can_draw) override;
+	void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 
 	void vibrate_handheld(int p_duration_ms, float p_amplitude) override;
 
@@ -110,9 +108,13 @@ public:
 
 	bool is_userfs_persistent() const override;
 
+	Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
+
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
 	Error open_dynamic_library(const String &p_path, void *&p_library_handle, GDExtensionData *p_data = nullptr) override;
+
+	Error move_to_trash(const String &p_path) override;
 
 	void resume_audio();
 

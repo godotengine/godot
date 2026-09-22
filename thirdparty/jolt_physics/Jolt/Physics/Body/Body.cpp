@@ -39,7 +39,7 @@ void Body::SetMotionType(EMotionType inMotionType)
 	if (mMotionType == inMotionType)
 		return;
 
-	JPH_ASSERT(inMotionType == EMotionType::Static || mMotionProperties != nullptr, "Body needs to be created with mAllowDynamicOrKinematic set tot true");
+	JPH_ASSERT(inMotionType == EMotionType::Static || mMotionProperties != nullptr, "Body needs to be created with mAllowDynamicOrKinematic set to true");
 	JPH_ASSERT(inMotionType != EMotionType::Static || !IsActive(), "Deactivate body first");
 	JPH_ASSERT(inMotionType == EMotionType::Dynamic || !IsSoftBody(), "Soft bodies can only be dynamic, you can make individual vertices kinematic by setting their inverse mass to 0");
 
@@ -96,7 +96,7 @@ void Body::MoveKinematic(RVec3Arg inTargetPosition, QuatArg inTargetRotation, fl
 
 void Body::CalculateWorldSpaceBoundsInternal()
 {
-	mBounds = mShape->GetWorldSpaceBounds(GetCenterOfMassTransform(), Vec3::sReplicate(1.0f));
+	mBounds = mShape->GetWorldSpaceBounds(GetCenterOfMassTransform(), Vec3::sOne());
 }
 
 void Body::SetPositionAndRotationInternal(RVec3Arg inPosition, QuatArg inRotation, bool inResetSleepTimer)
@@ -190,7 +190,7 @@ void Body::GetSubmergedVolume(RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNorma
 	Plane surface_relative_to_body = Plane::sFromPointAndNormal(inSurfacePosition - mPosition, inSurfaceNormal);
 
 	// Calculate amount of volume that is submerged and what the center of buoyancy is
-	mShape->GetSubmergedVolume(rotation, Vec3::sReplicate(1.0f), surface_relative_to_body, outTotalVolume, outSubmergedVolume, outRelativeCenterOfBuoyancy JPH_IF_DEBUG_RENDERER(, mPosition));
+	mShape->GetSubmergedVolume(rotation, Vec3::sOne(), surface_relative_to_body, outTotalVolume, outSubmergedVolume, outRelativeCenterOfBuoyancy JPH_IF_DEBUG_RENDERER(, mPosition));
 }
 
 bool Body::ApplyBuoyancyImpulse(float inTotalVolume, float inSubmergedVolume, Vec3Arg inRelativeCenterOfBuoyancy, float inBuoyancy, float inLinearDrag, float inAngularDrag, Vec3Arg inFluidVelocity, Vec3Arg inGravity, float inDeltaTime)
@@ -242,8 +242,8 @@ bool Body::ApplyBuoyancyImpulse(float inTotalVolume, float inSubmergedVolume, Ve
 		float relative_center_of_buoyancy_velocity_len_sq = relative_center_of_buoyancy_velocity.LengthSq();
 		if (relative_center_of_buoyancy_velocity_len_sq > 1.0e-12f)
 		{
-			Vec3 local_relative_center_of_buoyancy_velocity = GetRotation().Conjugated() * relative_center_of_buoyancy_velocity;
-			area = local_relative_center_of_buoyancy_velocity.Abs().Dot(size.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>() * size.Swizzle<SWIZZLE_Z, SWIZZLE_X, SWIZZLE_Y>()) / sqrt(relative_center_of_buoyancy_velocity_len_sq);
+			Vec3 local_relative_center_of_buoyancy_velocity = GetRotation().InverseRotate(relative_center_of_buoyancy_velocity);
+			area = local_relative_center_of_buoyancy_velocity.Abs().Dot(size.Swizzle<SWIZZLE_Y, SWIZZLE_Z, SWIZZLE_X>() * size.Swizzle<SWIZZLE_Z, SWIZZLE_X, SWIZZLE_Y>()) / Sqrt(relative_center_of_buoyancy_velocity_len_sq);
 		}
 
 		// Calculate the impulse
@@ -253,7 +253,7 @@ bool Body::ApplyBuoyancyImpulse(float inTotalVolume, float inSubmergedVolume, Ve
 		float linear_velocity_len_sq = linear_velocity.LengthSq();
 		float drag_delta_linear_velocity_len_sq = (drag_impulse * inverse_mass).LengthSq();
 		if (drag_delta_linear_velocity_len_sq > linear_velocity_len_sq)
-			drag_impulse *= sqrt(linear_velocity_len_sq / drag_delta_linear_velocity_len_sq);
+			drag_impulse *= Sqrt(linear_velocity_len_sq / drag_delta_linear_velocity_len_sq);
 
 		// Calculate the resulting delta linear velocity due to buoyancy and drag
 		Vec3 delta_linear_velocity = (drag_impulse + buoyancy_impulse) * inverse_mass;
@@ -271,7 +271,7 @@ bool Body::ApplyBuoyancyImpulse(float inTotalVolume, float inSubmergedVolume, Ve
 		float angular_velocity_len_sq = angular_velocity.LengthSq();
 		float drag_delta_angular_velocity_len_sq = drag_delta_angular_velocity.LengthSq();
 		if (drag_delta_angular_velocity_len_sq > angular_velocity_len_sq)
-			drag_delta_angular_velocity *= sqrt(angular_velocity_len_sq / drag_delta_angular_velocity_len_sq);
+			drag_delta_angular_velocity *= Sqrt(angular_velocity_len_sq / drag_delta_angular_velocity_len_sq);
 
 		// Calculate total delta angular velocity due to drag and buoyancy
 		Vec3 delta_angular_velocity = drag_delta_angular_velocity + inv_inertia * inRelativeCenterOfBuoyancy.Cross(buoyancy_impulse + drag_impulse);
@@ -395,6 +395,46 @@ BodyCreationSettings Body::GetBodyCreationSettings() const
 	return result;
 }
 
+void Body::ApplyBodyCreationSettings(const BodyCreationSettings &inBodyCreationSettings, const BroadPhaseLayerInterface &inBPLInterface)
+{
+	JPH_ASSERT(IsRigidBody() && !IsInBroadPhase());
+
+	mShape = inBodyCreationSettings.GetShape();
+	mUserData = inBodyCreationSettings.mUserData;
+	SetFriction(inBodyCreationSettings.mFriction);
+	SetRestitution(inBodyCreationSettings.mRestitution);
+	mMotionType = inBodyCreationSettings.mMotionType;
+	SetIsSensor(inBodyCreationSettings.mIsSensor);
+	SetCollideKinematicVsNonDynamic(inBodyCreationSettings.mCollideKinematicVsNonDynamic);
+	SetUseManifoldReduction(inBodyCreationSettings.mUseManifoldReduction);
+	SetApplyGyroscopicForce(inBodyCreationSettings.mApplyGyroscopicForce);
+	SetEnhancedInternalEdgeRemoval(inBodyCreationSettings.mEnhancedInternalEdgeRemoval);
+	SetObjectLayerInternal(inBodyCreationSettings.mObjectLayer, inBPLInterface);
+	mCollisionGroup = inBodyCreationSettings.mCollisionGroup;
+
+	if (inBodyCreationSettings.HasMassProperties())
+	{
+		MotionProperties *mp = mMotionProperties;
+		JPH_ASSERT(mp != nullptr, "Body was created without MotionProperties, ApplyBodyCreationSettings can't create one!");
+		mp->SetLinearDamping(inBodyCreationSettings.mLinearDamping);
+		mp->SetAngularDamping(inBodyCreationSettings.mAngularDamping);
+		mp->SetMaxLinearVelocity(inBodyCreationSettings.mMaxLinearVelocity);
+		mp->SetMaxAngularVelocity(inBodyCreationSettings.mMaxAngularVelocity);
+		mp->SetMassProperties(inBodyCreationSettings.mAllowedDOFs, inBodyCreationSettings.GetMassProperties());
+		mp->SetLinearVelocity(inBodyCreationSettings.mLinearVelocity); // Needs to happen after setting the max linear/angular velocity and setting allowed DOFs
+		mp->SetAngularVelocity(inBodyCreationSettings.mAngularVelocity);
+		mp->SetGravityFactor(inBodyCreationSettings.mGravityFactor);
+		mp->SetNumVelocityStepsOverride(inBodyCreationSettings.mNumVelocityStepsOverride);
+		mp->SetNumPositionStepsOverride(inBodyCreationSettings.mNumPositionStepsOverride);
+		mp->mMotionQuality = inBodyCreationSettings.mMotionQuality;
+		mp->mAllowSleeping = inBodyCreationSettings.mAllowSleeping;
+		JPH_IF_ENABLE_ASSERTS(mp->mCachedBodyType = mBodyType;)
+		JPH_IF_ENABLE_ASSERTS(mp->mCachedMotionType = mMotionType;)
+	}
+
+	SetPositionAndRotationInternal(inBodyCreationSettings.mPosition, inBodyCreationSettings.mRotation);
+}
+
 SoftBodyCreationSettings Body::GetSoftBodyCreationSettings() const
 {
 	JPH_ASSERT(IsSoftBody());
@@ -415,9 +455,40 @@ SoftBodyCreationSettings Body::GetSoftBodyCreationSettings() const
 	result.mGravityFactor = mp->GetGravityFactor();
 	result.mPressure = mp->GetPressure();
 	result.mUpdatePosition = mp->GetUpdatePosition();
+	result.mVertexRadius = mp->GetVertexRadius();
+	result.mAllowSleeping = mp->GetAllowSleeping();
+	result.mFacesDoubleSided = mp->GetFacesDoubleSided();
 	result.mSettings = mp->GetSettings();
 
 	return result;
+}
+
+void Body::ApplySoftBodyCreationSettings(const SoftBodyCreationSettings &inSoftBodyCreationSettings, const BroadPhaseLayerInterface &inBPLInterface)
+{
+	JPH_ASSERT(IsSoftBody() && !IsInBroadPhase());
+
+	mUserData = inSoftBodyCreationSettings.mUserData;
+	SetFriction(inSoftBodyCreationSettings.mFriction);
+	SetRestitution(inSoftBodyCreationSettings.mRestitution);
+	mMotionType = EMotionType::Dynamic;
+	SetObjectLayerInternal(inSoftBodyCreationSettings.mObjectLayer, inBPLInterface);
+	mCollisionGroup = inSoftBodyCreationSettings.mCollisionGroup;
+
+	SoftBodyMotionProperties *mp = static_cast<SoftBodyMotionProperties *>(mMotionProperties);
+	mp->SetLinearDamping(inSoftBodyCreationSettings.mLinearDamping);
+	mp->SetAngularDamping(0);
+	mp->SetMaxLinearVelocity(inSoftBodyCreationSettings.mMaxLinearVelocity);
+	mp->SetMaxAngularVelocity(FLT_MAX);
+	mp->SetLinearVelocity(Vec3::sZero());
+	mp->SetAngularVelocity(Vec3::sZero());
+	mp->SetGravityFactor(inSoftBodyCreationSettings.mGravityFactor);
+	mp->mMotionQuality = EMotionQuality::Discrete;
+	mp->mAllowSleeping = inSoftBodyCreationSettings.mAllowSleeping;
+	JPH_IF_ENABLE_ASSERTS(mp->mCachedBodyType = mBodyType;)
+	JPH_IF_ENABLE_ASSERTS(mp->mCachedMotionType = mMotionType;)
+	mp->Initialize(inSoftBodyCreationSettings);
+
+	SetPositionAndRotationInternal(inSoftBodyCreationSettings.mPosition, inSoftBodyCreationSettings.mMakeRotationIdentity? Quat::sIdentity() : inSoftBodyCreationSettings.mRotation);
 }
 
 JPH_NAMESPACE_END

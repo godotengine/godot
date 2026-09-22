@@ -56,10 +56,15 @@ struct ValueFormat : HBUINT16
                                          * PosTable (may be NULL) */
 #endif
 
-  IntType& operator = (uint16_t i) { v = i; return *this; }
+  NumType& operator = (uint16_t i) { v = i; return *this; }
 
-  unsigned int get_len () const  { return hb_popcount ((unsigned int) *this); }
-  unsigned int get_size () const { return get_len () * Value::static_size; }
+  // Note: spec says skip 2 bytes per bit in the valueformat. But reports
+  // from Microsoft developers indicate that only the fields that are
+  // currently defined are counted. We don't expect any new fields to
+  // be added to ValueFormat. As such, we use the faster hb_popcount8
+  // that only processes the lowest 8 bits.
+  unsigned int get_len () const  { return hb_popcount8 ((uint8_t) *this); }
+  size_t get_size () const { return get_len () * Value::static_size; }
 
   hb_vector_t<unsigned> get_device_table_indices () const {
     unsigned i = 0;
@@ -97,22 +102,26 @@ struct ValueFormat : HBUINT16
 #endif
       ;
 
-    if (format & xPlacement) glyph_pos.x_offset  += font->em_scale_x (get_short (values++, &ret));
-    if (format & yPlacement) glyph_pos.y_offset  += font->em_scale_y (get_short (values++, &ret));
+    if (format & xPlacement)
+      glyph_pos.x_offset = hb_saturate_add (glyph_pos.x_offset, font->em_scale_x (get_short (values++, &ret)));
+    if (format & yPlacement)
+      glyph_pos.y_offset = hb_saturate_add (glyph_pos.y_offset, font->em_scale_y (get_short (values++, &ret)));
     if (format & xAdvance) {
-      if (likely (horizontal)) glyph_pos.x_advance += font->em_scale_x (get_short (values, &ret));
+      if (likely (horizontal))
+	glyph_pos.x_advance = hb_saturate_add (glyph_pos.x_advance, font->em_scale_x (get_short (values, &ret)));
       values++;
     }
     /* y_advance values grow downward but font-space grows upward, hence negation */
     if (format & yAdvance) {
-      if (unlikely (!horizontal)) glyph_pos.y_advance -= font->em_scale_y (get_short (values, &ret));
+      if (unlikely (!horizontal))
+	glyph_pos.y_advance = hb_saturate_sub (glyph_pos.y_advance, font->em_scale_y (get_short (values, &ret)));
       values++;
     }
 
     if (!has_device ()) return ret;
 
-    bool use_x_device = font->x_ppem || font->num_coords;
-    bool use_y_device = font->y_ppem || font->num_coords;
+    bool use_x_device = font->x_ppem || font->has_nonzero_coords;
+    bool use_y_device = font->y_ppem || font->has_nonzero_coords;
 
     if (!use_x_device && !use_y_device) return ret;
 
@@ -122,23 +131,27 @@ struct ValueFormat : HBUINT16
     /* pixel -> fractional pixel */
     if (format & xPlaDevice)
     {
-      if (use_x_device) glyph_pos.x_offset  += get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache);
+      if (use_x_device)
+	glyph_pos.x_offset = hb_saturate_add (glyph_pos.x_offset, get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache));
       values++;
     }
     if (format & yPlaDevice)
     {
-      if (use_y_device) glyph_pos.y_offset  += get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache);
+      if (use_y_device)
+	glyph_pos.y_offset = hb_saturate_add (glyph_pos.y_offset, get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache));
       values++;
     }
     if (format & xAdvDevice)
     {
-      if (horizontal && use_x_device) glyph_pos.x_advance += get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache);
+      if (horizontal && use_x_device)
+	glyph_pos.x_advance = hb_saturate_add (glyph_pos.x_advance, get_device (values, &ret, base, c->sanitizer).get_x_delta (font, store, cache));
       values++;
     }
     if (format & yAdvDevice)
     {
       /* y_advance values grow downward but font-space grows upward, hence negation */
-      if (!horizontal && use_y_device) glyph_pos.y_advance -= get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache);
+      if (!horizontal && use_y_device)
+	glyph_pos.y_advance = hb_saturate_sub (glyph_pos.y_advance, get_device (values, &ret, base, c->sanitizer).get_y_delta (font, store, cache));
       values++;
     }
     return ret;

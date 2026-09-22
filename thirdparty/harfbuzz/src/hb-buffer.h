@@ -422,18 +422,34 @@ hb_buffer_get_flags (const hb_buffer_t *buffer);
  * @HB_BUFFER_CLUSTER_LEVEL_CHARACTERS: Don't group cluster values.
  * @HB_BUFFER_CLUSTER_LEVEL_DEFAULT: Default cluster level,
  *   equal to @HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES.
- * 
+ * @HB_BUFFER_CLUSTER_LEVEL_GRAPHEMES: Only group clusters, but don't enforce monotone order.
+ *
  * Data type for holding HarfBuzz's clustering behavior options. The cluster level
- * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * dictates one aspect of how HarfBuzz will treat non-base characters
  * during shaping.
  *
  * In @HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES, non-base
  * characters are merged into the cluster of the base character that precedes them.
+ * There is also cluster merging every time the clusters will otherwise become non-monotone.
  *
  * In @HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS, non-base characters are initially
  * assigned their own cluster values, which are not merged into preceding base
  * clusters. This allows HarfBuzz to perform additional operations like reorder
- * sequences of adjacent marks.
+ * sequences of adjacent marks. The output is still monotone, but the cluster
+ * values are more granular.
+ *
+ * In @HB_BUFFER_CLUSTER_LEVEL_CHARACTERS, non-base characters are assigned their
+ * own cluster values, which are not merged into preceding base clusters. Moreover,
+ * the cluster values are not merged into monotone order. This is the most granular
+ * cluster level, and it is useful for clients that need to know the exact cluster
+ * values of each character, but is harder to use for clients, since clusters
+ * might appear in any order.
+ *
+ * In @HB_BUFFER_CLUSTER_LEVEL_GRAPHEMES, non-base characters are merged into the
+ * cluster of the base character that precedes them. This is similar to the Unicode
+ * Grapheme Cluster algorithm, but it is not exactly the same. The output is
+ * not forced to be monotone. This is useful for clients that want to use HarfBuzz
+ * as a cheap implementation of the Unicode Grapheme Cluster algorithm.
  *
  * @HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES is the default, because it maintains
  * backward compatibility with older versions of HarfBuzz. New client programs that
@@ -446,8 +462,51 @@ typedef enum {
   HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES	= 0,
   HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS	= 1,
   HB_BUFFER_CLUSTER_LEVEL_CHARACTERS		= 2,
+  HB_BUFFER_CLUSTER_LEVEL_GRAPHEMES		= 3,
   HB_BUFFER_CLUSTER_LEVEL_DEFAULT = HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES
 } hb_buffer_cluster_level_t;
+
+/**
+ * HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE:
+ * @level: #hb_buffer_cluster_level_t to test
+ *
+ * Tests whether a cluster level groups cluster values into monotone order.
+ * Requires that the level be valid.
+ *
+ * Since: 11.0.0
+ */
+#define HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE(level) \
+	((bool) ((1u << (unsigned) (level)) & \
+		 ((1u << HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES) | \
+		  (1u << HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS))))
+
+/**
+ * HB_BUFFER_CLUSTER_LEVEL_IS_GRAPHEMES:
+ * @level: #hb_buffer_cluster_level_t to test
+ *
+ * Tests whether a cluster level groups cluster values by graphemes. Requires
+ * that the level be valid.
+ *
+ * Since: 11.0.0
+ */
+#define HB_BUFFER_CLUSTER_LEVEL_IS_GRAPHEMES(level) \
+	((bool) ((1u << (unsigned) (level)) & \
+		 ((1u << HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES) | \
+		  (1u << HB_BUFFER_CLUSTER_LEVEL_GRAPHEMES))))
+
+/**
+ * HB_BUFFER_CLUSTER_LEVEL_IS_CHARACTERS:
+ * @level: #hb_buffer_cluster_level_t to test
+ *
+ * Tests whether a cluster level does not group cluster values by graphemes.
+ * Requires that the level be valid.
+ *
+ * Since: 11.0.0
+ */
+#define HB_BUFFER_CLUSTER_LEVEL_IS_CHARACTERS(level) \
+	((bool) ((1u << (unsigned) (level)) & \
+		 ((1u << HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS) | \
+		  (1u << HB_BUFFER_CLUSTER_LEVEL_CHARACTERS))))
 
 HB_EXTERN void
 hb_buffer_set_cluster_level (hb_buffer_t               *buffer,
@@ -613,7 +672,12 @@ hb_buffer_normalize_glyphs (hb_buffer_t *buffer);
  * @HB_BUFFER_SERIALIZE_FLAG_GLYPH_EXTENTS: serialize glyph extents.
  * @HB_BUFFER_SERIALIZE_FLAG_GLYPH_FLAGS: serialize glyph flags. Since: 1.5.0
  * @HB_BUFFER_SERIALIZE_FLAG_NO_ADVANCES: do not serialize glyph advances,
- *  glyph offsets will reflect absolute glyph positions. Since: 1.8.0
+ *  glyph offsets will reflect absolute glyph positions. Since: 1.8.0.
+ *  Note: when this flag is used with a partial range of the buffer (i.e.
+ *  @start is not 0), calculating the absolute positions has a cost
+ *  proportional to @start. If the buffer is serialized in many small
+ *  chunks, this can lead to quadratic behavior. It is recommended to
+ *  use a larger @buf_size to minimize this cost.
  * @HB_BUFFER_SERIALIZE_FLAG_DEFINED: All currently defined flags. Since: 4.4.0
  *
  * Flags that control what glyph information are serialized in hb_buffer_serialize_glyphs().
@@ -805,6 +869,9 @@ HB_EXTERN void
 hb_buffer_set_message_func (hb_buffer_t *buffer,
 			    hb_buffer_message_func_t func,
 			    void *user_data, hb_destroy_func_t destroy);
+
+HB_EXTERN void
+hb_buffer_changed (hb_buffer_t *buffer);
 
 
 HB_END_DECLS

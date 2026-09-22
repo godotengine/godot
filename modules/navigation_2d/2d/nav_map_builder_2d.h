@@ -43,7 +43,7 @@ class NavMapBuilder2D {
 	static void _build_update_map_iteration(NavMapIterationBuild2D &r_build);
 
 public:
-	static nav_2d::PointKey get_point_key(const Vector2 &p_pos, const Vector2 &p_cell_size);
+	static Nav2D::PointKey get_point_key(const Vector2 &p_pos, const Vector2 &p_cell_size);
 
 	static void build_navmap_iteration(NavMapIterationBuild2D &r_build);
 };

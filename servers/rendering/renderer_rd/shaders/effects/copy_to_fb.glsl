@@ -5,13 +5,9 @@
 #VERSION_DEFINES
 
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#endif //USE_MULTIVIEW
+#endif // USE_MULTIVIEW
 
 #define FLAG_FLIP_Y (1 << 0)
 #define FLAG_USE_SECTION (1 << 1)
@@ -67,15 +63,6 @@ void main() {
 
 #VERSION_DEFINES
 
-#ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
-#extension GL_EXT_multiview : enable
-#define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#endif //USE_MULTIVIEW
-
 #define FLAG_FLIP_Y (1 << 0)
 #define FLAG_USE_SECTION (1 << 1)
 #define FLAG_FORCE_LUMINANCE (1 << 2)
@@ -119,8 +106,6 @@ layout(set = 1, binding = 0) uniform sampler2D source_color2;
 layout(location = 0) out vec4 frag_color;
 
 vec3 linear_to_srgb(vec3 color) {
-	//if going to srgb, clamp from 0 to 1.
-	color = clamp(color, vec3(0.0), vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
@@ -192,6 +177,7 @@ void main() {
 	}
 	if (bool(params.flags & FLAG_SRGB)) {
 		color.rgb = linear_to_srgb(color.rgb);
+		color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
 	}
 	if (bool(params.flags & FLAG_ALPHA_TO_ONE)) {
 		color.a = 1.0;

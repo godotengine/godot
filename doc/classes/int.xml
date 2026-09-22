@@ -119,7 +119,7 @@
 				var flags = 0b101
 				# Check if the first or second bit are enabled.
 				if flags &amp; 0b011:
-				    do_stuff() # This line will run.
+					do_stuff() # This line will run.
 				[/codeblock]
 			</description>
 		</operator>

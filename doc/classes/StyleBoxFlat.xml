@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StyleBoxFlat" inherits="StyleBox" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="StyleBoxFlat" inherits="StyleBox" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A customizable [StyleBox] that doesn't use a texture.
 	</brief_description>
@@ -37,7 +37,7 @@
 			<return type="int" />
 			<param index="0" name="corner" type="int" enum="Corner" />
 			<description>
-				Returns the given [param corner]'s radius. See [enum Corner] for possible values.
+				Returns the given [param corner]'s radius.
 			</description>
 		</method>
 		<method name="get_expand_margin" qualifiers="const">
@@ -67,7 +67,7 @@
 			<param index="0" name="corner" type="int" enum="Corner" />
 			<param index="1" name="radius" type="int" />
 			<description>
-				Sets the corner radius to [param radius] pixels for the given [param corner]. See [enum Corner] for possible values.
+				Sets the corner radius to [param radius] pixels for the given [param corner].
 			</description>
 		</method>
 		<method name="set_corner_radius_all">

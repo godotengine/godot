@@ -32,10 +32,10 @@
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #import <EGL/eglext_angle.h>
+
+#include <cstdio>
+#include <cstdlib>
 
 const char *GLManagerANGLE_MacOS::_get_platform_extension_name() const {
 	return "EGL_ANGLE_platform_angle";
@@ -48,7 +48,7 @@ EGLenum GLManagerANGLE_MacOS::_get_platform_extension_enum() const {
 Vector<EGLAttrib> GLManagerANGLE_MacOS::_get_platform_display_attributes() const {
 	Vector<EGLAttrib> ret;
 	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
-	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE);
+	ret.push_back(EGL_PLATFORM_ANGLE_TYPE_METAL_ANGLE);
 	ret.push_back(EGL_NONE);
 
 	return ret;

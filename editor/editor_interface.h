@@ -31,13 +31,13 @@
 #pragma once
 
 #include "core/io/resource.h"
-#include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/script_language.h"
 
 class Control;
 class CreateDialog;
 class EditorCommandPalette;
+class EditorDock;
 class EditorFileSystem;
 class EditorInspector;
 class EditorPaths;
@@ -47,6 +47,7 @@ class EditorSelection;
 class EditorSettings;
 class EditorToaster;
 class EditorUndoRedoManager;
+class ScenePaint2DEditor;
 class FileSystemDock;
 class Mesh;
 class Node;
@@ -96,18 +97,20 @@ protected:
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
+	bool is_exiting() const;
 	void restart_editor(bool p_save = true);
 
 	// Editor tools.
 
 	EditorCommandPalette *get_command_palette() const;
-	EditorFileSystem *get_resource_file_system() const;
+	EditorFileSystem *get_resource_filesystem() const;
 	EditorPaths *get_editor_paths() const;
 	EditorResourcePreview *get_resource_previewer() const;
 	EditorSelection *get_selection() const;
 	Ref<EditorSettings> get_editor_settings() const;
 	EditorToaster *get_editor_toaster() const;
 	EditorUndoRedoManager *get_editor_undo_redo() const;
+	ScenePaint2DEditor *get_scene_paint_2d() const;
 
 	Vector<Ref<Texture2D>> make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform3D> *p_transforms, int p_preview_size);
 	void make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size);
@@ -120,17 +123,28 @@ public:
 	Ref<Theme> get_editor_theme() const;
 
 	Control *get_base_control() const;
+#ifndef DISABLE_DEPRECATED
 	VBoxContainer *get_editor_main_screen() const;
+#endif
 	ScriptEditor *get_script_editor() const;
 	SubViewport *get_editor_viewport_2d() const;
 	SubViewport *get_editor_viewport_3d(int p_idx = 0) const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_main_screen_editor(const String &p_name);
+#endif
+	EditorDock *get_dock_by_name(const String &p_name);
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
 	bool is_multi_window_enabled() const;
 
 	float get_editor_scale() const;
+	String get_editor_language() const;
+
+	bool is_node_3d_snap_enabled() const;
+	real_t get_node_3d_translate_snap() const;
+	real_t get_node_3d_rotate_snap() const;
+	real_t get_node_3d_scale_snap() const;
 
 	void popup_dialog(Window *p_dialog, const Rect2i &p_screen_rect = Rect2i());
 	void popup_dialog_centered(Window *p_dialog, const Size2i &p_minsize = Size2i());
@@ -169,14 +183,22 @@ public:
 	void open_scene_from_path(const String &scene_path, bool p_set_inherited = false);
 	void reload_scene_from_path(const String &scene_path);
 
+	void set_object_edited(Object *p_object, bool p_edited);
+	bool is_object_edited(Object *p_object) const;
+
 	PackedStringArray get_open_scenes() const;
+	PackedStringArray get_unsaved_scenes() const;
+
 	TypedArray<Node> get_open_scene_roots() const;
 	Node *get_edited_scene_root() const;
+
+	void add_root_node(Node *p_node);
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 	void mark_scene_as_unsaved();
 	void save_all_scenes();
+	Error close_scene();
 
 	// Scene playback.
 
@@ -190,7 +212,9 @@ public:
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;
 
+#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
+#endif
 
 	// Base.
 	static void create();

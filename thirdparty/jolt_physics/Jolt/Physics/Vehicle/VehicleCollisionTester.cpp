@@ -139,7 +139,7 @@ bool VehicleCollisionTesterCastSphere::Collide(PhysicsSystem &inPhysicsSystem, c
 	const WheelSettings *wheel_settings = inVehicleConstraint.GetWheel(inWheelIndex)->GetSettings();
 	float wheel_radius = wheel_settings->mRadius;
 	float shape_cast_length = wheel_settings->mSuspensionMaxLength + wheel_radius - mRadius;
-	RShapeCast shape_cast(&sphere, Vec3::sReplicate(1.0f), RMat44::sTranslation(inOrigin), inDirection * shape_cast_length);
+	RShapeCast shape_cast(&sphere, Vec3::sOne(), RMat44::sTranslation(inOrigin), inDirection * shape_cast_length);
 
 	ShapeCastSettings settings;
 	settings.mUseShrunkenShapeAndConvexRadius = true;
@@ -261,7 +261,7 @@ bool VehicleCollisionTesterCastCylinder::Collide(PhysicsSystem &inPhysicsSystem,
 	CylinderShape cylinder(wheel_half_width, wheel_settings->mRadius, min(wheel_half_width, wheel_settings->mRadius) * mConvexRadiusFraction);
 	cylinder.SetEmbedded();
 
-	RShapeCast shape_cast(&cylinder, Vec3::sReplicate(1.0f), shape_cast_start, inDirection * max_suspension_length);
+	RShapeCast shape_cast(&cylinder, Vec3::sOne(), shape_cast_start, inDirection * max_suspension_length);
 
 	ShapeCastSettings settings;
 	settings.mUseShrunkenShapeAndConvexRadius = true;
@@ -346,7 +346,7 @@ void VehicleCollisionTesterCastCylinder::PredictContactProperties(PhysicsSystem 
 		// Get the support point of this normal in local space of the cylinder
 		// See CylinderShape::Cylinder::GetSupport
 		float x = inverse_local_normal.GetX(), y = inverse_local_normal.GetY(), z = inverse_local_normal.GetZ();
-		float o = sqrt(Square(x) + Square(z));
+		float o = Sqrt(Square(x) + Square(z));
 		Vec3 support_point;
 		if (o > 0.0f)
 			support_point = Vec3((radius * x) / o, Sign(y) * half_width, (radius * z) / o);

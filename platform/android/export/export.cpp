@@ -32,12 +32,12 @@
 
 #include "export_plugin.h"
 
+#include "core/object/class_db.h"
 #include "core/os/os.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
+#include "editor/export/android_sdk_manager.h"
 #include "editor/export/editor_export.h"
-
-String get_default_android_sdk_path();
+#include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 
 void register_android_exporter_types() {
 	GDREGISTER_VIRTUAL_CLASS(EditorExportPlatformAndroid);
@@ -50,15 +50,29 @@ void register_android_exporter() {
 	EDITOR_DEF_BASIC("export/android/debug_keystore_user", DEFAULT_ANDROID_KEYSTORE_DEBUG_USER);
 	EDITOR_DEF_BASIC("export/android/debug_keystore_pass", DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/debug_keystore_pass", PROPERTY_HINT_PASSWORD));
+	EDITOR_DEF_BASIC("export/android/build/automatically_delete_build_directory", false);
 
 #ifdef ANDROID_ENABLED
 	EDITOR_DEF_BASIC("export/android/install_exported_apk", !OS::get_singleton()->has_feature("horizonos"));
 #else
-	EDITOR_DEF_BASIC("export/android/java_sdk_path", OS::get_singleton()->get_environment("JAVA_HOME"));
+	EDITOR_DEF("export/android/java_sdk_path", OS::get_singleton()->has_environment("JAVA_HOME") ? OS::get_singleton()->get_environment("JAVA_HOME") : EditorPaths::get_singleton()->get_default_java_sdk_path());
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/java_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 
-	EDITOR_DEF_BASIC("export/android/android_sdk_path", OS::get_singleton()->has_environment("ANDROID_HOME") ? OS::get_singleton()->get_environment("ANDROID_HOME") : get_default_android_sdk_path());
+	EDITOR_DEF("export/android/android_sdk_path", OS::get_singleton()->has_environment("ANDROID_HOME") ? OS::get_singleton()->get_environment("ANDROID_HOME") : EditorPaths::get_singleton()->get_default_android_sdk_path());
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
+
+	EDITOR_DEF_BASIC("export/android/scrcpy/path", "");
+	EDITOR_DEF_BASIC("export/android/scrcpy/virtual_display", true);
+	EDITOR_DEF_BASIC("export/android/scrcpy/no_decorations", true);
+	EDITOR_DEF_BASIC("export/android/scrcpy/local_ime", true);
+	EDITOR_DEF_BASIC("export/android/scrcpy/screen_size", "1920x1080/120");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/scrcpy/screen_size", PROPERTY_HINT_PLACEHOLDER_TEXT, "WIDTHxHEIGHT/DPI"));
+
+#ifdef WINDOWS_ENABLED
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/scrcpy_path", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
+#else
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/scrcpy_path", PROPERTY_HINT_GLOBAL_FILE));
+#endif
 
 	EDITOR_DEF("export/android/force_system_user", false);
 
@@ -72,16 +86,4 @@ void register_android_exporter() {
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>(memnew(EditorExportPlatformAndroid));
 	EditorExport::get_singleton()->add_export_platform(exporter);
-}
-
-inline String get_default_android_sdk_path() {
-#ifdef WINDOWS_ENABLED
-	return OS::get_singleton()->get_environment("LOCALAPPDATA").path_join("Android/Sdk");
-#elif LINUXBSD_ENABLED
-	return OS::get_singleton()->get_environment("HOME").path_join("Android/Sdk");
-#elif MACOS_ENABLED
-	return OS::get_singleton()->get_environment("HOME").path_join("Library/Android/sdk");
-#else
-	return String();
-#endif
 }

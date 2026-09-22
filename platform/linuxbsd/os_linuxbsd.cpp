@@ -32,9 +32,18 @@
 
 #include "core/io/certs_compressed.gen.h"
 #include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/profiling/profiling.h"
+#include "core/string/regex.h"
 #include "main/main.h"
-#include "servers/display_server.h"
-#include "servers/rendering_server.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
+
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 
 #ifdef X11_ENABLED
 #include "x11/detect_prime_x11.h"
@@ -44,11 +53,6 @@
 #ifdef WAYLAND_ENABLED
 #include "wayland/detect_prime_egl.h"
 #include "wayland/display_server_wayland.h"
-#endif
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-#include "modules/regex/regex.h"
 #endif
 
 #if defined(RD_ENABLED)
@@ -68,20 +72,45 @@
 #endif
 
 #include <dlfcn.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
 #include <unistd.h>
 
-#ifdef HAVE_MNTENT
+#include <cstdio>
+#include <cstdlib>
+
+#if __has_include(<mntent.h>)
 #include <mntent.h>
 #endif
 
 #if defined(__FreeBSD__)
 #include <sys/sysctl.h>
+#endif
+
+#ifdef __linux__
+namespace GameMode {
+#include <thirdparty/misc/gamemode_client.h>
+}
+
+#include "core/config/project_settings.h"
+#endif
+
+#ifdef FONTCONFIG_ENABLED
+#ifdef SOWRAP_ENABLED
+#include "fontconfig-so_wrap.h"
+#else
+#include <fontconfig/fontconfig.h>
+#endif
+#endif
+
+#if defined(__FreeBSD__) || defined(__OpenBSD__) || (defined(__GLIBC_MINOR__) && (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
+// In <unistd.h>.
+// One day... (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700)
+// https://publications.opengroup.org/standards/unix/c211
+#define UNIX_GET_ENTROPY
+#elif !defined(NO_URANDOM)
+#include <fcntl.h>
 #endif
 
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
@@ -92,7 +121,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	String program;
 
 	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < std::size(message_programs); k++) {
+		for (uint64_t k = 0; k < std_size(message_programs); k++) {
 			String tested_path = path_elems[i].path_join(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
@@ -159,8 +188,13 @@ void OS_LinuxBSD::initialize() {
 }
 
 void OS_LinuxBSD::initialize_joypads() {
-#ifdef JOYDEV_ENABLED
-	joypad = memnew(JoypadLinux(Input::get_singleton()));
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
 #endif
 }
 
@@ -203,7 +237,7 @@ String OS_LinuxBSD::get_processor_name() const {
 	while (!f->eof_reached()) {
 		const String line = f->get_line();
 		if (line.to_lower().contains("model name")) {
-			return line.split(":")[1].strip_edges();
+			return line.get_slicec(':', 1).strip_edges();
 		}
 	}
 #endif
@@ -233,19 +267,15 @@ bool OS_LinuxBSD::is_sandboxed() const {
 }
 
 void OS_LinuxBSD::finalize() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 	main_loop = nullptr;
 
 #ifdef ALSAMIDI_ENABLED
 	driver_alsamidi.close();
 #endif
 
-#ifdef JOYDEV_ENABLED
-	if (joypad) {
-		memdelete(joypad);
-	}
+#ifdef SDL_ENABLED
+	memdelete(joypad_sdl);
 #endif
 }
 
@@ -254,9 +284,7 @@ MainLoop *OS_LinuxBSD::get_main_loop() const {
 }
 
 void OS_LinuxBSD::delete_main_loop() {
-	if (main_loop) {
-		memdelete(main_loop);
-	}
+	memdelete(main_loop);
 	main_loop = nullptr;
 }
 
@@ -288,7 +316,7 @@ String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
 		while (!f->eof_reached()) {
 			const String line = f->get_line();
 			if (line.contains(key)) {
-				String value = line.split("=")[1].strip_edges();
+				String value = line.get_slicec('=', 1).strip_edges();
 				value = value.trim_prefix("\"");
 				return value.trim_suffix("\"");
 			}
@@ -351,10 +379,8 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 	Vector<String> class_display_device_candidates;
 	Vector<String> class_3d_device_candidates;
 
-#ifdef MODULE_REGEX_ENABLED
 	RegEx regex_id_format = RegEx();
 	regex_id_format.compile("^[a-f0-9]{4}:[a-f0-9]{4}$"); // e.g. `10de:13c2`; IDs are always in hexadecimal
-#endif
 
 	Vector<String> value_lines = vendor_device_id_mappings.split("\n", false); // example: `02:00.0 0300: 10de:13c2 (rev a1)`
 	for (const String &line : value_lines) {
@@ -365,11 +391,9 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 		String device_class = columns[1].trim_suffix(":");
 		const String &vendor_device_id_mapping = columns[2];
 
-#ifdef MODULE_REGEX_ENABLED
 		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
 			continue;
 		}
-#endif
 
 		if (device_class == dc_vga) {
 			class_vga_device_candidates.push_back(vendor_device_id_mapping);
@@ -483,7 +507,6 @@ Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_
 
 Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const {
 	// NOTE: blacklist can be changed to `Vector<String>`, if the need arises.
-	const String sep = ":";
 	Vector<String> values;
 	for (const String &mapping : vendor_device_id_mapping) {
 		String device;
@@ -522,40 +545,41 @@ Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_
 }
 
 Error OS_LinuxBSD::shell_open(const String &p_uri) {
-	Error ok;
-	int err_code;
 	List<String> args;
 	args.push_back(p_uri);
 
-	// Agnostic
-	ok = execute("xdg-open", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	// Use create_process() instead of execute() to avoid blocking the main thread.
+	// This prevents the UI from freezing when opening file managers or other applications.
+	Error ok = create_process("xdg-open", args);
+	if (ok == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	// GNOME
 	args.push_front("open"); // The command is `gio open`, so we need to add it to args
-	ok = execute("gio", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	ok = create_process("gio", args);
+	if (ok == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	args.pop_front();
-	ok = execute("gvfs-open", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	ok = create_process("gvfs-open", args);
+	if (ok == OK) {
 		return OK;
-	} else if (err_code == 2) {
-		return ERR_FILE_NOT_FOUND;
 	}
 	// KDE
-	ok = execute("kde-open5", args, nullptr, &err_code);
-	if (ok == OK && !err_code) {
+	ok = create_process("kde-open5", args);
+	if (ok == OK) {
 		return OK;
 	}
-	ok = execute("kde-open", args, nullptr, &err_code);
-	return !err_code ? ok : FAILED;
+	ok = create_process("kde-open", args);
+	if (ok == OK) {
+		return OK;
+	}
+	// XFCE
+	ok = create_process("exo-open", args);
+	if (ok == OK) {
+		return OK;
+	}
+	return FAILED;
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
@@ -769,7 +793,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 
 	Vector<String> ret;
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
-	for (size_t i = 0; i < std::size(allowed_formats); i++) {
+	for (size_t i = 0; i < std_size(allowed_formats); i++) {
 		FcPattern *pattern = FcPatternCreate();
 		if (pattern) {
 			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
@@ -972,10 +996,32 @@ void OS_LinuxBSD::run() {
 	//int frames=0;
 	//uint64_t frame=0;
 
+#ifdef __linux__
+	Engine *e = Engine::get_singleton();
+	bool use_gamemode = GLOBAL_GET("application/run/use_game_mode");
+	int gamemode_status = -1;
+	if (!e->is_editor_hint() && !e->is_project_manager_hint()) {
+		if (use_gamemode) {
+			gamemode_status = GameMode::gamemode_request_start_for(OS::get_singleton()->get_process_id());
+			if (gamemode_status >= 0) {
+				print_verbose("GameMode: Enabled successfully.");
+			} else {
+				WARN_VERBOSE("GameMode: Failed to enable (check if the daemon is installed and running).");
+			}
+		} else {
+			print_verbose("GameMode: Not enabling, as the project has it disabled.");
+		}
+	}
+#endif
+
 	while (true) {
+		GodotProfileFrameMark;
+		GodotProfileZone("OS_LinuxBSD::run");
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-#ifdef JOYDEV_ENABLED
-		joypad->process_joypads();
+#ifdef SDL_ENABLED
+		if (joypad_sdl) {
+			joypad_sdl->process_events();
+		}
 #endif
 		if (Main::iteration()) {
 			break;
@@ -983,6 +1029,11 @@ void OS_LinuxBSD::run() {
 	}
 
 	main_loop->finalize();
+#ifdef __linux__
+	if (gamemode_status == 0) {
+		GameMode::gamemode_request_end_for(OS::get_singleton()->get_process_id());
+	}
+#endif
 }
 
 void OS_LinuxBSD::disable_crash_handler() {
@@ -999,7 +1050,7 @@ static String get_mountpoint(const String &p_path) {
 		return "";
 	}
 
-#ifdef HAVE_MNTENT
+#if __has_include(<mntent.h>)
 	dev_t dev = s.st_dev;
 	FILE *fd = setmntent("/proc/mounts", "r");
 	if (!fd) {
@@ -1198,6 +1249,33 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 	return f->get_as_text();
 }
 
+Error OS_LinuxBSD::get_entropy(uint8_t *r_buffer, int p_bytes) {
+#if defined(UNIX_GET_ENTROPY)
+	int left = p_bytes;
+	int ofs = 0;
+	do {
+		int chunk = MIN(left, 256);
+		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
+		left -= chunk;
+		ofs += chunk;
+	} while (left > 0);
+// Define this yourself if you don't want to fall back to /dev/urandom.
+#elif !defined(NO_URANDOM)
+	int r = open("/dev/urandom", O_RDONLY);
+	ERR_FAIL_COND_V(r < 0, FAILED);
+	int left = p_bytes;
+	do {
+		ssize_t ret = read(r, r_buffer, p_bytes);
+		ERR_FAIL_COND_V(ret <= 0, FAILED);
+		left -= ret;
+	} while (left > 0);
+#else
+	return ERR_UNAVAILABLE;
+#endif
+	return OK;
+}
+
+#ifdef TOOLS_ENABLED
 bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) const {
 	// Tests Rendering Device creation.
 
@@ -1264,6 +1342,7 @@ bool OS_LinuxBSD::_test_create_rendering_device_and_gl(const String &p_display_d
 #endif
 	return _test_create_rendering_device(p_display_driver);
 }
+#endif
 
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
@@ -1322,9 +1401,12 @@ OS_LinuxBSD::~OS_LinuxBSD() {
 #ifdef FONTCONFIG_ENABLED
 	if (object_set) {
 		FcObjectSetDestroy(object_set);
+		object_set = nullptr;
 	}
 	if (config) {
+		FcConfigSetCurrent(nullptr);
 		FcConfigDestroy(config);
+		config = nullptr;
 	}
 #endif // FONTCONFIG_ENABLED
 }

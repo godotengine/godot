@@ -32,6 +32,8 @@
 
 #include "thread_jandroid.h"
 
+#include "core/string/ustring.h"
+
 GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL(env);
@@ -40,11 +42,10 @@ GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 
 	_cls = (jclass)env->NewGlobalRef(env->GetObjectClass(godot_view));
 
+	_configure_pointer_icon = env->GetMethodID(_cls, "configurePointerIcon", "(ILjava/lang/String;FF)V");
+	_set_pointer_icon = env->GetMethodID(_cls, "setPointerIcon", "(I)V");
+
 	int android_device_api_level = android_get_device_api_level();
-	if (android_device_api_level >= __ANDROID_API_N__) {
-		_configure_pointer_icon = env->GetMethodID(_cls, "configurePointerIcon", "(ILjava/lang/String;FF)V");
-		_set_pointer_icon = env->GetMethodID(_cls, "setPointerIcon", "(I)V");
-	}
 	if (android_device_api_level >= __ANDROID_API_O__) {
 		_request_pointer_capture = env->GetMethodID(_cls, "requestPointerCapture", "()V");
 		_release_pointer_capture = env->GetMethodID(_cls, "releasePointerCapture", "()V");

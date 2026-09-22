@@ -32,6 +32,8 @@
 
 #include "csg_shape.h"
 
+#include "core/object/class_db.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/csg_gizmos.h"
 #endif
@@ -47,7 +49,9 @@ void initialize_csg_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(CSGTorus3D);
 		GDREGISTER_CLASS(CSGPolygon3D);
 		GDREGISTER_CLASS(CSGCombiner3D);
+#ifndef NAVIGATION_3D_DISABLED
 		CSGShape3D::navmesh_parse_init();
+#endif // NAVIGATION_3D_DISABLED
 	}
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {

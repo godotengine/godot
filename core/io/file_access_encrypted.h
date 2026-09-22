@@ -36,6 +36,8 @@
 #define ENCRYPTED_HEADER_MAGIC 0x43454447
 
 class FileAccessEncrypted : public FileAccess {
+	GDSOFTCLASS(FileAccessEncrypted, FileAccess);
+
 public:
 	enum Mode : int32_t {
 		MODE_READ,
@@ -56,8 +58,6 @@ private:
 	bool use_magic = true;
 
 	void _close();
-
-	static CryptoCore::RandomGenerator *_fae_static_rng;
 
 public:
 	Error open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true, const Vector<uint8_t> &p_iv = Vector<uint8_t>());
@@ -101,8 +101,5 @@ public:
 
 	virtual void close() override;
 
-	static void deinitialize();
-
-	FileAccessEncrypted() {}
 	~FileAccessEncrypted();
 };

@@ -8,6 +8,7 @@
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/TransformedShape.h>
 #include <Jolt/Physics/EActivation.h>
+#include <Jolt/Physics/Body/AllowedDOFs.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -16,6 +17,11 @@ class JPH_EXPORT CharacterSettings : public CharacterBaseSettings
 {
 public:
 	JPH_OVERRIDE_NEW_DELETE
+
+	/// Constructor
+										CharacterSettings() = default;
+										CharacterSettings(const CharacterSettings &) = default;
+	CharacterSettings &					operator = (const CharacterSettings &) = default;
 
 	/// Layer that this character will be added to
 	ObjectLayer							mLayer = 0;
@@ -28,6 +34,9 @@ public:
 
 	/// Value to multiply gravity with for this character
 	float								mGravityFactor = 1.0f;
+
+	/// Allowed degrees of freedom for this character
+	EAllowedDOFs						mAllowedDOFs = EAllowedDOFs::TranslationX | EAllowedDOFs::TranslationY | EAllowedDOFs::TranslationZ;
 };
 
 /// Runtime character object.
@@ -129,6 +138,9 @@ public:
 	/// @param ioCollector Collision collector that receives the collision results.
 	/// @param inLockBodies If the collision query should use the locking body interface (true) or the non locking body interface (false)
 	void								CheckCollision(RVec3Arg inPosition, QuatArg inRotation, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies = true) const;
+
+	/// Get the character settings that can recreate this character
+	CharacterSettings					GetCharacterSettings(bool inLockBodies = true) const;
 
 private:
 	/// Check collisions between inShape and the world using the center of mass transform

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationAgent3D" inherits="Node" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationAgent3D" inherits="Node" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 3D agent used to pathfind to a position while avoiding obstacles.
 	</brief_description>
@@ -7,6 +7,7 @@
 		A 3D agent used to pathfind to a position while avoiding static and dynamic obstacles. The calculation can be used by the parent node to dynamically move it along the path. Requires navigation data to work correctly.
 		Dynamic obstacles are avoided using RVO collision avoidance. Avoidance is computed before physics, so the pathfinding information can be used safely in the physics step.
 		[b]Note:[/b] After setting the [member target_position] property, the [method get_next_path_position] method must be used once every physics frame to update the internal path logic of the navigation agent. The vector position it returns should be used as the next movement position for the agent's parent node.
+		[b]Note:[/b] Several methods of this class, such as [method get_next_path_position], can trigger a new path calculation. Calling these in your callback to an agent's signal, such as [signal waypoint_reached], can cause infinite recursion. It is recommended to call these methods in the physics step or, alternatively, delay their call until the end of the frame (see [method Object.call_deferred] or [constant Object.CONNECT_DEFERRED]).
 	</description>
 	<tutorials>
 		<link title="Using NavigationAgents">$DOCS_URL/tutorials/navigation/navigation_using_navigationagents.html</link>
@@ -35,7 +36,7 @@
 		<method name="get_current_navigation_path" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns this agent's current path from start to finish in global coordinates. The path only updates when the target position is changed or the agent requires a repath. The path array is not intended to be used in direct path movement as the agent has its own internal path logic that would get corrupted by changing the path array manually. Use the intended [method get_next_path_position] once every physics frame to receive the next path point for the agents movement as this function also updates the internal path logic.
+				Returns this agent's current path from start to finish in global coordinates. The path only updates when the target position is changed or the agent requires a repath. The path array is not intended to be used in direct path movement as the agent has its own internal path logic that would get corrupted by changing the path array manually. Use the intended [method get_next_path_position] once every physics frame to receive the next path point for the agent's movement as this function also updates the internal path logic.
 			</description>
 		</method>
 		<method name="get_current_navigation_path_index" qualifiers="const">
@@ -73,6 +74,12 @@
 			<return type="Vector3" />
 			<description>
 				Returns the next position in global coordinates that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the position of the agent's parent. The use of this function once every physics frame is required to update the internal path logic of the NavigationAgent.
+			</description>
+		</method>
+		<method name="get_path_length" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the length of the currently calculated path. The returned value is [code]0.0[/code], if the path is still calculating or no calculation has been requested yet.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -197,6 +204,19 @@
 		<member name="path_postprocessing" type="int" setter="set_path_postprocessing" getter="get_path_postprocessing" enum="NavigationPathQueryParameters3D.PathPostProcessing" default="0">
 			The path postprocessing applied to the raw path corridor found by the [member pathfinding_algorithm].
 		</member>
+		<member name="path_return_max_length" type="float" setter="set_path_return_max_length" getter="get_path_return_max_length" default="0.0">
+			The maximum allowed length of the returned path in world units. A path will be clipped when going over this length.
+		</member>
+		<member name="path_return_max_radius" type="float" setter="set_path_return_max_radius" getter="get_path_return_max_radius" default="0.0">
+			The maximum allowed radius in world units that the returned path can be from the path start. The path will be clipped when going over this radius. Compared to [member path_return_max_length], this allows the agent to go that much further, if they need to walk around a corner.
+			[b]Note:[/b] This will perform a sphere clip considering only the actual navigation mesh path points with the first path position being the sphere's center.
+		</member>
+		<member name="path_search_max_distance" type="float" setter="set_path_search_max_distance" getter="get_path_search_max_distance" default="0.0">
+			The maximum distance a searched polygon can be away from the start polygon before the pathfinding cancels the search for a path to the (possibly unreachable or very far away) target position polygon. In this case the pathfinding resets and builds a path from the start polygon to the polygon that was found closest to the target position so far. A value of [code]0[/code] or below counts as unlimited. In case of unlimited the pathfinding will search all polygons connected with the start polygon until either the target position polygon is found or all available polygon search options are exhausted.
+		</member>
+		<member name="path_search_max_polygons" type="int" setter="set_path_search_max_polygons" getter="get_path_search_max_polygons" default="4096">
+			The maximum number of polygons that are searched before the pathfinding cancels the search for a path to the (possibly unreachable or very far away) target position polygon. In this case the pathfinding resets and builds a path from the start polygon to the polygon that was found closest to the target position so far. A value of [code]0[/code] or below counts as unlimited. In case of unlimited the pathfinding will search all polygons connected with the start polygon until either the target position polygon is found or all available polygon search options are exhausted.
+		</member>
 		<member name="pathfinding_algorithm" type="int" setter="set_pathfinding_algorithm" getter="get_pathfinding_algorithm" enum="NavigationPathQueryParameters3D.PathfindingAlgorithm" default="0">
 			The pathfinding algorithm used in the path query.
 		</member>
@@ -205,7 +225,7 @@
 			Does not affect normal pathfinding. To change an actor's pathfinding radius bake [NavigationMesh] resources with a different [member NavigationMesh.agent_radius] property and use different navigation maps for each actor size.
 		</member>
 		<member name="simplify_epsilon" type="float" setter="set_simplify_epsilon" getter="get_simplify_epsilon" default="0.0">
-			The path simplification amount in worlds units.
+			The path simplification amount in world units.
 		</member>
 		<member name="simplify_path" type="bool" setter="set_simplify_path" getter="get_simplify_path" default="false">
 			If [code]true[/code] a simplified version of the path will be returned with less critical path points removed. The simplification amount is controlled by [member simplify_epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
@@ -220,10 +240,10 @@
 			If set, a new navigation path from the current agent position to the [member target_position] is requested from the NavigationServer.
 		</member>
 		<member name="time_horizon_agents" type="float" setter="set_time_horizon_agents" getter="get_time_horizon_agents" default="1.0">
-			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but less freedom in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
+			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but less freedom in choosing its velocities. A too high value will slow down agent movement considerably. Must be positive.
 		</member>
 		<member name="time_horizon_obstacles" type="float" setter="set_time_horizon_obstacles" getter="get_time_horizon_obstacles" default="0.0">
-			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to static avoidance obstacles. The larger the number, the sooner the agent will respond to static avoidance obstacles, but less freedom in choosing its velocities. A too high value will slow down agents movement considerably. Must be positive.
+			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to static avoidance obstacles. The larger the number, the sooner the agent will respond to static avoidance obstacles, but less freedom in choosing its velocities. A too high value will slow down agent movement considerably. Must be positive.
 		</member>
 		<member name="use_3d_avoidance" type="bool" setter="set_use_3d_avoidance" getter="get_use_3d_avoidance" default="false">
 			If [code]true[/code], the agent calculates avoidance velocities in 3D omnidirectionally, e.g. for games that take place in air, underwater or space. Agents using 3D avoidance only avoid other agents using 3D avoidance, and react to radius-based avoidance obstacles. They ignore any vertex-based obstacles.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XRHandTracker" inherits="XRPositionalTracker" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="XRHandTracker" inherits="XRPositionalTracker" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A tracked hand in XR.
 	</brief_description>
@@ -22,7 +22,7 @@
 			<return type="int" enum="XRHandTracker.HandJointFlags" is_bitfield="true" />
 			<param index="0" name="joint" type="int" enum="XRHandTracker.HandJoint" />
 			<description>
-				Returns flags about the validity of the tracking data for the given hand joint (see [enum XRHandTracker.HandJointFlags]).
+				Returns flags about the validity of the tracking data for the given hand joint.
 			</description>
 		</method>
 		<method name="get_hand_joint_linear_velocity" qualifiers="const">

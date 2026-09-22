@@ -15,6 +15,7 @@
 #pragma once
 
 #ifdef MANIFOLD_DEBUG
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -33,6 +34,9 @@ struct geometryErr : public virtual std::runtime_error {
   using std::runtime_error::runtime_error;
 };
 using logicErr = std::logic_error;
+#endif
+
+#if defined(MANIFOLD_ASSERT) && defined(MANIFOLD_DEBUG)
 
 template <typename Ex>
 void AssertFail(const char* file, int line, const char* cond, const char* msg) {

@@ -74,7 +74,7 @@ static inline unsigned int glGetTypeSizeFromType( const GLenum type );
 MODIFICATIONS for use in libktx
 ===============================
 
-2018.3.23 Added glGetTypeSizeFromType. Mark Callow, Edgewise Consulting.
+2018.3.23 Added glGetTypeSizeFromType. Mark Callow, github.com/MarkCallow.
 2019.3.09 #if 0 around GL type declarations.            〃
 2019.5.30 Use common ktxFormatSize to return results.         〃
 2019.5.30 Return blockSizeInBits 0 for default case of glGetFormatSize. 〃

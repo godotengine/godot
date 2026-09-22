@@ -211,7 +211,7 @@ namespace Godot.NativeInterop
                 }
                 case godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_TOO_MANY_ARGUMENTS:
                 case godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_TOO_FEW_ARGUMENTS:
-                    return $"Invalid call to {where}. Expected {error.Expected} arguments.";
+                    return $"Invalid call to {where}. Expected {error.Expected} argument(s).";
                 case godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INVALID_METHOD:
                     return $"Invalid call. Nonexistent {where}.";
                 case godot_variant_call_error_error.GODOT_CALL_ERROR_CALL_ERROR_INSTANCE_IS_NULL:

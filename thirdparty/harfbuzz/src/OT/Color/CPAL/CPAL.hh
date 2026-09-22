@@ -172,7 +172,7 @@ struct CPAL
 
   bool has_data () const { return numPalettes; }
 
-  unsigned int get_size () const
+  size_t get_size () const
   { return min_size + numPalettes * sizeof (colorRecordIndicesZ[0]); }
 
   unsigned int get_palette_count () const { return numPalettes; }
@@ -209,7 +209,7 @@ struct CPAL
     hb_array_t<const BGRAColor> all_colors ((this+colorRecordsZ).arrayZ, numColorRecords);
     hb_array_t<const BGRAColor> palette_colors = all_colors.sub_array (start_index,
 								       numColors);
-    if (color_count)
+    if (color_count && colors)
     {
       + palette_colors.sub_array (start_offset, color_count)
       | hb_sink (hb_array (colors, *color_count))
@@ -307,6 +307,7 @@ struct CPAL
       if (first_color_to_layer_index.has (first_color_record_idx)) continue;
 
       first_color_index_for_layer.push (first_color_record_idx);
+      if (unlikely (!c->serializer->propagate_error (first_color_index_for_layer))) return_trace (false);
       first_color_to_layer_index.set (first_color_record_idx,
                                       first_color_index_for_layer.length - 1);
     }
