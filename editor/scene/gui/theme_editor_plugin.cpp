@@ -2324,7 +2324,17 @@ void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
 	names.sort_custom<StringName::AlphCompare>();
 
 	Vector<StringName> unique_names;
+
+	Ref<Texture2D> item_icon = get_editor_theme_icon(SNAME("NodeDisabled"));
+	bool filter_matches_name = false;
+
 	for (const StringName &E : names) {
+		if (p_filter == E) {
+			filter_matches_name = true;
+		}
+		if (E == edited_type) {
+			continue;
+		}
 		// Filter out undesired values.
 		if (!p_filter.is_subsequence_ofn(String(E))) {
 			continue;
@@ -2336,14 +2346,14 @@ void ThemeTypeDialog::_update_add_type_options(const String &p_filter) {
 		}
 		unique_names.append(E);
 
-		Ref<Texture2D> item_icon;
-		if (E == "") {
-			item_icon = get_editor_theme_icon(SNAME("NodeDisabled"));
-		} else {
+		if (E != "") {
 			item_icon = EditorNode::get_singleton()->get_class_icon(E, "NodeDisabled");
 		}
-
 		add_type_options->add_item(E, item_icon);
+	}
+	if (p_filter != "" && !filter_matches_name) {
+		item_icon = get_editor_theme_icon(SNAME("NodeDisabled"));
+		add_type_options->add_item(p_filter, item_icon);
 	}
 }
 
@@ -2365,8 +2375,17 @@ void ThemeTypeDialog::_add_type_dialog_activated(int p_index) {
 }
 
 void ThemeTypeDialog::_add_type_selected(const String &p_type_name) {
+	List<StringName> types;
+	ThemeDB::get_singleton()->get_default_theme()->get_type_list(&types);
+	is_submitted_value_custom = true;
+	for (StringName type : types) {
+		if (p_type_name == type) {
+			is_submitted_value_custom = false;
+		}
+	}
 	pre_submitted_value = p_type_name;
-	if (p_type_name.is_empty()) {
+	if (p_type_name.is_empty() && add_type_mode != ADD_VARIATION_BASE) {
+		is_submitted_value_custom = true;
 		add_type_confirmation->popup_centered();
 		return;
 	}
@@ -2375,7 +2394,7 @@ void ThemeTypeDialog::_add_type_selected(const String &p_type_name) {
 }
 
 void ThemeTypeDialog::_add_type_confirmed() {
-	emit_signal(SNAME("type_selected"), pre_submitted_value);
+	emit_signal(SNAME("type_selected"), pre_submitted_value, is_submitted_value_custom);
 	hide();
 }
 
@@ -2398,11 +2417,18 @@ void ThemeTypeDialog::_notification(int p_what) {
 }
 
 void ThemeTypeDialog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("type_selected", PropertyInfo(Variant::STRING, "type_name")));
+	ADD_SIGNAL(MethodInfo("type_selected", PropertyInfo(Variant::STRING, "type_name"), PropertyInfo(Variant::BOOL, "is_custom_type")));
 }
 
 void ThemeTypeDialog::set_edited_theme(const Ref<Theme> &p_theme) {
 	edited_theme = p_theme;
+}
+
+void ThemeTypeDialog::set_edited_type(const String &p_type) {
+	edited_type = p_type;
+}
+void ThemeTypeDialog::set_add_type_mode(const TypeDialogMode &p_add_type_mode) {
+	add_type_mode = p_add_type_mode;
 }
 
 void ThemeTypeDialog::set_include_own_types(bool p_enable) {
@@ -3029,6 +3055,8 @@ void ThemeTypeEditor::_list_type_selected(int p_index) {
 
 void ThemeTypeEditor::_add_type_button_cbk() {
 	add_type_mode = ADD_THEME_TYPE;
+	add_type_dialog->set_edited_type(edited_type);
+	add_type_dialog->set_add_type_mode(add_type_mode);
 	add_type_dialog->set_title(TTRC("Add Item Type"));
 	add_type_dialog->set_ok_button_text(TTRC("Add Type"));
 	add_type_dialog->set_include_own_types(false);
@@ -3677,15 +3705,17 @@ void ThemeTypeEditor::_type_variation_changed(const String p_value) {
 
 void ThemeTypeEditor::_add_type_variation_cbk() {
 	add_type_mode = ADD_VARIATION_BASE;
+	add_type_dialog->set_edited_type(edited_type);
+	add_type_dialog->set_add_type_mode(add_type_mode);
 	add_type_dialog->set_title(TTRC("Set Variation Base Type"));
 	add_type_dialog->set_ok_button_text(TTRC("Set Base Type"));
 	add_type_dialog->set_include_own_types(true);
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 }
 
-void ThemeTypeEditor::_add_type_dialog_selected(const String p_type_name) {
+void ThemeTypeEditor::_add_type_dialog_selected(const String p_type_name, bool p_is_custom_type) {
 	if (add_type_mode == ADD_THEME_TYPE) {
-		select_type(p_type_name);
+		select_type(p_type_name, p_is_custom_type);
 	} else if (add_type_mode == ADD_VARIATION_BASE) {
 		_type_variation_changed(p_type_name);
 	}
@@ -3737,7 +3767,7 @@ void ThemeTypeEditor::set_edited_theme(const Ref<Theme> &p_theme) {
 	add_type_dialog->set_edited_theme(edited_theme);
 }
 
-void ThemeTypeEditor::select_type(String p_type_name) {
+void ThemeTypeEditor::select_type(String p_type_name, bool p_is_custom_type = false) {
 	edited_type = p_type_name;
 	bool type_exists = false;
 
@@ -3762,6 +3792,12 @@ void ThemeTypeEditor::select_type(String p_type_name) {
 		edited_theme->add_sound_type(edited_type);
 
 		_update_type_list();
+
+		// Normally the window closes by the time we get here, so a deferred call is necessary.
+		if (p_is_custom_type) {
+			edited_type = p_type_name;
+			callable_mp(this, &ThemeTypeEditor::_add_type_variation_cbk).call_deferred();
+		}
 	}
 }
 
