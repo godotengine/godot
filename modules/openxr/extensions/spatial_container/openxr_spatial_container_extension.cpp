@@ -188,6 +188,15 @@ bool OpenXRSpatialContainerExtension::on_event_polled(const XrEventDataBuffer &e
 			const XrEventDataSpatialContainerBoundsChangedEXT *event_data = (XrEventDataSpatialContainerBoundsChangedEXT *)&event;
 			if (event_data->spatialContainer == spatial_container_data.spatial_container_handle) {
 				print_verbose("OpenXR: Spatial container bounds changed...");
+				XrSpatialContainerBoundsModeEXT new_bounds_mode = event_data->boundsMode;
+				if (spatial_container_data.current_bounds_mode != new_bounds_mode) {
+					spatial_container_data.current_bounds_mode = new_bounds_mode;
+					if (new_bounds_mode == XR_SPATIAL_CONTAINER_BOUNDS_MODE_IMMERSIVE_EXT) {
+						openxr_api->set_custom_play_space(XR_NULL_HANDLE);
+					} else {
+						openxr_api->set_custom_play_space(spatial_container_data.space_handle);
+					}
+				}
 				emit_signal(SNAME("spatial_container_bounds_changed"), spatial_container_data.spatial_container_rid, event_data->infiniteBounds, OpenXRSpatialContainerState::_to_bounds_mode(event_data->boundsMode), Vector3(event_data->bounds.width, event_data->bounds.height, event_data->bounds.depth));
 				return true;
 			}
@@ -363,7 +372,15 @@ XrResult OpenXRSpatialContainerExtension::locate_spatial_container_views(XrView 
 		return XR_ERROR_INITIALIZATION_FAILED;
 	}
 
-	return rendering_mechanism->locate_spatial_container_views(spatial_container_data.spatial_container_rid, p_views, r_view_pose_valid, r_should_submit_layers);
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL_V(openxr_api, XR_ERROR_VALIDATION_FAILURE);
+
+	return rendering_mechanism->locate_spatial_container_views(
+			spatial_container_data.spatial_container_rid,
+			spatial_container_data.current_bounds_mode == XR_SPATIAL_CONTAINER_BOUNDS_MODE_IMMERSIVE_EXT ? openxr_api->get_play_space() : spatial_container_data.space_handle,
+			p_views,
+			r_view_pose_valid,
+			r_should_submit_layers);
 }
 
 bool OpenXRSpatialContainerExtension::request_spatial_container_visible(bool p_visible) {

@@ -50,6 +50,7 @@ public:
 		RID spatial_container_rid = RID();
 		XrSpatialContainerEXT spatial_container_handle = XR_NULL_HANDLE;
 		XrSpace space_handle = XR_NULL_HANDLE;
+		XrSpatialContainerBoundsModeEXT current_bounds_mode = XR_SPATIAL_CONTAINER_BOUNDS_MODE_MAX_ENUM_EXT;
 	};
 
 	static OpenXRSpatialContainerExtension *get_singleton();

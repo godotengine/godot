@@ -65,7 +65,7 @@ public:
 	void on_spatial_container_visibility_changed(const OpenXRSpatialContainerExtension::SpatialContainerData &p_container, bool p_visible);
 	void on_spatial_container_closed(const OpenXRSpatialContainerExtension::SpatialContainerData &p_container);
 	XrSpatialContainerGraphicsPresentationEXT get_spatial_container_graphics_presentation() const;
-	XrResult locate_spatial_container_views(RID p_spatial_container_rid, XrView *p_views, bool &r_view_pose_valid, bool &r_should_submit_layers);
+	XrResult locate_spatial_container_views(RID p_spatial_container_rid, XrSpace p_space, XrView *p_views, bool &r_view_pose_valid, bool &r_should_submit_layers);
 
 protected:
 	static void _bind_methods();
@@ -97,13 +97,6 @@ private:
 	bool spatial_container_self_rendering_ext = false;
 
 	XrSpatialContainerEXT active_spatial_container = XR_NULL_HANDLE;
-	XrSpatialContainerViewLocateInfoEXT active_view_locate_info = {
-		XR_TYPE_SPATIAL_CONTAINER_VIEW_LOCATE_INFO_EXT, // type
-		nullptr, // next
-		XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, // viewConfigurationType
-		XR_NULL_HANDLE, // space
-		XR_NULL_HANDLE, // spatialContainer
-	};
 	XrSpatialContainerViewStateEXT active_view_state = {
 		XR_TYPE_SPATIAL_CONTAINER_VIEW_STATE_EXT, // type
 		nullptr, // next
