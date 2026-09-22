@@ -43,11 +43,8 @@ POSSIBILITY OF SUCH DAMAGE.
 into a UTF string. The behaviour is different for each code unit width. */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "pcre2_internal.h"
+
 
 
 /* If SUPPORT_UNICODE is not defined, this function will never be called.
@@ -83,16 +80,17 @@ PRIV(ord2utf)(uint32_t cvalue, PCRE2_UCHAR *buffer)
 /* Convert to UTF-8 */
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
-int i, j;
+unsigned int i;
+
 for (i = 0; i < PRIV(utf8_table1_size); i++)
   if ((int)cvalue <= PRIV(utf8_table1)[i]) break;
 buffer += i;
-for (j = i; j > 0; j--)
+for (unsigned int j = i; j != 0; j--)
  {
  *buffer-- = 0x80 | (cvalue & 0x3f);
  cvalue >>= 6;
  }
-*buffer = PRIV(utf8_table2)[i] | cvalue;
+*buffer = (PCRE2_UCHAR)(PRIV(utf8_table2)[i] | (int)cvalue);
 return i + 1;
 
 /* Convert to UTF-16 */
@@ -117,4 +115,4 @@ return 1;
 }
 #endif  /* SUPPORT_UNICODE */
 
-/* End of pcre_ord2utf.c */
+/* End of pcre2_ord2utf.c */

@@ -10,15 +10,15 @@
 namespace meshopt
 {
 
-static unsigned int findStripFirst(const unsigned int buffer[][3], unsigned int buffer_size, const unsigned int* valence)
+static unsigned int findStripFirst(const unsigned int buffer[][3], unsigned int buffer_size, const unsigned char* valence)
 {
 	unsigned int index = 0;
 	unsigned int iv = ~0u;
 
 	for (size_t i = 0; i < buffer_size; ++i)
 	{
-		unsigned int va = valence[buffer[i][0]], vb = valence[buffer[i][1]], vc = valence[buffer[i][2]];
-		unsigned int v = (va < vb && va < vc) ? va : (vb < vc) ? vb : vc;
+		unsigned char va = valence[buffer[i][0]], vb = valence[buffer[i][1]], vc = valence[buffer[i][2]];
+		unsigned int v = (va < vb && va < vc) ? va : (vb < vc ? vb : vc);
 
 		if (v < iv)
 		{
@@ -71,8 +71,9 @@ size_t meshopt_stripify(unsigned int* destination, const unsigned int* indices, 
 	size_t strip_size = 0;
 
 	// compute vertex valence; this is used to prioritize starting triangle for strips
-	unsigned int* valence = allocator.allocate<unsigned int>(vertex_count);
-	memset(valence, 0, vertex_count * sizeof(unsigned int));
+	// note: we use 8-bit counters for performance; for outlier vertices the valence is incorrect but that just affects the heuristic
+	unsigned char* valence = allocator.allocate<unsigned char>(vertex_count);
+	memset(valence, 0, vertex_count);
 
 	for (size_t i = 0; i < index_count; ++i)
 	{
@@ -151,7 +152,7 @@ size_t meshopt_stripify(unsigned int* destination, const unsigned int* indices, 
 		{
 			// if we didn't find anything, we need to find the next new triangle
 			// we use a heuristic to maximize the strip length
-			unsigned int i = findStripFirst(buffer, buffer_size, &valence[0]);
+			unsigned int i = findStripFirst(buffer, buffer_size, valence);
 			unsigned int a = buffer[i][0], b = buffer[i][1], c = buffer[i][2];
 
 			// ordered removal from the buffer

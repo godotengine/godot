@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop;
@@ -8,24 +7,24 @@ namespace Godot.NativeInterop;
 
 public partial class VariantUtils
 {
-    private static Exception UnsupportedType<T>() => new InvalidOperationException(
+    private static InvalidOperationException UnsupportedType<T>() => new InvalidOperationException(
         $"The type is not supported for conversion to/from Variant: '{typeof(T).FullName}'");
 
     internal static class GenericConversion<T>
     {
-        public static unsafe godot_variant ToVariant(in T from) =>
-            ToVariantCb != null ? ToVariantCb(from) : throw UnsupportedType<T>();
+        internal delegate godot_variant ToVariantConverter(scoped in T from);
+        internal delegate T FromVariantConverter(in godot_variant from);
+
+        public static unsafe godot_variant ToVariant(scoped in T from) =>
+             ToVariantCb != null ? ToVariantCb(from) : throw UnsupportedType<T>();
 
         public static unsafe T FromVariant(in godot_variant variant) =>
             FromVariantCb != null ? FromVariantCb(variant) : throw UnsupportedType<T>();
 
-        // ReSharper disable once StaticMemberInGenericType
-        internal static unsafe delegate*<in T, godot_variant> ToVariantCb;
+        internal static ToVariantConverter? ToVariantCb;
 
-        // ReSharper disable once StaticMemberInGenericType
-        internal static unsafe delegate*<in godot_variant, T> FromVariantCb;
+        internal static FromVariantConverter? FromVariantCb;
 
-        [SuppressMessage("ReSharper", "RedundantNameQualifier")]
         static GenericConversion()
         {
             RuntimeHelpers.RunClassConstructor(typeof(T).TypeHandle);
@@ -33,11 +32,10 @@ public partial class VariantUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    [SuppressMessage("ReSharper", "RedundantNameQualifier")]
-    public static godot_variant CreateFrom<[MustBeVariant] T>(in T from)
+    public static godot_variant CreateFrom<[MustBeVariant] T>(scoped in T from)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static TTo UnsafeAs<TTo>(in T f) => Unsafe.As<T, TTo>(ref Unsafe.AsRef(f));
+        static TTo UnsafeAs<TTo>(in T f) => Unsafe.As<T, TTo>(ref Unsafe.AsRef(in f));
 
         // `typeof(T) == typeof(X)` is optimized away. We cannot cache `typeof(T)` in a local variable, as it's not optimized when done like that.
 
@@ -158,6 +156,9 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Vector3[]))
             return CreateFromPackedVector3Array(UnsafeAs<Vector3[]>(from));
 
+        if (typeof(T) == typeof(Vector4[]))
+            return CreateFromPackedVector4Array(UnsafeAs<Vector4[]>(from));
+
         if (typeof(T) == typeof(Color[]))
             return CreateFromPackedColorArray(UnsafeAs<Color[]>(from));
 
@@ -195,27 +196,37 @@ public partial class VariantUtils
         if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
             return CreateFromGodotObject(UnsafeAs<GodotObject>(from));
 
-        // `typeof(T).IsValueType` is optimized away
-        // `typeof(T).IsEnum` is NOT optimized away: https://github.com/dotnet/runtime/issues/67113
-        // Fortunately, `typeof(System.Enum).IsAssignableFrom(typeof(T))` does the job!
+        // `typeof(T).IsEnum` is optimized away
 
-        if (typeof(T).IsValueType && typeof(System.Enum).IsAssignableFrom(typeof(T)))
+        if (typeof(T).IsEnum)
         {
-            // `Type.GetTypeCode(typeof(T).GetEnumUnderlyingType())` is not optimized away.
-            // Fortunately, `Unsafe.SizeOf<T>()` works and is optimized away.
-            // We don't need to know whether it's signed or unsigned.
+            // `typeof(T).GetEnumUnderlyingType()` is optimized away
 
-            if (Unsafe.SizeOf<T>() == 1)
+            var enumType = typeof(T).GetEnumUnderlyingType();
+
+            if (enumType == typeof(sbyte))
                 return CreateFromInt(UnsafeAs<sbyte>(from));
 
-            if (Unsafe.SizeOf<T>() == 2)
+            if (enumType == typeof(short))
                 return CreateFromInt(UnsafeAs<short>(from));
 
-            if (Unsafe.SizeOf<T>() == 4)
+            if (enumType == typeof(int))
                 return CreateFromInt(UnsafeAs<int>(from));
 
-            if (Unsafe.SizeOf<T>() == 8)
+            if (enumType == typeof(long))
                 return CreateFromInt(UnsafeAs<long>(from));
+
+            if (enumType == typeof(byte))
+                return CreateFromInt(UnsafeAs<byte>(from));
+
+            if (enumType == typeof(ushort))
+                return CreateFromInt(UnsafeAs<ushort>(from));
+
+            if (enumType == typeof(uint))
+                return CreateFromInt(UnsafeAs<uint>(from));
+
+            if (enumType == typeof(ulong))
+                return CreateFromInt(UnsafeAs<ulong>(from));
 
             throw UnsupportedType<T>();
         }
@@ -224,11 +235,10 @@ public partial class VariantUtils
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-    [SuppressMessage("ReSharper", "RedundantNameQualifier")]
     public static T ConvertTo<[MustBeVariant] T>(in godot_variant variant)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static T UnsafeAsT<TFrom>(TFrom f) => Unsafe.As<TFrom, T>(ref Unsafe.AsRef(f));
+        static T UnsafeAsT<TFrom>(TFrom f) => Unsafe.As<TFrom, T>(ref Unsafe.AsRef(in f));
 
         if (typeof(T) == typeof(bool))
             return UnsafeAsT(ConvertToBool(variant));
@@ -347,6 +357,9 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Vector3[]))
             return UnsafeAsT(ConvertAsPackedVector3ArrayToSystemArray(variant));
 
+        if (typeof(T) == typeof(Vector4[]))
+            return UnsafeAsT(ConvertAsPackedVector4ArrayToSystemArray(variant));
+
         if (typeof(T) == typeof(Color[]))
             return UnsafeAsT(ConvertAsPackedColorArrayToSystemArray(variant));
 
@@ -384,27 +397,37 @@ public partial class VariantUtils
         if (typeof(GodotObject).IsAssignableFrom(typeof(T)))
             return (T)(object)ConvertToGodotObject(variant);
 
-        // `typeof(T).IsValueType` is optimized away
-        // `typeof(T).IsEnum` is NOT optimized away: https://github.com/dotnet/runtime/issues/67113
-        // Fortunately, `typeof(System.Enum).IsAssignableFrom(typeof(T))` does the job!
+        // `typeof(T).IsEnum` is optimized away
 
-        if (typeof(T).IsValueType && typeof(System.Enum).IsAssignableFrom(typeof(T)))
+        if (typeof(T).IsEnum)
         {
-            // `Type.GetTypeCode(typeof(T).GetEnumUnderlyingType())` is not optimized away.
-            // Fortunately, `Unsafe.SizeOf<T>()` works and is optimized away.
-            // We don't need to know whether it's signed or unsigned.
+            // `typeof(T).GetEnumUnderlyingType()` is optimized away
 
-            if (Unsafe.SizeOf<T>() == 1)
+            var enumType = typeof(T).GetEnumUnderlyingType();
+
+            if (enumType == typeof(sbyte))
                 return UnsafeAsT(ConvertToInt8(variant));
 
-            if (Unsafe.SizeOf<T>() == 2)
+            if (enumType == typeof(short))
                 return UnsafeAsT(ConvertToInt16(variant));
 
-            if (Unsafe.SizeOf<T>() == 4)
+            if (enumType == typeof(int))
                 return UnsafeAsT(ConvertToInt32(variant));
 
-            if (Unsafe.SizeOf<T>() == 8)
+            if (enumType == typeof(long))
                 return UnsafeAsT(ConvertToInt64(variant));
+
+            if (enumType == typeof(byte))
+                return UnsafeAsT(ConvertToUInt8(variant));
+
+            if (enumType == typeof(ushort))
+                return UnsafeAsT(ConvertToUInt16(variant));
+
+            if (enumType == typeof(uint))
+                return UnsafeAsT(ConvertToUInt32(variant));
+
+            if (enumType == typeof(ulong))
+                return UnsafeAsT(ConvertToUInt64(variant));
 
             throw UnsupportedType<T>();
         }

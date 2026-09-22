@@ -15,6 +15,7 @@
 #include "../geometry/quadi.h"
 #include "../geometry/object.h"
 #include "../geometry/instance.h"
+#include "../geometry/instance_array.h"
 #include "../geometry/subgrid.h"
 
 #include "../common/state.h"
@@ -150,7 +151,7 @@ namespace embree
             const size_t leaf_bytes = size_t(1.2*Primitive::blocks(numPrimitives)*sizeof(Primitive));
             bvh->alloc.init_estimate(node_bytes+leaf_bytes);
             settings.singleThreadThreshold = bvh->alloc.fixSingleThreadThreshold(N,DEFAULT_SINGLE_THREAD_THRESHOLD,numPrimitives,node_bytes+leaf_bytes);
-            prims.resize(numPrimitives); 
+            prims.resize(numPrimitives);
 
             PrimInfo pinfo = mesh ?
               createPrimRefArray(mesh,geomID_,numPrimitives,prims,bvh->scene->progressInterface) :
@@ -518,14 +519,35 @@ namespace embree
 #endif
 
 #if defined(EMBREE_GEOMETRY_INSTANCE)
-    Builder* BVH4InstanceSceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) { return new BVHNBuilderSAH<4,InstancePrimitive>((BVH4*)bvh,scene,4,1.0f,1,1,gtype); }
+    Builder* BVH4InstanceSceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) {
+      return new BVHNBuilderSAH<4,InstancePrimitive>((BVH4*)bvh,scene,4,1.0f,1,1,gtype);
+    }
     Builder* BVH4InstanceMeshBuilderSAH (void* bvh, Instance* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode) {
       return new BVHNBuilderSAH<4,InstancePrimitive>((BVH4*)bvh,mesh,geomID,4,1.0f,1,inf,gtype);
     }
 #if defined(__AVX__)
-    Builder* BVH8InstanceSceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) { return new BVHNBuilderSAH<8,InstancePrimitive>((BVH8*)bvh,scene,8,1.0f,1,1,gtype); }
+    Builder* BVH8InstanceSceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) {
+      return new BVHNBuilderSAH<8,InstancePrimitive>((BVH8*)bvh,scene,8,1.0f,1,1,gtype);
+    }
     Builder* BVH8InstanceMeshBuilderSAH (void* bvh, Instance* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode) {
-      return new BVHNBuilderSAH<8,InstancePrimitive>((BVH8*)bvh,mesh,geomID,8,1.0f,1,inf,gtype);
+      return new BVHNBuilderSAH<8,InstancePrimitive>((BVH8*)bvh,mesh,geomID,8,1.0f,1,1,gtype);
+    }
+#endif
+#endif
+
+#if defined(EMBREE_GEOMETRY_INSTANCE_ARRAY)
+    Builder* BVH4InstanceArraySceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) {
+      return new BVHNBuilderSAH<4,InstanceArrayPrimitive>((BVH4*)bvh,scene,4,1.0f,1,1,gtype);
+    }
+    Builder* BVH4InstanceArrayMeshBuilderSAH (void* bvh, InstanceArray* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode) {
+      return new BVHNBuilderSAH<4,InstanceArrayPrimitive>((BVH4*)bvh,mesh,geomID,4,1.0f,1,1,gtype);
+    }
+#if defined(__AVX__)
+    Builder* BVH8InstanceArraySceneBuilderSAH (void* bvh, Scene* scene, Geometry::GTypeMask gtype) {
+      return new BVHNBuilderSAH<8,InstanceArrayPrimitive>((BVH8*)bvh,scene,8,1.0f,1,1,gtype);
+    }
+    Builder* BVH8InstanceArrayMeshBuilderSAH (void* bvh, InstanceArray* mesh, Geometry::GTypeMask gtype, unsigned int geomID, size_t mode) {
+      return new BVHNBuilderSAH<8,InstanceArrayPrimitive>((BVH8*)bvh,mesh,geomID,8,1.0f,1,1,gtype);
     }
 #endif
 #endif

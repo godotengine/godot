@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKET_PEER_MBED_DTLS_H
-#define PACKET_PEER_MBED_DTLS_H
+#pragma once
 
 #include "tls_context_mbedtls.h"
 
@@ -50,7 +49,7 @@ private:
 
 	Ref<PacketPeerUDP> base;
 
-	static PacketPeerDTLS *_create_func();
+	static PacketPeerDTLS *_create_func(bool p_notify_postinitialize);
 
 	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
 	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
@@ -83,5 +82,3 @@ public:
 	PacketPeerMbedDTLS();
 	~PacketPeerMbedDTLS();
 };
-
-#endif // PACKET_PEER_MBED_DTLS_H

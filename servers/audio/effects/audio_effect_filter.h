@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_EFFECT_FILTER_H
-#define AUDIO_EFFECT_FILTER_H
+#pragma once
 
 #include "servers/audio/audio_effect.h"
 #include "servers/audio/audio_filter_sw.h"
@@ -138,6 +137,13 @@ public:
 class AudioEffectNotchFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectNotchFilter, AudioEffectFilter);
 
+protected:
+	void _validate_property(PropertyInfo &p_property) const {
+		if (p_property.name == "gain") {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
+
 public:
 	AudioEffectNotchFilter() :
 			AudioEffectFilter(AudioFilterSW::NOTCH) {}
@@ -145,6 +151,13 @@ public:
 
 class AudioEffectBandLimitFilter : public AudioEffectFilter {
 	GDCLASS(AudioEffectBandLimitFilter, AudioEffectFilter);
+
+protected:
+	void _validate_property(PropertyInfo &p_property) const {
+		if (p_property.name == "gain") {
+			p_property.usage = PROPERTY_USAGE_NONE;
+		}
+	}
 
 public:
 	AudioEffectBandLimitFilter() :
@@ -166,5 +179,3 @@ public:
 	AudioEffectHighShelfFilter() :
 			AudioEffectFilter(AudioFilterSW::HIGHSHELF) {}
 };
-
-#endif // AUDIO_EFFECT_FILTER_H

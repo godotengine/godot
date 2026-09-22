@@ -1,73 +1,134 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  23 March 2023                                                   *
-* Website   :  http://www.angusj.com                                           *
-* Copyright :  Angus Johnson 2010-2023                                         *
+* Date      :  24 January 2025                                                 *
+* Website   :  https://www.angusj.com                                          *
+* Copyright :  Angus Johnson 2010-2025                                         *
 * Purpose   :  This module exports the Clipper2 Library (ie DLL/so)            *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
-// The exported functions below refer to simple structures that
-// can be understood across multiple languages. Consequently
-// Path64, PathD, Polytree64 etc are converted from C++ classes
-// (std::vector<> etc) into the following data structures:
-//
-// CPath64 (int64_t*) & CPathD (double_t*):
-// Path64 and PathD are converted into arrays of x,y coordinates.
-// However in these arrays the first x,y coordinate pair is a
-// counter with 'x' containing the number of following coordinate
-// pairs. ('y' should be 0, with one exception explained below.)
-// __________________________________
-// |counter|coord1|coord2|...|coordN|
-// |N ,0   |x1, y1|x2, y2|...|xN, yN|
-// __________________________________
-//
-// CPaths64 (int64_t**) & CPathsD (double_t**):
-// These are arrays of pointers to CPath64 and CPathD where
-// the first pointer is to a 'counter path'. This 'counter
-// path' has a single x,y coord pair with 'y' (not 'x')
-// containing the number of paths that follow. ('x' = 0).
-// _______________________________
-// |counter|path1|path2|...|pathN|
-// |addr0  |addr1|addr2|...|addrN| (*addr0[0]=0; *addr0[1]=N)
-// _______________________________
-//
-// The structures of CPolytree64 and CPolytreeD are defined
-// below and these structures don't need to be explained here.
 
+/*
+ Boolean clipping:
+ cliptype: NoClip=0, Intersection=1, Union=2, Difference=3, Xor=4
+ fillrule: EvenOdd=0, NonZero=1, Positive=2, Negative=3
+
+ Polygon offsetting (inflate/deflate):
+ jointype: Square=0, Bevel=1, Round=2, Miter=3
+ endtype: Polygon=0, Joined=1, Butt=2, Square=3, Round=4
+
+The path structures used extensively in other parts of this library are all
+based on std::vector classes. Since C++ classes can't be accessed by other
+languages, these paths are exported here as very simple array structures 
+(either of int64_t or double) that can be parsed by just about any 
+programming language.
+
+These 2D paths are defined by series of x and y coordinates together with an
+optional user-defined 'z' value (see Z-values below). Hence, a vertex refers
+to a single x and y coordinate (+/- a user-defined value). Data structures 
+have names with suffixes that indicate the array type (either int64_t or 
+double). For example, the data structure CPath64 contains an array of int64_t 
+values, whereas the data structure CPathD contains an array of double. 
+Where documentation omits the type suffix (eg CPath), it is referring to an 
+array whose data type could be either int64_t or double.
+
+For conciseness, the following letters are used in the diagrams below:
+N: Number of vertices in a given path
+C: Count (ie number) of paths (or PolyPaths) in the structure
+A: Number of elements in an array
+
+
+CPath64 and CPathD:
+These are arrays of either int64_t or double values. Apart from 
+the first two elements, these arrays are a series of vertices 
+that together define a path. The very first element contains the 
+number of vertices (N) in the path, while second element should 
+contain a 0 value.
+_______________________________________________________________
+| counters | vertex1      | vertex2      | ... | vertexN      |
+| N, 0     | x1, y1, (z1) | x2, y2, (z2) | ... | xN, yN, (zN) |
+---------------------------------------------------------------
+
+
+CPaths64 and CPathsD:
+These are also arrays of either int64_t or double values that
+contain any number of consecutive CPath structures. However, 
+preceding the first path is a pair of values. The first value
+contains the length of the entire array structure (A), and the 
+second contains the number (ie count) of contained paths (C).
+  Memory allocation for CPaths64 = A * sizeof(int64_t)
+  Memory allocation for CPathsD  = A * sizeof(double)
+__________________________________________
+| counters | path1 | path2 | ... | pathC |
+| A, C     |       |       | ... |       |
+------------------------------------------
+
+
+CPolytree64 and CPolytreeD:
+The entire polytree structure is an array of int64_t or double. The 
+first element in the array indicates the array's total length (A). 
+The second element indicates the number (C) of CPolyPath structures 
+that are the TOP LEVEL CPolyPath in the polytree, and these top
+level CPolyPath immediately follow these first two array elements. 
+These top level CPolyPath structures may, in turn, contain nested 
+CPolyPath children, and these collectively make a tree structure.
+_________________________________________________________
+| counters | CPolyPath1 | CPolyPath2 | ... | CPolyPathC |
+| A, C     |            |            | ... |            |
+---------------------------------------------------------
+
+
+CPolyPath64 and CPolyPathD:
+These array structures consist of a pair of counter values followed by a
+series of polygon vertices and a series of nested CPolyPath children.
+The first counter values indicates the number of vertices in the
+polygon (N), and the second counter indicates the CPolyPath child count (C).
+_____________________________________________________________________________
+|cntrs |vertex1     |vertex2      |...|vertexN     |child1|child2|...|childC|
+|N, C  |x1, y1, (z1)| x2, y2, (z2)|...|xN, yN, (zN)|      |      |...|      |
+-----------------------------------------------------------------------------
+
+
+DisposeArray64 & DisposeArrayD:
+All array structures are allocated in heap memory which will eventually
+need to be released. However, since applications linking to these DLL
+functions may use different memory managers, the only safe way to release
+this memory is to use the exported DisposeArray functions.
+
+
+(Optional) Z-Values:
+Structures will only contain user-defined z-values when the USINGZ
+pre-processor identifier is used. The library does not assign z-values
+because this field is intended for users to assign custom values to vertices.
+Z-values in input paths (subject and clip) will be copied to solution paths.
+New vertices at path intersections will generate a callback event that allows
+users to assign z-values at these new vertices. The user's callback function
+must conform with the DLLZCallback definition and be registered with the
+DLL via SetZCallback. To assist the user in assigning z-values, the library
+passes in the callback function the new intersection point together with
+the four vertices that define the two segments that are intersecting.
+
+*/
 #ifndef CLIPPER2_EXPORT_H
 #define CLIPPER2_EXPORT_H
-
-#include <cstdlib>
-#include <vector>
 
 #include "clipper2/clipper.core.h"
 #include "clipper2/clipper.engine.h"
 #include "clipper2/clipper.offset.h"
 #include "clipper2/clipper.rectclip.h"
+#include <cstdlib>
 
 namespace Clipper2Lib {
 
 typedef int64_t* CPath64;
-typedef int64_t** CPaths64;
-typedef double* CPathD;
-typedef double** CPathsD;
+typedef int64_t* CPaths64;
+typedef double*  CPathD;
+typedef double*  CPathsD;
 
-typedef struct CPolyPath64 {
-  CPath64       polygon;
-  uint32_t      is_hole;
-  uint32_t      child_count;
-  CPolyPath64*  childs;
-}
-CPolyTree64;
-
-typedef struct CPolyPathD {
-  CPathD        polygon;
-  uint32_t      is_hole;
-  uint32_t      child_count;
-  CPolyPathD*   childs;
-}
-CPolyTreeD;
+typedef int64_t* CPolyPath64;
+typedef int64_t* CPolyTree64;
+typedef double* CPolyPathD;
+typedef double* CPolyTreeD;
 
 template <typename T>
 struct CRect {
@@ -97,141 +158,401 @@ inline Rect<T> CRectToRect(const CRect<T>& rect)
   return result;
 }
 
-#define EXTERN_DLL_EXPORT extern "C" __declspec(dllexport)
+template <typename T1, typename T2>
+inline T1 Reinterpret(T2 value) {
+  return *reinterpret_cast<T1*>(&value);
+}
+
+
+#ifdef _WIN32
+  #define EXTERN_DLL_EXPORT extern "C" __declspec(dllexport)
+#else
+  #define EXTERN_DLL_EXPORT extern "C"
+#endif
+
 
 //////////////////////////////////////////////////////
-// EXPORTED FUNCTION DEFINITIONS
+// EXPORTED FUNCTION DECLARATIONS
 //////////////////////////////////////////////////////
 
 EXTERN_DLL_EXPORT const char* Version();
 
-// Some of the functions below will return data in the various CPath
-// and CPolyTree structures which are pointers to heap allocated
-// memory. Eventually this memory will need to be released with one
-// of the following 'DisposeExported' functions.  (This may be the
-// only safe way to release this memory since the executable
-// accessing these exported functions may use a memory manager that
-// allocates and releases heap memory in a different way. Also,
-// CPath structures that have been constructed by the executable
-// should not be destroyed using these 'DisposeExported' functions.)
-EXTERN_DLL_EXPORT void DisposeExportedCPath64(CPath64 p);
-EXTERN_DLL_EXPORT void DisposeExportedCPaths64(CPaths64& pp);
-EXTERN_DLL_EXPORT void DisposeExportedCPathD(CPathD p);
-EXTERN_DLL_EXPORT void DisposeExportedCPathsD(CPathsD& pp);
-EXTERN_DLL_EXPORT void DisposeExportedCPolyTree64(CPolyTree64*& cpt);
-EXTERN_DLL_EXPORT void DisposeExportedCPolyTreeD(CPolyTreeD*& cpt);
+EXTERN_DLL_EXPORT void DisposeArray64(int64_t*& p)
+{
+  delete[] p;
+}
 
-// Boolean clipping:
-// cliptype: None=0, Intersection=1, Union=2, Difference=3, Xor=4
-// fillrule: EvenOdd=0, NonZero=1, Positive=2, Negative=3
+EXTERN_DLL_EXPORT void DisposeArrayD(double*& p)
+{
+  delete[] p;
+}
+
 EXTERN_DLL_EXPORT int BooleanOp64(uint8_t cliptype,
   uint8_t fillrule, const CPaths64 subjects,
   const CPaths64 subjects_open, const CPaths64 clips,
   CPaths64& solution, CPaths64& solution_open,
   bool preserve_collinear = true, bool reverse_solution = false);
-EXTERN_DLL_EXPORT int BooleanOpPt64(uint8_t cliptype,
+
+EXTERN_DLL_EXPORT int BooleanOp_PolyTree64(uint8_t cliptype,
   uint8_t fillrule, const CPaths64 subjects,
   const CPaths64 subjects_open, const CPaths64 clips,
-  CPolyTree64*& solution, CPaths64& solution_open,
+  CPolyTree64& sol_tree, CPaths64& solution_open,
   bool preserve_collinear = true, bool reverse_solution = false);
+
 EXTERN_DLL_EXPORT int BooleanOpD(uint8_t cliptype,
   uint8_t fillrule, const CPathsD subjects,
   const CPathsD subjects_open, const CPathsD clips,
   CPathsD& solution, CPathsD& solution_open, int precision = 2,
   bool preserve_collinear = true, bool reverse_solution = false);
-EXTERN_DLL_EXPORT int BooleanOpPtD(uint8_t cliptype,
+
+EXTERN_DLL_EXPORT int BooleanOp_PolyTreeD(uint8_t cliptype,
   uint8_t fillrule, const CPathsD subjects,
   const CPathsD subjects_open, const CPathsD clips,
-  CPolyTreeD*& solution, CPathsD& solution_open, int precision = 2,
+  CPolyTreeD& solution, CPathsD& solution_open, int precision = 2,
   bool preserve_collinear = true, bool reverse_solution = false);
 
-// Polygon offsetting (inflate/deflate):
-// jointype: Square=0, Round=1, Miter=2
-// endtype: Polygon=0, Joined=1, Butt=2, Square=3, Round=4
 EXTERN_DLL_EXPORT CPaths64 InflatePaths64(const CPaths64 paths,
-  double delta, uint8_t jointype, uint8_t endtype, 
-  double miter_limit = 2.0, double arc_tolerance = 0.0, 
+  double delta, uint8_t jointype, uint8_t endtype,
+  double miter_limit = 2.0, double arc_tolerance = 0.0,
   bool reverse_solution = false);
+
 EXTERN_DLL_EXPORT CPathsD InflatePathsD(const CPathsD paths,
   double delta, uint8_t jointype, uint8_t endtype,
   int precision = 2, double miter_limit = 2.0,
   double arc_tolerance = 0.0, bool reverse_solution = false);
 
-// ExecuteRectClip & ExecuteRectClipLines:
-EXTERN_DLL_EXPORT CPaths64 ExecuteRectClip64(const CRect64& rect,
-  const CPaths64 paths, bool convex_only = false);
-EXTERN_DLL_EXPORT CPathsD ExecuteRectClipD(const CRectD& rect,
-  const CPathsD paths, int precision = 2, bool convex_only = false);
-EXTERN_DLL_EXPORT CPaths64 ExecuteRectClipLines64(const CRect64& rect,
+EXTERN_DLL_EXPORT CPaths64 InflatePath64(const CPath64 path,
+    double delta, uint8_t jointype, uint8_t endtype,
+    double miter_limit = 2.0, double arc_tolerance = 0.0,
+    bool reverse_solution = false);
+
+EXTERN_DLL_EXPORT CPathsD InflatePathD(const CPathD path,
+    double delta, uint8_t jointype, uint8_t endtype,
+    int precision = 2, double miter_limit = 2.0,
+    double arc_tolerance = 0.0, bool reverse_solution = false);
+
+// RectClip & RectClipLines:
+EXTERN_DLL_EXPORT CPaths64 RectClip64(const CRect64& rect,
   const CPaths64 paths);
-EXTERN_DLL_EXPORT CPathsD ExecuteRectClipLinesD(const CRectD& rect,
+EXTERN_DLL_EXPORT CPathsD RectClipD(const CRectD& rect,
+  const CPathsD paths, int precision = 2);
+EXTERN_DLL_EXPORT CPaths64 RectClipLines64(const CRect64& rect,
+  const CPaths64 paths);
+EXTERN_DLL_EXPORT CPathsD RectClipLinesD(const CRectD& rect,
   const CPathsD paths, int precision = 2);
 
 //////////////////////////////////////////////////////
 // INTERNAL FUNCTIONS
 //////////////////////////////////////////////////////
 
-inline CPath64 CreateCPath64(size_t cnt1, size_t cnt2);
-inline CPath64 CreateCPath64(const Path64& p);
-inline CPaths64 CreateCPaths64(const Paths64& pp);
-inline Path64 ConvertCPath64(const CPath64& p);
-inline Paths64 ConvertCPaths64(const CPaths64& pp);
+#ifdef USINGZ
+ZCallback64 dllCallback64 = nullptr;
+ZCallbackD  dllCallbackD  = nullptr;
 
-inline CPathD CreateCPathD(size_t cnt1, size_t cnt2);
-inline CPathD CreateCPathD(const PathD& p);
-inline CPathsD CreateCPathsD(const PathsD& pp);
-inline PathD ConvertCPathD(const CPathD& p);
-inline PathsD ConvertCPathsD(const CPathsD& pp);
+constexpr int EXPORT_VERTEX_DIMENSIONALITY = 3;
+#else    
+constexpr int EXPORT_VERTEX_DIMENSIONALITY  = 2;
+#endif 
 
-// the following function avoid multiple conversions
-inline CPathD CreateCPathD(const Path64& p, double scale);
-inline CPathsD CreateCPathsD(const Paths64& pp, double scale);
-inline Path64 ConvertCPathD(const CPathD& p, double scale);
-inline Paths64 ConvertCPathsD(const CPathsD& pp, double scale);
+template <typename T>
+static void GetPathCountAndCPathsArrayLen(const Paths<T>& paths,
+  size_t& cnt, size_t& array_len)
+{
+  array_len = 2;
+  cnt = 0;
+  for (const Path<T>& path : paths)
+    if (path.size())
+    {
+      array_len += path.size() * EXPORT_VERTEX_DIMENSIONALITY + 2;
+      ++cnt;
+    }
+}
 
-inline CPolyTree64* CreateCPolyTree64(const PolyTree64& pt);
-inline CPolyTreeD* CreateCPolyTreeD(const PolyTree64& pt, double scale);
+static size_t GetPolyPathArrayLen64(const PolyPath64& pp)
+{
+  size_t result = 2; // poly_length + child_count
+  result += pp.Polygon().size() * EXPORT_VERTEX_DIMENSIONALITY;
+  //plus nested children :)
+  for (size_t i = 0; i < pp.Count(); ++i)
+    result += GetPolyPathArrayLen64(*pp[i]);
+  return result;
+}
+
+static size_t GetPolyPathArrayLenD(const PolyPathD& pp)
+{
+  size_t result = 2; // poly_length + child_count
+  result += pp.Polygon().size() * EXPORT_VERTEX_DIMENSIONALITY;
+  //plus nested children :)
+  for (size_t i = 0; i < pp.Count(); ++i)
+    result += GetPolyPathArrayLenD(*pp[i]);
+  return result;
+}
+
+static void GetPolytreeCountAndCStorageSize64(const PolyTree64& tree,
+  size_t& cnt, size_t& array_len)
+{
+  cnt = tree.Count(); // nb: top level count only
+  array_len = GetPolyPathArrayLen64(tree);
+}
+
+static void GetPolytreeCountAndCStorageSizeD(const PolyTreeD& tree,
+  size_t& cnt, size_t& array_len)
+{
+  cnt = tree.Count(); // nb: top level count only
+  array_len = GetPolyPathArrayLenD(tree);
+}
+
+template <typename T>
+static T* CreateCPathsFromPathsT(const Paths<T>& paths)
+{
+  size_t cnt = 0, array_len = 0;
+  GetPathCountAndCPathsArrayLen(paths, cnt, array_len);
+  T* result = new T[array_len], * v = result;
+  *v++ = array_len;
+  *v++ = cnt;
+  for (const Path<T>& path : paths)
+  {
+    if (!path.size()) continue;
+    *v++ = path.size();
+    *v++ = 0;
+    for (const Point<T>& pt : path)
+    {
+      *v++ = pt.x;
+      *v++ = pt.y;
+#ifdef USINGZ
+      *v++ = Reinterpret<T>(pt.z);
+#endif
+    }
+  }
+  return result;
+}
+
+CPathsD CreateCPathsDFromPathsD(const PathsD& paths)
+{
+  if (!paths.size()) return nullptr;
+  size_t cnt, array_len;
+  GetPathCountAndCPathsArrayLen(paths, cnt, array_len);
+  CPathsD result = new double[array_len], v = result;
+  *v++ = (double)array_len;
+  *v++ = (double)cnt;
+  for (const PathD& path : paths)
+  {
+    if (!path.size()) continue;
+    *v = (double)path.size();
+    ++v; *v++ = 0;
+    for (const PointD& pt : path)
+    {
+      *v++ = pt.x;
+      *v++ = pt.y;
+#ifdef USINGZ
+      * v++ = Reinterpret<double>(pt.z);
+#endif
+    }
+  }
+  return result;
+}
+
+CPathsD CreateCPathsDFromPaths64(const Paths64& paths, double scale)
+{
+  if (!paths.size()) return nullptr;
+  size_t cnt, array_len;
+  GetPathCountAndCPathsArrayLen(paths, cnt, array_len);
+  CPathsD result = new double[array_len], v = result;
+  *v++ = (double)array_len;
+  *v++ = (double)cnt;
+  for (const Path64& path : paths)
+  {
+    if (!path.size()) continue;
+    *v = (double)path.size();
+    ++v; *v++ = 0;
+    for (const Point64& pt : path)
+    {
+      *v++ = pt.x * scale;
+      *v++ = pt.y * scale;
+#ifdef USINGZ
+      *v++ = Reinterpret<double>(pt.z);
+#endif
+    }
+  }
+  return result;
+}
+
+template <typename T>
+static Path<T> ConvertCPathToPathT(T* path)
+{
+  Path<T> result;
+  if (!path) return result;
+  T* v = path;
+  size_t cnt = static_cast<size_t>(*v);
+  v += 2; // skip 0 value
+  result.reserve(cnt);
+  for (size_t j = 0; j < cnt; ++j)
+  {
+      T x = *v++, y = *v++;
+#ifdef USINGZ
+      z_type z = Reinterpret<z_type>(*v++);
+      result.emplace_back(x, y, z);
+#else  
+      result.emplace_back(x, y);
+#endif
+  }
+  return result;
+}
+
+template <typename T>
+static Paths<T> ConvertCPathsToPathsT(T* paths)
+{
+  Paths<T> result;
+  if (!paths) return result;
+  T* v = paths; ++v;
+  size_t cnt = static_cast<size_t>(*v++);
+  result.reserve(cnt);
+  for (size_t i = 0; i < cnt; ++i)
+  {
+    size_t cnt2 = static_cast<size_t>(*v);
+    v += 2; 
+    Path<T> path;
+    path.reserve(cnt2);
+    for (size_t j = 0; j < cnt2; ++j)
+    {
+      T x = *v++, y = *v++;
+#ifdef USINGZ
+      z_type z = Reinterpret<z_type>(*v++);
+      path.emplace_back(x, y, z);
+#else
+      path.emplace_back(x, y);
+#endif
+    }
+    result.emplace_back(std::move(path));
+  }
+  return result;
+}
+
+static Path64 ConvertCPathDToPath64WithScale(const CPathD path, double scale)
+{
+    Path64 result;
+    if (!path) return result;
+    double* v = path;
+    size_t cnt = static_cast<size_t>(*v);
+    v += 2; // skip 0 value
+    result.reserve(cnt);
+    for (size_t j = 0; j < cnt; ++j)
+    {
+        double x = *v++ * scale;
+        double y = *v++ * scale;
+#ifdef USINGZ
+        z_type z = Reinterpret<z_type>(*v++);
+        result.emplace_back(x, y, z);
+#else  
+        result.emplace_back(x, y);
+#endif
+    }
+    return result;
+}
+
+static Paths64 ConvertCPathsDToPaths64(const CPathsD paths, double scale)
+{
+  Paths64 result;
+  if (!paths) return result;
+  double* v = paths;
+  ++v; // skip the first value (0)
+  size_t cnt = static_cast<size_t>(*v++);
+  result.reserve(cnt);
+  for (size_t i = 0; i < cnt; ++i)
+  {
+    size_t cnt2 = static_cast<size_t>(*v);
+    v += 2;
+    Path64 path;
+    path.reserve(cnt2);
+    for (size_t j = 0; j < cnt2; ++j)
+    {
+      double x = *v++ * scale;
+      double y = *v++ * scale;
+#ifdef USINGZ
+      z_type z = Reinterpret<z_type>(*v++);
+      path.emplace_back(x, y, z);
+#else
+      path.emplace_back(x, y);
+#endif
+    }
+    result.emplace_back(std::move(path));
+  }
+  return result;
+}
+
+static void CreateCPolyPath64(const PolyPath64* pp, int64_t*& v)
+{
+  *v++ = static_cast<int64_t>(pp->Polygon().size());
+  *v++ = static_cast<int64_t>(pp->Count());
+  for (const Point64& pt : pp->Polygon())
+  {
+    *v++ = pt.x;
+    *v++ = pt.y;
+#ifdef USINGZ   
+    * v++ = Reinterpret<int64_t>(pt.z); // raw memory copy
+#endif
+  }
+  for (size_t i = 0; i < pp->Count(); ++i)
+    CreateCPolyPath64(pp->Child(i), v);
+}
+
+static void CreateCPolyPathD(const PolyPathD* pp, double*& v)
+{
+  *v++ = static_cast<double>(pp->Polygon().size());
+  *v++ = static_cast<double>(pp->Count());
+  for (const PointD& pt : pp->Polygon())
+  {
+    *v++ = pt.x;
+    *v++ = pt.y;
+#ifdef USINGZ   
+    * v++ = Reinterpret<double>(pt.z); // raw memory copy
+#endif
+  }
+  for (size_t i = 0; i < pp->Count(); ++i)
+    CreateCPolyPathD(pp->Child(i), v);
+}
+
+static int64_t* CreateCPolyTree64(const PolyTree64& tree)
+{
+  size_t cnt, array_len;
+  GetPolytreeCountAndCStorageSize64(tree, cnt, array_len);
+  if (!cnt) return nullptr;
+  // allocate storage
+  int64_t* result = new int64_t[array_len];
+  int64_t* v = result;
+  *v++ = static_cast<int64_t>(array_len);
+  *v++ = static_cast<int64_t>(tree.Count());
+  for (size_t i = 0; i < tree.Count(); ++i)
+    CreateCPolyPath64(tree.Child(i), v);
+  return result;
+}
+
+static double* CreateCPolyTreeD(const PolyTreeD& tree)
+{
+  double scale = std::log10(tree.Scale());
+  size_t cnt, array_len;
+  GetPolytreeCountAndCStorageSizeD(tree, cnt, array_len);
+  if (!cnt) return nullptr;
+  // allocate storage
+  double* result = new double[array_len];
+  double* v = result;
+  *v++ = static_cast<double>(array_len);
+  *v++ = static_cast<double>(tree.Count());
+  for (size_t i = 0; i < tree.Count(); ++i)
+    CreateCPolyPathD(tree.Child(i), v);
+  return result;
+}
+
+//////////////////////////////////////////////////////
+// EXPORTED FUNCTION DEFINITIONS
+//////////////////////////////////////////////////////
 
 EXTERN_DLL_EXPORT const char* Version()
 {
   return CLIPPER2_VERSION;
 }
 
-EXTERN_DLL_EXPORT void DisposeExportedCPath64(CPath64 p)
-{
-  if (p) delete[] p;
-}
-
-EXTERN_DLL_EXPORT void DisposeExportedCPaths64(CPaths64& pp)
-{
-  if (!pp) return;
-  CPaths64 v = pp;
-  CPath64 cnts = *v;
-  const size_t cnt = static_cast<size_t>(cnts[1]);
-  for (size_t i = 0; i <= cnt; ++i) //nb: cnt +1
-    DisposeExportedCPath64(*v++);
-  delete[] pp;
-  pp = nullptr;
-}
-
-EXTERN_DLL_EXPORT void DisposeExportedCPathD(CPathD p)
-{
-  if (p) delete[] p;
-}
-
-EXTERN_DLL_EXPORT void DisposeExportedCPathsD(CPathsD& pp)
-{
-  if (!pp) return;
-  CPathsD v = pp;
-  CPathD cnts = *v;
-  size_t cnt = static_cast<size_t>(cnts[1]);
-  for (size_t i = 0; i <= cnt; ++i) //nb: cnt +1
-    DisposeExportedCPathD(*v++);
-  delete[] pp;
-  pp = nullptr;
-}
-
-EXTERN_DLL_EXPORT int BooleanOp64(uint8_t cliptype, 
+EXTERN_DLL_EXPORT int BooleanOp64(uint8_t cliptype,
   uint8_t fillrule, const CPaths64 subjects,
   const CPaths64 subjects_open, const CPaths64 clips,
   CPaths64& solution, CPaths64& solution_open,
@@ -239,50 +560,58 @@ EXTERN_DLL_EXPORT int BooleanOp64(uint8_t cliptype,
 {
   if (cliptype > static_cast<uint8_t>(ClipType::Xor)) return -4;
   if (fillrule > static_cast<uint8_t>(FillRule::Negative)) return -3;
-  
+
   Paths64 sub, sub_open, clp, sol, sol_open;
-  sub       = ConvertCPaths64(subjects);
-  sub_open  = ConvertCPaths64(subjects_open);
-  clp       = ConvertCPaths64(clips);
+  sub       = ConvertCPathsToPathsT(subjects);
+  sub_open  = ConvertCPathsToPathsT(subjects_open);
+  clp       = ConvertCPathsToPathsT(clips);
 
   Clipper64 clipper;
-  clipper.PreserveCollinear = preserve_collinear;
-  clipper.ReverseSolution = reverse_solution;
+  clipper.PreserveCollinear(preserve_collinear);
+  clipper.ReverseSolution(reverse_solution);
+#ifdef USINGZ
+  if (dllCallback64)
+    clipper.SetZCallback(dllCallback64);
+#endif
   if (sub.size() > 0) clipper.AddSubject(sub);
   if (sub_open.size() > 0) clipper.AddOpenSubject(sub_open);
   if (clp.size() > 0) clipper.AddClip(clp);
-  if (!clipper.Execute(ClipType(cliptype), FillRule(fillrule), sol, sol_open)) 
+  if (!clipper.Execute(ClipType(cliptype), FillRule(fillrule), sol, sol_open))
     return -1; // clipping bug - should never happen :)
-  solution = CreateCPaths64(sol);
-  solution_open = CreateCPaths64(sol_open);
+  solution = CreateCPathsFromPathsT(sol);
+  solution_open = CreateCPathsFromPathsT(sol_open);
   return 0; //success !!
 }
 
-EXTERN_DLL_EXPORT int BooleanOpPt64(uint8_t cliptype,
+EXTERN_DLL_EXPORT int BooleanOp_PolyTree64(uint8_t cliptype,
   uint8_t fillrule, const CPaths64 subjects,
   const CPaths64 subjects_open, const CPaths64 clips,
-  CPolyTree64*& solution, CPaths64& solution_open,
+  CPolyTree64& sol_tree, CPaths64& solution_open,
   bool preserve_collinear, bool reverse_solution)
 {
   if (cliptype > static_cast<uint8_t>(ClipType::Xor)) return -4;
   if (fillrule > static_cast<uint8_t>(FillRule::Negative)) return -3;
   Paths64 sub, sub_open, clp, sol_open;
-  sub = ConvertCPaths64(subjects);
-  sub_open = ConvertCPaths64(subjects_open);
-  clp = ConvertCPaths64(clips);
+  sub = ConvertCPathsToPathsT(subjects);
+  sub_open = ConvertCPathsToPathsT(subjects_open);
+  clp = ConvertCPathsToPathsT(clips);
 
-  PolyTree64 pt;
+  PolyTree64 tree;
   Clipper64 clipper;
-  clipper.PreserveCollinear = preserve_collinear;
-  clipper.ReverseSolution = reverse_solution;
+  clipper.PreserveCollinear(preserve_collinear);
+  clipper.ReverseSolution(reverse_solution);
+#ifdef USINGZ
+  if (dllCallback64)
+    clipper.SetZCallback(dllCallback64);
+#endif
   if (sub.size() > 0) clipper.AddSubject(sub);
   if (sub_open.size() > 0) clipper.AddOpenSubject(sub_open);
   if (clp.size() > 0) clipper.AddClip(clp);
-  if (!clipper.Execute(ClipType(cliptype), FillRule(fillrule), pt, sol_open))
+  if (!clipper.Execute(ClipType(cliptype), FillRule(fillrule), tree, sol_open))
     return -1; // clipping bug - should never happen :)
 
-  solution = CreateCPolyTree64(pt);
-  solution_open = CreateCPaths64(sol_open);
+  sol_tree = CreateCPolyTree64(tree);
+  solution_open = CreateCPathsFromPathsT(sol_open);
   return 0; //success !!
 }
 
@@ -295,60 +624,64 @@ EXTERN_DLL_EXPORT int BooleanOpD(uint8_t cliptype,
   if (precision < -8 || precision > 8) return -5;
   if (cliptype > static_cast<uint8_t>(ClipType::Xor)) return -4;
   if (fillrule > static_cast<uint8_t>(FillRule::Negative)) return -3;
-  const double scale = std::pow(10, precision);
+  //const double scale = std::pow(10, precision);
 
-  Paths64 sub, sub_open, clp, sol, sol_open;
-  sub       = ConvertCPathsD(subjects, scale);
-  sub_open  = ConvertCPathsD(subjects_open, scale);
-  clp       = ConvertCPathsD(clips, scale);
+  PathsD sub, sub_open, clp, sol, sol_open;
+  sub       = ConvertCPathsToPathsT(subjects);
+  sub_open  = ConvertCPathsToPathsT(subjects_open);
+  clp       = ConvertCPathsToPathsT(clips);
 
-  Clipper64 clipper;
-  clipper.PreserveCollinear = preserve_collinear;
-  clipper.ReverseSolution = reverse_solution;
+  ClipperD clipper(precision);
+  clipper.PreserveCollinear(preserve_collinear);
+  clipper.ReverseSolution(reverse_solution);
+#ifdef USINGZ
+  if (dllCallbackD)
+    clipper.SetZCallback(dllCallbackD);
+#endif
   if (sub.size() > 0) clipper.AddSubject(sub);
-  if (sub_open.size() > 0)
-    clipper.AddOpenSubject(sub_open);
+  if (sub_open.size() > 0) clipper.AddOpenSubject(sub_open);
   if (clp.size() > 0) clipper.AddClip(clp);
   if (!clipper.Execute(ClipType(cliptype),
     FillRule(fillrule), sol, sol_open)) return -1;
-
-  if (sol.size() > 0) solution = CreateCPathsD(sol, 1 / scale);
-  if (sol_open.size() > 0)
-    solution_open = CreateCPathsD(sol_open, 1 / scale);
+  solution = CreateCPathsDFromPathsD(sol);
+  solution_open = CreateCPathsDFromPathsD(sol_open);
   return 0;
 }
 
-EXTERN_DLL_EXPORT int BooleanOpPtD(uint8_t cliptype,
+EXTERN_DLL_EXPORT int BooleanOp_PolyTreeD(uint8_t cliptype,
   uint8_t fillrule, const CPathsD subjects,
   const CPathsD subjects_open, const CPathsD clips,
-  CPolyTreeD*& solution, CPathsD& solution_open, int precision,
+  CPolyTreeD& solution, CPathsD& solution_open, int precision,
   bool preserve_collinear, bool reverse_solution)
 {
   if (precision < -8 || precision > 8) return -5;
   if (cliptype > static_cast<uint8_t>(ClipType::Xor)) return -4;
   if (fillrule > static_cast<uint8_t>(FillRule::Negative)) return -3;
-  
-  const double scale = std::pow(10, precision);
-  Paths64 sub, sub_open, clp, sol_open;
-  sub       = ConvertCPathsD(subjects, scale);
-  sub_open  = ConvertCPathsD(subjects_open, scale);
-  clp       = ConvertCPathsD(clips, scale);
+  //double scale = std::pow(10, precision);
 
-  PolyTree64 sol;
-  Clipper64 clipper;
-  clipper.PreserveCollinear = preserve_collinear;
-  clipper.ReverseSolution = reverse_solution;
+  int err = 0;
+  PathsD sub, sub_open, clp, sol_open;
+  sub       = ConvertCPathsToPathsT(subjects);
+  sub_open  = ConvertCPathsToPathsT(subjects_open);
+  clp       = ConvertCPathsToPathsT(clips);
+
+  PolyTreeD tree;
+  ClipperD clipper(precision);
+  clipper.PreserveCollinear(preserve_collinear);
+  clipper.ReverseSolution(reverse_solution);
+#ifdef USINGZ
+  if (dllCallbackD)
+    clipper.SetZCallback(dllCallbackD);
+#endif
   if (sub.size() > 0) clipper.AddSubject(sub);
-  if (sub_open.size() > 0)
-    clipper.AddOpenSubject(sub_open);
+  if (sub_open.size() > 0) clipper.AddOpenSubject(sub_open);
   if (clp.size() > 0) clipper.AddClip(clp);
-  if (!clipper.Execute(ClipType(cliptype),
-    FillRule(fillrule), sol, sol_open)) return -1;
+  if (!clipper.Execute(ClipType(cliptype), FillRule(fillrule), tree, sol_open))
+    return -1; // clipping bug - should never happen :)
 
-  solution = CreateCPolyTreeD(sol, 1 / scale);
-  if (sol_open.size() > 0)
-    solution_open = CreateCPathsD(sol_open, 1 / scale);
-  return 0;
+  solution = CreateCPolyTreeD(tree);
+  solution_open = CreateCPathsDFromPathsD(sol_open);
+  return 0; //success !!
 }
 
 EXTERN_DLL_EXPORT CPaths64 InflatePaths64(const CPaths64 paths,
@@ -356,14 +689,13 @@ EXTERN_DLL_EXPORT CPaths64 InflatePaths64(const CPaths64 paths,
   double arc_tolerance, bool reverse_solution)
 {
   Paths64 pp;
-  pp = ConvertCPaths64(paths);
-
-  ClipperOffset clip_offset( miter_limit, 
+  pp = ConvertCPathsToPathsT(paths);
+  ClipperOffset clip_offset( miter_limit,
     arc_tolerance, reverse_solution);
   clip_offset.AddPaths(pp, JoinType(jointype), EndType(endtype));
-  Paths64 result; 
+  Paths64 result;
   clip_offset.Execute(delta, result);
-  return CreateCPaths64(result);
+  return CreateCPathsFromPathsT(result);
 }
 
 EXTERN_DLL_EXPORT CPathsD InflatePathsD(const CPathsD paths,
@@ -372,28 +704,59 @@ EXTERN_DLL_EXPORT CPathsD InflatePathsD(const CPathsD paths,
   double arc_tolerance, bool reverse_solution)
 {
   if (precision < -8 || precision > 8 || !paths) return nullptr;
+
   const double scale = std::pow(10, precision);
   ClipperOffset clip_offset(miter_limit, arc_tolerance, reverse_solution);
-  Paths64 pp = ConvertCPathsD(paths, scale);
+  Paths64 pp = ConvertCPathsDToPaths64(paths, scale);
   clip_offset.AddPaths(pp, JoinType(jointype), EndType(endtype));
   Paths64 result;
   clip_offset.Execute(delta * scale, result);
-  return CreateCPathsD(result, 1/scale);
+  return CreateCPathsDFromPaths64(result, 1 / scale);
 }
 
-EXTERN_DLL_EXPORT CPaths64 ExecuteRectClip64(const CRect64& rect,
-  const CPaths64 paths, bool convex_only)
+
+EXTERN_DLL_EXPORT CPaths64 InflatePath64(const CPath64 path,
+    double delta, uint8_t jointype, uint8_t endtype, double miter_limit,
+    double arc_tolerance, bool reverse_solution)
+{
+    Path64 pp;
+    pp = ConvertCPathToPathT(path);
+    ClipperOffset clip_offset(miter_limit,
+        arc_tolerance, reverse_solution);
+    clip_offset.AddPath(pp, JoinType(jointype), EndType(endtype));
+    Paths64 result;
+    clip_offset.Execute(delta, result);
+    return CreateCPathsFromPathsT(result);
+}
+
+EXTERN_DLL_EXPORT CPathsD InflatePathD(const CPathD path,
+    double delta, uint8_t jointype, uint8_t endtype,
+    int precision, double miter_limit,
+    double arc_tolerance, bool reverse_solution)
+{
+    if (precision < -8 || precision > 8 || !path) return nullptr;
+
+    const double scale = std::pow(10, precision);
+    ClipperOffset clip_offset(miter_limit, arc_tolerance, reverse_solution);
+    Path64 pp = ConvertCPathDToPath64WithScale(path, scale);
+    clip_offset.AddPath(pp, JoinType(jointype), EndType(endtype));
+    Paths64 result;
+    clip_offset.Execute(delta * scale, result);
+
+    return CreateCPathsDFromPaths64(result, 1 / scale);
+}
+
+EXTERN_DLL_EXPORT CPaths64 RectClip64(const CRect64& rect, const CPaths64 paths)
 {
   if (CRectIsEmpty(rect) || !paths) return nullptr;
   Rect64 r64 = CRectToRect(rect);
-  class RectClip rc(r64);
-  Paths64 pp = ConvertCPaths64(paths);
-  Paths64 result = rc.Execute(pp, convex_only);
-  return CreateCPaths64(result);
+  class RectClip64 rc(r64);
+  Paths64 pp = ConvertCPathsToPathsT(paths);
+  Paths64 result = rc.Execute(pp);
+  return CreateCPathsFromPathsT(result);
 }
 
-EXTERN_DLL_EXPORT CPathsD ExecuteRectClipD(const CRectD& rect,
-  const CPathsD paths, int precision, bool convex_only)
+EXTERN_DLL_EXPORT CPathsD RectClipD(const CRectD& rect, const CPathsD paths, int precision)
 {
   if (CRectIsEmpty(rect) || !paths) return nullptr;
   if (precision < -8 || precision > 8) return nullptr;
@@ -401,374 +764,69 @@ EXTERN_DLL_EXPORT CPathsD ExecuteRectClipD(const CRectD& rect,
 
   RectD r = CRectToRect(rect);
   Rect64 rec = ScaleRect<int64_t, double>(r, scale);
-  Paths64 pp = ConvertCPathsD(paths, scale);
-  class RectClip rc(rec);
-  Paths64 result = rc.Execute(pp, convex_only);
-  return CreateCPathsD(result, 1/scale);
+  Paths64 pp = ConvertCPathsDToPaths64(paths, scale);
+  class RectClip64 rc(rec);
+  Paths64 result = rc.Execute(pp);
+
+  return CreateCPathsDFromPaths64(result, 1 / scale);
 }
 
-EXTERN_DLL_EXPORT CPaths64 ExecuteRectClipLines64(const CRect64& rect,
+EXTERN_DLL_EXPORT CPaths64 RectClipLines64(const CRect64& rect,
   const CPaths64 paths)
 {
   if (CRectIsEmpty(rect) || !paths) return nullptr;
   Rect64 r = CRectToRect(rect);
-  class RectClipLines rcl (r);
-  Paths64 pp = ConvertCPaths64(paths);
+  class RectClipLines64 rcl (r);
+  Paths64 pp = ConvertCPathsToPathsT(paths);
   Paths64 result = rcl.Execute(pp);
-  return CreateCPaths64(result);
+  return CreateCPathsFromPathsT(result);
 }
 
-EXTERN_DLL_EXPORT CPathsD ExecuteRectClipLinesD(const CRectD& rect,
+EXTERN_DLL_EXPORT CPathsD RectClipLinesD(const CRectD& rect,
   const CPathsD paths, int precision)
 {
   if (CRectIsEmpty(rect) || !paths) return nullptr;
   if (precision < -8 || precision > 8) return nullptr;
+
   const double scale = std::pow(10, precision);
   Rect64 r = ScaleRect<int64_t, double>(CRectToRect(rect), scale);
-  class RectClipLines rcl(r);
-  Paths64 pp = ConvertCPathsD(paths, scale);
+  class RectClipLines64 rcl(r);
+  Paths64 pp = ConvertCPathsDToPaths64(paths, scale);
   Paths64 result = rcl.Execute(pp);
-  return CreateCPathsD(result, 1/scale);
+  return CreateCPathsDFromPaths64(result, 1 / scale);
 }
 
-inline CPath64 CreateCPath64(size_t cnt1, size_t cnt2)
+EXTERN_DLL_EXPORT CPaths64 MinkowskiSum64(const CPath64& cpattern, const CPath64& cpath, bool is_closed)
 {
-  // allocates memory for CPath64, fills in the counter, and
-  // returns the structure ready to be filled with path data
-  CPath64 result = new int64_t[2 + cnt1 *2];
-  result[0] = cnt1;
-  result[1] = cnt2;
-  return result;
+  Path64 path = ConvertCPathToPathT(cpath);
+  Path64 pattern = ConvertCPathToPathT(cpattern);
+  Paths64 solution = MinkowskiSum(pattern, path, is_closed);
+  return CreateCPathsFromPathsT(solution);
 }
 
-inline CPath64 CreateCPath64(const Path64& p)
+EXTERN_DLL_EXPORT CPaths64 MinkowskiDiff64(const CPath64& cpattern, const CPath64& cpath, bool is_closed)
 {
-  // allocates memory for CPath64, fills the counter
-  // and returns the memory filled with path data
-  size_t cnt = p.size();
-  if (!cnt) return nullptr;
-  CPath64 result = CreateCPath64(cnt, 0);
-  CPath64 v = result;
-  v += 2; // skip counters
-  for (const Point64& pt : p)
-  {
-    *v++ = pt.x;
-    *v++ = pt.y;
-  }
-  return result;
+  Path64 path = ConvertCPathToPathT(cpath);
+  Path64 pattern = ConvertCPathToPathT(cpattern);
+  Paths64 solution = MinkowskiDiff(pattern, path, is_closed);
+  return CreateCPathsFromPathsT(solution);
 }
 
-inline Path64 ConvertCPath64(const CPath64& p)
+#ifdef USINGZ
+typedef void (*DLLZCallback64)(const Point64& e1bot, const Point64& e1top, const Point64& e2bot, const Point64& e2top, Point64& pt);
+typedef void (*DLLZCallbackD)(const PointD& e1bot, const PointD& e1top, const PointD& e2bot, const PointD& e2top, PointD& pt);
+
+EXTERN_DLL_EXPORT void SetZCallback64(DLLZCallback64 callback)
 {
-  Path64 result;
-  if (p && *p)
-  {
-    CPath64 v = p;
-    const size_t cnt = static_cast<size_t>(p[0]);
-    v += 2; // skip counters
-    result.reserve(cnt);
-    for (size_t i = 0; i < cnt; ++i)
-    {
-      // x,y here avoids right to left function evaluation
-      // result.push_back(Point64(*v++, *v++));
-      int64_t x = *v++;
-      int64_t y = *v++;
-      result.push_back(Point64(x, y));
-    }
-  }
-  return result;
+  dllCallback64 = callback;
 }
 
-inline CPaths64 CreateCPaths64(const Paths64& pp)
+EXTERN_DLL_EXPORT void SetZCallbackD(DLLZCallbackD callback)
 {
-  // allocates memory for multiple CPath64 and
-  // and returns this memory filled with path data
-  size_t cnt = pp.size(), cnt2 = cnt;
-
-  // don't allocate space for empty paths
-  for (size_t i = 0; i < cnt; ++i)
-    if (!pp[i].size()) --cnt2;
-  if (!cnt2) return nullptr;
-
-  CPaths64 result = new int64_t* [cnt2 + 1];
-  CPaths64 v = result;
-  *v++ = CreateCPath64(0, cnt2); // assign a counter path
-  for (const Path64& p : pp)
-  {
-    *v = CreateCPath64(p);
-    if (*v) ++v;
-  }
-  return result;
+  dllCallbackD = callback;
 }
 
-inline Paths64 ConvertCPaths64(const CPaths64& pp)
-{
-  Paths64 result;
-  if (pp) 
-  {
-    CPaths64 v = pp;
-    CPath64 cnts = pp[0];
-    const size_t cnt = static_cast<size_t>(cnts[1]); // nb 2nd cnt
-    ++v; // skip cnts
-    result.reserve(cnt);
-    for (size_t i = 0; i < cnt; ++i)
-      result.push_back(ConvertCPath64(*v++));
-  }
-  return result;
-}
+#endif
 
-inline CPathD CreateCPathD(size_t cnt1, size_t cnt2)
-{
-  // allocates memory for CPathD, fills in the counter, and
-  // returns the structure ready to be filled with path data
-  CPathD result = new double[2 + cnt1 * 2];
-  result[0] = static_cast<double>(cnt1);
-  result[1] = static_cast<double>(cnt2);
-  return result;
 }
-
-inline CPathD CreateCPathD(const PathD& p)
-{
-  // allocates memory for CPath, fills the counter
-  // and returns the memory fills with path data
-  size_t cnt = p.size();
-  if (!cnt) return nullptr; 
-  CPathD result = CreateCPathD(cnt, 0);
-  CPathD v = result;
-  v += 2; // skip counters
-  for (const PointD& pt : p)
-  {
-    *v++ = pt.x;
-    *v++ = pt.y;
-  }
-  return result;
-}
-
-inline PathD ConvertCPathD(const CPathD& p)
-{
-  PathD result;
-  if (p)
-  {
-    CPathD v = p;
-    size_t cnt = static_cast<size_t>(v[0]);
-    v += 2; // skip counters
-    result.reserve(cnt);
-    for (size_t i = 0; i < cnt; ++i)
-    {
-      // x,y here avoids right to left function evaluation
-      // result.push_back(PointD(*v++, *v++));
-      double x = *v++;
-      double y = *v++;
-      result.push_back(PointD(x, y));
-    }
-  }
-  return result;
-}
-
-inline CPathsD CreateCPathsD(const PathsD& pp)
-{
-  size_t cnt = pp.size(), cnt2 = cnt;
-  // don't allocate space for empty paths
-  for (size_t i = 0; i < cnt; ++i)
-    if (!pp[i].size()) --cnt2;
-  if (!cnt2) return nullptr;
-  CPathsD result = new double * [cnt2 + 1];
-  CPathsD v = result;
-  *v++ = CreateCPathD(0, cnt2); // assign counter path
-  for (const PathD& p : pp)
-  {
-    *v = CreateCPathD(p);
-    if (*v) { ++v; }
-  }
-  return result;
-}
-
-inline PathsD ConvertCPathsD(const CPathsD& pp)
-{
-  PathsD result;
-  if (pp)
-  {
-    CPathsD v = pp;
-    CPathD cnts = v[0];
-    size_t cnt = static_cast<size_t>(cnts[1]);
-    ++v; // skip cnts path
-    result.reserve(cnt);
-    for (size_t i = 0; i < cnt; ++i)
-      result.push_back(ConvertCPathD(*v++));
-  }
-  return result;
-}
-
-inline Path64 ConvertCPathD(const CPathD& p, double scale)
-{
-  Path64 result;
-  if (p)
-  {
-    CPathD v = p;
-    size_t cnt = static_cast<size_t>(*v);
-    v += 2; // skip counters
-    result.reserve(cnt);
-    for (size_t i = 0; i < cnt; ++i)
-    {
-      // x,y here avoids right to left function evaluation
-      // result.push_back(PointD(*v++, *v++));
-      double x = *v++ * scale;
-      double y = *v++ * scale;
-      result.push_back(Point64(x, y));
-    }
-  }
-  return result;
-}
-
-inline Paths64 ConvertCPathsD(const CPathsD& pp, double scale)
-{
-  Paths64 result;
-  if (pp)
-  {
-    CPathsD v = pp;
-    CPathD cnts = v[0];
-    size_t cnt = static_cast<size_t>(cnts[1]);
-    result.reserve(cnt);
-    ++v; // skip cnts path
-    for (size_t i = 0; i < cnt; ++i)
-      result.push_back(ConvertCPathD(*v++, scale));
-  }
-  return result;
-}
-
-inline CPathD CreateCPathD(const Path64& p, double scale)
-{
-  // allocates memory for CPathD, fills in the counter, and
-  // returns the structure filled with *scaled* path data
-  size_t cnt = p.size();
-  if (!cnt) return nullptr;
-  CPathD result = CreateCPathD(cnt, 0);
-  CPathD v = result;
-  v += 2; // skip cnts 
-  for (const Point64& pt : p)
-  {
-    *v++ = pt.x * scale;
-    *v++ = pt.y * scale;
-  }
-  return result;
-}
-
-inline CPathsD CreateCPathsD(const Paths64& pp, double scale)
-{
-  // allocates memory for *multiple* CPathD, and
-  // returns the structure filled with scaled path data
-  size_t cnt = pp.size(), cnt2 = cnt;
-  // don't allocate space for empty paths
-  for (size_t i = 0; i < cnt; ++i)
-    if (!pp[i].size()) --cnt2;
-  if (!cnt2) return nullptr;
-  CPathsD result = new double* [cnt2 + 1];
-  CPathsD v = result;
-  *v++ = CreateCPathD(0, cnt2);
-  for (const Path64& p : pp)
-  {
-    *v = CreateCPathD(p, scale);
-    if (*v) ++v;
-  }
-  return result;
-}
-
-inline void InitCPolyPath64(CPolyTree64* cpt, 
-  bool is_hole, const std::unique_ptr <PolyPath64>& pp)
-{
-  cpt->polygon = CreateCPath64(pp->Polygon());
-  cpt->is_hole = is_hole;
-  size_t child_cnt = pp->Count();
-  cpt->child_count = static_cast<uint32_t>(child_cnt);
-  cpt->childs = nullptr;
-  if (!child_cnt) return;
-  cpt->childs = new CPolyPath64[child_cnt];
-  CPolyPath64* child = cpt->childs;
-  for (const std::unique_ptr <PolyPath64>& pp_child : *pp)
-    InitCPolyPath64(child++, !is_hole, pp_child);  
-}
-
-inline CPolyTree64* CreateCPolyTree64(const PolyTree64& pt)
-{
-  CPolyTree64* result = new CPolyTree64();
-  result->polygon = nullptr;
-  result->is_hole = false;
-  size_t child_cnt = pt.Count();
-  result->childs = nullptr;
-  result->child_count = static_cast<uint32_t>(child_cnt);
-  if (!child_cnt) return result;
-  result->childs = new CPolyPath64[child_cnt];
-  CPolyPath64* child = result->childs;
-  for (const std::unique_ptr <PolyPath64>& pp : pt)
-    InitCPolyPath64(child++, true, pp);
-  return result;
-}
-
-inline void DisposeCPolyPath64(CPolyPath64* cpp) 
-{
-  if (!cpp->child_count) return;
-  CPolyPath64* child = cpp->childs;
-  for (size_t i = 0; i < cpp->child_count; ++i)
-    DisposeCPolyPath64(child);
-  delete[] cpp->childs;
-}
-
-EXTERN_DLL_EXPORT void DisposeExportedCPolyTree64(CPolyTree64*& cpt)
-{
-  if (!cpt) return;
-  DisposeCPolyPath64(cpt);
-  delete cpt;
-  cpt = nullptr;
-}
-
-inline void InitCPolyPathD(CPolyTreeD* cpt,
-  bool is_hole, const std::unique_ptr <PolyPath64>& pp, double scale)
-{
-  cpt->polygon = CreateCPathD(pp->Polygon(), scale);
-  cpt->is_hole = is_hole;
-  size_t child_cnt = pp->Count();
-  cpt->child_count = static_cast<uint32_t>(child_cnt);
-  cpt->childs = nullptr;
-  if (!child_cnt) return;
-  cpt->childs = new CPolyPathD[child_cnt];
-  CPolyPathD* child = cpt->childs;
-  for (const std::unique_ptr <PolyPath64>& pp_child : *pp)
-    InitCPolyPathD(child++, !is_hole, pp_child, scale);
-}
-
-inline CPolyTreeD* CreateCPolyTreeD(const PolyTree64& pt, double scale)
-{
-  CPolyTreeD* result = new CPolyTreeD();
-  result->polygon = nullptr;
-  result->is_hole = false;
-  size_t child_cnt = pt.Count();
-  result->child_count = static_cast<uint32_t>(child_cnt);
-  result->childs = nullptr;
-  if (!child_cnt) return result;
-  result->childs = new CPolyPathD[child_cnt];
-  CPolyPathD* child = result->childs;
-  for (const std::unique_ptr <PolyPath64>& pp : pt)
-    InitCPolyPathD(child++, true, pp, scale);
-  return result;
-}
-
-inline void DisposeCPolyPathD(CPolyPathD* cpp)
-{
-  if (!cpp->child_count) return;
-  CPolyPathD* child = cpp->childs;
-  for (size_t i = 0; i < cpp->child_count; ++i)
-    DisposeCPolyPathD(child++);
-  delete[] cpp->childs;
-}
-
-EXTERN_DLL_EXPORT void DisposeExportedCPolyTreeD(CPolyTreeD*& cpt)
-{
-  if (!cpt) return;
-  DisposeCPolyPathD(cpt);
-  delete cpt;
-  cpt = nullptr;
-}
-
-}  // end Clipper2Lib namespace
-  
 #endif  // CLIPPER2_EXPORT_H

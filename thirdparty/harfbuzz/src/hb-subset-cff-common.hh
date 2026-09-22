@@ -115,7 +115,7 @@ struct str_encoder_t
       encode_byte (OpCode_BCD);
 
       // Based on:
-      // https://github.com/fonttools/fonttools/blob/97ed3a61cde03e17b8be36f866192fbd56f1d1a7/Lib/fontTools/misc/psCharStrings.py#L265-L294
+      // https://github.com/fonttools/fonttools/blob/0738c41dfbcbc213ab9263f486ef0cccc6eb5ce5/Lib/fontTools/misc/psCharStrings.py#L267-L316
 
       char buf[16];
       /* FontTools has the following comment:
@@ -133,12 +133,55 @@ struct str_encoder_t
       (void) hb_uselocale (((void) freelocale (clocale), oldlocale));
 
       char *s = buf;
+      size_t len;
+      char *comma = strchr (s, ',');
+      if (comma) // Comma for some European locales in case no uselocale available.
+	*comma = '.';
       if (s[0] == '0' && s[1] == '.')
 	s++;
       else if (s[0] == '-' && s[1] == '0' && s[2] == '.')
       {
 	s[1] = '-';
 	s++;
+      }
+      else if ((len = strlen (s)) > 3 && !strcmp (s + len - 3, "000"))
+      {
+	unsigned exponent = len - 3;
+	char *s2 = s + exponent - 1;
+	while (*s2 == '0' && exponent > 1)
+	{
+	  s2--;
+	  exponent++;
+	}
+	snprintf (s2 + 1, sizeof (buf) - (s2 + 1 - buf), "E%u", exponent);
+      }
+      else
+      {
+	char *dot = strchr (s, '.');
+	char *e = strchr (s, 'E');
+	if (dot && e)
+	{
+	  memmove (dot, dot + 1, e - (dot + 1));
+	  int exponent = atoi (e + 1);
+	  int new_exponent = exponent - (e - (dot + 1));
+	  if (new_exponent == 1)
+	  {
+	    e[-1] = '0';
+	    e[0] = '\0';
+	  }
+	  else
+	    snprintf (e - 1, sizeof (buf) - (e - 1 - buf), "E%d", new_exponent);
+	}
+      }
+      if ((s[0] == '.' && s[1] == '0') || (s[0] == '-' && s[1] == '.' && s[2] == '0'))
+      {
+	int sign = s[0] == '-';
+	char *s2 = s + sign + 1;
+	while (*s2 == '0')
+	  s2++;
+	len = strlen (s2);
+	memmove (s + sign, s2, len);
+	snprintf (s + sign + len, sizeof (buf) - (s + sign + len - buf), "E-%u", (unsigned) (strlen (s + sign) - 1));
       }
       hb_vector_t<char> nibbles;
       while (*s)
@@ -155,20 +198,22 @@ struct str_encoder_t
 	    {
 	      s++;
 	      nibbles.push (0x0C); // E-
-	      continue;
+	    } else {
+	      if (c2 == '+')
+		s++;
+	      nibbles.push (0x0B); // E
 	    }
-	    if (c2 == '+')
+	    if (*s == '0')
 	      s++;
-	    nibbles.push (0x0B); // E
 	    continue;
 	  }
 
-	  case '.': case ',': // Comma for some European locales in case no uselocale available.
+	  case '.':
 	    nibbles.push (0x0A); // .
 	    continue;
 
 	  case '-':
-	    nibbles.push (0x0E); // .
+	    nibbles.push (0x0E); // -
 	    continue;
 	}
 
@@ -276,11 +321,38 @@ struct cff_font_dict_op_serializer_t : op_serializer_t
   }
 };
 
+/* CharString command for specialization */
+struct cs_command_t
+{
+  hb_vector_t<number_t> args;
+  hb_vector_t<unsigned char> mask_bytes; /* For hintmask/cntrmask payload bytes. */
+  op_code_t op;
+
+  cs_command_t () : op (OpCode_Invalid) {}
+  cs_command_t (op_code_t op_) : op (op_) {}
+};
+
+typedef hb_vector_t<cs_command_t> *cs_command_vec_t;
+
+struct cff2_instancing_plan_t;
+
 struct flatten_param_t
 {
+  flatten_param_t (str_buff_t &flatStr_,
+                   bool drop_hints_,
+                   const hb_subset_plan_t *plan_,
+                   cs_command_vec_t commands_ = nullptr)
+    : flatStr (flatStr_), drop_hints (drop_hints_), plan (plan_), commands (commands_) {}
+
   str_buff_t     &flatStr;
   bool	drop_hints;
   const hb_subset_plan_t *plan;
+  cs_command_vec_t commands; /* Optional: capture parsed commands for specialization */
+
+  /* CFF2 partial instancing: when set, blends are rewritten against the
+   * instanced variation store instead of being copied or flattened. */
+  const cff2_instancing_plan_t *instancer = nullptr;
+  bool emitted_blend = false;
 };
 
 template <typename ACC, typename ENV, typename OPSET, op_code_t endchar_op=OpCode_Invalid>
@@ -290,7 +362,8 @@ struct subr_flattener_t
 		    const hb_subset_plan_t *plan_)
 		   : acc (acc_), plan (plan_) {}
 
-  bool flatten (str_buff_vec_t &flat_charstrings)
+  bool flatten (str_buff_vec_t &flat_charstrings,
+                hb_vector_t<hb_vector_t<cs_command_t>> *command_capture = nullptr)
   {
     unsigned count = plan->num_output_glyphs ();
     if (!flat_charstrings.resize_exact (count))
@@ -316,7 +389,8 @@ struct subr_flattener_t
       flatten_param_t  param = {
         flat_charstrings.arrayZ[i],
         (bool) (plan->flags & HB_SUBSET_FLAGS_NO_HINTING),
-	plan
+	plan,
+	command_capture ? &(*command_capture)[i] : nullptr
       };
       if (unlikely (!interp.interpret (param)))
 	return false;
@@ -371,29 +445,81 @@ struct parsed_cs_str_t : parsed_values_t<parsed_cs_op_t>
     parsed (false),
     hint_dropped (false),
     has_prefix_ (false),
-    has_calls_ (false)
+    has_calls_ (false),
+    coalescing_ (false)
   {
     SUPER::init ();
   }
 
+  HB_ALWAYS_INLINE
   void add_op (op_code_t op, const byte_str_ref_t& str_ref)
   {
-    if (!is_parsed ())
-      SUPER::add_op (op, str_ref);
+    if (is_parsed ()) return;
+    if (coalescing_)
+    {
+      /* Do not record individual tokens; only note their boundaries.
+       * Bytes are flushed as verbatim segments at call sites and at
+       * the end of the string.  Only enabled when per-op granularity
+       * is not needed later for hint analysis. */
+      penultimate_end_ = last_end_;
+      last_end_ = str_ref.get_offset ();
+      if (unlikely (op == OpCode_return || op == OpCode_endchar))
+	flush_segment (str_ref, last_end_);
+      return;
+    }
+    SUPER::add_op (op, str_ref);
   }
 
   void add_call_op (op_code_t op, const byte_str_ref_t& str_ref, unsigned int subr_num)
   {
-    if (!is_parsed ())
+    if (is_parsed ()) return;
+    has_calls_ = true;
+
+    if (coalescing_)
     {
-      has_calls_ = true;
-
-      /* Pop the subroutine number. */
-      values.pop ();
-
+      /* Flush bytes preceding the subroutine-number token, then skip
+       * over the number: it is re-encoded with the new bias. */
+      flush_segment (str_ref, penultimate_end_);
+      opStart = last_end_;
       SUPER::add_op (op, str_ref, {subr_num});
+      penultimate_end_ = last_end_ = str_ref.get_offset ();
+      return;
     }
+
+    /* Pop the subroutine number. */
+    values.pop ();
+
+    SUPER::add_op (op, str_ref, {subr_num});
   }
+
+  /* Flush pending bytes [opStart, end) as verbatim segment entries. */
+  void flush_segment (const byte_str_ref_t& str_ref, unsigned end)
+  {
+    unsigned start = opStart;
+    if (end <= start) return;
+    while (start < end)
+    {
+      auto arr = str_ref.sub_array (start, hb_min (end - start, 255u));
+      if (unlikely (!arr.length)) break;
+      parsed_cs_op_t *val = values.push ();
+      val->ptr = arr.arrayZ;
+      val->length = arr.length;
+      start += arr.length;
+    }
+    opStart = end;
+  }
+
+  /* For coalescing mode: flush any pending bytes through the current
+   * position; used where the string ends without an explicit
+   * return/endchar op (CFF2). */
+  void flush_coalesced (const byte_str_ref_t& str_ref)
+  {
+    if (coalescing_ && !is_parsed ())
+      flush_segment (str_ref, str_ref.get_offset ());
+  }
+
+  void enable_coalescing () { coalescing_ = true; }
+  bool is_coalescing () const { return coalescing_; }
 
   void set_prefix (const number_t &num, op_code_t op = OpCode_Invalid)
   {
@@ -458,6 +584,13 @@ struct parsed_cs_str_t : parsed_values_t<parsed_cs_op_t>
   bool    vsindex_dropped : 1;
   bool    has_prefix_ : 1;
   bool    has_calls_ : 1;
+  /* Record verbatim byte segments instead of individual tokens,
+   * making a separate compact() pass unnecessary; incompatible with
+   * hint analysis. */
+  bool    coalescing_ : 1;
+  /* End offsets of the last two tokens seen (coalescing mode). */
+  unsigned penultimate_end_ = 0;
+  unsigned last_end_ = 0;
   op_code_t	prefix_op_;
   number_t	prefix_num_;
 
@@ -525,7 +658,7 @@ struct cff_subset_accelerator_t
   parsed_cs_str_vec_t parsed_charstrings;
   parsed_cs_str_vec_t parsed_global_subrs;
   hb_vector_t<parsed_cs_str_vec_t> parsed_local_subrs;
-  mutable hb_atomic_ptr_t<glyph_to_sid_map_t> glyph_to_sid_map;
+  mutable hb_atomic_t<glyph_to_sid_map_t *> glyph_to_sid_map;
 
  private:
   hb_blob_t* original_blob;
@@ -538,14 +671,19 @@ struct subr_subset_param_t
 		       parsed_cs_str_vec_t *parsed_local_subrs_,
 		       hb_set_t *global_closure_,
 		       hb_set_t *local_closure_,
-		       bool drop_hints_) :
+		       bool drop_hints_,
+		       bool coalesce_ = false) :
       current_parsed_str (parsed_charstring_),
       parsed_charstring (parsed_charstring_),
       parsed_global_subrs (parsed_global_subrs_),
       parsed_local_subrs (parsed_local_subrs_),
       global_closure (global_closure_),
       local_closure (local_closure_),
-      drop_hints (drop_hints_) {}
+      drop_hints (drop_hints_),
+      coalesce (coalesce_)
+  {
+    if (coalesce) parsed_charstring->enable_coalescing ();
+  }
 
   parsed_cs_str_t *get_parsed_str_for_context (call_context_t &context)
   {
@@ -584,7 +722,10 @@ struct subr_subset_param_t
     else
     {
       if (!parsed_str->is_parsed ())
+      {
         parsed_str->alloc (env.str_ref.total_size ());
+        if (coalesce) parsed_str->enable_coalescing ();
+      }
       current_parsed_str = parsed_str;
     }
   }
@@ -597,6 +738,7 @@ struct subr_subset_param_t
   hb_set_t      *global_closure;
   hb_set_t      *local_closure;
   bool	  drop_hints;
+  bool	  coalesce;
 };
 
 struct subr_remap_t : hb_inc_bimap_t
@@ -714,6 +856,12 @@ struct subr_subsetter_t
       return false;
     }
 
+    /* When hints are not analyzed (not dropping hints, not populating
+     * the accelerator), coalesce parsed tokens as they are added,
+     * instead of a separate compact() pass. */
+    bool coalesce = !(plan->flags & HB_SUBSET_FLAGS_NO_HINTING) &&
+		    !plan->inprogress_accelerator;
+
     /* phase 1 & 2 */
     for (auto _ : plan->new_to_old_gid_list)
     {
@@ -746,7 +894,8 @@ struct subr_subsetter_t
                                   &parsed_local_subrs_storage[fd],
                                   &closures.global_closure,
                                   &closures.local_closures[fd],
-                                  plan->flags & HB_SUBSET_FLAGS_NO_HINTING);
+                                  plan->flags & HB_SUBSET_FLAGS_NO_HINTING,
+                                  coalesce);
 
       if (unlikely (!interp.interpret (param)))
         return false;
@@ -778,8 +927,11 @@ struct subr_subsetter_t
        *
        * The compacting both saves memory and makes further operations
        * faster.
+       *
+       * Not needed when tokens were coalesced during parsing.
        */
-      parsed_charstrings[new_glyph].compact ();
+      if (!coalesce)
+	parsed_charstrings[new_glyph].compact ();
     }
 
     /* Since parsed strings were loaded from accelerator, we still need
@@ -816,8 +968,7 @@ struct subr_subsetter_t
 	{
 	  // Hack to point vector to static string.
 	  auto &b = buffArray.arrayZ[last];
-	  b.length = 1;
-	  b.arrayZ = const_cast<unsigned char *>(endchar_str);
+	  b.set_storage (const_cast<unsigned char *>(endchar_str), 1);
 	}
 
       last++; // Skip over gid
@@ -832,8 +983,7 @@ struct subr_subsetter_t
       {
 	// Hack to point vector to static string.
 	auto &b = buffArray.arrayZ[last];
-	b.length = 1;
-	b.arrayZ = const_cast<unsigned char *>(endchar_str);
+	b.set_storage (const_cast<unsigned char *>(endchar_str), 1);
       }
 
     return true;
@@ -1083,7 +1233,7 @@ struct subr_subsetter_t
       if (opstr.op == OpCode_callsubr || opstr.op == OpCode_callgsubr)
         size += 3;
     }
-    if (!buff.alloc (buff.length + size, true))
+    if (!buff.alloc_exact (buff.length + size))
       return false;
 
     for (auto &opstr : str.values)

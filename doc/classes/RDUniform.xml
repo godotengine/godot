@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RDUniform" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RDUniform" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Shader uniform (used by [RenderingDevice]).
 	</brief_description>
@@ -13,16 +13,19 @@
 			<return type="void" />
 			<param index="0" name="id" type="RID" />
 			<description>
+				Binds the given id to the uniform. The data associated with the id is then used when the uniform is passed to a shader.
 			</description>
 		</method>
 		<method name="clear_ids">
 			<return type="void" />
 			<description>
+				Unbinds all ids currently bound to the uniform.
 			</description>
 		</method>
 		<method name="get_ids" qualifiers="const">
 			<return type="RID[]" />
 			<description>
+				Returns an array of all ids currently bound to the uniform.
 			</description>
 		</method>
 	</methods>

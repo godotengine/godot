@@ -283,7 +283,7 @@ namespace embree
 
 
         friend embree_ostream operator<<(embree_ostream cout, const SubGrid& sg) {
-          return cout << "SubGrid " << " ( x " << sg.x() << ", y = " << sg.y() << ", geomID = " << sg.geomID() << ", primID = " << sg.primID() << " )";
+          return cout << "SubGrid " << " ( x = " << sg.x() << ", y = " << sg.y() << ", geomID = " << sg.geomID() << ", primID = " << sg.primID() << ", invalid3x3X() " << (int)sg.invalid3x3X() << ", invalid3x3Y() " << (int)sg.invalid3x3Y();
         }
 
         __forceinline unsigned int geomID() const { return _geomID; }
@@ -305,9 +305,10 @@ namespace embree
         
         __forceinline SubGridID() {}
         __forceinline SubGridID(const unsigned int x, const unsigned int y, const unsigned int primID) :
-        x(x), y(y), primID(primID) {}        
+        x(x), y(y), primID(primID) {}
+        
       };
-
+      
       /* QuantizedBaseNode as large subgrid leaf */
       template<int N>
       struct SubGridQBVHN
@@ -401,6 +402,9 @@ namespace embree
 
       typedef SubGridQBVHN<4> SubGridQBVH4;
       typedef SubGridQBVHN<8> SubGridQBVH8;
+
+
+      
 
 
       /* QuantizedBaseNode as large subgrid leaf */
@@ -513,5 +517,4 @@ namespace embree
         }
 
       };
-
 }

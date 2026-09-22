@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_RPC_INTERFACE_H
-#define SCENE_RPC_INTERFACE_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "scene/main/multiplayer_api.h"
@@ -50,7 +49,7 @@ private:
 		MultiplayerPeer::TransferMode transfer_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
 		int channel = 0;
 
-		bool operator==(RPCConfig const &p_other) const {
+		bool operator==(const RPCConfig &p_other) const {
 			return name == p_other.name;
 		}
 	};
@@ -110,5 +109,3 @@ public:
 		multiplayer_replicator = p_replicator;
 	}
 };
-
-#endif // SCENE_RPC_INTERFACE_H

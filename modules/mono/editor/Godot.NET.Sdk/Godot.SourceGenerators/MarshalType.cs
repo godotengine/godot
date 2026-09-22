@@ -51,6 +51,7 @@ namespace Godot.SourceGenerators
         StringArray,
         Vector2Array,
         Vector3Array,
+        Vector4Array,
         ColorArray,
         GodotObjectOrDerivedArray,
         SystemArrayOfStringName,

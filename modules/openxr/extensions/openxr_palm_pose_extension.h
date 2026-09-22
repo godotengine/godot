@@ -28,19 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_PALM_POSE_EXTENSION_H
-#define OPENXR_PALM_POSE_EXTENSION_H
+#pragma once
 
 #include "openxr_extension_wrapper.h"
 
 class OpenXRPalmPoseExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRPalmPoseExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRPalmPoseExtension *get_singleton();
 
 	OpenXRPalmPoseExtension();
 	virtual ~OpenXRPalmPoseExtension() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	bool is_available();
 
@@ -49,5 +53,3 @@ private:
 
 	bool available = false;
 };
-
-#endif // OPENXR_PALM_POSE_EXTENSION_H

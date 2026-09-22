@@ -34,8 +34,11 @@
 #include "editor_network_profiler.h"
 #include "replication_editor.h"
 
+#include "core/object/callable_mp.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "scene/main/scene_tree.h"
 
 void MultiplayerEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(Variant::STRING, "path")));
@@ -103,7 +106,9 @@ void MultiplayerEditorDebugger::setup_session(int p_session_id) {
 	EditorNetworkProfiler *profiler = memnew(EditorNetworkProfiler);
 	profiler->connect("enable_profiling", callable_mp(this, &MultiplayerEditorDebugger::_profiler_activate).bind(p_session_id));
 	profiler->connect("open_request", callable_mp(this, &MultiplayerEditorDebugger::_open_request));
-	profiler->set_name(TTR("Network Profiler"));
+	profiler->set_name(TTRC("Network Profiler"));
+	session->connect("started", callable_mp(profiler, &EditorNetworkProfiler::started));
+	session->connect("stopped", callable_mp(profiler, &EditorNetworkProfiler::stopped));
 	session->add_session_tab(profiler);
 	profilers[p_session_id] = profiler;
 }
@@ -112,9 +117,9 @@ void MultiplayerEditorDebugger::setup_session(int p_session_id) {
 
 MultiplayerEditorPlugin::MultiplayerEditorPlugin() {
 	repl_editor = memnew(ReplicationEditor);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Replication"), repl_editor);
-	button->hide();
-	repl_editor->get_pin()->connect("pressed", callable_mp(this, &MultiplayerEditorPlugin::_pinned));
+	EditorDockManager::get_singleton()->add_dock(repl_editor);
+	repl_editor->close();
+	repl_editor->get_pin()->connect(SceneStringName(pressed), callable_mp(this, &MultiplayerEditorPlugin::_pinned));
 	debugger.instantiate();
 	debugger->connect("open_request", callable_mp(this, &MultiplayerEditorPlugin::_open_request));
 }
@@ -138,20 +143,14 @@ void MultiplayerEditorPlugin::_notification(int p_what) {
 void MultiplayerEditorPlugin::_node_removed(Node *p_node) {
 	if (p_node && p_node == repl_editor->get_current()) {
 		repl_editor->edit(nullptr);
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
-		}
-		button->hide();
+		repl_editor->close();
 		repl_editor->get_pin()->set_pressed(false);
 	}
 }
 
 void MultiplayerEditorPlugin::_pinned() {
-	if (!repl_editor->get_pin()->is_pressed()) {
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
-		}
-		button->hide();
+	if (!repl_editor->get_pin()->is_pressed() && repl_editor->get_current() == nullptr) {
+		repl_editor->close();
 	}
 }
 
@@ -165,12 +164,8 @@ bool MultiplayerEditorPlugin::handles(Object *p_object) const {
 
 void MultiplayerEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(repl_editor);
+		repl_editor->make_visible();
 	} else if (!repl_editor->get_pin()->is_pressed()) {
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
-		}
-		button->hide();
+		repl_editor->close();
 	}
 }

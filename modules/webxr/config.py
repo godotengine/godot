@@ -1,5 +1,9 @@
 def can_build(env, platform):
-    return env["opengl3"] and not env["disable_3d"]
+    if platform == "web" and env["proxy_to_pthread"]:
+        # WebXR is incompatible with proxy_to_pthread.
+        return False
+
+    return env["opengl3"] and not env["disable_xr"]
 
 
 def configure(env):

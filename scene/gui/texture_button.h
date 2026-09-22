@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_BUTTON_H
-#define TEXTURE_BUTTON_H
+#pragma once
 
 #include "scene/gui/base_button.h"
 #include "scene/resources/bit_map.h"
@@ -68,12 +67,13 @@ private:
 	void _texture_changed();
 
 protected:
-	virtual Size2 get_minimum_size() const override;
 	virtual bool has_point(const Point2 &p_point) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	virtual Size2 get_minimum_size() const override;
+
 	void set_texture_normal(const Ref<Texture2D> &p_normal);
 	void set_texture_pressed(const Ref<Texture2D> &p_pressed);
 	void set_texture_hover(const Ref<Texture2D> &p_hover);
@@ -99,10 +99,6 @@ public:
 
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
-
-	TextureButton();
 };
 
 VARIANT_ENUM_CAST(TextureButton::StretchMode);
-
-#endif // TEXTURE_BUTTON_H

@@ -28,21 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_DRIVER_ALSA_H
-#define AUDIO_DRIVER_ALSA_H
+#pragma once
 
 #ifdef ALSA_ENABLED
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
-#include "servers/audio_server.h"
+#include "servers/audio/audio_driver.h"
 
-#ifdef SOWRAP_ENABLED
-#include "asound-so_wrap.h"
-#else
-#include <alsa/asoundlib.h>
-#endif
+typedef struct _snd_pcm snd_pcm_t;
+typedef unsigned long snd_pcm_uframes_t;
 
 class AudioDriverALSA : public AudioDriver {
 	Thread thread;
@@ -95,5 +91,3 @@ public:
 };
 
 #endif // ALSA_ENABLED
-
-#endif // AUDIO_DRIVER_ALSA_H

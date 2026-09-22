@@ -210,9 +210,9 @@ namespace embree
     };
 
     /*! output operator */
-    friend __forceinline embree_ostream operator<<(embree_ostream cout, const PointMi& line)
+    friend __forceinline embree_ostream operator<<(embree_ostream cout, const PointMi& point)
     {
-      return cout << "Line" << M << "i {" << line.v0 << ", " << line.geomID() << ", " << line.primID() << "}";
+      return cout << "Point" << M << "i {" << point.geomID() << ", " << point.primID() << "}";
     }
 
    public:
@@ -267,10 +267,10 @@ namespace embree
     const vfloat4 a2 = vfloat4::loadu(geom->vertexPtr(primID(2), itime));
     const vfloat4 a3 = vfloat4::loadu(geom->vertexPtr(primID(3), itime));
     transpose(a0, a1, a2, a3, p0.x, p0.y, p0.z, p0.w);
-    const vfloat4 b0 = vfloat4(geom->normal(primID(0), itime));
-    const vfloat4 b1 = vfloat4(geom->normal(primID(1), itime));
-    const vfloat4 b2 = vfloat4(geom->normal(primID(2), itime));
-    const vfloat4 b3 = vfloat4(geom->normal(primID(3), itime));
+    const vfloat4 b0 = vfloat4(geom->normal((size_t)primID(0), (size_t)itime));
+    const vfloat4 b1 = vfloat4(geom->normal((size_t)primID(1), (size_t)itime));
+    const vfloat4 b2 = vfloat4(geom->normal((size_t)primID(2), (size_t)itime));
+    const vfloat4 b3 = vfloat4(geom->normal((size_t)primID(3), (size_t)itime));
     transpose(b0, b1, b2, b3, n0.x, n0.y, n0.z);
   }
 
@@ -364,14 +364,14 @@ namespace embree
     const vfloat4 a6 = vfloat4::loadu(geom->vertexPtr(primID(6), itime));
     const vfloat4 a7 = vfloat4::loadu(geom->vertexPtr(primID(7), itime));
     transpose(a0, a1, a2, a3, a4, a5, a6, a7, p0.x, p0.y, p0.z, p0.w);
-    const vfloat4 b0 = vfloat4(geom->normal(primID(0), itime));
-    const vfloat4 b1 = vfloat4(geom->normal(primID(1), itime));
-    const vfloat4 b2 = vfloat4(geom->normal(primID(2), itime));
-    const vfloat4 b3 = vfloat4(geom->normal(primID(3), itime));
-    const vfloat4 b4 = vfloat4(geom->normal(primID(4), itime));
-    const vfloat4 b5 = vfloat4(geom->normal(primID(5), itime));
-    const vfloat4 b6 = vfloat4(geom->normal(primID(6), itime));
-    const vfloat4 b7 = vfloat4(geom->normal(primID(7), itime));
+    const vfloat4 b0 = vfloat4(geom->normal((size_t)primID(0), (size_t)itime));
+    const vfloat4 b1 = vfloat4(geom->normal((size_t)primID(1), (size_t)itime));
+    const vfloat4 b2 = vfloat4(geom->normal((size_t)primID(2), (size_t)itime));
+    const vfloat4 b3 = vfloat4(geom->normal((size_t)primID(3), (size_t)itime));
+    const vfloat4 b4 = vfloat4(geom->normal((size_t)primID(4), (size_t)itime));
+    const vfloat4 b5 = vfloat4(geom->normal((size_t)primID(5), (size_t)itime));
+    const vfloat4 b6 = vfloat4(geom->normal((size_t)primID(6), (size_t)itime));
+    const vfloat4 b7 = vfloat4(geom->normal((size_t)primID(7), (size_t)itime));
     transpose(b0, b1, b2, b3, b4, b5, b6, b7, n0.x, n0.y, n0.z);
   }
 

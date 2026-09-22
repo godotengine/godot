@@ -65,6 +65,14 @@ Vector4i Vector4i::clamp(const Vector4i &p_min, const Vector4i &p_max) const {
 			CLAMP(w, p_min.w, p_max.w));
 }
 
+Vector4i Vector4i::clampi(int32_t p_min, int32_t p_max) const {
+	return Vector4i(
+			CLAMP(x, p_min, p_max),
+			CLAMP(y, p_min, p_max),
+			CLAMP(z, p_min, p_max),
+			CLAMP(w, p_min, p_max));
+}
+
 Vector4i Vector4i::snapped(const Vector4i &p_step) const {
 	return Vector4i(
 			Math::snapped(x, p_step.x),
@@ -73,19 +81,20 @@ Vector4i Vector4i::snapped(const Vector4i &p_step) const {
 			Math::snapped(w, p_step.w));
 }
 
+Vector4i Vector4i::snappedi(int32_t p_step) const {
+	return Vector4i(
+			Math::snapped(x, p_step),
+			Math::snapped(y, p_step),
+			Math::snapped(z, p_step),
+			Math::snapped(w, p_step));
+}
+
 Vector4i::operator String() const {
 	return "(" + itos(x) + ", " + itos(y) + ", " + itos(z) + ", " + itos(w) + ")";
 }
 
 Vector4i::operator Vector4() const {
 	return Vector4(x, y, z, w);
-}
-
-Vector4i::Vector4i(const Vector4 &p_vec4) {
-	x = (int32_t)p_vec4.x;
-	y = (int32_t)p_vec4.y;
-	z = (int32_t)p_vec4.z;
-	w = (int32_t)p_vec4.w;
 }
 
 static_assert(sizeof(Vector4i) == 4 * sizeof(int32_t));

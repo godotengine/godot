@@ -113,7 +113,6 @@ namespace embree
 
       BBox3fa bounds0 = empty;
       BBox3fa bounds1 = empty;
-      
       for (size_t i=0; i<M && begin<end; i++, begin++)
       {
 	const PrimRef& prim = prims[begin];
@@ -121,12 +120,12 @@ namespace embree
         const unsigned primID = prim.primID();
         const TriangleMesh* __restrict__ const mesh = scene->get<TriangleMesh>(geomID);
         const TriangleMesh::Triangle& tri = mesh->triangle(primID);
-        const Vec3fa& a0 = mesh->vertex(tri.v[0],itime+0); bounds0.extend(a0);
-        const Vec3fa& a1 = mesh->vertex(tri.v[0],itime+1); bounds1.extend(a1);
-        const Vec3fa& b0 = mesh->vertex(tri.v[1],itime+0); bounds0.extend(b0);
-        const Vec3fa& b1 = mesh->vertex(tri.v[1],itime+1); bounds1.extend(b1);
-        const Vec3fa& c0 = mesh->vertex(tri.v[2],itime+0); bounds0.extend(c0);
-        const Vec3fa& c1 = mesh->vertex(tri.v[2],itime+1); bounds1.extend(c1);
+        const Vec3fa& a0 = mesh->vertex(tri.v[0],size_t(itime+0)); bounds0.extend(a0);
+        const Vec3fa& a1 = mesh->vertex(tri.v[0],size_t(itime+1)); bounds1.extend(a1);
+        const Vec3fa& b0 = mesh->vertex(tri.v[1],size_t(itime+0)); bounds0.extend(b0);
+        const Vec3fa& b1 = mesh->vertex(tri.v[1],size_t(itime+1)); bounds1.extend(b1);
+        const Vec3fa& c0 = mesh->vertex(tri.v[2],size_t(itime+0)); bounds0.extend(c0);
+        const Vec3fa& c1 = mesh->vertex(tri.v[2],size_t(itime+1)); bounds1.extend(c1);
         vgeomID [i] = geomID;
         vprimID [i] = primID;
         va0.x[i] = a0.x; va0.y[i] = a0.y; va0.z[i] = a0.z;
@@ -159,12 +158,12 @@ namespace embree
         const int ilower = itime_range.begin();
         const TriangleMesh::Triangle& tri = mesh->triangle(primID);
         allBounds.extend(mesh->linearBounds(primID, time_range));
-        const Vec3fa& a0 = mesh->vertex(tri.v[0],ilower+0);
-        const Vec3fa& a1 = mesh->vertex(tri.v[0],ilower+1);
-        const Vec3fa& b0 = mesh->vertex(tri.v[1],ilower+0);
-        const Vec3fa& b1 = mesh->vertex(tri.v[1],ilower+1);
-        const Vec3fa& c0 = mesh->vertex(tri.v[2],ilower+0);
-        const Vec3fa& c1 = mesh->vertex(tri.v[2],ilower+1);
+        const Vec3fa& a0 = mesh->vertex(tri.v[0],size_t(ilower+0));
+        const Vec3fa& a1 = mesh->vertex(tri.v[0],size_t(ilower+1));
+        const Vec3fa& b0 = mesh->vertex(tri.v[1],size_t(ilower+0));
+        const Vec3fa& b1 = mesh->vertex(tri.v[1],size_t(ilower+1));
+        const Vec3fa& c0 = mesh->vertex(tri.v[2],size_t(ilower+0));
+        const Vec3fa& c1 = mesh->vertex(tri.v[2],size_t(ilower+1));
         const BBox1f time_range_v(mesh->timeStep(ilower+0),mesh->timeStep(ilower+1));
         auto a01 = globalLinear(std::make_pair(a0,a1),time_range_v);
         auto b01 = globalLinear(std::make_pair(b0,b1),time_range_v);

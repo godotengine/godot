@@ -2,13 +2,15 @@
 #pragma once
 
 #include "arithmetics.hpp"
-#include "Vector2.h"
+#include "Vector2.hpp"
 #include "BitmapRef.hpp"
 
 namespace msdfgen {
 
 template <typename T, int N>
-static void interpolate(T *output, const BitmapConstRef<T, N> &bitmap, Point2 pos) {
+inline void interpolate(T *output, const BitmapConstSection<T, N> &bitmap, Point2 pos) {
+    pos.x = clamp(pos.x, double(bitmap.width));
+    pos.y = clamp(pos.y, double(bitmap.height));
     pos -= .5;
     int l = (int) floor(pos.x);
     int b = (int) floor(pos.y);

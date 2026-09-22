@@ -22,6 +22,9 @@ namespace embree
 
       __forceinline PrimInfoRange (size_t begin, size_t end, const CentGeomBBox3fa& centGeomBounds)
         : CentGeomBBox3fa(centGeomBounds), range<size_t>(begin,end) {}
+
+      __forceinline PrimInfoRange (range<size_t> r, const CentGeomBBox3fa& centGeomBounds)
+        : CentGeomBBox3fa(centGeomBounds), range<size_t>(r) {}
       
       __forceinline float leafSAH() const { 
 	return expectedApproxHalfArea(geomBounds)*float(size()); 
@@ -30,7 +33,45 @@ namespace embree
       __forceinline float leafSAH(size_t block_shift) const { 
 	return expectedApproxHalfArea(geomBounds)*float((size()+(size_t(1)<<block_shift)-1) >> block_shift);
       }
+
+      __forceinline range<size_t> get_range() const {
+        return range<size_t>(begin(),end());
+      }
+
+      template<typename PrimRef> 
+        __forceinline void add_primref(const PrimRef& prim) 
+      {
+        CentGeomBBox3fa::extend_primref(prim);
+        _end++;
+      }
     };
+
+    inline void performFallbackSplit(PrimRef* const prims, const PrimInfoRange& pinfo, PrimInfoRange& linfo, PrimInfoRange& rinfo)
+    {
+      const size_t begin = pinfo.begin();
+      const size_t end   = pinfo.end();
+      const size_t center = (begin + end)/2;
+      
+      CentGeomBBox3fa left(empty);
+      for (size_t i=begin; i<center; i++)
+        left.extend_center2(prims[i]);
+      new (&linfo) PrimInfoRange(begin,center,left);
+      
+      CentGeomBBox3fa right(empty);
+      for (size_t i=center; i<end; i++)
+        right.extend_center2(prims[i]);
+      new (&rinfo) PrimInfoRange(center,end,right);
+    }
+
+    template<typename Type, typename getTypeFunc>
+    inline void performTypeSplit(const getTypeFunc& getType, Type type, PrimRef* const prims, range<size_t> range, PrimInfoRange& linfo, PrimInfoRange& rinfo)
+    {
+      CentGeomBBox3fa local_left(empty), local_right(empty);
+      auto isLeft = [&] (const PrimRef& ref) { return type == getType(ref.geomID()); };
+      const size_t center = serial_partitioning(prims,range.begin(),range.end(),local_left,local_right,isLeft,CentGeomBBox3fa::extend_ref);
+      linfo = PrimInfoRange(make_range(range.begin(),center     ),local_left);
+      rinfo = PrimInfoRange(make_range(center       ,range.end()),local_right);
+    }
     
     /*! Performs standard object binning */
     template<typename PrimRef, size_t BINS>
@@ -67,6 +108,24 @@ namespace embree
           const BinMapping<BINS> mapping(pinfo);
           bin_serial_or_parallel<parallel>(binner,prims,pinfo.begin(),pinfo.end(),PARALLEL_FIND_BLOCK_SIZE,mapping);
           return binner.best(mapping,logBlockSize);
+        }
+
+        /*! finds the best split */
+        __noinline const Split find_block_size(const PrimInfoRange& pinfo, const size_t blockSize)
+        {
+          if (likely(pinfo.size() < PARALLEL_THRESHOLD))
+            return find_block_size_template<false>(pinfo,blockSize);
+          else
+            return find_block_size_template<true>(pinfo,blockSize);
+        }
+
+        template<bool parallel>
+        __forceinline const Split find_block_size_template(const PrimInfoRange& pinfo, const size_t blockSize)
+        {
+          Binner binner(empty);
+          const BinMapping<BINS> mapping(pinfo);
+          bin_serial_or_parallel<parallel>(binner,prims,pinfo.begin(),pinfo.end(),PARALLEL_FIND_BLOCK_SIZE,mapping);
+          return binner.best_block_size(mapping,blockSize);
         }
 
         /*! array partitioning */
@@ -121,21 +180,8 @@ namespace embree
           std::sort(&prims[pinfo.begin()],&prims[pinfo.end()]);
         }
 
-        void splitFallback(const PrimInfoRange& pinfo, PrimInfoRange& linfo, PrimInfoRange& rinfo)
-        {
-          const size_t begin = pinfo.begin();
-          const size_t end   = pinfo.end();
-          const size_t center = (begin + end)/2;
-
-          CentGeomBBox3fa left(empty);
-          for (size_t i=begin; i<center; i++)
-            left.extend_center2(prims[i]);
-          new (&linfo) PrimInfoRange(begin,center,left);
-
-          CentGeomBBox3fa right(empty);
-          for (size_t i=center; i<end; i++)
-            right.extend_center2(prims[i]);
-          new (&rinfo) PrimInfoRange(center,end,right);
+        void splitFallback(const PrimInfoRange& pinfo, PrimInfoRange& linfo, PrimInfoRange& rinfo) {
+          performFallbackSplit(prims,pinfo,linfo,rinfo);
         }
 
         void splitByGeometry(const range<size_t>& range, PrimInfoRange& linfo, PrimInfoRange& rinfo)
@@ -156,6 +202,8 @@ namespace embree
         PrimRef* const prims;
       };
 
+#if !defined(RTHWIF_STANDALONE)
+    
     /*! Performs standard object binning */
     template<typename PrimRefMB, size_t BINS>
       struct HeuristicArrayBinningMB
@@ -196,5 +244,6 @@ namespace embree
           new (&rset) SetMB(right,set.prims,range<size_t>(center,end  ),set.time_range);
         }
       };
+#endif
   }
 }

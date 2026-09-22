@@ -30,6 +30,8 @@
 
 #include "vector4.h"
 
+#include "core/math/math_funcs.h"
+#include "core/math/vector4i.h"
 #include "core/string/ustring.h"
 
 Vector4::Axis Vector4::min_axis_index() const {
@@ -60,6 +62,10 @@ bool Vector4::is_equal_approx(const Vector4 &p_vec4) const {
 	return Math::is_equal_approx(x, p_vec4.x) && Math::is_equal_approx(y, p_vec4.y) && Math::is_equal_approx(z, p_vec4.z) && Math::is_equal_approx(w, p_vec4.w);
 }
 
+bool Vector4::is_same(const Vector4 &p_vec4) const {
+	return Math::is_same(x, p_vec4.x) && Math::is_same(y, p_vec4.y) && Math::is_same(z, p_vec4.z) && Math::is_same(w, p_vec4.w);
+}
+
 bool Vector4::is_zero_approx() const {
 	return Math::is_zero_approx(x) && Math::is_zero_approx(y) && Math::is_zero_approx(z) && Math::is_zero_approx(w);
 }
@@ -73,15 +79,23 @@ real_t Vector4::length() const {
 }
 
 void Vector4::normalize() {
-	real_t lengthsq = length_squared();
-	if (lengthsq == 0) {
-		x = y = z = w = 0;
+	if (!is_finite()) {
+#ifdef MATH_CHECKS
+		WARN_PRINT("Vector4 cannot be normalized, the elements must be finite. Making (0, 0, 0, 0) as a fallback.");
+#endif // MATH_CHECKS
+		zero();
+		return;
+	}
+
+	real_t l = length_squared();
+	if (l == 0) {
+		zero();
 	} else {
-		real_t length = Math::sqrt(lengthsq);
-		x /= length;
-		y /= length;
-		z /= length;
-		w /= length;
+		l = Math::sqrt(l);
+		x /= l;
+		y /= l;
+		z /= l;
+		w /= l;
 	}
 }
 
@@ -129,7 +143,7 @@ Vector4 Vector4::round() const {
 	return Vector4(Math::round(x), Math::round(y), Math::round(z), Math::round(w));
 }
 
-Vector4 Vector4::lerp(const Vector4 &p_to, const real_t p_weight) const {
+Vector4 Vector4::lerp(const Vector4 &p_to, real_t p_weight) const {
 	Vector4 res = *this;
 	res.x = Math::lerp(res.x, p_to.x, p_weight);
 	res.y = Math::lerp(res.y, p_to.y, p_weight);
@@ -138,7 +152,7 @@ Vector4 Vector4::lerp(const Vector4 &p_to, const real_t p_weight) const {
 	return res;
 }
 
-Vector4 Vector4::cubic_interpolate(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, const real_t p_weight) const {
+Vector4 Vector4::cubic_interpolate(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, real_t p_weight) const {
 	Vector4 res = *this;
 	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
 	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
@@ -147,7 +161,7 @@ Vector4 Vector4::cubic_interpolate(const Vector4 &p_b, const Vector4 &p_pre_a, c
 	return res;
 }
 
-Vector4 Vector4::cubic_interpolate_in_time(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const {
+Vector4 Vector4::cubic_interpolate_in_time(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const {
 	Vector4 res = *this;
 	res.x = Math::cubic_interpolate_in_time(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
 	res.y = Math::cubic_interpolate_in_time(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
@@ -156,7 +170,7 @@ Vector4 Vector4::cubic_interpolate_in_time(const Vector4 &p_b, const Vector4 &p_
 	return res;
 }
 
-Vector4 Vector4::posmod(const real_t p_mod) const {
+Vector4 Vector4::posmod(real_t p_mod) const {
 	return Vector4(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod), Math::fposmod(z, p_mod), Math::fposmod(w, p_mod));
 }
 
@@ -171,9 +185,22 @@ void Vector4::snap(const Vector4 &p_step) {
 	w = Math::snapped(w, p_step.w);
 }
 
+void Vector4::snapf(real_t p_step) {
+	x = Math::snapped(x, p_step);
+	y = Math::snapped(y, p_step);
+	z = Math::snapped(z, p_step);
+	w = Math::snapped(w, p_step);
+}
+
 Vector4 Vector4::snapped(const Vector4 &p_step) const {
 	Vector4 v = *this;
 	v.snap(p_step);
+	return v;
+}
+
+Vector4 Vector4::snappedf(real_t p_step) const {
+	Vector4 v = *this;
+	v.snapf(p_step);
 	return v;
 }
 
@@ -189,8 +216,20 @@ Vector4 Vector4::clamp(const Vector4 &p_min, const Vector4 &p_max) const {
 			CLAMP(w, p_min.w, p_max.w));
 }
 
+Vector4 Vector4::clampf(real_t p_min, real_t p_max) const {
+	return Vector4(
+			CLAMP(x, p_min, p_max),
+			CLAMP(y, p_min, p_max),
+			CLAMP(z, p_min, p_max),
+			CLAMP(w, p_min, p_max));
+}
+
 Vector4::operator String() const {
-	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ", " + String::num_real(w, false) + ")";
+	return "(" + String::num_real(x, true) + ", " + String::num_real(y, true) + ", " + String::num_real(z, true) + ", " + String::num_real(w, true) + ")";
 }
 
 static_assert(sizeof(Vector4) == 4 * sizeof(real_t));
+
+Vector4::operator Vector4i() const {
+	return Vector4i(x, y, z, w);
+}

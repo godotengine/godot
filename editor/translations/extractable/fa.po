@@ -1,0 +1,124 @@
+# Persian translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-17 15:01+0000\n"
+"Last-Translator: John Smith <pkafsharix@gmail.com>\n"
+"Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
+"godot/fa/>\n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 5.4\n"
+
+msgid "Save"
+msgstr "ذخیره"
+
+msgid "Clear"
+msgstr "پاک کردن"
+
+msgid "Network"
+msgstr "شبکه"
+
+msgid "Open"
+msgstr "باز کن"
+
+msgid "Select Current Folder"
+msgstr "انتخاب پوشه کنونی"
+
+msgid "Select This Folder"
+msgstr "برگزیدن این پوشه"
+
+msgid "All Recognized"
+msgstr "همه ی موارد شناخته شده اند"
+
+msgid "Open a File"
+msgstr "یک پرونده را باز کن"
+
+msgid "Open File(s)"
+msgstr "پرونده(ها) را باز کن"
+
+msgid "Open a Directory"
+msgstr "یک دیکشنری را باز کن"
+
+msgid "Open a File or Directory"
+msgstr "یک پرونده یا پوشه را باز کن"
+
+msgid "Save a File"
+msgstr "یک پرونده را ذخیره کن"
+
+msgid "Go to previous folder."
+msgstr "برو به پوشه پیشین."
+
+msgid "Go to next folder."
+msgstr "برو به پوشه بعد."
+
+msgid "Go to parent folder."
+msgstr "برو به پوشه والد."
+
+msgid "Path:"
+msgstr "مسیر:"
+
+msgid "Refresh files."
+msgstr "نوسازی پرونده‌ها."
+
+msgid "Directories & Files:"
+msgstr "پوشه‌ها و پرونده‌ها:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "تغییر پدیدار بودن فایل‌های مخفی شده."
+
+msgid "File:"
+msgstr "پرونده:"
+
+msgid "Create Folder"
+msgstr "ساخت پوشه"
+
+msgid "Name:"
+msgstr "نام:"
+
+msgid "Could not create folder."
+msgstr "ناتوان در ساختن پوشه."
+
+msgid "Zoom Out"
+msgstr "کوچکنمایی"
+
+msgid "Zoom Reset"
+msgstr "‪‮تنظیم مجدد بزرگنمایی"
+
+msgid "Zoom In"
+msgstr "بزرگنمایی"
+
+msgid "Left-to-Right"
+msgstr "چپ به راست"
+
+msgid "Right-to-Left"
+msgstr "راست به چپ"
+
+msgid "Cut"
+msgstr "برش"
+
+msgid "Copy"
+msgstr "کپی"
+
+msgid "Paste"
+msgstr "چسباندن"
+
+msgid "Select All"
+msgstr "انتخاب همه"
+
+msgid "Undo"
+msgstr "عقب‌گرد"
+
+msgid "Redo"
+msgstr "جلوگرد"
+
+msgid "(Other)"
+msgstr "(دیگر)"

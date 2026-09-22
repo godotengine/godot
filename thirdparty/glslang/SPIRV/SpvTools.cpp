@@ -44,6 +44,7 @@
 
 #include "SpvTools.h"
 #include "spirv-tools/optimizer.hpp"
+#include "glslang/MachineIndependent/localintermediate.h"
 
 namespace glslang {
 
@@ -70,6 +71,8 @@ spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLog
         return spv_target_env::SPV_ENV_VULKAN_1_2;
     case glslang::EShTargetVulkan_1_3:
         return spv_target_env::SPV_ENV_VULKAN_1_3;
+    case glslang::EShTargetVulkan_1_4:
+        return spv_target_env::SPV_ENV_VULKAN_1_4;
     default:
         break;
     }
@@ -79,6 +82,11 @@ spv_target_env MapToSpirvToolsEnv(const SpvVersion& spvVersion, spv::SpvBuildLog
 
     logger->missingFunctionality("Target version for SPIRV-Tools validator");
     return spv_target_env::SPV_ENV_UNIVERSAL_1_0;
+}
+
+spv_target_env MapToSpirvToolsEnv(const glslang::TIntermediate& intermediate, spv::SpvBuildLogger* logger)
+{
+    return MapToSpirvToolsEnv(intermediate.getSpv(), logger);
 }
 
 // Callback passed to spvtools::Optimizer::SetMessageConsumer
@@ -157,6 +165,7 @@ void SpirvToolsValidate(const glslang::TIntermediate& intermediate, std::vector<
     spvValidatorOptionsSetBeforeHlslLegalization(options, prelegalization);
     spvValidatorOptionsSetScalarBlockLayout(options, intermediate.usingScalarBlockLayout());
     spvValidatorOptionsSetWorkgroupScalarBlockLayout(options, intermediate.usingScalarBlockLayout());
+    spvValidatorOptionsSetAllowOffsetTextureOperand(options, intermediate.usingTextureOffsetNonConst());
     spvValidateWithOptions(context, options, &binary, &diagnostic);
 
     // report
@@ -218,9 +227,20 @@ void SpirvToolsTransform(const glslang::TIntermediate& intermediate, std::vector
     optimizer.RegisterPass(spvtools::CreateCFGCleanupPass());
 
     spvtools::OptimizerOptions spvOptOptions;
+    if (options->optimizerAllowExpandedIDBound)
+        spvOptOptions.set_max_id_bound(0x3FFFFFFF);
     optimizer.SetTargetEnv(MapToSpirvToolsEnv(intermediate.getSpv(), logger));
     spvOptOptions.set_run_validator(false); // The validator may run as a separate step later on
     optimizer.Run(spirv.data(), spirv.size(), &spirv, spvOptOptions);
+
+    if (options->optimizerAllowExpandedIDBound) {
+        if (spirv.size() > 3 && spirv[3] > kDefaultMaxIdBound) {
+            spvtools::Optimizer optimizer2(target_env);
+            optimizer2.SetMessageConsumer(OptimizerMesssageConsumer);
+            optimizer2.RegisterPass(spvtools::CreateCompactIdsPass());
+            optimizer2.Run(spirv.data(), spirv.size(), &spirv, spvOptOptions);
+        }
+    }
 }
 
 bool SpirvToolsAnalyzeDeadOutputStores(spv_target_env target_env, std::vector<unsigned int>& spirv,
@@ -292,6 +312,6 @@ void SpirvToolsStripDebugInfo(const glslang::TIntermediate& intermediate,
     optimizer.Run(spirv.data(), spirv.size(), &spirv, spvOptOptions);
 }
 
-}; // end namespace glslang
+} // end namespace glslang
 
 #endif

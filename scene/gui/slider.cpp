@@ -30,8 +30,11 @@
 
 #include "slider.h"
 
-#include "core/os/keyboard.h"
+#include "core/config/engine.h"
+#include "core/input/input.h"
+#include "core/object/class_db.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
 
 Size2 Slider::get_minimum_size() const {
 	Size2i ss = theme_cache.slider_style->get_minimum_size();
@@ -57,41 +60,51 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
 				Ref<Texture2D> grabber;
-				if (mouse_inside || has_focus()) {
+				if (mouse_inside || has_focus(true)) {
 					grabber = theme_cache.grabber_hl_icon;
 				} else {
 					grabber = theme_cache.grabber_icon;
 				}
 
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
+				grab.value_before_dragging = get_as_ratio();
+				play_theme_sound(theme_cache.drag_started_sound);
+				emit_signal(SNAME("drag_started"));
 
-				double grab_width = (double)grabber->get_width();
-				double grab_height = (double)grabber->get_height();
+				double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+				double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 				double max = orientation == VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
 				set_block_signals(true);
 				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
 				} else {
-					set_as_ratio(((double)grab.pos - (grab_width / 2.0)) / max);
+					double v = ((double)grab.pos - (grab_width / 2.0)) / max;
+					set_as_ratio(is_layout_rtl() ? 1 - v : v);
 				}
 				set_block_signals(false);
 				grab.active = true;
 				grab.uvalue = get_as_ratio();
 
-				emit_signal(SNAME("drag_started"));
 				_notify_shared_value_changed();
 			} else {
 				grab.active = false;
 
-				const bool value_changed = !Math::is_equal_approx((double)grab.uvalue, get_as_ratio());
+				const bool value_changed = !Math::is_equal_approx((double)grab.value_before_dragging, get_as_ratio());
+				play_theme_sound(theme_cache.drag_ended_sound);
 				emit_signal(SNAME("drag_ended"), value_changed);
 			}
 		} else if (scrollable) {
 			if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
-				grab_focus();
+				if (_is_focusable()) {
+					grab_focus();
+				}
+				play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 				set_value(get_value() + get_step());
 			} else if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-				grab_focus();
+				if (_is_focusable()) {
+					grab_focus();
+				}
+				play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 				set_value(get_value() - get_step());
 			}
 		}
@@ -102,12 +115,16 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		if (grab.active) {
 			Size2i size = get_size();
-			Ref<Texture2D> grabber = theme_cache.grabber_icon;
+			Ref<Texture2D> grabber = theme_cache.grabber_hl_icon;
+			double grab_width = theme_cache.center_grabber ? 0.0 : (double)grabber->get_width();
+			double grab_height = theme_cache.center_grabber ? 0.0 : (double)grabber->get_height();
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
+			} else if (is_layout_rtl()) {
+				motion = -motion;
 			}
-			double areasize = orientation == VERTICAL ? size.height - grabber->get_height() : size.width - grabber->get_width();
+			double areasize = orientation == VERTICAL ? size.height - grab_height : size.width - grab_width;
 			if (areasize <= 0) {
 				return;
 			}
@@ -121,41 +138,56 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventJoypadButton> joypadbutton_event = p_event;
 	bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
 
-	if (!mm.is_valid() && !mb.is_valid()) {
+	if (mm.is_null() && mb.is_null()) {
 		if (p_event->is_action_pressed("ui_left", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_left", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_left", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
 			}
-			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+
+			play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+			if (is_layout_rtl()) {
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			} else {
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			}
+
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_right", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_right", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
 			}
-			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+
+			play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+			if (is_layout_rtl()) {
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			} else {
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			}
+
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_up", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_up", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
 			}
+			play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_down", true)) {
@@ -163,17 +195,20 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_down", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_down", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
 			}
+			play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 			accept_event();
 		} else if (p_event->is_action("ui_home", true) && p_event->is_pressed()) {
+			play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			set_value(get_min());
 			accept_event();
 		} else if (p_event->is_action("ui_end", true) && p_event->is_pressed()) {
+			play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			set_value(get_max());
 			accept_event();
 		}
@@ -196,11 +231,19 @@ void Slider::_notification(int p_what) {
 				gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
 				if (orientation == HORIZONTAL) {
 					if (input->is_action_pressed("ui_left")) {
-						set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						if (is_layout_rtl()) {
+							set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						} else {
+							set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						}
 					}
 
 					if (input->is_action_pressed("ui_right")) {
-						set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						if (is_layout_rtl()) {
+							set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						} else {
+							set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						}
 					}
 				} else if (orientation == VERTICAL) {
 					if (input->is_action_pressed("ui_down")) {
@@ -212,7 +255,13 @@ void Slider::_notification(int p_what) {
 					}
 				}
 			}
+		} break;
 
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SLIDER);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -244,7 +293,7 @@ void Slider::_notification(int p_what) {
 			Ref<StyleBox> style = theme_cache.slider_style;
 			Ref<Texture2D> tick = theme_cache.tick_icon;
 
-			bool highlighted = editable && (mouse_inside || has_focus());
+			bool highlighted = editable && (mouse_inside || has_focus(true));
 			Ref<Texture2D> grabber;
 			if (editable) {
 				if (highlighted) {
@@ -263,46 +312,105 @@ void Slider::_notification(int p_what) {
 				grabber_area = theme_cache.grabber_area_style;
 			}
 
+			Size2 grabber_size = _fit_icon_size(grabber->get_size(), theme_cache.grabber_max_size).round();
+			Size2 tick_size = _fit_icon_size(tick->get_size(), theme_cache.tick_max_size).round();
+
 			if (orientation == VERTICAL) {
 				int widget_width = style->get_minimum_size().width;
-				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber->get_height());
-				int grabber_shift = theme_cache.center_grabber ? grabber->get_height() / 2 : 0;
+				double areasize = size.height - (theme_cache.center_grabber ? 0 : grabber_size.height);
+				int grabber_shift = theme_cache.center_grabber ? grabber_size.height / 2 : 0;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
-				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_height() / 2 + grabber_shift), Size2i(widget_width, areasize * ratio + grabber->get_height() / 2 - grabber_shift)));
+				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, Math::round(size.height - areasize * ratio - grabber_size.height / 2 + grabber_shift)), Size2i(widget_width, Math::round(areasize * ratio + grabber_size.height / 2 - grabber_shift))));
 
 				if (ticks > 1) {
-					int grabber_offset = (grabber->get_height() / 2 - tick->get_height() / 2);
+					int grabber_offset = (grabber_size.height / 2 - tick_size.height / 2);
 					for (int i = 0; i < ticks; i++) {
 						if (!ticks_on_borders && (i == 0 || i + 1 == ticks)) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset - grabber_shift;
-						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
+
+						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
+							Point2i pos = Point2i(widget_width + (size.width - widget_width) / 2 + theme_cache.tick_offset, ofs);
+							tick->draw_rect(ci, Rect2i(pos, tick_size));
+						}
+
+						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
+							Point2i pos = Point2i((size.width - widget_width) / 2 - tick_size.width - theme_cache.tick_offset, ofs);
+							tick->draw_rect(ci, Rect2i(pos, Size2i(-tick_size.width, tick_size.height)));
+						}
+
+						if (ticks_position == TICK_POSITION_CENTER) {
+							Point2i pos = Point2i((size.width - tick_size.width) / 2 + theme_cache.tick_offset, ofs);
+							tick->draw_rect(ci, Rect2i(pos, tick_size));
+						}
 					}
 				}
-				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber->get_height() + grabber_shift));
+				Point2i pos = Point2i(size.width / 2 - grabber_size.width / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber_size.height + grabber_shift);
+				grabber->draw_rect(ci, Rect2(pos, grabber_size));
 			} else {
 				int widget_height = style->get_minimum_size().height;
-				double areasize = size.width - (theme_cache.center_grabber ? 0 : grabber->get_size().width);
-				int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
+				double areasize = size.width - (theme_cache.center_grabber ? 0 : grabber_size.width);
+				int grabber_shift = theme_cache.center_grabber ? -grabber_size.width / 2 : 0;
+				bool rtl = is_layout_rtl();
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
-				grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(areasize * ratio + grabber->get_width() / 2 + grabber_shift, widget_height)));
+				int p = areasize * (rtl ? 1 - ratio : ratio) + grabber_size.width / 2 + grabber_shift;
+				if (rtl) {
+					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
+				} else {
+					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
+				}
 
 				if (ticks > 1) {
-					int grabber_offset = (grabber->get_width() / 2 - tick->get_width() / 2);
+					int grabber_offset = (grabber_size.width / 2 - tick_size.width / 2);
 					for (int i = 0; i < ticks; i++) {
 						if ((!ticks_on_borders) && ((i == 0) || ((i + 1) == ticks))) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset + grabber_shift;
-						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
+
+						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
+							Point2i pos = Point2i(ofs, widget_height + (size.height - widget_height) / 2 + theme_cache.tick_offset);
+							tick->draw_rect(ci, Rect2i(pos, tick_size));
+						}
+
+						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
+							Point2i pos = Point2i(ofs, (size.height - widget_height) / 2 - tick_size.height - theme_cache.tick_offset);
+							tick->draw_rect(ci, Rect2i(pos, Size2i(tick_size.width, -tick_size.height)));
+						}
+
+						if (ticks_position == TICK_POSITION_CENTER) {
+							Point2i pos = Point2i(ofs, (size.height - tick_size.height) / 2 + theme_cache.tick_offset);
+							tick->draw_rect(ci, Rect2i(pos, tick_size));
+						}
 					}
 				}
-				grabber->draw(ci, Point2i(ratio * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
+				Point2 pos = Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber_size.height / 2 + theme_cache.grabber_offset);
+				grabber->draw_rect(ci, Rect2(pos, grabber_size));
 			}
 		} break;
 	}
+}
+
+void Slider::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	if (p_property.name == "ticks_position") {
+		p_property.hint_string = orientation == VERTICAL ? "Right,Left,Both,Center" : "Bottom,Top,Both,Center";
+	}
+}
+
+Size2 Slider::_fit_icon_size(const Size2 &p_size, int p_max_size) const {
+	int max_dimension = MAX(p_size.width, p_size.height);
+	if (p_max_size <= 0 || max_dimension <= p_max_size) {
+		return p_size;
+	}
+
+	double scale = (double)p_max_size / max_dimension;
+
+	return Size2((int)(p_size.width * scale), (int)(p_size.height * scale));
 }
 
 void Slider::set_custom_step(double p_custom_step) {
@@ -330,12 +438,25 @@ bool Slider::get_ticks_on_borders() const {
 	return ticks_on_borders;
 }
 
+Slider::TickPosition Slider::get_ticks_position() const {
+	return ticks_position;
+}
+
 void Slider::set_ticks_on_borders(bool _tob) {
 	if (ticks_on_borders == _tob) {
 		return;
 	}
 
 	ticks_on_borders = _tob;
+	queue_redraw();
+}
+
+void Slider::set_ticks_position(TickPosition p_ticks_position) {
+	if (ticks_position == p_ticks_position) {
+		return;
+	}
+
+	ticks_position = p_ticks_position;
 	queue_redraw();
 }
 
@@ -368,6 +489,9 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ticks_on_borders"), &Slider::get_ticks_on_borders);
 	ClassDB::bind_method(D_METHOD("set_ticks_on_borders", "ticks_on_border"), &Slider::set_ticks_on_borders);
 
+	ClassDB::bind_method(D_METHOD("get_ticks_position"), &Slider::get_ticks_position);
+	ClassDB::bind_method(D_METHOD("set_ticks_position", "ticks_on_border"), &Slider::set_ticks_position);
+
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &Slider::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
 	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
@@ -380,6 +504,12 @@ void Slider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ticks_position", PROPERTY_HINT_ENUM), "set_ticks_position", "get_ticks_position");
+
+	BIND_ENUM_CONSTANT(TICK_POSITION_BOTTOM_RIGHT);
+	BIND_ENUM_CONSTANT(TICK_POSITION_TOP_LEFT);
+	BIND_ENUM_CONSTANT(TICK_POSITION_BOTH);
+	BIND_ENUM_CONSTANT(TICK_POSITION_CENTER);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_style, "slider");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_style, "grabber_area");
@@ -392,6 +522,15 @@ void Slider::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_max_size);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, tick_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, tick_max_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Slider, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Slider, drag_started_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Slider, drag_ended_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Slider, value_changed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Slider, value_change_rejected_sound);
 }
 
 Slider::Slider(Orientation p_orientation) {

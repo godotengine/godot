@@ -47,7 +47,7 @@ typedef enum {
  */
 size_t ZSTD_decompressBlock_internal(ZSTD_DCtx* dctx,
                                void* dst, size_t dstCapacity,
-                         const void* src, size_t srcSize, const int frame, const streaming_operation streaming);
+                         const void* src, size_t srcSize, const streaming_operation streaming);
 
 /* ZSTD_buildFSETable() :
  * generate FSE decoding table for one symbol (ll, ml or off)

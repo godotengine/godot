@@ -1,0 +1,12 @@
+# GLSL-specific rules.
+# The rules will be the same as .clang-format, except those explicitly mentioned.
+BasedOnStyle: InheritParentConfig
+# `uniform` and `buffer` not recognized as object-like containers.
+RemoveSemicolon: false
+# NOTE: This is a duplicated value from the main config to work around a bug in clang-format when
+#  inheriting a parent config. This value changed to a boolean in v22, and automatically resolves
+#  "DontAlign" to "false". However, it does *not* perform this resolution in an inherited file,
+#  which causes the value to fallback to the LLVM value: "true". When comparing `--dump-config`
+#  outputs, this is the only instance of this happening, but future major version bumps should
+#  ratify this as well.
+AlignAfterOpenBracket: DontAlign

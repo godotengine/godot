@@ -77,18 +77,18 @@ namespace embree
       {
         /* calculate denominator */
         vbool<M> valid = valid0;
+
         const Vec3vf<M> O = Vec3vf<M>((Vec3fa)ray.org);
         const Vec3vf<M> D = Vec3vf<M>((Vec3fa)ray.dir);
         const Vec3vf<M> C = Vec3vf<M>(tri_v0) - O;
         const Vec3vf<M> R = cross(C,D);
         const vfloat<M> den = dot(Vec3vf<M>(tri_Ng),D);
-
         const vfloat<M> absDen = abs(den);
         const vfloat<M> sgnDen = signmsk(den);
-        
+
         /* perform edge tests */
-        const vfloat<M> U = dot(R,Vec3vf<M>(tri_e2)) ^ sgnDen;
-        const vfloat<M> V = dot(R,Vec3vf<M>(tri_e1)) ^ sgnDen;
+        const vfloat<M> U = asFloat(asInt(dot(R,Vec3vf<M>(tri_e2))) ^ asInt(sgnDen));
+        const vfloat<M> V = asFloat(asInt(dot(R,Vec3vf<M>(tri_e1))) ^ asInt(sgnDen));
         
         /* perform backface culling */        
 #if defined(EMBREE_BACKFACE_CULLING)
@@ -99,14 +99,15 @@ namespace embree
         if (likely(early_out && none(valid))) return false;
 
         /* perform depth test */
-        const vfloat<M> T = dot(Vec3vf<M>(tri_Ng),C) ^ sgnDen;
+        const vfloat<M> T = asFloat(asInt(dot(Vec3vf<M>(tri_Ng),C)) ^ asInt(sgnDen));
+
         valid &= (absDen*vfloat<M>(ray.tnear()) < T) & (T <= absDen*vfloat<M>(ray.tfar));
         if (likely(early_out && none(valid))) return false;
            
         /* update hit information */
         new (&hit) MoellerTrumboreHitM<M,UVMapper>(valid,U,V,T,absDen,tri_Ng,mapUV);
 
-        return true;
+        return early_out || any(valid);
       }
 
       template<typename UVMapper>
@@ -320,8 +321,7 @@ namespace embree
         const Vec3vf<K> Ng = cross(e2,e1);
         return intersectK(valid0,ray.org,ray.dir,ray.tnear(),ray.tfar,tri_v0,e1,e2,Ng,mapUV,hit);
       }
-      
-      
+
       /*! Intersects K rays with one of M triangles. */
       template<typename UVMapper, typename Epilog>
       __forceinline vbool<K> intersectK(const vbool<K>& valid0, 

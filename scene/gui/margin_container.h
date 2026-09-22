@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MARGIN_CONTAINER_H
-#define MARGIN_CONTAINER_H
+#pragma once
 
 #include "scene/gui/container.h"
 
@@ -49,6 +48,8 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
+	virtual Size2 get_inner_combined_maximum_size() const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;
@@ -57,5 +58,3 @@ public:
 
 	MarginContainer();
 };
-
-#endif // MARGIN_CONTAINER_H

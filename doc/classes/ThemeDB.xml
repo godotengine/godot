@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ThemeDB" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ThemeDB" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A singleton that provides access to static information about [Theme] resources used by the engine and by your project.
 	</brief_description>
@@ -39,6 +39,9 @@
 		</member>
 		<member name="fallback_icon" type="Texture2D" setter="set_fallback_icon" getter="get_fallback_icon">
 			The fallback icon of every [Control] node and [Theme] resource. Used when no other value is available to the control.
+		</member>
+		<member name="fallback_sound" type="AudioStream" setter="set_fallback_sound" getter="get_fallback_sound">
+			The fallback sound of every [Control] node and [Theme] resource. Used when no other value is available to the control.
 		</member>
 		<member name="fallback_stylebox" type="StyleBox" setter="set_fallback_stylebox" getter="get_fallback_stylebox">
 			The fallback stylebox of every [Control] node and [Theme] resource. Used when no other value is available to the control.

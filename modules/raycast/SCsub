@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -15,10 +16,10 @@ if env["builtin_embree"]:
     embree_src = [
         "common/sys/sysinfo.cpp",
         "common/sys/alloc.cpp",
+        "common/sys/estring.cpp",
         "common/sys/filename.cpp",
         "common/sys/library.cpp",
         "common/sys/thread.cpp",
-        "common/sys/string.cpp",
         "common/sys/regression.cpp",
         "common/sys/mutex.cpp",
         "common/sys/condition.cpp",
@@ -36,6 +37,7 @@ if env["builtin_embree"]:
         "kernels/common/rtcore.cpp",
         "kernels/common/rtcore_builder.cpp",
         "kernels/common/scene.cpp",
+        "kernels/common/scene_verify.cpp",
         "kernels/common/alloc.cpp",
         "kernels/common/geometry.cpp",
         "kernels/common/scene_triangle_mesh.cpp",
@@ -56,8 +58,6 @@ if env["builtin_embree"]:
         "kernels/bvh/bvh_builder_twolevel.cpp",
         "kernels/bvh/bvh_intersector1_bvh4.cpp",
         "kernels/bvh/bvh_intersector_hybrid4_bvh4.cpp",
-        "kernels/bvh/bvh_intersector_stream_bvh4.cpp",
-        "kernels/bvh/bvh_intersector_stream_filters.cpp",
     ]
 
     thirdparty_sources = [thirdparty_dir + file for file in embree_src]
@@ -65,13 +65,6 @@ if env["builtin_embree"]:
     env_raycast.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "include"])
     env_raycast.Append(CPPDEFINES=["EMBREE_TARGET_SSE2", "EMBREE_LOWEST_ISA", "TASKING_INTERNAL"])
     env_raycast.AppendUnique(CPPDEFINES=["NDEBUG"])  # No assert() even in debug builds.
-
-    if not env.msvc:
-        if env["arch"] in ["x86_64", "x86_32"]:
-            env_raycast.Append(CCFLAGS=["-msse2", "-mxsave"])
-
-        if env["platform"] == "windows":
-            env_raycast.Append(CCFLAGS=["-mstackrealign"])
 
     if env["platform"] == "windows":
         if env.msvc:
@@ -87,9 +80,16 @@ if env["builtin_embree"]:
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
+    # Set x86 CPU instruction sets to use when building Embree's own intrinsics.
+    # Keep this in sync with Godot's main SConstruct file.
+    # This is only needed on MSVC, as GCC/Clang will set those defines automatically
+    # according to compiler instruction set flags.
     if env["arch"] != "x86_64" or env.msvc:
-        # Embree needs those, it will automatically use SSE2NEON in ARM
-        env_thirdparty.Append(CPPDEFINES=["__SSE2__", "__SSE__"])
+        # Embree needs those; it will automatically use SSE2NEON in ARM.
+        env_thirdparty.Append(CPPDEFINES=["__SSE__", "__SSE2__"])
+
+    if env["arch"] == "x86_64" and env.msvc:
+        env_thirdparty.Append(CPPDEFINES=["__SSE3__", "__SSSE3__", "__SSE4_1__", "__SSE4_2__"])
 
     if env["platform"] == "web":
         env_thirdparty.Append(CXXFLAGS=["-msimd128"])

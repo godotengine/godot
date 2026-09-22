@@ -1,0 +1,166 @@
+/**************************************************************************/
+/*  jolt_contact_listener_3d.h                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#pragma once
+
+#include "core/os/mutex.h"
+#include "core/templates/hash_set.h"
+#include "core/templates/hashfuncs.h"
+#include "core/templates/local_vector.h"
+#include "core/templates/self_list.h"
+#include "core/variant/variant.h"
+
+#include <Jolt/Jolt.h>
+
+#include <Jolt/Physics/Body/Body.h>
+#include <Jolt/Physics/Collision/ContactListener.h>
+#include <Jolt/Physics/SoftBody/SoftBodyContactListener.h>
+
+class JoltArea3D;
+class JoltBody3D;
+class JoltShapedObject3D;
+class JoltSoftBody3D;
+class JoltSpace3D;
+
+class JoltContactListener3D final
+		: public JPH::ContactListener,
+		  public JPH::SoftBodyContactListener {
+	struct BodyIDHasher {
+		static uint32_t hash(const JPH::BodyID &p_id) { return hash_fmix32(p_id.GetIndexAndSequenceNumber()); }
+	};
+
+	struct ShapePairHasher {
+		static uint32_t hash(const JPH::SubShapeIDPair &p_pair) {
+			uint32_t hash = hash_murmur3_one_32(p_pair.GetBody1ID().GetIndexAndSequenceNumber());
+			hash = hash_murmur3_one_32(p_pair.GetSubShapeID1().GetValue(), hash);
+			hash = hash_murmur3_one_32(p_pair.GetBody2ID().GetIndexAndSequenceNumber(), hash);
+			hash = hash_murmur3_one_32(p_pair.GetSubShapeID2().GetValue(), hash);
+			return hash_fmix32(hash);
+		}
+	};
+
+	struct Contact {
+		Vector3 point1;
+		Vector3 point2;
+		Vector3 velocity1;
+		Vector3 velocity2;
+		Vector3 impulse1;
+	};
+
+	struct Manifold {
+		JPH::SubShapeIDPair shape_pair;
+		TightLocalVector<Contact> contacts;
+		Vector3 normal1;
+		float depth = 0.0f;
+	};
+
+	struct ThreadLocals {
+		SelfList<ThreadLocals> instances_element;
+
+		LocalVector<Manifold> manifolds;
+		LocalVector<JPH::SubShapeIDPair> area_enters;
+		LocalVector<JPH::SubShapeIDPair> area_exits;
+		LocalVector<JPH::SubShapeIDPair> area_soft_body_overlaps;
+
+		inline static SelfList<ThreadLocals>::List instances;
+		inline static BinaryMutex instances_mutex;
+
+		ThreadLocals() : instances_element(this) {
+			MutexLock lock(instances_mutex);
+			instances.add_last(&instances_element);
+		}
+
+		~ThreadLocals() {
+			MutexLock lock(instances_mutex);
+			instances.remove(&instances_element);
+		}
+	};
+
+	HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_overlaps;
+	HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_soft_body_overlaps;
+
+	JoltSpace3D *space = nullptr;
+
+#ifdef DEBUG_ENABLED
+	PackedVector3Array debug_contacts;
+	std::atomic_int debug_contact_count = 0;
+#endif
+
+	static ThreadLocals &_get_thread_locals() {
+		thread_local ThreadLocals tl;
+		return tl;
+	}
+
+	virtual void OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) override;
+	virtual void OnContactPersisted(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) override;
+	virtual void OnContactRemoved(const JPH::SubShapeIDPair &p_shape_pair) override;
+
+	virtual JPH::SoftBodyValidateResult OnSoftBodyContactValidate(const JPH::Body &p_soft_body, const JPH::Body &p_other_body, JPH::SoftBodyContactSettings &p_settings) override;
+	virtual void OnSoftBodyContactAdded(const JPH::Body &p_soft_body, const JPH::SoftBodyManifold &p_manifold) override;
+
+	bool _try_override_collision_response(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, JPH::ContactSettings &p_settings);
+	bool _try_override_collision_response(const JPH::Body &p_jolt_soft_body, const JPH::Body &p_jolt_other_body, JPH::SoftBodyContactSettings &p_settings);
+	bool _try_apply_surface_velocities(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, JPH::ContactSettings &p_settings);
+	bool _try_add_contacts(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings);
+	bool _try_evaluate_area_overlap(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::SubShapeID &p_shape_id1, const JPH::SubShapeID &p_shape_id2);
+	void _try_remove_area_overlap(const JPH::SubShapeIDPair &p_shape_pair);
+
+#ifdef DEBUG_ENABLED
+	bool _try_add_debug_contacts(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold);
+	bool _try_add_debug_contacts(const JPH::Body &p_soft_body, const JPH::SoftBodyManifold &p_manifold);
+#endif
+
+	bool _has_shape_shifted(const JoltShapedObject3D &p_object, const JPH::SubShapeID &p_sub_shape_id);
+
+	void _evaluate_area_overlap(const JoltArea3D &p_area, const JoltArea3D &p_other_area, const JPH::SubShapeIDPair &p_shape_pair);
+	void _evaluate_area_overlap(const JoltArea3D &p_area, const JoltBody3D &p_body, const JPH::SubShapeIDPair &p_shape_pair);
+	void _evaluate_area_overlap(const JoltArea3D &p_area, const JoltSoftBody3D &p_body, const JPH::SubShapeIDPair &p_shape_pair);
+
+	void _flush_contacts();
+	void _flush_area_body_events();
+	void _flush_area_soft_body_events();
+
+	void _dispatch_area_enter(const JPH::SubShapeIDPair &p_shape_pair);
+	void _dispatch_area_exit(const JPH::SubShapeIDPair &p_shape_pair);
+
+public:
+	explicit JoltContactListener3D(JoltSpace3D *p_space) :
+			space(p_space) {}
+
+	void pre_step();
+	void post_step();
+
+#ifdef DEBUG_ENABLED
+	const PackedVector3Array &get_debug_contacts() const { return debug_contacts; }
+	int get_debug_contact_count() const { return debug_contact_count.load(std::memory_order_acquire); }
+	int get_max_debug_contacts() const { return (int)debug_contacts.size(); }
+	void set_max_debug_contacts(int p_count) { debug_contacts.resize(p_count); }
+#endif
+};

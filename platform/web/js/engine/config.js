@@ -19,7 +19,7 @@ const EngineConfig = {}; // eslint-disable-line no-unused-vars
 const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-vars
 	const cfg = /** @lends {InternalConfig.prototype} */ {
 		/**
-		 * Whether the unload the engine automatically after the instance is initialized.
+		 * Whether to unload the engine automatically after the instance is initialized.
 		 *
 		 * @memberof EngineConfig
 		 * @default
@@ -133,6 +133,16 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 * @type {Array.<string>}
 		 */
 		fileSizes: [],
+		/**
+		 * @ignore
+		 * @type {number}
+		 */
+		emscriptenPoolSize: 8,
+		/**
+		 * @ignore
+		 * @type {number}
+		 */
+		godotPoolSize: 4,
 		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
@@ -259,6 +269,8 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.serviceWorker = parse('serviceWorker', this.serviceWorker);
 		this.gdextensionLibs = parse('gdextensionLibs', this.gdextensionLibs);
 		this.fileSizes = parse('fileSizes', this.fileSizes);
+		this.emscriptenPoolSize = parse('emscriptenPoolSize', this.emscriptenPoolSize);
+		this.godotPoolSize = parse('godotPoolSize', this.godotPoolSize);
 		this.args = parse('args', this.args);
 		this.onExecute = parse('onExecute', this.onExecute);
 		this.onExit = parse('onExit', this.onExit);
@@ -271,12 +283,14 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 	 */
 	Config.prototype.getModuleConfig = function (loadPath, response) {
 		let r = response;
+		const gdext = this.gdextensionLibs;
 		return {
 			'print': this.onPrint,
 			'printErr': this.onPrintError,
 			'thisProgram': this.executable,
 			'noExitRuntime': false,
-			'dynamicLibraries': [`${loadPath}.side.wasm`],
+			'dynamicLibraries': [`${loadPath}.side.wasm`].concat(this.gdextensionLibs),
+			'emscriptenPoolSize': this.emscriptenPoolSize,
 			'instantiateWasm': function (imports, onSuccess) {
 				function done(result) {
 					onSuccess(result['instance'], result['module']);
@@ -294,12 +308,14 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'locateFile': function (path) {
 				if (!path.startsWith('godot.')) {
 					return path;
-				} else if (path.endsWith('.worker.js')) {
-					return `${loadPath}.worker.js`;
 				} else if (path.endsWith('.audio.worklet.js')) {
 					return `${loadPath}.audio.worklet.js`;
+				} else if (path.endsWith('.audio.position.worklet.js')) {
+					return `${loadPath}.audio.position.worklet.js`;
 				} else if (path.endsWith('.js')) {
 					return `${loadPath}.js`;
+				} else if (path in gdext) {
+					return path;
 				} else if (path.endsWith('.side.wasm')) {
 					return `${loadPath}.side.wasm`;
 				} else if (path.endsWith('.wasm')) {
@@ -347,6 +363,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'locale': locale,
 			'persistentDrops': this.persistentDrops,
 			'virtualKeyboard': this.experimentalVK,
+			'godotPoolSize': this.godotPoolSize,
 			'focusCanvas': this.focusCanvas,
 			'onExecute': this.onExecute,
 			'onExit': function (p_code) {

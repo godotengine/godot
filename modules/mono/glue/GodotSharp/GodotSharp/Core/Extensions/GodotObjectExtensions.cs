@@ -1,5 +1,8 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
+
+#nullable enable
 
 namespace Godot
 {
@@ -26,7 +29,7 @@ namespace Godot
         /// </example>
         /// <param name="instanceId">Instance ID of the Object to retrieve.</param>
         /// <returns>The <see cref="GodotObject"/> instance.</returns>
-        public static GodotObject InstanceFromId(ulong instanceId)
+        public static GodotObject? InstanceFromId(ulong instanceId)
         {
             return InteropUtils.UnmanagedGetManaged(NativeFuncs.godotsharp_instance_from_id(instanceId));
         }
@@ -49,7 +52,7 @@ namespace Godot
         /// </summary>
         /// <param name="instance">The instance to check.</param>
         /// <returns>If the instance is a valid object.</returns>
-        public static bool IsInstanceValid(GodotObject instance)
+        public static bool IsInstanceValid([NotNullWhen(true)] GodotObject? instance)
         {
             return instance != null && instance.NativeInstance != IntPtr.Zero;
         }
@@ -66,9 +69,9 @@ namespace Godot
         /// </summary>
         /// <param name="obj">The object.</param>
         /// <returns>
-        /// The <see cref="WeakRef"/> reference to the object or <see langword="null"/>.
+        /// The <see cref="Godot.WeakRef"/> reference to the object or <see langword="null"/>.
         /// </returns>
-        public static WeakRef WeakRef(GodotObject obj)
+        public static WeakRef? WeakRef(GodotObject? obj)
         {
             if (!IsInstanceValid(obj))
                 return null;

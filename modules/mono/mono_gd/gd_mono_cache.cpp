@@ -40,11 +40,11 @@ bool godot_api_cache_updated = false;
 void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	int checked_count = 0;
 
-#define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method)                             \
-	{                                                                                      \
-		ERR_FAIL_NULL_MSG(m_var,                                                           \
+#define CHECK_CALLBACK_NOT_NULL_IMPL(m_var, m_class, m_method) \
+	{ \
+		ERR_FAIL_NULL_MSG(m_var, \
 				"Mono Cache: Managed callback for '" #m_class "_" #m_method "' is null."); \
-		checked_count += 1;                                                                \
+		checked_count += 1; \
 	}
 
 #define CHECK_CALLBACK_NOT_NULL(m_class, m_method) CHECK_CALLBACK_NOT_NULL_IMPL(p_managed_callbacks.m_class##_##m_method, m_class, m_method)
@@ -53,12 +53,14 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, InvokeWithVariantArgs);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateEquals);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, DelegateHash);
+	CHECK_CALLBACK_NOT_NULL(DelegateUtils, GetArgumentCount);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TrySerializeDelegateWithGCHandle);
 	CHECK_CALLBACK_NOT_NULL(DelegateUtils, TryDeserializeDelegateWithGCHandle);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, FrameCallback);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CreateManagedForGodotObjectBinding);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, CreateManagedForGodotObjectScriptInstance);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetScriptNativeName);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetGlobalClassName);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SetGodotObjectPtr);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, RaiseEventSignal);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, ScriptIsOrInherits);

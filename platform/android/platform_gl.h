@@ -28,16 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLATFORM_GL_H
-#define PLATFORM_GL_H
+#pragma once
 
 #ifndef GLES_API_ENABLED
 #define GLES_API_ENABLED // Allow using GLES.
 #endif
 
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
+// IWYU pragma: begin_exports.
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
-
-#endif // PLATFORM_GL_H
+// IWYU pragma: end_exports.

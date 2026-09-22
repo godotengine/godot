@@ -28,10 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_GI_H
-#define RENDERER_GI_H
+#pragma once
 
-#include "servers/rendering_server.h"
+#include <cstdint>
+
+class RID;
+struct AABB;
+struct Transform3D;
+struct Vector3;
+struct Vector3i;
+
+template <typename T>
+class Vector;
 
 class RendererGI {
 public:
@@ -82,5 +90,3 @@ public:
 
 	virtual void sdfgi_reset() = 0;
 };
-
-#endif // RENDERER_GI_H

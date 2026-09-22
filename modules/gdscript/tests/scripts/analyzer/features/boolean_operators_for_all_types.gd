@@ -345,3 +345,12 @@ func test():
 	prints(x and true)
 	prints(x or false)
 	prints(x or true)
+
+	# TYPE_PACKED_VECTOR4_ARRAY
+	x = PackedVector4Array([Vector4.ONE])
+	prints("TYPE_PACKED_VECTOR4_ARRAY")
+	prints(not x)
+	prints(x and false)
+	prints(x and true)
+	prints(x or false)
+	prints(x or true)

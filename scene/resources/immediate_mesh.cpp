@@ -30,6 +30,9 @@
 
 #include "immediate_mesh.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_server.h"
+
 void ImmediateMesh::surface_begin(PrimitiveType p_primitive, const Ref<Material> &p_material) {
 	ERR_FAIL_COND_MSG(surface_active, "Already creating a new surface.");
 	active_surface_data.primitive = p_primitive;
@@ -147,7 +150,7 @@ void ImmediateMesh::surface_add_vertex_2d(const Vector2 &p_vertex) {
 
 void ImmediateMesh::surface_end() {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
-	ERR_FAIL_COND_MSG(!vertices.size(), "No vertices were added, surface can't be created.");
+	ERR_FAIL_COND_MSG(vertices.is_empty(), "No vertices were added, surface can't be created.");
 
 	uint64_t format = ARRAY_FORMAT_VERTEX | ARRAY_FLAG_FORMAT_CURRENT_VERSION;
 
@@ -208,7 +211,7 @@ void ImmediateMesh::surface_end() {
 				if (uses_tangents) {
 					t = tangents[i].normal.octahedron_tangent_encode(tangents[i].d);
 				} else {
-					Vector3 tan = Vector3(0.0, 1.0, 0.0).cross(normals[i].normalized());
+					Vector3 tan = Vector3(normals[i].z, -normals[i].x, normals[i].y).cross(normals[i].normalized()).normalized();
 					t = tan.octahedron_tangent_encode(1.0);
 				}
 
@@ -275,9 +278,9 @@ void ImmediateMesh::surface_end() {
 		}
 	}
 
-	RS::SurfaceData sd;
+	RenderingServerTypes::SurfaceData sd;
 
-	sd.primitive = RS::PrimitiveType(active_surface_data.primitive);
+	sd.primitive = RSE::PrimitiveType(active_surface_data.primitive);
 	sd.format = format;
 	sd.vertex_data = surface_vertex_create_cache;
 	if (uses_colors || uses_uvs || uses_uv2s) {
@@ -311,7 +314,11 @@ void ImmediateMesh::surface_end() {
 	uses_uvs = false;
 	uses_uv2s = false;
 
+	active_surface_data.vertex_2d = false;
+
 	surface_active = false;
+
+	emit_changed();
 }
 
 void ImmediateMesh::clear_surfaces() {
@@ -418,5 +425,5 @@ ImmediateMesh::ImmediateMesh() {
 }
 ImmediateMesh::~ImmediateMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(mesh);
+	RS::get_singleton()->free_rid(mesh);
 }

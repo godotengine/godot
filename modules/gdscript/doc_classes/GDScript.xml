@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GDScript" inherits="Script" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="GDScript" inherits="Script" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		A script implemented in the GDScript programming language.
 	</brief_description>
@@ -16,11 +16,10 @@
 			<return type="Variant" />
 			<description>
 				Returns a new instance of the script.
-				For example:
 				[codeblock]
 				var MyClass = load("myclass.gd")
 				var instance = MyClass.new()
-				assert(instance.get_script() == MyClass)
+				print(instance.get_script() == MyClass) # Prints true
 				[/codeblock]
 			</description>
 		</method>

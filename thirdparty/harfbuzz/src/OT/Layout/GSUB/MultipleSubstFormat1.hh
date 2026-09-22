@@ -44,6 +44,19 @@ struct MultipleSubstFormat1_2
     ;
   }
 
+  void depend (hb_depend_context_t *c) const
+  {
+    // Filter by parent_active_glyphs like closure does
+    + hb_zip (this+coverage, sequence)
+    | hb_filter (c->parent_active_glyphs (), hb_first)
+    | hb_apply ([&] (const hb_pair_t<hb_codepoint_t, const typename Types::template OffsetTo<Sequence<Types>>&> &_)
+                {
+                  const Sequence<Types>& s = this+_.second;
+                  s.depend (c, _.first);
+                })
+    ;
+  }
+
   void closure_lookups (hb_closure_lookups_context_t *c) const {}
 
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
@@ -66,7 +79,7 @@ struct MultipleSubstFormat1_2
     TRACE_APPLY (this);
 
     unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
+    if (index == NOT_COVERED) return_trace (false);
 
     return_trace ((this+sequence[index]).apply (c));
   }

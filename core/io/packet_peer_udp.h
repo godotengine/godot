@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKET_PEER_UDP_H
-#define PACKET_PEER_UDP_H
+#pragma once
 
-#include "core/io/ip.h"
+#include "core/io/ip_address.h"
 #include "core/io/net_socket.h"
 #include "core/io/packet_peer.h"
 
@@ -75,7 +74,7 @@ public:
 	Error wait();
 	bool is_bound() const;
 
-	Error connect_shared_socket(Ref<NetSocket> p_sock, IPAddress p_ip, uint16_t p_port, UDPServer *ref); // Used by UDPServer
+	Error connect_shared_socket(Ref<NetSocket> p_sock, IPAddress p_ip, uint16_t p_port, UDPServer *p_server); // Used by UDPServer
 	void disconnect_shared_socket(); // Used by UDPServer
 	Error store_packet(IPAddress p_ip, uint32_t p_port, uint8_t *p_buf, int p_buf_size); // Used internally and by UDPServer
 	Error connect_to_host(const IPAddress &p_host, int p_port);
@@ -91,11 +90,9 @@ public:
 	int get_available_packet_count() const override;
 	int get_max_packet_size() const override;
 	void set_broadcast_enabled(bool p_enabled);
-	Error join_multicast_group(IPAddress p_multi_address, String p_if_name);
-	Error leave_multicast_group(IPAddress p_multi_address, String p_if_name);
+	Error join_multicast_group(IPAddress p_multi_address, const String &p_if_name);
+	Error leave_multicast_group(IPAddress p_multi_address, const String &p_if_name);
 
 	PacketPeerUDP();
 	~PacketPeerUDP();
 };
-
-#endif // PACKET_PEER_UDP_H

@@ -1,0 +1,11 @@
+Color management and HDR protocol
+
+Maintainers:
+Sebastian Wick <sebastian at sebastianwick.net>
+Pekka Paalanen <pekka.paalanen@collabora.com>
+
+
+Historical credits not mentioned in the first commit:
+
+- Niels Ole Salscheider, for an early protocol version
+  https://lists.freedesktop.org/archives/wayland-devel/2014-October/017755.html

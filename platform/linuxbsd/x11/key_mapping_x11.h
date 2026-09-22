@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef KEY_MAPPING_X11_H
-#define KEY_MAPPING_X11_H
+#pragma once
 
 #include "core/os/keyboard.h"
 #include "core/templates/hash_map.h"
@@ -54,16 +53,17 @@ class KeyMappingX11 {
 	static inline HashMap<unsigned int, Key, HashMapHasherKeys> scancode_map;
 	static inline HashMap<Key, unsigned int, HashMapHasherKeys> scancode_map_inv;
 	static inline HashMap<KeySym, char32_t, HashMapHasherKeys> xkeysym_unicode_map;
+	static inline HashMap<unsigned int, KeyLocation, HashMapHasherKeys> location_map;
 
 	KeyMappingX11() {}
 
 public:
 	static void initialize();
 
+	static bool is_sym_numpad(KeySym p_keysym);
 	static Key get_keycode(KeySym p_keysym);
 	static unsigned int get_xlibcode(Key p_keysym);
 	static Key get_scancode(unsigned int p_code);
 	static char32_t get_unicode_from_keysym(KeySym p_keysym);
+	static KeyLocation get_location(unsigned int p_code);
 };
-
-#endif // KEY_MAPPING_X11_H

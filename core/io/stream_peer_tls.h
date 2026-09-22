@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STREAM_PEER_TLS_H
-#define STREAM_PEER_TLS_H
+#pragma once
 
 #include "core/crypto/crypto.h"
 #include "core/io/stream_peer.h"
@@ -38,7 +37,7 @@ class StreamPeerTLS : public StreamPeer {
 	GDCLASS(StreamPeerTLS, StreamPeer);
 
 protected:
-	static StreamPeerTLS *(*_create)();
+	static StreamPeerTLS *(*_create)(bool p_notify_postinitialize);
 	static void _bind_methods();
 
 public:
@@ -58,13 +57,9 @@ public:
 
 	virtual void disconnect_from_stream() = 0;
 
-	static StreamPeerTLS *create();
+	static StreamPeerTLS *create(bool p_notify_postinitialize = true);
 
 	static bool is_available();
-
-	StreamPeerTLS() {}
 };
 
 VARIANT_ENUM_CAST(StreamPeerTLS::Status);
-
-#endif // STREAM_PEER_TLS_H

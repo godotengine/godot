@@ -5,7 +5,7 @@
  *   Basic OpenType/CFF type definitions and interface (specification
  *   only).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -191,8 +191,8 @@ FT_BEGIN_HEADER
     FT_UInt    weight;
     FT_Bool    is_fixed_pitch;
     FT_Fixed   italic_angle;
-    FT_Fixed   underline_position;
-    FT_Fixed   underline_thickness;
+    FT_Short   underline_position;
+    FT_UShort  underline_thickness;
     FT_Int     paint_type;
     FT_Int     charstring_type;
     FT_Matrix  font_matrix;
@@ -248,10 +248,10 @@ FT_BEGIN_HEADER
     FT_Byte   num_family_blues;
     FT_Byte   num_family_other_blues;
 
-    FT_Pos    blue_values[14];
-    FT_Pos    other_blues[10];
-    FT_Pos    family_blues[14];
-    FT_Pos    family_other_blues[10];
+    FT_Fixed  blue_values[14];
+    FT_Fixed  other_blues[10];
+    FT_Fixed  family_blues[14];
+    FT_Fixed  family_other_blues[10];
 
     FT_Fixed  blue_scale;
     FT_Pos    blue_shift;

@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MOBILE_VR_INTERFACE_H
-#define MOBILE_VR_INTERFACE_H
+#pragma once
 
 #include "servers/xr/xr_interface.h"
 #include "servers/xr/xr_positional_tracker.h"
+#include "servers/xr/xr_vrs.h"
 
 /**
 	The mobile interface is a native VR interface that can be used on Android and iOS phones.
@@ -62,13 +62,21 @@ private:
 	double display_to_lens = 4.0;
 	double oversample = 1.5;
 
+	Rect2 offset_rect = Rect2(0, 0, 1, 1); // Full screen rect.
+
 	double k1 = 0.215;
 	double k2 = 0.215;
 	double aspect = 1.0;
+	double z_near = 0.01;
+	double z_far = 4096.0;
 
-	// at a minimum we need a tracker for our head
+	// At a minimum we need a tracker for our head.
 	Ref<XRPositionalTracker> head;
 	Transform3D head_transform;
+	TypedArray<Projection> camera_projections;
+	TypedArray<Transform3D> camera_offsets;
+
+	XRVRS xr_vrs;
 
 	/*
 		logic for processing our sensor data, this was originally in our positional tracker logic but I think
@@ -90,21 +98,21 @@ private:
 
 	///@TODO a few support functions for trackers, most are math related and should likely be moved elsewhere
 	float floor_decimals(const float p_value, const float p_decimals) {
-		float power_of_10 = pow(10.0f, p_decimals);
-		return floor(p_value * power_of_10) / power_of_10;
-	};
+		float power_of_10 = std::pow(10.0f, p_decimals);
+		return std::floor(p_value * power_of_10) / power_of_10;
+	}
 
 	Vector3 floor_decimals(const Vector3 &p_vector, const float p_decimals) {
 		return Vector3(floor_decimals(p_vector.x, p_decimals), floor_decimals(p_vector.y, p_decimals), floor_decimals(p_vector.z, p_decimals));
-	};
+	}
 
 	Vector3 low_pass(const Vector3 &p_vector, const Vector3 &p_last_vector, const float p_factor) {
 		return p_vector + (p_factor * (p_last_vector - p_vector));
-	};
+	}
 
 	Vector3 scrub(const Vector3 &p_vector, const Vector3 &p_last_vector, const float p_decimals, const float p_factor) {
 		return low_pass(floor_decimals(p_vector, p_decimals), p_last_vector, p_factor);
-	};
+	}
 
 	void set_position_from_sensors();
 
@@ -121,6 +129,9 @@ public:
 	void set_display_width(const double p_display_width);
 	double get_display_width() const;
 
+	void set_offset_rect(const Rect2 &p_offset_rect);
+	Rect2 get_offset_rect() const;
+
 	void set_display_to_lens(const double p_display_to_lens);
 	double get_display_to_lens() const;
 
@@ -132,6 +143,12 @@ public:
 
 	void set_k2(const double p_k2);
 	double get_k2() const;
+
+	float get_vrs_min_radius() const;
+	void set_vrs_min_radius(float p_vrs_min_radius);
+
+	float get_vrs_strength() const;
+	void set_vrs_strength(float p_vrs_strength);
 
 	virtual StringName get_name() const override;
 	virtual uint32_t get_capabilities() const override;
@@ -150,14 +167,18 @@ public:
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name) override;
+#ifndef DISABLE_DEPRECATED
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
-	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
+#endif
+	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 
 	virtual void process() override;
+
+	virtual RID get_vrs_texture() override;
 
 	MobileVRInterface();
 	~MobileVRInterface();
 };
-
-#endif // MOBILE_VR_INTERFACE_H

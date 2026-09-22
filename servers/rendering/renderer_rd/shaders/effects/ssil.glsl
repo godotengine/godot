@@ -49,8 +49,9 @@ const int num_taps[5] = { 3, 5, 12, 0, 0 };
 #define SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET (2)
 #define SSIL_DEPTH_MIPS_GLOBAL_OFFSET (-4.3) // best noise/quality/performance tradeoff, found empirically
 //
-// !!warning!! the edge handling is hard-coded to 'disabled' on quality level 0, and enabled above, on the C++ side; while toggling it here will work for
-// testing purposes, it will not yield performance gains (or correct results)
+// WARNING: The edge handling is hard-coded to 'disabled' on quality level 0, and enabled above,
+// on the C++ side; while toggling it here will work for testing purposes, it will not yield
+// performance gains (or correct results).
 #define SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET (1)
 //
 #define SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET (1)
@@ -70,7 +71,7 @@ layout(set = 0, binding = 2) uniform Constants { //get into a lower set
 constants;
 
 #ifdef ADAPTIVE
-layout(rgba16, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
+layout(rgba16f, set = 1, binding = 0) uniform restrict readonly image2DArray source_ssil;
 layout(set = 1, binding = 1) uniform sampler2D source_importance;
 layout(set = 1, binding = 2, std430) buffer Counter {
 	uint sum;
@@ -78,7 +79,7 @@ layout(set = 1, binding = 2, std430) buffer Counter {
 counter;
 #endif
 
-layout(rgba16, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
+layout(rgba16f, set = 2, binding = 0) uniform restrict writeonly image2D dest_image;
 layout(r8, set = 2, binding = 1) uniform image2D edges_weights_image;
 
 layout(set = 3, binding = 0) uniform sampler2D last_frame;
@@ -159,21 +160,16 @@ vec4 calculate_edges(const float p_center_z, const float p_left_z, const float p
 	return clamp((1.3 - edgesLRTB / (p_center_z * 0.040)), 0.0, 1.0);
 }
 
-vec3 decode_normal(vec3 p_encoded_normal) {
-	vec3 normal = p_encoded_normal * 2.0 - 1.0;
-	return normal;
-}
-
 vec3 load_normal(ivec2 p_pos) {
-	vec3 encoded_normal = imageLoad(source_normal, p_pos).xyz;
-	encoded_normal.z = 1.0 - encoded_normal.z;
-	return decode_normal(encoded_normal);
+	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos).xyz * 2.0 - 1.0);
+	encoded_normal.z = -encoded_normal.z;
+	return encoded_normal;
 }
 
 vec3 load_normal(ivec2 p_pos, ivec2 p_offset) {
-	vec3 encoded_normal = imageLoad(source_normal, p_pos + p_offset).xyz;
-	encoded_normal.z = 1.0 - encoded_normal.z;
-	return decode_normal(encoded_normal);
+	vec3 encoded_normal = normalize(imageLoad(source_normal, p_pos + p_offset).xyz * 2.0 - 1.0);
+	encoded_normal.z = -encoded_normal.z;
+	return encoded_normal;
 }
 
 // all vectors in viewspace
@@ -199,9 +195,9 @@ void SSIL_tap_inner(const int p_quality_level, inout vec3 r_color_sum, inout flo
 	float weight = 1.0;
 
 	if (p_quality_level >= SSIL_HALOING_REDUCTION_ENABLE_AT_QUALITY_PRESET) {
-		float reduct = max(0, -hit_delta.z);
-		reduct = clamp(reduct * params.neg_inv_radius + 2.0, 0.0, 1.0);
-		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduct + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);
+		float reduce = max(0, -hit_delta.z);
+		reduce = clamp(reduce * params.neg_inv_radius + 2.0, 0.0, 1.0);
+		weight = SSIL_HALOING_REDUCTION_AMOUNT * reduce + (1.0 - SSIL_HALOING_REDUCTION_AMOUNT);
 	}
 
 	// Translate sampling_uv to last screen's coordinates

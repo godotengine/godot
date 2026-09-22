@@ -22,6 +22,10 @@
 #include <cpu-features.h>
 #endif
 
+#include <stddef.h>
+
+#include "src/webp/types.h"
+
 //------------------------------------------------------------------------------
 // SSE2 detection.
 //
@@ -34,18 +38,6 @@ static WEBP_INLINE void GetCPUInfo(int cpu_info[4], int info_type) {
     "cpuid\n"
     "xchg %%edi, %%ebx\n"
     : "=a"(cpu_info[0]), "=D"(cpu_info[1]), "=c"(cpu_info[2]), "=d"(cpu_info[3])
-    : "a"(info_type), "c"(0));
-}
-#elif defined(__x86_64__) && \
-      (defined(__code_model_medium__) || defined(__code_model_large__)) && \
-      defined(__PIC__)
-static WEBP_INLINE void GetCPUInfo(int cpu_info[4], int info_type) {
-  __asm__ volatile (
-    "xchg{q}\t{%%rbx}, %q1\n"
-    "cpuid\n"
-    "xchg{q}\t{%%rbx}, %q1\n"
-    : "=a"(cpu_info[0]), "=&r"(cpu_info[1]), "=c"(cpu_info[2]),
-      "=d"(cpu_info[3])
     : "a"(info_type), "c"(0));
 }
 #elif defined(__i386__) || defined(__x86_64__)
@@ -187,7 +179,7 @@ static int AndroidCPUInfo(CPUFeature feature) {
 }
 WEBP_EXTERN VP8CPUInfo VP8GetCPUInfo;
 VP8CPUInfo VP8GetCPUInfo = AndroidCPUInfo;
-#elif defined(EMSCRIPTEN) // also needs to be before generic NEON test
+#elif defined(__EMSCRIPTEN__) // also needs to be before generic NEON test
 // Use compile flags as an indicator of SIMD support instead of a runtime check.
 static int wasmCPUInfo(CPUFeature feature) {
   switch (feature) {

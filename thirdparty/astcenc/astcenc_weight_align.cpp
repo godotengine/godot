@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2023 Arm Limited
+// Copyright 2011-2024 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <cassert>
 #include <cstring>
+#include <cfloat>
 
 static constexpr unsigned int ANGULAR_STEPS { 32 };
 
@@ -60,8 +61,8 @@ static const uint8_t steps_for_quant_level[12] {
 	2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32
 };
 
-alignas(ASTCENC_VECALIGN) static float sin_table[SINCOS_STEPS][ANGULAR_STEPS];
-alignas(ASTCENC_VECALIGN) static float cos_table[SINCOS_STEPS][ANGULAR_STEPS];
+ASTCENC_ALIGNAS static float sin_table[SINCOS_STEPS][ANGULAR_STEPS];
+ASTCENC_ALIGNAS static float cos_table[SINCOS_STEPS][ANGULAR_STEPS];
 
 #if defined(ASTCENC_DIAGNOSTICS)
 	static bool print_once { true };
@@ -99,19 +100,22 @@ static void compute_angular_offsets(
 	promise(weight_count > 0);
 	promise(max_angular_steps > 0);
 
-	alignas(ASTCENC_VECALIGN) int isamplev[BLOCK_MAX_WEIGHTS];
+	ASTCENC_ALIGNAS int isamplev[BLOCK_MAX_WEIGHTS];
 
 	// Precompute isample; arrays are always allocated 64 elements long
 	for (unsigned int i = 0; i < weight_count; i += ASTCENC_SIMD_WIDTH)
 	{
-		// Add 2^23 and interpreting bits extracts round-to-nearest int
-		vfloat sample = loada(dec_weight_ideal_value + i) * (SINCOS_STEPS - 1.0f) + vfloat(12582912.0f);
-		vint isample = float_as_int(sample) & vint((SINCOS_STEPS - 1));
+		// Ideal weight can be outside [0, 1] range, so clamp to fit table
+		vfloat ideal_weight = clampzo(loada(dec_weight_ideal_value + i));
+
+		// Convert a weight to a sincos table index
+		vfloat sample = ideal_weight * (SINCOS_STEPS - 1.0f);
+		vint isample = float_to_int_rtn(sample);
 		storea(isample, isamplev + i);
 	}
 
 	// Arrays are multiple of SIMD width (ANGULAR_STEPS), safe to overshoot max
-	vfloat mult = vfloat(1.0f / (2.0f * astc::PI));
+	vfloat mult(1.0f / (2.0f * astc::PI));
 
 	for (unsigned int i = 0; i < max_angular_steps; i += ASTCENC_SIMD_WIDTH)
 	{
@@ -164,17 +168,40 @@ static void compute_lowest_and_highest_weight(
 	promise(weight_count > 0);
 	promise(max_angular_steps > 0);
 
-	vfloat rcp_stepsize = vfloat::lane_id() + vfloat(1.0f);
+	vfloat rcp_stepsize = int_to_float(vint::lane_id()) + vfloat(1.0f);
+
+	// Compute minimum/maximum weights in the weight array. Our remapping
+	// is monotonic, so the min/max rounded weights relate to the min/max
+	// unrounded weights in a straightforward way.
+	vfloat min_weight(FLT_MAX);
+	vfloat max_weight(-FLT_MAX);
+
+	vint lane_id = vint::lane_id();
+	for (unsigned int i = 0; i < weight_count; i += ASTCENC_SIMD_WIDTH)
+	{
+		vmask active = lane_id < vint(weight_count);
+		lane_id += vint(ASTCENC_SIMD_WIDTH);
+
+		vfloat weights = loada(dec_weight_ideal_value + i);
+		min_weight = min(min_weight, select(min_weight, weights, active));
+		max_weight = max(max_weight, select(max_weight, weights, active));
+	}
+
+	min_weight = hmin(min_weight);
+	max_weight = hmax(max_weight);
 
 	// Arrays are ANGULAR_STEPS long, so always safe to run full vectors
 	for (unsigned int sp = 0; sp < max_angular_steps; sp += ASTCENC_SIMD_WIDTH)
 	{
-		vfloat minidx(128.0f);
-		vfloat maxidx(-128.0f);
 		vfloat errval = vfloat::zero();
 		vfloat cut_low_weight_err = vfloat::zero();
 		vfloat cut_high_weight_err = vfloat::zero();
 		vfloat offset = loada(offsets + sp);
+
+		// We know the min and max weight values, so we can figure out
+		// the corresponding indices before we enter the loop.
+		vfloat minidx = round(min_weight * rcp_stepsize - offset);
+		vfloat maxidx = round(max_weight * rcp_stepsize - offset);
 
 		for (unsigned int j = 0; j < weight_count; j++)
 		{
@@ -183,22 +210,12 @@ static void compute_lowest_and_highest_weight(
 			vfloat diff = sval - svalrte;
 			errval += diff * diff;
 
-			// Reset tracker on min hit
-			vmask mask = svalrte < minidx;
-			minidx = select(minidx, svalrte, mask);
-			cut_low_weight_err = select(cut_low_weight_err, vfloat::zero(), mask);
-
-			// Accumulate on min hit
-			mask = svalrte == minidx;
+			// Accumulate errors for minimum index
+			vmask mask = svalrte == minidx;
 			vfloat accum = cut_low_weight_err + vfloat(1.0f) - vfloat(2.0f) * diff;
 			cut_low_weight_err = select(cut_low_weight_err, accum, mask);
 
-			// Reset tracker on max hit
-			mask = svalrte > maxidx;
-			maxidx = select(maxidx, svalrte, mask);
-			cut_high_weight_err = select(cut_high_weight_err, vfloat::zero(), mask);
-
-			// Accumulate on max hit
+			// Accumulate errors for maximum index
 			mask = svalrte == maxidx;
 			accum = cut_high_weight_err + vfloat(1.0f) + vfloat(2.0f) * diff;
 			cut_high_weight_err = select(cut_high_weight_err, accum, mask);
@@ -242,16 +259,16 @@ static void compute_angular_endpoints_for_quant_levels(
 	unsigned int max_quant_steps = steps_for_quant_level[max_quant_level];
 	unsigned int max_angular_steps = steps_for_quant_level[max_quant_level];
 
-	alignas(ASTCENC_VECALIGN) float angular_offsets[ANGULAR_STEPS];
+	ASTCENC_ALIGNAS float angular_offsets[ANGULAR_STEPS];
 
 	compute_angular_offsets(weight_count, dec_weight_ideal_value,
 	                        max_angular_steps, angular_offsets);
 
-	alignas(ASTCENC_VECALIGN) float lowest_weight[ANGULAR_STEPS];
-	alignas(ASTCENC_VECALIGN) int32_t weight_span[ANGULAR_STEPS];
-	alignas(ASTCENC_VECALIGN) float error[ANGULAR_STEPS];
-	alignas(ASTCENC_VECALIGN) float cut_low_weight_error[ANGULAR_STEPS];
-	alignas(ASTCENC_VECALIGN) float cut_high_weight_error[ANGULAR_STEPS];
+	ASTCENC_ALIGNAS float lowest_weight[ANGULAR_STEPS];
+	ASTCENC_ALIGNAS int32_t weight_span[ANGULAR_STEPS];
+	ASTCENC_ALIGNAS float error[ANGULAR_STEPS];
+	ASTCENC_ALIGNAS float cut_low_weight_error[ANGULAR_STEPS];
+	ASTCENC_ALIGNAS float cut_high_weight_error[ANGULAR_STEPS];
 
 	compute_lowest_and_highest_weight(weight_count, dec_weight_ideal_value,
 	                                  max_angular_steps, max_quant_steps,

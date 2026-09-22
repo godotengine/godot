@@ -20,12 +20,12 @@ public class RiderLocatorEnvironment : IRiderLocatorEnvironment
         }
     }
 
-    public T FromJson<T>(string json)
+    public T? FromJson<T>(string json)
     {
         return JsonConvert.DeserializeObject<T>(json);
     }
 
-    public void Info(string message, Exception e = null)
+    public void Info(string message, Exception? e = null)
     {
         if (e == null)
             GD.Print(message);
@@ -33,7 +33,7 @@ public class RiderLocatorEnvironment : IRiderLocatorEnvironment
             GD.Print(message, e);
     }
 
-    public void Warn(string message, Exception e = null)
+    public void Warn(string message, Exception? e = null)
     {
         if (e == null)
             GD.PushWarning(message);
@@ -41,7 +41,7 @@ public class RiderLocatorEnvironment : IRiderLocatorEnvironment
             GD.PushWarning(message, e);
     }
 
-    public void Error(string message, Exception e = null)
+    public void Error(string message, Exception? e = null)
     {
         if (e == null)
             GD.PushError(message);
@@ -49,7 +49,7 @@ public class RiderLocatorEnvironment : IRiderLocatorEnvironment
             GD.PushError(message, e);
     }
 
-    public void Verbose(string message, Exception e = null)
+    public void Verbose(string message, Exception? e = null)
     {
         // do nothing, since IDK how to write only to the log, without spamming the output
     }

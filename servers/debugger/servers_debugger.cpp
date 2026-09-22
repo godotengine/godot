@@ -30,11 +30,15 @@
 
 #include "servers_debugger.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/engine_profiler.h"
-#include "core/io/marshalls.h"
-#include "servers/display_server.h"
+#include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
+#include "core/os/os.h"
+#include "servers/display/display_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #define CHECK_SIZE(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() < (uint32_t)(expected), false, String("Malformed ") + what + " message from script debugger, message too short. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))
 #define CHECK_END(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() > (uint32_t)expected, false, String("Malformed ") + what + " message from script debugger, message too long. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))
@@ -42,8 +46,7 @@
 Array ServersDebugger::ResourceUsage::serialize() {
 	infos.sort();
 
-	Array arr;
-	arr.push_back(infos.size() * 4);
+	Array arr = { infos.size() * 4 };
 	for (const ResourceInfo &E : infos) {
 		arr.push_back(E.path);
 		arr.push_back(E.format);
@@ -73,10 +76,7 @@ bool ServersDebugger::ResourceUsage::deserialize(const Array &p_arr) {
 }
 
 Array ServersDebugger::ScriptFunctionSignature::serialize() {
-	Array arr;
-	arr.push_back(name);
-	arr.push_back(id);
-	return arr;
+	return Array{ name, id };
 }
 
 bool ServersDebugger::ScriptFunctionSignature::deserialize(const Array &p_arr) {
@@ -88,32 +88,25 @@ bool ServersDebugger::ScriptFunctionSignature::deserialize(const Array &p_arr) {
 }
 
 Array ServersDebugger::ServersProfilerFrame::serialize() {
-	Array arr;
-	arr.push_back(frame_number);
-	arr.push_back(frame_time);
-	arr.push_back(process_time);
-	arr.push_back(physics_time);
-	arr.push_back(physics_frame_time);
-	arr.push_back(script_time);
+	Array arr = { frame_number, frame_time, process_time, physics_time, physics_frame_time, script_time };
 
 	arr.push_back(servers.size());
-	for (int i = 0; i < servers.size(); i++) {
-		ServerInfo &s = servers[i];
+	for (const ServerInfo &s : servers) {
 		arr.push_back(s.name);
 		arr.push_back(s.functions.size() * 2);
-		for (int j = 0; j < s.functions.size(); j++) {
-			ServerFunctionInfo &f = s.functions[j];
+		for (const ServerFunctionInfo &f : s.functions) {
 			arr.push_back(f.name);
 			arr.push_back(f.time);
 		}
 	}
 
-	arr.push_back(script_functions.size() * 4);
+	arr.push_back(script_functions.size() * 5);
 	for (int i = 0; i < script_functions.size(); i++) {
 		arr.push_back(script_functions[i].sig_id);
 		arr.push_back(script_functions[i].call_count);
 		arr.push_back(script_functions[i].self_time);
 		arr.push_back(script_functions[i].total_time);
+		arr.push_back(script_functions[i].internal_time);
 	}
 	return arr;
 }
@@ -149,23 +142,22 @@ bool ServersDebugger::ServersProfilerFrame::deserialize(const Array &p_arr) {
 	int func_size = p_arr[idx];
 	idx += 1;
 	CHECK_SIZE(p_arr, idx + func_size, "ServersProfilerFrame");
-	for (int i = 0; i < func_size / 4; i++) {
+	for (int i = 0; i < func_size / 5; i++) {
 		ScriptFunctionInfo fi;
 		fi.sig_id = p_arr[idx];
 		fi.call_count = p_arr[idx + 1];
 		fi.self_time = p_arr[idx + 2];
 		fi.total_time = p_arr[idx + 3];
+		fi.internal_time = p_arr[idx + 4];
 		script_functions.push_back(fi);
-		idx += 4;
+		idx += 5;
 	}
 	CHECK_END(p_arr, idx, "ServersProfilerFrame");
 	return true;
 }
 
 Array ServersDebugger::VisualProfilerFrame::serialize() {
-	Array arr;
-	arr.push_back(frame_number);
-	arr.push_back(areas.size() * 3);
+	Array arr = { frame_number, areas.size() * 3 };
 	for (int i = 0; i < areas.size(); i++) {
 		arr.push_back(areas[i].name);
 		arr.push_back(areas[i].cpu_msec);
@@ -181,7 +173,7 @@ bool ServersDebugger::VisualProfilerFrame::deserialize(const Array &p_arr) {
 	CHECK_SIZE(p_arr, size, "VisualProfilerFrame");
 	int idx = 2;
 	areas.resize(size / 3);
-	RS::FrameProfileArea *w = areas.ptrw();
+	RenderingServerTypes::FrameProfileArea *w = areas.ptrw();
 	for (int i = 0; i < size / 3; i++) {
 		w[i].name = p_arr[idx];
 		w[i].cpu_msec = p_arr[idx + 1];
@@ -196,7 +188,7 @@ class ServersDebugger::ScriptsProfiler : public EngineProfiler {
 	typedef ServersDebugger::ScriptFunctionInfo FunctionInfo;
 	struct ProfileInfoSort {
 		bool operator()(ScriptLanguage::ProfilingInfo *A, ScriptLanguage::ProfilingInfo *B) const {
-			return A->total_time < B->total_time;
+			return A->total_time > B->total_time;
 		}
 	};
 	Vector<ScriptLanguage::ProfilingInfo> info;
@@ -210,8 +202,11 @@ public:
 			sig_map.clear();
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				ScriptServer::get_language(i)->profiling_start();
+				if (p_opts.size() == 2 && p_opts[1].get_type() == Variant::BOOL) {
+					ScriptServer::get_language(i)->profiling_set_save_native_calls(p_opts[1]);
+				}
 			}
-			if (p_opts.size() == 1 && p_opts[0].get_type() == Variant::INT) {
+			if (p_opts.size() > 0 && p_opts[0].get_type() == Variant::INT) {
 				max_frame_functions = MAX(0, int(p_opts[0]));
 			}
 		} else {
@@ -265,6 +260,7 @@ public:
 			w[i].call_count = ptrs[i]->call_count;
 			w[i].total_time = ptrs[i]->total_time / 1000000.0;
 			w[i].self_time = ptrs[i]->self_time / 1000000.0;
+			w[i].internal_time = ptrs[i]->internal_time / 1000000.0;
 		}
 	}
 
@@ -336,10 +332,12 @@ public:
 		}
 		ServerInfo &srv = server_data[name];
 
-		ServerFunctionInfo fi;
-		fi.name = p_data[1];
-		fi.time = p_data[2];
-		srv.functions.push_back(fi);
+		for (int idx = 1; idx < p_data.size() - 1; idx += 2) {
+			ServerFunctionInfo fi;
+			fi.name = p_data[idx];
+			fi.time = p_data[idx + 1];
+			srv.functions.push_back(fi);
+		}
 	}
 
 	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
@@ -364,12 +362,19 @@ class ServersDebugger::VisualProfiler : public EngineProfiler {
 public:
 	void toggle(bool p_enable, const Array &p_opts) {
 		RS::get_singleton()->set_frame_profiling_enabled(p_enable);
+
+		// Send hardware information from the remote device so that it's accurate for remote debugging.
+		Array hardware_info = {
+			OS::get_singleton()->get_processor_name(),
+			RenderingServer::get_singleton()->get_video_adapter_name()
+		};
+		EngineDebugger::get_singleton()->send_message("visual:hardware_info", hardware_info);
 	}
 
 	void add(const Array &p_data) {}
 
 	void tick(double p_frame_time, double p_process_time, double p_physics_time, double p_physics_frame_time) {
-		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
+		Vector<RenderingServerTypes::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
 		ServersDebugger::VisualProfilerFrame frame;
 		if (!profile_areas.size()) {
 			return;
@@ -390,9 +395,7 @@ void ServersDebugger::initialize() {
 }
 
 void ServersDebugger::deinitialize() {
-	if (singleton) {
-		memdelete(singleton);
-	}
+	memdelete(singleton);
 }
 
 Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {
@@ -425,15 +428,32 @@ Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &
 void ServersDebugger::_send_resource_usage() {
 	ServersDebugger::ResourceUsage usage;
 
-	List<RS::TextureInfo> tinfo;
+	List<RenderingServerTypes::TextureInfo> tinfo;
 	RS::get_singleton()->texture_debug_usage(&tinfo);
 
-	for (const RS::TextureInfo &E : tinfo) {
+	for (const RenderingServerTypes::TextureInfo &E : tinfo) {
 		ServersDebugger::ResourceInfo info;
 		info.path = E.path;
 		info.vram = E.bytes;
 		info.id = E.texture;
-		info.type = "Texture";
+
+		switch (E.type) {
+			case RSE::TextureType::TEXTURE_TYPE_2D:
+				info.type = "Texture2D";
+				break;
+			case RSE::TextureType::TEXTURE_TYPE_3D:
+				info.type = "Texture3D";
+				break;
+			case RSE::TextureType::TEXTURE_TYPE_LAYERED:
+				info.type = "TextureLayered";
+				break;
+		}
+
+		String possible_type = _get_resource_type_from_path(E.path);
+		if (!possible_type.is_empty()) {
+			info.type = possible_type;
+		}
+
 		if (E.depth == 0) {
 			info.format = itos(E.width) + "x" + itos(E.height) + " " + Image::get_format_name(E.format);
 		} else {
@@ -442,7 +462,59 @@ void ServersDebugger::_send_resource_usage() {
 		usage.infos.push_back(info);
 	}
 
+	List<RenderingServerTypes::MeshInfo> mesh_info;
+	RS::get_singleton()->mesh_debug_usage(&mesh_info);
+
+	for (const RenderingServerTypes::MeshInfo &E : mesh_info) {
+		ServersDebugger::ResourceInfo info;
+		info.path = E.path;
+		// We use 64-bit integers to avoid overflow, if for whatever reason, the sum is bigger than 4GB.
+		uint64_t vram = E.vertex_buffer_size + E.attribute_buffer_size + E.skin_buffer_size + E.index_buffer_size + E.blend_shape_buffer_size + E.lod_index_buffers_size;
+		// But can info.vram even hold that, and why is it an int instead of an uint?
+		info.vram = vram;
+
+		// Even though these empty meshes can be indicative of issues somewhere else
+		// for UX reasons, we don't want to show them.
+		if (vram == 0 && E.path.is_empty()) {
+			continue;
+		}
+
+		info.id = E.mesh;
+		info.type = "Mesh";
+		String possible_type = _get_resource_type_from_path(E.path);
+		if (!possible_type.is_empty()) {
+			info.type = possible_type;
+		}
+
+		info.format = itos(E.vertex_count) + " Vertices";
+		usage.infos.push_back(info);
+	}
+
 	EngineDebugger::get_singleton()->send_message("servers:memory_usage", usage.serialize());
+}
+
+// Done on a best-effort basis.
+String ServersDebugger::_get_resource_type_from_path(const String &p_path) {
+	if (p_path.is_empty()) {
+		return "";
+	}
+
+	if (!ResourceLoader::exists(p_path)) {
+		return "";
+	}
+
+	if (ResourceCache::has(p_path)) {
+		Ref<Resource> resource = ResourceCache::get_ref(p_path);
+		return resource->get_class();
+	} else {
+		// This doesn't work all the time for embedded resources.
+		String resource_type = ResourceLoader::get_resource_type(p_path);
+		if (resource_type != "") {
+			return resource_type;
+		}
+	}
+
+	return "";
 }
 
 ServersDebugger::ServersDebugger() {

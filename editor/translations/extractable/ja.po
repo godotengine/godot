@@ -1,0 +1,242 @@
+# Japanese translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-12 14:00+0000\n"
+"Last-Translator: Koji Horaguchi <koji.horaguchi@gmail.com>\n"
+"Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
+"godot/ja/>\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.4-dev\n"
+
+msgid "New Code Region"
+msgstr "新しいコード領域"
+
+msgid "Pick a color from the screen."
+msgstr "画面から色を選択します。"
+
+msgid "Pick a color from the application window."
+msgstr "アプリケーション ウィンドウから色を選択します。"
+
+msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
+msgstr "16進コード (「#ff0000」) または名前付きの色 (「red」) を入力します。"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Clear"
+msgstr "クリア"
+
+msgid "Select a picker shape."
+msgstr "ピッカーシェイプを選択"
+
+msgid "Select a picker mode."
+msgstr "ピッカー・モードを選択"
+
+msgid "Hex code or named color"
+msgstr "16 進コードまたは名前付きの色"
+
+msgid "Add current color as a preset."
+msgstr "現在の色をプリセットとして追加します。"
+
+msgid "Network"
+msgstr "ネットワーク"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"ファイル \"%s\" はすでに存在します。\n"
+"上書きしますか？"
+
+msgid "Open"
+msgstr "開く"
+
+msgid "Select Current Folder"
+msgstr "現在のフォルダーを選択"
+
+msgid "Select This Folder"
+msgstr "このフォルダーを選択"
+
+msgid "You don't have permission to access contents of this folder."
+msgstr "このフォルダーの内容にアクセスする権限がありません。"
+
+msgid "All Recognized"
+msgstr "承認済みすべて"
+
+msgid "All Files"
+msgstr "すべてのファイル"
+
+msgid "Open a File"
+msgstr "ファイルを開く"
+
+msgid "Open File(s)"
+msgstr "ファイルを開く"
+
+msgid "Open a Directory"
+msgstr "ディレクトリを開く"
+
+msgid "Open a File or Directory"
+msgstr "ファイルまたはディレクトリを開く"
+
+msgid "Save a File"
+msgstr "ファイルを保存"
+
+msgid "Go to previous folder."
+msgstr "前のフォルダーへ移動する。"
+
+msgid "Go to next folder."
+msgstr "次のフォルダーへ移動する。"
+
+msgid "Go to parent folder."
+msgstr "親フォルダーへ移動する。"
+
+msgid "Path:"
+msgstr "パス:"
+
+msgid "Refresh files."
+msgstr "ファイルの一覧をリフレッシュする。"
+
+msgid "Directories & Files:"
+msgstr "ディレクトリとファイル:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "隠しファイルの表示 / 非表示を切り替えます。"
+
+msgid "File:"
+msgstr "ファイル:"
+
+msgid "Create Folder"
+msgstr "フォルダーを作成"
+
+msgid "Name:"
+msgstr "名前:"
+
+msgid "Could not create folder."
+msgstr "フォルダーを作成できませんでした。"
+
+msgid "Invalid extension, or empty filename."
+msgstr "拡張子が無効か、ファイル名が空です。"
+
+msgid "Zoom Out"
+msgstr "ズームアウト"
+
+msgid "Zoom Reset"
+msgstr "ズームをリセット"
+
+msgid "Zoom In"
+msgstr "ズームイン"
+
+msgid "Toggle the visual grid."
+msgstr "ビジュアルグリッドを切り替えます。"
+
+msgid "Toggle snapping to the grid."
+msgstr "グリッドスナッピングをオン / オフします。"
+
+msgid "Change the snapping distance."
+msgstr "スナップ距離を変更します。"
+
+msgid "Toggle the graph minimap."
+msgstr "グラフのミニマップを切り替えます。"
+
+msgid "Automatically arrange selected nodes."
+msgstr "選択したノードを自動的に配置します。"
+
+msgid "Same as Layout Direction"
+msgstr "レイアウト方向と同じ"
+
+msgid "Auto-Detect Direction"
+msgstr "方向の自動検出"
+
+msgid "Left-to-Right"
+msgstr "左から右"
+
+msgid "Right-to-Left"
+msgstr "右から左"
+
+msgid "Left-to-Right Mark (LRM)"
+msgstr "左から右へのマーク (LRM)"
+
+msgid "Right-to-Left Mark (RLM)"
+msgstr "右から左へのマーク (RLM)"
+
+msgid "Start of Left-to-Right Embedding (LRE)"
+msgstr "左から右への埋め込み (LRE) の開始"
+
+msgid "Start of Right-to-Left Embedding (RLE)"
+msgstr "右から左への埋め込み (RLE) の開始"
+
+msgid "Start of Left-to-Right Override (LRO)"
+msgstr "左から右へのオーバーライド (LRO) の開始"
+
+msgid "Start of Right-to-Left Override (RLO)"
+msgstr "右から左へのオーバーライド (RLO) の開始"
+
+msgid "Pop Direction Formatting (PDF)"
+msgstr "ポップ方向のフォーマット (PDF)"
+
+msgid "Arabic Letter Mark (ALM)"
+msgstr "アラビア文字マーク (ALM)"
+
+msgid "Left-to-Right Isolate (LRI)"
+msgstr "左から右への分離 (LRI)"
+
+msgid "Right-to-Left Isolate (RLI)"
+msgstr "右から左への分離 (RLI)"
+
+msgid "First Strong Isolate (FSI)"
+msgstr "ファーストストロングアイソレート(FSI)"
+
+msgid "Pop Direction Isolate (PDI)"
+msgstr "ポップディレクションアイソレート (PDI)"
+
+msgid "Zero-Width Joiner (ZWJ)"
+msgstr "ゼロ幅ジョイナー (ZWJ)"
+
+msgid "Zero-Width Non-Joiner (ZWNJ)"
+msgstr "ゼロ幅非ジョイナー (ZWNJ)"
+
+msgid "Word Joiner (WJ)"
+msgstr "ワードジョイナー (WJ)"
+
+msgid "Soft Hyphen (SHY)"
+msgstr "ソフトハイフン(SHY)"
+
+msgid "Cut"
+msgstr "切り取り"
+
+msgid "Copy"
+msgstr "コピー"
+
+msgid "Paste"
+msgstr "貼り付け"
+
+msgid "Select All"
+msgstr "すべて選択"
+
+msgid "Undo"
+msgstr "元に戻す"
+
+msgid "Redo"
+msgstr "やり直し"
+
+msgid "Text Writing Direction"
+msgstr "テキストの書き込み方向"
+
+msgid "Display Control Characters"
+msgstr "制御文字を表示"
+
+msgid "Insert Control Character"
+msgstr "制御文字を挿入"
+
+msgid "(Other)"
+msgstr "(その他)"

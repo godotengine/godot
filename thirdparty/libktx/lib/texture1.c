@@ -8,12 +8,12 @@
 
 /**
  * @internal
- * @file texture2.c
+ * @file
  * @~English
  *
  * @brief ktxTexture1 implementation. Support for KTX format.
  *
- * @author Mark Callow, www.edgewise-consulting.com
+ * @author Mark Callow, github.com/MarkCallow
  */
 
 #if defined(_WIN32)
@@ -61,7 +61,8 @@ ktxTexture1_constructCommon(ktxTexture1* This)
  * @copydoc ktxTexture2_construct
  */
 static KTX_error_code
-ktxTexture1_construct(ktxTexture1* This, ktxTextureCreateInfo* createInfo,
+ktxTexture1_construct(ktxTexture1* This,
+                      const ktxTextureCreateInfo* const createInfo,
                       ktxTextureCreateStorageEnum storageAllocation)
 {
     ktxTexture_protected* prtctd;
@@ -283,8 +284,10 @@ ktxTexture1_constructFromStreamAndHeader(ktxTexture1* This, ktxStream* pStream,
             }
 
             result = stream->read(stream, pKvd, kvdLen);
-            if (result != KTX_SUCCESS)
+            if (result != KTX_SUCCESS) {
+                free(pKvd);
                 goto cleanup;
+            }
 
             if (private->_needSwap) {
                 /* Swap the counts inside the key & value data. */
@@ -458,6 +461,9 @@ ktxTexture1_constructFromStdioStream(ktxTexture1* This, FILE* stdioStream,
  * @memberof ktxTexture1 @private
  * @brief Construct a ktxTexture1 from a named KTX file.
  *
+ * The file name must be encoded in utf-8. On Windows convert unicode names
+ * to utf-8 with @c WideCharToMultiByte(CP_UTF8, ...) before calling.
+ *
  * See ktxTextureInt_constructFromStream for details.
  *
  * @param[in] This pointer to a ktxTextureInt-sized block of memory to
@@ -484,7 +490,7 @@ ktxTexture1_constructFromNamedFile(ktxTexture1* This,
     if (This == NULL || filename == NULL)
         return KTX_INVALID_VALUE;
 
-    file = fopen(filename, "rb");
+    file = ktxFOpenUTF8(filename, "rb");
     if (!file)
        return KTX_FILE_OPEN_FAILED;
 
@@ -587,9 +593,9 @@ ktxTexture1_destruct(ktxTexture1* This)
  * @exception KTX_OUT_OF_MEMORY Not enough memory for the texture's images.
  */
 KTX_error_code
-ktxTexture1_Create(ktxTextureCreateInfo* createInfo,
-                  ktxTextureCreateStorageEnum storageAllocation,
-                  ktxTexture1** newTex)
+ktxTexture1_Create(const ktxTextureCreateInfo* const createInfo,
+                   ktxTextureCreateStorageEnum storageAllocation,
+                   ktxTexture1** newTex)
 {
     KTX_error_code result;
 
@@ -614,7 +620,7 @@ ktxTexture1_Create(ktxTextureCreateInfo* createInfo,
  * @~English
  * @brief Create a ktxTexture1 from a stdio stream reading from a KTX source.
  *
- * The address of a newly created ktxTexture1 reflecting the contents of the
+ * The address of a newly created texture reflecting the contents of the
  * stdio stream is written to the location pointed at by @p newTex.
  *
  * The create flag KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT should not be set,
@@ -673,13 +679,16 @@ ktxTexture1_CreateFromStdioStream(FILE* stdioStream,
     return result;
 }
 
-/*
+/**
  * @memberof ktxTexture1
  * @~English
  * @brief Create a ktxTexture1 from a named KTX file.
  *
- * The address of a newly created ktxTexture1 reflecting the contents of the
+ * The address of a newly created texture reflecting the contents of the
  * file is written to the location pointed at by @p newTex.
+ *
+ * The file name must be encoded in utf-8. On Windows convert unicode names
+ * to utf-8 with @c WideCharToMultiByte(CP_UTF8, ...) before calling.
  *
  * The create flag KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT should not be set,
  * if the ktxTexture1 is ultimately to be uploaded to OpenGL or Vulkan. This
@@ -700,7 +709,7 @@ ktxTexture1_CreateFromStdioStream(FILE* stdioStream,
  * @exception KTX_FILE_OPEN_FAILED The file could not be opened.
  * @exception KTX_INVALID_VALUE @p filename is @c NULL.
  *
- * For other exceptions, see ktxTexture_CreateFromStdioStream().
+ * For other exceptions, see ktxTexture1_CreateFromStdioStream().
  */
 KTX_error_code
 ktxTexture1_CreateFromNamedFile(const char* const filename,
@@ -731,7 +740,7 @@ ktxTexture1_CreateFromNamedFile(const char* const filename,
  * @~English
  * @brief Create a ktxTexture1 from KTX-formatted data in memory.
  *
- * The address of a newly created ktxTexture1 reflecting the contents of the
+ * The address of a newly created texture reflecting the contents of the
  * serialized KTX data is written to the location pointed at by @p newTex.
  *
  * The create flag KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT should not be set,
@@ -753,7 +762,7 @@ ktxTexture1_CreateFromNamedFile(const char* const filename,
  *
  * @exception KTX_INVALID_VALUE Either @p bytes is NULL or @p size is 0.
  *
- * For other exceptions, see ktxTexture_CreateFromStdioStream().
+ * For other exceptions, see ktxTexture1_CreateFromStdioStream().
  */
 KTX_error_code
 ktxTexture1_CreateFromMemory(const ktx_uint8_t* bytes, ktx_size_t size,
@@ -784,7 +793,7 @@ ktxTexture1_CreateFromMemory(const ktx_uint8_t* bytes, ktx_size_t size,
  * @~English
  * @brief Create a ktxTexture1 from KTX-formatted data from a `ktxStream`.
  *
- * The address of a newly created ktxTexture1 reflecting the contents of the
+ * The address of a newly created texture reflecting the contents of the
  * serialized KTX data is written to the location pointed at by @p newTex.
  *
  * The create flag KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT should not be set,
@@ -796,19 +805,17 @@ ktxTexture1_CreateFromMemory(const ktx_uint8_t* bytes, ktx_size_t size,
  * provided solely to enable implementation of the @e libktx v1 API on top of
  * ktxTexture1.
  *
- * @param[in] stream pointer to the stream to read KTX data from.
+ * @param[in] pStream pointer to the stream to read KTX data from.
  * @param[in] createFlags bitmask requesting specific actions during creation.
  * @param[in,out] newTex  pointer to a location in which store the address of
  *                        the newly created texture.
  *
  * @return      KTX_SUCCESS on success, other KTX_* enum values on error.
  *
- * @exception KTX_INVALID_VALUE Either @p bytes is NULL or @p size is 0.
- *
- * For other exceptions, see ktxTexture_CreateFromStdioStream().
+ * For exceptions, see ktxTexture1_CreateFromStdioStream().
  */
 KTX_error_code
-ktxTexture1_CreateFromStream(ktxStream* stream,
+ktxTexture1_CreateFromStream(ktxStream* pStream,
                              ktxTextureCreateFlags createFlags,
                              ktxTexture1** newTex)
 {
@@ -820,7 +827,7 @@ ktxTexture1_CreateFromStream(ktxStream* stream,
     if (tex == NULL)
         return KTX_OUT_OF_MEMORY;
 
-    result = ktxTexture1_constructFromStream(tex, stream, createFlags);
+    result = ktxTexture1_constructFromStream(tex, pStream, createFlags);
     if (result == KTX_SUCCESS)
         *newTex = (ktxTexture1*)tex;
     else {
@@ -1008,7 +1015,7 @@ ktxTexture1_GetDataSizeUncompressed(ktxTexture1* This)
  * @brief Calculate & return the size in bytes of an image at the specified
  *        mip level.
  *
- * For arrays, this is the size of layer, for cubemaps, the size of a face
+ * For arrays, this is the size of a layer, for cubemaps, the size of a face
  * and for 3D textures, the size of a depth slice.
  *
  * The size reflects the padding of each row to KTX_GL_UNPACK_ALIGNMENT.
@@ -1020,6 +1027,27 @@ ktx_size_t
 ktxTexture1_GetImageSize(ktxTexture1* This, ktx_uint32_t level)
 {
     return ktxTexture_calcImageSize(ktxTexture(This), level,
+                                    KTX_FORMAT_VERSION_ONE);
+}
+
+/**
+ * @memberof ktxTexture1
+ * @~English
+ * @brief Calculate & return the size in bytes of all the  images in the specified
+ *        mip level.
+ *
+ * For arrays, this is the size of all layers in the level, for cubemaps, the size of all
+ * faces in the level and for 3D textures, the size of all depth slices in the level.
+ *
+ * The size reflects the padding of each row to KTX_GL_UNPACK_ALIGNMENT.
+ *
+ * @param[in]     This     pointer to the ktxTexture1 object of interest.
+ * @param[in]     level    level of interest.
+ */
+ktx_size_t
+ktxTexture1_GetLevelSize(ktxTexture1* This, ktx_uint32_t level)
+{
+    return ktxTexture_calcLevelSize(ktxTexture(This), level,
                                     KTX_FORMAT_VERSION_ONE);
 }
 
@@ -1044,9 +1072,9 @@ ktxTexture1_glTypeSize(ktxTexture1* This)
  * @~English
  * @brief Iterate over the mip levels in a ktxTexture1 object.
  *
- * This is almost identical to ktxTexture_IterateLevelFaces(). The difference is
- * that the blocks of image data for non-array cube maps include all faces of
- * a mip level.
+ * This is almost identical to @ref ktxTexture::ktxTexture_IterateLevelFaces
+ * "ktxTexture_IterateLevelFaces". The difference is that the blocks of image
+ * data for non-array cube maps include all faces of a mip level.
  *
  * This function works even if @p This->pData == 0 so it can be used to
  * obtain offsets and sizes for each level by callers who have loaded the data
@@ -1114,11 +1142,12 @@ ktxTexture1_IterateLevels(ktxTexture1* This, PFNKTXITERCB iterCb, void* userdata
  * @brief Iterate over the images in a ktxTexture1 object while loading the
  *        image data.
  *
- * This operates similarly to ktxTexture_IterateLevelFaces() except that it
- * loads the images from the ktxTexture1's source to a temporary buffer
- * while iterating. The callback function must copy the image data if it
- * wishes to preserve it as the temporary buffer is reused for each level and
- * is freed when this function exits.
+ * This operates similarly to @ref ktxTexture::ktxTexture_IterateLevelFaces
+ * "ktxTexture_IterateLevelFaces" except that it loads the images from the
+ * ktxTexture1's source to a temporary buffer while iterating. The callback
+ * function must copy the image data if it wishes to preserve it as the
+ * temporary buffer is reused for each level and is freed when this function
+ * exits.
  *
  * This function is helpful for reducing memory usage when uploading the data
  * to a graphics API.
@@ -1277,6 +1306,7 @@ ktxTexture1_LoadImageData(ktxTexture1* This,
     DECLARE_PRIVATE(ktxTexture1);
     ktx_uint32_t    miplevel;
     ktx_uint8_t*    pDest;
+    ktx_uint8_t*    pDestEnd;
     KTX_error_code  result = KTX_SUCCESS;
 
     if (This == NULL)
@@ -1291,10 +1321,12 @@ ktxTexture1_LoadImageData(ktxTexture1* This,
         if (This->pData == NULL)
             return KTX_OUT_OF_MEMORY;
         pDest = This->pData;
+        pDestEnd = pDest + This->dataSize;
     } else if (bufSize < This->dataSize) {
         return KTX_INVALID_VALUE;
     } else {
         pDest = pBuffer;
+        pDestEnd = pBuffer + bufSize;
     }
 
     // Need to loop through for correct byte swapping
@@ -1325,6 +1357,10 @@ ktxTexture1_LoadImageData(ktxTexture1* This,
             innerIterations = 1;
         for (face = 0; face < innerIterations; ++face)
         {
+            if (pDest + faceLodSizePadded > pDestEnd) {
+                result = KTX_INVALID_VALUE;
+                goto cleanup;
+            }
             result = prtctd->_stream.read(&prtctd->_stream, pDest,
                                           faceLodSizePadded);
             if (result != KTX_SUCCESS) {
@@ -1443,6 +1479,7 @@ struct ktxTexture_vtbl ktxTexture1_vtbl = {
     (PFNKTEXGETIMAGEOFFSET)ktxTexture1_GetImageOffset,
     (PFNKTEXGETDATASIZEUNCOMPRESSED)ktxTexture1_GetDataSizeUncompressed,
     (PFNKTEXGETIMAGESIZE)ktxTexture1_GetImageSize,
+    (PFNKTEXGETLEVELSIZE)ktxTexture1_GetLevelSize,
     (PFNKTEXITERATELEVELS)ktxTexture1_IterateLevels,
     (PFNKTEXITERATELOADLEVELFACES)ktxTexture1_IterateLoadLevelFaces,
     (PFNKTEXNEEDSTRANSCODING)ktxTexture1_NeedsTranscoding,

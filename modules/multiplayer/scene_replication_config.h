@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_REPLICATION_CONFIG_H
-#define SCENE_REPLICATION_CONFIG_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/variant/typed_array.h"
@@ -79,6 +78,8 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	virtual void reset_state() override; // Required since we use variable amount of properties.
+
 	TypedArray<NodePath> get_properties() const;
 
 	void add_property(const NodePath &p_path, int p_index = -1);
@@ -106,5 +107,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(SceneReplicationConfig::ReplicationMode);
-
-#endif // SCENE_REPLICATION_CONFIG_H

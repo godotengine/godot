@@ -36,6 +36,7 @@ struct PairPosFormat1_3
     TRACE_SANITIZE (this);
 
     if (!c->check_struct (this)) return_trace (false);
+    hb_barrier ();
 
     unsigned int len1 = valueFormat[0].get_len ();
     unsigned int len2 = valueFormat[1].get_len ();
@@ -53,7 +54,7 @@ struct PairPosFormat1_3
   {
     auto &cov = this+coverage;
 
-    if (pairSet.len > glyphs->get_population () * hb_bit_storage ((unsigned) pairSet.len) / 4)
+    if (pairSet.len > glyphs->get_population () * hb_bit_storage ((unsigned) pairSet.len))
     {
       for (hb_codepoint_t g : glyphs->iter())
       {
@@ -102,14 +103,35 @@ struct PairPosFormat1_3
 
   const Coverage &get_coverage () const { return this+coverage; }
 
-  bool apply (hb_ot_apply_context_t *c) const
+  struct external_cache_t
+  {
+    hb_ot_layout_mapping_cache_t coverage;
+  };
+  void *external_cache_create () const
+  {
+    external_cache_t *cache = (external_cache_t *) hb_malloc (sizeof (external_cache_t));
+    if (likely (cache))
+    {
+      cache->coverage.clear ();
+    }
+    return cache;
+  }
+
+  bool apply (hb_ot_apply_context_t *c, void *external_cache) const
   {
     TRACE_APPLY (this);
-    hb_buffer_t *buffer = c->buffer;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    hb_buffer_t *buffer = c->buffer;
+
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    external_cache_t *cache = (external_cache_t *) external_cache;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
+#else
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
+#endif
+    if (index == NOT_COVERED) return_trace (false);
+
+    auto &skippy_iter = c->iter_input;
     skippy_iter.reset_fast (buffer->idx);
     unsigned unsafe_to;
     if (unlikely (!skippy_iter.next (&unsafe_to)))
@@ -131,20 +153,33 @@ struct PairPosFormat1_3
     auto *out = c->serializer->start_embed (*this);
     if (unlikely (!c->serializer->extend_min (out))) return_trace (false);
     out->format = format;
-    out->valueFormat[0] = valueFormat[0];
-    out->valueFormat[1] = valueFormat[1];
-    if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
+
+    hb_pair_t<unsigned, unsigned> newFormats = hb_pair (valueFormat[0], valueFormat[1]);
+
+    if (c->plan->normalized_coords)
     {
-      hb_pair_t<unsigned, unsigned> newFormats = compute_effective_value_formats (glyphset);
-      out->valueFormat[0] = newFormats.first;
-      out->valueFormat[1] = newFormats.second;
+      /* all device flags will be dropped when full instancing, no need to strip
+       * hints, also do not strip emtpy cause we don't compute the new default
+       * value during stripping */
+      newFormats = compute_effective_value_formats (glyphset, false, false, &c->plan->layout_variation_idx_delta_map);
+    }
+    /* do not strip hints for VF */
+    else if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
+    {
+      hb_blob_t* blob = hb_face_reference_table (c->plan->source, HB_TAG ('f','v','a','r'));
+      bool has_fvar = (blob != hb_blob_get_empty ());
+      hb_blob_destroy (blob);
+
+      bool strip = !has_fvar;
+      /* special case: strip hints when a VF has no GDEF varstore after
+       * subsetting*/
+      if (has_fvar && !c->plan->has_gdef_varstore)
+        strip = true;
+      newFormats = compute_effective_value_formats (glyphset, strip, true);
     }
 
-    if (c->plan->all_axes_pinned)
-    {
-      out->valueFormat[0] = out->valueFormat[0].drop_device_table_flags ();
-      out->valueFormat[1] = out->valueFormat[1].drop_device_table_flags ();
-    }
+    out->valueFormat[0] = newFormats.first;
+    out->valueFormat[1] = newFormats.second;
 
     hb_sorted_vector_t<hb_codepoint_t> new_coverage;
 
@@ -175,7 +210,9 @@ struct PairPosFormat1_3
   }
 
 
-  hb_pair_t<unsigned, unsigned> compute_effective_value_formats (const hb_set_t& glyphset) const
+  hb_pair_t<unsigned, unsigned> compute_effective_value_formats (const hb_set_t& glyphset,
+                                                                 bool strip_hints, bool strip_empty,
+                                                                 const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *varidx_delta_map = nullptr) const
   {
     unsigned record_size = PairSet::get_size (valueFormat);
 
@@ -195,8 +232,8 @@ struct PairPosFormat1_3
       {
         if (record->intersects (glyphset))
         {
-          format1 = format1 | valueFormat[0].get_effective_format (record->get_values_1 ());
-          format2 = format2 | valueFormat[1].get_effective_format (record->get_values_2 (valueFormat[0]));
+          format1 = format1 | valueFormat[0].get_effective_format (record->get_values_1 (), strip_hints, strip_empty, &set, varidx_delta_map);
+          format2 = format2 | valueFormat[1].get_effective_format (record->get_values_2 (valueFormat[0]), strip_hints, strip_empty, &set, varidx_delta_map);
         }
         record = &StructAtOffset<const PairValueRecord> (record, record_size);
       }

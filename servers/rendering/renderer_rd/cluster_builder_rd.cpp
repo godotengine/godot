@@ -29,8 +29,9 @@
 /**************************************************************************/
 
 #include "cluster_builder_rd.h"
+
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering/rendering_server_globals.h"
+#include "servers/rendering/rendering_server_globals.h" // IWYU pragma: keep. RENDER_TIMESTAMP macro uses RSG.
 
 ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	RD::VertexFormatID vertex_format;
@@ -49,28 +50,48 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	{
 		RD::FramebufferFormatID fb_format;
 		RD::PipelineColorBlendState blend_state;
-		String defines;
-		if (RD::get_singleton()->has_feature(RD::SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS)) {
-			fb_format = RD::get_singleton()->framebuffer_format_create_empty();
+		RD::PipelineRasterizationState rasterization_state;
+		RD::PipelineMultisampleState ms;
+		rasterization_state.enable_depth_clamp = true;
+		ms.sample_count = RD::TEXTURE_SAMPLES_4;
+
+		Vector<String> variants;
+		variants.push_back("");
+		variants.push_back("\n#define USE_ATTACHMENT\n");
+
+		ClusterRender::ShaderVariant shader_variant;
+		RenderingDevice *rd = RD::get_singleton();
+		if (rd->has_feature(RD::SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS)) {
+			fb_format = rd->framebuffer_format_create_empty();
 			blend_state = RD::PipelineColorBlendState::create_disabled();
+			shader_variant = ClusterRender::SHADER_NORMAL;
 		} else {
 			Vector<RD::AttachmentFormat> afs;
 			afs.push_back(RD::AttachmentFormat());
 			afs.write[0].usage_flags = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-			fb_format = RD::get_singleton()->framebuffer_format_create(afs);
+			fb_format = rd->framebuffer_format_create(afs);
 			blend_state = RD::PipelineColorBlendState::create_blend();
-			defines = "\n#define USE_ATTACHMENT\n";
+			shader_variant = ClusterRender::SHADER_USE_ATTACHMENT;
 		}
 
-		Vector<String> versions;
-		versions.push_back("");
-		cluster_render.cluster_render_shader.initialize(versions, defines);
+		cluster_render.cluster_render_shader.initialize(variants);
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
-		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, 0);
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
-		RD::PipelineMultisampleState ms;
-		ms.sample_count = RD::TEXTURE_SAMPLES_4;
-		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), ms, RD::PipelineDepthStencilState(), blend_state, 0);
+		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, shader_variant);
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+
+		// On Apple platforms, gl_HelperInvocation (simd_is_helper_thread()) is unreliable with MSAA, causing rendering artifacts.
+		// Disable the helper invocation check for the MSAA pipeline via specialization constant.
+		Vector<RD::PipelineSpecializationConstant> specialization_constants;
+#if defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
+		{
+			RD::PipelineSpecializationConstant sc;
+			sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+			sc.constant_id = 0; // sc_use_helper_check
+			sc.bool_value = false;
+			specialization_constants.push_back(sc);
+		}
+#endif
+		cluster_render.shader_pipelines[ClusterRender::PIPELINE_MSAA] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, ms, RD::PipelineDepthStencilState(), blend_state, 0, 0, specialization_constants);
 	}
 	{
 		Vector<String> versions;
@@ -218,12 +239,12 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 	}
 }
 ClusterBuilderSharedDataRD::~ClusterBuilderSharedDataRD() {
-	RD::get_singleton()->free(sphere_vertex_buffer);
-	RD::get_singleton()->free(sphere_index_buffer);
-	RD::get_singleton()->free(cone_vertex_buffer);
-	RD::get_singleton()->free(cone_index_buffer);
-	RD::get_singleton()->free(box_vertex_buffer);
-	RD::get_singleton()->free(box_index_buffer);
+	RD::get_singleton()->free_rid(sphere_vertex_buffer);
+	RD::get_singleton()->free_rid(sphere_index_buffer);
+	RD::get_singleton()->free_rid(cone_vertex_buffer);
+	RD::get_singleton()->free_rid(cone_index_buffer);
+	RD::get_singleton()->free_rid(box_vertex_buffer);
+	RD::get_singleton()->free_rid(box_index_buffer);
 
 	cluster_render.cluster_render_shader.version_free(cluster_render.shader_version);
 	cluster_store.cluster_store_shader.version_free(cluster_store.shader_version);
@@ -237,9 +258,9 @@ void ClusterBuilderRD::_clear() {
 		return;
 	}
 
-	RD::get_singleton()->free(cluster_buffer);
-	RD::get_singleton()->free(cluster_render_buffer);
-	RD::get_singleton()->free(element_buffer);
+	RD::get_singleton()->free_rid(cluster_buffer);
+	RD::get_singleton()->free_rid(cluster_render_buffer);
+	RD::get_singleton()->free_rid(element_buffer);
 	cluster_buffer = RID();
 	cluster_render_buffer = RID();
 	element_buffer = RID();
@@ -250,7 +271,7 @@ void ClusterBuilderRD::_clear() {
 	render_element_max = 0;
 	render_element_count = 0;
 
-	RD::get_singleton()->free(framebuffer);
+	RD::get_singleton()->free_rid(framebuffer);
 	framebuffer = RID();
 
 	cluster_render_uniform_set = RID();
@@ -266,8 +287,8 @@ void ClusterBuilderRD::setup(Size2i p_screen_size, uint32_t p_max_elements, RID 
 
 	screen_size = p_screen_size;
 
-	cluster_screen_size.width = (p_screen_size.width - 1) / cluster_size + 1;
-	cluster_screen_size.height = (p_screen_size.height - 1) / cluster_size + 1;
+	cluster_screen_size.width = Math::division_round_up((uint32_t)p_screen_size.width, cluster_size);
+	cluster_screen_size.height = Math::division_round_up((uint32_t)p_screen_size.height, cluster_size);
 
 	max_elements_by_type = p_max_elements;
 	if (max_elements_by_type % 32) { // Needs to be aligned to 32.
@@ -420,11 +441,11 @@ void ClusterBuilderRD::bake_cluster() {
 	RD::get_singleton()->draw_command_begin_label("Bake Light Cluster");
 
 	// Clear cluster buffer.
-	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+	RD::get_singleton()->buffer_clear(cluster_buffer, 0, cluster_buffer_size);
 
 	if (render_element_count > 0) {
 		// Clear render buffer.
-		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size, RD::BARRIER_MASK_RASTER);
+		RD::get_singleton()->buffer_clear(cluster_render_buffer, 0, cluster_render_buffer_size);
 
 		{ // Fill state uniform.
 
@@ -432,25 +453,25 @@ void ClusterBuilderRD::bake_cluster() {
 
 			RendererRD::MaterialStorage::store_camera(adjusted_projection, state.projection);
 			state.inv_z_far = 1.0 / z_far;
-			state.screen_to_clusters_shift = get_shift_from_power_of_2(cluster_size);
+			state.screen_to_clusters_shift = Math::get_shift_from_power_of_2(cluster_size);
 			state.screen_to_clusters_shift -= divisor; //screen is smaller, shift one less
 
 			state.cluster_screen_width = cluster_screen_size.x;
 			state.cluster_depth_offset = (render_element_max / 32);
 			state.cluster_data_size = state.cluster_depth_offset + render_element_max;
 
-			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+			RD::get_singleton()->buffer_update(state_uniform, 0, sizeof(StateUniform), &state);
 		}
 
 		// Update instances.
 
-		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+		RD::get_singleton()->buffer_update(element_buffer, 0, sizeof(RenderElementData) * render_element_count, render_elements);
 
 		RENDER_TIMESTAMP("Render 3D Cluster Elements");
 
 		// Render elements.
 		{
-			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
+			RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer);
 			ClusterBuilderSharedDataRD::ClusterRender::PushConstant push_constant = {};
 
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shared->cluster_render.shader_pipelines[use_msaa ? ClusterBuilderSharedDataRD::ClusterRender::PIPELINE_MSAA : ClusterBuilderSharedDataRD::ClusterRender::PIPELINE_NORMAL]);
@@ -475,6 +496,10 @@ void ClusterBuilderRD::bake_cluster() {
 							RD::get_singleton()->draw_list_bind_index_array(draw_list, shared->cone_index_array);
 						}
 					} break;
+					case ELEMENT_TYPE_AREA_LIGHT: {
+						RD::get_singleton()->draw_list_bind_vertex_array(draw_list, shared->box_vertex_array);
+						RD::get_singleton()->draw_list_bind_index_array(draw_list, shared->box_index_array);
+					} break;
 					case ELEMENT_TYPE_DECAL:
 					case ELEMENT_TYPE_REFLECTION_PROBE: {
 						RD::get_singleton()->draw_list_bind_vertex_array(draw_list, shared->box_vertex_array);
@@ -488,7 +513,7 @@ void ClusterBuilderRD::bake_cluster() {
 				RD::get_singleton()->draw_list_draw(draw_list, true, instances);
 				i += instances;
 			}
-			RD::get_singleton()->draw_list_end(RD::BARRIER_MASK_COMPUTE);
+			RD::get_singleton()->draw_list_end();
 		}
 		// Store elements.
 		RENDER_TIMESTAMP("Pack 3D Cluster Elements");
@@ -503,7 +528,8 @@ void ClusterBuilderRD::bake_cluster() {
 			push_constant.max_render_element_count_div_32 = render_element_max / 32;
 			push_constant.cluster_screen_size[0] = cluster_screen_size.x;
 			push_constant.cluster_screen_size[1] = cluster_screen_size.y;
-			push_constant.render_element_count_div_32 = render_element_count > 0 ? (render_element_count - 1) / 32 + 1 : 0;
+
+			push_constant.render_element_count_div_32 = Math::division_round_up(render_element_count, 32U);
 			push_constant.max_cluster_element_count_div_32 = max_elements_by_type / 32;
 			push_constant.pad1 = 0;
 			push_constant.pad2 = 0;
@@ -512,10 +538,8 @@ void ClusterBuilderRD::bake_cluster() {
 
 			RD::get_singleton()->compute_list_dispatch_threads(compute_list, cluster_screen_size.x, cluster_screen_size.y, 1);
 
-			RD::get_singleton()->compute_list_end(RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
+			RD::get_singleton()->compute_list_end();
 		}
-	} else {
-		RD::get_singleton()->barrier(RD::BARRIER_MASK_TRANSFER, RD::BARRIER_MASK_RASTER | RD::BARRIER_MASK_COMPUTE);
 	}
 	RENDER_TIMESTAMP("< Bake 3D Cluster");
 	RD::get_singleton()->draw_command_end_label();
@@ -532,7 +556,7 @@ void ClusterBuilderRD::debug(ElementType p_element) {
 	push_constant.screen_size[1] = screen_size.y;
 	push_constant.cluster_screen_size[0] = cluster_screen_size.x;
 	push_constant.cluster_screen_size[1] = cluster_screen_size.y;
-	push_constant.cluster_shift = get_shift_from_power_of_2(cluster_size);
+	push_constant.cluster_shift = Math::get_shift_from_power_of_2(cluster_size);
 	push_constant.cluster_type = p_element;
 	push_constant.orthogonal = camera_orthogonal;
 	push_constant.z_far = z_far;
@@ -568,5 +592,5 @@ ClusterBuilderRD::ClusterBuilderRD() {
 
 ClusterBuilderRD::~ClusterBuilderRD() {
 	_clear();
-	RD::get_singleton()->free(state_uniform);
+	RD::get_singleton()->free_rid(state_uniform);
 }

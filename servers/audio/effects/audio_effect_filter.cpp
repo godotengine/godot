@@ -29,12 +29,14 @@
 /**************************************************************************/
 
 #include "audio_effect_filter.h"
-#include "servers/audio_server.h"
+
+#include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 template <int S>
 void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	for (int i = 0; i < p_frame_count; i++) {
-		float f = p_src_frames[i].l;
+		float f = p_src_frames[i].left;
 		filter_process[0][0].process_one(f);
 		if constexpr (S > 1) {
 			filter_process[0][1].process_one(f);
@@ -46,11 +48,11 @@ void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, 
 			filter_process[0][3].process_one(f);
 		}
 
-		p_dst_frames[i].l = f;
+		p_dst_frames[i].left = f;
 	}
 
 	for (int i = 0; i < p_frame_count; i++) {
-		float f = p_src_frames[i].r;
+		float f = p_src_frames[i].right;
 		filter_process[1][0].process_one(f);
 		if constexpr (S > 1) {
 			filter_process[1][1].process_one(f);
@@ -62,7 +64,7 @@ void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, 
 			filter_process[1][3].process_one(f);
 		}
 
-		p_dst_frames[i].r = f;
+		p_dst_frames[i].right = f;
 	}
 }
 
@@ -109,7 +111,7 @@ Ref<AudioEffectInstance> AudioEffectFilter::instantiate() {
 }
 
 void AudioEffectFilter::set_cutoff(float p_freq) {
-	cutoff = p_freq;
+	cutoff = MAX(p_freq, 1.0);
 }
 
 float AudioEffectFilter::get_cutoff() const {
@@ -153,7 +155,7 @@ void AudioEffectFilter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_db", "amount"), &AudioEffectFilter::set_db);
 	ClassDB::bind_method(D_METHOD("get_db"), &AudioEffectFilter::get_db);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cutoff_hz", PROPERTY_HINT_RANGE, "1,20500,1,suffix:Hz"), "set_cutoff", "get_cutoff");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cutoff_hz", PROPERTY_HINT_RANGE, "20,20500,1,or_less,exp,suffix:Hz"), "set_cutoff", "get_cutoff");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "resonance", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_resonance", "get_resonance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gain", PROPERTY_HINT_RANGE, "0,4,0.01"), "set_gain", "get_gain");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "db", PROPERTY_HINT_ENUM, "6 dB,12 dB,18 dB,24 dB"), "set_db", "get_db");

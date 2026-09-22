@@ -31,7 +31,14 @@
 #include "main_timer_sync.h"
 
 #include "core/os/os.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
+
+// Uncomment this define to get more debugging logs for the delta smoothing.
+// #define GODOT_DEBUG_DELTA_SMOOTHER
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+#include "core/string/print_string.h"
+#include "core/string/string.h"
+#endif
 
 void MainFrameTime::clamp_process_step(double min_process_step, double max_process_step) {
 	if (process_step < min_process_step) {
@@ -42,6 +49,20 @@ void MainFrameTime::clamp_process_step(double min_process_step, double max_proce
 }
 
 /////////////////////////////////
+
+void MainTimerSync::DeltaSmoother::made_new_estimate() {
+	_hits_above_estimated = 0;
+	_hits_at_estimated = 0;
+	_hits_below_estimated = 0;
+	_hits_one_above_estimated = 0;
+	_hits_one_below_estimated = 0;
+
+	_estimate_complete = false;
+
+#ifdef GODOT_DEBUG_DELTA_SMOOTHER
+	print_line("estimated fps " + itos(_estimated_fps));
+#endif
+}
 
 void MainTimerSync::DeltaSmoother::update_refresh_rate_estimator(int64_t p_delta) {
 	// the calling code should prevent 0 or negative values of delta
@@ -212,8 +233,6 @@ bool MainTimerSync::DeltaSmoother::fps_allows_smoothing(int64_t p_delta) {
 				double fps = 1000000.0 / time_passed;
 				double ratio = fps / (double)_estimated_fps;
 
-				//print_line("ratio : " + String(Variant(ratio)));
-
 				if ((ratio > 0.95) && (ratio < 1.05)) {
 					_measurement_allows_smoothing = true;
 				} else {
@@ -243,8 +262,8 @@ int64_t MainTimerSync::DeltaSmoother::smooth_delta(int64_t p_delta) {
 	}
 
 	// only attempt smoothing if vsync is selected
-	DisplayServer::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServer::MAIN_WINDOW_ID);
-	if (vsync_mode != DisplayServer::VSYNC_ENABLED) {
+	DisplayServerEnums::VSyncMode vsync_mode = DisplayServer::get_singleton()->window_get_vsync_mode(DisplayServerEnums::MAIN_WINDOW_ID);
+	if (vsync_mode != DisplayServerEnums::VSYNC_ENABLED) {
 		return p_delta;
 	}
 
@@ -288,7 +307,6 @@ int64_t MainTimerSync::DeltaSmoother::smooth_delta(int64_t p_delta) {
 	units = MAX(units, 1);
 
 	_leftover_time -= units * _vsync_delta;
-	// print_line("units " + itos(units) + ", leftover " + itos(_leftover_time/1000) + " ms");
 
 	return units * _vsync_delta;
 }
@@ -335,7 +353,7 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_t
 
 	// simple determination of number of physics iteration
 	time_accum += ret.process_step;
-	ret.physics_steps = floor(time_accum * p_physics_ticks_per_second);
+	ret.physics_steps = std::floor(time_accum * p_physics_ticks_per_second);
 
 	int min_typical_steps = typical_physics_steps[0];
 	int max_typical_steps = min_typical_steps + 1;
@@ -368,7 +386,7 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_t
 
 	// try to keep it consistent with previous iterations
 	if (ret.physics_steps < min_typical_steps) {
-		const int max_possible_steps = floor((time_accum)*p_physics_ticks_per_second + get_physics_jitter_fix());
+		const int max_possible_steps = std::floor((time_accum)*p_physics_ticks_per_second + get_physics_jitter_fix());
 		if (max_possible_steps < min_typical_steps) {
 			ret.physics_steps = max_possible_steps;
 			update_typical = true;
@@ -376,7 +394,7 @@ MainFrameTime MainTimerSync::advance_core(double p_physics_step, int p_physics_t
 			ret.physics_steps = min_typical_steps;
 		}
 	} else if (ret.physics_steps > max_typical_steps) {
-		const int min_possible_steps = floor((time_accum)*p_physics_ticks_per_second - get_physics_jitter_fix());
+		const int min_possible_steps = std::floor((time_accum)*p_physics_ticks_per_second - get_physics_jitter_fix());
 		if (min_possible_steps > max_typical_steps) {
 			ret.physics_steps = min_possible_steps;
 			update_typical = true;
@@ -462,7 +480,7 @@ MainFrameTime MainTimerSync::advance_checked(double p_physics_step, int p_physic
 #endif
 
 	if (time_accum > p_physics_step) {
-		const int extra_physics_steps = floor(time_accum * p_physics_ticks_per_second);
+		const int extra_physics_steps = std::floor(time_accum * p_physics_ticks_per_second);
 		time_accum -= extra_physics_steps * p_physics_step;
 		ret.physics_steps += extra_physics_steps;
 	}

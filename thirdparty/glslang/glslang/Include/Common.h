@@ -94,6 +94,11 @@ std::string to_string(const T& val) {
     #pragma warning(disable : 4201) // nameless union
 #endif
 
+// Allow compilation to WASI which does not support threads yet.
+#ifdef __wasi__ 
+#define DISABLE_THREAD_SUPPORT
+#endif
+
 #include "PoolAlloc.h"
 
 //
@@ -157,6 +162,11 @@ template<class T> inline T* NewPoolObject(T*)
 template<class T> inline T* NewPoolObject(T, int instances)
 {
     return new(GetThreadPoolAllocator().allocate(instances * sizeof(T))) T[instances];
+}
+
+inline bool StartsWith(TString const &str, const char *prefix)
+{
+    return str.compare(0, strlen(prefix), prefix) == 0;
 }
 
 //
@@ -290,34 +300,6 @@ template <class T> int IntLog2(T n)
       result++;
     }
     return result;
-}
-
-inline bool IsInfinity(double x) {
-#ifdef _MSC_VER
-    switch (_fpclass(x)) {
-    case _FPCLASS_NINF:
-    case _FPCLASS_PINF:
-        return true;
-    default:
-        return false;
-    }
-#else
-    return std::isinf(x);
-#endif
-}
-
-inline bool IsNan(double x) {
-#ifdef _MSC_VER
-    switch (_fpclass(x)) {
-    case _FPCLASS_SNAN:
-    case _FPCLASS_QNAN:
-        return true;
-    default:
-        return false;
-    }
-#else
-  return std::isnan(x);
-#endif
 }
 
 } // end namespace glslang

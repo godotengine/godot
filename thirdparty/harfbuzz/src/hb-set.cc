@@ -358,6 +358,24 @@ hb_set_is_equal (const hb_set_t *set,
 }
 
 /**
+ * hb_set_intersects:
+ * @set: A set
+ * @other: Another set
+ *
+ * Tests whether @set and @other have any elements in common.
+ *
+ * Return value: `true` if the two sets intersect, `false` otherwise.
+ *
+ * Since: 14.4.0
+ **/
+hb_bool_t
+hb_set_intersects (const hb_set_t *set,
+		   const hb_set_t *other)
+{
+  return set->intersects (*other);
+}
+
+/**
  * hb_set_hash:
  * @set: A set
  *

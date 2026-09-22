@@ -1,0 +1,32 @@
+diff --git a/thirdparty/embree/common/sys/sysinfo.cpp b/thirdparty/embree/common/sys/sysinfo.cpp
+index 5f375cd95c..3c23fb1610 100644
+--- a/thirdparty/embree/common/sys/sysinfo.cpp
++++ b/thirdparty/embree/common/sys/sysinfo.cpp
+@@ -659,6 +659,10 @@ namespace embree
+ 
+ #if defined(__EMSCRIPTEN__)
+ #include <emscripten.h>
++
++extern "C" {
++extern int godot_js_os_hw_concurrency_get();
++}
+ #endif
+ 
+ namespace embree
+@@ -672,6 +676,8 @@ namespace embree
+     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
+     assert(nThreads);
+ #elif defined(__EMSCRIPTEN__)
++    nThreads = godot_js_os_hw_concurrency_get();
++#if 0
+     // WebAssembly supports pthreads, but not pthread_getaffinity_np. Get the number of logical
+     // threads from the browser or Node.js using JavaScript.
+     nThreads = MAIN_THREAD_EM_ASM_INT({
+@@ -687,6 +693,7 @@ namespace embree
+             return 1;
+         }
+     });
++#endif
+ #else
+     cpu_set_t set;
+     if (pthread_getaffinity_np(pthread_self(), sizeof(set), &set) == 0)

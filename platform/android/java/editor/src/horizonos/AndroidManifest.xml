@@ -1,0 +1,102 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:horizonos="http://schemas.horizonos/sdk">
+
+    <horizonos:uses-horizonos-sdk
+        horizonos:minSdkVersion="69"
+        horizonos:targetSdkVersion="69" />
+
+    <uses-feature
+        android:name="android.hardware.vr.headtracking"
+        android:required="true"
+        android:version="1"/>
+
+    <!-- Oculus Quest hand tracking -->
+    <uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
+    <uses-feature
+        android:name="oculus.software.handtracking"
+        android:required="false" />
+
+    <!-- Passthrough feature flag -->
+    <uses-feature android:name="com.oculus.feature.PASSTHROUGH"
+        android:required="false" />
+
+    <!-- Overlay keyboard support -->
+    <uses-feature android:name="oculus.software.overlay_keyboard" android:required="false"/>
+
+    <!-- Render model -->
+    <uses-permission android:name="com.oculus.permission.RENDER_MODEL" />
+    <uses-feature android:name="com.oculus.feature.RENDER_MODEL" android:required="false" />
+
+    <!-- Anchor api -->
+    <uses-permission android:name="com.oculus.permission.USE_ANCHOR_API" />
+
+    <!-- Scene api -->
+    <uses-permission android:name="com.oculus.permission.USE_SCENE" />
+
+    <!-- Temp removal of the 'REQUEST_INSTALL_PACKAGES' permission as it's currently forbidden by the Horizon OS store -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove" />
+
+    <!-- Passthrough feature -->
+    <uses-feature
+            android:name="android.hardware.camera2.any"
+            android:required="false"/>
+    <uses-permission android:name="horizonos.permission.HEADSET_CAMERA"/>
+
+    <application>
+
+        <activity
+            android:name=".GodotEditor"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            tools:node="merge"
+            tools:replace="android:screenOrientation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="com.oculus.intent.category.2D" />
+            </intent-filter>
+
+            <meta-data android:name="com.oculus.vrshell.free_resizing_lock_aspect_ratio" android:value="true"/>
+        </activity>
+        <activity-alias
+            android:name=".ProjectManager"
+            android:exported="true"
+            tools:node="merge"
+            android:targetActivity=".GodotEditor">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="com.oculus.intent.category.2D" />
+            </intent-filter>
+        </activity-alias>
+        <activity
+            android:name=".GodotXRGame"
+            android:exported="false"
+            tools:node="merge">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="com.oculus.intent.category.VR" />
+                <category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
+            </intent-filter>
+        </activity>
+
+        <!-- Supported Meta devices -->
+        <meta-data
+            android:name="com.oculus.supportedDevices"
+            android:value="quest2|quest3|questpro|quest3s"
+            tools:replace="android:value" />
+
+        <!-- Enable system splash screen -->
+        <meta-data android:name="com.oculus.ossplash" android:value="true"/>
+        <!-- Enable passthrough background during the splash screen -->
+        <meta-data android:name="com.oculus.ossplash.background" android:value="passthrough-contextual"/>
+
+        <meta-data android:name="com.oculus.handtracking.version" android:value="V2.0" />
+
+    </application>
+
+</manifest>

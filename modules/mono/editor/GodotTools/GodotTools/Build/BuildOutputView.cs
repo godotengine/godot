@@ -1,8 +1,6 @@
 using Godot;
 using static GodotTools.Internals.Globals;
 
-#nullable enable
-
 namespace GodotTools.Build
 {
     public partial class BuildOutputView : HBoxContainer

@@ -1,29 +1,30 @@
 #include "core/version.h"
-#ifndef _STR
-#define _STR(m_x) #m_x
-#define _MKSTR(m_x) _STR(m_x)
+
+#ifndef RT_MANIFEST
+#define RT_MANIFEST 24
 #endif
 
 GODOT_ICON ICON platform/windows/godot.ico
+1 RT_MANIFEST "platform/windows/godot.manifest"
 
 1 VERSIONINFO
-FILEVERSION    	VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
-PRODUCTVERSION 	VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,0
-FILEOS         	4
-FILETYPE       	1
+FILEVERSION     GODOT_VERSION_MAJOR,GODOT_VERSION_MINOR,GODOT_VERSION_PATCH,0
+PRODUCTVERSION  GODOT_VERSION_MAJOR,GODOT_VERSION_MINOR,GODOT_VERSION_PATCH,0
+FILEOS          4
+FILETYPE        1
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName",            "Godot Engine"
-            VALUE "FileDescription",        VERSION_NAME
-            VALUE "FileVersion",            VERSION_NUMBER
-            VALUE "ProductName",            VERSION_NAME
+            VALUE "FileDescription",        GODOT_VERSION_NAME
+            VALUE "FileVersion",            GODOT_VERSION_NUMBER
+            VALUE "ProductName",            GODOT_VERSION_NAME
             VALUE "Licence",                "MIT"
-            VALUE "LegalCopyright",         "Copyright (c) 2007-" _MKSTR(VERSION_YEAR) " Juan Linietsky, Ariel Manzur and contributors"
+            VALUE "LegalCopyright",         "(c) 2007-present Juan Linietsky, Ariel Manzur and Godot Engine contributors"
             VALUE "Info",                   "https://godotengine.org"
-            VALUE "ProductVersion",         VERSION_FULL_BUILD
+            VALUE "ProductVersion",         GODOT_VERSION_FULL_BUILD
         END
     END
     BLOCK "VarFileInfo"

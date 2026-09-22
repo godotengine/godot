@@ -51,7 +51,7 @@ PROJECT_BRIEF          = "Game Engine MIT"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = ../logo.png
+PROJECT_LOGO           = ../misc/logo/logo.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -1475,7 +1475,7 @@ EXT_LINKS_IN_WINDOW    = NO
 
 FORMULA_FONTSIZE       = 10
 
-# Use the FORMULA_TRANPARENT tag to determine whether or not the images
+# Use the FORMULA_TRANSPARENT tag to determine whether or not the images
 # generated for formulas are transparent PNGs. Transparent PNGs are not
 # supported properly for IE 6.0, but are supported on all modern browsers.
 #

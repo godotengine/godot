@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GridContainer" inherits="Container" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A container that arranges its child controls in a grid layout.
 	</brief_description>
@@ -9,7 +9,7 @@
 	</description>
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
-		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
+		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<members>
 		<member name="columns" type="int" setter="set_columns" getter="get_columns" default="1">
@@ -18,10 +18,10 @@
 	</members>
 	<theme_items>
 		<theme_item name="h_separation" data_type="constant" type="int" default="4">
-			The horizontal separation of children nodes.
+			The horizontal separation of child nodes.
 		</theme_item>
 		<theme_item name="v_separation" data_type="constant" type="int" default="4">
-			The vertical separation of children nodes.
+			The vertical separation of child nodes.
 		</theme_item>
 	</theme_items>
 </class>

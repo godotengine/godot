@@ -28,20 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef UTILITIES_GLES3_H
-#define UTILITIES_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/utilities.h"
 
-#include "platform_gl.h"
+#include <platform_gl.h>
 
 namespace GLES3 {
+
+/* VISIBILITY NOTIFIER */
+
+struct VisibilityNotifier {
+	AABB aabb;
+	Callable enter_callback;
+	Callable exit_callback;
+	Dependency dependency;
+};
 
 class Utilities : public RendererUtilities {
 private:
 	static Utilities *singleton;
+
+	/* VISIBILITY NOTIFIER */
+
+	mutable RID_Owner<VisibilityNotifier> visibility_notifier_owner;
+
+	/* MISC */
 
 	struct ResourceAllocation {
 #ifdef DEV_ENABLED
@@ -111,6 +126,7 @@ public:
 	}
 
 	// Records that data was allocated for state tracking purposes.
+	// Size is measured in bytes.
 	_FORCE_INLINE_ void texture_allocated_data(GLuint p_id, uint32_t p_size, String p_name = "") {
 		texture_mem_cache += p_size;
 #ifdef DEV_ENABLED
@@ -140,7 +156,7 @@ public:
 
 	/* INSTANCES */
 
-	virtual RS::InstanceType get_base_type(RID p_rid) const override;
+	virtual RSE::InstanceType get_base_type(RID p_rid) const override;
 	virtual bool free(RID p_rid) override;
 
 	/* DEPENDENCIES */
@@ -148,6 +164,10 @@ public:
 	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) override;
 
 	/* VISIBILITY NOTIFIER */
+
+	VisibilityNotifier *get_visibility_notifier(RID p_rid) { return visibility_notifier_owner.get_or_null(p_rid); }
+	bool owns_visibility_notifier(RID p_rid) const { return visibility_notifier_owner.owns(p_rid); }
+
 	virtual RID visibility_notifier_allocate() override;
 	virtual void visibility_notifier_initialize(RID p_notifier) override;
 	virtual void visibility_notifier_free(RID p_notifier) override;
@@ -199,17 +219,19 @@ public:
 
 	virtual void update_memory_info() override;
 
-	virtual uint64_t get_rendering_info(RS::RenderingInfo p_info) override;
+	virtual uint64_t get_rendering_info(RSE::RenderingInfo p_info) override;
 	virtual String get_video_adapter_name() const override;
 	virtual String get_video_adapter_vendor() const override;
-	virtual RenderingDevice::DeviceType get_video_adapter_type() const override;
+#ifdef RD_ENABLED
+	virtual RenderingDeviceEnums::DeviceType get_video_adapter_type() const override { return RenderingDeviceEnums::DeviceType::DEVICE_TYPE_OTHER; }
+#endif // RD_ENABLED
 	virtual String get_video_adapter_api_version() const override;
 
 	virtual Size2i get_maximum_viewport_size() const override;
+	virtual uint32_t get_maximum_shader_varyings() const override;
+	virtual uint64_t get_maximum_uniform_buffer_size() const override;
 };
 
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // UTILITIES_GLES3_H

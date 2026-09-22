@@ -61,6 +61,8 @@
 // class as the allocator (second) template argument.
 //
 
+#include "visibility.h"
+
 #include <cstddef>
 #include <cstring>
 #include <vector>
@@ -118,11 +120,16 @@ private:
     unsigned char* mem;           // beginning of our allocation (pts to header)
     TAllocation* prevAlloc;       // prior allocation in the chain
 
-    const static unsigned char guardBlockBeginVal;
-    const static unsigned char guardBlockEndVal;
-    const static unsigned char userDataFill;
+    static inline constexpr unsigned char guardBlockBeginVal = 0xfb;
+    static inline constexpr unsigned char guardBlockEndVal = 0xfe;
+    static inline constexpr unsigned char userDataFill = 0xcd;
 
-    const static size_t guardBlockSize;
+#   ifdef GUARD_BLOCKS
+    static inline constexpr size_t guardBlockSize = 16;
+#   else
+    static inline constexpr size_t guardBlockSize = 0;
+#   endif
+
 #   ifdef GUARD_BLOCKS
     inline static size_t headerSize() { return sizeof(TAllocation); }
 #   else
@@ -174,6 +181,7 @@ public:
     // Call allocate() to actually acquire memory.  Returns nullptr if no memory
     // available, otherwise a properly aligned pointer to 'numBytes' of memory.
     //
+    GLSLANG_EXPORT_FOR_TESTS
     void* allocate(size_t numBytes);
 
     //
@@ -250,6 +258,7 @@ private:
 // different times.  But a simple use is to have a global pop
 // with everyone using the same global allocator.
 //
+GLSLANG_EXPORT_FOR_TESTS
 extern TPoolAllocator& GetThreadPoolAllocator();
 void SetThreadPoolAllocator(TPoolAllocator* poolAllocator);
 
@@ -283,7 +292,7 @@ public:
 
     template<class Other>
         pool_allocator(const pool_allocator<Other>& p) : allocator(p.getAllocator()) { }
-
+    
     pointer allocate(size_type n) {
         return reinterpret_cast<pointer>(getAllocator().allocate(n * sizeof(T))); }
     pointer allocate(size_type n, const void*) {

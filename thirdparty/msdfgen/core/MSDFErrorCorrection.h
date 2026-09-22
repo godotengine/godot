@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Projection.h"
+#include "SDFTransformation.h"
 #include "Shape.h"
 #include "BitmapRef.hpp"
 
@@ -20,7 +20,7 @@ public:
     };
 
     MSDFErrorCorrection();
-    explicit MSDFErrorCorrection(const BitmapRef<byte, 1> &stencil, const Projection &projection, double range);
+    explicit MSDFErrorCorrection(const BitmapSection<byte, 1> &stencil, const SDFTransformation &transformation);
     /// Sets the minimum ratio between the actual and maximum expected distance delta to be considered an error.
     void setMinDeviationRatio(double minDeviationRatio);
     /// Sets the minimum ratio between the pre-correction distance error and the post-correction distance error.
@@ -29,25 +29,24 @@ public:
     void protectCorners(const Shape &shape);
     /// Flags all texels that contribute to edges as protected.
     template <int N>
-    void protectEdges(const BitmapConstRef<float, N> &sdf);
+    void protectEdges(const BitmapConstSection<float, N> &sdf);
     /// Flags all texels as protected.
     void protectAll();
     /// Flags texels that are expected to cause interpolation artifacts based on analysis of the SDF only.
     template <int N>
-    void findErrors(const BitmapConstRef<float, N> &sdf);
+    void findErrors(const BitmapConstSection<float, N> &sdf);
     /// Flags texels that are expected to cause interpolation artifacts based on analysis of the SDF and comparison with the exact shape distance.
     template <template <typename> class ContourCombiner, int N>
-    void findErrors(const BitmapConstRef<float, N> &sdf, const Shape &shape);
+    void findErrors(BitmapConstSection<float, N> sdf, const Shape &shape);
     /// Modifies the MSDF so that all texels with the error flag are converted to single-channel.
     template <int N>
-    void apply(const BitmapRef<float, N> &sdf) const;
+    void apply(BitmapSection<float, N> sdf) const;
     /// Returns the stencil in its current state (see Flags).
-    BitmapConstRef<byte, 1> getStencil() const;
+    BitmapConstSection<byte, 1> getStencil() const;
 
 private:
-    BitmapRef<byte, 1> stencil;
-    Projection projection;
-    double invRange;
+    BitmapSection<byte, 1> stencil;
+    SDFTransformation transformation;
     double minDeviationRatio;
     double minImproveRatio;
 

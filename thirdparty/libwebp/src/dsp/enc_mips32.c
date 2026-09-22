@@ -21,8 +21,8 @@
 #include "src/enc/vp8i_enc.h"
 #include "src/enc/cost_enc.h"
 
-static const int kC1 = 20091 + (1 << 16);
-static const int kC2 = 35468;
+static const int kC1 = WEBP_TRANSFORM_AC3_C1;
+static const int kC2 = WEBP_TRANSFORM_AC3_C2;
 
 // macro for one vertical pass in ITransformOne
 // MUL macro inlined
@@ -30,7 +30,7 @@ static const int kC2 = 35468;
 // A..D - offsets in bytes to load from in buffer
 // TEMP0..TEMP3 - registers for corresponding tmp elements
 // TEMP4..TEMP5 - temporary registers
-#define VERTICAL_PASS(A, B, C, D, TEMP4, TEMP0, TEMP1, TEMP2, TEMP3)        \
+#define VERTICAL_PASS(A, B, C, D, TEMP4, TEMP0, TEMP1, TEMP2, TEMP3) \
   "lh      %[temp16],      " #A "(%[temp20])                 \n\t"          \
   "lh      %[temp18],      " #B "(%[temp20])                 \n\t"          \
   "lh      %[temp17],      " #C "(%[temp20])                 \n\t"          \
@@ -38,12 +38,10 @@ static const int kC2 = 35468;
   "addu    %[" #TEMP4 "],    %[temp16],      %[temp18]       \n\t"          \
   "subu    %[temp16],      %[temp16],      %[temp18]         \n\t"          \
   "mul     %[" #TEMP0 "],    %[temp17],      %[kC2]          \n\t"          \
-  "mul     %[temp18],      %[temp19],      %[kC1]            \n\t"          \
-  "mul     %[temp17],      %[temp17],      %[kC1]            \n\t"          \
+  MUL_SHIFT_C1_IO(temp17, temp18)                                           \
+  MUL_SHIFT_C1(temp18, temp19)                                              \
   "mul     %[temp19],      %[temp19],      %[kC2]            \n\t"          \
   "sra     %[" #TEMP0 "],    %[" #TEMP0 "],    16            \n\n"          \
-  "sra     %[temp18],      %[temp18],      16                \n\n"          \
-  "sra     %[temp17],      %[temp17],      16                \n\n"          \
   "sra     %[temp19],      %[temp19],      16                \n\n"          \
   "subu    %[" #TEMP2 "],    %[" #TEMP0 "],    %[temp18]     \n\t"          \
   "addu    %[" #TEMP3 "],    %[temp17],      %[temp19]       \n\t"          \
@@ -58,17 +56,15 @@ static const int kC2 = 35468;
 // temp0..temp15 holds tmp[0]..tmp[15]
 // A - offset in bytes to load from ref and store to dst buffer
 // TEMP0, TEMP4, TEMP8 and TEMP12 - registers for corresponding tmp elements
-#define HORIZONTAL_PASS(A, TEMP0, TEMP4, TEMP8, TEMP12)                       \
+#define HORIZONTAL_PASS(A, TEMP0, TEMP4, TEMP8, TEMP12) \
   "addiu   %[" #TEMP0 "],    %[" #TEMP0 "],    4               \n\t"          \
   "addu    %[temp16],      %[" #TEMP0 "],    %[" #TEMP8 "]     \n\t"          \
   "subu    %[temp17],      %[" #TEMP0 "],    %[" #TEMP8 "]     \n\t"          \
   "mul     %[" #TEMP0 "],    %[" #TEMP4 "],    %[kC2]          \n\t"          \
-  "mul     %[" #TEMP8 "],    %[" #TEMP12 "],   %[kC1]          \n\t"          \
-  "mul     %[" #TEMP4 "],    %[" #TEMP4 "],    %[kC1]          \n\t"          \
+  MUL_SHIFT_C1_IO(TEMP4, TEMP8)                                               \
+  MUL_SHIFT_C1(TEMP8, TEMP12)                                                 \
   "mul     %[" #TEMP12 "],   %[" #TEMP12 "],   %[kC2]          \n\t"          \
   "sra     %[" #TEMP0 "],    %[" #TEMP0 "],    16              \n\t"          \
-  "sra     %[" #TEMP8 "],    %[" #TEMP8 "],    16              \n\t"          \
-  "sra     %[" #TEMP4 "],    %[" #TEMP4 "],    16              \n\t"          \
   "sra     %[" #TEMP12 "],   %[" #TEMP12 "],   16              \n\t"          \
   "subu    %[temp18],      %[" #TEMP0 "],    %[" #TEMP8 "]     \n\t"          \
   "addu    %[temp19],      %[" #TEMP4 "],    %[" #TEMP12 "]    \n\t"          \
@@ -113,9 +109,9 @@ static const int kC2 = 35468;
   "sb      %[" #TEMP12 "],   3+" XSTR(BPS) "*" #A "(%[temp16]) \n\t"
 
 // Does one or two inverse transforms.
-static WEBP_INLINE void ITransformOne_MIPS32(const uint8_t* ref,
-                                             const int16_t* in,
-                                             uint8_t* dst) {
+static WEBP_INLINE void ITransformOne_MIPS32(const uint8_t* WEBP_RESTRICT ref,
+                                             const int16_t* WEBP_RESTRICT in,
+                                             uint8_t* WEBP_RESTRICT dst) {
   int temp0, temp1, temp2, temp3, temp4, temp5, temp6;
   int temp7, temp8, temp9, temp10, temp11, temp12, temp13;
   int temp14, temp15, temp16, temp17, temp18, temp19, temp20;
@@ -145,8 +141,9 @@ static WEBP_INLINE void ITransformOne_MIPS32(const uint8_t* ref,
   );
 }
 
-static void ITransform_MIPS32(const uint8_t* ref, const int16_t* in,
-                              uint8_t* dst, int do_two) {
+static void ITransform_MIPS32(const uint8_t* WEBP_RESTRICT ref,
+                              const int16_t* WEBP_RESTRICT in,
+                              uint8_t* WEBP_RESTRICT dst, int do_two) {
   ITransformOne_MIPS32(ref, in, dst);
   if (do_two) {
     ITransformOne_MIPS32(ref + 4, in + 16, dst + 4);
@@ -196,11 +193,11 @@ static int QuantizeBlock_MIPS32(int16_t in[16], int16_t out[16],
 
   int16_t* ppin             = &in[0];
   int16_t* pout             = &out[0];
-  const uint16_t* ppsharpen = &mtx->sharpen_[0];
-  const uint32_t* ppzthresh = &mtx->zthresh_[0];
-  const uint16_t* ppq       = &mtx->q_[0];
-  const uint16_t* ppiq      = &mtx->iq_[0];
-  const uint32_t* ppbias    = &mtx->bias_[0];
+  const uint16_t* ppsharpen = &mtx->sharpen[0];
+  const uint32_t* ppzthresh = &mtx->zthresh[0];
+  const uint16_t* ppq       = &mtx->q[0];
+  const uint16_t* ppiq      = &mtx->iq[0];
+  const uint32_t* ppbias    = &mtx->bias[0];
 
   __asm__ volatile(
     QUANTIZE_ONE( 0,  0,  0)
@@ -240,7 +237,7 @@ static int QuantizeBlock_MIPS32(int16_t in[16], int16_t out[16],
 }
 
 static int Quantize2Blocks_MIPS32(int16_t in[32], int16_t out[32],
-                                  const VP8Matrix* const mtx) {
+                                  const VP8Matrix* WEBP_RESTRICT const mtx) {
   int nz;
   nz  = QuantizeBlock_MIPS32(in + 0 * 16, out + 0 * 16, mtx) << 0;
   nz |= QuantizeBlock_MIPS32(in + 1 * 16, out + 1 * 16, mtx) << 1;
@@ -362,8 +359,9 @@ static int Quantize2Blocks_MIPS32(int16_t in[32], int16_t out[32],
   "msub   %[temp6],  %[temp0]                \n\t"                \
   "msub   %[temp7],  %[temp1]                \n\t"
 
-static int Disto4x4_MIPS32(const uint8_t* const a, const uint8_t* const b,
-                           const uint16_t* const w) {
+static int Disto4x4_MIPS32(const uint8_t* WEBP_RESTRICT const a,
+                           const uint8_t* WEBP_RESTRICT const b,
+                           const uint16_t* WEBP_RESTRICT const w) {
   int tmp[32];
   int temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7, temp8;
 
@@ -397,8 +395,9 @@ static int Disto4x4_MIPS32(const uint8_t* const a, const uint8_t* const b,
 #undef VERTICAL_PASS
 #undef HORIZONTAL_PASS
 
-static int Disto16x16_MIPS32(const uint8_t* const a, const uint8_t* const b,
-                             const uint16_t* const w) {
+static int Disto16x16_MIPS32(const uint8_t* WEBP_RESTRICT const a,
+                             const uint8_t* WEBP_RESTRICT const b,
+                             const uint16_t* WEBP_RESTRICT const w) {
   int D = 0;
   int x, y;
   for (y = 0; y < 16 * BPS; y += 4 * BPS) {
@@ -479,8 +478,9 @@ static int Disto16x16_MIPS32(const uint8_t* const a, const uint8_t* const b,
   "sh     %[" #TEMP8 "],  " #D "(%[temp20])              \n\t"    \
   "sh     %[" #TEMP12 "], " #B "(%[temp20])              \n\t"
 
-static void FTransform_MIPS32(const uint8_t* src, const uint8_t* ref,
-                              int16_t* out) {
+static void FTransform_MIPS32(const uint8_t* WEBP_RESTRICT src,
+                              const uint8_t* WEBP_RESTRICT ref,
+                              int16_t* WEBP_RESTRICT out) {
   int temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7, temp8;
   int temp9, temp10, temp11, temp12, temp13, temp14, temp15, temp16;
   int temp17, temp18, temp19, temp20;
@@ -541,7 +541,8 @@ static void FTransform_MIPS32(const uint8_t* src, const uint8_t* ref,
   GET_SSE_INNER(C, C + 1, C + 2, C + 3)   \
   GET_SSE_INNER(D, D + 1, D + 2, D + 3)
 
-static int SSE16x16_MIPS32(const uint8_t* a, const uint8_t* b) {
+static int SSE16x16_MIPS32(const uint8_t* WEBP_RESTRICT a,
+                           const uint8_t* WEBP_RESTRICT b) {
   int count;
   int temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
 
@@ -575,7 +576,8 @@ static int SSE16x16_MIPS32(const uint8_t* a, const uint8_t* b) {
   return count;
 }
 
-static int SSE16x8_MIPS32(const uint8_t* a, const uint8_t* b) {
+static int SSE16x8_MIPS32(const uint8_t* WEBP_RESTRICT a,
+                          const uint8_t* WEBP_RESTRICT b) {
   int count;
   int temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
 
@@ -601,7 +603,8 @@ static int SSE16x8_MIPS32(const uint8_t* a, const uint8_t* b) {
   return count;
 }
 
-static int SSE8x8_MIPS32(const uint8_t* a, const uint8_t* b) {
+static int SSE8x8_MIPS32(const uint8_t* WEBP_RESTRICT a,
+                         const uint8_t* WEBP_RESTRICT b) {
   int count;
   int temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
 
@@ -623,7 +626,8 @@ static int SSE8x8_MIPS32(const uint8_t* a, const uint8_t* b) {
   return count;
 }
 
-static int SSE4x4_MIPS32(const uint8_t* a, const uint8_t* b) {
+static int SSE4x4_MIPS32(const uint8_t* WEBP_RESTRICT a,
+                         const uint8_t* WEBP_RESTRICT b) {
   int count;
   int temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
 

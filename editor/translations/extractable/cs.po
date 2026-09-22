@@ -1,0 +1,124 @@
+# Czech translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-02-28 10:05+0000\n"
+"Last-Translator: Daniel Dušek <dusekdan@gmail.com>\n"
+"Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
+"cs/>\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
+"X-Generator: Weblate 5.5-dev\n"
+
+msgid "Save"
+msgstr "Uložit"
+
+msgid "Clear"
+msgstr "Promazat"
+
+msgid "Add current color as a preset."
+msgstr "Přidat aktuální barvu jako předvolbu."
+
+msgid "Network"
+msgstr "Síť"
+
+msgid "Open"
+msgstr "Otevřít"
+
+msgid "Select Current Folder"
+msgstr "Vybrat stávající složku"
+
+msgid "Select This Folder"
+msgstr "Vybrat tuto složku"
+
+msgid "All Recognized"
+msgstr "Všechny rozpoznatelné"
+
+msgid "All Files"
+msgstr "Všechny soubory"
+
+msgid "Open a File"
+msgstr "Otevřít soubor"
+
+msgid "Open File(s)"
+msgstr "Otevřít soubor(y)"
+
+msgid "Open a Directory"
+msgstr "Otevřít složku"
+
+msgid "Open a File or Directory"
+msgstr "Otevřít soubor nebo složku"
+
+msgid "Save a File"
+msgstr "Uložit soubor"
+
+msgid "Go to previous folder."
+msgstr "Přejít do předchozí složky."
+
+msgid "Go to next folder."
+msgstr "Přejít do další složky."
+
+msgid "Go to parent folder."
+msgstr "Přejít do nadřazené složky."
+
+msgid "Path:"
+msgstr "Cesta:"
+
+msgid "Refresh files."
+msgstr "Obnovit soubory."
+
+msgid "Directories & Files:"
+msgstr "Složky a soubory:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Změnit viditelnost skrytých souborů."
+
+msgid "File:"
+msgstr "Soubor:"
+
+msgid "Create Folder"
+msgstr "Vytvořit složku"
+
+msgid "Name:"
+msgstr "Jméno:"
+
+msgid "Could not create folder."
+msgstr "Nelze vytvořit složku."
+
+msgid "Zoom Out"
+msgstr "Zmenšit"
+
+msgid "Zoom Reset"
+msgstr "Obnovení lupy"
+
+msgid "Zoom In"
+msgstr "Zvětšit"
+
+msgid "Cut"
+msgstr "Vyjmout"
+
+msgid "Copy"
+msgstr "Kopírovat"
+
+msgid "Paste"
+msgstr "Vložit"
+
+msgid "Select All"
+msgstr "Označit vše"
+
+msgid "Undo"
+msgstr "Zpět"
+
+msgid "Redo"
+msgstr "Znovu"
+
+msgid "(Other)"
+msgstr "(Ostatní)"

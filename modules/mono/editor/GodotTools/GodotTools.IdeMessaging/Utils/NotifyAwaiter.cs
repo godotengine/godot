@@ -1,3 +1,6 @@
+// ReSharper disable ParameterHidesMember
+// ReSharper disable UnusedMember.Global
+
 using System;
 using System.Runtime.CompilerServices;
 
@@ -5,9 +8,9 @@ namespace GodotTools.IdeMessaging.Utils
 {
     public class NotifyAwaiter<T> : INotifyCompletion
     {
-        private Action continuation;
-        private Exception exception;
-        private T result;
+        private Action? continuation;
+        private Exception? exception;
+        private T? result;
 
         public bool IsCompleted { get; private set; }
 
@@ -15,7 +18,7 @@ namespace GodotTools.IdeMessaging.Utils
         {
             if (exception != null)
                 throw exception;
-            return result;
+            return result!;
         }
 
         public void OnCompleted(Action continuation)

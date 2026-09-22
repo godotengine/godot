@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SELF_LIST_H
-#define SELF_LIST_H
+#pragma once
 
 #include "core/error/error_macros.h"
+#include "core/templates/sort_list.h"
 #include "core/typedefs.h"
 
-template <class T>
-class SelfList {
+template <typename T>
+class _WARN_UNUSED_ SelfList {
 public:
 	class List {
 		SelfList<T> *_first = nullptr;
@@ -109,57 +109,87 @@ public:
 			sort_custom<Comparator<T>>();
 		}
 
-		template <class C>
+		template <typename C>
 		void sort_custom() {
 			if (_first == _last) {
 				return;
 			}
 
-			SelfList<T> *from = _first;
-			SelfList<T> *current = from;
-			SelfList<T> *to = from;
-
-			while (current) {
-				SelfList<T> *next = current->_next;
-
-				if (from != current) {
-					current->_prev = nullptr;
-					current->_next = from;
-
-					SelfList<T> *find = from;
-					C less;
-					while (find && less(*find->_self, *current->_self)) {
-						current->_prev = find;
-						current->_next = find->_next;
-						find = find->_next;
-					}
-
-					if (current->_prev) {
-						current->_prev->_next = current;
-					} else {
-						from = current;
-					}
-
-					if (current->_next) {
-						current->_next->_prev = current;
-					} else {
-						to = current;
-					}
-				} else {
-					current->_prev = nullptr;
-					current->_next = nullptr;
-				}
-
-				current = next;
-			}
-			_first = from;
-			_last = to;
+			struct PtrComparator {
+				C compare;
+				_FORCE_INLINE_ bool operator()(const T *p_a, const T *p_b) const { return compare(*p_a, *p_b); }
+			};
+			using Element = SelfList<T>;
+			SortList<Element, T *, _self_ref, _prev_ref, _next_ref, PtrComparator> sorter;
+			sorter.sort(_first, _last);
 		}
+
+		struct ConstIterator {
+			_FORCE_INLINE_ const T &operator*() const { return *E->self(); }
+			_FORCE_INLINE_ const T *operator->() const { return E->self(); }
+
+			_FORCE_INLINE_ ConstIterator &operator++() {
+				E = E->next();
+				return *this;
+			}
+
+			_FORCE_INLINE_ ConstIterator &operator--() {
+				E = E->prev();
+				return *this;
+			}
+
+			_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return E == p_other.E; }
+			_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return E != p_other.E; }
+
+			_FORCE_INLINE_ ConstIterator(const SelfList<T> *p_elem) { E = p_elem; }
+			_FORCE_INLINE_ ConstIterator() {}
+			_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
+
+		private:
+			const SelfList<T> *E = nullptr;
+		};
+
+		struct Iterator {
+			_FORCE_INLINE_ T &operator*() const { return *E->self(); }
+			_FORCE_INLINE_ T *operator->() const { return E->self(); }
+
+			_FORCE_INLINE_ Iterator &operator++() {
+				E = E->next();
+				return *this;
+			}
+
+			_FORCE_INLINE_ Iterator &operator--() {
+				E = E->prev();
+				return *this;
+			}
+
+			_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return E == p_other.E; }
+			_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return E != p_other.E; }
+
+			Iterator(SelfList<T> *p_elem) { E = p_elem; }
+			Iterator() {}
+			Iterator(const Iterator &p_it) { E = p_it.E; }
+
+			operator ConstIterator() const {
+				return ConstIterator(E);
+			}
+
+		private:
+			SelfList<T> *E = nullptr;
+		};
+
+		_FORCE_INLINE_ Iterator begin() { return Iterator(first()); }
+		_FORCE_INLINE_ Iterator end() { return Iterator(nullptr); }
+
+		_FORCE_INLINE_ ConstIterator begin() const { return ConstIterator(first()); }
+		_FORCE_INLINE_ ConstIterator end() const { return ConstIterator(nullptr); }
 
 		_FORCE_INLINE_ SelfList<T> *first() { return _first; }
 		_FORCE_INLINE_ const SelfList<T> *first() const { return _first; }
 
-		_FORCE_INLINE_ List() {}
+		// Forbid copying, which has broken behavior.
+		void operator=(const List &) = delete;
+
 		_FORCE_INLINE_ ~List() {
 			// A self list must be empty on destruction.
 			DEV_ASSERT(_first == nullptr);
@@ -171,6 +201,10 @@ private:
 	T *_self = nullptr;
 	SelfList<T> *_next = nullptr;
 	SelfList<T> *_prev = nullptr;
+	// Specify pointers in variables to work around a VS 2022 bug (GH-121326).
+	static constexpr T *SelfList<T>::*_self_ref = &SelfList<T>::_self;
+	static constexpr SelfList<T> *SelfList<T>::*_prev_ref = &SelfList<T>::_prev;
+	static constexpr SelfList<T> *SelfList<T>::*_next_ref = &SelfList<T>::_next;
 
 public:
 	_FORCE_INLINE_ bool in_list() const { return _root; }
@@ -185,6 +219,9 @@ public:
 	_FORCE_INLINE_ const SelfList<T> *prev() const { return _prev; }
 	_FORCE_INLINE_ T *self() const { return _self; }
 
+	// Forbid copying, which has broken behavior.
+	void operator=(const SelfList<T> &) = delete;
+
 	_FORCE_INLINE_ SelfList(T *p_self) {
 		_self = p_self;
 	}
@@ -195,5 +232,3 @@ public:
 		}
 	}
 };
-
-#endif // SELF_LIST_H

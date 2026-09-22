@@ -13,11 +13,11 @@
 #include "../../common/sys/mutex.h"
 #include "../../common/sys/vector.h"
 #include "../../common/sys/array.h"
-#include "../../common/sys/string.h"
+#include "../../common/sys/estring.h"
 #include "../../common/sys/regression.h"
 #include "../../common/sys/vector.h"
 
-#include "../../common/math/math.h"
+#include "../../common/math/emath.h"
 #include "../../common/math/transcendental.h"
 #include "../../common/simd/simd.h"
 #include "../../common/math/vec2.h"
@@ -34,8 +34,6 @@
 #include "../../common/math/affinespace.h"
 #include "../../common/math/range.h"
 #include "../../common/lexers/tokenstream.h"
-
-#include "../../common/tasking/taskscheduler.h"
 
 #define COMMA ,
 
@@ -217,7 +215,7 @@ namespace embree
   __forceinline int getTimeSegment(float time, float numTimeSegments, float& ftime)
   {
     const float timeScaled = time * numTimeSegments;
-    const float itimef = clamp(floorf(timeScaled), 0.0f, numTimeSegments-1.0f);
+    const float itimef = clamp(floor(timeScaled), 0.0f, numTimeSegments-1.0f);
     ftime = timeScaled - itimef;
     return int(itimef);
   }
@@ -225,7 +223,7 @@ namespace embree
   __forceinline int getTimeSegment(float time, float start_time, float end_time, float numTimeSegments, float& ftime)
   {
     const float timeScaled = (time-start_time)/(end_time-start_time) * numTimeSegments;
-    const float itimef = clamp(floorf(timeScaled), 0.0f, numTimeSegments-1.0f);
+    const float itimef = clamp(floor(timeScaled), 0.0f, numTimeSegments-1.0f);
     ftime = timeScaled - itimef;
     return int(itimef);
   }

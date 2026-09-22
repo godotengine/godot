@@ -3,8 +3,19 @@
 ; It also helps for opening Godot to edit the scripts, but please don't
 ; let the editor changes be saved.
 
-config_version=4
+config_version=5
 
 [application]
 
 config/name="GDScript Integration Test Suite"
+
+[debug]
+
+settings/gdscript/always_track_call_stacks=true
+
+[input]
+
+test_input_action={
+"deadzone": 0.2,
+"events": []
+}

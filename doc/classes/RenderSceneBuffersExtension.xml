@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RenderSceneBuffersExtension" inherits="RenderSceneBuffers" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RenderSceneBuffersExtension" inherits="RenderSceneBuffers" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		This class allows for a RenderSceneBuffer implementation to be made in GDExtension.
 	</brief_description>
@@ -14,6 +14,13 @@
 			<param index="0" name="config" type="RenderSceneBuffersConfiguration" />
 			<description>
 				Implement this in GDExtension to handle the (re)sizing of a viewport.
+			</description>
+		</method>
+		<method name="_set_anisotropic_filtering_level" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="anisotropic_filtering_level" type="int" />
+			<description>
+				Implement this in GDExtension to change the anisotropic filtering level.
 			</description>
 		</method>
 		<method name="_set_fsr_sharpness" qualifiers="virtual">

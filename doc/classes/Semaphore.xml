@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Semaphore" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Semaphore" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A synchronization mechanism used to control access to a shared resource by [Thread]s.
 	</brief_description>
@@ -17,8 +17,9 @@
 	<methods>
 		<method name="post">
 			<return type="void" />
+			<param index="0" name="count" type="int" default="1" />
 			<description>
-				Lowers the [Semaphore], allowing one more thread in.
+				Lowers the [Semaphore], allowing one thread in, or more if [param count] is specified.
 			</description>
 		</method>
 		<method name="try_wait">

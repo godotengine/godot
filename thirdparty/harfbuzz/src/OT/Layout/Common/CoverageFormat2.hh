@@ -40,7 +40,7 @@ struct CoverageFormat2_4
 {
   friend struct Coverage;
 
-  protected:
+  public:
   HBUINT16      coverageFormat; /* Format identifier--format = 2 */
   SortedArray16Of<RangeRecord<Types>>
                 rangeRecord;    /* Array of glyph ranges--ordered by
@@ -120,7 +120,7 @@ struct CoverageFormat2_4
 
   bool intersects (const hb_set_t *glyphs) const
   {
-    if (rangeRecord.len > glyphs->get_population () * hb_bit_storage ((unsigned) rangeRecord.len) / 2)
+    if (rangeRecord.len > glyphs->get_population () * hb_bit_storage ((unsigned) rangeRecord.len))
     {
       for (auto g : *glyphs)
         if (get_coverage (g) != NOT_COVERED)
@@ -139,6 +139,19 @@ struct CoverageFormat2_4
     return false;
   }
 
+  static void add_intersected_bits (hb_set_t &set, hb_codepoint_t base, uint64_t bits)
+  { set.add_bits (base, bits); }
+
+  template <typename IterableOut>
+  static void add_intersected_bits (IterableOut&& out, hb_codepoint_t base, uint64_t bits)
+  {
+    while (bits)
+    {
+      out << base + hb_ctz (bits);
+      bits &= bits - 1;
+    }
+  }
+
   template <typename IterableOut,
 	    hb_requires (hb_is_sink_of (IterableOut, hb_codepoint_t))>
   void intersect_set (const hb_set_t &glyphs, IterableOut&& intersect_glyphs) const
@@ -151,11 +164,22 @@ struct CoverageFormat2_4
       if (unlikely (range.first < last))
         break;
       last = range.last;
-      for (hb_codepoint_t g = range.first - 1;
-	   glyphs.next (&g) && g <= last;)
-	intersect_glyphs << g;
+      hb_codepoint_t cursor = range.first & -hb_bit_page_t::ELT_BITS;
+      cursor = cursor ? cursor - 1 : HB_SET_VALUE_INVALID;
+      uint64_t bits;
+      while (glyphs.next_bits (&cursor, &bits) && cursor <= last)
+      {
+	if (range.first > cursor)
+	  bits &= UINT64_MAX << (range.first - cursor);
+	unsigned int end = last - cursor;
+	if (end < hb_bit_page_t::ELT_BITS - 1)
+	  bits &= (uint64_t (1) << (end + 1)) - 1;
+	add_intersected_bits (intersect_glyphs, cursor, bits);
+      }
     }
   }
+
+  unsigned cost () const { return hb_bit_storage ((unsigned) rangeRecord.len); /* bsearch cost */ }
 
   template <typename set_t>
   bool collect_coverage (set_t *glyphs) const

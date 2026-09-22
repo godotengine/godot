@@ -1,5 +1,5 @@
 // smol-v - public domain - https://github.com/aras-p/smol-v
-// authored 2016-2020 by Aras Pranckevicius
+// authored 2016-2024 by Aras Pranckevicius
 // no warranty implied; use at your own risk
 // See end of file for license information.
 
@@ -1197,8 +1197,8 @@ static bool smolv_CheckGenericHeader(const uint32_t* words, size_t wordCount, ui
 	if (headerMagic != expectedMagic)
 		return false;
 	uint32_t headerVersion = words[1] & versionMask;
-	if (headerVersion < 0x00010000 || headerVersion > 0x00010500)
-		return false; // only support 1.0 through 1.5
+	if (headerVersion < 0x00010000 || headerVersion > 0x00010600)
+		return false; // only support 1.0 through 1.6
 	
 	return true;
 }
@@ -2071,7 +2071,7 @@ void smolv::StatsPrint(const Stats* stats)
 // This software is available under 2 licenses -- choose whichever you prefer.
 // ------------------------------------------------------------------------------
 // ALTERNATIVE A - MIT License
-// Copyright (c) 2016-2020 Aras Pranckevicius
+// Copyright (c) 2016-2024 Aras Pranckevicius
 // Permission is hereby granted, free of charge, to any person obtaining a copy of
 // this software and associated documentation files (the "Software"), to deal in
 // the Software without restriction, including without limitation the rights to

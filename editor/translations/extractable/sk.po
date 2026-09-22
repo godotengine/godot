@@ -1,0 +1,122 @@
+# Slovak translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2023-12-02 19:36+0000\n"
+"Last-Translator: Ellie Star <gender.thief.star@gmail.com>\n"
+"Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
+"sk/>\n"
+"Language: sk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: Weblate 5.3-dev\n"
+
+msgid "Save"
+msgstr "Uložiť"
+
+msgid "Clear"
+msgstr "Vyčistiť"
+
+msgid "Network"
+msgstr "Sieť"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Súbor \"%s\" už existuje.\n"
+"Želáte si ho prepísať?"
+
+msgid "Open"
+msgstr "Otvoriť"
+
+msgid "Select Current Folder"
+msgstr "Vybrať Aktuálny Priečinok"
+
+msgid "Select This Folder"
+msgstr "Vybrať Tento Priečinok"
+
+msgid "All Recognized"
+msgstr "Všetko rozpoznané"
+
+msgid "Open a File"
+msgstr "Otvoriť súbor"
+
+msgid "Open File(s)"
+msgstr "Otvoriť súbor(y)"
+
+msgid "Open a Directory"
+msgstr "Otvorit priečinok"
+
+msgid "Open a File or Directory"
+msgstr "Otvoriť súbor / priečinok"
+
+msgid "Save a File"
+msgstr "Uložiť súbor"
+
+msgid "Go to previous folder."
+msgstr "Ísť do predchádzajúceho priečinka."
+
+msgid "Go to next folder."
+msgstr "Ísť do ďalšieho priečinka."
+
+msgid "Go to parent folder."
+msgstr "Ísť do parent folder."
+
+msgid "Path:"
+msgstr "Cesta:"
+
+msgid "Refresh files."
+msgstr "Obnoviť súbory."
+
+msgid "Directories & Files:"
+msgstr "Priečinky a Súbory:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Prepnúť viditeľnosť skrytých súborov."
+
+msgid "File:"
+msgstr "Súbor:"
+
+msgid "Create Folder"
+msgstr "Vytvoriť adresár"
+
+msgid "Name:"
+msgstr "Názov:"
+
+msgid "Could not create folder."
+msgstr "Priečinok sa nepodarilo vytvoriť."
+
+msgid "Zoom Out"
+msgstr "Oddialiť"
+
+msgid "Zoom Reset"
+msgstr "Resetovať Priblíženie"
+
+msgid "Zoom In"
+msgstr "Priblížiť"
+
+msgid "Cut"
+msgstr "Vystrihnúť"
+
+msgid "Copy"
+msgstr "Kopírovať"
+
+msgid "Paste"
+msgstr "Vložiť"
+
+msgid "Select All"
+msgstr "Označiť všetko"
+
+msgid "Undo"
+msgstr "Späť"
+
+msgid "Redo"
+msgstr "Prerobiť"

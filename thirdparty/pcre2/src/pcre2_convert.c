@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -39,11 +39,9 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include "pcre2_internal.h"
+
+
 
 #define TYPE_OPTIONS (PCRE2_CONVERT_GLOB| \
   PCRE2_CONVERT_POSIX_BASIC|PCRE2_CONVERT_POSIX_EXTENDED)
@@ -74,12 +72,22 @@ enum { POSIX_START_REGEX, POSIX_ANCHORED, POSIX_NOT_BRACKET,
 
 #define PUTCHARS(string) \
   { \
-  for (s = (char *)(string); *s != 0; s++) \
+  for (const char *s = string; *s != 0; s++) \
     { \
     if (p >= endp) return PCRE2_ERROR_NOMEMORY; \
     *p++ = *s; \
     } \
   }
+
+/* Macro to check for lowercase characters. */
+
+#ifdef EBCDIC
+#define ISLOWER(c)  (((c) >= CHAR_a && (c) <= CHAR_i) || \
+                     ((c) >= CHAR_j && (c) <= CHAR_r) || \
+                     ((c) >= CHAR_s && (c) <= CHAR_z))
+#else
+#define ISLOWER(c)  ((c) >= CHAR_a && (c) <= CHAR_z)
+#endif
 
 /* Literals that must be escaped: \ ? * + | . ^ $ { } [ ] ( ) */
 
@@ -96,6 +104,24 @@ static const char *posix_meta_escapes =
   STR_LEFT_PARENTHESIS STR_RIGHT_PARENTHESIS
   STR_LEFT_CURLY_BRACKET STR_RIGHT_CURLY_BRACKET
   STR_1 STR_2 STR_3 STR_4 STR_5 STR_6 STR_7 STR_8 STR_9;
+
+/* Recognized POSIX classes, colon-separated. */
+
+static const char *posix_classes =
+  STR_a STR_l STR_p STR_h STR_a STR_COLON
+  STR_l STR_o STR_w STR_e STR_r STR_COLON
+  STR_u STR_p STR_p STR_e STR_r STR_COLON
+  STR_a STR_l STR_n STR_u STR_m STR_COLON
+  STR_a STR_s STR_c STR_i STR_i STR_COLON
+  STR_b STR_l STR_a STR_n STR_k STR_COLON
+  STR_c STR_n STR_t STR_r STR_l STR_COLON
+  STR_d STR_i STR_g STR_i STR_t STR_COLON
+  STR_g STR_r STR_a STR_p STR_h STR_COLON
+  STR_p STR_r STR_i STR_n STR_t STR_COLON
+  STR_p STR_u STR_n STR_c STR_t STR_COLON
+  STR_s STR_p STR_a STR_c STR_e STR_COLON
+  STR_w STR_o STR_r STR_d STR_COLON
+  STR_x STR_d STR_i STR_g STR_i STR_t STR_COLON;
 
 
 
@@ -125,7 +151,6 @@ convert_posix(uint32_t pattype, PCRE2_SPTR pattern, PCRE2_SIZE plength,
   BOOL utf, PCRE2_UCHAR *use_buffer, PCRE2_SIZE use_length,
   PCRE2_SIZE *bufflenptr, BOOL dummyrun, pcre2_convert_context *ccontext)
 {
-char *s;
 PCRE2_SPTR posix = pattern;
 PCRE2_UCHAR *p = use_buffer;
 PCRE2_UCHAR *pp = p;
@@ -191,7 +216,7 @@ while (plength > 0)
       switch (posix_state)
         {
         case POSIX_CLASS_STARTED:
-        if (c <= 127 && islower(c)) break;  /* Remain in started state */
+        if (ISLOWER(c)) break;  /* Remain in started state */
         posix_state = POSIX_CLASS_NOT_STARTED;
         if (c == CHAR_COLON  && plength > 0 &&
             *posix == CHAR_RIGHT_SQUARE_BRACKET)
@@ -201,7 +226,7 @@ while (plength > 0)
           posix++;
           continue;    /* With next character after :] */
           }
-        /* Fall through */
+        PCRE2_FALLTHROUGH /* Fall through */
 
         case POSIX_CLASS_NOT_STARTED:
         if (c == CHAR_LEFT_SQUARE_BRACKET)
@@ -278,9 +303,9 @@ while (plength > 0)
     if (plength == 0) return PCRE2_ERROR_END_BACKSLASH;
     if (extended) nextisliteral = TRUE; else
       {
-      if (*posix < 127 && strchr(posix_meta_escapes, *posix) != NULL)
+      if (*posix < 255 && strchr(posix_meta_escapes, *posix) != NULL)
         {
-        if (isdigit(*posix)) PUTCHARS(STR_BACKSLASH);
+        if (*posix >= CHAR_0 && *posix <= CHAR_9) PUTCHARS(STR_BACKSLASH);
         if (p + 1 > endp) return PCRE2_ERROR_NOMEMORY;
         lastspecial = *p++ = *posix++;
         plength--;
@@ -296,7 +321,7 @@ while (plength > 0)
 
     case CHAR_LEFT_PARENTHESIS:
     bracount++;
-    /* Fall through */
+    PCRE2_FALLTHROUGH /* Fall through */
 
     case CHAR_QUESTION_MARK:
     case CHAR_PLUS:
@@ -304,7 +329,7 @@ while (plength > 0)
     case CHAR_RIGHT_CURLY_BRACKET:
     case CHAR_VERTICAL_LINE:
     if (!extended) goto ESCAPE_LITERAL;
-    /* Fall through */
+    PCRE2_FALLTHROUGH /* Fall through */
 
     case CHAR_DOT:
     case CHAR_DOLLAR_SIGN:
@@ -333,10 +358,10 @@ while (plength > 0)
       posix_state = POSIX_ANCHORED;
       goto COPY_SPECIAL;
       }
-    /* Fall through */
+    PCRE2_FALLTHROUGH /* Fall through */
 
     default:
-    if (c < 128 && strchr(pcre2_escaped_literals, c) != NULL)
+    if (c < 255 && strchr(pcre2_escaped_literals, c) != NULL)
       {
       ESCAPE_LITERAL:
       PUTCHARS(STR_BACKSLASH);
@@ -475,8 +500,6 @@ static int
 convert_glob_parse_class(PCRE2_SPTR *from, PCRE2_SPTR pattern_end,
   pcre2_output_context *out)
 {
-static const char *posix_classes = "alnum:alpha:ascii:blank:cntrl:digit:"
-  "graph:lower:print:punct:space:upper:word:xdigit:";
 PCRE2_SPTR start = *from + 1;
 PCRE2_SPTR pattern = start;
 const char *class_ptr;
@@ -501,7 +524,7 @@ class_index = 1;
 
 while (TRUE)
   {
-  if (*class_ptr == CHAR_NUL) return 0;
+  if (*class_ptr == 0) return 0;
 
   pattern = start;
 
@@ -540,23 +563,61 @@ Returns:   !0 => character is found in the class
 static BOOL
 convert_glob_char_in_class(int class_index, PCRE2_UCHAR c)
 {
+const uint8_t *cbits = PRIV(default_tables) + cbits_offset;
+int cbit;
+
+#if PCRE2_CODE_UNIT_WIDTH != 8
+if (c > 0xff)
+  {
+  /* Can't access the character tables for c > 0xff */
+  return FALSE;
+  }
+#endif
+
+/* See posix_class_maps. This is a small local clone of that.
+Note that we don't know exactly what character tables will be used at
+match time, but, for the purposes of pattern conversion, it should be
+sufficient to use PCRE2's built-in default tables. */
+
 switch (class_index)
   {
-  case 1: return isalnum(c);
-  case 2: return isalpha(c);
-  case 3: return 1;
-  case 4: return c == CHAR_HT || c == CHAR_SPACE;
-  case 5: return iscntrl(c);
-  case 6: return isdigit(c);
-  case 7: return isgraph(c);
-  case 8: return islower(c);
-  case 9: return isprint(c);
-  case 10: return ispunct(c);
-  case 11: return isspace(c);
-  case 12: return isupper(c);
-  case 13: return isalnum(c) || c == CHAR_UNDERSCORE;
-  default: return isxdigit(c);
+  case 1:                              /* alpha */
+  if (c == CHAR_UNDERSCORE) return FALSE;
+  if (((cbits + cbit_digit)[c/8] & (1u << (c&7))) != 0) return FALSE;
+  cbit = cbit_word;
+  break;
+
+  case 2: cbit = cbit_lower; break;    /* lower */
+  case 3: cbit = cbit_upper; break;    /* upper */
+
+  case 4:                              /* alnum */
+  if (c == CHAR_UNDERSCORE) return FALSE;
+  cbit = cbit_word;
+  break;
+
+  case 5:                              /* ascii */
+  if (((cbits + cbit_cntrl)[c/8] & (1u << (c&7))) != 0) return TRUE;
+  cbit = cbit_print;
+  break;
+
+  case 6:                              /* blank */
+  if (c == CHAR_LF || c == CHAR_VT || c == CHAR_FF || c == CHAR_CR)
+    return FALSE;
+  cbit = cbit_space;
+  break;
+
+  case 7: cbit = cbit_cntrl; break;    /* cntrl */
+  case 8: cbit = cbit_digit; break;    /* digit */
+  case 9: cbit = cbit_graph; break;    /* graph */
+  case 10: cbit = cbit_print; break;   /* print */
+  case 11: cbit = cbit_punct; break;   /* punct */
+  case 12: cbit = cbit_space; break;   /* space */
+  case 13: cbit = cbit_word; break;    /* word */
+  case 14: cbit = cbit_xdigit; break;  /* xdigit */
+  default: return FALSE;
   }
+
+return ((cbits + cbit)[c/8] & (1u << (c&7))) != 0;
 }
 
 /* Parse a range of characters.
@@ -998,7 +1059,7 @@ while (pattern < pattern_end)
     c = *pattern++;
     }
 
-  if (c < 128 && strchr(pcre2_escaped_literals, c) != NULL)
+  if (c < 255 && strchr(pcre2_escaped_literals, c) != NULL)
     convert_glob_write(&out, CHAR_BACKSLASH);
 
   convert_glob_write(&out, c);
@@ -1057,14 +1118,22 @@ pcre2_pattern_convert(PCRE2_SPTR pattern, PCRE2_SIZE plength, uint32_t options,
   PCRE2_UCHAR **buffptr, PCRE2_SIZE *bufflenptr,
   pcre2_convert_context *ccontext)
 {
-int i, rc;
+int rc;
+PCRE2_UCHAR null_str[1] = { 0xcd };
 PCRE2_UCHAR dummy_buffer[DUMMY_BUFFER_SIZE];
 PCRE2_UCHAR *use_buffer = dummy_buffer;
 PCRE2_SIZE use_length = DUMMY_BUFFER_SIZE;
 BOOL utf = (options & PCRE2_CONVERT_UTF) != 0;
 uint32_t pattype = options & TYPE_OPTIONS;
 
-if (pattern == NULL || bufflenptr == NULL) return PCRE2_ERROR_NULL;
+if (pattern == NULL && plength == 0)
+  pattern = null_str;
+
+if (pattern == NULL || bufflenptr == NULL)
+  {
+  if (bufflenptr != NULL) *bufflenptr = 0;  /* Error offset */
+  return PCRE2_ERROR_NULL;
+  }
 
 if ((options & ~ALL_OPTIONS) != 0 ||        /* Undefined bit set */
     (pattype & (~pattype+1)) != pattype ||  /* More than one type set */
@@ -1111,7 +1180,7 @@ if (buffptr != NULL && *buffptr != NULL)
 /* Call an individual converter, either just once (if a buffer was provided or
 just the length is needed), or twice (if a memory allocation is required). */
 
-for (i = 0; i < 2; i++)
+for (int i = 0; i < 2; i++)
   {
   PCRE2_UCHAR *allocated;
   BOOL dummyrun = buffptr == NULL || *buffptr == NULL;
@@ -1129,9 +1198,13 @@ for (i = 0; i < 2; i++)
       bufflenptr, dummyrun, ccontext);
     break;
 
+    /* We have already validated pattype. */
+    /* LCOV_EXCL_START */
     default:
+    PCRE2_DEBUG_UNREACHABLE();
     *bufflenptr = 0;  /* Error offset */
     return PCRE2_ERROR_INTERNAL;
+    /* LCOV_EXCL_STOP */
     }
 
   if (rc != 0 ||           /* Error */
@@ -1144,16 +1217,23 @@ for (i = 0; i < 2; i++)
 
   allocated = PRIV(memctl_malloc)(sizeof(pcre2_memctl) +
     (*bufflenptr + 1)*PCRE2_CODE_UNIT_WIDTH, (pcre2_memctl *)ccontext);
-  if (allocated == NULL) return PCRE2_ERROR_NOMEMORY;
+  if (allocated == NULL)
+    {
+    *bufflenptr = 0;  /* Error offset */
+    return PCRE2_ERROR_NOMEMORY;
+    }
   *buffptr = (PCRE2_UCHAR *)(((char *)allocated) + sizeof(pcre2_memctl));
 
   use_buffer = *buffptr;
   use_length = *bufflenptr + 1;
   }
 
-/* Control should never get here. */
-
+/* Running the loop above ought to have succeeded the second time. */
+/* LCOV_EXCL_START */
+PCRE2_DEBUG_UNREACHABLE();
+*bufflenptr = 0;  /* Error offset */
 return PCRE2_ERROR_INTERNAL;
+/* LCOV_EXCL_STOP */
 }
 
 

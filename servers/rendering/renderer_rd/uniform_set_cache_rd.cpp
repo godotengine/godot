@@ -30,7 +30,28 @@
 
 #include "uniform_set_cache_rd.h"
 
+#include "core/object/class_db.h"
+#include "servers/rendering/rendering_device_binds.h"
+
 UniformSetCacheRD *UniformSetCacheRD::singleton = nullptr;
+
+void UniformSetCacheRD::_bind_methods() {
+	ClassDB::bind_static_method("UniformSetCacheRD", D_METHOD("get_cache", "shader", "set", "uniforms"), &UniformSetCacheRD::get_cache_array);
+}
+
+RID UniformSetCacheRD::get_cache_array(RID p_shader, uint32_t p_set, const TypedArray<RDUniform> &p_uniforms) {
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
+
+	for (int i = 0; i < p_uniforms.size(); i++) {
+		Ref<RDUniform> uniform = p_uniforms[i];
+		if (uniform.is_valid()) {
+			uniforms.push_back(uniform->base);
+		}
+	}
+
+	return UniformSetCacheRD::get_singleton()->get_cache_vec(p_shader, p_set, uniforms);
+}
 
 void UniformSetCacheRD::_invalidate(Cache *p_cache) {
 	if (p_cache->prev) {
@@ -50,6 +71,55 @@ void UniformSetCacheRD::_invalidate(Cache *p_cache) {
 }
 void UniformSetCacheRD::_uniform_set_invalidation_callback(void *p_userdata) {
 	singleton->_invalidate(reinterpret_cast<Cache *>(p_userdata));
+}
+
+void UniformSetCacheRD::texture_replaced_in_uniform_set(void *p_cache_userdata, RID p_old_texture, RID p_new_texture) {
+	if (!p_cache_userdata) {
+		// Not a cache-managed uniform set, nothing to do.
+		return;
+	}
+
+	Cache *found = reinterpret_cast<Cache *>(p_cache_userdata);
+
+	// Remove from old hash bucket.
+	if (found->prev) {
+		found->prev->next = found->next;
+	} else {
+		uint32_t old_table_idx = found->hash % HASH_TABLE_SIZE;
+		hash_table[old_table_idx] = found->next;
+	}
+	if (found->next) {
+		found->next->prev = found->prev;
+	}
+
+	// Patch the uniforms: replace old texture RID with new.
+	for (uint32_t i = 0; i < found->uniforms.size(); i++) {
+		RD::Uniform &u = found->uniforms[i];
+		uint32_t id_count = u.get_id_count();
+		for (uint32_t j = 0; j < id_count; j++) {
+			if (u.get_id(j) == p_old_texture) {
+				u.set_id(j, p_new_texture);
+			}
+		}
+	}
+
+	// Recompute hash.
+	uint32_t h = hash_murmur3_one_64(found->shader.get_id());
+	h = hash_murmur3_one_32(found->set, h);
+	for (uint32_t i = 0; i < found->uniforms.size(); i++) {
+		h = _hash_uniform(found->uniforms[i], h);
+	}
+	h = hash_fmix32(h);
+	found->hash = h;
+
+	// Insert into new hash bucket.
+	uint32_t new_table_idx = h % HASH_TABLE_SIZE;
+	found->prev = nullptr;
+	found->next = hash_table[new_table_idx];
+	if (hash_table[new_table_idx]) {
+		hash_table[new_table_idx]->prev = found;
+	}
+	hash_table[new_table_idx] = found;
 }
 
 UniformSetCacheRD::UniformSetCacheRD() {

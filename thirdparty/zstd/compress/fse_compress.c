@@ -25,7 +25,7 @@
 #include "../common/error_private.h"
 #define ZSTD_DEPS_NEED_MALLOC
 #define ZSTD_DEPS_NEED_MATH64
-#include "../common/zstd_deps.h"  /* ZSTD_malloc, ZSTD_free, ZSTD_memcpy, ZSTD_memset */
+#include "../common/zstd_deps.h"  /* ZSTD_memset */
 #include "../common/bits.h" /* ZSTD_highbit32 */
 
 
@@ -225,8 +225,8 @@ size_t FSE_NCountWriteBound(unsigned maxSymbolValue, unsigned tableLog)
     size_t const maxHeaderSize = (((maxSymbolValue+1) * tableLog
                                    + 4 /* bitCount initialized at 4 */
                                    + 2 /* first two symbols may use one additional bit each */) / 8)
-                                    + 1 /* round up to whole nb bytes */
-                                    + 2 /* additional two bytes for bitstream flush */;
+                                   + 1 /* round up to whole nb bytes */
+                                   + 2 /* additional two bytes for bitstream flush */;
     return maxSymbolValue ? maxHeaderSize : FSE_NCOUNTBOUND;  /* maxSymbolValue==0 ? use default */
 }
 
@@ -255,7 +255,7 @@ FSE_writeNCount_generic (void* header, size_t headerBufferSize,
     /* Init */
     remaining = tableSize+1;   /* +1 for extra accuracy */
     threshold = tableSize;
-    nbBits = tableLog+1;
+    nbBits = (int)tableLog+1;
 
     while ((symbol < alphabetSize) && (remaining>1)) {  /* stops at 1 */
         if (previousIs0) {
@@ -274,7 +274,7 @@ FSE_writeNCount_generic (void* header, size_t headerBufferSize,
             }
             while (symbol >= start+3) {
                 start+=3;
-                bitStream += 3 << bitCount;
+                bitStream += 3U << bitCount;
                 bitCount += 2;
             }
             bitStream += (symbol-start) << bitCount;
@@ -294,7 +294,7 @@ FSE_writeNCount_generic (void* header, size_t headerBufferSize,
             count++;   /* +1 for extra accuracy */
             if (count>=threshold)
                 count += max;   /* [0..max[ [max..threshold[ (...) [threshold+max 2*threshold[ */
-            bitStream += count << bitCount;
+            bitStream += (U32)count << bitCount;
             bitCount  += nbBits;
             bitCount  -= (count<max);
             previousIs0  = (count==1);
@@ -322,7 +322,8 @@ FSE_writeNCount_generic (void* header, size_t headerBufferSize,
     out[1] = (BYTE)(bitStream>>8);
     out+= (bitCount+7) /8;
 
-    return (out-ostart);
+    assert(out >= ostart);
+    return (size_t)(out-ostart);
 }
 
 

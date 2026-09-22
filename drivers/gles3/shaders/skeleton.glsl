@@ -59,7 +59,7 @@ layout(location = 10) in highp uvec4 in_bone_attrib;
 layout(location = 11) in mediump vec4 in_weight_attrib;
 #endif
 
-uniform mediump sampler2D skeleton_texture; // texunit:0
+uniform highp sampler2D skeleton_texture; // texunit:0
 #endif
 
 /* clang-format on */

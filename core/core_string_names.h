@@ -28,74 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CORE_STRING_NAMES_H
-#define CORE_STRING_NAMES_H
+#pragma once
 
 #include "core/string/string_name.h"
 
 class CoreStringNames {
-	friend void register_core_types();
-	friend void unregister_core_types();
+	inline static CoreStringNames *singleton = nullptr;
 
+public:
 	static void create() { singleton = memnew(CoreStringNames); }
 	static void free() {
 		memdelete(singleton);
 		singleton = nullptr;
 	}
 
-	CoreStringNames();
-
-public:
 	_FORCE_INLINE_ static CoreStringNames *get_singleton() { return singleton; }
 
-	static CoreStringNames *singleton;
+	const StringName free_ = "free"; // free would conflict with C++ keyword.
+	const StringName changed = "changed";
+	const StringName script = "script";
+	const StringName script_changed = "script_changed";
+	const StringName _iter_init = "_iter_init";
+	const StringName _iter_next = "_iter_next";
+	const StringName _iter_get = "_iter_get";
+	const StringName get_rid = "get_rid";
+	const StringName _to_string = "_to_string";
+	const StringName _custom_features = "_custom_features";
 
-	StringName _free;
-	StringName changed;
-	StringName _script;
-	StringName script_changed;
-	StringName ___pdcdata;
-	StringName __getvar;
-	StringName _iter_init;
-	StringName _iter_next;
-	StringName _iter_get;
-	StringName get_rid;
-	StringName _to_string;
-#ifdef TOOLS_ENABLED
-	StringName _sections_unfolded;
-#endif
-	StringName _custom_features;
+	const StringName x = "x";
+	const StringName y = "y";
+	const StringName z = "z";
+	const StringName w = "w";
+	const StringName r = "r";
+	const StringName g = "g";
+	const StringName b = "b";
+	const StringName a = "a";
+	const StringName position = "position";
+	const StringName size = "size";
+	const StringName end = "end";
+	const StringName basis = "basis";
+	const StringName origin = "origin";
+	const StringName normal = "normal";
+	const StringName d = "d";
+	const StringName h = "h";
+	const StringName s = "s";
+	const StringName v = "v";
+	const StringName r8 = "r8";
+	const StringName g8 = "g8";
+	const StringName b8 = "b8";
+	const StringName a8 = "a8";
 
-	StringName x;
-	StringName y;
-	StringName z;
-	StringName w;
-	StringName r;
-	StringName g;
-	StringName b;
-	StringName a;
-	StringName position;
-	StringName size;
-	StringName end;
-	StringName basis;
-	StringName origin;
-	StringName normal;
-	StringName d;
-	StringName h;
-	StringName s;
-	StringName v;
-	StringName r8;
-	StringName g8;
-	StringName b8;
-	StringName a8;
-
-	StringName call;
-	StringName call_deferred;
-	StringName bind;
-	StringName unbind;
-	StringName emit;
-	StringName notification;
-	StringName property_list_changed;
+	const StringName call = "call";
+	const StringName call_deferred = "call_deferred";
+	const StringName bind = "bind";
+	const StringName notification = "notification";
+	const StringName property_list_changed = "property_list_changed";
 };
 
-#endif // CORE_STRING_NAMES_H
+#define CoreStringName(m_name) CoreStringNames::get_singleton()->m_name

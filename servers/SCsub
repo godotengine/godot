@@ -1,21 +1,24 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
 env.servers_sources = []
-env.add_source_files(env.servers_sources, "*.cpp")
 
-SConscript("xr/SCsub")
-SConscript("camera/SCsub")
-SConscript("physics_3d/SCsub")
-SConscript("physics_2d/SCsub")
-SConscript("rendering/SCsub")
+env.add_source_files(env.servers_sources, "register_server_types.cpp")
+
 SConscript("audio/SCsub")
-SConscript("text/SCsub")
+SConscript("camera/SCsub")
 SConscript("debugger/SCsub")
-SConscript("extensions/SCsub")
+SConscript("display/SCsub")
 SConscript("movie_writer/SCsub")
-SConscript("navigation/SCsub")
+SConscript("rendering/SCsub")
+SConscript("text/SCsub")
+SConscript("navigation_2d/SCsub")
+SConscript("physics_2d/SCsub")
+SConscript("navigation_3d/SCsub")
+SConscript("physics_3d/SCsub")
+SConscript("xr/SCsub")
 
 lib = env.add_library("servers", env.servers_sources)
 

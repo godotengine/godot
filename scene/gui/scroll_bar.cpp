@@ -30,11 +30,12 @@
 
 #include "scroll_bar.h"
 
-#include "core/os/keyboard.h"
-#include "core/os/os.h"
-#include "core/string/print_string.h"
+#include "core/object/callable_mp.h"
+#include "core/object/class_db.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
+#include "servers/display/accessibility_server.h"
+#include "servers/display/display_server.h"
 
 bool ScrollBar::focus_by_default = false;
 
@@ -46,24 +47,60 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> m = p_event;
-	if (!m.is_valid() || drag.active) {
-		emit_signal(SNAME("scrolling"));
-	}
 
 	Ref<InputEventMouseButton> b = p_event;
+
+	Ref<InputEventPanGesture> pg = p_event;
+
+	if (pg.is_valid()) {
+		accept_event();
+
+		if (orientation == HORIZONTAL) {
+			if (pg->get_delta().x != 0) {
+				if (pg->get_delta().x < 0) {
+					scroll(-MAX(Math::abs(pg->get_delta().x), get_step()));
+				}
+				if (pg->get_delta().x > 0) {
+					scroll(MAX(pg->get_delta().x, get_step()));
+				}
+			} else if (pg->get_delta().y != 0) {
+				if (pg->get_delta().y < 0) {
+					scroll(-MAX(Math::abs(pg->get_delta().y), get_step()));
+				}
+				if (pg->get_delta().y > 0) {
+					scroll(MAX(pg->get_delta().y, get_step()));
+				}
+			}
+		} else {
+			if (pg->get_delta().y < 0) {
+				scroll(-MAX(Math::abs(pg->get_delta().y), get_step()));
+			}
+			if (pg->get_delta().y > 0) {
+				scroll(MAX(pg->get_delta().y, get_step()));
+			}
+		}
+	}
 
 	if (b.is_valid()) {
 		accept_event();
 
 		if (b->get_button_index() == MouseButton::WHEEL_DOWN && b->is_pressed()) {
-			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
-			set_value(get_value() + MAX(change, get_step()));
+			double change = ((get_page() != 0.0) ? get_page() / PAGE_DIVISOR : (get_max() - get_min()) / 16.0) * b->get_factor();
+			const double previous_value = get_value();
+			scroll(MAX(change, get_step()));
+			// If the value didn't change as a result of the scroll operation,
+			// assume we were at the end of the scrollbar already.
+			play_theme_sound(Math::is_equal_approx(get_value(), previous_value) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			accept_event();
 		}
 
 		if (b->get_button_index() == MouseButton::WHEEL_UP && b->is_pressed()) {
-			double change = get_page() != 0.0 ? get_page() / 4.0 : (get_max() - get_min()) / 16.0;
-			set_value(get_value() - MAX(change, get_step()));
+			double change = ((get_page() != 0.0) ? get_page() / PAGE_DIVISOR : (get_max() - get_min()) / 16.0) * b->get_factor();
+			const double previous_value = get_value();
+			scroll(-MAX(change, get_step()));
+			// If the value didn't change as a result of the scroll operation,
+			// assume we were at the beginning of the scrollbar already.
+			play_theme_sound(Math::is_equal_approx(get_value(), previous_value) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
 			accept_event();
 		}
 
@@ -76,27 +113,32 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			Ref<Texture2D> decr = theme_cache.decrement_icon;
 			Ref<Texture2D> incr = theme_cache.increment_icon;
 
-			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
-			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
+			Size2 decr_size = _fit_icon_size(decr->get_size()).round();
+			Size2 incr_size = _fit_icon_size(incr->get_size()).round();
+
+			double decr_len = orientation == VERTICAL ? decr_size.height : decr_size.width;
+			double incr_len = orientation == VERTICAL ? incr_size.height : incr_size.width;
 			double grabber_ofs = get_grabber_offset();
 			double grabber_size = get_grabber_size();
 			double total = orientation == VERTICAL ? get_size().height : get_size().width;
 
-			if (ofs < decr_size) {
+			if (ofs < decr_len) {
 				decr_active = true;
-				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+				play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+				scroll(-(custom_step >= 0 ? custom_step : get_step()));
 				queue_redraw();
 				return;
 			}
 
-			if (ofs > total - incr_size) {
+			if (ofs > total - incr_len) {
 				incr_active = true;
-				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+				play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+				scroll(custom_step >= 0 ? custom_step : get_step());
 				queue_redraw();
 				return;
 			}
 
-			ofs -= decr_size;
+			ofs -= decr_len + theme_cache.scroll_style->get_margin(orientation == VERTICAL ? SIDE_TOP : SIDE_LEFT);
 
 			if (ofs < grabber_ofs) {
 				if (scrolling) {
@@ -106,11 +148,13 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 					target_scroll = CLAMP(get_value() - change, get_min(), get_max() - get_page());
 				}
 
+				play_theme_sound(theme_cache.value_changed_sound);
+
 				if (smooth_scroll_enabled) {
 					scrolling = true;
-					set_physics_process_internal(true);
+					set_process_internal(true);
 				} else {
-					set_value(target_scroll);
+					scroll_to(target_scroll);
 				}
 				return;
 			}
@@ -118,6 +162,9 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			ofs -= grabber_ofs;
 
 			if (ofs < grabber_size) {
+				if (!drag.active) {
+					play_theme_sound(theme_cache.drag_started_sound);
+				}
 				drag.active = true;
 				drag.pos_at_click = grabber_ofs + ofs;
 				drag.value_at_click = get_as_ratio();
@@ -130,17 +177,23 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 					target_scroll = CLAMP(get_value() + change, get_min(), get_max() - get_page());
 				}
 
+				play_theme_sound(theme_cache.value_changed_sound);
+
 				if (smooth_scroll_enabled) {
 					scrolling = true;
-					set_physics_process_internal(true);
+					set_process_internal(true);
 				} else {
-					set_value(target_scroll);
+					scroll_to(target_scroll);
 				}
 			}
 
 		} else {
 			incr_active = false;
 			decr_active = false;
+
+			if (drag.active) {
+				play_theme_sound(theme_cache.drag_ended_sound);
+			}
 			drag.active = false;
 			queue_redraw();
 		}
@@ -152,28 +205,38 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 		if (drag.active) {
 			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
 			Ref<Texture2D> decr = theme_cache.decrement_icon;
+			Size2 decr_size = _fit_icon_size(decr->get_size()).round();
 
-			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
-			ofs -= decr_size;
+			double decr_len = orientation == VERTICAL ? decr_size.height : decr_size.width;
+			ofs -= decr_len + theme_cache.scroll_style->get_margin(orientation == VERTICAL ? SIDE_TOP : SIDE_LEFT);
 
 			double diff = (ofs - drag.pos_at_click) / get_area_size();
 
+			double prev_scroll = get_value();
+
 			set_as_ratio(drag.value_at_click + diff);
+
+			if (!Math::is_equal_approx(prev_scroll, get_value())) {
+				emit_signal(SNAME("scrolling"));
+			}
 		} else {
 			double ofs = orientation == VERTICAL ? m->get_position().y : m->get_position().x;
 			Ref<Texture2D> decr = theme_cache.decrement_icon;
 			Ref<Texture2D> incr = theme_cache.increment_icon;
 
-			double decr_size = orientation == VERTICAL ? decr->get_height() : decr->get_width();
-			double incr_size = orientation == VERTICAL ? incr->get_height() : incr->get_width();
+			Size2 decr_size = _fit_icon_size(decr->get_size()).round();
+			Size2 incr_size = _fit_icon_size(incr->get_size()).round();
+
+			double decr_len = orientation == VERTICAL ? decr_size.height : decr_size.width;
+			double incr_len = orientation == VERTICAL ? incr_size.height : incr_size.width;
 			double total = orientation == VERTICAL ? get_size().height : get_size().width;
 
 			HighlightStatus new_hilite;
 
-			if (ofs < decr_size) {
+			if (ofs < decr_len) {
 				new_hilite = HIGHLIGHT_DECR;
 
-			} else if (ofs > total - incr_size) {
+			} else if (ofs > total - incr_len) {
 				new_hilite = HIGHLIGHT_INCR;
 
 			} else {
@@ -192,38 +255,51 @@ void ScrollBar::gui_input(const Ref<InputEvent> &p_event) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
-			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+			scroll(-(custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
 			}
-			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+			scroll(custom_step >= 0 ? custom_step : get_step());
 
 		} else if (p_event->is_action("ui_up", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
 
-			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+			scroll(-(custom_step >= 0 ? custom_step : get_step()));
 
 		} else if (p_event->is_action("ui_down", true)) {
 			if (orientation != VERTICAL) {
 				return;
 			}
-			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+			scroll(custom_step >= 0 ? custom_step : get_step());
 
 		} else if (p_event->is_action("ui_home", true)) {
-			set_value(get_min());
+			play_theme_sound(Math::is_equal_approx(get_value(), get_min()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+			scroll_to(get_min());
 
 		} else if (p_event->is_action("ui_end", true)) {
-			set_value(get_max());
+			play_theme_sound(Math::is_equal_approx(get_value(), get_max()) ? theme_cache.value_change_rejected_sound : theme_cache.value_changed_sound);
+			scroll_to(get_max());
 		}
 	}
 }
 
 void ScrollBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			AccessibilityServer::get_singleton()->update_set_role(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_SCROLL_BAR);
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 
@@ -245,7 +321,8 @@ void ScrollBar::_notification(int p_what) {
 				incr = theme_cache.increment_icon;
 			}
 
-			Ref<StyleBox> bg = has_focus() ? theme_cache.scroll_focus_style : theme_cache.scroll_style;
+			Size2 decr_size = _fit_icon_size(decr->get_size()).round();
+			Size2 incr_size = _fit_icon_size(incr->get_size()).round();
 
 			Ref<StyleBox> grabber;
 			if (drag.active) {
@@ -258,23 +335,27 @@ void ScrollBar::_notification(int p_what) {
 
 			Point2 ofs;
 
-			decr->draw(ci, Point2());
+			decr->draw_rect(ci, Rect2(Point2(), decr_size));
 
 			if (orientation == HORIZONTAL) {
-				ofs.x += decr->get_width();
+				ofs.x += decr_size.width;
 			} else {
-				ofs.y += decr->get_height();
+				ofs.y += decr_size.height;
 			}
 
 			Size2 area = get_size();
 
 			if (orientation == HORIZONTAL) {
-				area.width -= incr->get_width() + decr->get_width();
+				area.width -= incr_size.width + decr_size.width;
 			} else {
-				area.height -= incr->get_height() + decr->get_height();
+				area.height -= incr_size.height + decr_size.height;
 			}
 
-			bg->draw(ci, Rect2(ofs, area));
+			if (has_focus(true)) {
+				theme_cache.scroll_focus_style->draw(ci, Rect2(ofs, area));
+			} else {
+				theme_cache.scroll_style->draw(ci, Rect2(ofs, area));
+			}
 
 			if (orientation == HORIZONTAL) {
 				ofs.width += area.width;
@@ -282,19 +363,23 @@ void ScrollBar::_notification(int p_what) {
 				ofs.height += area.height;
 			}
 
-			incr->draw(ci, ofs);
+			incr->draw_rect(ci, Rect2(ofs, incr_size));
 			Rect2 grabber_rect;
 
 			if (orientation == HORIZONTAL) {
+				int padding_top = MAX(theme_cache.padding_top, 0);
+				int padding_bottom = MAX(theme_cache.padding_bottom, 0);
 				grabber_rect.size.width = get_grabber_size();
-				grabber_rect.size.height = get_size().height;
-				grabber_rect.position.y = 0;
-				grabber_rect.position.x = get_grabber_offset() + decr->get_width() + bg->get_margin(SIDE_LEFT);
+				grabber_rect.size.height = get_size().height - padding_top - padding_bottom;
+				grabber_rect.position.y = padding_top;
+				grabber_rect.position.x = get_grabber_offset() + decr_size.width + theme_cache.scroll_style->get_margin(SIDE_LEFT);
 			} else {
-				grabber_rect.size.width = get_size().width;
+				int padding_left = MAX(theme_cache.padding_left, 0);
+				int padding_right = MAX(theme_cache.padding_right, 0);
+				grabber_rect.size.width = get_size().width - padding_left - padding_right;
 				grabber_rect.size.height = get_grabber_size();
-				grabber_rect.position.y = get_grabber_offset() + decr->get_height() + bg->get_margin(SIDE_TOP);
-				grabber_rect.position.x = 0;
+				grabber_rect.position.y = get_grabber_offset() + decr_size.height + theme_cache.scroll_style->get_margin(SIDE_TOP);
+				grabber_rect.position.x = padding_left;
 			}
 
 			grabber->draw(ci, grabber_rect);
@@ -307,43 +392,43 @@ void ScrollBar::_notification(int p_what) {
 			}
 
 			if (drag_node) {
-				drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-				drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
+				drag_node->connect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
+				drag_node->connect(SceneStringName(tree_exiting), callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
 			if (drag_node) {
-				drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-				drag_node->disconnect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit));
+				drag_node->disconnect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
+				drag_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &ScrollBar::_drag_node_exit));
 			}
 
 			drag_node = nullptr;
 		} break;
 
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (scrolling) {
 				if (get_value() != target_scroll) {
 					double target = target_scroll - get_value();
-					double dist = abs(target);
-					double vel = ((target / dist) * 500) * get_physics_process_delta_time();
+					double dist = Math::abs(target);
+					double vel = ((target / dist) * 500) * get_process_delta_time();
 
 					if (Math::abs(vel) >= dist) {
-						set_value(target_scroll);
+						scroll_to(target_scroll);
 						scrolling = false;
-						set_physics_process_internal(false);
+						set_process_internal(false);
 					} else {
-						set_value(get_value() + vel);
+						scroll(vel);
 					}
 				} else {
 					scrolling = false;
-					set_physics_process_internal(false);
+					set_process_internal(false);
 				}
 
 			} else if (drag_node_touching) {
 				if (drag_node_touching_deaccel) {
 					Vector2 pos = Vector2(orientation == HORIZONTAL ? get_value() : 0, orientation == VERTICAL ? get_value() : 0);
-					pos += drag_node_speed * get_physics_process_delta_time();
+					pos += drag_node_speed * get_process_delta_time();
 
 					bool turnoff = false;
 
@@ -358,11 +443,11 @@ void ScrollBar::_notification(int p_what) {
 							turnoff = true;
 						}
 
-						set_value(pos.x);
+						scroll_to(pos.x);
 
 						float sgn_x = drag_node_speed.x < 0 ? -1 : 1;
 						float val_x = Math::abs(drag_node_speed.x);
-						val_x -= 1000 * get_physics_process_delta_time();
+						val_x -= 1000 * get_process_delta_time();
 
 						if (val_x < 0) {
 							turnoff = true;
@@ -381,11 +466,11 @@ void ScrollBar::_notification(int p_what) {
 							turnoff = true;
 						}
 
-						set_value(pos.y);
+						scroll_to(pos.y);
 
 						float sgn_y = drag_node_speed.y < 0 ? -1 : 1;
 						float val_y = Math::abs(drag_node_speed.y);
-						val_y -= 1000 * get_physics_process_delta_time();
+						val_y -= 1000 * get_process_delta_time();
 
 						if (val_y < 0) {
 							turnoff = true;
@@ -394,7 +479,7 @@ void ScrollBar::_notification(int p_what) {
 					}
 
 					if (turnoff) {
-						set_physics_process_internal(false);
+						set_process_internal(false);
 						drag_node_touching = false;
 						drag_node_touching_deaccel = false;
 					}
@@ -403,10 +488,10 @@ void ScrollBar::_notification(int p_what) {
 					if (time_since_motion == 0 || time_since_motion > 0.1) {
 						Vector2 diff = drag_node_accum - last_drag_node_accum;
 						last_drag_node_accum = drag_node_accum;
-						drag_node_speed = diff / get_physics_process_delta_time();
+						drag_node_speed = diff / get_process_delta_time();
 					}
 
-					time_since_motion += get_physics_process_delta_time();
+					time_since_motion += get_process_delta_time();
 				}
 			}
 		} break;
@@ -469,32 +554,53 @@ double ScrollBar::get_area_size() const {
 }
 
 double ScrollBar::get_grabber_offset() const {
-	return (get_area_size()) * get_as_ratio();
+	return get_area_size() * get_as_ratio();
 }
 
 Size2 ScrollBar::get_minimum_size() const {
 	Ref<Texture2D> incr = theme_cache.increment_icon;
 	Ref<Texture2D> decr = theme_cache.decrement_icon;
+	Size2 incr_size = _fit_icon_size(incr->get_size()).round();
+	Size2 decr_size = _fit_icon_size(decr->get_size()).round();
+
 	Ref<StyleBox> bg = theme_cache.scroll_style;
 	Size2 minsize;
 
 	if (orientation == VERTICAL) {
-		minsize.width = MAX(incr->get_size().width, bg->get_minimum_size().width);
-		minsize.height += incr->get_size().height;
-		minsize.height += decr->get_size().height;
+		int padding_left = MAX(theme_cache.padding_left, 0);
+		int padding_right = MAX(theme_cache.padding_right, 0);
+		minsize.width = MAX(incr_size.width, bg->get_minimum_size().width);
+		minsize.width += padding_left + padding_right;
+		minsize.height += incr_size.height;
+		minsize.height += decr_size.height;
 		minsize.height += bg->get_minimum_size().height;
 		minsize.height += get_grabber_min_size();
 	}
 
 	if (orientation == HORIZONTAL) {
-		minsize.height = MAX(incr->get_size().height, bg->get_minimum_size().height);
-		minsize.width += incr->get_size().width;
-		minsize.width += decr->get_size().width;
+		int padding_top = MAX(theme_cache.padding_top, 0);
+		int padding_bottom = MAX(theme_cache.padding_bottom, 0);
+		minsize.height = MAX(incr_size.height, bg->get_minimum_size().height);
+		minsize.height += padding_top + padding_bottom;
+		minsize.width += incr_size.width;
+		minsize.width += decr_size.width;
 		minsize.width += bg->get_minimum_size().width;
 		minsize.width += get_grabber_min_size();
 	}
 
 	return minsize;
+}
+
+void ScrollBar::scroll(double p_amount) {
+	scroll_to(get_value() + p_amount);
+}
+
+void ScrollBar::scroll_to(double p_position) {
+	double prev_scroll = get_value();
+	set_value(p_position);
+	if (!Math::is_equal_approx(prev_scroll, get_value())) {
+		emit_signal(SNAME("scrolling"));
+	}
 }
 
 void ScrollBar::set_custom_step(float p_custom_step) {
@@ -507,7 +613,7 @@ float ScrollBar::get_custom_step() const {
 
 void ScrollBar::_drag_node_exit() {
 	if (drag_node) {
-		drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
+		drag_node->disconnect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
 	}
 	drag_node = nullptr;
 }
@@ -517,24 +623,24 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 		return;
 	}
 
-	Ref<InputEventMouseButton> mb = p_input;
+	if (p_input->get_device() == InputEvent::DEVICE_ID_EMULATION) {
+		return;
+	}
 
-	if (mb.is_valid()) {
-		if (mb->get_button_index() != MouseButton::LEFT) {
-			return;
-		}
+	Ref<InputEventScreenTouch> touch = p_input;
 
-		if (mb->is_pressed()) {
+	if (touch.is_valid()) {
+		if (touch->is_pressed()) {
 			drag_node_speed = Vector2();
 			drag_node_accum = Vector2();
 			last_drag_node_accum = Vector2();
 			drag_node_from = Vector2(orientation == HORIZONTAL ? get_value() : 0, orientation == VERTICAL ? get_value() : 0);
-			drag_node_touching = DisplayServer::get_singleton()->is_touchscreen_available();
+			drag_node_touching = true;
 			drag_node_touching_deaccel = false;
 			time_since_motion = 0;
 
 			if (drag_node_touching) {
-				set_physics_process_internal(true);
+				set_process_internal(true);
 				time_since_motion = 0;
 			}
 
@@ -543,7 +649,7 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 				if (drag_node_speed == Vector2()) {
 					drag_node_touching_deaccel = false;
 					drag_node_touching = false;
-					set_physics_process_internal(false);
+					set_process_internal(false);
 				} else {
 					drag_node_touching_deaccel = true;
 				}
@@ -551,21 +657,21 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 		}
 	}
 
-	Ref<InputEventMouseMotion> mm = p_input;
+	Ref<InputEventScreenDrag> s_drag = p_input;
 
-	if (mm.is_valid()) {
+	if (s_drag.is_valid()) {
 		if (drag_node_touching && !drag_node_touching_deaccel) {
-			Vector2 motion = mm->get_relative();
+			Vector2 motion = s_drag->get_relative();
 
 			drag_node_accum -= motion;
 			Vector2 diff = drag_node_from + drag_node_accum;
 
 			if (orientation == HORIZONTAL) {
-				set_value(diff.x);
+				scroll_to(diff.x);
 			}
 
 			if (orientation == VERTICAL) {
-				set_value(diff.y);
+				scroll_to(diff.y);
 			}
 
 			time_since_motion = 0;
@@ -573,11 +679,24 @@ void ScrollBar::_drag_node_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
+Size2 ScrollBar::_fit_icon_size(const Size2 &p_size) const {
+	int max_size = theme_cache.icon_max_size;
+
+	int max_dimension = MAX(p_size.width, p_size.height);
+	if (max_size <= 0 || max_dimension <= max_size) {
+		return p_size;
+	}
+
+	double scale = (double)max_size / max_dimension;
+
+	return Size2((int)(p_size.width * scale), (int)(p_size.height * scale));
+}
+
 void ScrollBar::set_drag_node(const NodePath &p_path) {
 	if (is_inside_tree()) {
 		if (drag_node) {
-			drag_node->disconnect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-			drag_node->disconnect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit));
+			drag_node->disconnect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
+			drag_node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &ScrollBar::_drag_node_exit));
 		}
 	}
 
@@ -591,8 +710,8 @@ void ScrollBar::set_drag_node(const NodePath &p_path) {
 		}
 
 		if (drag_node) {
-			drag_node->connect("gui_input", callable_mp(this, &ScrollBar::_drag_node_input));
-			drag_node->connect("tree_exiting", callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
+			drag_node->connect(SceneStringName(gui_input), callable_mp(this, &ScrollBar::_drag_node_input));
+			drag_node->connect(SceneStringName(tree_exiting), callable_mp(this, &ScrollBar::_drag_node_exit), CONNECT_ONE_SHOT);
 		}
 	}
 }
@@ -633,6 +752,13 @@ void ScrollBar::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_icon, "decrement");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_hl_icon, "decrement_highlight");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, ScrollBar, decrement_pressed_icon, "decrement_pressed");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ScrollBar, icon_max_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, drag_started_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, drag_ended_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, value_changed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ScrollBar, value_change_rejected_sound);
 }
 
 ScrollBar::ScrollBar(Orientation p_orientation) {
@@ -640,9 +766,21 @@ ScrollBar::ScrollBar(Orientation p_orientation) {
 
 	if (focus_by_default) {
 		set_focus_mode(FOCUS_ALL);
+	} else {
+		set_focus_mode(FOCUS_ACCESSIBILITY);
 	}
 	set_step(0);
 }
 
 ScrollBar::~ScrollBar() {
+}
+
+void VScrollBar::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, VScrollBar, padding_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, VScrollBar, padding_right);
+}
+
+void HScrollBar::_bind_methods() {
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, HScrollBar, padding_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, HScrollBar, padding_bottom);
 }

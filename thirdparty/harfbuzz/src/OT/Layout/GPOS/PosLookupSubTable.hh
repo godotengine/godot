@@ -37,15 +37,15 @@ struct PosLookupSubTable
   {
     TRACE_DISPATCH (this, lookup_type);
     switch (lookup_type) {
-    case Single:                return_trace (u.single.dispatch (c, std::forward<Ts> (ds)...));
-    case Pair:                  return_trace (u.pair.dispatch (c, std::forward<Ts> (ds)...));
-    case Cursive:               return_trace (u.cursive.dispatch (c, std::forward<Ts> (ds)...));
-    case MarkBase:              return_trace (u.markBase.dispatch (c, std::forward<Ts> (ds)...));
-    case MarkLig:               return_trace (u.markLig.dispatch (c, std::forward<Ts> (ds)...));
-    case MarkMark:              return_trace (u.markMark.dispatch (c, std::forward<Ts> (ds)...));
-    case Context:               return_trace (u.context.dispatch (c, std::forward<Ts> (ds)...));
-    case ChainContext:          return_trace (u.chainContext.dispatch (c, std::forward<Ts> (ds)...));
-    case Extension:             return_trace (u.extension.dispatch (c, std::forward<Ts> (ds)...));
+    case Single:                hb_barrier (); return_trace (u.single.dispatch (c, std::forward<Ts> (ds)...));
+    case Pair:                  hb_barrier (); return_trace (u.pair.dispatch (c, std::forward<Ts> (ds)...));
+    case Cursive:               hb_barrier (); return_trace (u.cursive.dispatch (c, std::forward<Ts> (ds)...));
+    case MarkBase:              hb_barrier (); return_trace (u.markBase.dispatch (c, std::forward<Ts> (ds)...));
+    case MarkLig:               hb_barrier (); return_trace (u.markLig.dispatch (c, std::forward<Ts> (ds)...));
+    case MarkMark:              hb_barrier (); return_trace (u.markMark.dispatch (c, std::forward<Ts> (ds)...));
+    case Context:               hb_barrier (); return_trace (u.context.dispatch (c, std::forward<Ts> (ds)...));
+    case ChainContext:          hb_barrier (); return_trace (u.chainContext.dispatch (c, std::forward<Ts> (ds)...));
+    case Extension:             hb_barrier (); return_trace (u.extension.dispatch (c, std::forward<Ts> (ds)...));
     default:                    return_trace (c->default_return_value ());
     }
   }

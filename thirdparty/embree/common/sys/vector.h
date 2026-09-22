@@ -5,9 +5,12 @@
 
 #include "alloc.h"
 #include <algorithm>
+#include <type_traits>
 
 namespace embree
 {
+  class Device;
+  
    template<typename T, typename allocator>
     class vector_t
     {
@@ -25,6 +28,12 @@ namespace embree
       template<typename M>
       __forceinline explicit vector_t (M alloc, size_t sz) 
       : alloc(alloc), size_active(0), size_alloced(0), items(nullptr) { internal_resize_init(sz); }
+
+      __forceinline vector_t (Device* alloc)
+        : vector_t(alloc,0) {}
+
+      __forceinline vector_t(void* data, size_t bytes)
+        : size_active(0), size_alloced(bytes/sizeof(T)), items((T*)data) {}
     
       __forceinline ~vector_t() {
         clear();
@@ -63,6 +72,10 @@ namespace embree
         size_alloced = other.size_alloced; other.size_alloced = 0;
         items = other.items; other.items = nullptr;
         return *this;
+      }
+
+      __forceinline allocator& getAlloc() {
+	return alloc;
       }
 
       /********************** Iterators  ****************************/
@@ -112,8 +125,10 @@ namespace embree
 
       __forceinline       T* data()       { return items; };
       __forceinline const T* data() const { return items; };
+      
+      /* dangerous only use if you know what you're doing */
+      __forceinline void setDataPtr(T* data) { items = data; }
 
-     
       /******************** Modifiers **************************/
 
       __forceinline void push_back(const T& nt) 
@@ -215,6 +230,10 @@ namespace embree
         if (new_alloced <= size_alloced) 
           return size_alloced;
 
+        /* if current size is 0 allocate exact requested size */
+        if (size_alloced == 0)
+          return new_alloced;
+
         /* resize to next power of 2 otherwise */
         size_t new_size_alloced = size_alloced;
         while (new_size_alloced < new_alloced) {
@@ -237,8 +256,12 @@ namespace embree
   /*! vector class that performs aligned allocations */
   template<typename T>
     using avector = vector_t<T,aligned_allocator<T,std::alignment_of<T>::value> >;
-  
+
   /*! vector class that performs OS allocations */
   template<typename T>
     using ovector = vector_t<T,os_allocator<T> >;
+
+  /*! vector class with externally managed data buffer */
+  template<typename T>
+    using evector = vector_t<T,no_allocator<T>>;
 }

@@ -28,19 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_DOCUMENT_EXTENSION_CONVERT_IMPORTER_MESH_H
-#define GLTF_DOCUMENT_EXTENSION_CONVERT_IMPORTER_MESH_H
+#pragma once
 
 #include "gltf_document_extension.h"
+
+class MeshInstance3D;
 
 class GLTFDocumentExtensionConvertImporterMesh : public GLTFDocumentExtension {
 	GDCLASS(GLTFDocumentExtensionConvertImporterMesh, GLTFDocumentExtension);
 
 protected:
-	static void _bind_methods();
+	static void _copy_meta(Object *p_src_object, Object *p_dst_object);
 
 public:
+	static MeshInstance3D *convert_importer_mesh_instance_3d(ImporterMeshInstance3D *p_importer_mesh_instance_3d);
 	Error import_post(Ref<GLTFState> p_state, Node *p_root) override;
 };
-
-#endif // GLTF_DOCUMENT_EXTENSION_CONVERT_IMPORTER_MESH_H

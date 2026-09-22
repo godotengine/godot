@@ -503,7 +503,7 @@ public:
         case EbtInt:    returnValue.setIConst(iConst % constant.iConst); break;
         case EbtUint:   returnValue.setUConst(uConst % constant.uConst); break;
         case EbtInt8:   returnValue.setI8Const(i8Const % constant.i8Const); break;
-        case EbtInt16:  returnValue.setI8Const(i8Const % constant.i16Const); break;
+        case EbtInt16:  returnValue.setI16Const(i16Const % constant.i16Const); break;
         case EbtInt64:  returnValue.setI64Const(i64Const % constant.i64Const); break;
         case EbtUint8:  returnValue.setU8Const(u8Const % constant.u8Const); break;
         case EbtUint16: returnValue.setU16Const(u16Const % constant.u16Const); break;
@@ -897,6 +897,17 @@ public:
     TConstUnionArray(int size, const TConstUnion& val)
     {
         unionArray = new TConstUnionVector(size, val);
+    }
+
+    TConstUnionArray* clone() const
+    {
+        TConstUnionArray *copy = new TConstUnionArray(size());
+        if (unionArray) {
+            for (const auto i : *unionArray) {
+                copy->unionArray->push_back(i);
+            }
+        }
+        return copy;
     }
 
     int size() const { return unionArray ? (int)unionArray->size() : 0; }

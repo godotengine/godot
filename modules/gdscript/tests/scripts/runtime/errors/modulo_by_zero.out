@@ -1,0 +1,8 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR at runtime/errors/modulo_by_zero.gd:3 on subtest_int(): Modulo by zero error in operator '%'.
+>> SCRIPT ERROR at runtime/errors/modulo_by_zero.gd:8 on subtest_vector2i(): Modulo by zero error in operator '%'.
+>> SCRIPT ERROR at runtime/errors/modulo_by_zero.gd:13 on subtest_vector3i(): Modulo by zero error in operator '%'.
+>> SCRIPT ERROR at runtime/errors/modulo_by_zero.gd:18 on subtest_vector4i(): Modulo by zero error in operator '%'.
+>> SCRIPT ERROR at runtime/errors/modulo_by_zero.gd:23 on subtest_vector2i_mod_int(): Modulo by zero error in operator '%'.
+>> SCRIPT ERROR at runtime/errors/modulo_by_zero.gd:28 on subtest_vector3i_mod_int(): Modulo by zero error in operator '%'.
+>> SCRIPT ERROR at runtime/errors/modulo_by_zero.gd:33 on subtest_vector4i_mod_int(): Modulo by zero error in operator '%'.

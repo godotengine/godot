@@ -28,19 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SEMAPHORE_H
-#define SEMAPHORE_H
+#pragma once
 
-#include "core/error/error_list.h"
 #include "core/typedefs.h"
+
+#ifdef THREADS_ENABLED
+
 #ifdef DEBUG_ENABLED
 #include "core/error/error_macros.h"
 #endif
 
 #ifdef MINGW_ENABLED
 #define MINGW_STDTHREAD_REDUNDANCY_WARNING
-#include "thirdparty/mingw-std-threads/mingw.condition_variable.h"
-#include "thirdparty/mingw-std-threads/mingw.mutex.h"
+#include <thirdparty/mingw-std-threads/mingw.condition_variable.h>
+#include <thirdparty/mingw-std-threads/mingw.mutex.h>
 #define THREADING_NAMESPACE mingw_stdthread
 #else
 #include <condition_variable>
@@ -58,10 +59,12 @@ private:
 #endif
 
 public:
-	_ALWAYS_INLINE_ void post() const {
+	_ALWAYS_INLINE_ void post(uint32_t p_count = 1) const {
 		std::lock_guard lock(mutex);
-		count++;
-		condition.notify_one();
+		count += p_count;
+		for (uint32_t i = 0; i < p_count; ++i) {
+			condition.notify_one();
+		}
 	}
 
 	_ALWAYS_INLINE_ void wait() const {
@@ -130,4 +133,15 @@ public:
 #endif
 };
 
-#endif // SEMAPHORE_H
+#else // No threads.
+
+class Semaphore {
+public:
+	void post(uint32_t p_count = 1) const {}
+	void wait() const {}
+	bool try_wait() const {
+		return true;
+	}
+};
+
+#endif // THREADS_ENABLED

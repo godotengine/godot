@@ -30,6 +30,7 @@ ship it.
  * 2. At some point or another the code relied on the byte order of a uint32_t, this has been fixed
  * 3. Output has been reordered to struct { uint8_t r, g, b, a; } precisely in accordance with the function names
  * 4. Removing unused 'dither' parameter
+ * 5. Fix last line not being converted (and therefore was transparent)
  */
 
 #ifndef YUV2RGB_H
@@ -848,7 +849,6 @@ static void yuv422_2_rgb8888(uint8_t  *dst_ptr,
 		      int32_t   uv_span,
 		      int32_t   dst_span)
 {
-    height -= 1;
     while (height > 0)
     {
 	height -= width<<16;
@@ -1020,7 +1020,6 @@ static void yuv444_2_rgb8888(uint8_t  *dst_ptr,
 		      int32_t   uv_span,
 		      int32_t   dst_span)
 {
-    height -= 1;
     while (height > 0)
     {
 	height -= width<<16;

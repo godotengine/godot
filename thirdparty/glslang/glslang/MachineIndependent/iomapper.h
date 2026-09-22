@@ -37,7 +37,6 @@
 #define _IOMAPPER_INCLUDED
 
 #include <cstdint>
-#include "LiveTraverser.h"
 #include <unordered_map>
 #include <unordered_set>
 //
@@ -49,84 +48,7 @@ class TInfoSink;
 namespace glslang {
 
 class TIntermediate;
-struct TVarEntryInfo {
-    long long id;
-    TIntermSymbol* symbol;
-    bool live;
-    bool upgradedToPushConstant;
-    int newBinding;
-    int newSet;
-    int newLocation;
-    int newComponent;
-    int newIndex;
-    EShLanguage stage;
-
-    void clearNewAssignments() {
-        upgradedToPushConstant = false;
-        newBinding = -1;
-        newSet = -1;
-        newLocation = -1;
-        newComponent = -1;
-        newIndex = -1;
-    }
-
-    struct TOrderById {
-        inline bool operator()(const TVarEntryInfo& l, const TVarEntryInfo& r) { return l.id < r.id; }
-    };
-
-    struct TOrderByPriority {
-        // ordering:
-        // 1) has both binding and set
-        // 2) has binding but no set
-        // 3) has no binding but set
-        // 4) has no binding and no set
-        inline bool operator()(const TVarEntryInfo& l, const TVarEntryInfo& r) {
-            const TQualifier& lq = l.symbol->getQualifier();
-            const TQualifier& rq = r.symbol->getQualifier();
-
-            // simple rules:
-            // has binding gives 2 points
-            // has set gives 1 point
-            // who has the most points is more important.
-            int lPoints = (lq.hasBinding() ? 2 : 0) + (lq.hasSet() ? 1 : 0);
-            int rPoints = (rq.hasBinding() ? 2 : 0) + (rq.hasSet() ? 1 : 0);
-
-            if (lPoints == rPoints)
-                return l.id < r.id;
-            return lPoints > rPoints;
-        }
-    };
-
-    struct TOrderByPriorityAndLive {
-        // ordering:
-        // 1) do live variables first
-        // 2) has both binding and set
-        // 3) has binding but no set
-        // 4) has no binding but set
-        // 5) has no binding and no set
-        inline bool operator()(const TVarEntryInfo& l, const TVarEntryInfo& r) {
-
-            const TQualifier& lq = l.symbol->getQualifier();
-            const TQualifier& rq = r.symbol->getQualifier();
-
-            // simple rules:
-            // has binding gives 2 points
-            // has set gives 1 point
-            // who has the most points is more important.
-            int lPoints = (lq.hasBinding() ? 2 : 0) + (lq.hasSet() ? 1 : 0);
-            int rPoints = (rq.hasBinding() ? 2 : 0) + (rq.hasSet() ? 1 : 0);
-
-            if (l.live != r.live)
-                return l.live > r.live;
-
-            if (lPoints != rPoints)
-                return lPoints > rPoints;
-
-            return l.id < r.id;
-        }
-    };
-};
-
+struct TVarEntryInfo;
 // Base class for shared TIoMapResolver services, used by several derivations.
 struct TDefaultIoResolverBase : public glslang::TIoMapResolver {
 public:
@@ -198,12 +120,12 @@ protected:
     }
 
     static bool isTextureType(const glslang::TType& type) {
-        return (type.getBasicType() == glslang::EbtSampler &&
+        return (type.getBasicType() == glslang::EbtSampler && !type.getSampler().isCombined() &&
                 (type.getSampler().isTexture() || type.getSampler().isSubpass()));
     }
 
     static bool isUboType(const glslang::TType& type) {
-        return type.getQualifier().storage == EvqUniform;
+        return type.getQualifier().storage == EvqUniform && type.isStruct();
     }
 
     static bool isImageType(const glslang::TType& type) {
@@ -212,6 +134,24 @@ protected:
 
     static bool isSsboType(const glslang::TType& type) {
         return type.getQualifier().storage == EvqBuffer;
+    }
+
+    static bool isCombinedSamplerType(const glslang::TType& type) {
+        return type.getBasicType() == glslang::EbtSampler && type.getSampler().isCombined();
+    }
+
+    static bool isAsType(const glslang::TType& type) {
+        return type.getBasicType() == glslang::EbtAccStruct;
+    }
+
+    static bool isTensorType(const glslang::TType& type) {
+        return type.isTensorARM();
+    }
+
+    static bool isValidGlslType(const glslang::TType& type) {
+        // at most one must be true
+        return (isSamplerType(type) + isTextureType(type) + isUboType(type) + isImageType(type) +
+            isSsboType(type) + isCombinedSamplerType(type) + isAsType(type) + isTensorType(type)) <= 1;
     }
 
     // Return true if this is a SRV (shader resource view) type:
@@ -267,82 +207,22 @@ protected:
 
 typedef std::map<TString, TVarEntryInfo> TVarLiveMap;
 
-// override function "operator=", if a vector<const _Kty, _Ty> being sort,
-// when use vc++, the sort function will call :
-// pair& operator=(const pair<_Other1, _Other2>& _Right)
-// {
-//     first = _Right.first;
-//     second = _Right.second;
-//     return (*this);
-// }
-// that will make a const type handing on left.
-// override this function can avoid a compiler error.
-// In the future, if the vc++ compiler can handle such a situation,
-// this part of the code will be removed.
-struct TVarLivePair : std::pair<const TString, TVarEntryInfo> {
-    TVarLivePair(const std::pair<const TString, TVarEntryInfo>& _Right) : pair(_Right.first, _Right.second) {}
-    TVarLivePair& operator=(const TVarLivePair& _Right) {
-        const_cast<TString&>(first) = _Right.first;
-        second = _Right.second;
-        return (*this);
-    }
-    TVarLivePair(const TVarLivePair& src) : pair(src) { }
-};
-typedef std::vector<TVarLivePair> TVarLiveVector;
-
-// I/O mapper
-class TIoMapper {
-public:
-    TIoMapper() {}
-    virtual ~TIoMapper() {}
-    // grow the reflection stage by stage
-    bool virtual addStage(EShLanguage, TIntermediate&, TInfoSink&, TIoMapResolver*);
-    bool virtual doMap(TIoMapResolver*, TInfoSink&) { return true; }
-};
-
 // I/O mapper for GLSL
 class TGlslIoMapper : public TIoMapper {
 public:
-    TGlslIoMapper() {
-        memset(inVarMaps,     0, sizeof(TVarLiveMap*)   * (EShLangCount + 1));
-        memset(outVarMaps,    0, sizeof(TVarLiveMap*)   * (EShLangCount + 1));
-        memset(uniformVarMap, 0, sizeof(TVarLiveMap*)   * (EShLangCount + 1));
-        memset(intermediates, 0, sizeof(TIntermediate*) * (EShLangCount + 1));
-        profile = ENoProfile;
-        version = 0;
-        autoPushConstantMaxSize = 128;
-        autoPushConstantBlockPacking = ElpStd430;
-    }
-    virtual ~TGlslIoMapper() {
-        for (size_t stage = 0; stage < EShLangCount; stage++) {
-            if (inVarMaps[stage] != nullptr) {
-                delete inVarMaps[stage];
-                inVarMaps[stage] = nullptr;
-            }
-            if (outVarMaps[stage] != nullptr) {
-                delete outVarMaps[stage];
-                outVarMaps[stage] = nullptr;
-            }
-            if (uniformVarMap[stage] != nullptr) {
-                delete uniformVarMap[stage];
-                uniformVarMap[stage] = nullptr;
-            }
-            if (intermediates[stage] != nullptr)
-                intermediates[stage] = nullptr;
-        }
-    }
+    TGlslIoMapper();
+    virtual ~TGlslIoMapper();
     // If set, the uniform block with the given name will be changed to be backed by
     // push_constant if it's size is <= maxSize
-    void setAutoPushConstantBlock(const char* name, unsigned int maxSize, TLayoutPacking packing) {
+    bool setAutoPushConstantBlock(const char* name, unsigned int maxSize, TLayoutPacking packing) override {
         autoPushConstantBlockName = name;
         autoPushConstantMaxSize = maxSize;
         autoPushConstantBlockPacking = packing;
+        return true;
     }
     // grow the reflection stage by stage
     bool addStage(EShLanguage, TIntermediate&, TInfoSink&, TIoMapResolver*) override;
     bool doMap(TIoMapResolver*, TInfoSink&) override;
-    TVarLiveMap *inVarMaps[EShLangCount], *outVarMaps[EShLangCount],
-                *uniformVarMap[EShLangCount];
     TIntermediate* intermediates[EShLangCount];
     bool hadError = false;
     EProfile profile;
@@ -352,6 +232,8 @@ private:
     TString autoPushConstantBlockName;
     unsigned int autoPushConstantMaxSize;
     TLayoutPacking autoPushConstantBlockPacking;
+    TVarLiveMap *inVarMaps[EShLangCount], *outVarMaps[EShLangCount],
+                *uniformVarMap[EShLangCount];
 };
 
 } // end namespace glslang

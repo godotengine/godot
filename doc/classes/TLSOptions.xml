@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TLSOptions" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="TLSOptions" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		TLS configuration for clients and servers.
 	</brief_description>
@@ -38,6 +38,42 @@
 			<description>
 				Creates an [b]unsafe[/b] TLS client configuration where certificate validation is optional. You can optionally provide a valid [param trusted_chain], but the common name of the certificates will never be checked. Using this configuration for purposes other than testing [b]is not recommended[/b].
 				[b]Note:[/b] On the Web platform, TLS verification is always enforced against the CA list of the web browser. This is considered a security feature.
+			</description>
+		</method>
+		<method name="get_common_name_override" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the common name (domain name) override specified when creating with [method TLSOptions.client].
+			</description>
+		</method>
+		<method name="get_own_certificate" qualifiers="const">
+			<return type="X509Certificate" />
+			<description>
+				Returns the [X509Certificate] specified when creating with [method TLSOptions.server].
+			</description>
+		</method>
+		<method name="get_private_key" qualifiers="const">
+			<return type="CryptoKey" />
+			<description>
+				Returns the [CryptoKey] specified when creating with [method TLSOptions.server].
+			</description>
+		</method>
+		<method name="get_trusted_ca_chain" qualifiers="const">
+			<return type="X509Certificate" />
+			<description>
+				Returns the CA [X509Certificate] chain specified when creating with [method TLSOptions.client] or [method TLSOptions.client_unsafe].
+			</description>
+		</method>
+		<method name="is_server" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if created with [method TLSOptions.server], [code]false[/code] otherwise.
+			</description>
+		</method>
+		<method name="is_unsafe_client" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if created with [method TLSOptions.client_unsafe], [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="server" qualifiers="static">

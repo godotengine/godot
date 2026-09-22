@@ -4,10 +4,10 @@
 		A 3D axis-aligned bounding box.
 	</brief_description>
 	<description>
-		[AABB] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
-		It uses floating-point coordinates. The 2D counterpart to [AABB] is [Rect2].
-		Negative values for [member size] are not supported and will not work for most methods. Use [method abs] to get an AABB with a positive size.
-		[b]Note:[/b] Unlike [Rect2], [AABB] does not have a variant that uses integer coordinates.
+		The [AABB] built-in [Variant] type represents an axis-aligned bounding box in a 3D space. It is defined by its [member position] and [member size], which are [Vector3]. It is frequently used for fast overlap tests (see [method intersects]). Although [AABB] itself is axis-aligned, it can be combined with [Transform3D] to represent a rotated or skewed bounding box.
+		It uses floating-point coordinates. The 2D counterpart to [AABB] is [Rect2]. There is no version of [AABB] that uses integer coordinates.
+		[b]Note:[/b] Negative values for [member size] are not supported. With negative size, most [AABB] methods do not work correctly. Use [method abs] to get an equivalent [AABB] with a non-negative size.
+		[b]Note:[/b] In a boolean context, an [AABB] evaluates to [code]false[/code] if both [member position] and [member size] are zero (equal to [constant Vector3.ZERO]). Otherwise, it always evaluates to [code]true[/code].
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
@@ -18,7 +18,7 @@
 		<constructor name="AABB">
 			<return type="AABB" />
 			<description>
-				Constructs a default-initialized [AABB] with default (zero) values of [member position] and [member size].
+				Constructs an [AABB] with its [member position] and [member size] set to [constant Vector3.ZERO].
 			</description>
 		</constructor>
 		<constructor name="AABB">
@@ -33,7 +33,7 @@
 			<param index="0" name="position" type="Vector3" />
 			<param index="1" name="size" type="Vector3" />
 			<description>
-				Constructs an [AABB] from a position and size.
+				Constructs an [AABB] by [param position] and [param size].
 			</description>
 		</constructor>
 	</constructors>
@@ -41,34 +41,78 @@
 		<method name="abs" qualifiers="const">
 			<return type="AABB" />
 			<description>
-				Returns an AABB with equivalent position and size, modified so that the most-negative corner is the origin and the size is positive.
+				Returns an [AABB] equivalent to this bounding box, with its width, height, and depth modified to be non-negative values.
+				[codeblocks]
+				[gdscript]
+				var box = AABB(Vector3(5, 0, 5), Vector3(-20, -10, -5))
+				var absolute = box.abs()
+				print(absolute.position) # Prints (-15.0, -10.0, 0.0)
+				print(absolute.size)     # Prints (20.0, 10.0, 5.0)
+				[/gdscript]
+				[csharp]
+				var box = new Aabb(new Vector3(5, 0, 5), new Vector3(-20, -10, -5));
+				var absolute = box.Abs();
+				GD.Print(absolute.Position); // Prints (-15, -10, 0)
+				GD.Print(absolute.Size);     // Prints (20, 10, 5)
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] It's recommended to use this method when [member size] is negative, as most other methods in Godot assume that the [member size]'s components are greater than [code]0[/code].
 			</description>
 		</method>
 		<method name="encloses" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="with" type="AABB" />
 			<description>
-				Returns [code]true[/code] if this [AABB] completely encloses another one.
+				Returns [code]true[/code] if this bounding box [i]completely[/i] encloses the [param with] box. The edges of both boxes are included.
+				[codeblocks]
+				[gdscript]
+				var a = AABB(Vector3(0, 0, 0), Vector3(4, 4, 4))
+				var b = AABB(Vector3(1, 1, 1), Vector3(3, 3, 3))
+				var c = AABB(Vector3(2, 2, 2), Vector3(8, 8, 8))
+
+				print(a.encloses(a)) # Prints true
+				print(a.encloses(b)) # Prints true
+				print(a.encloses(c)) # Prints false
+				[/gdscript]
+				[csharp]
+				var a = new Aabb(new Vector3(0, 0, 0), new Vector3(4, 4, 4));
+				var b = new Aabb(new Vector3(1, 1, 1), new Vector3(3, 3, 3));
+				var c = new Aabb(new Vector3(2, 2, 2), new Vector3(8, 8, 8));
+
+				GD.Print(a.Encloses(a)); // Prints True
+				GD.Print(a.Encloses(b)); // Prints True
+				GD.Print(a.Encloses(c)); // Prints False
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="expand" qualifiers="const">
 			<return type="AABB" />
 			<param index="0" name="to_point" type="Vector3" />
 			<description>
-				Returns a copy of this [AABB] expanded to include a given point.
-				[b]Example:[/b]
+				Returns a copy of this bounding box expanded to align the edges with the given [param to_point], if necessary.
 				[codeblocks]
 				[gdscript]
-				# position (-3, 2, 0), size (1, 1, 1)
-				var box = AABB(Vector3(-3, 2, 0), Vector3(1, 1, 1))
-				# position (-3, -1, 0), size (3, 4, 2), so we fit both the original AABB and Vector3(0, -1, 2)
-				var box2 = box.expand(Vector3(0, -1, 2))
+				var box = AABB(Vector3(0, 0, 0), Vector3(5, 2, 5))
+
+				box = box.expand(Vector3(10, 0, 0))
+				print(box.position) # Prints (0.0, 0.0, 0.0)
+				print(box.size)     # Prints (10.0, 2.0, 5.0)
+
+				box = box.expand(Vector3(-5, 0, 5))
+				print(box.position) # Prints (-5.0, 0.0, 0.0)
+				print(box.size)     # Prints (15.0, 2.0, 5.0)
 				[/gdscript]
 				[csharp]
-				// position (-3, 2, 0), size (1, 1, 1)
-				var box = new Aabb(new Vector3(-3, 2, 0), new Vector3(1, 1, 1));
-				// position (-3, -1, 0), size (3, 4, 2), so we fit both the original AABB and Vector3(0, -1, 2)
-				var box2 = box.Expand(new Vector3(0, -1, 2));
+				var box = new Aabb(new Vector3(0, 0, 0), new Vector3(5, 2, 5));
+
+				box = box.Expand(new Vector3(10, 0, 0));
+				GD.Print(box.Position); // Prints (0, 0, 0)
+				GD.Print(box.Size);     // Prints (10, 2, 5)
+
+				box = box.Expand(new Vector3(-5, 0, 5));
+				GD.Print(box.Position); // Prints (-5, 0, 0)
+				GD.Print(box.Size);     // Prints (15, 2, 5)
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -76,111 +120,188 @@
 		<method name="get_center" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the center of the [AABB], which is equal to [member position] + ([member size] / 2).
+				Returns the center point of the bounding box. This is the same as [code]position + (size / 2.0)[/code].
 			</description>
 		</method>
 		<method name="get_endpoint" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="idx" type="int" />
 			<description>
-				Gets the position of the 8 endpoints of the [AABB] in space.
+				Returns the position of one of the 8 vertices that compose this bounding box. With an [param idx] of [code]0[/code] this is the same as [member position], and an [param idx] of [code]7[/code] is the same as [member end].
 			</description>
 		</method>
 		<method name="get_longest_axis" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the normalized longest axis of the [AABB].
+				Returns the longest normalized axis of this bounding box's [member size], as a [Vector3] ([constant Vector3.RIGHT], [constant Vector3.UP], or [constant Vector3.BACK]).
+				[codeblocks]
+				[gdscript]
+				var box = AABB(Vector3(0, 0, 0), Vector3(2, 4, 8))
+
+				print(box.get_longest_axis())       # Prints (0.0, 0.0, 1.0)
+				print(box.get_longest_axis_index()) # Prints 2
+				print(box.get_longest_axis_size())  # Prints 8.0
+				[/gdscript]
+				[csharp]
+				var box = new Aabb(new Vector3(0, 0, 0), new Vector3(2, 4, 8));
+
+				GD.Print(box.GetLongestAxis());      // Prints (0, 0, 1)
+				GD.Print(box.GetLongestAxisIndex()); // Prints Z
+				GD.Print(box.GetLongestAxisSize());  // Prints 8
+				[/csharp]
+				[/codeblocks]
+				See also [method get_longest_axis_index] and [method get_longest_axis_size].
 			</description>
 		</method>
 		<method name="get_longest_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the index of the longest axis of the [AABB] (according to [Vector3]'s [code]AXIS_*[/code] constants).
+				Returns the index to the longest axis of this bounding box's [member size] (see [constant Vector3.AXIS_X], [constant Vector3.AXIS_Y], and [constant Vector3.AXIS_Z]).
+				For an example, see [method get_longest_axis].
 			</description>
 		</method>
 		<method name="get_longest_axis_size" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the scalar length of the longest axis of the [AABB].
+				Returns the longest dimension of this bounding box's [member size].
+				For an example, see [method get_longest_axis].
 			</description>
 		</method>
 		<method name="get_shortest_axis" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns the normalized shortest axis of the [AABB].
+				Returns the shortest normalized axis of this bounding box's [member size], as a [Vector3] ([constant Vector3.RIGHT], [constant Vector3.UP], or [constant Vector3.BACK]).
+				[codeblocks]
+				[gdscript]
+				var box = AABB(Vector3(0, 0, 0), Vector3(2, 4, 8))
+
+				print(box.get_shortest_axis())       # Prints (1.0, 0.0, 0.0)
+				print(box.get_shortest_axis_index()) # Prints 0
+				print(box.get_shortest_axis_size())  # Prints 2.0
+				[/gdscript]
+				[csharp]
+				var box = new Aabb(new Vector3(0, 0, 0), new Vector3(2, 4, 8));
+
+				GD.Print(box.GetShortestAxis());      // Prints (1, 0, 0)
+				GD.Print(box.GetShortestAxisIndex()); // Prints X
+				GD.Print(box.GetShortestAxisSize());  // Prints 2
+				[/csharp]
+				[/codeblocks]
+				See also [method get_shortest_axis_index] and [method get_shortest_axis_size].
 			</description>
 		</method>
 		<method name="get_shortest_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the index of the shortest axis of the [AABB] (according to [Vector3]::AXIS* enum).
+				Returns the index to the shortest axis of this bounding box's [member size] (see [constant Vector3.AXIS_X], [constant Vector3.AXIS_Y], and [constant Vector3.AXIS_Z]).
+				For an example, see [method get_shortest_axis].
 			</description>
 		</method>
 		<method name="get_shortest_axis_size" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the scalar length of the shortest axis of the [AABB].
+				Returns the shortest dimension of this bounding box's [member size].
+				For an example, see [method get_shortest_axis].
 			</description>
 		</method>
 		<method name="get_support" qualifiers="const">
 			<return type="Vector3" />
-			<param index="0" name="dir" type="Vector3" />
+			<param index="0" name="direction" type="Vector3" />
 			<description>
-				Returns the vertex of the AABB that's the farthest in a given direction. This point is commonly known as the support point in collision detection algorithms.
+				Returns the vertex's position of this bounding box that's the farthest in the given direction. This point is commonly known as the support point in collision detection algorithms.
 			</description>
 		</method>
 		<method name="get_volume" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the volume of the [AABB].
+				Returns the bounding box's volume. This is equivalent to [code]size.x * size.y * size.z[/code]. See also [method has_volume].
 			</description>
 		</method>
 		<method name="grow" qualifiers="const">
 			<return type="AABB" />
 			<param index="0" name="by" type="float" />
 			<description>
-				Returns a copy of the [AABB] grown a given number of units towards all the sides.
+				Returns a copy of this bounding box extended on all sides by the given amount [param by]. A negative amount shrinks the box instead.
+				[codeblocks]
+				[gdscript]
+				var a = AABB(Vector3(4, 4, 4), Vector3(8, 8, 8)).grow(4)
+				print(a.position) # Prints (0.0, 0.0, 0.0)
+				print(a.size)     # Prints (16.0, 16.0, 16.0)
+
+				var b = AABB(Vector3(0, 0, 0), Vector3(8, 4, 2)).grow(2)
+				print(b.position) # Prints (-2.0, -2.0, -2.0)
+				print(b.size)     # Prints (12.0, 8.0, 6.0)
+				[/gdscript]
+				[csharp]
+				var a = new Aabb(new Vector3(4, 4, 4), new Vector3(8, 8, 8)).Grow(4);
+				GD.Print(a.Position); // Prints (0, 0, 0)
+				GD.Print(a.Size);     // Prints (16, 16, 16)
+
+				var b = new Aabb(new Vector3(0, 0, 0), new Vector3(8, 4, 2)).Grow(2);
+				GD.Print(b.Position); // Prints (-2, -2, -2)
+				GD.Print(b.Size);     // Prints (12, 8, 6)
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector3" />
 			<description>
-				Returns [code]true[/code] if the [AABB] contains a point. Points on the faces of the AABB are considered included, though float-point precision errors may impact the accuracy of such checks.
-				[b]Note:[/b] This method is not reliable for [AABB] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent [AABB] to check for contained points.
+				Returns [code]true[/code] if the bounding box contains the given [param point]. By convention, points exactly on the right, top, and front sides are [b]not[/b] included.
+				[b]Note:[/b] This method is not reliable for [AABB] with a [i]negative[/i] [member size]. Use [method abs] first to get a valid bounding box.
 			</description>
 		</method>
 		<method name="has_surface" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the [AABB] has a surface or a length, and [code]false[/code] if the [AABB] is empty (all components of [member size] are zero or negative).
+				Returns [code]true[/code] if this bounding box has a surface or a length, that is, at least one component of [member size] is greater than [code]0[/code]. Otherwise, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="has_volume" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the [AABB] has a volume, and [code]false[/code] if the [AABB] is flat, empty, or has a negative [member size].
+				Returns [code]true[/code] if this bounding box's width, height, and depth are all positive. See also [method get_volume].
 			</description>
 		</method>
 		<method name="intersection" qualifiers="const">
 			<return type="AABB" />
 			<param index="0" name="with" type="AABB" />
 			<description>
-				Returns the intersection between two [AABB]. An empty AABB (size [code](0, 0, 0)[/code]) is returned on failure.
+				Returns the intersection between this bounding box and [param with]. If the boxes do not intersect, returns an empty [AABB]. If the boxes intersect at the edge, returns a flat [AABB] with no volume (see [method has_surface] and [method has_volume]).
+				[codeblocks]
+				[gdscript]
+				var box1 = AABB(Vector3(0, 0, 0), Vector3(5, 2, 8))
+				var box2 = AABB(Vector3(2, 0, 2), Vector3(8, 4, 4))
+
+				var intersection = box1.intersection(box2)
+				print(intersection.position) # Prints (2.0, 0.0, 2.0)
+				print(intersection.size)     # Prints (3.0, 2.0, 4.0)
+				[/gdscript]
+				[csharp]
+				var box1 = new Aabb(new Vector3(0, 0, 0), new Vector3(5, 2, 8));
+				var box2 = new Aabb(new Vector3(2, 0, 2), new Vector3(8, 4, 4));
+
+				var intersection = box1.Intersection(box2);
+				GD.Print(intersection.Position); // Prints (2, 0, 2)
+				GD.Print(intersection.Size);     // Prints (3, 2, 4)
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] If you only need to know whether two bounding boxes are intersecting, use [method intersects], instead.
 			</description>
 		</method>
 		<method name="intersects" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="with" type="AABB" />
 			<description>
-				Returns [code]true[/code] if the [AABB] overlaps with another.
+				Returns [code]true[/code] if this bounding box overlaps with the box [param with]. The edges of both boxes are [i]always[/i] excluded.
 			</description>
 		</method>
 		<method name="intersects_plane" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="plane" type="Plane" />
 			<description>
-				Returns [code]true[/code] if the [AABB] is on both sides of a plane.
+				Returns [code]true[/code] if this bounding box is on both sides of the given [param plane].
 			</description>
 		</method>
 		<method name="intersects_ray" qualifiers="const">
@@ -188,7 +309,8 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="dir" type="Vector3" />
 			<description>
-				Returns the point of intersection of the given ray with this [AABB] or [code]null[/code] if there is no intersection. Ray length is infinite.
+				Returns the first point where this bounding box and the given ray intersect, as a [Vector3]. If no intersection occurs, returns [code]null[/code].
+				The ray begin at [param from], faces [param dir] and extends towards infinity.
 			</description>
 		</method>
 		<method name="intersects_segment" qualifiers="const">
@@ -196,40 +318,41 @@
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
 			<description>
-				Returns the point of intersection between [param from] and [param to] with this [AABB] or [code]null[/code] if there is no intersection.
+				Returns the first point where this bounding box and the given segment intersect, as a [Vector3]. If no intersection occurs, returns [code]null[/code].
+				The segment begins at [param from] and ends at [param to].
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="aabb" type="AABB" />
 			<description>
-				Returns [code]true[/code] if this [AABB] and [param aabb] are approximately equal, by calling [method @GlobalScope.is_equal_approx] on each component.
+				Returns [code]true[/code] if this bounding box and [param aabb] are approximately equal, by calling [method Vector3.is_equal_approx] on the [member position] and the [member size].
 			</description>
 		</method>
 		<method name="is_finite" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this [AABB] is finite, by calling [method @GlobalScope.is_finite] on each component.
+				Returns [code]true[/code] if this bounding box's values are finite, by calling [method Vector3.is_finite] on the [member position] and the [member size].
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">
 			<return type="AABB" />
 			<param index="0" name="with" type="AABB" />
 			<description>
-				Returns a larger [AABB] that contains both this [AABB] and [param with].
+				Returns an [AABB] that encloses both this bounding box and [param with] around the edges. See also [method encloses].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="end" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			Ending corner. This is calculated as [code]position + size[/code]. Setting this value will change the size.
+			The ending point. This is usually the corner on the top-right and back of the bounding box, and is equivalent to [code]position + size[/code]. Setting this point affects the [member size].
 		</member>
 		<member name="position" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			Beginning corner. Typically has values lower than [member end].
+			The origin point. This is usually the corner on the bottom-left and forward of the bounding box.
 		</member>
 		<member name="size" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			Size from [member position] to [member end]. Typically, all components are positive.
-			If the size is negative, you can use [method abs] to fix it.
+			The bounding box's width, height, and depth starting from [member position]. Setting this value also affects the [member end] point.
+			[b]Note:[/b] It's recommended setting the width, height, and depth to non-negative values. This is because most methods in Godot assume that the [member position] is the bottom-left-forward corner, and the [member end] is the top-right-back corner. To get an equivalent bounding box with non-negative size, use [method abs].
 		</member>
 	</members>
 	<operators>
@@ -237,7 +360,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="AABB" />
 			<description>
-				Returns [code]true[/code] if the AABBs are not equal.
+				Returns [code]true[/code] if the [member position] or [member size] of both bounding boxes are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
@@ -254,7 +377,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="AABB" />
 			<description>
-				Returns [code]true[/code] if the AABBs are exactly equal.
+				Returns [code]true[/code] if both [member position] and [member size] of the bounding boxes are exactly equal, respectively.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>

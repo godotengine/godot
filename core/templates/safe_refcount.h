@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SAFE_REFCOUNT_H
-#define SAFE_REFCOUNT_H
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -38,28 +37,29 @@
 #endif
 
 #include <atomic>
-#include <type_traits>
+#include <type_traits> // IWYU pragma: keep // Used in macro.
 
 // Design goals for these classes:
 // - No automatic conversions or arithmetic operators,
 //   to keep explicit the use of atomics everywhere.
-// - Using acquire-release semantics, even to set the first value.
-//   The first value may be set relaxedly in many cases, but adding the distinction
-//   between relaxed and unrelaxed operation to the interface would make it needlessly
-//   flexible. There's negligible waste in having release semantics for the initial
-//   value and, as an important benefit, you can be sure the value is properly synchronized
-//   even with threads that are already running.
+// - The first initialization is performed without
+//   release semantics to avoid static initialization
+//   race conditions. This trades for theoretical
+//   initial synchronization issues, but it's the same
+//   trade the stdlib made, and should occur only
+//   in "fairly contrived scenarios" (compare LWG 846
+//   and LWG 1478 via open-std.org).
 
 // These are used in very specific areas of the engine where it's critical that these guarantees are held
-#define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type)                    \
-	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type));   \
+#define SAFE_NUMERIC_TYPE_PUN_GUARANTEES(m_type) \
+	static_assert(sizeof(SafeNumeric<m_type>) == sizeof(m_type)); \
 	static_assert(alignof(SafeNumeric<m_type>) == alignof(m_type)); \
-	static_assert(std::is_trivially_destructible<std::atomic<m_type>>::value);
-#define SAFE_FLAG_TYPE_PUN_GUARANTEES                \
+	static_assert(std::is_trivially_destructible_v<std::atomic<m_type>>);
+#define SAFE_FLAG_TYPE_PUN_GUARANTEES \
 	static_assert(sizeof(SafeFlag) == sizeof(bool)); \
 	static_assert(alignof(SafeFlag) == alignof(bool));
 
-template <class T>
+template <typename T>
 class SafeNumeric {
 	std::atomic<T> value;
 
@@ -122,8 +122,8 @@ public:
 	}
 
 	_ALWAYS_INLINE_ T exchange_if_greater(T p_value) {
+		T tmp = value.load(std::memory_order_acquire);
 		while (true) {
-			T tmp = value.load(std::memory_order_acquire);
 			if (tmp >= p_value) {
 				return tmp; // already greater, or equal
 			}
@@ -135,8 +135,8 @@ public:
 	}
 
 	_ALWAYS_INLINE_ T conditional_increment() {
+		T c = value.load(std::memory_order_acquire);
 		while (true) {
-			T c = value.load(std::memory_order_acquire);
 			if (c == 0) {
 				return 0;
 			}
@@ -146,9 +146,8 @@ public:
 		}
 	}
 
-	_ALWAYS_INLINE_ explicit SafeNumeric<T>(T p_value = static_cast<T>(0)) {
-		set(p_value);
-	}
+	_ALWAYS_INLINE_ explicit constexpr SafeNumeric(T p_value = static_cast<T>(0)) :
+			value(p_value) {}
 };
 
 class SafeFlag {
@@ -165,17 +164,24 @@ public:
 		flag.store(true, std::memory_order_release);
 	}
 
+	_ALWAYS_INLINE_ bool set_if_clear() {
+		return !flag.exchange(true, std::memory_order_acq_rel);
+	}
+
 	_ALWAYS_INLINE_ void clear() {
 		flag.store(false, std::memory_order_release);
+	}
+
+	_ALWAYS_INLINE_ bool clear_if_set() {
+		return flag.exchange(false, std::memory_order_acq_rel);
 	}
 
 	_ALWAYS_INLINE_ void set_to(bool p_value) {
 		flag.store(p_value, std::memory_order_release);
 	}
 
-	_ALWAYS_INLINE_ explicit SafeFlag(bool p_value = false) {
-		set_to(p_value);
-	}
+	_ALWAYS_INLINE_ explicit constexpr SafeFlag(bool p_value = false) :
+			flag(p_value) {}
 };
 
 class SafeRefCount {
@@ -222,5 +228,3 @@ public:
 		count.set(p_value);
 	}
 };
-
-#endif // SAFE_REFCOUNT_H

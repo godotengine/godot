@@ -17,10 +17,7 @@
 #include "../common/allocations.h"  /* ZSTD_customMalloc, ZSTD_customFree */
 #include "../common/zstd_internal.h"
 #include "../common/portability_macros.h"
-
-#if defined (__cplusplus)
-extern "C" {
-#endif
+#include "../common/compiler.h" /* ZS2_isPower2 */
 
 /*-*************************************
 *  Constants
@@ -192,6 +189,7 @@ MEM_STATIC void ZSTD_cwksp_assert_internal_consistency(ZSTD_cwksp* ws) {
     {
         intptr_t const offset = __msan_test_shadow(ws->initOnceStart,
             (U8*)ZSTD_cwksp_initialAllocStart(ws) - (U8*)ws->initOnceStart);
+        (void)offset;
 #if defined(ZSTD_MSAN_PRINT)
         if(offset!=-1) {
             __msan_print_shadow((U8*)ws->initOnceStart + offset - 8, 32);
@@ -205,9 +203,9 @@ MEM_STATIC void ZSTD_cwksp_assert_internal_consistency(ZSTD_cwksp* ws) {
 /**
  * Align must be a power of 2.
  */
-MEM_STATIC size_t ZSTD_cwksp_align(size_t size, size_t const align) {
+MEM_STATIC size_t ZSTD_cwksp_align(size_t size, size_t align) {
     size_t const mask = align - 1;
-    assert((align & mask) == 0);
+    assert(ZSTD_isPower2(align));
     return (size + mask) & ~mask;
 }
 
@@ -221,7 +219,7 @@ MEM_STATIC size_t ZSTD_cwksp_align(size_t size, size_t const align) {
  * to figure out how much space you need for the matchState tables. Everything
  * else is though.
  *
- * Do not use for sizing aligned buffers. Instead, use ZSTD_cwksp_aligned_alloc_size().
+ * Do not use for sizing aligned buffers. Instead, use ZSTD_cwksp_aligned64_alloc_size().
  */
 MEM_STATIC size_t ZSTD_cwksp_alloc_size(size_t size) {
     if (size == 0)
@@ -233,12 +231,16 @@ MEM_STATIC size_t ZSTD_cwksp_alloc_size(size_t size) {
 #endif
 }
 
+MEM_STATIC size_t ZSTD_cwksp_aligned_alloc_size(size_t size, size_t alignment) {
+    return ZSTD_cwksp_alloc_size(ZSTD_cwksp_align(size, alignment));
+}
+
 /**
  * Returns an adjusted alloc size that is the nearest larger multiple of 64 bytes.
  * Used to determine the number of bytes required for a given "aligned".
  */
-MEM_STATIC size_t ZSTD_cwksp_aligned_alloc_size(size_t size) {
-    return ZSTD_cwksp_alloc_size(ZSTD_cwksp_align(size, ZSTD_CWKSP_ALIGNMENT_BYTES));
+MEM_STATIC size_t ZSTD_cwksp_aligned64_alloc_size(size_t size) {
+    return ZSTD_cwksp_aligned_alloc_size(size, ZSTD_CWKSP_ALIGNMENT_BYTES);
 }
 
 /**
@@ -261,7 +263,7 @@ MEM_STATIC size_t ZSTD_cwksp_slack_space_required(void) {
 MEM_STATIC size_t ZSTD_cwksp_bytes_to_align_ptr(void* ptr, const size_t alignBytes) {
     size_t const alignBytesMask = alignBytes - 1;
     size_t const bytes = (alignBytes - ((size_t)ptr & (alignBytesMask))) & alignBytesMask;
-    assert((alignBytes & alignBytesMask) == 0);
+    assert(ZSTD_isPower2(alignBytes));
     assert(bytes < alignBytes);
     return bytes;
 }
@@ -270,8 +272,12 @@ MEM_STATIC size_t ZSTD_cwksp_bytes_to_align_ptr(void* ptr, const size_t alignByt
  * Returns the initial value for allocStart which is used to determine the position from
  * which we can allocate from the end of the workspace.
  */
-MEM_STATIC void*  ZSTD_cwksp_initialAllocStart(ZSTD_cwksp* ws) {
-    return (void*)((size_t)ws->workspaceEnd & ~(ZSTD_CWKSP_ALIGNMENT_BYTES-1));
+MEM_STATIC void*  ZSTD_cwksp_initialAllocStart(ZSTD_cwksp* ws)
+{
+    char* endPtr = (char*)ws->workspaceEnd;
+    assert(ZSTD_isPower2(ZSTD_CWKSP_ALIGNMENT_BYTES));
+    endPtr = endPtr - ((size_t)endPtr % ZSTD_CWKSP_ALIGNMENT_BYTES);
+    return (void*)endPtr;
 }
 
 /**
@@ -286,7 +292,7 @@ ZSTD_cwksp_reserve_internal_buffer_space(ZSTD_cwksp* ws, size_t const bytes)
 {
     void* const alloc = (BYTE*)ws->allocStart - bytes;
     void* const bottom = ws->tableEnd;
-    DEBUGLOG(5, "cwksp: reserving %p %zd bytes, %zd bytes remaining",
+    DEBUGLOG(5, "cwksp: reserving [0x%p]:%zd bytes; %zd bytes remaining",
         alloc, bytes, ZSTD_cwksp_available_space(ws) - bytes);
     ZSTD_cwksp_assert_internal_consistency(ws);
     assert(alloc >= bottom);
@@ -403,7 +409,7 @@ MEM_STATIC void* ZSTD_cwksp_reserve_aligned_init_once(ZSTD_cwksp* ws, size_t byt
 {
     size_t const alignedBytes = ZSTD_cwksp_align(bytes, ZSTD_CWKSP_ALIGNMENT_BYTES);
     void* ptr = ZSTD_cwksp_reserve_internal(ws, alignedBytes, ZSTD_cwksp_alloc_aligned_init_once);
-    assert(((size_t)ptr & (ZSTD_CWKSP_ALIGNMENT_BYTES-1))== 0);
+    assert(((size_t)ptr & (ZSTD_CWKSP_ALIGNMENT_BYTES-1)) == 0);
     if(ptr && ptr < ws->initOnceStart) {
         /* We assume the memory following the current allocation is either:
          * 1. Not usable as initOnce memory (end of workspace)
@@ -423,17 +429,18 @@ MEM_STATIC void* ZSTD_cwksp_reserve_aligned_init_once(ZSTD_cwksp* ws, size_t byt
 /**
  * Reserves and returns memory sized on and aligned on ZSTD_CWKSP_ALIGNMENT_BYTES (64 bytes).
  */
-MEM_STATIC void* ZSTD_cwksp_reserve_aligned(ZSTD_cwksp* ws, size_t bytes)
+MEM_STATIC void* ZSTD_cwksp_reserve_aligned64(ZSTD_cwksp* ws, size_t bytes)
 {
-    void* ptr = ZSTD_cwksp_reserve_internal(ws, ZSTD_cwksp_align(bytes, ZSTD_CWKSP_ALIGNMENT_BYTES),
-                                            ZSTD_cwksp_alloc_aligned);
-    assert(((size_t)ptr & (ZSTD_CWKSP_ALIGNMENT_BYTES-1))== 0);
+    void* const ptr = ZSTD_cwksp_reserve_internal(ws,
+                        ZSTD_cwksp_align(bytes, ZSTD_CWKSP_ALIGNMENT_BYTES),
+                        ZSTD_cwksp_alloc_aligned);
+    assert(((size_t)ptr & (ZSTD_CWKSP_ALIGNMENT_BYTES-1)) == 0);
     return ptr;
 }
 
 /**
  * Aligned on 64 bytes. These buffers have the special property that
- * their values remain constrained, allowing us to re-use them without
+ * their values remain constrained, allowing us to reuse them without
  * memset()-ing them.
  */
 MEM_STATIC void* ZSTD_cwksp_reserve_table(ZSTD_cwksp* ws, size_t bytes)
@@ -473,7 +480,7 @@ MEM_STATIC void* ZSTD_cwksp_reserve_table(ZSTD_cwksp* ws, size_t bytes)
 #endif
 
     assert((bytes & (ZSTD_CWKSP_ALIGNMENT_BYTES-1)) == 0);
-    assert(((size_t)alloc & (ZSTD_CWKSP_ALIGNMENT_BYTES-1))== 0);
+    assert(((size_t)alloc & (ZSTD_CWKSP_ALIGNMENT_BYTES-1)) == 0);
     return alloc;
 }
 
@@ -519,13 +526,27 @@ MEM_STATIC void* ZSTD_cwksp_reserve_object(ZSTD_cwksp* ws, size_t bytes)
 
     return alloc;
 }
+/**
+ * with alignment control
+ * Note : should happen only once, at workspace first initialization
+ */
+MEM_STATIC void* ZSTD_cwksp_reserve_object_aligned(ZSTD_cwksp* ws, size_t byteSize, size_t alignment)
+{
+    size_t const mask = alignment - 1;
+    size_t const surplus = (alignment > sizeof(void*)) ? alignment - sizeof(void*) : 0;
+    void* const start = ZSTD_cwksp_reserve_object(ws, byteSize + surplus);
+    if (start == NULL) return NULL;
+    if (surplus == 0) return start;
+    assert(ZSTD_isPower2(alignment));
+    return (void*)(((size_t)start + surplus) & ~mask);
+}
 
 MEM_STATIC void ZSTD_cwksp_mark_tables_dirty(ZSTD_cwksp* ws)
 {
     DEBUGLOG(4, "cwksp: ZSTD_cwksp_mark_tables_dirty");
 
 #if ZSTD_MEMORY_SANITIZER && !defined (ZSTD_MSAN_DONT_POISON_WORKSPACE)
-    /* To validate that the table re-use logic is sound, and that we don't
+    /* To validate that the table reuse logic is sound, and that we don't
      * access table space that we haven't cleaned, we re-"poison" the table
      * space every time we mark it dirty.
      * Since tableValidEnd space and initOnce space may overlap we don't poison
@@ -576,7 +597,8 @@ MEM_STATIC void ZSTD_cwksp_clean_tables(ZSTD_cwksp* ws) {
  * Invalidates table allocations.
  * All other allocations remain valid.
  */
-MEM_STATIC void ZSTD_cwksp_clear_tables(ZSTD_cwksp* ws) {
+MEM_STATIC void ZSTD_cwksp_clear_tables(ZSTD_cwksp* ws)
+{
     DEBUGLOG(4, "cwksp: clearing tables!");
 
 #if ZSTD_ADDRESS_SANITIZER && !defined (ZSTD_ASAN_DONT_POISON_WORKSPACE)
@@ -602,9 +624,9 @@ MEM_STATIC void ZSTD_cwksp_clear(ZSTD_cwksp* ws) {
     DEBUGLOG(4, "cwksp: clearing!");
 
 #if ZSTD_MEMORY_SANITIZER && !defined (ZSTD_MSAN_DONT_POISON_WORKSPACE)
-    /* To validate that the context re-use logic is sound, and that we don't
+    /* To validate that the context reuse logic is sound, and that we don't
      * access stuff that this compression hasn't initialized, we re-"poison"
-     * the workspace except for the areas in which we expect memory re-use
+     * the workspace except for the areas in which we expect memory reuse
      * without initialization (objects, valid tables area and init once
      * memory). */
     {
@@ -633,6 +655,15 @@ MEM_STATIC void ZSTD_cwksp_clear(ZSTD_cwksp* ws) {
         ws->phase = ZSTD_cwksp_alloc_aligned_init_once;
     }
     ZSTD_cwksp_assert_internal_consistency(ws);
+}
+
+MEM_STATIC size_t ZSTD_cwksp_sizeof(const ZSTD_cwksp* ws) {
+    return (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->workspace);
+}
+
+MEM_STATIC size_t ZSTD_cwksp_used(const ZSTD_cwksp* ws) {
+    return (size_t)((BYTE*)ws->tableEnd - (BYTE*)ws->workspace)
+         + (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->allocStart);
 }
 
 /**
@@ -666,6 +697,11 @@ MEM_STATIC size_t ZSTD_cwksp_create(ZSTD_cwksp* ws, size_t size, ZSTD_customMem 
 MEM_STATIC void ZSTD_cwksp_free(ZSTD_cwksp* ws, ZSTD_customMem customMem) {
     void *ptr = ws->workspace;
     DEBUGLOG(4, "cwksp: freeing workspace");
+#if ZSTD_MEMORY_SANITIZER && !defined(ZSTD_MSAN_DONT_POISON_WORKSPACE)
+    if (ptr != NULL && customMem.customFree != NULL) {
+        __msan_unpoison(ptr, ZSTD_cwksp_sizeof(ws));
+    }
+#endif
     ZSTD_memset(ws, 0, sizeof(ZSTD_cwksp));
     ZSTD_customFree(ptr, customMem);
 }
@@ -677,15 +713,6 @@ MEM_STATIC void ZSTD_cwksp_free(ZSTD_cwksp* ws, ZSTD_customMem customMem) {
 MEM_STATIC void ZSTD_cwksp_move(ZSTD_cwksp* dst, ZSTD_cwksp* src) {
     *dst = *src;
     ZSTD_memset(src, 0, sizeof(ZSTD_cwksp));
-}
-
-MEM_STATIC size_t ZSTD_cwksp_sizeof(const ZSTD_cwksp* ws) {
-    return (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->workspace);
-}
-
-MEM_STATIC size_t ZSTD_cwksp_used(const ZSTD_cwksp* ws) {
-    return (size_t)((BYTE*)ws->tableEnd - (BYTE*)ws->workspace)
-         + (size_t)((BYTE*)ws->workspaceEnd - (BYTE*)ws->allocStart);
 }
 
 MEM_STATIC int ZSTD_cwksp_reserve_failed(const ZSTD_cwksp* ws) {
@@ -734,9 +761,5 @@ MEM_STATIC void ZSTD_cwksp_bump_oversized_duration(
         ws->workspaceOversizedDuration = 0;
     }
 }
-
-#if defined (__cplusplus)
-}
-#endif
 
 #endif /* ZSTD_CWKSP_H */

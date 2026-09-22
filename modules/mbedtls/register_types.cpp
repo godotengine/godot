@@ -35,14 +35,27 @@
 #include "packet_peer_mbed_dtls.h"
 #include "stream_peer_mbedtls.h"
 
-#ifdef TESTS_ENABLED
-#include "tests/test_crypto_mbedtls.h"
-#endif
+#include "core/config/project_settings.h"
+#include "core/os/os.h"
+
+#include <psa/crypto.h>
+
+static bool godot_mbedtls_initialized = false;
 
 void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
 		return;
 	}
+
+	GLOBAL_DEF("network/tls/enable_tls_v1.3", true);
+
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		mbedtls_debug_set_threshold(1);
+	}
+#endif
+
+	godot_mbedtls_initialized = true;
 
 	CryptoMbedTLS::initialize_crypto();
 	StreamPeerMbedTLS::initialize_tls();
@@ -51,7 +64,11 @@ void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
 }
 
 void uninitialize_mbedtls_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_CORE) {
+		return;
+	}
+
+	if (!godot_mbedtls_initialized) {
 		return;
 	}
 

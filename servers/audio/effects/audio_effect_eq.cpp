@@ -30,7 +30,8 @@
 
 #include "audio_effect_eq.h"
 
-#include "servers/audio_server.h"
+#include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	int band_count = bands[0].size();
@@ -46,14 +47,14 @@ void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *
 		AudioFrame dst = AudioFrame(0, 0);
 
 		for (int j = 0; j < band_count; j++) {
-			float l = src.l;
-			float r = src.r;
+			float l = src.left;
+			float r = src.right;
 
 			proc_l[j].process_one(l);
 			proc_r[j].process_one(r);
 
-			dst.l += l * bgain[j];
-			dst.r += r * bgain[j];
+			dst.left += l * bgain[j];
+			dst.right += r * bgain[j];
 		}
 
 		p_dst_frames[i] = dst;
@@ -112,7 +113,7 @@ bool AudioEffectEQ::_get(const StringName &p_name, Variant &r_ret) const {
 
 void AudioEffectEQ::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < band_names.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::FLOAT, band_names[i], PROPERTY_HINT_RANGE, "-60,24,0.1"));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, band_names[i], PROPERTY_HINT_RANGE, "-60,24,0.1,suffix:dB"));
 	}
 }
 

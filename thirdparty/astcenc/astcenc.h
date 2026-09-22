@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2020-2023 Arm Limited
+// Copyright 2020-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -215,6 +215,8 @@ enum astcenc_error {
 	ASTCENC_ERR_BAD_CONTEXT,
 	/** @brief The call failed due to unimplemented functionality. */
 	ASTCENC_ERR_NOT_IMPLEMENTED,
+	/** @brief The call failed due to an out-of-spec decode mode flag set. */
+	ASTCENC_ERR_BAD_DECODE_MODE,
 #if defined(ASTCENC_DIAGNOSTICS)
 	/** @brief The call failed due to an issue with diagnostic tracing. */
 	ASTCENC_ERR_DTRACE_FAILURE,
@@ -303,6 +305,11 @@ enum astcenc_type
 };
 
 /**
+ * @brief Function pointer type for compression progress reporting callback.
+ */
+extern "C" typedef void (*astcenc_progress_callback)(float);
+
+/**
  * @brief Enable normal map compression.
  *
  * Input data will be treated a two component normal map, storing X and Y, and the codec will
@@ -311,6 +318,19 @@ enum astcenc_type
  * used by BC5n).
  */
 static const unsigned int ASTCENC_FLG_MAP_NORMAL          = 1 << 0;
+
+/**
+ * @brief Enable compression heuristics that assume use of decode_unorm8 decode mode.
+ *
+ * The decode_unorm8 decode mode rounds differently to the decode_fp16 decode mode, so enabling this
+ * flag during compression will allow the compressor to use the correct rounding when selecting
+ * encodings. This will improve the compressed image quality if your application is using the
+ * decode_unorm8 decode mode, but will reduce image quality if using decode_fp16.
+ *
+ * Note that LDR_SRGB images will always use decode_unorm8 for the RGB channels, irrespective of
+ * this setting.
+ */
+static const unsigned int ASTCENC_FLG_USE_DECODE_UNORM8        = 1 << 1;
 
 /**
  * @brief Enable alpha weighting.
@@ -378,6 +398,7 @@ static const unsigned int ASTCENC_ALL_FLAGS =
                               ASTCENC_FLG_MAP_RGBM |
                               ASTCENC_FLG_USE_ALPHA_WEIGHT |
                               ASTCENC_FLG_USE_PERCEPTUAL |
+                              ASTCENC_FLG_USE_DECODE_UNORM8 |
                               ASTCENC_FLG_DECOMPRESS_ONLY |
                               ASTCENC_FLG_SELF_DECOMPRESS_ONLY;
 
@@ -541,6 +562,24 @@ struct astcenc_config
 	 * This option is ineffective for normal maps.
 	 */
 	float tune_2plane_early_out_limit_correlation;
+
+	/**
+	 * @brief The config enable for the mode0 fast-path search.
+	 *
+	 * If this is set to TUNE_MIN_TEXELS_MODE0 or higher then the early-out fast mode0
+	 * search is enabled. This option is ineffective for 3D block sizes.
+	 */
+	float tune_search_mode0_enable;
+
+	/**
+	 * @brief The progress callback, can be @c nullptr.
+	 *
+	 * If this is specified the codec will peridocially report progress for
+	 * compression as a percentage between 0 and 100. The callback is called from one
+	 * of the compressor threads, so doing significant work in the callback will
+	 * reduce compression performance.
+	 */
+	astcenc_progress_callback progress_callback;
 
 #if defined(ASTCENC_DIAGNOSTICS)
 	/**
@@ -743,6 +782,20 @@ ASTCENC_PUBLIC astcenc_error astcenc_compress_image(
  * @return @c ASTCENC_SUCCESS on success, or an error if reset failed.
  */
 ASTCENC_PUBLIC astcenc_error astcenc_compress_reset(
+	astcenc_context* context);
+
+/**
+ * @brief Cancel any pending compression operation.
+ *
+ * The caller must behave as if the compression completed normally, even though the data will be
+ * undefined. They are still responsible for synchronizing threads in the worker thread pool, and
+ * must call reset before starting another compression.
+ *
+ * @param context   Codec context.
+ *
+ * @return @c ASTCENC_SUCCESS on success, or an error if cancellation failed.
+ */
+ASTCENC_PUBLIC astcenc_error astcenc_compress_cancel(
 	astcenc_context* context);
 
 /**

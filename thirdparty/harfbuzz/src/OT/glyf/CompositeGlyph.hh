@@ -33,7 +33,7 @@ struct CompositeGlyphRecord
   };
 
   public:
-  unsigned int get_size () const
+  size_t get_size () const
   {
     unsigned int size = min_size;
     /* glyphIndex is 24bit instead of 16bit */
@@ -143,7 +143,7 @@ struct CompositeGlyphRecord
     float matrix[4];
     contour_point_t trans;
     get_transformation (matrix, trans);
-    if (unlikely (!points.alloc (points.length + 4))) return false; // For phantom points
+    if (unlikely (!points.alloc (points.length + 1 + 4))) return false; // For phantom points
     points.push (trans);
     return true;
   }
@@ -240,7 +240,8 @@ struct CompositeGlyphRecord
     }
     if (is_anchored ()) tx = ty = 0;
 
-    trans.init ((float) tx, (float) ty);
+    /* set is_end_point flag to true, used by IUP delta optimization */
+    trans.init ((float) tx, (float) ty, true);
 
     {
       const F2DOT14 *points = (const F2DOT14 *) p;

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -12,3 +13,6 @@ if env.editor_build:
     env_mp.add_source_files(module_obj, "editor/*.cpp")
 
 env.modules_sources += module_obj
+
+if env["tests"]:
+    env_mp.add_source_files(env.modules_sources, "./tests/*.cpp")

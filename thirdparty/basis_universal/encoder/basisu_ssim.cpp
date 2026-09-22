@@ -1,5 +1,5 @@
 // basisu_ssim.cpp
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2024 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -91,6 +91,8 @@ namespace basisu
 
 	void gaussian_filter(imagef &dst, const imagef &orig_img, uint32_t odd_filter_width, float sigma_sqr, bool wrapping, uint32_t width_divisor, uint32_t height_divisor)
 	{
+		assert(&dst != &orig_img);
+
 		assert(odd_filter_width && (odd_filter_width & 1));
 		odd_filter_width |= 1;
 

@@ -1,18 +1,16 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
-from platform_methods import run_in_subprocess
 import default_theme_builders
-
 
 env.add_source_files(env.scene_sources, "*.cpp")
 
 SConscript("icons/SCsub")
 
-env.Depends("#scene/theme/default_font.gen.h", "#thirdparty/fonts/OpenSans_SemiBold.woff2")
 env.CommandNoCache(
     "#scene/theme/default_font.gen.h",
     "#thirdparty/fonts/OpenSans_SemiBold.woff2",
-    run_in_subprocess(default_theme_builders.make_fonts_header),
+    env.Run(default_theme_builders.make_fonts_header),
 )

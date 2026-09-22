@@ -99,10 +99,13 @@ struct head
   bool is_condensed () const { return macStyle & CONDENSED; }
   bool is_expanded () const  { return macStyle & EXPANDED; }
 
+  unsigned get_mac_style () const { return macStyle; }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  version.major == 1 &&
 		  magicNumber == 0x5F0F3CF5u);
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,6 @@
 #include "tvgTaskScheduler.h"
 #include "tvgLoader.h"
 
-#ifdef _WIN32
-    #include <cstring>
-#endif
-
 #ifdef THORVG_SW_RASTER_SUPPORT
     #include "tvgSwRenderer.h"
 #endif
@@ -36,49 +32,45 @@
     #include "tvgGlRenderer.h"
 #endif
 
+#ifdef THORVG_WG_RASTER_SUPPORT
+    #include "tvgWgRenderer.h"
+#endif
+
 
 /************************************************************************/
 /* Internal Class Implementation                                        */
 /************************************************************************/
 
-static int _initCnt = 0;
-static uint16_t _version = 0;
-
-//enum class operation helper
-static constexpr bool operator &(CanvasEngine a, CanvasEngine b)
-{
-    return int(a) & int(b);
+namespace tvg {
+    int engineInit = 0;
 }
 
-static bool _buildVersionInfo()
+static uint16_t _version = 0;
+
+
+static bool _buildVersionInfo(uint32_t* major, uint32_t* minor, uint32_t* micro)
 {
-    auto SRC = THORVG_VERSION_STRING;   //ex) 0.3.99
-    auto p = SRC;
+    auto VER = THORVG_VERSION_STRING;
+    auto p = VER;
     const char* x;
 
-    char major[3];
-    x = strchr(p, '.');
-    if (!x) return false;
-    memcpy(major, p, x - p);
-    major[x - p] = '\0';
+    if (!(x = strchr(p, '.'))) return false;
+    uint32_t majorVal = atoi(p);
     p = x + 1;
 
-    char minor[3];
-    x = strchr(p, '.');
-    if (!x) return false;
-    memcpy(minor, p, x - p);
-    minor[x - p] = '\0';
+    if (!(x = strchr(p, '.'))) return false;
+    uint32_t minorVal = atoi(p);
     p = x + 1;
 
-    char micro[3];
-    x = SRC + strlen(THORVG_VERSION_STRING);
-    memcpy(micro, p, x - p);
-    micro[x - p] = '\0';
+    uint32_t microVal = atoi(p);
 
     char sum[7];
-    snprintf(sum, sizeof(sum), "%s%s%s", major, minor, micro);
-
+    snprintf(sum, sizeof(sum), "%d%02d%02d", majorVal, minorVal, microVal);
     _version = atoi(sum);
+
+    if (major) *major = majorVal;
+    if (minor) *minor = minorVal;
+    if (micro) *micro = microVal;
 
     return true;
 }
@@ -88,29 +80,11 @@ static bool _buildVersionInfo()
 /* External Class Implementation                                        */
 /************************************************************************/
 
-Result Initializer::init(CanvasEngine engine, uint32_t threads) noexcept
+Result Initializer::init(uint32_t threads) noexcept
 {
-    auto nonSupport = true;
+    if (engineInit++ > 0) return Result::Success;
 
-    if (engine & CanvasEngine::Sw) {
-        #ifdef THORVG_SW_RASTER_SUPPORT
-            if (!SwRenderer::init(threads)) return Result::FailedAllocation;
-            nonSupport = false;
-        #endif
-    } else if (engine & CanvasEngine::Gl) {
-        #ifdef THORVG_GL_RASTER_SUPPORT
-            if (!GlRenderer::init(threads)) return Result::FailedAllocation;
-            nonSupport = false;
-        #endif
-    } else {
-        return Result::InvalidArguments;
-    }
-
-    if (nonSupport) return Result::NonSupport;
-
-    if (_initCnt++ > 0) return Result::Success;
-
-    if (!_buildVersionInfo()) return Result::Unknown;
+    if (!_buildVersionInfo(nullptr, nullptr, nullptr)) return Result::Unknown;
 
     if (!LoaderMgr::init()) return Result::Unknown;
 
@@ -120,35 +94,36 @@ Result Initializer::init(CanvasEngine engine, uint32_t threads) noexcept
 }
 
 
-Result Initializer::term(CanvasEngine engine) noexcept
+Result Initializer::term() noexcept
 {
-    if (_initCnt == 0) return Result::InsufficientCondition;
+    if (engineInit == 0) return Result::InsufficientCondition;
 
-    auto nonSupport = true;
+    if (--engineInit > 0) return Result::Success;
 
-    if (engine & CanvasEngine::Sw) {
-        #ifdef THORVG_SW_RASTER_SUPPORT
-            if (!SwRenderer::term()) return Result::InsufficientCondition;
-            nonSupport = false;
-        #endif
-    } else if (engine & CanvasEngine::Gl) {
-        #ifdef THORVG_GL_RASTER_SUPPORT
-            if (!GlRenderer::term()) return Result::InsufficientCondition;
-            nonSupport = false;
-        #endif
-    } else {
-        return Result::InvalidArguments;
-    }
+    #ifdef THORVG_SW_RASTER_SUPPORT
+        if (!SwRenderer::term()) return Result::InsufficientCondition;
+    #endif
 
-    if (nonSupport) return Result::NonSupport;
+    #ifdef THORVG_GL_RASTER_SUPPORT
+        if (!GlRenderer::term()) return Result::InsufficientCondition;
+    #endif
 
-    if (--_initCnt > 0) return Result::Success;
+    #ifdef THORVG_WG_RASTER_SUPPORT
+        if (!WgRenderer::term()) return Result::InsufficientCondition;
+    #endif
 
     TaskScheduler::term();
 
     if (!LoaderMgr::term()) return Result::Unknown;
 
     return Result::Success;
+}
+
+
+const char* Initializer::version(uint32_t* major, uint32_t* minor, uint32_t* micro) noexcept
+{
+    if ((!major && ! minor && !micro) || _buildVersionInfo(major, minor, micro)) return THORVG_VERSION_STRING;
+    return nullptr;
 }
 
 

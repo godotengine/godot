@@ -12,6 +12,7 @@
 	<string>$name</string>
 	<key>CFBundleIconFile</key>
 	<string>icon.icns</string>
+$liquid_glass_icon
 	<key>CFBundleIdentifier</key>
 	<string>$bundle_identifier</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -49,14 +50,20 @@ $usage_descriptions
 	<string>NSApplication</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.$app_category</string>
-	<key>LSMinimumSystemVersion</key>
-	<string>$min_version</string>
+	<key>LSArchitecturePriority</key>
+	<array>
+		<string>arm64</string>
+		<string>x86_64</string>
+	</array>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
+		<key>arm64</key>
+		<string>$min_version_arm64</string>
 		<key>x86_64</key>
-		<string>$min_version</string>
+		<string>$min_version_x86_64</string>
 	</dict>
 	<key>NSHighResolutionCapable</key>
 $highres
+$additional_plist_content
 </dict>
 </plist>

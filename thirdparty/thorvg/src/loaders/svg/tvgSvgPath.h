@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2026 ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
 #ifndef _TVG_SVG_PATH_H_
 #define _TVG_SVG_PATH_H_
 
-#include <tvgCommon.h>
+#include "tvgRender.h"
 
-bool svgPathToTvgPath(const char* svgPath, Array<PathCommand>& cmds, Array<Point>& pts);
+bool svgPathToShape(const char* svgPath, RenderPath& out);
 
 #endif //_TVG_SVG_PATH_H_

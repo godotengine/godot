@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_EFFECT_COMPRESSOR_H
-#define AUDIO_EFFECT_COMPRESSOR_H
+#pragma once
 
 #include "servers/audio/audio_effect.h"
 
@@ -61,7 +60,6 @@ class AudioEffectCompressor : public AudioEffect {
 	StringName sidechain;
 
 protected:
-	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -90,5 +88,3 @@ public:
 
 	AudioEffectCompressor();
 };
-
-#endif // AUDIO_EFFECT_COMPRESSOR_H

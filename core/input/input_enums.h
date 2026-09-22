@@ -28,8 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_ENUMS_H
-#define INPUT_ENUMS_H
+#pragma once
+
+#include "core/error/error_macros.h"
+
+enum class InputEventType {
+	INVALID = -1,
+	KEY,
+	MOUSE_BUTTON,
+	MOUSE_MOTION,
+	JOY_MOTION,
+	JOY_BUTTON,
+	SCREEN_TOUCH,
+	SCREEN_DRAG,
+	MAGNIFY_GESTURE,
+	PAN_GESTURE,
+	MIDI,
+	SHORTCUT,
+	ACTION,
+	MAX,
+};
 
 enum class HatDir {
 	UP = 0,
@@ -82,7 +100,12 @@ enum class JoyButton {
 	PADDLE3 = 18,
 	PADDLE4 = 19,
 	TOUCHPAD = 20,
-	SDL_MAX = 21,
+	MISC2 = 21,
+	MISC3 = 22,
+	MISC4 = 23,
+	MISC5 = 24,
+	MISC6 = 25,
+	SDL_MAX = 26,
 	MAX = 128, // Android supports up to 36 buttons. DirectInput supports up to 128 buttons.
 };
 
@@ -130,8 +153,16 @@ enum class MouseButtonMask {
 	MB_XBUTTON2 = (1 << (int(MouseButton::MB_XBUTTON2) - 1)),
 };
 
-inline MouseButtonMask mouse_button_to_mask(MouseButton button) {
-	return MouseButtonMask(1 << ((int)button - 1));
+inline MouseButtonMask mouse_button_to_mask(MouseButton p_button) {
+	ERR_FAIL_COND_V(p_button == MouseButton::NONE, MouseButtonMask::NONE);
+
+	return MouseButtonMask(1 << ((int)p_button - 1));
 }
 
-#endif // INPUT_ENUMS_H
+constexpr MouseButtonMask operator|(MouseButtonMask p_a, MouseButtonMask p_b) {
+	return static_cast<MouseButtonMask>(static_cast<int>(p_a) | static_cast<int>(p_b));
+}
+
+constexpr MouseButtonMask &operator|=(MouseButtonMask &p_a, MouseButtonMask p_b) {
+	return p_a = p_a | p_b;
+}

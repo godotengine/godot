@@ -30,16 +30,14 @@ namespace Godot.SourceGenerators
                         {
                             if (x.cds.IsPartial())
                             {
-                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out var typeMissingPartial))
+                                if (x.cds.IsNested() && !x.cds.AreAllOuterTypesPartial(out _))
                                 {
-                                    Common.ReportNonPartialGodotScriptOuterClass(context, typeMissingPartial!);
                                     return false;
                                 }
 
                                 return true;
                             }
 
-                            Common.ReportNonPartialGodotScriptClass(context, x.cds, x.symbol);
                             return false;
                         })
                         .Select(x => x.symbol)
@@ -103,16 +101,18 @@ namespace Godot.SourceGenerators
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
                     source.Append(" ");
-                    source.Append(containingType.NameWithTypeParameters());
+                    source.Append(containingType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
                     source.Append("\n{\n");
                 }
             }
 
             source.Append("partial class ");
-            source.Append(symbol.NameWithTypeParameters());
+            source.Append(symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat));
             source.Append("\n{\n");
 
-            var members = symbol.GetMembers();
+            var members = symbol.GetMembers()
+                .Where(m => !m.GetAttributes()
+                    .Any(a => a.AttributeClass?.IsGodotIgnoreMemberAttribute() ?? false));
 
             var propertySymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
@@ -125,10 +125,12 @@ namespace Godot.SourceGenerators
 
             // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
             // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
-            var godotClassProperties = propertySymbols.Where(property => !(property.IsReadOnly || property.IsWriteOnly || property.SetMethod!.IsInitOnly))
+            var godotClassProperties = propertySymbols
+                .Where(property => !(property.IsReadOnly || property.IsWriteOnly) && property.SetMethodOrBaseSetMethod() is { IsInitOnly: false })
                 .WhereIsGodotCompatibleType(typeCache)
                 .ToArray();
-            var godotClassFields = fieldSymbols.Where(property => !property.IsReadOnly)
+            var godotClassFields = fieldSymbols
+                .Where(property => !property.IsReadOnly)
                 .WhereIsGodotCompatibleType(typeCache)
                 .ToArray();
 
@@ -171,10 +173,10 @@ namespace Godot.SourceGenerators
             {
                 string propertyName = property.PropertySymbol.Name;
 
-                source.Append("        info.AddProperty(PropertyName.")
+                source.Append("        info.AddProperty(PropertyName.@")
                     .Append(propertyName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.", propertyName),
+                    .AppendManagedToVariantExpr(string.Concat("this.@", propertyName),
                         property.PropertySymbol.Type, property.Type)
                     .Append(");\n");
             }
@@ -185,10 +187,10 @@ namespace Godot.SourceGenerators
             {
                 string fieldName = field.FieldSymbol.Name;
 
-                source.Append("        info.AddProperty(PropertyName.")
+                source.Append("        info.AddProperty(PropertyName.@")
                     .Append(fieldName)
                     .Append(", ")
-                    .AppendManagedToVariantExpr(string.Concat("this.", fieldName),
+                    .AppendManagedToVariantExpr(string.Concat("this.@", fieldName),
                         field.FieldSymbol.Type, field.Type)
                     .Append(");\n");
             }
@@ -199,7 +201,7 @@ namespace Godot.SourceGenerators
             {
                 string signalName = signalDelegate.Name;
 
-                source.Append("        info.AddSignalEventDelegate(SignalName.")
+                source.Append("        info.AddSignalEventDelegate(SignalName.@")
                     .Append(signalName)
                     .Append(", this.backing_")
                     .Append(signalName)
@@ -220,12 +222,12 @@ namespace Godot.SourceGenerators
             {
                 string propertyName = property.PropertySymbol.Name;
 
-                source.Append("        if (info.TryGetProperty(PropertyName.")
+                source.Append("        if (info.TryGetProperty(PropertyName.@")
                     .Append(propertyName)
                     .Append(", out var _value_")
                     .Append(propertyName)
                     .Append("))\n")
-                    .Append("            this.")
+                    .Append("            this.@")
                     .Append(propertyName)
                     .Append(" = ")
                     .AppendVariantToManagedExpr(string.Concat("_value_", propertyName),
@@ -239,12 +241,12 @@ namespace Godot.SourceGenerators
             {
                 string fieldName = field.FieldSymbol.Name;
 
-                source.Append("        if (info.TryGetProperty(PropertyName.")
+                source.Append("        if (info.TryGetProperty(PropertyName.@")
                     .Append(fieldName)
                     .Append(", out var _value_")
                     .Append(fieldName)
                     .Append("))\n")
-                    .Append("            this.")
+                    .Append("            this.@")
                     .Append(fieldName)
                     .Append(" = ")
                     .AppendVariantToManagedExpr(string.Concat("_value_", fieldName),
@@ -261,7 +263,7 @@ namespace Godot.SourceGenerators
 
                 source.Append("        if (info.TryGetSignalEventDelegate<")
                     .Append(signalDelegateQualifiedName)
-                    .Append(">(SignalName.")
+                    .Append(">(SignalName.@")
                     .Append(signalName)
                     .Append(", out var _value_")
                     .Append(signalName)

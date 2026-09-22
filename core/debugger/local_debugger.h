@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LOCAL_DEBUGGER_H
-#define LOCAL_DEBUGGER_H
+#pragma once
 
 #include "core/debugger/engine_debugger.h"
-#include "core/object/script_language.h"
 #include "core/templates/list.h"
 
 class LocalDebugger : public EngineDebugger {
@@ -45,7 +43,7 @@ private:
 	HashMap<String, String> options;
 
 	Pair<String, int> to_breakpoint(const String &p_line);
-	void print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix);
+	void print_variables(const List<String> &p_names, const List<Variant> &p_values, const String &p_variable_prefix);
 
 public:
 	void debug(bool p_can_continue, bool p_is_error_breakpoint);
@@ -55,5 +53,3 @@ public:
 	LocalDebugger();
 	~LocalDebugger();
 };
-
-#endif // LOCAL_DEBUGGER_H

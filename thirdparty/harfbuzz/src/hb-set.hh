@@ -30,11 +30,14 @@
 
 #include "hb.hh"
 #include "hb-bit-set-invertible.hh"
+#include "hb-bit-vector.hh" // Just to include
 
 
 template <typename impl_t>
 struct hb_sparseset_t
 {
+  static constexpr bool realloc_move = true;
+
   hb_object_header_t header;
   impl_t s;
 
@@ -42,10 +45,10 @@ struct hb_sparseset_t
   ~hb_sparseset_t () { fini (); }
 
   hb_sparseset_t (const hb_sparseset_t& other) : hb_sparseset_t () { set (other); }
-  hb_sparseset_t (hb_sparseset_t&& other) : hb_sparseset_t () { s = std::move (other.s); }
+  hb_sparseset_t (hb_sparseset_t&& other)  noexcept : hb_sparseset_t () { s = std::move (other.s); }
   hb_sparseset_t& operator = (const hb_sparseset_t& other) { set (other); return *this; }
-  hb_sparseset_t& operator = (hb_sparseset_t&& other) { s = std::move (other.s); return *this; }
-  friend void swap (hb_sparseset_t& a, hb_sparseset_t& b) { hb_swap (a.s, b.s); }
+  hb_sparseset_t& operator = (hb_sparseset_t&& other)  noexcept { s = std::move (other.s); return *this; }
+  friend void swap (hb_sparseset_t& a, hb_sparseset_t& b)  noexcept { hb_swap (a.s, b.s); }
 
   hb_sparseset_t (std::initializer_list<hb_codepoint_t> lst) : hb_sparseset_t ()
   {
@@ -84,7 +87,8 @@ struct hb_sparseset_t
   uint32_t hash () const { return s.hash (); }
 
   void add (hb_codepoint_t g) { s.add (g); }
-  bool add_range (hb_codepoint_t a, hb_codepoint_t b) { return s.add_range (a, b); }
+  void add_bits (hb_codepoint_t g, uint64_t bits) { s.add_bits (g, bits); }
+  bool add_range (hb_codepoint_t first, hb_codepoint_t last) { return s.add_range (first, last); }
 
   template <typename T>
   void add_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
@@ -104,6 +108,7 @@ struct hb_sparseset_t
   void del_range (hb_codepoint_t a, hb_codepoint_t b) { s.del_range (a, b); }
 
   bool get (hb_codepoint_t g) const { return s.get (g); }
+  bool may_have (hb_codepoint_t g) const { return get (g); }
 
   /* Has interface. */
   bool operator [] (hb_codepoint_t k) const { return get (k); }
@@ -118,6 +123,12 @@ struct hb_sparseset_t
   hb_sparseset_t& operator << (const hb_codepoint_pair_t& range)
   { add_range (range.first, range.second); return *this; }
 
+  bool may_intersect (const hb_sparseset_t &other) const
+  { return s.may_intersect (other.s); }
+
+  bool intersects (const hb_sparseset_t &other) const
+  { return s.intersects (other.s); }
+
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
   { return s.intersects (first, last); }
 
@@ -130,11 +141,15 @@ struct hb_sparseset_t
   bool is_subset (const hb_sparseset_t &larger_set) const { return s.is_subset (larger_set.s); }
 
   void union_ (const hb_sparseset_t &other) { s.union_ (other.s); }
-  void intersect (const hb_sparseset_t &other) { s.intersect (other.s); }
+  void intersect (const hb_sparseset_t &other,
+		  hb_vector_t<unsigned> *workspace = nullptr)
+  { s.intersect (other.s, workspace); }
   void subtract (const hb_sparseset_t &other) { s.subtract (other.s); }
   void symmetric_difference (const hb_sparseset_t &other) { s.symmetric_difference (other.s); }
 
   bool next (hb_codepoint_t *codepoint) const { return s.next (codepoint); }
+  bool next_bits (hb_codepoint_t *codepoint, uint64_t *bits) const
+  { return s.next_bits (codepoint, bits); }
   bool previous (hb_codepoint_t *codepoint) const { return s.previous (codepoint); }
   bool next_range (hb_codepoint_t *first, hb_codepoint_t *last) const
   { return s.next_range (first, last); }
@@ -144,6 +159,7 @@ struct hb_sparseset_t
   { return s.next_many (codepoint, out, size); }
 
   unsigned int get_population () const { return s.get_population (); }
+  bool get_singleton (hb_codepoint_t *codepoint) const { return s.get_singleton (codepoint); }
   hb_codepoint_t get_min () const { return s.get_min (); }
   hb_codepoint_t get_max () const { return s.get_max (); }
 
@@ -164,7 +180,7 @@ struct hb_set_t : hb_sparseset_t<hb_bit_set_invertible_t>
   ~hb_set_t () = default;
   hb_set_t () : sparseset () {};
   hb_set_t (const hb_set_t &o) : sparseset ((sparseset &) o) {};
-  hb_set_t (hb_set_t&& o) : sparseset (std::move ((sparseset &) o)) {}
+  hb_set_t (hb_set_t&& o)  noexcept : sparseset (std::move ((sparseset &) o)) {}
   hb_set_t& operator = (const hb_set_t&) = default;
   hb_set_t& operator = (hb_set_t&&) = default;
   hb_set_t (std::initializer_list<hb_codepoint_t> lst) : sparseset (lst) {}

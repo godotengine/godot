@@ -51,6 +51,7 @@ struct DataMap
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  dataZ.sanitize (c, base, dataLength)));
   }
 
@@ -82,7 +83,7 @@ struct meta
 			      unsigned int     *count,
 			      hb_ot_meta_tag_t *entries) const
     {
-      if (count)
+      if (count && entries)
       {
 	+ table->dataMaps.as_array ().sub_array (start_offset, count)
 	| hb_map (&DataMap::get_tag)
@@ -101,6 +102,7 @@ struct meta
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
+			  hb_barrier () &&
 			  version == 1 &&
 			  dataMaps.sanitize (c, this)));
   }

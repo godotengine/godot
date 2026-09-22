@@ -31,4 +31,3 @@
 #if defined(__AVX512F__)
 #include "avx512.h"
 #endif
-
