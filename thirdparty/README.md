@@ -1032,7 +1032,7 @@ Files extracted from upstream source:
 ## sdl
 
 - Upstream: https://github.com/libsdl-org/SDL
-- Version: 3.4.12 (f87239e71e42da91ca317a12eefb82cfbf3393eb, 2026)
+- Version: 3.4.16 (fa2c02bb6e21974a89ea9824bc53c9932abe5f9c, 2026)
 - License: Zlib
 - Vendored: hidapi 0.14.0, license BSD-3-Clause
 
@@ -1043,14 +1043,12 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-remove-unnecessary-subsystems.patch` ([GH-106218](https://github.com/godotengine/godot/pull/106218))
-- `0003-std-include.patch` ([GH-108144](https://github.com/godotengine/godot/pull/108144))
-- `0004-errno-include.patch` ([GH-108354](https://github.com/godotengine/godot/pull/108354))
-- `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
-- `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
-- `0007-ios-accelerometer.patch` ([GH-120373](https://github.com/godotengine/godot/pull/120373))
-- `0008-ios-link.patch` ([GH-123903](https://github.com/godotengine/godot/pull/123903))
-- `0009-ios-iostream-no-prefpath.patch` ([GH-123899](https://github.com/godotengine/godot/pull/123899))
-- `0010-fix-linux-getenv-unsafe.patch` ([GH-124017](https://github.com/godotengine/godot/pull/124017))
+- `0002-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
+- `0003-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
+- `0004-ios-accelerometer.patch` ([GH-120373](https://github.com/godotengine/godot/pull/120373))
+- `0005-ios-link.patch` ([GH-123903](https://github.com/godotengine/godot/pull/123903))
+- `0006-ios-iostream-no-prefpath.patch` ([GH-123899](https://github.com/godotengine/godot/pull/123899))
+- `0007-fix-linux-getenv-unsafe.patch` ([GH-124017](https://github.com/godotengine/godot/pull/124017))
 
 
 ## spirv-cross
