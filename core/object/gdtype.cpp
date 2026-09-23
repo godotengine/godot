@@ -152,10 +152,11 @@ bool GDType::bind_method(MethodBind *p_method, bool p_take_ownership) {
 	ERR_FAIL_COND_V(init_state != InitState::MUTABLE, false);
 
 	if (_members.has(p_method->get_name())) {
+		ERR_PRINT(vformat("Object '%s' already has member '%s'.", get_name(), p_method->get_name()));
 		if (p_take_ownership) {
 			memdelete(p_method);
 		}
-		ERR_FAIL_V_MSG(false, vformat("Object '%s' already has member '%s'.", get_name(), p_method->get_name()));
+		return false;
 	}
 
 	if (p_take_ownership) {
