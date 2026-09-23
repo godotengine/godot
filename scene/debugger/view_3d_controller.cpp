@@ -35,6 +35,7 @@
 #include "core/config/engine.h"
 #include "core/input/input.h"
 #include "core/input/shortcut.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/main/scene_tree.h"
 
 using namespace View3DControllerConsts;
@@ -326,25 +327,42 @@ void View3DController::cancel_navigation() {
 }
 
 void View3DController::cursor_pan(const Ref<InputEventWithModifiers> &p_event, const Vector2 &p_relative) {
-	float pan_speed = translation_sensitivity / 150.0;
-	if (p_event.is_valid() && navigation_scheme == NAV_SCHEME_MAYA && p_event->is_shift_pressed()) {
-		pan_speed *= 10;
+	if (!p_relative.is_zero_approx()) {
+		ERR_FAIL_COND(p_event.is_null());
+		ERR_FAIL_NULL(viewport);
+
+		Camera3D *camera = viewport->get_camera_3d();
+		ERR_FAIL_NULL(camera);
+
+		// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
+		const Transform3D camera_transform_previous = to_camera_transform();
+		const Transform3D camera_transform_backup = camera->get_global_transform();
+
+		camera->set_global_transform(camera_transform_previous);
+		{
+			Vector2 viewport_position = viewport->get_mouse_position();
+
+			float local_pan_factor = pan_factor;
+			if (p_event.is_valid() && navigation_scheme == NAV_SCHEME_MAYA && p_event->is_shift_pressed()) {
+				local_pan_factor *= 10.0;
+			}
+
+			Vector2 invert_axis = Vector2(
+					invert_x_axis ? -1.0 : 1.0,
+					invert_y_axis ? -1.0 : 1.0);
+			Vector2 from_position_2d = viewport_position - (p_relative * invert_axis);
+			Vector2 to_position_2d = viewport_position;
+
+			Vector3 from_position_3d = camera->project_position(from_position_2d, cursor.distance);
+			Vector3 to_position_3d = camera->project_position(to_position_2d, cursor.distance);
+			Vector3 diff_position_3d = (to_position_3d - from_position_3d) * local_pan_factor;
+
+			cursor.pos_x -= diff_position_3d.x;
+			cursor.pos_y -= diff_position_3d.y;
+			cursor.pos_z -= diff_position_3d.z;
+		}
+		camera->set_global_transform(camera_transform_backup);
 	}
-
-	Transform3D camera_transform;
-
-	camera_transform.translate_local(Vector3(cursor.pos_x, cursor.pos_y, cursor.pos_z));
-	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
-	Vector3 translation(
-			(invert_x_axis ? -1 : 1) * -p_relative.x * pan_speed,
-			(invert_y_axis ? -1 : 1) * p_relative.y * pan_speed,
-			0);
-	translation *= cursor.distance / DISTANCE_DEFAULT;
-	camera_transform.translate_local(translation);
-	cursor.pos_x = camera_transform.origin.x;
-	cursor.pos_y = camera_transform.origin.y;
-	cursor.pos_z = camera_transform.origin.z;
 
 	emit_signal(SNAME("cursor_panned"));
 }
@@ -355,14 +373,53 @@ void View3DController::cursor_orbit(const Ref<InputEventWithModifiers> &p_event,
 		return;
 	}
 
-	const float radians_per_pixel = Math::deg_to_rad(orbit_sensitivity);
+	if (!p_relative.is_zero_approx()) {
+		ERR_FAIL_COND(p_event.is_null());
+		ERR_FAIL_NULL(viewport);
 
-	cursor.unsnapped_x_rot += p_relative.y * radians_per_pixel * (invert_y_axis ? -1 : 1);
-	cursor.unsnapped_x_rot = CLAMP(cursor.unsnapped_x_rot, -1.57, 1.57);
-	cursor.unsnapped_y_rot += p_relative.x * radians_per_pixel * (invert_x_axis ? -1 : 1);
+		Camera3D *camera = viewport->get_camera_3d();
+		ERR_FAIL_NULL(camera);
 
-	cursor.x_rot = cursor.unsnapped_x_rot;
-	cursor.y_rot = cursor.unsnapped_y_rot;
+		// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
+		const Transform3D camera_transform_previous = to_camera_transform();
+		const Transform3D camera_transform_backup = camera->get_global_transform();
+
+		camera->set_global_transform(camera_transform_previous);
+		{
+			Vector2 viewport_position = viewport->get_mouse_position();
+			Vector2 invert_axis = Vector2(
+					invert_x_axis ? -1.0 : 1.0,
+					invert_y_axis ? -1.0 : 1.0);
+			Vector2 from_position_2d = viewport_position - p_relative;
+			Vector2 to_position_2d = viewport_position;
+
+			Vector3 from_position_3d = camera->project_position(from_position_2d, cursor.distance * Math::PI);
+			Vector3 to_linear_position_3d = camera->project_position(to_position_2d, cursor.distance * Math::PI);
+
+			Vector2 direction = p_relative.normalized() * invert_axis;
+			Vector2 rotation_factor = direction.sign() * orbit_factor;
+
+			double from_to_linear_length = from_position_3d.distance_to(to_linear_position_3d);
+			Vector2 arc_length = direction.abs() * from_to_linear_length;
+			Vector2 circumference_ratio = arc_length / (cursor.distance * Math::TAU);
+			Vector2 rotation = rotation_factor * circumference_ratio * Math::TAU;
+
+			// We need to flip the values here.
+			// The x axis is rotated up and down, and the y axis is left and right
+			// (relative to the camera).
+			double rotate_x = rotation.y;
+			double rotate_y = rotation.x;
+
+			static const double HALF_PI = Math::PI / 2.0;
+			cursor.unsnapped_x_rot += rotate_x;
+			cursor.unsnapped_x_rot = CLAMP(cursor.unsnapped_x_rot, -HALF_PI, HALF_PI);
+			cursor.unsnapped_y_rot += rotate_y;
+
+			cursor.x_rot = cursor.unsnapped_x_rot;
+			cursor.y_rot = cursor.unsnapped_y_rot;
+		}
+		camera->set_global_transform(camera_transform_backup);
+	}
 
 	ViewType new_view_type = VIEW_TYPE_USER;
 
@@ -415,34 +472,53 @@ void View3DController::cursor_look(const Ref<InputEventWithModifiers> &p_event, 
 		return;
 	}
 
-	// Scale mouse sensitivity with camera FOV scale when zoomed in to make it easier to point at things.
-	const float degrees_per_pixel = freelook_sensitivity * MIN(1.0, cursor.fov_scale);
-	const float radians_per_pixel = Math::deg_to_rad(degrees_per_pixel);
+	if (!p_relative.is_zero_approx()) {
+		ERR_FAIL_COND(p_event.is_null());
+		ERR_FAIL_NULL(viewport);
 
-	// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
-	const Transform3D prev_camera_transform = to_camera_transform();
+		Camera3D *camera = viewport->get_camera_3d();
+		ERR_FAIL_NULL(camera);
 
-	if (freelook_invert_y_axis) {
-		cursor.x_rot -= p_relative.y * radians_per_pixel;
-	} else {
-		cursor.x_rot += p_relative.y * radians_per_pixel;
+		// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
+		const Transform3D camera_transform_previous = to_camera_transform();
+		const Transform3D camera_transform_backup = camera->get_global_transform();
+
+		camera->set_global_transform(camera_transform_previous);
+		{
+			Vector2 viewport_position = viewport->get_mouse_position();
+			Vector2 invert_axis = Vector2(
+					invert_x_axis ? -1.0 : 1.0,
+					invert_y_axis ? -1.0 : 1.0);
+			Vector2 from_position_2d = viewport_position - p_relative;
+			Vector2 to_position_2d = viewport_position;
+
+			Vector3 from_position_3d = camera->project_position(from_position_2d, cursor.distance);
+			Vector3 to_linear_position_3d = camera->project_position(to_position_2d, cursor.distance);
+
+			Vector2 direction = p_relative.normalized() * invert_axis;
+			Vector2 rotation_factor = direction.sign() * freelook_factor;
+
+			double from_to_linear_length = from_position_3d.distance_to(to_linear_position_3d);
+			Vector2 arc_length = direction.abs() * from_to_linear_length;
+			Vector2 circumference_ratio = arc_length / (cursor.distance * Math::TAU);
+			Vector2 rotation = rotation_factor * circumference_ratio * Math::TAU;
+
+			// We need to flip the values here.
+			// The x axis is rotated up and down, and the y axis is left and right
+			// (relative to the camera).
+			double rotate_x = rotation.y;
+			double rotate_y = rotation.x;
+
+			static const double HALF_PI = Math::PI / 2.0;
+			cursor.unsnapped_x_rot += rotate_x;
+			cursor.unsnapped_x_rot = CLAMP(cursor.unsnapped_x_rot, -HALF_PI, HALF_PI);
+			cursor.unsnapped_y_rot += rotate_y;
+
+			cursor.x_rot = cursor.unsnapped_x_rot;
+			cursor.y_rot = cursor.unsnapped_y_rot;
+		}
+		camera->set_global_transform(camera_transform_backup);
 	}
-
-	// Clamp the Y rotation to roughly -90..90 degrees so the user can't look upside-down and end up disoriented.
-	cursor.x_rot = CLAMP(cursor.x_rot, -1.57, 1.57);
-	cursor.unsnapped_x_rot = cursor.x_rot;
-
-	cursor.y_rot += p_relative.x * radians_per_pixel;
-	cursor.unsnapped_y_rot = cursor.y_rot;
-
-	// Look is like the opposite of Orbit: the focus point rotates around the camera
-	Transform3D camera_transform = to_camera_transform();
-	Vector3 pos = camera_transform.xform(Vector3(0, 0, 0));
-	Vector3 prev_pos = prev_camera_transform.xform(Vector3(0, 0, 0));
-	Vector3 diff = prev_pos - pos;
-	cursor.pos_x += diff.x;
-	cursor.pos_y += diff.y;
-	cursor.pos_z += diff.z;
 
 	set_view_type(VIEW_TYPE_USER);
 }
@@ -505,10 +581,10 @@ void View3DController::update_camera(const real_t p_delta) {
 			cursor_interp.pos_y = cursor_interp.eye_pos_y + forward.y * cursor_interp.distance;
 			cursor_interp.pos_z = cursor_interp.eye_pos_z + forward.z * cursor_interp.distance;
 		} else {
-			if (translation_inertia > 0) {
-				cursor_interp.pos_x = Math::lerp(old_camera_cursor.pos_x, cursor.pos_x, MIN(1.0, p_delta * (1 / translation_inertia)));
-				cursor_interp.pos_y = Math::lerp(old_camera_cursor.pos_y, cursor.pos_y, MIN(1.0, p_delta * (1 / translation_inertia)));
-				cursor_interp.pos_z = Math::lerp(old_camera_cursor.pos_z, cursor.pos_z, MIN(1.0, p_delta * (1 / translation_inertia)));
+			if (pan_inertia > 0) {
+				cursor_interp.pos_x = Math::lerp(old_camera_cursor.pos_x, cursor.pos_x, MIN(1.0, p_delta * (1 / pan_inertia)));
+				cursor_interp.pos_y = Math::lerp(old_camera_cursor.pos_y, cursor.pos_y, MIN(1.0, p_delta * (1 / pan_inertia)));
+				cursor_interp.pos_z = Math::lerp(old_camera_cursor.pos_z, cursor.pos_z, MIN(1.0, p_delta * (1 / pan_inertia)));
 			}
 
 			if (zoom_inertia > 0) {
