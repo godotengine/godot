@@ -86,6 +86,10 @@ private:
 
 		int h_separation = 0;
 		int icon_max_width = 0;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> expanded_sound;
+		Ref<AudioStream> folded_sound;
 	} theme_cache;
 
 	Ref<StyleBox> _get_title_style() const;

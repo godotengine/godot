@@ -192,8 +192,6 @@ class ScriptEditor : public EditorDock {
 
 		FILE_MENU_RUN,
 
-		FILE_MENU_TOGGLE_FILES_PANEL,
-
 		FILE_MENU_MOVE_UP,
 		FILE_MENU_MOVE_DOWN,
 		FILE_MENU_SORT,
@@ -228,6 +226,7 @@ class ScriptEditor : public EditorDock {
 	};
 
 	HBoxContainer *menu_hb = nullptr;
+	Button *toggle_files_button = nullptr;
 	MenuButton *file_menu = nullptr;
 	MenuButton *script_search_menu = nullptr;
 	MenuButton *debug_menu = nullptr;
@@ -445,6 +444,8 @@ class ScriptEditor : public EditorDock {
 
 	void _close_builtin_scripts_from_scene(const String &p_scene);
 
+	void _toggle_files_pressed(bool p_pressed);
+
 	inline static ScriptEditor *script_editor = nullptr;
 	inline static ScriptEditor *bottom_script_editor = nullptr;
 
@@ -460,8 +461,6 @@ public:
 
 	static Dictionary get_context_data(Control *p_tab_control);
 
-	bool toggle_files_panel();
-	bool is_files_panel_toggled();
 	void apply_scripts() const;
 	void reload_scripts(bool p_refresh_only = false);
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
@@ -515,8 +514,6 @@ public:
 
 	void trigger_live_script_reload(const String &p_script_path);
 
-	VSplitContainer *get_left_list_split() { return list_split; }
-
 	void set_live_auto_reload_running_scripts(bool p_enabled);
 
 	void register_syntax_highlighter(const Ref<EditorSyntaxHighlighter> &p_syntax_highlighter);
@@ -548,7 +545,6 @@ public:
 	static bool open_in_external_editor(const String &p_path, int p_line, int p_col, bool p_ignore_project = false);
 
 	virtual String get_plugin_name() const override { return "Script"; }
-	virtual bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

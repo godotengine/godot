@@ -51,8 +51,7 @@ def detect_arch():
 def validate_arch(arch, platform_name, supported_arches):
     if arch not in supported_arches:
         methods.print_error(
-            'Unsupported CPU architecture "%s" for %s. Supported architectures are: %s.'
-            % (arch, platform_name, ", ".join(supported_arches))
+            f'Unsupported CPU architecture "{arch}" for {platform_name}. Supported architectures are: {", ".join(supported_arches)}.'
         )
         sys.exit(255)
 
@@ -63,14 +62,14 @@ def get_build_version(short):
     name = "custom_build"
     if os.getenv("BUILD_NAME") is not None:
         name = os.getenv("BUILD_NAME")
-    v = "%d.%d" % (version.major, version.minor)
+    v = f"{version.major}.{version.minor}"
     if version.patch > 0:
-        v += ".%d" % version.patch
+        v += f".{version.patch}"
     status = version.status
     if not short:
         if os.getenv("GODOT_VERSION_STATUS") is not None:
             status = str(os.getenv("GODOT_VERSION_STATUS"))
-        v += ".%s.%s" % (status, name)
+        v += f".{status}.{name}"
     return v
 
 

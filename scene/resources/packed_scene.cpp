@@ -106,10 +106,7 @@ Variant SceneState::_duplicate_recursive(const Variant &p_variant, HashMap<Node 
 				has_fallback = false;
 				if (fallback.is_typed()) {
 					const ContainerType &fallback_type = fallback.get_element_type();
-					has_fallback =
-							scr_type.variant_type == fallback_type.variant_type &&
-							scr_type.class_name == fallback_type.class_name &&
-							scr_type.script == fallback_type.script;
+					has_fallback = scr_type == fallback_type;
 				}
 			}
 			dst.resize(src.size());
@@ -129,16 +126,10 @@ Variant SceneState::_duplicate_recursive(const Variant &p_variant, HashMap<Node 
 			bool has_fallback = true;
 			Dictionary dst;
 			if (src.is_typed()) {
-				dst.set_typed(src.get_typed_key_builtin(), src.get_typed_key_class_name(), src.get_typed_key_script(), src.get_typed_value_builtin(), src.get_typed_value_class_name(), src.get_typed_value_script());
+				dst.set_typed(src.get_key_type(), src.get_value_type());
 				has_fallback = false;
 				if (fallback.is_typed()) {
-					has_fallback =
-							src.get_typed_key_builtin() == fallback.get_typed_key_builtin() &&
-							src.get_typed_key_class_name() == fallback.get_typed_key_class_name() &&
-							src.get_typed_key_script() == fallback.get_typed_key_script() &&
-							src.get_typed_value_builtin() == fallback.get_typed_value_builtin() &&
-							src.get_typed_value_class_name() == fallback.get_typed_value_class_name() &&
-							src.get_typed_value_script() == fallback.get_typed_value_script();
+					has_fallback = src.get_key_type() == fallback.get_key_type() && src.get_value_type() == fallback.get_value_type();
 				}
 			}
 
@@ -535,7 +526,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								if (set_array.is_same_typed(get_array)) {
 									set_array = set_array.duplicate();
 								} else {
-									set_array = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+									set_array = Array(set_array, get_array.get_element_type());
 								}
 							}
 
@@ -552,7 +543,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								if (set_dict.is_same_typed(get_dict)) {
 									set_dict = set_dict.duplicate();
 								} else {
-									set_dict = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(), get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
+									set_dict = Dictionary(set_dict, get_dict.get_key_type(), get_dict.get_value_type());
 								}
 							}
 

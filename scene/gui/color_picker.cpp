@@ -1106,7 +1106,6 @@ void ColorPicker::_ensure_file_dialog() {
 	}
 
 	file_dialog = memnew(FileDialog);
-	file_dialog->set_mode_overrides_title(false);
 	file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	file_dialog->set_current_dir(Engine::get_singleton()->is_editor_hint() ? "res://" : "user://");
 	add_child(file_dialog, false, INTERNAL_MODE_FRONT);
@@ -1365,6 +1364,9 @@ void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 		if (rect_old.has_point(mb->get_position())) {
 			// Revert to the old color when left-clicking the old color sample.
+			if (!old_color.is_equal_approx(color)) {
+				play_theme_sound(theme_cache.pressed_sound);
+			}
 			set_pick_color(old_color);
 
 			sample->set_focus_mode(FOCUS_NONE);
@@ -1373,6 +1375,9 @@ void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (p_event->is_action_pressed(SNAME("ui_accept"), false, true)) {
+		if (!old_color.is_equal_approx(color)) {
+			play_theme_sound(theme_cache.pressed_sound);
+		}
 		set_pick_color(old_color);
 		emit_signal(SNAME("color_changed"), color);
 	}
@@ -1498,6 +1503,7 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event, const Color &p_c
 			emit_signal(SNAME("color_changed"), p_color);
 		} else if (bev->is_pressed() && bev->get_button_index() == MouseButton::RIGHT && can_add_swatches) {
 			erase_preset(p_color);
+			play_theme_sound(theme_cache.pressed_sound);
 			emit_signal(SNAME("preset_removed"), p_color);
 		}
 	}
@@ -2084,6 +2090,10 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover, "tab_selected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_hover_pressed, "tab_selected", "TabContainer");
+
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, ColorPicker, pressed_sound, "pressed_sound", "BaseButton");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, ColorPicker, drag_started_sound, "drag_started_sound", "Slider");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, ColorPicker, drag_ended_sound, "drag_ended_sound", "Slider");
 
 	ADD_CLASS_DEPENDENCY("LineEdit");
 	ADD_CLASS_DEPENDENCY("MenuButton");

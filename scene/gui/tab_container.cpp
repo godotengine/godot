@@ -253,6 +253,25 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_constant_override(SNAME("icon_max_width"), theme_cache.icon_max_width);
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), theme_cache.outline_size);
 
+	if (theme_cache.focus_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("focus_sound"), theme_cache.focus_sound);
+	}
+	if (theme_cache.hover_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("hover_sound"), theme_cache.hover_sound);
+	}
+	if (theme_cache.pressed_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("pressed_sound"), theme_cache.pressed_sound);
+	}
+	if (theme_cache.pressed_disabled_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("pressed_disabled_sound"), theme_cache.pressed_disabled_sound);
+	}
+	if (theme_cache.drag_started_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("drag_started_sound"), theme_cache.drag_started_sound);
+	}
+	if (theme_cache.drag_ended_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("drag_ended_sound"), theme_cache.drag_ended_sound);
+	}
+
 	tab_bar->end_bulk_theme_override();
 
 	if (popup_button) {
@@ -1355,6 +1374,13 @@ void TabContainer::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT, TabContainer, tab_font, "font");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT_SIZE, TabContainer, tab_font_size, "font_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, outline_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, hover_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, pressed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, pressed_disabled_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, drag_started_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, drag_ended_sound);
 
 	CachedTab defaults;
 

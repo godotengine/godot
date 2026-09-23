@@ -816,8 +816,13 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 		return;
 	}
 
-	// Unfold all folders along the path (minus itself).
-	TreeItem *ti = (*directory_ptr)->get_parent();
+	// Unfold all folders along the path...
+	TreeItem *ti = *directory_ptr;
+	// ...minus itself, if the target is a folder.
+	if (target_path == base_dir_path) {
+		ti = ti->get_parent();
+	}
+
 	while (ti) {
 		ti->set_collapsed(false);
 		ti = ti->get_parent();

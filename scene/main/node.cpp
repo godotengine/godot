@@ -3097,7 +3097,7 @@ void Node::_duplicate_scripts(const Node *p_original, Node *p_copy, int p_flags)
 		Node *original = p_original->get_child(i, false);
 		// If using instantiation and the child structure changed, getting it by index will result in
 		// fetching values from the wrong nodes. So use the slower (but more accurate) path method.
-		Node *copy = instantiated ? p_copy->get_node(get_path_to(original)) : p_copy->get_child(i, false);
+		Node *copy = instantiated ? p_copy->get_node(p_original->get_path_to(original)) : p_copy->get_child(i, false);
 		ERR_FAIL_NULL_MSG(copy, "Child node disappeared while duplicating.");
 		_duplicate_scripts(original, copy, p_flags);
 	}
@@ -3161,7 +3161,7 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		Node *original = p_original->get_child(i, false);
 		// If using instantiation and the child structure changed, getting it by index will result in
 		// fetching values from the wrong nodes. So use the slower (but more accurate) path method.
-		Node *copy = instantiated ? p_copy->get_node(get_path_to(original)) : p_copy->get_child(i, false);
+		Node *copy = instantiated ? p_copy->get_node(p_original->get_path_to(original)) : p_copy->get_child(i, false);
 		ERR_FAIL_NULL_MSG(copy, "Child node disappeared while duplicating.");
 		_duplicate_properties(p_root, original, copy, p_flags);
 	}
