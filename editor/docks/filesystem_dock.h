@@ -157,7 +157,6 @@ private:
 	ProgressBar *scanning_progress = nullptr;
 	SplitContainer *split_box = nullptr;
 	MarginContainer *tree_mc = nullptr;
-	MarginContainer *files_mc = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
 
 	int split_box_offset_h = 0;
@@ -329,7 +328,7 @@ private:
 	void _resource_created();
 	void _script_or_shader_created(const Ref<Resource> &p_resource);
 	void _make_scene_confirm();
-	void _rename_operation_confirm();
+	void _rename_operation_confirm(bool p_from_tree);
 	void _duplicate_operation_confirm(const String &p_path);
 	void _move_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
@@ -361,7 +360,7 @@ private:
 	void _file_sort_popup(int p_id);
 
 	void _folder_color_index_pressed(int p_index, PopupMenu *p_menu);
-	void _file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options = true);
+	void _file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options = true, bool p_show_expand_options = true);
 	void _add_create_options(PopupMenu *p_popup, const String &p_base_folder);
 	void _tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);

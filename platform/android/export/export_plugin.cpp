@@ -910,71 +910,11 @@ void EditorExportPlatformAndroid::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("export/android")) {
-				_create_editor_debug_keystore_if_needed();
+				AndroidSDKManager::create_editor_debug_keystore_if_needed();
 			}
 		} break;
 	}
 #endif
-}
-
-void EditorExportPlatformAndroid::_create_editor_debug_keystore_if_needed() {
-	// Check if we have a valid keytool path.
-	String keytool_path = get_keytool_path();
-	if (!FileAccess::exists(keytool_path)) {
-		return;
-	}
-
-	// Check if the current editor debug keystore exists.
-	String editor_debug_keystore = EDITOR_GET("export/android/debug_keystore");
-	if (FileAccess::exists(editor_debug_keystore)) {
-		return;
-	}
-
-	// Generate the debug keystore.
-	String keystore_path = EditorPaths::get_singleton()->get_debug_keystore_path();
-	String keystores_dir = keystore_path.get_base_dir();
-	if (!DirAccess::exists(keystores_dir)) {
-		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		Error err = dir_access->make_dir_recursive(keystores_dir);
-		if (err != OK) {
-			WARN_PRINT(TTR("Error creating keystores directory:") + "\n" + keystores_dir);
-			return;
-		}
-	}
-
-	if (!FileAccess::exists(keystore_path)) {
-		String output;
-		List<String> args;
-		args.push_back("-genkey");
-		args.push_back("-keystore");
-		args.push_back(keystore_path);
-		args.push_back("-storepass");
-		args.push_back("android");
-		args.push_back("-alias");
-		args.push_back(DEFAULT_ANDROID_KEYSTORE_DEBUG_USER);
-		args.push_back("-keypass");
-		args.push_back(DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD);
-		args.push_back("-keyalg");
-		args.push_back("RSA");
-		args.push_back("-keysize");
-		args.push_back("2048");
-		args.push_back("-validity");
-		args.push_back("10000");
-		args.push_back("-dname");
-		args.push_back("cn=Godot, ou=Godot Engine, o=Stichting Godot, c=NL");
-		Error error = OS::get_singleton()->execute(keytool_path, args, &output, nullptr, true);
-		print_verbose(output);
-		if (error != OK) {
-			WARN_PRINT("Error: Unable to create debug keystore");
-			return;
-		}
-	}
-
-	// Update the editor settings.
-	EditorSettings::get_singleton()->set("export/android/debug_keystore", keystore_path);
-	EditorSettings::get_singleton()->set("export/android/debug_keystore_user", DEFAULT_ANDROID_KEYSTORE_DEBUG_USER);
-	EditorSettings::get_singleton()->set("export/android/debug_keystore_pass", DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD);
-	print_verbose("Updated editor debug keystore to " + keystore_path);
 }
 
 void EditorExportPlatformAndroid::_get_manifest_info(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions, Vector<FeatureInfo> &r_features, Vector<MetadataInfo> &r_metadata) {
@@ -2104,6 +2044,11 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (bool(p_preset->get("gradle_build/compress_native_libraries")) && !gradle_build_enabled) {
 				return TTR("\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is enabled.");
 			}
+		} else if (p_name == "gradle_build/minification") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (bool(p_preset->get("gradle_build/minification")) && !gradle_build_enabled) {
+				return TTR("\"Minification\" is only valid when \"Use Gradle Build\" is enabled.");
+			}
 		} else if (p_name == "gradle_build/export_format") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (int(p_preset->get("gradle_build/export_format")) == EXPORT_FORMAT_AAB && !gradle_build_enabled) {
@@ -2188,6 +2133,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/gradle_build_directory", PROPERTY_HINT_PLACEHOLDER_TEXT, "res://android"), "", false, false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/android_source_template", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gradle_build/compress_native_libraries"), false, false, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gradle_build/minification"), false, false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK, false, true));
 	// Using String instead of int to default to an empty string (no override) with placeholder for instructions (see GH-62465).
 	// This implies doing validation that the string is a proper int.
@@ -2675,15 +2621,6 @@ Ref<Texture2D> EditorExportPlatformAndroid::get_run_icon() const {
 	return run_icon;
 }
 
-String EditorExportPlatformAndroid::get_keytool_path() {
-	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
-		exe_ext = ".exe";
-	}
-	String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
-	return java_sdk_path.path_join("bin/keytool" + exe_ext);
-}
-
 static bool has_valid_keystore_credentials(String &r_error_str, const String &p_keystore, const String &p_username, const String &p_password, const String &p_type) {
 	String output;
 	List<String> args;
@@ -2694,7 +2631,7 @@ static bool has_valid_keystore_credentials(String &r_error_str, const String &p_
 	args.push_back(p_password);
 	args.push_back("-alias");
 	args.push_back(p_username);
-	String keytool_path = EditorExportPlatformAndroid::get_keytool_path();
+	String keytool_path = AndroidSDKManager::get_keytool_path();
 	Error error = OS::get_singleton()->execute(keytool_path, args, &output, nullptr, true);
 	String keytool_error = "keytool error:";
 	bool valid = output.substr(0, keytool_error.length()) != keytool_error;
@@ -2874,7 +2811,9 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 
 	// Validate the rest of the export configuration.
 
-	if (p_debug) {
+	// Validate the debug keystore setup.
+	bool has_valid_debug_keystore = true;
+	{
 		String dk = _get_keystore_path(p_preset, true);
 		String dk_user = p_preset->get_or_env("keystore/debug_user", ENV_ANDROID_KEYSTORE_DEBUG_USER);
 		String dk_password = p_preset->get_or_env("keystore/debug_password", ENV_ANDROID_KEYSTORE_DEBUG_PASS);
@@ -2884,15 +2823,22 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += TTR("Either Debug Keystore, Debug User AND Debug Password settings must be configured OR none of them.") + "\n";
 		}
 
-		// Use OR to make the export UI able to show this error.
-		if (!dk.is_empty() && !FileAccess::exists(dk)) {
+		if (dk.is_empty()) {
+			// Check the editor setting.
 			dk = EDITOR_GET("export/android/debug_keystore");
-			if (!FileAccess::exists(dk)) {
-				valid = false;
+			if (dk.is_empty() || !FileAccess::exists(dk)) {
+				has_valid_debug_keystore = false;
 				err += TTR("Debug keystore not configured in the Editor Settings nor in the preset.") + "\n";
 			}
+		} else if (!FileAccess::exists(dk)) {
+			has_valid_debug_keystore = false;
+			err += TTR("Debug keystore incorrectly configured in the export preset.") + "\n";
 		}
-	} else {
+	}
+
+	// Validate the release keystore setup.
+	bool has_valid_release_keystore = true;
+	{
 		String rk = _get_keystore_path(p_preset, false);
 		String rk_user = p_preset->get_or_env("keystore/release_user", ENV_ANDROID_KEYSTORE_RELEASE_USER);
 		String rk_password = p_preset->get_or_env("keystore/release_password", ENV_ANDROID_KEYSTORE_RELEASE_PASS);
@@ -2902,10 +2848,17 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += TTR("Either Release Keystore, Release User AND Release Password settings must be configured OR none of them.") + "\n";
 		}
 
-		if (!rk.is_empty() && !FileAccess::exists(rk)) {
-			valid = false;
+		if (rk.is_empty()) {
+			has_valid_release_keystore = false;
+		} else if (!FileAccess::exists(rk)) {
+			has_valid_release_keystore = false;
 			err += TTR("Release keystore incorrectly configured in the export preset.") + "\n";
 		}
+	}
+
+	// If both keystores are not configured, then it's an error.
+	if (!has_valid_debug_keystore && !has_valid_release_keystore) {
+		valid = false;
 	}
 
 #ifndef ANDROID_ENABLED
@@ -3666,6 +3619,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String sign_flag = bool_to_string(should_sign);
 		String zipalign_flag = "true";
 		String compress_native_libraries_flag = bool_to_string(p_preset->get("gradle_build/compress_native_libraries"));
+		String minification_flag = bool_to_string(!p_debug && bool(p_preset->get("gradle_build/minification")));
 
 		Vector<String> android_libraries;
 		Vector<String> android_dependencies;
@@ -3743,6 +3697,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
 		cmdline.push_back("-Pcompress_native_libraries=" + compress_native_libraries_flag); // argument to specify whether the build should compress native libraries.
+		cmdline.push_back("-Penable_minification=" + minification_flag); // argument to specify whether the build should enable R8 minification/obfuscation.
 
 		// NOTE: The release keystore is not included in the verbose logging
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
@@ -4266,10 +4221,10 @@ void EditorExportPlatformAndroid::initialize() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG::create_image_from_string(img, _android_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _android_logo_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		logo = ImageTexture::create_from_image(img);
 
-		ImageLoaderSVG::create_image_from_string(img, _android_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _android_run_icon_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		run_icon = ImageTexture::create_from_image(img);
 
 #ifndef DISABLE_DEPRECATED
@@ -4277,7 +4232,7 @@ void EditorExportPlatformAndroid::initialize() {
 #endif // DISABLE_DEPRECATED
 #ifndef ANDROID_ENABLED
 		devices_changed.set();
-		_create_editor_debug_keystore_if_needed();
+		AndroidSDKManager::create_editor_debug_keystore_if_needed();
 		_update_preset_status();
 		use_scrcpy = EditorSettings::get_singleton()->get_project_metadata("android", "use_scrcpy", false);
 #else // ANDROID_ENABLED

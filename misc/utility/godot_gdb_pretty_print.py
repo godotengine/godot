@@ -38,7 +38,7 @@ class GodotStringNamePrinter:
         if data == 0:
             return ""
 
-        return '"%s"' % data["name"]["_cowdata"]["_ptr"].string()
+        return f'"{data["name"]["_cowdata"]["_ptr"].string()}"'
 
     # Hint that the object is string-like.
     def display_hint(self):
@@ -118,7 +118,7 @@ class GodotVectorPrinter:
             yield str(i), (ptr + i).dereference()
 
     def to_string(self):
-        return "%s [%d]" % (self.value.type.name, self.get_size())
+        return f"{self.value.type.name} [{self.get_size()}]"
 
     # Hint that the object is array-like.
     def display_hint(self):
@@ -145,7 +145,7 @@ class GodotLocalVectorPrinter:
             yield str(i), (data + i).dereference()
 
     def to_string(self):
-        return "%s [%d]" % (self.value.type.name, self.value["count"])
+        return f"{self.value.type.name} [{self.value['count']}]"
 
     # Hint that the object is array-like.
     def display_hint(self):

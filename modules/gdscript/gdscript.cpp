@@ -1037,22 +1037,24 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 		HashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
 		if (E) {
 			const MemberInfo *member = &E->value;
-			Variant value = p_value;
-			if (!member->data_type.is_type(value)) {
+			Variant tmp;
+			const Variant *value = &p_value;
+			if (!member->data_type.is_type(p_value)) {
 				const Variant *args = &p_value;
 				Callable::CallError err;
-				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+				Variant::construct(member->data_type.builtin_type, tmp, &args, 1, err);
+				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(tmp)) {
 					return false;
 				}
+				value = &tmp;
 			}
 			if (likely(top->valid) && member->setter) {
-				const Variant *args = &value;
+				const Variant *args = value;
 				Callable::CallError err;
 				callp(member->setter, &args, 1, err);
 				return err.error == Callable::CallError::CALL_OK;
 			} else {
-				top->static_variables.write[member->index] = value;
+				top->static_variables.write[member->index] = *value;
 				return true;
 			}
 		}
@@ -1551,22 +1553,24 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 		HashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
 		if (E) {
 			const GDScript::MemberInfo *member = &E->value;
-			Variant value = p_value;
-			if (!member->data_type.is_type(value)) {
+			Variant tmp;
+			const Variant *value = &p_value;
+			if (!member->data_type.is_type(p_value)) {
 				const Variant *args = &p_value;
 				Callable::CallError err;
-				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+				Variant::construct(member->data_type.builtin_type, tmp, &args, 1, err);
+				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(tmp)) {
 					return false;
 				}
+				value = &tmp;
 			}
 			if (likely(script->valid) && member->setter) {
-				const Variant *args = &value;
+				const Variant *args = value;
 				Callable::CallError err;
 				callp(member->setter, &args, 1, err);
 				return err.error == Callable::CallError::CALL_OK;
 			} else {
-				members[member->index] = value;
+				members[member->index] = *value;
 				return true;
 			}
 		}
@@ -1578,22 +1582,24 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
 			if (E) {
 				const GDScript::MemberInfo *member = &E->value;
-				Variant value = p_value;
-				if (!member->data_type.is_type(value)) {
+				Variant tmp;
+				const Variant *value = &p_value;
+				if (!member->data_type.is_type(p_value)) {
 					const Variant *args = &p_value;
 					Callable::CallError err;
-					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+					Variant::construct(member->data_type.builtin_type, tmp, &args, 1, err);
+					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(tmp)) {
 						return false;
 					}
+					value = &tmp;
 				}
 				if (likely(sptr->valid) && member->setter) {
-					const Variant *args = &value;
+					const Variant *args = value;
 					Callable::CallError err;
 					callp(member->setter, &args, 1, err);
 					return err.error == Callable::CallError::CALL_OK;
 				} else {
-					sptr->static_variables.write[member->index] = value;
+					sptr->static_variables.write[member->index] = *value;
 					return true;
 				}
 			}
@@ -2303,20 +2309,18 @@ void GDScriptLanguage::profiling_start() {
 #ifdef DEBUG_ENABLED
 	MutexLock lock(mutex);
 
-	SelfList<GDScriptFunction> *elem = function_list.first();
-	while (elem) {
-		elem->self()->profile.call_count.set(0);
-		elem->self()->profile.self_time.set(0);
-		elem->self()->profile.total_time.set(0);
-		elem->self()->profile.frame_call_count.set(0);
-		elem->self()->profile.frame_self_time.set(0);
-		elem->self()->profile.frame_total_time.set(0);
-		elem->self()->profile.last_frame_call_count = 0;
-		elem->self()->profile.last_frame_self_time = 0;
-		elem->self()->profile.last_frame_total_time = 0;
-		elem->self()->profile.native_calls.clear();
-		elem->self()->profile.last_native_calls.clear();
-		elem = elem->next();
+	for (GDScriptFunction &func : function_list) {
+		func.profile.call_count.set(0);
+		func.profile.self_time.set(0);
+		func.profile.total_time.set(0);
+		func.profile.frame_call_count.set(0);
+		func.profile.frame_self_time.set(0);
+		func.profile.frame_total_time.set(0);
+		func.profile.last_frame_call_count = 0;
+		func.profile.last_frame_self_time = 0;
+		func.profile.last_frame_total_time = 0;
+		func.profile.native_calls.clear();
+		func.profile.last_native_calls.clear();
 	}
 
 	profiling = true;
@@ -2345,20 +2349,20 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *r_info_arr, 
 	MutexLock lock(mutex);
 
 	profiling_collate_native_call_data(true);
-	SelfList<GDScriptFunction> *elem = function_list.first();
-	while (elem) {
+
+	for (const GDScriptFunction &func : function_list) {
 		if (current >= p_info_max) {
 			break;
 		}
 		int last_non_internal = current;
-		r_info_arr[current].call_count = elem->self()->profile.call_count.get();
-		r_info_arr[current].self_time = elem->self()->profile.self_time.get();
-		r_info_arr[current].total_time = elem->self()->profile.total_time.get();
-		r_info_arr[current].signature = elem->self()->profile.signature;
+		r_info_arr[current].call_count = func.profile.call_count.get();
+		r_info_arr[current].self_time = func.profile.self_time.get();
+		r_info_arr[current].total_time = func.profile.total_time.get();
+		r_info_arr[current].signature = func.profile.signature;
 		current++;
 
 		int nat_time = 0;
-		HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = elem->self()->profile.native_calls.begin();
+		HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = func.profile.native_calls.begin();
 		while (nat_calls) {
 			r_info_arr[current].call_count = nat_calls->value.call_count;
 			r_info_arr[current].total_time = nat_calls->value.total_time;
@@ -2369,7 +2373,6 @@ int GDScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *r_info_arr, 
 			++nat_calls;
 		}
 		r_info_arr[last_non_internal].internal_time = nat_time;
-		elem = elem->next();
 	}
 #endif
 
@@ -2383,21 +2386,21 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_
 	MutexLock lock(mutex);
 
 	profiling_collate_native_call_data(false);
-	SelfList<GDScriptFunction> *elem = function_list.first();
-	while (elem) {
+
+	for (const GDScriptFunction &func : function_list) {
 		if (current >= p_info_max) {
 			break;
 		}
-		if (elem->self()->profile.last_frame_call_count > 0) {
+		if (func.profile.last_frame_call_count > 0) {
 			int last_non_internal = current;
-			r_info_arr[current].call_count = elem->self()->profile.last_frame_call_count;
-			r_info_arr[current].self_time = elem->self()->profile.last_frame_self_time;
-			r_info_arr[current].total_time = elem->self()->profile.last_frame_total_time;
-			r_info_arr[current].signature = elem->self()->profile.signature;
+			r_info_arr[current].call_count = func.profile.last_frame_call_count;
+			r_info_arr[current].self_time = func.profile.last_frame_self_time;
+			r_info_arr[current].total_time = func.profile.last_frame_total_time;
+			r_info_arr[current].signature = func.profile.signature;
 			current++;
 
 			int nat_time = 0;
-			HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = elem->self()->profile.last_native_calls.begin();
+			HashMap<String, GDScriptFunction::Profile::NativeProfile>::ConstIterator nat_calls = func.profile.last_native_calls.begin();
 			while (nat_calls) {
 				r_info_arr[current].call_count = nat_calls->value.call_count;
 				r_info_arr[current].total_time = nat_calls->value.total_time;
@@ -2410,7 +2413,6 @@ int GDScriptLanguage::profiling_get_frame_data(ProfilingInfo *r_info_arr, int p_
 			}
 			r_info_arr[last_non_internal].internal_time = nat_time;
 		}
-		elem = elem->next();
 	}
 #endif
 
@@ -2422,9 +2424,8 @@ void GDScriptLanguage::profiling_collate_native_call_data(bool p_accumulated) {
 	// The same native call can be called from multiple functions, so join them together here.
 	// Only use the name of the function (ie signature.split[2]).
 	HashMap<String, GDScriptFunction::Profile::NativeProfile *> seen_nat_calls;
-	SelfList<GDScriptFunction> *elem = function_list.first();
-	while (elem) {
-		HashMap<String, GDScriptFunction::Profile::NativeProfile> *nat_calls = p_accumulated ? &elem->self()->profile.native_calls : &elem->self()->profile.last_native_calls;
+	for (GDScriptFunction &func : function_list) {
+		HashMap<String, GDScriptFunction::Profile::NativeProfile> *nat_calls = p_accumulated ? &func.profile.native_calls : &func.profile.last_native_calls;
 		HashMap<String, GDScriptFunction::Profile::NativeProfile>::Iterator it = nat_calls->begin();
 
 		while (it != nat_calls->end()) {
@@ -2433,13 +2434,12 @@ void GDScriptLanguage::profiling_collate_native_call_data(bool p_accumulated) {
 			if (already_found) {
 				already_found->value->total_time += it->value.total_time;
 				already_found->value->call_count += it->value.call_count;
-				elem->self()->profile.last_native_calls.remove(it);
+				func.profile.last_native_calls.remove(it);
 			} else {
 				seen_nat_calls.insert(sig[2], &it->value);
 			}
 			++it;
 		}
-		elem = elem->next();
 	}
 #endif
 }
@@ -2471,13 +2471,11 @@ void GDScriptLanguage::reload_all_scripts() {
 	{
 		MutexLock lock(mutex);
 
-		SelfList<GDScript> *elem = script_list.first();
-		while (elem) {
-			if (elem->self()->get_path().is_resource_file()) {
-				print_verbose("GDScript: Found: " + elem->self()->get_path());
-				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+		for (GDScript &script : script_list) {
+			if (script.get_path().is_resource_file()) {
+				print_verbose("GDScript: Found: " + script.get_path());
+				scripts.push_back(Ref<GDScript>(&script)); //cast to gdscript to avoid being erased by accident
 			}
-			elem = elem->next();
 		}
 
 #ifdef TOOLS_ENABLED
@@ -2505,13 +2503,11 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts) {
 	{
 		MutexLock lock(mutex);
 
-		SelfList<GDScript> *elem = script_list.first();
-		while (elem) {
+		for (GDScript &script : script_list) {
 			// Scripts will reload all subclasses, so only reload root scripts.
-			if (elem->self()->is_root_script() && !elem->self()->get_path().is_empty()) {
-				scripts.push_back(Ref<GDScript>(elem->self())); //cast to gdscript to avoid being erased by accident
+			if (script.is_root_script() && !script.get_path().is_empty()) {
+				scripts.push_back(Ref<GDScript>(&script)); //cast to gdscript to avoid being erased by accident
 			}
-			elem = elem->next();
 		}
 	}
 
@@ -2536,6 +2532,9 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts) {
 	for (KeyValue<Ref<GDScript>, HashMap<ObjectID, List<Pair<StringName, Variant>>>> &E : to_reload) {
 		Ref<GDScript> scr = E.key;
 		print_verbose("GDScript: Reloading: " + scr->get_path());
+#ifdef TOOLS_ENABLED
+		bool was_tool = scr->is_tool();
+#endif
 		if (scr->is_built_in()) {
 			// TODO: It would be nice to do it more efficiently than loading the whole scene again.
 			Ref<PackedScene> scene = ResourceLoader::load(scr->get_path().get_slice("::", 0), "", ResourceFormatLoader::CACHE_MODE_IGNORE_DEEP);
@@ -2550,6 +2549,14 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts) {
 			scr->load_source_code(scr->get_path());
 		}
 		scr->reload(true);
+
+#ifdef TOOLS_ENABLED
+		// If @tool is added/removed, we reconstruct the instance
+		// This changes a placeholder instance to an actual instance or vice versa.
+		if (was_tool != scr->is_tool()) {
+			_prepare_script_for_reload(scr, to_reload[scr]);
+		}
+#endif
 
 		//restore state if saved
 		for (KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : E.value) {
@@ -2592,6 +2599,40 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts) {
 #endif // DEBUG_ENABLED
 }
 
+#ifdef TOOLS_ENABLED
+void GDScriptLanguage::_prepare_script_for_reload(const Ref<GDScript> &p_script, HashMap<ObjectID, List<Pair<StringName, Variant>>> &p_map) {
+	MutexLock lock(mutex);
+	while (p_script->instances.first()) {
+		GDScriptInstance *instance = p_script->instances.first()->self();
+		// Save instance info.
+		List<Pair<StringName, Variant>> state;
+		instance->get_property_state(state);
+		p_map[instance->get_owner()->get_instance_id()] = state;
+		instance->get_owner()->set_script(Variant());
+	}
+
+	// Same thing for placeholders.
+	while (p_script->placeholders.size()) {
+		Object *obj = (*p_script->placeholders.begin())->get_owner();
+
+		// Save instance info.
+		if (obj->get_script_instance()) {
+			p_map.insert(obj->get_instance_id(), List<Pair<StringName, Variant>>());
+			List<Pair<StringName, Variant>> &state = p_map[obj->get_instance_id()];
+			obj->get_script_instance()->get_property_state(state);
+			obj->set_script(Variant());
+		} else {
+			// No instance found. Let's remove it so we don't loop forever.
+			p_script->placeholders.erase(*p_script->placeholders.begin());
+		}
+	}
+
+	for (const KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : p_script->pending_reload_state) {
+		p_map[F.key] = F.value; // Pending to reload, use this one instead.
+	}
+}
+#endif
+
 void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script) {
 	Array scripts = { p_script };
 	reload_scripts(scripts);
@@ -2602,17 +2643,15 @@ void GDScriptLanguage::frame() {
 	if (profiling) {
 		MutexLock lock(mutex);
 
-		SelfList<GDScriptFunction> *elem = function_list.first();
-		while (elem) {
-			elem->self()->profile.last_frame_call_count = elem->self()->profile.frame_call_count.get();
-			elem->self()->profile.last_frame_self_time = elem->self()->profile.frame_self_time.get();
-			elem->self()->profile.last_frame_total_time = elem->self()->profile.frame_total_time.get();
-			elem->self()->profile.last_native_calls = elem->self()->profile.native_calls;
-			elem->self()->profile.frame_call_count.set(0);
-			elem->self()->profile.frame_self_time.set(0);
-			elem->self()->profile.frame_total_time.set(0);
-			elem->self()->profile.native_calls.clear();
-			elem = elem->next();
+		for (GDScriptFunction &func : function_list) {
+			func.profile.last_frame_call_count = func.profile.frame_call_count.get();
+			func.profile.last_frame_self_time = func.profile.frame_self_time.get();
+			func.profile.last_frame_total_time = func.profile.frame_total_time.get();
+			func.profile.last_native_calls = func.profile.native_calls;
+			func.profile.frame_call_count.set(0);
+			func.profile.frame_self_time.set(0);
+			func.profile.frame_total_time.set(0);
+			func.profile.native_calls.clear();
 		}
 	}
 

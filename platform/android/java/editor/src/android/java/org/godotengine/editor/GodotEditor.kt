@@ -37,12 +37,16 @@ import android.os.Handler
 import android.util.Log
 import androidx.xr.runtime.Session
 import androidx.xr.runtime.SessionCreateSuccess
+import androidx.xr.runtime.math.FloatSize3d
 import androidx.xr.runtime.math.IntSize2d
 import androidx.xr.runtime.math.Pose
 import androidx.xr.runtime.math.Quaternion
 import androidx.xr.runtime.math.Vector3
 import androidx.xr.scenecore.ActivityPanelEntity
 import androidx.xr.scenecore.MovableComponent
+import androidx.xr.scenecore.PanelEntity
+import androidx.xr.scenecore.ResizableComponent
+import androidx.xr.scenecore.ResizeEvent
 import androidx.xr.scenecore.SpatialCapability
 import androidx.xr.scenecore.scene
 import java.util.LinkedList
@@ -57,6 +61,9 @@ open class GodotEditor : BaseGodotEditor() {
 
 	companion object {
 		private val TAG = GodotEditor::class.java.simpleName
+
+		private val MAIN_WINDOW_PANEL_MIN_SIZE = FloatSize3d(0.45f, 0.25f, 0.0f)
+		private val SPATIAL_CONTAINER_PANEL_MIN_SIZE = FloatSize3d(0.05f, 0.05f, 0.0f)
 	}
 
 	private val handler = Handler()
@@ -86,6 +93,7 @@ open class GodotEditor : BaseGodotEditor() {
 			result.session.scene.apply{
 				addSpatialCapabilitiesChangedListener(spatialCapabilitiesChangedListener)
 				mainPanelEntity.addComponent(MovableComponent.createSystemMovable(result.session))
+				mainPanelEntity.addComponent(ResizableComponent.create(result.session, MAIN_WINDOW_PANEL_MIN_SIZE) { resizePanelEntity(it) })
 			}
 			return@lazy result.session
 		} else {
@@ -134,6 +142,13 @@ open class GodotEditor : BaseGodotEditor() {
 		return false
 	}
 
+	private fun resizePanelEntity(resizeEvent: ResizeEvent) {
+		if (resizeEvent.entity is PanelEntity && resizeEvent.resizeState == ResizeEvent.ResizeState.END) {
+			Log.v(TAG, "Resizing panel entity ${resizeEvent.entity} to ${resizeEvent.newSize}")
+			(resizeEvent.entity as PanelEntity).size = resizeEvent.newSize.to2d()
+		}
+	}
+
 	private fun startSpatialContainerActivity(newInstance: Intent) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			val scene = session!!.scene
@@ -146,6 +161,9 @@ open class GodotEditor : BaseGodotEditor() {
 				scene.activitySpace
 			)
 			activityPanel.addComponent(MovableComponent.createSystemMovable(session!!))
+			val spatialContainerPanelResizeComponent = ResizableComponent.create(session!!, SPATIAL_CONTAINER_PANEL_MIN_SIZE) { resizePanelEntity(it) }
+			spatialContainerPanelResizeComponent.isFixedAspectRatioEnabled = true
+			activityPanel.addComponent(spatialContainerPanelResizeComponent)
 
 			// We remove the 'NEW_TASK' flag as launching in a new task prevents embedding.
 			newInstance.removeFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

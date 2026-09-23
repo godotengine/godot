@@ -224,10 +224,10 @@ Size2i OpenXRFoveatedInsetExtension::get_render_size() {
 
 #ifdef DEBUG_ENABLED
 	// Views 2 and 3 should have the same size!
-	ERR_FAIL_COND_V(openxr_api->get_recommended_target_size(2) != openxr_api->get_recommended_target_size(3), Size2i());
+	ERR_FAIL_COND_V(openxr_api->get_recommended_view_size(2) != openxr_api->get_recommended_view_size(3), Size2i());
 #endif
 
-	return openxr_api->get_recommended_target_size(2);
+	return openxr_api->get_recommended_view_size(2);
 }
 
 void OpenXRFoveatedInsetExtension::register_viewport(RID p_viewport) {
@@ -275,7 +275,7 @@ void OpenXRFoveatedInsetExtension::on_pre_render() {
 	}
 
 	// Check if we need to update our swap chains.
-	Size2i new_size = openxr_api->get_recommended_target_size(2);
+	Size2i new_size = openxr_api->get_recommended_view_size(2);
 	if (render_state.size != new_size) {
 		_free_swapchains();
 

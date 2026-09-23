@@ -343,13 +343,26 @@ Rect2 ItemList::get_item_rect(int p_idx, bool p_expand) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Rect2());
 
 	Rect2 ret = items[p_idx].rect_cache;
+
 	if (p_expand && p_idx % current_columns == current_columns - 1) {
 		int width = get_size().width - theme_cache.panel_style->get_minimum_size().width;
 		if (scroll_bar_v->is_visible()) {
-			width -= scroll_bar_v->get_bound_minimum_size().width + theme_cache.scroll_bar_h_separation;
+			int scroll_width = scroll_bar_v->get_bound_minimum_size().width + theme_cache.scrollbar_h_separation;
+			if (theme_cache.scrollbar_margin_right < 0) {
+				width -= scroll_width;
+			} else {
+				int scroll_margin = theme_cache.scrollbar_margin_right + scroll_width;
+				if (scroll_margin > theme_cache.panel_style->get_margin(SIDE_RIGHT)) {
+					width -= scroll_margin - theme_cache.panel_style->get_margin(SIDE_RIGHT);
+				}
+			}
+		} else {
+			width -= MAX(theme_cache.panel_style->get_margin(SIDE_RIGHT), theme_cache.scrollbar_margin_right);
 		}
+
 		ret.size.width = width - ret.position.x;
 	}
+
 	ret.position += theme_cache.panel_style->get_offset();
 	return ret;
 }
@@ -771,6 +784,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		if (closest != hovered) {
 			prev_hovered = hovered;
 			hovered = closest;
+			if (hovered != -1 && !items[hovered].disabled) {
+				play_theme_sound(theme_cache.item_hovered_sound);
+			}
 			queue_accessibility_update();
 			queue_redraw();
 		}
@@ -781,42 +797,48 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 		int closest = get_item_at_position(mb->get_position(), true);
 
-		if (closest != -1 && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT))) {
+		const bool input_can_select = mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT);
+
+		if (closest != -1 && input_can_select) {
 			int i = closest;
 
-			if (items[i].disabled) {
-				// Don't emit any signal or do any action with clicked item when disabled.
-				return;
-			}
+			// Don't emit any signal or do any action with clicked item when disabled (other than playing the "disabled" audio feedback).
+			const bool audio_only = items[i].disabled;
 
-			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
+			if (!audio_only && select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
 				deselect(i);
 				emit_signal(SNAME("multi_selected"), i, false);
 				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
 			} else if (select_mode == SELECT_MULTI && mb->is_shift_pressed() && current >= 0 && current < items.size() && current != i) {
-				// Range selection.
+				if (!audio_only) {
+					// Range selection.
 
-				int from = current;
-				int to = i;
-				if (i < current) {
-					SWAP(from, to);
-				}
-				for (int j = from; j <= to; j++) {
-					if (!CAN_SELECT(j)) {
-						// Item is not selectable during a range selection, so skip it.
-						continue;
+					int from = current;
+					int to = i;
+					if (i < current) {
+						SWAP(from, to);
 					}
-					bool selected = !items[j].selected;
-					select(j, false);
-					if (selected) {
-						emit_signal(SNAME("multi_selected"), j, true);
+					for (int j = from; j <= to; j++) {
+						if (!CAN_SELECT(j)) {
+							// Item is not selectable during a range selection, so skip it.
+							continue;
+						}
+						bool selected = !items[j].selected;
+						select(j, false);
+						if (selected) {
+							emit_signal(SNAME("multi_selected"), j, true);
+						}
 					}
+
+					emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 				}
-				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
+				if (input_can_select) {
+					play_theme_sound(items[i].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
+				}
 
 			} else {
-				if (!mb->is_double_click() &&
+				if (!audio_only && !mb->is_double_click() &&
 						!mb->is_command_or_control_pressed() &&
 						select_mode == SELECT_MULTI &&
 						items[i].selectable &&
@@ -828,30 +850,46 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (select_mode == SELECT_TOGGLE) {
 					if (items[i].selectable) {
-						if (items[i].selected) {
-							deselect(i);
-							current = i;
-							emit_signal(SNAME("multi_selected"), i, false);
-						} else {
-							select(i, false);
-							current = i;
-							emit_signal(SNAME("multi_selected"), i, true);
+						if (!audio_only) {
+							if (items[i].selected) {
+								deselect(i);
+								current = i;
+								emit_signal(SNAME("multi_selected"), i, false);
+							} else {
+								select(i, false);
+								current = i;
+								emit_signal(SNAME("multi_selected"), i, true);
+							}
+						}
+
+						if (input_can_select) {
+							play_theme_sound(items[i].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
 						}
 					}
 				} else if (items[i].selectable && (!items[i].selected || allow_reselect)) {
-					select(i, select_mode == SELECT_SINGLE || !mb->is_command_or_control_pressed());
+					if (!audio_only) {
+						select(i, select_mode == SELECT_SINGLE || !mb->is_command_or_control_pressed());
+					}
 
-					if (select_mode == SELECT_SINGLE) {
-						emit_signal(SceneStringName(item_selected), i);
-					} else {
-						emit_signal(SNAME("multi_selected"), i, true);
+					if (input_can_select) {
+						play_theme_sound(items[i].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
+					}
+
+					if (!audio_only) {
+						if (select_mode == SELECT_SINGLE) {
+							emit_signal(SceneStringName(item_selected), i);
+						} else {
+							emit_signal(SNAME("multi_selected"), i, true);
+						}
 					}
 				}
 
-				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
+				if (!audio_only) {
+					emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
-				if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
-					emit_signal(SNAME("item_activated"), i);
+					if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+						emit_signal(SNAME("item_activated"), i);
+					}
 				}
 			}
 
@@ -965,6 +1003,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 					return;
 				}
+				play_theme_sound(theme_cache.focus_sound);
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
@@ -1011,6 +1050,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 					return;
 				}
+				play_theme_sound(theme_cache.focus_sound);
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
@@ -1071,6 +1111,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 					return;
 				}
+				play_theme_sound(theme_cache.focus_sound);
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
@@ -1100,6 +1141,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					accept_event();
 					return;
 				}
+				play_theme_sound(theme_cache.focus_sound);
 				set_current(next);
 				ensure_current_is_visible();
 				if (select_mode == SELECT_SINGLE) {
@@ -1113,9 +1155,11 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (current >= 0 && current < items.size()) {
 				if (CAN_SELECT(current) && !items[current].selected) {
 					select(current, false);
+					play_theme_sound(items[current].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
 					emit_signal(SNAME("multi_selected"), current, true);
 				} else if (items[current].selected) {
 					deselect(current);
+					play_theme_sound(items[current].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
 					emit_signal(SNAME("multi_selected"), current, false);
 				}
 			}
@@ -1123,6 +1167,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			if (current >= 0 && current < items.size() && !items[current].disabled) {
+				play_theme_sound(items[current].disabled ? theme_cache.item_selected_disabled_sound : theme_cache.item_selected_sound);
 				emit_signal(SNAME("item_activated"), current);
 			}
 		} else {
@@ -1156,6 +1201,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					}
 
 					if (items[i].text.findn(search_string) == 0) {
+						play_theme_sound(theme_cache.focus_sound);
 						set_current(i);
 						ensure_current_is_visible();
 						if (select_mode == SELECT_SINGLE) {
@@ -1405,23 +1451,47 @@ void ItemList::_notification(int p_what) {
 			Size2 scroll_bar_h_min = scroll_bar_h->is_visible() ? scroll_bar_h->get_bound_minimum_size() : Size2();
 			Size2 scroll_bar_v_min = scroll_bar_v->is_visible() ? scroll_bar_v->get_bound_minimum_size() : Size2();
 
-			int left_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_RIGHT) : theme_cache.panel_style->get_margin(SIDE_LEFT);
-			int right_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_LEFT) : theme_cache.panel_style->get_margin(SIDE_RIGHT);
+			int left_margin = 0;
+			if (theme_cache.scrollbar_margin_left < 0) {
+				left_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_RIGHT) : theme_cache.panel_style->get_margin(SIDE_LEFT);
+			} else {
+				left_margin = theme_cache.scrollbar_margin_left;
+			}
+			int right_margin = 0;
+			if (theme_cache.scrollbar_margin_right < 0) {
+				right_margin = is_layout_rtl() ? theme_cache.panel_style->get_margin(SIDE_LEFT) : theme_cache.panel_style->get_margin(SIDE_RIGHT);
+			} else {
+				right_margin = theme_cache.scrollbar_margin_right;
+			}
+
+			int top_margin = theme_cache.scrollbar_margin_top < 0 ? theme_cache.panel_style->get_margin(SIDE_TOP) : theme_cache.scrollbar_margin_top;
+			int bottom_margin = theme_cache.scrollbar_margin_bottom < 0 ? theme_cache.panel_style->get_margin(SIDE_BOTTOM) : theme_cache.scrollbar_margin_bottom;
 
 			scroll_bar_v->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -scroll_bar_v_min.width - right_margin);
 			scroll_bar_v->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -right_margin);
-			scroll_bar_v->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, theme_cache.panel_style->get_margin(SIDE_TOP));
-			scroll_bar_v->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -scroll_bar_h_min.height - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
+			scroll_bar_v->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, top_margin);
+			scroll_bar_v->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -scroll_bar_h_min.height - bottom_margin);
 
 			scroll_bar_h->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, left_margin);
 			scroll_bar_h->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, -right_margin - scroll_bar_v_min.width);
-			scroll_bar_h->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -scroll_bar_h_min.height - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
-			scroll_bar_h->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -theme_cache.panel_style->get_margin(SIDE_BOTTOM));
+			scroll_bar_h->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -scroll_bar_h_min.height - bottom_margin);
+			scroll_bar_h->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -bottom_margin);
 
 			Size2 size = get_size();
-			int width = size.width - theme_cache.panel_style->get_minimum_size().width;
+
+			int width = get_size().width - theme_cache.panel_style->get_minimum_size().width;
 			if (scroll_bar_v->is_visible()) {
-				width -= scroll_bar_v_min.width + theme_cache.scroll_bar_h_separation;
+				int scroll_width = scroll_bar_v_min.width + theme_cache.scrollbar_h_separation;
+				if (theme_cache.scrollbar_margin_right < 0) {
+					width -= scroll_width;
+				} else {
+					int scroll_margin = theme_cache.scrollbar_margin_right + scroll_width;
+					if (scroll_margin > theme_cache.panel_style->get_margin(SIDE_RIGHT)) {
+						width -= scroll_margin - theme_cache.panel_style->get_margin(SIDE_RIGHT);
+					}
+				}
+			} else {
+				width -= MAX(theme_cache.panel_style->get_margin(SIDE_RIGHT), theme_cache.scrollbar_margin_right);
 			}
 
 			draw_style_box(theme_cache.panel_style, Rect2(Point2(), size));
@@ -1985,6 +2055,7 @@ void ItemList::_shift_range_select(int p_from, int p_to) {
 		if (i >= MIN(shift_anchor, p_to) && i <= MAX(shift_anchor, p_to)) {
 			if (!is_selected(i)) {
 				select(i, false);
+				play_theme_sound(theme_cache.focus_sound);
 				emit_signal(SNAME("multi_selected"), i, true);
 			}
 		} else if (is_selected(i)) {
@@ -2488,7 +2559,11 @@ void ItemList::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, v_separation);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scroll_bar_h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_margin_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_margin_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_margin_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_margin_bottom);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ItemList, scrollbar_h_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, focus_style, "focus");
@@ -2518,6 +2593,11 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_style, "disabled");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_hovered_style, "disabled_hovered");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, guide_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ItemList, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ItemList, item_hovered_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ItemList, item_selected_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, ItemList, item_selected_disabled_sound);
 
 	Item defaults(true);
 

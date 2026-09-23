@@ -413,3 +413,11 @@ ext.getAddonsDirectory = { ->
     String addonsDirectory = project.hasProperty("addons_directory") ? project.property("addons_directory") : ""
     return addonsDirectory
 }
+
+ext.shouldMinify = { ->
+    String minifyFlag = project.hasProperty("enable_minification") ? project.property("enable_minification") : ""
+    if (minifyFlag == null || minifyFlag.isEmpty()) {
+        minifyFlag = "false"
+    }
+    return Boolean.parseBoolean(minifyFlag)
+}

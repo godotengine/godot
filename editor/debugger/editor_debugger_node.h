@@ -105,6 +105,7 @@ private:
 	float inspect_edited_object_timeout = 0;
 	EditorDebuggerTree *remote_scene_tree = nullptr;
 	bool remote_scene_tree_wait = false;
+	bool remote_scene_tree_queue_update = false;
 	float remote_scene_tree_timeout = 0.0;
 	bool auto_switch_remote_scene_tree = false;
 	bool debug_with_external_editor = false;
@@ -118,9 +119,14 @@ private:
 
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
 
+	Ref<StyleBoxEmpty> single_session_style;
+	Ref<StyleBox> multi_session_style;
+
 	ScriptEditorDebugger *_add_debugger();
 	void _update_errors(bool p_force = false);
 	void _update_margins();
+
+	void _update_debugger_tabs();
 
 	friend class DebuggerEditorPlugin;
 	friend class DebugAdapterParser;

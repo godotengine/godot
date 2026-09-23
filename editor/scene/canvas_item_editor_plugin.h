@@ -661,7 +661,6 @@ protected:
 
 public:
 	virtual String get_plugin_name() const override { return "2D"; }
-	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
@@ -725,6 +724,7 @@ class CanvasItemEditorViewport : public Control {
 	void _create_audio_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	bool _create_instance(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _create_mesh_node(Node *p_parent, const String &p_path, const Point2 &p_point);
+	void _create_script_node(Node *p_parent, const String &p_path, const Point2 &p_point);
 	void _perform_drop_data();
 	void _show_texture_node_type_selector();
 	void _update_theme();

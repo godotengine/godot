@@ -1030,8 +1030,8 @@ void fragment() {
 void SceneShaderForwardClustered::set_default_specialization(const ShaderSpecialization &p_specialization) {
 	default_specialization = p_specialization;
 
-	for (SelfList<ShaderData> *E = shader_list.first(); E; E = E->next()) {
-		E->self()->pipeline_hash_map.clear_pipelines();
+	for (ShaderData &shader_data : shader_list) {
+		shader_data.pipeline_hash_map.clear_pipelines();
 	}
 }
 

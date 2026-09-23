@@ -437,8 +437,8 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 	specialization_constants.push_back(sc);
 
 	sc.constant_id = 2;
-	sc.float_value = p_pipeline_key.shader_specialization.packed_2;
-	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
+	sc.int_value = p_pipeline_key.shader_specialization.packed_2;
+	sc.type = RD::PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
 	specialization_constants.push_back(sc);
 
 	sc = {}; // Sanitize value bits. "bool_value" only assigns 8 bits and keeps the remaining bits intact.
@@ -960,8 +960,8 @@ void fragment() {
 void SceneShaderForwardMobile::set_default_specialization(const ShaderSpecialization &p_specialization) {
 	default_specialization = p_specialization;
 
-	for (SelfList<ShaderData> *E = shader_list.first(); E; E = E->next()) {
-		E->self()->pipeline_hash_map.clear_pipelines();
+	for (ShaderData &shader_data : shader_list) {
+		shader_data.pipeline_hash_map.clear_pipelines();
 	}
 }
 

@@ -223,7 +223,7 @@ dependencies {
 
     // Android XR dependencies
     androidImplementation "org.godotengine:godot-openxr-vendors-androidxr:$versions.openxrVendorsVersion"
-    androidImplementation "androidx.xr.scenecore:scenecore:1.0.0-beta02"
+    androidImplementation "androidx.xr.scenecore:scenecore:1.0.0-rc01"
 
     // Meta dependencies
     horizonosImplementation "org.godotengine:godot-openxr-vendors-meta:$versions.openxrVendorsVersion"

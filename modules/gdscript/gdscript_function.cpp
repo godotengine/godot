@@ -33,6 +33,17 @@
 #include "gdscript.h"
 
 #include "core/object/class_db.h"
+#include "core/variant/container_type_validate.h"
+
+bool GDScriptDataType::is_type_exact(const ContainerType &p_container_type) const {
+	if (p_container_type.script.is_valid()) {
+		return (kind == SCRIPT || kind == GDSCRIPT) && script_type == p_container_type.script.ptr();
+	} else if (p_container_type.class_name != StringName()) {
+		return kind == NATIVE && native_type == p_container_type.class_name;
+	} else {
+		return kind == BUILTIN && builtin_type == p_container_type.variant_type;
+	}
+}
 
 bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_conversion) const {
 	switch (kind) {
@@ -45,18 +56,7 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 			if (valid && builtin_type == Variant::ARRAY && has_container_element_type(0)) {
 				Array array = p_variant;
 				if (array.is_typed()) {
-					const GDScriptDataType &elem_type = container_element_types[0];
-					Variant::Type array_builtin_type = (Variant::Type)array.get_typed_builtin();
-					StringName array_native_type = array.get_typed_class_name();
-					Ref<Script> array_script_type_ref = array.get_typed_script();
-
-					if (array_script_type_ref.is_valid()) {
-						valid = (elem_type.kind == SCRIPT || elem_type.kind == GDSCRIPT) && elem_type.script_type == array_script_type_ref.ptr();
-					} else if (array_native_type != StringName()) {
-						valid = elem_type.kind == NATIVE && elem_type.native_type == array_native_type;
-					} else {
-						valid = elem_type.kind == BUILTIN && elem_type.builtin_type == array_builtin_type;
-					}
+					valid = container_element_types[0].is_type_exact(array.get_element_type());
 				} else {
 					valid = false;
 				}
@@ -65,32 +65,12 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 				if (dictionary.is_typed()) {
 					if (dictionary.is_typed_key()) {
 						GDScriptDataType key = get_container_element_type_or_variant(0);
-						Variant::Type key_builtin_type = (Variant::Type)dictionary.get_typed_key_builtin();
-						StringName key_native_type = dictionary.get_typed_key_class_name();
-						Ref<Script> key_script_type_ref = dictionary.get_typed_key_script();
-
-						if (key_script_type_ref.is_valid()) {
-							valid = (key.kind == SCRIPT || key.kind == GDSCRIPT) && key.script_type == key_script_type_ref.ptr();
-						} else if (key_native_type != StringName()) {
-							valid = key.kind == NATIVE && key.native_type == key_native_type;
-						} else {
-							valid = key.kind == BUILTIN && key.builtin_type == key_builtin_type;
-						}
+						valid = key.is_type_exact(dictionary.get_key_type());
 					}
 
 					if (valid && dictionary.is_typed_value()) {
 						GDScriptDataType value = get_container_element_type_or_variant(1);
-						Variant::Type value_builtin_type = (Variant::Type)dictionary.get_typed_value_builtin();
-						StringName value_native_type = dictionary.get_typed_value_class_name();
-						Ref<Script> value_script_type_ref = dictionary.get_typed_value_script();
-
-						if (value_script_type_ref.is_valid()) {
-							valid = (value.kind == SCRIPT || value.kind == GDSCRIPT) && value.script_type == value_script_type_ref.ptr();
-						} else if (value_native_type != StringName()) {
-							valid = value.kind == NATIVE && value.native_type == value_native_type;
-						} else {
-							valid = value.kind == BUILTIN && value.builtin_type == value_builtin_type;
-						}
+						valid = value.is_type_exact(dictionary.get_value_type());
 					}
 				} else {
 					valid = false;

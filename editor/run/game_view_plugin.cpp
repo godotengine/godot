@@ -572,7 +572,7 @@ void GameView::_play_pressed() {
 		EditorNode::get_singleton()->set_unfocused_low_processor_usage_mode_enabled(false);
 		_update_embed_window_size();
 		if (!window_wrapper->get_window_enabled()) {
-			game_dock->make_visible();
+			EditorDockManager::get_singleton()->force_focus_dock(game_dock);
 			// Reset the normal size of the bottom panel when fully expanded.
 			EditorNode::get_singleton()->get_bottom_panel()->set_expanded(false);
 

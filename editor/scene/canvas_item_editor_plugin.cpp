@@ -80,6 +80,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/main/window.h"
+#include "scene/property_utils.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_texture.h"
@@ -590,11 +591,7 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 
 void CanvasItemEditor::_keying_changed() {
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	if (te && te->is_visible_in_tree() && te->get_current_animation().is_valid()) {
-		animation_hb->show();
-	} else {
-		animation_hb->hide();
-	}
+	animation_hb->set_visible(te && te->has_keying());
 }
 
 Rect2 CanvasItemEditor::_get_encompassing_rect_from_list(const List<CanvasItem *> &p_list) {
@@ -1671,6 +1668,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 				if (drag_selection.size() > 0) {
 					drag_type = DRAG_ROTATE;
 					drag_from = transform.affine_inverse().xform(b->get_position());
+					drag_to = drag_from;
 					CanvasItem *ci = drag_selection.front()->get();
 					if (!Math::is_inf(temp_pivot.x) || !Math::is_inf(temp_pivot.y)) {
 						drag_rotation_center = temp_pivot;
@@ -1680,6 +1678,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 						drag_rotation_center = ci->get_screen_transform().get_origin();
 					}
 					_save_canvas_item_state(drag_selection);
+					viewport->queue_redraw();
 					return true;
 				} else {
 					if (has_locked_items) {
@@ -2130,6 +2129,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				}
 
 				drag_from = transform.affine_inverse().xform(b->get_position());
+				drag_to = drag_from;
 				drag_selection = selection;
 				_save_canvas_item_state(drag_selection);
 				return true;
@@ -4529,7 +4529,6 @@ void CanvasItemEditor::_notification(int p_what) {
 
 			AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("keying_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
 			AnimationPlayerEditor::get_singleton()->connect("animation_selected", callable_mp(this, &CanvasItemEditor::_keying_changed).unbind(1));
-			_keying_changed();
 			_update_editor_settings();
 
 			connect("item_lock_status_changed", callable_mp(this, &CanvasItemEditor::_update_lock_and_group_button));
@@ -6471,6 +6470,19 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 			preview_node->add_child(sprite);
 			add_preview = true;
 		}
+
+		Ref<Script> script = res;
+		if (script.is_valid()) {
+			String class_name = script->get_global_name();
+			String base_type = script->get_instance_base_type();
+			Sprite2D *sprite = memnew(Sprite2D);
+			sprite->set_texture(EditorNode::get_singleton()->get_class_icon(
+					class_name.is_empty() ? base_type : class_name));
+			sprite->set_modulate(Color(1, 1, 1, 0.7f));
+			sprite->set_position(Vector2(0, -sprite->get_texture()->get_size().height) * EDSCALE);
+			preview_node->add_child(sprite);
+			add_preview = true;
+		}
 	}
 
 	if (add_preview) {
@@ -6544,7 +6556,7 @@ void CanvasItemEditorViewport::_create_audio_node(Node *p_parent, const String &
 		child->set_name(node_name);
 	}
 
-	// Compute the global position
+	// Compute the global position.
 	Transform2D xform = canvas_item_editor->get_canvas_transform();
 	Point2 target_position = xform.affine_inverse().xform(p_point);
 
@@ -6563,7 +6575,7 @@ void CanvasItemEditorViewport::_create_mesh_node(Node *p_parent, const String &p
 		child->set_name(node_name);
 	}
 
-	// Compute the global position
+	// Compute the global position.
 	Transform2D xform = canvas_item_editor->get_canvas_transform();
 	Point2 target_position = xform.affine_inverse().xform(p_point);
 
@@ -6624,6 +6636,69 @@ bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_
 	}
 
 	return true;
+}
+
+void CanvasItemEditorViewport::_create_script_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
+	Ref<Script> script = ResourceLoader::load(p_path);
+	if (script.is_null()) {
+		return;
+	}
+
+	String class_name = script->get_global_name();
+	String base_type = script->get_instance_base_type();
+	Object *ob = ClassDB::instantiate(base_type);
+	Node *instantiated_node = Object::cast_to<Node>(ob);
+	if (!instantiated_node) { // Error on instantiation.
+		return;
+	}
+	if (class_name.is_empty()) {
+		const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
+		if (!node_name.is_empty()) {
+			instantiated_node->set_name(node_name);
+		}
+	} else {
+		instantiated_node->set_name(class_name);
+		PropertyUtils::assign_custom_type_script(ob, script);
+	}
+	instantiated_node->set_script(script);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	if (p_parent) {
+		undo_redo->add_do_method(p_parent, "add_child", instantiated_node, true);
+		undo_redo->add_do_method(instantiated_node, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		undo_redo->add_do_reference(instantiated_node);
+		undo_redo->add_undo_method(p_parent, "remove_child", instantiated_node);
+	} else { // If no parent is selected, set as root node of the scene.
+		undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", instantiated_node);
+		undo_redo->add_do_method(instantiated_node, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+		undo_redo->add_do_reference(instantiated_node);
+		undo_redo->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
+	}
+
+	if (p_parent) {
+		String new_name = p_parent->validate_child_name(instantiated_node);
+		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+		undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), instantiated_node->get_class(), new_name);
+		undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
+	}
+
+	// Compute the global position.
+	Transform2D xform = canvas_item_editor->get_canvas_transform();
+	Point2 target_position = xform.affine_inverse().xform(p_point);
+
+	// There's nothing to be used as source position, so snapping will work as absolute if enabled.
+	target_position = canvas_item_editor->snap_point(target_position);
+
+	CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_parent);
+	Point2 local_target_pos = parent_ci ? parent_ci->get_global_transform().affine_inverse().xform(target_position) : target_position;
+
+	if (ClassDB::has_property(instantiated_node->get_class(), "position")) {
+		undo_redo->add_do_method(instantiated_node, "set_position", local_target_pos);
+	}
+
+	EditorSelection *editor_selection = EditorNode::get_singleton()->get_editor_selection();
+	undo_redo->add_do_method(editor_selection, "add_node", instantiated_node);
 }
 
 void CanvasItemEditorViewport::_perform_drop_data() {
@@ -6691,6 +6766,11 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		if (mesh.is_valid()) {
 			_create_mesh_node(target_node, path, drop_pos);
 		}
+
+		Ref<Script> script = res;
+		if (script.is_valid()) {
+			_create_script_node(target_node, path, drop_pos);
+		}
 	}
 
 	undo_redo->commit_action();
@@ -6740,10 +6820,14 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 		TEXTURE = 1 << 1,
 		AUDIO = 1 << 2,
 		MESH = 1 << 3,
+		SCRIPT = 1 << 4,
 	};
 	int instantiate_type = 0;
 
 	String error_message;
+
+	StringName script_node_type;
+
 	for (const String &path : files) {
 		const StringName res_type = ResourceLoader::get_resource_type(path);
 
@@ -6767,10 +6851,21 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 			instantiate_type |= AUDIO;
 		} else if (ClassDB::is_parent_class(res_type, "Mesh")) {
 			instantiate_type |= MESH;
+		} else if (ClassDB::is_parent_class(res_type, "Script")) {
+			Ref<Script> script = ResourceLoader::load(path);
+			ERR_CONTINUE(script.is_null());
+			StringName base_type = script->get_instance_base_type();
+			if (ClassDB::is_parent_class(base_type, "Node")) {
+				StringName global_name = script->get_global_name();
+				script_node_type = global_name.is_empty() ? base_type : global_name;
+				instantiate_type |= SCRIPT;
+			} else {
+				error_message = TTR("This script is not a valid node.");
+			}
 		}
 	}
 
-	String title = TTRN("Can't drop the file...", "Can't drop the files...", files.size());
+	String title = TPL(files.size(), TTR("Can't drop the file..."), TTR("Can't drop the files..."));
 	if (!error_message.is_empty()) {
 		set_hint_label(title, error_message);
 		canvas_item_editor->update_viewport();
@@ -6804,18 +6899,9 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 	canvas_item_editor->update_viewport();
 
 	String desc = "[ul]" +
-			TTRN("[b]Default:[/b] Add as sibling of selected node (except when root is selected).",
-					"[b]Default:[/b] Add as siblings of selected node (except when root is selected).",
-					files.size()) +
-			"\n" +
-			TTRN("[b]Hold Shift:[/b] Add as child of selected node.",
-					"[b]Hold Shift:[/b] Add as children of selected node.",
-					files.size()) +
-			"\n" +
-			vformat(TTRN("[b]Hold %s:[/b] Add as child of root node.",
-							"[b]Hold %s:[/b] Add as children of root node.",
-							files.size()),
-					keycode_get_string((Key)KeyModifierMask::ALT));
+			TPL(files.size(), TTR("[b]Default:[/b] Add as sibling of selected node (except when root is selected)."), TTR("[b]Default:[/b] Add as siblings of selected node (except when root is selected).")) + "\n" +
+			TPL(files.size(), TTR("[b]Hold Shift:[/b] Add as child of selected node."), TTR("[b]Hold Shift:[/b] Add as children of selected node.")) + "\n" +
+			vformat(TPL(files.size(), TTR("[b]Hold %s:[/b] Add as child of root node."), TTR("[b]Hold %s:[/b] Add as children of root node.")), keycode_get_string((Key)KeyModifierMask::ALT));
 
 	if (files.size() > 1) {
 		title = TTR("Dropping multiple files...");
@@ -6828,6 +6914,8 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 		title = vformat(TTR("Dropping a Texture file as a %s node..."), default_texture_node_type);
 	} else if (instantiate_type & MESH) {
 		title = TTR("Dropping a Mesh file...");
+	} else if (instantiate_type & SCRIPT) {
+		title = vformat(TTR("Dropping a Script as a %s node..."), script_node_type);
 	}
 	if (instantiate_type & TEXTURE) {
 		desc += "\n" + vformat(TTR("[b]Hold %s + Shift:[/b] Add Texture as a different node type."), keycode_get_string((Key)KeyModifierMask::ALT));

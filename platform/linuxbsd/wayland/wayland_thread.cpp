@@ -4445,6 +4445,9 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 
 	p_rect.position = scale_vector2i(p_rect.position, 1.0 / parent_scale);
 	p_rect.size = scale_vector2i(p_rect.size, 1.0 / parent_scale);
+
+	p_rect.size = p_rect.size.maxi(1);
+
 	// We manually scaled based on the parent. If we don't set the relevant fields,
 	// the resizing routines will get confused and scale once more.
 	ws.preferred_fractional_scale = parent.preferred_fractional_scale;

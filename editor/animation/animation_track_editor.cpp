@@ -2231,7 +2231,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 					}
 
 					bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
-					if (animation->track_get_type(track) == Animation::TYPE_VALUE && use_monospace_font) {
+					if (use_monospace_font && (animation->track_get_type(track) == Animation::TYPE_VALUE || animation->track_get_type(track) == Animation::TYPE_BEZIER || animation->track_get_type(track) == Animation::TYPE_BLEND_SHAPE)) {
 						font_to_use = source_font;
 						font_size_to_use = source_font_size;
 					}
@@ -4196,9 +4196,8 @@ Node *AnimationTrackEditor::get_root() const {
 void AnimationTrackEditor::update_keying() {
 	bool keying_enabled = false;
 
-	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
-	if (is_visible_in_tree() && animation.is_valid() && editor_history->get_path_size() > 0) {
-		Object *obj = ObjectDB::get_instance(editor_history->get_path_object(0));
+	if (is_visible_in_tree() && animation.is_valid()) {
+		Object *obj = InspectorDock::get_inspector_singleton()->get_edited_object();
 		keying_enabled = Object::cast_to<Node>(obj) != nullptr || Object::cast_to<MultiNodeEdit>(obj) != nullptr;
 	}
 
@@ -5602,10 +5601,6 @@ void AnimationTrackEditor::_notification(int p_what) {
 			dummy_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			inactive_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 
-			Ref<StyleBox> panel_style = get_theme_stylebox(SceneStringName(panel), SNAME("Tree"))->duplicate();
-			panel_style->set_content_margin(SIDE_TOP, get_theme_constant("base_margin", EditorStringName(Editor)) * EDSCALE);
-			main_panel->add_theme_style_override(SceneStringName(panel), panel_style);
-
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_ADD_RESET_KEY), get_editor_theme_icon(SNAME("MoveUp")));
 			edit->get_popup()->set_item_icon(edit->get_popup()->get_item_index(EDIT_APPLY_RESET), get_editor_theme_icon(SNAME("Reload")));
 			auto_fit->set_button_icon(get_editor_theme_icon(SNAME("AnimationAutoFit")));
@@ -6398,7 +6393,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 		float newpos = E->get().pos + motion;
 		undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 		if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
-			undo_redo->add_do_method(this, "_bezier_track_set_key_handle_mode", animation.ptr(), E->key().track, E->key().key, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
+			undo_redo->add_do_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), E->key().track, newpos, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
 		}
 	}
 
@@ -6412,7 +6407,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 	for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 		if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
-			undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode", animation.ptr(), E->key().track, E->key().key, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
+			undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), E->key().track, E->get().pos, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
 		}
 	}
 
@@ -7287,7 +7282,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 				if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
-					undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode", animation.ptr(), E->key().track, E->key().key, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
+					undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), E->key().track, E->get().pos, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
 				}
 			}
 
@@ -7613,7 +7608,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
 					undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 					if (animation->track_get_type(E->key().track) == Animation::TYPE_BEZIER) {
-						undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode", animation.ptr(), E->key().track, E->key().key, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
+						undo_redo->add_undo_method(this, "_bezier_track_set_key_handle_mode_at_time", animation.ptr(), E->key().track, E->get().pos, animation->bezier_track_get_key_handle_mode(E->key().track, E->key().key));
 					}
 				}
 				undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
@@ -8176,9 +8171,11 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(mc);
 
-	main_panel = memnew(PanelContainer);
+	PanelContainer *main_panel = memnew(PanelContainer);
 	main_panel->set_focus_mode(FOCUS_ALL); // Allow panel to have focus so that shortcuts work as expected.
+	main_panel->set_theme_type_variation("AnimationTrackPanel");
 	mc->add_child(main_panel);
+
 	HBoxContainer *timeline_scroll = memnew(HBoxContainer);
 	main_panel->add_child(timeline_scroll);
 	timeline_scroll->set_v_size_flags(SIZE_EXPAND_FILL);

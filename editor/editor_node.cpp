@@ -3193,7 +3193,6 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 
 	bool is_resource = Object::cast_to<Resource>(current_obj);
 	bool is_node = Object::cast_to<Node>(current_obj);
-	bool skip_main_plugin = false;
 
 	String editable_info; // None by default.
 	bool info_is_warning = false;
@@ -3245,9 +3244,6 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 			SceneTreeDock::get_singleton()->set_selected(current_node);
 			SceneTreeDock::get_singleton()->set_selection({ current_node });
 			InspectorDock::get_singleton()->update(current_node);
-			if (!inspector_only && !skip_main_plugin) {
-				skip_main_plugin = !editor_main_screen->can_auto_switch_screens();
-			}
 		} else {
 			SignalsDock::get_singleton()->set_object(nullptr);
 			GroupsDock::get_singleton()->set_selection(Vector<Node *>());
@@ -3316,9 +3312,6 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	// Take care of the main editor plugin.
 
 	if (!inspector_only) {
-		if (!skip_main_plugin) {
-			editor_main_screen->edit(current_obj);
-		}
 		edit_item(current_obj, editor_owner);
 	}
 
@@ -3501,7 +3494,13 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SCENE_OPEN_PREV: {
 			if (!prev_closed_scenes.is_empty()) {
-				open_scene(prev_closed_scenes.back()->get());
+				String path = prev_closed_scenes[prev_closed_scenes.size() - 1];
+				path = ResourceUID::ensure_path_nocheck(path);
+				if (!path.is_empty() && ResourceLoader::exists(path)) {
+					open_scene(path);
+				} else {
+					prev_closed_scenes.resize(prev_closed_scenes.size() - 1);
+				}
 			}
 		} break;
 		case EditorSceneTabs::SCENE_CLOSE_OTHERS: {
@@ -4004,6 +4003,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			OS::get_singleton()->shell_open("https://godotengine.org/community");
 		} break;
 		case HELP_ABOUT: {
+			if (!about) {
+				about = memnew(EditorAbout);
+				gui_base->add_child(about);
+			}
 			about->popup_centered(Size2(780, 500) * EDSCALE);
 		} break;
 		case HELP_SUPPORT_GODOT_DEVELOPMENT: {
@@ -4743,17 +4746,6 @@ Dictionary EditorNode::_get_main_scene_state() {
 }
 
 void EditorNode::_set_main_scene_state(const Dictionary &p_state) {
-	if (get_edited_scene()) {
-		if (!restoring_scenes && editor_main_screen->can_auto_switch_screens()) {
-			// Switch between 2D and 3D if currently in 2D or 3D.
-			Node *selected_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
-			if (!selected_node) {
-				selected_node = get_edited_scene();
-			}
-			editor_main_screen->edit(selected_node);
-		}
-	}
-
 	if (p_state.has("scene_tree_offset")) {
 		SceneTreeDock::get_singleton()->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_value(p_state["scene_tree_offset"]);
 	}
@@ -5523,10 +5515,11 @@ void EditorNode::_show_messages() {
 
 void EditorNode::_update_prev_closed_scenes(const String &p_scene_path, bool p_add_scene) {
 	if (!p_scene_path.is_empty()) {
+		const String scene_uid = ResourceUID::path_to_uid(p_scene_path);
 		if (p_add_scene) {
-			prev_closed_scenes.push_back(p_scene_path);
+			prev_closed_scenes.push_back(scene_uid);
 		} else {
-			prev_closed_scenes.erase(p_scene_path);
+			prev_closed_scenes.erase(scene_uid);
 		}
 		file_menu->set_item_disabled(file_menu->get_item_index(SCENE_OPEN_PREV), prev_closed_scenes.is_empty());
 	}
@@ -5534,22 +5527,27 @@ void EditorNode::_update_prev_closed_scenes(const String &p_scene_path, bool p_a
 
 void EditorNode::_add_to_recent_scenes(const String &p_scene) {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
+	const String scene_uid = ResourceUID::path_to_uid(p_scene);
+
+#ifndef DISABLE_DEPRECATED
 	if (rc.has(p_scene)) {
 		rc.erase(p_scene);
 	}
-	rc.push_front(p_scene);
+#endif
+	if (rc.has(scene_uid)) {
+		rc.erase(scene_uid);
+	}
+	rc.push_front(scene_uid);
 	if (rc.size() > 10) {
 		rc.resize(10);
 	}
 
 	EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", rc);
-	_update_recent_scenes();
 }
 
 void EditorNode::_open_recent_scene(int p_idx) {
 	if (p_idx == recent_scenes->get_item_count() - 1) {
 		EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", Array());
-		callable_mp(this, &EditorNode::_update_recent_scenes).call_deferred();
 	} else {
 		Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 		ERR_FAIL_INDEX(p_idx, rc.size());
@@ -5557,7 +5555,6 @@ void EditorNode::_open_recent_scene(int p_idx) {
 		if (open_scene(rc[p_idx]) != OK) {
 			rc.remove_at(p_idx);
 			EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", rc);
-			_update_recent_scenes();
 		}
 	}
 }
@@ -5566,18 +5563,33 @@ void EditorNode::_update_recent_scenes() {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scenes", Array());
 	recent_scenes->clear();
 
+	LocalVector<int> missing_scenes;
 	if (rc.size() == 0) {
 		recent_scenes->add_item(TTRC("No Recent Scenes"), -1);
 		recent_scenes->set_item_disabled(-1, true);
 	} else {
-		String path;
 		for (int i = 0; i < rc.size(); i++) {
-			path = rc[i];
-			recent_scenes->add_item(path.replace("res://", ""), i);
+			const String path = ResourceUID::ensure_path_nocheck(rc[i]);
+			if (!path.is_empty() && ResourceLoader::exists(path)) {
+				recent_scenes->add_item(path.trim_prefix("res://"), i);
+			} else {
+				missing_scenes.push_back(i);
+			}
 		}
 
 		recent_scenes->add_separator();
 		recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTRC("Clear Recent Scenes")));
+
+		if (!missing_scenes.is_empty()) {
+			// Some scenes are missing, so update the stored list.
+			Array new_scenes;
+			for (int i = 0; i < rc.size(); i++) {
+				if (!missing_scenes.has(i)) {
+					new_scenes.push_back(rc[i]);
+				}
+			}
+			EditorSettings::get_singleton()->set_project_metadata("recent_files", "scenes", new_scenes);
+		}
 	}
 	recent_scenes->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 	recent_scenes->reset_size();
@@ -5866,8 +5878,10 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 				bool instantiable = false;
 
 				// If the class doesn't exist or isn't global, then it's not instantiable
-				if (ClassDB::class_exists(p_class) || ScriptServer::is_global_class(p_class)) {
+				if (ClassDB::class_exists(p_class)) {
 					instantiable = !ClassDB::is_virtual(p_class) && ClassDB::can_instantiate(p_class);
+				} else if (ScriptServer::is_global_class(p_class)) {
+					instantiable = !ScriptServer::is_global_class_abstract(p_class);
 				}
 
 				return _get_class_or_script_icon(base_type, "", "", false, p_skip_fallback_virtual || instantiable);
@@ -8094,6 +8108,7 @@ void EditorNode::_build_file_menu(bool p_dark_mode) {
 	if (!recent_scenes) {
 		recent_scenes = memnew(PopupMenu);
 		recent_scenes->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		recent_scenes->connect("about_to_popup", callable_mp(this, &EditorNode::_update_recent_scenes));
 		recent_scenes->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_open_recent_scene));
 	}
 	file_menu->add_submenu_node_item(TTRC("Open Recent"), recent_scenes, SCENE_OPEN_RECENT);
@@ -9037,8 +9052,6 @@ EditorNode::EditorNode() {
 	build_profile_manager = memnew(EditorBuildProfileManager);
 	gui_base->add_child(build_profile_manager);
 
-	about = memnew(EditorAbout);
-	gui_base->add_child(about);
 	feature_profile_manager->connect("current_feature_profile_changed", callable_mp(this, &EditorNode::_feature_profile_changed));
 
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)

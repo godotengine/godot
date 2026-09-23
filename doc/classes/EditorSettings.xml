@@ -247,6 +247,10 @@
 		<member name="asset_store/available_urls" type="Dictionary" setter="" getter="">
 			A list of the available URLs that can be chosen in the Asset Store to fetch asset data. With the key being the name, and the value being the URL.
 		</member>
+		<member name="asset_store/show_incompatible_assets" type="bool" setter="" getter="">
+			If [code]true[/code], the Asset Store will show asset releases that are not compatible with the current engine version.
+			[b]Warning:[/b] Using such assets may result in errors and crashes.
+		</member>
 		<member name="asset_store/use_threads" type="bool" setter="" getter="">
 			If [code]true[/code], the Asset Store uses multiple threads for its HTTP requests. This prevents the Asset Store from blocking the main thread for every loaded asset.
 		</member>
@@ -1119,7 +1123,7 @@
 		</member>
 		<member name="interface/editor/localization/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface. If set to [b]Auto[/b], the language is automatically determined based on the system locale. See also [method EditorInterface.get_editor_language].
-			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/documentation/translation/index.html]contribute to editor translations on Weblate![/url]
+			Translations are provided by the community. If you spot a mistake, [url=https://contributing.godotengine.org/en/latest/development/translations.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/localization/localize_settings" type="bool" setter="" getter="">
 			If [code]true[/code], setting names in the editor are localized when possible.

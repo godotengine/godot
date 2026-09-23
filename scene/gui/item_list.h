@@ -163,7 +163,11 @@ protected:
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;
-		int scroll_bar_h_separation = 0;
+		int scrollbar_margin_left = -1;
+		int scrollbar_margin_top = -1;
+		int scrollbar_margin_right = -1;
+		int scrollbar_margin_bottom = -1;
+		int scrollbar_h_separation = 0;
 
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
@@ -194,6 +198,11 @@ protected:
 
 		Ref<Texture2D> scroll_hint;
 		Color scroll_hint_color;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> item_hovered_sound;
+		Ref<AudioStream> item_selected_sound;
+		Ref<AudioStream> item_selected_disabled_sound;
 	} theme_cache;
 
 	void _notification(int p_what);
