@@ -144,6 +144,7 @@
 	window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 	tracking_area = nil;
 	ime_input_event_in_progress = false;
+	ime_command_received = false;
 	mouse_down_control = false;
 	ignore_momentum_scroll = false;
 	last_pen_inverted = false;
@@ -222,6 +223,9 @@
 }
 
 - (void)doCommandBySelector:(SEL)aSelector {
+	if (aSelector != @selector(noop:)) {
+		ime_command_received = true;
+	}
 	[self tryToPerform:aSelector with:self];
 }
 
@@ -736,7 +740,26 @@
 
 	// Pass events to IME handler
 	if (wd.im_active) {
+		const bool was_composing = ime_input_event_in_progress;
+		ime_command_received = false;
 		[self interpretKeyEvents:[NSArray arrayWithObject:event]];
+		if (was_composing && !ime_input_event_in_progress && ime_command_received) {
+			// The IME ended composition but left this command for the application.
+			// Queue the original key after the committed text, without interpreting it again.
+			DisplayServerMacOS::KeyEvent ke;
+			ke.window_id = window_id;
+			ke.macos_state = [event modifierFlags];
+			ke.pressed = true;
+			ke.echo = [event isARepeat];
+			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
+			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
+			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
+			ke.unicode = 0;
+			ke.location = KeyMappingMacOS::translate_location([event keyCode]);
+			ke.raw = true;
+			ds->push_to_key_event_buffer(ke);
+			ime_suppress_next_keyup = false;
+		}
 	}
 }
 

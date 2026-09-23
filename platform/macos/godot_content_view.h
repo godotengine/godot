@@ -63,6 +63,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is de
 	NSTrackingArea *tracking_area;
 	NSMutableAttributedString *marked_text;
 	bool ime_input_event_in_progress;
+	bool ime_command_received;
 	bool mouse_down_control;
 	bool ignore_momentum_scroll;
 	bool last_pen_inverted;
