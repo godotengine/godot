@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "engine_debugger.h"
 
 #include "core/debugger/local_debugger.h"
@@ -195,3 +197,5 @@ EngineDebugger::~EngineDebugger() {
 	script_debugger = nullptr;
 	singleton = nullptr;
 }
+
+#endif // DEBUG_ENABLED

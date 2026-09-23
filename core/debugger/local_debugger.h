@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #include "core/debugger/engine_debugger.h"
 #include "core/templates/list.h"
 
@@ -53,3 +55,5 @@ public:
 	LocalDebugger();
 	~LocalDebugger();
 };
+
+#endif // DEBUG_ENABLED
