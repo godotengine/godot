@@ -107,6 +107,8 @@ static FloatConstantDef float_constant_defs[] = {
 	{ "Sqrt2", Math::SQRT2, TTRC("Sqrt2 constant (1.414214). Square root of 2.") }
 };
 
+static const String vector_expanded_name[4] = { "red", "green", "blue", "alpha" };
+
 constexpr int MAX_FLOAT_CONST_DEFS = std_size(float_constant_defs);
 
 ///////////////////
@@ -1016,8 +1018,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		EDITOR_GET("editors/visual_editors/category_colors/special_color"),
 		EDITOR_GET("editors/visual_editors/category_colors/particle_color"),
 	};
-
-	static const String vector_expanded_name[4] = { "red", "green", "blue", "alpha" };
 
 	Ref<ShaderGraph> sgraph = editor->get_shader_graph();
 	Ref<VisualShaderNode> vsnode = sgraph->get_node(p_id);
@@ -3990,15 +3990,15 @@ void VisualShaderEditor::_frame_title_popup_hide() {
 }
 
 void VisualShaderEditor::_frame_color_enabled_changed(int p_node_id) {
-	int item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_COLOR);
+	int item_index = popup_menu->get_item_index(int(NodeMenuOptions::ENABLE_FRAME_COLOR));
 
 	// The new state.
 	bool tint_color_enabled = !popup_menu->is_item_checked(item_index);
 
 	popup_menu->set_item_checked(item_index, tint_color_enabled);
-	int frame_color_item_idx = popup_menu->get_item_index(NodeMenuOptions::SET_FRAME_COLOR);
+	int frame_color_item_idx = popup_menu->get_item_index(int(NodeMenuOptions::SET_FRAME_COLOR));
 	if (tint_color_enabled && frame_color_item_idx == -1) {
-		popup_menu->add_item(TTR("Set Tint Color"), NodeMenuOptions::SET_FRAME_COLOR);
+		popup_menu->add_item(TTR("Set Tint Color"), int(NodeMenuOptions::SET_FRAME_COLOR));
 	} else if (!tint_color_enabled && frame_color_item_idx != -1) {
 		popup_menu->remove_item(frame_color_item_idx);
 	}
@@ -4065,7 +4065,7 @@ void VisualShaderEditor::_frame_color_popup_hide() {
 }
 
 void VisualShaderEditor::_frame_autoshrink_enabled_changed(int p_node_id) {
-	int item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK);
+	int item_index = popup_menu->get_item_index(int(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK));
 
 	bool autoshrink_enabled = popup_menu->is_item_checked(item_index);
 
@@ -5283,7 +5283,7 @@ void VisualShaderEditor::_handle_node_drop_on_connection() {
 	call_deferred(SNAME("_update_graph"));
 }
 
-void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
+void VisualShaderEditor::_delete_nodes(int p_type, const LocalVector<int> &p_nodes) {
 	VisualShader::Type type = VisualShader::Type(p_type);
 	List<ShaderGraph::Connection> conns;
 	edited_shader_graph->get_node_connections(&conns);
@@ -5663,7 +5663,7 @@ void VisualShaderEditor::_delete_node_request(int p_type, int p_node) {
 		return;
 	}
 
-	List<int> to_erase;
+	LocalVector<int> to_erase;
 	to_erase.push_back(p_node);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -5673,7 +5673,7 @@ void VisualShaderEditor::_delete_node_request(int p_type, int p_node) {
 }
 
 void VisualShaderEditor::_delete_nodes_request(const TypedArray<StringName> &p_nodes) {
-	List<int> to_erase;
+	LocalVector<int> to_erase;
 
 	if (p_nodes.is_empty()) {
 		// Called from context menu.
@@ -5804,62 +5804,65 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			clicked_connection = closest_connection;
 			saved_node_pos = graph->get_local_mouse_position();
 			saved_node_pos_dirty = true;
+			connection_popup_menu->set_item_disabled(connection_popup_menu->get_item_index(int(ConnectionMenuOptions::MAKE_GROUP)), selected_deletable_graph_elements.is_empty());
+
 			connection_popup_menu->set_position(gpos);
 			connection_popup_menu->reset_size();
 			connection_popup_menu->popup();
 		} else if (selected_graph_elements.is_empty() && copy_buffer_empty) {
 			_show_members_dialog(true);
 		} else {
-			popup_menu->set_item_disabled(NodeMenuOptions::CUT, selected_deletable_graph_elements.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::COPY, selected_deletable_graph_elements.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_buffer_empty);
-			popup_menu->set_item_disabled(NodeMenuOptions::DELETE_, selected_deletable_graph_elements.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, selected_deletable_graph_elements.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::CLEAR_COPY_BUFFER, copy_buffer_empty);
+			popup_menu->set_item_disabled(popup_menu->get_item_index(int(NodeMenuOptions::MAKE_GROUP)), selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(popup_menu->get_item_index(int(NodeMenuOptions::CUT)), selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(popup_menu->get_item_index(int(NodeMenuOptions::COPY)), selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(popup_menu->get_item_index(int(NodeMenuOptions::PASTE)), copy_buffer_empty);
+			popup_menu->set_item_disabled(popup_menu->get_item_index(int(NodeMenuOptions::DELETE_)), selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(popup_menu->get_item_index(int(NodeMenuOptions::DUPLICATE)), selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(popup_menu->get_item_index(int(NodeMenuOptions::CLEAR_COPY_BUFFER)), copy_buffer_empty);
 
-			int temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR2);
+			int temp = popup_menu->get_item_index(int(NodeMenuOptions::SEPARATOR2));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::FLOAT_CONSTANTS);
+			temp = popup_menu->get_item_index(int(NodeMenuOptions::FLOAT_CONSTANTS));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::CONVERT_CONSTANTS_TO_PARAMETERS);
+			temp = popup_menu->get_item_index(int(NodeMenuOptions::CONVERT_CONSTANTS_TO_PARAMETERS));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::CONVERT_PARAMETERS_TO_CONSTANTS);
+			temp = popup_menu->get_item_index(int(NodeMenuOptions::CONVERT_PARAMETERS_TO_CONSTANTS));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR3);
+			temp = popup_menu->get_item_index(int(NodeMenuOptions::SEPARATOR3));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::UNLINK_FROM_PARENT_FRAME);
+			temp = popup_menu->get_item_index(int(NodeMenuOptions::UNLINK_FROM_PARENT_FRAME));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::SET_FRAME_TITLE);
+			temp = popup_menu->get_item_index(int(NodeMenuOptions::SET_FRAME_TITLE));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_COLOR);
+			temp = popup_menu->get_item_index(int(NodeMenuOptions::ENABLE_FRAME_COLOR));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::SET_FRAME_COLOR);
+			temp = popup_menu->get_item_index(int(NodeMenuOptions::SET_FRAME_COLOR));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK);
+			temp = popup_menu->get_item_index(int(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK));
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
 
 			if (selected_constants.size() > 0 || selected_parameters.size() > 0) {
-				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
+				popup_menu->add_separator("", int(NodeMenuOptions::SEPARATOR2));
 
 				if (selected_float_constant != -1) {
 					if (!constants_submenu) {
@@ -5874,11 +5877,11 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				if (selected_constants.size() > 0) {
-					popup_menu->add_item(TTR("Convert Constant(s) to Parameter(s)"), NodeMenuOptions::CONVERT_CONSTANTS_TO_PARAMETERS);
+					popup_menu->add_item(TTR("Convert Constant(s) to Parameter(s)"), int(NodeMenuOptions::CONVERT_CONSTANTS_TO_PARAMETERS));
 				}
 
 				if (selected_parameters.size() > 0) {
-					popup_menu->add_item(TTR("Convert Parameter(s) to Constant(s)"), NodeMenuOptions::CONVERT_PARAMETERS_TO_CONSTANTS);
+					popup_menu->add_item(TTR("Convert Parameter(s) to Constant(s)"), int(NodeMenuOptions::CONVERT_PARAMETERS_TO_CONSTANTS));
 				}
 			}
 
@@ -5892,24 +5895,24 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (is_attached_to_frame) {
-				popup_menu->add_item(TTR("Detach from Parent Frame"), NodeMenuOptions::UNLINK_FROM_PARENT_FRAME);
+				popup_menu->add_item(TTR("Detach from Parent Frame"), int(NodeMenuOptions::UNLINK_FROM_PARENT_FRAME));
 			}
 
 			if (selected_frame != -1) {
-				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR3);
-				popup_menu->add_item(TTR("Set Frame Title"), NodeMenuOptions::SET_FRAME_TITLE);
-				popup_menu->add_check_item(TTR("Enable Auto Shrink"), NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK);
-				popup_menu->add_check_item(TTR("Enable Tint Color"), NodeMenuOptions::ENABLE_FRAME_COLOR);
+				popup_menu->add_separator("", int(NodeMenuOptions::SEPARATOR3));
+				popup_menu->add_item(TTR("Set Frame Title"), int(NodeMenuOptions::SET_FRAME_TITLE));
+				popup_menu->add_check_item(TTR("Enable Auto Shrink"), int(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK));
+				popup_menu->add_check_item(TTR("Enable Tint Color"), int(NodeMenuOptions::ENABLE_FRAME_COLOR));
 
 				VisualShaderNodeFrame *frame_ref = Object::cast_to<VisualShaderNodeFrame>(selected_vsnode.ptr());
 				if (frame_ref) {
-					int item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_COLOR);
+					int item_index = popup_menu->get_item_index(int(NodeMenuOptions::ENABLE_FRAME_COLOR));
 					popup_menu->set_item_checked(item_index, frame_ref->is_tint_color_enabled());
 					if (frame_ref->is_tint_color_enabled()) {
-						popup_menu->add_item(TTR("Set Tint Color"), NodeMenuOptions::SET_FRAME_COLOR);
+						popup_menu->add_item(TTR("Set Tint Color"), int(NodeMenuOptions::SET_FRAME_COLOR));
 					}
 
-					item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK);
+					item_index = popup_menu->get_item_index(int(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK));
 					popup_menu->set_item_checked(item_index, frame_ref->is_autoshrink_enabled());
 				}
 			}
@@ -6546,6 +6549,355 @@ void VisualShaderEditor::_duplicate_nodes() {
 	_dup_paste_nodes(type, items, node_connections, Vector2(10, 10) * EDSCALE, true);
 }
 
+// Returns the index of the group port whose source is the given output port, or -1.
+int VisualShaderEditor::_find_group_port(const LocalVector<GroupPort> &p_ports, int p_source_node, int p_source_port) {
+	for (uint32_t i = 0; i < p_ports.size(); i++) {
+		if (p_ports[i].source_node == p_source_node && p_ports[i].source_port == p_source_port) {
+			return int(i);
+		}
+	}
+	return -1;
+}
+
+bool VisualShaderEditor::_is_type_groupable(const StringName &p_type_name) {
+	if (_is_type_disallowed_in_group_context(p_type_name, true)) {
+		return false;
+	}
+
+	return p_type_name != VisualShaderNodeGroupInput::get_class_static() &&
+			p_type_name != VisualShaderNodeGroupOutput::get_class_static();
+}
+
+// Returns true if a path leaves the selection and comes back, which would be a cycle once grouped.
+bool VisualShaderEditor::_creates_group_cycle(const HashSet<int> &p_selection) const {
+	HashSet<int> visited;
+	List<int> to_visit;
+
+	for (const int id : p_selection) {
+		for (const int next : edited_shader_graph->get_next_connected_node_ids(id)) {
+			if (!p_selection.has(next) && !visited.has(next)) {
+				visited.insert(next);
+				to_visit.push_back(next);
+			}
+		}
+	}
+
+	while (!to_visit.is_empty()) {
+		const int current = to_visit.front()->get();
+		to_visit.pop_front();
+
+		for (const int next : edited_shader_graph->get_next_connected_node_ids(current)) {
+			if (p_selection.has(next)) {
+				return true;
+			}
+			if (!visited.has(next)) {
+				visited.insert(next);
+				to_visit.push_back(next);
+			}
+		}
+	}
+
+	return false;
+}
+
+// Returns an empty string when successful or an error message on fail.
+String VisualShaderEditor::_gather_group_build_data(GroupBuildData &r_build_data) {
+	HashSet<int> selected_nodes;
+	Vector<String> unsupported_nodes_captions;
+
+	for (int i = 0; i < graph->get_child_count(); i++) {
+		GraphElement *graph_element = Object::cast_to<GraphElement>(graph->get_child(i));
+		if (!graph_element || !graph_element->is_selected()) {
+			continue;
+		}
+
+		const int node_id = String(graph_element->get_name()).to_int();
+		Ref<VisualShaderNode> vsnode = edited_shader_graph->get_node(node_id);
+		if (vsnode.is_null() || !vsnode->is_deletable()) {
+			continue;
+		}
+
+		if (!_is_type_groupable(vsnode->get_class_name())) {
+			const String caption = vsnode->get_caption();
+			if (!unsupported_nodes_captions.has(caption)) {
+				unsupported_nodes_captions.push_back(caption);
+			}
+			continue;
+		}
+
+		selected_nodes.insert(node_id);
+		r_build_data.node_ids.push_back(node_id);
+	}
+
+	if (!unsupported_nodes_captions.is_empty()) {
+		return vformat(TTR("Cannot create a node group: %s can't be used inside a node group."), String(", ").join(unsupported_nodes_captions));
+	}
+
+	if (_creates_group_cycle(selected_nodes)) {
+		return TTR("Cannot create a node group: grouping these nodes would create a cycle.");
+	}
+
+	// Split the connections into the ones which should move into the group and the ones crossing its boundary.
+	List<ShaderGraph::Connection> conns;
+	edited_shader_graph->get_node_connections(&conns);
+
+	for (const ShaderGraph::Connection &connection : conns) {
+		const bool from_inside = selected_nodes.has(connection.from_node);
+		const bool to_inside = selected_nodes.has(connection.to_node);
+
+		if (from_inside && to_inside) {
+			r_build_data.inner_connections.push_back(connection);
+			continue;
+		}
+		if (!from_inside && !to_inside) {
+			continue;
+		}
+
+		LocalVector<GroupPort> &ports = to_inside ? r_build_data.input_ports : r_build_data.output_ports;
+		if (to_inside) {
+			r_build_data.incoming_connections.push_back(connection);
+		} else {
+			r_build_data.outgoing_connections.push_back(connection);
+		}
+
+		// Connections from the same output port share one group port.
+		if (_find_group_port(ports, connection.from_node, connection.from_port) != -1) {
+			continue;
+		}
+
+		const Ref<VisualShaderNode> source = edited_shader_graph->get_node(connection.from_node);
+
+		GroupPort port;
+		port.source_node = connection.from_node;
+		port.source_port = connection.from_port;
+		port.source_position = edited_shader_graph->get_node_position(connection.from_node);
+		port.type = source->get_output_port_type(connection.from_port);
+
+		// Some nodes like Input, constants and reroute return empty port names, so we use the caption as a fallback.
+		if (to_inside) {
+			// Named after the first inner port it feeds into.
+			const Ref<VisualShaderNode> dest_node = edited_shader_graph->get_node(connection.to_node);
+			port.name = dest_node->get_input_port_name(connection.to_port);
+			if (port.name.is_empty()) {
+				port.name = dest_node->get_caption();
+			}
+		} else {
+			// Currently only the port of a node with a single output can be expanded, so any port after that has to be one of it's components.
+			const bool is_component = connection.from_port > 0 &&
+					connection.from_port <= int(std_size(vector_expanded_name)) &&
+					source->get_output_port_count() == 1;
+
+			port.name = source->get_output_port_name(is_component ? 0 : connection.from_port);
+			if (port.name.is_empty()) {
+				port.name = source->get_caption();
+			}
+			if (is_component) {
+				port.name += "_" + vector_expanded_name[connection.from_port - 1];
+			}
+		}
+
+		ports.push_back(port);
+	}
+
+	// Sort the ports by the position of their source nodes to minimize "entanglement".
+	// There might be better heuristics, but this works fine in most cases.
+	struct GroupPortSorter {
+		bool operator()(const GroupPort &p_a, const GroupPort &p_b) const {
+			// Top to bottom.
+			if (p_a.source_position.y != p_b.source_position.y) {
+				return p_a.source_position.y < p_b.source_position.y;
+			}
+
+			// When they are on the same height, left to right.
+			if (p_a.source_position.x != p_b.source_position.x) {
+				return p_a.source_position.x < p_b.source_position.x;
+			}
+
+			// Several ports from the same source node share its position, so fall back to that node's output port order.
+			return p_a.source_port < p_b.source_port;
+		}
+	};
+	r_build_data.input_ports.sort_custom<GroupPortSorter>();
+	r_build_data.output_ports.sort_custom<GroupPortSorter>();
+
+	return String();
+}
+
+Rect2 VisualShaderEditor::_get_node_rect(int p_node_id) const {
+	Rect2 rect(edited_shader_graph->get_node_position(p_node_id), Size2());
+	const Ref<VisualShaderNodeResizableBase> resizable = edited_shader_graph->get_node(p_node_id);
+	if (resizable.is_valid()) {
+		rect.size = resizable->get_size() / cached_theme_base_scale;
+	}
+	return rect;
+}
+
+Ref<VisualShaderGroup> VisualShaderEditor::_build_group(const GroupBuildData &p_data) const {
+	ERR_FAIL_COND_V(p_data.node_ids.is_empty(), Ref<VisualShaderGroup>());
+
+	Ref<VisualShaderGroup> group;
+	group.instantiate();
+
+	// We keep the layout of the selection, but shift it to the right to leave some space for the group input node.
+	const real_t io_nodes_margin = 300.0;
+	Rect2 bounds = _get_node_rect(p_data.node_ids[0]);
+	for (const int id : p_data.node_ids) {
+		bounds = bounds.merge(_get_node_rect(id));
+	}
+	const Vector2 offset = -bounds.position + Vector2(io_nodes_margin, 0);
+	const real_t io_y = bounds.size.y * 0.5;
+
+	Ref<VisualShaderNodeGroupInput> group_input_node;
+	group_input_node.instantiate();
+	group_input_node->set_group(group.ptr());
+	const int group_input_id = group->get_valid_node_id();
+	group->add_node(group_input_node, Vector2(0, io_y), group_input_id);
+
+	Ref<VisualShaderNodeGroupOutput> group_output_node;
+	group_output_node.instantiate();
+	group_output_node->set_group(group.ptr());
+	const int group_output_id = group->get_valid_node_id();
+	group->add_node(group_output_node, Vector2(bounds.size.x + io_nodes_margin * 2, io_y), group_output_id);
+
+	for (const GroupPort &port : p_data.input_ports) {
+		const String port_name = group->insert_input_port(group->get_input_port_count(), port.type, port.name);
+		ERR_FAIL_COND_V_MSG(port_name.is_empty(), Ref<VisualShaderGroup>(), vformat("Could not create the group input port '%s'.", port.name));
+	}
+	for (const GroupPort &port : p_data.output_ports) {
+		const String port_name = group->insert_output_port(group->get_output_port_count(), port.type, port.name);
+		ERR_FAIL_COND_V_MSG(port_name.is_empty(), Ref<VisualShaderGroup>(), vformat("Could not create the group output port '%s'.", port.name));
+	}
+
+	// Duplicate the nodes since undo puts these back into the graph they came from.
+	HashMap<int, int> id_map; // Node ids of outer graph -> inner graph.
+	for (const int id : p_data.node_ids) {
+		const Ref<VisualShaderNode> original = edited_shader_graph->get_node(id);
+		Ref<VisualShaderNode> node = original->duplicate();
+
+		// Expressions need special treatment since their ports aren't stored as properties.
+		Ref<VisualShaderNodeGroupBase> group_base = node;
+		if (group_base.is_valid()) {
+			const Ref<VisualShaderNodeGroupBase> original_group_base = original;
+			group_base->set_inputs(original_group_base->get_inputs());
+			group_base->set_outputs(original_group_base->get_outputs());
+		}
+
+		// Inside groups, Input nodes are limited to the global built-ins of the shader mode.
+		Ref<VisualShaderNodeInput> input_node = node;
+		if (input_node.is_valid()) {
+			input_node->set_shader_mode(_get_validation_shader_mode());
+			input_node->set_shader_type(VisualShader::TYPE_MAX);
+		}
+
+		// The copies still have the original frame links, which relate to the outer graph.
+		node->set_frame(VisualShader::NODE_ID_INVALID);
+		Ref<VisualShaderNodeFrame> frame = node;
+		if (frame.is_valid()) {
+			frame->set_attached_nodes(PackedInt32Array());
+		}
+
+		const int new_id = group->get_valid_node_id();
+		group->add_node(node, edited_shader_graph->get_node_position(id) + offset, new_id);
+		id_map[id] = new_id;
+	}
+
+	for (const int id : p_data.node_ids) {
+		const int frame_id = edited_shader_graph->get_node(id)->get_frame();
+		if (id_map.has(frame_id)) {
+			group->attach_node_to_frame(id_map[id], id_map[frame_id]);
+		}
+	}
+
+	// Connect everything inside group.
+	for (const ShaderGraph::Connection &connection : p_data.inner_connections) {
+		group->connect_nodes_forced(id_map[connection.from_node], connection.from_port, id_map[connection.to_node], connection.to_port);
+	}
+	for (const ShaderGraph::Connection &connection : p_data.incoming_connections) {
+		const int port = _find_group_port(p_data.input_ports, connection.from_node, connection.from_port);
+		group->connect_nodes_forced(group_input_id, port, id_map[connection.to_node], connection.to_port);
+	}
+	for (uint32_t i = 0; i < p_data.output_ports.size(); i++) {
+		const GroupPort &port = p_data.output_ports[i];
+		group->connect_nodes_forced(id_map[port.source_node], port.source_port, group_output_id, int(i));
+	}
+
+	return group;
+}
+
+void VisualShaderEditor::_make_group_from_selection() {
+	GroupBuildData build_data;
+	const String error = _gather_group_build_data(build_data);
+	if (!error.is_empty()) {
+		alert->set_text(error);
+		alert->popup_centered();
+		return;
+	}
+	if (build_data.node_ids.is_empty()) {
+		return; // Nothing in the selection can be grouped.
+	}
+
+	const Ref<VisualShaderGroup> group = _build_group(build_data);
+	if (group.is_null()) {
+		return;
+	}
+
+	const VisualShader::Type type = get_current_shader_type();
+
+	Ref<VisualShaderNodeGroup> group_node;
+	group_node.instantiate();
+	group_node->set_group(group);
+
+	// Put the group node where the selection was before (roughly, since we don't know its final size).
+	Vector2 position;
+	for (const int id : build_data.node_ids) {
+		position += _get_node_rect(id).get_center();
+	}
+	position /= (real_t)build_data.node_ids.size();
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	_vs_create_action(TTR("Make Group"));
+
+	// Remove the group node before _delete_nodes() restores the original connections on undo, since both connect to the same outer input ports.
+	const int group_node_id = edited_shader_graph->get_valid_node_id();
+
+	for (uint32_t i = 0; i < build_data.input_ports.size(); i++) {
+		const GroupPort &port = build_data.input_ports[i];
+		undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, port.source_node, port.source_port, group_node_id, int(i));
+	}
+	for (const ShaderGraph::Connection &connection : build_data.outgoing_connections) {
+		const int port = _find_group_port(build_data.output_ports, connection.from_node, connection.from_port);
+		undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, group_node_id, port, connection.to_node, connection.to_port);
+	}
+	undo_redo->add_undo_method(edited_shader_graph.ptr(), "remove_node", group_node_id);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, group_node_id, false);
+
+	// Delete the selection before connecting the group node, since both connect to the same outer input ports.
+	_delete_nodes(type, build_data.node_ids);
+
+	if (visual_shader.is_valid() && group_edit_stack.is_empty()) {
+		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, group_node, position, group_node_id);
+	} else {
+		undo_redo->add_do_method(edited_shader_graph.ptr(), "add_node", group_node, position, group_node_id);
+	}
+	undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, group_node_id, false, false);
+
+	// Connect everything outside.
+	for (uint32_t i = 0; i < build_data.input_ports.size(); i++) {
+		const GroupPort &port = build_data.input_ports[i];
+		undo_redo->add_do_method(edited_shader_graph.ptr(), "connect_nodes", port.source_node, port.source_port, group_node_id, int(i));
+		undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, port.source_node, port.source_port, group_node_id, int(i));
+	}
+	for (const ShaderGraph::Connection &connection : build_data.outgoing_connections) {
+		const int port = _find_group_port(build_data.output_ports, connection.from_node, connection.from_port);
+		undo_redo->add_do_method(edited_shader_graph.ptr(), "connect_nodes", group_node_id, port, connection.to_node, connection.to_port);
+		undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, group_node_id, port, connection.to_node, connection.to_port);
+	}
+
+	undo_redo->commit_action();
+
+	graph->set_selected(graph->get_node_or_null(itos(group_node_id)));
+}
+
 void VisualShaderEditor::_copy_nodes(bool p_cut) {
 	_clear_copy_buffer();
 
@@ -6555,7 +6907,7 @@ void VisualShaderEditor::_copy_nodes(bool p_cut) {
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		_vs_create_action(TTR("Cut VisualShader Node(s)"));
 
-		List<int> ids;
+		LocalVector<int> ids;
 		for (const CopyItem &E : copy_items_buffer) {
 			ids.push_back(E.id);
 		}
@@ -7035,7 +7387,7 @@ void VisualShaderEditor::_tools_menu_option(int p_idx) {
 }
 
 void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
-	switch (p_idx) {
+	switch (NodeMenuOptions(p_idx)) {
 		case NodeMenuOptions::ADD:
 			_show_members_dialog(true);
 			break;
@@ -7053,6 +7405,9 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 			break;
 		case NodeMenuOptions::DUPLICATE:
 			_duplicate_nodes();
+			break;
+		case NodeMenuOptions::MAKE_GROUP:
+			_make_group_from_selection();
 			break;
 		case NodeMenuOptions::CLEAR_COPY_BUFFER:
 			_clear_copy_buffer();
@@ -7084,7 +7439,7 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 }
 
 void VisualShaderEditor::_connection_menu_id_pressed(int p_idx) {
-	switch (p_idx) {
+	switch (ConnectionMenuOptions(p_idx)) {
 		case ConnectionMenuOptions::DISCONNECT: {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			_vs_create_action(TTR("Disconnect"));
@@ -7127,6 +7482,9 @@ void VisualShaderEditor::_connection_menu_id_pressed(int p_idx) {
 				}
 			}
 			_add_node(idx, add_options[idx].ops);
+		} break;
+		case ConnectionMenuOptions::MAKE_GROUP: {
+			_make_group_from_selection();
 		} break;
 		default:
 			break;
@@ -7732,21 +8090,25 @@ VisualShaderEditor::VisualShaderEditor() {
 	popup_menu = memnew(PopupMenu);
 	add_child(popup_menu);
 	popup_menu->set_hide_on_checkable_item_selection(false);
-	popup_menu->add_item(TTR("Add Node"), NodeMenuOptions::ADD);
+	popup_menu->add_item(TTR("Add Node"), int(NodeMenuOptions::ADD));
+	popup_menu->add_item(TTR("Make Group"), int(NodeMenuOptions::MAKE_GROUP));
 	popup_menu->add_separator();
-	popup_menu->add_item(TTR("Cut"), NodeMenuOptions::CUT);
-	popup_menu->add_item(TTR("Copy"), NodeMenuOptions::COPY);
-	popup_menu->add_item(TTR("Paste"), NodeMenuOptions::PASTE);
-	popup_menu->add_item(TTR("Delete"), NodeMenuOptions::DELETE_);
-	popup_menu->add_item(TTR("Duplicate"), NodeMenuOptions::DUPLICATE);
-	popup_menu->add_item(TTR("Clear Copy Buffer"), NodeMenuOptions::CLEAR_COPY_BUFFER);
+	popup_menu->add_item(TTR("Cut"), int(NodeMenuOptions::CUT));
+	popup_menu->add_item(TTR("Copy"), int(NodeMenuOptions::COPY));
+	popup_menu->add_item(TTR("Paste"), int(NodeMenuOptions::PASTE));
+	popup_menu->add_item(TTR("Delete"), int(NodeMenuOptions::DELETE_));
+	popup_menu->add_item(TTR("Duplicate"), int(NodeMenuOptions::DUPLICATE));
+	popup_menu->add_item(TTR("Clear Copy Buffer"), int(NodeMenuOptions::CLEAR_COPY_BUFFER));
 	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
 
 	connection_popup_menu = memnew(PopupMenu);
 	add_child(connection_popup_menu);
-	connection_popup_menu->add_item(TTR("Disconnect"), ConnectionMenuOptions::DISCONNECT);
-	connection_popup_menu->add_item(TTR("Insert New Node"), ConnectionMenuOptions::INSERT_NEW_NODE);
-	connection_popup_menu->add_item(TTR("Insert New Reroute"), ConnectionMenuOptions::INSERT_NEW_REROUTE);
+	connection_popup_menu->add_item(TTR("Disconnect"), int(ConnectionMenuOptions::DISCONNECT));
+	connection_popup_menu->add_item(TTR("Insert New Node"), int(ConnectionMenuOptions::INSERT_NEW_NODE));
+	connection_popup_menu->add_item(TTR("Insert New Reroute"), int(ConnectionMenuOptions::INSERT_NEW_REROUTE));
+	// Acts on the node selection rather than on the clicked connection.
+	connection_popup_menu->add_separator();
+	connection_popup_menu->add_item(TTR("Make Group"), int(ConnectionMenuOptions::MAKE_GROUP));
 	connection_popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_connection_menu_id_pressed));
 
 	///////////////////////////////////////
