@@ -49,6 +49,10 @@ class Slider : public Range {
 	bool editable;
 	bool scrollable;
 
+	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
+	const float GAMEPAD_EVENT_REPEAT_RATE_MS = 1.0 / 20;
+	float gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+
 protected:
 	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
