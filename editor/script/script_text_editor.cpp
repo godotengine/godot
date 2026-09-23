@@ -1212,9 +1212,48 @@ void ScriptTextEditor::_code_complete_script(const String &p_code, List<EditorLa
 }
 
 void ScriptTextEditor::_breakpoint_toggled(int p_row) {
-	const CodeEdit *ce = code_editor->get_text_editor();
-	bool enabled = p_row < ce->get_line_count() && ce->is_line_breakpointed(p_row);
-	EditorDebuggerNode::get_singleton()->set_breakpoint(edited_res->get_path(), p_row + 1, enabled);
+	// set_line_as_breakpoint() emits this signal again.
+	if (adjusting_breakpoint) {
+		return;
+	}
+
+	CodeEdit *ce = code_editor->get_text_editor();
+	const bool enabled = p_row < ce->get_line_count() && ce->is_line_breakpointed(p_row);
+	int line = p_row + 1;
+
+	if (enabled) {
+		Ref<Script> script = edited_res;
+		if (script.is_valid()) {
+			const int resolved = script->get_breakpoint_line(line);
+			if (resolved != line) {
+				adjusting_breakpoint = true;
+				ce->set_line_as_breakpoint(p_row, false);
+
+				if (resolved <= 0) {
+					adjusting_breakpoint = false;
+					return;
+				}
+
+				const int resolved_row = resolved - 1;
+				if (resolved_row < 0 || resolved_row >= ce->get_line_count()) {
+					adjusting_breakpoint = false;
+					return;
+				}
+
+				const bool already_set = ce->is_line_breakpointed(resolved_row);
+				if (!already_set) {
+					ce->set_line_as_breakpoint(resolved_row, true);
+				}
+				adjusting_breakpoint = false;
+				if (already_set) {
+					return;
+				}
+				line = resolved;
+			}
+		}
+	}
+
+	EditorDebuggerNode::get_singleton()->set_breakpoint(edited_res->get_path(), line, enabled);
 }
 
 void ScriptTextEditor::_on_caret_moved() {

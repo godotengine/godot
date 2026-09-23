@@ -34,13 +34,17 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
+#include "core/templates/hash_set.h"
 #include "editor/debugger/debug_adapter/debug_adapter_parser.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/run/editor_run_bar.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 
 DebugAdapterProtocol *DebugAdapterProtocol::singleton = nullptr;
@@ -173,8 +177,16 @@ void DebugAdapterProtocol::reset_ids() {
 	breakpoint_id = 0;
 	breakpoint_list.clear();
 	breakpoint_source_list.clear();
+	_reset_breakpoint_sync();
 
 	reset_stack_info();
+}
+
+void DebugAdapterProtocol::_reset_breakpoint_sync() {
+	pending_moved_breakpoints.clear();
+	send_pending_moves = false;
+	session_configured = false;
+	client_breakpoint_lines.clear();
 }
 
 void DebugAdapterProtocol::reset_stack_info() {
@@ -977,35 +989,128 @@ void DebugAdapterProtocol::notify_custom_data(const String &p_msg, const Array &
 void DebugAdapterProtocol::notify_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) {
 	Dictionary event = parser->ev_breakpoint(p_breakpoint, p_enabled);
 	for (const Ref<DAPeer> &peer : clients) {
-		if (_current_request == "setBreakpoints" && peer == _current_peer) {
+		// setBreakpoints already returns additions. Removals are sent here.
+		if (p_enabled && _current_request == "setBreakpoints" && peer == _current_peer) {
 			continue;
 		}
 		peer->res_queue.push_back(event);
 	}
 }
 
+static int _resolve_breakpoint_line(const String &p_path, int p_line) {
+	String path = p_path;
+	if (!path.begins_with("res://") && !path.begins_with("uid://")) {
+		path = ProjectSettings::get_singleton()->localize_path(path);
+	}
+	if (!ResourceLoader::exists(path, "Script")) {
+		return p_line;
+	}
+
+	Ref<Script> script = ResourceLoader::load(path);
+	if (script.is_null()) {
+		return p_line;
+	}
+	return script->get_breakpoint_line(p_line);
+}
+
+static String _breakpoint_res_path(const String &p_path) {
+	if (p_path.begins_with("res://") || p_path.begins_with("uid://")) {
+		return p_path;
+	}
+	return ProjectSettings::get_singleton()->localize_path(p_path);
+}
+
+static bool _parse_editor_breakpoint(const String &p_breakpoint, String &r_path, int &r_line) {
+	// "res://" contains a colon. Start the search after it.
+	const int colon = p_breakpoint.find_char(':', 6);
+	if (colon == -1) {
+		return false;
+	}
+	r_path = p_breakpoint.left(colon);
+	r_line = p_breakpoint.substr(colon + 1).to_int();
+	return true;
+}
+
+static List<DAP::Breakpoint>::Element *_find_breakpoint(List<DAP::Breakpoint> &p_list, const String &p_res_path, int p_line) {
+	for (List<DAP::Breakpoint>::Element *E = p_list.front(); E; E = E->next()) {
+		const DAP::Breakpoint &breakpoint = E->get();
+		if (breakpoint.line != p_line || breakpoint.source == nullptr) {
+			continue;
+		}
+		if (_breakpoint_res_path(breakpoint.source->path) == p_res_path) {
+			return E;
+		}
+	}
+	return nullptr;
+}
+
 Array DebugAdapterProtocol::update_breakpoints(const String &p_path, const Array &p_lines) {
 	Array updated_breakpoints;
+	HashSet<int> active_lines;
+	const String res_path = _breakpoint_res_path(p_path);
 
 	// Add breakpoints
 	for (int i = 0; i < p_lines.size(); i++) {
-		DAP::Breakpoint breakpoint(fetch_source(p_path));
-		breakpoint.line = p_lines[i];
+		const int requested_line = p_lines[i];
+		const int resolved_line = _resolve_breakpoint_line(p_path, requested_line);
 
-		// Avoid duplicated entries.
-		List<DAP::Breakpoint>::Element *E = breakpoint_list.find(breakpoint);
-		if (E) {
-			updated_breakpoints.push_back(E->get().to_json());
+		DAP::Breakpoint breakpoint(fetch_source(p_path));
+		if (resolved_line < 0) {
+			breakpoint.verified = false;
+			breakpoint.line = requested_line;
+			breakpoint.message = "No executable code on or after this line.";
+			breakpoint.reason = "failed";
+			if (_current_peer.is_valid()) {
+				breakpoint.id = breakpoint_id++;
+				_queue_moved_breakpoint(breakpoint.id, p_path, requested_line, true);
+			}
+			updated_breakpoints.push_back(breakpoint.to_json());
 			continue;
 		}
 
-		EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, p_lines[i], true);
+		breakpoint.line = resolved_line;
 
-		// Breakpoints are inserted at the end of the breakpoint list.
+		// Avoid duplicated entries.
+		List<DAP::Breakpoint>::Element *E = _find_breakpoint(breakpoint_list, res_path, resolved_line);
+		if (E) {
+			active_lines.insert(resolved_line);
+			if (resolved_line != requested_line && _current_peer.is_valid()) {
+				// This id belongs only to the clicked line. Reusing the resolved breakpoint's id would remove that dot too.
+				DAP::Breakpoint duplicate = E->get();
+				duplicate.id = breakpoint_id++;
+				updated_breakpoints.push_back(duplicate.to_json());
+				_queue_moved_breakpoint(duplicate.id, p_path, resolved_line, true);
+			} else {
+				updated_breakpoints.push_back(E->get().to_json());
+			}
+			continue;
+		}
+
+		const int count_before = breakpoint_list.size();
+		EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, resolved_line, true);
+
+		if (breakpoint_list.size() == count_before) {
+			breakpoint.verified = false;
+			breakpoint.line = requested_line;
+			breakpoint.message = "Could not place breakpoint.";
+			breakpoint.reason = "failed";
+			if (_current_peer.is_valid()) {
+				breakpoint.id = breakpoint_id++;
+				_queue_moved_breakpoint(breakpoint.id, p_path, requested_line, true);
+			}
+			updated_breakpoints.push_back(breakpoint.to_json());
+			continue;
+		}
+
 		List<DAP::Breakpoint>::Element *added_breakpoint = breakpoint_list.back();
 		ERR_FAIL_NULL_V(added_breakpoint, Array());
 		ERR_FAIL_COND_V(!(added_breakpoint->get() == breakpoint), Array());
+		active_lines.insert(added_breakpoint->get().line);
 		updated_breakpoints.push_back(added_breakpoint->get().to_json());
+
+		if (resolved_line != requested_line && _current_peer.is_valid()) {
+			_queue_moved_breakpoint(added_breakpoint->get().id, p_path, resolved_line, false);
+		}
 	}
 
 	// Remove breakpoints
@@ -1013,17 +1118,112 @@ Array DebugAdapterProtocol::update_breakpoints(const String &p_path, const Array
 	Vector<int> to_remove;
 
 	for (const DAP::Breakpoint &b : breakpoint_list) {
-		if (b.source->path == p_path && !p_lines.has(b.line)) {
+		if (b.source && _breakpoint_res_path(b.source->path) == res_path && !active_lines.has(b.line) && !to_remove.has(b.line)) {
 			to_remove.push_back(b.line);
+		}
+	}
+
+	// Clear lines left from the previous launch.
+	List<String> editor_breakpoints;
+	ScriptEditor::get_singleton()->get_breakpoints(&editor_breakpoints);
+	for (const String &breakpoint : editor_breakpoints) {
+		String path;
+		int line = 0;
+		if (!_parse_editor_breakpoint(breakpoint, path, line)) {
+			continue;
+		}
+		if (path == res_path && !active_lines.has(line) && !to_remove.has(line)) {
+			to_remove.push_back(line);
 		}
 	}
 
 	// Safe to remove queued data now.
 	for (const int &line : to_remove) {
-		EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, line, false);
+		EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(res_path, line, false);
 	}
 
+	Array replacement;
+	for (const int line : active_lines) {
+		replacement.push_back(line);
+	}
+	EditorDebuggerNode::get_singleton()->set_breakpoints(res_path, replacement);
+	client_breakpoint_lines[res_path] = active_lines;
+
 	return updated_breakpoints;
+}
+
+void DebugAdapterProtocol::drop_breakpoints_omitted_by_client() {
+	List<String> editor_breakpoints;
+	ScriptEditor::get_singleton()->get_breakpoints(&editor_breakpoints);
+	for (const String &breakpoint : editor_breakpoints) {
+		String path;
+		int line = 0;
+		if (!_parse_editor_breakpoint(breakpoint, path, line)) {
+			continue;
+		}
+		const HashSet<int> *kept = client_breakpoint_lines.getptr(path);
+		if (kept == nullptr || !kept->has(line)) {
+			EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(path, line, false);
+		}
+	}
+}
+
+void DebugAdapterProtocol::_queue_moved_breakpoint(int p_id, const String &p_path, int p_line, bool p_remove_only) {
+	MovedBreakpoint moved;
+	moved.id = p_id;
+	moved.path = p_path;
+	moved.line = p_line;
+	moved.remove_only = p_remove_only;
+	pending_moved_breakpoints.push_back(moved);
+	if (session_configured) {
+		send_pending_moves = true;
+	}
+}
+
+void DebugAdapterProtocol::_flush_moved_breakpoints() {
+	for (const MovedBreakpoint &moved : pending_moved_breakpoints) {
+		_keep_moved_breakpoint(moved.id, moved.path, moved.line, moved.remove_only);
+	}
+	pending_moved_breakpoints.clear();
+}
+
+void DebugAdapterProtocol::on_configuration_done() {
+	// The client stores breakpoint ids before sending configurationDone.
+	session_configured = true;
+	_flush_moved_breakpoints();
+}
+
+void DebugAdapterProtocol::_keep_moved_breakpoint(int p_old_id, const String &p_path, int p_line, bool p_remove_only) {
+	if (clients.is_empty()) {
+		return;
+	}
+
+	DAP::Breakpoint moved(fetch_source(p_path));
+	moved.verified = true;
+	moved.line = p_line;
+	moved.id = p_remove_only ? p_old_id : breakpoint_id++;
+
+	if (!p_remove_only) {
+		List<DAP::Breakpoint>::Element *E = _find_breakpoint(breakpoint_list, _breakpoint_res_path(p_path), p_line);
+		if (E) {
+			E->get().id = moved.id;
+		}
+	}
+
+	DAP::Breakpoint previous = moved;
+	previous.id = p_old_id;
+
+	Dictionary removed = parser->ev_breakpoint(previous, false);
+	Dictionary added;
+	if (!p_remove_only) {
+		added = parser->ev_breakpoint(moved, true);
+	}
+	for (const Ref<DAPeer> &peer : clients) {
+		peer->res_queue.push_back(removed.duplicate());
+		if (!p_remove_only) {
+			peer->res_queue.push_back(added.duplicate());
+		}
+	}
 }
 
 void DebugAdapterProtocol::on_debug_paused() {
@@ -1070,16 +1270,19 @@ void DebugAdapterProtocol::on_debug_breakpoint_toggled(const String &p_path, con
 	breakpoint.line = p_line;
 
 	if (p_enabled) {
-		// Add the breakpoint
+		if (breakpoint_list.find(breakpoint)) {
+			return;
+		}
 		breakpoint.id = breakpoint_id++;
 		breakpoint_list.push_back(breakpoint);
 	} else {
 		// Remove the breakpoint
 		List<DAP::Breakpoint>::Element *E = breakpoint_list.find(breakpoint);
-		if (E) {
-			breakpoint.id = E->get().id;
-			breakpoint_list.erase(E);
+		if (!E) {
+			return;
 		}
+		breakpoint.id = E->get().id;
+		breakpoint_list.erase(E);
 	}
 
 	notify_breakpoint(breakpoint, p_enabled);
@@ -1199,6 +1402,12 @@ void DebugAdapterProtocol::on_debug_data(const String &p_msg, const Array &p_dat
 }
 
 void DebugAdapterProtocol::poll() {
+	// A later poll, so this is not in the same write as the setBreakpoints response.
+	if (send_pending_moves) {
+		send_pending_moves = false;
+		_flush_moved_breakpoints();
+	}
+
 	if (server->is_connection_available()) {
 		on_client_connected();
 	}

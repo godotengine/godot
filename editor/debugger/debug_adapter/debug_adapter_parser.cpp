@@ -140,6 +140,7 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 	DAP::Capabilities caps;
 	response["body"] = caps.to_json();
 
+	DebugAdapterProtocol::get_singleton()->_reset_breakpoint_sync();
 	DebugAdapterProtocol::get_singleton()->notify_initialized();
 
 	if (DebugAdapterProtocol::get_singleton()->_sync_breakpoints) {
@@ -280,6 +281,9 @@ Dictionary DebugAdapterParser::req_terminate(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_configurationDone(const Dictionary &p_params) const {
+	DebugAdapterProtocol::get_singleton()->on_configuration_done();
+	DebugAdapterProtocol::get_singleton()->drop_breakpoints_omitted_by_client();
+
 	Ref<DAPeer> peer = DebugAdapterProtocol::get_singleton()->get_current_peer();
 	if (!peer->pending_launch.is_empty()) {
 		peer->res_queue.push_back(_launch_process(peer->pending_launch));

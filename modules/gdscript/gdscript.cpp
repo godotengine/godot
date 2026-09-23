@@ -1290,6 +1290,51 @@ GDScript *GDScript::get_root_script() {
 	return result;
 }
 
+#ifdef TOOLS_ENABLED
+void GDScript::_collect_executable_lines(HashSet<int> &r_lines) const {
+	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
+		if (E.value) {
+			E.value->get_executable_lines(r_lines);
+		}
+	}
+	if (implicit_initializer) {
+		implicit_initializer->get_executable_lines(r_lines);
+	}
+	if (implicit_ready) {
+		implicit_ready->get_executable_lines(r_lines);
+	}
+	if (static_initializer) {
+		static_initializer->get_executable_lines(r_lines);
+	}
+	for (const KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
+		if (E.value.is_valid()) {
+			E.value->_collect_executable_lines(r_lines);
+		}
+	}
+}
+
+int GDScript::get_breakpoint_line(int p_line) const {
+	const GDScript *root = this;
+	while (root->_owner) {
+		root = root->_owner;
+	}
+
+	HashSet<int> lines;
+	root->_collect_executable_lines(lines);
+	if (lines.is_empty() || lines.has(p_line)) {
+		return p_line;
+	}
+
+	int next = -1;
+	for (const int line : lines) {
+		if (line > p_line && (next == -1 || line < next)) {
+			next = line;
+		}
+	}
+	return next;
+}
+#endif // TOOLS_ENABLED
+
 bool GDScript::has_script_signal(const StringName &p_signal) const {
 	if (_signals.has(p_signal)) {
 		return true;

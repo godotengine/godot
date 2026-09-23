@@ -193,6 +193,11 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
+#ifdef TOOLS_ENABLED
+	// p_line is one-based. Return p_line to keep the breakpoint. Return the next executable line to move the breakpoint. Return -1 when no executable line follows.
+	virtual int get_breakpoint_line(int p_line) const { return p_line; }
+#endif // TOOLS_ENABLED
+
 	virtual void get_constants(HashMap<StringName, Variant> *r_constants) {}
 	virtual void get_members(HashSet<StringName> *r_members) {}
 

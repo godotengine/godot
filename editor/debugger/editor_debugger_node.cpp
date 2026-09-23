@@ -474,6 +474,23 @@ void EditorDebuggerNode::_notification(int p_what) {
 				SceneTreeDock::get_singleton()->show_tab_buttons();
 				debugger->set_editor_remote_tree(remote_scene_tree);
 				debugger->start(server->take_connection());
+
+				// A removed gutter dot must not pause the next run.
+				List<String> editor_breakpoints;
+				ScriptEditor::get_singleton()->get_breakpoints(&editor_breakpoints);
+				Vector<Breakpoint> stale_breakpoints;
+				for (const KeyValue<Breakpoint, bool> &E : breakpoints) {
+					if (!E.value) {
+						continue;
+					}
+					if (editor_breakpoints.find(E.key.source + ":" + itos(E.key.line)) == nullptr) {
+						stale_breakpoints.push_back(E.key);
+					}
+				}
+				for (const Breakpoint &breakpoint : stale_breakpoints) {
+					set_breakpoint(breakpoint.source, breakpoint.line, false);
+				}
+
 				// Send breakpoints.
 				for (const KeyValue<Breakpoint, bool> &E : breakpoints) {
 					const Breakpoint &bp = E.key;
