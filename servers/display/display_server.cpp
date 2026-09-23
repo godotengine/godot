@@ -1682,7 +1682,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
 	ClassDB::bind_method(D_METHOD("cursor_set_custom_image", "cursor", "shape", "hotspot"), &DisplayServer::cursor_set_custom_image, DEFVAL(DisplayServerEnums::CURSOR_ARROW), DEFVAL(Vector2()));
 
-	ClassDB::bind_method(D_METHOD("send_toast_notification", "title", "text", "image", "callback"), &DisplayServer::send_toast_notification);
+	ClassDB::bind_method(D_METHOD("send_toast_notification", "title", "text", "image", "callback"), &DisplayServer::send_toast_notification, DEFVAL(Ref<Texture2D>()), DEFVAL(Callable()));
 	ClassDB::bind_method(D_METHOD("hide_toast_notification", "id"), &DisplayServer::hide_toast_notification);
 
 	ClassDB::bind_method(D_METHOD("get_swap_cancel_ok"), &DisplayServer::get_swap_cancel_ok);

@@ -338,6 +338,33 @@
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon as a fallback if necessary.
 		</member>
+		<member name="application/config/id" type="String" setter="" getter="" default="&quot;&quot;">
+			Unique application identifier.
+		</member>
+		<member name="application/config/id.android" type="String" setter="" getter="" default="&quot;com.example.$genname&quot;">
+			Unique application identifier in a reverse-DNS format. The reverse DNS format should preferably match a domain name you control, but this is not strictly required. For instance, if you own [code]example.com[/code], your package unique name should preferably be of the form [code]com.example.mygame[/code]. This identifier can only contain lowercase alphanumeric characters ([code]a-z[/code], and [code]0-9[/code]), underscores ([code]_[/code]), and periods ([code].[/code]). Each component of the reverse DNS format must start with a letter: for instance, [code]com.example.8game[/code] is not valid.
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name converted to lowercase. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]unnamed_project[/code].
+		</member>
+		<member name="application/config/id.ios" type="String" setter="" getter="" default="&quot;com.example.$genname&quot;">
+			Unique application identifier in a reverse-DNS format. The reverse DNS format should preferably match a domain name you control, but this is not strictly required. For instance, if you own [code]example.com[/code], your package unique name should preferably be of the form [code]com.example.mygame[/code]. This identifier can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name converted to lowercase. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]unnamed-project[/code].
+		</member>
+		<member name="application/config/id.linuxbsd" type="String" setter="" getter="" default="&quot;com.example.$genname&quot;">
+			Unique application identifier in a reverse-DNS format. The reverse DNS format should preferably match a domain name you control, but this is not strictly required. For instance, if you own [code]example.com[/code], your package unique name should preferably be of the form [code]com.example.mygame[/code]. This identifier can only contain lowercase alphanumeric characters ([code]a-z[/code], and [code]0-9[/code]), underscores ([code]_[/code]), and periods ([code].[/code]). Each component of the reverse DNS format must start with a letter: for instance, [code]com.example.8game[/code] is not valid.
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name converted to lowercase. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]unnamed_project[/code].
+		</member>
+		<member name="application/config/id.macos" type="String" setter="" getter="" default="&quot;com.example.$genname&quot;">
+			Unique application identifier in a reverse-DNS format. The reverse DNS format should preferably match a domain name you control, but this is not strictly required. For instance, if you own [code]example.com[/code], your package unique name should preferably be of the form [code]com.example.mygame[/code]. This identifier can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name converted to lowercase. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]unnamed-project[/code].
+		</member>
+		<member name="application/config/id.visionos" type="String" setter="" getter="" default="&quot;com.example.$genname&quot;">
+			Unique application identifier in a reverse-DNS format. The reverse DNS format should preferably match a domain name you control, but this is not strictly required. For instance, if you own [code]example.com[/code], your package unique name should preferably be of the form [code]com.example.mygame[/code]. This identifier can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name converted to lowercase. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]unnamed-project[/code].
+		</member>
+		<member name="application/config/id.windows" type="String" setter="" getter="" default="&quot;Example.$genname&quot;">
+			Unique application identifier in a [code]CompanyName.ProductName.SubProduct.VersionInformation[/code] format. This identifier can only contain lowercase alphanumeric characters ([code]a-z[/code], and [code]0-9[/code]), underscores ([code]_[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]). Each component should be pascal-cased.
+			If [code]$genname[/code] is present in the value, it will be replaced by the project name. If there are invalid characters in the project name, they will be stripped. If all characters in the project name are stripped, [code]$genname[/code] is replaced by [code]UnnamedProject[/code].
+		</member>
 		<member name="application/config/macos_native_icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon set in [code].icns[/code] format used on macOS to set the game's icon. This is done automatically on start by calling [method DisplayServer.set_native_icon].
 		</member>
