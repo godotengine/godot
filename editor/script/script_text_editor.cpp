@@ -1423,11 +1423,10 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 		}
 	}
 
-	// If documentation tooltips aren't enabled, there's no need to process the rest of the method.
-	// We can just pop up the tooltip with the diagnostics, if they are enabled (if not, we don't need
-	// to do anything at all).
-	if (!enable_docs || p_symbol.is_empty()) {
-		if (enable_diagnostics) {
+	// If documentation tooltips aren't enabled, only show the tooltip
+	// if there is diagnostic information for this location.
+	if (!enable_docs) {
+		if (!diagnostic_strings_concatenated.is_empty()) {
 			Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), String(), String(), true, p_shortcut, diagnostic_strings_concatenated);
 			memdelete(tmp);
 		}
