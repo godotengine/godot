@@ -140,7 +140,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	// make copies of our inputs
 	bool has_grav = false;
 	Vector3 acc = input->get_accelerometer();
-	Vector3 gyro = input->get_gyroscope();
+	const Vector3 gyro = input->get_gyroscope();
 	Vector3 grav = input->get_gravity();
 	Vector3 magneto = scale_magneto(input->get_magnetometer()); // this may be overkill on iOS because we're already getting a calibrated magnetometer reading
 
@@ -166,7 +166,7 @@ void MobileVRInterface::set_position_from_sensors() {
 		has_grav = true;
 	};
 
-	bool has_magneto = magneto.length() > 0.1f;
+	const bool has_magneto = magneto.length() > 0.1f;
 	if (gyro.length() > 0.1f) {
 		/* this can return to 0.0 if the user doesn't move the phone, so once on, it's on */
 		has_gyro = true;
