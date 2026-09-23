@@ -4081,16 +4081,15 @@ void Viewport::_refresh_texture_filter_cache() const {
 			default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
 		} break;
 		case DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE: {
-			Node *p = get_parent();
-			CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p);
+			CanvasItem *parent_ci = Object::cast_to<CanvasItem>(get_parent());
 			if (parent_ci) {
 				default_canvas_item_texture_filter_cache = (RenderingServerEnums::CanvasItemTextureFilter)parent_ci->get_texture_filter_in_tree();
-				if (default_canvas_item_texture_filter_cache == RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT) {
-					default_canvas_item_texture_filter_cache = RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+				if (default_canvas_item_texture_filter_cache != RSE::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT) {
+					break;
 				}
-				break;
 			}
-			Viewport *parent_vp = Object::cast_to<Viewport>(p);
+			// DEFAULT uses the enclosing viewport's filter.
+			Viewport *parent_vp = get_parent_viewport();
 			if (parent_vp) {
 				default_canvas_item_texture_filter_cache = (RenderingServerEnums::CanvasItemTextureFilter)parent_vp->get_texture_filter_in_tree();
 				break;
@@ -4102,6 +4101,26 @@ void Viewport::_refresh_texture_filter_cache() const {
 	}
 }
 
+void Viewport::_propagate_texture_filter_changed(Node *p_node) {
+	for (Node *child : p_node->iterate_children()) {
+		Viewport *child_vp = Object::cast_to<Viewport>(child);
+		if (child_vp) {
+			if (child_vp->default_canvas_item_texture_filter == DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE) {
+				child_vp->_update_texture_filter_changed(true);
+			}
+			continue;
+		}
+
+		CanvasItem *child_ci = Object::cast_to<CanvasItem>(child);
+		if (child_ci && child_ci->texture_filter == CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
+			child_ci->_update_texture_filter_changed(false);
+		}
+
+		// Descendants may still inherit this viewport's filter, even past a CanvasItem.
+		_propagate_texture_filter_changed(child);
+	}
+}
+
 void Viewport::_update_texture_filter_changed(bool p_propagate) {
 	if (!is_inside_tree()) {
 		return;
@@ -4110,19 +4129,7 @@ void Viewport::_update_texture_filter_changed(bool p_propagate) {
 	RS::get_singleton()->viewport_set_default_canvas_item_texture_filter(viewport, default_canvas_item_texture_filter_cache);
 
 	if (p_propagate) {
-		for (Node *c : iterate_children()) {
-			CanvasItem *child_ci = Object::cast_to<CanvasItem>(c);
-			if (child_ci) {
-				if (child_ci->texture_filter == CanvasItem::TEXTURE_FILTER_PARENT_NODE) {
-					child_ci->_update_texture_filter_changed(true);
-				}
-				continue;
-			}
-			Viewport *child_vp = Object::cast_to<Viewport>(c);
-			if (child_vp && child_vp->default_canvas_item_texture_filter == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE) {
-				child_vp->_update_texture_filter_changed(true);
-			}
-		}
+		_propagate_texture_filter_changed(this);
 	}
 }
 
