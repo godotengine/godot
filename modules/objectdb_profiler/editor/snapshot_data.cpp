@@ -215,20 +215,25 @@ bool SnapshotDataObject::is_class(const String &p_base_class) {
 	return ClassDB::is_parent_class(type_name, p_base_class);
 }
 
-bool SnapshotDataObject::did_change(const SnapshotDataObject *p_compare_with) const {
+bool SnapshotDataObject::did_change(SnapshotDataObject *p_compare_with) {
 	ERR_FAIL_COND_V_MSG(remote_object_id != p_compare_with->remote_object_id, true, "Attempted to compare two objects with different Remote IDs");
-	if (prop_values.size() != p_compare_with->prop_values.size()) {
+	if (modified_properties.size() > 0) {
 		return true;
 	}
 	for (const KeyValue<StringName, Variant> &kv : prop_values) {
 		if (!p_compare_with->prop_values.has(kv.key)) {
-			return true;
+			modified_properties.insert(kv.key);
 		} else if (p_compare_with->prop_values[kv.key] != kv.value) {
-			return true;
+			modified_properties.insert(kv.key);
 		}
 	}
 
-	return false;
+	if (modified_properties.size() > 0 || prop_values.size() != p_compare_with->prop_values.size()) {
+		// populate modified_properties of the other object
+		p_compare_with->did_change(this);
+	}
+
+	return modified_properties.size() > 0;
 }
 
 HashSet<ObjectID> SnapshotDataObject::_unique_references(const HashMap<String, ObjectID> &p_refs) {

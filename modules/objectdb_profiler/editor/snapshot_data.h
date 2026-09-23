@@ -64,6 +64,7 @@ public:
 	DiffStatus diff_status = DiffStatus::DIFF_UNMODIFIED;
 	LocalVector<PropertyInfo> prop_list;
 	HashMap<StringName, Variant> prop_values;
+	HashSet<StringName> modified_properties;
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
@@ -80,7 +81,7 @@ public:
 	bool is_refcounted();
 	bool is_node();
 	bool is_class(const String &p_base_class);
-	bool did_change(const SnapshotDataObject *p_compare_with) const;
+	bool did_change(SnapshotDataObject *p_compare_with);
 
 protected:
 	// Snapshots are inherently read-only. Can't edit the past.
