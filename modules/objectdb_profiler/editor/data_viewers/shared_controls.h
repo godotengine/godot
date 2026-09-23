@@ -41,7 +41,7 @@ class SpanningHeader : public PanelContainer {
 	GDCLASS(SpanningHeader, PanelContainer);
 
 public:
-	SpanningHeader(const String &p_text);
+	SpanningHeader(const String &p_text, const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 };
 
 class DarkPanelContainer : public PanelContainer {

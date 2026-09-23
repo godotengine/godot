@@ -37,18 +37,31 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box_flat.h"
 
-SpanningHeader::SpanningHeader(const String &p_text) {
+SpanningHeader::SpanningHeader(const String &p_text, const Ref<Texture2D> &p_icon) {
 	Ref<StyleBoxFlat> title_sbf;
 	title_sbf.instantiate();
 	title_sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_3", "Editor"));
 	add_theme_style_override(SceneStringName(panel), title_sbf);
 	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	set_tooltip_text(p_text);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	hb->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	add_child(hb);
+	if (p_icon.is_valid()) {
+		title_sbf->set_content_margin(Side::SIDE_LEFT, 8);
+		TextureRect *icon = memnew(TextureRect);
+		icon->set_texture(p_icon);
+		icon->set_stretch_mode(TextureRect::StretchMode::STRETCH_KEEP_CENTERED);
+		hb->add_child(icon);
+	}
 	Label *title = memnew(Label(p_text));
-	add_child(title);
-	title->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
-	title->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
+	title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	title->set_custom_maximum_size(Size2(900, -1)); // This maximum size is never reached, but allows ellipsis to work as intended
+	hb->add_child(title);
 }
 
 DarkPanelContainer::DarkPanelContainer() {
@@ -90,7 +103,7 @@ void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {
 	// We are visible.
 	bool matches_filter = true;
 	for (const String &filter_str : filters) {
-		bool filter_is_col = (filter_str.get_slice_count(":") == 2); // Filter is of the type 'col_name:match' (replacing spaces with '_').
+		bool filter_is_col = (filter_str.get_slice_count(":") == 2); // The filter is formatted as 'col_name:match' (replacing spaces with '_').
 		if (filter_is_col) {
 			String col_name = filter_str.get_slicec(':', 0);
 			String match = filter_str.get_slicec(':', 1);
@@ -98,11 +111,9 @@ void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {
 				continue;
 			} else {
 				for (int i = 0; i < managed_tree->get_columns(); i++) {
-					if (managed_tree->get_column_title(i).to_lower().replace_char(' ', '_') == col_name) {
-						if (!p_current_node->get_text(i).to_lower().contains(match)) {
-							matches_filter = false;
-							break;
-						}
+					if (managed_tree->get_column_title(i).to_lower().replace_char(' ', '_') == col_name && !p_current_node->get_text(i).to_lower().contains(match)) {
+						matches_filter = false;
+						break;
 					}
 				}
 			}
@@ -116,7 +127,7 @@ void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {
 			}
 			matches_filter = found;
 		}
-		if (matches_filter == false) {
+		if (!matches_filter) {
 			break;
 		}
 	}
