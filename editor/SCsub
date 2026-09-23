@@ -91,6 +91,7 @@ if env.editor_build:
     SConscript("project_upgrade/SCsub")
     SConscript("run/SCsub")
     SConscript("settings/SCsub")
+    SConscript("slime_ai/SCsub")
     SConscript("scene/SCsub")
     SConscript("script/SCsub")
     SConscript("shader/SCsub")

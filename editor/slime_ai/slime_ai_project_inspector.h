@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  slime_ai_editor_plugin.h                                            */
+/*  slime_ai_project_inspector.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,58 +30,13 @@
 
 #pragma once
 
-#include "editor/plugins/editor_plugin.h"
-#include "editor/slime_ai/slime_ai_scene_transaction.h"
-#include "editor/slime_ai/slime_ai_service_client.h"
+#include "core/variant/dictionary.h"
 
-class EditorDock;
-class Button;
-class Label;
-class TextEdit;
+namespace SlimeAI {
 
-class SlimeAIEditorPlugin : public EditorPlugin {
-	GDCLASS(SlimeAIEditorPlugin, EditorPlugin);
-
-	EditorDock *dock = nullptr;
-	TextEdit *display = nullptr;
-	TextEdit *activity = nullptr;
-	Label *context = nullptr;
-	Button *scene_context_button = nullptr;
-	Button *object_context_button = nullptr;
-	SlimeAI::ServiceClient service;
-	SlimeAI::SceneTransaction transaction;
-	Dictionary last_inspection;
-	Dictionary last_proposal;
-	Dictionary context_manifest;
-	String last_preview_id;
-	String last_operation_id;
-	uint64_t operation_sequence = 0;
-	uint64_t last_context_update = 0;
-
-	void _show(const Dictionary &p_data);
-	void _update_context();
-	void _inspect_project();
-	void _inspect();
-	void _inspect_object();
-	void _describe_api();
-	void _connect_service();
-	void _disconnect_service();
-	void _request_patch();
-	void _grant();
-	void _apply();
-	void _cancel();
-	void _undo();
-	void _redo();
-	void _save();
-	void _status();
-	void _mode_manual();
-	void _mode_protected();
-	void _mode_freedom();
-	void _on_response(const Dictionary &p_frame);
-	void _notification(int p_what);
-
+class ProjectInspector {
 public:
-	virtual String get_plugin_name() const override { return "Slime AI"; }
-	SlimeAIEditorPlugin();
-	~SlimeAIEditorPlugin();
+	static Dictionary inspect(int p_asset_limit = 64);
 };
+
+} // namespace SlimeAI

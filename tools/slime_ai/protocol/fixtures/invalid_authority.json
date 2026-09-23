@@ -1,0 +1,1 @@
+{"protocol_version":"1.0","request_id":"proposal-2","method":"fake_propose_scene_patch","params":{"scene_ref":"scene-1","base_revision":"revision-1","parent_ref":"node-root","root_class":"Node2D","scenario":"normal","approved":true}}

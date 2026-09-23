@@ -1,0 +1,1 @@
+{"protocol_version":"1.0","request_id":"hello-1","status":"ok","result":{"service_build":"fake-1.0","protocol_version":"1.0","capabilities":["fake_propose_scene_patch"]}}

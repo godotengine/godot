@@ -443,6 +443,114 @@ TEST_CASE("[SlimeAI][TX] interrupted saved effect reconciles after scene reopen"
 	DirAccess::remove_absolute(scene);
 }
 
+TEST_CASE("[SlimeAI][TX] unwritable journal prevents scene effect") {
+	const String journal = _temp_path("journal-directory");
+	REQUIRE(DirAccess::make_dir_recursive_absolute(journal) == OK);
+	Node2D *root = memnew(Node2D);
+	root->set_name("Root");
+	{
+		SlimeAI::SceneTransaction tx(journal);
+		const Dictionary preview = tx.preview(root, "journal-blocked", _proposal(root, SlimeAI::SceneInspector::inspect(root, true)), true);
+		REQUIRE(preview["status"] == "preview");
+		CHECK(tx.grant(preview["preview_id"])["status"] == "granted");
+		CHECK(_error_code(tx.apply(root, preview["preview_id"], true)) == "APPLY_FAILED_RECOVERY_REQUIRED");
+		CHECK(root->get_child_count() == 0);
+	}
+	memdelete(root);
+	DirAccess::remove_absolute(journal);
+}
+
+TEST_CASE("[SlimeAI][TX] unowned node cannot be renamed") {
+	const String journal = _temp_path("journal.json");
+	Node2D *root = memnew(Node2D);
+	root->set_name("Root");
+	Node2D *child = memnew(Node2D);
+	child->set_name("Unowned");
+	root->add_child(child);
+	SlimeAI::SceneTransaction tx(journal);
+	Dictionary operation;
+	operation["op"] = "rename_node";
+	operation["node_ref"] = SlimeAI::SceneInspector::object_ref(root, child);
+	operation["name"] = "Renamed";
+	CHECK(_error_code(tx.preview(root, "invalid-owner", _proposal_for(root, operation), true)) == "READ_ONLY_RESOURCE");
+	CHECK(child->get_name() == StringName("Unowned"));
+	memdelete(root);
+	DirAccess::remove_absolute(journal);
+}
+
+TEST_CASE("[SlimeAI][Policy] protected removal needs a native grant") {
+	const String journal = _temp_path("journal.json");
+	Node2D *root = memnew(Node2D);
+	root->set_name("Root");
+	Node2D *child = memnew(Node2D);
+	child->set_name("Marker");
+	root->add_child(child);
+	child->set_owner(root);
+	{
+		SlimeAI::SceneTransaction tx(journal);
+		CHECK(tx.set_mode(SlimeAI::SceneTransaction::PROTECTED, root)["status"] == "mode_set");
+		Dictionary operation;
+		operation["op"] = "remove_node";
+		operation["node_ref"] = SlimeAI::SceneInspector::object_ref(root, child);
+		const Dictionary preview = tx.preview(root, "protected-remove", _proposal_for(root, operation), true);
+		REQUIRE(preview["status"] == "preview");
+		CHECK(bool(preview["requires_native_grant"]));
+		CHECK(_error_code(tx.apply(root, preview["preview_id"], true)) == "PERMISSION_REQUIRED");
+		CHECK(root->get_child_count() == 1);
+		CHECK(tx.grant(preview["preview_id"])["status"] == "granted");
+		CHECK(tx.apply(root, preview["preview_id"], true)["status"] == "applied");
+		CHECK(root->get_child_count() == 0);
+	}
+	memdelete(root);
+	DirAccess::remove_absolute(journal);
+}
+
+TEST_CASE("[SlimeAI][TX] recovery status preserves a later human edit") {
+	const String journal = _temp_path("journal.json");
+	Node2D *root = memnew(Node2D);
+	root->set_name("Root");
+	const Dictionary proposal = _proposal(root, SlimeAI::SceneInspector::inspect(root, true));
+	{
+		SlimeAI::SceneTransaction tx(journal);
+		const Dictionary preview = tx.preview(root, "later-human-edit", proposal, true);
+		REQUIRE(preview["status"] == "preview");
+		CHECK(tx.grant(preview["preview_id"])["status"] == "granted");
+		tx.set_inject_failure_after_effect(true);
+		CHECK(_error_code(tx.apply(root, preview["preview_id"], true)) == "APPLY_FAILED_RECOVERY_REQUIRED");
+	}
+	Node2D *human = memnew(Node2D);
+	human->set_name("HumanLater");
+	root->add_child(human);
+	human->set_owner(root);
+	{
+		SlimeAI::SceneTransaction restarted(journal);
+		const Dictionary status = restarted.status(root, "later-human-edit");
+		CHECK(status["status"] == "prepared");
+		CHECK(status["effect"] == "present_unconfirmed");
+		CHECK(bool(restarted.preview(root, "later-human-edit", proposal, true)["duplicate"]));
+		CHECK(root->get_child_count() == 2);
+		CHECK(root->get_node_or_null(NodePath("HumanLater")) == human);
+	}
+	memdelete(root);
+	DirAccess::remove_absolute(journal);
+}
+
+TEST_CASE("[SlimeAI][TX] closing scene before apply leaves it unchanged") {
+	const String journal = _temp_path("journal.json");
+	Node2D *root = memnew(Node2D);
+	root->set_name("Root");
+	{
+		SlimeAI::SceneTransaction tx(journal);
+		const Dictionary preview = tx.preview(root, "scene-closed", _proposal(root, SlimeAI::SceneInspector::inspect(root, true)), true);
+		REQUIRE(preview["status"] == "preview");
+		CHECK(tx.grant(preview["preview_id"])["status"] == "granted");
+		CHECK(_error_code(tx.apply(nullptr, preview["preview_id"], true)) == "REVISION_CONFLICT");
+		CHECK(root->get_child_count() == 0);
+	}
+	memdelete(root);
+	DirAccess::remove_absolute(journal);
+}
+
 TEST_CASE("[SlimeAI][Policy] mode change invalidates grant and Freedom stays in scene scope") {
 	const String journal = _temp_path("journal.json");
 	Node2D *root = memnew(Node2D);

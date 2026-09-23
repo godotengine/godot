@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import glob
+
+Import("env")
+
+env.add_source_files(env.editor_sources, glob.glob("**/*.cpp", recursive=True))

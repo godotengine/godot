@@ -1,0 +1,43 @@
+Unicode parsing error: Byte 28 is not a correct continuation byte after c3
+ERROR: Condition "!PeekNamedPipe(fd[0], nullptr, 0, nullptr, &buf_rem, nullptr)" is true. Returning: 0
+   at: FileAccessWindowsPipe::get_length (drivers\windows\file_access_windows_pipe.cpp:110)
+ERROR: Condition "!PeekNamedPipe(fd[0], nullptr, 0, nullptr, &buf_rem, nullptr)" is true. Returning: 0
+   at: FileAccessWindowsPipe::get_length (drivers\windows\file_access_windows_pipe.cpp:110)
+WARNING: Adding 'AI_Marker' as child to 'Root' will make owner 'Root' inconsistent. Consider unsetting the owner beforehand.
+   at: Node::add_child (scene\main\node.cpp:1728)
+WARNING: Adding 'Renamed' as child to 'Root' will make owner 'Root' inconsistent. Consider unsetting the owner beforehand.
+   at: Node::add_child (scene\main\node.cpp:1728)
+ERROR: Bug: Dictionary::operator[] used when there was no value for the given key "effect". Please report.
+   at: Dictionary::operator [] (core\variant\dictionary.cpp:136)
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+tests\editor\slime_ai\test_slime_ai.cpp(249):
+TEST CASE:  [SlimeAI][TX] cancel and restart after interrupted effect
+
+tests\editor\slime_ai\test_slime_ai.cpp(270): ERROR: CHECK( status["status"] == "prepared" ) is NOT correct!
+  values: CHECK( error == prepared )
+
+tests\editor\slime_ai\test_slime_ai.cpp(271): ERROR: CHECK( status["effect"] == "present_unconfirmed" ) is NOT correct!
+  values: CHECK( <null> == present_unconfirmed )
+
+tests\editor\slime_ai\test_slime_ai.cpp(272): ERROR: CHECK( bool(restarted.preview(root, "native-interrupted", proposal, true)["duplicate"]) ) is NOT correct!
+  values: CHECK( false )
+
+===============================================================================
+tests\editor\slime_ai\test_slime_ai.cpp(405):
+TEST CASE:  [SlimeAI][TX] interrupted saved effect reconciles after scene reopen
+
+tests\editor\slime_ai\test_slime_ai.cpp(436): ERROR: CHECK( status["status"] == "prepared" ) is NOT correct!
+  values: CHECK( error == prepared )
+
+tests\editor\slime_ai\test_slime_ai.cpp(437): ERROR: CHECK( status["effect"] == "present_unconfirmed" ) is NOT correct!
+  values: CHECK( <null> == present_unconfirmed )
+
+tests\editor\slime_ai\test_slime_ai.cpp(438): ERROR: CHECK( bool(restarted.preview(reloaded, "crash-save-1", proposal, false)["duplicate"]) ) is NOT correct!
+  values: CHECK( false )
+
+===============================================================================
+[doctest] test cases:  15 |  13 passed | 2 failed | 1429 skipped
+[doctest] assertions: 208 | 202 passed | 6 failed |
+[doctest] Status: FAILURE!

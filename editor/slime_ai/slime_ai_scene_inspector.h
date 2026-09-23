@@ -40,7 +40,7 @@ public:
 	static String scene_ref(Node *p_root);
 	static String object_ref(Node *p_root, Node *p_node);
 	static Node *resolve(Node *p_root, const String &p_ref);
-	static Dictionary inspect(Node *p_root, bool p_editor_unsaved);
+	static Dictionary inspect(Node *p_root, bool p_editor_unsaved, int p_offset = 0, int p_limit = 128, int p_max_depth = 16);
 };
 
 } // namespace SlimeAI

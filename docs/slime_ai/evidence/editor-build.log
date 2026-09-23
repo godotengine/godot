@@ -1,0 +1,85 @@
+scons: Reading SConscript files ...
+Using Visual Studio 14.3 with Windows SDK 10.0.26100.0.
+Building for platform "windows", architecture "x86_64", target "editor".
+INFO: Developer build, with debug optimization level and debug symbols (unless overridden).
+scons: done reading SConscript files.
+scons: Building targets ...
+Generating tests\force_link.gen.h ...
+Compiling tests\editor\slime_ai\test_slime_ai.cpp ...
+Compiling tests\test_main.cpp ...
+tests\editor\slime_ai\test_slime_ai.cpp(162): error C2678: binary '==': no operator found which takes a left-hand operand of type 'doctest::detail::Expression_lhs<const Variant &>' (or there is no acceptable conversion)
+E:\SlimeEngine\core/string/string_name.h(207): note: could be 'bool operator ==(const char *,const StringName &)'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: 'bool operator ==(const char *,const StringName &)': cannot convert argument 1 from 'doctest::detail::Expression_lhs<const Variant &>' to 'const char *'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+E:\SlimeEngine\core/string/string_name.h(205): note: or       'bool operator ==(const String &,const StringName &)'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: 'bool operator ==(const String &,const StringName &)': cannot convert argument 1 from 'doctest::detail::Expression_lhs<const Variant &>' to 'const String &'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: Reason: cannot convert from 'doctest::detail::Expression_lhs<const Variant &>' to 'const String'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+E:\SlimeEngine\core/string/ustring.h(723): note: or       'bool operator ==(const wchar_t *,const String &)'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: 'bool operator ==(const wchar_t *,const String &)': cannot convert argument 1 from 'doctest::detail::Expression_lhs<const Variant &>' to 'const wchar_t *'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+E:\SlimeEngine\core/string/ustring.h(722): note: or       'bool operator ==(const char *,const String &)'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: 'bool operator ==(const char *,const String &)': cannot convert argument 1 from 'doctest::detail::Expression_lhs<const Variant &>' to 'const char *'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'unknown-type doctest::detail::Expression_lhs<const Variant &>::operator ==(R &&)'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: Failed to specialize function template 'unknown-type doctest::detail::Expression_lhs<const Variant &>::operator ==(R &&)'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: With the following template arguments:
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: 'R=bool'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: 'Variant::operator ==': overloaded functions have similar conversions
+E:\SlimeEngine\core/variant/variant.h(823): note: could be 'bool Variant::operator ==(const Variant &) const'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(int, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(int64_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(Math::int_alt_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(uint64_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(uint32_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(Math::uint_alt_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(float, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(double, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: while trying to match the argument list '(const Variant, T)'
+        with
+        [
+            T=bool
+        ]
+E:\SlimeEngine\core/templates/span.h(236): note: or       'bool operator ==(const Span<T> &,const Span<RHS> &)'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: 'bool operator ==(const Span<T> &,const Span<RHS> &)': could not deduce template argument for 'const Span<T> &' from 'doctest::detail::Expression_lhs<const Variant &>'
+tests\editor\slime_ai\test_slime_ai.cpp(162): note: while trying to match the argument list '(doctest::detail::Expression_lhs<const Variant &>, bool)'
+tests\editor\slime_ai\test_slime_ai.cpp(236): error C2678: binary '==': no operator found which takes a left-hand operand of type 'doctest::detail::Expression_lhs<const Variant &>' (or there is no acceptable conversion)
+E:\SlimeEngine\core/string/string_name.h(207): note: could be 'bool operator ==(const char *,const StringName &)'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: 'bool operator ==(const char *,const StringName &)': cannot convert argument 1 from 'doctest::detail::Expression_lhs<const Variant &>' to 'const char *'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+E:\SlimeEngine\core/string/string_name.h(205): note: or       'bool operator ==(const String &,const StringName &)'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: 'bool operator ==(const String &,const StringName &)': cannot convert argument 1 from 'doctest::detail::Expression_lhs<const Variant &>' to 'const String &'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: Reason: cannot convert from 'doctest::detail::Expression_lhs<const Variant &>' to 'const String'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+E:\SlimeEngine\core/string/ustring.h(723): note: or       'bool operator ==(const wchar_t *,const String &)'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: 'bool operator ==(const wchar_t *,const String &)': cannot convert argument 1 from 'doctest::detail::Expression_lhs<const Variant &>' to 'const wchar_t *'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+E:\SlimeEngine\core/string/ustring.h(722): note: or       'bool operator ==(const char *,const String &)'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: 'bool operator ==(const char *,const String &)': cannot convert argument 1 from 'doctest::detail::Expression_lhs<const Variant &>' to 'const char *'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'unknown-type doctest::detail::Expression_lhs<const Variant &>::operator ==(R &&)'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: Failed to specialize function template 'unknown-type doctest::detail::Expression_lhs<const Variant &>::operator ==(R &&)'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: With the following template arguments:
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: 'R=bool'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: 'Variant::operator ==': overloaded functions have similar conversions
+E:\SlimeEngine\core/variant/variant.h(823): note: could be 'bool Variant::operator ==(const Variant &) const'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(int, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(int64_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(Math::int_alt_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(uint64_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(uint32_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(Math::uint_alt_t, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(float, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: or       'built-in C++ operator==(double, int)'
+E:\SlimeEngine\thirdparty/doctest/doctest.h(1532): note: while trying to match the argument list '(const Variant, T)'
+        with
+        [
+            T=bool
+        ]
+E:\SlimeEngine\core/templates/span.h(236): note: or       'bool operator ==(const Span<T> &,const Span<RHS> &)'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: 'bool operator ==(const Span<T> &,const Span<RHS> &)': could not deduce template argument for 'const Span<T> &' from 'doctest::detail::Expression_lhs<const Variant &>'
+tests\editor\slime_ai\test_slime_ai.cpp(236): note: while trying to match the argument list '(doctest::detail::Expression_lhs<const Variant &>, bool)'
+Compiling editor\register_editor_types.cpp ...
+scons: *** [bin\obj\tests\editor\slime_ai\test_slime_ai.windows.editor.dev.x86_64.obj] Error 2
+scons: building terminated because of errors.
+INFO: Time elapsed: 00:00:14.16

@@ -1,0 +1,28 @@
+
+> slime-ai-fake-service@1.0.0 test
+> node --disable-warning=ExperimentalWarning --experimental-strip-types --test tests/*.test.ts
+
+✔ golden hello matches exact wire response and EOF exits (77.357ms)
+✔ golden proposal matches exact wire response (71.8158ms)
+✔ 3D proposal has typed Vector3 value and echoed request ID (80.1025ms)
+✔ frame decoder buffers split Unicode and JSON bytes (0.7765ms)
+✔ process accepts fragmented Unicode request and exits on EOF (76.4692ms)
+✔ decoder rejects invalid UTF-8 (0.2411ms)
+✔ decoder rejects oversized frame and resumes at next newline (0.5479ms)
+✔ process returns explicit protocol error for malformed and oversized frames (76.5422ms)
+✔ duplicate keys including escaped aliases are rejected (0.6948ms)
+✔ unsupported envelope/version and authority field fail closed (0.5409ms)
+✔ invalid method and arguments produce explicit errors with request ID echo (77.6834ms)
+✔ delayed scenario waits before returning valid proposal (158.9933ms)
+✔ malformed scenario emits an intentionally invalid response frame (70.4882ms)
+✔ disconnect scenario exits without response (74.0699ms)
+✔ partial frame at EOF never executes (69.1477ms)
+✔ nonfinite numeric JSON and excessive nesting are rejected (0.2342ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 941.962

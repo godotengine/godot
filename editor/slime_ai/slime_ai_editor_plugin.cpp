@@ -38,6 +38,9 @@
 #include "editor/editor_data.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
+#include "editor/slime_ai/slime_ai_api_describer.h"
+#include "editor/slime_ai/slime_ai_object_inspector.h"
+#include "editor/slime_ai/slime_ai_project_inspector.h"
 #include "editor/slime_ai/slime_ai_protocol.h"
 #include "editor/slime_ai/slime_ai_scene_inspector.h"
 #include "scene/gui/box_container.h"
@@ -64,11 +67,18 @@ SlimeAIEditorPlugin::SlimeAIEditorPlugin() :
 	Label *banner = memnew(Label);
 	banner->set_text("LOCAL FAKE SERVICE · native grants only");
 	column->add_child(banner);
-	_button(column, "Inspect selected scene", callable_mp(this, &SlimeAIEditorPlugin::_inspect));
+	context = memnew(Label);
+	context->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	column->add_child(context);
+	_button(column, "Inspect project", callable_mp(this, &SlimeAIEditorPlugin::_inspect_project));
+	scene_context_button = _button(column, "Scene: none (inspect)", callable_mp(this, &SlimeAIEditorPlugin::_inspect));
+	object_context_button = _button(column, "Node: none (inspect)", callable_mp(this, &SlimeAIEditorPlugin::_inspect_object));
+	_button(column, "Describe selected native position", callable_mp(this, &SlimeAIEditorPlugin::_describe_api));
 	_button(column, "Mode: Manual", callable_mp(this, &SlimeAIEditorPlugin::_mode_manual));
 	_button(column, "Mode: Protected", callable_mp(this, &SlimeAIEditorPlugin::_mode_protected));
 	_button(column, "Mode: Freedom for selected scene", callable_mp(this, &SlimeAIEditorPlugin::_mode_freedom));
 	_button(column, "Connect fake service", callable_mp(this, &SlimeAIEditorPlugin::_connect_service));
+	_button(column, "Disconnect fake service", callable_mp(this, &SlimeAIEditorPlugin::_disconnect_service));
 	_button(column, "Request and preview marker", callable_mp(this, &SlimeAIEditorPlugin::_request_patch));
 	_button(column, "Authorize this preview", callable_mp(this, &SlimeAIEditorPlugin::_grant));
 	_button(column, "Apply authorized preview", callable_mp(this, &SlimeAIEditorPlugin::_apply));
@@ -77,12 +87,17 @@ SlimeAIEditorPlugin::SlimeAIEditorPlugin() :
 	_button(column, "Redo", callable_mp(this, &SlimeAIEditorPlugin::_redo));
 	_button(column, "Save scene", callable_mp(this, &SlimeAIEditorPlugin::_save));
 	_button(column, "Recorded operation status", callable_mp(this, &SlimeAIEditorPlugin::_status));
+	activity = memnew(TextEdit);
+	activity->set_editable(false);
+	activity->set_custom_minimum_size(Size2(300, 75));
+	column->add_child(activity);
 	display = memnew(TextEdit);
 	display->set_editable(false);
-	display->set_custom_minimum_size(Size2(300, 240));
+	display->set_custom_minimum_size(Size2(300, 160));
 	display->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	column->add_child(display);
 	add_dock(dock);
+	_update_context();
 	set_process(true);
 }
 
@@ -96,6 +111,34 @@ SlimeAIEditorPlugin::~SlimeAIEditorPlugin() {
 
 void SlimeAIEditorPlugin::_show(const Dictionary &p_data) {
 	display->set_text(JSON::stringify(p_data, "  "));
+	String event = p_data.get("status", "inspection");
+	if (p_data.has("error")) {
+		Variant error = p_data["error"];
+		event = error.get_type() == Variant::DICTIONARY ? String(Dictionary(error).get("code", "error")) : String(error);
+	}
+	PackedStringArray lines = activity->get_text().split("\n", false);
+	while (lines.size() >= 8) {
+		lines.remove_at(0);
+	}
+	lines.push_back(event);
+	activity->set_text(String("\n").join(lines));
+	_update_context();
+}
+
+void SlimeAIEditorPlugin::_update_context() {
+	Node *root = EditorNode::get_singleton()->get_edited_scene();
+	String selected = "none";
+	if (root) {
+		const List<Node *> nodes = EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list();
+		selected = nodes.is_empty() ? String(root->get_name()) : String(nodes.front()->get()->get_name());
+	}
+	context->set_text(vformat("Service: %s | Project: %s\nScene: %s | Selection: %s", service.get_state(), ProjectSettings::get_singleton()->get_setting("application/config/name", "Unnamed Project"), root ? root->get_scene_file_path() : String("none"), selected));
+	scene_context_button->set_text(vformat("Scene: %s (inspect)", root ? root->get_scene_file_path().get_file() : String("none")));
+	object_context_button->set_text(vformat("Node: %s (inspect)", selected));
+}
+
+void SlimeAIEditorPlugin::_inspect_project() {
+	_show(SlimeAI::ProjectInspector::inspect());
 }
 
 void SlimeAIEditorPlugin::_inspect() {
@@ -108,6 +151,28 @@ void SlimeAIEditorPlugin::_inspect() {
 	_show(last_inspection);
 }
 
+void SlimeAIEditorPlugin::_inspect_object() {
+	Node *root = EditorNode::get_singleton()->get_edited_scene();
+	if (!root) {
+		_show(SlimeAI::error("STALE_REFERENCE", "No scene is open.", "Open a scene."));
+		return;
+	}
+	const List<Node *> nodes = EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list();
+	Node *node = nodes.is_empty() ? root : nodes.front()->get();
+	_show(SlimeAI::ObjectInspector::inspect(root, SlimeAI::SceneInspector::object_ref(root, node), EditorNode::get_singleton()->is_scene_unsaved(EditorNode::get_editor_data().get_edited_scene())));
+}
+
+void SlimeAIEditorPlugin::_describe_api() {
+	Node *root = EditorNode::get_singleton()->get_edited_scene();
+	if (!root) {
+		_show(SlimeAI::error("STALE_REFERENCE", "No scene is open.", "Open a scene."));
+		return;
+	}
+	const List<Node *> nodes = EditorNode::get_singleton()->get_editor_selection()->get_full_selected_node_list();
+	Node *node = nodes.is_empty() ? root : nodes.front()->get();
+	_show(SlimeAI::ApiDescriber::describe(node->get_class(), SNAME("position")));
+}
+
 void SlimeAIEditorPlugin::_connect_service() {
 	const String script_path = OS::get_singleton()->get_executable_path().get_base_dir().get_base_dir().path_join("tools/slime_ai/agent_service/src/main.ts");
 	Dictionary result;
@@ -115,6 +180,13 @@ void SlimeAIEditorPlugin::_connect_service() {
 	result["started"] = service.start(script_path);
 	result["service_state"] = service.get_state();
 	result["error"] = service.get_last_error();
+	_show(result);
+}
+
+void SlimeAIEditorPlugin::_disconnect_service() {
+	service.stop();
+	Dictionary result;
+	result["service_state"] = service.get_state();
 	_show(result);
 }
 
@@ -144,10 +216,17 @@ void SlimeAIEditorPlugin::_request_patch() {
 	params["parent_ref"] = parent_ref;
 	params["root_class"] = last_inspection["root_class"];
 	params["scenario"] = "normal";
+	context_manifest.clear();
+	context_manifest["fields_sent"] = params.keys();
+	context_manifest["scene_ref"] = params["scene_ref"];
+	context_manifest["selected_node_ref"] = parent_ref;
+	context_manifest["unsaved_content_sent"] = false;
+	context_manifest["editor_unsaved"] = last_inspection["editor_unsaved"];
 	const String request_id = service.request("fake_propose_scene_patch", params);
 	Dictionary result;
 	result["service_request_id"] = request_id;
 	result["state"] = request_id.is_empty() ? "request_failed" : "awaiting_fake_proposal";
+	result["outgoing_context_manifest"] = context_manifest;
 	_show(result);
 }
 
@@ -174,6 +253,7 @@ void SlimeAIEditorPlugin::_on_response(const Dictionary &p_frame) {
 	last_operation_id = vformat("native-%d-%d", OS::get_singleton()->get_ticks_usec(), operation_sequence);
 	Dictionary preview = transaction.preview(root, last_operation_id, last_proposal, EditorNode::get_singleton()->is_scene_unsaved(EditorNode::get_editor_data().get_edited_scene()));
 	last_preview_id = preview.get("preview_id", "");
+	preview["outgoing_context_manifest"] = context_manifest;
 	_show(preview);
 }
 
@@ -247,6 +327,11 @@ void SlimeAIEditorPlugin::_mode_freedom() {
 
 void SlimeAIEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
+		const uint64_t now = OS::get_singleton()->get_ticks_msec();
+		if (now - last_context_update >= 500) {
+			last_context_update = now;
+			_update_context();
+		}
 		Vector<Dictionary> frames;
 		service.poll(frames);
 		for (const Dictionary &frame : frames) {

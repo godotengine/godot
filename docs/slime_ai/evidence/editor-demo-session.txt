@@ -1,0 +1,4 @@
+pid=41728
+fixture_copy=C:\Users\logan\AppData\Local\Temp\slime-ai-demo-2d-ce5ef7cb3983408ca82c9cd19f5e2fa2
+binary=E:\SlimeEngine\bin\godot.windows.editor.dev.x86_64.console.exe
+started_utc=2026-09-23T22:17:48.9876169Z

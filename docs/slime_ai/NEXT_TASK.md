@@ -1,0 +1,3 @@
+# Next task after this assignment
+
+P00–P03's bounded first slice and built-editor transaction/recovery gate are verified. The next exact task is P04-01: add `project_search` and `code_read` as bounded, read-only, project-scoped native tools, with explicit context attachment and no live provider call. Start with source/fixture tests for path scope, size limits, Unicode, missing files, and unsaved buffers. Rebuild with `tools/slime_ai/harness/build_editor.ps1`, rerun `run_native_tests.ps1` and the fake service tests, and record counts in `TEST_MATRIX.md`. Do not advertise a cloud provider until its adapter and permission/data-routing tests run.

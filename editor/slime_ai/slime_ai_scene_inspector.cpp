@@ -69,28 +69,60 @@ Node *SceneInspector::resolve(Node *p_root, const String &p_ref) {
 	return node;
 }
 
-static void _append_nodes(Node *p_root, Node *p_node, Array &r_nodes, int p_limit) {
-	if (r_nodes.size() >= p_limit) {
+struct ScenePage {
+	int offset = 0;
+	int limit = 0;
+	int max_depth = 0;
+	int visited = 0;
+	bool depth_truncated = false;
+	Array nodes;
+};
+
+static void _append_nodes(Node *p_root, Node *p_node, ScenePage &r_page, int p_depth) {
+	if (r_page.visited > r_page.offset + r_page.limit) {
 		return;
 	}
+	const int index = r_page.visited++;
+	if (index >= r_page.offset && r_page.nodes.size() < r_page.limit) {
 	Dictionary item;
 	item["ref"] = SceneInspector::object_ref(p_root, p_node);
 	item["path"] = String(p_root->get_path_to(p_node));
 	item["class_name"] = p_node->get_class();
 	item["name"] = String(p_node->get_name());
 	item["owner_ref"] = SceneInspector::object_ref(p_root, p_node->get_owner());
+	item["instance_path"] = p_node == p_root ? String() : p_node->get_scene_file_path();
 	if (Node2D *node_2d = Object::cast_to<Node2D>(p_node)) {
-		item["position"] = node_2d->get_position();
+		Dictionary position;
+		position["type"] = "Vector2";
+		Array value;
+		value.push_back(node_2d->get_position().x);
+		value.push_back(node_2d->get_position().y);
+		position["value"] = value;
+		item["position"] = position;
+		item["visible"] = node_2d->is_visible();
 	} else if (Node3D *node_3d = Object::cast_to<Node3D>(p_node)) {
-		item["position"] = node_3d->get_position();
+		Dictionary position;
+		position["type"] = "Vector3";
+		Array value;
+		value.push_back(node_3d->get_position().x);
+		value.push_back(node_3d->get_position().y);
+		value.push_back(node_3d->get_position().z);
+		position["value"] = value;
+		item["position"] = position;
+		item["visible"] = node_3d->is_visible();
 	}
-	r_nodes.push_back(item);
+	r_page.nodes.push_back(item);
+	}
+	if (p_depth >= r_page.max_depth) {
+		r_page.depth_truncated |= p_node->get_child_count(false) > 0;
+		return;
+	}
 	for (int i = 0; i < p_node->get_child_count(false); i++) {
-		_append_nodes(p_root, p_node->get_child(i, false), r_nodes, p_limit);
+		_append_nodes(p_root, p_node->get_child(i, false), r_page, p_depth + 1);
 	}
 }
 
-Dictionary SceneInspector::inspect(Node *p_root, bool p_editor_unsaved) {
+Dictionary SceneInspector::inspect(Node *p_root, bool p_editor_unsaved, int p_offset, int p_limit, int p_max_depth) {
 	Dictionary result;
 	if (!p_root) {
 		result["error"] = "STALE_REFERENCE";
@@ -105,10 +137,17 @@ Dictionary SceneInspector::inspect(Node *p_root, bool p_editor_unsaved) {
 	result["staged_state"] = "not_inspected";
 	result["root_class"] = p_root->get_class();
 	result["root_ref"] = object_ref(p_root, p_root);
-	Array nodes;
-	_append_nodes(p_root, p_root, nodes, 512);
-	result["nodes"] = nodes;
-	result["truncated"] = nodes.size() >= 512;
+	ScenePage page;
+	page.offset = CLAMP(p_offset, 0, 4096);
+	page.limit = CLAMP(p_limit, 1, 512);
+	page.max_depth = CLAMP(p_max_depth, 0, 64);
+	_append_nodes(p_root, p_root, page, 0);
+	result["nodes"] = page.nodes;
+	result["page_offset"] = page.offset;
+	result["page_limit"] = page.limit;
+	result["max_depth"] = page.max_depth;
+	result["next_offset"] = page.visited > page.offset + page.limit ? page.offset + page.limit : -1;
+	result["truncated"] = page.visited > page.offset + page.limit || page.depth_truncated;
 
 	Ref<PackedScene> packed;
 	packed.instantiate();

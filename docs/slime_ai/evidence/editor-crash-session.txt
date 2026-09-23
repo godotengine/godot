@@ -1,0 +1,2 @@
+crash_path=C:\Users\logan\AppData\Local\Temp\slime-ai-crash-ff6609b659974beea8d830f3d98fc380
+crash_pid=12956

@@ -1,0 +1,2 @@
+conflict_path=C:\Users\logan\AppData\Local\Temp\slime-ai-conflict-ee87535d1c354b088c4356484ef44a5b
+conflict_pid=19568

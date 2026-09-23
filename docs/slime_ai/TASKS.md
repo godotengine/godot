@@ -1,0 +1,28 @@
+# P00–P03 task ledger
+
+Baseline revision: `ca871ccc9cd8e5c2ce829ec5c0fae1ac32c6269f`. Working branch: `codex/slime-ai-p00-p03`. Protocol dependency: `tools/slime_ai/protocol/CONTRACT.md`, native command revision 1.1 and service wire version 1.0 with golden fixtures. Initial user supplied plan files are unrelated, untracked inputs and must remain untouched.
+
+| ID | Owner | State | Acceptance evidence |
+|---|---|---|---|
+| P00-01..04 | Lead | verified | `BASELINE.md`, `SOURCE_MAP.md`, `evidence/p00-*` |
+| P00-05..06 | Lead | verified | Trusted 2D/3D fixtures, hashes, task records, `evidence/p00-fixture-*.log` |
+| P01-01 | Lead | verified | Contract and golden fixtures; native/service tests and versioned handshake |
+| P01-02..04 | Native worker and Lead integration | verified | Built-in dock, opt-in private child, IPC/lifecycle native tests and visible editor check |
+| P01-05..06 | Service worker and Lead integration | verified | Service 16/16, typecheck exit 0, native IPC suite, final editor smokes |
+| P02-01..07 | Lead integration | verified within bounded scope | Project/scene/object/API inspectors, selected context controls, explicit outgoing manifest, typed values/pages and 5 focused inspection tests |
+| P03-01..08 | Native worker and Lead verification | verified within one-scene scope | Native transaction, negative-path, dedup, policy, and recovery tests; see `TEST_MATRIX.md` |
+| P03-09 | Lead | verified | Real editor demonstration and process-crash restart; `evidence/EDITOR_DEMO.md` |
+
+## Delegation record A: native, contract 1.0 then native 1.1
+
+Allowed to create/edit `editor/slime_ai/**` except `editor/slime_ai/SCsub`, and `tests/editor/slime_ai/**`. No other paths. No shared registration/build hooks, protocol fixtures, docs, harness, or fixture edits. Do not spawn agents. Implement P01 native dock and private pipe client, P02 live read-only inspection, P03 one-scene native preview/grant/apply/undo/redo/dedup/recovery. Use the contract above; Lead added native command revision 1.1 after the initial wire contract was frozen, while keeping the service wire at 1.0. Engine mutations stay on editor main thread. Unsupported operations return structured errors. Coordinate any required shared hook change with Lead. Do not run a full engine build while Lead's build is active; Lead owns final build and tests.
+
+Acceptance checks assigned: native C++ tests with nonzero cases for split/malformed frames, missing/disconnected service, saved versus unsaved inspection without mutation, node invalidation, create/save/reopen, undo/redo, stale preview, permission denial, duplicate ID/same and different payload, unsupported class/property, cancel, and injected process-crash recovery. Provide exact commands, exit codes, test counts, and evidence. A static or compile-only check is not sufficient for the gate.
+
+## Delegation record B: service, contract 1.0
+
+Allowed to create/edit only `tools/slime_ai/agent_service/**`. No other paths. Do not change the shared contract/fixtures, native files, docs, or harness. Do not spawn agents. Implement P01 deterministic fake service on private stdin/stdout with handshake and proposal scenarios, strict frame decoder, bounded UTF-8, stderr diagnostics, EOF shutdown, and explicit errors. No network listener, API calls, credentials, or direct project writes. Pin the package tooling and lockfile without global installs.
+
+Acceptance checks assigned: `npm test` (nonzero test count) and typecheck, valid golden handshake/proposal, split UTF-8 and JSON frames, malformed/oversized/unsupported envelope, request ID echo, normal/delayed/malformed/disconnect scenarios, and EOF process exit. Return exact commands, exit codes, test counts, and evidence.
+
+Both worker handoffs must state task ID, base revision, files changed, behavior, commands, exit codes/counts, evidence, limitations, unresolved integration, and patch/commit reference. Lead will independently rerun all gates and owns any shared changes.

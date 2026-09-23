@@ -1,0 +1,6 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="FixtureRoot" type="Node3D"]
+
+[node name="Marker" type="Node3D" parent="."]
+position = Vector3(1, 2, 3)

@@ -1,0 +1,1 @@
+{"operations":[{"op":"set_property","node_ref":"node-marker","property":"visible","value":{"type":"bool","value":false}},{"op":"set_property","node_ref":"node-marker","property":"position","value":{"type":"Vector2","value":[12,34]}},{"op":"rename_node","node_ref":"node-marker","name":"MarkerRenamed"},{"op":"remove_node","node_ref":"node-marker"}]}

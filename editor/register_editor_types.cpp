@@ -134,6 +134,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/shader/shader_editor_plugin.h"
 #include "editor/shader/shader_file_editor_plugin.h"
+#include "editor/slime_ai/slime_ai_editor_plugin.h"
 #include "editor/translations/editor_translation_parser.h"
 #include "editor/version_control/editor_vcs_interface.h"
 #include "servers/rendering/rendering_server.h"
@@ -244,6 +245,7 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<ResourcePreloaderEditorPlugin>();
 	EditorPlugins::add_by_type<ShaderEditorPlugin>();
 	EditorPlugins::add_by_type<ShaderFileEditorPlugin>();
+	EditorPlugins::add_by_type<SlimeAIEditorPlugin>();
 	EditorPlugins::add_by_type<SpriteFramesEditorPlugin>();
 	EditorPlugins::add_by_type<StyleBoxEditorPlugin>();
 	EditorPlugins::add_by_type<SubViewportPreviewEditorPlugin>();

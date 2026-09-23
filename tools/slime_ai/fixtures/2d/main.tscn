@@ -1,0 +1,6 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="FixtureRoot" type="Node2D"]
+
+[node name="Marker" type="Node2D" parent="."]
+position = Vector2(12, 34)

@@ -1,0 +1,1 @@
+{"protocol_version":"1.0","request_id":"proposal-1","status":"ok","result":{"scene_ref":"scene-1","base_revision":"revision-1","operations":[{"op":"create_child","parent_ref":"node-root","class_name":"Node2D","name":"AI_Marker","properties":{"position":{"type":"Vector2","value":[48,24]}}}]}}

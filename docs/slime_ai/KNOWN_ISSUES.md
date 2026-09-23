@@ -1,0 +1,9 @@
+# Known issues and limitations
+
+- The host Python environment has a `site-packages/misc` package that shadows Godot's `misc/utility` when SCons is launched normally. Use the exact process-local import correction in `BASELINE.md` or remove the collision outside this task. The engine source itself compiled successfully with the correction.
+- The editor demonstration is visual and interactive on trusted copied fixtures, while the native suite checks deterministic command behavior. Neither is a long-running soak or general game acceptance test.
+- The successful baseline native check covered 2 Node2D cases; full upstream test coverage has not been run.
+- P03 accepts one allowlisted native operation in one loaded scene per preview. It does not provide cross-scene atomicity, code execution, arbitrary property setters, general resource mutation, or power-loss durability. The journal appends checksummed records and calls `FileAccess::flush`; a torn/corrupt record blocks future writes for review. Process-crash status is conservative: a prepared effect already present is reported `present_unconfirmed` and is not automatically replayed or reverted.
+- Undo/redo is the live editor session's history. After process restart, use the journal status and inspect the saved scene; no cross-restart undo history is promised.
+- The dock exposes selected scene/node controls and the outgoing context manifest. Scene inspection has bounded offset/limit/depth parameters; the dock currently displays the first page only. Native object inspection supports position, visibility, and `Sprite2D` texture identity; other properties and texture contents are explicitly uninspected.
+- A locked or read-only scene file save was not exercised. An unwritable journal path was tested and prevented mutation before effect. Packaging the fake service outside this source checkout and translation/theme polish remain later tasks.

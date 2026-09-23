@@ -1,0 +1,2 @@
+inspect_path=C:\Users\logan\AppData\Local\Temp\slime-ai-inspect-7f4352bb717c4b76aff98e37fb92fba3
+inspect_pid=36004
