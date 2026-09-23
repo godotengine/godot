@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_import_plugin.h                                                */
+/*  resource_importer_dds.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,47 +31,44 @@
 #pragma once
 
 #include "core/io/resource_importer.h"
-#include "core/variant/typed_array.h"
 
-class EditorImportPlugin : public ResourceImporter {
-	GDCLASS(EditorImportPlugin, ResourceImporter);
-
-protected:
-	static void _bind_methods();
-
-	GDVIRTUAL0RC_REQUIRED(String, _get_importer_name)
-	GDVIRTUAL0RC_REQUIRED(String, _get_visible_name)
-	GDVIRTUAL0RC(int, _get_preset_count)
-	GDVIRTUAL1RC_REQUIRED(String, _get_preset_name, int)
-	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_recognized_extensions)
-	GDVIRTUAL2RC_REQUIRED(TypedArray<Dictionary>, _get_import_options, String, int)
-	GDVIRTUAL0RC_REQUIRED(String, _get_save_extension)
-	GDVIRTUAL0RC_REQUIRED(String, _get_resource_type)
-	GDVIRTUAL0RC(bool, _get_preserves_source_file)
-	GDVIRTUAL0RC(float, _get_priority)
-	GDVIRTUAL0RC(int, _get_import_order)
-	GDVIRTUAL0RC(int, _get_format_version)
-	GDVIRTUAL3RC(bool, _get_option_visibility, String, StringName, Dictionary)
-	GDVIRTUAL5RC_REQUIRED(Error, _import, String, String, Dictionary, TypedArray<String>, TypedArray<String>)
-	GDVIRTUAL0RC(bool, _can_import_threaded)
-
-	Error _append_import_external_resource(const String &p_file, const Dictionary &p_custom_options = Dictionary(), const String &p_custom_importer = String(), Variant p_generator_parameters = Variant());
+// Default importer for DDS files.
+class ResourceImporterDDS : public ResourceImporter {
+	GDCLASS(ResourceImporterDDS, ResourceImporter);
 
 public:
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
-	virtual String get_preset_name(int p_idx) const override;
-	virtual int get_preset_count() const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
-	virtual bool get_preserves_source_file() const override;
-	virtual float get_priority() const override;
-	virtual int get_import_order() const override;
-	virtual int get_format_version() const override;
-	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const override;
+	virtual bool get_preserves_source_file() const override { return true; }
+	// Higher than the default of 1.0, so this is what get_importer_by_file() picks for new files.
+	virtual float get_priority() const override { return 2.0; }
+
+	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
-	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata = nullptr) override;
-	virtual bool can_import_threaded() const override;
-	Error append_import_external_resource(const String &p_file, const HashMap<StringName, Variant> &p_custom_options = HashMap<StringName, Variant>(), const String &p_custom_importer = String(), Variant p_generator_parameters = Variant());
+
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+
+	virtual bool can_import_threaded() const override { return true; }
+};
+
+// Importer that turns a DDS into a StreamedTexture2D
+class ResourceImporterDDSStreamed : public ResourceImporter {
+	GDCLASS(ResourceImporterDDSStreamed, ResourceImporter);
+
+public:
+	virtual String get_importer_name() const override;
+	virtual String get_visible_name() const override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual String get_save_extension() const override;
+	virtual String get_resource_type() const override;
+
+	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
+	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
+
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+
+	virtual bool can_import_threaded() const override { return true; }
 };

@@ -262,7 +262,7 @@ Error StreamedTexture2D::_load_data(const String &p_path, const uint8_t p_mip_le
 	return OK;
 }
 
-Error StreamedTexture2D::_save_data(const String &p_path, const Ref<Image> &p_image, uint32_t p_flags, uint32_t p_streaming_min, uint32_t p_streaming_max) {
+Error StreamedTexture2D::save_data(const String &p_path, const Ref<Image> &p_image, uint32_t p_flags, uint32_t p_streaming_min, uint32_t p_streaming_max) {
 	ERR_FAIL_COND_V(p_image.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_image->is_empty(), ERR_INVALID_PARAMETER);
 

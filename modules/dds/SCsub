@@ -6,4 +6,11 @@ Import("env_modules")
 
 env_dds = env_modules.Clone()
 
-env_dds.add_source_files(env.modules_sources, "*.cpp")
+module_obj = []
+
+env_dds.add_source_files(module_obj, "*.cpp")
+
+if env.editor_build:
+    env_dds.add_source_files(module_obj, "editor/*.cpp")
+
+env.modules_sources += module_obj
