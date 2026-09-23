@@ -363,9 +363,14 @@ void DependencyEditor::edit(const String &p_path) {
 
 void DependencyEditor::edit(const Vector<String> &p_paths) {
 	editing = p_paths;
-	String title_paths = p_paths[0].get_file() + (p_paths.size() > 1 ? ", ..." : "");
-	set_title(TTR("Dependencies For:") + " " + title_paths);
 
+	if (p_paths.size() == 1) {
+		// TRANSLATORS: %s is the file name that will be moved or duplicated.
+		set_title(vformat(TTR("Dependencies For: %s"), p_paths[0].get_file()));
+	} else {
+		// TRANSLATORS: %d is the number of files that will be moved or duplicated.
+		set_title(vformat(TTRN("Dependencies For: %d Item", "Dependencies For: %d Items", p_paths.size()), p_paths.size()));
+	}
 	filter->set_text("");
 
 	_update_menu_sort();
