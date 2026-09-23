@@ -35,7 +35,9 @@
 #include "godot_js.h"
 #include "ip_web.h"
 #include "net_socket_web.h"
+#include "remote_debugger_peer_messageport.h"
 
+#include "core/debugger/engine_debugger.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -57,6 +59,7 @@ void OS_Web::initialize() {
 	IPWeb::make_default();
 	NetSocketWeb::make_default();
 	DisplayServerWeb::register_web_driver();
+	EngineDebugger::register_uri_handler("messageport://", RemoteDebuggerPeerMessagePort::create);
 }
 
 void OS_Web::resume_audio() {
