@@ -63,11 +63,13 @@
 			<string>Editor</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>public.tscn</string>
+				<string>org.godotengine.scene.binary</string>
+				<string>org.godotengine.scene.text</string>
 			</array>
 			<key>NSExportableTypes</key>
 			<array>
-				<string>public.tscn</string>
+				<string>org.godotengine.scene.binary</string>
+				<string>org.godotengine.scene.text</string>
 			</array>
 		</dict>
 		<dict>
@@ -75,11 +77,11 @@
 			<string>Editor</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>public.godot</string>
+				<string>org.godotengine.project.text</string>
 			</array>
 			<key>NSExportableTypes</key>
 			<array>
-				<string>public.godot</string>
+				<string>org.godotengine.project.text</string>
 			</array>
 		</dict>
 	</array>
@@ -87,11 +89,11 @@
 	<array>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>public.tscn</string>
+			<string>org.godotengine.scene.binary</string>
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Engine scene</string>
+			<string>Godot Engine scene, binary encoded</string>
 			<key>UTTypeIconFile</key>
 			<string>Scene.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -103,20 +105,42 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>scn</string>
-					<string>tscn</string>
 					<string>escn</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>application/x-godot-scene</string>
+				<string>model/vnd.godot.scene.binary</string>
 			</dict>
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>public.gd</string>
+			<string>org.godotengine.scene.text</string>
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>GDScript script</string>
+			<string>Godot Engine scene, text encoded</string>
+			<key>UTTypeIconFile</key>
+			<string>Scene.icns</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>tscn</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>model/vnd.godot.scene.text</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.gdscript</string>
+			<key>UTTypeReferenceURL</key>
+			<string></string>
+			<key>UTTypeDescription</key>
+			<string>Godot Engine GDScript script</string>
 			<key>UTTypeIconFile</key>
 			<string>GDScript.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -130,16 +154,16 @@
 					<string>gd</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>application/x-gdscript</string>
+				<string>text/vnd.godot.gdscript</string>
 			</dict>
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>public.res</string>
+			<string>org.godotengine.resource.binary</string>
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Engine resource</string>
+			<string>Godot Engine resource, binary encoded</string>
 			<key>UTTypeIconFile</key>
 			<string>Resource.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -151,19 +175,41 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>res</string>
-					<string>tres</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>application/x-godot-resource</string>
+				<string>application/vnd.godot.resource.binary</string>
 			</dict>
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>public.gdshader</string>
+			<string>org.godotengine.resource.text</string>
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
-			<string>Godot Engine shader</string>
+			<string>Godot Engine resource, text encoded</string>
+			<key>UTTypeIconFile</key>
+			<string>Resource.icns</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>tres</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/vnd.godot.resource.text</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>org.godotengine.gdshader</string>
+			<key>UTTypeReferenceURL</key>
+			<string></string>
+			<key>UTTypeDescription</key>
+			<string>Godot Engine GDShader shader</string>
 			<key>UTTypeIconFile</key>
 			<string>Shader.icns</string>
 			<key>UTTypeConformsTo</key>
@@ -177,12 +223,12 @@
 					<string>gdshader</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>application/x-godot-shader</string>
+				<string>text/vnd.godot.gdshader</string>
 			</dict>
 		</dict>
 		<dict>
 			<key>UTTypeIdentifier</key>
-			<string>public.godot</string>
+			<string>org.godotengine.project.text</string>
 			<key>UTTypeReferenceURL</key>
 			<string></string>
 			<key>UTTypeDescription</key>
@@ -200,7 +246,7 @@
 					<string>godot</string>
 				</array>
 				<key>public.mime-type</key>
-				<string>application/x-godot-project</string>
+				<string>application/vnd.godot.project.text</string>
 			</dict>
 		</dict>
 	</array>
