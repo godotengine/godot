@@ -595,7 +595,7 @@ void Body2DSW::call_queries() {
 
 		Object *obj = ObjectDB::get_instance(fi_callback->id);
 		if (!obj) {
-			set_force_integration_callback(0, StringName());
+			set_force_integration_callback(ObjectID(), StringName());
 		} else {
 			Variant::CallError ce;
 			if (fi_callback->callback_udata.get_type() != Variant::NIL) {
@@ -633,7 +633,7 @@ void Body2DSW::set_force_integration_callback(ObjectID p_id, const StringName &p
 		fi_callback = nullptr;
 	}
 
-	if (p_id != 0) {
+	if (p_id.is_valid()) {
 		fi_callback = memnew(ForceIntegrationCallback);
 		fi_callback->id = p_id;
 		fi_callback->method = p_method;

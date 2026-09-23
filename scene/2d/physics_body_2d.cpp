@@ -1532,7 +1532,7 @@ Object *KinematicCollision2D::get_local_shape() const {
 }
 
 Object *KinematicCollision2D::get_collider() const {
-	if (collision.collider) {
+	if (collision.collider.is_valid()) {
 		return ObjectDB::get_instance(collision.collider);
 	}
 
@@ -1596,8 +1596,6 @@ void KinematicCollision2D::_bind_methods() {
 }
 
 KinematicCollision2D::KinematicCollision2D() {
-	collision.collider = 0;
 	collision.collider_shape = 0;
 	collision.local_shape = 0;
-	owner_id = 0;
 }
