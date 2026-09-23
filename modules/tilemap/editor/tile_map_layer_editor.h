@@ -387,7 +387,9 @@ private:
 	void _node_change(Node *p_node);
 
 	Control *custom_overlay = nullptr;
-	void _draw_overlay();
+	Control *tile_warning_overlay = nullptr;
+	void _draw_custom_overlay();
+	void _draw_tile_warning_overlay();
 
 	// Vector to keep plugins.
 	Vector<TileMapLayerSubEditorPlugin *> tile_map_editor_plugins;
