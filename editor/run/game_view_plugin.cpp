@@ -44,6 +44,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_toolbar_group.h"
 #include "editor/gui/window_wrapper.h"
 #include "editor/run/editor_run_bar.h"
@@ -404,12 +405,20 @@ bool GameViewDebugger::_msg_get_screenshot(const Array &p_args) {
 	return true;
 }
 
+bool GameViewDebugger::_msg_show_toaster(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 2, false, "show_toaster: invalid number of arguments");
+	EditorToaster::get_singleton()->popup_str(p_args[0], p_args[1]);
+	return true;
+}
+
 bool GameViewDebugger::capture(const String &p_message, const Array &p_data, int p_session) {
 	Ref<EditorDebuggerSession> session = get_session(p_session);
 	ERR_FAIL_COND_V(session.is_null(), true);
 
 	if (p_message == "game_view:get_screenshot") {
 		return _msg_get_screenshot(p_data);
+	} else if (p_message == "game_view:show_toaster") {
+		return _msg_show_toaster(p_data);
 	} else if (p_message == "game_view:setup_complete") {
 		emit_signal(SNAME("setup_complete"));
 		return true;
