@@ -381,7 +381,7 @@ public:
 	virtual void notification(int p_notification, bool p_reversed = false) override;
 	virtual String to_string(bool *r_valid) override;
 
-	virtual Ref<Script> get_script() const override;
+	virtual Script *get_script() const override;
 
 	virtual ScriptLanguage *get_language() override;
 

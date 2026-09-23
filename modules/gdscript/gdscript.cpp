@@ -2038,8 +2038,8 @@ String GDScriptInstance::to_string(bool *r_valid) {
 	return String();
 }
 
-Ref<Script> GDScriptInstance::get_script() const {
-	return script;
+Script *GDScriptInstance::get_script() const {
+	return *script;
 }
 
 ScriptLanguage *GDScriptInstance::get_language() {

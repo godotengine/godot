@@ -1971,8 +1971,8 @@ String CSharpInstance::to_string(bool *r_valid) {
 	return res;
 }
 
-Ref<Script> CSharpInstance::get_script() const {
-	return script;
+Script *CSharpInstance::get_script() const {
+	return *script;
 }
 
 ScriptLanguage *CSharpInstance::get_language() {
