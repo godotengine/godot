@@ -4579,6 +4579,10 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 		if (!p_ops.is_empty()) {
 			_setup_node(vsn, p_ops);
 		}
+		VisualShaderNodeParameter *param = Object::cast_to<VisualShaderNodeParameter>(vsn);
+		if (param) {
+			param->set_parameter_name(visual_shader->validate_parameter_name(param->get_caption(), nullptr));
+		}
 		VisualShaderNodeParameterRef *parameter_ref = Object::cast_to<VisualShaderNodeParameterRef>(vsn);
 		if (parameter_ref && to_node != -1 && to_slot != -1) {
 			VisualShaderNode::PortType input_port_type = edited_shader_graph->get_node(to_node)->get_input_port_type(to_slot);
