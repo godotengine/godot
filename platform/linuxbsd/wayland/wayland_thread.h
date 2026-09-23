@@ -657,6 +657,10 @@ private:
 		SafeFlag thread_done;
 		Mutex mutex;
 
+		// Written to by `destroy()` after setting `thread_done`, so that the
+		// polling thread wakes up even if nothing else arrives on the display.
+		int wake_fds[2] = { -1, -1 };
+
 		struct wl_display *wl_display = nullptr;
 	};
 

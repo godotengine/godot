@@ -3812,9 +3812,15 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 	ERR_FAIL_NULL(data);
 	ERR_FAIL_NULL(data->wl_display);
 
-	struct pollfd poll_fd = {};
-	poll_fd.fd = wl_display_get_fd(data->wl_display);
-	poll_fd.events = POLLIN;
+	struct pollfd poll_fds[2] = {};
+	poll_fds[0].fd = wl_display_get_fd(data->wl_display);
+	poll_fds[0].events = POLLIN;
+
+	// Written to by `destroy()`, as the display alone can't be trusted to wake us
+	// up: if we aren't registered as a reader when the reply to its roundtrip
+	// arrives, the main thread reads it by itself. A negative fd is ignored.
+	poll_fds[1].fd = data->wake_fds[0];
+	poll_fds[1].events = POLLIN;
 
 	while (true) {
 		// Empty the event queue while it's full.
@@ -3845,14 +3851,14 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 		wl_display_flush(data->wl_display);
 
 		// Wait for the event file descriptor to have new data.
-		poll(&poll_fd, 1, -1);
+		poll(poll_fds, 2, -1);
 
 		if (data->thread_done.is_set()) {
 			wl_display_cancel_read(data->wl_display);
 			break;
 		}
 
-		if (poll_fd.revents | POLLIN) {
+		if (poll_fds[0].revents | POLLIN) {
 			// Load the queues with fresh new data.
 			wl_display_read_events(data->wl_display);
 		} else {
@@ -5677,6 +5683,12 @@ Error WaylandThread::init() {
 	// Update the cursor.
 	cursor_set_shape(DisplayServerEnums::CURSOR_ARROW);
 
+	if (pipe2(thread_data.wake_fds, O_CLOEXEC) != 0) {
+		WARN_PRINT("Unable to create a wake-up pipe for the Wayland events thread, it might not stop on exit.");
+		thread_data.wake_fds[0] = -1;
+		thread_data.wake_fds[1] = -1;
+	}
+
 	events_thread.start(_poll_events_thread, &thread_data);
 
 	initialized = true;
@@ -6277,11 +6289,27 @@ void WaylandThread::destroy() {
 	if (wl_display && events_thread.is_started()) {
 		thread_data.thread_done.set();
 
-		// By sending a roundtrip message we're unblocking the polling thread so that
-		// it can realize that it's done and also handle every event that's left.
+		// Wake up the polling thread so that it can realize that it's done. A
+		// roundtrip alone isn't enough, as this thread might read the reply by
+		// itself.
+		if (thread_data.wake_fds[1] != -1) {
+			const char wake = 1;
+			if (write(thread_data.wake_fds[1], &wake, 1) != 1) {
+				WARN_PRINT("Unable to wake up the Wayland events thread, it might not stop.");
+			}
+		}
+
+		// Handle every event that's left.
 		wl_display_roundtrip(wl_display);
 
 		events_thread.wait_to_finish();
+	}
+
+	for (int &fd : thread_data.wake_fds) {
+		if (fd != -1) {
+			close(fd);
+			fd = -1;
+		}
 	}
 
 	if (!windows.is_empty()) {
