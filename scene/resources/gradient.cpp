@@ -108,8 +108,8 @@ Vector<float> Gradient::get_offsets() const {
 	return offsets;
 }
 
-Vector<Color> Gradient::get_colors() const {
-	Vector<Color> colors;
+PackedColorArray Gradient::get_colors() const {
+	PackedColorArray colors;
 	colors.resize(points.size());
 	for (uint32_t i = 0; i < points.size(); i++) {
 		colors.write[i] = points[i].color;
@@ -153,7 +153,7 @@ void Gradient::set_offsets(const Vector<float> &p_offsets) {
 	emit_changed();
 }
 
-void Gradient::set_colors(const Vector<Color> &p_colors) {
+void Gradient::set_colors(const PackedColorArray &p_colors) {
 	if (points.size() < p_colors.size()) {
 		is_sorted = false;
 	}

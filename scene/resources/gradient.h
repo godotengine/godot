@@ -139,8 +139,8 @@ public:
 	void set_offsets(const Vector<float> &p_offsets);
 	Vector<float> get_offsets() const;
 
-	void set_colors(const Vector<Color> &p_colors);
-	Vector<Color> get_colors() const;
+	void set_colors(const PackedColorArray &p_colors);
+	PackedColorArray get_colors() const;
 
 	void set_interpolation_mode(InterpolationMode p_interp_mode);
 	InterpolationMode get_interpolation_mode();
