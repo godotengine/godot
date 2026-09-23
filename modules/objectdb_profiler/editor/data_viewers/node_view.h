@@ -76,7 +76,7 @@ class SnapshotNodeView : public SnapshotView {
 
 	void _add_snapshot_to_tree(Tree *p_tree, GameStateSnapshot *p_snapshot, DiffGroup p_diff_group = DIFF_GROUP_NONE);
 	void _add_children_to_tree(TreeItem *p_parent_item, SnapshotDataObject *p_data, DiffGroup p_diff_group = DIFF_GROUP_NONE);
-	TreeItem *_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, const String &p_item_name, DiffGroup p_diff_group = DIFF_GROUP_NONE);
+	TreeItem *_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, const String &p_item_name, DiffGroup p_diff_group = DIFF_GROUP_NONE, SnapshotDataObject::DiffStatus p_diff_status = SnapshotDataObject::DiffStatus::DIFF_UNMODIFIED);
 	TreeItem *_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, SnapshotDataObject *p_data, DiffGroup p_diff_group = DIFF_GROUP_NONE);
 
 public:
