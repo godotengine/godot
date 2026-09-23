@@ -37,18 +37,27 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box_flat.h"
 
-SpanningHeader::SpanningHeader(const String &p_text) {
+SpanningHeader::SpanningHeader(const String &p_text, const Ref<Texture2D> &p_icon) {
 	Ref<StyleBoxFlat> title_sbf;
 	title_sbf.instantiate();
 	title_sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_3", "Editor"));
 	add_theme_style_override(SceneStringName(panel), title_sbf);
 	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SizeFlags::SIZE_EXPAND | SizeFlags::SIZE_SHRINK_CENTER);
+	add_child(hb);
+	if (p_icon.is_valid()) {
+		title_sbf->set_content_margin(Side::SIDE_LEFT, 8);
+		TextureRect *icon = memnew(TextureRect);
+		icon->set_texture(p_icon);
+		icon->set_stretch_mode(TextureRect::StretchMode::STRETCH_KEEP_CENTERED);
+		hb->add_child(icon);
+	}
 	Label *title = memnew(Label(p_text));
-	add_child(title);
-	title->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
-	title->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
+	hb->add_child(title);
 }
 
 DarkPanelContainer::DarkPanelContainer() {

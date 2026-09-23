@@ -167,11 +167,7 @@ void SnapshotObjectView::_insert_data(GameStateSnapshot *p_snapshot, const Strin
 		item->set_auto_translate_mode(offset + 0, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_auto_translate_mode(offset + 1, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_text(offset + 0, pair.value->type_name);
-		if (has_theme_icon(pair.value->type_name, SNAME("EditorIcons"))) {
-			item->set_icon(offset + 0, get_editor_theme_icon(pair.value->type_name));
-		} else {
-			item->set_icon(offset + 0, get_editor_theme_icon(SNAME("Object")));
-		}
+		item->set_icon(offset + 0, _get_class_icon_of_object(pair.value));
 		item->set_text(offset + 1, pair.value->get_name());
 		item->set_tooltip_text(offset + 1, pair.value->remote_path);
 		item->set_text(offset + 2, String::num_uint64(pair.value->inbound_references.size()));
@@ -181,6 +177,14 @@ void SnapshotObjectView::_insert_data(GameStateSnapshot *p_snapshot, const Strin
 		item_data_map[item] = pair.value;
 		data_item_map[pair.value] = item;
 	}
+}
+
+Ref<Texture2D> SnapshotObjectView::_get_class_icon_of_object(const SnapshotDataObject *p_object) const {
+	ERR_FAIL_NULL_V(p_object, Ref<Texture2D>());
+	if (has_theme_icon(p_object->type_name, SNAME("EditorIcons"))) {
+		return get_editor_theme_icon(p_object->type_name);
+	}
+	return get_editor_theme_icon(SNAME("Object"));
 }
 
 void SnapshotObjectView::_diff_filter_changed() {
@@ -219,13 +223,11 @@ void SnapshotObjectView::_object_selected() {
 	SnapshotDataObject *d = item_data_map[object_list->get_selected()];
 	EditorNode::get_singleton()->push_item(static_cast<Object *>(d));
 
-	DarkPanelContainer *object_panel = memnew(DarkPanelContainer);
 	VBoxContainer *object_panel_content = memnew(VBoxContainer);
 	object_panel_content->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	object_panel_content->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	object_details->add_child(object_panel);
-	object_panel->add_child(object_panel_content);
-	object_panel_content->add_child(memnew(SpanningHeader(d->get_name())));
+	object_details->add_child(object_panel_content);
+	object_panel_content->add_child(memnew(SpanningHeader(d->get_name(), _get_class_icon_of_object(d))));
 
 	ScrollContainer *properties_scroll = memnew(ScrollContainer);
 	properties_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
@@ -239,39 +241,93 @@ void SnapshotObjectView::_object_selected() {
 	properties_scroll->add_child(properties_container);
 	properties_container->add_theme_constant_override("separation", 8);
 
-	inbound_tree = _make_references_list(properties_container, TTRC("Inbound References"), TTRC("Source"), TTRC("Other object referencing this object"), TTRC("Property"), TTRC("Property of other object referencing this object"));
-	inbound_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_reference_selected).bind(inbound_tree));
-	TreeItem *ib_root = inbound_tree->create_item();
-	for (const KeyValue<String, ObjectID> &ob : d->inbound_references) {
-		TreeItem *i = inbound_tree->create_item(ib_root);
-		i->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
-		i->set_auto_translate_mode(1, AUTO_TRANSLATE_MODE_DISABLED);
+	if (d->inbound_references.size() > 0) {
+		inbound_tree = _make_references_list(properties_container, TTRC("Inbound References"), TTRC("Source"), TTRC("Other object referencing this object"), TTRC("Property"), TTRC("Property of other object referencing this object"));
+		inbound_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_reference_selected).bind(inbound_tree));
+		TreeItem *ib_root = inbound_tree->create_item();
+		SnapshotDataObject *diff_with = nullptr;
+		if (diff_data) {
+			GameStateSnapshot *other_snapshot = d->snapshot == snapshot_data ? diff_data : snapshot_data;
+			ObjectID id = ObjectID(d->remote_object_id);
+			if (other_snapshot->objects.has(id)) {
+				diff_with = other_snapshot->objects.get(id);
+			}
+		}
+		for (const KeyValue<String, ObjectID> &ob : d->inbound_references) {
+			TreeItem *i = inbound_tree->create_item(ib_root);
+			i->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+			i->set_auto_translate_mode(1, AUTO_TRANSLATE_MODE_DISABLED);
 
-		SnapshotDataObject *target = d->snapshot->objects[ob.value];
-		i->set_text(0, target->get_name());
-		i->set_text(1, ob.key);
-		reference_item_map[i] = data_item_map[target];
+			SnapshotDataObject *target = d->snapshot->objects[ob.value];
+			i->set_text(0, target->get_name());
+			i->set_icon(0, _get_class_icon_of_object(target));
+			i->set_text(1, ob.key);
+			reference_item_map[i] = data_item_map[target];
+
+			if (diff_with) {
+				Color col;
+				if (diff_with->inbound_references.has(ob.key)) {
+					if (diff_with->inbound_references.get(ob.key) != ob.value) {
+						col = Color(1, 1, 0, 0.1); // Modified
+					}
+				} else {
+					col = d->snapshot == snapshot_data ? Color(1, 0, 0, 0.1) : Color(0, 1, 0, 0.1);
+				}
+				if (col != Color()) {
+					i->set_custom_bg_color(0, col);
+					i->set_custom_bg_color(1, col);
+				}
+			}
+		}
 	}
 
-	outbound_tree = _make_references_list(properties_container, TTRC("Outbound References"), TTRC("Property"), TTRC("Property of this object referencing other object"), TTRC("Target"), TTRC("Other object being referenced"));
-	outbound_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_reference_selected).bind(outbound_tree));
-	TreeItem *ob_root = outbound_tree->create_item();
-	for (const KeyValue<String, ObjectID> &ob : d->outbound_references) {
-		TreeItem *i = outbound_tree->create_item(ob_root);
-		i->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
-		i->set_auto_translate_mode(1, AUTO_TRANSLATE_MODE_DISABLED);
+	if (d->outbound_references.size() > 0) {
+		outbound_tree = _make_references_list(properties_container, TTRC("Outbound References"), TTRC("Property"), TTRC("Property of this object referencing other object"), TTRC("Target"), TTRC("Other object being referenced"));
+		outbound_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_reference_selected).bind(outbound_tree));
+		TreeItem *ob_root = outbound_tree->create_item();
+		SnapshotDataObject *diff_with = nullptr;
+		if (diff_data) {
+			GameStateSnapshot *other_snapshot = d->snapshot == snapshot_data ? diff_data : snapshot_data;
+			ObjectID id = ObjectID(d->remote_object_id);
+			if (other_snapshot->objects.has(id)) {
+				diff_with = other_snapshot->objects.get(id);
+			}
+		}
+		for (const KeyValue<String, ObjectID> &ob : d->outbound_references) {
+			TreeItem *i = outbound_tree->create_item(ob_root);
+			i->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+			i->set_auto_translate_mode(1, AUTO_TRANSLATE_MODE_DISABLED);
 
-		SnapshotDataObject *target = d->snapshot->objects[ob.value];
-		i->set_text(0, ob.key);
-		i->set_text(1, target->get_name());
-		reference_item_map[i] = data_item_map[target];
+			SnapshotDataObject *target = d->snapshot->objects[ob.value];
+			i->set_text(0, ob.key);
+			i->set_text(1, target->get_name());
+			i->set_icon(1, _get_class_icon_of_object(target));
+			reference_item_map[i] = data_item_map[target];
+
+			if (diff_with) {
+				Color col;
+				if (diff_with->outbound_references.has(ob.key)) {
+					if (diff_with->outbound_references.get(ob.key) != ob.value) {
+						col = Color(1, 1, 0, 0.1); // Modified
+					}
+				} else {
+					col = d->snapshot == snapshot_data ? Color(1, 0, 0, 0.1) : Color(0, 1, 0, 0.1);
+				}
+				if (col != Color()) {
+					i->set_custom_bg_color(0, col);
+					i->set_custom_bg_color(1, col);
+				}
+			}
+		}
 	}
 }
 
 void SnapshotObjectView::_reference_selected(Tree *p_source_tree) {
 	TreeItem *ref_item = p_source_tree->get_selected();
 	Tree *other_tree = p_source_tree == inbound_tree ? outbound_tree : inbound_tree;
-	other_tree->deselect_all();
+	if (other_tree) {
+		other_tree->deselect_all();
+	}
 	TreeItem *other = reference_item_map[ref_item];
 	if (other) {
 		if (!other->is_visible()) {
@@ -288,16 +344,19 @@ Tree *SnapshotObjectView::_make_references_list(Control *p_container, const Stri
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	vbox->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	vbox->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
-	vbox->add_theme_constant_override("separation", 4);
+	vbox->add_theme_constant_override("separation", 2);
 	p_container->add_child(vbox);
 
 	vbox->set_custom_minimum_size(Vector2(300, 0) * EDSCALE);
 
-	RichTextLabel *lbl = memnew(RichTextLabel("[center]" + p_name + "[center]"));
+	RichTextLabel *lbl = memnew(RichTextLabel("[center][b]" + p_name + "[/b][/center]"));
 	lbl->set_fit_content(true);
 	lbl->set_use_bbcode(true);
 	vbox->add_child(lbl);
 	Tree *tree = memnew(Tree);
+	tree->add_theme_style_override(SceneStringName(panel), memnew(StyleBoxEmpty));
+	tree->add_theme_style_override("title_button_normal", get_theme_stylebox(CoreStringName(normal), "RichTextLabel"));
+	tree->add_theme_constant_override("h_separation", 8);
 	tree->set_hide_folding(true);
 	vbox->add_child(tree);
 	tree->set_select_mode(Tree::SelectMode::SELECT_ROW);
