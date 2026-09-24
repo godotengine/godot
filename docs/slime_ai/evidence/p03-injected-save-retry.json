@@ -1,0 +1,19 @@
+{
+  "disk_after": "6a3136697ffb7406c37bf6c79fc1b9dc1065c3cb2bbaedb851f04ccd61516653",
+  "disk_before": "fe8557743069a5084b2a19c9dcbb9fbc2964d9ba729c1fa6dedc15ce1674a88f",
+  "duplicate_request": true,
+  "editor_unsaved": false,
+  "marker_present": true,
+  "memory_node_count": 2,
+  "no_second_apply": true,
+  "operation_status": {
+    "duplicate": true,
+    "execution": "applied",
+    "operation_id": "save-denial-probe-6447288",
+    "persistence": "unverified",
+    "status": "applied",
+    "verification": "native_transaction_confirmed"
+  },
+  "save_error": 0,
+  "status": "save_confirmed"
+}

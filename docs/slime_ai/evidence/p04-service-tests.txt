@@ -1,0 +1,47 @@
+
+> slime-ai-fake-service@1.0.0 test
+> node --disable-warning=ExperimentalWarning --experimental-strip-types --test tests/*.test.ts
+
+✔ v1.1 run envelope requires explicit live authorization, model, finite limits, and exact fields (2.1335ms)
+✔ SSE parser preserves split Unicode and accumulator releases exactly one call after completed barrier (1.6145ms)
+✔ arguments.done followed by failure, incomplete output, or transport close never releases a tool (0.241ms)
+✔ malformed, authority-bearing, unknown, and multi-call output are rejected before dispatch (0.2918ms)
+✔ fake provider enters the same completed-turn and tool validator path (0.392ms)
+✔ JSONL fake run is offline, emits one ready call, and does not expose sentinel environment data (100.2598ms)
+✔ JSONL run_cancel acknowledgement precedes its cancelled event (115.1348ms)
+✔ JSONL unresolved continuation acknowledgement precedes reconciliation event (112.8127ms)
+✔ OpenAI adapter uses fixed endpoint, strict serial tools, call_id continuation, and redacted auth failures (12.9036ms)
+✔ sent strict tool schemas omit model-dependent array bounds while local validation enforces one operation (1.0977ms)
+✔ 401, 403, and missing credentials fail without retry; 429 is marked retryable (0.7228ms)
+✔ cancellation during credential lookup prevents a later network request (0.1669ms)
+✔ OpenAI SSE adapter waits for completed response before returning one validated call (2.0971ms)
+✔ immediate cancellation and attempt limits prevent late or repeated dispatch (28.2354ms)
+✔ timeout and disconnect retries stay finite and never dispatch from failed turns (63.3495ms)
+✔ run manager counts 429 retries and dispatches one validated call only (32.5922ms)
+✔ continuation is linked to pending call and duplicate delivery cannot cause another provider request (62.6727ms)
+✔ proposal repair attempts stop after two changed proposals (62.4117ms)
+✔ unresolved result halts continuation; cancel ignores late provider completion (76.5354ms)
+✔ golden hello matches exact wire response and EOF exits (111.0087ms)
+✔ golden proposal matches exact wire response (95.6583ms)
+✔ 3D proposal has typed Vector3 value and echoed request ID (110.5732ms)
+✔ frame decoder buffers split Unicode and JSON bytes (0.8929ms)
+✔ process accepts fragmented Unicode request and exits on EOF (97.7706ms)
+✔ decoder rejects invalid UTF-8 (0.2679ms)
+✔ decoder rejects oversized frame and resumes at next newline (0.5467ms)
+✔ process returns explicit protocol error for malformed and oversized frames (101.0436ms)
+✔ duplicate keys including escaped aliases are rejected (0.6172ms)
+✔ unsupported envelope/version and authority field fail closed (1.2981ms)
+✔ invalid method and arguments produce explicit errors with request ID echo (97.1663ms)
+✔ delayed scenario waits before returning valid proposal (195.6279ms)
+✔ malformed scenario emits an intentionally invalid response frame (98.1352ms)
+✔ disconnect scenario exits without response (99.1878ms)
+✔ partial frame at EOF never executes (94.4357ms)
+✔ nonfinite numeric JSON and excessive nesting are rejected (0.241ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1218.8393

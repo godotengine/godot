@@ -1,0 +1,39 @@
+revision=b6112992a830487ba3a1f81c4cd125455eb8ff82
+command=python -c <process-local misc import correction> platform=windows target=editor arch=x86_64 tests=yes dev_build=yes -j8
+started_utc=2026-09-23T23:29:02.1562918Z
+dirty_paths:
+ M docs/slime_ai/evidence/native-tests-manifest.txt
+ M editor/editor_interface.cpp
+ M editor/editor_node.cpp
+ M editor/editor_node.h
+ M editor/slime_ai/slime_ai_protocol.cpp
+ M editor/slime_ai/slime_ai_protocol.h
+ M editor/slime_ai/slime_ai_scene_transaction.cpp
+ M editor/slime_ai/slime_ai_scene_transaction.h
+ M editor/slime_ai/slime_ai_service_client.cpp
+ M editor/slime_ai/slime_ai_service_client.h
+ M tests/editor/slime_ai/test_slime_ai.cpp
+ M tools/slime_ai/agent_service/src/fake_provider.ts
+ M tools/slime_ai/agent_service/src/main.ts
+ M tools/slime_ai/agent_service/src/protocol.ts
+?? SlimeEngine_AI_Implementation_Plan.md
+?? SlimeEngine_Agent_Kickoff.md
+?? SlimeEngine_P03_Closeout_P04_Work_Order.md
+?? docs/slime_ai/evidence/editor-build-20260923-232007-754-manifest.txt
+?? docs/slime_ai/evidence/editor-build-20260923-232605-596-manifest.txt
+?? docs/slime_ai/evidence/editor-build-20260923-232703-345-manifest.txt
+?? editor/slime_ai/slime_ai_code_reader.cpp
+?? editor/slime_ai/slime_ai_code_reader.h
+?? editor/slime_ai/slime_ai_project_search.cpp
+?? editor/slime_ai/slime_ai_project_search.h
+?? tests/editor/slime_ai/test_slime_ai_p03_3d.cpp
+?? tests/editor/slime_ai/test_slime_ai_p04_read.cpp
+?? tools/slime_ai/agent_service/src/credentials.ts
+?? tools/slime_ai/agent_service/src/provider_events.ts
+?? tools/slime_ai/agent_service/src/providers.ts
+?? tools/slime_ai/agent_service/src/run_manager.ts
+?? tools/slime_ai/agent_service/src/tool_schema.ts
+exit_code=0
+binary=E:\SlimeEngine\bin\godot.windows.editor.dev.x86_64.console.exe
+binary_sha256=8ABAFA89A11F36EB1F967CE4CB594D014816CE0959D151928B373399855A2190
+finished_utc=2026-09-23T23:30:51.4399237Z

@@ -2143,7 +2143,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		_parse_nodes(packed_scene, f);
 	}
 
-	if (f->get_error() != OK && f->get_error() != ERR_FILE_EOF) {
+	const Error write_error = f->get_error();
+	// On Windows, safe-save replacement happens at close. A successful write
+	// to the temporary file does not prove that the original was replaced.
+	f->close();
+	if ((write_error != OK && write_error != ERR_FILE_EOF) || f->get_error() != OK) {
 		return ERR_CANT_CREATE;
 	}
 

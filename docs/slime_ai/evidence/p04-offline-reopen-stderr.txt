@@ -1,0 +1,4 @@
+ERROR: Index current_edited_scene = -1 is out of bounds (edited_scene.size() = 0).
+   at: EditorData::get_edited_scene_root (editor\editor_data.cpp:840)
+WARNING: Scan thread aborted...
+   at: EditorFileSystem::_notification (editor\file_system\editor_file_system.cpp:1748)

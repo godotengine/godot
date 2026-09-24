@@ -1,0 +1,8 @@
+source_revision=b6112992a830487ba3a1f81c4cd125455eb8ff82
+binary_sha256=DD074DB9A8F501432CE8C2BC66B33E5091C072C24A01F122A534CBEF7BEBC6A5
+command_1=cd tools/slime_ai/agent_service; npm test
+command_2=cd tools/slime_ai/agent_service; npm run typecheck
+npm_test_exit=0
+service_cases=35 passed, 0 failed, 0 skipped
+typecheck_exit=0
+network_requests=0

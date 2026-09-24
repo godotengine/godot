@@ -1,0 +1,11 @@
+source_revision=b6112992a830487ba3a1f81c4cd125455eb8ff82
+binary_sha256=DD074DB9A8F501432CE8C2BC66B33E5091C072C24A01F122A534CBEF7BEBC6A5
+fixture_copy=C:\Users\logan\AppData\Local\Temp\slime-ai-save-denial-b365f515df6e416ebf7f5aea8f666b71
+scene=C:\Users\logan\AppData\Local\Temp\slime-ai-save-denial-b365f515df6e416ebf7f5aea8f666b71\main.tscn
+scene_before_sha256=FE8557743069A5084B2A19C9DCBB9FBC2964D9BA729C1FA6DEDC15CE1674A88F
+scene_after_denied_sha256=FE8557743069A5084B2A19C9DCBB9FBC2964D9BA729C1FA6DEDC15CE1674A88F
+scene_after_sha256=6A3136697FFB7406C37BF6C79FC1B9DC1065C3CB2BBAEDB851F04CCD61516653
+editor_pid=128424
+denial=deterministic test-only save error injection
+reopen_exit_code=0
+result=passed

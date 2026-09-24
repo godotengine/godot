@@ -1,0 +1,82 @@
+{
+  "apply": {
+    "node_ref": "scene:1434233928557:1456665073813:AI_Marker",
+    "operation_id": "native-run-op-12148160-3",
+    "status": "applied"
+  },
+  "children_after_redo": 2,
+  "children_after_undo": 1,
+  "disk_after": "2f67f14fb1afba55d6c8b23b52eaa66e2891a715a42fb194b3aa84ec1e948824",
+  "disk_before": "fe8557743069a5084b2a19c9dcbb9fbc2964d9ba729c1fa6dedc15ce1674a88f",
+  "gameplay_verification": "not_run",
+  "grant": {
+    "status": "granted"
+  },
+  "native_operation_status": {
+    "execution": "applied",
+    "operation_id": "native-run-op-12148160-3",
+    "persistence": "unverified",
+    "status": "applied",
+    "verification": "native_transaction_confirmed"
+  },
+  "redo": {
+    "status": "redone"
+  },
+  "save_error": 0,
+  "transition": {
+    "check": "not_run",
+    "edit": "preview_only",
+    "gameplay_verification": "not_run",
+    "intent": "execute",
+    "limits": "3 attempts, 4 tool calls, 1024 output tokens, 120-second deadline",
+    "model": null,
+    "model_text_untrusted": "I can preview one native marker in the selected scene.I received the host result. Its recorded status is authoritative.",
+    "operation_id": "native-run-op-12148160-3",
+    "paused": false,
+    "preview": {
+      "after": {
+        "class_name": "Node2D",
+        "name": "AI_Marker",
+        "op": "create_child",
+        "parent_ref": "scene:1434233928557:1434233928557:.",
+        "properties": {
+          "position": {
+            "type": "Vector2",
+            "value": [
+              48.0,
+              24.0
+            ]
+          }
+        }
+      },
+      "base_revision": "86aa4bd7acaae23a4c9f44047d614baf72b92f2fdea0b06178b38b3e5d8c0290",
+      "before": null,
+      "disk_revision": "fe8557743069a5084b2a19c9dcbb9fbc2964d9ba729c1fa6dedc15ce1674a88f",
+      "mode": "Manual",
+      "operation_id": "native-run-op-12148160-3",
+      "preview_hash": "e80738878585d080a4765e1ca2fe4eb38e1553aab1b211dfd0758a4ffdf2f137",
+      "preview_id": "baf90fdde72b50e42206329ee10d791778f588606f143ef458c705c6fb767ebe",
+      "requires_native_grant": true,
+      "risk": "Adds one scene-owned node.",
+      "scene_scope": "res://main.tscn",
+      "status": "preview"
+    },
+    "preview_id": "baf90fdde72b50e42206329ee10d791778f588606f143ef458c705c6fb767ebe",
+    "provider": "fake",
+    "revalidate_on_apply": true,
+    "run_id": "native-run-12054849-2",
+    "save": "not_requested",
+    "scene_path": "res://main.tscn",
+    "scene_ref": "scene:1434233928557",
+    "status": "execute_transition_ready",
+    "tool_calls": 1,
+    "usage": {
+      "attempt": 2.0,
+      "input_tokens": null,
+      "output_tokens": null
+    }
+  },
+  "undo": {
+    "status": "undone"
+  }
+}

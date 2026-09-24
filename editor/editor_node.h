@@ -605,7 +605,7 @@ private:
 	void _set_current_scene_nocheck(int p_idx, bool p_ignore_state = false);
 	void _nav_to_selected_scene();
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
-	void _save_scene(String p_file, int idx = -1);
+	Error _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
@@ -659,7 +659,7 @@ private:
 	void _mark_unsaved_scenes();
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
-	void _save_scene_with_preview(String p_file, int p_idx = -1);
+	Error _save_scene_with_preview(String p_file, int p_idx = -1);
 	void _close_save_scene_progress();
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
@@ -995,11 +995,11 @@ public:
 
 	Control *get_gui_base() { return gui_base; }
 
-	void save_scene_to_path(String p_file, bool p_with_preview = true) {
+	Error save_scene_to_path(String p_file, bool p_with_preview = true) {
 		if (p_with_preview) {
-			_save_scene_with_preview(p_file);
+			return _save_scene_with_preview(p_file);
 		} else {
-			_save_scene(p_file);
+			return _save_scene(p_file);
 		}
 	}
 

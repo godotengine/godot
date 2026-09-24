@@ -63,6 +63,24 @@ SceneTransaction::SceneTransaction(const String &p_journal_path) :
 		journal(p_journal_path) {
 }
 
+String SceneTransaction::unresolved_operation(Node *p_root, const String &p_except_id) const {
+	if (!p_root) {
+		return String();
+	}
+	const Array ids = journal.operation_ids();
+	for (int i = 0; i < ids.size(); i++) {
+		const String id = ids[i];
+		if (id == p_except_id) {
+			continue;
+		}
+		const Dictionary record = journal.get(id);
+		if (String(record.get("state", "")) == "prepared" && String(record.get("scene_path", "")) == p_root->get_scene_file_path()) {
+			return id;
+		}
+	}
+	return String();
+}
+
 Dictionary SceneTransaction::set_mode(ApprovalMode p_mode, Node *p_selected_root) {
 	if (p_mode != MANUAL && p_mode != PROTECTED && p_mode != FREEDOM) {
 		return _failed("INVALID_ARGUMENT", "Unknown approval mode.", "Choose a supported mode.");
@@ -97,6 +115,10 @@ Dictionary SceneTransaction::preview(Node *p_root, const String &p_operation_id,
 		Dictionary result = status(p_root, p_operation_id);
 		result["duplicate"] = true;
 		return result;
+	}
+	const String unresolved_id = unresolved_operation(p_root);
+	if (!unresolved_id.is_empty()) {
+		return _failed("RECONCILIATION_REQUIRED", "An earlier operation in this scene is unresolved: " + unresolved_id, "Inspect its status and explicitly reconcile it before starting another operation.");
 	}
 	Dictionary inspection = SceneInspector::inspect(p_root, p_editor_unsaved);
 	if (inspection.has("error")) {
@@ -174,6 +196,10 @@ Dictionary SceneTransaction::apply(Node *p_root, const String &p_preview_id, boo
 	if (!journal.get(operation_id).is_empty()) {
 		return status(p_root, operation_id);
 	}
+	const String unresolved_id = unresolved_operation(p_root, operation_id);
+	if (!unresolved_id.is_empty()) {
+		return _failed("RECONCILIATION_REQUIRED", "An earlier operation in this scene is unresolved: " + unresolved_id, "Inspect its status and explicitly reconcile it before applying another operation.");
+	}
 	Dictionary inspection = SceneInspector::inspect(p_root, p_editor_unsaved);
 	if (inspection.has("error") || String(inspection.get("revision", "")) != String(preview_data["base_revision"])) {
 		return _failed("REVISION_CONFLICT", "The scene changed after preview.", "Inspect and preview again; the human edit is preserved.");
@@ -238,6 +264,11 @@ Dictionary SceneTransaction::status(Node *p_root, const String &p_operation_id) 
 	}
 	Dictionary result = _ok(record.get("state", "unknown"));
 	result["operation_id"] = p_operation_id;
+	if (String(record.get("state", "")) == "applied") {
+		result["execution"] = "applied";
+		result["persistence"] = "unverified";
+		result["verification"] = "native_transaction_confirmed";
+	}
 	if (String(record.get("state", "")) == "prepared") {
 		String effect = "unknown";
 		if (p_root && String(record.get("scene_path", "")) == p_root->get_scene_file_path()) {
@@ -248,8 +279,43 @@ Dictionary SceneTransaction::status(Node *p_root, const String &p_operation_id) 
 			}
 		}
 		result["effect"] = effect;
+		result["execution"] = effect == "present_unconfirmed" ? "effect_observed_unconfirmed" : "unknown";
+		result["persistence"] = "unverified";
+		result["verification"] = "pending_user_reconciliation";
 		result["recovery"] = "Do not retry this ID. Inspect the scene and reconcile the uncertain effect manually.";
 	}
+	return result;
+}
+
+Dictionary SceneTransaction::resolve(Node *p_root, const String &p_operation_id, const String &p_expected_revision, const String &p_observed_effect, bool p_editor_unsaved) {
+	if (!journal.valid() || !p_root) {
+		return _failed("APPLY_FAILED_RECOVERY_REQUIRED", "Journal or scene unavailable.", "Open the affected scene and inspect the journal.");
+	}
+	Dictionary record = journal.get(p_operation_id);
+	if (String(record.get("state", "")) != "prepared" || String(record.get("scene_path", "")) != p_root->get_scene_file_path()) {
+		return _failed("STALE_REFERENCE", "No unresolved operation belongs to this scene.", "Inspect the operation status.");
+	}
+	const Dictionary inspection = SceneInspector::inspect(p_root, p_editor_unsaved);
+	if (inspection.has("error") || String(inspection.get("revision", "")) != p_expected_revision) {
+		return _failed("REVISION_CONFLICT", "Scene changed since reconciliation inspection.", "Inspect the current scene again; newer edits are preserved.");
+	}
+	const Dictionary observed = status(p_root, p_operation_id);
+	if (p_observed_effect != String(observed.get("effect", "unknown")) || p_observed_effect == "unknown") {
+		return _failed("RECONCILIATION_REQUIRED", "Observed effect no longer matches the reviewed status.", "Inspect the scene and status again.");
+	}
+	record["state"] = "resolved_without_replay";
+	record["resolution_revision"] = p_expected_revision;
+	record["observed_effect"] = p_observed_effect;
+	record["resolution_disk_revision"] = inspection.get("disk_revision", "");
+	if (!journal.put(p_operation_id, record)) {
+		return _failed("APPLY_FAILED_RECOVERY_REQUIRED", "Could not persist reconciliation.", "Inspect the journal before continuing.");
+	}
+	Dictionary result = _ok("resolved_without_replay");
+	result["operation_id"] = p_operation_id;
+	result["effect"] = p_observed_effect;
+	result["execution"] = p_observed_effect == "present_unconfirmed" ? "effect_observed_unconfirmed" : "unknown";
+	result["persistence"] = "unverified";
+	result["verification"] = "user_reconciled";
 	return result;
 }
 

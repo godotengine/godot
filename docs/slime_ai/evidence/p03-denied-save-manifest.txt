@@ -1,0 +1,11 @@
+source_revision=b6112992a830487ba3a1f81c4cd125455eb8ff82
+binary_sha256=DD074DB9A8F501432CE8C2BC66B33E5091C072C24A01F122A534CBEF7BEBC6A5
+fixture_copy=C:\Users\logan\AppData\Local\Temp\slime-ai-save-denial-c18c36b9a7b64b43838be7ef42bbdfdc
+scene=C:\Users\logan\AppData\Local\Temp\slime-ai-save-denial-c18c36b9a7b64b43838be7ef42bbdfdc\main.tscn
+scene_before_sha256=FE8557743069A5084B2A19C9DCBB9FBC2964D9BA729C1FA6DEDC15CE1674A88F
+scene_after_denied_sha256=FE8557743069A5084B2A19C9DCBB9FBC2964D9BA729C1FA6DEDC15CE1674A88F
+scene_after_sha256=446B5516B8C49259FC01D5CEFD08D897DBC3AEF114E94D4106596E863D45F1ED
+editor_pid=99320
+denial=exclusive Windows FileStream share mode None on copied main.tscn
+reopen_exit_code=0
+result=passed

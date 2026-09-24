@@ -1,0 +1,15 @@
+{
+  "disk_after": "",
+  "disk_before": "fe8557743069a5084b2a19c9dcbb9fbc2964d9ba729c1fa6dedc15ce1674a88f",
+  "editor_unsaved": false,
+  "execution": {
+    "operation_id": "save-denial-probe-7092539",
+    "status": "applied"
+  },
+  "marker_present": true,
+  "memory_node_count": 2,
+  "persistence": "confirmed",
+  "previous_disk_preserved": false,
+  "save_error": 0,
+  "status": "unexpected_save_success"
+}

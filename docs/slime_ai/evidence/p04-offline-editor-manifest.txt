@@ -1,0 +1,13 @@
+source_revision=b6112992a830487ba3a1f81c4cd125455eb8ff82
+binary_sha256=DD074DB9A8F501432CE8C2BC66B33E5091C072C24A01F122A534CBEF7BEBC6A5
+fixture_copy=C:\Users\logan\AppData\Local\Temp\slime-ai-p04-offline-75f49691d068466782e27b7ffa2fc8e1
+scene_before_sha256=FE8557743069A5084B2A19C9DCBB9FBC2964D9BA729C1FA6DEDC15CE1674A88F
+scene_after_sha256=2F67F14FB1AFBA55D6C8B23B52EAA66E2891A715A42FB194B3AA84EC1E948824
+provider=fake
+model=none
+usage=unknown
+live_request=none
+editor_mode=gui
+unsaved_buffer_read=passed
+reopen_exit_code=0
+result=passed

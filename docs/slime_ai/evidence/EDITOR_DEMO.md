@@ -38,3 +38,9 @@ Pop-Location
 ```
 
 Final results: build exit 0; native 24/24 cases and 271/271 assertions, exit 0; service 16/16, exit 0; typecheck exit 0. Final copied 2D and 3D headless editor smokes each exited 0 (`final-editor-smoke-2d.log`, `final-editor-smoke-3d.log`). The malformed-frame native test deliberately writes a Unicode parser diagnostic; the test runner captures it as stderr data and reports the nonzero test count and exit code separately.
+
+## P03 closeout and P04 continuation, 2026-09-23/24
+
+The historical screenshots and counts above are preserved as the P00–P03 checkpoint, not relabeled as P04 evidence. The later final binary is SHA-256 `DD074DB9A8F501432CE8C2BC66B33E5091C072C24A01F122A534CBEF7BEBC6A5`. A real OS-locked save on a disposable fixture returned error 20 while the old file remained intact and the live edit stayed unsaved; the same logical operation could then be saved once after unlock. See `P03_SAVE_FAILURE.md`, including the failed first checkpoint.
+
+The visible-editor **programmatic** P04 fixture flow with the offline fake provider ran Discuss, Propose, explicit Execute transition, native grant/apply/undo/redo/save/reopen, plus an unsaved ScriptEditor buffer read. See `P04_OFFLINE_DEMO.md`. Native tests increased to 33/33 cases and 393/393 assertions; service tests to 35/35. Manual clicks through all new dock controls and a paid provider run are not recorded as performed. Live status is `not_run` in `P04_LIVE_DEMO.md`.

@@ -56,7 +56,7 @@ static bool _has_only(const Dictionary &p_dict, const Vector<String> &p_keys) {
 }
 
 bool validate_envelope(const Dictionary &p_frame, const String &p_request_id, String &r_error) {
-	if (!p_frame.has("protocol_version") || p_frame["protocol_version"].get_type() != Variant::STRING || String(p_frame["protocol_version"]) != "1.0") {
+	if (!p_frame.has("protocol_version") || p_frame["protocol_version"].get_type() != Variant::STRING || (String(p_frame["protocol_version"]) != "1.0" && String(p_frame["protocol_version"]) != "1.1")) {
 		r_error = "Unsupported protocol version.";
 		return false;
 	}
@@ -92,6 +92,23 @@ bool validate_envelope(const Dictionary &p_frame, const String &p_request_id, St
 		}
 	} else {
 		r_error = "Unknown response status.";
+		return false;
+	}
+	return true;
+}
+
+bool validate_run_event(const Dictionary &p_frame, const String &p_request_id, const String &p_run_id, String &r_error) {
+	if (!_has_only(p_frame, { "protocol_version", "request_id", "run_id", "event", "data" }) ||
+			String(p_frame.get("protocol_version", "")) != "1.1" ||
+			String(p_frame.get("request_id", "")) != p_request_id ||
+			String(p_frame.get("run_id", "")) != p_run_id ||
+			p_frame.get("data", Variant()).get_type() != Variant::DICTIONARY) {
+		r_error = "Invalid run event envelope or identity.";
+		return false;
+	}
+	const String event = p_frame["event"];
+	if (event != "run_state" && event != "text_delta" && event != "usage_update" && event != "turn_completed" && event != "turn_failed" && event != "tool_call_ready") {
+		r_error = "Unknown run event.";
 		return false;
 	}
 	return true;

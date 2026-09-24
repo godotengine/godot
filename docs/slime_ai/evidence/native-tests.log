@@ -1,7 +1,7 @@
 [doctest] doctest version is "2.4.12"
 [doctest] run with "--help" for options
 ===============================================================================
-[doctest] test cases:  24 |  24 passed | 0 failed | 1429 skipped
-[doctest] assertions: 271 | 271 passed | 0 failed |
+[doctest] test cases:  33 |  33 passed | 0 failed | 1429 skipped
+[doctest] assertions: 393 | 393 passed | 0 failed |
 [doctest] Status: SUCCESS!
 Unicode parsing error: Byte 28 is not a correct continuation byte after c3

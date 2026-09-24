@@ -1,0 +1,19 @@
+{
+  "disk_after": "unreadable_while_exclusively_locked",
+  "disk_before": "fe8557743069a5084b2a19c9dcbb9fbc2964d9ba729c1fa6dedc15ce1674a88f",
+  "disk_verification": "parent_harness_checks_after_lock_release_before_retry",
+  "editor_unsaved": true,
+  "execution": {
+    "execution": "applied",
+    "operation_id": "save-denial-probe-6525357",
+    "persistence": "unverified",
+    "status": "applied",
+    "verification": "native_transaction_confirmed"
+  },
+  "injected": false,
+  "marker_present": true,
+  "memory_node_count": 2,
+  "persistence": "failed",
+  "save_error": 20,
+  "status": "save_failed"
+}

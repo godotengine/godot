@@ -1,0 +1,13 @@
+{
+  "disk_before": "fe8557743069a5084b2a19c9dcbb9fbc2964d9ba729c1fa6dedc15ce1674a88f",
+  "editor_unsaved": true,
+  "execution": {
+    "node_ref": "scene:1437740373555:1438730229308:SaveDenialMarker",
+    "operation_id": "save-denial-probe-6447288",
+    "status": "applied"
+  },
+  "memory_node_count": 2,
+  "operation_id": "save-denial-probe-6447288",
+  "preview_id": "d02845c0311e5d1d3b81febeccb6ca775dc243f93b98405023682dda6cad782f",
+  "status": "applied"
+}

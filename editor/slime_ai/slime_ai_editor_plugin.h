@@ -33,11 +33,15 @@
 #include "editor/plugins/editor_plugin.h"
 #include "editor/slime_ai/slime_ai_scene_transaction.h"
 #include "editor/slime_ai/slime_ai_service_client.h"
+#include "editor/slime_ai/slime_ai_run_controller.h"
+#include "editor/slime_ai/slime_ai_save_failure_probe.h"
+#include "editor/slime_ai/slime_ai_p04_editor_probe.h"
 
 class EditorDock;
 class Button;
 class Label;
 class TextEdit;
+class LineEdit;
 
 class SlimeAIEditorPlugin : public EditorPlugin {
 	GDCLASS(SlimeAIEditorPlugin, EditorPlugin);
@@ -50,11 +54,23 @@ class SlimeAIEditorPlugin : public EditorPlugin {
 	Button *object_context_button = nullptr;
 	SlimeAI::ServiceClient service;
 	SlimeAI::SceneTransaction transaction;
+	SlimeAI::RunController run_controller;
+	SlimeAI::SaveFailureProbe save_failure_probe;
+	SlimeAI::P04EditorProbe p04_editor_probe;
+	LineEdit *model_input = nullptr;
+	TextEdit *task_input = nullptr;
+	String selected_provider = "openai_responses";
+	String selected_intent = "discuss";
+	bool live_authorized_once = false;
+	String live_authorized_model;
 	Dictionary last_inspection;
 	Dictionary last_proposal;
 	Dictionary context_manifest;
 	String last_preview_id;
 	String last_operation_id;
+	String reconcile_operation_id;
+	String reconcile_expected_revision;
+	String reconcile_observed_effect;
 	uint64_t operation_sequence = 0;
 	uint64_t last_context_update = 0;
 
@@ -74,6 +90,20 @@ class SlimeAIEditorPlugin : public EditorPlugin {
 	void _redo();
 	void _save();
 	void _status();
+	void _resolve_reviewed_operation();
+	void _provider_openai();
+	void _provider_fake();
+	void _provider_status();
+	void _intent_discuss();
+	void _intent_propose();
+	void _intent_execute();
+	void _authorize_live_once();
+	void _start_run();
+	void _cancel_run();
+	void _pause_run();
+	void _resume_run();
+	void _run_status();
+	void _transition_execute();
 	void _mode_manual();
 	void _mode_protected();
 	void _mode_freedom();

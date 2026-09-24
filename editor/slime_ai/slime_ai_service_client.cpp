@@ -39,6 +39,11 @@ namespace SlimeAI {
 
 bool ServiceClient::start(const String &p_script_path) {
 	stop();
+	if (!OS::get_singleton()->get_environment("SLIME_AI_OPENAI_API_KEY").is_empty()) {
+		state = "unavailable";
+		last_error = "The editor cannot launch the service with a provider key in its environment. Use the user credential store instead.";
+		return false;
+	}
 	if (!FileAccess::exists(p_script_path)) {
 		state = "unavailable";
 		last_error = "Fake service script is missing.";
@@ -74,7 +79,7 @@ String ServiceClient::request(const String &p_method, const Dictionary &p_params
 	request_number++;
 	const String id = String::num_uint64(request_number);
 	Dictionary envelope;
-	envelope["protocol_version"] = "1.0";
+	envelope["protocol_version"] = p_method.begins_with("run_") || p_method == "provider_status" ? "1.1" : "1.0";
 	envelope["request_id"] = id;
 	envelope["method"] = p_method;
 	envelope["params"] = p_params;
@@ -134,6 +139,27 @@ void ServiceClient::poll(Vector<Dictionary> &r_responses) {
 	}
 	for (const Dictionary &frame : frames) {
 		String validation_error;
+		if (frame.has("event")) {
+			if (!validate_run_event(frame, active_run_request_id, active_run_id, validation_error)) {
+				state = "protocol_error";
+				last_error = validation_error;
+				stop();
+				return;
+			}
+			r_responses.push_back(frame);
+			if (String(frame["event"]) == "turn_failed") {
+				active_run_id.clear();
+				active_run_request_id.clear();
+			}
+			if (String(frame["event"]) == "run_state") {
+				const String run_state = Dictionary(frame["data"]).get("state", "");
+				if (run_state == "completed" || run_state == "failed" || run_state == "cancelled") {
+					active_run_id.clear();
+					active_run_request_id.clear();
+				}
+			}
+			continue;
+		}
 		if (pending_id.is_empty() || !validate_envelope(frame, pending_id, validation_error)) {
 			state = "protocol_error";
 			last_error = validation_error;
@@ -153,6 +179,18 @@ void ServiceClient::poll(Vector<Dictionary> &r_responses) {
 					state = "ready";
 				}
 			}
+		}
+		if (pending_method.begins_with("run_") && String(frame["status"]) == "ok") {
+			const Dictionary result = frame["result"];
+			const String run_id = result.get("run_id", "");
+			if (run_id.is_empty() || (!active_run_id.is_empty() && active_run_id != run_id)) {
+				state = "protocol_error";
+				last_error = "Run acknowledgement identity mismatch.";
+				stop();
+				return;
+			}
+			active_run_id = run_id;
+			active_run_request_id = pending_id;
 		}
 		pending_id.clear();
 		pending_method.clear();
@@ -175,6 +213,8 @@ void ServiceClient::stop() {
 	pid = 0;
 	pending_id.clear();
 	pending_method.clear();
+	active_run_request_id.clear();
+	active_run_id.clear();
 	if (state != "protocol_error") {
 		state = "disconnected";
 	}

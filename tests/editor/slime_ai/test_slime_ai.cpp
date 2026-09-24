@@ -270,7 +270,18 @@ TEST_CASE("[SlimeAI][TX] cancel and restart after interrupted effect") {
 		CHECK(status["status"] == "prepared");
 		CHECK(status["effect"] == "present_unconfirmed");
 		CHECK(bool(restarted.preview(root, "native-interrupted", proposal, true)["duplicate"]));
+		CHECK(_error_code(restarted.preview(root, "fresh-after-interruption", _proposal(root, SlimeAI::SceneInspector::inspect(root, true)), true)) == "RECONCILIATION_REQUIRED");
+		const String current_revision = SlimeAI::SceneInspector::inspect(root, true)["revision"];
+		CHECK(_error_code(restarted.resolve(root, "native-interrupted", "stale-revision", "present_unconfirmed", true)) == "REVISION_CONFLICT");
+		CHECK(restarted.resolve(root, "native-interrupted", current_revision, "present_unconfirmed", true)["status"] == "resolved_without_replay");
 		CHECK(root->get_child_count() == 1);
+		Dictionary next_proposal = _proposal(root, SlimeAI::SceneInspector::inspect(root, true));
+		Dictionary next_operation = Array(next_proposal["operations"])[0];
+		next_operation["name"] = "AfterResolution";
+		Array next_operations;
+		next_operations.push_back(next_operation);
+		next_proposal["operations"] = next_operations;
+		CHECK(restarted.preview(root, "fresh-after-resolution", next_proposal, true)["status"] == "preview");
 	}
 	memdelete(root);
 	DirAccess::remove_absolute(journal);
@@ -528,6 +539,12 @@ TEST_CASE("[SlimeAI][TX] recovery status preserves a later human edit") {
 		CHECK(status["status"] == "prepared");
 		CHECK(status["effect"] == "present_unconfirmed");
 		CHECK(bool(restarted.preview(root, "later-human-edit", proposal, true)["duplicate"]));
+		CHECK(_error_code(restarted.preview(root, "fresh-after-human", _proposal(root, SlimeAI::SceneInspector::inspect(root, true)), true)) == "RECONCILIATION_REQUIRED");
+		const String reviewed_revision = SlimeAI::SceneInspector::inspect(root, true)["revision"];
+		root->set_position(Vector2(9, 12));
+		CHECK(_error_code(restarted.resolve(root, "later-human-edit", reviewed_revision, "present_unconfirmed", true)) == "REVISION_CONFLICT");
+		const String current_revision = SlimeAI::SceneInspector::inspect(root, true)["revision"];
+		CHECK(restarted.resolve(root, "later-human-edit", current_revision, "present_unconfirmed", true)["status"] == "resolved_without_replay");
 		CHECK(root->get_child_count() == 2);
 		CHECK(root->get_node_or_null(NodePath("HumanLater")) == human);
 	}

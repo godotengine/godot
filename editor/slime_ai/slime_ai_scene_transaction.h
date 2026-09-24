@@ -59,10 +59,12 @@ public:
 	Dictionary cancel(const String &p_preview_id);
 	Dictionary apply(Node *p_root, const String &p_preview_id, bool p_editor_unsaved);
 	Dictionary status(Node *p_root, const String &p_operation_id) const;
+	Dictionary resolve(Node *p_root, const String &p_operation_id, const String &p_expected_revision, const String &p_observed_effect, bool p_editor_unsaved);
 	Array recorded_operation_ids() const { return journal.operation_ids(); }
 	Dictionary undo(Node *p_root);
 	Dictionary redo(Node *p_root);
 	void set_inject_failure_after_effect(bool p_enabled) { inject_failure_after_effect = p_enabled; }
+	String unresolved_operation(Node *p_root, const String &p_except_id = String()) const;
 };
 
 } // namespace SlimeAI

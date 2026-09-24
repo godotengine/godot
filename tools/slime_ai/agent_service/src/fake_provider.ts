@@ -1,8 +1,8 @@
-import type { ServiceRequest } from './protocol.ts';
+import type { HelloRequest, ProposalRequest } from './protocol.ts';
 
 export const DELAY_MS = 75;
 
-export function responseFor(request: ServiceRequest): object {
+export function responseFor(request: HelloRequest | ProposalRequest): object {
   if (request.method === 'hello') {
     return { protocol_version: '1.0', request_id: request.request_id, status: 'ok',
       result: { service_build: 'fake-1.0', protocol_version: '1.0',

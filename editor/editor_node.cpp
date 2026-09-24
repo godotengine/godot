@@ -2298,7 +2298,7 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 	}
 }
 
-void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
+Error EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 4));
 
 	if (editor_data.get_edited_scene_root() != nullptr) {
@@ -2374,13 +2374,14 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	}
 
 	save_scene_progress->step(TTR("Saving Scene"), 4);
-	_save_scene(p_file, p_idx);
+	Error save_error = _save_scene(p_file, p_idx);
 
 	if (!singleton->cmdline_mode) {
 		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 	}
 
 	_close_save_scene_progress();
+	return save_error;
 }
 
 void EditorNode::_close_save_scene_progress() {
@@ -2509,19 +2510,19 @@ static void _reset_animation_mixers(Node *p_node, List<Pair<AnimationMixer *, Re
 	}
 }
 
-void EditorNode::_save_scene(String p_file, int idx) {
-	ERR_FAIL_COND_MSG(!saving_scene.is_empty() && saving_scene == p_file, "Scene saved while already being saved!");
+Error EditorNode::_save_scene(String p_file, int idx) {
+	ERR_FAIL_COND_V_MSG(!saving_scene.is_empty() && saving_scene == p_file, ERR_BUSY, "Scene saved while already being saved!");
 
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
 	if (!scene) {
 		show_warning(TTR("This operation can't be done without a tree root."));
-		return;
+		return ERR_CANT_CREATE;
 	}
 
 	if (!scene->get_scene_file_path().is_empty() && _validate_scene_recursive(scene->get_scene_file_path(), scene)) {
 		show_warning(TTR("This scene can't be saved because there is a cyclic instance inclusion.\nPlease resolve it and then attempt to save again."));
-		return;
+		return ERR_INVALID_DATA;
 	}
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_PRE_SAVE);
@@ -2552,7 +2553,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	if (err != OK) {
 		show_warning(TTR("Couldn't save scene. Likely dependencies (instances or inheritance) couldn't be satisfied."));
-		return;
+		return err;
 	}
 
 	int flg = 0;
@@ -2563,9 +2564,12 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	err = ResourceSaver::save(sdata, p_file, flg);
 
-	// This needs to be emitted before saving external resources.
-	emit_signal(SNAME("scene_saved"), p_file);
-	editor_data.notify_scene_saved(p_file);
+	// This needs to be emitted before saving external resources, but only
+	// after the scene file itself is durably replaced.
+	if (err == OK) {
+		emit_signal(SNAME("scene_saved"), p_file);
+		editor_data.notify_scene_saved(p_file);
+	}
 
 	_save_external_resources();
 	saving_scene = p_file; // Some editors may save scenes of built-in resources as external data, so avoid saving this scene again.
@@ -2603,6 +2607,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	scene->propagate_notification(NOTIFICATION_EDITOR_POST_SAVE);
 	_update_unsaved_cache();
+	return err;
 }
 
 void EditorNode::save_all_scenes() {

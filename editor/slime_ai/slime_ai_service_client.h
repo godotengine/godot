@@ -43,6 +43,8 @@ class ServiceClient {
 	FrameDecoder decoder;
 	String pending_id;
 	String pending_method;
+	String active_run_request_id;
+	String active_run_id;
 	String state = "disconnected";
 	String last_error;
 	uint64_t request_number = 0;
@@ -55,6 +57,7 @@ public:
 	String get_state() const { return state; }
 	String get_last_error() const { return last_error; }
 	String get_pending_method() const { return pending_method; }
+	String get_active_run_id() const { return active_run_id; }
 	bool is_ready() const { return state == "ready"; }
 	~ServiceClient();
 };

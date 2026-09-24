@@ -26,3 +26,18 @@ Allowed to create/edit only `tools/slime_ai/agent_service/**`. No other paths. D
 Acceptance checks assigned: `npm test` (nonzero test count) and typecheck, valid golden handshake/proposal, split UTF-8 and JSON frames, malformed/oversized/unsupported envelope, request ID echo, normal/delayed/malformed/disconnect scenarios, and EOF process exit. Return exact commands, exit codes, test counts, and evidence.
 
 Both worker handoffs must state task ID, base revision, files changed, behavior, commands, exit codes/counts, evidence, limitations, unresolved integration, and patch/commit reference. Lead will independently rerun all gates and owns any shared changes.
+
+## P03 closeout / P04 handoff, 2026-09-23/24
+
+| ID | Owner | State | Acceptance evidence |
+|---|---|---|---|
+| C01 real denied save | Lead | verified | Built editor under exclusive Windows lock, old file preserved, unsaved edit retained, retry saved one effect; `evidence/P03_SAVE_FAILURE.md` |
+| C02 unresolved reconciliation | Lead | verified within conservative scope | Fresh IDs blocked until exact operation/revision-bound user resolution; no replay; native cases 249 and 513 in `test_slime_ai.cpp` |
+| C03 operation/evidence map | Lead | verified with documented gaps | `TEST_MATRIX.md` maps all native enabled operations and negative paths; P04 model tool remains create only |
+| P04-01/02 provider events and OpenAI Responses | Service worker, Lead integration | offline verified; live not_run | `provider_events.ts`, `providers.ts`, `run_manager.ts`; 35/35 service cases, typecheck exit 0, `evidence/P04_LIVE_DEMO.md` |
+| P04-03 bounded run and native authority | Lead | offline verified | `slime_ai_run_controller`, native P04 cases, exact 3-attempt/4-tool/1024-token/30s/120s limits |
+| P04-04/05 dock and intents | Lead | GUI fixture verified; manual dock review unrun | `slime_ai_editor_plugin`, visible offline probe `evidence/P04_OFFLINE_DEMO.md` |
+| P04-06 scoped project search/read | Native reads worker, Lead integration | verified | `slime_ai_project_search`, `slime_ai_code_reader`, native read cases and visible unsaved ScriptEditor proof |
+| P04-07 credentials and consent | Service worker and Lead | offline verified; live not_run | Credential Manager lookup, no network at startup, one-run live authorization and synthetic failures |
+
+For this continuation, the lead owned shared contracts, save/lifecycle hooks, native permissions, integration, documentation, and final verification. Native reads worker ownership was only `editor/slime_ai/slime_ai_project_search.{h,cpp}`, `slime_ai_code_reader.{h,cpp}`, `tests/editor/slime_ai/test_slime_ai_p04_read.cpp`, and `test_slime_ai_p03_3d.cpp`; acceptance was focused scope/read/3D tests plus final lead build. Service worker ownership was only `tools/slime_ai/agent_service/**`; acceptance was offline provider/event/limit/redaction tests, `npm test`, and `npm run typecheck`. Neither worker spawned another agent. Final lead rerun: build exit 0, native 33/33 and 393/393, service 35/35, typecheck 0, OS-lock probe 0, visible GUI probe 0. No live request or push.

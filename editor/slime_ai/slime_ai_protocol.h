@@ -39,6 +39,7 @@ static constexpr int MAX_FRAME_BYTES = 1024 * 1024;
 
 Dictionary error(const String &p_code, const String &p_message, const String &p_recovery);
 bool validate_envelope(const Dictionary &p_frame, const String &p_request_id, String &r_error);
+bool validate_run_event(const Dictionary &p_frame, const String &p_request_id, const String &p_run_id, String &r_error);
 
 class FrameDecoder {
 	Vector<uint8_t> pending;
