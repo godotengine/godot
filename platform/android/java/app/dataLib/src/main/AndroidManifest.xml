@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+        <activity
+            android:name="com.godot.game.GodotApp"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:excludeFromRecents="false"
+            android:exported="false"
+            android:launchMode="singleInstancePerTask"
+            android:resizeableActivity="false"
+            android:screenOrientation="landscape"
+            android:supportsPictureInPicture="true"
+            android:theme="@style/GodotAppSplashTheme"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="UnusedAttribute"
+            tools:replace="android:screenOrientation,android:excludeFromRecents,android:resizeableActivity" />
+
+        <activity-alias
+            android:name="com.godot.game.GodotAppLauncher"
+            android:exported="true"
+            android:targetActivity="com.godot.game.GodotApp">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+    </application>
+</manifest>

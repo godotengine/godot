@@ -307,12 +307,18 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 	// Update the GodotApp activity tag.
 	String orientation = _get_android_orientation_label(DisplayServerEnums::ScreenOrientation(int(p_export_platform->get_project_setting(p_preset, "display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
-			"        <activity android:name=\".GodotApp\" "
+			"        <activity android:name=\"com.godot.game.GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
 			"tools:node=\"mergeOnlyAttributes\" "
+			"android:configChanges=\"layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode\" "
 			"android:excludeFromRecents=\"%s\" "
+			"android:exported=\"false\" "
+			"android:launchMode=\"singleInstancePerTask\" "
 			"android:screenOrientation=\"%s\" "
-			"android:resizeableActivity=\"%s\">\n",
+			"android:resizeableActivity=\"%s\" "
+			"android:supportsPictureInPicture=\"true\" "
+			"android:theme=\"@style/GodotAppSplashTheme\" "
+			"android:windowSoftInputMode=\"adjustResize\" >\n",
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
 			orientation,
 			bool_to_string(bool(p_export_platform->get_project_setting(p_preset, "display/window/size/resizable"))));
@@ -327,8 +333,8 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 	// Update the GodotAppLauncher activity tag.
 	manifest_activity_text += "        <activity-alias\n"
 							  "            tools:node=\"mergeOnlyAttributes\"\n"
-							  "            android:name=\".GodotAppLauncher\"\n"
-							  "            android:targetActivity=\".GodotApp\"\n"
+							  "            android:name=\"com.godot.game.GodotAppLauncher\"\n"
+							  "            android:targetActivity=\"com.godot.game.GodotApp\"\n"
 							  "            android:exported=\"true\">\n";
 
 	manifest_activity_text += "            <intent-filter>\n"
@@ -361,29 +367,32 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 	return manifest_activity_text;
 }
 
-String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug, const Vector<MetadataInfo> &p_metadata) {
+String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, int p_export_format, bool p_has_read_write_storage_permission, bool p_debug, const Vector<MetadataInfo> &p_metadata) {
 	int app_category_index = (int)(p_preset->get("package/app_category"));
 	bool is_game = app_category_index == APP_CATEGORY_GAME;
 
-	String manifest_application_text = vformat(
-			"    <application android:label=\"@string/godot_project_name_string\"\n"
-			"        android:allowBackup=\"%s\"\n"
-			"        android:icon=\"@mipmap/icon\"\n"
-			"        android:isGame=\"%s\"\n"
-			"        android:hasFragileUserData=\"%s\"\n"
-			"        android:requestLegacyExternalStorage=\"%s\"\n",
-			bool_to_string(p_preset->get("user_data_backup/allow")),
-			bool_to_string(is_game),
-			bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
-			bool_to_string(p_has_read_write_storage_permission));
-	if (app_category_index != APP_CATEGORY_UNDEFINED) {
-		manifest_application_text += vformat("        android:appCategory=\"%s\"\n", _get_app_category_label(app_category_index));
-		manifest_application_text += "        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
-	} else {
-		manifest_application_text += "        tools:remove=\"android:appCategory\"\n";
-		manifest_application_text += "        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+	String manifest_application_text = "    <application";
+	if (p_export_format != EXPORT_FORMAT_AAR) {
+		manifest_application_text += vformat(
+				"\n"
+				"        android:allowBackup=\"%s\"\n"
+				"        android:isGame=\"%s\"\n"
+				"        android:hasFragileUserData=\"%s\"\n"
+				"        android:requestLegacyExternalStorage=\"%s\"\n",
+				bool_to_string(p_preset->get("user_data_backup/allow")),
+				bool_to_string(is_game),
+				bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
+				bool_to_string(p_has_read_write_storage_permission));
+		if (app_category_index != APP_CATEGORY_UNDEFINED) {
+			manifest_application_text += vformat("        android:appCategory=\"%s\"\n", _get_app_category_label(app_category_index));
+			manifest_application_text += "        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+		} else {
+			manifest_application_text += "        tools:remove=\"android:appCategory\"\n";
+			manifest_application_text += "        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+		}
+		manifest_application_text += "        tools:ignore=\"UnusedAttribute\"";
 	}
-	manifest_application_text += "        tools:ignore=\"GoogleAppIndexingWarning\">\n\n";
+	manifest_application_text += ">\n\n";
 
 	for (int i = 0; i < p_metadata.size(); i++) {
 		manifest_application_text += vformat("        <meta-data tools:node=\"replace\" android:name=\"%s\" android:value=\"%s\" />\n", p_metadata[i].name, p_metadata[i].value);
