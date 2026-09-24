@@ -173,10 +173,41 @@ void SnapshotRefCountedView::_insert_data(GameStateSnapshot *p_snapshot, const S
 		item->set_auto_translate_mode(offset + 0, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_text(offset + 1, pair.value->get_name());
 		item->set_auto_translate_mode(offset + 1, AUTO_TRANSLATE_MODE_DISABLED);
+		Color col;
+		if (pair.value->diff_status == SnapshotDataObject::DIFF_ADDED) {
+			col = Color(0, 1, 0, 0.1);
+		} else if (pair.value->diff_status == SnapshotDataObject::DIFF_REMOVED) {
+			col = Color(1, 0, 0, 0.1);
+		} else if (pair.value->diff_status == SnapshotDataObject::DIFF_MODIFIED) {
+			col = Color(1, 1, 0, 0.1);
+		}
+		if (col != Color()) {
+			for (int c = 0; c <= offset + 1; c++) {
+				item->set_custom_bg_color(c, col);
+			}
+		}
 		item->set_text(offset + 2, String::num_uint64(native_refs));
 		item->set_text(offset + 3, String::num_uint64(objectdb_refs));
 		item->set_text(offset + 4, String::num_uint64(total_refs));
 		item->set_text(offset + 5, String::num_uint64(ref_cycles.size())); // Compute cycles and attach it to refcounted object.
+
+		if (diff_data && (pair.value->diff_status == SnapshotDataObject::DIFF_MODIFIED || pair.value->diff_status == SnapshotDataObject::DIFF_UNMODIFIED)) {
+			GameStateSnapshot *other_snapshot = p_snapshot == snapshot_data ? diff_data : snapshot_data;
+			SnapshotDataObject *other_object = other_snapshot->objects[pair.key];
+			int other_total_refs = other_object->extra_debug_data.has("ref_count") ? (uint64_t)other_object->extra_debug_data["ref_count"] : 0;
+			int other_objectdb_refs = other_object->get_unique_inbound_references().size();
+			int other_native_refs = other_total_refs - other_objectdb_refs;
+
+			if (native_refs != other_native_refs) {
+				item->set_custom_bg_color(offset + 2, Color(1, 1, 0, 0.1));
+			}
+			if (objectdb_refs != other_objectdb_refs) {
+				item->set_custom_bg_color(offset + 3, Color(1, 1, 0, 0.1));
+			}
+			if (total_refs != other_total_refs) {
+				item->set_custom_bg_color(offset + 4, Color(1, 1, 0, 0.1));
+			}
+		}
 
 		if (total_refs == ref_cycles.size()) {
 			// Often, references are held by the engine so we can't know if we're stuck in a cycle or not
