@@ -105,8 +105,10 @@ namespace Godot
                             { "type", (int)GD.TypeToVariantType(param.ParameterType) }
                         };
 
-                        if (param.HasDefaultValue) {
-                            methodDefaultParams.Add(param.RawDefaultValue?.ToString() ?? "null");
+                        if (param.HasDefaultValue)
+                        {
+                            var defVal = RuntimeTypeConversionHelper.ConvertToVariant(param.RawDefaultValue);
+                            methodDefaultParams.Add(Variant.CreateTakingOwnershipOfDisposableValue(defVal));
                         }
 
                         methodParams.Add(pinfo);
