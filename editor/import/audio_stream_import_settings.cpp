@@ -706,3 +706,9 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 
 	singleton = this;
 }
+
+AudioStreamImportSettingsDialog::~AudioStreamImportSettingsDialog() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}

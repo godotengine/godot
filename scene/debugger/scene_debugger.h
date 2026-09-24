@@ -177,6 +177,12 @@ private:
 	inline static LiveEditor *singleton = nullptr;
 
 public:
+	~LiveEditor() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
+	}
+
 	static LiveEditor *get_singleton();
 };
 #endif // DEBUG_ENABLED

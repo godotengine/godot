@@ -1498,3 +1498,9 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 
 	singleton = this;
 }
+
+EditorBuildProfileManager::~EditorBuildProfileManager() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}

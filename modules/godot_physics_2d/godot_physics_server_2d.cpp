@@ -1396,3 +1396,9 @@ GodotPhysicsServer2D::GodotPhysicsServer2D(bool p_using_threads) {
 
 	using_threads = p_using_threads;
 }
+
+GodotPhysicsServer2D::~GodotPhysicsServer2D() {
+	if (godot_singleton == this) {
+		godot_singleton = nullptr;
+	}
+}
