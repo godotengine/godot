@@ -48,6 +48,25 @@ int ClassData::instance_count(GameStateSnapshot *p_snapshot) {
 	return count;
 }
 
+int ClassData::unique_instance_count(GameStateSnapshot *p_snapshot, GameStateSnapshot *p_other_snapshot) {
+	ERR_FAIL_NULL_V(p_snapshot, 0);
+	ERR_FAIL_NULL_V(p_other_snapshot, 0);
+	int count = 0;
+	HashSet<uint64_t> known;
+	for (const SnapshotDataObject *instance : instances) {
+		if (instance->snapshot == p_snapshot) {
+			count += 1;
+			known.insert(instance->remote_object_id);
+		}
+	}
+	for (const SnapshotDataObject *instance : instances) {
+		if (instance->snapshot == p_other_snapshot && known.has(instance->remote_object_id)) {
+			count -= 1;
+		}
+	}
+	return count;
+}
+
 int ClassData::get_recursive_instance_count(HashMap<String, ClassData> &p_all_classes, GameStateSnapshot *p_snapshot) {
 	if (!recursive_instance_count_cache.has(p_snapshot)) {
 		recursive_instance_count_cache[p_snapshot] = instance_count(p_snapshot);
@@ -56,6 +75,18 @@ int ClassData::get_recursive_instance_count(HashMap<String, ClassData> &p_all_cl
 		}
 	}
 	return recursive_instance_count_cache[p_snapshot];
+}
+
+int ClassData::get_recursive_unique_instance_count(HashMap<String, ClassData> &p_all_classes, GameStateSnapshot *p_snapshot, GameStateSnapshot *p_other_snapshot) {
+	ERR_FAIL_NULL_V(p_snapshot, 0);
+	ERR_FAIL_NULL_V(p_other_snapshot, 0);
+	if (!recursive_unique_instance_count_cache.has(p_snapshot)) {
+		recursive_unique_instance_count_cache[p_snapshot] = unique_instance_count(p_snapshot, p_other_snapshot);
+		for (const String &child : child_classes) {
+			recursive_unique_instance_count_cache[p_snapshot] += p_all_classes[child].get_recursive_unique_instance_count(p_all_classes, p_snapshot, p_other_snapshot);
+		}
+	}
+	return recursive_unique_instance_count_cache[p_snapshot];
 }
 
 SnapshotClassView::SnapshotClassView() {
@@ -157,10 +188,33 @@ void SnapshotClassView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsh
 		next.tree_node->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		int a_count = next.get_recursive_instance_count(grouped_by_class, snapshot_data);
 		next.tree_node->set_text(1, String::num_int64(a_count));
+		next.tree_node->set_text_overrun_behavior(1, TextServer::OVERRUN_NO_TRIMMING);
 		if (diff_data) {
 			int b_count = next.get_recursive_instance_count(grouped_by_class, diff_data);
 			next.tree_node->set_text(2, String::num_int64(b_count));
+			next.tree_node->set_text_overrun_behavior(2, TextServer::OVERRUN_NO_TRIMMING);
 			next.tree_node->set_text(3, String::num_int64(a_count - b_count));
+			next.tree_node->set_text_overrun_behavior(3, TextServer::OVERRUN_NO_TRIMMING);
+
+			int unique_a = next.get_recursive_unique_instance_count(grouped_by_class, snapshot_data, diff_data);
+			int unique_b = next.get_recursive_unique_instance_count(grouped_by_class, diff_data, snapshot_data);
+			Color col;
+			if (unique_a > 0 && unique_b > 0) {
+				col = Color(1, 1, 0, 0.1); // Both have unique objects
+				next.tree_node->set_text(1, vformat(TTR("%d (%d removed)"), a_count, unique_a));
+				next.tree_node->set_text(2, vformat(TTR("%d (%d added)"), b_count, unique_b));
+			} else if (unique_a > 0) {
+				col = Color(1, 0, 0, 0.1); // A has removed objects
+				next.tree_node->set_text(1, vformat(TTR("%d (%d removed)"), a_count, unique_a));
+			} else if (unique_b > 0) {
+				col = Color(0, 1, 0, 0.1); // B has added objects
+				next.tree_node->set_text(2, vformat(TTR("%d (%d added)"), b_count, unique_b));
+			}
+			if (col != Color()) {
+				for (int c = 0; c < next.tree_node->get_tree()->get_columns(); c++) {
+					next.tree_node->set_custom_bg_color(c, col);
+				}
+			}
 		}
 		next.tree_node->set_metadata(0, next_class_name);
 		for (const String &c : next.child_classes) {
@@ -255,8 +309,16 @@ void SnapshotClassView::_populate_object_list(GameStateSnapshot *p_snapshot, Tre
 			TreeItem *item = p_list->create_item(root);
 			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 			item->set_text(0, pair.value->get_name());
+			item->set_tooltip_text(0, pair.value->remote_path);
 			item->set_metadata(0, pair.value->remote_object_id);
 			item->set_text_overrun_behavior(0, TextServer::OverrunBehavior::OVERRUN_NO_TRIMMING);
+			if (pair.value->diff_status == SnapshotDataObject::DIFF_ADDED) {
+				item->set_custom_bg_color(0, Color(0, 1, 0, 0.1));
+			} else if (pair.value->diff_status == SnapshotDataObject::DIFF_REMOVED) {
+				item->set_custom_bg_color(0, Color(1, 0, 0, 0.1));
+			} else if (pair.value->diff_status == SnapshotDataObject::DIFF_MODIFIED) {
+				item->set_custom_bg_color(0, Color(1, 1, 0, 0.1));
+			}
 			object_count++;
 		}
 	}
