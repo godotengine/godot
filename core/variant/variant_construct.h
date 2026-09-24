@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/script_language.h" // IWYU pragma: keep. Provide `Script` inheritance information for container types.
 #include "core/templates/a_hash_map.h"
 #include "core/variant/binder_common.h"
 #include "core/variant/variant.h"
