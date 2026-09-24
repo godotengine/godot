@@ -2037,6 +2037,14 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 	idle_callbacks[idle_callback_count++] = p_callback;
 }
 
+void SceneTree::reset_idle_callbacks() {
+	for (int i = 0; i < idle_callback_count; i++) {
+		idle_callbacks[i] = nullptr;
+	}
+
+	idle_callback_count = 0;
+}
+
 #ifdef TOOLS_ENABLED
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	bool add_options = false;
