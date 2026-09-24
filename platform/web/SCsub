@@ -47,6 +47,8 @@ sys_env.AddJSLibraries([
     "js/libs/library_godot_webgl2.js",
     "js/libs/library_godot_debugger.js",
 ])
+if env.editor_build:
+    sys_env.AddJSLibraries(["js/libs/library_godot_editor.js"])
 sys_env.AddJSExterns([
     "js/libs/library_godot_webgl2.externs.js",
 ])

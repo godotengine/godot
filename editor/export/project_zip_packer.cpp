@@ -44,7 +44,7 @@ String ProjectZIPPacker::get_project_zip_safe_name() {
 	// In the project name, all invalid characters become an empty string so that a name
 	// like "Platformer 2: Godette's Revenge" becomes "platformer_2-_godette-s_revenge".
 	const String project_name = GLOBAL_GET("application/config/name");
-	const String project_name_safe = project_name.to_lower().replace_char(' ', '_');
+	const String project_name_safe = project_name.to_lower().validate_filename().replace_chars(" .", '_');
 	const String datetime_safe =
 			Time::get_singleton()->get_datetime_string_from_system(false, true).replace_char(' ', '_');
 	const String output_name = OS::get_singleton()->get_safe_dir_name(vformat("%s_%s.zip", project_name_safe, datetime_safe));
@@ -60,6 +60,24 @@ void ProjectZIPPacker::pack_project_zip(const String &p_path) {
 
 	zipFile zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
 	_zip_recursive(resource_path, base_path, zip);
+	zipClose(zip, nullptr);
+}
+
+void ProjectZIPPacker::pack_zip_absolute_path(const String &p_output_path, const String &p_source_absolute_path) {
+	ERR_FAIL_COND_MSG(!DirAccess::dir_exists_absolute(p_source_absolute_path), vformat("Path %s doesn't exist or is not a directory.", p_source_absolute_path));
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	String base_path = p_source_absolute_path.rstrip("/");
+	if (base_path.begins_with("res://")) {
+		// This allows to find the parent dir of res:// if needed
+		base_path = ProjectSettings::get_singleton()->globalize_path(base_path);
+	}
+	base_path = base_path.get_base_dir(); // This will force to include the root dir in the zip
+
+	zipFile zip = zipOpen2(p_output_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
+
+	_zip_recursive(p_source_absolute_path, base_path + "/", zip);
 	zipClose(zip, nullptr);
 }
 
