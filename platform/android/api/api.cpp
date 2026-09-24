@@ -56,6 +56,7 @@ void register_android_api() {
 void unregister_android_api() {
 #if !defined(ANDROID_ENABLED)
 	memdelete(java_class_wrapper);
+	java_class_wrapper = nullptr;
 #endif
 }
 
@@ -149,6 +150,11 @@ Ref<JavaObject> JavaClassWrapper::create_proxy(const Object *p_object, const Pac
 
 JavaClassWrapper::JavaClassWrapper() {
 	singleton = this;
+}
+
+JavaClassWrapper::~JavaClassWrapper() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }
 
 #endif

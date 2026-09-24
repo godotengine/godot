@@ -174,6 +174,8 @@ uint64_t RendererCompositorRD::frame = 1;
 void RendererCompositorRD::finalize() {
 	texture_storage->_tex_blit_shader_free();
 	memdelete(scene);
+	scene = nullptr;
+	RendererSceneRenderRD::reset_singleton();
 	memdelete(canvas);
 	memdelete(fog);
 	memdelete(particles_storage);

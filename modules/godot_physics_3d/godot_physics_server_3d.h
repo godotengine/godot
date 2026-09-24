@@ -389,5 +389,5 @@ public:
 	int get_process_info(PS3DE::ProcessInfo p_info) override;
 
 	GodotPhysicsServer3D(bool p_using_threads = false);
-	~GodotPhysicsServer3D() {}
+	~GodotPhysicsServer3D();
 };

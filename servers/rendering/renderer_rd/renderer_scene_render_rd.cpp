@@ -1770,6 +1770,10 @@ void RendererSceneRenderRD::sdfgi_set_debug_probe_select(const Vector3 &p_positi
 
 RendererSceneRenderRD *RendererSceneRenderRD::singleton = nullptr;
 
+void RendererSceneRenderRD::reset_singleton() {
+	singleton = nullptr;
+}
+
 bool RendererSceneRenderRD::is_vrs_supported() const {
 	return RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS);
 }

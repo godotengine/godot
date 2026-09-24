@@ -305,6 +305,7 @@ public:
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	AnimationNodeStateMachineEditor();
+	~AnimationNodeStateMachineEditor();
 };
 
 class EditorAnimationMultiTransitionEdit : public RefCounted {
