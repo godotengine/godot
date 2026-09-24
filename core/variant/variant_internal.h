@@ -136,88 +136,6 @@ public:
 		}
 	}
 
-	// Atomic types.
-	_FORCE_INLINE_ static bool *get_bool(Variant *p_variant) { return &p_variant->_data._bool; }
-	_FORCE_INLINE_ static const bool *get_bool(const Variant *p_variant) { return &p_variant->_data._bool; }
-	_FORCE_INLINE_ static int64_t *get_int(Variant *p_variant) { return &p_variant->_data._int; }
-	_FORCE_INLINE_ static const int64_t *get_int(const Variant *p_variant) { return &p_variant->_data._int; }
-	_FORCE_INLINE_ static double *get_float(Variant *p_variant) { return &p_variant->_data._float; }
-	_FORCE_INLINE_ static const double *get_float(const Variant *p_variant) { return &p_variant->_data._float; }
-	_FORCE_INLINE_ static String *get_string(Variant *p_variant) { return reinterpret_cast<String *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const String *get_string(const Variant *p_variant) { return reinterpret_cast<const String *>(p_variant->_data._mem); }
-
-	// Math types.
-	_FORCE_INLINE_ static Vector2 *get_vector2(Variant *p_variant) { return reinterpret_cast<Vector2 *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Vector2 *get_vector2(const Variant *p_variant) { return reinterpret_cast<const Vector2 *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Vector2i *get_vector2i(Variant *p_variant) { return reinterpret_cast<Vector2i *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Vector2i *get_vector2i(const Variant *p_variant) { return reinterpret_cast<const Vector2i *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Rect2 *get_rect2(Variant *p_variant) { return reinterpret_cast<Rect2 *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Rect2 *get_rect2(const Variant *p_variant) { return reinterpret_cast<const Rect2 *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Rect2i *get_rect2i(Variant *p_variant) { return reinterpret_cast<Rect2i *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Rect2i *get_rect2i(const Variant *p_variant) { return reinterpret_cast<const Rect2i *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Vector3 *get_vector3(Variant *p_variant) { return reinterpret_cast<Vector3 *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Vector3 *get_vector3(const Variant *p_variant) { return reinterpret_cast<const Vector3 *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Vector3i *get_vector3i(Variant *p_variant) { return reinterpret_cast<Vector3i *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Vector3i *get_vector3i(const Variant *p_variant) { return reinterpret_cast<const Vector3i *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Vector4 *get_vector4(Variant *p_variant) { return reinterpret_cast<Vector4 *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Vector4 *get_vector4(const Variant *p_variant) { return reinterpret_cast<const Vector4 *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Vector4i *get_vector4i(Variant *p_variant) { return reinterpret_cast<Vector4i *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Vector4i *get_vector4i(const Variant *p_variant) { return reinterpret_cast<const Vector4i *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Transform2D *get_transform2d(Variant *p_variant) { return p_variant->_data._transform2d; }
-	_FORCE_INLINE_ static const Transform2D *get_transform2d(const Variant *p_variant) { return p_variant->_data._transform2d; }
-	_FORCE_INLINE_ static Plane *get_plane(Variant *p_variant) { return reinterpret_cast<Plane *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Plane *get_plane(const Variant *p_variant) { return reinterpret_cast<const Plane *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Quaternion *get_quaternion(Variant *p_variant) { return reinterpret_cast<Quaternion *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Quaternion *get_quaternion(const Variant *p_variant) { return reinterpret_cast<const Quaternion *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static ::AABB *get_aabb(Variant *p_variant) { return p_variant->_data._aabb; }
-	_FORCE_INLINE_ static const ::AABB *get_aabb(const Variant *p_variant) { return p_variant->_data._aabb; }
-	_FORCE_INLINE_ static Basis *get_basis(Variant *p_variant) { return p_variant->_data._basis; }
-	_FORCE_INLINE_ static const Basis *get_basis(const Variant *p_variant) { return p_variant->_data._basis; }
-	_FORCE_INLINE_ static Transform3D *get_transform(Variant *p_variant) { return p_variant->_data._transform3d; }
-	_FORCE_INLINE_ static const Transform3D *get_transform(const Variant *p_variant) { return p_variant->_data._transform3d; }
-	_FORCE_INLINE_ static Projection *get_projection(Variant *p_variant) { return p_variant->_data._projection; }
-	_FORCE_INLINE_ static const Projection *get_projection(const Variant *p_variant) { return p_variant->_data._projection; }
-
-	// Misc types.
-	_FORCE_INLINE_ static Color *get_color(Variant *p_variant) { return reinterpret_cast<Color *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Color *get_color(const Variant *p_variant) { return reinterpret_cast<const Color *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static StringName *get_string_name(Variant *p_variant) { return reinterpret_cast<StringName *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const StringName *get_string_name(const Variant *p_variant) { return reinterpret_cast<const StringName *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static NodePath *get_node_path(Variant *p_variant) { return reinterpret_cast<NodePath *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const NodePath *get_node_path(const Variant *p_variant) { return reinterpret_cast<const NodePath *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static ::RID *get_rid(Variant *p_variant) { return reinterpret_cast<::RID *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const ::RID *get_rid(const Variant *p_variant) { return reinterpret_cast<const ::RID *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Callable *get_callable(Variant *p_variant) { return reinterpret_cast<Callable *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Callable *get_callable(const Variant *p_variant) { return reinterpret_cast<const Callable *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Signal *get_signal(Variant *p_variant) { return reinterpret_cast<Signal *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Signal *get_signal(const Variant *p_variant) { return reinterpret_cast<const Signal *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Dictionary *get_dictionary(Variant *p_variant) { return reinterpret_cast<Dictionary *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Dictionary *get_dictionary(const Variant *p_variant) { return reinterpret_cast<const Dictionary *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static Array *get_array(Variant *p_variant) { return reinterpret_cast<Array *>(p_variant->_data._mem); }
-	_FORCE_INLINE_ static const Array *get_array(const Variant *p_variant) { return reinterpret_cast<const Array *>(p_variant->_data._mem); }
-
-	// Typed arrays.
-	_FORCE_INLINE_ static PackedByteArray *get_byte_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<uint8_t> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedByteArray *get_byte_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<uint8_t> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedInt32Array *get_int32_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<int32_t> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedInt32Array *get_int32_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<int32_t> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedInt64Array *get_int64_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<int64_t> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedInt64Array *get_int64_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<int64_t> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedFloat32Array *get_float32_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<float> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedFloat32Array *get_float32_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<float> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedFloat64Array *get_float64_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<double> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedFloat64Array *get_float64_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<double> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedStringArray *get_string_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<String> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedStringArray *get_string_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<String> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedVector2Array *get_vector2_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<Vector2> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedVector2Array *get_vector2_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<Vector2> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedVector3Array *get_vector3_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<Vector3> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedVector3Array *get_vector3_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<Vector3> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedColorArray *get_color_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<Color> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedColorArray *get_color_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<Color> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static PackedVector4Array *get_vector4_array(Variant *p_variant) { return &static_cast<Variant::PackedArrayRef<Vector4> *>(p_variant->_data.packed_array)->array; }
-	_FORCE_INLINE_ static const PackedVector4Array *get_vector4_array(const Variant *p_variant) { return &static_cast<const Variant::PackedArrayRef<Vector4> *>(p_variant->_data.packed_array)->array; }
-
 	_FORCE_INLINE_ static Object **get_object(Variant *p_variant) { return (Object **)&p_variant->_get_obj().obj; }
 	_FORCE_INLINE_ static const Object **get_object(const Variant *p_variant) { return (const Object **)&p_variant->_get_obj().obj; }
 
@@ -380,176 +298,11 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ static void *get_opaque_pointer(Variant *p_variant) {
-		switch (p_variant->type) {
-			case Variant::NIL:
-				return nullptr;
-			case Variant::BOOL:
-				return get_bool(p_variant);
-			case Variant::INT:
-				return get_int(p_variant);
-			case Variant::FLOAT:
-				return get_float(p_variant);
-			case Variant::STRING:
-				return get_string(p_variant);
-			case Variant::VECTOR2:
-				return get_vector2(p_variant);
-			case Variant::VECTOR2I:
-				return get_vector2i(p_variant);
-			case Variant::VECTOR3:
-				return get_vector3(p_variant);
-			case Variant::VECTOR3I:
-				return get_vector3i(p_variant);
-			case Variant::VECTOR4:
-				return get_vector4(p_variant);
-			case Variant::VECTOR4I:
-				return get_vector4i(p_variant);
-			case Variant::RECT2:
-				return get_rect2(p_variant);
-			case Variant::RECT2I:
-				return get_rect2i(p_variant);
-			case Variant::TRANSFORM3D:
-				return get_transform(p_variant);
-			case Variant::PROJECTION:
-				return get_projection(p_variant);
-			case Variant::TRANSFORM2D:
-				return get_transform2d(p_variant);
-			case Variant::QUATERNION:
-				return get_quaternion(p_variant);
-			case Variant::PLANE:
-				return get_plane(p_variant);
-			case Variant::BASIS:
-				return get_basis(p_variant);
-			case Variant::AABB:
-				return get_aabb(p_variant);
-			case Variant::COLOR:
-				return get_color(p_variant);
-			case Variant::STRING_NAME:
-				return get_string_name(p_variant);
-			case Variant::NODE_PATH:
-				return get_node_path(p_variant);
-			case Variant::RID:
-				return get_rid(p_variant);
-			case Variant::CALLABLE:
-				return get_callable(p_variant);
-			case Variant::SIGNAL:
-				return get_signal(p_variant);
-			case Variant::DICTIONARY:
-				return get_dictionary(p_variant);
-			case Variant::ARRAY:
-				return get_array(p_variant);
-			case Variant::PACKED_BYTE_ARRAY:
-				return get_byte_array(p_variant);
-			case Variant::PACKED_INT32_ARRAY:
-				return get_int32_array(p_variant);
-			case Variant::PACKED_INT64_ARRAY:
-				return get_int64_array(p_variant);
-			case Variant::PACKED_FLOAT32_ARRAY:
-				return get_float32_array(p_variant);
-			case Variant::PACKED_FLOAT64_ARRAY:
-				return get_float64_array(p_variant);
-			case Variant::PACKED_STRING_ARRAY:
-				return get_string_array(p_variant);
-			case Variant::PACKED_VECTOR2_ARRAY:
-				return get_vector2_array(p_variant);
-			case Variant::PACKED_VECTOR3_ARRAY:
-				return get_vector3_array(p_variant);
-			case Variant::PACKED_COLOR_ARRAY:
-				return get_color_array(p_variant);
-			case Variant::PACKED_VECTOR4_ARRAY:
-				return get_vector4_array(p_variant);
-			case Variant::OBJECT:
-				return get_object(p_variant);
-			case Variant::VARIANT_MAX:
-				ERR_FAIL_V(nullptr);
-		}
-		ERR_FAIL_V(nullptr);
-	}
+	static void *get_opaque_pointer(Variant *p_variant);
 
-	_FORCE_INLINE_ static const void *get_opaque_pointer(const Variant *p_variant) {
-		switch (p_variant->type) {
-			case Variant::NIL:
-				return nullptr;
-			case Variant::BOOL:
-				return get_bool(p_variant);
-			case Variant::INT:
-				return get_int(p_variant);
-			case Variant::FLOAT:
-				return get_float(p_variant);
-			case Variant::STRING:
-				return get_string(p_variant);
-			case Variant::VECTOR2:
-				return get_vector2(p_variant);
-			case Variant::VECTOR2I:
-				return get_vector2i(p_variant);
-			case Variant::VECTOR3:
-				return get_vector3(p_variant);
-			case Variant::VECTOR3I:
-				return get_vector3i(p_variant);
-			case Variant::VECTOR4:
-				return get_vector4(p_variant);
-			case Variant::VECTOR4I:
-				return get_vector4i(p_variant);
-			case Variant::RECT2:
-				return get_rect2(p_variant);
-			case Variant::RECT2I:
-				return get_rect2i(p_variant);
-			case Variant::TRANSFORM3D:
-				return get_transform(p_variant);
-			case Variant::PROJECTION:
-				return get_projection(p_variant);
-			case Variant::TRANSFORM2D:
-				return get_transform2d(p_variant);
-			case Variant::QUATERNION:
-				return get_quaternion(p_variant);
-			case Variant::PLANE:
-				return get_plane(p_variant);
-			case Variant::BASIS:
-				return get_basis(p_variant);
-			case Variant::AABB:
-				return get_aabb(p_variant);
-			case Variant::COLOR:
-				return get_color(p_variant);
-			case Variant::STRING_NAME:
-				return get_string_name(p_variant);
-			case Variant::NODE_PATH:
-				return get_node_path(p_variant);
-			case Variant::RID:
-				return get_rid(p_variant);
-			case Variant::CALLABLE:
-				return get_callable(p_variant);
-			case Variant::SIGNAL:
-				return get_signal(p_variant);
-			case Variant::DICTIONARY:
-				return get_dictionary(p_variant);
-			case Variant::ARRAY:
-				return get_array(p_variant);
-			case Variant::PACKED_BYTE_ARRAY:
-				return get_byte_array(p_variant);
-			case Variant::PACKED_INT32_ARRAY:
-				return get_int32_array(p_variant);
-			case Variant::PACKED_INT64_ARRAY:
-				return get_int64_array(p_variant);
-			case Variant::PACKED_FLOAT32_ARRAY:
-				return get_float32_array(p_variant);
-			case Variant::PACKED_FLOAT64_ARRAY:
-				return get_float64_array(p_variant);
-			case Variant::PACKED_STRING_ARRAY:
-				return get_string_array(p_variant);
-			case Variant::PACKED_VECTOR2_ARRAY:
-				return get_vector2_array(p_variant);
-			case Variant::PACKED_VECTOR3_ARRAY:
-				return get_vector3_array(p_variant);
-			case Variant::PACKED_COLOR_ARRAY:
-				return get_color_array(p_variant);
-			case Variant::PACKED_VECTOR4_ARRAY:
-				return get_vector4_array(p_variant);
-			case Variant::OBJECT:
-				return get_object(p_variant);
-			case Variant::VARIANT_MAX:
-				ERR_FAIL_V(nullptr);
-		}
-		ERR_FAIL_V(nullptr);
+	static const void *get_opaque_pointer(const Variant *p_variant) {
+		// Functionally equivalent to the non-const version, so just use that.
+		return get_opaque_pointer(const_cast<Variant *>(p_variant));
 	}
 
 	// Used internally in GDExtension and Godot's binding system when converting to Variant
@@ -601,100 +354,6 @@ struct _VariantInternalAccessorPackedArrayRef {
 	static _FORCE_INLINE_ Vector<T> &get(Variant *p_variant) { return static_cast<Variant::PackedArrayRef<T> *>(p_variant->_data.packed_array)->array; }
 	static _FORCE_INLINE_ const Vector<T> &get(const Variant *p_variant) { return static_cast<const Variant::PackedArrayRef<T> *>(p_variant->_data.packed_array)->array; }
 	static _FORCE_INLINE_ void set(Variant *r_variant, Vector<T> p_value) { static_cast<Variant::PackedArrayRef<T> *>(r_variant->_data.packed_array)->array = std::move(p_value); }
-};
-
-template <typename T>
-struct VariantInternalAccessor<T *> {
-	static _FORCE_INLINE_ T *get(const Variant *p_variant) { return const_cast<T *>(static_cast<const T *>(*VariantInternal::get_object(p_variant))); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const T *p_value) { VariantInternal::object_assign(r_variant, p_value); }
-};
-
-template <typename T>
-struct VariantInternalAccessor<const T *> {
-	static _FORCE_INLINE_ const T *get(const Variant *p_variant) { return static_cast<const T *>(*VariantInternal::get_object(p_variant)); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const T *p_value) { VariantInternal::object_assign(r_variant, p_value); }
-};
-
-template <>
-struct VariantInternalAccessor<IPAddress> {
-	static _FORCE_INLINE_ IPAddress get(const Variant *p_variant) { return IPAddress(*VariantInternal::get_string(p_variant)); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, IPAddress p_value) { *VariantInternal::get_string(r_variant) = String(p_value); }
-};
-
-template <typename T>
-struct VariantInternalAccessor<TypedArray<T>> {
-	static _FORCE_INLINE_ TypedArray<T> get(const Variant *p_variant) { return TypedArray<T>(*VariantInternal::get_array(p_variant)); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const TypedArray<T> &p_array) { *VariantInternal::get_array(r_variant) = Array(p_array); }
-};
-
-template <typename K, typename V>
-struct VariantInternalAccessor<TypedDictionary<K, V>> {
-	static _FORCE_INLINE_ TypedDictionary<K, V> get(const Variant *p_variant) { return TypedDictionary<K, V>(*VariantInternal::get_dictionary(p_variant)); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const TypedDictionary<K, V> &p_dictionary) { *VariantInternal::get_dictionary(r_variant) = Dictionary(p_dictionary); }
-};
-
-template <>
-struct VariantInternalAccessor<Object *> {
-	static _FORCE_INLINE_ Object *get(const Variant *p_variant) { return const_cast<Object *>(*VariantInternal::get_object(p_variant)); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const Object *p_value) { VariantInternal::object_assign(r_variant, p_value); }
-};
-
-template <typename T>
-struct VariantInternalAccessor<Ref<T>> {
-	static _FORCE_INLINE_ Ref<T> get(const Variant *p_variant) { return Ref<T>(static_cast<T *>(const_cast<Object *>(*VariantInternal::get_object(p_variant)))); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const Ref<T> &p_ref) { VariantInternal::object_assign(r_variant, p_ref); }
-};
-
-template <class T>
-struct VariantInternalAccessor<RequiredParam<T>> {
-	static _FORCE_INLINE_ RequiredParam<T> get(const Variant *p_variant) { return RequiredParam<T>(Object::cast_to<T>(const_cast<Object *>(*VariantInternal::get_object(p_variant)))); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const RequiredParam<T> &p_value) { VariantInternal::object_assign(r_variant, p_value.ptr()); }
-};
-
-template <class T>
-struct VariantInternalAccessor<const RequiredParam<T> &> {
-	static _FORCE_INLINE_ RequiredParam<T> get(const Variant *p_variant) { return RequiredParam<T>(Object::cast_to<T>(*VariantInternal::get_object(p_variant))); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const RequiredParam<T> &p_value) { VariantInternal::object_assign(r_variant, p_value.ptr()); }
-};
-
-template <class T>
-struct VariantInternalAccessor<RequiredResult<T>> {
-	static _FORCE_INLINE_ RequiredResult<T> get(const Variant *p_variant) { return RequiredResult<T>(Object::cast_to<T>(const_cast<Object *>(*VariantInternal::get_object(p_variant)))); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const RequiredResult<T> &p_value) { VariantInternal::object_assign(r_variant, p_value.ptr()); }
-};
-
-template <class T>
-struct VariantInternalAccessor<const RequiredResult<T> &> {
-	static _FORCE_INLINE_ RequiredResult<T> get(const Variant *p_variant) { return RequiredResult<T>(Object::cast_to<T>(*VariantInternal::get_object(p_variant))); }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const RequiredResult<T> &p_value) { VariantInternal::object_assign(r_variant, p_value.ptr()); }
-};
-
-template <>
-struct VariantInternalAccessor<Variant> {
-	static _FORCE_INLINE_ Variant &get(Variant *p_variant) { return *p_variant; }
-	static _FORCE_INLINE_ const Variant &get(const Variant *p_variant) { return *p_variant; }
-	static _FORCE_INLINE_ void set(Variant *r_variant, const Variant &p_value) { *r_variant = p_value; }
-};
-
-template <>
-struct VariantInternalAccessor<Vector<Variant>> {
-	static _FORCE_INLINE_ Vector<Variant> get(const Variant *p_variant) {
-		Vector<Variant> ret;
-		int s = VariantInternal::get_array(p_variant)->size();
-		ret.resize(s);
-		for (int i = 0; i < s; i++) {
-			ret.write[i] = VariantInternal::get_array(p_variant)->get(i);
-		}
-
-		return ret;
-	}
-	static _FORCE_INLINE_ void set(Variant *r_variant, const Vector<Variant> &p_value) {
-		int s = p_value.size();
-		VariantInternal::get_array(r_variant)->resize(s);
-		for (int i = 0; i < s; i++) {
-			VariantInternal::get_array(r_variant)->set(i, p_value[i]);
-		}
-	}
 };
 
 template <>
@@ -810,6 +469,100 @@ struct VariantInternalAccessor<PackedColorArray> : _VariantInternalAccessorPacke
 
 template <>
 struct VariantInternalAccessor<PackedVector4Array> : _VariantInternalAccessorPackedArrayRef<Vector4> {};
+
+template <typename T>
+struct VariantInternalAccessor<T *> {
+	static _FORCE_INLINE_ T *get(const Variant *p_variant) { return const_cast<T *>(static_cast<const T *>(*VariantInternal::get_object(p_variant))); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const T *p_value) { VariantInternal::object_assign(r_variant, p_value); }
+};
+
+template <typename T>
+struct VariantInternalAccessor<const T *> {
+	static _FORCE_INLINE_ const T *get(const Variant *p_variant) { return static_cast<const T *>(*VariantInternal::get_object(p_variant)); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const T *p_value) { VariantInternal::object_assign(r_variant, p_value); }
+};
+
+template <>
+struct VariantInternalAccessor<IPAddress> {
+	static _FORCE_INLINE_ IPAddress get(const Variant *p_variant) { return IPAddress(VariantInternalAccessor<String>::get(p_variant)); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, IPAddress p_value) { VariantInternalAccessor<String>::set(r_variant, String(p_value)); }
+};
+
+template <typename T>
+struct VariantInternalAccessor<TypedArray<T>> {
+	static _FORCE_INLINE_ TypedArray<T> get(const Variant *p_variant) { return TypedArray<T>(VariantInternalAccessor<Array>::get(p_variant)); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const TypedArray<T> &p_array) { VariantInternalAccessor<Array>::set(r_variant, p_array); }
+};
+
+template <typename K, typename V>
+struct VariantInternalAccessor<TypedDictionary<K, V>> {
+	static _FORCE_INLINE_ TypedDictionary<K, V> get(const Variant *p_variant) { return TypedDictionary<K, V>(VariantInternalAccessor<Dictionary>::get(p_variant)); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const TypedDictionary<K, V> &p_dictionary) { VariantInternalAccessor<Dictionary>::set(r_variant, p_dictionary); }
+};
+
+template <>
+struct VariantInternalAccessor<Object *> {
+	static _FORCE_INLINE_ Object *get(const Variant *p_variant) { return const_cast<Object *>(*VariantInternal::get_object(p_variant)); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const Object *p_value) { VariantInternal::object_assign(r_variant, p_value); }
+};
+
+template <typename T>
+struct VariantInternalAccessor<Ref<T>> {
+	static _FORCE_INLINE_ Ref<T> get(const Variant *p_variant) { return Ref<T>(static_cast<T *>(const_cast<Object *>(*VariantInternal::get_object(p_variant)))); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const Ref<T> &p_ref) { VariantInternal::object_assign(r_variant, p_ref); }
+};
+
+template <class T>
+struct VariantInternalAccessor<RequiredParam<T>> {
+	static _FORCE_INLINE_ RequiredParam<T> get(const Variant *p_variant) { return RequiredParam<T>(Object::cast_to<T>(const_cast<Object *>(*VariantInternal::get_object(p_variant)))); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const RequiredParam<T> &p_value) { VariantInternal::object_assign(r_variant, p_value.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<const RequiredParam<T> &> {
+	static _FORCE_INLINE_ RequiredParam<T> get(const Variant *p_variant) { return RequiredParam<T>(Object::cast_to<T>(*VariantInternal::get_object(p_variant))); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const RequiredParam<T> &p_value) { VariantInternal::object_assign(r_variant, p_value.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<RequiredResult<T>> {
+	static _FORCE_INLINE_ RequiredResult<T> get(const Variant *p_variant) { return RequiredResult<T>(Object::cast_to<T>(const_cast<Object *>(*VariantInternal::get_object(p_variant)))); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const RequiredResult<T> &p_value) { VariantInternal::object_assign(r_variant, p_value.ptr()); }
+};
+
+template <class T>
+struct VariantInternalAccessor<const RequiredResult<T> &> {
+	static _FORCE_INLINE_ RequiredResult<T> get(const Variant *p_variant) { return RequiredResult<T>(Object::cast_to<T>(*VariantInternal::get_object(p_variant))); }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const RequiredResult<T> &p_value) { VariantInternal::object_assign(r_variant, p_value.ptr()); }
+};
+
+template <>
+struct VariantInternalAccessor<Variant> {
+	static _FORCE_INLINE_ Variant &get(Variant *p_variant) { return *p_variant; }
+	static _FORCE_INLINE_ const Variant &get(const Variant *p_variant) { return *p_variant; }
+	static _FORCE_INLINE_ void set(Variant *r_variant, const Variant &p_value) { *r_variant = p_value; }
+};
+
+template <>
+struct VariantInternalAccessor<Vector<Variant>> {
+	static _FORCE_INLINE_ Vector<Variant> get(const Variant *p_variant) {
+		Vector<Variant> ret;
+		int s = VariantInternalAccessor<Array>::get(p_variant).size();
+		ret.resize(s);
+		for (int i = 0; i < s; i++) {
+			ret.write[i] = VariantInternalAccessor<Array>::get(p_variant).get(i);
+		}
+
+		return ret;
+	}
+	static _FORCE_INLINE_ void set(Variant *r_variant, const Vector<Variant> &p_value) {
+		int s = p_value.size();
+		VariantInternalAccessor<Array>::get(r_variant).resize(s);
+		for (int i = 0; i < s; i++) {
+			VariantInternalAccessor<Array>::get(r_variant).set(i, p_value[i]);
+		}
+	}
+};
 
 template <typename T, typename = std::void_t<>>
 struct IsVariantType : std::false_type {};
@@ -988,6 +741,92 @@ struct VariantTypeAdjust<Object *> {
 		*r_ret = (Object *)nullptr;
 	}
 };
+
+inline void *VariantInternal::get_opaque_pointer(Variant *p_variant) {
+	switch (p_variant->type) {
+		case Variant::NIL:
+			return nullptr;
+		case Variant::BOOL:
+			return &VariantInternalAccessor<bool>::get(p_variant);
+		case Variant::INT:
+			return &VariantInternalAccessor<int64_t>::get(p_variant);
+		case Variant::FLOAT:
+			return &VariantInternalAccessor<double>::get(p_variant);
+		case Variant::STRING:
+			return &VariantInternalAccessor<String>::get(p_variant);
+		case Variant::VECTOR2:
+			return &VariantInternalAccessor<Vector2>::get(p_variant);
+		case Variant::VECTOR2I:
+			return &VariantInternalAccessor<Vector2i>::get(p_variant);
+		case Variant::VECTOR3:
+			return &VariantInternalAccessor<Vector3>::get(p_variant);
+		case Variant::VECTOR3I:
+			return &VariantInternalAccessor<Vector3i>::get(p_variant);
+		case Variant::VECTOR4:
+			return &VariantInternalAccessor<Vector4>::get(p_variant);
+		case Variant::VECTOR4I:
+			return &VariantInternalAccessor<Vector4i>::get(p_variant);
+		case Variant::RECT2:
+			return &VariantInternalAccessor<Rect2>::get(p_variant);
+		case Variant::RECT2I:
+			return &VariantInternalAccessor<Rect2i>::get(p_variant);
+		case Variant::TRANSFORM3D:
+			return &VariantInternalAccessor<Transform3D>::get(p_variant);
+		case Variant::PROJECTION:
+			return &VariantInternalAccessor<Projection>::get(p_variant);
+		case Variant::TRANSFORM2D:
+			return &VariantInternalAccessor<Transform2D>::get(p_variant);
+		case Variant::QUATERNION:
+			return &VariantInternalAccessor<Quaternion>::get(p_variant);
+		case Variant::PLANE:
+			return &VariantInternalAccessor<Plane>::get(p_variant);
+		case Variant::BASIS:
+			return &VariantInternalAccessor<Basis>::get(p_variant);
+		case Variant::AABB:
+			return &VariantInternalAccessor<AABB>::get(p_variant);
+		case Variant::COLOR:
+			return &VariantInternalAccessor<Color>::get(p_variant);
+		case Variant::STRING_NAME:
+			return &VariantInternalAccessor<StringName>::get(p_variant);
+		case Variant::NODE_PATH:
+			return &VariantInternalAccessor<NodePath>::get(p_variant);
+		case Variant::RID:
+			return &VariantInternalAccessor<RID>::get(p_variant);
+		case Variant::CALLABLE:
+			return &VariantInternalAccessor<Callable>::get(p_variant);
+		case Variant::SIGNAL:
+			return &VariantInternalAccessor<Signal>::get(p_variant);
+		case Variant::DICTIONARY:
+			return &VariantInternalAccessor<Dictionary>::get(p_variant);
+		case Variant::ARRAY:
+			return &VariantInternalAccessor<Array>::get(p_variant);
+		case Variant::PACKED_BYTE_ARRAY:
+			return &VariantInternalAccessor<PackedByteArray>::get(p_variant);
+		case Variant::PACKED_INT32_ARRAY:
+			return &VariantInternalAccessor<PackedInt32Array>::get(p_variant);
+		case Variant::PACKED_INT64_ARRAY:
+			return &VariantInternalAccessor<PackedInt64Array>::get(p_variant);
+		case Variant::PACKED_FLOAT32_ARRAY:
+			return &VariantInternalAccessor<PackedFloat32Array>::get(p_variant);
+		case Variant::PACKED_FLOAT64_ARRAY:
+			return &VariantInternalAccessor<PackedFloat64Array>::get(p_variant);
+		case Variant::PACKED_STRING_ARRAY:
+			return &VariantInternalAccessor<PackedStringArray>::get(p_variant);
+		case Variant::PACKED_VECTOR2_ARRAY:
+			return &VariantInternalAccessor<PackedVector2Array>::get(p_variant);
+		case Variant::PACKED_VECTOR3_ARRAY:
+			return &VariantInternalAccessor<PackedVector3Array>::get(p_variant);
+		case Variant::PACKED_COLOR_ARRAY:
+			return &VariantInternalAccessor<PackedColorArray>::get(p_variant);
+		case Variant::PACKED_VECTOR4_ARRAY:
+			return &VariantInternalAccessor<PackedVector4Array>::get(p_variant);
+		case Variant::OBJECT:
+			return get_object(p_variant);
+		case Variant::VARIANT_MAX:
+			ERR_FAIL_V(nullptr);
+	}
+	ERR_FAIL_V(nullptr);
+}
 
 // GDExtension helpers.
 
