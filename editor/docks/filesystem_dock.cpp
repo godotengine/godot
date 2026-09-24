@@ -4042,6 +4042,10 @@ bool FileSystemDock::_get_imported_files(const String &p_path, String &r_extensi
 	Ref<DirAccess> da = DirAccess::open(p_path);
 	ERR_FAIL_COND_V(da.is_null(), false);
 
+	if (da->file_exists(".gdignore")) {
+		return true;
+	}
+
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (!n.is_empty()) {
