@@ -1033,7 +1033,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("increment_highlight", "TabContainer", icons["scroll_button_right_hl"]);
 	theme->set_icon("decrement", "TabContainer", icons["scroll_button_left"]);
 	theme->set_icon("decrement_highlight", "TabContainer", icons["scroll_button_left_hl"]);
-	theme->set_icon("decrement_highlight", "TabContainer", icons["scroll_button_left_hl"]);
 	theme->set_icon("increment_vertical", "TabContainer", icons["scroll_button_down"]);
 	theme->set_icon("increment_vertical_highlight", "TabContainer", icons["scroll_button_down_hl"]);
 	theme->set_icon("decrement_vertical", "TabContainer", icons["scroll_button_up"]);
