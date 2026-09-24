@@ -4018,6 +4018,7 @@ DisplayServerMacOS::~DisplayServerMacOS() {
 		HashMap<DisplayServerEnums::WindowID, WindowData>::Iterator F = E;
 		++E;
 		[F->value.window_object setContentView:nil];
+		[F->value.window_object setDelegate:nil];
 		[F->value.window_object close];
 	}
 
