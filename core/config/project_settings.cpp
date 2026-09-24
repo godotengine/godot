@@ -54,6 +54,27 @@
 #include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 #endif // TOOLS_ENABLED
 
+GlobalGetCachedRegistry *GlobalGetCachedRegistry::first = nullptr;
+SpinLock GlobalGetCachedRegistry::spin_lock;
+
+GlobalGetCachedRegistry::GlobalGetCachedRegistry(CleanupCallback p_cleanup_callback, void *p_userdata) {
+	cleanup_callback = p_cleanup_callback;
+	userdata = p_userdata;
+
+	spin_lock.lock();
+	next = first;
+	first = this;
+	spin_lock.unlock();
+}
+
+void GlobalGetCachedRegistry::cleanup() {
+	spin_lock.lock();
+	for (GlobalGetCachedRegistry *registry = first; registry; registry = registry->next) {
+		registry->cleanup_callback(registry->userdata);
+	}
+	spin_lock.unlock();
+}
+
 ProjectSettings *ProjectSettings::get_singleton() {
 	return singleton;
 }
