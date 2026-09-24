@@ -31,7 +31,9 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/templates/fixed_vector.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/pair.h"
 
 #define ANIM_MIN_LENGTH 0.001
 
@@ -282,6 +284,29 @@ private:
 	_FORCE_INLINE_ Variant _cubic_interpolate_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 	_FORCE_INLINE_ real_t _cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
+
+	typedef Pair<int, double> FetchedKey; // Int is the key index, double is the key time adjusted for the loop mode.
+	static constexpr uint32_t MAX_FETCHED_KEYS = 4; // For cubic.
+
+	// Fetch looped key with wrapping or clamping.
+	template <typename T>
+	_FORCE_INLINE_ FetchedKey _fetch_key(const LocalVector<TKey<T>> &p_keys, int p_len, int p_index, bool p_loop_wrap) const;
+
+	// Fetch keys based on current time. If p_margin = 0, returns [from, to]. If p_margin = 1, returns [pre_from, from, to, post_to].
+	// The p_backward only effect with Discrete track in AnimationMixer's API.
+	template <typename T>
+	_FORCE_INLINE_ FixedVector<FetchedKey, MAX_FETCHED_KEYS> _fetch_keys(const LocalVector<TKey<T>> &p_keys, int p_len, double p_time, bool p_loop_wrap, int p_margin, bool p_backward) const;
+
+	template <typename T>
+	_FORCE_INLINE_ double _get_interpolation_weighted_time(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_linear(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_linear_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_cubic(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_cubic_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, double p_time) const;
 
 	template <typename T>
 	_FORCE_INLINE_ T _interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;

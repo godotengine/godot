@@ -2516,6 +2516,74 @@ Variant Animation::_cubic_interpolate_angle_in_time(const Variant &p_pre_a, cons
 }
 
 template <typename T>
+Animation::FetchedKey Animation::_fetch_key(const LocalVector<TKey<T>> &p_keys, int p_len, int p_index, bool p_loop_wrap) const {
+	if (!p_loop_wrap || loop_mode == LOOP_NONE) {
+		// If clamped and trying to retrieve out of range, return the end key.
+		int index = CLAMP(p_index, 0, p_len - 1);
+		return FetchedKey(index, p_keys[index].time);
+	}
+	int index = Math::posmod(p_index, p_len);
+	int cycle = (p_index - index) / p_len; // Get cycle to calculate elapsed time and identify pingpong direction.
+	if (loop_mode == LOOP_LINEAR || cycle % 2 == 0) {
+		return FetchedKey(index, cycle * length + p_keys[index].time);
+	}
+	// If an array contains indices only, ping-pong can be interpreted as mirrored posmod.
+	index = p_len - 1 - index;
+	return FetchedKey(index, (cycle + 1) * length - p_keys[index].time);
+}
+
+template <typename T>
+FixedVector<Animation::FetchedKey, Animation::MAX_FETCHED_KEYS> Animation::_fetch_keys(const LocalVector<TKey<T>> &p_keys, int p_len, double p_time, bool p_loop_wrap, int p_margin, bool p_backward) const {
+	// The base key is "from", which is the key before the passed time
+	// (or the key after the time when retrieving keys backward for NEAREST/DISCRETE),
+	// and the other keys are fetched relative to the base key. Keys in the negative time are ignored.
+	int base_idx = p_backward ? MIN(_find(p_keys, p_time, true), p_len) : MIN(_find(p_keys, p_time), p_len - 1);
+	FixedVector<FetchedKey, MAX_FETCHED_KEYS> keys;
+	for (int i = -p_margin; i <= 1 + p_margin; i++) {
+		keys.push_back(_fetch_key(p_keys, p_len, p_backward ? base_idx - i : base_idx + i, p_loop_wrap));
+	}
+	return keys;
+}
+
+template <typename T>
+double Animation::_get_interpolation_weighted_time(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const {
+	double delta = p_key_1.second - p_key_0.second;
+	double from = p_time - p_key_0.second;
+	double weighted_time = 0.0;
+	if (!Math::is_zero_approx(delta)) {
+		weighted_time = from / delta;
+	}
+	real_t tr = p_keys[p_key_0.first].transition;
+	if (tr != 1.0) {
+		weighted_time = Math::ease(weighted_time, tr);
+	}
+	return weighted_time;
+}
+
+template <typename T>
+T Animation::_interpolate_linear(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const {
+	return _interpolate(p_keys[p_key_0.first].value, p_keys[p_key_1.first].value, p_time);
+}
+
+template <typename T>
+T Animation::_interpolate_linear_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const {
+	return _interpolate_angle(p_keys[p_key_0.first].value, p_keys[p_key_1.first].value, p_time);
+}
+
+template <typename T>
+T Animation::_interpolate_cubic(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, double p_time) const {
+	// The argument "m1" means minus 1. Based on that, 0 means "from" and 1 means "to".
+	return _cubic_interpolate_in_time(p_keys[p_key_m1.first].value, p_keys[p_key_0.first].value, p_keys[p_key_1.first].value, p_keys[p_key_2.first].value, p_time,
+			p_key_m1.second - p_key_0.second, p_key_1.second - p_key_0.second, p_key_2.second - p_key_0.second);
+}
+
+template <typename T>
+T Animation::_interpolate_cubic_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, double p_time) const {
+	return _cubic_interpolate_angle_in_time(p_keys[p_key_m1.first].value, p_keys[p_key_0.first].value, p_keys[p_key_1.first].value, p_keys[p_key_2.first].value, p_time,
+			p_key_m1.second - p_key_0.second, p_key_1.second - p_key_0.second, p_key_2.second - p_key_0.second);
+}
+
+template <typename T>
 T Animation::_interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward) const {
 	int len = _find(p_keys, length) + 1; // try to find last key (there may be more past the end)
 
@@ -2534,122 +2602,20 @@ T Animation::_interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, Int
 		return p_keys[0].value;
 	}
 
-	int idx = _find(p_keys, p_time, p_backward);
-
-	ERR_FAIL_COND_V(idx == -2, T());
-	int maxi = len - 1;
-	bool is_start_edge = p_backward ? idx >= len : idx == -1;
-	bool is_end_edge = p_backward ? idx == 0 : idx >= maxi;
-
-	real_t c = 0.0;
-	// Prepare for all cases of interpolation.
-	real_t delta = 0.0;
-	real_t from = 0.0;
-
-	int pre = -1;
-	int next = -1;
-	int post = -1;
-	real_t pre_t = 0.0;
-	real_t to_t = 0.0;
-	real_t post_t = 0.0;
-
-	bool use_cubic = p_interp == INTERPOLATION_CUBIC || p_interp == INTERPOLATION_CUBIC_ANGLE;
-
-	if (!p_loop_wrap || loop_mode == LOOP_NONE) {
-		if (is_start_edge) {
-			idx = p_backward ? maxi : 0;
-		}
-		next = CLAMP(idx + (p_backward ? -1 : 1), 0, maxi);
-		if (use_cubic) {
-			pre = CLAMP(idx + (p_backward ? 1 : -1), 0, maxi);
-			post = CLAMP(idx + (p_backward ? -2 : 2), 0, maxi);
-		}
-	} else if (loop_mode == LOOP_LINEAR) {
-		if (is_start_edge) {
-			idx = p_backward ? 0 : maxi;
-		}
-		next = Math::posmod(idx + (p_backward ? -1 : 1), len);
-		if (use_cubic) {
-			pre = Math::posmod(idx + (p_backward ? 1 : -1), len);
-			post = Math::posmod(idx + (p_backward ? -2 : 2), len);
-		}
-		if (is_start_edge) {
-			if (!p_backward) {
-				real_t endtime = (length - p_keys[idx].time);
-				if (endtime < 0) { // may be keys past the end
-					endtime = 0;
-				}
-				delta = endtime + p_keys[next].time;
-				from = endtime + p_time;
-			} else {
-				real_t endtime = p_keys[idx].time;
-				if (endtime > length) { // may be keys past the end
-					endtime = length;
-				}
-				delta = endtime + length - p_keys[next].time;
-				from = endtime + length - p_time;
-			}
-		} else if (is_end_edge) {
-			if (!p_backward) {
-				delta = (length - p_keys[idx].time) + p_keys[next].time;
-				from = p_time - p_keys[idx].time;
-			} else {
-				delta = p_keys[idx].time + (length - p_keys[next].time);
-				from = (length - p_time) - (length - p_keys[idx].time);
-			}
-		}
-	} else {
-		if (is_start_edge) {
-			idx = p_backward ? len : -1;
-		}
-		next = (int)Math::round(Math::pingpong((float)(idx + (p_backward ? -1 : 1)) + 0.5f, (float)len) - 0.5f);
-		if (use_cubic) {
-			pre = (int)Math::round(Math::pingpong((float)(idx + (p_backward ? 1 : -1)) + 0.5f, (float)len) - 0.5f);
-			post = (int)Math::round(Math::pingpong((float)(idx + (p_backward ? -2 : 2)) + 0.5f, (float)len) - 0.5f);
-		}
-		idx = (int)Math::round(Math::pingpong((float)idx + 0.5f, (float)len) - 0.5f);
-		if (is_start_edge) {
-			if (!p_backward) {
-				real_t endtime = p_keys[idx].time;
-				if (endtime < 0) { // may be keys past the end
-					endtime = 0;
-				}
-				delta = endtime + p_keys[next].time;
-				from = endtime + p_time;
-			} else {
-				real_t endtime = length - p_keys[idx].time;
-				if (endtime > length) { // may be keys past the end
-					endtime = length;
-				}
-				delta = endtime + length - p_keys[next].time;
-				from = endtime + length - p_time;
-			}
-		} else if (is_end_edge) {
-			if (!p_backward) {
-				delta = length * 2.0 - p_keys[idx].time - p_keys[next].time;
-				from = p_time - p_keys[idx].time;
-			} else {
-				delta = p_keys[idx].time + p_keys[next].time;
-				from = (length - p_time) - (length - p_keys[idx].time);
-			}
-		}
+	int margin = 0;
+	switch (p_interp) {
+		case INTERPOLATION_CUBIC:
+		case INTERPOLATION_CUBIC_ANGLE: {
+			margin = 1; // Based [from, to], so the result becomes [pre_from, from, to, post_to].
+		} break;
+		default: {
+			margin = 0; // Based [from, to].
+		} break;
 	}
-
-	if (!is_start_edge && !is_end_edge) {
-		if (!p_backward) {
-			delta = p_keys[next].time - p_keys[idx].time;
-			from = p_time - p_keys[idx].time;
-		} else {
-			delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
-			from = (length - p_time) - (length - p_keys[idx].time);
-		}
-	}
-
-	if (Math::is_zero_approx(delta)) {
-		c = 0;
-	} else {
-		c = from / delta;
-	}
+	// Backward only affects which key is picked by INTERPOLATION_NEAREST or UPDATE_DISCRETE. The other interpolations should be the same in both directions.
+	bool backward = p_backward && p_interp == INTERPOLATION_NEAREST;
+	FixedVector<FetchedKey, MAX_FETCHED_KEYS> keys = _fetch_keys(p_keys, len, p_time, p_loop_wrap, margin, backward);
+	int idx = keys[margin].first;
 
 	if (p_ok) {
 		*p_ok = true;
@@ -2661,57 +2627,23 @@ T Animation::_interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, Int
 		return p_keys[idx].value;
 	}
 
-	if (tr != 1.0) {
-		c = Math::ease(c, tr);
-	}
+	double weighted_time = _get_interpolation_weighted_time(p_keys, keys[margin], keys[margin + 1], p_time);
 
 	switch (p_interp) {
 		case INTERPOLATION_NEAREST: {
 			return p_keys[idx].value;
 		} break;
 		case INTERPOLATION_LINEAR: {
-			return _interpolate(p_keys[idx].value, p_keys[next].value, c);
+			return _interpolate_linear(p_keys, keys[0], keys[1], weighted_time);
 		} break;
 		case INTERPOLATION_LINEAR_ANGLE: {
-			return _interpolate_angle(p_keys[idx].value, p_keys[next].value, c);
+			return _interpolate_linear_angle(p_keys, keys[0], keys[1], weighted_time);
 		} break;
-		case INTERPOLATION_CUBIC:
+		case INTERPOLATION_CUBIC: {
+			return _interpolate_cubic(p_keys, keys[0], keys[1], keys[2], keys[3], weighted_time);
+		} break;
 		case INTERPOLATION_CUBIC_ANGLE: {
-			if (!p_loop_wrap || loop_mode == LOOP_NONE) {
-				pre_t = p_keys[pre].time - p_keys[idx].time;
-				to_t = p_keys[next].time - p_keys[idx].time;
-				post_t = p_keys[post].time - p_keys[idx].time;
-			} else if (loop_mode == LOOP_LINEAR) {
-				pre_t = pre > idx ? -length + p_keys[pre].time - p_keys[idx].time : p_keys[pre].time - p_keys[idx].time;
-				to_t = next < idx ? length + p_keys[next].time - p_keys[idx].time : p_keys[next].time - p_keys[idx].time;
-				post_t = next < idx || post <= idx ? length + p_keys[post].time - p_keys[idx].time : p_keys[post].time - p_keys[idx].time;
-			} else {
-				pre_t = p_keys[pre].time - p_keys[idx].time;
-				to_t = p_keys[next].time - p_keys[idx].time;
-				post_t = p_keys[post].time - p_keys[idx].time;
-
-				if ((pre > idx && idx == next && post < next) || (pre < idx && idx == next && post > next)) {
-					pre_t = p_keys[idx].time - p_keys[pre].time;
-				} else if (pre == idx) {
-					pre_t = idx < next ? -p_keys[idx].time * 2.0 : (length - p_keys[idx].time) * 2.0;
-				}
-
-				if (idx == next) {
-					to_t = pre < idx ? (length - p_keys[idx].time) * 2.0 : -p_keys[idx].time * 2.0;
-					post_t = p_keys[next].time - p_keys[post].time + to_t;
-				} else if (next == post) {
-					post_t = idx < next ? (length - p_keys[next].time) * 2.0 + to_t : -p_keys[next].time * 2.0 + to_t;
-				}
-			}
-
-			if (p_interp == INTERPOLATION_CUBIC_ANGLE) {
-				return _cubic_interpolate_angle_in_time(
-						p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
-						pre_t, to_t, post_t);
-			}
-			return _cubic_interpolate_in_time(
-					p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
-					pre_t, to_t, post_t);
+			return _interpolate_cubic_angle(p_keys, keys[0], keys[1], keys[2], keys[3], weighted_time);
 		} break;
 		default:
 			return p_keys[idx].value;

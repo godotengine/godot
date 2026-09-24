@@ -245,6 +245,7 @@
 			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated blend shape value at the given time (in seconds). The [param track_idx] must be the index of a blend shape track.
+				[b]Note:[/b] If [param backward] is [code]true[/code], the keys are retrieved on the reversed timeline. See also [method value_track_interpolate].
 			</description>
 		</method>
 		<method name="clear">
@@ -374,6 +375,7 @@
 			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated position value at the given time (in seconds). The [param track_idx] must be the index of a 3D position track.
+				[b]Note:[/b] If [param backward] is [code]true[/code], the keys are retrieved on the reversed timeline. See also [method value_track_interpolate].
 			</description>
 		</method>
 		<method name="remove_marker">
@@ -406,6 +408,7 @@
 			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated rotation value at the given time (in seconds). The [param track_idx] must be the index of a 3D rotation track.
+				[b]Note:[/b] If [param backward] is [code]true[/code], the keys are retrieved on the reversed timeline. See also [method value_track_interpolate].
 			</description>
 		</method>
 		<method name="scale_track_insert_key">
@@ -424,6 +427,7 @@
 			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated scale value at the given time (in seconds). The [param track_idx] must be the index of a 3D scale track.
+				[b]Note:[/b] If [param backward] is [code]true[/code], the keys are retrieved on the reversed timeline. See also [method value_track_interpolate].
 			</description>
 		</method>
 		<method name="set_marker_color">
@@ -666,7 +670,8 @@
 			<param index="2" name="backward" type="bool" default="false" />
 			<description>
 				Returns the interpolated value at the given time (in seconds). The [param track_idx] must be the index of a value track.
-				A [param backward] mainly affects the direction of key retrieval of the track with [constant UPDATE_DISCRETE] converted by [constant AnimationMixer.ANIMATION_CALLBACK_MODE_DISCRETE_FORCE_CONTINUOUS] to match the result with [method track_find_key].
+				If [param backward] is [code]true[/code], the keys are retrieved on the reversed timeline, so the base key is the key after [param time_sec]. This changes the result only for [constant UPDATE_DISCRETE] and [constant INTERPOLATION_NEAREST]; the other interpolation types give the same result as forward.
+				[b]Note:[/b] [AnimationMixer] always passes [code]false[/code] for continuous tracks with playback API.
 			</description>
 		</method>
 		<method name="value_track_set_update_mode">
