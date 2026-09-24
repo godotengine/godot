@@ -1495,7 +1495,7 @@ void GodotPhysicsServer3D::slider_joint_set_param(RID p_joint, PS3DE::SliderJoin
 real_t GodotPhysicsServer3D::slider_joint_get_param(RID p_joint, PS3DE::SliderJointParam p_param) const {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_CONE_TWIST, 0);
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_SLIDER, 0);
 	GodotSliderJoint3D *slider_joint = static_cast<GodotSliderJoint3D *>(joint);
 	return slider_joint->get_param(p_param);
 }
