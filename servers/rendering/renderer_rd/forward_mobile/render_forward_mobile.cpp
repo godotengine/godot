@@ -3690,4 +3690,7 @@ RenderForwardMobile::~RenderForwardMobile() {
 		RD::get_singleton()->free_rid(scene_state.lightmap_capture_buffer);
 		memdelete_arr(scene_state.lightmap_captures);
 	}
+
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }

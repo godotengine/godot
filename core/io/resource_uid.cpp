@@ -463,3 +463,9 @@ ResourceUID::ResourceUID() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 }
+
+ResourceUID::~ResourceUID() {
+	if (singleton == this) {
+		singleton = nullptr;
+	}
+}
