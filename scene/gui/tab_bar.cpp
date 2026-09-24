@@ -90,40 +90,31 @@ Size2 TabBar::get_minimum_size() const {
 
 	if (tab_sizing == TAB_SIZING_UNIFORM && visible_tabs_count > 0) {
 		int total_separation = (visible_tabs_count - 1) * theme_cache.tab_separation;
-		if (vertical) { /* VERTICAL */
-			ms.height = (primary_max * visible_tabs_count) + total_separation;
-		} else { /* HORIZONTAL */
-			ms.width = (primary_max * visible_tabs_count) + total_separation;
-		}
+		const int axis = vertical ? 1 : 0;
+		ms[axis] = (primary_max * visible_tabs_count) + total_separation;
 	}
 
 	if (clip_tabs) {
+		const int axis = vertical ? 1 : 0;
+		const int cross_axis = vertical ? 0 : 1;
 		const int buttons_primary = (get_tab_count() > 1 && theme_cache.decrement_icon.is_valid() && theme_cache.increment_icon.is_valid()) ? (vertical ? MAX(theme_cache.decrement_icon->get_height(), theme_cache.increment_icon->get_height()) : (theme_cache.decrement_icon->get_width() + theme_cache.increment_icon->get_width())) : 0;
 		const int popup_width = vertical ? _get_vertical_popup_button_min_size(this).width : 0;
 		int buttons_cross = 0;
-		if (vertical && get_tab_count() > 1 && theme_cache.decrement_vertical_icon.is_valid() && theme_cache.increment_vertical_icon.is_valid()) { /* VERTICAL */
+		if (vertical && get_tab_count() > 1 && theme_cache.decrement_vertical_icon.is_valid() && theme_cache.increment_vertical_icon.is_valid()) {
 			buttons_cross = theme_cache.decrement_vertical_icon->get_width() + theme_cache.increment_vertical_icon->get_width();
 		}
 
 		Size2 clipped_ms;
-		if (vertical) { /* VERTICAL */
-			clipped_ms.width = MAX(cross_max, popup_width + buttons_cross);
-			clipped_ms.height = primary_max + buttons_primary;
-		} else { /* HORIZONTAL */
-			clipped_ms.width = primary_max + buttons_primary;
-			clipped_ms.height = cross_max;
-		}
+		clipped_ms[cross_axis] = MAX(cross_max, popup_width + buttons_cross);
+		clipped_ms[axis] = primary_max + buttons_primary;
 
 		return clipped_ms;
 	}
 
-	if (vertical) { /* VERTICAL */
-		ms.width = MAX(cross_max, (int)_get_vertical_popup_button_min_size(this).width);
-		ms.height = primary_sum + (buttons_visible ? _get_reserved_vertical_buttons_row_height() : 0);
-	} else { /* HORIZONTAL */
-		ms.width = primary_sum;
-		ms.height = cross_max;
-	}
+	const int axis = vertical ? 1 : 0;
+	const int cross_axis = vertical ? 0 : 1;
+	ms[cross_axis] = MAX(cross_max, (int)_get_vertical_popup_button_min_size(this).width);
+	ms[axis] = primary_sum + (buttons_visible ? _get_reserved_vertical_buttons_row_height() : 0);
 
 	return ms;
 }
@@ -231,34 +222,21 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && event_device_id != InputEvent::DEVICE_ID_EMULATION) {
 		can_start_drag_drop = true;
 		if (mb->is_pressed() && !mb->is_command_or_control_pressed()) {
-			if (vertical) { /* VERTICAL */
-				if (mb->get_button_index() == MouseButton::WHEEL_UP) {
-					if (scrolling_enabled && buttons_visible && offset > 0) {
-						offset--;
-						_update_cache();
-						queue_redraw();
-					}
-				} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN) {
-					if (scrolling_enabled && buttons_visible && missing_right && offset < tabs.size()) {
-						offset++;
-						_update_cache();
-						queue_redraw();
-					}
+			const bool rtl = is_layout_rtl();
+			const bool scroll_up = vertical ? mb->get_button_index() == MouseButton::WHEEL_UP : (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == (rtl ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT));
+			const bool scroll_down = vertical ? mb->get_button_index() == MouseButton::WHEEL_DOWN : (mb->get_button_index() == MouseButton::WHEEL_DOWN || mb->get_button_index() == (rtl ? MouseButton::WHEEL_LEFT : MouseButton::WHEEL_RIGHT));
+
+			if (scroll_up) {
+				if (scrolling_enabled && buttons_visible && offset > 0) {
+					offset--;
+					_update_cache();
+					queue_redraw();
 				}
-			} else { /* HORIZONTAL */
-				const bool rtl = is_layout_rtl();
-				if (mb->get_button_index() == MouseButton::WHEEL_UP || mb->get_button_index() == (rtl ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT)) {
-					if (scrolling_enabled && buttons_visible && offset > 0) {
-						offset--;
-						_update_cache();
-						queue_redraw();
-					}
-				} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN || mb->get_button_index() == (rtl ? MouseButton::WHEEL_LEFT : MouseButton::WHEEL_RIGHT)) {
-					if (scrolling_enabled && buttons_visible && missing_right && offset < tabs.size()) {
-						offset++;
-						_update_cache();
-						queue_redraw();
-					}
+			} else if (scroll_down) {
+				if (scrolling_enabled && buttons_visible && missing_right && offset < tabs.size()) {
+					offset++;
+					_update_cache();
+					queue_redraw();
 				}
 			}
 		}
@@ -688,11 +666,15 @@ void TabBar::_notification(int p_what) {
 					AccessibilityServer::get_singleton()->update_set_tooltip(item.accessibility_item_element, item.tooltip);
 
 					const Rect2 content_rect = _get_tabs_content_rect();
-					if (vertical) { /* VERTICAL */
-						AccessibilityServer::get_singleton()->update_set_bounds(item.accessibility_item_element, Rect2(Point2(content_rect.position.x, item.ofs_cache), Size2(content_rect.size.x, item.size_cache)));
-					} else { /* HORIZONTAL */
-						AccessibilityServer::get_singleton()->update_set_bounds(item.accessibility_item_element, Rect2(Point2(item.ofs_cache, content_rect.position.y), Size2(item.size_cache, content_rect.size.y)));
-					}
+					const int axis = vertical ? 1 : 0;
+					const int cross_axis = vertical ? 0 : 1;
+					Point2 bounds_pos;
+					Size2 bounds_size;
+					bounds_pos[cross_axis] = content_rect.position[cross_axis];
+					bounds_pos[axis] = item.ofs_cache;
+					bounds_size[cross_axis] = content_rect.size[cross_axis];
+					bounds_size[axis] = item.size_cache;
+					AccessibilityServer::get_singleton()->update_set_bounds(item.accessibility_item_element, Rect2(bounds_pos, bounds_size));
 
 					item.accessibility_item_dirty = false;
 				}
@@ -1968,6 +1950,8 @@ Size2 TabBar::get_desired_size() const {
 
 	int primary_sum = 0;
 	int cross_max = 0;
+	const int axis = vertical ? 1 : 0;
+	const int cross_axis = vertical ? 0 : 1;
 
 	for (int i = 0; i < tabs.size(); i++) {
 		if (tabs[i].hidden) {
@@ -1982,24 +1966,18 @@ Size2 TabBar::get_desired_size() const {
 		}
 		const int tab_h = metrics.row_height;
 
-		if (vertical) { /* VERTICAL */
-			primary_sum += tab_h;
-			cross_max = MAX(cross_max, tab_w);
-		} else { /* HORIZONTAL */
-			primary_sum += tab_w;
-			cross_max = MAX(cross_max, tab_h);
-		}
+		primary_sum += vertical ? tab_h : tab_w;
+		cross_max = MAX(cross_max, vertical ? tab_w : tab_h);
 
 		if (i < tabs.size() - 1) {
 			primary_sum += theme_cache.tab_separation;
 		}
 	}
 
-	if (vertical) { /* VERTICAL */
-		return Size2(MAX(cross_max, (int)_get_vertical_popup_button_min_size(this).width), MIN(primary_sum, limit));
-	}
-
-	return Size2(MIN(primary_sum, limit), cross_max);
+	Size2 result;
+	result[cross_axis] = MAX(cross_max, (int)_get_vertical_popup_button_min_size(this).width);
+	result[axis] = MIN(primary_sum, limit);
+	return result;
 }
 
 void TabBar::_hover_switch_timeout() {
@@ -2712,17 +2690,13 @@ void TabBar::_get_scroll_button_rects(Rect2 &r_dec_rect, Rect2 &r_inc_rect) cons
 }
 
 bool TabBar::_is_point_primary_before_or_at_mid(const Point2 &p_point, const Rect2 &p_rect) const {
-	if (vertical) { /* VERTICAL */
-		return p_point.y <= p_rect.position.y + p_rect.size.height / 2;
-	}
-	return is_layout_rtl() != (p_point.x <= p_rect.position.x + p_rect.size.width / 2);
+	const bool rtl = is_layout_rtl();
+	return vertical ? p_point.y <= p_rect.position.y + p_rect.size.height / 2 : rtl != (p_point.x <= p_rect.position.x + p_rect.size.width / 2);
 }
 
 bool TabBar::_is_point_primary_after_mid(const Point2 &p_point, const Rect2 &p_rect) const {
-	if (vertical) { /* VERTICAL */
-		return p_point.y > p_rect.position.y + p_rect.size.height / 2;
-	}
-	return is_layout_rtl() != (p_point.x > p_rect.position.x + p_rect.size.width / 2);
+	const bool rtl = is_layout_rtl();
+	return vertical ? p_point.y > p_rect.position.y + p_rect.size.height / 2 : rtl != (p_point.x > p_rect.position.x + p_rect.size.width / 2);
 }
 
 bool TabBar::_is_point_before_first_tab(const Point2 &p_point) const {
@@ -2731,10 +2705,8 @@ bool TabBar::_is_point_before_first_tab(const Point2 &p_point) const {
 	}
 
 	const Rect2 first_tab_rect = get_tab_rect(0);
-	if (vertical) { /* VERTICAL */
-		return p_point.y < first_tab_rect.position.y;
-	}
-	return is_layout_rtl() != (p_point.x < first_tab_rect.position.x);
+	const bool rtl = is_layout_rtl();
+	return vertical ? p_point.y < first_tab_rect.position.y : rtl != (p_point.x < first_tab_rect.position.x);
 }
 
 TabBar::TabMetrics TabBar::_get_tab_metrics(int p_idx, bool p_for_minimum_size) const {
