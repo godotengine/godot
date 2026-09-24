@@ -54,6 +54,7 @@
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/translations/editor_translation_parser.h"
 #include "main/main.h"
 
 #ifdef GD_MONO_HOT_RELOAD
@@ -103,6 +104,10 @@ bool godot_icall_EditorProgress_Step(const godot_string *p_task, const godot_str
 	String task = *reinterpret_cast<const String *>(p_task);
 	String state = *reinterpret_cast<const String *>(p_state);
 	return EditorNode::progress_task_step(task, state, p_step, (bool)p_force_refresh);
+}
+
+void godot_icall_EditorTranslationParser_AddParser(EditorTranslationParserPlugin *p_translation_parser_plugin) {
+	EditorTranslationParser::get_singleton()->add_parser(p_translation_parser_plugin, EditorTranslationParser::STANDARD);
 }
 
 void godot_icall_Internal_FullExportTemplatesDir(godot_string *r_dest) {
@@ -266,6 +271,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godot_icall_EditorProgress_Create,
 	(void *)godot_icall_EditorProgress_Dispose,
 	(void *)godot_icall_EditorProgress_Step,
+	(void *)godot_icall_EditorTranslationParser_AddParser,
 	(void *)godot_icall_Internal_FullExportTemplatesDir,
 	(void *)godot_icall_Internal_IsMacOSAppBundleInstalled,
 	(void *)godot_icall_Internal_LipOCreateFile,
