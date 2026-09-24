@@ -4104,11 +4104,8 @@ void Viewport::_refresh_texture_filter_cache() const {
 void Viewport::_propagate_texture_filter_changed(Node *p_node) {
 	for (Node *child : p_node->iterate_children()) {
 		Viewport *child_vp = Object::cast_to<Viewport>(child);
-		if (child_vp) {
-			if (child_vp->default_canvas_item_texture_filter == DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE) {
-				child_vp->_update_texture_filter_changed(true);
-			}
-			continue;
+		if (child_vp && child_vp->default_canvas_item_texture_filter == DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE) {
+			child_vp->_update_texture_filter_changed(false);
 		}
 
 		CanvasItem *child_ci = Object::cast_to<CanvasItem>(child);
