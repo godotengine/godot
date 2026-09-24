@@ -3652,6 +3652,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme_default_font_size"), &Window::get_theme_default_font_size);
 
 	ClassDB::bind_method(D_METHOD("get_window_id"), &Window::get_window_id);
+	ClassDB::bind_method(D_METHOD("handle_input", "event"), &Window::_window_input);
 
 	ClassDB::bind_method(D_METHOD("set_accessibility_name", "name"), &Window::set_accessibility_name);
 	ClassDB::bind_method(D_METHOD("get_accessibility_name"), &Window::get_accessibility_name);

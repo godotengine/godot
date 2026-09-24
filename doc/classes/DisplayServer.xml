@@ -2497,7 +2497,7 @@
 			<param index="0" name="callback" type="Callable" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the [param callback] that should be called when any [InputEvent] is sent to the window specified by [param window_id].
+				Sets the [param callback] that should be called when any [InputEvent] is sent to the window specified by [param window_id]. The default implementation is [method Window.handle_input].
 				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
