@@ -624,13 +624,7 @@ void TabContainer::_ensure_popup_button_parent() {
 	}
 
 	const bool horizontal = tabs_position == POSITION_TOP || tabs_position == POSITION_BOTTOM;
-	Control *target_parent;
-
-	if (horizontal) { /* HORIZONTAL */
-		target_parent = internal_container;
-	} else { /* VERTICAL */
-		target_parent = tab_bar;
-	}
+	Control *target_parent = horizontal ? static_cast<Control *>(internal_container) : static_cast<Control *>(tab_bar);
 
 	if (popup_button->get_parent() != target_parent) {
 		if (popup_button->get_parent()) {
@@ -640,10 +634,7 @@ void TabContainer::_ensure_popup_button_parent() {
 		}
 	}
 
-	int popup_button_child_index = 1;
-	if (horizontal) { /* HORIZONTAL */
-		popup_button_child_index = is_layout_rtl() ? 0 : 1;
-	}
+	int popup_button_child_index = horizontal ? (is_layout_rtl() ? 0 : 1) : 1;
 
 	if (horizontal) { /* HORIZONTAL */
 		popup_button->set_h_size_flags(SIZE_FILL);
@@ -1153,11 +1144,7 @@ void TabContainer::set_tabs_position(TabPosition p_tabs_position) {
 	tab_bar->set_v_size_flags(horizontal ? SIZE_FILL : SIZE_EXPAND_FILL);
 
 	// Change internal_container orientation based on tabs position.
-	if (horizontal) {
-		internal_container->set_vertical(false);
-	} else {
-		internal_container->set_vertical(true);
-	}
+	internal_container->set_vertical(!horizontal);
 
 	_ensure_popup_button_parent();
 
@@ -1433,7 +1420,7 @@ Size2 TabContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 
 	Size2 panel_ms = theme_cache.panel_style->get_minimum_size();
 
-	if (tabs_position == POSITION_TOP || tabs_position == POSITION_BOTTOM) {
+	if (tabs_position == POSITION_TOP || tabs_position == POSITION_BOTTOM) { /* VERTICAL */
 		ms.height += largest_child_min_size.height;
 		ms.width = MAX(ms.width, largest_child_min_size.width + panel_ms.width);
 		ms.height += panel_ms.height;
