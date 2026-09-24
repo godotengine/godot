@@ -114,6 +114,11 @@ public:
 			mi.return_val = GetTypeInfo<R>::get_class_info();
 		}
 
+		// TODO: C++ does not have an easy way to get default arguments
+		//       For now it'll be an empty array regardless of whether
+		//       there is any default arguments.
+		mi.default_arguments.clear();
+
 		r_method_info = mi;
 #else
 		StringName method_name = get_method();
@@ -213,6 +218,11 @@ public:
 			mi.return_val = GetTypeInfo<R>::get_class_info();
 		}
 
+		// TODO: C++ does not have an easy way to get default arguments
+		//       For now it'll be an empty array regardless of whether
+		//       there is any default arguments.
+		mi.default_arguments.clear();
+
 		mi.flags |= METHOD_FLAGS_DEFAULT | METHOD_FLAG_CONST;
 
 		r_method_info = mi;
@@ -305,6 +315,11 @@ public:
 		if constexpr (!std::is_same<R, void>::value) {
 			mi.return_val = GetTypeInfo<R>::get_class_info();
 		}
+
+		// TODO: C++ does not have an easy way to get default arguments
+		//       For now it'll be an empty array regardless of whether
+		//       there is any default arguments.
+		mi.default_arguments.clear();
 
 		mi.flags |= METHOD_FLAGS_DEFAULT | METHOD_FLAG_STATIC;
 
