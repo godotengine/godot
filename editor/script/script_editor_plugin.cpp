@@ -4220,6 +4220,7 @@ ScriptEditor::ScriptEditor(const String &p_config_section, const String &p_cache
 	toggle_files_button->connect(SceneStringName(toggled), callable_mp(this, &ScriptEditor::_toggle_files_pressed));
 	toggle_files_button->set_accessibility_name(TTRC("Toggle Document List"));
 	toggle_files_button->set_toggle_mode(true);
+	toggle_files_button->set_flat(true);
 	toggle_files_button->set_shortcut_context(this);
 	toggle_files_button->set_shortcut(ED_GET_SHORTCUT("script_editor/toggle_files_panel"));
 	menu_hb->add_child(toggle_files_button);
