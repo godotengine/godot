@@ -15,4 +15,7 @@
     <ProjectReference Include="..\GodotSharp\GodotSharp.csproj" />
   </ItemGroup>
 
+  <Target Name="CopyFiles" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll;$(OutputPath)\$(AssemblyName).pdb;$(OutputPath)\$(AssemblyName).runtimeconfig.json" DestinationFolder="$(SolutionDir)\..\..\bin\GodotSharp\Api\$(Configuration)"/>
+  </Target>
 </Project>

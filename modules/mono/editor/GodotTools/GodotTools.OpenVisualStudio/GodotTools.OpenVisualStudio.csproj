@@ -8,11 +8,12 @@
     <SelfContained>False</SelfContained>
     <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
-  <PropertyGroup Condition="Exists('$(SolutionDir)/../../../../bin/GodotSharp/Api/Debug/GodotSharp.dll') And ('$(GodotPlatform)' == 'windows' Or ('$(GodotPlatform)' == '' And '$(OS)' == 'Windows_NT'))">
-    <OutputPath>$(SolutionDir)/../../../../bin/GodotSharp/Tools</OutputPath>
-    <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>False</AppendRuntimeIdentifierToOutputPath>
-  </PropertyGroup>
+  <Target Name="CopyFiles" AfterTargets="PostBuildEvent" Condition="'$(GodotPlatform)' == 'windows' Or ('$(GodotPlatform)' == '' And '$(OS)' == 'Windows_NT')">
+    <ItemGroup>
+      <OutputFiles Include="$(OutputPath)\*.*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(OutputFiles)" DestinationFolder="$(SolutionDir)\..\..\bin\GodotSharp\Tools"/>
+  </Target>
   <ItemGroup>
     <PackageReference Include="EnvDTE" Version="17.8.37221" />
   </ItemGroup>
