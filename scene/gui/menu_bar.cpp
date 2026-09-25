@@ -147,7 +147,7 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 
 	pm->set_size(Size2(item_rect.size.x, 0));
 	if (is_layout_rtl()) {
-		rect.position.x += rect.size.width - pm->get_size().width;
+		rect.position.x += item_rect.size.x - pm->get_size().width;
 	}
 	pm->set_position(rect.position);
 	pm->popup();
