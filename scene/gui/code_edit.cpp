@@ -2015,13 +2015,13 @@ bool CodeEdit::_fold_line(int p_line) {
 					continue;
 				}
 				int delimiter_end_line = get_delimiter_end_position(i, get_line(i).size() - 1).y;
-				if (is_in_string(i) == -1 && is_in_comment(i) == -1){
+				if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
 					break;
 				}
 
 				if (can_fold_line(i) && get_indent_level(i) == start_indent && delimiter_end_line == i) {
 					bool has_more_indented_code = false;
-					for (int j = i+ 1; j <= line_count; j++) { // Look ahead for indented code after the comment, if we find it, include it in the fold
+					for (int j = i + 1; j <= line_count; j++) { // Look ahead for indented code after the comment, if we find it, include it in the fold
 						if (get_line(j).strip_edges().is_empty()) {
 							continue;
 						}
@@ -2037,7 +2037,6 @@ bool CodeEdit::_fold_line(int p_line) {
 						break;
 					}
 				}
-
 			}
 		}
 	}
