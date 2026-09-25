@@ -197,9 +197,7 @@ void CameraFeedLinux::_read_frame() {
 		return;
 	}
 
-	StreamingBuffer streaming_buffer = buffers[buffer.index];
-	streaming_buffer.pitch = buffer_pitch;
-	buffer_decoder->decode(streaming_buffer);
+	buffer_decoder->decode(buffers[buffer.index]);
 
 	if (ioctl(file_descriptor, VIDIOC_QBUF, &buffer) == -1) {
 		print_error(vformat("ioctl(VIDIOC_QBUF) error: %d.", errno));
@@ -330,10 +328,6 @@ bool CameraFeedLinux::set_format(int p_index, const Dictionary &p_parameters) {
 		close(file_descriptor);
 		ERR_FAIL_V_MSG(false, vformat("Cannot set format, error: %d.", errno));
 	}
-
-	// Driver fills bytesperline (Y plane stride) on successful S_FMT. May exceed
-	// width when the driver pads rows for alignment; decoders must honor it.
-	buffer_pitch = (int32_t)format.fmt.pix.bytesperline;
 
 	if (feed_format.frame_numerator > 0) {
 		struct v4l2_streamparm param;

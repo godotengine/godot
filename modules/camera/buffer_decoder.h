@@ -38,7 +38,6 @@ class CameraFeed;
 struct StreamingBuffer {
 	void *start = nullptr;
 	size_t length = 0;
-	int32_t pitch = 0; // Y plane row stride in bytes (0 = assume tightly packed: pitch == width).
 };
 
 class BufferDecoder {
