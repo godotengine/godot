@@ -47,6 +47,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -1724,6 +1725,7 @@ Vector3 RuntimeNodeSelect::_get_screen_to_space(const Vector3 &p_vector3) {
 	Vector2 screen_he = cm.get_viewport_half_extents();
 	return camera_transform.xform(Vector3(((p_vector3.x / size.width) * 2.0 - 1.0) * screen_he.x, ((1.0 - (p_vector3.y / size.height)) * 2.0 - 1.0) * screen_he.y, -(znear + p_vector3.z)));
 }
+#endif // _3D_DISABLED
 
 void RuntimeNodeSelect::_box_selected_ci(const Array &p_selection) {
 	Vector<Node *> nodes;
@@ -1776,6 +1778,7 @@ void RuntimeNodeSelect::_commit_canvas_state_requested(const Array &p_selection,
 	}
 }
 
+#ifndef _3D_DISABLED
 void RuntimeNodeSelect::_fov_scaled() {
 	SceneTree::get_singleton()->get_root()->get_override_camera_3d()->set_perspective(camera_fov * view_3d_controller->cursor.fov_scale, camera_znear, camera_zfar);
 }
