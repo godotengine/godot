@@ -170,6 +170,24 @@ Vector4 Vector4::cubic_interpolate_in_time(const Vector4 &p_b, const Vector4 &p_
 	return res;
 }
 
+Vector4 Vector4::makima_interpolate(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, const Vector4 &p_pre_pre_a, const Vector4 &p_post_post_b, real_t p_weight) const {
+	Vector4 res = *this;
+	res.x = Math::makima_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_pre_pre_a.x, p_post_post_b.x, p_weight);
+	res.y = Math::makima_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_pre_pre_a.y, p_post_post_b.y, p_weight);
+	res.z = Math::makima_interpolate(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_pre_pre_a.z, p_post_post_b.z, p_weight);
+	res.w = Math::makima_interpolate(res.w, p_b.w, p_pre_a.w, p_post_b.w, p_pre_pre_a.w, p_post_post_b.w, p_weight);
+	return res;
+}
+
+Vector4 Vector4::makima_interpolate_in_time(const Vector4 &p_b, const Vector4 &p_pre_a, const Vector4 &p_post_b, const Vector4 &p_pre_pre_a, const Vector4 &p_post_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t, real_t p_pre_pre_a_t, real_t p_post_post_b_t) const {
+	Vector4 res = *this;
+	res.x = Math::makima_interpolate_in_time(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_pre_pre_a.x, p_post_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+	res.y = Math::makima_interpolate_in_time(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_pre_pre_a.y, p_post_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+	res.z = Math::makima_interpolate_in_time(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_pre_pre_a.z, p_post_post_b.z, p_weight, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+	res.w = Math::makima_interpolate_in_time(res.w, p_b.w, p_pre_a.w, p_post_b.w, p_pre_pre_a.w, p_post_post_b.w, p_weight, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+	return res;
+}
+
 Vector4 Vector4::posmod(real_t p_mod) const {
 	return Vector4(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod), Math::fposmod(z, p_mod), Math::fposmod(w, p_mod));
 }

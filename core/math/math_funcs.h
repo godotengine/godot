@@ -462,6 +462,177 @@ _ALWAYS_INLINE_ float cubic_interpolate_angle_in_time(float p_from, float p_to, 
 	return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
 }
 
+// Extrapolation used at the ends of the Akima method: https://blogs.mathworks.com/cleve/2019/04/29/makima-piecewise-cubic-interpolation/
+constexpr double akima_extrapolate(double p_edge, double p_edge_next) {
+	return 2.0 * p_edge - p_edge_next;
+}
+constexpr float akima_extrapolate(float p_edge, float p_edge_next) {
+	return 2.0f * p_edge - p_edge_next;
+}
+
+// Modified Akima tangent: https://www.mathworks.com/help/matlab/ref/makima.html
+constexpr double makima_tangent(double p_p0, double p_p1, double p_p2, double p_p3) {
+	double w1 = abs(p_p3 - p_p2) + abs(p_p3 + p_p2) * 0.5;
+	double w2 = abs(p_p1 - p_p0) + abs(p_p1 + p_p0) * 0.5;
+	if (w1 + w2 == 0) {
+		return (p_p1 + p_p2) * 0.5;
+	}
+	return (w1 * p_p1 + w2 * p_p2) / (w1 + w2);
+}
+constexpr float makima_tangent(float p_p0, float p_p1, float p_p2, float p_p3) {
+	float w1 = abs(p_p3 - p_p2) + abs(p_p3 + p_p2) * 0.5f;
+	float w2 = abs(p_p1 - p_p0) + abs(p_p1 + p_p0) * 0.5f;
+	if (w1 + w2 == 0) {
+		return (p_p1 + p_p2) * 0.5f;
+	}
+	return (w1 * p_p1 + w2 * p_p2) / (w1 + w2);
+}
+
+// Modified Akima interpolation detail: https://blogs.mathworks.com/cleve/2019/04/29/makima-piecewise-cubic-interpolation/
+constexpr double makima_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight,
+		double p_to_t, double p_pre_t, double p_post_t, double p_pre_pre_t, double p_post_post_t) {
+	bool is_to_coincident = p_to_t == 0;
+	bool is_pre_coincident = p_pre_t == 0;
+	bool is_post_coincident = p_post_t - p_to_t == 0;
+	bool is_pre_pre_coincident = p_pre_t - p_pre_pre_t == 0;
+	bool is_post_post_coincident = p_post_post_t - p_post_t == 0;
+
+	double m_from = is_to_coincident ? 0.0 : (p_to - p_from) / p_to_t;
+	double m_pre = is_pre_coincident ? 0.0 : (p_from - p_pre) / -p_pre_t;
+	double m_post = is_post_coincident ? 0.0 : (p_post - p_to) / (p_post_t - p_to_t);
+	if (is_pre_coincident) {
+		m_pre = is_post_coincident ? m_from : akima_extrapolate(m_from, m_post);
+	}
+	if (is_post_coincident) {
+		m_post = is_pre_coincident ? m_from : akima_extrapolate(m_from, m_pre);
+	}
+	double m_pre_pre = is_pre_pre_coincident ? akima_extrapolate(m_pre, m_from) : (p_pre - p_pre_pre) / (p_pre_t - p_pre_pre_t);
+	double m_post_post = is_post_post_coincident ? akima_extrapolate(m_post, m_from) : (p_post_post - p_post) / (p_post_post_t - p_post_t);
+	double t_from = makima_tangent(m_pre_pre, m_pre, m_from, m_post);
+	double t_to = makima_tangent(m_pre, m_from, m_post, m_post_post);
+	double s2 = p_weight * p_weight;
+	double s3 = s2 * p_weight;
+	return (2.0 * s3 - 3.0 * s2 + 1.0) * p_from +
+			(s3 - 2.0 * s2 + p_weight) * p_to_t * t_from +
+			(-2.0 * s3 + 3.0 * s2) * p_to +
+			(s3 - s2) * p_to_t * t_to;
+}
+constexpr float makima_interpolate_in_time(float p_from, float p_to, float p_pre, float p_post, float p_pre_pre, float p_post_post, float p_weight,
+		float p_to_t, float p_pre_t, float p_post_t, float p_pre_pre_t, float p_post_post_t) {
+	bool is_to_coincident = p_to_t == 0;
+	bool is_pre_coincident = p_pre_t == 0;
+	bool is_post_coincident = p_post_t - p_to_t == 0;
+	bool is_pre_pre_coincident = p_pre_t - p_pre_pre_t == 0;
+	bool is_post_post_coincident = p_post_post_t - p_post_t == 0;
+
+	float m_from = is_to_coincident ? 0.0f : (p_to - p_from) / p_to_t;
+	float m_pre = is_pre_coincident ? 0.0f : (p_from - p_pre) / -p_pre_t;
+	float m_post = is_post_coincident ? 0.0f : (p_post - p_to) / (p_post_t - p_to_t);
+	if (is_pre_coincident) {
+		m_pre = is_post_coincident ? m_from : akima_extrapolate(m_from, m_post);
+	}
+	if (is_post_coincident) {
+		m_post = is_pre_coincident ? m_from : akima_extrapolate(m_from, m_pre);
+	}
+	float m_pre_pre = is_pre_pre_coincident ? akima_extrapolate(m_pre, m_from) : (p_pre - p_pre_pre) / (p_pre_t - p_pre_pre_t);
+	float m_post_post = is_post_post_coincident ? akima_extrapolate(m_post, m_from) : (p_post_post - p_post) / (p_post_post_t - p_post_t);
+	float t_from = makima_tangent(m_pre_pre, m_pre, m_from, m_post);
+	float t_to = makima_tangent(m_pre, m_from, m_post, m_post_post);
+	float s2 = p_weight * p_weight;
+	float s3 = s2 * p_weight;
+	return (2.0f * s3 - 3.0f * s2 + 1.0f) * p_from +
+			(s3 - 2.0f * s2 + p_weight) * p_to_t * t_from +
+			(-2.0f * s3 + 3.0f * s2) * p_to +
+			(s3 - s2) * p_to_t * t_to;
+}
+
+constexpr double makima_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight) {
+	return makima_interpolate_in_time(p_from, p_to, p_pre, p_post, p_pre_pre, p_post_post, p_weight, 1.0, -1.0, 2.0, -2.0, 3.0);
+}
+constexpr float makima_interpolate(float p_from, float p_to, float p_pre, float p_post, float p_pre_pre, float p_post_post, float p_weight) {
+	return makima_interpolate_in_time(p_from, p_to, p_pre, p_post, p_pre_pre, p_post_post, p_weight, 1.0f, -1.0f, 2.0f, -2.0f, 3.0f);
+}
+
+_ALWAYS_INLINE_ double makima_interpolate_angle(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight) {
+	double from_rot = fmod(p_from, TAU);
+
+	double pre_diff = fmod(p_pre - from_rot, TAU);
+	double pre_rot = from_rot + fmod(2.0 * pre_diff, TAU) - pre_diff;
+	double pre_pre_diff = fmod(p_pre_pre - pre_rot, TAU);
+	double pre_pre_rot = pre_rot + fmod(2.0 * pre_pre_diff, TAU) - pre_pre_diff;
+
+	double to_diff = fmod(p_to - from_rot, TAU);
+	double to_rot = from_rot + fmod(2.0 * to_diff, TAU) - to_diff;
+
+	double post_diff = fmod(p_post - to_rot, TAU);
+	double post_rot = to_rot + fmod(2.0 * post_diff, TAU) - post_diff;
+
+	double post_post_diff = fmod(p_post_post - post_rot, TAU);
+	double post_post_rot = post_rot + fmod(2.0 * post_post_diff, TAU) - post_post_diff;
+
+	return makima_interpolate(from_rot, to_rot, pre_rot, post_rot, pre_pre_rot, post_post_rot, p_weight);
+}
+_ALWAYS_INLINE_ float makima_interpolate_angle(float p_from, float p_to, float p_pre, float p_post, float p_pre_pre, float p_post_post, float p_weight) {
+	float from_rot = fmod(p_from, (float)TAU);
+
+	float pre_diff = fmod(p_pre - from_rot, (float)TAU);
+	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)TAU) - pre_diff;
+	float pre_pre_diff = fmod(p_pre_pre - pre_rot, (float)TAU);
+	float pre_pre_rot = pre_rot + fmod(2.0f * pre_pre_diff, (float)TAU) - pre_pre_diff;
+
+	float to_diff = fmod(p_to - from_rot, (float)TAU);
+	float to_rot = from_rot + fmod(2.0f * to_diff, (float)TAU) - to_diff;
+
+	float post_diff = fmod(p_post - to_rot, (float)TAU);
+	float post_rot = to_rot + fmod(2.0f * post_diff, (float)TAU) - post_diff;
+
+	float post_post_diff = fmod(p_post_post - post_rot, (float)TAU);
+	float post_post_rot = post_rot + fmod(2.0f * post_post_diff, (float)TAU) - post_post_diff;
+
+	return makima_interpolate(from_rot, to_rot, pre_rot, post_rot, pre_pre_rot, post_post_rot, p_weight);
+}
+
+_ALWAYS_INLINE_ double makima_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight,
+		double p_to_t, double p_pre_t, double p_post_t, double p_pre_pre_t, double p_post_post_t) {
+	double from_rot = fmod(p_from, TAU);
+
+	double pre_diff = fmod(p_pre - from_rot, TAU);
+	double pre_rot = from_rot + fmod(2.0 * pre_diff, TAU) - pre_diff;
+	double pre_pre_diff = fmod(p_pre_pre - pre_rot, TAU);
+	double pre_pre_rot = pre_rot + fmod(2.0 * pre_pre_diff, TAU) - pre_pre_diff;
+
+	double to_diff = fmod(p_to - from_rot, TAU);
+	double to_rot = from_rot + fmod(2.0 * to_diff, TAU) - to_diff;
+
+	double post_diff = fmod(p_post - to_rot, TAU);
+	double post_rot = to_rot + fmod(2.0 * post_diff, TAU) - post_diff;
+
+	double post_post_diff = fmod(p_post_post - post_rot, TAU);
+	double post_post_rot = post_rot + fmod(2.0 * post_post_diff, TAU) - post_post_diff;
+
+	return makima_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, pre_pre_rot, post_post_rot, p_weight, p_to_t, p_pre_t, p_post_t, p_pre_pre_t, p_post_post_t);
+}
+_ALWAYS_INLINE_ float makima_interpolate_angle_in_time(float p_from, float p_to, float p_pre, float p_post, float p_pre_pre, float p_post_post, float p_weight,
+		float p_to_t, float p_pre_t, float p_post_t, float p_pre_pre_t, float p_post_post_t) {
+	float from_rot = fmod(p_from, (float)TAU);
+
+	float pre_diff = fmod(p_pre - from_rot, (float)TAU);
+	float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)TAU) - pre_diff;
+	float pre_pre_diff = fmod(p_pre_pre - pre_rot, (float)TAU);
+	float pre_pre_rot = pre_rot + fmod(2.0f * pre_pre_diff, (float)TAU) - pre_pre_diff;
+
+	float to_diff = fmod(p_to - from_rot, (float)TAU);
+	float to_rot = from_rot + fmod(2.0f * to_diff, (float)TAU) - to_diff;
+
+	float post_diff = fmod(p_post - to_rot, (float)TAU);
+	float post_rot = to_rot + fmod(2.0f * post_diff, (float)TAU) - post_diff;
+
+	float post_post_diff = fmod(p_post_post - post_rot, (float)TAU);
+	float post_post_rot = post_rot + fmod(2.0f * post_post_diff, (float)TAU) - post_post_diff;
+
+	return makima_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, pre_pre_rot, post_post_rot, p_weight, p_to_t, p_pre_t, p_post_t, p_pre_pre_t, p_post_post_t);
+}
+
 constexpr double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
 	/* Formula from Wikipedia article on Bezier curves. */
 	double omt = (1.0 - p_t);

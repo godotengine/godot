@@ -59,12 +59,15 @@ public:
 		TYPE_ANIMATION,
 	};
 
+	// TODO: Reorder the MAKIMA next to the CUBIC in Godot 5, since the enum values are serialized and cannot be changed without breaking compat.
 	enum InterpolationType : uint8_t {
 		INTERPOLATION_NEAREST,
 		INTERPOLATION_LINEAR,
 		INTERPOLATION_CUBIC,
 		INTERPOLATION_LINEAR_ANGLE,
 		INTERPOLATION_CUBIC_ANGLE,
+		INTERPOLATION_MAKIMA,
+		INTERPOLATION_MAKIMA_ANGLE,
 	};
 
 	enum UpdateMode : uint8_t {
@@ -285,17 +288,25 @@ private:
 	_FORCE_INLINE_ real_t _cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 	_FORCE_INLINE_ Variant _cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const;
 
+	_FORCE_INLINE_ Vector3 _makima_interpolate_in_time(const Vector3 &p_pre_pre_a, const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, const Vector3 &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+	_FORCE_INLINE_ Quaternion _makima_interpolate_in_time(const Quaternion &p_pre_pre_a, const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, const Quaternion &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+	_FORCE_INLINE_ Variant _makima_interpolate_in_time(const Variant &p_pre_pre_a, const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, const Variant &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+	_FORCE_INLINE_ real_t _makima_interpolate_in_time(const real_t &p_pre_pre_a, const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, const real_t &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+	_FORCE_INLINE_ Variant _makima_interpolate_angle_in_time(const Variant &p_pre_pre_a, const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, const Variant &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const;
+
 	typedef Pair<int, double> FetchedKey; // Int is the key index, double is the key time adjusted for the loop mode.
-	static constexpr uint32_t MAX_FETCHED_KEYS = 4; // For cubic.
+	static constexpr uint32_t MAX_FETCHED_KEYS = 6; // 4 for cubic, 6 for makima.
+	typedef FixedVector<FetchedKey, MAX_FETCHED_KEYS> FetchedKeys;
 
 	// Fetch looped key with wrapping or clamping.
 	template <typename T>
 	_FORCE_INLINE_ FetchedKey _fetch_key(const LocalVector<TKey<T>> &p_keys, int p_len, int p_index, bool p_loop_wrap) const;
 
 	// Fetch keys based on current time. If p_margin = 0, returns [from, to]. If p_margin = 1, returns [pre_from, from, to, post_to].
+	// If p_margin = 2, returns [pre_pre_from, pre_from, from, to, post_to, post_post_to].
 	// The p_backward only effect with Discrete track in AnimationMixer's API.
 	template <typename T>
-	_FORCE_INLINE_ FixedVector<FetchedKey, MAX_FETCHED_KEYS> _fetch_keys(const LocalVector<TKey<T>> &p_keys, int p_len, double p_time, bool p_loop_wrap, int p_margin, bool p_backward) const;
+	_FORCE_INLINE_ FetchedKeys _fetch_keys(const LocalVector<TKey<T>> &p_keys, int p_len, double p_time, bool p_loop_wrap, int p_margin, bool p_backward) const;
 
 	template <typename T>
 	_FORCE_INLINE_ double _get_interpolation_weighted_time(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_0, const FetchedKey &p_key_1, double p_time) const;
@@ -307,6 +318,10 @@ private:
 	_FORCE_INLINE_ T _interpolate_cubic(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, double p_time) const;
 	template <typename T>
 	_FORCE_INLINE_ T _interpolate_cubic_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_makima(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m2, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, const FetchedKey &p_key_3, double p_time) const;
+	template <typename T>
+	_FORCE_INLINE_ T _interpolate_makima_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m2, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, const FetchedKey &p_key_3, double p_time) const;
 
 	template <typename T>
 	_FORCE_INLINE_ T _interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
@@ -614,6 +629,7 @@ public:
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
 	static Variant interpolate_variant(const Variant &a, const Variant &b, float c, bool p_snap_array_element = false);
 	static Variant cubic_interpolate_in_time_variant(const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, float c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, bool p_snap_array_element = false);
+	static Variant makima_interpolate_in_time_variant(const Variant &pre_pre_a, const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, const Variant &post_post_b, float c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t, bool p_snap_array_element = false);
 
 	static bool is_less_or_equal_approx(double a, double b) {
 		return a < b || Math::is_equal_approx(a, b);

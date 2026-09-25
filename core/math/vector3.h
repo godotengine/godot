@@ -143,6 +143,8 @@ struct [[nodiscard]] Vector3 {
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const;
+	_FORCE_INLINE_ Vector3 makima_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const Vector3 &p_pre_pre_a, const Vector3 &p_post_post_b, real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 makima_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const Vector3 &p_pre_pre_a, const Vector3 &p_post_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t, real_t p_pre_pre_a_t, real_t p_post_post_b_t) const;
 	_FORCE_INLINE_ Vector3 bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, real_t p_t) const;
 	_FORCE_INLINE_ Vector3 bezier_derivative(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, real_t p_t) const;
 
@@ -314,6 +316,22 @@ Vector3 Vector3::cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_
 	res.x = Math::cubic_interpolate_in_time(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
 	res.y = Math::cubic_interpolate_in_time(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
 	res.z = Math::cubic_interpolate_in_time(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
+	return res;
+}
+
+Vector3 Vector3::makima_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const Vector3 &p_pre_pre_a, const Vector3 &p_post_post_b, real_t p_weight) const {
+	Vector3 res = *this;
+	res.x = Math::makima_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_pre_pre_a.x, p_post_post_b.x, p_weight);
+	res.y = Math::makima_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_pre_pre_a.y, p_post_post_b.y, p_weight);
+	res.z = Math::makima_interpolate(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_pre_pre_a.z, p_post_post_b.z, p_weight);
+	return res;
+}
+
+Vector3 Vector3::makima_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const Vector3 &p_pre_pre_a, const Vector3 &p_post_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t, real_t p_pre_pre_a_t, real_t p_post_post_b_t) const {
+	Vector3 res = *this;
+	res.x = Math::makima_interpolate_in_time(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_pre_pre_a.x, p_post_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+	res.y = Math::makima_interpolate_in_time(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_pre_pre_a.y, p_post_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+	res.z = Math::makima_interpolate_in_time(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_pre_pre_a.z, p_post_post_b.z, p_weight, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
 	return res;
 }
 

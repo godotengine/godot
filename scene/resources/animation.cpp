@@ -2515,6 +2515,43 @@ Variant Animation::_cubic_interpolate_angle_in_time(const Variant &p_pre_a, cons
 	return _cubic_interpolate_in_time(p_pre_a, p_a, p_b, p_post_b, p_c, p_pre_a_t, p_b_t, p_post_b_t);
 }
 
+// Modified Akima interpolation for anytype.
+
+Vector3 Animation::_makima_interpolate_in_time(const Vector3 &p_pre_pre_a, const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, const Vector3 &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const {
+	return p_a.makima_interpolate_in_time(p_b, p_pre_a, p_post_b, p_pre_pre_a, p_post_post_b, p_c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+}
+
+Quaternion Animation::_makima_interpolate_in_time(const Quaternion &p_pre_pre_a, const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, const Quaternion &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const {
+	return p_a.spherical_makima_interpolate_in_time(p_b, p_pre_a, p_post_b, p_pre_pre_a, p_post_post_b, p_c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+}
+
+Variant Animation::_makima_interpolate_in_time(const Variant &p_pre_pre_a, const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, const Variant &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const {
+	return makima_interpolate_in_time_variant(p_pre_pre_a, p_pre_a, p_a, p_b, p_post_b, p_post_post_b, p_c, p_pre_pre_a_t, p_pre_a_t, p_b_t, p_post_b_t, p_post_post_b_t);
+}
+
+real_t Animation::_makima_interpolate_in_time(const real_t &p_pre_pre_a, const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, const real_t &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const {
+	return Math::makima_interpolate_in_time(p_a, p_b, p_pre_a, p_post_b, p_pre_pre_a, p_post_post_b, p_c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+}
+
+Variant Animation::_makima_interpolate_angle_in_time(const Variant &p_pre_pre_a, const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, const Variant &p_post_post_b, real_t p_c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t) const {
+	uint32_t vformat = 1 << p_a.get_type();
+	vformat |= 1 << p_b.get_type();
+	vformat |= 1 << p_pre_a.get_type();
+	vformat |= 1 << p_post_b.get_type();
+	vformat |= 1 << p_pre_pre_a.get_type();
+	vformat |= 1 << p_post_post_b.get_type();
+	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
+		real_t a = p_a;
+		real_t b = p_b;
+		real_t pa = p_pre_a;
+		real_t pb = p_post_b;
+		real_t ppa = p_pre_pre_a;
+		real_t ppb = p_post_post_b;
+		return Math::fposmod((float)Math::makima_interpolate_angle_in_time(a, b, pa, pb, ppa, ppb, p_c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t), (float)Math::TAU);
+	}
+	return _makima_interpolate_in_time(p_pre_pre_a, p_pre_a, p_a, p_b, p_post_b, p_post_post_b, p_c, p_pre_pre_a_t, p_pre_a_t, p_b_t, p_post_b_t, p_post_post_b_t);
+}
+
 template <typename T>
 Animation::FetchedKey Animation::_fetch_key(const LocalVector<TKey<T>> &p_keys, int p_len, int p_index, bool p_loop_wrap) const {
 	if (!p_loop_wrap || loop_mode == LOOP_NONE) {
@@ -2533,12 +2570,12 @@ Animation::FetchedKey Animation::_fetch_key(const LocalVector<TKey<T>> &p_keys, 
 }
 
 template <typename T>
-FixedVector<Animation::FetchedKey, Animation::MAX_FETCHED_KEYS> Animation::_fetch_keys(const LocalVector<TKey<T>> &p_keys, int p_len, double p_time, bool p_loop_wrap, int p_margin, bool p_backward) const {
+Animation::FetchedKeys Animation::_fetch_keys(const LocalVector<TKey<T>> &p_keys, int p_len, double p_time, bool p_loop_wrap, int p_margin, bool p_backward) const {
 	// The base key is "from", which is the key before the passed time
 	// (or the key after the time when retrieving keys backward for NEAREST/DISCRETE),
 	// and the other keys are fetched relative to the base key. Keys in the negative time are ignored.
 	int base_idx = p_backward ? MIN(_find(p_keys, p_time, true), p_len) : MIN(_find(p_keys, p_time), p_len - 1);
-	FixedVector<FetchedKey, MAX_FETCHED_KEYS> keys;
+	FetchedKeys keys;
 	for (int i = -p_margin; i <= 1 + p_margin; i++) {
 		keys.push_back(_fetch_key(p_keys, p_len, p_backward ? base_idx - i : base_idx + i, p_loop_wrap));
 	}
@@ -2584,6 +2621,18 @@ T Animation::_interpolate_cubic_angle(const LocalVector<TKey<T>> &p_keys, const 
 }
 
 template <typename T>
+T Animation::_interpolate_makima(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m2, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, const FetchedKey &p_key_3, double p_time) const {
+	return _makima_interpolate_in_time(p_keys[p_key_m2.first].value, p_keys[p_key_m1.first].value, p_keys[p_key_0.first].value, p_keys[p_key_1.first].value, p_keys[p_key_2.first].value, p_keys[p_key_3.first].value, p_time,
+			p_key_m2.second - p_key_0.second, p_key_m1.second - p_key_0.second, p_key_1.second - p_key_0.second, p_key_2.second - p_key_0.second, p_key_3.second - p_key_0.second);
+}
+
+template <typename T>
+T Animation::_interpolate_makima_angle(const LocalVector<TKey<T>> &p_keys, const FetchedKey &p_key_m2, const FetchedKey &p_key_m1, const FetchedKey &p_key_0, const FetchedKey &p_key_1, const FetchedKey &p_key_2, const FetchedKey &p_key_3, double p_time) const {
+	return _makima_interpolate_angle_in_time(p_keys[p_key_m2.first].value, p_keys[p_key_m1.first].value, p_keys[p_key_0.first].value, p_keys[p_key_1.first].value, p_keys[p_key_2.first].value, p_keys[p_key_3.first].value, p_time,
+			p_key_m2.second - p_key_0.second, p_key_m1.second - p_key_0.second, p_key_1.second - p_key_0.second, p_key_2.second - p_key_0.second, p_key_3.second - p_key_0.second);
+}
+
+template <typename T>
 T Animation::_interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward) const {
 	int len = _find(p_keys, length) + 1; // try to find last key (there may be more past the end)
 
@@ -2604,6 +2653,10 @@ T Animation::_interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, Int
 
 	int margin = 0;
 	switch (p_interp) {
+		case INTERPOLATION_MAKIMA:
+		case INTERPOLATION_MAKIMA_ANGLE: {
+			margin = 2; // Based [from, to], with two neighboring keys on each side.
+		} break;
 		case INTERPOLATION_CUBIC:
 		case INTERPOLATION_CUBIC_ANGLE: {
 			margin = 1; // Based [from, to], so the result becomes [pre_from, from, to, post_to].
@@ -2614,7 +2667,7 @@ T Animation::_interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, Int
 	}
 	// Backward only affects which key is picked by INTERPOLATION_NEAREST or UPDATE_DISCRETE. The other interpolations should be the same in both directions.
 	bool backward = p_backward && p_interp == INTERPOLATION_NEAREST;
-	FixedVector<FetchedKey, MAX_FETCHED_KEYS> keys = _fetch_keys(p_keys, len, p_time, p_loop_wrap, margin, backward);
+	FetchedKeys keys = _fetch_keys(p_keys, len, p_time, p_loop_wrap, margin, backward);
 	int idx = keys[margin].first;
 
 	if (p_ok) {
@@ -2644,6 +2697,12 @@ T Animation::_interpolate(const LocalVector<TKey<T>> &p_keys, double p_time, Int
 		} break;
 		case INTERPOLATION_CUBIC_ANGLE: {
 			return _interpolate_cubic_angle(p_keys, keys[0], keys[1], keys[2], keys[3], weighted_time);
+		} break;
+		case INTERPOLATION_MAKIMA: {
+			return _interpolate_makima(p_keys, keys[0], keys[1], keys[2], keys[3], keys[4], keys[5], weighted_time);
+		} break;
+		case INTERPOLATION_MAKIMA_ANGLE: {
+			return _interpolate_makima_angle(p_keys, keys[0], keys[1], keys[2], keys[3], keys[4], keys[5], weighted_time);
 		} break;
 		default:
 			return p_keys[idx].value;
@@ -4016,11 +4075,14 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(TYPE_AUDIO);
 	BIND_ENUM_CONSTANT(TYPE_ANIMATION);
 
+	// TODO: Reorder the MAKIMA next to the CUBIC in Godot 5, since the enum values are serialized and cannot be changed without breaking compat.
 	BIND_ENUM_CONSTANT(INTERPOLATION_NEAREST);
 	BIND_ENUM_CONSTANT(INTERPOLATION_LINEAR);
 	BIND_ENUM_CONSTANT(INTERPOLATION_CUBIC);
 	BIND_ENUM_CONSTANT(INTERPOLATION_LINEAR_ANGLE);
 	BIND_ENUM_CONSTANT(INTERPOLATION_CUBIC_ANGLE);
+	BIND_ENUM_CONSTANT(INTERPOLATION_MAKIMA);
+	BIND_ENUM_CONSTANT(INTERPOLATION_MAKIMA_ANGLE);
 
 	BIND_ENUM_CONSTANT(UPDATE_CONTINUOUS);
 	BIND_ENUM_CONSTANT(UPDATE_DISCRETE);
@@ -4327,7 +4389,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 	Variant::Type type = vt->values[0].value.get_type();
 
 	// Special case for angle interpolation.
-	bool is_using_angle = vt->interpolation == Animation::INTERPOLATION_LINEAR_ANGLE || vt->interpolation == Animation::INTERPOLATION_CUBIC_ANGLE;
+	bool is_using_angle = vt->interpolation == Animation::INTERPOLATION_LINEAR_ANGLE || vt->interpolation == Animation::INTERPOLATION_CUBIC_ANGLE || vt->interpolation == Animation::INTERPOLATION_MAKIMA_ANGLE;
 	int i = 0;
 	while (i < (int)vt->values.size() - 2) {
 		bool erase = false;
@@ -6462,6 +6524,212 @@ Variant Animation::cubic_interpolate_in_time_variant(const Variant &pre_a, const
 						}
 						for (; i < max_size; i++) {
 							result[i] = cubic_interpolate_in_time_variant(i >= arr_pa.size() ? pre_last : arr_pa[i], lesser_last, arr_b[i], i >= arr_pb.size() ? post_last : arr_pb[i], c, p_pre_a_t, p_b_t, p_post_b_t);
+						}
+					}
+				}
+				return result;
+			}
+		} break;
+	}
+	return c < 0.5 ? a : b;
+}
+
+Variant Animation::makima_interpolate_in_time_variant(const Variant &pre_pre_a, const Variant &pre_a, const Variant &a, const Variant &b, const Variant &post_b, const Variant &post_post_b, float c, real_t p_pre_pre_a_t, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t, real_t p_post_post_b_t, bool p_snap_array_element) {
+	if (pre_pre_a.get_type() != a.get_type() || pre_a.get_type() != a.get_type() || b.get_type() != a.get_type() || post_b.get_type() != a.get_type() || post_post_b.get_type() != a.get_type()) {
+		if (pre_pre_a.is_num() && pre_a.is_num() && a.is_num() && b.is_num() && post_b.is_num() && post_post_b.is_num()) {
+			return makima_interpolate_in_time_variant(cast_to_blendwise(pre_pre_a), cast_to_blendwise(pre_a), cast_to_blendwise(a), cast_to_blendwise(b), cast_to_blendwise(post_b), cast_to_blendwise(post_post_b), c, p_pre_pre_a_t, p_pre_a_t, p_b_t, p_post_b_t, p_post_post_b_t, p_snap_array_element);
+		} else if (!a.is_array()) {
+			return a;
+		}
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		} break;
+		case Variant::FLOAT: {
+			return Math::makima_interpolate_in_time(a.operator double(), b.operator double(), pre_a.operator double(), post_b.operator double(), pre_pre_a.operator double(), post_post_b.operator double(), (double)c, (double)p_b_t, (double)p_pre_a_t, (double)p_post_b_t, (double)p_pre_pre_a_t, (double)p_post_post_b_t);
+		} break;
+		case Variant::VECTOR2: {
+			return (a.operator Vector2()).makima_interpolate_in_time(b.operator Vector2(), pre_a.operator Vector2(), post_b.operator Vector2(), pre_pre_a.operator Vector2(), post_post_b.operator Vector2(), c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+		} break;
+		case Variant::RECT2: {
+			const Rect2 rppa = pre_pre_a.operator Rect2();
+			const Rect2 rpa = pre_a.operator Rect2();
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			const Rect2 rpb = post_b.operator Rect2();
+			const Rect2 rppb = post_post_b.operator Rect2();
+			return Rect2(
+					ra.position.makima_interpolate_in_time(rb.position, rpa.position, rpb.position, rppa.position, rppb.position, c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					ra.size.makima_interpolate_in_time(rb.size, rpa.size, rpb.size, rppa.size, rppb.size, c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t));
+		} break;
+		case Variant::VECTOR3: {
+			return (a.operator Vector3()).makima_interpolate_in_time(b.operator Vector3(), pre_a.operator Vector3(), post_b.operator Vector3(), pre_pre_a.operator Vector3(), post_post_b.operator Vector3(), c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+		} break;
+		case Variant::VECTOR4: {
+			return (a.operator Vector4()).makima_interpolate_in_time(b.operator Vector4(), pre_a.operator Vector4(), post_b.operator Vector4(), pre_pre_a.operator Vector4(), post_post_b.operator Vector4(), c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+		} break;
+		case Variant::PLANE: {
+			const Plane pppa = pre_pre_a.operator Plane();
+			const Plane ppa = pre_a.operator Plane();
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			const Plane ppb = post_b.operator Plane();
+			const Plane pppb = post_post_b.operator Plane();
+			return Plane(
+					pa.normal.makima_interpolate_in_time(pb.normal, ppa.normal, ppb.normal, pppa.normal, pppb.normal, c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					Math::makima_interpolate_in_time((double)pa.d, (double)pb.d, (double)ppa.d, (double)ppb.d, (double)pppa.d, (double)pppb.d, (double)c, (double)p_b_t, (double)p_pre_a_t, (double)p_post_b_t, (double)p_pre_pre_a_t, (double)p_post_post_b_t));
+		} break;
+		case Variant::COLOR: {
+			const Color cppa = pre_pre_a.operator Color();
+			const Color cpa = pre_a.operator Color();
+			const Color ca = a.operator Color();
+			const Color cb = b.operator Color();
+			const Color cpb = post_b.operator Color();
+			const Color cppb = post_post_b.operator Color();
+			return Color(
+					Math::makima_interpolate_in_time((double)ca.r, (double)cb.r, (double)cpa.r, (double)cpb.r, (double)cppa.r, (double)cppb.r, (double)c, (double)p_b_t, (double)p_pre_a_t, (double)p_post_b_t, (double)p_pre_pre_a_t, (double)p_post_post_b_t),
+					Math::makima_interpolate_in_time((double)ca.g, (double)cb.g, (double)cpa.g, (double)cpb.g, (double)cppa.g, (double)cppb.g, (double)c, (double)p_b_t, (double)p_pre_a_t, (double)p_post_b_t, (double)p_pre_pre_a_t, (double)p_post_post_b_t),
+					Math::makima_interpolate_in_time((double)ca.b, (double)cb.b, (double)cpa.b, (double)cpb.b, (double)cppa.b, (double)cppb.b, (double)c, (double)p_b_t, (double)p_pre_a_t, (double)p_post_b_t, (double)p_pre_pre_a_t, (double)p_post_post_b_t),
+					Math::makima_interpolate_in_time((double)ca.a, (double)cb.a, (double)cpa.a, (double)cpb.a, (double)cppa.a, (double)cppb.a, (double)c, (double)p_b_t, (double)p_pre_a_t, (double)p_post_b_t, (double)p_pre_pre_a_t, (double)p_post_post_b_t));
+		} break;
+		case Variant::AABB: {
+			const ::AABB appa = pre_pre_a.operator ::AABB();
+			const ::AABB apa = pre_a.operator ::AABB();
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			const ::AABB apb = post_b.operator ::AABB();
+			const ::AABB appb = post_post_b.operator ::AABB();
+			return AABB(
+					aa.position.makima_interpolate_in_time(ab.position, apa.position, apb.position, appa.position, appb.position, c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					aa.size.makima_interpolate_in_time(ab.size, apa.size, apb.size, appa.size, appb.size, c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t));
+		} break;
+		case Variant::BASIS: {
+			const Basis bppa = pre_pre_a.operator Basis();
+			const Basis bpa = pre_a.operator Basis();
+			const Basis ba = a.operator Basis();
+			const Basis bb = b.operator Basis();
+			const Basis bpb = post_b.operator Basis();
+			const Basis bppb = post_post_b.operator Basis();
+			return Basis(
+					ba.rows[0].makima_interpolate_in_time(bb.rows[0], bpa.rows[0], bpb.rows[0], bppa.rows[0], bppb.rows[0], c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					ba.rows[1].makima_interpolate_in_time(bb.rows[1], bpa.rows[1], bpb.rows[1], bppa.rows[1], bppb.rows[1], c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					ba.rows[2].makima_interpolate_in_time(bb.rows[2], bpa.rows[2], bpb.rows[2], bppa.rows[2], bppb.rows[2], c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t));
+		} break;
+		case Variant::QUATERNION: {
+			return (a.operator Quaternion()).spherical_makima_interpolate_in_time(b.operator Quaternion(), pre_a.operator Quaternion(), post_b.operator Quaternion(), pre_pre_a.operator Quaternion(), post_post_b.operator Quaternion(), c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t);
+		} break;
+		case Variant::TRANSFORM2D: {
+			const Transform2D tppa = pre_pre_a.operator Transform2D();
+			const Transform2D tpa = pre_a.operator Transform2D();
+			const Transform2D ta = a.operator Transform2D();
+			const Transform2D tb = b.operator Transform2D();
+			const Transform2D tpb = post_b.operator Transform2D();
+			const Transform2D tppb = post_post_b.operator Transform2D();
+			// TODO: May cause unintended skew, we needs spherical_makima_interpolate_in_time() for angle and Transform2D::makima_interpolate_with().
+			return Transform2D(
+					ta[0].makima_interpolate_in_time(tb[0], tpa[0], tpb[0], tppa[0], tppb[0], c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					ta[1].makima_interpolate_in_time(tb[1], tpa[1], tpb[1], tppa[1], tppb[1], c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					ta[2].makima_interpolate_in_time(tb[2], tpa[2], tpb[2], tppa[2], tppb[2], c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t));
+		} break;
+		case Variant::TRANSFORM3D: {
+			const Transform3D tppa = pre_pre_a.operator Transform3D();
+			const Transform3D tpa = pre_a.operator Transform3D();
+			const Transform3D ta = a.operator Transform3D();
+			const Transform3D tb = b.operator Transform3D();
+			const Transform3D tpb = post_b.operator Transform3D();
+			const Transform3D tppb = post_post_b.operator Transform3D();
+			// TODO: May cause unintended skew, we needs Transform3D::makima_interpolate_with().
+			return Transform3D(
+					ta.basis.rows[0].makima_interpolate_in_time(tb.basis.rows[0], tpa.basis.rows[0], tpb.basis.rows[0], tppa.basis.rows[0], tppb.basis.rows[0], c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					ta.basis.rows[1].makima_interpolate_in_time(tb.basis.rows[1], tpa.basis.rows[1], tpb.basis.rows[1], tppa.basis.rows[1], tppb.basis.rows[1], c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					ta.basis.rows[2].makima_interpolate_in_time(tb.basis.rows[2], tpa.basis.rows[2], tpb.basis.rows[2], tppa.basis.rows[2], tppb.basis.rows[2], c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t),
+					ta.origin.makima_interpolate_in_time(tb.origin, tpa.origin, tpb.origin, tppa.origin, tppb.origin, c, p_b_t, p_pre_a_t, p_post_b_t, p_pre_pre_a_t, p_post_post_b_t));
+		} break;
+		case Variant::BOOL:
+		case Variant::INT:
+		case Variant::RECT2I:
+		case Variant::VECTOR2I:
+		case Variant::VECTOR3I:
+		case Variant::VECTOR4I:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY: {
+			// Fallback the interpolatable value which needs casting.
+			return cast_from_blendwise(makima_interpolate_in_time_variant(cast_to_blendwise(pre_pre_a), cast_to_blendwise(pre_a), cast_to_blendwise(a), cast_to_blendwise(b), cast_to_blendwise(post_b), cast_to_blendwise(post_post_b), c, p_pre_pre_a_t, p_pre_a_t, p_b_t, p_post_b_t, p_post_post_b_t, p_snap_array_element), a.get_type());
+		} break;
+		case Variant::STRING:
+		case Variant::STRING_NAME: {
+			// TODO:
+			// String interpolation works on both the character array size and the character code, to apply makima interpolation neatly,
+			// we need to figure out how to interpolate well in cases where there are fewer than 6 keys. So, for now, fallback to linear interpolation.
+			return interpolate_variant(a, b, c);
+		} break;
+		case Variant::PACKED_BYTE_ARRAY: {
+			// Skip.
+		} break;
+		default: {
+			if (a.is_array()) {
+				const Array arr_ppa = pre_pre_a.operator Array();
+				const Array arr_pa = pre_a.operator Array();
+				const Array arr_a = a.operator Array();
+				const Array arr_b = b.operator Array();
+				const Array arr_pb = post_b.operator Array();
+				const Array arr_ppb = post_post_b.operator Array();
+
+				int min_size = arr_a.size();
+				int max_size = arr_b.size();
+				bool is_a_larger = inform_variant_array(min_size, max_size);
+
+				Array result;
+				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Variant());
+				result.resize(min_size);
+
+				if (min_size == 0 && max_size == 0) {
+					return result;
+				}
+
+				Variant vz;
+				if (is_a_larger) {
+					vz = arr_a[0];
+				} else {
+					vz = arr_b[0];
+				}
+				vz.zero();
+				Variant pre_pre_last = arr_ppa.size() ? arr_ppa[arr_ppa.size() - 1] : vz;
+				Variant pre_last = arr_pa.size() ? arr_pa[arr_pa.size() - 1] : vz;
+				Variant post_last = arr_pb.size() ? arr_pb[arr_pb.size() - 1] : vz;
+				Variant post_post_last = arr_ppb.size() ? arr_ppb[arr_ppb.size() - 1] : vz;
+
+				int i = 0;
+				for (; i < min_size; i++) {
+					result[i] = makima_interpolate_in_time_variant(i >= arr_ppa.size() ? pre_pre_last : arr_ppa[i], i >= arr_pa.size() ? pre_last : arr_pa[i], arr_a[i], arr_b[i], i >= arr_pb.size() ? post_last : arr_pb[i], i >= arr_ppb.size() ? post_post_last : arr_ppb[i], c, p_pre_pre_a_t, p_pre_a_t, p_b_t, p_post_b_t, p_post_post_b_t);
+				}
+				if (min_size != max_size) {
+					// Process with last element of the lesser array.
+					// This is pretty funny and bizarre, but artists like to use it for polygon animation.
+					Variant lesser_last = vz;
+					if (is_a_larger && !Math::is_equal_approx(c, 1.0f)) {
+						result.resize(max_size);
+						if (p_snap_array_element) {
+							c = 0;
+						}
+						if (i > 0) {
+							lesser_last = arr_b[i - 1];
+						}
+						for (; i < max_size; i++) {
+							result[i] = makima_interpolate_in_time_variant(i >= arr_ppa.size() ? pre_pre_last : arr_ppa[i], i >= arr_pa.size() ? pre_last : arr_pa[i], arr_a[i], lesser_last, i >= arr_pb.size() ? post_last : arr_pb[i], i >= arr_ppb.size() ? post_post_last : arr_ppb[i], c, p_pre_pre_a_t, p_pre_a_t, p_b_t, p_post_b_t, p_post_post_b_t);
+						}
+					} else if (!is_a_larger && !Math::is_zero_approx(c)) {
+						result.resize(max_size);
+						if (p_snap_array_element) {
+							c = 1;
+						}
+						if (i > 0) {
+							lesser_last = arr_a[i - 1];
+						}
+						for (; i < max_size; i++) {
+							result[i] = makima_interpolate_in_time_variant(i >= arr_ppa.size() ? pre_pre_last : arr_ppa[i], i >= arr_pa.size() ? pre_last : arr_pa[i], lesser_last, arr_b[i], i >= arr_pb.size() ? post_last : arr_pb[i], i >= arr_ppb.size() ? post_post_last : arr_ppb[i], c, p_pre_pre_a_t, p_pre_a_t, p_b_t, p_post_b_t, p_post_post_b_t);
 						}
 					}
 				}

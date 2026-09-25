@@ -87,6 +87,12 @@ struct VariantUtilityFunctions {
 			double p_to_t, double p_pre_t, double p_post_t);
 	static double cubic_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
 			double p_to_t, double p_pre_t, double p_post_t);
+	static double makima_interpolate(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight);
+	static double makima_interpolate_angle(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight);
+	static double makima_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight,
+			double p_to_t, double p_pre_t, double p_post_t, double p_pre_pre_t, double p_post_post_t);
+	static double makima_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_pre_pre, double p_post_post, double p_weight,
+			double p_to_t, double p_pre_t, double p_post_t, double p_pre_pre_t, double p_post_post_t);
 	static double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t);
 	static double bezier_derivative(double p_start, double p_control_1, double p_control_2, double p_end, double p_t);
 	static double angle_difference(double p_from, double p_to);

@@ -2125,6 +2125,28 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 
 ////////////////////////////////////
 
+// To make the editor order makima next to cubic, mapping Animation::InterpolationType
+// since the enum cannot be reordered without breaking the serialized values.
+// TODO: Change this when the enum is reordered in Godot 5.
+static const Animation::InterpolationType INTERP_EDITOR_TO_ANIM[] = {
+	Animation::INTERPOLATION_NEAREST,
+	Animation::INTERPOLATION_LINEAR,
+	Animation::INTERPOLATION_CUBIC,
+	Animation::INTERPOLATION_MAKIMA,
+	Animation::INTERPOLATION_LINEAR_ANGLE,
+	Animation::INTERPOLATION_CUBIC_ANGLE,
+	Animation::INTERPOLATION_MAKIMA_ANGLE,
+};
+static const uint32_t ANIM_TO_INTERP_EDITOR[] = {
+	0, // INTERPOLATION_NEAREST
+	1, // INTERPOLATION_LINEAR
+	2, // INTERPOLATION_CUBIC
+	4, // INTERPOLATION_LINEAR_ANGLE
+	5, // INTERPOLATION_CUBIC_ANGLE
+	3, // INTERPOLATION_MAKIMA
+	6, // INTERPOLATION_MAKIMA_ANGLE
+};
+
 void AnimationTrackEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -2373,12 +2395,14 @@ void AnimationTrackEdit::_notification(int p_what) {
 					get_editor_theme_icon(SNAME("InterpWrapClamp")),
 					get_editor_theme_icon(SNAME("InterpWrapLoop")),
 				};
-				Ref<Texture2D> interp_icon[5] = {
+				Ref<Texture2D> interp_icon[7] = {
 					get_editor_theme_icon(SNAME("InterpRaw")),
 					get_editor_theme_icon(SNAME("InterpLinear")),
 					get_editor_theme_icon(SNAME("InterpCubic")),
+					get_editor_theme_icon(SNAME("InterpMakima")),
 					get_editor_theme_icon(SNAME("InterpLinearAngle")),
 					get_editor_theme_icon(SNAME("InterpCubicAngle")),
+					get_editor_theme_icon(SNAME("InterpMakimaAngle")),
 				};
 				Ref<Texture2D> cont_icon[3] = {
 					get_editor_theme_icon(SNAME("TrackContinuous")),
@@ -2453,7 +2477,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 					Animation::InterpolationType interp_mode = animation->track_get_interpolation_type(track);
 
-					Ref<Texture2D> icon = interp_icon[interp_mode];
+					Ref<Texture2D> icon = interp_icon[ANIM_TO_INTERP_EDITOR[interp_mode]];
 
 					interp_mode_rect.position.x = ofs;
 					interp_mode_rect.position.y = Math::round((get_size().height - icon->get_height()) / 2);
@@ -3164,6 +3188,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpRaw")), TTR("Nearest"), MENU_INTERPOLATION_NEAREST);
 				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpLinear")), TTR("Linear"), MENU_INTERPOLATION_LINEAR);
 				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpCubic")), TTR("Cubic"), MENU_INTERPOLATION_CUBIC);
+				menu->add_icon_item(get_editor_theme_icon(SNAME("InterpMakima")), TTR("Makima"), MENU_INTERPOLATION_MAKIMA);
 				// Check whether it is angle property.
 				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
 				if (ape) {
@@ -3188,6 +3213,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 							if (is_angle) {
 								menu->add_icon_item(get_editor_theme_icon(SNAME("InterpLinearAngle")), TTR("Linear Angle"), MENU_INTERPOLATION_LINEAR_ANGLE);
 								menu->add_icon_item(get_editor_theme_icon(SNAME("InterpCubicAngle")), TTR("Cubic Angle"), MENU_INTERPOLATION_CUBIC_ANGLE);
+								menu->add_icon_item(get_editor_theme_icon(SNAME("InterpMakimaAngle")), TTR("Makima Angle"), MENU_INTERPOLATION_MAKIMA_ANGLE);
 							}
 						}
 					}
@@ -3644,9 +3670,11 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_INTERPOLATION_NEAREST:
 		case MENU_INTERPOLATION_LINEAR:
 		case MENU_INTERPOLATION_CUBIC:
+		case MENU_INTERPOLATION_MAKIMA:
 		case MENU_INTERPOLATION_LINEAR_ANGLE:
-		case MENU_INTERPOLATION_CUBIC_ANGLE: {
-			Animation::InterpolationType interp_mode = Animation::InterpolationType(p_index - MENU_INTERPOLATION_NEAREST);
+		case MENU_INTERPOLATION_CUBIC_ANGLE:
+		case MENU_INTERPOLATION_MAKIMA_ANGLE: {
+			Animation::InterpolationType interp_mode = INTERP_EDITOR_TO_ANIM[p_index - MENU_INTERPOLATION_NEAREST];
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Change Animation Interpolation Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
@@ -7423,7 +7451,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				int len = keys.size() - 1;
 
 				// Special case for angle interpolation.
-				bool is_using_angle = animation->track_get_interpolation_type(track) == Animation::INTERPOLATION_LINEAR_ANGLE || animation->track_get_interpolation_type(track) == Animation::INTERPOLATION_CUBIC_ANGLE;
+				bool is_using_angle = animation->track_get_interpolation_type(track) == Animation::INTERPOLATION_LINEAR_ANGLE || animation->track_get_interpolation_type(track) == Animation::INTERPOLATION_CUBIC_ANGLE || animation->track_get_interpolation_type(track) == Animation::INTERPOLATION_MAKIMA_ANGLE;
 
 				// Make insert queue.
 				Vector<Pair<real_t, Variant>> insert_queue_new;
@@ -7672,7 +7700,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					}
 
 					// Special case for angle interpolation.
-					bool is_using_angle = it == Animation::INTERPOLATION_LINEAR_ANGLE || it == Animation::INTERPOLATION_CUBIC_ANGLE;
+					bool is_using_angle = it == Animation::INTERPOLATION_LINEAR_ANGLE || it == Animation::INTERPOLATION_CUBIC_ANGLE || it == Animation::INTERPOLATION_MAKIMA_ANGLE;
 
 					// Make insert queue.
 					Vector<Pair<real_t, Variant>> insert_queue_new;
