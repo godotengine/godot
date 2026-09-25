@@ -360,8 +360,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (sound_amount > 0) {
-		Array arr = { sound_amount };
-		select_sounds_label->set_text(TTRN("1 sound", "{num} sounds", sound_amount).format(arr, "{num}"));
+		select_sounds_label->set_text(vformat(TTRN("%d sound", "%d sounds", sound_amount), sound_amount));
 		select_all_sounds_button->set_visible(true);
 		select_full_sounds_button->set_visible(true);
 		deselect_all_sounds_button->set_visible(true);
