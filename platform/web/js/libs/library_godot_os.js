@@ -242,6 +242,7 @@ const GodotOS = {
 	$GodotOS__deps: ['$GodotRuntime', '$GodotConfig', '$GodotFS'],
 	$GodotOS__postset: [
 		'Module["request_quit"] = function() { GodotOS.request_quit() };',
+		'Module["force_quit"] = function(code) { _emscripten_force_exit(code ?? 1) };',
 		'Module["onExit"] = GodotOS.cleanup;',
 		'GodotOS._fs_sync_promise = Promise.resolve();',
 	].join(''),
