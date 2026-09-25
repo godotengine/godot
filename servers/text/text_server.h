@@ -325,6 +325,9 @@ public:
 	virtual void font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) = 0;
 	virtual bool font_is_allow_system_fallback(const RID &p_font_rid) const = 0;
 
+	virtual void font_set_use_missing_glyph(const RID &p_font_rid, bool p_use_missing_glyph) = 0;
+	virtual bool font_get_use_missing_glyph(const RID &p_font_rid) const = 0;
+
 	virtual void font_clear_system_fallback_cache() {}
 
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) = 0;

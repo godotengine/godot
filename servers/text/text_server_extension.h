@@ -205,6 +205,11 @@ public:
 	GDVIRTUAL1RC(bool, _font_is_allow_system_fallback, RID);
 	GDVIRTUAL0(_font_clear_system_fallback_cache);
 
+	virtual void font_set_use_missing_glyph(const RID &p_font_rid, bool p_use_missing_glyph) override;
+	virtual bool font_get_use_missing_glyph(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_use_missing_glyph, RID, bool);
+	GDVIRTUAL1RC(bool, _font_get_use_missing_glyph, RID);
+
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) override;
 	virtual bool font_is_force_autohinter(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_force_autohinter, RID, bool);
