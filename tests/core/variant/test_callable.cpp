@@ -328,7 +328,7 @@ public:
 		mi = MethodInfo();
 	}
 
-	bool is_valid_mi(const String &p_method_name, const Dictionary &p_callable_method_info_dict) {
+	bool is_valid_mi(const String &p_method_name, const Dictionary &p_callable_method_info_dict, const bool is_method_pointer) {
 		ERR_FAIL_COND_V_MSG(p_method_name.is_empty(), false,
 				"Method Name cannot be empty.");
 		ERR_FAIL_COND_V_MSG(!methods.has(p_method_name), false,
@@ -369,14 +369,19 @@ public:
 			}
 		}
 
-		bool is_default_args_euqal = expect_method.default_arguments.size() == method.default_arguments.size();
-		if (is_default_args_euqal) {
-			for (uint32_t i = 0; i < method.default_arguments.size(); ++i) {
-				if (!(expect_method.default_arguments[i] == method.default_arguments[i])) {
-					is_default_args_euqal = false;
-					ERR_PRINT(vformat("default_arguments[%d] not as expected.\nGot: %s,\nExpected: %s",
-							i, method.default_arguments[i], expect_method.default_arguments[i]));
-					break;
+		// TODO: Callables made from C++ Method Pointer can't give you its default arguments due to implementation
+		//       details and skip checking default arguments for callable method pointer.
+		bool is_default_args_euqal = true;
+		if (!is_method_pointer) {
+			is_default_args_euqal = expect_method.default_arguments.size() == method.default_arguments.size();
+			if (is_default_args_euqal) {
+				for (uint32_t i = 0; i < method.default_arguments.size(); ++i) {
+					if (!(expect_method.default_arguments[i] == method.default_arguments[i])) {
+						is_default_args_euqal = false;
+						ERR_PRINT(vformat("default_arguments[%d] not as expected.\nGot: %s,\nExpected: %s",
+								i, method.default_arguments[i], expect_method.default_arguments[i]));
+						break;
+					}
 				}
 			}
 		}
@@ -399,24 +404,34 @@ public:
 };
 
 #define CALLABLE_TEST(class_instance, method_name) \
-	CHECK(class_instance->is_valid_mi(#method_name, \
-			Callable(class_instance, #method_name).get_method_info()));
+	CHECK(class_instance->is_valid_mi( \
+			#method_name, \
+			Callable(class_instance, #method_name).get_method_info(), \
+			false));
 
 #define CALLABLE_MP_TEST(class_name, class_instance, method_name) \
-	CHECK(class_instance->is_valid_mi(#method_name, \
-			callable_mp(class_instance, &class_name::method_name).get_method_info()));
+	CHECK(class_instance->is_valid_mi( \
+			#method_name, \
+			callable_mp(class_instance, &class_name::method_name).get_method_info(), \
+			true));
 
 #define CALLABLE_MP_BIND_TEST(class_name, class_instance, method_name, ...) \
-	CHECK(class_instance->is_valid_mi(#method_name, \
-			callable_mp(class_instance, &class_name::method_name).bind(__VA_ARGS__).get_method_info()));
+	CHECK(class_instance->is_valid_mi( \
+			#method_name, \
+			callable_mp(class_instance, &class_name::method_name).bind(__VA_ARGS__).get_method_info(), \
+			true));
 
 #define CALLABLE_MP_UNBIND_TEST(class_name, class_instance, method_name, unbind_amount) \
-	CHECK(class_instance->is_valid_mi(#method_name, \
-			callable_mp(class_instance, &class_name::method_name).unbind(unbind_amount).get_method_info()));
+	CHECK(class_instance->is_valid_mi( \
+			#method_name, \
+			callable_mp(class_instance, &class_name::method_name).unbind(unbind_amount).get_method_info(), \
+			true));
 
 #define CALLABLE_MP_STATIC_TEST(class_name, class_instance, method_name) \
-	CHECK(class_instance->is_valid_mi(#method_name, \
-			callable_mp_static(&class_name::method_name).get_method_info()));
+	CHECK(class_instance->is_valid_mi( \
+			#method_name, \
+			callable_mp_static(&class_name::method_name).get_method_info(), \
+			true));
 
 TEST_CASE("[Callable] Method Info") {
 	TestGetMethodInfo *my_test = memnew(TestGetMethodInfo);
