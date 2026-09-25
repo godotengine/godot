@@ -1344,6 +1344,9 @@ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data, const Vector2i
 		} else if (FT_HAS_COLOR(p_font_data->face)) {
 			flags |= FT_LOAD_COLOR;
 		}
+		if (glyph_index == 0xffffff) {
+			glyph_index = 0; // .notdef
+		}
 
 		FT_Fixed v, h;
 		FT_Get_Advance(p_font_data->face, glyph_index, flags, &h);
@@ -2779,6 +2782,22 @@ bool TextServerAdvanced::_font_is_allow_system_fallback(const RID &p_font_rid) c
 
 	MutexLock lock(fd->mutex);
 	return fd->allow_system_fallback;
+}
+
+void TextServerAdvanced::_font_set_use_missing_glyph(const RID &p_font_rid, bool p_use_missing_glyph) {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+	MutexLock lock(fd->mutex);
+	fd->nodef = p_use_missing_glyph;
+}
+
+bool TextServerAdvanced::_font_get_use_missing_glyph(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->nodef;
 }
 
 void TextServerAdvanced::_font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) {
@@ -7172,18 +7191,36 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 					}
 				}
 				if (!found) {
-					gl.font_rid = RID();
-					gl.index = p_sd->text[i];
-					if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
-						gl.advance = get_hex_code_box_size(fs, gl.index).x;
-						p_sd->ascent = MAX(p_sd->ascent, get_hex_code_box_size(fs, gl.index).y * 0.85);
-						p_sd->descent = MAX(p_sd->descent, get_hex_code_box_size(fs, gl.index).y * 0.15);
+					if (_font_get_use_missing_glyph(p_fonts[0])) {
+						gl.font_rid = p_fonts[0];
+						gl.index = 0xffffff;
+						if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+							gl.advance = _font_get_glyph_advance(gl.font_rid, fs, gl.index).x;
+							gl.x_off = 0;
+							gl.y_off = _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+							p_sd->ascent = MAX(p_sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP));
+							p_sd->descent = MAX(p_sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM));
+						} else {
+							gl.advance = _font_get_glyph_advance(gl.font_rid, fs, gl.index).y;
+							gl.x_off = -Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5) + _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+							gl.y_off = _font_get_ascent(gl.font_rid, gl.font_size);
+							p_sd->ascent = MAX(p_sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
+							p_sd->descent = MAX(p_sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
+						}
 					} else {
-						gl.advance = get_hex_code_box_size(fs, gl.index).y;
-						gl.y_off = get_hex_code_box_size(fs, gl.index).y;
-						gl.x_off = -Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5);
-						p_sd->ascent = MAX(p_sd->ascent, Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5));
-						p_sd->descent = MAX(p_sd->descent, Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5));
+						gl.font_rid = RID();
+						gl.index = p_sd->text[i];
+						if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
+							gl.advance = get_hex_code_box_size(fs, gl.index).x;
+							p_sd->ascent = MAX(p_sd->ascent, get_hex_code_box_size(fs, gl.index).y * 0.85);
+							p_sd->descent = MAX(p_sd->descent, get_hex_code_box_size(fs, gl.index).y * 0.15);
+						} else {
+							gl.advance = get_hex_code_box_size(fs, gl.index).y;
+							gl.y_off = get_hex_code_box_size(fs, gl.index).y;
+							gl.x_off = -Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5);
+							p_sd->ascent = MAX(p_sd->ascent, Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5));
+							p_sd->descent = MAX(p_sd->descent, Math::round(get_hex_code_box_size(fs, gl.index).x * 0.5));
+						}
 					}
 				}
 				bool zero_w = (p_sd->preserve_control) ? (p_sd->text[i] == 0x200B || p_sd->text[i] == 0xFEFF) : ((p_sd->text[i] >= 0x200B && p_sd->text[i] <= 0x200D) || p_sd->text[i] == 0x2060 || p_sd->text[i] == 0xFEFF);

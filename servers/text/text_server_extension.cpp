@@ -110,6 +110,9 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_is_allow_system_fallback, "font_rid");
 	GDVIRTUAL_BIND(_font_clear_system_fallback_cache);
 
+	GDVIRTUAL_BIND(_font_set_use_missing_glyph, "font_rid", "use_missing_glyph");
+	GDVIRTUAL_BIND(_font_get_use_missing_glyph, "font_rid");
+
 	GDVIRTUAL_BIND(_font_set_force_autohinter, "font_rid", "force_autohinter");
 	GDVIRTUAL_BIND(_font_is_force_autohinter, "font_rid");
 
@@ -687,6 +690,16 @@ bool TextServerExtension::font_is_allow_system_fallback(const RID &p_font_rid) c
 
 void TextServerExtension::font_clear_system_fallback_cache() {
 	GDVIRTUAL_CALL(_font_clear_system_fallback_cache);
+}
+
+void TextServerExtension::font_set_use_missing_glyph(const RID &p_font_rid, bool p_use_missing_glyph) {
+	GDVIRTUAL_CALL(_font_set_use_missing_glyph, p_font_rid, p_use_missing_glyph);
+}
+
+bool TextServerExtension::font_get_use_missing_glyph(const RID &p_font_rid) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_font_get_use_missing_glyph, p_font_rid, ret);
+	return ret;
 }
 
 void TextServerExtension::font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) {

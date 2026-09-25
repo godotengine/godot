@@ -694,6 +694,9 @@ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i
 		} else if (FT_HAS_COLOR(p_font_data->face)) {
 			flags |= FT_LOAD_COLOR;
 		}
+		if (glyph_index == 0xffffff) {
+			glyph_index = 0; // .notdef
+		}
 
 		glyph_index = FT_Get_Char_Index(p_font_data->face, glyph_index);
 
@@ -1522,6 +1525,22 @@ bool TextServerFallback::_font_is_allow_system_fallback(const RID &p_font_rid) c
 
 	MutexLock lock(fd->mutex);
 	return fd->allow_system_fallback;
+}
+
+void TextServerFallback::_font_set_use_missing_glyph(const RID &p_font_rid, bool p_use_missing_glyph) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+	MutexLock lock(fd->mutex);
+	fd->nodef = p_use_missing_glyph;
+}
+
+bool TextServerFallback::_font_get_use_missing_glyph(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->nodef;
 }
 
 void TextServerFallback::_font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) {
@@ -5043,15 +5062,33 @@ bool TextServerFallback::_shaped_text_shape(const RID &p_shaped) {
 						gl.advance = Math::round(gl.advance);
 					}
 				} else if (sd->preserve_invalid || (sd->preserve_control && is_control(gl.index))) {
-					// Glyph not found, replace with hex code box.
-					if (sd->orientation == ORIENTATION_HORIZONTAL) {
-						gl.advance = get_hex_code_box_size(gl.font_size, gl.index).x;
-						sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.85);
-						sd->descent = MAX(sd->descent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.15);
+					if (_font_get_use_missing_glyph(span.fonts[0])) {
+						gl.font_rid = span.fonts[0];
+						gl.index = 0xffffff;
+						if (sd->orientation == ORIENTATION_HORIZONTAL) {
+							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x;
+							gl.x_off = 0;
+							gl.y_off = _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+							sd->ascent = MAX(sd->ascent, _font_get_ascent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_TOP));
+							sd->descent = MAX(sd->descent, _font_get_descent(gl.font_rid, gl.font_size) + _font_get_spacing(gl.font_rid, SPACING_BOTTOM));
+						} else {
+							gl.advance = _font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).y;
+							gl.x_off = -Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5) + _font_get_baseline_offset(gl.font_rid) * (double)(_font_get_ascent(gl.font_rid, gl.font_size) + _font_get_descent(gl.font_rid, gl.font_size));
+							gl.y_off = _font_get_ascent(gl.font_rid, gl.font_size);
+							sd->ascent = MAX(sd->ascent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
+							sd->descent = MAX(sd->descent, Math::round(_font_get_glyph_advance(gl.font_rid, gl.font_size, gl.index).x * 0.5));
+						}
 					} else {
-						gl.advance = get_hex_code_box_size(gl.font_size, gl.index).y;
-						sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
-						sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
+						// Glyph not found, replace with hex code box.
+						if (sd->orientation == ORIENTATION_HORIZONTAL) {
+							gl.advance = get_hex_code_box_size(gl.font_size, gl.index).x;
+							sd->ascent = MAX(sd->ascent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.85);
+							sd->descent = MAX(sd->descent, get_hex_code_box_size(gl.font_size, gl.index).y * 0.15);
+						} else {
+							gl.advance = get_hex_code_box_size(gl.font_size, gl.index).y;
+							sd->ascent = MAX(sd->ascent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
+							sd->descent = MAX(sd->descent, Math::round(get_hex_code_box_size(gl.font_size, gl.index).x * 0.5));
+						}
 					}
 				}
 				if (zw) {

@@ -660,5 +660,8 @@
 		<member name="subpixel_positioning" type="int" setter="set_subpixel_positioning" getter="get_subpixel_positioning" enum="TextServer.SubpixelPositioning" default="1">
 			Font glyph subpixel positioning mode. Subpixel positioning provides shaper text and better kerning for smaller font sizes, at the cost of higher memory usage and lower font rasterization speed. Use [constant TextServer.SUBPIXEL_POSITIONING_AUTO] to automatically enable it based on the font size.
 		</member>
+		<member name="use_missing_glyph" type="bool" setter="set_use_missing_glyph" getter="get_use_missing_glyph" default="false">
+			If set to [code]true[/code], font uses builtin [code].nodef[/code] glyph to substitute missing glyphs, otherwise hex code box is used.If set to [code]true[/code], font uses built-in [code].nodef[/code] glyph to substitute missing glyphs, otherwise hex code box is used.
+		</member>
 	</members>
 </class>

@@ -85,5 +85,8 @@
 			[b]One Quarter of a Pixel:[/b] Always perform precise subpixel positioning regardless of font size. Highest quality, slowest rendering.
 			[b]Auto (Except Pixel Fonts):[/b] [b]Disabled[/b] for pixel style fonts (each glyph's contours contain only straight horizontal and vertical lines), [b]Auto[/b] for other fonts.
 		</member>
+		<member name="use_missing_glyph" type="bool" setter="" getter="" default="false">
+			If set to [code]true[/code], font uses built-in [code].nodef[/code] glyph to substitute missing glyphs, otherwise hex code box is used.
+		</member>
 	</members>
 </class>

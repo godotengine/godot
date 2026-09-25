@@ -572,6 +572,13 @@
 				Returns thickness of the underline in pixels.
 			</description>
 		</method>
+		<method name="font_get_use_missing_glyph" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code], if font uses built-in [code].nodef[/code] glyph to substitute missing glyphs.
+			</description>
+		</method>
 		<method name="font_get_used_palette" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
@@ -1087,6 +1094,14 @@
 			<param index="2" name="underline_thickness" type="float" />
 			<description>
 				Sets thickness of the underline in pixels.
+			</description>
+		</method>
+		<method name="font_set_use_missing_glyph">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="use_missing_glyph" type="bool" />
+			<description>
+				If set to [code]true[/code], font uses built-in [code].nodef[/code] glyph to substitute missing glyphs, otherwise hex code box is used.
 			</description>
 		</method>
 		<method name="font_set_used_palette">
