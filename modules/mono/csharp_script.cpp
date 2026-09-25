@@ -2080,8 +2080,11 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 	for (int i = 0; i < p_count; i++) {
 		const GDMonoCache::godotsharp_property_info &prop = props[i];
 
-		StringName name = *reinterpret_cast<const StringName *>(&prop.name);
-		String hint_string = *reinterpret_cast<const String *>(&prop.hint_string);
+		uint8_t buffer_name[sizeof(StringName)];
+		uint8_t buffer_hint_string[sizeof(String)];
+
+		const StringName &name = *static_cast<StringName *>(memcpy(buffer_name, &prop.name, sizeof(StringName)));
+		const String &hint_string = *static_cast<String *>(memcpy(buffer_hint_string, &prop.hint_string, sizeof(String)));
 
 		PropertyInfo pinfo(prop.type, name, prop.hint, hint_string, prop.usage);
 
@@ -2106,8 +2109,11 @@ void GD_CLR_STDCALL CSharpScript::_add_property_default_values_callback(CSharpSc
 	for (int i = 0; i < p_count; i++) {
 		const GDMonoCache::godotsharp_property_def_val_pair &def_val_pair = def_vals[i];
 
-		StringName name = *reinterpret_cast<const StringName *>(&def_val_pair.name);
-		Variant value = *reinterpret_cast<const Variant *>(&def_val_pair.value);
+		uint8_t buffer_name[sizeof(StringName)];
+		uint8_t buffer_value[sizeof(Variant)];
+
+		const StringName &name = *static_cast<StringName *>(memcpy(buffer_name, &def_val_pair.name, sizeof(StringName)));
+		const Variant &value = *static_cast<Variant *>(memcpy(buffer_value, &def_val_pair.value, sizeof(Variant)));
 
 		p_script->exported_members_defval_cache[name] = value;
 	}
