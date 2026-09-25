@@ -288,6 +288,7 @@ class ScriptEditor : public EditorDock {
 	struct ScriptHistory {
 		Control *control = nullptr;
 		Dictionary state;
+		String source;
 	};
 
 	Vector<ScriptHistory> history;
