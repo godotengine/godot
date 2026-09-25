@@ -754,7 +754,6 @@ Error EditorHelp::_goto_desc(const String &p_class, bool p_can_trigger_save_hist
 
 void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocData::MethodDoc> &p_methods) {
 	class_desc->add_newline();
-	class_desc->add_newline();
 
 	static const char *titles_by_type[METHOD_TYPE_MAX] = {
 		TTRC("Methods"),
@@ -787,8 +786,12 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 
 		if (any_previous && !m.is_empty()) {
 			class_desc->push_cell();
+			class_desc->push_font_size(1);
+			class_desc->pop(); // font_size
 			class_desc->pop(); // cell
 			class_desc->push_cell();
+			class_desc->push_font_size(1);
+			class_desc->pop(); // font_size
 			class_desc->pop(); // cell
 		}
 
@@ -807,8 +810,12 @@ void EditorHelp::_update_method_list(MethodType p_method_type, const Vector<DocD
 
 			if (is_new_group && pass == 1) {
 				class_desc->push_cell();
+				class_desc->push_font_size(1);
+				class_desc->pop(); // font_size
 				class_desc->pop(); // cell
 				class_desc->push_cell();
+				class_desc->push_font_size(1);
+				class_desc->pop(); // font_size
 				class_desc->pop(); // cell
 			}
 
@@ -1077,7 +1084,6 @@ void EditorHelp::_update_doc() {
 
 	// Class description
 	class_desc->add_newline();
-	class_desc->add_newline();
 
 	section_line.push_back(Pair<String, int>(TTR("Description"), class_desc->get_paragraph_count() - 2));
 	description_line = class_desc->get_paragraph_count() - 2;
@@ -1149,7 +1155,6 @@ void EditorHelp::_update_doc() {
 	// Online tutorials
 	if (!cd.tutorials.is_empty()) {
 		class_desc->add_newline();
-		class_desc->add_newline();
 
 		section_line.push_back(Pair<String, int>(TTR("Online Tutorials"), class_desc->get_paragraph_count() - 2));
 		description_line = class_desc->get_paragraph_count() - 2;
@@ -1212,7 +1217,6 @@ void EditorHelp::_update_doc() {
 
 	if (has_properties) {
 		class_desc->add_newline();
-		class_desc->add_newline();
 
 		section_line.push_back(Pair<String, int>(TTR("Properties"), class_desc->get_paragraph_count() - 2));
 		_push_title_font();
@@ -1242,12 +1246,20 @@ void EditorHelp::_update_doc() {
 				// No need for the extra spacing when there's no overridden property.
 				if (overridden_property_exists) {
 					class_desc->push_cell();
+					class_desc->push_font_size(1);
+					class_desc->pop(); // font_size
 					class_desc->pop(); // cell
 					class_desc->push_cell();
+					class_desc->push_font_size(1);
+					class_desc->pop(); // font_size
 					class_desc->pop(); // cell
 					class_desc->push_cell();
+					class_desc->push_font_size(1);
+					class_desc->pop(); // font_size
 					class_desc->pop(); // cell
 					class_desc->push_cell();
+					class_desc->push_font_size(1);
+					class_desc->pop(); // font_size
 					class_desc->pop(); // cell
 				}
 			}
@@ -2217,6 +2229,8 @@ void EditorHelp::_update_doc() {
 
 				if (!prop.setter.is_empty()) {
 					class_desc->push_cell();
+					class_desc->push_font_size(1);
+					class_desc->pop(); // font_size
 					class_desc->pop(); // cell
 
 					class_desc->push_cell();
@@ -2244,6 +2258,8 @@ void EditorHelp::_update_doc() {
 
 				if (!prop.getter.is_empty()) {
 					class_desc->push_cell();
+					class_desc->push_font_size(1);
+					class_desc->pop(); // font_size
 					class_desc->pop(); // cell
 
 					class_desc->push_cell();
@@ -2271,8 +2287,6 @@ void EditorHelp::_update_doc() {
 			}
 
 			class_desc->pop(); // table
-
-			class_desc->add_newline();
 
 			class_desc->push_indent(1);
 			_push_normal_font();
