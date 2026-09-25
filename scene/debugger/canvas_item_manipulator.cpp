@@ -2116,17 +2116,9 @@ void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *
 	xform = (xform * ci->get_transform()).affine_inverse();
 	const real_t local_grab_distance = xform.basis_xform(Vector2(grab_distance, 0)).length() / zoom;
 	if (ci->_edit_is_selected_on_click(xform.xform(pos), local_grab_distance)) {
-		Node2D *node = Object::cast_to<Node2D>(ci);
-
 		DebuggerHelpers::SelectResult res;
 		res.item = ci;
-		res.has_order = node;
-		if (is_editor) {
-			res.order = node ? node->get_z_index() : 0;
-		} else {
-			res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
-		}
-
+		res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
 		r_items.push_back(res);
 	}
 }
@@ -2216,17 +2208,9 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 	}
 
 	if (selected) {
-		Node2D *node = Object::cast_to<Node2D>(ci);
-
 		DebuggerHelpers::SelectResult res;
 		res.item = ci;
-		res.has_order = node;
-		if (is_editor) {
-			res.order = node ? node->get_z_index() : 0;
-		} else {
-			res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
-		}
-
+		res.order = ci->get_effective_z_index() + ci->get_canvas_layer();
 		r_items.push_back(res);
 	}
 }
