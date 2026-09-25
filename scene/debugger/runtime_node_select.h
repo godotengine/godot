@@ -41,6 +41,7 @@
 #endif // _3D_DISABLED
 
 class PopupMenu;
+class Texture2D;
 class ViewPanner;
 
 #ifndef _3D_DISABLED
