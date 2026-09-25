@@ -37,6 +37,7 @@
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
 #include "../objects/jolt_object_3d.h"
+#include "../shapes/jolt_custom_double_sided_shape.h"
 #include "../shapes/jolt_custom_motion_shape.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "jolt_motion_filter_3d.h"
@@ -52,6 +53,8 @@
 #include <Jolt/Physics/Collision/CollidePointResult.h>
 #include <Jolt/Physics/Collision/NarrowPhaseQuery.h>
 #include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/Shape/CompoundShape.h>
+#include <Jolt/Physics/Collision/Shape/DecoratedShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
@@ -592,14 +595,38 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const PS3DT::ShapeParameters 
 	for (int ts = 0, nts = ts_collector.get_hit_count(); ts < nts; ts++) {
 		const JPH::TransformedShape &transformed_shape = ts_collector.get_hit(ts);
 
+		const JoltObject3D *object = space->try_get_object(transformed_shape.mBodyID);
+		ERR_FAIL_NULL_V(object, 0);
+
+		const JPH::Body *body = object->get_jolt_body();
+		ERR_FAIL_NULL_V(body, 0);
+
+		// Determine if there is a JoltCustomDoubleSidedShape on the path to this leaf shape, and if so set the double sided mode.
+		settings.mBackFaceMode = JPH::EBackFaceMode::IgnoreBackFaces;
+		const JPH::Shape *hit_shape = body->GetShape();
+		JPH::SubShapeID hit_sub_shape_id = transformed_shape.mSubShapeIDCreator.GetID();
+		for (;;) {
+			if (hit_shape->GetType() == JPH::EShapeType::Compound) {
+				JPH::SubShapeID remainder;
+				const JPH::CompoundShape *compound = static_cast<const JPH::CompoundShape *>(hit_shape);
+				JPH::uint32 idx = compound->GetSubShapeIndexFromID(hit_sub_shape_id, remainder);
+				hit_shape = compound->GetSubShape(idx).mShape;
+				hit_sub_shape_id = remainder;
+			} else if (hit_shape->GetSubType() == JoltCustomShapeSubType::DOUBLE_SIDED && static_cast<const JoltCustomDoubleSidedShape *>(hit_shape)->should_collide_with_back_faces()) {
+				settings.mBackFaceMode = JPH::EBackFaceMode::CollideWithBackFaces;
+				break;
+			} else if (hit_shape->GetType() == JPH::EShapeType::Decorated) {
+				hit_shape = static_cast<const JPH::DecoratedShape *>(hit_shape)->GetInnerShape();
+			} else {
+				break;
+			}
+		}
+
 		JoltQueryCollectorAny<JPH::CollideShapeCollector> leaf_collector;
 		transformed_shape.CollideShape(jolt_shape, jolt_scale, jolt_transform_com, settings, jolt_transform_com.GetTranslation(), leaf_collector);
 
 		if (leaf_collector.had_hit()) {
 			const JPH::CollideShapeResult &hit = leaf_collector.get_hit();
-
-			const JoltObject3D *object = space->try_get_object(transformed_shape.mBodyID);
-			ERR_FAIL_NULL_V(object, 0);
 
 			PS3DT::ShapeResult &result = *r_results++;
 
