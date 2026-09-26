@@ -238,6 +238,7 @@ public:
 	virtual String get_user_data_dir(const String &p_user_dir) const override;
 
 	virtual String expand_path(const String &p_path) const override;
+	static String fix_path(const String &p_path);
 
 	virtual String get_unique_id() const override;
 
