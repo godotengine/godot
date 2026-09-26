@@ -74,6 +74,10 @@ protected:
 	virtual float get_stream_sampling_rate() override;
 
 public:
+#ifdef TOOLS_ENABLED
+	bool is_preview = false;
+#endif
+
 	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
 	virtual bool is_playing() const override;
