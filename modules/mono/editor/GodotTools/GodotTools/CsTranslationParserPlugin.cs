@@ -293,11 +293,12 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
             case 1:
             {
                 var argExpr = arguments[0].Expression;
+                var line = argExpr.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
                 var constantValue = semanticModel.GetConstantValue(argExpr);
 
                 if (constantValue is { HasValue: true, Value: string message })
                 {
-                    _ret.Add([message, "", "", comment]);
+                    _ret.Add([message, "", "", comment, line.ToString()]);
                 }
 
                 break;
@@ -309,11 +310,12 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
 
                 var msgValue = semanticModel.GetConstantValue(msgExpr);
                 var ctxValue = semanticModel.GetConstantValue(ctxExpr);
+                var line = msgExpr.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
 
                 if (msgValue is { HasValue: true, Value: string message } &&
                     ctxValue is { HasValue: true, Value: string context })
                 {
-                    _ret.Add([message, context, "", comment]);
+                    _ret.Add([message, context, "", comment, line.ToString()]);
                 }
 
                 break;
@@ -325,6 +327,7 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
     {
         var singularExpr = arguments[0].Expression;
         var pluralExpr = arguments[1].Expression;
+        var line = singularExpr.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
 
         var singularValue = semanticModel.GetConstantValue(singularExpr);
         var pluralValue = semanticModel.GetConstantValue(pluralExpr);
@@ -344,8 +347,12 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
             {
                 context = ctx;
             }
+            else
+            {
+                return;
+            }
         }
-        _ret.Add([singular, context, plural, comment]);
+        _ret.Add([singular, context, plural, comment, line.ToString()]);
     }
 
     private List<MetadataReference> GetProjectReferences(string projectPath, string configuration = "Debug", string? targetPlatform = null)
