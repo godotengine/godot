@@ -132,6 +132,14 @@ Image::Format CompressedTexture2D::get_format() const {
 	return format;
 }
 
+int CompressedTexture2D::get_mipmap_count() const {
+	return mipmap_count;
+}
+
+bool CompressedTexture2D::has_mipmaps() const {
+	return mipmap_count > 0;
+}
+
 Error CompressedTexture2D::load(const String &p_path) {
 	int lw, lh;
 	Ref<Image> image;
@@ -158,6 +166,7 @@ Error CompressedTexture2D::load(const String &p_path) {
 	h = lh;
 	path_to_file = p_path;
 	format = image->get_format();
+	mipmap_count = image->get_mipmap_count();
 
 	if (get_path().is_empty()) {
 		//temporarily set path if no path set for resource, helps find errors
