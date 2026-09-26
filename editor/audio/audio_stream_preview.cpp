@@ -33,6 +33,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "scene/resources/audio/audio_stream_wav.h"
 #include "servers/audio/audio_server.h"
 
 float AudioStreamPreview::get_length() const {
@@ -200,6 +201,13 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	Preview *preview = &previews[p_stream->get_instance_id()];
 	preview->base_stream = p_stream;
 	preview->playback = preview->base_stream->instantiate_playback();
+
+	Ref<AudioStreamPlaybackWAV> wav_playback = preview->playback;
+	if (wav_playback.is_valid()) {
+		// Disable looping so the preview isn't broken.
+		wav_playback->is_preview = true;
+	}
+
 	preview->generating.set();
 	preview->id = p_stream->get_instance_id();
 
