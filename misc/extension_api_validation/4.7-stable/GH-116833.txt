@@ -1,0 +1,6 @@
+GH-116833
+---------
+Validate extension JSON: Error: Field 'classes/VoxelGI/methods/bake/arguments': size changed value in new API, from 2 to 3.
+
+Added optional "threaded" argument to bake method in VoxelGI class.
+Compatibility method registered.
