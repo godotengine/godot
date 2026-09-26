@@ -37,6 +37,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/settings/editor_settings.h"
@@ -121,6 +122,16 @@ void ShaderCreateDialog::_template_changed(int p_template) {
 }
 
 void ShaderCreateDialog::ok_pressed() {
+	if (missing_base_dir) {
+		String path = file_path->get_text();
+		Error err = EditorFileSystem::get_singleton()->make_dir_recursive(path.strip_edges().get_base_dir());
+		if (err != OK) {
+			alert->set_text(TTR("Error - Could not create the directory for the shader."));
+			alert->popup_centered();
+			return;
+		}
+	}
+
 	if (is_new_shader_created) {
 		_create_new();
 		if (built_in_enabled) {
@@ -402,9 +413,10 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 		return TTRC("Path is not local.");
 	}
 
+	missing_base_dir = false;
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(stripped_file_path.get_base_dir()) != OK) {
-		return TTRC("Invalid base path.");
+		missing_base_dir = true;
 	}
 
 	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -425,6 +437,9 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 }
 
 void ShaderCreateDialog::_update_dialog() {
+	if (missing_base_dir) {
+		validation_panel->set_message(MSG_ID_SHADER, TTRC("Base path is invalid, the target folder will be created automatically."), EditorValidationPanel::MSG_WARNING);
+	}
 	if (!is_built_in && !is_path_valid) {
 		validation_panel->set_message(MSG_ID_SHADER, TTRC("Invalid path."), EditorValidationPanel::MSG_ERROR);
 	}
