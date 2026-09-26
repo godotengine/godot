@@ -37,9 +37,7 @@
 #include "core/debugger/script_debugger.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-#include "core/object/property_info.h"
 #include "core/templates/sort_array.h"
-#include "core/templates/vector.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;

@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/object/method_info.h"
-#include "core/object/property_info.h"
-#include "core/variant/dictionary.h"
 #include "tests/test_macros.h"
 
 TEST_FORCE_LINK(test_callable)

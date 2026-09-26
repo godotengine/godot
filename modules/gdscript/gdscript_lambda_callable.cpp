@@ -34,11 +34,6 @@
 
 #include "core/templates/hashfuncs.h"
 
-#include <core/error/error_macros.h>
-#include <core/object/property_info.h>
-#include <core/string/print_string.h>
-#include <core/variant/dictionary.h>
-
 bool GDScriptLambdaCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	// Lambda callables are only compared by reference.
 	return p_a == p_b;
@@ -95,7 +90,6 @@ int GDScriptLambdaCallable::get_argument_count(bool &r_is_valid) const {
 }
 
 void GDScriptLambdaCallable::get_method_info(MethodInfo &r_method_info) const {
-	print_line("GDScriptLambdaCallable::get_arguments was called!");
 	if (function == nullptr) {
 		return;
 	}
@@ -227,7 +221,6 @@ int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 }
 
 void GDScriptLambdaSelfCallable::get_method_info(MethodInfo &r_method_info) const {
-	print_line("GDScriptLambdaSelfCallable::get_arguments was called!");
 	if (function == nullptr) {
 		return;
 	}

@@ -32,10 +32,6 @@
 
 #include "core/object/method_info.h"
 
-#include <core/error/error_macros.h>
-#include <core/string/print_string.h>
-#include <core/variant/variant.h>
-
 bool GDScriptUtilityCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	return p_a->hash() == p_b->hash();
 }
@@ -100,7 +96,6 @@ int GDScriptUtilityCallable::get_argument_count(bool &r_is_valid) const {
 }
 
 void GDScriptUtilityCallable::get_method_info(MethodInfo &r_method_info) const {
-	print_line("GDScriptUtilityCallable::get_arguments is called!");
 	switch (type) {
 		case TYPE_INVALID:
 			r_method_info = MethodInfo();

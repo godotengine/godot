@@ -37,9 +37,6 @@
 #include "core/variant/callable_bind.h"
 #include "core/variant/variant_callable.h"
 
-#include <core/string/print_string.h>
-#include <core/variant/dictionary.h>
-
 void Callable::call_deferredp(const Variant **p_arguments, int p_argcount) const {
 	MessageQueue::get_singleton()->push_callablep(*this, p_arguments, p_argcount, true);
 }
@@ -238,7 +235,6 @@ void Callable::get_method_info_ref(MethodInfo &r_method_info) const {
 }
 
 Dictionary Callable::get_method_info() const {
-	print_line("Callable::get_arguments called!");
 	MethodInfo mi;
 	get_method_info_ref(mi);
 	return mi.operator Dictionary();
@@ -490,7 +486,6 @@ int CallableCustom::get_argument_count(bool &r_is_valid) const {
 }
 
 void CallableCustom::get_method_info(MethodInfo &r_method_info) const {
-	print_line("CallableCustom::get_arguments is called!");
 	r_method_info = MethodInfo();
 }
 
