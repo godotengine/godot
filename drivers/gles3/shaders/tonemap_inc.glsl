@@ -20,8 +20,7 @@ vec3 linear_to_srgb(vec3 color) {
 
 // This approximation expects non-negative input; negative input behaves poorly.
 vec3 srgb_to_linear(vec3 color) {
-	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
-	return color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);
+	return mix(pow((color.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)), color.rgb * (1.0 / 12.92), lessThan(color.rgb, vec3(0.04045)));
 }
 
 #ifdef APPLY_TONEMAPPING
