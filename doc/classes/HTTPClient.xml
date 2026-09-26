@@ -194,6 +194,14 @@
 				The proxy server is unset if [param host] is empty or [param port] is -1.
 			</description>
 		</method>
+		<method name="shutdown">
+			<return type="void" />
+			<description>
+				Shuts down the underlying connection without fully closing the [HTTPClient].
+				This is mostly useful when [member blocking_mode_enabled] is [code]true[/code] and the connection needs to be interrupted from a different thread.
+				[b]Note:[/b] This has no effect on platforms that do not support blocking mode (like the web platform).
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled" default="false">
