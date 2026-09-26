@@ -62,7 +62,9 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	object_list = memnew(Tree);
 
 	filter_bar = memnew(TreeSortAndFilterBar(object_list, TTRC("Filter Objects")));
-	object_column->add_child(filter_bar);
+	HBoxContainer *filter_hbox = memnew(HBoxContainer);
+	filter_hbox->add_child(filter_bar);
+	object_column->add_child(filter_hbox);
 	int sort_idx = 0;
 	if (diff_data) {
 		filter_bar->add_sort_option(TTRC("Snapshot"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
@@ -72,6 +74,28 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	filter_bar->add_sort_option(TTRC("Inbound References"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, sort_idx++);
 	TreeSortAndFilterBar::SortOptionIndexes default_sort = filter_bar->add_sort_option(
 			TTRC("Outbound References"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, sort_idx++);
+
+	if (diff_data) {
+		PanelContainer *panel = memnew(PanelContainer);
+		panel->set_theme_type_variation("PanelContainerButtonGroup");
+		filter_hbox->add_child(panel);
+		HBoxContainer *hb = memnew(HBoxContainer);
+		panel->add_child(hb);
+		for (int df = 0; df < SnapshotDataObject::DiffStatus::DIFF_MAX; df++) {
+			Button *filter_btn = memnew(Button);
+			const LocalVector<String> TEXTS = { "+", "-", "!=", "==" };
+			const LocalVector<String> TOOLTIPS = { TTRC("Show Added Objects"), TTRC("Show Removed Objects"), TTRC("Show Modified Objects"), TTRC("Show Unmodified Objects") };
+			filter_btn->set_theme_type_variation(SceneStringName(FlatButton));
+			filter_btn->set_text(TEXTS[df]);
+			filter_btn->set_tooltip_text(TOOLTIPS[df]);
+			filter_btn->set_toggle_mode(true);
+			filter_btn->set_pressed(df != SnapshotDataObject::DiffStatus::DIFF_UNMODIFIED);
+			filter_btn->connect(SceneStringName(toggled), callable_mp(this, &SnapshotObjectView::_diff_filter_changed).unbind(1));
+			diff_filter_buttons.insert(df, filter_btn);
+			hb->add_child(filter_btn);
+		}
+		filter_bar->set_custom_filter_callback(callable_mp(this, &SnapshotObjectView::_should_show_item));
+	}
 
 	// Tree of objects.
 	object_list->set_select_mode(Tree::SelectMode::SELECT_ROW);
@@ -100,14 +124,10 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	object_list->set_column_title_tooltip_text(offset + 1, TTRC("Object's name"));
 	object_list->set_column_title(offset + 2, TTRC("In"));
 	object_list->set_column_expand(offset + 2, false);
-	object_list->set_column_clip_content(offset + 2, false);
 	object_list->set_column_title_tooltip_text(offset + 2, TTRC("Number of inbound references"));
-	object_list->set_column_custom_minimum_width(offset + 2, 30 * EDSCALE);
 	object_list->set_column_title(offset + 3, TTRC("Out"));
 	object_list->set_column_expand(offset + 3, false);
-	object_list->set_column_clip_content(offset + 3, false);
 	object_list->set_column_title_tooltip_text(offset + 3, TTRC("Number of outbound references"));
-	object_list->set_column_custom_minimum_width(offset + 2, 30 * EDSCALE);
 	object_list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_object_selected));
 	object_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	object_list->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
@@ -141,6 +161,7 @@ void SnapshotObjectView::_insert_data(GameStateSnapshot *p_snapshot, const Strin
 			item->set_text(0, p_name);
 			item->set_tooltip_text(0, p_snapshot->name);
 			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+			item->set_meta(SNAME("filter"), pair.value->diff_status);
 			offset = 1;
 		}
 		item->set_auto_translate_mode(offset + 0, AUTO_TRANSLATE_MODE_DISABLED);
@@ -154,10 +175,38 @@ void SnapshotObjectView::_insert_data(GameStateSnapshot *p_snapshot, const Strin
 		item->set_text(offset + 1, pair.value->get_name());
 		item->set_tooltip_text(offset + 1, pair.value->remote_path);
 		item->set_text(offset + 2, String::num_uint64(pair.value->inbound_references.size()));
+		item->set_text_overrun_behavior(offset + 2, TextServer::OverrunBehavior::OVERRUN_NO_TRIMMING);
 		item->set_text(offset + 3, String::num_uint64(pair.value->outbound_references.size()));
+		item->set_text_overrun_behavior(offset + 3, TextServer::OverrunBehavior::OVERRUN_NO_TRIMMING);
 		item_data_map[item] = pair.value;
 		data_item_map[pair.value] = item;
 	}
+}
+
+void SnapshotObjectView::_diff_filter_changed() {
+	filter_bar->apply();
+}
+
+bool SnapshotObjectView::_should_show_item(TreeItem *p_item) {
+	if (p_item == object_list->get_root()) {
+		return true;
+	}
+	SnapshotDataObject::DiffStatus item_type = p_item->get_meta(SNAME("filter"), SnapshotDataObject::DiffStatus::DIFF_MAX);
+	ERR_FAIL_INDEX_V(item_type, SnapshotDataObject::DiffStatus::DIFF_MAX, true);
+	if (diff_filter_buttons.get(item_type)->is_pressed()) {
+		if (item_type != SnapshotDataObject::DiffStatus::DIFF_UNMODIFIED && p_item->get_custom_bg_color(0) == Color()) {
+			const LocalVector<Color> BG_COLORS = {
+				Color(0, 1, 0, 0.1),
+				Color(1, 0, 0, 0.1),
+				Color(1, 1, 0, 0.1),
+			};
+			for (int c = 0; c < object_list->get_columns(); c++) {
+				p_item->set_custom_bg_color(c, BG_COLORS[item_type]);
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 void SnapshotObjectView::_object_selected() {

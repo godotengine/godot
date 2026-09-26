@@ -110,6 +110,7 @@ protected:
 	Tree *managed_tree = nullptr;
 	HashMap<int, SortItem> sort_items;
 	int current_sort = 0;
+	Callable custom_filter_cb;
 
 	void _apply_filter(TreeItem *p_current_node = nullptr);
 	void _apply_sort();
@@ -123,5 +124,6 @@ public:
 	void clear_filter();
 	void clear();
 	void select_sort(int p_item_id);
+	void set_custom_filter_callback(const Callable &p_custom_callback);
 	void apply();
 };
