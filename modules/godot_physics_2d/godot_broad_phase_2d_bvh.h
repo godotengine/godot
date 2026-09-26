@@ -46,14 +46,6 @@ class GodotBroadPhase2DBVH : public GodotBroadPhase2D {
 		}
 	};
 
-	template <typename T>
-	class UserCullTestFunction {
-	public:
-		static bool user_cull_check(const T *p_a, const T *p_b) {
-			return true;
-		}
-	};
-
 	enum Tree {
 		TREE_STATIC = 0,
 		TREE_DYNAMIC = 1,
@@ -64,7 +56,7 @@ class GodotBroadPhase2DBVH : public GodotBroadPhase2D {
 		TREE_FLAG_DYNAMIC = 1 << TREE_DYNAMIC,
 	};
 
-	BVH_Manager<GodotCollisionObject2D, 2, true, 128, UserPairTestFunction<GodotCollisionObject2D>, UserCullTestFunction<GodotCollisionObject2D>, Rect2, Vector2> bvh;
+	BVH_Manager<GodotCollisionObject2D, 2, true, 128, UserPairTestFunction<GodotCollisionObject2D>, std::nullptr_t, Rect2, Vector2, true, true> bvh;
 
 	static void *_pair_callback(void *, uint32_t, GodotCollisionObject2D *, int, uint32_t, GodotCollisionObject2D *, int);
 	static void _unpair_callback(void *, uint32_t, GodotCollisionObject2D *, int, uint32_t, GodotCollisionObject2D *, int, void *);
