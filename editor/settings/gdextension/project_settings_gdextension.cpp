@@ -35,6 +35,10 @@
 #include "core/io/config_file.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/settings/gdextension/cpp_scons/cpp_scons_gdext_creator.h"
+#include "editor/settings/gdextension/gdextension_create_dialog.h"
+#include "editor/settings/gdextension/gdextension_creator_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/label.h"
 #include "scene/gui/tree.h"
@@ -71,6 +75,18 @@ void ProjectSettingsGDExtension::_cell_button_pressed(Object *p_item, int p_colu
 	}
 }
 
+void ProjectSettingsGDExtension::_on_create_gdextension_pressed() {
+	Vector<Ref<GDExtensionCreatorPlugin>> creators;
+	creators.append(memnew(CppSconsGDExtensionCreator));
+	create_dialog->load_plugin_creators(creators);
+	create_dialog->popup_centered(Size2(400, 300) * EDSCALE);
+}
+
+void ProjectSettingsGDExtension::_on_gdextension_created() {
+	EditorFileSystem::get_singleton()->scan();
+	_update_extension_tree();
+}
+
 void ProjectSettingsGDExtension::_on_item_activated() {
 	TreeItem *item = extension_list->get_selected();
 	if (item == nullptr) {
@@ -104,12 +120,19 @@ void ProjectSettingsGDExtension::_update_extension_tree() {
 }
 
 ProjectSettingsGDExtension::ProjectSettingsGDExtension() {
+	create_dialog = memnew(GDExtensionCreateDialog);
+	add_child(create_dialog);
+	create_dialog->connect("gdextension_created", callable_mp(this, &ProjectSettingsGDExtension::_on_gdextension_created));
 	// Create the title label.
 	HBoxContainer *title_hb = memnew(HBoxContainer);
 	Label *label = memnew(Label(TTRC("Installed GDExtensions:")));
 	label->set_theme_type_variation("HeaderSmall");
 	title_hb->add_child(label);
 	title_hb->add_spacer();
+	// Create the "Create GDExtension" button.
+	Button *create_plugin_button = memnew(Button(TTR("Create GDExtension")));
+	create_plugin_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectSettingsGDExtension::_on_create_gdextension_pressed));
+	title_hb->add_child(create_plugin_button);
 	add_child(title_hb);
 	// Create the tree.
 	extension_list = memnew(Tree);
