@@ -305,9 +305,9 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f) {
 	Image::Format format = Image::Format(f->get_32());
 
 	if (data_format == DATA_FORMAT_PNG || data_format == DATA_FORMAT_WEBP) {
-		//look for a PNG or WebP file inside
-		//mipmaps need to be read independently, they will be later combined
-		Vector<Ref<Image>> mipmap_images;
+		// Look for a PNG or WebP file inside.
+		// Mipmaps need to be read independently, they will be later combined.
+		LocalVector<Ref<Image>> mipmap_images;
 		uint64_t total_size = 0;
 
 		for (uint32_t i = 0; i < mipmaps + 1; i++) {
@@ -315,10 +315,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f) {
 
 			Vector<uint8_t> pv;
 			pv.resize(size);
-			{
-				uint8_t *wr = pv.ptrw();
-				f->get_buffer(wr, size);
-			}
+			f->get_buffer(pv.ptrw(), size);
 
 			Ref<Image> img;
 			if (data_format == DATA_FORMAT_PNG && Image::png_unpacker) {
@@ -327,9 +324,8 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f) {
 				img = Image::webp_unpacker(pv);
 			}
 
-			if (img.is_null() || img->is_empty()) {
-				ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
-			}
+			ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
+
 			// If the image is compressed and its format doesn't match the desired format, return an empty reference.
 			// This is done to avoid recompressing the image on load.
 			ERR_FAIL_COND_V(img->is_compressed() && format != img->get_format(), Ref<Image>());
@@ -343,57 +339,38 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f) {
 				img->convert(format);
 			}
 
-			total_size += img->get_data().size();
-
+			total_size += img->get_data_size();
 			mipmap_images.push_back(img);
 		}
 
-		//print_line("mipmap read total: " + itos(mipmap_images.size()));
-
-		Ref<Image> image;
-		image.instantiate();
-
 		if (mipmap_images.size() == 1) {
-			//only one image (which will most likely be the case anyway for this format)
-			image = mipmap_images[0];
-			return image;
-
+			// Only one image (which will most likely be the case anyway for this format).
+			return mipmap_images[0];
 		} else {
-			//rarer use case, but needs to be supported
+			// Rarer use case, but needs to be supported.
 			Vector<uint8_t> img_data;
 			img_data.resize(total_size);
+			uint8_t *wr = img_data.ptrw();
 
-			{
-				uint8_t *wr = img_data.ptrw();
-
-				int ofs = 0;
-				for (int i = 0; i < mipmap_images.size(); i++) {
-					Vector<uint8_t> id = mipmap_images[i]->get_data();
-					int len = id.size();
-					const uint8_t *r = id.ptr();
-					memcpy(&wr[ofs], r, len);
-					ofs += len;
-				}
+			int64_t ofs = 0;
+			for (uint32_t i = 0; i < mipmap_images.size(); i++) {
+				int64_t len = mipmap_images[i]->get_data_size();
+				const uint8_t *r = mipmap_images[i]->ptr();
+				memcpy(&wr[ofs], r, len);
+				ofs += len;
 			}
 
-			image->set_data(w, h, true, mipmap_images[0]->get_format(), img_data);
-			return image;
+			return Image::create_from_data(w, h, true, format, img_data);
 		}
-
 	} else if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
 		uint32_t size = f->get_32();
 		Vector<uint8_t> pv;
 		pv.resize(size);
-		{
-			uint8_t *wr = pv.ptrw();
-			f->get_buffer(wr, size);
-		}
-		Ref<Image> img;
-		img = Image::basis_universal_unpacker(pv);
-		if (img.is_null() || img->is_empty()) {
-			ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
-		}
-		format = img->get_format();
+		f->get_buffer(pv.ptrw(), size);
+
+		Ref<Image> img = Image::basis_universal_unpacker(pv);
+		ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
+
 		return img;
 	} else if (data_format == DATA_FORMAT_IMAGE) {
 		int64_t size = Image::get_image_data_size(w, h, format, mipmaps > 0);
