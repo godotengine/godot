@@ -37,9 +37,45 @@
 #include "core/object/class_db.h"
 #include "scene/resources/texture.h"
 
+#ifdef TOOLS_ENABLED
+#include "core/io/resource_importer.h"
+#include "editor/editor_node.h"
+#include "scene/resources/streamed_texture.h"
+
+#include "modules/dds/editor/resource_importer_dds.h"
+
+static void _editor_init() {
+	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
+		Ref<ResourceImporterDDS> dds_importer;
+		dds_importer.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(dds_importer);
+	}
+
+	if constexpr (GD_IS_CLASS_ENABLED(StreamedTexture2D)) {
+		Ref<ResourceImporterDDSStreamed> dds_streamed_importer;
+		dds_streamed_importer.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(dds_streamed_importer);
+	}
+}
+#endif
+
 static Ref<ResourceFormatDDS> resource_loader_dds;
+static Ref<ResourceFormatDDSRef> resource_loader_dds_ref;
 
 void initialize_dds_module(ModuleInitializationLevel p_level) {
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
+			GDREGISTER_CLASS(ResourceImporterDDS);
+		}
+		if constexpr (GD_IS_CLASS_ENABLED(StreamedTexture2D)) {
+			GDREGISTER_CLASS(ResourceImporterDDSStreamed);
+		}
+
+		EditorNode::add_init_callback(_editor_init);
+	}
+#endif
+
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -50,6 +86,9 @@ void initialize_dds_module(ModuleInitializationLevel p_level) {
 	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
 		resource_loader_dds.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_dds);
+
+		resource_loader_dds_ref.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_dds_ref);
 	}
 }
 
@@ -59,6 +98,9 @@ void uninitialize_dds_module(ModuleInitializationLevel p_level) {
 	}
 
 	if constexpr (GD_IS_CLASS_ENABLED(Texture)) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_dds_ref);
+		resource_loader_dds_ref.unref();
+
 		ResourceLoader::remove_resource_format_loader(resource_loader_dds);
 		resource_loader_dds.unref();
 	}

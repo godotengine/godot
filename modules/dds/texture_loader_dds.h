@@ -30,7 +30,12 @@
 
 #pragma once
 
+#include "core/io/image.h"
 #include "core/io/resource_loader.h"
+
+Vector<Ref<Image>> dds_load_images(const String &p_path, bool &r_is_2d);
+
+Error dds_save_redirect(const String &p_path, const String &p_source_path);
 
 class ResourceFormatDDS : public ResourceFormatLoader {
 	GDSOFTCLASS(ResourceFormatDDS, ResourceFormatLoader);
@@ -43,4 +48,14 @@ public:
 
 	ResourceFormatDDS();
 	virtual ~ResourceFormatDDS() {}
+};
+
+class ResourceFormatDDSRef : public ResourceFormatLoader {
+	GDSOFTCLASS(ResourceFormatDDSRef, ResourceFormatLoader);
+
+public:
+	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
 };

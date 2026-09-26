@@ -1555,8 +1555,20 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 				continue;
 			}
 
-			// Before doing this, try to see if it can be customized.
-			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, false);
+			String export_path = path;
+
+			// If preserve_source it set, the source file should be exported as is.
+			const bool preserve_source = config->get_value("remap", "preserve_source", false);
+			if (preserve_source) {
+				save_info.path = path;
+				err = save_proxy.save_file(p_preset, p_udata, save_info, FileAccess::get_file_as_bytes(path));
+				if (err != OK) {
+					return err;
+				}
+			} else {
+				// Before doing this, try to see if it can be customized.
+				export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, false);
+			}
 
 			if (export_path != path) {
 				// It was actually customized.
