@@ -3104,7 +3104,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 					}
 
 					while (!screen_found || !init_expand_to_title_found || !init_display_scale_found || !init_custom_scale_found || !prefer_wayland_found || !tablet_found || !ac_found) {
-						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
 

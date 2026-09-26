@@ -1502,7 +1502,6 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 			int lines = 0;
 			String error_text;
 			while (true) {
-				assign = Variant();
 				next_tag.fields.clear();
 				next_tag.name = String();
 
