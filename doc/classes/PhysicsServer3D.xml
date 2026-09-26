@@ -1096,6 +1096,22 @@
 				[b]Note:[/b] This is not used in Godot Physics.
 			</description>
 		</method>
+		<method name="slider_joint_get_applied_force" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the magnitude of the force applied to satisfy this joint. Returns [code]0.0[/code] if the joint is not yet connected to two bodies.
+				[b]Note:[/b] Only supported when using Jolt Physics.
+			</description>
+		</method>
+		<method name="slider_joint_get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the magnitude of the torque applied to satisfy this joint. Returns [code]0.0[/code] if the joint is not yet connected to two bodies.
+				[b]Note:[/b] Only supported when using Jolt Physics.
+			</description>
+		</method>
 		<method name="slider_joint_get_param" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />

@@ -1524,6 +1524,22 @@ real_t GodotPhysicsServer3D::slider_joint_get_param(RID p_joint, PS3DE::SliderJo
 	return slider_joint->get_param(p_param);
 }
 
+float GodotPhysicsServer3D::slider_joint_get_applied_force(RID p_joint) const {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_SLIDER, 0.0f);
+	GodotSliderJoint3D *slider_joint = static_cast<GodotSliderJoint3D *>(joint);
+	return slider_joint->get_applied_force();
+}
+
+float GodotPhysicsServer3D::slider_joint_get_applied_torque(RID p_joint) const {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_SLIDER, 0.0f);
+	GodotSliderJoint3D *slider_joint = static_cast<GodotSliderJoint3D *>(joint);
+	return slider_joint->get_applied_torque();
+}
+
 void GodotPhysicsServer3D::joint_make_cone_twist(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) {
 	GodotBody3D *body_A = body_owner.get_or_null(p_body_A);
 	ERR_FAIL_NULL(body_A);

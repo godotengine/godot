@@ -375,6 +375,9 @@ public:
 	FUNC3(slider_joint_set_param, RID, PS3DE::SliderJointParam, real_t)
 	FUNC2RC(real_t, slider_joint_get_param, RID, PS3DE::SliderJointParam)
 
+	FUNC1RC(float, slider_joint_get_applied_force, RID)
+	FUNC1RC(float, slider_joint_get_applied_torque, RID)
+
 	FUNC5(joint_make_cone_twist, RID, RID, const Transform3D &, RID, const Transform3D &)
 
 	FUNC3(cone_twist_joint_set_param, RID, PS3DE::ConeTwistJointParam, real_t)

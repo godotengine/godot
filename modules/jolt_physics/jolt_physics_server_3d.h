@@ -395,6 +395,9 @@ public:
 	virtual void slider_joint_set_param(RID p_joint, PS3DE::SliderJointParam p_param, real_t p_value) override;
 	virtual real_t slider_joint_get_param(RID p_joint, PS3DE::SliderJointParam p_param) const override;
 
+	virtual float slider_joint_get_applied_force(RID p_joint) const override;
+	virtual float slider_joint_get_applied_torque(RID p_joint) const override;
+
 	virtual void joint_make_cone_twist(RID p_joint, RID p_body_a, const Transform3D &p_local_ref_a, RID p_body_b, const Transform3D &p_local_ref_b) override;
 
 	virtual void cone_twist_joint_set_param(RID p_joint, PS3DE::ConeTwistJointParam p_param, real_t p_value) override;
@@ -478,9 +481,6 @@ public:
 
 	bool slider_joint_get_jolt_flag(RID p_joint, SliderJointFlagJolt p_flag) const;
 	void slider_joint_set_jolt_flag(RID p_joint, SliderJointFlagJolt p_flag, bool p_enabled);
-
-	float slider_joint_get_applied_force(RID p_joint);
-	float slider_joint_get_applied_torque(RID p_joint);
 
 	double cone_twist_joint_get_jolt_param(RID p_joint, ConeTwistJointParamJolt p_param) const;
 	void cone_twist_joint_set_jolt_param(RID p_joint, ConeTwistJointParamJolt p_param, double p_value);
