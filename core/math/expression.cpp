@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "expression.h"
+#include "expression.compat.inc"
 
 #include "core/object/class_db.h"
 
@@ -483,6 +484,12 @@ Error Expression::_get_token(Token &r_token) {
 						}
 
 						if (Variant::has_utility_function(id)) {
+							Variant::UtilityFunctionType ftype = Variant::get_utility_function_type(id);
+							if (!allowed_scope.has_flag(1 << ftype)) {
+								_set_error(vformat("Unexpected function '%s'", id));
+								r_token.type = TK_ERROR;
+								return ERR_PARSE_ERROR;
+							}
 							r_token.type = TK_BUILTIN_FUNC;
 							r_token.value = id;
 							return OK;
@@ -500,7 +507,7 @@ Error Expression::_get_token(Token &r_token) {
 					return OK;
 
 				} else {
-					_set_error("Unexpected character.");
+					_set_error("Unexpected character");
 					r_token.type = TK_ERROR;
 					return ERR_PARSE_ERROR;
 				}
@@ -1395,6 +1402,12 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 		case Expression::ENode::TYPE_BUILTIN_FUNC: {
 			const Expression::BuiltinFuncNode *bifunc = static_cast<const Expression::BuiltinFuncNode *>(p_node);
 
+			Variant::UtilityFunctionType ftype = Variant::get_utility_function_type(bifunc->func);
+			if (!allowed_scope.has_flag(1 << ftype)) {
+				r_error_str = vformat("Unexpected function '%s'", bifunc->func);
+				return false;
+			}
+
 			Vector<Variant> arr;
 			Vector<const Variant *> argp;
 			arr.resize(bifunc->arguments.size());
@@ -1462,7 +1475,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 	return false;
 }
 
-Error Expression::parse(const String &p_expression, const Vector<String> &p_input_names) {
+Error Expression::parse(const String &p_expression, const Vector<String> &p_input_names, BitField<UtilityFunctionTypeFlags> p_allowed_scope) {
 	if (nodes) {
 		memdelete(nodes);
 		nodes = nullptr;
@@ -1473,6 +1486,7 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	error_set = false;
 	str_ofs = 0;
 	input_names = p_input_names;
+	allowed_scope = p_allowed_scope;
 
 	expression = p_expression;
 	root = _parse_expression();
@@ -1512,10 +1526,14 @@ String Expression::get_error_text() const {
 }
 
 void Expression::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("parse", "expression", "input_names"), &Expression::parse, DEFVAL(Vector<String>()));
+	ClassDB::bind_method(D_METHOD("parse", "expression", "input_names", "allowed_scope"), &Expression::parse, DEFVAL(Vector<String>()), DEFVAL(FUNC_TYPE_MATH | FUNC_TYPE_RANDOM | FUNC_TYPE_GENERAL));
 	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error", "const_calls_only"), &Expression::execute, DEFVAL(Array()), DEFVAL(Variant()), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_execute_failed"), &Expression::has_execute_failed);
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
+
+	BIND_BITFIELD_FLAG(FUNC_TYPE_MATH);
+	BIND_BITFIELD_FLAG(FUNC_TYPE_RANDOM);
+	BIND_BITFIELD_FLAG(FUNC_TYPE_GENERAL);
 }
 
 Expression::~Expression() {
