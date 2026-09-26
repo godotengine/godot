@@ -1785,6 +1785,7 @@ void Object::initialize_class() {
 	get_gdtype_static_mutable().initialize();
 	_bind_methods();
 	_bind_compatibility_methods();
+	get_gdtype_static_mutable().finalize();
 	initialized = true;
 }
 
