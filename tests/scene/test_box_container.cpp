@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_box_container)
 #include "scene/gui/control.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "tests/scene/mock_control.h"
 
 namespace TestBoxContainer {
 
@@ -341,6 +342,132 @@ TEST_CASE("[SceneTree][BoxContainer] HBoxContainer") {
 		memdelete(child_control_2);
 	}
 
+	SUBCASE("Desired size children") {
+		MockControl *child_control_1 = memnew(MockControl);
+		MockControl *child_control_2 = memnew(MockControl);
+		hbox_container->add_child(child_control_1);
+		hbox_container->add_child(child_control_2);
+
+		child_control_1->set_desired_size(Size2(50, 0));
+		child_control_2->set_desired_size(Size2(50, 0));
+
+		// Set a custom maximum size to ensure the container does not expand to accommodate children in "a + b > c" case at first.
+		// It is also necessary to set max size propagation to false to prevent children's bound desired sizes from being capped in "a + b > c" case.
+		hbox_container->set_size(Size2());
+		hbox_container->set_custom_maximum_size(Size2(100, 100));
+		hbox_container->set_propagate_maximum_size(false);
+		hbox_container->add_theme_constant_override("separation", 0);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				hbox_container->get_size().is_equal_approx(Size2(100, 0)),
+				"Container expands to accommodate children up to its maximum size. Case: a + b = c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(50, 0)) && child_control_2->get_size().is_equal_approx(Size2(50, 0))),
+				"Children control with equal desired sizes take equal space. Case: a + b = c");
+
+		hbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(200, 0));
+		child_control_2->set_desired_size(Size2(200, 0));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				hbox_container->get_size().is_equal_approx(Size2(100, 0)),
+				"Container expands to accommodate children up to its maximum size. Case: a + b > c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(50, 0)) && child_control_2->get_size().is_equal_approx(Size2(50, 0))),
+				"Children control with equal desired sizes take equal space. Case: a + b > c");
+
+		hbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(10, 0));
+		child_control_2->set_desired_size(Size2(10, 0));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				hbox_container->get_size().is_equal_approx(Size2(20, 0)),
+				"Container only expands as much as needed to accommodate children. Case: a + b < c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(10, 0)) && child_control_2->get_size().is_equal_approx(Size2(10, 0))),
+				"Children control with equal desired sizes take equal space. Case: a + b < c");
+
+		hbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(75, 0));
+		child_control_2->set_desired_size(Size2(25, 0));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				hbox_container->get_size().is_equal_approx(Size2(100, 0)),
+				"Container expands to accommodate children up to its maximum size. Case: a + b = c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(75, 0)) && child_control_2->get_size().is_equal_approx(Size2(25, 0))),
+				"Children control with different desired sizes take different space. Case: a + b = c");
+
+		hbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(300, 0));
+		child_control_2->set_desired_size(Size2(100, 0));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				hbox_container->get_size().is_equal_approx(Size2(100, 0)),
+				"Container expands to accommodate children up to its maximum size. Case: a + b > c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(75, 0)) && child_control_2->get_size().is_equal_approx(Size2(25, 0))),
+				"Children control with different desired sizes take different space. Case: a + b > c");
+
+		hbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(40, 0));
+		child_control_2->set_desired_size(Size2(20, 0));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				hbox_container->get_size().is_equal_approx(Size2(60, 0)),
+				"Container only expands as much as needed to accommodate children. Case: a + b < c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(40, 0)) && child_control_2->get_size().is_equal_approx(Size2(20, 0))),
+				"Children control with different desired sizes take different space. Case: a + b < c");
+
+		memdelete(child_control_1);
+		memdelete(child_control_2);
+	}
+
+	SUBCASE("Desired size takes priority over expanding children") {
+		MockControl *child_control_1 = memnew(MockControl);
+		MockControl *child_control_2 = memnew(MockControl);
+		Control *child_control_3 = memnew(Control);
+		hbox_container->add_child(child_control_1);
+		hbox_container->add_child(child_control_2);
+		hbox_container->add_child(child_control_3);
+
+		child_control_1->set_desired_size(Size2(50, 0));
+		child_control_2->set_desired_size(Size2(50, 0));
+		child_control_3->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+		hbox_container->set_size(Size2());
+		hbox_container->set_custom_maximum_size(Size2(100, 100));
+		hbox_container->set_propagate_maximum_size(false);
+		hbox_container->add_theme_constant_override("separation", 0);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				hbox_container->get_size().is_equal_approx(Size2(100, 0)),
+				"Container desired sizes take priority over expanding children.");
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(50, 0)) &&
+						child_control_2->get_size().is_equal_approx(Size2(50, 0)) &&
+						child_control_3->get_size().is_equal_approx(Size2(0, 0))),
+				"Expanding children do not take space from children with desired sizes.");
+
+		memdelete(child_control_3);
+		memdelete(child_control_2);
+		memdelete(child_control_1);
+	}
+
 	memdelete(hbox_container);
 }
 
@@ -617,6 +744,132 @@ TEST_CASE("[SceneTree][BoxContainer] VBoxContainer") {
 
 		memdelete(child_control_1);
 		memdelete(child_control_2);
+	}
+
+	SUBCASE("Desired size children") {
+		MockControl *child_control_1 = memnew(MockControl);
+		MockControl *child_control_2 = memnew(MockControl);
+		vbox_container->add_child(child_control_1);
+		vbox_container->add_child(child_control_2);
+
+		child_control_1->set_desired_size(Size2(0, 50));
+		child_control_2->set_desired_size(Size2(0, 50));
+
+		// Set a custom maximum size to ensure the container does not expand to accommodate children in "a + b > c" case at first.
+		// It is also necessary to set max size propagation to false to prevent children's bound desired sizes from being capped in "a + b > c" case.
+		vbox_container->set_size(Size2());
+		vbox_container->set_custom_maximum_size(Size2(100, 100));
+		vbox_container->set_propagate_maximum_size(false);
+		vbox_container->add_theme_constant_override("separation", 0);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				vbox_container->get_size().is_equal_approx(Size2(0, 100)),
+				"Container expands to accommodate children up to its maximum size. Case: a + b = c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(0, 50)) && child_control_2->get_size().is_equal_approx(Size2(0, 50))),
+				"Children control with equal desired sizes take equal space. Case: a + b = c");
+
+		vbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(0, 200));
+		child_control_2->set_desired_size(Size2(0, 200));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				vbox_container->get_size().is_equal_approx(Size2(0, 100)),
+				"Container expands to accommodate children up to its maximum size. Case: a + b > c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(0, 50)) && child_control_2->get_size().is_equal_approx(Size2(0, 50))),
+				"Children control with equal desired sizes take equal space. Case: a + b > c");
+
+		vbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(0, 10));
+		child_control_2->set_desired_size(Size2(0, 10));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				vbox_container->get_size().is_equal_approx(Size2(0, 20)),
+				"Container only expands as much as needed to accommodate children. Case: a + b < c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(0, 10)) && child_control_2->get_size().is_equal_approx(Size2(0, 10))),
+				"Children control with equal desired sizes take equal space. Case: a + b < c");
+
+		vbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(0, 75));
+		child_control_2->set_desired_size(Size2(0, 25));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				vbox_container->get_size().is_equal_approx(Size2(0, 100)),
+				"Container expands to accommodate children up to its maximum size. Case: a + b = c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(0, 75)) && child_control_2->get_size().is_equal_approx(Size2(0, 25))),
+				"Children control with different desired sizes take different space. Case: a + b = c");
+
+		vbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(0, 300));
+		child_control_2->set_desired_size(Size2(0, 100));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				vbox_container->get_size().is_equal_approx(Size2(0, 100)),
+				"Container expands to accommodate children up to its maximum size. Case: a + b > c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(0, 75)) && child_control_2->get_size().is_equal_approx(Size2(0, 25))),
+				"Children control with different desired sizes take different space. Case: a + b > c");
+
+		vbox_container->set_size(Size2());
+		child_control_1->set_desired_size(Size2(0, 40));
+		child_control_2->set_desired_size(Size2(0, 20));
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				vbox_container->get_size().is_equal_approx(Size2(0, 60)),
+				"Container only expands as much as needed to accommodate children. Case: a + b < c");
+
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(0, 40)) && child_control_2->get_size().is_equal_approx(Size2(0, 20))),
+				"Children control with different desired sizes take different space. Case: a + b < c");
+
+		memdelete(child_control_1);
+		memdelete(child_control_2);
+	}
+
+	SUBCASE("Desired size takes priority over expanding children") {
+		MockControl *child_control_1 = memnew(MockControl);
+		MockControl *child_control_2 = memnew(MockControl);
+		Control *child_control_3 = memnew(Control);
+		vbox_container->add_child(child_control_1);
+		vbox_container->add_child(child_control_2);
+		vbox_container->add_child(child_control_3);
+
+		child_control_1->set_desired_size(Size2(0, 50));
+		child_control_2->set_desired_size(Size2(0, 50));
+		child_control_3->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+		vbox_container->set_size(Size2());
+		vbox_container->set_custom_maximum_size(Size2(100, 100));
+		vbox_container->set_propagate_maximum_size(false);
+		vbox_container->add_theme_constant_override("separation", 0);
+		SceneTree::get_singleton()->process(0);
+
+		CHECK_MESSAGE(
+				vbox_container->get_size().is_equal_approx(Size2(0, 100)),
+				"Container desired sizes take priority over expanding children.");
+		CHECK_MESSAGE(
+				(child_control_1->get_size().is_equal_approx(Size2(0, 50)) &&
+						child_control_2->get_size().is_equal_approx(Size2(0, 50)) &&
+						child_control_3->get_size().is_equal_approx(Size2(0, 0))),
+				"Expanding children do not take space from children with desired sizes.");
+
+		memdelete(child_control_3);
+		memdelete(child_control_2);
+		memdelete(child_control_1);
 	}
 
 	memdelete(vbox_container);
