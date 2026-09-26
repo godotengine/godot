@@ -368,6 +368,10 @@
 			A [SubViewportContainer] will automatically set this property to [code]false[/code] for the [Viewport] contained inside of it.
 			See also [method set_input_as_handled] and [method is_input_handled].
 		</member>
+		<member name="local_focus" type="bool" setter="set_local_focus" getter="get_local_focus" default="false">
+			If [code]false[/code], all other [Control]s in the same [Window] will lose focus when a [Control] grabs focus.
+			If [code]true[/code], only other [Control]s in the same [Viewport] will lose focus when a [Control] grabs focus.
+		</member>
 		<member name="mesh_lod_threshold" type="float" setter="set_mesh_lod_threshold" getter="get_mesh_lod_threshold" default="1.0">
 			The automatic LOD bias to use for meshes rendered within the [Viewport] (this is analogous to [member ReflectionProbe.mesh_lod_threshold]). Higher values will use less detailed versions of meshes that have LOD variations generated. If set to [code]0.0[/code], automatic LOD is disabled. Increase [member mesh_lod_threshold] to improve performance at the cost of geometry detail.
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/mesh_lod/lod_change/threshold_pixels] project setting.
