@@ -1648,6 +1648,15 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
 				 */
 				synchronized (sGLThreadManager) {
 					Log.d("GLThread", "Exiting render thread");
+
+					// In order to correctly clean up GL resources, we need a current EGL surface.
+					if (mHaveEglContext && !mHaveEglSurface) {
+						mHaveEglSurface = mEglHelper.createSurface();
+						if (!mHaveEglSurface) {
+							Log.w("GLThread", "Could not make an EGL surface current for shutdown, GL resources will not be explicitly released");
+						}
+					}
+
 					GLSurfaceView view = mGLSurfaceViewWeakRef.get();
 					if (view != null) {
 						view.mRenderer.onRenderThreadExiting();
