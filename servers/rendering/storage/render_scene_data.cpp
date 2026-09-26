@@ -36,6 +36,15 @@ void RenderSceneData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cam_transform"), &RenderSceneData::get_cam_transform);
 	ClassDB::bind_method(D_METHOD("get_cam_projection"), &RenderSceneData::get_cam_projection);
 
+	ClassDB::bind_method(D_METHOD("get_transformed_projection_data"), &RenderSceneData::get_transformed_projection_data);
+
+	ClassDB::bind_method(D_METHOD("get_z_far"), &RenderSceneData::get_z_far);
+	ClassDB::bind_method(D_METHOD("get_z_near"), &RenderSceneData::get_z_near);
+	ClassDB::bind_method(D_METHOD("get_aspect"), &RenderSceneData::get_aspect);
+	ClassDB::bind_method(D_METHOD("get_viewport_half_extents"), &RenderSceneData::get_viewport_half_extents);
+	ClassDB::bind_method(D_METHOD("get_far_plane_half_extents"), &RenderSceneData::get_far_plane_half_extents);
+	ClassDB::bind_method(D_METHOD("get_pixels_per_meter", "for_pixel_width"), &RenderSceneData::get_pixels_per_meter);
+
 	ClassDB::bind_method(D_METHOD("get_view_count"), &RenderSceneData::get_view_count);
 	ClassDB::bind_method(D_METHOD("get_view_eye_offset", "view"), &RenderSceneData::get_view_eye_offset);
 	ClassDB::bind_method(D_METHOD("get_view_projection", "view"), &RenderSceneData::get_view_projection);
