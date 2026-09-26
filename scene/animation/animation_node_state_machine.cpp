@@ -1132,7 +1132,7 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(AnimationNode::
 
 	StringName advance_condition_name = transition->get_advance_condition_name();
 
-	ERR_FAIL_COND_V(p_instance.resource != state_machine, false);
+	ERR_FAIL_COND_V(advance_condition_name != StringName() && p_instance.resource != state_machine, false);
 
 	if (advance_condition_name != StringName() && !bool(p_instance.get_parameter(advance_condition_name))) {
 		return false;

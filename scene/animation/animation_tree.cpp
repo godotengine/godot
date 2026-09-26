@@ -106,7 +106,7 @@ void AnimationNode::get_child_nodes(LocalVector<ChildNode> *r_child_nodes) {
 }
 
 void AnimationNode::blend_animation(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const StringName &p_animation, AnimationMixer::PlaybackInfo &p_playback_info) {
-	p_playback_info.track_weights = &p_instance.track_weights;
+	p_playback_info.track_weights = Vector<real_t>(p_instance.track_weights);
 	p_process_state.tree->make_animation_instance(p_animation, p_playback_info);
 }
 

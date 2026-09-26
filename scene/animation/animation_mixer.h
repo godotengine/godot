@@ -90,7 +90,7 @@ public:
 		bool is_external_seeking = false;
 		Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 		real_t weight = 0.0;
-		LocalVector<real_t> *track_weights = nullptr;
+		Vector<real_t> track_weights;
 	};
 
 	struct AnimationInstance {
