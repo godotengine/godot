@@ -908,6 +908,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(PrimitiveMesh);
 	GDREGISTER_CLASS(BoxMesh);
 	GDREGISTER_CLASS(CapsuleMesh);
+	GDREGISTER_CLASS(CapsuleMesh);
 	GDREGISTER_CLASS(CylinderMesh);
 	GDREGISTER_CLASS(PlaneMesh);
 	GDREGISTER_CLASS(PrismMesh);
@@ -942,6 +943,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(WorldBoundaryShape3D);
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
+	GDREGISTER_CLASS(CapsuleShape3D);
+	GDREGISTER_CLASS(CylinderShape3D);
 #endif // PHYSICS_3D_DISABLED
 	GDREGISTER_CLASS(World3D);
 
