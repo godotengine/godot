@@ -74,6 +74,11 @@ public:
 		PLATFORM_STRING_FILE_MANAGER_SHOW,
 	};
 
+	enum LowProcessorModeSleepUsecMode {
+		LOW_PROCESSOR_SLEEP_USEC_MODE_AUTOMATIC,
+		LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM,
+	};
+
 private:
 	static OS *singleton;
 	static uint64_t target_ticks;
@@ -82,7 +87,9 @@ private:
 	List<String> _user_args;
 	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	bool low_processor_usage_mode = false;
+	LowProcessorModeSleepUsecMode low_processor_usage_mode_sleep_usec_mode = LOW_PROCESSOR_SLEEP_USEC_MODE_CUSTOM;
 	int low_processor_usage_mode_sleep_usec = 10000;
+	int low_processor_usage_mode_sleep_usec_automatic = 10000;
 	bool _delta_smoothing_enabled = false;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
@@ -202,8 +209,12 @@ public:
 
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
+	virtual void set_low_processor_usage_mode_sleep_usec_mode(LowProcessorModeSleepUsecMode p_mode);
+	virtual LowProcessorModeSleepUsecMode get_low_processor_usage_mode_sleep_usec_mode() const;
 	virtual void set_low_processor_usage_mode_sleep_usec(int p_usec);
 	virtual int get_low_processor_usage_mode_sleep_usec() const;
+	virtual int get_effective_low_processor_usage_mode_sleep_usec() const;
+	virtual void set_low_processor_usage_mode_sleep_usec_automatic(int p_usec);
 
 	void set_delta_smoothing(bool p_enabled);
 	bool is_delta_smoothing_enabled() const;
