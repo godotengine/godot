@@ -1126,8 +1126,6 @@ public:
 	};
 
 	struct SuiteNode : public Node {
-		DataType suite_type;
-
 		SuiteNode *parent_block = nullptr;
 		LocalVector<Node *> statements;
 		struct Local {
