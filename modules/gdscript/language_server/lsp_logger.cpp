@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_language_server.h                                            */
+/*  lsp_logger.cpp                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "lsp_logger.h"
 
-#include "editor/plugins/editor_plugin.h"
+#include <cstdio>
 
-class GDScriptLanguageServer : public EditorPlugin {
-	GDSOFTCLASS(GDScriptLanguageServer, EditorPlugin);
+void LspLogger::logv(const char *p_format, va_list p_list, bool p_err) {
+	if (!should_log(p_err)) {
+		return;
+	}
 
-	Thread thread;
-	bool thread_running = false;
-	// There is no notification when the editor is initialized. We need to poll till we attempted to start the server.
-	bool start_attempted = false;
-	bool started = false;
-
-	// Defaults located in editor_settings.cpp
-	bool use_thread = false;
-	String host;
-	int port = 0;
-	int poll_limit_usec = 0;
-
-	static void thread_main(void *p_userdata);
-
-private:
-	void _notification(int p_what);
-
-public:
-	static int port_override;
-	static bool use_stdio;
-	GDScriptLanguageServer();
-	void start();
-	void stop();
-};
-
-void register_lsp_types();
+	vfprintf(stderr, p_format, p_list);
+}
