@@ -96,6 +96,12 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="closed">
+			<description>
+				Emitted when the peer closes.
+				[b]Note:[/b] Calling [method close] will not cause this signal to be emitted.
+			</description>
+		</signal>
 		<signal name="peer_connected">
 			<param index="0" name="id" type="int" />
 			<description>
