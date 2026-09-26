@@ -619,7 +619,7 @@ void ScriptCreateDialog::_update_dialog() {
 		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("Invalid inherited parent name or path."), EditorValidationPanel::MSG_ERROR);
 	}
 
-	if (validation_panel->is_valid() && !is_new_script_created) {
+	if (validation_panel->is_valid() && !is_new_script_created && load_enabled) {
 		validation_panel->set_message(MSG_ID_SCRIPT, TTRC("File exists, it will be reused."), EditorValidationPanel::MSG_OK);
 	}
 
