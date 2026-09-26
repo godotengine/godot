@@ -29,7 +29,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="Vector2" />
 			<description>
-				Adds a constant directional force without affecting rotation that keeps being applied over time until cleared with [code]constant_force = Vector2(0, 0)[/code].
+				Adds a constant directional force (in global coordinates) without affecting rotation that keeps being applied over time until cleared with [code]constant_force = Vector2(0, 0)[/code].
 				This is equivalent to using [method add_constant_force] at the body's center of mass.
 			</description>
 		</method>
@@ -38,7 +38,7 @@
 			<param index="0" name="force" type="Vector2" />
 			<param index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Adds a constant positioned force to the body that keeps being applied over time until cleared with [code]constant_force = Vector2(0, 0)[/code].
+				Adds a constant positioned force (in global coordinates) to the body that keeps being applied over time until cleared with [code]constant_force = Vector2(0, 0)[/code].
 				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
@@ -53,7 +53,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="Vector2" />
 			<description>
-				Applies a directional force without affecting rotation. A force is time dependent and meant to be applied every physics update.
+				Applies a directional force (in global coordinates) without affecting rotation. A force is time dependent and meant to be applied every physics update.
 				This is equivalent to using [method apply_force] at the body's center of mass.
 			</description>
 		</method>
@@ -61,7 +61,7 @@
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Applies a directional impulse without affecting rotation.
+				Applies a directional impulse (in global coordinates) without affecting rotation.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 				This is equivalent to using [method apply_impulse] at the body's center of mass.
 			</description>
@@ -71,7 +71,7 @@
 			<param index="0" name="force" type="Vector2" />
 			<param index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Applies a positioned force to the body. A force is time dependent and meant to be applied every physics update.
+				Applies a positioned force (in global coordinates) to the body. A force is time dependent and meant to be applied every physics update.
 				[param position] is the offset from the body origin in global coordinates.
 			</description>
 		</method>
@@ -80,7 +80,7 @@
 			<param index="0" name="impulse" type="Vector2" />
 			<param index="1" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Applies a positioned impulse to the body.
+				Applies a positioned impulse (in global coordinates) to the body.
 				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 				[param position] is the offset from the body origin in global coordinates.
 			</description>
