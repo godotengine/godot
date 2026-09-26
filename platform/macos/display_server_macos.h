@@ -78,6 +78,7 @@ public:
 		bool pressed = false;
 		bool echo = false;
 		bool raw = false;
+		bool ime = false;
 		Key keycode = Key::NONE;
 		Key physical_keycode = Key::NONE;
 		Key key_label = Key::NONE;
