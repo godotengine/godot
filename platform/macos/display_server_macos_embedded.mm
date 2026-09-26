@@ -216,6 +216,12 @@ DisplayServerMacOSEmbedded::DisplayServerMacOSEmbedded(const String &p_rendering
 	ca_context = [CAContext contextWithCGSConnection:connection_id options:@{ kCAContextCIFilterBehavior : @"ignore" }];
 	ca_context.layer = layer;
 
+	if (!EngineDebugger::get_singleton()) {
+		ERR_PRINT("MacOS Embedded Display Server failed to connect to editor!");
+		r_error = ERR_UNAVAILABLE;
+		return;
+	}
+
 	{
 		Array arr = { ca_context.contextId };
 		EngineDebugger::get_singleton()->send_message("game_view:set_context_id", arr);
