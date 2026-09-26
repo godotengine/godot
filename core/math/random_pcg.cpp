@@ -60,6 +60,10 @@ int64_t RandomPCG::rand_weighted(const Vector<float> &p_weights) {
 			return i;
 		}
 	}
+	if (weights_sum == 0.0) {
+		WARN_PRINT("Weight array sum is zero.");
+		return -1;
+	}
 
 	for (int64_t i = weights_size - 1; i >= 0; --i) {
 		if (weights[i] > 0) {
