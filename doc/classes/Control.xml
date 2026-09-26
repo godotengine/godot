@@ -838,6 +838,14 @@
 				Returns [code]true[/code] if the layout is right-to-left. See also [member layout_direction].
 			</description>
 		</method>
+		<method name="play_theme_sound">
+			<return type="void" />
+			<param index="0" name="stream" type="AudioStream" />
+			<description>
+				Plays the sound from the [param stream] resource non-positionally in the bus specified by the [member ProjectSettings.audio/buses/gui_theme_bus] project setting. Typically, the [param stream] resource is obtained using [method get_theme_sound].
+				[b]Note:[/b] This method should only be used to play UI-related sounds. It should not be used to play general game sounds, as it offers very limited control. The method's behavior is an implementation detail and may change in future versions.
+			</description>
+		</method>
 		<method name="release_focus">
 			<return type="void" />
 			<description>
