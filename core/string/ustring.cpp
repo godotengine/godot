@@ -2420,6 +2420,10 @@ static double built_in_strtod(
 	int decPt;
 	/* Temporarily holds location of exponent in string. */
 	const C *pExp;
+	/* True if any leading zeros were skipped. */
+	bool skippedZeros = false;
+	/* Number of zeros AFTER the decimal point and BEFORE a non-zero character. */
+	int fracZeros = 0;
 
 	/*
 	 * Strip off leading blanks and check for a sign.
@@ -2440,11 +2444,35 @@ static double built_in_strtod(
 	}
 
 	/*
-	 * Count the number of digits in the mantissa (including the decimal
-	 * point), and also locate the decimal point.
+	 * Skip leading zeros. If the integer part is zero, also skip the
+	 * zeros right after the decimal point. They do not affect the value
+	 * and must not count towards the 18-digit limit below.
 	 */
 
-	decPt = -1;
+	while (*p == '0') {
+		p += 1;
+		skippedZeros = true;
+	}
+	if (*p == '.' && *(p + 1) == '0') {
+		p += 1;
+		while (*p == '0') {
+			skippedZeros = true;
+			fracZeros += 1;
+			p += 1;
+		}
+	}
+
+	/*
+	 * Count the number of digits in the mantissa (including the decimal
+	 * point), and also locate the decimal point. If the point was skipped
+	 * along with leading zeros, it is not counted here and decPt starts at 0.
+	 */
+
+	if (fracZeros > 0) {
+		decPt = 0;
+	} else {
+		decPt = -1;
+	}
 	for (mantSize = 0;; mantSize += 1) {
 		c = *p;
 		if (!is_digit(c)) {
@@ -2467,19 +2495,22 @@ static double built_in_strtod(
 	p -= mantSize;
 	if (decPt < 0) {
 		decPt = mantSize;
-	} else {
+	} else if (fracZeros == 0) {
 		mantSize -= 1; /* One of the digits was the point. */
 	}
 	if (mantSize > 18) {
-		fracExp = decPt - 18;
+		fracExp = decPt - 18 - fracZeros;
 		mantSize = 18;
 	} else {
-		fracExp = decPt - mantSize;
+		fracExp = decPt - mantSize - fracZeros;
 	}
 	if (mantSize == 0) {
 		fraction = 0.0;
-		p = p_string;
-		goto done;
+		if (!skippedZeros) {
+			/* No digits at all, so this is not a number. */
+			p = p_string;
+			goto done;
+		}
 	} else {
 		int frac1, frac2;
 
