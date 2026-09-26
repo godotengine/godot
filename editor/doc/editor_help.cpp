@@ -4914,6 +4914,11 @@ void EditorHelpBit::update_content_height() {
 	content->set_custom_minimum_size(Size2(content->get_custom_minimum_size().x, CLAMP(content_height, content_min_height, content_max_height)));
 }
 
+void EditorHelpBit::override_custom_minimum_width(float p_min_width) {
+	title->set_custom_minimum_size(Size2(p_min_width, title->get_custom_minimum_size().y));
+	content->set_custom_minimum_size(Size2(p_min_width, content->get_custom_minimum_size().y));
+}
+
 EditorHelpBit::EditorHelpBit(
 		const String &p_symbol,
 		const String &p_prologue,
