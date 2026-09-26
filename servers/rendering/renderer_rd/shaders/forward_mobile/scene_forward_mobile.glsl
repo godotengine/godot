@@ -1981,6 +1981,7 @@ void main() {
 		ambient_light *= cc_attenuation;
 		indirect_specular_light *= cc_attenuation;
 
+		// Clearcoat Layer
 		// We don't need a BRDF approximation for clearcoat, so we can use the fresnel directly.
 		indirect_specular_light += cc_specular_light * F;
 #endif
