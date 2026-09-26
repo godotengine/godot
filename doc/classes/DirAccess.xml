@@ -356,6 +356,20 @@
 				Static version of [method remove]. Supports only absolute paths.
 			</description>
 		</method>
+		<method name="remove_recursive">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Recursively deletes the target directory and all of its contents. The argument can be relative to the current directory, or an absolute path. Returns one of the [enum Error] code constants ([constant OK] on success).
+			</description>
+		</method>
+		<method name="remove_recursive_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Static version of [method remove_recursive]. Supports only absolute paths.
+			</description>
+		</method>
 		<method name="rename">
 			<return type="int" enum="Error" />
 			<param index="0" name="from" type="String" />
