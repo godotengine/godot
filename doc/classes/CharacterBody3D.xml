@@ -86,6 +86,13 @@
 				Returns the number of times the body collided and changed direction during the last call to [method move_and_slide].
 			</description>
 		</method>
+		<method name="get_visual_position" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns a smoothed position for visual elements like cameras. When [member step_smooth_enabled] is [code]true[/code], this position interpolates the vertical component during step-up and step-down events, preventing jarring camera movement when traversing stairs. The horizontal components match the actual physics position.
+				Use this for camera positioning instead of [member Node3D.global_position] when step handling is enabled.
+			</description>
+		</method>
 		<method name="get_wall_normal" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -182,6 +189,19 @@
 		</member>
 		<member name="slide_on_ceiling" type="bool" setter="set_slide_on_ceiling_enabled" getter="is_slide_on_ceiling_enabled" default="true">
 			If [code]true[/code], during a jump against the ceiling, the body will slide, if [code]false[/code] it will be stopped and will fall vertically.
+		</member>
+		<member name="step_enabled" type="bool" setter="set_step_enabled" getter="is_step_enabled" default="false">
+			If [code]true[/code], the body will automatically step up onto obstacles shorter than [member step_height] when calling [method move_and_slide]. Uses an up-forward-down trace algorithm similar to classic FPS engines. Only works when [member motion_mode] is [constant MOTION_MODE_GROUNDED].
+			[b]Note:[/b] For best results, use a [CylinderShape3D] collider. [CapsuleShape3D] colliders have rounded bottoms that can cause step detection issues.
+		</member>
+		<member name="step_height" type="float" setter="set_step_height" getter="get_step_height" default="0.3">
+			Maximum height of obstacles the body can step onto when [member step_enabled] is [code]true[/code]. Obstacles taller than this will block movement and cause sliding.
+		</member>
+		<member name="step_smooth_enabled" type="bool" setter="set_step_smooth_enabled" getter="is_step_smooth_enabled" default="true">
+			If [code]true[/code], the [method get_visual_position] method returns a smoothed position that interpolates during step events. This prevents jarring camera movement when traversing stairs.
+		</member>
+		<member name="step_smooth_speed" type="float" setter="set_step_smooth_speed" getter="get_step_smooth_speed" default="10.0">
+			Controls how quickly [method get_visual_position] catches up to the actual position during step events. Higher values result in faster, snappier camera response. This is a rate factor, not meters per second.
 		</member>
 		<member name="up_direction" type="Vector3" setter="set_up_direction" getter="get_up_direction" default="Vector3(0, 1, 0)">
 			Vector pointing upwards, used to determine what is a wall and what is a floor (or a ceiling) when calling [method move_and_slide]. Defaults to [constant Vector3.UP]. As the vector will be normalized it can't be equal to [constant Vector3.ZERO], if you want all collisions to be reported as walls, consider using [constant MOTION_MODE_FLOATING] as [member motion_mode].
