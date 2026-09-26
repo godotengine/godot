@@ -60,6 +60,7 @@ private:
 	uint32_t _frame_delay = 0;
 	uint64_t _frame_ticks = 0;
 	double _process_step = 0;
+	double _physics_step = 0;
 
 	int ips = 60;
 	int user_ips = 60;
@@ -140,6 +141,7 @@ public:
 	bool is_in_physics_frame() const { return _in_physics; }
 	uint64_t get_frame_ticks() const { return _frame_ticks; }
 	double get_process_step() const { return _process_step; }
+	double get_physics_step() const { return _physics_step; }
 	double get_physics_interpolation_fraction() const { return _physics_interpolation_fraction; }
 
 	void set_time_scale(double p_scale);
