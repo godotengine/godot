@@ -210,10 +210,6 @@ EditorDockDragHint::EditorDockDragHint() {
 	dock_drop_highlight->set_border_width_all(Math::round(2 * EDSCALE));
 }
 
-void DockTabContainer::_pre_popup(const Size2i &p_size) {
-	dock_context_popup->set_dock(get_dock(get_current_tab()));
-}
-
 void DockTabContainer::_tab_rmb_clicked(int p_tab_idx) {
 	EditorDock *hovered_dock = get_dock(p_tab_idx);
 	if (!hovered_dock) {
@@ -228,7 +224,6 @@ void DockTabContainer::_tab_rmb_clicked(int p_tab_idx) {
 
 void DockTabContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		connect("pre_popup_pressed", callable_mp(this, &DockTabContainer::_pre_popup).bind(Size2i()));
 		connect("child_order_changed", callable_mp(this, &DockTabContainer::update_visibility));
 	}
 }
@@ -299,7 +294,6 @@ void DockTabContainer::load_selected_tab(int p_idx) {
 
 void DockTabContainer::set_dock_context_popup(DockContextPopup *p_popup) {
 	dock_context_popup = p_popup;
-	set_popup(dock_context_popup);
 }
 
 void DockTabContainer::move_dock_index(EditorDock *p_dock, int p_to_index, bool p_set_current) {

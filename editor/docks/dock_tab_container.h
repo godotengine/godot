@@ -80,7 +80,6 @@ class DockTabContainer : public TabContainer {
 
 	HashMap<int, int> valid_drop_margins;
 
-	void _pre_popup(const Size2i &p_size);
 	void _tab_rmb_clicked(int p_tab_idx);
 
 protected:
