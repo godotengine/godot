@@ -380,8 +380,7 @@ void ScriptCreateDialog::_create_new() {
 		scr->set_path(lpath);
 		Error err = ResourceSaver::save(scr, lpath, ResourceSaver::FLAG_CHANGE_PATH);
 		if (err != OK) {
-			alert->set_text(TTR("Error - Could not create script in filesystem."));
-			alert->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("Failed to create Script in the filesystem."), TTR("Error!"));
 			return;
 		}
 	}
@@ -394,8 +393,7 @@ void ScriptCreateDialog::_load_exist() {
 	String path = file_path->get_text();
 	Ref<Resource> p_script = ResourceLoader::load(path, "Script");
 	if (p_script.is_null()) {
-		alert->set_text(vformat(TTR("Error loading script from %s"), path));
-		alert->popup_centered();
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Failed to load Script from \"%s\"."), path), TTR("Error!"));
 		return;
 	}
 
@@ -1006,13 +1004,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	file_browse->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_browse);
 	set_ok_button_text(TTR("Create"));
-	alert = memnew(AcceptDialog);
-	alert->set_flag(Window::FLAG_RESIZE_DISABLED, true);
-	alert->get_label()->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	alert->get_label()->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	alert->get_label()->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-	alert->get_label()->set_custom_minimum_size(Size2(325, 60) * EDSCALE);
-	add_child(alert);
 
 	set_hide_on_ok(false);
 	set_title(TTR("Attach Node Script"));
