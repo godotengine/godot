@@ -372,6 +372,9 @@ public:
 	virtual void cone_twist_joint_set_param(RID p_joint, PS3DE::ConeTwistJointParam p_param, real_t p_value) = 0;
 	virtual real_t cone_twist_joint_get_param(RID p_joint, PS3DE::ConeTwistJointParam p_param) const = 0;
 
+	virtual float cone_twist_joint_get_applied_force(RID p_joint) const = 0;
+	virtual float cone_twist_joint_get_applied_torque(RID p_joint) const = 0;
+
 	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) = 0; //reference frame is A
 
 	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis, PS3DE::G6DOFJointAxisParam p_param, real_t p_value) = 0;

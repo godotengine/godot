@@ -417,6 +417,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_cone_twist_joint_set_param, "joint", "param", "value");
 	GDVIRTUAL_BIND(_cone_twist_joint_get_param, "joint", "param");
 
+	GDVIRTUAL_BIND(_cone_twist_joint_get_applied_force, "joint");
+	GDVIRTUAL_BIND(_cone_twist_joint_get_applied_torque, "joint");
+
 	GDVIRTUAL_BIND(_joint_make_generic_6dof, "joint", "body_A", "local_ref_A", "body_B", "local_ref_B");
 
 	GDVIRTUAL_BIND(_generic_6dof_joint_set_param, "joint", "axis", "param", "value");

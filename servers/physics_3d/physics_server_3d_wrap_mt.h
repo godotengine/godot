@@ -383,6 +383,9 @@ public:
 	FUNC3(cone_twist_joint_set_param, RID, PS3DE::ConeTwistJointParam, real_t)
 	FUNC2RC(real_t, cone_twist_joint_get_param, RID, PS3DE::ConeTwistJointParam)
 
+	FUNC1RC(float, cone_twist_joint_get_applied_force, RID)
+	FUNC1RC(float, cone_twist_joint_get_applied_torque, RID)
+
 	FUNC5(joint_make_generic_6dof, RID, RID, const Transform3D &, RID, const Transform3D &)
 
 	FUNC4(generic_6dof_joint_set_param, RID, Vector3::Axis, PS3DE::G6DOFJointAxisParam, real_t)

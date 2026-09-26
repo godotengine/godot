@@ -403,6 +403,9 @@ public:
 	virtual void cone_twist_joint_set_param(RID p_joint, PS3DE::ConeTwistJointParam p_param, real_t p_value) override;
 	virtual real_t cone_twist_joint_get_param(RID p_joint, PS3DE::ConeTwistJointParam p_param) const override;
 
+	virtual float cone_twist_joint_get_applied_force(RID p_joint) const override;
+	virtual float cone_twist_joint_get_applied_torque(RID p_joint) const override;
+
 	virtual void joint_make_generic_6dof(RID p_joint, RID p_body_a, const Transform3D &p_local_ref_a, RID p_body_b, const Transform3D &p_local_ref_b) override;
 
 	virtual void generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, PS3DE::G6DOFJointAxisParam p_param, real_t p_value) override;
@@ -487,9 +490,6 @@ public:
 
 	bool cone_twist_joint_get_jolt_flag(RID p_joint, ConeTwistJointFlagJolt p_flag) const;
 	void cone_twist_joint_set_jolt_flag(RID p_joint, ConeTwistJointFlagJolt p_flag, bool p_enabled);
-
-	float cone_twist_joint_get_applied_force(RID p_joint);
-	float cone_twist_joint_get_applied_torque(RID p_joint);
 
 	double generic_6dof_joint_get_jolt_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParamJolt p_param) const;
 	void generic_6dof_joint_set_jolt_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParamJolt p_param, double p_value);

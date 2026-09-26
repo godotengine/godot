@@ -400,6 +400,9 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cone_twist_joint_set_param", "joint", "param", "value"), &PhysicsServer3D::cone_twist_joint_set_param);
 	ClassDB::bind_method(D_METHOD("cone_twist_joint_get_param", "joint", "param"), &PhysicsServer3D::cone_twist_joint_get_param);
 
+	ClassDB::bind_method(D_METHOD("cone_twist_joint_get_applied_force", "joint"), &PhysicsServer3D::cone_twist_joint_get_applied_force);
+	ClassDB::bind_method(D_METHOD("cone_twist_joint_get_applied_torque", "joint"), &PhysicsServer3D::cone_twist_joint_get_applied_torque);
+
 	BIND_ENUM_CONSTANT(PS3DE::CONE_TWIST_JOINT_SWING_SPAN);
 	BIND_ENUM_CONSTANT(PS3DE::CONE_TWIST_JOINT_TWIST_SPAN);
 	BIND_ENUM_CONSTANT(PS3DE::CONE_TWIST_JOINT_BIAS);
