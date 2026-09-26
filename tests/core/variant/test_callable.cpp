@@ -367,7 +367,7 @@ public:
 		}
 
 		// TODO: Callables made from C++ Method Pointer can't give you its default arguments due to implementation
-		//       details and skip checking default arguments for callable method pointer.
+		//       details, therefore skip checking default arguments for callable method pointer.
 		bool is_default_args_euqal = true;
 		if (!is_method_pointer) {
 			is_default_args_euqal = expect_method.default_arguments.size() == method.default_arguments.size();

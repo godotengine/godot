@@ -706,6 +706,7 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 	}
 	return false;
 }
+
 MethodInfo PlaceHolderScriptInstance::get_method_info(const StringName &p_method) const {
 	MethodInfo ret;
 	if (script->is_placeholder_fallback_enabled()) {
