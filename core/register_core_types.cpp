@@ -276,8 +276,8 @@ void register_core_types() {
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
-	GDREGISTER_CLASS(RegExMatch);
-	GDREGISTER_CLASS(RegEx);
+	GDREGISTER_CLASS(CoreBind::RegExMatch);
+	GDREGISTER_CLASS(CoreBind::RegEx);
 
 	GDREGISTER_CLASS(ConfigFile);
 
