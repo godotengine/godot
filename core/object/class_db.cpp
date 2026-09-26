@@ -190,11 +190,6 @@ public:
 		// Construct a placeholder.
 		Object *obj = native_parent->creation_func(static_cast<bool>(p_notify_postinitialize));
 
-		// Classes descending from RefCounted are expected to be returned with a refcount of 1.
-		if (RefCounted *ref_counted = Object::cast_to<RefCounted>(obj)) {
-			ref_counted->init_ref();
-		}
-
 		// ClassDB::set_object_extension_instance() won't be called for placeholders.
 		// We need need to make sure that all the things it would have done (even if
 		// done in a different way to support placeholders) will also be done here.
@@ -634,10 +629,10 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 #endif // DISABLE_DEPRECATED
 	else {
 		Object *object = ti->creation_func(p_notify_postinitialize);
-		if (p_with_refcount && object != nullptr && object->is_ref_counted()) {
+		if (!p_with_refcount && object != nullptr && object->is_ref_counted()) {
 			// creation_func creates the object with an (effective) refcount of 1,
-			// so establish the expected refcount=1 now.
-			((RefCounted *)object)->init_ref();
+			// so deinit it for the legacy caller now.
+			((RefCounted *)object)->deinit_ref();
 		}
 		return object;
 	}

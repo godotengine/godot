@@ -131,6 +131,7 @@ inline void operator delete(void *p_mem, void *(*p_allocfunc)(size_t p_size)) {
 template <typename T, typename Enable = void>
 struct memnew_result {
 	using class_name = T *;
+	static T *wrap(T *p_obj) { return p_obj; }
 };
 
 template <typename T>
@@ -140,9 +141,8 @@ _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
 
 template <typename T>
 _ALWAYS_INLINE_ memnew_result_t<T> _post_initialize(T *p_obj) {
-	memnew_result_t<T> result{ p_obj };
-	postinitialize_handler(result);
-	return result;
+	postinitialize_handler(p_obj);
+	return memnew_result<T>::wrap(p_obj);
 }
 
 #define memnew(m_class) _post_initialize(::new (DefaultAllocator{}) m_class)
