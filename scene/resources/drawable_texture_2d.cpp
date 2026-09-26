@@ -151,6 +151,7 @@ void DrawableTexture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect,
 
 // Perform a blit operation from the given source to the given rect on self.
 void DrawableTexture2D::blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_source, const Color &p_modulate, int p_mipmap, const Ref<Material> &p_material) {
+	ERR_FAIL_COND_MSG(p_mipmap < 0, "Cannot target a negative MipMap level.");
 	// Use user Shader if exists.
 	RID material = default_material;
 	if (p_material.is_valid()) {
@@ -162,6 +163,7 @@ void DrawableTexture2D::blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_s
 
 	// Rendering server expects textureParameters as a TypedArray[RID]
 	Array textures;
+	ERR_FAIL_COND_MSG(texture.is_null(), "Target Texture is not set up yet.");
 	textures.push_back(texture);
 
 	if (p_source.is_valid()) {
@@ -181,6 +183,7 @@ void DrawableTexture2D::blit_rect(const Rect2i p_rect, const Ref<Texture2D> &p_s
 
 // Perform a blit operation from the given sources to the given rect on self and extra targets
 void DrawableTexture2D::blit_rect_multi(const Rect2i p_rect, const TypedArray<Texture2D> &p_sources, const TypedArray<DrawableTexture2D> &p_extra_targets, const Color &p_modulate, int p_mipmap, const Ref<Material> &p_material) {
+	ERR_FAIL_COND_MSG(p_mipmap < 0, "Cannot target a negative MipMap level.");
 	RID material = default_material;
 	if (p_material.is_valid()) {
 		material = p_material->get_rid();
@@ -191,10 +194,13 @@ void DrawableTexture2D::blit_rect_multi(const Rect2i p_rect, const TypedArray<Te
 
 	// Rendering server expects textureParameters as a TypedArray[RID]
 	Array textures;
+	ERR_FAIL_COND_MSG(texture.is_null(), "Target Texture is not set up yet.");
 	textures.push_back(texture);
 	int i = 0;
 	while (i < p_extra_targets.size()) {
-		textures.push_back(RID(p_extra_targets[i]));
+		Ref<DrawableTexture2D> extra_tar = Ref<DrawableTexture2D>(p_extra_targets[i]);
+		ERR_FAIL_COND_MSG(extra_tar->texture.is_null(), "Target Texture is not set up yet.");
+		textures.push_back(extra_tar->texture);
 		i += 1;
 	}
 	i = 0;
