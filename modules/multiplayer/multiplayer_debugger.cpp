@@ -307,10 +307,10 @@ void MultiplayerDebugger::ReplicationProfiler::add(const Array &p_data) {
 		sync_data[id] = SyncInfo(sync);
 	}
 	SyncInfo &info = sync_data[id];
-	if (what == "sync_in") {
+	if (what == "sync_in" || what == "delta_in") {
 		info.incoming_syncs++;
 		info.incoming_size += size;
-	} else if (what == "sync_out") {
+	} else if (what == "sync_out" || what == "delta_out") {
 		info.outgoing_syncs++;
 		info.outgoing_size += size;
 	}
