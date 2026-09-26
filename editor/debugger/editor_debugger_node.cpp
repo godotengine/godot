@@ -144,6 +144,9 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 }
 
 void EditorDebuggerNode::_update_debugger_tabs() {
+	bool is_theme_classic = EDITOR_GET("interface/theme/style") == "Classic";
+	StringName tab_variation = is_theme_classic ? "TabContainerOdd" : "TabContainerInner";
+
 	int active_session = 0;
 	for (int i = 0; i < tabs->get_child_count(); i++) {
 		if (ScriptEditorDebugger *idle_dbg = Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(i))) {
@@ -152,16 +155,20 @@ void EditorDebuggerNode::_update_debugger_tabs() {
 			tabs->set_tab_hidden(i, !is_session_active);
 			if (is_session_active) {
 				active_session++;
+				get_debugger(i)->get_tab_container()->set_theme_type_variation(active_session > 1 ? tab_variation : "");
 			}
 		}
 	}
 	tabs->set_tabs_visible(active_session > 1);
 
+	TabContainer *default_debug_tabs = get_debugger(0)->get_tab_container();
 	if (tabs->are_tabs_visible()) {
-		get_debugger(0)->clear_style();
+		default_debug_tabs->remove_theme_style_override(SceneStringName(panel));
+		default_debug_tabs->set_theme_type_variation(tab_variation);
 		tabs->add_theme_style_override(SceneStringName(panel), multi_session_style);
 	} else {
-		get_debugger(0)->add_style();
+		default_debug_tabs->add_theme_style_override(SceneStringName(panel), multi_session_style);
+		default_debug_tabs->set_theme_type_variation("");
 		tabs->add_theme_style_override(SceneStringName(panel), single_session_style);
 	}
 }
@@ -377,8 +384,18 @@ void EditorDebuggerNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			multi_session_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles));
+
 			if (tabs->are_tabs_visible()) {
 				tabs->add_theme_style_override(SceneStringName(panel), multi_session_style);
+
+				bool is_theme_classic = EDITOR_GET("interface/theme/style") == "Classic";
+				StringName tab_variation = is_theme_classic ? "TabContainerOdd" : "TabContainerInner";
+
+				for (int i = 0; i < tabs->get_child_count(); i++) {
+					if (ScriptEditorDebugger *idle_dbg = Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(i))) {
+						idle_dbg->get_tab_container()->set_theme_type_variation(tab_variation);
+					}
+				}
 			}
 		} break;
 
@@ -391,6 +408,17 @@ void EditorDebuggerNode::_notification(int p_what) {
 			_update_margins();
 
 			remote_scene_tree->update_icon_max_width();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// Only update the debugger names.
+			if (tabs->is_visible()) {
+				for (int i = 0; i < tabs->get_child_count(); i++) {
+					if (ScriptEditorDebugger *idle_dbg = Object::cast_to<ScriptEditorDebugger>(tabs->get_tab_control(i))) {
+						idle_dbg->set_name(vformat(TTR("Session %d"), i + 1));
+					}
+				}
+			}
 		} break;
 
 		case NOTIFICATION_READY: {

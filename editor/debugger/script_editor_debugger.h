@@ -348,8 +348,7 @@ public:
 	bool request_stack_dump(const int &p_frame);
 
 	void update_tabs();
-	void add_style();
-	void clear_style();
+	TabContainer *get_tab_container() { return tabs; }
 	String get_var_value(const String &p_var) const;
 
 	void save_node(ObjectID p_id, const String &p_file);
