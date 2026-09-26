@@ -273,6 +273,10 @@ Error ScriptServer::unregister_language(const ScriptLanguage *p_language) {
 }
 
 void ScriptServer::init_languages() {
+	// Register ScriptBacktrace early, to avoid a lock-upgrade crash when _err_print_error
+	// is called inside ClassDB and tries to instantiate ScriptBacktrace.
+	ScriptBacktrace::initialize_class();
+
 	{ // Load global classes.
 		global_classes_clear();
 #ifndef DISABLE_DEPRECATED
