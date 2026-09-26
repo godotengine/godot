@@ -163,7 +163,7 @@ private:
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
 	static bool create_missing_resources_if_class_unavailable;
-	static HashMap<String, Vector<String>> translation_remaps;
+	static inline HashMap<String, LocalVector<Pair<String, String>>> translation_remaps;
 
 	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
