@@ -1636,6 +1636,26 @@ Quaternion JoltPhysicsServer3D::generic_6dof_joint_get_angular_target_rotation(R
 	return g6dof_joint->get_angular_target_rotation();
 }
 
+float JoltPhysicsServer3D::generic_6dof_joint_get_applied_force(RID p_joint) const {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_6DOF, 0.0f);
+	JoltGeneric6DOFJoint3D *g6dof_joint = static_cast<JoltGeneric6DOFJoint3D *>(joint);
+
+	return g6dof_joint->get_applied_force();
+}
+
+float JoltPhysicsServer3D::generic_6dof_joint_get_applied_torque(RID p_joint) const {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_6DOF, 0.0f);
+	JoltGeneric6DOFJoint3D *g6dof_joint = static_cast<JoltGeneric6DOFJoint3D *>(joint);
+
+	return g6dof_joint->get_applied_torque();
+}
+
 PS3DE::JointType JoltPhysicsServer3D::joint_get_type(RID p_joint) const {
 	const JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, PS3DE::JOINT_TYPE_PIN);
@@ -2023,24 +2043,4 @@ void JoltPhysicsServer3D::generic_6dof_joint_set_jolt_flag(RID p_joint, Vector3:
 	JoltGeneric6DOFJoint3D *g6dof_joint = static_cast<JoltGeneric6DOFJoint3D *>(joint);
 
 	return g6dof_joint->set_jolt_flag(p_axis, p_flag, p_enabled);
-}
-
-float JoltPhysicsServer3D::generic_6dof_joint_get_applied_force(RID p_joint) {
-	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_NULL_V(joint, 0.0f);
-
-	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_6DOF, 0.0f);
-	JoltGeneric6DOFJoint3D *g6dof_joint = static_cast<JoltGeneric6DOFJoint3D *>(joint);
-
-	return g6dof_joint->get_applied_force();
-}
-
-float JoltPhysicsServer3D::generic_6dof_joint_get_applied_torque(RID p_joint) {
-	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_NULL_V(joint, 0.0f);
-
-	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_6DOF, 0.0f);
-	JoltGeneric6DOFJoint3D *g6dof_joint = static_cast<JoltGeneric6DOFJoint3D *>(joint);
-
-	return g6dof_joint->get_applied_torque();
 }

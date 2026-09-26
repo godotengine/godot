@@ -431,6 +431,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_generic_6dof_joint_set_angular_target_rotation, "joint", "target_rotation");
 	GDVIRTUAL_BIND(_generic_6dof_joint_get_angular_target_rotation, "joint");
 
+	GDVIRTUAL_BIND(_generic_6dof_joint_get_applied_force, "joint");
+	GDVIRTUAL_BIND(_generic_6dof_joint_get_applied_torque, "joint");
+
 	GDVIRTUAL_BIND(_joint_get_type, "joint");
 
 	GDVIRTUAL_BIND(_joint_set_solver_priority, "joint", "priority");

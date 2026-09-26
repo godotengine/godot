@@ -386,6 +386,9 @@ public:
 	virtual void generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) = 0;
 	virtual Quaternion generic_6dof_joint_get_angular_target_rotation(RID p_joint) const = 0;
 
+	virtual float generic_6dof_joint_get_applied_force(RID p_joint) const = 0;
+	virtual float generic_6dof_joint_get_applied_torque(RID p_joint) const = 0;
+
 	/* QUERY API */
 
 	/* MISC */

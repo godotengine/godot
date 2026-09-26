@@ -417,6 +417,9 @@ public:
 	virtual void generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) override;
 	virtual Quaternion generic_6dof_joint_get_angular_target_rotation(RID p_joint) const override;
 
+	virtual float generic_6dof_joint_get_applied_force(RID p_joint) const override;
+	virtual float generic_6dof_joint_get_applied_torque(RID p_joint) const override;
+
 	virtual PS3DE::JointType joint_get_type(RID p_joint) const override;
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override;
@@ -496,9 +499,6 @@ public:
 
 	bool generic_6dof_joint_get_jolt_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlagJolt p_flag) const;
 	void generic_6dof_joint_set_jolt_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlagJolt p_flag, bool p_enabled);
-
-	float generic_6dof_joint_get_applied_force(RID p_joint);
-	float generic_6dof_joint_get_applied_torque(RID p_joint);
 };
 
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::HingeJointParamJolt)

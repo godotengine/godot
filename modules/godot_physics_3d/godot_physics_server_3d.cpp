@@ -1671,6 +1671,22 @@ Quaternion GodotPhysicsServer3D::generic_6dof_joint_get_angular_target_rotation(
 	return Quaternion();
 }
 
+float GodotPhysicsServer3D::generic_6dof_joint_get_applied_force(RID p_joint) const {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_6DOF, 0.0f);
+	GodotGeneric6DOFJoint3D *generic_6dof_joint = static_cast<GodotGeneric6DOFJoint3D *>(joint);
+	return generic_6dof_joint->get_applied_force();
+}
+
+float GodotPhysicsServer3D::generic_6dof_joint_get_applied_torque(RID p_joint) const {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_6DOF, 0.0f);
+	GodotGeneric6DOFJoint3D *generic_6dof_joint = static_cast<GodotGeneric6DOFJoint3D *>(joint);
+	return generic_6dof_joint->get_applied_torque();
+}
+
 void GodotPhysicsServer3D::free_rid(RID p_rid) {
 	_update_shapes(); //just in case
 

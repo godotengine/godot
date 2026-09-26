@@ -783,6 +783,22 @@
 				[b]Note:[/b] Only for Jolt backend. Other 3D physics backends return the identity quaternion.
 			</description>
 		</method>
+		<method name="generic_6dof_joint_get_applied_force" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the magnitude of the force applied to satisfy this joint. Returns [code]0.0[/code] if the joint is not yet connected to two bodies.
+				[b]Note:[/b] Only supported when using Jolt Physics.
+			</description>
+		</method>
+		<method name="generic_6dof_joint_get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the magnitude of the torque applied to satisfy this joint. Returns [code]0.0[/code] if the joint is not yet connected to two bodies.
+				[b]Note:[/b] Only supported when using Jolt Physics.
+			</description>
+		</method>
 		<method name="generic_6dof_joint_get_flag" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />

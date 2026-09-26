@@ -22,6 +22,20 @@
 				Returns the joint's current angular target as a body-space quaternion. If no explicit target was set via [method set_angular_target_rotation], the value is derived from [constant PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT] on backends that support it; other backends return the identity quaternion.
 			</description>
 		</method>
+		<method name="get_applied_force" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the magnitude of the force applied to satisfy this joint. Returns [code]0.0[/code] if the joint is not yet connected to two bodies.
+				[b]Note:[/b] Only supported when using Jolt Physics.
+			</description>
+		</method>
+		<method name="get_applied_torque" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the magnitude of the torque applied to satisfy this joint. Returns [code]0.0[/code] if the joint is not yet connected to two bodies.
+				[b]Note:[/b] Only supported when using Jolt Physics.
+			</description>
+		</method>
 		<method name="get_flag_x" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="flag" type="int" enum="Generic6DOFJoint3D.Flag" />

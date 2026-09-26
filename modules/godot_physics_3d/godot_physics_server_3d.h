@@ -375,6 +375,9 @@ public:
 	virtual void generic_6dof_joint_set_angular_target_rotation(RID p_joint, const Quaternion &p_target_rotation) override;
 	virtual Quaternion generic_6dof_joint_get_angular_target_rotation(RID p_joint) const override;
 
+	virtual float generic_6dof_joint_get_applied_force(RID p_joint) const override;
+	virtual float generic_6dof_joint_get_applied_torque(RID p_joint) const override;
+
 	virtual PS3DE::JointType joint_get_type(RID p_joint) const override;
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority) override;
