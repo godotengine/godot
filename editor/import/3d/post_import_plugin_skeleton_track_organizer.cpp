@@ -63,7 +63,7 @@ void PostImportPluginSkeletonTrackOrganizer::internal_process(InternalImportCate
 		bool remove_positions = bool(p_options["retarget/remove_tracks/unimportant_positions"]);
 		int separate_unmapped_bones = int(p_options["retarget/remove_tracks/unmapped_bones"]);
 
-		if (!remove_positions && separate_unmapped_bones == 0) {
+		if (!remove_except_bone && !remove_positions && separate_unmapped_bones == 0) {
 			return;
 		}
 
@@ -114,6 +114,7 @@ void PostImportPluginSkeletonTrackOrganizer::internal_process(InternalImportCate
 							} else {
 								mapped_bone_indices.push_back(i);
 							}
+							continue;
 						}
 					}
 					if (remove_except_bone) {
