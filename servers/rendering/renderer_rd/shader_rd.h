@@ -39,7 +39,15 @@
 
 class StringBuilder;
 
+namespace RendererRD {
+
+class MaterialStorage;
+
+}
+
 class ShaderRD {
+	friend class RendererRD::MaterialStorage;
+
 public:
 	struct VariantDefine {
 		int group = 0;
