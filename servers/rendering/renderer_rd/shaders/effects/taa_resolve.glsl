@@ -77,6 +77,18 @@ const ivec2 kOffsets3x3[9] = {
 	ivec2(1, 1),
 };
 
+const float kWeights3x3[9] = {
+	1.0,
+	2.0,
+	1.0,
+	2.0,
+	2.5,
+	2.0,
+	1.0,
+	2.0,
+	1.0,
+};
+
 /*------------------------------------------------------------------------------
 						THREAD GROUP SHARED MEMORY (LDS)
 ------------------------------------------------------------------------------*/
@@ -298,6 +310,8 @@ vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history, float velocity_confid
 
 		// Karis anti-flicker: bright samples contribute less to mean/variance  to filter out fireflies
 		float w = 1.0 / (1.0 + ycocg.x);
+		// Karis recommends adding additional weight ot the center
+		w *= kWeights3x3[i];
 
 		sum += w * ycocg;
 		sum_sq += w * ycocg * ycocg;
