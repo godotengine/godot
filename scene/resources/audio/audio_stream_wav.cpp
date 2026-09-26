@@ -654,26 +654,27 @@ Ref<AudioSample> AudioStreamWAV::generate_sample() const {
 }
 
 Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options) {
-	// /* STEP 1, READ WAVE FILE */
+	// Step 1: Read file.
 
 	Ref<FileAccessMemory> file;
 	file.instantiate();
 	Error err = file->open_custom(p_stream_data.ptr(), p_stream_data.size());
-	ERR_FAIL_COND_V_MSG(err != OK, Ref<AudioStreamWAV>(), "Cannot create memfile for WAV file buffer.");
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<AudioStreamWAV>(), "Cannot create memfile for AudioStreamWAV file buffer.");
 
-	/* CHECK RIFF */
-	char riff[5];
-	riff[4] = 0;
-	file->get_buffer((uint8_t *)&riff, 4); //RIFF
+	char magic[5];
+	magic[4] = 0;
+	file->get_buffer((uint8_t *)&magic, 4);
 
-	if (riff[0] != 'R' || riff[1] != 'I' || riff[2] != 'F' || riff[3] != 'F') {
-		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV file. File should start with 'RIFF', but found '%s', in file of size %d bytes", riff, file->get_length()));
+	if (!strcmp(magic, "RIFF")) { // RIFF is always little-endian.
+		file->set_big_endian(false);
+	} else if (!strcmp(magic, "FORM")) { // FORM is always big-endian.
+		file->set_big_endian(true);
+	} else {
+		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV or AIFF file. File should start with 'RIFF' or 'FORM', but found '%s', in file of size %d bytes", magic, file->get_length()));
 	}
 
-	/* GET FILESIZE */
-
 	// The file size in header is 8 bytes less than the actual size.
-	// See https://docs.fileformat.com/audio/wav/
+	// See https://docs.fileformat.com/audio/wav/ and https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/AIFF/Docs/AIFF-1.3.pdf
 	const int FILE_SIZE_HEADER_OFFSET = 8;
 	uint32_t file_size_header = file->get_32() + FILE_SIZE_HEADER_OFFSET;
 	uint64_t file_size = file->get_length();
@@ -681,14 +682,19 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		WARN_PRINT(vformat("File size %d is %s than the expected size %d.", file_size, file_size > file_size_header ? "larger" : "smaller", file_size_header));
 	}
 
-	/* CHECK WAVE */
+	char type[5];
+	type[4] = 0;
+	file->get_buffer((uint8_t *)&type, 4);
 
-	char wave[5];
-	wave[4] = 0;
-	file->get_buffer((uint8_t *)&wave, 4); //WAVE
+	bool is_aifc = false;
+	char aifc_type[5] = "NONE";
 
-	if (wave[0] != 'W' || wave[1] != 'A' || wave[2] != 'V' || wave[3] != 'E') {
-		ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV file. Header should contain 'WAVE', but found '%s', in file of size %d bytes", wave, file->get_length()));
+	if (strcmp(type, "WAVE") && strcmp(type, "AIFF")) {
+		if (!strcmp(type, "AIFC")) {
+			is_aifc = true;
+		} else {
+			ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Not a WAV or AIFF file. Header should contain 'WAVE', 'AIFF' or 'AIFC', but found '%s', in file of size %d bytes", type, file->get_length()));
+		}
 	}
 
 	// Let users override potential loop points from the WAV.
@@ -712,21 +718,18 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	HashMap<String, String> tag_map;
 
 	while (!file->eof_reached()) {
-		/* chunk */
-		char chunk_id[4];
-		file->get_buffer((uint8_t *)&chunk_id, 4); //RIFF
+		char chunk_id[5];
+		chunk_id[4] = 0;
+		file->get_buffer((uint8_t *)&chunk_id, 4);
 
-		/* chunk size */
 		uint32_t chunksize = file->get_32();
 		uint32_t file_pos = file->get_position(); //save file pos, so we can skip to next chunk safely
 
 		if (file->eof_reached()) {
-			//ERR_PRINT("EOF REACH");
 			break;
 		}
 
-		if (chunk_id[0] == 'f' && chunk_id[1] == 'm' && chunk_id[2] == 't' && chunk_id[3] == ' ' && !format_found) {
-			/* IS FORMAT CHUNK */
+		if (!strcmp(chunk_id, "fmt ") && !format_found) { // WAV format chunk.
 
 			//Issue: #7755 : Not a bug - usage of other formats (format codes) are unsupported in current importer version.
 			//Consider revision for engine version 3.0
@@ -758,14 +761,37 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			format_found = true;
 		}
 
-		if (chunk_id[0] == 'd' && chunk_id[1] == 'a' && chunk_id[2] == 't' && chunk_id[3] == 'a' && !data_found) {
-			/* IS DATA CHUNK */
+		if (!strcmp(chunk_id, "COMM") && !format_found) { // AIFF common chunk.
+			format_channels = file->get_16();
+
+			if (format_channels != 1 && format_channels != 2) {
+				ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Format not supported for AIFF file (not stereo or mono).");
+			}
+
+			frames = file->get_32();
+			format_bits = file->get_16();
+
+			// AIFF stores sampling rate as 80-bit IEEE 754 float.
+			uint16_t rate_exponent = file->get_16() & 0x7FFF;
+			uint64_t rate_significand = file->get_64();
+			format_freq = rate_significand >> (63 - (rate_exponent - 16383));
+
+			if (is_aifc) {
+				// AIFC extends COMM with a 4 byte compression type.
+				// See https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/AIFF/Docs/AIFF-C.9.26.91.pdf
+				file->get_buffer((uint8_t *)&aifc_type, 4);
+				if (strcmp(aifc_type, "NONE") && strcmp(aifc_type, "sowt") && strcmp(aifc_type, "fl32") && strcmp(aifc_type, "fl64")) {
+					ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), vformat("Format '%s' not supported for AIFC file (only 'NONE', 'sowt', 'fl32' and 'fl64' are supported).", aifc_type));
+				}
+			}
+
+			format_found = true;
+		}
+
+		if (!strcmp(chunk_id, "data") && !data_found) { // WAV data chunk.
 			data_found = true;
 
-			if (!format_found) {
-				ERR_PRINT("'data' chunk before 'format' chunk found.");
-				break;
-			}
+			ERR_BREAK_MSG(!format_found, "'data' chunk before 'format' chunk found.");
 
 			uint64_t remaining_bytes = file_size - file_pos;
 			frames = chunksize;
@@ -777,11 +803,6 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			ERR_FAIL_COND_V(format_channels == 0, Ref<AudioStreamWAV>());
 			frames /= format_channels;
 			frames /= (format_bits >> 3);
-
-			/*print_line("chunksize: "+itos(chunksize));
-			print_line("channels: "+itos(format_channels));
-			print_line("bits: "+itos(format_bits));
-			*/
 
 			ERR_FAIL_COND_V(data.resize(frames * format_channels) != OK, Ref<AudioStreamWAV>());
 
@@ -829,15 +850,70 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 					}
 				}
 			}
-
-			// This is commented out due to some weird edge case seemingly in FileAccessMemory, doesn't seem to have any side effects though.
-			// if (file->eof_reached()) {
-			// 	ERR_FAIL_V_MSG(Ref<AudioStreamWAV>(), "Premature end of file.");
-			// }
 		}
 
-		if (import_loop_mode == 0 && chunk_id[0] == 's' && chunk_id[1] == 'm' && chunk_id[2] == 'p' && chunk_id[3] == 'l') {
-			// Loop point info!
+		if (!strcmp(chunk_id, "SSND") && !data_found) { // AIFF sound data chunk.
+			data_found = true;
+
+			ERR_BREAK_MSG(!format_found, "'SSND' chunk found before 'COMM' chunk in AIFF file.");
+			ERR_FAIL_COND_V(format_channels == 0, Ref<AudioStreamWAV>());
+
+			uint32_t offset = file->get_32();
+			file->get_32(); // Skip block size.
+
+			if (offset) {
+				file->seek(file_pos + offset);
+			}
+
+			ERR_FAIL_COND_V(data.resize(frames * format_channels) != OK, Ref<AudioStreamWAV>());
+
+			float *data_ptrw = data.ptrw();
+
+			bool sowt = false;
+			if (!strcmp(aifc_type, "sowt")) {
+				file->set_big_endian(false);
+				sowt = true;
+			}
+
+			if (format_bits == 8) {
+				for (int64_t i = 0; i < frames * format_channels; i++) {
+					data_ptrw[i] = int8_t(file->get_8()) / 128.f;
+				}
+			} else if (format_bits == 16) {
+				for (int64_t i = 0; i < frames * format_channels; i++) {
+					data_ptrw[i] = int16_t(file->get_16()) / 32768.f;
+				}
+			} else {
+				if (!strcmp(aifc_type, "fl32") || !strcmp(aifc_type, "fl64")) {
+					for (int64_t i = 0; i < frames * format_channels; i++) {
+						if (format_bits == 32) {
+							data_ptrw[i] = file->get_float();
+						} else if (format_bits == 64) {
+							data_ptrw[i] = file->get_double();
+						}
+					}
+				} else {
+					for (int64_t i = 0; i < frames * format_channels; i++) {
+						uint32_t s = 0;
+						for (int b = 0; b < format_bits / 8; b++) {
+							if (sowt) {
+								s |= ((uint32_t)file->get_8()) << (b * 8);
+							} else {
+								s = (s << 8) | (uint32_t)file->get_8();
+							}
+						}
+						s <<= (32 - format_bits);
+						data_ptrw[i] = (int32_t(s) >> 16) / 32768.f;
+					}
+				}
+			}
+
+			if (sowt) {
+				file->set_big_endian(true);
+			}
+		}
+
+		if (import_loop_mode == 0 && !strcmp(chunk_id, "smpl")) { // WAV loop point info.
 
 			/**
 			 *	Consider exploring next document:
@@ -869,15 +945,16 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 			}
 		}
 
-		if (chunk_id[0] == 'L' && chunk_id[1] == 'I' && chunk_id[2] == 'S' && chunk_id[3] == 'T') {
+		if (!strcmp(chunk_id, "LIST")) {
 			// RIFF 'LIST' chunk.
 			// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
 
-			char list_id[4];
+			char list_id[5];
+			list_id[4] = 0;
 			file->get_buffer((uint8_t *)&list_id, 4);
 			uint32_t end_of_chunk = file_pos + chunksize - 8;
 
-			if (list_id[0] == 'I' && list_id[1] == 'N' && list_id[2] == 'F' && list_id[3] == 'O') {
+			if (!strcmp(list_id, "INFO")) {
 				// 'INFO' list type.
 				// The size of an entry can be arbitrary.
 				while (file->get_position() < end_of_chunk) {
@@ -916,7 +993,7 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 		file->seek(file_pos + chunksize + (chunksize & 1));
 	}
 
-	// STEP 2, APPLY CONVERSIONS
+	// Step 2: Apply conversions.
 
 	bool is16 = format_bits != 8;
 	uint32_t rate = format_freq;
