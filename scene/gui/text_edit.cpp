@@ -1858,7 +1858,7 @@ void TextEdit::_notification(int p_what) {
 						for (int j = 0; j < underline.size(); j++) {
 							Rect2 rect = Rect2(
 									underline[j].x + char_margin,
-									ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size),
+									ofs_y + theme_cache.font->get_underline_position(theme_cache.font_size) + MIN(theme_cache.line_spacing * 0.5, 0),
 									underline[j].y - underline[j].x,
 									theme_cache.font_size * 0.1);
 
