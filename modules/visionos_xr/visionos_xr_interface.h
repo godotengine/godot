@@ -35,6 +35,7 @@
 #include "visionos_controller_tracking.h"
 #include "visionos_definitions.h"
 #include "visionos_hand_tracking.h"
+#include "visionos_spatial_events.h"
 
 #ifdef __OBJC__
 #import <CompositorServices/CompositorServices.h>
@@ -121,6 +122,9 @@ private:
 
 	// Controller tracking
 	VisionOSControllerTracking controllers;
+
+	// Pinching events
+	VisionOSSpatialEventTracking spatial_events;
 
 	// Data and functions only accessible from the rendering thread
 	class RenderThread : public Object {
@@ -240,6 +244,8 @@ public:
 	// Note that we need to re-run it when the privacy authorizations changed
 	// or when a new controller was connected (on visionOS 26 and earlier).
 	void run_ar_session();
+
+	void on_spatial_event(const VisionOSSpatialEvent &);
 
 	// The LayerRenderer and Capabilities are polled from the app delegate when initializing the VisionOSXRInterface,
 	// but they need to be updated when the app backgrounds and foregrounds because they are recreated by visionOS
