@@ -1761,6 +1761,24 @@ int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *
 	return 0;
 }
 
+MethodInfo CSharpInstance::get_method_info(const StringName &p_method) const {
+	MethodInfo mi;
+	if (!script->is_script_valid() || !script->valid) {
+		return mi;
+	}
+
+	const CSharpScript *top = script.ptr();
+	while (top != nullptr) {
+		mi = top->get_method_info(p_method);
+		if (!(mi == MethodInfo())) {
+			return mi;
+		}
+		top = top->base_script.ptr();
+	}
+
+	return mi;
+}
+
 Variant CSharpInstance::_callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const {
 	ERR_FAIL_COND_V(script.is_null(), Variant());
 

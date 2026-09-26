@@ -89,6 +89,13 @@ int GDScriptLambdaCallable::get_argument_count(bool &r_is_valid) const {
 	return function->get_argument_count() - captures.size();
 }
 
+void GDScriptLambdaCallable::get_method_info(MethodInfo &r_method_info) const {
+	if (function == nullptr) {
+		return;
+	}
+	r_method_info = function->get_method_info();
+}
+
 void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 	int captures_amount = captures.size();
 
@@ -211,6 +218,13 @@ int GDScriptLambdaSelfCallable::get_argument_count(bool &r_is_valid) const {
 	}
 	r_is_valid = true;
 	return function->get_argument_count() - captures.size();
+}
+
+void GDScriptLambdaSelfCallable::get_method_info(MethodInfo &r_method_info) const {
+	if (function == nullptr) {
+		return;
+	}
+	r_method_info = function->get_method_info();
 }
 
 void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

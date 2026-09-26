@@ -97,6 +97,41 @@ public:
 		return sizeof...(P);
 	}
 
+	virtual void get_method_info(MethodInfo &r_method_info) const {
+#ifndef DEBUG_ENABLED
+		MethodInfo mi;
+
+		for (uint32_t i = 0; i < sizeof...(P); ++i) {
+			PropertyInfo arg;
+			call_get_argument_type_info<P...>(i, arg);
+			mi.arguments.push_back(arg);
+		}
+
+		if constexpr (!std::is_same<R, void>::value) {
+			mi.return_val = GetTypeInfo<R>::get_class_info();
+		}
+
+		// TODO: C++ does not have an easy way to get default arguments
+		//       For now it'll be an empty array regardless of whether
+		//       there is any default arguments.
+		mi.default_arguments.clear();
+
+		r_method_info = mi;
+#else
+		StringName method_name = get_method();
+		ERR_FAIL_COND(method_name.is_empty());
+		method_name = StringName(method_name.string().split("::")[1]); // Hack.
+
+		ObjectID obj_id = get_object();
+		ERR_FAIL_COND_MSG(!obj_id.is_valid(),
+				vformat("Failed to get the ObjectID of '" + uitos(data.object_id) + "' in CallableCustomMethodPointer, method name: \"%s\"", method_name));
+
+		Object *obj = ObjectDB::get_instance(obj_id);
+		ERR_FAIL_NULL(obj);
+		r_method_info = obj->get_method_info(method_name);
+#endif
+	}
+
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 		ERR_FAIL_NULL_MSG(ObjectDB::get_instance(ObjectID(data.object_id)), "Invalid Object id '" + uitos(data.object_id) + "', can't call method.");
 		if constexpr (std::is_same<R, void>::value) {
@@ -164,6 +199,29 @@ public:
 	virtual int get_argument_count(bool &r_is_valid) const override {
 		r_is_valid = true;
 		return sizeof...(P);
+	}
+
+	virtual void get_method_info(MethodInfo &r_method_info) const override {
+		MethodInfo mi;
+
+		for (uint32_t i = 0; i < sizeof...(P); ++i) {
+			PropertyInfo arg;
+			call_get_argument_type_info<P...>(i, arg);
+			mi.arguments.push_back(arg);
+		}
+
+		if constexpr (!std::is_same<R, void>::value) {
+			mi.return_val = GetTypeInfo<R>::get_class_info();
+		}
+
+		// TODO: C++ does not have an easy way to get default arguments
+		//       For now it'll be an empty array regardless of whether
+		//       there is any default arguments.
+		mi.default_arguments.clear();
+
+		mi.flags |= METHOD_FLAGS_DEFAULT | METHOD_FLAG_CONST;
+
+		r_method_info = mi;
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
@@ -238,6 +296,29 @@ public:
 	virtual int get_argument_count(bool &r_is_valid) const override {
 		r_is_valid = true;
 		return sizeof...(P);
+	}
+
+	virtual void get_method_info(MethodInfo &r_method_info) const override {
+		MethodInfo mi;
+
+		for (uint32_t i = 0; i < sizeof...(P); ++i) {
+			PropertyInfo arg;
+			call_get_argument_type_info<P...>(i, arg);
+			mi.arguments.push_back(arg);
+		}
+
+		if constexpr (!std::is_same<R, void>::value) {
+			mi.return_val = GetTypeInfo<R>::get_class_info();
+		}
+
+		// TODO: C++ does not have an easy way to get default arguments
+		//       For now it'll be an empty array regardless of whether
+		//       there is any default arguments.
+		mi.default_arguments.clear();
+
+		mi.flags |= METHOD_FLAGS_DEFAULT | METHOD_FLAG_STATIC;
+
+		r_method_info = mi;
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
