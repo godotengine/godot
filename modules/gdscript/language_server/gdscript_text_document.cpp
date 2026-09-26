@@ -31,8 +31,8 @@
 #include "gdscript_text_document.h"
 
 #include "../gdscript.h"
-#include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
+#include "lsp_parse_result.h"
 
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
@@ -144,7 +144,7 @@ Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(uri);
 	Array arr;
 
-	ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+	LSPParseResult *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 	if (parser) {
 		LSP::DocumentSymbol symbol = parser->get_symbols();
 		arr.push_back(symbol.to_json(true));

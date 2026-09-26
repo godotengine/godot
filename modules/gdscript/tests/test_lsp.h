@@ -36,10 +36,10 @@
 
 #include "../gdscript_analyzer.h"
 #include "../gdscript_linter.h"
-#include "../language_server/gdscript_extend_parser.h"
 #include "../language_server/gdscript_language_protocol.h"
 #include "../language_server/gdscript_workspace.h"
 #include "../language_server/godot_lsp.h"
+#include "../language_server/lsp_parse_result.h"
 #include "gdscript_test_runner.h"
 
 #include "core/io/dir_access.h"
@@ -430,7 +430,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 
 			for (const String &path : paths) {
 				assert_no_errors_in(path);
-				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+				LSPParseResult *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 				REQUIRE(parser);
 				LSP::DocumentSymbol cls = parser->get_symbols();
 
@@ -442,7 +442,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		SUBCASE("Documentation is correctly set") {
 			String path = "res://lsp/doc_comments.gd";
 			assert_no_errors_in(path);
-			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
+			LSPParseResult *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(path);
 			REQUIRE(parser);
 			LSP::DocumentSymbol cls = parser->get_symbols();
 			REQUIRE(cls.documentation.contains("brief"));
@@ -548,7 +548,7 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 			{ U"b", LSP::Range(4, 1, 4, 2) },
 		};
 
-		ExtendGDScriptParser *parser = memnew(ExtendGDScriptParser);
+		LSPParseResult *parser = memnew(LSPParseResult);
 		parser->parse(code, "res://dummy.gd");
 
 		for (KeyValue<String, LSP::Range> symbol : symbols) {
