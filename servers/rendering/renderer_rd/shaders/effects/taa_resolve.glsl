@@ -257,33 +257,19 @@ vec3 sample_catmull_rom_9(sampler2D stex, vec2 uv, vec2 resolution) {
 							  HISTORY CLIPPING
 ------------------------------------------------------------------------------*/
 
-// Based on "Temporal Reprojection Anti-Aliasing" - https://github.com/playdeadgames/temporal
-vec3 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec3 p, vec3 q) {
-	vec3 r = q - p;
-	vec3 rmax = (aabb_max - p.xyz);
-	vec3 rmin = (aabb_min - p.xyz);
+// AABB intersection using the slab method
+vec3 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec3 ray_origin, vec3 ray_destination) {
+	vec3 direction = ray_destination - ray_origin + vec3(FLT_MIN);
 
-	if (r.x > rmax.x + FLT_MIN) {
-		r *= (rmax.x / r.x);
-	}
-	if (r.y > rmax.y + FLT_MIN) {
-		r *= (rmax.y / r.y);
-	}
-	if (r.z > rmax.z + FLT_MIN) {
-		r *= (rmax.z / r.z);
-	}
+	vec3 tMin = (aabb_min - ray_origin) / direction;
+	vec3 tMax = (aabb_max - ray_origin) / direction;
 
-	if (r.x < rmin.x - FLT_MIN) {
-		r *= (rmin.x / r.x);
-	}
-	if (r.y < rmin.y - FLT_MIN) {
-		r *= (rmin.y / r.y);
-	}
-	if (r.z < rmin.z - FLT_MIN) {
-		r *= (rmin.z / r.z);
-	}
+	//vec3 t1 = min(tMin, tMax);
+	vec3 t2 = max(tMin, tMax);
 
-	return p + r;
+	// float tNear = max(max(t1.x, t1.y), t1.z);
+	float tFar = min(min(t2.x, t2.y), t2.z);
+	return ray_origin + direction * clamp(tFar, 0.0, 1.0);
 }
 
 vec3 to_ycocg(vec3 rgb) {
