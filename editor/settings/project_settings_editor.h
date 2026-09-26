@@ -47,6 +47,7 @@
 class EditorVariantTypeOptionButton;
 class FileSystemDock;
 class ProjectSettingsGDExtension;
+class SettingPresetEditor;
 
 class ProjectSettingsEditor : public AcceptDialog {
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
@@ -83,6 +84,10 @@ class ProjectSettingsEditor : public AcceptDialog {
 	EditorVariantTypeOptionButton *type_box = nullptr;
 	Button *add_button = nullptr;
 	Button *del_button = nullptr;
+	Button *presets_button = nullptr;
+
+	ConfirmationDialog *presets_dialog = nullptr;
+	SettingPresetEditor *presets_editor = nullptr;
 
 	Label *restart_label = nullptr;
 	TextureRect *restart_icon = nullptr;
@@ -112,6 +117,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _setting_selected(const String &p_path);
 	void _add_setting();
 	void _delete_setting();
+	void _presets_pressed();
+	void _preset_dialog_confirmed();
 
 	void _tabs_tab_changed(int p_tab);
 	void _focus_current_search_box();
