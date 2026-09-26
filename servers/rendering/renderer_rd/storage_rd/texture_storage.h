@@ -298,6 +298,10 @@ private:
 			int panorama_to_dp_users;
 			int users;
 			Rect2 uv_rect;
+
+			// Note for the reviewers: This is the solution 1
+			Rect2 border_uv_rect;
+			Vector2 border_offset;
 			bool drawn = false;
 		};
 
