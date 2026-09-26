@@ -4136,6 +4136,10 @@ void fragment() {
 		environment->set_sky(sky);
 		environment->set_background(Environment::BG_SKY);
 
+		// Default screen-space reflection fade-in to a more physically accurate value.
+		// This is done here to only affect newly created Environment resources based on the preview environment.
+		environment->set_ssr_fade_in(0.0);
+
 		sun_environ_popup->set_process_shortcut_input(true);
 
 		_load_default_preview_settings();
