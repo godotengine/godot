@@ -9,6 +9,7 @@
 		Shelf filters: [AudioEffectLowShelfFilter] and [AudioEffectHighShelfFilter]
 		Band-pass and notch filters: [AudioEffectBandPassFilter], [AudioEffectBandLimitFilter], and [AudioEffectNotchFilter]
 		Low/high-pass filters: [AudioEffectLowPassFilter] and [AudioEffectHighPassFilter]
+		Peak filter: [AudioEffectPeakFilter]
 	</description>
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
@@ -28,7 +29,7 @@
 			Gain at or directly next to the [member cutoff_hz] frequency threshold. Value can range from 0 to 1.
 			Its exact behavior depends on the selected filter type:
 			- For shelf filters, it accentuates or masks the order by increasing frequencies right next to the [member cutoff_hz] frequency and decreasing frequencies on the opposite side.
-			- For the band-pass and notch filters, it widens or narrows the filter at the [member cutoff_hz] frequency threshold.
+			- For the band-pass, notch, and peak filters, it widens or narrows the filter at the [member cutoff_hz] frequency threshold.
 			- For low/high-pass filters, it increases or decreases frequencies at the [member cutoff_hz] frequency threshold.
 		</member>
 	</members>
