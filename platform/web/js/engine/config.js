@@ -125,9 +125,9 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		gdextensionLibs: [],
 		/**
 		 * @ignore
-		 * @type {Array.<string>}
+		 * @type {Object<string, number>}
 		 */
-		fileSizes: [],
+		fileSizes: {},
 		/**
 		 * @ignore
 		 * @type {number}
@@ -146,6 +146,13 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		debugPort: null,
 		/**
+		 * The Process ID assigned to this instance (useful for debugging).
+		 * @memberof EngineConfig
+		 * @default
+		 * @type {number}
+		 */
+		pid: 0,
+		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
 		 * This is for example used in the Web Editor template to switch between project manager and editor, and for running the game.
@@ -156,9 +163,22 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 */
 		/**
 		 * @ignore
-		 * @type {?function(string, Array.<string>)}
+		 * @type {?function(string, Array.<string>):?number}
 		 */
 		onExecute: null,
+		/**
+		 * A callback function for handling Godot's ``OS.kill`` calls.
+		 *
+		 * This is for example used in the Web Editor template to forcefully terminate a running game instance.
+		 *
+		 * @callback EngineConfig.onTerminatePID
+		 * @param {number} pid The Process ID to terminate.
+		 */
+		/**
+		 * @ignore
+		 * @type {?function(number)}
+		 */
+		onTerminatePID: null,
 		/**
 		 * A callback function for being notified when the Godot instance quits.
 		 *
@@ -272,9 +292,12 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.emscriptenPoolSize = parse('emscriptenPoolSize', this.emscriptenPoolSize);
 		this.godotPoolSize = parse('godotPoolSize', this.godotPoolSize);
+		this.debugPort = parse('debugPort', this.debugPort);
+		this.pid = parse('pid', this.pid);
 		this.args = parse('args', this.args);
 		this.debugPort = parse('debugPort', this.debugPort);
 		this.onExecute = parse('onExecute', this.onExecute);
+		this.onTerminatePID = parse('onTerminatePID', this.onTerminatePID);
 		this.onExit = parse('onExit', this.onExit);
 	};
 
@@ -360,6 +383,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 
 		// Godot configuration.
 		return {
+			'pid': this.pid,
 			'canvas': this.canvas,
 			'canvasResizePolicy': this.canvasResizePolicy,
 			'locale': locale,
@@ -368,6 +392,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'focusCanvas': this.focusCanvas,
 			'debugPort': this.debugPort,
 			'onExecute': this.onExecute,
+			'onTerminatePID': this.onTerminatePID,
 			'onExit': function (p_code) {
 				cleanup(); // We always need to call the cleanup callback to free memory.
 				if (typeof (onExit) === 'function') {

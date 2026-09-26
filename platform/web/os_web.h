@@ -45,6 +45,7 @@ class OS_Web : public OS_Unix {
 
 	MIDIDriverWebMidi midi_driver;
 
+	ProcessID web_pid = 0;
 	bool idb_is_syncing = false;
 	bool idb_available = false;
 	bool idb_needs_sync = false;
