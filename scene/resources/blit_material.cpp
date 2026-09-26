@@ -83,6 +83,8 @@ void BlitMaterial::_update_shader(BlendMode p_blend) {
 }
 
 void BlitMaterial::set_blend_mode(BlendMode p_blend_mode) {
+	ERR_FAIL_INDEX_MSG(p_blend_mode, BLEND_MODE_DISABLED, "Invalid blend mode.");
+
 	blend_mode = p_blend_mode;
 	_update_shader(blend_mode);
 	if (shader_set) {
