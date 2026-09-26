@@ -594,14 +594,7 @@ void PixelFormats::addMTLPixelFormatDescImpl(MTL::PixelFormat p_pix_fmt, MTL::Pi
 	addMTLPixelFormatDescFull(mtlFmt, mtlFmt, viewClass, kMTLFmtCaps##appleGPUCaps)
 
 #define addMTLPixelFormatDescSRGB(mtlFmt, viewClass, appleGPUCaps, mtlFmtLinear) \
-	/* Cannot write to sRGB textures in the simulator */ \
-	if (TARGET_OS_SIMULATOR) { \
-		MTLFmtCaps appleFmtCaps = kMTLFmtCaps##appleGPUCaps; \
-		flags::clear(appleFmtCaps, kMTLFmtCapsWrite); \
-		addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, appleFmtCaps); \
-	} else { \
-		addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, kMTLFmtCaps##appleGPUCaps); \
-	}
+	addMTLPixelFormatDescFull(mtlFmt, mtlFmtLinear, viewClass, kMTLFmtCaps##appleGPUCaps);
 
 void PixelFormats::initMTLPixelFormatCapabilities() {
 	_mtl_pixel_format_descs.reserve(1024);
@@ -929,9 +922,6 @@ void PixelFormats::modifyMTLFormatCapabilities(const MetalFeatures &p_feat) {
 	// be individually write-enabled during blending on macOS. Disabling blending
 	// on macOS is the least-intrusive way to handle this in a Vulkan-friendly way.
 	disableMTLPixFmtCapsIf(p_feat.supportsMac, RGB9E5Float, Blend);
-
-	// RGB9E5Float cannot be used as a render target on the simulator.
-	disableMTLPixFmtCapsIf(TARGET_OS_SIMULATOR, RGB9E5Float, ColorAtt);
 
 	setMTLPixFmtCapsIf(iosOnly6, RG32Uint, RWC);
 	setMTLPixFmtCapsIf(iosOnly6, RG32Sint, RWC);
