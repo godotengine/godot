@@ -145,31 +145,38 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #define _LIFETIME_BOUND_
 #endif
 
-// Make room for our constexpr's below by overriding potential system-specific macros.
+template <typename T>
+constexpr const T gd_sign(const T p_value) {
+	return p_value > 0 ? +1.0f : (p_value < 0 ? -1.0f : 0.0f);
+}
+
+template <typename T, typename T2>
+constexpr auto gd_min(const T p_left, const T2 p_right) {
+	return p_left < p_right ? p_left : p_right;
+}
+
+template <typename T, typename T2>
+constexpr auto gd_max(const T p_left, const T2 p_right) {
+	return p_left > p_right ? p_left : p_right;
+}
+
+template <typename T, typename T2, typename T3>
+constexpr auto gd_clamp(const T p_value, const T2 p_min, const T3 p_max) {
+	return p_value < p_min ? p_min : (p_value > p_max ? p_max : p_value);
+}
+
+// Make room for our versions below.
 #undef SIGN
 #undef MIN
 #undef MAX
 #undef CLAMP
 
-template <typename T>
-constexpr const T SIGN(const T p_value) {
-	return p_value > 0 ? +1.0f : (p_value < 0 ? -1.0f : 0.0f);
-}
-
-template <typename T, typename T2>
-constexpr auto MIN(const T p_left, const T2 p_right) {
-	return p_left < p_right ? p_left : p_right;
-}
-
-template <typename T, typename T2>
-constexpr auto MAX(const T p_left, const T2 p_right) {
-	return p_left > p_right ? p_left : p_right;
-}
-
-template <typename T, typename T2, typename T3>
-constexpr auto CLAMP(const T p_value, const T2 p_min, const T3 p_max) {
-	return p_value < p_min ? p_min : (p_value > p_max ? p_max : p_value);
-}
+// Define these as macros. This prevents system headers from redeclaring
+// them with naive macros, which perform worse than the constexpr functions.
+#define SIGN(m_v) gd_sign((m_v))
+#define MIN(m_l, m_r) gd_min((m_l), (m_r))
+#define MAX(m_l, m_r) gd_max((m_l), (m_r))
+#define CLAMP(m_v, m_min, m_max) gd_clamp((m_v), (m_min), (m_max))
 
 // Like std::size, but without requiring any additional includes.
 template <typename T, size_t SIZE>
