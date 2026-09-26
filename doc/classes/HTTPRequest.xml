@@ -182,6 +182,13 @@
 				Returns the current status of the underlying [HTTPClient].
 			</description>
 		</method>
+		<method name="get_uploaded_bytes" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of bytes this HTTPRequest uploaded. See [method HTTPClient.get_request_bytes_sent] for more details.
+				[b]Note:[/b] On the Web platform, this function always returns [code]-1[/code] due to browser limitations.
+			</description>
+		</method>
 		<method name="request">
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />

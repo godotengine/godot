@@ -567,6 +567,10 @@ int64_t HTTPClientTCP::get_response_body_length() const {
 	return body_size;
 }
 
+int64_t HTTPClientTCP::get_request_bytes_sent() const {
+	return request_buffer->get_position();
+}
+
 PackedByteArray HTTPClientTCP::read_response_body_chunk() {
 	ERR_FAIL_COND_V(status != STATUS_BODY, PackedByteArray());
 
