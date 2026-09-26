@@ -13,8 +13,8 @@
 	</description>
 	<tutorials>
 		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
-		<link title="Rich Text Label with BBCode Demo">https://godotengine.org/asset-library/asset/2774</link>
-		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
+		<link title="Rich Text Label with BBCode Demo">https://store.godotengine.org/asset/godot-foundation/rich-text-label-with-bbcode-demo/</link>
+		<link title="Operating System Testing Demo">https://store.godotengine.org/asset/godot-foundation/operating-system-testing-demo/</link>
 	</tutorials>
 	<methods>
 		<method name="add_hr">
