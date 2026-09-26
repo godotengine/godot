@@ -1442,7 +1442,7 @@
 			<description>
 				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes_to_var].
 				[b]Note:[/b] If you need object serialization, see [method var_to_bytes_with_objects].
-				[b]Note:[/b] Encoding [Callable] is not supported and will result in an empty value, regardless of the data.
+				[b]Note:[/b] [Callable]s are replaced with empty Callable objects when encoded, regardless of the Callable's contents.
 			</description>
 		</method>
 		<method name="var_to_bytes_with_objects">
@@ -1450,7 +1450,7 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include executable code). Deserialization can be done with [method bytes_to_var_with_objects].
-				[b]Note:[/b] Encoding [Callable] is not supported and will result in an empty value, regardless of the data.
+				[b]Note:[/b] [Callable]s are replaced with empty Callable objects when encoded, regardless of the Callable's contents.
 			</description>
 		</method>
 		<method name="var_to_str">
