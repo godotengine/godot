@@ -37,18 +37,27 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box_flat.h"
 
-SpanningHeader::SpanningHeader(const String &p_text) {
+SpanningHeader::SpanningHeader(const String &p_text, const Ref<Texture2D> &p_icon) {
 	Ref<StyleBoxFlat> title_sbf;
 	title_sbf.instantiate();
 	title_sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_3", "Editor"));
 	add_theme_style_override(SceneStringName(panel), title_sbf);
 	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	hb->set_h_size_flags(SizeFlags::SIZE_EXPAND | SizeFlags::SIZE_SHRINK_CENTER);
+	add_child(hb);
+	if (p_icon.is_valid()) {
+		title_sbf->set_content_margin(Side::SIDE_LEFT, 8);
+		TextureRect *icon = memnew(TextureRect);
+		icon->set_texture(p_icon);
+		icon->set_stretch_mode(TextureRect::StretchMode::STRETCH_KEEP_CENTERED);
+		hb->add_child(icon);
+	}
 	Label *title = memnew(Label(p_text));
-	add_child(title);
-	title->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
-	title->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
+	hb->add_child(title);
 }
 
 DarkPanelContainer::DarkPanelContainer() {
@@ -71,7 +80,9 @@ void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {
 
 	// Reset ourselves to default state.
 	p_current_node->set_visible(true);
-	p_current_node->clear_custom_color(0);
+	for (int c = 0; c < managed_tree->get_columns(); c++) {
+		p_current_node->clear_custom_color(c);
+	}
 
 	// Go through each child and filter them.
 	bool any_child_visible = false;
@@ -83,21 +94,69 @@ void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {
 	}
 
 	// Check if we match the filter.
-	String filter_str = filter_edit->get_text().strip_edges(true, true).to_lower();
+	Vector<String> filters = filter_edit->get_text().strip_edges(true, true).to_lower().split(" ", false);
 
 	// We are visible.
-	bool matches_filter = false;
-	for (int i = 0; i < managed_tree->get_columns(); i++) {
-		if (p_current_node->get_text(i).to_lower().contains(filter_str)) {
-			matches_filter = true;
+	bool matches_filter = true;
+	for (const String &filter_str : filters) {
+		bool filter_is_col = (filter_str.get_slice_count(":") == 2); // Filter is of the type 'col_name:match' (replacing spaces with '_')
+		if (filter_is_col) {
+			String col_name = filter_str.get_slicec(':', 0);
+			String match = filter_str.get_slicec(':', 1);
+			if (col_name.is_empty() || match.is_empty()) {
+				continue;
+			} else {
+				for (int i = 0; i < managed_tree->get_columns(); i++) {
+					if (managed_tree->get_column_title(i).to_lower().replace_char(' ', '_') == col_name) {
+						if (!p_current_node->get_text(i).to_lower().contains(match)) {
+							matches_filter = false;
+							break;
+						}
+					}
+				}
+			}
+		} else {
+			bool found = false;
+			for (int i = 0; i < managed_tree->get_columns(); i++) {
+				if (p_current_node->get_text(i).to_lower().contains(filter_str)) {
+					found = true;
+					break;
+				}
+			}
+			matches_filter = found;
+		}
+		if (matches_filter == false) {
 			break;
 		}
 	}
-	if (matches_filter || filter_str.is_empty()) {
-		p_current_node->set_visible(true);
+
+	if (matches_filter || filters.is_empty()) {
+		bool custom_filter = true;
+		if (custom_filter_cb.is_valid()) {
+			Variant variant_node = p_current_node;
+			const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *));
+			argptrs[0] = &variant_node;
+
+			Callable::CallError ce;
+			Variant ret;
+			custom_filter_cb.callp(argptrs, 1, ret, ce);
+			if (ce.error != Callable::CallError::CALL_OK) {
+				ERR_PRINT(vformat("Error calling custom filter method for in TreeSortAndFilterBar: %s.", Variant::get_callable_error_text(custom_filter_cb, argptrs, 1, ce)));
+				// Callable will never work for subsequent tree items, clear it
+				custom_filter_cb = Callable();
+			} else if (ret.get_type() != Variant::Type::BOOL) {
+				WARN_PRINT_ONCE("Custom filter method for in TreeSortAndFilterBar returned a non boolean value, will be interpreted as a boolean.");
+				custom_filter = ret.operator bool();
+			} else {
+				custom_filter = ret;
+			}
+		}
+		p_current_node->set_visible(custom_filter);
 	} else if (any_child_visible) {
 		// We have a visible child.
-		p_current_node->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+		for (int c = 0; c < managed_tree->get_columns(); c++) {
+			p_current_node->set_custom_color(c, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
+		}
 	} else {
 		// We and our children are not visible.
 		p_current_node->set_visible(false);
@@ -230,6 +289,10 @@ void TreeSortAndFilterBar::clear() {
 
 void TreeSortAndFilterBar::select_sort(int p_item_id) {
 	_sort_changed(p_item_id);
+}
+
+void TreeSortAndFilterBar::set_custom_filter_callback(const Callable &p_custom_callback) {
+	custom_filter_cb = p_custom_callback;
 }
 
 void TreeSortAndFilterBar::apply() {
