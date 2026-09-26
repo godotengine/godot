@@ -1392,7 +1392,7 @@ namespace Godot
             if (pos < 0)
                 return string.Empty;
 
-            return instance.Substring(pos, instance.Length - pos);
+            return instance.Substring(pos);
         }
 
         /// <summary>
@@ -1728,7 +1728,7 @@ namespace Godot
         /// <summary>
         /// Decodes a string in URL encoded format. This is meant to
         /// decode parameters in a URL when receiving an HTTP request.
-        /// This mostly wraps around <see cref="Uri.UnescapeDataString"/>,
+        /// This mostly wraps around <see cref="Uri.UnescapeDataString(string)"/>,
         /// but also handles <c>+</c>.
         /// See <see cref="URIEncode"/> for encoding.
         /// </summary>
@@ -1742,7 +1742,7 @@ namespace Godot
         /// <summary>
         /// Encodes a string to URL friendly format. This is meant to
         /// encode parameters in a URL when sending an HTTP request.
-        /// This wraps around <see cref="Uri.EscapeDataString"/>.
+        /// This wraps around <see cref="Uri.EscapeDataString(string)"/>.
         /// See <see cref="URIDecode"/> for decoding.
         /// </summary>
         /// <param name="instance">The string to encode.</param>

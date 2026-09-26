@@ -1,1 +1,1 @@
-https://www.nuget.org/packages/Microsoft.NETCore.App.Runtime.Mono.android-arm64/9.0.4
+https://www.nuget.org/packages/Microsoft.NETCore.App.Runtime.Mono.android-arm64/10.0.11
