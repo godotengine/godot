@@ -37,6 +37,10 @@ TEST_FORCE_LINK(test_object)
 #include "core/object/object.h"
 #include "core/object/script_language.h"
 #include "tests/signal_watcher.h"
+#ifdef THREADS_ENABLED
+#include "core/os/os.h"
+#include "core/os/thread.h"
+#endif
 
 namespace TestObject {
 
@@ -691,4 +695,41 @@ TEST_CASE("[Object] RequiredResult") {
 	CHECK_EQ(ref, var);
 }
 
+#ifdef THREADS_ENABLED
+
+static void locked_instance_delete(void *p_void_obj) {
+	memdelete(static_cast<Object *>(p_void_obj));
+}
+
+TEST_CASE("[Object] Locked instance") {
+	Thread thread{};
+
+	Object *obj = memnew(Object);
+	ObjectID obj_id = obj->get_instance_id();
+
+	Object *p_db = ObjectDB::get_locked_instance(obj_id);
+	CHECK_MESSAGE(
+			p_db == obj,
+			"The database pointer returned by the object id should reference same object.");
+
+	thread.start(&locked_instance_delete, obj);
+
+	OS::get_singleton()->delay_usec(1000);
+	CHECK_MESSAGE(
+			ObjectDB::get_locked_instance(obj_id) == nullptr,
+			"Can't return more locked instances after `memdelete`.");
+
+	OS::get_singleton()->delay_usec(1000);
+	CHECK_MESSAGE(
+			ObjectDB::get_instance(obj_id) == obj,
+			"The other thread is forced to wait in `memdelete` until the instance is unlocked.");
+
+	ObjectDB::unlock_instance(obj);
+	thread.wait_to_finish();
+
+	CHECK_MESSAGE(
+			ObjectDB::get_instance(obj_id) == nullptr,
+			"Object is deleted after unlocking.");
+}
+#endif
 } // namespace TestObject
