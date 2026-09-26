@@ -95,6 +95,7 @@ private:
 	void _shape_changed(const Ref<Shape3D> &p_shape);
 	void _update_debug_shapes();
 	void _clear_debug_shapes();
+	void _physics_debug_changed();
 
 	void _apply_disabled();
 	void _apply_enabled();

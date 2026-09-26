@@ -39,6 +39,10 @@
 #include "servers/display/accessibility_server.h"
 #include "servers/display/display_server.h"
 
+#if defined(DEBUG_ENABLED) && !defined(PHYSICS_2D_DISABLED)
+#include "servers/physics_2d/physics_server_2d.h"
+#endif
+
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	if (texture_normal == p_texture) {
 		return;
@@ -161,10 +165,11 @@ void TouchScreenButton::_notification(int p_what) {
 				}
 			}
 
+#if defined(DEBUG_ENABLED) && !defined(PHYSICS_2D_DISABLED)
 			if (!shape_visible) {
 				return;
 			}
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !PhysicsServer2D::get_singleton()->debug_is_enabled()) {
 				return;
 			}
 			if (shape.is_valid()) {
@@ -178,6 +183,7 @@ void TouchScreenButton::_notification(int p_what) {
 				draw_set_transform_matrix(get_canvas_transform().translated_local(pos));
 				shape->draw(get_canvas_item(), draw_col);
 			}
+#endif
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -216,10 +222,6 @@ void TouchScreenButton::_notification(int p_what) {
 			if (is_pressed()) {
 				_release();
 			}
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
 		} break;
 	}
 }
@@ -462,4 +464,8 @@ void TouchScreenButton::_bind_methods() {
 TouchScreenButton::TouchScreenButton() {
 	unit_rect.instantiate();
 	unit_rect->set_size(Vector2(1, 1));
+
+#if defined(DEBUG_ENABLED) && !defined(PHYSICS_2D_DISABLED)
+	PhysicsServer2D::get_singleton()->connect("_debug_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }
