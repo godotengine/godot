@@ -375,6 +375,8 @@ public:
 	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_local_b) override;
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const override;
 
+	virtual float pin_joint_get_applied_force(RID p_joint) const override;
+
 	virtual void joint_make_hinge(RID p_joint, RID p_body_a, const Transform3D &p_hinge_a, RID p_body_b, const Transform3D &p_hinge_b) override;
 
 	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_a, const Vector3 &p_pivot_a, const Vector3 &p_axis_a, RID p_body_b, const Vector3 &p_pivot_b, const Vector3 &p_axis_b) override;
@@ -461,8 +463,6 @@ public:
 
 	int joint_get_solver_position_iterations(RID p_joint);
 	void joint_set_solver_position_iterations(RID p_joint, int p_value);
-
-	float pin_joint_get_applied_force(RID p_joint);
 
 	double hinge_joint_get_jolt_param(RID p_joint, HingeJointParamJolt p_param) const;
 	void hinge_joint_set_jolt_param(RID p_joint, HingeJointParamJolt p_param, double p_value);

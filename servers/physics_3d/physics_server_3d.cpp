@@ -323,6 +323,7 @@ void PhysicsServer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PS3DE::JOINT_TYPE_MAX);
 
 	ClassDB::bind_method(D_METHOD("joint_make_pin", "joint", "body_A", "local_A", "body_B", "local_B"), &PhysicsServer3D::joint_make_pin);
+
 	ClassDB::bind_method(D_METHOD("pin_joint_set_param", "joint", "param", "value"), &PhysicsServer3D::pin_joint_set_param);
 	ClassDB::bind_method(D_METHOD("pin_joint_get_param", "joint", "param"), &PhysicsServer3D::pin_joint_get_param);
 
@@ -331,6 +332,8 @@ void PhysicsServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("pin_joint_set_local_b", "joint", "local_B"), &PhysicsServer3D::pin_joint_set_local_b);
 	ClassDB::bind_method(D_METHOD("pin_joint_get_local_b", "joint"), &PhysicsServer3D::pin_joint_get_local_b);
+
+	ClassDB::bind_method(D_METHOD("pin_joint_get_applied_force", "joint"), &PhysicsServer3D::pin_joint_get_applied_force);
 
 	BIND_ENUM_CONSTANT(PS3DE::PIN_JOINT_BIAS);
 	BIND_ENUM_CONSTANT(PS3DE::PIN_JOINT_DAMPING);

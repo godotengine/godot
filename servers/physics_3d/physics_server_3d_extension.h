@@ -495,6 +495,8 @@ public:
 	EXBIND2(pin_joint_set_local_b, RID, const Vector3 &)
 	EXBIND1RC(Vector3, pin_joint_get_local_b, RID)
 
+	EXBIND1RC(float, pin_joint_get_applied_force, RID)
+
 	EXBIND5(joint_make_hinge, RID, RID, const Transform3D &, RID, const Transform3D &)
 	EXBIND7(joint_make_hinge_simple, RID, RID, const Vector3 &, const Vector3 &, RID, const Vector3 &, const Vector3 &)
 

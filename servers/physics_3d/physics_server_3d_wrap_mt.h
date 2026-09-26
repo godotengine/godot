@@ -356,6 +356,8 @@ public:
 	FUNC2(pin_joint_set_local_b, RID, const Vector3 &)
 	FUNC1RC(Vector3, pin_joint_get_local_b, RID)
 
+	FUNC1RC(float, pin_joint_get_applied_force, RID)
+
 	FUNC5(joint_make_hinge, RID, RID, const Transform3D &, RID, const Transform3D &)
 	FUNC7(joint_make_hinge_simple, RID, RID, const Vector3 &, const Vector3 &, RID, const Vector3 &, const Vector3 &)
 

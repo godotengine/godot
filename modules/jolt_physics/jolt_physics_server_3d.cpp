@@ -1350,6 +1350,16 @@ Vector3 JoltPhysicsServer3D::pin_joint_get_local_b(RID p_joint) const {
 	return pin_joint->get_local_b();
 }
 
+float JoltPhysicsServer3D::pin_joint_get_applied_force(RID p_joint) const {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_PIN, 0.0);
+	JoltPinJoint3D *pin_joint = static_cast<JoltPinJoint3D *>(joint);
+
+	return pin_joint->get_applied_force();
+}
+
 void JoltPhysicsServer3D::joint_make_hinge(RID p_joint, RID p_body_a, const Transform3D &p_hinge_a, RID p_body_b, const Transform3D &p_hinge_b) {
 	JoltJoint3D *old_joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(old_joint);
@@ -1793,16 +1803,6 @@ void JoltPhysicsServer3D::joint_set_solver_position_iterations(RID p_joint, int 
 	ERR_FAIL_NULL(joint);
 
 	return joint->set_solver_position_iterations(p_value);
-}
-
-float JoltPhysicsServer3D::pin_joint_get_applied_force(RID p_joint) {
-	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_NULL_V(joint, 0.0f);
-
-	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_PIN, 0.0);
-	JoltPinJoint3D *pin_joint = static_cast<JoltPinJoint3D *>(joint);
-
-	return pin_joint->get_applied_force();
 }
 
 double JoltPhysicsServer3D::hinge_joint_get_jolt_param(RID p_joint, HingeJointParamJolt p_param) const {

@@ -962,6 +962,14 @@
 				[b]Note:[/b] Only supported when using GodotPhysics3D. This method has no effect when using Jolt Physics, as it does not support joint solver priority.
 			</description>
 		</method>
+		<method name="pin_joint_get_applied_force" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns the magnitude of the force applied to satisfy this joint. Returns [code]0.0[/code] if the joint is not yet connected to two bodies. [PinJoint3D] has no rotational constraint, so there is no equivalent [code]pin_joint_get_applied_torque[/code] method.
+				[b]Note:[/b] Only supported when using Jolt Physics.
+			</description>
+		</method>
 		<method name="pin_joint_get_local_a" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="joint" type="RID" />

@@ -390,6 +390,8 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_pin_joint_set_local_b, "joint", "local_B");
 	GDVIRTUAL_BIND(_pin_joint_get_local_b, "joint");
 
+	GDVIRTUAL_BIND(_pin_joint_get_applied_force, "joint");
+
 	GDVIRTUAL_BIND(_joint_make_hinge, "joint", "body_A", "hinge_A", "body_B", "hinge_B");
 	GDVIRTUAL_BIND(_joint_make_hinge_simple, "joint", "body_A", "pivot_A", "axis_A", "body_B", "pivot_B", "axis_B");
 

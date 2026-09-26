@@ -334,6 +334,8 @@ public:
 	virtual void pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) override;
 	virtual Vector3 pin_joint_get_local_b(RID p_joint) const override;
 
+	virtual float pin_joint_get_applied_force(RID p_joint) const override;
+
 	virtual void joint_make_hinge(RID p_joint, RID p_body_A, const Transform3D &p_frame_A, RID p_body_B, const Transform3D &p_frame_B) override;
 	virtual void joint_make_hinge_simple(RID p_joint, RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) override;
 

@@ -1335,6 +1335,14 @@ Vector3 GodotPhysicsServer3D::pin_joint_get_local_b(RID p_joint) const {
 	return pin_joint->get_position_b();
 }
 
+float GodotPhysicsServer3D::pin_joint_get_applied_force(RID p_joint) const {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_PIN, 0.0f);
+	GodotPinJoint3D *pin_joint = static_cast<GodotPinJoint3D *>(joint);
+	return pin_joint->get_applied_force();
+}
+
 void GodotPhysicsServer3D::joint_make_hinge(RID p_joint, RID p_body_A, const Transform3D &p_frame_A, RID p_body_B, const Transform3D &p_frame_B) {
 	GodotBody3D *body_A = body_owner.get_or_null(p_body_A);
 	ERR_FAIL_NULL(body_A);
