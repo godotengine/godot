@@ -164,16 +164,32 @@ void SnapshotNodeView::_add_snapshot_to_tree(Tree *p_tree, GameStateSnapshot *p_
 		}
 	}
 
+	TreeItem *tree_root = p_tree->get_root();
+	if (tree_root == nullptr) {
+		tree_root = p_tree->create_item();
+	}
+	p_tree->set_hide_root(true);
+
+	TreeItem *root_item = nullptr;
 	if (scene_root != nullptr) {
-		TreeItem *root_item = _add_item_to_tree(p_tree, p_tree->get_root(), scene_root, p_diff_group);
+		root_item = _add_item_to_tree(p_tree, p_tree->get_root(), scene_root, p_diff_group);
 		_add_children_to_tree(root_item, scene_root, p_diff_group);
 	}
 
 	if (!orphan_nodes.is_empty()) {
-		TreeItem *orphans_item = _add_item_to_tree(p_tree, p_tree->get_root(), TTRC("Orphan Nodes"), p_diff_group);
+		String name = TTRC("Orphan Nodes");
+		if (p_diff_group == DIFF_GROUP_REMOVED) {
+			name = TTRC("A Orphan Nodes");
+		} else if (p_diff_group == DIFF_GROUP_ADDED) {
+			name = TTRC("B Orphan Nodes");
+		}
+		TreeItem *orphans_item = _add_item_to_tree(p_tree, tree_root, name, p_diff_group);
 		for (SnapshotDataObject *orphan_node : orphan_nodes) {
 			TreeItem *orphan_item = _add_item_to_tree(p_tree, orphans_item, orphan_node, p_diff_group);
 			_add_children_to_tree(orphan_item, orphan_node, p_diff_group);
+		}
+		if (root_item) {
+			orphans_item->move_before(root_item);
 		}
 	}
 }
@@ -186,7 +202,7 @@ void SnapshotNodeView::_add_children_to_tree(TreeItem *p_parent_item, SnapshotDa
 	}
 }
 
-TreeItem *SnapshotNodeView::_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, const String &p_item_name, DiffGroup p_diff_group) {
+TreeItem *SnapshotNodeView::_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, const String &p_item_name, DiffGroup p_diff_group, SnapshotDataObject::DiffStatus p_diff_status) {
 	// Find out if this node already exists.
 	TreeItem *item = nullptr;
 	if (p_diff_group != DIFF_GROUP_NONE) {
@@ -200,13 +216,17 @@ TreeItem *SnapshotNodeView::_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, 
 	}
 
 	if (item) {
-		// If it exists, clear the background color because we now know it exists in both trees.
-		item->clear_custom_bg_color(0);
+		if (p_diff_status != SnapshotDataObject::DiffStatus::DIFF_MODIFIED) {
+			// If it exists, clear the background color because we now know it exists in both trees.
+			item->clear_custom_bg_color(0);
+		}
 	} else {
 		// Add the new node and set its background color to green or red depending on which snapshot it's a part of.
 		item = p_tree->create_item(p_parent);
 
-		if (p_diff_group == DIFF_GROUP_ADDED) {
+		if (p_diff_status == SnapshotDataObject::DiffStatus::DIFF_MODIFIED) {
+			item->set_custom_bg_color(0, Color(1, 1, 0, 0.1));
+		} else if (p_diff_group == DIFF_GROUP_ADDED) {
 			item->set_custom_bg_color(0, Color(0, 1, 0, 0.1));
 		} else if (p_diff_group == DIFF_GROUP_REMOVED) {
 			item->set_custom_bg_color(0, Color(1, 0, 0, 0.1));
@@ -221,7 +241,7 @@ TreeItem *SnapshotNodeView::_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, 
 
 TreeItem *SnapshotNodeView::_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, SnapshotDataObject *p_data, DiffGroup p_diff_group) {
 	String node_name = p_data->extra_debug_data["node_name"];
-	TreeItem *child_item = _add_item_to_tree(p_tree, p_parent, node_name, p_diff_group);
+	TreeItem *child_item = _add_item_to_tree(p_tree, p_parent, node_name, p_diff_group, p_data->diff_status);
 	tree_item_data[child_item].push_back(p_data);
 	return child_item;
 }
