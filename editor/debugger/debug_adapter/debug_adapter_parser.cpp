@@ -39,6 +39,19 @@
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
 
+#define VALIDATE_KEY(p_dict, p_key, p_type)                                                                        \
+	if (!((Dictionary)p_dict).has(p_key)) {                                                                        \
+		String error = vformat("Missing required key: '%s'", p_key);                                               \
+		ERR_FAIL_V_MSG(prepare_malformed_error_response(p_params, error), vformat("%s: %s", __FUNCTION__, error)); \
+	}                                                                                                              \
+	if (((Dictionary)p_dict)[p_key].get_type() != p_type) {                                                        \
+		String error = vformat("Key '%s' has invalid type: expected %s but got %s",                                \
+				p_key,                                                                                             \
+				Variant::get_type_name(p_type),                                                                    \
+				Variant::get_type_name(((Dictionary)p_dict)[p_key].get_type()));                                   \
+		ERR_FAIL_V_MSG(prepare_malformed_error_response(p_params, error), vformat("%s: %s", __FUNCTION__, error)); \
+	}
+
 void DebugAdapterParser::_bind_methods() {
 	// Requests
 	ClassDB::bind_method(D_METHOD("req_initialize", "params"), &DebugAdapterParser::req_initialize);
@@ -70,6 +83,9 @@ Dictionary DebugAdapterParser::prepare_base_event() const {
 }
 
 Dictionary DebugAdapterParser::prepare_success_response(const Dictionary &p_params) const {
+	VALIDATE_KEY(p_params, "seq", Variant::INT); // "seq" is transformed to int when the request arrives
+	VALIDATE_KEY(p_params, "command", Variant::STRING);
+
 	Dictionary response;
 	response["type"] = "response";
 	response["request_seq"] = p_params["seq"];
@@ -80,7 +96,11 @@ Dictionary DebugAdapterParser::prepare_success_response(const Dictionary &p_para
 }
 
 Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params, DAP::ErrorType err_type, const Dictionary &variables) const {
-	Dictionary response, body;
+	VALIDATE_KEY(p_params, "seq", Variant::INT); // "seq" is transformed to int when the request arrives
+	VALIDATE_KEY(p_params, "command", Variant::STRING);
+
+	Dictionary response;
+	Dictionary body;
 	response["type"] = "response";
 	response["request_seq"] = p_params["seq"];
 	response["command"] = p_params["command"];
@@ -110,6 +130,10 @@ Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params
 			error = "missing_device";
 			error_desc = "There's no connected device with specified id.";
 			break;
+		case DAP::ErrorType::MALFORMED_REQUEST:
+			error = "malformed_request";
+			error_desc = "The request is malformed ({details}).";
+			break;
 		case DAP::ErrorType::UNKNOWN:
 		default:
 			error = "unknown";
@@ -126,7 +150,15 @@ Dictionary DebugAdapterParser::prepare_error_response(const Dictionary &p_params
 	return response;
 }
 
+Dictionary DebugAdapterParser::prepare_malformed_error_response(const Dictionary &p_params, const String &p_error) const {
+	Dictionary variables;
+	variables["details"] = p_error;
+	return prepare_error_response(p_params, DAP::ErrorType::MALFORMED_REQUEST, variables);
+}
+
 Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const {
+	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
+
 	Dictionary response = prepare_success_response(p_params);
 	Dictionary args = p_params["arguments"];
 
@@ -169,6 +201,8 @@ Dictionary DebugAdapterParser::req_disconnect(const Dictionary &p_params) const 
 }
 
 Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
+	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
+
 	Dictionary args = p_params["arguments"];
 	if (args.has("project") && !is_valid_path(args["project"])) {
 		Dictionary variables;
@@ -201,9 +235,11 @@ Vector<String> DebugAdapterParser::_extract_play_arguments(const Dictionary &p_a
 }
 
 Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const {
+	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
+
 	Dictionary args = p_params["arguments"];
 	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
-	if ((bool)args["noDebug"] != dbg->is_skip_breakpoints()) {
+	if ((bool)args.get("noDebug", false) != dbg->is_skip_breakpoints()) {
 		dbg->debug_skip_breakpoints();
 	}
 
@@ -258,15 +294,18 @@ Dictionary DebugAdapterParser::req_attach(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
-	// Extract embedded "arguments" so it can be given to req_launch/req_attach
-	Dictionary params = p_params, args;
-	args = params["arguments"];
-	args = args["arguments"];
-	params["arguments"] = args;
+	// Copy the request parameters and extract any embedded arguments to be forwarded to req_launch/req_attach
+	Dictionary params = p_params;
+	if (p_params.has("arguments") && p_params["arguments"].get_type() == Variant::DICTIONARY) {
+		const Dictionary &run_args = params["arguments"];
+		if (run_args.has("arguments")) {
+			params["arguments"] = run_args["arguments"];
+		}
+	}
 
 	Dictionary response = DebugAdapterProtocol::get_singleton()->get_current_peer()->attached ? req_attach(params) : _launch_process(params);
-	if (!response["success"]) {
-		response["command"] = p_params["command"];
+	if (!(bool)response.get("success", false)) {
+		response["command"] = p_params["command"]; // No need to validate that "command" exists; this is done when any request is received
 		return response;
 	}
 
@@ -308,7 +347,8 @@ Dictionary DebugAdapterParser::req_continue(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_threads(const Dictionary &p_params) const {
-	Dictionary response = prepare_success_response(p_params), body;
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
 
 	DAP::Thread thread;
@@ -326,7 +366,8 @@ Dictionary DebugAdapterParser::req_stackTrace(const Dictionary &p_params) const 
 		return Dictionary();
 	}
 
-	Dictionary response = prepare_success_response(p_params), body;
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
 
 	bool lines_at_one = DebugAdapterProtocol::get_singleton()->get_current_peer()->linesStartAt1;
@@ -350,10 +391,15 @@ Dictionary DebugAdapterParser::req_stackTrace(const Dictionary &p_params) const 
 }
 
 Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) const {
-	Dictionary response = prepare_success_response(p_params), body;
+	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
+	VALIDATE_KEY(p_params["arguments"], "source", Variant::DICTIONARY);
+
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
 
 	Dictionary args = p_params["arguments"];
+	VALIDATE_KEY(args["source"], "path", Variant::STRING);
 	DAP::Source source;
 	source.from_json(args["source"]);
 
@@ -372,9 +418,11 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 		source.path = source.path.substr(0, 1).to_upper() + source.path.substr(1);
 	}
 
-	Array breakpoints = args["breakpoints"], lines;
+	Array breakpoints = args.get("breakpoints", Array());
+	Array lines;
 	for (int i = 0; i < breakpoints.size(); i++) {
 		DAP::SourceBreakpoint breakpoint;
+		VALIDATE_KEY(breakpoints[i], "line", Variant::FLOAT);
 		breakpoint.from_json(breakpoints[i]);
 
 		lines.push_back(breakpoint.line + !lines_at_one);
@@ -389,15 +437,20 @@ Dictionary DebugAdapterParser::req_setBreakpoints(const Dictionary &p_params) co
 }
 
 Dictionary DebugAdapterParser::req_breakpointLocations(const Dictionary &p_params) const {
-	Dictionary response = prepare_success_response(p_params), body;
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
+
+	if (!p_params.has("arguments")) {
+		return response;
+	}
+
 	Dictionary args = p_params["arguments"];
+	VALIDATE_KEY(args, "line", Variant::FLOAT);
 
 	DAP::BreakpointLocation location;
 	location.line = args["line"];
-	if (args.has("endLine")) {
-		location.endLine = args["endLine"];
-	}
+	location.endLine = args.get("endLine", -1);
 	Array locations = { location.to_json() };
 
 	body["breakpoints"] = locations;
@@ -405,7 +458,11 @@ Dictionary DebugAdapterParser::req_breakpointLocations(const Dictionary &p_param
 }
 
 Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
-	Dictionary response = prepare_success_response(p_params), body;
+	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
+	VALIDATE_KEY(p_params["arguments"], "frameId", Variant::FLOAT);
+
+	Dictionary response = prepare_success_response(p_params);
+	Dictionary body;
 	response["body"] = body;
 
 	Dictionary args = p_params["arguments"];
@@ -445,6 +502,9 @@ Dictionary DebugAdapterParser::req_scopes(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_variables(const Dictionary &p_params) const {
+	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
+	VALIDATE_KEY(p_params["arguments"], "variablesReference", Variant::FLOAT);
+
 	// If _remaining_vars > 0, the debuggee is still sending a stack dump to the editor.
 	if (DebugAdapterProtocol::get_singleton()->_remaining_vars > 0) {
 		return Dictionary();
@@ -495,6 +555,9 @@ Dictionary DebugAdapterParser::req_stepIn(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
+	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
+	VALIDATE_KEY(p_params["arguments"], "expression", Variant::STRING);
+
 	Dictionary args = p_params["arguments"];
 	String expression = args["expression"];
 	int frame_id = args.has("frameId") ? static_cast<int>(args["frameId"]) : DebugAdapterProtocol::get_singleton()->_current_frame;
@@ -519,6 +582,10 @@ Dictionary DebugAdapterParser::req_evaluate(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_godot_put_msg(const Dictionary &p_params) const {
+	VALIDATE_KEY(p_params, "arguments", Variant::DICTIONARY);
+	VALIDATE_KEY(p_params["arguments"], "message", Variant::STRING);
+	VALIDATE_KEY(p_params["arguments"], "data", Variant::ARRAY);
+
 	Dictionary args = p_params["arguments"];
 
 	String msg = args["message"];
@@ -537,7 +604,8 @@ Dictionary DebugAdapterParser::ev_initialized() const {
 }
 
 Dictionary DebugAdapterParser::ev_process(const String &p_command) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "process";
 	event["body"] = body;
 
@@ -555,7 +623,8 @@ Dictionary DebugAdapterParser::ev_terminated() const {
 }
 
 Dictionary DebugAdapterParser::ev_exited(const int &p_exitcode) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "exited";
 	event["body"] = body;
 
@@ -565,7 +634,8 @@ Dictionary DebugAdapterParser::ev_exited(const int &p_exitcode) const {
 }
 
 Dictionary DebugAdapterParser::ev_stopped() const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "stopped";
 	event["body"] = body;
 
@@ -619,7 +689,8 @@ Dictionary DebugAdapterParser::ev_stopped_step() const {
 }
 
 Dictionary DebugAdapterParser::ev_continued() const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "continued";
 	event["body"] = body;
 
@@ -629,7 +700,8 @@ Dictionary DebugAdapterParser::ev_continued() const {
 }
 
 Dictionary DebugAdapterParser::ev_output(const String &p_message, RemoteDebugger::MessageType p_type) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "output";
 	event["body"] = body;
 
@@ -640,7 +712,8 @@ Dictionary DebugAdapterParser::ev_output(const String &p_message, RemoteDebugger
 }
 
 Dictionary DebugAdapterParser::ev_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "breakpoint";
 	event["body"] = body;
 
@@ -651,7 +724,8 @@ Dictionary DebugAdapterParser::ev_breakpoint(const DAP::Breakpoint &p_breakpoint
 }
 
 Dictionary DebugAdapterParser::ev_custom_data(const String &p_msg, const Array &p_data) const {
-	Dictionary event = prepare_base_event(), body;
+	Dictionary event = prepare_base_event();
+	Dictionary body;
 	event["event"] = "godot/custom_data";
 	event["body"] = body;
 
