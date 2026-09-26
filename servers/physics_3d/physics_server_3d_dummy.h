@@ -407,6 +407,9 @@ public:
 	virtual void hinge_joint_set_flag(RID p_joint, PS3DE::HingeJointFlag p_flag, bool p_enabled) override {}
 	virtual bool hinge_joint_get_flag(RID p_joint, PS3DE::HingeJointFlag p_flag) const override { return false; }
 
+	virtual float hinge_joint_get_applied_force(RID p_joint) const override { return 0.0f; }
+	virtual float hinge_joint_get_applied_torque(RID p_joint) const override { return 0.0f; }
+
 	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) override {}
 
 	virtual void slider_joint_set_param(RID p_joint, PS3DE::SliderJointParam p_param, real_t p_value) override {}

@@ -401,6 +401,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_hinge_joint_set_flag, "joint", "flag", "enabled");
 	GDVIRTUAL_BIND(_hinge_joint_get_flag, "joint", "flag");
 
+	GDVIRTUAL_BIND(_hinge_joint_get_applied_force, "joint");
+	GDVIRTUAL_BIND(_hinge_joint_get_applied_torque, "joint");
+
 	GDVIRTUAL_BIND(_joint_make_slider, "joint", "body_A", "local_ref_A", "body_B", "local_ref_B");
 
 	GDVIRTUAL_BIND(_slider_joint_set_param, "joint", "param", "value");

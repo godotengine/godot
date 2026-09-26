@@ -506,6 +506,9 @@ public:
 	EXBIND3(hinge_joint_set_flag, RID, PS3DE::HingeJointFlag, bool)
 	EXBIND2RC(bool, hinge_joint_get_flag, RID, PS3DE::HingeJointFlag)
 
+	EXBIND1RC(float, hinge_joint_get_applied_force, RID)
+	EXBIND1RC(float, hinge_joint_get_applied_torque, RID)
+
 	EXBIND5(joint_make_slider, RID, RID, const Transform3D &, RID, const Transform3D &)
 
 	EXBIND3(slider_joint_set_param, RID, PS3DE::SliderJointParam, real_t)

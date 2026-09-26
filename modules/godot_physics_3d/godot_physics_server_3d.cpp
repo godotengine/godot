@@ -1423,6 +1423,22 @@ bool GodotPhysicsServer3D::hinge_joint_get_flag(RID p_joint, PS3DE::HingeJointFl
 	return hinge_joint->get_flag(p_flag);
 }
 
+float GodotPhysicsServer3D::hinge_joint_get_applied_force(RID p_joint) const {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_HINGE, 0.0f);
+	GodotHingeJoint3D *hinge_joint = static_cast<GodotHingeJoint3D *>(joint);
+	return hinge_joint->get_applied_force();
+}
+
+float GodotPhysicsServer3D::hinge_joint_get_applied_torque(RID p_joint) const {
+	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_HINGE, 0.0f);
+	GodotHingeJoint3D *hinge_joint = static_cast<GodotHingeJoint3D *>(joint);
+	return hinge_joint->get_applied_torque();
+}
+
 void GodotPhysicsServer3D::joint_set_solver_priority(RID p_joint, int p_priority) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);

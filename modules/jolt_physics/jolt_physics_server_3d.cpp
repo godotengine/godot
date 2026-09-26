@@ -1422,6 +1422,26 @@ bool JoltPhysicsServer3D::hinge_joint_get_flag(RID p_joint, PS3DE::HingeJointFla
 	return hinge_joint->get_flag(p_flag);
 }
 
+float JoltPhysicsServer3D::hinge_joint_get_applied_force(RID p_joint) const {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_HINGE, 0.0f);
+	JoltHingeJoint3D *hinge_joint = static_cast<JoltHingeJoint3D *>(joint);
+
+	return hinge_joint->get_applied_force();
+}
+
+float JoltPhysicsServer3D::hinge_joint_get_applied_torque(RID p_joint) const {
+	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL_V(joint, 0.0f);
+
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_HINGE, 0.0f);
+	JoltHingeJoint3D *hinge_joint = static_cast<JoltHingeJoint3D *>(joint);
+
+	return hinge_joint->get_applied_torque();
+}
+
 void JoltPhysicsServer3D::joint_make_slider(RID p_joint, RID p_body_a, const Transform3D &p_local_ref_a, RID p_body_b, const Transform3D &p_local_ref_b) {
 	JoltJoint3D *old_joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(old_joint);
@@ -1843,26 +1863,6 @@ void JoltPhysicsServer3D::hinge_joint_set_jolt_flag(RID p_joint, HingeJointFlagJ
 	JoltHingeJoint3D *hinge_joint = static_cast<JoltHingeJoint3D *>(joint);
 
 	return hinge_joint->set_jolt_flag(p_flag, p_enabled);
-}
-
-float JoltPhysicsServer3D::hinge_joint_get_applied_force(RID p_joint) {
-	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_NULL_V(joint, 0.0f);
-
-	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_HINGE, 0.0f);
-	JoltHingeJoint3D *hinge_joint = static_cast<JoltHingeJoint3D *>(joint);
-
-	return hinge_joint->get_applied_force();
-}
-
-float JoltPhysicsServer3D::hinge_joint_get_applied_torque(RID p_joint) {
-	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
-	ERR_FAIL_NULL_V(joint, 0.0f);
-
-	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_HINGE, 0.0f);
-	JoltHingeJoint3D *hinge_joint = static_cast<JoltHingeJoint3D *>(joint);
-
-	return hinge_joint->get_applied_torque();
 }
 
 double JoltPhysicsServer3D::slider_joint_get_jolt_param(RID p_joint, SliderJointParamJolt p_param) const {

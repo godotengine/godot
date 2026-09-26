@@ -738,6 +738,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="_hinge_joint_get_applied_force" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_hinge_joint_get_applied_torque" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_hinge_joint_get_flag" qualifiers="virtual required const">
 			<return type="bool" />
 			<param index="0" name="joint" type="RID" />

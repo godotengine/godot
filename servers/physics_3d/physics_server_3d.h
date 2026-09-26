@@ -356,6 +356,9 @@ public:
 	virtual void hinge_joint_set_flag(RID p_joint, PS3DE::HingeJointFlag p_flag, bool p_enabled) = 0;
 	virtual bool hinge_joint_get_flag(RID p_joint, PS3DE::HingeJointFlag p_flag) const = 0;
 
+	virtual float hinge_joint_get_applied_force(RID p_joint) const = 0;
+	virtual float hinge_joint_get_applied_torque(RID p_joint) const = 0;
+
 	virtual void joint_make_slider(RID p_joint, RID p_body_A, const Transform3D &p_local_frame_A, RID p_body_B, const Transform3D &p_local_frame_B) = 0; //reference frame is A
 
 	virtual void slider_joint_set_param(RID p_joint, PS3DE::SliderJointParam p_param, real_t p_value) = 0;

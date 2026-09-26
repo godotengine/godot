@@ -387,6 +387,9 @@ public:
 	virtual void hinge_joint_set_flag(RID p_joint, PS3DE::HingeJointFlag p_flag, bool p_enabled) override;
 	virtual bool hinge_joint_get_flag(RID p_joint, PS3DE::HingeJointFlag p_flag) const override;
 
+	virtual float hinge_joint_get_applied_force(RID p_joint) const override;
+	virtual float hinge_joint_get_applied_torque(RID p_joint) const override;
+
 	virtual void joint_make_slider(RID p_joint, RID p_body_a, const Transform3D &p_local_ref_a, RID p_body_b, const Transform3D &p_local_ref_b) override;
 
 	virtual void slider_joint_set_param(RID p_joint, PS3DE::SliderJointParam p_param, real_t p_value) override;
@@ -469,9 +472,6 @@ public:
 
 	bool hinge_joint_get_jolt_flag(RID p_joint, HingeJointFlagJolt p_flag) const;
 	void hinge_joint_set_jolt_flag(RID p_joint, HingeJointFlagJolt p_flag, bool p_enabled);
-
-	float hinge_joint_get_applied_force(RID p_joint);
-	float hinge_joint_get_applied_torque(RID p_joint);
 
 	double slider_joint_get_jolt_param(RID p_joint, SliderJointParamJolt p_param) const;
 	void slider_joint_set_jolt_param(RID p_joint, SliderJointParamJolt p_param, double p_value);

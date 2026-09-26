@@ -367,6 +367,9 @@ public:
 	FUNC3(hinge_joint_set_flag, RID, PS3DE::HingeJointFlag, bool)
 	FUNC2RC(bool, hinge_joint_get_flag, RID, PS3DE::HingeJointFlag)
 
+	FUNC1RC(float, hinge_joint_get_applied_force, RID)
+	FUNC1RC(float, hinge_joint_get_applied_torque, RID)
+
 	FUNC5(joint_make_slider, RID, RID, const Transform3D &, RID, const Transform3D &)
 
 	FUNC3(slider_joint_set_param, RID, PS3DE::SliderJointParam, real_t)
