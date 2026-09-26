@@ -39,7 +39,6 @@ class DebuggerHelpers {
 public:
 	struct SelectResult {
 		Node *item = nullptr;
-		bool has_order = false;
 		real_t order = 0;
 		_FORCE_INLINE_ bool operator<(const SelectResult &p_rr) const { return p_rr.order < order; }
 	};
