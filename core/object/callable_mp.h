@@ -30,12 +30,10 @@
 
 #pragma once
 
-#include "core/error/error_macros.h"
 #include "core/object/object.h"
 #include "core/variant/binder_common.h"
 #include "core/variant/callable.h"
 
-#include <cstdint>
 #include <type_traits>
 
 class CallableCustomMethodPointerBase : public CallableCustom {
@@ -100,7 +98,6 @@ public:
 	}
 
 	virtual void get_method_info(MethodInfo &r_method_info) const {
-		print_line("CallableCustomMethodPointer::get_arguments is called!");
 #ifndef DEBUG_ENABLED
 		MethodInfo mi;
 
@@ -205,7 +202,6 @@ public:
 	}
 
 	virtual void get_method_info(MethodInfo &r_method_info) const override {
-		print_line("CallableCustomMethodPointerC::get_arguments is called!");
 		MethodInfo mi;
 
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {
@@ -303,7 +299,6 @@ public:
 	}
 
 	virtual void get_method_info(MethodInfo &r_method_info) const override {
-		print_line("CallableCustomStaticMethodPointer::get_arguments is called!");
 		MethodInfo mi;
 
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {

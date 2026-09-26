@@ -30,12 +30,8 @@
 
 #include "variant_callable.h"
 
+#include "core/object/method_info.h"
 #include "core/templates/hashfuncs.h"
-
-#include <core/error/error_macros.h>
-#include <core/object/method_info.h>
-#include <core/templates/vector.h>
-#include <core/variant/variant.h>
 
 bool VariantCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	return p_a->hash() == p_b->hash();
@@ -83,7 +79,6 @@ int VariantCallable::get_argument_count(bool &r_is_valid) const {
 }
 
 void VariantCallable::get_method_info(MethodInfo &r_method_info) const {
-	print_line("VariantCallable::get_arguments called!");
 	if (!is_valid()) {
 		return;
 	}

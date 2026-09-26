@@ -47,7 +47,6 @@
 #include "core/os/process_id.h"
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
-#include "core/variant/variant.h"
 
 namespace CoreBind {
 

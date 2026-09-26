@@ -38,9 +38,6 @@
 #include "utils/naming_utils.h"
 #include "utils/string_utils.h"
 
-#include "core/object/property_info.h"
-#include "core/templates/vector.h"
-
 #ifdef GD_MONO_HOT_RELOAD
 #include "managed_callable.h"
 #include "utils/path_utils.h"

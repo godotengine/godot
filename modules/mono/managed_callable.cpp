@@ -33,8 +33,6 @@
 #include "csharp_script.h"
 #include "mono_gd/gd_mono_cache.h"
 
-#include <core/string/print_string.h>
-
 #ifdef GD_MONO_HOT_RELOAD
 SelfList<ManagedCallable>::List ManagedCallable::instances;
 RBMap<ManagedCallable *, Array> ManagedCallable::instances_pending_reload;
@@ -92,7 +90,6 @@ int ManagedCallable::get_argument_count(bool &r_is_valid) const {
 }
 
 void ManagedCallable::get_method_info(MethodInfo &r_method_info) const {
-	print_line("ManagedCallable::get_arguments is called!");
 	Dictionary mi_dict;
 	GDMonoCache::managed_callbacks.DelegateUtils_GetMethodInfo(delegate_handle, &mi_dict);
 	r_method_info = MethodInfo::from_dict(mi_dict);
