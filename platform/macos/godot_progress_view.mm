@@ -34,18 +34,19 @@
 
 - (id)init {
 	self = [super init];
-	pr_state = DisplayServerEnums::PROGRESS_STATE_NOPROGRESS;
-	pr_value = 0.f;
-	pr_offset = 0.f;
 	return self;
 }
 
-- (void)setValue:(float)value {
-	pr_value = value;
+- (void)setValue:(float)value wid:(DisplayServerEnums::WindowID)wid {
+	pd_map[wid].pr_value = value;
 }
 
-- (void)setState:(DisplayServerEnums::ProgressState)state {
-	pr_state = state;
+- (void)setState:(DisplayServerEnums::ProgressState)state wid:(DisplayServerEnums::WindowID)wid {
+	pd_map[wid].pr_state = state;
+}
+
+- (void)removeWindow:(DisplayServerEnums::WindowID)wid {
+	pd_map.erase(wid);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
@@ -53,42 +54,69 @@
 	[[NSGraphicsContext currentContext] setImageInterpolation:NSImageInterpolationHigh];
 	[[NSApp applicationIconImage] drawInRect:self.bounds];
 
-	if (pr_state == DisplayServerEnums::PROGRESS_STATE_NOPROGRESS) {
+	int count = 0;
+	for (const KeyValue<DisplayServerEnums::WindowID, ProgressData> &E : pd_map) {
+		if (E.value.pr_state == DisplayServerEnums::PROGRESS_STATE_NOPROGRESS) {
+			continue;
+		}
+		count++;
+		if (count == 3) {
+			break;
+		}
+	}
+
+	if (count == 0) {
 		return;
 	}
 
-	// Border draw.
-	NSRect rect = NSMakeRect(1.f, 1.f, self.bounds.size.width - 2.f, 16.f);
-	NSBezierPath *bezier_path = [NSBezierPath bezierPathWithRoundedRect:rect xRadius:8.f yRadius:8.f];
-	[bezier_path setLineWidth:2.0];
-	[[NSColor grayColor] set];
-	[bezier_path stroke];
-
-	// Fill clip path.
-	rect = NSMakeRect(2.f, 2.f, self.bounds.size.width - 4.f, 14.f);
-	bezier_path = [NSBezierPath bezierPathWithRoundedRect:rect xRadius:7.f yRadius:7.f];
-	[bezier_path setLineWidth:1.0];
-	[bezier_path addClip];
-
-	// Fill draw.
-	if (pr_state == DisplayServerEnums::PROGRESS_STATE_INDETERMINATE) {
-		rect.size.width /= 5.0;
-		pr_offset += rect.size.width / 10.0;
-		if (pr_offset > self.bounds.size.width - rect.size.width) {
-			pr_offset = 0.f;
+	int index = 0;
+	for (KeyValue<DisplayServerEnums::WindowID, ProgressData> &E : pd_map) {
+		if (E.value.pr_state == DisplayServerEnums::PROGRESS_STATE_NOPROGRESS) {
+			continue;
 		}
-		rect.origin.x += pr_offset;
-	} else {
-		rect.size.width = Math::floor(rect.size.width * pr_value);
+
+		// Reset clip path.
+		NSBezierPath *clip = [NSBezierPath bezierPathWithRect:self.bounds];
+		[clip setClip];
+
+		// Border draw.
+		NSRect rect = NSMakeRect(1.f, 1.f + index * 17.f, self.bounds.size.width - 2.f, 16.f);
+		NSBezierPath *bezier_path = [NSBezierPath bezierPathWithRoundedRect:rect xRadius:8.f yRadius:8.f];
+		[bezier_path setLineWidth:2.0];
+		[[NSColor grayColor] set];
+		[bezier_path stroke];
+
+		// Fill clip path.
+		rect = NSMakeRect(2.f, 2.f + index * 17.f, self.bounds.size.width - 4.f, 14.f);
+		bezier_path = [NSBezierPath bezierPathWithRoundedRect:rect xRadius:7.f yRadius:7.f];
+		[bezier_path setLineWidth:1.0];
+		[bezier_path addClip];
+
+		// Fill draw.
+		if (E.value.pr_state == DisplayServerEnums::PROGRESS_STATE_INDETERMINATE) {
+			rect.size.width /= 5.0;
+			E.value.pr_offset += rect.size.width / 10.0;
+			if (E.value.pr_offset > self.bounds.size.width - rect.size.width) {
+				E.value.pr_offset = 0.f;
+			}
+			rect.origin.x += E.value.pr_offset;
+		} else {
+			rect.size.width = Math::floor(rect.size.width * E.value.pr_value);
+		}
+		if (E.value.pr_state == DisplayServerEnums::PROGRESS_STATE_ERROR) {
+			[[NSColor colorWithSRGBRed:1.0 green:0.2 blue:0.2 alpha:1.0] set];
+		} else if (E.value.pr_state == DisplayServerEnums::PROGRESS_STATE_PAUSED) {
+			[[NSColor colorWithSRGBRed:1.0 green:1.0 blue:0.2 alpha:1.0] set];
+		} else {
+			[[NSColor colorWithSRGBRed:0.2 green:0.6 blue:1.0 alpha:1.0] set];
+		}
+		NSRectFill(rect);
+
+		index++;
+		if (index == count) {
+			break;
+		}
 	}
-	if (pr_state == DisplayServerEnums::PROGRESS_STATE_ERROR) {
-		[[NSColor colorWithSRGBRed:1.0 green:0.2 blue:0.2 alpha:1.0] set];
-	} else if (pr_state == DisplayServerEnums::PROGRESS_STATE_PAUSED) {
-		[[NSColor colorWithSRGBRed:1.0 green:1.0 blue:0.2 alpha:1.0] set];
-	} else {
-		[[NSColor colorWithSRGBRed:0.2 green:0.6 blue:1.0 alpha:1.0] set];
-	}
-	NSRectFill(rect);
 }
 
 @end
