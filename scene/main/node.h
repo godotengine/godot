@@ -571,6 +571,7 @@ public:
 
 	NodePath get_path() const;
 	NodePath get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_path = false) const;
+	NodePath get_path_to_descendant(RequiredParam<const Node> p_node) const;
 	Node *find_common_parent_with(const Node *p_node) const;
 
 	void add_to_group(const StringName &p_identifier, bool p_persistent = false);
