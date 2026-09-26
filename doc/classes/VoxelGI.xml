@@ -47,6 +47,25 @@
 			Number of times to subdivide the grid that the [VoxelGI] operates on. A higher number results in finer detail and thus higher visual quality, while lower numbers result in better performance.
 		</member>
 	</members>
+	<signals>
+		<signal name="bake_begin">
+			<description>
+				Emitted when the node starts baking its [VoxelGIData].
+			</description>
+		</signal>
+		<signal name="bake_end">
+			<description>
+				Emitted when the node fully completed baking its [VoxelGIData].
+			</description>
+		</signal>
+		<signal name="bake_step">
+			<param index="0" name="step" type="int" />
+			<param index="1" name="status" type="String" />
+			<description>
+				Emitted every time the bake process completes a step. The step value starts with [code]0[/code] and ends with [code]999[/code]. The status value is an arbitrary string that describes the current section of the bake process.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="SUBDIV_64" value="0" enum="Subdiv">
 			Use 64 subdivisions. This is the lowest quality setting, but the fastest. Use it if you can, but especially use it on lower-end hardware.

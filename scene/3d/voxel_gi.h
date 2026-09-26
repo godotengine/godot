@@ -108,10 +108,6 @@ public:
 
 	};
 
-	typedef void (*BakeBeginFunc)();
-	typedef bool (*BakeStepFunc)(int, const String &);
-	typedef void (*BakeEndFunc)();
-
 private:
 	Ref<VoxelGIData> probe_data;
 
@@ -120,6 +116,10 @@ private:
 	Subdiv subdiv = SUBDIV_128;
 	Vector3 size = Vector3(20, 20, 20);
 	Ref<CameraAttributes> camera_attributes;
+
+	StringName bake_begin_name = "bake_begin";
+	StringName bake_step_name = "bake_step";
+	StringName bake_end_name = "bake_end";
 
 	struct PlotMesh {
 		Ref<Material> override_material;
@@ -130,8 +130,14 @@ private:
 
 	void _find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes);
 	void _debug_bake();
+	bool _voxelizer_plot_bake_step_function(int p_current, int p_total);
+	bool _voxelizer_sdf_bake_step_function(int p_current, int p_total);
 
 	float _get_camera_exposure_normalization();
+
+	void bake_begin();
+	bool bake_step(int p_step, const String &p_status);
+	void bake_end();
 
 protected:
 	static void _bind_methods();
@@ -141,10 +147,6 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
-	static BakeBeginFunc bake_begin_function;
-	static BakeStepFunc bake_step_function;
-	static BakeEndFunc bake_end_function;
-
 	void set_probe_data(const Ref<VoxelGIData> &p_data);
 	Ref<VoxelGIData> get_probe_data() const;
 
