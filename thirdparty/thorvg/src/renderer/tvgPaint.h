@@ -27,20 +27,12 @@
 #include "tvgRender.h"
 #include "tvgMath.h"
 
-
 #define PAINT(A) ((Paint::Impl*)A->pImpl)
 
 namespace tvg
 {
 enum ContextFlag : uint8_t {Default = 0, FastTrack = 1};
-
-struct Iterator
-{
-    virtual ~Iterator() {}
-    virtual const Paint* next() = 0;
-    virtual uint32_t count() = 0;
-    virtual void begin() = 0;
-};
+struct AccessorIterator;
 
 struct Mask
 {
@@ -306,10 +298,10 @@ struct Paint::Impl
         return Result::Success;
     }
 
-    bool intersects(const RenderRegion& region);
+    bool intersects(const RenderRegion& region, bool visibleOnly);
     RenderRegion bounds();
     bool bounds(Point* pt4, const Matrix* pm, bool obb);
-    Iterator* iterator();
+    AccessorIterator* iterator();
     RenderData update(RenderMethod* renderer, const Matrix& pm, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag pFlag, bool clipper = false);
     bool render(RenderMethod* renderer, CompositionFlag flag = CompositionFlag::Invalid);
     Paint* duplicate(Paint* ret = nullptr);
@@ -317,4 +309,4 @@ struct Paint::Impl
 
 }
 
-#endif //_TVG_PAINT_H_
+#endif  //_TVG_PAINT_H_
