@@ -34,7 +34,7 @@
 #define UNICODE_RANGES_INC
 
 // Unicode Character Blocks
-// Source: https://www.unicode.org/Public/17.0.0/ucd/Blocks.txt
+// Source: https://www.unicode.org/Public/18.0.0/ucd/Blocks.txt
 
 struct UniRange {
 	int32_t start;
@@ -292,6 +292,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x11D00, 0x11D5F, U"Masaram Gondi" },
 	{ 0x11D60, 0x11DAF, U"Gunjala Gondi" },
 	{ 0x11DB0, 0x11DEF, U"Tolong Siki" },
+	{ 0x11DF0, 0x11DFF, U"Bengali Supplement" },
 	{ 0x11EE0, 0x11EFF, U"Makasar" },
 	{ 0x11F00, 0x11F5F, U"Kawi" },
 	{ 0x11FB0, 0x11FBF, U"Lisu Supplement" },
@@ -299,6 +300,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x12000, 0x123FF, U"Cuneiform" },
 	{ 0x12400, 0x1247F, U"Cuneiform Numbers and Punctuation" },
 	{ 0x12480, 0x1254F, U"Early Dynastic Cuneiform" },
+	{ 0x12550, 0x1268F, U"Archaic Cuneiform Numerals" },
 	{ 0x12F90, 0x12FFF, U"Cypro-Minoan" },
 	{ 0x13000, 0x1342F, U"Egyptian Hieroglyphs" },
 	{ 0x13460, 0x143FF, U"Egyptian Hieroglyphs Extended-A" },
@@ -319,6 +321,8 @@ static UniRange unicode_ranges[] = {
 	{ 0x18B00, 0x18CFF, U"Khitan Small Script" },
 	{ 0x18D00, 0x18D7F, U"Tangut Supplement" },
 	{ 0x18D80, 0x18DFF, U"Tangut Components Supplement" },
+	{ 0x18E00, 0x1919F, U"Jurchen" },
+	{ 0x191A0, 0x191DF, U"Jurchen Radicals" },
 	{ 0x1AFF0, 0x1AFFF, U"Kana Extended-B" },
 	{ 0x1B000, 0x1B0FF, U"Kana Supplement" },
 	{ 0x1B100, 0x1B12F, U"Kana Extended-A" },
@@ -332,12 +336,14 @@ static UniRange unicode_ranges[] = {
 	{ 0x1D000, 0x1D0FF, U"Byzantine Musical Symbols" },
 	{ 0x1D100, 0x1D1FF, U"Musical Symbols" },
 	{ 0x1D200, 0x1D24F, U"Ancient Greek Musical Notation" },
+	{ 0x1D250, 0x1D28F, U"Musical Symbols Supplement" },
 	{ 0x1D2C0, 0x1D2DF, U"Kaktovik Numerals" },
 	{ 0x1D2E0, 0x1D2FF, U"Mayan Numerals" },
 	{ 0x1D300, 0x1D35F, U"Tai Xuan Jing Symbols" },
 	{ 0x1D360, 0x1D37F, U"Counting Rod Numerals" },
 	{ 0x1D400, 0x1D7FF, U"Mathematical Alphanumeric Symbols" },
 	{ 0x1D800, 0x1DAAF, U"Sutton SignWriting" },
+	{ 0x1DB00, 0x1DBFF, U"Miscellaneous Symbols and Arrows Extended" },
 	{ 0x1DF00, 0x1DFFF, U"Latin Extended-G" },
 	{ 0x1E000, 0x1E02F, U"Glagolitic Supplement" },
 	{ 0x1E030, 0x1E08F, U"Cyrillic Extended-D" },
@@ -379,6 +385,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x30000, 0x3134F, U"CJK Unified Ideographs Extension G" },
 	{ 0x31350, 0x323AF, U"CJK Unified Ideographs Extension H" },
 	{ 0x323B0, 0x3347F, U"CJK Unified Ideographs Extension J" },
+	{ 0x3D000, 0x3FC3F, U"Seal" },
 	{ 0xF0000, 0xFFFFF, U"Supplementary Private Use Area-A" },
 	{ 0x100000, 0x10FFFF, U"Supplementary Private Use Area-B" },
 	{ 0x10FFFF, 0x10FFFF, String() }
