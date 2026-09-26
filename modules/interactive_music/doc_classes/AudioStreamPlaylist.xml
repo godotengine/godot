@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlaylist" inherits="AudioStream" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
-		[AudioStream] that includes sub-streams and plays them back like a playlist.
+		Stores multiple sub-[AudioStream]s, which will be played in sequence.
 	</brief_description>
 	<description>
-		An audio stream that can play back sub-streams in sequence. Streams can be added to the Playlist with [method set_list_stream], and shuffled with [member shuffle].
+		[AudioStreamPlaylist] can play multiple streams in sequence. The order can be manually set, or shuffled with [member shuffle]. A stream can be set with [method set_list_stream].
+		This stream is ideal if you want to have alternating music tracks, like a radio station.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
@@ -13,14 +14,14 @@
 		<method name="get_bpm" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the BPM of the playlist, which can vary depending on the clip being played.
+				Returns the tempo of the currently playing stream, in beats per minute (BPM).
 			</description>
 		</method>
 		<method name="get_list_stream" qualifiers="const">
 			<return type="AudioStream" />
 			<param index="0" name="stream_index" type="int" />
 			<description>
-				Returns the stream at playback position index.
+				Returns the [AudioStream] of the given [param stream_index].
 			</description>
 		</method>
 		<method name="set_list_stream">
@@ -28,13 +29,13 @@
 			<param index="0" name="stream_index" type="int" />
 			<param index="1" name="audio_stream" type="AudioStream" />
 			<description>
-				Sets the stream at playback position index.
+				Sets the [param audio_stream] of the given [param stream_index].
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="fade_time" type="float" setter="set_fade_time" getter="get_fade_time" default="0.3">
-			Fade time used when a stream ends, when going to the next one. Streams are expected to have an extra bit of audio after the end to help with fading.
+			Fade-out time used when a stream ends, and switching to the next one (without fade-in). It may be preferred to have an extra bit of audio at the end of the streams with the same length as this property.
 		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="true">
 			If [code]true[/code], the playlist will loop, otherwise the playlist will end when the last stream is finished.
@@ -43,12 +44,12 @@
 			If [code]true[/code], the playlist will shuffle each time playback starts and each time it loops.
 		</member>
 		<member name="stream_count" type="int" setter="set_stream_count" getter="get_stream_count" default="0">
-			Amount of streams in the playlist.
+			Number of streams in the playlist.
 		</member>
 	</members>
 	<constants>
 		<constant name="MAX_STREAMS" value="64">
-			Maximum amount of streams supported in the playlist.
+			Maximum number of streams supported in the playlist.
 		</constant>
 	</constants>
 </class>
