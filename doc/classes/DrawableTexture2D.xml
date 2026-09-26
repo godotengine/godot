@@ -79,7 +79,7 @@
 		</constant>
 		<constant name="DRAWABLE_FORMAT_RGBA8_SRGB" value="1" enum="DrawableFormat">
 			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
-			When drawn to, an sRGB to linear color space conversion is performed.
+			When drawn to, a linear to sRGB color encoding conversion is performed.
 		</constant>
 		<constant name="DRAWABLE_FORMAT_RGBAH" value="2" enum="DrawableFormat">
 			OpenGL texture format GL_RGBA16F where there are four components, each a 16-bit "half-precision" floating-point value.
