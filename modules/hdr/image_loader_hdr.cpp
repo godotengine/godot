@@ -103,6 +103,8 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 					int i = 0;
 					while (i < width) {
 						int count = f->get_8();
+						ERR_FAIL_COND_V_MSG(count == 0, ERR_FILE_CORRUPT, "Invalid decoded run count, corrupt HDR.");
+
 						if (count > 128) {
 							// Run
 							int value = f->get_8();
