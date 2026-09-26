@@ -674,9 +674,9 @@ void Node3DEditor::_xform_dialog_action() {
 	Vector3 translate;
 
 	for (int i = 0; i < 3; i++) {
-		translate[i] = xform_translate[i]->get_text().to_float();
-		rotate[i] = Math::deg_to_rad(xform_rotate[i]->get_text().to_float());
-		scale[i] = xform_scale[i]->get_text().to_float();
+		translate[i] = xform_translate[i]->get_value();
+		rotate[i] = Math::deg_to_rad(xform_rotate[i]->get_value());
+		scale[i] = xform_scale[i]->get_value() * 0.01;
 	}
 
 	t.basis.scale(scale);
@@ -861,9 +861,9 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
 			for (int i = 0; i < 3; i++) {
-				xform_translate[i]->set_text("0");
-				xform_rotate[i]->set_text("0");
-				xform_scale[i]->set_text("1");
+				xform_translate[i]->set_value(0.0);
+				xform_rotate[i]->set_value(0.0);
+				xform_scale[i]->set_value(100.0);
 			}
 
 			xform_dialog->popup_centered(Size2(320, 240) * EDSCALE);
@@ -2659,6 +2659,14 @@ void Node3DEditor::_notification(int p_what) {
 				update_all_gizmos();
 			}
 			_update_vertex_snap_tooltips();
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				double float_step = EDITOR_GET("interface/inspector/default_float_step");
+				for (int i = 0; i < 3; i++) {
+					xform_translate[i]->set_step(float_step);
+					xform_rotate[i]->set_step(float_step);
+					xform_scale[i]->set_step(float_step);
+				}
+			}
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
@@ -3889,22 +3897,38 @@ Node3DEditor::Node3DEditor() {
 	HBoxContainer *translate_hb = memnew(HBoxContainer);
 	xform_vbc->add_margin_child(TTRC("Translate:"), translate_hb);
 	HBoxContainer *rotate_hb = memnew(HBoxContainer);
-	xform_vbc->add_margin_child(TTRC("Rotate (deg.):"), rotate_hb);
+	xform_vbc->add_margin_child(TTRC("Rotate:"), rotate_hb);
 	HBoxContainer *scale_hb = memnew(HBoxContainer);
-	xform_vbc->add_margin_child(TTRC("Scale (ratio):"), scale_hb);
+	xform_vbc->add_margin_child(TTRC("Scale:"), scale_hb);
 
+	double float_step = EDITOR_GET("interface/inspector/default_float_step");
 	for (int i = 0; i < 3; i++) {
-		xform_translate[i] = memnew(LineEdit);
+		xform_translate[i] = memnew(SpinBox);
+		xform_translate[i]->set_format(U"%s m");
+		xform_translate[i]->set_min(-1000000);
+		xform_translate[i]->set_allow_lesser(true);
+		xform_translate[i]->set_max(-1000000);
+		xform_translate[i]->set_allow_greater(true);
+		xform_translate[i]->set_step(float_step);
 		xform_translate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_translate[i]->set_select_all_on_focus(true);
 		translate_hb->add_child(xform_translate[i]);
 
-		xform_rotate[i] = memnew(LineEdit);
+		xform_rotate[i] = memnew(SpinBox);
+		xform_rotate[i]->set_format(U"%s °");
+		xform_rotate[i]->set_min(-360.0);
+		xform_rotate[i]->set_max(360.0);
+		xform_rotate[i]->set_step(float_step);
 		xform_rotate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_rotate[i]->set_select_all_on_focus(true);
 		rotate_hb->add_child(xform_rotate[i]);
 
-		xform_scale[i] = memnew(LineEdit);
+		xform_scale[i] = memnew(SpinBox);
+		xform_scale[i]->set_format(U"%s %%");
+		xform_scale[i]->set_min(-100.0);
+		xform_scale[i]->set_allow_lesser(true);
+		xform_scale[i]->set_allow_greater(true);
+		xform_scale[i]->set_step(float_step);
 		xform_scale[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 		xform_scale[i]->set_select_all_on_focus(true);
 		scale_hb->add_child(xform_scale[i]);
