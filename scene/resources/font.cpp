@@ -1387,48 +1387,48 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < cache.size(); i++) {
 		String prefix = "cache/" + itos(i) + "/";
 		TypedArray<Vector2i> sizes = get_size_cache_list(i);
-		p_list->push_back(PropertyInfo(Variant::DICTIONARY, prefix + "variation_coordinates", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + "face_index", PROPERTY_HINT_RANGE, "0,32767,1", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM2D, prefix + "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_top", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_bottom", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_glyph", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "baseline_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::DICTIONARY, prefix + "variation_coordinates", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "face_index", PROPERTY_HINT_RANGE, "0,32767,1", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM2D, prefix + "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_top", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_bottom", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_glyph", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "baseline_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 
 		for (int j = 0; j < sizes.size(); j++) {
 			Vector2i sz = sizes[j];
 			String prefix_sz = prefix + itos(sz.x) + "/" + itos(sz.y) + "/";
 			if (sz.y == 0) {
-				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "ascent", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "descent", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "underline_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "underline_thickness", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "ascent", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "descent", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "underline_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "underline_thickness", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, prefix_sz + "scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 			}
 
 			int tx_cnt = get_texture_count(i, sz);
 			for (int k = 0; k < tx_cnt; k++) {
-				p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, prefix_sz + "textures/" + itos(k) + "/offsets", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, Image::get_class_static(), PROPERTY_USAGE_STORAGE));
+				p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, prefix_sz + "textures/" + itos(k) + "/offsets", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::OBJECT, prefix_sz + "textures/" + itos(k) + "/image", PROPERTY_HINT_RESOURCE_TYPE, Image::get_class_static(), PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 			}
 			PackedInt32Array glyphs = get_glyph_list(i, sz);
 			for (int k = 0; k < glyphs.size(); k++) {
 				const int32_t &gl = glyphs[k];
 				if (sz.y == 0) {
-					p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "glyphs/" + itos(gl) + "/advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+					p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "glyphs/" + itos(gl) + "/advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 				}
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "glyphs/" + itos(gl) + "/offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "glyphs/" + itos(gl) + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::RECT2, prefix_sz + "glyphs/" + itos(gl) + "/uv_rect", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-				p_list->push_back(PropertyInfo(Variant::INT, prefix_sz + "glyphs/" + itos(gl) + "/texture_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "glyphs/" + itos(gl) + "/offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "glyphs/" + itos(gl) + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::RECT2, prefix_sz + "glyphs/" + itos(gl) + "/uv_rect", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+				p_list->push_back(PropertyInfo(Variant::INT, prefix_sz + "glyphs/" + itos(gl) + "/texture_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 			}
 			if (sz.y == 0) {
 				TypedArray<Vector2i> kerning_map = get_kerning_list(i, sz.x);
 				for (int k = 0; k < kerning_map.size(); k++) {
 					const Vector2i &gl_pair = kerning_map[k];
-					p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "kerning_overrides/" + itos(gl_pair.x) + "/" + itos(gl_pair.y), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+					p_list->push_back(PropertyInfo(Variant::VECTOR2, prefix_sz + "kerning_overrides/" + itos(gl_pair.x) + "/" + itos(gl_pair.y), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 				}
 			}
 		}
