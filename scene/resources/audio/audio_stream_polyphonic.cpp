@@ -83,11 +83,19 @@ void AudioStreamPlaybackPolyphonic::stop() {
 
 	bool locked = false;
 	for (Stream &s : streams) {
-		if (s.active.is_set()) {
+		if (s.active.is_set() && !locked) {
 			// Need locking because something may still be mixing.
 			locked = true;
 			AudioServer::get_singleton()->lock();
 		}
+
+		if (s.stream_playback.is_valid() && s.stream_playback->get_is_sample() && s.active.is_set()) {
+			Ref<AudioSamplePlayback> active_sample_playback = s.stream_playback->get_sample_playback();
+			if (active_sample_playback.is_valid()) {
+				AudioServer::get_singleton()->stop_sample_playback(active_sample_playback);
+			}
+		}
+
 		s.active.clear();
 		s.finish_request.clear();
 		s.stream_playback.unref();
