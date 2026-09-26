@@ -6561,7 +6561,7 @@ void GDScriptAnalyzer::push_error(const String &p_message, const GDScriptParser:
 }
 
 void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) const {
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	if (p_node == nullptr) {
 		return;
 	}
@@ -6569,7 +6569,7 @@ void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) cons
 	for (int i = p_node->start_line; i <= p_node->end_line; i++) {
 		parser->unsafe_lines.insert(i);
 	}
-#endif // DEBUG_ENABLED
+#endif // TOOLS_ENABLED
 }
 
 void GDScriptAnalyzer::downgrade_node_type_source(GDScriptParser::ExpressionNode *p_node) {

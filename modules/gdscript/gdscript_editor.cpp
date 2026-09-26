@@ -183,7 +183,6 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 		err = linter.lint();
 	}
 
-#ifdef DEBUG_ENABLED
 	if (r_warnings) {
 		for (const GDScriptWarning &E : parser.get_warnings()) {
 			const GDScriptWarning &warn = E;
@@ -192,12 +191,11 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 			w.start_column = warn.start_column;
 			w.end_line = warn.end_line;
 			w.end_column = warn.end_column;
-			w.string_code = GDScriptWarning::get_name_from_code(warn.code);
+			w.string_code = warn.get_name();
 			w.message = warn.get_message();
 			r_warnings->push_back(w);
 		}
 	}
-#endif
 	if (err) {
 		if (r_errors) {
 			for (const GDScriptParser::ParserError &pe : parser.get_errors()) {
@@ -237,7 +235,6 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 		}
 	}
 
-#ifdef DEBUG_ENABLED
 	if (r_safe_lines) {
 		const HashSet<int> &unsafe_lines = parser.get_unsafe_lines();
 		for (int i = 1; i <= parser.get_last_line_number(); i++) {
@@ -246,7 +243,6 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 			}
 		}
 	}
-#endif
 
 	return true;
 }
