@@ -459,6 +459,7 @@ public:
 
 	Control *get_active_editor() const;
 	Vector<Control *> get_all_editors() const;
+	void focus_active_editor();
 
 	Vector<String> _get_breakpoints();
 	void get_breakpoints(List<String> *p_breakpoints);
