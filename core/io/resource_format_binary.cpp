@@ -850,22 +850,29 @@ static void save_ustring(Ref<FileAccess> r_file, const String &p_string) {
 }
 
 static String get_ustring(Ref<FileAccess> r_file) {
-	int len = r_file->get_32();
+	uint32_t len = r_file->get_32();
+	if (len == 0) {
+		return String();
+	}
 	Vector<char> str_buf;
-	str_buf.resize(len);
-	r_file->get_buffer((uint8_t *)&str_buf[0], len);
+	Error err = str_buf.resize((int64_t)len);
+	ERR_FAIL_COND_V(err != OK, String());
+	uint64_t read = r_file->get_buffer((uint8_t *)&str_buf[0], len);
+	ERR_FAIL_COND_V(read != len, String());
 	return String::utf8(&str_buf[0], len);
 }
 
 String ResourceLoaderBinary::get_unicode_string() {
-	int len = f->get_32();
-	if (len > str_buf.size()) {
-		str_buf.resize(len);
-	}
+	uint32_t len = f->get_32();
 	if (len == 0) {
 		return String();
 	}
-	f->get_buffer((uint8_t *)&str_buf[0], len);
+	if ((int64_t)len > str_buf.size()) {
+		Error err = str_buf.resize((int64_t)len);
+		ERR_FAIL_COND_V(err != OK, String());
+	}
+	uint64_t read = f->get_buffer((uint8_t *)&str_buf[0], len);
+	ERR_FAIL_COND_V(read != len, String());
 	return String::utf8(&str_buf[0], len);
 }
 

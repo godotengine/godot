@@ -107,10 +107,15 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField
 							// Run
 							int value = f->get_8();
 							count -= 128;
+
+							ERR_FAIL_COND_V_MSG(count > width - i, ERR_FILE_CORRUPT, "Corrupt HDR RLE run.");
+
 							for (int z = 0; z < count; ++z) {
 								ptr[(j * width + i++) * 4 + k] = uint8_t(value);
 							}
 						} else {
+							ERR_FAIL_COND_V_MSG(count > width - i, ERR_FILE_CORRUPT, "Corrupt HDR RLE dump.");
+
 							// Dump
 							f->get_buffer(temp_read_ptr, count);
 							for (int z = 0; z < count; ++z) {

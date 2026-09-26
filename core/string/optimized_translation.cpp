@@ -256,7 +256,13 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 		return StringName(); //nothing
 	}
 
+	int64_t btsize = bucket_table.size();
+	ERR_FAIL_COND_V((int64_t)p + 2 > btsize, StringName());
+
 	const Bucket &bucket = *(const Bucket *)&btptr[p];
+
+	ERR_FAIL_COND_V(bucket.size < 0, StringName());
+	ERR_FAIL_COND_V((int64_t)p + 2 + (int64_t)bucket.size * 4 > btsize, StringName());
 
 	h = hash(bucket.func, str.get_data());
 
@@ -273,11 +279,15 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 		return StringName();
 	}
 
+	int64_t ssize = strings.size();
+	ERR_FAIL_COND_V((int64_t)bucket.elem[idx].str_offset + (int64_t)bucket.elem[idx].comp_size > ssize, StringName());
+
 	if (bucket.elem[idx].comp_size == bucket.elem[idx].uncomp_size) {
 		return String::utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
 	} else {
 		CharString uncomp;
-		uncomp.resize_uninitialized(bucket.elem[idx].uncomp_size + 1);
+		Error err = uncomp.resize_uninitialized((int64_t)bucket.elem[idx].uncomp_size + 1);
+		ERR_FAIL_COND_V(err != OK, StringName());
 		smaz_decompress(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].comp_size, uncomp.ptrw(), bucket.elem[idx].uncomp_size);
 		return String::utf8(uncomp.get_data());
 	}
@@ -296,14 +306,25 @@ Vector<String> OptimizedTranslation::get_translated_message_list() const {
 	for (int i = 0; i < hash_table.size(); i++) {
 		uint32_t p = htptr[i];
 		if (p != 0xFFFFFFFF) {
+			int64_t btsize = bucket_table.size();
+			ERR_FAIL_COND_V((int64_t)p + 2 > btsize, Vector<String>());
+
 			const Bucket &bucket = *(const Bucket *)&btptr[p];
+
+			ERR_FAIL_COND_V(bucket.size < 0, Vector<String>());
+			ERR_FAIL_COND_V((int64_t)p + 2 + (int64_t)bucket.size * 4 > btsize, Vector<String>());
+
 			for (int j = 0; j < bucket.size; j++) {
+				int64_t ssize = strings.size();
+				ERR_FAIL_COND_V((int64_t)bucket.elem[j].str_offset + (int64_t)bucket.elem[j].comp_size > ssize, Vector<String>());
+
 				if (bucket.elem[j].comp_size == bucket.elem[j].uncomp_size) {
 					String rstr = String::utf8(&sptr[bucket.elem[j].str_offset], bucket.elem[j].uncomp_size);
 					msgs.push_back(rstr);
 				} else {
 					CharString uncomp;
-					uncomp.resize_uninitialized(bucket.elem[j].uncomp_size + 1);
+					Error err = uncomp.resize_uninitialized((int64_t)bucket.elem[j].uncomp_size + 1);
+					ERR_FAIL_COND_V(err != OK, Vector<String>());
 					smaz_decompress(&sptr[bucket.elem[j].str_offset], bucket.elem[j].comp_size, uncomp.ptrw(), bucket.elem[j].uncomp_size);
 					String rstr = String::utf8(uncomp.get_data());
 					msgs.push_back(rstr);
