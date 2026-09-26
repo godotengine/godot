@@ -333,7 +333,7 @@
 			<return type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
 			<param index="0" name="file" type="String" />
 			<description>
-				Returns the UNIX permissions of the file at the given path.
+				Returns the UNIX permissions of the file at the given path. See also [method set_unix_permissions].
 				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
@@ -477,7 +477,7 @@
 			<param index="0" name="file" type="String" />
 			<param index="1" name="permissions" type="int" enum="FileAccess.UnixPermissionFlags" is_bitfield="true" />
 			<description>
-				Sets file UNIX permissions.
+				Sets file UNIX permissions. See also [method DirAccess.copy], which can change flags directly when copying a file.
 				[b]Note:[/b] This method is implemented on iOS, Linux/BSD, and macOS.
 			</description>
 		</method>
