@@ -63,12 +63,21 @@ void LightmapperRD::add_mesh(const MeshData &p_mesh) {
 	ERR_FAIL_COND(p_mesh.albedo_on_uv2->get_width() != p_mesh.emission_on_uv2->get_width());
 	ERR_FAIL_COND(p_mesh.albedo_on_uv2->get_height() != p_mesh.emission_on_uv2->get_height());
 	ERR_FAIL_COND(p_mesh.points.is_empty());
+	ERR_FAIL_COND(!p_mesh.receive && !p_mesh.contribute && !p_mesh.emissive && !p_mesh.cast_shadow);
 	MeshInstance mi;
 	mi.data = p_mesh;
+	const int mesh_index = mesh_instances.size();
 	mesh_instances.push_back(mi);
+	if (p_mesh.receive) {
+		receiver_mesh_indices.push_back(mesh_index);
+	} else {
+		has_non_receivers = true;
+	}
+	has_custom_shadow_casting |= !p_mesh.cast_shadow || p_mesh.cast_shadow_double_sided;
+	has_custom_indirect_contribution |= !p_mesh.contribute;
 }
 
-void LightmapperRD::add_directional_light(const String &p_name, bool p_static, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_angular_distance, float p_shadow_blur) {
+void LightmapperRD::add_directional_light(const String &p_name, bool p_static, bool p_shadow_enabled, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_angular_distance, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_DIRECTIONAL;
 	l.direction[0] = p_direction.x;
@@ -80,6 +89,7 @@ void LightmapperRD::add_directional_light(const String &p_name, bool p_static, c
 	l.energy = p_energy;
 	l.indirect_energy = p_indirect_energy;
 	l.static_bake = p_static;
+	l.shadow_enabled = p_shadow_enabled;
 	l.size = Math::tan(Math::deg_to_rad(p_angular_distance));
 	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
@@ -90,7 +100,7 @@ void LightmapperRD::add_directional_light(const String &p_name, bool p_static, c
 	light_metadata.push_back(md);
 }
 
-void LightmapperRD::add_omni_light(const String &p_name, bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) {
+void LightmapperRD::add_omni_light(const String &p_name, bool p_static, bool p_shadow_enabled, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_OMNI;
 	l.position[0] = p_position.x;
@@ -104,6 +114,7 @@ void LightmapperRD::add_omni_light(const String &p_name, bool p_static, const Ve
 	l.energy = p_energy;
 	l.indirect_energy = p_indirect_energy;
 	l.static_bake = p_static;
+	l.shadow_enabled = p_shadow_enabled;
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
@@ -114,7 +125,7 @@ void LightmapperRD::add_omni_light(const String &p_name, bool p_static, const Ve
 	light_metadata.push_back(md);
 }
 
-void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) {
+void LightmapperRD::add_spot_light(const String &p_name, bool p_static, bool p_shadow_enabled, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) {
 	Light l;
 	l.type = LIGHT_TYPE_SPOT;
 	l.position[0] = p_position.x;
@@ -133,6 +144,7 @@ void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Ve
 	l.energy = p_energy;
 	l.indirect_energy = p_indirect_energy;
 	l.static_bake = p_static;
+	l.shadow_enabled = p_shadow_enabled;
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
 	lights.push_back(l);
@@ -143,7 +155,7 @@ void LightmapperRD::add_spot_light(const String &p_name, bool p_static, const Ve
 	light_metadata.push_back(md);
 }
 
-void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur, const Rect2 &p_texture_rect, float p_max_mipmap) {
+void LightmapperRD::add_area_light(const String &p_name, bool p_static, bool p_shadow_enabled, const Vector3 &p_position, const Vector3 &p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, const Vector3 &p_area_width, const Vector3 &p_area_height, float p_size, float p_shadow_blur, const Rect2 &p_texture_rect, float p_max_mipmap) {
 	Light l;
 	l.type = LIGHT_TYPE_AREA;
 	l.position[0] = p_position.x;
@@ -166,6 +178,7 @@ void LightmapperRD::add_area_light(const String &p_name, bool p_static, const Ve
 	l.energy = p_energy;
 	l.indirect_energy = p_indirect_energy;
 	l.static_bake = p_static;
+	l.shadow_enabled = p_shadow_enabled;
 	l.size = p_size;
 	l.shadow_blur = p_shadow_blur;
 
@@ -333,33 +346,88 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	int best_atlas_memory = 0x7FFFFFFF;
 	Vector<Vector3i> best_atlas_offsets;
 
-	// Determine best texture array atlas size by bruteforce fitting.
-	while (atlas_size.x <= p_max_texture_size && atlas_size.y <= p_max_texture_size) {
-		Vector<Vector2i> source_sizes;
-		Vector<int> source_indices;
-		source_sizes.resize(sizes.size());
-		source_indices.resize(sizes.size());
-		for (int i = 0; i < source_indices.size(); i++) {
-			// Add padding between lightmaps.
-			// Scale the padding if the lightmap will be downsampled at the end of the baking process
-			// Otherwise the padding would be insufficient.
-			source_sizes.write[i] = sizes[i] + Vector2i(2, 2).maxi(p_denoiser_range) * p_supersampling_factor;
-			source_indices.write[i] = i;
-		}
-		Vector<Vector3i> atlas_offsets;
-		atlas_offsets.resize(source_sizes.size());
+	// Optimize the final atlas using receivers only. Contributor-only meshes are
+	// packed into temporary slices afterwards so they never consume saved layers.
+	if (!receiver_mesh_indices.is_empty()) {
+		while (atlas_size.x <= p_max_texture_size && atlas_size.y <= p_max_texture_size) {
+			Vector<Vector2i> source_sizes;
+			Vector<int> source_indices;
+			for (int i = 0; i < receiver_mesh_indices.size(); i++) {
+				const int mesh_index = receiver_mesh_indices[i];
+				source_sizes.push_back(sizes[mesh_index] + Size2i(2, 2).maxi(p_denoiser_range) * p_supersampling_factor);
+				source_indices.push_back(mesh_index);
+			}
+			Vector<Vector3i> atlas_offsets;
+			atlas_offsets.resize(sizes.size());
 
-		// Ensure the sizes can all fit into a single atlas layer.
-		// This should always happen, and this check is only in place to prevent an infinite loop.
-		for (int i = 0; i < source_sizes.size(); i++) {
-			if (source_sizes[i] > atlas_size) {
-				return BAKE_ERROR_ATLAS_TOO_SMALL;
+			for (int i = 0; i < source_sizes.size(); i++) {
+				if (source_sizes[i] > atlas_size) {
+					return BAKE_ERROR_ATLAS_TOO_SMALL;
+				}
+			}
+
+			int slices = 0;
+			while (!source_sizes.is_empty()) {
+				Vector<Vector3i> offsets = Geometry2D::partial_pack_rects(source_sizes, atlas_size);
+				Vector<int> new_indices;
+				Vector<Vector2i> new_sources;
+				for (int i = 0; i < offsets.size(); i++) {
+					Vector3i ofs = offsets[i];
+					int sidx = source_indices[i];
+					if (ofs.z > 0) {
+						ofs.z = slices;
+						atlas_offsets.write[sidx] = ofs + Vector3i(1, 1, 0);
+					} else {
+						new_indices.push_back(sidx);
+						new_sources.push_back(source_sizes[i]);
+					}
+				}
+				source_sizes = new_sources;
+				source_indices = new_indices;
+				slices++;
+			}
+
+			int mem_used = atlas_size.x * atlas_size.y * slices;
+			if (mem_used < best_atlas_memory) {
+				best_atlas_size = atlas_size;
+				best_atlas_offsets = atlas_offsets;
+				best_atlas_slices = slices;
+				best_atlas_memory = mem_used;
+			}
+
+			if (atlas_size.width == atlas_size.height) {
+				atlas_size.width *= 2;
+			} else {
+				atlas_size.height *= 2;
 			}
 		}
+	} else {
+		// No receivers: choose the smallest legal atlas. It is temporary only.
+		best_atlas_size = atlas_size;
+		best_atlas_offsets.resize(sizes.size());
+	}
 
-		int slices = 0;
+	atlas_size = best_atlas_size;
+	receiver_atlas_slices = best_atlas_slices;
+	atlas_slices = receiver_atlas_slices;
 
-		while (source_sizes.size() > 0) {
+	if (has_non_receivers) {
+		Vector<Vector2i> source_sizes;
+		Vector<int> source_indices;
+		for (int i = 0; i < mesh_instances.size(); i++) {
+			if (mesh_instances[i].data.receive) {
+				continue;
+			}
+			Vector2i padded_size = sizes[i] + Size2i(2, 2).maxi(p_denoiser_range) * p_supersampling_factor;
+			if (padded_size > atlas_size) {
+				return BAKE_ERROR_ATLAS_TOO_SMALL;
+			}
+			source_sizes.push_back(padded_size);
+			source_indices.push_back(i);
+		}
+
+		int contributor_slices = 0;
+		while (!source_sizes.is_empty()) {
 			Vector<Vector3i> offsets = Geometry2D::partial_pack_rects(source_sizes, atlas_size);
 			Vector<int> new_indices;
 			Vector<Vector2i> new_sources;
@@ -367,36 +435,19 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 				Vector3i ofs = offsets[i];
 				int sidx = source_indices[i];
 				if (ofs.z > 0) {
-					//valid
-					ofs.z = slices;
-					atlas_offsets.write[sidx] = ofs + Vector3i(1, 1, 0); // Center lightmap in the reserved oversized region
+					ofs.z = receiver_atlas_slices + contributor_slices;
+					best_atlas_offsets.write[sidx] = ofs + Vector3i(1, 1, 0);
 				} else {
 					new_indices.push_back(sidx);
 					new_sources.push_back(source_sizes[i]);
 				}
 			}
-
 			source_sizes = new_sources;
 			source_indices = new_indices;
-			slices++;
+			contributor_slices++;
 		}
-
-		int mem_used = atlas_size.x * atlas_size.y * slices;
-		if (mem_used < best_atlas_memory) {
-			best_atlas_size = atlas_size;
-			best_atlas_offsets = atlas_offsets;
-			best_atlas_slices = slices;
-			best_atlas_memory = mem_used;
-		}
-
-		if (atlas_size.width == atlas_size.height) {
-			atlas_size.width *= 2;
-		} else {
-			atlas_size.height *= 2;
-		}
+		atlas_slices += contributor_slices;
 	}
-	atlas_size = best_atlas_size;
-	atlas_slices = best_atlas_slices;
 
 	// apply the offsets and slice to all images, and also blit albedo and emission
 	albedo_images.resize(atlas_slices);
@@ -426,7 +477,9 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		mi.offset.y = best_atlas_offsets[m_i].y;
 		mi.slice = best_atlas_offsets[m_i].z;
 		albedo_images.write[mi.slice]->blit_rect(mi.data.albedo_on_uv2, Rect2i(Vector2i(), mi.data.albedo_on_uv2->get_size()), mi.offset);
-		emission_images.write[mi.slice]->blit_rect(mi.data.emission_on_uv2, Rect2(Vector2i(), mi.data.emission_on_uv2->get_size()), mi.offset);
+		if (mi.data.emissive) {
+			emission_images.write[mi.slice]->blit_rect(mi.data.emission_on_uv2, Rect2(Vector2i(), mi.data.emission_on_uv2->get_size()), mi.offset);
+		}
 	}
 
 	return BAKE_OK;
@@ -558,7 +611,19 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			if (material.is_valid()) {
 				t.cull_mode = RSG::material_storage->material_get_cull_mode(material);
 			}
-			t.pad1 = 0; //make valgrind not complain
+			t.flags = 0;
+			if (mi.data.cast_shadow) {
+				t.flags |= 1u;
+			}
+			if (mi.data.cast_shadow_double_sided) {
+				t.flags |= 2u;
+			}
+			if (mi.data.contribute) {
+				t.flags |= 4u;
+			}
+			if (mi.data.emissive) {
+				t.flags |= 8u;
+			}
 			triangles.push_back(t);
 			slice_triangle_count.write[t.slice]++;
 		}
@@ -1180,6 +1245,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RenderingContextDriver *rcd = nullptr;
 	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
 	if (rd == nullptr) {
+#if defined(RD_ENABLED)
 #if defined(METAL_ENABLED)
 		rcd = memnew(RenderingContextDriverMetal);
 		rd = memnew(RenderingDevice);
@@ -1189,6 +1255,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			rcd = memnew(RenderingContextDriverVulkan);
 			rd = memnew(RenderingDevice);
 		}
+#endif
 #endif
 		if (rcd != nullptr && rd != nullptr) {
 			err = rcd->initialize();
@@ -1452,7 +1519,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_BUFFERS
 
 		memdelete(rd);
-
 		memdelete(rcd);
 	}
 	ERR_FAIL_COND_V(err != OK, BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES);
@@ -1630,6 +1696,12 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	Ref<RDShaderFile> compute_shader;
 	String defines = "";
 	defines += "\n#define CLUSTER_SIZE " + uitos(cluster_size) + "\n";
+	if (has_custom_shadow_casting) {
+		defines += "\n#define USE_BAKE_SHADOW_CAST_FLAGS\n";
+	}
+	if (has_custom_indirect_contribution) {
+		defines += "\n#define USE_BAKE_CONTRIBUTION_FLAGS\n";
+	}
 
 	if (p_bake_sh) {
 		defines += "\n#define USE_SH_LIGHTMAPS\n";
@@ -2251,7 +2323,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		FREE_RASTER_RESOURCES
 		FREE_COMPUTE_RESOURCES
 		memdelete(rd);
-
 		memdelete(rcd);
 
 		blendseams_shader->print_errors("blendseams_shader");
@@ -2400,7 +2471,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		p_step_function(0.9, RTR("Retrieving textures"), p_bake_userdata, true);
 	}
 
-	for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
+	const int persisted_slices = has_non_receivers ? receiver_atlas_slices : atlas_slices;
+	for (int i = 0; i < persisted_slices * (p_bake_sh ? 4 : 1); i++) {
 		Vector<uint8_t> s = rd->texture_get_data(light_accum_tex, i);
 		Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBAH, s);
 		img->convert(Image::FORMAT_RGBH); //remove alpha
@@ -2408,7 +2480,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 
 	if (p_bake_shadowmask) {
-		for (int i = 0; i < atlas_slices; i++) {
+		for (int i = 0; i < persisted_slices; i++) {
 			Vector<uint8_t> s = rd->texture_get_data(shadowmask_tex, i);
 			Ref<Image> img = Image::create_from_data(atlas_size.width, atlas_size.height, false, Image::FORMAT_RGBA8, s);
 			img->convert(Image::FORMAT_R8);
@@ -2437,7 +2509,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	FREE_BLENDSEAMS_RESOURCES
 
 	memdelete(rd);
-
 	memdelete(rcd);
 
 	return BAKE_OK;
@@ -2462,26 +2533,28 @@ Ref<Image> LightmapperRD::get_shadowmask_texture(int p_index) const {
 }
 
 int LightmapperRD::get_bake_mesh_count() const {
-	return mesh_instances.size();
+	return receiver_mesh_indices.size();
 }
 
 Variant LightmapperRD::get_bake_mesh_userdata(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, mesh_instances.size(), Variant());
-	return mesh_instances[p_index].data.userdata;
+	ERR_FAIL_INDEX_V(p_index, receiver_mesh_indices.size(), Variant());
+	return mesh_instances[receiver_mesh_indices[p_index]].data.userdata;
 }
 
 Rect2 LightmapperRD::get_bake_mesh_uv_scale(int p_index) const {
 	ERR_FAIL_COND_V(lightmap_textures.is_empty(), Rect2());
+	ERR_FAIL_INDEX_V(p_index, receiver_mesh_indices.size(), Rect2());
+	const MeshInstance &mi = mesh_instances[receiver_mesh_indices[p_index]];
 	Rect2 uv_ofs;
 	Vector2 atlas_size = Vector2(lightmap_textures[0]->get_width(), lightmap_textures[0]->get_height());
-	uv_ofs.position = Vector2(mesh_instances[p_index].offset) / atlas_size;
-	uv_ofs.size = Vector2(mesh_instances[p_index].data.albedo_on_uv2->get_width(), mesh_instances[p_index].data.albedo_on_uv2->get_height()) / atlas_size;
+	uv_ofs.position = Vector2(mi.offset) / atlas_size;
+	uv_ofs.size = Vector2(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height()) / atlas_size;
 	return uv_ofs;
 }
 
 int LightmapperRD::get_bake_mesh_texture_slice(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, mesh_instances.size(), Variant());
-	return mesh_instances[p_index].slice;
+	ERR_FAIL_INDEX_V(p_index, receiver_mesh_indices.size(), -1);
+	return mesh_instances[receiver_mesh_indices[p_index]].slice;
 }
 
 int LightmapperRD::get_bake_probe_count() const {
