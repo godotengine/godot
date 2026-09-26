@@ -43,6 +43,8 @@
 #include "scene/resources/texture.h"
 #include "servers/rendering/rendering_server.h"
 
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For texture_streaming.
+
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 	for (Ref<Material> pass_child = p_pass; pass_child.is_valid(); pass_child = pass_child->get_next_pass()) {
 		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
@@ -2054,15 +2056,7 @@ void fragment() {)";
 #endif
 	if (streaming_enabled && flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
-	// Write triplanar UV to UV for texture streaming feedback.
-	// Pick the UV projection of the dominant triplanar axis.
-	if (uv1_power_normal.x >= uv1_power_normal.y && uv1_power_normal.x >= uv1_power_normal.z) {
-		STREAMING_UV = uv1_triplanar_pos.zy * vec2(-1.0, 1.0);
-	} else if (uv1_power_normal.y >= uv1_power_normal.z) {
-		STREAMING_UV = uv1_triplanar_pos.xz;
-	} else {
-		STREAMING_UV = uv1_triplanar_pos.xy;
-	}
+	STREAMING_LOD = streaming_lod_planar(dFdx(uv1_triplanar_pos), dFdy(uv1_triplanar_pos), uv1_power_normal);
 )";
 	}
 
