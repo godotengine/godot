@@ -112,6 +112,15 @@ private:
 		};
 
 		Vector<Effect> effects;
+
+		struct Send {
+			StringName target;
+			float volume_db = 0.0f;
+			bool mute = false;
+		};
+
+		HashMap<const StringName, Send> sends;
+
 		float volume_db = 0.0f;
 		StringName send;
 		int index_cache = 0;
@@ -255,6 +264,16 @@ public:
 
 	void set_bus_send(int p_bus, const StringName &p_send);
 	StringName get_bus_send(int p_bus) const;
+
+	void add_bus_sends(int p_bus, const StringName &p_send);
+	TypedArray<StringName> get_bus_sends(int p_bus);
+	void remove_bus_sends(int p_bus, const StringName &p_send);
+
+	void set_bus_sends_mute(int p_bus, const StringName &p_send, bool p_enable);
+	bool is_bus_sends_mute(int p_bus, const StringName &p_send);
+
+	void set_bus_sends_volume_db(int p_bus, const StringName &p_send, float p_volume_db);
+	float get_bus_sends_volume_db(int p_bus, const StringName &p_send);
 
 	void set_bus_solo(int p_bus, bool p_enable);
 	bool is_bus_solo(int p_bus) const;
