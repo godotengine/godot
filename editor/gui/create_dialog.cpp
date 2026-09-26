@@ -400,6 +400,13 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 }
 
 void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringName &p_type, TypeCategory p_type_category, const String &p_match_keyword) {
+	if (p_type.is_empty()) {
+		// Pressing "Confirm" doesn't work if the selected type is empty.
+		// Setting this disables the button.
+		r_item->set_meta(SNAME("__instantiable"), false);
+		ERR_FAIL_COND(p_type.is_empty());
+	}
+
 	bool script_type = ScriptServer::is_global_class(p_type);
 	bool is_abstract = false;
 	bool is_custom_type = false;
@@ -474,7 +481,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		r_item->set_collapsed(false);
 	} else {
 		// Don't collapse the root node or an abstract node on the first tree level.
-		bool should_collapse = p_type != base_type && (r_item->get_parent()->get_text(0) != base_type || can_instantiate);
+		bool should_collapse = r_item->get_parent() && p_type != base_type && (r_item->get_parent()->get_text(0) != base_type || can_instantiate);
 
 		if (should_collapse && bool(EDITOR_GET("docks/scene_tree/start_create_dialog_fully_expanded"))) {
 			should_collapse = false; // Collapse all nodes anyway.
@@ -486,6 +493,8 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	r_item->set_tooltip_text(0, description);
 
 	if (p_type_category == TypeCategory::OTHER_TYPE && !script_type) {
+		ERR_FAIL_COND(!EditorNode::get_editor_data().get_custom_types().has(custom_type_parents[p_type]));
+
 		Ref<Texture2D> icon = EditorNode::get_editor_data().get_custom_types()[custom_type_parents[p_type]][custom_type_indices[p_type]].icon;
 		if (icon.is_valid()) {
 			r_item->set_icon(0, icon);
