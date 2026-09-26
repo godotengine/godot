@@ -50,6 +50,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/scene_tree.h"
+#include "servers/display/display_server.h"
 
 void AnimationTreeEditor::_meta_clicked(Variant p_meta) {
 	if (p_meta.get_type() != Variant::STRING) {
@@ -311,6 +312,10 @@ void AnimationTreeEditor::_path_button_pressed(int p_path) {
 	}
 }
 
+void AnimationTreeEditor::_copy_path_pressed() {
+	DisplayServer::get_singleton()->clipboard_set(get_base_path().quote());
+}
+
 void AnimationTreeEditor::_animation_list_changed() {
 	AnimationNodeBlendTreeEditor *bte = AnimationNodeBlendTreeEditor::get_singleton();
 	if (bte) {
@@ -428,6 +433,7 @@ void AnimationTreeEditor::_notification(int p_what) {
 			current_scope_error_label->add_theme_font_size_override(SNAME("normal_font_size"), get_theme_font_size(SNAME("main_size"), EditorStringName(EditorFonts)));
 			current_scope_error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			current_scope_error_label->add_theme_style_override(SNAME("normal"), get_theme_stylebox(SNAME("normal"), SNAME("Label")));
+			copy_path_button->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -527,13 +533,24 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	VBoxContainer *main_vbox_container = memnew(VBoxContainer);
 	add_child(main_vbox_container);
 
+	HBoxContainer *path_container = memnew(HBoxContainer);
+	main_vbox_container->add_child(path_container);
+
 	path_edit = memnew(ScrollContainer);
 	path_edit->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	main_vbox_container->add_child(path_edit);
+	path_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	path_container->add_child(path_edit);
 
 	path_hb = memnew(HBoxContainer);
 	path_hb->add_child(memnew(Label(TTR("Path:"))));
 	path_edit->add_child(path_hb);
+
+	copy_path_button = memnew(Button);
+	copy_path_button->set_flat(true);
+	copy_path_button->set_tooltip_text(TTR("Copy Tree Path"));
+	copy_path_button->set_focus_mode(FOCUS_ACCESSIBILITY);
+	copy_path_button->connect(SceneStringName(pressed), callable_mp(this, &AnimationTreeEditor::_copy_path_pressed));
+	path_container->add_child(copy_path_button);
 
 	main_vbox_container->add_child(memnew(HSeparator));
 
