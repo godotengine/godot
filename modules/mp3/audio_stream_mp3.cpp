@@ -71,16 +71,20 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			++frames_mixed;
 
 			if (beat_loop && (int)frames_mixed >= beat_length_frames) {
-				for (int i = 0; i < FADE_SIZE; i++) {
-					samples_mixed = drmp3_read_pcm_frames_f32(&mp3d, 1, buf_frame);
-					loop_fade[i] = AudioFrame(buf_frame[0], buf_frame[mp3d.channels - 1]);
-					if (!samples_mixed) {
-						break;
+				if (mp3_stream->loop_offset * mp3_stream->sample_rate < beat_length_frames) {
+					for (int i = 0; i < FADE_SIZE; i++) {
+						samples_mixed = drmp3_read_pcm_frames_f32(&mp3d, 1, buf_frame);
+						loop_fade[i] = AudioFrame(buf_frame[0], buf_frame[mp3d.channels - 1]);
+						if (!samples_mixed) {
+							break;
+						}
 					}
+					loop_fade_remaining = 0;
+					seek(mp3_stream->loop_offset);
+					loops++;
+				} else {
+					beat_loop = false;
 				}
-				loop_fade_remaining = 0;
-				seek(mp3_stream->loop_offset);
-				loops++;
 			}
 		}
 
