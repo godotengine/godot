@@ -1425,8 +1425,6 @@ bool Theme::is_type_variation(const StringName &p_theme_type, const StringName &
 }
 
 void Theme::clear_type_variation(const StringName &p_theme_type) {
-	ERR_FAIL_COND_MSG(!variation_map.has(p_theme_type), "Cannot clear the type variation '" + String(p_theme_type) + "' because it does not exist.");
-
 	StringName base_type = variation_map[p_theme_type];
 	variation_base_map[base_type].erase(p_theme_type);
 	variation_map.erase(p_theme_type);
