@@ -29,6 +29,14 @@
 				If any of the controls added can gain keyboard focus, add it here. This ensures that focus will be restored if the inspector is refreshed.
 			</description>
 		</method>
+		<method name="add_inline_control">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<param index="1" name="side" type="int" enum="EditorProperty.InlineControlSide" />
+			<description>
+				Adds a [Control] to the [param side] of the edited property.
+			</description>
+		</method>
 		<method name="deselect">
 			<return type="void" />
 			<description>
@@ -232,4 +240,12 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="INLINE_CONTROL_LEFT" value="0" enum="InlineControlSide">
+			The left side of the edited property.
+		</constant>
+		<constant name="INLINE_CONTROL_RIGHT" value="1" enum="InlineControlSide">
+			The right side of the edited property
+		</constant>
+	</constants>
 </class>
