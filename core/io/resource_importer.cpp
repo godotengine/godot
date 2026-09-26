@@ -70,7 +70,6 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	String decomp_path;
 	bool decomp_path_found = false;
 	while (true) {
-		assign = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
 
@@ -344,7 +343,6 @@ void ResourceFormatImporter::get_internal_resource_path_list(const String &p_pat
 	int lines = 0;
 	String error_text;
 	while (true) {
-		assign = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
 
