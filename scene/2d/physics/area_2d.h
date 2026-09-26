@@ -51,7 +51,7 @@ private:
 	SpaceOverride gravity_space_override = SPACE_OVERRIDE_DISABLED;
 	Vector2 gravity_vec;
 	real_t gravity = 0.0;
-	bool gravity_is_point = false;
+	PS2DE::AreaGravityType gravity_type = PS2DE::AREA_GRAVITY_TYPE_DIRECTIONAL;
 	real_t gravity_point_unit_distance = 0.0;
 
 	SpaceOverride linear_damp_space_override = SPACE_OVERRIDE_DISABLED;
@@ -143,8 +143,13 @@ public:
 	void set_gravity_space_override_mode(SpaceOverride p_mode);
 	SpaceOverride get_gravity_space_override_mode() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
+#endif // DISABLE_DEPRECATED
+
+	void set_gravity_type(PS2DE::AreaGravityType p_type);
+	PS2DE::AreaGravityType get_gravity_type() const;
 
 	void set_gravity_point_unit_distance(real_t p_scale);
 	real_t get_gravity_point_unit_distance() const;
