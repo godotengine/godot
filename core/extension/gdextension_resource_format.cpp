@@ -73,7 +73,7 @@ Error GDExtensionResourceLoader::load_gdextension_resource(const String &p_path,
 	GDExtensionManager *extension_manager = GDExtensionManager::get_singleton();
 
 	GDExtensionManager::LoadStatus status = extension_manager->load_extension(p_path);
-	if (status != GDExtensionManager::LOAD_STATUS_OK && status != GDExtensionManager::LOAD_STATUS_ALREADY_LOADED) {
+	if (status != GDExtensionManager::LoadStatus::OK && status != GDExtensionManager::LoadStatus::ALREADY_LOADED) {
 		// Errors already logged in load_extension().
 		return FAILED;
 	}
