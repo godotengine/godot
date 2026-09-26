@@ -41,6 +41,7 @@
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/value_ptr.h"
 #include "core/variant/variant.h"
 
 #define ADD_SIGNAL(m_signal) get_gdtype_static_mutable().add_signal(m_signal)
@@ -418,7 +419,7 @@ private:
 			List<Connection>::Element *cE = nullptr;
 		};
 
-		MethodInfo user;
+		ValuePtr<MethodInfo> user_signal_info;
 		HashMap<Callable, Slot> slot_map;
 		bool removable = false;
 	};
