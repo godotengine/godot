@@ -40,7 +40,9 @@
 class Callable;
 class StringName;
 class Variant;
-
+class Script;
+template <typename T>
+class Ref;
 struct ArrayPrivate;
 struct ContainerType;
 
@@ -181,7 +183,7 @@ public:
 	const void *id() const;
 
 	void set_typed(const ContainerType &p_element_type);
-	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	void set_typed(uint32_t p_type, const StringName &p_class_name, const Ref<Script> &p_script);
 
 	bool is_typed() const;
 	bool is_same_typed(const Array &p_other) const;
@@ -202,7 +204,7 @@ public:
 	}
 
 	Array(const Array &p_base, const ContainerType &p_element_type);
-	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
+	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Ref<Script> &p_script);
 	Array(const Array &p_from);
 	Array(std::initializer_list<Variant> p_init);
 	Array();

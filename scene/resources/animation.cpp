@@ -5916,7 +5916,7 @@ Variant Animation::add_variant(const Variant &a, const Variant &b) {
 				bool is_a_larger = inform_variant_array(min_size, max_size);
 
 				Array result;
-				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Variant());
+				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Ref<Script>());
 				result.resize(min_size);
 				int i = 0;
 				for (; i < min_size; i++) {
@@ -6030,7 +6030,7 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 				bool is_a_larger = inform_variant_array(min_size, max_size);
 
 				Array result;
-				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Variant());
+				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Ref<Script>());
 				result.resize(min_size);
 				int i = 0;
 				for (; i < min_size; i++) {
@@ -6166,7 +6166,7 @@ Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
 				bool is_a_larger = inform_variant_array(min_size, max_size);
 
 				Array result;
-				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Variant());
+				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Ref<Script>());
 				result.resize(min_size);
 				int i = 0;
 				for (; i < min_size; i++) {
@@ -6303,7 +6303,7 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 				bool is_a_larger = inform_variant_array(min_size, max_size);
 
 				Array result;
-				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Variant());
+				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Ref<Script>());
 				result.resize(min_size);
 				int i = 0;
 				for (; i < min_size; i++) {
@@ -6484,7 +6484,7 @@ Variant Animation::cubic_interpolate_in_time_variant(const Variant &pre_a, const
 				bool is_a_larger = inform_variant_array(min_size, max_size);
 
 				Array result;
-				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Variant());
+				result.set_typed(MAX(arr_a.get_typed_builtin(), arr_b.get_typed_builtin()), StringName(), Ref<Script>());
 				result.resize(min_size);
 
 				if (min_size == 0 && max_size == 0) {

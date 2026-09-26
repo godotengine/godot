@@ -696,13 +696,13 @@ void GDScript::_static_default_init() {
 		if (type.builtin_type == Variant::ARRAY && type.has_container_element_type(0)) {
 			const GDScriptDataType element_type = type.get_container_element_type(0);
 			Array default_value;
-			default_value.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+			default_value.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type_ref);
 			static_variables.write[E.value.index] = default_value;
 		} else if (type.builtin_type == Variant::DICTIONARY && type.has_container_element_types()) {
 			const GDScriptDataType key_type = type.get_container_element_type_or_variant(0);
 			const GDScriptDataType value_type = type.get_container_element_type_or_variant(1);
 			Dictionary default_value;
-			default_value.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
+			default_value.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type_ref, value_type.builtin_type, value_type.native_type, value_type.script_type_ref);
 			static_variables.write[E.value.index] = default_value;
 		} else {
 			Variant default_value;
