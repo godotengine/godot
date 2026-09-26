@@ -198,6 +198,46 @@ void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
 	camera_feed->set_rgb_image(image);
 }
 
+Yuv420BufferDecoder::Yuv420BufferDecoder(CameraFeed *p_camera_feed, bool p_v_plane_first) :
+		BufferDecoder(p_camera_feed) {
+	v_plane_first = p_v_plane_first;
+	const size_t chroma_size = (size_t)(width / 2) * (height / 2);
+	y_buffer.resize((size_t)width * height);
+	cbcr_buffer.resize(chroma_size * 2);
+	y_image.instantiate();
+	cbcr_image.instantiate();
+}
+
+void Yuv420BufferDecoder::decode(StreamingBuffer p_buffer) {
+	const int chroma_width = width / 2;
+	const int chroma_height = height / 2;
+	const size_t y_plane_size = (size_t)width * height;
+	const size_t chroma_plane_size = (size_t)chroma_width * chroma_height;
+
+	if (p_buffer.length < y_plane_size + chroma_plane_size * 2) {
+		return;
+	}
+
+	const uint8_t *src = (const uint8_t *)p_buffer.start;
+	const uint8_t *plane2 = src + y_plane_size;
+	const uint8_t *plane3 = plane2 + chroma_plane_size;
+	const uint8_t *cb_src = v_plane_first ? plane3 : plane2;
+	const uint8_t *cr_src = v_plane_first ? plane2 : plane3;
+
+	memcpy(y_buffer.ptrw(), src, y_plane_size);
+
+	// Interleave Cb and Cr into RG8 (R=Cb, G=Cr).
+	uint8_t *cbcr_dst = cbcr_buffer.ptrw();
+	for (size_t i = 0; i < chroma_plane_size; i++) {
+		*cbcr_dst++ = *cb_src++;
+		*cbcr_dst++ = *cr_src++;
+	}
+
+	y_image->set_data(width, height, false, Image::FORMAT_L8, y_buffer);
+	cbcr_image->set_data(chroma_width, chroma_height, false, Image::FORMAT_RG8, cbcr_buffer);
+	camera_feed->set_ycbcr_images(y_image, cbcr_image);
+}
+
 JpegBufferDecoder::JpegBufferDecoder(CameraFeed *p_camera_feed) :
 		BufferDecoder(p_camera_feed) {
 }

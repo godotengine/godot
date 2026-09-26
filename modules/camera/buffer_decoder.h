@@ -103,6 +103,22 @@ public:
 	virtual void decode(StreamingBuffer p_buffer) override;
 };
 
+// Decoder for V4L2_PIX_FMT_YUV420 (YU12 / I420) and V4L2_PIX_FMT_YVU420 (YV12).
+// Planar 4:2:0: Y plane (w*h) followed by Cb and Cr planes (w/2 * h/2 each).
+// V4L2_PIX_FMT_YVU420 swaps the order to Y, V, U.
+class Yuv420BufferDecoder : public BufferDecoder {
+private:
+	bool v_plane_first = false; // True for V4L2_PIX_FMT_YVU420 (Y, V, U order).
+	Vector<uint8_t> y_buffer;
+	Vector<uint8_t> cbcr_buffer; // Interleaved CbCr (RG8 format: R=Cb, G=Cr).
+	Ref<Image> y_image;
+	Ref<Image> cbcr_image;
+
+public:
+	Yuv420BufferDecoder(CameraFeed *p_camera_feed, bool p_v_plane_first);
+	virtual void decode(StreamingBuffer p_buffer) override;
+};
+
 class JpegBufferDecoder : public BufferDecoder {
 private:
 	Vector<uint8_t> image_data;
