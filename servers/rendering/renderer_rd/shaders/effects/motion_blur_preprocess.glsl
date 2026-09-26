@@ -1,0 +1,257 @@
+///////////////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2025 sphynx-owner
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+///////////////////////////////////////////////////////////////////////////////////
+// File changes (yyyy-mm-dd)
+// 2025-01-11: sphynx: first commit
+// 2026-01-16: HydrogenC: make tile size specification constant and simplify push constant
+///////////////////////////////////////////////////////////////////////////////////
+// Original file link: https://github.com/sphynx-owner/Godot-Motion-Blur-Addon/blob/main/addons/godot-motion-blur/pre_blur_processing/shader_stages/pre_blur_processor.glsl
+
+#[compute]
+#version 450
+
+#VERSION_DEFINES
+
+#define FLT_MAX 3.402823466e+38
+#define FLT_MIN 1.175494351e-38
+#define PIXEL_RADIUS_SQUARED 0.25
+
+// Arrived at via experimentation. Using dot-product operation
+// on sub-1-length velocities squares their length, and it ends
+// up very small. Since this value is also used to distinguish
+// static from dynamic elements, we don't want it to be too permissive
+// as it may allow static geometry whose extracted object velocity is
+// the result of precision errors.
+#define UV_CHANGE_EPSILON 0.00001
+
+#define MAX_VIEWS 2
+
+#include "../scene_data_inc.glsl"
+
+layout(set = 0, binding = 0) uniform sampler2D depth_sampler;
+layout(set = 0, binding = 1) uniform sampler2D vector_sampler;
+layout(rgba16f, set = 0, binding = 2) uniform writeonly image2D vector_output;
+
+#define view_mat3x4_to_mat4(matrix) transpose(mat4(matrix[0], matrix[1], matrix[2], vec4(0.0, 0.0, 0.0, 1.0)))
+
+#define sharp_step(lower, upper, x) clamp((x - lower) / (upper - lower), 0, 1)
+
+#define clamp_length(vec, length_vec, max_length) vec *= max_length / max(max_length, length(length_vec))
+
+#define uv_to_ndc(uv) uv * 2.0 - 1.0
+
+#define ndc_to_uv(ndc) ndc * 0.5 + 0.5
+
+layout(set = 0, binding = 3, std140) uniform SceneDataBlock {
+	SceneData data;
+	SceneData prev_data;
+}
+scene;
+
+layout(push_constant, std430) uniform Params {
+	float velocity_multiplier_camera_rotation;
+	float velocity_multiplier_camera_movement;
+	float velocity_multiplier_object;
+	float velocity_threshold_lower;
+
+	float velocity_threshold_upper;
+	float support_fsr2;
+	float motion_blur_intensity;
+	float framerate_normalization_factor;
+}
+params;
+
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+
+void main() {
+	ivec2 render_size = ivec2(textureSize(vector_sampler, 0));
+
+	ivec2 uvi = ivec2(gl_GlobalInvocationID.xy);
+
+	if ((uvi.x >= render_size.x) || (uvi.y >= render_size.y)) {
+		return;
+	}
+
+	SceneData scene_data = scene.data;
+
+	SceneData previous_scene_data = scene.prev_data;
+
+	vec2 uvn = vec2(uvi + vec2(0.5) + vec2(0, -0.1)) / render_size;
+
+	// We get the view-space position at the pixel
+	// ---------------------------------------------------
+	float depth = texelFetch(depth_sampler, uvi, 0).x;
+
+	vec4 view_position = scene_data.inv_projection_matrix * vec4(uv_to_ndc(uvn), depth, 1.0);
+
+	view_position.xyz /= view_position.w;
+	// ---------------------------------------------------
+
+	// We derive a current_uv which we can compare against our manually extracted UVs.
+	vec3 current_uv = vec3(uvn, depth);
+
+	mat4 inv_view_matrix = view_mat3x4_to_mat4(scene_data.inv_view_matrix);
+
+	// We take the view position, transform it to a world position, and then back to a view position using the past view matrix, resulting in an estimation of where the pixel
+	// was last frame. This estimation only works for static environment. It breaks for moving objects.
+	// ---------------------------------------------------
+	vec4 world_position = inv_view_matrix * vec4(view_position.xyz, 1.0);
+
+	mat4 prev_view_matrix = view_mat3x4_to_mat4(previous_scene_data.view_matrix);
+
+	vec4 view_past_position = prev_view_matrix * vec4(world_position.xyz, 1.0);
+	// ---------------------------------------------------
+
+	// We extract a UV and depth change
+	// ---------------------------------------------------
+	vec4 view_past_ndc = previous_scene_data.projection_matrix * view_past_position;
+
+	view_past_ndc.xyz /= view_past_ndc.w;
+
+	vec3 past_uv = vec3(ndc_to_uv(view_past_ndc.xy), view_past_ndc.z);
+
+	vec4 view_past_ndc_cache = view_past_ndc;
+
+	vec3 camera_uv_change = past_uv - current_uv;
+	// ---------------------------------------------------
+
+	// We do a similar process, but this time only using the rotation part of the view matrices,
+	// resulting in the part of the UV change that was caused by the rotation between frames.
+	// ---------------------------------------------------
+	world_position = mat4(mat3(inv_view_matrix)) * vec4(view_position.xyz, 1.0);
+
+	view_past_position = mat4(mat3(prev_view_matrix)) * vec4(world_position.xyz, 1.0);
+
+	view_past_ndc = previous_scene_data.projection_matrix * view_past_position;
+
+	view_past_ndc.xyz /= view_past_ndc.w;
+
+	past_uv = vec3(ndc_to_uv(view_past_ndc.xy), view_past_ndc.z);
+
+	vec3 camera_rotation_uv_change = past_uv - current_uv;
+	// ---------------------------------------------------
+
+	// By subtracting the rotation part of the UV change from the total UV change, we can arrive
+	// at the UV change that was cause by the camera's movement.
+	vec3 camera_movement_uv_change = camera_uv_change - camera_rotation_uv_change;
+
+	// Get a velocity sample
+	vec2 sampled_velocity = texelFetch(vector_sampler, uvi, 0).xy;
+
+	// FSR2 alters the velocity buffer in a very specific way:
+	// 1. Static geometry has its velocity replaced with a vec2(-1).
+	if (params.support_fsr2 > 0.5) {
+		if (sampled_velocity == vec2(-1)) {
+			sampled_velocity = camera_uv_change.xy;
+		}
+	}
+
+	/**
+	In Godot, background and skyboxes do not write to the velocity buffer. However, our manually-extracted UV change uses the view-matrices and the depth buffer to generate equivalent velocities, and it works even when the depth is 0 (infinity/background). Assuming the skybox is always static (does not move on its own), the value we extracted can serve as the ground truth. We set the base velocity to that of the manually extracted vectors, and keep it if the depth is 0 (background depth). It's not currently possible, but in the future you may be able to write to the veolcity buffer without writing to the depth buffer, so I'm checking for non-zero velocity as well just to be safe.
+	**/
+	// ---------------------------------------------------
+	vec3 base_velocity = camera_uv_change;
+
+	if (depth > 0 || dot(sampled_velocity * render_size, sampled_velocity * render_size) > PIXEL_RADIUS_SQUARED) {
+		base_velocity.xy = sampled_velocity;
+	}
+	// ---------------------------------------------------
+
+	// By subtracting the "original" UV change stored on base_velocity from the manuall-derived
+	// camera UV change, we end up with the UV change that was caused by the object's motion
+	vec3 object_uv_change = base_velocity - camera_uv_change;
+
+	// Now that we have the 3 components that make the original motion vectors isolated, we
+	// can put them back together after tuning them however we like.
+	// We assume that component magnitudes are between 0 and 1. This must be enforced on the editor interface level.
+	vec3 total_velocity = camera_rotation_uv_change * params.velocity_multiplier_camera_rotation + camera_movement_uv_change * params.velocity_multiplier_camera_movement + object_uv_change * params.velocity_multiplier_object;
+
+	// If depth == 0 (skybox), or the objcet is not static (has some object uv change), clear z velocity.
+	// The z velocity was manually extracted using view matrices and thus can only be safely assumed for static environment.
+	// In the case of background pixels, it does not make much sense for them to have "depth velocity". In addition, the depth velocity
+	// of the background is very saturated since it's a point at infinity that covers large distances easily, and I worry
+	// about noise it might introduce.
+	if (depth == 0 || dot(object_uv_change.xy, object_uv_change.xy) > UV_CHANGE_EPSILON) {
+		total_velocity.z = 0;
+		base_velocity.z = 0;
+	}
+
+	// This is a heuristic I came up with. Simply scaling down individual components of the original velocity
+	// can yield unintuivite results if those components are large but cancel out. For example, if a camera is following
+	// a speeding car, that car appears stationary in the camera's view, and so it's original velocity is small or zero.
+	// However under the hood that velocity is comprized of a very large object movement component on the car, cancelled out
+	// by the movement component of the camera that follows it. In that scenario, turning off just the object movement component would
+	// uncover that hidden camera movement component, and we would see the car start blurring more instead of less.
+	// The solution I stumbled across when trying to solve this issue, has proven to be more robust than expected.
+	// The rule of thumb is that users that configure these velocity multipliers expect to REDUCE one or more aspects
+	// that otherwise trigger motion blur. So intuitively, the final velocity that decides the motion blur amount should
+	// be reduced or kept the same as the original velocity. Now, if all multipliers are set to lower than 1, we can
+	// adjust our expectations and say that we expect the final velocity to be no larger than the largest configured multiplier multiplied
+	// by the original velocity. So if we have 0.2 object movement, 0.4 camera movement, and 0.1 camera rotation, we should not
+	// see any velocity that's larger than 0.4 of the original velocity.
+	// The same logic can be applied in the other direction. If the resulting velocity somehow collapses to a smaller value than the
+	// minimum multiplier's fraction of the original velocity, we can fallback to such original velocity times the minimum multiplier.
+	// ---------------------------------------------------
+	float max_component_multiplier = max(params.velocity_multiplier_camera_rotation, max(params.velocity_multiplier_camera_movement, params.velocity_multiplier_object));
+
+	float min_component_multiplier = min(params.velocity_multiplier_camera_rotation, min(params.velocity_multiplier_camera_movement, params.velocity_multiplier_object));
+
+	vec3 max_fallback_velocity = base_velocity * max_component_multiplier;
+
+	vec3 min_fallback_velocity = base_velocity * min_component_multiplier;
+
+	if (dot(total_velocity.xy, total_velocity.xy) > dot(max_fallback_velocity.xy, max_fallback_velocity.xy)) {
+		total_velocity = max_fallback_velocity;
+	}
+
+	if (dot(total_velocity.xy, total_velocity.xy) < dot(min_fallback_velocity.xy, min_fallback_velocity.xy)) {
+		total_velocity = min_fallback_velocity;
+	}
+	// ---------------------------------------------------
+
+	// Here is where we apply the velocity thresholds and the intensity, customized by the user. Note that we scale
+	// the velocity's y component that's fed into the thresholds to counter the effects on aspect ratio on its perceived length.
+	// Also note that we apply framerate normalization on the velocity fed to the thresholds. The point of the velocity
+	// thresholds is to be aware of human's eye tracking capabilities, keeping eye-trackable objects crisp.
+	// This revolves around the object's speed across the screen which is framerate-independent, meaning activation of the
+	// blur should also be framerate-independent.
+	float thresholds_multiplier = sharp_step(params.velocity_threshold_lower, params.velocity_threshold_upper, length(total_velocity.xy * vec2(float(render_size.x) / float(render_size.y), 1)) * params.framerate_normalization_factor * params.motion_blur_intensity);
+
+	// If the previous position is happening behind the camera's near clip plane, which can happen when the camera moves backwards at high speed,
+	// the w component of the projected vector would be negative, and the velocity vector would be flipped.
+	// This happens with Godot's native motion vectors as well. We can detect this and flip them back, avoiding
+	// crazy artifacts.
+	total_velocity.xy *= thresholds_multiplier * render_size * (view_past_ndc_cache.w < 0 ? -1 : 1) * params.motion_blur_intensity;
+
+	// Now we clamp the velocity magnitudes to the tile size. This avoids saturating tiles and
+	// revealing the seams between them. It also tames the velocities in general, otherwise
+	// causing abnoxious blurring at high movement speeds or at lower framerates.
+	// We multiply the tile size by 2 because we blur the velocity
+	// symmetrically forwards and backwards so its radius is half its magnitude.
+	// NOTE @sphynx-owner: this clamp also handles the asymptotical behavior of near-clip-plane velocities.
+	// ---------------------------------------------------
+	clamp_length(total_velocity, total_velocity.xy, TILE_SIZE * 2);
+	// ---------------------------------------------------
+
+	// total_velocity up to this point was backwards, because it was derived using UV differences, which were vectors
+	// pointing to the previous UV, meaning the velocity of the pixel is in the other direction.
+	imageStore(vector_output, uvi, vec4(-total_velocity, depth));
+}

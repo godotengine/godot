@@ -921,6 +921,11 @@ public:
 
 	FUNCRIDSPLIT(camera_attributes)
 
+	FUNC1(camera_attributes_set_motion_blur_show_in_editor, bool)
+	FUNC1(camera_attributes_set_motion_blur_quality, RSE::MotionBlurQuality)
+
+	FUNC8(camera_attributes_set_motion_blur, RID, bool, float, float, float, float, float, float)
+
 	FUNC2(camera_attributes_set_dof_blur_quality, RSE::DOFBlurQuality, bool)
 	FUNC1(camera_attributes_set_dof_blur_bokeh_shape, RSE::DOFBokehShape)
 
