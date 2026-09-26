@@ -34,6 +34,16 @@
 #include "core/templates/sort_list.h"
 #include "core/typedefs.h"
 
+/**
+ * A doubly linked list, implemented by storing the previous and next
+ * pointer in each element rather than a separate allocation.
+ *
+ * This class is not trivially relocatable, which makes
+ * usage like `Vector<SelfList<T>>` impossible (see GH-100509).
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 template <typename T>
 class _WARN_UNUSED_ SelfList {
 public:
