@@ -213,9 +213,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RSE::ViewportDebugDraw 
 		}
 
 		if ((ubo.flags & SCENE_DATA_FLAGS_USE_AMBIENT_CUBEMAP) || (ubo.flags & SCENE_DATA_FLAGS_USE_REFLECTION_CUBEMAP)) {
-			Basis sky_transform = render_scene_render->environment_get_sky_orientation(p_env);
-			sky_transform = sky_transform.inverse() * cam_transform.basis;
-			RendererRD::MaterialStorage::store_transform_3x3(sky_transform, ubo.radiance_inverse_xform);
+			RendererRD::MaterialStorage::store_transform_3x3(cam_transform.basis, ubo.radiance_inverse_xform);
 		}
 
 		ubo.flags |= render_scene_render->environment_get_fog_enabled(p_env) ? SCENE_DATA_FLAGS_USE_FOG : 0;

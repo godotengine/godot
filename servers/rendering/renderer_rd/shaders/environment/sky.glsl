@@ -219,9 +219,10 @@ void main() {
 	cube_normal.x = (uv_interp.x + params.projection.x) / params.projection.y;
 	cube_normal.y = (uv_interp.y + params.projection.z) / params.projection.w;
 #endif
+#endif
+
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
-#endif
 
 	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
