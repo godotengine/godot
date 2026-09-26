@@ -174,21 +174,17 @@ void RendererCompositorStorage::compositor_set_compositor_effects(RID p_composit
 	}
 }
 
-Vector<RID> RendererCompositorStorage::compositor_get_compositor_effects(RID p_compositor, RSE::CompositorEffectCallbackType p_callback_type, bool p_enabled_only) const {
+Vector<RID> RendererCompositorStorage::compositor_get_compositor_effects(RID p_compositor, RSE::CompositorEffectCallbackType p_callback_type) const {
 	Compositor *compositor = compositor_owner.get_or_null(p_compositor);
 	ERR_FAIL_NULL_V(compositor, Vector<RID>());
 
-	if (p_enabled_only || p_callback_type != RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY) {
-		Vector<RID> effects;
+	Vector<RID> effects;
 
-		for (RID rid : compositor->compositor_effects) {
-			if ((!p_enabled_only || compositor_effect_get_enabled(rid)) && (p_callback_type == RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY || compositor_effect_get_callback_type(rid) == p_callback_type)) {
-				effects.push_back(rid);
-			}
+	for (RID rid : compositor->compositor_effects) {
+		if (compositor_effect_get_enabled(rid) && (p_callback_type == RSE::COMPOSITOR_EFFECT_CALLBACK_TYPE_ANY || compositor_effect_get_callback_type(rid) == p_callback_type)) {
+			effects.push_back(rid);
 		}
-
-		return effects;
-	} else {
-		return compositor->compositor_effects;
 	}
+
+	return effects;
 }
