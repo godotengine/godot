@@ -280,12 +280,12 @@ void register_editor_types() {
 	EditorPlugins::add_by_type<CPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticles3DEditorPlugin>();
 	EditorPlugins::add_by_type<GPUParticlesCollisionSDF3DEditorPlugin>();
-	EditorPlugins::add_by_type<LightmapGIEditorPlugin>();
 	EditorPlugins::add_by_type<MeshEditorPlugin>();
 	EditorPlugins::add_by_type<MeshInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<MeshLibraryEditorPlugin>();
 	EditorPlugins::add_by_type<OccluderInstance3DEditorPlugin>();
 	EditorPlugins::add_by_type<MultiMeshEditorPlugin>();
+	EditorPlugins::add_by_type<LightmapGIEditorPlugin>();
 	EditorPlugins::add_by_type<Path3DEditorPlugin>();
 	EditorPlugins::add_by_type<Polygon3DEditorPlugin>();
 	EditorPlugins::add_by_type<Skeleton3DEditorPlugin>();
