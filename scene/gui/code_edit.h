@@ -31,7 +31,56 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/text_edit.h"
+
+class CodeEdit;
+class CodeHintPanel : public Panel {
+	GDCLASS(CodeHintPanel, Panel)
+
+private:
+	CodeEdit *code_edit;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	CodeHintPanel(CodeEdit *p_code_edit);
+};
+
+class CodeCompletionPanel : public Panel {
+	GDCLASS(CodeCompletionPanel, Panel)
+
+private:
+	CodeEdit *code_edit;
+	Rect2i scroll_rect;
+	float pan_offset = 0.0f;
+	int current_selected = 0;
+	int force_item_center = -1;
+	int line_ofs = 0;
+	bool scroll_hovered = false;
+	bool scroll_pressed = false;
+	bool drag_started = false;
+	bool mouse_over = false;
+
+	LocalVector<RID> ac_items;
+	RID ac_scroll_element;
+
+	void _update_scroll_selected_line(float p_mouse_y);
+
+protected:
+	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
+	virtual RID get_focused_accessibility_element() const override;
+
+public:
+	int get_current_selection() const { return current_selected; }
+	void set_current_selection(int p_index);
+	void update_completion_options();
+	bool is_mouse_hovering() const;
+
+	CodeCompletionPanel(CodeEdit *p_code_edit);
+};
 
 class CodeEdit : public TextEdit {
 	GDCLASS(CodeEdit, TextEdit)
@@ -201,10 +250,14 @@ private:
 	TypedArray<String> _get_delimiters(DelimiterType p_type) const;
 
 	/* Code Hint */
+	friend class CodeHintPanel;
+	CodeHintPanel *code_hint_panel = nullptr;
 	String code_hint = "";
 
 	bool code_hint_draw_below = true;
 	int code_hint_xpos = -0xFFFF;
+
+	void _update_code_hint();
 
 	/* Code Completion */
 	struct CodeCompletionOption {
@@ -231,25 +284,13 @@ private:
 		_FORCE_INLINE_ bool operator()(const CodeCompletionOption &l, const CodeCompletionOption &r) const;
 	};
 
+	friend class CodeCompletionPanel;
+	CodeCompletionPanel *code_completion_panel = nullptr;
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
 
-	Vector2 completion_touch_drag_accum;
-	bool code_completion_active = false;
-	bool is_code_completion_scroll_hovered = false;
-	bool is_code_completion_scroll_pressed = false;
-	bool is_code_completion_drag_started = false;
 	Vector<CodeCompletionOption> code_completion_options;
-	Vector<RID> code_completion_ac_items;
-	RID code_completion_ac_scroll_element;
-	RID code_completion_ac_root_element;
-	int code_completion_line_ofs = 0;
-	int code_completion_current_selected = 0;
-	int code_completion_force_item_center = -1;
 	int code_completion_longest_line = 0;
-	Rect2i code_completion_rect;
-	Rect2i code_completion_scroll_rect;
-	float code_completion_pan_offset = 0.0f;
 
 	HashSet<char32_t> code_completion_prefixes;
 	List<CodeCompletionOption> code_completion_option_submitted;
@@ -259,9 +300,9 @@ private:
 	int code_completion_caret_line = 0;
 	int code_completion_caret_column = 0;
 
-	void _update_scroll_selected_line(float p_mouse_y);
 	void _filter_code_completion_candidates_impl();
 	bool _should_reset_selected_option_for_new_options(const Vector<CodeCompletionOption> &p_new_options);
+	void _show_code_completion();
 
 	/* Line length guidelines */
 	TypedArray<int> line_length_guideline_columns;
@@ -369,8 +410,6 @@ protected:
 	virtual void _handle_unicode_input_internal(const uint32_t p_unicode, int p_caret) override;
 	virtual void _backspace_internal(int p_caret) override;
 	virtual void _cut_internal(int p_caret) override;
-
-	virtual RID get_focused_accessibility_element() const override;
 
 	GDVIRTUAL1(_confirm_code_completion, bool)
 	GDVIRTUAL1(_request_code_completion, bool)
@@ -537,7 +576,7 @@ public:
 	void confirm_code_completion(bool p_replace = false);
 	void cancel_code_completion();
 
-	Rect2i get_code_completion_rect() const { return code_completion_rect; }
+	bool is_mouse_over_code_completion() const;
 
 	/* Line length guidelines */
 	void set_line_length_guidelines(TypedArray<int> p_guideline_columns);
