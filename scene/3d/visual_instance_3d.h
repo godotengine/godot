@@ -135,7 +135,6 @@ private:
 
 	float lod_bias = 1.0;
 
-	mutable HashMap<StringName, Variant> instance_shader_parameters;
 	mutable HashMap<StringName, StringName> instance_shader_parameter_property_remap;
 
 	float extra_cull_margin = 0.0;
@@ -153,6 +152,8 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 	void _validate_property(PropertyInfo &p_property) const;
+
+	mutable HashMap<StringName, Variant> instance_shader_parameters;
 
 	static void _bind_methods();
 
