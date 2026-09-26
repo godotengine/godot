@@ -101,7 +101,7 @@ protected:
 public:
 	Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 	void process_rpc(int p_from, const uint8_t *p_packet, int p_packet_len);
-	String get_rpc_md5(const Object *p_obj);
+	String get_rpc_md5(const Node *p_node);
 
 	SceneRPCInterface(SceneMultiplayer *p_multiplayer, SceneCacheInterface *p_cache, SceneReplicationInterface *p_replicator) {
 		multiplayer = p_multiplayer;
