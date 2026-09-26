@@ -1769,8 +1769,13 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 	return get_indexed(p_name.get_as_property_path().get_subnames());
 }
 
-void Object::initialize_class() {
+void Object::initialize_class(bool p_deinit) {
 	static bool initialized = false;
+	if (p_deinit) {
+		initialized = false;
+		get_gdtype_static_mutable(p_deinit);
+		return;
+	}
 	if (likely(initialized)) {
 		return;
 	}
@@ -1781,7 +1786,7 @@ void Object::initialize_class() {
 		// Initialized on another thread while we were waiting.
 		return;
 	}
-	_add_class_to_classdb(get_gdtype_static_mutable(), nullptr);
+	_add_class_to_classdb(get_gdtype_static_mutable(), nullptr, Object::initialize_class);
 	get_gdtype_static_mutable().initialize();
 	_bind_methods();
 	_bind_compatibility_methods();
@@ -1858,8 +1863,8 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	}
 }
 
-void Object::_add_class_to_classdb(GDType &p_type, const GDType *p_inherits) {
-	ClassDB::_add_class(p_type, p_inherits);
+void Object::_add_class_to_classdb(GDType &p_type, const GDType *p_inherits, void (*p_deinit_func)(bool deinit)) {
+	ClassDB::_add_class(p_type, p_inherits, p_deinit_func);
 }
 
 void Object::_get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
