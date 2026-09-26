@@ -296,12 +296,19 @@ def configure(env: "SConsEnvironment"):
         if env["arch"] in ["x86_64", "x86_32"]:
             env["x86_libtheora_opt_gcc"] = True
 
+    if not env["builtin_libvpx"]:
+        env.ParseConfig("pkg-config vpx --cflags --libs")
+
     if not env["builtin_libvorbis"]:
         env["builtin_libogg"] = False  # Needed to link against system libvorbis
         if env.editor_build:
             env.ParseConfig("pkg-config vorbis vorbisfile vorbisenc --cflags --libs")
         else:
             env.ParseConfig("pkg-config vorbis vorbisfile --cflags --libs")
+
+    if not env["builtin_libopus"]:
+        env["builtin_libogg"] = False  # Needed to link against system libopus
+        env.ParseConfig("pkg-config opus opusfile --cflags --libs")
 
     if not env["builtin_libogg"]:
         env.ParseConfig("pkg-config ogg --cflags --libs")

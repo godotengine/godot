@@ -1,0 +1,2 @@
+configure    eol=lf
+*.sh         eol=lf
