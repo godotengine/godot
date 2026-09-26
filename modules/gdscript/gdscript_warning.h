@@ -90,6 +90,7 @@ public:
 		CONFUSABLE_TEMPORARY_MODIFICATION, // Modifying a temporary value in a complex assignment chain or calling a non-`const` method.
 		INFERENCE_ON_VARIANT, // The declaration uses type inference but the value is typed as Variant.
 		NATIVE_METHOD_OVERRIDE, // The script method overrides a native one, this may not work as intended.
+		STATIC_METHOD_SHADOWS_SCRIPT_METHOD, // The script static method shadows a non-static method of the script resource, this may not work as intended.
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
 		ONREADY_WITH_EXPORT, // The `@onready` annotation will set the value after `@export` which is likely not intended.
 		ONREADY_WITH_CAST, // The cast will silently assign `null` if the node has a wrong type. This is likely not intended.
@@ -150,6 +151,7 @@ public:
 		WARN, // CONFUSABLE_TEMPORARY_MODIFICATION
 		ERROR, // INFERENCE_ON_VARIANT // Most likely done by accident, usually inference is trying for a particular type.
 		ERROR, // NATIVE_METHOD_OVERRIDE // May not work as expected.
+		ERROR, // STATIC_METHOD_SHADOWS_SCRIPT_METHOD // May not work as expected.
 		ERROR, // GET_NODE_DEFAULT_WITHOUT_ONREADY // May not work as expected.
 		ERROR, // ONREADY_WITH_EXPORT // May not work as expected.
 		WARN, // ONREADY_WITH_CAST
