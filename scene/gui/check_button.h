@@ -39,6 +39,7 @@ class CheckButton : public Button {
 		int h_separation = 0;
 		int check_v_offset = 0;
 		Ref<StyleBox> normal_style;
+		Ref<StyleBox> disabled_style;
 
 		Ref<Texture2D> checked;
 		Ref<Texture2D> unchecked;
