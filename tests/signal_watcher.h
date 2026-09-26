@@ -63,7 +63,8 @@ class SignalWatcher : public Object {
 public:
 	static SignalWatcher *get_singleton() { return singleton; }
 
-	void watch_signal(Object *p_object, const String &p_signal);
+	inline void watch_signal(Object *p_object, const String &p_signal) { watch_signal_named(p_object, p_signal, p_signal); }
+	void watch_signal_named(Object *p_object, const String &p_signal, const String &p_name);
 	void unwatch_signal(Object *p_object, const String &p_signal);
 	bool check(const String &p_name, const Array &p_args);
 	bool check_false(const String &p_name);
@@ -76,6 +77,7 @@ public:
 };
 
 #define SIGNAL_WATCH(m_object, m_signal) SignalWatcher::get_singleton()->watch_signal(m_object, m_signal);
+#define SIGNAL_WATCH_NAMED(m_object, m_signal, m_name) SignalWatcher::get_singleton()->watch_signal_named(m_object, m_signal, m_name);
 #define SIGNAL_UNWATCH(m_object, m_signal) SignalWatcher::get_singleton()->unwatch_signal(m_object, m_signal);
 
 #define SIGNAL_CHECK(m_signal, m_args) CHECK(SignalWatcher::get_singleton()->check(m_signal, m_args));
