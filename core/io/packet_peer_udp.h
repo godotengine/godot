@@ -92,6 +92,7 @@ public:
 	void set_broadcast_enabled(bool p_enabled);
 	Error join_multicast_group(IPAddress p_multi_address, const String &p_if_name);
 	Error leave_multicast_group(IPAddress p_multi_address, const String &p_if_name);
+	Error set_multicast_send_interface(const String &p_if_name);
 
 	PacketPeerUDP();
 	~PacketPeerUDP();
