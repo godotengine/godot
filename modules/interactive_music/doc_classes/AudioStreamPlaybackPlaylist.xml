@@ -8,4 +8,51 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="change_stream">
+			<return type="void" />
+			<param index="0" name="stream_index" type="int" />
+			<description>
+				Changes to a specific stream within the playlist (by index). Raises an error if [param stream_index] is out of bounds.
+			</description>
+		</method>
+		<method name="get_current_stream_index" qualifiers="const">
+			<return type="int" />
+			<description>
+				Gets the currently playing audio stream index.
+			</description>
+		</method>
+		<method name="get_stream_playback_position" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the playback position of the currently playing stream. This is different from [method AudioStreamPlayback.get_playback_position] which returns the playback position for the entire playlist.
+			</description>
+		</method>
+		<method name="next_stream">
+			<return type="void" />
+			<description>
+				Plays the next stream. If [member AudioStreamPlaylist.shuffle] is enabled it will play the next stream in the shuffle order.
+				If [member AudioStreamPlaylist.loop] is disabled and the last stream is currently playing, nothing will happen.
+			</description>
+		</method>
+		<method name="previous_stream">
+			<return type="void" />
+			<description>
+				Plays the previous stream. If [member AudioStreamPlaylist.shuffle] is enabled it will play the previous stream in the shuffle order.
+				If [member AudioStreamPlaylist.loop] is disabled and the first stream is currently playing, nothing will happen.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="stream_changed">
+			<description>
+				Emitted when the playlist player changes which stream is playing.
+			</description>
+		</signal>
+		<signal name="stream_looped">
+			<description>
+				Emitted when the currently playing stream loops and begins playback again.
+			</description>
+		</signal>
+	</signals>
 </class>
