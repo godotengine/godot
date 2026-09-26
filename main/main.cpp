@@ -3000,9 +3000,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "editor/steam/library_path", PROPERTY_HINT_FILE_PATH, ""), "");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "editor/steam/library_path.windows", PROPERTY_HINT_FILE_PATH, "*.dll"), "");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "editor/steam/library_path.linuxbsd", PROPERTY_HINT_FILE_PATH, "*.so"), "");
+	GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "editor/steam/library_path.macos", PROPERTY_HINT_FILE_PATH, "*.dylib"), "");
+	GLOBAL_DEF_RST("editor/steam/time_tracker", true);
 #if defined(STEAMAPI_ENABLED)
 	if (editor || project_manager) {
-		steam_tracker = memnew(SteamTracker);
+		if (bool(GLOBAL_GET("editor/steam/time_tracker"))) {
+			steam_tracker = memnew(SteamTracker(ProjectSettings::get_singleton()->globalize_path(GLOBAL_GET("editor/steam/library_path"))));
+		}
 	}
 #endif
 
