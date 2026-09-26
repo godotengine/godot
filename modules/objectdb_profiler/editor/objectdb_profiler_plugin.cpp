@@ -31,8 +31,10 @@
 #include "objectdb_profiler_plugin.h"
 
 #include "objectdb_profiler_panel.h"
+#include "snapshot_data.h"
 
 #include "core/object/callable_mp.h"
+#include "editor/editor_interface.h"
 
 bool ObjectDBProfilerDebuggerPlugin::has_capture(const String &p_capture) const {
 	return p_capture == "snapshot";
@@ -65,4 +67,30 @@ void ObjectDBProfilerPlugin::_notification(int p_what) {
 			remove_debugger_plugin(debugger);
 		}
 	}
+}
+
+static void _highlight_editor_property(EditorProperty *editor) {
+	if (editor != nullptr) {
+		editor->draw_rect(Rect2(Vector2(), editor->get_size()), Color(1, 1, 0, 0.1));
+	}
+}
+
+void ObjectDBProfilerPlugin::edit(Object *p_object) {
+	SnapshotDataObject *snapshot = Object::cast_to<SnapshotDataObject>(p_object);
+	ERR_FAIL_NULL(snapshot);
+	EditorInspector *inspector = EditorInterface::get_singleton()->get_inspector();
+	for (const StringName &prop : snapshot->modified_properties) {
+		// Highlight modified properties
+		for (EditorProperty *editor : inspector->get_property_editors(prop)) {
+			if (editor && !editor->is_connected(SceneStringName(draw), callable_mp_static(&_highlight_editor_property))) {
+				editor->connect(SceneStringName(draw), callable_mp_static(&_highlight_editor_property).bind(editor));
+				editor->queue_redraw();
+			}
+		}
+	}
+}
+
+bool ObjectDBProfilerPlugin::handles(Object *p_object) const {
+	SnapshotDataObject *snapshot = Object::cast_to<SnapshotDataObject>(p_object);
+	return debugger.is_valid() && snapshot != nullptr && snapshot->diff_status == SnapshotDataObject::DiffStatus::DIFF_MODIFIED;
 }
