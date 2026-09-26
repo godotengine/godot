@@ -30,6 +30,9 @@
 
 #include "physics_point_query_parameters_3d.h"
 
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+#include "core/config/engine.h"
+#endif
 #include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
@@ -71,4 +74,10 @@ void PhysicsPointQueryParameters3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "exclude", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_exclude", "get_exclude");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies"), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas"), "set_collide_with_areas", "is_collide_with_areas_enabled");
+}
+
+PhysicsPointQueryParameters3D::PhysicsPointQueryParameters3D() {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsPointQueryParameters3D, Engine::get_singleton()->get_physics_frames());
+#endif
 }

@@ -30,6 +30,9 @@
 
 #include "navigation_path_query_parameters_3d.h"
 
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+#include "core/config/engine.h"
+#endif
 #include "core/object/class_db.h"
 #include "core/variant/typed_array.h"
 
@@ -242,4 +245,10 @@ void NavigationPathQueryParameters3D::_bind_methods() {
 	BIND_BITFIELD_FLAG(PATH_METADATA_INCLUDE_RIDS);
 	BIND_BITFIELD_FLAG(PATH_METADATA_INCLUDE_OWNERS);
 	BIND_BITFIELD_FLAG(PATH_METADATA_INCLUDE_ALL);
+}
+
+NavigationPathQueryParameters3D::NavigationPathQueryParameters3D() {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(NavigationPathQueryParameters3D, Engine::get_singleton()->get_physics_frames());
+#endif
 }
