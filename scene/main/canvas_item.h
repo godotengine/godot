@@ -130,12 +130,10 @@ private:
 	mutable HashMap<StringName, StringName> instance_parameter_cache;
 #endif
 	OversamplingWithScale oversampling_with_scale = OVERSAMPLING_WITH_SCALE_PARENT_NODE;
-	double oversampling_override = -1.0;
 	bool is_oversampling_with_scale_cache = false;
 	double oversampling_override_cache = -1.0;
 
-	void _update_oversampling(bool p_propagate = false);
-	bool _is_oversampling_with_scale() const;
+	void _invalidate_oversampling(bool p_oversampling_with_scale);
 
 	ClipChildrenMode clip_children_mode = CLIP_CHILDREN_DISABLED;
 
