@@ -1352,7 +1352,7 @@ void Control::set_offsets_preset(LayoutPreset p_preset, LayoutPresetMode p_resiz
 	ERR_FAIL_INDEX((int)p_resize_mode, 4);
 
 	// Calculate the size if the node is not resized
-	Size2 min_size = get_combined_minimum_size();
+	Size2 min_size = get_bound_minimum_size();
 	Size2 new_size = get_size();
 	if (p_resize_mode == PRESET_MODE_MINSIZE || p_resize_mode == PRESET_MODE_KEEP_HEIGHT) {
 		new_size.x = min_size.x;
