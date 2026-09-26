@@ -32,10 +32,14 @@
 
 #include "core/extension/godot_instance.h"
 #include "core/extension/libgodot.h"
+#include "core/string/string_name.h"
+#include "editor/plugins/editor_plugin.h"
 #include "main/main.h"
+#include "scene/main/scene_tree.h"
+#include "servers/display/display_server.h"
+#include "servers/movie_writer/movie_writer.h"
 
 static OS_MacOS *os = nullptr;
-
 static GodotInstance *instance = nullptr;
 
 GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func) {
@@ -66,8 +70,9 @@ void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
 	if (instance == godot_instance) {
 		godot_instance->stop();
 		memdelete(godot_instance);
-		// Note: When Godot Engine supports reinitialization, clear the instance pointer here.
-		//instance = nullptr;
-		Main::cleanup();
+		instance = nullptr;
+		Main::cleanup(true);
+		delete os;
+		os = nullptr;
 	}
 }
