@@ -156,6 +156,55 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 	features.sort();
 	return features;
 }
+
+static bool _rename_files(ProjectSettings *p_project_settings, const StringName &p_setting, const HashMap<String, String> &p_renames) {
+	PackedStringArray files = p_project_settings->get(p_setting);
+	int file_count = files.size();
+	String *files_write = files.ptrw();
+
+	bool any_renamed = false;
+	for (int i = 0; i < file_count; i++) {
+		const String *rename = p_renames.getptr(files_write[i]);
+		if (rename) {
+			files_write[i] = *rename;
+			any_renamed = true;
+		}
+	}
+	if (any_renamed) {
+		p_project_settings->set(p_setting, files);
+	}
+	return any_renamed;
+}
+
+bool ProjectSettings::handle_renamed_files(const HashMap<String, String> &p_renames) {
+	bool any_renamed = _rename_files(this, "internationalization/locale/translations", p_renames);
+	any_renamed = _rename_files(this, "internationalization/locale/translations_pot_files", p_renames) || any_renamed;
+	return any_renamed;
+}
+
+static bool _remove_files(ProjectSettings *p_project_settings, const StringName &p_setting, const HashMap<String, String> &p_removes) {
+	PackedStringArray files = p_project_settings->get(p_setting);
+
+	bool any_removed = false;
+	for (int i = 0; i < files.size();) {
+		if (p_removes.has(files[i])) {
+			files.remove_at(i);
+			any_removed = true;
+		} else {
+			i++;
+		}
+	}
+	if (any_removed) {
+		p_project_settings->set(p_setting, files);
+	}
+	return any_removed;
+}
+
+bool ProjectSettings::handle_removed_files(const HashMap<String, String> &p_removes) {
+	bool any_removed = _remove_files(this, "internationalization/locale/translations", p_removes);
+	any_removed = _remove_files(this, "internationalization/locale/translations_pot_files", p_removes) || any_removed;
+	return any_removed;
+}
 #endif // TOOLS_ENABLED
 
 String ProjectSettings::localize_path(const String &p_path) const {
