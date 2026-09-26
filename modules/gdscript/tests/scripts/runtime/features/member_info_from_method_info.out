@@ -1,0 +1,40 @@
+GDTEST_OK
+--- built-in methods ---
+func add_to_group(group: StringName, persistent: bool = false) -> void
+func find_child(pattern: String, recursive: bool = true, owned: bool = true) -> Node
+--- built-in vararg methods ---
+func call_thread_safe(method: StringName, ...args) -> Variant
+func rpc_id(peer_id: int, method: StringName, ...args) -> Error
+--- plain methods ---
+func my_func_1(_foo: Variant, _bar: Variant) -> Variant
+func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+--- static methods ---
+static func my_static_func_1(_foo: Variant, _bar: Variant) -> Variant
+static func my_static_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+--- rpc methods ---
+func my_rpc_func_1(_foo: Variant, _bar: Variant) -> Variant
+func my_rpc_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+--- lambdas ---
+func <anonymous lambda>(_foo: Variant, _bar: Variant) -> Variant
+func <anonymous lambda>(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+--- lambdas with self ---
+func <anonymous lambda>(_foo: Variant, _bar: Variant) -> Variant
+func <anonymous lambda>(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+--- bind ---
+func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+--- unbind ---
+func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+--- variant callables ---
+func replace(what: String, forwhat: String) -> String
+func rsplit(delimiter: String = "", allow_empty: bool = true, maxsplit: int = 0) -> PackedStringArray
+--- variant vararg callables ---
+func call(...args) -> Variant
+func rpc_id(peer_id: int, ...args) -> void
+--- global methods ---
+func is_equal_approx(a: float, b: float) -> bool
+func inverse_lerp(from: float, to: float, weight: float) -> float
+--- GDScript methods ---
+func char(code: int) -> String
+func is_instance_of(value: Variant, type: Variant) -> bool
