@@ -253,15 +253,15 @@
 		<signal name="body_entered">
 			<param index="0" name="body" type="Node" />
 			<description>
-				Emitted when a collision with another [PhysicsBody2D] or [TileMap] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				Emitted when a collision with another [PhysicsBody2D] or [TileMapLayer] occurs. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMapLayer]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMapLayer].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<param index="0" name="body" type="Node" />
 			<description>
-				Emitted when the collision with another [PhysicsBody2D] or [TileMap] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
-				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
+				Emitted when the collision with another [PhysicsBody2D] or [TileMapLayer] ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMapLayer]s are detected if the [TileSet] has Collision [Shape2D]s.
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMapLayer].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -270,10 +270,10 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of this RigidBody2D's [Shape2D]s collides with another [PhysicsBody2D] or [TileMap]'s [Shape2D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				Emitted when one of this RigidBody2D's [Shape2D]s collides with another [PhysicsBody2D] or [TileMapLayer]'s [Shape2D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMapLayer]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[param body_rid] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
-				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
-				[param body_shape_index] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMapLayer].
+				[param body_shape_index] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMapLayer] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
 				[param local_shape_index] the index of the [Shape2D] of this RigidBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
@@ -283,10 +283,10 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when the collision between one of this RigidBody2D's [Shape2D]s and another [PhysicsBody2D] or [TileMap]'s [Shape2D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMap]s are detected if the [TileSet] has Collision [Shape2D]s.
+				Emitted when the collision between one of this RigidBody2D's [Shape2D]s and another [PhysicsBody2D] or [TileMapLayer]'s [Shape2D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [TileMapLayer]s are detected if the [TileSet] has Collision [Shape2D]s.
 				[param body_rid] the [RID] of the other [PhysicsBody2D] or [TileSet]'s [CollisionObject2D] used by the [PhysicsServer2D].
-				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMap].
-				[param body_shape_index] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMap] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
+				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody2D] or [TileMapLayer].
+				[param body_shape_index] the index of the [Shape2D] of the other [PhysicsBody2D] or [TileMapLayer] used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
 				[param local_shape_index] the index of the [Shape2D] of this RigidBody2D used by the [PhysicsServer2D]. Get the [CollisionShape2D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
