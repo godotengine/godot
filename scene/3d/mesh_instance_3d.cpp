@@ -32,9 +32,12 @@
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/object/property_info.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/main/scene_tree.h"
 #include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
@@ -234,6 +237,19 @@ void MeshInstance3D::set_skeleton_path(const NodePath &p_skeleton) {
 
 NodePath MeshInstance3D::get_skeleton_path() {
 	return skeleton_path;
+}
+
+void MeshInstance3D::set_skinning_method(MeshInstance3D::MeshSkinningMethod p_method) {
+	if (p_method == skinning_method) {
+		return;
+	}
+
+	skinning_method = p_method;
+	RenderingServer::get_singleton()->instance_set_skinning_method(get_instance(), static_cast<RSE::MeshSkinningMethod>(p_method));
+}
+
+MeshInstance3D::MeshSkinningMethod MeshInstance3D::get_skinning_method() const {
+	return skinning_method;
 }
 
 AABB MeshInstance3D::get_aabb() const {
@@ -907,6 +923,8 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &MeshInstance3D::get_skeleton_path);
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &MeshInstance3D::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skin"), &MeshInstance3D::get_skin);
+	ClassDB::bind_method(D_METHOD("set_skinning_method", "method"), &MeshInstance3D::set_skinning_method);
+	ClassDB::bind_method(D_METHOD("get_skinning_method"), &MeshInstance3D::get_skinning_method);
 	ClassDB::bind_method(D_METHOD("get_skin_reference"), &MeshInstance3D::get_skin_reference);
 
 	ClassDB::bind_method(D_METHOD("get_surface_override_material_count"), &MeshInstance3D::get_surface_override_material_count);
@@ -940,6 +958,7 @@ void MeshInstance3D::_bind_methods() {
 	ADD_GROUP("Skeleton", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, Skin::get_class_static()), "set_skin", "get_skin");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton3D"), "set_skeleton_path", "get_skeleton_path");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "skinning_method", PROPERTY_HINT_ENUM, "Linear Blend,Dual Quaternion,Dual Quaternion with Scaling", PROPERTY_USAGE_DEFAULT), "set_skinning_method", "get_skinning_method");
 	ADD_GROUP("", "");
 }
 
