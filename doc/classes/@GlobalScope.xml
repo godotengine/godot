@@ -327,7 +327,7 @@
 			<param index="7" name="post_t" type="float" />
 			<description>
 				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre] and [param post] values. See also [method lerp_angle].
-				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
+				It can perform smoother interpolation than [method cubic_interpolate_angle] by the time values.
 			</description>
 		</method>
 		<method name="cubic_interpolate_in_time">
@@ -684,6 +684,72 @@
 				log(10) # Returns 2.302585
 				[/codeblock]
 				[b]Note:[/b] The logarithm of [code]0[/code] returns [code]-inf[/code], while negative values return [code]-nan[/code].
+			</description>
+		</method>
+		<method name="makima_interpolate">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="pre" type="float" />
+			<param index="3" name="post" type="float" />
+			<param index="4" name="pre_pre" type="float" />
+			<param index="5" name="post_post" type="float" />
+			<param index="6" name="weight" type="float" />
+			<description>
+				Modified Akima interpolates between two values by the factor defined in [param weight] with [param pre], [param post], [param pre_pre] and [param post_post] values.
+				The resulting curve overshoots less than [method cubic_interpolate], and stays flat where three or more adjacent values are equal.
+			</description>
+		</method>
+		<method name="makima_interpolate_angle">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="pre" type="float" />
+			<param index="3" name="post" type="float" />
+			<param index="4" name="pre_pre" type="float" />
+			<param index="5" name="post_post" type="float" />
+			<param index="6" name="weight" type="float" />
+			<description>
+				Modified Akima interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre], [param post], [param pre_pre] and [param post_post] values. See also [method lerp_angle].
+				The resulting curve overshoots less than [method cubic_interpolate_angle], and stays flat where three or more adjacent values are equal.
+			</description>
+		</method>
+		<method name="makima_interpolate_angle_in_time">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="pre" type="float" />
+			<param index="3" name="post" type="float" />
+			<param index="4" name="pre_pre" type="float" />
+			<param index="5" name="post_post" type="float" />
+			<param index="6" name="weight" type="float" />
+			<param index="7" name="to_t" type="float" />
+			<param index="8" name="pre_t" type="float" />
+			<param index="9" name="post_t" type="float" />
+			<param index="10" name="pre_pre_t" type="float" />
+			<param index="11" name="post_post_t" type="float" />
+			<description>
+				Modified Akima interpolates between two rotation values with shortest path by the factor defined in [param weight] with [param pre], [param post], [param pre_pre] and [param post_post] values. See also [method lerp_angle].
+				It can perform smoother interpolation than [method makima_interpolate_angle] by the time values.
+			</description>
+		</method>
+		<method name="makima_interpolate_in_time">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="pre" type="float" />
+			<param index="3" name="post" type="float" />
+			<param index="4" name="pre_pre" type="float" />
+			<param index="5" name="post_post" type="float" />
+			<param index="6" name="weight" type="float" />
+			<param index="7" name="to_t" type="float" />
+			<param index="8" name="pre_t" type="float" />
+			<param index="9" name="post_t" type="float" />
+			<param index="10" name="pre_pre_t" type="float" />
+			<param index="11" name="post_post_t" type="float" />
+			<description>
+				Modified Akima interpolates between two values by the factor defined in [param weight] with [param pre], [param post], [param pre_pre] and [param post_post] values.
+				It can perform smoother interpolation than [method makima_interpolate] by the time values.
 			</description>
 		</method>
 		<method name="max" qualifiers="vararg">
