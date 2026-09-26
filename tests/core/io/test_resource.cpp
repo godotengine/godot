@@ -32,6 +32,7 @@
 
 TEST_FORCE_LINK(test_resource)
 
+#include "core/io/dir_access.h"
 #include "core/io/resource.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -569,6 +570,34 @@ TEST_CASE("[Resource] Saving and loading") {
 	CHECK_MESSAGE(
 			loaded_child_resource_text->get_name() == "I'm a child resource",
 			"The loaded child resource name should be equal to the expected value.");
+}
+
+TEST_CASE("[Resource] Loading binary resources with relative external paths") {
+	const String temp_dir = TestUtils::get_temp_path("relative_resource_paths");
+	const String inner_path = temp_dir.path_join("inner.tres");
+	const String outer_path = temp_dir.path_join("sub/outer.res");
+	REQUIRE(DirAccess::make_dir_recursive_absolute(outer_path.get_base_dir()) == OK);
+
+	Ref<Resource> inner_resource = memnew(Resource);
+	inner_resource->set_name("Inner resource");
+	REQUIRE(ResourceSaver::save(inner_resource, inner_path) == OK);
+	inner_resource->set_path_cache(inner_path);
+
+	Ref<Resource> outer_resource = memnew(Resource);
+	outer_resource->set_meta("external_resource", inner_resource);
+	REQUIRE(ResourceSaver::save(outer_resource, outer_path, ResourceSaver::FLAG_RELATIVE_PATHS) == OK);
+
+	inner_resource.unref();
+	outer_resource.unref();
+
+	Error load_error;
+	Ref<Resource> loaded_outer_resource = ResourceLoader::load(outer_path, "", ResourceFormatLoader::CacheMode::CACHE_MODE_IGNORE, &load_error);
+	REQUIRE(load_error == OK);
+	REQUIRE(loaded_outer_resource.is_valid());
+
+	Ref<Resource> loaded_inner_resource = loaded_outer_resource->get_meta("external_resource");
+	REQUIRE(loaded_inner_resource.is_valid());
+	CHECK(loaded_inner_resource->get_name() == "Inner resource");
 }
 
 TEST_CASE("[Resource] Breaking circular references on save") {
