@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PacketPeerExtension" inherits="PacketPeer" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Extension class to [PacketPeer] for implementing custom in GDExtension or C++.
 	</brief_description>
 	<description>
+		This class provides an interface which extends [PacketPeer] for use with GDExtension or custom C++ classes, which allows for the implementation of  a custom packet-based protocol, while retaining access to all the high level API found in [PacketPeer]. 
+		To create a custom packet peer, override [method _get_packet] and [method _put_packet] to handle raw packet I/O, and override [method _get_available_packet_count] and [method _get_max_packet_size] to report the state of your underlying buffer or connection.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,11 +14,15 @@
 		<method name="_get_available_packet_count" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
+				Returns the number of packets currently available to read in the ring (receive) buffer.
+				Backing implementation of [method PacketPeer.get_available_packet_count].
 			</description>
 		</method>
 		<method name="_get_max_packet_size" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
+				Returns the maximum number of bytes in a single packet.
+				Backing implementation of [method PacketPeer.get_packet] (size constraint).
 			</description>
 		</method>
 		<method name="_get_packet" qualifiers="virtual">
@@ -22,6 +30,9 @@
 			<param index="0" name="r_buffer" type="const uint8_t **" />
 			<param index="1" name="r_buffer_size" type="int32_t*" />
 			<description>
+				Returns the next available raw packet. Sets [param r_buffer] to point to the packet's data and sets [param r_buffer_size] to the byte length of that data. The buffer must remain valid until the next call to [method _get_packet] or [method _put_packet].
+				Return [constant OK] on success, or an appropriate [enum Error] code on failure. The returned error can later be queried via [method PacketPeer.get_packet_error].
+				Backing implementation of [method PacketPeer.get_packet].
 			</description>
 		</method>
 		<method name="_put_packet" qualifiers="virtual">
@@ -29,6 +40,8 @@
 			<param index="0" name="buffer" type="const uint8_t*" />
 			<param index="1" name="buffer_size" type="int" />
 			<description>
+				Sends a raw packet. [param buffer] points to the data to send and [param buffer_size] is the number of bytes to transmit.
+				Backing implementation of [method PacketPeer.put_packet].
 			</description>
 		</method>
 	</methods>
