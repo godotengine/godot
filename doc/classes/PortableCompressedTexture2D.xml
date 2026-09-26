@@ -66,18 +66,25 @@
 	</members>
 	<constants>
 		<constant name="COMPRESSION_MODE_LOSSLESS" value="0" enum="CompressionMode">
+			Use WebP lossless per mipmap. Falls back to PNG when the WebP module is disabled, when [member ProjectSettings.rendering/textures/lossless_compression/force_png] is on, or when either dimension exceeds [code]16383[/code].
 		</constant>
 		<constant name="COMPRESSION_MODE_LOSSY" value="1" enum="CompressionMode">
+			Use WebP lossy, quality from [method create_from_image]'s [code]lossy_quality[/code]. No PNG fallback.
 		</constant>
 		<constant name="COMPRESSION_MODE_BASIS_UNIVERSAL" value="2" enum="CompressionMode">
+			Use Basis Universal supercompression. Rejects already-compressed input.
 		</constant>
 		<constant name="COMPRESSION_MODE_S3TC" value="3" enum="CompressionMode">
+			Use S3TC compression.
 		</constant>
 		<constant name="COMPRESSION_MODE_ETC2" value="4" enum="CompressionMode">
+			Use ETC2 compression.
 		</constant>
 		<constant name="COMPRESSION_MODE_BPTC" value="5" enum="CompressionMode">
+			Use BPTC compression.
 		</constant>
 		<constant name="COMPRESSION_MODE_ASTC" value="6" enum="CompressionMode">
+			Use ASTC compression.
 		</constant>
 	</constants>
 </class>
