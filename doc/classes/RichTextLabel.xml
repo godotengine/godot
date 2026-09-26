@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A control for displaying text that can contain custom fonts, images, and basic formatting. [RichTextLabel] manages these as an internal tag stack. It also adapts itself to given width/heights.
-		[b]Note:[/b] [method newline], [method push_paragraph], [code]"\n"[/code], [code]"\r\n"[/code], [code]p[/code] tag, and alignment tags start a new paragraph. Each paragraph is processed independently, in its own BiDi context. If you want to force line wrapping within paragraph, any other line breaking character can be used, for example, Form Feed (U+000C), Next Line (U+0085), Line Separator (U+2028).
+		[b]Note:[/b] [method newline], [method push_paragraph], [code]"\n"[/code], [code]"\r\n"[/code], [code]p[/code] tag, and alignment tags start a new paragraph. Each paragraph is processed independently, in its own BiDi context. If you want to force line wrapping within a paragraph, any other line breaking character can be used, for example, Form Feed (U+000C), Next Line (U+0085), Line Separator (U+2028).
 		[b]Note:[/b] Assignments to [member text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member text] will erase previous edits made from other manual sources such as [method append_text] and the [code]push_*[/code] / [method pop] methods.
 		[b]Note:[/b] RichTextLabel doesn't support entangled BBCode tags. For example, instead of using [code skip-lint][b]bold[i]bold italic[/b]italic[/i][/code], use [code skip-lint][b]bold[i]bold italic[/i][/b][i]italic[/i][/code].
 		[b]Note:[/b] [code]push_*/pop_*[/code] functions won't affect BBCode.
@@ -88,7 +88,7 @@
 			<param index="0" name="character" type="int" />
 			<description>
 				Returns the line number of the character position provided. Line and character numbers are both zero-indexed.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_character_paragraph">
@@ -96,7 +96,7 @@
 			<param index="0" name="character" type="int" />
 			<description>
 				Returns the paragraph number of the character position provided. Paragraph and character numbers are both zero-indexed.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_content_height" qualifiers="const">
@@ -104,7 +104,7 @@
 			<description>
 				Returns the height of the content.
 				[b]Note:[/b] This method always returns the full content size, and is not affected by [member visible_ratio] and [member visible_characters]. To get the visible content size, use [method get_visible_content_rect].
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_content_width" qualifiers="const">
@@ -112,14 +112,14 @@
 			<description>
 				Returns the width of the content.
 				[b]Note:[/b] This method always returns the full content size, and is not affected by [member visible_ratio] and [member visible_characters]. To get the visible content size, use [method get_visible_content_rect].
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the total number of lines in the text. Wrapped text is counted as multiple lines.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_height" qualifiers="const">
@@ -135,7 +135,7 @@
 			<param index="0" name="line" type="int" />
 			<description>
 				Returns the vertical offset of the line found at the provided index.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_range">
@@ -144,7 +144,7 @@
 			<description>
 				Returns the indexes of the first and last visible characters for the given [param line], as a [Vector2i].
 				[b]Note:[/b] If [member visible_characters_behavior] is set to [constant TextServer.VC_CHARS_BEFORE_SHAPING] only visible wrapped lines are counted.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_line_width" qualifiers="const">
@@ -212,7 +212,7 @@
 			<param index="0" name="paragraph" type="int" />
 			<description>
 				Returns the vertical offset of the paragraph found at the provided index.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_parsed_text" qualifiers="const">
@@ -236,19 +236,19 @@
 		<method name="get_selection_from" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the current selection first character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
+				Returns the current selection's first character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_selection_line_offset" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the current selection vertical line offset if a selection is active, [code]-1.0[/code] otherwise.
+				Returns the current selection's vertical line offset if a selection is active, [code]-1.0[/code] otherwise.
 			</description>
 		</method>
 		<method name="get_selection_to" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the current selection last character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
+				Returns the current selection's last character index if a selection is active, [code]-1[/code] otherwise. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_total_character_count" qualifiers="const">
@@ -302,7 +302,7 @@
 			<description>
 				Returns the number of visible lines.
 				[b]Note:[/b] This method returns a correct value only after the label has been drawn.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="get_visible_paragraph_count" qualifiers="const">
@@ -310,7 +310,7 @@
 			<description>
 				Returns the number of visible paragraphs. A paragraph is considered visible if at least one of its lines is visible.
 				[b]Note:[/b] This method returns a correct value only after the label has been drawn.
-				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
+				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether the document is fully loaded.
 			</description>
 		</method>
 		<method name="install_effect">
@@ -618,7 +618,7 @@
 			<description>
 				Removes a paragraph of content from the label. Returns [code]true[/code] if the paragraph exists.
 				The [param paragraph] argument is the index of the paragraph to remove, it can take values in the interval [code][0, get_paragraph_count() - 1][/code].
-				If [param no_invalidate] is set to [code]true[/code], cache for the subsequent paragraphs is not invalidated. Use it for faster updates if deleted paragraph is fully self-contained (have no unclosed tags), or this call is part of the complex edit operation and [method invalidate_paragraph] will be called at the end of operation.
+				If [param no_invalidate] is set to [code]true[/code], cache for the subsequent paragraphs is not invalidated. Use it for faster updates if the deleted paragraph is fully self-contained (has no unclosed tags), or this call is part of a complex edit operation and [method invalidate_paragraph] will be called at the end of the operation.
 			</description>
 		</method>
 		<method name="scroll_to_line">
@@ -632,7 +632,7 @@
 			<return type="void" />
 			<param index="0" name="paragraph" type="int" />
 			<description>
-				Scrolls the window's top line to match first line of the [param paragraph].
+				Scrolls the window's top line to match the first line of the [param paragraph].
 			</description>
 		</method>
 		<method name="scroll_to_selection">
@@ -644,15 +644,15 @@
 		<method name="select_all">
 			<return type="void" />
 			<description>
-				Select all the text.
-				If [member selection_enabled] is [code]false[/code], no selection will occur.
+				Selects all the text.
+				If [member selection_enabled] is [code]false[/code], no selection occurs.
 			</description>
 		</method>
 		<method name="set_cell_border_color">
 			<return type="void" />
 			<param index="0" name="color" type="Color" />
 			<description>
-				Sets color of a table cell border.
+				Sets the color of a table cell's border.
 			</description>
 		</method>
 		<method name="set_cell_padding">
@@ -667,7 +667,7 @@
 			<param index="0" name="odd_row_bg" type="Color" />
 			<param index="1" name="even_row_bg" type="Color" />
 			<description>
-				Sets color of a table cell. Separate colors for alternating rows can be specified.
+				Sets the color of a table cell. Separate colors for alternating rows can be specified.
 			</description>
 		</method>
 		<method name="set_cell_size_override">
@@ -770,8 +770,8 @@
 			The minimum font size used when [member resize_font_to_fit] is enabled. Also determines the minimum vertical size of this [RichTextLabel], potentially used by a parent [Container]. If [member minimum_font_size] is greater than [member maximum_font_size], the minimum font size takes precedence.
 		</member>
 		<member name="progress_bar_delay" type="int" setter="set_progress_bar_delay" getter="get_progress_bar_delay" default="1000">
-			The delay after which the loading progress bar is displayed, in milliseconds. Set to [code]-1[/code] to disable progress bar entirely.
-			[b]Note:[/b] Progress bar is displayed only if [member threaded] is enabled.
+			The delay after which the loading progress bar is displayed, in milliseconds. Set to [code]-1[/code] to disable the progress bar entirely.
+			[b]Note:[/b] The progress bar is displayed only if [member threaded] is enabled.
 		</member>
 		<member name="resize_font_to_fit" type="bool" setter="set_resize_font_to_fit" getter="is_resize_font_to_fit_enabled" default="false">
 			If [code]true[/code], the text size will automatically shrink or grow to fit within the node's bounding rectangle. It will pick the largest font size between [member minimum_font_size] and [member maximum_font_size] that doesn't cause the text to be truncated.
@@ -806,7 +806,7 @@
 		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
-			[b]Note:[/b] If [member bbcode_enabled] is [code]true[/code], it is unadvised to use the [code]+=[/code] operator with [member text] (e.g. [code]text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. It will also erase all BBCode that was added to stack using [code]push_*[/code] methods. Use [method append_text] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
+			[b]Note:[/b] If [member bbcode_enabled] is [code]true[/code], it is unadvised to use the [code]+=[/code] operator with [member text] (e.g. [code]text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. It will also erase all BBCode that was added to the stack using [code]push_*[/code] methods. Use [method append_text] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="Control.TextDirection" default="0">
 			Base text writing direction.
@@ -826,7 +826,7 @@
 			The clipping behavior when [member visible_characters] or [member visible_ratio] is set.
 		</member>
 		<member name="visible_ratio" type="float" setter="set_visible_ratio" getter="get_visible_ratio" default="1.0">
-			The fraction of characters to display, relative to the total number of characters (see [method get_total_character_count]). If set to [code]1.0[/code], all characters are displayed. If set to [code]0.5[/code], only half of the characters will be displayed. This can be useful when animating the text appearing in a dialog box.
+			The fraction of characters to display, relative to the total number of characters (see [method get_total_character_count]). If set to [code]1.0[/code], all characters are displayed. If set to [code]0.5[/code], only half of the characters are displayed. This can be useful when animating the text appearing in a dialog box.
 			[b]Note:[/b] Setting this property updates [member visible_characters] accordingly.
 		</member>
 	</members>
@@ -889,13 +889,13 @@
 			Represents the size of the [enum MenuItems] enum.
 		</constant>
 		<constant name="META_UNDERLINE_NEVER" value="0" enum="MetaUnderline">
-			Meta tag does not display an underline, even if [member meta_underlined] is [code]true[/code].
+			Meta tags do not display an underline, even if [member meta_underlined] is [code]true[/code].
 		</constant>
 		<constant name="META_UNDERLINE_ALWAYS" value="1" enum="MetaUnderline">
-			If [member meta_underlined] is [code]true[/code], meta tag always display an underline.
+			If [member meta_underlined] is [code]true[/code], meta tags always display an underline.
 		</constant>
 		<constant name="META_UNDERLINE_ON_HOVER" value="2" enum="MetaUnderline">
-			If [member meta_underlined] is [code]true[/code], meta tag display an underline when the mouse cursor is over it.
+			If [member meta_underlined] is [code]true[/code], meta tags display an underline when hovered by the mouse cursor.
 		</constant>
 		<constant name="UPDATE_TEXTURE" value="1" enum="ImageUpdateMask" is_bitfield="true">
 			If this bit is set, [method update_image] changes image texture.
