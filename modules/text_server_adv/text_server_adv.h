@@ -293,6 +293,7 @@ class TextServerAdvanced : public TextServerExtension {
 		bool disable_embedded_bitmaps = true;
 		bool mipmaps = false;
 		bool msdf = false;
+		bool nodef = false;
 		int msdf_range = 14;
 		FixedSizeScaleMode fixed_size_scale_mode = FIXED_SIZE_SCALE_DISABLE;
 		int msdf_source_size = 48;
@@ -892,6 +893,9 @@ public:
 	MODBIND2(font_set_allow_system_fallback, const RID &, bool);
 	MODBIND1RC(bool, font_is_allow_system_fallback, const RID &);
 	MODBIND0(font_clear_system_fallback_cache);
+
+	MODBIND2(font_set_use_missing_glyph, const RID &, bool);
+	MODBIND1RC(bool, font_get_use_missing_glyph, const RID &);
 
 	MODBIND2(font_set_force_autohinter, const RID &, bool);
 	MODBIND1RC(bool, font_is_force_autohinter, const RID &);

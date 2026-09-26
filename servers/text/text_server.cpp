@@ -275,6 +275,9 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_is_allow_system_fallback", "font_rid"), &TextServer::font_is_allow_system_fallback);
 	ClassDB::bind_method(D_METHOD("font_clear_system_fallback_cache"), &TextServer::font_clear_system_fallback_cache);
 
+	ClassDB::bind_method(D_METHOD("font_set_use_missing_glyph", "font_rid", "use_missing_glyph"), &TextServer::font_set_use_missing_glyph);
+	ClassDB::bind_method(D_METHOD("font_get_use_missing_glyph", "font_rid"), &TextServer::font_get_use_missing_glyph);
+
 	ClassDB::bind_method(D_METHOD("font_set_force_autohinter", "font_rid", "force_autohinter"), &TextServer::font_set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("font_is_force_autohinter", "font_rid"), &TextServer::font_is_force_autohinter);
 

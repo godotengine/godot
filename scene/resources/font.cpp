@@ -624,6 +624,7 @@ _FORCE_INLINE_ bool FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_force_autohinter(cache[p_cache_index], force_autohinter);
 			TS->font_set_modulate_color_glyphs(cache[p_cache_index], modulate_color_glyphs);
 			TS->font_set_allow_system_fallback(cache[p_cache_index], allow_system_fallback);
+			TS->font_set_use_missing_glyph(cache[p_cache_index], use_nodef);
 			TS->font_set_hinting(cache[p_cache_index], hinting);
 			TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
 			TS->font_set_keep_rounding_remainders(cache[p_cache_index], keep_rounding_remainders);
@@ -955,6 +956,9 @@ void FontFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_system_fallback", "allow_system_fallback"), &FontFile::set_allow_system_fallback);
 	ClassDB::bind_method(D_METHOD("is_allow_system_fallback"), &FontFile::is_allow_system_fallback);
 
+	ClassDB::bind_method(D_METHOD("set_use_missing_glyph", "use_missing_glyph"), &FontFile::set_use_missing_glyph);
+	ClassDB::bind_method(D_METHOD("get_use_missing_glyph"), &FontFile::get_use_missing_glyph);
+
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &FontFile::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &FontFile::is_force_autohinter);
 
@@ -1087,6 +1091,7 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "modulate_color_glyphs", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_modulate_color_glyphs", "is_modulate_color_glyphs");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_missing_glyph", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_use_missing_glyph", "get_use_missing_glyph");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_STORAGE), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size", "get_fixed_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size_scale_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size_scale_mode", "get_fixed_size_scale_mode");
@@ -1449,6 +1454,7 @@ void FontFile::reset_state() {
 	force_autohinter = false;
 	modulate_color_glyphs = false;
 	allow_system_fallback = true;
+	use_nodef = false;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	keep_rounding_remainders = true;
@@ -1490,6 +1496,7 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 	force_autohinter = false;
 	modulate_color_glyphs = false;
 	allow_system_fallback = true;
+	use_nodef = false;
 	hinting = TextServer::HINTING_NONE;
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
@@ -2291,6 +2298,21 @@ void FontFile::set_allow_system_fallback(bool p_allow_system_fallback) {
 
 bool FontFile::is_allow_system_fallback() const {
 	return allow_system_fallback;
+}
+
+void FontFile::set_use_missing_glyph(bool p_use_missing_glyph) {
+	if (use_nodef != p_use_missing_glyph) {
+		use_nodef = p_use_missing_glyph;
+		for (int i = 0; i < cache.size(); i++) {
+			ERR_CONTINUE(!_ensure_rid(i));
+			TS->font_set_use_missing_glyph(cache[i], use_nodef);
+		}
+		emit_changed();
+	}
+}
+
+bool FontFile::get_use_missing_glyph() const {
+	return use_nodef;
 }
 
 void FontFile::set_force_autohinter(bool p_force_autohinter) {
@@ -3255,6 +3277,9 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_system_fallback", "allow_system_fallback"), &SystemFont::set_allow_system_fallback);
 	ClassDB::bind_method(D_METHOD("is_allow_system_fallback"), &SystemFont::is_allow_system_fallback);
 
+	ClassDB::bind_method(D_METHOD("set_use_missing_glyph", "use_missing_glyph"), &SystemFont::set_use_missing_glyph);
+	ClassDB::bind_method(D_METHOD("get_use_missing_glyph"), &SystemFont::get_use_missing_glyph);
+
 	ClassDB::bind_method(D_METHOD("set_force_autohinter", "force_autohinter"), &SystemFont::set_force_autohinter);
 	ClassDB::bind_method(D_METHOD("is_force_autohinter"), &SystemFont::is_force_autohinter);
 
@@ -3300,6 +3325,7 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_system_fallback"), "set_allow_system_fallback", "is_allow_system_fallback");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter"), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "modulate_color_glyphs"), "set_modulate_color_glyphs", "is_modulate_color_glyphs");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_missing_glyph", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_use_missing_glyph", "get_use_missing_glyph");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), "set_keep_rounding_remainders", "get_keep_rounding_remainders");
@@ -3407,6 +3433,7 @@ void SystemFont::_update_base_font() {
 		file->set_force_autohinter(force_autohinter);
 		file->set_modulate_color_glyphs(modulate_color_glyphs);
 		file->set_allow_system_fallback(allow_system_fallback);
+		file->set_use_missing_glyph(use_nodef);
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
 		file->set_keep_rounding_remainders(keep_rounding_remainders);
@@ -3452,6 +3479,7 @@ void SystemFont::reset_state() {
 	force_autohinter = false;
 	modulate_color_glyphs = false;
 	allow_system_fallback = true;
+	use_nodef = false;
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	keep_rounding_remainders = true;
@@ -3564,6 +3592,20 @@ void SystemFont::set_allow_system_fallback(bool p_allow_system_fallback) {
 
 bool SystemFont::is_allow_system_fallback() const {
 	return allow_system_fallback;
+}
+
+void SystemFont::set_use_missing_glyph(bool p_use_missing_glyph) {
+	if (use_nodef != p_use_missing_glyph) {
+		use_nodef = p_use_missing_glyph;
+		if (base_font.is_valid()) {
+			base_font->set_use_missing_glyph(use_nodef);
+		}
+		emit_changed();
+	}
+}
+
+bool SystemFont::get_use_missing_glyph() const {
+	return use_nodef;
 }
 
 void SystemFont::set_force_autohinter(bool p_force_autohinter) {

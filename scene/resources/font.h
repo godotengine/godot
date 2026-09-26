@@ -205,6 +205,7 @@ class FontFile : public Font {
 	bool force_autohinter = false;
 	bool modulate_color_glyphs = false;
 	bool allow_system_fallback = true;
+	bool use_nodef = false;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 	bool keep_rounding_remainders = true;
@@ -285,6 +286,9 @@ public:
 
 	virtual void set_allow_system_fallback(bool p_allow_system_fallback);
 	virtual bool is_allow_system_fallback() const;
+
+	virtual void set_use_missing_glyph(bool p_use_missing_glyph);
+	virtual bool get_use_missing_glyph() const;
 
 	virtual void set_force_autohinter(bool p_force_autohinter);
 	virtual bool is_force_autohinter() const;
@@ -509,6 +513,7 @@ class SystemFont : public Font {
 	bool force_autohinter = false;
 	bool modulate_color_glyphs = false;
 	bool allow_system_fallback = true;
+	bool use_nodef = false;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 	bool keep_rounding_remainders = true;
@@ -540,6 +545,9 @@ public:
 
 	virtual void set_allow_system_fallback(bool p_allow_system_fallback);
 	virtual bool is_allow_system_fallback() const;
+
+	virtual void set_use_missing_glyph(bool p_use_missing_glyph);
+	virtual bool get_use_missing_glyph() const;
 
 	virtual void set_force_autohinter(bool p_force_autohinter);
 	virtual bool is_force_autohinter() const;
