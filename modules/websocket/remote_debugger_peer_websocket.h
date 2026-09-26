@@ -49,7 +49,6 @@ public:
 	Error connect_to_host(const String &p_uri);
 
 	bool is_peer_connected() override;
-	int get_max_message_size() const override;
 	bool has_message() override;
 	Error put_message(const Array &p_arr) override;
 	Array get_message() override;

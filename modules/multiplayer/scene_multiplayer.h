@@ -47,7 +47,6 @@ public:
 		return OK;
 	}
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override { return OK; }
-	virtual int get_max_packet_size() const override { return 0; }
 
 	virtual void set_target_peer(int p_peer_id) override {}
 	virtual int get_packet_peer() const override { return 0; }
