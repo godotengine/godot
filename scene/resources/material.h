@@ -389,6 +389,7 @@ private:
 		uint64_t orm : 1;
 
 		// flag bitfield
+		uint32_t texture_mask;
 		uint32_t feature_mask;
 		uint32_t flags;
 
@@ -417,6 +418,54 @@ private:
 	static Mutex shader_map_mutex;
 
 	MaterialKey current_key;
+
+	_FORCE_INLINE_ bool _does_texture_affect_key(TextureParam p_texture_param) const {
+		// Returns whether the texture being set affects the shader generation. The material key will mask out any
+		// textures that may be set but are unused due to the features that are enabled.
+		switch (p_texture_param) {
+			case TEXTURE_ALBEDO:
+				return false;
+			case TEXTURE_METALLIC:
+				return !orm;
+			case TEXTURE_ROUGHNESS:
+				return !orm;
+			case TEXTURE_EMISSION:
+				return features[FEATURE_EMISSION];
+			case TEXTURE_NORMAL:
+				return features[FEATURE_NORMAL_MAPPING];
+			case TEXTURE_RIM:
+				return features[FEATURE_RIM];
+			case TEXTURE_CLEARCOAT:
+				return features[FEATURE_CLEARCOAT];
+			case TEXTURE_FLOWMAP:
+				return features[FEATURE_ANISOTROPY];
+			case TEXTURE_AMBIENT_OCCLUSION:
+				return features[FEATURE_AMBIENT_OCCLUSION];
+			case TEXTURE_HEIGHTMAP:
+				return features[FEATURE_HEIGHT_MAPPING];
+			case TEXTURE_SUBSURFACE_SCATTERING:
+				return features[FEATURE_SUBSURFACE_SCATTERING];
+			case TEXTURE_SUBSURFACE_TRANSMITTANCE:
+				return features[FEATURE_SUBSURFACE_TRANSMITTANCE];
+			case TEXTURE_BACKLIGHT:
+				return features[FEATURE_BACKLIGHT];
+			case TEXTURE_REFRACTION:
+				return features[FEATURE_REFRACTION];
+			case TEXTURE_DETAIL_MASK:
+				return features[FEATURE_DETAIL];
+			case TEXTURE_DETAIL_ALBEDO:
+				return features[FEATURE_DETAIL];
+			case TEXTURE_DETAIL_NORMAL:
+				return features[FEATURE_DETAIL];
+			case TEXTURE_ORM:
+				return orm;
+			case TEXTURE_BENT_NORMAL:
+				return features[FEATURE_BENT_NORMAL_MAPPING];
+			default:
+				DEV_ASSERT(false && "Unknown texture parameter.");
+				return false;
+		}
+	}
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 		MaterialKey mk;
@@ -447,15 +496,21 @@ private:
 		mk.stencil_compare = stencil_compare;
 		mk.stencil_reference = stencil_reference;
 
-		for (int i = 0; i < FEATURE_MAX; i++) {
-			if (features[i]) {
-				mk.feature_mask |= ((uint64_t)1 << i);
+		for (uint32_t i = 0; i < TEXTURE_MAX; i++) {
+			if (_does_texture_affect_key((TextureParam)(i)) && textures[i].is_valid()) {
+				mk.texture_mask |= (1U << i);
 			}
 		}
 
-		for (int i = 0; i < FLAG_MAX; i++) {
+		for (uint32_t i = 0; i < FEATURE_MAX; i++) {
+			if (features[i]) {
+				mk.feature_mask |= (1U << i);
+			}
+		}
+
+		for (uint32_t i = 0; i < FLAG_MAX; i++) {
 			if (flags[i]) {
-				mk.flags |= ((uint64_t)1 << i);
+				mk.flags |= (1U << i);
 			}
 		}
 
