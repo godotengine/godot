@@ -222,12 +222,12 @@ bool AnimationTrackKeyEdit::_set(const StringName &p_name, const Variant &p_valu
 			if (name == "name") {
 				d_new["method"] = p_value;
 			} else if (name == "arg_count") {
-				Vector<Variant> args = d_old["args"];
+				Vector<Variant> args = d_old["args"].to<Vector<Variant>>();
 				args.resize(p_value);
 				d_new["args"] = args;
 				change_notify_deserved = true;
 			} else if (name.begins_with("args/")) {
-				Vector<Variant> args = d_old["args"];
+				Vector<Variant> args = d_old["args"].to<Vector<Variant>>();
 				int idx = name.get_slicec('/', 1).to_int();
 				ERR_FAIL_INDEX_V(idx, args.size(), false);
 
@@ -477,7 +477,7 @@ bool AnimationTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) const
 
 			ERR_FAIL_COND_V(!d.has("args"), false);
 
-			Vector<Variant> args = d["args"];
+			Vector<Variant> args = d["args"].to<Vector<Variant>>();
 
 			if (name == "arg_count") {
 				r_ret = args.size();
@@ -606,7 +606,7 @@ void AnimationTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) const
 
 			Dictionary d = animation->track_get_key_value(track, key);
 			ERR_FAIL_COND(!d.has("args"));
-			Vector<Variant> args = d["args"];
+			Vector<Variant> args = d["args"].to<Vector<Variant>>();
 			String vtypes;
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 				if (i > 0) {
@@ -832,12 +832,12 @@ bool AnimationMultiTrackKeyEdit::_set(const StringName &p_name, const Variant &p
 					if (name == "name") {
 						d_new["method"] = p_value;
 					} else if (name == "arg_count") {
-						Vector<Variant> args = d_old["args"];
+						Vector<Variant> args = d_old["args"].to<Vector<Variant>>();
 						args.resize(p_value);
 						d_new["args"] = args;
 						change_notify_deserved = true;
 					} else if (name.begins_with("args/")) {
-						Vector<Variant> args = d_old["args"];
+						Vector<Variant> args = d_old["args"].to<Vector<Variant>>();
 						int idx = name.get_slicec('/', 1).to_int();
 						ERR_FAIL_INDEX_V(idx, args.size(), false);
 
@@ -1050,7 +1050,7 @@ bool AnimationMultiTrackKeyEdit::_get(const StringName &p_name, Variant &r_ret) 
 
 					ERR_FAIL_COND_V(!d.has("args"), false);
 
-					Vector<Variant> args = d["args"];
+					Vector<Variant> args = d["args"].to<Vector<Variant>>();
 
 					if (name == "arg_count") {
 						r_ret = args.size();
@@ -1215,7 +1215,7 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 
 				Dictionary d = animation->track_get_key_value(first_track, first_key);
 				ERR_FAIL_COND(!d.has("args"));
-				Vector<Variant> args = d["args"];
+				Vector<Variant> args = d["args"].to<Vector<Variant>>();
 				String vtypes;
 				for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 					if (i > 0) {
@@ -2659,7 +2659,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		text += "(";
 		Vector<Variant> args;
 		if (d.has("args")) {
-			args = d["args"];
+			args = d["args"].to<Vector<Variant>>();
 		}
 		for (int i = 0; i < args.size(); i++) {
 			if (i > 0) {
@@ -2982,7 +2982,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					text += "(";
 					Vector<Variant> args;
 					if (d.has("args")) {
-						args = d["args"];
+						args = d["args"].to<Vector<Variant>>();
 					}
 					for (int i = 0; i < args.size(); i++) {
 						if (i > 0) {
