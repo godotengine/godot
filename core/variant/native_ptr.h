@@ -93,10 +93,10 @@ struct VariantCaster<GDExtensionPtr<T>> {
 template <typename T>
 struct VariantInternalAccessor<GDExtensionPtr<T>> {
 	static _FORCE_INLINE_ const GDExtensionPtr<T> &get(const Variant *p_variant) {
-		return *reinterpret_cast<const GDExtensionPtr<T> *>(VariantInternal::get_int(p_variant));
+		return *reinterpret_cast<const GDExtensionPtr<T> *>(&VariantInternalAccessor<int64_t>::get(p_variant));
 	}
 	static _FORCE_INLINE_ void set(Variant *r_variant, const GDExtensionPtr<T> &p_value) {
-		*VariantInternal::get_int(r_variant) = uint64_t(p_value.data);
+		VariantInternalAccessor<int64_t>::set(r_variant, uint64_t(p_value.data));
 	}
 };
 
