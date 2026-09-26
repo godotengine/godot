@@ -41,6 +41,9 @@
 #include "core/string/string_builder.h"
 #include "core/string/translation_server.h"
 #include "core/string/ustring.h"
+#ifdef TOOLS_ENABLED
+#include "editor/debugger/editor_debugger_node.h"
+#endif
 #include "scene/theme/theme_db.h"
 #include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
@@ -1599,6 +1602,11 @@ void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 
 			int padding = p_region.size.x / 6;
 
 			Color use_color = theme_cache.breakpoint_color;
+#ifdef TOOLS_ENABLED
+			if (EditorDebuggerNode::get_singleton()->is_skip_breakpoints()) {
+				use_color = Color(.7, .7, .7);
+			}
+#endif
 			if (hovering && !shift_pressed) {
 				use_color = breakpointed ? use_color.lightened(0.3) : use_color.darkened(0.5);
 			}
