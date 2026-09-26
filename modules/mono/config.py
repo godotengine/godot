@@ -1,16 +1,12 @@
 def can_build(env, platform):
+    if "mono" not in env.get("supported", []):
+        return False
+    if env.editor_build:
+        return platform in ["windows", "macos", "linuxbsd"]
     return True
 
 
 def configure(env):
-    # Check if the platform has marked mono as supported.
-    supported = env.get("supported", [])
-    if "mono" not in supported:
-        import sys
-
-        print("The 'mono' module does not currently support building for this platform. Aborting.")
-        sys.exit(255)
-
     env.add_module_version_string("mono")
 
 
