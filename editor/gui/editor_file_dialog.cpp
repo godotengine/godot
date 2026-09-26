@@ -31,6 +31,7 @@
 #include "editor_file_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/file_system/dependency_editor.h"
@@ -39,6 +40,10 @@
 #ifndef DISABLE_DEPRECATED
 #include "core/object/class_db.h"
 #endif
+
+void EditorFileDialog::_hidden_files_toggled(bool p_show) {
+	EditorSettings::get_singleton()->set("filesystem/file_dialog/show_hidden_files", p_show);
+}
 
 void EditorFileDialog::_item_menu_id_pressed(int p_option) {
 	// Use dependency dialog to delete the entry in the editor, but only for project files.
@@ -173,4 +178,8 @@ void EditorFileDialog::_notification(int p_what) {
 			set_display_mode((DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 		} break;
 	}
+}
+
+EditorFileDialog::EditorFileDialog() {
+	show_hidden->connect(SceneStringName(toggled), callable_mp(this, &EditorFileDialog::_hidden_files_toggled));
 }
