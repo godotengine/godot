@@ -1108,7 +1108,8 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	if (!Engine::get_singleton()->is_editor_hint()) {
 		return;
 	}
-	if (p_property.name == "sky" || p_property.name == "sky_custom_fov" || p_property.name == "sky_rotation" || p_property.name == "ambient_light_sky_contribution") {
+
+	if (p_property.name == "sky" || p_property.name == "sky_custom_fov" || p_property.name == "sky_rotation") {
 		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
@@ -1123,14 +1124,14 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "ambient_light_color" || p_property.name == "ambient_light_energy") {
-		if (ambient_source == AMBIENT_SOURCE_DISABLED) {
+		if ((ambient_source != AMBIENT_SOURCE_BG || bg_mode != BG_SKY) && ambient_source != AMBIENT_SOURCE_SKY && ambient_source != AMBIENT_SOURCE_COLOR) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 		return;
 	}
 
 	if (p_property.name == "ambient_light_sky_contribution") {
-		if (ambient_source == AMBIENT_SOURCE_DISABLED || ambient_source == AMBIENT_SOURCE_COLOR) {
+		if ((ambient_source != AMBIENT_SOURCE_BG || bg_mode != BG_SKY) && ambient_source != AMBIENT_SOURCE_SKY) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 		return;
@@ -1195,7 +1196,7 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "background_color") {
-		if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
+		if (bg_mode != BG_COLOR) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 		return;
@@ -1217,6 +1218,7 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 
 	if (p_property.name == "background_intensity" && !GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		return;
 	}
 }
 
