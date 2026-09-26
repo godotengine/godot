@@ -43,7 +43,7 @@
 				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check.
 				assert(speed &lt; 20, "the speed limit is 20") # Show a message.
 				[/codeblock]
-				[b]Note:[/b] [method assert] is a keyword, not a function. So you cannot access it as a [Callable] or use it inside expressions.
+				[b]Note:[/b] [method assert] is a keyword, not a function. This means you cannot access it as a [Callable] or use it inside expressions.
 			</description>
 		</method>
 		<method name="char">
@@ -191,13 +191,15 @@
 			<return type="Resource" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns a [Resource] from the filesystem located at [param path]. During run-time, the resource is loaded when the script is being parsed. This function effectively acts as a reference to that resource. Note that this function requires [param path] to be a constant [String]. If you want to load a resource from a dynamic/variable path, use [method load].
+				Returns a [Resource] from the filesystem located at [param path]. During run-time, the resource is loaded when the script is being parsed. This function effectively acts as a reference to that resource. If the same resource is preloaded in multiple different places, it will only be loaded into memory once.
+				See also the [ResourcePreloader] node, which can be used to preload a list of resources without needing to attach a script.
+				[b]Note:[/b] that this function requires [param path] to be a constant [String]. If you want to load a resource from a dynamic/variable path, use [method load].
 				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the Assets Panel and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.
 				[codeblock]
 				# Create instance of a scene.
 				var diamond = preload("res://diamond.tscn").instantiate()
 				[/codeblock]
-				[b]Note:[/b] [method preload] is a keyword, not a function. So you cannot access it as a [Callable].
+				[b]Note:[/b] [method preload] is a keyword, not a function. This means you cannot access it as a [Callable].
 			</description>
 		</method>
 		<method name="print_debug" qualifiers="vararg">
