@@ -2521,6 +2521,9 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 	Node *scene = editor_data.get_edited_scene_root(idx);
 
+	// All scenes have their own resources in the editor, we just pick them up for saving
+	Ref<PackedScene> sdata = editor_data.get_scene_resource(idx);
+
 	if (!scene) {
 		show_warning(TTR("This operation can't be done without a tree root."));
 		return;
@@ -2539,22 +2542,12 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	_reset_animation_mixers(scene, &anim_backups);
 	_save_editor_states(p_file, idx);
 
-	Ref<PackedScene> sdata;
-
-	if (ResourceCache::has(p_file)) {
-		// Something may be referencing this resource and we are good with that.
-		// We must update it, but also let the previous scene state go, as
-		// old version still work for referencing changes in instantiated or inherited scenes.
-
-		sdata = ResourceCache::get_ref(p_file);
-		if (sdata.is_valid()) {
-			sdata->recreate_state();
-		} else {
-			sdata.instantiate();
-		}
+	if (sdata.is_valid()) {
+		sdata->recreate_state();
 	} else {
 		sdata.instantiate();
 	}
+
 	Error err = sdata->pack(scene);
 
 	if (err != OK) {
