@@ -154,6 +154,7 @@ public:
 
 	void set_dock_enabled(EditorDock *p_dock, bool p_enabled);
 	void close_dock(EditorDock *p_dock);
+	void close_docks_by_slot(EditorDock::DockSlot slot);
 	void open_dock(EditorDock *p_dock, bool p_set_current = true);
 	void focus_dock(EditorDock *p_dock);
 	void force_focus_dock(EditorDock *p_dock); // Ignore can_switch_dock().
