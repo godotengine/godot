@@ -226,6 +226,7 @@ public:
 	//these go through command queue if they are in another thread
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
 	FUNC2(texture_3d_update, RID, const Vector<Ref<Image>> &)
+	FUNC4(texture_2d_update_partial, RID, const Vector2i &, const Ref<Image> &, int)
 	FUNC4(texture_external_update, RID, int, int, uint64_t)
 	FUNC2(texture_proxy_update, RID, RID)
 
@@ -1045,6 +1046,7 @@ public:
 	FUNC6(canvas_item_add_texture_rect, RID, const Rect2 &, RID, bool, const Color &, bool)
 	FUNC7(canvas_item_add_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, bool, bool)
 	FUNC8(canvas_item_add_msdf_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &, int, float, float)
+	FUNC8(canvas_item_add_slug_texture, RID, const Rect2 &, RID, uint32_t, const Rect2 &, const Color &, float, bool)
 	FUNC5(canvas_item_add_lcd_texture_rect_region, RID, const Rect2 &, RID, const Rect2 &, const Color &)
 	FUNC10(canvas_item_add_nine_patch, RID, const Rect2 &, const Rect2 &, RID, const Vector2 &, const Vector2 &, RSE::NinePatchAxisMode, RSE::NinePatchAxisMode, bool, const Color &)
 	FUNC5(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID)

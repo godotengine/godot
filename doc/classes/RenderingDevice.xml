@@ -1288,6 +1288,20 @@
 				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
 			</description>
 		</method>
+		<method name="texture_update_partial">
+			<return type="int" enum="Error" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="offset" type="Vector2i" />
+			<param index="3" name="size" type="Vector2i" />
+			<param index="4" name="data" type="PackedByteArray" />
+			<description>
+				Updates part of the texture data with new data, replacing the previous data in place. The updated texture data must have the same format. For 2D textures (which only have one layer), [param layer] must be [code]0[/code]. Returns [constant @GlobalScope.OK] if the update was successful, [constant @GlobalScope.ERR_INVALID_PARAMETER] otherwise.
+				[b]Note:[/b] Updating textures is forbidden during creation of a draw or compute list.
+				[b]Note:[/b] The existing [param texture] can't be updated while a draw list that uses it as part of a framebuffer is being created. Ensure the draw list is finalized (and that the color/depth texture using it is not set to [constant FINAL_ACTION_CONTINUE]) to update this texture.
+				[b]Note:[/b] The existing [param texture] requires the [constant TEXTURE_USAGE_CAN_UPDATE_BIT] to be updatable.
+			</description>
+		</method>
 		<method name="tlas_build" experimental="">
 			<return type="int" enum="Error" />
 			<param index="0" name="tlas" type="RID" />

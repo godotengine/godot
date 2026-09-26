@@ -174,7 +174,7 @@ private:
 	void _build_variant_code(StringBuilder &p_builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template);
 	Vector<String> _build_variant_stage_sources(uint32_t p_variant, CompileData p_data);
 
-	void _add_stage(const char *p_code, StageType p_stage_type);
+	void _add_stage(const String &p_code, StageType p_stage_type);
 
 	String _version_get_sha1(Version *p_version) const;
 	String _get_cache_file_relative_path(Version *p_version, int p_group, const String &p_api_name);
