@@ -3770,7 +3770,29 @@ void TileMapLayerEditor::_notification(int p_what) {
 
 				const TileMapLayer *edited_layer = _get_edited_layer();
 				if (edited_layer && custom_overlay) {
-					custom_overlay->set_texture_filter(edited_layer->get_texture_filter_in_tree());
+					TextureFilter filter = edited_layer->get_texture_filter_in_tree();
+					if (filter == TextureFilter::TEXTURE_FILTER_PARENT_NODE) {
+						Viewport* edited_layer_vp = edited_layer->get_viewport();
+						if (edited_layer_vp) {
+							switch (edited_layer_vp->get_default_canvas_item_texture_filter()) {
+								case Viewport::DefaultCanvasItemTextureFilter::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR:
+									filter = TextureFilter::TEXTURE_FILTER_LINEAR;
+									break;
+								case Viewport::DefaultCanvasItemTextureFilter::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
+									filter = TextureFilter::TEXTURE_FILTER_NEAREST;
+									break;
+								case Viewport::DefaultCanvasItemTextureFilter::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+									filter = TextureFilter::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+									break;
+								case Viewport::DefaultCanvasItemTextureFilter::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+									filter = TextureFilter::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+									break;
+								default:
+									break;
+							}
+						}
+					}
+					custom_overlay->set_texture_filter(filter);
 				}
 
 				CanvasItemEditor::get_singleton()->update_viewport();
