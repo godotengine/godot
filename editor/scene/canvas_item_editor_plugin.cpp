@@ -4028,6 +4028,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	viewport->add_child(frame_time_panel_container);
 
 	ci_manipulator.instantiate();
+	ci_manipulator->set_editor_mode_enabled(true);
 	ci_manipulator->set_scale(EDSCALE);
 	ci_manipulator->set_drag_threshold(8);
 	// Enable pixel snapping even if pixel snap rendering is disabled in the Project Settings.
