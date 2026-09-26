@@ -139,10 +139,9 @@ private:
 			StandardMaterial3D::TextureFilter p_filter_mode, bool p_repeats);
 	Ref<GLTFTextureSampler> _get_sampler_for_texture(Ref<GLTFState> p_state,
 			const GLTFTextureIndex p_texture);
-	Error _parse_json(const String &p_path, Ref<GLTFState> p_state);
 	Error _parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state);
 	void _compute_node_heights(Ref<GLTFState> p_state);
-	Error _parse_buffers(Ref<GLTFState> p_state, const String &p_base_path);
+	Error _parse_buffers(Ref<GLTFState> p_state);
 	Error _parse_buffer_views(Ref<GLTFState> p_state);
 	Error _parse_accessors(Ref<GLTFState> p_state);
 	template <typename T>
@@ -164,7 +163,7 @@ private:
 	Error _serialize_lights(Ref<GLTFState> p_state);
 	Ref<Image> _parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index, String &r_file_extension);
 	void _parse_image_save_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_resource_uri, const String &p_file_extension, int p_index, Ref<Image> p_image);
-	Error _parse_images(Ref<GLTFState> p_state, const String &p_base_path);
+	Error _parse_images(Ref<GLTFState> p_state);
 	Error _parse_textures(Ref<GLTFState> p_state);
 	Error _parse_texture_samplers(Ref<GLTFState> p_state);
 	Error _parse_materials(Ref<GLTFState> p_state);
@@ -206,13 +205,12 @@ private:
 	Error _serialize_nodes(Ref<GLTFState> p_state);
 	Error _serialize_scenes(Ref<GLTFState> p_state);
 	String interpolation_to_string(const GLTFAnimation::Interpolation p_interp);
-	Error _encode_buffer_bins(Ref<GLTFState> p_state, const String &p_path);
-	Error _encode_buffer_glb(Ref<GLTFState> p_state, const String &p_path);
+	Error _encode_buffers(Ref<GLTFState> p_state);
 	PackedByteArray _serialize_glb_buffer(Ref<GLTFState> p_state, Error *r_err);
 	Dictionary _serialize_texture_transform_uv1(const Ref<BaseMaterial3D> &p_material);
 	Dictionary _serialize_texture_transform_uv2(const Ref<BaseMaterial3D> &p_material);
 	Error _serialize_asset_header(Ref<GLTFState> p_state);
-	Error _serialize_file(Ref<GLTFState> p_state, const String p_path);
+	Error _serialize_file(Ref<GLTFState> p_state);
 	Error _serialize_gltf_extensions(Ref<GLTFState> p_state) const;
 
 public:
@@ -241,7 +239,7 @@ public:
 	virtual Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path);
 
 public:
-	Error _parse_gltf_state(Ref<GLTFState> p_state, const String &p_search_path);
+	Error _parse_gltf_state(Ref<GLTFState> p_state);
 	Error _parse_asset_header(Ref<GLTFState> p_state);
 	Error _parse_gltf_extensions(Ref<GLTFState> p_state);
 	void _process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root);
@@ -302,7 +300,7 @@ public:
 	void _convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const String &p_animation_track_name);
 
 	Error _serialize(Ref<GLTFState> p_state);
-	Error _parse(Ref<GLTFState> p_state, const String &p_path, Ref<FileAccess> p_file);
+	Error _parse(Ref<GLTFState> p_state, Ref<FileAccess> p_file);
 };
 
 VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);
