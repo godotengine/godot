@@ -272,7 +272,6 @@
 		</member>
 		<member name="debug_paths_hint" type="bool" setter="set_debug_paths_hint" getter="is_debugging_paths_hint" default="false">
 			If [code]true[/code], curves from [Path2D] and [Path3D] nodes will be visible when running the game from the editor for debugging purposes.
-			[b]Note:[/b] This property is not designed to be changed at run-time. Changing the value of [member debug_paths_hint] while the project is running will not have the desired effect.
 		</member>
 		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
 			The root of the scene currently being edited in the editor. This is usually a direct child of [member root].
