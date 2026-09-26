@@ -353,7 +353,7 @@ void Light3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (get_light_type() == RSE::LIGHT_AREA && p_property.name == "light_projector") {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	} else if (get_light_type() != RSE::LIGHT_DIRECTIONAL && (p_property.name == "shadow_contact_shadows_allow" || p_property.name == "shadow_contact_shadows_opacity" || p_property.name == "shadow_contact_shadows_blur")) {
+	} else if (get_light_type() != RSE::LIGHT_DIRECTIONAL && (p_property.name == "shadow_contact_shadows_allow" || p_property.name == "shadow_contact_shadows_blur")) {
 		// Contact shadows are currently only supported on DirectionalLight3D.
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -437,7 +437,6 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_caster_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_shadow_caster_mask", "get_shadow_caster_mask");
 	ADD_SUBGROUP("Contact Shadows", "shadow_contact_shadows_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_contact_shadows_allow", PROPERTY_HINT_GROUP_ENABLE), "set_allow_contact_shadows", "get_allow_contact_shadows");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact_shadows_opacity", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_OPACITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact_shadows_blur", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_BLUR);
 	ADD_SUBGROUP("", "");
 
@@ -473,7 +472,6 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_INTENSITY);
-	BIND_ENUM_CONSTANT(PARAM_CONTACT_SHADOW_OPACITY);
 	BIND_ENUM_CONSTANT(PARAM_CONTACT_SHADOW_BLUR);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
@@ -529,7 +527,6 @@ Light3D::Light3D(RSE::LightType p_type) {
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
 	set_param(PARAM_SHADOW_FADE_START, 1);
-	set_param(PARAM_CONTACT_SHADOW_OPACITY, 1.0);
 	set_param(PARAM_CONTACT_SHADOW_BLUR, 1.0);
 	// For OmniLight3D and SpotLight3D, specified in Lumens.
 	set_param(PARAM_INTENSITY, 1000.0);
