@@ -122,9 +122,9 @@ protected:
 
 	virtual String _get_accessibility_name() const override;
 
-public:
-	virtual Size2 get_minimum_size() const override;
+	virtual Size2 _get_minimum_size() const override;
 
+public:
 	Size2 get_minimum_size_for_text_and_icon(const String &p_text, Ref<Texture2D> p_icon) const;
 
 	void set_text(const String &p_text);

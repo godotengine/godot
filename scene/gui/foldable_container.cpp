@@ -34,7 +34,7 @@
 #include "scene/resources/text_line.h"
 #include "scene/theme/theme_db.h"
 
-Size2 FoldableContainer::get_minimum_size() const {
+Size2 FoldableContainer::_get_minimum_size() const {
 	_update_title_min_size();
 
 	if (folded) {

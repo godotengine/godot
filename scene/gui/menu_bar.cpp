@@ -872,7 +872,7 @@ bool MenuBar::is_prefer_global_menu() const {
 	return prefer_native;
 }
 
-Size2 MenuBar::get_minimum_size() const {
+Size2 MenuBar::_get_minimum_size() const {
 	if (is_native_menu()) {
 		return Size2();
 	}

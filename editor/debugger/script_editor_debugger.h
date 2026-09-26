@@ -304,6 +304,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	void request_remote_objects(const TypedArray<uint64_t> &p_obj_ids, bool p_update_selection = true);
 	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field = "");
@@ -380,8 +382,6 @@ public:
 
 	bool is_skip_breakpoints() const;
 	bool is_ignore_error_breaks() const;
-
-	virtual Size2 get_minimum_size() const override;
 
 	void add_debugger_tab(Control *p_control);
 	void remove_debugger_tab(Control *p_control);

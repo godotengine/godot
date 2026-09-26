@@ -73,9 +73,9 @@ class VideoStreamPlayer : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_notification);
+	virtual Size2 _get_minimum_size() const override;
 
 public:
-	Size2 get_minimum_size() const override;
 	void set_expand(bool p_expand);
 	bool has_expand() const;
 

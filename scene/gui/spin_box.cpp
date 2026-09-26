@@ -90,7 +90,7 @@ void SpinBoxLineEdit::_notification(int p_what) {
 	}
 }
 
-Size2 SpinBox::get_minimum_size() const {
+Size2 SpinBox::_get_minimum_size() const {
 	Size2 ms = line_edit->get_bound_minimum_size();
 	ms.width += sizing_cache.buttons_block_width;
 	return ms;

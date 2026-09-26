@@ -34,8 +34,8 @@
 #include "core/object/class_db.h"
 #include "core/typedefs.h"
 
-Size2 TextureButton::get_minimum_size() const {
-	Size2 rscale = Control::get_minimum_size();
+Size2 TextureButton::_get_minimum_size() const {
+	Size2 rscale;
 
 	if (!ignore_texture_size) {
 		if (normal.is_null()) {

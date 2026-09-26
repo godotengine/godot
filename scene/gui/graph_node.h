@@ -133,6 +133,8 @@ protected:
 
 	virtual String _get_accessibility_name() const override;
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	virtual String get_accessibility_container_name(const Node *p_node) const override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -197,7 +199,6 @@ public:
 	void set_slots_focus_mode(Control::FocusMode p_focus_mode);
 	Control::FocusMode get_slots_focus_mode() const;
 
-	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_desired_size() const override;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;

@@ -1055,7 +1055,7 @@ Rect2 Label::get_character_bounds(int p_pos) const {
 	return Rect2();
 }
 
-Size2 Label::get_minimum_size() const {
+Size2 Label::_get_minimum_size() const {
 	_ensure_shaped();
 
 	Size2 min_size = minsize;

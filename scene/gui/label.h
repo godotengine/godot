@@ -121,8 +121,9 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 #endif
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
-	virtual Size2 get_minimum_size() const override;
 	virtual Size2 get_desired_size() const override;
 	virtual PackedStringArray get_configuration_warnings() const override;
 

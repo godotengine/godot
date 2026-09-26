@@ -1891,7 +1891,9 @@ Size2 Control::get_custom_maximum_size() const {
 Size2 Control::get_maximum_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
 	Vector2 ms = Vector2(-1, -1);
-	GDVIRTUAL_CALL(_get_maximum_size, ms);
+	if (!GDVIRTUAL_CALL(_get_maximum_size, ms)) {
+		ms = _get_maximum_size();
+	}
 	return ms;
 }
 
@@ -2013,7 +2015,9 @@ void Control::set_block_minimum_size_adjust(bool p_block) {
 Size2 Control::get_minimum_size() const {
 	ERR_READ_THREAD_GUARD_V(Size2());
 	Vector2 ms;
-	GDVIRTUAL_CALL(_get_minimum_size, ms);
+	if (!GDVIRTUAL_CALL(_get_minimum_size, ms)) {
+		ms = _get_minimum_size();
+	}
 	return ms;
 }
 

@@ -32,7 +32,7 @@
 
 #include "scene/theme/theme_db.h"
 
-Size2 MarginContainer::get_minimum_size() const {
+Size2 MarginContainer::_get_minimum_size() const {
 	Size2 max = Container::_get_minimum_size();
 
 	max.width += (theme_cache.margin_left + theme_cache.margin_right);

@@ -151,9 +151,9 @@ class ControlEditorPopupButton : public Button {
 
 protected:
 	void _notification(int p_what);
+	virtual Size2 _get_minimum_size() const override;
 
 public:
-	virtual Size2 get_minimum_size() const override;
 	virtual void toggled(bool p_pressed) override;
 
 	VBoxContainer *get_popup_hbox() const { return popup_vbox; }
