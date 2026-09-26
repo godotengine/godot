@@ -352,6 +352,16 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 	ERR_FAIL_COND_V(!p_options.has("animation/fps"), nullptr);
 
+	// TODO: Fix the bug for cases where only some of the textures can't be found as well!
+	// If no textures are found, we will try to import without the "blender/materials/unpack_enabled" option.
+	// This solution is intended for cases when Geometry Nodes are used with UV nodes in a shader.
+	// But that doesn't help when at least one texture has been found.
+	if (state->get_textures().size() == 0 && p_options.has("blender/materials/unpack_enabled")) {
+		HashMap<StringName, Variant> new_options(p_options);
+		new_options.erase("blender/materials/unpack_enabled");
+		return import_scene(p_path, p_flags, new_options, r_missing_deps, r_err);
+	}
+
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
 	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, false);
