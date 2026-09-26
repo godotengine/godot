@@ -2,9 +2,31 @@ GDTEST_OK
 1
 1
 1.0
+---
 <Node>
 <Node>
 <Node>
 null
+---
 null
 null
+---
+Array[String](["abc", "123"])
+Array[String](["abc", "123"])
+Array[String](["abc", "123"])
+PackedStringArray("abc", "123")
+PackedInt32Array(0, 123)
+PackedVector2Array(0, 0, 0, 0)
+---
+PackedStringArray("abc", "123")
+["abc", "123"]
+Array[String](["abc", "123"])
+PackedStringArray("abc", "123")
+---
+PackedStringArray("1", "a")
+PackedStringArray("1")
+PackedStringArray("(1.0, 1.0)")
+---
+Dictionary[String, String]({})
+Dictionary[String, String]({})
+Dictionary[String, String]({})

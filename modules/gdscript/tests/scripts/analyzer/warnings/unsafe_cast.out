@@ -7,3 +7,5 @@ GDTEST_OK
 ~~ WARNING at line 16: (UNSAFE_CAST) Casting "Variant" to "Node" is unsafe.
 ~~ WARNING at line 20: (UNSAFE_CAST) Casting "Variant" to "int" is unsafe.
 ~~ WARNING at line 21: (UNSAFE_CAST) Casting "Variant" to "Node" is unsafe.
+~~ WARNING at line 26: (UNSAFE_CAST) Casting "Array" to "Array[RID]" is unsafe.
+~~ WARNING at line 36: (UNSAFE_CAST) Casting "Dictionary" to "Dictionary[RID, RID]" is unsafe.
