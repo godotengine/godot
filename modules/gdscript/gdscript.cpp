@@ -1777,7 +1777,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *r_properties) const
 
 							String elem_type;
 							if (arr.is_typed()) {
-								const Ref<Script> script_type = arr.get_typed_script();
+								const Ref<Script> &script_type = arr.get_typed_script();
 								if (script_type.is_valid() && script_type->is_script_valid()) {
 									elem_type = GDScript::debug_get_script_name(script_type);
 								} else if (!arr.get_typed_class_name().is_empty()) {

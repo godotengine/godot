@@ -185,7 +185,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 			if (dict.is_typed()) {
 				result += "Dictionary[";
 
-				Ref<Script> key_script = dict.get_typed_key_script();
+				const Ref<Script> &key_script = dict.get_typed_key_script();
 				if (key_script.is_valid()) {
 					if (key_script->get_global_name() != StringName()) {
 						result += key_script->get_global_name();
@@ -204,7 +204,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 
 				result += ", ";
 
-				Ref<Script> value_script = dict.get_typed_value_script();
+				const Ref<Script> &value_script = dict.get_typed_value_script();
 				if (value_script.is_valid()) {
 					if (value_script->get_global_name() != StringName()) {
 						result += value_script->get_global_name();
@@ -258,7 +258,7 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 			if (array.is_typed()) {
 				result += "Array[";
 
-				Ref<Script> script = array.get_typed_script();
+				const Ref<Script> &script = array.get_typed_script();
 				if (script.is_valid()) {
 					if (script->get_global_name() != StringName()) {
 						result += script->get_global_name();
