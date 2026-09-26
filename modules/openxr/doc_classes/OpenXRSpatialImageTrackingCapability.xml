@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialImageTrackingCapability" inherits="OpenXRExtensionWrapper" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Implementation for handling spatial entity image tracking logic.
+	</brief_description>
+	<description>
+		This class handles the OpenXR image tracking spatial entity extension.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_built_in_tracking_state">
+			<return type="int" enum="OpenXRSpatialEntityExtension.TrackingState" />
+			<description>
+				Returns the state of the built-in tracking system.
+			</description>
+		</method>
+		<method name="image_database_add">
+			<return type="void" />
+			<param index="0" name="image_database" type="RID" />
+			<param index="1" name="name" type="String" />
+			<param index="2" name="image" type="Image" />
+			<param index="3" name="physical_width" type="float" default="0.0" />
+			<param index="4" name="is_static" type="bool" default="false" />
+			<description>
+				Adds an image to an image tracking database. [param name] sets a name for this image, this will be set on our [OpenXRImageTracker] object when this image is detected. [param image] is the image we track, this should be an uncompressed RGB or RGBA image. [param physical_width] provides an indicator of how wide the image is in reality. If [param is_static] is [code]true[/code] the tracking logic assume the image will not be moved after it has been detected.
+			</description>
+		</method>
+		<method name="image_database_create">
+			<return type="RID" />
+			<description>
+				Create an image tracking database. This database will hold a collection of images that the image tracking logic will be able to detect.
+			</description>
+		</method>
+		<method name="image_database_free">
+			<return type="void" />
+			<param index="0" name="image_database" type="RID" />
+			<description>
+				Clean up an image tracking database.
+				[b]Note:[/b] If the image database is still in use this will give an error.
+			</description>
+		</method>
+		<method name="image_database_submit">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="image_database" type="RID" />
+			<param index="1" name="user_callback" type="Callable" default="Callable()" />
+			<param index="2" name="fail_callback" type="Callable" default="Callable()" />
+			<description>
+				Uploads the image tracking database to OpenXR. This must be called before the image database is used to create a spatial context. Once called the image database can no longer be modified.
+				[param user_callback] is an optional method that will be called if submission has been successful. It will have the image database RID as a parameter.
+				[param fail_callback] is called if submitting our image database fails, The parameters are respectively the image database RID, the failure code (integer), and a boolean that indicates if the failure was in retrieving the image tracking database handle.
+				[b]Note:[/b] If we fail to start submitting our image database, no [OpenXRFutureResult] object is returned and neither callbacks are called.
+			</description>
+		</method>
+		<method name="is_supported">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if image tracking is supported.
+			</description>
+		</method>
+		<method name="start_built_in_tracking">
+			<return type="bool" />
+			<param index="0" name="image_database" type="RID" />
+			<description>
+				Starts our built in image tracking using the supplied image tracking database.
+			</description>
+		</method>
+		<method name="start_entity_discovery">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="component_data" type="OpenXRSpatialComponentData[]" />
+			<param index="2" name="next_snapshot_create" type="OpenXRStructureBase" default="null" />
+			<param index="3" name="next_snapshot_query" type="OpenXRStructureBase" default="null" />
+			<param index="4" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Performs discovery of our images. This is called automatically if our built in image tracking is enabled.
+			</description>
+		</method>
+		<method name="stop_built_in_tracking">
+			<return type="void" />
+			<param index="0" name="clear_trackers" type="bool" default="true" />
+			<description>
+				Stops out built in image tracking.
+			</description>
+		</method>
+	</methods>
+</class>

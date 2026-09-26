@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRImageTracker" inherits="OpenXRSpatialEntityTracker" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Spatial entity tracker for our spatial entity image tracking extension.
+	</brief_description>
+	<description>
+		Spatial entity tracker for our spatial entity image tracking extension. These trackers identify entities in our real space by recognising an image.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_image_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the image associated with this tracker, as registered when calling [method OpenXRSpatialImageTrackingCapability.image_database_add].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bounds_size" type="Vector2" setter="set_bounds_size" getter="get_bounds_size" default="Vector2(0, 0)">
+			The bounds size for this image.
+		</member>
+	</members>
+</class>
