@@ -284,6 +284,12 @@ public:
 		RID light;
 		int pass = 0;
 		PagedArray<RenderGeometryInstance *> instances;
+
+		// Positional shadow static cache, only used for lights where `RendererLightStorage::light_get_shadow_caching()`
+		// returns `true`. `instances` then only holds the dynamic shadow casters.
+		PagedArray<RenderGeometryInstance *> static_instances;
+		bool use_static_cache = false; // Copy the cached static depth into the atlas slot, then draw `instances` on top of it.
+		bool update_static_cache = false; // Draw `static_instances` into the static cache first.
 	};
 
 	struct RenderSDFGIData {

@@ -707,6 +707,12 @@ public:
 		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
 
+		// Positional shadow static cache (see `RenderingServer::instance_geometry_set_shadow_mobility()`).
+		// Bumped whenever the light itself or a static shadow caster in its range changes.
+		uint64_t static_shadow_version = 1;
+		// Last `static_shadow_version` scheduled for rendering.
+		uint64_t static_shadow_version_scheduled = 0;
+
 	private:
 		// Instead of a single dirty flag, we maintain a count
 		// so that we can detect lights that are being made dirty
@@ -720,6 +726,19 @@ public:
 	public:
 		bool is_shadow_dirty() const { return shadow_dirty_count != 0; }
 		void make_shadow_dirty() { shadow_dirty_count = light_intersects_multiple_cameras ? 1 : 2; }
+		// The light itself changed, the static shadow cache is invalid too.
+		void make_static_shadow_dirty() {
+			static_shadow_version++;
+			make_shadow_dirty();
+		}
+		// A shadow caster changed. Only static casters invalidate the static shadow cache.
+		void make_shadow_dirty_for_caster(const Instance *p_caster) {
+			if (p_caster->shadow_mobility_static) {
+				static_shadow_version++;
+			}
+			make_shadow_dirty();
+		}
+		bool is_static_shadow_dirty() const { return static_shadow_version != static_shadow_version_scheduled; }
 		void detect_light_intersects_multiple_cameras(uint32_t p_frame_id) {
 			// We need to detect the case where shadow updates are occurring
 			// more than once per frame. In this case, we need to turn off
@@ -1085,6 +1104,8 @@ public:
 	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
 	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
+	bool _light_instance_schedule_static_shadow_cache(InstanceLightData *p_light, RID p_shadow_atlas);
+	static void _light_instance_extract_static_shadow_casters(PagedArray<Instance *> &r_casters, RendererSceneRender::RenderShadowData &r_shadow_data, bool p_update_static_cache, uint32_t p_caster_mask);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 	RID _render_get_compositor(RID p_camera, RID p_scenario);

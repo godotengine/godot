@@ -215,6 +215,12 @@ public:
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = true) = 0;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
 	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) = 0;
+	// Positional shadow static cache (only used when `light_get_shadow_caching()` returns `true`).
+	// Called before any light is updated in the atlas on a frame where a light using the cache is visible.
+	virtual void shadow_atlas_enable_static_cache(RID p_atlas) {}
+	// Returns `true` if the static cache of the light must be redrawn (never drawn, new atlas slot, or `p_static_version`
+	// changed). The caller must then draw it this frame, as `p_static_version` is recorded as the cached version.
+	virtual bool shadow_atlas_update_light_static_cache(RID p_atlas, RID p_light_instance, uint64_t p_static_version) { return true; }
 
 	virtual void shadow_atlas_update(RID p_atlas) = 0;
 
