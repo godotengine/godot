@@ -75,6 +75,10 @@ class AccessibilityServerAccessKit : public AccessibilityServer {
 		accesskit_android_adapter *adapter = nullptr;
 		jobject host = nullptr;
 #endif
+#ifdef APPLE_EMBEDDED_ENABLED
+		accesskit_ios_subclassing_adapter *adapter = nullptr;
+#endif
+
 		RID root_id;
 		bool initial_update_completed = false;
 		HashSet<RID> update;
