@@ -170,6 +170,10 @@ Ref<Shape2D> CollisionShape2D::get_shape() const {
 	return shape;
 }
 
+uint32_t CollisionShape2D::get_owner_id() const {
+	return owner_id;
+}
+
 bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	if (shape.is_null()) {
 		return false;
@@ -303,6 +307,7 @@ void CollisionShape2D::_validate_property(PropertyInfo &p_property) const {
 void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape2D::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape2D::get_shape);
+	ClassDB::bind_method(D_METHOD("get_owner_id"), &CollisionShape2D::get_owner_id);
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &CollisionShape2D::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape2D::is_disabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision", "enabled"), &CollisionShape2D::set_one_way_collision);

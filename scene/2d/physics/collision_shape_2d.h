@@ -75,6 +75,8 @@ public:
 	void set_shape(const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> get_shape() const;
 
+	uint32_t get_owner_id() const;
+
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
 

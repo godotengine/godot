@@ -12,6 +12,14 @@
 		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/2728</link>
 		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
 	</tutorials>
+	<methods>
+		<method name="get_owner_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the shape owner ID used to register the shape within the parent [CollisionObject2D].  This can be used in with a shape index to determine which [CollisionShape2D] owns the shape that entered an [Area2D] or collided with a [PhysicsBody2D].
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="debug_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0, 0, 0)">
 			The collision shape color that is displayed in the editor, or in the running project if [b]Debug &gt; Visible Collision Shapes[/b] is checked at the top of the editor.

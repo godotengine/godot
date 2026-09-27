@@ -167,6 +167,7 @@ void CollisionShape3D::_bind_methods() {
 #endif
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape3D::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape3D::get_shape);
+	ClassDB::bind_method(D_METHOD("get_owner_id"), &CollisionShape3D::get_owner_id);
 	ClassDB::bind_method(D_METHOD("set_disabled", "enable"), &CollisionShape3D::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &CollisionShape3D::is_disabled);
 
@@ -236,6 +237,10 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 
 Ref<Shape3D> CollisionShape3D::get_shape() const {
 	return shape;
+}
+
+uint32_t CollisionShape3D::get_owner_id() const {
+	return owner_id;
 }
 
 void CollisionShape3D::set_disabled(bool p_disabled) {
