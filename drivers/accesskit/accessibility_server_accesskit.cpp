@@ -333,7 +333,8 @@ accesskit_tree_update *AccessibilityServerAccessKit::_accessibility_initial_tree
 
 	accesskit_tree_update *tree_update = accesskit_tree_update_with_capacity_and_focus(1, win_id);
 
-	accesskit_tree_update_set_tree(tree_update, accesskit_tree_new(win_id));
+	accesskit_tree_info *tree_info = accesskit_tree_info_new(win_id);
+	accesskit_tree_update_set_tree_info(tree_update, tree_info);
 	accesskit_tree_update_push_node(tree_update, win_id, win_node);
 
 	print_verbose(vformat("Accessibility: window %d adapter activated.", window_id));
