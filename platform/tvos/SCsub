@@ -14,8 +14,6 @@ swift_file_names = list(map(lambda f: f.name, swift_files))
 mm_files = Glob("*.mm")
 mm_file_names = list(map(lambda f: f.name, mm_files))
 
-tvos_lib = swift_file_names + mm_file_names
-
 env_tvos = env.Clone()
 
 # Configure Swift builder
@@ -24,7 +22,8 @@ apple_platform = env["APPLE_PLATFORM"]
 sdk_path = env["APPLE_SDK_PATH"]
 current_path = Dir(".").abspath
 bridging_header_filename = "bridging_header_tvos.h"
-setup_swift_builder(
+# The Swift sources are compiled together into a single object that's linked into the library.
+swift_module = setup_swift_builder(
     env_tvos,
     apple_platform,
     sdk_path,
@@ -36,12 +35,15 @@ setup_swift_builder(
 # Enable module support
 env_tvos.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
-tvos_lib = env_tvos.add_library("tvos", tvos_lib)
+tvos_lib = env_tvos.add_library("tvos", mm_file_names + list(swift_module))
 if "LIBS_EXTERNAL" in env_tvos:
     env_tvos.Depends(tvos_lib, env_tvos["LIBS_EXTERNAL"])
 
-combine_command = env_tvos.CommandNoCache(
-    "#bin/libgodot" + env_tvos["LIBSUFFIX"], [tvos_lib] + env_tvos["LIBS"], env.Run(combine_libs_apple_embedded)
+# Build the Swift->ObjC interop header before any ObjC++ source that #imports it.
+env_tvos.Depends(tvos_lib, env_tvos["SWIFT_OBJC_HEADER_TARGET"])
+
+combine_command = env_tvos.Command(
+    "#bin/libgodot" + env_tvos["LIBSUFFIX"], [tvos_lib] + env_tvos["LIBS"], combine_libs_apple_embedded
 )
 
 if env["generate_bundle"]:

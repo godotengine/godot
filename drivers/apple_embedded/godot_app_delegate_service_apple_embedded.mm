@@ -111,7 +111,9 @@ static __weak GDTViewController *_viewController = nil;
 		category = AVAudioSessionCategoryMultiRoute;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAY_AND_RECORD) {
 		category = AVAudioSessionCategoryPlayAndRecord;
+#ifndef TVOS_ENABLED
 		options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
+#endif
 		options |= AVAudioSessionCategoryOptionAllowBluetoothA2DP;
 		options |= AVAudioSessionCategoryOptionAllowAirPlay;
 	} else if (sessionCategorySetting == SESSION_CATEGORY_PLAYBACK) {

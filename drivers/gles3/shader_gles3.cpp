@@ -552,7 +552,7 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 #ifdef WEB_ENABLED // not supported in webgl
 	return false;
 #else
-#if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
+#if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED) && !defined(TVOS_ENABLED)
 	if (RasterizerUtilGLES3::is_gles_over_gl() && (glProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return false;
 	}
@@ -639,7 +639,7 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 	return;
 #else
 	ERR_FAIL_COND(!shader_cache_dir_valid);
-#if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
+#if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED) && !defined(TVOS_ENABLED)
 	if (RasterizerUtilGLES3::is_gles_over_gl() && (glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return;
 	}

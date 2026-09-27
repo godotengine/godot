@@ -275,6 +275,9 @@ public:
 	// Returns height of the currently shown virtual keyboard (0 if keyboard is hidden).
 	virtual int virtual_keyboard_get_height() const;
 
+	// Returns true if the virtual keyboard is currently shown.
+	virtual bool is_keyboard_active() const;
+
 	virtual bool has_hardware_keyboard() const;
 
 	virtual int keyboard_get_layout_count() const;

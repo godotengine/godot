@@ -503,7 +503,16 @@ String EditorExportPlatformTVOS::_process_config_file_line(const Ref<EditorExpor
 	} else if (p_line.contains("$moltenvk_buildgrp")) {
 		strnew += p_line.replace("$moltenvk_buildgrp", "") + "\n";
 
-		// Launch Storyboard
+		// Launch Storyboard: retarget the shared iOS storyboard at Apple's tvOS shape
+		// (`com.apple.InterfaceBuilder.AppleTV.Storyboard`, `targetRuntime="AppleTV"`,
+		// no <device> or <deployment> elements).
+	} else if (p_line.contains("targetRuntime=\"iOS.CocoaTouch\"")) {
+		String line = p_line.replace("com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB", "com.apple.InterfaceBuilder.AppleTV.Storyboard");
+		strnew += line.replace("targetRuntime=\"iOS.CocoaTouch\"", "targetRuntime=\"AppleTV\"") + "\n";
+	} else if (p_line.contains("<deployment identifier=\"iOS\"/>")) {
+		strnew += "\n";
+	} else if (p_line.contains("<device id=\"retina6_1\"")) {
+		strnew += "\n";
 	} else if (p_line.contains("$plist_launch_screen_name")) {
 		String value = "<key>UILaunchStoryboardName</key>\n<string>Launch Screen</string>";
 		strnew += p_line.replace("$plist_launch_screen_name", value) + "\n";
@@ -536,7 +545,9 @@ String EditorExportPlatformTVOS::_process_config_file_line(const Ref<EditorExpor
 			}
 		}
 
-		strnew += p_line.replace("$launch_screen_image_mode", value) + "\n";
+		strnew += p_line.replace("$launch_screen_image_mode", value).replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
+	} else if (p_line.contains("$launch_screen_image_file_name")) {
+		strnew += p_line.replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
 	} else if (p_line.contains("$launch_screen_background_color")) {
 		bool use_custom = p_preset->get("storyboard/use_custom_bg_color");
 		Color color = use_custom ? p_preset->get("storyboard/custom_bg_color") : get_project_setting(p_preset, "application/boot_splash/bg_color");
@@ -579,6 +590,12 @@ String EditorExportPlatformTVOS::_process_config_file_line(const Ref<EditorExpor
 		// Application Scene Manifest - Immersive Configuration
 	} else if (p_line.contains("$application_scene_manifest_immersive_configuration")) {
 		strnew += p_line.replace("$application_scene_manifest_immersive_configuration", "") + "\n";
+
+		// visionOS-only usage descriptions have no tvOS equivalent.
+	} else if (p_line.contains("$hand_tracking_usage_description")) {
+		strnew += p_line.replace("$hand_tracking_usage_description", "") + "\n";
+	} else if (p_line.contains("$accessory_tracking_usage_description")) {
+		strnew += p_line.replace("$accessory_tracking_usage_description", "") + "\n";
 
 		// Apple Embedded common
 	} else {

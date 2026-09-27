@@ -135,17 +135,28 @@
 #define SDL_FILESYSTEM_DUMMY 1
 #define SDL_FSOPS_DUMMY 1
 
-// iOS/visionOS defines
-#elif defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
+// iOS/tvOS/visionOS defines
+#elif defined(IOS_ENABLED) || defined(TVOS_ENABLED) || defined(VISIONOS_ENABLED)
 
 #ifdef IOS_ENABLED
 #define SDL_PLATFORM_PRIVATE_NAME "iOS"
+#elif defined(TVOS_ENABLED)
+#define SDL_PLATFORM_PRIVATE_NAME "tvOS"
 #else
 #define SDL_PLATFORM_PRIVATE_NAME "visionOS"
 #endif
 
 #define HAVE_STDIO_H 1
 #define HAVE_LIBC 1
+
+#ifdef TVOS_ENABLED
+// tvOS prohibits sbrk, so dlmalloc must use mmap only (same effect as its DARWIN branch).
+#define HAVE_MORECORE 0
+#define HAVE_MMAP 1
+#ifndef MALLOC_ALIGNMENT
+#define MALLOC_ALIGNMENT ((size_t)16U)
+#endif
+#endif
 
 #define SDL_JOYSTICK_MFI 1
 #define SDL_HAPTIC_DUMMY 1

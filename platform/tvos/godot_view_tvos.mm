@@ -30,16 +30,56 @@
 
 #import "godot_view_tvos.h"
 
+#import "display_layer_tvos.h"
+
 #include "core/error/error_macros.h"
 
-#define Key GC_Key_
-#import <GameController/GameController.h>
-#undef Key
+@interface GDTViewTVOS ()
+
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wobjc-property-synthesis")
+@property(strong, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
+GODOT_CLANG_WARNING_POP
+
+@end
 
 @implementation GDTViewTVOS
 
 - (void)godot_commonInit {
 	[super godot_commonInit];
+
+	// NOTE: Game-controller events (Siri Remote, MFi controllers) are delivered
+	// through the GCEventViewController base class; unlike iOS/visionOS, tvOS has
+	// no GCEventInteraction API.
+}
+
+- (CALayer<GDTDisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName {
+	if (self.renderingLayer) {
+		return self.renderingLayer;
+	}
+
+	CALayer<GDTDisplayLayer> *layer;
+
+	if ([driverName isEqualToString:@"vulkan"] || [driverName isEqualToString:@"metal"]) {
+		layer = [GDTMetalLayer layer];
+#if defined(GLES3_ENABLED)
+	} else if ([driverName isEqualToString:@"opengl3"]) {
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in tvOS 12.0.
+		layer = [GDTOpenGLLayer layer];
+		GODOT_CLANG_WARNING_POP
+#endif
+	} else {
+		return nil;
+	}
+
+	layer.frame = self.bounds;
+	layer.contentsScale = self.contentScaleFactor;
+
+	[self.layer addSublayer:layer];
+	self.renderingLayer = layer;
+
+	[layer initializeDisplayLayer];
+
+	return self.renderingLayer;
 }
 
 @end

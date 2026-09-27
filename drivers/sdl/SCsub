@@ -200,7 +200,7 @@ if env["builtin_sdl"]:
             "timer/windows/SDL_systimer.c",
         ]
 
-    elif env["platform"] in ["ios", "visionos"]:
+    elif env["platform"] in ["ios", "tvos", "visionos"]:
         thirdparty_sources += [
             "core/unix/SDL_appid.c",
             "core/unix/SDL_poll.c",
@@ -227,6 +227,9 @@ if env["builtin_sdl"]:
 driver_obj = []
 
 env_sdl.add_source_files(driver_obj, "*.cpp")
+if env["platform"] in ["ios", "tvos", "visionos"]:
+    # Apple sys filesystem driver is absent from the SDL snapshot; provide SDL_GetPrefPath.
+    env_sdl.add_source_files(driver_obj, ["SDL_filesystem_apple_embedded.mm"])
 env.drivers_sources += driver_obj
 
 # Needed to force rebuilding the driver files when the thirdparty library is updated.

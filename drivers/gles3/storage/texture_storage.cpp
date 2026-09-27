@@ -3268,7 +3268,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 		return;
 	}
 
-#ifndef IOS_ENABLED
+#if !defined(IOS_ENABLED) && !defined(TVOS_ENABLED)
 	Config *config = Config::get_singleton();
 #endif
 
@@ -3332,7 +3332,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 
 			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->color, rt->size.x * rt->size.y * rt->view_count * rt->color_format_size, "Render target color texture");
 		}
-#ifndef IOS_ENABLED
+#if !defined(IOS_ENABLED) && !defined(TVOS_ENABLED)
 		if (use_array && !config->multiview_supported) {
 			// Attach the first layer now so the FBO is complete.
 			// Layer per eye is attached in RasterizerSceneGLES3::render_scene().
@@ -3373,7 +3373,7 @@ void TextureStorage::_update_render_target_color(RenderTarget *rt) {
 			GLES3::Utilities::get_singleton()->texture_allocated_data(rt->depth, rt->size.x * rt->size.y * rt->view_count * 4, "Render target depth texture");
 		}
 
-#ifndef IOS_ENABLED
+#if !defined(IOS_ENABLED) && !defined(TVOS_ENABLED)
 		if (use_array && !config->multiview_supported) {
 			glFramebufferTextureLayer(GL_FRAMEBUFFER, rt->depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, rt->depth, 0, 0);
 		} else if (use_array) {
@@ -3452,7 +3452,7 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-#ifndef IOS_ENABLED
+#if !defined(IOS_ENABLED) && !defined(TVOS_ENABLED)
 	if (view_count > 1 && !GLES3::Config::get_singleton()->multiview_supported) {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, velocity_texture_id, 0, 0);
 	} else if (view_count > 1) {
@@ -3471,7 +3471,7 @@ void TextureStorage::_update_render_target_velocity(RenderTarget *rt) {
 	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-#ifndef IOS_ENABLED
+#if !defined(IOS_ENABLED) && !defined(TVOS_ENABLED)
 	if (view_count > 1 && !GLES3::Config::get_singleton()->multiview_supported) {
 		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, velocity_depth_texture_id, 0, 0);
 	} else if (view_count > 1) {

@@ -330,6 +330,12 @@ def setup_swift_builder(
     elif apple_platform == "visionossimulator":
         target_suffix = "xros26.0-simulator"
 
+    elif apple_platform == "tvos":
+        target_suffix = "tvos26.0"
+
+    elif apple_platform == "tvosimulator":
+        target_suffix = "tvos26.0-simulator"
+
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
 

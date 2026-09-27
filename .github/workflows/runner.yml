@@ -29,6 +29,12 @@ jobs:
     if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
     uses: ./.github/workflows/ios_builds.yml
 
+  tvos-build:
+    name: 📺 tvOS
+    needs: static-checks
+    if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
+    uses: ./.github/workflows/tvos_builds.yml
+
   linux-build:
     name: 🐧 Linux
     needs: static-checks

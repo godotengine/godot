@@ -26,10 +26,10 @@ if env["xaudio2"]:
     SConscript("xaudio2/SCsub")
 
 # Shared Apple platform drivers
-if env["platform"] in ["macos", "ios", "visionos"]:
+if env["platform"] in ["macos", "ios", "tvos", "visionos"]:
     SConscript("apple/SCsub")
     SConscript("coreaudio/SCsub")
-if env["platform"] in ["ios", "visionos"]:
+if env["platform"] in ["ios", "tvos", "visionos"]:
     SConscript("apple_embedded/SCsub")
 
 # Accessibility
@@ -62,7 +62,7 @@ if env["opengl3"]:
     SConscript("egl/SCsub")
 
 # Input drivers
-if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows", "ios", "visionos"]:
+if env["sdl"] and env["platform"] in ["linuxbsd", "macos", "windows", "ios", "tvos", "visionos"]:
     # TODO: Evaluate support for Android and Web.
     SConscript("sdl/SCsub")
 

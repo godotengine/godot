@@ -324,7 +324,7 @@ void MetalDeviceProperties::init_limits(MTL::Device *p_device) {
 		limits.maxThreadGroupMemoryAllocation = 16352;
 	}
 
-#if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
+#if (TARGET_OS_IOS || TARGET_OS_TV) && !TARGET_OS_MACCATALYST
 	limits.minUniformBufferOffsetAlignment = 64;
 #endif
 

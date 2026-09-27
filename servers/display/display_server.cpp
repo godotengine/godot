@@ -1135,6 +1135,10 @@ int DisplayServer::virtual_keyboard_get_height() const {
 	return 0;
 }
 
+bool DisplayServer::is_keyboard_active() const {
+	return false;
+}
+
 bool DisplayServer::has_hardware_keyboard() const {
 	return true;
 }

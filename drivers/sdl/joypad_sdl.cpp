@@ -34,6 +34,9 @@
 
 #include "core/input/default_controller_mappings.h"
 #include "core/variant/dictionary.h"
+#ifdef TVOS_ENABLED
+#include "servers/display/display_server.h"
+#endif
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_error.h>
@@ -122,6 +125,14 @@ void JoypadSDL::process_events() {
 	}
 
 	SDL_Event sdl_event;
+#ifdef TVOS_ENABLED
+	// While the native keyboard is up, the remote drives it, but its presses
+	// still arrive here as joystick input. Drain them so the game behind the
+	// keyboard doesn't move too; attach/detach still process below. The
+	// display server doesn't exist yet when initialize() first pumps this.
+	DisplayServer *ds = DisplayServer::get_singleton();
+	const bool ignore_joy_input = ds != nullptr && ds->is_keyboard_active();
+#endif
 	while (SDL_PollEvent(&sdl_event)) {
 		// A new joypad was attached
 		if (sdl_event.type == SDL_EVENT_JOYSTICK_ADDED) {
@@ -212,6 +223,16 @@ void JoypadSDL::process_events() {
 			}
 			// An event for an attached joypad
 		} else if (sdl_event.type >= SDL_EVENT_JOYSTICK_AXIS_MOTION && sdl_event.type < SDL_EVENT_FINGER_DOWN && sdl_instance_id_to_joypad_id.has(sdl_event.jdevice.which)) {
+#ifdef TVOS_ENABLED
+			// Releases always pass: the press that opened the keyboard was fed
+			// before it went up, and swallowing its release would stick the
+			// button down in Godot until pressed again.
+			if (ignore_joy_input && sdl_event.type != SDL_EVENT_JOYSTICK_REMOVED &&
+					sdl_event.type != SDL_EVENT_JOYSTICK_BUTTON_UP &&
+					sdl_event.type != SDL_EVENT_GAMEPAD_BUTTON_UP) {
+				continue;
+			}
+#endif
 			int joy_id = sdl_instance_id_to_joypad_id.get(sdl_event.jdevice.which);
 
 			switch (sdl_event.type) {

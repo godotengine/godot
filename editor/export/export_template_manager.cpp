@@ -506,6 +506,14 @@ void ExportTemplateManager::_initialize_template_data() {
 
 	{
 		TemplateInfo info;
+		info.name = "tvOS";
+		info.description = TTRC("Build for Apple's tvOS.");
+		info.file_list = { "tvos.zip" };
+		template_data[TemplateID::TVOS] = info;
+	}
+
+	{
+		TemplateInfo info;
 		info.name = TTR("ICU Data");
 		info.description = TTRC("Line breaking dictionaries for TextServer, used by certain languages.");
 		info.file_list = { "icudt_godot.dat" };
@@ -562,6 +570,14 @@ void ExportTemplateManager::_initialize_template_data() {
 #endif
 		info.group = TTR("Mobile", "Platform Group");
 		platform_map[PlatformID::VISIONOS] = info;
+	}
+	{
+		PlatformInfo info;
+		info.name = "tvOS";
+		info.icon = _get_platform_icon("tvOS");
+		info.templates = { TemplateID::TVOS };
+		info.group = TTR("Mobile", "Platform Group");
+		platform_map[PlatformID::TVOS] = info;
 	}
 	{
 		PlatformInfo info;
@@ -1354,6 +1370,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			platform_map[PlatformID::ANDROID].group = TTR("Mobile", "Platform Group");
 			platform_map[PlatformID::IOS].group = TTR("Mobile", "Platform Group");
 			platform_map[PlatformID::VISIONOS].group = TTR("Mobile", "Platform Group");
+			platform_map[PlatformID::TVOS].group = TTR("Mobile", "Platform Group");
 			platform_map[PlatformID::COMMON].name = TTR("Common");
 			template_data[TemplateID::WEB_EXTENSIONS].name = TTR("Web with Extensions");
 			template_data[TemplateID::WEB_NOTHREADS].name = TTR("Web Single-Threaded");

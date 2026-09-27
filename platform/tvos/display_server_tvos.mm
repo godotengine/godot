@@ -59,6 +59,17 @@ String DisplayServerTVOS::get_name() const {
 	return "tvOS";
 }
 
+bool DisplayServerTVOS::has_feature(DisplayServerEnums::Feature p_feature) const {
+	switch (p_feature) {
+		case DisplayServerEnums::FEATURE_CLIPBOARD:
+		case DisplayServerEnums::FEATURE_ORIENTATION:
+		case DisplayServerEnums::FEATURE_TOUCHSCREEN:
+			return false;
+		default:
+			return DisplayServerAppleEmbedded::has_feature(p_feature);
+	}
+}
+
 int DisplayServerTVOS::screen_get_dpi(int p_screen) const {
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
@@ -93,11 +104,11 @@ float DisplayServerTVOS::screen_get_scale(int p_screen) const {
 	return screen.scale;
 }
 
-// TODO: tvOS virtual keyboard support.
-// UITextView.editable is unavailable on tvOS and UIKeyInput on custom views
-// doesn't trigger the keyboard (rdar://27389949). UITextField works but needs
-// further integration with the Godot input system. For now, keyboard input
-// is not supported on tvOS.
+// tvOS virtual keyboard: UITextView.editable is unavailable on tvOS and
+// UIKeyInput on custom views doesn't trigger the keyboard (rdar://27389949),
+// so the shared show/hide path drives a hidden UITextField instead (see
+// GDTKeyboardInputField). The field is Menu-dismissable; its delegate tells
+// Godot, so a LineEdit never sits editing with no keyboard up.
 
 // MARK: HDR
 

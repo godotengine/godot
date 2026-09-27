@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  display_server_tvos.h                                                 */
+/*  display_layer_tvos.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,36 +30,19 @@
 
 #pragma once
 
-#include "drivers/apple_embedded/display_server_apple_embedded.h"
+#include "drivers/apple_embedded/display_layer_apple_embedded.h"
 
-@class UIScreen;
+#if defined(GLES3_ENABLED)
+#import <OpenGLES/EAGLDrawable.h>
+#endif
+#import <QuartzCore/QuartzCore.h>
 
-class DisplayServerTVOS final : public DisplayServerAppleEmbedded {
-	GDSOFTCLASS(DisplayServerTVOS, DisplayServerAppleEmbedded);
+@interface GDTMetalLayer : CAMetalLayer <GDTDisplayLayer>
+@end
 
-	_THREAD_SAFE_CLASS_
+#if defined(GLES3_ENABLED)
+API_DEPRECATED("OpenGLES is deprecated", ios(2.0, 12.0), tvos(9.0, 12.0))
+@interface GDTOpenGLLayer : CAEAGLLayer <GDTDisplayLayer>
 
-	DisplayServerTVOS(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
-	~DisplayServerTVOS();
-
-	UIScreen *_get_ui_screen(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const;
-
-public:
-	static DisplayServerTVOS *get_singleton();
-
-	static void register_tvos_driver();
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
-
-	virtual String get_name() const override;
-
-	virtual bool has_feature(DisplayServerEnums::Feature p_feature) const override;
-
-	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-
-protected:
-	virtual bool _screen_hdr_is_supported() const override;
-	virtual float _screen_potential_edr_headroom() const override;
-	virtual float _screen_current_edr_headroom() const override;
-};
+@end
+#endif

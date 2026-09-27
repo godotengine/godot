@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  display_server_tvos.h                                                 */
+/*  godot_keyboard_input_field.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,36 +30,19 @@
 
 #pragma once
 
-#include "drivers/apple_embedded/display_server_apple_embedded.h"
+#import <UIKit/UIKit.h>
 
-@class UIScreen;
+// tvOS counterpart of GDTKeyboardInputView. tvOS does not summon its keyboard
+// for a UITextView - a plain one refuses first responder outright - while a
+// UITextField brings it up, hidden or not. Same interface, same key synthesis.
+@interface GDTKeyboardInputField : UITextField
 
-class DisplayServerTVOS final : public DisplayServerAppleEmbedded {
-	GDSOFTCLASS(DisplayServerTVOS, DisplayServerAppleEmbedded);
+- (BOOL)becomeFirstResponderWithString:(NSString *)existingString cursorStart:(NSInteger)start cursorEnd:(NSInteger)end;
+- (void)godot_hideKeyboard;
 
-	_THREAD_SAFE_CLASS_
+// Mirrors the LineEdit's max length (<= 0 is unlimited). Without it the
+// field can outgrow the LineEdit, which rejects the overflow, and the two
+// sides diverge - every later keystroke diffs against the wrong text.
+@property(nonatomic, assign) NSInteger godotMaxLength;
 
-	DisplayServerTVOS(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
-	~DisplayServerTVOS();
-
-	UIScreen *_get_ui_screen(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const;
-
-public:
-	static DisplayServerTVOS *get_singleton();
-
-	static void register_tvos_driver();
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
-
-	virtual String get_name() const override;
-
-	virtual bool has_feature(DisplayServerEnums::Feature p_feature) const override;
-
-	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-
-protected:
-	virtual bool _screen_hdr_is_supported() const override;
-	virtual float _screen_potential_edr_headroom() const override;
-	virtual float _screen_current_edr_headroom() const override;
-};
+@end

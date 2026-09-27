@@ -106,10 +106,10 @@ Config::Config() {
 #else
 		etc2_supported = true;
 #endif
-#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED) || defined(TVOS_ENABLED)
 		// Some Android devices report support for S3TC but we don't expect that and don't export the textures.
 		// This could be fixed but so few devices support it that it doesn't seem useful (and makes bigger APKs).
-		// For good measure we do the same hack for iOS, just in case.
+		// For good measure we do the same hack for iOS and tvOS, just in case.
 		s3tc_supported = false;
 #else
 		s3tc_supported = extensions.has("GL_EXT_texture_compression_dxt1") || extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
@@ -146,7 +146,7 @@ Config::Config() {
 #else
 	msaa_supported = true;
 #endif
-#ifndef IOS_ENABLED
+#if !defined(IOS_ENABLED) && !defined(TVOS_ENABLED)
 #ifdef WEB_ENABLED
 	msaa_multiview_supported = extensions.has("OCULUS_multiview");
 	rt_msaa_multiview_supported = msaa_multiview_supported;

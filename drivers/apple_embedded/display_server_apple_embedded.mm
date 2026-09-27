@@ -36,7 +36,11 @@
 #include "core/os/os.h"
 #import "drivers/apple_embedded/apple_embedded.h"
 #import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
+#ifdef TVOS_ENABLED
+#import "drivers/apple_embedded/godot_keyboard_input_field.h"
+#else
 #import "drivers/apple_embedded/godot_keyboard_input_view.h"
+#endif
 #import "drivers/apple_embedded/godot_view_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_controller.h"
 #import "drivers/apple_embedded/key_mapping_apple_embedded.h"
@@ -65,6 +69,15 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 	native_menu = memnew(NativeMenu);
 
 	bool has_made_render_compositor_current = false;
+
+#if !defined(GLES3_ENABLED) && defined(METAL_ENABLED)
+	if (rendering_driver == "opengl3") {
+		WARN_PRINT("OpenGL 3 is not supported on this platform, switching to Metal.");
+		rendering_driver = "metal";
+		OS::get_singleton()->set_current_rendering_method("mobile", OS::RENDERING_SOURCE_FALLBACK);
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver, OS::RENDERING_SOURCE_FALLBACK);
+	}
+#endif
 
 #if defined(RD_ENABLED)
 	rendering_context = nullptr;
@@ -715,7 +728,11 @@ bool DisplayServerAppleEmbedded::can_any_window_draw() const {
 }
 
 bool DisplayServerAppleEmbedded::is_touchscreen_available() const {
+#ifdef TVOS_ENABLED
+	return false;
+#else
 	return true;
+#endif
 }
 
 _FORCE_INLINE_ int _convert_utf32_offset_to_utf16(const String &p_existing_text, int p_pos) {
@@ -764,6 +781,9 @@ void DisplayServerAppleEmbedded::virtual_keyboard_show(const String &p_existing_
 		} break;
 	}
 
+#ifdef TVOS_ENABLED
+	GDTAppDelegateService.viewController.keyboardView.godotMaxLength = p_max_length;
+#endif
 	[GDTAppDelegateService.viewController.keyboardView
 			becomeFirstResponderWithString:existingString
 							   cursorStart:_convert_utf32_offset_to_utf16(p_existing_text, p_cursor_start)
@@ -775,7 +795,11 @@ bool DisplayServerAppleEmbedded::is_keyboard_active() const {
 }
 
 void DisplayServerAppleEmbedded::virtual_keyboard_hide() {
+#ifdef TVOS_ENABLED
+	[GDTAppDelegateService.viewController.keyboardView godot_hideKeyboard];
+#else
 	[GDTAppDelegateService.viewController.keyboardView resignFirstResponder];
+#endif
 }
 
 void DisplayServerAppleEmbedded::virtual_keyboard_set_height(int height) {
@@ -795,13 +819,19 @@ bool DisplayServerAppleEmbedded::has_hardware_keyboard() const {
 }
 
 void DisplayServerAppleEmbedded::clipboard_set(const String &p_text) {
+#ifndef TVOS_ENABLED
 	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8().get_data()];
+#endif
 }
 
 String DisplayServerAppleEmbedded::clipboard_get() const {
+#ifndef TVOS_ENABLED
 	NSString *text = [UIPasteboard generalPasteboard].string;
 
 	return String::utf8([text UTF8String]);
+#else
+	return String();
+#endif
 }
 
 void DisplayServerAppleEmbedded::screen_set_keep_on(bool p_enable) {

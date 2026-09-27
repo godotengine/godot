@@ -32,11 +32,16 @@
 
 #include "core/config/project_settings.h"
 #import "drivers/apple_embedded/display_server_apple_embedded.h"
+#ifdef TVOS_ENABLED
+#import "drivers/apple_embedded/godot_keyboard_input_field.h"
+#else
 #import "drivers/apple_embedded/godot_keyboard_input_view.h"
+#endif
 #import "drivers/apple_embedded/godot_view_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_renderer.h"
 #import "drivers/apple_embedded/key_mapping_apple_embedded.h"
 #import "drivers/apple_embedded/os_apple_embedded.h"
+#include "scene/main/scene_tree.h"
 #include "servers/camera/camera_server.h"
 
 #import <AVFoundation/AVFoundation.h>
@@ -46,7 +51,11 @@
 @interface GDTViewController () <GDTViewDelegate>
 
 @property(strong, nonatomic) GDTViewRenderer *renderer;
+#ifdef TVOS_ENABLED
+@property(strong, nonatomic) GDTKeyboardInputField *keyboardView;
+#else
 @property(strong, nonatomic) GDTKeyboardInputView *keyboardView;
+#endif
 
 @property(strong, nonatomic) UIView *godotLoadingOverlay;
 
@@ -59,11 +68,52 @@
 }
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-	[super pressesBegan:presses withEvent:event];
+#ifndef TVOS_ENABLED
+	[super pressesBegan:presses
+			  withEvent:event];
+#endif
 
 	if (!DisplayServerAppleEmbedded::get_singleton() || DisplayServerAppleEmbedded::get_singleton()->is_keyboard_active()) {
 		return;
 	}
+#if defined(TVOS_ENABLED) && defined(TVOS_SIMULATOR)
+	// Simulator only: on device the remote arrives through SDL as a joystick
+	// (clicks, swipes, and buttons), so mapping presses to keys as well would
+	// report every press twice. The Simulator has no GameController remote, so
+	// synthesize key events here instead; presses without a key come from the
+	// (virtual) remote rather than a hardware keyboard. Menu is handled below.
+	for (UIPress *press in presses) {
+		if (press.key != nil) {
+			continue;
+		}
+		Key key = Key::NONE;
+		switch (press.type) {
+			case UIPressTypeUpArrow:
+				key = Key::UP;
+				break;
+			case UIPressTypeDownArrow:
+				key = Key::DOWN;
+				break;
+			case UIPressTypeLeftArrow:
+				key = Key::LEFT;
+				break;
+			case UIPressTypeRightArrow:
+				key = Key::RIGHT;
+				break;
+			case UIPressTypeSelect:
+				key = Key::ENTER;
+				break;
+			case UIPressTypePlayPause:
+				key = Key::SPACE;
+				break;
+			default:
+				break;
+		}
+		if (key != Key::NONE) {
+			DisplayServerAppleEmbedded::get_singleton()->key(key, 0, key, key, 0, true, KeyLocation::UNSPECIFIED);
+		}
+	}
+#endif
 	if (@available(iOS 13.4, *)) {
 		for (UIPress *press in presses) {
 			String u32lbl = String::utf8([press.key.charactersIgnoringModifiers UTF8String]);
@@ -94,11 +144,60 @@
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
-	[super pressesEnded:presses withEvent:event];
+#ifdef TVOS_ENABLED
+	for (UIPress *press in presses) {
+		if (press.type == UIPressTypeMenu) {
+			SceneTree *scene = SceneTree::get_singleton();
+			if (scene && scene->is_quit_on_go_back()) {
+				// Let UIKit process the event.
+				[super pressesEnded:presses withEvent:event];
+			} else if (DisplayServerAppleEmbedded::get_singleton()) {
+				DisplayServerAppleEmbedded::get_singleton()->send_window_event(DisplayServerEnums::WINDOW_EVENT_GO_BACK_REQUEST);
+			}
+			return;
+		}
+	}
+#else
+	[super pressesEnded:presses
+			  withEvent:event];
+#endif
 
 	if (!DisplayServerAppleEmbedded::get_singleton() || DisplayServerAppleEmbedded::get_singleton()->is_keyboard_active()) {
 		return;
 	}
+#if defined(TVOS_ENABLED) && defined(TVOS_SIMULATOR)
+	for (UIPress *press in presses) {
+		if (press.key != nil) {
+			continue;
+		}
+		Key key = Key::NONE;
+		switch (press.type) {
+			case UIPressTypeUpArrow:
+				key = Key::UP;
+				break;
+			case UIPressTypeDownArrow:
+				key = Key::DOWN;
+				break;
+			case UIPressTypeLeftArrow:
+				key = Key::LEFT;
+				break;
+			case UIPressTypeRightArrow:
+				key = Key::RIGHT;
+				break;
+			case UIPressTypeSelect:
+				key = Key::ENTER;
+				break;
+			case UIPressTypePlayPause:
+				key = Key::SPACE;
+				break;
+			default:
+				break;
+		}
+		if (key != Key::NONE) {
+			DisplayServerAppleEmbedded::get_singleton()->key(key, 0, key, key, 0, false, KeyLocation::UNSPECIFIED);
+		}
+	}
+#endif
 	if (@available(iOS 13.4, *)) {
 		for (UIPress *press in presses) {
 			String u32lbl = String::utf8([press.key.charactersIgnoringModifiers UTF8String]);
@@ -166,7 +265,9 @@
 	[self observeKeyboard];
 	[self displayLoadingOverlay];
 
+#ifndef TVOS_ENABLED
 	[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+#endif
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -184,9 +285,16 @@
 
 - (void)observeKeyboard {
 	print_verbose("Setting up keyboard input view.");
+#ifdef TVOS_ENABLED
+	self.keyboardView = [GDTKeyboardInputField new];
+#else
 	self.keyboardView = [GDTKeyboardInputView new];
+#endif
 	[self.view addSubview:self.keyboardView];
 
+#ifndef TVOS_ENABLED
+	// tvOS has no keyboard show/hide notifications; the system input UI takes
+	// over the screen instead. Text still flows through the input view below.
 	print_verbose("Adding observer for keyboard show/hide.");
 	[[NSNotificationCenter defaultCenter]
 			addObserver:self
@@ -198,6 +306,7 @@
 			   selector:@selector(keyboardHidden:)
 				   name:UIKeyboardDidHideNotification
 				 object:nil];
+#endif // TVOS_ENABLED
 }
 
 - (void)displayLoadingOverlay {
@@ -374,6 +483,7 @@
 
 // MARK: Keyboard
 
+#ifndef TVOS_ENABLED
 - (void)keyboardOnScreen:(NSNotification *)notification {
 	NSDictionary *info = notification.userInfo;
 	NSValue *value = info[UIKeyboardFrameEndUserInfoKey];
@@ -391,5 +501,6 @@
 		DisplayServerAppleEmbedded::get_singleton()->virtual_keyboard_set_height(0);
 	}
 }
+#endif // TVOS_ENABLED
 
 @end

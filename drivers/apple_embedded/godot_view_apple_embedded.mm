@@ -37,16 +37,24 @@
 #import "drivers/apple_embedded/display_server_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_renderer.h"
 
+#ifndef TVOS_ENABLED
 #import <CoreMotion/CoreMotion.h>
+#endif
 
+#ifndef TVOS_ENABLED
 static const int max_touches = 32;
 static const float earth_gravity = 9.80665;
+#endif
 
 @interface GDTView () {
+#ifndef TVOS_ENABLED
 	UITouch *godot_touches[max_touches];
+#endif
 	CGFloat last_edr_headroom;
+#ifndef TVOS_ENABLED
 	NSTimeInterval begin_timestamp[max_touches];
 	CGPoint begin_delta[max_touches];
+#endif
 }
 
 @property(assign, nonatomic) BOOL isActive;
@@ -60,7 +68,9 @@ static const float earth_gravity = 9.80665;
 
 @property(strong, nonatomic) CALayer<GDTDisplayLayer> *renderingLayer;
 
+#ifndef TVOS_ENABLED
 @property(strong, nonatomic) CMMotionManager *motionManager;
+#endif
 
 @property(assign, nonatomic) BOOL delegateDidFinishSetUp;
 
@@ -104,10 +114,12 @@ static const float earth_gravity = 9.80665;
 		self.renderingLayer = nil;
 	}
 
+#ifndef TVOS_ENABLED
 	if (self.motionManager) {
 		[self.motionManager stopDeviceMotionUpdates];
 		self.motionManager = nil;
 	}
+#endif
 
 	if (self.displayLink) {
 		[self.displayLink invalidate];
@@ -125,7 +137,7 @@ static const float earth_gravity = 9.80665;
 	self.useCADisplayLink = bool(GLOBAL_DEF("display.AppleEmbedded/use_cadisplaylink", true)) ? YES : NO;
 	last_edr_headroom = 0.0;
 
-#if !defined(VISIONOS_ENABLED)
+#if !defined(VISIONOS_ENABLED) && !defined(TVOS_ENABLED)
 	self.contentScaleFactor = [UIScreen mainScreen].scale;
 #endif
 
@@ -133,6 +145,7 @@ static const float earth_gravity = 9.80665;
 		[self registerForTraitChanges:@[ [UITraitUserInterfaceStyle class] ] withTarget:self action:@selector(traitCollectionDidChangeWithView:previousTraitCollection:)];
 	}
 
+#ifndef TVOS_ENABLED
 	[self initTouches];
 
 	self.multipleTouchEnabled = YES;
@@ -147,6 +160,7 @@ static const float earth_gravity = 9.80665;
 			self.motionManager = nil;
 		}
 	}
+#endif
 }
 
 - (void)system_theme_changed {
@@ -191,7 +205,9 @@ static const float earth_gravity = 9.80665;
 		self.animationTimer = nil;
 	}
 
+#ifndef TVOS_ENABLED
 	[self clearTouches];
+#endif
 }
 
 - (void)startRendering {
@@ -251,11 +267,17 @@ static const float earth_gravity = 9.80665;
 		}
 	}
 
+#ifndef TVOS_ENABLED
 	[self handleMotion];
+#endif
 
 #if !defined(VISIONOS_ENABLED)
 	if (@available(iOS 16.0, *)) {
+#ifdef TVOS_ENABLED
+		CGFloat edr_headroom = self.window.windowScene.screen.currentEDRHeadroom;
+#else
 		CGFloat edr_headroom = UIScreen.mainScreen.currentEDRHeadroom;
+#endif
 		if (last_edr_headroom != edr_headroom) {
 			last_edr_headroom = edr_headroom;
 			if (DisplayServerAppleEmbedded::get_singleton()) {
@@ -288,6 +310,32 @@ static const float earth_gravity = 9.80665;
 	}
 }
 
+#ifdef TVOS_ENABLED
+// tvOS has no `UIScreen.mainScreen` to read at init time (it is deprecated as of tvOS 26),
+// and the window is only known once the view is in the hierarchy. Metal sizes its drawable
+// explicitly, but the OpenGL ES renderbuffer is derived from the layer's `contentsScale`,
+// so leaving a stale scale here renders at the wrong resolution.
+- (void)updateContentScaleFactor {
+	CGFloat scale = self.window.windowScene.screen.scale;
+	if (scale <= 0.0) {
+		// The trait collection reports 0 when it has no scale to give either.
+		scale = self.traitCollection.displayScale;
+	}
+	if (scale <= 0.0) {
+		return;
+	}
+
+	self.contentScaleFactor = scale;
+	self.renderingLayer.contentsScale = scale;
+}
+
+- (void)didMoveToWindow {
+	[super didMoveToWindow];
+
+	[self updateContentScaleFactor];
+}
+#endif
+
 - (void)layoutSubviews {
 	[super layoutSubviews];
 	[self layoutRenderingLayer];
@@ -305,6 +353,8 @@ static const float earth_gravity = 9.80665;
 }
 
 // MARK: - Input
+
+#ifndef TVOS_ENABLED
 
 // MARK: Touches
 
@@ -489,5 +539,7 @@ static const float earth_gravity = 9.80665;
 		} break;
 	}
 }
+
+#endif // TVOS_ENABLED
 
 @end

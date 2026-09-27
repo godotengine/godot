@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  display_server_tvos.h                                                 */
+/*  SDL_filesystem_apple_embedded.mm                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,38 +28,46 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+// Minimal Apple-embedded fallback for the SDL filesystem API.
+//
+// Godot's SDL snapshot does not ship a sys filesystem driver for Apple
+// platforms, but SDL_IOFromFile() (used for gamepad mapping files) calls
+// SDL_GetPrefPath() on them. Provide it, rooted at the app's Documents
+// directory like Godot's own user-data path. Only compiled for the Apple
+// embedded platforms; every other platform either compiles SDL's own
+// filesystem driver or never references this symbol.
 
-#include "drivers/apple_embedded/display_server_apple_embedded.h"
+#include "SDL3/SDL_filesystem.h"
+#include "SDL3/SDL_stdinc.h"
 
-@class UIScreen;
+#import <Foundation/Foundation.h>
+#include <string.h>
 
-class DisplayServerTVOS final : public DisplayServerAppleEmbedded {
-	GDSOFTCLASS(DisplayServerTVOS, DisplayServerAppleEmbedded);
+extern "C" char *SDL_GetPrefPath(const char *org, const char *app) {
+	@autoreleasepool {
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+		if ([paths count] == 0) {
+			return nullptr;
+		}
 
-	_THREAD_SAFE_CLASS_
+		NSString *base = [paths objectAtIndex:0];
+		if (org && org[0] != '\0') {
+			base = [base stringByAppendingPathComponent:[NSString stringWithUTF8String:org]];
+		}
+		if (app && app[0] != '\0') {
+			base = [base stringByAppendingPathComponent:[NSString stringWithUTF8String:app]];
+		}
 
-	DisplayServerTVOS(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
-	~DisplayServerTVOS();
+		[[NSFileManager defaultManager] createDirectoryAtPath:base withIntermediateDirectories:YES attributes:nil error:nil];
 
-	UIScreen *_get_ui_screen(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const;
-
-public:
-	static DisplayServerTVOS *get_singleton();
-
-	static void register_tvos_driver();
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, DisplayServerEnums::Context p_context, int64_t p_parent_window, Error &r_error);
-
-	virtual String get_name() const override;
-
-	virtual bool has_feature(DisplayServerEnums::Feature p_feature) const override;
-
-	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
-
-protected:
-	virtual bool _screen_hdr_is_supported() const override;
-	virtual float _screen_potential_edr_headroom() const override;
-	virtual float _screen_current_edr_headroom() const override;
-};
+		const char *utf8 = [[base stringByAppendingString:@"/"] UTF8String];
+		if (!utf8) {
+			return nullptr;
+		}
+		char *ret = (char *)SDL_malloc(strlen(utf8) + 1);
+		if (ret) {
+			strcpy(ret, utf8);
+		}
+		return ret;
+	}
+}
