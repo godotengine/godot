@@ -445,6 +445,8 @@ class AnimationTrackEdit : public Control {
 		MENU_KEY_LOOKUP,
 		MENU_USE_BLEND_ENABLED,
 		MENU_USE_BLEND_DISABLED,
+		MENU_CHANGE_TARGET_NODE,
+		MENU_CHANGE_TARGET_PROPERTY,
 	};
 
 	AnimationTimelineEdit *timeline = nullptr;
@@ -684,9 +686,18 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_length(double p_new_len);
 	void _dropped_track(int p_from_track, int p_to_track);
 
+	Vector<StringName> _get_valid_types_for_track(int p_type);
 	void _add_track(int p_type);
+	void _pick_track_node_selected(NodePath p_path);
 	void _new_track_node_selected(NodePath p_path);
+	void _move_track_to_node(NodePath p_path);
+	void _prop_selector_property_selected(const String &p_name);
 	void _new_track_property_selected(const String &p_name);
+	void _change_track_property_selected(const String &p_name);
+	void _change_track_target_node_pressed(int p_track);
+	void _change_track_target_property_pressed(int p_track);
+	Variant::Type _get_track_value_type(int p_track);
+	String _get_blend_shape_track_path(const String &p_property_path) const;
 
 	void _update_step_spinbox();
 	void _store_snap_states();
@@ -694,8 +705,10 @@ class AnimationTrackEditor : public VBoxContainer {
 	PropertySelector *prop_selector = nullptr;
 	PropertySelector *method_selector = nullptr;
 	SceneTreeDialog *pick_track = nullptr;
+	int dialog_state = -1;
 	int adding_track_type = 0;
 	NodePath adding_track_path;
+	int affected_track_idx = -1;
 
 	bool keying = false;
 
@@ -957,6 +970,13 @@ public:
 		EDIT_GOTO_PREV_KEYFRAME,
 	};
 
+	enum DialogAction {
+		DIALOG_ADD_TRACK_NODE,
+		DIALOG_ADD_TRACK_PROPERTY,
+		DIALOG_CHANGE_NODE_PATH,
+		DIALOG_CHANGE_PROPERTY_PATH,
+	};
+
 	void add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 	void remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin);
 
@@ -964,6 +984,8 @@ public:
 	Ref<Animation> get_current_animation() const;
 	void set_root(Node *p_root);
 	Node *get_root() const;
+	Node *get_track_node_or_null(int p_track);
+	bool is_bone_track(int p_track);
 	void update_keying();
 	bool has_keying() const;
 
