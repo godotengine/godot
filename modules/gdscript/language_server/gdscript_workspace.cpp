@@ -61,7 +61,7 @@ void GDScriptWorkspace::_bind_methods() {
 }
 
 void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
-	Ref<Script> scr = obj->get_script();
+	Script *scr = obj->get_script_ptr();
 
 	if (scr->get_language()->get_name() != "GDScript") {
 		return;
@@ -623,8 +623,8 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<E
 
 			while (!stack.is_empty()) {
 				current = Object::cast_to<Node>(stack.pop_back());
-				Ref<GDScript> scr = current->get_script();
-				if (scr.is_valid() && GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
+				GDScript *scr = Object::cast_to<GDScript>(current->get_script_ptr());
+				if (scr != nullptr && GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
 					break;
 				}
 				for (int i = 0; i < current->get_child_count(); ++i) {
@@ -632,8 +632,8 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<E
 				}
 			}
 
-			Ref<GDScript> scr = current->get_script();
-			if (scr.is_null() || !GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
+			GDScript *scr = Object::cast_to<GDScript>(current->get_script_ptr());
+			if (scr == nullptr || !GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
 				current = owner_scene_node;
 			}
 		}

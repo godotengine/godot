@@ -156,8 +156,8 @@ String get_friendly_config_prefix(Ref<GLTFDocumentExtension> p_extension) {
 	if (!config_prefix.is_empty()) {
 		return config_prefix;
 	}
-	const Ref<Script> script = p_extension->get_script();
-	if (script.is_valid()) {
+	Script *script = p_extension->get_script_ptr();
+	if (script != nullptr) {
 		config_prefix = String(script->get_global_name()).trim_prefix("GLTFDocumentExtension").trim_suffix("GLTFDocumentExtension");
 		if (!config_prefix.is_empty()) {
 			return config_prefix;

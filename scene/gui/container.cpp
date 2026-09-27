@@ -276,7 +276,7 @@ bool Container::is_accessibility_region() const {
 PackedStringArray Container::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 
-	if (get_class() == "Container" && get_script().is_null()) {
+	if (get_class() == "Container" && get_script_ptr() == nullptr) {
 		warnings.push_back(RTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead."));
 	}
 
