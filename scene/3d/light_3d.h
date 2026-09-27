@@ -77,6 +77,8 @@ private:
 	bool reverse_cull = false;
 	uint32_t cull_mask = 0;
 	uint32_t shadow_caster_mask = 0xFFFFFFFF;
+	bool shadow_cache_enabled = false;
+	int shadow_dynamic_update_interval = 1;
 	bool distance_fade_enabled = false;
 	real_t distance_fade_begin = 40.0;
 	real_t distance_fade_shadow = 50.0;
@@ -143,6 +145,12 @@ public:
 
 	void set_allow_contact_shadows(bool p_enable);
 	bool get_allow_contact_shadows() const;
+
+	void set_shadow_cache_enabled(bool p_enable);
+	bool is_shadow_cache_enabled() const;
+
+	void set_shadow_dynamic_update_interval(int p_frames);
+	int get_shadow_dynamic_update_interval() const;
 
 	void set_bake_mode(BakeMode p_mode);
 	BakeMode get_bake_mode() const;

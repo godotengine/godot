@@ -168,6 +168,25 @@ bool Light3D::get_allow_contact_shadows() const {
 	return allow_contact_shadows;
 }
 
+void Light3D::set_shadow_cache_enabled(bool p_enable) {
+	shadow_cache_enabled = p_enable;
+	RS::get_singleton()->light_set_shadow_caching(light, shadow_cache_enabled);
+}
+
+bool Light3D::is_shadow_cache_enabled() const {
+	return shadow_cache_enabled;
+}
+
+void Light3D::set_shadow_dynamic_update_interval(int p_frames) {
+	ERR_FAIL_COND_MSG(p_frames < 1, "The shadow dynamic update interval must be at least 1 frame.");
+	shadow_dynamic_update_interval = p_frames;
+	RS::get_singleton()->light_set_shadow_dynamic_update_interval(light, shadow_dynamic_update_interval);
+}
+
+int Light3D::get_shadow_dynamic_update_interval() const {
+	return shadow_dynamic_update_interval;
+}
+
 AABB Light3D::get_aabb() const {
 	if (type == RSE::LIGHT_DIRECTIONAL) {
 		return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
@@ -356,6 +375,9 @@ void Light3D::_validate_property(PropertyInfo &p_property) const {
 	} else if (get_light_type() != RSE::LIGHT_DIRECTIONAL && (p_property.name == "shadow_contact_shadows_allow" || p_property.name == "shadow_contact_shadows_opacity" || p_property.name == "shadow_contact_shadows_blur")) {
 		// Contact shadows are currently only supported on DirectionalLight3D.
 		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (get_light_type() != RSE::LIGHT_OMNI && get_light_type() != RSE::LIGHT_SPOT && (p_property.name == "shadow_cache_enabled" || p_property.name == "shadow_dynamic_update_interval")) {
+		// Shadow caching is only implemented for OmniLight3D and SpotLight3D.
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -399,6 +421,12 @@ void Light3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_contact_shadows", "enabled"), &Light3D::set_allow_contact_shadows);
 	ClassDB::bind_method(D_METHOD("get_allow_contact_shadows"), &Light3D::get_allow_contact_shadows);
 
+	ClassDB::bind_method(D_METHOD("set_shadow_cache_enabled", "enable"), &Light3D::set_shadow_cache_enabled);
+	ClassDB::bind_method(D_METHOD("is_shadow_cache_enabled"), &Light3D::is_shadow_cache_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_shadow_dynamic_update_interval", "frames"), &Light3D::set_shadow_dynamic_update_interval);
+	ClassDB::bind_method(D_METHOD("get_shadow_dynamic_update_interval"), &Light3D::get_shadow_dynamic_update_interval);
+
 	ClassDB::bind_method(D_METHOD("set_bake_mode", "bake_mode"), &Light3D::set_bake_mode);
 	ClassDB::bind_method(D_METHOD("get_bake_mode"), &Light3D::get_bake_mode);
 
@@ -440,6 +468,8 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact_shadows_opacity", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_OPACITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact_shadows_blur", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_CONTACT_SHADOW_BLUR);
 	ADD_SUBGROUP("", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_cache_enabled"), "set_shadow_cache_enabled", "is_shadow_cache_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_dynamic_update_interval", PROPERTY_HINT_RANGE, "1,60,1,or_greater,suffix:frames"), "set_shadow_dynamic_update_interval", "get_shadow_dynamic_update_interval");
 
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "distance_fade_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_enable_distance_fade", "is_distance_fade_enabled");

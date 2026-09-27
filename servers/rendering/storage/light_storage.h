@@ -63,6 +63,13 @@ public:
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) = 0;
 	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) = 0;
 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const = 0;
+	// Positional shadow caching (see `RenderingServer::light_set_shadow_caching()`).
+	// Only implemented by renderers that support it (Forward+); the defaults make it a no-op elsewhere.
+	virtual void light_set_shadow_caching(RID p_light, bool p_enabled) {}
+	virtual void light_set_shadow_dynamic_update_interval(RID p_light, int p_frames) {}
+	// Returns `true` only if the light is an omni/spot light with caching enabled and the active renderer supports it.
+	virtual bool light_get_shadow_caching(RID p_light) const { return false; }
+	virtual int light_get_shadow_dynamic_update_interval(RID p_light) const { return 1; }
 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) = 0;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) = 0;
 	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) = 0;

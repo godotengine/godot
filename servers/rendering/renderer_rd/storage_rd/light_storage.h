@@ -56,6 +56,8 @@ public:
 private:
 	static LightStorage *singleton;
 	uint32_t max_cluster_elements = 512;
+	// Set by scene renderers that implement the positional shadow static cache (Forward+).
+	bool shadow_static_cache_supported = false;
 
 	/* LIGHT */
 	struct Light {
@@ -70,6 +72,8 @@ private:
 		uint32_t max_sdfgi_cascade = 2;
 		uint32_t cull_mask = 0xFFFFFFFF;
 		uint32_t shadow_caster_mask = 0xFFFFFFFF;
+		bool shadow_caching = false;
+		int shadow_dynamic_update_interval = 1;
 		bool distance_fade = false;
 		real_t distance_fade_begin = 40.0;
 		real_t distance_fade_shadow = 50.0;
@@ -514,6 +518,10 @@ public:
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) override;
 	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) override;
 	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override;
+	virtual void light_set_shadow_caching(RID p_light, bool p_enabled) override;
+	virtual void light_set_shadow_dynamic_update_interval(RID p_light, int p_frames) override;
+	virtual bool light_get_shadow_caching(RID p_light) const override;
+	virtual int light_get_shadow_dynamic_update_interval(RID p_light) const override;
 	virtual void light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) override;
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override;
 	virtual void light_set_allow_contact_shadows(RID p_light, bool p_enable) override;

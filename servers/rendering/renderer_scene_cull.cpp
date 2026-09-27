@@ -1373,6 +1373,28 @@ void RendererSceneCull::instance_geometry_set_cast_shadows_setting(RID p_instanc
 	_instance_queue_update(instance, false, true);
 }
 
+void RendererSceneCull::instance_geometry_set_shadow_mobility(RID p_instance, RSE::ShadowMobility p_shadow_mobility) {
+	Instance *instance = instance_owner.get_or_null(p_instance);
+	ERR_FAIL_NULL(instance);
+
+	const bool is_static = p_shadow_mobility == RSE::SHADOW_MOBILITY_STATIC;
+	if (instance->shadow_mobility_static == is_static) {
+		return;
+	}
+	instance->shadow_mobility_static = is_static;
+
+	if ((1 << instance->base_type) & RSE::INSTANCE_GEOMETRY_MASK && instance->base_data) {
+		// The caster moves between the static and dynamic caster lists of the lights it's paired with.
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
+		if (geom->can_cast_shadows) {
+			for (const Instance *E : geom->lights) {
+				InstanceLightData *light = static_cast<InstanceLightData *>(E->base_data);
+				light->make_shadow_dirty();
+			}
+		}
+	}
+}
+
 void RendererSceneCull::instance_geometry_set_material_override(RID p_instance, RID p_material) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);

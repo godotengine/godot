@@ -341,6 +341,41 @@ uint32_t LightStorage::light_get_shadow_caster_mask(RID p_light) const {
 	return light->shadow_caster_mask;
 }
 
+void LightStorage::light_set_shadow_caching(RID p_light, bool p_enabled) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	if (light->shadow_caching == p_enabled) {
+		return;
+	}
+	light->shadow_caching = p_enabled;
+
+	// Re-render the whole shadow map, with or without the static/dynamic caster split.
+	light->version++;
+	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
+}
+
+void LightStorage::light_set_shadow_dynamic_update_interval(RID p_light, int p_frames) {
+	Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL(light);
+
+	light->shadow_dynamic_update_interval = MAX(1, p_frames);
+}
+
+bool LightStorage::light_get_shadow_caching(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL_V(light, false);
+
+	return shadow_static_cache_supported && light->shadow_caching && (light->type == RSE::LIGHT_OMNI || light->type == RSE::LIGHT_SPOT);
+}
+
+int LightStorage::light_get_shadow_dynamic_update_interval(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_NULL_V(light, 1);
+
+	return light->shadow_dynamic_update_interval;
+}
+
 void LightStorage::light_set_bake_mode(RID p_light, RSE::LightBakeMode p_bake_mode) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);

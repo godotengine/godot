@@ -433,6 +433,7 @@ public:
 		bool baked_light : 1; // This flag is only to know if it actually did use baked light.
 		bool dynamic_gi : 1; // Same as above for dynamic objects.
 		bool redraw_if_visible : 1;
+		bool shadow_mobility_static : 1; // RSE::SHADOW_MOBILITY_STATIC, see RenderingServer::instance_geometry_set_shadow_mobility().
 
 		Instance *lightmap = nullptr;
 		Rect2 lightmap_uv_scale;
@@ -574,6 +575,7 @@ public:
 			baked_light = true;
 			dynamic_gi = false;
 			redraw_if_visible = false;
+			shadow_mobility_static = false;
 
 			lightmap_slice_index = 0;
 			lightmap = nullptr;
@@ -1057,6 +1059,7 @@ public:
 
 	virtual void instance_geometry_set_flag(RID p_instance, RSE::InstanceFlags p_flags, bool p_enabled);
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, RSE::ShadowCastingSetting p_shadow_casting_setting);
+	virtual void instance_geometry_set_shadow_mobility(RID p_instance, RSE::ShadowMobility p_shadow_mobility);
 	virtual void instance_geometry_set_material_override(RID p_instance, RID p_material);
 	virtual void instance_geometry_set_material_overlay(RID p_instance, RID p_material);
 
