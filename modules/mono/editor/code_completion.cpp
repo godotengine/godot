@@ -68,9 +68,9 @@ Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Script> &p_
 		return nullptr;
 	}
 
-	Ref<Script> c = p_current->get_script();
+	Script *c = p_current->get_script_ptr();
 
-	if (c == p_script) {
+	if (p_script == c) {
 		return p_current;
 	}
 

@@ -696,13 +696,13 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 					break;
 				}
 
-				Ref<Script> base_script = p_property_object->get_script();
-				while (base_script.is_valid()) {
+				Script *base_script = p_property_object->get_script_ptr();
+				while (base_script != nullptr) {
 					if (base_script->get_global_name() == pi.hint_string) {
 						si->set(E.first, E.second);
 						break;
 					}
-					base_script = base_script->get_base_script();
+					base_script = base_script->get_base_script().ptr();
 				}
 				break;
 			}

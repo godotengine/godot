@@ -450,8 +450,8 @@ static void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &r
 	}
 
 	if (p_current->get_script_instance()) {
-		Ref<Script> scr = p_current->get_script();
-		if (scr.is_valid()) {
+		Script *scr = p_current->get_script_ptr();
+		if (scr != nullptr) {
 			r_used_scripts.insert(scr);
 		}
 	}
@@ -1585,9 +1585,9 @@ static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_curr
 	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return;
 	}
-	Ref<Script> c = p_current->get_script();
+	Script *c = p_current->get_script_ptr();
 
-	if (c.is_valid()) {
+	if (c != nullptr) {
 		r_scripts.insert(c);
 	}
 
@@ -3011,14 +3011,14 @@ Error DocumentEditorContainer::close_file(const String &p_file) {
 
 void DocumentEditorContainer::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
 	ERR_FAIL_NULL(p_obj);
-	Ref<Script> scr = p_obj->get_script();
-	ERR_FAIL_COND(scr.is_null());
+	Script *scr = p_obj->get_script_ptr();
+	ERR_FAIL_NULL(scr);
 
 	if (!scr->get_language()->can_make_function()) {
 		return;
 	}
 
-	EditorNode::get_singleton()->push_item(scr.ptr());
+	EditorNode::get_singleton()->push_item(scr);
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(tab_container->get_tab_control(i));
@@ -3031,7 +3031,7 @@ void DocumentEditorContainer::_add_callback(Object *p_obj, const String &p_funct
 		_go_to_tab(i, true);
 
 		// Save the current script so the changes can be picked up by an external editor.
-		if (!scr.ptr()->is_built_in()) { // But only if it's not built-in script.
+		if (!scr->is_built_in()) { // But only if it's not built-in script.
 			save_current_script();
 		} else {
 			ste->apply_code();

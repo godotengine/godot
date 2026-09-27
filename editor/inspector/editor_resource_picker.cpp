@@ -243,9 +243,9 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 		bool any_type_matches = false;
 
 		String res_type = loaded_resource->get_class();
-		Ref<Script> res_script = loaded_resource->get_script();
+		Script *res_script = loaded_resource->get_script_ptr();
 		bool is_global_class = false;
-		if (res_script.is_valid()) {
+		if (res_script != nullptr) {
 			String script_type = EditorNode::get_editor_data().script_class_get_name(res_script->get_path());
 			if (!script_type.is_empty()) {
 				is_global_class = true;
@@ -794,8 +794,8 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	}
 	String res_type = p_resource->get_class();
 
-	Ref<Script> res_script = p_resource->get_script();
-	if (res_script.is_null()) {
+	Script *res_script = p_resource->get_script_ptr();
+	if (res_script == nullptr) {
 		return res_type;
 	}
 
@@ -917,8 +917,8 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		return true;
 	}
 
-	if (res->get_script()) {
-		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
+	if (res->get_script_ptr()) {
+		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script_ptr());
 		if (_is_type_valid(custom_class, allowed_types)) {
 			return true;
 		}
@@ -1163,8 +1163,8 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 
 		StringName custom_class;
 		bool is_custom = false;
-		if (edited_resource->get_script()) {
-			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(edited_resource->get_script());
+		if (edited_resource->get_script_ptr()) {
+			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(edited_resource->get_script_ptr());
 			is_custom = _is_type_valid(custom_class, allowed_types);
 		}
 
@@ -1216,8 +1216,8 @@ bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) 
 
 		StringName custom_class;
 		bool is_custom = false;
-		if (p_resource->get_script()) {
-			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script());
+		if (p_resource->get_script_ptr()) {
+			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script_ptr());
 			is_custom = _is_type_valid(custom_class, allowed_types);
 		}
 
@@ -1231,8 +1231,8 @@ bool EditorResourcePicker::is_resource_allowed(const Ref<Resource> &p_resource) 
 void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 	if (!is_resource_allowed(p_resource)) {
 		StringName custom_class;
-		if (p_resource->get_script()) {
-			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script());
+		if (p_resource->get_script_ptr()) {
+			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script_ptr());
 		}
 		const String class_str = (custom_class.is_empty() ? p_resource->get_class() : vformat("%s (%s)", custom_class, p_resource->get_class()));
 		ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
@@ -1576,8 +1576,8 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 	}
 
 	if (script_owner) {
-		Ref<Script> scr = script_owner->get_script();
-		if (scr.is_valid()) {
+		Script *scr = script_owner->get_script_ptr();
+		if (scr != nullptr) {
 			menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptExtend")), TTR("Extend Script..."), OBJ_MENU_EXTEND_SCRIPT);
 		}
 	}

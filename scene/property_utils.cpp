@@ -151,7 +151,7 @@ Variant PropertyUtils::get_property_default_value(const Object *p_object, const 
 
 	// Let's see what default is set by the topmost script having a default, if any
 	if (topmost_script.is_null()) {
-		topmost_script = p_object->get_script();
+		topmost_script = p_object->get_script_ptr();
 	}
 	if (topmost_script.is_valid()) {
 		// Should be called in the editor only and not at runtime,

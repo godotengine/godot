@@ -68,8 +68,8 @@ String SignalAwaiterCallable::get_as_text() const {
 	Object *base = ObjectDB::get_instance(target_id);
 	if (base) {
 		String class_name = base->get_class();
-		Ref<Script> script = base->get_script();
-		if (script.is_valid() && script->get_path().is_resource_file()) {
+		Script *script = base->get_script_ptr();
+		if (script != nullptr && script->get_path().is_resource_file()) {
 			class_name += "(" + script->get_path().get_file() + ")";
 		}
 		return class_name + "::SignalAwaiterMiddleman::" + String(signal);
@@ -153,8 +153,8 @@ uint32_t EventSignalCallable::hash() const {
 
 String EventSignalCallable::get_as_text() const {
 	String class_name = owner->get_class();
-	Ref<Script> script = owner->get_script();
-	if (script.is_valid() && script->get_path().is_resource_file()) {
+	Script *script = owner->get_script_ptr();
+	if (script != nullptr && script->get_path().is_resource_file()) {
 		class_name += "(" + script->get_path().get_file() + ")";
 	}
 	return class_name + "::EventSignalMiddleman::" + String(event_signal_name);

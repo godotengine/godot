@@ -827,8 +827,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(autoload.name);
 					Node *node = Object::cast_to<Node>(constant);
 					if (node != nullptr) {
-						Ref<GDScript> scr = node->get_script();
-						if (scr.is_valid()) {
+						GDScript *scr = Object::cast_to<GDScript>(node->get_script_ptr());
+						if (scr != nullptr) {
 							script_path = scr->get_script_path();
 						}
 					}
@@ -4656,8 +4656,8 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(name);
 					Node *node = Object::cast_to<Node>(constant);
 					if (node != nullptr) {
-						Ref<GDScript> scr = node->get_script();
-						if (scr.is_valid()) {
+						GDScript *scr = Object::cast_to<GDScript>(node->get_script_ptr());
+						if (scr != nullptr) {
 							Ref<GDScriptParserRef> single_parser = parser->get_depended_parser_for(scr->get_script_path());
 							if (single_parser.is_valid()) {
 								Error err = single_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
@@ -5832,7 +5832,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 			is_meta_type = true;
 		} else {
 			is_meta_type = false;
-			scr = obj->get_script();
+			scr = obj->get_script_ptr();
 		}
 
 		if (scr.is_valid()) {

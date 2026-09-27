@@ -5238,7 +5238,7 @@ void EditorNode::update_node_from_node_modification_entry(Node *p_node, Modifica
 		for (const Connection &E : p_node_modification.connections_from) {
 			Connection conn = E;
 
-			bool valid = p_node->has_method(conn.callable.get_method()) || Ref<Script>(p_node->get_script()).is_null() || Ref<Script>(p_node->get_script())->has_method(conn.callable.get_method());
+			bool valid = p_node->has_method(conn.callable.get_method()) || p_node->get_script_ptr() == nullptr || p_node->get_script_ptr()->has_method(conn.callable.get_method());
 			ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", conn.signal.get_object()->get_class(), conn.signal.get_name(), conn.callable.get_object()->get_class(), conn.callable.get_method()));
 
 			// Get the object which the signal is connected from.
@@ -5793,9 +5793,9 @@ Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) cons
 		return PropertyUtils::get_custom_type_script(node);
 	}
 
-	Ref<Script> scr = p_object->get_script();
+	Script *scr = p_object->get_script_ptr();
 
-	if (scr.is_valid()) {
+	if (scr != nullptr) {
 		// Uncommenting would break things! Consider adding a parameter if you need it.
 		// StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
 		// if (name != StringName()) {
@@ -5825,14 +5825,14 @@ Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) cons
 StringName EditorNode::get_object_custom_type_name(const Object *p_object) const {
 	ERR_FAIL_NULL_V(p_object, StringName());
 
-	Ref<Script> scr = p_object->get_script();
-	if (scr.is_null() && Object::cast_to<Script>(p_object)) {
-		scr = p_object;
+	Script *scr = p_object->get_script_ptr();
+	if (scr == nullptr) {
+		scr = const_cast<Script *>(Object::cast_to<const Script>(p_object));
 	}
 
-	if (scr.is_valid()) {
-		Ref<Script> base_scr = scr;
-		while (base_scr.is_valid()) {
+	if (scr != nullptr) {
+		Script *base_scr = scr;
+		while (base_scr != nullptr) {
 			StringName name = EditorNode::get_editor_data().script_class_get_name(base_scr->get_path());
 			if (name != StringName()) {
 				return name;
@@ -5848,7 +5848,7 @@ StringName EditorNode::get_object_custom_type_name(const Object *p_object) const
 					}
 				}
 			}
-			base_scr = base_scr->get_base_script();
+			base_scr = base_scr->get_base_script().ptr();
 		}
 	}
 
@@ -5968,12 +5968,12 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) {
 	ERR_FAIL_NULL_V_MSG(p_object, nullptr, "Object cannot be null.");
 
-	Ref<Script> scr = p_object->get_script();
+	Script *scr = p_object->get_script_ptr();
 
 	const EditorDebuggerRemoteObjects *robjs = Object::cast_to<EditorDebuggerRemoteObjects>(p_object);
 	if (robjs) {
 		String class_name;
-		if (scr.is_valid()) {
+		if (scr != nullptr) {
 			class_name = scr->get_global_name();
 
 			if (class_name.is_empty()) {
@@ -5989,14 +5989,14 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 		return get_class_icon(class_name, p_fallback);
 	}
 
-	if (scr.is_null() && p_object->is_class("Script")) {
-		scr = p_object;
+	if (scr == nullptr && p_object->is_class("Script")) {
+		scr = Object::cast_to<Script>(const_cast<Object *>(p_object));
 	}
 
 	if (Object::cast_to<MultiNodeEdit>(p_object)) {
 		return get_class_icon(Object::cast_to<MultiNodeEdit>(p_object)->get_edited_class_name(), p_fallback);
 	} else {
-		return _get_class_or_script_icon(p_object->get_class(), scr.is_valid() ? scr->get_path() : String(), p_fallback);
+		return _get_class_or_script_icon(p_object->get_class(), scr != nullptr ? scr->get_path() : String(), p_fallback);
 	}
 }
 
@@ -6027,12 +6027,12 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
 	ERR_FAIL_NULL_V(p_object, false);
 
-	Ref<Script> scr = p_object->get_script();
-	if (scr.is_null() && Object::cast_to<Script>(p_object)) {
-		scr = p_object;
+	Script *scr = p_object->get_script_ptr();
+	if (scr == nullptr) {
+		scr = Object::cast_to<Script>(const_cast<Object *>(p_object));
 	}
 
-	if (scr.is_valid()) {
+	if (scr != nullptr) {
 		Ref<Script> base_script = scr;
 		while (base_script.is_valid()) {
 			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
