@@ -6,14 +6,14 @@ func find_child(pattern: String, recursive: bool = true, owned: bool = true) -> 
 func call_thread_safe(method: StringName, ...args) -> Variant
 func rpc_id(peer_id: int, method: StringName, ...args) -> Error
 --- plain methods ---
-func my_func_1(_foo: Variant, _bar: Variant) -> Variant
-func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+func my_func_1(_foo: int, _bar: String) -> void
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
 --- static methods ---
-static func my_static_func_1(_foo: Variant, _bar: Variant) -> Variant
-static func my_static_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+static func my_static_func_1(_foo: Node3D, _bar: bool) -> Variant
+static func my_static_func_2(_foo: Variant, _bar: int, _baz: Variant) -> String
 --- rpc methods ---
-func my_rpc_func_1(_foo: Variant, _bar: Variant) -> Variant
-func my_rpc_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+func my_rpc_func_1(_foo: String, _bar: StringName) -> bool
+func my_rpc_func_2(_foo: int, _bar: String, _baz: bool) -> StringName
 --- lambdas ---
 func <anonymous lambda>(_foo: Variant, _bar: Variant) -> Variant
 func <anonymous lambda>(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
@@ -21,11 +21,11 @@ func <anonymous lambda>(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
 func <anonymous lambda>(_foo: Variant, _bar: Variant) -> Variant
 func <anonymous lambda>(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
 --- bind ---
-func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
-func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
 --- unbind ---
-func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
-func my_func_2(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
 --- variant callables ---
 func replace(what: String, forwhat: String) -> String
 func rsplit(delimiter: String = "", allow_empty: bool = true, maxsplit: int = 0) -> PackedStringArray

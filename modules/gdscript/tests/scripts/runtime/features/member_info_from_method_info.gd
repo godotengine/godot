@@ -1,24 +1,24 @@
 extends Node
 
-func my_func_1(_foo, _bar):
+func my_func_1(_foo: int, _bar: String) -> void:
 	pass
 
-func my_func_2(_foo, _bar, _baz):
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath):
 	pass
 
-static func my_static_func_1(_foo, _bar):
+static func my_static_func_1(_foo: Node3D, _bar: bool):
 	pass
 
-static func my_static_func_2(_foo, _bar, _baz):
-	pass
-
-@rpc
-func my_rpc_func_1(_foo, _bar):
-	pass
+static func my_static_func_2(_foo, _bar: int, _baz) -> String:
+	return ""
 
 @rpc
-func my_rpc_func_2(_foo, _bar, _baz):
-	pass
+func my_rpc_func_1(_foo: String, _bar: StringName) -> bool:
+	return false
+
+@rpc
+func my_rpc_func_2(_foo: int, _bar: String, _baz: bool) -> StringName:
+	return &""
 
 func test():
 	print("--- built-in methods ---")
