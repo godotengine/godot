@@ -88,11 +88,11 @@ const Features = {
 		if (!Features.isFetchAvailable()) {
 			missing.push('Fetch - Check web browser version');
 		}
-		if (!Features.isSecureContext()) {
-			missing.push('Secure Context - Check web server configuration (use HTTPS)');
-		}
 
 		if (supportsThreads) {
+			if (!Features.isSecureContext()) {
+				missing.push('Secure Context - Check web server configuration (use HTTPS)');
+			}
 			if (!Features.isCrossOriginIsolated()) {
 				missing.push('Cross-Origin Isolation - Check that the web server configuration sends the correct headers.');
 			}
