@@ -126,6 +126,10 @@ public:
 				uint32_t multimesh_format_2d : 1;
 				uint32_t multimesh_has_color : 1;
 				uint32_t multimesh_has_custom_data : 1;
+				uint32_t fog_use_legacy_blending : 1;
+				uint32_t cluster_has_area_light : 1;
+				uint32_t use_lightmap_specular : 1;
+				uint32_t material_feedback : 1;
 			};
 		};
 
@@ -246,6 +250,7 @@ public:
 		bool uses_roughness = false;
 		bool uses_normal = false;
 		bool uses_tangent = false;
+		bool writes_tangent = false;
 		bool uses_particle_trails = false;
 		bool uses_normal_map = false;
 		bool uses_bent_normal_map = false;
@@ -344,6 +349,7 @@ public:
 	SceneForwardClusteredShaderRD shader;
 	ShaderCompiler compiler;
 	bool emulate_point_size = false;
+	bool depth_prepass_enabled = false;
 
 	RID default_shader;
 	RID default_material;
@@ -352,10 +358,12 @@ public:
 	RID debug_shadow_splits_material_shader;
 	RID debug_shadow_splits_material;
 	RID default_shader_rd;
+	RID default_multiview_shader_rd; // This is lazily initialized, use "get_default_shader_rd" instead.
 	RID default_shader_sdfgi_rd;
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
+	RID default_material_feedback_buffer;
 
 	RID shadow_sampler;
 
@@ -382,6 +390,7 @@ public:
 	bool is_multiview_shader_group_enabled() const;
 	bool is_advanced_shader_group_enabled(bool p_multiview) const;
 	uint32_t get_pipeline_compilations(RSE::PipelineSource p_source);
+	RID get_default_shader_rd(bool p_is_multiview = false);
 };
 
 } // namespace RendererSceneRenderImplementation

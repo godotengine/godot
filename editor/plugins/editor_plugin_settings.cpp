@@ -116,15 +116,18 @@ void EditorPluginSettings::update_plugins() {
 
 				TreeItem *item = plugin_list->create_item(root);
 				item->set_text(COLUMN_NAME, name);
+				item->set_auto_translate_mode(COLUMN_NAME, AUTO_TRANSLATE_MODE_DISABLED);
 				if (!is_enabled) {
 					item->set_custom_color(COLUMN_NAME, disabled_color);
 				}
 				item->set_tooltip_text(COLUMN_NAME, vformat(TTR("Name: %s\nPath: %s\nMain Script: %s\n\n%s"), name, path, scr, wrapped_description));
 				item->set_metadata(COLUMN_NAME, path);
 				item->set_text(COLUMN_VERSION, version);
+				item->set_auto_translate_mode(COLUMN_VERSION, AUTO_TRANSLATE_MODE_DISABLED);
 				item->set_custom_font(COLUMN_VERSION, get_theme_font("source", EditorStringName(EditorFonts)));
 				item->set_metadata(COLUMN_VERSION, scr);
 				item->set_text(COLUMN_AUTHOR, author);
+				item->set_auto_translate_mode(COLUMN_AUTHOR, AUTO_TRANSLATE_MODE_DISABLED);
 				item->set_metadata(COLUMN_AUTHOR, description);
 				item->set_cell_mode(COLUMN_STATUS, TreeItem::CELL_MODE_CHECK);
 				item->set_text(COLUMN_STATUS, TTRC("On"));

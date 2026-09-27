@@ -62,6 +62,7 @@ EditorDebuggerTree::EditorDebuggerTree() {
 	add_child(file_dialog);
 
 	accept = memnew(AcceptDialog);
+	accept->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(accept);
 }
 
@@ -212,10 +213,10 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	set_hide_root(false);
 
 	updating_scene_tree = true;
-	const String last_path = get_selected_path();
 	const String filter = SceneTreeDock::get_singleton()->get_filter();
 	LocalVector<TreeItem *> select_items;
 	bool hide_filtered_out_parents = EDITOR_GET("docks/scene_tree/hide_filtered_out_parents");
+	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree.
 
 	bool should_scroll = scrolling_to_item || filter != last_filter;
 	scrolling_to_item = false;
@@ -257,6 +258,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		// Add this node.
 		TreeItem *item = create_item(parent);
 		item->set_text(0, node.name);
+		item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 		if (node.scene_file_path.is_empty()) {
 			item->set_tooltip_text(0, node.name + "\n" + TTR("Type:") + " " + node.type_name);
 		} else {
@@ -280,25 +282,19 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		item->set_meta("node_path", current_path + "/" + item->get_text(0));
 
 		// Select previously selected nodes.
-		if (debugger_id == p_debugger) { // Can use remote id.
-			if (inspected_object_ids.has(uint64_t(node.id))) {
-				ids_present.append(node.id);
-				select_items.push_back(item);
-				if (should_scroll) {
-					// Temporarily set to `false`, to allow caching the unfolds.
-					updating_scene_tree = false;
-					item->uncollapse_tree();
-					updating_scene_tree = true;
-					scroll_item = item;
-				}
-			}
-		} else if (last_path == (String)item->get_meta("node_path")) { // Must use path.
-			updating_scene_tree = false; // Force emission of new selections.
+		if (inspected_object_ids.has(uint64_t(node.id))) {
+			ids_present.append(node.id);
 			select_items.push_back(item);
 			if (should_scroll) {
+				// Temporarily set to `false`, to allow caching the unfolds.
+				updating_scene_tree = false;
+				// Expand ancestors to make the item visible.
+				if (TreeItem *parent_item = item->get_parent()) {
+					parent_item->uncollapse_tree();
+				}
+				updating_scene_tree = true;
 				scroll_item = item;
 			}
-			updating_scene_tree = true;
 		}
 
 		// Add buttons.
@@ -385,8 +381,6 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 	inspected_object_ids = ids_present;
 
-	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree.
-
 	for (TreeItem *item : select_items) {
 		item->select(0);
 	}
@@ -410,6 +404,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
+	// IDs that weren't found will be excluded in the next update (either removed or not nodes).
 	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
 
@@ -431,6 +426,10 @@ void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 }
 
 void EditorDebuggerTree::clear_selection() {
+	if (inspected_object_ids.is_empty()) {
+		return;
+	}
+
 	inspected_object_ids.clear();
 
 	if (!updating_scene_tree) {
@@ -515,16 +514,12 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			String text = get_selected_path();
 			if (text.is_empty()) {
 				return;
-			} else if (text == "/root") {
+			}
+			// Keep full remote path but strip the "/root" prefix for user-facing copy.
+			if (text == "/root") {
 				text = ".";
-			} else {
-				text = text.replace("/root/", "");
-				int slash = text.find_char('/');
-				if (slash < 0) {
-					text = ".";
-				} else {
-					text = text.substr(slash + 1);
-				}
+			} else if (text.begins_with("/root/")) {
+				text = text.substr(String("/root/").length());
 			}
 			DisplayServer::get_singleton()->clipboard_set(text);
 		} break;

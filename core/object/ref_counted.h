@@ -37,6 +37,7 @@ class RefCounted : public Object {
 	GDCLASS(RefCounted, Object);
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
+	SafeNumeric<uint32_t> dereference_count;
 
 protected:
 	static void _bind_methods();
@@ -46,6 +47,7 @@ public:
 
 	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() != 1; }
 	bool init_ref();
+	void deinit_ref(); // Effectively decrements refcount by increasing refcount_init by one.
 	bool reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();
 	int get_reference_count() const;
@@ -235,20 +237,6 @@ template <typename T>
 void postinitialize_handler(Ref<T> &p_object) {
 	postinitialize_handler(p_object.ptr());
 }
-
-class WeakRef : public RefCounted {
-	GDCLASS(WeakRef, RefCounted);
-
-	ObjectID ref;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Variant get_ref() const;
-	void set_obj(Object *p_object);
-	void set_ref(const Ref<RefCounted> &p_ref);
-};
 
 // Zero-constructing Ref initializes reference to nullptr (and thus empty).
 template <typename T>

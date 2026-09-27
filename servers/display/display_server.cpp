@@ -1151,6 +1151,12 @@ void DisplayServer::cursor_set_custom_image(const Ref<Resource> &p_cursor, Displ
 	WARN_PRINT("Custom cursor shape not supported by this display server.");
 }
 
+DisplayServerEnums::NotificationID DisplayServer::send_toast_notification(const String &p_title, const String &p_text, const Ref<Texture2D> &p_image, const Callable &p_callback) {
+	return DisplayServerEnums::INVALID_NOTIFICATION_ID;
+}
+
+void DisplayServer::hide_toast_notification(DisplayServerEnums::NotificationID p_id) {}
+
 bool DisplayServer::get_swap_cancel_ok() {
 	return false;
 }
@@ -1304,7 +1310,7 @@ bool DisplayServer::window_is_hdr_output_supported(DisplayServerEnums::WindowID 
 
 void DisplayServer::window_request_hdr_output(const bool p_enable, DisplayServerEnums::WindowID p_window) {
 	if (p_enable) {
-		WARN_PRINT_ED("HDR output is not supported by this display server.");
+		WARN_PRINT("HDR output requested, but it is not supported by this display server.");
 	}
 }
 
@@ -1317,7 +1323,7 @@ bool DisplayServer::window_is_hdr_output_enabled(DisplayServerEnums::WindowID p_
 }
 
 void DisplayServer::window_set_hdr_output_reference_luminance(const float p_reference_luminance, DisplayServerEnums::WindowID p_window) {
-	WARN_PRINT_ED("HDR output is not supported by this display server.");
+	WARN_PRINT("Attempting to set reference luminance, but HDR output is not supported by this display server.");
 }
 
 float DisplayServer::window_get_hdr_output_reference_luminance(DisplayServerEnums::WindowID p_window) const {
@@ -1329,7 +1335,7 @@ float DisplayServer::window_get_hdr_output_current_reference_luminance(DisplaySe
 }
 
 void DisplayServer::window_set_hdr_output_max_luminance(const float p_max_luminance, DisplayServerEnums::WindowID p_window) {
-	WARN_PRINT_ED("HDR output is not supported by this display server.");
+	WARN_PRINT("Attempting to set max luminance, but HDR output is not supported by this display server.");
 }
 
 float DisplayServer::window_get_hdr_output_max_luminance(DisplayServerEnums::WindowID p_window) const {
@@ -1363,7 +1369,7 @@ void DisplayServer::unregister_additional_output(Object *p_object) {
 }
 
 void DisplayServer::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("orientation_changed", PropertyInfo(Variant::INT, "orientation")));
+	ADD_SIGNAL(MethodInfo("orientation_changed", PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, "DisplayServer.SensorOrientation")));
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
@@ -1462,8 +1468,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clipboard_set_primary", "clipboard_primary"), &DisplayServer::clipboard_set_primary);
 	ClassDB::bind_method(D_METHOD("clipboard_get_primary"), &DisplayServer::clipboard_get_primary);
 
-	ClassDB::bind_method(D_METHOD("get_display_cutouts"), &DisplayServer::get_display_cutouts);
-	ClassDB::bind_method(D_METHOD("get_display_safe_area"), &DisplayServer::get_display_safe_area);
+	ClassDB::bind_method(D_METHOD("get_display_cutouts", "screen"), &DisplayServer::get_display_cutouts, DEFVAL(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("get_display_safe_area", "screen"), &DisplayServer::get_display_safe_area, DEFVAL(DisplayServerEnums::SCREEN_OF_MAIN_WINDOW));
 
 	ClassDB::bind_method(D_METHOD("get_screen_count"), &DisplayServer::get_screen_count);
 	ClassDB::bind_method(D_METHOD("get_primary_screen"), &DisplayServer::get_primary_screen);
@@ -1529,6 +1535,8 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("window_set_flag", "flag", "enabled", "window_id"), &DisplayServer::window_set_flag, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_flag", "flag", "window_id"), &DisplayServer::window_get_flag, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
+
+	ClassDB::bind_method(D_METHOD("window_set_icon", "icon", "window_id"), &DisplayServer::window_set_icon, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_set_window_buttons_offset", "offset", "window_id"), &DisplayServer::window_set_window_buttons_offset, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_safe_title_margins", "window_id"), &DisplayServer::window_get_safe_title_margins, DEFVAL(DisplayServerEnums::MAIN_WINDOW_ID));
@@ -1602,7 +1610,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_description", "id", "description"), &DisplayServer::accessibility_update_set_description);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_value", "id", "value"), &DisplayServer::accessibility_update_set_value);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_tooltip", "id", "tooltip"), &DisplayServer::accessibility_update_set_tooltip);
-	ClassDB::bind_method(D_METHOD("accessibility_update_set_bounds", "id", "p_rect"), &DisplayServer::accessibility_update_set_bounds);
+	ClassDB::bind_method(D_METHOD("accessibility_update_set_bounds", "id", "rect"), &DisplayServer::accessibility_update_set_bounds);
 	ClassDB::bind_method(D_METHOD("accessibility_update_set_transform", "id", "transform"), &DisplayServer::accessibility_update_set_transform);
 	ClassDB::bind_method(D_METHOD("accessibility_update_add_child", "id", "child_id"), &DisplayServer::accessibility_update_add_child);
 	ClassDB::bind_method(D_METHOD("accessibility_update_add_related_controls", "id", "related_id"), &DisplayServer::accessibility_update_add_related_controls);
@@ -1673,6 +1681,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cursor_set_shape", "shape"), &DisplayServer::cursor_set_shape);
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
 	ClassDB::bind_method(D_METHOD("cursor_set_custom_image", "cursor", "shape", "hotspot"), &DisplayServer::cursor_set_custom_image, DEFVAL(DisplayServerEnums::CURSOR_ARROW), DEFVAL(Vector2()));
+
+	ClassDB::bind_method(D_METHOD("send_toast_notification", "title", "text", "image", "callback"), &DisplayServer::send_toast_notification);
+	ClassDB::bind_method(D_METHOD("hide_toast_notification", "id"), &DisplayServer::hide_toast_notification);
 
 	ClassDB::bind_method(D_METHOD("get_swap_cancel_ok"), &DisplayServer::get_swap_cancel_ok);
 
@@ -1869,6 +1880,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCROLL_HINT_BOTTOM_EDGE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCROLL_HINT_LEFT_EDGE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCROLL_HINT_RIGHT_EDGE);
+#endif // DISABLE_DEPRECATED
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_HIDDEN);
@@ -1876,7 +1888,6 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_CONFINED_HIDDEN);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::MOUSE_MODE_MAX);
-#endif // DISABLE_DEPRECATED
 
 	BIND_CONSTANT(DisplayServerEnums::INVALID_SCREEN);
 	BIND_CONSTANT(DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS);
@@ -1887,6 +1898,7 @@ void DisplayServer::_bind_methods() {
 	BIND_CONSTANT(DisplayServerEnums::MAIN_WINDOW_ID);
 	BIND_CONSTANT(DisplayServerEnums::INVALID_WINDOW_ID);
 	BIND_CONSTANT(DisplayServerEnums::INVALID_INDICATOR_ID);
+	BIND_CONSTANT(DisplayServerEnums::INVALID_NOTIFICATION_ID);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_LANDSCAPE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_PORTRAIT);
@@ -1895,6 +1907,10 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR_LANDSCAPE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR_PORTRAIT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::SCREEN_SENSOR);
+
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_UNDEFINED);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_PORTRAIT);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::SENSOR_ORIENTATION_LANDSCAPE);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_DEFAULT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::KEYBOARD_TYPE_MULTILINE);
@@ -1966,6 +1982,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EVENT_DPI_CHANGE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EVENT_TITLEBAR_CHANGE);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EVENT_FORCE_CLOSE);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EVENT_OUTPUT_MAX_LINEAR_VALUE_CHANGED);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_TOP_LEFT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_TOP);
@@ -1976,6 +1993,10 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_BOTTOM);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_BOTTOM_RIGHT);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::WINDOW_EDGE_MAX);
+
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NOTIFICATION_ACTIVATED);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NOTIFICATION_DISMISSED);
+	BIND_ENUM_CONSTANT(DisplayServerEnums::NOTIFICATION_FAILED);
 
 	BIND_ENUM_CONSTANT(DisplayServerEnums::VSYNC_DISABLED);
 	BIND_ENUM_CONSTANT(DisplayServerEnums::VSYNC_ENABLED);

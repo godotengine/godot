@@ -1,6 +1,6 @@
 /* pngstruct.h - internal structures for libpng
  *
- * Copyright (c) 2018-2025 Cosmin Truta
+ * Copyright (c) 2018-2026 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -106,7 +106,7 @@ typedef enum
  * TODO: C23: convert these macros to C23 inlines (which are static).
  */
 #define png_chunk_flag_from_index(i) (0x80000000U >> (31 - (i)))
-   /* The flag coresponding to the given png_index enum value.  This is defined
+   /* The flag corresponding to the given png_index enum value.  This is defined
     * for png_unknown as well (until it reaches the value 32) but this should
     * not be relied on.
     */
@@ -115,7 +115,7 @@ typedef enum
    (((png_ptr)->chunks & png_chunk_flag_from_index(i)) != 0)
    /* The chunk has been recorded in png_struct */
 
-#define png_file_add_chunk(pnt_ptr, i)\
+#define png_file_add_chunk(png_ptr, i)\
    ((void)((png_ptr)->chunks |= png_chunk_flag_from_index(i)))
    /* Record the chunk in the png_struct */
 

@@ -52,6 +52,20 @@
  * Most client programs will not need to deal with shape plans directly.
  **/
 
+#ifdef HAVE_HARFRUST
+extern "C" void _hb_harfrust_shape_plan_destroy_rs (void *data);
+#endif
+
+hb_shape_plan_t::~hb_shape_plan_t ()
+{
+#ifdef HAVE_HARFRUST
+  void *data = harfrust_data.get_relaxed ();
+  if (data)
+    _hb_harfrust_shape_plan_destroy_rs (data);
+#endif
+  key.fini ();
+}
+
 
 /*
  * hb_shape_plan_key_t
@@ -115,6 +129,7 @@ hb_shape_plan_key_t::init (bool                           copy,
       else if (0 == strcmp (*shaper_list, #shaper)) \
 	HB_SHAPER_PLAN (shaper);
 #include "hb-shaper-list.hh"
+
 #undef HB_SHAPER_IMPLEMENT
   }
   else

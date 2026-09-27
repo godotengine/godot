@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SkeletonProfile" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="SkeletonProfile" inherits="Resource" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Base class for a profile of a virtual skeleton used as a target for retargeting.
 	</brief_description>
@@ -178,7 +178,7 @@
 	<members>
 		<member name="bone_size" type="int" setter="set_bone_size" getter="get_bone_size" default="0">
 			The amount of bones in retargeting section's [BoneMap] editor. For example, [SkeletonProfileHumanoid] has 56 bones.
-			The size of elements in [BoneMap] updates when changing this property in it's assigned [SkeletonProfile].
+			The size of elements in [BoneMap] updates when changing this property in its assigned [SkeletonProfile].
 		</member>
 		<member name="group_size" type="int" setter="set_group_size" getter="get_group_size" default="0">
 			The amount of groups of bones in retargeting section's [BoneMap] editor. For example, [SkeletonProfileHumanoid] has 4 groups.

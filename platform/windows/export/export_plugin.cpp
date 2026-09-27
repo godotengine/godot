@@ -203,7 +203,7 @@ Error EditorExportPlatformWindows::modify_template(const Ref<EditorExportPreset>
 	return OK;
 }
 
-Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
+Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	String custom_debug = p_preset->get("custom_template/debug");
 	String custom_release = p_preset->get("custom_template/release");
 	String arch = p_preset->get("binary_format/architecture");
@@ -306,7 +306,9 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 		pck_path = pck_path.get_basename() + ".tmp";
 	}
 
-	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags);
+	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, export_as_zip);
+
+	Error err = EditorExportPlatformPC::export_project(p_preset, p_debug, pck_path, p_flags, !export_as_zip);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
@@ -919,6 +921,11 @@ Error EditorExportPlatformWindows::fixup_embedded_pck(const String &p_path, int6
 	return OK;
 }
 
+void EditorExportPlatformWindows::get_platform_features(List<String> *r_features) const {
+	EditorExportPlatformPC::get_platform_features(r_features);
+	r_features->push_back("windows");
+}
+
 Ref<Texture2D> EditorExportPlatformWindows::get_run_icon() const {
 	return run_icon;
 }
@@ -1130,10 +1137,10 @@ void EditorExportPlatformWindows::initialize() {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-		ImageLoaderSVG::create_image_from_string(img, _windows_logo_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _windows_logo_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		set_logo(ImageTexture::create_from_image(img));
 
-		ImageLoaderSVG::create_image_from_string(img, _windows_run_icon_svg, EDSCALE, upsample, false);
+		ImageLoaderSVG::create_image_from_string(img, _windows_run_icon_svg, EDSCALE, upsample, HashMap<Color, Color>());
 		run_icon = ImageTexture::create_from_image(img);
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();

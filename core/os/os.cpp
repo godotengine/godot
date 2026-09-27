@@ -35,7 +35,6 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/os/midi_driver.h"
-#include "core/os/os.h"
 #include "core/version_generated.gen.h"
 
 #include <cstdarg>
@@ -76,9 +75,7 @@ double OS::get_unix_time() const {
 }
 
 void OS::_set_logger(CompositeLogger *p_logger) {
-	if (_logger) {
-		memdelete(_logger);
-	}
+	memdelete(_logger);
 	_logger = p_logger;
 }
 
@@ -836,8 +833,6 @@ OS::OS() {
 }
 
 OS::~OS() {
-	if (_logger) {
-		memdelete(_logger);
-	}
+	memdelete(_logger);
 	singleton = nullptr;
 }

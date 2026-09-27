@@ -10,6 +10,7 @@
 		Although [Color] may be used to store values of any encoding, the red ([member r]), green ([member g]), and blue ([member b]) properties of [Color] are expected by Godot to be encoded using the [url=https://en.wikipedia.org/wiki/SRGB#Transfer_function_(%22gamma%22)]nonlinear sRGB transfer function[/url] unless otherwise stated. This color encoding is used by many traditional art and web tools, making it easy to match colors between Godot and these tools. Godot uses [url=https://en.wikipedia.org/wiki/Rec._709]Rec. ITU-R BT.709[/url] color primaries, which are used by the sRGB standard.
 		All physical simulation, such as lighting calculations, and colorimetry transformations, such as [method get_luminance], must be performed on linearly encoded values to produce correct results. When performing these calculations, convert [Color] to and from linear encoding using [method srgb_to_linear] and [method linear_to_srgb].
 		[b]Note:[/b] In a boolean context, a Color will evaluate to [code]false[/code] if it is equal to [code]Color(0, 0, 0, 1)[/code] (opaque black). Otherwise, a Color will always evaluate to [code]true[/code].
+		[b]Note:[/b] In C#, color constants are defined in the [code]Colors[/code] static class instead of [code skip-lint]Color[/code]. Additionally, named colors use [code]PascalCase[/code] syntax instead of [code]UPPER_SNAKE_CASE[/code]. For example, [code skip-lint]Color.ALICE_BLUE[/code] in GDScript is [code skip-lint]Colors.AliceBlue[/code] in C#.
 	</description>
 	<tutorials>
 		<link title="2D GD Paint Demo">https://godotengine.org/asset-library/asset/2768</link>
@@ -218,7 +219,7 @@
 				[b]Note:[/b] [method get_luminance] relies on the color using linear encoding to return an accurate relative luminance value. If the color uses the default nonlinear sRGB encoding, use [method srgb_to_linear] to convert it to linear encoding first.
 			</description>
 		</method>
-		<method name="hex" qualifiers="static">
+		<method name="hex" qualifiers="static" keywords="from_rgba32">
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
@@ -239,7 +240,7 @@
 				If you want to use hex notation in a constant expression, use the equivalent constructor instead (i.e. [code]Color(0xRRGGBBAA)[/code]).
 			</description>
 		</method>
-		<method name="hex64" qualifiers="static">
+		<method name="hex64" qualifiers="static" keywords="from_rgba64">
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
@@ -460,7 +461,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_rgba32" qualifiers="const">
+		<method name="to_rgba32" qualifiers="const" keywords="to_hex">
 			<return type="int" />
 			<description>
 				Returns the color converted to a 32-bit integer in RGBA format (each component is 8 bits). RGBA is Godot's default format. This method is the inverse of [method hex].
@@ -476,7 +477,7 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="to_rgba64" qualifiers="const">
+		<method name="to_rgba64" qualifiers="const" keywords="to_hex64">
 			<return type="int" />
 			<description>
 				Returns the color converted to a 64-bit integer in RGBA format (each component is 16 bits). RGBA is Godot's default format. This method is the inverse of [method hex64].

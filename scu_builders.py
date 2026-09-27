@@ -74,7 +74,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
             print_error(f'SCU: "{output_folder}" could not be created.')
             return
         if _verbose:
-            print("SCU: Creating folder: %s" % output_folder)
+            print(f"SCU: Creating folder: {output_folder}")
 
     file_text = ""
 
@@ -94,7 +94,7 @@ def write_output_file(file_count, include_list, start_line, end_line, output_fol
 
     if not output_path.exists() or output_path.read_text() != file_text:
         if _verbose:
-            print("SCU: Generating: %s" % short_filename)
+            print(f"SCU: Generating: {short_filename}")
         output_path.write_text(file_text, encoding="utf8")
     elif _verbose:
         print("SCU: Generation not needed for: " + short_filename)
@@ -262,7 +262,7 @@ def generate_scu_files(max_includes_per_scu):
     global _max_includes_per_scu
     _max_includes_per_scu = max_includes_per_scu
 
-    print("SCU: Generating build files... (max includes per SCU: %d)" % _max_includes_per_scu)
+    print(f"SCU: Generating build files... (max includes per SCU: {_max_includes_per_scu})")
 
     curr_folder = os.path.abspath("./")
 
@@ -305,6 +305,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["editor/doc"])
     process_folder(["editor/docks"], ["file_system_dock"])
     process_folder(["editor/export"])
+    process_folder(["editor/export/shader_baker"])
     process_folder(["editor/file_system"])
     process_folder(["editor/gui"])
     process_folder(["editor/import"])
@@ -317,7 +318,6 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["editor/scene"])
     process_folder(["editor/scene/2d"])
     process_folder(["editor/scene/2d/physics"])
-    process_folder(["editor/scene/2d/tiles"])
     process_folder(["editor/scene/3d"])
     process_folder(["editor/scene/3d/gizmos"])
     process_folder(["editor/scene/gui"])
@@ -377,7 +377,7 @@ def generate_scu_files(max_includes_per_scu):
     )
     process_folder(["modules/openxr/extensions/spatial_entities"])
     process_folder(["modules/openxr/scene"])
-
+    process_folder(["modules/tilemap"])
     process_folder(["modules/webrtc"])
     process_folder(["modules/websocket"])
     process_folder(["modules/webxr"])
@@ -423,6 +423,7 @@ def generate_scu_files(max_includes_per_scu):
             "tests",
             "/core",
             "/core/config",
+            "/core/crypto",
             "/core/input",
             "/core/io",
             "/core/math",
@@ -443,6 +444,6 @@ def generate_scu_files(max_includes_per_scu):
     os.chdir(curr_folder)
 
     if _verbose:
-        print("SCU: Processed folders: %s" % sorted(_scu_folders))
+        print(f"SCU: Processed folders: {sorted(_scu_folders)}")
 
     return _scu_folders

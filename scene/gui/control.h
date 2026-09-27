@@ -82,6 +82,7 @@ public:
 		SIZE_EXPAND = 2,
 		SIZE_SHRINK_CENTER = 4,
 		SIZE_SHRINK_END = 8,
+		SIZE_MAXIMIZE = 16,
 
 		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 	};
@@ -172,6 +173,11 @@ public:
 		TEXT_DIRECTION_INHERITED = TextServer::DIRECTION_INHERITED,
 	};
 
+	enum AutoFocusStrategy {
+		STRATEGY_LEGACY,
+		STRATEGY_BALLOON,
+	};
+
 private:
 	struct CComparator {
 		bool operator()(const Control *p_a, const Control *p_b) const {
@@ -239,12 +245,30 @@ private:
 
 		Point2 pos_cache;
 		Size2 size_cache;
+
+		mutable Size2 maximum_size_cache;
+		mutable bool maximum_size_valid = false;
+
+		mutable Size2 parent_maximum_size_cache = Size2(-1, -1);
+
+		Size2 last_maximum_size;
+		bool updating_last_maximum_size = false;
+		bool block_maximum_size_adjust = false;
+
 		mutable Size2 minimum_size_cache;
 		mutable bool minimum_size_valid = false;
 
 		Size2 last_minimum_size;
 		bool updating_last_minimum_size = false;
 		bool block_minimum_size_adjust = false;
+
+		mutable Size2 desired_size_cache;
+		mutable bool desired_size_valid = false;
+
+		Size2 last_desired_size;
+		bool updating_last_desired_size = false;
+
+		bool expanded_by_desired_size = false;
 
 		bool layout_pending = false;
 
@@ -255,7 +279,10 @@ private:
 		BitField<SizeFlags> h_size_flags = SIZE_FILL;
 		BitField<SizeFlags> v_size_flags = SIZE_FILL;
 		real_t expand = 1.0;
-		Point2 custom_minimum_size;
+		Size2 custom_maximum_size = Size2(-1, -1);
+		Size2 custom_minimum_size;
+
+		bool propagate_maximum_size = false;
 
 		// Input events and rendering.
 
@@ -301,6 +328,7 @@ private:
 		Theme::ThemeFontSizeMap theme_font_size_override;
 		Theme::ThemeColorMap theme_color_override;
 		Theme::ThemeConstantMap theme_constant_override;
+		Theme::ThemeSoundMap theme_sound_override;
 
 		mutable HashMap<StringName, Theme::ThemeIconMap> theme_icon_cache;
 		mutable HashMap<StringName, Theme::ThemeStyleMap> theme_style_cache;
@@ -308,6 +336,7 @@ private:
 		mutable HashMap<StringName, Theme::ThemeFontSizeMap> theme_font_size_cache;
 		mutable HashMap<StringName, Theme::ThemeColorMap> theme_color_cache;
 		mutable HashMap<StringName, Theme::ThemeConstantMap> theme_constant_cache;
+		mutable HashMap<StringName, Theme::ThemeSoundMap> theme_audio_cache;
 
 		// Internationalization.
 
@@ -320,6 +349,7 @@ private:
 		// Extra properties.
 
 		String tooltip;
+		StringName translation_context;
 		AutoTranslateMode tooltip_auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 	} data;
@@ -343,8 +373,7 @@ private:
 	void _set_global_position(const Point2 &p_point);
 	void _set_size(const Size2 &p_size);
 
-	void _compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (&r_offsets)[4]);
-	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
+	void _compute_layout_rect(Rect2 p_rect, bool p_keep_offsets = false);
 
 	void _set_layout_mode(LayoutMode p_mode);
 	void _update_layout_mode();
@@ -353,8 +382,13 @@ private:
 	void _set_anchors_layout_preset(int p_preset);
 	int _get_anchors_layout_preset() const;
 
+	void _update_maximum_size_cache() const;
+	void _update_maximum_size();
 	void _update_minimum_size_cache() const;
 	void _update_minimum_size();
+	void _update_desired_size_cache() const;
+	void _update_desired_size();
+	void _grow_to_desired_size();
 	void _size_changed();
 
 	void _top_level_changed() override {} // Controls don't need to do anything, only other CanvasItems.
@@ -374,12 +408,16 @@ private:
 
 	// Focus.
 
-	bool _is_focusable() const;
-	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
+	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_score, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 	bool _is_focus_mode_enabled() const;
 	void _update_focus_behavior_recursive();
 	void _propagate_focus_behavior_recursive_recursively(bool p_enabled, bool p_skip_non_inherited);
+
+	// Focus Strategies.
+	real_t _focus_strategy_legacy(const Vector2 &p_dir, const Control &p_candidate, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min);
+	real_t _focus_strategy_balloon_candidate_score(const Vector2 &p_start, const Vector2 &p_dir, const Pair<Vector2, Vector2> &p_edge);
+	real_t _focus_strategy_balloon(const Vector2 &p_dir, const Control &p_candidate, const Rect2 &p_clamp);
 
 	// Theming.
 
@@ -403,6 +441,10 @@ protected:
 
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
+	// Localization
+
+	virtual StringName _get_translation_context_with_override(const StringName &p_context) const override;
 
 	// Theming.
 
@@ -429,10 +471,19 @@ protected:
 	static void _bind_compatibility_methods();
 #endif //DISABLE_DEPRECATED
 
+	// Focus.
+	bool _is_focusable() const;
+
+	// Node overrides.
+
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
+
 	// Exposed virtual methods.
 
 	GDVIRTUAL1RC(bool, _has_point, Vector2)
 	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
+	GDVIRTUAL0RC(Vector2, _get_maximum_size)
 	GDVIRTUAL0RC(Vector2, _get_minimum_size)
 	GDVIRTUAL1RC(String, _get_tooltip, Vector2)
 	GDVIRTUAL1RC(AutoTranslateMode, _get_tooltip_auto_translate_mode_at, Vector2)
@@ -466,8 +517,7 @@ public:
 
 	// Editor plugin interoperability.
 
-	// TODO: Decouple controls from their editor plugin and get rid of this.
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
 
@@ -488,9 +538,7 @@ public:
 	virtual bool _edit_use_pivot() const override;
 
 	virtual Size2 _edit_get_minimum_size() const override;
-#endif //TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 #endif // DEBUG_ENABLED
@@ -572,15 +620,38 @@ public:
 	Vector2 get_pivot_offset() const;
 	Vector2 get_combined_pivot_offset() const;
 
-	void update_minimum_size();
+	void set_propagate_maximum_size(bool p_propagate);
+	bool is_propagating_maximum_size();
 
+	void update_maximum_size();
+	void update_minimum_size();
+	void update_desired_size();
+
+	void grow_to_desired_size();
+	bool is_expanded_by_desired_size() const;
+
+	void set_block_maximum_size_adjust(bool p_block);
 	void set_block_minimum_size_adjust(bool p_block);
+
+	virtual Size2 get_maximum_size() const;
+	virtual Size2 get_combined_maximum_size() const;
+	virtual Size2 get_inner_combined_maximum_size() const;
+
+	void set_custom_maximum_size(const Size2 &p_custom);
+	Size2 get_custom_maximum_size() const;
+
+	void set_parent_maximum_size_cache(const Size2 &p_size);
 
 	virtual Size2 get_minimum_size() const;
 	virtual Size2 get_combined_minimum_size() const;
 
 	void set_custom_minimum_size(const Size2 &p_custom);
 	Size2 get_custom_minimum_size() const;
+
+	virtual Size2 get_bound_minimum_size() const;
+
+	Size2 get_bound_desired_size() const;
+	virtual Size2 get_desired_size() const;
 
 	bool is_layout_pending() const;
 	bool is_layout_pending_in_tree() const;
@@ -677,12 +748,18 @@ public:
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
 
+	// Theme sound playback.
+
+	void play_theme_sound(const Ref<AudioStream> &p_stream);
+
 	// Accessibility.
 
 	virtual String get_accessibility_container_name(const Node *p_node) const;
 
 	void set_accessibility_name(const String &p_name);
 	String get_accessibility_name() const;
+
+	virtual String _get_accessibility_name() const;
 
 	void set_accessibility_description(const String &p_description);
 	String get_accessibility_description() const;
@@ -701,6 +778,8 @@ public:
 
 	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
 	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
+
+	virtual Transform2D get_accessibility_transform() const override { return get_global_transform(); }
 
 	// Rendering.
 
@@ -731,12 +810,13 @@ public:
 	void begin_bulk_theme_override();
 	void end_bulk_theme_override();
 
-	void add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> rp_icon);
-	void add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> rp_style);
-	void add_theme_font_override(const StringName &p_name, RequiredParam<Font> rp_font);
+	void add_theme_icon_override(const StringName &p_name, RequiredParam<Texture2D> p_icon);
+	void add_theme_style_override(const StringName &p_name, RequiredParam<StyleBox> p_style);
+	void add_theme_font_override(const StringName &p_name, RequiredParam<Font> p_font);
 	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);
+	void add_theme_sound_override(const StringName &p_name, const Ref<AudioStream> &p_sound);
 
 	void remove_theme_icon_override(const StringName &p_name);
 	void remove_theme_style_override(const StringName &p_name);
@@ -744,6 +824,7 @@ public:
 	void remove_theme_font_size_override(const StringName &p_name);
 	void remove_theme_color_override(const StringName &p_name);
 	void remove_theme_constant_override(const StringName &p_name);
+	void remove_theme_sound_override(const StringName &p_name);
 
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
@@ -751,6 +832,7 @@ public:
 	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Ref<AudioStream> get_theme_sound(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Variant get_used_theme_item(const String &p_full_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
@@ -763,6 +845,7 @@ public:
 	bool has_theme_font_size_override(const StringName &p_name) const;
 	bool has_theme_color_override(const StringName &p_name) const;
 	bool has_theme_constant_override(const StringName &p_name) const;
+	bool has_theme_sound_override(const StringName &p_name) const;
 
 	bool has_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
@@ -770,6 +853,7 @@ public:
 	bool has_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	bool has_theme_sound(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 
 	float get_theme_default_base_scale() const;
 	Ref<Font> get_theme_default_font() const;
@@ -797,6 +881,8 @@ public:
 
 	String get_tooltip_text() const;
 	void set_tooltip_text(const String &text);
+	StringName get_translation_context() const;
+	void set_translation_context(const StringName &p_context);
 	virtual String get_tooltip(const Point2 &p_pos) const;
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 

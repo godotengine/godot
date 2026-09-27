@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -206,6 +206,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
  * SDL_LOG_PRIORITY_WARN and higher have a prefix showing their priority, e.g.
  * "WARNING: ".
  *
+ * This function makes a copy of its string argument, **prefix**, so it is not
+ * necessary to keep the value of **prefix** alive after the call returns.
+ *
  * \param priority the SDL_LogPriority to modify.
  * \param prefix the prefix to use for that log priority, or NULL to use no
  *               prefix.
@@ -263,7 +266,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fm
  * \sa SDL_LogInfo
  * \sa SDL_LogMessage
  * \sa SDL_LogMessageV
- * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */
@@ -485,7 +487,8 @@ typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_
 /**
  * Get the default log output function.
  *
- * \returns the default log output callback.
+ * \returns the default log output callback. It should be called with NULL for
+ *          the userdata argument.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

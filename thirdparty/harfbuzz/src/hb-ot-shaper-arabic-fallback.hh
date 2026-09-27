@@ -231,11 +231,7 @@ struct arabic_fallback_plan_t
   OT::hb_ot_layout_lookup_accelerator_t *accel_array[ARABIC_FALLBACK_MAX_LOOKUPS];
 };
 
-#if defined(_WIN32) && !defined(HB_NO_WIN1256)
-#define HB_WITH_WIN1256
-#endif
-
-#ifdef HB_WITH_WIN1256
+#ifndef HB_NO_WIN1256
 #include "hb-ot-shaper-arabic-win1256.hh"
 #endif
 
@@ -254,7 +250,7 @@ arabic_fallback_plan_init_win1256 (arabic_fallback_plan_t *fallback_plan HB_UNUS
 				   const hb_ot_shape_plan_t *plan HB_UNUSED,
 				   hb_font_t *font HB_UNUSED)
 {
-#ifdef HB_WITH_WIN1256
+#ifndef HB_NO_WIN1256
   /* Does this font look like it's Windows-1256-encoded? */
   hb_codepoint_t g;
   if (!(hb_font_get_glyph (font, 0x0627u, 0, &g) && g == 199 /* ALEF */ &&

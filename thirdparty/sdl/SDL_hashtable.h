@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -219,10 +219,10 @@ typedef void (SDLCALL *SDL_HashDestroyCallback)(void *userdata, const void *key,
  * \returns true to keep iterating, false to stop iteration.
  *
  * \threadsafety A read lock is held during iteration, so other threads can
- *               still access the the hash table, but threads attempting to
- *               make changes will be blocked until iteration completes. If
- *               this is a concern, do as little in the callback as possible
- *               and finish iteration quickly.
+ *               still access the hash table, but threads attempting to make
+ *               changes will be blocked until iteration completes. If this
+ *               is a concern, do as little in the callback as possible and
+ *               finish iteration quickly.
  *
  * \since This datatype is available since SDL 3.4.0.
  *
@@ -248,7 +248,7 @@ typedef bool (SDLCALL *SDL_HashTableIterateCallback)(void *userdata, const SDL_H
  *
  * You can specify an estimate of the number of items expected to be stored
  * in the table, which can help make the table run more efficiently. The table
- * will preallocate resources to accomodate this number of items, which is
+ * will preallocate resources to accommodate this number of items, which is
  * most useful if you intend to fill the table with a lot of data right after
  * creating it. Otherwise, it might make more sense to specify the _minimum_
  * you expect the table to hold and let it grow as necessary from there. This
@@ -422,7 +422,7 @@ extern bool SDL_HashTableEmpty(SDL_HashTable *table);
  * \param table the hash table to iterate.
  * \param callback the function pointer to call for each value.
  * \param userdata a pointer that is passed to `callback`.
- * \returns true if iteration happened, false if not (bogus parameter, etc).
+ * \returns true if iteration happened, false if not (bogus parameter, etc.).
  *
  * \since This function is available since SDL 3.4.0.
  */

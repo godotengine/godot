@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody2D" inherits="PhysicsBody2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RigidBody2D" inherits="PhysicsBody2D" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A 2D physics body that is moved by a physics simulation.
 	</brief_description>
@@ -114,6 +114,24 @@
 			<description>
 				Returns the number of contacts this body has with other bodies. By default, this returns 0 unless bodies are configured to monitor contacts (see [member contact_monitor]).
 				[b]Note:[/b] To retrieve the colliding bodies, use [method get_colliding_bodies].
+			</description>
+		</method>
+		<method name="get_velocity_at_local_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="local_position" type="Vector2" />
+			<description>
+				Returns the body's velocity at the given relative position.
+				[param local_position] is the offset from the body origin in global coordinates.
+				See also [method get_velocity_at_position].
+			</description>
+		</method>
+		<method name="get_velocity_at_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="global_point" type="Vector2" />
+			<description>
+				Returns the body's velocity at the given global position.
+				This is equivalent to [code]get_velocity_at_local_position(global_point - global_position)[/code].
+				See also [method get_velocity_at_local_position].
 			</description>
 		</method>
 		<method name="set_axis_velocity">

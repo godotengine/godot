@@ -98,8 +98,12 @@ HashMap<String, bool *> OpenXRFBFoveationExtension::get_requested_extensions(XrV
 #ifdef XR_USE_GRAPHICS_API_VULKAN
 	if (rendering_driver == "vulkan") {
 		request_extensions[XR_FB_FOVEATION_VULKAN_EXTENSION_NAME] = &fb_foveation_vulkan_ext;
-		request_extensions[XR_META_FOVEATION_EYE_TRACKED_EXTENSION_NAME] = &meta_foveation_eye_tracked_ext;
 		request_extensions[XR_META_VULKAN_SWAPCHAIN_CREATE_INFO_EXTENSION_NAME] = &meta_vulkan_swapchain_create_info_ext;
+
+		bool fov_eye_tracked = GLOBAL_GET("xr/openxr/foveation_eye_tracked");
+		if (fov_eye_tracked) {
+			request_extensions[XR_META_FOVEATION_EYE_TRACKED_EXTENSION_NAME] = &meta_foveation_eye_tracked_ext;
+		}
 	}
 #endif // XR_USE_GRAPHICS_API_VULKAN
 
@@ -206,7 +210,7 @@ void OpenXRFBFoveationExtension::get_fragment_density_offsets(LocalVector<Vector
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	if (!is_foveation_eye_tracked_enabled() || !OpenXREyeGazeInteractionExtension::get_singleton()->is_available()) {
+	if (foveation_level == 0 || !is_foveation_eye_tracked_enabled() || !OpenXREyeGazeInteractionExtension::get_singleton()->is_available()) {
 		return;
 	}
 
@@ -243,7 +247,7 @@ void OpenXRFBFoveationExtension::set_foveation_with_subsampled_images_enabled(bo
 }
 
 bool OpenXRFBFoveationExtension::is_foveation_with_subsampled_images_enabled() const {
-	return is_enabled() && meta_vulkan_swapchain_create_info_ext && foveation_with_subsampled_images_enabled;
+	return is_enabled() && foveation_level > 0 && meta_vulkan_swapchain_create_info_ext && foveation_with_subsampled_images_enabled;
 }
 
 void OpenXRFBFoveationExtension::set_foveation_with_subsampled_images_active(bool p_active) {

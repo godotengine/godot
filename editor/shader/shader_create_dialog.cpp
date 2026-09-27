@@ -32,9 +32,12 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/settings/editor_settings.h"
@@ -119,6 +122,16 @@ void ShaderCreateDialog::_template_changed(int p_template) {
 }
 
 void ShaderCreateDialog::ok_pressed() {
+	if (missing_base_dir) {
+		String path = file_path->get_text();
+		Error err = EditorFileSystem::get_singleton()->make_dir_recursive(path.strip_edges().get_base_dir());
+		if (err != OK) {
+			alert->set_text(TTR("Error - Could not create the directory for the shader."));
+			alert->popup_centered();
+			return;
+		}
+	}
+
 	if (is_new_shader_created) {
 		_create_new();
 		if (built_in_enabled) {
@@ -163,7 +176,7 @@ void ShaderCreateDialog::_create_new() {
 		if (is_built_in) {
 			Node *edited_scene = get_tree()->get_edited_scene_root();
 			if (likely(edited_scene)) {
-				shader->set_path(edited_scene->get_scene_file_path() + "::" + shader->generate_scene_unique_id());
+				EditorNode::setup_built_in_resource(shader, edited_scene->get_scene_file_path());
 			}
 		} else {
 			String lpath = ProjectSettings::get_singleton()->localize_path(file_path->get_text());
@@ -337,7 +350,7 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 	int preferred_type = -1;
 	// Select preferred type if specified.
 	for (int i = 0; i < type_menu->get_item_count(); i++) {
-		if (type_menu->get_item_text(i) == p_preferred_type) {
+		if (type_menu->get_item_text(i) == p_preferred_type && !(p_load_enabled && p_preferred_type.contains("Include"))) {
 			preferred_type = i;
 			break;
 		}
@@ -348,7 +361,7 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 		String last_lang = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_language", "");
 		if (!last_lang.is_empty()) {
 			for (int i = 0; i < type_menu->get_item_count(); i++) {
-				if (type_menu->get_item_text(i) == last_lang) {
+				if (type_menu->get_item_text(i) == last_lang && !(p_load_enabled && last_lang.contains("Include"))) {
 					preferred_type = i;
 					break;
 				}
@@ -400,9 +413,10 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 		return TTRC("Path is not local.");
 	}
 
+	missing_base_dir = false;
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (d->change_dir(stripped_file_path.get_base_dir()) != OK) {
-		return TTRC("Invalid base path.");
+		missing_base_dir = true;
 	}
 
 	Ref<DirAccess> f = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -423,6 +437,9 @@ String ShaderCreateDialog::_validate_path(const String &p_path) {
 }
 
 void ShaderCreateDialog::_update_dialog() {
+	if (missing_base_dir) {
+		validation_panel->set_message(MSG_ID_SHADER, TTRC("Base path is invalid, the target folder will be created automatically."), EditorValidationPanel::MSG_WARNING);
+	}
 	if (!is_built_in && !is_path_valid) {
 		validation_panel->set_message(MSG_ID_SHADER, TTRC("Invalid path."), EditorValidationPanel::MSG_ERROR);
 	}

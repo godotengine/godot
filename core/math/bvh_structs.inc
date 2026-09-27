@@ -78,7 +78,7 @@ public:
 	}
 
 	bool is_dirty() const { return dirty; }
-	void set_dirty(bool p) { dirty = p; }
+	void set_dirty(bool p_dirty) { dirty = p_dirty; }
 
 	void clear() {
 		num_items = 0;
@@ -140,8 +140,8 @@ struct TNode {
 
 	bool is_full_of_children() const { return num_children >= MAX_CHILDREN; }
 
-	void remove_child_internal(uint32_t child_num) {
-		children[child_num] = children[num_children - 1];
+	void remove_child_internal(uint32_t p_child_num) {
+		children[p_child_num] = children[num_children - 1];
 		num_children--;
 	}
 

@@ -152,6 +152,8 @@ class DisplayServerX11 : public DisplayServer {
 #ifdef XKB_ENABLED
 		xkb_compose_state *xkb_state = nullptr;
 #endif
+		Ref<Image> icon;
+		bool icon_set = false;
 
 		Size2i min_size;
 		Size2i max_size;
@@ -229,6 +231,7 @@ class DisplayServerX11 : public DisplayServer {
 	::Time last_keyrelease_time = 0;
 	::XIM xim = nullptr;
 	::XIMStyle xim_style;
+	bool warn_xim_just_stopped = true;
 
 	static int _xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
 			::XPointer call_data);
@@ -271,6 +274,12 @@ class DisplayServerX11 : public DisplayServer {
 		Vector2 old_raw_pos;
 		::Time last_relative_time;
 	} xi;
+
+	Ref<Image> icon;
+	void _update_window_icon(WindowData &p_wd);
+
+	static bool g_set_icon_error;
+	static int set_icon_errorhandler(Display *dpy, XErrorEvent *ev);
 
 	bool _refresh_device_info();
 
@@ -442,6 +451,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_scale(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Color screen_get_pixel(const Point2i &p_position) const override;
 	virtual Ref<Image> screen_get_image(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
@@ -499,6 +509,8 @@ public:
 
 	virtual void window_set_mode(DisplayServerEnums::WindowMode p_mode, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 	virtual DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
+
+	virtual void window_set_icon(const Ref<Image> &p_icon, DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) override;
 
 	virtual bool window_is_maximize_allowed(DisplayServerEnums::WindowID p_window = DisplayServerEnums::MAIN_WINDOW_ID) const override;
 

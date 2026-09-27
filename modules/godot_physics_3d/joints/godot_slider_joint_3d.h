@@ -233,11 +233,11 @@ public:
 	Vector3 getAncorInA();
 	Vector3 getAncorInB();
 
-	void set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value);
-	real_t get_param(PhysicsServer3D::SliderJointParam p_param) const;
+	void set_param(PS3DE::SliderJointParam p_param, real_t p_value);
+	real_t get_param(PS3DE::SliderJointParam p_param) const;
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
 
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
+	virtual PS3DE::JointType get_type() const override { return PS3DE::JOINT_TYPE_SLIDER; }
 };

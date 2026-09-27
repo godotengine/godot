@@ -200,7 +200,7 @@ void GLTFNode::set_visible(bool p_visible) {
 }
 
 Variant GLTFNode::get_additional_data(const StringName &p_extension_name) {
-	return additional_data[p_extension_name];
+	return additional_data.get(p_extension_name, Variant());
 }
 
 bool GLTFNode::has_additional_data(const StringName &p_extension_name) {
@@ -212,6 +212,7 @@ void GLTFNode::set_additional_data(const StringName &p_extension_name, Variant p
 }
 
 NodePath GLTFNode::get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons) {
+	ERR_FAIL_COND_V_MSG(p_state.is_null(), NodePath(), "Cannot get scene node path because GLTFState is null.");
 	Vector<StringName> path;
 	Vector<StringName> subpath;
 	Ref<GLTFNode> current_gltf_node = this;

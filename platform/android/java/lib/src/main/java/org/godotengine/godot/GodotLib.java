@@ -33,6 +33,7 @@ package org.godotengine.godot;
 import org.godotengine.godot.gl.GodotRenderer;
 import org.godotengine.godot.io.directory.DirectoryAccessHandler;
 import org.godotengine.godot.io.file.FileAccessHandler;
+import org.godotengine.godot.nativeapi.GodotNativeBridge;
 import org.godotengine.godot.tts.GodotTTS;
 import org.godotengine.godot.utils.GodotNetUtils;
 import org.godotengine.godot.variant.Callable;
@@ -40,7 +41,11 @@ import org.godotengine.godot.variant.Callable;
 import android.app.Activity;
 import android.content.res.AssetManager;
 import android.hardware.SensorEvent;
+import android.os.Bundle;
 import android.view.Surface;
+import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeProvider;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -56,13 +61,13 @@ public class GodotLib {
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
 	public static native boolean initialize(
-			Godot p_instance,
-			AssetManager p_asset_manager,
+			GodotNativeBridge nativeBridge,
+			AssetManager assetManager,
 			GodotIO godotIO,
 			GodotNetUtils netUtils,
 			DirectoryAccessHandler directoryAccessHandler,
 			FileAccessHandler fileAccessHandler,
-			boolean use_apk_expansion);
+			boolean useApkExpansion);
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
@@ -108,14 +113,25 @@ public class GodotLib {
 	public static native void ttsCallback(int event, long id, int pos);
 
 	/**
+	 * Accesskit.
+	 */
+
+	static native boolean createAccessKitAdapter(long windowID);
+	static native void freeAccessKitAdapter(long windowID);
+	static native AccessibilityNodeInfo createAccessibilityNodeInfo(long windowID, View host, int virtualViewId);
+	static native AccessibilityNodeInfo findAccessibilityFocus(long windowID, View host, int focusType);
+	static native boolean performAccessibilityAction(long windowID, View host, int virtualViewId, int action, Bundle arguments);
+	static native boolean onAccessibilityHoverEvent(long windowID, View host, int action, float x, float y);
+
+	/**
 	 * Forward touch events.
 	 */
-	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap);
+	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap, boolean longPress);
 
 	/**
 	 * Dispatch mouse events
 	 */
-	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY);
+	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY, boolean emulated);
 
 	public static native void magnify(float x, float y, float factor);
 
@@ -144,6 +160,12 @@ public class GodotLib {
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void gyroscope(float x, float y, float z);
+
+	/**
+	 * Forward device orientation (rotation vector) events as a quaternion.
+	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
+	 */
+	public static native void deviceOrientation(float x, float y, float z, float w);
 
 	/**
 	 * Forward regular key events.

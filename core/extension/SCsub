@@ -19,6 +19,4 @@ env.CommandNoCache(
     env.Run(make_interface_header.run),
 )
 
-env_extension = env.Clone()
-
-env_extension.add_source_files(env.core_sources, "*.cpp")
+env.add_source_files(env.core_sources, "*.cpp")

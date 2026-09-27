@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorExportPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorExportPlugin" inherits="RefCounted" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A script that is executed when exporting the project.
 	</brief_description>
@@ -310,6 +310,16 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Adds a static library from the given [param path] to the Apple embedded platform project.
+			</description>
+		</method>
+		<method name="add_apple_embedded_platform_spm_package">
+			<return type="void" />
+			<param index="0" name="url" type="String" />
+			<param index="1" name="version" type="String" />
+			<param index="2" name="products" type="PackedStringArray" />
+			<description>
+				Adds a Swift Package Manager package to the Apple embedded platform's Xcode project. The [param url] is the URL of the package, [param version] is the version requirement (e.g. "1.0.0"), and [param products] is an array of product names to include from the package.
+				[b]Note:[/b] Only supported on iOS and visionOS.
 			</description>
 		</method>
 		<method name="add_file">

@@ -33,7 +33,7 @@
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/audio/audio_stream_randomizer.h"
 
 void AudioStreamRandomizerEditorPlugin::edit(Object *p_object) {
 }

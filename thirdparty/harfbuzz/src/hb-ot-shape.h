@@ -54,6 +54,21 @@ hb_ot_shape_plan_get_feature_tags (hb_shape_plan_t *shape_plan,
 				   unsigned int    *tag_count, /* IN/OUT */
 				   hb_tag_t        *tags /* OUT */);
 
+/**
+ * HB_OT_SHAPE_BUFFER_FORMAT_SERIAL:
+ *
+ * The serial number of the current internal buffer format.
+ *
+ * The serial number will increase when internal #hb_glyph_info_t and
+ * #hb_glyph_position_t members change their format.
+ *
+ * Since: 13.2.0
+ */
+#define HB_OT_SHAPE_BUFFER_FORMAT_SERIAL 1
+
+HB_EXTERN unsigned int
+hb_ot_shape_get_buffer_format_serial (void);
+
 HB_END_DECLS
 
 #endif /* HB_OT_SHAPE_H */

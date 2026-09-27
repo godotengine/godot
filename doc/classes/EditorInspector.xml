@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInspector" inherits="ScrollContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="EditorInspector" inherits="ScrollContainer" api_type="editor" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A control used to edit properties of an object.
 	</brief_description>
@@ -14,6 +14,19 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="collapse_all_folding">
+			<return type="void" />
+			<description>
+				Collapses all foldable sections.
+			</description>
+		</method>
+		<method name="create_default_inspector" qualifiers="static">
+			<return type="EditorInspector" />
+			<param index="0" name="filter_line_edit" type="LineEdit" default="null" />
+			<description>
+				Creates an inspector with the same configuration as the one used in the editor's Inspector dock. When passing a [LineEdit] into [param filter_line_edit], the inspector will filter its properties based on [member LineEdit.text] whenever [signal LineEdit.text_changed] is emitted.
+			</description>
+		</method>
 		<method name="edit">
 			<return type="void" />
 			<param index="0" name="object" type="Object" />
@@ -22,10 +35,28 @@
 				[b]Note:[/b] If you want to edit an object in the editor's main inspector, use the [code]edit_*[/code] methods in [EditorInterface] instead.
 			</description>
 		</method>
+		<method name="expand_all_folding">
+			<return type="void" />
+			<description>
+				Expands all foldable sections.
+			</description>
+		</method>
+		<method name="expand_revertable">
+			<return type="void" />
+			<description>
+				Expands only the foldable sections that contain a revertable (i.e. non-default) property.
+			</description>
+		</method>
 		<method name="get_edited_object">
 			<return type="Object" />
 			<description>
 				Returns the object currently selected in this inspector.
+			</description>
+		</method>
+		<method name="get_property_clipboard" qualifiers="static">
+			<return type="Variant" />
+			<description>
+				Gets the value currently in the property clipboard.
 			</description>
 		</method>
 		<method name="get_selected_path" qualifiers="const">
@@ -45,6 +76,13 @@
 			<param index="6" name="wide" type="bool" default="false" />
 			<description>
 				Creates a property editor that can be used by plugin UI to edit the specified property of an [param object].
+			</description>
+		</method>
+		<method name="set_property_clipboard" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="value" type="Variant" />
+			<description>
+				Sets the property clipboard's content to the given value.
 			</description>
 		</method>
 	</methods>

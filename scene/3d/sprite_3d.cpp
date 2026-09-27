@@ -1154,15 +1154,21 @@ void AnimatedSprite3D::_notification(int p_what) {
 					// Forwards.
 					if (frame_progress >= 1.0) {
 						if (frame >= last_frame) {
-							if (frames->get_animation_loop(animation)) {
-								frame = 0;
-								emit_signal("animation_looped");
-							} else {
+							SpriteFrames::LoopMode loop = frames->get_animation_loop_mode(animation);
+							if (loop == SpriteFrames::LOOP_NONE) {
 								frame = last_frame;
 								pause();
 								emit_signal(SceneStringName(animation_finished));
 								return;
 							}
+
+							if (loop == SpriteFrames::LOOP_PINGPONG) {
+								frame = last_frame;
+								custom_speed_scale *= -1;
+							} else {
+								frame = 0;
+							}
+							emit_signal("animation_looped");
 						} else {
 							frame++;
 						}
@@ -1178,15 +1184,21 @@ void AnimatedSprite3D::_notification(int p_what) {
 					// Backwards.
 					if (frame_progress <= 0) {
 						if (frame <= 0) {
-							if (frames->get_animation_loop(animation)) {
-								frame = last_frame;
-								emit_signal("animation_looped");
-							} else {
+							SpriteFrames::LoopMode loop = frames->get_animation_loop_mode(animation);
+							if (loop == SpriteFrames::LOOP_NONE) {
 								frame = 0;
 								pause();
 								emit_signal(SceneStringName(animation_finished));
 								return;
 							}
+
+							if (loop == SpriteFrames::LOOP_PINGPONG) {
+								frame = 0;
+								custom_speed_scale *= -1;
+							} else {
+								frame = last_frame;
+							}
+							emit_signal("animation_looped");
 						} else {
 							frame--;
 						}
@@ -1540,7 +1552,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_looped"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, SpriteFrames::get_class_static()), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, SpriteFrames::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, ""), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");

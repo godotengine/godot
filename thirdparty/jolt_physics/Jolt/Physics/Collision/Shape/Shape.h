@@ -13,9 +13,8 @@
 #include <Jolt/Core/Color.h>
 #include <Jolt/Core/Result.h>
 #include <Jolt/Core/NonCopyable.h>
-#include <Jolt/Core/UnorderedMap.h>
-#include <Jolt/Core/UnorderedSet.h>
-#include <Jolt/Core/StreamUtils.h>
+#include <Jolt/Core/UnorderedSetFwd.h>
+#include <Jolt/Core/ObjectToIDMap.h>
 #include <Jolt/ObjectStream/SerializableObject.h>
 
 JPH_NAMESPACE_BEGIN

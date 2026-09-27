@@ -1,0 +1,15 @@
+diff --git a/thirdparty/glad/gl.c b/thirdparty/glad/gl.c
+index d78c606dbd..0d4c77ed59 100644
+--- a/thirdparty/glad/gl.c
++++ b/thirdparty/glad/gl.c
+@@ -2614,6 +2614,10 @@ static GLADapiproc glad_dlsym_handle(void* handle, const char *name) {
+   typedef __eglMustCastToProperFunctionPointerType (GLAD_API_PTR *PFNEGLGETPROCADDRESSPROC)(const char *name);
+ #endif
+   extern __eglMustCastToProperFunctionPointerType emscripten_GetProcAddress(const char *name);
++#elif EGL_STATIC
++  typedef void (*__eglMustCastToProperFunctionPointerType)(void);
++  typedef __eglMustCastToProperFunctionPointerType (GLAD_API_PTR *PFNEGLGETPROCADDRESSPROC)(const char *name);
++  extern __eglMustCastToProperFunctionPointerType GLAD_API_PTR eglGetProcAddress(const char *name);
+ #elif defined(GLAD_GLES2_USE_SYSTEM_EGL)
+   #include <EGL/egl.h>
+   typedef __eglMustCastToProperFunctionPointerType (GLAD_API_PTR *PFNEGLGETPROCADDRESSPROC)(const char *name);

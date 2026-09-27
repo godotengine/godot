@@ -162,6 +162,9 @@ private:
 
 	uint32_t max_cluster_elements = 512;
 
+	/* Fog */
+	bool fog_use_legacy_blending = false;
+
 	/* Volumetric Fog */
 
 	uint32_t volumetric_fog_size = 128;
@@ -174,7 +177,7 @@ public:
 	/* LIGHTING */
 
 	virtual void setup_added_reflection_probe(const Transform3D &p_transform, const Vector3 &p_half_size) {}
-	virtual void setup_added_light(const RSE::LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture) {}
+	virtual void setup_added_light(const RSE::LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture, const Vector2 &p_area_size) {}
 	virtual void setup_added_decal(const Transform3D &p_transform, const Vector3 &p_half_size) {}
 
 	/* GI */
@@ -325,10 +328,15 @@ public:
 		return material_use_debanding;
 	}
 
+	_FORCE_INLINE_ bool fog_use_legacy_blending_get() const {
+		return fog_use_legacy_blending;
+	}
+
 	int get_roughness_layers() const;
 	bool is_using_radiance_octmap_array() const;
 
 	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) override;
+	virtual PackedByteArray bake_render_area_light_atlas(const TypedArray<RID> &p_area_light_textures, const TypedArray<Rect2> &p_area_light_atlas_texture_rects, const Size2i &p_size, int p_mipmaps) override;
 
 	virtual bool free(RID p_rid) override;
 

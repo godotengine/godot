@@ -15,7 +15,7 @@ def make_fonts_header(target, source, env):
             file.write(f"""\
 inline constexpr int _font_{name}_size = {len(buffer)};
 inline constexpr unsigned char _font_{name}[] = {{
-	{methods.format_buffer(buffer, 1)}
+{methods.format_buffer(buffer, 1)}
 }};
 
 """)

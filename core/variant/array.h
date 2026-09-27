@@ -44,7 +44,13 @@ class Variant;
 struct ArrayPrivate;
 struct ContainerType;
 
-class Array {
+/**
+ * Array-like Variant container with ref semantics on top of copy-on-write semantics.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
+class _WARN_UNUSED_ Array {
 	mutable ArrayPrivate *_p;
 	void _ref(const Array &p_from) const;
 	void _unref() const;
@@ -111,10 +117,10 @@ public:
 
 	bool operator==(const Array &p_array) const;
 	bool operator!=(const Array &p_array) const;
-	bool recursive_equal(const Array &p_array, int recursion_count) const;
+	bool recursive_equal(const Array &p_array, int p_recursion_count) const;
 
 	uint32_t hash() const;
-	uint32_t recursive_hash(int recursion_count) const;
+	uint32_t recursive_hash(int p_recursion_count) const;
 	void operator=(const Array &p_array);
 
 	void assign(const Array &p_array);
@@ -155,7 +161,7 @@ public:
 
 	Array duplicate(bool p_deep = false) const;
 	Array duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
-	Array recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
+	Array recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int p_recursion_count) const;
 
 	Array slice(int p_begin, int p_end = INT_MAX, int p_step = 1, bool p_deep = false) const;
 	Array filter(const Callable &p_callable) const;
@@ -181,7 +187,7 @@ public:
 	bool is_same_typed(const Array &p_other) const;
 	bool is_same_instance(const Array &p_other) const;
 
-	ContainerType get_element_type() const;
+	const ContainerType &get_element_type() const _LIFETIME_BOUND_;
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
@@ -190,11 +196,12 @@ public:
 	bool is_read_only() const;
 	static Array create_read_only();
 
-	Span<Variant> span() const;
-	operator Span<Variant>() const {
+	Span<Variant> span() const _LIFETIME_BOUND_;
+	operator Span<Variant>() const _LIFETIME_BOUND_ {
 		return this->span();
 	}
 
+	Array(const Array &p_base, const ContainerType &p_element_type);
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array(std::initializer_list<Variant> p_init);

@@ -27,8 +27,8 @@
 #include "hb.hh"
 
 #include "hb-raster-paint.hh"
-#include "hb-raster-svg.hh"
 #include "hb-machinery.hh"
+#include "hb-paint.hh"
 
 #include <math.h>
 
@@ -107,28 +107,59 @@ ensure_initialized (hb_raster_paint_t *c)
 {
   if (c->surface_stack.length) return;
 
+  /* A failed stack push (OOM) leaves the vector in a sticky error
+   * state, so initialization can never succeed; bail out cheaply
+   * instead of re-paying the surface acquire-and-clear below on
+   * every subsequent paint callback. */
+  if (unlikely (c->surface_stack.in_error () || c->clip_stack.in_error ()))
+    return;
+
+  /* acquire_surface() clears a full surface; charge its area, so
+   * repeated failed initialization attempts cannot re-pay it
+   * indefinitely.  Successful initialization re-arms the session
+   * budget below, making the charge a no-op for normal sessions. */
+  if (unlikely (!c->charge_work ((int64_t) c->fixed_extents.width *
+				 c->fixed_extents.height)))
+    return;
+
   /* Root surface */
   hb_raster_image_t *root = c->acquire_surface ();
   if (unlikely (!root)) return;
+
+  if (hb_color_get_alpha (c->background))
+  {
+    uint32_t bg = HB_COLOR (hb_color_get_blue (c->background),
+			    hb_color_get_green (c->background),
+			    hb_color_get_red (c->background),
+			    hb_color_get_alpha (c->background));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+    uint32_t *pixels = (uint32_t *) hb_raster_image_get_buffer (root);
+#pragma GCC diagnostic pop
+    hb_raster_extents_t ext;
+    hb_raster_image_get_extents (root, &ext);
+    unsigned count = ext.width * ext.height;
+    for (unsigned i = 0; i < count; i++)
+      pixels[i] = bg;
+  }
+
   if (unlikely (!c->surface_stack.push_or_fail (root)))
   {
     c->release_surface (root);
     return;
   }
 
-  /* Initial transform */
-  if (unlikely (!c->transform_stack.push_or_fail (c->base_transform)))
-  {
-    c->release_surface (c->surface_stack.pop ());
-    return;
-  }
+  /* Session work budget: flat floor, or a few passes over the (possibly
+   * client-sized) surface, whichever is larger. */
+  c->work_left = hb_max ((int64_t) HB_RASTER_MAX_PAINT_WORK,
+			 (int64_t) HB_RASTER_MAX_PAINT_WORK_PASSES *
+			 c->fixed_extents.width * c->fixed_extents.height);
 
   /* Initial clip: full coverage rectangle */
   hb_raster_clip_t clip;
   clip.init_full (c->fixed_extents.width, c->fixed_extents.height);
   if (unlikely (!c->clip_stack.push_or_fail (std::move (clip))))
   {
-    c->transform_stack.pop ();
     c->release_surface (c->surface_stack.pop ());
     return;
   }
@@ -145,7 +176,6 @@ hb_raster_paint_push_transform (hb_paint_funcs_t *pfuncs HB_UNUSED,
   hb_raster_paint_t *c = (hb_raster_paint_t *) paint_data;
 
   ensure_initialized (c);
-  if (unlikely (!c->transform_stack.length)) return;
 
   hb_transform_t<> t = c->current_transform ();
   t.multiply ({xx, yx, xy, yy, dx, dy});
@@ -158,7 +188,8 @@ hb_raster_paint_pop_transform (hb_paint_funcs_t *pfuncs HB_UNUSED,
 			       void *user_data HB_UNUSED)
 {
   hb_raster_paint_t *c = (hb_raster_paint_t *) paint_data;
-  c->transform_stack.pop ();
+  if (c->transform_stack.length)
+    c->transform_stack.pop ();
 }
 
 static hb_bool_t
@@ -173,6 +204,23 @@ hb_raster_paint_color_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
 typedef void (*hb_raster_paint_clip_mask_emit_t) (hb_raster_draw_t *rdr, void *user_data);
 
+/* Attach the surface box and the session work budget to @rdr before
+ * outlines are drawn into it: curves outside the surface collapse to
+ * their chord, and flattening work is charged as it happens instead
+ * of only after the whole outline has been emitted. */
+static void
+hb_raster_paint_attach_clip_rdr (hb_raster_paint_t *c,
+				 hb_raster_draw_t *rdr,
+				 const hb_raster_image_t *surf)
+{
+  hb_raster_draw_set_clip_box (rdr,
+			       (float) surf->extents.x_origin,
+			       (float) surf->extents.y_origin,
+			       (float) surf->extents.x_origin + (float) surf->extents.width,
+			       (float) surf->extents.y_origin + (float) surf->extents.height);
+  hb_raster_draw_set_external_work (rdr, &c->work_left);
+}
+
 static void
 hb_raster_paint_push_empty_clip (hb_raster_paint_t *c, unsigned w, unsigned h)
 {
@@ -185,25 +233,50 @@ hb_raster_paint_push_empty_clip (hb_raster_paint_t *c, unsigned w, unsigned h)
   (void) c->clip_stack.push (std::move (new_clip));
 }
 
-static void
-hb_raster_paint_push_clip_from_emitter (hb_raster_paint_t *c,
-					hb_raster_paint_clip_mask_emit_t emit,
-					void *emit_data)
+static bool
+hb_raster_paint_intersect_mask (const hb_raster_image_t *surf,
+				const hb_raster_extents_t &mask_ext,
+				const hb_raster_clip_t &clip,
+				unsigned w, unsigned h,
+				int64_t *mask_x0, int64_t *mask_y0,
+				unsigned *ix0, unsigned *iy0,
+				unsigned *ix1, unsigned *iy1)
 {
-  ensure_initialized (c);
+  /* Convert mask extents from surface coordinates to clip-buffer coordinates. */
+  int64_t mx0 = (int64_t) mask_ext.x_origin - (int64_t) surf->extents.x_origin;
+  int64_t my0 = (int64_t) mask_ext.y_origin - (int64_t) surf->extents.y_origin;
 
-  hb_raster_image_t *surf = c->current_surface ();
-  if (unlikely (!surf)) return;
+  int64_t x0 = hb_max ((int64_t) clip.min_x, hb_max (mx0, (int64_t) 0));
+  int64_t y0 = hb_max ((int64_t) clip.min_y, hb_max (my0, (int64_t) 0));
+  int64_t x1 = hb_min ((int64_t) clip.max_x, hb_min (mx0 + mask_ext.width, (int64_t) w));
+  int64_t y1 = hb_min ((int64_t) clip.max_y, hb_min (my0 + mask_ext.height, (int64_t) h));
 
-  unsigned w = surf->extents.width;
-  unsigned h = surf->extents.height;
+  if (x0 >= x1 || y0 >= y1) return false;
 
-  hb_raster_clip_t new_clip = c->acquire_clip (w, h);
+  *mask_x0 = mx0;
+  *mask_y0 = my0;
+  *ix0 = (unsigned) x0;
+  *iy0 = (unsigned) y0;
+  *ix1 = (unsigned) x1;
+  *iy1 = (unsigned) y1;
+  return true;
+}
 
-  hb_raster_draw_t *rdr = c->clip_rdr;
-  hb_transform_t<> t = c->current_effective_transform ();
-  hb_raster_draw_set_transform (rdr, t.xx, t.yx, t.xy, t.yy, t.x0, t.y0);
-  emit (rdr, emit_data);
+/* Render whatever edges have been accumulated into @rdr and
+ * push the result as a new clip on the stack, intersecting
+ * with the existing clip.  Used by the emitter-based clip
+ * helpers (push_clip_glyph) and by push_clip_path_end once
+ * the caller has drawn the path into @rdr. */
+static void
+hb_raster_paint_finalize_path_clip (hb_raster_paint_t *c,
+				    hb_raster_draw_t *rdr,
+				    hb_raster_image_t *surf,
+				    unsigned w, unsigned h)
+{
+  /* Charge the scanline work of the accumulated outline before
+   * rendering it. */
+  c->work_left -= hb_raster_draw_get_edge_work (rdr, h);
+
   hb_raster_image_t *mask_img = hb_raster_draw_render (rdr);
 
   if (unlikely (!mask_img))
@@ -211,6 +284,20 @@ hb_raster_paint_push_clip_from_emitter (hb_raster_paint_t *c,
     hb_raster_paint_push_empty_clip (c, w, h);
     return;
   }
+
+  /* Charge the mask render (its own area; may exceed the surface) plus
+   * the clip-buffer pass below. */
+  hb_raster_extents_t mask_render_ext;
+  hb_raster_image_get_extents (mask_img, &mask_render_ext);
+  if (unlikely (!c->charge_work ((int64_t) mask_render_ext.width * mask_render_ext.height +
+				 (int64_t) w * h)))
+  {
+    hb_raster_draw_recycle_image (rdr, mask_img);
+    hb_raster_paint_push_empty_clip (c, w, h);
+    return;
+  }
+
+  hb_raster_clip_t new_clip = c->acquire_clip (w, h);
 
   /* Allocate alpha buffer and intersect with previous clip */
   size_t clip_size = (size_t) new_clip.stride * h;
@@ -221,34 +308,29 @@ hb_raster_paint_push_clip_from_emitter (hb_raster_paint_t *c,
     hb_raster_paint_push_empty_clip (c, w, h);
     return;
   }
+  hb_memset (new_clip.alpha.arrayZ, 0, (unsigned) clip_size);
 
   const uint8_t *mask_buf = hb_raster_image_get_buffer (mask_img);
   hb_raster_extents_t mask_ext;
   hb_raster_image_get_extents (mask_img, &mask_ext);
   const hb_raster_clip_t &old_clip = c->current_clip ();
-
-  /* Convert mask extents from surface coordinates to clip-buffer coordinates. */
-  int mask_x0 = mask_ext.x_origin - surf->extents.x_origin;
-  int mask_y0 = mask_ext.y_origin - surf->extents.y_origin;
-  int mask_x1 = mask_x0 + (int) mask_ext.width;
-  int mask_y1 = mask_y0 + (int) mask_ext.height;
-
-  int ix0_i = hb_max ((int) old_clip.min_x, hb_max (mask_x0, 0));
-  int iy0_i = hb_max ((int) old_clip.min_y, hb_max (mask_y0, 0));
-  int ix1_i = hb_min ((int) old_clip.max_x, hb_min (mask_x1, (int) w));
-  int iy1_i = hb_min ((int) old_clip.max_y, hb_min (mask_y1, (int) h));
-
-  if (ix0_i >= ix1_i || iy0_i >= iy1_i)
+  if (unlikely (!old_clip.has_valid_alpha_mask ()))
   {
     hb_raster_draw_recycle_image (rdr, mask_img);
     hb_raster_paint_push_empty_clip (c, w, h);
     return;
   }
 
-  unsigned ix0 = (unsigned) ix0_i;
-  unsigned iy0 = (unsigned) iy0_i;
-  unsigned ix1 = (unsigned) ix1_i;
-  unsigned iy1 = (unsigned) iy1_i;
+  int64_t mask_x0, mask_y0;
+  unsigned ix0, iy0, ix1, iy1;
+  if (!hb_raster_paint_intersect_mask (surf, mask_ext, old_clip, w, h,
+				       &mask_x0, &mask_y0,
+				       &ix0, &iy0, &ix1, &iy1))
+  {
+    hb_raster_draw_recycle_image (rdr, mask_img);
+    hb_raster_paint_push_empty_clip (c, w, h);
+    return;
+  }
 
   new_clip.min_x = w; new_clip.min_y = h;
   new_clip.max_x = 0; new_clip.max_y = 0;
@@ -257,11 +339,11 @@ hb_raster_paint_push_clip_from_emitter (hb_raster_paint_t *c,
   {
     for (unsigned y = iy0; y < iy1; y++)
     {
-      const uint8_t *mask_row = mask_buf + (unsigned) ((int) y - mask_y0) * mask_ext.stride;
+      const uint8_t *mask_row = mask_buf + (unsigned) ((int64_t) y - mask_y0) * mask_ext.stride;
       uint8_t *out_row = new_clip.alpha.arrayZ + y * new_clip.stride;
       unsigned row_min = ix1;
       unsigned row_max = ix0;
-      unsigned mx = (unsigned) ((int) ix0 - mask_x0);
+      unsigned mx = (unsigned) ((int64_t) ix0 - mask_x0);
       for (unsigned x = ix0; x < ix1; x++)
       {
 	uint8_t a = mask_row[mx++];
@@ -288,13 +370,13 @@ hb_raster_paint_push_clip_from_emitter (hb_raster_paint_t *c,
     for (unsigned y = iy0; y < iy1; y++)
     {
       const uint8_t *old_row = old_clip.alpha.arrayZ + y * old_clip.stride;
-      const uint8_t *mask_row = mask_buf + (unsigned) ((int) y - mask_y0) * mask_ext.stride;
+      const uint8_t *mask_row = mask_buf + (unsigned) ((int64_t) y - mask_y0) * mask_ext.stride;
       uint8_t *out_row = new_clip.alpha.arrayZ + y * new_clip.stride;
       unsigned row_min = ix1;
       unsigned row_max = ix0;
       for (unsigned x = ix0; x < ix1; x++)
       {
-	unsigned mx = (unsigned) ((int) x - mask_x0);
+	unsigned mx = (unsigned) ((int64_t) x - mask_x0);
 	uint8_t a = hb_raster_div255 (mask_row[mx] * old_row[x]);
 	out_row[x] = a;
 	if (a)
@@ -318,6 +400,37 @@ hb_raster_paint_push_clip_from_emitter (hb_raster_paint_t *c,
     hb_raster_paint_push_empty_clip (c, w, h);
 }
 
+static void
+hb_raster_paint_push_clip_from_emitter (hb_raster_paint_t *c,
+					hb_raster_paint_clip_mask_emit_t emit,
+					void *emit_data)
+{
+  ensure_initialized (c);
+
+  hb_raster_image_t *surf = c->current_surface ();
+  if (unlikely (!surf)) return;
+
+  unsigned w = surf->extents.width;
+  unsigned h = surf->extents.height;
+
+  /* Out of budget: skip the glyph-outline extraction entirely, so
+   * per-glyph outline limits cannot multiply with the caller's
+   * paint-graph traversal limits. */
+  if (unlikely (c->work_left <= 0))
+  {
+    hb_raster_paint_push_empty_clip (c, w, h);
+    return;
+  }
+
+  hb_raster_draw_t *rdr = c->clip_rdr;
+  hb_transform_t<> t = c->current_effective_transform ();
+  hb_raster_draw_set_transform (rdr, t.xx, t.yx, t.xy, t.yy, t.x0, t.y0);
+  hb_raster_paint_attach_clip_rdr (c, rdr, surf);
+  emit (rdr, emit_data);
+
+  hb_raster_paint_finalize_path_clip (c, rdr, surf, w, h);
+}
+
 struct hb_raster_paint_glyph_clip_data_t
 {
   hb_codepoint_t glyph;
@@ -329,7 +442,7 @@ hb_raster_paint_emit_clip_glyph_mask (hb_raster_draw_t *rdr, void *user_data)
 {
   hb_raster_paint_glyph_clip_data_t *data = (hb_raster_paint_glyph_clip_data_t *) user_data;
   /* Let draw-render choose tight glyph extents; we map by mask origin below. */
-  hb_font_draw_glyph (data->font, data->glyph, hb_raster_draw_get_funcs (), rdr);
+  hb_font_draw_glyph (data->font, data->glyph, hb_raster_draw_get_funcs (rdr), rdr);
 }
 
 static void
@@ -342,30 +455,6 @@ hb_raster_paint_push_clip_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
   hb_raster_paint_t *c = (hb_raster_paint_t *) paint_data;
   hb_raster_paint_glyph_clip_data_t data = {glyph, font};
   hb_raster_paint_push_clip_from_emitter (c, hb_raster_paint_emit_clip_glyph_mask, &data);
-}
-
-/* Push clip from arbitrary path emitter (used by SVG rasterizer).
- * Identical to push_clip_glyph but calls user func instead of hb_font_draw_glyph. */
-struct hb_raster_paint_path_clip_data_t
-{
-  hb_raster_svg_path_func_t func;
-  void *user_data;
-};
-
-static void
-hb_raster_paint_emit_clip_path_mask (hb_raster_draw_t *rdr, void *user_data)
-{
-  hb_raster_paint_path_clip_data_t *data = (hb_raster_paint_path_clip_data_t *) user_data;
-  data->func (hb_raster_draw_get_funcs (), rdr, data->user_data);
-}
-
-void
-hb_raster_paint_push_clip_path (hb_raster_paint_t *c,
-				hb_raster_svg_path_func_t func,
-				void *user_data)
-{
-  hb_raster_paint_path_clip_data_t data = {func, user_data};
-  hb_raster_paint_push_clip_from_emitter (c, hb_raster_paint_emit_clip_path_mask, &data);
 }
 
 static void
@@ -407,10 +496,14 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
     fmax_x = hb_max (fmax_x, cx[i]); fmax_y = hb_max (fmax_y, cy[i]);
   }
 
-  int px0 = (int) floorf (fmin_x) - surf->extents.x_origin;
-  int py0 = (int) floorf (fmin_y) - surf->extents.y_origin;
-  int px1 = (int) ceilf (fmax_x) - surf->extents.x_origin;
-  int py1 = (int) ceilf (fmax_y) - surf->extents.y_origin;
+  /* A spec-legal but very large transform can push these bounds past the int
+     range or to non-finite values; a bare float->int conversion would then be
+     undefined.  Saturate through hb_clamp_to<> (which also maps NaN to
+     INT32_MIN); the subtraction is done in double to avoid overflow. */
+  int px0 = hb_clamp_to<int32_t> ((double) floorf (fmin_x) - surf->extents.x_origin);
+  int py0 = hb_clamp_to<int32_t> ((double) floorf (fmin_y) - surf->extents.y_origin);
+  int px1 = hb_clamp_to<int32_t> ((double) ceilf  (fmax_x) - surf->extents.x_origin);
+  int py1 = hb_clamp_to<int32_t> ((double) ceilf  (fmax_y) - surf->extents.y_origin);
 
   /* Clamp to surface bounds */
   px0 = hb_max (px0, 0);
@@ -419,6 +512,19 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
   py1 = hb_min (py1, (int) h);
 
   const hb_raster_clip_t &old_clip = c->current_clip ();
+  if (unlikely (!old_clip.has_valid_alpha_mask ()))
+  {
+    hb_raster_paint_push_empty_clip (c, w, h);
+    return;
+  }
+
+  /* All paths below except rect-on-rect run a full clip-buffer pass. */
+  if (!(is_axis_aligned && old_clip.is_rect) &&
+      unlikely (!c->charge_work ((int64_t) w * h)))
+  {
+    hb_raster_paint_push_empty_clip (c, w, h);
+    return;
+  }
 
   hb_raster_clip_t new_clip = c->acquire_clip (w, h);
 
@@ -431,6 +537,43 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
     new_clip.rect_x1 = hb_min (px1, old_clip.rect_x1);
     new_clip.rect_y1 = hb_min (py1, old_clip.rect_y1);
     new_clip.update_bounds_from_rect ();
+  }
+  else if (is_axis_aligned)
+  {
+    /* Fast path: intersect an axis-aligned rect with an existing alpha clip. */
+    new_clip.is_rect = false;
+    size_t clip_size = (size_t) new_clip.stride * h;
+    if (unlikely (clip_size > HB_RASTER_MAX_BUFFER_SIZE ||
+                  !new_clip.alpha.resize ((unsigned) clip_size)))
+    {
+      hb_raster_paint_push_empty_clip (c, w, h);
+      return;
+    }
+    hb_memset (new_clip.alpha.arrayZ, 0, (unsigned) clip_size);
+
+    int iy0_i = hb_max (py0, (int) old_clip.min_y);
+    int iy1_i = hb_min (py1, (int) old_clip.max_y);
+    int ix0_i = hb_max (px0, (int) old_clip.min_x);
+    int ix1_i = hb_min (px1, (int) old_clip.max_x);
+
+    if (ix0_i < ix1_i && iy0_i < iy1_i)
+    {
+      unsigned iy0 = (unsigned) iy0_i;
+      unsigned iy1 = (unsigned) iy1_i;
+      unsigned ix0 = (unsigned) ix0_i;
+      unsigned ix1 = (unsigned) ix1_i;
+
+      for (unsigned y = iy0; y < iy1; y++)
+      {
+        const uint8_t *old_row = old_clip.alpha.arrayZ + y * old_clip.stride;
+        uint8_t *new_row = new_clip.alpha.arrayZ + y * new_clip.stride;
+        hb_memcpy (new_row + ix0, old_row + ix0, ix1 - ix0);
+      }
+      new_clip.min_x = ix0;
+      new_clip.min_y = iy0;
+      new_clip.max_x = ix1;
+      new_clip.max_y = iy1;
+    }
   }
   else
   {
@@ -457,88 +600,96 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
     /* For each pixel in the bounding box, test if inside the quad
      * using cross-product edge tests (winding order). */
-    unsigned iy0 = (unsigned) hb_max (py0, (int) old_clip.min_y);
-    unsigned iy1 = (unsigned) hb_min (py1, (int) old_clip.max_y);
-    unsigned ix0 = (unsigned) hb_max (px0, (int) old_clip.min_x);
-    unsigned ix1 = (unsigned) hb_min (px1, (int) old_clip.max_x);
+    int iy0_i = hb_max (py0, (int) old_clip.min_y);
+    int iy1_i = hb_min (py1, (int) old_clip.max_y);
+    int ix0_i = hb_max (px0, (int) old_clip.min_x);
+    int ix1_i = hb_min (px1, (int) old_clip.max_x);
     new_clip.min_x = w; new_clip.min_y = h;
     new_clip.max_x = 0; new_clip.max_y = 0;
 
-    /* Precompute edge normals for point-in-quad test.
-     * Edge i goes from corner i to corner (i+1)%4.
-     * Normal = (dy, -dx); inside test: dot(normal, p-corner) >= 0 */
-	    float enx[4], eny[4], ed[4];
-	    for (unsigned i = 0; i < 4; i++)
-	    {
-	      unsigned j = (i + 1) & 3;
-	      float edx = qx[j] - qx[i], edy = qy[j] - qy[i];
-	      enx[i] = edy;       /* normal x */
-	      eny[i] = -edx;      /* normal y */
-	      ed[i] = enx[i] * qx[i] + eny[i] * qy[i]; /* distance threshold */
-	    }
-	    float area2 = 0.f;
-	    for (unsigned i = 0; i < 4; i++)
-	    {
-	      unsigned j = (i + 1) & 3;
-	      area2 += qx[i] * qy[j] - qx[j] * qy[i];
-	    }
-	    bool ccw = area2 >= 0.f;
+    if (ix0_i < ix1_i && iy0_i < iy1_i)
+    {
+      unsigned iy0 = (unsigned) iy0_i;
+      unsigned iy1 = (unsigned) iy1_i;
+      unsigned ix0 = (unsigned) ix0_i;
+      unsigned ix1 = (unsigned) ix1_i;
 
-    if (old_clip.is_rect)
-    {
-      for (unsigned y = iy0; y < iy1; y++)
-	for (unsigned x = ix0; x < ix1; x++)
-	{
-	  float px_f = x + 0.5f, py_f = y + 0.5f;
-	  /* Test if pixel center is inside the quad */
-		  bool inside = true;
-		  for (unsigned i = 0; i < 4; i++)
-		  {
-		    float d = enx[i] * px_f + eny[i] * py_f;
-		    if (ccw ? d < ed[i] : d > ed[i])
-		    {
-		      inside = false;
-		      break;
-		    }
-		  }
-	  uint8_t a = inside ? 255 : 0;
-	  new_clip.alpha[y * new_clip.stride + x] = a;
-	  if (a)
-	  {
-	    new_clip.min_x = hb_min (new_clip.min_x, x);
-	    new_clip.min_y = hb_min (new_clip.min_y, y);
-	    new_clip.max_x = hb_max (new_clip.max_x, x + 1);
-	    new_clip.max_y = hb_max (new_clip.max_y, y + 1);
-	  }
-	}
-    }
-    else
-    {
-      for (unsigned y = iy0; y < iy1; y++)
+      /* Precompute edge normals for point-in-quad test.
+       * Edge i goes from corner i to corner (i+1)%4.
+       * Normal = (dy, -dx); inside test: dot(normal, p-corner) >= 0 */
+	      float enx[4], eny[4], ed[4];
+	      for (unsigned i = 0; i < 4; i++)
+	      {
+		unsigned j = (i + 1) & 3;
+		float edx = qx[j] - qx[i], edy = qy[j] - qy[i];
+		enx[i] = edy;       /* normal x */
+		eny[i] = -edx;      /* normal y */
+		ed[i] = enx[i] * qx[i] + eny[i] * qy[i]; /* distance threshold */
+	      }
+	      float area2 = 0.f;
+	      for (unsigned i = 0; i < 4; i++)
+	      {
+		unsigned j = (i + 1) & 3;
+		area2 += qx[i] * qy[j] - qx[j] * qy[i];
+	      }
+	      bool ccw = area2 >= 0.f;
+
+      if (old_clip.is_rect)
       {
-	const uint8_t *old_row = old_clip.alpha.arrayZ + y * old_clip.stride;
-	for (unsigned x = ix0; x < ix1; x++)
-	{
-	  float px_f = x + 0.5f, py_f = y + 0.5f;
-	  /* Test if pixel center is inside the quad */
-		  bool inside = true;
-		  for (unsigned i = 0; i < 4; i++)
-		  {
-		    float d = enx[i] * px_f + eny[i] * py_f;
-		    if (ccw ? d < ed[i] : d > ed[i])
-		    {
-		      inside = false;
-		      break;
-		    }
-		  }
-	  uint8_t a = inside ? old_row[x] : 0;
-	  new_clip.alpha[y * new_clip.stride + x] = a;
-	  if (a)
+	for (unsigned y = iy0; y < iy1; y++)
+	  for (unsigned x = ix0; x < ix1; x++)
 	  {
-	    new_clip.min_x = hb_min (new_clip.min_x, x);
-	    new_clip.min_y = hb_min (new_clip.min_y, y);
-	    new_clip.max_x = hb_max (new_clip.max_x, x + 1);
-	    new_clip.max_y = hb_max (new_clip.max_y, y + 1);
+	    float px_f = x + 0.5f, py_f = y + 0.5f;
+	    /* Test if pixel center is inside the quad */
+		    bool inside = true;
+		    for (unsigned i = 0; i < 4; i++)
+		    {
+		      float d = enx[i] * px_f + eny[i] * py_f;
+		      if (ccw ? d < ed[i] : d > ed[i])
+		      {
+			inside = false;
+			break;
+		      }
+		    }
+	    uint8_t a = inside ? 255 : 0;
+	    new_clip.alpha[y * new_clip.stride + x] = a;
+	    if (a)
+	    {
+	      new_clip.min_x = hb_min (new_clip.min_x, x);
+	      new_clip.min_y = hb_min (new_clip.min_y, y);
+	      new_clip.max_x = hb_max (new_clip.max_x, x + 1);
+	      new_clip.max_y = hb_max (new_clip.max_y, y + 1);
+	    }
+	  }
+      }
+      else
+      {
+	for (unsigned y = iy0; y < iy1; y++)
+	{
+	  const uint8_t *old_row = old_clip.alpha.arrayZ + y * old_clip.stride;
+	  for (unsigned x = ix0; x < ix1; x++)
+	  {
+	    float px_f = x + 0.5f, py_f = y + 0.5f;
+	    /* Test if pixel center is inside the quad */
+		    bool inside = true;
+		    for (unsigned i = 0; i < 4; i++)
+		    {
+		      float d = enx[i] * px_f + eny[i] * py_f;
+		      if (ccw ? d < ed[i] : d > ed[i])
+		      {
+			inside = false;
+			break;
+		      }
+		    }
+	    uint8_t a = inside ? old_row[x] : 0;
+	    new_clip.alpha[y * new_clip.stride + x] = a;
+	    if (a)
+	    {
+	      new_clip.min_x = hb_min (new_clip.min_x, x);
+	      new_clip.min_y = hb_min (new_clip.min_y, y);
+	      new_clip.max_x = hb_max (new_clip.max_x, x + 1);
+	      new_clip.max_y = hb_max (new_clip.max_y, y + 1);
+	    }
 	  }
 	}
       }
@@ -547,6 +698,60 @@ hb_raster_paint_push_clip_rectangle (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
   if (unlikely (!c->clip_stack.push_or_fail (std::move (new_clip))))
     hb_raster_paint_push_empty_clip (c, surf->extents.width, surf->extents.height);
+}
+
+static hb_draw_funcs_t *
+hb_raster_paint_push_clip_path_start (hb_paint_funcs_t *pfuncs HB_UNUSED,
+				      void *paint_data,
+				      void **draw_data,
+				      void *user_data HB_UNUSED)
+{
+  hb_raster_paint_t *c = (hb_raster_paint_t *) paint_data;
+
+  ensure_initialized (c);
+
+  /* Prime clip_rdr with the current effective transform; the
+   * caller then drives hb_draw_*() into it, and _end renders
+   * the accumulated edges into a mask and intersects with the
+   * current clip. */
+  if (unlikely (!c->surface_stack.length || !c->clip_rdr))
+  {
+    *draw_data = nullptr;
+    return nullptr;
+  }
+
+  hb_raster_draw_t *rdr = c->clip_rdr;
+  hb_transform_t<> t = c->current_effective_transform ();
+  hb_raster_draw_set_transform (rdr, t.xx, t.yx, t.xy, t.yy, t.x0, t.y0);
+  hb_raster_image_t *surf = c->current_surface ();
+  if (likely (surf))
+    hb_raster_paint_attach_clip_rdr (c, rdr, surf);
+
+  *draw_data = rdr;
+  return hb_raster_draw_get_funcs (rdr);
+}
+
+static void
+hb_raster_paint_push_clip_path_end (hb_paint_funcs_t *pfuncs HB_UNUSED,
+				    void *paint_data,
+				    void *user_data HB_UNUSED)
+{
+  hb_raster_paint_t *c = (hb_raster_paint_t *) paint_data;
+
+  hb_raster_image_t *surf = c->current_surface ();
+  if (unlikely (!surf || !c->clip_rdr)) return;
+
+  unsigned w = surf->extents.width;
+  unsigned h = surf->extents.height;
+
+  if (unlikely (c->work_left <= 0))
+  {
+    hb_raster_draw_clear (c->clip_rdr);
+    hb_raster_paint_push_empty_clip (c, w, h);
+    return;
+  }
+
+  hb_raster_paint_finalize_path_clip (c, c->clip_rdr, surf, w, h);
 }
 
 static void
@@ -568,6 +773,10 @@ hb_raster_paint_push_group (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
   ensure_initialized (c);
 
+  /* acquire_surface() clears a full surface; charge its area. */
+  if (unlikely (!c->charge_work ((int64_t) c->fixed_extents.width * c->fixed_extents.height)))
+    return;
+
   hb_raster_image_t *new_surf = c->acquire_surface ();
   if (unlikely (!new_surf)) return;
   if (unlikely (!c->surface_stack.push_or_fail (new_surf)))
@@ -587,36 +796,19 @@ hb_raster_paint_pop_group (hb_paint_funcs_t *pfuncs HB_UNUSED,
   hb_raster_image_t *src = c->surface_stack.pop ();
   hb_raster_image_t *dst = c->current_surface ();
 
-  if (dst && src)
+  if (dst && src &&
+      likely (c->charge_work ((int64_t) dst->extents.width * dst->extents.height)))
     hb_raster_image_composite (dst, src, mode);
 
   c->release_surface (src);
 }
 
 static void
-hb_raster_paint_color (hb_paint_funcs_t *pfuncs HB_UNUSED,
-		       void *paint_data,
-		       hb_bool_t is_foreground,
+hb_raster_paint_solid (hb_raster_paint_t *c,
+		       hb_raster_image_t *surf,
 		       hb_color_t color,
-		       void *user_data HB_UNUSED)
+		       hb_raster_image_t *mask_img)
 {
-  hb_raster_paint_t *c = (hb_raster_paint_t *) paint_data;
-
-  ensure_initialized (c);
-
-  hb_raster_image_t *surf = c->current_surface ();
-  if (unlikely (!surf)) return;
-
-  if (is_foreground)
-  {
-    /* Use foreground color, modulating alpha */
-    color = HB_COLOR (hb_color_get_blue (c->foreground),
-		      hb_color_get_green (c->foreground),
-		      hb_color_get_red (c->foreground),
-		      hb_raster_div255 (hb_color_get_alpha (c->foreground) *
-			      hb_color_get_alpha (color)));
-  }
-
   uint32_t premul = color_to_premul_pixel (color);
   uint8_t premul_a = (uint8_t) (premul >> 24);
   const hb_raster_clip_t &clip = c->current_clip ();
@@ -625,15 +817,39 @@ hb_raster_paint_color (hb_paint_funcs_t *pfuncs HB_UNUSED,
   if (clip.min_x >= clip.max_x || clip.min_y >= clip.max_y) return;
   if (premul_a == 0) return;
 
+  unsigned ix0 = clip.min_x, iy0 = clip.min_y;
+  unsigned ix1 = clip.max_x, iy1 = clip.max_y;
+  const uint8_t *mask_buf = nullptr;
+  hb_raster_extents_t mask_ext;
+  int64_t mask_x0 = 0, mask_y0 = 0;
+  if (mask_img)
+  {
+    mask_buf = hb_raster_image_get_buffer (mask_img);
+    hb_raster_image_get_extents (mask_img, &mask_ext);
+    if (!hb_raster_paint_intersect_mask (surf, mask_ext, clip,
+					 surf->extents.width, surf->extents.height,
+					 &mask_x0, &mask_y0,
+					 &ix0, &iy0, &ix1, &iy1))
+      return;
+  }
+
+  if (unlikely (!c->charge_work ((int64_t) (ix1 - ix0) * (iy1 - iy0))))
+    return;
+
   if (likely (!clip.is_rect))
   {
-    for (unsigned y = clip.min_y; y < clip.max_y; y++)
+    for (unsigned y = iy0; y < iy1; y++)
     {
       hb_packed_t<uint32_t> *__restrict row = (hb_packed_t<uint32_t> *) (surf->buffer.arrayZ + y * stride);
       const uint8_t *__restrict clip_row = clip.alpha.arrayZ + y * clip.stride;
-      for (unsigned x = clip.min_x; x < clip.max_x; x++)
+      const uint8_t *__restrict mask_row = mask_buf ? mask_buf + (unsigned) ((int64_t) y - mask_y0) * mask_ext.stride
+						    : nullptr;
+      unsigned mx = (unsigned) ((int64_t) ix0 - mask_x0);
+      for (unsigned x = ix0; x < ix1; x++)
       {
 	uint8_t clip_alpha = clip_row[x];
+	if (mask_row)
+	  clip_alpha = hb_raster_div255 (mask_row[mx++] * clip_alpha);
 	if (clip_alpha == 0) continue;
 	if (clip_alpha == 255)
 	{
@@ -650,6 +866,22 @@ hb_raster_paint_color (hb_paint_funcs_t *pfuncs HB_UNUSED,
       }
     }
   }
+  else if (mask_buf)
+  {
+    for (unsigned y = iy0; y < iy1; y++)
+    {
+      hb_packed_t<uint32_t> *__restrict row = (hb_packed_t<uint32_t> *) (surf->buffer.arrayZ + y * stride);
+      const uint8_t *__restrict mask_row = mask_buf + (unsigned) ((int64_t) y - mask_y0) * mask_ext.stride;
+      unsigned mx = (unsigned) ((int64_t) ix0 - mask_x0);
+      for (unsigned x = ix0; x < ix1; x++)
+      {
+	uint8_t mask_alpha = mask_row[mx++];
+	if (mask_alpha == 0) continue;
+	uint32_t src = hb_raster_alpha_mul (premul, mask_alpha);
+	row[x] = hb_packed_t<uint32_t> (hb_raster_src_over (src, (uint32_t) row[x]));
+      }
+    }
+  }
   else
   {
     for (unsigned y = clip.min_y; y < clip.max_y; y++)
@@ -659,6 +891,65 @@ hb_raster_paint_color (hb_paint_funcs_t *pfuncs HB_UNUSED,
 	row[x] = hb_packed_t<uint32_t> (hb_raster_src_over (premul, (uint32_t) row[x]));
     }
   }
+}
+
+static void
+hb_raster_paint_color (hb_paint_funcs_t *pfuncs HB_UNUSED,
+		       void *paint_data,
+		       hb_bool_t is_foreground HB_UNUSED,
+		       hb_color_t color,
+		       void *user_data HB_UNUSED)
+{
+  hb_raster_paint_t *c = (hb_raster_paint_t *) paint_data;
+
+  ensure_initialized (c);
+
+  hb_raster_image_t *surf = c->current_surface ();
+  if (unlikely (!surf)) return;
+
+  hb_raster_paint_solid (c, surf, color, nullptr);
+}
+
+static void
+hb_raster_paint_fill_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
+			    void *paint_data,
+			    hb_codepoint_t glyph,
+			    hb_font_t *font,
+			    hb_bool_t is_foreground HB_UNUSED,
+			    hb_color_t color,
+			    void *user_data HB_UNUSED)
+{
+  hb_raster_paint_t *c = (hb_raster_paint_t *) paint_data;
+
+  ensure_initialized (c);
+
+  hb_raster_image_t *surf = c->current_surface ();
+  if (unlikely (!surf)) return;
+
+  /* Out of budget: skip the glyph-outline extraction entirely. */
+  if (unlikely (c->work_left <= 0)) return;
+
+  hb_raster_draw_t *rdr = c->clip_rdr;
+  hb_transform_t<> t = c->current_effective_transform ();
+  hb_raster_draw_set_transform (rdr, t.xx, t.yx, t.xy, t.yy, t.x0, t.y0);
+  hb_raster_paint_attach_clip_rdr (c, rdr, surf);
+
+  hb_raster_paint_glyph_clip_data_t data = {glyph, font};
+  hb_raster_paint_emit_clip_glyph_mask (rdr, &data);
+
+  /* Charge the scanline work of the accumulated outline before
+   * rendering it. */
+  c->work_left -= hb_raster_draw_get_edge_work (rdr, surf->extents.height);
+
+  hb_raster_image_t *mask_img = hb_raster_draw_render (rdr);
+  if (unlikely (!mask_img)) return;
+
+  hb_raster_extents_t mask_ext;
+  hb_raster_image_get_extents (mask_img, &mask_ext);
+  if (likely (c->charge_work ((int64_t) mask_ext.width * mask_ext.height)))
+    hb_raster_paint_solid (c, surf, color, mask_img);
+
+  hb_raster_draw_recycle_image (rdr, mask_img);
 }
 
 static hb_bool_t
@@ -676,10 +967,8 @@ hb_raster_paint_image (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
   ensure_initialized (c);
 
-  /* Handle SVG format */
-  if (format == HB_PAINT_IMAGE_FORMAT_SVG)
-    return hb_raster_svg_render (c, blob, c->svg_glyph, c->svg_font,
-				 c->svg_palette, c->foreground);
+  /* Out of budget: skip, including the image decode below. */
+  if (unlikely (c->work_left <= 0)) return false;
 
   unsigned src_width = width;
   unsigned src_height = height;
@@ -751,6 +1040,14 @@ hb_raster_paint_image (hb_paint_funcs_t *pfuncs HB_UNUSED,
   if (fabsf (img_sx) < 1e-10f || fabsf (img_sy) < 1e-10f)
     return false;
 
+  {
+    unsigned clip_w = clip.max_x > clip.min_x ? clip.max_x - clip.min_x : 0;
+    unsigned clip_h = clip.max_y > clip.min_y ? clip.max_y - clip.min_y : 0;
+    if (unlikely (!c->charge_work ((int64_t) clip_w * clip_h +
+				   (int64_t) src_width * src_height)))
+      return false;
+  }
+
   if (clip.is_rect)
   {
     for (unsigned py = clip.min_y; py < clip.max_y; py++)
@@ -764,7 +1061,8 @@ hb_raster_paint_image (hb_paint_funcs_t *pfuncs HB_UNUSED,
 	float ix = (gx - img_x) / img_sx;
 	float iy = (float) (src_height - 1) - (gy - img_y) / img_sy;
 
-	if (ix < 0.f || iy < 0.f ||
+	if (unlikely (!std::isfinite (ix) || !std::isfinite (iy)) ||
+	    ix < 0.f || iy < 0.f ||
 	    ix > (float) (src_width - 1) || iy > (float) (src_height - 1))
 	{
 	  gx += inv_xx;
@@ -802,7 +1100,8 @@ hb_raster_paint_image (hb_paint_funcs_t *pfuncs HB_UNUSED,
 	float ix = (gx - img_x) / img_sx;
 	float iy = (float) (src_height - 1) - (gy - img_y) / img_sy;
 
-	if (ix < 0.f || iy < 0.f ||
+	if (unlikely (!std::isfinite (ix) || !std::isfinite (iy)) ||
+	    ix < 0.f || iy < 0.f ||
 	    ix > (float) (src_width - 1) || iy > (float) (src_height - 1))
 	{
 	  gx += inv_xx;
@@ -828,65 +1127,14 @@ hb_raster_paint_image (hb_paint_funcs_t *pfuncs HB_UNUSED,
  * Gradient helpers
  */
 
-#define PREALLOCATED_COLOR_STOPS 16
 #define GRADIENT_LUT_SIZE 256
 #define GRADIENT_LUT_MIN_PIXELS (64u * 64u)
 
-static int
-cmp_color_stop (const void *p1, const void *p2)
+static HB_ALWAYS_INLINE float
+reflect_gradient_t (float t)
 {
-  const hb_color_stop_t *c1 = (const hb_color_stop_t *) p1;
-  const hb_color_stop_t *c2 = (const hb_color_stop_t *) p2;
-  if (c1->offset < c2->offset) return -1;
-  if (c1->offset > c2->offset) return 1;
-  return 0;
-}
-
-static bool
-get_color_stops (hb_raster_paint_t *c,
-		 hb_color_line_t *color_line,
-		 unsigned *count,
-		 hb_color_stop_t **stops)
-{
-  unsigned len = hb_color_line_get_color_stops (color_line, 0, nullptr, nullptr);
-  if (len > *count)
-  {
-    if (unlikely (!c->scratch_color_stops.resize (len)))
-      return false;
-    *stops = c->scratch_color_stops.arrayZ;
-  }
-  hb_color_line_get_color_stops (color_line, 0, &len, *stops);
-  for (unsigned i = 0; i < len; i++)
-    if ((*stops)[i].is_foreground)
-      (*stops)[i].color = HB_COLOR (hb_color_get_blue (c->foreground),
-				    hb_color_get_green (c->foreground),
-				    hb_color_get_red (c->foreground),
-				    hb_raster_div255 (hb_color_get_alpha (c->foreground) *
-					    hb_color_get_alpha ((*stops)[i].color)));
-
-  *count = len;
-  return true;
-}
-
-static void
-normalize_color_line (hb_color_stop_t *stops,
-		      unsigned len,
-		      float *omin, float *omax)
-{
-  hb_qsort (stops, len, sizeof (hb_color_stop_t), cmp_color_stop);
-
-  float mn = stops[0].offset, mx = stops[0].offset;
-  for (unsigned i = 1; i < len; i++)
-  {
-    mn = hb_min (mn, stops[i].offset);
-    mx = hb_max (mx, stops[i].offset);
-  }
-  if (mn != mx)
-    for (unsigned i = 0; i < len; i++)
-      stops[i].offset = (stops[i].offset - mn) / (mx - mn);
-
-  *omin = mn;
-  *omax = mx;
+  t = fmodf (fabsf (t), 2.f);
+  return t > 1.f ? 2.f - t : t;
 }
 
 /* Evaluate color at normalized position t, interpolating in premultiplied space. */
@@ -894,6 +1142,13 @@ static uint32_t
 evaluate_color_line (const hb_color_stop_t *stops, unsigned len, float t,
 		     hb_paint_extend_t extend)
 {
+  if (unlikely (!len))
+    return 0;
+  if (unlikely (len == 1))
+    return color_to_premul_pixel (stops[0].color);
+  if (unlikely (!std::isfinite (t)))
+    t = 0.f;
+
   /* Apply extend mode */
   if (extend == HB_PAINT_EXTEND_PAD)
   {
@@ -905,10 +1160,7 @@ evaluate_color_line (const hb_color_stop_t *stops, unsigned len, float t,
   }
   else /* REFLECT */
   {
-    if (t < 0) t = -t;
-    int period = (int) floorf (t);
-    float frac = t - (float) period;
-    t = (period & 1) ? 1.f - frac : frac;
+    t = reflect_gradient_t (t);
   }
 
   /* Find bounding stops */
@@ -955,6 +1207,9 @@ evaluate_color_line (const hb_color_stop_t *stops, unsigned len, float t,
 static HB_ALWAYS_INLINE float
 normalize_gradient_t (float t, hb_paint_extend_t extend)
 {
+  if (unlikely (!std::isfinite (t)))
+    return 0.f;
+
   if (extend == HB_PAINT_EXTEND_PAD)
     return hb_clamp (t, 0.f, 1.f);
   if (extend == HB_PAINT_EXTEND_REPEAT)
@@ -964,10 +1219,7 @@ normalize_gradient_t (float t, hb_paint_extend_t extend)
   }
 
   /* REFLECT */
-  if (t < 0.f) t = -t;
-  int period = (int) floorf (t);
-  float frac = t - (float) period;
-  return (period & 1) ? 1.f - frac : frac;
+  return reflect_gradient_t (t);
 }
 
 static void
@@ -988,33 +1240,13 @@ lookup_gradient_lut (const uint32_t *lut,
 		     hb_paint_extend_t extend)
 {
   float u = normalize_gradient_t (t, extend);
+  if (unlikely (!std::isfinite (u)))
+    u = 0.f;
+  else
+    u = hb_clamp (u, 0.f, 1.f);
   unsigned idx = (unsigned) (u * (GRADIENT_LUT_SIZE - 1) + 0.5f);
   return lut[idx];
 }
-
-static void
-reduce_anchors (float x0, float y0,
-		float x1, float y1,
-		float x2, float y2,
-		float *xx0, float *yy0,
-		float *xx1, float *yy1)
-{
-  float q2x = x2 - x0, q2y = y2 - y0;
-  float q1x = x1 - x0, q1y = y1 - y0;
-  float s = q2x * q2x + q2y * q2y;
-  if (s < 0.000001f)
-  {
-    *xx0 = x0; *yy0 = y0;
-    *xx1 = x1; *yy1 = y1;
-    return;
-  }
-  float k = (q2x * q1x + q2y * q1y) / s;
-  *xx0 = x0;
-  *yy0 = y0;
-  *xx1 = x1 - k * q2x;
-  *yy1 = y1 - k * q2y;
-}
-
 
 /*
  * Gradient paint callbacks
@@ -1036,19 +1268,19 @@ hb_raster_paint_linear_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
   hb_raster_image_t *surf = c->current_surface ();
   if (unlikely (!surf)) return;
 
-  unsigned len = PREALLOCATED_COLOR_STOPS;
-  hb_color_stop_t stops_[PREALLOCATED_COLOR_STOPS];
-  hb_color_stop_t *stops = stops_;
-
-  if (unlikely (!get_color_stops (c, color_line, &len, &stops)))
+  if (unlikely (!c->fetch_color_stops (color_line)))
     return;
+  hb_color_stop_t *stops = c->scratch_color_stops.arrayZ;
+  unsigned len = c->scratch_color_stops.length;
   float mn, mx;
-  normalize_color_line (stops, len, &mn, &mx);
+  hb_paint_normalize_color_line (stops, len, &mn, &mx);
 
   hb_paint_extend_t extend = hb_color_line_get_extend (color_line);
   const hb_raster_clip_t &clip = c->current_clip ();
   unsigned clip_w = clip.max_x > clip.min_x ? clip.max_x - clip.min_x : 0;
   unsigned clip_h = clip.max_y > clip.min_y ? clip.max_y - clip.min_y : 0;
+  if (unlikely (!c->charge_work ((int64_t) clip_w * clip_h)))
+    return;
   bool use_lut = (uint64_t) clip_w * clip_h >= GRADIENT_LUT_MIN_PIXELS;
   uint32_t lut[GRADIENT_LUT_SIZE];
   if (use_lut)
@@ -1056,7 +1288,8 @@ hb_raster_paint_linear_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
   /* Reduce 3-point anchor to 2-point gradient axis */
   float lx0, ly0, lx1, ly1;
-  reduce_anchors (x0, y0, x1, y1, x2, y2, &lx0, &ly0, &lx1, &ly1);
+  hb_paint_reduce_linear_anchors (x0, y0, x1, y1, x2, y2,
+				  &lx0, &ly0, &lx1, &ly1);
 
   /* Apply normalization to endpoints */
   float gx0 = lx0 + mn * (lx1 - lx0);
@@ -1067,7 +1300,7 @@ hb_raster_paint_linear_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
   /* Inverse transform: pixel → glyph space */
   hb_transform_t<> t = c->current_effective_transform ();
   float det = t.xx * t.yy - t.xy * t.yx;
-  if (fabsf (det) < 1e-10f) goto done;
+  if (fabsf (det) < 1e-10f) return;
 
   {
     float inv_det = 1.f / det;
@@ -1081,7 +1314,7 @@ hb_raster_paint_linear_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
     /* Gradient direction vector and denominator for projection */
     float dx = gx1 - gx0, dy = gy1 - gy0;
     float denom = dx * dx + dy * dy;
-    if (denom < 1e-10f) goto done;
+    if (denom < 1e-10f) return;
     float inv_denom = 1.f / denom;
 
     unsigned stride = surf->extents.stride;
@@ -1169,8 +1402,6 @@ hb_raster_paint_linear_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
     }
   }
 
-done:
-  (void) stops_;
 }
 
 static void
@@ -1188,19 +1419,19 @@ hb_raster_paint_radial_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
   hb_raster_image_t *surf = c->current_surface ();
   if (unlikely (!surf)) return;
 
-  unsigned len = PREALLOCATED_COLOR_STOPS;
-  hb_color_stop_t stops_[PREALLOCATED_COLOR_STOPS];
-  hb_color_stop_t *stops = stops_;
-
-  if (unlikely (!get_color_stops (c, color_line, &len, &stops)))
+  if (unlikely (!c->fetch_color_stops (color_line)))
     return;
+  hb_color_stop_t *stops = c->scratch_color_stops.arrayZ;
+  unsigned len = c->scratch_color_stops.length;
   float mn, mx;
-  normalize_color_line (stops, len, &mn, &mx);
+  hb_paint_normalize_color_line (stops, len, &mn, &mx);
 
   hb_paint_extend_t extend = hb_color_line_get_extend (color_line);
   const hb_raster_clip_t &clip = c->current_clip ();
   unsigned clip_w = clip.max_x > clip.min_x ? clip.max_x - clip.min_x : 0;
   unsigned clip_h = clip.max_y > clip.min_y ? clip.max_y - clip.min_y : 0;
+  if (unlikely (!c->charge_work ((int64_t) clip_w * clip_h)))
+    return;
   bool use_lut = (uint64_t) clip_w * clip_h >= GRADIENT_LUT_MIN_PIXELS;
   uint32_t lut[GRADIENT_LUT_SIZE];
   if (use_lut)
@@ -1217,7 +1448,7 @@ hb_raster_paint_radial_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
   /* Inverse transform */
   hb_transform_t<> t = c->current_effective_transform ();
   float det = t.xx * t.yy - t.xy * t.yx;
-  if (fabsf (det) < 1e-10f) goto done;
+  if (fabsf (det) < 1e-10f) return;
 
   {
     float inv_det = 1.f / det;
@@ -1448,8 +1679,6 @@ hb_raster_paint_radial_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
     }
   }
 
-done:
-  (void) stops_;
 }
 
 static void
@@ -1468,19 +1697,19 @@ hb_raster_paint_sweep_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
   hb_raster_image_t *surf = c->current_surface ();
   if (unlikely (!surf)) return;
 
-  unsigned len = PREALLOCATED_COLOR_STOPS;
-  hb_color_stop_t stops_[PREALLOCATED_COLOR_STOPS];
-  hb_color_stop_t *stops = stops_;
-
-  if (unlikely (!get_color_stops (c, color_line, &len, &stops)))
+  if (unlikely (!c->fetch_color_stops (color_line)))
     return;
+  hb_color_stop_t *stops = c->scratch_color_stops.arrayZ;
+  unsigned len = c->scratch_color_stops.length;
   float mn, mx;
-  normalize_color_line (stops, len, &mn, &mx);
+  hb_paint_normalize_color_line (stops, len, &mn, &mx);
 
   hb_paint_extend_t extend = hb_color_line_get_extend (color_line);
   const hb_raster_clip_t &clip = c->current_clip ();
   unsigned clip_w = clip.max_x > clip.min_x ? clip.max_x - clip.min_x : 0;
   unsigned clip_h = clip.max_y > clip.min_y ? clip.max_y - clip.min_y : 0;
+  if (unlikely (!c->charge_work ((int64_t) clip_w * clip_h)))
+    return;
   bool use_lut = (uint64_t) clip_w * clip_h >= GRADIENT_LUT_MIN_PIXELS;
   uint32_t lut[GRADIENT_LUT_SIZE];
   if (use_lut)
@@ -1494,7 +1723,7 @@ hb_raster_paint_sweep_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
   /* Inverse transform */
   hb_transform_t<> t = c->current_effective_transform ();
   float det = t.xx * t.yy - t.xy * t.yx;
-  if (fabsf (det) < 1e-10f || fabsf (angle_range) < 1e-10f) goto done;
+  if (fabsf (det) < 1e-10f || fabsf (angle_range) < 1e-10f) return;
 
   {
     float inv_det = 1.f / det;
@@ -1600,8 +1829,6 @@ hb_raster_paint_sweep_gradient (hb_paint_funcs_t *pfuncs HB_UNUSED,
     }
   }
 
-done:
-  (void) stops_;
 }
 
 static hb_bool_t
@@ -1635,9 +1862,12 @@ static struct hb_raster_paint_funcs_lazy_loader_t : hb_paint_funcs_lazy_loader_t
 
     hb_paint_funcs_set_push_transform_func (funcs, hb_raster_paint_push_transform, nullptr, nullptr);
     hb_paint_funcs_set_pop_transform_func (funcs, hb_raster_paint_pop_transform, nullptr, nullptr);
+    hb_paint_funcs_set_fill_glyph_func (funcs, hb_raster_paint_fill_glyph, nullptr, nullptr);
     hb_paint_funcs_set_color_glyph_func (funcs, hb_raster_paint_color_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_glyph_func (funcs, hb_raster_paint_push_clip_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_rectangle_func (funcs, hb_raster_paint_push_clip_rectangle, nullptr, nullptr);
+    hb_paint_funcs_set_push_clip_path_start_func (funcs, hb_raster_paint_push_clip_path_start, nullptr, nullptr);
+    hb_paint_funcs_set_push_clip_path_end_func (funcs, hb_raster_paint_push_clip_path_end, nullptr, nullptr);
     hb_paint_funcs_set_pop_clip_func (funcs, hb_raster_paint_pop_clip, nullptr, nullptr);
     hb_paint_funcs_set_push_group_func (funcs, hb_raster_paint_push_group, nullptr, nullptr);
     hb_paint_funcs_set_pop_group_func (funcs, hb_raster_paint_pop_group, nullptr, nullptr);
@@ -1774,7 +2004,7 @@ hb_raster_paint_set_user_data (hb_raster_paint_t  *paint,
  * Since: 13.0.0
  **/
 void *
-hb_raster_paint_get_user_data (hb_raster_paint_t  *paint,
+hb_raster_paint_get_user_data (const hb_raster_paint_t  *paint,
 			       hb_user_data_key_t *key)
 {
   return hb_object_get_user_data (paint, key);
@@ -1819,7 +2049,7 @@ hb_raster_paint_set_transform (hb_raster_paint_t *paint,
  * Since: 13.0.0
  **/
 void
-hb_raster_paint_get_transform (hb_raster_paint_t *paint,
+hb_raster_paint_get_transform (const hb_raster_paint_t *paint,
 			       float *xx, float *yx,
 			       float *xy, float *yy,
 			       float *dx, float *dy)
@@ -1863,7 +2093,7 @@ hb_raster_paint_set_scale_factor (hb_raster_paint_t *paint,
  * Since: 13.0.0
  **/
 void
-hb_raster_paint_get_scale_factor (hb_raster_paint_t *paint,
+hb_raster_paint_get_scale_factor (const hb_raster_paint_t *paint,
 				  float *x_scale_factor,
 				  float *y_scale_factor)
 {
@@ -1910,7 +2140,7 @@ hb_raster_paint_set_extents (hb_raster_paint_t         *paint,
  * Since: 13.0.0
  **/
 hb_bool_t
-hb_raster_paint_get_extents (hb_raster_paint_t   *paint,
+hb_raster_paint_get_extents (const hb_raster_paint_t   *paint,
 			     hb_raster_extents_t *extents)
 {
   if (!paint->has_extents)
@@ -1931,6 +2161,8 @@ hb_raster_paint_get_extents (hb_raster_paint_t   *paint,
  *
  * This is equivalent to computing a transformed bounding box in pixel
  * space and calling hb_raster_paint_set_extents().
+ *
+ * The resulting dimensions are capped at 4096 pixels per side.
  *
  * Return value: `true` if transformed extents are non-empty and set;
  * `false` otherwise.
@@ -1972,10 +2204,10 @@ hb_raster_paint_set_glyph_extents (hb_raster_paint_t        *paint,
     ty_max = hb_max (ty_max, py[i]);
   }
 
-  int ex0 = (int) floorf (tx_min);
-  int ey0 = (int) floorf (ty_min);
-  int ex1 = (int) ceilf  (tx_max);
-  int ey1 = (int) ceilf  (ty_max);
+  int32_t ex0 = hb_clamp_to<int32_t> (floorf (tx_min));
+  int32_t ey0 = hb_clamp_to<int32_t> (floorf (ty_min));
+  int32_t ex1 = hb_clamp_to<int32_t> (ceilf  (tx_max));
+  int32_t ey1 = hb_clamp_to<int32_t> (ceilf  (ty_max));
 
   if (ex1 <= ex0 || ey1 <= ey0)
   {
@@ -1986,8 +2218,8 @@ hb_raster_paint_set_glyph_extents (hb_raster_paint_t        *paint,
 
   paint->fixed_extents = {
     ex0, ey0,
-    (unsigned) (ex1 - ex0),
-    (unsigned) (ey1 - ey0),
+    (unsigned) hb_min ((int64_t) ex1 - ex0, (int64_t) HB_RASTER_MAX_AUTO_DIMENSION),
+    (unsigned) hb_min ((int64_t) ey1 - ey0, (int64_t) HB_RASTER_MAX_AUTO_DIMENSION),
     0
   };
   paint->has_extents = true;
@@ -2011,6 +2243,92 @@ hb_raster_paint_set_foreground (hb_raster_paint_t *paint,
 				hb_color_t         foreground)
 {
   paint->foreground = foreground;
+}
+
+/**
+ * hb_raster_paint_get_foreground:
+ * @paint: a paint context
+ *
+ * Returns the foreground color previously set on @paint, or the
+ * default opaque black if none was set.
+ *
+ * Return value: the foreground color.
+ *
+ * Since: 14.2.0
+ **/
+hb_color_t
+hb_raster_paint_get_foreground (const hb_raster_paint_t *paint)
+{
+  return paint->foreground;
+}
+
+/**
+ * hb_raster_paint_set_background:
+ * @paint: a paint context
+ * @background: the background color
+ *
+ * Sets the background color for @paint.  If set to a non-transparent
+ * value, the rendered image is pre-filled with this color before
+ * glyph content is composited on top.  Default is transparent.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_raster_paint_set_background (hb_raster_paint_t *paint,
+				hb_color_t         background)
+{
+  paint->background = background;
+}
+
+/**
+ * hb_raster_paint_get_background:
+ * @paint: a paint context
+ *
+ * Returns the background color previously set on @paint, or
+ * transparent if none was set.
+ *
+ * Return value: the background color.
+ *
+ * Since: 14.2.0
+ **/
+hb_color_t
+hb_raster_paint_get_background (const hb_raster_paint_t *paint)
+{
+  return paint->background;
+}
+
+/**
+ * hb_raster_paint_set_palette:
+ * @paint: a paint context
+ * @palette: palette index
+ *
+ * Selects which font palette is used when paint callbacks look up
+ * indexed colors.  Default is palette 0.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_raster_paint_set_palette (hb_raster_paint_t *paint,
+			     unsigned           palette)
+{
+  paint->palette = palette;
+}
+
+/**
+ * hb_raster_paint_get_palette:
+ * @paint: a paint context
+ *
+ * Returns the palette index previously set on @paint, or 0 if none
+ * was set.
+ *
+ * Return value: the palette index.
+ *
+ * Since: 14.2.0
+ **/
+unsigned
+hb_raster_paint_get_palette (const hb_raster_paint_t *paint)
+{
+  return paint->palette;
 }
 
 /**
@@ -2065,20 +2383,80 @@ hb_raster_paint_set_custom_palette_color (hb_raster_paint_t *paint,
 
 /**
  * hb_raster_paint_get_funcs:
+ * @paint: a rasterizer paint context.
  *
- * Fetches the singleton #hb_paint_funcs_t that renders color glyphs
- * into an #hb_raster_paint_t.  Pass the #hb_raster_paint_t as the
- * @paint_data argument when calling hb_font_paint_glyph().
+ * Fetches the #hb_paint_funcs_t that renders color glyphs into
+ * @paint.  Pass @paint as the @paint_data argument when calling
+ * hb_font_paint_glyph().
  *
  * Return value: (transfer none):
  * The rasterizer paint functions
  *
- * Since: 13.0.0
+ * Since: 14.2.0
  **/
 hb_paint_funcs_t *
-hb_raster_paint_get_funcs (void)
+hb_raster_paint_get_funcs (const hb_raster_paint_t *paint HB_UNUSED)
 {
   return static_raster_paint_funcs.get_unconst ();
+}
+
+static hb_bool_t
+hb_raster_paint_glyph_impl (hb_raster_paint_t *paint,
+			    hb_font_t        *font,
+			    hb_codepoint_t    glyph,
+			    hb_bool_t         fallible)
+{
+  if (!paint->has_extents)
+  {
+    hb_glyph_extents_t ge;
+    if (hb_font_get_glyph_extents (font, glyph, &ge))
+      hb_raster_paint_set_glyph_extents (paint, &ge);
+  }
+
+  hb_paint_funcs_t *funcs = hb_raster_paint_get_funcs (paint);
+  hb_paint_push_transform (funcs, paint,
+			   paint->base_transform.xx, paint->base_transform.yx,
+			   paint->base_transform.xy, paint->base_transform.yy,
+			   paint->base_transform.x0, paint->base_transform.y0);
+
+  hb_bool_t ret = true;
+  if (fallible)
+    ret = hb_font_paint_glyph_or_fail (font, glyph,
+				       funcs, paint,
+				       paint->palette, paint->foreground);
+  else
+    hb_font_paint_glyph (font, glyph,
+			 funcs, paint,
+			 paint->palette, paint->foreground);
+
+  hb_paint_pop_transform (funcs, paint);
+  return ret;
+}
+
+/**
+ * hb_raster_paint_glyph_or_fail:
+ * @paint: a paint context
+ * @font: font to paint from
+ * @glyph: glyph ID to paint
+ *
+ * Convenience to paint one color glyph.  Equivalent to:
+ *
+ * |[<!-- language="plain" -->
+ * hb_font_paint_glyph_or_fail (font, glyph,
+ *   hb_raster_paint_get_funcs (paint), paint,
+ *   palette, foreground);
+ * ]|
+ *
+ * Return value: `true` if painting succeeded, `false` otherwise.
+ *
+ * Since: 14.2.0
+ **/
+hb_bool_t
+hb_raster_paint_glyph_or_fail (hb_raster_paint_t *paint,
+			       hb_font_t        *font,
+			       hb_codepoint_t    glyph)
+{
+  return hb_raster_paint_glyph_impl (paint, font, glyph, true);
 }
 
 /**
@@ -2086,60 +2464,20 @@ hb_raster_paint_get_funcs (void)
  * @paint: a paint context
  * @font: font to paint from
  * @glyph: glyph ID to paint
- * @pen_x: glyph origin x in font coordinates (pre-transform)
- * @pen_y: glyph origin y in font coordinates (pre-transform)
- * @palette: palette index
- * @foreground: foreground color
  *
- * Convenience wrapper to paint one color glyph at (@pen_x, @pen_y) using
- * the paint context's current transform. The pen coordinates are applied
- * before minification and transformed by the current affine transform.
+ * Paints one glyph into @paint.  Unlike
+ * hb_raster_paint_glyph_or_fail(), glyphs with no color paint data
+ * fall back to a synthesized foreground-colored outline, so any
+ * glyph with an outline or bitmap image produces output.
  *
- * Return value: `true` if painting succeeded, `false` otherwise.
- *
- * Since: 13.0.0
+ * Since: 14.2.0
  **/
-hb_bool_t
+void
 hb_raster_paint_glyph (hb_raster_paint_t *paint,
 		       hb_font_t        *font,
-		       hb_codepoint_t    glyph,
-		       float             pen_x,
-		       float             pen_y,
-		       unsigned           palette,
-		       hb_color_t         foreground)
+		       hb_codepoint_t    glyph)
 {
-  float xx = paint->base_transform.xx;
-  float yx = paint->base_transform.yx;
-  float xy = paint->base_transform.xy;
-  float yy = paint->base_transform.yy;
-  float dx = paint->base_transform.x0;
-  float dy = paint->base_transform.y0;
-
-  float tx = dx + xx * pen_x + xy * pen_y;
-  float ty = dy + yx * pen_x + yy * pen_y;
-
-  if (!paint->has_extents)
-  {
-    hb_glyph_extents_t ge;
-    if (hb_font_get_glyph_extents (font, glyph, &ge))
-    {
-      hb_raster_paint_set_transform (paint, xx, yx, xy, yy, tx, ty);
-      hb_raster_paint_set_glyph_extents (paint, &ge);
-    }
-  }
-
-  hb_raster_paint_set_transform (paint, xx, yx, xy, yy, tx, ty);
-  paint->svg_glyph = glyph;
-  paint->svg_font = font;
-  paint->svg_palette = palette;
-  hb_bool_t ret = hb_font_paint_glyph_or_fail (font, glyph,
-						hb_raster_paint_get_funcs (), paint,
-						palette, foreground);
-  paint->svg_glyph = 0;
-  paint->svg_font = nullptr;
-  paint->svg_palette = 0;
-  hb_raster_paint_set_transform (paint, xx, yx, xy, yy, dx, dy);
-  return ret;
+  hb_raster_paint_glyph_impl (paint, font, glyph, false);
 }
 
 /**
@@ -2167,11 +2505,14 @@ hb_raster_paint_glyph (hb_raster_paint_t *paint,
 hb_raster_image_t *
 hb_raster_paint_render (hb_raster_paint_t *paint)
 {
-  hb_raster_image_t *result = nullptr;
+  /* Common per-exit state reset.  Runs on every return path,
+   * including the early-return failure cases below. */
+  HB_SCOPE_GUARD (hb_raster_paint_clear (paint));
 
   if (unlikely (!paint->has_extents))
-    goto fail;
+    return nullptr;
 
+  hb_raster_image_t *result;
   if (paint->surface_stack.length)
   {
     result = paint->surface_stack[0];
@@ -2185,28 +2526,36 @@ hb_raster_paint_render (hb_raster_paint_t *paint)
   {
     result = paint->acquire_surface ();
     if (unlikely (!result))
-      goto fail;
+      return nullptr;
   }
 
-  /* Clean up stacks and reset auto-extents for next glyph. */
-  paint->transform_stack.clear ();
-  paint->release_all_clips ();
-  hb_raster_draw_reset (paint->clip_rdr);
-  paint->has_extents = false;
-  paint->fixed_extents = {};
-
   return result;
+}
 
-fail:
+/**
+ * hb_raster_paint_clear:
+ * @paint: a paint context
+ *
+ * Discards accumulated paint output so @paint can be reused for
+ * another render.  User configuration (base transform, scale
+ * factors, foreground, custom palette colors) is preserved.  Call
+ * hb_raster_paint_reset() to also reset user configuration to
+ * defaults.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_raster_paint_clear (hb_raster_paint_t *paint)
+{
+  paint->fixed_extents = {};
+  paint->has_extents = false;
+  paint->work_left = HB_RASTER_MAX_PAINT_WORK;
   paint->transform_stack.clear ();
   paint->release_all_clips ();
   for (auto *s : paint->surface_stack)
     paint->release_surface (s);
   paint->surface_stack.clear ();
   hb_raster_draw_reset (paint->clip_rdr);
-  paint->has_extents = false;
-  paint->fixed_extents = {};
-  return nullptr;
 }
 
 /**
@@ -2224,15 +2573,9 @@ hb_raster_paint_reset (hb_raster_paint_t *paint)
   paint->base_transform = {1, 0, 0, 1, 0, 0};
   paint->x_scale_factor = 1.f;
   paint->y_scale_factor = 1.f;
-  paint->fixed_extents = {};
-  paint->has_extents = false;
   paint->foreground = HB_COLOR (0, 0, 0, 255);
   hb_raster_paint_clear_custom_palette_colors (paint);
-  paint->transform_stack.clear ();
-  paint->release_all_clips ();
-  for (auto *s : paint->surface_stack)
-    paint->release_surface (s);
-  paint->surface_stack.clear ();
+  hb_raster_paint_clear (paint);
 }
 
 /**

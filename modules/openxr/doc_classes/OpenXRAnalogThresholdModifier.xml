@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OpenXRAnalogThresholdModifier" inherits="OpenXRActionBindingModifier" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+<class name="OpenXRAnalogThresholdModifier" inherits="OpenXRActionBindingModifier" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		The analog threshold binding modifier can modify a float input to a boolean input with specified thresholds.
 	</brief_description>

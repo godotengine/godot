@@ -71,7 +71,26 @@ struct hb_raster_draw_t
   hb_raster_extents_t fixed_extents     = {};
   bool                has_extents = false;
 
+  /* Visibility clip box for curve flattening (device pixels); set
+     internally by raster-paint so invisible curves collapse to their
+     chord.  See hb_raster_draw_set_clip_box(). */
+  bool  has_clip_box = false;
+  float clip_x0 = 0.f, clip_y0 = 0.f, clip_x1 = 0.f, clip_y1 = 0.f;
+
+  /* Flattening clip resolved from the above (or from fixed extents),
+     expanded by one pixel; kept in sync by hb_raster_draw_update_flatten_clip(). */
+  bool  flatten_clip_active = false;
+  float flatten_clip_x0 = 0.f, flatten_clip_y0 = 0.f;
+  float flatten_clip_x1 = 0.f, flatten_clip_y1 = 0.f;
+
+  /* Curve-flattening work, charged one unit per Bézier subdivision.
+     When external_work is set (by raster-paint), that session budget
+     is charged instead of the standalone per-session one. */
+  int64_t  flatten_work_left = HB_RASTER_MAX_DRAW_WORK;
+  int64_t *external_work = nullptr;
+
   /* Accumulated geometry */
+  int64_t edges_left = HB_RASTER_MAX_DRAW_EDGES;
   hb_vector_t<hb_raster_edge_t> edges;
 
   /* Scratch — reused across render() calls */
@@ -196,7 +215,7 @@ hb_raster_draw_set_user_data (hb_raster_draw_t   *draw,
  * Since: 13.0.0
  **/
 void *
-hb_raster_draw_get_user_data (hb_raster_draw_t   *draw,
+hb_raster_draw_get_user_data (const hb_raster_draw_t   *draw,
 			      hb_user_data_key_t *key)
 {
   return hb_object_get_user_data (draw, key);
@@ -257,7 +276,7 @@ hb_raster_draw_set_scale_factor (hb_raster_draw_t *draw,
  * Since: 13.0.0
  **/
 void
-hb_raster_draw_get_scale_factor (hb_raster_draw_t *draw,
+hb_raster_draw_get_scale_factor (const hb_raster_draw_t *draw,
 				 float *x_scale_factor,
 				 float *y_scale_factor)
 {
@@ -280,7 +299,7 @@ hb_raster_draw_get_scale_factor (hb_raster_draw_t *draw,
  * Since: 13.0.0
  **/
 void
-hb_raster_draw_get_transform (hb_raster_draw_t *draw,
+hb_raster_draw_get_transform (const hb_raster_draw_t *draw,
 			      float *xx, float *yx,
 			      float *xy, float *yy,
 			      float *dx, float *dy)
@@ -291,6 +310,38 @@ hb_raster_draw_get_transform (hb_raster_draw_t *draw,
   if (yy) *yy = draw->transform.yy;
   if (dx) *dx = draw->transform.x0;
   if (dy) *dy = draw->transform.y0;
+}
+
+/* Recompute the resolved flattening clip box: the internal clip box
+   when set, otherwise the fixed output extents when known.  Expanded
+   by one pixel so fixed-point rounding at the boundary stays safe.
+   Called whenever the clip box or extents change.  A curve whose
+   control-point bounding box misses the clip box entirely is replaced
+   by its chord: coverage inside the box then depends only on the
+   curve's endpoints (intermediate scanline crossings cancel in pairs,
+   and crossings right of the box never reach visible pixels), so the
+   replacement is exact for rendering. */
+static void
+hb_raster_draw_update_flatten_clip (hb_raster_draw_t *draw)
+{
+  if (draw->has_clip_box)
+  {
+    draw->flatten_clip_active = true;
+    draw->flatten_clip_x0 = draw->clip_x0 - 1.f;
+    draw->flatten_clip_y0 = draw->clip_y0 - 1.f;
+    draw->flatten_clip_x1 = draw->clip_x1 + 1.f;
+    draw->flatten_clip_y1 = draw->clip_y1 + 1.f;
+  }
+  else if (draw->has_extents)
+  {
+    draw->flatten_clip_active = true;
+    draw->flatten_clip_x0 = (float) draw->fixed_extents.x_origin - 1.f;
+    draw->flatten_clip_y0 = (float) draw->fixed_extents.y_origin - 1.f;
+    draw->flatten_clip_x1 = (float) draw->fixed_extents.x_origin + (float) draw->fixed_extents.width + 1.f;
+    draw->flatten_clip_y1 = (float) draw->fixed_extents.y_origin + (float) draw->fixed_extents.height + 1.f;
+  }
+  else
+    draw->flatten_clip_active = false;
 }
 
 /**
@@ -310,6 +361,7 @@ hb_raster_draw_set_extents (hb_raster_draw_t          *draw,
 {
   draw->fixed_extents     = *extents;
   draw->has_extents = true;
+  hb_raster_draw_update_flatten_clip (draw);
 }
 
 /**
@@ -324,7 +376,7 @@ hb_raster_draw_set_extents (hb_raster_draw_t          *draw,
  * Since: 13.0.0
  **/
 hb_bool_t
-hb_raster_draw_get_extents (hb_raster_draw_t    *draw,
+hb_raster_draw_get_extents (const hb_raster_draw_t    *draw,
 			    hb_raster_extents_t *extents)
 {
   if (!draw->has_extents)
@@ -345,6 +397,8 @@ hb_raster_draw_get_extents (hb_raster_draw_t    *draw,
  *
  * This is equivalent to computing a transformed bounding box in pixel
  * space and calling hb_raster_draw_set_extents().
+ *
+ * The resulting dimensions are capped at 4096 pixels per side.
  *
  * Return value: `true` if transformed extents are non-empty and set;
  * `false` otherwise.
@@ -382,26 +436,53 @@ hb_raster_draw_set_glyph_extents (hb_raster_draw_t         *draw,
     ty_max = hb_max (ty_max, ty);
   }
 
-  int ex0 = (int) floorf (tx_min);
-  int ey0 = (int) floorf (ty_min);
-  int ex1 = (int) ceilf  (tx_max);
-  int ey1 = (int) ceilf  (ty_max);
+  int32_t ex0 = hb_clamp_to<int32_t> (floorf (tx_min));
+  int32_t ey0 = hb_clamp_to<int32_t> (floorf (ty_min));
+  int32_t ex1 = hb_clamp_to<int32_t> (ceilf  (tx_max));
+  int32_t ey1 = hb_clamp_to<int32_t> (ceilf  (ty_max));
 
   if (ex1 <= ex0 || ey1 <= ey0)
   {
     draw->fixed_extents = {};
     draw->has_extents = false;
+    hb_raster_draw_update_flatten_clip (draw);
     return false;
   }
 
   draw->fixed_extents = {
     ex0, ey0,
-    (unsigned) (ex1 - ex0),
-    (unsigned) (ey1 - ey0),
+    (unsigned) hb_min ((int64_t) ex1 - ex0, (int64_t) HB_RASTER_MAX_AUTO_DIMENSION),
+    (unsigned) hb_min ((int64_t) ey1 - ey0, (int64_t) HB_RASTER_MAX_AUTO_DIMENSION),
     0
   };
   draw->has_extents = true;
+  hb_raster_draw_update_flatten_clip (draw);
   return true;
+}
+
+/**
+ * hb_raster_draw_clear:
+ * @draw: a rasterizer
+ *
+ * Discards accumulated geometry and extents so @draw can be reused
+ * for another render.  User configuration (transform, scale factors)
+ * is preserved.  Call hb_raster_draw_reset() to also reset user
+ * configuration to defaults.
+ *
+ * Since: 14.2.0
+ **/
+void
+hb_raster_draw_clear (hb_raster_draw_t *draw)
+{
+  draw->fixed_extents     = {};
+  draw->has_extents = false;
+  draw->has_clip_box = false;
+  draw->flatten_clip_active = false;
+  draw->flatten_work_left = HB_RASTER_MAX_DRAW_WORK;
+  draw->external_work = nullptr;
+  draw->edges_left = HB_RASTER_MAX_DRAW_EDGES;
+  draw->edges.clear ();
+  draw->active_edges.clear ();
 }
 
 /**
@@ -412,9 +493,6 @@ hb_raster_draw_set_glyph_extents (hb_raster_draw_t         *draw,
  * geometry, the transform, and fixed extents.  The object can then be
  * reused for a new glyph.
  *
- * Internal scratch buffers and recycled image cache are preserved for
- * reuse across subsequent renders.
- *
  * Since: 13.0.0
  **/
 void
@@ -423,10 +501,37 @@ hb_raster_draw_reset (hb_raster_draw_t *draw)
   draw->transform         = {1, 0, 0, 1, 0, 0};
   draw->x_scale_factor    = 1.f;
   draw->y_scale_factor    = 1.f;
-  draw->fixed_extents     = {};
-  draw->has_extents = false;
-  draw->edges.clear ();
-  draw->active_edges.clear ();
+  hb_raster_draw_clear (draw);
+}
+
+void
+hb_raster_draw_set_clip_box (hb_raster_draw_t *draw,
+			     float x0, float y0,
+			     float x1, float y1)
+{
+  draw->has_clip_box = true;
+  draw->clip_x0 = x0;
+  draw->clip_y0 = y0;
+  draw->clip_x1 = x1;
+  draw->clip_y1 = y1;
+  hb_raster_draw_update_flatten_clip (draw);
+}
+
+void
+hb_raster_draw_set_external_work (hb_raster_draw_t *draw,
+				  int64_t *work_left)
+{
+  draw->external_work = work_left;
+}
+
+int64_t
+hb_raster_draw_get_edge_work (hb_raster_draw_t *draw, unsigned max_rows)
+{
+  int64_t work = 0;
+  for (const auto &e : draw->edges)
+    work += 1 + hb_min (((int64_t) e.yH - (int64_t) e.yL) >> HB_RASTER_PIXEL_BITS,
+			(int64_t) max_rows);
+  return work;
 }
 
 /**
@@ -469,10 +574,13 @@ emit_segment (hb_raster_draw_t *draw,
 	      float x0, float y0,
 	      float x1, float y1)
 {
-  int32_t X0 = (int32_t) roundf (x0 * HB_RASTER_ONE_PIXEL);
-  int32_t Y0 = (int32_t) roundf (y0 * HB_RASTER_ONE_PIXEL);
-  int32_t X1 = (int32_t) roundf (x1 * HB_RASTER_ONE_PIXEL);
-  int32_t Y1 = (int32_t) roundf (y1 * HB_RASTER_ONE_PIXEL);
+  if (unlikely (draw->edges_left <= 0))
+    return;
+
+  int32_t X0 = hb_clamp_to<int32_t> (roundf (x0 * HB_RASTER_ONE_PIXEL));
+  int32_t Y0 = hb_clamp_to<int32_t> (roundf (y0 * HB_RASTER_ONE_PIXEL));
+  int32_t X1 = hb_clamp_to<int32_t> (roundf (x1 * HB_RASTER_ONE_PIXEL));
+  int32_t Y1 = hb_clamp_to<int32_t> (roundf (y1 * HB_RASTER_ONE_PIXEL));
 
   if (Y0 == Y1) return; /* horizontal — skip */
 
@@ -482,10 +590,15 @@ emit_segment (hb_raster_draw_t *draw,
   } else {
     e.xL = X1; e.yL = Y1; e.xH = X0; e.yH = Y0; e.wind = -1;
   }
-  e.slope = ((int64_t) (e.xH - e.xL) << 16) / (e.yH - e.yL);
+  e.slope = (((int64_t) e.xH - (int64_t) e.xL) * (int64_t) 65536) /
+	    ((int64_t) e.yH - (int64_t) e.yL);
 
-  draw->edges.push (e);
+  if (likely (draw->edges.push_or_fail (e)))
+    draw->edges_left--;
+  else
+    draw->edges_left = 0;
 }
+
 
 /* Quadratic Bézier flattener — iterative de Casteljau at t=0.5. */
 static inline void
@@ -499,46 +612,90 @@ flatten_quadratic_recursive (hb_raster_draw_t *draw,
   {
     float x0, y0, x1, y1, x2, y2;
     int depth;
+    bool check_clip;
   };
 
   quad_node_t stack[16];
   unsigned top = 0;
 
+  bool check_clip = draw->flatten_clip_active;
+  int64_t *work = draw->external_work ? draw->external_work : &draw->flatten_work_left;
+  int64_t work_left = *work;
+
   while (true)
   {
-    bool is_flat;
-    if (false)
+    bool emit_chord = depth >= 16;
+
+    /* Entirely outside the clip box: the chord is exact for coverage.
+       Subdivided control points are convex combinations of their
+       parent's, so once a node is entirely inside the box no
+       descendant can leave it and the test is skipped below. */
+    if (!emit_chord && check_clip)
     {
-      /* Old behavior: midpoint deviation from chord midpoint. */
-      float mx = x0 * 0.25f + x1 * 0.5f + x2 * 0.25f;
-      float my = y0 * 0.25f + y1 * 0.5f + y2 * 0.25f;
-      float chord_mx = (x0 + x2) * 0.5f;
-      float chord_my = (y0 + y2) * 0.5f;
-      float dx = mx - chord_mx;
-      float dy = my - chord_my;
-      static const float flat_thresh = HB_RASTER_FLAT_THRESH * HB_RASTER_FLAT_THRESH;
-      is_flat = (dx * dx + dy * dy) <= flat_thresh;
-    }
-    else
-    {
-      /* FreeType behavior: control-point deviation from chord center. */
-      const float flat_thresh = 0.25f;
-      float dx = x0 + x2 - 2.f * x1;
-      float dy = y0 + y2 - 2.f * y1;
-      if (dx < 0) dx = -dx;
-      if (dy < 0) dy = -dy;
-      is_flat = dx <= flat_thresh && dy <= flat_thresh;
+      float bx0 = hb_min (x0, hb_min (x1, x2));
+      float bx1 = hb_max (x0, hb_max (x1, x2));
+      float by0 = hb_min (y0, hb_min (y1, y2));
+      float by1 = hb_max (y0, hb_max (y1, y2));
+      if (bx1 < draw->flatten_clip_x0 || bx0 > draw->flatten_clip_x1 ||
+	  by1 < draw->flatten_clip_y0 || by0 > draw->flatten_clip_y1)
+	emit_chord = true;
+      else if (bx0 >= draw->flatten_clip_x0 && bx1 <= draw->flatten_clip_x1 &&
+	       by0 >= draw->flatten_clip_y0 && by1 <= draw->flatten_clip_y1)
+	check_clip = false;
     }
 
-    if (depth >= 16 || is_flat)
+    if (!emit_chord)
+    {
+      bool is_flat;
+      if (false)
+      {
+	/* Old behavior: midpoint deviation from chord midpoint. */
+	float mx = x0 * 0.25f + x1 * 0.5f + x2 * 0.25f;
+	float my = y0 * 0.25f + y1 * 0.5f + y2 * 0.25f;
+	float chord_mx = (x0 + x2) * 0.5f;
+	float chord_my = (y0 + y2) * 0.5f;
+	float dx = mx - chord_mx;
+	float dy = my - chord_my;
+	static const float flat_thresh = HB_RASTER_FLAT_THRESH * HB_RASTER_FLAT_THRESH;
+	is_flat = (dx * dx + dy * dy) <= flat_thresh;
+      }
+      else
+      {
+	/* FreeType behavior: control-point deviation from chord center. */
+	const float flat_thresh = 0.25f;
+	float dx = x0 + x2 - 2.f * x1;
+	float dy = y0 + y2 - 2.f * y1;
+	if (dx < 0) dx = -dx;
+	if (dy < 0) dy = -dy;
+	is_flat = dx <= flat_thresh && dy <= flat_thresh;
+      }
+      emit_chord = is_flat;
+    }
+
+    /* Charge one unit per subdivision; degrade to the chord when the
+       session work budget is spent. */
+    if (!emit_chord)
+    {
+      if (unlikely (work_left <= 0))
+	emit_chord = true;
+      else
+	work_left--;
+    }
+
+    if (emit_chord)
     {
       emit_segment (draw, x0, y0, x2, y2);
-      if (!top) return;
+      if (!top)
+      {
+	*work = work_left;
+	return;
+      }
       const quad_node_t &n = stack[--top];
       x0 = n.x0; y0 = n.y0;
       x1 = n.x1; y1 = n.y1;
       x2 = n.x2; y2 = n.y2;
       depth = n.depth;
+      check_clip = n.check_clip;
       continue;
     }
 
@@ -547,7 +704,7 @@ flatten_quadratic_recursive (hb_raster_draw_t *draw,
     float xm  = (x01 + x12) * 0.5f, ym  = (y01 + y12) * 0.5f;
 
     /* Depth is capped at 16, so stack capacity 16 is sufficient. */
-    stack[top++] = {xm, ym, x12, y12, x2, y2, depth + 1};
+    stack[top++] = {xm, ym, x12, y12, x2, y2, depth + 1, check_clip};
     x2 = xm; y2 = ym;
     x1 = x01; y1 = y01;
     depth++;
@@ -665,52 +822,96 @@ flatten_cubic_recursive (hb_raster_draw_t *draw,
   {
     float x0, y0, x1, y1, x2, y2, x3, y3;
     int depth;
+    bool check_clip;
   };
 
   cubic_node_t stack[16];
   unsigned top = 0;
 
+  bool check_clip = draw->flatten_clip_active;
+  int64_t *work = draw->external_work ? draw->external_work : &draw->flatten_work_left;
+  int64_t work_left = *work;
+
   while (true)
   {
-    bool is_flat;
-    if (false)
+    bool emit_chord = depth >= 16;
+
+    /* Entirely outside the clip box: the chord is exact for coverage.
+       Subdivided control points are convex combinations of their
+       parent's, so once a node is entirely inside the box no
+       descendant can leave it and the test is skipped below. */
+    if (!emit_chord && check_clip)
     {
-      /* Old behavior: curvature/chord-error bound. */
-      float err2 = cubic_chord_error_bound2 (x0, y0, x1, y1, x2, y2, x3, y3);
-      static const float flat_thresh = HB_RASTER_FLAT_THRESH * HB_RASTER_FLAT_THRESH;
-      is_flat = err2 <= flat_thresh;
-    }
-    else
-    {
-      /* FreeType behavior: chord-trisection distance test. */
-      const float flat_thresh = 0.5f;
-
-      float d10x = 2.f * x0 - 3.f * x1 + x3;
-      float d10y = 2.f * y0 - 3.f * y1 + y3;
-      float d20x = x0 - 3.f * x2 + 2.f * x3;
-      float d20y = y0 - 3.f * y2 + 2.f * y3;
-
-      if (d10x < 0) d10x = -d10x;
-      if (d10y < 0) d10y = -d10y;
-      if (d20x < 0) d20x = -d20x;
-      if (d20y < 0) d20y = -d20y;
-
-      is_flat = d10x <= flat_thresh &&
-                d10y <= flat_thresh &&
-                d20x <= flat_thresh &&
-                d20y <= flat_thresh;
+      float bx0 = hb_min (hb_min (x0, x1), hb_min (x2, x3));
+      float bx1 = hb_max (hb_max (x0, x1), hb_max (x2, x3));
+      float by0 = hb_min (hb_min (y0, y1), hb_min (y2, y3));
+      float by1 = hb_max (hb_max (y0, y1), hb_max (y2, y3));
+      if (bx1 < draw->flatten_clip_x0 || bx0 > draw->flatten_clip_x1 ||
+	  by1 < draw->flatten_clip_y0 || by0 > draw->flatten_clip_y1)
+	emit_chord = true;
+      else if (bx0 >= draw->flatten_clip_x0 && bx1 <= draw->flatten_clip_x1 &&
+	       by0 >= draw->flatten_clip_y0 && by1 <= draw->flatten_clip_y1)
+	check_clip = false;
     }
 
-    if (depth >= 16 || is_flat)
+    if (!emit_chord)
+    {
+      bool is_flat;
+      if (false)
+      {
+	/* Old behavior: curvature/chord-error bound. */
+	float err2 = cubic_chord_error_bound2 (x0, y0, x1, y1, x2, y2, x3, y3);
+	static const float flat_thresh = HB_RASTER_FLAT_THRESH * HB_RASTER_FLAT_THRESH;
+	is_flat = err2 <= flat_thresh;
+      }
+      else
+      {
+	/* FreeType behavior: chord-trisection distance test. */
+	const float flat_thresh = 0.5f;
+
+	float d10x = 2.f * x0 - 3.f * x1 + x3;
+	float d10y = 2.f * y0 - 3.f * y1 + y3;
+	float d20x = x0 - 3.f * x2 + 2.f * x3;
+	float d20y = y0 - 3.f * y2 + 2.f * y3;
+
+	if (d10x < 0) d10x = -d10x;
+	if (d10y < 0) d10y = -d10y;
+	if (d20x < 0) d20x = -d20x;
+	if (d20y < 0) d20y = -d20y;
+
+	is_flat = d10x <= flat_thresh &&
+		  d10y <= flat_thresh &&
+		  d20x <= flat_thresh &&
+		  d20y <= flat_thresh;
+      }
+      emit_chord = is_flat;
+    }
+
+    /* Charge one unit per subdivision; degrade to the chord when the
+       session work budget is spent. */
+    if (!emit_chord)
+    {
+      if (unlikely (work_left <= 0))
+	emit_chord = true;
+      else
+	work_left--;
+    }
+
+    if (emit_chord)
     {
       emit_segment (draw, x0, y0, x3, y3);
-      if (!top) return;
+      if (!top)
+      {
+	*work = work_left;
+	return;
+      }
       const cubic_node_t &n = stack[--top];
       x0 = n.x0; y0 = n.y0;
       x1 = n.x1; y1 = n.y1;
       x2 = n.x2; y2 = n.y2;
       x3 = n.x3; y3 = n.y3;
       depth = n.depth;
+      check_clip = n.check_clip;
       continue;
     }
 
@@ -722,7 +923,7 @@ flatten_cubic_recursive (hb_raster_draw_t *draw,
     float xm   = (x012 + x123) * 0.5f, ym   = (y012 + y123) * 0.5f;
 
     /* Depth is capped at 16, so stack capacity 16 is sufficient. */
-    stack[top++] = {xm, ym, x123, y123, x23, y23, x3, y3, depth + 1};
+    stack[top++] = {xm, ym, x123, y123, x23, y23, x3, y3, depth + 1, check_clip};
     x3 = xm; y3 = ym;
     x2 = x012; y2 = y012;
     x1 = x01; y1 = y01;
@@ -835,6 +1036,7 @@ hb_raster_line_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
 		   void *user_data HB_UNUSED)
 {
   hb_raster_draw_t *draw = (hb_raster_draw_t *) draw_data;
+  if (unlikely (draw->edges_left <= 0)) return;
 
   float tx0, ty0, tx1, ty1;
   transform_point (draw, st->current_x, st->current_y, tx0, ty0);
@@ -851,6 +1053,7 @@ hb_raster_quadratic_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
 			void *user_data HB_UNUSED)
 {
   hb_raster_draw_t *draw = (hb_raster_draw_t *) draw_data;
+  if (unlikely (draw->edges_left <= 0)) return;
 
   float tx0, ty0, tx1, ty1, tx2, ty2;
   transform_point (draw, st->current_x, st->current_y, tx0, ty0);
@@ -869,6 +1072,7 @@ hb_raster_cubic_to (hb_draw_funcs_t *dfuncs HB_UNUSED,
 		    void *user_data HB_UNUSED)
 {
   hb_raster_draw_t *draw = (hb_raster_draw_t *) draw_data;
+  if (unlikely (draw->edges_left <= 0)) return;
 
   float tx0, ty0, tx1, ty1, tx2, ty2, tx3, ty3;
   transform_point (draw, st->current_x, st->current_y, tx0, ty0);
@@ -920,20 +1124,48 @@ free_static_raster_draw_funcs ()
 
 /**
  * hb_raster_draw_get_funcs:
+ * @draw: a rasterizer draw context.
  *
- * Fetches the singleton #hb_draw_funcs_t that feeds outline data
- * into an #hb_raster_draw_t.  Pass the #hb_raster_draw_t as the
- * @draw_data argument when calling the draw functions.
+ * Fetches the #hb_draw_funcs_t that feeds outline data into
+ * @draw.  Pass @draw as the @draw_data argument when calling
+ * the draw functions.
  *
  * Return value: (transfer none):
  * The rasterizer draw functions
  *
- * Since: 13.0.0
+ * Since: 14.2.0
  **/
 hb_draw_funcs_t *
-hb_raster_draw_get_funcs (void)
+hb_raster_draw_get_funcs (const hb_raster_draw_t *draw HB_UNUSED)
 {
   return static_raster_draw_funcs.get_unconst ();
+}
+
+/**
+ * hb_raster_draw_glyph_or_fail:
+ * @draw: a rasterizer
+ * @font: font to draw from
+ * @glyph: glyph ID to draw
+ *
+ * Convenience to draw one glyph.  Equivalent to:
+ *
+ * |[<!-- language="plain" -->
+ * hb_font_draw_glyph_or_fail (font, glyph,
+ *   hb_raster_draw_get_funcs (draw), draw);
+ * ]|
+ *
+ * Return value: `true` if the glyph was drawn, `false` if the font has
+ * no outlines for @glyph.
+ *
+ * Since: 14.2.0
+ **/
+hb_bool_t
+hb_raster_draw_glyph_or_fail (hb_raster_draw_t *draw,
+			      hb_font_t       *font,
+			      hb_codepoint_t   glyph)
+{
+  return hb_font_draw_glyph_or_fail (font, glyph,
+				     hb_raster_draw_get_funcs (draw), draw);
 }
 
 /**
@@ -941,35 +1173,19 @@ hb_raster_draw_get_funcs (void)
  * @draw: a rasterizer
  * @font: font to draw from
  * @glyph: glyph ID to draw
- * @pen_x: glyph origin x in font coordinates (pre-transform)
- * @pen_y: glyph origin y in font coordinates (pre-transform)
  *
- * Convenience wrapper to draw one glyph at (@pen_x, @pen_y) using the
- * rasterizer's current transform. The pen coordinates are applied before
- * minification and are transformed by the current affine transform.
+ * Draws one glyph into @draw using the rasterizer's current
+ * transform.  Equivalent to hb_raster_draw_glyph_or_fail() with the
+ * return value ignored.
  *
- * Since: 13.0.0
+ * Since: 14.2.0
  **/
 void
 hb_raster_draw_glyph (hb_raster_draw_t *draw,
 		      hb_font_t       *font,
-		      hb_codepoint_t   glyph,
-		      float            pen_x,
-		      float            pen_y)
+		      hb_codepoint_t   glyph)
 {
-  float xx = draw->transform.xx;
-  float yx = draw->transform.yx;
-  float xy = draw->transform.xy;
-  float yy = draw->transform.yy;
-  float dx = draw->transform.x0;
-  float dy = draw->transform.y0;
-
-  hb_raster_draw_set_transform (draw,
-				xx, yx, xy, yy,
-				dx + xx * pen_x + xy * pen_y,
-				dy + yx * pen_x + yy * pen_y);
-  hb_font_draw_glyph (font, glyph, hb_raster_draw_get_funcs (), draw);
-  hb_raster_draw_set_transform (draw, xx, yx, xy, yy, dx, dy);
+  hb_raster_draw_glyph_or_fail (draw, font, glyph);
 }
 
 
@@ -1030,15 +1246,23 @@ edge_sweep_row (int32_t                *area,
 		unsigned               &x_min,
 		unsigned               &x_max)
 {
-  int32_t y_bot = y_top + HB_RASTER_ONE_PIXEL;
+  /* Saturate: y_top can be within ONE_PIXEL of INT32_MAX when the surface
+   * sits at the extreme of the fixed-point coordinate space.  Edges are
+   * int32-clamped too, so no coverage exists beyond INT32_MAX anyway. */
+  int32_t y_bot = (int32_t) hb_min ((int64_t) y_top + HB_RASTER_ONE_PIXEL, (int64_t) INT32_MAX);
 
   int32_t ey0 = hb_max (edge.yL, y_top);
   int32_t ey1 = hb_min (edge.yH, y_bot);
   if (ey0 >= ey1) return;
 
-  /* X at clipped endpoints (fixed-point) */
-  int32_t x0 = edge.xL + (int32_t) ((int64_t) (ey0 - edge.yL) * edge.slope >> 16);
-  int32_t x1 = edge.xL + (int32_t) ((int64_t) (ey1 - edge.yL) * edge.slope >> 16);
+  /* X at clipped endpoints (fixed-point). Keep the interpolation in 64-bit
+   * so extreme y values do not overflow before the slope multiply. */
+  int64_t x0_64 = (int64_t) edge.xL +
+		  ((((int64_t) ey0 - (int64_t) edge.yL) * edge.slope) >> 16);
+  int64_t x1_64 = (int64_t) edge.xL +
+		  ((((int64_t) ey1 - (int64_t) edge.yL) * edge.slope) >> 16);
+  int32_t x0 = (int32_t) hb_clamp (x0_64, (int64_t) INT32_MIN, (int64_t) INT32_MAX);
+  int32_t x1 = (int32_t) hb_clamp (x1_64, (int64_t) INT32_MIN, (int64_t) INT32_MAX);
 
   /* Fractional y within this pixel row [0, ONE_PIXEL] */
   int32_t fy0 = ey0 - y_top;
@@ -1057,8 +1281,8 @@ edge_sweep_row (int32_t                *area,
     return;
   }
 
-  int32_t total_dx = x1 - x0;
-  int32_t total_dy = fy1 - fy0;
+  int64_t total_dx = (int64_t) x1 - (int64_t) x0;
+  int64_t total_dy = (int64_t) fy1 - (int64_t) fy0;
 
   /* fy increment per pixel column (constant since x_b advances by ONE_PIXEL). */
   int32_t delta_fy = (int32_t) ((int64_t) HB_RASTER_ONE_PIXEL * total_dy / total_dx);
@@ -1066,8 +1290,9 @@ edge_sweep_row (int32_t                *area,
   if (total_dx > 0)
   {
     /* Left-to-right edge. */
-    int32_t x_b  = (cx0 + 1) << HB_RASTER_PIXEL_BITS;
-    int32_t fy_b = fy0 + (int32_t) ((int64_t) (x_b - x0) * total_dy / total_dx);
+    int32_t x_b = (int32_t) hb_clamp (((int64_t) cx0 + 1) * HB_RASTER_ONE_PIXEL,
+				      (int64_t) INT32_MIN, (int64_t) INT32_MAX);
+    int32_t fy_b = fy0 + (int32_t) ((((int64_t) x_b - (int64_t) x0) * total_dy) / total_dx);
     cell_add (area, cover, width, cx0 - x_org, fx0, fy0, HB_RASTER_ONE_PIXEL, fy_b, wind, x_min, x_max);
 
     int32_t fy_prev = fy_b;
@@ -1083,8 +1308,9 @@ edge_sweep_row (int32_t                *area,
   else
   {
     /* Right-to-left edge. */
-    int32_t x_b  = cx0 << HB_RASTER_PIXEL_BITS;
-    int32_t fy_b = fy0 + (int32_t) ((int64_t) (x_b - x0) * total_dy / total_dx);
+    int32_t x_b = (int32_t) hb_clamp ((int64_t) cx0 * HB_RASTER_ONE_PIXEL,
+				      (int64_t) INT32_MIN, (int64_t) INT32_MAX);
+    int32_t fy_b = fy0 + (int32_t) ((((int64_t) x_b - (int64_t) x0) * total_dy) / total_dx);
     cell_add (area, cover, width, cx0 - x_org, fx0, fy0, 0, fy_b, wind, x_min, x_max);
 
     int32_t fy_prev = fy_b;
@@ -1255,16 +1481,18 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
 	ymax = hb_max (ymax, e.yH);
       }
 
-      /* Convert fixed-point → pixels (floor for min, ceil for max) */
+      /* Convert fixed-point → pixels (floor for min, ceil for max).  Edge
+	 coordinates are saturated to int32 range in emit_segment, so the
+	 +MASK ceil step must be widened to avoid signed overflow. */
       int x0 = xmin >> HB_RASTER_PIXEL_BITS;
       int y0 = ymin >> HB_RASTER_PIXEL_BITS;
-      int x1 = (xmax + HB_RASTER_PIXEL_MASK) >> HB_RASTER_PIXEL_BITS;
-      int y1 = (ymax + HB_RASTER_PIXEL_MASK) >> HB_RASTER_PIXEL_BITS;
+      int x1 = (int) (((int64_t) xmax + HB_RASTER_PIXEL_MASK) >> HB_RASTER_PIXEL_BITS);
+      int y1 = (int) (((int64_t) ymax + HB_RASTER_PIXEL_MASK) >> HB_RASTER_PIXEL_BITS);
 
       ext.x_origin = x0;
       ext.y_origin = y0;
-      ext.width    = (unsigned) hb_max (0, x1 - x0);
-      ext.height   = (unsigned) hb_max (0, y1 - y0);
+      ext.width    = (unsigned) hb_min (hb_max (0, x1 - x0), HB_RASTER_MAX_AUTO_DIMENSION);
+      ext.height   = (unsigned) hb_min (hb_max (0, y1 - y0), HB_RASTER_MAX_AUTO_DIMENSION);
       ext.stride   = 0; /* filled below */
     }
   }
@@ -1274,24 +1502,23 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
     ext.stride = (ext.width + 3u) & ~3u;
 
   /* ── 3. Allocate or reuse image ─────────────────────────────────── */
-  hb_raster_image_t *image;
+  /* Reset one-shot state on every exit path. */
+  HB_SCOPE_GUARD (hb_raster_draw_clear (draw));
+
+  hb_unique_ptr_t<hb_raster_image_t> image;
   if (draw->recycled_image)
   {
-    image = draw->recycled_image;
+    image = hb_unique_ptr_t<hb_raster_image_t> (draw->recycled_image);
     draw->recycled_image = nullptr;
   }
   else
   {
-    image = hb_raster_image_create_or_fail ();
-    if (unlikely (!image)) goto fail;
+    image = hb_unique_ptr_t<hb_raster_image_t> (hb_raster_image_create_or_fail ());
+    if (unlikely (!image)) return nullptr;
   }
 
   if (unlikely (!image->configure (HB_RASTER_FORMAT_A8, ext)))
-  {
-    hb_raster_image_destroy (image);
-    image = nullptr;
-    goto fail;
-  }
+    return nullptr;
   image->clear ();
 
   /* ── 4. Bucket edges by starting row and rasterize scanlines ──── */
@@ -1299,7 +1526,7 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
   {
     if (unlikely (!draw->row_area.resize_dirty (ext.width) ||
 		  !draw->row_cover.resize_dirty (ext.width)))
-      goto fail;
+      return nullptr;
     hb_memset (draw->row_area.arrayZ,  0, ext.width * sizeof (int32_t));
     hb_memset (draw->row_cover.arrayZ, 0, ext.width * sizeof (int16_t));
 
@@ -1309,7 +1536,7 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
     if (ext.height > old_buckets)
     {
       if (unlikely (!draw->edge_buckets.resize (ext.height)))
-	goto fail;
+	return nullptr;
     }
     for (unsigned i = 0; i < hb_min (ext.height, old_buckets); i++)
       draw->edge_buckets.arrayZ[i].clear ();
@@ -1328,7 +1555,8 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
 
     for (unsigned row = 0; row < ext.height; row++)
     {
-      int32_t y_top = (ext.y_origin + (int) row) << HB_RASTER_PIXEL_BITS;
+      int64_t y_top_64 = ((int64_t) ext.y_origin + (int64_t) row) * HB_RASTER_ONE_PIXEL;
+      int32_t y_top = (int32_t) hb_clamp (y_top_64, (int64_t) INT32_MIN, (int64_t) INT32_MAX);
 
       /* Add new edges from this row's bucket. */
       draw->active_edges.extend (draw->edge_buckets.arrayZ[row]);
@@ -1371,16 +1599,5 @@ hb_raster_draw_render (hb_raster_draw_t *draw)
     }
   }
 
-done:
-  /* ── 6. Reset one-shot state ────────────────────────────────────── */
-  draw->edges.clear ();
-  draw->has_extents = false;
-  draw->fixed_extents     = {};
-
-  return image;
-
-fail:
-  hb_raster_image_destroy (image);
-  image = nullptr;
-  goto done;
+  return image.release ();
 }

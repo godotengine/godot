@@ -107,6 +107,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	void _restart_bind_compat_92089();
+	void _request_particles_process_bind_compat_109142(real_t p_time);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -128,7 +129,7 @@ public:
 	void set_trail_sections(int p_sections);
 	void set_trail_section_subdivisions(int p_subdivisions);
 	void set_interp_to_end(float p_interp);
-	void request_particles_process(real_t p_requested_process_time);
+	void request_particles_process(real_t p_requested_process_time, real_t p_requested_process_time_residual);
 
 #ifdef TOOLS_ENABLED
 	void set_show_gizmos(bool p_show_gizmos);

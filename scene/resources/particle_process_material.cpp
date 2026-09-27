@@ -635,7 +635,7 @@ void ParticleProcessMaterial::_update_shader() {
 	}
 	code += "}\n\n";
 
-	code += "void calculate_initial_display_params(inout DisplayParameters params, inout uint alt_seed) {\n";
+	code += "void calculate_initial_display_params(inout DisplayParameters params, inout uint alt_seed, vec4 color_multiplier) {\n";
 	code += "	// -------------------- DO NOT REORDER OPERATIONS, IT BREAKS VISUAL COMPATIBILITY\n";
 	code += "	// -------------------- ADD NEW OPERATIONS AT THE BOTTOM\n";
 	code += "	float pi = 3.14159;\n";
@@ -649,7 +649,8 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	params.animation_speed = mix(anim_speed_min, anim_speed_max, rand_from_seed(alt_seed));\n";
 	code += "	params.animation_offset = mix(anim_offset_min, anim_offset_max, rand_from_seed(alt_seed));\n";
 	code += "	params.lifetime = (1.0 - lifetime_randomness * rand_from_seed(alt_seed));\n";
-	code += "	params.color = color_value;\n";
+	code += "	params.color = color_value * color_multiplier;\n";
+
 	if (color_initial_ramp.is_valid()) {
 		code += "	params.color *= texture(color_initial_ramp, vec2(rand_from_seed(alt_seed)));\n";
 	}
@@ -913,7 +914,12 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	uint base_number = NUMBER;\n";
 	code += "	uint alt_seed = hash(base_number + uint(1) + RANDOM_SEED);\n";
 	code += "	DisplayParameters params;\n";
-	code += "	calculate_initial_display_params(params, alt_seed);\n";
+	if (particle_flags[PARTICLE_FLAG_PRESERVE_COLOR]) {
+		code += "	USERDATA2 = COLOR;\n";
+		code += "	calculate_initial_display_params(params, alt_seed, USERDATA2);\n";
+	} else {
+		code += "	calculate_initial_display_params(params, alt_seed, vec4(1.0));\n";
+	}
 	code += "	// Reset alt seed?\n";
 	code += "	//alt_seed = hash(base_number + uint(1) + RANDOM_SEED);\n";
 	code += "	DynamicsParameters dynamic_params;\n";
@@ -929,10 +935,10 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "		CUSTOM = vec4(0.0);\n";
 	code += "		CUSTOM.w = params.lifetime;\n";
 	code += "		CUSTOM.x = dynamic_params.angle;\n";
+	// Accumulated angle from angular velocity is stored in userdata W
+	code += "		USERDATA1.w = 0.0;\n";
 	code += "	}\n";
-	code += "	if (RESTART_COLOR) {\n";
-	code += "		COLOR = params.color;\n";
-	code += "	}\n";
+	code += "	COLOR = params.color;\n";
 	code += "	if (RESTART_ROT_SCALE) {\n";
 	code += "		TRANSFORM[0].xyz = vec3(1.0, 0.0, 0.0);\n";
 	code += "		TRANSFORM[1].xyz = vec3(0.0, 1.0, 0.0);\n";
@@ -1000,6 +1006,8 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "		}\n";
 		}
 	}
+	code += "	} else {\n";
+	code += "		USERDATA1.xyz = VELOCITY.xyz;\n";
 	code += "	}\n\n";
 	code += "	process_display_param(params, 0.0);\n\n";
 	code += "	USERDATA1.xyz = (EMISSION_TRANSFORM * vec4(USERDATA1.xyz, 0.0)).xyz;\n";
@@ -1018,7 +1026,11 @@ void ParticleProcessMaterial::_update_shader() {
 	code += "	//}\n";
 	code += "	uint alt_seed = hash(base_number + uint(1) + RANDOM_SEED);\n";
 	code += "	DisplayParameters params;\n";
-	code += "	calculate_initial_display_params(params, alt_seed);\n";
+	if (particle_flags[PARTICLE_FLAG_PRESERVE_COLOR]) {
+		code += "	calculate_initial_display_params(params, alt_seed, USERDATA2);\n";
+	} else {
+		code += "	calculate_initial_display_params(params, alt_seed, vec4(1.0));\n";
+	}
 	code += "	DynamicsParameters dynamic_params;\n";
 	code += "	calculate_initial_dynamics_params(dynamic_params, alt_seed);\n";
 	code += "	PhysicalParameters physics_params;\n";
@@ -1163,11 +1175,12 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	base_angle *= texture(angle_texture, vec2(lifetime_percent)).r;\n";
 	}
 	if (tex_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
-		code += "	base_angle += CUSTOM.y * LIFETIME * dynamic_params.angular_velocity * texture(angular_velocity_texture, vec2(lifetime_percent)).r;\n";
+		code += "	USERDATA1.w += texture(angular_velocity_texture, vec2(lifetime_percent)).r * DELTA * dynamic_params.angular_velocity;\n";
+		code += "	CUSTOM.x = base_angle * degree_to_rad + USERDATA1.w;\n";
 	} else {
 		code += "	base_angle += CUSTOM.y * LIFETIME * dynamic_params.angular_velocity;\n";
+		code += "	CUSTOM.x = base_angle * degree_to_rad;\n";
 	}
-	code += "	CUSTOM.x = base_angle * degree_to_rad;\n";
 	code += "	COLOR = params.color;\n\n";
 
 	if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
@@ -1223,6 +1236,12 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		params.scale *= texture(scale_over_velocity_curve, vec2(0.0)).rgb;\n";
 		code += "	}\n";
 	}
+
+	if (particle_flags[PARTICLE_FLAG_INHERIT_EMITTER_SCALE]) {
+		code += "	vec3 emitter_scale = vec3(length(EMISSION_TRANSFORM[0].xyz), length(EMISSION_TRANSFORM[1].xyz), length(EMISSION_TRANSFORM[2].xyz));\n";
+		code += "	params.scale = params.scale * emitter_scale;\n";
+	}
+
 	// A scale of 0 results in no emission at some emission amounts (including 3 and 6).
 	// `sign(scale)` is unsuitable, because sign(0) returns 0, nullifying the minimum value.
 	// The following evaluates to 1 when scale is 0, falling back to a positive minimum value.
@@ -2559,6 +2578,8 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_rotate_y"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_ROTATE_Y);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_disable_z"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DISABLE_Z);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_damping_as_friction"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_DAMPING_AS_FRICTION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_inherit_emitter_scale"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_INHERIT_EMITTER_SCALE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particle_flag_preserve_color"), "set_particle_flag", "get_particle_flag", PARTICLE_FLAG_PRESERVE_COLOR);
 	ADD_GROUP("Spawn", "");
 	ADD_SUBGROUP("Position", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "emission_shape_offset"), "set_emission_shape_offset", "get_emission_shape_offset");
@@ -2701,6 +2722,8 @@ void ParticleProcessMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_ROTATE_Y);
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_DISABLE_Z);
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_DAMPING_AS_FRICTION);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_INHERIT_EMITTER_SCALE);
+	BIND_ENUM_CONSTANT(PARTICLE_FLAG_PRESERVE_COLOR);
 	BIND_ENUM_CONSTANT(PARTICLE_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);

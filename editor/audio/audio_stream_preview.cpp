@@ -32,8 +32,8 @@
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
-
-/////////////////////
+#include "core/os/os.h"
+#include "servers/audio/audio_server.h"
 
 float AudioStreamPreview::get_length() const {
 	return length;
@@ -120,11 +120,15 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 
 	int mixbuff_chunk_frames = AudioServer::get_singleton()->get_mix_rate() * muxbuff_chunk_s;
 
-	Vector<AudioFrame> mix_chunk;
+	LocalVector<AudioFrame> mix_chunk;
 	mix_chunk.resize(mixbuff_chunk_frames);
 
 	int frames_total = AudioServer::get_singleton()->get_mix_rate() * preview->preview->length;
 	int frames_todo = frames_total;
+
+	const uint64_t update_interval_usec = 16000; // Roughly 60 Hz.
+	uint64_t time_accum_usec = 0;
+	uint64_t last_time_usec = OS::get_singleton()->get_ticks_usec();
 
 	preview->playback->start();
 
@@ -132,9 +136,9 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 		int ofs_write = uint64_t(frames_total - frames_todo) * uint64_t(preview->preview->preview.size() / 2) / uint64_t(frames_total);
 		int to_read = MIN(frames_todo, mixbuff_chunk_frames);
 		int to_write = uint64_t(to_read) * uint64_t(preview->preview->preview.size() / 2) / uint64_t(frames_total);
-		to_write = MIN(to_write, (preview->preview->preview.size() / 2) - ofs_write);
+		to_write = MIN(to_write, int(preview->preview->preview.size() / 2) - ofs_write);
 
-		preview->playback->mix(mix_chunk.ptrw(), 1.0, to_read);
+		preview->playback->mix(mix_chunk.ptr(), 1.0, to_read);
 
 		for (int i = 0; i < to_write; i++) {
 			float max = -1000;
@@ -158,13 +162,22 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 			uint8_t pfrom = CLAMP((min * 0.5 + 0.5) * 255, 0, 255);
 			uint8_t pto = CLAMP((max * 0.5 + 0.5) * 255, 0, 255);
 
-			preview->preview->preview.write[(ofs_write + i) * 2 + 0] = pfrom;
-			preview->preview->preview.write[(ofs_write + i) * 2 + 1] = pto;
+			preview->preview->preview[(ofs_write + i) * 2 + 0] = pfrom;
+			preview->preview->preview[(ofs_write + i) * 2 + 1] = pto;
 		}
 
 		frames_todo -= to_read;
-		callable_mp(singleton, &AudioStreamPreviewGenerator::_update_emit).call_deferred(preview->id);
+
+		uint64_t new_time_usec = OS::get_singleton()->get_ticks_usec();
+		time_accum_usec += new_time_usec - last_time_usec;
+		last_time_usec = new_time_usec;
+		if (time_accum_usec >= update_interval_usec) {
+			time_accum_usec = 0;
+			callable_mp(singleton, &AudioStreamPreviewGenerator::_update_emit).call_deferred(preview->id);
+		}
 	}
+
+	callable_mp(singleton, &AudioStreamPreviewGenerator::_update_emit).call_deferred(preview->id);
 
 	preview->preview->version++;
 
@@ -197,14 +210,11 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 
 	int frames = AudioServer::get_singleton()->get_mix_rate() * len_s;
 
-	Vector<uint8_t> maxmin;
+	LocalVector<uint8_t> maxmin;
 	int pw = frames / 20;
 	maxmin.resize(pw * 2);
-	{
-		uint8_t *ptr = maxmin.ptrw();
-		for (int i = 0; i < pw * 2; i++) {
-			ptr[i] = 127;
-		}
+	for (int i = 0; i < pw * 2; i++) {
+		maxmin[i] = 127;
 	}
 
 	preview->preview.instantiate();
@@ -212,8 +222,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->preview->length = len_s;
 
 	if (preview->playback.is_valid()) {
-		preview->thread = memnew(Thread);
-		preview->thread->start(_preview_thread, preview);
+		preview->task_id = WorkerThreadPool::get_singleton()->add_native_task(&AudioStreamPreviewGenerator::_preview_thread, preview, true, "AudioStreamPreviewGenerator");
 	}
 
 	return preview->preview;
@@ -233,12 +242,12 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 			List<ObjectID> to_erase;
 			for (KeyValue<ObjectID, Preview> &E : previews) {
 				if (!E.value.generating.is_set()) {
-					if (E.value.thread) {
-						E.value.thread->wait_to_finish();
-						memdelete(E.value.thread);
-						E.value.thread = nullptr;
-					}
-					if (!ObjectDB::get_instance(E.key)) { //no longer in use, get rid of preview
+					if (E.value.task_id != WorkerThreadPool::INVALID_TASK_ID) {
+						if (WorkerThreadPool::get_singleton()->is_task_completed(E.value.task_id)) {
+							WorkerThreadPool::get_singleton()->wait_for_task_completion(E.value.task_id);
+							E.value.task_id = WorkerThreadPool::INVALID_TASK_ID;
+						}
+					} else if (!ObjectDB::get_instance(E.key)) { //no longer in use, get rid of preview
 						to_erase.push_back(E.key);
 					}
 				}
@@ -255,4 +264,13 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 AudioStreamPreviewGenerator::AudioStreamPreviewGenerator() {
 	singleton = this;
 	set_process(true);
+}
+
+AudioStreamPreviewGenerator::~AudioStreamPreviewGenerator() {
+	for (KeyValue<ObjectID, Preview> &E : previews) {
+		if (E.value.task_id != WorkerThreadPool::INVALID_TASK_ID) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(E.value.task_id);
+		}
+	}
+	previews.clear();
 }

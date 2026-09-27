@@ -199,7 +199,6 @@ void main() {
 						oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c);
 				vec3 new_up = rotated * params.align_up;
 				mat3 local = mat3(normalize(cross(new_up, params.sort_direction)), new_up, params.sort_direction);
-				local = local * mat3(txform);
 				txform[0].xyz = local[0];
 				txform[1].xyz = local[1];
 				txform[2].xyz = local[2];
@@ -318,7 +317,7 @@ void main() {
 			inv_emission_transform[1] = vec4(params.inv_emission_transform[3], params.inv_emission_transform[4], params.inv_emission_transform[5], 0.0);
 			inv_emission_transform[2] = vec4(params.inv_emission_transform[6], params.inv_emission_transform[7], params.inv_emission_transform[8], 0.0);
 			inv_emission_transform[3] = vec4(params.inv_emission_transform[9], params.inv_emission_transform[10], params.inv_emission_transform[11], 1.0);
-			inv_emission_transform = transpose(inv_emission_transform);
+
 			txform = inv_emission_transform * txform;
 		}
 	} else {

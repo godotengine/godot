@@ -40,6 +40,7 @@
 #include "scene/gui/tree.h"
 
 class ImageTexture;
+class ColorRect;
 
 class EditorVisualProfiler : public VBoxContainer {
 	GDCLASS(EditorVisualProfiler, VBoxContainer);
@@ -73,6 +74,7 @@ private:
 	TextureRect *graph = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
+	ColorRect *graph_background = nullptr;
 	Tree *variables = nullptr;
 	HSplitContainer *h_split = nullptr;
 	CheckBox *frame_relative = nullptr;
@@ -88,6 +90,7 @@ private:
 	int hover_metric = -1;
 
 	StringName selected_area;
+	HashMap<StringName, bool> category_folding;
 
 	bool updating_frame = false;
 
@@ -116,6 +119,7 @@ private:
 
 	//void _make_metric_ptrs(Metric &m);
 	void _item_selected();
+	void _item_collapsed(TreeItem *p_item);
 
 	void _update_plot();
 

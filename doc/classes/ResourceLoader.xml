@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ResourceLoader" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ResourceLoader" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A singleton for loading resource files.
 	</brief_description>
@@ -62,6 +62,13 @@
 			<param index="0" name="type" type="String" />
 			<description>
 				Returns the list of recognized extensions for a resource type.
+			</description>
+		</method>
+		<method name="get_resource_type">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the resource type associated with a given resource path.
 			</description>
 		</method>
 		<method name="get_resource_uid">

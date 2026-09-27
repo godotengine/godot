@@ -30,6 +30,7 @@
 
 #include "theme_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/doc/editor_help.h"
@@ -92,6 +93,9 @@ void ThemeItemImportTree::_update_items_tree() {
 		return;
 	}
 
+	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
+	Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+
 	String filter_text = import_items_filter->get_text();
 
 	List<StringName> types;
@@ -106,6 +110,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	int font_size_amount = 0;
 	int icon_amount = 0;
 	int stylebox_amount = 0;
+	int sound_amount = 0;
 
 	tree_color_items.clear();
 	tree_constant_items.clear();
@@ -113,6 +118,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	tree_font_size_items.clear();
 	tree_icon_items.clear();
 	tree_stylebox_items.clear();
+	tree_sound_items.clear();
 
 	for (const StringName &E : types) {
 		String type_name = (String)E;
@@ -126,6 +132,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 		TreeItem *type_node = import_items_tree->create_item(root);
 		type_node->set_meta("_can_be_imported", false);
+		type_node->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 		type_node->set_collapsed(true);
 		type_node->set_icon(0, type_icon);
 		type_node->set_text(0, type_name);
@@ -183,7 +190,7 @@ void ThemeItemImportTree::_update_items_tree() {
 			switch (dt) {
 				case Theme::DATA_TYPE_COLOR:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("Color")));
-					data_type_node->set_text(0, TTR("Colors"));
+					data_type_node->set_text(0, TTRC("Colors"));
 
 					item_list = &tree_color_items;
 					color_amount += filtered_names.size();
@@ -191,7 +198,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 				case Theme::DATA_TYPE_CONSTANT:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("MemberConstant")));
-					data_type_node->set_text(0, TTR("Constants"));
+					data_type_node->set_text(0, TTRC("Constants"));
 
 					item_list = &tree_constant_items;
 					constant_amount += filtered_names.size();
@@ -199,7 +206,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 				case Theme::DATA_TYPE_FONT:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("FontItem")));
-					data_type_node->set_text(0, TTR("Fonts"));
+					data_type_node->set_text(0, TTRC("Fonts"));
 
 					item_list = &tree_font_items;
 					font_amount += filtered_names.size();
@@ -207,7 +214,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 				case Theme::DATA_TYPE_FONT_SIZE:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("FontSize")));
-					data_type_node->set_text(0, TTR("Font Sizes"));
+					data_type_node->set_text(0, TTRC("Font Sizes"));
 
 					item_list = &tree_font_size_items;
 					font_size_amount += filtered_names.size();
@@ -215,7 +222,7 @@ void ThemeItemImportTree::_update_items_tree() {
 
 				case Theme::DATA_TYPE_ICON:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("ImageTexture")));
-					data_type_node->set_text(0, TTR("Icons"));
+					data_type_node->set_text(0, TTRC("Icons"));
 
 					item_list = &tree_icon_items;
 					icon_amount += filtered_names.size();
@@ -223,10 +230,18 @@ void ThemeItemImportTree::_update_items_tree() {
 
 				case Theme::DATA_TYPE_STYLEBOX:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("StyleBoxFlat")));
-					data_type_node->set_text(0, TTR("Styleboxes"));
+					data_type_node->set_text(0, TTRC("Styleboxes"));
 
 					item_list = &tree_stylebox_items;
 					stylebox_amount += filtered_names.size();
+					break;
+
+				case Theme::DATA_TYPE_SOUND:
+					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("AudioStream")));
+					data_type_node->set_text(0, TTRC("Sounds"));
+
+					item_list = &tree_sound_items;
+					sound_amount += filtered_names.size();
 					break;
 
 				case Theme::DATA_TYPE_MAX:
@@ -237,6 +252,7 @@ void ThemeItemImportTree::_update_items_tree() {
 			for (const StringName &F : filtered_names) {
 				TreeItem *item_node = import_items_tree->create_item(data_type_node);
 				item_node->set_meta("_can_be_imported", true);
+				item_node->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 				item_node->set_text(0, F);
 				item_node->set_cell_mode(IMPORT_ITEM, TreeItem::CELL_MODE_CHECK);
 				item_node->set_checked(IMPORT_ITEM, false);
@@ -244,6 +260,9 @@ void ThemeItemImportTree::_update_items_tree() {
 				item_node->set_cell_mode(IMPORT_ITEM_DATA, TreeItem::CELL_MODE_CHECK);
 				item_node->set_checked(IMPORT_ITEM_DATA, false);
 				item_node->set_editable(IMPORT_ITEM_DATA, true);
+				if (use_monospace_font) {
+					item_node->set_custom_font(0, monospace_font);
+				}
 
 				_restore_selected_item(item_node);
 				item_node->propagate_check(IMPORT_ITEM, false);
@@ -267,8 +286,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (color_amount > 0) {
-		Array arr = { color_amount };
-		select_colors_label->set_text(TTRN("1 color", "{num} colors", color_amount).format(arr, "{num}"));
+		select_colors_label->set_text(vformat(TTRN("%d color", "%d colors", color_amount), color_amount));
 		select_all_colors_button->set_visible(true);
 		select_full_colors_button->set_visible(true);
 		deselect_all_colors_button->set_visible(true);
@@ -280,8 +298,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (constant_amount > 0) {
-		Array arr = { constant_amount };
-		select_constants_label->set_text(TTRN("1 constant", "{num} constants", constant_amount).format(arr, "{num}"));
+		select_constants_label->set_text(vformat(TTRN("%d constant", "%d constants", constant_amount), constant_amount));
 		select_all_constants_button->set_visible(true);
 		select_full_constants_button->set_visible(true);
 		deselect_all_constants_button->set_visible(true);
@@ -293,8 +310,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (font_amount > 0) {
-		Array arr = { font_amount };
-		select_fonts_label->set_text(TTRN("1 font", "{num} fonts", font_amount).format(arr, "{num}"));
+		select_fonts_label->set_text(vformat(TTRN("%d font", "%d fonts", font_amount), font_amount));
 		select_all_fonts_button->set_visible(true);
 		select_full_fonts_button->set_visible(true);
 		deselect_all_fonts_button->set_visible(true);
@@ -306,8 +322,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (font_size_amount > 0) {
-		Array arr = { font_size_amount };
-		select_font_sizes_label->set_text(TTRN("1 font size", "{num} font sizes", font_size_amount).format(arr, "{num}"));
+		select_font_sizes_label->set_text(vformat(TTRN("%d font size", "%d font sizes", font_size_amount), font_size_amount));
 		select_all_font_sizes_button->set_visible(true);
 		select_full_font_sizes_button->set_visible(true);
 		deselect_all_font_sizes_button->set_visible(true);
@@ -319,8 +334,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (icon_amount > 0) {
-		Array arr = { icon_amount };
-		select_icons_label->set_text(TTRN("1 icon", "{num} icons", icon_amount).format(arr, "{num}"));
+		select_icons_label->set_text(vformat(TTRN("%d icon", "%d icons", icon_amount), icon_amount));
 		select_all_icons_button->set_visible(true);
 		select_full_icons_button->set_visible(true);
 		deselect_all_icons_button->set_visible(true);
@@ -334,8 +348,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	}
 
 	if (stylebox_amount > 0) {
-		Array arr = { stylebox_amount };
-		select_styleboxes_label->set_text(TTRN("1 stylebox", "{num} styleboxes", stylebox_amount).format(arr, "{num}"));
+		select_styleboxes_label->set_text(vformat(TTRN("%d stylebox", "%d styleboxes", stylebox_amount), stylebox_amount));
 		select_all_styleboxes_button->set_visible(true);
 		select_full_styleboxes_button->set_visible(true);
 		deselect_all_styleboxes_button->set_visible(true);
@@ -344,6 +357,18 @@ void ThemeItemImportTree::_update_items_tree() {
 		select_all_styleboxes_button->set_visible(false);
 		select_full_styleboxes_button->set_visible(false);
 		deselect_all_styleboxes_button->set_visible(false);
+	}
+
+	if (sound_amount > 0) {
+		select_sounds_label->set_text(vformat(TTRN("%d sound", "%d sounds", sound_amount), sound_amount));
+		select_all_sounds_button->set_visible(true);
+		select_full_sounds_button->set_visible(true);
+		deselect_all_sounds_button->set_visible(true);
+	} else {
+		select_sounds_label->set_text(TTR("No sounds found."));
+		select_all_sounds_button->set_visible(false);
+		select_full_sounds_button->set_visible(false);
+		deselect_all_sounds_button->set_visible(false);
 	}
 }
 
@@ -462,6 +487,10 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 			total_selected_items_label = total_selected_styleboxes_label;
 			break;
 
+		case Theme::DATA_TYPE_SOUND:
+			total_selected_items_label = total_selected_sounds_label;
+			break;
+
 		case Theme::DATA_TYPE_MAX:
 			return; // Can't happen, but silences warning.
 	}
@@ -481,8 +510,7 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 	if (count == 0) {
 		total_selected_items_label->hide();
 	} else {
-		Array arr = { count };
-		total_selected_items_label->set_text(TTRN("{num} currently selected", "{num} currently selected", count).format(arr, "{num}"));
+		total_selected_items_label->set_text(vformat(TTRN("%d currently selected", "%d currently selected", count), count));
 		total_selected_items_label->show();
 	}
 }
@@ -626,6 +654,10 @@ void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
 			item_list = &tree_stylebox_items;
 			break;
 
+		case Theme::DATA_TYPE_SOUND:
+			item_list = &tree_sound_items;
+			break;
+
 		case Theme::DATA_TYPE_MAX:
 			return; // Can't happen, but silences warning.
 	}
@@ -679,6 +711,10 @@ void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
 
 		case Theme::DATA_TYPE_STYLEBOX:
 			item_list = &tree_stylebox_items;
+			break;
+
+		case Theme::DATA_TYPE_SOUND:
+			item_list = &tree_sound_items;
 			break;
 
 		case Theme::DATA_TYPE_MAX:
@@ -738,6 +774,10 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 			item_list = &tree_stylebox_items;
 			break;
 
+		case Theme::DATA_TYPE_SOUND:
+			item_list = &tree_sound_items;
+			break;
+
 		case Theme::DATA_TYPE_MAX:
 			return; // Can't happen, but silences warning.
 	}
@@ -762,7 +802,7 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 
 void ThemeItemImportTree::_import_selected() {
 	if (selected_items.is_empty()) {
-		EditorNode::get_singleton()->show_accept(TTR("Nothing was selected for the import."), TTR("OK"));
+		EditorNode::get_singleton()->show_warning(TTRC("Nothing was selected for the import."));
 		return;
 	}
 
@@ -812,6 +852,10 @@ void ThemeItemImportTree::_import_selected() {
 
 					case Theme::DATA_TYPE_STYLEBOX:
 						item_value = Ref<StyleBox>();
+						break;
+
+					case Theme::DATA_TYPE_SOUND:
+						item_value = Ref<AudioStream>();
 						break;
 
 					case Theme::DATA_TYPE_MAX:
@@ -865,6 +909,7 @@ void ThemeItemImportTree::reset_item_tree() {
 	total_selected_font_sizes_label->hide();
 	total_selected_icons_label->hide();
 	total_selected_styleboxes_label->hide();
+	total_selected_sounds_label->hide();
 
 	_update_items_tree();
 }
@@ -919,6 +964,11 @@ void ThemeItemImportTree::_notification(int p_what) {
 			deselect_all_styleboxes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
 			select_all_styleboxes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
 			select_full_styleboxes_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
+
+			select_sounds_icon->set_texture(get_editor_theme_icon(SNAME("AudioStream")));
+			deselect_all_sounds_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeDeselectAll")));
+			select_all_sounds_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectAll")));
+			select_full_sounds_button->set_button_icon(get_editor_theme_icon(SNAME("ThemeSelectFull")));
 		} break;
 	}
 }
@@ -929,7 +979,7 @@ void ThemeItemImportTree::_bind_methods() {
 
 ThemeItemImportTree::ThemeItemImportTree() {
 	import_items_filter = memnew(LineEdit);
-	import_items_filter->set_placeholder(TTR("Filter Items"));
+	import_items_filter->set_placeholder(TTRC("Filter Items"));
 	import_items_filter->set_clear_button_enabled(true);
 	add_child(import_items_filter);
 	import_items_filter->connect(SceneStringName(text_changed), callable_mp(this, &ThemeItemImportTree::_filter_text_changed));
@@ -939,7 +989,6 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	add_child(import_main_hb);
 
 	import_items_tree = memnew(Tree);
-	import_items_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	import_items_tree->set_hide_root(true);
 	import_items_tree->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	import_main_hb->add_child(import_items_tree);
@@ -948,8 +997,8 @@ ThemeItemImportTree::ThemeItemImportTree() {
 
 	import_items_tree->set_columns(3);
 	import_items_tree->set_column_titles_visible(true);
-	import_items_tree->set_column_title(IMPORT_ITEM, TTR("Import"));
-	import_items_tree->set_column_title(IMPORT_ITEM_DATA, TTR("With Data"));
+	import_items_tree->set_column_title(IMPORT_ITEM, TTRC("Import"));
+	import_items_tree->set_column_title(IMPORT_ITEM_DATA, TTRC("With Data"));
 	import_items_tree->set_column_expand(0, true);
 	import_items_tree->set_column_clip_content(0, true);
 	import_items_tree->set_column_expand(IMPORT_ITEM, false);
@@ -971,7 +1020,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	import_bulk_sc->add_child(import_bulk_vb);
 
 	Label *import_bulk_label = memnew(Label);
-	import_bulk_label->set_text(TTR("Select by data type:"));
+	import_bulk_label->set_text(TTRC("Select by data type:"));
 	import_bulk_vb->add_child(import_bulk_label);
 
 	select_colors_icon = memnew(TextureRect);
@@ -1016,6 +1065,13 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	select_full_styleboxes_button = memnew(Button);
 	total_selected_styleboxes_label = memnew(Label);
 
+	select_sounds_icon = memnew(TextureRect);
+	select_sounds_label = memnew(Label);
+	deselect_all_sounds_button = memnew(Button);
+	select_all_sounds_button = memnew(Button);
+	select_full_sounds_button = memnew(Button);
+	total_selected_sounds_label = memnew(Label);
+
 	for (int i = 0; i < Theme::DATA_TYPE_MAX; i++) {
 		Theme::DataType dt = (Theme::DataType)i;
 
@@ -1040,10 +1096,10 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				select_full_items_button = select_full_colors_button;
 				total_selected_items_label = total_selected_colors_label;
 
-				items_title = TTR("Colors");
-				select_all_items_tooltip = TTR("Select all visible color items.");
-				select_full_items_tooltip = TTR("Select all visible color items and their data.");
-				deselect_all_items_tooltip = TTR("Deselect all visible color items.");
+				items_title = TTRC("Colors");
+				select_all_items_tooltip = TTRC("Select all visible color items.");
+				select_full_items_tooltip = TTRC("Select all visible color items and their data.");
+				deselect_all_items_tooltip = TTRC("Deselect all visible color items.");
 				break;
 
 			case Theme::DATA_TYPE_CONSTANT:
@@ -1054,10 +1110,10 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				select_full_items_button = select_full_constants_button;
 				total_selected_items_label = total_selected_constants_label;
 
-				items_title = TTR("Constants");
-				select_all_items_tooltip = TTR("Select all visible constant items.");
-				select_full_items_tooltip = TTR("Select all visible constant items and their data.");
-				deselect_all_items_tooltip = TTR("Deselect all visible constant items.");
+				items_title = TTRC("Constants");
+				select_all_items_tooltip = TTRC("Select all visible constant items.");
+				select_full_items_tooltip = TTRC("Select all visible constant items and their data.");
+				deselect_all_items_tooltip = TTRC("Deselect all visible constant items.");
 				break;
 
 			case Theme::DATA_TYPE_FONT:
@@ -1068,10 +1124,10 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				select_full_items_button = select_full_fonts_button;
 				total_selected_items_label = total_selected_fonts_label;
 
-				items_title = TTR("Fonts");
-				select_all_items_tooltip = TTR("Select all visible font items.");
-				select_full_items_tooltip = TTR("Select all visible font items and their data.");
-				deselect_all_items_tooltip = TTR("Deselect all visible font items.");
+				items_title = TTRC("Fonts");
+				select_all_items_tooltip = TTRC("Select all visible font items.");
+				select_full_items_tooltip = TTRC("Select all visible font items and their data.");
+				deselect_all_items_tooltip = TTRC("Deselect all visible font items.");
 				break;
 
 			case Theme::DATA_TYPE_FONT_SIZE:
@@ -1082,10 +1138,10 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				select_full_items_button = select_full_font_sizes_button;
 				total_selected_items_label = total_selected_font_sizes_label;
 
-				items_title = TTR("Font sizes");
-				select_all_items_tooltip = TTR("Select all visible font size items.");
-				select_full_items_tooltip = TTR("Select all visible font size items and their data.");
-				deselect_all_items_tooltip = TTR("Deselect all visible font size items.");
+				items_title = TTRC("Font sizes");
+				select_all_items_tooltip = TTRC("Select all visible font size items.");
+				select_full_items_tooltip = TTRC("Select all visible font size items and their data.");
+				deselect_all_items_tooltip = TTRC("Deselect all visible font size items.");
 				break;
 
 			case Theme::DATA_TYPE_ICON:
@@ -1096,10 +1152,10 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				select_full_items_button = select_full_icons_button;
 				total_selected_items_label = total_selected_icons_label;
 
-				items_title = TTR("Icons");
-				select_all_items_tooltip = TTR("Select all visible icon items.");
-				select_full_items_tooltip = TTR("Select all visible icon items and their data.");
-				deselect_all_items_tooltip = TTR("Deselect all visible icon items.");
+				items_title = TTRC("Icons");
+				select_all_items_tooltip = TTRC("Select all visible icon items.");
+				select_full_items_tooltip = TTRC("Select all visible icon items and their data.");
+				deselect_all_items_tooltip = TTRC("Deselect all visible icon items.");
 				break;
 
 			case Theme::DATA_TYPE_STYLEBOX:
@@ -1110,10 +1166,24 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				select_full_items_button = select_full_styleboxes_button;
 				total_selected_items_label = total_selected_styleboxes_label;
 
-				items_title = TTR("Styleboxes");
-				select_all_items_tooltip = TTR("Select all visible stylebox items.");
-				select_full_items_tooltip = TTR("Select all visible stylebox items and their data.");
-				deselect_all_items_tooltip = TTR("Deselect all visible stylebox items.");
+				items_title = TTRC("Styleboxes");
+				select_all_items_tooltip = TTRC("Select all visible stylebox items.");
+				select_full_items_tooltip = TTRC("Select all visible stylebox items and their data.");
+				deselect_all_items_tooltip = TTRC("Deselect all visible stylebox items.");
+				break;
+
+			case Theme::DATA_TYPE_SOUND:
+				select_items_icon = select_sounds_icon;
+				select_items_label = select_sounds_label;
+				deselect_all_items_button = deselect_all_sounds_button;
+				select_all_items_button = select_all_sounds_button;
+				select_full_items_button = select_full_sounds_button;
+				total_selected_items_label = total_selected_sounds_label;
+
+				items_title = TTRC("Sounds");
+				select_all_items_tooltip = TTRC("Select all visible sound items.");
+				select_full_items_tooltip = TTRC("Select all visible sound items and their data.");
+				deselect_all_items_tooltip = TTRC("Deselect all visible sound items.");
 				break;
 
 			case Theme::DATA_TYPE_MAX:
@@ -1166,7 +1236,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 			select_icons_warning_hb->add_child(select_icons_warning_icon);
 
 			select_icons_warning = memnew(Label);
-			select_icons_warning->set_text(TTR("Caution: Adding icon data may considerably increase the size of your Theme resource."));
+			select_icons_warning->set_text(TTRC("Caution: Adding icon data may considerably increase the size of your Theme resource."));
 			select_icons_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 			select_icons_warning->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			select_icons_warning_hb->add_child(select_icons_warning);
@@ -1178,12 +1248,12 @@ ThemeItemImportTree::ThemeItemImportTree() {
 
 	import_collapse_types_button = memnew(Button);
 	import_collapse_types_button->set_flat(true);
-	import_collapse_types_button->set_tooltip_text(TTR("Collapse types."));
+	import_collapse_types_button->set_tooltip_text(TTRC("Collapse types."));
 	import_buttons->add_child(import_collapse_types_button);
 	import_collapse_types_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_toggle_type_items).bind(true));
 	import_expand_types_button = memnew(Button);
 	import_expand_types_button->set_flat(true);
-	import_expand_types_button->set_tooltip_text(TTR("Expand types."));
+	import_expand_types_button->set_tooltip_text(TTRC("Expand types."));
 	import_buttons->add_child(import_expand_types_button);
 	import_expand_types_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_toggle_type_items).bind(false));
 
@@ -1191,27 +1261,27 @@ ThemeItemImportTree::ThemeItemImportTree() {
 
 	import_select_all_button = memnew(Button);
 	import_select_all_button->set_flat(true);
-	import_select_all_button->set_text(TTR("Select All"));
-	import_select_all_button->set_tooltip_text(TTR("Select all Theme items."));
+	import_select_all_button->set_text(TTRC("Select All"));
+	import_select_all_button->set_tooltip_text(TTRC("Select all Theme items."));
 	import_buttons->add_child(import_select_all_button);
 	import_select_all_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_select_all_items_pressed));
 	import_select_full_button = memnew(Button);
 	import_select_full_button->set_flat(true);
-	import_select_full_button->set_text(TTR("Select With Data"));
-	import_select_full_button->set_tooltip_text(TTR("Select all Theme items with item data."));
+	import_select_full_button->set_text(TTRC("Select With Data"));
+	import_select_full_button->set_tooltip_text(TTRC("Select all Theme items with item data."));
 	import_buttons->add_child(import_select_full_button);
 	import_select_full_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_select_full_items_pressed));
 	import_deselect_all_button = memnew(Button);
 	import_deselect_all_button->set_flat(true);
-	import_deselect_all_button->set_text(TTR("Deselect All"));
-	import_deselect_all_button->set_tooltip_text(TTR("Deselect all Theme items."));
+	import_deselect_all_button->set_text(TTRC("Deselect All"));
+	import_deselect_all_button->set_tooltip_text(TTRC("Deselect all Theme items."));
 	import_buttons->add_child(import_deselect_all_button);
 	import_deselect_all_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_deselect_all_items_pressed));
 
 	import_buttons->add_spacer();
 
 	Button *import_add_selected_button = memnew(Button);
-	import_add_selected_button->set_text(TTR("Import Selected"));
+	import_add_selected_button->set_text(TTRC("Import Selected"));
 	import_buttons->add_child(import_add_selected_button);
 	import_add_selected_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemImportTree::_import_selected));
 }
@@ -1220,7 +1290,7 @@ ThemeItemImportTree::ThemeItemImportTree() {
 
 void ThemeItemEditorDialog::ok_pressed() {
 	if (import_default_theme_items->has_selected_items() || import_editor_theme_items->has_selected_items() || import_other_theme_items->has_selected_items()) {
-		confirm_closing_dialog->set_text(TTR("Import Items tab has some items selected. Selection will be lost upon closing this window.\nClose anyway?"));
+		confirm_closing_dialog->set_text(TTRC("Import Items tab has some items selected. Selection will be lost upon closing this window.\nClose anyway?"));
 		confirm_closing_dialog->popup_centered(Size2(380, 120) * EDSCALE);
 		return;
 	}
@@ -1302,6 +1372,7 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		edit_items_add_font_size->set_disabled(false);
 		edit_items_add_icon->set_disabled(false);
 		edit_items_add_stylebox->set_disabled(false);
+		edit_items_add_sound->set_disabled(false);
 
 		edit_items_remove_class->set_disabled(false);
 		edit_items_remove_custom->set_disabled(false);
@@ -1316,12 +1387,13 @@ void ThemeItemEditorDialog::_update_edit_types() {
 		edit_items_add_font_size->set_disabled(true);
 		edit_items_add_icon->set_disabled(true);
 		edit_items_add_stylebox->set_disabled(true);
+		edit_items_add_sound->set_disabled(true);
 
 		edit_items_remove_class->set_disabled(true);
 		edit_items_remove_custom->set_disabled(true);
 		edit_items_remove_all->set_disabled(true);
 
-		edit_items_message->set_text(TTR("Select a theme type from the list to edit its items.\nYou can add a custom type or import a type with its items from another theme."));
+		edit_items_message->set_text(TTRC("Select a theme type from the list to edit its items.\nYou can add a custom type or import a type with its items from another theme."));
 		edit_items_message->show();
 	}
 
@@ -1405,15 +1477,15 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			TreeItem *color_root = edit_items_tree->create_item(root);
 			color_root->set_metadata(0, Theme::DATA_TYPE_COLOR);
 			color_root->set_icon(0, get_editor_theme_icon(SNAME("Color")));
-			color_root->set_text(0, TTR("Colors"));
-			color_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Color Items"));
+			color_root->set_text(0, TTRC("Colors"));
+			color_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTRC("Remove All Color Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
 			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(color_root);
 				item->set_text(0, E);
-				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
-				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTRC("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTRC("Remove Item"));
 			}
 
 			has_any_items = true;
@@ -1428,15 +1500,15 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			TreeItem *constant_root = edit_items_tree->create_item(root);
 			constant_root->set_metadata(0, Theme::DATA_TYPE_CONSTANT);
 			constant_root->set_icon(0, get_editor_theme_icon(SNAME("MemberConstant")));
-			constant_root->set_text(0, TTR("Constants"));
-			constant_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Constant Items"));
+			constant_root->set_text(0, TTRC("Constants"));
+			constant_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTRC("Remove All Constant Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
 			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(constant_root);
 				item->set_text(0, E);
-				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
-				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTRC("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTRC("Remove Item"));
 			}
 
 			has_any_items = true;
@@ -1451,15 +1523,15 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			TreeItem *font_root = edit_items_tree->create_item(root);
 			font_root->set_metadata(0, Theme::DATA_TYPE_FONT);
 			font_root->set_icon(0, get_editor_theme_icon(SNAME("FontItem")));
-			font_root->set_text(0, TTR("Fonts"));
-			font_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Font Items"));
+			font_root->set_text(0, TTRC("Fonts"));
+			font_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTRC("Remove All Font Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
 			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(font_root);
 				item->set_text(0, E);
-				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
-				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTRC("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTRC("Remove Item"));
 			}
 
 			has_any_items = true;
@@ -1474,15 +1546,15 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			TreeItem *font_size_root = edit_items_tree->create_item(root);
 			font_size_root->set_metadata(0, Theme::DATA_TYPE_FONT_SIZE);
 			font_size_root->set_icon(0, get_editor_theme_icon(SNAME("FontSize")));
-			font_size_root->set_text(0, TTR("Font Sizes"));
-			font_size_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Font Size Items"));
+			font_size_root->set_text(0, TTRC("Font Sizes"));
+			font_size_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTRC("Remove All Font Size Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
 			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(font_size_root);
 				item->set_text(0, E);
-				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
-				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTRC("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTRC("Remove Item"));
 			}
 
 			has_any_items = true;
@@ -1497,15 +1569,15 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			TreeItem *icon_root = edit_items_tree->create_item(root);
 			icon_root->set_metadata(0, Theme::DATA_TYPE_ICON);
 			icon_root->set_icon(0, get_editor_theme_icon(SNAME("ImageTexture")));
-			icon_root->set_text(0, TTR("Icons"));
-			icon_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Icon Items"));
+			icon_root->set_text(0, TTRC("Icons"));
+			icon_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTRC("Remove All Icon Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
 			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(icon_root);
 				item->set_text(0, E);
-				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
-				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTRC("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTRC("Remove Item"));
 			}
 
 			has_any_items = true;
@@ -1520,15 +1592,38 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			TreeItem *stylebox_root = edit_items_tree->create_item(root);
 			stylebox_root->set_metadata(0, Theme::DATA_TYPE_STYLEBOX);
 			stylebox_root->set_icon(0, get_editor_theme_icon(SNAME("StyleBoxFlat")));
-			stylebox_root->set_text(0, TTR("Styleboxes"));
-			stylebox_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All StyleBox Items"));
+			stylebox_root->set_text(0, TTRC("Styleboxes"));
+			stylebox_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTRC("Remove All StyleBox Items"));
 
 			names.sort_custom<StringName::AlphCompare>();
 			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(stylebox_root);
 				item->set_text(0, E);
-				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
-				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTRC("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTRC("Remove Item"));
+			}
+
+			has_any_items = true;
+		}
+	}
+
+	{ // Sounds.
+		names.clear();
+		edited_theme->get_sound_list(p_item_type, &names);
+
+		if (names.size() > 0) {
+			TreeItem *sound_root = edit_items_tree->create_item(root);
+			sound_root->set_metadata(0, Theme::DATA_TYPE_SOUND);
+			sound_root->set_icon(0, get_editor_theme_icon(SNAME("AudioStream")));
+			sound_root->set_text(0, TTRC("Sounds"));
+			sound_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTRC("Remove All Sound Items"));
+
+			names.sort_custom<StringName::AlphCompare>();
+			for (const StringName &E : names) {
+				TreeItem *item = edit_items_tree->create_item(sound_root);
+				item->set_text(0, E);
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTRC("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTRC("Remove Item"));
 			}
 
 			has_any_items = true;
@@ -1539,7 +1634,7 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 	TreeItem *selected_item = edit_type_list->get_selected();
 	if (selected_item) {
 		if (!has_any_items) {
-			edit_items_message->set_text(TTR("This theme type is empty.\nAdd more items to it manually or by importing from another theme."));
+			edit_items_message->set_text(TTRC("This theme type is empty.\nAdd more items to it manually or by importing from another theme."));
 			edit_items_message->show();
 		} else {
 			edit_items_message->set_text("");
@@ -1632,6 +1727,10 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, const S
 		case Theme::DATA_TYPE_CONSTANT:
 			ur->add_do_method(*edited_theme, "set_constant", p_item_name, p_item_type, 0);
 			ur->add_undo_method(*edited_theme, "clear_constant", p_item_name, p_item_type);
+			break;
+		case Theme::DATA_TYPE_SOUND:
+			ur->add_do_method(*edited_theme, "set_sound", p_item_name, p_item_type, Ref<AudioStream>());
+			ur->add_undo_method(*edited_theme, "clear_sound", p_item_name, p_item_type);
 			break;
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
@@ -1802,22 +1901,25 @@ void ThemeItemEditorDialog::_open_add_theme_item_dialog(int p_data_type) {
 
 	switch (edit_item_data_type) {
 		case Theme::DATA_TYPE_COLOR:
-			edit_theme_item_dialog->set_title(TTR("Add Color Item"));
+			edit_theme_item_dialog->set_title(TTRC("Add Color Item"));
 			break;
 		case Theme::DATA_TYPE_CONSTANT:
-			edit_theme_item_dialog->set_title(TTR("Add Constant Item"));
+			edit_theme_item_dialog->set_title(TTRC("Add Constant Item"));
 			break;
 		case Theme::DATA_TYPE_FONT:
-			edit_theme_item_dialog->set_title(TTR("Add Font Item"));
+			edit_theme_item_dialog->set_title(TTRC("Add Font Item"));
 			break;
 		case Theme::DATA_TYPE_FONT_SIZE:
-			edit_theme_item_dialog->set_title(TTR("Add Font Size Item"));
+			edit_theme_item_dialog->set_title(TTRC("Add Font Size Item"));
 			break;
 		case Theme::DATA_TYPE_ICON:
-			edit_theme_item_dialog->set_title(TTR("Add Icon Item"));
+			edit_theme_item_dialog->set_title(TTRC("Add Icon Item"));
 			break;
 		case Theme::DATA_TYPE_STYLEBOX:
-			edit_theme_item_dialog->set_title(TTR("Add Stylebox Item"));
+			edit_theme_item_dialog->set_title(TTRC("Add Stylebox Item"));
+			break;
+		case Theme::DATA_TYPE_SOUND:
+			edit_theme_item_dialog->set_title(TTRC("Add Sound Item"));
 			break;
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
@@ -1838,22 +1940,25 @@ void ThemeItemEditorDialog::_open_rename_theme_item_dialog(Theme::DataType p_dat
 
 	switch (edit_item_data_type) {
 		case Theme::DATA_TYPE_COLOR:
-			edit_theme_item_dialog->set_title(TTR("Rename Color Item"));
+			edit_theme_item_dialog->set_title(TTRC("Rename Color Item"));
 			break;
 		case Theme::DATA_TYPE_CONSTANT:
-			edit_theme_item_dialog->set_title(TTR("Rename Constant Item"));
+			edit_theme_item_dialog->set_title(TTRC("Rename Constant Item"));
 			break;
 		case Theme::DATA_TYPE_FONT:
-			edit_theme_item_dialog->set_title(TTR("Rename Font Item"));
+			edit_theme_item_dialog->set_title(TTRC("Rename Font Item"));
 			break;
 		case Theme::DATA_TYPE_FONT_SIZE:
-			edit_theme_item_dialog->set_title(TTR("Rename Font Size Item"));
+			edit_theme_item_dialog->set_title(TTRC("Rename Font Size Item"));
 			break;
 		case Theme::DATA_TYPE_ICON:
-			edit_theme_item_dialog->set_title(TTR("Rename Icon Item"));
+			edit_theme_item_dialog->set_title(TTRC("Rename Icon Item"));
 			break;
 		case Theme::DATA_TYPE_STYLEBOX:
-			edit_theme_item_dialog->set_title(TTR("Rename Stylebox Item"));
+			edit_theme_item_dialog->set_title(TTRC("Rename Stylebox Item"));
+			break;
+		case Theme::DATA_TYPE_SOUND:
+			edit_theme_item_dialog->set_title(TTRC("Rename Sound Item"));
 			break;
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
@@ -1915,11 +2020,11 @@ void ThemeItemEditorDialog::_open_select_another_theme() {
 void ThemeItemEditorDialog::_select_another_theme_cbk(const String &p_path) {
 	Ref<Theme> loaded_theme = ResourceLoader::load(p_path);
 	if (loaded_theme.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid file, not a Theme resource."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid file, not a Theme resource."));
 		return;
 	}
 	if (loaded_theme == edited_theme) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid file, same as the edited Theme resource."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid file, same as the edited Theme resource."));
 		return;
 	}
 
@@ -1941,6 +2046,7 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 			edit_items_add_font_size->set_button_icon(get_editor_theme_icon(SNAME("FontSize")));
 			edit_items_add_icon->set_button_icon(get_editor_theme_icon(SNAME("ImageTexture")));
 			edit_items_add_stylebox->set_button_icon(get_editor_theme_icon(SNAME("StyleBoxFlat")));
+			edit_items_add_sound->set_button_icon(get_editor_theme_icon(SNAME("AudioStream")));
 
 			edit_items_remove_class->set_button_icon(get_editor_theme_icon(SNAME("Control")));
 			edit_items_remove_custom->set_button_icon(get_editor_theme_icon(SNAME("ThemeRemoveCustomItems")));
@@ -1963,8 +2069,8 @@ void ThemeItemEditorDialog::set_edited_theme(const Ref<Theme> &p_theme) {
 }
 
 ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_editor) {
-	set_title(TTR("Manage Theme Items"));
-	set_ok_button_text(TTR("Close"));
+	set_title(TTRC("Manage Theme Items"));
+	set_ok_button_text(TTRC("Close"));
 	set_hide_on_ok(false); // Closing may require a confirmation in some cases.
 
 	theme_type_editor = p_theme_type_editor;
@@ -1976,14 +2082,14 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	// Edit Items tab.
 	HSplitContainer *edit_dialog_hs = memnew(HSplitContainer);
 	tc->add_child(edit_dialog_hs);
-	tc->set_tab_title(0, TTR("Edit Items"));
+	tc->set_tab_title(0, TTRC("Edit Items"));
 
 	VBoxContainer *edit_dialog_side_vb = memnew(VBoxContainer);
 	edit_dialog_side_vb->set_custom_minimum_size(Size2(200.0, 0.0) * EDSCALE);
 	edit_dialog_hs->add_child(edit_dialog_side_vb);
 
 	Label *edit_type_label = memnew(Label);
-	edit_type_label->set_text(TTR("Types:"));
+	edit_type_label->set_text(TTRC("Types:"));
 	edit_dialog_side_vb->add_child(edit_type_label);
 
 	edit_type_list = memnew(Tree);
@@ -1999,7 +2105,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_type_list->set_theme_type_variation("TreeSecondary");
 
 	Label *edit_add_type_label = memnew(Label);
-	edit_add_type_label->set_text(TTR("Add Type:"));
+	edit_add_type_label->set_text(TTRC("Add Type:"));
 	edit_dialog_side_vb->add_child(edit_add_type_label);
 
 	HBoxContainer *edit_add_type_hb = memnew(HBoxContainer);
@@ -2020,73 +2126,80 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_vb->add_child(edit_items_toolbar);
 
 	Label *edit_items_toolbar_add_label = memnew(Label);
-	edit_items_toolbar_add_label->set_text(TTR("Add Item:"));
+	edit_items_toolbar_add_label->set_text(TTRC("Add Item:"));
 	edit_items_toolbar->add_child(edit_items_toolbar_add_label);
 
 	edit_items_add_color = memnew(Button);
-	edit_items_add_color->set_tooltip_text(TTR("Add Color Item"));
+	edit_items_add_color->set_tooltip_text(TTRC("Add Color Item"));
 	edit_items_add_color->set_flat(true);
 	edit_items_add_color->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_color);
 	edit_items_add_color->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_COLOR));
 
 	edit_items_add_constant = memnew(Button);
-	edit_items_add_constant->set_tooltip_text(TTR("Add Constant Item"));
+	edit_items_add_constant->set_tooltip_text(TTRC("Add Constant Item"));
 	edit_items_add_constant->set_flat(true);
 	edit_items_add_constant->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_constant);
 	edit_items_add_constant->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_CONSTANT));
 
 	edit_items_add_font = memnew(Button);
-	edit_items_add_font->set_tooltip_text(TTR("Add Font Item"));
+	edit_items_add_font->set_tooltip_text(TTRC("Add Font Item"));
 	edit_items_add_font->set_flat(true);
 	edit_items_add_font->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_font);
 	edit_items_add_font->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_FONT));
 
 	edit_items_add_font_size = memnew(Button);
-	edit_items_add_font_size->set_tooltip_text(TTR("Add Font Size Item"));
+	edit_items_add_font_size->set_tooltip_text(TTRC("Add Font Size Item"));
 	edit_items_add_font_size->set_flat(true);
 	edit_items_add_font_size->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_font_size);
 	edit_items_add_font_size->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_FONT_SIZE));
 
 	edit_items_add_icon = memnew(Button);
-	edit_items_add_icon->set_tooltip_text(TTR("Add Icon Item"));
+	edit_items_add_icon->set_tooltip_text(TTRC("Add Icon Item"));
 	edit_items_add_icon->set_flat(true);
 	edit_items_add_icon->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_icon);
 	edit_items_add_icon->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_ICON));
 
 	edit_items_add_stylebox = memnew(Button);
-	edit_items_add_stylebox->set_tooltip_text(TTR("Add StyleBox Item"));
+	edit_items_add_stylebox->set_tooltip_text(TTRC("Add StyleBox Item"));
 	edit_items_add_stylebox->set_flat(true);
 	edit_items_add_stylebox->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_stylebox);
 	edit_items_add_stylebox->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_STYLEBOX));
 
+	edit_items_add_sound = memnew(Button);
+	edit_items_add_sound->set_tooltip_text(TTRC("Add Sound Item"));
+	edit_items_add_sound->set_flat(true);
+	edit_items_add_sound->set_disabled(true);
+	edit_items_toolbar->add_child(edit_items_add_sound);
+	edit_items_add_sound->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_SOUND));
+
 	edit_items_toolbar->add_child(memnew(VSeparator));
 
 	Label *edit_items_toolbar_remove_label = memnew(Label);
-	edit_items_toolbar_remove_label->set_text(TTR("Remove Items:"));
+	edit_items_toolbar_remove_label->set_text(TTRC("Remove Items:"));
 	edit_items_toolbar->add_child(edit_items_toolbar_remove_label);
 
 	edit_items_remove_class = memnew(Button);
-	edit_items_remove_class->set_tooltip_text(TTR("Remove Class Items"));
+	edit_items_remove_class->set_tooltip_text(TTRC("Remove Class Items"));
 	edit_items_remove_class->set_flat(true);
 	edit_items_remove_class->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_class);
 	edit_items_remove_class->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_remove_class_items));
 
 	edit_items_remove_custom = memnew(Button);
-	edit_items_remove_custom->set_tooltip_text(TTR("Remove Custom Items"));
+	edit_items_remove_custom->set_tooltip_text(TTRC("Remove Custom Items"));
 	edit_items_remove_custom->set_flat(true);
 	edit_items_remove_custom->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_custom);
 	edit_items_remove_custom->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_remove_custom_items));
 
 	edit_items_remove_all = memnew(Button);
-	edit_items_remove_all->set_tooltip_text(TTR("Remove All Items"));
+	edit_items_remove_all->set_tooltip_text(TTRC("Remove All Items"));
 	edit_items_remove_all->set_flat(true);
 	edit_items_remove_all->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_remove_all);
@@ -2110,7 +2223,7 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_tree->add_child(edit_items_message);
 
 	edit_theme_item_dialog = memnew(ConfirmationDialog);
-	edit_theme_item_dialog->set_title(TTR("Add Theme Item"));
+	edit_theme_item_dialog->set_title(TTRC("Add Theme Item"));
 	add_child(edit_theme_item_dialog);
 	VBoxContainer *edit_theme_item_vb = memnew(VBoxContainer);
 	edit_theme_item_dialog->add_child(edit_theme_item_vb);
@@ -2118,13 +2231,13 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_theme_item_old_vb = memnew(VBoxContainer);
 	edit_theme_item_vb->add_child(edit_theme_item_old_vb);
 	Label *edit_theme_item_old = memnew(Label);
-	edit_theme_item_old->set_text(TTR("Old Name:"));
+	edit_theme_item_old->set_text(TTRC("Old Name:"));
 	edit_theme_item_old_vb->add_child(edit_theme_item_old);
 	theme_item_old_name = memnew(Label);
 	edit_theme_item_old_vb->add_child(theme_item_old_name);
 
 	Label *edit_theme_item_label = memnew(Label);
-	edit_theme_item_label->set_text(TTR("Name:"));
+	edit_theme_item_label->set_text(TTRC("Name:"));
 	edit_theme_item_vb->add_child(edit_theme_item_label);
 	theme_item_name = memnew(LineEdit);
 	edit_theme_item_vb->add_child(theme_item_name);
@@ -2136,16 +2249,16 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	import_tc->set_theme_type_variation("TabContainerInner");
 	import_tc->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
 	tc->add_child(import_tc);
-	tc->set_tab_title(1, TTR("Import Items"));
+	tc->set_tab_title(1, TTRC("Import Items"));
 
 	import_default_theme_items = memnew(ThemeItemImportTree);
 	import_tc->add_child(import_default_theme_items);
-	import_tc->set_tab_title(0, TTR("Default Theme"));
+	import_tc->set_tab_title(0, TTRC("Default Theme"));
 	import_default_theme_items->connect("items_imported", callable_mp(this, &ThemeItemEditorDialog::_update_edit_types));
 
 	import_editor_theme_items = memnew(ThemeItemImportTree);
 	import_tc->add_child(import_editor_theme_items);
-	import_tc->set_tab_title(1, TTR("Editor Theme"));
+	import_tc->set_tab_title(1, TTRC("Editor Theme"));
 	import_editor_theme_items->connect("items_imported", callable_mp(this, &ThemeItemEditorDialog::_update_edit_types));
 
 	VBoxContainer *import_another_theme_vb = memnew(VBoxContainer);
@@ -2162,11 +2275,11 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 
 	import_another_theme_dialog = memnew(EditorFileDialog);
 	import_another_theme_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	import_another_theme_dialog->set_title(TTR("Select Another Theme Resource:"));
+	import_another_theme_dialog->set_title(TTRC("Select Another Theme Resource:"));
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("Theme", &ext);
 	for (const String &E : ext) {
-		import_another_theme_dialog->add_filter("*." + E, TTR("Theme Resource"));
+		import_another_theme_dialog->add_filter("*." + E, TTRC("Theme Resource"));
 	}
 	import_another_file_hb->add_child(import_another_theme_dialog);
 	import_another_theme_dialog->connect("file_selected", callable_mp(this, &ThemeItemEditorDialog::_select_another_theme_cbk));
@@ -2176,10 +2289,11 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	import_another_theme_vb->add_child(import_other_theme_items);
 
 	import_tc->add_child(import_another_theme_vb);
-	import_tc->set_tab_title(2, TTR("Another Theme"));
+	import_tc->set_tab_title(2, TTRC("Another Theme"));
 	import_other_theme_items->connect("items_imported", callable_mp(this, &ThemeItemEditorDialog::_update_edit_types));
 
 	confirm_closing_dialog = memnew(ConfirmationDialog);
+	confirm_closing_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	confirm_closing_dialog->set_autowrap(true);
 	add_child(confirm_closing_dialog);
 	confirm_closing_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ThemeItemEditorDialog::_close_dialog));
@@ -2301,7 +2415,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_child(add_type_vb);
 
 	Label *add_type_filter_label = memnew(Label);
-	add_type_filter_label->set_text(TTR("Filter the list of types or create a new custom type:"));
+	add_type_filter_label->set_text(TTRC("Filter the list of types or create a new custom type:"));
 	add_type_vb->add_child(add_type_filter_label);
 
 	add_type_filter = memnew(FilterLineEdit);
@@ -2310,7 +2424,7 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_filter->connect(SceneStringName(text_submitted), callable_mp(this, &ThemeTypeDialog::_add_type_dialog_entered));
 
 	Label *add_type_options_label = memnew(Label);
-	add_type_options_label->set_text(TTR("Available Node-based types:"));
+	add_type_options_label->set_text(TTRC("Available Node-based types:"));
 	add_type_vb->add_child(add_type_options_label);
 
 	MarginContainer *mc = memnew(MarginContainer);
@@ -2327,8 +2441,9 @@ ThemeTypeDialog::ThemeTypeDialog() {
 	add_type_options->connect("item_activated", callable_mp(this, &ThemeTypeDialog::_add_type_dialog_activated));
 
 	add_type_confirmation = memnew(ConfirmationDialog);
-	add_type_confirmation->set_title(TTR("Type name is empty!"));
-	add_type_confirmation->set_text(TTR("Are you sure you want to create an empty type?"));
+	add_type_confirmation->set_flag(Window::FLAG_RESIZE_DISABLED, true);
+	add_type_confirmation->set_title(TTRC("Type name is empty!"));
+	add_type_confirmation->set_text(TTRC("Are you sure you want to create an empty type?"));
 	add_type_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &ThemeTypeDialog::_add_type_confirmed));
 	add_child(add_type_confirmation);
 }
@@ -2361,7 +2476,7 @@ VBoxContainer *ThemeTypeEditor::_create_item_list(Theme::DataType p_data_type) {
 	item_add_hb->add_child(item_add_edit);
 	item_add_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ThemeTypeEditor::_item_add_lineedit_cbk).bind(p_data_type, item_add_edit));
 	Button *item_add_button = memnew(Button);
-	item_add_button->set_text(TTR("Add"));
+	item_add_button->set_text(TTRC("Add"));
 	item_add_button->set_disabled(true);
 	item_add_hb->add_child(item_add_button);
 	item_add_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_add_cbk).bind(p_data_type, item_add_edit));
@@ -2541,21 +2656,21 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 
 		Button *item_rename_button = memnew(Button);
 		item_rename_button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
-		item_rename_button->set_tooltip_text(TTR("Rename Item"));
+		item_rename_button->set_tooltip_text(TTRC("Rename Item"));
 		item_rename_button->set_flat(true);
 		item_name_container->add_child(item_rename_button);
 		item_rename_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_cbk).bind(p_data_type, p_item_name, item_name_container));
 
 		Button *item_remove_button = memnew(Button);
 		item_remove_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
-		item_remove_button->set_tooltip_text(TTR("Remove Item"));
+		item_remove_button->set_tooltip_text(TTRC("Remove Item"));
 		item_remove_button->set_flat(true);
 		item_name_container->add_child(item_remove_button);
 		item_remove_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_remove_cbk).bind(p_data_type, p_item_name));
 
 		Button *item_rename_confirm_button = memnew(Button);
 		item_rename_confirm_button->set_button_icon(get_editor_theme_icon(SNAME("ImportCheck")));
-		item_rename_confirm_button->set_tooltip_text(TTR("Confirm Item Rename"));
+		item_rename_confirm_button->set_tooltip_text(TTRC("Confirm Item Rename"));
 		item_rename_confirm_button->set_flat(true);
 		item_name_container->add_child(item_rename_confirm_button);
 		item_rename_confirm_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_confirmed).bind(p_data_type, p_item_name, item_name_container));
@@ -2563,7 +2678,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 
 		Button *item_rename_cancel_button = memnew(Button);
 		item_rename_cancel_button->set_button_icon(get_editor_theme_icon(SNAME("ImportFail")));
-		item_rename_cancel_button->set_tooltip_text(TTR("Cancel Item Rename"));
+		item_rename_cancel_button->set_tooltip_text(TTRC("Cancel Item Rename"));
 		item_rename_cancel_button->set_flat(true);
 		item_name_container->add_child(item_rename_cancel_button);
 		item_rename_cancel_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_rename_canceled).bind(p_data_type, p_item_name, item_name_container));
@@ -2573,7 +2688,7 @@ HBoxContainer *ThemeTypeEditor::_create_property_control(Theme::DataType p_data_
 
 		Button *item_override_button = memnew(Button);
 		item_override_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-		item_override_button->set_tooltip_text(TTR("Override Item"));
+		item_override_button->set_tooltip_text(TTRC("Override Item"));
 		item_override_button->set_flat(true);
 		item_name_container->add_child(item_override_button);
 		item_override_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_item_override_cbk).bind(p_data_type, p_item_name));
@@ -2789,7 +2904,7 @@ void ThemeTypeEditor::_update_type_items() {
 			pin_leader_button->set_toggle_mode(true);
 			pin_leader_button->set_pressed(true);
 			pin_leader_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
-			pin_leader_button->set_tooltip_text(TTR("Unpin this StyleBox as a main style."));
+			pin_leader_button->set_tooltip_text(TTRC("Unpin this StyleBox as a main style."));
 			item_control->add_child(pin_leader_button);
 			pin_leader_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_on_unpin_leader_button_pressed));
 
@@ -2833,7 +2948,7 @@ void ThemeTypeEditor::_update_type_items() {
 				pin_leader_button->set_flat(true);
 				pin_leader_button->set_toggle_mode(true);
 				pin_leader_button->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
-				pin_leader_button->set_tooltip_text(TTR("Pin this StyleBox as a main style. Editing its properties will update the same properties in all other StyleBoxes of this type."));
+				pin_leader_button->set_tooltip_text(TTRC("Pin this StyleBox as a main style. Editing its properties will update the same properties in all other StyleBoxes of this type."));
 				pin_leader_button->set_accessibility_name(TTRC("Pin this StyleBox as a main style."));
 				item_control->add_child(pin_leader_button);
 				pin_leader_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_on_pin_leader_button_pressed).bind(item_editor, E.key));
@@ -2850,6 +2965,44 @@ void ThemeTypeEditor::_update_type_items() {
 			item_control->add_child(item_editor);
 			_add_focusable(item_editor);
 			stylebox_items_list->add_child(item_control);
+		}
+	}
+
+	// Sounds.
+	{
+		for (int i = sound_items_list->get_child_count() - 1; i >= 0; i--) {
+			Node *node = sound_items_list->get_child(i);
+			node->queue_free();
+			sound_items_list->remove_child(node);
+		}
+
+		HashMap<StringName, bool> sound_items = _get_type_items(edited_type, Theme::DATA_TYPE_SOUND, show_default);
+		for (const KeyValue<StringName, bool> &E : sound_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_SOUND, E.key, E.value);
+			EditorResourcePicker *item_editor = memnew(EditorResourcePicker);
+			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+			item_editor->set_base_type("AudioStream");
+			item_control->add_child(item_editor);
+
+			if (E.value) {
+				if (edited_theme->has_sound(E.key, edited_type)) {
+					item_editor->set_edited_resource(edited_theme->get_sound(E.key, edited_type));
+				} else {
+					item_editor->set_edited_resource(Ref<Resource>());
+				}
+				item_editor->connect("resource_selected", callable_mp(this, &ThemeTypeEditor::_edit_resource_item));
+				item_editor->connect("resource_changed", callable_mp(this, &ThemeTypeEditor::_sound_item_changed).bind(E.key));
+			} else {
+				if (ThemeDB::get_singleton()->get_default_theme()->has_sound(E.key, edited_type)) {
+					item_editor->set_edited_resource(ThemeDB::get_singleton()->get_default_theme()->get_sound(E.key, edited_type));
+				} else {
+					item_editor->set_edited_resource(Ref<Resource>());
+				}
+				item_editor->set_editable(false);
+			}
+
+			_add_focusable(item_editor);
+			sound_items_list->add_child(item_control);
 		}
 	}
 
@@ -2875,8 +3028,8 @@ void ThemeTypeEditor::_list_type_selected(int p_index) {
 
 void ThemeTypeEditor::_add_type_button_cbk() {
 	add_type_mode = ADD_THEME_TYPE;
-	add_type_dialog->set_title(TTR("Add Item Type"));
-	add_type_dialog->set_ok_button_text(TTR("Add Type"));
+	add_type_dialog->set_title(TTRC("Add Item Type"));
+	add_type_dialog->set_ok_button_text(TTRC("Add Type"));
 	add_type_dialog->set_include_own_types(false);
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 }
@@ -2991,6 +3144,15 @@ void ThemeTypeEditor::_add_default_type_items() {
 			}
 		}
 	}
+	{
+		names.clear();
+		ThemeDB::get_singleton()->get_default_theme()->get_sound_list(default_type, &names);
+		for (const StringName &E : names) {
+			if (!new_snapshot->has_sound(E, edited_type)) {
+				new_snapshot->set_sound(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_sound(E, edited_type));
+			}
+		}
+	}
 
 	updating = false;
 
@@ -3053,6 +3215,10 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 				ur->add_undo_method(this, "_unpin_leading_stylebox");
 			}
 		} break;
+		case Theme::DATA_TYPE_SOUND: {
+			ur->add_do_method(*edited_theme, "set_sound", item_name, edited_type, Ref<AudioStream>());
+			ur->add_undo_method(*edited_theme, "clear_sound", item_name, edited_type);
+		} break;
 	}
 
 	ur->commit_action();
@@ -3103,6 +3269,10 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 			if (is_stylebox_pinned(sb)) {
 				ur->add_undo_method(this, "_unpin_leading_stylebox");
 			}
+		} break;
+		case Theme::DATA_TYPE_SOUND: {
+			ur->add_do_method(*edited_theme, "set_sound", p_item_name, edited_type, Ref<AudioStream>());
+			ur->add_undo_method(*edited_theme, "clear_sound", p_item_name, edited_type);
 		} break;
 	}
 
@@ -3159,6 +3329,14 @@ void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
 			if (is_stylebox_pinned(sb)) {
 				ur->add_do_method(this, "_unpin_leading_stylebox");
 				ur->add_undo_method(this, "_pin_leading_stylebox", p_item_name, sb);
+			}
+		} break;
+		case Theme::DATA_TYPE_SOUND: {
+			ur->add_do_method(*edited_theme, "clear_sound", p_item_name, edited_type);
+			if (edited_theme->has_sound(p_item_name, edited_type)) {
+				ur->add_undo_method(*edited_theme, "set_sound", p_item_name, edited_type, edited_theme->get_sound(p_item_name, edited_type));
+			} else {
+				ur->add_undo_method(*edited_theme, "set_sound", p_item_name, edited_type, Ref<AudioStream>());
 			}
 		} break;
 	}
@@ -3224,6 +3402,10 @@ void ThemeTypeEditor::_item_rename_confirmed(int p_data_type, String p_item_name
 			if (leading_stylebox.pinned && leading_stylebox.item_name == p_item_name) {
 				leading_stylebox.item_name = new_name;
 			}
+		} break;
+		case Theme::DATA_TYPE_SOUND: {
+			ur->add_do_method(*edited_theme, "rename_sound", p_item_name, new_name, edited_type);
+			ur->add_undo_method(*edited_theme, "rename_sound", new_name, p_item_name, edited_type);
 		} break;
 	}
 
@@ -3323,6 +3505,23 @@ void ThemeTypeEditor::_stylebox_item_changed(Ref<StyleBox> p_value, String p_ite
 
 	ur->add_do_method(this, "_change_pinned_stylebox");
 	ur->add_undo_method(this, "_change_pinned_stylebox");
+
+	ur->add_do_method(this, CoreStringName(call_deferred), "_update_type_items");
+	ur->add_undo_method(this, CoreStringName(call_deferred), "_update_type_items");
+
+	ur->commit_action();
+}
+
+void ThemeTypeEditor::_sound_item_changed(Ref<AudioStream> p_value, String p_item_name) {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Set Sound Item in Theme"));
+
+	ur->add_do_method(*edited_theme, "set_sound", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<AudioStream>());
+	if (edited_theme->has_sound(p_item_name, edited_type)) {
+		ur->add_undo_method(*edited_theme, "set_sound", p_item_name, edited_type, edited_theme->get_sound(p_item_name, edited_type));
+	} else {
+		ur->add_undo_method(*edited_theme, "set_sound", p_item_name, edited_type, Ref<AudioStream>());
+	}
 
 	ur->add_do_method(this, CoreStringName(call_deferred), "_update_type_items");
 	ur->add_undo_method(this, CoreStringName(call_deferred), "_update_type_items");
@@ -3477,8 +3676,8 @@ void ThemeTypeEditor::_type_variation_changed(const String p_value) {
 
 void ThemeTypeEditor::_add_type_variation_cbk() {
 	add_type_mode = ADD_VARIATION_BASE;
-	add_type_dialog->set_title(TTR("Set Variation Base Type"));
-	add_type_dialog->set_ok_button_text(TTR("Set Base Type"));
+	add_type_dialog->set_title(TTRC("Set Variation Base Type"));
+	add_type_dialog->set_ok_button_text(TTRC("Set Base Type"));
 	add_type_dialog->set_include_own_types(true);
 	add_type_dialog->popup_centered(Size2(560, 420) * EDSCALE);
 }
@@ -3507,7 +3706,8 @@ void ThemeTypeEditor::_notification(int p_what) {
 			data_type_tabs->set_tab_icon(3, get_editor_theme_icon(SNAME("FontSize")));
 			data_type_tabs->set_tab_icon(4, get_editor_theme_icon(SNAME("ImageTexture")));
 			data_type_tabs->set_tab_icon(5, get_editor_theme_icon(SNAME("StyleBoxFlat")));
-			data_type_tabs->set_tab_icon(6, get_editor_theme_icon(SNAME("Tools")));
+			data_type_tabs->set_tab_icon(6, get_editor_theme_icon(SNAME("AudioStream")));
+			data_type_tabs->set_tab_icon(7, get_editor_theme_icon(SNAME("Tools")));
 
 			type_variation_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
@@ -3558,6 +3758,7 @@ void ThemeTypeEditor::select_type(String p_type_name) {
 		edited_theme->add_font_size_type(edited_type);
 		edited_theme->add_color_type(edited_type);
 		edited_theme->add_constant_type(edited_type);
+		edited_theme->add_sound_type(edited_type);
 
 		_update_type_list();
 	}
@@ -3575,7 +3776,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	main_vb->add_child(type_list_hb);
 
 	Label *type_list_label = memnew(Label);
-	type_list_label->set_text(TTR("Type:"));
+	type_list_label->set_text(TTRC("Type:"));
 	type_list_hb->add_child(type_list_label);
 
 	theme_type_list = memnew(OptionButton);
@@ -3583,11 +3784,13 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	theme_type_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	theme_type_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	theme_type_list->set_accessibility_name(TTRC("Type"));
+	theme_type_list->set_search_bar_enabled(true);
+	theme_type_list->set_search_bar_min_item_count(10);
 	type_list_hb->add_child(theme_type_list);
 	theme_type_list->connect(SceneStringName(item_selected), callable_mp(this, &ThemeTypeEditor::_list_type_selected));
 
 	add_type_button = memnew(Button);
-	add_type_button->set_tooltip_text(TTR("Add a type from a list of available types or create a new one."));
+	add_type_button->set_tooltip_text(TTRC("Add a type from a list of available types or create a new one."));
 	type_list_hb->add_child(add_type_button);
 	add_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_type_button_cbk));
 
@@ -3619,32 +3822,40 @@ ThemeTypeEditor::ThemeTypeEditor() {
 
 	show_default_items_button = memnew(CheckButton);
 	show_default_items_button->set_h_size_flags(SIZE_EXPAND_FILL);
-	show_default_items_button->set_text(TTR("Show Default"));
+	show_default_items_button->set_text(TTRC("Show Default"));
 	show_default_items_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
-	show_default_items_button->set_tooltip_text(TTR("Show default type items alongside items that have been overridden."));
+	show_default_items_button->set_tooltip_text(TTRC("Show default type items alongside items that have been overridden."));
 	show_default_items_button->set_pressed(true);
 	type_controls->add_child(show_default_items_button);
 	show_default_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_update_type_items));
 
 	Button *add_default_items_button = memnew(Button);
 	add_default_items_button->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_default_items_button->set_text(TTR("Override All"));
-	add_default_items_button->set_tooltip_text(TTR("Override all default type items."));
+	add_default_items_button->set_text(TTRC("Override All"));
+	add_default_items_button->set_tooltip_text(TTRC("Override all default type items."));
 	type_controls->add_child(add_default_items_button);
 	add_default_items_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_default_type_items));
 
 	data_type_tabs = memnew(TabContainer);
 	data_type_tabs->set_tab_alignment(TabBar::ALIGNMENT_CENTER);
-	main_vb->add_child(data_type_tabs);
 	data_type_tabs->set_v_size_flags(SIZE_EXPAND_FILL);
 	data_type_tabs->set_use_hidden_tabs_for_min_size(true);
+	main_vb->add_child(data_type_tabs);
 
 	color_items_list = _create_item_list(Theme::DATA_TYPE_COLOR);
+	data_type_tabs->set_tab_tooltip(data_type_tabs->get_tab_count() - 1, TTRC("Colors"));
 	constant_items_list = _create_item_list(Theme::DATA_TYPE_CONSTANT);
+	data_type_tabs->set_tab_tooltip(data_type_tabs->get_tab_count() - 1, TTRC("Constants"));
 	font_items_list = _create_item_list(Theme::DATA_TYPE_FONT);
+	data_type_tabs->set_tab_tooltip(data_type_tabs->get_tab_count() - 1, TTRC("Fonts"));
 	font_size_items_list = _create_item_list(Theme::DATA_TYPE_FONT_SIZE);
+	data_type_tabs->set_tab_tooltip(data_type_tabs->get_tab_count() - 1, TTRC("Font Sizes"));
 	icon_items_list = _create_item_list(Theme::DATA_TYPE_ICON);
+	data_type_tabs->set_tab_tooltip(data_type_tabs->get_tab_count() - 1, TTRC("Icons"));
 	stylebox_items_list = _create_item_list(Theme::DATA_TYPE_STYLEBOX);
+	data_type_tabs->set_tab_tooltip(data_type_tabs->get_tab_count() - 1, TTRC("StyleBoxes"));
+	sound_items_list = _create_item_list(Theme::DATA_TYPE_SOUND);
+	data_type_tabs->set_tab_tooltip(data_type_tabs->get_tab_count() - 1, TTRC("Sounds"));
 
 	VBoxContainer *type_settings_tab = memnew(VBoxContainer);
 	type_settings_tab->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
@@ -3666,7 +3877,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_vb->add_child(type_variation_hb);
 	Label *type_variation_label = memnew(Label);
 	type_variation_hb->add_child(type_variation_label);
-	type_variation_label->set_text(TTR("Base Type"));
+	type_variation_label->set_text(TTRC("Base Type"));
 	type_variation_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	type_variation_edit = memnew(LineEdit);
 	type_variation_hb->add_child(type_variation_edit);
@@ -3676,14 +3887,14 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_variation_edit->set_accessibility_name(TTRC("Base Type"));
 	type_variation_button = memnew(Button);
 	type_variation_hb->add_child(type_variation_button);
-	type_variation_button->set_tooltip_text(TTR("Select the variation base type from a list of available types."));
+	type_variation_button->set_tooltip_text(TTRC("Select the variation base type from a list of available types."));
 	type_variation_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_add_type_variation_cbk));
 
 	type_variation_locked = memnew(Label);
 	type_variation_vb->add_child(type_variation_locked);
 	type_variation_locked->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	type_variation_locked->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
-	type_variation_locked->set_text(TTR("A type associated with a built-in class cannot be marked as a variation of another type."));
+	type_variation_locked->set_text(TTRC("A type associated with a built-in class cannot be marked as a variation of another type."));
 	type_variation_locked->hide();
 
 	add_type_dialog = memnew(ThemeTypeDialog);
@@ -3908,6 +4119,7 @@ void ThemeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Con
 	preview_tabs->set_current_tab(preview_tabs->get_tab_count() - 1);
 	preview_tab->connect("scene_invalidated", callable_mp(this, &ThemeEditor::_remove_preview_tab_invalid).bind(preview_tab));
 	preview_tab->connect("scene_reloaded", callable_mp(this, &ThemeEditor::_update_preview_tab).bind(preview_tab));
+	_preview_tabs_resized();
 }
 
 void ThemeEditor::_preview_tabs_resized() {
@@ -4018,13 +4230,13 @@ ThemeEditor::ThemeEditor() {
 	top_menu->add_child(memnew(VSeparator));
 
 	Button *theme_save_button = memnew(Button);
-	theme_save_button->set_text(TTR("Save"));
+	theme_save_button->set_text(TTRC("Save"));
 	theme_save_button->set_flat(true);
 	theme_save_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_save_button_cbk).bind(false));
 	top_menu->add_child(theme_save_button);
 
 	Button *theme_save_as_button = memnew(Button);
-	theme_save_as_button->set_text(TTR("Save As..."));
+	theme_save_as_button->set_text(TTRC("Save As..."));
 	theme_save_as_button->set_flat(true);
 	theme_save_as_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_save_button_cbk).bind(true));
 	top_menu->add_child(theme_save_as_button);
@@ -4076,6 +4288,7 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs->connect(SceneStringName(resized), callable_mp(this, &ThemeEditor::_preview_tabs_resized), CONNECT_DEFERRED);
 
 	add_preview_button = memnew(Button);
+	add_preview_button->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	add_preview_button->set_tooltip_text(TTRC("Add Preview"));
 	add_preview_button->set_flat(true);
 	preview_tabs->add_child(add_preview_button);
@@ -4089,15 +4302,15 @@ ThemeEditor::ThemeEditor() {
 	DefaultThemeEditorPreview *default_preview_tab = memnew(DefaultThemeEditorPreview);
 	preview_tabs_content->add_child(default_preview_tab);
 	default_preview_tab->connect("control_picked", callable_mp(this, &ThemeEditor::_preview_control_picked));
-	preview_tabs->add_tab(TTR("Default Preview"));
+	preview_tabs->add_tab(TTRC("Default Preview"));
 
 	preview_scene_dialog = memnew(EditorFileDialog);
 	preview_scene_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	preview_scene_dialog->set_title(TTR("Select UI Scene:"));
+	preview_scene_dialog->set_title(TTRC("Select UI Scene:"));
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &ext);
 	for (const String &E : ext) {
-		preview_scene_dialog->add_filter("*." + E, TTR("Scene"));
+		preview_scene_dialog->add_filter("*." + E, TTRC("Scene"));
 	}
 	main_hs->add_child(preview_scene_dialog);
 	preview_scene_dialog->connect("file_selected", callable_mp(this, &ThemeEditor::_preview_scene_dialog_cbk));

@@ -228,9 +228,7 @@ FabrikInverseKinematic::Task *FabrikInverseKinematic::create_simple_task(Skeleto
 }
 
 void FabrikInverseKinematic::free_task(Task *p_task) {
-	if (p_task) {
-		memdelete(p_task);
-	}
+	memdelete(p_task);
 }
 
 void FabrikInverseKinematic::set_goal(Task *p_task, const Transform3D &p_goal) {

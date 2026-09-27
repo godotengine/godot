@@ -56,7 +56,7 @@ public:
 	virtual void on_session_destroyed() override;
 
 	virtual void on_main_swapchains_created() override;
-	virtual void on_pre_render() override;
+	virtual void on_pre_draw_viewport(RID p_render_target) override;
 	virtual void on_post_draw_viewport(RID p_render_target) override;
 	virtual void *set_projection_views_and_get_next_pointer(int p_view_index, void *p_next_pointer) override;
 

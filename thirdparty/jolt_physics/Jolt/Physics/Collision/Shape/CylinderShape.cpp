@@ -143,7 +143,7 @@ public:
 		// A Fast and Robust GJK Implementation for Collision Detection of Convex Objects - Gino van den Bergen
 		// page 8
 		float x = inDirection.GetX(), y = inDirection.GetY(), z = inDirection.GetZ();
-		float o = sqrt(Square(x) + Square(z));
+		float o = Sqrt(Square(x) + Square(z));
 		if (o > 0.0f)
 			return Vec3((mRadius * x) / o, Sign(y) * mHalfHeight, (mRadius * z) / o);
 		else
@@ -207,7 +207,7 @@ void CylinderShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg in
 	if (xz_sq > y_sq)
 	{
 		// Hitting side
-		float f = -scaled_radius / sqrt(xz_sq);
+		float f = -scaled_radius / Sqrt(xz_sq);
 		float vx = x * f;
 		float vz = z * f;
 		outVertices.push_back(inCenterOfMassTransform * Vec3(vx, scaled_half_height, vz));
@@ -222,7 +222,7 @@ void CylinderShape::GetSupportingFace(const SubShapeID &inSubShapeID, Vec3Arg in
 		Mat44 transform = inCenterOfMassTransform;
 		if (xz_sq > 0.00765427f * y_sq)
 		{
-			Vec4 base_x = Vec4(x, 0, z, 0) / sqrt(xz_sq);
+			Vec4 base_x = Vec4(x, 0, z, 0) / Sqrt(xz_sq);
 			Vec4 base_z = base_x.Swizzle<SWIZZLE_Z, SWIZZLE_Y, SWIZZLE_X, SWIZZLE_W>() * Vec4(-1, 0, 1, 0);
 			transform = transform * Mat44(base_x, Vec4(0, 1, 0, 0), base_z, Vec4(0, 0, 0, 1));
 		}

@@ -1,0 +1,93 @@
+diff --git a/thirdparty/offset_allocator/offsetAllocator.cpp b/thirdparty/offset_allocator/offsetAllocator.cpp
+--- a/thirdparty/offset_allocator/offsetAllocator.cpp
++++ b/thirdparty/offset_allocator/offsetAllocator.cpp
+@@ -73,7 +73,7 @@ namespace OffsetAllocator
+                 exp = mantissaStartBit + 1;
+                 mantissa = (size >> mantissaStartBit) & MANTISSA_MASK;
+                 
+-                uint32 lowBitsMask = (1 << mantissaStartBit) - 1;
++                uint32 lowBitsMask = (uint32(1) << mantissaStartBit) - 1;
+                 
+                 // Round up!
+                 if ((size & lowBitsMask) != 0)
+@@ -126,7 +126,8 @@ namespace OffsetAllocator
+     // Utility functions
+     uint32 findLowestSetBitAfter(uint32 bitMask, uint32 startBitIndex)
+     {
+-        uint32 maskBeforeStartIndex = (1 << startBitIndex) - 1;
++        if (startBitIndex >= 32) return Allocation::NO_SPACE;
++        uint32 maskBeforeStartIndex = (uint32(1) << startBitIndex) - 1;
+         uint32 maskAfterStartIndex = ~maskBeforeStartIndex;
+         uint32 bitsAfter = bitMask & maskAfterStartIndex;
+         if (bitsAfter == 0) return Allocation::NO_SPACE;
+@@ -212,6 +213,7 @@ namespace OffsetAllocator
+         // Round up to bin index to ensure that alloc >= bin
+         // Gives us min bin index that fits the size
+         uint32 minBinIndex = SmallFloat::uintToFloatRoundUp(size);
++        if (minBinIndex == 240) minBinIndex = 239; // 4 GiB bin overflows uint32
+         
+         uint32 minTopBinIndex = minBinIndex >> TOP_BINS_INDEX_SHIFT;
+         uint32 minLeafBinIndex = minBinIndex & LEAF_BINS_INDEX_MASK;
+@@ -220,7 +222,7 @@ namespace OffsetAllocator
+         uint32 leafBinIndex = Allocation::NO_SPACE;
+ 
+         // If top bin exists, scan its leaf bin. This can fail (NO_SPACE).
+-        if (m_usedBinsTop & (1 << topBinIndex))
++        if (m_usedBinsTop & (uint32(1) << topBinIndex))
+         {
+             leafBinIndex = findLowestSetBitAfter(m_usedBins[topBinIndex], minLeafBinIndex);
+         }
+@@ -247,6 +249,10 @@ namespace OffsetAllocator
+         NodeIndex nodeIndex = m_binIndices[binIndex];
+         Node& node = m_nodes[nodeIndex];
+         uint32 nodeTotalSize = node.dataSize;
++        if (nodeTotalSize < size)
++        {
++            return {.offset = Allocation::NO_SPACE, .metadata = Allocation::NO_SPACE_METADATA};
++        }
+         node.dataSize = size;
+         node.used = true;
+         m_binIndices[binIndex] = node.binListNext;
+@@ -260,13 +266,13 @@ namespace OffsetAllocator
+         if (m_binIndices[binIndex] == Node::unused)
+         {
+             // Remove a leaf bin mask bit
+-            m_usedBins[topBinIndex] &= ~(1 << leafBinIndex);
++            m_usedBins[topBinIndex] &= ~(uint32(1) << leafBinIndex);
+             
+             // All leaf bins empty?
+             if (m_usedBins[topBinIndex] == 0)
+             {
+                 // Remove a top bin mask bit
+-                m_usedBinsTop &= ~(1 << topBinIndex);
++                m_usedBinsTop &= ~(uint32(1) << topBinIndex);
+             }
+         }
+         
+@@ -366,8 +372,8 @@ namespace OffsetAllocator
+         if (m_binIndices[binIndex] == Node::unused)
+         {
+             // Set bin mask bits
+-            m_usedBins[topBinIndex] |= 1 << leafBinIndex;
+-            m_usedBinsTop |= 1 << topBinIndex;
++            m_usedBins[topBinIndex] |= uint32(1) << leafBinIndex;
++            m_usedBinsTop |= uint32(1) << topBinIndex;
+         }
+         
+         // Take a freelist node and insert on top of the bin linked list (next = old top)
+@@ -415,13 +421,13 @@ namespace OffsetAllocator
+             if (m_binIndices[binIndex] == Node::unused)
+             {
+                 // Remove a leaf bin mask bit
+-                m_usedBins[topBinIndex] &= ~(1 << leafBinIndex);
++                m_usedBins[topBinIndex] &= ~(uint32(1) << leafBinIndex);
+                 
+                 // All leaf bins empty?
+                 if (m_usedBins[topBinIndex] == 0)
+                 {
+                     // Remove a top bin mask bit
+-                    m_usedBinsTop &= ~(1 << topBinIndex);
++                    m_usedBinsTop &= ~(uint32(1) << topBinIndex);
+                 }
+             }
+         }

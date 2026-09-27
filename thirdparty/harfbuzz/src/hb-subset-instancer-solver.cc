@@ -370,7 +370,8 @@ double renormalizeValue (double v, const Triple &triple,
                          const TripleDistances &triple_distances, bool extrapolate)
 {
   double lower = triple.minimum, def = triple.middle, upper = triple.maximum;
-  assert (lower <= def && def <= upper);
+  if (unlikely (!(lower <= def && def <= upper)))
+    return hb_clamp (v, -1.0, +1.0);
 
   if (!extrapolate)
     v = hb_clamp (v, lower, upper);
@@ -384,14 +385,26 @@ double renormalizeValue (double v, const Triple &triple,
 
   /* default >= 0 and v != default */
   if (v > def)
-    return (v - def) / (upper - def);
+  {
+    double positive_range = upper - def;
+    if (unlikely (!positive_range))
+      return +1.0;
+    return (v - def) / positive_range;
+  }
 
   /* v < def */
   if (lower >= 0.0)
-    return (v - def) / (def - lower);
+  {
+    double negative_range = def - lower;
+    if (unlikely (!negative_range))
+      return -1.0;
+    return (v - def) / negative_range;
+  }
 
   /* lower < 0 and v < default */
   double total_distance = triple_distances.negative * (-lower) + triple_distances.positive * def;
+  if (unlikely (!total_distance))
+    return 0.0;
 
   double v_distance;
   if (v >= 0.0)
