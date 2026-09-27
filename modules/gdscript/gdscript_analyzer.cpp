@@ -1687,6 +1687,12 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 	}
 	p_annotation->is_resolved = true;
 
+#ifdef DEBUG_ENABLED
+	if (p_annotation->name == "@rpc" && !ClassDB::is_parent_class(parser->current_class->base_type.native_type, SNAME("Node"))) {
+		parser->push_warning(p_annotation, GDScriptWarning::RPC_NOT_ON_NODE, p_annotation->name);
+	}
+#endif
+
 	const MethodInfo &annotation_info = parser->valid_annotations[p_annotation->name].info;
 
 	for (uint32_t i = 0, j = 0; i < p_annotation->arguments.size(); i++) {
