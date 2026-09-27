@@ -2377,54 +2377,56 @@ NodePath Node::get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_p
 		return NodePath(".");
 	}
 
-	HashSet<const Node *> visited;
-
-	const Node *n = this;
-
-	while (n) {
-		visited.insert(n);
-		n = n->data.parent;
-	}
-
-	const Node *common_parent = node;
-
-	while (common_parent) {
-		if (visited.has(common_parent)) {
-			break;
-		}
-		common_parent = common_parent->data.parent;
-	}
-
+	const Node *common_parent = find_common_parent_with(node);
 	ERR_FAIL_NULL_V_MSG(common_parent, NodePath(), vformat("No path can be resolved between the nodes %s and %s as they share no common ancestor.", get_description(true), node->get_description(true)));
-
-	visited.clear();
 
 	Vector<StringName> path;
 	StringName up = String("..");
 
 	if (p_use_unique_path) {
-		n = node;
-
 		bool is_detected = false;
-		while (n != common_parent) {
-			if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
-				path.push_back(UNIQUE_NODE_PREFIX + String(n->get_name()));
+		Node *owner = get_owner();
+
+		// Trivial case where node is common parent
+		if (node == common_parent && node->is_unique_name_in_owner()) {
+			Node *n_owner = node->get_owner();
+			if (n_owner == owner || n_owner == this) {
+				path.push_back(UNIQUE_NODE_PREFIX + String(node->get_name()));
 				is_detected = true;
-				break;
 			}
-			path.push_back(n->get_name());
-			n = n->data.parent;
+		}
+
+		const Node *n = node;
+		if (!is_detected) {
+			// Walk upward from node until either the common parent is reached or
+			// a node with a unique name is found, whichever happens first.
+			while (n != common_parent) {
+				if (n->is_unique_name_in_owner()) {
+					Node *n_owner = n->get_owner();
+					if (n_owner == owner || n_owner == this) {
+						path.push_back(UNIQUE_NODE_PREFIX + String(n->get_name()));
+						is_detected = true;
+						break;
+					}
+				}
+				path.push_back(n->get_name());
+				n = n->data.parent;
+			}
 		}
 
 		if (!is_detected) {
+			// Walk upward from this until the common parent is reached.
 			n = this;
 
 			String detected_name;
 			int up_count = 0;
 			while (n != common_parent) {
-				if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
-					detected_name = n->get_name();
-					up_count = 0;
+				if (n->is_unique_name_in_owner()) {
+					Node *n_owner = n->get_owner();
+					if (n_owner == owner || n_owner == this) {
+						detected_name = n->get_name();
+						up_count = 0;
+					}
 				}
 				up_count++;
 				n = n->data.parent;
@@ -2439,7 +2441,7 @@ NodePath Node::get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_p
 			}
 		}
 	} else {
-		n = node;
+		const Node *n = node;
 
 		while (n != common_parent) {
 			path.push_back(n->get_name());
