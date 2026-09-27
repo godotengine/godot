@@ -73,7 +73,6 @@ namespace Godot
         {
             try
             {
-                Console.WriteLine("GetMethodInfo was called!");
                 var @delegate = (Delegate?)GCHandle.FromIntPtr(delegateGCHandle).Target;
                 var method = @delegate?.Method;
                 if (method is null)
