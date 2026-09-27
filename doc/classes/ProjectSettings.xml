@@ -639,6 +639,9 @@
 		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="0">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). These return values are sometimes used to indicate possible errors using the [enum Error] enum.
 		</member>
+		<member name="debug/gdscript/warnings/rpc_not_on_node" type="int" setter="" getter="" default="2">
+			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when adding the [code]@rpc[/code] annotation to a function belonging to a class that does not inherit from [Node].
+		</member>
 		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
 			When set to [b]Warn[/b] or [b]Error[/b], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
 		</member>
