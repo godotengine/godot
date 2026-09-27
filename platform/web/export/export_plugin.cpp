@@ -907,6 +907,14 @@ Ref<Texture2D> EditorExportPlatformWeb::get_run_icon() const {
 	return run_icon;
 }
 
+String EditorExportPlatformWeb::get_debug_protocol() const {
+#ifdef WEB_ENABLED
+	return "messageport://";
+#else
+	return "ws://";
+#endif
+}
+
 void EditorExportPlatformWeb::initialize() {
 	if (EditorNode::get_singleton()) {
 		server.instantiate();

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  GodotApp.java                                                         */
+/*  editor_debugger_server_messageport.cpp                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,78 +28,70 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package com.godot.game;
+#include "editor_debugger_server_messageport.h"
 
-import org.godotengine.godot.Godot;
-import org.godotengine.godot.GodotActivity;
+#include "editor/editor_log.h"
+#include "editor/editor_node.h"
 
-import android.os.Bundle;
-import android.util.Log;
+extern "C" {
+bool godot_js_editor_debugger_active();
+void godot_js_editor_debugger_cb(void (*p_callback)(int p_id));
+}
 
-import androidx.activity.EdgeToEdge;
-import androidx.core.splashscreen.SplashScreen;
+EditorDebuggerServerMessagePort *EditorDebuggerServerMessagePort::singleton = nullptr;
 
-/**
- * Template activity for Godot Android builds.
- * Feel free to extend and modify this class for your custom logic.
- */
-public class GodotApp extends GodotActivity {
-	static {
-		// .NET libraries.
-		if (BuildConfig.FLAVOR.equals("mono")) {
-			try {
-				Log.v("GODOT", "Loading System.Security.Cryptography.Native.Android library");
-				System.loadLibrary("System.Security.Cryptography.Native.Android");
-			} catch (UnsatisfiedLinkError e) {
-				Log.e("GODOT", "Unable to load System.Security.Cryptography.Native.Android library");
-			}
-		}
-	}
+void EditorDebuggerServerMessagePort::_add_session(int p_session) {
+	ERR_FAIL_NULL(singleton);
+	singleton->pending.push_back(p_session);
+}
 
-	private final Runnable updateWindowAppearance = () -> {
-		Godot godot = getGodot();
-		if (godot != null) {
-			godot.enableImmersiveMode(godot.isInImmersiveMode(), true);
-			godot.enableEdgeToEdge(godot.isInEdgeToEdgeMode(), true);
-			godot.setSystemBarsAppearance();
-		}
-	};
+void EditorDebuggerServerMessagePort::initialize() {
+	EditorDebuggerServer::register_protocol_handler("messageport://", EditorDebuggerServerMessagePort::create);
+}
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
-		EdgeToEdge.enable(this);
-		super.onCreate(savedInstanceState);
+void EditorDebuggerServerMessagePort::poll() {
+}
 
-		Godot godot = getGodot();
-		if (godot != null && godot.getDisableGodotSplash()) {
-			splashScreen.setKeepOnScreenCondition(() -> godot.getRunStatus() != Godot.RunStatus.STARTED);
-		}
-	}
+String EditorDebuggerServerMessagePort::get_uri() const {
+	return "messageport://";
+}
 
-	@Override
-	public void onResume() {
-		super.onResume();
-		updateWindowAppearance.run();
-	}
+Error EditorDebuggerServerMessagePort::start(const String &p_uri) {
+	godot_js_editor_debugger_cb(&_add_session);
+	return OK;
+}
 
-	@Override
-	public void onGodotMainLoopStarted() {
-		super.onGodotMainLoopStarted();
-		runOnUiThread(updateWindowAppearance);
-	}
+void EditorDebuggerServerMessagePort::stop() {
+	godot_js_editor_debugger_cb(nullptr);
+	pending.clear();
+}
 
-	@Override
-	public void onGodotForceQuit(Godot instance) {
-		if (!BuildConfig.FLAVOR.equals("instrumented")) {
-			// For instrumented builds, we disable force-quitting to allow the instrumented tests to complete
-			// successfully, otherwise they fail when the process crashes.
-			super.onGodotForceQuit(instance);
-		}
-	}
+bool EditorDebuggerServerMessagePort::is_active() const {
+	return godot_js_editor_debugger_active();
+}
 
-	@Override
-	protected boolean isPiPEnabled() {
-		return true;
-	}
+bool EditorDebuggerServerMessagePort::is_connection_available() const {
+	return pending.size();
+}
+
+Ref<RemoteDebuggerPeer> EditorDebuggerServerMessagePort::take_connection() {
+	ERR_FAIL_COND_V(!is_connection_available(), Ref<RemoteDebuggerPeer>());
+	Ref<RemoteDebuggerPeerMessagePort> peer = memnew(RemoteDebuggerPeerMessagePort(pending.front()->get()));
+	pending.pop_front();
+	return peer;
+}
+
+EditorDebuggerServerMessagePort::EditorDebuggerServerMessagePort() {
+	ERR_FAIL_COND(singleton != nullptr);
+	singleton = this;
+}
+
+EditorDebuggerServerMessagePort::~EditorDebuggerServerMessagePort() {
+	stop();
+	singleton = nullptr;
+}
+
+Ref<EditorDebuggerServer> EditorDebuggerServerMessagePort::create(const String &p_protocol) {
+	ERR_FAIL_COND_V(p_protocol != "messageport://", nullptr);
+	return memnew(EditorDebuggerServerMessagePort);
 }

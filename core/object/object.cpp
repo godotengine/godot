@@ -1087,7 +1087,7 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 }
 
 Variant Object::get_script() const {
-	return script_instance ? Variant(script_instance->get_script()) : Variant();
+	return script_instance ? Variant(Ref<Script>(script_instance->get_script())) : Variant();
 }
 
 bool Object::has_meta(const StringName &p_name) const {

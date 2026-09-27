@@ -34,9 +34,12 @@
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/editor_main_screen.h"
 #include "editor/plugins/editor_plugin.h"
+#include "scene/debugger/canvas_item_manipulator.h"
 #include "scene/debugger/runtime_node_select.h"
 #include "scene/gui/box_container.h"
 
+class ButtonGroup;
+class EditorToolbarGroup;
 class EmbeddedProcessBase;
 class VSeparator;
 class WindowWrapper;
@@ -52,7 +55,9 @@ private:
 	bool is_feature_enabled = true;
 	int node_type = RuntimeNodeSelect::NODE_TYPE_NONE;
 	bool selection_visible = true;
-	int select_mode = RuntimeNodeSelect::SELECT_MODE_SINGLE;
+	int ci_tool = CanvasItemManipulator::TOOL_SELECT;
+	int ci_local_space = true;
+	int n3d_tool = RuntimeNodeSelect::SELECT_MODE_SINGLE;
 	bool mute_audio = false;
 	EditorDebuggerNode::CameraOverride camera_override_mode = EditorDebuggerNode::OVERRIDE_INGAME;
 
@@ -73,6 +78,8 @@ private:
 	HashMap<uint64_t, ScreenshotCB> screenshot_callbacks;
 
 	bool _msg_get_screenshot(const Array &p_args);
+	bool _msg_show_toaster(const Array &p_args);
+	bool _msg_open_scene(const Array &p_args);
 
 protected:
 	static void _bind_methods();
@@ -93,7 +100,10 @@ public:
 	void reset_time_scale();
 
 	void set_node_type(int p_type);
-	void set_select_mode(int p_mode);
+	void set_ci_tool(int p_tool);
+	void set_n3d_tool(int p_tool);
+	// FIXME: This is present only for Android, and the code that uses it needs to be updated.
+	void set_select_mode(int p_mode) {}
 
 	void set_selection_visible(bool p_visible);
 
@@ -106,6 +116,8 @@ public:
 
 	void set_camera_override(bool p_enabled);
 	void set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode);
+
+	void set_ci_local_space(bool p_enabled);
 
 	void report_window_focused(bool p_focused);
 
@@ -125,7 +137,6 @@ class GameView : public VBoxContainer {
 		CAMERA_RESET_3D,
 		CAMERA_MODE_INGAME,
 		CAMERA_MODE_EDITORS,
-		SELECTION_HIDE,
 		SELECTION_AVOID_LOCKED,
 		SELECTION_PREFER_GROUP,
 		WINDOW_SIZE_MODE_FIXED,
@@ -180,29 +191,39 @@ class GameView : public VBoxContainer {
 	Rect2i floating_window_rect;
 	int floating_window_screen = -1;
 
+	bool debug_hide_selection = false;
 	bool debug_mute_audio = false;
 
-	bool selection_hide = true;
+	EditorToolbarGroup *ci_bar = nullptr;
+	EditorToolbarGroup *n3d_bar = nullptr;
+
 	bool selection_avoid_locked = false;
 	bool selection_prefer_group = false;
 
 	Button *suspend_button = nullptr;
 	Button *next_frame_button = nullptr;
 
-	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
-	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
+	Ref<ButtonGroup> node_group;
+	Ref<ButtonGroup> ci_group;
+	Ref<ButtonGroup> n3d_group;
 
-	MenuButton *selection_options_menu = nullptr;
+	Button *node_type_button[RuntimeNodeSelect::NODE_TYPE_MAX];
+	Button *ci_button[CanvasItemManipulator::TOOL_MAX];
+	Button *n3d_button[RuntimeNodeSelect::SELECT_MODE_MAX];
+
+	MenuButton *n3d_options_menu = nullptr;
 
 	Button *camera_override_button = nullptr;
 	MenuButton *camera_override_menu = nullptr;
 
+	Button *debug_hide_selection_button = nullptr;
 	Button *debug_mute_audio_button = nullptr;
 
 	HBoxContainer *embedding_hb = nullptr;
 	MenuButton *game_window_options_menu = nullptr;
 	Label *game_size_label = nullptr;
 	HBoxContainer *game_hb = nullptr;
+	Ref<ButtonGroup> game_embed_group;
 	Button *game_embed_mode_button[EmbedMode::EMBED_TYPE_MAX];
 	Panel *panel = nullptr;
 	EmbeddedProcessBase *embedded_process = nullptr;
@@ -227,12 +248,9 @@ class GameView : public VBoxContainer {
 
 	void _update_debugger_buttons();
 
-	void _handle_shortcut_requested(int p_embed_action);
-	void _toggle_suspend_button();
 	void _suspend_button_toggled(bool p_pressed);
 
 	void _node_type_pressed(int p_option);
-	void _select_mode_pressed(int p_option);
 	void _game_embed_mode_pressed(int p_option);
 	void _selection_options_menu_id_pressed(int p_id);
 	void _game_window_options_menu_menu_id_pressed(int p_id);
@@ -254,6 +272,7 @@ class GameView : public VBoxContainer {
 	void _embedding_failed();
 	void _embedded_process_focused();
 	void _editor_or_project_settings_changed();
+	void _inspector_object_changed();
 
 	EmbedAvailability _get_embed_available();
 	void _update_ui();
@@ -264,7 +283,9 @@ class GameView : public VBoxContainer {
 	void _update_arguments_for_instance(int p_idx, List<String> &r_arguments);
 	void _show_update_window_wrapper();
 
+	void _debug_hide_selection_button_pressed();
 	void _debug_mute_audio_button_pressed();
+
 	void _setup_complete();
 	void _game_window_size_received(const Array &p_state);
 	void _hdr_state_received(const Array &p_state);
@@ -282,6 +303,8 @@ class GameView : public VBoxContainer {
 
 	void _feature_profile_changed();
 
+	Button *_setup_button(const StringName &p_icon, const Ref<ButtonGroup> &p_group, const Ref<Shortcut> &p_shortcut = nullptr);
+
 protected:
 	void _notification(int p_what);
 
@@ -295,6 +318,8 @@ public:
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
+
+	MarginContainer *toolbar_margin = nullptr;
 
 	GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process, WindowWrapper *p_wrapper);
 };

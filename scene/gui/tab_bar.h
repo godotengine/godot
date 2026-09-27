@@ -144,6 +144,16 @@ private:
 	int tabs_rearrange_group = -1;
 	bool switch_on_drag_hover = true;
 
+	// Touch interaction
+	bool touch_dragging_starting = false;
+	bool touch_dragging_in_progress = false;
+	Vector2 drag_accum;
+	Vector2 drag_from;
+	int tab_pressing = -1;
+	bool can_start_drag_drop = true;
+	bool touch_long_press_dragging = false;
+	const float DRAG_THRESHOLD = 8.0f;
+
 	static const int CURRENT_TAB_UNINITIALIZED = -2;
 	bool initialized = false;
 	int queued_current = CURRENT_TAB_UNINITIALIZED;
@@ -219,6 +229,9 @@ private:
 
 	bool _select_previous_available(bool p_play_sound);
 	bool _select_next_available(bool p_play_sound);
+
+	bool _handle_scroll_button(const Point2 &p_pos);
+	void _update_scroll_button_highlight(const Point2 &p_pos);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

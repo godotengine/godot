@@ -54,7 +54,7 @@
 			[b]Note:[/b] Reserved attributes configured via other export options or project settings cannot be overridden by [code]custom_theme_attributes[/code] and are skipped during export.
 		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
-			Application export format (*.apk or *.aab).
+			Application export format ([code]*.apk[/code], [code]*.aab[/code], or [code]*.aar[/code]).
 		</member>
 		<member name="gradle_build/gradle_build_directory" type="String" setter="" getter="">
 			Path to the Gradle build directory. If left empty, then [code]res://android[/code] will be used.

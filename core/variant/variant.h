@@ -412,6 +412,11 @@ public:
 	Variant &operator[](const Variant &p_key) = delete;
 	const Variant &operator[](const Variant &p_key) const = delete;
 
+	// Canonical conversion operator.
+	template <typename T>
+	_FORCE_INLINE_ T to() const { return *this; }
+
+	// Legacy conversion operators. Use `variant.to<Type>()` instead. These operators will be phased out over time.
 	operator bool() const;
 	operator int64_t() const;
 	operator int32_t() const;
@@ -475,8 +480,6 @@ public:
 	operator Vector<Face3>() const;
 	operator Vector<Variant>() const;
 	operator Vector<StringName>() const;
-
-	operator IPAddress() const;
 
 	template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
 	_FORCE_INLINE_ operator T() const { return static_cast<T>(operator int64_t()); }
@@ -881,6 +884,9 @@ public:
 		}
 	}
 };
+
+template <>
+IPAddress Variant::to<IPAddress>() const;
 
 template <typename... VarArgs>
 Vector<Variant> varray(VarArgs... p_args) {

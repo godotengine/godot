@@ -1358,9 +1358,8 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 		vec2 reflection_uv = vec3_to_oct_with_border(local_ref_vec, border_size);
 		reflection.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(reflection_uv, reflections.data[ref_index].index), roughness_lod).rgb) * REFLECTION_MULTIPLIER;
 		reflection.rgb *= half(reflections.data[ref_index].exposure_normalization);
-		reflection.a = reflection_blend;
+		reflection.a = reflection_blend * half(reflections.data[ref_index].intensity);
 
-		reflection.rgb *= half(reflections.data[ref_index].intensity);
 		reflection.rgb *= reflection.a;
 
 		reflection_accum += reflection;
@@ -1390,9 +1389,8 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 		vec2 cc_reflection_uv = vec3_to_oct_with_border(local_cc_ref_vec, border_size);
 		cc_reflection.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(cc_reflection_uv, reflections.data[ref_index].index), cc_roughness_lod).rgb) * REFLECTION_MULTIPLIER;
 		cc_reflection.rgb *= half(reflections.data[ref_index].exposure_normalization);
-		cc_reflection.a = cc_reflection_blend;
+		cc_reflection.a = cc_reflection_blend * half(reflections.data[ref_index].intensity);
 
-		cc_reflection.rgb *= half(reflections.data[ref_index].intensity);
 		cc_reflection.rgb *= cc_reflection.a;
 
 		cc_reflection_accum += cc_reflection;
@@ -1416,7 +1414,7 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 			vec2 ambient_uv = vec3_to_oct_with_border(local_amb_vec, border_size);
 			ambient_out.rgb = hvec3(textureLod(sampler2DArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec3(ambient_uv, reflections.data[ref_index].index), roughness_lod).rgb);
 			ambient_out.rgb *= half(reflections.data[ref_index].exposure_normalization);
-			ambient_out.a = ambient_blend;
+			ambient_out.a = ambient_blend * half(reflections.data[ref_index].intensity);
 			ambient_out.rgb *= ambient_out.a;
 			ambient_accum += ambient_out;
 		} break;
@@ -1425,7 +1423,7 @@ void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal
 			half ambient_blend = max(half(0.0), blend - ambient_accum.a);
 
 			ambient_out.rgb = hvec3(reflections.data[ref_index].ambient);
-			ambient_out.a = ambient_blend;
+			ambient_out.a = ambient_blend * half(reflections.data[ref_index].intensity);
 			ambient_out.rgb *= ambient_out.a;
 			ambient_accum += ambient_out;
 		} break;

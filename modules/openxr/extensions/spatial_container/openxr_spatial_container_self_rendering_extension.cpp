@@ -196,10 +196,6 @@ void OpenXRSpatialContainerSelfRenderingExtension::_add_spatial_container_to_ren
 	print_verbose("OpenXR: Setting active spatial container.");
 	active_spatial_container = p_container_data.spatial_container_handle;
 
-	active_view_locate_info.viewConfigurationType = openxr_api->get_view_configuration();
-	active_view_locate_info.space = p_container_data.space_handle;
-	active_view_locate_info.spatialContainer = active_spatial_container;
-
 	active_view_state.viewConfigurationType = openxr_api->get_view_configuration();
 
 	active_layer.spatialContainer = active_spatial_container;
@@ -230,10 +226,6 @@ void OpenXRSpatialContainerSelfRenderingExtension::_remove_spatial_container_fro
 	// Reset the active spatial container.
 	print_verbose("OpenXR: Resetting active spatial container.");
 	active_spatial_container = XR_NULL_HANDLE;
-
-	active_view_locate_info.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
-	active_view_locate_info.space = XR_NULL_HANDLE;
-	active_view_locate_info.spatialContainer = XR_NULL_HANDLE;
 
 	active_view_state.viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 	active_view_state.viewStateFlags = 0;
@@ -284,7 +276,7 @@ void *OpenXRSpatialContainerSelfRenderingExtension::set_projection_layer_and_get
 	return &container_view_config;
 }
 
-XrResult OpenXRSpatialContainerSelfRenderingExtension::locate_spatial_container_views(RID p_spatial_container_rid, XrView *p_views, bool &r_view_pose_valid, bool &r_should_submit_layers) {
+XrResult OpenXRSpatialContainerSelfRenderingExtension::locate_spatial_container_views(RID p_spatial_container_rid, XrSpace p_space, XrView *p_views, bool &r_view_pose_valid, bool &r_should_submit_layers) {
 	if (!is_enabled() || active_spatial_container == XR_NULL_HANDLE) {
 		return XR_ERROR_INITIALIZATION_FAILED;
 	}
@@ -301,12 +293,20 @@ XrResult OpenXRSpatialContainerSelfRenderingExtension::locate_spatial_container_
 		}
 	}
 
+	XrSpatialContainerViewLocateInfoEXT view_locate_info = {
+		XR_TYPE_SPATIAL_CONTAINER_VIEW_LOCATE_INFO_EXT, // type
+		nullptr, // next
+		openxr_api->get_view_configuration(), // viewConfigurationType
+		p_space, // space
+		active_spatial_container, // spatialContainer
+	};
+
 	XrSpatialContainerViewsLocateInfoEXT locate_info = {
 		XR_TYPE_SPATIAL_CONTAINER_VIEWS_LOCATE_INFO_EXT, // type
 		spatial_container_views_locate_info_next_pointer, // next
 		openxr_api->get_predicted_display_time(), // displayTime
 		1, // viewLocateInfoCount
-		&active_view_locate_info, // viewLocateInfos
+		&view_locate_info, // viewLocateInfos
 	};
 
 	uint32_t total_view_count = openxr_api->get_view_count();

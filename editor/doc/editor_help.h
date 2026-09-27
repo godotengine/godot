@@ -359,6 +359,8 @@ public:
 	void set_content_height_limits(float p_min, float p_max);
 	void update_content_height();
 
+	void override_custom_minimum_width(float p_min_width);
+
 	EditorHelpBit(
 			const String &p_symbol = String(),
 			const String &p_prologue = String(),

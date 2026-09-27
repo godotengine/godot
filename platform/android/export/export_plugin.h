@@ -168,7 +168,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _get_manifest_info(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions, Vector<FeatureInfo> &r_features, Vector<MetadataInfo> &r_metadata);
 
-	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug);
+	void _clear_tmp_manifest(const Ref<EditorExportPreset> &p_preset);
+
+	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, int p_export_format, bool p_debug);
 
 	bool _is_transparency_allowed(const Ref<EditorExportPreset> &p_preset) const;
 
@@ -199,6 +201,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
 
 	Error _generate_sparse_pck_metadata(const Ref<EditorExportPreset> &p_preset, PackData &p_pack_data, Vector<uint8_t> &r_data);
+
+	static String _get_export_format_extension(int p_export_format);
 
 protected:
 	void _notification(int p_what);

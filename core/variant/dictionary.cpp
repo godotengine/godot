@@ -143,11 +143,7 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 	const Variant *key = _p->typed_key.validate(p_key, tmpk, "getptr");
 	ERR_FAIL_NULL_V(key, nullptr);
 
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(*key));
-	if (!E) {
-		return nullptr;
-	}
-	return &E->value;
+	return _p->variant_map.getptr(*key);
 }
 
 // WARNING: This method does not validate the value type.
@@ -156,15 +152,12 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 	const Variant *key = _p->typed_key.validate(p_key, tmpk, "getptr");
 	ERR_FAIL_NULL_V(key, nullptr);
 
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E(_p->variant_map.find(*key));
-	if (!E) {
-		return nullptr;
-	}
-	if (unlikely(_p->read_only != nullptr)) {
-		*_p->read_only = E->value;
+	Variant *value = _p->variant_map.getptr(*key);
+	if (value != nullptr && unlikely(_p->read_only != nullptr)) {
+		*_p->read_only = *value;
 		return _p->read_only;
 	} else {
-		return &E->value;
+		return value;
 	}
 }
 
@@ -186,7 +179,7 @@ Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 	const Variant *key = _p->typed_key.validate(p_key, tmpk, "get");
 	ERR_FAIL_NULL_V(key, p_default);
 
-	const Variant *result = getptr(*key);
+	const Variant *result = _p->variant_map.getptr(*key);
 	if (!result) {
 		return p_default;
 	}
@@ -199,7 +192,7 @@ Variant Dictionary::get_or_add(const Variant &p_key, const Variant &p_default) {
 	const Variant *key = _p->typed_key.validate(p_key, tmpk, "get_or_add");
 	ERR_FAIL_NULL_V(key, p_default);
 
-	const Variant *result = getptr(*key);
+	const Variant *result = _p->variant_map.getptr(*key);
 	if (!result) {
 		Variant tmpv;
 		const Variant *value = _p->typed_value.validate(p_default, tmpv, "add");

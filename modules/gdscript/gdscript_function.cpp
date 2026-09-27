@@ -114,14 +114,14 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 				return !was_freed;
 			}
 
-			Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
+			Script *base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
 			bool valid = false;
-			while (base.is_valid()) {
+			while (base != nullptr) {
 				if (base == script_type) {
 					valid = true;
 					break;
 				}
-				base = base->get_base_script();
+				base = base->get_base_script().ptr();
 			}
 			return valid;
 		} break;
