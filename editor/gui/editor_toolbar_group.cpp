@@ -57,7 +57,7 @@ void EditorToolbarGroup::_notification(int p_what) {
 			// thus adding 18 will give us the minimum of 32
 			// which allows increased font sizes to scale the toolbar.
 			const int font_size = get_theme_default_font_size();
-			const int max_size = MAX(32, font_size + 18);
+			const int max_size = MAX(32 * EDSCALE, font_size + 18 * EDSCALE);
 			set_custom_minimum_size(Size2(-1, max_size));
 			set_custom_maximum_size(Size2(-1, max_size));
 		} break;
