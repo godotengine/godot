@@ -408,6 +408,11 @@ String TreeItem::get_text(int p_column) const {
 	return cells[p_column].text;
 }
 
+Ref<TextParagraph> TreeItem::_get_text_buf(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), nullptr);
+	return cells[p_column].text_buf;
+}
+
 void TreeItem::set_description(int p_column, String p_text) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -2236,28 +2241,12 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) const {
 
 	p_item->cells.write[p_col].text_buf->clear();
 	if (p_item->cells[p_col].mode == TreeItem::CELL_MODE_RANGE) {
+		if (!p_item->cells[p_col].text.is_empty() && !p_item->cells[p_col].editable) {
+			return;
+		}
+		valtext = _get_range_cell_text(p_item->cells[p_col]);
 		if (!p_item->cells[p_col].text.is_empty()) {
-			if (!p_item->cells[p_col].editable) {
-				return;
-			}
-
-			int option = (int)p_item->cells[p_col].val;
-
-			valtext = p_item->atr(p_col, ETR("(Other)"));
-			Vector<String> strings = p_item->cells[p_col].text.split(",");
-			for (int j = 0; j < strings.size(); j++) {
-				int value = j;
-				if (!strings[j].get_slicec(':', 1).is_empty()) {
-					value = strings[j].get_slicec(':', 1).to_int();
-				}
-				if (option == value) {
-					valtext = p_item->atr(p_col, strings[j].get_slicec(':', 0));
-					break;
-				}
-			}
-
-		} else {
-			valtext = String::num(p_item->cells[p_col].val, Math::range_step_decimals(p_item->cells[p_col].step));
+			valtext = p_item->atr(p_col, valtext);
 		}
 	} else {
 		// Don't auto translate if it's in string mode and editable, as the text can be changed to anything by the user.
@@ -2429,6 +2418,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			int text_width = item_width - theme_cache.inner_item_margin_left - theme_cache.inner_item_margin_right;
+			if (p_item->cells[i].mode == TreeItem::CELL_MODE_CHECK) {
+				text_width -= theme_cache.checked->get_width() + theme_cache.check_h_separation;
+			}
 			if (p_item->cells[i].icon.is_valid()) {
 				text_width -= _get_cell_icon_size(p_item->cells[i]).x + theme_cache.icon_h_separation;
 			}
@@ -3038,7 +3030,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 		switched = true;
 	}
 
-	bool emitted_row = false;
+	bool emitted_row = true;
 
 	for (int i = 0; i < columns.size(); i++) {
 		TreeItem::Cell &c = p_current->cells.write[i];
@@ -3048,6 +3040,10 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 		}
 
 		if (select_mode == SELECT_ROW) {
+			if (&selected_cell == &c) {
+				selected_col = i;
+				emitted_row = false;
+			}
 			if (p_selected == p_current && (!c.selected || allow_reselect)) {
 				c.selected = true;
 				selected_item = p_selected;
@@ -3060,9 +3056,6 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					// Deselect other rows.
 					c.selected = false;
 				}
-			}
-			if (&selected_cell == &c) {
-				selected_col = i;
 			}
 		} else if (select_mode == SELECT_SINGLE || select_mode == SELECT_MULTI) {
 			if (!r_in_range && &selected_cell == &c) {
@@ -3181,7 +3174,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			if (relative_pos.y > item->cached_label_height) {
 				continue;
 			}
-			int result = propagate_mouse_event(relative_pos, x_ofs, y_ofs, x_limit, p_double_click, item, p_button, p_mod, false, true);
+			int result = propagate_mouse_event(relative_pos, item->sticky_offset.x, item->sticky_offset.y, x_limit, p_double_click, item, p_button, p_mod, false, true);
 			if (result < 0) {
 				return result;
 			}
@@ -3282,9 +3275,11 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				if (select_mode == SELECT_MULTI && p_mod->is_command_or_control_pressed()) {
 					if (c.selected && p_button == MouseButton::LEFT) {
 						p_item->deselect(col);
+						play_theme_sound(theme_cache.item_selected_sound);
 						emit_signal(SNAME("multi_selected"), p_item, col, false);
 					} else {
 						p_item->select(col);
+						play_theme_sound(theme_cache.item_selected_sound);
 						emit_signal(SNAME("multi_selected"), p_item, col, true);
 						emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
 					}
@@ -3292,6 +3287,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 					if (select_mode == SELECT_MULTI && p_mod->is_shift_pressed() && selected_item && selected_item != p_item) {
 						bool inrange = false;
 
+						play_theme_sound(theme_cache.item_selected_sound);
 						select_single_item(p_item, root, col, selected_item, &inrange);
 						emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
 					} else {
@@ -3314,6 +3310,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 								}
 							}
 
+							play_theme_sound(theme_cache.item_selected_sound);
 							emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
 						}
 					}
@@ -3329,7 +3326,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 		// Editing.
 		bool bring_up_editor = allow_reselect ? (c.selected && already_selected) : c.selected;
-		String editor_text = c.text;
 
 		switch (c.mode) {
 			case TreeItem::CELL_MODE_STRING: {
@@ -3408,7 +3404,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 						bring_up_editor = false;
 
 					} else {
-						editor_text = String::num(p_item->cells[col].val, Math::range_step_decimals(p_item->cells[col].step));
 						if (select_mode == SELECT_MULTI && get_viewport()->get_processed_events_count() == focus_in_id) {
 							bring_up_editor = false;
 						}
@@ -3646,6 +3641,28 @@ void Tree::_update_value_editor(const TreeItem::Cell &p_cell) {
 	updating_value_editor = false;
 }
 
+String Tree::_get_range_cell_text(const TreeItem::Cell &p_cell) const {
+	if (p_cell.text.is_empty()) {
+		return String::num(p_cell.val, Math::range_step_decimals(p_cell.step));
+	}
+
+	int option = (int)p_cell.val;
+	String valtext = ETR("(Other)");
+	Vector<String> strings = p_cell.text.split(",");
+
+	for (int j = 0; j < strings.size(); j++) {
+		int value = j;
+		if (!strings[j].get_slicec(':', 1).is_empty()) {
+			value = strings[j].get_slicec(':', 1).to_int();
+		}
+		if (option == value) {
+			valtext = strings[j].get_slicec(':', 0);
+			break;
+		}
+	}
+	return valtext;
+}
+
 void Tree::popup_select(int p_option) {
 	if (!popup_edited_item) {
 		return;
@@ -3682,8 +3699,10 @@ void Tree::_go_left() {
 		selected_button = -1;
 		if (select_mode == SELECT_MULTI) {
 			selected_col--;
+			play_theme_sound(theme_cache.focus_sound);
 			emit_signal(SNAME("cell_selected"));
 		} else {
+			play_theme_sound(theme_cache.focus_sound);
 			selected_item->select(selected_col - 1);
 		}
 	}
@@ -3709,8 +3728,10 @@ void Tree::_go_right() {
 		selected_button = -1;
 		if (select_mode == SELECT_MULTI) {
 			selected_col++;
+			play_theme_sound(theme_cache.focus_sound);
 			emit_signal(SNAME("cell_selected"));
 		} else {
+			play_theme_sound(theme_cache.focus_sound);
 			selected_item->select(selected_col + 1);
 		}
 	}
@@ -3738,6 +3759,7 @@ void Tree::_go_up() {
 		}
 
 		selected_item = prev;
+		play_theme_sound(theme_cache.focus_sound);
 		emit_signal(SNAME("cell_selected"));
 		queue_redraw();
 	} else {
@@ -3747,6 +3769,7 @@ void Tree::_go_up() {
 		if (!prev) {
 			return; // Do nothing.
 		}
+		play_theme_sound(theme_cache.focus_sound);
 		prev->select(col);
 	}
 
@@ -3779,10 +3802,12 @@ void Tree::_shift_select_range(TreeItem *new_item) {
 			if (in_range || at_range_edge) {
 				if (!item->is_selected(selected_col) && item->is_selectable(selected_col)) {
 					item->select(selected_col);
+					play_theme_sound(theme_cache.focus_sound);
 					emit_signal(SNAME("multi_selected"), item, selected_col, true);
 				}
 			} else if (item->is_selected(selected_col)) {
 				item->deselect(selected_col);
+				play_theme_sound(theme_cache.focus_sound);
 				emit_signal(SNAME("multi_selected"), item, selected_col, false);
 			}
 		}
@@ -3814,6 +3839,7 @@ void Tree::_go_down() {
 		}
 
 		selected_item = next;
+		play_theme_sound(theme_cache.focus_sound);
 		emit_signal(SNAME("cell_selected"));
 		queue_redraw();
 	} else {
@@ -3823,6 +3849,7 @@ void Tree::_go_down() {
 		if (!next) {
 			return; // Do nothing.
 		}
+		play_theme_sound(theme_cache.focus_sound);
 		next->select(col);
 	}
 
@@ -4130,8 +4157,10 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			// Bring up editor if possible.
 			if (selected_item && selected_col != -1 && selected_button != -1) {
 				const TreeItem::Cell &c = selected_item->cells[selected_col];
+				play_theme_sound(theme_cache.item_selected_sound);
 				emit_signal("button_clicked", selected_item, selected_col, c.buttons[selected_button].id, MouseButton::LEFT);
 			} else if (!edit_selected()) {
+				play_theme_sound(theme_cache.item_selected_sound);
 				emit_signal(SNAME("item_activated"));
 				incr_search.clear();
 			}
@@ -4437,13 +4466,13 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 		double prev_v = v_scroll->get_value();
-		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+		v_scroll->set_value(v_scroll->get_value() + pan_gesture->get_delta().y);
 
 		double prev_h = h_scroll->get_value();
 		if (is_layout_rtl()) {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * -pan_gesture->get_delta().x / 8);
+			h_scroll->set_value(h_scroll->get_value() - pan_gesture->get_delta().x);
 		} else {
-			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
+			h_scroll->set_value(h_scroll->get_value() + pan_gesture->get_delta().x);
 		}
 
 		if (v_scroll->get_value() != prev_v || h_scroll->get_value() != prev_h) {
@@ -4581,6 +4610,11 @@ void Tree::_determine_hovered_item() {
 	bool header_hover_needs_redraw = cache.hover_header_row && cache.hover_header_column != old_header_column;
 	// Mouse has moved between header and "main" areas.
 	bool whole_needs_redraw = cache.hover_header_row != old_header_row;
+
+	if (cache.hover_item != nullptr && (header_hover_needs_redraw || item_hover_needs_redraw)) {
+		// Play sound if the hover state has changed, but don't play it when unhovering.
+		play_theme_sound(theme_cache.item_hovered_sound);
+	}
 
 	if (whole_needs_redraw || header_hover_needs_redraw || item_hover_needs_redraw) {
 		queue_redraw();
@@ -5254,8 +5288,12 @@ void Tree::_notification(int p_what) {
 		case NOTIFICATION_DRAG_BEGIN: {
 			single_select_defer = nullptr;
 			if (theme_cache.scroll_speed > 0) {
-				scrolling = true;
-				set_process_internal(true);
+				const Dictionary drag_data = get_viewport()->gui_get_drag_data();
+				// Enable scrolling, unless dragging a tab.
+				if (drag_data.get("type", "").operator String() != "tab") {
+					scrolling = true;
+					set_process_internal(true);
+				}
 			}
 		} break;
 
@@ -5641,7 +5679,7 @@ void Tree::_notification(int p_what) {
 			}
 
 			sticky_stack_end = 0;
-			if (root) {
+			if (root && !drop_mode_flags) {
 				sticky_list.clear();
 				Vector2 stick_ofs;
 				Vector2 last_ofs = stick_ofs;
@@ -5744,6 +5782,7 @@ void Tree::set_self_modulate(const Color &p_self_modulate) {
 	RS::get_singleton()->canvas_item_set_self_modulate(content_ci, p_self_modulate);
 	RS::get_singleton()->canvas_item_set_self_modulate(custom_ci, p_self_modulate);
 	RS::get_singleton()->canvas_item_set_self_modulate(stylebox_ci, p_self_modulate);
+	RS::get_singleton()->canvas_item_set_self_modulate(drop_indicator_ci, p_self_modulate);
 }
 
 void Tree::_update_all() {
@@ -7275,6 +7314,9 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 	if (it) {
 		const String item_tooltip = it->get_tooltip_text(col);
 		if (enable_auto_tooltip && item_tooltip.is_empty()) {
+			if (it->cells[col].mode == TreeItem::CELL_MODE_RANGE) {
+				return _get_range_cell_text(it->cells[col]);
+			}
 			return it->get_text(col);
 		}
 		return item_tooltip;
@@ -7636,6 +7678,10 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, title_button_hover);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, title_button_color);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Tree, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Tree, item_hovered_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, Tree, item_selected_sound);
+
 	ADD_CLASS_DEPENDENCY("HScrollBar");
 	ADD_CLASS_DEPENDENCY("HSlider");
 	ADD_CLASS_DEPENDENCY("LineEdit");
@@ -7726,9 +7772,7 @@ Tree::Tree() {
 }
 
 Tree::~Tree() {
-	if (root) {
-		memdelete(root);
-	}
+	memdelete(root);
 	RenderingServer::get_singleton()->free_rid(drop_indicator_ci);
 	RenderingServer::get_singleton()->free_rid(content_ci);
 	RenderingServer::get_singleton()->free_rid(custom_ci);

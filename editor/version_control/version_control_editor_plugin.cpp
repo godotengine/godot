@@ -325,9 +325,7 @@ void VersionControlEditorPlugin::_commit() {
 
 	EditorVCSInterface::get_singleton()->commit(msg, toggle_amend_commit->is_pressed());
 
-	if (version_control_dock->get_current_layout() == EditorDock::DOCK_LAYOUT_HORIZONTAL) {
-		version_control_dock->hide();
-	}
+	version_control_dock->close();
 
 	commit_message->release_focus();
 	commit_button->release_focus();
@@ -635,7 +633,6 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 		Dictionary meta_data = commit_list->get_selected()->get_metadata(0);
 		String commit_id = meta_data[SNAME("commit_id")];
 		String commit_subtitle = meta_data[SNAME("commit_subtitle")];
-		String commit_date = meta_data[SNAME("commit_date")];
 		String commit_author = meta_data[SNAME("commit_author")];
 		String commit_date_string = meta_data[SNAME("commit_date_string")];
 
@@ -979,6 +976,7 @@ void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 void VersionControlEditorPlugin::register_editor() {
 	EditorDockManager::get_singleton()->add_dock(version_commit_dock);
 	EditorDockManager::get_singleton()->add_dock(version_control_dock);
+	version_control_dock->close();
 
 	_set_vcs_ui_state(true);
 }
@@ -1267,11 +1265,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_all_button->set_tooltip_text(TTR("Stage all changes"));
 	unstage_title->add_child(stage_all_button);
 
-	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_v_size_flags(Tree::SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontal");
-	unstage_area->add_child(mc);
-
 	unstaged_files = memnew(Tree);
 	unstaged_files->set_select_mode(Tree::SELECT_ROW);
 	unstaged_files->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(unstaged_files));
@@ -1279,8 +1272,9 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstaged_files->connect(SNAME("button_clicked"), callable_mp(this, &VersionControlEditorPlugin::_cell_button_pressed));
 	unstaged_files->create_item();
 	unstaged_files->set_hide_root(true);
-	unstaged_files->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
-	mc->add_child(unstaged_files);
+	unstaged_files->set_v_size_flags(Tree::SIZE_EXPAND_FILL);
+	unstaged_files->set_theme_type_variation("TreeSecondary");
+	unstage_area->add_child(unstaged_files);
 
 	VBoxContainer *stage_area = memnew(VBoxContainer);
 	stage_area->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1301,11 +1295,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstage_all_button->set_tooltip_text(TTR("Unstage all changes"));
 	stage_title->add_child(unstage_all_button);
 
-	mc = memnew(MarginContainer);
-	mc->set_v_size_flags(Tree::SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontal");
-	stage_area->add_child(mc);
-
 	staged_files = memnew(Tree);
 	staged_files->set_select_mode(Tree::SELECT_ROW);
 	staged_files->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(staged_files));
@@ -1313,8 +1302,9 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	staged_files->connect(SNAME("item_activated"), callable_mp(this, &VersionControlEditorPlugin::_item_activated).bind(staged_files));
 	staged_files->create_item();
 	staged_files->set_hide_root(true);
-	staged_files->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
-	mc->add_child(staged_files);
+	staged_files->set_v_size_flags(Tree::SIZE_EXPAND_FILL);
+	staged_files->set_theme_type_variation("TreeSecondary");
+	stage_area->add_child(staged_files);
 
 	// Editor crashes if bind is null
 	unstage_all_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_move_all).bind(staged_files));
@@ -1378,11 +1368,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list_size_button->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_set_commit_list_size));
 	commit_list_hbc->add_child(commit_list_size_button);
 
-	mc = memnew(MarginContainer);
-	mc->set_v_grow_direction(Control::GrowDirection::GROW_DIRECTION_END);
-	mc->set_theme_type_variation("NoBorderHorizontal");
-	dock_vb->add_child(mc);
-
 	commit_list = memnew(Tree);
 	commit_list->set_custom_minimum_size(Size2(200, 160));
 	commit_list->create_item();
@@ -1391,9 +1376,9 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list->set_columns(2); // Commit message and author.
 	commit_list->set_column_custom_minimum_width(0, 40);
 	commit_list->set_column_custom_minimum_width(1, 20);
-	commit_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	commit_list->set_theme_type_variation("TreeSecondary");
 	commit_list->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_load_diff).bind(commit_list));
-	mc->add_child(commit_list);
+	dock_vb->add_child(commit_list);
 
 	HFlowContainer *menu_bar = memnew(HFlowContainer);
 	menu_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1567,8 +1552,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_control_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL | EditorDock::DOCK_LAYOUT_FLOATING);
 	version_control_dock->set_global(false);
 	version_control_dock->set_transient(true);
+	version_control_dock->set_closable(true);
 	version_control_dock->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	version_commit_dock->connect("opened", callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::open_dock).bind(version_control_dock, false));
 	version_commit_dock->connect("closed", callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::close_dock).bind(version_control_dock));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);

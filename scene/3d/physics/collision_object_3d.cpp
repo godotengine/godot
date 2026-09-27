@@ -36,6 +36,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/shape_3d.h"
 #include "scene/resources/mesh.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #include "servers/rendering/rendering_server.h"
 
 void CollisionObject3D::_notification(int p_what) {
@@ -138,6 +139,17 @@ void CollisionObject3D::_notification(int p_what) {
 
 		case NOTIFICATION_ENABLED: {
 			_apply_enabled();
+		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			if (_are_collision_shapes_visible()) {
+				for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+					debug_shapes_to_update.insert(E.key);
+				}
+				_update_debug_shapes();
+			} else {
+				_clear_debug_shapes();
+			}
 		} break;
 	}
 }
@@ -613,19 +625,19 @@ Object *CollisionObject3D::shape_owner_get_owner(uint32_t p_owner) const {
 	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
-void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape3D> rp_shape) {
+void CollisionObject3D::shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape3D> p_shape) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
-	EXTRACT_PARAM_OR_FAIL(p_shape, rp_shape);
+	EXTRACT_PARAM_OR_FAIL(shape, p_shape);
 
 	ShapeData &sd = shapes[p_owner];
 	ShapeData::ShapeBase s;
 	s.index = total_subshapes;
-	s.shape = p_shape;
+	s.shape = shape;
 
 	if (area) {
-		PhysicsServer3D::get_singleton()->area_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+		PhysicsServer3D::get_singleton()->area_add_shape(rid, shape->get_rid(), sd.xform, sd.disabled);
 	} else {
-		PhysicsServer3D::get_singleton()->body_add_shape(rid, p_shape->get_rid(), sd.xform, sd.disabled);
+		PhysicsServer3D::get_singleton()->body_add_shape(rid, shape->get_rid(), sd.xform, sd.disabled);
 	}
 	sd.shapes.push_back(s);
 

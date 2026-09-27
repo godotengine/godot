@@ -133,7 +133,6 @@ void EditorAudioBus::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			update_bus();
-			set_process(true);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -1158,6 +1157,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 #ifndef DISABLE_DEPRECATED
 	effect_list.erase("AudioEffectLimiter");
 #endif
+	// TODO Godot 5.0: AudioEffectEQ and AudioEffectFilter should be abstract
+	effect_list.erase("AudioEffectEQ"); // Base classes, shouldn't be used directly.
+	effect_list.erase("AudioEffectFilter");
 	effect_list.sort_custom<StringName::AlphCompare>();
 	for (const StringName &E : effect_list) {
 		if (!ClassDB::can_instantiate(E) || ClassDB::is_virtual(E)) {
@@ -1329,6 +1331,7 @@ void EditorAudioBuses::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				_update_file_label();
 			}
+			set_process(is_visible_in_tree());
 		} break;
 	}
 }
@@ -1530,10 +1533,10 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 
 void EditorAudioBuses::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
 	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
-		bus_mc->set_theme_type_variation("NoBorderHorizontalBottom");
+		bus_mc->set_theme_type_variation("NoBorderBottomPanel");
 		bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
 	} else {
-		bus_mc->set_theme_type_variation("NoBorderHorizontal");
+		bus_mc->set_theme_type_variation("NoBorderPanel");
 		bus_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
 	}
 }
@@ -1578,7 +1581,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorAudioBuses::_menu_option));
 
 	bus_mc = memnew(MarginContainer);
-	bus_mc->set_theme_type_variation("NoBorderHorizontal");
+	bus_mc->set_theme_type_variation("NoBorderPanel");
 	bus_mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	main_vb->add_child(bus_mc);
 
@@ -1627,8 +1630,6 @@ EditorAudioBuses::EditorAudioBuses() {
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &EditorAudioBuses::_rebuild_buses));
 	AudioServer::get_singleton()->connect("bus_renamed", callable_mp(this, &EditorAudioBuses::_rebuild_buses).unbind(3));
 	FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &EditorAudioBuses::_file_moved));
-
-	set_process(true);
 }
 
 void EditorAudioBuses::open_layout(const String &p_path) {

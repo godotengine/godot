@@ -82,12 +82,15 @@ void XRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_trackers", "tracker_types"), &XRServer::get_trackers);
 	ClassDB::bind_method(D_METHOD("get_tracker", "tracker_name"), &XRServer::get_tracker);
 
+	ClassDB::bind_method(D_METHOD("get_camera_projections", "tracker_name", "aspect", "near", "far"), &XRServer::get_camera_projections);
+	ClassDB::bind_method(D_METHOD("get_camera_offsets", "tracker_name"), &XRServer::get_camera_offsets);
+
 	ClassDB::bind_method(D_METHOD("get_primary_interface"), &XRServer::get_primary_interface);
 	ClassDB::bind_method(D_METHOD("set_primary_interface", "interface"), &XRServer::set_primary_interface);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "primary_interface"), "set_primary_interface", "get_primary_interface");
 
-	BIND_ENUM_CONSTANT(TRACKER_HEAD);
+	BIND_ENUM_CONSTANT(TRACKER_CAMERA);
 	BIND_ENUM_CONSTANT(TRACKER_CONTROLLER);
 	BIND_ENUM_CONSTANT(TRACKER_BASESTATION);
 	BIND_ENUM_CONSTANT(TRACKER_ANCHOR);
@@ -97,6 +100,10 @@ void XRServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_ANY_KNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_UNKNOWN);
 	BIND_ENUM_CONSTANT(TRACKER_ANY);
+
+#ifndef DISABLE_DEPRECATED
+	BIND_ENUM_CONSTANT(TRACKER_HEAD);
+#endif
 
 	BIND_ENUM_CONSTANT(RESET_FULL_ROTATION);
 	BIND_ENUM_CONSTANT(RESET_BUT_KEEP_TILT);
@@ -396,6 +403,75 @@ Ref<XRTracker> XRServer::get_tracker(const StringName &p_name) const {
 		// tracker hasn't been registered yet, which is fine, no need to spam the error log...
 		return Ref<XRTracker>();
 	}
+}
+
+TypedArray<Projection> XRServer::get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) {
+	TypedArray<Projection> projections;
+
+	// Try primary interface first.
+	if (primary_interface.is_valid()) {
+		projections = primary_interface->get_camera_projections(p_tracker_name, p_aspect, p_z_near, p_z_far);
+		if (!projections.is_empty()) {
+			return projections;
+		}
+	}
+
+	// Try any other active interfaces.
+	for (Ref<XRInterface> interface : interfaces) {
+		if (interface != primary_interface && interface->is_initialized()) {
+			projections = interface->get_camera_projections(p_tracker_name, p_aspect, p_z_near, p_z_far);
+			if (!projections.is_empty()) {
+				return projections;
+			}
+		}
+	}
+
+#ifndef DISABLE_DEPRECATED
+	// Fallback on old implementation.
+	if (primary_interface.is_valid() && p_tracker_name == XR_TRACKER_HEAD) {
+		for (uint32_t v = 0; v < primary_interface->get_view_count(); v++) {
+			projections.push_back(primary_interface->get_projection_for_view(v, p_aspect, p_z_near, p_z_far));
+		}
+	}
+#endif
+
+	return projections;
+}
+
+TypedArray<Transform3D> XRServer::get_camera_offsets(const StringName &p_tracker_name) {
+	TypedArray<Transform3D> offsets;
+
+	// Try primary interface first.
+	if (primary_interface.is_valid()) {
+		offsets = primary_interface->get_camera_offsets(p_tracker_name);
+		if (!offsets.is_empty()) {
+			return offsets;
+		}
+	}
+
+	// Try any other active interfaces.
+	for (Ref<XRInterface> interface : interfaces) {
+		if (interface != primary_interface && interface->is_initialized()) {
+			offsets = interface->get_camera_offsets(p_tracker_name);
+			if (!offsets.is_empty()) {
+				return offsets;
+			}
+		}
+	}
+
+#ifndef DISABLE_DEPRECATED
+	// Fallback on old implementation.
+	if (primary_interface.is_valid() && p_tracker_name == XR_TRACKER_HEAD) {
+		Transform3D inv_camera_transform = primary_interface->get_camera_transform().inverse();
+
+		for (uint32_t v = 0; v < primary_interface->get_view_count(); v++) {
+			Transform3D offset = primary_interface->get_transform_for_view(v, Transform3D());
+			offsets.push_back(inv_camera_transform * offset);
+		}
+	}
+#endif
+
+	return offsets;
 }
 
 PackedStringArray XRServer::get_suggested_tracker_names() const {

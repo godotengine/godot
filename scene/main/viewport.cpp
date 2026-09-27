@@ -41,6 +41,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "core/object/class_db.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
+#include "scene/audio/audio_stream_player.h"
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
@@ -51,16 +52,17 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/resources/dpi_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/text_line.h"
+#include "scene/resources/world_2d.h"
 #include "servers/audio/audio_server.h"
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-// 2D.
+#ifndef _2D_DISABLED
 #include "scene/2d/audio_listener_2d.h"
 #include "scene/2d/camera_2d.h"
-#include "scene/resources/world_2d.h"
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_listener_3d.h"
@@ -72,10 +74,12 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/collision_object_2d.h"
 #include "servers/physics_2d/direct_states/physics_direct_space_state_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_object_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 #ifndef XR_DISABLED
@@ -898,6 +902,8 @@ void Viewport::_process_picking() {
 			pos = st->get_position();
 		}
 
+		// Avoid unused variable warning if 2D and 3D are both disabled.
+		(void)is_mouse;
 #ifndef PHYSICS_2D_DISABLED
 		if (ss2d) {
 			// Send to 2D.
@@ -930,8 +936,11 @@ void Viewport::_process_picking() {
 				if (physics_object_picking_sort) {
 					struct ComparatorCollisionObjects {
 						bool operator()(const PS2DT::ShapeResult &p_a, const PS2DT::ShapeResult &p_b) const {
-							CollisionObject2D *a = Object::cast_to<CollisionObject2D>(p_a.collider);
-							CollisionObject2D *b = Object::cast_to<CollisionObject2D>(p_b.collider);
+							if (!p_a.collider_id.is_valid() || !p_b.collider_id.is_valid()) {
+								return false;
+							}
+							CollisionObject2D *a = ObjectDB::get_instance<CollisionObject2D>(p_a.collider_id);
+							CollisionObject2D *b = ObjectDB::get_instance<CollisionObject2D>(p_b.collider_id);
 							if (!a || !b) {
 								return false;
 							}
@@ -950,8 +959,8 @@ void Viewport::_process_picking() {
 					if (is_input_handled()) {
 						break;
 					}
-					if (res[i].collider_id.is_valid() && res[i].collider) {
-						CollisionObject2D *co = Object::cast_to<CollisionObject2D>(res[i].collider);
+					if (res[i].collider_id.is_valid()) {
+						CollisionObject2D *co = ObjectDB::get_instance<CollisionObject2D>(res[i].collider_id);
 						if (co && co->can_process()) {
 							bool send_event = true;
 							if (is_mouse) {
@@ -1038,7 +1047,7 @@ void Viewport::_process_picking() {
 
 					bool col = space->intersect_ray(ray_params, result);
 					ObjectID new_collider;
-					CollisionObject3D *co = col ? Object::cast_to<CollisionObject3D>(result.collider) : nullptr;
+					CollisionObject3D *co = col && result.collider_id.is_valid() ? ObjectDB::get_instance<CollisionObject3D>(result.collider_id) : nullptr;
 					if (co && co->can_process()) {
 						new_collider = result.collider_id;
 						if (!capture_object) {
@@ -1989,7 +1998,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							// Grabbing unhovered focus can cause issues when mouse is dragged
 							// with another button held down.
 							if (gui.mouse_over_hierarchy.has(control->get_instance_id())) {
-								// Hide the focus when it comes from a click.
+								// Don't play a sound when the focus comes from a click.
+								// Also, hide the focus when it comes from a click.
 								control->grab_focus(true);
 							}
 							break;
@@ -2305,8 +2315,13 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		if (p_event->is_action_pressed(SNAME("ui_cancel"))) {
 			// Cancel tooltip timer or hide tooltip when pressing Escape (this is standard behavior in most applications).
+			Control *tooltip_control = gui.tooltip_control;
 			_gui_cancel_tooltip();
 			if (gui.tooltip_popup) {
+				// Some platforms send a mouse motion event when the tooltip is destroyed under the cursor.
+				// Remember the tooltip control, so that the tooltip timer is not immediately restarted
+				// by a mouse event triggered upon the tooltip closing.
+				gui.tooltip_control = tooltip_control;
 				// If a tooltip was hidden, prevent other actions associated with `ui_cancel` from occurring.
 				// For instance, this prevents the node from being deselected when pressing Escape
 				// to hide a documentation tooltip in the inspector.
@@ -2428,6 +2443,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 
 			if (next) {
+				play_theme_sound(next->get_theme_sound(SNAME("focus_sound")));
 				next->grab_focus();
 				set_input_as_handled();
 			} else if (show_focus && gui.hide_focus && gui.key_focus) {
@@ -2522,9 +2538,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
 	Control *drag_preview = _gui_get_drag_preview();
-	if (drag_preview) {
-		memdelete(drag_preview);
-	}
+	memdelete(drag_preview);
 	p_control->set_as_top_level(true);
 	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); // Add as child of viewport.
@@ -2594,6 +2608,15 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.tooltip_control == p_control) {
 		gui.tooltip_control = nullptr;
 	}
+}
+
+void Viewport::play_theme_sound(const Ref<AudioStream> &p_stream) {
+	ERR_MAIN_THREAD_GUARD;
+	if (p_stream.is_null() || !get_tree()) {
+		return;
+	}
+
+	get_tree()->play_theme_sound(p_stream);
 }
 
 void Viewport::canvas_item_top_level_changed() {
@@ -2868,12 +2891,10 @@ void Viewport::_push_text_input(const String &p_text, bool p_emit_signal) {
 		gui.subwindow_focused->push_text_input(p_text);
 		return;
 	}
-
-	StringName set_text_method = SNAME("_set_text");
-	if (!gui.key_focus || !gui.key_focus->has_method(set_text_method)) {
+	if (!gui.key_focus) {
 		return;
 	}
-	gui.key_focus->call(set_text_method, p_text, p_emit_signal);
+	gui.key_focus->call(SNAME("_set_text"), p_text, p_emit_signal);
 }
 
 void Viewport::push_text_input(const String &p_text) {
@@ -3495,10 +3516,10 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 	gui.sending_mouse_enter_exit_notifications = false;
 }
 
-void Viewport::push_input(RequiredParam<InputEvent> rp_event, bool p_local_coords) {
+void Viewport::push_input(RequiredParam<InputEvent> p_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
-	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
+	EXTRACT_PARAM_OR_FAIL(event, p_event);
 
 	if (disable_input || disable_input_override) {
 		return;
@@ -3522,9 +3543,9 @@ void Viewport::push_input(RequiredParam<InputEvent> rp_event, bool p_local_coord
 
 	Ref<InputEvent> ev;
 	if (!p_local_coords) {
-		ev = _make_input_local(p_event);
+		ev = _make_input_local(event);
 	} else {
-		ev = p_event;
+		ev = event;
 	}
 
 	Ref<InputEventMouse> me = ev;
@@ -3562,11 +3583,11 @@ void Viewport::push_input(RequiredParam<InputEvent> rp_event, bool p_local_coord
 }
 
 #ifndef DISABLE_DEPRECATED
-void Viewport::push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_local_coords) {
+void Viewport::push_unhandled_input(RequiredParam<InputEvent> p_event, bool p_local_coords) {
 	ERR_MAIN_THREAD_GUARD;
 	WARN_DEPRECATED_MSG(R"*(The "push_unhandled_input()" method is deprecated, use "push_input()" instead.)*");
 	ERR_FAIL_COND(!is_inside_tree());
-	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
+	EXTRACT_PARAM_OR_FAIL(event, p_event);
 
 	local_input_handled = false;
 
@@ -3580,9 +3601,9 @@ void Viewport::push_unhandled_input(RequiredParam<InputEvent> rp_event, bool p_l
 
 	Ref<InputEvent> ev;
 	if (!p_local_coords) {
-		ev = _make_input_local(p_event);
+		ev = _make_input_local(event);
 	} else {
-		ev = p_event;
+		ev = event;
 	}
 
 	_push_unhandled_input_internal(ev);
@@ -4453,7 +4474,7 @@ bool Viewport::get_canvas_cull_mask_bit(uint32_t p_layer) const {
 	return (canvas_cull_mask & (1 << p_layer));
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 bool Viewport::is_visible_subviewport() const {
 	if (!is_sub_viewport()) {
 		return true;
@@ -4461,7 +4482,7 @@ bool Viewport::is_visible_subviewport() const {
 	SubViewportContainer *container = Object::cast_to<SubViewportContainer>(get_parent());
 	return container && container->is_visible_in_tree();
 }
-#endif // TOOLS_ENABLED
+#endif // DEBUG_ENABLED
 
 void Viewport::_update_audio_listener_2d() {
 	if (AudioServer::get_singleton()) {
@@ -4469,6 +4490,7 @@ void Viewport::_update_audio_listener_2d() {
 	}
 }
 
+#ifndef _2D_DISABLED
 void Viewport::_audio_listener_2d_set(AudioListener2D *p_audio_listener) {
 	if (audio_listener_2d == p_audio_listener) {
 		return;
@@ -4643,6 +4665,7 @@ Camera2D *Viewport::get_override_camera_2d() const {
 	return camera_2d_override.is_enabled() ? get_camera_2d() : nullptr;
 }
 #endif // DEBUG_ENABLED
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 AudioListener3D *Viewport::get_audio_listener_3d() const {
@@ -4904,7 +4927,12 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 	}
 
 	if (is_inside_tree()) {
-		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
+		const Ref<World3D> found_world_3d = find_world_3d();
+		if (found_world_3d.is_valid()) {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, found_world_3d->get_scenario());
+		} else {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
+		}
 	}
 
 	_update_audio_listener_3d();
@@ -4925,7 +4953,12 @@ void Viewport::_own_world_3d_changed() {
 	}
 
 	if (is_inside_tree()) {
-		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
+		const Ref<World3D> found_world_3d = find_world_3d();
+		if (found_world_3d.is_valid()) {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, found_world_3d->get_scenario());
+		} else {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
+		}
 	}
 
 	_update_audio_listener_3d();
@@ -4960,7 +4993,12 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 	}
 
 	if (is_inside_tree()) {
-		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
+		const Ref<World3D> found_world_3d = find_world_3d();
+		if (found_world_3d.is_valid()) {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, found_world_3d->get_scenario());
+		} else {
+			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
+		}
 	}
 
 	_update_audio_listener_3d();
@@ -5303,10 +5341,12 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_process_picking"), &Viewport::_process_picking);
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
+#ifndef _2D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d", "enable"), &Viewport::set_as_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("is_audio_listener_2d"), &Viewport::is_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("get_audio_listener_2d"), &Viewport::get_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_world_3d", "world_3d"), &Viewport::set_world_3d);
@@ -5392,7 +5432,9 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap,Inherit"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirror,Inherit"), "set_default_canvas_item_texture_repeat", "get_default_canvas_item_texture_repeat");
 	ADD_GROUP("Audio Listener", "audio_listener_");
+#ifndef _2D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_2d"), "set_as_audio_listener_2d", "is_audio_listener_2d");
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "audio_listener_enable_3d"), "set_as_audio_listener_3d", "is_audio_listener_3d");
 #endif // _3D_DISABLED
@@ -5899,7 +5941,9 @@ T *Viewport::CameraOverride<T>::get_overridden_camera() const {
 
 // Explicit template instantiation to allow template definitions inside cpp file
 // and prevent instantiation using other than the desired camera types.
+#ifndef _2D_DISABLED
 template class Viewport::CameraOverride<Camera2D>;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 template class Viewport::CameraOverride<Camera3D>;
 #endif // _3D_DISABLED

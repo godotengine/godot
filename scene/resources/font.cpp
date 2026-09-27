@@ -603,9 +603,9 @@ _FORCE_INLINE_ void FontFile::_clear_cache() {
 	}
 }
 
-_FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_from) const {
+_FORCE_INLINE_ bool FontFile::_ensure_rid(int p_cache_index, int p_make_linked_from) const {
 	if (unlikely(p_cache_index >= cache.size())) {
-		cache.resize(p_cache_index + 1);
+		ERR_FAIL_COND_V(cache.resize(p_cache_index + 1) != OK, false);
 	}
 	if (unlikely(!cache[p_cache_index].is_valid())) {
 		if (p_make_linked_from >= 0 && p_make_linked_from != p_cache_index && p_make_linked_from < cache.size()) {
@@ -637,6 +637,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_opentype_feature_overrides(cache[p_cache_index], feature_overrides);
 		}
 	}
+	return true;
 }
 
 void FontFile::_convert_packed_8bit(Ref<Image> &p_source, int p_page, int p_sz) {
@@ -2133,27 +2134,27 @@ PackedByteArray FontFile::get_data() const {
 }
 
 void FontFile::set_font_name(const String &p_name) {
-	_ensure_rid(0);
+	ERR_FAIL_COND(!_ensure_rid(0));
 	TS->font_set_name(cache[0], p_name);
 }
 
 void FontFile::set_font_style_name(const String &p_name) {
-	_ensure_rid(0);
+	ERR_FAIL_COND(!_ensure_rid(0));
 	TS->font_set_style_name(cache[0], p_name);
 }
 
 void FontFile::set_font_style(BitField<TextServer::FontStyle> p_style) {
-	_ensure_rid(0);
+	ERR_FAIL_COND(!_ensure_rid(0));
 	TS->font_set_style(cache[0], p_style);
 }
 
 void FontFile::set_font_weight(int p_weight) {
-	_ensure_rid(0);
+	ERR_FAIL_COND(!_ensure_rid(0));
 	TS->font_set_weight(cache[0], p_weight);
 }
 
 void FontFile::set_font_stretch(int p_stretch) {
-	_ensure_rid(0);
+	ERR_FAIL_COND(!_ensure_rid(0));
 	TS->font_set_stretch(cache[0], p_stretch);
 }
 
@@ -2161,7 +2162,7 @@ void FontFile::set_antialiasing(TextServer::FontAntialiasing p_antialiasing) {
 	if (antialiasing != p_antialiasing) {
 		antialiasing = p_antialiasing;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_antialiasing(cache[i], antialiasing);
 		}
 		emit_changed();
@@ -2176,7 +2177,7 @@ void FontFile::set_disable_embedded_bitmaps(bool p_disable_embedded_bitmaps) {
 	if (disable_embedded_bitmaps != p_disable_embedded_bitmaps) {
 		disable_embedded_bitmaps = p_disable_embedded_bitmaps;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_disable_embedded_bitmaps(cache[i], disable_embedded_bitmaps);
 		}
 		emit_changed();
@@ -2191,7 +2192,7 @@ void FontFile::set_generate_mipmaps(bool p_generate_mipmaps) {
 	if (mipmaps != p_generate_mipmaps) {
 		mipmaps = p_generate_mipmaps;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_generate_mipmaps(cache[i], mipmaps);
 		}
 		emit_changed();
@@ -2206,7 +2207,7 @@ void FontFile::set_multichannel_signed_distance_field(bool p_msdf) {
 	if (msdf != p_msdf) {
 		msdf = p_msdf;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_multichannel_signed_distance_field(cache[i], msdf);
 		}
 		emit_changed();
@@ -2221,7 +2222,7 @@ void FontFile::set_msdf_pixel_range(int p_msdf_pixel_range) {
 	if (msdf_pixel_range != p_msdf_pixel_range) {
 		msdf_pixel_range = p_msdf_pixel_range;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_msdf_pixel_range(cache[i], msdf_pixel_range);
 		}
 		emit_changed();
@@ -2236,7 +2237,7 @@ void FontFile::set_msdf_size(int p_msdf_size) {
 	if (msdf_size != p_msdf_size) {
 		msdf_size = p_msdf_size;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_msdf_size(cache[i], msdf_size);
 		}
 		emit_changed();
@@ -2251,7 +2252,7 @@ void FontFile::set_fixed_size(int p_fixed_size) {
 	if (fixed_size != p_fixed_size) {
 		fixed_size = p_fixed_size;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_fixed_size(cache[i], fixed_size);
 		}
 		emit_changed();
@@ -2266,7 +2267,7 @@ void FontFile::set_fixed_size_scale_mode(TextServer::FixedSizeScaleMode p_fixed_
 	if (fixed_size_scale_mode != p_fixed_size_scale_mode) {
 		fixed_size_scale_mode = p_fixed_size_scale_mode;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_fixed_size_scale_mode(cache[i], fixed_size_scale_mode);
 		}
 		emit_changed();
@@ -2281,7 +2282,7 @@ void FontFile::set_allow_system_fallback(bool p_allow_system_fallback) {
 	if (allow_system_fallback != p_allow_system_fallback) {
 		allow_system_fallback = p_allow_system_fallback;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_allow_system_fallback(cache[i], allow_system_fallback);
 		}
 		emit_changed();
@@ -2296,7 +2297,7 @@ void FontFile::set_force_autohinter(bool p_force_autohinter) {
 	if (force_autohinter != p_force_autohinter) {
 		force_autohinter = p_force_autohinter;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_force_autohinter(cache[i], force_autohinter);
 		}
 		emit_changed();
@@ -2311,7 +2312,7 @@ void FontFile::set_modulate_color_glyphs(bool p_modulate) {
 	if (modulate_color_glyphs != p_modulate) {
 		modulate_color_glyphs = p_modulate;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_modulate_color_glyphs(cache[i], modulate_color_glyphs);
 		}
 		emit_changed();
@@ -2326,7 +2327,7 @@ void FontFile::set_hinting(TextServer::Hinting p_hinting) {
 	if (hinting != p_hinting) {
 		hinting = p_hinting;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_hinting(cache[i], hinting);
 		}
 		emit_changed();
@@ -2341,7 +2342,7 @@ void FontFile::set_subpixel_positioning(TextServer::SubpixelPositioning p_subpix
 	if (subpixel_positioning != p_subpixel) {
 		subpixel_positioning = p_subpixel;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_subpixel_positioning(cache[i], subpixel_positioning);
 		}
 		emit_changed();
@@ -2356,7 +2357,7 @@ void FontFile::set_keep_rounding_remainders(bool p_keep_rounding_remainders) {
 	if (keep_rounding_remainders != p_keep_rounding_remainders) {
 		keep_rounding_remainders = p_keep_rounding_remainders;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_keep_rounding_remainders(cache[i], keep_rounding_remainders);
 		}
 		emit_changed();
@@ -2371,7 +2372,7 @@ void FontFile::set_oversampling(real_t p_oversampling) {
 	if (oversampling_override != p_oversampling) {
 		oversampling_override = p_oversampling;
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_set_oversampling(cache[i], oversampling_override);
 		}
 		emit_changed();
@@ -2439,7 +2440,7 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 	// Create new variation cache.
 	int idx = cache.size();
 	if (make_linked_from >= 0) {
-		_ensure_rid(idx, make_linked_from);
+		ERR_FAIL_COND_V(!_ensure_rid(idx, make_linked_from), RID());
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_TOP, p_spacing_top);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_BOTTOM, p_spacing_bottom);
 		TS->font_set_spacing(cache[idx], TextServer::SPACING_SPACE, p_spacing_space);
@@ -2448,7 +2449,7 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 		TS->font_set_used_palette(cache[idx], p_palette_index);
 		TS->font_set_palette_custom_colors(cache[idx], p_custom_colors);
 	} else {
-		_ensure_rid(idx);
+		ERR_FAIL_COND_V(!_ensure_rid(idx), RID());
 		TS->font_set_variation_coordinates(cache[idx], p_variation_coordinates);
 		TS->font_set_face_index(cache[idx], p_face_index);
 		TS->font_set_embolden(cache[idx], p_strength);
@@ -2465,7 +2466,7 @@ RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_fa
 }
 
 RID FontFile::_get_rid() const {
-	_ensure_rid(0);
+	ERR_FAIL_COND_V(!_ensure_rid(0), RID());
 	return cache[0];
 }
 
@@ -2490,79 +2491,79 @@ void FontFile::remove_cache(int p_cache_index) {
 
 TypedArray<Vector2i> FontFile::get_size_cache_list(int p_cache_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Array());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Array());
 	return TS->font_get_size_cache_list(cache[p_cache_index]);
 }
 
 void FontFile::clear_size_cache(int p_cache_index) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_clear_size_cache(cache[p_cache_index]);
 }
 
 void FontFile::remove_size_cache(int p_cache_index, const Vector2i &p_size) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_remove_size_cache(cache[p_cache_index], p_size);
 }
 
 void FontFile::set_variation_coordinates(int p_cache_index, const Dictionary &p_variation_coordinates) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_variation_coordinates(cache[p_cache_index], p_variation_coordinates);
 }
 
 Dictionary FontFile::get_variation_coordinates(int p_cache_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Dictionary());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Dictionary());
 	return TS->font_get_variation_coordinates(cache[p_cache_index]);
 }
 
 void FontFile::set_embolden(int p_cache_index, float p_strength) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_embolden(cache[p_cache_index], p_strength);
 }
 
 float FontFile::get_embolden(int p_cache_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0.f);
 	return TS->font_get_embolden(cache[p_cache_index]);
 }
 
 void FontFile::set_transform(int p_cache_index, Transform2D p_transform) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_transform(cache[p_cache_index], p_transform);
 }
 
 Transform2D FontFile::get_transform(int p_cache_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Transform2D());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Transform2D());
 	return TS->font_get_transform(cache[p_cache_index]);
 }
 
 void FontFile::set_extra_spacing(int p_cache_index, TextServer::SpacingType p_spacing, int64_t p_value) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_spacing(cache[p_cache_index], p_spacing, p_value);
 }
 
 int64_t FontFile::get_extra_spacing(int p_cache_index, TextServer::SpacingType p_spacing) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0);
 	return TS->font_get_spacing(cache[p_cache_index], p_spacing);
 }
 
 float FontFile::get_extra_baseline_offset(int p_cache_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0);
 	return TS->font_get_baseline_offset(cache[p_cache_index]);
 }
 
 void FontFile::set_extra_baseline_offset(int p_cache_index, float p_baseline_offset) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_baseline_offset(cache[p_cache_index], p_baseline_offset);
 }
 
@@ -2571,242 +2572,242 @@ void FontFile::set_face_index(int p_cache_index, int64_t p_index) {
 	ERR_FAIL_COND(p_index < 0);
 	ERR_FAIL_COND(p_index >= 0x7FFF);
 
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_face_index(cache[p_cache_index], p_index);
 }
 
 int64_t FontFile::get_face_index(int p_cache_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0);
 	return TS->font_get_face_index(cache[p_cache_index]);
 }
 
 void FontFile::set_cache_ascent(int p_cache_index, int p_size, real_t p_ascent) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_ascent(cache[p_cache_index], p_size, p_ascent);
 }
 
 real_t FontFile::get_cache_ascent(int p_cache_index, int p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0.f);
 	return TS->font_get_ascent(cache[p_cache_index], p_size);
 }
 
 void FontFile::set_cache_descent(int p_cache_index, int p_size, real_t p_descent) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_descent(cache[p_cache_index], p_size, p_descent);
 }
 
 real_t FontFile::get_cache_descent(int p_cache_index, int p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0.f);
 	return TS->font_get_descent(cache[p_cache_index], p_size);
 }
 
 void FontFile::set_cache_underline_position(int p_cache_index, int p_size, real_t p_underline_position) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_underline_position(cache[p_cache_index], p_size, p_underline_position);
 }
 
 real_t FontFile::get_cache_underline_position(int p_cache_index, int p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0.f);
 	return TS->font_get_underline_position(cache[p_cache_index], p_size);
 }
 
 void FontFile::set_cache_underline_thickness(int p_cache_index, int p_size, real_t p_underline_thickness) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_underline_thickness(cache[p_cache_index], p_size, p_underline_thickness);
 }
 
 real_t FontFile::get_cache_underline_thickness(int p_cache_index, int p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0.f);
 	return TS->font_get_underline_thickness(cache[p_cache_index], p_size);
 }
 
 void FontFile::set_cache_scale(int p_cache_index, int p_size, real_t p_scale) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_scale(cache[p_cache_index], p_size, p_scale);
 }
 
 real_t FontFile::get_cache_scale(int p_cache_index, int p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0.f);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0.f);
 	return TS->font_get_scale(cache[p_cache_index], p_size);
 }
 
 int FontFile::get_texture_count(int p_cache_index, const Vector2i &p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0);
 	return TS->font_get_texture_count(cache[p_cache_index], p_size);
 }
 
 void FontFile::clear_textures(int p_cache_index, const Vector2i &p_size) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_clear_textures(cache[p_cache_index], p_size);
 }
 
 void FontFile::remove_texture(int p_cache_index, const Vector2i &p_size, int p_texture_index) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_remove_texture(cache[p_cache_index], p_size, p_texture_index);
 }
 
 void FontFile::set_texture_image(int p_cache_index, const Vector2i &p_size, int p_texture_index, const Ref<Image> &p_image) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_texture_image(cache[p_cache_index], p_size, p_texture_index, p_image);
 }
 
 Ref<Image> FontFile::get_texture_image(int p_cache_index, const Vector2i &p_size, int p_texture_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Ref<Image>());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Ref<Image>());
 	return TS->font_get_texture_image(cache[p_cache_index], p_size, p_texture_index);
 }
 
 void FontFile::set_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index, const PackedInt32Array &p_offset) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_texture_offsets(cache[p_cache_index], p_size, p_texture_index, p_offset);
 }
 
 PackedInt32Array FontFile::get_texture_offsets(int p_cache_index, const Vector2i &p_size, int p_texture_index) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, PackedInt32Array());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), PackedInt32Array());
 	return TS->font_get_texture_offsets(cache[p_cache_index], p_size, p_texture_index);
 }
 
 PackedInt32Array FontFile::get_glyph_list(int p_cache_index, const Vector2i &p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, PackedInt32Array());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), PackedInt32Array());
 	return TS->font_get_glyph_list(cache[p_cache_index], p_size);
 }
 
 void FontFile::clear_glyphs(int p_cache_index, const Vector2i &p_size) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_clear_glyphs(cache[p_cache_index], p_size);
 }
 
 void FontFile::remove_glyph(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_remove_glyph(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontFile::set_glyph_advance(int p_cache_index, int p_size, int32_t p_glyph, const Vector2 &p_advance) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_glyph_advance(cache[p_cache_index], p_size, p_glyph, p_advance);
 }
 
 Vector2 FontFile::get_glyph_advance(int p_cache_index, int p_size, int32_t p_glyph) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Vector2());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Vector2());
 	return TS->font_get_glyph_advance(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontFile::set_glyph_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Vector2 &p_offset) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_glyph_offset(cache[p_cache_index], p_size, p_glyph, p_offset);
 }
 
 Vector2 FontFile::get_glyph_offset(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Vector2());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Vector2());
 	return TS->font_get_glyph_offset(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontFile::set_glyph_size(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Vector2 &p_gl_size) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_glyph_size(cache[p_cache_index], p_size, p_glyph, p_gl_size);
 }
 
 Vector2 FontFile::get_glyph_size(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Vector2());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Vector2());
 	return TS->font_get_glyph_size(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontFile::set_glyph_uv_rect(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, const Rect2 &p_uv_rect) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_glyph_uv_rect(cache[p_cache_index], p_size, p_glyph, p_uv_rect);
 }
 
 Rect2 FontFile::get_glyph_uv_rect(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Rect2());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Rect2());
 	return TS->font_get_glyph_uv_rect(cache[p_cache_index], p_size, p_glyph);
 }
 
 void FontFile::set_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph, int p_texture_idx) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_glyph_texture_idx(cache[p_cache_index], p_size, p_glyph, p_texture_idx);
 }
 
 int FontFile::get_glyph_texture_idx(int p_cache_index, const Vector2i &p_size, int32_t p_glyph) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), 0);
 	return TS->font_get_glyph_texture_idx(cache[p_cache_index], p_size, p_glyph);
 }
 
 TypedArray<Vector2i> FontFile::get_kerning_list(int p_cache_index, int p_size) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Array());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Array());
 	return TS->font_get_kerning_list(cache[p_cache_index], p_size);
 }
 
 void FontFile::clear_kerning_map(int p_cache_index, int p_size) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_clear_kerning_map(cache[p_cache_index], p_size);
 }
 
 void FontFile::remove_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_remove_kerning(cache[p_cache_index], p_size, p_glyph_pair);
 }
 
 void FontFile::set_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair, const Vector2 &p_kerning) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_set_kerning(cache[p_cache_index], p_size, p_glyph_pair, p_kerning);
 }
 
 Vector2 FontFile::get_kerning(int p_cache_index, int p_size, const Vector2i &p_glyph_pair) const {
 	ERR_FAIL_COND_V(p_cache_index < 0, Vector2());
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND_V(!_ensure_rid(p_cache_index), Vector2());
 	return TS->font_get_kerning(cache[p_cache_index], p_size, p_glyph_pair);
 }
 
 void FontFile::render_range(int p_cache_index, const Vector2i &p_size, char32_t p_start, char32_t p_end) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_render_range(cache[p_cache_index], p_size, p_start, p_end);
 }
 
 void FontFile::render_glyph(int p_cache_index, const Vector2i &p_size, int32_t p_index) {
 	ERR_FAIL_COND(p_cache_index < 0);
-	_ensure_rid(p_cache_index);
+	ERR_FAIL_COND(!_ensure_rid(p_cache_index));
 	TS->font_render_glyph(cache[p_cache_index], p_size, p_index);
 }
 
 void FontFile::set_language_support_override(const String &p_language, bool p_supported) {
 	language_support_overrides[p_language] = p_supported;
 	for (int i = 0; i < cache.size(); i++) {
-		_ensure_rid(i);
+		ERR_CONTINUE(!_ensure_rid(i));
 		TS->font_set_language_support_override(cache[i], p_language, p_supported);
 	}
 }
@@ -2823,7 +2824,7 @@ void FontFile::remove_language_support_override(const String &p_language) {
 	if (language_support_overrides.has(p_language)) {
 		language_support_overrides.erase(p_language);
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_remove_language_support_override(cache[i], p_language);
 		}
 	}
@@ -2840,7 +2841,7 @@ Vector<String> FontFile::get_language_support_overrides() const {
 void FontFile::set_script_support_override(const String &p_script, bool p_supported) {
 	script_support_overrides[p_script] = p_supported;
 	for (int i = 0; i < cache.size(); i++) {
-		_ensure_rid(i);
+		ERR_CONTINUE(!_ensure_rid(i));
 		TS->font_set_script_support_override(cache[i], p_script, p_supported);
 	}
 }
@@ -2857,7 +2858,7 @@ void FontFile::remove_script_support_override(const String &p_script) {
 	if (script_support_overrides.has(p_script)) {
 		script_support_overrides.erase(p_script);
 		for (int i = 0; i < cache.size(); i++) {
-			_ensure_rid(i);
+			ERR_CONTINUE(!_ensure_rid(i));
 			TS->font_remove_script_support_override(cache[i], p_script);
 		}
 	}
@@ -2874,7 +2875,7 @@ Vector<String> FontFile::get_script_support_overrides() const {
 void FontFile::set_opentype_feature_overrides(const Dictionary &p_overrides) {
 	feature_overrides = p_overrides;
 	for (int i = 0; i < cache.size(); i++) {
-		_ensure_rid(i);
+		ERR_CONTINUE(!_ensure_rid(i));
 		TS->font_set_opentype_feature_overrides(cache[i], p_overrides);
 	}
 }
@@ -2884,12 +2885,12 @@ Dictionary FontFile::get_opentype_feature_overrides() const {
 }
 
 int32_t FontFile::get_glyph_index(int p_size, char32_t p_char, char32_t p_variation_selector) const {
-	_ensure_rid(0);
+	ERR_FAIL_COND_V(!_ensure_rid(0), 0);
 	return TS->font_get_glyph_index(cache[0], p_size, p_char, p_variation_selector);
 }
 
 char32_t FontFile::get_char_from_glyph_index(int p_size, int32_t p_glyph_index) const {
-	_ensure_rid(0);
+	ERR_FAIL_COND_V(!_ensure_rid(0), 0);
 	return TS->font_get_char_from_glyph_index(cache[0], p_size, p_glyph_index);
 }
 

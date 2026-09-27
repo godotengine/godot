@@ -657,7 +657,7 @@ bool SkyRD::Sky::set_material(RID p_material) {
 	return true;
 }
 
-Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, const Size2i &p_size) {
+Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, bool p_use_array, const Size2i &p_size) {
 	if (radiance.is_valid()) {
 		RendererRD::CopyEffects *copy_effects = RendererRD::CopyEffects::get_singleton();
 
@@ -668,7 +668,7 @@ Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, con
 		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 
 		RID rad_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
-		copy_effects->copy_octmap_to_panorama(radiance, rad_tex, p_size, p_roughness_layers, reflection.layers.size() > 1, Size2(uv_border_size, 1.0f - uv_border_size * 2.0));
+		copy_effects->copy_octmap_to_panorama(radiance, rad_tex, p_size, p_roughness_layers, p_use_array, Size2(uv_border_size, 1.0f - uv_border_size * 2.0));
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rad_tex, 0);
 		RD::get_singleton()->free_rid(rad_tex);
 
@@ -1403,7 +1403,8 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 	ERR_FAIL_COND(p_render_buffers.is_null());
 	ERR_FAIL_COND(p_env.is_null());
 
-	SkyMaterialData *material_data = _get_sky_material_data(p_env);
+	RSE::EnvironmentBG background = RendererSceneRenderRD::get_singleton()->environment_get_background(p_env);
+	SkyMaterialData *material_data = (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) ? _get_flat_color_sky_material_data(p_env) : _get_sky_material_data(p_env);
 	ERR_FAIL_NULL(material_data);
 
 	SkyShaderData *shader_data = material_data->shader_data;
@@ -1469,7 +1470,8 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 
 	Sky *sky = get_sky(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
-	SkyMaterialData *material_data = _get_sky_material_data(p_env);
+	RSE::EnvironmentBG background = RendererSceneRenderRD::get_singleton()->environment_get_background(p_env);
+	SkyMaterialData *material_data = (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) ? _get_flat_color_sky_material_data(p_env) : _get_sky_material_data(p_env);
 	ERR_FAIL_NULL(material_data);
 
 	SkyShaderData *shader_data = material_data->shader_data;
@@ -1595,20 +1597,34 @@ void SkyRD::update_dirty_skys() {
 	dirty_sky_list = nullptr;
 }
 
+SkyRD::SkyMaterialData *SkyRD::_get_flat_color_sky_material_data(RID p_env) {
+	ERR_FAIL_COND_V(p_env.is_null(), nullptr);
+
+	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+
+	SkyMaterialData *material_data = nullptr;
+	RID sky_material = sky_scene_state.fog_material;
+
+	material_data = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
+
+	if (!material_data) {
+		sky_material = sky_shader.default_material;
+		material_data = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
+	}
+
+	return material_data;
+}
+
 SkyRD::SkyMaterialData *SkyRD::_get_sky_material_data(RID p_env) {
 	ERR_FAIL_COND_V(p_env.is_null(), nullptr);
 
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 	Sky *sky = get_sky(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
-	RSE::EnvironmentBG background = RendererSceneRenderRD::get_singleton()->environment_get_background(p_env);
 
 	SkyMaterialData *material_data = nullptr;
 	RID sky_material;
 
-	if (background == RSE::ENV_BG_CLEAR_COLOR || background == RSE::ENV_BG_COLOR) {
-		sky_material = sky_scene_state.fog_material;
-		material_data = static_cast<SkyMaterialData *>(material_storage->material_get_data(sky_material, RendererRD::MaterialStorage::SHADER_TYPE_SKY));
-	} else if (sky) {
+	if (sky) {
 		sky_material = sky_get_material(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_env));
 
 		if (sky_material.is_valid()) {
@@ -1701,7 +1717,7 @@ Ref<Image> SkyRD::sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irrad
 
 	update_dirty_skys();
 
-	return sky->bake_panorama(p_energy, p_bake_irradiance ? roughness_layers : 0, p_size);
+	return sky->bake_panorama(p_energy, p_bake_irradiance ? roughness_layers : 0, sky_use_octmap_array, p_size);
 }
 
 RID SkyRD::sky_get_radiance_texture_rd(RID p_sky) const {

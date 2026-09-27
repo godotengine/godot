@@ -98,16 +98,15 @@ void _compress_astc(Image *r_img, Image::UsedChannels p_channels, Image::Compres
 
 	// Compress image data and (if required) mipmaps.
 	const bool has_mipmaps = r_img->has_mipmaps();
+
 	int width = r_img->get_width();
 	int height = r_img->get_height();
-	int required_width = (width % block_x) != 0 ? width + (block_x - (width % block_x)) : width;
-	int required_height = (height % block_y) != 0 ? height + (block_y - (height % block_y)) : height;
+	width = (width % block_x) != 0 ? width + (block_x - (width % block_x)) : width;
+	height = (height % block_y) != 0 ? height + (block_y - (height % block_y)) : height;
 
-	if (width != required_width || height != required_height) {
-		// Resize texture to fit block size.
-		r_img->resize(required_width, required_height);
-		width = required_width;
-		height = required_height;
+	if (r_img->get_width() != width || r_img->get_height() != height) {
+		// Align the image to the block size.
+		r_img->resize(width, height, Image::INTERPOLATE_NEAREST);
 	}
 
 	print_verbose(vformat("astcenc: Encoding image size %dx%d to format %s%s.", width, height, Image::get_format_name(target_format), has_mipmaps ? ", with mipmaps" : ""));
@@ -286,9 +285,6 @@ void _decompress_astc(Image *r_img) {
 
 		int dst_mip_w, dst_mip_h;
 		const int64_t dst_ofs = Image::get_image_mipmap_offset_and_dimensions(width, height, target_format, i, dst_mip_w, dst_mip_h);
-
-		// Ensure that mip offset is a multiple of 8 (etcpak expects uint64_t pointer).
-		ERR_FAIL_COND(dst_ofs % 8 != 0);
 		uint8_t *dest_mip_write = &dest_write[dst_ofs];
 
 		astcenc_image image;
@@ -296,7 +292,6 @@ void _decompress_astc(Image *r_img) {
 		image.dim_y = dst_mip_h;
 		image.dim_z = 1;
 		image.data_type = is_hdr ? ASTCENC_TYPE_F16 : ASTCENC_TYPE_U8;
-
 		image.data = (void **)(&dest_mip_write);
 
 		const astcenc_swizzle swizzle = {

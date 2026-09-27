@@ -54,12 +54,18 @@ void ProjectSettingsEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs
 
 void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	// Restore valid window bounds or pop up at default size.
+#ifdef ANDROID_ENABLED
+	// The Android Editor's aspect ratio may change when the device orientation changes, and `saved_size` may correspond to a different orientation (example, a very small width if it was last opened in portrait mode).
+	// Always reset the popup size so that it covers most of the available area.
+	popup_centered_clamped(Size2(1200, 700) * EDSCALE, 0.8);
+#else
 	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "project_settings", Rect2());
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
 		popup_centered_clamped(Size2(1200, 700) * EDSCALE, 0.8);
 	}
+#endif
 
 	_add_feature_overrides();
 	general_settings_inspector->update_category_list();
@@ -105,7 +111,8 @@ void ProjectSettingsEditor::_save() {
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
-	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(plugin_settings));
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(addons_container));
+	addons_container->set_current_tab(0);
 }
 
 void ProjectSettingsEditor::set_general_page(const String &p_category) {
@@ -847,7 +854,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	group_settings->connect("group_changed", callable_mp(this, &ProjectSettingsEditor::queue_save));
 	globals_container->add_child(group_settings);
 
-	TabContainer *addons_container = memnew(TabContainer);
+	addons_container = memnew(TabContainer);
 	addons_container->set_theme_type_variation("TabContainerInner");
 	addons_container->set_name(TTRC("Addons"));
 	tab_container->add_child(addons_container);

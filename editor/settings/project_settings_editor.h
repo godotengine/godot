@@ -70,6 +70,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	EditorAutoloadSettings *autoload_settings = nullptr;
 	ShaderGlobalsEditor *shaders_global_shader_uniforms_editor = nullptr;
 	GroupSettingsEditor *group_settings = nullptr;
+	TabContainer *addons_container = nullptr;
 	EditorPluginSettings *plugin_settings = nullptr;
 	ProjectSettingsGDExtension *gdextension_settings = nullptr;
 

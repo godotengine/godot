@@ -62,6 +62,8 @@
 #include "servers/display/display_server.h"
 #include "servers/rendering/rendering_server.h"
 
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
+
 void ExportTemplateManager::_request_mirrors() {
 	mirrors_list->clear();
 	mirrors_empty = true;
@@ -496,6 +498,14 @@ void ExportTemplateManager::_initialize_template_data() {
 
 	{
 		TemplateInfo info;
+		info.name = "visionOS";
+		info.description = TTRC("Build for Apple's visionOS.");
+		info.file_list = { "visionos.zip" };
+		template_data[TemplateID::VISIONOS] = info;
+	}
+
+	{
+		TemplateInfo info;
 		info.name = TTR("ICU Data");
 		info.description = TTRC("Line breaking dictionaries for TextServer, used by certain languages.");
 		info.file_list = { "icudt_godot.dat" };
@@ -545,9 +555,21 @@ void ExportTemplateManager::_initialize_template_data() {
 	}
 	{
 		PlatformInfo info;
+		info.name = "visionOS";
+		info.icon = _get_platform_icon("visionOS");
+#ifndef MODULE_MONO_ENABLED
+		info.templates = { TemplateID::VISIONOS };
+#endif
+		info.group = TTR("Mobile", "Platform Group");
+		platform_map[PlatformID::VISIONOS] = info;
+	}
+	{
+		PlatformInfo info;
 		info.name = "Web";
 		info.icon = _get_platform_icon("Web");
+#ifndef MODULE_MONO_ENABLED
 		info.templates = { TemplateID::WEB, TemplateID::WEB_EXTENSIONS, TemplateID::WEB_NOTHREADS, TemplateID::WEB_EXTENSIONS_NOTHREADS };
+#endif
 		info.group = TTR("Web", "Platform Group");
 		platform_map[PlatformID::WEB] = info;
 	}
@@ -1331,6 +1353,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			platform_map[PlatformID::WEB].group = TTR("Web", "Platform Group");
 			platform_map[PlatformID::ANDROID].group = TTR("Mobile", "Platform Group");
 			platform_map[PlatformID::IOS].group = TTR("Mobile", "Platform Group");
+			platform_map[PlatformID::VISIONOS].group = TTR("Mobile", "Platform Group");
 			platform_map[PlatformID::COMMON].name = TTR("Common");
 			template_data[TemplateID::WEB_EXTENSIONS].name = TTR("Web with Extensions");
 			template_data[TemplateID::WEB_NOTHREADS].name = TTR("Web Single-Threaded");
@@ -1377,7 +1400,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			}
 			progress += indeterminate_count;
 			EditorNode::get_bottom_panel()->get_progress_indicator()->set_value(progress / download_count);
-		}
+		} break;
 	}
 }
 
@@ -1418,8 +1441,42 @@ bool ExportTemplateManager::is_android_template_installed(const Ref<EditorExport
 	return DirAccess::exists(get_android_build_directory(p_preset));
 }
 
+bool ExportTemplateManager::is_android_build_version_valid(const Ref<EditorExportPreset> &p_preset) {
+	String build_version_path = get_android_build_directory(p_preset).get_base_dir().path_join(".build_version");
+	Ref<FileAccess> f = FileAccess::open(build_version_path, FileAccess::READ);
+	if (f.is_valid()) {
+		String current_version = get_android_template_identifier(p_preset);
+		String installed_version = f->get_line().strip_edges();
+		if (current_version == installed_version) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool ExportTemplateManager::can_install_android_template(const Ref<EditorExportPreset> &p_preset) {
 	return FileAccess::exists(get_android_source_zip(p_preset));
+}
+
+Error ExportTemplateManager::delete_android_build_directory(const Ref<EditorExportPreset> &p_preset) {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);
+
+	String build_dir = get_android_build_directory(p_preset);
+	String parent_dir = build_dir.get_base_dir();
+	print_verbose("Deleting android build directory " + build_dir);
+
+	ProgressDialog::get_singleton()->add_task("deleting_android_build_dir", TTR("Deleting Android Build Directory"), 1);
+
+	Error err = da->change_dir(parent_dir);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	err = da->erase_contents_recursive();
+	ERR_FAIL_COND_V(err != OK, err);
+
+	ProgressDialog::get_singleton()->end_task("deleting_android_build_dir");
+	EditorFileSystem::get_singleton()->scan_changes();
+	return OK;
 }
 
 Error ExportTemplateManager::install_android_template(const Ref<EditorExportPreset> &p_preset) {
@@ -1437,6 +1494,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 	String build_dir = get_android_build_directory(p_preset);
 	String parent_dir = build_dir.get_base_dir();
+	print_verbose("Installing android build directory " + build_dir);
 
 	// Make parent of the build dir (if it does not exist).
 	da->make_dir_recursive(parent_dir);

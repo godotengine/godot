@@ -41,6 +41,7 @@
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_interface.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
@@ -357,11 +358,13 @@ void EditorPlugin::set_plugin_version(const String &p_version) {
 	plugin_version = p_version;
 }
 
+#ifndef DISABLE_DEPRECATED
 bool EditorPlugin::has_main_screen() const {
 	bool success = false;
 	GDVIRTUAL_CALL(_has_main_screen, success);
 	return success;
 }
+#endif
 
 void EditorPlugin::make_visible(bool p_visible) {
 	GDVIRTUAL_CALL(_make_visible, p_visible);
@@ -617,6 +620,12 @@ void EditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+			// When the plugin registers a main screen (which usually should happen when entering tree), this allows to recognize it as the owner.
+			EditorNode::get_editor_main_screen()->adding_plugin = this;
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			EditorNode::get_editor_main_screen()->adding_plugin = nullptr;
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -696,7 +705,9 @@ void EditorPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_forward_3d_force_draw_over_viewport, "viewport_control");
 	GDVIRTUAL_BIND(_get_plugin_name);
 	GDVIRTUAL_BIND(_get_plugin_icon);
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_has_main_screen);
+#endif
 	GDVIRTUAL_BIND(_make_visible, "visible");
 	GDVIRTUAL_BIND(_edit, "object");
 	GDVIRTUAL_BIND(_handles, "object");

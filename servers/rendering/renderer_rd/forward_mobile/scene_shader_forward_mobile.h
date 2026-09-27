@@ -107,9 +107,9 @@ public:
 				uint32_t multimesh_has_custom_data : 1;
 
 				uint32_t scene_use_ambient_cubemap : 1;
+				uint32_t scene_use_reflection_color : 1;
 				uint32_t scene_use_reflection_cubemap : 1;
 				uint32_t scene_roughness_limiter_enabled : 1;
-				uint32_t padding_0 : 1;
 
 				uint32_t soft_shadow_samples : 6;
 				uint32_t penumbra_shadow_samples : 6;
@@ -129,13 +129,18 @@ public:
 				uint32_t directional_lights : 2;
 				uint32_t decals : 1;
 				uint32_t directional_light_blend_splits : 8;
-				uint32_t padding_1 : 1;
+				uint32_t use_lightmap_specular : 1;
 			};
 		};
 
 		union {
-			float packed_2;
-			float luminance_multiplier;
+			uint32_t packed_2;
+
+			struct {
+				// `2.0` if `true`, `1.0` if `false`.
+				uint32_t luminance_multiplier : 1;
+				uint32_t material_feedback : 1;
+			};
 		};
 	};
 
@@ -211,7 +216,7 @@ public:
 				h = hash_murmur3_one_32(primitive_type, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_0, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_1, h);
-				h = hash_murmur3_one_float(shader_specialization.packed_2, h);
+				h = hash_murmur3_one_32(shader_specialization.packed_2, h);
 				h = hash_murmur3_one_32(version, h);
 				h = hash_murmur3_one_32(render_pass, h);
 				h = hash_murmur3_one_32(wireframe, h);
@@ -361,6 +366,7 @@ public:
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
+	RID default_material_feedback_buffer;
 
 	RID shadow_sampler;
 

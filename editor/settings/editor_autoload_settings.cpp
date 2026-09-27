@@ -522,7 +522,7 @@ void EditorAutoloadSettings::update_autoload() {
 			if (old_info.path == info.path) {
 				// Still the same resource, check status
 				info.node = old_info.node;
-				if (info.node && info.node->is_instance()) {
+				if (info.node && info.node->is_inside_tree()) {
 					Ref<Script> scr = info.node->get_script();
 					info.in_editor = scr.is_valid() && scr->is_tool();
 					if (info.is_singleton == old_info.is_singleton && info.in_editor == old_info.in_editor) {
@@ -911,7 +911,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontalBottomWide");
+	mc->set_theme_type_variation("NoBorderBottomWideWindow");
 	add_child(mc);
 
 	tree = memnew(Tree);

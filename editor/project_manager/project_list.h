@@ -271,6 +271,7 @@ private:
 	// Project list items.
 
 	void _create_project_item_control(int p_index);
+	void _update_project_control_translatable_fields(const Item &item);
 	void _toggle_project(int p_index);
 	void _remove_project(int p_index, bool p_update_settings);
 

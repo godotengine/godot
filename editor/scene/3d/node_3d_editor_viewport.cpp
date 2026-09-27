@@ -68,12 +68,18 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
+#include "scene/property_utils.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/immediate_mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/physics_3d/physics_server_3d_types.h"
 #include "servers/rendering/rendering_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 using namespace Node3DEditorConstants;
 
@@ -215,8 +221,12 @@ void ViewportNavigationControl::_update_navigation() {
 
 			const Vector3 direction = forward + right;
 			const Vector3 motion = direction * speed;
-			viewport->view_3d_controller->cursor.pos += motion;
-			viewport->view_3d_controller->cursor.eye_pos += motion;
+			viewport->view_3d_controller->cursor.pos_x += motion.x;
+			viewport->view_3d_controller->cursor.pos_y += motion.y;
+			viewport->view_3d_controller->cursor.pos_z += motion.z;
+			viewport->view_3d_controller->cursor.eye_pos_x += motion.x;
+			viewport->view_3d_controller->cursor.eye_pos_y += motion.y;
+			viewport->view_3d_controller->cursor.eye_pos_z += motion.z;
 		} break;
 
 		case View3DController::NAV_MODE_LOOK: {
@@ -1032,7 +1042,7 @@ void Node3DEditorViewport::_vertex_snap_cancel() {
 		}
 	}
 	vertex_snap_original_positions.clear();
-	set_message(TTR("Vertex Snap Canceled."), 3);
+	set_message(TTR("Vertex snap canceled."), 3);
 	surface->queue_redraw();
 }
 
@@ -1183,7 +1193,7 @@ Vector3 Node3DEditorViewport::_get_screen_to_space(const Vector3 &p_vector3) {
 	Vector2 screen_he = cm.get_viewport_half_extents();
 
 	Transform3D camera_transform;
-	camera_transform.translate_local(view_3d_controller->cursor.pos);
+	camera_transform.translate_local(Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z));
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -view_3d_controller->cursor.x_rot);
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -view_3d_controller->cursor.y_rot);
 	camera_transform.translate_local(0, 0, view_3d_controller->cursor.distance);
@@ -1494,18 +1504,19 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
 		int col_axis = -1;
-		real_t col_d = 1e20;
+		real_t col_cost = 1e20;
 
 		for (int i = 0; i < 3; i++) {
-			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * (GIZMO_ARROW_OFFSET + (GIZMO_ARROW_SIZE * 0.5));
-			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE;
+			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * (GIZMO_ARROW_OFFSET + GIZMO_ARROW_SIZE * 0.5);
+			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE * 0.5;
 
 			Vector3 r;
 
-			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, grabber_radius, &r)) {
-				const real_t d = r.distance_to(ray_pos);
-				if (d < col_d) {
-					col_d = d;
+			const real_t effective_radius = grabber_radius * 1.5;
+			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, effective_radius, &r)) {
+				const real_t cost = _screen_space_selection_cost(grabber_pos, effective_radius, r);
+				if (cost < col_cost) {
+					col_cost = cost;
 					col_axis = i;
 				}
 			}
@@ -1513,28 +1524,40 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 		bool is_plane_translate = false;
 		// plane select
-		if (col_axis == -1) {
-			col_d = 1e20;
+		{
+			// Adjust transform planes.
+			Transform3D pt = Transform3D(gt);
+			if (camera->get_projection() != Camera3D::ProjectionType::PROJECTION_ORTHOGONAL) {
+				const Vector3 dir = camera->get_global_position().direction_to(pt.origin);
+				for (int j = 0; j < 3; j++) {
+					// If a transform gizmo axis points away from the camera,
+					// we simply mirror the transform plane along that axis by inverting the corresponding basis component.
+					int sign = pt.basis.get_column(j).normalized().dot(dir) > CMP_EPSILON ? -1 : 1;
+					pt.basis.set_column(j, sign * pt.basis.get_column(j));
+				}
+			}
 
 			for (int i = 0; i < 3; i++) {
-				Vector3 ivec2 = gt.basis.get_column((i + 1) % 3).normalized();
-				Vector3 ivec3 = gt.basis.get_column((i + 2) % 3).normalized();
+				Vector3 ivec2 = pt.basis.get_column((i + 1) % 3).normalized();
+				Vector3 ivec3 = pt.basis.get_column((i + 2) % 3).normalized();
 
 				// Allow some tolerance to make the plane easier to click,
 				// even if the click is actually slightly outside the plane.
-				const Vector3 grabber_pos = gt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_SIZE + GIZMO_PLANE_DST * 0.6667);
+				const Vector3 grabber_pos = pt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_DST + GIZMO_PLANE_SIZE * 0.5);
+				const real_t grabber_size = gizmo_scale * GIZMO_PLANE_SIZE * 0.5;
 
 				Vector3 r;
-				Plane plane(gt.basis.get_column(i).normalized(), gt.origin);
+				Plane plane(pt.basis.get_column(i).normalized(), pt.origin);
 
 				if (plane.intersects_ray(ray_pos, ray, &r)) {
 					const real_t dist = r.distance_to(grabber_pos);
 					// Allow some tolerance to make the plane easier to click,
 					// even if the click is actually slightly outside the plane.
-					if (dist < (gizmo_scale * GIZMO_PLANE_SIZE * 1.5)) {
-						const real_t d = ray_pos.distance_to(r);
-						if (d < col_d) {
-							col_d = d;
+					const real_t effective_size = grabber_size * 1.5;
+					if (dist < effective_size) {
+						const real_t cost = _screen_space_selection_cost(grabber_pos, effective_size, r);
+						if (cost < col_cost) {
+							col_cost = cost;
 							col_axis = i;
 
 							is_plane_translate = true;
@@ -1667,18 +1690,19 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
 		int col_axis = -1;
-		float col_d = 1e20;
+		float col_cost = 1e20;
 
 		for (int i = 0; i < 3; i++) {
-			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * GIZMO_SCALE_OFFSET;
-			const real_t grabber_radius = gizmo_scale * GIZMO_ARROW_SIZE;
+			const Vector3 grabber_pos = gt.origin + gt.basis.get_column(i).normalized() * gizmo_scale * (GIZMO_SCALE_OFFSET + GIZMO_SCALE_SIZE * 0.5);
+			const real_t grabber_radius = gizmo_scale * GIZMO_SCALE_SIZE * 0.5;
 
 			Vector3 r;
 
-			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, grabber_radius, &r)) {
-				const real_t d = r.distance_to(ray_pos);
-				if (d < col_d) {
-					col_d = d;
+			const real_t effective_radius = grabber_radius * 1.5;
+			if (Geometry3D::segment_intersects_sphere(ray_pos, ray_pos + ray * MAX_Z, grabber_pos, effective_radius, &r)) {
+				const real_t cost = _screen_space_selection_cost(grabber_pos, effective_radius, r);
+				if (cost < col_cost) {
+					col_cost = cost;
 					col_axis = i;
 				}
 			}
@@ -1686,28 +1710,38 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 		bool is_plane_scale = false;
 		// plane select
-		if (col_axis == -1) {
-			col_d = 1e20;
+		{
+			// Adjust transform planes.
+			Transform3D pt = Transform3D(gt);
+			if (camera->get_projection() != Camera3D::ProjectionType::PROJECTION_ORTHOGONAL) {
+				const Vector3 dir = camera->get_global_position().direction_to(pt.origin);
+				for (int j = 0; j < 3; j++) {
+					int sign = pt.basis.get_column(j).normalized().dot(dir) > CMP_EPSILON ? -1 : 1;
+					pt.basis.set_column(j, sign * pt.basis.get_column(j));
+				}
+			}
 
 			for (int i = 0; i < 3; i++) {
-				const Vector3 ivec2 = gt.basis.get_column((i + 1) % 3).normalized();
-				const Vector3 ivec3 = gt.basis.get_column((i + 2) % 3).normalized();
+				const Vector3 ivec2 = pt.basis.get_column((i + 1) % 3).normalized();
+				const Vector3 ivec3 = pt.basis.get_column((i + 2) % 3).normalized();
 
 				// Allow some tolerance to make the plane easier to click,
 				// even if the click is actually slightly outside the plane.
-				const Vector3 grabber_pos = gt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_SIZE + GIZMO_PLANE_DST * 0.6667);
+				const Vector3 grabber_pos = pt.origin + (ivec2 + ivec3) * gizmo_scale * (GIZMO_PLANE_DST + GIZMO_PLANE_SIZE * 0.5);
+				const real_t grabber_size = gizmo_scale * GIZMO_PLANE_SIZE * 0.5;
 
 				Vector3 r;
-				Plane plane(gt.basis.get_column(i).normalized(), gt.origin);
+				Plane plane(pt.basis.get_column(i).normalized(), pt.origin);
 
 				if (plane.intersects_ray(ray_pos, ray, &r)) {
 					const real_t dist = r.distance_to(grabber_pos);
 					// Allow some tolerance to make the plane easier to click,
 					// even if the click is actually slightly outside the plane.
-					if (dist < (gizmo_scale * GIZMO_PLANE_SIZE * 1.5)) {
-						const real_t d = ray_pos.distance_to(r);
-						if (d < col_d) {
-							col_d = d;
+					const real_t effective_size = grabber_size * 1.5;
+					if (dist < effective_size) {
+						const real_t cost = _screen_space_selection_cost(grabber_pos, effective_size, r);
+						if (cost < col_cost) {
+							col_cost = cost;
 							col_axis = i;
 
 							is_plane_scale = true;
@@ -2518,13 +2552,20 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				} else {
 					if (ruler->is_inside_tree()) {
 						EditorNode::get_singleton()->get_scene_root()->remove_child(ruler);
+						collision_reposition = false;
+
 						ruler_start_point->set_visible(false);
 						ruler_end_point->set_visible(false);
 						ruler_label->set_visible(false);
 						ruler_label_x->set_visible(false);
 						ruler_label_y->set_visible(false);
 						ruler_label_z->set_visible(false);
-						collision_reposition = false;
+
+						geometry->clear_surfaces();
+						geometry_xray->clear_surfaces();
+						triangle_mesh->clear_surfaces();
+						triangle_mesh_xray->clear_surfaces();
+
 						break;
 					}
 
@@ -2881,6 +2922,12 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", event_mod)) {
 			_menu_option(VIEW_CENTER_TO_SELECTION);
 			times_focused_consecutively += 1;
+			follow_mode_uses_aabb = false;
+		}
+		if (ED_IS_SHORTCUT("spatial_editor/focus_aabb", event_mod)) {
+			_menu_option(VIEW_CENTER_TO_AABB);
+			times_focused_consecutively += 1;
+			follow_mode_uses_aabb = true;
 		}
 		if (ED_IS_SHORTCUT("spatial_editor/align_transform_with_view", event_mod)) {
 			_menu_option(VIEW_ALIGN_TRANSFORM_WITH_VIEW);
@@ -3153,30 +3200,31 @@ void Node3DEditorViewport::_project_settings_changed() {
 }
 
 static void override_label_colors(Control *p_control) {
+	const Ref<Theme> &editor_theme = EditorNode::get_singleton()->get_editor_theme();
 	p_control->begin_bulk_theme_override();
-	p_control->add_theme_color_override(SceneStringName(font_color), p_control->get_theme_color(SNAME("font_dark_background_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_hover_color", p_control->get_theme_color(SNAME("font_dark_background_hover_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_focus_color", p_control->get_theme_color(SNAME("font_dark_background_focus_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_pressed_color", p_control->get_theme_color(SNAME("font_dark_background_pressed_color"), EditorStringName(Editor)));
-	p_control->add_theme_color_override("font_hover_pressed_color", p_control->get_theme_color(SNAME("font_dark_background_hover_pressed_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override(SceneStringName(font_color), editor_theme->get_color(SNAME("font_dark_background_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_hover_color", editor_theme->get_color(SNAME("font_dark_background_hover_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_focus_color", editor_theme->get_color(SNAME("font_dark_background_focus_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_pressed_color", editor_theme->get_color(SNAME("font_dark_background_pressed_color"), EditorStringName(Editor)));
+	p_control->add_theme_color_override("font_hover_pressed_color", editor_theme->get_color(SNAME("font_dark_background_hover_pressed_color"), EditorStringName(Editor)));
 	p_control->end_bulk_theme_override();
 }
 
-static void override_button_stylebox(Button *p_button, const Ref<StyleBox> p_stylebox) {
-	p_button->begin_bulk_theme_override();
-	p_button->add_theme_style_override(CoreStringName(normal), p_stylebox);
-	p_button->add_theme_style_override("normal_mirrored", p_stylebox);
-	p_button->add_theme_style_override(SceneStringName(hover), p_stylebox);
-	p_button->add_theme_style_override("hover_mirrored", p_stylebox);
-	p_button->add_theme_style_override("hover_pressed", p_stylebox);
-	p_button->add_theme_style_override("hover_pressed_mirrored", p_stylebox);
-	p_button->add_theme_style_override(SceneStringName(pressed), p_stylebox);
-	p_button->add_theme_style_override("pressed_mirrored", p_stylebox);
-	p_button->add_theme_style_override("focus", p_stylebox);
-	p_button->add_theme_style_override("focus_mirrored", p_stylebox);
-	p_button->add_theme_style_override("disabled", p_stylebox);
-	p_button->add_theme_style_override("disabled_mirrored", p_stylebox);
-	p_button->end_bulk_theme_override();
+static void override_control_stylebox(Control *p_control, const Ref<StyleBox> p_stylebox) {
+	p_control->begin_bulk_theme_override();
+	p_control->add_theme_style_override(CoreStringName(normal), p_stylebox);
+	p_control->add_theme_style_override("normal_mirrored", p_stylebox);
+	p_control->add_theme_style_override(SceneStringName(hover), p_stylebox);
+	p_control->add_theme_style_override("hover_mirrored", p_stylebox);
+	p_control->add_theme_style_override("hover_pressed", p_stylebox);
+	p_control->add_theme_style_override("hover_pressed_mirrored", p_stylebox);
+	p_control->add_theme_style_override(SceneStringName(pressed), p_stylebox);
+	p_control->add_theme_style_override("pressed_mirrored", p_stylebox);
+	p_control->add_theme_style_override("focus", p_stylebox);
+	p_control->add_theme_style_override("focus_mirrored", p_stylebox);
+	p_control->add_theme_style_override("disabled", p_stylebox);
+	p_control->add_theme_style_override("disabled_mirrored", p_stylebox);
+	p_control->end_bulk_theme_override();
 }
 
 void Node3DEditorViewport::_notification(int p_what) {
@@ -3227,6 +3275,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::_project_settings_changed));
 			_update_navigation_controls_visibility();
+			_init_gizmo_instance(index);
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -3236,7 +3285,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			set_physics_process(vp_visible);
 
 			if (vp_visible) {
-				view_3d_controller->set_orthogonal(view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL)));
+				bool orthogonal_checked = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
+				if (view_3d_controller->is_orthogonal() != orthogonal_checked) {
+					view_3d_controller->set_orthogonal(orthogonal_checked);
+				}
 				view_3d_controller->update_camera();
 				_update_name();
 			} else {
@@ -3251,7 +3303,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			if (ruler->is_inside_tree()) {
+			if (ruler->is_inside_tree() && ruler_start_point->is_visible()) {
 				Vector3 start_pos = ruler_start_point->get_global_position();
 				Vector3 end_pos = ruler_end_point->get_global_position();
 
@@ -3284,103 +3336,91 @@ void Node3DEditorViewport::_notification(int p_what) {
 				bool show_components = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 
 				if (show_components) {
-					Ref<ImmediateMesh> triangle_mesh = ruler_triangle_lines->get_mesh();
-					Ref<ImmediateMesh> triangle_mesh_xray = ruler_triangle_lines_xray->get_mesh();
-
-					if (triangle_mesh.is_valid() && triangle_mesh_xray.is_valid()) {
-						Vector3 delta = end_pos - start_pos;
-						delta = delta.abs();
-						const real_t threshold = 0.001;
-						if (delta.x < threshold) {
-							delta.x = 0.0;
-						}
-						if (delta.y < threshold) {
-							delta.y = 0.0;
-						}
-						if (delta.z < threshold) {
-							delta.z = 0.0;
-						}
-
-						Vector3 corner_point;
-						Color first_line_color;
-						Color second_line_color;
-
-						Color axis_x_color = get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor));
-						Color axis_y_color = get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor));
-						Color axis_z_color = get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor));
-
-						if (delta.x > 0.0 && delta.y > 0.0 && delta.z == 0.0) {
-							// XY plane
-							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
-							first_line_color = axis_x_color;
-							second_line_color = axis_y_color;
-						} else if (delta.x > 0.0 && delta.z > 0.0 && delta.y == 0.0) {
-							// XZ plane
-							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
-							first_line_color = axis_x_color;
-							second_line_color = axis_z_color;
-						} else if (delta.y > 0.0 && delta.z > 0.0 && delta.x == 0.0) {
-							// YZ plane
-							corner_point = Vector3(start_pos.x, start_pos.y, end_pos.z);
-							first_line_color = axis_z_color;
-							second_line_color = axis_y_color;
-						} else if (delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0) {
-							// All three axes
-							corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
-							first_line_color = axis_x_color;
-							second_line_color = axis_y_color;
-						} else {
-							corner_point = end_pos;
-							first_line_color = axis_x_color;
-							second_line_color = axis_x_color;
-						}
-
-						triangle_mesh->clear_surfaces();
-						triangle_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
-
-						Vector3 triangle_camera_dir = (camera->get_transform().origin - center).normalized();
-						real_t triangle_offset_distance = 0.01;
-
-						triangle_mesh->surface_set_color(first_line_color);
-						triangle_mesh->surface_add_vertex(start_pos + triangle_camera_dir * triangle_offset_distance);
-						triangle_mesh->surface_set_color(first_line_color);
-						triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
-						triangle_mesh->surface_set_color(second_line_color);
-						triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
-						triangle_mesh->surface_set_color(second_line_color);
-						triangle_mesh->surface_add_vertex(end_pos + triangle_camera_dir * triangle_offset_distance);
-
-						triangle_mesh->surface_end();
-
-						Color first_line_color_xray = first_line_color;
-						Color second_line_color_xray = second_line_color;
-						first_line_color_xray.a = 0.15;
-						second_line_color_xray.a = 0.15;
-
-						triangle_mesh_xray->clear_surfaces();
-						triangle_mesh_xray->surface_begin(Mesh::PRIMITIVE_LINES);
-
-						triangle_mesh_xray->surface_set_color(first_line_color_xray);
-						triangle_mesh_xray->surface_add_vertex(start_pos);
-						triangle_mesh_xray->surface_set_color(first_line_color_xray);
-						triangle_mesh_xray->surface_add_vertex(corner_point);
-						triangle_mesh_xray->surface_set_color(second_line_color_xray);
-						triangle_mesh_xray->surface_add_vertex(corner_point);
-						triangle_mesh_xray->surface_set_color(second_line_color_xray);
-						triangle_mesh_xray->surface_add_vertex(end_pos);
-
-						triangle_mesh_xray->surface_end();
+					Vector3 delta = end_pos - start_pos;
+					delta = delta.abs();
+					const real_t threshold = 0.001;
+					if (delta.x < threshold) {
+						delta.x = 0.0;
 					}
+					if (delta.y < threshold) {
+						delta.y = 0.0;
+					}
+					if (delta.z < threshold) {
+						delta.z = 0.0;
+					}
+
+					Vector3 corner_point;
+					Color first_line_color;
+					Color second_line_color;
+
+					Color axis_x_color = get_theme_color(SNAME("axis_x_color"), EditorStringName(Editor));
+					Color axis_y_color = get_theme_color(SNAME("axis_y_color"), EditorStringName(Editor));
+					Color axis_z_color = get_theme_color(SNAME("axis_z_color"), EditorStringName(Editor));
+
+					if (delta.x > 0.0 && delta.y > 0.0 && delta.z == 0.0) {
+						// XY plane
+						corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+						first_line_color = axis_x_color;
+						second_line_color = axis_y_color;
+					} else if (delta.x > 0.0 && delta.z > 0.0 && delta.y == 0.0) {
+						// XZ plane
+						corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+						first_line_color = axis_x_color;
+						second_line_color = axis_z_color;
+					} else if (delta.y > 0.0 && delta.z > 0.0 && delta.x == 0.0) {
+						// YZ plane
+						corner_point = Vector3(start_pos.x, start_pos.y, end_pos.z);
+						first_line_color = axis_z_color;
+						second_line_color = axis_y_color;
+					} else if (delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0) {
+						// All three axes
+						corner_point = Vector3(end_pos.x, start_pos.y, start_pos.z);
+						first_line_color = axis_x_color;
+						second_line_color = axis_y_color;
+					} else {
+						corner_point = end_pos;
+						first_line_color = axis_x_color;
+						second_line_color = axis_x_color;
+					}
+
+					triangle_mesh->clear_surfaces();
+					triangle_mesh->surface_begin(Mesh::PRIMITIVE_LINES);
+
+					Vector3 triangle_camera_dir = (camera->get_transform().origin - center).normalized();
+					real_t triangle_offset_distance = 0.01;
+
+					triangle_mesh->surface_set_color(first_line_color);
+					triangle_mesh->surface_add_vertex(start_pos + triangle_camera_dir * triangle_offset_distance);
+					triangle_mesh->surface_set_color(first_line_color);
+					triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
+					triangle_mesh->surface_set_color(second_line_color);
+					triangle_mesh->surface_add_vertex(corner_point + triangle_camera_dir * triangle_offset_distance);
+					triangle_mesh->surface_set_color(second_line_color);
+					triangle_mesh->surface_add_vertex(end_pos + triangle_camera_dir * triangle_offset_distance);
+
+					triangle_mesh->surface_end();
+
+					Color first_line_color_xray = first_line_color;
+					Color second_line_color_xray = second_line_color;
+					first_line_color_xray.a = 0.15;
+					second_line_color_xray.a = 0.15;
+
+					triangle_mesh_xray->clear_surfaces();
+					triangle_mesh_xray->surface_begin(Mesh::PRIMITIVE_LINES);
+
+					triangle_mesh_xray->surface_set_color(first_line_color_xray);
+					triangle_mesh_xray->surface_add_vertex(start_pos);
+					triangle_mesh_xray->surface_set_color(first_line_color_xray);
+					triangle_mesh_xray->surface_add_vertex(corner_point);
+					triangle_mesh_xray->surface_set_color(second_line_color_xray);
+					triangle_mesh_xray->surface_add_vertex(corner_point);
+					triangle_mesh_xray->surface_set_color(second_line_color_xray);
+					triangle_mesh_xray->surface_add_vertex(end_pos);
+
+					triangle_mesh_xray->surface_end();
 				} else {
-					Ref<ImmediateMesh> triangle_mesh = ruler_triangle_lines->get_mesh();
-					Ref<ImmediateMesh> triangle_mesh_xray = ruler_triangle_lines_xray->get_mesh();
-
-					if (triangle_mesh.is_valid()) {
-						triangle_mesh->clear_surfaces();
-					}
-					if (triangle_mesh_xray.is_valid()) {
-						triangle_mesh_xray->clear_surfaces();
-					}
+					triangle_mesh->clear_surfaces();
+					triangle_mesh_xray->clear_surfaces();
 				}
 
 				if (show_components) {
@@ -3554,7 +3594,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 					follow_mode->set_text(vformat(TTR("Following %s"), focused_node->get_name()));
 					follow_mode->set_button_icon(get_editor_theme_icon(focused_node->get_class()));
 					follow_mode->show();
-					focus_selection();
+					if (follow_mode_uses_aabb) {
+						focus_aabb();
+					} else {
+						focus_selection();
+					}
 				} else {
 					_disable_follow_mode();
 				}
@@ -3837,21 +3881,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
-			surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
-			surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
-			surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
-			surface->connect(SceneStringName(mouse_exited), callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
-			surface->connect(SceneStringName(focus_entered), callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
-			surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
-
-			_init_gizmo_instance(index);
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			_finish_gizmo_instances();
-		} break;
-
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_centered_labels();
 
@@ -3862,20 +3891,20 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			const Ref<StyleBox> &information_3d_stylebox = gui_base->get_theme_stylebox(SNAME("Information3dViewport"), EditorStringName(EditorStyles));
 
-			override_button_stylebox(view_display_menu, information_3d_stylebox);
+			override_control_stylebox(view_display_menu, information_3d_stylebox);
 			override_label_colors(view_display_menu);
-			override_button_stylebox(translation_preview_button, information_3d_stylebox);
+			override_control_stylebox(translation_preview_button, information_3d_stylebox);
 			override_label_colors(translation_preview_button);
-			override_button_stylebox(follow_mode, information_3d_stylebox);
+			override_control_stylebox(follow_mode, information_3d_stylebox);
 			override_label_colors(follow_mode);
-			override_button_stylebox(preview_camera, information_3d_stylebox);
+			override_control_stylebox(preview_camera, information_3d_stylebox);
 			override_label_colors(preview_camera);
 
 			frame_time_gradient->set_color(0, get_theme_color(SNAME("success_color_dark_background"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(1, get_theme_color(SNAME("warning_color_dark_background"), EditorStringName(Editor)));
 			frame_time_gradient->set_color(2, get_theme_color(SNAME("error_color_dark_background"), EditorStringName(Editor)));
 
-			override_button_stylebox(pilot_camera, information_3d_stylebox);
+			override_control_stylebox(pilot_camera, information_3d_stylebox);
 			override_label_colors(pilot_camera);
 
 			info_panel->add_theme_style_override(SceneStringName(panel), information_3d_stylebox);
@@ -3890,8 +3919,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 			frame_time_panel->set_custom_minimum_size(Size2(min_width, 0) * EDSCALE);
 			frame_time_vbox->add_theme_constant_override("separation", Math::round(-1 * EDSCALE));
 
-			cinema_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
-			locked_label->add_theme_style_override(CoreStringName(normal), information_3d_stylebox);
+			override_control_stylebox(cinema_label, information_3d_stylebox);
+			override_label_colors(cinema_label);
+			override_control_stylebox(locked_label, information_3d_stylebox);
+			override_label_colors(locked_label);
 
 			ruler_label->add_theme_color_override(SceneStringName(font_color), Color(1.0, 0.9, 0.0, 1.0));
 			ruler_label->add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 1.0));
@@ -4369,12 +4400,18 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 		} break;
 		case VIEW_CENTER_TO_ORIGIN: {
-			view_3d_controller->cursor.pos = Vector3(0, 0, 0);
+			view_3d_controller->cursor.pos_x = 0;
+			view_3d_controller->cursor.pos_y = 0;
+			view_3d_controller->cursor.pos_z = 0;
 			_disable_follow_mode();
 
 		} break;
 		case VIEW_CENTER_TO_SELECTION: {
 			focus_selection();
+
+		} break;
+		case VIEW_CENTER_TO_AABB: {
+			focus_aabb();
 
 		} break;
 		case VIEW_ALIGN_TRANSFORM_WITH_VIEW: {
@@ -4401,7 +4438,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Transform3D xform = camera_transform;
 				if (view_3d_controller->is_orthogonal()) {
 					Vector3 offset = camera_transform.basis.xform(Vector3(0, 0, view_3d_controller->cursor.distance));
-					xform.origin = view_3d_controller->cursor.pos + offset;
+					xform.origin = Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z) + offset;
 				} else {
 					xform.scale_basis(sp->get_scale());
 				}
@@ -4720,7 +4757,9 @@ void Node3DEditorViewport::_preview_camera_property_changed() {
 void Node3DEditorViewport::_sync_cursor_from_transform(const Transform3D &p_transform) {
 	const Basis basis = p_transform.basis;
 
-	view_3d_controller->cursor.eye_pos = p_transform.origin;
+	view_3d_controller->cursor.eye_pos_x = p_transform.origin.x;
+	view_3d_controller->cursor.eye_pos_y = p_transform.origin.y;
+	view_3d_controller->cursor.eye_pos_z = p_transform.origin.z;
 	view_3d_controller->cursor.x_rot = -basis.get_euler().x;
 	view_3d_controller->cursor.y_rot = -basis.get_euler().y;
 	view_3d_controller->cursor.unsnapped_x_rot = view_3d_controller->cursor.x_rot;
@@ -4730,7 +4769,9 @@ void Node3DEditorViewport::_sync_cursor_from_transform(const Transform3D &p_tran
 	if (view_3d_controller->is_orthogonal()) {
 		distance = (get_zfar() - get_znear()) / 2.0;
 	}
-	view_3d_controller->cursor.pos = p_transform.origin - basis.get_column(2) * distance;
+	view_3d_controller->cursor.pos_x = p_transform.origin.x - basis.get_column(2).x * distance;
+	view_3d_controller->cursor.pos_y = p_transform.origin.y - basis.get_column(2).y * distance;
+	view_3d_controller->cursor.pos_z = p_transform.origin.z - basis.get_column(2).z * distance;
 }
 
 void Node3DEditorViewport::_update_centered_labels() {
@@ -4980,7 +5021,7 @@ void Node3DEditorViewport::switch_preview_camera(Camera3D *p_new_camera) {
 }
 
 void Node3DEditorViewport::update_transform_gizmo_view() {
-	if (!is_visible_in_tree()) {
+	if (!camera->is_inside_tree()) {
 		return;
 	}
 
@@ -5071,15 +5112,28 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		}
 		axis_angle.basis.scale(scale);
 		axis_angle.origin = xform.origin;
+
+		// Adjust transform planes.
+		Transform3D plane_angle = Transform3D(axis_angle);
+		if (camera->get_projection() != Camera3D::ProjectionType::PROJECTION_ORTHOGONAL) {
+			// When a transform operation is in progress, use the initial origin
+			// so the transform plane stays attached to the cursor.
+			const Vector3 dir = camera_xform.origin.direction_to(_edit.mode == TRANSFORM_NONE ? plane_angle.origin : _edit.original.origin);
+			for (int j = 0; j < 3; j++) {
+				int sign = plane_angle.basis.get_column(j).normalized().dot(dir) > CMP_EPSILON ? -1 : 1;
+				plane_angle.basis.set_column(j, sign * plane_angle.basis.get_column(j));
+			}
+		}
+
 		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
-		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
+		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], plane_angle);
 		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
 		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_rotate_gizmo && i != arc_replaces_ring);
 		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
-		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], axis_angle);
+		RenderingServer::get_singleton()->instance_set_transform(scale_plane_gizmo_instance[i], plane_angle);
 		RenderingServer::get_singleton()->instance_set_visible(scale_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE));
 		RenderingServer::get_singleton()->instance_set_transform(axis_gizmo_instance[i], xform);
 	}
@@ -5116,7 +5170,10 @@ void Node3DEditorViewport::update_transform_gizmo_highlight() {
 
 void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 	if (p_state.has("position")) {
-		view_3d_controller->cursor.pos = p_state["position"];
+		Vector3 pos = p_state["position"];
+		view_3d_controller->cursor.pos_x = pos.x;
+		view_3d_controller->cursor.pos_y = pos.y;
+		view_3d_controller->cursor.pos_z = pos.z;
 	}
 	if (p_state.has("x_rotation")) {
 		view_3d_controller->cursor.x_rot = p_state["x_rotation"];
@@ -5272,7 +5329,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 
 Dictionary Node3DEditorViewport::get_state() const {
 	Dictionary d;
-	d["position"] = view_3d_controller->cursor.pos;
+	d["position"] = Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z);
 	d["x_rotation"] = view_3d_controller->cursor.x_rot;
 	d["y_rotation"] = view_3d_controller->cursor.y_rot;
 	d["distance"] = view_3d_controller->cursor.distance;
@@ -5372,7 +5429,69 @@ void Node3DEditorViewport::focus_selection() {
 		center /= count;
 	}
 
-	view_3d_controller->cursor.pos = center;
+	view_3d_controller->cursor.pos_x = center.x;
+	view_3d_controller->cursor.pos_y = center.y;
+	view_3d_controller->cursor.pos_z = center.z;
+}
+
+void Node3DEditorViewport::focus_aabb() {
+	Vector3 center;
+	AABB combined_aabb;
+	bool aabb_valid = false;
+	float required_distance = 0.0f;
+
+	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+	if (selection.is_empty()) {
+		return;
+	}
+
+	focused_node_id = selection.front()->get()->get_instance_id();
+
+	LocalVector<Node *> stack;
+	stack.reserve(selection.size());
+	for (Node *node : selection) {
+		stack.push_back(node);
+	}
+
+	while (!stack.is_empty()) {
+		Node *node = stack[stack.size() - 1];
+		stack.resize(stack.size() - 1);
+
+		VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(node);
+		if (vi) {
+			AABB local_aabb = vi->get_aabb();
+			if (local_aabb.has_volume()) {
+				AABB global_aabb = vi->get_global_transform().xform(local_aabb);
+				if (!aabb_valid) {
+					combined_aabb = global_aabb;
+					aabb_valid = true;
+				} else {
+					combined_aabb = combined_aabb.merge(global_aabb);
+				}
+			}
+		}
+
+		for (Node *child : node->iterate_children()) {
+			stack.push_back(child);
+		}
+	}
+
+	if (aabb_valid) {
+		center = combined_aabb.get_center();
+
+		float aabb_radius = combined_aabb.get_size().length() * 0.5f;
+		float fov_rad = Math::deg_to_rad(get_fov());
+		required_distance = aabb_radius / Math::tan(fov_rad * 0.5f);
+		required_distance *= 1.2f;
+		required_distance = CLAMP(required_distance, get_znear() * 2.0f, get_zfar() * 0.8f);
+
+		view_3d_controller->cursor.pos_x = center.x;
+		view_3d_controller->cursor.pos_y = center.y;
+		view_3d_controller->cursor.pos_z = center.z;
+		view_3d_controller->cursor.distance = required_distance;
+	} else {
+		focus_selection();
+	}
 }
 
 void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, AABB *p_preview_bounds, AcceptDialog *p_accept) {
@@ -5465,7 +5584,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 
 	// Plane facing the camera using fallback distance.
 	if (is_orthogonal) {
-		plane = Plane(world_ray, view_3d_controller->cursor.pos - world_ray * (view_3d_controller->cursor.distance - FALLBACK_DISTANCE));
+		plane = Plane(world_ray, Vector3(view_3d_controller->cursor.pos_x, view_3d_controller->cursor.pos_y, view_3d_controller->cursor.pos_z) - world_ray * (view_3d_controller->cursor.distance - FALLBACK_DISTANCE));
 	} else {
 		plane = Plane(world_ray, world_pos + world_ray * FALLBACK_DISTANCE);
 	}
@@ -5578,6 +5697,19 @@ void Node3DEditorViewport::_create_preview_node(const Vector<String> &files) con
 		if (audio.is_valid()) {
 			Sprite3D *sprite = memnew(Sprite3D);
 			sprite->set_texture(get_editor_theme_icon(SNAME("Gizmo3DSamplePlayer")));
+			sprite->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+			sprite->set_pixel_size(0.005);
+			preview_node->add_child(sprite);
+			add_preview = true;
+		}
+
+		Ref<Script> script = res;
+		if (script.is_valid()) {
+			String class_name = script->get_global_name();
+			String base_type = script->get_instance_base_type();
+			Sprite3D *sprite = memnew(Sprite3D);
+			sprite->set_texture(EditorNode::get_singleton()->get_class_icon(
+					class_name.is_empty() ? base_type : class_name));
 			sprite->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
 			sprite->set_pixel_size(0.005);
 			preview_node->add_child(sprite);
@@ -5835,6 +5967,59 @@ bool Node3DEditorViewport::_create_audio_node(Node *p_parent, const String &p_pa
 	return true;
 }
 
+bool Node3DEditorViewport::_create_script_node(Node *p_parent, const String &p_path, const Point2 &p_point) {
+	Ref<Script> script = ResourceLoader::load(p_path);
+	if (script.is_null()) {
+		return false;
+	}
+
+	String class_name = script->get_global_name();
+	String base_type = script->get_instance_base_type();
+	Object *ob = ClassDB::instantiate(base_type);
+	Node *instantiated_node = Object::cast_to<Node>(ob);
+	if (!instantiated_node) { // Error on instantiation.
+		return false;
+	}
+	if (class_name.is_empty()) {
+		const String &node_name = Node::adjust_name_casing(p_path.get_file().get_basename());
+		if (!node_name.is_empty()) {
+			instantiated_node->set_name(node_name);
+		}
+	} else {
+		instantiated_node->set_name(class_name);
+		PropertyUtils::assign_custom_type_script(ob, script);
+	}
+	instantiated_node->set_script(script);
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->add_do_method(p_parent, "add_child", instantiated_node, true);
+	undo_redo->add_do_method(instantiated_node, "set_owner", EditorNode::get_singleton()->get_edited_scene());
+	undo_redo->add_do_reference(instantiated_node);
+	undo_redo->add_undo_method(p_parent, "remove_child", instantiated_node);
+	undo_redo->add_do_method(editor_selection, "add_node", instantiated_node);
+
+	const String new_name = p_parent->validate_child_name(instantiated_node);
+	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
+	undo_redo->add_do_method(ed, "live_debug_create_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), instantiated_node->get_class(), new_name);
+	undo_redo->add_undo_method(ed, "live_debug_remove_node", NodePath(String(EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent)) + "/" + new_name));
+
+	Transform3D parent_tf;
+	Node3D *parent_node3d = Object::cast_to<Node3D>(p_parent);
+	if (parent_node3d) {
+		parent_tf = parent_node3d->get_global_gizmo_transform();
+	}
+
+	if (ClassDB::has_property(instantiated_node->get_class(), "transform")) {
+		Transform3D new_tf = instantiated_node->get("transform");
+		new_tf.origin = parent_tf.affine_inverse().xform(preview_node_pos + instantiated_node->get("position"));
+		new_tf.basis = parent_tf.affine_inverse().basis * new_tf.basis;
+
+		undo_redo->add_do_method(instantiated_node, "set_transform", new_tf);
+	}
+
+	return true;
+}
+
 void Node3DEditorViewport::_perform_drop_data() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (spatial_editor->get_preview_material_target().is_valid()) {
@@ -5881,6 +6066,13 @@ void Node3DEditorViewport::_perform_drop_data() {
 		Ref<AudioStream> audio = res;
 		if (audio.is_valid()) {
 			if (!_create_audio_node(target_node, path, drop_pos)) {
+				error_files.push_back(path.get_file());
+			}
+		}
+
+		Ref<Script> script = res;
+		if (script.is_valid()) {
+			if (!_create_script_node(target_node, path, drop_pos)) {
 				error_files.push_back(path.get_file());
 			}
 		}
@@ -5946,12 +6138,18 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		AUDIO = 1 << 2,
 		MESH = 1 << 3,
 		MATERIAL = 1 << 4,
+		SCRIPT = 1 << 5,
 	};
 	int instantiate_type = 0;
 
 	// Track whether a type other than PackedScene is valid to stop checking them and only
 	// continue to check if the rest of the scenes are valid (don't have cyclic dependencies).
 	bool is_other_valid = false;
+
+	String error_message;
+
+	StringName script_node_type;
+
 	// Check if at least one of the dragged files is a mesh, material, texture, or scene.
 	for (int i = 0; i < files.size(); i++) {
 		const String &res_type = ResourceLoader::get_resource_type(files[i]);
@@ -5960,8 +6158,9 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		bool is_material = ClassDB::is_parent_class(res_type, "Material");
 		bool is_texture = ClassDB::is_parent_class(res_type, "Texture");
 		bool is_audio = ClassDB::is_parent_class(res_type, "AudioStream");
+		bool is_script = ClassDB::is_parent_class(res_type, "Script");
 
-		if (is_mesh || is_scene || is_material || is_texture || is_audio) {
+		if (is_mesh || is_scene || is_material || is_texture || is_audio || is_script) {
 			Ref<Resource> res = ResourceLoader::load(files[i]);
 			if (res.is_null()) {
 				continue;
@@ -5971,6 +6170,7 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			Ref<Material> mat = res;
 			Ref<Texture2D> tex = res;
 			Ref<AudioStream> audio = res;
+			Ref<Script> script = res;
 			if (scn.is_valid()) {
 				Node *instantiated_scene = scn->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 				if (!instantiated_scene) {
@@ -6013,13 +6213,28 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 			} else if (!is_other_valid && audio.is_valid()) {
 				is_other_valid = true;
 				instantiate_type |= AUDIO;
+			} else if (!is_other_valid && script.is_valid()) {
+				StringName base_type = script->get_instance_base_type();
+				if (ClassDB::is_parent_class(base_type, "Node")) {
+					StringName global_name = script->get_global_name();
+					script_node_type = global_name.is_empty() ? base_type : global_name;
+					is_other_valid = true;
+					instantiate_type |= SCRIPT;
+				} else {
+					error_message = TTR("This script is not a valid node.");
+				}
 			} else {
 				continue;
 			}
 		}
 	}
 
-	String title = TTRN("Can't drop the file...", "Can't drop the files...", files.size());
+	String title = TPL(files.size(), TTR("Can't drop the file..."), TTR("Can't drop the files..."));
+	if (!error_message.is_empty()) {
+		_show_tooltip(title, error_message);
+		return false;
+	}
+
 	if (is_cyclical_dep) {
 		_show_tooltip(title, vformat(TTR("Circular dependency found at %s."), error_file));
 		return false;
@@ -6036,17 +6251,9 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	preview_node->hide();
 
 	String desc = "[ul]" +
-			TTRN("[b]Default:[/b] Add as sibling of selected node (except when root is selected).",
-					"[b]Default:[/b] Add as siblings of selected node (except when root is selected).",
-					files.size()) +
-			"\n" +
-			TTRN("[b]Hold Shift:[/b] Add as child of selected node.",
-					"[b]Hold Shift:[/b] Add as children of selected node.",
-					files.size()) +
-			"\n" +
-			TTRN("[b]Hold Alt:[/b] Add as child of root node.",
-					"[b]Hold Alt:[/b] Add as children of root node.",
-					files.size());
+			TPL(files.size(), TTR("[b]Default:[/b] Add as sibling of selected node (except when root is selected)."), TTR("[b]Default:[/b] Add as siblings of selected node (except when root is selected).")) + "\n" +
+			TPL(files.size(), TTR("[b]Hold Shift:[/b] Add as child of selected node."), TTR("[b]Hold Shift:[/b] Add as children of selected node.")) + "\n" +
+			vformat(TPL(files.size(), TTR("[b]Hold %s:[/b] Add as child of root node."), TTR("[b]Hold %s:[/b] Add as children of root node.")), keycode_get_string((Key)KeyModifierMask::ALT));
 
 	if (files.size() > 1) {
 		title = TTR("Dropping multiple files...");
@@ -6062,6 +6269,8 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 		desc += vformat(TTR("[b]Default:[/b] Place in Geometry's Material Override slot.") +
 						"\n" + TTR("[b]Hold %s:[/b] Place in Mesh's Surface Material Override slot."),
 				keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL));
+	} else if (instantiate_type & SCRIPT) {
+		title = vformat(TTR("Dropping a Script as a %s node..."), script_node_type);
 	}
 	desc += "[/ul]";
 
@@ -6668,6 +6877,17 @@ void Node3DEditorViewport::_add_advanced_debug_draw_mode_item(PopupMenu *p_popup
 	display_submenu->set_item_metadata(-1, item_data); // Tooltip is assigned in NOTIFICATION_TRANSLATION_CHANGED.
 }
 
+real_t Node3DEditorViewport::_screen_space_selection_cost(const Vector3 &p_center, const float p_radius, const Vector3 &p_pos) {
+	const Vector3 cam_up = camera->get_transform().basis.get_column(1).normalized();
+
+	const Point2 screen_pos = point_to_screen(p_center);
+	const real_t screen_size = screen_pos.distance_to(point_to_screen(p_center + cam_up * p_radius));
+	const real_t screen_dist = screen_pos.distance_to(point_to_screen(p_pos));
+
+	real_t cost = Math::pow(screen_dist / MAX(screen_size, 1.0), 2.0);
+	return cost;
+}
+
 void Node3DEditorViewport::_load_viewport_inputs() {
 	// Registering with Key::NONE intentionally creates an empty Array.
 	register_shortcut_action("spatial_editor/viewport_orbit_modifier_1", TTRC("Viewport Orbit Modifier 1"), Key::NONE);
@@ -6719,7 +6939,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	c->add_child(viewport);
 	surface = memnew(Control);
 	SET_DRAG_FORWARDING_CD(surface, Node3DEditorViewport);
-	add_child(surface);
 	surface->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	surface->set_clip_contents(true);
 	camera = memnew(Camera3D);
@@ -6728,6 +6947,14 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(camera);
 	camera->make_current();
 	surface->set_focus_mode(FOCUS_ALL);
+	add_child(surface);
+
+	surface->connect(SceneStringName(draw), callable_mp(this, &Node3DEditorViewport::_draw));
+	surface->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditorViewport::_sinput));
+	surface->connect(SceneStringName(mouse_entered), callable_mp(this, &Node3DEditorViewport::_surface_mouse_enter));
+	surface->connect(SceneStringName(mouse_exited), callable_mp(this, &Node3DEditorViewport::_surface_mouse_exit));
+	surface->connect(SceneStringName(focus_entered), callable_mp(this, &Node3DEditorViewport::_surface_focus_enter));
+	surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
 
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	surface->add_child(vbox);
@@ -6739,7 +6966,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	view_display_menu = memnew(MenuButton);
 	view_display_menu->set_flat(false);
-	view_display_menu->set_h_size_flags(0);
+	view_display_menu->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	view_display_menu->set_shortcut_context(this);
 	view_display_menu->set_accessibility_name(TTRC("View"));
 	view_display_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -6855,6 +7082,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->add_separator();
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_aabb"), VIEW_CENTER_TO_AABB);
 	view_display_menu->get_popup()->set_item_tooltip(-1, TTR("Press Focus Selection twice to start following the selection as it moves. Press it yet another time to stop following the selection."));
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
@@ -6895,7 +7123,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	// Using Control even on macOS to avoid conflict with Quick Open shortcut.
 	preview_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_camera_preview", TTRC("Toggle Camera Preview"), KeyModifierMask::CTRL | Key::P));
 	vbox->add_child(preview_camera);
-	preview_camera->set_h_size_flags(0);
+	preview_camera->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	preview_camera->set_theme_type_variation("CheckBoxNoIconTint");
 	preview_camera->hide();
 	preview_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview));
@@ -6905,7 +7133,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	pilot_camera->set_tooltip_text(TTRC("Enable pilot mode for the preview camera.\nAllows WASD movement and mouse look when in preview mode."));
 	pilot_camera->set_shortcut(ED_SHORTCUT("spatial_editor/toggle_pilot_preview", TTRC("Toggle Pilot Mode in Preview")));
 	vbox->add_child(pilot_camera);
-	pilot_camera->set_h_size_flags(0);
+	pilot_camera->set_h_size_flags(SIZE_SHRINK_BEGIN);
 	pilot_camera->set_theme_type_variation("CheckBoxNoIconTint");
 	pilot_camera->hide();
 	pilot_camera->connect(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_pilot_preview));
@@ -7073,15 +7301,13 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ruler_material_xray->set_transparency(BaseMaterial3D::TRANSPARENCY_ALPHA);
 	ruler_material_xray->set_render_priority(BaseMaterial3D::RENDER_PRIORITY_MAX);
 
-	geometry.instantiate();
-
-	geometry_xray.instantiate();
-
 	ruler_line = memnew(MeshInstance3D);
+	geometry.instantiate();
 	ruler_line->set_mesh(geometry);
 	ruler_line->set_material_override(ruler_material);
 
 	ruler_line_xray = memnew(MeshInstance3D);
+	geometry_xray.instantiate();
 	ruler_line_xray->set_mesh(geometry_xray);
 	ruler_line_xray->set_material_override(ruler_material_xray);
 
@@ -7102,13 +7328,11 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	ruler_triangle_material_xray->set_flag(BaseMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 	ruler_triangle_lines = memnew(MeshInstance3D);
-	Ref<ImmediateMesh> triangle_mesh;
 	triangle_mesh.instantiate();
 	ruler_triangle_lines->set_mesh(triangle_mesh);
 	ruler_triangle_lines->set_material_override(ruler_triangle_material);
 
 	ruler_triangle_lines_xray = memnew(MeshInstance3D);
-	Ref<ImmediateMesh> triangle_mesh_xray;
 	triangle_mesh_xray.instantiate();
 	ruler_triangle_lines_xray->set_mesh(triangle_mesh_xray);
 	ruler_triangle_lines_xray->set_material_override(ruler_triangle_material_xray);
@@ -7138,6 +7362,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	viewport->add_child(ruler_label_z);
 
 	view_3d_controller.instantiate();
+	view_3d_controller->set_auto_orthogonal_allowed(view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL)));
 	view_3d_controller->connect("view_state_changed", callable_mp(this, &Node3DEditorViewport::_view_state_changed));
 	view_3d_controller->connect("fov_scaled", callable_mp((CanvasItem *)surface, &CanvasItem::queue_redraw));
 	view_3d_controller->connect("freelook_changed", callable_mp(this, &Node3DEditorViewport::_freelook_changed));
@@ -7153,6 +7378,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
+	_finish_gizmo_instances();
 	memdelete(ruler);
 }
 

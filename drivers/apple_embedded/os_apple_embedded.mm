@@ -40,8 +40,8 @@
 #include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #import "drivers/apple/os_log_logger.h"
-#import "drivers/apple_embedded/app_delegate_service.h"
 #import "drivers/apple_embedded/display_server_apple_embedded.h"
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_controller.h"
 #ifdef SDL_ENABLED
@@ -159,6 +159,11 @@ OS_AppleEmbedded::OS_AppleEmbedded() {
 
 OS_AppleEmbedded::~OS_AppleEmbedded() {}
 
+Error OS_AppleEmbedded::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int status = SecRandomCopyBytes(kSecRandomDefault, p_bytes, r_buffer);
+	return status == errSecSuccess ? OK : FAILED;
+}
+
 void OS_AppleEmbedded::alert(const String &p_alert, const String &p_title) {
 	const CharString utf8_alert = p_alert.utf8();
 	const CharString utf8_title = p_title.utf8();
@@ -191,14 +196,9 @@ void OS_AppleEmbedded::initialize_modules() {
 
 void OS_AppleEmbedded::deinitialize_modules() {
 #ifdef SDL_ENABLED
-	if (joypad_sdl) {
-		memdelete(joypad_sdl);
-	}
+	memdelete(joypad_sdl);
 #endif
-
-	if (apple_embedded) {
-		memdelete(apple_embedded);
-	}
+	memdelete(apple_embedded);
 }
 
 void OS_AppleEmbedded::set_main_loop(MainLoop *p_main_loop) {
@@ -781,6 +781,14 @@ Error OS_AppleEmbedded::setup_remote_filesystem(const String &p_server_host, int
 		remote_fs_dir = r_project_path;
 	}
 	return err;
+}
+
+void OS_AppleEmbedded::audio_driver_start() {
+	audio_driver.start();
+}
+
+void OS_AppleEmbedded::audio_driver_stop() {
+	audio_driver.stop();
 }
 
 void OS_AppleEmbedded::on_focus_out() {

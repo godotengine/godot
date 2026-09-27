@@ -127,15 +127,15 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    await RenderingServer.frame_post_draw
-				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
+					await RenderingServer.frame_post_draw
+					$Viewport.get_texture().get_image().save_png("user://Screenshot.png")
 				[/gdscript]
 				[csharp]
 				public async override void _Ready()
 				{
-				    await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
-				    var viewport = GetNode&lt;Viewport&gt;("Viewport");
-				    viewport.GetTexture().GetImage().SavePng("user://Screenshot.png");
+					await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+					var viewport = GetNode&lt;Viewport&gt;("Viewport");
+					viewport.GetTexture().GetImage().SavePng("user://Screenshot.png");
 				}
 				[/csharp]
 				[/codeblocks]

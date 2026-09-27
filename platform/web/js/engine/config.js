@@ -120,11 +120,6 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		persistentPaths: ['/userfs'],
 		/**
 		 * @ignore
-		 * @type {boolean}
-		 */
-		persistentDrops: false,
-		/**
-		 * @ignore
 		 * @type {Array.<string>}
 		 */
 		gdextensionLibs: [],
@@ -143,6 +138,13 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 * @type {number}
 		 */
 		godotPoolSize: 4,
+		/**
+		 * A MessagePort used to send debug messages when using protocol messageport://
+		 * @memberof EngineConfig
+		 * @default
+		 * @type {?MessagePort}
+		 */
+		debugPort: null,
 		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
@@ -263,7 +265,6 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.locale = parse('locale', this.locale);
 		this.canvasResizePolicy = parse('canvasResizePolicy', this.canvasResizePolicy);
 		this.persistentPaths = parse('persistentPaths', this.persistentPaths);
-		this.persistentDrops = parse('persistentDrops', this.persistentDrops);
 		this.experimentalVK = parse('experimentalVK', this.experimentalVK);
 		this.focusCanvas = parse('focusCanvas', this.focusCanvas);
 		this.serviceWorker = parse('serviceWorker', this.serviceWorker);
@@ -272,6 +273,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.emscriptenPoolSize = parse('emscriptenPoolSize', this.emscriptenPoolSize);
 		this.godotPoolSize = parse('godotPoolSize', this.godotPoolSize);
 		this.args = parse('args', this.args);
+		this.debugPort = parse('debugPort', this.debugPort);
 		this.onExecute = parse('onExecute', this.onExecute);
 		this.onExit = parse('onExit', this.onExit);
 	};
@@ -361,10 +363,10 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'canvas': this.canvas,
 			'canvasResizePolicy': this.canvasResizePolicy,
 			'locale': locale,
-			'persistentDrops': this.persistentDrops,
 			'virtualKeyboard': this.experimentalVK,
 			'godotPoolSize': this.godotPoolSize,
 			'focusCanvas': this.focusCanvas,
+			'debugPort': this.debugPort,
 			'onExecute': this.onExecute,
 			'onExit': function (p_code) {
 				cleanup(); // We always need to call the cleanup callback to free memory.

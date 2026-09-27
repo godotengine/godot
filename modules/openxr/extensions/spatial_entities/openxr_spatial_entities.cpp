@@ -147,7 +147,7 @@ void OpenXRSpatialEntityTracker::set_entity(const RID &p_entity) {
 
 		XrSpatialEntityIdEXT entity_id = se_extension->get_spatial_entity_id(p_entity);
 
-		String tracker_name = String("openxr/spatial_entity/") + String::num_int64(entity_id);
+		String tracker_name = String("openxr/spatial_entity/") + String::num_uint64(entity_id);
 		set_tracker_name(tracker_name);
 	} else {
 		set_tracker_name("openxr/spatial_entity/null");
@@ -419,6 +419,12 @@ Transform3D OpenXRSpatialComponentMesh2DList::get_transform(int64_t p_index) con
 	return openxr_api->transform_from_pose(mesh2d_data[p_index].origin);
 }
 
+XrSpatialBufferIdEXT OpenXRSpatialComponentMesh2DList::get_vertex_buffer_id(int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, mesh2d_data.size(), XR_NULL_SPATIAL_BUFFER_ID_EXT);
+
+	return mesh2d_data[p_index].vertexBuffer.bufferId;
+}
+
 PackedVector2Array OpenXRSpatialComponentMesh2DList::get_vertices(RID p_snapshot, int64_t p_index) const {
 	ERR_FAIL_INDEX_V(p_index, mesh2d_data.size(), PackedVector2Array());
 
@@ -434,6 +440,12 @@ PackedVector2Array OpenXRSpatialComponentMesh2DList::get_vertices(RID p_snapshot
 	ERR_FAIL_NULL_V(se_extension, PackedVector2Array());
 
 	return se_extension->get_vector2_buffer(p_snapshot, buffer.bufferId);
+}
+
+XrSpatialBufferIdEXT OpenXRSpatialComponentMesh2DList::get_index_buffer_id(int64_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, mesh2d_data.size(), XR_NULL_SPATIAL_BUFFER_ID_EXT);
+
+	return mesh2d_data[p_index].indexBuffer.bufferId;
 }
 
 PackedInt32Array OpenXRSpatialComponentMesh2DList::get_indices(RID p_snapshot, int64_t p_index) const {
@@ -562,7 +574,7 @@ void *OpenXRSpatialQueryResultData::get_structure_data(void *p_next) {
 }
 
 XrSpatialEntityIdEXT OpenXRSpatialQueryResultData::get_entity_id(int64_t p_index) const {
-	ERR_FAIL_INDEX_V(p_index, entity_ids.size(), XR_NULL_ENTITY);
+	ERR_FAIL_INDEX_V(p_index, entity_ids.size(), XR_NULL_SPATIAL_ENTITY_ID_EXT);
 
 	return entity_ids[p_index];
 }

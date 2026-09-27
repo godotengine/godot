@@ -62,9 +62,6 @@ void GridContainer::_resort() {
 		int col = valid_controls_index % columns;
 		valid_controls_index++;
 
-		if (is_propagating_maximum_size()) {
-			c->set_parent_maximum_size_cache(combined_max_size);
-		}
 		Size2i ms = c->get_bound_minimum_size().ceil();
 		Size2i desired_size = c->get_bound_desired_size().ceil();
 		Size2i max_size = c->get_combined_maximum_size().floor();
@@ -319,8 +316,6 @@ void GridContainer::_resort() {
 		}
 	}
 
-	int accumulated_width = 0;
-	int accumulated_height = 0;
 	valid_controls_index = 0;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i));
@@ -359,19 +354,6 @@ void GridContainer::_resort() {
 			s.y++;
 		}
 
-		if (is_propagating_maximum_size()) {
-			Size2 ms = combined_max_size;
-			if (ms.width >= 0) {
-				ms.width -= accumulated_width;
-				ms.width = MAX(ms.width, 0);
-			}
-			if (ms.height >= 0) {
-				ms.height -= accumulated_height;
-				ms.height = MAX(ms.height, 0);
-			}
-			c->set_parent_maximum_size_cache(ms);
-		}
-
 		if (rtl) {
 			Point2 p(col_ofs - s.width, row_ofs);
 			fit_child_in_rect(c, Rect2(p, s));
@@ -380,13 +362,6 @@ void GridContainer::_resort() {
 			Point2 p(col_ofs, row_ofs);
 			fit_child_in_rect(c, Rect2(p, s));
 			col_ofs += s.width + theme_cache.h_separation;
-		}
-
-		if (col == columns - 1) {
-			accumulated_height += s.height + theme_cache.v_separation;
-			accumulated_width = 0;
-		} else {
-			accumulated_width += s.width + theme_cache.h_separation;
 		}
 	}
 }
@@ -456,17 +431,22 @@ Size2 GridContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 		int col = valid_controls_index % columns;
 		valid_controls_index++;
 
-		Size2i ms = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
+		Size2 min_size = p_use_desired_sizes ? c->get_bound_desired_size() : c->get_bound_minimum_size();
+		Size2 max_size = c->get_custom_maximum_size();
+
+		real_t col_width = (c->get_h_size_flags().has_flag(SIZE_MAXIMIZE) && max_size.width >= 0) ? max_size.width : min_size.width;
+		real_t row_height = (c->get_v_size_flags().has_flag(SIZE_MAXIMIZE) && max_size.height >= 0) ? max_size.height : min_size.height;
+
 		if (col_minw.has(col)) {
-			col_minw[col] = MAX(col_minw[col], ms.width);
+			col_minw[col] = MAX(col_minw[col], col_width);
 		} else {
-			col_minw[col] = ms.width;
+			col_minw[col] = col_width;
 		}
 
 		if (row_minh.has(row)) {
-			row_minh[row] = MAX(row_minh[row], ms.height);
+			row_minh[row] = MAX(row_minh[row], row_height);
 		} else {
-			row_minh[row] = ms.height;
+			row_minh[row] = row_height;
 		}
 		max_col = MAX(col, max_col);
 		max_row = MAX(row, max_row);

@@ -29,5 +29,8 @@
 		<constant name="BLEND_MODE_DISABLED" value="4" enum="BlendMode">
 			No blending mode, direct color copy.
 		</constant>
+		<constant name="BLEND_MODE_PREMULTIPLIED_ALPHA" value="5" enum="BlendMode">
+			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
+		</constant>
 	</constants>
 </class>

@@ -38,7 +38,7 @@ for name, path in env.module_list.items():
     SConscript(base_path + "/SCsub")
 
     if env.modules_sources:
-        lib = env_modules.add_library("module_%s" % name, env.modules_sources)
+        lib = env_modules.add_library(f"module_{name}", env.modules_sources)
         env.Prepend(LIBS=[lib])
 
     if env["tests"]:

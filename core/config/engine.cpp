@@ -32,12 +32,15 @@
 
 #include "core/authors.gen.h"
 #include "core/config/project_settings.h"
+#include "core/core_globals.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
 #include "core/object/object.h"
 #include "core/variant/typed_array.h"
 #include "core/version.h"
+#ifdef RD_ENABLED
 #include "servers/rendering/rendering_device.h"
+#endif // RD_ENABLED
 
 void Engine::_update_time_scale() {
 	_time_scale = _user_time_scale * _game_time_scale;
@@ -87,10 +90,12 @@ double Engine::get_physics_jitter_fix() const {
 void Engine::set_max_fps(int p_fps) {
 	_max_fps = p_fps > 0 ? p_fps : 0;
 
+#ifdef RD_ENABLED
 	RenderingDevice *rd = RenderingDevice::get_singleton();
 	if (rd) {
 		rd->_set_max_fps(_max_fps);
 	}
+#endif // RD_ENABLED
 }
 
 int Engine::get_max_fps() const {
@@ -174,18 +179,18 @@ Dictionary Engine::get_version_info() const {
 	return dict;
 }
 
-static Array array_from_info(const char *const *info_list) {
+static Array array_from_info(const char *const *p_info_list) {
 	Array arr;
-	for (int i = 0; info_list[i] != nullptr; i++) {
-		arr.push_back(String::utf8(info_list[i]));
+	for (int i = 0; p_info_list[i] != nullptr; i++) {
+		arr.push_back(String::utf8(p_info_list[i]));
 	}
 	return arr;
 }
 
-static Array array_from_info_count(const char *const *info_list, int info_count) {
+static Array array_from_info_count(const char *const *p_info_list, int p_info_count) {
 	Array arr;
-	for (int i = 0; i < info_count; i++) {
-		arr.push_back(String::utf8(info_list[i]));
+	for (int i = 0; i < p_info_count; i++) {
+		arr.push_back(String::utf8(p_info_list[i]));
 	}
 	return arr;
 }

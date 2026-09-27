@@ -120,7 +120,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	static Ref<FileAccess> _open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
-	static Ref<FileAccess> _create_temp_compat_114053(int p_mode_flags, const String &p_prefix = "", const String &p_extension = "", bool p_keep = false);
+	static Ref<FileAccess> _create_temp_bind_compat_114053(int p_mode_flags, const String &p_prefix = "", const String &p_extension = "", bool p_keep = false);
 
 	void store_8_bind_compat_78289(uint8_t p_dest);
 	void store_16_bind_compat_78289(uint16_t p_dest);

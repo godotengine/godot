@@ -35,6 +35,7 @@
 #include "editor/scene/texture/color_channel_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/aspect_ratio_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/label.h"
 #include "scene/gui/spin_box.h"
@@ -47,6 +48,7 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/portable_compressed_texture.h"
+#include "scene/resources/streamed_texture.h"
 #include "scene/resources/texture_rd.h"
 #include "servers/rendering/rendering_device.h"
 
@@ -114,6 +116,10 @@ void TexturePreview::_notification(int p_what) {
 				metadata_label->add_theme_font_override(SceneStringName(font), metadata_label_font);
 			}
 
+			if (metadata_toggle) {
+				metadata_toggle->set_button_icon(get_editor_theme_icon(SNAME("Info")));
+			}
+
 			bg_rect->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
 			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
 			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
@@ -134,10 +140,12 @@ void TexturePreview::_update_texture_display_ratio() {
 }
 
 static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
+#ifdef RD_ENABLED
 	const Ref<Texture2DRD> rd_texture = p_texture;
 	if (rd_texture.is_valid() && RD::get_singleton() && RD::get_singleton()->texture_is_valid(rd_texture->get_texture_rd_rid())) {
 		return rd_texture->get_image()->get_format();
 	}
+#endif
 
 	return p_texture->get_format();
 }
@@ -148,7 +156,9 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 	// We are having to download the image only to get its mipmaps count. It would be nice if we didn't have to.
 	Ref<Image> image;
 	Ref<AtlasTexture> at = p_texture;
+#ifdef RD_ENABLED
 	Ref<Texture2DRD> rd_texture = p_texture;
+#endif
 
 	if (at.is_valid()) {
 		// The AtlasTexture tries to obtain the region from the atlas as an image,
@@ -157,13 +167,19 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 		if (atlas.is_valid()) {
 			image = atlas->get_image();
 		}
-	} else if (rd_texture.is_valid()) {
-		if (RD::get_singleton() && RD::get_singleton()->texture_is_valid(rd_texture->get_texture_rd_rid())) {
-			return -1;
-		}
-		image = p_texture->get_image();
 	} else {
+#ifdef RD_ENABLED
+		if (rd_texture.is_valid()) {
+			if (RD::get_singleton() && RD::get_singleton()->texture_is_valid(rd_texture->get_texture_rd_rid())) {
+				return -1;
+			}
+			image = p_texture->get_image();
+		} else {
+			image = p_texture->get_image();
+		}
+#else
 		image = p_texture->get_image();
+#endif
 	}
 
 	if (image.is_valid()) {
@@ -233,6 +249,11 @@ void TexturePreview::_update_metadata_label_text() {
 						texture->get_height(),
 						format_name));
 	}
+}
+
+void TexturePreview::_toggle_metadata_label() {
+	metadata_label->set_visible(!metadata_label->is_visible());
+	metadata_toggle->set_modulate(Color(1, 1, 1, metadata_label->is_visible() ? 0.8 : 0.4));
 }
 
 void TexturePreview::on_selected_channels_changed() {
@@ -336,6 +357,16 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		metadata_label->set_v_size_flags(Control::SIZE_SHRINK_END);
 
 		add_child(metadata_label);
+
+		metadata_toggle = memnew(Button);
+		metadata_toggle->set_flat(true);
+		metadata_toggle->set_tooltip_text(TTRC("Toggle metadata overlay."));
+		metadata_toggle->set_theme_type_variation("PreviewLightButton");
+		metadata_toggle->set_modulate(Color(1, 1, 1, 0.8));
+		metadata_toggle->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
+		metadata_toggle->set_v_size_flags(Control::SIZE_SHRINK_END);
+		metadata_toggle->connect(SceneStringName(pressed), callable_mp(this, &TexturePreview::_toggle_metadata_label));
+		add_child(metadata_toggle);
 	}
 }
 
@@ -351,9 +382,15 @@ bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 			Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr ||
 			Object::cast_to<AnimatedTexture>(p_object) != nullptr ||
 			Object::cast_to<DPITexture>(p_object) != nullptr ||
-			Object::cast_to<Texture2DRD>(p_object) != nullptr) {
+			Object::cast_to<StreamedTexture2D>(p_object) != nullptr) {
 		return true;
 	}
+
+#ifdef RD_ENABLED
+	if (Object::cast_to<Texture2DRD>(p_object) != nullptr) {
+		return true;
+	}
+#endif
 
 	Ref<Texture2D> texture_2d(Object::cast_to<Texture2D>(p_object));
 	if (texture_2d.is_valid()) {
@@ -365,7 +402,17 @@ bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 	Ref<Texture> texture(Object::cast_to<Texture>(p_object));
-	if (texture.is_null()) {
+	if (texture.is_valid()) {
+		// Load the full-resolution image for streamed textures.
+		const Ref<StreamedTexture2D> streamed_texture(texture);
+		if (streamed_texture.is_valid()) {
+			const Ref<Image> image = streamed_texture->get_image();
+			if (image.is_valid()) {
+				texture = ImageTexture::create_from_image(image);
+			}
+		}
+	} else {
+		// Not a texture, try to load as an image.
 		Ref<Image> image(Object::cast_to<Image>(p_object));
 		texture = ImageTexture::create_from_image(image);
 

@@ -40,6 +40,7 @@
 #include "scene/resources/surface_tool.h"
 
 #ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
 #include "servers/rendering/rendering_server.h" // Only used for debug collision shapes.
 #endif // PHYSICS_3D_DISABLED
 
@@ -487,9 +488,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	if (!dirty) {
 		return brush;
 	}
-	if (brush) {
-		memdelete(brush);
-	}
+	memdelete(brush);
 	brush = nullptr;
 	CSGBrush *n = _build_brush();
 	HashMap<int32_t, Ref<Material>> mesh_materials;
@@ -522,9 +521,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	}
 	if (!manifolds.empty()) {
 		manifold::Manifold manifold_result = manifold::Manifold::BatchBoolean(manifolds, current_op);
-		if (n) {
-			memdelete(n);
-		}
+		memdelete(n);
 		n = memnew(CSGBrush);
 		_unpack_manifold(manifold_result, mesh_materials, n);
 	}
@@ -1064,6 +1061,14 @@ void CSGShape3D::_notification(int p_what) {
 				PhysicsServer3D::get_singleton()->body_set_state(root_collision_body, PS3DE::BODY_STATE_TRANSFORM, get_global_transform());
 			}
 			_on_transform_changed();
+		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			if (_is_debug_collision_shape_visible()) {
+				_update_debug_collision_shape();
+			} else {
+				_clear_debug_collision_shape();
+			}
 		} break;
 #endif // PHYSICS_3D_DISABLED
 	}
@@ -2677,6 +2682,13 @@ void CSGPolygon3D::_notification(int p_what) {
 			path->disconnect(SceneStringName(tree_exited), callable_mp(this, &CSGPolygon3D::_path_exited));
 			path->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
 			path = nullptr;
+		}
+	} else if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (mode == MODE_PATH && !is_using_collision()) {
+			// Force an update when the CSGPolygon3D re-enters the tree to make sure it still follows the Path3D's current state.
+			// This is not needed when collision is enabled, as having collision
+			// enabled will automatically trigger an update.
+			_make_dirty();
 		}
 	}
 }

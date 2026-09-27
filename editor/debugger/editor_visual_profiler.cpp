@@ -37,6 +37,7 @@
 #include "editor/run/editor_run_bar.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/color_rect.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/resources/image_texture.h"
@@ -187,7 +188,7 @@ void EditorVisualProfiler::_update_plot() {
 		wr[i + 0] = Math::fast_ftoi(background_color.r * 255);
 		wr[i + 1] = Math::fast_ftoi(background_color.g * 255);
 		wr[i + 2] = Math::fast_ftoi(background_color.b * 255);
-		wr[i + 3] = 255;
+		wr[i + 3] = Math::fast_ftoi(background_color.a * 255);
 	}
 
 	//find highest value
@@ -281,43 +282,47 @@ void EditorVisualProfiler::_update_plot() {
 
 			//plot CPU
 			for (int j = 0; j < h; j++) {
-				uint8_t r, g, b;
+				uint8_t r, g, b, a;
 
 				if (column_cpu[j].a == 0) {
 					r = Math::fast_ftoi(background_color.r * 255);
 					g = Math::fast_ftoi(background_color.g * 255);
 					b = Math::fast_ftoi(background_color.b * 255);
+					a = Math::fast_ftoi(background_color.a * 255);
 				} else {
 					r = CLAMP((column_cpu[j].r / column_cpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_cpu[j].g / column_cpu[j].a) * 255.0, 0, 255);
 					b = CLAMP((column_cpu[j].b / column_cpu[j].a) * 255.0, 0, 255);
+					a = 255;
 				}
 
 				int widx = (j * w + i) * 4;
 				wr[widx + 0] = r;
 				wr[widx + 1] = g;
 				wr[widx + 2] = b;
-				wr[widx + 3] = 255;
+				wr[widx + 3] = a;
 			}
 			//plot GPU
 			for (int j = 0; j < h; j++) {
-				uint8_t r, g, b;
+				uint8_t r, g, b, a;
 
 				if (column_gpu[j].a == 0) {
 					r = Math::fast_ftoi(background_color.r * 255);
 					g = Math::fast_ftoi(background_color.g * 255);
 					b = Math::fast_ftoi(background_color.b * 255);
+					a = Math::fast_ftoi(background_color.a * 255);
 				} else {
 					r = CLAMP((column_gpu[j].r / column_gpu[j].a) * 255.0, 0, 255);
 					g = CLAMP((column_gpu[j].g / column_gpu[j].a) * 255.0, 0, 255);
 					b = CLAMP((column_gpu[j].b / column_gpu[j].a) * 255.0, 0, 255);
+					a = 255;
 				}
 
 				int widx = (j * w + w / 2 + i) * 4;
 				wr[widx + 0] = r;
 				wr[widx + 1] = g;
 				wr[widx + 2] = b;
-				wr[widx + 3] = 255;
+				wr[widx + 3] = a;
 			}
 		}
 	}
@@ -475,6 +480,11 @@ void EditorVisualProfiler::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			activate->set_button_icon(get_editor_theme_icon(SNAME("Play")));
 			clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
+			graph_background->set_color(get_theme_color(SNAME("dark_color_1"), EditorStringName(Editor)));
+
+			if (last_metric > -1) {
+				_update_plot();
+			}
 		} break;
 	}
 }
@@ -867,15 +877,19 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	variables->connect("cell_selected", callable_mp(this, &EditorVisualProfiler::_item_selected));
 	variables->connect("item_collapsed", callable_mp(this, &EditorVisualProfiler::_item_collapsed));
 
+	graph_background = memnew(ColorRect);
+	h_split->add_child(graph_background);
+
 	graph = memnew(TextureRect);
 	graph->set_custom_minimum_size(Size2(250 * EDSCALE, 0));
 	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	graph->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	graph->connect(SceneStringName(draw), callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
 	graph->connect(SceneStringName(gui_input), callable_mp(this, &EditorVisualProfiler::_graph_tex_input));
 	graph->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
 
-	h_split->add_child(graph);
+	graph_background->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	int metric_size = CLAMP(int(EDITOR_GET("debugger/profiler_frame_history_size")), 60, 10000);

@@ -116,8 +116,6 @@ class EditorHelp : public VBoxContainer {
 
 	LineEdit *search = nullptr;
 	FindBar *find_bar = nullptr;
-	HBoxContainer *status_bar = nullptr;
-	Button *toggle_files_button = nullptr;
 
 	struct ThemeCache {
 		Ref<StyleBox> background_style;
@@ -174,7 +172,6 @@ class EditorHelp : public VBoxContainer {
 	void _class_desc_finished();
 	void _class_list_select(const String &p_select);
 	void _class_desc_select(const String &p_select);
-	void _class_desc_input(const Ref<InputEvent> &p_input);
 	void _class_desc_resized(bool p_force_update_theme);
 	int display_margin = 0;
 
@@ -186,8 +183,6 @@ class EditorHelp : public VBoxContainer {
 
 	void _request_help(const String &p_string);
 	void _search(bool p_search_previous = false);
-
-	void _toggle_files_pressed();
 
 	inline static int doc_generation_count = 0;
 	inline static String doc_version_hash;
@@ -268,8 +263,6 @@ public:
 	int get_scroll() const;
 	void set_scroll(int p_scroll);
 
-	void update_toggle_files_button();
-
 	static void init_gdext_pointers();
 
 	EditorHelp();
@@ -323,6 +316,9 @@ class EditorHelpBit : public VBoxContainer {
 
 	bool use_class_prefix = false;
 
+	String current_symbol;
+	String current_prologue;
+
 	String symbol_doc_link;
 	String symbol_class_name;
 	String symbol_type;
@@ -354,6 +350,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	static void clear_cache();
 	static String get_as_plain_text(const String &p_symbol, const String &p_prologue = String());
 
 	void parse_symbol(const String &p_symbol, const String &p_prologue = String());
@@ -362,7 +359,14 @@ public:
 	void set_content_height_limits(float p_min, float p_max);
 	void update_content_height();
 
-	EditorHelpBit(const String &p_symbol = String(), const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_allow_selection = true, bool p_in_tooltip = false);
+	void override_custom_minimum_width(float p_min_width);
+
+	EditorHelpBit(
+			const String &p_symbol = String(),
+			const String &p_prologue = String(),
+			bool p_use_class_prefix = false,
+			bool p_allow_selection = true,
+			bool p_in_tooltip = false);
 };
 
 // Standard tooltips do not allow you to hover over them.
@@ -371,6 +375,9 @@ class EditorHelpBitTooltip : public PopupPanel {
 	GDCLASS(EditorHelpBitTooltip, PopupPanel);
 
 	static bool _is_tooltip_visible;
+
+	RichTextLabel *diagnostics_label;
+	VBoxContainer *vbox;
 
 	Timer *timer = nullptr;
 	uint64_t _enter_tree_time = 0;
@@ -388,7 +395,13 @@ protected:
 
 public:
 	// The returned control is an orphan node, which is to make the standard tooltip invisible.
-	[[nodiscard]] static Control *make_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false, bool p_shortcut = false);
+	[[nodiscard]] static Control *make_tooltip(
+			Control *p_target,
+			const String &p_symbol,
+			const String &p_prologue = String(),
+			bool p_use_class_prefix = false,
+			bool p_shortcut = false,
+			const String &p_diagnostics = String());
 
 	void popup_under_position(const Point2 &p_point);
 
@@ -426,7 +439,7 @@ public:
 	static EditorHelpHighlighter *get_singleton();
 
 	void highlight(RichTextLabel *p_rich_text_label, Language p_language, const String &p_source, bool p_use_cache);
-	void reset_cache();
+	void clear_cache();
 
 	EditorHelpHighlighter();
 	virtual ~EditorHelpHighlighter();

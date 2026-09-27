@@ -77,6 +77,7 @@ enum SceneUniformLocation {
 	SCENE_EMPTY2, // Unused, put here to avoid conflicts with SKY_MULTIVIEW_UNIFORM_LOCATION.
 	SCENE_PREV_DATA_UNIFORM_LOCATION,
 	SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION,
+	SCENE_DECAL_DATA,
 };
 
 enum SkyUniformLocation {
@@ -95,6 +96,7 @@ enum SkyUniformLocation {
 	SKY_MULTIVIEW_UNIFORM_LOCATION,
 	SKY_EMPTY9, // Unused, put here to avoid conflicts with SCENE_PREV_DATA_UNIFORM_LOCATION.
 	SKY_EMPTY10, // Unused, put here to avoid conflicts with SCENE_PREV_MULTIVIEW_UNIFORM_LOCATION.
+	SKY_EMPTY11, // Unused, put here to avoid conflicts with SCENE_DECAL_DATA.
 };
 
 struct RenderDataGLES3 {
@@ -345,6 +347,9 @@ private:
 		LocalVector<RID> reflection_probe_rid_cache;
 		LocalVector<Transform3D> reflection_probes_local_transform_cache;
 
+		uint32_t decals_count = 0;
+		int32_t decals[MAX_DECAL_CULL];
+
 		RID lightmap_instance;
 		Rect2 lightmap_uv_scale;
 		uint32_t lightmap_slice_index;
@@ -364,7 +369,7 @@ private:
 		virtual void clear_light_instances() override;
 		virtual void pair_light_instance(const RID p_light_instance, RSE::LightType light_type, uint32_t placement_idx) override;
 		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
-		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override {}
+		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override;
 		virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
 
 		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override {}
@@ -417,6 +422,9 @@ private:
 
 			float ambient_light_color_energy[4];
 
+			float reflection_color[3];
+			uint32_t use_reflection_color = 0;
+
 			float ambient_color_sky_mix;
 			uint32_t directional_shadow_count;
 			float emissive_exposure_normalization;
@@ -459,6 +467,10 @@ private:
 			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
+			// Current view being rendered. Used when emulating multiview by
+			// rendering once per view (when the GPU doesn't support multiview).
+			uint32_t view_index = 0;
+			uint32_t pad[3];
 		};
 		static_assert(sizeof(MultiviewUBO) % 16 == 0, "Multiview UBO size must be a multiple of 16 bytes");
 		static_assert(sizeof(MultiviewUBO) < 16384, "MultiviewUBO size must be 16384 bytes or smaller");
@@ -739,6 +751,8 @@ private:
 
 	RenderList render_list[RENDER_LIST_MAX];
 
+	RSE::DecalFilter decals_filter = RSE::DECAL_FILTER_LINEAR_MIPMAPS;
+
 	void _update_scene_ubo(GLuint &p_ubo_buffer, GLuint p_index, uint32_t p_size, const void *p_source_data, String p_name = "");
 
 	void _setup_lights(const RenderDataGLES3 *p_render_data, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_omni_light_count, uint32_t &r_spot_light_count, uint32_t &r_area_light_count, uint32_t &r_directional_shadow_count);
@@ -859,6 +873,7 @@ protected:
 	mutable RID_Owner<Sky, true> sky_owner;
 
 	GLES3::SkyMaterialData *_get_sky_material_data(RID p_env);
+	GLES3::SkyMaterialData *_get_flat_color_sky_material_data(RID p_env);
 	void _setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();

@@ -1,5 +1,3 @@
-GH-98750
---------
 Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ALICE_BLUE': value changed value in new API, from "Color(0.941176, 0.972549, 1, 1)" to "Color(0.9411765, 0.972549, 1, 1)".
 Validate extension JSON: Error: Field 'builtin_classes/Color/constants/ANTIQUE_WHITE': value changed value in new API, from "Color(0.980392, 0.921569, 0.843137, 1)" to "Color(0.98039216, 0.92156863, 0.84313726, 1)".
 Validate extension JSON: Error: Field 'builtin_classes/Color/constants/AQUAMARINE': value changed value in new API, from "Color(0.498039, 1, 0.831373, 1)" to "Color(0.49803922, 1, 0.83137256, 1)".

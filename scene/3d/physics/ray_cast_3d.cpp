@@ -35,6 +35,7 @@
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/mesh.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #include "servers/rendering/rendering_server.h"
 
 void RayCast3D::set_target_position(const Vector3 &p_point) {
@@ -217,6 +218,14 @@ void RayCast3D::_notification(int p_what) {
 				}
 			}
 		} break;
+
+		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
+			if (get_tree()->is_debugging_collisions_hint()) {
+				_update_debug_shape();
+			} else {
+				_clear_debug_shape();
+			}
+		} break;
 	}
 }
 
@@ -269,18 +278,18 @@ void RayCast3D::add_exception_rid(const RID &p_rid) {
 	exclude.insert(p_rid);
 }
 
-void RayCast3D::add_exception(RequiredParam<const CollisionObject3D> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
-	add_exception_rid(p_node->get_rid());
+void RayCast3D::add_exception(RequiredParam<const CollisionObject3D> p_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(node, p_node, "The passed Node must be an instance of CollisionObject3D.");
+	add_exception_rid(node->get_rid());
 }
 
 void RayCast3D::remove_exception_rid(const RID &p_rid) {
 	exclude.erase(p_rid);
 }
 
-void RayCast3D::remove_exception(RequiredParam<const CollisionObject3D> rp_node) {
-	EXTRACT_PARAM_OR_FAIL_MSG(p_node, rp_node, "The passed Node must be an instance of CollisionObject3D.");
-	remove_exception_rid(p_node->get_rid());
+void RayCast3D::remove_exception(RequiredParam<const CollisionObject3D> p_node) {
+	EXTRACT_PARAM_OR_FAIL_MSG(node, p_node, "The passed Node must be an instance of CollisionObject3D.");
+	remove_exception_rid(node->get_rid());
 }
 
 void RayCast3D::clear_exceptions() {

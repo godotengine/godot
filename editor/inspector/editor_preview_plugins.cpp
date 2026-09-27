@@ -39,13 +39,14 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/audio/audio_stream.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
-#include "servers/audio/audio_stream.h"
+#include "servers/audio/audio_server.h"
 #include "servers/rendering/rendering_server.h"
 
 void post_process_preview(Ref<Image> p_image) {

@@ -30,11 +30,12 @@
 
 #pragma once
 
-#include "core/math/audio_frame.h"
 #include "core/variant/method_ptrcall.h"
 #include "core/variant/type_info.h"
 #include "core/variant/variant_caster.h"
 #include "core/variant/variant_internal.h"
+
+struct AudioFrame;
 
 // Metafunction for pointee name. Specialized in GDVIRTUAL_NATIVE_PTR; takes into account const; falls back to "void".
 template <typename T>
@@ -91,11 +92,11 @@ struct VariantCaster<GDExtensionPtr<T>> {
 
 template <typename T>
 struct VariantInternalAccessor<GDExtensionPtr<T>> {
-	static _FORCE_INLINE_ const GDExtensionPtr<T> &get(const Variant *v) {
-		return *reinterpret_cast<const GDExtensionPtr<T> *>(VariantInternal::get_int(v));
+	static _FORCE_INLINE_ const GDExtensionPtr<T> &get(const Variant *p_variant) {
+		return *reinterpret_cast<const GDExtensionPtr<T> *>(VariantInternal::get_int(p_variant));
 	}
-	static _FORCE_INLINE_ void set(Variant *v, const GDExtensionPtr<T> &p_value) {
-		*VariantInternal::get_int(v) = uint64_t(p_value.data);
+	static _FORCE_INLINE_ void set(Variant *r_variant, const GDExtensionPtr<T> &p_value) {
+		*VariantInternal::get_int(r_variant) = uint64_t(p_value.data);
 	}
 };
 

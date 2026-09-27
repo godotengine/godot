@@ -26,6 +26,22 @@ def get_tools(env: "SConsEnvironment"):
 def get_opts():
     from SCons.Variables import BoolVariable
 
+    # Dependencies folder.
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        # Cross-compiling, the deps install script puts things in `bin`.
+        # Getting an absolute path to it is a bit hacky in Python.
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except Exception:  # Give up.
+            deps_folder = ""
+
     return [
         ("ANDROID_HOME", "Path to the Android SDK", get_env_android_sdk_root()),
         (
@@ -40,6 +56,12 @@ def get_opts():
             False,
         ),
         BoolVariable("swappy", "Use Swappy Frame Pacing library", False),
+        # Screen reader support.
+        (
+            "accesskit_sdk_path",
+            "Path to the AccessKit C SDK",
+            os.path.join(deps_folder, "accesskit"),
+        ),
     ]
 
 
@@ -136,8 +158,7 @@ def configure(env: "SConsEnvironment"):
 
     if get_min_sdk_version(env["ndk_platform"]) < get_min_target_api():
         print_warning(
-            "Minimum supported Android target api is %d. Forcing target api %d."
-            % (get_min_target_api(), get_min_target_api())
+            f"Minimum supported Android target api is {get_min_target_api()}. Forcing target api {get_min_target_api()}."
         )
         env["ndk_platform"] = "android-" + str(get_min_target_api())
 
@@ -226,6 +247,29 @@ def configure(env: "SConsEnvironment"):
     if get_min_sdk_version(env["ndk_platform"]) >= 24:
         env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
+    if env["accesskit"]:
+        if os.path.exists(env["accesskit_sdk_path"]):
+            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            if env["arch"] == "arm64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/arm64-v8a/static/"])
+            elif env["arch"] == "arm32":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/armeabi-v7a/static/"])
+            elif env["arch"] == "x86_64":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/x86_64/static/"])
+            elif env["arch"] == "x86_32":
+                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/android/x86/static/"])
+            env.Append(LIBS=["accesskit"])
+            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+        else:
+            print_warning(
+                "The screen reader support driver requires dependencies to be installed.\n"
+                f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                "See the documentation for more information:\n"
+                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html#compiling-with-accesskit-support\n"
+                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+            )
+            env["accesskit"] = False
+
     if env["arch"] == "x86_32":
         if has_swappy:
             env.Append(LIBPATH=["#thirdparty/swappy-frame-pacing/x86"])
@@ -257,7 +301,8 @@ def configure(env: "SConsEnvironment"):
     env.Append(LIBS=["OpenSLES", "EGL", "android", "log", "z", "dl"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+
         if has_swappy:
             env.Append(CPPDEFINES=["SWAPPY_FRAME_PACING_ENABLED"])
             env.Append(LIBS=["swappy_static"])

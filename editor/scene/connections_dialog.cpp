@@ -33,11 +33,11 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/templates/hash_set.h"
 #include "editor/doc/editor_help.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/docks/signals_dock.h"
-#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -401,7 +401,7 @@ void ConnectDialog::_update_method_tree() {
 	ScriptInstance *si = target->get_script_instance();
 	if (si) {
 		if (si->get_script()->is_built_in()) {
-			si->get_script()->reload();
+			si->get_script()->reload(true);
 		}
 		List<MethodInfo> methods;
 		si->get_method_list(&methods);
@@ -987,6 +987,7 @@ void ConnectionsDock::_filter_changed(const String &p_text) {
  */
 void ConnectionsDock::_make_or_edit_connection() {
 	NodePath dst_path = connect_dialog->get_dst_path();
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	Node *target = Object::cast_to<Node>(selected_object)->get_node(dst_path);
 
 	ERR_FAIL_NULL(target);
@@ -1013,7 +1014,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 
 	if (scr.is_valid() && !ClassDB::has_method(target->get_class(), cd.method)) {
 		// Check in target's own script.
-		int line = scr->get_language()->find_function(cd.method, scr->get_source_code());
+		int32_t line = scr->get_language()->get_editor_language()->find_function(cd.method, scr->get_source_code());
 		if (line != -1) {
 			add_script_function_request = EDITOR_GET("text_editor/behavior/navigation/open_script_when_connecting_signal_to_existing_method");
 		} else {
@@ -1021,7 +1022,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 			bool found_inherited_function = false;
 			Ref<Script> inherited_scr = scr->get_base_script();
 			while (inherited_scr.is_valid()) {
-				int inherited_line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
+				int32_t inherited_line = inherited_scr->get_language()->get_editor_language()->find_function(cd.method, inherited_scr->get_source_code());
 				if (inherited_line != -1) {
 					found_inherited_function = true;
 					break;
@@ -1121,6 +1122,7 @@ void ConnectionsDock::_connect(const ConnectDialog::ConnectionData &p_cd) {
  * Break single connection w/ undo-redo functionality.
  */
 void ConnectionsDock::_disconnect(const ConnectDialog::ConnectionData &p_cd) {
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	ERR_FAIL_COND(p_cd.source != selected_object); // Shouldn't happen but... Bugcheck.
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -1156,6 +1158,7 @@ void ConnectionsDock::_disconnect_all() {
 		Connection connection = child->get_metadata(0);
 		if (!_is_connection_inherited(connection)) {
 			ConnectDialog::ConnectionData cd = connection;
+			Object *selected_object = ObjectDB::get_instance(selected_object_id);
 			undo_redo->add_do_method(selected_object, "disconnect", cd.signal, cd.get_callable());
 			undo_redo->add_undo_method(selected_object, "connect", cd.signal, cd.get_callable(), cd.flags);
 		}
@@ -1232,6 +1235,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 
 	ConnectDialog::ConnectionData cd;
 
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	Node *selected_node = Object::cast_to<Node>(selected_object);
 	Node *dst_node = selected_node->get_owner() ? selected_node->get_owner() : selected_node;
 	if (!dst_node || dst_node->get_script().is_null()) {
@@ -1279,6 +1283,7 @@ void ConnectionsDock::_go_to_method(TreeItem &p_item) {
 
 	Connection connection = p_item.get_metadata(0);
 	ConnectDialog::ConnectionData cd = connection;
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	ERR_FAIL_COND(cd.source != selected_object); // Shouldn't happen but... bugcheck.
 
 	if (!cd.target) {
@@ -1292,7 +1297,7 @@ void ConnectionsDock::_go_to_method(TreeItem &p_item) {
 	}
 
 	if (scr.is_valid() && ScriptEditor::get_singleton()->script_goto_method(scr, cd.method)) {
-		EditorNode::get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+		ScriptEditor::get_singleton()->focus_script_editor(scr); // TODO: Move this to goto_method().
 	}
 }
 
@@ -1300,7 +1305,7 @@ void ConnectionsDock::_handle_class_menu_option(int p_option) {
 	switch (p_option) {
 		case CLASS_MENU_OPEN_DOCS:
 			ScriptEditor::get_singleton()->goto_help("class:" + class_menu_doc_class_name);
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+			ScriptEditor::get_singleton()->focus_editor(); // TODO: Move this to goto_help().
 			break;
 	}
 }
@@ -1330,7 +1335,7 @@ void ConnectionsDock::_handle_signal_menu_option(int p_option) {
 		} break;
 		case SIGNAL_MENU_OPEN_DOCS: {
 			ScriptEditor::get_singleton()->goto_help("class_signal:" + String(meta["class"]) + ":" + String(meta["name"]));
-			EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+			ScriptEditor::get_singleton()->focus_editor();
 		} break;
 	}
 }
@@ -1469,6 +1474,13 @@ void ConnectionsDock::_close() {
 	hide();
 }
 
+void ConnectionsDock::_changed_callback() {
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
+	if (selected_object != nullptr) {
+		update_tree();
+	}
+}
+
 void ConnectionsDock::_connect_pressed() {
 	TreeItem *item = tree->get_selected();
 	if (!item) {
@@ -1526,8 +1538,19 @@ void ConnectionsDock::set_object(Object *p_object) {
 		select_an_object->hide();
 		holder->show();
 	}
+
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
+	if (selected_object != nullptr) {
+		selected_object->disconnect(CoreStringName(property_list_changed), callable_mp(this, &ConnectionsDock::_changed_callback));
+	}
+
+	selected_object_id = p_object ? p_object->get_instance_id() : ObjectID();
 	selected_object = p_object;
 	is_editing_resource = (Object::cast_to<Resource>(selected_object) != nullptr);
+
+	if (selected_object != nullptr) {
+		selected_object->connect(CoreStringName(property_list_changed), callable_mp(this, &ConnectionsDock::_changed_callback));
+	}
 	update_tree();
 }
 
@@ -1538,6 +1561,7 @@ void ConnectionsDock::update_tree() {
 	}
 	tree->clear();
 
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	if (!selected_object) {
 		return;
 	}
@@ -1758,7 +1782,7 @@ ConnectionsDock::ConnectionsDock() {
 	holder->add_child(search_box);
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_theme_type_variation("NoBorderHorizontal");
+	mc->set_theme_type_variation("NoBorderPanel");
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	holder->add_child(mc);
 

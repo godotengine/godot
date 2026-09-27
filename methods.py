@@ -10,9 +10,10 @@ import subprocess
 import sys
 import zlib
 from collections import OrderedDict
+from collections.abc import Generator
 from io import StringIO
 from pathlib import Path
-from typing import Generator, TextIO, cast
+from typing import TextIO, cast
 
 from misc.utility.color import print_error, print_info, print_warning
 from platform_methods import detect_arch
@@ -46,7 +47,7 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
     for file in files:
         obj = self.Object(file)
         if obj in sources:
-            print_warning('Object "{}" already included in environment sources.'.format(obj))
+            print_warning(f'Object "{obj}" already included in environment sources.')
             continue
         sources.append(obj)
 
@@ -344,7 +345,7 @@ def module_check_dependencies(self, module):
     missing_deps = set()
     required_deps = self.module_dependencies[module][0] if module in self.module_dependencies else []
     for dep in required_deps:
-        opt = "module_{}_enabled".format(dep)
+        opt = f"module_{dep}_enabled"
         if opt not in self or not self[opt] or not module_check_dependencies(self, dep):
             missing_deps.add(dep)
 
@@ -654,7 +655,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print_error("Failed to find SDK path while running 'xcrun --sdk {} --show-sdk-path'.".format(sdk_name))
+            print_error(f"Failed to find SDK path while running 'xcrun --sdk {sdk_name} --show-sdk-path'.")
             raise
 
 
@@ -1291,9 +1292,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
                 itemlist[key] += [item]
 
         for x in itemlist.keys():
-            properties.append(
-                "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
-            )
+            properties.append(f"<ActiveProjectItemList_{x}>;{';'.join(itemlist[x])};</ActiveProjectItemList_{x}>")
         output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
 
         # The modules_enabled.gen.h header containing the defines is only generated on build, and only for the most recently built

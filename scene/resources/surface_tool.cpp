@@ -743,7 +743,7 @@ void SurfaceTool::index() {
 		return; //already indexed
 	}
 
-	AHashMap<Vertex &, int, VertexHasher> indices = vertex_array.size();
+	AHashMap<Vertex &, int, VertexHasher> indices(vertex_array.size());
 
 	uint32_t new_size = 0;
 	for (Vertex &vertex : vertex_array) {
@@ -975,7 +975,6 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
 	Array arr = p_existing->surface_get_blend_shape_arrays(p_surface);
-	Array blend_shape_names;
 	int32_t shape_idx = -1;
 	for (int32_t i = 0; i < p_existing->get_blend_shape_count(); i++) {
 		String name = p_existing->get_blend_shape_name(i);
@@ -1165,7 +1164,7 @@ void SurfaceTool::generate_normals(bool p_flip) {
 
 	ERR_FAIL_COND((vertex_array.size() % 3) != 0);
 
-	AHashMap<SmoothGroupVertex, Vector3, SmoothGroupVertexHasher> smooth_hash = vertex_array.size();
+	AHashMap<SmoothGroupVertex, Vector3, SmoothGroupVertexHasher> smooth_hash(vertex_array.size());
 
 	for (uint32_t vi = 0; vi < vertex_array.size(); vi += 3) {
 		Vertex *v = &vertex_array[vi];

@@ -395,9 +395,7 @@ void ServersDebugger::initialize() {
 }
 
 void ServersDebugger::deinitialize() {
-	if (singleton) {
-		memdelete(singleton);
-	}
+	memdelete(singleton);
 }
 
 Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured) {

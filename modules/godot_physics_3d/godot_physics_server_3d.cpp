@@ -976,12 +976,12 @@ RID GodotPhysicsServer3D::soft_body_create() {
 	return rid;
 }
 
-void GodotPhysicsServer3D::soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> rp_rendering_server_handler) {
+void GodotPhysicsServer3D::soft_body_update_rendering_server(RID p_body, RequiredParam<PhysicsServer3DRenderingServerHandler> p_rendering_server_handler) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);
-	EXTRACT_PARAM_OR_FAIL(p_rendering_server_handler, rp_rendering_server_handler);
+	EXTRACT_PARAM_OR_FAIL(rendering_server_handler, p_rendering_server_handler);
 
-	soft_body->update_rendering_server(p_rendering_server_handler);
+	soft_body->update_rendering_server(rendering_server_handler);
 }
 
 void GodotPhysicsServer3D::soft_body_set_space(RID p_body, RID p_space) {
@@ -1495,7 +1495,7 @@ void GodotPhysicsServer3D::slider_joint_set_param(RID p_joint, PS3DE::SliderJoin
 real_t GodotPhysicsServer3D::slider_joint_get_param(RID p_joint, PS3DE::SliderJointParam p_param) const {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL_V(joint, 0);
-	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_CONE_TWIST, 0);
+	ERR_FAIL_COND_V(joint->get_type() != PS3DE::JOINT_TYPE_SLIDER, 0);
 	GodotSliderJoint3D *slider_joint = static_cast<GodotSliderJoint3D *>(joint);
 	return slider_joint->get_param(p_param);
 }

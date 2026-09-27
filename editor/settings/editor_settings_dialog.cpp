@@ -93,6 +93,9 @@ void EditorSettingsDialog::_settings_property_edited() {
 	} else if (full_name == "editors/3d/navigation/navigation_scheme") {
 		update_3d_navigation_preset();
 		_update_shortcuts();
+	} else if (full_name == "interface/editor/appearance/custom_display_scale") {
+		// The "Custom" display scale is index 7 in the setting's enum hint.
+		EditorSettings::get_singleton()->set_manually("interface/editor/appearance/display_scale", 7);
 	}
 }
 
@@ -233,6 +236,11 @@ void EditorSettingsDialog::popup_edit_settings() {
 		saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "editor_settings", Rect2());
 	}
 
+#ifdef ANDROID_ENABLED
+	// The Android Editor's aspect ratio may change when the device orientation changes, and `saved_size` may correspond to a different orientation (example, a very small width if it was last opened in portrait mode).
+	// Always reset the popup size so that it covers most of the available area.
+	popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+#else
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else if (_is_in_project_manager()) {
@@ -240,6 +248,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	} else {
 		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
+#endif
 
 	_focus_current_search_box();
 }
@@ -1079,7 +1088,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderHorizontalBottom");
+	mc->set_theme_type_variation("NoBorderBottomPanel");
 	tab_shortcuts->add_child(mc);
 
 	shortcuts = memnew(Tree);
@@ -1090,6 +1099,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->set_column_titles_visible(true);
 	shortcuts->set_column_title(0, TTRC("Name"));
 	shortcuts->set_column_title(1, TTRC("Binding"));
+	shortcuts->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	shortcuts->connect("button_clicked", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	mc->add_child(shortcuts);
@@ -1123,6 +1133,8 @@ EditorSettingsDialog::~EditorSettingsDialog() {
 }
 
 void EditorSettingsPropertyWrapper::_setup_override_info() {
+	bottom_editor_separation = true;
+
 	override_container = memnew(HBoxContainer);
 
 	override_icon = memnew(TextureRect);

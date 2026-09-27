@@ -148,7 +148,8 @@
 			<return type="Vector3" />
 			<param index="0" name="to" type="Vector3" />
 			<description>
-				Returns the normalized vector pointing from this vector to [param to]. This is equivalent to using [code](b - a).normalized()[/code].
+				Returns the normalized vector pointing from this vector to [param to].
+				[code]a.direction_to(b)[/code] is equivalent to [code](b - a).normalized()[/code]. See also [method normalized].
 			</description>
 		</method>
 		<method name="distance_squared_to" qualifiers="const">

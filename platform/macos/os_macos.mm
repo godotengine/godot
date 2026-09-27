@@ -41,6 +41,7 @@
 
 #include "core/config/engine.h"
 #include "core/crypto/crypto_core.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
@@ -239,9 +240,7 @@ void OS_MacOS::finalize() {
 	delete_main_loop();
 
 #ifdef SDL_ENABLED
-	if (joypad_sdl) {
-		memdelete(joypad_sdl);
-	}
+	memdelete(joypad_sdl);
 #endif
 }
 
@@ -1020,6 +1019,11 @@ String OS_MacOS::get_system_ca_certificates() {
 	return certs;
 }
 
+Error OS_MacOS::get_entropy(uint8_t *r_buffer, int p_bytes) {
+	int status = SecRandomCopyBytes(kSecRandomDefault, p_bytes, r_buffer);
+	return status == errSecSuccess ? OK : FAILED;
+}
+
 OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	// macOS supports both formats on ARM. Prefer S3TC/BPTC
 	// for better compatibility with x86 platforms.
@@ -1189,6 +1193,10 @@ OS_MacOS_NSApp::OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv
 
 // MARK: - OS_MacOS_Headless
 
+void OS_MacOS_Headless::alert(const String &p_alert, const String &p_title) {
+	WARN_PRINT(p_alert);
+}
+
 void OS_MacOS_Headless::run() {
 	CFRunLoopGetCurrent();
 
@@ -1243,6 +1251,15 @@ OS_MacOS_Headless::OS_MacOS_Headless(const char *p_execpath, int p_argc, char **
 // MARK: - OS_MacOS_Embedded
 
 #ifdef TOOLS_ENABLED
+
+void OS_MacOS_Embedded::alert(const String &p_alert, const String &p_title) {
+	if (EngineDebugger::get_singleton()) {
+		Array arr = { p_alert, p_title };
+		EngineDebugger::get_singleton()->send_message("game_view:alert", arr);
+	} else {
+		WARN_PRINT(p_alert);
+	}
+}
 
 void OS_MacOS_Embedded::run() {
 	CFRunLoopGetCurrent();

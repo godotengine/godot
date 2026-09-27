@@ -3,6 +3,7 @@
 
 
 #include "../../hb-open-type.hh"
+#include "../../hb-depend-data.hh"
 #include "../../hb-ot-head-table.hh"
 #include "../../hb-ot-hmtx-table.hh"
 #include "../../hb-ot-var-gvar-table.hh"
@@ -98,8 +99,11 @@ struct glyf
       return_trace (false);
 
     hb_vector_t<glyf_impl::SubsetGlyph> glyphs;
-    if (!_populate_subset_glyphs (c->plan, font, glyphs))
+    /* SubsetGlyphs borrow bytes from this blob until they are serialized. */
+    hb_blob_t *source_glyf = nullptr;
+    if (!_populate_subset_glyphs (c->plan, font, glyphs, &source_glyf))
     {
+      hb_blob_destroy (source_glyf);
       hb_font_destroy (font);
       return_trace (false);
     }
@@ -130,6 +134,7 @@ struct glyf
     bool result = glyf_prime->serialize (c->serializer, hb_iter (glyphs), use_short_loca, c->plan);
     if (c->plan->normalized_coords && !c->plan->pinned_at_default)
       _free_compiled_subset_glyphs (glyphs);
+    hb_blob_destroy (source_glyf);
 
     if (unlikely (!c->serializer->check_success (glyf_impl::_add_loca_and_head (c,
 						 padded_offsets.iter (),
@@ -142,7 +147,8 @@ struct glyf
   bool
   _populate_subset_glyphs (const hb_subset_plan_t   *plan,
 			   hb_font_t                *font,
-			   hb_vector_t<glyf_impl::SubsetGlyph>& glyphs /* OUT */) const;
+			   hb_vector_t<glyf_impl::SubsetGlyph>& glyphs /* OUT */,
+			   hb_blob_t               **source_glyf /* OUT */) const;
 
   hb_font_t *
   _create_font_for_instancing (const hb_subset_plan_t *plan) const;
@@ -215,6 +221,17 @@ struct glyf_accelerator_t
   }
 
   bool has_data () const { return num_glyphs; }
+
+  void depend (hb_depend_data_builder_t *builder) const
+  {
+    if (!has_data ()) return;
+    for (hb_codepoint_t gid = 0; gid < get_num_glyphs (); gid++)
+    {
+      auto glyph = glyph_for_gid (gid);
+      for (auto &item : glyph.get_composite_iterator ())
+        builder->add_depend (gid, HB_OT_TAG_glyf, item.get_gid ());
+    }
+  }
 
   protected:
   template<typename T>
@@ -340,10 +357,12 @@ struct glyf_accelerator_t
 	  return;
 	}
 	{
-	  extents->x_bearing = roundf (min_x);
-	  extents->width = roundf (max_x - extents->x_bearing);
-	  extents->y_bearing = roundf (max_y);
-	  extents->height = roundf (min_y - extents->y_bearing);
+	  double x_bearing = (double) roundf (min_x);
+	  double y_bearing = (double) roundf (max_y);
+	  extents->x_bearing = hb_clamp_to<hb_position_t> (x_bearing);
+	  extents->width = hb_clamp_to<hb_position_t> ((double) roundf (max_x) - x_bearing);
+	  extents->y_bearing = hb_clamp_to<hb_position_t> (y_bearing);
+	  extents->height = hb_clamp_to<hb_position_t> ((double) roundf (min_y) - y_bearing);
 
 	  if (scaled)
 	    font->scale_glyph_extents (extents);
@@ -437,7 +456,8 @@ struct glyf_accelerator_t
   bool get_extents_at (hb_font_t *font,
 		       hb_codepoint_t gid,
 		       hb_glyph_extents_t *extents,
-		       hb_array_t<const int> coords) const
+		       hb_array_t<const int> coords,
+		       int64_t *budget = nullptr) const
   {
     if (unlikely (gid >= num_glyphs)) return false;
 
@@ -451,6 +471,7 @@ struct glyf_accelerator_t
 			     points_aggregator_t (font, extents, nullptr, true),
 			     coords,
 			     *scratch);
+      if (budget) *budget -= scratch->all_points.length;
       release_scratch (scratch);
       return ret;
     }
@@ -509,13 +530,16 @@ struct glyf_accelerator_t
   get_path_at (hb_font_t *font, hb_codepoint_t gid, hb_draw_session_t &draw_session,
 	       hb_array_t<const int> coords,
 	       hb_glyf_scratch_t &scratch,
-	       hb_scalar_cache_t *gvar_cache = nullptr) const
+	       hb_scalar_cache_t *gvar_cache = nullptr,
+	       int64_t *budget = nullptr) const
   {
     if (!has_data ()) return false;
-    return get_points (font, gid, glyf_impl::path_builder_t (font, draw_session),
-		       coords,
-		       scratch,
-		       gvar_cache);
+    bool ret = get_points (font, gid, glyf_impl::path_builder_t (font, draw_session),
+			   coords,
+			   scratch,
+			   gvar_cache);
+    if (budget) *budget -= scratch.all_points.length;
+    return ret;
   }
 
 
@@ -542,6 +566,10 @@ struct glyf_accelerator_t
     }
   }
 
+  unsigned int get_num_glyphs () const { return num_glyphs; }
+  hb_blob_t *reference_glyf_table () const
+  { return hb_blob_reference (glyf_table.get_blob ()); }
+
 #ifndef HB_NO_VAR
   const gvar_accelerator_t *gvar;
 #ifndef HB_NO_BEYOND_64K
@@ -565,10 +593,12 @@ struct glyf_accelerator_t
 inline bool
 glyf::_populate_subset_glyphs (const hb_subset_plan_t   *plan,
 			       hb_font_t *font,
-			       hb_vector_t<glyf_impl::SubsetGlyph>& glyphs /* OUT */) const
+			       hb_vector_t<glyf_impl::SubsetGlyph>& glyphs /* OUT */,
+			       hb_blob_t **source_glyf /* OUT */) const
 {
   OT::glyf_accelerator_t glyf (plan->source);
   if (!glyphs.alloc_exact (plan->new_to_old_gid_list.length)) return false;
+  *source_glyf = glyf.reference_glyf_table ();
 
   for (const auto &pair : plan->new_to_old_gid_list)
   {
@@ -613,6 +643,19 @@ glyf::_create_font_for_instancing (const hb_subset_plan_t *plan) const
 {
   hb_font_t *font = hb_font_create (plan->source);
   if (unlikely (font == hb_font_get_empty ())) return nullptr;
+
+#ifndef HB_NO_VAR
+  if (plan->has_avar2)
+  {
+    /* Under avar2, instancing applies only to the self-contained pins,
+     * whose constant final coordinates the plan holds in normalized_coords.
+     * Setting user-space variations would run the full avar2 mapping and
+     * bake contributions that remain live in the instance's variations. */
+    hb_font_set_var_coords_normalized (font, plan->normalized_coords.arrayZ,
+				       plan->normalized_coords.length);
+    return font;
+  }
+#endif
 
   hb_vector_t<hb_variation_t> vars;
   if (unlikely (!vars.alloc (plan->user_axes_location.get_population (), true)))

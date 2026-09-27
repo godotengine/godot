@@ -34,12 +34,12 @@
 
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
-#include "core/os/thread.h"
 #include "core/string/string_name.h"
 #include "core/templates/pair.h"
 #include "core/templates/self_list.h"
 #include "core/variant/variant.h"
 
+struct ContainerType;
 class GDScriptInstance;
 class GDScript;
 
@@ -64,6 +64,7 @@ public:
 
 	_FORCE_INLINE_ bool has_type() const { return kind != VARIANT; }
 
+	bool is_type_exact(const ContainerType &p_container_type) const;
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const;
 
 	bool can_contain_object() const {
@@ -347,6 +348,8 @@ private:
 	StringName source;
 	bool _static = false;
 	Vector<GDScriptDataType> argument_types;
+	// NOTE: This is the expected return type, but coroutines can actually return a `GDScriptFunctionState` object.
+	// In VM it is currently only used to return a default value on error (as a fallback).
 	GDScriptDataType return_type;
 	MethodInfo method_info;
 	Variant rpc_config;
@@ -379,7 +382,7 @@ private:
 	Vector<Variant::ValidatedConstructor> constructors;
 	Vector<Variant::ValidatedUtilityFunction> utilities;
 	Vector<GDScriptUtilityFunctions::FunctionPtr> gds_utilities;
-	Vector<MethodBind *> methods;
+	Vector<const MethodBind *> methods;
 	Vector<GDScriptFunction *> lambdas;
 
 	int _code_size = 0;
@@ -415,7 +418,7 @@ private:
 	const Variant::ValidatedConstructor *_constructors_ptr = nullptr;
 	const Variant::ValidatedUtilityFunction *_utilities_ptr = nullptr;
 	const GDScriptUtilityFunctions::FunctionPtr *_gds_utilities_ptr = nullptr;
-	MethodBind **_methods_ptr = nullptr;
+	const MethodBind *const *_methods_ptr = nullptr;
 	GDScriptFunction **_lambdas_ptr = nullptr;
 
 #ifdef DEBUG_ENABLED
@@ -517,7 +520,17 @@ class GDScriptFunctionState : public RefCounted {
 protected:
 	static void _bind_methods();
 
+private:
+	bool cleared = false;
+
 public:
+	/**
+	 * Transfers the object into a zombie state, in which it has no functionality anymore and can outlive `GDScriptLanguage`.
+	 * A cleared function state does not hold any references and thus can not be locked up in a ref cycle.
+	 * Callers SHOULD hold a reference to the object while calling `clear`.
+	 */
+	void clear();
+
 #ifdef DEBUG_ENABLED
 	// Returns a human-readable representation of the function.
 	String get_readable_function() {

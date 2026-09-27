@@ -432,12 +432,12 @@ public:
 			capacity(std_size(stack_buffer)) {
 	}
 
-	_FORCE_INLINE_ void push_back(char c) {
+	_FORCE_INLINE_ void push_back(char p_char) {
 		if (written >= capacity) {
 			ERR_FAIL_COND(!grow());
 		}
 
-		buffer[written++] = c;
+		buffer[written++] = p_char;
 	}
 
 	_FORCE_INLINE_ const char *get_data() const {

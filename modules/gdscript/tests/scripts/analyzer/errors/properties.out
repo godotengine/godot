@@ -4,3 +4,5 @@ GDTEST_ANALYZER_ERROR
 >> ERROR at line 13: Function with return type "int" cannot be used as getter for a property of type "String".
 >> ERROR at line 13: Function with argument type "int" cannot be used as setter for a property of type "String".
 >> ERROR at line 19: Cannot assign a value of type int to variable "x" with specified type String.
+>> ERROR at line 30: Getter with type "String" cannot be used along with setter of type "int".
+>> ERROR at line 33: Getter with type "String" cannot be used along with setter of type "int".

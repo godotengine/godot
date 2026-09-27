@@ -40,8 +40,8 @@
 #include "scene/animation/animation_player.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/resources/animation.h"
+#include "scene/resources/audio/audio_stream.h"
 #include "servers/audio/audio_server.h"
-#include "servers/audio/audio_stream.h"
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_stream_player_3d.h"
@@ -916,7 +916,7 @@ bool AnimationMixer::_update_caches() {
 						track_audio->object_id = child->get_instance_id();
 						track_audio->audio_stream.instantiate();
 						track_audio->audio_stream->set_polyphony(audio_max_polyphony);
-						track_audio->playback_type = (AudioServer::PlaybackType)(int)(child->call(SNAME("get_playback_type")));
+						track_audio->playback_type = (AuSE::PlaybackType)(int)(child->call(SNAME("get_playback_type")));
 						track_audio->bus = (StringName)(child->call(SNAME("get_bus")));
 
 						track = track_audio;
@@ -1955,7 +1955,7 @@ void AnimationMixer::_blend_apply() {
 						return;
 					}
 					if (t->loc_used && t->rot_used && t->scale_used) {
-						Transform3D transform = Transform3D(Basis(t->rot).scaled(t->scale), t->loc);
+						Transform3D transform = Transform3D(Basis(t->rot).scaled_local(t->scale), t->loc);
 						t_node_3d->set_transform(transform);
 					} else {
 						if (t->loc_used) {
@@ -2552,6 +2552,12 @@ void AnimationMixer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
 	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
+
+	// TODO Note: These used to be bound in AnimationPlayer::_bind_methods, indicating it
+	//            was originally meant to be exposed to AnimationPlayer instead of AnimationMixer.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("find_animation", "animation"), &AnimationMixer::find_animation);
+	ClassDB::bind_method(D_METHOD("find_animation_library", "animation"), &AnimationMixer::find_animation_library);
 }
 
 AnimationMixer::AnimationMixer() {

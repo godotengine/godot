@@ -199,43 +199,43 @@ void InputMap::action_set_deadzone(const StringName &p_action, float p_deadzone)
 	input_map[p_action].deadzone = p_deadzone;
 }
 
-void InputMap::action_add_event(const StringName &p_action, RequiredParam<InputEvent> rp_event) {
-	EXTRACT_PARAM_OR_FAIL_MSG(p_event, rp_event, "It's not a reference to a valid InputEvent object.");
+void InputMap::action_add_event(const StringName &p_action, RequiredParam<InputEvent> p_event) {
+	EXTRACT_PARAM_OR_FAIL_MSG(event, p_event, "It's not a reference to a valid InputEvent object.");
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
-	if (_find_event(input_map[p_action], p_event, true)) {
+	if (_find_event(input_map[p_action], event, true)) {
 		return; // Already added.
 	}
 
 	// Normalize legacy device IDs: before the device ID change,
 	// keyboard and mouse events defaulted to device=0.
-	if (p_event->get_device() == 0) {
-		switch (p_event->get_type()) {
+	if (event->get_device() == 0) {
+		switch (event->get_type()) {
 			case InputEventType::KEY:
-				p_event->set_device(InputEvent::DEVICE_ID_KEYBOARD);
+				event->set_device(InputEvent::DEVICE_ID_KEYBOARD);
 				break;
 			case InputEventType::MOUSE_BUTTON:
 			case InputEventType::MOUSE_MOTION:
-				p_event->set_device(InputEvent::DEVICE_ID_MOUSE);
+				event->set_device(InputEvent::DEVICE_ID_MOUSE);
 				break;
 			default:
 				break;
 		}
 	}
 
-	input_map[p_action].inputs.push_back(p_event);
+	input_map[p_action].inputs.push_back(event);
 }
 
-bool InputMap::action_has_event(const StringName &p_action, RequiredParam<InputEvent> rp_event) {
-	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
+bool InputMap::action_has_event(const StringName &p_action, RequiredParam<InputEvent> p_event) {
+	EXTRACT_PARAM_OR_FAIL_V(event, p_event, false);
 	ERR_FAIL_COND_V_MSG(!input_map.has(p_action), false, suggest_actions(p_action));
-	return (_find_event(input_map[p_action], p_event, true) != nullptr);
+	return (_find_event(input_map[p_action], event, true) != nullptr);
 }
 
-void InputMap::action_erase_event(const StringName &p_action, RequiredParam<InputEvent> rp_event) {
-	EXTRACT_PARAM_OR_FAIL(p_event, rp_event);
+void InputMap::action_erase_event(const StringName &p_action, RequiredParam<InputEvent> p_event) {
+	EXTRACT_PARAM_OR_FAIL(event, p_event);
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), suggest_actions(p_action));
 
-	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], p_event, true);
+	List<Ref<InputEvent>>::Element *E = _find_event(input_map[p_action], event, true);
 	if (E) {
 		input_map[p_action].inputs.erase(E);
 
@@ -276,9 +276,9 @@ const List<Ref<InputEvent>> *InputMap::action_get_events(const StringName &p_act
 	return &E->value.inputs;
 }
 
-bool InputMap::event_is_action(RequiredParam<InputEvent> rp_event, const StringName &p_action, bool p_exact_match) const {
-	EXTRACT_PARAM_OR_FAIL_V(p_event, rp_event, false);
-	return event_get_action_status(p_event, p_action, p_exact_match);
+bool InputMap::event_is_action(RequiredParam<InputEvent> p_event, const StringName &p_action, bool p_exact_match) const {
+	EXTRACT_PARAM_OR_FAIL_V(event, p_event, false);
+	return event_get_action_status(event, p_action, p_exact_match);
 }
 
 int InputMap::event_get_index(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match) const {

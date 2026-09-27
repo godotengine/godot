@@ -140,6 +140,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	extension.instantiate();
 	Error err = extension->open_library(p_path, p_loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_NOT_LOADED;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 
@@ -192,6 +195,9 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 
 	Error err = extension->open_library(p_path, extension->loader);
 	if (err != OK) {
+		if (err == ERR_SKIP) {
+			return LOAD_STATUS_NOT_LOADED;
+		}
 		return LOAD_STATUS_FAILED;
 	}
 
@@ -402,11 +408,19 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 	}
 
 	bool needs_restart = false;
+#ifdef TOOLS_ENABLED
+	bool trigger_reload = false;
+#endif
 	for (const String &extension : extensions_added) {
 		GDExtensionManager::LoadStatus st = GDExtensionManager::get_singleton()->load_extension(extension);
 		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
+#ifdef TOOLS_ENABLED
+		if (st == GDExtensionManager::LOAD_STATUS_OK) {
+			trigger_reload = true;
+		}
+#endif
 	}
 
 	for (const String &extension : extensions_removed) {
@@ -414,10 +428,15 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 		if (st == GDExtensionManager::LOAD_STATUS_NEEDS_RESTART) {
 			needs_restart = true;
 		}
+#ifdef TOOLS_ENABLED
+		if (st == GDExtensionManager::LOAD_STATUS_OK) {
+			trigger_reload = true;
+		}
+#endif
 	}
 
 #ifdef TOOLS_ENABLED
-	if (extensions_added.size() || extensions_removed.size()) {
+	if (trigger_reload) {
 		// Emitting extensions_reloaded so EditorNode can reload Inspector and regenerate documentation.
 		emit_signal("extensions_reloaded");
 

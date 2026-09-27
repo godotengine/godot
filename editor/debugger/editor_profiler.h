@@ -40,6 +40,7 @@
 #include "scene/gui/tree.h"
 
 class ImageTexture;
+class ColorRect;
 
 class EditorProfiler : public VBoxContainer {
 	GDCLASS(EditorProfiler, VBoxContainer);
@@ -100,6 +101,7 @@ private:
 	Button *activate = nullptr;
 	Button *clear_button = nullptr;
 	TextureRect *graph = nullptr;
+	ColorRect *graph_background = nullptr;
 	Ref<ImageTexture> graph_texture;
 	Vector<uint8_t> graph_image;
 
