@@ -3883,7 +3883,7 @@ bool Animation::track_is_enabled(int p_track) const {
 }
 
 void Animation::track_move_up(int p_track) {
-	if (p_track < ((int)tracks.size() - 1)) {
+	if (p_track >= 0 && p_track < ((int)tracks.size() - 1)) {
 		SWAP(tracks[p_track], tracks[p_track + 1]);
 	}
 
@@ -3891,7 +3891,7 @@ void Animation::track_move_up(int p_track) {
 }
 
 void Animation::track_move_down(int p_track) {
-	if ((uint32_t)p_track < tracks.size()) {
+	if (p_track > 0 && (uint32_t)p_track < tracks.size()) {
 		SWAP(tracks[p_track], tracks[p_track - 1]);
 	}
 
