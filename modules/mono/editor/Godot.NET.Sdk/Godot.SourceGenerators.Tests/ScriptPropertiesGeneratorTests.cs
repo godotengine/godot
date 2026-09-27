@@ -69,6 +69,15 @@ public class ScriptPropertiesGeneratorTests
     }
 
     [Fact]
+    public async Task Inheritance()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(
+            new string[] { "Inheritance.cs" },
+            new string[] { "InheritanceBase_ScriptProperties.generated.cs", "InheritanceChild_ScriptProperties.generated.cs" }
+        );
+    }
+
+    [Fact]
     public async Task ExportedButtons()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertiesGenerator>.Verify(

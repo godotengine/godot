@@ -185,6 +185,11 @@ void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sorting_use_aabb_center", "enabled"), &VisualInstance3D::set_sorting_use_aabb_center);
 	ClassDB::bind_method(D_METHOD("is_sorting_use_aabb_center"), &VisualInstance3D::is_sorting_use_aabb_center);
 
+	// TODO Note: This used to be bound in GeometryInstance3D::_bind_methods, indicating it
+	//            was originally meant to be exposed to GeometryInstance3D instead of VisualInstance3D.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("get_aabb"), &VisualInstance3D::get_aabb);
+
 	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 
@@ -370,6 +375,19 @@ void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+bool GeometryInstance3D::_property_can_revert(const StringName &p_name) const {
+	return _instance_uniform_get_remap(p_name) != nullptr;
+}
+
+bool GeometryInstance3D::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	const StringName *param_name = _instance_uniform_get_remap(p_name);
+	if (param_name) {
+		r_property = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), *param_name);
+		return true;
+	}
+	return false;
+}
+
 void GeometryInstance3D::set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting) {
 	shadow_casting_setting = p_shadow_casting_setting;
 
@@ -404,7 +422,7 @@ void GeometryInstance3D::set_instance_shader_parameter(const StringName &p_name,
 	if (p_value.get_type() == Variant::NIL) {
 		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_name);
 		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_name, def_value);
-		instance_shader_parameters.erase(p_value);
+		instance_shader_parameters.erase(p_name);
 	} else {
 		instance_shader_parameters[p_name] = p_value;
 		if (p_value.get_type() == Variant::OBJECT) {
@@ -598,8 +616,6 @@ void GeometryInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &GeometryInstance3D::get_custom_aabb);
-
-	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance3D::get_aabb);
 
 	ADD_GROUP("Geometry", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT), "set_material_override", "get_material_override");

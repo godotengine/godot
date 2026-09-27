@@ -48,6 +48,7 @@ public:
 	const StringName draw = "draw";
 	const StringName hidden = "hidden";
 	const StringName visibility_changed = "visibility_changed";
+	const StringName is_visible = "is_visible";
 
 	const StringName input_event = "input_event";
 	const StringName gui_input = "gui_input";
@@ -62,6 +63,7 @@ public:
 
 	const StringName item_rect_changed = "item_rect_changed";
 	const StringName size_flags_changed = "size_flags_changed";
+	const StringName maximum_size_changed = "maximum_size_changed";
 	const StringName minimum_size_changed = "minimum_size_changed";
 	const StringName sleeping_state_changed = "sleeping_state_changed";
 	const StringName node_configuration_warning_changed = "node_configuration_warning_changed";

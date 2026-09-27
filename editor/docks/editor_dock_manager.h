@@ -59,6 +59,8 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 
 public:
+	Control *get_child_as_control(int p_index) const;
+
 	DockSplitContainer();
 };
 
@@ -89,7 +91,9 @@ private:
 
 	// To access splits easily by index.
 	Vector<DockSplitContainer *> vsplits;
+	DockSplitContainer *main_vsplit = nullptr;
 	DockSplitContainer *main_hsplit = nullptr;
+	DockSplitContainer *bottom_hsplit = nullptr;
 
 	DockTabContainer *dock_slots[EditorDock::DOCK_SLOT_MAX];
 	Vector<WindowWrapper *> dock_windows;
@@ -98,6 +102,7 @@ private:
 
 	EditorDock *dock_tab_dragged = nullptr;
 	bool docks_visible = true;
+	bool forced_focus = false;
 
 	DockContextPopup *dock_context_popup = nullptr;
 	PopupMenu *docks_menu = nullptr;
@@ -122,15 +127,22 @@ private:
 	void _queue_update_tab_style(EditorDock *p_dock);
 	void _update_dirty_dock_tabs();
 
+	void _register_split(DockSplitContainer **p_var, DockSplitContainer *p_split);
+
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
+
+	DockTabContainer *get_dock_container(int p_slot) const;
+	EditorDock *get_dock_by_name(const String &p_name) const;
 
 	void update_docks_menu();
 	void update_tab_styles();
 	void set_tab_icon_max_width(int p_max_width);
 
 	void add_vsplit(DockSplitContainer *p_split);
-	void set_hsplit(DockSplitContainer *p_split);
+	void set_main_vsplit(DockSplitContainer *p_split) { _register_split(&main_vsplit, p_split); }
+	void set_main_hsplit(DockSplitContainer *p_split) { _register_split(&main_hsplit, p_split); }
+	void set_bottom_hsplit(DockSplitContainer *p_split) { _register_split(&bottom_hsplit, p_split); }
 	void register_dock_slot(DockTabContainer *p_tab_container);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
@@ -138,10 +150,13 @@ public:
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load = false);
 
+	void set_dock_slot_highlighted(int p_slot, bool p_highlighted);
+
 	void set_dock_enabled(EditorDock *p_dock, bool p_enabled);
 	void close_dock(EditorDock *p_dock);
 	void open_dock(EditorDock *p_dock, bool p_set_current = true);
 	void focus_dock(EditorDock *p_dock);
+	void force_focus_dock(EditorDock *p_dock); // Ignore can_switch_dock().
 	void make_dock_floating(EditorDock *p_dock);
 
 	void set_docks_visible(bool p_show);
@@ -165,7 +180,6 @@ class DockSlotGrid : public Control {
 	int hovered_slot = -1;
 
 	Rect2 rect_cache[EditorDock::DOCK_SLOT_MAX];
-	Rect2 main_screen_rect;
 	bool rect_cache_dirty = true;
 
 	void _update_rect_cache();

@@ -85,6 +85,7 @@ void EditorPropertyActionSet::set_option_button_clip(bool p_enable) {
 EditorPropertyActionSet::EditorPropertyActionSet() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	options->set_flat(true);
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(options);
@@ -155,6 +156,7 @@ void EditorPropertyBindingPath::set_option_button_clip(bool p_enable) {
 EditorPropertyBindingPath::EditorPropertyBindingPath() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
+	options->set_fit_to_longest_item(false);
 	options->set_flat(true);
 	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	add_child(options);

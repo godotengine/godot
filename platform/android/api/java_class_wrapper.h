@@ -67,8 +67,6 @@ class JavaClass : public RefCounted {
 		ARG_TYPE_MASK = (1 << 16) - 1
 	};
 
-	RBMap<StringName, Variant> constant_map;
-
 	struct MethodInfo {
 		bool _public = false;
 		bool _static = false;
@@ -76,7 +74,16 @@ class JavaClass : public RefCounted {
 		Vector<uint32_t> param_types;
 		Vector<StringName> param_sigs;
 		uint32_t return_type = 0;
-		jmethodID method;
+		jmethodID method = nullptr;
+	};
+
+	struct FieldInfo {
+		bool _static = false;
+		bool _final = false;
+		uint32_t field_type = 0;
+		StringName field_sig;
+		jfieldID field = nullptr;
+		Variant constant_value;
 	};
 
 	_FORCE_INLINE_ static void _convert_to_variant_type(int p_sig, Variant::Type &r_type, float &likelihood) {
@@ -182,20 +189,29 @@ class JavaClass : public RefCounted {
 	}
 
 	_FORCE_INLINE_ static bool _convert_object_to_variant(JNIEnv *env, jobject obj, Variant &var, uint32_t p_sig);
+	_FORCE_INLINE_ static bool _convert_variant_to_jvalue(JNIEnv *p_env, const Variant &p_variant, uint32_t p_sig, const StringName &p_strsig, jvalue &r_ret);
+	_FORCE_INLINE_ static bool _get_field_value(JNIEnv *p_env, jobject p_instance, jclass p_clazz, const JavaClass::FieldInfo &p_field_info, Variant &r_ret);
+	_FORCE_INLINE_ static bool _set_field_value(JNIEnv *p_env, jobject p_instance, jclass p_clazz, const JavaClass::FieldInfo &p_field_info, const Variant &p_property);
 
 	bool _call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret);
+
+	bool _get_field(jobject p_instance, const StringName &p_name, Variant &r_ret) const;
+	bool _set_field(jobject p_instance, const StringName &p_name, const Variant &p_property);
 
 	friend class JavaClassWrapper;
 	friend class JavaObject;
 	String java_class_name;
 	String java_constructor_name;
 	HashMap<StringName, List<MethodInfo>> methods;
+	HashMap<StringName, FieldInfo> fields;
 	jclass _class;
+	bool is_interface;
 #endif
 
 protected:
 	static void _bind_methods();
 	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_property);
 
 public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
@@ -225,6 +241,8 @@ class JavaObject : public RefCounted {
 
 protected:
 	static void _bind_methods();
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_property);
 
 public:
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
@@ -251,9 +269,11 @@ class JavaClassWrapper : public Object {
 	friend class JavaClass;
 	jmethodID Class_getConstructors;
 	jmethodID Class_getDeclaredMethods;
-	jmethodID Class_getFields;
+	jmethodID Class_getDeclaredFields;
+	jmethodID Class_getInterfaces;
 	jmethodID Class_getName;
 	jmethodID Class_getSuperclass;
+	jmethodID Class_isInterface;
 	jmethodID Constructor_getParameterTypes;
 	jmethodID Constructor_getModifiers;
 	jmethodID Method_getParameterTypes;
@@ -263,6 +283,7 @@ class JavaClassWrapper : public Object {
 	jmethodID Field_getName;
 	jmethodID Field_getModifiers;
 	jmethodID Field_get;
+	jmethodID Field_getType;
 	jmethodID Boolean_booleanValue;
 	jmethodID Byte_byteValue;
 	jmethodID Character_characterValue;
@@ -272,7 +293,16 @@ class JavaClassWrapper : public Object {
 	jmethodID Float_floatValue;
 	jmethodID Double_doubleValue;
 
+	jclass proxy_class;
+	jmethodID Proxy_isProxyClass;
+
+	jclass android_runtime_class;
+	jmethodID ARP_create_proxy_from_godot_callable;
+	jmethodID ARP_create_proxy_from_godot_object_id;
+
+	bool _is_proxy_class(JNIEnv *env, jclass p_class);
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
+	bool _wrap_class_components(JNIEnv *p_env, const Ref<JavaClass> &p_java_class, jclass p_class, bool p_allow_non_public_methods_access);
 #endif
 
 	Ref<JavaObject> exception;
@@ -290,6 +320,9 @@ public:
 	Ref<JavaClass> wrap(const String &p_class) {
 		return _wrap(p_class, false);
 	}
+
+	Ref<JavaObject> create_sam_callback(const String &p_sam_interface, const Callable &p_callable);
+	Ref<JavaObject> create_proxy(const Object *p_object, const PackedStringArray &p_interfaces);
 
 	Ref<JavaObject> get_exception() {
 		return exception;

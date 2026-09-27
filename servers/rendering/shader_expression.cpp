@@ -161,11 +161,11 @@ Error ShaderExpression::_get_token(Token &r_token) {
 				return OK;
 			}
 			case '^': {
-				invalid_character = true;
+				r_token.type = TK_OP_BIT_XOR;
 				break;
 			}
 			case '~': {
-				invalid_character = true;
+				r_token.type = TK_OP_BIT_INVERT;
 				break;
 			}
 			case '\'': {

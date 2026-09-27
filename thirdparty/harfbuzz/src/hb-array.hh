@@ -219,26 +219,46 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
     return false;
   }
 
-  hb_sorted_array_t<Type> qsort (int (*cmp_)(const void*, const void*))
+  hb_sorted_array_t<Type> qsort (int (*cmp)(const void*, const void*))
   {
-    //static_assert (hb_enable_if (hb_is_trivially_copy_assignable(Type)), "");
     if (likely (length))
-      hb_qsort (arrayZ, length, this->get_item_size (), cmp_);
+      hb_qsort (arrayZ, length, this->get_item_size (), cmp);
     return hb_sorted_array_t<Type> (*this);
   }
+
+  /* Comparator follows the C qsort convention: returns
+   * negative / zero / positive int. */
+  template <typename Compar>
+  hb_sorted_array_t<Type> qsort (Compar compar)
+  {
+    if (likely (length))
+      hb_qsort_inline (arrayZ, length, compar);
+    return hb_sorted_array_t<Type> (*this);
+  }
+
+  private:
+  template <typename T = Type,
+	    hb_enable_if (std::is_move_assignable<T>::value)>
+  hb_sorted_array_t<Type> _qsort (hb_priority<1>)
+  {
+    return qsort ([] (const Type &a, const Type &b) { return Type::cmp (&a, &b); });
+  }
+  hb_sorted_array_t<Type> _qsort (hb_priority<0>)
+  {
+    return qsort ((int(*)(const void*, const void*)) Type::cmp);
+  }
+  public:
+
   hb_sorted_array_t<Type> qsort ()
   {
-    //static_assert (hb_enable_if (hb_is_trivially_copy_assignable(Type)), "");
-    if (likely (length))
-      hb_qsort (arrayZ, length, this->get_item_size (), Type::cmp);
-    return hb_sorted_array_t<Type> (*this);
+    return _qsort (hb_prioritize);
   }
 
   /*
    * Other methods.
    */
 
-  unsigned int get_size () const { return length * this->get_item_size (); }
+  size_t get_size () const { return length * this->get_item_size (); }
 
   /*
    * Reverse the order of items in this array in the range [start, end).

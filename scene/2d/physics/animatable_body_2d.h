@@ -32,6 +32,8 @@
 
 #include "scene/2d/physics/static_body_2d.h"
 
+class PhysicsDirectBodyState2D;
+
 class AnimatableBody2D : public StaticBody2D {
 	GDCLASS(AnimatableBody2D, StaticBody2D);
 

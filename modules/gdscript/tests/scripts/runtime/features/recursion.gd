@@ -15,5 +15,4 @@ func test():
 
 	print()
 
-	# Largest prime number below 10000.
-	print(is_prime(9973))
+	print(is_prime(1931))

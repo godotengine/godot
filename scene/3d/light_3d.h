@@ -58,6 +58,8 @@ public:
 		PARAM_SHADOW_BLUR = RSE::LIGHT_PARAM_SHADOW_BLUR,
 		PARAM_TRANSMITTANCE_BIAS = RSE::LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		PARAM_INTENSITY = RSE::LIGHT_PARAM_INTENSITY,
+		PARAM_CONTACT_SHADOW_OPACITY = RSE::LIGHT_PARAM_CONTACT_SHADOW_OPACITY,
+		PARAM_CONTACT_SHADOW_BLUR = RSE::LIGHT_PARAM_CONTACT_SHADOW_BLUR,
 		PARAM_MAX = RSE::LIGHT_PARAM_MAX
 	};
 
@@ -86,7 +88,7 @@ private:
 	Ref<Texture2D> projector;
 	Color correlated_color = Color(1.0, 1.0, 1.0);
 	float temperature = 6500.0;
-
+	bool allow_contact_shadows = true;
 	// bind helpers
 
 	virtual void owner_changed_notify() override;
@@ -138,6 +140,9 @@ public:
 
 	void set_shadow_caster_mask(uint32_t p_caster_mask);
 	uint32_t get_shadow_caster_mask() const;
+
+	void set_allow_contact_shadows(bool p_enable);
+	bool get_allow_contact_shadows() const;
 
 	void set_bake_mode(BakeMode p_mode);
 	BakeMode get_bake_mode() const;
@@ -237,4 +242,31 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	SpotLight3D();
+};
+
+class AreaLight3D : public Light3D {
+	GDCLASS(AreaLight3D, Light3D);
+
+private:
+	Vector2 area_size;
+	Ref<Texture2D> area_texture;
+	bool area_normalize_energy = true;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_area_size(const Vector2 &p_size);
+	Vector2 get_area_size() const;
+
+	void set_area_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_area_texture() const;
+
+	void set_area_normalize_energy(bool p_enable);
+	bool is_area_normalizing_energy() const;
+
+	PackedStringArray get_configuration_warnings() const override;
+
+	AreaLight3D();
+	~AreaLight3D();
 };

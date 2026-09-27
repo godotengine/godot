@@ -36,18 +36,22 @@
 # GREEN MONSTER <racovitavvalentin@gmail.com>, 2025.
 # Alin Gheorghe <yovngra@gmail.com>, 2025.
 # SimonMaracine <simonmaracine@gmail.com>, 2025.
-# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025.
+# "A Thousand Ships (she/her)" <over999ships@gmail.com>, 2025, 2026.
 # EnderIce2 <enderice2@protonmail.com>, 2025.
 # Gape Gepeto <gapegepeto@gmail.com>, 2026.
 # Rareș Bozga <darwj10011@gmail.com>, 2026.
 # ADV <alex.devien@gmail.com>, 2026.
+# Mihai Andrei <mihoi25@yahoo.com>, 2026.
+# AlexTECPlayz <alextecplayz@vantainteractive.com>, 2026.
+# benq <madalin.lost@gmail.com>, 2026.
+# robbpaun <robbpaun@gmail.com>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2026-01-14 05:00+0000\n"
-"Last-Translator: ADV <alex.devien@gmail.com>\n"
+"PO-Revision-Date: 2026-05-21 19:11+0000\n"
+"Last-Translator: robbpaun <robbpaun@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -56,31 +60,136 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 5.15.2-dev\n"
+"X-Generator: Weblate 2026.6.dev0\n"
 
 msgid "OK"
 msgstr "OK"
 
+msgid "Failed"
+msgstr "A eșuat"
+
+msgid "Unavailable"
+msgstr "Indisponibil"
+
+msgid "Unconfigured"
+msgstr "Neconfigurat"
+
 msgid "Unauthorized"
 msgstr "Neautorizat"
+
+msgid "Parameter out of range"
+msgstr "Parametru în afara intervalului"
 
 msgid "Out of memory"
 msgstr "Memorie epuizată"
 
+msgid "File not found"
+msgstr "Fișier nu a fost găsit"
+
+msgid "File: Bad drive"
+msgstr "Fișier: Disc defect"
+
+msgid "File: Bad path"
+msgstr "Fișier: Cale greșită"
+
 msgid "File: Permission denied"
 msgstr "Acces respins"
+
+msgid "File already in use"
+msgstr "Fișierul este deja in utilizare"
+
+msgid "Can't open file"
+msgstr "Nu s-a putut deschide fișierul"
+
+msgid "Can't write file"
+msgstr "Nu s-a putut scrie fișierul"
+
+msgid "Can't read file"
+msgstr "Nu s-a putut citi fișierul"
+
+msgid "File unrecognized"
+msgstr "Fișier nerecunoscut"
 
 msgid "File corrupt"
 msgstr "Fișier corupt"
 
+msgid "Missing dependencies for file"
+msgstr "Dependențele fișierului lipsesc"
+
+msgid "End of file"
+msgstr "Sfârșitul fișierului"
+
+msgid "Can't open"
+msgstr "Nu s-a putut deschide"
+
+msgid "Can't create"
+msgstr "Nu se poate crea"
+
+msgid "Query failed"
+msgstr "Cerere eșuată"
+
+msgid "Already in use"
+msgstr "Deja folosit"
+
+msgid "Locked"
+msgstr "Blocat"
+
+msgid "Timeout"
+msgstr "Expirat"
+
+msgid "Can't acquire resource"
+msgstr "Nu pot lua resursa"
+
+msgid "Invalid parameter"
+msgstr "paremetru nevalid."
+
+msgid "Already exists"
+msgstr "Deja există"
+
+msgid "Does not exist"
+msgstr "Nu există"
+
+msgid "Can't read database"
+msgstr "Nu se poate citii baza de date"
+
 msgid "Can't write database"
 msgstr "Nu se poate scrie în baza de date"
+
+msgid "Compilation failed"
+msgstr "Compilare eșuată"
+
+msgid "Method not found"
+msgstr "Metoda nu a fost găsită"
+
+msgid "Link failed"
+msgstr "Legătura a eșuat"
+
+msgid "Script failed"
+msgstr "Scriptul a eșuat"
 
 msgid "Cyclic link detected"
 msgstr "Legătură ciclică detectată"
 
+msgid "Invalid declaration"
+msgstr "Declarație invalidă"
+
+msgid "Duplicate symbol"
+msgstr "Simbol dublicat"
+
+msgid "Busy"
+msgstr "Ocupat"
+
+msgid "Skip"
+msgstr "Sari peste"
+
 msgid "Help"
 msgstr "Ajutor"
+
+msgid "Bug"
+msgstr "Bug"
+
+msgid "Printer on fire"
+msgstr "Printerul a luat foc"
 
 msgid "unset"
 msgstr "Nesetat"
@@ -599,8 +708,8 @@ msgstr "Adaugă %s"
 msgid "Load..."
 msgstr "Încarcă..."
 
-msgid "Move Node Point"
-msgstr "Mută punct nod"
+msgid "Move BlendSpace1D Node Point"
+msgstr "Mută punct nod BlendSpace1D"
 
 msgid "Change BlendSpace1D Config"
 msgstr "Modifică configurație BlendSpace1D"
@@ -625,9 +734,6 @@ msgstr "Adaugă punct animație"
 msgid "Remove BlendSpace1D Point"
 msgstr "Șterge punct BlendSpace1D"
 
-msgid "Move BlendSpace1D Node Point"
-msgstr "Mută punct nod BlendSpace1D"
-
 msgid "Continuous"
 msgstr "Continuu"
 
@@ -636,15 +742,6 @@ msgstr "Discret"
 
 msgid "Capture"
 msgstr "Înregistrează"
-
-msgid ""
-"Select and move points.\n"
-"RMB: Create point at position clicked.\n"
-"Shift+LMB+Drag: Set the blending position within the space."
-msgstr ""
-"Selectează si mută punctele.\n"
-"Clic dreapta: Creează punct la pozitia cursorului.\n"
-"Shift + clic stânga + tragere: Setează poziția interpolării în spațiu."
 
 msgid "Create points."
 msgstr "Creați puncte."
@@ -661,20 +758,14 @@ msgstr "Afișați și porniți fixarea pe grilă."
 msgid "Grid Step"
 msgstr "Interval Grilă"
 
-msgid "Sync:"
-msgstr "Sincronizare:"
+msgid "Open Editor"
+msgstr "Deschidere Editor"
 
-msgid "Blend:"
-msgstr "Interpolare:"
-
-msgid "Point"
-msgstr "Punct"
+msgid "Position"
+msgstr "Poziție"
 
 msgid "Blend Value"
 msgstr "Valoare interpolare"
-
-msgid "Open Editor"
-msgstr "Deschidere Editor"
 
 msgid "Min"
 msgstr "Minim"
@@ -705,9 +796,6 @@ msgstr "Ștergere punct BlendSpace2D"
 
 msgid "Remove BlendSpace2D Triangle"
 msgstr "Stergere triunghi BlendSpace2D"
-
-msgid "No triangles exist, so no blending can take place."
-msgstr "Nu există triunghiuri, deci interpolarea nu se poate realiza."
 
 msgid "Toggle Auto Triangles"
 msgstr "Comutați Auto Triunghiuri"
@@ -862,9 +950,6 @@ msgstr "Marker de început"
 msgid "End Marker"
 msgstr "Marker de sfârșit"
 
-msgid "Library Name:"
-msgstr "Nume bibliotecă:"
-
 msgid "Animation name can't be empty."
 msgstr "Numele animației nu poate să fie gol."
 
@@ -921,8 +1006,20 @@ msgstr "Salvează Bibliotecă"
 msgid "Make Animation Library Unique: %s"
 msgstr "Fă biblioteca de animații unică: %s"
 
-msgid "Animation Name:"
-msgstr "Nume Animație:"
+msgid "Make Animation Unique: %s"
+msgstr "Fă animația unică: %s"
+
+msgid "Save Animation to File: %s"
+msgstr "Salvează animația în fișierul: %s"
+
+msgid "Load Animation into Library: %s"
+msgstr "Încarcă animația în bibliotecă: %s"
+
+msgid "Rename Animation Library: %s"
+msgstr "Redenumește biblioteca de animații: %s"
+
+msgid "Rename Animation: %s"
+msgstr "Redenumește animația: %s"
 
 msgid "Pasted Animation"
 msgstr "Animație Lipită"
@@ -933,11 +1030,17 @@ msgstr "Salvați"
 msgid "Save As"
 msgstr "Salvați Ca"
 
+msgid "Remove Animation Library: %s"
+msgstr "Elimină biblioteca de animații: %s"
+
 msgid "Resource"
 msgstr "Resursă"
 
 msgid "Storage"
 msgstr "Stochare"
+
+msgid "Library Name:"
+msgstr "Nume bibliotecă:"
 
 msgid "Error:"
 msgstr "Eroare:"
@@ -1032,6 +1135,9 @@ msgstr "Forțează Modulare Albă"
 msgid "Include Gizmos (3D)"
 msgstr "Include Gizmo-uri (3D)"
 
+msgid "Animation Name:"
+msgstr "Nume Animație:"
+
 msgid "Close"
 msgstr "Închide"
 
@@ -1055,12 +1161,6 @@ msgstr "Creați noduri noi."
 
 msgid "Connect nodes."
 msgstr "Conectați nodurile."
-
-msgid "Transition:"
-msgstr "Tranziție:"
-
-msgid "Play Mode:"
-msgstr "Mod redare:"
 
 msgid "Change Animation Length"
 msgstr "Schimbă Durata Animației"
@@ -1256,6 +1356,26 @@ msgstr "AnimationPlayer nu se poate anima singur, doar alți jucători."
 msgid "property '%s'"
 msgstr "proprietatea '%s'"
 
+msgctxt "Transition Type"
+msgid "Quint"
+msgstr "Al cincilea"
+
+msgctxt "Transition Type"
+msgid "Quart"
+msgstr "Al patrulea"
+
+msgctxt "Transition Type"
+msgid "Quad"
+msgstr "Patrime"
+
+msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Sari"
+
+msgctxt "Transition Type"
+msgid "Spring"
+msgstr "Arc"
+
 msgid "Change Animation Step"
 msgstr "Schimbă Pasul Animației"
 
@@ -1299,9 +1419,6 @@ msgstr "Inserați Pistă și Cheie"
 
 msgid "Method not found in object:"
 msgstr "Metoda nu a fost găsită în obiect:"
-
-msgid "Position"
-msgstr "Poziție"
 
 msgid "Rotation"
 msgstr "Rotație"
@@ -1492,30 +1609,6 @@ msgstr "Proporție Scalare:"
 msgid "Select Transition and Easing"
 msgstr "Selectați Tranziție și ușurare"
 
-msgctxt "Transition Type"
-msgid "Sine"
-msgstr "sinus"
-
-msgctxt "Transition Type"
-msgid "Quint"
-msgstr "Al cincilea"
-
-msgctxt "Transition Type"
-msgid "Quart"
-msgstr "Al patrulea"
-
-msgctxt "Transition Type"
-msgid "Quad"
-msgstr "Patrime"
-
-msgctxt "Transition Type"
-msgid "Bounce"
-msgstr "Sari"
-
-msgctxt "Transition Type"
-msgid "Spring"
-msgstr "Arc"
-
 msgid "FPS:"
 msgstr "Frame-uri pe secunda:"
 
@@ -1564,23 +1657,29 @@ msgstr "Schimbați decalajul de oprire a clipului audio"
 msgid "Path:"
 msgstr "Cale:"
 
+msgid "Errors"
+msgstr "Erori"
+
 msgid "License"
 msgstr "Licență"
+
+msgid "Loading..."
+msgstr "Încărcare..."
+
+msgid "Download"
+msgstr "Descarcă"
+
+msgid "Downloading..."
+msgstr "Descărcare..."
+
+msgid "Install..."
+msgstr "Instalare..."
 
 msgid "Version:"
 msgstr "Versiune:"
 
-msgid "Contents:"
-msgstr "Conținut:"
-
-msgid "View Files"
-msgstr "Vizualizează Fișierele"
-
-msgid "Description:"
-msgstr "Descriere:"
-
-msgid "Download"
-msgstr "Descarcă"
+msgid "Description"
+msgstr "Descriere"
 
 msgid "Connection error, please try again."
 msgstr "Eroare la conectare, te rog încearcă din nou."
@@ -1630,9 +1729,6 @@ msgstr "Eroare la Descărcarea Asset-ului:"
 msgid "Downloading (%s / %s)..."
 msgstr "Se descarcă (%s / %s)..."
 
-msgid "Downloading..."
-msgstr "Descărcare..."
-
 msgid "Resolving..."
 msgstr "Se Rezolvă..."
 
@@ -1648,26 +1744,11 @@ msgstr "Eroare la solicitare"
 msgid "Idle"
 msgstr "Inactiv"
 
-msgid "Install..."
-msgstr "Instalare..."
-
 msgid "Retry"
 msgstr "Reîncearcă"
 
 msgid "Download Error"
 msgstr "Eroare Descărcare"
-
-msgid "Featured"
-msgstr "Caracteristici prezente"
-
-msgid "Community"
-msgstr "Comunitate"
-
-msgid "Testing"
-msgstr "Se Testează"
-
-msgid "Loading..."
-msgstr "Încărcare..."
 
 msgctxt "Pagination"
 msgid "Last"
@@ -1676,8 +1757,8 @@ msgstr "ultima"
 msgid "All"
 msgstr "Toate"
 
-msgid "Install"
-msgstr "Instalați"
+msgid "No results for \"%s\"."
+msgstr "Niciun rezultat pentru \"%s\"."
 
 msgid "Import..."
 msgstr "Import..."
@@ -1691,11 +1772,8 @@ msgstr "Sorare:"
 msgid "Category:"
 msgstr "Categorie:"
 
-msgid "Site:"
-msgstr "Site:"
-
-msgid "Support"
-msgstr "Suport"
+msgid "Licenses"
+msgstr "Licențe"
 
 msgid "Assets ZIP File"
 msgstr "Fișier ZIP cu Asset-uri"
@@ -1718,6 +1796,9 @@ msgstr "(și %s alte fișiere)"
 
 msgid "Success!"
 msgstr "Succes!"
+
+msgid "Install"
+msgstr "Instalați"
 
 msgid "Audio Preview Play/Pause"
 msgstr "Previzualizare Audio Pornește/Oprește"
@@ -1894,9 +1975,6 @@ msgstr "Timp"
 msgid "Calls"
 msgstr "Apeluri"
 
-msgid "Errors"
-msgstr "Erori"
-
 msgid "Main Thread"
 msgstr "Fir principal"
 
@@ -1911,6 +1989,12 @@ msgstr "Profiler"
 
 msgid "Type"
 msgstr "Tip"
+
+msgid "Show in FileSystem"
+msgstr "Afișare în FileSystem"
+
+msgid "View Owners..."
+msgstr "Vizualizează Proprietarii..."
 
 msgid "Experimental"
 msgstr "Experimental"
@@ -1929,12 +2013,6 @@ msgstr "Clasă:"
 
 msgid "Inherits:"
 msgstr "Mosteneste:"
-
-msgid "Inherited by:"
-msgstr "Moştenit de:"
-
-msgid "Description"
-msgstr "Descriere"
 
 msgid "Online Tutorials"
 msgstr "Tutoriale Online"
@@ -1975,22 +2053,11 @@ msgstr "Descrieri Proprietate"
 msgid "(value)"
 msgstr "(valoare)"
 
-msgid ""
-"There is currently no description for this property. Please help us by "
-"[color=$color][url=$url]contributing one[/url][/color]!"
-msgstr ""
-"Nu există în prezent nici o descriere pentru această proprietate. Te rog "
-"ajută-ne prin a [color = $color] [url = $url] contribui cu una [/ URL] [/ "
-"color]!"
-
 msgid "Editor"
 msgstr "Editor"
 
 msgid "Open"
 msgstr "Deschide"
-
-msgid "Show in FileSystem"
-msgstr "Afișare în FileSystem"
 
 msgid "Open in File Manager"
 msgstr "Deschideți în Administratorul de Fișiere"
@@ -2079,9 +2146,6 @@ msgstr "Această clasă este marcată ca experimentală."
 msgid "Dock Position"
 msgstr "Poziția Dock-ului"
 
-msgid "Favorites:"
-msgstr "Favorite:"
-
 msgid "Favorites"
 msgstr "Favorite"
 
@@ -2138,9 +2202,6 @@ msgstr "Execută"
 msgid "Edit Dependencies..."
 msgstr "Editează Dependințele..."
 
-msgid "View Owners..."
-msgstr "Vizualizează Proprietarii..."
-
 msgid "Add to Favorites"
 msgstr "Adauga la Favorite"
 
@@ -2149,9 +2210,6 @@ msgstr "Eliminare din Preferințe"
 
 msgid "Reimport"
 msgstr "Reimportă"
-
-msgid "Show in File Manager"
-msgstr "Arătați în Administratorul de Fișiere"
 
 msgid "New Folder..."
 msgstr "Director Nou..."
@@ -2190,6 +2248,9 @@ msgstr "Renumește Grupul"
 msgid "Name:"
 msgstr "Nume:"
 
+msgid "Description:"
+msgstr "Descriere:"
+
 msgid "Rename"
 msgstr "Redenumește"
 
@@ -2217,11 +2278,11 @@ msgstr "Importă Ca:"
 msgid "Preset"
 msgstr "Presetare"
 
-msgid "Failed to load resource."
-msgstr "Încărcarea resursei a eșuat."
-
 msgid "Make Sub-Resources Unique"
 msgstr "Faceți Sub-Resursa Unică"
+
+msgid "Failed to load resource."
+msgstr "Încărcarea resursei a eșuat."
 
 msgid "Inspector"
 msgstr "Inspector"
@@ -2410,12 +2471,6 @@ msgstr "Scena '%s' are dependințe nefuncționale:"
 msgid "Clear Recent Scenes"
 msgstr "Curăță Scenele Recente"
 
-msgid "Save Layout"
-msgstr "Salvează Schema"
-
-msgid "Delete Layout"
-msgstr "Șterge Schema"
-
 msgid "Save & Close"
 msgstr "Salvează și închide"
 
@@ -2536,6 +2591,9 @@ msgstr "Captură de ecran"
 msgid "Toggle Fullscreen"
 msgstr "Comutare ecran complet"
 
+msgid "Community"
+msgstr "Comunitate"
+
 msgid "Report a Bug"
 msgstr "Raportează o Eroare"
 
@@ -2544,9 +2602,6 @@ msgstr "Trimite Feedbackul Docs"
 
 msgid "Open Script Editor"
 msgstr "Deschide Editorul de Scripturi"
-
-msgid "Open Asset Library"
-msgstr "Deschide Librăria de Asseturi"
 
 msgid "Open the next Editor"
 msgstr "Deschide Editorul următor"
@@ -2622,28 +2677,6 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 "La exporturile pe 32 de biți PCK-ul încorporat nu poate fi mai mare de 4 GiB."
 
-msgid "Error requesting URL:"
-msgstr "Eroare la solicitarea URL:"
-
-msgid "Can't connect to the mirror."
-msgstr "Nu se poate conecta la oglindă."
-
-msgid "No response from the mirror."
-msgstr "Niciun răspuns de la oglinda."
-
-msgid "Request failed:"
-msgstr "Cerere Eșuată:"
-
-msgid "Cannot remove temporary file:"
-msgstr "Nu pot sterge fișierul temporar:"
-
-msgid ""
-"No download links found for this version. Direct download is only available "
-"for official releases."
-msgstr ""
-"Niciun link pentru descărcare nu a fost găsit pentru această versiune. "
-"Descărcarea directă este disponibilă numai pentru lansări oficiale."
-
 msgid "Extracting Export Templates"
 msgstr "Se extrag Șabloanele de Export"
 
@@ -2655,12 +2688,6 @@ msgstr "Decomprimare Surse de compilare Android"
 
 msgid "Export Template Manager"
 msgstr "Exportă Managerul de Șabloane"
-
-msgid "Current Version:"
-msgstr "Versiune Curentă:"
-
-msgid "Uninstall"
-msgstr "Dezinstalează"
 
 msgid "Download from:"
 msgstr "Descărcați din:"
@@ -2676,9 +2703,6 @@ msgstr "Administrează Șabloanele de Export"
 
 msgid "Dependencies For:"
 msgstr "Dependențe Pentru:"
-
-msgid "Dependencies"
-msgstr "Dependențe"
 
 msgid "Dependencies:"
 msgstr "Dependințe:"
@@ -2791,8 +2815,8 @@ msgstr "Schimbă Tipul lui \"%s\""
 msgid "Change"
 msgstr "Schimbați"
 
-msgid "No results for \"%s\"."
-msgstr "Niciun rezultat pentru \"%s\"."
+msgid "Favorites:"
+msgstr "Favorite:"
 
 msgid "Recent:"
 msgstr "Recent:"
@@ -2856,9 +2880,6 @@ msgstr "Toate Componentele"
 
 msgid "Components"
 msgstr "Componente"
-
-msgid "Licenses"
-msgstr "Licențe"
 
 msgid "Expand Bottom Panel"
 msgstr "Extinde Panoul De Jos"
@@ -3008,9 +3029,6 @@ msgstr "Eliminați %d proiecte din listă?"
 
 msgid "Remove this project from the list?"
 msgstr "Eliminați acest proiect din listă?"
-
-msgid "Asset Library"
-msgstr "Librăria de Resurse"
 
 msgid "Error"
 msgstr "Eroare"
@@ -3228,21 +3246,12 @@ msgstr "Axa-Y"
 msgid "Z-Axis"
 msgstr "Axa-Z"
 
-msgid "Remove item %d?"
-msgstr "Elimini obiectul %d?"
-
 msgid ""
 "Update from existing scene?:\n"
 "%s"
 msgstr ""
 "Actualizează din Scenă existenta?:\n"
 "%s"
-
-msgid "Add Item"
-msgstr "Adaugă Obiect"
-
-msgid "Remove Selected Item"
-msgstr "Elimină Obiectul Selectat"
 
 msgid "Update from Scene"
 msgstr "Actualizează din Scenă"
@@ -3307,11 +3316,11 @@ msgstr "Cantitate:"
 msgid "Populate"
 msgstr "Populare"
 
-msgid "Orthogonal"
-msgstr "Ortogonal"
-
 msgid "View"
 msgstr "Perspectivă"
+
+msgid "Orthogonal"
+msgstr "Ortogonal"
 
 msgid "Cancel Transformation"
 msgstr "anulează transformare"
@@ -3332,9 +3341,6 @@ msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
 "Alt+Butonul drept al mausului: Arată o listă a tuturor nodurilor la poziția "
 "clickului, inclusiv cele blocate."
-
-msgid "(Available in all modes.)"
-msgstr "(Disponibile in toate modurile.)"
 
 msgid "Move Mode"
 msgstr "Mod Mutare"
@@ -3492,6 +3498,9 @@ msgstr "V: Setează poziția pivotului nodului selectat."
 msgid "RMB: Add node at position clicked."
 msgstr "Butonul drept al mausuli: Adaugă nod la poziția clickului."
 
+msgid "Shift: Scale proportionally."
+msgstr "Shift: Redimensionare proporțională."
+
 msgid "Paste Pose"
 msgstr "Lipește Postura"
 
@@ -3531,20 +3540,11 @@ msgstr "Magnificare la 800%"
 msgid "Zoom to 1600%"
 msgstr "Magnificare la 1600%"
 
-msgid "Shift: Scale proportionally."
-msgstr "Shift: Redimensionare proporțională."
-
 msgid "Pan Mode"
 msgstr "Mod În Jur"
 
-msgid "Toggle smart snapping."
-msgstr "Comutați fixarea inteligentă."
-
 msgid "Use Smart Snap"
 msgstr "Utilizează Snap Inteligent"
-
-msgid "Toggle grid snapping."
-msgstr "Comutare grilă fixare."
 
 msgid "Use Grid Snap"
 msgstr "Utilizează Snap Grilă"
@@ -3955,6 +3955,9 @@ msgstr "Va crea un nou fișier script."
 msgid "Built-in Script:"
 msgstr "Script încorporat:"
 
+msgid "Line"
+msgstr "Linie"
+
 msgid "Current value: "
 msgstr "Valoare curentă: "
 
@@ -3973,17 +3976,11 @@ msgstr "Deschide..."
 msgid "Script Editor"
 msgstr "Editor de scripturi"
 
-msgid "Standard"
-msgstr "Standard"
-
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
 msgstr ""
 "Lipsește metoda conectată '%s' pentru semnalul '%s' de la nodul '%s' la nodul "
 "'%s'."
-
-msgid "Line"
-msgstr "Linie"
 
 msgid "Duplicate Selection"
 msgstr "Duplicați Selecția"
@@ -3993,6 +3990,9 @@ msgstr "Salt la funcție..."
 
 msgid "Go to Line..."
 msgstr "Salt la linie..."
+
+msgid "Standard"
+msgstr "Standard"
 
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
@@ -4042,9 +4042,6 @@ msgstr "%s este o cale invalidă. Fișierul nu există."
 
 msgid "%s is an invalid path. Not in resource path (res://)."
 msgstr "%s este o cale invalida. Nu este în calea resurselor (res://)."
-
-msgid "Node Name:"
-msgstr "Nume Nod:"
 
 msgid "Global Variable"
 msgstr "Variabil Global"
@@ -4173,6 +4170,12 @@ msgstr "Încarcă Profil(e)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Administrează Profilele Ferestrei de Editare"
 
+msgid "Save Layout"
+msgstr "Salvează Schema"
+
+msgid "Delete Layout"
+msgstr "Șterge Schema"
+
 msgid "Editor Settings"
 msgstr "Setări ale Editorului"
 
@@ -4188,39 +4191,6 @@ msgstr "Plugin-uri"
 msgid "There are unsaved changes in the following built-in shaders(s):"
 msgstr ""
 "Există modificări care nu au fost salvate în următoarele shadere integrate:"
-
-msgid "Add Input"
-msgstr "Adaugă Intrare(Input)"
-
-msgid "Color function."
-msgstr "Funcția de culoare."
-
-msgid "Grayscale function."
-msgstr "Funcția tonuri de gri."
-
-msgid "Sepia function."
-msgstr "Funcția sepia."
-
-msgid "Difference operator."
-msgstr "Operator de diferență."
-
-msgid "HardLight operator."
-msgstr "Operator HardLight."
-
-msgid "Color constant."
-msgstr "Constantă de culoare."
-
-msgid "Input parameter."
-msgstr "Parametru de intrare."
-
-msgid "Transform function."
-msgstr "Funcție de transformare."
-
-msgid "Transform constant."
-msgstr "Transformare constantă."
-
-msgid "Vector function."
-msgstr "Funcție vectorială."
 
 msgid "Add %d Translation"
 msgid_plural "Add %d Translations"
@@ -4270,6 +4240,46 @@ msgstr ""
 msgid "A Count"
 msgstr "Un Număr"
 
+msgid "Add Input"
+msgstr "Adaugă Intrare(Input)"
+
+msgid "Color function."
+msgstr "Funcția de culoare."
+
+msgid "Grayscale function."
+msgstr "Funcția tonuri de gri."
+
+msgid "Sepia function."
+msgstr "Funcția sepia."
+
+msgid "Difference operator."
+msgstr "Operator de diferență."
+
+msgid "HardLight operator."
+msgstr "Operator HardLight."
+
+msgid "Color constant."
+msgstr "Constantă de culoare."
+
+msgid "Input parameter."
+msgstr "Parametru de intrare."
+
+msgid "Transform function."
+msgstr "Funcție de transformare."
+
+msgid "Transform constant."
+msgstr "Transformare constantă."
+
+msgid "Vector function."
+msgstr "Funcție vectorială."
+
+msgid ""
+"Shader keywords cannot be used as parameter names.\n"
+"Choose another name."
+msgstr ""
+"Cuvintele cheie Shader nu pot fi utilizate ca nume pentru parametrii.\n"
+"Alegeți un alt nume."
+
 msgid "Invalid package name:"
 msgstr "Nume pachet nevalid:"
 
@@ -4295,16 +4305,6 @@ msgid ""
 msgstr ""
 "Poziția de pornire NavigationLink2D ar trebui să fie diferită de poziția "
 "finală pentru a fi utilă."
-
-msgid "Nothing connected to input '%s' of node '%s'."
-msgstr "Nimic conectat la intrarea '%s' a nodului '%s'."
-
-msgid ""
-"Shader keywords cannot be used as parameter names.\n"
-"Choose another name."
-msgstr ""
-"Cuvintele cheie Shader nu pot fi utilizate ca nume pentru parametrii.\n"
-"Alegeți un alt nume."
 
 msgid "Missing condition."
 msgstr "Condiție lipsa."

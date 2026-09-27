@@ -59,7 +59,7 @@
  * hb_glyph_extents_t glyph_extents;
  * hb_font_get_glyph_extents (font, gid, &glyph_extents);
  * hb_raster_paint_set_glyph_extents (paint, &glyph_extents);
- * hb_raster_paint_glyph (paint, font, gid, pen_x, pen_y, 0, foreground);
+ * hb_raster_paint_glyph (paint, font, gid, pen_x, pen_y);
  * hb_raster_image_t *img = hb_raster_paint_render (paint);
  * ]|
  *

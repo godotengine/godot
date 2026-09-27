@@ -63,6 +63,24 @@ void ProjectZIPPacker::pack_project_zip(const String &p_path) {
 	zipClose(zip, nullptr);
 }
 
+void ProjectZIPPacker::pack_zip_absolute_path(const String &p_output_path, const String &p_source_absolute_path) {
+	ERR_FAIL_COND_MSG(!DirAccess::dir_exists_absolute(p_source_absolute_path), vformat("Path %s doesn't exist or is not a directory.", p_source_absolute_path));
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	String base_path = p_source_absolute_path.rstrip("/");
+	if (base_path.begins_with("res://")) {
+		// This allows to find the parent dir of res:// if needed
+		base_path = ProjectSettings::get_singleton()->globalize_path(base_path);
+	}
+	base_path = base_path.get_base_dir(); // This will force to include the root dir in the zip
+
+	zipFile zip = zipOpen2(p_output_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
+
+	_zip_recursive(p_source_absolute_path, base_path + "/", zip);
+	zipClose(zip, nullptr);
+}
+
 void ProjectZIPPacker::_zip_file(const String &p_path, const String &p_base_path, zipFile p_zip) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
@@ -74,10 +92,39 @@ void ProjectZIPPacker::_zip_file(const String &p_path, const String &p_base_path
 	data.resize(len);
 	f->get_buffer(data.ptrw(), len);
 
+	uint64_t time = FileAccess::get_modified_time(p_path);
+	if (time == 0) {
+		time = Time::get_singleton()->get_unix_time_from_system();
+	}
+	Dictionary tz = Time::get_singleton()->get_time_zone_from_system();
+	time += tz["bias"].operator int() * 60;
+	Dictionary dt = Time::get_singleton()->get_datetime_dict_from_unix_time(time);
+
+	zip_fileinfo zipfi;
+	zipfi.tmz_date.tm_year = dt["year"];
+	zipfi.tmz_date.tm_mon = dt["month"].operator int() - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, https://www.cplusplus.com/reference/ctime/tm/
+	zipfi.tmz_date.tm_mday = dt["day"];
+	zipfi.tmz_date.tm_hour = dt["hour"];
+	zipfi.tmz_date.tm_min = dt["minute"];
+	zipfi.tmz_date.tm_sec = dt["second"];
+	zipfi.dosDate = 0;
+
+	// 0100000: regular file type
+	// 0000755: permissions rwxr-xr-x
+	// 0000644: permissions rw-r--r--
+	uint32_t _mode = FileAccess::get_unix_permissions(p_path);
+	if (_mode == 0) {
+		_mode = 0100644;
+	} else {
+		_mode |= 0100000;
+	}
+	zipfi.external_fa = (_mode << 16L) | ((_mode & 0200) ? 0 : 1); // UUUUUUUUUUUUUUUU0000000000ADVSHR: Unix permissions (U) + DOS read-only flag (R).
+	zipfi.internal_fa = 0;
+
 	String path = p_path.trim_prefix(p_base_path);
 	zipOpenNewFileInZip4(p_zip,
 			path.utf8().get_data(),
-			nullptr,
+			&zipfi,
 			nullptr,
 			0,
 			nullptr,

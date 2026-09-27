@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
-#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_types.h"
 
 class KinematicCollision3D : public RefCounted {
 	GDCLASS(KinematicCollision3D, RefCounted);
@@ -39,7 +39,7 @@ class KinematicCollision3D : public RefCounted {
 	ObjectID owner_id;
 	friend class PhysicsBody3D;
 	friend class CharacterBody3D;
-	PhysicsServer3D::MotionResult result;
+	PS3DT::MotionResult result;
 
 protected:
 	static void _bind_methods();

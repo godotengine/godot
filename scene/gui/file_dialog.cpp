@@ -370,14 +370,24 @@ void FileDialog::update_dir() {
 	if (drives->is_visible()) {
 		if (dir_access->get_current_dir().is_network_share_path()) {
 			_update_drives(false);
-			drives->add_item(ETR("Network"));
-			drives->set_item_disabled(-1, true);
-			drives->select(drives->get_item_count() - 1);
+			PopupMenu *pm = drives->get_popup();
+			pm->add_item(ETR("Network"));
+			Dictionary meta;
+			meta["index"] = -1;
+			meta["path"] = String();
+			meta["name"] = ETR("Network");
+			pm->set_item_metadata(-1, meta);
+			pm->set_item_disabled(-1, true);
+			drives->set_text(meta["name"]);
+			selected_drive = pm->get_item_count() - 1;
 		} else {
+			PopupMenu *pm = drives->get_popup();
 			int cur = dir_access->get_current_drive();
-			for (int i = 0; i < drives->get_item_count(); i++) {
-				if (drives->get_item_metadata(i).operator int() == cur) {
-					drives->select(i);
+			for (int i = 0; i < pm->get_item_count(); i++) {
+				const Dictionary &meta = pm->get_item_metadata(i);
+				if (meta["index"].operator int() == cur) {
+					drives->set_text(meta["name"]);
+					selected_drive = i;
 					break;
 				}
 			}
@@ -393,7 +403,7 @@ void FileDialog::_dir_submitted(String p_dir) {
 #ifdef WINDOWS_ENABLED
 	if (root_prefix.is_empty() && drives->is_visible() && !new_dir.is_network_share_path() && new_dir.is_absolute_path() && new_dir.find(":/") == -1 && new_dir.find(":\\") == -1) {
 		// Non network path without X:/ prefix on Windows, add drive letter.
-		new_dir = drives->get_item_text(drives->get_selected()).path_join(new_dir);
+		new_dir = drives->get_popup()->get_item_metadata(selected_drive).operator Dictionary()["path"].operator String().path_join(new_dir);
 	}
 #endif
 	if (!root_prefix.is_empty()) {
@@ -447,6 +457,10 @@ void FileDialog::_push_history() {
 }
 
 void FileDialog::_action_pressed() {
+	if (_is_open_should_be_disabled()) {
+		return;
+	}
+
 	if (mode == FILE_MODE_OPEN_FILES) {
 		const Vector<String> files = get_selected_files();
 		if (!files.is_empty()) {
@@ -1224,6 +1238,10 @@ void FileDialog::update_customization() {
 	favorite_button->set_visible(customization_flags[CUSTOMIZATION_FAVORITES]);
 	favorite_vbox->set_visible(customization_flags[CUSTOMIZATION_FAVORITES]);
 	recent_vbox->set_visible(customization_flags[CUSTOMIZATION_RECENT]);
+	dir_prev->set_visible(customization_flags[CUSTOMIZATION_NAVIGATION_BUTTONS]);
+	dir_next->set_visible(customization_flags[CUSTOMIZATION_NAVIGATION_BUTTONS]);
+	drives->set_visible(customization_flags[CUSTOMIZATION_DRIVE_SELECTOR]);
+	filter->set_visible(customization_flags[CUSTOMIZATION_FILTERS]);
 }
 
 void FileDialog::clear_filename_filter() {
@@ -1367,14 +1385,6 @@ String FileDialog::get_root_subfolder() const {
 	return root_subfolder;
 }
 
-void FileDialog::set_mode_overrides_title(bool p_override) {
-	mode_overrides_title = p_override;
-}
-
-bool FileDialog::is_mode_overriding_title() const {
-	return mode_overrides_title;
-}
-
 void FileDialog::set_file_mode(FileMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 5);
 	if (mode == p_mode) {
@@ -1384,34 +1394,24 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
 			set_default_ok_text(ETR("Open"));
-			if (mode_overrides_title) {
-				set_title(ETR("Open a File"));
-			}
+			set_default_title(ETR("Open a File"));
 			break;
 		case FILE_MODE_OPEN_FILES:
 			set_default_ok_text(ETR("Open"));
-			if (mode_overrides_title) {
-				set_title(ETR("Open File(s)"));
-			}
+			set_default_title(ETR("Open File(s)"));
 			break;
 		case FILE_MODE_OPEN_DIR:
 			set_default_ok_text(ETR("Select Current Folder"));
-			if (mode_overrides_title) {
-				set_title(ETR("Open a Directory"));
-			}
+			set_default_title(ETR("Open a Directory"));
 			break;
 		case FILE_MODE_OPEN_ANY:
 			set_default_ok_text(ETR("Open"));
-			if (mode_overrides_title) {
-				set_title(ETR("Open a File or Directory"));
-			}
+			set_default_title(ETR("Open a File or Directory"));
 			make_dir_button->show();
 			break;
 		case FILE_MODE_SAVE_FILE:
 			set_default_ok_text(ETR("Save"));
-			if (mode_overrides_title) {
-				set_title(ETR("Save a File"));
-			}
+			set_default_title(ETR("Save a File"));
 			break;
 	}
 	_update_make_dir_visible();
@@ -1568,6 +1568,7 @@ void FileDialog::_invalidate() {
 	}
 
 	update_file_list();
+	get_ok_button()->set_disabled(_is_open_should_be_disabled());
 
 	if (ensure_visible_after_invalidating) {
 		file_list->ensure_current_is_visible();
@@ -1615,8 +1616,11 @@ void FileDialog::_make_dir() {
 }
 
 void FileDialog::_select_drive(int p_idx) {
-	String d = drives->get_item_text(p_idx);
-	_change_dir(d);
+	const Dictionary &meta = drives->get_popup()->get_item_metadata(p_idx);
+	drives->set_text(meta["name"]);
+	selected_drive = p_idx;
+
+	_change_dir(meta["path"]);
 	filename_edit->set_text("");
 	_push_history();
 }
@@ -1662,7 +1666,8 @@ void FileDialog::_update_drives(bool p_select) {
 	if (drive_map.size() == 0) {
 		drives->hide();
 	} else {
-		drives->clear();
+		PopupMenu *pm = drives->get_popup();
+		pm->clear();
 		Node *dp = drives->get_parent();
 		if (dp) {
 			dp->remove_child(drives);
@@ -1672,10 +1677,22 @@ void FileDialog::_update_drives(bool p_select) {
 		drives->show();
 
 		for (const KeyValue<int, String> &drv : drive_map) {
-			drives->add_item(drv.value);
-			drives->set_item_metadata(-1, drv.key);
+			String display_name = drv.value;
+			String lbl = dir_access->get_drive_label(drv.key);
+			if (!lbl.is_empty()) {
+				display_name = drv.value + " (" + lbl + ")";
+			}
+			pm->add_item(display_name);
+			pm->set_item_tooltip(-1, drv.value);
+
+			Dictionary meta;
+			meta["index"] = drv.key;
+			meta["path"] = drv.value;
+			meta["name"] = drv.value;
+			pm->set_item_metadata(-1, meta);
 			if (p_select && drv.key == cur) {
-				drives->select(drives->get_item_count() - 1);
+				drives->set_text(drv.value);
+				selected_drive = drv.key;
 			}
 		}
 	}
@@ -2107,8 +2124,6 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_dir", "dir"), &FileDialog::set_current_dir);
 	ClassDB::bind_method(D_METHOD("set_current_file", "file"), &FileDialog::set_current_file);
 	ClassDB::bind_method(D_METHOD("set_current_path", "path"), &FileDialog::set_current_path);
-	ClassDB::bind_method(D_METHOD("set_mode_overrides_title", "override"), &FileDialog::set_mode_overrides_title);
-	ClassDB::bind_method(D_METHOD("is_mode_overriding_title"), &FileDialog::is_mode_overriding_title);
 	ClassDB::bind_method(D_METHOD("set_file_mode", "mode"), &FileDialog::set_file_mode);
 	ClassDB::bind_method(D_METHOD("get_file_mode"), &FileDialog::get_file_mode);
 	ClassDB::bind_method(D_METHOD("set_display_mode", "mode"), &FileDialog::set_display_mode);
@@ -2137,7 +2152,12 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_file_dialog"), &FileDialog::popup_file_dialog);
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
 
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_mode_overrides_title", "override"), &FileDialog::set_mode_overrides_title);
+	ClassDB::bind_method(D_METHOD("is_mode_overriding_title"), &FileDialog::is_mode_overriding_title);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
+#endif
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "file_mode", PROPERTY_HINT_ENUM, "Open File,Open Files,Open Folder,Open Any,Save"), "set_file_mode", "get_file_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List"), "set_display_mode", "get_display_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User Data,File System"), "set_access", "get_access");
@@ -2159,6 +2179,9 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "layout_toggle_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_LAYOUT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "overwrite_warning_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_OVERWRITE_WARNING);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "deleting_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_DELETE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "navigation_buttons_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_NAVIGATION_BUTTONS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "drive_selector_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_DRIVE_SELECTOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "filters_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_FILTERS);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE_PATH, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
@@ -2191,6 +2214,9 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_LAYOUT);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_OVERWRITE_WARNING);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_DELETE);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_NAVIGATION_BUTTONS);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_DRIVE_SELECTOR);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_FILTERS);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FileDialog, thumbnail_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);
@@ -2248,6 +2274,7 @@ void FileDialog::set_show_hidden_files(bool p_show) {
 	if (show_hidden_files == p_show) {
 		return;
 	}
+	show_hidden->set_pressed_no_signal(p_show);
 	show_hidden_files = p_show;
 	invalidate();
 }
@@ -2313,7 +2340,7 @@ bool FileDialog::get_use_native_dialog() const {
 }
 
 FileDialog::FileDialog() {
-	set_title(ETR("Save a File"));
+	set_default_title(ETR("Save a File"));
 	set_hide_on_ok(false);
 	set_size(Size2(640, 360));
 	set_default_ok_text(ETR("Save")); // Default mode text.
@@ -2367,8 +2394,9 @@ FileDialog::FileDialog() {
 	drives_container = memnew(HBoxContainer);
 	top_toolbar->add_child(drives_container);
 
-	drives = memnew(OptionButton);
-	drives->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_select_drive));
+	drives = memnew(MenuButton);
+	drives->set_flat(false);
+	drives->get_popup()->connect("index_pressed", callable_mp(this, &FileDialog::_select_drive));
 	drives->set_accessibility_name(ETR("Drive"));
 	top_toolbar->add_child(drives);
 
@@ -2600,6 +2628,7 @@ FileDialog::FileDialog() {
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // Too many extensions overflows it.
+	filter->set_fit_to_longest_item(false);
 	file_box->add_child(filter);
 	filter->connect(SceneStringName(item_selected), callable_mp(this, &FileDialog::_filter_selected));
 
@@ -2618,6 +2647,7 @@ FileDialog::FileDialog() {
 	confirm_save->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_save_confirm_pressed));
 
 	delete_dialog = memnew(ConfirmationDialog);
+	delete_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	delete_dialog->set_text(ETR("Delete the selected file?\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently."));
 	add_child(delete_dialog, false, INTERNAL_MODE_FRONT);
 	delete_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileDialog::_delete_confirm));
@@ -2636,10 +2666,12 @@ FileDialog::FileDialog() {
 	make_dir_dialog->register_text_enter(new_dir_name);
 
 	mkdirerr = memnew(AcceptDialog);
+	mkdirerr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	mkdirerr->set_text(ETR("Could not create folder."));
 	add_child(mkdirerr, false, INTERNAL_MODE_FRONT);
 
 	exterr = memnew(AcceptDialog);
+	exterr->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	exterr->set_text(ETR("Invalid extension, or empty filename."));
 	add_child(exterr, false, INTERNAL_MODE_FRONT);
 

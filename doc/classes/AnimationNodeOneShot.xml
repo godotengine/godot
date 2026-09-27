@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeOneShot" inherits="AnimationNodeSync" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationNodeOneShot" inherits="AnimationNodeSync" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Plays an animation once in an [AnimationNodeBlendTree].
 	</brief_description>
@@ -48,6 +48,17 @@
 
 		// Get current internal state (read-only).
 		animationTree.Get("parameters/OneShot/internal_active");
+		[/csharp]
+		[/codeblocks]
+		Optionally, signals can be used by setting an [AnimationNodeObserverOneShot] through [AnimationTree].
+		[codeblocks]
+		[gdscript]
+		var observer = tree.get("parameters/OneShot/observer")
+		observer.started.connect(on_one_shot_started)
+		[/gdscript]
+		[csharp]
+		var observer = animationTree.Get("parameters/OneShot/observer").As&lt;AnimationNodeObserverOneShot&gt;();
+		observer.Started += OnOneShotStarted;
 		[/csharp]
 		[/codeblocks]
 	</description>

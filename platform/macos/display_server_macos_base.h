@@ -107,6 +107,8 @@ protected:
 	void _update_hdr_output(DisplayServerEnums::WindowID p_window, const HDROutput &p_hdr);
 
 public:
+	virtual bool has_window(DisplayServerEnums::WindowID p_window) const { return p_window == DisplayServerEnums::MAIN_WINDOW_ID; }
+
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;
@@ -122,6 +124,8 @@ public:
 	virtual Color get_accent_color() const override;
 	virtual Color get_base_color() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
+
+	virtual void send_window_event_by_id(DisplayServerEnums::WindowEvent p_event, DisplayServerEnums::WindowID p_id = DisplayServerEnums::MAIN_WINDOW_ID) const = 0;
 
 	virtual void mouse_set_mode(DisplayServerEnums::MouseMode p_mode) override;
 	virtual DisplayServerEnums::MouseMode mouse_get_mode() const override;

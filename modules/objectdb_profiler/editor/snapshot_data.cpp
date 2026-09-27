@@ -32,6 +32,7 @@
 
 #include "core/core_bind.h"
 #include "core/io/compression.h"
+#include "core/io/resource_loader.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "scene/debugger/scene_debugger_object.h"
@@ -44,10 +45,25 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 		snapshot(p_snapshot) {
 	remote_object_id = p_obj.id;
 	type_name = p_obj.class_name;
+	remote_name = vformat("<%s:%d> ", type_name, remote_object_id) + TTR("(Runtime Instance)");
+	remote_path = "";
+	bool is_node = ClassDB::is_parent_class(type_name, "Node");
+	bool is_resource = ClassDB::is_parent_class(type_name, "Resource");
 
 	for (const SceneDebuggerObject::SceneDebuggerProperty &prop : p_obj.properties) {
 		PropertyInfo pinfo = prop.first;
 		Variant pvalue = prop.second;
+
+		if (is_node && pinfo.name == "name") {
+			remote_name = pvalue;
+		} else if (is_node && pinfo.name == "Node/path") {
+			remote_path = pvalue;
+		} else if (is_resource && pinfo.name == "resource_path") {
+			remote_path = pvalue;
+			if (!remote_path.is_empty()) {
+				remote_name = remote_path.get_file();
+			}
+		}
 
 		if (pinfo.type == Variant::OBJECT && pvalue.is_string()) {
 			String path = pvalue;
@@ -160,6 +176,9 @@ String SnapshotDataObject::_get_script_name(Ref<Script> p_script) {
 }
 
 String SnapshotDataObject::get_name() {
+	if (!remote_name.is_empty()) {
+		return remote_name;
+	}
 	String found_type_name = type_name;
 
 	// Ideally, we will name it after the script attached to it.
@@ -275,7 +294,7 @@ void GameStateSnapshot::_get_rc_cycles(
 		}
 
 		SnapshotDataObject *next = objects[next_child.value];
-		if (next != nullptr && next->is_class(RefCounted::get_class_static()) && !next->is_class(WeakRef::get_class_static()) && !p_traversed_objs.has(next)) {
+		if (next != nullptr && next->is_class(RefCounted::get_class_static()) && !next->is_class("WeakRef") && !p_traversed_objs.has(next)) {
 			HashSet<SnapshotDataObject *> traversed_copy(p_traversed_objs);
 			if (p_obj != p_source_obj) {
 				traversed_copy.insert(p_obj);
@@ -308,7 +327,7 @@ void GameStateSnapshot::recompute_references() {
 	}
 
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &obj : objects) {
-		if (!obj.value->is_class(RefCounted::get_class_static()) || obj.value->is_class(WeakRef::get_class_static())) {
+		if (!obj.value->is_class(RefCounted::get_class_static()) || obj.value->is_class("WeakRef")) {
 			continue;
 		}
 		LocalVector<String> cycles;

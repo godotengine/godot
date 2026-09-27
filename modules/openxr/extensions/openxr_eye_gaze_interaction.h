@@ -52,7 +52,7 @@ public:
 	bool is_available();
 	bool supports_eye_gaze_interaction();
 
-	virtual void on_register_metadata() override;
+	virtual void on_register_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) override;
 
 	bool get_eye_gaze_pose(double p_dist, Vector3 &r_eye_pose);
 

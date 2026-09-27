@@ -33,8 +33,10 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/property_info.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
@@ -248,16 +250,10 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<PropertyInfo> list;
 		shader->get_shader_uniform_list(&list, true);
 
-		HashMap<String, HashMap<String, List<PropertyInfo>>> groups;
-		LocalVector<Pair<String, LocalVector<String>>> vgroups;
-		{
-			HashMap<String, List<PropertyInfo>> none_subgroup;
-			none_subgroup.insert("<None>", List<PropertyInfo>());
-			groups.insert("<None>", none_subgroup);
-		}
+		HashMap<String, List<PropertyInfo>> groups;
+		LocalVector<String> vgroups;
 
 		String last_group = "<None>";
-		String last_subgroup = "<None>";
 
 		bool is_none_group_undefined = true;
 		bool is_none_group = true;
@@ -265,13 +261,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 		for (const PropertyInfo &pi : list) {
 			if (pi.usage == PROPERTY_USAGE_GROUP) {
 				if (!pi.name.is_empty()) {
-					Vector<String> vgroup = pi.name.split("::");
-					last_group = vgroup[0];
-					if (vgroup.size() > 1) {
-						last_subgroup = vgroup[1];
-					} else {
-						last_subgroup = "<None>";
-					}
+					last_group = pi.name;
 					is_none_group = false;
 
 					if (!groups.has(last_group)) {
@@ -280,36 +270,14 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 						info.name = last_group.capitalize();
 						info.hint_string = "shader_parameter/";
 
-						List<PropertyInfo> none_subgroup;
-						none_subgroup.push_back(info);
+						List<PropertyInfo> props;
+						props.push_back(info);
 
-						HashMap<String, List<PropertyInfo>> subgroup_map;
-						subgroup_map.insert("<None>", none_subgroup);
-
-						groups.insert(last_group, subgroup_map);
-						vgroups.push_back(Pair<String, LocalVector<String>>(last_group, { "<None>" }));
-					}
-
-					if (!groups[last_group].has(last_subgroup)) {
-						PropertyInfo info;
-						info.usage = PROPERTY_USAGE_SUBGROUP;
-						info.name = last_subgroup.capitalize();
-						info.hint_string = "shader_parameter/";
-
-						List<PropertyInfo> subgroup;
-						subgroup.push_back(info);
-
-						groups[last_group].insert(last_subgroup, subgroup);
-						for (Pair<String, LocalVector<String>> &group : vgroups) {
-							if (group.first == last_group) {
-								group.second.push_back(last_subgroup);
-								break;
-							}
-						}
+						groups.insert(last_group, props);
+						vgroups.push_back(last_group);
 					}
 				} else {
 					last_group = "<None>";
-					last_subgroup = "<None>";
 					is_none_group = true;
 				}
 				continue; // Pass group.
@@ -322,9 +290,12 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				info.usage = PROPERTY_USAGE_GROUP;
 				info.name = "Shader Parameters";
 				info.hint_string = "shader_parameter/";
-				groups["<None>"]["<None>"].push_back(info);
 
-				vgroups.push_back(Pair<String, LocalVector<String>>("<None>", { "<None>" }));
+				List<PropertyInfo> props;
+				props.push_back(info);
+
+				groups.insert("<None>", props);
+				vgroups.push_back("<None>");
 			}
 
 			const bool is_uniform_cached = param_cache.has(pi.name);
@@ -374,16 +345,13 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 				param_cache.insert(pi.name, default_value);
 				remap_cache.insert(info.name, pi.name);
 			}
-			groups[last_group][last_subgroup].push_back(info);
+			groups[last_group].push_back(info);
 		}
 
-		for (const Pair<String, LocalVector<String>> &group_pair : vgroups) {
-			String group = group_pair.first;
-			for (const String &subgroup : group_pair.second) {
-				List<PropertyInfo> &prop_infos = groups[group][subgroup];
-				for (const PropertyInfo &item : prop_infos) {
-					p_list->push_back(item);
-				}
+		for (const String &group : vgroups) {
+			List<PropertyInfo> &prop_infos = groups[group];
+			for (const PropertyInfo &item : prop_infos) {
+				p_list->push_back(item);
 			}
 		}
 	}
@@ -460,7 +428,7 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 		Variant *v = param_cache.getptr(p_param);
 		if (!v) {
 			// Never assigned, also update the remap cache.
-			remap_cache["shader_parameter/" + p_param.operator String()] = p_param;
+			remap_cache["shader_parameter/" + p_param.string()] = p_param;
 			param_cache.insert(p_param, p_value);
 		} else {
 			*v = p_value;
@@ -769,6 +737,11 @@ void BaseMaterial3D::_update_shader() {
 		texfilter_height_str += ", repeat_disable";
 	}
 
+	bool animation_enabled = features[FEATURE_PARTICLES_ANIMATION];
+#ifndef DISABLE_DEPRECATED
+	animation_enabled = animation_enabled || billboard_mode == BILLBOARD_PARTICLES;
+#endif
+
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 	String code = vformat(
 			"// NOTE: Shader automatically converted from " GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG "'s %s.\n\n",
@@ -1057,7 +1030,7 @@ uniform float metallic : hint_range(0.0, 1.0, 0.01);
 		code += "uniform sampler2D texture_orm : hint_roughness_g, " + texfilter_str + ";\n";
 	}
 
-	if (billboard_mode == BILLBOARD_PARTICLES) {
+	if (animation_enabled) {
 		code += R"(
 uniform int particles_anim_h_frames : hint_range(1, 128);
 uniform int particles_anim_v_frames : hint_range(1, 128);
@@ -1337,25 +1310,30 @@ void vertex() {)";
 			vec4(0.0, 0.0, 0.0, 1.0));
 )";
 			}
-			// Set modelview normal and handle animation.
+			// Set modelview normal.
 			code += R"(
 	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
-
-	float h_frames = float(particles_anim_h_frames);
-	float v_frames = float(particles_anim_v_frames);
-	float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);
-	float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));
-	if (!particles_anim_loop) {
-		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);
-	} else {
-		particle_frame = mod(particle_frame, particle_total_frames);
-	}
-	UV /= vec2(h_frames, v_frames);
-	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);
 )";
 		} break;
 		case BILLBOARD_MAX:
 			break; // Internal value, skip.
+	}
+
+	// Handle animation.
+	if (animation_enabled) {
+		code += R"(
+		float h_frames = float(particles_anim_h_frames);
+		float v_frames = float(particles_anim_v_frames);
+		float particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);
+		float particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));
+		if (!particles_anim_loop) {
+			particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);
+		} else {
+			particle_frame = mod(particle_frame, particle_total_frames);
+		}
+		UV /= vec2(h_frames, v_frames);
+		UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);
+)";
 	}
 
 	if (flags[FLAG_FIXED_SIZE]) {
@@ -1851,14 +1829,16 @@ void fragment() {)";
 	}
 
 	if (proximity_fade_enabled) {
-		code += R"(
+		// Invert proximity fade direction if using inverted depth. Otherwise, the material is never visible with proximity fade enabled.
+		code += vformat(R"(
 	// Proximity Fade: Enabled
 	float proximity_depth_tex = textureLod(depth_texture, SCREEN_UV, 0.0).r;
 	vec4 ndc = OUTPUT_IS_SRGB ? vec4(vec3(SCREEN_UV, proximity_depth_tex) * 2.0 - 1.0, 1.0) : vec4(SCREEN_UV * 2.0 - 1.0, proximity_depth_tex, 1.0);
 	vec4 proximity_view_pos = INV_PROJECTION_MATRIX * ndc;
 	proximity_view_pos.xyz /= proximity_view_pos.w;
-	ALPHA *= clamp(1.0 - smoothstep(proximity_view_pos.z + proximity_fade_distance, proximity_view_pos.z, VERTEX.z), 0.0, 1.0);
-)";
+	ALPHA *= clamp(1.0 - smoothstep(proximity_view_pos.z %s proximity_fade_distance, proximity_view_pos.z, VERTEX.z), 0.0, 1.0);
+)",
+				depth_test == DEPTH_TEST_INVERTED ? "-" : "+");
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
@@ -2065,6 +2045,24 @@ void fragment() {)";
 		code += R"(	vec3 detail_norm = mix(NORMAL_MAP, detail_norm_tex.rgb, detail_tex.a);
 	NORMAL_MAP = mix(NORMAL_MAP, detail_norm, detail_mask_tex.r);
 	ALBEDO.rgb = mix(ALBEDO.rgb, detail, detail_mask_tex.r);
+)";
+	}
+
+	bool streaming_enabled = false;
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	streaming_enabled = GLOBAL_GET_CACHED(bool, "rendering/textures/streaming/enabled");
+#endif
+	if (streaming_enabled && flags[FLAG_UV1_USE_TRIPLANAR]) {
+		code += R"(
+	// Write triplanar UV to UV for texture streaming feedback.
+	// Pick the UV projection of the dominant triplanar axis.
+	if (uv1_power_normal.x >= uv1_power_normal.y && uv1_power_normal.x >= uv1_power_normal.z) {
+		STREAMING_UV = uv1_triplanar_pos.zy * vec2(-1.0, 1.0);
+	} else if (uv1_power_normal.y >= uv1_power_normal.z) {
+		STREAMING_UV = uv1_triplanar_pos.xz;
+	} else {
+		STREAMING_UV = uv1_triplanar_pos.xy;
+	}
 )";
 	}
 
@@ -2582,9 +2580,16 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+#ifndef DISABLE_DEPRECATED
+	if (billboard_mode == BILLBOARD_PARTICLES) {
+		if (p_property.name == "particles_anim_enabled") {
+			p_property.hint = PROPERTY_HINT_NONE;
+			p_property.usage = PROPERTY_USAGE_NONE;
+		} else if (p_property.name.begins_with("particles_anim_")) {
+			p_property.usage = PROPERTY_USAGE_DEFAULT;
+		}
 	}
+#endif
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
@@ -3745,12 +3750,13 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
 
 	ADD_GROUP("Particles Anim", "particles_anim_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "particles_anim_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_feature", "get_feature", FEATURE_PARTICLES_ANIMATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_h_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_h_frames", "get_particles_anim_h_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "particles_anim_v_frames", PROPERTY_HINT_RANGE, "1,128,1"), "set_particles_anim_v_frames", "get_particles_anim_v_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "particles_anim_loop"), "set_particles_anim_loop", "get_particles_anim_loop");
 
 	ADD_GROUP("Grow", "grow_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "grow"), "set_grow_enabled", "is_grow_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "grow", PROPERTY_HINT_GROUP_ENABLE), "set_grow_enabled", "is_grow_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "grow_amount", PROPERTY_HINT_RANGE, "-16,16,0.001,suffix:m"), "set_grow", "get_grow");
 
 	ADD_GROUP("Transform", "");
@@ -3762,8 +3768,9 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "z_clip_scale", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), "set_z_clip_scale", "get_z_clip_scale");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_fov_override"), "set_flag", "get_flag", FLAG_USE_FOV_OVERRIDE);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov_override", PROPERTY_HINT_RANGE, "1,179,0.1,degrees"), "set_fov_override", "get_fov_override");
+
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enabled"), "set_proximity_fade_enabled", "is_proximity_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_proximity_fade_enabled", "is_proximity_fade_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0.01,4096,0.01,suffix:m"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 
 	ADD_GROUP("MSDF", "msdf_");
@@ -3841,6 +3848,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_REFRACTION);
 	BIND_ENUM_CONSTANT(FEATURE_DETAIL);
 	BIND_ENUM_CONSTANT(FEATURE_BENT_NORMAL_MAPPING);
+	BIND_ENUM_CONSTANT(FEATURE_PARTICLES_ANIMATION);
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 
 	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);

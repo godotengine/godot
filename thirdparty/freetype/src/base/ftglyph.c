@@ -4,7 +4,7 @@
  *
  *   FreeType convenience functions to handle glyphs (body).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -62,7 +62,7 @@
                         FT_GlyphSlot  slot )
   {
     FT_BitmapGlyph  glyph   = (FT_BitmapGlyph)bitmap_glyph;
-    FT_Error        error   = FT_Err_Ok;
+    FT_Error        error;
     FT_Library      library = FT_GLYPH( glyph )->library;
 
 
@@ -75,17 +75,8 @@
     glyph->left = slot->bitmap_left;
     glyph->top  = slot->bitmap_top;
 
-    /* do lazy copying whenever possible */
-    if ( slot->internal->flags & FT_GLYPH_OWN_BITMAP )
-    {
-      glyph->bitmap          = slot->bitmap;
-      slot->internal->flags &= ~FT_GLYPH_OWN_BITMAP;
-    }
-    else
-    {
-      FT_Bitmap_Init( &glyph->bitmap );
-      error = FT_Bitmap_Copy( library, &slot->bitmap, &glyph->bitmap );
-    }
+    FT_Bitmap_Init( &glyph->bitmap );
+    error = FT_Bitmap_Copy( library, &slot->bitmap, &glyph->bitmap );
 
   Exit:
     return error;
@@ -865,9 +856,9 @@
       goto Exit;
 
     /* in case of success, copy the bitmap to the glyph bitmap */
-    error = ft_bitmap_glyph_init( (FT_Glyph)bitmap, &dummy );
-    if ( error )
-      goto Exit;
+    bitmap->left   = dummy.bitmap_left;
+    bitmap->top    = dummy.bitmap_top;
+    bitmap->bitmap = dummy.bitmap;
 
     /* copy advance */
     bitmap->root.advance = glyph->advance;

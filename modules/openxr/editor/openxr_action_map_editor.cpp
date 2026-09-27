@@ -64,15 +64,8 @@ void OpenXRActionMapEditor::_bind_methods() {
 void OpenXRActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			const String theme_style = EDITOR_GET("interface/theme/style");
-			tabs->set_theme_type_variation(theme_style == "Classic" ? "TabContainerOdd" : "TabContainerInner");
-
-			for (int i = 0; i < tabs->get_child_count(); i++) {
-				Control *tab = Object::cast_to<Control>(tabs->get_child(i));
-				if (tab) {
-					tab->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-				}
-			}
+			const bool is_theme_classic = EDITOR_GET("interface/theme/style") == "Classic";
+			tabs->set_theme_type_variation(is_theme_classic ? "TabContainerOdd" : "TabContainerInner");
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -82,12 +75,23 @@ void OpenXRActionMapEditor::_notification(int p_what) {
 	}
 }
 
+void OpenXRActionMapEditor::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
+	if (p_slot != EditorDock::DOCK_SLOT_BOTTOM) {
+		actionsets_mc->set_theme_type_variation("NoBorderBottomWideWindow");
+		actionsets_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_TOP_AND_LEFT);
+	} else {
+		actionsets_mc->set_theme_type_variation("NoBorderOpenXR");
+		actionsets_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
+	}
+}
+
 OpenXRActionSetEditor *OpenXRActionMapEditor::_add_action_set_editor(const Ref<OpenXRActionSet> &p_action_set) {
 	ERR_FAIL_COND_V(p_action_set.is_null(), nullptr);
 
 	OpenXRActionSetEditor *action_set_editor = memnew(OpenXRActionSetEditor(action_map, p_action_set));
 	action_set_editor->connect("remove", callable_mp(this, &OpenXRActionMapEditor::_on_remove_action_set));
 	action_set_editor->connect("action_removed", callable_mp(this, &OpenXRActionMapEditor::_on_action_removed));
+	action_set_editor->connect("action_renamed", callable_mp(this, &OpenXRActionMapEditor::_on_action_renamed));
 
 	actionsets_vb->add_child(action_set_editor);
 
@@ -250,6 +254,15 @@ void OpenXRActionMapEditor::_on_action_removed(const Ref<OpenXRAction> &p_action
 	}
 }
 
+void OpenXRActionMapEditor::_on_action_renamed(const Ref<OpenXRAction> &p_action) {
+	for (int i = 0; i < tabs->get_tab_count(); i++) {
+		OpenXRInteractionProfileEditorBase *interaction_profile_editor = Object::cast_to<OpenXRInteractionProfileEditorBase>(tabs->get_tab_control(i));
+		if (interaction_profile_editor) {
+			interaction_profile_editor->_set_dirty();
+		}
+	}
+}
+
 void OpenXRActionMapEditor::_on_add_interaction_profile() {
 	ERR_FAIL_COND(action_map.is_null());
 
@@ -342,6 +355,13 @@ void OpenXRActionMapEditor::_on_reset_to_default_layout() {
 }
 
 void OpenXRActionMapEditor::_on_tabs_tab_changed(int p_tab) {
+	OpenXRInteractionProfileEditorBase *interaction_profile_editor = Object::cast_to<OpenXRInteractionProfileEditorBase>(tabs->get_tab_control(p_tab));
+
+	if (!interaction_profile_editor) {
+		return;
+	}
+
+	interaction_profile_editor->_update_interaction_profile();
 }
 
 void OpenXRActionMapEditor::_on_tab_button_pressed(int p_tab) {
@@ -493,12 +513,17 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	tabs->connect("tab_button_pressed", callable_mp(this, &OpenXRActionMapEditor::_on_tab_button_pressed));
 	main_vb->add_child(tabs);
 
+	actionsets_mc = memnew(MarginContainer);
+	actionsets_mc->set_theme_type_variation("NoBorderOpenXR");
+	tabs->add_child(actionsets_mc);
+	actionsets_mc->set_name(TTRC("Action Sets"));
+
 	actionsets_scroll = memnew(ScrollContainer);
 	actionsets_scroll->set_h_size_flags(SIZE_EXPAND_FILL);
 	actionsets_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 	actionsets_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	tabs->add_child(actionsets_scroll);
-	actionsets_scroll->set_name(TTR("Action Sets"));
+	actionsets_scroll->set_scroll_hint_mode(ScrollContainer::SCROLL_HINT_MODE_ALL);
+	actionsets_mc->add_child(actionsets_scroll);
 
 	actionsets_vb = memnew(VBoxContainer);
 	actionsets_vb->set_h_size_flags(SIZE_EXPAND_FILL);

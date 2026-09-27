@@ -2872,8 +2872,8 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 					case TYPE_POSITION_3D: {
 						const PositionTrack *tt = static_cast<const PositionTrack *>(t);
 						if (tt->compressed_track >= 0) {
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, from_time, length, r_indices);
-							_get_compressed_key_indices_in_range<3>(tt->compressed_track, p_start, to_time, r_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, from_time, end, r_indices);
+							_get_compressed_key_indices_in_range<3>(tt->compressed_track, start, to_time, r_indices);
 						} else {
 							if (!is_backward) {
 								_track_get_key_indices_in_range(tt->positions, from_time, anim_end, r_indices, is_backward);
@@ -3883,7 +3883,7 @@ bool Animation::track_is_enabled(int p_track) const {
 }
 
 void Animation::track_move_up(int p_track) {
-	if (p_track < ((int)tracks.size() - 1)) {
+	if (p_track >= 0 && p_track < ((int)tracks.size() - 1)) {
 		SWAP(tracks[p_track], tracks[p_track + 1]);
 	}
 
@@ -3891,7 +3891,7 @@ void Animation::track_move_up(int p_track) {
 }
 
 void Animation::track_move_down(int p_track) {
-	if ((uint32_t)p_track < tracks.size()) {
+	if (p_track > 0 && (uint32_t)p_track < tracks.size()) {
 		SWAP(tracks[p_track], tracks[p_track - 1]);
 	}
 

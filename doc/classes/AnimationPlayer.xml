@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="AnimationMixer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="AnimationPlayer" inherits="AnimationMixer" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A node used for animation playback.
 	</brief_description>
@@ -297,6 +297,9 @@
 		<member name="autoplay" type="StringName" setter="set_autoplay" getter="get_autoplay" default="&amp;&quot;&quot;">
 			The key of the animation to play when the scene loads.
 		</member>
+		<member name="clear_cache_on_stop" type="bool" setter="set_clear_cache_on_stop_enabled" getter="is_clear_cache_on_stop_enabled" default="true">
+			If [code]true[/code], the animation track cache is cleared when the animation is stopped or the playback queue becomes empty. If [code]false[/code], the track cache is preserved, which can improve performance when animations are frequently started and stopped.
+		</member>
 		<member name="current_animation" type="StringName" setter="set_current_animation" getter="get_current_animation" default="&amp;&quot;&quot;">
 			The key of the currently playing animation. If no animation is playing, the property's value is an empty string. Changing this value does not restart the animation. See [method play] for more information on playing animations.
 			[b]Note:[/b] While this property appears in the Inspector, it's not meant to be edited, and it's not saved in the scene. This property is mainly used to get the currently playing animation, and internally for animation playback tracks. For more information, see [Animation].
@@ -343,7 +346,7 @@
 			</description>
 		</signal>
 		<signal name="current_animation_changed">
-			<param index="0" name="name" type="StringName" />
+			<param index="0" name="anim_name" type="StringName" />
 			<description>
 				Emitted when [member current_animation] changes.
 			</description>

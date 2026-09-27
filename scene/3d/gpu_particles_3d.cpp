@@ -482,8 +482,20 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void GPUParticles3D::request_particles_process(real_t p_requested_process_time) {
-	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time);
+void GPUParticles3D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_residual) {
+	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time, p_request_process_time_residual);
+	// Setting emitting independently from set_emitting is important here
+	// we assume to be in a controlled process situation.
+	// setting RS emission to true is necessary to ensure particles will emit when
+	// regular process time is > than zero but the particles are already in trailing mode.
+	// this could also be done on the GScript/tool side.
+	if (p_requested_process_time > 0.0) {
+		emitting = true;
+		RS::get_singleton()->particles_set_emitting(particles, true);
+	}
+	if (p_request_process_time_residual > 0.0) {
+		emitting = false;
+	}
 }
 
 void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -532,13 +544,13 @@ void GPUParticles3D::_notification(int p_what) {
 
 			if (one_shot) {
 				time += get_process_delta_time();
-				if (time > emission_time) {
+				if ((time * speed_scale) > emission_time) {
 					emitting = false;
 					if (!active) {
 						set_process_internal(false);
 					}
 				}
-				if (time > active_time) {
+				if ((time * speed_scale) > active_time) {
 					if (active && !signal_canceled) {
 						emit_signal(SceneStringName(finished));
 					}
@@ -850,7 +862,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles3D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles3D::get_amount_ratio);
 
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles3D::request_particles_process);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time", "process_time_residual"), &GPUParticles3D::request_particles_process, DEFVAL(0.0));
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
@@ -888,11 +900,15 @@ void GPUParticles3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "trail_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_trail_enabled", "is_trail_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "trail_lifetime", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:s"), "set_trail_lifetime", "get_trail_lifetime");
 	ADD_GROUP("Process Material", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticleProcessMaterial,ShaderMaterial", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_process_material", "get_process_material");
 	ADD_GROUP("Draw Passes", "draw_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_passes", PROPERTY_HINT_RANGE, "0," + itos(MAX_DRAW_PASSES) + ",1"), "set_draw_passes", "get_draw_passes");
 	for (int i = 0; i < MAX_DRAW_PASSES; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "draw_pass_" + itos(i + 1), PROPERTY_HINT_RESOURCE_TYPE, Mesh::get_class_static()), "set_draw_pass_mesh", "get_draw_pass_mesh", i);
+		// Specify all types for explicit ordering in the inspector,
+		// but list generic Mesh last to allow extended types to show up at the end.
+		// Keep the order in sync with MeshInstance3D's `mesh` property,
+		// with the exception of moving QuadMesh to the beginning so that it's automatically instanced on node creation.
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "draw_pass_" + itos(i + 1), PROPERTY_HINT_RESOURCE_TYPE, "QuadMesh,BoxMesh,SphereMesh,CapsuleMesh,CylinderMesh,PrismMesh,TorusMesh,PlaneMesh,TextMesh,RibbonTrailMesh,TubeTrailMesh,PointMesh,ArrayMesh,ImmediateMesh,PlaceholderMesh,Mesh", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_draw_pass_mesh", "get_draw_pass_mesh", i);
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "draw_skin", PROPERTY_HINT_RESOURCE_TYPE, Skin::get_class_static()), "set_skin", "get_skin");
 

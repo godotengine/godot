@@ -98,6 +98,8 @@ public:
 		// to be a more pleasant player-facing value.
 		float hdr_reference_luminance = 200.0f;
 		float hdr_max_luminance = 1000.0f;
+		// linear_luminance_scale must always equal hdr_reference_luminance on Apple platforms.
+		float hdr_linear_luminance_scale = 200.0f;
 		bool needs_resize = false;
 		bool hdr_output = false;
 
@@ -105,7 +107,7 @@ public:
 				device(p_device) {}
 		virtual ~Surface() = default;
 
-		MTL::PixelFormat get_pixel_format() const { return pixel_format; }
+		virtual MTL::PixelFormat get_pixel_format() const { return pixel_format; }
 		void set_hdr_output_enabled(bool p_enabled) {
 			if (hdr_output != p_enabled) {
 				hdr_output = p_enabled;

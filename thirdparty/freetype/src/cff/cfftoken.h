@@ -4,7 +4,7 @@
  *
  *   CFF token definitions (specification only).
  *
- * Copyright (C) 1996-2025 by
+ * Copyright (C) 1996-2026 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -30,8 +30,8 @@
   CFF_FIELD_STRING  ( 4,     weight,              "Weight" )
   CFF_FIELD_BOOL    ( 0x101, is_fixed_pitch,      "isFixedPitch" )
   CFF_FIELD_FIXED   ( 0x102, italic_angle,        "ItalicAngle" )
-  CFF_FIELD_FIXED   ( 0x103, underline_position,  "UnderlinePosition" )
-  CFF_FIELD_FIXED   ( 0x104, underline_thickness, "UnderlineThickness" )
+  CFF_FIELD_NUM     ( 0x103, underline_position,  "UnderlinePosition" )
+  CFF_FIELD_NUM     ( 0x104, underline_thickness, "UnderlineThickness" )
   CFF_FIELD_NUM     ( 0x105, paint_type,          "PaintType" )
   CFF_FIELD_NUM     ( 0x106, charstring_type,     "CharstringType" )
   CFF_FIELD_CALLBACK( 0x107, font_matrix,         "FontMatrix" )

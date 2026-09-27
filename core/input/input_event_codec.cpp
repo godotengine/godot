@@ -45,8 +45,8 @@ enum class BoolShift : uint8_t {
 };
 
 // cast operator for BoolShift to uint8_t
-inline uint8_t operator<<(uint8_t a, BoolShift b) {
-	return a << static_cast<uint8_t>(b);
+inline uint8_t operator<<(uint8_t p_left, BoolShift p_right) {
+	return p_left << static_cast<uint8_t>(p_right);
 }
 
 uint8_t encode_key_modifier_state(Ref<InputEventWithModifiers> p_event) {
@@ -58,11 +58,11 @@ uint8_t encode_key_modifier_state(Ref<InputEventWithModifiers> p_event) {
 	return bools;
 }
 
-void decode_key_modifier_state(uint8_t bools, Ref<InputEventWithModifiers> p_event) {
-	p_event->set_shift_pressed(bools & (1 << BoolShift::SHIFT));
-	p_event->set_ctrl_pressed(bools & (1 << BoolShift::CTRL));
-	p_event->set_alt_pressed(bools & (1 << BoolShift::ALT));
-	p_event->set_meta_pressed(bools & (1 << BoolShift::META));
+void decode_key_modifier_state(uint8_t p_bools, Ref<InputEventWithModifiers> p_event) {
+	p_event->set_shift_pressed(p_bools & (1 << BoolShift::SHIFT));
+	p_event->set_ctrl_pressed(p_bools & (1 << BoolShift::CTRL));
+	p_event->set_alt_pressed(p_bools & (1 << BoolShift::ALT));
+	p_event->set_meta_pressed(p_bools & (1 << BoolShift::META));
 }
 
 int encode_vector2(const Vector2 &p_vector, uint8_t *p_data) {

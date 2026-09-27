@@ -23,15 +23,35 @@ def can_build():
 def get_opts():
     from SCons.Variables import BoolVariable
 
+    # Dependencies folder. Mirrors the layout used by macOS / Windows.
+    deps_folder = os.getenv("LOCALAPPDATA")
+    if deps_folder:
+        deps_folder = os.path.join(deps_folder, "Godot", "build_deps")
+    else:
+        try:
+            import inspect
+
+            caller_frame = inspect.stack()[1]
+            caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
+            deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+        except Exception:
+            deps_folder = ""
+
     return [
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
-        ("SWIFT_FRONTEND", "Path to the swift-frontend binary", ""),
+        (("SWIFT_COMPILER", "SWIFT_FRONTEND"), "Path to the swiftc binary", ""),
         # APPLE_TOOLCHAIN_PATH Example: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
         (("APPLE_TOOLCHAIN_PATH", "IOS_TOOLCHAIN_PATH"), "Path to the Apple toolchain", ""),
         (("APPLE_SDK_PATH", "IOS_SDK_PATH"), "Path to the iOS SDK", ""),
         (("apple_target_triple", "ios_triple"), "Triple for the corresponding target Apple platform toolchain", ""),
         BoolVariable(("simulator", "ios_simulator"), "Build for Simulator", False),
         BoolVariable("generate_bundle", "Generate an APP bundle after building iOS/macOS binaries", False),
+        # Screen reader support.
+        (
+            "accesskit_sdk_path",
+            "Path to the AccessKit C SDK",
+            os.path.join(deps_folder, "accesskit"),
+        ),
     ]
 
 
@@ -103,14 +123,14 @@ def configure(env: "SConsEnvironment"):
 
     if env["simulator"]:
         env["APPLE_PLATFORM"] = "iossimulator"
-        env.Append(ASFLAGS=["-mios-simulator-version-min=14.0"])
-        env.Append(CCFLAGS=["-mios-simulator-version-min=14.0"])
+        env.Append(ASFLAGS=["-mios-simulator-version-min=15.0"])
+        env.Append(CCFLAGS=["-mios-simulator-version-min=15.0"])
         env.Append(CPPDEFINES=["IOS_SIMULATOR"])
         env.extra_suffix = ".simulator" + env.extra_suffix
     else:
         env["APPLE_PLATFORM"] = "ios"
-        env.Append(ASFLAGS=["-miphoneos-version-min=14.0"])
-        env.Append(CCFLAGS=["-miphoneos-version-min=14.0"])
+        env.Append(ASFLAGS=["-miphoneos-version-min=15.0"])
+        env.Append(CCFLAGS=["-miphoneos-version-min=15.0"])
     detect_darwin_sdk_path(env["APPLE_PLATFORM"], env)
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
@@ -120,7 +140,7 @@ def configure(env: "SConsEnvironment"):
             print_error("Building for iOS with 'arch=x86_64' requires 'simulator=yes'.")
             sys.exit(255)
 
-        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
+        env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "11.0"
         env.Append(
             CCFLAGS=(
                 "-fobjc-arc -arch x86_64"
@@ -153,12 +173,28 @@ def configure(env: "SConsEnvironment"):
     env.Prepend(CPPPATH=["#platform/ios"])
     env.Append(CPPDEFINES=["IOS_ENABLED", "APPLE_EMBEDDED_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
 
+    # AccessKit (screen reader support).
+    if env["accesskit"]:
+        ak_xcf = os.path.join(env["accesskit_sdk_path"], "lib", "ios", "AccessKit.xcframework")
+        if os.path.isdir(ak_xcf):
+            env.Prepend(CPPPATH=[os.path.join(env["accesskit_sdk_path"], "include")])
+            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+        else:
+            print_warning(
+                "The screen reader support driver requires dependencies to be installed.\n"
+                f"You can install them by running `python3 {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
+                "See the documentation for more information:\n"
+                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_ios.html\n"
+                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+            )
+            env["accesskit"] = False
+
     if env["metal"] and env["simulator"]:
         print_warning("iOS Simulator does not support the Metal rendering driver")
         env["metal"] = False
 
     if env["metal"]:
-        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED"])
         env.Prepend(
             CPPPATH=[
                 "$APPLE_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",
@@ -173,7 +209,7 @@ def configure(env: "SConsEnvironment"):
         env["vulkan"] = False
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED", "GLES_SILENCE_DEPRECATION"])

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,8 @@ typedef struct SDL_IMMDevice_callbacks
 bool SDL_IMMDevice_Init(const SDL_IMMDevice_callbacks *callbacks);
 void SDL_IMMDevice_Quit(void);
 bool SDL_IMMDevice_Get(struct SDL_AudioDevice *device, IMMDevice **immdevice, bool recording);
-void SDL_IMMDevice_EnumerateEndpoints(struct SDL_AudioDevice **default_playback, struct SDL_AudioDevice **default_recording, SDL_AudioFormat force_format);
+bool SDL_IMMDevice_GetIsCapture(IMMDevice* device);
+void SDL_IMMDevice_EnumerateEndpoints(struct SDL_AudioDevice **default_playback, struct SDL_AudioDevice **default_recording, SDL_AudioFormat force_format, bool supports_recording_playback_devices);
 LPGUID SDL_IMMDevice_GetDirectSoundGUID(struct SDL_AudioDevice *device);
 LPCWSTR SDL_IMMDevice_GetDevID(struct SDL_AudioDevice *device);
 void SDL_IMMDevice_FreeDeviceHandle(struct SDL_AudioDevice *device);

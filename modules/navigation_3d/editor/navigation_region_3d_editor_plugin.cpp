@@ -30,6 +30,7 @@
 
 #include "navigation_region_3d_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -250,6 +251,7 @@ NavigationRegion3DEditor::NavigationRegion3DEditor() {
 	bake_hbox->add_child(bake_info);
 
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 
 	multibake_dialog = memnew(ConfirmationDialog);

@@ -13,7 +13,7 @@
 #endif
 
 // MSVC supports compiling SSE2 code regardless of compile options; we assume all 32-bit CPUs support SSE2
-#if !defined(SIMD_SSE) && defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_X64))
+#if !defined(SIMD_SSE) && defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || (defined(_M_X64) && !defined(_M_ARM64EC)))
 #define SIMD_SSE
 #endif
 
@@ -23,7 +23,7 @@
 #endif
 
 // On MSVC, we assume that ARM builds always target NEON-capable devices
-#if !defined(SIMD_NEON) && defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64))
+#if !defined(SIMD_NEON) && defined(_MSC_VER) && (defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC))
 #define SIMD_NEON
 #endif
 
@@ -222,6 +222,11 @@ static void dispatchSimd(void (*process)(T*, size_t), T* data, size_t count, siz
 	size_t count4 = count & ~size_t(3);
 	process(data, count4);
 
+#ifdef MESHOPTIMIZER_VERTEXFILTER_SIMDNOTAIL
+	// optionally omit tail processing to improve code size, expecting the caller to pass aligned counts
+	assert(count4 == count);
+	(void)stride;
+#else
 	if (count4 < count)
 	{
 		T tail[4 * 4] = {}; // max stride 4, max count 4
@@ -232,6 +237,7 @@ static void dispatchSimd(void (*process)(T*, size_t), T* data, size_t count, siz
 		process(tail, count - count4);
 		memcpy(data + count4 * stride, tail, tail_size);
 	}
+#endif
 }
 
 inline uint64_t rotateleft64(uint64_t v, int x)
@@ -536,7 +542,7 @@ static void decodeFilterColorSimd16(unsigned short* data, size_t count)
 }
 #endif
 
-#if defined(SIMD_NEON) && !defined(__aarch64__) && !defined(_M_ARM64)
+#if defined(SIMD_NEON) && !defined(__aarch64__) && !(defined(_M_ARM64) || defined(_M_ARM64EC))
 inline float32x4_t vsqrtq_f32(float32x4_t x)
 {
 	float32x4_t r = vrsqrteq_f32(x);
@@ -640,7 +646,7 @@ static void decodeFilterOctSimd16(short* data, size_t count)
 
 		// compute normal length & scale
 		float32x4_t ll = vfmaq_f32(vfmaq_f32(vmulq_f32(x, x), y, y), z, z);
-#if !defined(__aarch64__) && !defined(_M_ARM64)
+#if !defined(__aarch64__) && !(defined(_M_ARM64) || defined(_M_ARM64EC))
 		float32x4_t rl = vrsqrteq_f32(ll);
 		rl = vmulq_f32(rl, vrsqrtsq_f32(vmulq_f32(rl, ll), rl)); // refine rsqrt estimate
 		float32x4_t s = vmulq_f32(vdupq_n_f32(32767.f), rl);
@@ -888,7 +894,7 @@ static void decodeFilterOctSimd8(signed char* data, size_t count)
 		v128_t z = wasm_f32x4_sub(wasm_f32x4_convert_i32x4(zf), wasm_f32x4_add(wasm_f32x4_abs(x), wasm_f32x4_abs(y)));
 
 		// fixup octahedral coordinates for z<0
-		// note: i32x4_min with 0 is equvalent to f32x4_min
+		// note: i32x4_min with 0 is equivalent to f32x4_min
 		v128_t t = wasm_i32x4_min(z, wasm_i32x4_splat(0));
 
 		x = wasm_f32x4_add(x, wasm_v128_xor(t, wasm_v128_and(x, sign)));
@@ -919,8 +925,7 @@ static void decodeFilterOctSimd8(signed char* data, size_t count)
 static void decodeFilterOctSimd16(short* data, size_t count)
 {
 	const v128_t sign = wasm_f32x4_splat(-0.f);
-	// TODO: volatile here works around LLVM mis-optimizing code; https://github.com/llvm/llvm-project/issues/149457
-	volatile v128_t zmask = wasm_i32x4_splat(0x7fff);
+	const v128_t zmask = wasm_i32x4_splat(0x7fff);
 
 	for (size_t i = 0; i < count; i += 4)
 	{
@@ -944,7 +949,7 @@ static void decodeFilterOctSimd16(short* data, size_t count)
 		v128_t z = wasm_f32x4_sub(wasm_f32x4_convert_i32x4(zf), wasm_f32x4_add(wasm_f32x4_abs(x), wasm_f32x4_abs(y)));
 
 		// fixup octahedral coordinates for z<0
-		// note: i32x4_min with 0 is equvalent to f32x4_min
+		// note: i32x4_min with 0 is equivalent to f32x4_min
 		v128_t t = wasm_i32x4_min(z, wasm_i32x4_splat(0));
 
 		x = wasm_f32x4_add(x, wasm_v128_xor(t, wasm_v128_and(x, sign)));
@@ -1069,9 +1074,6 @@ static void decodeFilterExpSimd(unsigned int* data, size_t count)
 
 static void decodeFilterColorSimd8(unsigned char* data, size_t count)
 {
-	// TODO: volatile here works around LLVM mis-optimizing code; https://github.com/llvm/llvm-project/issues/149457
-	volatile v128_t zero = wasm_i32x4_splat(0);
-
 	for (size_t i = 0; i < count; i += 4)
 	{
 		v128_t c4 = wasm_v128_load(&data[i * 4]);
@@ -1080,7 +1082,7 @@ static void decodeFilterColorSimd8(unsigned char* data, size_t count)
 		v128_t yf = wasm_v128_and(c4, wasm_i32x4_splat(0xff));
 		v128_t cof = wasm_i32x4_shr(wasm_i32x4_shl(c4, 16), 24);
 		v128_t cgf = wasm_i32x4_shr(wasm_i32x4_shl(c4, 8), 24);
-		v128_t af = wasm_v128_or(zero, wasm_u32x4_shr(c4, 24));
+		v128_t af = wasm_u32x4_shr(c4, 24);
 
 		// recover scale from alpha high bit
 		v128_t as = af;
@@ -1120,9 +1122,6 @@ static void decodeFilterColorSimd8(unsigned char* data, size_t count)
 
 static void decodeFilterColorSimd16(unsigned short* data, size_t count)
 {
-	// TODO: volatile here works around LLVM mis-optimizing code; https://github.com/llvm/llvm-project/issues/149457
-	volatile v128_t zero = wasm_i32x4_splat(0);
-
 	for (size_t i = 0; i < count; i += 4)
 	{
 		v128_t c4_0 = wasm_v128_load(&data[(i + 0) * 4]);
@@ -1136,7 +1135,7 @@ static void decodeFilterColorSimd16(unsigned short* data, size_t count)
 		v128_t yf = wasm_v128_and(c4_yco, wasm_i32x4_splat(0xffff));
 		v128_t cof = wasm_i32x4_shr(c4_yco, 16);
 		v128_t cgf = wasm_i32x4_shr(wasm_i32x4_shl(c4_cga, 16), 16);
-		v128_t af = wasm_v128_or(zero, wasm_u32x4_shr(c4_cga, 16));
+		v128_t af = wasm_u32x4_shr(c4_cga, 16);
 
 		// recover scale from alpha high bit
 		v128_t as = af;
@@ -1189,8 +1188,9 @@ inline int optlog2(float v)
 	} u;
 
 	u.f = v;
-	// +1 accounts for implicit 1. in mantissa; denormalized numbers will end up clamped to min_exp by calling code
-	return v == 0 ? 0 : int((u.ui >> 23) & 0xff) - 127 + 1;
+	// +1 accounts for implicit 1. in mantissa; zero and denormalized numbers will end up clamped to min_exp by calling code
+	// this is important for shared exponent modes, as a zero component should not inflate the shared exponent
+	return int((u.ui >> 23) & 0xff) - 127 + 1;
 }
 
 // optimized variant of ldexp
@@ -1277,6 +1277,7 @@ void meshopt_encodeFilterOct(void* destination, size_t count, size_t stride, int
 {
 	assert(stride == 4 || stride == 8);
 	assert(bits >= 2 && bits <= 16);
+	assert(stride == 8 || bits <= 8);
 
 	signed char* d8 = static_cast<signed char*>(destination);
 	short* d16 = static_cast<short*>(destination);
@@ -1367,11 +1368,12 @@ void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, in
 
 	const int min_exp = -100;
 
+	// used to track maximum exponent for EncodeExpSharedComponent and zero exponent reuse for EncodeExpSeparate
+	for (size_t j = 0; j < stride_float; ++j)
+		component_exp[j] = (mode == meshopt_EncodeExpSeparate) ? 0 : min_exp;
+
 	if (mode == meshopt_EncodeExpSharedComponent)
 	{
-		for (size_t j = 0; j < stride_float; ++j)
-			component_exp[j] = min_exp;
-
 		for (size_t i = 0; i < count; ++i)
 		{
 			const float* v = &data[i * stride_float];
@@ -1409,7 +1411,9 @@ void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, in
 			{
 				int e = optlog2(v[j]);
 
-				component_exp[j] = (min_exp < e) ? e : min_exp;
+				// zero values inherit the last encoded exponent to keep the encoded data more compressible
+				if (v[j] != 0)
+					component_exp[j] = (min_exp < e) ? e : min_exp;
 			}
 		}
 		else if (mode == meshopt_EncodeExpClamped)
@@ -1447,6 +1451,7 @@ void meshopt_encodeFilterColor(void* destination, size_t count, size_t stride, i
 {
 	assert(stride == 4 || stride == 8);
 	assert(bits >= 2 && bits <= 16);
+	assert(stride == 8 || bits <= 8);
 
 	unsigned char* d8 = static_cast<unsigned char*>(destination);
 	unsigned short* d16 = static_cast<unsigned short*>(destination);
@@ -1469,7 +1474,7 @@ void meshopt_encodeFilterColor(void* destination, size_t count, size_t stride, i
 		assert(unsigned((fy + fco - fcg) | (fy + fcg) | (fy - fco - fcg)) < (1u << bits));
 
 		// alpha: K-1-bit encoding with high bit set to 1
-		int fa = meshopt_quantizeUnorm(c[3], bits - 1) | (1 << (bits - 1));
+		int fa = (meshopt_quantizeUnorm(c[3], bits) >> 1) | (1 << (bits - 1));
 
 		if (stride == 4)
 		{

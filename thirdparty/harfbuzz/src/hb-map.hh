@@ -49,11 +49,16 @@ struct hb_hashmap_t
 
   void _copy (const hb_hashmap_t& o)
   {
+    if (unlikely (!o.successful))
+    {
+      successful = false;
+      return;
+    }
     if (unlikely (!o.mask)) return;
 
     if (hb_is_trivially_copy_assignable (item_t))
     {
-      items = (item_t *) hb_malloc (sizeof (item_t) * (o.mask + 1));
+      items = (item_t *) hb_malloc2 ((o.mask + 1), sizeof (item_t));
       if (unlikely (!items))
       {
 	successful = false;
@@ -199,12 +204,20 @@ struct hb_hashmap_t
   bool alloc (unsigned new_population = 0)
   {
     if (unlikely (!successful)) return false;
+    if (unlikely (population > 0x3FFFFFFFu || new_population > 0x3FFFFFFFu))
+    {
+      // Population sizes >0x3FFFFFFF will result in power
+      // being larger than 31, which in turn leads to a new size
+      // that overflows u32.
+      successful = false;
+      return false;
+    }
 
     if (new_population != 0 && (new_population + new_population / 2) < mask) return true;
 
     unsigned int power = hb_bit_storage (hb_max (hb_max ((unsigned) population, new_population) * 2, 4u));
     unsigned int new_size = 1u << power;
-    item_t *new_items = (item_t *) hb_malloc ((size_t) new_size * sizeof (item_t));
+    item_t *new_items = (item_t *) hb_malloc2 ((size_t) new_size, sizeof (item_t));
     if (unlikely (!new_items))
     {
       successful = false;
@@ -288,7 +301,7 @@ struct hb_hashmap_t
     occupancy++;
     population++;
 
-    if (unlikely (length > max_chain_length) && occupancy * 8 > mask)
+    if (unlikely (length > max_chain_length) && occupancy > mask / 8)
       alloc (mask - 8); // This ensures we jump to next larger size
 
     return true;
@@ -379,7 +392,11 @@ struct hb_hashmap_t
 
   void clear ()
   {
-    if (unlikely (!successful)) return;
+    /* Early-out on already-empty.  Protects the Null singleton
+     * (zero-initialized) from any writes.  Any non-empty hashmap
+     * is a real heap instance with writable items, so clearing
+     * under !successful is safe. */
+    if (!population && !occupancy) return;
 
     for (auto &_ : hb_iter (items, size ()))
     {

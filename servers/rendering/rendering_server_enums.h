@@ -191,7 +191,13 @@ enum ArrayFormat : uint64_t {
 	ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 3),
 
 	ARRAY_FLAG_COMPRESS_ATTRIBUTES = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 4),
-	// We leave enough room for up to 5 more compression flags.
+
+	// When set, the surface's vertex, attribute, skin, and index buffers are created with the
+	// `BUFFER_CREATION_AS_STORAGE_BIT` usage bit so they can be bound as storage buffers in
+	// compute shaders. Required to write into them from a compute pipeline through the RIDs
+	// returned by `mesh_surface_get_vertex_buffer_rd_rid` and friends.
+	ARRAY_FLAG_USE_STORAGE_BUFFER = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 5),
+	// We leave enough room for up to 4 more compression flags.
 
 	ARRAY_FLAG_FORMAT_VERSION_BASE = ARRAY_COMPRESS_FLAGS_BASE + 10,
 	ARRAY_FLAG_FORMAT_VERSION_SHIFT = ARRAY_FLAG_FORMAT_VERSION_BASE,
@@ -236,6 +242,7 @@ enum LightType {
 	LIGHT_DIRECTIONAL,
 	LIGHT_OMNI,
 	LIGHT_SPOT,
+	LIGHT_AREA,
 };
 
 enum LightParam {
@@ -260,6 +267,8 @@ enum LightParam {
 	LIGHT_PARAM_SHADOW_BLUR,
 	LIGHT_PARAM_TRANSMITTANCE_BIAS,
 	LIGHT_PARAM_INTENSITY,
+	LIGHT_PARAM_CONTACT_SHADOW_OPACITY,
+	LIGHT_PARAM_CONTACT_SHADOW_BLUR,
 	LIGHT_PARAM_MAX,
 };
 
@@ -294,6 +303,13 @@ enum ShadowQuality {
 	SHADOW_QUALITY_SOFT_HIGH,
 	SHADOW_QUALITY_SOFT_ULTRA,
 	SHADOW_QUALITY_MAX,
+};
+
+enum ScreenSpaceContactShadowsLength {
+	SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_SHORT,
+	SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_MEDIUM,
+	SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_LONG,
+	SCREEN_SPACE_CONTACT_SHADOWS_LENGTH_MAX,
 };
 
 enum LightProjectorFilter {
@@ -458,6 +474,7 @@ enum ViewportScaling3DMode {
 	VIEWPORT_SCALING_3D_MODE_FSR2,
 	VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL,
 	VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL,
+	VIEWPORT_SCALING_3D_MODE_NEAREST,
 	VIEWPORT_SCALING_3D_MODE_MAX,
 	VIEWPORT_SCALING_3D_MODE_OFF = 255, // for internal use only
 };
@@ -470,7 +487,7 @@ enum ViewportScaling3DType {
 };
 
 inline ViewportScaling3DType scaling_3d_mode_type(ViewportScaling3DMode p_mode) {
-	if (p_mode == VIEWPORT_SCALING_3D_MODE_BILINEAR || p_mode == VIEWPORT_SCALING_3D_MODE_FSR || p_mode == VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+	if (p_mode == VIEWPORT_SCALING_3D_MODE_NEAREST || p_mode == VIEWPORT_SCALING_3D_MODE_BILINEAR || p_mode == VIEWPORT_SCALING_3D_MODE_FSR || p_mode == VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
 		return VIEWPORT_SCALING_3D_TYPE_SPATIAL;
 	} else if (p_mode == VIEWPORT_SCALING_3D_MODE_FSR2 || p_mode == VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
 		return VIEWPORT_SCALING_3D_TYPE_TEMPORAL;
@@ -586,6 +603,8 @@ enum ViewportDebugDraw {
 	VIEWPORT_DEBUG_DRAW_OCCLUDERS,
 	VIEWPORT_DEBUG_DRAW_MOTION_VECTORS,
 	VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER,
+	VIEWPORT_DEBUG_DRAW_CLUSTER_AREA_LIGHTS,
+	VIEWPORT_DEBUG_DRAW_AREA_LIGHT_ATLAS,
 };
 
 enum ViewportVRSMode {

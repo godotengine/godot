@@ -148,7 +148,7 @@ struct HBUINT15 : HBUINT16
 /* 32-bit unsigned integer with variable encoding. */
 struct HBUINT32VAR
 {
-  unsigned get_size () const
+  size_t get_size () const
   {
     unsigned b0 = v[0];
     if (b0 < 0x80)
@@ -163,7 +163,7 @@ struct HBUINT32VAR
       return 5;
   }
 
-  static unsigned get_size (uint32_t v)
+  static size_t get_size (uint32_t v)
   {
     if (v < 0x80)
       return 1;
@@ -563,8 +563,8 @@ struct UnsizedArrayOf
     return arrayZ[i];
   }
 
-  static unsigned int get_size (unsigned int len)
-  { return len * Type::static_size; }
+  static size_t get_size (unsigned int len)
+  { return hb_unsigned_mul_saturate (len, Type::static_size); }
 
   template <typename T> operator T * () { return arrayZ; }
   template <typename T> operator const T * () const { return arrayZ; }
@@ -725,8 +725,8 @@ struct ArrayOf
     return arrayZ[i];
   }
 
-  unsigned int get_size () const
-  { return len.static_size + len * Type::static_size; }
+  size_t get_size () const
+  { return hb_unsigned_mul_add_saturate (len, Type::static_size, len.static_size); }
 
   explicit operator bool () const { return len; }
 
@@ -909,8 +909,8 @@ struct HeadlessArrayOf
     hb_barrier ();
     return arrayZ[i-1];
   }
-  unsigned int get_size () const
-  { return lenP1.static_size + get_length () * Type::static_size; }
+  size_t get_size () const
+  { return hb_unsigned_mul_add_saturate (get_length (), Type::static_size, lenP1.static_size); }
 
   unsigned get_length () const { return lenP1 ? lenP1 - 1 : 0; }
 
@@ -1003,8 +1003,8 @@ struct ArrayOfM1
     hb_barrier ();
     return arrayZ[i];
   }
-  unsigned int get_size () const
-  { return lenM1.static_size + (lenM1 + 1) * Type::static_size; }
+  size_t get_size () const
+  { return hb_unsigned_mul_add_saturate (lenM1 + 1, Type::static_size, lenM1.static_size); }
 
   template <typename ...Ts>
   HB_ALWAYS_INLINE
@@ -1197,8 +1197,8 @@ struct VarSizedBinSearchArrayOf
   }
   unsigned int get_length () const
   { return header.nUnits - last_is_terminator (); }
-  unsigned int get_size () const
-  { return header.static_size + header.nUnits * header.unitSize; }
+  size_t get_size () const
+  { return hb_unsigned_mul_add_saturate (header.nUnits, header.unitSize, header.static_size); }
 
   template <typename ...Ts>
   HB_ALWAYS_INLINE
@@ -1461,10 +1461,11 @@ struct CFFIndex
     return hb_ubytes_t (data_base () + offset0, offset1 - offset0);
   }
 
-  unsigned int get_size () const
+  size_t get_size () const
   {
     if (count)
-      return min_size + offSize.static_size + offset_array_size () + (offset_at (count) - 1);
+      return hb_unsigned_add_saturate (min_size, offSize.static_size,
+				       offset_array_size (), offset_at (count) - 1);
     return min_size;  /* empty CFFIndex contains count only */
   }
 
@@ -2082,7 +2083,7 @@ struct TupleList : CFF2Index
 template <unsigned int alignment>
 struct Align
 {
-  unsigned get_size (const void *base) const
+  size_t get_size (const void *base) const
   {
     unsigned offset = (const char *) this - (const char *) base;
     return (alignment - offset) & (alignment - 1);

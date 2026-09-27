@@ -446,16 +446,33 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 				continue;
 			}
 
-			const String &cname = name;
 			// Property setters and getters do not get exposed as individual methods.
 			HashSet<StringName> setters_getters;
 
-			class_list[cname] = DocData::ClassDoc();
-			DocData::ClassDoc &c = class_list[cname];
-			c.name = cname;
+			class_list[name] = DocData::ClassDoc();
+			DocData::ClassDoc &c = class_list[name];
+			c.name = name;
 			c.inherits = ClassDB::get_parent_class(name);
 
-			inheriting[c.inherits].insert(cname);
+			inheriting[c.inherits].insert(name);
+
+			switch (ClassDB::get_api_type(name)) {
+				case ClassDB::API_CORE:
+					c.api_type = "core";
+					break;
+				case ClassDB::API_EDITOR:
+					c.api_type = "editor";
+					break;
+				case ClassDB::API_EXTENSION:
+					c.api_type = "extension";
+					break;
+				case ClassDB::API_EDITOR_EXTENSION:
+					c.api_type = "editor_extension";
+					break;
+				case ClassDB::API_NONE:
+					c.api_type = String();
+					break;
+			}
 
 			List<PropertyInfo> properties;
 			List<PropertyInfo> own_properties;
@@ -606,7 +623,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				bool found_type = false;
 				if (getter != StringName()) {
-					MethodBind *mb = ClassDB::get_method(name, getter);
+					const MethodBind *mb = ClassDB::get_method(name, getter);
 					if (mb) {
 						PropertyInfo retinfo = mb->get_return_info();
 
@@ -730,7 +747,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 			// Theme items.
 			{
 				List<ThemeDB::ThemeItemBind> theme_items;
-				ThemeDB::get_singleton()->get_class_items(cname, &theme_items);
+				ThemeDB::get_singleton()->get_class_items(name, &theme_items);
 				Ref<Theme> default_theme = ThemeDB::get_singleton()->get_default_theme();
 
 				for (const ThemeDB::ThemeItemBind &theme_item : theme_items) {
@@ -762,12 +779,16 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							tid.type = "StyleBox";
 							tid.data_type = "style";
 							break;
+						case Theme::DATA_TYPE_SOUND:
+							tid.type = "AudioStream";
+							tid.data_type = "sound";
+							break;
 						case Theme::DATA_TYPE_MAX:
 							break; // Can't happen, but silences warning.
 					}
 
 					if (theme_item.data_type == Theme::DATA_TYPE_COLOR || theme_item.data_type == Theme::DATA_TYPE_CONSTANT) {
-						tid.default_value = DocData::get_default_value_string(default_theme->get_theme_item(theme_item.data_type, theme_item.item_name, cname));
+						tid.default_value = DocData::get_default_value_string(default_theme->get_theme_item(theme_item.data_type, theme_item.item_name, name));
 					}
 
 					c.theme_properties.push_back(tid);
@@ -1017,7 +1038,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 		// FIXME: this is kind of hackish...
 		for (const Engine::Singleton &s : singletons) {
 			DocData::PropertyDoc pd;
-			if (!s.ptr) {
+			if (!s.ptr || s.user_created) {
 				continue;
 			}
 			pd.name = s.name;
@@ -1277,10 +1298,7 @@ Error DocTools::load_classes(const String &p_dir) {
 	while (!path.is_empty()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
-			Error err2 = parser->open(p_dir.path_join(path));
-			if (err2) {
-				return err2;
-			}
+			RETURN_IF_ERROR(parser->open(p_dir.path_join(path)));
 
 			_load(parser);
 		}
@@ -1335,7 +1353,7 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 		ERR_FAIL_COND_V(parser->get_node_name() != "class", ERR_FILE_CORRUPT);
 
 		ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-		String name = parser->get_named_attribute_value("name");
+		const String name = parser->get_named_attribute_value("name");
 		class_list[name] = DocData::ClassDoc();
 		DocData::ClassDoc &c = class_list[name];
 
@@ -1345,6 +1363,10 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 		}
 
 		inheriting[c.inherits].insert(name);
+
+		if (parser->has_attribute("api_type")) {
+			c.api_type = parser->get_named_attribute_value("api_type");
+		}
 
 #ifndef DISABLE_DEPRECATED
 		if (parser->has_attribute("is_deprecated")) {
@@ -1685,12 +1707,15 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		String header = "<class name=\"" + c.name.xml_escape(true) + "\"";
 		if (!c.inherits.is_empty()) {
 			header += " inherits=\"" + c.inherits.xml_escape(true) + "\"";
-			if (c.is_deprecated) {
-				header += " deprecated=\"" + c.deprecated_message.xml_escape(true) + "\"";
-			}
-			if (c.is_experimental) {
-				header += " experimental=\"" + c.experimental_message.xml_escape(true) + "\"";
-			}
+		}
+		if (!c.api_type.is_empty()) {
+			header += " api_type=\"" + c.api_type.xml_escape(true) + "\"";
+		}
+		if (c.is_deprecated) {
+			header += " deprecated=\"" + c.deprecated_message.xml_escape(true) + "\"";
+		}
+		if (c.is_experimental) {
+			header += " experimental=\"" + c.experimental_message.xml_escape(true) + "\"";
 		}
 		if (!c.keywords.is_empty()) {
 			header += String(" keywords=\"") + c.keywords.xml_escape(true) + "\"";
@@ -1853,10 +1878,7 @@ Error DocTools::load_compressed(const uint8_t *p_data, int64_t p_compressed_size
 	class_list.clear();
 
 	Ref<XMLParser> parser = memnew(XMLParser);
-	Error err = parser->open_buffer(data);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(parser->open_buffer(data));
 
 	_load(parser);
 
@@ -1865,10 +1887,7 @@ Error DocTools::load_compressed(const uint8_t *p_data, int64_t p_compressed_size
 
 Error DocTools::load_xml(const uint8_t *p_data, int64_t p_size) {
 	Ref<XMLParser> parser = memnew(XMLParser);
-	Error err = parser->_open_buffer(p_data, p_size);
-	if (err) {
-		return err;
-	}
+	RETURN_IF_ERROR(parser->_open_buffer(p_data, p_size));
 
 	_load(parser);
 

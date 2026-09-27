@@ -85,17 +85,12 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 			Point2 ofs = _position_rect.position;
 			Size2 scale = mask_size / _position_rect.size;
 
-			switch (stretch_mode) {
-				case STRETCH_KEEP_ASPECT_COVERED: {
-					// if the stretch mode is aspect covered the image uses a texture region so we need to take that into account
-					float min = MIN(scale.x, scale.y);
-					scale.x = min;
-					scale.y = min;
-					ofs -= _texture_region.position / min;
-				} break;
-				default: {
-					// FIXME: Why a switch if we only handle one enum value?
-				}
+			if (stretch_mode == STRETCH_KEEP_ASPECT_COVERED) {
+				// if the stretch mode is aspect covered the image uses a texture region so we need to take that into account
+				float min = MIN(scale.x, scale.y);
+				scale.x = min;
+				scale.y = min;
+				ofs -= _texture_region.position / min;
 			}
 
 			// offset and scale the new point position to adjust it to the bitmask size
