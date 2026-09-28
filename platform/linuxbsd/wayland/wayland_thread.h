@@ -308,6 +308,10 @@ public:
 		bool tiled_bottom = false;
 		bool suspended = false; // We can stop drawing.
 
+		bool mpass = false;
+		wl_region *region = nullptr;
+		Vector<Vector2> region_path;
+
 		// These are true by default as it isn't guaranteed that we'll find an
 		// xdg-shell implementation with wm_capabilities available. If and once we
 		// receive a wm_capabilities event these will get reset and updated with
@@ -1309,6 +1313,7 @@ public:
 	DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window_id) const;
 
 	void window_set_borderless(DisplayServerEnums::WindowID p_window_id, bool p_borderless);
+	void window_set_mpass(DisplayServerEnums::WindowID p_window_id, bool p_mpass, const Vector<Vector2> &p_region);
 	void window_set_title(DisplayServerEnums::WindowID p_window_id, const String &p_title);
 	void window_set_app_id(DisplayServerEnums::WindowID p_window_id, const String &p_app_id);
 
