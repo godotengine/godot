@@ -2011,12 +2011,11 @@ void CanvasItemManipulator::get_canvas_items_at_pos(const Point2 &p_pos, Vector<
 	find_canvas_items_at_pos(p_pos, start, r_items);
 
 	// Remove invalid results.
-	bool is_editor = Engine::get_singleton()->is_editor_hint();
 	for (int i = 0; i < r_items.size(); i++) {
 		Node *node = r_items[i].item;
 
 		// Make sure the selected node is in the current scene, or editable.
-		if (is_editor && node && node != SceneTree::get_singleton()->get_edited_scene_root()) {
+		if (editor_mode && node && node != SceneTree::get_singleton()->get_edited_scene_root()) {
 			node = start->get_deepest_editable_node(node);
 		}
 
@@ -2048,7 +2047,7 @@ void CanvasItemManipulator::get_canvas_items_at_pos(const Point2 &p_pos, Vector<
 		}
 
 		//	Remove the item if invalid.
-		bool in_editor_scene = is_editor && ci != start && ci->get_owner() != start && !start->is_editable_instance(ci->get_owner());
+		bool in_editor_scene = editor_mode && ci != start && ci->get_owner() != start && !start->is_editable_instance(ci->get_owner());
 		if (duplicate || in_editor_scene || (!p_allow_locked && is_node_locked(ci))) {
 			r_items.remove_at(i);
 			i--;
@@ -2059,26 +2058,26 @@ void CanvasItemManipulator::get_canvas_items_at_pos(const Point2 &p_pos, Vector<
 }
 
 void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<DebuggerHelpers::SelectResult> &r_items, const Transform2D &p_parent_xform, const Transform2D &p_canvas_xform) {
-	bool is_editor = Engine::get_singleton()->is_editor_hint();
-	SubViewport *vp = Object::cast_to<SubViewport>(p_node);
-
-	if (!is_editor && vp) {
-		return; // FIXME: Make subviewport selection work at runtime.
-	}
-
 	Transform2D xform = p_canvas_xform;
+	Viewport *vp = Object::cast_to<Viewport>(p_node);
 
-	if (is_editor) {
-		if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
+	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
+		if (editor_mode) {
 			xform = cl->get_transform();
-		} else if (vp) {
-			if (!vp->is_visible_subviewport()) {
-				return;
-			}
-			xform = vp->get_popup_base_transform();
-			if (!vp->get_visible_rect().has_point(xform.affine_inverse().xform(p_pos))) {
-				return;
-			}
+		}
+	} else if (vp) {
+		if (!editor_mode && vp != SceneTree::get_singleton()->get_root()) {
+			return; // FIXME: Make subviewport selection work at runtime.
+		}
+
+		if (editor_mode && !vp->is_visible_subviewport()) {
+			return;
+		}
+
+		xform = vp->get_popup_base_transform();
+
+		if (editor_mode && !vp->get_visible_rect().has_point(xform.affine_inverse().xform(p_pos))) {
+			return;
 		}
 	}
 
@@ -2108,7 +2107,7 @@ void CanvasItemManipulator::find_canvas_items_at_pos(const Point2 &p_pos, Node *
 
 	// Cameras don't affect `CanvasLayer`s.
 	// Only check at runtime, as cameras aren't active in the editor.
-	if (!is_editor && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
+	if (!editor_mode && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
 		Window *root = SceneTree::get_singleton()->get_root();
 		pos = root->get_canvas_transform().affine_inverse().xform(p_pos);
 	}
@@ -2128,37 +2127,40 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 		return;
 	}
 
-	bool is_editor = Engine::get_singleton()->is_editor_hint();
+	Transform2D xform = p_canvas_xform;
 	Viewport *vp = Object::cast_to<Viewport>(p_node);
 
-	if (!is_editor && vp && vp != SceneTree::get_singleton()->get_root()) {
-		return; // FIXME: Make subviewport selection work at runtime.
-	}
-
-	Transform2D xform = p_canvas_xform;
-
-	if (is_editor) {
-		if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
+	if (CanvasLayer *cl = Object::cast_to<CanvasLayer>(p_node)) {
+		if (editor_mode) {
 			xform = cl->get_transform();
-		} else if (vp) {
-			if (!vp->is_visible_subviewport()) {
-				return;
-			}
-			xform = vp->get_popup_base_transform();
-			if (!vp->get_visible_rect().intersects(xform.affine_inverse().xform(p_rect))) {
-				return;
-			}
+		}
+	} else if (vp) {
+		if (!editor_mode && vp != SceneTree::get_singleton()->get_root()) {
+			return; // FIXME: Make subviewport selection work at runtime.
+		}
+
+		if (editor_mode && !vp->is_visible_subviewport()) {
+			return;
+		}
+
+		xform = vp->get_popup_base_transform();
+
+		if (editor_mode && !vp->get_visible_rect().intersects(xform.affine_inverse().xform(p_rect))) {
+			return;
 		}
 	}
 
-	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
-
 	bool editable = true;
-	if (is_editor) {
+	if (editor_mode) {
 		Node *start = Object::cast_to<Node>(find_items_start_callback.call());
-		editable = !is_editor || p_node == start || p_node->get_owner() == start || p_node == start->get_deepest_editable_node(p_node);
+		if (p_node != start && !p_node->get_owner()) {
+			return;
+		}
+
+		editable = p_node == start || p_node->get_owner() == start || p_node == start->get_deepest_editable_node(p_node);
 	}
 
+	CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
 	bool lock_children = p_node->get_meta("_edit_group_", false);
 	bool locked = is_node_locked(p_node);
 
@@ -2188,7 +2190,7 @@ void CanvasItemManipulator::find_canvas_items_in_rect(const Rect2 &p_rect, Node 
 	Rect2 rect = p_rect;
 	// Cameras don't affect `CanvasLayer`s.
 	// Only check at runtime, as cameras aren't active in the editor.
-	if (!is_editor && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
+	if (!editor_mode && (!ci->get_canvas_layer_node() || ci->get_canvas_layer_node()->is_following_viewport())) {
 		Window *root = SceneTree::get_singleton()->get_root();
 		rect = root->get_canvas_transform().affine_inverse().xform(p_rect);
 	}

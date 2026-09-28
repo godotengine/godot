@@ -1193,6 +1193,7 @@ void GameView::_notification(int p_what) {
 			ci_button[CanvasItemManipulator::TOOL_SELECT]->set_tooltip_text(vformat(TTR("%s+Drag: Rotate selected node around pivot."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + vformat(TTR("%s+Drag: Move selected node."), keycode_get_string((Key)KeyModifierMask::ALT)) + "\n" + vformat(TTR("%s+%s+Drag: Scale selected node."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL), keycode_get_string((Key)KeyModifierMask::ALT)) + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + show_list_tooltip);
 			ci_button[CanvasItemManipulator::TOOL_MOVE]->set_tooltip_text(show_list_tooltip);
 			ci_button[CanvasItemManipulator::TOOL_ROTATE]->set_tooltip_text(show_list_tooltip);
+			ci_button[CanvasItemManipulator::TOOL_SCALE]->set_tooltip_text(TTR("Shift: Scale proportionally.") + "\n" + show_list_tooltip);
 			ci_button[CanvasItemManipulator::TOOL_LIST_SELECT]->set_tooltip_text(TTR("Show list of selectable nodes at position clicked.") + "\n" + show_list_tooltip);
 			ci_button[CanvasItemManipulator::TOOL_EDIT_PIVOT]->set_tooltip_text(TTR("Click to change object's pivot.") + "\n" + TTR("Shift: Set temporary pivot.") + "\n" + TTR("Click this button while holding Shift to put the temporary pivot in the center of the selected nodes.") + "\n" + show_list_tooltip);
 			ci_button[CanvasItemManipulator::TOOL_PAN]->set_tooltip_text(TTR("You can also use Pan View shortcut (Space by default) to pan in any mode.") + "\n" + show_list_tooltip);
@@ -1698,6 +1699,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	}
 	{
 		Button *button = _setup_button(SNAME("EditPivot"), ci_group);
+		button->set_disabled(true);
 		ci_bar->get_hbox()->add_child(button);
 		button->connect(SceneStringName(pressed), callable_mp(*debugger, &GameViewDebugger::set_ci_tool).bind(CanvasItemManipulator::TOOL_EDIT_PIVOT));
 		ci_button[CanvasItemManipulator::TOOL_EDIT_PIVOT] = button;

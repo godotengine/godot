@@ -134,6 +134,7 @@ private:
 	Tool tool = TOOL_SELECT;
 	DragType drag_type = DRAG_NONE;
 	Input::CursorShape cursor_shape = Input::CursorShape::CURSOR_ARROW;
+	bool editor_mode = false; // Set it manually instead of using the hint, to allow debugging the editor itself.
 
 	bool local_space = false;
 	bool show_transformation_gizmos = false;
@@ -249,6 +250,8 @@ public:
 	void reset_drag();
 
 	bool reset_temp_pivot();
+
+	void set_editor_mode_enabled(bool p_enabled) { editor_mode = p_enabled; }
 
 	void set_tool(Tool p_tool);
 	void set_drag_type(DragType p_type) { drag_type = p_type; }
