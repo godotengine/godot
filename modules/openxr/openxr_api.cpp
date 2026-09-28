@@ -4198,7 +4198,7 @@ bool OpenXRAPI::get_action_bool(RID p_action, RID p_tracker) {
 	};
 
 	XrActionStateBoolean result_state;
-	result_state.type = XR_TYPE_ACTION_STATE_BOOLEAN,
+	result_state.type = XR_TYPE_ACTION_STATE_BOOLEAN;
 	result_state.next = nullptr;
 	XrResult result = xrGetActionStateBoolean(session, &get_info, &result_state);
 	if (XR_FAILED(result)) {
