@@ -217,4 +217,16 @@ open class GodotEditor : BaseGodotEditor() {
 		}
 		super.onEditorDisconnected(editorId)
 	}
+
+	override fun getCommandLine(): MutableList<String> {
+		val updatedArgs = super.getCommandLine()
+		if (getEditorWindowInfo() == EDITOR_MAIN_INFO && packageManager.hasSystemFeature("android.hardware.xr.input.eye_tracking")) {
+			if (!updatedArgs.contains("--accessibility ")) {
+				Log.v(TAG, "Enabling accessibility for Android XR to add support for eye aiming.")
+				updatedArgs.add("--accessibility ")
+				updatedArgs.add("always")
+			}
+		}
+		return updatedArgs
+	}
 }
