@@ -5878,6 +5878,14 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	}
 }
 
+void EditorInspector::preview_change(Object *p_object, const Variant &p_name, const Variant &p_value) {
+	// Directly sets a property, bypassing undo/redo while blocking tree updates.
+	// Useful for making sure a tree update doesn't destroy an open popup like a color picker.
+	changing++;
+	p_object->set(p_name, p_value);
+	changing--;
+}
+
 void EditorInspector::_multiple_properties_changed(const Vector<String> &p_paths, const Array &p_values, bool p_changing) {
 	ERR_FAIL_COND(p_paths.is_empty() || p_values.is_empty());
 	ERR_FAIL_COND(p_paths.size() != p_values.size());

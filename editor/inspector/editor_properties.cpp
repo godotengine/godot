@@ -2956,8 +2956,8 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 		return;
 	}
 
-	// Preview color change, bypassing undo/redo.
-	get_edited_object()->set(get_edited_property(), p_color);
+	// Preview color change, bypassing undo/redo. This also blocks tree updates during the setter, making sure the color picker can't be destroyed while editing.
+	get_parent_inspector()->preview_change(get_edited_object(), get_edited_property(), p_color);
 }
 
 void EditorPropertyColor::_picker_created() {
