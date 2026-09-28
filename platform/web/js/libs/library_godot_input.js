@@ -93,6 +93,12 @@ const GodotIME = {
 
 		init: function (ime_cb, key_cb, code, key) {
 			function key_event_cb(pressed, evt) {
+				// With an input method in between (e.g. IBus on Linux, virtual keyboards), the
+				// key is "Process"/"Unidentified" (keyCode 229) and the text arrives in an
+				// `input` event (below) or through composition: let the browser handle it.
+				if (evt.isComposing || evt.keyCode === 229 || evt.key === 'Process' || evt.key === 'Unidentified') {
+					return;
+				}
 				const modifiers = GodotIME.getModifiers(evt);
 				GodotRuntime.stringToHeap(evt.code, code, 32);
 				GodotRuntime.stringToHeap(evt.key, key, 32);
@@ -142,6 +148,18 @@ const GodotIME = {
 			GodotEventListeners.add(ime, 'compositionstart', ime_event_cb, false);
 			GodotEventListeners.add(ime, 'compositionupdate', ime_event_cb, false);
 			GodotEventListeners.add(ime, 'compositionend', ime_event_cb, false);
+			// Text inserted without a composition (input methods that commit characters
+			// directly): delivered like a composition commit.
+			GodotEventListeners.add(ime, 'input', function (event) {
+				if (GodotIME.ime == null || event.isComposing || event.inputType !== 'insertText' || !event.data) {
+					return;
+				}
+				ime_cb(0, null);
+				const ptr = GodotRuntime.allocString(event.data);
+				ime_cb(2, ptr);
+				GodotRuntime.free(ptr);
+				GodotIME.ime.innerHTML = '';
+			}, false);
 			GodotEventListeners.add(ime, 'keydown', key_event_cb.bind(null, 1), false);
 			GodotEventListeners.add(ime, 'keyup', key_event_cb.bind(null, 0), false);
 
