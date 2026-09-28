@@ -2,6 +2,7 @@
 from misc.utility.scons_hints import *
 
 from methods import print_error
+from platform_methods import combine_libs_ar, get_libs_as_nodes
 
 Import("env")
 
@@ -91,8 +92,10 @@ side_target = "#bin/godot.side${PROGSUFFIX}.wasm"
 if env["library_type"] == "static_library":
     # Create dummy js file.
     main_js = env.NoCache(env.Textfile(build_targets[0], ""))[0]
-    # Godot static library, currently only includes web_files.
-    web_lib = sys_env.add_library("#bin/godot", web_files)
+    web_lib = sys_env.add_library("web", web_files)
+    prog = sys_env.CommandNoCache(
+        "#bin/libgodot" + sys_env["LIBSUFFIX"], [web_lib] + get_libs_as_nodes(sys_env), sys_env.Run(combine_libs_ar)
+    )
 elif env["library_type"] == "shared_library":
     # Create dummy js file.
     main_js = env.NoCache(env.Textfile(build_targets[0], ""))[0]
