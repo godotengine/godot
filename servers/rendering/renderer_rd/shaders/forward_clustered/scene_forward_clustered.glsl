@@ -1916,7 +1916,7 @@ void fragment_shader(in SceneData scene_data) {
 								transmittance_color,
 								transmittance_depth,
 								transmittance_boost,
-								transmittance_z,
+								0.0,
 #endif
 #ifdef LIGHT_RIM_USED
 								rim, rim_tint,
