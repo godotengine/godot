@@ -5441,11 +5441,9 @@ void Node3DEditorViewport::focus_aabb() {
 	float required_distance = 0.0f;
 
 	const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-	if (selection.is_empty()) {
-		return;
+	if (!selection.is_empty()) {
+		focused_node_id = selection.front()->get()->get_instance_id();
 	}
-
-	focused_node_id = selection.front()->get()->get_instance_id();
 
 	LocalVector<Node *> stack;
 	stack.reserve(selection.size());
@@ -5468,6 +5466,19 @@ void Node3DEditorViewport::focus_aabb() {
 				} else {
 					combined_aabb = combined_aabb.merge(global_aabb);
 				}
+			}
+		} else {
+			Node3D *node_3d = Object::cast_to<Node3D>(node);
+			if (node_3d) {
+				Vector3 pivot = node_3d->get_global_position();
+				if (!aabb_valid) {
+					combined_aabb = AABB(pivot, Vector3());
+					aabb_valid = true;
+				} else {
+					combined_aabb.expand_to(pivot);
+				}
+			} else {
+				continue;
 			}
 		}
 
