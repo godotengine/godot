@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "display_server_web.h"
 #include "godot_js.h"
 #include "os_web.h"
 
+#include "core/config/engine.h"
 #include "core/extension/godot_instance.h"
 #include "core/extension/libgodot.h"
 #include "core/io/resource_loader.h"
@@ -41,9 +43,42 @@
 
 #include <cstdlib>
 
-[[maybe_unused]] static OS_Web *os = nullptr;
+static OS_Web *os = nullptr;
+#ifndef PROXY_TO_PTHREAD_ENABLED
+static uint64_t target_ticks = 0;
+#endif
 
 static GodotInstance *instance = nullptr;
+
+// Keep in sync with web_main.cpp.
+static bool web_iteration() {
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	uint64_t current_ticks = os->get_ticks_usec();
+#endif
+
+	bool force_draw = DisplayServerWeb::get_singleton()->check_size_force_redraw();
+	if (force_draw) {
+		Main::force_redraw();
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	} else if (current_ticks < target_ticks) {
+		return false; // Skip frame.
+#endif
+	}
+
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0) {
+		if (current_ticks - target_ticks > 1000000) {
+			// When the window loses focus, we stop getting updates and accumulate delay.
+			// For this reason, if the difference is too big, we reset target ticks to the current ticks.
+			target_ticks = current_ticks;
+		}
+		target_ticks += (uint64_t)(1000000 / max_fps);
+	}
+#endif
+
+	return os->main_loop_iterate();
+}
 
 void print_web_header() {
 	// Emscripten.
@@ -75,6 +110,7 @@ GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], 
 	}
 
 	instance = memnew(GodotInstance);
+	instance->set_iteration(&web_iteration);
 	if (!instance->initialize(p_init_func)) {
 		memdelete(instance);
 		// Note: When Godot Engine supports reinitialization, clear the instance pointer here.
