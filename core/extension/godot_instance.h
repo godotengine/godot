@@ -36,6 +36,9 @@
 class GodotInstance : public Object {
 	GDCLASS(GodotInstance, Object);
 
+	typedef bool (*IterationFunction)();
+
+	IterationFunction iteration_func;
 	bool started = false;
 
 protected:
@@ -50,6 +53,7 @@ public:
 	bool start();
 	bool is_started();
 	bool iteration();
+	void set_iteration(IterationFunction p_iteration_func);
 	void stop();
 
 	void focus_out();
