@@ -3030,7 +3030,9 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						const uint32_t &parent_flags = cull_data.scenario->instance_data[idata.parent_array_index].flags;
 						if (parent_flags & InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN) {
 							const int32_t &parent_idx = cull_data.scenario->instance_data[idata.parent_array_index].visibility_index;
-							fade = cull_data.scenario->instance_visibility[parent_idx].children_fade_alpha;
+							if (parent_idx != -1) {
+								fade = cull_data.scenario->instance_visibility[parent_idx].children_fade_alpha;
+							}
 						}
 						idata.instance_geometry->set_parent_fade_alpha(fade);
 					}
