@@ -4230,7 +4230,7 @@ float OpenXRAPI::get_action_float(RID p_action, RID p_tracker) {
 	};
 
 	XrActionStateFloat result_state;
-	result_state.type = XR_TYPE_ACTION_STATE_FLOAT,
+	result_state.type = XR_TYPE_ACTION_STATE_FLOAT;
 	result_state.next = nullptr;
 	XrResult result = xrGetActionStateFloat(session, &get_info, &result_state);
 	if (XR_FAILED(result)) {
