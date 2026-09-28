@@ -4262,7 +4262,7 @@ Vector2 OpenXRAPI::get_action_vector2(RID p_action, RID p_tracker) {
 	};
 
 	XrActionStateVector2f result_state;
-	result_state.type = XR_TYPE_ACTION_STATE_VECTOR2F,
+	result_state.type = XR_TYPE_ACTION_STATE_VECTOR2F;
 	result_state.next = nullptr;
 	XrResult result = xrGetActionStateVector2f(session, &get_info, &result_state);
 	if (XR_FAILED(result)) {
