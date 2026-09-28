@@ -313,6 +313,8 @@ Ref<Mesh> GPUParticles3D::get_draw_pass_mesh(int p_pass) const {
 	return draw_passes[p_pass];
 }
 
+//----------------------- Skeletal emission
+
 void GPUParticles3D::set_skeletal_mesh(const NodePath &p_skeletal_mesh) {
 	if (!is_inside_tree()) {
 		skeletal_mesh = p_skeletal_mesh;
@@ -351,6 +353,39 @@ void GPUParticles3D::_fetch_skin() {
 NodePath GPUParticles3D::get_skeletal_mesh() const {
 	return skeletal_mesh;
 }
+
+void GPUParticles3D::set_emission_texture(const Ref<Texture2D> &p_emission_texture) {
+	// Hello reviewer. I'm not so convinced over calling particles_set_baked_emission_texture
+	// twice, once for the texture, and once for the point count.
+	// it feels logical to have a single function in the rendering server, but i don't
+	// think it's possible to have setget for multiple properties.
+
+	emission_texture = p_emission_texture;
+	if (emission_texture.is_valid()) {
+		RS::get_singleton()->particles_set_baked_emission_texture(get_rid(), emission_texture->get_rid(), emission_texture_points_count);
+	} else {
+		RS::get_singleton()->particles_set_baked_emission_texture(get_rid(), RID(), emission_texture_points_count);
+	}
+}
+
+Ref<Texture2D> GPUParticles3D::get_fixed_fps() const {
+	return emission_texture;
+}
+
+void GPUParticles3D::set_emission_texture_points_count(int p_emission_texture_point_count) {
+	emission_texture_points_count = p_emission_texture_point_count;
+	if (emission_texture.is_valid()) {
+		RS::get_singleton()->particles_set_baked_emission_texture(get_rid(), emission_texture->get_rid(), emission_texture_points_count);
+	} else {
+		RS::get_singleton()->particles_set_baked_emission_texture(get_rid(), RID(), emission_texture_points_count);
+	}
+}
+
+int GPUParticles3D::get_emission_texture_points_count() const {
+	return emission_texture_points_count;
+}
+
+//--------------------------------------------------------
 
 void GPUParticles3D::set_fixed_fps(int p_count) {
 	fixed_fps = p_count;

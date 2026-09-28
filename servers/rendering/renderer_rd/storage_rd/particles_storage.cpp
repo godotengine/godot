@@ -758,7 +758,7 @@ void ParticlesStorage::particles_set_skeleton(RID p_particles, RID p_skeleton) {
 	particles->particles_material_uniform_set = RID();
 }
 
-void ParticlesStorage::particles_set_baked_emission_texture(RID p_particles, RID p_emission_texture) {
+void ParticlesStorage::particles_set_baked_emission_texture(RID p_particles, RID p_emission_texture, int p_points_count) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 
