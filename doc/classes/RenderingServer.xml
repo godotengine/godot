@@ -1959,6 +1959,14 @@
 				Sets the per-instance shader uniform on the specified 3D geometry instance. Equivalent to [method GeometryInstance3D.set_instance_shader_parameter].
 			</description>
 		</method>
+		<method name="instance_geometry_set_shadow_mobility">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="shadow_mobility" type="int" enum="RenderingServer.ShadowMobility" />
+			<description>
+				Sets whether the geometry instance is a static or a dynamic shadow caster for lights that use shadow caching (see [method light_set_shadow_caching]). Equivalent to [member GeometryInstance3D.shadow_mobility].
+			</description>
+		</method>
 		<method name="instance_geometry_set_transparency">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
@@ -2269,12 +2277,28 @@
 				If [code]true[/code], light will cast shadows. Equivalent to [member Light3D.shadow_enabled].
 			</description>
 		</method>
+		<method name="light_set_shadow_caching">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code], the shadows of the static shadow casters of this omni or spot light are cached in a separate shadow map, and only the dynamic shadow casters are drawn when the shadow is updated (see [method instance_geometry_set_shadow_mobility]). Equivalent to [member Light3D.shadow_cache_enabled].
+			</description>
+		</method>
 		<method name="light_set_shadow_caster_mask">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="mask" type="int" />
 			<description>
 				Sets the shadow caster mask for this 3D light. Shadows will only be cast using objects in the selected layers. Equivalent to [member Light3D.shadow_caster_mask].
+			</description>
+		</method>
+		<method name="light_set_shadow_dynamic_update_interval">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="frames" type="int" />
+			<description>
+				Sets the minimum number of frames between two shadow updates of a light that uses shadow caching, when only dynamic shadow casters changed. Equivalent to [member Light3D.shadow_dynamic_update_interval].
 			</description>
 		</method>
 		<method name="lightmap_create">
@@ -6059,6 +6083,12 @@
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
 			Only render the shadows from the object. The object itself will not be drawn.
+		</constant>
+		<constant name="SHADOW_MOBILITY_DYNAMIC" value="0" enum="ShadowMobility">
+			The instance is a dynamic shadow caster. It is drawn every time the shadow of a light that affects it is updated.
+		</constant>
+		<constant name="SHADOW_MOBILITY_STATIC" value="1" enum="ShadowMobility">
+			The instance is a static shadow caster. For lights that use shadow caching, it is only drawn when the cached shadow map of the light must be redrawn.
 		</constant>
 		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode" keywords="LOD_FADE_DISABLED">
 			Disable visibility range fading for the given instance.

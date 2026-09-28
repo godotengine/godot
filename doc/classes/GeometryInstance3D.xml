@@ -66,6 +66,13 @@
 			The material override for the whole geometry.
 			If a material is assigned to this property, it will be used instead of any material set in any material slot of the mesh.
 		</member>
+		<member name="shadow_mobility" type="int" setter="set_shadow_mobility" getter="get_shadow_mobility" enum="GeometryInstance3D.ShadowMobility" default="0">
+			Whether this geometry is a static or a dynamic shadow caster for lights that use shadow caching (see [member Light3D.shadow_cache_enabled]).
+			Static shadow casters are drawn into a cached shadow map, which is only redrawn when the light changes or when a static shadow caster in the light's range is added, removed, moved, hidden or modified. Dynamic shadow casters are drawn on top of a copy of the cached shadow map every time the shadow is updated.
+			Set this to [constant SHADOW_MOBILITY_STATIC] on geometry that doesn't move (such as level geometry), and keep [constant SHADOW_MOBILITY_DYNAMIC] on moving or animated geometry (such as characters). Moving a static shadow caster is supported, but redraws the cached shadow maps of all lights that affect it.
+			[b]Note:[/b] Static shadow casters that use an animated material (for example, a shader that reads [code]TIME[/code]) are always drawn as dynamic shadow casters.
+			[b]Note:[/b] Only supported for [OmniLight3D] and [SpotLight3D] shadows when using the Forward+ rendering method. Otherwise, this property has no effect.
+		</member>
 		<member name="transparency" type="float" setter="set_transparency" getter="get_transparency" default="0.0" keywords="opacity">
 			The transparency applied to the whole geometry (as a multiplier of the materials' existing transparency). [code]0.0[/code] is fully opaque, while [code]1.0[/code] is fully transparent. Values greater than [code]0.0[/code] (exclusive) will force the geometry's materials to go through the transparent pipeline, which is slower to render and can exhibit rendering issues due to incorrect transparency sorting. However, unlike using a transparent material, setting [member transparency] to a value greater than [code]0.0[/code] (exclusive) will [i]not[/i] disable shadow rendering.
 			In spatial shaders, [code]1.0 - transparency[/code] is set as the default value of the [code]ALPHA[/code] built-in.
@@ -105,6 +112,12 @@
 		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
 			Will only show the shadows casted from this object.
 			In other words, the actual mesh will not be visible, only the shadows casted from the mesh will be.
+		</constant>
+		<constant name="SHADOW_MOBILITY_DYNAMIC" value="0" enum="ShadowMobility">
+			The geometry is a dynamic shadow caster. It is drawn every time the shadow of a light that affects it is updated. This is the default.
+		</constant>
+		<constant name="SHADOW_MOBILITY_STATIC" value="1" enum="ShadowMobility">
+			The geometry is a static shadow caster. For lights with [member Light3D.shadow_cache_enabled], it is only drawn when the cached shadow map of the light must be redrawn.
 		</constant>
 		<constant name="GI_MODE_DISABLED" value="0" enum="GIMode">
 			Disabled global illumination mode. Use for dynamic objects that do not contribute to global illumination (such as characters). When using [VoxelGI] and SDFGI, the geometry will [i]receive[/i] indirect lighting and reflections but the geometry will not be considered in GI baking.
