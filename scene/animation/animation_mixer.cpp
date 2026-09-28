@@ -2377,7 +2377,11 @@ void AnimationMixer::capture(const StringName &p_name, double p_duration, Tween:
 			continue;
 		}
 		if (reference_animation->track_get_type(i) == Animation::TYPE_VALUE && reference_animation->value_track_get_update_mode(i) == Animation::UPDATE_CAPTURE) {
-			TrackCacheValue *t = static_cast<TrackCacheValue *>(track_cache[reference_animation->track_get_unique_id(i)]);
+			TrackCache **track_ptr = track_cache.getptr(reference_animation->track_get_unique_id(i));
+			if (track_ptr == nullptr || *track_ptr == nullptr) {
+				continue;
+			}
+			TrackCacheValue *t = static_cast<TrackCacheValue *>(*track_ptr);
 			Object *t_obj = ObjectDB::get_instance(t->object_id);
 			if (t_obj) {
 				Variant value = t_obj->get_indexed(t->subpath);

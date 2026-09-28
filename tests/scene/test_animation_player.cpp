@@ -32,7 +32,10 @@
 
 TEST_FORCE_LINK(test_animation_player)
 
+#include "scene/2d/node_2d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
 #include "scene/resources/animation.h"
 
 namespace TestAnimationPlayer {
@@ -60,6 +63,32 @@ TEST_CASE("[AnimationPlayer] get & set blend_time") {
 	animation_player->set_blend_time(anim1, anim2, 4.0);
 	CHECK(animation_player->get_blend_time(anim1, anim2) == doctest::Approx(4.0f));
 	memdelete(animation_player);
+}
+
+TEST_CASE("[SceneTree][AnimationPlayer] Capture with an unresolved track path") {
+	const StringName anim_name = "capture";
+	const Ref<Animation> animation = memnew(Animation);
+	animation->set_length(1.0);
+	int track = animation->add_track(Animation::TYPE_VALUE);
+	animation->track_set_path(track, NodePath("Missing:position"));
+	animation->value_track_set_update_mode(track, Animation::UPDATE_CAPTURE);
+	animation->track_insert_key(track, 0.5, Vector2(1, 1));
+
+	const Ref<AnimationLibrary> animation_library = memnew(AnimationLibrary);
+	animation_library->add_animation(anim_name, animation);
+
+	Node2D *owner = memnew(Node2D);
+	AnimationPlayer *animation_player = memnew(AnimationPlayer);
+	owner->add_child(animation_player);
+	SceneTree::get_singleton()->get_root()->add_child(owner);
+	animation_player->add_animation_library("", animation_library);
+
+	ERR_PRINT_OFF;
+	animation_player->play_with_capture(anim_name, 1.0);
+	ERR_PRINT_ON;
+
+	CHECK(animation_player->is_playing());
+	memdelete(owner);
 }
 
 } // namespace TestAnimationPlayer
