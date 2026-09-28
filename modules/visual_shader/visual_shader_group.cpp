@@ -903,10 +903,6 @@ String VisualShaderNodeGroup::get_output_port_name(int p_port) const {
 	return group->get_output_port_name(p_port);
 }
 
-bool VisualShaderNodeGroup::is_show_prop_names() const {
-	return true;
-}
-
 Vector<StringName> VisualShaderNodeGroup::get_editable_properties() const {
 	Vector<StringName> props;
 	props.push_back("group");
