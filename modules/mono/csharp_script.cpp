@@ -2376,6 +2376,58 @@ void CSharpScript::reload_registered_script(Ref<CSharpScript> p_script) {
 #endif
 }
 
+void GD_CLR_STDCALL CSharpScript::_try_add_method_tramp(CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::MethodTrampoline p_trampoline, bool p_is_static) {
+	MethodKey method_key{ *p_name, p_argc };
+	if (!p_scr->method_trampolines.has(method_key)) {
+		p_scr->method_trampolines.insert_new(method_key, p_trampoline);
+	}
+	// We add static methods to both `static_method_trampolines` and `method_trampolines`.
+	// This allows static methods to be called on instances (e.g., `object.SomeStaticMethod()`).
+	// While we could look up both maps at runtime, keeping them in a single map maintains
+	// compatibility with how methods were resolved before trampolines were introduced.
+	// For example, invoking `Foo` and `Bar` on an instance of `DerivedScript` should always
+	// resolve to the declaration from the `DerivedScript` class:
+	//     class BaseScript : Node {
+	//         void Foo() {}
+	//         static void Bar() {}
+	//     }
+	//     class DerivedScript : BaseScript {
+	//         static void Foo() {}
+	//         void Bar() {}
+	//     }
+	if (p_is_static) {
+		p_scr->static_method_trampolines.insert_new(method_key, p_trampoline);
+	}
+}
+
+void GD_CLR_STDCALL CSharpScript::_try_add_property_tramp(CSharpScript *p_scr, const StringName *p_name, godotsharp::PropertyGetterTrampoline p_getter_trampoline, godotsharp::PropertySetterTrampoline p_setter_trampoline) {
+	DEV_ASSERT(p_getter_trampoline.function_pointer != nullptr || p_setter_trampoline.function_pointer != nullptr);
+
+	PropertyTrampolines *found = p_scr->property_trampolines.getptr(*p_name);
+	if (found) {
+		// Could not have added an entry where both are null.
+		DEV_ASSERT(found->getter.function_pointer != nullptr || found->setter.function_pointer != nullptr);
+
+		// If an entry already exists, we still replace one of the trampolines if it's null.
+		// This matches the behavior of Get/SetGodotClassPropertyValue, which will continue
+		// looking in base classes if the property in the current class is readonly/writeonly.
+		if (p_getter_trampoline.function_pointer && !found->getter.function_pointer) {
+			found->getter = p_getter_trampoline;
+		} else if (p_setter_trampoline.function_pointer && !found->setter.function_pointer) {
+			found->setter = p_setter_trampoline;
+		}
+	} else {
+		p_scr->property_trampolines.insert_new(*p_name, { p_getter_trampoline, p_setter_trampoline });
+	}
+}
+
+void GD_CLR_STDCALL CSharpScript::_try_add_raise_signal_tramp(CSharpScript *p_scr, const StringName *p_name, int32_t p_argc, godotsharp::RaiseSignalTrampoline p_trampoline) {
+	SignalKey signal_key{ *p_name, p_argc };
+	if (!p_scr->raise_signal_trampolines.has(signal_key)) {
+		p_scr->raise_signal_trampolines.insert_new(signal_key, p_trampoline);
+	}
+}
+
 // Extract information about the script using the mono class.
 void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	p_script->static_method_trampolines.clear();
@@ -2383,65 +2435,9 @@ void CSharpScript::update_script_class_info(Ref<CSharpScript> p_script) {
 	p_script->property_trampolines.clear();
 	p_script->raise_signal_trampolines.clear();
 
-	auto try_add_method_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc,
-										godotsharp::MethodTrampoline p_trampoline, bool p_is_static) {
-		MethodKey method_key{ *p_name, p_argc };
-		if (!p_scr->method_trampolines.has(method_key)) {
-			p_scr->method_trampolines.insert_new(method_key, p_trampoline);
-		}
-		// We add static methods to both `static_method_trampolines` and `method_trampolines`.
-		// This allows static methods to be called on instances (e.g., `object.SomeStaticMethod()`).
-		// While we could look up both maps at runtime, keeping them in a single map maintains
-		// compatibility with how methods were resolved before trampolines were introduced.
-		// For example, invoking `Foo` and `Bar` on an instance of `DerivedScript` should always
-		// resolve to the declaration from the `DerivedScript` class:
-		//     class BaseScript : Node {
-		//         void Foo() {}
-		//         static void Bar() {}
-		//     }
-		//     class DerivedScript : BaseScript {
-		//         static void Foo() {}
-		//         void Bar() {}
-		//     }
-		if (p_is_static) {
-			p_scr->static_method_trampolines.insert_new(method_key, p_trampoline);
-		}
-	};
-
-	auto try_add_property_tramp = [](CSharpScript *p_scr, const StringName *p_name,
-										  godotsharp::PropertyGetterTrampoline p_getter_trampoline,
-										  godotsharp::PropertySetterTrampoline p_setter_trampoline) {
-		DEV_ASSERT(p_getter_trampoline.function_pointer != nullptr || p_setter_trampoline.function_pointer != nullptr);
-
-		PropertyTrampolines *found = p_scr->property_trampolines.getptr(*p_name);
-		if (found) {
-			// Could not have added an entry where both are null.
-			DEV_ASSERT(found->getter.function_pointer != nullptr || found->setter.function_pointer != nullptr);
-
-			// If an entry already exists, we still replace one of the trampolines if it's null.
-			// This matches the behavior of Get/SetGodotClassPropertyValue, which will continue
-			// looking in base classes if the property in the current class is readonly/writeonly.
-			if (p_getter_trampoline.function_pointer && !found->getter.function_pointer) {
-				found->getter = p_getter_trampoline;
-			} else if (p_setter_trampoline.function_pointer && !found->setter.function_pointer) {
-				found->setter = p_setter_trampoline;
-			}
-		} else {
-			p_scr->property_trampolines.insert_new(*p_name, { p_getter_trampoline, p_setter_trampoline });
-		}
-	};
-
-	auto try_add_raise_signal_tramp = [](CSharpScript *p_scr, const StringName *p_name, int32_t p_argc,
-											  godotsharp::RaiseSignalTrampoline p_trampoline) {
-		SignalKey signal_key{ *p_name, p_argc };
-		if (!p_scr->raise_signal_trampolines.has(signal_key)) {
-			p_scr->raise_signal_trampolines.insert_new(signal_key, p_trampoline);
-		}
-	};
-
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_UpdateScriptTrampolines(
 			p_script.ptr(), &p_script->should_fallback_to_legacy_trampolines,
-			try_add_method_tramp, try_add_property_tramp, try_add_raise_signal_tramp);
+			&_try_add_method_tramp, &_try_add_property_tramp, &_try_add_raise_signal_tramp);
 
 	TypeInfo type_info;
 
