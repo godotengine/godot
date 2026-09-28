@@ -34,6 +34,7 @@
 
 #include "core/config/engine.h"
 #include "core/io/image.h"
+#include "core/math/geometry_2d.h"
 #include "core/os/os.h"
 
 #ifdef __FreeBSD__
@@ -4998,6 +4999,37 @@ void WaylandThread::window_try_set_mode(DisplayServerEnums::WindowID p_window_id
 
 		default: {
 		} break;
+	}
+}
+
+void WaylandThread::window_set_input_region(DisplayServerEnums::WindowID p_window_id, bool p_empty_region, const Vector<Vector2> &p_region) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowState &ws = windows[p_window_id];
+
+	wl_region *region = nullptr;
+	if (p_empty_region) {
+		region = wl_compositor_create_region(registry.wl_compositor);
+	} else if (!p_region.is_empty()) {
+		region = wl_compositor_create_region(registry.wl_compositor);
+
+		double win_scale = window_state_get_scale_factor(&ws);
+		Size2i scaled_size = scale_vector2i(ws.rect.size, win_scale);
+		for (int x = 0; x < scaled_size.x; x++) {
+			for (int y = 0; y < scaled_size.y; y++) {
+				Vector2 point = Vector2(x, y);
+				if (Geometry2D::is_point_in_polygon(point, p_region)) {
+					// Convert region points to window logical scale.
+					point = scale_vector2i(point, 1.0 / win_scale);
+					wl_region_add(region, point.x, point.y, 1, 1);
+				}
+			}
+		}
+	}
+
+	wl_surface_set_input_region(ws.wl_surface, region);
+
+	if (region) {
+		wl_region_destroy(region);
 	}
 }
 
