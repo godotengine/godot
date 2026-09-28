@@ -3,12 +3,15 @@ def can_build(env, platform):
 
 
 def configure(env):
+    import sys
+
     # Check if the platform has marked mono as supported.
     supported = env.get("supported", [])
     if "mono" not in supported:
-        import sys
-
         print("The 'mono' module does not currently support building for this platform. Aborting.")
+        sys.exit(255)
+    if env["platform"] == "web" and env["library_type"] != "static_library":
+        print("The 'mono' module only supports \"library_type=static_library\" on web. Aborting.")
         sys.exit(255)
 
     env.add_module_version_string("mono")

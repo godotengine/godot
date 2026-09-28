@@ -116,6 +116,23 @@ namespace GodotTools.Export
             Console.Error.WriteLine(exception);
         }
 
+        private void ThrowIfNotIgnored([DoesNotReturnIf(false)] bool ignoreNotSupportedError, EditorExportPlatform platform, Exception exception)
+        {
+            if (ignoreNotSupportedError)
+            {
+                string? exceptionMessage = exception.Message;
+                if (string.IsNullOrEmpty(exceptionMessage))
+                {
+                    exceptionMessage = $"Exception thrown: {exception.GetType().Name}";
+                }
+                platform.AddMessage(EditorExportPlatform.ExportMessageType.Warning, "Export .NET Project", $"Ignored error: {exceptionMessage}");
+            }
+            else
+            {
+                throw exception;
+            }
+        }
+
         // With this method we can override how a file is exported in the PCK
         public override void _ExportFile(string path, string type, string[] features)
         {
@@ -175,14 +192,19 @@ namespace GodotTools.Export
                 return;
 
             string osName = GetExportPlatform().GetOsName();
+            bool ignoreNotSupportedError = (bool)GetExportPreset().GetProjectSetting("dotnet/project/ignore_not_supported_export_error");
 
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
-                throw new NotSupportedException("Target platform not supported.");
+            {
+                ThrowIfNotIgnored(ignoreNotSupportedError, GetExportPlatform(), new NotSupportedException("Target platform not supported."));
+                return;
+            }
 
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android, OS.Platforms.iOS }
                     .Contains(platform))
             {
-                throw new NotImplementedException("Target platform not yet implemented.");
+                ThrowIfNotIgnored(ignoreNotSupportedError, GetExportPlatform(), new NotImplementedException("Target platform not yet implemented."));
+                return;
             }
 
             bool useAndroidLinuxBionic = (bool)GetOption("dotnet/android_use_linux_bionic");

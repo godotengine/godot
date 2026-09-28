@@ -100,7 +100,12 @@ elif env["library_type"] == "shared_library":
     # Create dummy js file.
     main_js = env.NoCache(env.Textfile(build_targets[0], ""))[0]
     # Export LibGodot related functions from the side library.
-    env.Append(LINKFLAGS=["-sEXPORTED_FUNCTIONS=_libgodot_create_godot_instance,_libgodot_destroy_godot_instance"])
+    libgodot_api = [
+        "_libgodot_create_godot_instance",
+        "_libgodot_destroy_godot_instance",
+        "_libgodot_mono_set_plugins_initialize",
+    ]
+    env.Append(LINKFLAGS=["-sEXPORTED_FUNCTIONS=" + repr(sorted(list(set(libgodot_api))))])
     # The side library, containing all Godot code.
     side_wasm = env.add_program(side_target, web_files)
 elif env["dlink_enabled"]:
