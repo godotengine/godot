@@ -117,6 +117,8 @@ class InspectorDock : public EditorDock {
 	void _paste_resource();
 	void _prepare_resource_extra_popup();
 	Ref<Resource> _get_current_resource() const;
+	bool _is_menu_option_enabled(int p_option) const;
+	void _update_resource_extra_popup_items();
 
 	void _info_pressed();
 	void _resource_created();

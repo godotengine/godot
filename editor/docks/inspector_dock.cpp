@@ -65,6 +65,10 @@ void InspectorDock::_menu_confirm_current() {
 }
 
 void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
+	if (!_is_menu_option_enabled(p_option)) {
+		return;
+	}
+
 	if (!p_confirmed) {
 		current_option = p_option;
 	}
@@ -305,18 +309,44 @@ void InspectorDock::_paste_resource() {
 }
 
 void InspectorDock::_prepare_resource_extra_popup() {
-	Ref<Resource> r = EditorSettings::get_singleton()->get_resource_clipboard();
-	PopupMenu *popup = resource_extra_button->get_popup();
-	popup->set_item_disabled(popup->get_item_index(RESOURCE_EDIT_CLIPBOARD), r.is_null());
+	_update_resource_extra_popup_items();
+}
 
-	Ref<Resource> current_res = _get_current_resource();
-	popup->set_item_disabled(popup->get_item_index(RESOURCE_SHOW_IN_FILESYSTEM), current_res.is_null() || current_res->is_built_in());
+void InspectorDock::_update_resource_extra_popup_items() {
+	PopupMenu *popup = resource_extra_button->get_popup();
+	for (int i = 0; i < popup->get_item_count(); i++) {
+		popup->set_item_disabled(i, !_is_menu_option_enabled(popup->get_item_id(i)));
+	}
 }
 
 Ref<Resource> InspectorDock::_get_current_resource() const {
 	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
 	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 	return Ref<Resource>(Object::cast_to<Resource>(current_obj));
+}
+
+bool InspectorDock::_is_menu_option_enabled(int p_option) const {
+	switch (p_option) {
+		case RESOURCE_SAVE:
+		case RESOURCE_SAVE_AS:
+		case RESOURCE_COPY:
+		case RESOURCE_MAKE_BUILT_IN: {
+			return current && current->is_class("Resource") && !current->is_class("TextFile");
+		}
+		case OBJECT_REQUEST_HELP: {
+			return current && !current->is_class("TextFile") && (current->is_class("Resource") || current->is_class("Node"));
+		}
+		case RESOURCE_EDIT_CLIPBOARD: {
+			return EditorSettings::get_singleton()->get_resource_clipboard().is_valid();
+		}
+		case RESOURCE_SHOW_IN_FILESYSTEM: {
+			Ref<Resource> current_res = _get_current_resource();
+			return current_res.is_valid() && !current_res->is_built_in();
+		}
+		default: {
+			return true;
+		}
+	}
 }
 
 void InspectorDock::_prepare_history() {
@@ -587,12 +617,7 @@ void InspectorDock::update(Object *p_object) {
 	resource_save_button->set_disabled(!is_resource || is_text_file);
 	resource_save_button->set_visible(is_resource || is_text_file);
 
-	PopupMenu *resource_extra_popup = resource_extra_button->get_popup();
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_SAVE), !is_resource || is_text_file);
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_SAVE_AS), !is_resource || is_text_file);
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_COPY), !is_resource || is_text_file);
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(OBJECT_REQUEST_HELP), (!is_resource && !is_node) || is_text_file);
-	resource_extra_popup->set_item_disabled(resource_extra_popup->get_item_index(RESOURCE_MAKE_BUILT_IN), !is_resource || is_text_file);
+	_update_resource_extra_popup_items();
 
 	if (!is_object || is_text_file) {
 		info->hide();
