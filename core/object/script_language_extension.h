@@ -315,6 +315,30 @@ private:
 			return script_language->validate(p_code, p_path, r_functions, r_errors, r_warnings, r_safe_lines);
 		}
 
+		virtual const Vector<String> get_reserved_words() const override {
+			return script_language->get_reserved_words();
+		}
+
+		virtual bool is_control_flow_keyword(const String &p_string) const override {
+			return script_language->is_control_flow_keyword(p_string);
+		}
+
+		virtual const Vector<String> get_comment_delimiters() const override {
+			return script_language->get_comment_delimiters();
+		}
+
+		virtual const Vector<String> get_doc_comment_delimiters() const override {
+			return script_language->get_doc_comment_delimiters();
+		}
+
+		virtual const Vector<String> get_string_delimiters() const override {
+			return script_language->get_string_delimiters();
+		}
+
+		virtual NameCasing get_preferred_file_name_casing() const override {
+			return static_cast<NameCasing>(script_language->preferred_file_name_casing());
+		}
+
 		EditorAdapter(ScriptLanguageExtension *p_script_language) {
 			script_language = p_script_language;
 		}
@@ -322,43 +346,55 @@ private:
 	EditorAdapter *editor_adapter;
 
 public:
-	virtual EditorLanguage *get_editor_language() override {
+	virtual EditorLanguage *get_editor_language() const override {
 		return editor_adapter;
 	}
 #endif // TOOLS_ENABLED
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_reserved_words)
-
-	virtual Vector<String> get_reserved_words() const override {
+#ifdef TOOLS_ENABLED
+	Vector<String> get_reserved_words() const {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_reserved_words, ret);
 		return ret;
 	}
-	EXBIND1RC(bool, is_control_flow_keyword, const String &)
+#endif // TOOLS_ENABLED
+
+	GDVIRTUAL1RC_REQUIRED(bool, _is_control_flow_keyword, const String &);
+#ifdef TOOLS_ENABLED
+	bool is_control_flow_keyword(const String &p_string) const {
+		bool ret = false;
+		GDVIRTUAL_CALL(_is_control_flow_keyword, p_string, ret);
+		return ret;
+	}
+#endif // TOOLS_ENABLED
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_comment_delimiters)
-
-	virtual Vector<String> get_comment_delimiters() const override {
+#ifdef TOOLS_ENABLED
+	Vector<String> get_comment_delimiters() const {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_comment_delimiters, ret);
 		return ret;
 	}
+#endif // TOOLS_ENABLED
 
 	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
-
-	virtual Vector<String> get_doc_comment_delimiters() const override {
+#ifdef TOOLS_ENABLED
+	Vector<String> get_doc_comment_delimiters() const {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
 		return ret;
 	}
+#endif // TOOLS_ENABLED
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_string_delimiters)
-
-	virtual Vector<String> get_string_delimiters() const override {
+#ifdef TOOLS_ENABLED
+	Vector<String> get_string_delimiters() const {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_string_delimiters, ret);
 		return ret;
 	}
+#endif // TOOLS_ENABLED
 
 	EXBIND3RC(Ref<Script>, make_template, const String &, const String &, const String &)
 
@@ -481,17 +517,17 @@ public:
 	EXBIND0R(bool, overrides_external_editor)
 
 	GDVIRTUAL0RC(ScriptNameCasing, _preferred_file_name_casing);
-
-	virtual ScriptNameCasing preferred_file_name_casing() const override {
+#ifdef TOOLS_ENABLED
+	ScriptNameCasing preferred_file_name_casing() const {
 		ScriptNameCasing ret;
 		if (GDVIRTUAL_CALL(_preferred_file_name_casing, ret)) {
 			return ret;
 		}
 		return ScriptNameCasing::SCRIPT_NAME_CASING_SNAKE_CASE;
 	}
+#endif // TOOLS_ENABLED
 
 	GDVIRTUAL3RC_REQUIRED(Dictionary, _complete_code, const String &, const String &, Object *)
-
 #ifdef TOOLS_ENABLED
 	Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<EditorLanguage::CompletionOption> *r_options, bool &r_force, String &r_call_hint) {
 		Dictionary ret;

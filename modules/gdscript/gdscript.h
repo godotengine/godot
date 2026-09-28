@@ -593,14 +593,9 @@ public:
 
 	/* EDITOR FUNCTIONS */
 #ifdef TOOLS_ENABLED
-	virtual EditorLanguage *get_editor_language() override;
+	virtual EditorLanguage *get_editor_language() const override;
 #endif // TOOLS_ENABLED
 
-	virtual Vector<String> get_reserved_words() const override;
-	virtual bool is_control_flow_keyword(const String &p_keywords) const override;
-	virtual Vector<String> get_comment_delimiters() const override;
-	virtual Vector<String> get_doc_comment_delimiters() const override;
-	virtual Vector<String> get_string_delimiters() const override;
 	virtual bool is_using_templates() override;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) override;

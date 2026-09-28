@@ -227,7 +227,7 @@ public:
 	/* EDITOR FUNCTIONS */
 #ifdef TOOLS_ENABLED
 	// Must not return `nullptr`. `EditorLanguage` can be used as default implementation for languages without editor support.
-	virtual EditorLanguage *get_editor_language() = 0;
+	virtual EditorLanguage *get_editor_language() const = 0;
 #endif // TOOLS_ENABLED
 
 	enum TemplateLocation {
@@ -236,6 +236,7 @@ public:
 		TEMPLATE_PROJECT
 	};
 
+	// Keep in sync with `EditorLanguage::NameCasing`.
 	enum ScriptNameCasing {
 		SCRIPT_NAME_CASING_AUTO,
 		SCRIPT_NAME_CASING_PASCAL_CASE,
@@ -257,11 +258,6 @@ public:
 		}
 	};
 
-	virtual Vector<String> get_reserved_words() const = 0;
-	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
-	virtual Vector<String> get_comment_delimiters() const = 0;
-	virtual Vector<String> get_doc_comment_delimiters() const = 0;
-	virtual Vector<String> get_string_delimiters() const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }
@@ -273,7 +269,6 @@ public:
 	virtual bool can_make_function() const { return true; }
 	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 	virtual bool overrides_external_editor() { return false; }
-	virtual ScriptNameCasing preferred_file_name_casing() const { return SCRIPT_NAME_CASING_SNAKE_CASE; }
 
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) = 0;
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value) {}

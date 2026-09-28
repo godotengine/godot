@@ -60,7 +60,7 @@
 #ifdef TOOLS_ENABLED
 GDScriptEditorLanguage *GDScriptEditorLanguage::singleton = nullptr;
 
-EditorLanguage *GDScriptLanguage::get_editor_language() {
+EditorLanguage *GDScriptLanguage::get_editor_language() const {
 	return GDScriptEditorLanguage::get_singleton();
 }
 #endif // TOOLS_ENABLED
@@ -79,17 +79,93 @@ static String _get_indentation() {
 	return "\t";
 }
 
-Vector<String> GDScriptLanguage::get_comment_delimiters() const {
+#ifdef TOOLS_ENABLED
+
+const Vector<String> GDScriptEditorLanguage::get_reserved_words() const {
+	// Please keep alphabetical order within categories.
+	static const Vector<String> ret = {
+		// Control flow.
+		"break",
+		"continue",
+		"elif",
+		"else",
+		"for",
+		"if",
+		"match",
+		"pass",
+		"return",
+		"when",
+		"while",
+		// Declarations.
+		"class",
+		"class_name",
+		"const",
+		"enum",
+		"extends",
+		"func",
+		"namespace", // Reserved for potential future use.
+		"signal",
+		"static",
+		"trait", // Reserved for potential future use.
+		"var",
+		// Other keywords.
+		"await",
+		"breakpoint",
+		"self",
+		"super",
+		"yield", // Reserved for potential future use.
+		// Operators.
+		"and",
+		"as",
+		"in",
+		"is",
+		"not",
+		"or",
+		// Special values (tokenizer treats them as literals, not as tokens).
+		"false",
+		"null",
+		"true",
+		// Constants.
+		"INF",
+		"NAN",
+		"PI",
+		"TAU",
+		// Functions (highlighter uses global function color instead).
+		"assert",
+		"preload",
+		// Types (highlighter uses type color instead).
+		"void",
+	};
+
+	return ret;
+}
+
+bool GDScriptEditorLanguage::is_control_flow_keyword(const String &p_keyword) const {
+	// Please keep alphabetical order.
+	return p_keyword == "break" ||
+			p_keyword == "continue" ||
+			p_keyword == "elif" ||
+			p_keyword == "else" ||
+			p_keyword == "for" ||
+			p_keyword == "if" ||
+			p_keyword == "match" ||
+			p_keyword == "pass" ||
+			p_keyword == "return" ||
+			p_keyword == "when" ||
+			p_keyword == "while";
+}
+
+const Vector<String> GDScriptEditorLanguage::get_comment_delimiters() const {
 	static const Vector<String> delimiters = { "#" };
 	return delimiters;
 }
 
-Vector<String> GDScriptLanguage::get_doc_comment_delimiters() const {
+const Vector<String> GDScriptEditorLanguage::get_doc_comment_delimiters() const {
 	static const Vector<String> delimiters = { "##" };
 	return delimiters;
 }
 
-Vector<String> GDScriptLanguage::get_string_delimiters() const {
+const Vector<String> GDScriptEditorLanguage::get_string_delimiters() const {
 	static const Vector<String> delimiters = {
 		"\" \"",
 		"' '",
@@ -99,6 +175,8 @@ Vector<String> GDScriptLanguage::get_string_delimiters() const {
 	// NOTE: StringName, NodePath and r-strings are not listed here.
 	return delimiters;
 }
+
+#endif // TOOLS_ENABLED
 
 bool GDScriptLanguage::is_using_templates() {
 	return true;

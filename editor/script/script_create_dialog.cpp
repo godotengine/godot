@@ -36,6 +36,7 @@
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -190,7 +191,7 @@ String ScriptCreateDialog::_adjust_file_path(const String &p_base_path) const {
 
 	String base_dir = p_base_path.get_base_dir();
 	String file_name = p_base_path.get_file().get_basename();
-	file_name = EditorNode::adjust_script_name_casing(file_name, language->preferred_file_name_casing());
+	file_name = EditorNode::adjust_script_name_casing(file_name, static_cast<ScriptLanguage::ScriptNameCasing>(language->get_editor_language()->get_preferred_file_name_casing()));
 	String extension = language->get_extension();
 	return base_dir.path_join(file_name + "." + extension);
 }
@@ -763,7 +764,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	int space_indent_size = 4;
 	// Get meta delimiter
 	String meta_delimiter;
-	for (const String &script_delimiter : p_language->get_comment_delimiters()) {
+	for (const String &script_delimiter : p_language->get_editor_language()->get_comment_delimiters()) {
 		if (!script_delimiter.contains_char(' ')) {
 			meta_delimiter = script_delimiter;
 			break;

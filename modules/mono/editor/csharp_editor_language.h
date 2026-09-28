@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  csharp_editor_language.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,73 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "csharp_script.h"
-#include "csharp_script_resource_format.h"
+#include "core/object/editor_language.h"
 
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
-#include "core/object/class_db.h"
+class CSharpEditorLanguage final : public EditorLanguage {
+	static CSharpEditorLanguage *singleton;
 
-#ifdef TOOLS_ENABLED
-#include "./editor/csharp_editor_language.h"
-#endif
+public:
+	_FORCE_INLINE_ static CSharpEditorLanguage *get_singleton() { return singleton; }
 
-CSharpLanguage *script_language_cs = nullptr;
-Ref<ResourceFormatLoaderCSharpScript> resource_loader_cs;
-Ref<ResourceFormatSaverCSharpScript> resource_saver_cs;
+	virtual const Vector<String> get_reserved_words() const override;
+	virtual bool is_control_flow_keyword(const String &p_keyword) const override;
+	virtual const Vector<String> get_comment_delimiters() const override;
+	virtual const Vector<String> get_doc_comment_delimiters() const override;
+	virtual const Vector<String> get_string_delimiters() const override;
+	virtual NameCasing get_preferred_file_name_casing() const override;
 
-MonoBind::GodotSharp *_godotsharp = nullptr;
-
-void initialize_mono_module(ModuleInitializationLevel p_level) {
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		memnew(CSharpEditorLanguage);
+	CSharpEditorLanguage() {
+		ERR_FAIL_COND(singleton != nullptr);
+		singleton = this;
 	}
-#endif
-
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+	~CSharpEditorLanguage() {
+		if (singleton == this) {
+			singleton = nullptr;
+		}
 	}
-
-	GDREGISTER_CLASS(CSharpScript);
-
-	_godotsharp = memnew(MonoBind::GodotSharp);
-
-	script_language_cs = memnew(CSharpLanguage);
-	script_language_cs->set_language_index(ScriptServer::get_language_count());
-	ScriptServer::register_language(script_language_cs);
-
-	if constexpr (GD_IS_CLASS_ENABLED(CSharpScript)) {
-		resource_loader_cs.instantiate();
-		ResourceLoader::add_resource_format_loader(resource_loader_cs);
-		resource_saver_cs.instantiate();
-		ResourceSaver::add_resource_format_saver(resource_saver_cs);
-	}
-}
-
-void uninitialize_mono_module(ModuleInitializationLevel p_level) {
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		memdelete(CSharpEditorLanguage::get_singleton());
-	}
-#endif
-
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	ScriptServer::unregister_language(script_language_cs);
-
-	memdelete(script_language_cs);
-
-	if constexpr (GD_IS_CLASS_ENABLED(CSharpScript)) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_cs);
-		resource_loader_cs.unref();
-		ResourceSaver::remove_resource_format_saver(resource_saver_cs);
-		resource_saver_cs.unref();
-	}
-
-	memdelete(_godotsharp);
-}
+};

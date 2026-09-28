@@ -49,6 +49,12 @@ public:
 
 	virtual bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const override;
 
+	virtual const Vector<String> get_reserved_words() const override;
+	virtual bool is_control_flow_keyword(const String &p_string) const override;
+	virtual const Vector<String> get_comment_delimiters() const override;
+	virtual const Vector<String> get_doc_comment_delimiters() const override;
+	virtual const Vector<String> get_string_delimiters() const override;
+
 	GDScriptEditorLanguage() {
 		ERR_FAIL_COND(singleton != nullptr);
 		singleton = this;
