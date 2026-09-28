@@ -1607,6 +1607,9 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 		// No name and a new name is needed, create one.
 
 		name = p_child->get_class();
+		if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+			name = adjust_name_casing(name);
+		}
 	}
 
 	const Node *const *existing = data.children.getptr(name);
