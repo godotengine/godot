@@ -222,7 +222,7 @@ TEST_CASE("[MethodBind] check all method binds") {
 
 TEST_CASE("[MethodBind] check bound enums") {
 	MethodBindTester::initialize_class();
-	const AHashMap<StringName, GDType::Member> &property_map = MethodBindTester::get_gdtype_static().members();
+	const GDType &gdtype = MethodBindTester::get_gdtype_static();
 
 #define BOUND_ENUM_LOOP(m_info, m_value, m_name) \
 	CHECK(m_info->values.has(#m_name)); \
@@ -230,7 +230,7 @@ TEST_CASE("[MethodBind] check bound enums") {
 		CHECK(static_cast<int64_t>(m_value) == m_info->values[#m_name]); \
 	}
 
-	const GDType::Member *member = property_map.getptr("Test");
+	const GDType::Member *member = gdtype.get_member("Test");
 	CHECK(member);
 	CHECK(member->type == GDType::Member::Type::ENUM);
 	const GDType::EnumInfo *enum_info_test = member->payload.enum_info;
@@ -248,7 +248,7 @@ TEST_CASE("[MethodBind] check bound enums") {
 		BOUND_ENUM_LOOP(enum_info_test, MethodBindTester::TEST_MAX, TEST_MAX)
 	}
 
-	const GDType::Member *property_scoped = property_map.getptr("TestScoped");
+	const GDType::Member *property_scoped = gdtype.get_member("TestScoped");
 	CHECK(property_scoped);
 	CHECK(property_scoped->type == GDType::Member::Type::ENUM);
 	const GDType::EnumInfo *enum_info_test_scoped = property_scoped->payload.enum_info;

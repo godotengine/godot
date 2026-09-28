@@ -1557,11 +1557,11 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 				// Skip getters and setters of properties because users will usually use the property instead.
 				HashSet<StringName> methods_to_skip;
-				for (const KeyValue<StringName, GDType::Member> &kv : ClassDB::get_gdtype(type)->members()) {
-					if (kv.value.type != GDType::Member::Type::PROPERTY) {
+				for (const GDType::Member *member : ClassDB::get_gdtype(type)->members()) {
+					if (member->type != GDType::Member::Type::PROPERTY) {
 						continue; // Not relevant.
 					}
-					const GDType::Member::Property &psg = kv.value.payload.property;
+					const GDType::Member::Property &psg = member->payload.property;
 					if (psg.index != -1 || (psg.property_info->usage & PROPERTY_USAGE_INTERNAL)) {
 						continue; // Not exposed.
 					}

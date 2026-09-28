@@ -80,6 +80,9 @@ public:
 			const MethodInfo *signal;
 		};
 
+		StringName name;
+		/// The type that declared this member.
+		const GDType *owner = nullptr;
 		Type type;
 		Payload payload;
 
@@ -119,6 +122,47 @@ public:
 		Member(Type p_type, const Payload &p_payload) : type(p_type), payload(p_payload) {}
 	};
 
+	/// Iterates members in declaration order, starting with the root type's.
+	class MemberRange {
+		const GDType *const *types_begin = nullptr;
+		const GDType *const *types_end = nullptr;
+
+	public:
+		class Iterator {
+			const GDType *const *type = nullptr;
+			const GDType *const *type_end = nullptr;
+			uint32_t index = 0;
+
+			_FORCE_INLINE_ void _skip_empty() {
+				while (type != type_end && index >= (*type)->_self_members.size()) {
+					type++;
+					index = 0;
+				}
+			}
+
+		public:
+			_FORCE_INLINE_ const Member *operator*() const { return (*type)->_self_members[index]; }
+			_FORCE_INLINE_ Iterator &operator++() {
+				index++;
+				_skip_empty();
+				return *this;
+			}
+			_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return type == p_other.type && index == p_other.index; }
+			_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return !(*this == p_other); }
+
+			Iterator(const GDType *const *p_type, const GDType *const *p_type_end) :
+					type(p_type), type_end(p_type_end) {
+				_skip_empty();
+			}
+		};
+
+		Iterator begin() const { return Iterator(types_begin, types_end); }
+		Iterator end() const { return Iterator(types_end, types_end); }
+
+		MemberRange(const GDType *const *p_types_begin, const GDType *const *p_types_end) :
+				types_begin(p_types_begin), types_end(p_types_end) {}
+	};
+
 protected:
 	const GDType *super_type;
 	mutable InitState init_state = InitState::UNINITIALIZED;
@@ -135,10 +179,18 @@ protected:
 
 	AHashMap<StringName, LocalVector<MethodBind *>> self_compatibility_method_map;
 
-	/// Contains all members that can be obtained or set with dot notation (`object.member`).
-	AHashMap<StringName, Member> _members;
-	AHashMap<StringName, Member> _self_members;
+	/// The root type first, down to this type. Used to iterate inherited members.
+	LocalVector<const GDType *> _type_hierarchy;
+
+	/// Members declared by this type, in declaration order. Owned.
+	LocalVector<const Member *> _self_members;
+	/// All members that can be obtained or set with dot notation (`object.member`),
+	/// including inherited ones. Members are shared with every subtype by pointer,
+	/// so that each member is stored only once.
+	AHashMap<StringName, const Member *> _members;
 	LocalVector<const PropertyInfo *> ordered_self_properties;
+
+	void _add_member(const StringName &p_name, const Member &p_member);
 
 public:
 	GDType(const GDType *p_super_type, StringName p_name);
@@ -175,6 +227,13 @@ public:
 	const LocalVector<const PropertyInfo *> &get_ordered_self_properties() const { return ordered_self_properties; }
 
 	// Access
-	const AHashMap<StringName, Member> &members(bool p_no_inheritance = false) const { return p_no_inheritance ? _self_members : _members; }
+	MemberRange members(bool p_no_inheritance = false) const {
+		const GDType *const *types_end = _type_hierarchy.ptr() + _type_hierarchy.size();
+		return MemberRange(p_no_inheritance ? types_end - 1 : _type_hierarchy.ptr(), types_end);
+	}
+	_FORCE_INLINE_ const Member *get_member(const StringName &p_name, bool p_no_inheritance = false) const {
+		const Member *const *member = _members.getptr(p_name);
+		return member && (!p_no_inheritance || (*member)->owner == this) ? *member : nullptr;
+	}
 	const EnumInfo *get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance = false) const;
 };

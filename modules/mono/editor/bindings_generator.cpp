@@ -4234,15 +4234,15 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const AHashMap<StringName, GDType::Member> &member_map = class_info->gdtype->members(true);
+		const GDType::MemberRange member_map = class_info->gdtype->members(true);
 
-		for (const KeyValue<StringName, GDType::Member> &E : member_map) {
-			if (E.value.type != GDType::Member::Type::SIGNAL) {
+		for (const GDType::Member *member : member_map) {
+			if (member->type != GDType::Member::Type::SIGNAL) {
 				continue;
 			}
 			SignalInterface isignal;
 
-			const MethodInfo &method_info = *E.value.payload.signal;
+			const MethodInfo &method_info = *member->payload.signal;
 
 			if (method_info.name.begins_with("_")) {
 				// Signals starting with an underscore are internal and not meant to be exposed.
@@ -4333,11 +4333,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
-		for (const KeyValue<StringName, GDType::Member> &kv : member_map) {
-			if (kv.value.type != GDType::Member::Type::ENUM) {
+		for (const GDType::Member *enum_member : member_map) {
+			if (enum_member->type != GDType::Member::Type::ENUM) {
 				continue;
 			}
-			StringName enum_proxy_cname = kv.key;
+			StringName enum_proxy_cname = enum_member->name;
 			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.string());
 			if (enums_with_forced_suffix.has(itype.proxy_name + "." + enum_proxy_name) || itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
 				// In case the enum name conflicts with other PascalCase members,
@@ -4346,8 +4346,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, kv.value.payload.enum_info->is_bitfield);
-			for (const KeyValue<StringName, int64_t> &kv_case : kv.value.payload.enum_info->values) {
+			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, enum_member->payload.enum_info->is_bitfield);
+			for (const KeyValue<StringName, int64_t> &kv_case : enum_member->payload.enum_info->values) {
 				String constant_name = kv_case.key.string();
 				constants.erase(kv_case.key);
 
@@ -4384,7 +4384,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			TypeInterface enum_itype;
 			enum_itype.is_enum = true;
-			enum_itype.name = itype.name + "." + String(kv.key);
+			enum_itype.name = itype.name + "." + String(enum_member->name);
 			enum_itype.cname = StringName(enum_itype.name);
 			enum_itype.proxy_name = itype.proxy_name + "." + enum_proxy_name;
 			TypeInterface::postsetup_enum_type(enum_itype);
@@ -4392,7 +4392,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			const GDType::Member *member = class_info->gdtype->members(true).getptr(StringName(constant_name));
+			const GDType::Member *member = class_info->gdtype->get_member(StringName(constant_name), true);
 			ERR_FAIL_NULL_V(member, false);
 			int64_t value = member->payload.integer_constant.value;
 

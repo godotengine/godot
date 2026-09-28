@@ -33,8 +33,14 @@
 #include "core/object/method_bind.h"
 #include "core/os/memory.h"
 #include "core/os/thread.h"
+#include "core/templates/paged_allocator.h"
 
 static_assert(std::is_same_v<Thread::ID, uint64_t>);
+
+/// Shared by all types, so that the members of each type, which are registered one type
+/// at a time, end up next to each other in memory. Locked, since types may be registered
+/// and freed on any thread.
+static PagedAllocator<GDType::Member, true, 1024> member_allocator;
 
 GDType::GDType(const GDType *p_super_type, StringName p_name) :
 		super_type(p_super_type), name(std::move(p_name)) {
@@ -44,16 +50,19 @@ GDType::GDType(const GDType *p_super_type, StringName p_name) :
 		for (const StringName &ancestor_name : super_type->name_hierarchy) {
 			name_hierarchy.push_back(ancestor_name);
 		}
+		_type_hierarchy = super_type->_type_hierarchy;
 	}
+	_type_hierarchy.push_back(this);
 }
 
 GDType::~GDType() {
-	for (const KeyValue<StringName, Member> &kv : _self_members) {
-		if (kv.value.type == Member::Type::ENUM) {
-			memdelete(const_cast<EnumInfo *>(kv.value.payload.enum_info));
-		} else if (kv.value.type == Member::Type::SIGNAL) {
-			memdelete(const_cast<MethodInfo *>(kv.value.payload.signal));
+	for (const Member *member : _self_members) {
+		if (member->type == Member::Type::ENUM) {
+			memdelete(const_cast<EnumInfo *>(member->payload.enum_info));
+		} else if (member->type == Member::Type::SIGNAL) {
+			memdelete(const_cast<MethodInfo *>(member->payload.signal));
 		}
+		member_allocator.free(const_cast<Member *>(member));
 	}
 	for (MethodBind *bind : owned_method_map) {
 		memdelete(bind);
@@ -90,10 +99,18 @@ void GDType::initialize() {
 	init_state = InitState::MUTABLE;
 }
 
+void GDType::_add_member(const StringName &p_name, const Member &p_member) {
+	Member *member = member_allocator.alloc(p_member);
+	member->name = p_name;
+	member->owner = this;
+	_self_members.push_back(member);
+	_members.insert(p_name, member);
+}
+
 void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield) {
 	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
-	ERR_FAIL_COND_MSG(_members.has(p_name), vformat("Object '%s' already has member '%s'.", get_name(), p_name));
+	ERR_FAIL_COND_MSG(get_member(p_name), vformat("Object '%s' already has member '%s'.", get_name(), p_name));
 
 	EnumInfo *enum_info = nullptr;
 
@@ -103,8 +120,8 @@ void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p
 			enum_name = enum_name.get_slicec('.', 1);
 		}
 
-		const Member *enum_member = _self_members.getptr(enum_name);
-		ERR_FAIL_COND_MSG(!enum_member && _members.has(enum_name), vformat("Cannot bind integer constant '%s' to enum '%s' from class '%s' because the enum belongs to a parent class.", p_name, enum_name, get_name()));
+		const Member *enum_member = get_member(enum_name, true);
+		ERR_FAIL_COND_MSG(!enum_member && get_member(enum_name), vformat("Cannot bind integer constant '%s' to enum '%s' from class '%s' because the enum belongs to a parent class.", p_name, enum_name, get_name()));
 		ERR_FAIL_COND_MSG(enum_member && enum_member->type != Member::Type::ENUM, vformat("Object '%s' already has member '%s'.", get_name(), enum_name));
 
 		if (enum_member) {
@@ -116,14 +133,12 @@ void GDType::bind_integer_constant(const StringName &p_enum, const StringName &p
 			enum_info->name = enum_name;
 			enum_info->is_bitfield = p_is_bitfield;
 			enum_info->values.insert(p_name, p_constant);
-			_self_members.insert(enum_name, Member::create_enum(enum_info));
-			_members.insert(enum_name, Member::create_enum(enum_info));
+			_add_member(enum_name, Member::create_enum(enum_info));
 		}
 	}
 
 	Member::IntegerConstant entry{ p_constant, enum_info };
-	_members.insert(p_name, Member::create_integer_constant(entry));
-	_self_members.insert(p_name, Member::create_integer_constant(entry));
+	_add_member(p_name, Member::create_integer_constant(entry));
 }
 
 void GDType::bind_integer_constant_raw(const char *p_enum_qualified_name, const char *p_name, int64_t p_constant, bool p_is_bitfield) {
@@ -133,7 +148,7 @@ void GDType::bind_integer_constant_raw(const char *p_enum_qualified_name, const 
 }
 
 const GDType::EnumInfo *GDType::get_integer_constant_enum(const StringName &p_name, bool p_no_inheritance) const {
-	const Member *member = members(p_no_inheritance).getptr(p_name);
+	const Member *member = get_member(p_name, p_no_inheritance);
 	if (!member || member->type != Member::Type::INTEGER_CONSTANT) {
 		return nullptr;
 	}
@@ -145,19 +160,18 @@ void GDType::add_signal(MethodInfo p_signal) {
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 
 	const StringName signal_name(p_signal.name);
-	ERR_FAIL_COND_MSG(_members.has(signal_name), vformat("Object '%s' already has member '%s'.", get_name(), signal_name));
+	ERR_FAIL_COND_MSG(get_member(signal_name), vformat("Object '%s' already has member '%s'.", get_name(), signal_name));
 
 	const MethodInfo *ptr = memnew(MethodInfo(std::move(p_signal)));
 
-	_members.insert(ptr->name, Member::create_signal(ptr));
-	_self_members.insert(ptr->name, Member::create_signal(ptr));
+	_add_member(ptr->name, Member::create_signal(ptr));
 }
 
 bool GDType::bind_method(MethodBind *p_method, bool p_take_ownership) {
 	ERR_FAIL_COND_V(Thread::get_caller_id() != owning_thread_id, false);
 	ERR_FAIL_COND_V(init_state != InitState::MUTABLE, false);
 
-	if (_members.has(p_method->get_name())) {
+	if (get_member(p_method->get_name())) {
 		ERR_PRINT(vformat("Object '%s' already has member '%s'.", get_name(), p_method->get_name()));
 		if (p_take_ownership) {
 			memdelete(p_method);
@@ -168,8 +182,7 @@ bool GDType::bind_method(MethodBind *p_method, bool p_take_ownership) {
 	if (p_take_ownership) {
 		owned_method_map.push_back(p_method);
 	}
-	_members.insert(p_method->get_name(), Member::create_method(p_method));
-	_self_members.insert(p_method->get_name(), Member::create_method(p_method));
+	_add_member(p_method->get_name(), Member::create_method(p_method));
 
 	return true;
 }
@@ -178,7 +191,7 @@ void GDType::set_method_flags(const StringName &p_method, int p_flags) {
 	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 
-	const Member *member = _self_members.getptr(p_method);
+	const Member *member = get_member(p_method, true);
 	ERR_FAIL_NULL(member);
 	ERR_FAIL_COND(member->type != Member::Type::METHOD);
 
@@ -201,15 +214,15 @@ void GDType::add_property(const PropertyInfo &p_pinfo, const StringName &p_sette
 	ERR_FAIL_COND(Thread::get_caller_id() != owning_thread_id);
 	ERR_FAIL_COND(init_state != InitState::MUTABLE);
 
-	ERR_FAIL_COND_MSG(_members.has(p_pinfo.name), vformat("Object '%s' already has member '%s'.", get_name(), p_pinfo.name));
+	ERR_FAIL_COND_MSG(get_member(p_pinfo.name), vformat("Object '%s' already has member '%s'.", get_name(), p_pinfo.name));
 
 	const MethodBind *mb_set = nullptr;
 	if (p_setter) {
-		const Member *set_member = _members.getptr(p_setter);
+		const Member *setter_member = get_member(p_setter);
 
-		ERR_FAIL_COND_MSG(!set_member || set_member->type != Member::Type::METHOD, vformat("Invalid setter '%s::%s' for property '%s'.", get_name(), p_setter, p_pinfo.name));
+		ERR_FAIL_COND_MSG(!setter_member || setter_member->type != Member::Type::METHOD, vformat("Invalid setter '%s::%s' for property '%s'.", get_name(), p_setter, p_pinfo.name));
 
-		mb_set = set_member->payload.method;
+		mb_set = setter_member->payload.method;
 
 		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, vformat("Invalid function for setter '%s::%s' for property '%s'.", get_name(), p_setter, p_pinfo.name));
@@ -217,11 +230,11 @@ void GDType::add_property(const PropertyInfo &p_pinfo, const StringName &p_sette
 
 	const MethodBind *mb_get = nullptr;
 	if (p_getter) {
-		const Member *get_member = _members.getptr(p_getter);
+		const Member *getter_member = get_member(p_getter);
 
-		ERR_FAIL_COND_MSG(!get_member || get_member->type != Member::Type::METHOD, vformat("Invalid getter '%s::%s' for property '%s'.", get_name(), p_getter, p_pinfo.name));
+		ERR_FAIL_COND_MSG(!getter_member || getter_member->type != Member::Type::METHOD, vformat("Invalid getter '%s::%s' for property '%s'.", get_name(), p_getter, p_pinfo.name));
 
-		mb_get = get_member->payload.method;
+		mb_get = getter_member->payload.method;
 
 		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, vformat("Invalid function for getter '%s::%s' for property '%s'.", get_name(), p_getter, p_pinfo.name));
@@ -235,8 +248,7 @@ void GDType::add_property(const PropertyInfo &p_pinfo, const StringName &p_sette
 	psg.getter = mb_get;
 	psg.index = p_index;
 
-	_members.insert(p_pinfo.name, Member::create_property(psg));
-	_self_members.insert(p_pinfo.name, Member::create_property(psg));
+	_add_member(p_pinfo.name, Member::create_property(psg));
 	ordered_self_properties.push_back(info);
 }
 

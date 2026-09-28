@@ -403,9 +403,9 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 		LocalVector<StringName> signals;
 		LocalVector<StringName> setgets;
 
-		for (const KeyValue<StringName, GDType::Member> &kv : t->gdtype->members(true)) {
-			if (kv.value.type == GDType::Member::Type::METHOD) {
-				String name = kv.key.string();
+		for (const GDType::Member *member : t->gdtype->members(true)) {
+			if (member->type == GDType::Member::Type::METHOD) {
+				String name = member->name.string();
 
 				ERR_CONTINUE(name.is_empty());
 
@@ -413,13 +413,13 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 					continue; // Ignore non-virtual methods that start with an underscore
 				}
 
-				methods.push_back(kv.key);
-			} else if (kv.value.type == GDType::Member::Type::INTEGER_CONSTANT) {
-				constants.push_back(kv.key);
-			} else if (kv.value.type == GDType::Member::Type::SIGNAL) {
-				signals.push_back(kv.key);
-			} else if (kv.value.type == GDType::Member::Type::PROPERTY) {
-				setgets.push_back(kv.key);
+				methods.push_back(member->name);
+			} else if (member->type == GDType::Member::Type::INTEGER_CONSTANT) {
+				constants.push_back(member->name);
+			} else if (member->type == GDType::Member::Type::SIGNAL) {
+				signals.push_back(member->name);
+			} else if (member->type == GDType::Member::Type::PROPERTY) {
+				setgets.push_back(member->name);
 			}
 		}
 
@@ -427,7 +427,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 			methods.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : methods) {
-				const MethodBind *mb = t->gdtype->members(true)[F].payload.method;
+				const MethodBind *mb = t->gdtype->get_member(F, true)->payload.method;
 				hash = hash_murmur3_one_64(mb->get_name().hash(), hash);
 				hash = hash_murmur3_one_64(mb->get_argument_count(), hash);
 				hash = hash_murmur3_one_64(mb->get_argument_type(-1), hash); //return
@@ -458,7 +458,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (const StringName &F : constants) {
 				hash = hash_murmur3_one_64(F.hash(), hash);
-				hash = hash_murmur3_one_64(uint64_t(t->gdtype->members(true)[F].payload.integer_constant.value), hash);
+				hash = hash_murmur3_one_64(uint64_t(t->gdtype->get_member(F, true)->payload.integer_constant.value), hash);
 			}
 		}
 
@@ -466,7 +466,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 			signals.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : signals) {
-				const MethodInfo &mi = *t->gdtype->members(true)[F].payload.signal;
+				const MethodInfo &mi = *t->gdtype->get_member(F, true)->payload.signal;
 				hash = hash_murmur3_one_64(F.hash(), hash);
 				for (const PropertyInfo &pi : mi.arguments) {
 					hash = hash_murmur3_one_64(pi.type, hash);
@@ -478,7 +478,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 			setgets.sort_custom<StringName::AlphCompare>();
 
 			for (const StringName &F : setgets) {
-				const GDType::Member &member = t->gdtype->members(true)[F];
+				const GDType::Member &member = *t->gdtype->get_member(F, true);
 				const GDType::Member::Property &psg = member.payload.property;
 
 				hash = hash_murmur3_one_64(F.hash(), hash);
@@ -935,9 +935,9 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 			continue;
 		}
 
-		for (const KeyValue<StringName, GDType::Member> &kv : type->gdtype->members(true)) {
-			if (kv.value.type == GDType::Member::Type::METHOD) {
-				p_methods->push_back(info_from_bind(kv.value.payload.method));
+		for (const GDType::Member *member : type->gdtype->members(true)) {
+			if (member->type == GDType::Member::Type::METHOD) {
+				p_methods->push_back(info_from_bind(member->payload.method));
 			}
 		}
 		type = type->inherits_ptr;
@@ -963,9 +963,9 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 			type = type->inherits_ptr;
 			continue;
 		}
-		for (const KeyValue<StringName, GDType::Member> &kv : type->gdtype->members(true)) {
-			if (kv.value.type == GDType::Member::Type::METHOD) {
-				p_methods->push_back(Pair(info_from_bind(kv.value.payload.method), kv.value.payload.method->get_hash()));
+		for (const GDType::Member *member : type->gdtype->members(true)) {
+			if (member->type == GDType::Member::Type::METHOD) {
+				p_methods->push_back(Pair(info_from_bind(member->payload.method), member->payload.method->get_hash()));
 			}
 		}
 #ifdef DEBUG_ENABLED
@@ -1007,7 +1007,7 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 		}
 
 #ifdef DEBUG_ENABLED
-		const GDType::Member *member = type->gdtype->members(true).getptr(p_method);
+		const GDType::Member *member = type->gdtype->get_member(p_method, true);
 		if (member && member->type == GDType::Member::Type::METHOD) {
 			if (r_info != nullptr) {
 				*r_info = info_from_bind(member->payload.method);
@@ -1020,7 +1020,7 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			return true;
 		}
 #else
-		const GDType::Member *member = type->gdtype->members(true).getptr(p_method);
+		const GDType::Member *member = type->gdtype->get_member(p_method, true);
 		if (member && member->type == GDType::Member::Type::METHOD) {
 			if (r_info) {
 				*r_info = info_from_bind(member->payload.method);
@@ -1047,7 +1047,7 @@ const MethodBind *ClassDB::get_method(const StringName &p_class, const StringNam
 		return nullptr;
 	}
 
-	const GDType::Member *member = type->gdtype->members().getptr(p_name);
+	const GDType::Member *member = type->gdtype->get_member(p_name);
 	return member && member->type == GDType::Member::Type::METHOD ? member->payload.method : nullptr;
 }
 
@@ -1076,7 +1076,7 @@ const MethodBind *ClassDB::get_method_with_compatibility(const StringName &p_cla
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-		const GDType::Member *member = type->gdtype->members(true).getptr(p_name);
+		const GDType::Member *member = type->gdtype->get_member(p_name, true);
 		if (member && member->type == GDType::Member::Type::METHOD) {
 			if (r_method_exists) {
 				*r_method_exists = true;
@@ -1120,9 +1120,9 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	for (const KeyValue<StringName, GDType::Member> &kv : type->gdtype->members(p_no_inheritance)) {
-		if (kv.value.type == GDType::Member::Type::INTEGER_CONSTANT) {
-			p_constants->push_back(kv.key);
+	for (const GDType::Member *member : type->gdtype->members(p_no_inheritance)) {
+		if (member->type == GDType::Member::Type::INTEGER_CONSTANT) {
+			p_constants->push_back(member->name);
 		}
 	}
 }
@@ -1132,7 +1132,7 @@ int64_t ClassDB::get_integer_constant(const StringName &p_class, const StringNam
 
 	ClassInfo *type = classes.getptr(p_class);
 	if (type) {
-		const GDType::Member *member = type->gdtype->members().getptr(p_name);
+		const GDType::Member *member = type->gdtype->get_member(p_name);
 		if (member && member->type == GDType::Member::Type::INTEGER_CONSTANT) {
 			if (p_success) {
 				*p_success = true;
@@ -1153,7 +1153,7 @@ bool ClassDB::has_integer_constant(const StringName &p_class, const StringName &
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL_V(type, false);
 
-	const GDType::Member *member = type->gdtype->members(p_no_inheritance).getptr(p_name);
+	const GDType::Member *member = type->gdtype->get_member(p_name, p_no_inheritance);
 	return member && member->type == GDType::Member::Type::INTEGER_CONSTANT;
 }
 
@@ -1177,9 +1177,9 @@ void ClassDB::get_enum_list(const StringName &p_class, List<StringName> *p_enums
 		return;
 	}
 
-	for (const KeyValue<StringName, GDType::Member> &kv : type->gdtype->members(p_no_inheritance)) {
-		if (kv.value.type == GDType::Member::Type::ENUM) {
-			p_enums->push_back(kv.key);
+	for (const GDType::Member *member : type->gdtype->members(p_no_inheritance)) {
+		if (member->type == GDType::Member::Type::ENUM) {
+			p_enums->push_back(member->name);
 		}
 	}
 }
@@ -1190,7 +1190,7 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	const GDType::Member *member = type->gdtype->members(p_no_inheritance).getptr(p_enum);
+	const GDType::Member *member = type->gdtype->get_member(p_enum, p_no_inheritance);
 	ERR_FAIL_NULL(member);
 	ERR_FAIL_COND(member->type != GDType::Member::Type::ENUM);
 
@@ -1232,7 +1232,7 @@ bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL_V(type, false);
 
-	const GDType::Member *member = type->gdtype->members(p_no_inheritance).getptr(p_name);
+	const GDType::Member *member = type->gdtype->get_member(p_name, p_no_inheritance);
 	return member && member->type == GDType::Member::Type::ENUM;
 }
 
@@ -1242,7 +1242,7 @@ bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_na
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NULL_V(type, false);
 
-	const GDType::Member *member = type->gdtype->members(p_no_inheritance).getptr(p_name);
+	const GDType::Member *member = type->gdtype->get_member(p_name, p_no_inheritance);
 	// FIXME This fails unexpectedly often. Keeping legacy behavior to silently fail for now.
 	if (!member || member->type != GDType::Member::Type::ENUM) {
 		return false;
@@ -1266,9 +1266,9 @@ void ClassDB::get_signal_list(const StringName &p_class, List<MethodInfo> *p_sig
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	for (const KeyValue<StringName, GDType::Member> &kv : type->gdtype->members(p_no_inheritance)) {
-		if (kv.value.type == GDType::Member::Type::SIGNAL) {
-			p_signals->push_back(*kv.value.payload.signal);
+	for (const GDType::Member *member : type->gdtype->members(p_no_inheritance)) {
+		if (member->type == GDType::Member::Type::SIGNAL) {
+			p_signals->push_back(*member->payload.signal);
 		}
 	}
 }
@@ -1279,7 +1279,7 @@ bool ClassDB::has_signal(const StringName &p_class, const StringName &p_signal, 
 	if (!type) {
 		return false;
 	}
-	const GDType::Member *member = type->gdtype->members(p_no_inheritance).getptr(p_signal);
+	const GDType::Member *member = type->gdtype->get_member(p_signal, p_no_inheritance);
 	return member && member->type == GDType::Member::Type::SIGNAL;
 }
 
@@ -1289,7 +1289,7 @@ bool ClassDB::get_signal(const StringName &p_class, const StringName &p_signal, 
 	if (!type) {
 		return false;
 	}
-	const GDType::Member *member = type->gdtype->members().getptr(p_signal);
+	const GDType::Member *member = type->gdtype->get_member(p_signal);
 	if (!member || member->type != GDType::Member::Type::SIGNAL) {
 		return false;
 	}
@@ -1357,11 +1357,11 @@ void ClassDB::add_linked_property(const StringName &p_class, const String &p_pro
 	ClassInfo *type = classes.getptr(p_class);
 	ERR_FAIL_NO_CLASS(type, p_class);
 
-	const GDType::Member *member = type->gdtype->members(true).getptr(p_property);
+	const GDType::Member *member = type->gdtype->get_member(p_property, true);
 	ERR_FAIL_NULL(member);
 	ERR_FAIL_COND(member->type != GDType::Member::Type::PROPERTY);
 
-	const GDType::Member *linked_property = type->gdtype->members(true).getptr(p_linked_property);
+	const GDType::Member *linked_property = type->gdtype->get_member(p_linked_property, true);
 	ERR_FAIL_NULL(linked_property);
 	ERR_FAIL_COND(linked_property->type != GDType::Member::Type::PROPERTY);
 
@@ -1417,7 +1417,7 @@ bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_p
 
 	ClassInfo *class_info = classes.getptr(p_class);
 	if (class_info) {
-		const GDType::Member *member = class_info->gdtype->members(p_no_inheritance).getptr(p_property);
+		const GDType::Member *member = class_info->gdtype->get_member(p_property, p_no_inheritance);
 		if (member && member->type == GDType::Member::Type::PROPERTY) {
 			if (r_info) {
 				*r_info = *member->payload.property.property_info;
@@ -1447,7 +1447,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 int ClassDB::get_property_index(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
 	ClassInfo *class_info = classes.getptr(p_class);
 	if (class_info) {
-		const GDType::Member *member = class_info->gdtype->members().getptr(p_property);
+		const GDType::Member *member = class_info->gdtype->get_member(p_property);
 		if (member && member->type == GDType::Member::Type::PROPERTY) {
 			const GDType::Member::Property &psg = member->payload.property;
 			if (r_is_valid) {
@@ -1468,7 +1468,7 @@ int ClassDB::get_property_index(const StringName &p_class, const StringName &p_p
 Variant::Type ClassDB::get_property_type(const StringName &p_class, const StringName &p_property, bool *r_is_valid) {
 	ClassInfo *class_info = classes.getptr(p_class);
 	if (class_info) {
-		const GDType::Member *member = class_info->gdtype->members().getptr(p_property);
+		const GDType::Member *member = class_info->gdtype->get_member(p_property);
 		if (member && member->type == GDType::Member::Type::PROPERTY) {
 			const GDType::Member::Property &psg = member->payload.property;
 			if (r_is_valid) {
@@ -1489,7 +1489,7 @@ Variant::Type ClassDB::get_property_type(const StringName &p_class, const String
 StringName ClassDB::get_property_setter(const StringName &p_class, const StringName &p_property) {
 	ClassInfo *class_info = classes.getptr(p_class);
 	if (class_info) {
-		const GDType::Member *member = class_info->gdtype->members().getptr(p_property);
+		const GDType::Member *member = class_info->gdtype->get_member(p_property);
 		if (member && member->type == GDType::Member::Type::PROPERTY) {
 			return member->payload.property.setter ? member->payload.property.setter->get_name() : StringName();
 		}
@@ -1501,7 +1501,7 @@ StringName ClassDB::get_property_setter(const StringName &p_class, const StringN
 StringName ClassDB::get_property_getter(const StringName &p_class, const StringName &p_property) {
 	ClassInfo *class_info = classes.getptr(p_class);
 	if (class_info) {
-		const GDType::Member *member = class_info->gdtype->members().getptr(p_property);
+		const GDType::Member *member = class_info->gdtype->get_member(p_property);
 		if (member && member->type == GDType::Member::Type::PROPERTY) {
 			return member->payload.property.getter ? member->payload.property.getter->get_name() : StringName();
 		}
@@ -1513,7 +1513,7 @@ StringName ClassDB::get_property_getter(const StringName &p_class, const StringN
 bool ClassDB::has_property(const StringName &p_class, const StringName &p_property, bool p_no_inheritance) {
 	ClassInfo *class_info = classes.getptr(p_class);
 	if (class_info) {
-		const GDType::Member *member = class_info->gdtype->members(p_no_inheritance).getptr(p_property);
+		const GDType::Member *member = class_info->gdtype->get_member(p_property, p_no_inheritance);
 		return member ? member->type == GDType::Member::Type::PROPERTY : false;
 	}
 
@@ -1532,7 +1532,7 @@ bool ClassDB::has_method(const StringName &p_class, const StringName &p_method, 
 	if (!type) {
 		return false;
 	}
-	const GDType::Member *member = type->gdtype->members(p_no_inheritance).getptr(p_method);
+	const GDType::Member *member = type->gdtype->get_member(p_method, p_no_inheritance);
 	return member && member->type == GDType::Member::Type::METHOD;
 }
 
@@ -1541,7 +1541,7 @@ int ClassDB::get_method_argument_count(const StringName &p_class, const StringNa
 
 	ClassInfo *type = classes.getptr(p_class);
 	if (type) {
-		const GDType::Member *member = type->gdtype->members(p_no_inheritance).getptr(p_method);
+		const GDType::Member *member = type->gdtype->get_member(p_method, p_no_inheritance);
 		if (member && member->type == GDType::Member::Type::METHOD) {
 			if (r_is_valid) {
 				*r_is_valid = true;
