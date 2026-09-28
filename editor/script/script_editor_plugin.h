@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/error/error_list.h"
+#include "core/object/editor_language.h"
 #include "core/object/script_language.h"
 #include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
@@ -571,6 +572,7 @@ public:
 	void update_doc(const String &p_name) { script_container->update_doc(p_name); }
 	void clear_docs_from_script(const Ref<Script> &p_script) { script_container->clear_docs_from_script(p_script); }
 	void update_docs_from_script(const Ref<Script> &p_script) { script_container->update_docs_from_script(p_script); }
+	void rename_symbol(const String &p_symbol, const EditorLanguage::LookupResult &p_lookup);
 
 	void trigger_live_script_reload(const String &p_script_path) { script_container->trigger_live_script_reload(p_script_path); }
 
