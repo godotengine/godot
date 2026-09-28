@@ -315,6 +315,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	NextInfo _find_next(AnimationNode::ProcessState &p_process_state, AnimationNodeInstance &p_instance, AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine) const;
 	Ref<AnimationNodeStateMachineTransition> _check_group_transition(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const AnimationNodeStateMachine::Transition &p_transition, Ref<AnimationNodeStateMachine> &r_state_machine, bool &r_bypass) const;
 	bool _can_transition_to_next(AnimationNode::ProcessState &p_process_state, AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, NextInfo p_next, bool p_test_only);
+	bool _is_switch_mode_satisfied(AnimationNodeStateMachineTransition::SwitchMode p_switch_mode, bool p_break_loop_at_end, double p_xfade) const;
 
 	void _set_current(AnimationNode::ProcessState &p_process_state, AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
 	void _set_grouped(bool p_is_grouped);

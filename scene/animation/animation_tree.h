@@ -99,10 +99,10 @@ public:
 		bool will_end = false; // For breaking loop, it is true when just looped.
 		bool is_infinity = false; // For unpredictable state machine's end.
 
-		bool is_looping() {
+		bool is_looping() const {
 			return loop_mode != Animation::LOOP_NONE;
 		}
-		double get_remain(bool p_break_loop = false) {
+		double get_remain(bool p_break_loop = false) const {
 			if ((is_looping() && !p_break_loop) || is_infinity) {
 				return HUGE_LENGTH;
 			}

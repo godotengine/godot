@@ -1042,8 +1042,12 @@ bool AnimationNodeStateMachinePlayback::_can_transition_to_next(AnimationNode::P
 		return false;
 	}
 
-	if (current != SceneStringName(Start) && p_next.switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
-		return Animation::is_less_or_equal_approx(current_nti.get_remain(p_next.break_loop_at_end), p_next.xfade);
+	return _is_switch_mode_satisfied(p_next.switch_mode, p_next.break_loop_at_end, p_next.xfade);
+}
+
+bool AnimationNodeStateMachinePlayback::_is_switch_mode_satisfied(AnimationNodeStateMachineTransition::SwitchMode p_switch_mode, bool p_break_loop_at_end, double p_xfade) const {
+	if (current != SceneStringName(Start) && p_switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_END) {
+		return Animation::is_less_or_equal_approx(current_nti.get_remain(p_break_loop_at_end), p_xfade);
 	}
 	return true;
 }
@@ -1094,6 +1098,9 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 	} else {
 		int auto_advance_to = -1;
 		float priority_best = 1e20;
+		const bool prefer_ready = !next_request;
+		int ready_advance_to = -1;
+		float ready_priority_best = 1e20;
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
 			Ref<AnimationNodeStateMachine> anodesm = p_state_machine;
 			bool bypass = false;
@@ -1102,11 +1109,20 @@ AnimationNodeStateMachinePlayback::NextInfo AnimationNodeStateMachinePlayback::_
 				continue;
 			}
 			if (p_state_machine->transitions[i].from == current && (_check_advance_condition(p_process_state, p_instance, anodesm, ref_transition) || bypass)) {
+				if (prefer_ready && ref_transition->get_priority() <= ready_priority_best && _is_switch_mode_satisfied(ref_transition->get_switch_mode(), ref_transition->is_loop_broken_at_end(), ref_transition->get_xfade_time())) {
+					ready_priority_best = ref_transition->get_priority();
+					ready_advance_to = i;
+					continue;
+				}
 				if (ref_transition->get_priority() <= priority_best) {
 					priority_best = ref_transition->get_priority();
 					auto_advance_to = i;
 				}
 			}
+		}
+
+		if (ready_advance_to != -1) {
+			auto_advance_to = ready_advance_to;
 		}
 
 		if (auto_advance_to != -1) {
