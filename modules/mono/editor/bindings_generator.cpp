@@ -3081,7 +3081,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_use_span && p_imethod.is_vararg) {
-			p_output.append(MEMBER_BEGIN "[System.Runtime.CompilerServices.OverloadResolutionPriority(1)]");
+			p_output.append(MEMBER_BEGIN "[global::System.Runtime.CompilerServices.OverloadResolutionPriority(1)]");
 		}
 
 		p_output.append(MEMBER_BEGIN);
