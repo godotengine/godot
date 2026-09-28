@@ -91,7 +91,7 @@ void Path2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 #ifdef DEBUG_ENABLED
-			_debug_create();
+			_debug_update();
 #endif
 		} break;
 
@@ -100,10 +100,17 @@ void Path2D::_notification(int p_what) {
 			_debug_free();
 #endif
 		} break;
+
 		// Draw the curve if path debugging is enabled.
 		case NOTIFICATION_DRAW: {
 #ifdef DEBUG_ENABLED
 			_debug_update();
+#endif
+		} break;
+
+		case NOTIFICATION_DEBUG_PATHS_HINT_CHANGED: {
+#ifdef DEBUG_ENABLED
+			queue_redraw();
 #endif
 		} break;
 	}
@@ -146,7 +153,7 @@ void Path2D::_debug_update() {
 	ERR_FAIL_NULL(SceneTree::get_singleton());
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 
-	const bool path_debug_enabled = (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_paths_hint());
+	const bool path_debug_enabled = (Engine::get_singleton()->is_editor_hint() || (get_tree() && get_tree()->is_debugging_paths_hint()));
 
 	if (!path_debug_enabled) {
 		_debug_free();
