@@ -670,15 +670,7 @@ class SampleNode {
 		this.isPaused = false;
 		this.pauseTime = 0;
 
-		if (this._source != null) {
-			this._source.removeEventListener('ended', this._onended);
-			this._onended = null;
-			if (this.isStarted) {
-				this._source.stop();
-			}
-			this._source.disconnect();
-			this._source = null;
-		}
+		this._clearSource();
 
 		for (const sampleNodeBus of this._sampleNodeBuses.values()) {
 			sampleNodeBus.clear();
@@ -717,11 +709,10 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	_restart() {
-		if (this._source != null) {
-			this._source.disconnect();
-		}
+		this._clearSource();
 		this._source = GodotAudio.ctx.createBufferSource();
 		this._source.buffer = this.getSample().getAudioBuffer();
+		this._syncPlaybackRate();
 
 		// Make sure that we connect the new source to the sample node bus.
 		for (const sampleNodeBus of this._sampleNodeBuses.values()) {
@@ -729,15 +720,31 @@ class SampleNode {
 		}
 
 		this._addEndedListener();
-		const pauseTime = this.isPaused
-			? this.pauseTime
-			: 0;
 		if (this._positionWorklet != null) {
 			this._positionWorklet.port.postMessage({ type: 'clear' });
 			this._source.connect(this._positionWorklet);
 		}
-		this._source.start(this.startTime, this.offset + pauseTime);
+		this._source.start(this.startTime, this.offset + this.pauseTime);
 		this.isStarted = true;
+	}
+
+	/**
+	 * Stops, disconnects and clears the current source.
+	 * @returns {void}
+	 */
+	_clearSource() {
+		if (this._source == null) {
+			return;
+		}
+		if (this._onended != null) {
+			this._source.removeEventListener('ended', this._onended);
+			this._onended = null;
+		}
+		if (this.isStarted) {
+			this._source.stop();
+		}
+		this._source.disconnect();
+		this._source = null;
 	}
 
 	/**
@@ -745,11 +752,12 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	_pause() {
-		if (!this.isStarted) {
+		if (!this.isStarted || this.isPaused) {
 			return;
 		}
 		this.isPaused = true;
-		this.pauseTime = (GodotAudio.ctx.currentTime - this._sourceStartTime) / this.getPlaybackRate();
+		const elapsed = GodotAudio.ctx.currentTime - this._sourceStartTime;
+		this.pauseTime += elapsed * this.getPlaybackRate() * this.getPitchScale();
 		this._source.stop();
 	}
 
@@ -758,9 +766,12 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	_unpause() {
+		if (!this.isPaused) {
+			return;
+		}
+		this._resetSourceStartTime();
 		this._restart();
 		this.isPaused = false;
-		this.pauseTime = 0;
 	}
 
 	/**
@@ -768,10 +779,6 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	_addEndedListener() {
-		if (this._onended != null) {
-			this._source.removeEventListener('ended', this._onended);
-		}
-
 		/** @type {SampleNode} */
 		// eslint-disable-next-line consistent-this
 		const self = this;
