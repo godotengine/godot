@@ -301,9 +301,6 @@ void TabContainer::_repaint() {
 }
 
 void TabContainer::_repaint_internal() {
-	Vector<Control *> controls = _get_tab_controls();
-	int current = get_current_tab();
-
 	float top_margin = theme_cache.tabbar_style->get_margin(SIDE_TOP);
 	float bottom_margin = theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
 
@@ -320,29 +317,29 @@ void TabContainer::_repaint_internal() {
 	}
 
 	updating_visibility = true;
-	for (int i = 0; i < controls.size(); i++) {
-		Control *c = controls[i];
-
-		if (i == current) {
-			c->show();
-			c->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-
-			if (tabs_visible && _is_tab_bar_owned()) {
-				if (tabs_position == POSITION_BOTTOM) {
-					c->set_offset(SIDE_BOTTOM, -_get_tab_height());
-				} else {
-					c->set_offset(SIDE_TOP, _get_tab_height());
-				}
-			}
-
-			c->set_offset(SIDE_TOP, c->get_offset(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_TOP));
-			c->set_offset(SIDE_LEFT, c->get_offset(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_LEFT));
-			c->set_offset(SIDE_RIGHT, c->get_offset(SIDE_RIGHT) - theme_cache.panel_style->get_margin(SIDE_RIGHT));
-			c->set_offset(SIDE_BOTTOM, c->get_offset(SIDE_BOTTOM) - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
-		} else {
+	Control *current_control = get_current_tab_control();
+	// First hide all non-current controls, so that visibility order does not depend on tab order.
+	for (Control *c : _get_tab_controls()) {
+		if (c != current_control) {
 			c->hide();
 		}
 	}
+	// Then show the current control.
+	current_control->show();
+	current_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+
+	if (tabs_visible && _is_tab_bar_owned()) {
+		if (tabs_position == POSITION_BOTTOM) {
+			current_control->set_offset(SIDE_BOTTOM, -_get_tab_height());
+		} else {
+			current_control->set_offset(SIDE_TOP, _get_tab_height());
+		}
+	}
+
+	current_control->set_offset(SIDE_TOP, current_control->get_offset(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_TOP));
+	current_control->set_offset(SIDE_LEFT, current_control->get_offset(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_LEFT));
+	current_control->set_offset(SIDE_RIGHT, current_control->get_offset(SIDE_RIGHT) - theme_cache.panel_style->get_margin(SIDE_RIGHT));
+	current_control->set_offset(SIDE_BOTTOM, current_control->get_offset(SIDE_BOTTOM) - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
 	updating_visibility = false;
 
 	update_minimum_size();
