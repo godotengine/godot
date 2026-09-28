@@ -2249,27 +2249,27 @@ bool CanvasItemManipulator::reset_temp_pivot() {
 	return false;
 }
 
+void CanvasItemManipulator::center_temp_pivot_on_selection() {
+	Array selection;
+	get_selection_callback.call(selection);
+
+	if (!selection.is_empty()) {
+		Vector2 center;
+		for (const Variant &var : selection) {
+			const CanvasItem *ci = Object::cast_to<CanvasItem>(var);
+			Transform2D xform = ci->get_screen_transform() * ci->get_transform().affine_inverse();
+			center += xform.xform(ci->_edit_get_position());
+		}
+		temp_pivot = center / selection.size();
+	}
+}
+
 void CanvasItemManipulator::set_tool(Tool p_tool) {
 	if (drag_type != DRAG_NONE) {
 		commit_drag();
 	}
 
 	tool = p_tool;
-
-	if (p_tool == TOOL_EDIT_PIVOT && Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
-		// Special action that places temporary rotation pivot in the middle of the selection.
-		Array selection;
-		get_selection_callback.call(selection);
-
-		if (!selection.is_empty()) {
-			Vector2 center;
-			for (const Variant &var : selection) {
-				const CanvasItem *ci = Object::cast_to<CanvasItem>(var);
-				center += ci->get_viewport()->get_popup_base_transform().xform(ci->_edit_get_position());
-			}
-			temp_pivot = center / selection.size();
-		}
-	}
 }
 
 void CanvasItemManipulator::set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut) {
