@@ -4,12 +4,14 @@
 
 #VERSION_DEFINES
 
+#ifndef MODE_COPY_DEPTH
 layout(push_constant, std430) uniform Params {
 	float z_far;
 	float z_near;
 	vec2 texel_size;
 }
 params;
+#endif
 
 layout(location = 0) out vec2 uv_interp;
 
@@ -27,7 +29,23 @@ void main() {
 
 layout(location = 0) in vec2 uv_interp;
 
+#ifdef MODE_COPY_DEPTH
+
+// Copies a region of a depth texture to the same region of a depth attachment of the same size.
+layout(set = 0, binding = 0) uniform sampler2D source_depth;
+
+void main() {
+	gl_FragDepth = texelFetch(source_depth, ivec2(gl_FragCoord.xy), 0).r;
+}
+
+#else
+
 layout(set = 0, binding = 0) uniform samplerCube source_cube;
+
+#ifdef MODE_MERGE_STATIC
+// Same size as the destination, holds the positional shadow static cache.
+layout(set = 0, binding = 1) uniform sampler2D static_depth;
+#endif
 
 layout(push_constant, std430) uniform Params {
 	float z_far;
@@ -77,5 +95,11 @@ void main() {
 	float linear_depth = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near + depth * (params.z_far - params.z_near));
 	// linear_depth equal to view space depth
 	depth = (params.z_far - linear_depth * depth_fix) / params.z_far;
+#ifdef MODE_MERGE_STATIC
+	// Keep the nearest of the static and dynamic shadow casters (nearer depth values are greater).
+	depth = max(depth, texelFetch(static_depth, ivec2(gl_FragCoord.xy), 0).r);
+#endif
 	gl_FragDepth = depth;
 }
+
+#endif

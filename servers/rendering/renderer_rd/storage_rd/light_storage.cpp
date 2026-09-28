@@ -84,6 +84,9 @@ LightStorage::~LightStorage() {
 	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps) {
 		RD::get_singleton()->free_rid(E.value.cubemap);
 	}
+	for (const KeyValue<int, ShadowCubemap> &E : shadow_cubemaps_static) {
+		RD::get_singleton()->free_rid(E.value.cubemap);
+	}
 
 	singleton = nullptr;
 }
@@ -366,7 +369,7 @@ bool LightStorage::light_get_shadow_caching(RID p_light) const {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL_V(light, false);
 
-	return shadow_static_cache_supported && light->shadow_caching && (light->type == RSE::LIGHT_OMNI || light->type == RSE::LIGHT_SPOT);
+	return shadow_static_cache_supported && light->shadow_caching && light->shadow && (light->type == RSE::LIGHT_OMNI || light->type == RSE::LIGHT_SPOT);
 }
 
 int LightStorage::light_get_shadow_dynamic_update_interval(RID p_light) const {
@@ -2427,6 +2430,20 @@ void LightStorage::_update_shadow_atlas(ShadowAtlas *shadow_atlas) {
 		fb_tex.push_back(shadow_atlas->depth);
 		shadow_atlas->fb = RD::get_singleton()->framebuffer_create(fb_tex);
 	}
+
+	if (shadow_atlas->size > 0 && shadow_atlas->static_cache_enabled && shadow_atlas->static_depth.is_null()) {
+		RD::TextureFormat tf;
+		tf.format = get_shadow_atlas_depth_format(shadow_atlas->use_16_bits);
+		tf.width = shadow_atlas->size;
+		tf.height = shadow_atlas->size;
+		tf.usage_bits = get_shadow_atlas_depth_usage_bits();
+
+		shadow_atlas->static_depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		RD::get_singleton()->set_resource_name(shadow_atlas->static_depth, "Shadow atlas static cache");
+		Vector<RID> fb_tex;
+		fb_tex.push_back(shadow_atlas->static_depth);
+		shadow_atlas->static_fb = RD::get_singleton()->framebuffer_create(fb_tex);
+	}
 }
 
 void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits) {
@@ -2443,6 +2460,12 @@ void LightStorage::shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits
 	if (shadow_atlas->depth.is_valid()) {
 		RD::get_singleton()->free_rid(shadow_atlas->depth);
 		shadow_atlas->depth = RID();
+	}
+	if (shadow_atlas->static_depth.is_valid()) {
+		// Also frees `static_fb`. Reallocated with the new size when needed.
+		RD::get_singleton()->free_rid(shadow_atlas->static_depth);
+		shadow_atlas->static_depth = RID();
+		shadow_atlas->static_fb = RID();
 	}
 	for (int i = 0; i < 4; i++) {
 		//clear subdivisions
@@ -2737,10 +2760,12 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 	if (found_shadow) {
 		if (old_quadrant != SHADOW_INVALID) {
 			shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].version = 0;
+			shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].static_version = 0;
 			shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow].owner = RID();
 
 			if (old_key & OMNI_LIGHT_FLAG) {
 				shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow + 1].version = 0;
+				shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow + 1].static_version = 0;
 				shadow_atlas->quadrants[old_quadrant].shadows.write[old_shadow + 1].owner = RID();
 			}
 		}
@@ -2754,6 +2779,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 		sh->owner = p_light_instance;
 		sh->alloc_tick = tick;
 		sh->version = p_light_version;
+		sh->static_version = 0;
 
 		if (is_omni) {
 			new_key |= OMNI_LIGHT_FLAG;
@@ -2765,6 +2791,7 @@ bool LightStorage::shadow_atlas_update_light(RID p_atlas, RID p_light_instance, 
 			extra_sh->owner = p_light_instance;
 			extra_sh->alloc_tick = tick;
 			extra_sh->version = p_light_version;
+			extra_sh->static_version = 0;
 		}
 
 		li->shadow_atlases.insert(p_atlas);
@@ -2788,14 +2815,47 @@ void LightStorage::_shadow_atlas_invalidate_shadow(ShadowAtlas::Quadrant::Shadow
 			uint32_t omni_shadow_idx = p_shadow_idx + (s == (uint32_t)p_shadow_idx ? 1 : -1);
 			ShadowAtlas::Quadrant::Shadow *omni_shadow = &p_shadow_atlas->quadrants[p_quadrant].shadows.write[omni_shadow_idx];
 			omni_shadow->version = 0;
+			omni_shadow->static_version = 0;
 			omni_shadow->owner = RID();
 		}
 
 		p_shadow_atlas->shadow_owners.erase(p_shadow->owner);
 		p_shadow->version = 0;
+		p_shadow->static_version = 0;
 		p_shadow->owner = RID();
 		sli->shadow_atlases.erase(p_atlas);
 	}
+}
+
+void LightStorage::shadow_atlas_enable_static_cache(RID p_atlas) {
+	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
+	ERR_FAIL_NULL(shadow_atlas);
+
+	// The static cache texture is allocated in `_update_shadow_atlas()`.
+	shadow_atlas->static_cache_enabled = true;
+}
+
+bool LightStorage::shadow_atlas_update_light_static_cache(RID p_atlas, RID p_light_instance, uint64_t p_static_version) {
+	ShadowAtlas *shadow_atlas = shadow_atlas_owner.get_or_null(p_atlas);
+	ERR_FAIL_NULL_V(shadow_atlas, true);
+
+	const uint32_t *key = shadow_atlas->shadow_owners.getptr(p_light_instance);
+	if (!key) {
+		return true;
+	}
+
+	uint32_t quadrant = (*key >> QUADRANT_SHIFT) & 0x3;
+	uint32_t shadow = *key & SHADOW_INDEX_MASK;
+	ERR_FAIL_INDEX_V((int)shadow, shadow_atlas->quadrants[quadrant].shadows.size(), true);
+
+	ShadowAtlas::Quadrant::Shadow &sh = shadow_atlas->quadrants[quadrant].shadows.write[shadow];
+	if (shadow_atlas->static_depth.is_valid() && sh.static_version == p_static_version) {
+		return false;
+	}
+
+	// The caller draws the static cache this frame.
+	sh.static_version = p_static_version;
+	return true;
 }
 
 void LightStorage::shadow_atlas_update(RID p_atlas) {
@@ -2901,8 +2961,9 @@ int LightStorage::get_directional_light_shadow_size(RID p_light_instance) {
 
 /* SHADOW CUBEMAPS */
 
-LightStorage::ShadowCubemap *LightStorage::_get_shadow_cubemap(int p_size) {
-	if (!shadow_cubemaps.has(p_size)) {
+LightStorage::ShadowCubemap *LightStorage::_get_shadow_cubemap(int p_size, bool p_static) {
+	HashMap<int, ShadowCubemap> &cubemaps = p_static ? shadow_cubemaps_static : shadow_cubemaps;
+	if (!cubemaps.has(p_size)) {
 		ShadowCubemap sc;
 		{
 			RD::TextureFormat tf;
@@ -2922,20 +2983,20 @@ LightStorage::ShadowCubemap *LightStorage::_get_shadow_cubemap(int p_size) {
 			sc.side_fb[i] = RD::get_singleton()->framebuffer_create(fbtex);
 		}
 
-		shadow_cubemaps[p_size] = sc;
+		cubemaps[p_size] = sc;
 	}
 
-	return &shadow_cubemaps[p_size];
+	return &cubemaps[p_size];
 }
 
-RID LightStorage::get_cubemap(int p_size) {
-	ShadowCubemap *cubemap = _get_shadow_cubemap(p_size);
+RID LightStorage::get_cubemap(int p_size, bool p_static) {
+	ShadowCubemap *cubemap = _get_shadow_cubemap(p_size, p_static);
 
 	return cubemap->cubemap;
 }
 
-RID LightStorage::get_cubemap_fb(int p_size, int p_pass) {
-	ShadowCubemap *cubemap = _get_shadow_cubemap(p_size);
+RID LightStorage::get_cubemap_fb(int p_size, int p_pass, bool p_static) {
+	ShadowCubemap *cubemap = _get_shadow_cubemap(p_size, p_static);
 
 	return cubemap->side_fb[p_pass];
 }

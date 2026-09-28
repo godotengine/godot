@@ -415,6 +415,7 @@ private:
 				RID owner;
 				uint64_t version = 0;
 				uint64_t fog_version = 0; // used for fog
+				uint64_t static_version = 0; // Version of the static shadow casters in `static_depth`, 0 if not drawn.
 				uint64_t alloc_tick = 0;
 
 				Shadow() {}
@@ -433,6 +434,12 @@ private:
 
 		RID depth;
 		RID fb; //for copying
+
+		// Positional shadow static cache: same layout as `depth`, only holds the static shadow casters.
+		// Allocated only once a light using the cache is rendered with this atlas.
+		bool static_cache_enabled = false;
+		RID static_depth;
+		RID static_fb;
 
 		HashMap<RID, uint32_t> shadow_owners;
 	};
@@ -465,7 +472,8 @@ private:
 	};
 
 	HashMap<int, ShadowCubemap> shadow_cubemaps;
-	ShadowCubemap *_get_shadow_cubemap(int p_size);
+	HashMap<int, ShadowCubemap> shadow_cubemaps_static; // Used to update the positional shadow static cache.
+	ShadowCubemap *_get_shadow_cubemap(int p_size, bool p_static = false);
 
 	/* PIPELINE HINTS */
 
@@ -1132,6 +1140,8 @@ public:
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
 	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) override;
+	virtual void shadow_atlas_enable_static_cache(RID p_atlas) override;
+	virtual bool shadow_atlas_update_light_static_cache(RID p_atlas, RID p_light_instance, uint64_t p_static_version) override;
 	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_instance) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
 		ERR_FAIL_NULL_V(atlas, false);
@@ -1175,6 +1185,18 @@ public:
 		return atlas->fb;
 	}
 
+	_FORCE_INLINE_ RID shadow_atlas_get_static_texture(RID p_atlas) {
+		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
+		ERR_FAIL_NULL_V(atlas, RID());
+		return atlas->static_depth;
+	}
+
+	_FORCE_INLINE_ RID shadow_atlas_get_static_fb(RID p_atlas) {
+		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
+		ERR_FAIL_NULL_V(atlas, RID());
+		return atlas->static_fb;
+	}
+
 	virtual void shadow_atlas_update(RID p_atlas) override;
 	static RD::DataFormat get_shadow_atlas_depth_format(bool p_16_bits);
 	static uint32_t get_shadow_atlas_depth_usage_bits();
@@ -1206,8 +1228,10 @@ public:
 
 	/* SHADOW CUBEMAPS */
 
-	RID get_cubemap(int p_size);
-	RID get_cubemap_fb(int p_size, int p_pass);
+	RID get_cubemap(int p_size, bool p_static = false);
+	RID get_cubemap_fb(int p_size, int p_pass, bool p_static = false);
+
+	void set_shadow_static_cache_supported(bool p_supported) { shadow_static_cache_supported = p_supported; }
 	static RD::DataFormat get_cubemap_depth_format();
 	static uint32_t get_cubemap_depth_usage_bits();
 

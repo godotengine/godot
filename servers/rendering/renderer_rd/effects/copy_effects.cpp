@@ -145,17 +145,25 @@ CopyEffects::CopyEffects(BitField<RasterEffects> p_raster_effects) {
 	{
 		// Initialize copier
 		Vector<String> copy_modes;
-		copy_modes.push_back("\n");
+		copy_modes.push_back("\n"); // CUBE_TO_DP_MODE_CUBE_TO_DP
+		copy_modes.push_back("\n#define MODE_MERGE_STATIC\n"); // CUBE_TO_DP_MODE_MERGE_STATIC
+		copy_modes.push_back("\n#define MODE_COPY_DEPTH\n"); // CUBE_TO_DP_MODE_COPY_DEPTH
 
 		cube_to_dp.shader.initialize(copy_modes);
 
 		cube_to_dp.shader_version = cube_to_dp.shader.version_create();
-		RID shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, 0);
+		RID shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, CUBE_TO_DP_MODE_CUBE_TO_DP);
 		RD::PipelineDepthStencilState dss;
 		dss.enable_depth_test = true;
 		dss.depth_compare_operator = RD::COMPARE_OP_ALWAYS;
 		dss.enable_depth_write = true;
 		cube_to_dp.pipeline.setup(shader, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), dss, RD::PipelineColorBlendState(), 0);
+
+		RID merge_static_shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, CUBE_TO_DP_MODE_MERGE_STATIC);
+		cube_to_dp.merge_static_pipeline.setup(merge_static_shader, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), dss, RD::PipelineColorBlendState(), 0);
+
+		RID copy_depth_shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, CUBE_TO_DP_MODE_COPY_DEPTH);
+		cube_to_dp.copy_depth_pipeline.setup(copy_depth_shader, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), dss, RD::PipelineColorBlendState(), 0);
 	}
 
 	{
@@ -1077,7 +1085,7 @@ void CopyEffects::set_color_raster(RID p_dest_texture, const Color &p_color, con
 	RD::get_singleton()->draw_list_end();
 }
 
-void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip) {
+void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuffer, const Rect2 &p_rect, const Vector2 &p_dst_size, float p_z_near, float p_z_far, bool p_dp_flip, RID p_merge_static_depth) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -1103,15 +1111,48 @@ void CopyEffects::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dst_framebuf
 
 	RD::Uniform u_source_rd_texture(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_rd_texture }));
 
-	RID shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, 0);
+	// When merging with the positional shadow static cache, the static depth is read from the same texel of a texture with the same size.
+	const bool merge_static = p_merge_static_depth.is_valid();
+	RID shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, merge_static ? CUBE_TO_DP_MODE_MERGE_STATIC : CUBE_TO_DP_MODE_CUBE_TO_DP);
 	ERR_FAIL_COND(shader.is_null());
 
+	PipelineCacheRD &pipeline = merge_static ? cube_to_dp.merge_static_pipeline : cube_to_dp.pipeline;
+	RID uniform_set;
+	if (merge_static) {
+		RID nearest_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+		RD::Uniform u_static_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ nearest_sampler, p_merge_static_depth }));
+		uniform_set = uniform_set_cache->get_cache(shader, 0, u_source_rd_texture, u_static_depth);
+	} else {
+		uniform_set = uniform_set_cache->get_cache(shader, 0, u_source_rd_texture);
+	}
+
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, screen_rect);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, cube_to_dp.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set, 0);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
 
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(CopyToDPPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
+void CopyEffects::copy_depth_to_fb_rect(RID p_source_depth, RID p_dst_framebuffer, const Rect2i &p_rect) {
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	ERR_FAIL_NULL(material_storage);
+
+	RID default_sampler = material_storage->sampler_rd_get_default(RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, RSE::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+	RD::Uniform u_source_depth(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ default_sampler, p_source_depth }));
+
+	RID shader = cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, CUBE_TO_DP_MODE_COPY_DEPTH);
+	ERR_FAIL_COND(shader.is_null());
+
+	// The source texel matching each destination texel is read with `gl_FragCoord`, so the source must have the same size.
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, p_rect);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, cube_to_dp.copy_depth_pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, uniform_set_cache->get_cache(shader, 0, u_source_depth), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, material_storage->get_quad_index_array());
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 	RD::get_singleton()->draw_list_end();
 }
