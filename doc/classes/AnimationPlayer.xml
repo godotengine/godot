@@ -137,6 +137,7 @@
 			<description>
 				Plays the animation with key [param name] in reverse.
 				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
+				[b]Note:[/b] Continuous tracks, including value tracks with [constant Animation.UPDATE_CONTINUOUS], are simply interpolated on the reversed timeline, while value tracks with [constant Animation.UPDATE_DISCRETE] apply a key only in the frame it is passed, so the value held between two keys can differ from forward playback.
 			</description>
 		</method>
 		<method name="play_section">
