@@ -37,6 +37,7 @@
 #include "core/string/translation_server.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_plugin.h"
+#include "editor/export/export_template_manager.h"
 
 int _get_android_orientation_value(DisplayServerEnums::ScreenOrientation screen_orientation) {
 	switch (screen_orientation) {
@@ -210,14 +211,15 @@ String _android_xml_escape(const String &p_string) {
 }
 
 // Creates strings.xml files inside the gradle project for different locales.
-Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_gradle_build_dir, const Dictionary &p_appnames) {
+Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_export_src_dir, const Dictionary &p_appnames) {
 	print_verbose("Creating strings resources for supported locales for project " + p_project_name);
 	// Stores the string into the default values directory.
 	String processed_default_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(p_project_name));
-	store_string_at_path(p_gradle_build_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
+	store_string_at_path(p_export_src_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
-	Ref<DirAccess> da = DirAccess::open(p_gradle_build_dir.path_join("res"));
+	const String reference_values_parent_dir = ExportTemplateManager::get_android_build_directory(p_preset).path_join("dataLib/src/main/res");
+	Ref<DirAccess> da = DirAccess::open(reference_values_parent_dir);
 	if (da.is_null()) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			print_error("Unable to open Android resources directory.");
@@ -241,7 +243,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 			continue;
 		}
 		String locale = file.replace("values-", "").replace("-r", "_");
-		String locale_directory = p_gradle_build_dir.path_join("res/" + file + "/godot_project_name_string.xml");
+		String locale_directory = p_export_src_dir.path_join("res/" + file + "/godot_project_name_string.xml");
 
 		String locale_project_name;
 		if (p_appnames.is_empty()) {
