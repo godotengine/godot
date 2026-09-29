@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_visual_shader.h                                                */
+/*  test_visual_shader.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "modules/visual_shader/visual_shader.h"
-
 #include "tests/test_macros.h"
+
+#include "modules/visual_shader/visual_shader.h"
 
 namespace TestVisualShader {
 
