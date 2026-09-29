@@ -40,10 +40,18 @@ struct StringName::Table {
 	constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;
 	constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
 
-	static inline _Data *table[TABLE_LEN];
-	static inline BinaryMutex mutex;
-	static inline PagedAllocator<_Data> allocator;
+	static _Data *table[TABLE_LEN];
+	static BinaryMutex mutex;
+	static PagedAllocator<_Data> allocator;
 };
+
+// Defined out-of-class instead of using static inline so the compiler can
+// place the table in the zero-fill region (.bss) instead of the initialized
+// data section (.data). Because the zero-fill region is allocated at runtime,
+// this shrinks the binary size on disk.
+StringName::_Data *StringName::Table::table[TABLE_LEN];
+BinaryMutex StringName::Table::mutex;
+PagedAllocator<StringName::_Data> StringName::Table::allocator;
 
 void StringName::setup() {
 	ERR_FAIL_COND(configured);
