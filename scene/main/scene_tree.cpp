@@ -976,7 +976,17 @@ void SceneTree::set_debug_collisions_hint(bool p_enabled) {
 }
 
 bool SceneTree::is_debugging_collisions_hint() const {
-	return PhysicsServer2D::get_singleton()->debug_is_enabled() || PhysicsServer3D::get_singleton()->debug_is_enabled();
+#ifndef PHYSICS_2D_DISABLED
+	if (PhysicsServer2D::get_singleton()->debug_is_enabled()) {
+		return true;
+	}
+#endif
+#ifndef PHYSICS_3D_DISABLED
+	if (PhysicsServer3D::get_singleton()->debug_is_enabled()) {
+		return true;
+	}
+#endif
+	return false;
 }
 
 void SceneTree::set_debug_paths_hint(bool p_enabled) {
