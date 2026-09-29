@@ -38,6 +38,7 @@
 #include "core/version_generated.gen.h"
 
 #include <cstdarg>
+#include <cstdint> // For 128 bit math.
 #include <cstdio>
 
 #ifdef MINGW_ENABLED
@@ -47,6 +48,15 @@
 #else
 #include <thread>
 #define THREADING_NAMESPACE std
+#endif
+
+#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
+#if !defined(__SIZEOF_INT128__)
+// For _umul128 Intrinsic in the timing code.
+// (MSVC / Platforms supporting 64-bit hardware multiplication).
+#include <intrin.h>
+#pragma intrinsic(_umul128)
+#endif
 #endif
 
 OS *OS::singleton = nullptr;
@@ -66,8 +76,162 @@ bool OS::prefer_meta_over_ctrl() {
 #endif
 }
 
+#ifdef DEBUG_ENABLED
+void OS::set_primary_time_scale(double p_scale) {
+	// Also rejects NaN.
+	if (!(p_scale >= 0)) {
+		p_scale = 0;
+	}
+	if (p_scale > 4294967295) {
+		p_scale = 4294967295;
+	}
+
+	const uint64_t new_scale = (uint64_t)(((double)UINT32_MAX + 1.0) * p_scale);
+	PrimaryClock &pc = _primary_clock;
+
+	MutexLock lock(pc.mutex);
+
+	const uint32_t seq = pc.sequence.load(std::memory_order_relaxed);
+	pc.sequence.store(seq + 1, std::memory_order_relaxed);
+
+	// Full fence : the odd sequence must be globally visible before we sample the raw clock.
+	std::atomic_thread_fence(std::memory_order_seq_cst);
+
+	const uint64_t old_raw = pc.sync_raw_tick.load(std::memory_order_relaxed);
+	uint64_t raw_tick = get_ticks_usec_raw();
+
+	if (unlikely(raw_tick < old_raw)) {
+		WARN_PRINT_ONCE("get_ticks_usec_raw() went backwards; clamping.");
+		raw_tick = old_raw;
+	}
+
+	const uint64_t new_fluid = pc.calculate_ticks_usec(
+			raw_tick,
+			old_raw,
+			pc.sync_fluid_tick.load(std::memory_order_relaxed),
+			pc.current_time_scale.load(std::memory_order_relaxed));
+
+	pc.sync_raw_tick.store(raw_tick, std::memory_order_relaxed);
+	pc.sync_fluid_tick.store(new_fluid, std::memory_order_relaxed);
+	pc.current_time_scale.store(new_scale, std::memory_order_relaxed);
+
+	pc.sequence.store(seq + 2, std::memory_order_release);
+}
+
+uint64_t OS::get_ticks_usec() const {
+	uint64_t sync_raw_tick, sync_fluid_tick, time_scale, raw_tick;
+	const PrimaryClock &pc = _primary_clock;
+
+	for (;;) {
+		const uint32_t seq1 = pc.sequence.load(std::memory_order_acquire);
+		if (seq1 & 1) {
+			continue;
+		}
+
+		sync_raw_tick = pc.sync_raw_tick.load(std::memory_order_relaxed);
+		sync_fluid_tick = pc.sync_fluid_tick.load(std::memory_order_relaxed);
+		time_scale = pc.current_time_scale.load(std::memory_order_relaxed);
+
+		// Sampled INSIDE the validated window, so it is consistent.
+		raw_tick = get_ticks_usec_raw();
+
+		std::atomic_thread_fence(std::memory_order_acquire);
+		if (seq1 == pc.sequence.load(std::memory_order_relaxed)) {
+			break;
+		}
+	}
+
+	uint64_t result = pc.calculate_ticks_usec(raw_tick, sync_raw_tick, sync_fluid_tick, time_scale);
+
+// Uncomment the following line if you suspect a non-monotonic clock on a particular platform.
+// Godot expects clocks to be monotonic, time running backwards can lead to overflow bugs etc.
+// #define GODOT_DIAGNOSE_NON_MONOTONIC_CLOCK
+#ifdef GODOT_DIAGNOSE_NON_MONOTONIC_CLOCK
+	uint64_t last = pc.last_returned.load(std::memory_order_relaxed);
+	while (result > last) {
+		if (pc.last_returned.compare_exchange_weak(last, result, std::memory_order_relaxed)) {
+			return result;
+		}
+	}
+	return last;
+#else
+	return result;
+#endif
+}
+
+uint64_t OS::PrimaryClock::calculate_ticks_usec(uint64_t p_raw_tick, uint64_t p_sync_raw_tick, uint64_t p_sync_fluid_tick, uint64_t p_time_scale) const {
+	// Raw clock went backwards relative to the sync point.
+	// This shouldn't happen with monotonic clocks, but external bugs
+	// can occur, so we protect against it.
+	// Treat as zero elapsed time instead of letting the unsigned subtraction wrap.
+	if (unlikely(p_raw_tick < p_sync_raw_tick)) {
+		return p_sync_fluid_tick;
+	}
+
+	// The number of raw ticks since the last measurement.
+	uint64_t raw_diff = p_raw_tick - p_sync_raw_tick;
+
+	// Shortcut for the simplest possible case (most running games).
+	if (p_time_scale == (uint64_t)UINT32_MAX + 1) {
+		return p_sync_fluid_tick + raw_diff;
+	}
+
+	// This section uses 128 fixed point math to prevent overflow.
+	// 128 isn't supported on all platforms, so we need different code paths.
+	uint64_t scaled_delta = 0;
+
+#if defined(__SIZEOF_INT128__)
+	//  (Clang, GCC, and compatible compilers) - use __uint128_t.
+
+	__uint128_t total_delta = (__uint128_t)raw_diff * p_time_scale;
+
+	// Shift right by 32 to scale back down from 32.32 fixed-point.
+	scaled_delta = (uint64_t)(total_delta >> 32);
+
+#elif defined(_MSC_VER) && (defined(_M_X64) || defined(_M_ARM64))
+	// (MSVC / Platforms supporting 64-bit hardware multiplication) - use _umul128 intrinsic.
+	uint64_t high_64 = 0;
+	uint64_t low_64 = _umul128(raw_diff, p_time_scale, &high_64);
+
+	// Extract the middle 64 bits from the 128-bit result (effectively a right-shift by 32).
+	scaled_delta = (low_64 >> 32) | (high_64 << 32);
+#else
+	// Reference version.
+
+	// Split both 64 bit inputs into 32 bit halves.
+	uint64_t u_high = raw_diff >> 32;
+	uint64_t u_low = raw_diff & 0xFFFFFFFFULL;
+	uint64_t v_high = p_time_scale >> 32;
+	uint64_t v_low = p_time_scale & 0xFFFFFFFFULL;
+
+	// Perform the 4 cross-multiplications.
+	uint64_t p0 = u_low * v_low; // Aligned to bit 0
+	uint64_t p1 = u_low * v_high; // Aligned to bit 32
+	uint64_t p2 = u_high * v_low; // Aligned to bit 32
+	uint64_t p3 = u_high * v_high; // Aligned to bit 64
+
+	// Accumulate the middle terms along with the carry from the lower term (p0 >> 32).
+	uint64_t mid = (p0 >> 32) + (p1 & 0xFFFFFFFFULL) + (p2 & 0xFFFFFFFFULL);
+
+	uint64_t mid_hi = mid >> 32;
+	uint64_t mid_lo = mid & 0xFFFFFFFFULL;
+
+	// Compute the upper terms and add the carry from mid.
+	uint64_t upper_combined = (p1 >> 32) + (p2 >> 32) + p3 + mid_hi;
+
+	// Reconstruct the final 64-bit scaled value.
+	scaled_delta = mid_lo | (upper_combined << 32);
+#endif
+	return p_sync_fluid_tick + scaled_delta;
+}
+#endif
+
 uint64_t OS::get_ticks_msec() const {
 	return get_ticks_usec() / 1000ULL;
+}
+
+uint64_t OS::get_ticks_msec_raw() const {
+	return get_ticks_usec_raw() / 1000ULL;
 }
 
 double OS::get_unix_time() const {
