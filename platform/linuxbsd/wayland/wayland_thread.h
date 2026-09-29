@@ -422,6 +422,7 @@ public:
 
 		// Relative motion has its own optional event and so needs its own time.
 		Vector2 relative_motion;
+		Vector2 relative_motion_unaccel;
 		uint32_t relative_motion_time = 0;
 
 		BitField<MouseButtonMask> pressed_button_mask = MouseButtonMask::NONE;

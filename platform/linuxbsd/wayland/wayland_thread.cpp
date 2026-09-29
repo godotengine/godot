@@ -2144,7 +2144,13 @@ void WaylandThread::_wl_pointer_on_frame(void *data, struct wl_pointer *wl_point
 			if (old_pd.relative_motion_time != pd.relative_motion_time) {
 				uint32_t time_delta = pd.relative_motion_time - old_pd.relative_motion_time;
 
-				mm->set_relative(pd.relative_motion * scale);
+				if (wayland_thread->pointer_constraint == PointerConstraint::LOCKED) {
+					// Captured mouse: report motion without pointer acceleration, like
+					// the X11 (XInput2 raw events) and Windows (raw input) backends do.
+					mm->set_relative(pd.relative_motion_unaccel * scale);
+				} else {
+					mm->set_relative(pd.relative_motion * scale);
+				}
 				mm->set_velocity((Vector2)pos_delta / time_delta);
 			} else {
 				// The spec includes the possibility of having motion events without an
@@ -3056,6 +3062,9 @@ void WaylandThread::_wp_relative_pointer_on_relative_motion(void *data, struct z
 
 	pd.relative_motion.x = wl_fixed_to_double(dx);
 	pd.relative_motion.y = wl_fixed_to_double(dy);
+
+	pd.relative_motion_unaccel.x = wl_fixed_to_double(dx_unaccel);
+	pd.relative_motion_unaccel.y = wl_fixed_to_double(dy_unaccel);
 
 	pd.relative_motion_time = uptime_lo;
 }
