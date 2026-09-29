@@ -1515,7 +1515,7 @@ void ItemList::_notification(int p_what) {
 					}
 
 					const int y = base_ofs.y + separators[i];
-					if (rtl && scroll_bar_v->is_visible()) {
+					if (rtl) {
 						draw_line(Vector2(size.width - theme_cache.panel_style->get_margin(SIDE_LEFT) - width, y), Vector2(size.width - theme_cache.panel_style->get_margin(SIDE_LEFT), y), theme_cache.guide_color);
 					} else {
 						draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width + theme_cache.panel_style->get_margin(SIDE_LEFT), y), theme_cache.guide_color);
@@ -1708,6 +1708,7 @@ void ItemList::_notification(int p_what) {
 						float text_w = items[i].rect_cache.size.width - text_ofs.x * 2;
 						if (wraparound_items && text_w + text_ofs.x > width) {
 							text_w = width - text_ofs.x;
+							text_w = MAX(1, text_w);
 						}
 						items.write[i].text_buf->set_width(text_w);
 
@@ -1735,6 +1736,7 @@ void ItemList::_notification(int p_what) {
 						float text_w = items[i].rect_cache.size.width - text_width_ofs;
 						if (wraparound_items && items[i].rect_cache.size.width > width) {
 							text_w -= items[i].rect_cache.size.width - width;
+							text_w = MAX(1, text_w);
 						}
 						items.write[i].text_buf->set_width(text_w);
 
