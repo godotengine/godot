@@ -106,7 +106,7 @@ Error store_string_at_path(const String &p_path, const String &p_data);
 Error rename_and_store_file_in_gradle_project(const Ref<EditorExportPreset> &p_preset, void *p_userdata, const EditorExportPlatform::SaveFileInfo &p_info, const Vector<uint8_t> &p_data);
 
 // Creates strings.xml files inside the gradle project for different locales.
-Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_gradle_build_dir, const Dictionary &p_appnames);
+Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &p_project_name, const String &p_export_src_dir, const Dictionary &p_appnames);
 
 String bool_to_string(bool v);
 

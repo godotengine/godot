@@ -293,15 +293,14 @@ static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[ICON_DENSITIES_COUN
 	{ "res/mipmap/icon_monochrome.webp", 432 }
 };
 
-static const char *DATA_LIB_DIRECTORY = "dataLib/src/main";
 static const char *DEFAULT_ASSETS_DIRECTORY = "dataLib/src/main/assets";
 static const char *AAB_ASSETS_DIRECTORY = "assetPackInstallTime/src/main/assets";
 
-// Temp manifest locations
-static const char *AAR_DEBUG_MANIFEST = "dataLib/src/debug/AndroidManifest.xml";
-static const char *AAR_RELEASE_MANIFEST = "dataLib/src/release/AndroidManifest.xml";
-static const char *APK_AAB_DEBUG_MANIFEST = "src/debug/AndroidManifest.xml";
-static const char *APK_AAB_RELEASE_MANIFEST = "src/release/AndroidManifest.xml";
+// Temp source dirs
+static const char *AAR_DEBUG_SRC_DIR = "dataLib/src/debug";
+static const char *AAR_RELEASE_SRC_DIR = "dataLib/src/release";
+static const char *APK_AAB_DEBUG_SRC_DIR = "src/debug";
+static const char *APK_AAB_RELEASE_SRC_DIR = "src/release";
 
 #ifndef ANDROID_ENABLED
 void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
@@ -975,9 +974,7 @@ void EditorExportPlatformAndroid::_get_manifest_info(const Ref<EditorExportPrese
 	r_metadata.append(editor_version_metadata);
 }
 
-void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, int p_export_format, bool p_debug) {
-	_clear_tmp_manifest(p_preset);
-
+void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, const String &p_export_src_dir, bool p_give_internet, int p_export_format, bool p_debug) {
 	print_verbose("Building temporary manifest...");
 	String manifest_text =
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
@@ -1021,14 +1018,7 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	manifest_text += _get_application_tag(Ref<EditorExportPlatform>(this), p_preset, p_export_format, _has_read_write_storage_permission(perms), p_debug, manifest_metadata);
 	manifest_text += "</manifest>\n";
 
-	const String gradle_build_directory = ExportTemplateManager::get_android_build_directory(p_preset);
-	String manifest_path;
-	if (p_export_format == EXPORT_FORMAT_AAR) {
-		manifest_path = gradle_build_directory.path_join((p_debug ? AAR_DEBUG_MANIFEST : AAR_RELEASE_MANIFEST));
-	} else {
-		manifest_path = gradle_build_directory.path_join((p_debug ? APK_AAB_DEBUG_MANIFEST : APK_AAB_RELEASE_MANIFEST));
-	}
-
+	const String manifest_path = p_export_src_dir.path_join("AndroidManifest.xml");
 	print_verbose("Storing manifest into " + manifest_path + ": " + "\n" + manifest_text);
 	store_string_at_path(manifest_path, manifest_text);
 }
@@ -1037,11 +1027,11 @@ bool EditorExportPlatformAndroid::_is_transparency_allowed(const Ref<EditorExpor
 	return (bool)get_project_setting(p_preset, "display/window/per_pixel_transparency/allowed");
 }
 
-void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> &p_preset) {
-	String data_lib_dir = ExportTemplateManager::get_android_build_directory(p_preset).path_join(DATA_LIB_DIRECTORY);
-	const String themes_xml_path = data_lib_dir.path_join("res/values/themes.xml");
+void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> &p_preset, const String &p_export_src_dir) {
+	const String src_themes_xml_path = ExportTemplateManager::get_android_build_directory(p_preset).path_join("dataLib/src/main/res/values/themes.xml");
+	const String dst_themes_xml_path = p_export_src_dir.path_join("res/values/themes.xml");
 
-	if (!FileAccess::exists(themes_xml_path)) {
+	if (!FileAccess::exists(src_themes_xml_path)) {
 		print_error("res/values/themes.xml does not exist.");
 		return;
 	}
@@ -1070,7 +1060,7 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 	String splash_icon_path = p_preset->get(ANDROID_SPLASH_ICON_OPTION);
 	if (!splash_icon_path.is_empty() && splash_icon_path.get_extension() == "xml") {
 		Vector<uint8_t> data = FileAccess::get_file_as_bytes(splash_icon_path);
-		store_file_at_path(data_lib_dir.path_join("res/drawable/splash_icon_vector.xml"), data);
+		store_file_at_path(p_export_src_dir.path_join("res/drawable/splash_icon_vector.xml"), data);
 		splash_theme_attributes["windowSplashScreenAnimatedIcon"] = "@drawable/splash_icon_vector";
 	}
 	String splash_branding_image_path = p_preset->get(ANDROID_SPLASH_BRANDING_IMAGE_OPTION);
@@ -1106,7 +1096,7 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 		}
 	}
 
-	Ref<FileAccess> file = FileAccess::open(themes_xml_path, FileAccess::READ);
+	Ref<FileAccess> file = FileAccess::open(src_themes_xml_path, FileAccess::READ);
 	PackedStringArray lines = file->get_as_text().split("\n");
 	file->close();
 
@@ -1160,8 +1150,8 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 
 	// Reconstruct the XML content from the modified lines.
 	String xml_content = String("\n").join(new_lines);
-	store_string_at_path(themes_xml_path, xml_content);
-	print_verbose("Successfully modified " + themes_xml_path + ": " + "\n" + xml_content);
+	store_string_at_path(dst_themes_xml_path, xml_content);
+	print_verbose("Successfully modified " + src_themes_xml_path + ": " + "\n" + xml_content);
 }
 
 void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
@@ -1939,27 +1929,25 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	}
 }
 
-void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<EditorExportPreset> &p_preset,
+void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const String &p_export_src_dir,
 		const Ref<Image> &p_main_image,
 		const Ref<Image> &p_foreground,
 		const Ref<Image> &p_background,
 		const Ref<Image> &p_monochrome,
 		const Ref<Image> &p_splash_icon,
 		const Ref<Image> &p_splash_branding_image) {
-	const String data_lib_dir = ExportTemplateManager::get_android_build_directory(p_preset).path_join(DATA_LIB_DIRECTORY);
-
 	// Copy splash screen icon to the drawable directory.
 	// This is only for png/webp/svg file; XML file is handled in _fix_themes_xml().
 	if (p_splash_icon.is_valid() && !p_splash_icon->is_empty()) {
 		print_verbose("Copying splash screen icon into " + ANDROID_SPLASH_ICON_PATH);
 		Vector<uint8_t> buffer = p_splash_icon->save_webp_to_buffer();
-		store_file_at_path(data_lib_dir.path_join(ANDROID_SPLASH_ICON_PATH), buffer);
+		store_file_at_path(p_export_src_dir.path_join(ANDROID_SPLASH_ICON_PATH), buffer);
 	}
 
 	if (p_splash_branding_image.is_valid() && !p_splash_branding_image->is_empty()) {
 		print_verbose("Copying splash screen branding image into " + ANDROID_SPLASH_BRANDING_IMAGE_PATH);
 		Vector<uint8_t> buffer = p_splash_branding_image->save_webp_to_buffer();
-		store_file_at_path(data_lib_dir.path_join(ANDROID_SPLASH_BRANDING_IMAGE_PATH), buffer);
+		store_file_at_path(p_export_src_dir.path_join(ANDROID_SPLASH_BRANDING_IMAGE_PATH), buffer);
 	}
 
 	String monochrome_tag = "";
@@ -1972,7 +1960,7 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 			print_verbose("Processing launcher icon for dimension " + itos(LAUNCHER_ICONS[i].dimensions) + " into " + LAUNCHER_ICONS[i].export_path);
 			Vector<uint8_t> data;
 			_process_launcher_icons(LAUNCHER_ICONS[i].export_path, p_main_image, LAUNCHER_ICONS[i].dimensions, data);
-			store_file_at_path(data_lib_dir.path_join(LAUNCHER_ICONS[i].export_path), data);
+			store_file_at_path(p_export_src_dir.path_join(LAUNCHER_ICONS[i].export_path), data);
 		}
 
 		if (p_foreground.is_valid() && !p_foreground->is_empty()) {
@@ -1980,7 +1968,7 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 			Vector<uint8_t> data;
 			_process_launcher_icons(LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path, p_foreground,
 					LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].dimensions, data);
-			store_file_at_path(data_lib_dir.path_join(LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path), data);
+			store_file_at_path(p_export_src_dir.path_join(LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path), data);
 		}
 
 		if (p_background.is_valid() && !p_background->is_empty()) {
@@ -1988,7 +1976,7 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 			Vector<uint8_t> data;
 			_process_launcher_icons(LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path, p_background,
 					LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].dimensions, data);
-			store_file_at_path(data_lib_dir.path_join(LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path), data);
+			store_file_at_path(p_export_src_dir.path_join(LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path), data);
 		}
 
 		if (p_monochrome.is_valid() && !p_monochrome->is_empty()) {
@@ -1996,13 +1984,13 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 			Vector<uint8_t> data;
 			_process_launcher_icons(LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path, p_monochrome,
 					LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].dimensions, data);
-			store_file_at_path(data_lib_dir.path_join(LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path), data);
+			store_file_at_path(p_export_src_dir.path_join(LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path), data);
 			monochrome_tag = "    <monochrome android:drawable=\"@mipmap/icon_monochrome\"/>\n";
 		}
 	}
 
 	// Finalize the icon.xml by formatting the template with the optional monochrome tag.
-	store_string_at_path(data_lib_dir.path_join(ICON_XML_PATH), vformat(ICON_XML_TEMPLATE, monochrome_tag));
+	store_string_at_path(p_export_src_dir.path_join(ICON_XML_PATH), vformat(ICON_XML_TEMPLATE, monochrome_tag));
 }
 
 Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
@@ -3240,32 +3228,48 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	return OK;
 }
 
-void EditorExportPlatformAndroid::_clear_tmp_manifest(const Ref<EditorExportPreset> &p_preset) {
+void EditorExportPlatformAndroid::_clear_tmp_src_dirs(const Ref<EditorExportPreset> &p_preset) {
 	Ref<DirAccess> da_res = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	String gradle_build_directory = ExportTemplateManager::get_android_build_directory(p_preset);
 
-	// Clear the temporary AAR manifests.
-	String aar_debug_manifest_path = gradle_build_directory.path_join(AAR_DEBUG_MANIFEST);
-	if (da_res->file_exists(aar_debug_manifest_path)) {
-		print_verbose("Clearing temporary aar debug manifest...");
-		da_res->remove(aar_debug_manifest_path);
+	// Clear the temporary AAR source dirs.
+	String aar_debug_src_dir = gradle_build_directory.path_join(AAR_DEBUG_SRC_DIR);
+	if (da_res->dir_exists(aar_debug_src_dir)) {
+		print_verbose("Clearing temporary aar debug source directory...");
+		Ref<DirAccess> da_debug_src_dir = DirAccess::open(aar_debug_src_dir);
+		ERR_FAIL_COND(da_debug_src_dir.is_null());
+
+		da_debug_src_dir->erase_contents_recursive();
+		da_res->remove(aar_debug_src_dir);
 	}
-	String aar_release_manifest_path = gradle_build_directory.path_join(AAR_RELEASE_MANIFEST);
-	if (da_res->file_exists(aar_release_manifest_path)) {
-		print_verbose("Clearing temporary aar release manifest...");
-		da_res->remove(aar_release_manifest_path);
+	String aar_release_src_dir = gradle_build_directory.path_join(AAR_RELEASE_SRC_DIR);
+	if (da_res->dir_exists(aar_release_src_dir)) {
+		print_verbose("Clearing temporary aar release source directory...");
+		Ref<DirAccess> da_release_src_dir = DirAccess::open(aar_release_src_dir);
+		ERR_FAIL_COND(da_release_src_dir.is_null());
+
+		da_release_src_dir->erase_contents_recursive();
+		da_res->remove(aar_release_src_dir);
 	}
 
-	// Clear the temporary APK / AAB manifests.
-	String apk_aab_debug_manifest_path = gradle_build_directory.path_join(APK_AAB_DEBUG_MANIFEST);
-	if (da_res->file_exists(apk_aab_debug_manifest_path)) {
-		print_verbose("Clearing temporary apk / aab debug manifest...");
-		da_res->remove(apk_aab_debug_manifest_path);
+	// Clear the temporary APK / AAB source dirs.
+	String apk_aab_debug_src_dir = gradle_build_directory.path_join(APK_AAB_DEBUG_SRC_DIR);
+	if (da_res->dir_exists(apk_aab_debug_src_dir)) {
+		print_verbose("Clearing temporary apk / aab debug source directory...");
+		Ref<DirAccess> da_debug_src_dir = DirAccess::open(apk_aab_debug_src_dir);
+		ERR_FAIL_COND(da_debug_src_dir.is_null());
+
+		da_debug_src_dir->erase_contents_recursive();
+		da_res->remove(apk_aab_debug_src_dir);
 	}
-	String apk_aab_release_manifest_path = gradle_build_directory.path_join(APK_AAB_RELEASE_MANIFEST);
-	if (da_res->file_exists(apk_aab_release_manifest_path)) {
-		print_verbose("Clearing temporary apk / aab release manifest...");
-		da_res->remove(apk_aab_release_manifest_path);
+	String apk_aab_release_src_dir = gradle_build_directory.path_join(APK_AAB_RELEASE_SRC_DIR);
+	if (da_res->dir_exists(apk_aab_release_src_dir)) {
+		print_verbose("Clearing temporary apk / aab release source directory...");
+		Ref<DirAccess> da_release_src_dir = DirAccess::open(apk_aab_release_src_dir);
+		ERR_FAIL_COND(da_release_src_dir.is_null());
+
+		da_release_src_dir->erase_contents_recursive();
+		da_res->remove(apk_aab_release_src_dir);
 	}
 }
 
@@ -3574,7 +3578,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return ERR_UNCONFIGURED;
 			}
 		}
-		const String assets_directory = get_assets_directory(p_preset, export_format);
 #ifndef ANDROID_ENABLED
 		String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
 		if (java_sdk_path.is_empty()) {
@@ -3591,22 +3594,31 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		print_verbose("Android sdk path: " + sdk_path);
 #endif
 
+		// Clear previous temporary directories.
+		_clear_assets_directory(p_preset);
+		_clear_tmp_src_dirs(p_preset);
+
+		String export_src_dir;
+		if (export_format == EXPORT_FORMAT_AAR) {
+			export_src_dir = gradle_build_directory.path_join((p_debug ? AAR_DEBUG_SRC_DIR : AAR_RELEASE_SRC_DIR));
+		} else {
+			export_src_dir = gradle_build_directory.path_join((p_debug ? APK_AAB_DEBUG_SRC_DIR : APK_AAB_RELEASE_SRC_DIR));
+		}
+
 		// TODO: should we use "package/name" or "application/config/name"?
 		String project_name = get_project_name(p_preset, p_preset->get("package/name"));
-		const String data_lib_directory = gradle_build_directory.path_join(DATA_LIB_DIRECTORY);
-		err = _create_project_name_strings_files(p_preset, project_name, data_lib_directory, get_project_setting(p_preset, "application/config/name_localized")); //project name localization.
+		err = _create_project_name_strings_files(p_preset, project_name, export_src_dir, get_project_setting(p_preset, "application/config/name_localized")); //project name localization.
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Unable to overwrite res/*.xml files with project name."));
 		}
 		// Copies the project icon files into the appropriate Gradle project directory.
-		_copy_icons_to_gradle_project(p_preset, main_image, foreground, background, monochrome, splash_icon, splash_branding_image);
+		_copy_icons_to_gradle_project(export_src_dir, main_image, foreground, background, monochrome, splash_icon, splash_branding_image);
 		// Write an AndroidManifest.xml file into the Gradle project directory.
-		_write_tmp_manifest(p_preset, p_give_internet, export_format, p_debug);
+		_write_tmp_manifest(p_preset, export_src_dir, p_give_internet, export_format, p_debug);
 		// Modify res/values/themes.xml file.
-		_fix_themes_xml(p_preset);
+		_fix_themes_xml(p_preset, export_src_dir);
 
 		//stores all the project files inside the Gradle project directory. Also includes all ABIs
-		_clear_assets_directory(p_preset);
 		String gdextension_libs_path = gradle_build_directory.path_join(GDEXTENSION_LIBS_PATH);
 		_remove_copied_libs(gdextension_libs_path);
 
@@ -3614,6 +3626,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			return ERR_SKIP;
 		}
 		print_verbose("Exporting project files...");
+		const String assets_directory = get_assets_directory(p_preset, export_format);
 		CustomExportData user_data;
 		user_data.assets_directory = assets_directory;
 		user_data.libs_directory = gradle_build_directory.path_join("libs");
