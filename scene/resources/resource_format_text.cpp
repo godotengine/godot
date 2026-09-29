@@ -36,7 +36,6 @@
 #include "core/io/missing_resource.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
-#include "core/variant/container_type_validate.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
