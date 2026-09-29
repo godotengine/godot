@@ -76,7 +76,7 @@ void AudioDriver::audio_server_process(int p_frames, int32_t *p_buffer, bool p_u
 void AudioDriver::update_mix_time(int p_frames) {
 	_last_mix_frames = p_frames;
 	if (OS::get_singleton()) {
-		_last_mix_time = OS::get_singleton()->get_ticks_usec();
+		_last_mix_time = OS::get_singleton()->get_ticks_usec_raw();
 	}
 }
 
@@ -84,7 +84,7 @@ double AudioDriver::get_time_since_last_mix() {
 	lock();
 	uint64_t last_mix_time = _last_mix_time;
 	unlock();
-	return (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
+	return (OS::get_singleton()->get_ticks_usec_raw() - last_mix_time) / 1000000.0;
 }
 
 double AudioDriver::get_time_to_next_mix() {
@@ -92,7 +92,7 @@ double AudioDriver::get_time_to_next_mix() {
 	uint64_t last_mix_time = _last_mix_time;
 	uint64_t last_mix_frames = _last_mix_frames;
 	unlock();
-	double total = (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
+	double total = (OS::get_singleton()->get_ticks_usec_raw() - last_mix_time) / 1000000.0;
 	double mix_buffer = last_mix_frames / (double)get_mix_rate();
 	return mix_buffer - total;
 }
@@ -674,7 +674,7 @@ bool AudioServer::thread_has_channel_mix_buffer(int p_bus, int p_buffer) const {
 }
 
 AudioFrame *AudioServer::thread_get_channel_mix_buffer(int p_bus, int p_buffer) {
-	last_sound_played_ms = OS::get_singleton()->get_ticks_msec();
+	last_sound_played_ms = OS::get_singleton()->get_ticks_msec_raw();
 
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), nullptr);
 	ERR_FAIL_INDEX_V(p_buffer, buses[p_bus]->channels.size(), nullptr);
@@ -1226,7 +1226,7 @@ void AudioServer::update() {
 
 	// Give audio driver option to turn off to throttle CPU.
 	if (AudioDriverManager::get_mute_sensitivity(AudioDriverManager::MUTE_FLAG_SILENCE)) {
-		uint32_t time_ms = OS::get_singleton()->get_ticks_msec();
+		uint32_t time_ms = OS::get_singleton()->get_ticks_msec_raw();
 		if (time_ms >= last_sound_played_ms) {
 			uint32_t diff_ms = time_ms - last_sound_played_ms;
 			if (diff_ms <= 10000) {
