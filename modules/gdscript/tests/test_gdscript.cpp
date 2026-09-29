@@ -380,4 +380,25 @@ void test(TestType p_type) {
 
 	finish_language();
 }
+
+int generate_tests() {
+	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
+
+	const bool print_filenames = cmdline_args.erase("--print-filenames");
+
+	String path;
+
+	List<String>::Element *element = cmdline_args.find("gdscript-generate-tests");
+	if (element && element->next()) {
+		path = element->next()->get();
+	} else {
+		path = "modules/gdscript/tests/scripts";
+	}
+
+	GDScriptTestRunner runner(path, print_filenames);
+
+	bool completed = runner.generate_outputs();
+	return completed ? 0 : -1;
+}
+
 } // namespace GDScriptTests
