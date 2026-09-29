@@ -3301,9 +3301,9 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		moving_selection_attempt = false;
 		moving_selection = false;
 
+		path_popup->popup();
 		path_popup->set_position(get_screen_position() + path_rect.position - theme_ofs);
 		path_popup->set_size(path_rect.size);
-		path_popup->popup();
 		path->grab_focus();
 		path->set_caret_column(path->get_text().length());
 		clicking_on_name = false;
