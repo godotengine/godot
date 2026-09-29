@@ -2682,7 +2682,7 @@ void OS_Windows::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 
 	if (dynamic_delay > 0) {
 		target_ticks += dynamic_delay;
-		uint64_t current_ticks = get_ticks_usec();
+		uint64_t current_ticks = get_ticks_usec_raw();
 
 		if (!is_in_low_processor_usage_mode()) {
 			if (target_ticks > current_ticks + delay_resolution) {
@@ -2695,7 +2695,7 @@ void OS_Windows::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 				}
 			}
 			// Busy wait for the remainder of time.
-			while (get_ticks_usec() < target_ticks) {
+			while (get_ticks_usec_raw() < target_ticks) {
 				YieldProcessor();
 			}
 		} else {
@@ -2706,7 +2706,7 @@ void OS_Windows::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
 			}
 		}
 
-		current_ticks = get_ticks_usec();
+		current_ticks = get_ticks_usec_raw();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
 	}
 }
