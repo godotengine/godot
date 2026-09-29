@@ -93,6 +93,12 @@ public:
 		SIMPLIFY_REGULARIZE = 1 << 4, // From meshopt_SimplifyRegularize
 		/* Allow collapses across attribute discontinuities, except for vertices that are tagged with 0x02 in vertex_lock. */
 		SIMPLIFY_PERMISSIVE = 1 << 5, // From meshopt_SimplifyPermissive
+		/* Produce more regular triangle sizes and shapes during simplification, at a small cost to geometric and attribute quality. */
+		SIMPLIFY_REGULARIZE_LIGHT = 1 << 6, // From meshopt_SimplifyRegularizeLight
+		/* Try to preserve fold lines between opposite-facing triangles, at a small performance cost. */
+		SIMPLIFY_PRESERVE_FOLDS = 1 << 7, // From meshopt_SimplifyPreserveFolds
+		/* Clamp attribute error to match position error scale and avoid extreme error values in areas with high attribute variance. */
+		SIMPLIFY_ERROR_CLAMPED = 1 << 8, // From meshopt_SimplifyErrorClamped
 		/* Produce tangents compatible with MikkTSpace (same weighting and fallbacks) at the cost of reduced quality. Not recommended unless normal maps are baked. */
 		TANGENT_COMPATIBLE = 1 << 0, // From meshopt_TangentCompatible
 	};

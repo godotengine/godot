@@ -1,5 +1,5 @@
 /**
- * meshoptimizer - version 1.2
+ * meshoptimizer - version 1.3
  *
  * Copyright (C) 2016-2026, by Arseny Kapoulkine (arseny.kapoulkine@gmail.com)
  * Report bugs and download new versions at https://github.com/zeux/meshoptimizer
@@ -12,7 +12,7 @@
 #include <stddef.h>
 
 /* Version macro; major * 1000 + minor * 10 + patch */
-#define MESHOPTIMIZER_VERSION 1020 /* 1.2 */
+#define MESHOPTIMIZER_VERSION 1030 /* 1.3 */
 
 /* If no API is defined, assume default */
 #ifndef MESHOPTIMIZER_API
@@ -104,17 +104,17 @@ MESHOPTIMIZER_API void meshopt_remapVertexBuffer(void* destination, const void* 
 MESHOPTIMIZER_API void meshopt_remapIndexBuffer(unsigned int* destination, const unsigned int* indices, size_t index_count, const unsigned int* remap);
 
 /**
- * Experimental: Filter out redundant triangles from the index buffer and return the number of remaining indices
+ * Filter out redundant triangles from the index buffer and return the number of remaining indices
  * Triangles are considered redundant if they are degenerate (two vertices have the same vertex key) or duplicate (matching triangle was present earlier).
  * First vertex_size bytes of every vertex are compared for equality; typically vertex_size should be set to the size of the position attribute.
  * Note that duplicate triangles with opposite windings are preserved, as they may be needed for double-sided rendering.
  *
  * destination must contain enough space for the resulting index buffer (index_count elements)
  */
-MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_filterIndexBuffer(unsigned int* destination, const unsigned int* indices, size_t index_count, const void* vertices, size_t vertex_count, size_t vertex_size, size_t vertex_stride);
+MESHOPTIMIZER_API size_t meshopt_filterIndexBuffer(unsigned int* destination, const unsigned int* indices, size_t index_count, const void* vertices, size_t vertex_count, size_t vertex_size, size_t vertex_stride);
 
 /**
- * Experimental: Filter out redundant triangles from the index buffer and return the number of remaining indices
+ * Filter out redundant triangles from the index buffer and return the number of remaining indices
  * Triangles are considered redundant if they are degenerate (two vertices have the same vertex key) or duplicate (matching triangle was present earlier).
  * All bytes in specified streams are compared for equality; streams should include attributes relevant for position transform (e.g. bone influences).
  * Note that duplicate triangles with opposite windings are preserved, as they may be needed for double-sided rendering.
@@ -122,7 +122,7 @@ MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_filterIndexBuffer(unsigned int* destin
  * destination must contain enough space for the resulting index buffer (index_count elements)
  * stream_count must be <= 16
  */
-MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_filterIndexBufferMulti(unsigned int* destination, const unsigned int* indices, size_t index_count, size_t vertex_count, const struct meshopt_Stream* streams, size_t stream_count);
+MESHOPTIMIZER_API size_t meshopt_filterIndexBufferMulti(unsigned int* destination, const unsigned int* indices, size_t index_count, size_t vertex_count, const struct meshopt_Stream* streams, size_t stream_count);
 
 /**
  * Generate index buffer that can be used for more efficient rendering when only a subset of the vertex attributes is necessary
@@ -475,10 +475,14 @@ enum
 	meshopt_SimplifyPrune = 1 << 3,
 	/* Produce more regular triangle sizes and shapes during simplification, at some cost to geometric and attribute quality. */
 	meshopt_SimplifyRegularize = 1 << 4,
-	/* Experimental: Allow collapses across attribute discontinuities, except for vertices that are tagged with meshopt_SimplifyVertex_Protect in vertex_lock. */
+	/* Allow collapses across attribute discontinuities, except for vertices that are tagged with meshopt_SimplifyVertex_Protect in vertex_lock. */
 	meshopt_SimplifyPermissive = 1 << 5,
 	/* Produce more regular triangle sizes and shapes during simplification, at a small cost to geometric and attribute quality. */
 	meshopt_SimplifyRegularizeLight = 1 << 6,
+	/* Experimental: Try to preserve fold lines between opposite-facing triangles, at a small performance cost. */
+	meshopt_SimplifyPreserveFolds = 1 << 7,
+	/* Experimental: Clamp attribute error to match position error scale and avoid extreme error values in areas with high attribute variance. */
+	meshopt_SimplifyErrorClamped = 1 << 8,
 };
 
 /**
@@ -881,7 +885,7 @@ MESHOPTIMIZER_API void meshopt_spatialSortTriangles(unsigned int* destination, c
 MESHOPTIMIZER_API void meshopt_spatialClusterPoints(unsigned int* destination, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t cluster_size);
 
 /**
- * Experimental: Opacity micromap generator (measure)
+ * Opacity micromap generator (measure)
  * Computes a subdivision level for each input triangle, as well as deduplicating the triangles that reference the same UVs to reduce rasterization requests.
  * Returns the number of OMM entries.
  *
@@ -892,10 +896,10 @@ MESHOPTIMIZER_API void meshopt_spatialClusterPoints(unsigned int* destination, c
  * max_level specifies the maximum subdivision level (0..12)
  * target_edge can be 0; when >0, triangle subdivision is adaptive and targets target_edge^2 texel area
  */
-MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_opacityMapMeasure(unsigned char* levels, unsigned int* sources, int* omm_indices, const unsigned int* indices, size_t index_count, const float* vertex_uvs, size_t vertex_count, size_t vertex_uvs_stride, unsigned int texture_width, unsigned int texture_height, int max_level, float target_edge);
+MESHOPTIMIZER_API size_t meshopt_opacityMapMeasure(unsigned char* levels, unsigned int* sources, int* omm_indices, const unsigned int* indices, size_t index_count, const float* vertex_uvs, size_t vertex_count, size_t vertex_uvs_stride, unsigned int texture_width, unsigned int texture_height, int max_level, float target_edge);
 
 /**
- * Experimental: Opacity micromap generator (rasterize)
+ * Opacity micromap generator (rasterize)
  * Rasterizes opacity state for a single triangle entry by sampling the alpha texture, using bilinear filtering and 0.5 alpha cutoff.
  *
  * result should contain enough space for the output opacity data (which can be computed using meshopt_opacityMapEntrySize)
@@ -906,11 +910,11 @@ MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_opacityMapMeasure(unsigned char* level
  * texture_stride specifies the distance in bytes between consecutive pixels, e.g. 4 for RGBA input
  * texture_pitch specifies the distance in bytes between consecutive rows, e.g. 4*texture_width for tightly packed RGBA input
  */
-MESHOPTIMIZER_EXPERIMENTAL void meshopt_opacityMapRasterize(unsigned char* result, int level, int states, const float* uv0, const float* uv1, const float* uv2, const unsigned char* texture_data, size_t texture_stride, size_t texture_pitch, unsigned int texture_width, unsigned int texture_height);
-MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_opacityMapEntrySize(int level, int states);
+MESHOPTIMIZER_API void meshopt_opacityMapRasterize(unsigned char* result, int level, int states, const float* uv0, const float* uv1, const float* uv2, const unsigned char* texture_data, size_t texture_stride, size_t texture_pitch, unsigned int texture_width, unsigned int texture_height);
+MESHOPTIMIZER_API size_t meshopt_opacityMapEntrySize(int level, int states);
 
 /**
- * Experimental: Opacity micromap generator (compact)
+ * Opacity micromap generator (compact)
  * Compacts and deduplicates opacity data, merging identical micromap entries and replacing micromap states with special indices (-4..-1) when possible.
  * Returns the number of OMM entries after compaction; the data array should be trimmed using the last offset/size.
  *
@@ -921,7 +925,7 @@ MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_opacityMapEntrySize(int level, int sta
  * omm_indices should contain indices into the original OMM data, and will be updated with a new index or a special index (-4..-1) when possible
  * states should be 2 for 2-state format (opaque/transparent) and 4 for 4-state format (opaque/transparent/unknown)
  */
-MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_opacityMapCompact(unsigned char* data, size_t data_size, unsigned char* levels, unsigned int* offsets, size_t omm_count, int* omm_indices, size_t triangle_count, int states);
+MESHOPTIMIZER_API size_t meshopt_opacityMapCompact(unsigned char* data, size_t data_size, unsigned char* levels, unsigned int* offsets, size_t omm_count, int* omm_indices, size_t triangle_count, int states);
 
 /**
  * Tangent generation options
@@ -930,17 +934,17 @@ enum
 {
 	/* Produce tangents compatible with MikkTSpace (same weighting and fallbacks) at the cost of reduced quality. Not recommended unless normal maps are baked. */
 	meshopt_TangentCompatible = 1 << 0,
-	/* Experimental: For vertices only connected to degenerate triangles, output zero tangents instead of an arbitrary fallback.  */
+	/* For vertices only connected to degenerate triangles, output zero tangents instead of an arbitrary fallback.  */
 	meshopt_TangentZeroFallback = 1 << 1,
 };
 
 /**
- * Experimental: Tangent space generator
+ * Tangent space generator
  * Computes per-corner tangent vectors; for each corner, computes normalized tangent vector (xyz) and orientation (w, +/-1).
  * Bitangent can be reconstructed via cross(normal, tangent.xyz) * tangent.w.
  * To apply tangents to the mesh, either deindex and reindex it with the tangent stream, or copy tangents to existing vertex data while duplicating
  * vertices with different tangent vectors (e.g. on UV mirror seams).
- * Input can be indexed or unindexed (indices=NULL); this does not affect the resulting tangents, but indexed inputs are ~30% faster to process.
+ * Input can be indexed or unindexed (indices=NULL); this does not affect the resulting tangents, but indexed inputs are faster to process.
  *
  * result must contain enough space for the output tangent data (index_count*4 elements)
  * indices can be NULL if the input is unindexed
@@ -948,7 +952,47 @@ enum
  * vertex_normals should have unit float3 normal in the first 12 bytes of each vertex
  * vertex_uvs should have float2 texture coordinate in the first 8 bytes of each vertex
  */
-MESHOPTIMIZER_EXPERIMENTAL void meshopt_generateTangents(float* result, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const float* vertex_normals, size_t vertex_normals_stride, const float* vertex_uvs, size_t vertex_uvs_stride, unsigned int options);
+MESHOPTIMIZER_API void meshopt_generateTangents(float* result, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const float* vertex_normals, size_t vertex_normals_stride, const float* vertex_uvs, size_t vertex_uvs_stride, unsigned int options);
+
+/**
+ * Experimental: Normal generator
+ * Computes per-corner normal vectors; normals are averaged across soft edges, using crease angle to determine which edges are hard.
+ * To apply normals to the mesh, either deindex and reindex it with the normal stream, or copy normals to existing vertex data while duplicating
+ * vertices with different normal vectors (on normal seams).
+ * Input can be indexed or unindexed (indices=NULL); this does not affect the resulting normals, but indexed inputs are faster to process.
+ *
+ * result must contain enough space for the output normal data (index_count*3 elements)
+ * indices can be NULL if the input is unindexed
+ * vertex_positions should have float3 position in the first 12 bytes of each vertex
+ * crease_angle specifies the angle in radians below which normals are averaged across edges
+ * smoothing specifies the amount of smoothing to apply to resulting normals as a post-process; larger smoothing values take longer, with the recommended range being [0..5].
+ */
+MESHOPTIMIZER_EXPERIMENTAL void meshopt_generateNormals(float* result, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, float crease_angle, float smoothing);
+
+/**
+ * Experimental: Remeshing flags
+ */
+enum
+{
+	/* Produce a two-sided shell that wraps around surfaces of the original mesh, instead of a solid mesh. */
+	meshopt_RemeshShell = 1 << 0,
+	/* Compute optimal output positions that approximate the original surface as closely as possible. */
+	meshopt_RemeshSolve = 1 << 1,
+};
+
+/**
+ * Experimental: Voxel remesher
+ * Generates a new mesh that approximates or refines the original mesh, attempting to preserve mesh appearance at a given voxel resolution.
+ * The original topology is not preserved; features that are closer than the voxel size may be merged, and small gaps in the original mesh may be closed.
+ * Returns the number of triangles in the new mesh, with destination containing a vertex position for each triangle corner.
+ *
+ * destination can be NULL; when it's not NULL, it must contain enough space for the resulting triangle buffer (max_triangle_count * 3 vertices, 3 floats per vertex)
+ * max_triangle_count is the number of triangles that can be written; when destination is NULL or insufficiently large, the returned value is an upper bound on the number of triangles
+ * vertex_positions should have float3 position in the first 12 bytes of each vertex
+ * resolution is the dimension of the internal voxel grid and should be in the range [4, 256]
+ * options must be a bitmask composed of meshopt_RemeshX options; 0 is a safe default
+ */
+MESHOPTIMIZER_EXPERIMENTAL size_t meshopt_remesh(float* destination, size_t max_triangle_count, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, int resolution, unsigned int options);
 
 /**
  * Quantize a float into half-precision (as defined by IEEE-754 fp16) floating point value
@@ -972,7 +1016,7 @@ MESHOPTIMIZER_API float meshopt_quantizeFloat(float v, int N);
 MESHOPTIMIZER_API float meshopt_dequantizeHalf(unsigned short h);
 
 /**
- * Experimental: Compute shared exponent suitable for mesh/cluster position quantization
+ * Compute shared exponent suitable for mesh/cluster position quantization
  * Given mesh or cluster bounds, compute a shared exponent that can be used to quantize any position inside the bounds to a 24-bit integer grid.
  * The resulting output can be stored as a compact bit-stream to be decoded directly in shaders, or to be used as an input to RT BVH builders,
  * for example via D3D12_VERTEX_FORMAT_COMPRESSED1 in DXR2 (max_bits=16).
@@ -983,10 +1027,10 @@ MESHOPTIMIZER_API float meshopt_dequantizeHalf(unsigned short h);
  * The resulting integer can be stored as signed 24-bit, or as an unsigned offset from a signed 24-bit anchor value, shared between all positions.
  *
  * minv/maxv specify the axis-aligned bounding box of the mesh or cluster; each should refer to a float3 value
- * min_exp specifies the minimum value for the returned exponent, limiting precision to reduce size; e.g. min_exp = -10 will produce minimum error of 1mm given metric units
+ * min_exp specifies the minimum value for the returned exponent, limiting precision to reduce size; e.g. min_exp = -10 limits precision to 1mm given metric units
  * max_bits specifies the maximum allowed number of bits for the quantized integer range (offset from anchor is an unsigned integer up to 2^max_bits-1)
  */
-MESHOPTIMIZER_EXPERIMENTAL int meshopt_computePositionExponent(const float* minv, const float* maxv, int min_exp, int max_bits);
+MESHOPTIMIZER_API int meshopt_computePositionExponent(const float* minv, const float* maxv, int min_exp, int max_bits);
 
 /**
  * Set allocation callbacks
@@ -1116,6 +1160,10 @@ template <typename T>
 inline void meshopt_spatialSortTriangles(T* destination, const T* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 template <typename T>
 inline void meshopt_generateTangents(float* result, const T* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const float* vertex_normals, size_t vertex_normals_stride, const float* vertex_uvs, size_t vertex_uvs_stride, unsigned int options = 0);
+template <typename T>
+inline void meshopt_generateNormals(float* result, const T* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, float crease_angle, float smoothing = 0.f);
+template <typename T>
+inline size_t meshopt_remesh(float* destination, size_t max_triangle_count, const T* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, int resolution, unsigned int options = 0);
 #endif
 
 /* Inline implementation */
@@ -1631,6 +1679,22 @@ inline void meshopt_generateTangents(float* result, const T* indices, size_t ind
 	meshopt_IndexAdapter<T> in(NULL, indices, indices ? index_count : 0);
 
 	meshopt_generateTangents(result, indices ? in.data : NULL, index_count, vertex_positions, vertex_count, vertex_positions_stride, vertex_normals, vertex_normals_stride, vertex_uvs, vertex_uvs_stride, options);
+}
+
+template <typename T>
+inline void meshopt_generateNormals(float* result, const T* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, float crease_angle, float smoothing)
+{
+	meshopt_IndexAdapter<T> in(NULL, indices, indices ? index_count : 0);
+
+	meshopt_generateNormals(result, indices ? in.data : NULL, index_count, vertex_positions, vertex_count, vertex_positions_stride, crease_angle, smoothing);
+}
+
+template <typename T>
+inline size_t meshopt_remesh(float* destination, size_t max_triangle_count, const T* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, int resolution, unsigned int options)
+{
+	meshopt_IndexAdapter<T> in(NULL, indices, index_count);
+
+	return meshopt_remesh(destination, max_triangle_count, in.data, index_count, vertex_positions, vertex_count, vertex_positions_stride, resolution, options);
 }
 #endif
 

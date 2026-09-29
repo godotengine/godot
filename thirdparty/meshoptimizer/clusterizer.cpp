@@ -863,6 +863,15 @@ static void bvhComputeArea(float* areas, const BVHBox* boxes, const unsigned int
 
 	for (size_t i = 0; i < count; ++i)
 	{
+#ifdef SIMD_SSE
+		// prefetch boxes ahead to reduce the stalls from cache misses; the loop is not load-limited so these do not hurt even on smaller inputs
+		if (i + 16 < count)
+		{
+			_mm_prefetch(reinterpret_cast<const char*>(&boxes[order[i + 16]]), _MM_HINT_T0);
+			_mm_prefetch(reinterpret_cast<const char*>(&boxes[order[count - 1 - i - 16]]), _MM_HINT_T0);
+		}
+#endif
+
 		float larea = boxMerge(accuml, boxes[order[i]]);
 		float rarea = boxMerge(accumr, boxes[order[count - 1 - i]]);
 
