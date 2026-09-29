@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_instance.h                                                      */
+/*  libgodot.cpp                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "libgodot.h"
 
-#include "core/extension/gdextension_interface.gen.h"
-#include "core/object/object.h"
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. For mono.
 
-class GodotInstance : public Object {
-	GDCLASS(GodotInstance, Object);
-
-	typedef bool (*IterationFunction)();
-
-	IterationFunction iteration_func;
-	bool started = false;
-
-protected:
-	static void _bind_methods();
-
-public:
-	GodotInstance();
-	~GodotInstance();
-
-	bool initialize(GDExtensionInitializationFunction p_init_func);
-
-	bool start();
-	bool is_started();
-	bool iteration();
-	void set_iteration(IterationFunction p_iteration_func);
-	void stop();
-
-	void focus_out();
-	void focus_in();
-	void pause();
-	void resume();
-};
+#ifndef MODULE_MONO_ENABLED
+void libgodot_mono_set_plugins_initialize([[maybe_unused]] void *p_plugins_initialize) {}
+#endif

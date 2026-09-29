@@ -63,6 +63,10 @@
 #endif
 #endif
 
+#ifdef LIBGODOT_ENABLED
+#include "core/extension/libgodot.h"
+#endif
+
 GDMono *GDMono::singleton = nullptr;
 
 namespace {
@@ -85,6 +89,10 @@ mono_assembly_name_get_culture_fn mono_assembly_name_get_culture = nullptr;
 mono_image_open_from_data_with_name_fn mono_image_open_from_data_with_name = nullptr;
 mono_assembly_load_from_full_fn mono_assembly_load_from_full = nullptr;
 #endif
+#endif
+
+#ifdef LIBGODOT_ENABLED
+void *libgodot_plugins_initialize = nullptr;
 #endif
 
 #ifdef _WIN32
@@ -428,6 +436,17 @@ using godot_plugins_initialize_fn = bool (*)(void *, bool, gdmono::PluginCallbac
 using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbacks *, const void **, int32_t);
 #endif
 
+godot_plugins_initialize_fn try_load_libgodot_runtime(bool &r_runtime_initialized) {
+#if defined(LIBGODOT_ENABLED)
+	if (libgodot_plugins_initialize) {
+		print_verbose("Found plugins_initialize set by LibGodot");
+		r_runtime_initialized = true;
+		return (godot_plugins_initialize_fn)libgodot_plugins_initialize;
+	}
+#endif
+	return nullptr;
+}
+
 #ifdef TOOLS_ENABLED
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
@@ -610,6 +629,13 @@ godot_plugins_initialize_fn initialize_coreclr_and_godot_plugins(bool &r_runtime
 
 } // namespace
 
+#ifdef LIBGODOT_ENABLED
+// Implement function from "core/extension/libgodot.h"
+void libgodot_mono_set_plugins_initialize(void *p_plugins_initialize) {
+	libgodot_plugins_initialize = p_plugins_initialize;
+}
+#endif
+
 bool GDMono::should_initialize() {
 #ifdef TOOLS_ENABLED
 	// The editor always needs to initialize the .NET module for now.
@@ -641,40 +667,42 @@ void GDMono::initialize() {
 
 	_init_godot_api_hashes();
 
-	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
+	godot_plugins_initialize_fn godot_plugins_initialize = try_load_libgodot_runtime(runtime_initialized);
 
+	if (!godot_plugins_initialize) {
 #if !defined(APPLE_EMBEDDED_ENABLED)
-	// Check that the .NET assemblies directory exists before trying to use it.
-	if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
-		OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
-		ERR_FAIL_MSG(".NET: Assemblies not found");
-	}
+		// Check that the .NET assemblies directory exists before trying to use it.
+		if (!DirAccess::exists(GodotSharpDirs::get_api_assemblies_dir())) {
+			OS::get_singleton()->alert(vformat(RTR("Unable to find the .NET assemblies directory.\nMake sure the '%s' directory exists and contains the .NET assemblies."), GodotSharpDirs::get_api_assemblies_dir()), RTR(".NET assemblies not found"));
+			ERR_FAIL_MSG(".NET: Assemblies not found");
+		}
 #endif
 
-	if (load_hostfxr(hostfxr_dll_handle)) {
-		godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
-		ERR_FAIL_NULL(godot_plugins_initialize);
-	} else {
-#if !defined(TOOLS_ENABLED)
-		if (load_coreclr(coreclr_dll_handle)) {
-			godot_plugins_initialize = initialize_coreclr_and_godot_plugins(runtime_initialized);
+		if (load_hostfxr(hostfxr_dll_handle)) {
+			godot_plugins_initialize = initialize_hostfxr_and_godot_plugins(runtime_initialized);
+			ERR_FAIL_NULL(godot_plugins_initialize);
 		} else {
-			void *dll_handle = nullptr;
-			godot_plugins_initialize = try_load_native_aot_library(dll_handle);
-			if (godot_plugins_initialize != nullptr) {
-				runtime_initialized = true;
+#if !defined(TOOLS_ENABLED)
+			if (load_coreclr(coreclr_dll_handle)) {
+				godot_plugins_initialize = initialize_coreclr_and_godot_plugins(runtime_initialized);
+			} else {
+				void *dll_handle = nullptr;
+				godot_plugins_initialize = try_load_native_aot_library(dll_handle);
+				if (godot_plugins_initialize != nullptr) {
+					runtime_initialized = true;
+				}
 			}
-		}
 
-		if (godot_plugins_initialize == nullptr) {
-			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
-		}
+			if (godot_plugins_initialize == nullptr) {
+				ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+			}
 #else
 
-		// Show a message box to the user to make the problem explicit (and explain a potential crash).
-		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, specifically hostfxr.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart Godot."), TTR("Failed to load .NET runtime"));
-		ERR_FAIL_MSG(".NET: Failed to load hostfxr");
+			// Show a message box to the user to make the problem explicit (and explain a potential crash).
+			OS::get_singleton()->alert(TTR("Unable to load .NET runtime, specifically hostfxr.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 8.0 or later from https://get.dot.net and restart Godot."), TTR("Failed to load .NET runtime"));
+			ERR_FAIL_MSG(".NET: Failed to load hostfxr");
 #endif
+		}
 	}
 
 	int32_t interop_funcs_size = 0;

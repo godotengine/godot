@@ -64,6 +64,8 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		return ERR_FILE_CORRUPT;
 	}
 
+	Ref<DirAccess> dst_dir_da = DirAccess::open(p_dir);
+
 	do {
 		//get filename
 		unz_file_info info;
@@ -81,6 +83,14 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		if (!pwa && (file == "godot.service.worker.js" || file == "godot.offline.html")) {
 			continue;
 		}
+
+		// Create missing directories.
+		String file_dir = file.get_base_dir();
+		if (!file_dir.is_empty() && !dst_dir_da->exists(file_dir)) {
+			Error err = dst_dir_da->make_dir_recursive(file_dir);
+			ERR_CONTINUE_MSG(err != OK, vformat("Cannot create directory '%s'.", file_dir));
+		}
+
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
@@ -423,11 +433,13 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 
 bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 #ifdef MODULE_MONO_ENABLED
-	// Don't check for additional errors, as this particular error cannot be resolved.
-	r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
-	r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
-	return false;
-#else
+	if (!p_preset->get_project_setting("dotnet/project/ignore_not_supported_export_error").operator bool()) {
+		// Don't check for additional errors, as this particular error cannot be resolved.
+		r_error += TTR("Exporting to Web is currently not supported in Godot 4 when using C#/.NET. Use Godot 3 to target Web with C#/Mono instead.") + "\n";
+		r_error += TTR("If this project does not use C#, use a non-C# editor build to export the project.") + "\n";
+		return false;
+	}
+#endif
 
 	String err;
 	bool valid = false;
@@ -459,7 +471,6 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 	}
 
 	return valid;
-#endif // !MODULE_MONO_ENABLED
 }
 
 bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
@@ -854,18 +865,9 @@ Error EditorExportPlatformWeb::_export_project(const Ref<EditorExportPreset> &p_
 	Error err = export_project(p_preset, true, basepath + ".html", p_debug_flags);
 	if (err != OK) {
 		// Export generates several files, clean them up on failure.
-		DirAccess::remove_file_or_error(basepath + ".html");
-		DirAccess::remove_file_or_error(basepath + ".offline.html");
-		DirAccess::remove_file_or_error(basepath + ".js");
-		DirAccess::remove_file_or_error(basepath + ".audio.worklet.js");
-		DirAccess::remove_file_or_error(basepath + ".audio.position.worklet.js");
-		DirAccess::remove_file_or_error(basepath + ".service.worker.js");
-		DirAccess::remove_file_or_error(basepath + ".pck");
-		DirAccess::remove_file_or_error(basepath + ".png");
-		DirAccess::remove_file_or_error(basepath + ".side.wasm");
-		DirAccess::remove_file_or_error(basepath + ".wasm");
-		DirAccess::remove_file_or_error(basepath + ".icon.png");
-		DirAccess::remove_file_or_error(basepath + ".apple-touch-icon.png");
+		Ref<DirAccess> dest_da = DirAccess::open(dest);
+		ERR_FAIL_COND_V(dest_da.is_null(), err);
+		ERR_FAIL_COND_V_MSG(dest_da->erase_contents_recursive() != OK, err, "Failed to delete temporary files.");
 	}
 	return err;
 }

@@ -1133,6 +1133,9 @@
 		<member name="dotnet/project/assembly_reload_attempts" type="int" setter="" getter="" default="3">
 			Number of times to attempt assembly reloading after rebuilding .NET assemblies. Effectively also the timeout in seconds to wait for unloading of script assemblies to finish.
 		</member>
+		<member name="dotnet/project/ignore_not_supported_export_error" type="bool" setter="" getter="" default="false">
+			Ignores the non supported error when exporting from the non supported platform, e.g. [EditorExportPlatformWeb], [EditorExportPlatformExtension].
+		</member>
 		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
 			Change this value to set up a multi-project scenario where there are multiple [code].csproj[/code] files. Keep in mind that the Godot project is considered one of the C# projects in the workspace and its root directory should contain the [code]project.godot[/code] and [code].csproj[/code] files next to each other.

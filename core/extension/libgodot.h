@@ -70,6 +70,17 @@ LIBGODOT_API GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, cha
  */
 LIBGODOT_API void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance);
 
+/**
+ * @name libgodot_mono_set_plugins_initialize
+ * @since 4.x
+ *
+ * Sets plugins initialize function that is used to initialize the module mono.
+ * Does nothing when used outside of mono build.
+ *
+ * @param p_plugins_initialize The plugins initialize function.
+ */
+LIBGODOT_API void libgodot_mono_set_plugins_initialize(void *p_plugins_initialize);
+
 #ifdef __cplusplus
 }
 #endif // __cplusplus

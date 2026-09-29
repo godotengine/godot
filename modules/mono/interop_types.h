@@ -36,165 +36,175 @@
 extern "C" {
 #endif
 
-// This is taken from the old GDNative, which was removed.
-
-#define GODOT_VARIANT_SIZE (sizeof(real_t) * 4 + sizeof(int64_t))
+// Keep in sync with modules/mono/glue/GodotSharp/GodotSharp/Core/NativeInterop/InteropStructs.cs,
+// and C# math structs.
 
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_VARIANT_SIZE];
+	struct godot_variant_obj_data {
+		uint64_t _dont_touch_that_0;
+		void *_dont_touch_that_1;
+	};
+	struct godot_variant_vector4 {
+		real_t _dont_touch_that_0;
+		real_t _dont_touch_that_1;
+		real_t _dont_touch_that_2;
+		real_t _dont_touch_that_3;
+	};
+	int32_t _dont_touch_that_0;
+	union {
+		void *_dont_touch_that_0;
+		struct godot_variant_obj_data _dont_touch_that_1;
+		struct godot_variant_vector4 _dont_touch_that_2;
+	} _dont_touch_that_1 alignas(8);
 } godot_variant;
 
-#define GODOT_ARRAY_SIZE sizeof(void *)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_ARRAY_SIZE];
+	union {
+		uint8_t _dont_touch_that_0;
+		void *_dont_touch_that_1;
+	};
 } godot_array;
 
-#define GODOT_DICTIONARY_SIZE sizeof(void *)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_DICTIONARY_SIZE];
+	union {
+		uint8_t _dont_touch_that_0;
+		void *_dont_touch_that_1;
+	};
 } godot_dictionary;
 
-#define GODOT_STRING_SIZE sizeof(void *)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_STRING_SIZE];
+	void *_dont_touch_that;
 } godot_string;
 
-#define GODOT_STRING_NAME_SIZE sizeof(void *)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_STRING_NAME_SIZE];
+	void *_dont_touch_that;
 } godot_string_name;
 
-#define GODOT_PACKED_ARRAY_SIZE (2 * sizeof(void *))
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_PACKED_ARRAY_SIZE];
+	void *_dont_touch_that_0;
+	void *_dont_touch_that_1;
 } godot_packed_array;
 
-#define GODOT_VECTOR2_SIZE (sizeof(real_t) * 2)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_VECTOR2_SIZE];
+	real_t _dont_touch_that_0;
+	real_t _dont_touch_that_1;
 } godot_vector2;
 
-#define GODOT_VECTOR2I_SIZE (sizeof(int32_t) * 2)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_VECTOR2I_SIZE];
+	int32_t _dont_touch_that_0;
+	int32_t _dont_touch_that_1;
 } godot_vector2i;
 
-#define GODOT_RECT2_SIZE (sizeof(real_t) * 4)
-
-typedef struct godot_rect2 {
-	uint8_t _dont_touch_that[GODOT_RECT2_SIZE];
+typedef struct {
+	godot_vector2 _dont_touch_that_0;
+	godot_vector2 _dont_touch_that_1;
 } godot_rect2;
 
-#define GODOT_RECT2I_SIZE (sizeof(int32_t) * 4)
-
-typedef struct godot_rect2i {
-	uint8_t _dont_touch_that[GODOT_RECT2I_SIZE];
+typedef struct {
+	godot_vector2i _dont_touch_that_0;
+	godot_vector2i _dont_touch_that_1;
 } godot_rect2i;
 
-#define GODOT_VECTOR3_SIZE (sizeof(real_t) * 3)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_VECTOR3_SIZE];
+	real_t _dont_touch_that_0;
+	real_t _dont_touch_that_1;
+	real_t _dont_touch_that_2;
 } godot_vector3;
 
-#define GODOT_VECTOR3I_SIZE (sizeof(int32_t) * 3)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_VECTOR3I_SIZE];
+	int32_t _dont_touch_that_0;
+	int32_t _dont_touch_that_1;
+	int32_t _dont_touch_that_2;
 } godot_vector3i;
 
-#define GODOT_TRANSFORM2D_SIZE (sizeof(real_t) * 6)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_TRANSFORM2D_SIZE];
+	godot_vector2 _dont_touch_that_0;
+	godot_vector2 _dont_touch_that_1;
+	godot_vector2 _dont_touch_that_2;
 } godot_transform2d;
 
-#define GODOT_VECTOR4_SIZE (sizeof(real_t) * 4)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_VECTOR4_SIZE];
+	real_t _dont_touch_that_0;
+	real_t _dont_touch_that_1;
+	real_t _dont_touch_that_2;
+	real_t _dont_touch_that_3;
 } godot_vector4;
 
-#define GODOT_VECTOR4I_SIZE (sizeof(int32_t) * 4)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_VECTOR4I_SIZE];
+	int32_t _dont_touch_that_0;
+	int32_t _dont_touch_that_1;
+	int32_t _dont_touch_that_2;
+	int32_t _dont_touch_that_3;
 } godot_vector4i;
 
-#define GODOT_PLANE_SIZE (sizeof(real_t) * 4)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_PLANE_SIZE];
+	godot_vector3 _dont_touch_that_0;
+	real_t _dont_touch_that_1;
 } godot_plane;
 
-#define GODOT_QUATERNION_SIZE (sizeof(real_t) * 4)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_QUATERNION_SIZE];
+	real_t _dont_touch_that_0;
+	real_t _dont_touch_that_1;
+	real_t _dont_touch_that_2;
+	real_t _dont_touch_that_3;
 } godot_quaternion;
 
-#define GODOT_AABB_SIZE (sizeof(real_t) * 6)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_AABB_SIZE];
+	godot_vector3 _dont_touch_that_0;
+	godot_vector3 _dont_touch_that_1;
 } godot_aabb;
 
-#define GODOT_BASIS_SIZE (sizeof(real_t) * 9)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_BASIS_SIZE];
+	godot_vector3 _dont_touch_that_0;
+	godot_vector3 _dont_touch_that_1;
+	godot_vector3 _dont_touch_that_2;
 } godot_basis;
 
-#define GODOT_TRANSFORM3D_SIZE (sizeof(real_t) * 12)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_TRANSFORM3D_SIZE];
+	godot_basis _dont_touch_that_0;
+	godot_vector3 _dont_touch_that_1;
 } godot_transform3d;
 
-#define GODOT_PROJECTION_SIZE (sizeof(real_t) * 4 * 4)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_PROJECTION_SIZE];
+	godot_vector4 _dont_touch_that_0;
+	godot_vector4 _dont_touch_that_1;
+	godot_vector4 _dont_touch_that_2;
+	godot_vector4 _dont_touch_that_3;
 } godot_projection;
 
 // Colors should always use 32-bit floats, so don't use real_t here.
-#define GODOT_COLOR_SIZE (sizeof(float) * 4)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_COLOR_SIZE];
+	float _dont_touch_that_0;
+	float _dont_touch_that_1;
+	float _dont_touch_that_2;
+	float _dont_touch_that_3;
 } godot_color;
 
-#define GODOT_NODE_PATH_SIZE sizeof(void *)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_NODE_PATH_SIZE];
+	void *_dont_touch_that;
 } godot_node_path;
 
-#define GODOT_RID_SIZE sizeof(uint64_t)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_RID_SIZE];
+	uint64_t _dont_touch_that;
 } godot_rid;
 
-// Alignment hardcoded in `core/variant/callable.h`.
-#define GODOT_CALLABLE_SIZE (16)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_CALLABLE_SIZE];
+	union {
+		uint8_t _dont_touch_that_0;
+		godot_string_name _dont_touch_that_1;
+	} _dont_touch_that_0;
+	union {
+		uint64_t _dont_touch_that_0;
+		void *_dont_touch_that_1;
+	} _dont_touch_that_1 alignas(8);
 } godot_callable;
 
-// Alignment hardcoded in `core/variant/callable.h`.
-#define GODOT_SIGNAL_SIZE (16)
-
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_SIGNAL_SIZE];
+	union {
+		uint8_t _dont_touch_that_0;
+		godot_string_name _dont_touch_that_1;
+	} _dont_touch_that_0;
+	uint64_t _dont_touch_that_1 alignas(8);
 } godot_signal;
 
 #ifdef __cplusplus

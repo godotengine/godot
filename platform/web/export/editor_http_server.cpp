@@ -88,7 +88,7 @@ void EditorHTTPServer::_send_response() {
 	const int query_index = req[1].find_char('?');
 	const String path = (query_index == -1) ? req[1] : req[1].substr(0, query_index);
 
-	const String req_file = path.get_file();
+	const String req_file = path.trim_prefix("/");
 	const String req_ext = path.get_extension();
 	const String cache_path = EditorPaths::get_singleton()->get_temp_dir().path_join("web");
 	const String filepath = cache_path.path_join(req_file);
@@ -250,6 +250,16 @@ EditorHTTPServer::EditorHTTPServer() {
 	mimes["png"] = "image/png";
 	mimes["svg"] = "image/svg";
 	mimes["wasm"] = "application/wasm";
+
+	// https://github.com/dotnet/runtime/blob/v11.0.0-rc.1.26425.128/src/mono/wasm/features.md#mime-types
+	mimes["bin"] = "application/octet-stream";
+	mimes["dat"] = "application/octet-stream";
+	mimes["map"] = "application/json";
+	mimes["symbols"] = "text/plain";
+	mimes["pdb"] = "application/octet-stream";
+	mimes["dll"] = "application/octet-stream";
+	mimes["webcil"] = "application/octet-stream";
+
 	server.instantiate();
 	stop();
 }
