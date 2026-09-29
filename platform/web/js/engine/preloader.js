@@ -16,7 +16,14 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 				return Promise.resolve();
 			});
 		}
-		const reader = response.body.getReader();
+		let reader;
+		if (response.url.endsWith('.gzip')) {
+			const ds = new DecompressionStream('gzip');
+			reader = ds.readable.getReader();
+			response.body.pipeThrough(ds);
+		} else {
+			reader = response.body.getReader();
+		}
 		return new Response(new ReadableStream({
 			start: function (controller) {
 				onloadprogress(reader, controller).then(function () {

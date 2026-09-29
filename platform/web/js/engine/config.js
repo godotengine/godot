@@ -138,6 +138,12 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 * @type {number}
 		 */
 		godotPoolSize: 4,
+		/*
+		 * Fetch pack and engine gzip from the server.
+		 * @memberof EngineConfig
+		 * @type {boolean}
+		 */
+		gzip: false,
 		/**
 		 * A MessagePort used to send debug messages when using protocol messageport://
 		 * @memberof EngineConfig
@@ -272,6 +278,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		this.fileSizes = parse('fileSizes', this.fileSizes);
 		this.emscriptenPoolSize = parse('emscriptenPoolSize', this.emscriptenPoolSize);
 		this.godotPoolSize = parse('godotPoolSize', this.godotPoolSize);
+		this.gzip = parse('gzip', this.gzip);
 		this.args = parse('args', this.args);
 		this.debugPort = parse('debugPort', this.debugPort);
 		this.onExecute = parse('onExecute', this.onExecute);
