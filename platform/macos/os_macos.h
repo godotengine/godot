@@ -207,6 +207,7 @@ class OS_MacOS_Headless : public OS_MacOS {
 public:
 	virtual void alert(const String &p_alert, const String &p_title) override;
 
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 	virtual void run() override;
 
 	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);

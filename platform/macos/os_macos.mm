@@ -1197,6 +1197,12 @@ void OS_MacOS_Headless::alert(const String &p_alert, const String &p_title) {
 	WARN_PRINT(p_alert);
 }
 
+void OS_MacOS_Headless::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
+	// The headless main loop polls CFRunLoop without waiting, so a frame timer
+	// would not throttle it. Use the blocking delay instead.
+	OS_Unix::add_frame_delay(p_can_draw, p_wake_for_events);
+}
+
 void OS_MacOS_Headless::run() {
 	CFRunLoopGetCurrent();
 
