@@ -2672,7 +2672,8 @@ Quaternion Animation::spherical_makima_interpolate_in_time(const Quaternion &p_f
 	ln.x = makima_interpolate_in_time(ln_from.x, ln_to.x, ln_pre.x, ln_post.x, ln_pre_pre.x, ln_post_post.x, p_weight, p_to_t, p_pre_t, p_post_t, p_pre_pre_t, p_post_post_t);
 	ln.y = makima_interpolate_in_time(ln_from.y, ln_to.y, ln_pre.y, ln_post.y, ln_pre_pre.y, ln_post_post.y, p_weight, p_to_t, p_pre_t, p_post_t, p_pre_pre_t, p_post_post_t);
 	ln.z = makima_interpolate_in_time(ln_from.z, ln_to.z, ln_pre.z, ln_post.z, ln_pre_pre.z, ln_post_post.z, p_weight, p_to_t, p_pre_t, p_post_t, p_pre_pre_t, p_post_post_t);
-	Quaternion q1 = from_q * ln.exp();
+	Quaternion from_ln = ln;
+	Quaternion to_in_from_ln = ln_to;
 
 	// Calc by Expmap in to_q space.
 	ln_from = (to_q.inverse() * from_q).log();
@@ -2685,10 +2686,10 @@ Quaternion Animation::spherical_makima_interpolate_in_time(const Quaternion &p_f
 	ln.x = makima_interpolate_in_time(ln_from.x, ln_to.x, ln_pre.x, ln_post.x, ln_pre_pre.x, ln_post_post.x, p_weight, p_to_t, p_pre_t, p_post_t, p_pre_pre_t, p_post_post_t);
 	ln.y = makima_interpolate_in_time(ln_from.y, ln_to.y, ln_pre.y, ln_post.y, ln_pre_pre.y, ln_post_post.y, p_weight, p_to_t, p_pre_t, p_post_t, p_pre_pre_t, p_post_post_t);
 	ln.z = makima_interpolate_in_time(ln_from.z, ln_to.z, ln_pre.z, ln_post.z, ln_pre_pre.z, ln_post_post.z, p_weight, p_to_t, p_pre_t, p_post_t, p_pre_pre_t, p_post_post_t);
-	Quaternion q2 = to_q * ln.exp();
+	Quaternion to_ln = ln;
 
 	// To cancel error made by Expmap ambiguity, do blending.
-	return q1.slerp(q2, p_weight);
+	return Quaternion::blend_log(from_q, from_ln, to_ln, to_in_from_ln, p_weight);
 }
 
 // Modified Akima interpolation for anytype.
