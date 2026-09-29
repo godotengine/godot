@@ -30,6 +30,8 @@
 
 #include "callable_mp.h"
 
+#include <cstring>
+
 bool CallableCustomMethodPointerBase::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	const CallableCustomMethodPointerBase *a = static_cast<const CallableCustomMethodPointerBase *>(p_a);
 	const CallableCustomMethodPointerBase *b = static_cast<const CallableCustomMethodPointerBase *>(p_b);
@@ -41,7 +43,7 @@ bool CallableCustomMethodPointerBase::compare_equal(const CallableCustom *p_a, c
 	// Avoid sorting by memory address proximity, which leads to unpredictable performance over time
 	// due to the reuse of old addresses for newer objects. Use byte-wise comparison to leverage the
 	// backwards encoding of little-endian systems as a way to decouple spatiality and time.
-	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size * 4) == 0;
+	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size) == 0;
 }
 
 bool CallableCustomMethodPointerBase::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -53,7 +55,7 @@ bool CallableCustomMethodPointerBase::compare_less(const CallableCustom *p_a, co
 	}
 
 	// See note in compare_equal().
-	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size * 4) < 0;
+	return memcmp(a->comp_ptr, b->comp_ptr, a->comp_size) < 0;
 }
 
 CallableCustom::CompareEqualFunc CallableCustomMethodPointerBase::get_compare_equal_func() const {
@@ -68,16 +70,18 @@ uint32_t CallableCustomMethodPointerBase::hash() const {
 	return h;
 }
 
-void CallableCustomMethodPointerBase::_setup(uint32_t *p_base_ptr, uint32_t p_ptr_size) {
+void CallableCustomMethodPointerBase::_setup(const std::byte *p_base_ptr, uint32_t p_ptr_size) {
 	comp_ptr = p_base_ptr;
-	comp_size = p_ptr_size / 4;
+	comp_size = p_ptr_size;
 
 	// Precompute hash.
-	for (uint32_t i = 0; i < comp_size; i++) {
+	uint32_t word;
+	for (uint32_t i = 0; i < comp_size; i += sizeof(word)) {
+		memcpy(&word, comp_ptr + i, sizeof(word));
 		if (i == 0) {
-			h = hash_murmur3_one_32(comp_ptr[i]);
+			h = hash_murmur3_one_32(word);
 		} else {
-			h = hash_murmur3_one_32(comp_ptr[i], h);
+			h = hash_murmur3_one_32(word, h);
 		}
 	}
 }
