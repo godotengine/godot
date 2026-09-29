@@ -450,6 +450,10 @@ void RenderSceneBuffersGLES3::_clear_msaa3d_buffers() {
 		}
 		msaa3d.depth = 0;
 	}
+
+	msaa3d.samples = 1;
+	msaa3d.needs_resolve = false;
+	msaa3d.check_fbo_cache = false;
 }
 
 void RenderSceneBuffersGLES3::_clear_intermediate_buffers() {
