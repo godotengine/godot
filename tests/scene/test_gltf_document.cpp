@@ -42,6 +42,7 @@ TEST_FORCE_LINK(test_gltf_document)
 
 #include "modules/gltf/extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "modules/gltf/gltf_document.h"
+#include "modules/gltf/structures/gltf_texture_sampler.h"
 
 namespace TestGLTFDocument {
 
@@ -193,6 +194,21 @@ void test_gltf_save(Node *p_node) {
 	const Error err_save_glb = gltf_document_save->write_to_filesystem(gltf_state_save, TestUtils::get_temp_path("cube.glb"));
 	CHECK(err_save_gltf == OK);
 	CHECK(err_save_glb == OK);
+}
+
+TEST_CASE("[GLTFTextureSampler] Wrap S and T remain independent") {
+	Ref<GLTFTextureSampler> sampler;
+	sampler.instantiate();
+
+	sampler->set_wrap_s(GLTFTextureSampler::WrapMode::CLAMP_TO_EDGE);
+	sampler->set_wrap_t(GLTFTextureSampler::WrapMode::REPEAT);
+	CHECK(sampler->get_wrap_s() == GLTFTextureSampler::WrapMode::CLAMP_TO_EDGE);
+	CHECK(sampler->get_wrap_t() == GLTFTextureSampler::WrapMode::REPEAT);
+
+	sampler->set_wrap_s(GLTFTextureSampler::WrapMode::REPEAT);
+	sampler->set_wrap_t(GLTFTextureSampler::WrapMode::CLAMP_TO_EDGE);
+	CHECK(sampler->get_wrap_s() == GLTFTextureSampler::WrapMode::REPEAT);
+	CHECK(sampler->get_wrap_t() == GLTFTextureSampler::WrapMode::CLAMP_TO_EDGE);
 }
 
 TEST_CASE("[SceneTree][GLTFDocument] Load cube.gltf") {
