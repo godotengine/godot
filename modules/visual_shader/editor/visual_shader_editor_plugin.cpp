@@ -128,6 +128,56 @@ void VisualShaderNodePlugin::_bind_methods() {
 
 ///////////////////
 
+void VSGraphNode::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
+			const Ref<StyleBox> sb_panel = get_theme_stylebox(SceneStringName(panel));
+			const Size2 size = get_size();
+			// Deeper cards are more narrow.
+			for (uint32_t i = 0; i < stack_cards.size(); i++) {
+				const real_t offset = (i + 1) * STACK_DECORATION_CARD_STEP * EDSCALE;
+				RenderingServer::get_singleton()->canvas_item_clear(stack_cards[i]);
+				const Rect2 canvas_rect = Rect2(offset, size.height, size.width - 2 * offset, offset);
+				RenderingServer::get_singleton()->canvas_item_set_custom_rect(stack_cards[i], true, canvas_rect);
+				sb_panel->draw(stack_cards[i], Rect2(offset, offset, size.width - 2 * offset, size.height));
+			}
+		} break;
+	}
+}
+
+void VSGraphNode::set_draw_stack_decoration(bool p_enable) {
+	if (p_enable == !stack_cards.is_empty()) {
+		return;
+	}
+
+	RenderingServer *rs = RS::get_singleton();
+	if (p_enable) {
+		for (uint32_t i = 0; i < stack_cards.capacity(); i++) {
+			const RID card = rs->canvas_item_create();
+			rs->canvas_item_set_parent(card, get_canvas_item());
+			rs->canvas_item_set_use_parent_material(card, true);
+			rs->canvas_item_set_draw_behind_parent(card, true);
+			rs->canvas_item_set_draw_index(card, -1 - (int)i);
+			rs->canvas_item_set_clip(card, true);
+			rs->canvas_item_set_self_modulate(card, Color(1, 1, 1, STACK_DECORATION_CARD_OPACITY / (i + 1)));
+			stack_cards.push_back(card);
+		}
+	} else {
+		for (const RID &card : stack_cards) {
+			rs->free_rid(card);
+		}
+		stack_cards.clear();
+	}
+
+	queue_redraw();
+}
+
+VSGraphNode::~VSGraphNode() {
+	for (const RID &card : stack_cards) {
+		RenderingServer::get_singleton()->free_rid(card);
+	}
+}
+
 void VSGraphNode::_draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color, const Color &p_rim_color) {
 	Ref<Texture2D> port_icon = p_left ? get_slot_custom_icon_left(p_slot_index) : get_slot_custom_icon_right(p_slot_index);
 
@@ -647,7 +697,7 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 
 		if (p_port_id != -1 && link.output_ports[p_port_id].preview_button != nullptr) {
 			if (is_dirty) {
-				link.preview_pos = link.graph_element->get_child_count();
+				link.preview_pos = link.graph_element->get_child_count(false);
 			}
 
 			VBoxContainer *vbox = memnew(VBoxContainer);
@@ -1061,22 +1111,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		node = gnode;
 
 		if (is_group) {
-			// Add group icon to node titlebar.
-			HBoxContainer *titlebar = gnode->get_titlebar_hbox();
-			TextureRect *group_icon = memnew(TextureRect);
-			group_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
-			group_icon->set_texture(editor->get_editor_theme_icon("VisualShaderGroup"));
-			titlebar->add_child(group_icon, false, Node::INTERNAL_MODE_FRONT);
+			// Hint that the node contains other nodes.
+			gnode->set_draw_stack_decoration(true);
 
 			Ref<VisualShaderGroup> group = group_node->get_group();
 
-			// Add "Edit" button to group node titlebar.
-			Button *edit_group_btn = memnew(Button);
-			edit_group_btn->set_tooltip_text(TTRC("Edit"));
-			edit_group_btn->set_button_icon(editor->get_editor_theme_icon("Edit"));
-			edit_group_btn->set_disabled(group.is_null());
-			edit_group_btn->connect(SceneStringName(pressed), callable_mp(editor, &VisualShaderEditor::_edit_group_in_graph).bind(p_id), CONNECT_DEFERRED);
-			titlebar->add_child(edit_group_btn);
+			gnode->connect(SceneStringName(gui_input), callable_mp(editor, &VisualShaderEditor::_group_node_gui_input).bind(p_id));
 
 			// Update title and inputs/outputs on changes. The graph is rebuilt frequently, so guard
 			// against connecting twice.
@@ -1098,11 +1138,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 	// Set the node's titlebar color based on its category.
 	if (vsnode->get_category() != VisualShaderNode::CATEGORY_NONE && !is_frame && !is_reroute) {
-		Ref<StyleBoxFlat> sb_colored = editor->get_theme_stylebox("titlebar", "GraphNode")->duplicate();
+		Ref<StyleBoxFlat> sb_colored = node->get_theme_stylebox(SNAME("titlebar"))->duplicate();
 		sb_colored->set_bg_color(category_color[vsnode->get_category()]);
 		node->add_theme_style_override("titlebar", sb_colored);
 
-		Ref<StyleBoxFlat> sb_colored_selected = editor->get_theme_stylebox("titlebar_selected", "GraphNode")->duplicate();
+		Ref<StyleBoxFlat> sb_colored_selected = node->get_theme_stylebox(SNAME("titlebar_selected"))->duplicate();
 		sb_colored_selected->set_bg_color(category_color[vsnode->get_category()].lightened(0.2));
 		node->add_theme_style_override("titlebar_selected", sb_colored_selected);
 	}
@@ -3197,6 +3237,18 @@ void VisualShaderEditor::_edit_group_in_graph(int p_idx) {
 	_update_graph();
 
 	_restore_editor_state();
+}
+
+void VisualShaderEditor::_group_node_gui_input(const Ref<InputEvent> &p_event, int p_idx) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+		Ref<VisualShaderNodeGroup> group_node = edited_shader_graph->get_node(p_idx);
+		if (group_node.is_null() || group_node->get_group().is_null()) {
+			return;
+		}
+		accept_event();
+		callable_mp(this, &VisualShaderEditor::_edit_group_in_graph).call_deferred(p_idx);
+	}
 }
 
 void VisualShaderEditor::_exit_group() {
@@ -5733,6 +5785,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 		selected_parameters.clear();
 		selected_frame = -1;
 		selected_float_constant = -1;
+		selected_group_node = -1;
 
 		List<int> selected_deletable_graph_elements;
 		List<GraphElement *> selected_graph_elements;
@@ -5749,6 +5802,10 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			selected_graph_elements.push_back(graph_element);
+
+			if (Object::cast_to<VisualShaderNodeGroup>(vsnode.ptr())) {
+				selected_group_node = id;
+			}
 
 			if (!vsnode->is_deletable()) {
 				continue;
@@ -5782,6 +5839,10 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			selected_float_constant = -1;
 		}
 
+		if (selected_graph_elements.size() > 1) {
+			selected_group_node = -1;
+		}
+
 		bool copy_buffer_empty = true;
 		for (const CopyItem &item : copy_items_buffer) {
 			if (!item.disabled) {
@@ -5804,14 +5865,22 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 		} else if (selected_graph_elements.is_empty() && copy_buffer_empty) {
 			_show_members_dialog(true);
 		} else {
-			popup_menu->set_item_disabled(NodeMenuOptions::CUT, selected_deletable_graph_elements.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::COPY, selected_deletable_graph_elements.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::PASTE, copy_buffer_empty);
-			popup_menu->set_item_disabled(NodeMenuOptions::DELETE_, selected_deletable_graph_elements.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, selected_deletable_graph_elements.is_empty());
-			popup_menu->set_item_disabled(NodeMenuOptions::CLEAR_COPY_BUFFER, copy_buffer_empty);
+			popup_menu->set_item_disabled(popup_menu->get_item_index(NodeMenuOptions::CUT), selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(popup_menu->get_item_index(NodeMenuOptions::COPY), selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(popup_menu->get_item_index(NodeMenuOptions::PASTE), copy_buffer_empty);
+			popup_menu->set_item_disabled(popup_menu->get_item_index(NodeMenuOptions::DELETE_), selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(popup_menu->get_item_index(NodeMenuOptions::DUPLICATE), selected_deletable_graph_elements.is_empty());
+			popup_menu->set_item_disabled(popup_menu->get_item_index(NodeMenuOptions::CLEAR_COPY_BUFFER), copy_buffer_empty);
 
-			int temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR2);
+			int temp = popup_menu->get_item_index(NodeMenuOptions::EDIT_GROUP);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
+			temp = popup_menu->get_item_index(NodeMenuOptions::EDIT_GROUP_SEPARATOR);
+			if (temp != -1) {
+				popup_menu->remove_item(temp);
+			}
+			temp = popup_menu->get_item_index(NodeMenuOptions::SEPARATOR2);
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
@@ -5906,6 +5975,16 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 					item_index = popup_menu->get_item_index(NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK);
 					popup_menu->set_item_checked(item_index, frame_ref->is_autoshrink_enabled());
 				}
+			}
+
+			if (selected_group_node != -1) {
+				Ref<VisualShaderNodeGroup> group_node = edited_shader_graph->get_node(selected_group_node);
+
+				popup_menu->add_item(TTR("Edit Group"), NodeMenuOptions::EDIT_GROUP);
+				popup_menu->set_item_disabled(-1, group_node->get_group().is_null());
+				popup_menu->set_item_index(-1, 0);
+				popup_menu->add_separator("", NodeMenuOptions::EDIT_GROUP_SEPARATOR);
+				popup_menu->set_item_index(-1, 1);
 			}
 
 			popup_menu->set_position(gpos);
@@ -7069,6 +7148,9 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 			break;
 		case NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK:
 			_frame_autoshrink_enabled_changed(selected_frame);
+			break;
+		case NodeMenuOptions::EDIT_GROUP:
+			_edit_group_in_graph(selected_group_node);
 			break;
 		default:
 			break;

@@ -34,6 +34,7 @@
 #include "../visual_shader_group.h"
 
 #include "core/object/undo_redo.h"
+#include "core/templates/fixed_vector.h"
 #include "editor/inspector/editor_properties.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/script/script_editor_base.h"
@@ -83,9 +84,21 @@ public:
 class VSGraphNode : public GraphNode {
 	GDCLASS(VSGraphNode, GraphNode);
 
+	const float STACK_DECORATION_CARD_STEP = 6.0;
+	const float STACK_DECORATION_CARD_OPACITY = 0.6;
+
+	FixedVector<RID, 2> stack_cards; // Decoration for node groups.
+
 protected:
+	void _notification(int p_what);
+
 	void _draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color, const Color &p_rim_color);
 	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
+
+public:
+	void set_draw_stack_decoration(bool p_enable);
+
+	~VSGraphNode();
 };
 
 class VSRerouteNode : public VSGraphNode {
@@ -410,6 +423,8 @@ class VisualShaderEditor : public ScriptEditorBase {
 	};
 
 	enum NodeMenuOptions {
+		EDIT_GROUP,
+		EDIT_GROUP_SEPARATOR, // ignore
 		ADD,
 		SEPARATOR, // ignore
 		CUT,
@@ -530,6 +545,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 	void _set_mode(int p_which);
 
 	void _edit_group_in_graph(int p_idx);
+	void _group_node_gui_input(const Ref<InputEvent> &p_event, int p_idx);
 	void _exit_group();
 	void _update_group_related_nodes();
 	void _edit_group_ports_pressed(int p_group_input_node_id, Button *p_button);
@@ -593,6 +609,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 	HashSet<int> selected_parameters;
 	int selected_frame = -1;
 	int selected_float_constant = -1;
+	int selected_group_node = -1;
 
 	void _convert_constants_to_parameters(bool p_vice_versa);
 	void _detach_nodes_from_frame_request();

@@ -1431,20 +1431,23 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			const int gn_corner_radius = 3;
 
 			const Color gn_bg_color = p_config.dark_theme ? p_config.dark_color_3 : p_config.dark_color_1.lerp(p_config.mono_color, 0.09);
-			const Color gn_frame_bg = _get_base_color(p_config, 2.4, 0.9);
+			const Color gn_frame_bg = p_config.surface_base_color;
 
 			const bool high_contrast_borders = p_config.draw_extra_borders && p_config.dark_theme;
+			const float gn_border_contrast = high_contrast_borders ? 0.4 : 0.25;
+			const Color gn_border_color = p_config.dark_theme ? gn_bg_color.lightened(gn_border_contrast) : gn_bg_color.darkened(gn_border_contrast);
 
 			Ref<StyleBoxFlat> gn_panel_style = EditorThemeManager::make_flat_stylebox(gn_frame_bg, gn_margin_side, gn_margin_top, gn_margin_side, gn_margin_bottom, p_config.corner_radius);
 			gn_panel_style->set_border_width(SIDE_BOTTOM, EDSCALE_RND(2));
 			gn_panel_style->set_border_width(SIDE_LEFT, EDSCALE_RND(2));
 			gn_panel_style->set_border_width(SIDE_RIGHT, EDSCALE_RND(2));
-			gn_panel_style->set_border_color(high_contrast_borders ? gn_bg_color.lightened(0.2) : gn_bg_color.darkened(0.3));
+			gn_panel_style->set_border_color(gn_border_color);
 			gn_panel_style->set_corner_radius_individual(0, 0, EDSCALE_RND(gn_corner_radius), EDSCALE_RND(gn_corner_radius));
 			gn_panel_style->set_anti_aliased(true);
 
 			Ref<StyleBoxFlat> gn_panel_selected_style = gn_panel_style->duplicate();
-			gn_panel_selected_style->set_bg_color(p_config.dark_theme ? gn_bg_color.lightened(0.15) : gn_bg_color.darkened(0.15));
+			// Opaque variant of the inspector's selected property background (see "bg_selected" of EditorProperty).
+			gn_panel_selected_style->set_bg_color(gn_frame_bg.blend(p_config.mono_color * Color(1, 1, 1, 0.05)));
 			gn_panel_selected_style->set_border_width(SIDE_TOP, 0);
 			gn_panel_selected_style->set_border_width(SIDE_BOTTOM, EDSCALE_RND(2));
 			gn_panel_selected_style->set_border_width(SIDE_LEFT, EDSCALE_RND(2));
@@ -1459,7 +1462,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			gn_titlebar_style->set_border_width(SIDE_TOP, EDSCALE_RND(2));
 			gn_titlebar_style->set_border_width(SIDE_LEFT, EDSCALE_RND(2));
 			gn_titlebar_style->set_border_width(SIDE_RIGHT, EDSCALE_RND(2));
-			gn_titlebar_style->set_border_color(high_contrast_borders ? gn_bg_color.lightened(0.2) : gn_bg_color.darkened(0.3));
+			gn_titlebar_style->set_border_color(gn_border_color);
 			gn_titlebar_style->set_expand_margin(SIDE_TOP, EDSCALE_RND(2));
 			gn_titlebar_style->set_corner_radius_individual(EDSCALE_RND(gn_corner_radius), EDSCALE_RND(gn_corner_radius), 0, 0);
 			gn_titlebar_style->set_anti_aliased(true);
