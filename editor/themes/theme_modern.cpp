@@ -668,8 +668,8 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_constant("scrollbar_margin_top", "Tree", 0);
 			p_theme->set_constant("scrollbar_margin_right", "Tree", 0);
 			p_theme->set_constant("scrollbar_margin_bottom", "Tree", 0);
-			p_theme->set_constant("scrollbar_h_separation", "Tree", EDSCALE_RND(1));
-			p_theme->set_constant("scrollbar_v_separation", "Tree", EDSCALE_RND(1));
+			p_theme->set_constant("scrollbar_h_separation", "Tree", 0);
+			p_theme->set_constant("scrollbar_v_separation", "Tree", 0);
 
 			Color relationship_line_color = p_config.mono_color * Color(1, 1, 1, p_config.relationship_line_opacity);
 			Color highlight_line_color = p_config.mono_color * Color(1, 1, 1, p_config.relationship_line_opacity * 2);
@@ -786,7 +786,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_constant("scrollbar_margin_top", "ItemList", 0);
 			p_theme->set_constant("scrollbar_margin_right", "ItemList", 0);
 			p_theme->set_constant("scrollbar_margin_bottom", "ItemList", 0);
-			p_theme->set_constant("scrollbar_h_separation", "ItemList", EDSCALE_RND(1));
+			p_theme->set_constant("scrollbar_h_separation", "ItemList", 0);
 			p_theme->set_constant("icon_margin", "ItemList", EDSCALE_RND(p_config.increased_margin + 2));
 			p_theme->set_constant(SceneStringName(line_separation), "ItemList", p_config.separation_margin);
 			p_theme->set_constant("outline_size", "ItemList", 0);
