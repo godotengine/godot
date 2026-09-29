@@ -412,7 +412,7 @@ Size2 FlowContainer::_get_minimum_size(bool p_use_desired_sizes) const {
 	return minimum;
 }
 
-Size2 FlowContainer::get_minimum_size() const {
+Size2 FlowContainer::_get_minimum_size() const {
 	return _get_minimum_size(false);
 }
 

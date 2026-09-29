@@ -74,8 +74,8 @@ void ScalableContainer::_notification(int p_what) {
 	}
 }
 
-Size2 ScalableContainer::get_minimum_size() const {
-	return MarginContainer::get_minimum_size() * EDSCALE;
+Size2 ScalableContainer::_get_minimum_size() const {
+	return MarginContainer::_get_minimum_size() * EDSCALE;
 }
 
 ScalableContainer::ScalableContainer() {

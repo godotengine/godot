@@ -948,7 +948,7 @@ void FontPreview::_notification(int p_what) {
 	}
 }
 
-Size2 FontPreview::get_minimum_size() const {
+Size2 FontPreview::_get_minimum_size() const {
 	return Vector2(64, 64) * EDSCALE;
 }
 

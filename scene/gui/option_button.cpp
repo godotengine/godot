@@ -52,12 +52,12 @@ void OptionButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	Button::shortcut_input(p_event);
 }
 
-Size2 OptionButton::get_minimum_size() const {
+Size2 OptionButton::_get_minimum_size() const {
 	Size2 minsize;
 	if (fit_to_longest_item) {
 		minsize = _cached_size;
 	} else {
-		minsize = Button::get_minimum_size();
+		minsize = Button::_get_minimum_size();
 	}
 
 	if (has_theme_icon(SNAME("arrow"))) {

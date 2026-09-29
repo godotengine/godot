@@ -127,10 +127,10 @@ protected:
 	void _grabber_mouse_exited();
 	void _focus_entered(bool p_hide_focus = false);
 
+	virtual Size2 _get_minimum_size() const override;
+
 public:
 	String get_tooltip(const Point2 &p_pos) const override;
-
-	virtual Size2 get_minimum_size() const override;
 
 	String get_text_value() const;
 	void set_label(const String &p_label);

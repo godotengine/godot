@@ -32,7 +32,7 @@
 
 #include "scene/theme/theme_db.h"
 
-Size2 Separator::get_minimum_size() const {
+Size2 Separator::_get_minimum_size() const {
 	Size2 ms(3, 3);
 	if (orientation == VERTICAL) {
 		ms.x = theme_cache.separation;

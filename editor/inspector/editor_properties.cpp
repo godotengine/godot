@@ -1143,7 +1143,7 @@ void EditorPropertyLayersGrid::set_read_only(bool p_read_only) {
 	read_only = p_read_only;
 }
 
-Size2 EditorPropertyLayersGrid::get_minimum_size() const {
+Size2 EditorPropertyLayersGrid::_get_minimum_size() const {
 	Size2 min_size = get_grid_size();
 
 	// Add extra rows when expanded.

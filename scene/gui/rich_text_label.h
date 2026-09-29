@@ -145,6 +145,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual Size2 _get_minimum_size() const override;
+
 #ifndef DISABLE_DEPRECATED
 	void _push_font_bind_compat_79053(const Ref<Font> &p_font, int p_size);
 	void _set_table_column_expand_bind_compat_79053(int p_column, bool p_expand, int p_ratio);
@@ -1041,8 +1043,6 @@ public:
 
 	void install_effect(const Variant effect);
 	void reload_effects();
-
-	virtual Size2 get_minimum_size() const override;
 
 	RichTextLabel(const String &p_text = String());
 	~RichTextLabel();

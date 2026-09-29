@@ -38,7 +38,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/margin_container.h"
 
-Size2 EditorObjectSelector::get_minimum_size() const {
+Size2 EditorObjectSelector::_get_minimum_size() const {
 	return main_mc->get_minimum_size();
 }
 

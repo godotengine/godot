@@ -52,8 +52,6 @@ public:
 	void set_curve(Ref<Curve> p_curve);
 	Ref<Curve> get_curve();
 
-	Size2 get_minimum_size() const override;
-
 	enum PresetID {
 		PRESET_CONSTANT = 0,
 		PRESET_LINEAR,
@@ -72,6 +70,7 @@ public:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual Size2 _get_minimum_size() const override;
 
 private:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

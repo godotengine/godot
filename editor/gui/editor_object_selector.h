@@ -59,9 +59,9 @@ class EditorObjectSelector : public Button {
 protected:
 	void _notification(int p_what);
 
-public:
-	virtual Size2 get_minimum_size() const override;
+	virtual Size2 _get_minimum_size() const override;
 
+public:
 	void update_path();
 	void clear_path();
 	void enable_path();

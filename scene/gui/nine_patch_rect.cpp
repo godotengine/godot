@@ -52,7 +52,7 @@ void NinePatchRect::_notification(int p_what) {
 	}
 }
 
-Size2 NinePatchRect::get_minimum_size() const {
+Size2 NinePatchRect::_get_minimum_size() const {
 	return Size2(margin[SIDE_LEFT] + margin[SIDE_RIGHT], margin[SIDE_TOP] + margin[SIDE_BOTTOM]);
 }
 

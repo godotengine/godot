@@ -127,9 +127,9 @@ TextShaderPreviewLineLayer::TextShaderPreviewLineLayer() {
 /***  SHADER PREVIEW ****/
 
 class SquareMarginContainer : public MarginContainer {
-public:
-	Size2 get_minimum_size() const override {
-		Size2 ms = MarginContainer::get_minimum_size();
+protected:
+	virtual Size2 _get_minimum_size() const override {
+		Size2 ms = MarginContainer::_get_minimum_size();
 		float side = MAX(get_size().x, ms.y);
 		return Size2(ms.x, side);
 	}

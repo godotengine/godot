@@ -98,7 +98,7 @@ void AnimationNodeBlendTreeEditor::_update_options_menu(bool p_has_input_ports) 
 	use_position_from_popup_menu = false;
 }
 
-Size2 AnimationNodeBlendTreeEditor::get_minimum_size() const {
+Size2 AnimationNodeBlendTreeEditor::_get_minimum_size() const {
 	return Size2(10, 200);
 }
 
