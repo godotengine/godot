@@ -140,7 +140,7 @@ public:
 	[[deprecated("Use Engine::get_physics_ticks_per_second instead.")]] virtual int get_user_physics_ticks_per_second() const { return get_physics_ticks_per_second(); }
 	[[deprecated("Use Engine::get_max_physics_steps_per_frame instead.")]] virtual int get_user_max_physics_steps_per_frame() const { return get_max_physics_steps_per_frame(); }
 
-	[[deprecated]] void set_user_time_scale(double p_scale) {}
+	[[deprecated("Use OS::set_wall_clock_time_scale instead.")]] void set_user_time_scale(double p_scale) {}
 	[[deprecated("Use Engine::get_time_scale instead.")]] double get_effective_time_scale() const { return get_time_scale(); }
 #endif // DISABLE_DEPRECATED
 	double get_unfrozen_time_scale() const;
