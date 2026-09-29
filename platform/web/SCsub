@@ -117,6 +117,9 @@ engine = [
     "js/engine/config.js",
     "js/engine/engine.js",
 ]
+if env["target"] == "editor":
+    engine += ["js/engine/iframe.js"]
+
 externs = [env.File("#platform/web/js/engine/engine.externs.js")]
 js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs, env["threads"])
 env.Depends(js_engine, externs)
