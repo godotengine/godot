@@ -719,25 +719,41 @@ void Trail3D::_process_trail() {
 	switch (limit_mode) {
 		case LIMIT_MODE_MAX_LENGTH:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				Vector3 tan = (pos - points[1]).normalized();
+				real_t dot = tan.dot(tangents[1]);
+				if (dot < -0.5) {
+					tangents.insert(1, -tangents[1]);
+					points.insert(1, points[1]);
+					normals.insert(1, up);
+				}
+				tangents.insert(1, tangents[1]);
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_last_pinned_u += dist_from_leading;
-				if (points.size() > 3) {
-					tangents.write[2] = (points[1] - points[3]).normalized();
+				if (points.size() > 3 && dot > -0.5) {
+					tangents.write[2] = (tangents[1].lerp(tangents[3], 0.5)).normalized();
 				}
 			}
 			break;
 		case LIMIT_MODE_LIFETIME:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				Vector3 tan = (pos - points[1]).normalized();
+				real_t dot = tan.dot(tangents[1]);
+				if (dot < -0.5) {
+					tangents.insert(1, -tangents[1]);
+					points.insert(1, points[1]);
+					normals.insert(1, up);
+					_times.insert(1, _times[1]);
+					_velocities.insert(1, _velocities[1]);
+				}
+				tangents.insert(1, tan);
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_times.insert(1, _time);
 				_last_pinned_u += dist_from_leading;
 				_velocities.insert(1, (points[1] - points[2]).length() / (_times[1] - _times[2]));
-				if (points.size() > 3) {
-					tangents.write[2] = (points[1] - points[3]).normalized();
+				if (points.size() > 3 && dot > -0.5) {
+					tangents.write[2] = (tangents[1].lerp(tangents[3], 0.5)).normalized();
 				}
 			}
 			break;
