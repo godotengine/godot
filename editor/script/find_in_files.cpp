@@ -792,9 +792,9 @@ FindInFilesSearchPanel::FindInFilesSearchPanel() {
 		applydiscard_hb->add_child(apply_rename);
 		apply_rename->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesSearchPanel::_on_rename_apply).bind(false));
 
-		apply_rename = memnew(Button(TTRC("Cancel")));
-		applydiscard_hb->add_child(apply_rename);
-		apply_rename->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesSearchPanel::_on_rename_discard));
+		Button *discard_rename = memnew(Button(TTRC("Cancel")));
+		applydiscard_hb->add_child(discard_rename);
+		discard_rename->connect(SceneStringName(pressed), callable_mp(this, &FindInFilesSearchPanel::_on_rename_discard));
 	}
 
 	debounce_timer = memnew(Timer);
@@ -930,17 +930,15 @@ void FindInFilesContainer::create_rename_control(const String &p_symbol, const E
 	finder->set_filter(exts);
 	finder->set_symbol_rename(p_lookup);
 
+	search_control->set_block_signals(true); // Prevent premature search.
 	search_control->set_finder(finder, false);
 	search_control->set_search_text(p_symbol);
 	search_control->set_replace(true);
 	search_control->set_replace_text(p_symbol);
+	search_control->set_block_signals(false);
 
 	new_panel->set_symbol_rename(p_lookup);
 	new_panel->start_search();
-
-	if (tabs->get_tab_count() == 1) {
-		_update_bar_visibility();
-	}
 }
 
 void FindInFilesResultsPanel::_notification(int p_what) {

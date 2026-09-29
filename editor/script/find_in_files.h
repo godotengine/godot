@@ -168,7 +168,6 @@ class FindInFilesSearchPanel : public ScrollContainer {
 	LineEdit *renamed_symbol_name = nullptr;
 	LineEdit *rename_line_edit = nullptr;
 	Button *apply_rename = nullptr;
-	Button *discard_rename = nullptr;
 
 	ConfirmationDialog *rename_confirm = nullptr;
 
@@ -356,8 +355,6 @@ public:
 	FindInFilesContainer *get_container() { return container; }
 
 	void open_dock(const String &p_initial_text = "", bool p_replace = false);
-
-	FindInFilesContainer *get_dock() const { return container; }
 
 	FindInFiles();
 };

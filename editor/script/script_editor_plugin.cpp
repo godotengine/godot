@@ -3728,7 +3728,7 @@ void DocumentEditorContainer::update_docs_from_script(const Ref<Script> &p_scrip
 
 void ScriptEditor::rename_symbol(const String &p_symbol, const EditorLanguage::LookupResult &p_lookup) {
 	FindInFiles::get_singleton()->get_container()->create_rename_control(p_symbol, p_lookup);
-	FindInFiles::get_singleton()->get_dock()->make_visible();
+	FindInFiles::get_singleton()->get_container()->make_visible();
 
 	LineEdit *name_edit = FindInFiles::get_singleton()->get_container()->get_search_control()->get_rename_line_edit();
 	callable_mp((Control *)name_edit, &Control::grab_focus).call_deferred(false);
