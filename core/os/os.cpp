@@ -937,7 +937,7 @@ void OS::benchmark_begin_measure(const String &p_context, const String &p_what) 
 	Pair<String, String> mark_key(p_context, p_what);
 	ERR_FAIL_COND_MSG(benchmark_marks_from.has(mark_key), vformat("Benchmark key '%s:%s' already exists.", p_context, p_what));
 
-	benchmark_marks_from[mark_key] = OS::get_singleton()->get_ticks_usec();
+	benchmark_marks_from[mark_key] = OS::get_singleton()->get_ticks_usec_raw();
 #endif
 }
 void OS::benchmark_end_measure(const String &p_context, const String &p_what) {
@@ -945,7 +945,7 @@ void OS::benchmark_end_measure(const String &p_context, const String &p_what) {
 	Pair<String, String> mark_key(p_context, p_what);
 	ERR_FAIL_COND_MSG(!benchmark_marks_from.has(mark_key), vformat("Benchmark key '%s:%s' doesn't exist.", p_context, p_what));
 
-	uint64_t total = OS::get_singleton()->get_ticks_usec() - benchmark_marks_from[mark_key];
+	uint64_t total = OS::get_singleton()->get_ticks_usec_raw() - benchmark_marks_from[mark_key];
 	double total_f = double(total) / double(1000000);
 	benchmark_marks_final[mark_key] = total_f;
 #endif
