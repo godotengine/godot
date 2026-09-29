@@ -102,9 +102,11 @@ public:
 
 	virtual Image::Format texture_get_format(RID p_texture) const = 0;
 
+#ifdef TOOLS_ENABLED
 	virtual void texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) = 0;
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) = 0;
+#endif
 
 	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) = 0;
 

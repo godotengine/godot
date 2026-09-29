@@ -1921,6 +1921,7 @@ String TextureStorage::texture_get_path(RID p_texture) const {
 	return texture->path;
 }
 
+#ifdef TOOLS_ENABLED
 void TextureStorage::texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) {
 	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(texture);
@@ -1947,6 +1948,7 @@ void TextureStorage::texture_set_detect_roughness_callback(RID p_texture, Render
 	texture->detect_roughness_callback = p_callback;
 	texture->detect_roughness_callback_ud = p_userdata;
 }
+#endif
 
 void TextureStorage::texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) {
 	for (const RID &rid : texture_owner.get_owned_list()) {
