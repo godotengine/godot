@@ -702,6 +702,10 @@ File extracted from upstream release tarball:
 - Added 2 headers `godot_mbedtls_config.h` and `godot_psa_config.h` in `thirdparty/mbedtls/godot` for build configuration
 - Added `thirdparty/mbedtls/godot/godot_mbedtls_platform.cpp` to implement some mbedTLS platform functions using Godot-native APIs
 
+Patches:
+
+- `0001-fix-msvc-light.patch` ([GH-124014](https://github.com/godotengine/godot/pull/124014))
+
 
 ## metal-cpp
 
