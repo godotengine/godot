@@ -57,6 +57,7 @@ layout(set = 0, binding = 4) uniform sampler2D history_buffer;
 layout(rgba16f, set = 0, binding = 5) uniform restrict writeonly image2D output_buffer;
 layout(set = 0, binding = 6) uniform sampler2D last_accum_count_buffer;
 layout(r16f, set = 0, binding = 7) uniform restrict writeonly image2D output_accum_count_buffer;
+layout(rg16f, set = 0, binding = 8) uniform restrict writeonly image2D output_prev_velocity_buffer;
 
 layout(push_constant, std430) uniform Params {
 	vec2 resolution;
@@ -363,9 +364,8 @@ vec3 fallback_neighborhood_avg(uvec2 pos_group) {
 	return avg * 0.2;
 }
 
-vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, sampler2D tex_prev_weight, out float out_accum_count) {
+vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, sampler2D tex_prev_weight, out float out_accum_count, out vec2 velocity) {
 	// Get the velocity of the current pixel
-	vec2 velocity = vec2(0.0);
 	// dilate velocity buffer for good velocity on geometry edges
 	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity);
 
@@ -446,8 +446,10 @@ void main() {
 	const vec2 uv = (gl_GlobalInvocationID.xy + 0.5f) / params.resolution;
 
 	float new_weight;
-	vec3 result = temporal_antialiasing(pos_group_top_left, pos_group, pos_screen, uv, history_buffer, last_accum_count_buffer, new_weight);
+	vec2 velocity;
+	vec3 result = temporal_antialiasing(pos_group_top_left, pos_group, pos_screen, uv, history_buffer, last_accum_count_buffer, new_weight, velocity);
 
 	imageStore(output_buffer, ivec2(gl_GlobalInvocationID.xy), vec4(result, 1.0));
 	imageStore(output_accum_count_buffer, ivec2(gl_GlobalInvocationID.xy), vec4(new_weight, 0.0, 0.0, 0.0));
+	imageStore(output_prev_velocity_buffer, ivec2(gl_GlobalInvocationID.xy), vec4(velocity, 0.0, 0.0));
 }
