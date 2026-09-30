@@ -71,7 +71,6 @@ class [[nodiscard]] _WARN_UNUSED_ StringName {
 	static void setup();
 	static void cleanup();
 	static uint32_t get_empty_hash();
-	static inline bool configured = false;
 #ifdef DEBUG_ENABLED
 	struct DebugSortReferences {
 		bool operator()(const _Data *p_left, const _Data *p_right) const {
@@ -188,7 +187,8 @@ public:
 	_FORCE_INLINE_
 #endif
 	~StringName() {
-		if (likely(configured) && _data) { //only free if configured
+		// Using `likely` here leads to huge binary size benefits.
+		if (likely(_data)) {
 			unref();
 		}
 	}
