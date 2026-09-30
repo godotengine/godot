@@ -184,6 +184,15 @@ struct PropertyInfo {
 	bool operator<(const PropertyInfo &p_info) const {
 		return name < p_info.name;
 	}
+
+	// Need to be declared because ~PropertyInfo is specified.
+	PropertyInfo(const PropertyInfo &) = default;
+	PropertyInfo(PropertyInfo &&) = default;
+	PropertyInfo &operator=(const PropertyInfo &) = default;
+	PropertyInfo &operator=(PropertyInfo &&) = default;
+
+	// This is _NO_INLINE_ to save on binary size.
+	_NO_INLINE_ ~PropertyInfo() = default;
 };
 
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
