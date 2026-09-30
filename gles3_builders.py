@@ -2,7 +2,7 @@
 
 import os.path
 
-from methods import generated_wrapper, print_error, to_raw_cstring
+from methods import compress_buffer, format_buffer, generated_wrapper, print_error
 
 
 class GLES3HeaderStruct:
@@ -551,16 +551,19 @@ protected:
 		static const Feedback *_feedbacks = nullptr;
 """)
 
+        # Store the code of both stages in a single compressed buffer, as null-terminated strings.
+        vertex_code = "\n".join(header_data.vertex_lines).encode() + b"\n\0"
+        fragment_code = "\n".join(header_data.fragment_lines).encode() + b"\n\0"
+        buffer = vertex_code + fragment_code
+        compressed = compress_buffer(buffer)
+
         file.write(f"""\
-		static const char _vertex_code[] = {{
-{to_raw_cstring(header_data.vertex_lines)}
+		static const uint8_t _code_compressed[] = {{
+{format_buffer(compressed, 3)}
 		}};
+		const CharString _code = _decompress_code(_code_compressed, {len(compressed)}, {len(buffer)});
 
-		static const char _fragment_code[] = {{
-{to_raw_cstring(header_data.fragment_lines)}
-		}};
-
-		_setup(_vertex_code, _fragment_code, "{out_file_class}",
+		_setup(_code.get_data(), _code.get_data() + {len(vertex_code)}, "{out_file_class}",
 				{len(header_data.uniforms)}, _uniform_strings, {len(header_data.ubos)}, _ubo_pairs,
 				{len(header_data.feedbacks)}, _feedbacks, {len(header_data.texunits)}, _texunit_pairs,
 				{len(header_data.specialization_names)}, _spec_pairs, {variant_count}, _variant_defines);
