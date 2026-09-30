@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  jolt_custom_decorated_shape.h                                         */
+/*  jolt_custom_instance_overrides_shape.h                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,19 +30,44 @@
 
 #pragma once
 
+#include "jolt_custom_shape_type.h"
+
 #include <Jolt/Jolt.h>
 
 #include <Jolt/Physics/Collision/Shape/DecoratedShape.h>
 #include <Jolt/Physics/Collision/TransformedShape.h>
 
-class JoltCustomDecoratedShapeSettings : public JPH::DecoratedShapeSettings {
+class JoltCustomInstanceOverridesShapeSettings final : public JPH::DecoratedShapeSettings {
 public:
+	bool object_back_face_collision = false;
+	bool shape_back_face_collision = false;
+
 	using JPH::DecoratedShapeSettings::DecoratedShapeSettings;
+
+	virtual ShapeResult Create() const override;
 };
 
-class JoltCustomDecoratedShape : public JPH::DecoratedShape {
+class JoltCustomInstanceOverridesShape final : public JPH::DecoratedShape {
+	bool object_back_face_collision = false;
+	bool shape_back_face_collision = false;
+
 public:
-	using JPH::DecoratedShape::DecoratedShape;
+	static void register_type();
+
+	JoltCustomInstanceOverridesShape() : JPH::DecoratedShape(JoltCustomShapeSubType::INSTANCE_OVERRIDES) {}
+
+	JoltCustomInstanceOverridesShape(const JoltCustomInstanceOverridesShapeSettings &p_settings, JPH::Shape::ShapeResult &p_result) :
+			JPH::DecoratedShape(JoltCustomShapeSubType::INSTANCE_OVERRIDES, p_settings, p_result),
+			object_back_face_collision(p_settings.object_back_face_collision),
+			shape_back_face_collision(p_settings.shape_back_face_collision) {
+		if (!p_result.HasError()) {
+			p_result.Set(this);
+		}
+	}
+
+	bool object_has_back_face_collision() const { return object_back_face_collision; }
+
+	bool shape_has_back_face_collision() const { return shape_back_face_collision; }
 
 	virtual JPH::AABox GetLocalBounds() const override { return mInnerShape->GetLocalBounds(); }
 
@@ -54,7 +79,7 @@ public:
 
 	virtual JPH::Vec3 GetSurfaceNormal(const JPH::SubShapeID &p_sub_shape_id, JPH::Vec3Arg p_local_surface_position) const override { return mInnerShape->GetSurfaceNormal(p_sub_shape_id, p_local_surface_position); }
 
-	virtual JPH::uint64 GetSubShapeUserData(const JPH::SubShapeID &p_sub_shape_id) const override { return mInnerShape->GetSubShapeUserData(p_sub_shape_id); }
+	virtual JPH::uint64 GetSubShapeUserData(const JPH::SubShapeID &p_sub_shape_id) const override { return GetUserData(); }
 
 	virtual JPH::TransformedShape GetSubShapeTransformedShape(const JPH::SubShapeID &p_sub_shape_id, JPH::Vec3Arg p_position_com, JPH::QuatArg p_rotation, JPH::Vec3Arg p_scale, JPH::SubShapeID &p_remainder) const override { return mInnerShape->GetSubShapeTransformedShape(p_sub_shape_id, p_position_com, p_rotation, p_scale, p_remainder); }
 
@@ -70,13 +95,11 @@ public:
 
 	virtual bool CastRay(const JPH::RayCast &p_ray, const JPH::SubShapeIDCreator &p_sub_shape_id_creator, JPH::RayCastResult &p_hit) const override { return mInnerShape->CastRay(p_ray, p_sub_shape_id_creator, p_hit); }
 
-	virtual void CastRay(const JPH::RayCast &p_ray, const JPH::RayCastSettings &p_ray_cast_settings, const JPH::SubShapeIDCreator &p_sub_shape_id_creator, JPH::CastRayCollector &p_collector, const JPH::ShapeFilter &p_shape_filter = JPH::ShapeFilter()) const override { return mInnerShape->CastRay(p_ray, p_ray_cast_settings, p_sub_shape_id_creator, p_collector, p_shape_filter); }
+	virtual void CastRay(const JPH::RayCast &p_ray, const JPH::RayCastSettings &p_ray_cast_settings, const JPH::SubShapeIDCreator &p_sub_shape_id_creator, JPH::CastRayCollector &p_collector, const JPH::ShapeFilter &p_shape_filter = JPH::ShapeFilter()) const override;
 
 	virtual void CollidePoint(JPH::Vec3Arg p_point, const JPH::SubShapeIDCreator &p_sub_shape_id_creator, JPH::CollidePointCollector &p_collector, const JPH::ShapeFilter &p_shape_filter = JPH::ShapeFilter()) const override { mInnerShape->CollidePoint(p_point, p_sub_shape_id_creator, p_collector, p_shape_filter); }
 
 	virtual void CollideSoftBodyVertices(JPH::Mat44Arg p_center_of_mass_transform, JPH::Vec3Arg p_scale, const JPH::CollideSoftBodyVertexIterator &p_vertices, JPH::uint p_num_vertices, int p_colliding_shape_index) const override { mInnerShape->CollideSoftBodyVertices(p_center_of_mass_transform, p_scale, p_vertices, p_num_vertices, p_colliding_shape_index); }
-
-	virtual void CollectTransformedShapes(const JPH::AABox &p_box, JPH::Vec3Arg p_position_com, JPH::QuatArg p_rotation, JPH::Vec3Arg p_scale, const JPH::SubShapeIDCreator &p_sub_shape_id_creator, JPH::TransformedShapeCollector &p_collector, const JPH::ShapeFilter &p_shape_filter = JPH::ShapeFilter()) const override { mInnerShape->CollectTransformedShapes(p_box, p_position_com, p_rotation, p_scale, p_sub_shape_id_creator, p_collector, p_shape_filter); }
 
 	virtual void TransformShape(JPH::Mat44Arg p_center_of_mass_transform, JPH::TransformedShapeCollector &p_collector) const override { mInnerShape->TransformShape(p_center_of_mass_transform, p_collector); }
 
