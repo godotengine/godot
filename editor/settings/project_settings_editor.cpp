@@ -84,10 +84,25 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 	_focus_current_search_box();
 }
 
-void ProjectSettingsEditor::popup_for_override(const String &p_override) {
+void ProjectSettingsEditor::popup_for_setting(const String &p_setting) {
 	popup_project_settings();
 	tab_container->set_current_tab(0);
-	general_settings_inspector->set_current_section(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + p_override.get_slicec('/', 0));
+
+	String section;
+	PackedStringArray parts = p_setting.split("/");
+	if (parts.size() < 2) {
+		// Invalid property
+		return;
+	} else if (parts.size() == 2) {
+		section = parts[0];
+	} else {
+		section = parts[0] + "/" + parts[1];
+	}
+	general_settings_inspector->set_current_section(section);
+}
+
+void ProjectSettingsEditor::popup_for_override(const String &p_override) {
+	popup_for_setting(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + p_override);
 }
 
 void ProjectSettingsEditor::set_filter(const String &p_filter) {

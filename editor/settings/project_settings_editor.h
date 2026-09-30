@@ -140,6 +140,7 @@ public:
 	static ProjectSettingsEditor *get_singleton() { return singleton; }
 
 	void popup_project_settings(bool p_clear_filter = false);
+	void popup_for_setting(const String &p_setting);
 	void popup_for_override(const String &p_override);
 
 	void set_plugins_page();
