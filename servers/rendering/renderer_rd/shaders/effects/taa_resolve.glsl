@@ -166,6 +166,11 @@ void populate_group_shared_memory(uvec2 group_id, uint group_index) {
 void depth_test_min(uvec2 pos, inout float min_depth, inout uvec2 min_pos) {
 	float depth = load_depth(pos);
 
+	// prefer non sky pixels to get real geometry velocity
+	if (depth <= 0.0000001) {
+		return;
+	}
+
 	if (depth < min_depth) {
 		min_depth = depth;
 		min_pos = pos;
