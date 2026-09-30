@@ -38,6 +38,7 @@
 #define FLT_MAX 32767.0
 #define RPC_9 0.11111111111
 #define RPC_16 0.0625
+#define MAX_ACCUMULATED_SAMPLES 16.0
 
 #define DISOCCLUSION_SCALE 0.01 // Scale the weight of this pixel calculated as (change in velocity - threshold) * scale.
 
@@ -54,6 +55,8 @@ layout(rg16f, set = 0, binding = 2) uniform restrict readonly image2D velocity_b
 layout(rg16f, set = 0, binding = 3) uniform restrict readonly image2D last_velocity_buffer;
 layout(set = 0, binding = 4) uniform sampler2D history_buffer;
 layout(rgba16f, set = 0, binding = 5) uniform restrict writeonly image2D output_buffer;
+layout(set = 0, binding = 6) uniform sampler2D last_accum_count_buffer;
+layout(r16f, set = 0, binding = 7) uniform restrict writeonly image2D output_accum_count_buffer;
 
 layout(push_constant, std430) uniform Params {
 	vec2 resolution;
@@ -340,7 +343,7 @@ float get_factor_disocclusion(vec2 uv_reprojected, vec2 velocity) {
 	return clamp(disocclusion * DISOCCLUSION_SCALE, 0.0, 1.0);
 }
 
-vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history) {
+vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, sampler2D tex_prev_weight, out float out_accum_count) {
 	// Get the velocity of the current pixel
 	vec2 velocity = vec2(0.0);
 	// dilate velocity buffer for good velocity on geometry edges
@@ -356,6 +359,9 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	vec3 color_history = sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb;
 	color_history = reinhard(color_history);
 
+	// Previous accumulated sample count (bilinear sample so partially occluded pixels don't have a hard step)
+	float prev_accum_count = texture(tex_prev_weight, uv_reprojected).r;
+
 	// Confidence for motion-adaptive AABB box size: 1 at rest, 0 in motion
 	// see intel https://github.com/GameTechDev/TAA/blob/main/MiniEngine/Core/Shaders/TAAResolve.hlsl
 	float velocity_confidence = clamp(1.0 - length(velocity) / VELOCITY_CONFIDENCE_DISTANCE, 0.0, 1.0);
@@ -363,9 +369,8 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
 	color_history = clip_history_3x3(pos_group, color_history, velocity_confidence);
 
-	// Compute blend factor
-	float blend_factor = RPC_16; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
-	float reset_factor; // will be added after anti-flicker so it is not overwritten
+	// Compute reset factor
+	float reset_factor;
 	{
 		// If re-projected UV is out of screen, converge to current color immediately.
 		float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
@@ -374,6 +379,16 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 		float factor_disocclusion = get_factor_disocclusion(uv_reprojected, velocity);
 		reset_factor = clamp(factor_screen + factor_disocclusion, 0.0, 1.0);
 	}
+
+	//FIXME: look some more into reset factor. The overall design looks decent, but right now we just blend towards an aliased color_input
+	// when the reset factor is high. Maybe we could blend it with a blur of the neighborhood to at least AA it a bit?
+	// ALso, intel additionally has depth reset, which could be useful when there are two objects moving into the same direction. We already have all the data, so adding it should be trivial.
+
+	// reset decays the accumulated sample count smoothly
+	prev_accum_count *= (1.0 - reset_factor);
+
+	// equal weight blend to ensuzre full history and current contribute equally (history limited by MAX_ACCUMULATED_SAMPLES)
+	float blend_factor = 1.0 / (prev_accum_count + 1.0);
 
 	// Resolve
 	vec3 color_resolved = vec3(0.0);
@@ -394,6 +409,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 		color_resolved = reinhard_inverse(color_resolved);
 	}
 
+	out_accum_count = min(prev_accum_count + 1.0, MAX_ACCUMULATED_SAMPLES);
 	return color_resolved;
 }
 
@@ -410,6 +426,9 @@ void main() {
 	const uvec2 pos_screen = gl_GlobalInvocationID.xy;
 	const vec2 uv = (gl_GlobalInvocationID.xy + 0.5f) / params.resolution;
 
-	vec3 result = temporal_antialiasing(pos_group_top_left, pos_group, pos_screen, uv, history_buffer);
+	float new_weight;
+	vec3 result = temporal_antialiasing(pos_group_top_left, pos_group, pos_screen, uv, history_buffer, last_accum_count_buffer, new_weight);
+
 	imageStore(output_buffer, ivec2(gl_GlobalInvocationID.xy), vec4(result, 1.0));
+	imageStore(output_accum_count_buffer, ivec2(gl_GlobalInvocationID.xy), vec4(new_weight, 0.0, 0.0, 0.0));
 }
