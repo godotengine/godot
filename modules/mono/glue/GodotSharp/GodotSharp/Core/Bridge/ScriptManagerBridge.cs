@@ -1095,13 +1095,33 @@ namespace Godot.Bridge
 
         private static void GetGodotClassTrampolinesForType(Type type, TrampolineCollectorPool collectorPool)
         {
-            var getGodotClassTrampolines = type.GetNestedType("GodotInternal",
-                    BindingFlags.DeclaredOnly | BindingFlags.Static |
-                    BindingFlags.NonPublic | BindingFlags.Public)
-                ?.GetMethod(
-                    "GetGodotClassTrampolines",
+            Type? godotInternalType;
+
+            if (type.IsGenericType)
+            {
+                var getGodotClassGodotInternalType = type.GetMethod("GetGodotClassGodotInternalType",
                     BindingFlags.DeclaredOnly | BindingFlags.Static |
                     BindingFlags.NonPublic | BindingFlags.Public);
+
+                if (getGodotClassGodotInternalType == null)
+                    return;
+
+                godotInternalType = (Type?)getGodotClassGodotInternalType.Invoke(null, null);
+            }
+            else
+            {
+                godotInternalType = type.GetNestedType("GodotInternal",
+                    BindingFlags.DeclaredOnly | BindingFlags.Static |
+                    BindingFlags.NonPublic | BindingFlags.Public);
+            }
+
+            if (godotInternalType == null)
+                return;
+
+            var getGodotClassTrampolines = godotInternalType.GetMethod(
+                "GetGodotClassTrampolines",
+                BindingFlags.DeclaredOnly | BindingFlags.Static |
+                BindingFlags.NonPublic | BindingFlags.Public);
 
             if (getGodotClassTrampolines == null)
                 return;

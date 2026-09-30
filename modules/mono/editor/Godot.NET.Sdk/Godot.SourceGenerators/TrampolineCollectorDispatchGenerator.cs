@@ -153,10 +153,22 @@ public class TrampolineCollectorDispatchGenerator : ISourceGenerator
         }
 
 
-        source
-            .Append("        }\n");
+        source.Append("        }\n");
 
         source.Append("    }\n"); // partial class GodotInternal
+
+        // Generate GetGodotClassGodotInternalType
+        // When GodotSharp calls `GetNestedType("GodotInternal")`, that method returns a generic type definition,
+        // even though we're calling it on a constructed generic type. This is an AOT-compatible workaround.
+        // This workaround should no longer be needed once assemblies and generated code are trim-compatible.
+        if (symbol.IsGenericType)
+        {
+            source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
+            source.Append("    private new static global::System.Type GetGodotClassGodotInternalType()\n    {\n");
+            source.Append("        return typeof(GodotInternal);\n");
+            source.Append("    }\n");
+            source.Append("#pragma warning restore CS0109\n");
+        }
 
         source.Append("#pragma warning restore CS0109\n");
         source.Append("#pragma warning restore CS0628\n");
