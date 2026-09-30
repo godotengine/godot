@@ -50,7 +50,7 @@ TAA::~TAA() {
 	taa_shader.version_free(shader_version);
 }
 
-void TAA::resolve(RID p_frame, RID p_output, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_prev_velocity_dest, RID p_history, RID p_prev_accum_count, RID p_accum_count, Size2 p_resolution, float p_z_near, float p_z_far) {
+void TAA::resolve(RID p_frame, RID p_output, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_prev_velocity_dest, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -82,11 +82,9 @@ void TAA::resolve(RID p_frame, RID p_output, RID p_depth, RID p_velocity, RID p_
 	RD::Uniform u_prev_velocity(RD::UNIFORM_TYPE_IMAGE, 3, { p_prev_velocity });
 	RD::Uniform u_history(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 4, { default_sampler, p_history });
 	RD::Uniform u_frame_dest(RD::UNIFORM_TYPE_IMAGE, 5, { p_output });
-	RD::Uniform u_prev_accum_count(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 6, { default_sampler, p_prev_accum_count });
-	RD::Uniform u_accum_count(RD::UNIFORM_TYPE_IMAGE, 7, { p_accum_count });
-	RD::Uniform u_prev_velocity_dest(RD::UNIFORM_TYPE_IMAGE, 8, { p_prev_velocity_dest });
+	RD::Uniform u_prev_velocity_dest(RD::UNIFORM_TYPE_IMAGE, 6, { p_prev_velocity_dest });
 
-	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_frame_source, u_depth, u_velocity, u_prev_velocity, u_history, u_frame_dest, u_prev_accum_count, u_accum_count, u_prev_velocity_dest), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_frame_source, u_depth, u_velocity, u_prev_velocity, u_history, u_frame_dest, u_prev_velocity_dest), 0);
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(TAAResolvePushConstant));
 	RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_resolution.width, p_resolution.height, 1);
 	RD::get_singleton()->compute_list_end();
@@ -102,15 +100,12 @@ void TAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RD::DataFormat p_f
 	if (!p_render_buffers->has_texture(SNAME("taa"), SNAME("history_a"))) {
 		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 
-		p_render_buffers->create_texture(SNAME("taa"), SNAME("history_a"), p_format, usage_bits);
-		p_render_buffers->create_texture(SNAME("taa"), SNAME("history_b"), p_format, usage_bits);
-
-		// accumulation count buffers
-		uint32_t accum_usage_bits = usage_bits | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-		p_render_buffers->create_texture(SNAME("taa"), SNAME("weight_a"), RD::DATA_FORMAT_R16_SFLOAT, accum_usage_bits);
-		p_render_buffers->create_texture(SNAME("taa"), SNAME("weight_b"), RD::DATA_FORMAT_R16_SFLOAT, accum_usage_bits);
-		RD::get_singleton()->texture_clear(p_render_buffers->get_texture(SNAME("taa"), SNAME("weight_a")), Color(0, 0, 0, 0), 0, 1, 0, view_count);
-		RD::get_singleton()->texture_clear(p_render_buffers->get_texture(SNAME("taa"), SNAME("weight_b")), Color(0, 0, 0, 0), 0, 1, 0, view_count);
+		uint32_t history_usage_bits = usage_bits | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		p_render_buffers->create_texture(SNAME("taa"), SNAME("history_a"), p_format, history_usage_bits);
+		p_render_buffers->create_texture(SNAME("taa"), SNAME("history_b"), p_format, history_usage_bits);
+		// Clear so alpha (accumulated sample count) starts at 0.
+		RD::get_singleton()->texture_clear(p_render_buffers->get_texture(SNAME("taa"), SNAME("history_a")), Color(0, 0, 0, 0), 0, 1, 0, view_count);
+		RD::get_singleton()->texture_clear(p_render_buffers->get_texture(SNAME("taa"), SNAME("history_b")), Color(0, 0, 0, 0), 0, 1, 0, view_count);
 
 		p_render_buffers->create_texture(SNAME("taa"), SNAME("prev_velocity_a"), RD::DATA_FORMAT_R16G16_SFLOAT, usage_bits);
 		p_render_buffers->create_texture(SNAME("taa"), SNAME("prev_velocity_b"), RD::DATA_FORMAT_R16G16_SFLOAT, usage_bits);
@@ -129,22 +124,20 @@ void TAA::process(Ref<RenderSceneBuffersRD> p_render_buffers, RD::DataFormat p_f
 
 		RID taa_history = p_render_buffers->get_texture_slice(SNAME("taa"), SNAME("history_a"), v, 0);
 		RID taa_output = p_render_buffers->get_texture_slice(SNAME("taa"), SNAME("history_b"), v, 0);
-		RID taa_prev_accum_count = p_render_buffers->get_texture_slice(SNAME("taa"), SNAME("weight_a"), v, 0);
-		RID taa_accum_count = p_render_buffers->get_texture_slice(SNAME("taa"), SNAME("weight_b"), v, 0);
 		RID taa_prev_velocity = p_render_buffers->get_texture_slice(SNAME("taa"), SNAME("prev_velocity_a"), v, 0);
 		RID taa_prev_velocity_dest = p_render_buffers->get_texture_slice(SNAME("taa"), SNAME("prev_velocity_b"), v, 0);
 		if (ping_pong) {
 			SWAP(taa_history, taa_output);
-			SWAP(taa_prev_accum_count, taa_accum_count);
 			SWAP(taa_prev_velocity, taa_prev_velocity_dest);
 		}
 
 		if (!just_allocated) {
 			RID depth_texture = p_render_buffers->get_depth_texture(v);
-			resolve(internal_texture, taa_output, depth_texture, velocity_buffer, taa_prev_velocity, taa_prev_velocity_dest, taa_history, taa_prev_accum_count, taa_accum_count, Size2(internal_size.x, internal_size.y), p_z_near, p_z_far);
+			resolve(internal_texture, taa_output, depth_texture, velocity_buffer, taa_prev_velocity, taa_prev_velocity_dest, taa_history, Size2(internal_size.x, internal_size.y), p_z_near, p_z_far);
 			copy_effects->copy_to_rect(taa_output, internal_texture, Rect2(0, 0, internal_size.x, internal_size.y));
 		} else {
-			copy_effects->copy_to_rect(internal_texture, taa_output, Rect2(0, 0, internal_size.x, internal_size.y));
+			// Copy color history and set accum count to 1, for 50/50 blend next frame
+			copy_effects->copy_to_rect(internal_texture, taa_output, Rect2(0, 0, internal_size.x, internal_size.y), false, false, false, false, true);
 			copy_effects->copy_to_rect(velocity_buffer, taa_prev_velocity_dest, Rect2(0, 0, internal_size.x, internal_size.y));
 		}
 	}

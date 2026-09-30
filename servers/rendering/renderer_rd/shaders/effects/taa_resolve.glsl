@@ -53,11 +53,9 @@ layout(rgba16f, set = 0, binding = 0) uniform restrict readonly image2D color_bu
 layout(set = 0, binding = 1) uniform sampler2D depth_buffer;
 layout(rg16f, set = 0, binding = 2) uniform restrict readonly image2D velocity_buffer;
 layout(rg16f, set = 0, binding = 3) uniform restrict readonly image2D last_velocity_buffer;
-layout(set = 0, binding = 4) uniform sampler2D history_buffer;
-layout(rgba16f, set = 0, binding = 5) uniform restrict writeonly image2D output_buffer;
-layout(set = 0, binding = 6) uniform sampler2D last_accum_count_buffer;
-layout(r16f, set = 0, binding = 7) uniform restrict writeonly image2D output_accum_count_buffer;
-layout(rg16f, set = 0, binding = 8) uniform restrict writeonly image2D output_prev_velocity_buffer;
+layout(set = 0, binding = 4) uniform sampler2D history_buffer; // .rgb = HDR color, .a = accumulated sample count
+layout(rgba16f, set = 0, binding = 5) uniform restrict writeonly image2D output_buffer; // .rgb = HDR color, .a = accumulated sample count
+layout(rg16f, set = 0, binding = 6) uniform restrict writeonly image2D output_prev_velocity_buffer;
 
 layout(push_constant, std430) uniform Params {
 	vec2 resolution;
@@ -194,7 +192,7 @@ void get_closest_pixel_velocity_3x3(in ivec2 group_pos, uvec2 group_top_left, ou
 							  HISTORY SAMPLING
 ------------------------------------------------------------------------------*/
 
-vec3 sample_catmull_rom_5(sampler2D stex, vec2 uv, vec2 resolution) {
+vec4 sample_catmull_rom_5(sampler2D stex, vec2 uv, vec2 resolution) {
 	// Source: https://gist.github.com/TheRealMJP/c83b8c0f46b63f3a88a5986f4fa982b1
 	// License: https://gist.github.com/TheRealMJP/bc503b0b87b643d3505d41eab8b332ae
 	// changed to 5 taps to improve performance
@@ -238,12 +236,12 @@ vec3 sample_catmull_rom_5(sampler2D stex, vec2 uv, vec2 resolution) {
 	float w_bottom = w12.x * w3.y;
 	float w_total = w_top + w_left + w_center + w_right + w_bottom;
 
-	vec3 result = vec3(0.0);
-	result += textureLod(stex, vec2(texPos12.x, texPos0.y), 0.0).xyz * w_top;
-	result += textureLod(stex, vec2(texPos0.x, texPos12.y), 0.0).xyz * w_left;
-	result += textureLod(stex, vec2(texPos12.x, texPos12.y), 0.0).xyz * w_center;
-	result += textureLod(stex, vec2(texPos3.x, texPos12.y), 0.0).xyz * w_right;
-	result += textureLod(stex, vec2(texPos12.x, texPos3.y), 0.0).xyz * w_bottom;
+	vec4 result = vec4(0.0);
+	result += textureLod(stex, vec2(texPos12.x, texPos0.y), 0.0) * w_top;
+	result += textureLod(stex, vec2(texPos0.x, texPos12.y), 0.0) * w_left;
+	result += textureLod(stex, vec2(texPos12.x, texPos12.y), 0.0) * w_center;
+	result += textureLod(stex, vec2(texPos3.x, texPos12.y), 0.0) * w_right;
+	result += textureLod(stex, vec2(texPos12.x, texPos3.y), 0.0) * w_bottom;
 
 	return max(result / w_total, 0.0f);
 }
@@ -358,7 +356,7 @@ vec3 fallback_neighborhood_avg(ivec2 pos_group) {
 	return avg * 0.2;
 }
 
-vec3 temporal_antialiasing(uvec2 pos_group_top_left, ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, sampler2D tex_prev_weight, out float out_accum_count, out vec2 velocity) {
+vec4 temporal_antialiasing(uvec2 pos_group_top_left, ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, out vec2 velocity) {
 	// Get the velocity of the current pixel
 	// dilate velocity buffer for good velocity on geometry edges
 	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity);
@@ -370,11 +368,9 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, ivec2 pos_group, uvec2 pos_
 	vec3 color_input = load_color(pos_group);
 
 	// Get history color (catmull-rom reduces a lot of the blurring that you get under motion)
-	vec3 color_history = sample_catmull_rom_5(tex_history, uv_reprojected, params.resolution).rgb;
-	color_history = reinhard(color_history);
-
-	// Previous accumulated sample count (bilinear sample so partially occluded pixels don't have a hard step)
-	float prev_accum_count = texture(tex_prev_weight, uv_reprojected).r;
+	vec4 history_sample = sample_catmull_rom_5(tex_history, uv_reprojected, params.resolution);
+	vec3 color_history = reinhard(history_sample.rgb);
+	float prev_accum_count = history_sample.a;
 
 	// Confidence for motion-adaptive AABB box size: 1 at rest, 0 in motion
 	// see intel https://github.com/GameTechDev/TAA/blob/main/MiniEngine/Core/Shaders/TAAResolve.hlsl
@@ -422,8 +418,8 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, ivec2 pos_group, uvec2 pos_
 		color_resolved = reinhard_inverse(color_resolved);
 	}
 
-	out_accum_count = min(prev_accum_count + 1.0, MAX_ACCUMULATED_SAMPLES);
-	return color_resolved;
+	float new_accum_count = min(prev_accum_count + 1.0, MAX_ACCUMULATED_SAMPLES);
+	return vec4(color_resolved, new_accum_count);
 }
 
 void main() {
@@ -439,11 +435,9 @@ void main() {
 	const uvec2 pos_screen = gl_GlobalInvocationID.xy;
 	const vec2 uv = (gl_GlobalInvocationID.xy + 0.5f) / params.resolution;
 
-	float new_weight;
 	vec2 velocity;
-	vec3 result = temporal_antialiasing(pos_group_top_left, pos_group, pos_screen, uv, history_buffer, last_accum_count_buffer, new_weight, velocity);
+	vec4 result = temporal_antialiasing(pos_group_top_left, pos_group, pos_screen, uv, history_buffer, velocity);
 
-	imageStore(output_buffer, ivec2(gl_GlobalInvocationID.xy), vec4(result, 1.0));
-	imageStore(output_accum_count_buffer, ivec2(gl_GlobalInvocationID.xy), vec4(new_weight, 0.0, 0.0, 0.0));
+	imageStore(output_buffer, ivec2(gl_GlobalInvocationID.xy), result);
 	imageStore(output_prev_velocity_buffer, ivec2(gl_GlobalInvocationID.xy), vec4(velocity, 0.0, 0.0));
 }
