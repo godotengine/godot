@@ -56,12 +56,78 @@ GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0") // Can't "ignor
 GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wdangling-pointer=0") // Can't "ignore" this for some reason.
 #endif
 
+namespace _CowData {
+
+typedef int64_t Size;
+typedef uint64_t USize;
+static constexpr USize MAX_INT = INT64_MAX;
+
+static constexpr size_t REF_COUNT_OFFSET = 0;
+static constexpr size_t CAPACITY_OFFSET = Memory::get_aligned_address(REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>), alignof(USize));
+static constexpr size_t SIZE_OFFSET = Memory::get_aligned_address(CAPACITY_OFFSET + sizeof(USize), alignof(USize));
+static constexpr size_t DATA_OFFSET = Memory::get_aligned_address(SIZE_OFFSET + sizeof(USize), Memory::MAX_ALIGN);
+
+// internal helpers
+
+static constexpr _FORCE_INLINE_ USize grow_capacity(USize p_previous_capacity) {
+	// 1.5x the given size.
+	// This ratio was chosen because it is close to the ideal growth rate of the golden ratio.
+	// See https://archive.ph/Z2R8w for details.
+	return MAX((USize)2, p_previous_capacity + ((1 + p_previous_capacity) >> 1));
+}
+
+static constexpr _FORCE_INLINE_ USize next_capacity(USize p_previous_capacity, USize p_size) {
+	if (p_previous_capacity < p_size) {
+		return MAX(grow_capacity(p_previous_capacity), p_size);
+	}
+	return p_previous_capacity;
+}
+
+static constexpr _FORCE_INLINE_ USize smaller_capacity(USize p_previous_capacity, USize p_size) {
+	if (p_size < p_previous_capacity >> 2) {
+		return grow_capacity(p_size);
+	}
+	return p_previous_capacity;
+}
+
+static _FORCE_INLINE_ void *_get_data_ptr(uint8_t *p_ptr) {
+	return (void *)(p_ptr + DATA_OFFSET);
+}
+
+/// Note: Assumes _ptr != nullptr.
+_FORCE_INLINE_ SafeNumeric<USize> *_get_refcount(const void *p_ptr) {
+	return (SafeNumeric<USize> *)((uint8_t *)p_ptr - DATA_OFFSET + REF_COUNT_OFFSET);
+}
+
+/// Note: Assumes _ptr != nullptr.
+_FORCE_INLINE_ USize *_get_size(const void *p_ptr) {
+	return (USize *)((uint8_t *)p_ptr - DATA_OFFSET + SIZE_OFFSET);
+}
+
+/// Note: Assumes _ptr != nullptr.
+_FORCE_INLINE_ USize *_get_capacity(const void *p_ptr) {
+	return (USize *)((uint8_t *)p_ptr - DATA_OFFSET + CAPACITY_OFFSET);
+}
+
+/// Internal type erased versions of CowData methods. Templating them only with the size helps to reduce template bloat by only specializing variations that are actually needed.
+
+template <uint64_t t_size>
+Error _alloc_exact(void **p_ptr, uint64_t p_capacity);
+
+template <_CowData::USize t_size, typename Mover>
+Error _insert_uninitialized(void **p_ptr, _CowData::USize p_index, _CowData::USize p_count, _CowData::USize p_capacity);
+
+template <_CowData::USize t_size>
+Error _realloc_exact(void **p_ptr, _CowData::USize p_capacity);
+
+} //namespace _CowData
+
 template <typename T>
 class CowData {
 public:
-	typedef int64_t Size;
-	typedef uint64_t USize;
-	static constexpr USize MAX_INT = INT64_MAX;
+	using Size = _CowData::Size;
+	using USize = _CowData::USize;
+	static constexpr USize MAX_INT = _CowData::MAX_INT;
 
 private:
 	// Alignment:  ↓ max_align_t           ↓ USize          ↓ USize            ↓ MAX_ALIGN
@@ -71,54 +137,12 @@ private:
 	//             └────────────────────┴──┴───────────────┴──┴─────────────┴──┴───────────...
 	// Offset:     ↑ REF_COUNT_OFFSET      ↑ CAPACITY_OFFSET  ↑ SIZE_OFFSET    ↑ DATA_OFFSET
 
-	static constexpr size_t REF_COUNT_OFFSET = 0;
-	static constexpr size_t CAPACITY_OFFSET = Memory::get_aligned_address(REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>), alignof(USize));
-	static constexpr size_t SIZE_OFFSET = Memory::get_aligned_address(CAPACITY_OFFSET + sizeof(USize), alignof(USize));
-	static constexpr size_t DATA_OFFSET = Memory::get_aligned_address(SIZE_OFFSET + sizeof(USize), Memory::MAX_ALIGN);
+	static constexpr size_t REF_COUNT_OFFSET = _CowData::REF_COUNT_OFFSET;
+	static constexpr size_t CAPACITY_OFFSET = _CowData::CAPACITY_OFFSET;
+	static constexpr size_t SIZE_OFFSET = _CowData::SIZE_OFFSET;
+	static constexpr size_t DATA_OFFSET = _CowData::DATA_OFFSET;
 
 	mutable T *_ptr = nullptr;
-
-	// internal helpers
-
-	static constexpr _FORCE_INLINE_ USize grow_capacity(USize p_previous_capacity) {
-		// 1.5x the given size.
-		// This ratio was chosen because it is close to the ideal growth rate of the golden ratio.
-		// See https://archive.ph/Z2R8w for details.
-		return MAX((USize)2, p_previous_capacity + ((1 + p_previous_capacity) >> 1));
-	}
-
-	static constexpr _FORCE_INLINE_ USize next_capacity(USize p_previous_capacity, USize p_size) {
-		if (p_previous_capacity < p_size) {
-			return MAX(grow_capacity(p_previous_capacity), p_size);
-		}
-		return p_previous_capacity;
-	}
-
-	static constexpr _FORCE_INLINE_ USize smaller_capacity(USize p_previous_capacity, USize p_size) {
-		if (p_size < p_previous_capacity >> 2) {
-			return grow_capacity(p_size);
-		}
-		return p_previous_capacity;
-	}
-
-	static _FORCE_INLINE_ T *_get_data_ptr(uint8_t *p_ptr) {
-		return (T *)(p_ptr + DATA_OFFSET);
-	}
-
-	/// Note: Assumes _ptr != nullptr.
-	_FORCE_INLINE_ SafeNumeric<USize> *_get_refcount() const {
-		return (SafeNumeric<USize> *)((uint8_t *)_ptr - DATA_OFFSET + REF_COUNT_OFFSET);
-	}
-
-	/// Note: Assumes _ptr != nullptr.
-	_FORCE_INLINE_ USize *_get_size() const {
-		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + SIZE_OFFSET);
-	}
-
-	/// Note: Assumes _ptr != nullptr.
-	_FORCE_INLINE_ USize *_get_capacity() const {
-		return (USize *)((uint8_t *)_ptr - DATA_OFFSET + CAPACITY_OFFSET);
-	}
 
 	// Decrements the reference count. Deallocates the backing buffer if needed.
 	// After this function, _ptr is guaranteed to be NULL.
@@ -142,7 +166,7 @@ private:
 	/// Does not modify the size.
 	[[nodiscard]] Error _insert_uninitialized(USize p_index, USize p_count, USize p_capacity);
 	[[nodiscard]] Error _insert_uninitialized(USize p_index, USize p_count) {
-		return _insert_uninitialized(p_index, p_count, next_capacity(capacity(), size() + p_count));
+		return _insert_uninitialized(p_index, p_count, _CowData::next_capacity(capacity(), size() + p_count));
 	}
 	/// Removes elements from the buffer at the specified position, moving elements behind to accommodate.
 	/// After the call, this CowData is the only owner of the buffer.
@@ -173,9 +197,9 @@ public:
 		return _ptr;
 	}
 
-	_FORCE_INLINE_ Size size() const { return !_ptr ? 0 : *_get_size(); }
-	_FORCE_INLINE_ USize capacity() const { return !_ptr ? 0 : *_get_capacity(); }
-	_FORCE_INLINE_ USize refcount() const { return !_ptr ? 0 : *_get_refcount(); }
+	_FORCE_INLINE_ Size size() const { return !_ptr ? 0 : *_CowData::_get_size(_ptr); }
+	_FORCE_INLINE_ USize capacity() const { return !_ptr ? 0 : *_CowData::_get_capacity(_ptr); }
+	_FORCE_INLINE_ USize refcount() const { return !_ptr ? 0 : *_CowData::_get_refcount(_ptr); }
 
 	_FORCE_INLINE_ void clear() { _unref(); }
 	_FORCE_INLINE_ bool is_empty() const { return size() == 0; }
@@ -238,7 +262,7 @@ void CowData<T>::_unref() {
 		return;
 	}
 
-	if (_get_refcount()->decrement() > 0) {
+	if (_CowData::_get_refcount(_ptr)->decrement() > 0) {
 		// Data is still in use elsewhere.
 		_ptr = nullptr;
 		return;
@@ -290,7 +314,7 @@ Error CowData<T>::insert(Size p_pos, T &&p_val) {
 
 	// Create the new element at the given index.
 	memnew_placement(_ptr + p_pos, T(std::move(p_val)));
-	*_get_size() = new_size;
+	*_CowData::_get_size(_ptr) = new_size;
 
 	return OK;
 }
@@ -300,7 +324,7 @@ Error CowData<T>::push_back(T &&p_val) {
 	RETURN_IF_ERROR(_insert_uninitialized(size(), 1));
 
 	memnew_placement(_ptr + size(), T(std::move(p_val)));
-	*_get_size() = size() + 1;
+	*_CowData::_get_size(_ptr) = size() + 1;
 
 	return OK;
 }
@@ -328,42 +352,64 @@ Error CowData<T>::append(Span<T> p_span) {
 	RETURN_IF_ERROR(_insert_uninitialized(size(), p_span.size()));
 	const T *span_ptr = span_in_self ? (_ptr + idx_in_self) : p_span.ptr();
 	copy_arr_placement(_ptr + size(), span_ptr, p_span.size());
-	*_get_size() = size() + p_span.size();
+	*_CowData::_get_size(_ptr) = size() + p_span.size();
 	return OK;
 }
 
-template <typename T>
-Error CowData<T>::_insert_uninitialized(USize p_index, USize p_count, USize p_capacity) {
-	DEV_ASSERT(p_capacity >= (USize)size() + p_count);
+template <_CowData::USize t_size>
+struct MoveTrivially {
+	static _FORCE_INLINE_ void move(void *p_dst, const void *p_src, size_t p_num) {
+		memcpy((uint8_t *)p_dst, (uint8_t *)p_src, p_num * t_size);
+	}
+};
 
-	if (!_ptr) {
-		return _alloc_exact(p_capacity);
-	} else if (_get_refcount()->get() == 1) {
-		if (capacity() < p_capacity) {
+template <typename T>
+struct Move {
+	static _FORCE_INLINE_ void move(void *p_dst, const void *p_src, size_t p_num) {
+		copy_arr_placement((T *)p_dst, (const T *)p_src, p_num);
+	}
+};
+
+template <typename T>
+_FORCE_INLINE_ Error CowData<T>::_insert_uninitialized(USize p_index, USize p_count, USize p_capacity) {
+	DEV_ASSERT(p_capacity >= (uint64_t)size() + p_count);
+	if constexpr (std::is_trivially_copyable_v<T>) {
+		return _CowData::_insert_uninitialized<sizeof(T), MoveTrivially<sizeof(T)>>((void **)&(this->_ptr), p_index, p_count, p_capacity);
+	} else {
+		return _CowData::_insert_uninitialized<sizeof(T), Move<T>>((void **)&(this->_ptr), p_index, p_count, p_capacity);
+	}
+}
+
+template <_CowData::USize t_size, typename Mover>
+Error _CowData::_insert_uninitialized(void **p_ptr, _CowData::USize p_index, _CowData::USize p_count, _CowData::USize p_capacity) {
+	if (!*p_ptr) {
+		return _CowData::_alloc_exact<t_size>(p_ptr, p_capacity);
+	} else if (_CowData::_get_refcount(*p_ptr)->get() == 1) {
+		if (*_CowData::_get_capacity(*p_ptr) < p_capacity) {
 			// Need to grow.
-			RETURN_IF_ERROR(_realloc_exact(p_capacity));
+			RETURN_IF_ERROR(_CowData::_realloc_exact<t_size>(p_ptr, p_capacity));
 		}
 
 		// Relocate elements up.
-		if (p_index != (USize)size()) {
-			memmove((void *)(_ptr + p_index + p_count), (void *)(_ptr + p_index), (size() - p_index) * sizeof(T));
+		if (p_index != (uint64_t)(*_CowData::_get_size(*p_ptr))) {
+			memmove((void *)((uint8_t *)*p_ptr + (p_index + p_count) * t_size), (void *)((uint8_t *)*p_ptr + p_index * t_size), (*_CowData::_get_size(*p_ptr) - p_index) * t_size);
 		}
 	} else {
 		// Insert new element by forking.
 		// Initialize the data elsewhere first and only swap when it's ready.
-		CowData new_data;
+		void *new_data;
 
-		RETURN_IF_ERROR(new_data._alloc_exact(p_capacity));
+		RETURN_IF_ERROR(_CowData::_alloc_exact<t_size>(&new_data, p_capacity));
 
 		// Copy over elements.
-		copy_arr_placement(new_data._ptr, _ptr, p_index);
-		copy_arr_placement(
-				new_data._ptr + p_index + p_count,
-				_ptr + p_index,
-				size() - p_index);
+		Mover::move(new_data, *p_ptr, p_index);
+		Mover::move((uint8_t *)new_data + (p_index + p_count) * t_size, (uint8_t *)*p_ptr + p_index * t_size, *_CowData::_get_size(*p_ptr) - p_index);
 
-		*new_data._get_size() = size();
-		SWAP(_ptr, new_data._ptr);
+		*_CowData::_get_size(new_data) = *_CowData::_get_size(*p_ptr);
+		SWAP(*p_ptr, new_data);
+
+		// In theory this was an `unref` call previously. But since we started with a refcount > 1 the destruction part does not matter.
+		_CowData::_get_refcount(new_data)->decrement();
 	}
 
 	return OK;
@@ -383,7 +429,7 @@ Error CowData<T>::_remove(USize p_index, USize p_count) {
 
 	const USize new_size = prev_size - p_count;
 
-	if (_get_refcount()->get() == 1) {
+	if (_CowData::_get_refcount(_ptr)->get() == 1) {
 		// We're the only owner; remove in-place.
 
 		// Destruct the elements, then relocate the rest down.
@@ -393,7 +439,7 @@ Error CowData<T>::_remove(USize p_index, USize p_count) {
 		}
 
 		// Shrink to fit if necessary.
-		const USize new_capacity = smaller_capacity(capacity(), new_size);
+		const USize new_capacity = _CowData::smaller_capacity(capacity(), new_size);
 		if (new_capacity < capacity()) {
 			Error err = _realloc_exact(new_capacity);
 			CRASH_COND(err);
@@ -402,7 +448,7 @@ Error CowData<T>::_remove(USize p_index, USize p_count) {
 		// Remove by forking.
 		CowData new_data;
 
-		RETURN_IF_ERROR(new_data._alloc_exact(smaller_capacity(capacity(), new_size)));
+		RETURN_IF_ERROR(new_data._alloc_exact(_CowData::smaller_capacity(capacity(), new_size)));
 
 		// Copy over elements.
 		copy_arr_placement(new_data._ptr, _ptr, p_index);
@@ -414,7 +460,7 @@ Error CowData<T>::_remove(USize p_index, USize p_count) {
 		SWAP(_ptr, new_data._ptr);
 	}
 
-	*_get_size() = new_size;
+	*_CowData::_get_size(_ptr) = new_size;
 
 	return OK;
 }
@@ -430,7 +476,7 @@ Error CowData<T>::reserve(USize p_min_capacity) {
 		return OK;
 	}
 
-	USize new_capacity = p_exact ? p_min_capacity : next_capacity(capacity(), p_min_capacity);
+	USize new_capacity = p_exact ? p_min_capacity : _CowData::next_capacity(capacity(), p_min_capacity);
 	return _insert_uninitialized(size(), 0, new_capacity);
 }
 
@@ -454,7 +500,7 @@ Error CowData<T>::resize(Size p_size) {
 		if constexpr (p_initialize) {
 			memnew_arr_placement(_ptr + prev_size, p_size - prev_size);
 		}
-		*_get_size() = p_size;
+		*_CowData::_get_size(_ptr) = p_size;
 
 		return OK;
 	} else {
@@ -464,51 +510,71 @@ Error CowData<T>::resize(Size p_size) {
 }
 
 template <typename T>
-Error CowData<T>::_alloc_exact(USize p_capacity) {
+_FORCE_INLINE_ Error CowData<T>::_alloc_exact(USize p_capacity) {
 	DEV_ASSERT(!_ptr);
+	return _CowData::_alloc_exact<sizeof(T)>((void **)&(this->_ptr), p_capacity);
+}
 
-	uint8_t *mem_new = (uint8_t *)Memory::alloc_static(p_capacity * sizeof(T) + DATA_OFFSET, false);
+template <_CowData::USize t_size>
+Error _CowData::_alloc_exact(void **p_ptr, _CowData::USize p_capacity) {
+	uint8_t *mem_new = (uint8_t *)Memory::alloc_static(p_capacity * t_size + _CowData::DATA_OFFSET, false);
 	ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
-	_ptr = _get_data_ptr(mem_new);
+	*p_ptr = _CowData::_get_data_ptr(mem_new);
 
 	// If we alloc, we're guaranteed to be the only reference.
-	new (_get_refcount()) SafeNumeric<USize>(1);
-	*_get_size() = 0;
+	new (_CowData::_get_refcount(*p_ptr)) SafeNumeric<_CowData::USize>(1);
+	*_CowData::_get_size(*p_ptr) = 0;
 	// The actual capacity is whatever we can stuff into the alloc_size.
-	*_get_capacity() = p_capacity;
+	*_CowData::_get_capacity(*p_ptr) = p_capacity;
 
 	return OK;
 }
 
 template <typename T>
-Error CowData<T>::_realloc_exact(USize p_capacity) {
+_FORCE_INLINE_ Error CowData<T>::_realloc_exact(USize p_capacity) {
 	DEV_ASSERT(_ptr);
+	return _CowData::_realloc_exact<sizeof(T)>((void **)&(this->_ptr), p_capacity);
+}
 
-	uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)_ptr) - DATA_OFFSET, p_capacity * sizeof(T) + DATA_OFFSET, false);
+template <_CowData::USize t_size>
+Error _CowData::_realloc_exact(void **p_ptr, _CowData::USize p_capacity) {
+	uint8_t *mem_new = (uint8_t *)Memory::realloc_static(((uint8_t *)*p_ptr) - _CowData::DATA_OFFSET, p_capacity * t_size + _CowData::DATA_OFFSET, false);
 	ERR_FAIL_NULL_V(mem_new, ERR_OUT_OF_MEMORY);
 
-	_ptr = _get_data_ptr(mem_new);
+	*p_ptr = _CowData::_get_data_ptr(mem_new);
 
 	// If we realloc, we're guaranteed to be the only reference.
 	// So the reference was 1 and was copied to be 1 again.
-	DEV_ASSERT(_get_refcount()->get() == 1);
+	DEV_ASSERT(_CowData::_get_refcount(*p_ptr)->get() == 1);
 	// The size was also copied from the previous allocation.
 	// The actual capacity is whatever we can stuff into the alloc_size.
-	*_get_capacity() = p_capacity;
+	*_CowData::_get_capacity(*p_ptr) = p_capacity;
 
 	return OK;
 }
 
+template <_CowData::USize t_size, typename Mover>
+Error m_copy_on_write(void **p_ptr);
+
 template <typename T>
-Error CowData<T>::_copy_on_write() {
-	if (!_ptr || _get_refcount()->get() == 1) {
+_FORCE_INLINE_ Error CowData<T>::_copy_on_write() {
+	if constexpr (std::is_trivially_copyable_v<T>) {
+		return m_copy_on_write<sizeof(T), MoveTrivially<sizeof(T)>>((void **)&(this->_ptr));
+	} else {
+		return m_copy_on_write<sizeof(T), Move<T>>((void **)&(this->_ptr));
+	}
+}
+
+template <_CowData::USize t_size, typename Mover>
+Error m_copy_on_write(void **p_ptr) {
+	if (!*p_ptr || _CowData::_get_refcount(*p_ptr)->get() == 1) {
 		// Nothing to do.
 		return OK;
 	}
 
 	// Fork to become the only reference.
-	return _insert_uninitialized(size(), 0, capacity());
+	return _CowData::_insert_uninitialized<t_size, Mover>(p_ptr, *_CowData::_get_size(*p_ptr), 0, *_CowData::_get_capacity(*p_ptr));
 }
 
 template <typename T>
@@ -522,7 +588,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 	CowData old_data;
 	old_data._ptr = _ptr;
 
-	if (p_from._ptr && p_from._get_refcount()->conditional_increment() > 0) {
+	if (p_from._ptr && _CowData::_get_refcount(p_from._ptr)->conditional_increment() > 0) {
 		_ptr = p_from._ptr;
 	} else {
 		// New data is null or we cannot copy.
@@ -538,7 +604,7 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 	CRASH_COND(_alloc_exact(p_init.size()));
 
 	copy_arr_placement(_ptr, p_init.begin(), p_init.size());
-	*_get_size() = p_init.size();
+	*_CowData::_get_size(_ptr) = p_init.size();
 }
 
 template <typename T>
@@ -549,7 +615,7 @@ CowData<T>::CowData(Span<T> p_span) {
 	CRASH_COND(_alloc_exact(p_span.size()));
 
 	copy_arr_placement(_ptr, p_span.begin(), p_span.size());
-	*_get_size() = p_span.size();
+	*_CowData::_get_size(_ptr) = p_span.size();
 }
 
 GODOT_GCC_WARNING_POP
