@@ -248,9 +248,13 @@ private: \
 	void operator=(const m_class &p_rval) = delete; \
 	friend class ::ClassDB; \
 \
-	static GDType &get_gdtype_static_mutable() { \
+	static GDType &get_gdtype_static_mutable(bool p_deinit = false) { \
 		static GDType *gdtype = nullptr; \
 		static bool initialized = false; \
+		if (p_deinit) { \
+			initialized = false; \
+			return *gdtype; \
+		} \
 		if (likely(initialized)) { \
 			return *gdtype; \
 		} \
@@ -286,8 +290,13 @@ protected: \
 	} \
 \
 public: \
-	static void initialize_class() { \
+	static void initialize_class(bool p_deinit = false) { \
 		static bool initialized = false; \
+		if (p_deinit) { \
+			initialized = false; \
+			get_gdtype_static_mutable(p_deinit); \
+			return; \
+		} \
 		if (likely(initialized)) { \
 			return; \
 		} \
@@ -298,7 +307,7 @@ public: \
 			return; \
 		} \
 		m_inherits::initialize_class(); \
-		_add_class_to_classdb(get_gdtype_static_mutable(), &super_type::get_gdtype_static()); \
+		_add_class_to_classdb(get_gdtype_static_mutable(), &super_type::get_gdtype_static(), m_class::initialize_class); \
 		get_gdtype_static_mutable().initialize(); \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) { \
 			_bind_methods(); \
@@ -454,9 +463,13 @@ private:
 	mutable const GDType *_gdtype_ptr = nullptr;
 	void _reset_gdtype() const;
 
-	static GDType &get_gdtype_static_mutable() {
+	static GDType &get_gdtype_static_mutable(bool p_deinit = false) {
 		static GDType *gdtype = nullptr;
 		static bool initialized = false;
+		if (p_deinit) {
+			initialized = false;
+			return *gdtype;
+		}
 		if (likely(initialized)) {
 			return *gdtype;
 		}
@@ -593,7 +606,7 @@ protected:
 	friend class ::ClassDB;
 	friend class PlaceholderExtensionInstance;
 
-	static void _add_class_to_classdb(GDType &p_class, const GDType *p_inherits);
+	static void _add_class_to_classdb(GDType &p_class, const GDType *p_inherits, void (*p_deinit_func)(bool deinit) = nullptr);
 	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
@@ -620,7 +633,8 @@ protected:
 #endif
 
 public: // Should be protected, but bug in clang++.
-	static void initialize_class();
+	static void initialize_class(bool deinit = false);
+
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
