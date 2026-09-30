@@ -42,6 +42,8 @@
 /**
  * Array-like container with unique ownership.
  *
+ * Elements are relocated by naive memory moves; they must not store their own address (see GH-100509).
+ *
  * Core container guidance:
  * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  *
