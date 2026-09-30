@@ -156,7 +156,10 @@ public:
 	const Vector<StringName> &get_name_hierarchy() const { return name_hierarchy; }
 
 	// Binding
+
 	void bind_integer_constant(const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
+	// Minimal footprint helper for codebase callers. Helps avoid binary size.
+	void bind_integer_constant_raw(const char *p_enum_qualified_name, const char *p_value_name, int64_t p_constant, bool p_is_bitfield = false);
 
 	void add_signal(MethodInfo p_signal);
 
