@@ -205,7 +205,8 @@ bool DisplayServerX11::has_feature(DisplayServerEnums::Feature p_feature) const 
 #endif
 		case DisplayServerEnums::FEATURE_CLIPBOARD_PRIMARY:
 		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
-		case DisplayServerEnums::FEATURE_WINDOW_DRAG: {
+		case DisplayServerEnums::FEATURE_WINDOW_DRAG:
+		case DisplayServerEnums::FEATURE_FOLLOW_PARENT: {
 			return true;
 		} break;
 
@@ -3352,6 +3353,9 @@ void DisplayServerX11::window_set_flag(DisplayServerEnums::WindowFlags p_flag, b
 
 			XFlush(x11_display);
 		} break;
+		case DisplayServerEnums::WINDOW_FLAG_FOLLOW_PARENT: {
+			wd.follow_parent = p_enabled;
+		} break;
 		case DisplayServerEnums::WINDOW_FLAG_MINIMIZE_DISABLED: {
 			wd.no_min_btn = p_enabled;
 			_update_motif_wm_hints(p_window);
@@ -3442,6 +3446,9 @@ bool DisplayServerX11::window_get_flag(DisplayServerEnums::WindowFlags p_flag, D
 	switch (p_flag) {
 		case DisplayServerEnums::WINDOW_FLAG_MAXIMIZE_DISABLED: {
 			return wd.no_max_btn;
+		} break;
+		case DisplayServerEnums::WINDOW_FLAG_FOLLOW_PARENT: {
+			return wd.follow_parent;
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_MINIMIZE_DISABLED: {
 			return wd.no_min_btn;
@@ -4608,6 +4615,22 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 
 	wd.position = new_rect.position;
 	wd.size = new_rect.size;
+
+	if (wd.follow_parent && windows.has(wd.transient_parent)) {
+		WindowData &wd_parent = windows[wd.transient_parent];
+
+		wd.offset = wd_parent.position - wd.position;
+	}
+
+	for (const DisplayServerEnums::WindowID &child : wd.transient_children) {
+		WindowData &wd_child = windows[child];
+		if (wd_child.follow_parent) {
+			wd_child.position.x = wd.position.x - wd_child.offset.x;
+			wd_child.position.y = wd.position.y - wd_child.offset.y;
+			XMoveWindow(x11_display, wd_child.x11_window, wd_child.position.x, wd_child.position.y);
+			_update_real_mouse_position(wd_child);
+		}
+	}
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {

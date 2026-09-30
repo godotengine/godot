@@ -854,6 +854,7 @@ bool DisplayServerMacOS::has_feature(DisplayServerEnums::Feature p_feature) cons
 		case DisplayServerEnums::FEATURE_EMOJI_AND_SYMBOL_PICKER:
 		case DisplayServerEnums::FEATURE_WINDOW_EMBEDDING:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
+		case DisplayServerEnums::FEATURE_FOLLOW_PARENT:
 			return true;
 		case DisplayServerEnums::FEATURE_ACCESSIBILITY_SCREEN_READER: {
 			return AccessibilityServer::get_singleton()->is_supported();
@@ -2533,6 +2534,9 @@ void DisplayServerMacOS::window_set_flag(DisplayServerEnums::WindowFlags p_flag,
 			[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
 			[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:(wd.no_min_btn && wd.no_max_btn)];
 		} break;
+		case DisplayServerEnums::WINDOW_FLAG_FOLLOW_PARENT: {
+			wd.follow_parent = p_enabled;
+		} break;
 		case DisplayServerEnums::WINDOW_FLAG_RESIZE_DISABLED: {
 			wd.resize_disabled = p_enabled;
 			if (wd.fullscreen) { // Fullscreen window should be resizable, style will be applied on exiting fullscreen.
@@ -2685,6 +2689,9 @@ bool DisplayServerMacOS::window_get_flag(DisplayServerEnums::WindowFlags p_flag,
 	switch (p_flag) {
 		case DisplayServerEnums::WINDOW_FLAG_MAXIMIZE_DISABLED: {
 			return wd.no_max_btn;
+		} break;
+		case DisplayServerEnums::WINDOW_FLAG_FOLLOW_PARENT: {
+			return wd.follow_parent;
 		} break;
 		case DisplayServerEnums::WINDOW_FLAG_MINIMIZE_DISABLED: {
 			return wd.no_min_btn;
