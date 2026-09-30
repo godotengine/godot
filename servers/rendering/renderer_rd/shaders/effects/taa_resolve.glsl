@@ -59,7 +59,7 @@ layout(rg16f, set = 0, binding = 6) uniform restrict writeonly image2D output_pr
 
 layout(push_constant, std430) uniform Params {
 	vec2 resolution;
-	float disocclusion_threshold; // 0.1 / max(params.resolution.x, params.resolution.y)
+	float disocclusion_threshold; // 2.5f If velocity changes by less than this amount of texels we can retain the accumulation buffer.
 	float variance_dynamic;
 }
 params;
@@ -155,7 +155,7 @@ void populate_group_shared_memory(uvec2 group_id, uint group_index) {
 								VELOCITY
 ------------------------------------------------------------------------------*/
 
-void depth_test_min(ivec2 pos, inout float min_depth, inout ivec2 min_pos) {
+void depth_test_min(ivec2 pos, inout float closest_depth, inout ivec2 min_pos) {
 	float depth = load_depth(pos);
 
 	// prefer non sky pixels to get real geometry velocity
@@ -163,29 +163,29 @@ void depth_test_min(ivec2 pos, inout float min_depth, inout ivec2 min_pos) {
 		return;
 	}
 
-	if (depth > min_depth) {
-		min_depth = depth;
+	if (depth > closest_depth) {
+		closest_depth = depth;
 		min_pos = pos;
 	}
 }
 
 // Returns velocity with closest depth (3x3 neighborhood)
-void get_closest_pixel_velocity_3x3(in ivec2 group_pos, uvec2 group_top_left, out vec2 velocity) {
-	float min_depth = 1.0;
+void get_closest_pixel_velocity_3x3(in ivec2 group_pos, out vec2 velocity) {
+	float closest_depth = 0.0;
 	ivec2 min_pos = group_pos;
 
-	depth_test_min(group_pos + kOffsets3x3[0], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[1], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[2], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[3], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[4], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[5], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[6], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[7], min_depth, min_pos);
-	depth_test_min(group_pos + kOffsets3x3[8], min_depth, min_pos);
+	depth_test_min(group_pos + kOffsets3x3[0], closest_depth, min_pos);
+	depth_test_min(group_pos + kOffsets3x3[1], closest_depth, min_pos);
+	depth_test_min(group_pos + kOffsets3x3[2], closest_depth, min_pos);
+	depth_test_min(group_pos + kOffsets3x3[3], closest_depth, min_pos);
+	depth_test_min(group_pos + kOffsets3x3[4], closest_depth, min_pos);
+	depth_test_min(group_pos + kOffsets3x3[5], closest_depth, min_pos);
+	depth_test_min(group_pos + kOffsets3x3[6], closest_depth, min_pos);
+	depth_test_min(group_pos + kOffsets3x3[7], closest_depth, min_pos);
+	depth_test_min(group_pos + kOffsets3x3[8], closest_depth, min_pos);
 
 	// Velocity out
-	velocity = imageLoad(velocity_buffer, ivec2(group_top_left) + min_pos).xy;
+	velocity = imageLoad(velocity_buffer, ivec2(gl_WorkGroupID.xy) * kGroupSize + min_pos).xy;
 }
 
 /*------------------------------------------------------------------------------
@@ -356,10 +356,9 @@ vec3 fallback_neighborhood_avg(ivec2 pos_group) {
 	return avg * 0.2;
 }
 
-vec4 temporal_antialiasing(uvec2 pos_group_top_left, ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, out vec2 velocity) {
+vec4 temporal_antialiasing(ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, out vec2 velocity) {
 	// Get the velocity of the current pixel
-	// dilate velocity buffer for good velocity on geometry edges
-	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity);
+	velocity = imageLoad(velocity_buffer, ivec2(pos_screen)).xy;
 
 	// Get reprojected uv
 	vec2 uv_reprojected = uv + velocity;
@@ -374,7 +373,9 @@ vec4 temporal_antialiasing(uvec2 pos_group_top_left, ivec2 pos_group, uvec2 pos_
 
 	// Confidence for motion-adaptive AABB box size: 1 at rest, 0 in motion
 	// see intel https://github.com/GameTechDev/TAA/blob/main/MiniEngine/Core/Shaders/TAAResolve.hlsl
-	float velocity_confidence = clamp(1.0 - length(velocity) / VELOCITY_CONFIDENCE_DISTANCE, 0.0, 1.0);
+	vec2 velocity_dilated;
+	get_closest_pixel_velocity_3x3(pos_group, velocity_dilated);
+	float velocity_confidence = clamp(1.0 - length(velocity_dilated) / VELOCITY_CONFIDENCE_DISTANCE, 0.0, 1.0);
 
 	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
 	color_history = clip_history_3x3(pos_group, color_history, velocity_confidence);
@@ -431,12 +432,11 @@ void main() {
 	}
 
 	const ivec2 pos_group = ivec2(gl_LocalInvocationID.xy);
-	const uvec2 pos_group_top_left = gl_WorkGroupID.xy * kGroupSize - kBorderSize;
 	const uvec2 pos_screen = gl_GlobalInvocationID.xy;
 	const vec2 uv = (gl_GlobalInvocationID.xy + 0.5f) / params.resolution;
 
 	vec2 velocity;
-	vec4 result = temporal_antialiasing(pos_group_top_left, pos_group, pos_screen, uv, history_buffer, velocity);
+	vec4 result = temporal_antialiasing(pos_group, pos_screen, uv, history_buffer, velocity);
 
 	imageStore(output_buffer, ivec2(gl_GlobalInvocationID.xy), result);
 	imageStore(output_prev_velocity_buffer, ivec2(gl_GlobalInvocationID.xy), vec4(velocity, 0.0, 0.0));
