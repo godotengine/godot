@@ -64,6 +64,7 @@
 #include "extensions/openxr_future_extension.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
+#include "extensions/openxr_headless_extension.h"
 #include "extensions/openxr_htc_controller_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 #include "extensions/openxr_huawei_controller_extension.h"
@@ -204,6 +205,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			_register_extension(memnew(OpenXRValveControllerExtension));
 			_register_extension(memnew(OpenXRKHRGenericController));
 			_register_extension(memnew(OpenXRFoveatedInsetExtension));
+			_register_extension(memnew(OpenXRHeadlessExtension));
 
 			// Futures extension has to be registered as a singleton so extensions can access it.
 			_register_extension(memnew(OpenXRFutureExtension), true, true);
