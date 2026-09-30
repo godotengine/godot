@@ -260,33 +260,51 @@ vec3 clip_aabb(vec3 aabb_min, vec3 aabb_max, vec3 p, vec3 q) {
 	return p + r;
 }
 
-// Clip history to the neighbourhood of the current sample
-vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history, vec2 velocity_closest) {
-	// Sample a 3x3 neighbourhood
-	vec3 s1 = load_color(group_pos + kOffsets3x3[0]);
-	vec3 s2 = load_color(group_pos + kOffsets3x3[1]);
-	vec3 s3 = load_color(group_pos + kOffsets3x3[2]);
-	vec3 s4 = load_color(group_pos + kOffsets3x3[3]);
-	vec3 s5 = load_color(group_pos + kOffsets3x3[4]);
-	vec3 s6 = load_color(group_pos + kOffsets3x3[5]);
-	vec3 s7 = load_color(group_pos + kOffsets3x3[6]);
-	vec3 s8 = load_color(group_pos + kOffsets3x3[7]);
-	vec3 s9 = load_color(group_pos + kOffsets3x3[8]);
+vec3 to_ycocg(vec3 rgb) {
+	float Y = 0.25 * rgb.r + 0.5 * rgb.g + 0.25 * rgb.b;
+	float Co = 0.5 * rgb.r - 0.5 * rgb.b;
+	float Cg = -0.25 * rgb.r + 0.5 * rgb.g - 0.25 * rgb.b;
+	return vec3(Y, Co, Cg);
+}
 
-	// Compute min and max (with an adaptive box size, which greatly reduces ghosting)
+vec3 from_ycocg(vec3 ycocg) {
+	float Y = ycocg.r;
+	float Co = ycocg.g;
+	float Cg = ycocg.b;
+
+	float r = Y + Co - Cg;
+	float g = Y + Cg;
+	float b = Y - Co - Cg;
+	return vec3(r, g, b);
+}
+
+// Clip history to the neighbourhood of the current sample
+vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history) {
+	// Sample a 3x3 neighbourhood
+	vec3 s1 = to_ycocg(load_color(group_pos + kOffsets3x3[0]));
+	vec3 s2 = to_ycocg(load_color(group_pos + kOffsets3x3[1]));
+	vec3 s3 = to_ycocg(load_color(group_pos + kOffsets3x3[2]));
+	vec3 s4 = to_ycocg(load_color(group_pos + kOffsets3x3[3]));
+	vec3 s5 = to_ycocg(load_color(group_pos + kOffsets3x3[4]));
+	vec3 s6 = to_ycocg(load_color(group_pos + kOffsets3x3[5]));
+	vec3 s7 = to_ycocg(load_color(group_pos + kOffsets3x3[6]));
+	vec3 s8 = to_ycocg(load_color(group_pos + kOffsets3x3[7]));
+	vec3 s9 = to_ycocg(load_color(group_pos + kOffsets3x3[8]));
+
+	// Compute min and max
 	vec3 color_avg = (s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9) * RPC_9;
 	vec3 color_avg2 = ((s1 * s1) + (s2 * s2) + (s3 * s3) + (s4 * s4) + (s5 * s5) + (s6 * s6) + (s7 * s7) + (s8 * s8) + (s9 * s9)) * RPC_9;
+
 	// Use variance clipping as described in https://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
-	float box_size = mix(0.0f, params.variance_dynamic, smoothstep(0.02f, 0.0f, length(velocity_closest)));
-	vec3 dev = sqrt(abs(color_avg2 - (color_avg * color_avg))) * box_size;
+	vec3 dev = sqrt(abs(color_avg2 - (color_avg * color_avg))) * params.variance_dynamic;
 	vec3 color_min = color_avg - dev;
 	vec3 color_max = color_avg + dev;
 
 	// Variance clipping
-	vec3 color = clip_aabb(color_min, color_max, clamp(color_avg, color_min, color_max), color_history);
+	vec3 color = clip_aabb(color_min, color_max, color_avg, to_ycocg(color_history));
 
 	// Clamp to prevent NaNs
-	color = clamp(color, FLT_MIN, FLT_MAX);
+	color = clamp(from_ycocg(color), FLT_MIN, FLT_MAX);
 
 	return color;
 }
@@ -313,7 +331,9 @@ float get_factor_disocclusion(vec2 uv_reprojected, vec2 velocity) {
 
 vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history) {
 	// Get the velocity of the current pixel
-	vec2 velocity = imageLoad(velocity_buffer, ivec2(pos_screen)).xy;
+	vec2 velocity = vec2(0.0);
+	// dilate velocity buffer for good velocity on geometry edges
+	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity);
 
 	// Get reprojected uv
 	vec2 uv_reprojected = uv + velocity;
@@ -325,21 +345,18 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	vec3 color_history = sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb;
 
 	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
-	vec2 velocity_closest = vec2(0.0); // This is best done by using the velocity with the closest depth.
-	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity_closest);
-	color_history = clip_history_3x3(pos_group, color_history, velocity_closest);
+	color_history = clip_history_3x3(pos_group, color_history);
 
 	// Compute blend factor
 	float blend_factor = RPC_16; // We want to be able to accumulate as many jitter samples as we generated, that is, 16.
+	float reset_factor; // will be added after anti-flicker so it is not overwritten
 	{
 		// If re-projected UV is out of screen, converge to current color immediately.
 		float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
 
 		// Increase blend factor when there is disocclusion (fixes a lot of the remaining ghosting).
 		float factor_disocclusion = get_factor_disocclusion(uv_reprojected, velocity);
-
-		// Add to the blend factor
-		blend_factor = clamp(blend_factor + factor_screen + factor_disocclusion, 0.0, 1.0);
+		reset_factor = clamp(factor_screen + factor_disocclusion, 0.0, 1.0);
 	}
 
 	// Resolve
@@ -356,6 +373,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 		diff = 1.0 - diff;
 		diff = diff * diff;
 		blend_factor = mix(0.0, blend_factor, diff);
+		blend_factor = clamp(blend_factor + reset_factor, 0.0, 1.0);
 
 		// Lerp/blend
 		color_resolved = mix(color_history, color_input, blend_factor);
