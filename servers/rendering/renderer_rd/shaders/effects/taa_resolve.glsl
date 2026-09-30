@@ -163,7 +163,7 @@ void depth_test_min(ivec2 pos, inout float min_depth, inout ivec2 min_pos) {
 		return;
 	}
 
-	if (depth < min_depth) {
+	if (depth > min_depth) {
 		min_depth = depth;
 		min_pos = pos;
 	}
