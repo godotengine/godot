@@ -71,6 +71,15 @@ struct MethodDefinition {
 			name(p_name) {}
 	MethodDefinition(const StringName &p_name) :
 			name(p_name) {}
+
+	// Need to be declared because ~MethodDefinition is specified.
+	MethodDefinition(const MethodDefinition &) = default;
+	MethodDefinition(MethodDefinition &&) = default;
+	MethodDefinition &operator=(const MethodDefinition &) = default;
+	MethodDefinition &operator=(MethodDefinition &&) = default;
+
+	// This is _NO_INLINE_ to save on binary size.
+	_NO_INLINE_ ~MethodDefinition() = default;
 };
 
 MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint32_t p_argcount);
