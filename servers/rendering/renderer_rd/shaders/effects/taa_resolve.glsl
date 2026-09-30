@@ -110,25 +110,17 @@ float get_depth(ivec2 thread_id) {
 	return texelFetch(depth_buffer, thread_id, 0).r;
 }
 
-shared vec3 tile_color[kTileDimension][kTileDimension];
-shared float tile_depth[kTileDimension][kTileDimension];
+// Contains color and depth
+shared vec4 tile_data[kTileDimension][kTileDimension];
 
-vec3 load_color(uvec2 group_thread_id) {
+vec3 load_color(ivec2 group_thread_id) {
 	group_thread_id += kBorderSize;
-	return tile_color[group_thread_id.x][group_thread_id.y];
+	return tile_data[group_thread_id.x][group_thread_id.y].rgb;
 }
 
-void store_color(uvec2 group_thread_id, vec3 color) {
-	tile_color[group_thread_id.x][group_thread_id.y] = color;
-}
-
-float load_depth(uvec2 group_thread_id) {
+float load_depth(ivec2 group_thread_id) {
 	group_thread_id += kBorderSize;
-	return tile_depth[group_thread_id.x][group_thread_id.y];
-}
-
-void store_depth(uvec2 group_thread_id, float depth) {
-	tile_depth[group_thread_id.x][group_thread_id.y] = depth;
+	return tile_data[group_thread_id.x][group_thread_id.y].a;
 }
 
 void store_color_depth(uvec2 group_thread_id, ivec2 thread_id) {
@@ -136,8 +128,9 @@ void store_color_depth(uvec2 group_thread_id, ivec2 thread_id) {
 	thread_id = clamp(thread_id, ivec2(0, 0), ivec2(params.resolution) - ivec2(1, 1));
 
 	// Run everything in reinhard
-	store_color(group_thread_id, reinhard(imageLoad(color_buffer, thread_id).rgb));
-	store_depth(group_thread_id, get_depth(thread_id));
+	vec3 color = reinhard(imageLoad(color_buffer, thread_id).rgb);
+	float depth = get_depth(thread_id);
+	tile_data[group_thread_id.x][group_thread_id.y] = vec4(color, depth);
 }
 
 void populate_group_shared_memory(uvec2 group_id, uint group_index) {
@@ -164,7 +157,7 @@ void populate_group_shared_memory(uvec2 group_id, uint group_index) {
 								VELOCITY
 ------------------------------------------------------------------------------*/
 
-void depth_test_min(uvec2 pos, inout float min_depth, inout uvec2 min_pos) {
+void depth_test_min(ivec2 pos, inout float min_depth, inout ivec2 min_pos) {
 	float depth = load_depth(pos);
 
 	// prefer non sky pixels to get real geometry velocity
@@ -179,9 +172,9 @@ void depth_test_min(uvec2 pos, inout float min_depth, inout uvec2 min_pos) {
 }
 
 // Returns velocity with closest depth (3x3 neighborhood)
-void get_closest_pixel_velocity_3x3(in uvec2 group_pos, uvec2 group_top_left, out vec2 velocity) {
+void get_closest_pixel_velocity_3x3(in ivec2 group_pos, uvec2 group_top_left, out vec2 velocity) {
 	float min_depth = 1.0;
-	uvec2 min_pos = group_pos;
+	ivec2 min_pos = group_pos;
 
 	depth_test_min(group_pos + kOffsets3x3[0], min_depth, min_pos);
 	depth_test_min(group_pos + kOffsets3x3[1], min_depth, min_pos);
@@ -194,7 +187,7 @@ void get_closest_pixel_velocity_3x3(in uvec2 group_pos, uvec2 group_top_left, ou
 	depth_test_min(group_pos + kOffsets3x3[8], min_depth, min_pos);
 
 	// Velocity out
-	velocity = imageLoad(velocity_buffer, ivec2(group_top_left + min_pos)).xy;
+	velocity = imageLoad(velocity_buffer, ivec2(group_top_left) + min_pos).xy;
 }
 
 /*------------------------------------------------------------------------------
@@ -297,7 +290,7 @@ vec3 from_ycocg(vec3 ycocg) {
 }
 
 // Clip history to the neighbourhood of the current sample
-vec3 clip_history_3x3(uvec2 group_pos, vec3 color_history, float velocity_confidence) {
+vec3 clip_history_3x3(ivec2 group_pos, vec3 color_history, float velocity_confidence) {
 	// Sample a 3x3 neighbourhood
 	vec3 sum = vec3(0.0);
 	vec3 sum_sq = vec3(0.0);
@@ -356,7 +349,7 @@ float get_factor_velocity_disocclusion(vec2 uv_reprojected, vec2 velocity) {
 
 // 5-tap (cross) neighborhood average
 // Used as a first-frame fallback on disocclusion so we don't output a raw aliased sample
-vec3 fallback_neighborhood_avg(uvec2 pos_group) {
+vec3 fallback_neighborhood_avg(ivec2 pos_group) {
 	vec3 avg = load_color(pos_group);
 	avg += load_color(pos_group + ivec2(-1, 0));
 	avg += load_color(pos_group + ivec2(1, 0));
@@ -365,7 +358,7 @@ vec3 fallback_neighborhood_avg(uvec2 pos_group) {
 	return avg * 0.2;
 }
 
-vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, sampler2D tex_prev_weight, out float out_accum_count, out vec2 velocity) {
+vec3 temporal_antialiasing(uvec2 pos_group_top_left, ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, sampler2D tex_prev_weight, out float out_accum_count, out vec2 velocity) {
 	// Get the velocity of the current pixel
 	// dilate velocity buffer for good velocity on geometry edges
 	get_closest_pixel_velocity_3x3(pos_group, pos_group_top_left, velocity);
@@ -441,7 +434,7 @@ void main() {
 		return;
 	}
 
-	const uvec2 pos_group = gl_LocalInvocationID.xy;
+	const ivec2 pos_group = ivec2(gl_LocalInvocationID.xy);
 	const uvec2 pos_group_top_left = gl_WorkGroupID.xy * kGroupSize - kBorderSize;
 	const uvec2 pos_screen = gl_GlobalInvocationID.xy;
 	const vec2 uv = (gl_GlobalInvocationID.xy + 0.5f) / params.resolution;
