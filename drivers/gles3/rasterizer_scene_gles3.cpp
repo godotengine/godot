@@ -3652,14 +3652,6 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							spec_constants |= SceneShaderGLES3::SECOND_REFLECTION_PROBE;
 						}
 
-						if (inst->decals_count > 0) {
-							spec_constants |= SceneShaderGLES3::USE_DECALS;
-
-							if (decals_filter == RSE::DECAL_FILTER_NEAREST_MIPMAPS || decals_filter == RSE::DECAL_FILTER_LINEAR_MIPMAPS || decals_filter == RSE::DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC || decals_filter == RSE::DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC) {
-								spec_constants |= SceneShaderGLES3::USE_DECAL_MIPMAPS;
-							}
-						}
-
 						if (inst->lightmap_instance.is_valid()) {
 							spec_constants |= SceneShaderGLES3::USE_LIGHTMAP;
 
@@ -3766,6 +3758,15 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						} else if (scene_state.directional_shadow_quality >= RSE::SHADOW_QUALITY_SOFT_LOW) {
 							spec_constants |= SceneShaderGLES3::SHADOW_MODE_PCF_5;
 						}
+					}
+				}
+
+				// Decals apply in all color passes.
+				if (inst->decals_count > 0) {
+					spec_constants |= SceneShaderGLES3::USE_DECALS;
+
+					if (decals_filter == RSE::DECAL_FILTER_NEAREST_MIPMAPS || decals_filter == RSE::DECAL_FILTER_LINEAR_MIPMAPS || decals_filter == RSE::DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC || decals_filter == RSE::DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC) {
+						spec_constants |= SceneShaderGLES3::USE_DECAL_MIPMAPS;
 					}
 				}
 			}
