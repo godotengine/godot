@@ -47,6 +47,7 @@
 // See Intel MiniEngine TAAResolve.hlsl and Karis "High Quality Temporal Supersampling"
 #define MIN_VARIANCE_BOX_SIZE_MULTIPLIER 0.4
 #define VELOCITY_CONFIDENCE_DISTANCE (128.0 / 1080.0) // 128 at 1080p, store it resolution independent
+#define DILATION_CONFIDENCE_DISTANCE (5.0 / 1080.0) // 6 texels at 1080p, texel distance difference at which we loose confidence in the dilated velocity.
 
 layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) in;
 
@@ -155,7 +156,7 @@ void populate_group_shared_memory(uvec2 group_id, uint group_index) {
 /*------------------------------------------------------------------------------
 								VELOCITY
 ------------------------------------------------------------------------------*/
-
+/*
 void depth_test_min(ivec2 pos, inout float closest_depth, inout ivec2 min_pos) {
 	float depth = load_depth(pos);
 
@@ -188,6 +189,7 @@ void get_closest_pixel_velocity_3x3(in ivec2 group_pos, out vec2 velocity) {
 	// Velocity out
 	velocity = imageLoad(velocity_buffer, ivec2(gl_WorkGroupID.xy) * kGroupSize + min_pos).xy;
 }
+*/
 
 void velocity_test_max(ivec2 pos, inout float max_magnitude_sq, inout vec2 max_velocity) {
 	vec2 v = imageLoad(velocity_buffer, ivec2(gl_WorkGroupID.xy) * kGroupSize + pos).xy;
@@ -411,9 +413,15 @@ vec4 temporal_antialiasing(ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D
 
 	// Confidence for motion-adaptive AABB box size: 1 at rest, 0 in motion
 	// see intel https://github.com/GameTechDev/TAA/blob/main/MiniEngine/Core/Shaders/TAAResolve.hlsl
-	float velocity_confidence = clamp(1.0 - length(velocity) / VELOCITY_CONFIDENCE_DISTANCE, 0.0, 1.0);
+	float velocity_confidence = 1.0 - length(velocity) / VELOCITY_CONFIDENCE_DISTANCE;
+
+	// Silhouette detection to mitigate halo introduced by velocity dilation
+	float divergence = length(velocity_dilated - velocity);
+	float silhouette_confidence = 1.0 - divergence / DILATION_CONFIDENCE_DISTANCE;
+	velocity_confidence = min(velocity_confidence, silhouette_confidence);
 
 	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
+	velocity_confidence = clamp(velocity_confidence, 0.0, 1.0);
 	color_history = clip_history_3x3(pos_group, color_history, velocity_confidence);
 
 	// Compute reset factor
