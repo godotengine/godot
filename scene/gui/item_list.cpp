@@ -2044,7 +2044,7 @@ int ItemList::_get_available_item_width() const {
 			}
 		}
 	} else {
-		width -= MAX(theme_cache.panel_style->get_margin(SIDE_RIGHT), theme_cache.scrollbar_margin_right);
+		width -= MAX(0, theme_cache.scrollbar_margin_right - theme_cache.panel_style->get_margin(SIDE_RIGHT));
 	}
 
 	return width;
