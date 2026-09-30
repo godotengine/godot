@@ -329,7 +329,7 @@ vec3 clip_history_3x3(ivec2 group_pos, vec3 color_history, float velocity_confid
 									TAA
 ------------------------------------------------------------------------------*/
 
-const vec3 lumCoeff = vec3(0.299f, 0.587f, 0.114f);
+const vec3 lumCoeff = vec3(0.2126f, 0.7152f, 0.0722f);
 
 float luminance(vec3 color) {
 	return max(dot(color, lumCoeff), 0.0001f);
@@ -406,8 +406,7 @@ vec4 temporal_antialiasing(ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D
 		// Reduce flickering
 		float lum_color = luminance(color_input);
 		float lum_history = luminance(color_history);
-		float diff = abs(lum_color - lum_history) / max(lum_color, max(lum_history, 1.001));
-		diff = 1.0 - diff;
+		float diff = 1.0 - abs(lum_color - lum_history);
 		diff = diff * diff;
 		blend_factor = mix(0.0, blend_factor, diff);
 		blend_factor = clamp(blend_factor + reset_factor, 0.0, 1.0);
