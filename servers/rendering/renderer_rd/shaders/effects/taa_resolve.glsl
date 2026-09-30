@@ -38,7 +38,8 @@
 #define FLT_MAX 32767.0
 #define RPC_9 0.11111111111
 #define RPC_16 0.0625
-#define MAX_ACCUMULATED_SAMPLES 16.0
+#define MAX_ACCUMULATED_SAMPLES 12.0
+#define MAX_ACCUMULATED_SAMPLES_MOTION 4.0
 
 #define DISOCCLUSION_SCALE 0.01 // Scale the weight of this pixel calculated as (change in velocity - threshold) * scale.
 
@@ -263,14 +264,19 @@ vec4 sample_catmull_rom_5(sampler2D stex, vec2 uv, vec2 resolution) {
 	float w_bottom = w12.x * w3.y;
 	float w_total = w_top + w_left + w_center + w_right + w_bottom;
 
+	// don't apply weight to accumulation count in alpha
+	vec4 center = textureLod(stex, vec2(texPos12.x, texPos12.y), 0.0);
+
 	vec4 result = vec4(0.0);
 	result += textureLod(stex, vec2(texPos12.x, texPos0.y), 0.0) * w_top;
 	result += textureLod(stex, vec2(texPos0.x, texPos12.y), 0.0) * w_left;
-	result += textureLod(stex, vec2(texPos12.x, texPos12.y), 0.0) * w_center;
+	result += center * w_center;
 	result += textureLod(stex, vec2(texPos3.x, texPos12.y), 0.0) * w_right;
 	result += textureLod(stex, vec2(texPos12.x, texPos3.y), 0.0) * w_bottom;
 
-	return max(result / w_total, 0.0f);
+	result = max(result / w_total, 0.0f);
+	result.a = center.a;
+	return result;
 }
 
 /*------------------------------------------------------------------------------
@@ -448,7 +454,9 @@ vec4 temporal_antialiasing(ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D
 		color_resolved = reinhard_inverse(color_resolved);
 	}
 
-	float new_accum_count = min(prev_accum_count + 1.0, MAX_ACCUMULATED_SAMPLES);
+	// When moving lower accumulation so heavy history weighting doesn't smear textures
+	float max_accum = mix(MAX_ACCUMULATED_SAMPLES_MOTION, MAX_ACCUMULATED_SAMPLES, velocity_confidence);
+	float new_accum_count = min(prev_accum_count + 1.0, max_accum);
 	return vec4(color_resolved, new_accum_count);
 }
 
