@@ -883,6 +883,9 @@ else:
         if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.
             env.AppendUnique(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
+        elif methods.using_emcc(env):
+            # Emscripten can use separate -s for build options, so pass the alias directly to the linker.
+            env.AppendUnique(LINKFLAGS=["-Wl,-s"])
         else:
             env.AppendUnique(LINKFLAGS=["-s"])
 
