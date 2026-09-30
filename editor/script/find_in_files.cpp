@@ -1534,11 +1534,11 @@ void FindInFilesContainer::_on_theme_changed() {
 
 void FindInFilesContainer::_on_tab_changed() {
 	if (FindInFilesResultsPanel *panel = Object::cast_to<FindInFilesResultsPanel>(tabs->get_current_tab_control())) {
+		search_control->set_replace_text(panel->get_replace_text());
+		search_control->set_finder(panel->get_finder(), false);
 		if (panel->get_finder()->is_rename_mode()) {
 			search_control->set_replace(true);
 		}
-		search_control->set_replace_text(panel->get_replace_text());
-		search_control->set_finder(panel->get_finder(), false);
 	}
 }
 
