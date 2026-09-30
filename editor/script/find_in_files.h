@@ -245,7 +245,7 @@ class FindInFilesResultsPanel : public MarginContainer {
 	MarginContainer *results_mc = nullptr;
 
 	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
-	void _remove_result(TreeItem *p_item);
+	void _remove_result(TreeItem *p_item, bool p_update_matches);
 	void _on_result_found(const String &p_fpath, int p_line_number, int p_begin, int p_end, const String &p_text);
 	void _on_theme_changed();
 	void _on_finished();
