@@ -84,7 +84,7 @@ void RenderSceneBuffersGLES3::_rt_attach_textures(GLuint p_color, GLuint p_depth
 	}
 }
 
-GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count) {
+GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count, bool p_depth_has_stencil) {
 	FBDEF new_fbo;
 
 #if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
@@ -101,7 +101,7 @@ GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_dept
 	glGenFramebuffers(1, &new_fbo.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, new_fbo.fbo);
 
-	_rt_attach_textures(p_color, p_depth, p_samples, p_view_count, true);
+	_rt_attach_textures(p_color, p_depth, p_samples, p_view_count, p_depth_has_stencil);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -690,8 +690,9 @@ GLuint RenderSceneBuffersGLES3::get_render_fbo(int p_view) {
 	if (msaa3d.check_fbo_cache) {
 		GLuint color = texture_storage->render_target_get_color(render_target);
 		GLuint depth = texture_storage->render_target_get_depth(render_target);
+		bool depth_has_stencil = texture_storage->render_target_get_depth_has_stencil(render_target);
 
-		rt_fbo = _rt_get_cached_fbo(color, depth, msaa3d.samples, view_count);
+		rt_fbo = _rt_get_cached_fbo(color, depth, msaa3d.samples, view_count, depth_has_stencil);
 		if (rt_fbo == 0) {
 			// Somehow couldn't obtain this? Just render without MSAA.
 			rt_fbo = texture_storage->render_target_get_fbo(render_target);
