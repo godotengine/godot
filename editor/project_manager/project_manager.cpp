@@ -413,6 +413,10 @@ void ProjectManager::_select_main_view(int p_id) {
 }
 
 void ProjectManager::_show_about() {
+	if (!about_dialog) {
+		about_dialog = memnew(EditorAbout);
+		add_child(about_dialog);
+	}
 	about_dialog->popup_centered(Size2(780, 500) * EDSCALE);
 }
 
@@ -1320,6 +1324,84 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 }
 
 void ProjectManager::_files_dropped(PackedStringArray p_files) {
+#ifdef WEB_ENABLED
+	if (p_files.size() == 1 && p_files[0].ends_with(".zip")) {
+		const String &file = p_files[0];
+		Error err = DirAccess::rename_absolute(file, "/tmp/install.zip"); // Cleaned up at shutdown.
+		if (err) {
+			_show_error(vformat("Error importing the ZIP file: %d", err));
+			return;
+		}
+		_install_project("/tmp/install.zip", file.get_file().get_basename().capitalize());
+		return;
+	}
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	PackedStringArray errors;
+	PackedStringArray folders;
+	const String home = "/home/web_user";
+	for (const String &folder : p_files) {
+		if (!da->dir_exists(folder)) {
+			if (folder.ends_with(".zip")) {
+				errors.push_back("Importing multiple ZIP projects is not supported.");
+			} else {
+				errors.push_back(vformat("Unrecognized file: %s", folder.get_file()));
+			}
+			continue;
+		}
+		const String &name = folder.get_file();
+		const String base = folder.get_base_dir();
+		const String dest = home + "/" + name;
+		if (da->dir_exists(dest)) {
+			errors.push_back(vformat("Cannot import folder '%s', path already exists.", name));
+			continue;
+		}
+		// Move dropped folder to the home folder destination
+		List<String> dirs;
+		dirs.push_back(name);
+		Error err = OK;
+		while (dirs.size()) {
+			const String cur = dirs.front()->get();
+			dirs.pop_front();
+			err = DirAccess::make_dir_absolute(home + "/" + cur);
+			if (err != OK) {
+				errors.push_back(vformat("Failed to create folder: '%s/%s'", home, cur));
+				break;
+			}
+			for (const String &F : DirAccess::get_files_at(base + "/" + cur)) {
+				const String src = base + "/" + cur + "/" + F;
+				const String dst = home + "/" + cur + "/" + F;
+				err = DirAccess::rename_absolute(src, dst);
+				if (err != OK) {
+					errors.push_back(vformat("Failed to move file: '%s' to '%s'", src, dst));
+					break;
+				}
+			}
+			if (err != OK) {
+				break;
+			}
+			for (const String &D : DirAccess::get_directories_at(base + "/" + cur)) {
+				dirs.push_back(cur + "/" + D);
+			}
+		}
+		if (err != OK) {
+			// Try removing the import destination.
+			Ref<DirAccess> dab = DirAccess::open(dest);
+			if (dab.is_valid()) {
+				dab->erase_contents_recursive();
+				dab.unref();
+				DirAccess::remove_absolute(dest);
+			}
+		} else {
+			folders.push_back(dest);
+		}
+	}
+
+	if (errors.size()) {
+		_show_error(String("\n").join(errors));
+	}
+	project_list->find_projects_multiple(folders);
+#else
 	// TODO: Support installing multiple ZIPs at the same time?
 	if (p_files.size() == 1 && p_files[0].ends_with(".zip")) {
 		const String &file = p_files[0];
@@ -1340,6 +1422,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 		folders.push_back(E);
 	}
 	project_list->find_projects_multiple(folders);
+#endif // WEB_ENABLED
 }
 
 void ProjectManager::_titlebar_resized() {
@@ -1909,9 +1992,6 @@ ProjectManager::ProjectManager() {
 		error_dialog = memnew(AcceptDialog);
 		error_dialog->set_title(TTRC("Error"));
 		add_child(error_dialog);
-
-		about_dialog = memnew(EditorAbout);
-		add_child(about_dialog);
 	}
 
 	// Tag management.

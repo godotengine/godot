@@ -649,6 +649,8 @@ XrResult OpenXRAPI::attempt_create_instance(XrVersion p_version) {
 	// Get our project name.
 	String project_name = GLOBAL_GET("application/config/name");
 	if (!project_name.is_empty()) {
+		// On SteamVR, if applicationName contains slashes, controllers won't work!
+		project_name = project_name.replace_char('/', '-');
 		copy_string_to_char_buffer(project_name, instance_create_info.applicationInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE);
 	}
 

@@ -243,7 +243,7 @@ public:
 
 	/* EDITOR AND DEBUGGING */
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	// Save and restore a CanvasItem state
 	virtual void _edit_set_state(const Dictionary &p_state) {}
 	virtual Dictionary _edit_get_state() const { return Dictionary(); }
@@ -271,10 +271,6 @@ public:
 	virtual Point2 _edit_get_pivot() const { return Point2(); }
 
 	virtual Transform2D _edit_get_transform() const;
-#endif // TOOLS_ENABLED
-
-#ifdef DEBUG_ENABLED
-	// Those need to be available in debug runtime, to allow for node selection.
 
 	// Select the node.
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;

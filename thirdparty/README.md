@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.22.3 (826d672661f9453c8b269ab3946dbcbae6300555, 2026)
+- Version: 0.23.1 (8b6ed37c20ed4c59390e253407983333053662ba, 2026)
 - License: MIT
 
 Files extracted from upstream source:
@@ -1035,6 +1035,8 @@ Patches:
 - `0005-fix-libudev-dbus.patch` ([GH-108373](https://github.com/godotengine/godot/pull/108373))
 - `0006-fix-cs-environ.patch` ([GH-109283](https://github.com/godotengine/godot/pull/109283))
 - `0007-ios-accelerometer.patch` ([GH-120373](https://github.com/godotengine/godot/pull/120373))
+- `0008-ios-link.patch` ([GH-123903](https://github.com/godotengine/godot/pull/123903))
+- `0009-ios-iostream-no-prefpath.patch` ([GH-123899](https://github.com/godotengine/godot/pull/123899))
 
 
 ## spirv-cross

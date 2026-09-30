@@ -407,7 +407,7 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action_for_history(TTRN("Instantiate Scene", "Instantiate Scenes", instances.size()), editor_data->get_current_edited_scene_history_id(), UndoRedo::MERGE_ALL);
+	undo_redo->create_action_for_history(TPL(instances.size(), TTR("Instantiate Scene"), TTR("Instantiate Scenes")), editor_data->get_current_edited_scene_history_id(), UndoRedo::MERGE_ALL);
 	undo_redo->add_do_method(editor_selection, "clear");
 
 	for (int i = 0; i < instances.size(); i++) {
@@ -477,7 +477,7 @@ void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action_for_history(TTRN("Create AudioStreamPlayer", "Create AudioStreamPlayers", nodes.size()), editor_data->get_current_edited_scene_history_id());
+	undo_redo->create_action_for_history(TPL(nodes.size(), TTR("Create AudioStreamPlayer"), TTR("Create AudioStreamPlayers")), editor_data->get_current_edited_scene_history_id());
 	undo_redo->add_do_method(editor_selection, "clear");
 
 	for (int i = 0; i < nodes.size(); i++) {
@@ -1312,8 +1312,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				existing = root_name + "." + extensions.front()->get().to_lower();
 			}
 			new_scene_from_dialog->set_current_path(existing);
-
-			new_scene_from_dialog->set_title(TTRC("Save New Scene As..."));
 			new_scene_from_dialog->popup_file_dialog();
 		} break;
 		case TOOL_COPY_NODE_PATH: {
@@ -3171,10 +3169,11 @@ Node *SceneTreeDock::_do_create(Node *p_parent) {
 	Node *child = create_dialog->instantiate_selected<Node>();
 	ERR_FAIL_NULL_V(child, nullptr);
 
-	String new_name = p_parent->validate_child_name(child);
+	String new_name = child->get_name();
 	if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
 		new_name = adjust_name_casing(new_name);
 	}
+	new_name = p_parent->prevalidate_child_name(child, new_name);
 	child->set_name(new_name);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -5461,6 +5460,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	placeholder_editable_instance_remove_dialog->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_toggle_placeholder_from_selection));
 
 	new_scene_from_dialog = memnew(EditorFileDialog);
+	new_scene_from_dialog->set_title(TTRC("Save New Scene As..."));
 	new_scene_from_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	new_scene_from_dialog->add_option(TTRC("Reset Position"), Vector<String>(), true);
 	new_scene_from_dialog->add_option(TTRC("Reset Rotation"), Vector<String>(), false);

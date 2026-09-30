@@ -51,6 +51,11 @@ bool OpenXRValveControllerExtension::is_available() {
 }
 
 void OpenXRValveControllerExtension::on_register_metadata(OpenXRInteractionProfileMetadata *p_interaction_profile_metadata) {
+	p_interaction_profile_metadata->register_path_rename("/user/hand/left/input/bumper/touch", "/user/hand/left/input/shoulder/touch");
+	p_interaction_profile_metadata->register_path_rename("/user/hand/right/input/bumper/touch", "/user/hand/right/input/shoulder/touch");
+	p_interaction_profile_metadata->register_path_rename("/user/hand/left/input/bumper/click", "/user/hand/left/input/shoulder/click");
+	p_interaction_profile_metadata->register_path_rename("/user/hand/right/input/bumper/click", "/user/hand/right/input/shoulder/click");
+
 	{ // Valve Steam Frame controller
 		const String profile_path = "/interaction_profiles/valve/frame_controller_valve";
 		p_interaction_profile_metadata->register_interaction_profile("Valve Steam Frame controller", profile_path, XR_VALVE_FRAME_CONTROLLER_INTERACTION_EXTENSION_NAME);
@@ -62,8 +67,8 @@ void OpenXRValveControllerExtension::on_register_metadata(OpenXRInteractionProfi
 			p_interaction_profile_metadata->register_io_path(profile_path, "System touch", user_path, user_path + "/input/system/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
 			p_interaction_profile_metadata->register_io_path(profile_path, "System click", user_path, user_path + "/input/system/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
-			p_interaction_profile_metadata->register_io_path(profile_path, "Bumper touch", user_path, user_path + "/input/bumper/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-			p_interaction_profile_metadata->register_io_path(profile_path, "Bumper click", user_path, user_path + "/input/bumper/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
+			p_interaction_profile_metadata->register_io_path(profile_path, "Shoulder touch", user_path, user_path + "/input/shoulder/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
+			p_interaction_profile_metadata->register_io_path(profile_path, "Shoulder click", user_path, user_path + "/input/shoulder/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
 			p_interaction_profile_metadata->register_io_path(profile_path, "Trigger", user_path, user_path + "/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
 			p_interaction_profile_metadata->register_io_path(profile_path, "Trigger touch", user_path, user_path + "/input/trigger/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);

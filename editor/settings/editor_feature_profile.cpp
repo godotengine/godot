@@ -547,6 +547,7 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 	class_item->set_editable(0, true);
 	class_item->set_selectable(0, true);
 	class_item->set_metadata(0, p_class);
+	class_item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 
 	bool collapsed = edited->is_item_collapsed(p_class);
 	class_item->set_collapsed(collapsed);
@@ -652,6 +653,7 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 			property->set_metadata(0, name);
 			String icon_type = Variant::get_type_name(E.type);
 			property->set_icon(0, EditorNode::get_singleton()->get_class_icon(icon_type));
+			property->set_autowrap_mode(0, TextServer::AUTOWRAP_WORD_SMART);
 		}
 	}
 
@@ -1001,11 +1003,11 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 
 	h_split = memnew(HSplitContainer);
 	h_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	h_split->set_split_offset(260 * EDSCALE, 0);
 	main_vbc->add_child(h_split);
 
 	class_list_vbc = memnew(VBoxContainer);
 	h_split->add_child(class_list_vbc);
-	class_list_vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	class_list = memnew(Tree);
 	class_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
@@ -1016,15 +1018,16 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	class_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_edited), CONNECT_DEFERRED);
 	class_list->connect("item_collapsed", callable_mp(this, &EditorFeatureProfileManager::_class_list_item_collapsed));
 	class_list->set_theme_type_variation("TreeSecondary");
+	class_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	// It will be displayed once the user creates or chooses a profile.
 	class_list_vbc->hide();
 
 	property_list_vbc = memnew(VBoxContainer);
 	h_split->add_child(property_list_vbc);
-	property_list_vbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	description_bit = memnew(EditorHelpBit);
 	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
+	description_bit->override_custom_minimum_width(320 * EDSCALE);
 	description_bit->connect("request_hide", callable_mp(this, &EditorFeatureProfileManager::_hide_requested));
 	property_list_vbc->add_margin_child(TTRC("Description:"), description_bit, false);
 
@@ -1035,6 +1038,8 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	property_list->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	property_list->connect("item_edited", callable_mp(this, &EditorFeatureProfileManager::_property_item_edited), CONNECT_DEFERRED);
 	property_list->set_theme_type_variation("TreeSecondary");
+	property_list->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
+	property_list->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	// It will be displayed once the user creates or chooses a profile.
 	property_list_vbc->hide();
 

@@ -183,7 +183,7 @@ protected:
 	public:
 		virtual bool handles(ScriptEditorBase *p_seb) override { return Object::cast_to<ShaderTextEditor>(p_seb); }
 
-		EditMenusShTE(ScriptEditor *p_se) : EditMenusCEB(p_se, "Shader Previews") {}
+		EditMenusShTE(DocumentEditorContainer *p_document_editor_container) : EditMenusCEB(p_document_editor_container, "Shader Previews") {}
 	};
 
 	void _notification(int p_what);
@@ -209,7 +209,7 @@ public:
 	void set_code_block_changed(const String &p_code);
 	virtual void apply_code() override;
 
-	virtual EditMenusBase *create_edit_menu(ScriptEditor *p_se) override { return memnew(EditMenusShTE(p_se)); }
+	virtual EditMenusBase *create_edit_menu(DocumentEditorContainer *p_document_editor_container) override { return memnew(EditMenusShTE(p_document_editor_container)); }
 
 	static void register_editor();
 

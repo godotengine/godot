@@ -388,6 +388,15 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 	}
 }
 
+void ThemeDB::get_class_list(HashSet<StringName> &r_list) const {
+	for (const KeyValue<StringName, List<ThemeDB::ThemeItemBind>> &KV : theme_item_binds_list) {
+		if (ClassDB::get_api_type(KV.key) == ClassDB::API_CORE) {
+			// Don't include editor and extension classes.
+			r_list.insert(KV.key);
+		}
+	}
+}
+
 void ThemeDB::get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited, Theme::DataType p_filter_type) {
 	List<StringName> class_hierarchy;
 	StringName class_name = p_class_name;

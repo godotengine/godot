@@ -45,10 +45,25 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 		snapshot(p_snapshot) {
 	remote_object_id = p_obj.id;
 	type_name = p_obj.class_name;
+	remote_name = vformat("<%s:%d> ", type_name, remote_object_id) + TTR("(Runtime Instance)");
+	remote_path = "";
+	bool is_node = ClassDB::is_parent_class(type_name, "Node");
+	bool is_resource = ClassDB::is_parent_class(type_name, "Resource");
 
 	for (const SceneDebuggerObject::SceneDebuggerProperty &prop : p_obj.properties) {
 		PropertyInfo pinfo = prop.first;
 		Variant pvalue = prop.second;
+
+		if (is_node && pinfo.name == "name") {
+			remote_name = pvalue;
+		} else if (is_node && pinfo.name == "Node/path") {
+			remote_path = pvalue;
+		} else if (is_resource && pinfo.name == "resource_path") {
+			remote_path = pvalue;
+			if (!remote_path.is_empty()) {
+				remote_name = remote_path.get_file();
+			}
+		}
 
 		if (pinfo.type == Variant::OBJECT && pvalue.is_string()) {
 			String path = pvalue;
@@ -161,6 +176,9 @@ String SnapshotDataObject::_get_script_name(Ref<Script> p_script) {
 }
 
 String SnapshotDataObject::get_name() {
+	if (!remote_name.is_empty()) {
+		return remote_name;
+	}
 	String found_type_name = type_name;
 
 	// Ideally, we will name it after the script attached to it.

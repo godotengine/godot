@@ -253,7 +253,7 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 
 		switch (p_compress_type) {
 			case EtcpakType::ETCPAK_TYPE_ETC1:
-				CompressEtc1RgbDither(src_mip_read, dest_mip_write, blocks, dest_mip_w);
+				CompressEtc1Rgb(src_mip_read, dest_mip_write, blocks, dest_mip_w);
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_ETC2:
@@ -274,7 +274,7 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_DXT1:
-				CompressBc1Dither(src_mip_read, dest_mip_write, blocks, dest_mip_w);
+				CompressBc1(src_mip_read, dest_mip_write, blocks, dest_mip_w);
 				break;
 
 			case EtcpakType::ETCPAK_TYPE_DXT5:

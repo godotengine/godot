@@ -486,12 +486,20 @@ struct MultiviewData {
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
+	highp uint view_index;
+	highp uint pad0;
+	highp uint pad1;
+	highp uint pad2;
 };
 
 layout(std140) uniform MultiviewDataBlock { // ubo:9
 	MultiviewData data;
 }
 multiview_data_block;
+
+#ifdef EMULATE_MULTIVIEW
+#define ViewIndex (multiview_data_block.data.view_index)
+#endif
 
 #ifdef RENDER_MOTION_VECTORS
 layout(std140) uniform PrevMultiviewDataBlock { // ubo:14
@@ -1269,12 +1277,20 @@ struct MultiviewData {
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
+	highp uint view_index;
+	highp uint pad0;
+	highp uint pad1;
+	highp uint pad2;
 };
 
 layout(std140) uniform MultiviewDataBlock { // ubo:9
 	MultiviewData data;
 }
 multiview_data_block;
+
+#ifdef EMULATE_MULTIVIEW
+#define ViewIndex (multiview_data_block.data.view_index)
+#endif
 #endif
 
 uniform highp mat4 world_transform;
@@ -2131,10 +2147,8 @@ void reflection_process(samplerCube reflection_map,
 	if (exterior) {
 		reflection.rgb = mix(skybox, reflection.rgb, blend);
 	}
-	reflection.rgb *= intensity;
-	reflection.a = blend;
-	reflection.rgb *= blend;
-
+	reflection.a = blend * intensity;
+	reflection.rgb *= reflection.a;
 	reflection_accum += reflection;
 
 #ifndef USE_LIGHTMAP
@@ -2147,8 +2161,8 @@ void reflection_process(samplerCube reflection_map,
 			ambient_out.rgb = mix(ambient, ambient_out.rgb, blend);
 		}
 
-		ambient_out.a = blend;
-		ambient_out.rgb *= blend;
+		ambient_out.a = blend * intensity;
+		ambient_out.rgb *= ambient_out.a;
 		ambient_accum += ambient_out;
 	} else if (ref_ambient_mode == REFLECTION_AMBIENT_COLOR) {
 		vec4 ambient_out;
@@ -2157,8 +2171,8 @@ void reflection_process(samplerCube reflection_map,
 			ambient_out.rgb = mix(ambient, ambient_out.rgb, blend);
 		}
 
-		ambient_out.a = blend;
-		ambient_out.rgb *= blend;
+		ambient_out.a = blend * intensity;
+		ambient_out.rgb *= ambient_out.a;
 		ambient_accum += ambient_out;
 	}
 #endif // USE_LIGHTMAP
@@ -2589,7 +2603,7 @@ void main() {
 #endif // SECOND_REFLECTION_PROBE
 
 		if (reflection_accum.a > 0.0) {
-			specular_light = reflection_accum.rgb / reflection_accum.a;
+			specular_light = mix(specular_light, reflection_accum.rgb / reflection_accum.a, reflection_accum.a);
 		}
 	}
 #endif // DISABLE_REFLECTION_PROBE
@@ -2614,7 +2628,7 @@ void main() {
 
 #ifndef DISABLE_REFLECTION_PROBE
 		if (ambient_accum.a > 0.0) {
-			ambient_light = mix(ambient_light, (ambient_accum.rgb / ambient_accum.a) * scene_data_block.data.ambient_light_color_energy.a, scene_data_block.data.ambient_color_sky_mix);
+			ambient_light = mix(ambient_light, (ambient_accum.rgb / ambient_accum.a) * scene_data_block.data.ambient_light_color_energy.a, ambient_accum.a);
 		}
 #endif // DISABLE_REFLECTION_PROBE
 	}

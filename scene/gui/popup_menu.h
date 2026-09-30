@@ -126,6 +126,11 @@ class PopupMenu : public Popup {
 
 	bool activated_by_keyboard = false;
 
+	bool touch_dragging = false;
+	Vector2 touch_drag_accum;
+	int touch_pressed_item = -1;
+	const float DRAG_THRESHOLD = 8.0; // Minimum distance (in pixels) before a touch counts as a drag.
+
 	Timer *close_suspended_timer = nullptr;
 	bool close_was_suspended = false;
 	Timer *submenu_timer = nullptr;

@@ -72,7 +72,7 @@ def generateVersionName() {
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-    ndkVersion versions.ndkVersion
+    ndkVersion = versions.ndkVersion
 
     namespace = "org.godotengine.editor"
 
@@ -90,7 +90,7 @@ android {
             editorBuildSuffix: ""
         ]
 
-        ndk { debugSymbolLevel 'NONE' }
+        ndk { debugSymbolLevel = 'NONE' }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -101,7 +101,7 @@ android {
     }
 
     testOptions {
-        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        execution = 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
     base {
@@ -134,25 +134,25 @@ android {
         debug {
             applicationIdSuffix ".debug"
             manifestPlaceholders += [editorBuildSuffix: " (debug)"]
-            signingConfig signingConfigs.debug
+            signingConfig = signingConfigs.debug
         }
 
         benchmark {
             initWith release
             applicationIdSuffix ".benchmark"
             manifestPlaceholders += [editorBuildSuffix: " (benchmark)"]
-            signingConfig signingConfigs.debug
+            signingConfig = signingConfigs.debug
             matchingFallbacks = ['release']
             debuggable false
         }
 
         release {
             if (hasReleaseSigningConfigs()) {
-                signingConfig signingConfigs.release
+                signingConfig = signingConfigs.release
             } else {
                 // We default to the debug signingConfigs when the release signing configs are not
                 // available (e.g: development in Android Studio).
-                signingConfig signingConfigs.debug
+                signingConfig = signingConfigs.debug
                 // In addition, we update the application ID to allow installing an Android studio release build
                 // side by side with a production build from the store.
                 applicationIdSuffix ".release"

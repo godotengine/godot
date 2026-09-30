@@ -48,7 +48,10 @@
 #endif
 
 #ifdef TESTS_ENABLED
-#include "tests/gdscript_test_runner.h"
+#ifndef DISABLE_DEPRECATED
+#include "core/error/error_macros.h"
+#include "core/os/os.h"
+#endif
 #endif
 
 #include "core/config/engine.h"
@@ -1037,22 +1040,24 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 		HashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
 		if (E) {
 			const MemberInfo *member = &E->value;
-			Variant value = p_value;
-			if (!member->data_type.is_type(value)) {
+			Variant tmp;
+			const Variant *value = &p_value;
+			if (!member->data_type.is_type(p_value)) {
 				const Variant *args = &p_value;
 				Callable::CallError err;
-				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+				Variant::construct(member->data_type.builtin_type, tmp, &args, 1, err);
+				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(tmp)) {
 					return false;
 				}
+				value = &tmp;
 			}
 			if (likely(top->valid) && member->setter) {
-				const Variant *args = &value;
+				const Variant *args = value;
 				Callable::CallError err;
 				callp(member->setter, &args, 1, err);
 				return err.error == Callable::CallError::CALL_OK;
 			} else {
-				top->static_variables.write[member->index] = value;
+				top->static_variables.write[member->index] = *value;
 				return true;
 			}
 		}
@@ -1551,22 +1556,24 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 		HashMap<StringName, GDScript::MemberInfo>::Iterator E = script->member_indices.find(p_name);
 		if (E) {
 			const GDScript::MemberInfo *member = &E->value;
-			Variant value = p_value;
-			if (!member->data_type.is_type(value)) {
+			Variant tmp;
+			const Variant *value = &p_value;
+			if (!member->data_type.is_type(p_value)) {
 				const Variant *args = &p_value;
 				Callable::CallError err;
-				Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+				Variant::construct(member->data_type.builtin_type, tmp, &args, 1, err);
+				if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(tmp)) {
 					return false;
 				}
+				value = &tmp;
 			}
 			if (likely(script->valid) && member->setter) {
-				const Variant *args = &value;
+				const Variant *args = value;
 				Callable::CallError err;
 				callp(member->setter, &args, 1, err);
 				return err.error == Callable::CallError::CALL_OK;
 			} else {
-				members[member->index] = value;
+				members[member->index] = *value;
 				return true;
 			}
 		}
@@ -1578,22 +1585,24 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
 			if (E) {
 				const GDScript::MemberInfo *member = &E->value;
-				Variant value = p_value;
-				if (!member->data_type.is_type(value)) {
+				Variant tmp;
+				const Variant *value = &p_value;
+				if (!member->data_type.is_type(p_value)) {
 					const Variant *args = &p_value;
 					Callable::CallError err;
-					Variant::construct(member->data_type.builtin_type, value, &args, 1, err);
-					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(value)) {
+					Variant::construct(member->data_type.builtin_type, tmp, &args, 1, err);
+					if (err.error != Callable::CallError::CALL_OK || !member->data_type.is_type(tmp)) {
 						return false;
 					}
+					value = &tmp;
 				}
 				if (likely(sptr->valid) && member->setter) {
-					const Variant *args = &value;
+					const Variant *args = value;
 					Callable::CallError err;
 					callp(member->setter, &args, 1, err);
 					return err.error == Callable::CallError::CALL_OK;
 				} else {
-					sptr->static_variables.write[member->index] = value;
+					sptr->static_variables.write[member->index] = *value;
 					return true;
 				}
 			}
@@ -2032,8 +2041,8 @@ String GDScriptInstance::to_string(bool *r_valid) {
 	return String();
 }
 
-Ref<Script> GDScriptInstance::get_script() const {
-	return script;
+Script *GDScriptInstance::get_script() const {
+	return *script;
 }
 
 ScriptLanguage *GDScriptInstance::get_language() {
@@ -2182,7 +2191,12 @@ void GDScriptLanguage::init() {
 #endif // DEBUG_ENABLED
 
 #ifdef TESTS_ENABLED
-	GDScriptTests::GDScriptTestRunner::handle_cmdline();
+#ifndef DISABLE_DEPRECATED
+	if (OS::get_singleton()->get_cmdline_args().find("--gdscript-generate-tests")) {
+		ERR_PRINT(R"(The command for generating GDScript test output has changed to "--test gdscript-generate-tests")");
+		exit(-1);
+	}
+#endif // !DISABLE_DEPRECATED
 #endif // TESTS_ENABLED
 }
 

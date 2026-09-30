@@ -11,8 +11,8 @@ allprojects {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
+        maven { url = "https://plugins.gradle.org/m2/" }
+        maven { url = "https://central.sonatype.com/repository/maven-snapshots/"}
 
         // Godot user plugins custom maven repos
         String[] mavenRepos = getGodotPluginsMavenRepos()
@@ -42,6 +42,9 @@ dependencies {
     implementation "androidx.fragment:fragment:$versions.fragmentVersion"
     implementation "androidx.core:core-splashscreen:$versions.splashscreenVersion"
     implementation "androidx.documentfile:documentfile:$versions.documentfileVersion"
+
+    implementation project(":dataLib")
+    implementation project(":fusedDepsLib")
 
     if (rootProject.findProject(":lib")) {
         implementation project(":lib")
@@ -75,7 +78,7 @@ dependencies {
                         break
                 }
             } else {
-                implementation dep
+                // This is handled in ':fusedDepsLib:build.gradle'
             }
         }
     }
@@ -102,7 +105,7 @@ dependencies {
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-    ndkVersion versions.ndkVersion
+    ndkVersion = versions.ndkVersion
 
     compileOptions {
         sourceCompatibility versions.javaVersion
@@ -115,16 +118,16 @@ android {
 
     assetPacks = [":assetPackInstallTime"]
 
-    namespace = 'com.godot.game'
+    namespace = 'com.godot.game.app'
 
     defaultConfig {
         // The default ignore pattern for the 'assets' directory includes hidden files and directories which are used by Godot projects.
         aaptOptions {
-            ignoreAssetsPattern "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
+            ignoreAssetsPattern = "!.svn:!.git:!.gitignore:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
         }
 
         ndk {
-            debugSymbolLevel 'NONE'
+            debugSymbolLevel = 'NONE'
             String[] export_abi_list = getExportEnabledABIs()
             abiFilters export_abi_list
         }
@@ -147,15 +150,15 @@ android {
     }
 
     testOptions {
-        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        execution = 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
     lintOptions {
-        abortOnError false
+        abortOnError = false
         disable 'MissingTranslation', 'UnusedResources'
     }
 
-    ndkVersion versions.ndkVersion
+    ndkVersion = versions.ndkVersion
 
     packagingOptions {
         exclude 'META-INF/LICENSE'
@@ -173,7 +176,7 @@ android {
             // For more background, see:
             // - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
             // - https://stackoverflow.com/a/44704840
-            useLegacyPackaging shouldUseLegacyPackaging()
+            useLegacyPackaging = shouldUseLegacyPackaging()
         }
 
         // Always select Godot's version of libc++_shared.so in case deps have their own
@@ -215,24 +218,24 @@ android {
             // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
             if (shouldSign()) {
-                signingConfig signingConfigs.debug
+                signingConfig = signingConfigs.debug
             } else {
-                signingConfig null
+                signingConfig = null
             }
         }
 
         release {
             minifyEnabled shouldMinify()
-            shrinkResources false
+            shrinkResources = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
             // Signing and zip-aligning are skipped for prebuilt builds, but
             // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
             if (shouldSign()) {
-                signingConfig signingConfigs.release
+                signingConfig = signingConfigs.release
             } else {
-                signingConfig null
+                signingConfig = null
             }
         }
     }
@@ -275,26 +278,34 @@ task copyAndRenameBinary(type: Copy) {
     // machines.
     doNotTrackState("No need for up-to-date checks for the copy-and-rename operation")
 
-    String exportPath = getExportPath()
-    String exportFilename = getExportFilename()
-    String exportEdition = getExportEdition()
-    String exportBuildType = getExportBuildType()
-    String exportBuildTypeCapitalized = exportBuildType.capitalize()
     String exportFormat = getExportFormat()
 
-    boolean isAab = exportFormat == "aab"
-    boolean isMono = exportEdition == "mono"
-    String filenameSuffix = isAab ? "${exportEdition}-${exportBuildType}" : exportBuildType
-    if (isMono) {
-        filenameSuffix = isAab ? "${exportEdition}-${exportBuildType}" : "${exportEdition}${exportBuildTypeCapitalized}"
+    String sourceFilename = ""
+    String sourceFilepath = ""
+    if (exportFormat == "aar") {
+        sourceFilename = "fusedDepsLib.aar"
+
+        def fusedDepsLibProject = findProject(":fusedDepsLib")
+        sourceFilepath = "${fusedDepsLibProject.buildDir}/outputs/aar/$sourceFilename"
+    } else {
+        String exportEdition = getExportEdition()
+        String exportBuildType = getExportBuildType()
+        String exportBuildTypeCapitalized = exportBuildType.capitalize()
+
+        if (exportFormat == "aab") {
+            String filenameSuffix = "${exportEdition}-${exportBuildType}"
+            sourceFilename = "${project.name}-${filenameSuffix}.aab"
+            sourceFilepath = "$buildDir/outputs/bundle/${exportEdition}${exportBuildTypeCapitalized}/$sourceFilename"
+        } else {
+            String filenameSuffix = exportEdition == "mono" ? "${exportEdition}${exportBuildTypeCapitalized}" : exportBuildType
+            sourceFilename = "android_${filenameSuffix}.apk"
+            sourceFilepath = "$buildDir/outputs/apk/$exportEdition/$exportBuildType/$sourceFilename"
+        }
     }
 
-    String sourceFilename = isAab ? "${project.name}-${filenameSuffix}.aab" : "android_${filenameSuffix}.apk"
-    String sourceFilepath = isAab ? "$buildDir/outputs/bundle/${exportEdition}${exportBuildTypeCapitalized}/$sourceFilename" : "$buildDir/outputs/apk/$exportEdition/$exportBuildType/$sourceFilename"
-
     from sourceFilepath
-    into exportPath
-    rename sourceFilename, exportFilename
+    into getExportPath()
+    rename sourceFilename, getExportFilename()
 }
 
 /**

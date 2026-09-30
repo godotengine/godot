@@ -2303,16 +2303,6 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 	}
 }
 
-void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(p_event.is_null());
-
-	if (!is_visible_in_tree()) {
-		return;
-	}
-
-	snap_key_enabled = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
-}
-
 void Node3DEditor::_sun_environ_settings_pressed() {
 	Vector2 pos = sun_environ_settings->get_screen_position() + sun_environ_settings->get_size();
 	sun_environ_popup->set_position(pos - Vector2(sun_environ_popup->get_contents_minimum_size().width / 2, 0));
@@ -2338,9 +2328,10 @@ void Node3DEditor::_textures_button_pressed() {
 
 void Node3DEditor::_textures_button_update_state() {
 	const bool texture_streaming_enabled = GLOBAL_GET("rendering/textures/streaming/enabled");
-	textures_button->set_disabled(!texture_streaming_enabled);
 
 	if (!texture_streaming_enabled) {
+		textures_button->hide();
+		textures_button_separator->hide();
 		textures_popup->hide();
 	}
 }
@@ -3670,7 +3661,8 @@ Node3DEditor::Node3DEditor() {
 	ED_SHORTCUT("spatial_editor/switch_perspective_orthogonal", TTRC("Switch Perspective/Orthogonal View"), Key::KP_5);
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTRC("Insert Animation Key"), Key::K);
 	ED_SHORTCUT("spatial_editor/focus_origin", TTRC("Focus Origin"), Key::O);
-	ED_SHORTCUT("spatial_editor/focus_selection", TTRC("Focus Selection"), Key::F);
+	ED_SHORTCUT("spatial_editor/focus_selection", TTRC("Focus Selection"), KeyModifierMask::CMD_OR_CTRL + Key::F);
+	ED_SHORTCUT("spatial_editor/focus_aabb", TTRC("Focus and Frame Selection"), Key::F);
 	ED_SHORTCUT_ARRAY("spatial_editor/align_transform_with_view", TTRC("Align Transform with View"),
 			{ int32_t(KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::KP_0),
 					int32_t(KeyModifierMask::ALT | KeyModifierMask::CTRL | Key::M),
@@ -3714,13 +3706,14 @@ Node3DEditor::Node3DEditor() {
 
 #ifdef MODULE_TEXTURE_STREAMING_ENABLED
 	textures_button = memnew(Button);
+	textures_button_separator = memnew(VSeparator);
 	textures_button->set_text(TTRC("Textures"));
 	textures_button->set_tooltip_text(TTRC("Edit texture streaming quality settings."));
 	textures_button->set_theme_type_variation(SceneStringName(FlatButton));
 	textures_button->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_textures_button_pressed));
 
 	main_flow->add_child(textures_button);
-	main_flow->add_child(memnew(VSeparator));
+	main_flow->add_child(textures_button_separator);
 #endif
 
 	context_toolbar_panel = memnew(PanelContainer);
@@ -3918,7 +3911,6 @@ Node3DEditor::Node3DEditor() {
 
 	selected = nullptr;
 
-	set_process_shortcut_input(true);
 	add_to_group(SceneStringName(_spatial_editor_group));
 
 	current_hover_gizmo_handle = -1;
@@ -4352,6 +4344,11 @@ void Node3DEditor::set_local_coords_enabled(bool on) const {
 
 bool Node3DEditor::is_preserve_children_transform_enabled() const {
 	return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed();
+}
+
+bool Node3DEditor::is_snap_enabled() const {
+	const bool snap_key_down = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	return snap_enabled != snap_key_down;
 }
 
 bool Node3DEditor::is_vertex_snap_use_collision() const {

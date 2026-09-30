@@ -103,6 +103,8 @@ bool EditorInspector::_resource_properties_matches(const Ref<Resource> &p_resour
 	String subgroup;
 	String subgroup_base;
 
+	Object *object = ObjectDB::get_instance(edited_object_id);
+
 	List<PropertyInfo> plist;
 	p_resource->get_property_list(&plist, true);
 
@@ -251,29 +253,32 @@ Size2 EditorProperty::get_minimum_size() const {
 
 	bool label_empty = label.is_empty();
 	if (!label_empty) {
-		ms.width += theme_cache.font_offset + theme_cache.horizontal_separation;
+		// Add an extra 1, since text clipping is off if the width is 0 or less.
+		ms.width += theme_cache.font_offset + theme_cache.horizontal_separation + 1;
 	}
 
-	// Always take the revert and pin values into account, since their state can be changed at whim
-	// and we don't want to update the min width every time this happens.
-	{
-		if (!is_read_only()) {
-			ms.width += theme_cache.revert_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
-		}
+	int padding_sep = theme_cache.padding + theme_cache.horizontal_separation;
 
-		ms.width += theme_cache.pin_icon->get_width() + theme_cache.horizontal_separation;
+	// Always take the revert button into account, since values are changed constantly
+	// and we don't want to update the min width every time this happens.
+	if (!is_read_only()) {
+		ms.width += theme_cache.revert_icon->get_width() + padding_sep;
+	}
+
+	if (pinned) {
+		ms.width += theme_cache.pin_icon->get_width() + padding_sep;
 	}
 
 	if (keying) {
-		ms.width += theme_cache.key_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
+		ms.width += theme_cache.key_icon->get_width() + padding_sep;
 	}
 
 	if (deletable) {
-		ms.width += theme_cache.delete_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
+		ms.width += theme_cache.delete_icon->get_width() + padding_sep;
 	}
 
 	if (checkable) {
-		ms.width += theme_cache.checked_icon->get_width() + theme_cache.padding + theme_cache.horizontal_separation;
+		ms.width += theme_cache.checked_icon->get_width() + padding_sep;
 	}
 
 	Size2 ls = left_container->get_combined_minimum_size();
@@ -4308,6 +4313,7 @@ void EditorInspector::_update_property_editor(EditorProperty *p_ep) {
 }
 
 void EditorInspector::_parse_added_editors(VBoxContainer *p_current_vbox, EditorInspectorSection *p_section, Ref<EditorInspectorPlugin> p_plugin) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	for (const EditorInspectorPlugin::AddedEditor &F : p_plugin->added_editors) {
 		EditorProperty *ep = Object::cast_to<EditorProperty>(F.property_editor);
 
@@ -4368,6 +4374,7 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 		return false;
 	}
 
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	StringName class_name = object->get_class();
 
 	while (class_name != StringName()) {
@@ -4400,6 +4407,7 @@ void EditorInspector::_add_section_in_tree(EditorInspectorSection *p_section, VB
 }
 
 void EditorInspector::update_tree() {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (!object) {
 		return;
 	}
@@ -5454,6 +5462,7 @@ void EditorInspector::_clear(bool p_hide_plugins) {
 }
 
 Object *EditorInspector::get_edited_object() {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	return object;
 }
 
@@ -5462,25 +5471,25 @@ Object *EditorInspector::get_next_edited_object() {
 }
 
 void EditorInspector::edit(Object *p_object) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (object == p_object) {
 		return;
 	}
 
 	next_object = p_object; // Some plugins need to know the next edited object when clearing the inspector.
 	if (object) {
-		if (likely(Variant(object).get_validated_object())) {
-			object->disconnect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
-		}
+		object->disconnect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
 		_clear();
 	}
 	per_array_page.clear();
 
+	edited_object_id = p_object ? p_object->get_instance_id() : ObjectID();
 	object = p_object;
 
 	if (object) {
 		update_scroll_request = 0; //reset
-		if (scroll_cache.has(object->get_instance_id())) { //if exists, set something else
-			update_scroll_request = scroll_cache[object->get_instance_id()]; //done this way because wait until full size is accommodated
+		if (scroll_cache.has(edited_object_id)) { // If exists, set something else.
+			update_scroll_request = scroll_cache[edited_object_id]; // Done this way because wait until full size is accommodated.
 		}
 		object->connect(CoreStringName(property_list_changed), callable_mp(this, &EditorInspector::_changed_callback));
 
@@ -5702,6 +5711,7 @@ void EditorInspector::_page_change_request(int p_new_page, const StringName &p_a
 }
 
 void EditorInspector::_edit_request_change(Object *p_object, const String &p_property) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (object != p_object) { //may be undoing/redoing for a non edited object, so ignore
 		return;
 	}
@@ -5726,9 +5736,25 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 	}
 
+	Object *object = ObjectDB::get_instance(edited_object_id);
+	Variant new_value = p_value;
+
+	// Check if we are setting a built-in resource from another scene.
+	Resource *res = Object::cast_to<Resource>(new_value.get_validated_object());
+	if (res && res->is_built_in()) {
+		String src_scene = res->get_path().get_slice("::", 0);
+		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+		String current_scene_path = edited_scene ? edited_scene->get_scene_file_path() : "";
+		if (src_scene != current_scene_path) {
+			Ref<Resource> duplicated_res = res->duplicate();
+			EditorNode::setup_built_in_resource(duplicated_res, current_scene_path);
+			new_value = duplicated_res;
+		}
+	}
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (!undo_redo || bool(object->call(SNAME("_dont_undo_redo")))) {
-		object->set(p_name, p_value);
+		object->set(p_name, new_value);
 		if (p_refresh_all) {
 			_edit_request_change(object, "");
 		} else {
@@ -5737,19 +5763,19 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 
 		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<MultiNodeEdit>(object)) {
-		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
+		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, new_value, p_changed_field);
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
-		Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, p_value, p_changed_field);
+		Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, new_value, p_changed_field);
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else {
 		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS, nullptr, false, mark_unsaved);
-		undo_redo->add_do_property(object, p_name, p_value);
+		undo_redo->add_do_property(object, p_name, new_value);
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
-		Variant::Type type = p_value.get_type();
+		Variant::Type type = new_value.get_type();
 		if (valid) {
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
@@ -5757,13 +5783,13 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 				undo_redo->add_undo_property(object, p_name, value);
 			}
 			Node *N = Object::cast_to<Node>(object);
-			bool double_counting = Object::cast_to<Node>(p_value) == N || Object::cast_to<Node>(value) == N;
-			if (N && !double_counting && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
+			bool double_counting = Object::cast_to<Node>(new_value) == N || Object::cast_to<Node>(value) == N;
+			if (N && !double_counting && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != new_value) {
 				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
-				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
+				undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, false);
 				// Perhaps an inefficient way of updating the resource count.
 				// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
+				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, true);
 				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
 			}
 		}
@@ -5779,7 +5805,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			}
 		}
 
-		const PackedStringArray linked_properties_dynamic = object->call(SNAME("_get_linked_undo_properties"), p_name, p_value);
+		const PackedStringArray linked_properties_dynamic = object->call(SNAME("_get_linked_undo_properties"), p_name, new_value);
 		for (const String &prop : linked_properties_dynamic) {
 			valid = false;
 			Variant undo_value = object->get(prop, &valid);
@@ -5793,7 +5819,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Variant v_name = p_name;
 		const Vector<Callable> &callbacks = EditorNode::get_editor_data().get_undo_redo_inspector_hook_callback();
 		for (const Callable &callback : callbacks) {
-			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &p_value };
+			const Variant *p_arguments[] = { &v_undo_redo, &v_object, &v_name, &new_value };
 			Variant return_value;
 			Callable::CallError call_error;
 
@@ -5817,18 +5843,18 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			//Setting a Subresource. Since there's possibly multiple Nodes referencing 'r', we need to link them to the Subresource.
 			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
 			for (Node *N : shared_nodes) {
-				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != p_value) {
+				if ((type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) && value != new_value) {
 					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", value, N, true);
-					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, false);
+					undo_redo->add_do_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, false);
 					// Perhaps an inefficient way of updating the resource count.
 					// We could go in depth and check which Resource values changed/got removed and which ones stayed the same, but this is more readable at the moment.
-					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", p_value, N, true);
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", new_value, N, true);
 					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_node_reference", value, N, false);
 				}
 			}
 			if (String(p_name) == "resource_local_to_scene") {
 				bool prev = object->get(p_name);
-				bool next = p_value;
+				bool next = new_value;
 				if (next) {
 					undo_redo->add_do_method(r, "setup_local_to_scene");
 				}
@@ -5896,6 +5922,7 @@ void EditorInspector::_multiple_properties_changed(const Vector<String> &p_paths
 }
 
 void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (!object) {
 		return;
 	}
@@ -5907,6 +5934,7 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 }
 
 void EditorInspector::_property_deleted(const String &p_path) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (!object) {
 		return;
 	}
@@ -5927,6 +5955,7 @@ void EditorInspector::_property_deleted(const String &p_path) {
 }
 
 void EditorInspector::_property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (!object) {
 		return;
 	}
@@ -5938,6 +5967,7 @@ void EditorInspector::_property_keyed_with_value(const String &p_path, const Var
 }
 
 void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (!object) {
 		return;
 	}
@@ -5979,6 +6009,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 }
 
 void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (!object) {
 		return;
 	}
@@ -6026,6 +6057,7 @@ void EditorInspector::_resource_selected(const String &p_path, Ref<Resource> p_r
 }
 
 void EditorInspector::_node_removed(Node *p_node) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (p_node == object) {
 		edit(nullptr);
 	}
@@ -6040,6 +6072,7 @@ void EditorInspector::_update_current_favorites() {
 	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
 
 	// Fetch script properties.
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	Ref<Script> scr = object->get_script();
 	if (scr.is_valid()) {
 		List<PropertyInfo> plist;
@@ -6095,6 +6128,7 @@ void EditorInspector::_update_current_favorites() {
 }
 
 void EditorInspector::_set_property_favorited(const String &p_path, bool p_favorited) {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (!object) {
 		return;
 	}
@@ -6184,6 +6218,7 @@ void EditorInspector::_clear_current_favorites() {
 
 	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
 
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	Ref<Script> scr = object->get_script();
 	if (scr.is_valid()) {
 		List<PropertyInfo> plist;
@@ -6320,6 +6355,7 @@ void EditorInspector::_notification(int p_what) {
 
 void EditorInspector::_changed_callback() {
 	//this is called when property change is notified via notify_property_list_changed()
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	if (object != nullptr) {
 		_update_current_favorites();
 		_edit_request_change(object, String());
@@ -6331,8 +6367,8 @@ void EditorInspector::_vscroll_changed(double p_offset) {
 		return;
 	}
 
-	if (object) {
-		scroll_cache[object->get_instance_id()] = p_offset;
+	if (edited_object_id.is_valid()) {
+		scroll_cache[edited_object_id] = p_offset;
 	}
 }
 
@@ -6404,6 +6440,7 @@ void EditorInspector::_show_add_meta_dialog() {
 	}
 
 	StringName dialog_title;
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	Node *node = Object::cast_to<Node>(object);
 	// If object is derived from Node use node name, if derived from Resource use classname.
 	dialog_title = node ? node->get_name() : StringName(object->get_class());
@@ -6414,6 +6451,7 @@ void EditorInspector::_show_add_meta_dialog() {
 }
 
 void EditorInspector::_add_meta_confirm() {
+	Object *object = ObjectDB::get_instance(edited_object_id);
 	// Ensure metadata is unfolded when adding a new metadata.
 	object->editor_set_section_unfold("metadata", true);
 
