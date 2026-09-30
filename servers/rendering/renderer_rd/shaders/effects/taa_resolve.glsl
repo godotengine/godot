@@ -188,6 +188,33 @@ void get_closest_pixel_velocity_3x3(in ivec2 group_pos, out vec2 velocity) {
 	velocity = imageLoad(velocity_buffer, ivec2(gl_WorkGroupID.xy) * kGroupSize + min_pos).xy;
 }
 
+void velocity_test_max(ivec2 pos, inout float max_magnitude_sq, inout vec2 max_velocity) {
+	vec2 v = imageLoad(velocity_buffer, ivec2(gl_WorkGroupID.xy) * kGroupSize + pos).xy;
+	float mag_sq = dot(v, v);
+	if (mag_sq > max_magnitude_sq) {
+		max_magnitude_sq = mag_sq;
+		max_velocity = v;
+	}
+}
+
+// Returns the largest velocity (3x3 neighborhood)
+void get_largest_velocity_3x3(in ivec2 group_pos, out vec2 velocity) {
+	float max_magnitude_sq = -1.0;
+	vec2 max_velocity = vec2(0.0);
+
+	velocity_test_max(group_pos + kOffsets3x3[0], max_magnitude_sq, max_velocity);
+	velocity_test_max(group_pos + kOffsets3x3[1], max_magnitude_sq, max_velocity);
+	velocity_test_max(group_pos + kOffsets3x3[2], max_magnitude_sq, max_velocity);
+	velocity_test_max(group_pos + kOffsets3x3[3], max_magnitude_sq, max_velocity);
+	velocity_test_max(group_pos + kOffsets3x3[4], max_magnitude_sq, max_velocity);
+	velocity_test_max(group_pos + kOffsets3x3[5], max_magnitude_sq, max_velocity);
+	velocity_test_max(group_pos + kOffsets3x3[6], max_magnitude_sq, max_velocity);
+	velocity_test_max(group_pos + kOffsets3x3[7], max_magnitude_sq, max_velocity);
+	velocity_test_max(group_pos + kOffsets3x3[8], max_magnitude_sq, max_velocity);
+
+	velocity = max_velocity;
+}
+
 /*------------------------------------------------------------------------------
 							  HISTORY SAMPLING
 ------------------------------------------------------------------------------*/
@@ -361,7 +388,12 @@ vec4 temporal_antialiasing(ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D
 	velocity = imageLoad(velocity_buffer, ivec2(pos_screen)).xy;
 
 	// Get reprojected uv
-	vec2 uv_reprojected = uv + velocity;
+	// Unlike the history buffer the velocity is aliased. To not introduce aliasing indirectly we dilate slightly
+	// See https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/
+	vec2 velocity_dilated;
+	//get_closest_pixel_velocity_3x3(pos_group, velocity_dilated);
+	get_largest_velocity_3x3(pos_group, velocity_dilated);
+	vec2 uv_reprojected = uv + velocity_dilated;
 
 	// Get input color (LDS holds reinhard colors!)
 	vec3 color_input = load_color(pos_group);
@@ -373,9 +405,7 @@ vec4 temporal_antialiasing(ivec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D
 
 	// Confidence for motion-adaptive AABB box size: 1 at rest, 0 in motion
 	// see intel https://github.com/GameTechDev/TAA/blob/main/MiniEngine/Core/Shaders/TAAResolve.hlsl
-	vec2 velocity_dilated;
-	get_closest_pixel_velocity_3x3(pos_group, velocity_dilated);
-	float velocity_confidence = clamp(1.0 - length(velocity_dilated) / VELOCITY_CONFIDENCE_DISTANCE, 0.0, 1.0);
+	float velocity_confidence = clamp(1.0 - length(velocity) / VELOCITY_CONFIDENCE_DISTANCE, 0.0, 1.0);
 
 	// Clip history to the neighbourhood of the current sample (fixes a lot of the ghosting).
 	color_history = clip_history_3x3(pos_group, color_history, velocity_confidence);
