@@ -335,12 +335,23 @@ float luminance(vec3 color) {
 
 // This is "velocity disocclusion" as described by https://www.elopezr.com/temporal-aa-and-the-quest-for-the-holy-trail/.
 // We use texel space, so our scale and threshold differ.
-float get_factor_disocclusion(vec2 uv_reprojected, vec2 velocity) {
+float get_factor_velocity_disocclusion(vec2 uv_reprojected, vec2 velocity) {
 	vec2 velocity_previous = imageLoad(last_velocity_buffer, ivec2(uv_reprojected * params.resolution)).xy;
 	vec2 velocity_texels = velocity * params.resolution;
 	vec2 prev_velocity_texels = velocity_previous * params.resolution;
 	float disocclusion = length(prev_velocity_texels - velocity_texels) - params.disocclusion_threshold;
 	return clamp(disocclusion * DISOCCLUSION_SCALE, 0.0, 1.0);
+}
+
+// 5-tap (cross) neighborhood average
+// Used as a first-frame fallback on disocclusion so we don't output a raw aliased sample
+vec3 fallback_neighborhood_avg(uvec2 pos_group) {
+	vec3 avg = load_color(pos_group);
+	avg += load_color(pos_group + ivec2(-1, 0));
+	avg += load_color(pos_group + ivec2(1, 0));
+	avg += load_color(pos_group + ivec2(0, -1));
+	avg += load_color(pos_group + ivec2(0, 1));
+	return avg * 0.2;
 }
 
 vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_screen, vec2 uv, sampler2D tex_history, sampler2D tex_prev_weight, out float out_accum_count) {
@@ -375,14 +386,13 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 		// If re-projected UV is out of screen, converge to current color immediately.
 		float factor_screen = any(lessThan(uv_reprojected, vec2(0.0))) || any(greaterThan(uv_reprojected, vec2(1.0))) ? 1.0 : 0.0;
 
-		// Increase blend factor when there is disocclusion (fixes a lot of the remaining ghosting).
-		float factor_disocclusion = get_factor_disocclusion(uv_reprojected, velocity);
-		reset_factor = clamp(factor_screen + factor_disocclusion, 0.0, 1.0);
+		float factor_velocity_disocclusion = get_factor_velocity_disocclusion(uv_reprojected, velocity);
+		reset_factor = clamp(factor_screen + factor_velocity_disocclusion, 0.0, 1.0);
 	}
 
-	//FIXME: look some more into reset factor. The overall design looks decent, but right now we just blend towards an aliased color_input
-	// when the reset factor is high. Maybe we could blend it with a blur of the neighborhood to at least AA it a bit?
-	// ALso, intel additionally has depth reset, which could be useful when there are two objects moving into the same direction. We already have all the data, so adding it should be trivial.
+	// On reset we will fall back to color_input, which is a single aliased sample
+	// If a reset is happening blend in an average of the neighborhood to avoid shimmer & aliasing
+	color_input = mix(color_input, fallback_neighborhood_avg(pos_group), reset_factor * 0.5);
 
 	// reset decays the accumulated sample count smoothly
 	prev_accum_count *= (1.0 - reset_factor);
