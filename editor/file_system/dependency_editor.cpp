@@ -49,6 +49,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/tree.h"
+#include "scene/resources/packed_scene.h"
 
 static void _setup_search_file_dialog(EditorFileDialog *p_dialog, const String &p_file, const String &p_type) {
 	p_dialog->set_title(vformat(TTR("Search Replacement For: %s"), p_file.get_file()));
@@ -440,28 +441,35 @@ DependencyEditor::DependencyEditor() {
 }
 
 /////////////////////////////////////
-void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
+void DependencyEditorOwners::_list_rmb_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index) {
 	if (p_mouse_button_index != MouseButton::RIGHT) {
 		return;
 	}
 
 	file_options->clear();
 	file_options->reset_size();
-	if (p_item >= 0) {
-		PackedInt32Array selected_items = owners->get_selected_items();
+	TreeItem *selected = owners->get_next_selected(owners->get_root());
+	if (selected != nullptr) {
+		int selected_count = 0;
 		bool only_scenes_selected = true;
 
-		for (int i = 0; i < selected_items.size(); i++) {
-			int item_idx = selected_items[i];
-			if (ResourceLoader::get_resource_type(owners->get_item_text(item_idx)) != "PackedScene") {
+		while (selected != nullptr) {
+			bool is_file = selected->get_parent() == owners->get_root();
+			if (!is_file) {
 				only_scenes_selected = false;
 				break;
 			}
+			selected_count += 1;
+			if (ResourceLoader::get_resource_type(selected->get_text(0)) != "PackedScene") {
+				only_scenes_selected = false;
+				break;
+			}
+			selected = owners->get_next_selected(selected);
 		}
 
 		if (only_scenes_selected) {
-			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TPL(selected_items.size(), TTRC("Open Scene"), TTRC("Open Scenes")), FILE_MENU_OPEN);
-		} else if (selected_items.size() == 1) {
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TPL(selected_count, TTRC("Open Scene"), TTRC("Open Scenes")), FILE_MENU_OPEN);
+		} else if (selected_count == 1) {
 			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_MENU_OPEN);
 		} else {
 			return;
@@ -473,9 +481,31 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 	file_options->popup();
 }
 
-void DependencyEditorOwners::_select_file(int p_idx) {
-	String fpath = owners->get_item_text(p_idx);
-	EditorNode::get_singleton()->load_scene_or_resource(fpath);
+void DependencyEditorOwners::_select_file() {
+	HashSet<TreeItem *> served;
+	TreeItem *selected = owners->get_next_selected(owners->get_root());
+	while (selected != nullptr) {
+		TreeItem *file_item = selected;
+		while (file_item->get_parent() != owners->get_root()) {
+			file_item = file_item->get_parent();
+		}
+		if (served.has(file_item)) {
+			selected = owners->get_next_selected(selected);
+			continue;
+		}
+		String fpath = file_item->get_text(0);
+		EditorNode::get_singleton()->load_scene_or_resource(fpath);
+		if (selected != file_item) {
+			// Select Node.
+			NodePath path = NodePath(selected->get_text(0));
+			if (Node *root = EditorNode::get_singleton()->get_edited_scene()) {
+				if (Node *owner_node = root->get_node_or_null(path)) {
+					EditorNode::get_singleton()->edit_node(owner_node);
+				}
+			}
+		}
+		selected = owners->get_next_selected(selected);
+	}
 
 	hide();
 	emit_signal(SceneStringName(confirmed));
@@ -486,20 +516,13 @@ void DependencyEditorOwners::_empty_clicked(const Vector2 &p_pos, MouseButton p_
 		return;
 	}
 
-	owners->deselect_all();
+	owners->set_selected(nullptr);
 }
 
 void DependencyEditorOwners::_file_option(int p_option) {
 	switch (p_option) {
 		case FILE_MENU_OPEN: {
-			PackedInt32Array selected_items = owners->get_selected_items();
-			for (int i = 0; i < selected_items.size(); i++) {
-				int item_idx = selected_items[i];
-				if (item_idx < 0 || item_idx >= owners->get_item_count()) {
-					break;
-				}
-				_select_file(item_idx);
-			}
+			_select_file();
 		} break;
 	}
 }
@@ -527,17 +550,72 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 		}
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(efsd->get_file_type(i));
+		TreeItem *item = owners->create_item(owners->get_root());
+		item->set_text(0, efsd->get_file_path(i));
+		item->set_icon(0, icon);
+		if (efsd->get_file_type(i) == "PackedScene") {
+			_fill_node_list(item, efsd->get_file_path(i));
+		}
+	}
+}
 
-		owners->add_item(efsd->get_file_path(i), icon);
+static bool _variant_contains_edited_resoruce(const Variant &val, const String &p_resource_path) {
+	switch (val.get_type()) {
+		case Variant::OBJECT: {
+			Ref<Resource> res = val;
+			return (res.is_valid() && res->get_path() == p_resource_path);
+		} break;
+		case Variant::ARRAY: {
+			Array arr = val;
+			for (int i = 0; i < arr.size(); i++) {
+				if (_variant_contains_edited_resoruce(arr.get(i), p_resource_path)) {
+					return true;
+				}
+			}
+			return false;
+		} break;
+		case Variant::DICTIONARY: {
+			Dictionary dict = val;
+			for (const KeyValue<Variant, Variant> &E : dict) {
+				if (_variant_contains_edited_resoruce(E.key, p_resource_path) || _variant_contains_edited_resoruce(E.value, p_resource_path)) {
+					return true;
+				}
+			}
+			return false;
+		} break;
+		default:
+			return false;
+	}
+}
+
+void DependencyEditorOwners::_fill_node_list(TreeItem *p_parent, const String &p_scene_path) {
+	Ref<PackedScene> scene = ResourceLoader::load(p_scene_path);
+	ERR_FAIL_COND(!scene.is_valid());
+	Ref<SceneState> state = scene->get_state();
+	ERR_FAIL_COND(!state.is_valid());
+	for (int n = 0; n < state->get_node_count(); n++) {
+		for (int p = 0; p < state->get_node_property_count(n); p++) {
+			Variant val = state->get_node_property_value(n, p);
+
+			if (_variant_contains_edited_resoruce(val, editing)) {
+				NodePath path = state->get_node_path(n);
+				String type = state->get_node_type(n);
+				Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
+				TreeItem *item = owners->create_item(p_parent);
+				item->set_text(0, String(path));
+				item->set_icon(0, icon);
+			}
+		}
 	}
 }
 
 void DependencyEditorOwners::show(const String &p_path) {
 	editing = p_path;
 	owners->clear();
+	owners->create_item(); // root
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
 
-	int count = owners->get_item_count();
+	int count = owners->get_root()->get_child_count();
 	if (count > 0) {
 		empty->hide();
 		owners_count->set_text(vformat(TTR("Owners of: %s (Total: %d)"), p_path.get_file(), count));
@@ -582,14 +660,15 @@ DependencyEditorOwners::DependencyEditorOwners() {
 	owners_mc->set_theme_type_variation("NoBorderHorizontalWindow");
 	vbox->add_child(owners_mc);
 
-	owners = memnew(ItemList);
+	owners = memnew(Tree);
 	owners->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	owners->set_select_mode(ItemList::SELECT_MULTI);
-	owners->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_BOTH);
-	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
+	owners->set_select_mode(Tree::SELECT_MULTI);
+	owners->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
+	owners->connect("item_mouse_selected", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
 	owners->connect("empty_clicked", callable_mp(this, &DependencyEditorOwners::_empty_clicked));
 	owners->set_allow_rmb_select(true);
+	owners->set_hide_root(true);
 	owners_mc->add_child(owners);
 
 	set_title(TTRC("Owners List"));

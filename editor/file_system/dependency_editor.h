@@ -101,14 +101,15 @@ class DependencyEditorOwners : public AcceptDialog {
 	Label *owners_count = nullptr;
 	Label *empty = nullptr;
 	MarginContainer *owners_mc = nullptr;
-	ItemList *owners = nullptr;
+	Tree *owners = nullptr;
 	PopupMenu *file_options = nullptr;
 	String editing;
 
 	void _fill_owners(EditorFileSystemDirectory *efsd);
+	void _fill_node_list(TreeItem *p_parent, const String &p_scene_path);
 
-	void _list_rmb_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
-	void _select_file(int p_idx);
+	void _list_rmb_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+	void _select_file();
 	void _empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _file_option(int p_option);
 
