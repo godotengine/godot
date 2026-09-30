@@ -405,8 +405,8 @@ int MenuBar::_get_index_at_point(const Point2 &p_point) const {
 			continue;
 		}
 		Size2 size = menu_cache[i].text_buf->get_size() + style->get_minimum_size();
-		if (point.x > offset && point.x < offset + size.x) {
-			if (point.y > 0 && point.y < size.y) {
+		if (point.x >= offset && point.x < offset + size.x) {
+			if (point.y >= 0 && point.y < size.y) {
 				return i;
 			}
 		}
