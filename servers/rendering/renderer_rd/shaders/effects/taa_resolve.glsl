@@ -201,9 +201,10 @@ void get_closest_pixel_velocity_3x3(in uvec2 group_pos, uvec2 group_top_left, ou
 							  HISTORY SAMPLING
 ------------------------------------------------------------------------------*/
 
-vec3 sample_catmull_rom_9(sampler2D stex, vec2 uv, vec2 resolution) {
+vec3 sample_catmull_rom_5(sampler2D stex, vec2 uv, vec2 resolution) {
 	// Source: https://gist.github.com/TheRealMJP/c83b8c0f46b63f3a88a5986f4fa982b1
 	// License: https://gist.github.com/TheRealMJP/bc503b0b87b643d3505d41eab8b332ae
+	// changed to 5 taps to improve performance
 
 	// We're going to sample a 4x4 grid of texels surrounding the target UV coordinate. We'll do this by rounding
 	// down the sample location to get the exact center of our "starting" texel. The starting texel will be at
@@ -237,21 +238,21 @@ vec3 sample_catmull_rom_9(sampler2D stex, vec2 uv, vec2 resolution) {
 	texPos3 /= resolution;
 	texPos12 /= resolution;
 
-	vec3 result = vec3(0.0f, 0.0f, 0.0f);
+	float w_top = w12.x * w0.y;
+	float w_left = w0.x * w12.y;
+	float w_center = w12.x * w12.y;
+	float w_right = w3.x * w12.y;
+	float w_bottom = w12.x * w3.y;
+	float w_total = w_top + w_left + w_center + w_right + w_bottom;
 
-	result += textureLod(stex, vec2(texPos0.x, texPos0.y), 0.0).xyz * w0.x * w0.y;
-	result += textureLod(stex, vec2(texPos12.x, texPos0.y), 0.0).xyz * w12.x * w0.y;
-	result += textureLod(stex, vec2(texPos3.x, texPos0.y), 0.0).xyz * w3.x * w0.y;
+	vec3 result = vec3(0.0);
+	result += textureLod(stex, vec2(texPos12.x, texPos0.y), 0.0).xyz * w_top;
+	result += textureLod(stex, vec2(texPos0.x, texPos12.y), 0.0).xyz * w_left;
+	result += textureLod(stex, vec2(texPos12.x, texPos12.y), 0.0).xyz * w_center;
+	result += textureLod(stex, vec2(texPos3.x, texPos12.y), 0.0).xyz * w_right;
+	result += textureLod(stex, vec2(texPos12.x, texPos3.y), 0.0).xyz * w_bottom;
 
-	result += textureLod(stex, vec2(texPos0.x, texPos12.y), 0.0).xyz * w0.x * w12.y;
-	result += textureLod(stex, vec2(texPos12.x, texPos12.y), 0.0).xyz * w12.x * w12.y;
-	result += textureLod(stex, vec2(texPos3.x, texPos12.y), 0.0).xyz * w3.x * w12.y;
-
-	result += textureLod(stex, vec2(texPos0.x, texPos3.y), 0.0).xyz * w0.x * w3.y;
-	result += textureLod(stex, vec2(texPos12.x, texPos3.y), 0.0).xyz * w12.x * w3.y;
-	result += textureLod(stex, vec2(texPos3.x, texPos3.y), 0.0).xyz * w3.x * w3.y;
-
-	return max(result, 0.0f);
+	return max(result / w_total, 0.0f);
 }
 
 /*------------------------------------------------------------------------------
@@ -376,7 +377,7 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 	vec3 color_input = load_color(pos_group);
 
 	// Get history color (catmull-rom reduces a lot of the blurring that you get under motion)
-	vec3 color_history = sample_catmull_rom_9(tex_history, uv_reprojected, params.resolution).rgb;
+	vec3 color_history = sample_catmull_rom_5(tex_history, uv_reprojected, params.resolution).rgb;
 	color_history = reinhard(color_history);
 
 	// Previous accumulated sample count (bilinear sample so partially occluded pixels don't have a hard step)
