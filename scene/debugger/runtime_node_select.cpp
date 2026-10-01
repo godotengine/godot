@@ -68,6 +68,10 @@
 #include "scene/resources/surface_tool.h"
 #endif // _3D_DISABLED
 
+#ifdef TOOLS_ENABLED
+#include "editor/themes/editor_icons.h"
+#endif
+
 RuntimeNodeSelect *RuntimeNodeSelect::get_singleton() {
 	return singleton;
 }
@@ -90,6 +94,13 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 
 	root->connect(SceneStringName(window_input), callable_mp(this, &RuntimeNodeSelect::_root_window_input));
 	root->connect("size_changed", callable_mp(this, &RuntimeNodeSelect::_queue_selection_update), CONNECT_DEFERRED);
+
+	if (!editor_icons_theme.is_valid()) {
+		editor_icons_theme.instantiate();
+		editor_configure_icons(false);
+		editor_register_icons(editor_icons_theme, true, 1, 16, 1.0);
+		editor_icons_sname = "EditorIcons";
+	}
 
 	max_selection = p_settings.get("debugger/max_node_selection", 1);
 	scale = GLOBAL_GET("display/window/stretch/scale");
@@ -1366,6 +1377,10 @@ void RuntimeNodeSelect::_open_selection_list(const Array &p_selection, const Poi
 	selection_list->set_theme(ThemeDB::get_singleton()->get_default_theme());
 	selection_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
 	selection_list->set_force_native(true);
+	selection_list->set_search_bar_enabled(true);
+	selection_list->set_search_bar_min_item_count(6);
+	Size2i max_size = Vector2(selection_list->is_embedded() ? selection_list->get_window()->get_size() : DisplayServer::get_singleton()->screen_get_size()) * 0.4;
+	selection_list->set_max_size(max_size);
 	selection_list->connect("index_pressed", callable_mp(this, &RuntimeNodeSelect::_items_popup_index_pressed).bind(selection_list));
 	selection_list->connect("popup_hide", callable_mp(this, &RuntimeNodeSelect::_close_selection_list));
 
@@ -1397,15 +1412,26 @@ void RuntimeNodeSelect::_open_selection_list(const Array &p_selection, const Poi
 
 		selection_list->add_item((String)node->get_name() + suffix);
 		selection_list->set_item_metadata(-1, node);
+#ifdef TOOLS_ENABLED
+		if (editor_icons_theme->has_icon(node->get_class(), editor_icons_sname)) {
+			selection_list->set_item_icon(-1, editor_icons_theme->get_icon(node->get_class(), editor_icons_sname));
+		}
+#endif // TOOLS_ENABLED
 	}
 
-	selection_list->set_position(selection_list->is_embedded() ? p_pos : (Input::get_singleton()->get_mouse_position() + root->get_position()));
+	Vector2 desired_pos = selection_list->is_embedded() ? p_pos : (Input::get_singleton()->get_mouse_position() + root->get_position());
+	selection_list->set_position(desired_pos);
 	selection_list->reset_size();
 	selection_list->popup();
 
 	selection_list->set_content_scale_factor(1);
-	selection_list->set_min_size(selection_list->get_contents_minimum_size());
+	selection_list->set_min_size(selection_list->get_contents_minimum_size().clamp(Vector2(), max_size));
 	selection_list->reset_size();
+
+	bool needs_move_up = (selection_list->is_embedded() ? desired_pos.y > selection_list->get_window()->get_size().y / 2.0 : desired_pos.y > DisplayServer::get_singleton()->screen_get_size().y / 2.0);
+	if (needs_move_up) {
+		selection_list->set_position(desired_pos - Vector2(0, selection_list->get_size().y));
+	}
 
 	// FIXME: Ugly hack that stops the popup from hiding when the button is released.
 	selection_list->call_deferred(SNAME("set_position"), selection_list->get_position() + Point2(1, 0));
