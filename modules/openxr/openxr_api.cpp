@@ -31,6 +31,7 @@
 #include "openxr_api.h"
 
 #include "action_map/openxr_interaction_profile_metadata.h"
+#include "extensions/openxr_headless_extension.h"
 #include "openxr_interface.h"
 #include "openxr_util.h"
 
@@ -2754,9 +2755,7 @@ bool OpenXRAPI::process() {
 	}
 
 	if (!graphics_extension) {
-		// TODO: Convert current time to XrTime and pass it in here.
-		//       This value is completely bogus, but at least it causes trackers to move at all.
-		frame_state.predictedDisplayTime = OS::get_singleton()->get_ticks_usec() * 1000;
+		OpenXRHeadlessExtension::get_singleton()->get_current_xrtime(&frame_state.predictedDisplayTime);
 	}
 
 	if (frame_state.predictedDisplayPeriod > 500000000) {

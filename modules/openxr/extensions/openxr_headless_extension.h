@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "../util.h"
 #include "openxr_extension_wrapper.h"
 
 class OpenXRHeadlessExtension : public OpenXRExtensionWrapper {
@@ -46,10 +47,19 @@ public:
 
 	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
+	virtual void on_instance_created(const XrInstance p_instance) override;
+
+	void get_current_xrtime(XrTime* result);
+
 	bool is_available();
 
 private:
 	static OpenXRHeadlessExtension *singleton;
 
-	bool available = false;
+	bool headless_ext = false;
+
+#if UNIX_ENABLED
+	bool convert_timespec_time_ext = false;
+	EXT_PROTO_XRRESULT_FUNC3(xrConvertTimespecTimeToTimeKHR, (XrInstance), instance, (const struct timespec*), timespecTime, (XrTime*), time);
+#endif
 };
