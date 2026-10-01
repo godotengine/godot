@@ -2826,6 +2826,9 @@
 		<constant name="FEATURE_PIP_MODE" value="36" enum="Feature">
 			Display server supports putting the application in picture-in-picture mode. [b]Android[/b]
 		</constant>
+		<constant name="FEATURE_EMBEDDED" value="37" enum="Feature">
+			Display server is embedding windows to another process. [b]macOS[/b]
+		</constant>
 		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole" deprecated="Use [AccessibilityServer] instead.">
 			Unknown or custom role.
 		</constant>
