@@ -439,7 +439,7 @@ private:
 	EditorBottomPanel *bottom_panel = nullptr;
 
 	Tree *disk_changed_list = nullptr;
-	LocalVector<String> disk_changed_scenes;
+	HashSet<String> disk_changed_scenes;
 	bool disk_changed_project = false;
 	ConfirmationDialog *disk_changed = nullptr;
 	ConfirmationDialog *project_data_missing = nullptr;

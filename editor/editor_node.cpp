@@ -1626,7 +1626,7 @@ void EditorNode::_scan_external_changes() {
 			TreeItem *ti = disk_changed_list->create_item(r);
 			ti->set_text(0, scene_path.get_file());
 			need_reload = true;
-			disk_changed_scenes.push_back(scene_path);
+			disk_changed_scenes.insert(scene_path);
 		}
 	}
 
@@ -1644,9 +1644,7 @@ void EditorNode::_scan_external_changes() {
 }
 
 void EditorNode::_resave_externally_modified_scenes(String p_str) {
-	for (const String &scene_path : disk_changed_scenes) {
-		_save_scene(scene_path);
-	}
+	save_scene_list(disk_changed_scenes);
 
 	if (disk_changed_project) {
 		ProjectSettings::get_singleton()->save();
