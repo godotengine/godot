@@ -74,6 +74,7 @@ int AudioStreamPlaybackOpus::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 				}
 				active = false;
 				todo = 0;
+				return 0;
 			}
 			mixed_was_zero = true;
 		}
