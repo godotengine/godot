@@ -2066,6 +2066,11 @@ void Object::_bind_methods() {
 	BIND_BITFIELD_FLAG(CONNECT_APPEND_SOURCE_OBJECT);
 }
 
+void Object::_get_property_list_inner(List<PropertyInfo> *p_list, const StringName &p_class_name) const {
+	p_list->push_back(PropertyInfo(Variant::NIL, p_class_name, PROPERTY_HINT_NONE, p_class_name, PROPERTY_USAGE_CATEGORY));
+	_get_property_list_from_classdb(p_class_name, p_list, true, this);
+}
+
 void Object::call_deferredp(const StringName &p_method, const Variant **p_args, int p_argcount, bool p_show_error) {
 	MessageQueue::get_singleton()->push_callp(this, p_method, p_args, p_argcount);
 }
