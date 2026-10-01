@@ -1,0 +1,12 @@
+diff --git a/thirdparty/xatlas/xatlas.cpp b/thirdparty/xatlas/xatlas.cpp
+index 5c5c57ecab..68bf5abee5 100644
+--- a/thirdparty/xatlas/xatlas.cpp
++++ b/thirdparty/xatlas/xatlas.cpp
+@@ -51,6 +51,7 @@ Copyright (c) 2012 Brandon Pelfrey
+ #define __STDC_LIMIT_MACROS
+ #include <stdint.h>
+ #include <stdio.h>
++#include <stdlib.h> // realloc, free. Not included by xatlas.h on all platforms (e.g. newer macOS SDKs).
+ #include <string.h>
+ 
+ #ifndef XA_DEBUG

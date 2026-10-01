@@ -1309,6 +1309,10 @@ Files extracted from upstream source:
 - `source/xatlas/xatlas.{cpp,h}`
 - `LICENSE`
 
+Patches:
+
+- `0001-add-stdlib-include.patch`
+
 
 ## zlib
 
