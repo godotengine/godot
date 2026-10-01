@@ -191,10 +191,6 @@ Ref<AudioStreamPlayback> AudioStreamOpus::instantiate_playback() {
 	return opus;
 }
 
-void AudioStreamOpus::clear_data() {
-	data.clear();
-}
-
 void AudioStreamOpus::set_data(const Vector<uint8_t> &p_data) {
 	// Open file to fetch metadata
 	OggOpusFile *opus_file = op_open_memory(p_data.ptr(), p_data.size(), nullptr);
