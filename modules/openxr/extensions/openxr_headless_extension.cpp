@@ -28,16 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "openxr_headless_extension.h"
+#include <ctime>
 
 #include "../openxr_api.h"
+#include "../openxr_platform_inc.h"
 
-// TODO: This is where the convert functions are gonna come from, I think?
-// #include "../openxr_platform_inc.h"
-
-// TODO: This is where we're gonna get the current time from to pass to those functions.
-//       I just hope that the windows version returns a "performance counter" compatible value.
-// #include "core/os/os.h"
+#include "openxr_headless_extension.h"
 
 // Implementation for:
 // https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_MND_headless
@@ -62,17 +58,39 @@ OpenXRHeadlessExtension::~OpenXRHeadlessExtension() {
 HashMap<String, bool *> OpenXRHeadlessExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
-	request_extensions[XR_MND_HEADLESS_EXTENSION_NAME] = &available;
-	// request_extensions[XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME] = &convert_timespec_time_ext;
+	request_extensions[XR_MND_HEADLESS_EXTENSION_NAME] = &headless_ext;
+#if UNIX_ENABLED
+	request_extensions[XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME] = &convert_timespec_time_ext;
+#endif
 
 	return request_extensions;
 }
 
+void OpenXRHeadlessExtension::on_instance_created(const XrInstance p_instance) {
+#if UNIX_ENABLED
+	if (convert_timespec_time_ext) {
+		EXT_INIT_XR_FUNC(xrConvertTimespecTimeToTimeKHR);
+	}
+#endif
+}
+
+void OpenXRHeadlessExtension::get_current_xrtime(XrTime* result) {
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL(openxr_api);
+	XrInstance instance = openxr_api->get_instance();
+	ERR_FAIL_COND(instance == XR_NULL_HANDLE);
+
+#if UNIX_ENABLED
+	timespec time;
+	clock_gettime(CLOCK_MONOTONIC, &time);
+	xrConvertTimespecTimeToTimeKHR(instance, &time, result);
+#endif
+}
+
 bool OpenXRHeadlessExtension::is_available() {
-// #if UNIX_ENABLED
-// 	if (!convert_timespec_time_ext) return false;
-// #elif WINDOWS_ENABLED
-//
-// #endif
-	return available;
+#if UNIX_ENABLED
+	return headless_ext && convert_timespec_time_ext;
+#else
+	return false;
+#endif
 }

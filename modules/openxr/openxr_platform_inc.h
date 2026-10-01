@@ -79,6 +79,10 @@
 #include <X11/Xlib.h>
 #endif // X11_ENABLED
 
+#ifdef UNIX_ENABLED
+#define XR_USE_TIMESPEC
+#endif // UNIX_ENABLED
+
 #ifdef WINDOWS_ENABLED
 #define COM_NO_WINDOWS_H
 #include <objbase.h>
