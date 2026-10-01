@@ -46,7 +46,7 @@ String ResourceImporterOpus::get_importer_name() const {
 }
 
 String ResourceImporterOpus::get_visible_name() const {
-	return "Ogg Opus";
+	return "Opus";
 }
 
 void ResourceImporterOpus::get_recognized_extensions(List<String> *p_extensions) const {
@@ -112,7 +112,7 @@ Error ResourceImporterOpus::import(ResourceUID::ID p_source_id, const String &p_
 	opus_stream->set_beat_count(beat_count);
 	opus_stream->set_bar_beats(bar_beats);
 
-	return ResourceSaver::save(opus_stream, p_save_path + ".oggopusstr");
+	return ResourceSaver::save(opus_stream, p_save_path + "." + get_save_extension());
 }
 
 void ResourceImporterOpus::_bind_methods() {
