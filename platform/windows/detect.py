@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import methods
 from methods import print_error, print_warning
-from platform_methods import detect_arch, validate_arch
+from platform_methods import check_accesskit_version, detect_arch, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -451,23 +451,26 @@ def configure_msvc(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
-            if env["arch"] == "arm64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/msvc/static"])
-            elif env["arch"] == "x86_64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/msvc/static"])
-            elif env["arch"] == "x86_32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/msvc/static"])
-            LIBS += [
-                "accesskit",
-                "runtimeobject",
-                "propsys",
-                "oleaut32",
-                "user32",
-                "userenv",
-                "ntdll",
-            ]
-            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            if check_accesskit_version(env["accesskit_sdk_path"]):
+                env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+                if env["arch"] == "arm64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/msvc/static"])
+                elif env["arch"] == "x86_64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/msvc/static"])
+                elif env["arch"] == "x86_32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/msvc/static"])
+                LIBS += [
+                    "accesskit",
+                    "runtimeobject",
+                    "propsys",
+                    "oleaut32",
+                    "user32",
+                    "userenv",
+                    "ntdll",
+                ]
+                env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            else:
+                env["accesskit"] = False
         else:
             print_error(
                 "The screen reader support driver requires dependencies to be installed.\n"
@@ -847,33 +850,36 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
-            if env["use_llvm"]:
-                if env["arch"] == "arm64":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/mingw-llvm/static/"])
-                elif env["arch"] == "x86_64":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw-llvm/static/"])
-                elif env["arch"] == "x86_32":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw-llvm/static/"])
+            if check_accesskit_version(env["accesskit_sdk_path"]):
+                env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+                if env["use_llvm"]:
+                    if env["arch"] == "arm64":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/mingw-llvm/static/"])
+                    elif env["arch"] == "x86_64":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw-llvm/static/"])
+                    elif env["arch"] == "x86_32":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw-llvm/static/"])
+                else:
+                    if env["arch"] == "x86_64":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw/static/"])
+                    elif env["arch"] == "x86_32":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw/static/"])
+                env.Append(LIBPATH=["#bin/obj/platform/windows"])
+                env.Append(
+                    LIBS=[
+                        "accesskit",
+                        "runtimeobject",
+                        "propsys",
+                        "oleaut32",
+                        "user32",
+                        "userenv",
+                        "ntdll",
+                    ]
+                )
+                env.Append(LIBPATH=["#platform/windows"])
+                env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
             else:
-                if env["arch"] == "x86_64":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw/static/"])
-                elif env["arch"] == "x86_32":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw/static/"])
-            env.Append(LIBPATH=["#bin/obj/platform/windows"])
-            env.Append(
-                LIBS=[
-                    "accesskit",
-                    "runtimeobject",
-                    "propsys",
-                    "oleaut32",
-                    "user32",
-                    "userenv",
-                    "ntdll",
-                ]
-            )
-            env.Append(LIBPATH=["#platform/windows"])
-            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+                env["accesskit"] = False
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"

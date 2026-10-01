@@ -46,4 +46,7 @@ shutil.unpack_archive(ac_archive, deps_folder)
 os.remove(ac_archive)
 os.rename(os.path.join(deps_folder, "accesskit-c-" + ac_version), ac_folder)
 
+with open(os.path.join(ac_folder, "version"), "w") as f:
+    f.write(ac_version)
+
 print("AccessKit installed successfully.\n")
