@@ -2513,7 +2513,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 
 	if (ofs > 0 && (is_in_string(get_caret_line(), ofs) != -1 || !is_symbol(line[ofs - 1]) || code_completion_prefixes.has(line[ofs - 1]))) {
 		emit_signal(SNAME("code_completion_requested"));
-	} else if (ofs > 1 && line[ofs - 1] == ' ' && code_completion_prefixes.has(line[ofs - 2])) {
+	} else if (ofs > 1 && line[ofs - 1] == ' ' && (!is_symbol(line[ofs - 2]) || code_completion_prefixes.has(line[ofs - 2]))) {
 		emit_signal(SNAME("code_completion_requested"));
 	}
 	queue_accessibility_update();
@@ -2709,8 +2709,8 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 	end_complex_operation();
 
 	cancel_code_completion();
-	if (code_completion_prefixes.has(caret_last_completion_char)) {
-		request_code_completion();
+	if (code_completion_prefixes.has(caret_last_completion_char) || caret_last_completion_char == ' ') {
+		request_code_completion(true);
 	}
 }
 
