@@ -88,7 +88,7 @@ class AudioStreamOpus : public AudioStream {
 
 	friend class AudioStreamPlaybackOpus;
 
-	TightLocalVector<uint8_t> data;
+	Vector<uint8_t> data;
 	double length = 0;
 	bool loop = false;
 	double loop_offset = 0;
