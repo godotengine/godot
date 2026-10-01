@@ -48,6 +48,10 @@ class ViewPanner;
 class ArrayMesh;
 #endif
 
+#ifdef TOOLS_ENABLED
+class Theme;
+#endif
+
 class RuntimeNodeSelect : public Object {
 	GDCLASS(RuntimeNodeSelect, Object);
 
@@ -121,6 +125,10 @@ private:
 	Ref<Texture2D> pivot_icon;
 	Ref<Texture2D> resize_icon;
 	Ref<Texture2D> anchor_icon;
+#ifdef TOOLS_ENABLED
+	Ref<Theme> editor_icons_theme;
+	StringName editor_icons_sname;
+#endif
 
 	HashMap<ObjectID, Dictionary> selected_ci_nodes; // The node's ID and its canvas state.
 	int sel_2d_scale = 1;
