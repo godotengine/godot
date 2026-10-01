@@ -120,14 +120,17 @@ public:
 #else
 		StringName method_name = get_method();
 		ERR_FAIL_COND(method_name.is_empty());
-		method_name = StringName(method_name.string().split("::")[1]); // Hack.
 
-		ObjectID obj_id = get_object();
-		ERR_FAIL_COND_MSG(!obj_id.is_valid(),
-				vformat("Failed to get the ObjectID of '" + uitos(data.object_id) + "' in CallableCustomMethodPointer, method name: \"%s\"", method_name));
+		Vector<String> split = method_name.string().split("::");
+		if (split[split.size() - 1].begins_with("&")) {
+			method_name = split[split.size() - 1].substr(1); // remove the '&'
+		} else {
+			method_name = split[split.size() - 1];
+		}
 
-		Object *obj = ObjectDB::get_instance(obj_id);
-		ERR_FAIL_NULL(obj);
+		Object *obj = ObjectDB::get_instance(ObjectID(data.object_id));
+		ERR_FAIL_NULL_MSG(obj, "Invalid Object id '" + uitos(data.object_id) + "', can't get method info.");
+
 		r_method_info = obj->get_method_info(method_name);
 #endif
 	}
