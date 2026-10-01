@@ -4166,10 +4166,19 @@ void EditorNode::_check_system_theme_changed() {
 	}
 
 	if (system_theme_changed) {
-		class_icon_cache.clear();
-		_update_theme();
-		_build_icon_type_cache();
-		recent_scenes->reset_size();
+		EditorThemeManager::set_theme_outdated();
+
+		SceneTree *sml = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
+		if (!sml) {
+			return;
+		}
+		Node *root = sml->get_root()->get_child(0);
+		if (!root) {
+			return;
+		}
+		// Some theme related settings are updated in editor settings change handlers.
+		// Using "NOTIFICATION_EDITOR_SETTINGS_CHANGED" to simulate manual theme change from the editor settings and ensure all parts of the editor are updated correctly.
+		root->propagate_notification(EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 	} else if (menu_type == MENU_TYPE_GLOBAL && display_server->is_dark_mode_supported() && display_server->is_dark_mode() != last_dark_mode_state) {
 		last_dark_mode_state = display_server->is_dark_mode();
 
