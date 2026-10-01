@@ -136,7 +136,9 @@ void ProjectExportDialog::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			script_key_error->set_text(String::utf8("•  ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
-			export_error2->set_text(String::utf8("•  ") + TTR("Export templates for this platform are missing:") + " ");
+			const String err2 = String::utf8("•  ") + TTR("Export templates for this platform are missing:") + " ";
+			export_error2->set_text(err2);
+			export_error2->set_tooltip_text(err2);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -379,6 +381,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 			}
 
 			export_error->set_text(error);
+			export_error->set_tooltip_text(error);
 			export_error->show();
 		} else {
 			export_error->hide();
@@ -417,6 +420,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 				error += " - " + items[i];
 			}
 			export_warning->set_text(error);
+			export_warning->set_tooltip_text(error);
 			export_warning->show();
 		} else {
 			export_warning->hide();
@@ -2086,12 +2090,14 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	export_error = memnew(Label);
 	export_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	export_error->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	main_vb->add_child(export_error);
 	export_error->hide();
 	export_error->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD_ELLIPSIS);
 
 	export_warning = memnew(Label);
 	export_warning->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	export_warning->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	main_vb->add_child(export_warning);
 	export_warning->hide();
 	export_warning->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD_ELLIPSIS);
@@ -2102,6 +2108,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	export_error2 = memnew(Label);
 	export_error2->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	export_error2->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	export_templates_error->add_child(export_error2);
 	export_error2->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_WORD_ELLIPSIS);
 
