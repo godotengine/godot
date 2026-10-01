@@ -1566,7 +1566,7 @@ void ConnectionsDock::update_tree() {
 	DocTools *doc_data = EditorHelp::get_doc_data();
 	EditorData &editor_data = EditorNode::get_editor_data();
 	StringName native_base = selected_object->get_class();
-	Ref<Script> script_base(selected_object->get_script_ptr());
+	Script *script_base = selected_object->get_script_ptr();
 
 	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
 	Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
@@ -1577,7 +1577,7 @@ void ConnectionsDock::update_tree() {
 		Ref<Texture2D> class_icon;
 		List<MethodInfo> class_signals;
 
-		if (script_base.is_valid()) {
+		if (script_base != nullptr) {
 			class_name = script_base->get_global_name();
 			if (class_name.is_empty()) {
 				class_name = script_base->get_path().get_file();
@@ -1616,7 +1616,7 @@ void ConnectionsDock::update_tree() {
 				}
 			}
 
-			script_base = base;
+			script_base = base.ptr();
 		} else {
 			class_name = native_base;
 			doc_class_name = native_base;

@@ -3987,7 +3987,7 @@ void SceneTreeDock::_script_dropped(const String &p_file, Node *p_to_node) {
 		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", p_to_node);
 		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", p_to_node);
 		undo_redo->add_do_method(p_to_node, "set_script", scr);
-		undo_redo->add_undo_method(p_to_node, "set_script", p_to_node->get_script_ptr());
+		undo_redo->add_undo_method(p_to_node, "set_script", p_to_node->get_script());
 		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", p_to_node);
 		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", p_to_node);
 		undo_redo->add_do_method(this, "_queue_update_script_button");

@@ -2268,7 +2268,7 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const String &p_t
 
 Dictionary VisualShaderEditor::get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node) {
 	Dictionary dict;
-	dict["script"] = p_custom_node->get_script_ptr();
+	dict["script"] = p_custom_node->get_script();
 	dict["name"] = p_custom_node->_get_name();
 	dict["description"] = p_custom_node->_get_description();
 	dict["return_icon_type"] = p_custom_node->_get_return_icon_type();
