@@ -1720,8 +1720,8 @@ int ClassDB::class_get_method_argument_count(const StringName &p_class, const St
 
 Dictionary ClassDB::class_get_method_info(const StringName &p_class, const StringName &p_method, bool p_no_inheritance) const {
 	MethodInfo mi;
-	bool is_method_found = ::ClassDB::get_method_info(p_class, p_method, &mi, p_no_inheritance);
-	if (is_method_found) {
+	bool valid = ::ClassDB::get_method_info(p_class, p_method, &mi, p_no_inheritance);
+	if (valid) {
 		return mi.operator Dictionary();
 	}
 	return Dictionary();
