@@ -3772,10 +3772,9 @@ void TileMapLayerEditor::_notification(int p_what) {
 				if (edited_layer && custom_overlay) {
 					TextureFilter filter = edited_layer->get_texture_filter_in_tree();
 					if (filter == TextureFilter::TEXTURE_FILTER_PARENT_NODE) {
-						Viewport* edited_layer_vp = edited_layer->get_viewport();
+						Viewport *edited_layer_vp = edited_layer->get_viewport();
 						if (edited_layer_vp) {
 							filter = (CanvasItem::TextureFilter)edited_layer_vp->get_texture_filter_in_tree();
-						}
 						}
 					}
 					custom_overlay->set_texture_filter(filter);
