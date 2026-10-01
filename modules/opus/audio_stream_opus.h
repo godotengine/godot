@@ -92,7 +92,6 @@ class AudioStreamOpus : public AudioStream {
 	double length = 0;
 	bool loop = false;
 	double loop_offset = 0;
-	void clear_data();
 
 	double bpm = 0;
 	int beat_count = 0;
