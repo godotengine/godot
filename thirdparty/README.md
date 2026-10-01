@@ -1041,6 +1041,7 @@ Patches:
 - `0007-ios-accelerometer.patch` ([GH-120373](https://github.com/godotengine/godot/pull/120373))
 - `0008-ios-link.patch` ([GH-123903](https://github.com/godotengine/godot/pull/123903))
 - `0009-ios-iostream-no-prefpath.patch` ([GH-123899](https://github.com/godotengine/godot/pull/123899))
+- `0010-fix-linux-getenv-unsafe.patch` ([GH-124017](https://github.com/godotengine/godot/pull/124017))
 
 
 ## spirv-cross
