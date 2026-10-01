@@ -1505,7 +1505,7 @@ Vector2 Viewport::get_mouse_position() const {
 		// Rely on the most recent mouse coordinate from an InputEventMouse in push_input.
 		// In this case get_screen_transform is not applicable, because it is ambiguous.
 		return gui.last_mouse_pos;
-	} else if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_MOUSE)) {
+	} else if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_MOUSE) && !DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_EMBEDDED)) {
 		Transform2D xform = get_screen_transform_internal(true);
 		if (xform.determinant() == 0) {
 			// Screen transform can be non-invertible when the Window is minimized.
