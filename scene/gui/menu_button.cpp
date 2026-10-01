@@ -86,7 +86,11 @@ void MenuButton::show_popup() {
 
 	emit_signal(SNAME("about_to_popup"));
 	Rect2 rect = get_screen_rect();
-	rect.position.x += theme_cache.popup_offset_x;
+	if (is_layout_rtl()) {
+		rect.position.x -= theme_cache.popup_offset_x;
+	} else {
+		rect.position.x += theme_cache.popup_offset_x;
+	}
 	rect.position.y += rect.size.height + theme_cache.popup_offset_y;
 	if (get_viewport()->is_embedding_subwindows() && popup->get_force_native()) {
 		Transform2D xform = get_viewport()->get_popup_base_transform_native();
