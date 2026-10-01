@@ -5141,7 +5141,6 @@ EditorHelpBitTooltip::EditorHelpBitTooltip(Control *p_target, bool p_shortcut) {
 	diagnostics_label->set_theme_type_variation("EditorHelpBitTooltipTitle");
 	diagnostics_label->set_custom_minimum_size(Size2(640 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
 	diagnostics_label->set_fit_content(true);
-	diagnostics_label->set_selection_enabled(true);
 	diagnostics_label->set_context_menu_enabled(false);
 	diagnostics_label->set_use_bbcode(true);
 
