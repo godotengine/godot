@@ -198,17 +198,13 @@ void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
 	camera_feed->set_rgb_image(image);
 }
 
-Yuv420BufferDecoder::Yuv420BufferDecoder(CameraFeed *p_camera_feed, bool p_v_plane_first) :
+Yuv420ToRgbBufferDecoder::Yuv420ToRgbBufferDecoder(CameraFeed *p_camera_feed, bool p_u_plane_first) :
 		BufferDecoder(p_camera_feed) {
-	v_plane_first = p_v_plane_first;
-	const size_t chroma_size = (size_t)(width / 2) * (height / 2);
-	y_buffer.resize((size_t)width * height);
-	cbcr_buffer.resize(chroma_size * 2);
-	y_image.instantiate();
-	cbcr_image.instantiate();
+	u_plane_first = p_u_plane_first;
+	image_data.resize(width * height * 3);
 }
 
-void Yuv420BufferDecoder::decode(StreamingBuffer p_buffer) {
+void Yuv420ToRgbBufferDecoder::decode(StreamingBuffer p_buffer) {
 	const int chroma_width = width / 2;
 	const int chroma_height = height / 2;
 	const size_t y_plane_size = (size_t)width * height;
@@ -218,24 +214,40 @@ void Yuv420BufferDecoder::decode(StreamingBuffer p_buffer) {
 		return;
 	}
 
-	const uint8_t *src = (const uint8_t *)p_buffer.start;
-	const uint8_t *plane2 = src + y_plane_size;
-	const uint8_t *plane3 = plane2 + chroma_plane_size;
-	const uint8_t *cb_src = v_plane_first ? plane3 : plane2;
-	const uint8_t *cr_src = v_plane_first ? plane2 : plane3;
+	const uint8_t *y_plane = (const uint8_t *)p_buffer.start;
+	const uint8_t *chroma_src = y_plane + y_plane_size;
+	const uint8_t *u_plane = u_plane_first ? chroma_src : chroma_src + chroma_plane_size;
+	const uint8_t *v_plane = u_plane_first ? chroma_src + chroma_plane_size : chroma_src;
+	uint8_t *dst = (uint8_t *)image_data.ptrw();
 
-	memcpy(y_buffer.ptrw(), src, y_plane_size);
+	for (int row = 0; row < height; row++) {
+		const uint8_t *y_src = y_plane + (size_t)row * width;
+		const uint8_t *u_src = u_plane + (size_t)(row / 2) * chroma_width;
+		const uint8_t *v_src = v_plane + (size_t)(row / 2) * chroma_width;
 
-	// Interleave Cb and Cr into RG8 (R=Cb, G=Cr).
-	uint8_t *cbcr_dst = cbcr_buffer.ptrw();
-	for (size_t i = 0; i < chroma_plane_size; i++) {
-		*cbcr_dst++ = *cb_src++;
-		*cbcr_dst++ = *cr_src++;
+		for (int col = 0; col < width; col += 2) {
+			int u = *u_src++;
+			int v = *v_src++;
+			int u1 = (((u - 128) << 7) + (u - 128)) >> 6;
+			int rg = (((u - 128) << 1) + (u - 128) + ((v - 128) << 2) + ((v - 128) << 1)) >> 3;
+			int v1 = (((v - 128) << 1) + (v - 128)) >> 1;
+
+			for (int i = 0; i < 2; i++) {
+				int y = *y_src++;
+				*dst++ = CLAMP(y + v1, 0, 255);
+				*dst++ = CLAMP(y - rg, 0, 255);
+				*dst++ = CLAMP(y + u1, 0, 255);
+			}
+		}
 	}
 
-	y_image->set_data(width, height, false, Image::FORMAT_L8, y_buffer);
-	cbcr_image->set_data(chroma_width, chroma_height, false, Image::FORMAT_RG8, cbcr_buffer);
-	camera_feed->set_ycbcr_images(y_image, cbcr_image);
+	if (image.is_valid()) {
+		image->set_data(width, height, false, Image::FORMAT_RGB8, image_data);
+	} else {
+		image.instantiate(width, height, false, Image::FORMAT_RGB8, image_data);
+	}
+
+	camera_feed->set_rgb_image(image);
 }
 
 JpegBufferDecoder::JpegBufferDecoder(CameraFeed *p_camera_feed) :
