@@ -153,6 +153,10 @@ void TreeItem::_change_tree(Tree *p_tree) {
 			tree->single_select_defer = nullptr;
 		}
 
+		if (tree->multi_deselect_defer == this) {
+			tree->multi_deselect_defer = nullptr;
+		}
+
 		if (tree->edited_item == this) {
 			tree->edited_item = nullptr;
 			tree->pressing_for_editor = false;
@@ -3166,6 +3170,7 @@ void Tree::_range_click_timeout() {
 
 int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod, bool p_first_call, bool p_skip_children) {
 	if (p_first_call) {
+		multi_deselect_defer = nullptr;
 		// Handle sticky item input first
 		for (TreeItem *item : sticky_list) {
 			Point2 relative_pos = p_pos;
@@ -3274,9 +3279,8 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			if (c.selectable) {
 				if (select_mode == SELECT_MULTI && p_mod->is_command_or_control_pressed()) {
 					if (c.selected && p_button == MouseButton::LEFT) {
-						p_item->deselect(col);
-						play_theme_sound(theme_cache.item_selected_sound);
-						emit_signal(SNAME("multi_selected"), p_item, col, false);
+						multi_deselect_defer = p_item;
+						multi_deselect_defer_column = col;
 					} else {
 						p_item->select(col);
 						play_theme_sound(theme_cache.item_selected_sound);
@@ -4272,6 +4276,15 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				if (single_select_defer) {
 					select_single_item(single_select_defer, root, single_select_defer_column);
 					single_select_defer = nullptr;
+				}
+
+				if (multi_deselect_defer) {
+					if (multi_deselect_defer->is_selected(multi_deselect_defer_column)) {
+						multi_deselect_defer->deselect(multi_deselect_defer_column);
+						play_theme_sound(theme_cache.item_selected_sound);
+						emit_signal(SNAME("multi_selected"), multi_deselect_defer, multi_deselect_defer_column, false);
+					}
+					multi_deselect_defer = nullptr;
 				}
 
 				range_click_timer->stop();
@@ -5287,6 +5300,7 @@ void Tree::_notification(int p_what) {
 
 		case NOTIFICATION_DRAG_BEGIN: {
 			single_select_defer = nullptr;
+			multi_deselect_defer = nullptr;
 			if (theme_cache.scroll_speed > 0) {
 				const Dictionary drag_data = get_viewport()->gui_get_drag_data();
 				// Enable scrolling, unless dragging a tab.
