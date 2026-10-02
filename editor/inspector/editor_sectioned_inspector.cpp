@@ -158,6 +158,10 @@ void SectionedInspector::_section_selected() {
 	emit_signal(SNAME("category_changed"), selected_category);
 }
 
+void SectionedInspector::_edited_property_list_changed() {
+	filter->notify_property_list_changed();
+}
+
 void SectionedInspector::set_current_section(const String &p_section) {
 	if (section_map.has(p_section)) {
 		TreeItem *item = section_map[p_section];
@@ -185,6 +189,10 @@ String SectionedInspector::get_full_item_path(const String &p_item) {
 }
 
 void SectionedInspector::edit(Object *p_object) {
+	if (obj.is_valid()) {
+		ObjectDB::get_instance(obj)->disconnect(CoreStringName(property_list_changed), callable_mp(this, &SectionedInspector::_edited_property_list_changed));
+	}
+
 	if (!p_object) {
 		obj = ObjectID();
 		sections->clear();
@@ -195,6 +203,7 @@ void SectionedInspector::edit(Object *p_object) {
 		return;
 	}
 
+	p_object->connect(CoreStringName(property_list_changed), callable_mp(this, &SectionedInspector::_edited_property_list_changed));
 	ObjectID id = p_object->get_instance_id();
 
 	inspector->set_object_class(p_object->get_class());
