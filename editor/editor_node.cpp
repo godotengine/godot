@@ -1927,12 +1927,14 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 		}
 	} else if (!p_resource->get_path().get_base_dir().is_empty()) {
 		if (is_resource) {
+			String path = resource_path;
 			if (!extensions.is_empty()) {
 				const String ext = resource_path.get_extension().to_lower();
 				if (extensions.find(ext) == nullptr) {
-					file->set_current_path(resource_path.replacen("." + ext, "." + extensions.front()->get()));
+					path = resource_path.replacen("." + ext, "." + extensions.front()->get());
 				}
 			}
+			file->set_current_path(path);
 		} else {
 			file->set_current_file(new_resource_name_snake_case);
 		}
