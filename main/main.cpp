@@ -2731,22 +2731,22 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				init_custom_pos = GLOBAL_GET("display/window/size/initial_position").operator Vector2i();
 				init_use_custom_pos = true;
 			}
-		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN || initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN) { // Center of Primary Screen.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN || initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN) { // Primary Screen Center.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServerEnums::SCREEN_PRIMARY;
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) { // Center of Other Screen.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) { // Other Screen Center.
 			if (!init_use_custom_screen) {
 				init_screen = GLOBAL_GET("display/window/size/initial_screen").operator int();
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS) { // Center of Screen With Mouse Pointer.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS) { // Screen With Mouse Pointer Center.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServerEnums::SCREEN_WITH_MOUSE_FOCUS;
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS) { // Center of Screen With Keyboard Focus.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS) { // Screen With Keyboard Focus Center.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServerEnums::SCREEN_WITH_KEYBOARD_FOCUS;
 				init_use_custom_screen = true;
