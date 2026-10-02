@@ -119,6 +119,19 @@ Error MovieWriterOGV::write_begin(const Size2i &p_movie_size, uint32_t p_fps, co
 	}
 	base_path += ".ogv";
 
+	if (GLOBAL_GET("editor/movie_writer/create_new_file_if_existing")) {
+		String tmp_fullpath = base_path;
+		String tmp_basename = base_path.get_basename();
+		int number = 1;
+		while (FileAccess::exists(tmp_fullpath)) {
+			tmp_fullpath = tmp_basename + "_" + itos(number) + ".ogv";
+			number++;
+		}
+		base_path = tmp_fullpath;
+	}
+
+	output_path = base_path;
+
 	f = FileAccess::open(base_path, FileAccess::WRITE_READ);
 	ERR_FAIL_COND_V(f.is_null(), ERR_CANT_OPEN);
 
