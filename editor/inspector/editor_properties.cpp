@@ -3768,12 +3768,12 @@ void EditorPropertyResource::update_property() {
 			}
 
 			sub_inspector->set_read_only(is_checkable() && !is_checked());
+			sub_inspector->set_category_color_level(get_sub_inspector_color_level());
 
 			if (res.ptr() != sub_inspector->get_edited_object()) {
 				sub_inspector->edit(res.ptr());
 				_update_property_bg();
 			}
-			sub_inspector->set_category_color_level(get_sub_inspector_color_level());
 
 		} else if (sub_inspector) {
 			set_bottom_editor(nullptr);
