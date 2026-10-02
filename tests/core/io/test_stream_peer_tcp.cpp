@@ -57,6 +57,7 @@ public:
 	virtual Ref<NetSocket> accept(Address &r_addr) override;
 
 	virtual bool is_open() const override;
+	virtual void shutdown(ShutdownType p_flag) override {}
 	virtual int get_available_bytes() const override;
 	virtual Error get_socket_address(Address *r_ip) const override;
 
