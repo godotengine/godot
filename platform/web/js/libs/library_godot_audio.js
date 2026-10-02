@@ -647,16 +647,12 @@ class SampleNode {
 		this._positionWorklet.port.onmessage = (event) => {
 			switch (event.data['type']) {
 			case 'position':
-				this._playbackPosition = (parseInt(event.data.data, 10) / this.getSample().sampleRate) + this.offset;
+				this._playbackPosition += (parseInt(event.data.data, 10) / this.getSample().sampleRate) * this._pitchScale;
 				break;
 			default:
 				// Do nothing.
 			}
 		};
-
-		const resetParameter = this._positionWorklet.parameters.get('reset');
-		resetParameter.setValueAtTime(1, GodotAudio.ctx.currentTime);
-		resetParameter.setValueAtTime(0, GodotAudio.ctx.currentTime + 1);
 
 		return this._positionWorklet;
 	}
