@@ -2688,6 +2688,9 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 			if (!importer->get_resource_type().is_empty()) {
 				f->store_line("type=\"" + importer->get_resource_type() + "\"");
 			}
+			if (importer->get_preserves_source_file()) {
+				f->store_line("preserve_source=true");
+			}
 
 			if (uid == ResourceUID::INVALID_ID) {
 				uid = ResourceUID::get_singleton()->create_id_for_path(file);
@@ -2944,6 +2947,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		}
 		if (!importer->get_resource_type().is_empty()) {
 			f->store_line("type=\"" + importer->get_resource_type() + "\"");
+		}
+		if (importer->get_preserves_source_file()) {
+			f->store_line("preserve_source=true");
 		}
 
 		f->store_line("uid=\"" + ResourceUID::get_singleton()->id_to_text(uid) + "\""); // Store in readable format.
