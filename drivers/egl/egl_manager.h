@@ -34,10 +34,11 @@
 
 #include "core/templates/local_vector.h"
 #include "servers/display/display_server_enums.h"
+#include "servers/rendering/gl_manager.h"
 
 #include <platform_egl.h>
 
-class EGLManager {
+class EGLManager : public GLManager {
 private:
 	// An EGL-side representation of a display with its own rendering
 	// context.
@@ -93,24 +94,31 @@ private:
 public:
 	int display_get_native_visual_id(void *p_display);
 
-	Error open_display(void *p_display);
+	Error open_display(void *p_display) override;
 	Error window_create(DisplayServerEnums::WindowID p_window_id, void *p_display, void *p_native_window, int p_width, int p_height);
+	Error window_create(DisplayServerEnums::WindowID p_window_id, Ref<RenderingNativeSurface> p_native_surface, int p_width, int p_height) override;
 
-	void window_destroy(DisplayServerEnums::WindowID p_window_id);
+	void window_resize(DisplayServerEnums::WindowID p_window_id, int p_width, int p_height) override {}
+	void window_destroy(DisplayServerEnums::WindowID p_window_id) override;
 
-	void release_current();
-	void swap_buffers();
+	int window_get_render_target(DisplayServerEnums::WindowID p_window_id) const override { return 0; }
+	int window_get_color_texture(DisplayServerEnums::WindowID p_id) const override { return 0; }
+	Size2i window_get_size(DisplayServerEnums::WindowID p_window_id) const override { return Size2i(); }
 
-	void window_make_current(DisplayServerEnums::WindowID p_window_id);
+	void release_current() override;
+	void swap_buffers() override;
 
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
+	void window_make_current(DisplayServerEnums::WindowID p_window_id) override;
+
+	void set_use_vsync(bool p_use) override;
+	bool is_using_vsync() const override;
+	bool validate_driver() const override { return true; }
 
 	EGLContext get_context(DisplayServerEnums::WindowID p_window_id);
 	EGLDisplay get_display(DisplayServerEnums::WindowID p_window_id);
 	EGLConfig get_config(DisplayServerEnums::WindowID p_window_id);
 
-	Error initialize(void *p_native_display = nullptr);
+	Error initialize(void *p_native_display = nullptr) override;
 
 	EGLManager();
 	virtual ~EGLManager();

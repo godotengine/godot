@@ -562,6 +562,8 @@ GLAD_API_CALL int gladLoadEGL(EGLDisplay display, GLADloadfunc load);
 
 #ifdef GLAD_EGL
 
+GLAD_API_CALL void gladSetupEGL(int eglc, const char* eglNames[]);
+
 GLAD_API_CALL int gladLoaderLoadEGL(EGLDisplay display);
 
 GLAD_API_CALL void gladLoaderUnloadEGL(void);
