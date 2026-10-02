@@ -178,7 +178,5 @@ public:
 	const HashSet<String> &get_client_markdown_allowed_html_tags() const;
 
 	GDScriptLanguageProtocol();
-	~GDScriptLanguageProtocol() {
-		clients.clear();
-	}
+	~GDScriptLanguageProtocol();
 };

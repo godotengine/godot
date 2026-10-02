@@ -552,3 +552,8 @@ EditorSceneTabs::EditorSceneTabs() {
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorSceneTabs::_project_settings_changed));
 }
+
+EditorSceneTabs::~EditorSceneTabs() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
