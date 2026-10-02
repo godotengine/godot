@@ -14,7 +14,6 @@ layout(push_constant, std430) uniform Params {
 	ivec2 light_offset;
 	vec4 light_coordinate;
 	float surface_thickness;
-	float opacity;
 	float blur;
 	float taa_frame_count;
 }
@@ -232,6 +231,5 @@ void main() {
 
 	// Average the 4 buckets, then take the harder of hard_shadow and averaged result
 	float shadow = min(hard_shadow, dot(shadow_value, vec4(0.25)));
-	shadow = mix(1.0, shadow, params.opacity);
 	imageStore(output_shadow, write_xy, vec4(shadow, 0.0, 0.0, 0.0));
 }
