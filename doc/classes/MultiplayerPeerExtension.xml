@@ -97,12 +97,6 @@
 				Called when the "refuse new connections" status is requested on this [MultiplayerPeer] (see [member MultiplayerPeer.refuse_new_connections]).
 			</description>
 		</method>
-		<method name="_is_server" qualifiers="virtual required const">
-			<return type="bool" />
-			<description>
-				Called when the "is server" status is requested on the [MultiplayerAPI]. See [method MultiplayerAPI.is_server].
-			</description>
-		</method>
 		<method name="_is_server_relay_supported" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
