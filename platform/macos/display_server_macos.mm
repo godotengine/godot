@@ -2437,6 +2437,31 @@ void DisplayServerMacOS::window_start_drag(DisplayServerEnums::WindowID p_window
 	[wd.window_object performWindowDragWithEvent:event];
 }
 
+void DisplayServerMacOS::window_drag_files(const PackedStringArray &p_files, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(p_files.is_empty());
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	NSPoint local_pos = [wd.window_object convertPointFromScreen:[NSEvent mouseLocation]];
+	NSEvent *event = [NSEvent mouseEventWithType:NSEventTypeLeftMouseDragged location:local_pos modifierFlags:0 timestamp:0 windowNumber:[wd.window_object windowNumber] context:nil eventNumber:0 clickCount:0 pressure:0];
+
+	NSMutableArray *files = [NSMutableArray array];
+	for (const String &file : p_files) {
+		NSString *file_path = [NSString stringWithUTF8String:file.utf8().get_data()];
+		NSURL *file_url = [NSURL fileURLWithPath:file_path];
+		NSImage *file_icon = [[NSWorkspace sharedWorkspace] iconForFile:file_path];
+		NSDraggingItem *drag_item = [[NSDraggingItem alloc] initWithPasteboardWriter:file_url];
+		[drag_item setDraggingFrame:NSMakeRect(local_pos.x - file_icon.size.width / 2, local_pos.y - file_icon.size.height / 2, file_icon.size.width, file_icon.size.height) contents:file_icon];
+		[files addObject:drag_item];
+	}
+
+	NSDraggingSession *dragging_session = [wd.window_view beginDraggingSessionWithItems:files event:event source:wd.window_view];
+	dragging_session.animatesToStartingPositionsOnCancelOrFail = YES;
+	dragging_session.draggingFormation = NSDraggingFormationNone;
+}
+
 void DisplayServerMacOS::window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 

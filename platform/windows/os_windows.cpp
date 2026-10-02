@@ -119,7 +119,7 @@ __declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 #define DWRITE_FONT_WEIGHT_SEMI_LIGHT (DWRITE_FONT_WEIGHT)350
 #endif
 
-static String fix_path(const String &p_path) {
+String OS_Windows::fix_path(const String &p_path) {
 	String path = p_path;
 	if (p_path.is_relative_path()) {
 		Char16String current_dir_name;
