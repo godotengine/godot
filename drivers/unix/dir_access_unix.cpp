@@ -741,8 +741,6 @@ DirAccessUnix::DirAccessUnix() {
 	if (current_dir.append_utf8(real_current_dir_name) != OK) {
 		current_dir = real_current_dir_name;
 	}
-
-	change_dir(current_dir);
 }
 
 DirAccessUnix::RemoveNotificationFunc DirAccessUnix::remove_notification_func = nullptr;

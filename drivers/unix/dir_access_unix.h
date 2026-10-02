@@ -41,12 +41,12 @@
 
 class DirAccessUnix : public DirAccess {
 	GDSOFTCLASS(DirAccessUnix, DirAccess);
-	DIR *dir_stream = nullptr;
 
 	bool _cisdir = false;
 	bool _cishidden = false;
 
 protected:
+	DIR *dir_stream = nullptr;
 	String current_dir;
 	virtual String fix_unicode_name(const char *p_name) const { return String::utf8(p_name); }
 	virtual bool is_hidden(const String &p_name);

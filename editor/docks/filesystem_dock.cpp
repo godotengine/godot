@@ -322,6 +322,8 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 		// Build the tree.
 		const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+		// Previews for files in collapsed folders are requested when the folder is expanded.
+		const bool files_shown = _is_tree_item_expanded(subdirectory_item);
 
 		for (const FileInfo &file_info : file_list) {
 			TreeItem *file_item = tree->create_item(subdirectory_item);
@@ -349,7 +351,9 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			if (main_scene_path == file_metadata) {
 				file_item->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 			}
-			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, callable_mp(this, &FileSystemDock::_tree_thumbnail_done).bind(tree_update_id, file_item->get_instance_id()));
+			if (files_shown) {
+				_queue_tree_item_preview(file_item, file_metadata);
+			}
 		}
 	} else if (lpath.get_base_dir() == current_path.get_base_dir()) {
 		subdirectory_item->select(0);
@@ -394,6 +398,8 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	// Recreate the tree.
 	tree->clear();
 	tree_update_id++;
+	tree_preview_requested.clear();
+	pending_tree_thumbnails.clear();
 	updating_tree = true;
 	TreeItem *root = tree->create_item();
 	root->set_accept_children(false);
@@ -470,8 +476,8 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			ti->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 		}
 
-		if (!favorite.ends_with("/")) {
-			EditorResourcePreview::get_singleton()->queue_resource_preview(favorite, callable_mp(this, &FileSystemDock::_tree_thumbnail_done).bind(tree_update_id, ti->get_instance_id()));
+		if (!favorite.ends_with("/") && !favorites_item->is_collapsed()) {
+			_queue_tree_item_preview(ti, favorite);
 		}
 	}
 
@@ -610,6 +616,10 @@ void FileSystemDock::_notification(int p_what) {
 			} else {
 				_update_tree(Vector<String>(), true);
 			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			_apply_pending_tree_thumbnails();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -921,10 +931,61 @@ void FileSystemDock::_file_list_thumbnail_done(const String &p_path, const Ref<T
 }
 
 void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_update_id, ObjectID p_item) {
-	TreeItem *item = ObjectDB::get_instance<TreeItem>(p_item);
-	if (item && tree_update_id == p_update_id && p_small_preview.is_valid()) {
-		item->set_icon(0, _apply_thumbnail_filter(p_small_preview, p_path));
+	if (tree_update_id != p_update_id || p_small_preview.is_null()) {
+		return;
 	}
+	pending_tree_thumbnails.push_back({ p_item, p_path, p_small_preview });
+	set_process_internal(true);
+}
+
+void FileSystemDock::_apply_pending_tree_thumbnails() {
+	for (const PendingTreeThumbnail &pending : pending_tree_thumbnails) {
+		TreeItem *item = ObjectDB::get_instance<TreeItem>(pending.item);
+		if (item) {
+			item->set_icon(0, _apply_thumbnail_filter(pending.preview, pending.path));
+		}
+	}
+	pending_tree_thumbnails.clear();
+	set_process_internal(false);
+}
+
+bool FileSystemDock::_is_tree_item_expanded(TreeItem *p_item) {
+	for (TreeItem *item = p_item; item; item = item->get_parent()) {
+		if (item->is_collapsed()) {
+			return false;
+		}
+	}
+	return true;
+}
+
+void FileSystemDock::_queue_tree_item_preview(TreeItem *p_item, const String &p_path) {
+	const ObjectID id = p_item->get_instance_id();
+	if (tree_preview_requested.has(id)) {
+		return;
+	}
+	tree_preview_requested.insert(id);
+	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, callable_mp(this, &FileSystemDock::_tree_thumbnail_done).bind(tree_update_id, id));
+}
+
+void FileSystemDock::_queue_tree_children_previews(TreeItem *p_item) {
+	for (TreeItem *child = p_item->get_first_child(); child; child = child->get_next()) {
+		const String path = child->get_metadata(0);
+		if (!path.begins_with("res://")) {
+			continue;
+		}
+		if (!path.ends_with("/")) {
+			_queue_tree_item_preview(child, path);
+		} else if (!child->is_collapsed()) {
+			_queue_tree_children_previews(child);
+		}
+	}
+}
+
+void FileSystemDock::_tree_item_collapsed(TreeItem *p_item) {
+	if (!_is_tree_item_expanded(p_item)) {
+		return;
+	}
+	_queue_tree_children_previews(p_item);
 }
 
 Ref<Texture2D> FileSystemDock::_apply_thumbnail_filter(const Ref<Texture2D> &p_thumbnail, const String &p_file_path) const {
@@ -4670,6 +4731,7 @@ FileSystemDock::FileSystemDock() {
 	tree_mc->add_child(tree);
 
 	tree->connect("item_activated", callable_mp(this, &FileSystemDock::_tree_activate_file));
+	tree->connect("item_collapsed", callable_mp(this, &FileSystemDock::_tree_item_collapsed));
 	tree->connect("multi_selected", callable_mp(this, &FileSystemDock::_tree_multi_selected));
 	tree->connect("item_mouse_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
 	tree->connect("empty_clicked", callable_mp(this, &FileSystemDock::_tree_empty_click));

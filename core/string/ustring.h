@@ -302,6 +302,7 @@ class [[nodiscard]] _WARN_UNUSED_ String {
 	bool _base_is_subsequence_of(const String &p_string, bool p_case_insensitive) const;
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
 	int _count(const char *p_string, int p_from, int p_to, bool p_case_insensitive) const;
+	static char32_t _char_lowercase_table(char32_t p_char);
 	String _separate_compound_words() const;
 
 public:
@@ -507,7 +508,12 @@ public:
 	String join(const Vector<String> &p_parts) const;
 
 	static char32_t char_uppercase(char32_t p_char);
-	static char32_t char_lowercase(char32_t p_char);
+	static _FORCE_INLINE_ char32_t char_lowercase(char32_t p_char) {
+		if (p_char < 128) {
+			return is_ascii_upper_case(p_char) ? p_char + ('a' - 'A') : p_char;
+		}
+		return _char_lowercase_table(p_char);
+	}
 	String to_upper() const;
 	String to_lower() const;
 

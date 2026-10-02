@@ -261,6 +261,16 @@ private:
 
 	bool updating_tree = false;
 	int tree_update_id;
+
+	struct PendingTreeThumbnail {
+		ObjectID item;
+		String path;
+		Ref<Texture2D> preview;
+	};
+	HashSet<ObjectID> tree_preview_requested;
+	// Applied once per frame to limit tree redraws.
+	LocalVector<PendingTreeThumbnail> pending_tree_thumbnails;
+
 	FileSystemTree *tree = nullptr;
 	FileSystemList *files = nullptr;
 	bool import_dock_needs_update = false;
@@ -384,6 +394,11 @@ private:
 	void _preview_invalidated(const String &p_path);
 	void _file_list_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index, const String &p_filename);
 	void _tree_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_update_id, ObjectID p_item);
+	void _apply_pending_tree_thumbnails();
+	static bool _is_tree_item_expanded(TreeItem *p_item);
+	void _queue_tree_item_preview(TreeItem *p_item, const String &p_path);
+	void _queue_tree_children_previews(TreeItem *p_item);
+	void _tree_item_collapsed(TreeItem *p_item);
 	Ref<Texture2D> _apply_thumbnail_filter(const Ref<Texture2D> &p_thumbnail, const String &p_file_path) const;
 
 	void _update_display_mode(bool p_force = false);
