@@ -3668,7 +3668,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 		if (fpath.has_extension("gdshader") || fpath.has_extension("gdshaderinc")) {
 			ShaderEditorPlugin *shader_editor = Object::cast_to<ShaderEditorPlugin>(EditorNode::get_editor_data().get_editor_by_name("Shader"));
 			shader_editor->edit(res.ptr());
-			shader_editor->make_visible(true);
+			shader_editor->set_current();
 			TextShaderEditor *text_shader_editor = Object::cast_to<TextShaderEditor>(shader_editor->get_shader_editor(res));
 			if (text_shader_editor) {
 				text_shader_editor->goto_line_selection(line_number - 1, begin, end);

@@ -342,11 +342,13 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 		is_new = true;
 	}
 
-	EditorNode::get_singleton()->update_resource_count(p_node);
-
 	if (!(p_force || I->value.dirty)) {
 		// Nothing to do.
 		return;
+	}
+
+	if (is_scene_tree_dock) {
+		EditorNode::get_singleton()->update_resource_count(p_node);
 	}
 
 	_update_node(p_node, item, part_of_subscene);
@@ -935,10 +937,6 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		return;
 	}
 
-	if (!update_when_invisible && !is_visible_in_tree()) {
-		return;
-	}
-
 	Node *scene_node = get_scene_node();
 	const ObjectID scene_id = scene_node ? scene_node->get_instance_id() : ObjectID();
 	if (node_cache.current_scene_id != scene_id) {
@@ -946,6 +944,10 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 		marked.clear();
 		node_cache.current_scene_id = scene_id;
 		node_cache.force_update = true;
+	}
+
+	if (!update_when_invisible && !is_visible_in_tree()) {
+		return;
 	}
 
 	if (tree->is_editing()) {
