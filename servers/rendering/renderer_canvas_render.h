@@ -223,11 +223,13 @@ public:
 			Color color;
 			RSE::NinePatchAxisMode axis_x;
 			RSE::NinePatchAxisMode axis_y;
+			uint16_t flags;
 
 			RID texture;
 
 			CommandNinePatch() {
 				draw_center = true;
+				flags = 0;
 				type = TYPE_NINEPATCH;
 			}
 		};
