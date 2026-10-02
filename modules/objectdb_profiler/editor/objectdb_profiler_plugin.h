@@ -46,6 +46,9 @@ protected:
 
 public:
 	ObjectDBProfilerPlugin();
+
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
 };
 
 class ObjectDBProfilerDebuggerPlugin : public EditorDebuggerPlugin {
