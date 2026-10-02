@@ -1,0 +1,5 @@
+GH-94602
+--------
+Validate extension JSON: Error: Field 'classes/BitMap/methods/opaque_to_polygons/arguments': size changed value in new API, from 2 to 3.
+
+Add an optional argument to use a star-region-restricted Ramer-Douglas-Peucker Algorithm. No adjustments should be necessary.
