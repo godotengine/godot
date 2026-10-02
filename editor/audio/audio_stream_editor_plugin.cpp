@@ -85,7 +85,7 @@ void AudioStreamEditor::_draw_preview() {
 		return; // No points to draw.
 	}
 
-	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
+	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview_internal(stream, _need_preview_update);
 
 	Rect2 rect = _preview->get_rect();
 
@@ -108,6 +108,8 @@ void AudioStreamEditor::_draw_preview() {
 	Vector<Color> colors = { get_theme_color(SNAME("contrast_color_2"), EditorStringName(Editor)) };
 
 	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), points, colors);
+
+	_need_preview_update = false;
 }
 
 void AudioStreamEditor::_preview_changed(ObjectID p_which) {
@@ -120,6 +122,9 @@ void AudioStreamEditor::_stream_changed() {
 	if (!is_visible()) {
 		return;
 	}
+	_need_preview_update = true;
+	_preview->queue_redraw();
+	_indicator->queue_redraw();
 	queue_redraw();
 }
 
@@ -178,6 +183,7 @@ void AudioStreamEditor::_draw_indicator() {
 			col);
 
 	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
+	_duration_label->set_text(String::num(len, 2).pad_decimals(2) + "s");
 }
 
 void AudioStreamEditor::_on_input_indicator(Ref<InputEvent> p_event) {
