@@ -121,6 +121,7 @@ public:
 	void bandwidth_throttle();
 	void compress(CompressionMode p_mode);
 	double pop_statistic(HostStatistic p_stat);
+	int get_max_peers() const;
 	int get_max_channels() const;
 
 	// Extras
