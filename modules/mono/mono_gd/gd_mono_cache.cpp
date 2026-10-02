@@ -71,6 +71,7 @@ void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks) {
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, TryReloadRegisteredScriptWithClass);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, UpdateScriptTrampolines);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, UpdateScriptClassInfo);
+	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetDocs);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, SwapGCHandleForType);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyInfoList);
 	CHECK_CALLBACK_NOT_NULL(ScriptManagerBridge, GetPropertyDefaultValues);
