@@ -419,7 +419,7 @@ class BindingsGenerator {
 		 * %1: internal method call arguments without surrounding parenthesis
 		 * %2: [cs_type] of the return type
 		 * %3: [c_type_out] of the return type
-		 * %4: reserved
+		 * %4: generic type
 		 * %5: indentation text
 		 */
 		String cs_out;
