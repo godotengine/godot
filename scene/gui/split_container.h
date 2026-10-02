@@ -184,6 +184,8 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	void _clamp_split_offset_bind_compat_90411();
+	void _set_split_offset_bind_compat_123560(int p_offset);
+	int _get_split_offset_bind_compat_123560() const;
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
