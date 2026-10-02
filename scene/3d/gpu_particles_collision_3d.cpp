@@ -628,16 +628,16 @@ void GPUParticlesCollisionSDF3D::set_bake_mask_value(int p_layer_number, bool p_
 	ERR_FAIL_COND_MSG(p_layer_number < 1 || p_layer_number > 20, vformat("The render layer number (%d) must be between 1 and 20 (inclusive).", p_layer_number));
 	uint32_t mask = get_bake_mask();
 	if (p_value) {
-		mask |= 1 << (p_layer_number - 1);
+		mask |= 1u << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << (p_layer_number - 1));
+		mask &= ~(1u << (p_layer_number - 1));
 	}
 	set_bake_mask(mask);
 }
 
 bool GPUParticlesCollisionSDF3D::get_bake_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1 || p_layer_number > 20, false, vformat("The render layer number (%d) must be between 1 and 20 (inclusive).", p_layer_number));
-	return bake_mask & (1 << (p_layer_number - 1));
+	return bake_mask & (1u << (p_layer_number - 1));
 }
 
 void GPUParticlesCollisionSDF3D::set_texture(const Ref<Texture3D> &p_texture) {
@@ -815,9 +815,9 @@ void GPUParticlesCollisionHeightField3D::set_heightfield_mask_value(int p_layer_
 	ERR_FAIL_COND_MSG(p_layer_number > 20, "Render layer number must be between 1 and 20 inclusive.");
 	uint32_t mask = get_heightfield_mask();
 	if (p_value) {
-		mask |= 1 << (p_layer_number - 1);
+		mask |= 1u << (p_layer_number - 1);
 	} else {
-		mask &= ~(1 << (p_layer_number - 1));
+		mask &= ~(1u << (p_layer_number - 1));
 	}
 	set_heightfield_mask(mask);
 }
@@ -825,7 +825,7 @@ void GPUParticlesCollisionHeightField3D::set_heightfield_mask_value(int p_layer_
 bool GPUParticlesCollisionHeightField3D::get_heightfield_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
-	return heightfield_mask & (1 << (p_layer_number - 1));
+	return heightfield_mask & (1u << (p_layer_number - 1));
 }
 
 void GPUParticlesCollisionHeightField3D::set_follow_camera_enabled(bool p_enabled) {
