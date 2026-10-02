@@ -32,7 +32,6 @@
 
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/zip_io.h"
 #include "core/object/callable_mp.h"
 #include "core/os/os.h"
 #include "editor/editor_node.h"

@@ -32,11 +32,11 @@
 
 #ifdef D3D12_ENABLED
 
+#include "../../openxr_api.h"
 #include "../../openxr_util.h"
 
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server.h"
-#include "servers/rendering/rendering_server_globals.h"
 
 HashMap<String, bool *> OpenXRD3D12Extension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
