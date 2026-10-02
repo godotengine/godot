@@ -446,8 +446,19 @@ void GraphEdit::_update_scroll_offset() {
 			continue;
 		}
 
-		Point2 pos = graph_element->get_position_offset() * zoom;
+		// Calculate screen position from graph space position_offset.
+		// When an element has a pivot_offset, we want the pivot point to stay at the same
+		// visual position in graph space, while the element scales around it.
+		//
+		// The element's internal transform is: T(pivot) * S(scale) * T(-pivot)
+		// Final visual position of top-left corner = position + pivot - pivot * scale
+		//
+		// We want: (position_offset + pivot) * zoom to be constant (pivot stays in place)
+		// So: screen_pos = (position_offset + pivot) * zoom - pivot
+		Vector2 pivot = graph_element->get_pivot_offset();
+		Point2 pos = (graph_element->get_position_offset() + pivot) * zoom - pivot;
 		pos -= scroll_offset;
+
 		graph_element->set_position(pos);
 		if (graph_element->get_scale() != Vector2(zoom, zoom)) {
 			graph_element->set_scale(Vector2(zoom, zoom));
