@@ -4,7 +4,7 @@
 		A comparison function for common types within the visual shader graph.
 	</brief_description>
 	<description>
-		Compares [code]a[/code] and [code]b[/code] of [member type] by [member function]. Returns a boolean scalar. Translates to [code]if[/code] instruction in shader code.
+		Compares [code]a[/code] and [code]b[/code] of [member type] by [member function]. Returns a boolean scalar. Translates to [code]if[/code] instruction in GDShader code.
 	</description>
 	<tutorials>
 	</tutorials>
