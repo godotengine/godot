@@ -99,6 +99,7 @@ void Tween::_stop_internal(bool p_reset) {
 
 RequiredResult<PropertyTweener> Tween::tween_property(RequiredParam<const Object> p_target, const NodePath &p_property, Variant p_to, double p_duration) {
 	EXTRACT_PARAM_OR_FAIL_V(target, p_target, nullptr);
+	ERR_FAIL_COND_V_MSG(target->is_queued_for_deletion() || (!target->is_ref_counted() && ObjectDB::get_instance(target->get_instance_id()) == nullptr), nullptr, "The Tween's target object is queued for deletion or has been deleted.");
 	CHECK_VALID();
 
 	Vector<StringName> property_subnames = p_property.get_as_property_path().get_subnames();
