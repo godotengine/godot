@@ -8,6 +8,6 @@
 	</description>
 	<tutorials>
 		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+		<link title="Voxel Game Demo">https://store.godotengine.org/asset/godot-foundation/voxel-game-demo/</link>
 	</tutorials>
 </class>

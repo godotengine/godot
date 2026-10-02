@@ -41,7 +41,7 @@
 		<link title="File system">$DOCS_URL/tutorials/scripting/filesystem.html</link>
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 		<link title="Binary serialization API">$DOCS_URL/tutorials/io/binary_serialization_api.html</link>
-		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+		<link title="Voxel Game Demo">https://store.godotengine.org/asset/godot-foundation/voxel-game-demo/</link>
 	</tutorials>
 	<methods>
 		<method name="close">
