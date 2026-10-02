@@ -142,7 +142,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	}
 
 	print_error("\n================================================================");
-	print_error(vformat("%s: Program crashed", __FUNCTION__));
+	print_error(vformat("\x1b[1;91m%s: Program crashed.\x1b[0m", __FUNCTION__));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(GODOT_VERSION_HASH).is_empty()) {
@@ -226,11 +226,11 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 					}
 				}
 				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
-					print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
+					print_error(vformat("\x1b[94m[%d] \x1b[96m%x \x1b[90m(%s+%x) - %s (%s:%d)\x1b[0m", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
 				} else if (!fnName.empty()) {
-					print_error(vformat("[%d] %x (%s+%x) - %s", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset, fnName.c_str()));
+					print_error(vformat("\x1b[94m[%d] \x1b[96m%x \x1b[90m(%s+%x) - %s\x1b[0m", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset, fnName.c_str()));
 				} else {
-					print_error(vformat("[%d] %x (%s+%x) - ???", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset));
+					print_error(vformat("\x1b[94m[%d] \x1b[96m%x \x1b[90m(%s+%x) - ???\x1b[0m", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset));
 				}
 			}
 
