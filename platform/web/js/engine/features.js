@@ -38,7 +38,7 @@ const Features = {
 	 * This value is dependent on Cross-Origin-Opener-Policy and Cross-Origin-Embedder-Policy headers sent by the server.
 	 *
 	 * @returns {boolean} If the engine is running in a Secure Context.
-	 * @function Engine.isSecureContext
+	 * @function Engine.isCrossOriginIsolated
 	 */
 	isCrossOriginIsolated: function () {
 		return window['crossOriginIsolated'] === true;
