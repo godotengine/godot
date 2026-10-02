@@ -1090,8 +1090,18 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 }
 
 void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServerEnums::WindowID p_window_id) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_mouse_passthrough region %s", p_region));
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+
+	WindowData &wd = windows[p_window_id];
+	if (wd.mpass_region == p_region) {
+		return;
+	}
+
+	wd.mpass_region = p_region;
+
+	wayland_thread.window_set_mpass(p_window_id, window_get_flag(DisplayServerEnums::WINDOW_FLAG_MOUSE_PASSTHROUGH), wd.mpass_region);
 }
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServerEnums::WindowID p_window_id) {
@@ -1359,6 +1369,10 @@ void DisplayServerWayland::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 		case DisplayServerEnums::WINDOW_FLAG_POPUP_WM_HINT: {
 			ERR_FAIL_COND_MSG(p_window_id == DisplayServerEnums::MAIN_WINDOW_ID, "Main window can't have popup hint.");
 			ERR_FAIL_COND_MSG(wd.created && (wd.flags & DisplayServerEnums::WINDOW_FLAG_POPUP_WM_HINT_BIT) != p_enabled, "Popup hint can't changed while window is opened.");
+		} break;
+
+		case DisplayServerEnums::WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			wayland_thread.window_set_mpass(p_window_id, p_enabled, wd.mpass_region);
 		} break;
 
 		default: {
