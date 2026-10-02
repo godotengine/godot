@@ -215,6 +215,8 @@ public:
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant);
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const;
 
+	virtual void body_set_transform(RID p_body, const Transform &p_xform, PhysicsServer::BodyTransformMode p_mode);
+
 	virtual void body_set_applied_force(RID p_body, const Vector3 &p_force);
 	virtual Vector3 body_get_applied_force(RID p_body) const;
 

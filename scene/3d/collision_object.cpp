@@ -57,7 +57,7 @@ void CollisionObject::_notification(int p_what) {
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
 			} else {
-				PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+				_update_body_xform();
 			}
 
 			Ref<World> world_ref = get_world();
@@ -80,7 +80,7 @@ void CollisionObject::_notification(int p_what) {
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_transform(rid, get_global_transform());
 			} else {
-				PhysicsServer::get_singleton()->body_set_state(rid, PhysicsServer::BODY_STATE_TRANSFORM, get_global_transform());
+				_update_body_xform();
 			}
 
 			_on_transform_changed();
@@ -296,6 +296,22 @@ void CollisionObject::_on_transform_changed() {
 	}
 }
 
+void CollisionObject::_update_body_xform() {
+	PhysicsServer::get_singleton()->body_set_transform(get_rid(), get_global_transform(), wake_neighbours ? PhysicsServer::BODY_TRANSFORM_MODE_WAKE_NEIGHBOURS : PhysicsServer::BODY_TRANSFORM_MODE_DEFAULT);
+}
+
+void CollisionObject::set_collision_wake_neighbours(bool p_enable) {
+	if (p_enable == wake_neighbours) {
+		return;
+	}
+	wake_neighbours = p_enable;
+
+	// Send to server xform with the new flag.
+	if (wake_neighbours && is_inside_tree()) {
+		_update_body_xform();
+	}
+}
+
 void CollisionObject::set_ray_pickable(bool p_ray_pickable) {
 	ray_pickable = p_ray_pickable;
 	_update_pickable();
@@ -316,6 +332,8 @@ void CollisionObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_mask_bit", "bit"), &CollisionObject::get_collision_mask_bit);
 	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &CollisionObject::set_ray_pickable);
 	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &CollisionObject::is_ray_pickable);
+	ClassDB::bind_method(D_METHOD("set_collision_wake_neighbours", "enable"), &CollisionObject::set_collision_wake_neighbours);
+	ClassDB::bind_method(D_METHOD("get_collision_wake_neighbours"), &CollisionObject::get_collision_wake_neighbours);
 	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CollisionObject::set_capture_input_on_drag);
 	ClassDB::bind_method(D_METHOD("get_capture_input_on_drag"), &CollisionObject::get_capture_input_on_drag);
 	ClassDB::bind_method(D_METHOD("get_rid"), &CollisionObject::get_rid);
@@ -345,6 +363,7 @@ void CollisionObject::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
 	ADD_GROUP("Collision", "collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_wake_neighbours"), "set_collision_wake_neighbours", "get_collision_wake_neighbours");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 

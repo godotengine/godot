@@ -291,35 +291,40 @@ void BodySW::_shapes_changed() {
 	wakeup_neighbours();
 }
 
+void BodySW::body_set_transform(const Transform &p_xform, PhysicsServer::BodyTransformMode p_mode) {
+	if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
+		new_transform = p_xform;
+		if (p_mode == PhysicsServer::BODY_TRANSFORM_MODE_WAKE_NEIGHBOURS) {
+			wakeup_neighbours();
+		}
+		set_active(true);
+		if (first_time_kinematic) {
+			_set_transform(p_xform);
+			_set_inv_transform(get_transform().affine_inverse());
+			first_time_kinematic = false;
+		}
+
+	} else if (mode == PhysicsServer::BODY_MODE_STATIC) {
+		_set_transform(p_xform);
+		_set_inv_transform(get_transform().affine_inverse());
+		wakeup_neighbours();
+	} else {
+		Transform t = p_xform;
+		t.orthonormalize();
+		new_transform = get_transform(); //used as old to compute motion
+		if (new_transform == t) {
+			return;
+		}
+		_set_transform(t);
+		_set_inv_transform(get_transform().inverse());
+	}
+	wakeup();
+}
+
 void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant &p_variant) {
 	switch (p_state) {
 		case PhysicsServer::BODY_STATE_TRANSFORM: {
-			if (mode == PhysicsServer::BODY_MODE_KINEMATIC) {
-				new_transform = p_variant;
-				//wakeup_neighbours();
-				set_active(true);
-				if (first_time_kinematic) {
-					_set_transform(p_variant);
-					_set_inv_transform(get_transform().affine_inverse());
-					first_time_kinematic = false;
-				}
-
-			} else if (mode == PhysicsServer::BODY_MODE_STATIC) {
-				_set_transform(p_variant);
-				_set_inv_transform(get_transform().affine_inverse());
-				wakeup_neighbours();
-			} else {
-				Transform t = p_variant;
-				t.orthonormalize();
-				new_transform = get_transform(); //used as old to compute motion
-				if (new_transform == t) {
-					break;
-				}
-				_set_transform(t);
-				_set_inv_transform(get_transform().inverse());
-			}
-			wakeup();
-
+			body_set_transform(p_variant, PhysicsServer::BODY_TRANSFORM_MODE_DEFAULT);
 		} break;
 		case PhysicsServer::BODY_STATE_LINEAR_VELOCITY: {
 			/*

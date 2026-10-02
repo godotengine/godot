@@ -69,6 +69,7 @@ class CollisionObject : public Spatial {
 
 	bool capture_input_on_drag;
 	bool ray_pickable;
+	bool wake_neighbours = false;
 
 	Set<uint32_t> debug_shapes_to_update;
 	int debug_shapes_count = 0;
@@ -88,6 +89,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	friend class Viewport;
+
+	void _update_body_xform();
 	virtual void _input_event(Node *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
@@ -135,6 +138,9 @@ public:
 
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;
+
+	void set_collision_wake_neighbours(bool p_enable);
+	bool get_collision_wake_neighbours() const { return wake_neighbours; }
 
 	void set_capture_input_on_drag(bool p_capture);
 	bool get_capture_input_on_drag() const;

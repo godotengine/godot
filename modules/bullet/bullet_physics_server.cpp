@@ -680,6 +680,13 @@ Variant BulletPhysicsServer::body_get_state(RID p_body, BodyState p_state) const
 	return body->get_state(p_state);
 }
 
+void BulletPhysicsServer::body_set_transform(RID p_body, const Transform &p_xform, PhysicsServer::BodyTransformMode p_mode) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->body_set_transform(p_xform, p_mode);
+}
+
 void BulletPhysicsServer::body_set_applied_force(RID p_body, const Vector3 &p_force) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);

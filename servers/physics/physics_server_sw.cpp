@@ -668,6 +668,12 @@ Variant PhysicsServerSW::body_get_state(RID p_body, BodyState p_state) const {
 	return body->get_state(p_state);
 };
 
+void PhysicsServerSW::body_set_transform(RID p_body, const Transform &p_xform, BodyTransformMode p_mode) {
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->body_set_transform(p_xform, p_mode);
+}
+
 void PhysicsServerSW::body_set_applied_force(RID p_body, const Vector3 &p_force) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);

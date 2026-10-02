@@ -581,6 +581,16 @@ PhysicsServer::BodyMode RigidBodyBullet::get_mode() const {
 	return mode;
 }
 
+void RigidBodyBullet::body_set_transform(const Transform &p_xform, PhysicsServer::BodyTransformMode p_mode) {
+	set_transform(p_xform);
+
+	if (p_mode == PhysicsServer::BODY_TRANSFORM_MODE_WAKE_NEIGHBOURS) {
+		if (space) {
+			space->rigid_body_wake_neighbours(this);
+		}
+	}
+}
+
 void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant &p_variant) {
 	switch (p_state) {
 		case PhysicsServer::BODY_STATE_TRANSFORM:

@@ -284,6 +284,8 @@ public:
 	void set_state(PhysicsServer::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer::BodyState p_state) const;
 
+	void body_set_transform(const Transform &p_xform, PhysicsServer::BodyTransformMode p_mode);
+
 	void set_applied_force(const Vector3 &p_force) { applied_force = p_force; }
 	Vector3 get_applied_force() const { return applied_force; }
 

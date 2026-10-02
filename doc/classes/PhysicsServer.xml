@@ -594,6 +594,16 @@
 				Sets a body state (see [enum BodyState] constants).
 			</description>
 		</method>
+		<method name="body_set_transform">
+			<return type="void" />
+			<argument index="0" name="body" type="RID" />
+			<argument index="1" name="transform" type="Transform" />
+			<argument index="2" name="mode" type="int" enum="PhysicsServer.BodyTransformMode" />
+			<description>
+				Sets a body transform (see [enum BodyTransformMode] constants).
+				[b]Note:[/b] This function is an extended alternative to setting transform via [method body_set_state].
+			</description>
+		</method>
 		<method name="body_test_motion">
 			<return type="bool" />
 			<argument index="0" name="body" type="RID" />
@@ -1258,6 +1268,12 @@
 		</constant>
 		<constant name="BODY_STATE_CAN_SLEEP" value="4" enum="BodyState">
 			Constant to set/get whether the body can sleep.
+		</constant>
+		<constant name="BODY_TRANSFORM_MODE_DEFAULT" value="0" enum="BodyTransformMode">
+			Equivalent to [method body_set_state] with [constant BODY_STATE_TRANSFORM].
+		</constant>
+		<constant name="BODY_TRANSFORM_MODE_WAKE_NEIGHBOURS" value="1" enum="BodyTransformMode">
+			Wakes any neighbouring sleeping physics bodies after the body is moved.
 		</constant>
 		<constant name="AREA_BODY_ADDED" value="0" enum="AreaBodyStatus">
 			The value of the first parameter and area callback function receives, when an object enters one of its shapes.

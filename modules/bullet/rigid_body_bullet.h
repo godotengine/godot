@@ -257,6 +257,8 @@ public:
 	void set_state(PhysicsServer::BodyState p_state, const Variant &p_variant);
 	Variant get_state(PhysicsServer::BodyState p_state) const;
 
+	void body_set_transform(const Transform &p_xform, PhysicsServer::BodyTransformMode p_mode);
+
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 	void apply_central_impulse(const Vector3 &p_impulse);
 	void apply_torque_impulse(const Vector3 &p_impulse);

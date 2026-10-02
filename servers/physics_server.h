@@ -402,8 +402,16 @@ public:
 		BODY_STATE_CAN_SLEEP
 	};
 
+	enum BodyTransformMode {
+		BODY_TRANSFORM_MODE_DEFAULT,
+		BODY_TRANSFORM_MODE_WAKE_NEIGHBOURS,
+	};
+
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) = 0;
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const = 0;
+
+	// body_set_transform will passthrough to body_set_state UNLESS it is implemented in a derived physics server.
+	virtual void body_set_transform(RID p_body, const Transform &p_xform, BodyTransformMode p_mode);
 
 	//do something about it
 	virtual void body_set_applied_force(RID p_body, const Vector3 &p_force) = 0;
@@ -829,6 +837,7 @@ VARIANT_ENUM_CAST(PhysicsServer::AreaSpaceOverrideMode);
 VARIANT_ENUM_CAST(PhysicsServer::BodyMode);
 VARIANT_ENUM_CAST(PhysicsServer::BodyParameter);
 VARIANT_ENUM_CAST(PhysicsServer::BodyState);
+VARIANT_ENUM_CAST(PhysicsServer::BodyTransformMode);
 VARIANT_ENUM_CAST(PhysicsServer::BodyAxis);
 VARIANT_ENUM_CAST(PhysicsServer::PinJointParam);
 VARIANT_ENUM_CAST(PhysicsServer::JointType);

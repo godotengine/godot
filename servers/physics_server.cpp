@@ -477,6 +477,13 @@ bool PhysicsServer::_body_test_motion(RID p_body, const Transform &p_from, const
 	return body_test_motion(p_body, p_from, p_motion, p_infinite_inertia, r, p_exclude_raycast_shapes, exclude);
 }
 
+void PhysicsServer::body_set_transform(RID p_body, const Transform &p_xform, BodyTransformMode p_mode) {
+	// Base class wrapper of body_set_state for any third party physics engines that haven't yet implemented
+	// body_set_transform().
+	// This will mean they won't support `wakeup_neighbours` for bodies, but should otherwise function correctly.
+	body_set_state(p_body, BODY_STATE_TRANSFORM, p_xform);
+}
+
 void PhysicsServer::_bind_methods() {
 #ifndef _3D_DISABLED
 
@@ -571,6 +578,8 @@ void PhysicsServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("body_set_state", "body", "state", "value"), &PhysicsServer::body_set_state);
 	ClassDB::bind_method(D_METHOD("body_get_state", "body", "state"), &PhysicsServer::body_get_state);
+
+	ClassDB::bind_method(D_METHOD("body_set_transform", "body", "transform", "mode"), &PhysicsServer::body_set_transform);
 
 	ClassDB::bind_method(D_METHOD("body_add_central_force", "body", "force"), &PhysicsServer::body_add_central_force);
 	ClassDB::bind_method(D_METHOD("body_add_force", "body", "force", "position"), &PhysicsServer::body_add_force);
@@ -772,6 +781,9 @@ void PhysicsServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(BODY_STATE_ANGULAR_VELOCITY);
 	BIND_ENUM_CONSTANT(BODY_STATE_SLEEPING);
 	BIND_ENUM_CONSTANT(BODY_STATE_CAN_SLEEP);
+
+	BIND_ENUM_CONSTANT(BODY_TRANSFORM_MODE_DEFAULT);
+	BIND_ENUM_CONSTANT(BODY_TRANSFORM_MODE_WAKE_NEIGHBOURS);
 
 	BIND_ENUM_CONSTANT(AREA_BODY_ADDED);
 	BIND_ENUM_CONSTANT(AREA_BODY_REMOVED);

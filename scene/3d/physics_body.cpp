@@ -1470,8 +1470,8 @@ void KinematicBody::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
 		//used by sync to physics, send the new transform to the physics
-		Transform new_transform = get_global_transform();
-		PhysicsServer::get_singleton()->body_set_state(get_rid(), PhysicsServer::BODY_STATE_TRANSFORM, new_transform);
+		_update_body_xform();
+
 		//but then revert changes
 		set_notify_local_transform(false);
 		set_global_transform(last_valid_transform);
