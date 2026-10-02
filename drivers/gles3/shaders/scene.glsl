@@ -2336,6 +2336,11 @@ void main() {
 
 	float sss_strength = 0.0;
 
+#ifdef STREAMING_LOD_USED
+	// Not used, but needed so shaders that write STREAMING_LOD still compile.
+	float streaming_lod = 0.0;
+#endif
+
 #ifdef ALPHA_SCISSOR_USED
 	float alpha_scissor_threshold = 1.0;
 #endif // ALPHA_SCISSOR_USED
