@@ -159,6 +159,7 @@ private:
 	int cached_start = 0;
 	int cached_label_height = 0;
 	int cached_total_end = 0;
+	int cached_strip_index = -1;
 	Point2 sticky_offset;
 
 	LocalVector<TreeItem *> children_cache;
@@ -602,7 +603,7 @@ private:
 	void update_item_cell(TreeItem *p_item, int p_col) const;
 	void update_item_cache(TreeItem *p_item) const;
 	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color, const RID &p_ci) const;
-	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height, const RID &p_ci);
+	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height, const RID &p_ci, int &r_row_idx);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod, bool p_first_call = true, bool p_skip_children = false);
 	void _line_editor_submit(String p_text);
@@ -649,6 +650,7 @@ private:
 		Ref<StyleBox> custom_button;
 		Ref<StyleBox> custom_button_hover;
 		Ref<StyleBox> custom_button_pressed;
+		Ref<StyleBox> row_stripes;
 
 		Color title_button_color;
 
@@ -703,6 +705,7 @@ private:
 		int children_hl_line_width = 0;
 		int parent_hl_line_margin = 0;
 		int draw_guides = 0;
+		int row_stripes_visible = 0;
 
 		int dragging_unfold_wait_msec = 500;
 
