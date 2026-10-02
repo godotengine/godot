@@ -6,6 +6,7 @@ var a: Array = [1]:
 		prints("get a")
 		return a
 
+@warning_ignore("implicit_conversion_causes_copy")
 var b: PackedByteArray = [1]:
 	set(v):
 		prints("set b", v)
@@ -14,6 +15,7 @@ var b: PackedByteArray = [1]:
 		prints("get b")
 		return b
 
+@warning_ignore("implicit_conversion_causes_copy")
 var c: PackedVector2Array = [Vector2.ONE]:
 	set(v):
 		prints("set c", v)

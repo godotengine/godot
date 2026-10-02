@@ -6310,9 +6310,9 @@ void GDScriptAnalyzer::check_conversion(const GDScriptParser::Node *p_source, Va
 	}
 
 	bool conversion_causes_copy = (Variant::is_type_shared(p_from_type) || p_from_type >= Variant::PACKED_BYTE_ARRAY) && (Variant::is_type_shared(p_to_type) || p_to_type >= Variant::PACKED_BYTE_ARRAY);
-	// We only want to warn about a copy if the use comes from a variable access.
-	bool from_variable = p_source && p_source->type == GDScriptParser::Node::IDENTIFIER;
-	if (from_variable && conversion_causes_copy) {
+	// We don't want to warn on copies if the use comes from a literal.
+	bool from_literal = p_source && p_source->type == GDScriptParser::Node::LITERAL;
+	if (!from_literal && conversion_causes_copy) {
 		String from_name = Variant::get_type_name(p_from_type);
 		String to_name = Variant::get_type_name(p_to_type);
 		parser->push_warning(p_source, GDScriptWarning::IMPLICIT_CONVERSION_CAUSES_COPY, from_name, to_name);

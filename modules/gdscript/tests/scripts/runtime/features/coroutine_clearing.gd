@@ -41,12 +41,14 @@ signal tick()
 
 func await_before_and_after() -> void:
 	await tick
+	@warning_ignore("implicit_conversion_causes_copy")
 	var packed_array: PackedStringArray = ["abc"]
 	var instance := Instance.new()
 	await tick
 	prints(packed_array, instance)
 
 func await_two_after() -> void:
+	@warning_ignore("implicit_conversion_causes_copy")
 	var packed_array: PackedStringArray = ["abc"]
 	var instance := Instance.new()
 	await tick

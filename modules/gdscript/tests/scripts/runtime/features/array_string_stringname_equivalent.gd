@@ -24,6 +24,7 @@ func test():
 	print("StringName in Array[String]: ", &"abc" in string_array)
 	print("String in Array[StringName]: ", "abc" in stringname_array)
 
+	@warning_ignore("implicit_conversion_causes_copy")
 	var packed_string_array: PackedStringArray = []
 	Utils.check(!packed_string_array.push_back("abc"))
 	print("StringName in PackedStringArray: ", &"abc" in packed_string_array)

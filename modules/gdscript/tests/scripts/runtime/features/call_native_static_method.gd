@@ -10,8 +10,10 @@ func run(param):
 	print(FileAccess.file_exists(param))
 
 	# Not validated native static call without return value.
+	@warning_ignore("implicit_conversion_causes_copy")
 	FileDialog.set_favorite_list([param])
 	print(FileDialog.get_favorite_list())
+	@warning_ignore("implicit_conversion_causes_copy")
 	FileDialog.set_favorite_list([])
 
 func test():
