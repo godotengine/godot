@@ -30,6 +30,9 @@
 
 #include "physics_testmotion_query_result_2d.h"
 
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+#include "core/config/engine.h"
+#endif
 #include "core/object/class_db.h"
 
 Vector2 PhysicsTestMotionResult2D::get_travel() const {
@@ -98,4 +101,10 @@ void PhysicsTestMotionResult2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_collision_depth"), &PhysicsTestMotionResult2D::get_collision_depth);
 	ClassDB::bind_method(D_METHOD("get_collision_safe_fraction"), &PhysicsTestMotionResult2D::get_collision_safe_fraction);
 	ClassDB::bind_method(D_METHOD("get_collision_unsafe_fraction"), &PhysicsTestMotionResult2D::get_collision_unsafe_fraction);
+}
+
+PhysicsTestMotionResult2D::PhysicsTestMotionResult2D() {
+#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+	PER_PHYSICS_TICK_ALLOCATION_WARNING(PhysicsTestMotionResult2D, Engine::get_singleton()->get_physics_frames());
+#endif
 }

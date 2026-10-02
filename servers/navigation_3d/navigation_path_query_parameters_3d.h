@@ -123,6 +123,8 @@ public:
 
 	void set_path_search_max_distance(float p_distance);
 	float get_path_search_max_distance() const;
+
+	NavigationPathQueryParameters3D();
 };
 
 VARIANT_ENUM_CAST(NavigationPathQueryParameters3D::PathfindingAlgorithm);
