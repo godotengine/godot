@@ -7,6 +7,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_callp" qualifiers="virtual">
+			<return type="Dictionary" />
+			<param index="0" name="method" type="StringName" />
+			<param index="1" name="args" type="Array" />
+			<description>
+				Overrides the behavior of [Script]'s [code]callp[/code], allowing the extension to supply its own logic when [param method] is called with [param args].
+				When this method is overridden, it should return a [Dictionary] with the following keys:
+				- [code]"result"[/code] - The call's return value, or [code]null[/code] if the call has no return value.
+				- [code]"error"[/code] - [i](Optional)[/i] The error code. Defaults to no error (i.e. the equivalent of [code]OK[/code]).
+				- [code]"argument"[/code] - [i](Optional)[/i] The index of the argument that caused the error as an [int]. Only used when [code]"error"[/code] is present.
+				- [code]"expected"[/code] - [i](Optional)[/i] The expected argument type or count as an [int], depending on the error. Only used when [code]"error"[/code] is present.
+				If the returned [Dictionary] does not contain a [code]"result"[/code] key, the call delegates to [Script]'s default behavior.
+			</description>
+		</method>
 		<method name="_can_instantiate" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
