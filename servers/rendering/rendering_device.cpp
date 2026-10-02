@@ -10214,12 +10214,12 @@ RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create
 }
 
 RID RenderingDevice::_framebuffer_create(const TypedArray<RID> &p_textures, FramebufferFormatID p_format_check, uint32_t p_view_count) {
-	Vector<RID> textures = Variant(p_textures);
+	Vector<RID> textures = Variant(p_textures).to<Vector<RID>>();
 	return framebuffer_create(textures, p_format_check, p_view_count);
 }
 
 RID RenderingDevice::_framebuffer_create_multipass(const TypedArray<RID> &p_textures, const TypedArray<RDFramebufferPass> &p_passes, FramebufferFormatID p_format_check, uint32_t p_view_count) {
-	Vector<RID> textures = Variant(p_textures);
+	Vector<RID> textures = Variant(p_textures).to<Vector<RID>>();
 	Vector<FramebufferPass> passes;
 	for (int i = 0; i < p_passes.size(); i++) {
 		Ref<RDFramebufferPass> pass = p_passes[i];
@@ -10248,7 +10248,7 @@ RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const Typ
 }
 
 RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers, const Vector<int64_t> &p_offsets) {
-	Vector<RID> buffers = Variant(p_src_buffers);
+	Vector<RID> buffers = Variant(p_src_buffers).to<Vector<RID>>();
 
 	Vector<uint64_t> offsets;
 	offsets.resize(p_offsets.size());
@@ -10260,7 +10260,7 @@ RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatI
 }
 
 void RenderingDevice::_draw_list_bind_vertex_buffers_format(DrawListID p_list, VertexFormatID p_vertex_format, uint32_t p_vertex_count, const TypedArray<RID> &p_vertex_buffers, const Vector<int64_t> &p_offsets) {
-	Vector<RID> buffers = Variant(p_vertex_buffers);
+	Vector<RID> buffers = Variant(p_vertex_buffers).to<Vector<RID>>();
 
 	Vector<uint64_t> offsets;
 	offsets.resize(p_offsets.size());
