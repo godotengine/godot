@@ -42,10 +42,6 @@
 
 #include <cstdio>
 
-#if defined(DEBUG_ENABLED)
-#define CRASH_HANDLER_ENABLED 1
-#endif
-
 #ifdef CRASH_HANDLER_ENABLED
 #include "stack_trace_macos.h"
 
@@ -212,10 +208,10 @@ void CrashHandler::disable() {
 	}
 
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, SIG_DFL);
-	signal(SIGFPE, SIG_DFL);
-	signal(SIGILL, SIG_DFL);
-	signal(SIGTRAP, SIG_DFL);
+	signal(SIGSEGV, old_sig_segf);
+	signal(SIGFPE, old_sig_fpe);
+	signal(SIGILL, old_sig_ill);
+	signal(SIGTRAP, old_sig_trap);
 #endif
 
 	disabled = true;
@@ -223,9 +219,9 @@ void CrashHandler::disable() {
 
 void CrashHandler::initialize() {
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, handle_crash);
-	signal(SIGFPE, handle_crash);
-	signal(SIGILL, handle_crash);
-	signal(SIGTRAP, handle_crash);
+	old_sig_segf = signal(SIGSEGV, handle_crash);
+	old_sig_fpe = signal(SIGFPE, handle_crash);
+	old_sig_ill = signal(SIGILL, handle_crash);
+	old_sig_trap = signal(SIGTRAP, handle_crash);
 #endif
 }

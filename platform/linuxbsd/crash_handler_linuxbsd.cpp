@@ -39,10 +39,6 @@
 #include "core/version.h"
 #include "main/main.h"
 
-#ifndef DEBUG_ENABLED
-#undef CRASH_HANDLER_ENABLED
-#endif
-
 #ifdef CRASH_HANDLER_ENABLED
 #include <cxxabi.h>
 #include <dlfcn.h>
@@ -262,9 +258,9 @@ void CrashHandler::disable() {
 	}
 
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, SIG_DFL);
-	signal(SIGFPE, SIG_DFL);
-	signal(SIGILL, SIG_DFL);
+	signal(SIGSEGV, old_sig_segf);
+	signal(SIGFPE, old_sig_fpe);
+	signal(SIGILL, old_sig_ill);
 #endif
 
 	disabled = true;
@@ -272,8 +268,8 @@ void CrashHandler::disable() {
 
 void CrashHandler::initialize() {
 #ifdef CRASH_HANDLER_ENABLED
-	signal(SIGSEGV, handle_crash);
-	signal(SIGFPE, handle_crash);
-	signal(SIGILL, handle_crash);
+	old_sig_segf = signal(SIGSEGV, handle_crash);
+	old_sig_fpe = signal(SIGFPE, handle_crash);
+	old_sig_ill = signal(SIGILL, handle_crash);
 #endif
 }
