@@ -340,6 +340,12 @@
 		</operator>
 		<operator name="operator *">
 			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
+		<operator name="operator *">
+			<return type="Vector4" />
 			<param index="0" name="right" type="float" />
 			<description>
 				Multiplies each component of the [Vector4] by the given [float].
@@ -365,6 +371,12 @@
 				[/codeblock]
 			</description>
 		</operator>
+		<operator name="operator +">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator -">
 			<return type="Vector4" />
 			<param index="0" name="right" type="Vector4" />
@@ -375,6 +387,12 @@
 				[/codeblock]
 			</description>
 		</operator>
+		<operator name="operator -">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
+			</description>
+		</operator>
 		<operator name="operator /">
 			<return type="Vector4" />
 			<param index="0" name="right" type="Vector4" />
@@ -383,6 +401,12 @@
 				[codeblock]
 				print(Vector4(10, 20, 30, 40) / Vector4(2, 5, 3, 4)) # Prints (5.0, 4.0, 10.0, 10.0)
 				[/codeblock]
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Vector4" />
+			<param index="0" name="right" type="Vector4i" />
+			<description>
 			</description>
 		</operator>
 		<operator name="operator /">
