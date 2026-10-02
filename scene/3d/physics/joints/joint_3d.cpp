@@ -135,6 +135,7 @@ void Joint3D::set_node_a(const NodePath &p_node_a) {
 
 	a = p_node_a;
 	_update_joint();
+	update_gizmos();
 }
 
 NodePath Joint3D::get_node_a() const {
@@ -152,6 +153,7 @@ void Joint3D::set_node_b(const NodePath &p_node_b) {
 
 	b = p_node_b;
 	_update_joint();
+	update_gizmos();
 }
 
 NodePath Joint3D::get_node_b() const {
@@ -183,6 +185,10 @@ void Joint3D::_notification(int p_what) {
 				_disconnect_signals();
 			}
 			_update_joint(true);
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			update_gizmos();
 		} break;
 	}
 }
