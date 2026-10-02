@@ -941,6 +941,9 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			if (!descriptions.is_empty()) {
 				strnew += lines[i].replace("$usage_descriptions", descriptions);
 			}
+		} else if (lines[i].contains("$gamemode")) {
+			bool use_gamemode = get_project_setting(p_preset, "application/run/use_game_mode");
+			strnew += lines[i].replace("$gamemode", String("\t<key>LSSupportsGameMode</key>\n\t") + (use_gamemode ? "<true/>" : "<false/>")) + "\n";
 		} else {
 			strnew += lines[i] + "\n";
 		}
