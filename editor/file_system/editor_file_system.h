@@ -82,6 +82,7 @@ class EditorFileSystemDirectory : public Object {
 	static void _bind_methods();
 
 	friend class EditorFileSystem;
+	friend class EditorFileSystemTestAccessor;
 
 public:
 	String get_name();
@@ -146,6 +147,8 @@ class EditorFileSystem : public Node {
 	GDCLASS(EditorFileSystem, Node);
 
 	_THREAD_SAFE_CLASS_
+
+	friend class EditorFileSystemTestAccessor;
 
 	struct ItemAction {
 		enum Action {
@@ -276,7 +279,7 @@ class EditorFileSystem : public Node {
 	Error _reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options = HashMap<StringName, Variant>(), const String &p_custom_importer = String(), Variant *generator_parameters = nullptr, bool p_update_file_system = true);
 	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
-	bool _test_for_reimport(const String &p_path, const String &p_expected_import_md5);
+	bool _test_for_reimport(const String &p_path);
 	bool _is_test_for_reimport_needed(const String &p_path, uint64_t p_last_modification_time, uint64_t p_modification_time, uint64_t p_last_import_modification_time, uint64_t p_import_modification_time, const Vector<String> &p_import_dest_paths);
 	bool _can_import_file(const String &p_path);
 	Vector<String> _get_import_dest_paths(const String &p_path);
