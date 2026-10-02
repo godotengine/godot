@@ -190,6 +190,13 @@
 				Rotates this node's [member basis] around the Z axis by the given [param angle], in radians. This operation is calculated in parent space (relative to the parent) and preserves the [member position].
 			</description>
 		</method>
+		<method name="scale_object">
+			<return type="void" />
+			<param index="0" name="ratio" type="Vector3" />
+			<description>
+				Scales the local transformation by given 3D scale factors.
+			</description>
+		</method>
 		<method name="scale_object_local">
 			<return type="void" />
 			<param index="0" name="scale" type="Vector3" />
