@@ -99,6 +99,8 @@ RichTextLabel::ItemCustomFX::~ItemCustomFX() {
 Rect2i _merge_or_copy_rect(const Rect2i &p_a, const Rect2i &p_b) {
 	if (!p_a.has_area()) {
 		return p_b;
+	} else if (!p_b.has_area()) {
+		return p_a;
 	} else {
 		return p_a.merge(p_b);
 	}
