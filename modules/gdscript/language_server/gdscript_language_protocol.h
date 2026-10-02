@@ -155,6 +155,9 @@ public:
 	// Completion
 	Array lsp_completion(const Dictionary &p_params);
 
+	// Workspace
+	Array lsp_symbol(const Dictionary &p_params);
+
 	/**
 	 * Returns a list of symbols that might be related to the document position.
 	 *
