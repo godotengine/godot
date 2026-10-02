@@ -798,7 +798,7 @@ struct VariantIndexedSetGet_String {
 			return;
 		}
 		String *b = &VariantInternalAccessor<String>::get(r_base);
-		const String *v = VariantInternal::get_string(p_value);
+		const String *v = &VariantInternalAccessor<String>::get(p_value);
 		if (v->length() == 0) {
 			b->remove_at(p_index);
 		} else {
@@ -817,7 +817,7 @@ struct VariantIndexedSetGet_String {
 			return;
 		}
 		String *b = &VariantInternalAccessor<String>::get(r_base);
-		const String *v = VariantInternal::get_string(p_value);
+		const String *v = &VariantInternalAccessor<String>::get(p_value);
 		if (v->length() == 0) {
 			b->remove_at(p_index);
 		} else {
@@ -841,7 +841,7 @@ struct VariantIndexedSetGet_String {
 	}
 	static Variant::Type get_index_type() { return Variant::STRING; }
 	static uint32_t get_index_usage() { return PROPERTY_USAGE_DEFAULT; }
-	static uint64_t get_indexed_size(const Variant *p_base) { return VariantInternal::get_string(p_base)->length(); }
+	static uint64_t get_indexed_size(const Variant *p_base) { return VariantInternalAccessor<String>::get(p_base).length(); }
 };
 
 INDEXED_SETGET_STRUCT_BUILTIN_NUMERIC(Vector2, double, real_t, 2)

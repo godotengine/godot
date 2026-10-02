@@ -323,9 +323,9 @@ int AnimationNode::find_input(const String &p_name) const {
 AnimationNode::NodeTimeInfo AnimationNode::process(ProcessState &p_process_state, AnimationNodeInstance &p_instance, const AnimationMixer::PlaybackInfo &p_playback_info, bool p_test_only) {
 	p_process_state.is_testing = p_test_only;
 
-	double &length = *VariantInternal::get_float(p_instance.parameter_ptrs_by_slot[AnimationNodeInstance::SLOT_CURRENT_LENGTH]);
-	double &position = *VariantInternal::get_float(p_instance.parameter_ptrs_by_slot[AnimationNodeInstance::SLOT_CURRENT_POSITION]);
-	double &delta = *VariantInternal::get_float(p_instance.parameter_ptrs_by_slot[AnimationNodeInstance::SLOT_CURRENT_DELTA]);
+	double &length = VariantInternalAccessor<double>::get(p_instance.parameter_ptrs_by_slot[AnimationNodeInstance::SLOT_CURRENT_LENGTH]);
+	double &position = VariantInternalAccessor<double>::get(p_instance.parameter_ptrs_by_slot[AnimationNodeInstance::SLOT_CURRENT_POSITION]);
+	double &delta = VariantInternalAccessor<double>::get(p_instance.parameter_ptrs_by_slot[AnimationNodeInstance::SLOT_CURRENT_DELTA]);
 
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 	if (p_playback_info.seeked) {
