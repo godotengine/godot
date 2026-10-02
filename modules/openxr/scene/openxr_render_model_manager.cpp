@@ -149,7 +149,7 @@ void OpenXRRenderModelManager::_on_render_model_top_level_path_changed(RID p_pat
 
 void OpenXRRenderModelManager::_notification(int p_what) {
 	// Do not run in editor!
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		return;
 	}
 
