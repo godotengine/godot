@@ -35,12 +35,6 @@
 				Called when the connection status is requested on the [MultiplayerPeer] (see [method MultiplayerPeer.get_connection_status]).
 			</description>
 		</method>
-		<method name="_get_max_packet_size" qualifiers="virtual required const">
-			<return type="int" />
-			<description>
-				Called when the maximum allowed packet size (in bytes) is requested by the [MultiplayerAPI].
-			</description>
-		</method>
 		<method name="_get_packet" qualifiers="virtual">
 			<return type="int" enum="Error" />
 			<param index="0" name="r_buffer" type="const uint8_t **" />
