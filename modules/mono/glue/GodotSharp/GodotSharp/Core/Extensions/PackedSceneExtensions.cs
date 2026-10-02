@@ -17,7 +17,14 @@ namespace Godot
         /// <returns>The instantiated scene.</returns>
         public T Instantiate<T>(PackedScene.GenEditState editState = (PackedScene.GenEditState)0) where T : class
         {
-            return (T)(object)Instantiate(editState);
+            Node instance = Instantiate(editState);
+            if (instance is not T typedInstance)
+            {
+                instance.Free();
+                throw new InvalidCastException($"The root node of the PackedScene is of type '{instance.GetType()}' and can't be casted to the given type '{typeof(T)}'.");
+            }
+
+            return typedInstance;
         }
 
         /// <summary>
@@ -30,7 +37,14 @@ namespace Godot
         /// <returns>The instantiated scene.</returns>
         public T InstantiateOrNull<T>(PackedScene.GenEditState editState = (PackedScene.GenEditState)0) where T : class
         {
-            return Instantiate(editState) as T;
+            Node instance = Instantiate(editState);
+            if (instance is not T typedInstance)
+            {
+                instance.Free();
+                return default;
+            }
+
+            return typedInstance;
         }
     }
 }
