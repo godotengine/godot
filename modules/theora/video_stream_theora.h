@@ -134,6 +134,7 @@ public:
 	virtual void set_paused(bool p_paused) override;
 	virtual bool is_paused() const override;
 
+	virtual double get_frame_duration() const override;
 	virtual double get_length() const override;
 
 	virtual double get_playback_position() const override;
