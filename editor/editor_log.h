@@ -32,6 +32,7 @@
 
 #include "core/os/thread.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/settings/editor_setting_tracker.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/rich_text_label.h"
@@ -49,6 +50,7 @@ public:
 		MSG_TYPE_STD_RICH,
 		MSG_TYPE_WARNING,
 		MSG_TYPE_EDITOR,
+		MSG_TYPE_MAX,
 	};
 
 private:
@@ -124,7 +126,9 @@ private:
 		}
 	};
 
-	int line_limit = 10000;
+	EditorSettingTracker max_lines_setting = { "run/output/max_lines" };
+	EditorSettingTracker collapse_setting = { "_editor_log_collapse", false };
+	EditorSettingTracker filter_settings[MSG_TYPE_MAX];
 
 	Vector<LogMessage> messages;
 	// Maps MessageTypes to LogFilters for convenient access and storage (don't need 1 member per filter).
@@ -172,7 +176,6 @@ private:
 	void _load_state();
 
 	void _update_theme();
-	void _editor_settings_changed();
 
 protected:
 	void _notification(int p_what);
