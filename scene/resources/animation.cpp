@@ -3695,7 +3695,7 @@ bool Animation::bezier_track_calculate_handles(int p_track, int p_index, HandleM
 
 	int prev_key = MAX(0, p_index - 1);
 	int next_key = MIN((int)bt->values.size() - 1, p_index + 1);
-	if (prev_key == next_key) {
+	if (prev_key == next_key && p_mode != HANDLE_MODE_LINEAR) {
 		return false;
 	}
 
