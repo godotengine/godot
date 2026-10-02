@@ -12,6 +12,18 @@
 		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="_can_use_shader" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally to determine if [member shader] should be shown in the editor or not.
+			</description>
+		</method>
+		<method name="_can_use_shader_parameters" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally to determine if shader uniforms should be shown in the editor or not.
+			</description>
+		</method>
 		<method name="get_shader_parameter" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="param" type="StringName" />
