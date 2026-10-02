@@ -57,7 +57,8 @@ class DirectoryAccessHandler(context: Context) {
 		 * Maps to [ACCESS_FILESYSTEM]
 		 */
 		ACCESS_USERDATA(1),
-		ACCESS_FILESYSTEM(2);
+		ACCESS_FILESYSTEM(2),
+		ACCESS_EDITOR_RESOURCES(3);
 
 		fun generateDirAccessId(dirId: Int) = (dirId * DIR_ACCESS_ID_MULTIPLIER) + nativeValue
 
@@ -91,7 +92,7 @@ class DirectoryAccessHandler(context: Context) {
 				// we provide a 'Resources' directory handler.
 				// If this is an editor build, 'Resources' refers to the opened project resources
 				// and so we provide a 'Filesystem' directory handler.
-				if (accessType == ACCESS_RESOURCES) {
+				if (accessType == ACCESS_RESOURCES || accessType == ACCESS_EDITOR_RESOURCES) {
 					return if (Godot.isEditorBuild()) {
 						ACCESS_FILESYSTEM
 					} else {
