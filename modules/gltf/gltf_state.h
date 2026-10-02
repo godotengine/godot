@@ -68,7 +68,9 @@ protected:
 	int major_version = 0;
 	int minor_version = 0;
 	String copyright;
+#ifndef DISABLE_DEPRECATED
 	Vector<uint8_t> glb_data;
+#endif // DISABLE_DEPRECATED
 	double bake_fps = 30.0;
 
 	bool use_named_skin_binds = false;
@@ -202,8 +204,10 @@ public:
 	String get_copyright() const;
 	void set_copyright(const String &p_copyright);
 
+#ifndef DISABLE_DEPRECATED
 	Vector<uint8_t> get_glb_data() const;
 	void set_glb_data(const Vector<uint8_t> &p_glb_data);
+#endif // DISABLE_DEPRECATED
 
 	bool get_use_named_skin_binds() const;
 	void set_use_named_skin_binds(bool p_use_named_skin_binds);
@@ -255,6 +259,7 @@ public:
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);
+	bool is_text_file() const;
 
 	PackedInt32Array get_root_nodes() const;
 	void set_root_nodes(const PackedInt32Array &p_root_nodes);
