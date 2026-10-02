@@ -154,6 +154,7 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> ternary_jump_skip_pos;
 
 	List<List<int>> current_breaks_to_patch;
+	Vector<int> function_inline_cache_locations;
 
 	void add_stack_identifier(const StringName &p_id, int p_stackpos) {
 		if (locals.size() > max_locals) {

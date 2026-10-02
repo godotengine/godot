@@ -32,6 +32,7 @@
 
 #include "gdscript.h"
 #include "gdscript_function.h"
+#include "inline_cache.h"
 
 #include "core/object/method_bind.h"
 #include "core/string/string_builder.h"
@@ -709,7 +710,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				}
 				text += ")";
 
-				incr = 5 + argc;
+				incr = 5 + FunctionInlineCacheIntSize + argc;
 			} break;
 			case OPCODE_CALL_METHOD_BIND:
 			case OPCODE_CALL_METHOD_BIND_RET: {
