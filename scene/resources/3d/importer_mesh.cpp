@@ -866,6 +866,9 @@ Ref<ArrayMesh> ImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
 		if (mesh.is_null()) {
 			mesh.instantiate();
 		}
+		// p_base may already be in use, so only emit changed once the mesh is complete.
+		mesh->_block_emit_changed();
+
 		mesh->set_name(get_name());
 		if (has_meta("import_id")) {
 			mesh->set_meta("import_id", get_meta("import_id"));
@@ -903,6 +906,8 @@ Ref<ArrayMesh> ImporterMesh::get_mesh(const Ref<ArrayMesh> &p_base) {
 			Ref<ArrayMesh> shadow = shadow_mesh->get_mesh();
 			mesh->set_shadow_mesh(shadow);
 		}
+
+		mesh->_unblock_emit_changed();
 	}
 
 	return mesh;
