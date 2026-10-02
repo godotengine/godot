@@ -174,6 +174,9 @@ namespace GodotTools.Export
             if (!ProjectContainsDotNet())
                 return;
 
+            if (!GodotSharpEditor.Instance.MSBuildPanel.BuildProject())
+                throw new InvalidOperationException("Failed to build project. Check MSBuild panel for details.");
+
             string osName = GetExportPlatform().GetOsName();
 
             if (!TryDeterminePlatformFromOSName(osName, out string? platform))
