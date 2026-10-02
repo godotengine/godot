@@ -1,10 +1,6 @@
 """Functions used to generate source files during build time"""
 
-import os
 import os.path
-import subprocess
-import tempfile
-import uuid
 
 import methods
 
@@ -75,38 +71,14 @@ def make_translations(target, source, env):
     sorted_paths = sorted([src.abspath for src in source], key=lambda path: os.path.splitext(os.path.basename(path))[0])
 
     xl_names = []
-    msgfmt = env.Detect("msgfmt")
-    if not msgfmt:
-        methods.print_warning("msgfmt not found, using .po files instead of .mo")
 
     with methods.generated_wrapper(target_cpp) as file:
         for path in sorted_paths:
             name = os.path.splitext(os.path.basename(path))[0]
-            # msgfmt erases non-translated messages, so avoid using it if exporting the POT.
-            if msgfmt and name != category:
-                mo_path = os.path.join(tempfile.gettempdir(), uuid.uuid4().hex + ".mo")
-                cmd = f'{msgfmt} "{path}" --no-hash -o "{mo_path}"'
-                try:
-                    subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-                    buffer = methods.get_buffer(mo_path)
-                except OSError as e:
-                    methods.print_warning(
-                        f"msgfmt execution failed, using .po file instead of .mo: path={path!r}; [{e.__class__.__name__}] {e}"
-                    )
-                    buffer = methods.get_buffer(path)
-                finally:
-                    try:
-                        if os.path.exists(mo_path):
-                            os.remove(mo_path)
-                    except OSError as e:
-                        # Do not fail the entire build if it cannot delete a temporary file.
-                        methods.print_warning(
-                            f"Could not delete temporary .mo file: path={mo_path!r}; [{e.__class__.__name__}] {e}"
-                        )
-            else:
-                buffer = methods.get_buffer(path)
-                if name == category:
-                    name = "source"
+
+            buffer = methods.get_buffer(path)
+            if name == category:
+                name = "source"
 
             decomp_size = len(buffer)
             buffer = methods.compress_buffer(buffer)
