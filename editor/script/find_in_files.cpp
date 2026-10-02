@@ -149,8 +149,11 @@ void FindInFilesSearch::_notification(int p_what) {
 }
 
 void FindInFilesSearch::start() {
+	searching = true; // Set before emitting signal, to have correct state.
+	emit_signal("started");
 	if (pattern.is_empty()) {
 		print_verbose("Nothing to search, pattern is empty");
+		searching = false;
 		emit_signal(SceneStringName(finished));
 		return;
 	}
@@ -158,6 +161,7 @@ void FindInFilesSearch::start() {
 	_calculate_wildcard(exclude_string, &exclude_wildcards);
 	if (extension_filter.is_empty()) {
 		print_verbose("Nothing to search, filter matches no files");
+		searching = false;
 		emit_signal(SceneStringName(finished));
 		return;
 	}
@@ -172,7 +176,6 @@ void FindInFilesSearch::start() {
 	files_to_scan.clear();
 	initial_files_count = 0;
 
-	searching = true;
 	set_process(true);
 }
 
@@ -415,16 +418,25 @@ void FindInFilesSearch::_bind_methods() {
 			PropertyInfo(Variant::INT, "end"),
 			PropertyInfo(Variant::STRING, "text")));
 
+	ADD_SIGNAL(MethodInfo("started"));
 	ADD_SIGNAL(MethodInfo("finished"));
 }
 
 //-----------------------------------------------------------------------------
 
 void FindInFilesSearchPanel::set_finder(FindInFilesSearch *p_finder, bool p_init) {
+	const Callable update_callable = callable_mp(this, &FindInFilesSearchPanel::_update_replace_all_button);
+	if (finder) {
+		finder->disconnect("started", update_callable);
+		finder->disconnect(SceneStringName(finished), update_callable);
+	}
 	finder = p_finder;
+	finder->connect("started", update_callable);
+	finder->connect(SceneStringName(finished), update_callable);
 
 	default_view->set_visible(!p_finder->is_rename_mode());
 	rename_view->set_visible(p_finder->is_rename_mode());
+	_update_replace_all_button();
 
 	search_text_line_edit->set_text(finder->get_search_text());
 	renamed_symbol_name->set_text(finder->get_search_text());
@@ -492,6 +504,10 @@ HashSet<String> FindInFilesSearchPanel::get_filter() const {
 		}
 	}
 	return filters;
+}
+
+void FindInFilesSearchPanel::_update_replace_all_button() {
+	replace_all_button->set_disabled(finder->is_searching());
 }
 
 void FindInFilesSearchPanel::_notification(int p_what) {
