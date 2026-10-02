@@ -40,14 +40,15 @@
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);
 
-	StringName name;
+	const GDType *nc_gdtype;
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ const StringName &get_name() const { return name; }
+	_FORCE_INLINE_ const GDType *get_native_gdtype() const { return nc_gdtype; }
+	_FORCE_INLINE_ const StringName &get_name() const { return nc_gdtype->get_name(); }
 	Variant _new();
 	Object *instantiate();
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override;
