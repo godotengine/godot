@@ -169,8 +169,11 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 
 	actions.uniforms = &uniforms;
 
-	MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
-	Error err = SceneShaderForwardMobile::singleton->compiler.compile(RSE::SHADER_SPATIAL, code, &actions, path, gen_code);
+	Error err = OK;
+	{
+		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
+		err = SceneShaderForwardMobile::singleton->compiler.compile(RSE::SHADER_SPATIAL, code, &actions, path, gen_code);
+	}
 
 	if (err != OK) {
 		if (version.is_valid()) {
@@ -266,7 +269,6 @@ bool SceneShaderForwardMobile::ShaderData::casts_shadows() const {
 
 RenderingServerTypes::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderData::get_native_source_code() const {
 	if (version.is_valid()) {
-		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		return SceneShaderForwardMobile::singleton->shader.version_get_native_source_code(version);
 	} else {
 		return RenderingServerTypes::ShaderNativeSourceCode();
@@ -275,7 +277,6 @@ RenderingServerTypes::ShaderNativeSourceCode SceneShaderForwardMobile::ShaderDat
 
 Pair<ShaderRD *, RID> SceneShaderForwardMobile::ShaderData::get_native_shader_and_version() const {
 	if (version.is_valid()) {
-		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		return { &SceneShaderForwardMobile::singleton->shader, version };
 	} else {
 		return {};
@@ -480,7 +481,6 @@ void SceneShaderForwardMobile::ShaderData::_clear_vertex_input_mask_cache() {
 
 RID SceneShaderForwardMobile::ShaderData::get_shader_variant(ShaderVersion p_shader_version, bool p_ubershader) const {
 	if (version.is_valid()) {
-		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		ERR_FAIL_NULL_V(SceneShaderForwardMobile::singleton, RID());
 		return SceneShaderForwardMobile::singleton->shader.version_get_shader(version, p_shader_version + (SceneShaderForwardMobile::singleton->use_fp16 ? SHADER_VERSION_MAX * 2 : 0) + (p_ubershader ? SHADER_VERSION_MAX : 0));
 	} else {
@@ -506,7 +506,6 @@ uint64_t SceneShaderForwardMobile::ShaderData::get_vertex_input_mask(ShaderVersi
 
 bool SceneShaderForwardMobile::ShaderData::is_valid() const {
 	if (version.is_valid()) {
-		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		ERR_FAIL_NULL_V(SceneShaderForwardMobile::singleton, false);
 		return SceneShaderForwardMobile::singleton->shader.version_is_valid(version);
 	} else {
@@ -524,7 +523,6 @@ SceneShaderForwardMobile::ShaderData::~ShaderData() {
 	pipeline_hash_map.clear_pipelines();
 
 	if (version.is_valid()) {
-		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		ERR_FAIL_NULL(SceneShaderForwardMobile::singleton);
 		SceneShaderForwardMobile::singleton->shader.version_free(version);
 	}
