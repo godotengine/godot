@@ -31,8 +31,10 @@
 #pragma once
 
 #include "core/templates/local_vector.h"
+#include "core/variant/type_info.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/mesh.h"
+#include "servers/rendering/rendering_server_enums.h"
 
 #ifndef NAVIGATION_3D_DISABLED
 class NavigationMesh;
@@ -44,34 +46,14 @@ class SkinReference;
 class MeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MeshInstance3D, GeometryInstance3D);
 
-protected:
-	Ref<Mesh> mesh;
-	Ref<Skin> skin;
-	Ref<Skin> skin_internal;
-	Ref<SkinReference> skin_ref;
-	NodePath skeleton_path;
-
-	LocalVector<float> blend_shape_tracks;
-	HashMap<StringName, int> blend_shape_properties;
-	Vector<Ref<Material>> surface_override_materials;
-
-	void _mesh_changed();
-	void _resolve_skeleton_path();
-
-protected:
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-	bool surface_index_0 = false;
-
-	void _notification(int p_what);
-	static void _bind_methods();
-
-	bool _property_can_revert(const StringName &p_name) const;
-	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
-
 public:
 	static constexpr AncestralClass static_ancestral_class = AncestralClass::MESH_INSTANCE_3D;
+
+	enum MeshSkinningMethod {
+		MESH_SKINNING_METHOD_LINEAR_BLEND = RSE::MESH_SKINNING_METHOD_LINEAR_BLEND,
+		MESH_SKINNING_METHOD_DUAL_QUATERNION = RSE::MESH_SKINNING_METHOD_DUAL_QUATERNION,
+		MESH_SKINNING_METHOD_DUAL_QUATERNION_SCALED = RSE::MESH_SKINNING_METHOD_DUAL_QUATERNION_SCALED,
+	};
 
 #ifndef DISABLE_DEPRECATED
 	static inline bool use_parent_skeleton_compat = false;
@@ -86,6 +68,9 @@ public:
 
 	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
+
+	void set_skinning_method(MeshSkinningMethod p_skinning_method);
+	MeshSkinningMethod get_skinning_method() const;
 
 	Ref<SkinReference> get_skin_reference() const;
 
@@ -120,6 +105,32 @@ public:
 
 	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
 
+protected:
+	Ref<Mesh> mesh;
+	Ref<Skin> skin;
+	Ref<Skin> skin_internal;
+	Ref<SkinReference> skin_ref;
+	NodePath skeleton_path;
+	MeshSkinningMethod skinning_method = MeshSkinningMethod::MESH_SKINNING_METHOD_LINEAR_BLEND;
+
+	LocalVector<float> blend_shape_tracks;
+	HashMap<StringName, int> blend_shape_properties;
+	Vector<Ref<Material>> surface_override_materials;
+
+	void _mesh_changed();
+	void _resolve_skeleton_path();
+
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool surface_index_0 = false;
+
+	void _notification(int p_what);
+	static void _bind_methods();
+
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
+
 #ifndef NAVIGATION_3D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
@@ -136,3 +147,5 @@ public:
 
 	MeshInstance3D();
 };
+
+VARIANT_ENUM_CAST(MeshInstance3D::MeshSkinningMethod);
