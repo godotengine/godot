@@ -661,6 +661,16 @@
 			Opens the file for read and write operations. If the file exists, it is truncated to zero length and its contents are cleared. Otherwise, it is created. The file cursor is positioned at the beginning of the file.
 			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
 		</constant>
+		<constant name="WRITE_EXCLUSIVE" value="10" enum="ModeFlags">
+			Opens the file for write operations with exclusive creation. If the file already exists, an error occurs. This mode can be useful for lock files.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
+			[b]Note:[/b] This mode is not currently implemented on Windows.
+		</constant>
+		<constant name="WRITE_READ_EXCLUSIVE" value="15" enum="ModeFlags">
+			Opens the file for read and write operations with exclusive creation. If the file already exists, an error occurs. This mode can be useful for lock files.
+			[b]Note:[/b] When creating a file it must be in an already existing directory. To recursively create directories for a file path, see [method DirAccess.make_dir_recursive].
+			[b]Note:[/b] This mode is not currently implemented on Windows.
+		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
 			Uses the [url=https://fastlz.org/]FastLZ[/url] compression method.
 		</constant>
