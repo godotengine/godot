@@ -35,10 +35,17 @@ TEST_FORCE_LINK(test_viewport)
 #include "core/object/callable_mp.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "servers/rendering/renderer_viewport.h"
+#include "servers/rendering/rendering_server.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "tests/display_server_mock.h"
 #include "tests/signal_watcher.h"
 
@@ -50,6 +57,158 @@ TEST_FORCE_LINK(test_viewport)
 #endif // PHYSICS_2D_DISABLED
 
 namespace TestViewport {
+
+static void check_texture_filter(Viewport *p_viewport, RSE::CanvasItemTextureFilter p_expected) {
+	INFO("Viewport: ", p_viewport->get_path());
+	RenderingServer::get_singleton()->sync();
+	const RendererViewport::Viewport *render_viewport = RSG::viewport->viewport_owner.get_or_null(p_viewport->get_viewport_rid());
+	REQUIRE(render_viewport != nullptr);
+	// Check the renderer before calling the getter, which refreshes the scene-side cache.
+	CHECK(render_viewport->texture_filter == p_expected);
+	CHECK(p_viewport->get_texture_filter_in_tree() == p_expected);
+}
+
+TEST_CASE("[SceneTree][Viewport] Texture filter inheritance") {
+	SubViewport *outer = memnew(SubViewport);
+	outer->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	SceneTree::get_singleton()->get_root()->add_child(outer);
+
+	SubViewport *inner = memnew(SubViewport);
+	inner->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+
+	SUBCASE("Direct viewport parent") {
+		outer->add_child(inner);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+		outer->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+	}
+
+	SUBCASE("CanvasItem parent inherits the enclosing viewport") {
+		Control *control = memnew(Control);
+		outer->add_child(control);
+		control->add_child(inner);
+		CHECK(control->get_texture_filter_in_tree() == CanvasItem::TEXTURE_FILTER_PARENT_NODE);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+		outer->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+		outer->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	}
+
+	SUBCASE("Explicit CanvasItem filters take precedence") {
+		Control *control = memnew(Control);
+		Control *child = memnew(Control);
+		outer->add_child(control);
+		control->add_child(child);
+		child->add_child(inner);
+		for (int filter = CanvasItem::TEXTURE_FILTER_NEAREST; filter < CanvasItem::TEXTURE_FILTER_MAX; filter++) {
+			control->set_texture_filter(CanvasItem::TextureFilter(filter));
+			check_texture_filter(inner, RSE::CanvasItemTextureFilter(filter));
+		}
+		control->set_texture_filter(CanvasItem::TEXTURE_FILTER_PARENT_NODE);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	}
+
+	SUBCASE("Plain Node parent and reparenting") {
+		Node *node = memnew(Node);
+		outer->add_child(node);
+		node->add_child(inner);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+		outer->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+
+		SubViewport *other = memnew(SubViewport);
+		other->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+		outer->add_child(other);
+		node->reparent(other);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	}
+
+	SUBCASE("Explicit viewport defaults are preserved") {
+		outer->add_child(inner);
+		SubViewport *explicit_viewport = memnew(SubViewport);
+		inner->add_child(explicit_viewport);
+		CHECK(explicit_viewport->get_default_canvas_item_texture_filter() == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+		Control *control = memnew(Control);
+		explicit_viewport->add_child(control);
+		SubViewport *nested = memnew(SubViewport);
+		nested->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+		control->add_child(nested);
+		check_texture_filter(nested, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+		outer->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+		check_texture_filter(explicit_viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+		check_texture_filter(nested, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+		explicit_viewport->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+		check_texture_filter(nested, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	}
+
+	SUBCASE("Viewport inheritance crosses CanvasItem inheritance boundaries") {
+		Control *explicit_control = memnew(Control);
+		explicit_control->set_texture_filter(CanvasItem::TEXTURE_FILTER_LINEAR);
+		outer->add_child(explicit_control);
+		Node *boundary = nullptr;
+		SUBCASE("Node") {
+			boundary = memnew(Node);
+		}
+		SUBCASE("CanvasLayer") {
+			boundary = memnew(CanvasLayer);
+		}
+		SUBCASE("Top-level CanvasItem") {
+			Control *top_level = memnew(Control);
+			top_level->set_as_top_level(true);
+			boundary = top_level;
+		}
+		explicit_control->add_child(boundary);
+		Control *control = memnew(Control);
+		boundary->add_child(control);
+		control->add_child(inner);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+		outer->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+		check_texture_filter(inner, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+		CHECK(explicit_control->get_texture_filter_in_tree() == CanvasItem::TEXTURE_FILTER_LINEAR);
+	}
+
+	memdelete(outer);
+}
+
+TEST_CASE("[SceneTree][Viewport] Window and popup texture filter inheritance") {
+	Window *root = SceneTree::get_singleton()->get_root();
+	Viewport::DefaultCanvasItemTextureFilter original_filter = root->get_default_canvas_item_texture_filter();
+	root->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	Node *scene = memnew(Node);
+	root->add_child(scene);
+
+	Window *window = memnew(Window);
+	window->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+	scene->add_child(window);
+	Popup *popup = memnew(Popup);
+	CHECK(popup->get_default_canvas_item_texture_filter() == Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+	popup->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+	scene->add_child(popup);
+	PopupPanel *popup_panel = memnew(PopupPanel);
+	scene->add_child(popup_panel);
+	OptionButton *option_button = memnew(OptionButton);
+	scene->add_child(option_button);
+	MenuButton *menu_button = memnew(MenuButton);
+	scene->add_child(menu_button);
+
+	Viewport *viewports[] = { window, popup, popup_panel, option_button->get_popup(), menu_button->get_popup() };
+	for (Viewport *viewport : viewports) {
+		check_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	}
+	root->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+	for (Viewport *viewport : viewports) {
+		check_texture_filter(viewport, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+	}
+	option_button->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
+	check_texture_filter(option_button->get_popup(), RSE::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+
+	memdelete(scene);
+	root->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE);
+	check_texture_filter(root, RSE::CANVAS_ITEM_TEXTURE_FILTER_LINEAR);
+	root->set_default_canvas_item_texture_filter(original_filter);
+}
 
 class NotificationControlViewport : public Control {
 	GDCLASS(NotificationControlViewport, Control);

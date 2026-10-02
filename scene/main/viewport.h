@@ -430,6 +430,7 @@ private:
 	DefaultCanvasItemTextureFilter default_canvas_item_texture_filter = DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	mutable RenderingServerEnums::CanvasItemTextureFilter default_canvas_item_texture_filter_cache = RenderingServerEnums::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	void _refresh_texture_filter_cache() const;
+	void _propagate_texture_filter_changed(Node *p_node);
 
 	DefaultCanvasItemTextureRepeat default_canvas_item_texture_repeat = DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
 	mutable RenderingServerEnums::CanvasItemTextureRepeat default_canvas_item_texture_repeat_cache = RenderingServerEnums::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
