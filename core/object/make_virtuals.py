@@ -1,3 +1,13 @@
+import argparse
+import sys
+
+try:
+    sys.path.insert(0, "./")
+    import methods
+except ImportError:
+    raise SystemExit(f'Generator script "{__file__}" must be run from repository root!')
+
+
 script_call = """ScriptInstance *_script_instance = ((Object *)(this))->get_script_instance();\\
 		if (_script_instance) {\\
 			Callable::CallError ce;\\
@@ -190,12 +200,10 @@ def generate_version(argcount, const=False, returns=False, required=False, compa
     return s
 
 
-def run(target, source, env):
+def virtuals(target: str) -> None:
     max_versions = 12
 
-    txt = """/* THIS FILE IS GENERATED DO NOT EDIT */
-#pragma once
-
+    txt = """\
 // IWYU pragma: begin_keep
 #include "core/object/script_instance.h"
 #include "core/variant/method_ptrcall.h"
@@ -236,5 +244,21 @@ _NO_INLINE_ inline void _gdvirtual_print_required_error(const Object *p_object, 
         txt += generate_version(i, True, False, False, True)
         txt += generate_version(i, True, True, False, True)
 
-    with open(str(target[0]), "w", encoding="utf-8", newline="\n") as f:
+    with methods.generated_wrapper(target) as f:
         f.write(txt)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    virtuals_parser = subparsers.add_parser("virtuals")
+    virtuals_parser.add_argument("target")
+
+    args = vars(parser.parse_args())
+    command = globals().get(args.pop("command"), {})
+    command(**args)
+
+
+if __name__ == "__main__":
+    main()

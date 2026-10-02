@@ -1,3 +1,13 @@
+import sys
+
+try:
+    sys.path.insert(0, "./")
+    import methods
+except ImportError:
+    raise SystemExit(f'Generator script "{__file__}" must be run from repository root!')
+
+import argparse
+
 proto_mod = """
 #define MODBIND$VER($RETTYPE m_name$ARG) \\
 virtual $RETVAL _##m_name($FUNCARGS) $CONST; \\
@@ -116,10 +126,10 @@ def generate_ex_version(argcount, const=False, returns=False):
     return s
 
 
-def run(target, source, env):
+def wrapper(target: str) -> None:
     max_versions = 12
 
-    txt = "#pragma once"
+    txt = ""
 
     for i in range(max_versions + 1):
         txt += "\n/* Extension Wrapper " + str(i) + " Arguments */\n"
@@ -135,5 +145,21 @@ def run(target, source, env):
         txt += generate_mod_version(i, True, False)
         txt += generate_mod_version(i, True, True)
 
-    with open(str(target[0]), "w", encoding="utf-8", newline="\n") as f:
+    with methods.generated_wrapper(target) as f:
         f.write(txt)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    wrapper_parser = subparsers.add_parser("wrapper")
+    wrapper_parser.add_argument("target")
+
+    args = vars(parser.parse_args())
+    command = globals().get(args.pop("command"), {})
+    command(**args)
+
+
+if __name__ == "__main__":
+    main()

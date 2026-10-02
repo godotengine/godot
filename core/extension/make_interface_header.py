@@ -1,8 +1,14 @@
+import argparse
 import difflib
 import json
-from collections import OrderedDict
+import sys
 
-import methods
+try:
+    sys.path.insert(0, "./")
+    import methods
+except ImportError:
+    raise SystemExit(f'Generator script "{__file__}" must be run from repository root!')
+
 
 BASE_TYPES = [
     "void",
@@ -24,18 +30,17 @@ BASE_TYPES = [
 ]
 
 
-def run(target, source, env):
-    filename = str(source[0])
-    buffer = methods.get_buffer(filename)
-    data = json.loads(buffer, object_pairs_hook=OrderedDict)
-    check_formatting(buffer.decode("utf-8"), data, filename)
+def interface_header(target, interface):
+    buffer = methods.get_buffer(interface)
+    data = json.loads(buffer)
+    check_formatting(buffer.decode("utf-8"), data, interface)
     check_allowed_keys(data, ["_copyright", "$schema", "format_version", "types", "interface"])
 
     valid_data_types = {}
     for type in BASE_TYPES:
         valid_data_types[type] = True
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         file.write("""\
 #ifndef __cplusplus
 #include <stddef.h>
@@ -362,3 +367,20 @@ def write_interface(file, interface):
     write_function_type(file, fn)
 
     file.write("\n")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    interface_header_parser = subparsers.add_parser("interface_header")
+    interface_header_parser.add_argument("target")
+    interface_header_parser.add_argument("interface")
+
+    args = vars(parser.parse_args())
+    command = globals().get(args.pop("command"), {})
+    command(**args)
+
+
+if __name__ == "__main__":
+    main()
