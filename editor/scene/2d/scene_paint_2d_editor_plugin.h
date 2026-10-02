@@ -39,6 +39,7 @@ class CheckBox;
 class SpinBox;
 class ItemList;
 class OptionButton;
+class PopupPanel;
 
 class ScenePaint2DEditor : public Control {
 	GDCLASS(ScenePaint2DEditor, Control);
@@ -75,6 +76,7 @@ class ScenePaint2DEditor : public Control {
 		MENU_ITEM_SNAP_TO_GRID_PAINT_MODE,
 		MENU_ITEM_SNAP_TO_GRID_CELL_CENTER_PAINT_MODE,
 		MENU_ITEM_ALLOW_OVERLAPPING = 4,
+		MENU_ITEM_RANDOMIZE_SETTINGS = 5,
 	};
 
 	bool pinned = false;
@@ -89,6 +91,22 @@ class ScenePaint2DEditor : public Control {
 
 	Size2i grid_step = Size2i(16, 16);
 	Size2i grid_offset = Size2i(0, 0);
+
+	// Randomization settings.
+	bool randomize_rotation = false;
+	bool randomize_scale = false;
+	float rand_rot_min = 0.0f;
+	float rand_rot_max = 360.0f;
+	float rand_scale_min = 0.5f;
+	float rand_scale_max = 1.5f;
+
+	PopupPanel *randomize_popup = nullptr;
+	CheckBox *randomize_rotation_check = nullptr;
+	CheckBox *randomize_scale_check = nullptr;
+	SpinBox *rand_rot_min_spin = nullptr;
+	SpinBox *rand_rot_max_spin = nullptr;
+	SpinBox *rand_scale_min_spin = nullptr;
+	SpinBox *rand_scale_max_spin = nullptr;
 
 	int recent_idx = -1;
 
@@ -167,6 +185,13 @@ class ScenePaint2DEditor : public Control {
 	void _update_paint_mode();
 	PaintMode _reload_paint_mode();
 	void _grid_step_changed();
+	void _randomize_settings_pressed();
+	void _randomize_rotation_toggled(bool p_pressed);
+	void _randomize_scale_toggled(bool p_pressed);
+	void _rand_rot_min_changed(double p_value);
+	void _rand_rot_max_changed(double p_value);
+	void _rand_scale_min_changed(double p_value);
+	void _rand_scale_max_changed(double p_value);
 
 protected:
 	static void _bind_methods();
