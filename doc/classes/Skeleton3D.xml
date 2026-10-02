@@ -43,6 +43,7 @@
 		<method name="create_skin_from_rest_transforms">
 			<return type="Skin" />
 			<description>
+				Returns a new [Skin] derived from the skeleton's rest poses. Used to get a fallback skin when none is provided.
 			</description>
 		</method>
 		<method name="find_bone" qualifiers="const">
