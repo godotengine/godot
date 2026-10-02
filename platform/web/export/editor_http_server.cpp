@@ -142,9 +142,9 @@ void EditorHTTPServer::_poll() {
 		}
 		tcp = server->take_connection();
 		peer = tcp;
-		time = OS::get_singleton()->get_ticks_usec();
+		time = OS::get_singleton()->get_ticks_usec_raw();
 	}
-	if (OS::get_singleton()->get_ticks_usec() - time > 1000000) {
+	if (OS::get_singleton()->get_ticks_usec_raw() - time > 1000000) {
 		_clear_client();
 		return;
 	}

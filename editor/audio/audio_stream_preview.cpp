@@ -128,7 +128,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 
 	const uint64_t update_interval_usec = 16000; // Roughly 60 Hz.
 	uint64_t time_accum_usec = 0;
-	uint64_t last_time_usec = OS::get_singleton()->get_ticks_usec();
+	uint64_t last_time_usec = OS::get_singleton()->get_ticks_usec_raw();
 
 	preview->playback->start();
 
@@ -168,7 +168,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 
 		frames_todo -= to_read;
 
-		uint64_t new_time_usec = OS::get_singleton()->get_ticks_usec();
+		uint64_t new_time_usec = OS::get_singleton()->get_ticks_usec_raw();
 		time_accum_usec += new_time_usec - last_time_usec;
 		last_time_usec = new_time_usec;
 		if (time_accum_usec >= update_interval_usec) {

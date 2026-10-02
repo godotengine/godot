@@ -53,7 +53,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 	int todo = p_frames;
 
 #ifdef DEBUG_ENABLED
-	uint64_t prof_ticks = OS::get_singleton()->get_ticks_usec();
+	uint64_t prof_ticks = OS::get_singleton()->get_ticks_usec_raw();
 #endif
 
 	if (channel_count != get_channel_count()) {
@@ -124,7 +124,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 	}
 
 #ifdef DEBUG_ENABLED
-	prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks);
+	prof_time.add(OS::get_singleton()->get_ticks_usec_raw() - prof_ticks);
 #endif
 }
 
@@ -350,7 +350,7 @@ void AudioServer::_mix_step() {
 				}
 
 #ifdef DEBUG_ENABLED
-				uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+				uint64_t ticks = OS::get_singleton()->get_ticks_usec_raw();
 #endif
 
 				for (int k = 0; k < bus->channels.size(); k++) {
@@ -369,7 +369,7 @@ void AudioServer::_mix_step() {
 				}
 
 #ifdef DEBUG_ENABLED
-				bus->effects.write[j].prof_time += OS::get_singleton()->get_ticks_usec() - ticks;
+				bus->effects.write[j].prof_time += OS::get_singleton()->get_ticks_usec_raw() - ticks;
 #endif
 			}
 		}
