@@ -1005,7 +1005,7 @@ void OS_Android::load_platform_gdextensions() const {
 	Vector<String> extension_list_config_file = godot_java->get_gdextension_list_config_file();
 	for (String config_file_path : extension_list_config_file) {
 		GDExtensionManager::LoadStatus err = GDExtensionManager::get_singleton()->load_extension(config_file_path);
-		ERR_CONTINUE_MSG(err == GDExtensionManager::LOAD_STATUS_FAILED, "Error loading platform extension: " + config_file_path);
+		ERR_CONTINUE_MSG(err == GDExtensionManager::LoadStatus::FAILED, "Error loading platform extension: " + config_file_path);
 	}
 }
 
