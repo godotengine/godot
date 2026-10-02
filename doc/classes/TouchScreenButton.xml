@@ -23,7 +23,7 @@
 			The button's action. Actions can be handled with [InputEventAction].
 		</member>
 		<member name="bitmask" type="BitMap" setter="set_bitmask" getter="get_bitmask">
-			The button's bitmask.
+			A mask used to determine the touch sensitivity of the button. Assumed to be the same size as the texture defining the visual appearance of the button. If [member shape] is set, ignored.
 		</member>
 		<member name="passby_press" type="bool" setter="set_passby_press" getter="is_passby_press_enabled" default="false">
 			If [code]true[/code], the [signal pressed] and [signal released] signals are emitted whenever a pressed finger goes in and out of the button, even if the pressure started outside the active area of the button.
