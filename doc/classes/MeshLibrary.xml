@@ -115,6 +115,13 @@
 				The array consists of each [Shape3D] followed by its [Transform3D].
 			</description>
 		</method>
+		<method name="get_item_use_custom_preview" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns whether the item uses a custom preview.
+			</description>
+		</method>
 		<method name="get_last_unused_item_id" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -210,6 +217,15 @@
 				The array should consist of [Shape3D] objects, each followed by a [Transform3D] that will be applied to it. For shapes that should not have a transform, use [constant Transform3D.IDENTITY].
 			</description>
 		</method>
+		<method name="set_item_use_custom_preview">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="use_custom_preview" type="bool" />
+			<description>
+				If [code]true[/code], the item's preview will be saved with the resource. Use it only if you really need a custom mesh preview and your [MeshLibrary] resource is saved in binary format. The image is intended for editor usage and will get embedded in the library. It also makes the previews not update when the mesh changes.
+				If [code]false[/code], no preview will be stored and the editor will automatically generate them on when needed.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="item/{index}/category" type="String" setter="" getter="" default="&amp;&quot;&quot;">
@@ -237,10 +253,13 @@
 			The transform to apply to the item's navigation mesh.
 		</member>
 		<member name="item/{index}/preview" type="Texture2D" setter="" getter="">
-			The texture to use as the item's preview icon in the editor.
+			The texture to use as the item's preview icon in the editor.  Setting this property automatically enables or disables [member item/{index}/use_custom_preview].
 		</member>
 		<member name="item/{index}/shapes" type="Array" setter="" getter="" default="[]">
 			The item's collision shapes. The array should consist of [Shape3D] objects, each followed by a [Transform3D] that will be applied to it. For shapes that should not have a transform, use [constant Transform3D.IDENTITY].
+		</member>
+		<member name="item/{index}/use_custom_preview" type="bool" setter="" getter="" default="false">
+			If disabled, the preview image is not persistent and instead generated on demand.
 		</member>
 	</members>
 </class>
