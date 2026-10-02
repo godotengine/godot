@@ -81,8 +81,6 @@ static String _disassemble_address(const GDScript *p_script, const GDScriptFunct
 					return "self";
 				case GDScriptFunction::ADDR_STACK_CLASS:
 					return "class";
-				case GDScriptFunction::ADDR_STACK_NIL:
-					return "nil";
 				default:
 					return "stack(" + itos(addr) + ")";
 			}
