@@ -68,6 +68,12 @@ public:
 		INITIAL_SCREEN_PRIMARY = -2,
 	};
 
+	enum UpdatePriority {
+		UPDATE_CONTINUOUSLY,
+		UPDATE_WHEN_CHANGED,
+		UPDATE_VITAL_ONLY,
+	};
+
 private:
 	struct VariantContainer {
 		int order = 0;
