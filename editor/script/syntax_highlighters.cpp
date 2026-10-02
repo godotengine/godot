@@ -132,8 +132,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		/* Reserved words. */
 		const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 		const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
-		for (const String &keyword : scr_lang->get_reserved_words()) {
-			if (scr_lang->is_control_flow_keyword(keyword)) {
+		for (const String &keyword : scr_lang->get_editor_language()->get_reserved_words()) {
+			if (scr_lang->get_editor_language()->is_control_flow_keyword(keyword)) {
 				highlighter->add_keyword_color(keyword, control_flow_keyword_color);
 			} else {
 				highlighter->add_keyword_color(keyword, keyword_color);
@@ -165,7 +165,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 		/* Comments */
 		const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
-		for (const String &comment : scr_lang->get_comment_delimiters()) {
+		for (const String &comment : scr_lang->get_editor_language()->get_comment_delimiters()) {
 			String beg = comment.get_slicec(' ', 0);
 			String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 			highlighter->add_color_region(beg, end, comment_color, end.is_empty());
@@ -173,7 +173,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 		/* Doc comments */
 		const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
-		for (const String &doc_comment : scr_lang->get_doc_comment_delimiters()) {
+		for (const String &doc_comment : scr_lang->get_editor_language()->get_doc_comment_delimiters()) {
 			String beg = doc_comment.get_slicec(' ', 0);
 			String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 			highlighter->add_color_region(beg, end, doc_comment_color, end.is_empty());
@@ -181,7 +181,7 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 
 		/* Strings */
 		const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
-		for (const String &string : scr_lang->get_string_delimiters()) {
+		for (const String &string : scr_lang->get_editor_language()->get_string_delimiters()) {
 			String beg = string.get_slicec(' ', 0);
 			String end = string.get_slice_count(" ") > 1 ? string.get_slicec(' ', 1) : String();
 			highlighter->add_color_region(beg, end, string_color, end.is_empty());

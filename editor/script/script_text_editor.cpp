@@ -318,9 +318,10 @@ void ScriptTextEditor::_set_theme_for_script() {
 	text_edit->get_syntax_highlighter()->update_cache();
 
 	Ref<Script> script = edited_res;
-	Vector<String> strings = script->get_language()->get_string_delimiters();
+
 	text_edit->clear_string_delimiters();
-	for (const String &string : strings) {
+
+	for (const String &string : script->get_language()->get_editor_language()->get_string_delimiters()) {
 		String beg = string.get_slicec(' ', 0);
 		String end = string.get_slice_count(" ") > 1 ? string.get_slicec(' ', 1) : String();
 		if (!text_edit->has_string_delimiter(beg)) {
@@ -334,7 +335,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 
 	text_edit->clear_comment_delimiters();
 
-	for (const String &comment : script->get_language()->get_comment_delimiters()) {
+	for (const String &comment : script->get_language()->get_editor_language()->get_comment_delimiters()) {
 		String beg = comment.get_slicec(' ', 0);
 		String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
@@ -344,7 +345,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 		}
 	}
 
-	for (const String &doc_comment : script->get_language()->get_doc_comment_delimiters()) {
+	for (const String &doc_comment : script->get_language()->get_editor_language()->get_doc_comment_delimiters()) {
 		String beg = doc_comment.get_slicec(' ', 0);
 		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
@@ -1911,7 +1912,7 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 
 	String delimiter = "#";
 
-	for (const String &script_delimiter : script->get_language()->get_comment_delimiters()) {
+	for (const String &script_delimiter : script->get_language()->get_editor_language()->get_comment_delimiters()) {
 		if (!script_delimiter.contains_char(' ')) {
 			delimiter = script_delimiter;
 			break;

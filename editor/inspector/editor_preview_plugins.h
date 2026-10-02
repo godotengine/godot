@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/image.h"
+#include "core/object/editor_language.h"
 #include "editor/inspector/editor_resource_preview.h"
 
 class ScriptLanguage;
@@ -102,7 +103,7 @@ public:
 class EditorScriptPreviewPlugin : public EditorResourcePreviewGenerator {
 	GDCLASS(EditorScriptPreviewPlugin, EditorResourcePreviewGenerator);
 
-	Ref<Texture2D> _generate_from_source_code(const ScriptLanguage *p_language, const String &p_source_code, const Size2 &p_size, Dictionary &p_metadata) const;
+	Ref<Texture2D> _generate_from_source_code(const EditorLanguage *p_language, const String &p_source_code, const Size2 &p_size, Dictionary &p_metadata) const;
 
 public:
 	virtual bool handles(const String &p_type) const override;
