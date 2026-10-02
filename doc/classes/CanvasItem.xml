@@ -655,6 +655,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="auto_redraw" type="bool" setter="set_auto_redraw" getter="is_auto_redraw" default="true">
+			Determines whether the [CanvasItem] is redrawn automatically on events like visibility change or size change. Disabling this property can improve performance when using complex custom drawing, by avoiding unnecessary redraws. Calling [method queue_redraw] manually will always redraw the item.
+			[b]Note:[/b] Disabling auto-redraw works best for [Node2D]. More advanced [CanvasItem] nodes, like [Control], don't check this property in their logic and may still redraw.
+		</member>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
 			The mode in which this node clips its children, acting as a mask.
 			[b]Note:[/b] Clipping nodes cannot be nested or placed within a [CanvasGroup]. If an ancestor of this node clips its children or is a [CanvasGroup], then this node's clip mode should be set to [constant CLIP_CHILDREN_DISABLED] to avoid unexpected behavior.
@@ -756,7 +760,7 @@
 			This notification is received [i]before[/i] the related [signal visibility_changed] signal.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_CANVAS" value="32">
-			The [CanvasItem] has entered the canvas.
+			The [CanvasItem] has entered the canvas. This notification can be received when entering scene tree, changing [member top_level], or when [World2D] changes.
 		</constant>
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			The [CanvasItem] has exited the canvas.
