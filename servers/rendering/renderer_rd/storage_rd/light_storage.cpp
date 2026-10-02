@@ -798,7 +798,9 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				light_data.shadow_opacity = (p_using_shadows && light->shadow)
 						? light->param[RSE::LIGHT_PARAM_SHADOW_OPACITY]
 						: 0.0;
-				light_data.sscs_index = light->allow_contact_shadows ? directional_contact_shadows_count++ : 0xffffffff;
+				light_data.sscs_index = (light->shadow && light->allow_contact_shadows)
+						? directional_contact_shadows_count++
+						: 0xffffffff;
 
 				float angular_diameter = light->param[RSE::LIGHT_PARAM_SIZE];
 				if (angular_diameter > 0.0) {
