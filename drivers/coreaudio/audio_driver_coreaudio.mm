@@ -125,7 +125,11 @@ Error AudioDriverCoreAudio::init() {
 	AudioDeviceID device_id;
 	UInt32 dev_id_size = sizeof(AudioDeviceID);
 
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 	AudioObjectPropertyAddress property_dev_id = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+#else
+	AudioObjectPropertyAddress property_dev_id = { kAudioHardwarePropertyDefaultOutputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMain };
+#endif
 	result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property_dev_id, 0, nullptr, &dev_id_size, &device_id);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 

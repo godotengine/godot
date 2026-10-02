@@ -59,8 +59,6 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 
 	private var shouldExit = false
 	private var exited = false
-	private var rendererInitialized = false
-	private var rendererResumed = false
 	private var resumed = false
 	private var surfaceChanged = false
 	private var hasSurface = false
@@ -202,7 +200,7 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 							return
 						}
 
-						// Check for events and execute them outside of the loop if found to avoid
+						// Check for events and execute them outside the loop if found to avoid
 						// blocking the thread lifecycle by holding onto the lock.
 						if (eventQueue.isNotEmpty()) {
 							event = eventQueue.removeAt(0)
@@ -210,28 +208,21 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 						}
 
 						if (readyToDraw) {
-							if (!rendererResumed) {
-								rendererResumed = true
-								vkRenderer.onVkResume()
-
-								if (!rendererInitialized) {
-									rendererInitialized = true
+							if (!vkRenderer.initialized) {
+								if (vkRenderer.initialize()) {
 									vkRenderer.onVkSurfaceCreated(vkSurfaceView.holder.surface)
 								}
 							}
 
-							if (surfaceChanged) {
-								vkRenderer.onVkSurfaceChanged(vkSurfaceView.holder.surface, width, height)
-								surfaceChanged = false
-							}
+							if (vkRenderer.initialized) {
+								if (surfaceChanged) {
+									vkRenderer.onVkSurfaceChanged(vkSurfaceView.holder.surface, width, height)
+									surfaceChanged = false
+								}
 
-							// Break out of the loop so drawing can occur without holding onto the lock.
-							break
-						} else if (rendererResumed) {
-							// If we aren't ready to draw but are resumed, that means we either lost a surface
-							// or the app was paused.
-							rendererResumed = false
-							vkRenderer.onVkPause()
+								// Break out of the loop so drawing can occur without holding onto the lock.
+								break
+							}
 						}
 						// We only reach this state if we are not ready to draw and have no queued events, so
 						// we wait.
