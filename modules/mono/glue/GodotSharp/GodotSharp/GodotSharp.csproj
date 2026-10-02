@@ -29,6 +29,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CollectLocalizedDocsForPack</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,6 +38,14 @@
       <Link>SdkPackageVersions.props</Link>
     </None>
   </ItemGroup>
+
+  <Target Name="CollectLocalizedDocsForPack">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="LocalizedDocs\**\*.xml">
+        <PackagePath>lib\$(TargetFramework)\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);GODOT</DefineConstants>

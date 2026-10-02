@@ -25,6 +25,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CollectLocalizedDocsForPack</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);GODOT</DefineConstants>
@@ -35,6 +36,13 @@
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
+  <Target Name="CollectLocalizedDocsForPack">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="LocalizedDocs\**\*.xml">
+        <PackagePath>lib\$(TargetFramework)\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+      </TfmSpecificPackageFile>
+    </ItemGroup>
+  </Target>
   <!-- Compat Sources -->
   <ItemGroup Condition=" '$(GodotNoDeprecated)' == '' ">
     <Compile Include="Compat.cs" />
