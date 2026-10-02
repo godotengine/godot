@@ -77,6 +77,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	bool using_audio_client_3 = false;
 
 	SafeFlag exit_thread;
+	SafeFlag output_sleeping;
 
 	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample);
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
@@ -99,6 +100,8 @@ public:
 
 	virtual Error init() override;
 	virtual void start() override;
+	virtual bool can_output_device_sleep() const override { return true; }
+	virtual bool set_output_device_sleep(bool p_enable) override;
 	virtual int get_mix_rate() const override;
 	virtual SpeakerMode get_speaker_mode() const override;
 	virtual float get_latency() override;
