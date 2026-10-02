@@ -292,7 +292,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	// Usage.
 
 	MTLResourceOptions options = 0;
-#if defined(VISIONOS_ENABLED)
+#if defined(VISIONOS_ENABLED) || MAC_OS_X_VERSION_MIN_REQUIRED >= 130000
 	const bool supports_memoryless = true;
 #else
 	const bool supports_memoryless = (*device_properties).features.highestFamily >= MTLGPUFamilyApple2 && (*device_properties).features.highestFamily < MTLGPUFamilyMac1;
@@ -1198,7 +1198,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_container(const Ref
 													 data:binary];
 		} else {
 			options.preserveInvariance = shader_data.is_position_invariant;
-#if defined(VISIONOS_ENABLED)
+#if defined(VISIONOS_ENABLED) || MAC_OS_X_VERSION_MIN_REQUIRED >= 150000
 			options.mathMode = MTLMathModeFast;
 #else
 			options.fastMathEnabled = YES;

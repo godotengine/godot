@@ -317,12 +317,16 @@ void CameraMacOS::update_feeds() {
 		if (@available(macOS 14.0, *)) {
 			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternal, AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeContinuityCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
 		} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 140000
 			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+#endif
 		}
 		devices = session.devices;
 #if defined(__x86_64__)
 	} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 101500
 		devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+#endif
 	}
 #endif
 
