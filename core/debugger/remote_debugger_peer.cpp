@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "remote_debugger_peer.h"
 
 #include "core/config/project_settings.h"
@@ -269,3 +271,5 @@ void RemoteDebuggerPeerTCP::_disconnect_with_error(const String &p_reason) {
 	ERR_PRINT(p_reason);
 	tcp_client->disconnect_from_host();
 }
+
+#endif // DEBUG_ENABLED

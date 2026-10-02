@@ -786,4 +786,4 @@ void View3DController::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("cursor_distance_scaled"));
 }
 
-#endif // DEBUG_ENABLED && _3D_DISABLED
+#endif // DEBUG_ENABLED && !_3D_DISABLED
