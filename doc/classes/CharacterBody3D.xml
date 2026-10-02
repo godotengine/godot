@@ -142,7 +142,7 @@
 	</methods>
 	<members>
 		<member name="floor_block_on_wall" type="bool" setter="set_floor_block_on_wall_enabled" getter="is_floor_block_on_wall_enabled" default="true">
-			If [code]true[/code], the body will be able to move on the floor only. This option avoids to be able to walk on walls, it will however allow to slide down along them.
+			If [code]true[/code], the body will be able to move on the floor only. The body will not be able to walk on walls, but it will slide down along them.
 		</member>
 		<member name="floor_constant_speed" type="bool" setter="set_floor_constant_speed_enabled" getter="is_floor_constant_speed_enabled" default="false">
 			If [code]false[/code] (by default), the body will move faster on downward slopes and slower on upward slopes.
