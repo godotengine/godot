@@ -244,24 +244,26 @@ int AudioStreamPlaybackWAV::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 		len /= 2;
 	}
 
+#ifdef TOOLS_ENABLED
+	AudioStreamWAV::LoopMode loop_format = is_preview ? AudioStreamWAV::LoopMode::LOOP_DISABLED : base->loop_mode;
+#else
+	AudioStreamWAV::LoopMode loop_format = base->loop_mode;
+#endif
+
+	AudioStreamWAV::Format format = base->format;
 	int64_t loop_begin = base->loop_begin;
 	int64_t loop_end = base->loop_end;
-	int64_t begin_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_begin : 0;
-	int64_t end_limit = (base->loop_mode != AudioStreamWAV::LOOP_DISABLED) ? loop_end : len - 1;
+	int64_t begin_limit = (loop_format != AudioStreamWAV::LOOP_DISABLED) ? loop_begin : 0;
+	int64_t end_limit = (loop_format != AudioStreamWAV::LOOP_DISABLED) ? loop_end : len - 1;
 	bool is_stereo = base->stereo;
 
 	int32_t todo = p_frames;
 
-	if (base->loop_mode == AudioStreamWAV::LOOP_BACKWARD) {
+	if (loop_format == AudioStreamWAV::LOOP_BACKWARD) {
 		sign = -1;
 	}
 
 	int8_t increment = sign;
-
-	//looping
-
-	AudioStreamWAV::LoopMode loop_format = base->loop_mode;
-	AudioStreamWAV::Format format = base->format;
 
 	/* audio data */
 
