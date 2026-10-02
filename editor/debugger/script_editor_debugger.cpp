@@ -176,14 +176,6 @@ void ScriptEditorDebugger::update_tabs() {
 	}
 }
 
-void ScriptEditorDebugger::add_style() {
-	tabs->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
-}
-
-void ScriptEditorDebugger::clear_style() {
-	tabs->remove_theme_style_override(SceneStringName(panel));
-}
-
 void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
 	Array msg = { p_id, p_file };
 	_put_msg("scene:save_node", msg);
