@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/ref_counted.h"
 #include "core/variant/type_info.h"
 
 template <typename T>
@@ -41,7 +42,7 @@ public:
 	}
 
 	_FORCE_INLINE_ TypedArray(const Array &p_array) {
-		set_typed(GodotTypeInfo::Internal::get_variant_type<T>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<T>(), Variant());
+		set_typed(GodotTypeInfo::Internal::get_variant_type<T>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<T>(), Ref<Script>());
 		if (is_same_typed(p_array)) {
 			Array::operator=(p_array);
 		} else {
@@ -53,6 +54,6 @@ public:
 			TypedArray(Array(p_init)) {}
 
 	_FORCE_INLINE_ TypedArray() {
-		set_typed(GodotTypeInfo::Internal::get_variant_type<T>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<T>(), Variant());
+		set_typed(GodotTypeInfo::Internal::get_variant_type<T>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<T>(), Ref<Script>());
 	}
 };

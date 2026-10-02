@@ -631,7 +631,7 @@ TEST_CASE("[Dictionary] assign()") {
 	CHECK(untyped.size() == 1);
 
 	Dictionary typed;
-	typed.set_typed(Variant::STRING, StringName(), Variant(), Variant::STRING, StringName(), Variant());
+	typed.set_typed(Variant::STRING, StringName(), Ref<Script>(), Variant::STRING, StringName(), Ref<Script>());
 	typed.assign(untyped);
 	CHECK(typed.size() == 1);
 	typed["key2"] = "value";
@@ -690,7 +690,7 @@ TEST_CASE("[Dictionary] Type checks/comparisons") {
 	CHECK_FALSE(d1.is_typed_key());
 	CHECK_FALSE(d1.is_typed_value());
 
-	d1.set_typed(Variant::STRING, StringName(), Variant(), Variant::OBJECT, "Node", Variant());
+	d1.set_typed(Variant::STRING, StringName(), Ref<Script>(), Variant::OBJECT, "Node", Ref<Script>());
 	CHECK(d1.is_typed());
 	CHECK(d1.is_typed_key());
 	CHECK(d1.is_typed_value());
@@ -703,7 +703,7 @@ TEST_CASE("[Dictionary] Type checks/comparisons") {
 	CHECK_FALSE(d1.is_same_typed_key(d2));
 	CHECK_FALSE(d1.is_same_typed_value(d2));
 
-	d2.set_typed(Variant::STRING, StringName(), Variant(), Variant::STRING, StringName(), Variant());
+	d2.set_typed(Variant::STRING, StringName(), Ref<Script>(), Variant::STRING, StringName(), Ref<Script>());
 	CHECK_FALSE(d1.is_same_typed(d2));
 	CHECK(d1.is_same_typed_key(d2));
 	CHECK_FALSE(d1.is_same_typed_value(d2));

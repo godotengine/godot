@@ -5654,7 +5654,7 @@ Array GDScriptAnalyzer::make_array_from_element_datatype(const GDScriptParser::D
 
 		array.set_typed(p_element_datatype.builtin_type, p_element_datatype.native_type, script_type);
 	} else {
-		array.set_typed(p_element_datatype.builtin_type, StringName(), Variant());
+		array.set_typed(p_element_datatype.builtin_type, StringName(), Ref<Script>());
 	}
 
 	return array;
@@ -5663,9 +5663,9 @@ Array GDScriptAnalyzer::make_array_from_element_datatype(const GDScriptParser::D
 Dictionary GDScriptAnalyzer::make_dictionary_from_element_datatype(const GDScriptParser::DataType &p_key_element_datatype, const GDScriptParser::DataType &p_value_element_datatype, const GDScriptParser::Node *p_source_node) {
 	Dictionary dictionary;
 	StringName key_name;
-	Variant key_script;
+	Ref<Script> key_script;
 	StringName value_name;
-	Variant value_script;
+	Ref<Script> value_script;
 
 	if (p_key_element_datatype.builtin_type == Variant::OBJECT) {
 		Ref<Script> script_type = p_key_element_datatype.script_type;
@@ -5680,7 +5680,7 @@ Dictionary GDScriptAnalyzer::make_dictionary_from_element_datatype(const GDScrip
 		}
 
 		key_name = p_key_element_datatype.native_type;
-		key_script = script_type;
+		key_script = std::move(script_type);
 	}
 
 	if (p_value_element_datatype.builtin_type == Variant::OBJECT) {
@@ -5696,7 +5696,7 @@ Dictionary GDScriptAnalyzer::make_dictionary_from_element_datatype(const GDScrip
 		}
 
 		value_name = p_value_element_datatype.native_type;
-		value_script = script_type;
+		value_script = std::move(script_type);
 	}
 
 	dictionary.set_typed(p_key_element_datatype.builtin_type, key_name, key_script, p_value_element_datatype.builtin_type, value_name, value_script);

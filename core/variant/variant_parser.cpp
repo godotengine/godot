@@ -1138,7 +1138,7 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 			Dictionary dict;
 			Variant::Type key_type = Variant::NIL;
 			StringName key_class_name;
-			Variant key_script;
+			Ref<Script> key_script;
 			bool got_comma_token = false;
 			if (builtin_types.has(r_token.value)) {
 				key_type = builtin_types.get(r_token.value);
@@ -1160,7 +1160,7 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 					if (script.is_valid() && script->is_script_valid()) {
 						key_type = Variant::OBJECT;
 						key_class_name = script->get_instance_base_type();
-						key_script = script;
+						key_script = std::move(script);
 					}
 				}
 			} else if (ClassDB::class_exists(r_token.value)) {
@@ -1184,7 +1184,7 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 
 			Variant::Type value_type = Variant::NIL;
 			StringName value_class_name;
-			Variant value_script;
+			Ref<Script> value_script;
 			bool got_bracket_token = false;
 			if (builtin_types.has(r_token.value)) {
 				value_type = builtin_types.get(r_token.value);
@@ -1206,7 +1206,7 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 					if (script.is_valid() && script->is_script_valid()) {
 						value_type = Variant::OBJECT;
 						value_class_name = script->get_instance_base_type();
-						value_script = script;
+						value_script = std::move(script);
 					}
 				}
 			} else if (ClassDB::class_exists(r_token.value)) {
@@ -1278,7 +1278,7 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 			Array array = Array();
 			bool got_bracket_token = false;
 			if (builtin_types.has(r_token.value)) {
-				array.set_typed(builtin_types.get(r_token.value), StringName(), Variant());
+				array.set_typed(builtin_types.get(r_token.value), StringName(), Ref<Script>());
 			} else if (r_token.value == "Resource" || r_token.value == "SubResource" || r_token.value == "ExtResource") {
 				Variant resource;
 				err = parse_value(r_token, resource, p_stream, r_line, r_err_str, p_res_parser);
@@ -1286,7 +1286,7 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 					if (r_token.value == "Resource" && err == ERR_PARSE_ERROR && r_err_str == "Expected '('" && r_token.type == TK_BRACKET_CLOSE) {
 						err = OK;
 						r_err_str = String();
-						array.set_typed(Variant::OBJECT, r_token.value, Variant());
+						array.set_typed(Variant::OBJECT, r_token.value, Ref<Script>());
 						got_bracket_token = true;
 					} else {
 						return err;
@@ -1298,7 +1298,7 @@ Error VariantParser::parse_value(Token &r_token, Variant &r_value, Stream *p_str
 					}
 				}
 			} else if (ClassDB::class_exists(r_token.value)) {
-				array.set_typed(Variant::OBJECT, r_token.value, Variant());
+				array.set_typed(Variant::OBJECT, r_token.value, Ref<Script>());
 			}
 
 			if (!got_bracket_token) {
