@@ -156,8 +156,33 @@ class GridMap : public Node3D {
 		OctantKey() {}
 	};
 
-	OctantKey get_octant_key_from_index_key(const IndexKey &p_index_key) const;
 	OctantKey get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const;
+
+	//Octant key merged with other mesh render parameters forcing baked meshes separation
+	union SurfaceMapKey {
+		struct {
+			int16_t octant_x;
+			int16_t octant_y;
+			int16_t octant_z;
+			int16_t octant_empty;
+			uint32_t render_layer;
+		};
+
+		uint8_t data[12];
+
+		static uint32_t hash(const SurfaceMapKey &p_key) {
+			return hash_djb2_buffer(p_key.data, 12);
+		}
+		_FORCE_INLINE_ bool operator==(const SurfaceMapKey &p_key) const {
+			return memcmp((void *)data, (void *)p_key.data, 12) == 0;
+		}
+
+		SurfaceMapKey() {
+			memset((void *)data, 0, 12);
+		}
+	};
+
+	SurfaceMapKey get_surface_map_key_from_index_key(const IndexKey &p_index_key, int mesh_lib_item) const;
 
 #ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;
@@ -229,6 +254,7 @@ class GridMap : public Node3D {
 	struct BakedMesh {
 		Ref<Mesh> mesh;
 		RID instance;
+		int item;
 	};
 
 	Vector<BakedMesh> baked_meshes;
