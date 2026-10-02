@@ -850,6 +850,11 @@ bool EditorFileSystem::_scan_import_support(const Vector<String> &reimports) {
 }
 
 bool EditorFileSystem::_update_scan_actions() {
+	if (updating_scan_actions) {
+		return false;
+	}
+	updating_scan_actions = true;
+
 	sources_changed.clear();
 
 	// We need to update the script global class names before the reimports to be sure that
@@ -1070,6 +1075,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	}
 	scan_actions.clear();
 
+	updating_scan_actions = false;
 	return fs_changed;
 }
 
