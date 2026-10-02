@@ -60,6 +60,9 @@
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
 #include "drivers/register_driver_types.h"
+#ifdef TOOLS_ENABLED
+#include "editor/plugins/editor_plugin.h"
+#endif
 #include "main/app_icon.gen.h"
 #include "main/main_timer_sync.h"
 #include "main/performance.h"
@@ -5431,4 +5434,12 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->finalize_core();
 
 	Thread::release_main_thread();
+
+#ifdef TOOLS_ENABLED
+	EditorPlugins::reset();
+#endif
+	MovieWriter::reset();
+	AudioDriverManager::reset();
+	DisplayServer::reset();
+	SceneTree::reset_idle_callbacks();
 }
