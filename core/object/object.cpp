@@ -1047,11 +1047,12 @@ String Object::to_string() {
 }
 
 void Object::set_script(const Variant &p_script) {
-	if (get_script() == p_script) {
+	Ref<Script> s = p_script;
+
+	if (s == get_script_ptr()) {
 		return;
 	}
 
-	Ref<Script> s = p_script;
 	if (!p_script.is_null()) {
 		ERR_FAIL_COND_MSG(s.is_null(), "Cannot set object script. Parameter should be null or a reference to a valid script.");
 		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
@@ -1087,7 +1088,11 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 }
 
 Variant Object::get_script() const {
-	return script_instance ? Variant(Ref<Script>(script_instance->get_script())) : Variant();
+	return script_instance ? Variant(script_instance->get_script()) : Variant();
+}
+
+Script *Object::get_script_ptr() const {
+	return script_instance ? script_instance->get_script() : nullptr;
 }
 
 bool Object::has_meta(const StringName &p_name) const {

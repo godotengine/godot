@@ -903,11 +903,11 @@ Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
 	if (!edited_scene[p_idx].root) {
 		return Ref<Script>();
 	}
-	Ref<Script> s = edited_scene[p_idx].root->get_script();
-	if (s.is_null() && edited_scene[p_idx].root->get_child_count()) {
+	Script *s = edited_scene[p_idx].root->get_script_ptr();
+	if (s == nullptr && edited_scene[p_idx].root->get_child_count()) {
 		Node *n = edited_scene[p_idx].root->get_child(0);
-		while (s.is_null() && n && !n->is_instance()) {
-			s = n->get_script();
+		while (s == nullptr && n && !n->is_instance()) {
+			s = n->get_script_ptr();
 			n = n->get_parent();
 		}
 	}

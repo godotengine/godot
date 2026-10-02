@@ -4998,10 +4998,9 @@ void EditorInspector::update_tree() {
 			} else if (classname == "") {
 				classname = object->get_class_name();
 				Resource *res = Object::cast_to<Resource>(object);
-				if (res && !res->get_script().is_null()) {
+				if (res) {
 					// Grab the script of this resource to get the evaluated script class.
-					Ref<Script> scr = res->get_script();
-					if (scr.is_valid()) {
+					if (Script *scr = res->get_script_ptr(); scr != nullptr) {
 						Vector<DocData::ClassDoc> docs = scr->get_documentation();
 						if (!docs.is_empty()) {
 							// The documentation of a GDScript's main class is at the end of the array.
@@ -6073,8 +6072,8 @@ void EditorInspector::_update_current_favorites() {
 
 	// Fetch script properties.
 	Object *object = ObjectDB::get_instance(edited_object_id);
-	Ref<Script> scr = object->get_script();
-	if (scr.is_valid()) {
+	Script *scr = object->get_script_ptr();
+	if (scr != nullptr) {
 		List<PropertyInfo> plist;
 		// FIXME: Only properties from a saved script will be available, unsaved ones will be ignored.
 		// Can cause a little wonkiness, while nothing serious, would be nice to find a way to get
@@ -6174,8 +6173,8 @@ void EditorInspector::_set_property_favorited(const String &p_path, bool p_favor
 
 	if (class_name.is_empty()) {
 		// Check if it's part of a script.
-		Ref<Script> scr = object->get_script();
-		if (scr.is_valid()) {
+		Script *scr = object->get_script_ptr();
+		if (scr != nullptr) {
 			List<PropertyInfo> plist;
 			scr->get_script_property_list(&plist);
 
@@ -6219,8 +6218,8 @@ void EditorInspector::_clear_current_favorites() {
 	HashMap<String, PackedStringArray> favorites = EditorSettings::get_singleton()->get_favorite_properties();
 
 	Object *object = ObjectDB::get_instance(edited_object_id);
-	Ref<Script> scr = object->get_script();
-	if (scr.is_valid()) {
+	Script *scr = object->get_script_ptr();
+	if (scr != nullptr) {
 		List<PropertyInfo> plist;
 		scr->get_script_property_list(&plist);
 

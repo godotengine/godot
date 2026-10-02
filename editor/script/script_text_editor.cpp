@@ -1111,8 +1111,8 @@ static Vector<Node *> _find_all_node_for_script(Node *p_base, Node *p_current, c
 		return nodes;
 	}
 
-	Ref<Script> c = p_current->get_script();
-	if (c == p_script) {
+	Script *c = p_current->get_script_ptr();
+	if (p_script == c) {
 		nodes.push_back(p_current);
 	}
 
@@ -1128,8 +1128,8 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return nullptr;
 	}
-	Ref<Script> c = p_current->get_script();
-	if (c == p_script) {
+	Script *c = p_current->get_script_ptr();
+	if (p_script == c) {
 		return p_current;
 	}
 	for (int i = 0; i < p_current->get_child_count(); i++) {
@@ -2027,7 +2027,7 @@ void ScriptTextEditor::_set_drop_info_text(const Dictionary &p_info) const {
 }
 
 static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
-	if (p_current_node->get_script() == script) {
+	if (script == p_current_node->get_script_ptr()) {
 		return p_current_node;
 	}
 
@@ -2094,9 +2094,9 @@ String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Reso
 	variable_name = variable_name.to_snake_case().validate_unicode_identifier();
 
 	StringName class_name = p_resource->get_class();
-	Ref<Script> resource_script = p_resource->get_script();
+	Script *resource_script = p_resource->get_script_ptr();
 
-	if (resource_script.is_valid()) {
+	if (resource_script != nullptr) {
 		StringName global_resource_script_name = resource_script->get_global_name();
 		if (!global_resource_script_name.is_empty()) {
 			class_name = global_resource_script_name;
@@ -2258,10 +2258,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
 				if (use_type) {
 					StringName custom_class_name;
-					Ref<Script> node_script = node->get_script();
-					while (node_script.is_valid() && custom_class_name.is_empty()) {
+					Script *node_script = node->get_script_ptr();
+					while (node_script != nullptr && custom_class_name.is_empty()) {
 						custom_class_name = node_script->get_global_name();
-						node_script = node_script->get_base_script();
+						node_script = node_script->get_base_script().ptr();
 					}
 					const StringName class_name = custom_class_name.is_empty() ? node->get_class_name() : custom_class_name;
 					text_to_drop += vformat("@onready var %s: %s = %c%s", variable_name, class_name, is_unique ? '%' : '$', path);
@@ -2288,10 +2288,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
 				StringName custom_class_name;
-				Ref<Script> node_script = node->get_script();
-				while (node_script.is_valid() && custom_class_name.is_empty()) {
+				Script *node_script = node->get_script_ptr();
+				while (node_script != nullptr && custom_class_name.is_empty()) {
 					custom_class_name = node_script->get_global_name();
-					node_script = node_script->get_base_script();
+					node_script = node_script->get_base_script().ptr();
 				}
 				const StringName class_name = custom_class_name.is_empty() ? node->get_class_name() : custom_class_name;
 				text_to_drop += vformat("@export var %s: %s\n", variable_name, class_name);
@@ -2376,7 +2376,7 @@ Vector<ObjectID> ScriptTextEditor::_get_objects_for_export_assignment() const {
 		MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(edited_object);
 
 		if (node_edit != nullptr) {
-			if (node_edit->get_script() == script) {
+			if (script == node_edit->get_script_ptr()) {
 				objects.push_back(node_edit->get_instance_id());
 			}
 		} else if (multi_node_edit != nullptr) {
@@ -2384,7 +2384,7 @@ Vector<ObjectID> ScriptTextEditor::_get_objects_for_export_assignment() const {
 			for (int i = 0; i < multi_node_edit->get_node_count(); i++) {
 				NodePath np = multi_node_edit->get_node(i);
 				Node *node = es->get_node(np);
-				if (node->get_script() == script) {
+				if (script == node->get_script_ptr()) {
 					objects.push_back(node->get_instance_id());
 				}
 			}

@@ -35,6 +35,7 @@
 #include "core/io/resource.h"
 #include "core/math/math_funcs.h"
 #include "core/object/gdtype.h"
+#include "core/object/script_language.h"
 #include "core/variant/variant_parser.h"
 #include "core/variant/variant_pools.h"
 
@@ -3571,8 +3572,8 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 	String base_text;
 	if (p_base) {
 		base_text = p_base->get_class();
-		Ref<Resource> script = p_base->get_script();
-		if (script.is_valid() && script->get_path().is_resource_file()) {
+		Script *script = p_base->get_script_ptr();
+		if (script != nullptr && script->get_path().is_resource_file()) {
 			base_text += "(" + script->get_path().get_file() + ")";
 		}
 		base_text += "::";
