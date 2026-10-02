@@ -317,6 +317,8 @@ public:
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
+	void offset_position_for_ccd(const Vector2 &p_offset);
+
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
 
