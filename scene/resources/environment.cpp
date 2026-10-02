@@ -52,6 +52,7 @@ void Environment::set_background(BGMode p_bg) {
 	if (bg_mode != BG_SKY) {
 		set_fog_aerial_perspective(0.0);
 	}
+	emit_changed();
 }
 
 Environment::BGMode Environment::get_background() const {
@@ -65,6 +66,7 @@ void Environment::set_sky(const Ref<Sky> &p_sky) {
 		sb_rid = bg_sky->get_rid();
 	}
 	RS::get_singleton()->environment_set_sky(environment, sb_rid);
+	emit_changed();
 }
 
 Ref<Sky> Environment::get_sky() const {
@@ -74,6 +76,7 @@ Ref<Sky> Environment::get_sky() const {
 void Environment::set_sky_custom_fov(float p_scale) {
 	bg_sky_custom_fov = p_scale;
 	RS::get_singleton()->environment_set_sky_custom_fov(environment, p_scale);
+	emit_changed();
 }
 
 float Environment::get_sky_custom_fov() const {
@@ -83,6 +86,7 @@ float Environment::get_sky_custom_fov() const {
 void Environment::set_sky_rotation(const Vector3 &p_rotation) {
 	bg_sky_rotation = p_rotation;
 	RS::get_singleton()->environment_set_sky_orientation(environment, Basis::from_euler(p_rotation));
+	emit_changed();
 }
 
 Vector3 Environment::get_sky_rotation() const {
@@ -92,6 +96,7 @@ Vector3 Environment::get_sky_rotation() const {
 void Environment::set_bg_color(const Color &p_color) {
 	bg_color = p_color;
 	RS::get_singleton()->environment_set_bg_color(environment, p_color);
+	emit_changed();
 }
 
 Color Environment::get_bg_color() const {
@@ -101,6 +106,7 @@ Color Environment::get_bg_color() const {
 void Environment::set_bg_energy_multiplier(float p_multiplier) {
 	bg_energy_multiplier = p_multiplier;
 	_update_bg_energy();
+	emit_changed();
 }
 
 float Environment::get_bg_energy_multiplier() const {
@@ -110,6 +116,7 @@ float Environment::get_bg_energy_multiplier() const {
 void Environment::set_bg_intensity(float p_exposure_value) {
 	bg_intensity = p_exposure_value;
 	_update_bg_energy();
+	emit_changed();
 }
 
 float Environment::get_bg_intensity() const {
@@ -127,6 +134,7 @@ void Environment::_update_bg_energy() {
 void Environment::set_canvas_max_layer(int p_max_layer) {
 	bg_canvas_max_layer = p_max_layer;
 	RS::get_singleton()->environment_set_canvas_max_layer(environment, p_max_layer);
+	emit_changed();
 }
 
 int Environment::get_canvas_max_layer() const {
@@ -136,6 +144,7 @@ int Environment::get_canvas_max_layer() const {
 void Environment::set_camera_feed_id(int p_id) {
 	bg_camera_feed_id = p_id;
 	RS::get_singleton()->environment_set_camera_feed_id(environment, bg_camera_feed_id);
+	emit_changed();
 }
 
 int Environment::get_camera_feed_id() const {
@@ -147,6 +156,7 @@ int Environment::get_camera_feed_id() const {
 void Environment::set_ambient_light_color(const Color &p_color) {
 	ambient_color = p_color;
 	_update_ambient_light();
+	emit_changed();
 }
 
 Color Environment::get_ambient_light_color() const {
@@ -157,6 +167,7 @@ void Environment::set_ambient_source(AmbientSource p_source) {
 	ambient_source = p_source;
 	_update_ambient_light();
 	notify_property_list_changed();
+	emit_changed();
 }
 
 Environment::AmbientSource Environment::get_ambient_source() const {
@@ -166,6 +177,7 @@ Environment::AmbientSource Environment::get_ambient_source() const {
 void Environment::set_ambient_light_energy(float p_energy) {
 	ambient_energy = p_energy;
 	_update_ambient_light();
+	emit_changed();
 }
 
 float Environment::get_ambient_light_energy() const {
@@ -177,6 +189,7 @@ void Environment::set_ambient_light_sky_contribution(float p_ratio) {
 	// can result in negative colors.
 	ambient_sky_contribution = CLAMP(p_ratio, 0.0, 1.0);
 	_update_ambient_light();
+	emit_changed();
 }
 
 float Environment::get_ambient_light_sky_contribution() const {
@@ -187,6 +200,7 @@ void Environment::set_reflection_source(ReflectionSource p_source) {
 	reflection_source = p_source;
 	_update_ambient_light();
 	notify_property_list_changed();
+	emit_changed();
 }
 
 Environment::ReflectionSource Environment::get_reflection_source() const {
@@ -208,6 +222,7 @@ void Environment::set_tonemapper(ToneMapper p_tone_mapper) {
 	tone_mapper = p_tone_mapper;
 	_update_tonemap();
 	notify_property_list_changed();
+	emit_changed();
 }
 
 Environment::ToneMapper Environment::get_tonemapper() const {
@@ -217,6 +232,7 @@ Environment::ToneMapper Environment::get_tonemapper() const {
 void Environment::set_tonemap_exposure(float p_exposure) {
 	tonemap_exposure = p_exposure;
 	_update_tonemap();
+	emit_changed();
 }
 
 float Environment::get_tonemap_exposure() const {
@@ -226,6 +242,7 @@ float Environment::get_tonemap_exposure() const {
 void Environment::set_tonemap_white(float p_white) {
 	tonemap_white = p_white;
 	_update_tonemap();
+	emit_changed();
 }
 
 float Environment::get_tonemap_white() const {
@@ -263,6 +280,8 @@ void Environment::_update_tonemap() {
 void Environment::set_ssr_enabled(bool p_enabled) {
 	ssr_enabled = p_enabled;
 	_update_ssr();
+	notify_property_list_changed();
+	emit_changed();
 }
 
 bool Environment::is_ssr_enabled() const {
@@ -272,6 +291,7 @@ bool Environment::is_ssr_enabled() const {
 void Environment::set_ssr_max_steps(int p_steps) {
 	ssr_max_steps = p_steps;
 	_update_ssr();
+	emit_changed();
 }
 
 int Environment::get_ssr_max_steps() const {
@@ -281,6 +301,7 @@ int Environment::get_ssr_max_steps() const {
 void Environment::set_ssr_fade_in(float p_fade_in) {
 	ssr_fade_in = MAX(p_fade_in, 0.0f);
 	_update_ssr();
+	emit_changed();
 }
 
 float Environment::get_ssr_fade_in() const {
@@ -290,6 +311,7 @@ float Environment::get_ssr_fade_in() const {
 void Environment::set_ssr_fade_out(float p_fade_out) {
 	ssr_fade_out = MAX(p_fade_out, 0.0f);
 	_update_ssr();
+	emit_changed();
 }
 
 float Environment::get_ssr_fade_out() const {
@@ -299,6 +321,7 @@ float Environment::get_ssr_fade_out() const {
 void Environment::set_ssr_depth_tolerance(float p_depth_tolerance) {
 	ssr_depth_tolerance = p_depth_tolerance;
 	_update_ssr();
+	emit_changed();
 }
 
 float Environment::get_ssr_depth_tolerance() const {
@@ -320,6 +343,8 @@ void Environment::_update_ssr() {
 void Environment::set_ssao_enabled(bool p_enabled) {
 	ssao_enabled = p_enabled;
 	_update_ssao();
+	notify_property_list_changed();
+	emit_changed();
 }
 
 bool Environment::is_ssao_enabled() const {
@@ -329,6 +354,7 @@ bool Environment::is_ssao_enabled() const {
 void Environment::set_ssao_radius(float p_radius) {
 	ssao_radius = p_radius;
 	_update_ssao();
+	emit_changed();
 }
 
 float Environment::get_ssao_radius() const {
@@ -338,6 +364,7 @@ float Environment::get_ssao_radius() const {
 void Environment::set_ssao_intensity(float p_intensity) {
 	ssao_intensity = p_intensity;
 	_update_ssao();
+	emit_changed();
 }
 
 float Environment::get_ssao_intensity() const {
@@ -347,6 +374,7 @@ float Environment::get_ssao_intensity() const {
 void Environment::set_ssao_power(float p_power) {
 	ssao_power = p_power;
 	_update_ssao();
+	emit_changed();
 }
 
 float Environment::get_ssao_power() const {
@@ -356,6 +384,7 @@ float Environment::get_ssao_power() const {
 void Environment::set_ssao_detail(float p_detail) {
 	ssao_detail = p_detail;
 	_update_ssao();
+	emit_changed();
 }
 
 float Environment::get_ssao_detail() const {
@@ -365,6 +394,7 @@ float Environment::get_ssao_detail() const {
 void Environment::set_ssao_horizon(float p_horizon) {
 	ssao_horizon = p_horizon;
 	_update_ssao();
+	emit_changed();
 }
 
 float Environment::get_ssao_horizon() const {
@@ -374,6 +404,7 @@ float Environment::get_ssao_horizon() const {
 void Environment::set_ssao_sharpness(float p_sharpness) {
 	ssao_sharpness = p_sharpness;
 	_update_ssao();
+	emit_changed();
 }
 
 float Environment::get_ssao_sharpness() const {
@@ -383,6 +414,7 @@ float Environment::get_ssao_sharpness() const {
 void Environment::set_ssao_direct_light_affect(float p_direct_light_affect) {
 	ssao_direct_light_affect = p_direct_light_affect;
 	_update_ssao();
+	emit_changed();
 }
 
 float Environment::get_ssao_direct_light_affect() const {
@@ -392,6 +424,7 @@ float Environment::get_ssao_direct_light_affect() const {
 void Environment::set_ssao_ao_channel_affect(float p_ao_channel_affect) {
 	ssao_ao_channel_affect = p_ao_channel_affect;
 	_update_ssao();
+	emit_changed();
 }
 
 float Environment::get_ssao_ao_channel_affect() const {
@@ -417,6 +450,8 @@ void Environment::_update_ssao() {
 void Environment::set_ssil_enabled(bool p_enabled) {
 	ssil_enabled = p_enabled;
 	_update_ssil();
+	notify_property_list_changed();
+	emit_changed();
 }
 
 bool Environment::is_ssil_enabled() const {
@@ -426,6 +461,7 @@ bool Environment::is_ssil_enabled() const {
 void Environment::set_ssil_radius(float p_radius) {
 	ssil_radius = p_radius;
 	_update_ssil();
+	emit_changed();
 }
 
 float Environment::get_ssil_radius() const {
@@ -435,6 +471,7 @@ float Environment::get_ssil_radius() const {
 void Environment::set_ssil_intensity(float p_intensity) {
 	ssil_intensity = p_intensity;
 	_update_ssil();
+	emit_changed();
 }
 
 float Environment::get_ssil_intensity() const {
@@ -444,6 +481,7 @@ float Environment::get_ssil_intensity() const {
 void Environment::set_ssil_sharpness(float p_sharpness) {
 	ssil_sharpness = p_sharpness;
 	_update_ssil();
+	emit_changed();
 }
 
 float Environment::get_ssil_sharpness() const {
@@ -453,6 +491,7 @@ float Environment::get_ssil_sharpness() const {
 void Environment::set_ssil_normal_rejection(float p_normal_rejection) {
 	ssil_normal_rejection = p_normal_rejection;
 	_update_ssil();
+	emit_changed();
 }
 
 float Environment::get_ssil_normal_rejection() const {
@@ -474,6 +513,8 @@ void Environment::_update_ssil() {
 void Environment::set_sdfgi_enabled(bool p_enabled) {
 	sdfgi_enabled = p_enabled;
 	_update_sdfgi();
+	notify_property_list_changed();
+	emit_changed();
 }
 
 bool Environment::is_sdfgi_enabled() const {
@@ -484,6 +525,7 @@ void Environment::set_sdfgi_cascades(int p_cascades) {
 	ERR_FAIL_COND_MSG(p_cascades < 1 || p_cascades > 8, "Invalid number of SDFGI cascades (must be between 1 and 8).");
 	sdfgi_cascades = p_cascades;
 	_update_sdfgi();
+	emit_changed();
 }
 
 int Environment::get_sdfgi_cascades() const {
@@ -493,6 +535,7 @@ int Environment::get_sdfgi_cascades() const {
 void Environment::set_sdfgi_min_cell_size(float p_size) {
 	sdfgi_min_cell_size = p_size;
 	_update_sdfgi();
+	emit_changed();
 }
 
 float Environment::get_sdfgi_min_cell_size() const {
@@ -506,6 +549,7 @@ void Environment::set_sdfgi_max_distance(float p_distance) {
 	}
 	sdfgi_min_cell_size = p_distance;
 	_update_sdfgi();
+	emit_changed();
 }
 
 float Environment::get_sdfgi_max_distance() const {
@@ -520,6 +564,7 @@ float Environment::get_sdfgi_max_distance() const {
 void Environment::set_sdfgi_cascade0_distance(float p_distance) {
 	sdfgi_min_cell_size = p_distance / 64.0;
 	_update_sdfgi();
+	emit_changed();
 }
 
 float Environment::get_sdfgi_cascade0_distance() const {
@@ -529,6 +574,7 @@ float Environment::get_sdfgi_cascade0_distance() const {
 void Environment::set_sdfgi_y_scale(SDFGIYScale p_y_scale) {
 	sdfgi_y_scale = p_y_scale;
 	_update_sdfgi();
+	emit_changed();
 }
 
 Environment::SDFGIYScale Environment::get_sdfgi_y_scale() const {
@@ -538,6 +584,7 @@ Environment::SDFGIYScale Environment::get_sdfgi_y_scale() const {
 void Environment::set_sdfgi_use_occlusion(bool p_enabled) {
 	sdfgi_use_occlusion = p_enabled;
 	_update_sdfgi();
+	emit_changed();
 }
 
 bool Environment::is_sdfgi_using_occlusion() const {
@@ -547,6 +594,7 @@ bool Environment::is_sdfgi_using_occlusion() const {
 void Environment::set_sdfgi_bounce_feedback(float p_amount) {
 	sdfgi_bounce_feedback = p_amount;
 	_update_sdfgi();
+	emit_changed();
 }
 float Environment::get_sdfgi_bounce_feedback() const {
 	return sdfgi_bounce_feedback;
@@ -555,6 +603,7 @@ float Environment::get_sdfgi_bounce_feedback() const {
 void Environment::set_sdfgi_read_sky_light(bool p_enabled) {
 	sdfgi_read_sky_light = p_enabled;
 	_update_sdfgi();
+	emit_changed();
 }
 
 bool Environment::is_sdfgi_reading_sky_light() const {
@@ -564,6 +613,7 @@ bool Environment::is_sdfgi_reading_sky_light() const {
 void Environment::set_sdfgi_energy(float p_energy) {
 	sdfgi_energy = p_energy;
 	_update_sdfgi();
+	emit_changed();
 }
 
 float Environment::get_sdfgi_energy() const {
@@ -573,6 +623,7 @@ float Environment::get_sdfgi_energy() const {
 void Environment::set_sdfgi_normal_bias(float p_bias) {
 	sdfgi_normal_bias = p_bias;
 	_update_sdfgi();
+	emit_changed();
 }
 
 float Environment::get_sdfgi_normal_bias() const {
@@ -582,6 +633,7 @@ float Environment::get_sdfgi_normal_bias() const {
 void Environment::set_sdfgi_probe_bias(float p_bias) {
 	sdfgi_probe_bias = p_bias;
 	_update_sdfgi();
+	emit_changed();
 }
 
 float Environment::get_sdfgi_probe_bias() const {
@@ -608,6 +660,8 @@ void Environment::_update_sdfgi() {
 void Environment::set_glow_enabled(bool p_enabled) {
 	glow_enabled = p_enabled;
 	_update_glow();
+	notify_property_list_changed();
+	emit_changed();
 }
 
 bool Environment::is_glow_enabled() const {
@@ -620,6 +674,7 @@ void Environment::set_glow_level(int p_level, float p_intensity) {
 	glow_levels.write[p_level] = p_intensity;
 
 	_update_glow();
+	emit_changed();
 }
 
 float Environment::get_glow_level(int p_level) const {
@@ -632,6 +687,7 @@ void Environment::set_glow_normalized(bool p_normalized) {
 	glow_normalize_levels = p_normalized;
 
 	_update_glow();
+	emit_changed();
 }
 
 bool Environment::is_glow_normalized() const {
@@ -641,6 +697,7 @@ bool Environment::is_glow_normalized() const {
 void Environment::set_glow_intensity(float p_intensity) {
 	glow_intensity = p_intensity;
 	_update_glow();
+	emit_changed();
 }
 
 float Environment::get_glow_intensity() const {
@@ -650,6 +707,7 @@ float Environment::get_glow_intensity() const {
 void Environment::set_glow_strength(float p_strength) {
 	glow_strength = p_strength;
 	_update_glow();
+	emit_changed();
 }
 
 float Environment::get_glow_strength() const {
@@ -659,6 +717,7 @@ float Environment::get_glow_strength() const {
 void Environment::set_glow_mix(float p_mix) {
 	glow_mix = p_mix;
 	_update_glow();
+	emit_changed();
 }
 
 float Environment::get_glow_mix() const {
@@ -668,6 +727,7 @@ float Environment::get_glow_mix() const {
 void Environment::set_glow_bloom(float p_threshold) {
 	glow_bloom = p_threshold;
 	_update_glow();
+	emit_changed();
 }
 
 float Environment::get_glow_bloom() const {
@@ -678,6 +738,7 @@ void Environment::set_glow_blend_mode(GlowBlendMode p_mode) {
 	glow_blend_mode = p_mode;
 	_update_glow();
 	notify_property_list_changed();
+	emit_changed();
 }
 
 Environment::GlowBlendMode Environment::get_glow_blend_mode() const {
@@ -687,6 +748,7 @@ Environment::GlowBlendMode Environment::get_glow_blend_mode() const {
 void Environment::set_glow_hdr_bleed_threshold(float p_threshold) {
 	glow_hdr_bleed_threshold = p_threshold;
 	_update_glow();
+	emit_changed();
 }
 
 float Environment::get_glow_hdr_bleed_threshold() const {
@@ -696,6 +758,7 @@ float Environment::get_glow_hdr_bleed_threshold() const {
 void Environment::set_glow_hdr_bleed_scale(float p_scale) {
 	glow_hdr_bleed_scale = p_scale;
 	_update_glow();
+	emit_changed();
 }
 
 float Environment::get_glow_hdr_bleed_scale() const {
@@ -705,6 +768,7 @@ float Environment::get_glow_hdr_bleed_scale() const {
 void Environment::set_glow_hdr_luminance_cap(float p_amount) {
 	glow_hdr_luminance_cap = p_amount;
 	_update_glow();
+	emit_changed();
 }
 
 float Environment::get_glow_hdr_luminance_cap() const {
@@ -714,6 +778,7 @@ float Environment::get_glow_hdr_luminance_cap() const {
 void Environment::set_glow_map_strength(float p_strength) {
 	glow_map_strength = p_strength;
 	_update_glow();
+	emit_changed();
 }
 
 float Environment::get_glow_map_strength() const {
@@ -723,6 +788,7 @@ float Environment::get_glow_map_strength() const {
 void Environment::set_glow_map(Ref<Texture> p_glow_map) {
 	glow_map = p_glow_map;
 	_update_glow();
+	emit_changed();
 }
 
 Ref<Texture> Environment::get_glow_map() const {
@@ -774,6 +840,8 @@ void Environment::_update_glow() {
 void Environment::set_fog_enabled(bool p_enabled) {
 	fog_enabled = p_enabled;
 	_update_fog();
+	notify_property_list_changed();
+	emit_changed();
 }
 
 bool Environment::is_fog_enabled() const {
@@ -789,6 +857,7 @@ void Environment::set_fog_mode(FogMode p_mode) {
 	fog_mode = p_mode;
 	_update_fog();
 	notify_property_list_changed();
+	emit_changed();
 }
 
 Environment::FogMode Environment::get_fog_mode() const {
@@ -805,6 +874,7 @@ Color Environment::get_fog_light_color() const {
 void Environment::set_fog_light_energy(float p_amount) {
 	fog_light_energy = p_amount;
 	_update_fog();
+	emit_changed();
 }
 float Environment::get_fog_light_energy() const {
 	return fog_light_energy;
@@ -812,6 +882,7 @@ float Environment::get_fog_light_energy() const {
 void Environment::set_fog_sun_scatter(float p_amount) {
 	fog_sun_scatter = p_amount;
 	_update_fog();
+	emit_changed();
 }
 float Environment::get_fog_sun_scatter() const {
 	return fog_sun_scatter;
@@ -819,6 +890,7 @@ float Environment::get_fog_sun_scatter() const {
 void Environment::set_fog_density(float p_amount) {
 	fog_density = p_amount;
 	_update_fog();
+	emit_changed();
 }
 float Environment::get_fog_density() const {
 	return fog_density;
@@ -826,6 +898,7 @@ float Environment::get_fog_density() const {
 void Environment::set_fog_height(float p_amount) {
 	fog_height = p_amount;
 	_update_fog();
+	emit_changed();
 }
 float Environment::get_fog_height() const {
 	return fog_height;
@@ -833,6 +906,7 @@ float Environment::get_fog_height() const {
 void Environment::set_fog_height_density(float p_amount) {
 	fog_height_density = p_amount;
 	_update_fog();
+	emit_changed();
 }
 float Environment::get_fog_height_density() const {
 	return fog_height_density;
@@ -841,6 +915,7 @@ float Environment::get_fog_height_density() const {
 void Environment::set_fog_aerial_perspective(float p_aerial_perspective) {
 	fog_aerial_perspective = p_aerial_perspective;
 	_update_fog();
+	emit_changed();
 }
 float Environment::get_fog_aerial_perspective() const {
 	return fog_aerial_perspective;
@@ -849,6 +924,7 @@ float Environment::get_fog_aerial_perspective() const {
 void Environment::set_fog_sky_affect(float p_sky_affect) {
 	fog_sky_affect = p_sky_affect;
 	_update_fog();
+	emit_changed();
 }
 
 float Environment::get_fog_sky_affect() const {
@@ -875,6 +951,7 @@ void Environment::_update_fog() {
 void Environment::set_fog_depth_curve(float p_curve) {
 	fog_depth_curve = p_curve;
 	_update_fog_depth();
+	emit_changed();
 }
 
 float Environment::get_fog_depth_curve() const {
@@ -887,6 +964,7 @@ void Environment::set_fog_depth_begin(float p_begin) {
 		set_fog_depth_end(fog_depth_begin);
 	}
 	_update_fog_depth();
+	emit_changed();
 }
 
 float Environment::get_fog_depth_begin() const {
@@ -899,6 +977,7 @@ void Environment::set_fog_depth_end(float p_end) {
 		set_fog_depth_begin(fog_depth_end);
 	}
 	_update_fog_depth();
+	emit_changed();
 }
 
 float Environment::get_fog_depth_end() const {
@@ -936,6 +1015,8 @@ void Environment::_update_volumetric_fog() {
 void Environment::set_volumetric_fog_enabled(bool p_enable) {
 	volumetric_fog_enabled = p_enable;
 	_update_volumetric_fog();
+	notify_property_list_changed();
+	emit_changed();
 }
 
 bool Environment::is_volumetric_fog_enabled() const {
@@ -944,6 +1025,7 @@ bool Environment::is_volumetric_fog_enabled() const {
 void Environment::set_volumetric_fog_density(float p_density) {
 	volumetric_fog_density = p_density;
 	_update_volumetric_fog();
+	emit_changed();
 }
 float Environment::get_volumetric_fog_density() const {
 	return volumetric_fog_density;
@@ -951,6 +1033,7 @@ float Environment::get_volumetric_fog_density() const {
 void Environment::set_volumetric_fog_albedo(Color p_color) {
 	volumetric_fog_albedo = p_color;
 	_update_volumetric_fog();
+	emit_changed();
 }
 Color Environment::get_volumetric_fog_albedo() const {
 	return volumetric_fog_albedo;
@@ -958,6 +1041,7 @@ Color Environment::get_volumetric_fog_albedo() const {
 void Environment::set_volumetric_fog_emission(Color p_color) {
 	volumetric_fog_emission = p_color;
 	_update_volumetric_fog();
+	emit_changed();
 }
 Color Environment::get_volumetric_fog_emission() const {
 	return volumetric_fog_emission;
@@ -965,6 +1049,7 @@ Color Environment::get_volumetric_fog_emission() const {
 void Environment::set_volumetric_fog_emission_energy(float p_begin) {
 	volumetric_fog_emission_energy = p_begin;
 	_update_volumetric_fog();
+	emit_changed();
 }
 float Environment::get_volumetric_fog_emission_energy() const {
 	return volumetric_fog_emission_energy;
@@ -972,6 +1057,7 @@ float Environment::get_volumetric_fog_emission_energy() const {
 void Environment::set_volumetric_fog_anisotropy(float p_anisotropy) {
 	volumetric_fog_anisotropy = p_anisotropy;
 	_update_volumetric_fog();
+	emit_changed();
 }
 float Environment::get_volumetric_fog_anisotropy() const {
 	return volumetric_fog_anisotropy;
@@ -979,6 +1065,7 @@ float Environment::get_volumetric_fog_anisotropy() const {
 void Environment::set_volumetric_fog_length(float p_length) {
 	volumetric_fog_length = p_length;
 	_update_volumetric_fog();
+	emit_changed();
 }
 float Environment::get_volumetric_fog_length() const {
 	return volumetric_fog_length;
@@ -987,6 +1074,7 @@ void Environment::set_volumetric_fog_detail_spread(float p_detail_spread) {
 	p_detail_spread = CLAMP(p_detail_spread, 0.5, 6.0);
 	volumetric_fog_detail_spread = p_detail_spread;
 	_update_volumetric_fog();
+	emit_changed();
 }
 float Environment::get_volumetric_fog_detail_spread() const {
 	return volumetric_fog_detail_spread;
@@ -995,6 +1083,7 @@ float Environment::get_volumetric_fog_detail_spread() const {
 void Environment::set_volumetric_fog_gi_inject(float p_gi_inject) {
 	volumetric_fog_gi_inject = p_gi_inject;
 	_update_volumetric_fog();
+	emit_changed();
 }
 float Environment::get_volumetric_fog_gi_inject() const {
 	return volumetric_fog_gi_inject;
@@ -1002,6 +1091,7 @@ float Environment::get_volumetric_fog_gi_inject() const {
 void Environment::set_volumetric_fog_ambient_inject(float p_ambient_inject) {
 	volumetric_fog_ambient_inject = p_ambient_inject;
 	_update_volumetric_fog();
+	emit_changed();
 }
 float Environment::get_volumetric_fog_ambient_inject() const {
 	return volumetric_fog_ambient_inject;
@@ -1010,6 +1100,7 @@ float Environment::get_volumetric_fog_ambient_inject() const {
 void Environment::set_volumetric_fog_sky_affect(float p_sky_affect) {
 	volumetric_fog_sky_affect = p_sky_affect;
 	_update_volumetric_fog();
+	emit_changed();
 }
 
 float Environment::get_volumetric_fog_sky_affect() const {
@@ -1019,6 +1110,7 @@ float Environment::get_volumetric_fog_sky_affect() const {
 void Environment::set_volumetric_fog_temporal_reprojection_enabled(bool p_enable) {
 	volumetric_fog_temporal_reproject = p_enable;
 	_update_volumetric_fog();
+	emit_changed();
 }
 bool Environment::is_volumetric_fog_temporal_reprojection_enabled() const {
 	return volumetric_fog_temporal_reproject;
@@ -1026,6 +1118,7 @@ bool Environment::is_volumetric_fog_temporal_reprojection_enabled() const {
 void Environment::set_volumetric_fog_temporal_reprojection_amount(float p_amount) {
 	volumetric_fog_temporal_reproject_amount = p_amount;
 	_update_volumetric_fog();
+	emit_changed();
 }
 
 float Environment::get_volumetric_fog_temporal_reprojection_amount() const {
@@ -1037,6 +1130,8 @@ float Environment::get_volumetric_fog_temporal_reprojection_amount() const {
 void Environment::set_adjustment_enabled(bool p_enabled) {
 	adjustment_enabled = p_enabled;
 	_update_adjustment();
+	notify_property_list_changed();
+	emit_changed();
 }
 
 bool Environment::is_adjustment_enabled() const {
@@ -1046,6 +1141,7 @@ bool Environment::is_adjustment_enabled() const {
 void Environment::set_adjustment_brightness(float p_brightness) {
 	adjustment_brightness = p_brightness;
 	_update_adjustment();
+	emit_changed();
 }
 
 float Environment::get_adjustment_brightness() const {
@@ -1055,6 +1151,7 @@ float Environment::get_adjustment_brightness() const {
 void Environment::set_adjustment_contrast(float p_contrast) {
 	adjustment_contrast = p_contrast;
 	_update_adjustment();
+	emit_changed();
 }
 
 float Environment::get_adjustment_contrast() const {
@@ -1064,6 +1161,7 @@ float Environment::get_adjustment_contrast() const {
 void Environment::set_adjustment_saturation(float p_saturation) {
 	adjustment_saturation = p_saturation;
 	_update_adjustment();
+	emit_changed();
 }
 
 float Environment::get_adjustment_saturation() const {
@@ -1083,6 +1181,7 @@ void Environment::set_adjustment_color_correction(Ref<Texture> p_color_correctio
 		use_1d_color_correction = false;
 	}
 	_update_adjustment();
+	emit_changed();
 }
 
 Ref<Texture> Environment::get_adjustment_color_correction() const {
