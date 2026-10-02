@@ -1214,6 +1214,7 @@
 			<return type="bool" />
 			<param index="0" name="unicode" type="int" />
 			<description>
+				Returns [code]true[/code] if [param unicode] is a valid letter.
 			</description>
 		</method>
 		<method name="_load_support_data" qualifiers="virtual">
