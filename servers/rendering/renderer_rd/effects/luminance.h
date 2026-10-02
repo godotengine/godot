@@ -44,16 +44,15 @@ private:
 	bool prefer_raster_effects;
 
 	enum LuminanceReduceMode {
-		LUMINANCE_REDUCE_READ,
-		LUMINANCE_REDUCE,
+		LUMINANCE_REDUCE_HISTOGRAM,
 		LUMINANCE_REDUCE_WRITE,
 		LUMINANCE_REDUCE_MAX
 	};
 
 	struct LuminanceReducePushConstant {
 		int32_t source_size[2];
-		float max_luminance;
-		float min_luminance;
+		float min_log_lum;
+		float log_lum_range;
 		float exposure_adjust;
 		float pad[3];
 	};
@@ -96,11 +95,15 @@ public:
 	public:
 		Vector<RID> reduce;
 		RID current;
+		RID previous;
+		RID histogram;
+
+		~LuminanceBuffers();
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
 		virtual void free_data() override;
 
-		void set_prefer_raster_effects(bool p_prefer_raster_effects);
+		void init(bool p_prefer_raster_effects);
 	};
 
 	Ref<LuminanceBuffers> get_luminance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers);
