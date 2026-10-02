@@ -91,6 +91,16 @@
 				Returns [code]true[/code] if vertex is set to pinned.
 			</description>
 		</method>
+		<method name="pin_overlapping_points">
+			<return type="void" />
+			<param index="0" name="point_index" type="int" />
+			<param index="1" name="pinned" type="bool" />
+			<param index="2" name="attachment_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<param index="3" name="insert_at" type="int" default="-1" />
+			<description>
+				Sets the pinned state of all the surface vertices overlapping with the provided vertex. When set to [code]true[/code], the optional [param attachment_path] can define a [Node3D] the pinned vertices will be attached to.
+			</description>
+		</method>
 		<method name="remove_collision_exception_with">
 			<return type="void" />
 			<param index="0" name="body" type="Node" />
