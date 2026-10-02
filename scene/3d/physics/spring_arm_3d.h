@@ -42,6 +42,7 @@ class SpringArm3D : public Node3D {
 	real_t current_spring_length = 0.0;
 	uint32_t mask = 1;
 	real_t margin = 0.01;
+	bool editor_preview = false;
 
 protected:
 	void _notification(int p_what);
@@ -60,6 +61,8 @@ public:
 	real_t get_hit_length();
 	void set_margin(real_t p_margin);
 	real_t get_margin();
+	void set_editor_preview(bool p_editor_preview);
+	bool is_editor_previewing() const;
 
 private:
 	void process_spring();
