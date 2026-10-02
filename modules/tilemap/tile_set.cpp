@@ -471,8 +471,7 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 
 	int new_source_id = p_atlas_source_id_override >= 0 ? p_atlas_source_id_override : next_source_id;
 	sources[new_source_id] = p_tile_set_source;
-	source_ids.push_back(new_source_id);
-	source_ids.sort();
+	source_ids.ordered_insert(new_source_id);
 	TileSet *old_tileset = p_tile_set_source->get_tile_set();
 	if (old_tileset != this && old_tileset != nullptr) {
 		// If the source is already in a TileSet (might happen when duplicating), remove it from the other TileSet.
@@ -497,7 +496,6 @@ void TileSet::remove_source(int p_source_id) {
 	sources[p_source_id]->set_tile_set(nullptr);
 	sources.erase(p_source_id);
 	source_ids.erase(p_source_id);
-	source_ids.sort();
 
 	terrains_cache_dirty = true;
 	emit_changed();
@@ -526,8 +524,7 @@ void TileSet::set_source_id(int p_source_id, int p_new_source_id) {
 	sources.erase(p_source_id);
 
 	source_ids.erase(p_source_id);
-	source_ids.push_back(p_new_source_id);
-	source_ids.sort();
+	source_ids.ordered_insert(p_new_source_id);
 
 	_compute_next_source_id();
 
@@ -4818,7 +4815,7 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 						tiles[coords].alternatives[alternative_id] = memnew(TileData);
 						tiles[coords].alternatives[alternative_id]->set_tile_set(tile_set);
 						tiles[coords].alternatives[alternative_id]->set_allow_transform(alternative_id > 0);
-						tiles[coords].alternatives_ids.push_back(alternative_id);
+						tiles[coords].alternatives_ids.ordered_insert(alternative_id);
 					}
 					if (components.size() >= 3) {
 						bool valid;
@@ -5010,8 +5007,7 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 
 	// Create and resize the tile.
 	tiles.insert(p_atlas_coords, tad);
-	tiles_ids.push_back(p_atlas_coords);
-	tiles_ids.sort();
+	tiles_ids.ordered_insert(p_atlas_coords);
 
 	_create_coords_mapping_cache(p_atlas_coords);
 	_queue_update_padded_texture();
@@ -5033,7 +5029,6 @@ void TileSetAtlasSource::remove_tile(Vector2i p_atlas_coords) {
 	// Delete the tile
 	tiles.erase(p_atlas_coords);
 	tiles_ids.erase(p_atlas_coords);
-	tiles_ids.sort();
 
 	_queue_update_padded_texture();
 
@@ -5383,8 +5378,7 @@ void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_
 		tiles.erase(p_atlas_coords);
 
 		tiles_ids.erase(p_atlas_coords);
-		tiles_ids.push_back(new_atlas_coords);
-		tiles_ids.sort();
+		tiles_ids.ordered_insert(new_atlas_coords);
 	}
 	tiles[new_atlas_coords].size_in_atlas = new_size;
 
@@ -5405,8 +5399,7 @@ int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, i
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_allow_transform(true);
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->connect(CoreStringName(changed), callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->notify_property_list_changed();
-	tiles[p_atlas_coords].alternatives_ids.push_back(new_alternative_id);
-	tiles[p_atlas_coords].alternatives_ids.sort();
+	tiles[p_atlas_coords].alternatives_ids.ordered_insert(new_alternative_id);
 	_compute_next_alternative_id(p_atlas_coords);
 
 	_try_emit_changed();
@@ -5423,7 +5416,6 @@ void TileSetAtlasSource::remove_alternative_tile(const Vector2i p_atlas_coords, 
 	memdelete(tiles[p_atlas_coords].alternatives[p_alternative_tile]);
 	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
 	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
-	tiles[p_atlas_coords].alternatives_ids.sort();
 
 	_try_emit_changed();
 }
@@ -5437,11 +5429,10 @@ void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, 
 	ERR_FAIL_COND_MSG(tiles[p_atlas_coords].alternatives.has(p_new_id), vformat("TileSetAtlasSource has already an alternative with id %d at %s.", p_new_id, String(p_atlas_coords)));
 
 	tiles[p_atlas_coords].alternatives[p_new_id] = tiles[p_atlas_coords].alternatives[p_alternative_tile];
-	tiles[p_atlas_coords].alternatives_ids.push_back(p_new_id);
+	tiles[p_atlas_coords].alternatives_ids.ordered_insert(p_new_id);
 
 	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
 	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
-	tiles[p_atlas_coords].alternatives_ids.sort();
 
 	_try_emit_changed();
 }
@@ -5796,8 +5787,7 @@ int TileSetScenesCollectionSource::create_scene_tile(Ref<PackedScene> p_packed_s
 	int new_scene_id = p_id_override >= 0 ? p_id_override : next_scene_id;
 
 	scenes[new_scene_id] = SceneData();
-	scenes_ids.push_back(new_scene_id);
-	scenes_ids.sort();
+	scenes_ids.ordered_insert(new_scene_id);
 	set_scene_tile_scene(new_scene_id, p_packed_scene);
 	_compute_next_alternative_id();
 
@@ -5813,8 +5803,7 @@ void TileSetScenesCollectionSource::set_scene_tile_id(int p_id, int p_new_id) {
 
 	scenes[p_new_id] = SceneData();
 	scenes[p_new_id] = scenes[p_id];
-	scenes_ids.push_back(p_new_id);
-	scenes_ids.sort();
+	scenes_ids.ordered_insert(p_new_id);
 
 	_compute_next_alternative_id();
 
