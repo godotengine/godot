@@ -262,7 +262,7 @@ void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
 
 	if (dock->dock_slot_index != EditorDock::DOCK_SLOT_NONE) {
 		dock->is_open = false;
-		focus_dock(dock);
+		force_focus_dock(dock);
 	} else {
 		close_dock(dock);
 	}
@@ -317,7 +317,7 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 			p_dock->get_window()->set_size(popup_size);
 			p_dock->get_window()->move_to_center();
 		}
-		p_dock->get_window()->grab_focus();
+		focus_dock(p_dock);
 	}
 }
 
@@ -715,6 +715,7 @@ void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus
 	if (p_dock->dock_window) {
 		if (p_grab_focus) {
 			p_dock->get_window()->grab_focus();
+			p_dock->emit_signal("_focused");
 		}
 		return;
 	}
@@ -726,6 +727,7 @@ void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus
 
 	if (p_grab_focus) {
 		tab_container->get_tab_bar()->grab_focus(true);
+		p_dock->emit_signal("_focused");
 	}
 
 	if (!p_dock->is_visible_in_tree()) {

@@ -82,6 +82,7 @@ class DockTabContainer : public TabContainer {
 
 	void _pre_popup(const Size2i &p_size);
 	void _tab_rmb_clicked(int p_tab_idx);
+	void _tab_clicked();
 
 protected:
 	DockContextPopup *dock_context_popup = nullptr;
