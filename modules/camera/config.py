@@ -10,6 +10,7 @@ def can_build(env, platform):
         or platform == "android"
         or platform == "ios"
         or platform == "visionos"
+        or platform == "web"
     )
 
 
