@@ -79,6 +79,12 @@ Luminance::~Luminance() {
 	}
 }
 
+Luminance::LuminanceBuffers::~LuminanceBuffers() {
+	if (last_luminance.is_valid()) {
+		RD::get_singleton()->free_rid(last_luminance);
+	}
+}
+
 void Luminance::LuminanceBuffers::set_prefer_raster_effects(bool p_prefer_raster_effects) {
 	prefer_raster_effects = p_prefer_raster_effects;
 }
@@ -106,7 +112,7 @@ void Luminance::LuminanceBuffers::configure(RenderSceneBuffersRD *p_render_buffe
 		}
 
 		if (final) {
-			tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+			tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		}
 
 		RID texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
@@ -114,7 +120,11 @@ void Luminance::LuminanceBuffers::configure(RenderSceneBuffersRD *p_render_buffe
 
 		if (final) {
 			current = RD::get_singleton()->texture_create(tf, RD::TextureView());
-			RD::get_singleton()->texture_clear(current, Color(0.0, 0.0, 0.0), 0u, 1u, 0u, 1u);
+			if (last_luminance.is_valid()) {
+				RD::get_singleton()->texture_copy(last_luminance, current, Vector3(), Vector3(), Vector3(1, 1, 1), 0u, 0u, 0u, 0u);
+			} else {
+				RD::get_singleton()->texture_clear(current, DEFAULT_LUMINANCE, 0u, 1u, 0u, 1u);
+			}
 			break;
 		}
 	}
@@ -126,8 +136,12 @@ void Luminance::LuminanceBuffers::free_data() {
 	}
 	reduce.clear();
 
+	if (last_luminance.is_valid()) {
+		RD::get_singleton()->free_rid(last_luminance);
+	}
+
 	if (current.is_valid()) {
-		RD::get_singleton()->free_rid(current);
+		last_luminance = current;
 		current = RID();
 	}
 }
