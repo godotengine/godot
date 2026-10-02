@@ -868,6 +868,10 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$min_version_arm64", p_preset->get("application/min_macos_version_arm64")) + "\n";
 		} else if (lines[i].contains("$min_version_x86_64")) {
 			strnew += lines[i].replace("$min_version_x86_64", p_preset->get("application/min_macos_version_x86_64")) + "\n";
+		} else if (lines[i].contains("$min_version_common")) {
+			double v_arm64 = p_preset->get("application/min_macos_version_arm64");
+			double v_x86_64 = p_preset->get("application/min_macos_version_x86_64");
+			strnew += lines[i].replace("$min_version_common", rtos(MIN(v_arm64, v_x86_64))) + "\n";
 		} else if (lines[i].contains("$min_version")) {
 			strnew += lines[i].replace("$min_version", p_preset->get("application/min_macos_version_x86_64")) + "\n"; // Old template, use x86-64 version for both.
 		} else if (lines[i].contains("$highres")) {
