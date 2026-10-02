@@ -2540,13 +2540,23 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			CHECK(code_edit->get_caret_line() == 1);
 			CHECK(code_edit->get_caret_column() == 1);
 
-			// Preserve current indentation above.
+			// No line above.
 			code_edit->set_text("\ttest");
 			code_edit->set_caret_column(3);
 			SEND_GUI_ACTION("ui_text_newline_above");
-			CHECK(code_edit->get_line(0) == "\t");
+			CHECK(code_edit->get_line(0) == "");
 			CHECK(code_edit->get_line(1) == "\ttest");
 			CHECK(code_edit->get_caret_line() == 0);
+			CHECK(code_edit->get_caret_column() == 0);
+
+			// With line above, use the above line indent.
+			code_edit->set_text("\ttest\n");
+			code_edit->set_caret_line(1);
+			SEND_GUI_ACTION("ui_text_newline_above");
+			CHECK(code_edit->get_line(0) == "\ttest");
+			CHECK(code_edit->get_line(1) == "\t");
+			CHECK(code_edit->get_line(2) == "");
+			CHECK(code_edit->get_caret_line() == 1);
 			CHECK(code_edit->get_caret_column() == 1);
 
 			// Increase existing indentation.
@@ -2701,12 +2711,14 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			CHECK(code_edit->get_caret_column() == 4);
 
 			// Preserve current indentation above.
-			code_edit->set_text("    test");
+			code_edit->set_text("    \n    test");
+			code_edit->set_caret_line(1);
 			code_edit->set_caret_column(6);
 			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line(0) == "    ");
-			CHECK(code_edit->get_line(1) == "    test");
-			CHECK(code_edit->get_caret_line() == 0);
+			CHECK(code_edit->get_line(1) == "    ");
+			CHECK(code_edit->get_line(2) == "    test");
+			CHECK(code_edit->get_caret_line() == 1);
 			CHECK(code_edit->get_caret_column() == 4);
 
 			// Increase existing indentation.
@@ -4934,9 +4946,9 @@ TEST_CASE("[SceneTree][CodeEdit] text manipulation") {
 		CHECK(code_edit->get_line(1) == "");
 		CHECK(code_edit->get_line(2) == "test new line");
 		CHECK(code_edit->get_caret_count() == 2);
-		CHECK(code_edit->get_caret_line(0) == 0);
+		CHECK(code_edit->get_caret_line(1) == 0);
 		CHECK(code_edit->get_caret_column(0) == 0);
-		CHECK(code_edit->get_caret_line(1) == 1);
+		CHECK(code_edit->get_caret_line(0) == 1);
 		CHECK(code_edit->get_caret_column(1) == 0);
 
 		// See '[CodeEdit] auto indent' tests for tests about new line with indentation.
