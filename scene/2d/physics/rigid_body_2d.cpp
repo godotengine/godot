@@ -303,6 +303,10 @@ void RigidBody2D::set_freeze_enabled(bool p_freeze) {
 
 	freeze = p_freeze;
 	_apply_body_mode();
+	set_notify_transform(freeze);
+	if (!freeze) {
+		PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_SLEEPING, false);
+	}
 }
 
 bool RigidBody2D::is_freeze_enabled() const {
