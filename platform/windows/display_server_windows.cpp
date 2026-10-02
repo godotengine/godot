@@ -498,11 +498,12 @@ public:
 		}
 
 		LPWSTR lpw_path = nullptr;
-		p_item->GetDisplayName(SIGDN_FILESYSPATH, &lpw_path);
-		if (!lpw_path) {
+		HRESULT hr = p_item->GetDisplayName(SIGDN_FILESYSPATH, &lpw_path);
+		if (FAILED(hr)) {
 			return S_FALSE;
 		}
 		String path = String::utf16((const char16_t *)lpw_path).replace_char('\\', '/').trim_prefix(R"(\\?\)").simplify_path();
+		CoTaskMemFree(lpw_path);
 		if (!path.begins_with(root.simplify_path())) {
 			return S_FALSE;
 		}
