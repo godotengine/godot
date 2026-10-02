@@ -2519,6 +2519,14 @@ Rect2i Window::get_usable_parent_rect() const {
 		ERR_FAIL_NULL_V(w, Rect2());
 
 		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
+		float factor = get_content_scale_factor();
+		if (factor > 0.0f && !Math::is_equal_approx(factor, 1.0f)) {
+			Vector2 p_pos = Vector2(parent_rect.position) / factor;
+			Vector2 p_size = Vector2(parent_rect.size) / factor;
+
+			parent_rect.position = Point2i(p_pos.floor());
+			parent_rect.size = Size2i(p_size.floor());
+		}
 	}
 	return parent_rect;
 }
