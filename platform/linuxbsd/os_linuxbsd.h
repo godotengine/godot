@@ -126,6 +126,7 @@ public:
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
 	void run();
+	void process_events();
 
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;

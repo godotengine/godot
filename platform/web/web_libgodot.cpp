@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  libgodot_linuxbsd.cpp                                                 */
+/*  web_libgodot.cpp                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,25 +28,81 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "os_linuxbsd.h"
+#include "display_server_web.h"
+#include "godot_js.h"
+#include "os_web.h"
 
+#include "core/config/engine.h"
 #include "core/extension/godot_instance.h"
 #include "core/extension/libgodot.h"
+#include "core/io/resource_loader.h"
+#include "core/os/os.h"
+#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 #include "main/main.h"
 
-static OS_LinuxBSD *os = nullptr;
+#include <cstdlib>
+
+static OS_Web *os = nullptr;
+#ifndef PROXY_TO_PTHREAD_ENABLED
+static uint64_t target_ticks = 0;
+#endif
 
 static GodotInstance *instance = nullptr;
 
-static bool linuxbsd_iteration() {
-	os->process_events();
-	return Main::iteration();
+// Keep in sync with web_main.cpp.
+static bool web_iteration() {
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	uint64_t current_ticks = os->get_ticks_usec();
+#endif
+
+	bool force_draw = DisplayServerWeb::get_singleton()->check_size_force_redraw();
+	if (force_draw) {
+		Main::force_redraw();
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	} else if (current_ticks < target_ticks) {
+		return false; // Skip frame.
+#endif
+	}
+
+#ifndef PROXY_TO_PTHREAD_ENABLED
+	int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0) {
+		if (current_ticks - target_ticks > 1000000) {
+			// When the window loses focus, we stop getting updates and accumulate delay.
+			// For this reason, if the difference is too big, we reset target ticks to the current ticks.
+			target_ticks = current_ticks;
+		}
+		target_ticks += (uint64_t)(1000000 / max_fps);
+	}
+#endif
+
+	return os->main_loop_iterate();
+}
+
+void print_web_header() {
+	// Emscripten.
+	char *emscripten_version_char = godot_js_emscripten_get_version();
+	String emscripten_version = vformat("Emscripten %s", emscripten_version_char);
+	// `free()` is used here because it's not memory that was allocated by Godot.
+	free(emscripten_version_char);
+
+	// Build features.
+	String thread_support = OS::get_singleton()->has_feature("threads")
+			? "multi-threaded"
+			: "single-threaded";
+	String extensions_support = OS::get_singleton()->has_feature("web_extensions")
+			? "GDExtension support"
+			: "no GDExtension support";
+
+	Vector<String> build_configuration = { emscripten_version, thread_support, extensions_support };
+	print_line(vformat("Build configuration: %s.", String(", ").join(build_configuration)));
 }
 
 GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func) {
 	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created.");
 
-	os = new OS_LinuxBSD();
+	os = new OS_Web();
 
 	Error err = Main::setup(p_argv[0], p_argc - 1, &p_argv[1], false);
 	if (err != OK) {
@@ -54,13 +110,18 @@ GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], 
 	}
 
 	instance = memnew(GodotInstance);
-	instance->set_iteration(&linuxbsd_iteration);
+	instance->set_iteration(&web_iteration);
 	if (!instance->initialize(p_init_func)) {
 		memdelete(instance);
 		// Note: When Godot Engine supports reinitialization, clear the instance pointer here.
 		//instance = nullptr;
 		return nullptr;
 	}
+
+	print_web_header();
+
+	// Ease up compatibility.
+	ResourceLoader::set_abort_on_missing_resources(false);
 
 	return (GDExtensionObjectPtr)instance;
 }
