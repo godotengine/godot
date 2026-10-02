@@ -29,6 +29,7 @@
 					else:
 						print("Found file: " + file_name)
 					file_name = dir.get_next()
+				dir.list_dir_end()
 			else:
 				print("An error occurred when trying to access the path.")
 		[/gdscript]
@@ -52,6 +53,7 @@
 					}
 					fileName = dir.GetNext();
 				}
+				dir.ListDirEnd();
 			}
 			else
 			{
