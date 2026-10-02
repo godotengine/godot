@@ -119,7 +119,7 @@
 			<param index="1" name="angle" type="float" />
 			<description>
 				Returns a copy of this transform rotated around the given [param axis] by the given [param angle] (in radians).
-				The [param axis] must be a normalized vector (see [method Vector3.normalized]). If [param angle] is positive, the basis is rotated counter-clockwise around the axis.
+				The [param axis] must be a normalized vector (see [method Vector3.normalized]). If [param angle] is positive, the basis is rotated counter-clockwise when looking against the axis.
 				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding rotation transform [code]R[/code] from the left, i.e., [code]R * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
 			</description>
