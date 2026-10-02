@@ -218,16 +218,14 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 			// HACK: Overwrite `PropertyInfo` with the current runtime type.
 			// This allows untyped variables to be displayed correctly.
 			prop[1] = Variant::OBJECT;
-
-			var = res->get_path();
-		} else { //only send information that can be sent..
-			int len = 0; //test how big is this to encode
-			encode_variant(var, nullptr, len);
-			if (len > p_max_size) { //limit to max size
-				hint = PROPERTY_HINT_OBJECT_TOO_BIG;
-				hint_string = "";
-				var = Variant();
-			}
+		}
+		// Only send information that can be sent.
+		int len = 0; // Test how big is this to encode.
+		encode_variant(var, nullptr, len);
+		if (len > p_max_size) { // Limit to max size.
+			hint = PROPERTY_HINT_OBJECT_TOO_BIG;
+			hint_string = "";
+			var = Variant();
 		}
 		prop.push_back(hint);
 		prop.push_back(hint_string);
