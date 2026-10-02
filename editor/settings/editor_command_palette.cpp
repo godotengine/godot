@@ -47,6 +47,7 @@ EditorCommandPalette *EditorCommandPalette::singleton = nullptr;
 
 static Rect2i prev_rect = Rect2i();
 static bool was_showed = false;
+constexpr int RECENT_HISTORY_SIZE = 15;
 
 float EditorCommandPalette::_score_path(const String &p_search, const String &p_path) {
 	float score = 0.9f + .1f * (p_search.length() / (float)p_path.length());
@@ -112,6 +113,40 @@ void EditorCommandPalette::_update_command_search(const String &search_text) {
 	} else {
 		SortArray<CommandEntry, CommandHistoryComparator> sorter;
 		sorter.sort(entries.ptrw(), entries.size());
+	}
+
+	if (search_text.is_empty()) {
+		TreeItem *recent_section = nullptr;
+		int recent_count = 0;
+		for (const CommandEntry &entry : entries) {
+			if (entry.last_used <= 0) {
+				break;
+			}
+
+			if (recent_count == RECENT_HISTORY_SIZE) {
+				break;
+			}
+
+			if (!recent_section) {
+				recent_section = search_options->create_item(root);
+				first_section = recent_section;
+				recent_section->set_text(0, TTRC("Recent"));
+				recent_section->set_selectable(0, false);
+				recent_section->set_selectable(1, false);
+				recent_section->set_custom_bg_color(0, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+				recent_section->set_custom_bg_color(1, get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor)));
+			}
+
+			TreeItem *ti = search_options->create_item(recent_section);
+			String shortcut_text = entry.shortcut_text == "None" ? "" : entry.shortcut_text;
+			ti->set_text(0, entry.display_name);
+			ti->set_metadata(0, entry.key_name);
+			ti->set_text_alignment(1, HORIZONTAL_ALIGNMENT_RIGHT);
+			ti->set_text(1, shortcut_text);
+			Color c = get_theme_color(SceneStringName(font_color), EditorStringName(Editor)) * Color(1, 1, 1, 0.5);
+			ti->set_custom_color(1, c);
+			recent_count++;
+		}
 	}
 
 	const int entry_limit = MIN(entries.size(), 300);
@@ -217,37 +252,34 @@ void EditorCommandPalette::remove_command(String p_key_name) {
 	commands.erase(p_key_name);
 }
 
-void EditorCommandPalette::add_command(String p_command_name, String p_key_name, Callable p_action, const Ref<Shortcut> &p_shortcut) {
-	ERR_FAIL_COND_MSG(commands.has(p_key_name), "The Command '" + String(p_command_name) + "' already exists. Unable to add it.");
-
-	Command command;
-	command.name = p_command_name;
-	command.callable = p_action;
-	if (p_shortcut.is_null()) {
-		command.shortcut_text = "None";
-	} else {
-		command.shortcut = p_shortcut;
-		command.shortcut_text = p_shortcut->get_as_text();
-	}
-
-	commands[p_key_name] = command;
-}
-
-void EditorCommandPalette::_add_command(String p_command_name, String p_key_name, Callable p_binded_action, String p_shortcut_text) {
+void EditorCommandPalette::_add_command_internal(const String &p_command_name, const String &p_key_name, const Callable &p_binded_action, const Ref<Shortcut> &p_shortcut, const String &p_shortcut_text) {
 	ERR_FAIL_COND_MSG(commands.has(p_key_name), "The Command '" + String(p_command_name) + "' already exists. Unable to add it.");
 
 	Command command;
 	command.name = p_command_name;
 	command.callable = p_binded_action;
+	command.shortcut = p_shortcut;
 	command.shortcut_text = p_shortcut_text;
 
-	// Commands added from plugins don't exist yet when the history is loaded, so we assign the last use time here if it was recorded.
+	// Assign the last use time here if it was recorded.
 	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
 	if (command_history.has(p_key_name)) {
 		command.last_used = command_history[p_key_name];
 	}
 
 	commands[p_key_name] = command;
+}
+
+void EditorCommandPalette::add_command(String p_command_name, String p_key_name, Callable p_action, const Ref<Shortcut> &p_shortcut) {
+	String shortcut_text = "None";
+	if (p_shortcut.is_valid()) {
+		shortcut_text = p_shortcut->get_as_text();
+	}
+	_add_command_internal(p_command_name, p_key_name, p_action, p_shortcut, shortcut_text);
+}
+
+void EditorCommandPalette::_add_command(String p_command_name, String p_key_name, Callable p_binded_action, String p_shortcut_text) {
+	_add_command_internal(p_command_name, p_key_name, p_binded_action, Ref<Shortcut>(), p_shortcut_text);
 }
 
 void EditorCommandPalette::execute_command(const String &p_command_key) {
@@ -275,15 +307,6 @@ void EditorCommandPalette::register_shortcuts_as_command() {
 		add_command(command_name, E.key, callable_mp(EditorNode::get_singleton()->get_viewport(), &Viewport::push_input).bind(ev, false), shortcut);
 	}
 	unregistered_shortcuts.clear();
-
-	// Load command use history.
-	Dictionary command_history = EditorSettings::get_singleton()->get_project_metadata("command_palette", "command_history", Dictionary());
-	for (const KeyValue<Variant, Variant> &history_kv : command_history) {
-		const String &history_key = history_kv.key;
-		if (commands.has(history_key)) {
-			commands[history_key].last_used = history_kv.value;
-		}
-	}
 }
 
 Ref<Shortcut> EditorCommandPalette::add_shortcut_command(const String &p_command, const String &p_key, Ref<Shortcut> p_shortcut) {
