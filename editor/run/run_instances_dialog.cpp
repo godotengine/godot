@@ -318,12 +318,14 @@ RunInstancesDialog::RunInstancesDialog() {
 	{
 		Label *l = memnew(Label);
 		l->set_text(TTR("Main Run Args:"));
+		l->set_theme_type_variation("HeaderSmall");
 		main_gc->add_child(l);
 	}
 
 	{
 		Label *l = memnew(Label);
 		l->set_text(TTR("Main Feature Tags:"));
+		l->set_theme_type_variation("HeaderSmall");
 		main_gc->add_child(l);
 	}
 
