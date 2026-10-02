@@ -20,12 +20,10 @@
  * SOFTWARE.
  */
 
-#define _USE_MATH_DEFINES       //Math Constants are not defined in Standard C/C++.
-
 #include <cstring>
 #include <ctype.h>
 #include "tvgMath.h"
-#include "tvgSvgLoaderCommon.h"
+#include "tvgSvgCommon.h"
 #include "tvgSvgPath.h"
 #include "tvgStr.h"
 #include "tvgSvgUtil.h"

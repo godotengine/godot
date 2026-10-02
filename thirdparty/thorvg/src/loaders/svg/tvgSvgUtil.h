@@ -30,5 +30,6 @@ const char* svgUtilSkipWhiteSpace(const char* itr, const char* itrEnd);
 const char* svgUtilUnskipWhiteSpace(const char* itr, const char* itrStart);
 const char* svgUtilSkipWhiteSpaceAndComma(const char* content);
 size_t svgUtilURLDecode(const char *src, char** dst);
+void svgUtilHslToRgb(float h, float s, float l, uint8_t& r, uint8_t& g, uint8_t& b);
 
 #endif //_TVG_SVG_UTIL_H_
