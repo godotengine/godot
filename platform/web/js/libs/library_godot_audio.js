@@ -341,6 +341,11 @@ class SampleNodeBus {
  */
 class SampleNode {
 	/**
+	 * @type {AudioBufferSourceNode | null}
+	 */
+	_source = null;
+
+	/**
 	 * Returns a `SampleNode`.
 	 * @param {string} id Id of the `SampleNode`.
 	 * @returns {SampleNode}
@@ -435,7 +440,7 @@ class SampleNode {
 		/** @type {number} */
 		this.pauseTime = 0;
 		/** @type {number} */
-		this._playbackRate = 44100;
+		this._playbackRate = options.playbackRate ?? 44100;
 		/** @type {LoopMode} */
 		this.loopMode = options.loopMode ?? this.getSample().loopMode ?? 'disabled';
 		/** @type {number} */
@@ -444,16 +449,11 @@ class SampleNode {
 		this._sourceStartTime = 0;
 		/** @type {Map<Bus, SampleNodeBus>} */
 		this._sampleNodeBuses = new Map();
-		/** @type {AudioBufferSourceNode | null} */
-		this._source = GodotAudio.ctx.createBufferSource();
-
 		this._onended = null;
 		/** @type {AudioWorkletNode | null} */
 		this._positionWorklet = null;
 
-		this.setPlaybackRate(options.playbackRate ?? 44100);
-		this._source.buffer = this.getSample().getAudioBuffer();
-
+		this._createAndPrepareSource();
 		this._addEndedListener();
 
 		const bus = GodotAudio.Bus.getBus(params.busIndex);
@@ -696,6 +696,19 @@ class SampleNode {
 	}
 
 	/**
+	 * @returns {void}
+	 */
+	_createAndPrepareSource() {
+		if (this._source != null) {
+			this._source.disconnect();
+		}
+
+		this._source = GodotAudio.ctx.createBufferSource();
+		this._source.buffer = this.getSample().getAudioBuffer();
+		this._syncPlaybackRate();
+	}
+
+	/**
 	 * Resets the source start time
 	 * @returns {void}
 	 */
@@ -717,11 +730,7 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	_restart() {
-		if (this._source != null) {
-			this._source.disconnect();
-		}
-		this._source = GodotAudio.ctx.createBufferSource();
-		this._source.buffer = this.getSample().getAudioBuffer();
+		this._createAndPrepareSource();
 
 		// Make sure that we connect the new source to the sample node bus.
 		for (const sampleNodeBus of this._sampleNodeBuses.values()) {
@@ -758,6 +767,9 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	_unpause() {
+		if (!this.isPaused) {
+			return;
+		}
 		this._restart();
 		this.isPaused = false;
 		this.pauseTime = 0;
