@@ -100,8 +100,10 @@ public:
 };
 
 struct Breakpoint {
-	int id = 0;
+	int id = -1;
 	bool verified = false;
+	String message;
+	String reason;
 	const Source *source = nullptr;
 	int line = 0;
 
@@ -115,8 +117,16 @@ struct Breakpoint {
 
 	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
-		dict["id"] = id;
+		if (id >= 0) {
+			dict["id"] = id;
+		}
 		dict["verified"] = verified;
+		if (!message.is_empty()) {
+			dict["message"] = message;
+		}
+		if (!reason.is_empty()) {
+			dict["reason"] = reason;
+		}
 		if (source) {
 			dict["source"] = source->to_json();
 		}

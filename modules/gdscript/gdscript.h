@@ -192,6 +192,7 @@ private:
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 	void _update_exports_down(bool p_base_exports_changed);
+	void _collect_executable_lines(HashSet<int> &r_lines) const;
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -313,6 +314,10 @@ public:
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
 
 	virtual ScriptLanguage *get_language() const override;
+
+#ifdef TOOLS_ENABLED
+	virtual int get_breakpoint_line(int p_line) const override;
+#endif
 
 	virtual int get_member_line(const StringName &p_member) const override {
 #ifdef TOOLS_ENABLED
