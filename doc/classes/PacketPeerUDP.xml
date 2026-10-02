@@ -127,6 +127,14 @@
 				[b]Note:[/b] [method set_broadcast_enabled] must be enabled before sending packets to a broadcast address (e.g. [code]255.255.255.255[/code]).
 			</description>
 		</method>
+		<method name="set_multicast_send_interface">
+			<return type="int" enum="Error" />
+			<param index="0" name="interface_name" type="String" />
+			<description>
+				Selects the interface that will be used to send multicast packets.
+				To get a list of available interfaces, use [method IP.get_local_interfaces].
+			</description>
+		</method>
 		<method name="wait">
 			<return type="int" enum="Error" />
 			<description>

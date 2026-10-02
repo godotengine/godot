@@ -111,6 +111,7 @@ public:
 	virtual void set_reuse_address_enabled(bool p_enabled) override;
 	virtual Error join_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
 	virtual Error leave_multicast_group(const IPAddress &p_multi_address, const String &p_if_name) override;
+	virtual Error set_multicast_send_interface(const String &p_if_name) override;
 
 	NetSocketUnix();
 	~NetSocketUnix() override;
