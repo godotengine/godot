@@ -74,6 +74,7 @@ protected:
 
 	bool limit_enabled = true;
 	int limit[4] = { -10000000, -10000000, 10000000, 10000000 }; // Left, top, right, bottom.
+	int smooth_limit[4] = { -10000000, -10000000, 10000000, 10000000 }; // Left, top, right, bottom.
 	bool limit_smoothing_enabled = false;
 
 	real_t drag_margin[4] = { 0.2, 0.2, 0.2, 0.2 };
@@ -88,6 +89,9 @@ protected:
 	bool _is_editing_in_editor() const;
 	void _update_process_callback();
 	void _update_scroll();
+
+	void _move_smooth_limits(const Rect2 &screen_rect, const Rect2 &constrained_rect, double delta);
+	int _get_limit_viewport_edge(int i, const Rect2 &screen_rect);
 
 #ifdef TOOLS_ENABLED
 	void _project_settings_changed();
