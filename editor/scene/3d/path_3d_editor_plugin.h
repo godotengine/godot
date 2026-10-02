@@ -103,6 +103,7 @@ public:
 
 	int get_priority() const override;
 	Path3DGizmoPlugin();
+	void update_materials() override;
 };
 
 class Path3DEditorPlugin : public EditorPlugin {
