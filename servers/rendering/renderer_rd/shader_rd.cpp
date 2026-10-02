@@ -1211,11 +1211,14 @@ PackedByteArray ShaderRD::save_shader_cache_bytes(const LocalVector<int> &p_vari
 
 	for (uint32_t i = 0; i < variant_count; i++) {
 		int variant_id = p_variants[i];
-		*(uint32_t *)(bytes_ptr) = uint32_t(p_variant_data[variant_id].size());
+		const int64_t variant_size = p_variant_data[variant_id].size();
+		*(uint32_t *)(bytes_ptr) = uint32_t(variant_size);
 		bytes_ptr += sizeof(uint32_t);
 
-		memcpy(bytes_ptr, p_variant_data[variant_id].ptr(), p_variant_data[variant_id].size());
-		bytes_ptr += p_variant_data[variant_id].size();
+		if (variant_size > 0) {
+			memcpy(bytes_ptr, p_variant_data[variant_id].ptr(), variant_size);
+			bytes_ptr += variant_size;
+		}
 	}
 
 	DEV_ASSERT((bytes.ptrw() + bytes.size()) == bytes_ptr);
