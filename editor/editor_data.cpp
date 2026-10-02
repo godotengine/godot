@@ -642,11 +642,12 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	}
 	EditedScene es;
 	es.root = nullptr;
+	es.scene = memnew(PackedScene);
 	es.path = String();
 	es.file_modified_time = 0;
 	es.history_current = -1;
 	es.live_edit_root = NodePath(String("/root"));
-	es.history_id = last_created_scene++;
+	es.history_id = undo_redo_manager->get_history_id_for_object(*es.scene);
 	es.time_opened = Time::get_singleton()->get_unix_time_from_system();
 
 	if (p_at_pos == edited_scene.size()) {
@@ -714,6 +715,17 @@ void EditorData::set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene) 
 	EditedScene &scene_info = edited_scene.write[p_idx];
 
 	scene_info.scene = p_scene;
+	scene_info.history_id = undo_redo_manager->get_history_id_for_object(*p_scene);
+}
+
+Ref<PackedScene> EditorData::get_scene_resource(int p_idx) const {
+	if (p_idx < 0) {
+		ERR_FAIL_INDEX_V(current_edited_scene, edited_scene.size(), Ref<PackedScene>());
+		return edited_scene[current_edited_scene].scene;
+	} else {
+		ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), Ref<PackedScene>());
+		return edited_scene[p_idx].scene;
+	}
 }
 
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths) {
