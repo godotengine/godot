@@ -15,6 +15,7 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Get the value of a shader parameter as set on this instance.
+				[b]Note:[/b] This method only returns values previously set via [method set_instance_shader_parameter]. If the parameter has not been explicitly set on this instance, it will return [code]null[/code], even if the parameter has a default value defined in the shader code.
 			</description>
 		</method>
 		<method name="set_instance_shader_parameter">
