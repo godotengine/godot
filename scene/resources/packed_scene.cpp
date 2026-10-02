@@ -202,7 +202,7 @@ Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, Ha
 	return local_dupe;
 }
 
-static Node *_find_node_by_id(Node *p_owner, Node *p_node, int32_t p_id) {
+Node *PackedScene::find_node_by_id(Node *p_owner, Node *p_node, int32_t p_id) {
 	if (p_owner == p_node || p_node->get_owner() == p_owner) {
 		if (p_node->get_unique_scene_id() == p_id) {
 			return p_node;
@@ -210,7 +210,7 @@ static Node *_find_node_by_id(Node *p_owner, Node *p_node, int32_t p_id) {
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *found = _find_node_by_id(p_owner, p_node->get_child(i), p_id);
+		Node *found = find_node_by_id(p_owner, p_node->get_child(i), p_id);
 		if (found) {
 			return found;
 		}
@@ -363,7 +363,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							while (base != ret_nodes[0] && !base->is_instance()) {
 								base = base->get_parent();
 							}
-							node = _find_node_by_id(base, base, id);
+							node = PackedScene::find_node_by_id(base, base, id);
 						}
 					} else {
 						if (ids[i] != node->get_unique_scene_id()) {
