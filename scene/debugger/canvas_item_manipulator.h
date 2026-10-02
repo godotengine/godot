@@ -250,6 +250,7 @@ public:
 	void reset_drag();
 
 	bool reset_temp_pivot();
+	void center_temp_pivot_on_selection();
 
 	void set_editor_mode_enabled(bool p_enabled) { editor_mode = p_enabled; }
 

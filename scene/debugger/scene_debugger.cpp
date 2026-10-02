@@ -222,7 +222,7 @@ Error SceneDebugger::_msg_request_scene_tree(const Array &p_args) {
 }
 
 Error SceneDebugger::_msg_save_node(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_args.size() != 2, ERR_INVALID_DATA);
 	_save_node(p_args[0], p_args[1]);
 	Array arr;
 	arr.append(p_args[1]);
@@ -533,9 +533,10 @@ Error SceneDebugger::_msg_runtime_node_select_set_node_type(const Array &p_args)
 }
 
 Error SceneDebugger::_msg_runtime_node_select_set_ci_tool(const Array &p_args) {
-	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	ERR_FAIL_COND_V(p_args.size() != 2, ERR_INVALID_DATA);
 	CanvasItemManipulator::Tool tool = (CanvasItemManipulator::Tool)p_args[0];
-	RuntimeNodeSelect::get_singleton()->_set_ci_tool(tool);
+	bool shift_pressed = p_args[1];
+	RuntimeNodeSelect::get_singleton()->_set_ci_tool(tool, shift_pressed);
 	return OK;
 }
 
