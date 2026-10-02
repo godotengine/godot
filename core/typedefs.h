@@ -116,6 +116,17 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #endif
 #endif
 
+// Marks code as unlikely to be executed (e.g. init and teardown code that runs once),
+// to make compilers optimize it for size.
+// GCC also treats functions only called from cold functions as cold.
+#ifndef _COLD_
+#if defined(__GNUC__)
+#define _COLD_ __attribute__((cold))
+#else
+#define _COLD_
+#endif
+#endif
+
 // Should never inline.
 #ifndef _NO_INLINE_
 #if defined(__GNUC__)
