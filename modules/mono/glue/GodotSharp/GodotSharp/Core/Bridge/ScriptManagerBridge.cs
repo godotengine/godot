@@ -1140,6 +1140,7 @@ namespace Godot.Bridge
             // Careful with padding...
             public godot_string_name Name; // Not owned
             public godot_string HintString;
+            public godot_string Description;
             public int Type;
             public int Hint;
             public int Usage;
@@ -1148,6 +1149,7 @@ namespace Godot.Bridge
             public void Dispose()
             {
                 HintString.Dispose();
+                Description.Dispose();
             }
         }
 #pragma warning restore IDE1006
@@ -1208,23 +1210,24 @@ namespace Godot.Bridge
                         (nuint)length, (nuint)sizeof(godotsharp_property_info)))!;
                 }
 
+                int initializedLength = 0;
                 try
                 {
                     for (int i = 0; i < length; i++)
                     {
                         var property = properties[i];
 
-                        godotsharp_property_info interopProperty = new()
+                        interopProperties[i] = new()
                         {
                             Type = (int)property.Type,
                             Name = (godot_string_name)property.Name.NativeValue, // Not owned
                             Hint = (int)property.Hint,
-                            HintString = Marshaling.ConvertStringToNative(property.HintString),
                             Usage = (int)property.Usage,
                             Exported = property.Exported.ToGodotBool()
                         };
-
-                        interopProperties[i] = interopProperty;
+                        initializedLength++;
+                        interopProperties[i].HintString = Marshaling.ConvertStringToNative(property.HintString);
+                        interopProperties[i].Description = Marshaling.ConvertStringToNative(property.Description);
                     }
 
                     using godot_string currentClassName =
@@ -1238,7 +1241,7 @@ namespace Godot.Bridge
                 }
                 finally
                 {
-                    for (int i = 0; i < length; i++)
+                    for (int i = 0; i < initializedLength; i++)
                         interopProperties[i].Dispose();
 
                     if (!useStack)

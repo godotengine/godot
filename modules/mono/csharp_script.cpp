@@ -65,6 +65,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/settings/editor_settings.h"
@@ -2179,6 +2180,34 @@ CSharpInstance::~CSharpInstance() {
 }
 
 #ifdef TOOLS_ENABLED
+StringName CSharpScript::get_doc_class_name() const {
+	if (type_info.is_global_class) {
+		return type_info.class_name;
+	}
+	return get_path().trim_prefix("res://").quote();
+}
+
+Vector<DocData::ClassDoc> CSharpScript::get_documentation() const {
+	Vector<DocData::ClassDoc> docs;
+	if (!valid) {
+		return docs;
+	}
+
+	DocData::ClassDoc doc;
+	doc.name = get_doc_class_name();
+	doc.script_path = get_path();
+	doc.is_script_doc = true;
+	if (base_script.is_valid()) {
+		docs = base_script->get_documentation();
+		doc.inherits = base_script->get_doc_class_name();
+	} else {
+		doc.inherits = get_instance_base_type();
+	}
+	doc.properties = exported_property_docs;
+	docs.push_back(doc);
+	return docs;
+}
+
 void CSharpScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 	placeholders.erase(p_placeholder);
 }
@@ -2222,6 +2251,17 @@ void GD_CLR_STDCALL CSharpScript::_add_property_info_list_callback(CSharpScript 
 		if (prop.exported) {
 #ifdef TOOLS_ENABLED
 			p_script->exported_members_cache.push_back(pinfo);
+			if (!(prop.usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_CATEGORY))) {
+				DocData::ArgumentDoc type_doc;
+				DocData::argument_doc_from_arginfo(type_doc, pinfo);
+				DocData::PropertyDoc property_doc;
+				property_doc.name = name;
+				property_doc.type = type_doc.type;
+				property_doc.enumeration = type_doc.enumeration;
+				property_doc.is_bitfield = type_doc.is_bitfield;
+				property_doc.description = *reinterpret_cast<const String *>(&prop.description);
+				p_script->exported_property_docs.push_back(property_doc);
+			}
 #endif
 
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
@@ -2274,6 +2314,7 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 #ifdef TOOLS_ENABLED
 		exported_members_cache.clear();
 		exported_members_defval_cache.clear();
+		exported_property_docs.clear();
 #endif
 
 		if (GDMonoCache::godot_api_cache_updated) {
@@ -2283,6 +2324,14 @@ bool CSharpScript::_update_exports(PlaceHolderScriptInstance *p_instance_to_upda
 			GDMonoCache::managed_callbacks.ScriptManagerBridge_GetPropertyDefaultValues(this, &_add_property_default_values_callback);
 #endif
 		}
+
+#ifdef TOOLS_ENABLED
+		if (is_editor) {
+			for (const DocData::ClassDoc &doc : get_documentation()) {
+				EditorHelp::add_doc(doc);
+			}
+		}
+#endif
 	}
 
 #ifdef TOOLS_ENABLED
@@ -2997,6 +3046,12 @@ Error CSharpScript::load_source_code(const String &p_path) {
 }
 
 void CSharpScript::_clear() {
+#ifdef TOOLS_ENABLED
+	if (valid && Engine::get_singleton()->is_editor_hint()) {
+		EditorHelp::remove_doc(get_doc_class_name());
+	}
+	exported_property_docs.clear();
+#endif
 	type_info = TypeInfo();
 	valid = false;
 	reload_invalidated = true;

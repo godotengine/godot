@@ -242,6 +242,7 @@ private:
 #ifdef TOOLS_ENABLED
 	List<PropertyInfo> exported_members_cache; // members_cache
 	HashMap<StringName, Variant> exported_members_defval_cache; // member_default_values_cache
+	Vector<DocData::PropertyDoc> exported_property_docs;
 	HashSet<PlaceHolderScriptInstance *> placeholders;
 	bool source_changed_cache = false;
 	bool placeholder_fallback_enabled = false;
@@ -299,12 +300,8 @@ public:
 	void set_source_code(const String &p_code) override;
 
 #ifdef TOOLS_ENABLED
-	virtual StringName get_doc_class_name() const override { return StringName(); } // TODO
-	virtual Vector<DocData::ClassDoc> get_documentation() const override {
-		// TODO
-		Vector<DocData::ClassDoc> docs;
-		return docs;
-	}
+	virtual StringName get_doc_class_name() const override;
+	virtual Vector<DocData::ClassDoc> get_documentation() const override;
 	virtual String get_class_icon_path() const override {
 		return type_info.icon_path;
 	}
@@ -564,6 +561,7 @@ public:
 	/* EDITOR FUNCTIONS */
 #ifdef TOOLS_ENABLED
 	virtual EditorLanguage *get_editor_language() override { return &editor_language; }
+	bool supports_documentation() const override { return true; }
 #endif
 
 	Vector<String> get_reserved_words() const override;

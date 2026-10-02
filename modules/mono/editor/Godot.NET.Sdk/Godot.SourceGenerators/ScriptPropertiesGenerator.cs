@@ -292,7 +292,15 @@ namespace Godot.SourceGenerators
                         continue;
                     }
 
-                    AppendPropertyInfo(source, propertyInfo.Value);
+                    string? description = null;
+                    if (propertyInfo.Value.Exported)
+                    {
+                        var descriptionAttr = member.Symbol.GetAttributes().FirstOrDefault(a =>
+                            a.AttributeClass?.FullQualifiedNameOmitGlobal() == GodotClasses.DescriptionAttr);
+                        description = descriptionAttr?.ConstructorArguments.FirstOrDefault().Value as string;
+                    }
+
+                    AppendPropertyInfo(source, propertyInfo.Value, description);
                 }
 
                 source.Append("        return properties;\n");
@@ -433,7 +441,7 @@ namespace Godot.SourceGenerators
                 .Append(", exported: true));\n");
         }
 
-        private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
+        private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo, string? description)
         {
             source.Append("        properties.Add(new(type: (global::Godot.Variant.Type)")
                 .Append((int)propertyInfo.Type)
@@ -447,7 +455,16 @@ namespace Godot.SourceGenerators
                 .Append((int)propertyInfo.Usage)
                 .Append(", exported: ")
                 .Append(propertyInfo.Exported ? "true" : "false")
-                .Append("));\n");
+                .Append(")");
+
+            if (description is { Length: > 0 })
+            {
+                source.Append(" { Description = ")
+                    .Append(SymbolDisplay.FormatLiteral(description, quote: true))
+                    .Append(" }");
+            }
+
+            source.Append(");\n");
         }
 
         private static IEnumerable<PropertyInfo> DetermineGroupingPropertyInfo(ISymbol memberSymbol)

@@ -5,9 +5,13 @@ using static Godot.Mathf;
 
 public partial class ExportedFields : GodotObject
 {
+    [Description("Enables [b]collision detection[/b] for this node.")]
     [Export] private Boolean _fieldBoolean = true;
+    [Description("")]
     [Export] private Char _fieldChar = 'f';
+    [Description(null)]
     [Export] private SByte _fieldSByte = 10;
+    [System.ComponentModel.Description("This attribute is not Godot Inspector metadata.")]
     [Export] private Int16 _fieldInt16 = 10;
     [Export] private Int32 _fieldInt32 = 10;
     [Export] private Int64 _fieldInt64 = -10_000;
@@ -17,6 +21,7 @@ public partial class ExportedFields : GodotObject
     [Export] private UInt64 _fieldUInt64 = 10;
     [Export] private Single _fieldSingle = 10;
     [Export] private Double _fieldDouble = 10;
+    [Description("Displays the \"Primary\" profile.\nSettings file: C:\\Config\tSupports Unicode: café " + "✓.")]
     [Export] private String _fieldString = "foo";
 
     // Static import

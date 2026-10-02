@@ -11,6 +11,7 @@ public readonly struct PropertyInfo
     public PropertyUsageFlags Usage { get; init; }
     public StringName? ClassName { get; init; }
     public bool Exported { get; init; }
+    public string? Description { get; init; }
 
     public PropertyInfo(Variant.Type type, StringName name, PropertyHint hint, string hintString,
         PropertyUsageFlags usage, bool exported)

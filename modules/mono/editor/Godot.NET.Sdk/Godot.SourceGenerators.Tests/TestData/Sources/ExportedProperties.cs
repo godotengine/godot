@@ -5,7 +5,9 @@ using static Godot.Mathf;
 public partial class ExportedProperties(string primaryCtorParameter) : GodotObject
 {
     // Do not generate default value
+    [Description("This member is not exported; ignore its description.")]
     private String _notGeneratePropertyString = new string("not generate");
+    [Description("Name of the resource shown in " + "the Inspector.")]
     [Export]
     public String NotGenerateComplexLamdaProperty
     {

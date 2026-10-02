@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <ProjectGuid>{AEBF0036-DA76-4341-B651-A3F2856AB2FA}</ProjectGuid>
@@ -73,6 +73,7 @@
     <Compile Include="Core\Attributes\GlobalClassAttribute.cs" />
     <Compile Include="Core\Attributes\GodotClassNameAttribute.cs" />
     <Compile Include="Core\Attributes\IconAttribute.cs" />
+    <Compile Include="Core\Attributes\DescriptionAttribute.cs" />
     <Compile Include="Core\Attributes\MustBeVariantAttribute.cs" />
     <Compile Include="Core\Attributes\RpcAttribute.cs" />
     <Compile Include="Core\Attributes\ScriptPathAttribute.cs" />
