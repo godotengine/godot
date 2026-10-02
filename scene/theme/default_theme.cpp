@@ -592,6 +592,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("tick", "HSlider", icons["hslider_tick"]);
 
 	theme->set_constant("center_grabber", "HSlider", 0);
+	theme->set_constant("grabber_anchored", "HSlider", 0);
 	theme->set_constant("grabber_offset", "HSlider", 0);
 	theme->set_constant("tick_offset", "HSlider", 0);
 
@@ -607,6 +608,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("tick", "VSlider", icons["vslider_tick"]);
 
 	theme->set_constant("center_grabber", "VSlider", 0);
+	theme->set_constant("grabber_anchored", "VSlider", 0);
 	theme->set_constant("grabber_offset", "VSlider", 0);
 	theme->set_constant("tick_offset", "VSlider", 0);
 
