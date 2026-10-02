@@ -4200,7 +4200,7 @@ bool OpenXRAPI::get_action_bool(RID p_action, RID p_tracker) {
 	};
 
 	XrActionStateBoolean result_state;
-	result_state.type = XR_TYPE_ACTION_STATE_BOOLEAN,
+	result_state.type = XR_TYPE_ACTION_STATE_BOOLEAN;
 	result_state.next = nullptr;
 	XrResult result = xrGetActionStateBoolean(session, &get_info, &result_state);
 	if (XR_FAILED(result)) {
@@ -4232,7 +4232,7 @@ float OpenXRAPI::get_action_float(RID p_action, RID p_tracker) {
 	};
 
 	XrActionStateFloat result_state;
-	result_state.type = XR_TYPE_ACTION_STATE_FLOAT,
+	result_state.type = XR_TYPE_ACTION_STATE_FLOAT;
 	result_state.next = nullptr;
 	XrResult result = xrGetActionStateFloat(session, &get_info, &result_state);
 	if (XR_FAILED(result)) {
@@ -4264,7 +4264,7 @@ Vector2 OpenXRAPI::get_action_vector2(RID p_action, RID p_tracker) {
 	};
 
 	XrActionStateVector2f result_state;
-	result_state.type = XR_TYPE_ACTION_STATE_VECTOR2F,
+	result_state.type = XR_TYPE_ACTION_STATE_VECTOR2F;
 	result_state.next = nullptr;
 	XrResult result = xrGetActionStateVector2f(session, &get_info, &result_state);
 	if (XR_FAILED(result)) {
