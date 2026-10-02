@@ -799,7 +799,7 @@ void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 		for (int i = 0; i < boundaries.size(); i += 2) {
 			const int start = boundaries[i];
 			const int end = boundaries[i + 1];
-			tooltip += "\n" + p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
+			tooltip += "\n" + p_node->get_editor_description().substr(start, end - start).rstrip("\n");
 		}
 	}
 
