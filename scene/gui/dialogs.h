@@ -132,12 +132,15 @@ public:
 class ConfirmationDialog : public AcceptDialog {
 	GDCLASS(ConfirmationDialog, AcceptDialog);
 	Button *cancel = nullptr;
+	Button *negative_action_button = nullptr;
 
 protected:
 	static void _bind_methods();
 
 public:
 	Button *get_cancel_button();
+	Button *get_negative_action_button();
+	void set_negative_action_button(Button *p_new_negative_action_button);
 
 	void set_cancel_button_text(String p_cancel_button_text);
 	String get_cancel_button_text() const;
