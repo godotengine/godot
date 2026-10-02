@@ -603,6 +603,8 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->msdf_pixel_range = "msdf_pixel_range";
 	shader_names->msdf_outline_size = "msdf_outline_size";
 
+	shader_names->slug_scale = "slug_scale";
+
 	shader_names->metallic_texture_channel = "metallic_texture_channel";
 	shader_names->ao_texture_channel = "ao_texture_channel";
 	shader_names->clearcoat_texture_channel = "clearcoat_texture_channel";
@@ -633,6 +635,7 @@ void BaseMaterial3D::init_shaders() {
 	shader_names->texture_names[TEXTURE_DETAIL_ALBEDO] = "texture_detail_albedo";
 	shader_names->texture_names[TEXTURE_DETAIL_NORMAL] = "texture_detail_normal";
 	shader_names->texture_names[TEXTURE_ORM] = "texture_orm";
+	shader_names->texture_names[TEXTURE_SLUG] = "texture_slug";
 
 	shader_names->alpha_scissor_threshold = "alpha_scissor_threshold";
 	shader_names->alpha_hash_scale = "alpha_hash_scale";
@@ -972,6 +975,13 @@ uniform float distance_fade_max : hint_range(0.0, 4096.0, 0.01);
 		}
 	}
 
+	if (flags[FLAG_USE_SLUG] || flags[FLAG_USE_SLUG_COLOR]) {
+		code += R"(
+uniform float slug_scale;
+uniform highp isampler2D texture_slug : filter_nearest, repeat_disable;
+)";
+	}
+
 	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
 uniform float msdf_pixel_range : hint_range(1.0, 100.0, 1.0);
@@ -1173,6 +1183,10 @@ varying vec3 uv2_power_normal;
 )";
 	}
 
+	if (flags[FLAG_USE_SLUG] || flags[FLAG_USE_SLUG_COLOR]) {
+		code += R"(varying flat uint slug_offset;)";
+	}
+
 	code += R"(
 uniform vec3 uv1_scale;
 uniform vec3 uv1_offset;
@@ -1189,6 +1203,11 @@ uniform vec3 uv2_offset;
 	}
 
 	// Generate vertex shader.
+	if (flags[FLAG_USE_SLUG] || flags[FLAG_USE_SLUG_COLOR]) {
+		code += R"(
+/* [[TextServer::SLUG_V_METHODS]] */
+)";
+	}
 	code += R"(
 void vertex() {)";
 
@@ -1436,6 +1455,16 @@ void vertex() {)";
 	uv2_triplanar_pos *= vec3(1.0, -1.0, 1.0);
 )";
 	}
+	if (flags[FLAG_USE_SLUG] || flags[FLAG_USE_SLUG_COLOR]) {
+		code += R"(
+	slug_offset = BONE_INDICES.x;
+	vec2 vertex_norm_arr[4] = vec2[](vec2(-1.0, 1.0), vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(1.0, 1.0));
+	vec2 vertex_norm = vertex_norm_arr[BONE_INDICES.y];
+	vec4 jac = vec4(slug_scale, 0.0, 0.0, -slug_scale);
+	UV.y = -UV.y;
+	hb_gpu_dilate(VERTEX.xy, UV, vertex_norm, jac, MODELVIEW_MATRIX, VIEWPORT_SIZE);
+)";
+	}
 
 	if (grow_enabled) {
 		code += R"(
@@ -1465,11 +1494,19 @@ void vertex() {)";
 	// End of the vertex shader function.
 	code += "}\n";
 
-	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
+	if (flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
 		code += R"(
-float msdf_median(float r, float g, float b) {
-	return max(min(r, g), min(max(r, g), b));
+/* [[TextServer::MSDF_F_METHODS]] */
+)";
+	}
+	if (flags[FLAG_USE_SLUG] || flags[FLAG_USE_SLUG_COLOR]) {
+		code += R"(
+ivec4 slug_fetch(int offset) {
+	int atlas_width = textureSize(texture_slug, 0).x;
+	return texelFetch(texture_slug, ivec2(offset % atlas_width, offset / atlas_width), 0);
 }
+
+/* [[TextServer::SLUG_F_METHODS]] */
 )";
 	}
 
@@ -1627,17 +1664,42 @@ void fragment() {)";
 		}
 		code += R"(
 		float px_size = max(0.5 * dot(msdf_size, dest_size), 1.0);
-		float d = msdf_median(albedo_tex.r, albedo_tex.g, albedo_tex.b);
-		if (msdf_outline_size > 0.0) {
-			float cr = clamp(msdf_outline_size, 0.0, (msdf_pixel_range / 2.0) - 1.0) / msdf_pixel_range;
-			d = min(d, albedo_tex.a);
-			albedo_tex.a = clamp((d - 0.5 + cr) * px_size, 0.0, 1.0);
-		} else {
-			albedo_tex.a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
-		}
+		albedo_tex.a = msdf_draw(albedo_tex, msdf_outline_size, msdf_pixel_range, px_size);
 		albedo_tex.rgb = vec3(1.0);
 	}
 )";
+	} else if (flags[FLAG_USE_SLUG]) {
+		code += R"(
+	{
+		float coverage = hb_gpu_draw(UV, slug_offset);
+		float brightness = dot(albedo_tex.rgb, vec3(1.0 / 3.0));
+		float ppem = 1.0 / max(fwidth(UV).x, fwidth(UV).y);
+		coverage = hb_gpu_stem_darken(coverage, brightness, ppem);
+		albedo_tex.a = coverage * albedo_tex.a;
+	}
+)";
+
+	} else if (flags[FLAG_USE_SLUG_COLOR]) {
+		code += R"(
+	{
+		float coverage = 0.0;
+		vec4 c = hb_gpu_paint(UV, slug_offset, albedo_tex, coverage);
+		if (coverage > 0.0 && coverage < 1.0) {
+			float brightness = c.a > 0.0 ? dot(c.rgb, vec3 (1.0 / 3.0)) / c.a : 0.0;
+			float ppem = 1.0 / max(fwidth(UV).x, fwidth(UV).y);
+			float adj = hb_gpu_stem_darken(coverage, brightness, ppem);
+			c *= adj / coverage;
+		}
+		albedo_tex = c;
+		if (!OUTPUT_IS_SRGB) {
+			albedo_tex.rgb = mix(
+				pow((albedo_tex.rgb + vec3(0.055)) * (1.0 / (1.0 + 0.055)), vec3(2.4)),
+				albedo_tex.rgb.rgb * (1.0 / 12.92),
+				lessThan(albedo_tex.rgb, vec3(0.04045)));
+		}
+	}
+)";
+
 	} else if (flags[FLAG_ALBEDO_TEXTURE_FORCE_SRGB]) {
 		code += R"(
 	// Albedo Texture Force sRGB: Enabled
@@ -2067,6 +2129,11 @@ void fragment() {)";
 	}
 
 	code += "}\n";
+
+	code = RenderingServer::include_vertex_module_code(code);
+	code = RenderingServer::include_fragment_module_code(code);
+	code = RenderingServer::include_compute_module_code(code);
+	code = code.replace("#define", "//define");
 
 	// We must create the shader outside the shader_map_mutex to avoid potential deadlocks with
 	// other tasks in the WorkerThreadPool simultaneously creating materials, which
@@ -2616,6 +2683,14 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 
+		if (p_property.name == "slug_scale" && !(flags[FLAG_USE_SLUG] || flags[FLAG_USE_SLUG_COLOR])) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (p_property.name == "slug_texture" && !(flags[FLAG_USE_SLUG] || flags[FLAG_USE_SLUG_COLOR])) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
 		if ((p_property.name == "distance_fade_max_distance" || p_property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
@@ -3027,7 +3102,7 @@ float BaseMaterial3D::get_fov_override() const {
 	return fov_override;
 }
 
-Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, AlphaAntiAliasing p_alpha_antialiasing_mode, bool p_texture_repeat, RID *r_shader_rid) {
+Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_slug, bool p_slug_color, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, AlphaAntiAliasing p_alpha_antialiasing_mode, bool p_texture_repeat, RID *r_shader_rid) {
 	uint64_t key = 0;
 	key |= ((int8_t)p_shaded & 0x01) << 0;
 	key |= ((int8_t)p_transparency & 0x07) << 1; // Bits 1-3.
@@ -3040,6 +3115,8 @@ Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_
 	key |= ((int8_t)p_filter & 0x07) << 10; // Bits 10-12.
 	key |= ((int8_t)p_alpha_antialiasing_mode & 0x07) << 13; // Bits 13-15.
 	key |= ((int8_t)p_texture_repeat & 0x01) << 16;
+	key |= ((int8_t)p_slug & 0x01) << 17;
+	key |= ((int8_t)p_slug_color & 0x01) << 18;
 
 	if (materials_for_2d.has(key)) {
 		if (r_shader_rid) {
@@ -3057,6 +3134,8 @@ Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_TEXTURE_MSDF, p_msdf);
+	material->set_flag(FLAG_USE_SLUG, p_slug);
+	material->set_flag(FLAG_USE_SLUG_COLOR, p_slug_color);
 	material->set_flag(FLAG_DISABLE_DEPTH_TEST, p_no_depth);
 	material->set_flag(FLAG_FIXED_SIZE, p_fixed_size);
 	material->set_flag(FLAG_USE_TEXTURE_REPEAT, p_texture_repeat);
@@ -3117,6 +3196,15 @@ void BaseMaterial3D::set_msdf_outline_size(float p_size) {
 
 float BaseMaterial3D::get_msdf_outline_size() const {
 	return msdf_outline_size;
+}
+
+void BaseMaterial3D::set_slug_scale(float p_scale) {
+	slug_scale = p_scale;
+	_material_set_param(shader_names->slug_scale, p_scale);
+}
+
+float BaseMaterial3D::get_slug_scale() const {
+	return slug_scale;
 }
 
 void BaseMaterial3D::set_distance_fade(DistanceFadeMode p_mode) {
@@ -3560,6 +3648,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msdf_outline_size", "size"), &BaseMaterial3D::set_msdf_outline_size);
 	ClassDB::bind_method(D_METHOD("get_msdf_outline_size"), &BaseMaterial3D::get_msdf_outline_size);
 
+	ClassDB::bind_method(D_METHOD("set_slug_scale", "scale"), &BaseMaterial3D::set_slug_scale);
+	ClassDB::bind_method(D_METHOD("get_slug_scale"), &BaseMaterial3D::get_slug_scale);
+
 	ClassDB::bind_method(D_METHOD("set_distance_fade", "mode"), &BaseMaterial3D::set_distance_fade);
 	ClassDB::bind_method(D_METHOD("get_distance_fade"), &BaseMaterial3D::get_distance_fade);
 
@@ -3777,6 +3868,12 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_outline_size", PROPERTY_HINT_RANGE, "0,250,1"), "set_msdf_outline_size", "get_msdf_outline_size");
 
+	ADD_GROUP("SLUG", "slug_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_slug"), "set_flag", "get_flag", FLAG_USE_SLUG);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_slug_color"), "set_flag", "get_flag", FLAG_USE_SLUG_COLOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "slug_texture", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static()), "set_texture", "get_texture", TEXTURE_SLUG);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "slug_scale", PROPERTY_HINT_RANGE, "0,1000.0,0.001"), "set_slug_scale", "get_slug_scale");
+
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "distance_fade_min_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_distance_fade_min_distance", "get_distance_fade_min_distance");
@@ -3810,6 +3907,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_DETAIL_ALBEDO);
 	BIND_ENUM_CONSTANT(TEXTURE_DETAIL_NORMAL);
 	BIND_ENUM_CONSTANT(TEXTURE_ORM);
+	BIND_ENUM_CONSTANT(TEXTURE_SLUG);
 	BIND_ENUM_CONSTANT(TEXTURE_MAX);
 
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST);
@@ -3897,6 +3995,8 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_DISABLE_SPECULAR_OCCLUSION);
 	BIND_ENUM_CONSTANT(FLAG_USE_Z_CLIP_SCALE);
 	BIND_ENUM_CONSTANT(FLAG_USE_FOV_OVERRIDE);
+	BIND_ENUM_CONSTANT(FLAG_USE_SLUG);
+	BIND_ENUM_CONSTANT(FLAG_USE_SLUG_COLOR);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(DIFFUSE_BURLEY);
@@ -4004,6 +4104,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_msdf_pixel_range(4.0);
 	set_msdf_outline_size(0.0);
 
+	set_slug_scale(1.0);
+
 	set_heightmap_deep_parallax_min_layers(8);
 	set_heightmap_deep_parallax_max_layers(32);
 	set_heightmap_deep_parallax_flip_tangent(false); //also sets binormal
@@ -4014,6 +4116,8 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_stencil_mode(STENCIL_MODE_DISABLED);
 
 	flags[FLAG_ALBEDO_TEXTURE_MSDF] = false;
+	flags[FLAG_USE_SLUG] = false;
+	flags[FLAG_USE_SLUG_COLOR] = false;
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
 
 	current_key.invalid_key = 1;

@@ -91,14 +91,25 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_font_set_generate_mipmaps, "font_rid", "generate_mipmaps");
 	GDVIRTUAL_BIND(_font_get_generate_mipmaps, "font_rid");
 
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_font_set_multichannel_signed_distance_field, "font_rid", "msdf");
 	GDVIRTUAL_BIND(_font_is_multichannel_signed_distance_field, "font_rid");
+#endif
+
+	GDVIRTUAL_BIND(_font_set_render_mode, "font_rid", "mode");
+	GDVIRTUAL_BIND(_font_get_render_mode, "font_rid");
+	GDVIRTUAL_BIND(_font_has_color_paint, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_msdf_pixel_range, "font_rid", "msdf_pixel_range");
 	GDVIRTUAL_BIND(_font_get_msdf_pixel_range, "font_rid");
 
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_font_set_msdf_size, "font_rid", "msdf_size");
 	GDVIRTUAL_BIND(_font_get_msdf_size, "font_rid");
+#endif
+
+	GDVIRTUAL_BIND(_font_set_source_size, "font_rid", "source_size");
+	GDVIRTUAL_BIND(_font_get_source_size, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_fixed_size, "font_rid", "fixed_size");
 	GDVIRTUAL_BIND(_font_get_fixed_size, "font_rid");
@@ -198,6 +209,9 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_get_glyph_uv_rect, "font_rid", "size", "glyph");
 	GDVIRTUAL_BIND(_font_set_glyph_uv_rect, "font_rid", "size", "glyph", "uv_rect");
+
+	GDVIRTUAL_BIND(_font_get_glyph_data_offset, "font_rid", "size", "glyph");
+	GDVIRTUAL_BIND(_font_set_glyph_data_offset, "font_rid", "size", "glyph", "data_offset");
 
 	GDVIRTUAL_BIND(_font_get_glyph_texture_idx, "font_rid", "size", "glyph");
 	GDVIRTUAL_BIND(_font_set_glyph_texture_idx, "font_rid", "size", "glyph", "texture_idx");
@@ -625,6 +639,7 @@ bool TextServerExtension::font_get_generate_mipmaps(const RID &p_font_rid) const
 	return ret;
 }
 
+#ifndef DISABLE_DEPRECATED
 void TextServerExtension::font_set_multichannel_signed_distance_field(const RID &p_font_rid, bool p_msdf) {
 	GDVIRTUAL_CALL(_font_set_multichannel_signed_distance_field, p_font_rid, p_msdf);
 }
@@ -632,6 +647,23 @@ void TextServerExtension::font_set_multichannel_signed_distance_field(const RID 
 bool TextServerExtension::font_is_multichannel_signed_distance_field(const RID &p_font_rid) const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_font_is_multichannel_signed_distance_field, p_font_rid, ret);
+	return ret;
+}
+#endif
+
+void TextServerExtension::font_set_render_mode(const RID &p_font_rid, FontRenderMode p_mode) {
+	GDVIRTUAL_CALL(_font_set_render_mode, p_font_rid, p_mode);
+}
+
+TextServer::FontRenderMode TextServerExtension::font_get_render_mode(const RID &p_font_rid) const {
+	TextServer::FontRenderMode ret = TextServer::FONT_RENDER_RASTER;
+	GDVIRTUAL_CALL(_font_get_render_mode, p_font_rid, ret);
+	return ret;
+}
+
+bool TextServerExtension::font_has_color_paint(const RID &p_font_rid) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_font_has_color_paint, p_font_rid, ret);
 	return ret;
 }
 
@@ -645,13 +677,41 @@ int64_t TextServerExtension::font_get_msdf_pixel_range(const RID &p_font_rid) co
 	return ret;
 }
 
+#ifndef DISABLE_DEPRECATED
 void TextServerExtension::font_set_msdf_size(const RID &p_font_rid, int64_t p_msdf_size) {
+	if (GDVIRTUAL_CALL(_font_set_source_size, p_font_rid, p_msdf_size)) {
+		return;
+	}
 	GDVIRTUAL_CALL(_font_set_msdf_size, p_font_rid, p_msdf_size);
 }
 
 int64_t TextServerExtension::font_get_msdf_size(const RID &p_font_rid) const {
 	int64_t ret = 0;
+	if (GDVIRTUAL_CALL(_font_get_source_size, p_font_rid, ret)) {
+		return ret;
+	}
 	GDVIRTUAL_CALL(_font_get_msdf_size, p_font_rid, ret);
+	return ret;
+}
+#endif
+
+void TextServerExtension::font_set_source_size(const RID &p_font_rid, int64_t p_source_size) {
+	if (GDVIRTUAL_CALL(_font_set_source_size, p_font_rid, p_source_size)) {
+		return;
+	}
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_CALL(_font_set_msdf_size, p_font_rid, p_source_size);
+#endif
+}
+
+int64_t TextServerExtension::font_get_source_size(const RID &p_font_rid) const {
+	int64_t ret = 0;
+	if (GDVIRTUAL_CALL(_font_get_source_size, p_font_rid, ret)) {
+		return ret;
+	}
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_CALL(_font_get_msdf_size, p_font_rid, ret);
+#endif
 	return ret;
 }
 
@@ -992,6 +1052,16 @@ Rect2 TextServerExtension::font_get_glyph_uv_rect(const RID &p_font_rid, const V
 
 void TextServerExtension::font_set_glyph_uv_rect(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, const Rect2 &p_uv_rect) {
 	GDVIRTUAL_CALL(_font_set_glyph_uv_rect, p_font_rid, p_size, p_glyph, p_uv_rect);
+}
+
+int64_t TextServerExtension::font_get_glyph_data_offset(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {
+	int64_t ret = 0;
+	GDVIRTUAL_CALL(_font_get_glyph_data_offset, p_font_rid, p_size, p_glyph, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_glyph_data_offset(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_data_offset) {
+	GDVIRTUAL_CALL(_font_set_glyph_data_offset, p_font_rid, p_size, p_glyph, p_data_offset);
 }
 
 int64_t TextServerExtension::font_get_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const {

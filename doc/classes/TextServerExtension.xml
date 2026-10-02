@@ -224,6 +224,15 @@
 				Returns outline contours of the glyph.
 			</description>
 		</method>
+		<method name="_font_get_glyph_data_offset" qualifiers="virtual required const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<description>
+				Returns glyph data offset for HarfBuzz/SLUG rendering mode.
+			</description>
+		</method>
 		<method name="_font_get_glyph_index" qualifiers="virtual required const">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
@@ -349,7 +358,7 @@
 				Returns the width of the range around the shape between the minimum and maximum representable signed distance.
 			</description>
 		</method>
-		<method name="_font_get_msdf_size" qualifiers="virtual const">
+		<method name="_font_get_msdf_size" qualifiers="virtual const" deprecated="Use [method _font_get_source_size] instead.">
 			<return type="int" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
@@ -414,6 +423,13 @@
 				Returns the name of the predefined color palette at [param index]. Palette contains all colors used to render font glyphs. Each palette has the same number of colors.
 			</description>
 		</method>
+		<method name="_font_get_render_mode" qualifiers="virtual const">
+			<return type="int" enum="TextServer.FontRenderMode" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font rendering mode.
+			</description>
+		</method>
 		<method name="_font_get_scale" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -449,6 +465,13 @@
 			<param index="0" name="font_rid" type="RID" />
 			<description>
 				Returns list of the font sizes in the cache. Each size is [Vector2i] with font size and outline size.
+			</description>
+		</method>
+		<method name="_font_get_source_size" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns source font size used to generate MSDF and HarfBuzz/SLUG textures.
 			</description>
 		</method>
 		<method name="_font_get_spacing" qualifiers="virtual const">
@@ -579,6 +602,13 @@
 				Returns [code]true[/code] if a Unicode [param char] is available in the font.
 			</description>
 		</method>
+		<method name="_font_has_color_paint" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code] if font has multi-colored vector glyphs.
+			</description>
+		</method>
 		<method name="_font_is_allow_system_fallback" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
@@ -608,7 +638,7 @@
 				Returns [code]true[/code] if color modulation is applied when drawing the font's colored glyphs.
 			</description>
 		</method>
-		<method name="_font_is_multichannel_signed_distance_field" qualifiers="virtual const">
+		<method name="_font_is_multichannel_signed_distance_field" qualifiers="virtual const" deprecated="Use [method _font_get_render_mode] instead.">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
@@ -825,6 +855,16 @@
 				Sets glyph advance (offset of the next glyph).
 			</description>
 		</method>
+		<method name="_font_set_glyph_data_offset" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="Vector2i" />
+			<param index="2" name="glyph" type="int" />
+			<param index="3" name="data_offset" type="int" />
+			<description>
+				Sets glyph data offset for HarfBuzz/SLUG rendering mode.
+			</description>
+		</method>
 		<method name="_font_set_glyph_offset" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
@@ -916,7 +956,7 @@
 				Sets the width of the range around the shape between the minimum and maximum representable signed distance.
 			</description>
 		</method>
-		<method name="_font_set_msdf_size" qualifiers="virtual">
+		<method name="_font_set_msdf_size" qualifiers="virtual" deprecated="Use [method _font_set_source_size] instead.">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="msdf_size" type="int" />
@@ -924,7 +964,7 @@
 				Sets source font size used to generate MSDF textures.
 			</description>
 		</method>
-		<method name="_font_set_multichannel_signed_distance_field" qualifiers="virtual">
+		<method name="_font_set_multichannel_signed_distance_field" qualifiers="virtual" deprecated="Use [method _font_set_render_mode] instead.">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="msdf" type="bool" />
@@ -964,6 +1004,14 @@
 				Sets array of custom colors to override predefined palette. Set to empty array to reset overrides. Use [code]Color(0, 0, 0, 0)[/code], to keep predefined palette color at specific position.
 			</description>
 		</method>
+		<method name="_font_set_render_mode" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="mode" type="int" enum="TextServer.FontRenderMode" />
+			<description>
+				Sets font rendering mode.
+			</description>
+		</method>
 		<method name="_font_set_scale" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
@@ -980,6 +1028,14 @@
 			<param index="2" name="supported" type="bool" />
 			<description>
 				Adds override for [method _font_is_script_supported].
+			</description>
+		</method>
+		<method name="_font_set_source_size" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="source_size" type="int" />
+			<description>
+				Sets source font size used to generate MSDF and HarfBuzz/SLUG textures.
 			</description>
 		</method>
 		<method name="_font_set_spacing" qualifiers="virtual">

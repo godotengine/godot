@@ -143,20 +143,37 @@ public:
 	GDVIRTUAL2(_font_set_generate_mipmaps, RID, bool);
 	GDVIRTUAL1RC(bool, _font_get_generate_mipmaps, RID);
 
+#ifndef DISABLE_DEPRECATED
 	virtual void font_set_multichannel_signed_distance_field(const RID &p_font_rid, bool p_msdf) override;
 	virtual bool font_is_multichannel_signed_distance_field(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_multichannel_signed_distance_field, RID, bool);
 	GDVIRTUAL1RC(bool, _font_is_multichannel_signed_distance_field, RID);
+#endif
+
+	virtual void font_set_render_mode(const RID &p_font_rid, FontRenderMode p_render_mode) override;
+	virtual FontRenderMode font_get_render_mode(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_render_mode, RID, TextServer::FontRenderMode);
+	GDVIRTUAL1RC(TextServer::FontRenderMode, _font_get_render_mode, RID);
+
+	virtual bool font_has_color_paint(const RID &p_font_rid) const override;
+	GDVIRTUAL1RC(bool, _font_has_color_paint, RID);
 
 	virtual void font_set_msdf_pixel_range(const RID &p_font_rid, int64_t p_msdf_pixel_range) override;
 	virtual int64_t font_get_msdf_pixel_range(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_msdf_pixel_range, RID, int64_t);
 	GDVIRTUAL1RC(int64_t, _font_get_msdf_pixel_range, RID);
 
+#ifndef DISABLE_DEPRECATED
 	virtual void font_set_msdf_size(const RID &p_font_rid, int64_t p_msdf_size) override;
 	virtual int64_t font_get_msdf_size(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_msdf_size, RID, int64_t);
 	GDVIRTUAL1RC(int64_t, _font_get_msdf_size, RID);
+#endif
+
+	virtual void font_set_source_size(const RID &p_font_rid, int64_t p_source_size) override;
+	virtual int64_t font_get_source_size(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_source_size, RID, int64_t);
+	GDVIRTUAL1RC(int64_t, _font_get_source_size, RID);
 
 	virtual void font_set_fixed_size(const RID &p_font_rid, int64_t p_fixed_size) override;
 	virtual int64_t font_get_fixed_size(const RID &p_font_rid) const override;
@@ -322,6 +339,11 @@ public:
 	virtual void font_set_glyph_uv_rect(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, const Rect2 &p_uv_rect) override;
 	GDVIRTUAL3RC_REQUIRED(Rect2, _font_get_glyph_uv_rect, RID, const Vector2i &, int64_t);
 	GDVIRTUAL4_REQUIRED(_font_set_glyph_uv_rect, RID, const Vector2i &, int64_t, const Rect2 &);
+
+	virtual int64_t font_get_glyph_data_offset(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
+	virtual void font_set_glyph_data_offset(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_offset) override;
+	GDVIRTUAL3RC_REQUIRED(int64_t, _font_get_glyph_data_offset, RID, const Vector2i &, int64_t);
+	GDVIRTUAL4_REQUIRED(_font_set_glyph_data_offset, RID, const Vector2i &, int64_t, int64_t);
 
 	virtual int64_t font_get_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph) const override;
 	virtual void font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) override;
