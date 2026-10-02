@@ -157,6 +157,7 @@ const Vector<String> enums_with_forced_suffix = {
 	"Line3D.MaterialMode",
 	"Line3D.MeshAlignment",
 	"Line3D.TilingMode",
+	"SpringBoneCollision3D.CollideMode",
 };
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
