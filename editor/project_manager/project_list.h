@@ -98,7 +98,6 @@ private:
 
 	int title_fullsize_cache = 0;
 	int tag_size_cache = 0;
-	int window_size_cache = 0;
 
 protected:
 	void _notification(int p_what);
@@ -120,10 +119,9 @@ public:
 	void set_is_favorite(bool p_favorite);
 	void set_is_missing(bool p_missing);
 	void set_is_grayed(bool p_grayed);
-	void set_project_title_index(int p_title_index);
 	void set_project_title_autowrap();
 
-	void resize_project_title();
+	void resize_project_title(const int p_title_size);
 
 	ProjectListItemControl();
 };
@@ -221,8 +219,8 @@ public:
 		String get_last_edited_string() const;
 	};
 
-	HashMap<int, int> title_size_cache;
-	int project_title_index_count = -1;
+	int title_size_cache = 0;
+	int window_size_cache = 0;
 
 private:
 	String _config_path;
@@ -306,6 +304,13 @@ public:
 	static inline const char *SIGNAL_MENU_OPTION_SELECTED = "menu_option_selected";
 
 	static bool project_feature_looks_like_version(const String &p_feature);
+
+	// Compact mode.
+
+	bool compact_mode = false;
+	bool compact_mode_cache = false;
+	bool sb_visible_cache = false;
+	int compact_size_cache = 0;
 
 	// Initialization & loading.
 
