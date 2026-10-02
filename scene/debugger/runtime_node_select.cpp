@@ -394,7 +394,7 @@ bool RuntimeNodeSelect::_get_selection_ci_callback(Array r_selection) {
 
 Point2 RuntimeNodeSelect::_local_mouse_pos_callback() const {
 	Window *root = SceneTree::get_singleton()->get_root();
-	return root->get_screen_transform().affine_inverse().xform(root->get_mouse_position());
+	return root->get_popup_base_transform().xform(root->get_mouse_position());
 }
 
 void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
