@@ -874,7 +874,7 @@ void FindInFilesResultsPanel::stop_search() {
 	cancel_button->hide();
 }
 
-void FindInFilesResultsPanel::_remove_result(TreeItem *p_item) {
+void FindInFilesResultsPanel::_remove_result(TreeItem *p_item, bool p_update_matches) {
 	const String file_path = p_item->get_metadata(0);
 	result_items.erase(p_item);
 	if (file_items_results_count.has(p_item)) {
@@ -900,7 +900,9 @@ void FindInFilesResultsPanel::_remove_result(TreeItem *p_item) {
 		}
 	}
 	get_tree()->queue_delete(p_item);
-	_update_matches_text();
+	if (p_update_matches) {
+		_update_matches_text();
+	}
 }
 
 void FindInFilesResultsPanel::update_layout(EditorDock::DockLayout p_layout, int p_slot) {
@@ -1235,8 +1237,9 @@ void FindInFilesResultsPanel::replace_all() {
 	}
 
 	for (TreeItem *item : replaced_items) {
-		_remove_result(item);
+		_remove_result(item, false);
 	}
+	_update_matches_text();
 
 	emit_signal(SNAME("files_modified"));
 
@@ -1270,7 +1273,7 @@ void FindInFilesResultsPanel::_on_button_clicked(TreeItem *p_item, int p_column,
 		emit_signal(SNAME("files_modified"));
 	}
 
-	_remove_result(p_item);
+	_remove_result(p_item, true);
 }
 
 void FindInFilesResultsPanel::_apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text) {
@@ -1324,13 +1327,6 @@ void FindInFilesResultsPanel::_apply_replaces_in_file(const String &p_fpath, con
 		ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + p_fpath + "'.");
 		f->store_string(final_text);
 		f->close();
-
-		Ref<Resource> res = ResourceCache::get_ref(p_fpath);
-		if (res.is_valid()) {
-			res->reload_from_file();
-		}
-
-		EditorFileSystem::get_singleton()->update_file(p_fpath);
 	}
 }
 
