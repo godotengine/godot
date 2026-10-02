@@ -1035,7 +1035,6 @@ bool ShaderTextEditor::_edit_option(int p_option) {
 	tx->apply_ime();
 
 	switch (p_option) {
-		case EDIT_COMPLETE:
 		case EDIT_TOGGLE_COMMENT: {
 			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
 		}
