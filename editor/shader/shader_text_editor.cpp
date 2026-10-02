@@ -369,9 +369,7 @@ void TextShaderPreview::_delete_pressed() {
 String TextShaderPreview::_get_enclosing_function(const PackedStringArray &p_lines, int p_line) const {
 	int brace_stack = 0;
 
-	Ref<RegEx> regex;
-	regex.instantiate();
-	regex->compile(R"(void\s+(\w+)\s*\()");
+	const RegEx regex = RegEx(R"(void\s+(\w+)\s*\()");
 
 	for (int i = p_line; i >= 0; i--) {
 		// Strip comments and trailing whitespace.
@@ -384,9 +382,9 @@ String TextShaderPreview::_get_enclosing_function(const PackedStringArray &p_lin
 		brace_stack -= clean_line.count("{");
 
 		if (brace_stack < 0) {
-			Ref<RegExMatch> m = regex->search(clean_line);
-			if (m.is_valid()) {
-				return m->get_string(1);
+			const RegExMatch match = regex.search(clean_line);
+			if (match.is_valid()) {
+				return match.get_string(1);
 			}
 		}
 	}
@@ -397,13 +395,8 @@ String TextShaderPreview::_get_enclosing_function(const PackedStringArray &p_lin
 bool TextShaderPreview::_is_inside_loop(const PackedStringArray &p_lines, int p_line) const {
 	int brace_stack = 0;
 
-	Ref<RegEx> loop_regex;
-	loop_regex.instantiate();
-	loop_regex->compile(R"(\b(for|while|do)\b)");
-
-	Ref<RegEx> func_regex;
-	func_regex.instantiate();
-	func_regex->compile(R"(\b(?!for\b|while\b|do\b|if\b|else\b|return\b|switch\b)\w+\s+\w+\s*\()");
+	const RegEx loop_regex = RegEx(R"(\b(for|while|do)\b)");
+	const RegEx func_regex = RegEx(R"(\b(?!for\b|while\b|do\b|if\b|else\b|return\b|switch\b)\w+\s+\w+\s*\()");
 
 	for (int i = p_line; i >= 0; i--) {
 		String clean_line = p_lines[i].split("//")[0].strip_edges();
@@ -415,10 +408,10 @@ bool TextShaderPreview::_is_inside_loop(const PackedStringArray &p_lines, int p_
 		brace_stack -= clean_line.count("{");
 
 		if (brace_stack < 0) {
-			if (loop_regex->search(clean_line).is_valid()) {
+			if (loop_regex.search(clean_line).is_valid()) {
 				return true;
 			}
-			if (func_regex->search(clean_line).is_valid()) {
+			if (func_regex.search(clean_line).is_valid()) {
 				return false;
 			}
 
@@ -430,13 +423,11 @@ bool TextShaderPreview::_is_inside_loop(const PackedStringArray &p_lines, int p_
 }
 
 bool TextShaderPreview::_find_statement(const PackedStringArray &p_lines, int p_line, String &r_var_name, int &r_start, int &r_end) const {
-	Ref<RegEx> var_regex;
-	var_regex.instantiate();
-	var_regex->compile(R"(([\w.]+)\s*([+\-*/%]?=)(?!=))");
+	const RegEx var_regex = RegEx((R"(([\w.]+)\s*([+\-*/%]?=)(?!=))"));
 
 	// Walk backward from the caret to find the line with the assignment operator.
 	int start = p_line;
-	Ref<RegExMatch> var_match = var_regex->search(p_lines[start]);
+	RegExMatch var_match = var_regex.search(p_lines[start]);
 	while (!var_match.is_valid() && start > 0) {
 		String current_line = p_lines[start].strip_edges();
 
@@ -445,7 +436,7 @@ bool TextShaderPreview::_find_statement(const PackedStringArray &p_lines, int p_
 		}
 
 		start -= 1;
-		var_match = var_regex->search(p_lines[start]);
+		var_match = var_regex.search(p_lines[start]);
 	}
 
 	if (!var_match.is_valid()) {
@@ -453,10 +444,8 @@ bool TextShaderPreview::_find_statement(const PackedStringArray &p_lines, int p_
 	}
 
 	// Flow control selection can't be previewed.
-	Ref<RegEx> flow_regex;
-	flow_regex.instantiate();
-	flow_regex->compile(R"(^(else\s+)?(if|while|for)\b)");
-	if (flow_regex->search(p_lines[start].strip_edges()).is_valid()) {
+	const RegEx flow_regex = RegEx(R"(^(else\s+)?(if|while|for)\b)");
+	if (flow_regex.search(p_lines[start].strip_edges()).is_valid()) {
 		return false;
 	}
 
@@ -474,7 +463,7 @@ bool TextShaderPreview::_find_statement(const PackedStringArray &p_lines, int p_
 		return false;
 	}
 
-	String full_captured_path = var_match->get_string(1); // e.g my_vec.xy.
+	String full_captured_path = var_match.get_string(1); // e.g my_vec.xy.
 	r_var_name = full_captured_path.split(".")[0]; // e.g my_vec.
 	r_start = start;
 	r_end = end;
@@ -488,21 +477,18 @@ String TextShaderPreview::_find_var_type(const PackedStringArray &p_lines, const
 		return builtin_types[p_var_name];
 	}
 
-	Ref<RegEx> type_regex;
-	type_regex.instantiate();
-
 	// Matches a type keyword, followed by anything except a semicolon, then the variable name.
 	// This safely handles: "float my_var;" and "float a, b, my_var;"
-	type_regex->compile(R"(\b(float|vec2|vec3|vec4|int|bool)\b[^(;]*\b)" + p_var_name + R"(\b)");
+	const RegEx type_regex = RegEx(R"(\b(float|vec2|vec3|vec4|int|bool)\b[^(;]*\b)" + p_var_name + R"(\b)");
 
 	// Walk backwards from the end of the assignment statement.
 	for (int i = p_line; i >= 0; i--) {
 		// Strip out comments before checking so we don't catch commented-out declarations.
 		String clean_line = p_lines[i].split("//")[0];
 
-		Ref<RegExMatch> m = type_regex->search(clean_line);
-		if (m.is_valid()) {
-			return m->get_string(1);
+		const RegExMatch match = type_regex.search(clean_line);
+		if (match.is_valid()) {
+			return match.get_string(1);
 		}
 	}
 
