@@ -998,11 +998,11 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	hvec3 pos_local_to_light = hvec3(dot(light_to_vert, area_a_dir), dot(light_to_vert, area_b_dir), dot(light_to_vert, -area_direction));
 
 	hvec3 closest_point_local_to_light = hvec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
-	half dist = length(closest_point_local_to_light - pos_local_to_light);
+	half dist = saturateHalf(length(closest_point_local_to_light - pos_local_to_light));
 
 	half light_length = max(half(0.0), dist);
-	half light_attenuation_raw = get_omni_attenuation(float(light_length), area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation);
-	half light_attenuation_ltc = light_attenuation_raw * half(light_length * light_length); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
+	half light_attenuation_raw = saturateHalf(get_omni_attenuation(light_length, area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation));
+	half light_attenuation_ltc = saturateHalf(light_attenuation_raw * light_length * light_length); // solid angle already decreases by inverse square, so attenuation power is 2.0 by default -> subtract 2.0
 	half shadow = half(1.0);
 
 #ifndef SHADOWS_DISABLED
