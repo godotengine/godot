@@ -8,6 +8,7 @@
 		Particle attractors work in real-time and can be moved, rotated and scaled during gameplay. Unlike collision shapes, non-uniform scaling of attractors is also supported.
 		Attractors can be temporarily disabled by hiding them, or by setting their [member strength] to [code]0.0[/code].
 		[b]Note:[/b] Particle attractors only affect [GPUParticles3D], not [CPUParticles3D].
+		[b]Note:[/b] For technical reasons, a [GPUParticles3D] node may only interact with up to 32 [GPUParticlesAttractor3D] nodes at a time. If more attractors are present in the [GPUParticles3D]'s visibility AABB, some of them will be ignored by particles.
 	</description>
 	<tutorials>
 	</tutorials>
