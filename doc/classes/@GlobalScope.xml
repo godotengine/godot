@@ -689,11 +689,13 @@
 		<method name="max" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
-				Returns the maximum of the given numeric values. This function can take any number of arguments.
+				Returns the maximum of the given values. This function can take two or more arguments. Supported types: [int], [float], [bool], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				max(1, 7, 3, -6, 5) # Returns 7
+				max(true, false)    # Returns true
 				[/codeblock]
-				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise maximum, and will pick the largest value when compared using [code]x &lt; y[/code]. To perform component-wise maximum, use [method Vector2.max], [method Vector2i.max], [method Vector3.max], [method Vector3i.max], [method Vector4.max], and [method Vector4i.max].
+				See also [method min].
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise maximum, and will pick the largest value when compared using [code]x &lt; y[/code]. To perform component-wise maximum, use [method Vector2.max], [method Vector2i.max], [method Vector3.max], [method Vector3i.max], [method Vector4.max], and [method Vector4i.max]. For better type safety, use [method maxf] or [method maxi].
 			</description>
 		</method>
 		<method name="maxf">
@@ -723,11 +725,13 @@
 		<method name="min" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
-				Returns the minimum of the given numeric values. This function can take any number of arguments.
+				Returns the minimum of the given values. This function can take two or more arguments. Supported types: [int], [float], [bool], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i].
 				[codeblock]
 				min(1, 7, 3, -6, 5) # Returns -6
+				min(true, false)    # Returns false
 				[/codeblock]
-				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise minimum, and will pick the smallest value when compared using [code]x &lt; y[/code]. To perform component-wise minimum, use [method Vector2.min], [method Vector2i.min], [method Vector3.min], [method Vector3i.min], [method Vector4.min], and [method Vector4i.min].
+				See also [method max].
+				[b]Note:[/b] When using this on vectors it will [i]not[/i] perform component-wise minimum, and will pick the smallest value when compared using [code]x &lt; y[/code]. To perform component-wise minimum, use [method Vector2.min], [method Vector2i.min], [method Vector3.min], [method Vector3i.min], [method Vector4.min], and [method Vector4i.min]. For better type safety, use [method minf] or [method mini].
 			</description>
 		</method>
 		<method name="minf">
