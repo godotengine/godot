@@ -3,7 +3,9 @@ func convert_arg_int_to_float(arg: int) -> float: return arg
 func convert_var_int_to_float() -> float: var number := 59; return number
 
 func convert_literal_array_to_packed() -> PackedStringArray: return ['46']
+@warning_ignore("implicit_conversion_causes_copy")
 func convert_arg_array_to_packed(arg: Array) -> PackedStringArray: return arg
+@warning_ignore("implicit_conversion_causes_copy")
 func convert_var_array_to_packed() -> PackedStringArray: var array := ['79']; return array
 
 func test():
