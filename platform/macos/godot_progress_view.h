@@ -35,11 +35,16 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
+struct ProgressData {
+	DisplayServerEnums::ProgressState pr_state = DisplayServerEnums::PROGRESS_STATE_NOPROGRESS;
+	float pr_value = 0.f;
+	float pr_offset = 0.f;
+};
+
 @interface GodotProgressView : NSView {
-	DisplayServerEnums::ProgressState pr_state;
-	float pr_value;
-	float pr_offset;
+	HashMap<DisplayServerEnums::WindowID, ProgressData> pd_map;
 }
-- (void)setValue:(float)value;
-- (void)setState:(DisplayServerEnums::ProgressState)state;
+- (void)setValue:(float)value wid:(DisplayServerEnums::WindowID)wid;
+- (void)setState:(DisplayServerEnums::ProgressState)state wid:(DisplayServerEnums::WindowID)wid;
+- (void)removeWindow:(DisplayServerEnums::WindowID)wid;
 @end

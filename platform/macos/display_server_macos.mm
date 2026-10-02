@@ -791,6 +791,9 @@ void DisplayServerMacOS::window_destroy(DisplayServerEnums::WindowID p_window) {
 	}
 #endif
 	AccessibilityServer::get_singleton()->window_destroy(p_window);
+	if (dock_progress) {
+		[dock_progress removeWindow:p_window];
+	}
 
 	windows.erase(p_window);
 
@@ -2729,25 +2732,25 @@ void DisplayServerMacOS::window_request_attention(DisplayServerEnums::WindowID p
 }
 
 void DisplayServerMacOS::window_set_taskbar_progress_value(float p_value, DisplayServerEnums::WindowID p_window) {
-	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
+	ERR_FAIL_COND(!windows.has(p_window));
 
 	if (!dock_progress) {
 		dock_progress = [[GodotProgressView alloc] init];
 		[NSApp.dockTile setContentView:dock_progress];
 	}
 
-	[dock_progress setValue:p_value];
+	[dock_progress setValue:p_value wid:p_window];
 }
 
 void DisplayServerMacOS::window_set_taskbar_progress_state(DisplayServerEnums::ProgressState p_state, DisplayServerEnums::WindowID p_window) {
-	ERR_FAIL_COND(p_window != DisplayServerEnums::MAIN_WINDOW_ID);
+	ERR_FAIL_COND(!windows.has(p_window));
 
 	if (!dock_progress) {
 		dock_progress = [[GodotProgressView alloc] init];
 		[NSApp.dockTile setContentView:dock_progress];
 	}
 
-	[dock_progress setState:p_state];
+	[dock_progress setState:p_state wid:p_window];
 }
 
 void DisplayServerMacOS::window_move_to_foreground(DisplayServerEnums::WindowID p_window) {
