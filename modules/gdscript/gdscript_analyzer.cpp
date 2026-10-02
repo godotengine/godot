@@ -1703,7 +1703,7 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 
 		if (value.get_type() != argument_info.type) {
 #ifdef DEBUG_ENABLED
-			check_conversion_warnings(argument, type_from_variant(value, argument), type_from_property(argument_info, true, argument));
+			check_conversion_warnings(argument, argument->type_constraint, type_from_property(argument_info, true, argument));
 #endif // DEBUG_ENABLED
 
 			if (!Variant::can_convert_strict(value.get_type(), argument_info.type)) {
@@ -6309,12 +6309,12 @@ void GDScriptAnalyzer::check_conversion_warnings(const GDScriptParser::Node *p_s
 		return;
 	}
 
-	bool conversion_causes_copy = (Variant::is_type_shared(p_from_type.builtin_type) || p_from_type.builtin_type >= Variant::PACKED_BYTE_ARRAY) && (Variant::is_type_shared(p_to_type.builtin_type) || p_to_type.builtin_type >= Variant::PACKED_BYTE_ARRAY);
+	bool conversion_causes_copy = Variant::is_type_shared(p_from_type.builtin_type) && Variant::is_type_shared(p_to_type.builtin_type);
 	// We don't want to warn on copies if the use comes from a literal.
-	bool from_literal = p_source && p_source->type == GDScriptParser::Node::LITERAL;
+	bool from_literal = p_source && (p_source->type == GDScriptParser::Node::ARRAY || p_source->type == GDScriptParser::Node::DICTIONARY);
 	if (!from_literal && conversion_causes_copy) {
-		String from_name = p_from_type.to_string();
-		String to_name = p_to_type.to_string();
+		String from_name = p_from_type.to_string_strict();
+		String to_name = p_to_type.to_string_strict();
 		parser->push_warning(p_source, GDScriptWarning::IMPLICIT_CONVERSION_CAUSES_COPY, from_name, to_name);
 	}
 }

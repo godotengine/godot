@@ -2,9 +2,7 @@ const const_float_int: float = 19
 const const_float_plus: float = 12 + 22
 const const_float_cast: float = 76 as float
 
-@warning_ignore("implicit_conversion_causes_copy")
 const const_packed_empty: PackedFloat64Array = []
-@warning_ignore("implicit_conversion_causes_copy")
 const const_packed_ints: PackedFloat64Array = [52]
 
 func test():
