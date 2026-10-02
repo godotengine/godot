@@ -319,6 +319,10 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 		if (depth_test == DEPTH_TEST_ENABLED_INVERTED) {
 			depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS;
 		}
+	} else if (depth_draw != DEPTH_DRAW_DISABLED) {
+		depth_stencil_state.enable_depth_test = true;
+		depth_stencil_state.enable_depth_write = true;
+		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_ALWAYS;
 	}
 
 	RD::RenderPrimitive primitive_rd_table[RSE::PRIMITIVE_MAX] = {
