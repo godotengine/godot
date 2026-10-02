@@ -3,7 +3,6 @@
     <ProjectGuid>{8FBEC238-D944-4074-8548-B3B524305905}</ProjectGuid>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>14</LangVersion>
-    <OutputPath>bin/$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace>Godot</RootNamespace>
     <DocumentationFile>$(OutputPath)/$(AssemblyName).xml</DocumentationFile>
@@ -35,6 +34,11 @@
       <Private>false</Private>
     </ProjectReference>
   </ItemGroup>
+
+  <Target Name="CopyFiles" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll;$(OutputPath)\$(AssemblyName).pdb;$(OutputPath)\$(AssemblyName).xml" DestinationFolder="$(GodotOutputDataDir)\Api\$(Configuration)" />
+  </Target>
+
   <!-- Compat Sources -->
   <ItemGroup Condition=" '$(GodotNoDeprecated)' == '' ">
     <Compile Include="Compat.cs" />
