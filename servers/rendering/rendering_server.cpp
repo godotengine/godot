@@ -3201,9 +3201,13 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_attributes_set_dof_blur_quality", "quality", "use_jitter"), &RenderingServer::camera_attributes_set_dof_blur_quality);
 	ClassDB::bind_method(D_METHOD("camera_attributes_set_dof_blur_bokeh_shape", "shape"), &RenderingServer::camera_attributes_set_dof_blur_bokeh_shape);
 
+	ClassDB::bind_method(D_METHOD("camera_attributes_set_motion_blur_show_in_editor", "enabled"), &RenderingServer::camera_attributes_set_motion_blur_show_in_editor);
+	ClassDB::bind_method(D_METHOD("camera_attributes_set_motion_blur_quality", "quality"), &RenderingServer::camera_attributes_set_motion_blur_quality);
+
 	ClassDB::bind_method(D_METHOD("camera_attributes_set_dof_blur", "camera_attributes", "far_enable", "far_distance", "far_transition", "near_enable", "near_distance", "near_transition", "amount"), &RenderingServer::camera_attributes_set_dof_blur);
 	ClassDB::bind_method(D_METHOD("camera_attributes_set_exposure", "camera_attributes", "multiplier", "normalization"), &RenderingServer::camera_attributes_set_exposure);
 	ClassDB::bind_method(D_METHOD("camera_attributes_set_auto_exposure", "camera_attributes", "enable", "min_sensitivity", "max_sensitivity", "speed", "scale"), &RenderingServer::camera_attributes_set_auto_exposure);
+	ClassDB::bind_method(D_METHOD("camera_attributes_set_motion_blur", "camera_attributes", "enabled", "intensity", "velocity_multiplier_object", "velocity_multiplier_camera_movement", "velocity_multiplier_camera_rotation", "velocity_threshold_lower", "velocity_threshold_upper"), &RenderingServer::camera_attributes_set_motion_blur);
 
 	BIND_ENUM_CONSTANT(RSE::DOF_BOKEH_BOX);
 	BIND_ENUM_CONSTANT(RSE::DOF_BOKEH_HEXAGON);
@@ -3213,6 +3217,10 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RSE::DOF_BLUR_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(RSE::DOF_BLUR_QUALITY_MEDIUM);
 	BIND_ENUM_CONSTANT(RSE::DOF_BLUR_QUALITY_HIGH);
+
+	BIND_ENUM_CONSTANT(RSE::MOTION_BLUR_QUALITY_STANDARD);
+	BIND_ENUM_CONSTANT(RSE::MOTION_BLUR_QUALITY_HIGH);
+	BIND_ENUM_CONSTANT(RSE::MOTION_BLUR_QUALITY_CINEMATIC);
 
 	/* SCENARIO */
 
@@ -3742,6 +3750,8 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF_RST("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16× (Slow)")), 2);
+
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/motion_blur/motion_blur_quality", PROPERTY_HINT_ENUM, "Standard (Fast),High (Average), Cinematic (Slowest)"), 0);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slowest)"), 1);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
