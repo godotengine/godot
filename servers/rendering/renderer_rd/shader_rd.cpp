@@ -259,6 +259,7 @@ void ShaderRD::_initialize_version(Version *p_version) {
 	p_version->variant_data.resize(variant_defines.size());
 	p_version->group_compilation_tasks.resize_initialized(group_enabled.size());
 	p_version->group_loaded_from_cache.resize_initialized(group_enabled.size());
+	p_version->group_compilation_valid.resize_initialized(group_enabled.size());
 }
 
 void ShaderRD::_clear_version(Version *p_version) {
@@ -732,6 +733,7 @@ void ShaderRD::_compile_version_start(Version *p_version, int p_group) {
 	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &ShaderRD::_compile_variant, compile_data, group_to_variant_map[p_group].size(), -1, true, SNAME("ShaderCompilation"));
 	p_version->group_compilation_tasks.write[p_group] = group_task;
 	p_version->group_loaded_from_cache.write[p_group] = false;
+	p_version->group_compilation_valid.write[p_group] = false;
 }
 
 void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
@@ -756,27 +758,30 @@ void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
 	}
 
 	if (!all_valid) {
-		// Clear versions if they exist.
-		for (int i = 0; i < variant_defines.size(); i++) {
-			if (!variants_enabled[i] || !group_enabled[variant_defines[i].group]) {
+		// Clear this group's variants if they exist.
+		for (uint32_t i = 0; i < group_to_variant_map[p_group].size(); i++) {
+			int variant_id = group_to_variant_map[p_group][i];
+			if (!variants_enabled[variant_id]) {
 				continue; // Disabled.
 			}
-			if (!p_version->variants[i].is_null()) {
-				RD::get_singleton()->free_rid(p_version->variants[i]);
+			if (!p_version->variants[variant_id].is_null()) {
+				RD::get_singleton()->free_rid(p_version->variants[variant_id]);
+				p_version->variants.write[variant_id] = RID();
 			}
+			p_version->variant_data.write[variant_id].clear();
 		}
 
-		p_version->variants.clear();
-		p_version->variant_data.clear();
+		p_version->group_compilation_valid.write[p_group] = false;
 		return;
 	}
+
 #if ENABLE_SHADER_CACHE
-	else if (shader_cache_user_dir_valid && !p_version->group_loaded_from_cache[p_group]) {
+	if (shader_cache_user_dir_valid && !p_version->group_loaded_from_cache[p_group]) {
 		_save_to_cache(p_version, p_group);
 	}
 #endif
 
-	p_version->valid = true;
+	p_version->group_compilation_valid.write[p_group] = true;
 }
 
 void ShaderRD::_compile_ensure_finished(Version *p_version) {
@@ -784,6 +789,19 @@ void ShaderRD::_compile_ensure_finished(Version *p_version) {
 	for (int i = 0; i < group_enabled.size(); i++) {
 		_compile_version_end(p_version, i);
 	}
+
+	// The version is only valid if every enabled group compiled successfully.
+	bool valid = true;
+	for (int i = 0; i < p_version->group_compilation_tasks.size(); i++) {
+		if (!group_enabled[i]) {
+			continue;
+		}
+		if (!p_version->group_compilation_valid[i]) {
+			valid = false;
+			break;
+		}
+	}
+	p_version->valid = valid;
 }
 
 void ShaderRD::_version_set(Version *p_version, const HashMap<String, String> &p_code, const Vector<String> &p_custom_defines) {
