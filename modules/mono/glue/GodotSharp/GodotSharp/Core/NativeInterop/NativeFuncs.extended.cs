@@ -2,10 +2,20 @@
 #pragma warning disable IDE1006 // Naming rule violation
 // ReSharper disable InconsistentNaming
 
+using System;
+
 namespace Godot.NativeInterop
 {
     public static partial class NativeFuncs
     {
+        public static unsafe godot_variant godotsharp_method_bind_call(IntPtr p_method_bind, IntPtr p_instance,
+            godot_variant** p_args, int p_arg_count, out godot_variant_call_error p_call_error)
+        {
+            godotsharp_method_bind_call(p_method_bind, p_instance, p_args, p_arg_count, out p_call_error,
+                out godot_variant ret);
+            return ret;
+        }
+
         public static godot_variant godotsharp_variant_new_copy(scoped in godot_variant src)
         {
             switch (src.Type)
@@ -45,6 +55,12 @@ namespace Godot.NativeInterop
             }
 
             godotsharp_variant_new_copy(out godot_variant ret, src);
+            return ret;
+        }
+        
+        public static godot_array godotsharp_variant_as_array(scoped in godot_variant p_self)
+        {
+            godotsharp_variant_as_array(in p_self, out godot_array ret);
             return ret;
         }
 

@@ -972,7 +972,8 @@ namespace Godot
         /// <returns>The constructed color.</returns>
         public static Color FromOkHsl(float hue, float saturation, float lightness, float alpha = 1.0f)
         {
-            return NativeFuncs.godotsharp_color_from_ok_hsl(hue, saturation, lightness, alpha);
+            NativeFuncs.godotsharp_color_from_ok_hsl(hue, saturation, lightness, alpha, out var color);
+            return color;
         }
 
         /// <summary>
