@@ -1485,7 +1485,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						} else {
 							has_valid_getter = true;
 #ifdef DEBUG_ENABLED
-							check_conversion_warnings(member.variable, return_datatype.builtin_type, member.variable->type_constraint.builtin_type);
+							check_conversion_warnings(member.variable, return_datatype, member.variable->type_constraint);
 #endif // DEBUG_ENABLED
 						}
 					}
@@ -1509,7 +1509,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						has_valid_setter = true;
 
 #ifdef DEBUG_ENABLED
-						check_conversion_warnings(member.variable, member.variable->type_constraint.builtin_type, setter_function->parameters[0]->type_constraint.builtin_type);
+						check_conversion_warnings(member.variable, member.variable->type_constraint, setter_function->parameters[0]->type_constraint);
 #endif // DEBUG_ENABLED
 					}
 				}
@@ -1703,7 +1703,7 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 
 		if (value.get_type() != argument_info.type) {
 #ifdef DEBUG_ENABLED
-			check_conversion_warnings(argument, value.get_type(), argument_info.type);
+			check_conversion_warnings(argument, type_from_variant(value, argument), type_from_property(argument_info, true, argument));
 #endif // DEBUG_ENABLED
 
 			if (!Variant::can_convert_strict(value.get_type(), argument_info.type)) {
@@ -2236,7 +2236,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 				mark_node_unsafe(p_assignable->initializer);
 #ifdef DEBUG_ENABLED
 			} else {
-				check_conversion_warnings(p_assignable->initializer, initializer_type.builtin_type, specified_type.builtin_type);
+				check_conversion_warnings(p_assignable->initializer, initializer_type, specified_type);
 #endif // DEBUG_ENABLED
 			}
 		}
@@ -2625,7 +2625,7 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 				p_return->use_conversion = true;
 			}
 #ifdef DEBUG_ENABLED
-			check_conversion_warnings(p_return->return_value, result.builtin_type, expected_type.builtin_type);
+			check_conversion_warnings(p_return->return_value, result, expected_type);
 #endif // DEBUG_ENABLED
 		}
 	}
@@ -2803,7 +2803,7 @@ void GDScriptAnalyzer::update_const_expression_builtin_type(GDScriptParser::Expr
 	}
 
 #ifdef DEBUG_ENABLED
-	check_conversion_warnings(p_expression, value_type.builtin_type, p_type.builtin_type);
+	check_conversion_warnings(p_expression, value_type, p_type);
 #endif // DEBUG_ENABLED
 
 	p_expression->reduced_value = converted_to;
@@ -3083,7 +3083,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 #ifdef DEBUG_ENABLED
 	if (assignee_type.is_hard_type()) {
-		check_conversion_warnings(p_assignment->assigned_value, assigned_value_type.builtin_type, assignee_type.builtin_type);
+		check_conversion_warnings(p_assignment->assigned_value, assigned_value_type, assignee_type);
 	}
 	// Check for assignment with operation before assignment.
 	if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE && p_assignment->assignee->type == GDScriptParser::Node::IDENTIFIER) {
@@ -6153,7 +6153,7 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 			}
 #ifdef DEBUG_ENABLED
 		} else if (par_type.kind == GDScriptParser::DataType::BUILTIN && arg_type.kind == GDScriptParser::DataType::BUILTIN) {
-			check_conversion_warnings(p_call->arguments[i], arg_type.builtin_type, par_type.builtin_type);
+			check_conversion_warnings(p_call->arguments[i], arg_type, par_type);
 #endif // DEBUG_ENABLED
 		}
 	}
@@ -6295,26 +6295,26 @@ void GDScriptAnalyzer::warn_confusable_temporary_modification(GDScriptParser::Ex
 	}
 }
 
-void GDScriptAnalyzer::check_conversion_warnings(const GDScriptParser::Node *p_source, Variant::Type p_from_type, Variant::Type p_to_type) {
-	if (p_from_type == p_to_type) {
+void GDScriptAnalyzer::check_conversion_warnings(const GDScriptParser::Node *p_source, const GDScriptParser::DataType &p_from_type, const GDScriptParser::DataType &p_to_type) {
+	if (p_from_type.builtin_type == p_to_type.builtin_type) {
 		return;
 	}
 
-	if (p_from_type == Variant::NIL || p_to_type == Variant::NIL) {
+	if (p_from_type.builtin_type == Variant::NIL || p_to_type.builtin_type == Variant::NIL) {
 		return;
 	}
 
-	if (p_from_type == Variant::FLOAT && p_to_type == Variant::INT) {
+	if (p_from_type.builtin_type == Variant::FLOAT && p_to_type.builtin_type == Variant::INT) {
 		parser->push_warning(p_source, GDScriptWarning::NARROWING_CONVERSION);
 		return;
 	}
 
-	bool conversion_causes_copy = (Variant::is_type_shared(p_from_type) || p_from_type >= Variant::PACKED_BYTE_ARRAY) && (Variant::is_type_shared(p_to_type) || p_to_type >= Variant::PACKED_BYTE_ARRAY);
+	bool conversion_causes_copy = (Variant::is_type_shared(p_from_type.builtin_type) || p_from_type.builtin_type >= Variant::PACKED_BYTE_ARRAY) && (Variant::is_type_shared(p_to_type.builtin_type) || p_to_type.builtin_type >= Variant::PACKED_BYTE_ARRAY);
 	// We don't want to warn on copies if the use comes from a literal.
 	bool from_literal = p_source && p_source->type == GDScriptParser::Node::LITERAL;
 	if (!from_literal && conversion_causes_copy) {
-		String from_name = Variant::get_type_name(p_from_type);
-		String to_name = Variant::get_type_name(p_to_type);
+		String from_name = p_from_type.to_string();
+		String to_name = p_to_type.to_string();
 		parser->push_warning(p_source, GDScriptWarning::IMPLICIT_CONVERSION_CAUSES_COPY, from_name, to_name);
 	}
 }

@@ -160,7 +160,7 @@ class GDScriptAnalyzer {
 #ifdef DEBUG_ENABLED
 	void is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope);
 	void warn_confusable_temporary_modification(GDScriptParser::ExpressionNode *p_expression);
-	void check_conversion_warnings(const GDScriptParser::Node *p_source, Variant::Type p_from, Variant::Type p_to);
+	void check_conversion_warnings(const GDScriptParser::Node *p_source, const GDScriptParser::DataType &p_from_type, const GDScriptParser::DataType &p_to_type);
 #endif // DEBUG_ENABLED
 
 public:
