@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  visionos_controller_tracking.h                                        */
+/*  visionos_spatial_events.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -34,62 +34,62 @@
 
 #include "visionos_definitions.h"
 
+#include "core/math/transform_3d.h"
 #include "servers/xr/xr_controller_tracker.h"
 
-#ifdef __OBJC__
-#define Key GodotKey
-#import <CoreHaptics/CoreHaptics.h>
-#import <GameController/GameController.h>
-#undef Key
-#else // __OBJC__
-typedef struct GCController *GCController_t;
-typedef struct CHHapticEngine *CHHapticEngine_t;
-#endif // __OBJC__
+// Equivalent to https://developer.apple.com/documentation/swiftui/spatialeventcollection/event
+struct VisionOSSpatialEvent {
+	// Ray
+	bool has_ray;
+	Transform3D ray;
 
-class VisionOSXRInterface;
+	// Hand
+	enum class Chirality : int {
+		none = 0,
+		left = 1,
+		right = 2
+	};
+	Chirality chirality;
+	Transform3D hand_pose;
 
-// Controller tracking using ARKit and GCController
-struct VisionOSControllerTracking {
-	bool enabled = false;
-	VisionOSAuthorizationStatus authorization = VisionOSAuthorizationStatus::NOT_DETERMINED;
+	// Phase
+	enum class Phase : int {
+		unknown = 0,
+		active = 1,
+		cancelled = 2,
+		ended = 3
+	};
+	Phase phase;
+};
 
-	bool active() const { return enabled && authorization == VisionOSAuthorizationStatus::ALLOWED; }
+// Godot representation of visionOS spatial events.
+struct VisionOSSpatialEventTracking {
+	// Ray from center of the head to
+	// the direction of the eyes, when a
+	// pinch gesture begins.
+	Ref<XRControllerTracker> eyes_ray;
 
-	// ARKit state
-	ar_accessory_tracking_provider_t accessory_tracking_provider = nullptr;
-	ar_accessories_t accessories = nullptr;
-	ar_accessory_anchor_t left_controller_anchor = nullptr;
-	ar_accessory_anchor_t right_controller_anchor = nullptr;
+	struct Hand {
+		// Hand pose when pinching and dragging.
+		VisionOSSharedController *controller;
 
-	// Controller state
-	VisionOSSharedController *left_shared_controller = nullptr;
-	VisionOSSharedController *right_shared_controller = nullptr;
-	GCController *left_gc_controller = nullptr;
-	GCController *right_gc_controller = nullptr;
-	CHHapticEngine *left_haptic_engine = nullptr;
-	CHHapticEngine *right_haptic_engine = nullptr;
+		// Update the ray only once per gesture.
+		bool ray_submitted = false;
 
-	// Notification observers
-	id controller_observer = nullptr;
-	id controller_disconnect_observer = nullptr;
+		// Correcting the transforms from each hand to
+		// map to the Godot and OpenXR convention:
+		// https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_EXT_hand_interaction
+		Transform3D transform_correction;
+	};
 
-	void initialize(XRServer *p_xr_server, VisionOSXRInterface *p_xr_interface,
-			VisionOSSharedController &p_left_hand,
+	// Left and right hands.
+	Hand left_hand, right_hand;
+
+	void initialize(XRServer *p_xr_server, VisionOSSharedController &p_left_hand,
 			VisionOSSharedController &p_right_hand);
 	void uninitialize(XRServer *p_xr_server);
 
-	void init_for_controller(GCController *p_controller);
-	void setup_controller_notifications();
-	void cleanup_controller_notifications();
-	void handle_controller_disconnect(GCController *p_controller);
-	void update_accessories_list();
-	void update_controller_trackers_from_arkit(CFTimeInterval p_trackable_anchor_time);
-	void update_controller_from_anchor(Ref<XRControllerTracker> p_controller_tracker, ar_accessory_anchor_t p_controller_anchor, GCController *p_gc_controller);
-
-	// Called directly from the same function on the XRInterface
-	void trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec);
-
-	VisionOSXRInterface *xr_interface = nullptr; // assigned on initialization
+	void on_spatial_event(const VisionOSSpatialEvent &);
 };
 
 #endif // VISIONOS_ENABLED

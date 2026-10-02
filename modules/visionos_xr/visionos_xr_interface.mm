@@ -38,6 +38,7 @@
 #include "core/error/error_macros.h"
 #include "core/input/input.h"
 #include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -48,6 +49,7 @@
 #include "servers/rendering/rendering_server.h" // ERR_NOT_ON_RENDER_THREAD_V
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/rendering_server_types.h"
+#include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_server.h"
 
 #include "platform/visionos/godot_app_delegate_service_visionos.h"
@@ -150,6 +152,18 @@ bool VisionOSXRInterface::initialize() {
 	hands.enabled = GLOBAL_GET("xr/visionos/enable_hand_tracking");
 	controllers.enabled = GLOBAL_GET("xr/visionos/enable_controller_tracking");
 
+	// Shared trackers
+	left_hand.tracker.instantiate();
+	left_hand.tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_LEFT);
+	left_hand.tracker->set_tracker_name("left_hand");
+	left_hand.tracker->set_tracker_desc("visionOS left controller and spatial event");
+	xr_server->add_tracker(left_hand.tracker);
+	right_hand.tracker.instantiate();
+	right_hand.tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_RIGHT);
+	right_hand.tracker->set_tracker_name("right_hand");
+	right_hand.tracker->set_tracker_desc("visionOS light controller and spatial event");
+	xr_server->add_tracker(right_hand.tracker);
+
 	// ARKit session
 	ar_session = ar_session_create();
 
@@ -179,8 +193,10 @@ bool VisionOSXRInterface::initialize() {
 
 	// Controllers
 	if (controllers.enabled) {
-		controllers.initialize(xr_server, this);
+		controllers.initialize(xr_server, this, left_hand, right_hand);
 	}
+
+	spatial_events.initialize(xr_server, left_hand, right_hand);
 
 	// Running the ARKit session for head tracking, at first
 	run_ar_session();
@@ -221,6 +237,18 @@ bool VisionOSXRInterface::CompositorServicesData::initialize(XRServer *p_xr_serv
 	return true;
 }
 
+namespace {
+
+template <typename TrackerType>
+void uninitialize_tracker(Ref<TrackerType> &p_tracker, XRServer *p_xr_server) {
+	if (p_tracker.is_valid()) {
+		p_xr_server->remove_tracker(p_tracker);
+		p_tracker.unref();
+	}
+}
+
+} // namespace
+
 void VisionOSXRInterface::uninitialize() {
 	if (!initialized) {
 		return;
@@ -232,32 +260,28 @@ void VisionOSXRInterface::uninitialize() {
 
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
+		uninitialize_tracker(left_hand.tracker, xr_server);
+		uninitialize_tracker(right_hand.tracker, xr_server);
+
 		if (controllers.enabled) {
 			controllers.uninitialize(xr_server);
 		}
 
 		if (hands.enabled) {
-			if (hands.left_hand_tracker.is_valid()) {
-				xr_server->remove_tracker(hands.left_hand_tracker);
-				hands.left_hand_tracker.unref();
-			}
-			if (hands.right_hand_tracker.is_valid()) {
-				xr_server->remove_tracker(hands.right_hand_tracker);
-				hands.right_hand_tracker.unref();
-			}
+			uninitialize_tracker(hands.left_hand_tracker, xr_server);
+			uninitialize_tracker(hands.right_hand_tracker, xr_server);
 		}
 
 		if (cs.enabled) {
-			if (cs.head_tracker.is_valid()) {
-				xr_server->remove_tracker(cs.head_tracker);
-				cs.head_tracker.unref();
-			}
+			uninitialize_tracker(cs.head_tracker, xr_server);
 
 			if (xr_server->get_primary_interface() == this) {
 				// no longer our primary interface
 				xr_server->set_primary_interface(nullptr);
 			}
 		}
+
+		spatial_events.uninitialize(xr_server);
 
 		initialized = false;
 	}
@@ -539,6 +563,10 @@ void VisionOSXRInterface::run_ar_session() {
 
 	// Running the ARSession with the given providers, after it has been configured
 	ar_session_run(ar_session, ar_data_providers);
+}
+
+void VisionOSXRInterface::on_spatial_event(const VisionOSSpatialEvent &p_event) {
+	spatial_events.on_spatial_event(p_event);
 }
 
 CFTimeInterval VisionOSXRInterface::get_trackable_anchor_time() {
