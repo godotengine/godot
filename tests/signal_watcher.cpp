@@ -60,21 +60,21 @@ void SignalWatcher::_signal_callback_three(Variant p_arg1, Variant p_arg2, Varia
 	_add_signal_entry(args, p_name);
 }
 
-void SignalWatcher::watch_signal(Object *p_object, const String &p_signal) {
+void SignalWatcher::watch_signal_named(Object *p_object, const String &p_signal, const String &p_name) {
 	MethodInfo method_info;
 	ClassDB::get_signal(p_object->get_class(), p_signal, &method_info);
 	switch (method_info.arguments.size()) {
 		case 0: {
-			p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_zero).bind(p_signal));
+			p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_zero).bind(p_name));
 		} break;
 		case 1: {
-			p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_one).bind(p_signal));
+			p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_one).bind(p_name));
 		} break;
 		case 2: {
-			p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_two).bind(p_signal));
+			p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_two).bind(p_name));
 		} break;
 		case 3: {
-			p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_three).bind(p_signal));
+			p_object->connect(p_signal, callable_mp(this, &SignalWatcher::_signal_callback_three).bind(p_name));
 		} break;
 		default: {
 			MESSAGE("Signal ", p_signal, " arg count not supported.");
