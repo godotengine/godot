@@ -349,8 +349,9 @@ void PropertySelector::_confirmed() {
 	if (!ti) {
 		return;
 	}
-	emit_signal(SNAME("selected"), ti->get_metadata(0));
+	// The signal may cause another dialog to be displayed, so be sure to hide this one first.
 	hide();
+	emit_signal(SNAME("selected"), ti->get_metadata(0));
 }
 
 void PropertySelector::_item_selected() {
