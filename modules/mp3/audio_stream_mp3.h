@@ -51,6 +51,7 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 	uint32_t frames_mixed = 0;
 	bool active = false;
 	int loops = 0;
+	bool beat_loop = false;
 
 	friend class AudioStreamMP3;
 
