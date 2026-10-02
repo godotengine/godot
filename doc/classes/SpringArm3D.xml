@@ -29,6 +29,12 @@
 				Returns the spring arm's current length.
 			</description>
 		</method>
+		<method name="process_spring">
+			<return type="void" />
+			<description>
+				Checks for collisions with the SpringArm3D immediately without waiting for the next idle or physics frame.
+			</description>
+		</method>
 		<method name="remove_excluded_object">
 			<return type="bool" />
 			<param index="0" name="RID" type="RID" />
@@ -46,6 +52,9 @@
 			The margin is then subtracted to this length and the translation is applied to the child objects of the SpringArm3D.
 			This margin is useful for when the SpringArm3D has a [Camera3D] as a child node: without the margin, the [Camera3D] would be placed on the exact point of collision, while with the margin the [Camera3D] would be placed close to the point of collision.
 		</member>
+		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="SpringArm3D.SpringArm3DProcessCallback" default="0">
+			When the SpringArm3D checks for collisions. See [enum SpringArm3DProcessCallback].
+		</member>
 		<member name="shape" type="Shape3D" setter="set_shape" getter="get_shape">
 			The [Shape3D] to use for the SpringArm3D.
 			When the shape is set, the SpringArm3D will cast the [Shape3D] on its z axis instead of performing a ray cast.
@@ -55,4 +64,15 @@
 			To know more about how to perform a shape cast or a ray cast, please consult the [PhysicsDirectSpaceState3D] documentation.
 		</member>
 	</members>
+	<constants>
+		<constant name="SPRINGARM3D_PROCESS_PHYSICS" value="0" enum="SpringArm3DProcessCallback">
+			The SpringArm3D checks for collisions during physics frames (see [constant Node.NOTIFICATION_INTERNAL_PHYSICS_PROCESS]).
+		</constant>
+		<constant name="SPRINGARM3D_PROCESS_IDLE" value="1" enum="SpringArm3DProcessCallback">
+			The SpringArm3D checks for collisions during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+		</constant>
+		<constant name="SPRINGARM3D_PROCESS_NONE" value="2" enum="SpringArm3DProcessCallback">
+			The SpringArm3D does not check for collisions automatically (see [method process_spring]).
+		</constant>
+	</constants>
 </class>
