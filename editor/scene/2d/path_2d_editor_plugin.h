@@ -37,6 +37,7 @@
 class CanvasItemEditor;
 class ConfirmationDialog;
 class MenuButton;
+class EditorSpinSlider;
 
 class Path2DEditor : public HBoxContainer {
 	GDCLASS(Path2DEditor, HBoxContainer);
@@ -54,16 +55,18 @@ class Path2DEditor : public HBoxContainer {
 		MODE_DELETE,
 		MODE_CLOSE,
 		MODE_CLEAR_POINTS,
+		MODE_AUTO_TANGENT,
 	};
 
 	Mode mode = MODE_EDIT;
 	HBoxContainer *toolbar = nullptr;
-	Button *curve_clear_points = nullptr;
 	Button *curve_close = nullptr;
 	Button *curve_create = nullptr;
 	Button *curve_del = nullptr;
 	Button *curve_edit = nullptr;
 	Button *curve_edit_curve = nullptr;
+	Button *curve_auto_tangent_toggle = nullptr;
+	EditorSpinSlider *auto_tangent_torsion = nullptr;
 	MenuButton *handle_menu = nullptr;
 
 	Button *create_curve_button = nullptr;
@@ -76,6 +79,8 @@ class Path2DEditor : public HBoxContainer {
 	enum HandleOption {
 		HANDLE_OPTION_ANGLE,
 		HANDLE_OPTION_LENGTH,
+		HANDLE_OPTION_AUTO_TANGENT,
+		HANDLE_OPTION_CLEAR_POINTS,
 	};
 
 	enum Action {
@@ -107,8 +112,11 @@ class Path2DEditor : public HBoxContainer {
 	void _node_visibility_changed();
 	void _update_toolbar();
 
+	void _auto_tangent();
+
 	void _create_curve();
 	void _confirm_clear_points();
+	void _auto_tangent_point(int p_index);
 	void _clear_curve_points(Path2D *p_path2d);
 	void _restore_curve_points(Path2D *p_path2d, const PackedVector2Array &p_points);
 
