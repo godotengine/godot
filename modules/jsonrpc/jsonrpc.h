@@ -37,10 +37,10 @@
 class JSONRPC : public Object {
 	GDCLASS(JSONRPC, Object)
 
+protected:
 	HashMap<String, Callable> methods;
 	HashMap<int, Callable> response_handlers;
 
-protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED

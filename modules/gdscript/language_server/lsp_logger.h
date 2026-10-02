@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_language_server.h                                            */
+/*  lsp_logger.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,34 +30,13 @@
 
 #pragma once
 
-#include "editor/plugins/editor_plugin.h"
+#include "core/io/logger.h"
 
-class GDScriptLanguageServer : public EditorPlugin {
-	GDSOFTCLASS(GDScriptLanguageServer, EditorPlugin);
-
-	Thread thread;
-	bool thread_running = false;
-	// There is no notification when the editor is initialized. We need to poll till we attempted to start the server.
-	bool start_attempted = false;
-	bool started = false;
-
-	// Defaults located in editor_settings.cpp
-	bool use_thread = false;
-	String host;
-	int port = 0;
-	int poll_limit_usec = 0;
-
-	static void thread_main(void *p_userdata);
-
-private:
-	void _notification(int p_what);
-
+// Logger for LSP stdio mode. Stdout is reserved for the LSP transport,
+// so all output goes to stderr. A future iteration could route messages
+// through the LSP window/logMessage notification instead.
+class LspLogger : public Logger {
 public:
-	static int port_override;
-	static bool use_stdio;
-	GDScriptLanguageServer();
-	void start();
-	void stop();
+	virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
+	virtual ~LspLogger() {}
 };
-
-void register_lsp_types();
