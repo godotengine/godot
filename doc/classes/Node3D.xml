@@ -159,6 +159,7 @@
 			<param index="1" name="angle" type="float" />
 			<description>
 				Rotates this node's [member basis] around the [param axis] by the given [param angle], in radians. This operation is calculated in parent space (relative to the parent) and preserves the [member position].
+				[b]Note:[/b] It's not recommended to modify the [member rotation] property directly and using this method in the same frame as it will likely cause unexpected behavior.
 			</description>
 		</method>
 		<method name="rotate_object_local">
@@ -167,6 +168,7 @@
 			<param index="1" name="angle" type="float" />
 			<description>
 				Rotates this node's [member basis] around the [param axis] by the given [param angle], in radians. This operation is calculated in local space (relative to this node) and preserves the [member position].
+				[b]Note:[/b] It's not recommended to modify the [member rotation] property directly and using this method in the same frame as it will likely cause unexpected behavior.
 			</description>
 		</method>
 		<method name="rotate_x">
@@ -174,6 +176,7 @@
 			<param index="0" name="angle" type="float" />
 			<description>
 				Rotates this node's [member basis] around the X axis by the given [param angle], in radians. This operation is calculated in parent space (relative to the parent) and preserves the [member position].
+				[b]Note:[/b] It's not recommended to modify the [member rotation] property directly and using this method in the same frame as it will likely cause unexpected behavior.
 			</description>
 		</method>
 		<method name="rotate_y">
@@ -181,6 +184,7 @@
 			<param index="0" name="angle" type="float" />
 			<description>
 				Rotates this node's [member basis] around the Y axis by the given [param angle], in radians. This operation is calculated in parent space (relative to the parent) and preserves the [member position].
+				[b]Note:[/b] It's not recommended to modify the [member rotation] property directly and using this method in the same frame as it will likely cause unexpected behavior.
 			</description>
 		</method>
 		<method name="rotate_z">
@@ -188,6 +192,7 @@
 			<param index="0" name="angle" type="float" />
 			<description>
 				Rotates this node's [member basis] around the Z axis by the given [param angle], in radians. This operation is calculated in parent space (relative to the parent) and preserves the [member position].
+				[b]Note:[/b] It's not recommended to modify the [member rotation] property directly and using this method in the same frame as it will likely cause unexpected behavior.
 			</description>
 		</method>
 		<method name="scale_object_local">
