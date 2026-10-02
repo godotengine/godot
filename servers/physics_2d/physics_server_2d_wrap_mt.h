@@ -225,9 +225,11 @@ public:
 	FUNC2(body_apply_central_impulse, RID, const Vector2 &);
 	FUNC2(body_apply_torque_impulse, RID, real_t);
 	FUNC3(body_apply_impulse, RID, const Vector2 &, const Vector2 &);
+	FUNC3(body_apply_impulse_at_position, RID, const Vector2 &, const Vector2 &);
 
 	FUNC2(body_apply_central_force, RID, const Vector2 &);
 	FUNC3(body_apply_force, RID, const Vector2 &, const Vector2 &);
+	FUNC3(body_apply_force_at_position, RID, const Vector2 &, const Vector2 &);
 	FUNC2(body_apply_torque, RID, real_t);
 
 	FUNC2(body_add_constant_central_force, RID, const Vector2 &);
