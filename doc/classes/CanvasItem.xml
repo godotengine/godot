@@ -19,8 +19,8 @@
 		<method name="_draw" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				Called when [CanvasItem] has been requested to redraw (after [method queue_redraw] is called, either manually or by the engine).
-				Corresponds to the [constant NOTIFICATION_DRAW] notification in [method Object._notification].
+				Called when [CanvasItem] has been requested to redraw (after [method queue_redraw] is called, either manually or by the engine). This corresponds to the [constant NOTIFICATION_DRAW] notification in [method Object._notification].
+				[b]Note:[/b] Resizing the viewport (e.g. by resizing the window) will always trigger a redraw, therefore causing [method _draw] to be called again.
 			</description>
 		</method>
 		<method name="draw_animation_slice">
