@@ -4007,11 +4007,15 @@ void RenderingDeviceDriverD3D12::command_clear_buffer(CommandBufferID p_cmd_buff
 		_resource_transitions_flush(cmd_buf_info);
 	}
 
+	// UAVs require the offset to be aligned to 16 bytes
+	const uint64_t view_offset = p_offset & ~uint64_t(D3D12_RAW_UAV_SRV_BYTE_ALIGNMENT - 1);
+	const uint64_t view_size = (p_offset - view_offset) + p_size;
+
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
 	uav_desc.Format = DXGI_FORMAT_R32_TYPELESS;
 	uav_desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-	uav_desc.Buffer.FirstElement = p_offset / 4;
-	uav_desc.Buffer.NumElements = p_size / 4;
+	uav_desc.Buffer.FirstElement = view_offset / 4;
+	uav_desc.Buffer.NumElements = (view_size + 3) / 4;
 	uav_desc.Buffer.StructureByteStride = 0;
 	uav_desc.Buffer.CounterOffsetInBytes = 0;
 	uav_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
@@ -4030,14 +4034,21 @@ void RenderingDeviceDriverD3D12::command_clear_buffer(CommandBufferID p_cmd_buff
 			cmd_buf_info->uav_alloc.cpu_handle,
 			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
+	// due to alignment rules the UAV is sometimes bigger than the area we want to clear, limit the clear
+	D3D12_RECT clear_rect = {};
+	clear_rect.left = LONG((p_offset - view_offset) / 4);
+	clear_rect.right = LONG(clear_rect.left + p_size / 4);
+	clear_rect.top = 0;
+	clear_rect.bottom = 1;
+
 	static const UINT values[4] = {};
 	cmd_buf_info->cmd_list->ClearUnorderedAccessViewUint(
 			shader_visible_descriptor_allocation.gpu_handle,
 			cmd_buf_info->uav_alloc.cpu_handle,
 			buf_info->resource,
 			values,
-			0,
-			nullptr);
+			1,
+			&clear_rect);
 }
 
 void RenderingDeviceDriverD3D12::command_copy_buffer(CommandBufferID p_cmd_buffer, BufferID p_src_buffer, BufferID p_buf_locfer, VectorView<BufferCopyRegion> p_regions) {
