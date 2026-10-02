@@ -3,23 +3,16 @@
 class ComputeShaderRD : public ShaderRD {
 public:
 	ComputeShaderRD() {
-		static const char *_vertex_code = nullptr;
-		static const char *_fragment_code = nullptr;
-		static const char _compute_code[] = {
-R"<!>(
-#version 450
-
-#VERSION_DEFINES
-
-#define BLOCK_SIZE 8
-
-#define M_PI 3.14159265359
-
-void main() {
-	uint t = BLOCK_SIZE + 1;
-}
-)<!>"
+		static const uint8_t _code_compressed[] = {
+			120, 218, 227, 82, 46, 75, 45, 42, 206, 204, 207, 83, 48, 49, 53, 224, 226, 82, 14, 115, 13, 10, 246, 244, 247, 139,
+			119, 113, 117, 243, 244, 115, 13, 6, 138, 164, 164, 166, 101, 230, 165, 42, 56, 249, 248, 59, 123, 199, 7, 123, 70,
+			185, 42, 88, 32, 68, 125, 227, 3, 60, 21, 140, 245, 12, 77, 12, 77, 45, 141, 204, 76, 141, 77, 45, 185, 184, 202,
+			242, 51, 83, 20, 114, 19, 51, 243, 52, 52, 21, 170, 185, 56, 75, 51, 243, 74, 20, 74, 20, 108, 145, 77, 208, 86, 48,
+			180, 230, 170, 229, 98, 0, 0, 129, 6, 33,
+88
 		};
-		setup(_vertex_code, _fragment_code, _compute_code, "ComputeShaderRD");
+		const CharString _code = _decompress_code(_code_compressed, 115, 126);
+
+		setup(nullptr, nullptr, _code.get_data() + 0, "ComputeShaderRD");
 	}
 };
