@@ -34,7 +34,10 @@ TEST_FORCE_LINK(test_graph_node)
 
 #ifndef ADVANCED_GUI_DISABLED
 
+#include "core/object/message_queue.h"
 #include "scene/gui/graph_node.h"
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
 
 namespace TestGraphNode {
 
@@ -53,6 +56,153 @@ TEST_CASE("[GraphNode][SceneTree]") {
 
 		memdelete(test_child);
 		memdelete(test_node);
+	}
+
+	SUBCASE("[GraphNode] Graph Node with no children should report no slots.") {
+		// Setup.
+		GraphNode *graph_node = memnew(GraphNode);
+		graph_node->set_name("Graph Node");
+
+		Window *root = SceneTree::get_singleton()->get_root();
+		root->add_child(graph_node);
+
+		// Test.
+		MessageQueue::get_singleton()->flush();
+		CHECK(graph_node->get_slot_count() == 0);
+
+		memdelete(graph_node);
+	}
+
+	SUBCASE("[GraphNode] Graph Node with no children should report no slots, even if slot properties were defined.") {
+		// Setup.
+		GraphNode *graph_node = memnew(GraphNode);
+		graph_node->set_name("Graph Node");
+
+		Window *root = SceneTree::get_singleton()->get_root();
+		root->add_child(graph_node);
+
+		// Test.
+		graph_node->set_slot(0, true, 0, Color(1, 0, 0, 1), true, 1, Color(0, 0, 1, 1));
+		graph_node->set_slot(2, true, 0, Color(0, 1, 0, 1), true, 1, Color(1, 1, 1, 1));
+		MessageQueue::get_singleton()->flush();
+		CHECK(graph_node->get_slot_count() == 0);
+
+		memdelete(graph_node);
+	}
+
+	SUBCASE("[GraphNode] Graph Node should properly count slots.") {
+		// Setup.
+		GraphNode *graph_node = memnew(GraphNode);
+		graph_node->set_name("Graph Node");
+
+		Window *root = SceneTree::get_singleton()->get_root();
+		root->add_child(graph_node);
+
+		// Test adding and removing children.
+		// Need to flush deferred functions, as that's when slots are updated.
+		int expected_slot_count = 0;
+		CHECK(graph_node->get_slot_count() == expected_slot_count);
+
+		Vector<Node *> test_children;
+		for (int i = 0; i < 5; ++i) {
+			Control *slot = memnew(Control);
+			graph_node->add_child(slot);
+			test_children.push_back(slot);
+			expected_slot_count++;
+
+			MessageQueue::get_singleton()->flush();
+			CHECK(graph_node->get_slot_count() == expected_slot_count);
+
+			if ((i & 1) == 0) {
+				Node *not_a_slot = memnew(Node);
+				graph_node->add_child(not_a_slot);
+				test_children.push_back(not_a_slot);
+
+				MessageQueue::get_singleton()->flush();
+				CHECK(graph_node->get_slot_count() == expected_slot_count);
+			}
+		}
+
+		for (Node *test_child : test_children) {
+			Control *c = Object::cast_to<Control>(test_child);
+			if (c) {
+				expected_slot_count--;
+			}
+			graph_node->remove_child(test_child);
+			memdelete(test_child);
+			MessageQueue::get_singleton()->flush();
+			CHECK(graph_node->get_slot_count() == expected_slot_count);
+		}
+
+		// Cleanup.
+		memdelete(graph_node);
+	}
+
+	SUBCASE("[GraphNode] Graph Node should properly report ports for slots.") {
+		// Setup.
+		GraphNode *graph_node = memnew(GraphNode);
+		graph_node->set_name("Graph Node");
+
+		Window *root = SceneTree::get_singleton()->get_root();
+		root->add_child(graph_node);
+
+		Vector<Control *> test_children;
+		for (int i = 0; i < 6; ++i) {
+			Control *slot = memnew(Control);
+			graph_node->add_child(slot);
+			test_children.push_back(slot);
+		}
+
+		MessageQueue::get_singleton()->flush();
+
+		graph_node->set_slot(0, true, 0, Color(1, 0, 0, 1), true, 1, Color(0, 0, 1, 1));
+		graph_node->set_slot(1, true, 0, Color(1, 0, 0, 1), false, 1, Color(0, 0, 1, 1));
+		graph_node->set_slot(2, false, 0, Color(1, 0, 0, 1), true, 1, Color(0, 0, 1, 1));
+		graph_node->set_slot(3, false, 0, Color(1, 0, 0, 1), false, 1, Color(0, 0, 1, 1));
+		// Slot 4 left undefined.
+		graph_node->set_slot(5, true, 0, Color(1, 0, 0, 1), true, 1, Color(0, 0, 1, 1));
+		graph_node->set_slot(6, true, 0, Color(1, 0, 0, 1), true, 1, Color(0, 0, 1, 1));
+
+		// Test.
+		CHECK(graph_node->get_slot_count() == 6);
+
+		CHECK(graph_node->get_slot_input_port(0) == 0);
+		CHECK(graph_node->get_slot_input_port(1) == 1);
+		CHECK(graph_node->get_slot_input_port(2) == -1);
+		CHECK(graph_node->get_slot_input_port(3) == -1);
+		CHECK(graph_node->get_slot_input_port(4) == -1);
+		CHECK(graph_node->get_slot_input_port(5) == 2);
+
+		CHECK(graph_node->get_slot_output_port(0) == 0);
+		CHECK(graph_node->get_slot_output_port(1) == -1);
+		CHECK(graph_node->get_slot_output_port(2) == 1);
+		CHECK(graph_node->get_slot_output_port(3) == -1);
+		CHECK(graph_node->get_slot_output_port(4) == -1);
+		CHECK(graph_node->get_slot_output_port(5) == 2);
+
+		graph_node->set_slot_enabled_left(5, false);
+		CHECK(graph_node->get_slot_input_port(5) == -1);
+		CHECK(graph_node->get_slot_output_port(5) == 2);
+
+		graph_node->set_slot_enabled_right(5, false);
+		CHECK(graph_node->get_slot_input_port(5) == -1);
+		CHECK(graph_node->get_slot_output_port(5) == -1);
+
+		graph_node->set_slot_enabled_right(4, true);
+		graph_node->set_slot_enabled_left(5, true);
+		graph_node->set_slot_enabled_right(5, true);
+		CHECK(graph_node->get_slot_input_port(4) == -1);
+		CHECK(graph_node->get_slot_input_port(5) == 2);
+		CHECK(graph_node->get_slot_output_port(4) == 2);
+		CHECK(graph_node->get_slot_output_port(5) == 3);
+
+		// Cleanup.
+		for (Node *test_child : test_children) {
+			graph_node->remove_child(test_child);
+			memdelete(test_child);
+		}
+
+		memdelete(graph_node);
 	}
 }
 
