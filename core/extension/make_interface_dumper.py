@@ -4,7 +4,7 @@ import methods
 def run(target, source, env):
     buffer = methods.get_buffer(str(source[0]))
     decomp_size = len(buffer)
-    buffer = methods.compress_buffer(buffer)
+    buffer = methods.compress_buffer_zstd(buffer, env)
 
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(f"""\
@@ -25,7 +25,7 @@ class GDExtensionInterfaceDump {{
 		static Vector<uint8_t> load_gdextension_interface_file() {{
 			Vector<uint8_t> data;
 			data.resize(_gdextension_interface_data_uncompressed_size);
-			int ret = Compression::decompress(data.ptrw(), _gdextension_interface_data_uncompressed_size, _gdextension_interface_data_compressed, _gdextension_interface_data_compressed_size, Compression::MODE_DEFLATE);
+			int ret = Compression::decompress(data.ptrw(), _gdextension_interface_data_uncompressed_size, _gdextension_interface_data_compressed, _gdextension_interface_data_compressed_size, Compression::MODE_ZSTD);
 			ERR_FAIL_COND_V_MSG(ret == -1, Vector<uint8_t>(), "Compressed file is corrupt.");
 			return data;
 		}}
