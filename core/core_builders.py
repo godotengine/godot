@@ -74,7 +74,7 @@ uint8_t script_encryption_key[32] = {{
 def make_certs_header(target, source, env):
     buffer = methods.get_buffer(str(source[0]))
     decomp_size = len(buffer)
-    buffer = methods.compress_buffer(buffer)
+    buffer = methods.compress_buffer_zstd(buffer, env)
 
     with methods.generated_wrapper(str(target[0])) as file:
         # System certs path. Editor will use them if defined. (for package maintainers)
