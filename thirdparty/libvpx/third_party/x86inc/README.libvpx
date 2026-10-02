@@ -1,0 +1,19 @@
+URL: https://git.videolan.org/git/x264.git
+Version: 3e5aed95cc470f37e2db3e6506a8deb89b527720
+License: ISC
+License File: LICENSE
+
+Description:
+x264/libav's framework for x86 assembly. Contains a variety of macros and
+defines that help automatically allow assembly to work cross-platform.
+
+Local Modifications:
+Get configuration from vpx_config.asm.
+Prefix functions with vpx by default.
+Manage name mangling (prefixing with '_') manually because 'PREFIX' does not
+  exist in libvpx.
+Copy PIC 'GLOBAL' macros from x86_abi_support.asm
+Use .text instead of .rodata on macho to avoid broken tables in PIC mode.
+Use .text with no alignment for aout.
+Only use 'hidden' visibility with Chromium.
+Prefix ARCH_* with VPX_.
