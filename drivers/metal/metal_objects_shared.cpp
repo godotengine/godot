@@ -565,7 +565,7 @@ void MDCommandBufferBase::render_set_blend_constants(const Color &p_constants) {
 	RenderStateBase &state = get_render_state_base();
 	if (state.blend_constants != p_constants) {
 		state.blend_constants = p_constants;
-		state.dirty.set_flag(RenderStateBase::DIRTY_BLEND);
+		state.dirty.set_flag(RenderStateBase::DIRTY_RASTER);
 	}
 }
 
@@ -705,10 +705,10 @@ void MDCommandBufferBase::encode_push_constant_data(RDD::ShaderID p_shader, Vect
 		case MDCommandBufferStateType::Render:
 		case MDCommandBufferStateType::Compute: {
 			MDShader *shader = (MDShader *)(p_shader.id);
-			if (shader->push_constants.binding == UINT32_MAX) {
+			push_constant_binding = shader->push_constants.stage_binding;
+			if (!push_constant_binding.is_valid()) {
 				return;
 			}
-			push_constant_binding = shader->push_constants.binding;
 			const void *ptr = p_data.ptr();
 			uint32_t data_len = p_data.size() * sizeof(uint32_t);
 			// Round buffer length up to 16 bytes. SPIRV-Cross's MSL backend pads the
