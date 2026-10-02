@@ -2435,6 +2435,13 @@ int MeshStorage::skeleton_get_bone_count(RID p_skeleton) const {
 	return skeleton->size;
 }
 
+GLuint MeshStorage::skeleton_get_bones_buffer(RID p_skeleton) const {
+	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
+	ERR_FAIL_NULL_V(skeleton, GLuint(0));
+
+	return skeleton->transforms_texture;
+}
+
 void MeshStorage::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform3D &p_transform) {
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
