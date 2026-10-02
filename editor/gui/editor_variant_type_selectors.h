@@ -52,6 +52,7 @@ class EditorVariantTypePopupMenu : public PopupMenu {
 	GDCLASS(EditorVariantTypePopupMenu, PopupMenu);
 
 	bool remove_item = false;
+	bool meta_property = false;
 	bool icons_dirty = true;
 
 	void _populate();
@@ -62,5 +63,5 @@ protected:
 	virtual void _popup_base(const Rect2i &p_bounds = Rect2i()) override;
 
 public:
-	EditorVariantTypePopupMenu(bool p_remove_item);
+	EditorVariantTypePopupMenu(bool p_remove_item, bool p_meta_property = false);
 };
