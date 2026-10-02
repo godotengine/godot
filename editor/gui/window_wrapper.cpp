@@ -306,8 +306,7 @@ Size2 WindowWrapper::get_margins_size() {
 	if (!margins) {
 		return Size2();
 	}
-
-	return Size2(margins->get_margin_size(SIDE_LEFT) + margins->get_margin_size(SIDE_RIGHT), margins->get_margin_size(SIDE_TOP) + margins->get_margin_size(SIDE_RIGHT));
+	return Size2(margins->get_margin_size(SIDE_LEFT) + margins->get_margin_size(SIDE_RIGHT), margins->get_margin_size(SIDE_TOP) + margins->get_margin_size(SIDE_BOTTOM));
 }
 
 Size2 WindowWrapper::get_margins_top_left() {
