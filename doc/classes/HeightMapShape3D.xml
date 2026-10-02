@@ -45,7 +45,7 @@
 			<param index="2" name="height_max" type="float" />
 			<description>
 				Updates [member map_data] with data read from an [Image] reference. Automatically resizes heightmap [member map_width] and [member map_depth] to fit the full image width and height.
-				The image needs to be in either [constant Image.FORMAT_RF] (32 bit), [constant Image.FORMAT_RH] (16 bit), or [constant Image.FORMAT_R8] (8 bit).
+				The image needs to be in either [constant Image.FORMAT_RF] (32 bit), [constant Image.FORMAT_RH] (16 bit), [constant Image.FORMAT_R8] or [constant Image.FORMAT_L8] (8 bit).
 				Each image pixel is read in as a float on the range from [code]0.0[/code] (black pixel) to [code]1.0[/code] (white pixel). This range value gets remapped to [param height_min] and [param height_max] to form the final height value.
 				[b]Note:[/b] Using a heightmap with 16-bit or 32-bit data, stored in EXR or HDR format is recommended. Using 8-bit height data, or a format like PNG that Godot imports as 8-bit, will result in a terraced terrain.
 			</description>
