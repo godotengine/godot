@@ -281,13 +281,13 @@ namespace GodotTools.OpenVisualStudio
         private interface IOleMessageFilter
         {
             [PreserveSig]
-            int HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo);
+            public int HandleInComingCall(int dwCallType, IntPtr hTaskCaller, int dwTickCount, IntPtr lpInterfaceInfo);
 
             [PreserveSig]
-            int RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType);
+            public int RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType);
 
             [PreserveSig]
-            int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
+            public int MessagePending(IntPtr hTaskCallee, int dwTickCount, int dwPendingType);
         }
 
         #endregion
