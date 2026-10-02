@@ -55,6 +55,7 @@ float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
 
 void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 	float scale = timeline->get_zoom_scale();
+	bool animation_loops = animation->get_loop_mode() != Animation::LOOP_NONE;
 
 	int limit = timeline->get_name_limit();
 	int right_limit = get_size().width;
@@ -159,16 +160,18 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 		int to_x = (offset_n - timeline->get_value()) * scale + limit;
 		int point_end = to_x;
 
-		if (from_x > right_limit) { // Not visible.
+		if (from_x > right_limit && !animation_loops) { // Not visible.
 			continue;
 		}
 
-		if (to_x < limit) { // Not visible.
+		if (to_x < limit && !animation_loops) { // Not visible.
 			continue;
 		}
 
-		from_x = MAX(from_x, limit);
-		to_x = MIN(to_x, right_limit);
+		if (!animation_loops) {
+			from_x = MAX(from_x, limit);
+			to_x = MIN(to_x, right_limit);
+		}
 
 		Vector<Vector2> lines;
 
@@ -221,9 +224,63 @@ void AnimationBezierTrackEdit::_draw_track(int p_track, const Color &p_color) {
 			prev_pos = pos;
 		}
 
+		bool is_first = E == key_order.front();
+		bool is_last = E->next() == key_order.back();
 		if (lines.size() >= 2) {
-			draw_multiline(lines, p_color, Math::round(EDSCALE), true);
+			if (is_first && E->key() > 0) {
+				Point2 from = lines[0];
+				from.x = limit - timeline->get_value() * scale;
+				if (animation_loops) {
+					lines.insert(0, lines[0]);
+					lines.insert(0, from);
+				}
+			}
+			if (is_last && E->next()->key() < animation->get_length()) {
+				Point2 to = lines[lines.size() - 1];
+				to.x = (animation->get_length() - timeline->get_value()) * scale + limit;
+				if (animation_loops) {
+					lines.push_back(lines[lines.size() - 1]);
+					lines.push_back(to);
+				}
+				float initial_value = animation->bezier_track_get_key_value(p_track, key_order.front()->value());
+				if (selection.has(IntPair(p_track, key_order.front()->value()))) {
+					if (moving_selection) {
+						initial_value += moving_selection_offset.y;
+					} else if (scaling_selection) {
+						initial_value += -scaling_selection_offset.y + (initial_value - scaling_selection_pivot.y) * (scaling_selection_scale.y - 1);
+					}
+				}
+				initial_value = _bezier_h_to_pixel(initial_value);
+				if (to.y != initial_value) {
+					Point2 from = to;
+					from.y = initial_value;
+					if (animation_loops) {
+						lines.push_back(from);
+						lines.push_back(to);
+					}
+				}
+			}
+			_draw_multiline_clipped(lines, p_color, limit, right_limit);
 		}
+		if (animation_loops) {
+			int h_offset = animation->get_length() * scale;
+			real_t visible_min_time = timeline->get_value();
+			real_t visible_max_time = visible_min_time + (right_limit - limit) / scale;
+			int first_loop = Math::floor(visible_min_time / animation->get_length());
+			int last_loop = Math::ceil(visible_max_time / animation->get_length());
+			for (int l = first_loop; l <= last_loop; l++) {
+				Vector<Vector2> loop_lines;
+				for (int p = 0; p < lines.size(); p++) {
+					loop_lines.push_back(lines[p] + Point2(l * h_offset, 0));
+				}
+				_draw_multiline_clipped(loop_lines, p_color, limit, right_limit);
+			}
+		}
+	}
+}
+void AnimationBezierTrackEdit::_draw_multiline_clipped(const Vector<Point2> &p_points, const Color &p_color, int p_clip_left, int p_clip_right) {
+	for (int i = 0; i <= p_points.size() - 2; i += 2) {
+		_draw_line_clipped(p_points[i], p_points[i + 1], p_color, p_clip_left, p_clip_right);
 	}
 }
 
