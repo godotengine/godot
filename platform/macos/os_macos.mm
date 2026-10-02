@@ -1281,6 +1281,7 @@ void OS_MacOS_Embedded::run() {
 
 	DisplayServerMacOSEmbedded *ds = Object::cast_to<DisplayServerMacOSEmbedded>(DisplayServer::get_singleton());
 	if (!ds) {
+		Main::cleanup();
 		ERR_FAIL_MSG("DisplayServerMacOSEmbedded is not initialized.");
 	}
 
