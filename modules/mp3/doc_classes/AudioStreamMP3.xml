@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		MP3 audio stream driver. See [member data] if you want to load an MP3 file at run-time. More info can be found in [ResourceImporterMP3].
-		[b]Note:[/b] This class can optionally support legacy MP1 and MP2 formats, provided that the engine is compiled with the [code]minimp3_extra_formats=yes[/code] SCons option. These extra formats are not enabled by default.
+		[b]Note:[/b] This class can optionally support legacy MP1 and MP2 formats, provided that the engine is compiled with the [code]mp3_extra_formats=yes[/code] SCons option. These extra formats are not enabled by default.
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
