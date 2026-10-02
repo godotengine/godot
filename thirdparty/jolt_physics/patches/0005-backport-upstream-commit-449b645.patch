@@ -1,0 +1,297 @@
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/Collision/CollideShape.h b/thirdparty/jolt_physics/Jolt/Physics/Collision/CollideShape.h
+index cfec8139..134f300d 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/Collision/CollideShape.h
++++ b/thirdparty/jolt_physics/Jolt/Physics/Collision/CollideShape.h
+@@ -101,6 +101,9 @@ public:
+ 
+ 	/// How backfacing triangles should be treated
+ 	EBackFaceMode				mBackFaceMode				= EBackFaceMode::IgnoreBackFaces;
++
++	/// Max squared distance to consider a vertex to be the same as another vertex, used by the internal edge removal algorithm to determine if two edges are shared. (unit: meter^2)
++	float						mInternalEdgeRemovalVertexToleranceSq = cDefaultInternalEdgeRemovalVertexToleranceSq;
+ };
+ 
+ JPH_NAMESPACE_END
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/Collision/InternalEdgeRemovingCollector.h b/thirdparty/jolt_physics/Jolt/Physics/Collision/InternalEdgeRemovingCollector.h
+index cec7d7be..eee55022 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/Collision/InternalEdgeRemovingCollector.h
++++ b/thirdparty/jolt_physics/Jolt/Physics/Collision/InternalEdgeRemovingCollector.h
+@@ -31,7 +31,7 @@ class InternalEdgeRemovingCollector : public CollideShapeCollector
+ 	{
+ 		for (const Voided &vf : mVoidedFeatures)
+ 			if (vf.mSubShapeID == inSubShapeID
+-				&& inV.IsClose(Vec3::sLoadFloat3Unsafe(vf.mFeature), 1.0e-8f))
++				&& inV.IsClose(Vec3::sLoadFloat3Unsafe(vf.mFeature), mVertexToleranceSq))
+ 				return true;
+ 		return false;
+ 	}
+@@ -76,13 +76,15 @@ class InternalEdgeRemovingCollector : public CollideShapeCollector
+ 
+ public:
+ 	/// Constructor, configures a collector to be called with all the results that do not hit internal edges
+-	explicit				InternalEdgeRemovingCollector(CollideShapeCollector &inChainedCollector
++	explicit				InternalEdgeRemovingCollector(CollideShapeCollector &inChainedCollector,
++			float inVertexToleranceSq
+ 		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+ 			, RVec3Arg inBaseOffset
+ 		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+ 		) :
+ 		CollideShapeCollector(inChainedCollector),
+-		mChainedCollector(inChainedCollector)
++		mChainedCollector(inChainedCollector),
++		mVertexToleranceSq(inVertexToleranceSq)
+ 		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+ 			, mBaseOffset(inBaseOffset)
+ 		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+@@ -249,7 +251,7 @@ public:
+ 		JPH_ASSERT(inCollideShapeSettings.mActiveEdgeMode == EActiveEdgeMode::CollideWithAll); // Won't work without colliding with all edges
+ 		JPH_ASSERT(inCollideShapeSettings.mCollectFacesMode == ECollectFacesMode::CollectFaces); // Won't work without collecting faces
+ 
+-		InternalEdgeRemovingCollector wrapper(ioCollector
++		InternalEdgeRemovingCollector wrapper(ioCollector, inCollideShapeSettings.mInternalEdgeRemovalVertexToleranceSq
+ 		#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+ 			, inBaseOffset
+ 		#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+@@ -271,6 +273,7 @@ private:
+ 	CollideShapeCollector &	mChainedCollector;
+ 	Array<Voided, STLLocalAllocator<Voided, cMaxLocalVoidedFeatures>> mVoidedFeatures;
+ 	Array<CollideShapeResult, STLLocalAllocator<CollideShapeResult, cMaxLocalDelayedResults>> mDelayedResults;
++	float					mVertexToleranceSq;		// Max squared distance to consider a vertex to be the same as another vertex, used to determine if a feature is voided
+ #ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+ 	RVec3					mBaseOffset; 			// Base offset for the query, used to draw the results in the right place
+ #endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/Collision/NarrowPhaseQuery.cpp b/thirdparty/jolt_physics/Jolt/Physics/Collision/NarrowPhaseQuery.cpp
+index 670cee33..1a8c2c78 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/Collision/NarrowPhaseQuery.cpp
++++ b/thirdparty/jolt_physics/Jolt/Physics/Collision/NarrowPhaseQuery.cpp
+@@ -301,7 +301,7 @@ void NarrowPhaseQuery::CollideShapeWithInternalEdgeRemoval(const Shape *inShape,
+ 	settings.mActiveEdgeMode = EActiveEdgeMode::CollideWithAll;
+ 	settings.mCollectFacesMode = ECollectFacesMode::CollectFaces;
+ 
+-	InternalEdgeRemovingCollector wrapper(ioCollector
++	InternalEdgeRemovingCollector wrapper(ioCollector, settings.mInternalEdgeRemovalVertexToleranceSq
+ 	#ifdef JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+ 		, inBaseOffset
+ 	#endif // JPH_INTERNAL_EDGE_REMOVING_COLLECTOR_DEBUG
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/Collision/Shape/HeightFieldShape.cpp b/thirdparty/jolt_physics/Jolt/Physics/Collision/Shape/HeightFieldShape.cpp
+index ff55f4ba..d859b22e 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/Collision/Shape/HeightFieldShape.cpp
++++ b/thirdparty/jolt_physics/Jolt/Physics/Collision/Shape/HeightFieldShape.cpp
+@@ -185,9 +185,9 @@ uint32 HeightFieldShapeSettings::CalculateBitsPerSampleForError(float inMaxError
+ 									// Not accurate enough, increase bits per sample
+ 									bits_per_sample++;
+ 
+-									// Don't go above 8 bits per sample
+-									if (bits_per_sample == 8)
+-										return bits_per_sample;
++									// Don't go above cMaxBitsPerSample bits per sample
++									if (bits_per_sample == cMaxBitsPerSample)
++										return cMaxBitsPerSample;
+ 								}
+ 							}
+ 						}
+@@ -416,7 +416,7 @@ void HeightFieldShape::StoreMaterialIndices(const HeightFieldShapeSettings &inSe
+ 
+ void HeightFieldShape::CacheValues()
+ {
+-	mSampleMask = uint8((uint32(1) << mBitsPerSample) - 1);
++	mSampleMask = uint16((uint32(1) << mBitsPerSample) - 1);
+ }
+ 
+ void HeightFieldShape::AllocateBuffers()
+@@ -424,7 +424,7 @@ void HeightFieldShape::AllocateBuffers()
+ 	uint num_blocks = GetNumBlocks();
+ 	uint max_stride = (num_blocks + 1) >> 1;
+ 	mRangeBlocksSize = sGridOffsets[sGetMaxLevel(num_blocks) - 1] + Square(max_stride);
+-	mHeightSamplesSize = (mSampleCount * mSampleCount * mBitsPerSample + 7) / 8 + 1;
++	mHeightSamplesSize = (mSampleCount * mSampleCount * mBitsPerSample + 7) / 8 + 2; // Since we read 3 bytes per sample, we need 2 extra bytes of padding
+ 	mActiveEdgesSize = (Square(mSampleCount - 1) * 3 + 7) / 8 + 1; // See explanation at HeightFieldShape::CalculateActiveEdges
+ 
+ 	JPH_ASSERT(mRangeBlocks == nullptr && mHeightSamples == nullptr && mActiveEdges == nullptr);
+@@ -457,9 +457,9 @@ HeightFieldShape::HeightFieldShape(const HeightFieldShapeSettings &inSettings, S
+ 	}
+ 
+ 	// Check bits per sample
+-	if (inSettings.mBitsPerSample < 1 || inSettings.mBitsPerSample > 8)
++	if (inSettings.mBitsPerSample < 1 || inSettings.mBitsPerSample > HeightFieldShapeConstants::cMaxBitsPerSample)
+ 	{
+-		outResult.SetError("HeightFieldShape: Bits per sample must be in the range [1, 8]!");
++		outResult.SetError("HeightFieldShape: Bits per sample must be in the range [1, 16]!");
+ 		return;
+ 	}
+ 
+@@ -727,9 +727,10 @@ HeightFieldShape::HeightFieldShape(const HeightFieldShapeSettings &inSettings, S
+ 			uint byte_pos = sample >> 3;
+ 			uint bit_pos = sample & 0b111;
+ 			output_value <<= bit_pos;
+-			JPH_ASSERT(byte_pos + 1 < mHeightSamplesSize);
++			JPH_ASSERT(byte_pos + 2 < mHeightSamplesSize); // We read max 16 bits which could be spread out over 3 bytes
+ 			mHeightSamples[byte_pos] |= uint8(output_value);
+ 			mHeightSamples[byte_pos + 1] |= uint8(output_value >> 8);
++			mHeightSamples[byte_pos + 2] |= uint8(output_value >> 16);
+ 			sample += inSettings.mBitsPerSample;
+ 		}
+ 
+@@ -816,7 +817,7 @@ inline void HeightFieldShape::GetBlockOffsetAndScale(uint inBlockX, uint inBlock
+ 	outBlockScale = float(block.mMax[n] - block.mMin[n]) / float(mSampleMask);
+ }
+ 
+-inline uint8 HeightFieldShape::GetHeightSample(uint inX, uint inY) const
++inline uint16 HeightFieldShape::GetHeightSample(uint inX, uint inY) const
+ {
+ 	JPH_ASSERT(inX < mSampleCount);
+ 	JPH_ASSERT(inY < mSampleCount);
+@@ -827,16 +828,16 @@ inline uint8 HeightFieldShape::GetHeightSample(uint inX, uint inY) const
+ 	uint bit_pos = sample & 0b111;
+ 
+ 	// Fetch the height sample value
+-	JPH_ASSERT(byte_pos + 1 < mHeightSamplesSize);
++	JPH_ASSERT(byte_pos + 2 < mHeightSamplesSize); // We read max 16 bits which could be spread out over 3 bytes
+ 	const uint8 *height_samples = mHeightSamples + byte_pos;
+-	uint16 height_sample = uint16(height_samples[0]) | uint16(uint16(height_samples[1]) << 8);
+-	return uint8(height_sample >> bit_pos) & mSampleMask;
++	uint32 height_sample = uint32(height_samples[0]) | (uint32(height_samples[1]) << 8) | (uint32(height_samples[2]) << 16);
++	return uint16(height_sample >> bit_pos) & mSampleMask;
+ }
+ 
+ inline Vec3 HeightFieldShape::GetPosition(uint inX, uint inY, float inBlockOffset, float inBlockScale, bool &outNoCollision) const
+ {
+ 	// Get quantized value
+-	uint8 height_sample = GetHeightSample(inX, inY);
++	uint16 height_sample = GetHeightSample(inX, inY);
+ 	outNoCollision = height_sample == mSampleMask;
+ 
+ 	// Add 0.5 to the quantized value to minimize the error (see constructor)
+@@ -980,7 +981,7 @@ void HeightFieldShape::GetHeights(uint inX, uint inY, uint inSizeX, uint inSizeY
+ 						uint output_y = block_y * mBlockSize + sample_y;
+ 
+ 						// Get quantized value
+-						uint8 height_sample = GetHeightSample(inX + output_x, inY + output_y);
++						uint16 height_sample = GetHeightSample(inX + output_x, inY + output_y);
+ 
+ 						// Dequantize
+ 						float h = height_sample != mSampleMask? offset + height_sample * scale : cNoCollisionValue;
+@@ -1129,7 +1130,7 @@ void HeightFieldShape::SetHeights(uint inX, uint inY, uint inSizeX, uint inSizeY
+ 				{
+ 					// Quantize height
+ 					float h = heights[sample_y * heights_stride + sample_x];
+-					uint8 quantized_height = h != cNoCollisionValue? uint8(Clamp((int)floor((h - offset) / scale), 0, int(mSampleMask) - 1)) : mSampleMask;
++					uint16 quantized_height = h != cNoCollisionValue? uint16(Clamp((int)floor((h - offset) / scale), 0, int(mSampleMask) - 1)) : mSampleMask;
+ 
+ 					// Determine bit position of sample
+ 					uint sample = ((affected_y + sample_y) * mSampleCount + affected_x + sample_x) * uint(mBitsPerSample);
+@@ -1137,13 +1138,14 @@ void HeightFieldShape::SetHeights(uint inX, uint inY, uint inSizeX, uint inSizeY
+ 					uint bit_pos = sample & 0b111;
+ 
+ 					// Update the height value sample
+-					JPH_ASSERT(byte_pos + 1 < mHeightSamplesSize);
++					JPH_ASSERT(byte_pos + 2 < mHeightSamplesSize); // We read max 16 bits which could be spread out over 3 bytes
+ 					uint8 *height_samples = mHeightSamples + byte_pos;
+-					uint16 height_sample = uint16(height_samples[0]) | uint16(uint16(height_samples[1]) << 8);
+-					height_sample &= ~(uint16(mSampleMask) << bit_pos);
+-					height_sample |= uint16(quantized_height) << bit_pos;
++					uint32 height_sample = uint32(height_samples[0]) | (uint32(height_samples[1]) << 8) | (uint32(height_samples[2]) << 16);
++					height_sample &= ~(uint32(mSampleMask) << bit_pos);
++					height_sample |= uint32(quantized_height) << bit_pos;
+ 					height_samples[0] = uint8(height_sample);
+ 					height_samples[1] = uint8(height_sample >> 8);
++					height_samples[2] = uint8(height_sample >> 16);
+ 				}
+ 		}
+ 
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/Collision/Shape/HeightFieldShape.h b/thirdparty/jolt_physics/Jolt/Physics/Collision/Shape/HeightFieldShape.h
+index 5aa6de88..c9bdc605 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/Collision/Shape/HeightFieldShape.h
++++ b/thirdparty/jolt_physics/Jolt/Physics/Collision/Shape/HeightFieldShape.h
+@@ -33,6 +33,9 @@ namespace HeightFieldShapeConstants
+ 	/// When height samples are converted to 16 bit:
+ 	constexpr uint16				cNoCollisionValue16 = 0xffff;				///< This is the magic value for 'no collision'
+ 	constexpr uint16				cMaxHeightValue16 = 0xfffe;					///< This is the maximum allowed height value
++
++	/// Maximum value for HeightFieldShapeSettings::mBitsPerSample
++	constexpr uint32				cMaxBitsPerSample = 16;
+ };
+ 
+ /// Class that constructs a HeightFieldShape
+@@ -63,7 +66,7 @@ public:
+ 
+ 	/// Given mBlockSize, mSampleCount and mHeightSamples, calculate the amount of bits needed to stay below absolute error inMaxError
+ 	/// @param inMaxError Maximum allowed error in mHeightSamples after compression (note that this does not take mScale.Y into account)
+-	/// @return Needed bits per sample in the range [1, 8].
++	/// @return Needed bits per sample in the range [1, 16].
+ 	uint32							CalculateBitsPerSampleForError(float inMaxError) const;
+ 
+ 	/// The height field is a surface defined by: mOffset + mScale * (x, mHeightSamples[y * mSampleCount + x], y).
+@@ -83,12 +86,12 @@ public:
+ 	uint32							mMaterialsCapacity = 0;
+ 
+ 	/// The heightfield is divided in blocks of mBlockSize * mBlockSize * 2 triangles and the acceleration structure culls blocks only,
+-	/// bigger block sizes reduce memory consumption but also reduce query performance. Sensible values are [2, 8], does not need to be
++	/// bigger block sizes reduce memory consumption but also reduce query performance. Valid values are [2, 8], does not need to be
+ 	/// a power of 2. Note that at run-time we'll perform one more grid subdivision, so the effective block size is half of what is provided here.
+ 	uint32							mBlockSize = 2;
+ 
+-	/// How many bits per sample to use to compress the height field. Can be in the range [1, 8].
+-	/// Note that each sample is compressed relative to the min/max value of its block of mBlockSize * mBlockSize pixels so the effective precision is higher.
++	/// How many bits per sample to use to compress the height field. Can be in the range [1, 16].
++	/// Note that each sample is compressed relative to the min/max value of its block of mBlockSize * mBlockSize samples so the effective precision is higher.
+ 	/// Also note that increasing mBlockSize saves more memory than reducing the amount of bits per sample.
+ 	uint32							mBitsPerSample = 8;
+ 
+@@ -307,7 +310,7 @@ private:
+ 	inline void						GetBlockOffsetAndScale(uint inBlockX, uint inBlockY, uint inRangeBlockOffset, uint inRangeBlockStride, float &outBlockOffset, float &outBlockScale) const;
+ 
+ 	/// Get the height sample at position (inX, inY)
+-	inline uint8					GetHeightSample(uint inX, uint inY) const;
++	inline uint16					GetHeightSample(uint inX, uint inY) const;
+ 
+ 	/// Faster version of GetPosition when block offset and scale are already known
+ 	inline Vec3						GetPosition(uint inX, uint inY, float inBlockOffset, float inBlockScale, bool &outNoCollision) const;
+@@ -358,7 +361,7 @@ private:
+ 	uint32							mRangeBlocksSize = 0;						///< Size of mRangeBlocks in elements
+ 	uint32							mActiveEdgesSize = 0;						///< Size of mActiveEdges in bytes
+ 	uint8							mBitsPerSample = 8;							///< See HeightFieldShapeSettings::mBitsPerSample
+-	uint8							mSampleMask = 0xff;							///< All bits set for a sample: (1 << mBitsPerSample) - 1, used to indicate that there's no collision
++	uint16							mSampleMask = 0xff;							///< All bits set for a sample: (1 << mBitsPerSample) - 1, used to indicate that there's no collision
+ 	uint16							mMinSample = HeightFieldShapeConstants::cNoCollisionValue16; ///< Min and max value in mHeightSamples quantized to 16 bit, for calculating bounding box
+ 	uint16							mMaxSample = HeightFieldShapeConstants::cNoCollisionValue16;
+ 	RangeBlock *					mRangeBlocks = nullptr;						///< Hierarchical grid of range data describing the height variations within 1 block. The grid for level <level> starts at offset sGridOffsets[<level>]
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/PhysicsSettings.h b/thirdparty/jolt_physics/Jolt/Physics/PhysicsSettings.h
+index 1109e253..cbd88d1a 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/PhysicsSettings.h
++++ b/thirdparty/jolt_physics/Jolt/Physics/PhysicsSettings.h
+@@ -16,7 +16,10 @@ constexpr float cDefaultPenetrationTolerance = 1.0e-4f; ///< Stop when there's l
+ constexpr float cDefaultConvexRadius = 0.05f;
+ 
+ /// Used by (Tapered)CapsuleShape to determine when supporting face is an edge rather than a point (unit: meter)
+-static constexpr float cCapsuleProjectionSlop = 0.02f;
++constexpr float cCapsuleProjectionSlop = 0.02f;
++
++/// Max squared distance to consider a vertex to be the same as another vertex, used by the internal edge removal algorithm to determine if two edges are shared (unit: meter^2)
++constexpr float cDefaultInternalEdgeRemovalVertexToleranceSq = 1.0e-8f;
+ 
+ /// Maximum amount of jobs to allow
+ constexpr int cMaxPhysicsJobs = 2048;
+@@ -73,6 +76,9 @@ struct PhysicsSettings
+ 	/// Maximum allowed distance between old and new contact point to preserve contact forces for warm start (units: meter^2)
+ 	float		mContactPointPreserveLambdaMaxDistSq = Square(0.01f); ///< 1 cm
+ 
++	/// Max squared distance to consider a vertex to be the same as another vertex, used by the internal edge removal algorithm to determine if two edges are shared. (unit: meter^2)
++	float		mInternalEdgeRemovalVertexToleranceSq = cDefaultInternalEdgeRemovalVertexToleranceSq;
++
+ 	/// Number of solver velocity iterations to run
+ 	/// Note that this needs to be >= 2 in order for friction to work (friction is applied using the non-penetration impulse from the previous iteration)
+ 	uint		mNumVelocitySteps = 10;
+diff --git a/thirdparty/jolt_physics/Jolt/Physics/PhysicsSystem.cpp b/thirdparty/jolt_physics/Jolt/Physics/PhysicsSystem.cpp
+index 7b4babfc..c2ead513 100644
+--- a/thirdparty/jolt_physics/Jolt/Physics/PhysicsSystem.cpp
++++ b/thirdparty/jolt_physics/Jolt/Physics/PhysicsSystem.cpp
+@@ -1096,6 +1096,7 @@ void PhysicsSystem::ProcessBodyPair(ContactAllocator &ioContactAllocator, const
+ 		settings.mActiveEdgeMode = mPhysicsSettings.mCheckActiveEdges? EActiveEdgeMode::CollideOnlyWithActive : EActiveEdgeMode::CollideWithAll;
+ 		settings.mMaxSeparationDistance = body1->IsSensor() || body2->IsSensor()? 0.0f : mPhysicsSettings.mSpeculativeContactDistance;
+ 		settings.mActiveEdgeMovementDirection = body1->GetLinearVelocity() - body2->GetLinearVelocity();
++		settings.mInternalEdgeRemovalVertexToleranceSq = mPhysicsSettings.mInternalEdgeRemovalVertexToleranceSq;
+ 
+ 		// Create shape filter
+ 		SimShapeFilterWrapper shape_filter(mSimShapeFilter, body1);
+2.52.0.windows.1
