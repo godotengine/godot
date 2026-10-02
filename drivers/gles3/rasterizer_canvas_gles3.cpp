@@ -2906,8 +2906,8 @@ RasterizerCanvasGLES3::~RasterizerCanvasGLES3() {
 	glDeleteBuffers(1, &data.canvas_quad_vertices);
 	glDeleteVertexArrays(1, &data.canvas_quad_array);
 
-	glDeleteBuffers(1, &data.canvas_quad_vertices);
-	glDeleteVertexArrays(1, &data.canvas_quad_array);
+	glDeleteBuffers(1, &data.particle_quad_vertices);
+	glDeleteVertexArrays(1, &data.particle_quad_array);
 
 	GLES3::TextureStorage::get_singleton()->canvas_texture_free(default_canvas_texture);
 	memdelete_arr(state.instance_data_array);
