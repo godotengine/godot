@@ -574,8 +574,8 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	switch (p_type_to) {
 		case BOOL: {
 			static const Type valid[] = {
-				INT,
-				FLOAT,
+				//INT,
+				//FLOAT,
 				//STRING,
 				NIL,
 			};
@@ -584,7 +584,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		} break;
 		case INT: {
 			static const Type valid[] = {
-				BOOL,
+				//BOOL,
 				FLOAT,
 				//STRING,
 				NIL,
@@ -595,7 +595,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		} break;
 		case FLOAT: {
 			static const Type valid[] = {
-				BOOL,
+				//BOOL,
 				INT,
 				//STRING,
 				NIL,
