@@ -732,6 +732,27 @@ static const int Hint = 4;
 }; // namespace DiagnosticSeverity
 
 /**
+ * The diagnostic tags.
+ *
+ * @since 3.15.0
+ */
+namespace DiagnosticTag {
+/**
+ * Unused or unnecessary code.
+ *
+ * Clients are allowed to render diagnostics with this tag faded out
+ * instead of having an error squiggle.
+ */
+static const int Unnecessary = 1;
+/**
+ * Deprecated or obsolete code.
+ *
+ * Clients are allowed to rendered diagnostics with this tag strike through.
+ */
+static const int Deprecated = 2;
+}; // namespace DiagnosticTag
+
+/**
  * Represents a related message and source code location for a diagnostic. This should be
  * used to point to code locations that cause or related to a diagnostics, e.g when duplicating
  * a symbol in a scope.
@@ -788,6 +809,14 @@ struct Diagnostic {
 	String message;
 
 	/**
+	 * Additional metadata about the diagnostic.
+	 *
+	 * @since 3.15.0
+	 */
+	// Note: Uses DiagnosticTag namespace values.
+	Vector<int> tags;
+
+	/**
 	 * An array of related diagnostic information, e.g. when symbol-names within
 	 * a scope collide all definitions can be marked via this property.
 	 */
@@ -807,6 +836,14 @@ struct Diagnostic {
 				arr[i] = relatedInformation[i].to_json();
 			}
 			dict["relatedInformation"] = arr;
+		}
+		if (!tags.is_empty()) {
+			Array arr;
+			arr.resize(tags.size());
+			for (int i = 0; i < tags.size(); i++) {
+				arr[i] = tags[i];
+			}
+			dict["tags"] = arr;
 		}
 		return dict;
 	}
