@@ -40,7 +40,7 @@ class SceneMultiplayer;
 class SceneCacheInterface;
 
 class SceneReplicationInterface : public RefCounted {
-	GDCLASS(SceneReplicationInterface, RefCounted);
+	GDSOFTCLASS(SceneReplicationInterface, RefCounted);
 
 private:
 	struct TrackedNode {

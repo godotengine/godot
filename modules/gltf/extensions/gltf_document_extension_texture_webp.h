@@ -33,7 +33,7 @@
 #include "gltf_document_extension.h"
 
 class GLTFDocumentExtensionTextureWebP : public GLTFDocumentExtension {
-	GDCLASS(GLTFDocumentExtensionTextureWebP, GLTFDocumentExtension);
+	GDSOFTCLASS(GLTFDocumentExtensionTextureWebP, GLTFDocumentExtension);
 
 public:
 	// Import process.
