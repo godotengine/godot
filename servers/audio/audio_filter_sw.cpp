@@ -123,6 +123,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 			p_coeffs->a2 = 1.0 - alpha;
 		} break;
 		case PEAK: {
+			a0 = (1 + alpha / tmpgain);
 			p_coeffs->b0 = (1.0 + alpha * tmpgain);
 			p_coeffs->b1 = (-2.0 * cos_v);
 			p_coeffs->b2 = (1.0 - alpha * tmpgain);
