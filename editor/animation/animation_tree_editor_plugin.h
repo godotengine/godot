@@ -57,6 +57,7 @@ class AnimationTreeEditor : public EditorDock {
 
 	ScrollContainer *path_edit = nullptr;
 	HBoxContainer *path_hb = nullptr;
+	Button *mute_audio_tracks = nullptr;
 	HBoxContainer *status_bar = nullptr;
 	RichTextLabel *current_scope_error_label = nullptr;
 	Button *error_button = nullptr;
@@ -86,6 +87,7 @@ protected:
 	void _meta_clicked(Variant p_meta);
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
+	void _mute_audio_tracks_pressed();
 
 	static AnimationTreeEditor *singleton;
 

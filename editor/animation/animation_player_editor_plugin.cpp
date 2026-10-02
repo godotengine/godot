@@ -204,6 +204,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			onion_toggle->set_button_icon(get_editor_theme_icon(SNAME("Onion")));
 			onion_skinning->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
+			mute_audio_tracks->set_button_icon(get_editor_theme_icon(mute_audio_tracks->is_pressed() ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
 			pin->set_button_icon(get_editor_theme_icon(SNAME("Pin")));
 
 #define ITEM_ICON(m_item, m_icon) tool_anim->get_popup()->set_item_icon(tool_anim->get_popup()->get_item_index(m_item), get_editor_theme_icon(SNAME(m_icon)))
@@ -222,6 +223,8 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			_find_player();
 			_ensure_dummy_player();
+			mute_audio_tracks->set_pressed(AnimationMixer::is_editor_audio_muted());
+			mute_audio_tracks->set_button_icon(get_editor_theme_icon(mute_audio_tracks->is_pressed() ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
 		} break;
 	}
 }
@@ -1978,6 +1981,11 @@ void AnimationPlayerEditor::_stop_onion_skinning() {
 	}
 }
 
+void AnimationPlayerEditor::_mute_audio_tracks_pressed() {
+	mute_audio_tracks->set_button_icon(get_editor_theme_icon(mute_audio_tracks->is_pressed() ? SNAME("AudioMute") : SNAME("AudioStreamPlayer")));
+	AnimationMixer::set_editor_audio_muted(mute_audio_tracks->is_pressed());
+}
+
 void AnimationPlayerEditor::_pin_pressed() {
 	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
 }
@@ -2205,6 +2213,17 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(onion_skinning);
 
 	hb->add_child(memnew(VSeparator));
+
+	mute_audio_tracks = memnew(Button);
+	mute_audio_tracks->set_theme_type_variation(SceneStringName(FlatButton));
+	mute_audio_tracks->set_toggle_mode(true);
+	mute_audio_tracks->set_tooltip_text(TTRC("Mute audio tracks in Editor"));
+	// Icon changes when pressed, doesn't need accent color
+	mute_audio_tracks->add_theme_color_override(SNAME("icon_pressed_color"), Color(1, 1, 1));
+	mute_audio_tracks->add_theme_color_override(SNAME("icon_hover_pressed_color"), Color(1, 1, 1));
+	mute_audio_tracks->set_button_icon(get_editor_theme_icon(SNAME("AudioStreamPlayer")));
+	hb->add_child(mute_audio_tracks);
+	mute_audio_tracks->connect(SceneStringName(pressed), callable_mp(this, &AnimationPlayerEditor::_mute_audio_tracks_pressed));
 
 	pin = memnew(Button);
 	pin->set_theme_type_variation(SceneStringName(FlatButton));
