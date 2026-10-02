@@ -291,6 +291,8 @@ void main() {
 
 #endif
 
+	vec3 l;
+	uint aniso;
 	{
 		uint rgbe = process_voxels.data[voxel_index].light;
 
@@ -301,13 +303,17 @@ void main() {
 		float e = float((rgbe >> 25) & 0x1F);
 		float m = pow(2.0, e - 15.0 - 9.0);
 
-		vec3 l = vec3(r, g, b) * m;
+		l = vec3(r, g, b) * m;
 
-		uint aniso = process_voxels.data[voxel_index].light_aniso;
+		aniso = process_voxels.data[voxel_index].light_aniso;
+
+		// In static mode, this will happen later
+#ifdef MODE_PROCESS_DYNAMIC
 		for (uint i = 0; i < 6; i++) {
 			float strength = ((aniso >> (i * 5)) & 0x1F) / float(0x1F);
 			light_accum[i] += l * strength;
 		}
+#endif
 	}
 
 	// Raytrace light
@@ -450,6 +456,10 @@ void main() {
 	vec3 light_total = vec3(0);
 
 	for (int i = 0; i < 6; i++) {
+#ifdef MODE_PROCESS_STATIC
+		float strength = ((aniso >> (i * 5)) & 0x1F) / float(0x1F);
+		light_accum[i] = max(light_accum[i], l * strength); // Prevent static light from stacking on itself infinitely
+#endif
 		light_total += light_accum[i];
 		lumas[i] = max(light_accum[i].r, max(light_accum[i].g, light_accum[i].b));
 	}
