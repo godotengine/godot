@@ -2453,13 +2453,13 @@ void EditorHelp::_class_desc_scroll_to_paragraph(int p_line, bool p_save_history
 		Dictionary state = get_state();
 		// Row 0 is not a state worth saving as a previous state to history.
 		if (int(state["row"]) > 0) {
-			emit_signal(SNAME("_request_save_new_history"), state);
+			call_on_all_layout_pending_finished(callable_mp(this, &EditorHelp::_emit_request_save_new_history).bind(state));
 		}
 	}
 	class_desc->scroll_to_paragraph(p_line);
 	// Save history after scrolling.
 	if (p_save_history) {
-		emit_signal(SNAME("_request_save_new_history"), get_state());
+		call_on_all_layout_pending_finished(callable_mp(this, &EditorHelp::_emit_request_save_new_history).bind(get_state()));
 		if (ScriptEditorNavigationMarker::get_singleton()->is_locating()) {
 			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		}
@@ -2468,6 +2468,10 @@ void EditorHelp::_class_desc_scroll_to_paragraph(int p_line, bool p_save_history
 
 bool EditorHelp::_need_save_new_history() const {
 	return !ScriptEditorNavigationMarker::get_singleton()->is_initializing() && ScriptEditorNavigationMarker::get_singleton()->is_locating();
+}
+
+void EditorHelp::_emit_request_save_new_history(const Dictionary &p_state) {
+	emit_signal(SNAME("_request_save_new_history"), p_state);
 }
 
 static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const Control *p_owner_node, const String &p_class) {
@@ -3427,7 +3431,7 @@ void EditorHelp::update_doc() {
 
 void EditorHelp::trigger_history_save_on_navigate() {
 	if (_need_save_new_history()) {
-		emit_signal(SNAME("_request_save_new_history"), get_state());
+		call_on_all_layout_pending_finished(callable_mp(this, &EditorHelp::_emit_request_save_new_history).bind(get_state()));
 		if (ScriptEditorNavigationMarker::get_singleton()->is_locating()) {
 			ScriptEditorNavigationMarker::get_singleton()->locate_end();
 		}
