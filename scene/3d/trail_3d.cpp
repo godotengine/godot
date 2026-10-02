@@ -608,9 +608,17 @@ void Trail3D::_do_rebuild() {
 
 		if (alignment == MESH_ALIGNMENT_BILLBOARD) {
 			Vector4 custom = Vector4();
-			custom.x = tangent.x;
-			custom.y = tangent.y;
-			custom.z = tangent.z;
+
+			Vector3 tan;
+			if (i < 1) {
+				tan = (points[0] - points[1]).normalized();
+			} else {
+				tan = (points[i - 1] - points[i]).normalized();
+			}
+
+			custom.x = tan.x;
+			custom.y = tan.y;
+			custom.z = tan.z;
 
 			custom.w = half_width;
 			_write_custom(custom, j2, write_attrib);
@@ -662,6 +670,7 @@ void Trail3D::_process_trail() {
 	}
 
 	Vector3 up = tf.basis.get_column(1);
+	Vector3 tan = tf.basis.get_column(2);
 	real_t delta = get_process_delta_time();
 	_time += delta;
 	real_t head_velocity = (get_global_position() - _previous_position).length() / MAX(delta, CMP_EPSILON);
@@ -670,22 +679,20 @@ void Trail3D::_process_trail() {
 		while (points.size() < 2) {
 			points.insert(0, pos);
 			normals.insert(0, up);
-			tangents.insert(0, Vector3(0.0, 0.0, 1.0));
+			tangents.insert(0, tan);
 			if (limit_mode == LIMIT_MODE_LIFETIME) {
 				_times.insert(0, _time);
 				_velocities.insert(0, head_velocity);
 			}
 		}
+
 	} else {
 		if (emitting) {
 			points.write[0] = pos;
 			normals.write[0] = up;
+			tangents.write[0] = tan;
 			if (pos.distance_squared_to(points[1]) > CMP_EPSILON) {
-				real_t len = (pos - points[1]).length();
-				Vector3 t = (pos - points[1]) / len;
-				tangents.write[0] = t;
 				if (points.size() == 2) {
-					tangents.write[1] = t;
 					if (_previous_position.distance_squared_to(points[1]) <= CMP_EPSILON && limit_mode == LIMIT_MODE_LIFETIME) {
 						_times.write[1] = _time - delta;
 						_velocities.write[1] = head_velocity;
@@ -716,33 +723,30 @@ void Trail3D::_process_trail() {
 		_last_pinned_u = -tiling_offset - min_section_length;
 	}
 
-	switch (limit_mode) {
-		case LIMIT_MODE_MAX_LENGTH:
-			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
-				points.insert(1, pos);
-				normals.insert(1, up);
-				_last_pinned_u += dist_from_leading;
-				if (points.size() > 3) {
-					tangents.write[2] = (points[1] - points[3]).normalized();
-				}
+	if (dist_from_leading > min_section_length && emitting) {
+		real_t dot = tan.dot(tangents[1]);
+
+		/*if (dot <= -0.5) {
+			tangents.insert(1, -tangents[1]);
+			points.insert(1, points[1]);
+			normals.insert(1, up);
+			if(limit_mode == LIMIT_MODE_LIFETIME){
+				_times.insert(1, _times[1]);
+				_velocities.insert(1, _velocities[1]);
 			}
-			break;
-		case LIMIT_MODE_LIFETIME:
-			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
-				points.insert(1, pos);
-				normals.insert(1, up);
-				_times.insert(1, _time);
-				_last_pinned_u += dist_from_leading;
-				_velocities.insert(1, (points[1] - points[2]).length() / (_times[1] - _times[2]));
-				if (points.size() > 3) {
-					tangents.write[2] = (points[1] - points[3]).normalized();
-				}
-			}
-			break;
-		default:
-			break;
+		}*/
+
+		tangents.insert(1, tan);
+		points.insert(1, pos);
+		normals.insert(1, up);
+		if (limit_mode == LIMIT_MODE_LIFETIME) {
+			_times.insert(1, _time);
+			_velocities.insert(1, (points[1] - points[2]).length() / (_times[1] - _times[2]));
+		}
+		_last_pinned_u += dist_from_leading;
+		if (points.size() > 3 && dot > -0.5) {
+			tangents.write[2] = (tangents[1].lerp(tangents[3], 0.5)).normalized();
+		}
 	}
 
 	if (pin_uv) {
