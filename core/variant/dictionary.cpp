@@ -40,10 +40,20 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, String);
 #include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
 
+struct DictionaryKeyComparator {
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs) {
+		// Object keys retain their identity after being freed.
+		if (p_lhs.get_type() == Variant::OBJECT && p_rhs.get_type() == Variant::OBJECT) {
+			return p_lhs.identity_compare(p_rhs);
+		}
+		return StringLikeVariantComparator::compare(p_lhs, p_rhs);
+	}
+};
+
 struct DictionaryPrivate {
 	SafeRefCount refcount;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator> variant_map;
+	HashMap<Variant, Variant, HashMapHasherDefault, DictionaryKeyComparator> variant_map;
 	ContainerTypeValidate typed_key;
 	ContainerTypeValidate typed_value;
 	Variant *typed_fallback = nullptr; // Allows a typed dictionary to return dummy values when attempting an invalid access.
@@ -166,7 +176,7 @@ Variant Dictionary::get_valid(const Variant &p_key) const {
 	const Variant *key = _p->typed_key.validate(p_key, tmpk, "get_valid");
 	ERR_FAIL_NULL_V(key, Variant());
 
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator E(_p->variant_map.find(*key));
+	HashMap<Variant, Variant, HashMapHasherDefault, DictionaryKeyComparator>::ConstIterator E(_p->variant_map.find(*key));
 
 	if (!E) {
 		return Variant();
@@ -291,7 +301,7 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int p_recursion
 	}
 	p_recursion_count++;
 	for (const KeyValue<Variant, Variant> &this_E : _p->variant_map) {
-		HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
+		HashMap<Variant, Variant, HashMapHasherDefault, DictionaryKeyComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
 		if (!other_E || !this_E.value.hash_compare(other_E->value, p_recursion_count, false)) {
 			return false;
 		}
@@ -455,7 +465,7 @@ void Dictionary::assign(const Dictionary &p_dictionary) {
 	}
 
 	int size = p_dictionary._p->variant_map.size();
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator> variant_map = HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>(size);
+	HashMap<Variant, Variant, HashMapHasherDefault, DictionaryKeyComparator> variant_map = HashMap<Variant, Variant, HashMapHasherDefault, DictionaryKeyComparator>(size);
 
 	Vector<Variant> key_array;
 	key_array.resize(size);
@@ -590,7 +600,7 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 	const Variant *key = _p->typed_key.validate(*p_key, tmpk, "next");
 	ERR_FAIL_NULL_V(key, nullptr);
 
-	HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::Iterator E = _p->variant_map.find(*key);
+	HashMap<Variant, Variant, HashMapHasherDefault, DictionaryKeyComparator>::Iterator E = _p->variant_map.find(*key);
 
 	if (!E) {
 		return nullptr;
