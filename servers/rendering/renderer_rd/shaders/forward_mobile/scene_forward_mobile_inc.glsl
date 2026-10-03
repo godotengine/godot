@@ -154,11 +154,11 @@ bool sc_scene_roughness_limiter_enabled() {
 }
 
 uint sc_soft_shadow_samples() {
-	return (sc_packed_0() >> 24) & 63U;
+	return (sc_packed_0() >> 20) & 63U;
 }
 
 uint sc_penumbra_shadow_samples() {
-	return (sc_packed_0() >> 30) & 63U;
+	return (sc_packed_0() >> 26) & 63U;
 }
 
 uint sc_directional_soft_shadow_samples() {
