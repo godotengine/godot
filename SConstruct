@@ -142,7 +142,7 @@ env["x86_libtheora_opt_gcc"] = False
 env["x86_libtheora_opt_vc"] = False
 
 # avoid issues when building with different versions of python out of the same directory
-env.SConsignFile(File("#.sconsign{0}.dblite".format(pickle.HIGHEST_PROTOCOL)).abspath)
+env.SConsignFile(File(f"#.sconsign{pickle.HIGHEST_PROTOCOL}.dblite").abspath)
 
 # Build options
 
@@ -158,7 +158,7 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add((["platform", "p"], "Target platform (%s)" % "|".join(platform_list), ""))
+opts.Add((["platform", "p"], f"Target platform ({'|'.join(platform_list)})", ""))
 opts.Add(
     EnumVariable(
         "target", "Compilation target", "editor", ["editor", "template_release", "template_debug"], ignorecase=2
@@ -194,6 +194,15 @@ opts.Add(
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("brotli", "Enable Brotli for decompression and WOFF2 fonts support", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver on supported platforms", False))
+opts.Add(
+    BoolVariable(
+        "rendering_device",
+        "Enable RenderingDevice abstraction for modern graphics APIs (use the `vulkan`, `d3d12`, and `metal` options to toggle individual drivers)",
+        True,
+    )
+)
+opts.Add(BoolVariable("forward_plus_renderer", "Enable the Forward+ renderer (requires RenderingDevice)", True))
+opts.Add(BoolVariable("forward_mobile_renderer", "Enable the Mobile renderer (requires RenderingDevice)", True))
 opts.Add(BoolVariable("vulkan", "Enable the Vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
@@ -229,6 +238,11 @@ opts.Add(
         True,
     )
 )
+opts.Add((
+    "profiler_broadcast_address",
+    "The broadcast IP address used for announcing the profiler application. In Tracy this configures TRACY_CLIENT_ADDRESS.",
+    "",
+))
 
 
 # Advanced options
@@ -261,6 +275,7 @@ opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
+opts.Add(BoolVariable("disable_2d", "Disable 2D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("disable_physics_2d", "Disable 2D physics nodes and server", False))
@@ -622,8 +637,8 @@ if env.GetOption("num_jobs") == altered_num_jobs:
         else:
             safer_cpu_count = cpu_count if cpu_count <= 4 else cpu_count - 1
             print(
-                "Auto-detected %d CPU cores available for build parallelism. Using %d cores by default. You can override it with the `-j` or `num_jobs` arguments."
-                % (cpu_count, safer_cpu_count)
+                f"Auto-detected {cpu_count} CPU cores available for build parallelism. Using {safer_cpu_count} cores by default. "
+                "You can override it with the `-j` or `num_jobs` arguments."
             )
             env.SetOption("num_jobs", safer_cpu_count)
 
@@ -695,6 +710,22 @@ if env["scu_build"]:
         max_includes_per_scu = read_scu_limit
 
     methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
+
+if env["rendering_device"]:
+    if env["platform"] == "web":
+        # Not available in the web platform.
+        env["rendering_device"] = False
+    else:
+        env.Append(CPPDEFINES=["RD_ENABLED"])
+        if env["forward_mobile_renderer"]:
+            env.Append(CPPDEFINES=["MOBILE_RD_ENABLED"])
+        if env["forward_plus_renderer"]:
+            env.Append(CPPDEFINES=["FORWARD_RD_ENABLED"])
+# These need to be set before platform detection.
+if not env["rendering_device"] or not (env["forward_mobile_renderer"] or env["forward_plus_renderer"]):
+    env["d3d12"] = False
+    env["metal"] = False
+    env["vulkan"] = False
 
 # Must happen after the flags' definition, as configure is when most flags
 # are actually handled to change compile options, etc.
@@ -852,6 +883,9 @@ else:
         if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.
             env.AppendUnique(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
+        elif methods.using_emcc(env):
+            # Emscripten can use separate -s for build options, so pass the alias directly to the linker.
+            env.AppendUnique(LINKFLAGS=["-Wl,-s"])
         else:
             env.AppendUnique(LINKFLAGS=["-s"])
 
@@ -1002,7 +1036,11 @@ else:  # GCC, Clang
 
     if env["werror"]:
         env.AppendUnique(CCFLAGS=["-Werror"])
-        env.AppendUnique(LINKFLAGS=["-Wl,--fatal-warnings" if env["platform"] != "macos" else "-Wl,-fatal_warnings"])
+        if env["platform"] != "macos":
+            env.AppendUnique(LINKFLAGS=["-Wl,--fatal-warnings"])
+        elif env["arch"] != "x86_64":
+            # Disabled for x86-64 macOS build due to MoltenVK min. target version mismatch.
+            env.AppendUnique(LINKFLAGS=["-Wl,-fatal_warnings"])
 
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
@@ -1029,6 +1067,7 @@ sys.modules.pop("detect")
 if env.editor_build:
     unsupported_opts = []
     for disable_opt in [
+        "disable_2d",
         "disable_3d",
         "disable_advanced_gui",
         "disable_physics_2d",
@@ -1046,6 +1085,11 @@ if env.editor_build:
         )
         Exit(255)
 
+if env["disable_2d"]:
+    env.Append(CPPDEFINES=["_2D_DISABLED"])
+    env["disable_navigation_2d"] = True
+    env["disable_physics_2d"] = True
+    env["tests"] = False
 if env["disable_3d"]:
     env.Append(CPPDEFINES=["_3D_DISABLED"])
     env["disable_navigation_3d"] = True

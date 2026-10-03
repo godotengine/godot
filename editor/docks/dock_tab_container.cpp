@@ -46,7 +46,7 @@ bool EditorDockDragHint::can_drop_data(const Point2 &p_point, const Variant &p_d
 void EditorDockDragHint::drop_data(const Point2 &p_point, const Variant &p_data) {
 	// Drop dock into last spot if not over tabbar.
 	if (mouse_inside_tabbar) {
-		drop_tabbar->_handle_drop_data("tab_container_tab", p_point, p_data, callable_mp(this, &EditorDockDragHint::_drag_move_tab), callable_mp(this, &EditorDockDragHint::_drag_move_tab_from));
+		drop_tabbar->_handle_drop_data("tab_container_tab", p_point - (drop_tabbar->get_global_position() - get_global_position()), p_data, callable_mp(this, &EditorDockDragHint::_drag_move_tab), callable_mp(this, &EditorDockDragHint::_drag_move_tab_from));
 	} else {
 		EditorDockManager *dock_manager = EditorDockManager::get_singleton();
 		if (mouse_margin_index == -1) {
@@ -77,7 +77,7 @@ void EditorDockDragHint::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 		}
 		const Point2 pos = mm->get_position();
-		mouse_inside_tabbar = drop_tabbar_parent->get_rect().has_point(pos);
+		mouse_inside_tabbar = drop_tabbar_parent->get_global_rect().has_point(mm->get_global_position());
 
 		if (mouse_inside_tabbar) {
 			mouse_margin_index = -1;
@@ -194,7 +194,7 @@ void EditorDockDragHint::_notification(int p_what) {
 
 			// Only display tabbar hint if the mouse is over the tabbar.
 			if (mouse_inside_tabbar) {
-				draw_set_transform(drop_tabbar_parent->get_position()); // The TabBar isn't always on top.
+				draw_set_transform(Vector2(drop_tabbar->get_global_position().x - get_global_position().x, drop_tabbar_parent->get_position().y)); // The TabBar isn't always on top.
 				drop_tabbar->_draw_tab_drop(get_canvas_item());
 			}
 		} break;
@@ -224,6 +224,14 @@ void DockTabContainer::_tab_rmb_clicked(int p_tab_idx) {
 	dock_context_popup->set_dock(hovered_dock);
 	dock_context_popup->set_position(get_tab_bar()->get_screen_position() + get_tab_bar()->get_local_mouse_position());
 	dock_context_popup->popup();
+}
+
+void DockTabContainer::_tab_clicked() {
+	EditorDock *current_dock = get_dock(get_current_tab());
+	if (!current_dock) {
+		return;
+	}
+	EditorDockManager::get_singleton()->force_focus_dock(current_dock);
 }
 
 void DockTabContainer::_notification(int p_what) {
@@ -317,11 +325,22 @@ EditorDock *DockTabContainer::get_dock(int p_idx) const {
 	return Object::cast_to<EditorDock>(get_tab_control(p_idx));
 }
 
+EditorDock *DockTabContainer::get_dock_by_name(const String &p_name) const {
+	for (int i = 0; i < get_tab_count(); i++) {
+		EditorDock *dock = get_dock(i);
+		ERR_CONTINUE(!dock);
+		if (dock->get_display_title() == p_name) {
+			return dock;
+		}
+	}
+	return nullptr;
+}
+
 void DockTabContainer::show_drag_hint() {
 	if (!is_visible_in_tree()) {
 		return;
 	}
-	drag_hint->set_rect(get_global_rect());
+	drag_hint->set_rect(get_drag_hint_rect());
 	drag_hint->show();
 }
 
@@ -348,6 +367,7 @@ DockTabContainer::DockTabContainer(int p_slot) {
 
 	get_tab_bar()->set_switch_on_release(true);
 	get_tab_bar()->connect("tab_rmb_clicked", callable_mp(this, &DockTabContainer::_tab_rmb_clicked));
+	get_tab_bar()->connect("tab_clicked", callable_mp(this, &DockTabContainer::_tab_clicked).unbind(1));
 }
 
 Rect2 SideDockTabContainer::get_floating_dock_rect(EditorDock *p_dock) {

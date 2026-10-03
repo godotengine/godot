@@ -623,7 +623,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 
 				bool found_type = false;
 				if (getter != StringName()) {
-					MethodBind *mb = ClassDB::get_method(name, getter);
+					const MethodBind *mb = ClassDB::get_method(name, getter);
 					if (mb) {
 						PropertyInfo retinfo = mb->get_return_info();
 
@@ -778,6 +778,10 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 						case Theme::DATA_TYPE_STYLEBOX:
 							tid.type = "StyleBox";
 							tid.data_type = "style";
+							break;
+						case Theme::DATA_TYPE_SOUND:
+							tid.type = "AudioStream";
+							tid.data_type = "sound";
 							break;
 						case Theme::DATA_TYPE_MAX:
 							break; // Can't happen, but silences warning.

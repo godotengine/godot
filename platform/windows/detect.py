@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import methods
 from methods import print_error, print_warning
-from platform_methods import detect_arch, validate_arch
+from platform_methods import check_accesskit_version, detect_arch, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -451,35 +451,39 @@ def configure_msvc(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
-            if env["arch"] == "arm64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/msvc/static"])
-            elif env["arch"] == "x86_64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/msvc/static"])
-            elif env["arch"] == "x86_32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/msvc/static"])
-            LIBS += [
-                "accesskit",
-                "runtimeobject",
-                "propsys",
-                "oleaut32",
-                "user32",
-                "userenv",
-                "ntdll",
-            ]
-            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            if check_accesskit_version(env["accesskit_sdk_path"]):
+                env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+                if env["arch"] == "arm64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/msvc/static"])
+                elif env["arch"] == "x86_64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/msvc/static"])
+                elif env["arch"] == "x86_32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/msvc/static"])
+                LIBS += [
+                    "accesskit",
+                    "runtimeobject",
+                    "propsys",
+                    "oleaut32",
+                    "user32",
+                    "userenv",
+                    "ntdll",
+                ]
+                env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            else:
+                env["accesskit"] = False
         else:
             print_error(
                 "The screen reader support driver requires dependencies to be installed.\n"
                 f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
-                "See the documentation for more information:\n"
-                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+                "See the documentation for more information:\n\t"
+                "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#compiling-with-accesskit-support"
+                "\nAlternatively, disable this driver by compiling with `accesskit=no` explicitly."
             )
             env["accesskit"] = False
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
+
         if not env["use_volk"]:
             LIBS += ["vulkan"]
 
@@ -489,7 +493,8 @@ def configure_msvc(env: "SConsEnvironment"):
     if env["d3d12"]:
         check_d3d12_installed(env, env["arch"] + "-msvc")
 
-        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED"])
+
         LIBS += ["dxgi", "dxguid"]
         LIBS += ["version"]  # Mesa dependency.
 
@@ -529,9 +534,9 @@ def configure_msvc(env: "SConsEnvironment"):
                 print_warning(
                     "The ANGLE rendering driver requires dependencies to be installed.\n"
                     f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_angle.py')}`.\n"
-                    "See the documentation for more information:\n"
-                    "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                    "Alternatively, disable this driver by compiling with `angle=no` explicitly."
+                    "See the documentation for more information:\n\t"
+                    "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#compiling-with-angle-support"
+                    "\nAlternatively, disable this driver by compiling with `angle=no` explicitly."
                 )
                 env["angle"] = False
 
@@ -845,40 +850,43 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
-            if env["use_llvm"]:
-                if env["arch"] == "arm64":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/mingw-llvm/static/"])
-                elif env["arch"] == "x86_64":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw-llvm/static/"])
-                elif env["arch"] == "x86_32":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw-llvm/static/"])
+            if check_accesskit_version(env["accesskit_sdk_path"]):
+                env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+                if env["use_llvm"]:
+                    if env["arch"] == "arm64":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/mingw-llvm/static/"])
+                    elif env["arch"] == "x86_64":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw-llvm/static/"])
+                    elif env["arch"] == "x86_32":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw-llvm/static/"])
+                else:
+                    if env["arch"] == "x86_64":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw/static/"])
+                    elif env["arch"] == "x86_32":
+                        env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw/static/"])
+                env.Append(LIBPATH=["#bin/obj/platform/windows"])
+                env.Append(
+                    LIBS=[
+                        "accesskit",
+                        "runtimeobject",
+                        "propsys",
+                        "oleaut32",
+                        "user32",
+                        "userenv",
+                        "ntdll",
+                    ]
+                )
+                env.Append(LIBPATH=["#platform/windows"])
+                env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
             else:
-                if env["arch"] == "x86_64":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86_64/mingw/static/"])
-                elif env["arch"] == "x86_32":
-                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/x86/mingw/static/"])
-            env.Append(LIBPATH=["#bin/obj/platform/windows"])
-            env.Append(
-                LIBS=[
-                    "accesskit",
-                    "runtimeobject",
-                    "propsys",
-                    "oleaut32",
-                    "user32",
-                    "userenv",
-                    "ntdll",
-                ]
-            )
-            env.Append(LIBPATH=["#platform/windows"])
-            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+                env["accesskit"] = False
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
                 f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
-                "See the documentation for more information:\n"
-                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
+                "See the documentation for more information:\n\t"
+                "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#compiling-with-accesskit-support"
+                "\nAlternatively, disable this driver by compiling with `accesskit=no` explicitly."
             )
             env["accesskit"] = False
 
@@ -886,7 +894,8 @@ def configure_mingw(env: "SConsEnvironment"):
         env.Append(LIBS=["psapi", "dbghelp"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
 
@@ -899,7 +908,8 @@ def configure_mingw(env: "SConsEnvironment"):
         else:
             check_d3d12_installed(env, env["arch"] + "-gcc")
 
-        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED"])
+
         env.Append(LIBS=["dxgi", "dxguid"])
 
         # PIX
@@ -943,9 +953,9 @@ def configure_mingw(env: "SConsEnvironment"):
                 print_warning(
                     "The ANGLE rendering driver requires dependencies to be installed.\n"
                     f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_angle.py')}`.\n"
-                    "See the documentation for more information:\n"
-                    "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-                    "Alternatively, disable this driver by compiling with `angle=no` explicitly."
+                    "See the documentation for more information:\n\t"
+                    "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#compiling-with-angle-support"
+                    "\nAlternatively, disable this driver by compiling with `angle=no` explicitly."
                 )
                 env["angle"] = False
 
@@ -975,8 +985,8 @@ def check_d3d12_installed(env, suffix):
         print_error(
             "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
             f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_d3d12_sdk_windows.py')}`.\n"
-            "See the documentation for more information:\n"
-            "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html\n"
-            "Alternatively, disable this driver by compiling with `d3d12=no` explicitly."
+            "See the documentation for more information:\n\t"
+            "https://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_windows.html#installing-direct3d-12-requirements"
+            "\nAlternatively, disable this driver by compiling with `d3d12=no` explicitly."
         )
         sys.exit(255)

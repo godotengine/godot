@@ -258,6 +258,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		// Add this node.
 		TreeItem *item = create_item(parent);
 		item->set_text(0, node.name);
+		item->set_text_overrun_behavior(0, TextServer::OVERRUN_NO_TRIMMING);
 		if (node.scene_file_path.is_empty()) {
 			item->set_tooltip_text(0, node.name + "\n" + TTR("Type:") + " " + node.type_name);
 		} else {
@@ -403,6 +404,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
+	// IDs that weren't found will be excluded in the next update (either removed or not nodes).
 	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
 
@@ -424,6 +426,10 @@ void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 }
 
 void EditorDebuggerTree::clear_selection() {
+	if (inspected_object_ids.is_empty()) {
+		return;
+	}
+
 	inspected_object_ids.clear();
 
 	if (!updating_scene_tree) {

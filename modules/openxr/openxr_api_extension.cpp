@@ -55,6 +55,7 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("insert_debug_label", "label_name"), &OpenXRAPIExtension::insert_debug_label);
 
 	ClassDB::bind_method(D_METHOD("get_view_count"), &OpenXRAPIExtension::get_view_count);
+	ClassDB::bind_method(D_METHOD("get_primary_view_count"), &OpenXRAPIExtension::get_primary_view_count);
 	ClassDB::bind_method(D_METHOD("get_view_configuration"), &OpenXRAPIExtension::get_view_configuration);
 
 	ClassDB::bind_method(D_METHOD("is_initialized"), &OpenXRAPIExtension::is_initialized);
@@ -196,6 +197,11 @@ void OpenXRAPIExtension::insert_debug_label(const String &p_label_name) {
 uint32_t OpenXRAPIExtension::get_view_count() const {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
 	return (uint32_t)OpenXRAPI::get_singleton()->get_view_count();
+}
+
+uint32_t OpenXRAPIExtension::get_primary_view_count() const {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (uint32_t)OpenXRAPI::get_singleton()->get_primary_view_count();
 }
 
 uint64_t OpenXRAPIExtension::get_view_configuration() const {

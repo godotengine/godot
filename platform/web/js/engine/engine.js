@@ -236,6 +236,32 @@ const Engine = (function () {
 			},
 
 			/**
+			 * Forcibly exit the current instance.
+			 *
+			 * This is akin to terminating the process on a regular OS, and *may* be able to terminate
+			 * the engine and free resources even if the engine has crashed, or is stuck in a loop.
+			 *
+			 */
+			forceQuit: function () {
+				if (this.rtenv) {
+					this.rtenv['force_quit']();
+				}
+			},
+
+			/**
+			 * Editor-Only.
+			 *
+			 * Adds a new EditorDebuggerSession connected via the given port.
+			 *
+			 * @param {MessagePort} port The port used for the debugger session.
+			 */
+			addDebuggerSession: function (port) {
+				if (this.rtenv) {
+					this.rtenv['add_debugger_session'](port);
+				}
+			},
+
+			/**
 			 * Install the progressive-web app service worker.
 			 * @returns {Promise} The service worker registration promise.
 			 */
@@ -259,6 +285,8 @@ const Engine = (function () {
 		Engine.prototype['startGame'] = Engine.prototype.startGame;
 		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
 		Engine.prototype['requestQuit'] = Engine.prototype.requestQuit;
+		Engine.prototype['forceQuit'] = Engine.prototype.forceQuit;
+		Engine.prototype['addDebuggerSession'] = Engine.prototype.addDebuggerSession;
 		Engine.prototype['installServiceWorker'] = Engine.prototype.installServiceWorker;
 		// Also expose static methods as instance methods
 		Engine.prototype['load'] = Engine.load;

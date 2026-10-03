@@ -102,6 +102,7 @@ private:
 
 	EditorDock *dock_tab_dragged = nullptr;
 	bool docks_visible = true;
+	bool forced_focus = false;
 
 	DockContextPopup *dock_context_popup = nullptr;
 	PopupMenu *docks_menu = nullptr;
@@ -132,6 +133,7 @@ public:
 	static EditorDockManager *get_singleton() { return singleton; }
 
 	DockTabContainer *get_dock_container(int p_slot) const;
+	EditorDock *get_dock_by_name(const String &p_name) const;
 
 	void update_docks_menu();
 	void update_tab_styles();
@@ -154,6 +156,7 @@ public:
 	void close_dock(EditorDock *p_dock);
 	void open_dock(EditorDock *p_dock, bool p_set_current = true);
 	void focus_dock(EditorDock *p_dock);
+	void force_focus_dock(EditorDock *p_dock); // Ignore can_switch_dock().
 	void make_dock_floating(EditorDock *p_dock);
 
 	void set_docks_visible(bool p_show);
@@ -177,7 +180,6 @@ class DockSlotGrid : public Control {
 	int hovered_slot = -1;
 
 	Rect2 rect_cache[EditorDock::DOCK_SLOT_MAX];
-	Rect2 main_screen_rect;
 	bool rect_cache_dirty = true;
 
 	void _update_rect_cache();

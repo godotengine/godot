@@ -46,7 +46,7 @@ static bool _profile_count_as_native(const Object *p_base_obj, const StringName 
 	if ((p_methodname == SNAME("new") && cname == GDScript::get_class_static()) || p_methodname == CoreStringName(call)) {
 		return false;
 	}
-	return ClassDB::class_exists(cname) && ClassDB::has_method(cname, p_methodname, false);
+	return ClassDB::has_method(cname, p_methodname, false);
 }
 
 static String _get_element_type(Variant::Type builtin_type, const StringName &native_type, const Ref<Script> &script_type) {
@@ -971,7 +971,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				bool result = false;
 				if (object && object->get_script_instance()) {
-					Script *script_ptr = object->get_script_instance()->get_script().ptr();
+					Script *script_ptr = object->get_script_instance()->get_script();
 					while (script_ptr) {
 						if (script_ptr == script_type) {
 							result = true;
@@ -1356,7 +1356,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!gdscript);
 
 				int index = _code_ptr[ip + 3];
-				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+				if (unlikely(index < 0 || index >= gdscript->static_variables.size())) {
+#ifdef DEBUG_ENABLED
+					if (GDScriptLanguage::get_singleton()->finishing) {
+						// Just assume it's SIOF. There is a tiny possibility that something else is causing this (e.g. bug, reload).
+						err_text = vformat("Static variable does not exist anymore. Since the order in which static variables are destructed is arbitrary, consider emptying objects from them in a well-defined order manually before shutdown.");
+					} else {
+						_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition 'index < 0 || index >= gdscript->static_variables.size()' is true. Breaking..:");
+					}
+#endif
+					OPCODE_BREAK;
+				}
 
 				gdscript->static_variables.write[index] = *value;
 
@@ -1374,7 +1384,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!gdscript);
 
 				int index = _code_ptr[ip + 3];
-				GD_ERR_BREAK(index < 0 || index >= gdscript->static_variables.size());
+
+				if (unlikely(index < 0 || index >= gdscript->static_variables.size())) {
+#ifdef DEBUG_ENABLED
+					if (GDScriptLanguage::get_singleton()->finishing) {
+						// Just assume it's SIOF. There is a tiny possibility that something else is causing this (e.g. bug, reload).
+						err_text = vformat("Static variable does not exist anymore. Since the order in which static variables are destructed is arbitrary, consider emptying objects from them in a well-defined order manually before shutdown.");
+					} else {
+						_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition 'index < 0 || index >= gdscript->static_variables.size()' is true. Breaking..:");
+					}
+#endif
+					OPCODE_BREAK;
+				}
 
 				*target = gdscript->static_variables[index];
 
@@ -1599,7 +1620,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							OPCODE_BREAK;
 						}
 
-						Script *src_type = scr_inst->get_script().ptr();
+						Script *src_type = scr_inst->get_script();
 						bool valid = false;
 
 						while (src_type) {
@@ -1712,7 +1733,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ScriptInstance *scr_inst = src->operator Object *()->get_script_instance();
 
 					if (scr_inst) {
-						Script *src_type = src->operator Object *()->get_script_instance()->get_script().ptr();
+						Script *src_type = src->operator Object *()->get_script_instance()->get_script();
 
 						while (src_type) {
 							if (src_type == base_type) {
@@ -1948,7 +1969,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							}
 							base_obj = base->get_validated_object();
 							if (base_obj) {
-								MethodBind *method = ClassDB::get_method(base_obj->get_class_name(), *methodname);
+								const MethodBind *method = ClassDB::get_method(base_obj->get_class_name(), *methodname);
 								if (method && !method->has_return()) {
 									err_text = R"(Trying to get a return value of a method that returns "void")";
 									OPCODE_BREAK;
@@ -2043,7 +2064,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				int argc = _code_ptr[ip + 1];
 				GD_ERR_BREAK(argc < 0);
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2162,7 +2183,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				ip += instr_arg_count;
 
 				GD_ERR_BREAK(_code_ptr[ip + 1] < 0 || _code_ptr[ip + 1] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 1]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 1]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2212,7 +2233,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(argc < 0);
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2250,7 +2271,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(argc < 0);
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2288,7 +2309,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(argc < 0);
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2342,7 +2363,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(argc < 0);
 
 				GD_ERR_BREAK(_code_ptr[ip + 2] < 0 || _code_ptr[ip + 2] >= _methods_count);
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2]];
 
 				GodotProfileZoneScriptSystemCall(method, source, name, method->get_name(), line);
 
@@ -2540,7 +2561,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					*dst = E->value->call(p_instance, (const Variant **)argptrs, argc, err);
 				} else if (gds->native.ptr()) {
 					if (*methodname != GDScriptLanguage::get_singleton()->strings._init) {
-						MethodBind *mb = ClassDB::get_method(gds->native->get_name(), *methodname);
+						const MethodBind *mb = ClassDB::get_method(gds->native->get_name(), *methodname);
 						if (!mb) {
 							err.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 						} else {
@@ -3015,7 +3036,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					Script *ret_type = ret_obj->get_script_instance()->get_script().ptr();
+					Script *ret_type = ret_obj->get_script_instance()->get_script();
 					bool valid = false;
 
 					while (ret_type) {

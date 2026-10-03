@@ -416,39 +416,39 @@ String VisualShaderNodeParticleMeshEmitter::generate_code(Shader::Mode p_mode, V
 	return code;
 }
 
-Vector<VisualShader::DefaultTextureParam> VisualShaderNodeParticleMeshEmitter::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
-	Vector<VisualShader::DefaultTextureParam> ret;
+Vector<ShaderGraph::DefaultTextureParam> VisualShaderNodeParticleMeshEmitter::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
+	Vector<ShaderGraph::DefaultTextureParam> ret;
 
 	if (is_output_port_connected(0)) {
-		VisualShader::DefaultTextureParam dtp;
+		ShaderGraph::DefaultTextureParam dtp;
 		dtp.name = make_unique_id(p_type, p_id, "mesh_vx");
 		dtp.params.push_back(position_texture);
 		ret.push_back(dtp);
 	}
 
 	if (is_output_port_connected(1)) {
-		VisualShader::DefaultTextureParam dtp;
+		ShaderGraph::DefaultTextureParam dtp;
 		dtp.name = make_unique_id(p_type, p_id, "mesh_nm");
 		dtp.params.push_back(normal_texture);
 		ret.push_back(dtp);
 	}
 
 	if (is_output_port_connected(2) || is_output_port_connected(3)) {
-		VisualShader::DefaultTextureParam dtp;
+		ShaderGraph::DefaultTextureParam dtp;
 		dtp.name = make_unique_id(p_type, p_id, "mesh_col");
 		dtp.params.push_back(color_texture);
 		ret.push_back(dtp);
 	}
 
 	if (is_output_port_connected(4)) {
-		VisualShader::DefaultTextureParam dtp;
+		ShaderGraph::DefaultTextureParam dtp;
 		dtp.name = make_unique_id(p_type, p_id, "mesh_uv");
 		dtp.params.push_back(uv_texture);
 		ret.push_back(dtp);
 	}
 
 	if (is_output_port_connected(5)) {
-		VisualShader::DefaultTextureParam dtp;
+		ShaderGraph::DefaultTextureParam dtp;
 		dtp.name = make_unique_id(p_type, p_id, "mesh_uv2");
 		dtp.params.push_back(uv2_texture);
 		ret.push_back(dtp);

@@ -79,8 +79,8 @@ void ScenePaint2DEditor::_edit(Object *p_object) {
 		{
 #endif
 			grid = CanvasItemEditor::get_singleton()->is_grid_visible();
-			grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
-			grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
+			grid_step = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->get_grid_step();
+			grid_offset = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->get_grid_offset();
 		}
 	}
 
@@ -368,9 +368,9 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 		pos = paint_mode == PAINT_MODE_SNAP_GRID ? cell_pos : (cell_pos + offset);
 
 		if (!allow_overlapping) {
-			Vector<CanvasItemEditor::SelectResult> results;
-			canvas_item_editor->find_canvas_items_at_pos(pos, node, results);
-			for (const CanvasItemEditor::SelectResult &result : results) {
+			Vector<DebuggerHelpers::SelectResult> results;
+			canvas_item_editor->get_canvas_item_manipulator()->find_canvas_items_at_pos(pos, node, results);
+			for (const DebuggerHelpers::SelectResult &result : results) {
 				Node2D *root = _get_node_root(result.item);
 				if (_is_scene_painted(root)) {
 					Vector2 root_pos = node->get_global_transform().xform(root->get_position());
@@ -403,6 +403,7 @@ void ScenePaint2DEditor::_add_node_at_pos() {
 		undo_redo->add_do_method(node_2d, "set_global_position", pos);
 		undo_redo->add_undo_method(node, "remove_child", node_2d);
 		undo_redo->commit_action(false);
+		emit_signal(SNAME("scene_painted"), node_2d);
 	}
 
 	CanvasItemEditor::get_singleton()->update_viewport();
@@ -423,10 +424,10 @@ void ScenePaint2DEditor::_remove_node_at_pos() {
 	}
 
 	Node *scene = EditorNode::get_singleton()->get_edited_scene();
-	Vector<CanvasItemEditor::SelectResult> results;
-	canvas_item_editor->find_canvas_items_at_pos(pos, node, results);
+	Vector<DebuggerHelpers::SelectResult> results;
+	canvas_item_editor->get_canvas_item_manipulator()->find_canvas_items_at_pos(pos, node, results);
 
-	for (const CanvasItemEditor::SelectResult &result : results) {
+	for (const DebuggerHelpers::SelectResult &result : results) {
 		Node2D *root = _get_node_root(result.item);
 		if (!_is_scene_painted(root)) {
 			continue;
@@ -638,10 +639,10 @@ void ScenePaint2DEditor::_update_scene_picker(int p_mode, Control *p_control) {
 		case PICK_CANVAS_ITEM: {
 			CanvasItemEditor *canvas_item_editor = CanvasItemEditor::get_singleton();
 			Vector2 pos = canvas_item_editor->get_canvas_transform().affine_inverse().xform(viewport->get_local_mouse_position());
-			Vector<CanvasItemEditor::SelectResult> results;
+			Vector<DebuggerHelpers::SelectResult> results;
 			Node *scene = EditorNode::get_singleton()->get_edited_scene();
-			canvas_item_editor->find_canvas_items_at_pos(pos, scene, results);
-			for (const CanvasItemEditor::SelectResult &result : results) {
+			canvas_item_editor->get_canvas_item_manipulator()->find_canvas_items_at_pos(pos, scene, results);
+			for (const DebuggerHelpers::SelectResult &result : results) {
 				Node2D *root = _get_node_root(result.item);
 				if (_is_selected_scene_valid(root)) {
 					node_2d = root;
@@ -754,8 +755,8 @@ ScenePaint2DEditor::PaintMode ScenePaint2DEditor::_reload_paint_mode() {
 }
 
 void ScenePaint2DEditor::_grid_step_changed() {
-	grid_step = CanvasItemEditor::get_singleton()->get_grid_step();
-	grid_offset = CanvasItemEditor::get_singleton()->get_grid_offset();
+	grid_step = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->get_grid_step();
+	grid_offset = CanvasItemEditor::get_singleton()->get_canvas_item_manipulator()->get_grid_offset();
 }
 
 void ScenePaint2DEditor::_bind_methods() {
@@ -763,6 +764,7 @@ void ScenePaint2DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_scene_provider", "control"), &ScenePaint2DEditor::unregister_scene_provider);
 	ClassDB::bind_method(D_METHOD("set_painted_scene", "scene"), &ScenePaint2DEditor::set_painted_scene);
 	ClassDB::bind_method(D_METHOD("get_painted_scene"), &ScenePaint2DEditor::get_painted_scene);
+	ADD_SIGNAL(MethodInfo("scene_painted", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, Node2D::get_class_static())));
 }
 
 void ScenePaint2DEditor::_notification(int p_what) {
@@ -928,7 +930,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	scene_picker_button->set_toggle_mode(true);
 	scene_picker_button->set_accessibility_name(TTRC("Scene Picker"));
 	scene_picker_button->set_theme_type_variation(SceneStringName(FlatButton));
-	scene_picker_button->set_tooltip_text(TTRC("When enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding Ctrl enables picking from the 2D editor's viewport."));
+	scene_picker_button->set_tooltip_text(vformat(TTRC("When enabled, you can select scenes from the FileSystem dock, Scene dock, or 2D editor's viewport.\nHolding %s enables picking from the 2D editor's viewport."), keycode_get_string(Key::CMD_OR_CTRL)));
 	scene_picker_button->connect(SceneStringName(toggled), callable_mp(this, &ScenePaint2DEditor::_scene_picker_toggled));
 	scene_picker_button->set_shortcut(ED_SHORTCUT("scene_painter/scene_picker", TTRC("Scene Picker"), Key::I));
 	scene_picker_button->set_shortcut_context(CanvasItemEditor::get_singleton());
@@ -972,7 +974,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 	advanced_settings_popup->set_item_metadata(-1, PAINT_MODE_SNAP_GRID_CELL_CENTER);
 	advanced_settings_popup->add_separator();
 	advanced_settings_popup->add_check_item(TTRC("Allow Overlapping"), MENU_ITEM_ALLOW_OVERLAPPING);
-	advanced_settings_popup->set_item_tooltip(-1, TTRC("Allow painting over existing painted scenes.\nHold Shift while painting to temporarily toggle this option."));
+	advanced_settings_popup->set_item_tooltip(-1, vformat(TTRC("Allow painting over existing painted scenes.\nHold %s while painting to temporarily toggle this option."), keycode_get_string(Key::SHIFT)));
 	advanced_settings_popup->set_item_disabled(-1, true);
 
 	advanced_settings_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ScenePaint2DEditor::_advanced_settings_id_pressed));
@@ -980,7 +982,7 @@ ScenePaint2DEditor::ScenePaint2DEditor() {
 
 void ScenePaint2DEditorPlugin::_canvas_item_tool_changed(int p_tool) {
 	bool prev_selected = scene_paint_2d_editor->is_tool_selected;
-	scene_paint_2d_editor->is_tool_selected = (CanvasItemEditor::Tool)p_tool == CanvasItemEditor::TOOL_SCENE_PAINT;
+	scene_paint_2d_editor->is_tool_selected = (CanvasItemManipulator::Tool)p_tool == CanvasItemManipulator::TOOL_SCENE_PAINT;
 	if (!scene_paint_2d_editor->is_tool_selected && prev_selected) {
 		make_visible(false);
 		scene_paint_2d_editor->_update_hint_label();

@@ -40,7 +40,10 @@
 
 RenderingDeviceGraph::RenderingDeviceGraph() {
 	driver_honors_barriers = false;
-	driver_clears_with_copy_engine = false;
+	driver_buffer_clears_with_copy_engine = false;
+	driver_texture_clears_with_copy_engine = false;
+	driver_buffers_require_transitions = false;
+	driver_textures_require_layout_transitions = false;
 }
 
 RenderingDeviceGraph::~RenderingDeviceGraph() {
@@ -84,8 +87,16 @@ String RenderingDeviceGraph::_usage_to_string(ResourceUsage p_usage) {
 			return "Attachment Color Read Write";
 		case RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE:
 			return "Attachment Depth Stencil Read Write";
+		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ:
+			return "Attachment Fragment Shading Rate Read";
+		case RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ:
+			return "Attachment Fragment Density Map Read";
 		case RESOURCE_USAGE_GENERAL:
 			return "General";
+		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ:
+			return "Acceleration Structure Read";
+		case RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE:
+			return "Acceleration Structure Read Write";
 		default:
 			ERR_FAIL_V_MSG("Invalid", vformat("Invalid resource usage %d.", p_usage));
 	}
@@ -629,8 +640,8 @@ void RenderingDeviceGraph::_add_command_to_graph(ResourceTracker **p_resource_tr
 
 		if (different_usage) {
 			// Even if the usage of the resource isn't a write usage explicitly, a different usage implies a transition and it should therefore be considered a write.
-			// In the case of buffers however, this is not exactly necessary if the driver does not consider different buffer usages as different states.
-			write_usage = write_usage || bool(resource_tracker->texture_driver_id) || driver_buffers_require_transitions;
+			// However, this is not necessary if the driver does not consider different usages as different states (e.g. no image layouts).
+			write_usage = write_usage || (driver_textures_require_layout_transitions && bool(resource_tracker->texture_driver_id)) || driver_buffers_require_transitions;
 			resource_tracker->usage = new_resource_usage;
 		}
 
@@ -1101,6 +1112,7 @@ void RenderingDeviceGraph::_wait_for_secondary_command_buffer_tasks() {
 }
 
 void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, RDD::CommandBufferID &r_command_buffer, CommandBufferPool &r_command_buffer_pool, int32_t &r_current_label_index, int32_t &r_current_label_level) {
+	driver->command_group_begin(r_command_buffer);
 	for (uint32_t i = 0; i < p_sorted_commands_count; i++) {
 		const uint32_t command_index = p_sorted_commands[i].index;
 		const uint32_t command_data_offset = command_data_offsets[command_index];
@@ -1165,7 +1177,9 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 				}
 
 				const RecordedComputeListCommand *compute_list_command = reinterpret_cast<const RecordedComputeListCommand *>(command);
+				driver->command_begin_compute_pass(r_command_buffer);
 				_run_compute_list_command(r_command_buffer, compute_list_command->instruction_data(), compute_list_command->instruction_data_size);
+				driver->command_end_compute_pass(r_command_buffer);
 			} break;
 			case RecordedCommand::TYPE_DRAW_LIST: {
 				if (driver_workarounds.avoid_compute_after_draw) {
@@ -1250,6 +1264,7 @@ void RenderingDeviceGraph::_run_render_commands(int32_t p_level, const RecordedC
 			}
 		}
 	}
+	driver->command_group_end(r_command_buffer);
 }
 
 void RenderingDeviceGraph::_run_label_command_change(RDD::CommandBufferID p_command_buffer, int32_t p_new_label_index, int32_t p_new_level, bool p_ignore_previous_value, bool p_use_label_for_empty, const RecordedCommandSort *p_sorted_commands, uint32_t p_sorted_commands_count, int32_t &r_current_label_index, int32_t &r_current_label_level) {
@@ -1761,8 +1776,10 @@ void RenderingDeviceGraph::initialize(RDD *p_driver, RenderPassCreationFunction 
 	}
 
 	driver_honors_barriers = driver->api_trait_get(RDD::API_TRAIT_HONORS_PIPELINE_BARRIERS);
-	driver_clears_with_copy_engine = driver->api_trait_get(RDD::API_TRAIT_CLEARS_WITH_COPY_ENGINE);
+	driver_buffer_clears_with_copy_engine = driver->api_trait_get(RDD::API_TRAIT_BUFFER_CLEARS_WITH_COPY_ENGINE);
+	driver_texture_clears_with_copy_engine = driver->api_trait_get(RDD::API_TRAIT_TEXTURE_CLEARS_WITH_COPY_ENGINE);
 	driver_buffers_require_transitions = driver->api_trait_get(RDD::API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS);
+	driver_textures_require_layout_transitions = driver->api_trait_get(RDD::API_TRAIT_TEXTURES_REQUIRE_LAYOUT_TRANSITIONS);
 }
 
 void RenderingDeviceGraph::finalize() {
@@ -1878,7 +1895,7 @@ void RenderingDeviceGraph::add_buffer_clear(RDD::BufferID p_dst, ResourceTracker
 	command->size = p_size;
 
 	ResourceUsage usage;
-	if (driver_clears_with_copy_engine) {
+	if (driver_buffer_clears_with_copy_engine) {
 		command->self_stages = RDD::PIPELINE_STAGE_COPY_BIT;
 		usage = RESOURCE_USAGE_COPY_TO;
 	} else {
@@ -2430,7 +2447,7 @@ void RenderingDeviceGraph::add_texture_clear_color(RDD::TextureID p_dst, Resourc
 	command->range = p_range;
 
 	ResourceUsage usage;
-	if (driver_clears_with_copy_engine) {
+	if (driver_texture_clears_with_copy_engine) {
 		command->self_stages = RDD::PIPELINE_STAGE_COPY_BIT;
 		usage = RESOURCE_USAGE_COPY_TO;
 	} else {
@@ -2460,7 +2477,7 @@ void RenderingDeviceGraph::add_texture_clear_depth_stencil(RDD::TextureID p_dst,
 	command->range = p_range;
 
 	ResourceUsage usage;
-	if (driver_clears_with_copy_engine) {
+	if (driver_texture_clears_with_copy_engine) {
 		command->self_stages = RDD::PIPELINE_STAGE_COPY_BIT;
 		usage = RESOURCE_USAGE_COPY_TO;
 	} else {

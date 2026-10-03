@@ -1,5 +1,3 @@
-GH-112617
----------
 Validate extension JSON: API was removed: classes/RichTextLabel/enums/ImageUpdateMask/values/UPDATE_WIDTH_IN_PERCENT
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/10': default_value changed value in new API, from "false" to "0".
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments/10': type changed value in new API, from "bool" to "enum::RichTextLabel.ImageUnit".

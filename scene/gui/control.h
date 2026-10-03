@@ -82,6 +82,7 @@ public:
 		SIZE_EXPAND = 2,
 		SIZE_SHRINK_CENTER = 4,
 		SIZE_SHRINK_END = 8,
+		SIZE_MAXIMIZE = 16,
 
 		SIZE_EXPAND_FILL = SIZE_EXPAND | SIZE_FILL,
 	};
@@ -170,6 +171,11 @@ public:
 		TEXT_DIRECTION_LTR = TextServer::DIRECTION_LTR,
 		TEXT_DIRECTION_RTL = TextServer::DIRECTION_RTL,
 		TEXT_DIRECTION_INHERITED = TextServer::DIRECTION_INHERITED,
+	};
+
+	enum AutoFocusStrategy {
+		STRATEGY_LEGACY,
+		STRATEGY_BALLOON,
 	};
 
 private:
@@ -322,6 +328,7 @@ private:
 		Theme::ThemeFontSizeMap theme_font_size_override;
 		Theme::ThemeColorMap theme_color_override;
 		Theme::ThemeConstantMap theme_constant_override;
+		Theme::ThemeSoundMap theme_sound_override;
 
 		mutable HashMap<StringName, Theme::ThemeIconMap> theme_icon_cache;
 		mutable HashMap<StringName, Theme::ThemeStyleMap> theme_style_cache;
@@ -329,6 +336,7 @@ private:
 		mutable HashMap<StringName, Theme::ThemeFontSizeMap> theme_font_size_cache;
 		mutable HashMap<StringName, Theme::ThemeColorMap> theme_color_cache;
 		mutable HashMap<StringName, Theme::ThemeConstantMap> theme_constant_cache;
+		mutable HashMap<StringName, Theme::ThemeSoundMap> theme_audio_cache;
 
 		// Internationalization.
 
@@ -400,11 +408,16 @@ private:
 
 	// Focus.
 
-	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
+	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_score, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
 	bool _is_focus_mode_enabled() const;
 	void _update_focus_behavior_recursive();
 	void _propagate_focus_behavior_recursive_recursively(bool p_enabled, bool p_skip_non_inherited);
+
+	// Focus Strategies.
+	real_t _focus_strategy_legacy(const Vector2 &p_dir, const Control &p_candidate, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min);
+	real_t _focus_strategy_balloon_candidate_score(const Vector2 &p_start, const Vector2 &p_dir, const Pair<Vector2, Vector2> &p_edge);
+	real_t _focus_strategy_balloon(const Vector2 &p_dir, const Control &p_candidate, const Rect2 &p_clamp);
 
 	// Theming.
 
@@ -504,8 +517,7 @@ public:
 
 	// Editor plugin interoperability.
 
-	// TODO: Decouple controls from their editor plugin and get rid of this.
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Dictionary _edit_get_state() const override;
 	virtual void _edit_set_state(const Dictionary &p_state) override;
 
@@ -526,9 +538,7 @@ public:
 	virtual bool _edit_use_pivot() const override;
 
 	virtual Size2 _edit_get_minimum_size() const override;
-#endif //TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 #endif // DEBUG_ENABLED
@@ -738,6 +748,10 @@ public:
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
 
+	// Theme sound playback.
+
+	void play_theme_sound(const Ref<AudioStream> &p_stream);
+
 	// Accessibility.
 
 	virtual String get_accessibility_container_name(const Node *p_node) const;
@@ -765,7 +779,7 @@ public:
 	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
 	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
 
-	virtual Transform2D get_accessibility_transform() const override { return get_transform(); }
+	virtual Transform2D get_accessibility_transform() const override { return get_global_transform(); }
 
 	// Rendering.
 
@@ -802,6 +816,7 @@ public:
 	void add_theme_font_size_override(const StringName &p_name, int p_font_size);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
 	void add_theme_constant_override(const StringName &p_name, int p_constant);
+	void add_theme_sound_override(const StringName &p_name, const Ref<AudioStream> &p_sound);
 
 	void remove_theme_icon_override(const StringName &p_name);
 	void remove_theme_style_override(const StringName &p_name);
@@ -809,6 +824,7 @@ public:
 	void remove_theme_font_size_override(const StringName &p_name);
 	void remove_theme_color_override(const StringName &p_name);
 	void remove_theme_constant_override(const StringName &p_name);
+	void remove_theme_sound_override(const StringName &p_name);
 
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
@@ -816,6 +832,7 @@ public:
 	int get_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Ref<AudioStream> get_theme_sound(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Variant get_used_theme_item(const String &p_full_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
@@ -828,6 +845,7 @@ public:
 	bool has_theme_font_size_override(const StringName &p_name) const;
 	bool has_theme_color_override(const StringName &p_name) const;
 	bool has_theme_constant_override(const StringName &p_name) const;
+	bool has_theme_sound_override(const StringName &p_name) const;
 
 	bool has_theme_icon(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_stylebox(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
@@ -835,6 +853,7 @@ public:
 	bool has_theme_font_size(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	bool has_theme_sound(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 
 	float get_theme_default_base_scale() const;
 	Ref<Font> get_theme_default_font() const;

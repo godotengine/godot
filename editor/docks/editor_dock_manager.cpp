@@ -33,6 +33,7 @@
 #include "core/object/callable_mp.h"
 #include "editor/docks/dock_tab_container.h"
 #include "editor/docks/editor_dock.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/window_wrapper.h"
@@ -152,14 +153,7 @@ EditorDock *EditorDockManager::_get_dock_tab_dragged() {
 	const String tab_type = dock_drop_data.get("tab_type", "");
 	if (tab_type == "tab_container_tab") {
 		Node *source_tab_bar = EditorNode::get_singleton()->get_node(dock_drop_data["from_path"]);
-		if (!source_tab_bar) {
-			return nullptr;
-		}
-		HBoxContainer *parent = Object::cast_to<HBoxContainer>(source_tab_bar->get_parent()); // The internal container.
-		if (!parent) {
-			return nullptr;
-		}
-		DockTabContainer *source_tab_container = Object::cast_to<DockTabContainer>(parent->get_parent());
+		DockTabContainer *source_tab_container = Object::cast_to<DockTabContainer>(TabContainer::get_tab_bar_container(Object::cast_to<TabBar>(source_tab_bar)));
 		if (!source_tab_container) {
 			return nullptr;
 		}
@@ -198,6 +192,15 @@ void EditorDockManager::_update_layout() {
 DockTabContainer *EditorDockManager::get_dock_container(int p_slot) const {
 	ERR_FAIL_INDEX_V(p_slot, EditorDock::DOCK_SLOT_MAX, nullptr);
 	return dock_slots[p_slot];
+}
+
+EditorDock *EditorDockManager::get_dock_by_name(const String &p_name) const {
+	for (EditorDock *dock : all_docks) {
+		if (dock->get_display_title() == p_name) {
+			return dock;
+		}
+	}
+	return nullptr;
 }
 
 void EditorDockManager::update_docks_menu() {
@@ -249,7 +252,7 @@ void EditorDockManager::_docks_menu_option(int p_id) {
 		ERR_FAIL_NULL(parent_menu);
 		parent_menu->hide();
 	}
-	focus_dock(dock);
+	force_focus_dock(dock);
 }
 
 void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
@@ -259,7 +262,7 @@ void EditorDockManager::_window_close_request(WindowWrapper *p_wrapper) {
 
 	if (dock->dock_slot_index != EditorDock::DOCK_SLOT_NONE) {
 		dock->is_open = false;
-		focus_dock(dock);
+		force_focus_dock(dock);
 	} else {
 		close_dock(dock);
 	}
@@ -314,7 +317,7 @@ void EditorDockManager::_open_dock_in_window(EditorDock *p_dock, bool p_show_win
 			p_dock->get_window()->set_size(popup_size);
 			p_dock->get_window()->move_to_center();
 		}
-		p_dock->get_window()->grab_focus();
+		focus_dock(p_dock);
 	}
 }
 
@@ -567,6 +570,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 				if (closed_docks.has(name)) {
 					dock->is_open = false;
 					dock->hide();
+					dock->emit_signal(SNAME("closed"));
 					_move_dock(dock, closed_dock_parent);
 				} else {
 					dock->is_open = true;
@@ -655,6 +659,8 @@ void EditorDockManager::close_dock(EditorDock *p_dock) {
 	}
 
 	p_dock->is_open = false;
+	p_dock->emit_signal(SNAME("closed"));
+
 	DockTabContainer *parent_container = p_dock->get_parent_container();
 	if (parent_container) {
 		parent_container->dock_closed(p_dock);
@@ -709,17 +715,19 @@ void EditorDockManager::_make_dock_visible(EditorDock *p_dock, bool p_grab_focus
 	if (p_dock->dock_window) {
 		if (p_grab_focus) {
 			p_dock->get_window()->grab_focus();
+			p_dock->emit_signal("_focused");
 		}
 		return;
 	}
 
 	DockTabContainer *tab_container = p_dock->get_parent_container();
-	if (!tab_container || !tab_container->can_switch_dock()) {
+	if (!tab_container || (!forced_focus && !tab_container->can_switch_dock())) {
 		return;
 	}
 
 	if (p_grab_focus) {
-		tab_container->get_tab_bar()->grab_focus();
+		tab_container->get_tab_bar()->grab_focus(true);
+		p_dock->emit_signal("_focused");
 	}
 
 	if (!p_dock->is_visible_in_tree()) {
@@ -742,6 +750,12 @@ void EditorDockManager::focus_dock(EditorDock *p_dock) {
 	}
 
 	_make_dock_visible(p_dock, true);
+}
+
+void EditorDockManager::force_focus_dock(EditorDock *p_dock) {
+	forced_focus = true;
+	focus_dock(p_dock);
+	forced_focus = false;
 }
 
 void EditorDockManager::add_dock(EditorDock *p_dock) {
@@ -906,7 +920,6 @@ void DockContextPopup::_tab_move_right() {
 
 void DockContextPopup::_close_dock() {
 	hide();
-	context_dock->emit_signal("closed");
 	dock_manager->close_dock(context_dock);
 }
 
@@ -1024,7 +1037,7 @@ void DockShortcutHandler::shortcut_input(const Ref<InputEvent> &p_event) {
 		if (dock_shortcut.is_valid() && dock_shortcut->matches_event(p_event)) {
 			bool was_visible = dock->is_visible();
 			if (!dock->transient || dock->is_open) {
-				EditorDockManager::get_singleton()->focus_dock(dock);
+				EditorDockManager::get_singleton()->force_focus_dock(dock);
 			}
 			DockTabContainer *dock_container = dock->get_parent_container();
 			if (dock_container) {
@@ -1045,17 +1058,6 @@ void DockSlotGrid::_update_rect_cache() {
 		rect.position = rect.position * CELL_SIZE * EDSCALE + (rect.position + Vector2i(0, 1)) * MARGINS * EDSCALE;
 		rect.size = rect.size * CELL_SIZE * EDSCALE + (rect.size - Vector2i(1, 1)) * MARGINS * EDSCALE;
 		rect_cache[i] = rect;
-	}
-
-	// Temporarily hard-coded, until main screen is registered as a slot.
-	{
-		Rect2 rect = Rect2i(2, 0, 4, 4);
-		if (is_layout_rtl()) {
-			rect.position.x = GRID_SIZE.x - rect.position.x - rect.size.x;
-		}
-		rect.position = rect.position * CELL_SIZE * EDSCALE + (rect.position + Vector2i(0, 1)) * MARGINS * EDSCALE;
-		rect.size = rect.size * CELL_SIZE * EDSCALE + (rect.size - Vector2i(1, 1)) * MARGINS * EDSCALE;
-		main_screen_rect = rect;
 	}
 }
 
@@ -1129,7 +1131,6 @@ void DockSlotGrid::_notification(int p_what) {
 					}
 				}
 			}
-			draw_rect(main_screen_rect, unusable_dock_color);
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {

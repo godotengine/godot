@@ -234,12 +234,23 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	HashMap<String, Dictionary> value_frequency;
 	HashSet<String> extensions;
 
+	String import_type;
+
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<ConfigFile> config;
 		config.instantiate();
 		extensions.insert(p_paths[i].get_extension());
 		Error err = config->load(p_paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
+
+		const String type = config->get_value("remap", "type", String());
+		if (import_type.is_empty()) {
+			import_type = type;
+		} else if (import_type != type) {
+			// All should be the same type.
+			clear();
+			return;
+		}
 
 		if (i == 0) {
 			String importer_name = config->get_value("remap", "importer");

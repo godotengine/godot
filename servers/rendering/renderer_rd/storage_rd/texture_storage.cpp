@@ -1180,7 +1180,7 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 	TextureToRDFormat ret_format;
 	Image::Format validated_format = Image::FORMAT_MAX;
 	Vector<uint8_t> all_data;
-	uint32_t mipmap_count = 0;
+	uint32_t mipmap_count = 1;
 	Vector<Texture::BufferSlice3D> slices;
 	{
 		Vector<Ref<Image>> images;
@@ -1199,7 +1199,6 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 
 		all_data.resize(all_data_size); //consolidate all data here
 		uint32_t offset = 0;
-		Size2i prev_size;
 		for (int i = 0; i < p_data.size(); i++) {
 			uint32_t s = images[i]->get_data().size();
 
@@ -1215,10 +1214,21 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 			offset += s;
 
 			Size2i img_size(images[i]->get_width(), images[i]->get_height());
-			if (img_size != prev_size) {
+		}
+
+		// Calculate the mipmap count again.
+		if (p_mipmaps) {
+			int mmw = p_width;
+			int mmh = p_height;
+			int mmd = p_depth;
+
+			while (mmw > 1 || mmh > 1 || mmd > 1) {
 				mipmap_count++;
+
+				mmw = MAX(1, mmw >> 1);
+				mmh = MAX(1, mmh >> 1);
+				mmd = MAX(1, mmd >> 1);
 			}
-			prev_size = img_size;
 		}
 	}
 
@@ -1863,9 +1873,15 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 
 	// DRAW!!
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 6u);
+	// Detect if any target is in Decal Atlas and also draw to Decal Atlas?
 
 	RD::get_singleton()->draw_list_end();
 	RD::get_singleton()->draw_command_end_label();
+	i = 0;
+	while (i < p_textures.size()) {
+		decal_atlas_mark_draw_on_texture(p_textures[i]);
+		i += 1;
+	}
 }
 
 //these two APIs can be used together or in combination with the others.
@@ -2050,7 +2066,11 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	Vector<RID> proxies_to_update = tex->proxies;
 	Vector<RID> proxies_to_redirect = by_tex->proxies;
 
+	RID streaming_state = tex->streaming_state;
+
 	*tex = *by_tex;
+
+	tex->streaming_state = streaming_state; // restore streaming state
 
 	tex->proxies = proxies_to_update; //restore proxies, so they can be updated
 
@@ -2069,6 +2089,64 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 
 	decal_atlas_mark_dirty_on_texture(p_texture);
 	area_light_atlas_mark_dirty_on_texture(p_texture);
+}
+
+void TextureStorage::texture_replace_compatible(RID p_texture, RID p_by_texture) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(tex);
+	ERR_FAIL_COND(tex->proxy_to.is_valid()); //can't replace proxy
+	Texture *by_tex = texture_owner.get_or_null(p_by_texture);
+	ERR_FAIL_NULL(by_tex);
+	ERR_FAIL_COND(by_tex->proxy_to.is_valid()); //can't replace proxy
+
+	if (tex == by_tex) {
+		return;
+	}
+
+	RID old_rd_texture = tex->rd_texture;
+	RID old_rd_texture_srgb = tex->rd_texture_srgb;
+	RID new_rd_texture = by_tex->rd_texture;
+	RID new_rd_texture_srgb = by_tex->rd_texture_srgb;
+
+	if (tex->canvas_texture) {
+		memdelete(tex->canvas_texture);
+		tex->canvas_texture = nullptr;
+	}
+
+	Vector<RID> proxies_to_update = tex->proxies;
+	Vector<RID> proxies_to_redirect = by_tex->proxies;
+
+	*tex = *by_tex;
+
+	tex->proxies = proxies_to_update; //restore proxies, so they can be updated
+
+	if (tex->canvas_texture) {
+		tex->canvas_texture->diffuse = p_texture; //update
+	}
+
+	for (int i = 0; i < proxies_to_update.size(); i++) {
+		texture_proxy_update(proxies_to_update[i], p_texture);
+	}
+	for (int i = 0; i < proxies_to_redirect.size(); i++) {
+		texture_proxy_update(proxies_to_redirect[i], p_texture);
+	}
+
+	// Replace RD-level textures: patches uniform sets and defers old resources.
+	if (old_rd_texture_srgb.is_valid() && old_rd_texture_srgb != new_rd_texture_srgb) {
+		if (new_rd_texture_srgb.is_valid()) {
+			RD::get_singleton()->texture_replace_rid(old_rd_texture_srgb, new_rd_texture_srgb);
+		} else {
+			RD::get_singleton()->free_rid(old_rd_texture_srgb);
+		}
+	}
+	if (old_rd_texture != new_rd_texture) {
+		RD::get_singleton()->texture_replace_rid(old_rd_texture, new_rd_texture);
+	}
+
+	//delete last, so proxies can be updated
+	texture_owner.free(p_by_texture);
+
+	decal_atlas_mark_dirty_on_texture(p_texture);
 }
 
 void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p_height) {
@@ -2666,15 +2744,16 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
 				r_format.format_srgb = RD::DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK;
+				r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
 			} else {
 				//not supported, reconvert
 				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+				r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
 				image->decompress();
 				image->convert(Image::FORMAT_RGBA8);
 			}
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break;
@@ -2682,15 +2761,16 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC3_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_BC3_UNORM_BLOCK;
 				r_format.format_srgb = RD::DATA_FORMAT_BC3_SRGB_BLOCK;
+				r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
 			} else {
 				//not supported, reconvert
 				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+				r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
 				image->decompress();
 				image->convert(Image::FORMAT_RGBA8);
 			}
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
-			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break;
@@ -2887,9 +2967,11 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 		}
 	}
 
-	// RGB formats are often not supported, only print warnings about them when launched with the --verbose flag.
-	const bool is_rgb_format = original_format == Image::FORMAT_RGB8 || original_format == Image::FORMAT_RGBH || original_format == Image::FORMAT_RGBF;
-	if ((is_print_verbose_enabled() || !is_rgb_format) && original_format != image->get_format()) {
+	// RGB formats are usually not supported, do not print warnings about them.
+	const bool is_rgb_format = original_format == Image::FORMAT_RGB8 || original_format == Image::FORMAT_RGBH || original_format == Image::FORMAT_RGBF ||
+			original_format == Image::FORMAT_RGB16 || original_format == Image::FORMAT_RGB16I;
+
+	if (!is_rgb_format && original_format != image->get_format()) {
 		WARN_PRINT(vformat("Image format %s not supported by hardware, converting to %s.", Image::get_format_name(original_format), Image::get_format_name(image->get_format())));
 	}
 
@@ -3783,10 +3865,66 @@ void TextureStorage::decal_atlas_mark_dirty_on_texture(RID p_texture) {
 	}
 }
 
+void TextureStorage::decal_atlas_mark_draw_on_texture(RID p_texture) {
+	if (decal_atlas.dirty) {
+		return; // Don't mess with it while it's dirty anyway.
+	}
+
+	if (decal_atlas.textures.has(p_texture)) {
+		// Belongs to `decal_atlas`.
+		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
+		t->drawn = true;
+
+		decal_atlas.draw_dirty = true;
+	}
+}
+
 void TextureStorage::decal_atlas_remove_texture(RID p_texture) {
 	if (decal_atlas.textures.has(p_texture)) {
 		decal_atlas.textures.erase(p_texture);
 		//there is not much a point of making it dirty, just let it be.
+	}
+}
+
+void TextureStorage::decal_atlas_redraw_textures() {
+	if (decal_atlas.dirty) {
+		return; // Don't mess with it while it's dirty anyway.
+	}
+
+	if (!decal_atlas.draw_dirty) {
+		return; // Nothing to do.
+	}
+
+	decal_atlas.draw_dirty = false;
+
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
+	ERR_FAIL_COND(decal_atlas.texture.is_null());
+
+	RID prev_texture;
+	for (int i = 0; i < decal_atlas.texture_mipmaps.size(); i++) {
+		const DecalAtlas::MipMap &mm = decal_atlas.texture_mipmaps[i];
+
+		if (decal_atlas.textures.size()) {
+			if (i == 0) {
+				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb);
+				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
+					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
+					if (t->drawn) {
+						Texture *src_tex = get_texture(E.key);
+						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+						t->drawn = false;
+					}
+				}
+
+				RD::get_singleton()->draw_list_end();
+
+				prev_texture = mm.texture;
+			} else {
+				copy_effects->copy_to_fb_rect(prev_texture, mm.fb, Rect2i(Point2i(), mm.size));
+				prev_texture = mm.texture;
+			}
+		}
 	}
 }
 
@@ -3820,6 +3958,7 @@ void TextureStorage::update_decal_atlas() {
 	}
 
 	decal_atlas.dirty = false;
+	decal_atlas.draw_dirty = false;
 
 	if (decal_atlas.texture.is_valid()) {
 		RD::get_singleton()->free_rid(decal_atlas.texture);
@@ -3992,6 +4131,7 @@ void TextureStorage::update_decal_atlas() {
 					Texture *src_tex = get_texture(E.key);
 
 					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+					t->drawn = false;
 				}
 
 				RD::get_singleton()->draw_list_end();
@@ -5360,4 +5500,10 @@ uint32_t TextureStorage::render_target_get_color_usage_bits(bool p_msaa) {
 		// FIXME: Storage bit should only be requested when FSR is required.
 		return RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
 	}
+}
+
+void TextureStorage::texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL_MSG(tex, "Invalid texture RID.");
+	tex->streaming_state = p_streaming_state;
 }

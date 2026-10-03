@@ -106,7 +106,7 @@ void Glow::process_glow(GLuint p_source_color, Size2i p_size, const Glow::Level 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(p_use_multiview ? GL_TEXTURE_2D_ARRAY : GL_TEXTURE_2D, p_source_color);
 
-		uint64_t specialization = p_use_multiview ? GlowShaderGLES3::USE_MULTIVIEW : 0;
+		uint64_t specialization = p_use_multiview ? (uint64_t)GlowShaderGLES3::USE_MULTIVIEW : 0;
 		bool success = glow.shader.version_bind_shader(glow.shader_version, GlowShaderGLES3::MODE_FILTER, specialization);
 		if (!success) {
 			return;

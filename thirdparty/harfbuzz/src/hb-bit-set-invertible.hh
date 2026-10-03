@@ -101,9 +101,20 @@ struct hb_bit_set_invertible_t
   }
   unsigned int get_population () const
   { return inverted ? INVALID - s.get_population () : s.get_population (); }
+  bool get_singleton (hb_codepoint_t *codepoint) const
+  {
+    if (likely (!inverted))
+      return s.get_singleton (codepoint);
+    if (s.get_population () != INVALID - 1)
+      return false;
+    *codepoint = get_min ();
+    return *codepoint != INVALID;
+  }
 
 
   void add (hb_codepoint_t g) { unlikely (inverted) ? s.del (g) : s.add (g); }
+  void add_bits (hb_codepoint_t g, uint64_t bits)
+  { unlikely (inverted) ? s.del_bits (g, bits) : s.add_bits (g, bits); }
   bool add_range (hb_codepoint_t a, hb_codepoint_t b)
   { return unlikely (inverted) ? ((void) s.del_range (a, b), true) : s.add_range (a, b); }
 
@@ -142,6 +153,24 @@ struct hb_bit_set_invertible_t
 
   bool may_intersect (const hb_bit_set_invertible_t &other) const
   { return inverted || other.inverted || s.intersects (other.s); }
+
+  bool intersects (const hb_bit_set_invertible_t &other) const
+  {
+    if (likely (!inverted))
+      return unlikely (other.inverted) ? !s.is_subset (other.s)
+				       : s.intersects (other.s);
+    if (likely (!other.inverted))
+      return !other.s.is_subset (s);
+
+    unsigned population = s.get_population ();
+    unsigned other_population = other.s.get_population ();
+    if ((uint64_t) population + other_population < INVALID)
+      return true;
+
+    return population >= other_population
+	 ? !hb_all (iter (), other.s)
+	 : !hb_all (other.iter (), s);
+  }
 
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
   {
@@ -187,8 +216,10 @@ struct hb_bit_set_invertible_t
 
   protected:
   template <typename Op>
-  void process (const Op& op, const hb_bit_set_invertible_t &other)
-  { s.process (op, other.s); }
+  void process (const Op& op,
+		const hb_bit_set_invertible_t &other,
+		hb_vector_t<unsigned> *workspace = nullptr)
+  { s.process (op, other.s, workspace); }
   public:
   void union_ (const hb_bit_set_invertible_t &other)
   {
@@ -209,21 +240,22 @@ struct hb_bit_set_invertible_t
     if (likely (s.successful))
       inverted = inverted || other.inverted;
   }
-  void intersect (const hb_bit_set_invertible_t &other)
+  void intersect (const hb_bit_set_invertible_t &other,
+		  hb_vector_t<unsigned> *workspace = nullptr)
   {
     if (likely (inverted == other.inverted))
     {
       if (unlikely (inverted))
-	process (hb_bitwise_or, other);
+	process (hb_bitwise_or, other, workspace);
       else
-	process (hb_bitwise_and, other); /* Main branch. */
+	process (hb_bitwise_and, other, workspace); /* Main branch. */
     }
     else
     {
       if (unlikely (inverted))
-	process (hb_bitwise_lt, other);
+	process (hb_bitwise_lt, other, workspace);
       else
-	process (hb_bitwise_gt, other);
+	process (hb_bitwise_gt, other, workspace);
     }
     if (likely (s.successful))
       inverted = inverted && other.inverted;
@@ -279,6 +311,47 @@ struct hb_bit_set_invertible_t
 
     *codepoint = v + 1;
     return *codepoint != INVALID;
+  }
+  bool next_bits (hb_codepoint_t *codepoint, uint64_t *bits) const
+  {
+    if (likely (!inverted))
+      return s.next_bits (codepoint, bits);
+
+    hb_codepoint_t base;
+    if (unlikely (*codepoint == INVALID))
+      base = 0;
+    else
+    {
+      base = *codepoint & -hb_bit_page_t::ELT_BITS;
+      if (unlikely (base >= INVALID - hb_bit_page_t::ELT_BITS + 1))
+	goto done;
+      base += hb_bit_page_t::ELT_BITS;
+    }
+
+    while (true)
+    {
+      hb_codepoint_t cursor = base ? base - hb_bit_page_t::ELT_BITS : INVALID;
+      uint64_t excluded = 0;
+      if (!s.next_bits (&cursor, &excluded) || cursor != base)
+	excluded = 0;
+      *bits = ~excluded;
+      bool last = unlikely (base >= INVALID - hb_bit_page_t::ELT_BITS + 1);
+      if (last)
+	*bits &= UINT64_MAX >> 1;
+      if (*bits)
+      {
+	*codepoint = base;
+	return true;
+      }
+      if (unlikely (last))
+	break;
+      base += hb_bit_page_t::ELT_BITS;
+    }
+
+  done:
+    *codepoint = INVALID;
+    *bits = 0;
+    return false;
   }
   bool previous (hb_codepoint_t *codepoint) const
   {
@@ -352,27 +425,50 @@ struct hb_bit_set_invertible_t
 
   /*
    * Iterator implementation.
+   * Mutating the set invalidates its iterators.
    */
   struct iter_t : hb_iter_with_fallback_t<iter_t, hb_codepoint_t>
   {
     static constexpr bool is_sorted_iterator = true;
     static constexpr bool has_fast_len = true;
     iter_t (const hb_bit_set_invertible_t &s_ = Null (hb_bit_set_invertible_t),
-	    bool init = true) : s (&s_), v (INVALID), l(0)
+    bool init = true) : s (&s_), v (INVALID), remaining (0),
+				     have_len (!init), base (INVALID), bits (0)
     {
       if (init)
-      {
-	l = s->get_population () + 1;
-	__next__ ();
-      }
+	advance ();
     }
 
     typedef hb_codepoint_t __item_t__;
     hb_codepoint_t __item__ () const { return v; }
     bool __more__ () const { return v != INVALID; }
-    void __next__ () { s->next (&v); if (likely (l)) l--; }
-    void __prev__ () { s->previous (&v); l++; }
-    unsigned __len__ () const { return l; }
+    void __next__ ()
+    {
+      remaining--;
+      advance ();
+    }
+    void __prev__ ()
+    {
+      if (s->previous (&v))
+      {
+	sync ();
+	remaining++;
+      }
+      else
+      {
+	base = INVALID;
+	bits = 0;
+      }
+    }
+    unsigned __len__ () const
+    {
+      if (unlikely (!have_len))
+      {
+	remaining += s->get_population ();
+	have_len = true;
+      }
+      return remaining;
+    }
     iter_t end () const { return iter_t (*s, false); }
     bool operator != (const iter_t& o) const
     { return v != o.v; }
@@ -380,7 +476,35 @@ struct hb_bit_set_invertible_t
     protected:
     const hb_bit_set_invertible_t *s;
     hb_codepoint_t v;
-    unsigned l;
+    mutable unsigned remaining;
+    mutable bool have_len;
+    hb_codepoint_t base;
+    uint64_t bits;
+
+    void advance ()
+    {
+      if (likely (bits))
+      {
+	v = base + hb_ctz (bits);
+	bits &= bits - 1;
+      }
+      else if (s->next_bits (&base, &bits))
+      {
+	v = base + hb_ctz (bits);
+	bits &= bits - 1;
+      }
+      else
+	v = INVALID;
+    }
+
+    void sync ()
+    {
+      base = v & -hb_bit_page_t::ELT_BITS;
+      hb_codepoint_t cursor = base ? base - hb_bit_page_t::ELT_BITS : INVALID;
+      s->next_bits (&cursor, &bits);
+      unsigned int bit = v & (hb_bit_page_t::ELT_BITS - 1);
+      bits = bit == hb_bit_page_t::ELT_BITS - 1 ? 0 : bits >> (bit + 1) << (bit + 1);
+    }
   };
   iter_t iter () const { return iter_t (*this); }
   operator iter_t () const { return iter (); }

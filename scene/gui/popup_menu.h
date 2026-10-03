@@ -126,6 +126,11 @@ class PopupMenu : public Popup {
 
 	bool activated_by_keyboard = false;
 
+	bool touch_dragging = false;
+	Vector2 touch_drag_accum;
+	int touch_pressed_item = -1;
+	const float DRAG_THRESHOLD = 8.0; // Minimum distance (in pixels) before a touch counts as a drag.
+
 	Timer *close_suspended_timer = nullptr;
 	bool close_was_suspended = false;
 	Timer *submenu_timer = nullptr;
@@ -245,11 +250,16 @@ class PopupMenu : public Popup {
 		Color font_separator_color;
 		int font_separator_outline_size = 0;
 		Color font_separator_outline_color;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> item_hovered_sound;
+		Ref<AudioStream> item_activated_sound;
+		Ref<AudioStream> item_activated_disabled_sound;
 	} theme_cache;
 
 	void _draw_items();
 	void _update_search_bar_visibility();
-	void _items_focus_entered();
+	bool _highlight_first_available_item(int p_from = 0, int p_to = -1, bool p_reversed = false);
 	void _search_bar_text_changed(const String &p_new_text);
 	void _search_bar_focus_entered();
 	void _filter_items(const String &p_query);

@@ -119,7 +119,7 @@ Ref<Resource> DedicatedServerExportPlugin::_customize_resource(const Ref<Resourc
 		current_export_mode = _get_export_mode_for_path(p_path);
 	}
 
-	if (p_resource.is_valid() && current_export_mode == EditorExportPreset::MODE_FILE_STRIP && p_resource->has_method("create_placeholder")) {
+	if (p_resource.is_valid() && current_export_mode == EditorExportPreset::MODE_FILE_STRIP) {
 		Callable::CallError err;
 		Ref<Resource> result = p_resource->callp("create_placeholder", nullptr, 0, err);
 		if (err.error == Callable::CallError::CALL_OK) {

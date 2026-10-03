@@ -586,52 +586,6 @@ Vector<Ref<ScriptBacktrace>> ScriptServer::capture_script_backtraces(bool p_incl
 void ScriptLanguage::frame() {
 }
 
-TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_characteristics(const String &p_base) {
-	// Return characteristics of the match found by order of importance.
-	// Matches will be ranked by a lexicographical order on the vector returned by this function.
-	// The lower values indicate better matches and that they should go before in the order of appearance.
-	if (!matches_dirty) {
-		return charac;
-	}
-	charac.clear();
-	// Ensure base is not empty and at the same time that matches is not empty too.
-	if (p_base.length() == 0) {
-		matches_dirty = false;
-		charac.push_back(location);
-		return charac;
-	}
-	charac.push_back(matches.size());
-	charac.push_back((matches[0].first == 0) ? 0 : 1);
-	const char32_t *target_char = &p_base[0];
-	int bad_case = 0;
-	for (const Pair<int, int> &match_segment : matches) {
-		const char32_t *string_to_complete_char = &display[match_segment.first];
-		for (int j = 0; j < match_segment.second; j++, string_to_complete_char++, target_char++) {
-			if (*string_to_complete_char != *target_char) {
-				bad_case++;
-			}
-		}
-	}
-	charac.push_back(bad_case);
-	charac.push_back(location);
-	charac.push_back(matches[0].first);
-	matches_dirty = false;
-	return charac;
-}
-
-void ScriptLanguage::CodeCompletionOption::clear_characteristics() {
-	charac = TypedArray<int>();
-}
-
-TypedArray<int> ScriptLanguage::CodeCompletionOption::get_option_cached_characteristics() const {
-	// Only returns the cached value and warns if it was not updated since the last change of matches.
-	if (matches_dirty) {
-		WARN_PRINT("Characteristics are not up to date.");
-	}
-
-	return charac;
-}
-
 void ScriptLanguage::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_AUTO);
 	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_PASCAL_CASE);
@@ -691,15 +645,15 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 	return false;
 }
 
-void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
+void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *r_properties) const {
 	if (script->is_placeholder_fallback_enabled()) {
 		for (const PropertyInfo &E : properties) {
-			p_properties->push_back(E);
+			r_properties->push_back(E);
 		}
 	} else {
 		for (const PropertyInfo &E : properties) {
 			PropertyInfo pinfo = E;
-			p_properties->push_back(E);
+			r_properties->push_back(E);
 		}
 	}
 }
@@ -726,13 +680,13 @@ Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_n
 	return Variant::NIL;
 }
 
-void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
+void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *r_list) const {
 	if (script->is_placeholder_fallback_enabled()) {
 		return;
 	}
 
 	if (script.is_valid()) {
-		script->get_script_method_list(p_list);
+		script->get_script_method_list(r_list);
 	}
 }
 

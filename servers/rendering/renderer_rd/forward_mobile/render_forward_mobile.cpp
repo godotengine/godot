@@ -46,6 +46,11 @@
 #include "servers/xr/xr_server.h"
 #endif
 
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+#include "modules/texture_streaming/texture_streaming.h"
+#endif
+
 #define PRELOAD_PIPELINES_ON_SURFACE_CACHE_CONSTRUCTION 1
 
 using namespace RendererSceneRenderImplementation;
@@ -724,6 +729,20 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 
 	p_samplers.append_uniforms(uniforms, 13);
 
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	{
+		RD::Uniform u;
+		u.binding = 25;
+		u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		RID instance_buffer = TextureStreaming::get_singleton()->feedback_buffer_get_uniform_rid();
+		if (instance_buffer.is_null()) {
+			instance_buffer = scene_shader.default_material_feedback_buffer;
+		}
+		u.append_id(instance_buffer);
+		uniforms.push_back(u);
+	}
+#endif // MODULE_TEXTURE_STREAMING_ENABLED
+
 	return UniformSetCacheRD::get_singleton()->get_cache_vec(scene_shader.get_default_shader_rd(is_multiview), RENDER_PASS_UNIFORM_SET, uniforms);
 }
 
@@ -742,7 +761,7 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 		// Transform (for directional lightmaps).
 		Basis to_lm = light_storage->lightmap_instance_get_transform(p_lightmaps[i]).basis.inverse() * p_cam_transform.basis;
 		to_lm = to_lm.inverse().transposed(); //will transform normals
-		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
+		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform_and_specular_intensity);
 
 		// Light texture size.
 		Vector2i lightmap_size = light_storage->lightmap_get_light_texture_size(lightmap);
@@ -760,6 +779,10 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 
 		scene_state.lightmap_ids[i] = p_lightmaps[i];
 		scene_state.lightmap_has_sh[i] = light_storage->lightmap_uses_spherical_harmonics(lightmap);
+
+		float &specular_intensity = scene_state.lightmaps[i].normal_xform_and_specular_intensity[3];
+		specular_intensity = light_storage->lightmap_get_specular_intensity(lightmap);
+		scene_state.lightmap_has_specular[i] = scene_state.lightmap_has_sh[i] && (specular_intensity > 0.0f);
 
 		scene_state.lightmaps_used++;
 	}
@@ -1073,6 +1096,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	bool copy_canvas = false;
 	bool use_ambient_cubemap = false;
 	bool use_reflection_cubemap = false;
+	bool use_reflection_color = false;
 
 	if (get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
@@ -1084,6 +1108,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RSE::EnvironmentReflectionSource reflection_source = environment_get_reflection_source(p_render_data->environment);
 		use_ambient_cubemap = (ambient_source == RSE::ENV_AMBIENT_SOURCE_BG && bg_mode == RSE::ENV_BG_SKY) || ambient_source == RSE::ENV_AMBIENT_SOURCE_SKY;
 		use_reflection_cubemap = (reflection_source == RSE::ENV_REFLECTION_SOURCE_BG && bg_mode == RSE::ENV_BG_SKY) || reflection_source == RSE::ENV_REFLECTION_SOURCE_SKY;
+		use_reflection_color = (reflection_source == RSE::ENV_REFLECTION_SOURCE_BG && bg_mode == RSE::ENV_BG_COLOR) || (reflection_source == RSE::ENV_REFLECTION_SOURCE_BG && bg_mode == RSE::ENV_BG_CLEAR_COLOR);
 
 		if (p_render_data->camera_attributes.is_valid()) {
 			bg_energy_multiplier *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
@@ -1182,9 +1207,15 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		base_specialization.scene_use_ambient_cubemap = use_ambient_cubemap;
+		base_specialization.scene_use_reflection_color = use_reflection_color;
 		base_specialization.scene_use_reflection_cubemap = use_reflection_cubemap;
 		base_specialization.scene_roughness_limiter_enabled = p_render_data->render_buffers.is_valid() && screen_space_roughness_limiter_is_active();
-		base_specialization.luminance_multiplier = p_render_data->render_buffers.is_valid() ? p_render_data->render_buffers->get_luminance_multiplier() : 1.0;
+		if (p_render_data->render_buffers.is_valid()) {
+			// Encode as a boolean, as the luminance multiplier is always `2.0` (`true`) or `1.0` (`false`) in the Mobile renderer.
+			base_specialization.luminance_multiplier = p_render_data->render_buffers->get_luminance_multiplier() > (1.0 + CMP_EPSILON);
+		} else {
+			base_specialization.luminance_multiplier = false;
+		}
 	}
 
 	{
@@ -1270,7 +1301,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 
 		if (render_list[RENDER_LIST_OPAQUE].elements.size() > 0) {
-			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, !is_reflection_probe);
 			render_list_params.framebuffer_format = fb_format;
 			render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
@@ -1297,7 +1328,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_ALPHA, p_render_data, is_multiview, radiance_texture, samplers, true);
 
-				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, base_specialization, get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, base_specialization, get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, !is_reflection_probe);
 				render_list_params.framebuffer_format = fb_format;
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
@@ -1366,7 +1397,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
 				//_setup_environment(p_render_data, is_reflection_probe, screen_size, screen_size, p_default_bg_color, false);
 
-				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
+				RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, base_specialization, get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, !is_reflection_probe);
 				render_list_params.framebuffer_format = fb_format;
 				render_list_params.subpass = RD::get_singleton()->draw_list_get_current_pass(); // Should now always be 0.
 
@@ -2148,15 +2179,23 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 
 		fill_push_constant_instance_indices(&instance_data, inst);
 
+		uint32_t material_feedback_index = UINT32_MAX;
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+		if (surface->material->material_feedback_rid.is_valid()) {
+			material_feedback_index = TextureStreaming::get_singleton()->feedback_buffer_material_index(surface->material->material_feedback_rid);
+		}
+#endif
+
 		instance_data.set_compressed_aabb(surface_aabb);
+		instance_data.material_feedback_index = material_feedback_index;
 		instance_data.set_uv_scale(uv_scale);
 
 		scene_state.curr_gpu_ptr[p_render_list][i + p_offset] = instance_data;
 
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
-		// Sets lod_index and uses_lightmap at once.
-		element_info.value = uint32_t(surface->sort.sort_key1 & 0x1FF);
+		// Sets lod_index, uses_lightmap, and uses_lightmap_specular at once.
+		element_info.value = uint32_t(surface->sort.sort_key1 & 0x3FF);
 	}
 
 	if (p_update_buffer && element_total > 0u) {
@@ -2222,6 +2261,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 		}
 
 		bool uses_lightmap = false;
+		bool uses_lightmap_specular = false;
 		// bool uses_gi = false;
 
 		if (p_render_list == RENDER_LIST_OPAQUE) {
@@ -2239,6 +2279,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP;
 					if (scene_state.lightmap_has_sh[lightmap_cull_index]) {
 						flags |= INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP;
+						uses_lightmap_specular = scene_state.lightmap_has_specular[lightmap_cull_index];
 					}
 					uses_lightmap = true;
 				} else {
@@ -2281,6 +2322,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 		while (surf) {
 			surf->sort.uses_lightmap = 0;
+			surf->sort.uses_lightmap_specular = 0;
 
 			// LOD
 
@@ -2325,6 +2367,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 				if (uses_lightmap) {
 					surf->sort.uses_lightmap = 1; // This needs to become our lightmap index but we'll do that in a separate PR.
+					surf->sort.uses_lightmap_specular = uses_lightmap_specular ? 1 : 0;
 					scene_state.used_lightmap = true;
 				}
 
@@ -2459,6 +2502,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 		pipeline_specialization.multimesh_format_2d = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D);
 		pipeline_specialization.multimesh_has_color = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR);
 		pipeline_specialization.multimesh_has_custom_data = bool(inst->flags_cache & INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA);
+		pipeline_specialization.material_feedback = p_params->use_material_feedback && surf->material->material_feedback_rid.is_valid();
 
 		SceneState::PushConstant push_constant;
 		push_constant.base_index = i + p_params->element_offset;
@@ -2483,6 +2527,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 			pipeline_specialization.area_lights = SceneShaderForwardMobile::shader_count_for(inst->area_light_count);
 			pipeline_specialization.reflection_probes = SceneShaderForwardMobile::shader_count_for(inst->reflection_probe_count);
 			pipeline_specialization.decals = inst->decals_count > 0;
+			pipeline_specialization.use_lightmap_specular = element_info.uses_lightmap_specular;
 
 #ifdef DEBUG_ENABLED
 			if (unlikely(get_debug_draw_mode() == RSE::VIEWPORT_DEBUG_DRAW_LIGHTING)) {
@@ -3461,17 +3506,13 @@ void RenderForwardMobile::_update_dirty_geometry_instances() {
 void RenderForwardMobile::_update_dirty_geometry_pipelines() {
 	if (global_pipeline_data_required.key != global_pipeline_data_compiled.key) {
 		// Go through the entire list of surfaces and compile pipelines for everything again.
-		SelfList<GeometryInstanceSurfaceDataCache> *list = geometry_surface_compilation_all_list.first();
-		while (list != nullptr) {
-			GeometryInstanceSurfaceDataCache *surface_cache = list->self();
-			_mesh_generate_all_pipelines_for_surface_cache(surface_cache, global_pipeline_data_required);
+		for (GeometryInstanceSurfaceDataCache &surface_cache : geometry_surface_compilation_all_list) {
+			_mesh_generate_all_pipelines_for_surface_cache(&surface_cache, global_pipeline_data_required);
 
-			if (surface_cache->compilation_dirty_element.in_list()) {
+			if (surface_cache.compilation_dirty_element.in_list()) {
 				// Remove any elements from the dirty list as they don't need to be processed again.
-				geometry_surface_compilation_dirty_list.remove(&surface_cache->compilation_dirty_element);
+				geometry_surface_compilation_dirty_list.remove(&surface_cache.compilation_dirty_element);
 			}
-
-			list = list->next();
 		}
 
 		global_pipeline_data_compiled.key = global_pipeline_data_required.key;
@@ -3551,7 +3592,7 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 
 	specialization.use_lightmap_bicubic_filter = lightmap_filter_bicubic_get();
 	specialization.use_material_debanding = material_use_debanding_get();
-	specialization.luminance_multiplier = 2.0f;
+	specialization.luminance_multiplier = true; // `true` is treated as a 2.0 multiplier.
 	scene_shader.set_default_specialization(specialization);
 
 	base_uniforms_changed(); //also need this
@@ -3610,6 +3651,14 @@ RenderForwardMobile::RenderForwardMobile() {
 		defines += "\n#define USE_DOUBLE_PRECISION \n";
 	}
 #endif
+	{
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+		bool texture_streaming = GLOBAL_GET("rendering/textures/streaming/enabled");
+		if (texture_streaming) {
+			defines += "\n#define TEXTURE_STREAMING\n";
+		}
+#endif
+	}
 
 	scene_shader.init(defines);
 

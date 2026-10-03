@@ -1443,7 +1443,11 @@ void Variant::_clear_internal() {
 			reinterpret_cast<NodePath *>(_data._mem)->~NodePath();
 		} break;
 		case OBJECT: {
-			_get_obj().unref();
+			// Mirrors ObjData::unref
+			const ObjData &objdata = _get_obj();
+			if (objdata.id.is_ref_counted() && static_cast<RefCounted *>(objdata.obj)->unreference()) {
+				memdelete(objdata.obj);
+			}
 		} break;
 		case RID: {
 			// Not much need probably.
@@ -2319,7 +2323,8 @@ Variant::operator Vector<StringName>() const {
 	return to;
 }
 
-Variant::operator IPAddress() const {
+template <>
+IPAddress Variant::to<IPAddress>() const {
 	if (type == PACKED_FLOAT32_ARRAY || type == PACKED_INT32_ARRAY || type == PACKED_FLOAT64_ARRAY || type == PACKED_INT64_ARRAY || type == PACKED_BYTE_ARRAY) {
 		Vector<int> addr = operator Vector<int>();
 		if (addr.size() == 4) {

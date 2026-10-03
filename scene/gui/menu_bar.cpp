@@ -147,7 +147,7 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 
 	pm->set_size(Size2(item_rect.size.x, 0));
 	if (is_layout_rtl()) {
-		rect.position.x += rect.size.width - pm->get_size().width;
+		rect.position.x += item_rect.size.x - pm->get_size().width;
 	}
 	pm->set_position(rect.position);
 	pm->popup();
@@ -405,8 +405,8 @@ int MenuBar::_get_index_at_point(const Point2 &p_point) const {
 			continue;
 		}
 		Size2 size = menu_cache[i].text_buf->get_size() + style->get_minimum_size();
-		if (point.x > offset && point.x < offset + size.x) {
-			if (point.y > 0 && point.y < size.y) {
+		if (point.x >= offset && point.x < offset + size.x) {
+			if (point.y >= 0 && point.y < size.y) {
 				return i;
 			}
 		}

@@ -421,6 +421,11 @@ void GroupsEditor::_notification(int p_what) {
 			get_tree()->connect("node_added", callable_mp(this, &GroupsEditor::_load_scene_groups));
 			get_tree()->connect("node_removed", callable_mp(this, &GroupsEditor::_node_removed));
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_ready()) {
+				_update_tree();
+			}
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			filter->set_right_icon(get_editor_theme_icon("Search"));
 			add->set_button_icon(get_editor_theme_icon("Add"));
@@ -511,9 +516,9 @@ void GroupsEditor::_item_mouse_selected(const Vector2 &p_pos, MouseButton p_mous
 
 		menu->clear();
 		if (ti->get_meta("__local")) {
-			menu->add_icon_item(get_editor_theme_icon(SNAME("Environment")), TTR("Convert to Global Group"), CONVERT_GROUP);
+			menu->add_icon_item(get_editor_theme_icon(SNAME("Environment")), TTRC("Convert to Global Group"), CONVERT_GROUP);
 		} else {
-			menu->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTR("Convert to Scene Group"), CONVERT_GROUP);
+			menu->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTRC("Convert to Scene Group"), CONVERT_GROUP);
 		}
 
 		String group_name = ti->get_meta("__name");
@@ -664,7 +669,7 @@ void GroupsEditor::_confirm_delete() {
 void GroupsEditor::_show_add_group_dialog() {
 	if (!add_group_dialog) {
 		add_group_dialog = memnew(ConfirmationDialog);
-		add_group_dialog->set_title(TTR("Create New Group"));
+		add_group_dialog->set_title(TTRC("Create New Group"));
 		add_group_dialog->set_ok_button_text(TTRC("Create"));
 		add_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_add));
 
@@ -675,7 +680,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		gc->set_columns(2);
 		vbc->add_child(gc);
 
-		Label *label_name = memnew(Label(TTR("Name:")));
+		Label *label_name = memnew(Label(TTRC("Name:")));
 		label_name->set_h_size_flags(SIZE_SHRINK_BEGIN);
 		gc->add_child(label_name);
 
@@ -690,10 +695,10 @@ void GroupsEditor::_show_add_group_dialog() {
 		hbc->add_child(add_group_name);
 
 		global_group_button = memnew(CheckButton);
-		global_group_button->set_text(TTR("Global"));
+		global_group_button->set_text(TTRC("Global"));
 		hbc->add_child(global_group_button);
 
-		Label *label_description = memnew(Label(TTR("Description:")));
+		Label *label_description = memnew(Label(TTRC("Description:")));
 		label_name->set_h_size_flags(SIZE_SHRINK_BEGIN);
 		gc->add_child(label_description);
 
@@ -733,14 +738,14 @@ void GroupsEditor::_show_add_group_dialog() {
 void GroupsEditor::_show_rename_group_dialog() {
 	if (!rename_group_dialog) {
 		rename_group_dialog = memnew(ConfirmationDialog);
-		rename_group_dialog->set_title(TTR("Rename Group"));
+		rename_group_dialog->set_title(TTRC("Rename Group"));
 		rename_group_dialog->connect(SceneStringName(confirmed), callable_mp(this, &GroupsEditor::_confirm_rename));
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		rename_group_dialog->add_child(vbc);
 
 		HBoxContainer *hbc = memnew(HBoxContainer);
-		hbc->add_child(memnew(Label(TTR("Name:"))));
+		hbc->add_child(memnew(Label(TTRC("Name:"))));
 
 		rename_group = memnew(LineEdit);
 		rename_group->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
@@ -759,7 +764,7 @@ void GroupsEditor::_show_rename_group_dialog() {
 		vbc->add_child(rename_validation_panel);
 
 		rename_check_box = memnew(CheckBox);
-		rename_check_box->set_text(TTR("Rename references in all scenes"));
+		rename_check_box->set_text(TTRC("Rename references in all scenes"));
 		vbc->add_child(rename_check_box);
 
 		add_child(rename_group_dialog);
@@ -799,7 +804,7 @@ void GroupsEditor::_show_remove_group_dialog() {
 		vbox->add_child(remove_label);
 
 		remove_check_box = memnew(CheckBox);
-		remove_check_box->set_text(TTR("Delete references from all scenes"));
+		remove_check_box->set_text(TTRC("Delete references from all scenes"));
 		vbox->add_child(remove_check_box);
 
 		remove_group_dialog->add_child(vbox);
@@ -815,7 +820,7 @@ void GroupsEditor::_show_remove_group_dialog() {
 	bool is_global = !ti->get_meta("__local");
 	remove_check_box->set_visible(is_global);
 	remove_check_box->set_pressed(false);
-	remove_label->set_text(vformat(TTR("Delete group \"%s\" and all its references?"), ti->get_text(0)));
+	remove_label->set_text(vformat(TTRC("Delete group \"%s\" and all its references?"), ti->get_text(0)));
 
 	remove_group_dialog->reset_size();
 	remove_group_dialog->popup_centered();
@@ -905,13 +910,13 @@ GroupsEditor::GroupsEditor() {
 
 	add = memnew(Button);
 	add->set_theme_type_variation("FlatMenuButton");
-	add->set_tooltip_text(TTR("Add a new group."));
+	add->set_tooltip_text(TTRC("Add a new group."));
 	add->connect(SceneStringName(pressed), callable_mp(this, &GroupsEditor::_show_add_group_dialog));
 	hbc->add_child(add);
 
 	filter = memnew(LineEdit);
 	filter->set_clear_button_enabled(true);
-	filter->set_placeholder(TTR("Filter Groups"));
+	filter->set_placeholder(TTRC("Filter Groups"));
 	filter->set_accessibility_name(TTRC("Filter Groups"));
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->connect(SceneStringName(text_changed), callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
@@ -935,7 +940,7 @@ GroupsEditor::GroupsEditor() {
 
 	menu = memnew(PopupMenu);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GroupsEditor::_menu_id_pressed));
-	tree->add_child(menu);
+	add_child(menu);
 
 	select_a_node = memnew(Label);
 	select_a_node->set_focus_mode(FOCUS_ACCESSIBILITY);

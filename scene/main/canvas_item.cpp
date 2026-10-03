@@ -35,7 +35,9 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#ifndef _2D_DISABLED
 #include "scene/2d/canvas_group.h"
+#endif // _2D_DISABLED
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -61,13 +63,11 @@ bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tole
 		return p_point.length() < p_tolerance;
 	}
 }
-#endif // DEBUG_ENABLED
 
-#ifdef TOOLS_ENABLED
 Transform2D CanvasItem::_edit_get_transform() const {
 	return Transform2D(_edit_get_rotation(), _edit_get_position() + _edit_get_pivot());
 }
-#endif //TOOLS_ENABLED
+#endif // DEBUG_ENABLED
 
 bool CanvasItem::is_visible_in_tree() const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -108,6 +108,7 @@ void CanvasItem::_handle_visibility_change(bool p_visible) {
 	} else {
 		emit_signal(SceneStringName(hidden));
 	}
+	queue_accessibility_update();
 
 	_block();
 	for (int i = 0; i < get_child_count(); i++) {
@@ -374,7 +375,7 @@ void CanvasItem::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !visible);
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !is_visible_in_tree());
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1401,11 +1402,13 @@ PackedStringArray CanvasItem::get_configuration_warnings() const {
 				warned_about_ancestor_clipping = true;
 			}
 
+#ifndef _2D_DISABLED
 			CanvasGroup *as_canvas_group = Object::cast_to<CanvasGroup>(n);
 			if (!warned_about_canvasgroup_ancestor && as_canvas_group) {
 				warnings.push_back(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its children."), as_canvas_group->get_name()));
 				warned_about_canvasgroup_ancestor = true;
 			}
+#endif // _2D_DISABLED
 
 			// Only break out early once both warnings have been triggered, so
 			// that the user is aware of both possible reasons for clipping not working.
@@ -1855,10 +1858,12 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 
 	update_configuration_warnings();
 
+#ifndef _2D_DISABLED
 	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
 		//avoid accidental bugs, make this not work on CanvasGroup
 		return;
 	}
+#endif // _2D_DISABLED
 
 	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RSE::CanvasGroupMode(clip_children_mode));
 }

@@ -5,7 +5,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from methods import get_compiler_version, print_error, print_info, print_warning, using_gcc
-from platform_methods import detect_arch, validate_arch
+from platform_methods import check_accesskit_version, detect_arch, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -153,7 +153,7 @@ def configure(env: "SConsEnvironment"):
             else:
                 env.Append(LINKFLAGS=["-fuse-ld=mold"])
         else:
-            env.Append(LINKFLAGS=["-fuse-ld=%s" % env["linker"]])
+            env.Append(LINKFLAGS=[f"-fuse-ld={env['linker']}"])
 
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
@@ -512,31 +512,34 @@ def configure(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
-            if env["arch"] == "arm64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
-            elif env["arch"] == "arm32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
-            elif env["arch"] == "rv64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
-            elif env["arch"] == "x86_64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
-            elif env["arch"] == "x86_32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
-            env.Append(LIBS=["accesskit"])
-            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            if check_accesskit_version(env["accesskit_sdk_path"]):
+                env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+                if env["arch"] == "arm64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
+                elif env["arch"] == "arm32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
+                elif env["arch"] == "rv64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
+                elif env["arch"] == "x86_64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
+                elif env["arch"] == "x86_32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
+                env.Append(LIBS=["accesskit"])
+                env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            else:
+                env["accesskit"] = False
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
                 f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
                 "See the documentation for more information:\n"
-                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html\n"
+                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html#compiling-with-accesskit-support\n"
                 "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
             )
             env["accesskit"] = False
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:

@@ -191,7 +191,7 @@ String DebuggerMarshalls::parse_type_from_variant(const Variant &p_variant) {
 			const ScriptInstance *script_instance = obj->get_script_instance();
 
 			if (script_instance) {
-				Ref<Script> script = script_instance->get_script();
+				Ref<Script> script(script_instance->get_script());
 				if (script.is_valid()) {
 					name = script->get_global_name();
 				}

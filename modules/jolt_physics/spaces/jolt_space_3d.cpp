@@ -141,11 +141,8 @@ JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system, JPH::TempAllocator *p_tem
 
 	physics_system->SetSimCollideBodyVsBody([](const JPH::Body &p_body1, const JPH::Body &p_body2, JPH::Mat44Arg p_transform_com1, JPH::Mat44Arg p_transform_com2, JPH::CollideShapeSettings &p_collide_shape_settings, JPH::CollideShapeCollector &p_collector, const JPH::ShapeFilter &p_shape_filter) {
 		if (p_body1.IsSensor() || p_body2.IsSensor()) {
-			JPH::CollideShapeSettings new_collide_shape_settings = p_collide_shape_settings;
-			// Since we're breaking the sensor down into leaf shapes we'll end up stripping away our `JoltCustomDoubleSidedShape` decorator shape and thus any back-face collision, so we simply force-enable it like this rather than going through the trouble of reapplying the decorator.
-			new_collide_shape_settings.mBackFaceMode = JPH::EBackFaceMode::CollideWithBackFaces;
 			JPH::SubShapeIDCreator part1, part2;
-			JPH::CollideShapeVsShapePerLeaf<JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector>>(p_body1.GetShape(), p_body2.GetShape(), JPH::Vec3::sOne(), JPH::Vec3::sOne(), p_transform_com1, p_transform_com2, part1, part2, new_collide_shape_settings, p_collector, p_shape_filter);
+			JPH::CollideShapeVsShapePerLeaf<JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector>>(p_body1.GetShape(), p_body2.GetShape(), JPH::Vec3::sOne(), JPH::Vec3::sOne(), p_transform_com1, p_transform_com2, part1, part2, p_collide_shape_settings, p_collector, p_shape_filter);
 		} else {
 			JPH::PhysicsSystem::sDefaultSimCollideBodyVsBody(p_body1, p_body2, p_transform_com1, p_transform_com2, p_collide_shape_settings, p_collector, p_shape_filter);
 		}

@@ -284,6 +284,8 @@ public:
 	void set_text(int p_column, String p_text);
 	String get_text(int p_column) const;
 
+	Ref<TextParagraph> _get_text_buf(int p_column) const;
+
 	void set_description(int p_column, String p_text);
 	String get_description(int p_column) const;
 
@@ -714,6 +716,10 @@ private:
 		int scrollbar_margin_left = -1;
 		int scrollbar_h_separation = 0;
 		int scrollbar_v_separation = 0;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> item_hovered_sound;
+		Ref<AudioStream> item_selected_sound;
 	} theme_cache;
 
 	struct Cache {

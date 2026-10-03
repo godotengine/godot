@@ -1,0 +1,13 @@
+diff --git a/thirdparty/sdl/io/SDL_iostream.c b/thirdparty/sdl/io/SDL_iostream.c
+index 31c74ab503..75c4c69a06 100644
+--- a/thirdparty/sdl/io/SDL_iostream.c
++++ b/thirdparty/sdl/io/SDL_iostream.c
+@@ -956,7 +956,7 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
+         }
+     }
+ 
+-#elif defined(SDL_PLATFORM_IOS)
++#elif defined(SDL_PLATFORM_IOS) && !defined(SDL_FILESYSTEM_DUMMY)
+ 
+     // Try to open the file on the filesystem first
+     FILE *fp = NULL;

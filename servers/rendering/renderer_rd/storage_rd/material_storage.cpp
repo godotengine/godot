@@ -40,6 +40,12 @@
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/storage/variant_converters.h"
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+#include "modules/texture_streaming/texture_streaming.h"
+#endif
+
 using namespace RendererRD;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -857,6 +863,14 @@ MaterialStorage::MaterialData::~MaterialData() {
 		material_storage->global_shader_uniforms.materials_using_texture.erase(global_texture_E);
 	}
 
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	if (material_feedback_rid.is_valid()) {
+		Vector<RID> empty_textures;
+		TextureStreaming::get_singleton()->material_set_textures(material_feedback_rid, empty_textures);
+		material_feedback_rid = RID();
+	}
+#endif
+
 	for (int i = 0; i < 2; i++) {
 		if (uniform_buffer[i].is_valid()) {
 			RD::get_singleton()->free_rid(uniform_buffer[i]);
@@ -875,6 +889,7 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 
 	bool uses_global_textures = false;
 	global_textures_pass++;
+	Vector<RID> material_feedback_textures;
 
 	for (int i = 0, k = 0; i < p_texture_uniforms.size(); i++) {
 		const StringName &uniform_name = p_texture_uniforms[i].name;
@@ -983,6 +998,9 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 
 				if (tex) {
 					rd_texture = (srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
+					if (tex->streaming_state.is_valid()) {
+						material_feedback_textures.push_back(tex->streaming_state);
+					}
 #ifdef TOOLS_ENABLED
 					if (tex->detect_3d_callback && p_3d_material) {
 						tex->detect_3d_callback(tex->detect_3d_callback_ud);
@@ -1019,6 +1037,13 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 			}
 		}
 	}
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+	if (material_feedback_rid.is_valid() || !material_feedback_textures.is_empty()) {
+		material_feedback_rid = TextureStreaming::get_singleton()->material_set_textures(material_feedback_rid, material_feedback_textures);
+	}
+#endif
+
 	{
 		//for textures no longer used, unregister them
 		List<StringName> to_delete;
@@ -2630,17 +2655,23 @@ RSE::CullMode RendererRD::MaterialStorage::material_get_cull_mode(RID p_material
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL_V(material, RSE::CULL_MODE_DISABLED);
 	ERR_FAIL_NULL_V(material->shader, RSE::CULL_MODE_DISABLED);
+
 	if (material->shader->type == ShaderType::SHADER_TYPE_3D && material->shader->data) {
+#ifdef FORWARD_RD_ENABLED
 		RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *sd_clustered = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *>(material->shader->data);
 		if (sd_clustered) {
 			return (RSE::CullMode)sd_clustered->cull_mode;
 		}
+#endif // FORWARD_RD_ENABLED
 
+#ifdef MOBILE_RD_ENABLED
 		RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *sd_mobile = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *>(material->shader->data);
 		if (sd_mobile) {
 			return (RSE::CullMode)sd_mobile->cull_mode;
 		}
+#endif // MOBILE_RD_ENABLED
 	}
+
 	return RSE::CULL_MODE_DISABLED;
 }
 

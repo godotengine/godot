@@ -35,7 +35,9 @@
 #include "godot_js.h"
 #include "ip_web.h"
 #include "net_socket_web.h"
+#include "remote_debugger_peer_messageport.h"
 
+#include "core/debugger/engine_debugger.h"
 #include "core/io/file_access.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
@@ -57,6 +59,7 @@ void OS_Web::initialize() {
 	IPWeb::make_default();
 	NetSocketWeb::make_default();
 	DisplayServerWeb::register_web_driver();
+	EngineDebugger::register_uri_handler("messageport://", RemoteDebuggerPeerMessagePort::create);
 }
 
 void OS_Web::resume_audio() {
@@ -118,17 +121,22 @@ Error OS_Web::create_process(const String &p_path, const List<String> &p_argumen
 		args.push_back(E);
 	}
 	String json_args = Variant(args).to_json_string();
-	int failed = godot_js_os_execute(json_args.utf8().get_data());
-	ERR_FAIL_COND_V_MSG(failed, ERR_UNAVAILABLE, "OS::execute() or create_process() must be implemented in Web via 'engine.setOnExecute' if required.");
+	int64_t id = godot_js_os_execute(p_path.utf8().get_data(), json_args.utf8().get_data());
+	ERR_FAIL_COND_V_MSG(id < 0, ERR_UNAVAILABLE, "OS::execute() or create_process() must be implemented in JavaScript via 'EngineConfig.onExecute' if required.");
+	if (r_child_id) {
+		*r_child_id = id;
+	}
 	return OK;
 }
 
 Error OS_Web::kill(const ProcessID &p_pid) {
-	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "OS::kill() is not available on the Web platform.");
+	int ret = godot_js_os_kill(p_pid);
+	ERR_FAIL_COND_V_MSG(ret, ERR_UNAVAILABLE, "OS::kill() must be implemented in JavaScript via 'EngineConfig.onTerminatePID' if required.");
+	return OK;
 }
 
 int OS_Web::get_process_id() const {
-	return 0;
+	return web_pid;
 }
 
 bool OS_Web::is_process_running(const ProcessID &p_pid) const {
@@ -268,6 +276,18 @@ Error OS_Web::pwa_update() {
 	return godot_js_pwa_update() ? FAILED : OK;
 }
 
+Error OS_Web::move_to_trash(const String &p_path) {
+	if (DirAccess::dir_exists_absolute(p_path)) {
+		Ref<DirAccess> da = DirAccess::open(p_path);
+		ERR_FAIL_COND_V(da.is_null(), ERR_BUG);
+		Error err = da->erase_contents_recursive();
+		if (err) {
+			return err;
+		}
+	}
+	return DirAccess::remove_absolute(p_path);
+}
+
 bool OS_Web::is_userfs_persistent() const {
 	return idb_available;
 }
@@ -304,6 +324,8 @@ void OS_Web::initialize_joypads() {
 }
 
 OS_Web::OS_Web() {
+	web_pid = godot_js_config_pid_get();
+
 	char locale_ptr[16];
 	godot_js_config_locale_get(locale_ptr, 16);
 	setenv("LANG", locale_ptr, true);

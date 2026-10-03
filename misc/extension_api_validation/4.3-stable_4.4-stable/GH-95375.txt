@@ -1,5 +1,3 @@
-GH-95375
---------
 Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/properties/playing': setter changed value in new API, from "_set_playing" to &"set_playing".
 Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/properties/playing': setter changed value in new API, from "_set_playing" to &"set_playing".
 Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/properties/playing': setter changed value in new API, from "_set_playing" to &"set_playing".

@@ -531,7 +531,10 @@ void OpenXRSpatialMarkerTrackingCapability::on_session_destroyed() {
 	// Disconnect our discovery
 	OpenXRSpatialEntityExtension *se_extension = OpenXRSpatialEntityExtension::get_singleton();
 	ERR_FAIL_NULL(se_extension);
-	se_extension->disconnect(SNAME("spatial_discovery_recommended"), callable_mp(this, &OpenXRSpatialMarkerTrackingCapability::_on_spatial_discovery_recommended));
+
+	if (se_extension->is_connected(SNAME("spatial_discovery_recommended"), callable_mp(this, &OpenXRSpatialMarkerTrackingCapability::_on_spatial_discovery_recommended))) {
+		se_extension->disconnect(SNAME("spatial_discovery_recommended"), callable_mp(this, &OpenXRSpatialMarkerTrackingCapability::_on_spatial_discovery_recommended));
+	}
 }
 
 void OpenXRSpatialMarkerTrackingCapability::on_process() {

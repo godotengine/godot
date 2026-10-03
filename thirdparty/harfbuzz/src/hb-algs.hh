@@ -39,6 +39,19 @@
 #include <functional>
 #include <new>
 
+static HB_ALWAYS_INLINE void *
+hb_malloc2 (size_t nmemb, size_t size)
+{
+  if (size && nmemb > SIZE_MAX / size) return nullptr;
+  return hb_malloc (nmemb * size);
+}
+static HB_ALWAYS_INLINE void *
+hb_realloc2 (void *ptr, size_t nmemb, size_t size)
+{
+  if (size && nmemb > SIZE_MAX / size) return nullptr;
+  return hb_realloc (ptr, nmemb * size);
+}
+
 /*
  * Flags
  */
@@ -877,6 +890,94 @@ struct
 }
 HB_FUNCOBJ (hb_clamp);
 
+/* Signed saturating arithmetic. */
+template <typename T>
+static HB_ALWAYS_INLINE T
+hb_saturate_add (T a, T b)
+{
+  static_assert (std::is_integral<T>::value && std::is_signed<T>::value, "");
+
+#if hb_has_builtin(__builtin_add_overflow)
+  T result;
+  if (likely (!__builtin_add_overflow (a, b, &result)))
+    return result;
+#else
+  if (b > 0)
+  {
+    if (likely (a <= hb_int_max (T) - b))
+      return a + b;
+  }
+  else if (likely (a >= hb_int_min (T) - b))
+    return a + b;
+#endif
+
+  return a < 0 ? hb_int_min (T) : hb_int_max (T);
+}
+
+template <typename T>
+static HB_ALWAYS_INLINE T
+hb_saturate_sub (T a, T b)
+{
+  static_assert (std::is_integral<T>::value && std::is_signed<T>::value, "");
+
+#if hb_has_builtin(__builtin_sub_overflow)
+  T result;
+  if (likely (!__builtin_sub_overflow (a, b, &result)))
+    return result;
+#else
+  if (b > 0)
+  {
+    if (likely (a >= hb_int_min (T) + b))
+      return a - b;
+  }
+  else if (likely (a <= hb_int_max (T) + b))
+    return a - b;
+#endif
+
+  return b < 0 ? hb_int_max (T) : hb_int_min (T);
+}
+
+template <typename T>
+static HB_ALWAYS_INLINE T
+hb_saturate_neg (T a)
+{
+  static_assert (std::is_integral<T>::value && std::is_signed<T>::value, "");
+
+  return hb_saturate_sub ((T) 0, a);
+}
+
+/* Convert a floating-point value to integer type T, saturating to T's
+ * range instead of relying on the undefined behavior of an out-of-range
+ * float-to-int conversion.  NaN saturates to the minimum of T. */
+template <typename T>
+static HB_ALWAYS_INLINE T
+hb_clamp_to (double v)
+{
+  return (T) hb_clamp (v,
+		       (double) hb_int_min (T),
+		       (double) hb_int_max (T));
+}
+
+template <typename T>
+static HB_ALWAYS_INLINE T
+hb_clamp_to (float v)
+{
+  /* Widen explicitly: float cannot represent all integer bounds exactly,
+   * so the clamp itself is done in double. */
+  return hb_clamp_to<T> ((double) v);
+}
+
+template <typename T>
+static HB_ALWAYS_INLINE T
+hb_clamp_to (int64_t v)
+{
+  static_assert (std::is_integral<T>::value && std::is_signed<T>::value, "");
+
+  return (T) hb_clamp (v,
+		       (int64_t) hb_int_min (T),
+		       (int64_t) hb_int_max (T));
+}
+
 /*
  * Bithacks.
  */
@@ -1215,6 +1316,62 @@ hb_unsigned_add_overflows (unsigned int a, unsigned int b, unsigned *result = nu
   return b > (unsigned int) -1 - a;
 }
 
+/* Saturating arithmetic on size_t.  On platforms where size_t is wider than
+ * unsigned int (i.e. 64-bit), the inputs to get_size()-style computations
+ * (counts and static_sizes which are at most 32-bit) cannot overflow size_t,
+ * so these reduce to plain arithmetic.  On 32-bit platforms (size_t is
+ * unsigned int), they saturate to SIZE_MAX so sanitize/serialize callers
+ * naturally reject the resulting size as out-of-range. */
+
+static inline size_t
+hb_unsigned_mul_saturate (size_t a, size_t b)
+{
+  if (sizeof (size_t) > sizeof (unsigned int))
+    return a * b;
+#if hb_has_builtin(__builtin_mul_overflow)
+  size_t result;
+  if (__builtin_mul_overflow (a, b, &result))
+    return (size_t) -1;
+  return result;
+#else
+  if (b > 0 && a > ((size_t) -1) / b) return (size_t) -1;
+  return a * b;
+#endif
+}
+
+static inline size_t
+hb_unsigned_add_saturate (size_t a, size_t b)
+{
+  if (sizeof (size_t) > sizeof (unsigned int))
+    return a + b;
+#if hb_has_builtin(__builtin_add_overflow)
+  size_t result;
+  if (__builtin_add_overflow (a, b, &result))
+    return (size_t) -1;
+  return result;
+#else
+  if (b > ((size_t) -1) - a) return (size_t) -1;
+  return a + b;
+#endif
+}
+
+/* Variadic forms: fold left across all arguments. */
+template <typename ...Ts>
+static inline size_t
+hb_unsigned_mul_saturate (size_t a, size_t b, size_t c, Ts... rest)
+{ return hb_unsigned_mul_saturate (hb_unsigned_mul_saturate (a, b), c, rest...); }
+
+template <typename ...Ts>
+static inline size_t
+hb_unsigned_add_saturate (size_t a, size_t b, size_t c, Ts... rest)
+{ return hb_unsigned_add_saturate (hb_unsigned_add_saturate (a, b), c, rest...); }
+
+/* Saturating mul-add: a * b + c.  Covers the dominant get_size() pattern
+ * `count * static_size + min_size`. */
+static inline size_t
+hb_unsigned_mul_add_saturate (size_t a, size_t b, size_t c)
+{ return hb_unsigned_add_saturate (hb_unsigned_mul_saturate (a, b), c); }
+
 
 /*
  * Sort and search.
@@ -1305,141 +1462,85 @@ hb_bsearch (const K& key, V* base,
 }
 
 
-/* From https://github.com/noporpoise/sort_r
-   Feb 5, 2019 (c8c65c1e)
-   Modified to support optional argument using templates */
-
-/* Isaac Turner 29 April 2014 Public Domain */
-
-/*
-hb_qsort function to be exported.
-Parameters:
-  base is the array to be sorted
-  nel is the number of elements in the array
-  width is the size in bytes of each element of the array
-  compar is the comparison function
-  arg (optional) is a pointer to be passed to the comparison function
-
-void hb_qsort(void *base, size_t nel, size_t width,
-              int (*compar)(const void *_a, const void *_b, [void *_arg]),
-              [void *arg]);
-*/
-
-#define SORT_R_SWAP(a,b,tmp) ((void) ((tmp) = (a)), (void) ((a) = (b)), (b) = (tmp))
-
-/* swap a and b */
-/* a and b must not be equal! */
-static inline void sort_r_swap(char *__restrict a, char *__restrict b,
-                               size_t w)
+/* Quicksort partitioning loop: median-of-three pivot, two-way
+ * Hoare partition, tail-call elimination on the larger side.
+ * Stops partitioning when subranges shrink below the threshold;
+ * a single insertion-sort pass over the whole array (run by the
+ * caller) finishes the job.  Same structure libstdc++ uses for
+ * std::sort.
+ *
+ * Not stable; equivalent values may be swapped. */
+/* Quicksort partitioning loop: median-of-three pivot, two-way
+ * Hoare partition, tail-call elimination on the larger side.
+ * Stops partitioning when subranges shrink below the threshold;
+ * a single insertion-sort pass over the whole array (run by
+ * hb_qsort_inline below) finishes the job.  Same shape libstdc++
+ * uses for std::sort.
+ *
+ * Not stable; equivalent values may be swapped. */
+template <typename T, typename Compar>
+static inline void
+hb_qsort_loop (T *base, size_t nel, Compar compar)
 {
-  char tmp, *end = a+w;
-  for(; a < end; a++, b++) { SORT_R_SWAP(*a, *b, tmp); }
-}
-
-/* swap a, b iff a>b */
-/* a and b must not be equal! */
-/* __restrict is same as restrict but better support on old machines */
-template <typename Compar>
-static inline int sort_r_cmpswap(char *__restrict a,
-                                 char *__restrict b, size_t w,
-                                 Compar compar)
-{
-  if(compar(a, b) > 0) {
-    sort_r_swap(a, b, w);
-    return 1;
-  }
-  return 0;
-}
-
-/*
-Swap consecutive blocks of bytes of size na and nb starting at memory addr ptr,
-with the smallest swap so that the blocks are in the opposite order. Blocks may
-be internally re-ordered e.g.
-  12345ab  ->   ab34512
-  123abc   ->   abc123
-  12abcde  ->   deabc12
-*/
-static inline void sort_r_swap_blocks(char *ptr, size_t na, size_t nb)
-{
-  if(na > 0 && nb > 0) {
-    if(na > nb) { sort_r_swap(ptr, ptr+na, nb); }
-    else { sort_r_swap(ptr, ptr+nb, na); }
-  }
-}
-
-/* Implement recursive quicksort ourselves */
-/* Note: quicksort is not stable, equivalent values may be swapped */
-template <typename Compar>
-static inline void sort_r_simple(void *base, size_t nel, size_t w,
-                                 Compar compar)
-{
-  char *b = (char *)base, *end = b + nel*w;
-
-  if(nel < 10) {
-    /* Insertion sort for arbitrarily small inputs */
-    char *pi, *pj;
-    for(pi = b+w; pi < end; pi += w) {
-      for(pj = pi; pj > b && sort_r_cmpswap(pj-w,pj,w,compar); pj -= w) {}
-    }
-  }
-  else
+  while (nel > 24)
   {
-    /* nel > 9; Quicksort */
+    T *last = base + nel - 1;
+    T *mid = base + nel / 2;
 
-    int cmp;
-    char *pl, *ple, *pr, *pre, *pivot;
-    char *last = b+w*(nel-1), *tmp;
-
-    char *l[3];
-    l[0] = b + w;
-    l[1] = b+w*(nel/2);
-    l[2] = last - w;
-
-    if(compar(l[0],l[1]) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
-    if(compar(l[1],l[2]) > 0) {
-      SORT_R_SWAP(l[1], l[2], tmp);
-      if(compar(l[0],l[1]) > 0) { SORT_R_SWAP(l[0], l[1], tmp); }
+    /* Median-of-three pivot, parked at last-1. */
+    if (compar (*base, *mid) > 0) hb_swap (*base, *mid);
+    if (compar (*mid, *last) > 0)
+    {
+      hb_swap (*mid, *last);
+      if (compar (*base, *mid) > 0) hb_swap (*base, *mid);
     }
+    hb_swap (*mid, *(last - 1));
+    T &pivot = *(last - 1);
 
-    if(l[1] != last) { sort_r_swap(l[1], last, w); }
-
-    pivot = last;
-    ple = pl = b;
-    pre = pr = last;
-
-    while(pl < pr) {
-      for(; pl < pr; pl += w) {
-        cmp = compar(pl, pivot);
-        if(cmp > 0) { break; }
-        else if(cmp == 0) {
-          if(ple < pl) { sort_r_swap(ple, pl, w); }
-          ple += w;
-        }
-      }
-      if(pl >= pr) { break; }
-      for(; pl < pr; ) {
-        pr -= w;
-        cmp = compar(pr, pivot);
-        if(cmp == 0) {
-          pre -= w;
-          if(pr < pre) { sort_r_swap(pr, pre, w); }
-        }
-        else if(cmp < 0) {
-          if(pl < pr) { sort_r_swap(pl, pr, w); }
-          pl += w;
-          break;
-        }
-      }
+    /* Two-way Hoare partition.  Inner loops are unguarded:
+     * median-of-three left *base <= pivot and *last >= pivot,
+     * which act as sentinels. */
+    T *i = base, *j = last - 1;
+    while (true)
+    {
+      while (compar (*++i, pivot) < 0) {}
+      while (compar (*--j, pivot) > 0) {}
+      if (i >= j) break;
+      hb_swap (*i, *j);
     }
+    hb_swap (*i, *(last - 1));
 
-    pl = pr;
-
-    sort_r_swap_blocks(b, ple-b, pl-ple);
-    sort_r_swap_blocks(pr, pre-pr, end-pre);
-
-    sort_r_simple(b, (pl-ple)/w, w, compar);
-    sort_r_simple(end-(pre-pr), (pre-pr)/w, w, compar);
+    /* Recurse on smaller side, loop on larger — bounds stack
+     * depth at O(log n). */
+    size_t left  = (size_t) (i - base);
+    size_t right = nel - left - 1;
+    if (left < right)
+    {
+      hb_qsort_loop (base, left, compar);
+      base = i + 1;
+      nel  = right;
+    }
+    else
+    {
+      hb_qsort_loop (i + 1, right, compar);
+      nel  = left;
+    }
   }
+}
+
+template <typename T, typename Compar>
+static inline void
+hb_qsort_inline (T *base, size_t nel, Compar compar)
+{
+  hb_qsort_loop (base, nel, compar);
+
+  /* Single final insertion sort over the whole array.  After
+   * the partitioning loop, every element is within the threshold
+   * of its sorted position, so this pass is O(n * threshold). */
+  T *end = base + nel;
+  for (T *pi = base + 1; pi < end; pi++)
+    for (T *pj = pi; pj > base && compar (pj[-1], pj[0]) > 0; pj--)
+      hb_swap (pj[-1], pj[0]);
 }
 
 static inline void

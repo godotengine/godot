@@ -35,6 +35,7 @@
 #ifndef GDSCRIPT_NO_LSP
 
 #include "../gdscript_analyzer.h"
+#include "../gdscript_linter.h"
 #include "../language_server/gdscript_extend_parser.h"
 #include "../language_server/gdscript_language_protocol.h"
 #include "../language_server/gdscript_workspace.h"
@@ -311,6 +312,14 @@ void assert_no_errors_in(const String &p_path) {
 
 	GDScriptAnalyzer analyzer(&parser);
 	err = analyzer.analyze();
+
+#ifdef DEBUG_ENABLED
+	if (err == OK) {
+		GDScriptLinter linter(parser);
+		err = linter.lint();
+	}
+#endif
+
 	REQUIRE_MESSAGE(err == OK, vformat("Errors while analyzing '%s'", p_path));
 }
 

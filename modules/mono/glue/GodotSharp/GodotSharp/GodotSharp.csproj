@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <ProjectGuid>{AEBF0036-DA76-4341-B651-A3F2856AB2FA}</ProjectGuid>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14</LangVersion>
     <OutputPath>bin/$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace>Godot</RootNamespace>
@@ -56,8 +56,12 @@
   <ItemGroup>
     <Compile Include="Core\Aabb.cs" />
     <Compile Include="Core\Attributes\ExportToolButtonAttribute.cs" />
+    <Compile Include="Core\Bridge\Collectors.cs" />
     <Compile Include="Core\Bridge\GodotSerializationInfo.cs" />
     <Compile Include="Core\Bridge\MethodInfo.cs" />
+    <Compile Include="Core\Bridge\GodotClassTrampolines.cs" />
+    <Compile Include="Core\Bridge\MethodKey.cs" />
+    <Compile Include="Core\Bridge\SignalKey.cs" />
     <Compile Include="Core\Callable.generics.cs" />
     <Compile Include="Core\CustomGCHandle.cs" />
     <Compile Include="Core\Array.cs" />

@@ -342,23 +342,58 @@ void TileAtlasView::_draw_base_tiles_texture_grid() {
 
 		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
-		// Draw each tile texture region.
+		int num_squares_h = texture->get_height() / texture_region_size.height;
+		int num_squares_w = texture->get_width() / texture_region_size.width;
+
+		// Square 8 pts (4 lines 2 pts e/a)
+		Vector<Point2> points;
+		points.reserve(num_squares_h * num_squares_w * 8);
+
+		Vector<Color> colors;
+		colors.reserve(num_squares_h * num_squares_w * 4);
+
 		for (int x = 0; x < grid_size.x; x++) {
 			for (int y = 0; y < grid_size.y; y++) {
 				Vector2i origin = margins + (Vector2i(x, y) * (texture_region_size + separation));
 				Vector2i base_tile_coords = tile_set_atlas_source->get_tile_at_coords(Vector2i(x, y));
+				Vector2i region_size;
+				Color tile_color;
+
 				if (base_tile_coords != TileSetSource::INVALID_ATLAS_COORDS) {
 					if (base_tile_coords == Vector2i(x, y)) {
-						// Draw existing tile.
+						tile_color = Color(1.0, 1.0, 1.0, 0.8);
+
 						Vector2i size_in_atlas = tile_set_atlas_source->get_tile_size_in_atlas(base_tile_coords);
-						Vector2 region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
-						base_tiles_texture_grid->draw_rect(Rect2i(origin, region_size), Color(1.0, 1.0, 1.0, 0.8), false);
+						region_size = texture_region_size * size_in_atlas + separation * (size_in_atlas - Vector2i(1, 1));
 					}
 				} else {
-					// Draw the grid.
-					base_tiles_texture_grid->draw_rect(Rect2i(origin, texture_region_size), Color(0.7, 0.7, 0.7, 0.1), false);
+					tile_color = Color(0.7, 0.7, 0.7, 0.1);
+					region_size = texture_region_size;
+				}
+
+				for (int c = 0; c < 4; c++) {
+					colors.push_back(tile_color);
+				}
+
+				Vector2i corners[4] = {
+					origin,
+					origin + Vector2i{ region_size.x, 0 },
+					origin + region_size,
+					origin + Vector2i{ 0, region_size.y }
+				};
+
+				for (int i = 0; i < 4; i++) {
+					points.push_back(corners[i]);
+					points.push_back(corners[(i + 1) % 4]);
 				}
 			}
+		}
+
+		if (!points.is_empty()) {
+			RenderingServer::get_singleton()->canvas_item_add_multiline(
+					base_tiles_texture_grid->get_canvas_item(),
+					points,
+					colors);
 		}
 	}
 }

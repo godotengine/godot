@@ -648,9 +648,9 @@ private:
 
 	/* Syntax highlighting. */
 	Ref<SyntaxHighlighter> syntax_highlighter;
-	HashMap<int, Vector<Pair<int64_t, Color>>> syntax_highlighting_cache;
+	HashMap<int, LocalVector<Pair<int64_t, Color>>> syntax_highlighting_cache;
 
-	Vector<Pair<int64_t, Color>> _get_line_syntax_highlighting(int p_line);
+	bool _update_line_syntax_highlighting(int p_line);
 	void _clear_syntax_highlighting_cache();
 	void _syntax_highlighter_changed();
 
@@ -697,6 +697,12 @@ private:
 #ifndef DISABLE_DEPRECATED
 		Color background_color = Color(1, 1, 1);
 #endif // DISABLE_DEPRECATED
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> caret_moved_sound;
+		Ref<AudioStream> caret_move_rejected_sound;
+		Ref<AudioStream> text_changed_sound;
+		Ref<AudioStream> text_change_rejected_sound;
 	} theme_cache;
 
 	bool window_has_focus = true;
@@ -707,6 +713,9 @@ private:
 	bool draw_control_chars = false;
 	bool draw_tabs = false;
 	bool draw_spaces = false;
+
+	// Used to avoid spamming `caret_move_rejected_sound` when key repeat is enabled.
+	bool last_key_is_echo = false;
 
 	// FIXME: Helper method to draw unfilled rects, should be moved to RenderingServer.
 	void _draw_rect_unfilled(RID p_canvas_item, const Rect2 &p_rect, const Color &p_color, real_t p_width = -1.0, bool p_antialiased = false) const;
@@ -741,6 +750,8 @@ private:
 	void _delete(bool p_word = false, bool p_all_to_right = false);
 	void _move_caret_document_start(bool p_select);
 	void _move_caret_document_end(bool p_select);
+	void _play_caret_moved_sound(const Vector<Vector3i> &p_previous_caret_positions_and_selections);
+	bool _has_any_caret_moved(const Vector<Vector3i> &p_previous_caret_positions_and_selections) const;
 	bool _clear_carets_and_selection();
 
 protected:
@@ -861,6 +872,7 @@ public:
 	/* Text */
 	// Text properties.
 	RID get_text_canvas_item() const;
+	const Ref<TextParagraph> get_line_data(int p_line) const { return text.get_line_data(p_line); }
 
 	bool has_ime_text() const;
 	void cancel_ime();

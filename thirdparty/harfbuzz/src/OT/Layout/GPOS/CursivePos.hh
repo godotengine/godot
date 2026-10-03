@@ -22,7 +22,7 @@ struct CursivePos
     if (unlikely (!c->may_dispatch (this, &u.format.v))) return c->no_dispatch_return_value ();
     TRACE_DISPATCH (this, u.format.v);
     switch (u.format.v) {
-    case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 1: hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     default:return_trace (c->default_return_value ());
     }
   }

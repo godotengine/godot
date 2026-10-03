@@ -229,6 +229,8 @@ class SceneTreeEditor : public Control {
 	LocalVector<StringName> *script_types;
 	bool _has_drop_selection(TreeItem *p_item, const Point2 &p_point) const;
 	bool _is_script_type(const StringName &p_type) const;
+	NodePath _get_node_path(Node *p_node) const;
+	Node *_get_node(const NodePath &p_path) const;
 
 	Vector<StringName> valid_types;
 
@@ -255,6 +257,7 @@ public:
 	Node *get_selected();
 	void set_can_rename(bool p_can_rename) { can_rename = p_can_rename; }
 	void set_editor_selection(EditorSelection *p_selection);
+	TreeItem *get_node_item(Node *p_node) const;
 
 	void set_show_enabled_subscene(bool p_show) { show_enabled_subscene = p_show; }
 	void set_valid_types(const Vector<StringName> &p_valid);

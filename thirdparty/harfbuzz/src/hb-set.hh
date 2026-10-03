@@ -87,6 +87,7 @@ struct hb_sparseset_t
   uint32_t hash () const { return s.hash (); }
 
   void add (hb_codepoint_t g) { s.add (g); }
+  void add_bits (hb_codepoint_t g, uint64_t bits) { s.add_bits (g, bits); }
   bool add_range (hb_codepoint_t first, hb_codepoint_t last) { return s.add_range (first, last); }
 
   template <typename T>
@@ -125,6 +126,9 @@ struct hb_sparseset_t
   bool may_intersect (const hb_sparseset_t &other) const
   { return s.may_intersect (other.s); }
 
+  bool intersects (const hb_sparseset_t &other) const
+  { return s.intersects (other.s); }
+
   bool intersects (hb_codepoint_t first, hb_codepoint_t last) const
   { return s.intersects (first, last); }
 
@@ -137,11 +141,15 @@ struct hb_sparseset_t
   bool is_subset (const hb_sparseset_t &larger_set) const { return s.is_subset (larger_set.s); }
 
   void union_ (const hb_sparseset_t &other) { s.union_ (other.s); }
-  void intersect (const hb_sparseset_t &other) { s.intersect (other.s); }
+  void intersect (const hb_sparseset_t &other,
+		  hb_vector_t<unsigned> *workspace = nullptr)
+  { s.intersect (other.s, workspace); }
   void subtract (const hb_sparseset_t &other) { s.subtract (other.s); }
   void symmetric_difference (const hb_sparseset_t &other) { s.symmetric_difference (other.s); }
 
   bool next (hb_codepoint_t *codepoint) const { return s.next (codepoint); }
+  bool next_bits (hb_codepoint_t *codepoint, uint64_t *bits) const
+  { return s.next_bits (codepoint, bits); }
   bool previous (hb_codepoint_t *codepoint) const { return s.previous (codepoint); }
   bool next_range (hb_codepoint_t *first, hb_codepoint_t *last) const
   { return s.next_range (first, last); }
@@ -151,6 +159,7 @@ struct hb_sparseset_t
   { return s.next_many (codepoint, out, size); }
 
   unsigned int get_population () const { return s.get_population (); }
+  bool get_singleton (hb_codepoint_t *codepoint) const { return s.get_singleton (codepoint); }
   hb_codepoint_t get_min () const { return s.get_min (); }
   hb_codepoint_t get_max () const { return s.get_max (); }
 

@@ -694,7 +694,7 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("parent_hl_line_color", "Tree", highlight_line_color);
 			p_theme->set_color("children_hl_line_color", "Tree", relationship_line_color);
 			p_theme->set_color("drop_on_item_color", "Tree", p_config.accent_color);
-			p_theme->set_color("drop_position_color", "Tree", p_config.icon_normal_color);
+			p_theme->set_color("drop_position_color", "Tree", p_config.mono_color * Color(1, 1, 1, 0.9));
 			p_theme->set_color("guide_color", "Tree", Color(1, 1, 1, 0));
 			p_theme->set_color("scroll_hint_color", "Tree", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
 
@@ -782,7 +782,11 @@ void ThemeModern::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edit
 			p_theme->set_color("scroll_hint_color", "ItemList", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
 			p_theme->set_constant("v_separation", "ItemList", EDSCALE_RND(p_config.base_margin * 1.5));
 			p_theme->set_constant("h_separation", "ItemList", EDSCALE_RND(p_config.increased_margin + 2));
-			p_theme->set_constant("scroll_bar_h_separation", "ItemList", style_itemlist_bg->get_margin(SIDE_RIGHT));
+			p_theme->set_constant("scrollbar_margin_left", "ItemList", 0);
+			p_theme->set_constant("scrollbar_margin_top", "ItemList", 0);
+			p_theme->set_constant("scrollbar_margin_right", "ItemList", 0);
+			p_theme->set_constant("scrollbar_margin_bottom", "ItemList", 0);
+			p_theme->set_constant("scrollbar_h_separation", "ItemList", EDSCALE_RND(1));
 			p_theme->set_constant("icon_margin", "ItemList", EDSCALE_RND(p_config.increased_margin + 2));
 			p_theme->set_constant(SceneStringName(line_separation), "ItemList", p_config.separation_margin);
 			p_theme->set_constant("outline_size", "ItemList", 0);
@@ -1684,6 +1688,11 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(panel), "ScrollContainer", p_config.base_empty_style);
 		p_theme->set_stylebox("focus", "ScrollContainer", p_config.focus_style);
 
+		p_theme->set_constant("scrollbar_margin_left", "ScrollContainer", 0);
+		p_theme->set_constant("scrollbar_margin_top", "ScrollContainer", 0);
+		p_theme->set_constant("scrollbar_margin_right", "ScrollContainer", 0);
+		p_theme->set_constant("scrollbar_margin_bottom", "ScrollContainer", 0);
+
 		// Scroll hints.
 		p_theme->set_color("scroll_hint_vertical_color", "ScrollContainer", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
 		p_theme->set_color("scroll_hint_horizontal_color", "ScrollContainer", Color(0, 0, 0, p_config.dark_theme ? 1.0 : 0.5));
@@ -1710,8 +1719,8 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_type_variation("MainToolBarMargin", "MarginContainer");
 		p_theme->set_constant("margin_left", "MainToolBarMargin", EDSCALE_RND(4));
 		p_theme->set_constant("margin_right", "MainToolBarMargin", EDSCALE_RND(4));
-		p_theme->set_constant("margin_top", "MainToolBarMargin", EDSCALE_RND(p_config.base_margin * 0.5));
-		p_theme->set_constant("margin_bottom", "MainToolBarMargin", EDSCALE_RND(p_config.base_margin * 0.5));
+		p_theme->set_constant("margin_top", "MainToolBarMargin", EDSCALE);
+		p_theme->set_constant("margin_bottom", "MainToolBarMargin", EDSCALE);
 
 		// 2D and 3D contextual toolbar.
 		// Use a custom stylebox to make contextual menu items stand out from the rest.
@@ -1723,8 +1732,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("ContextualToolbar", EditorStringName(EditorStyles), toolbar_stylebox);
 
 		// Script editor.
-		p_theme->set_stylebox("ScriptEditorPanel", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(p_config.base_margin, 0, p_config.base_margin, p_config.base_margin));
-		p_theme->set_stylebox("ScriptEditorPanelFloating", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 		p_theme->set_stylebox("ScriptEditor", EditorStringName(EditorStyles), EditorThemeManager::make_empty_stylebox(0, 0, 0, 0));
 
 		// Game view.
@@ -1734,14 +1741,15 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(panel), "GamePanel", game_panel);
 
 		// Main menu.
-		p_theme->set_stylebox(CoreStringName(normal), "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("normal_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox(SceneStringName(pressed), "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("pressed_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox(SceneStringName(hover), "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("hover_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("hover_pressed", "MainScreenButton", p_config.base_empty_wide_style);
-		p_theme->set_stylebox("hover_pressed_mirrored", "MainScreenButton", p_config.base_empty_wide_style);
+		p_theme->set_color("font_selected_color", "MainScreenContainer", p_config.accent_color);
+		p_theme->set_color("font_unselected_color", "MainScreenContainer", p_config.font_color);
+		p_theme->set_color("icon_selected_color", "MainScreenContainer", p_config.accent_color);
+		p_theme->set_color("icon_unselected_color", "MainScreenContainer", p_config.icon_normal_color);
+		p_theme->set_constant("h_separation", "MainScreenContainer", 4);
+		p_theme->set_stylebox("tab_unselected", "MainScreenContainer", p_config.base_empty_wide_style);
+		p_theme->set_stylebox("tab_selected", "MainScreenContainer", p_config.base_empty_wide_style);
+		p_theme->set_stylebox("tab_hovered", "MainScreenContainer", p_config.base_empty_wide_style);
+		p_theme->set_constant("tab_separation", "MainScreenContainer", 8 * EDSCALE);
 
 		// Main screen buttons.
 		const Color mb_font_color = p_config.font_color * Color(1, 1, 1, 0.95);
@@ -1791,6 +1799,7 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		// Bottom panel.
 		Ref<StyleBoxFlat> style_bottom_panel = p_config.content_panel_style->duplicate();
 		style_bottom_panel->set_content_margin_all(p_config.tab_container_style->get_content_margin(SIDE_LEFT));
+		style_bottom_panel->set_content_margin(SIDE_BOTTOM, p_config.content_panel_style->get_content_margin(SIDE_BOTTOM));
 		style_bottom_panel->set_border_width(SIDE_BOTTOM, 0);
 		style_bottom_panel->set_corner_radius_all(EDSCALE_RND(p_config.corner_radius));
 		style_bottom_panel->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
@@ -1816,7 +1825,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox("tabbar_background", "BottomPanel", style_bottom_panel_tabbar);
 		p_theme->set_stylebox("tab_selected", "BottomPanel", bottom_panel_button_pressed);
 		p_theme->set_stylebox("tab_hovered", "BottomPanel", bottom_panel_button_hover);
-		p_theme->set_stylebox("tab_focus", "BottomPanel", p_config.base_empty_style);
 		p_theme->set_stylebox("tab_unselected", "BottomPanel", style_bottom_tab);
 		p_theme->set_color("font_unselected_color", "BottomPanel", p_config.font_color);
 		p_theme->set_color("font_hovered_color", "BottomPanel", p_config.font_hover_color);
@@ -2051,75 +2059,6 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 		p_theme->set_stylebox(SceneStringName(panel), "EditorAbout", p_config.window_complex_style);
 		p_theme->set_stylebox(SceneStringName(panel), "ThemeItemEditorDialog", p_config.window_complex_style);
 
-		// MarginContainers with negative margins, to negate borders. Used with scroll hints.
-		{
-			int panel_margin = p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
-			int margin = -panel_margin;
-
-			p_theme->set_type_variation("NoBorderHorizontal", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderHorizontal", margin);
-			p_theme->set_constant("margin_right", "NoBorderHorizontal", margin);
-
-			p_theme->set_type_variation("NoBorderHorizontalBottom", "NoBorderHorizontal");
-			p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
-
-			// Used in the asset library. Specifically, the ("bg", "AssetLib") stylebox.
-
-			margin = -p_config.base_margin * EDSCALE;
-
-			p_theme->set_type_variation("NoBorderAssetLib", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAssetLib", margin);
-			p_theme->set_constant("margin_right", "NoBorderAssetLib", margin);
-			p_theme->set_constant("margin_bottom", "NoBorderAssetLib", margin);
-
-			p_theme->set_type_variation("NoBorderAssetLibHorizontal", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAssetLibHorizontal", margin);
-			p_theme->set_constant("margin_right", "NoBorderAssetLibHorizontal", margin);
-
-			margin -= panel_margin;
-
-			// Same as above, but with the margins adapted for the project manager.
-
-			p_theme->set_type_variation("NoBorderAssetLibProjectManager", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManager", margin);
-			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManager", margin);
-			p_theme->set_constant("margin_bottom", "NoBorderAssetLibProjectManager", margin);
-
-			p_theme->set_type_variation("NoBorderAssetLibProjectManagerHorizontal", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManagerHorizontal", margin);
-			p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManagerHorizontal", margin);
-
-			int bottom_panel_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
-
-			p_theme->set_type_variation("NoBorderPanel", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderPanel", -bottom_panel_margin);
-			p_theme->set_constant("margin_right", "NoBorderPanel", -bottom_panel_margin);
-
-			p_theme->set_type_variation("NoBorderBottomPanel", "NoBorderPanel");
-			p_theme->set_constant("margin_bottom", "NoBorderBottomPanel", -bottom_panel_margin);
-
-			margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
-
-			p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
-			p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
-
-			margin = 2 * -bottom_panel_margin;
-
-			// Same as above, including the bottom.
-			p_theme->set_type_variation("NoBorderBottomWideWindow", "NoBorderHorizontalWindow");
-			p_theme->set_constant("margin_bottom", "NoBorderBottomWideWindow", margin);
-
-			// Used in the animation track editor.
-			p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
-			p_theme->set_constant("margin_left", "NoBorderAnimation", margin);
-			p_theme->set_constant("margin_right", "NoBorderAnimation", margin);
-
-			// Used in the OpenXR action map editor.
-			p_theme->set_type_variation("NoBorderOpenXR", "NoBorderAnimation");
-			p_theme->set_constant("margin_bottom", "NoBorderOpenXR", -panel_margin);
-		}
-
 		// Buttons in material previews.
 		{
 			const Color dim_light_color = p_config.icon_normal_color.darkened(0.24);
@@ -2210,6 +2149,16 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 			style_button_group->set_bg_color(p_config.surface_lower_color.lerp(p_config.mono_color_inv, 0.15).lightened(0.02));
 
 			p_theme->set_stylebox(SceneStringName(panel), "PanelContainerButtonGroup", style_button_group);
+		}
+
+		// VSeparatorButtonGroup.
+		{
+			p_theme->set_type_variation("VSeparatorButtonGroup", "VSeparator");
+
+			Ref<StyleBoxLine> style_v_separator = p_theme->get_stylebox(SNAME("separator"), SNAME("VSeparator"))->duplicate();
+			style_v_separator->set_color(p_config.base_color);
+
+			p_theme->set_stylebox("separator", "VSeparatorButtonGroup", style_v_separator);
 		}
 
 		// TreeLineEdit.
@@ -2625,6 +2574,11 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 
 		int margin = p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
 
+		p_theme->set_type_variation("AnimationTrackPanel", "PanelContainer");
+		Ref<StyleBox> panel_sb = p_theme->get_stylebox(SceneStringName(panel), SNAME("Tree"))->duplicate();
+		panel_sb->set_content_margin(SIDE_TOP, p_config.base_margin * EDSCALE);
+		p_theme->set_stylebox(SceneStringName(panel), "AnimationTrackPanel", panel_sb);
+
 		p_theme->set_type_variation("AnimationTrackMargins", "MarginContainer");
 		p_theme->set_constant("margin_left", "AnimationTrackMargins", margin);
 		p_theme->set_constant("margin_right", "AnimationTrackMargins", margin);
@@ -2949,4 +2903,74 @@ void ThemeModern::populate_editor_styles(const Ref<EditorTheme> &p_theme, Editor
 	Ref<StyleBoxFlat> tile_expand_style = p_config.base_style->duplicate();
 	tile_expand_style->set_corner_radius_all(0);
 	p_theme->set_stylebox("expand_panel", "TileSetEditor", tile_expand_style);
+
+	// MarginContainers with negative margins, to negate borders. Used with scroll hints.
+	{
+		int panel_margin = p_theme->get_stylebox(SceneStringName(panel), SNAME("PanelContainer"))->get_content_margin(SIDE_LEFT);
+		int margin = -panel_margin;
+
+		p_theme->set_type_variation("NoBorderHorizontal", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderHorizontal", margin);
+		p_theme->set_constant("margin_right", "NoBorderHorizontal", margin);
+
+		p_theme->set_type_variation("NoBorderHorizontalBottom", "NoBorderHorizontal");
+		p_theme->set_constant("margin_bottom", "NoBorderHorizontalBottom", margin);
+
+		// Used in the asset library. Specifically, the ("bg", "AssetLib") stylebox.
+
+		margin = -p_config.base_margin * EDSCALE;
+
+		p_theme->set_type_variation("NoBorderAssetLib", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAssetLib", margin);
+		p_theme->set_constant("margin_right", "NoBorderAssetLib", margin);
+		p_theme->set_constant("margin_bottom", "NoBorderAssetLib", margin);
+
+		p_theme->set_type_variation("NoBorderAssetLibHorizontal", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAssetLibHorizontal", margin);
+		p_theme->set_constant("margin_right", "NoBorderAssetLibHorizontal", margin);
+
+		margin -= panel_margin;
+
+		// Same as above, but with the margins adapted for the project manager.
+
+		p_theme->set_type_variation("NoBorderAssetLibProjectManager", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManager", margin);
+		p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManager", margin);
+		p_theme->set_constant("margin_bottom", "NoBorderAssetLibProjectManager", margin);
+
+		p_theme->set_type_variation("NoBorderAssetLibProjectManagerHorizontal", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAssetLibProjectManagerHorizontal", margin);
+		p_theme->set_constant("margin_right", "NoBorderAssetLibProjectManagerHorizontal", margin);
+
+		int bottom_panel_margin = p_theme->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles))->get_content_margin(SIDE_LEFT);
+
+		p_theme->set_type_variation("NoBorderPanel", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderPanel", -bottom_panel_margin);
+		p_theme->set_constant("margin_right", "NoBorderPanel", -bottom_panel_margin);
+
+		p_theme->set_type_variation("NoBorderBottomPanel", "NoBorderPanel");
+		p_theme->set_constant("margin_bottom", "NoBorderBottomPanel", -bottom_panel_margin);
+
+		margin = -p_theme->get_stylebox(SceneStringName(panel), SNAME("AcceptDialog"))->get_content_margin(SIDE_LEFT);
+
+		p_theme->set_type_variation("NoBorderHorizontalWindow", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderHorizontalWindow", margin);
+		p_theme->set_constant("margin_right", "NoBorderHorizontalWindow", margin);
+
+		margin = 2 * -bottom_panel_margin;
+
+		// Same as above, including the bottom.
+		p_theme->set_type_variation("NoBorderBottomWideWindow", "NoBorderHorizontalWindow");
+		p_theme->set_constant("margin_bottom", "NoBorderBottomWideWindow", margin);
+
+		// Used in the animation track editor.
+		p_theme->set_type_variation("NoBorderAnimation", "MarginContainer");
+		p_theme->set_constant("margin_left", "NoBorderAnimation", margin);
+		p_theme->set_constant("margin_right", "NoBorderAnimation", margin);
+		p_theme->set_constant("margin_bottom", "NoBorderAnimation", -p_theme->get_stylebox(SceneStringName(panel), SNAME("AnimationTrackPanel"))->get_content_margin(SIDE_BOTTOM));
+
+		// Used in the OpenXR action map editor.
+		p_theme->set_type_variation("NoBorderOpenXR", "NoBorderAnimation");
+		p_theme->set_constant("margin_bottom", "NoBorderOpenXR", -panel_margin);
+	}
 }

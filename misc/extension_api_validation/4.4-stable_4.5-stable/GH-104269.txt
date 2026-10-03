@@ -1,5 +1,3 @@
-GH-104269
----------
 Validate extension JSON: API was removed: classes/RenderingServer/methods/instance_set_interpolated
 Validate extension JSON: API was removed: classes/RenderingServer/methods/instance_reset_physics_interpolation
 

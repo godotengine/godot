@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -76,9 +76,7 @@ static bool HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
                 child = device->children[i];
                 child->driver->CloseJoystick(child, joystick);
             }
-            if (serial) {
-                SDL_free(serial);
-            }
+            SDL_free(serial);
             return false;
         }
 
@@ -102,9 +100,7 @@ static bool HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     }
 
     // Update the joystick with the combined serial numbers
-    if (joystick->serial) {
-        SDL_free(joystick->serial);
-    }
+    SDL_free(joystick->serial);
     joystick->serial = serial;
 
     return true;

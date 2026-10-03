@@ -115,8 +115,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 		}
 	} else {
 		// Update dirty cells.
-		for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-			CellData &cell_data = *cell_data_list_element->self();
+		for (CellData &cell_data : dirty.cell_list) {
 			quadrants_to_updates.insert(_coords_to_quadrant_coords(cell_data.coords, TILE_MAP_DEBUG_QUADRANT_SIZE));
 #ifndef PHYSICS_2D_DISABLED
 			// Physics quadrants are drawn from their origin.
@@ -147,8 +146,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 			}
 		}
 	} else {
-		for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-			CellData &cell_data = *cell_data_list_element->self();
+		for (CellData &cell_data : dirty.cell_list) {
 			Ref<DebugQuadrant> debug_quadrant = debug_quadrant_map[_coords_to_quadrant_coords(cell_data.coords, TILE_MAP_DEBUG_QUADRANT_SIZE)];
 			if (!cell_data.debug_quadrant_list_element.in_list()) {
 				debug_quadrant->cells.add(&cell_data.debug_quadrant_list_element);
@@ -183,8 +181,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 #endif // PHYSICS_2D_DISABLED
 
 		// Draw debug info.
-		for (SelfList<CellData> *cell_data_list_element = debug_quadrant->cells.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-			CellData &cell_data = *cell_data_list_element->self();
+		for (CellData &cell_data : debug_quadrant->cells) {
 			if (cell_data.cell.source_id != TileSet::INVALID_SOURCE) {
 				_rendering_draw_cell_debug(ci, quadrant_pos, cell_data);
 #ifndef NAVIGATION_2D_DISABLED
@@ -208,6 +205,12 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	_debug_was_cleaned_up = false;
 }
 
+void TileMapLayer::_physics_debug_changed() {
+#ifndef PHYSICS_2D_DISABLED
+	dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE] = true;
+	_queue_internal_update();
+#endif
+}
 #endif // DEBUG_ENABLED
 
 Color TileMapLayer::_highlight_color(const Color &p_modulate) const {
@@ -277,8 +280,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 			}
 		} else {
 			// Update dirty cells.
-			for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-				CellData &cell_data = *cell_data_list_element->self();
+			for (CellData &cell_data : dirty.cell_list) {
 				_rendering_quadrants_update_cell(cell_data, dirty_rendering_quadrant_list);
 			}
 		}
@@ -292,8 +294,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 			// Check if the quadrant has a tile.
 			bool has_a_tile = false;
-			for (SelfList<CellData> *cell_data_list_element = rendering_quadrant->cells.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-				CellData &cell_data = *cell_data_list_element->self();
+			for (const CellData &cell_data : rendering_quadrant->cells) {
 				if (cell_data.cell.source_id != TileSet::INVALID_SOURCE) {
 					has_a_tile = true;
 					break;
@@ -321,9 +322,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 				int prev_z_index = 0;
 				RID prev_ci;
 
-				for (SelfList<CellData> *cell_data_quadrant_list_element = rendering_quadrant->cells.first(); cell_data_quadrant_list_element; cell_data_quadrant_list_element = cell_data_quadrant_list_element->next()) {
-					CellData &cell_data = *cell_data_quadrant_list_element->self();
-
+				for (const CellData &cell_data : rendering_quadrant->cells) {
 					TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(*tile_set->get_source(cell_data.cell.source_id));
 
 					// Get the tile data.
@@ -481,8 +480,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 			}
 		} else {
 			// Update dirty cells.
-			for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-				CellData &cell_data = *cell_data_list_element->self();
+			for (CellData &cell_data : dirty.cell_list) {
 				_rendering_occluders_update_cell(cell_data);
 			}
 		}
@@ -802,8 +800,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 			}
 		} else {
 			// Update dirty cells.
-			for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-				CellData &cell_data = *cell_data_list_element->self();
+			for (CellData &cell_data : dirty.cell_list) {
 				_physics_quadrants_update_cell(cell_data, dirty_physics_quadrant_list);
 			}
 		}
@@ -816,8 +813,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 
 			// Check if the quadrant has a tile.
 			bool has_a_tile = false;
-			for (SelfList<CellData> *cell_data_list_element = physics_quadrant->cells.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-				CellData &cell_data = *cell_data_list_element->self();
+			for (const CellData &cell_data : physics_quadrant->cells) {
 				if (cell_data.cell.source_id != TileSet::INVALID_SOURCE) {
 					has_a_tile = true;
 					break;
@@ -849,9 +845,7 @@ void TileMapLayer::_physics_update(bool p_force_cleanup) {
 					uint32_t physics_mask = tile_set->get_physics_layer_collision_mask(tile_set_physics_layer);
 
 					// Merge polygons together for each quadrant.
-					for (SelfList<CellData> *cell_data_quadrant_list_element = physics_quadrant->cells.first(); cell_data_quadrant_list_element; cell_data_quadrant_list_element = cell_data_quadrant_list_element->next()) {
-						CellData &cell_data = *cell_data_quadrant_list_element->self();
-
+					for (const CellData &cell_data : physics_quadrant->cells) {
 						TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(*tile_set->get_source(cell_data.cell.source_id));
 
 						// Get the tile data.
@@ -1095,7 +1089,7 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 	bool show_collision = false;
 	switch (collision_visibility_mode) {
 		case TileMapLayer::DEBUG_VISIBILITY_MODE_DEFAULT:
-			show_collision = !Engine::get_singleton()->is_editor_hint() && get_tree()->is_debugging_collisions_hint();
+			show_collision = !Engine::get_singleton()->is_editor_hint() && PhysicsServer2D::get_singleton()->debug_is_enabled();
 			break;
 		case TileMapLayer::DEBUG_VISIBILITY_MODE_FORCE_HIDE:
 			show_collision = false;
@@ -1343,8 +1337,7 @@ void TileMapLayer::_navigation_update(bool p_force_cleanup) {
 			}
 		} else {
 			// Update dirty cells.
-			for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-				CellData &cell_data = *cell_data_list_element->self();
+			for (CellData &cell_data : dirty.cell_list) {
 				_navigation_update_cell(cell_data);
 			}
 		}
@@ -1592,8 +1585,7 @@ void TileMapLayer::_scenes_update(bool p_force_cleanup) {
 			}
 		} else {
 			// Update dirty cells.
-			for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-				CellData &cell_data = *cell_data_list_element->self();
+			for (CellData &cell_data : dirty.cell_list) {
 				_scenes_update_cell(cell_data);
 			}
 		}
@@ -1748,8 +1740,7 @@ void TileMapLayer::_build_runtime_update_tile_data(bool p_force_cleanup) {
 					_build_runtime_update_tile_data_for_cell(E.value, use_tilemap_for_runtime, true);
 				}
 			} else {
-				for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-					CellData &cell_data = *cell_data_list_element->self();
+				for (CellData &cell_data : dirty.cell_list) {
 					_build_runtime_update_tile_data_for_cell(cell_data, use_tilemap_for_runtime);
 				}
 			}
@@ -1816,9 +1807,8 @@ void TileMapLayer::_clear_runtime_update_tile_data() {
 		}
 		_runtime_update_needs_all_cells_cleaned_up = false;
 	} else {
-		for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-			CellData &r_cell_data = *cell_data_list_element->self();
-			_clear_runtime_update_tile_data_for_cell(r_cell_data);
+		for (CellData &cell_data : dirty.cell_list) {
+			_clear_runtime_update_tile_data_for_cell(cell_data);
 		}
 	}
 }
@@ -1841,8 +1831,7 @@ void TileMapLayer::_update_cells_callback(bool p_force_cleanup) {
 
 	// List all the dirty cell's positions to notify script of cell updates.
 	TypedArray<Vector2i> dirty_cell_positions;
-	for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-		CellData &cell_data = *cell_data_list_element->self();
+	for (const CellData &cell_data : dirty.cell_list) {
 		dirty_cell_positions.push_back(cell_data.coords);
 	}
 
@@ -2088,8 +2077,7 @@ void TileMapLayer::_internal_update(bool p_force_cleanup) {
 
 	// List the cells to delete definitely.
 	Vector<Vector2i> to_delete;
-	for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
-		CellData &cell_data = *cell_data_list_element->self();
+	for (const CellData &cell_data : dirty.cell_list) {
 		// Select the cell from tile_map if it is invalid.
 		if (cell_data.cell.source_id == TileSet::INVALID_SOURCE) {
 			to_delete.push_back(cell_data.coords);
@@ -2169,11 +2157,6 @@ void TileMapLayer::_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			dirty.flags[DIRTY_FLAGS_LAYER_VISIBILITY] = true;
-			_queue_internal_update();
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			dirty.flags[DIRTY_FLAGS_LAYER_COLLISION_VISIBILITY_MODE] = true;
 			_queue_internal_update();
 		} break;
 	}
@@ -3610,6 +3593,10 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 
 TileMapLayer::TileMapLayer() {
 	set_notify_transform(true);
+
+#if defined(DEBUG_ENABLED) && !defined(PHYSICS_2D_DISABLED)
+	PhysicsServer2D::get_singleton()->connect("_debug_changed", callable_mp(this, &TileMapLayer::_physics_debug_changed));
+#endif
 }
 
 TileMapLayer::~TileMapLayer() {

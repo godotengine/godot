@@ -33,6 +33,7 @@
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
 #include "../gdscript_compiler.h"
+#include "../gdscript_linter.h"
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer_buffer.h"
 
@@ -131,9 +132,8 @@ void finish_language() {
 
 StringName GDScriptTestRunner::test_function_name;
 
-GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_language, bool p_print_filenames, bool p_use_binary_tokens) {
+GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_print_filenames, bool p_use_binary_tokens) {
 	test_function_name = StringName("test");
-	do_init_languages = p_init_language;
 	print_filenames = p_print_filenames;
 	binary_tokens = p_use_binary_tokens;
 
@@ -142,9 +142,7 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 		source_dir += "/";
 	}
 
-	if (do_init_languages) {
-		init_language(p_source_dir);
-	}
+	init_language(p_source_dir);
 
 #ifdef DEBUG_ENABLED
 	// Set all warning levels to "Warn" in order to test them properly, even the ones that default to error.
@@ -170,9 +168,7 @@ GDScriptTestRunner::GDScriptTestRunner(const String &p_source_dir, bool p_init_l
 
 GDScriptTestRunner::~GDScriptTestRunner() {
 	test_function_name = StringName();
-	if (do_init_languages) {
-		finish_language();
-	}
+	finish_language();
 }
 
 #ifndef DEBUG_ENABLED
@@ -412,28 +408,6 @@ GDScriptTest::GDScriptTest(const String &p_source_path, const String &p_output_p
 	_error_handler.errfunc = error_handler;
 }
 
-void GDScriptTestRunner::handle_cmdline() {
-	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
-
-	for (List<String>::Element *E = cmdline_args.front(); E; E = E->next()) {
-		String &cmd = E->get();
-		if (cmd == "--gdscript-generate-tests") {
-			String path;
-			if (E->next()) {
-				path = E->next()->get();
-			} else {
-				path = "modules/gdscript/tests/scripts";
-			}
-
-			GDScriptTestRunner runner(path, false, cmdline_args.find("--print-filenames") != nullptr);
-
-			bool completed = runner.generate_outputs();
-			int failed = completed ? 0 : -1;
-			exit(failed);
-		}
-	}
-}
-
 void GDScriptTest::enable_stdout() {
 	// TODO: this could likely be handled by doctest or `tests/test_macros.h`.
 	OS::get_singleton()->set_stdout_enabled(true);
@@ -580,6 +554,14 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	// Test type-checking.
 	GDScriptAnalyzer analyzer(&parser);
 	err = analyzer.analyze();
+
+#ifdef DEBUG_ENABLED
+	if (err == OK) {
+		GDScriptLinter linter(parser);
+		err = linter.lint();
+	}
+#endif
+
 	if (err != OK) {
 		enable_stdout();
 		result.status = GDTEST_ANALYZER_ERROR;
@@ -671,7 +653,7 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 	}
 
 	// Create object instance for test.
-	Object *obj = ClassDB::instantiate(script->get_native()->get_name());
+	Object *obj = ClassDB::instantiate(script->get_instance_base_type());
 	Ref<RefCounted> obj_ref;
 	if (obj->is_ref_counted()) {
 		obj_ref = Ref<RefCounted>(Object::cast_to<RefCounted>(obj));

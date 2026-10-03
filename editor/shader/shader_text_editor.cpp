@@ -916,7 +916,7 @@ static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName
 
 static String complete_from_path;
 
-static void _complete_include_paths_search(EditorFileSystemDirectory *p_efsd, List<ScriptLanguage::CodeCompletionOption> *r_options) {
+static void _complete_include_paths_search(EditorFileSystemDirectory *p_efsd, List<EditorLanguage::CompletionOption> *r_options) {
 	if (!p_efsd) {
 		return;
 	}
@@ -926,7 +926,7 @@ static void _complete_include_paths_search(EditorFileSystemDirectory *p_efsd, Li
 			if (path.begins_with(complete_from_path)) {
 				path = path.replace_first(complete_from_path, "");
 			}
-			r_options->push_back(ScriptLanguage::CodeCompletionOption(path, ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH));
+			r_options->push_back(EditorLanguage::CompletionOption(path, EditorLanguage::CompletionKind::FILE_PATH));
 		}
 	}
 	for (int j = 0; j < p_efsd->get_subdir_count(); j++) {
@@ -934,18 +934,18 @@ static void _complete_include_paths_search(EditorFileSystemDirectory *p_efsd, Li
 	}
 }
 
-static void _complete_include_paths(List<ScriptLanguage::CodeCompletionOption> *r_options) {
+static void _complete_include_paths(List<EditorLanguage::CompletionOption> *r_options) {
 	_complete_include_paths_search(EditorFileSystem::get_singleton()->get_filesystem(), r_options);
 }
 
-void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void ShaderTextEditor::_code_complete_script(const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) {
 	CodeEdit *editor = code_editor->get_text_editor();
 	if (editor->is_in_comment(editor->get_caret_line(), editor->get_caret_column()) != -1) {
 		return;
 	}
 
-	List<ScriptLanguage::CodeCompletionOption> pp_options;
-	List<ScriptLanguage::CodeCompletionOption> pp_defines;
+	List<EditorLanguage::CompletionOption> pp_options;
+	List<EditorLanguage::CompletionOption> pp_defines;
 	ShaderPreprocessor preprocessor;
 	String code;
 	String resource_path = edited_res->get_path();
@@ -953,10 +953,10 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	if (!complete_from_path.ends_with("/")) {
 		complete_from_path += "/";
 	}
-	preprocessor.preprocess(p_code, resource_path, code, nullptr, nullptr, nullptr, nullptr, &pp_options, &pp_defines, _complete_include_paths);
+	preprocessor.preprocess_for_editor(p_code, resource_path, code, nullptr, nullptr, nullptr, &pp_options, &pp_defines, _complete_include_paths);
 	complete_from_path = String();
 	if (pp_options.size()) {
-		for (const ScriptLanguage::CodeCompletionOption &E : pp_options) {
+		for (const EditorLanguage::CompletionOption &E : pp_options) {
 			r_options->push_back(E);
 		}
 		return;
@@ -980,7 +980,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 
 	sl.complete(code, comp_info, r_options, calltip);
 	if (sl.get_completion_type() == ShaderLanguage::COMPLETION_IDENTIFIER) {
-		for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
+		for (const EditorLanguage::CompletionOption &E : pp_defines) {
 			r_options->push_back(E);
 		}
 	}
@@ -1077,7 +1077,7 @@ void ShaderTextEditor::_validate_script() {
 		code_editor->get_text_editor()->set_draw_breakpoints_gutter(false);
 	}
 	String filename = edited_res->get_path();
-	last_compile_result = preprocessor.preprocess(code, filename, code_pp, &error_pp, &err_positions, &regions);
+	last_compile_result = preprocessor.preprocess_for_editor(code, filename, code_pp, &error_pp, &err_positions, &regions);
 
 	for (int i = 0; i < code_editor->get_text_editor()->get_line_count(); i++) {
 		code_editor->get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));

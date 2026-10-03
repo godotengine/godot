@@ -42,6 +42,8 @@
 /**
  * Array-like container with unique ownership.
  *
+ * Elements are relocated by naive memory moves; they must not store their own address (see GH-100509).
+ *
  * Core container guidance:
  * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  *
@@ -76,6 +78,16 @@ private:
 		}
 	}
 
+	// Can't use `_resize(0)`, since it requires a no-arg-constructor even if it wouldn't be called.
+	void _clear() {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
+			for (U i = 0; i < count; i++) {
+				data[i].~T();
+			}
+		}
+		count = 0;
+	}
+
 public:
 	_FORCE_INLINE_ T *ptr() _LIFETIME_BOUND_ { return data; }
 	_FORCE_INLINE_ const T *ptr() const _LIFETIME_BOUND_ { return data; }
@@ -84,13 +96,31 @@ public:
 	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return Span(data, count); }
 	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return span(); }
 
-	// Must take a copy instead of a reference (see GH-31736).
-	_FORCE_INLINE_ void push_back(T p_elem) {
+	// Overload for lvalues (copies).
+	_FORCE_INLINE_ void push_back(const T &p_elem) {
 		if (unlikely(count == capacity)) {
+			// Must take a copy instead of a reference (see GH-31736).
+			T local_copy(p_elem);
 			reserve(count + 1);
+			memnew_placement(&data[count++], T(std::move(local_copy)));
+		} else {
+			memnew_placement(&data[count++], T(p_elem));
 		}
+	}
 
-		memnew_placement(&data[count++], T(std::move(p_elem)));
+	// Overload for rvalues (moves).
+	_FORCE_INLINE_ void push_back(T &&p_elem) {
+		if (unlikely(count == capacity)) {
+			// STL states that p_elem should never be a self-insertion:
+			// i.e. vec.push_back(std::move(vec[0]));
+			// However for safety, and compatibility we can choose to make a copy
+			// here too.
+			T local_copy(std::move(p_elem));
+			reserve(count + 1);
+			memnew_placement(&data[count++], T(std::move(local_copy)));
+		} else {
+			memnew_placement(&data[count++], T(std::move(p_elem)));
+		}
 	}
 
 	void remove_at(U p_index) {
@@ -156,7 +186,7 @@ public:
 	[[deprecated("Use reverse() instead")]] void invert() { reverse(); }
 #endif
 
-	_FORCE_INLINE_ void clear() { resize(0); }
+	_FORCE_INLINE_ void clear() { _clear(); }
 	_FORCE_INLINE_ void reset() {
 		clear();
 		if (data) {

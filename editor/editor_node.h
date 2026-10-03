@@ -42,6 +42,9 @@ typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
+#ifndef ANDROID_ENABLED
+class AndroidSDKManager;
+#endif
 class AcceptDialog;
 class BoxContainer;
 class ColorPicker;
@@ -173,8 +176,9 @@ public:
 		PROJECT_VERSION_CONTROL,
 		PROJECT_EXPORT,
 		PROJECT_PACK_AS_ZIP,
-		PROJECT_INSTALL_ANDROID_SOURCE,
+		PROJECT_SETUP_ANDROID_BUILD,
 		PROJECT_OPEN_USER_DATA_FOLDER,
+		PROJECT_DOWNLOAD_SOURCE, // Web editor only
 		PROJECT_RELOAD_CURRENT_PROJECT,
 		PROJECT_QUIT_TO_PROJECT_MANAGER,
 
@@ -289,7 +293,6 @@ private:
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
 	LocalVector<String> pending_addons;
 	HashMap<ObjectID, HashSet<EditorPlugin *>> active_plugins;
-	bool is_main_screen_editing = false;
 
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
@@ -373,7 +376,7 @@ private:
 
 	PopupMenu *recent_scenes = nullptr;
 	String _recent_scene;
-	List<String> prev_closed_scenes;
+	LocalVector<String> prev_closed_scenes;
 	String defer_load_scene;
 	Node *_last_instantiated_scene = nullptr;
 
@@ -436,7 +439,7 @@ private:
 	EditorBottomPanel *bottom_panel = nullptr;
 
 	Tree *disk_changed_list = nullptr;
-	LocalVector<String> disk_changed_scenes;
+	HashSet<String> disk_changed_scenes;
 	bool disk_changed_project = false;
 	ConfirmationDialog *disk_changed = nullptr;
 	ConfirmationDialog *project_data_missing = nullptr;
@@ -500,6 +503,10 @@ private:
 
 	bool unfocused_low_processor_usage_mode_enabled = true;
 
+#ifndef ANDROID_ENABLED
+	AndroidSDKManager *android_sdk_manager = nullptr;
+#endif
+
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
 	static int build_callback_count;
@@ -552,6 +559,8 @@ private:
 	void _android_export_preset_selected(int p_index);
 	void _android_install_build_template();
 	void _android_explore_build_templates();
+	void _android_remove_build_templates(bool p_prompt_for_removal);
+	void _setup_android_build(bool p_confirmed);
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
@@ -1045,6 +1054,8 @@ public:
 	void redo();
 
 	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr);
+
+	Error setup_android_build_template(const Ref<EditorExportPreset> &p_preset, bool p_confirmed);
 
 	EditorNode();
 	~EditorNode();
