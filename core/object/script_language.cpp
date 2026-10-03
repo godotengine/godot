@@ -707,21 +707,30 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 	return false;
 }
 
-MethodInfo PlaceHolderScriptInstance::get_method_info(const StringName &p_method) const {
-	MethodInfo ret;
+MethodInfo PlaceHolderScriptInstance::get_method_info(const StringName &p_method, bool *r_is_valid) const {
 	if (script->is_placeholder_fallback_enabled()) {
-		return ret;
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return MethodInfo();
 	}
 
 	Ref<Script> scr = script;
 	while (scr.is_valid()) {
-		ret = scr->get_method_info(p_method);
+		MethodInfo ret = scr->get_method_info(p_method);
 		if (!(ret == MethodInfo())) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
 			return ret;
 		}
 		scr = scr->get_base_script();
 	}
-	return ret;
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return MethodInfo();
 }
 
 Variant PlaceHolderScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {

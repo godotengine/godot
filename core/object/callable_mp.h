@@ -97,7 +97,7 @@ public:
 		return sizeof...(P);
 	}
 
-	virtual void get_method_info(MethodInfo &r_method_info) const {
+	virtual bool get_method_info(MethodInfo &r_method_info) const override {
 #ifndef DEBUG_ENABLED
 		MethodInfo mi;
 
@@ -117,9 +117,10 @@ public:
 		mi.default_arguments.clear();
 
 		r_method_info = mi;
+		return true;
 #else
 		StringName method_name = get_method();
-		ERR_FAIL_COND(method_name.is_empty());
+		ERR_FAIL_COND_V(method_name.is_empty(), false);
 
 		Vector<String> split = method_name.string().split("::");
 		if (split[split.size() - 1].begins_with("&")) {
@@ -129,9 +130,11 @@ public:
 		}
 
 		Object *obj = ObjectDB::get_instance(ObjectID(data.object_id));
-		ERR_FAIL_NULL_MSG(obj, "Invalid Object id '" + uitos(data.object_id) + "', can't get method info.");
+		ERR_FAIL_NULL_V_MSG(obj, false, "Invalid Object id '" + uitos(data.object_id) + "', can't get method info.");
 
-		r_method_info = obj->get_method_info(method_name);
+		bool valid;
+		r_method_info = obj->get_method_info(method_name, &valid);
+		return valid;
 #endif
 	}
 
@@ -204,7 +207,7 @@ public:
 		return sizeof...(P);
 	}
 
-	virtual void get_method_info(MethodInfo &r_method_info) const override {
+	virtual bool get_method_info(MethodInfo &r_method_info) const override {
 		MethodInfo mi;
 
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {
@@ -225,6 +228,7 @@ public:
 		mi.flags |= METHOD_FLAGS_DEFAULT | METHOD_FLAG_CONST;
 
 		r_method_info = mi;
+		return true;
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
@@ -301,7 +305,7 @@ public:
 		return sizeof...(P);
 	}
 
-	virtual void get_method_info(MethodInfo &r_method_info) const override {
+	virtual bool get_method_info(MethodInfo &r_method_info) const override {
 		MethodInfo mi;
 
 		for (uint32_t i = 0; i < sizeof...(P); ++i) {
@@ -322,6 +326,7 @@ public:
 		mi.flags |= METHOD_FLAGS_DEFAULT | METHOD_FLAG_STATIC;
 
 		r_method_info = mi;
+		return true;
 	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {

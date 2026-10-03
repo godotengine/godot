@@ -78,11 +78,17 @@ int VariantCallable::get_argument_count(bool &r_is_valid) const {
 	return Variant::get_builtin_method_argument_count(variant.get_type(), method);
 }
 
-void VariantCallable::get_method_info(MethodInfo &r_method_info) const {
+bool VariantCallable::get_method_info(MethodInfo &r_method_info) const {
 	if (!is_valid()) {
-		return;
+		return false;
 	}
+
 	r_method_info = Variant::get_builtin_method_info(variant.get_type(), method);
+	if (r_method_info == MethodInfo()) {
+		return false;
+	}
+
+	return true;
 }
 
 void VariantCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

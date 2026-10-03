@@ -69,7 +69,7 @@ namespace Godot
         }
 
         [UnmanagedCallersOnly]
-        internal static unsafe void GetMethodInfo(IntPtr delegateGCHandle, godot_dictionary* outMethodInfoDictionary)
+        internal static unsafe godot_dictionary GetMethodInfo(IntPtr delegateGCHandle, godot_bool* outIsValid)
         {
             try
             {
@@ -77,7 +77,7 @@ namespace Godot
                 var method = @delegate?.Method;
                 if (method is null)
                 {
-                    return;
+                    return NativeFuncs.godotsharp_dictionary_new();
                 }
 
                 var methodInfo = new Collections.Dictionary();
@@ -122,13 +122,12 @@ namespace Godot
                 flags |= method.IsAbstract ? MethodFlags.VirtualRequired : 0;
                 methodInfo.Add("flags", (int)flags);
 
-                *outMethodInfoDictionary = NativeFuncs.godotsharp_dictionary_new_copy(
-                    (godot_dictionary)methodInfo.NativeValue);
+                return NativeFuncs.godotsharp_dictionary_new_copy((godot_dictionary)methodInfo.NativeValue);
             }
             catch (Exception e)
             {
                 ExceptionUtils.LogException(e);
-                return;
+                return NativeFuncs.godotsharp_dictionary_new();
             }
         }
 

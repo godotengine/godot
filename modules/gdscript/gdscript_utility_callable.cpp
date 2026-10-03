@@ -95,18 +95,23 @@ int GDScriptUtilityCallable::get_argument_count(bool &r_is_valid) const {
 	ERR_FAIL_V_MSG(0, "Invalid type.");
 }
 
-void GDScriptUtilityCallable::get_method_info(MethodInfo &r_method_info) const {
+bool GDScriptUtilityCallable::get_method_info(MethodInfo &r_method_info) const {
 	switch (type) {
 		case TYPE_INVALID:
 			r_method_info = MethodInfo();
-			break;
+			return false;
 		case TYPE_GLOBAL:
 			r_method_info = Variant::get_utility_function_info(function_name);
-			break;
+			return true;
 		case TYPE_GDSCRIPT:
 			r_method_info = GDScriptUtilityFunctions::get_function_info(function_name);
-			break;
+			if (!(r_method_info == MethodInfo())) {
+				return true;
+			}
 	}
+
+	r_method_info = MethodInfo();
+	return false;
 }
 
 void GDScriptUtilityCallable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {

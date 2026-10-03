@@ -98,8 +98,8 @@ int CallableCustomBind::get_argument_count(bool &r_is_valid) const {
 	}
 	return 0;
 }
-void CallableCustomBind::get_method_info(MethodInfo &r_method_info) const {
-	callable.get_method_info_ref(r_method_info);
+bool CallableCustomBind::get_method_info(MethodInfo &r_method_info) const {
+	return callable.get_method_info_ref(r_method_info);
 }
 
 int CallableCustomBind::get_bound_arguments_count() const {
@@ -239,8 +239,8 @@ int CallableCustomUnbind::get_argument_count(bool &r_is_valid) const {
 	return 0;
 }
 
-void CallableCustomUnbind::get_method_info(MethodInfo &r_method_info) const {
-	callable.get_method_info_ref(r_method_info);
+bool CallableCustomUnbind::get_method_info(MethodInfo &r_method_info) const {
+	return callable.get_method_info_ref(r_method_info);
 }
 
 int CallableCustomUnbind::get_bound_arguments_count() const {

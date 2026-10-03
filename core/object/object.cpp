@@ -811,18 +811,30 @@ int Object::get_method_argument_count(const StringName &p_method, bool *r_is_val
 }
 
 Dictionary Object::_get_method_info_bind(const StringName &p_name) const {
-	return get_method_info(p_name).operator Dictionary();
+	bool valid = false;
+	MethodInfo mi = get_method_info(p_name, &valid);
+	if (valid) {
+		return mi.operator Dictionary();
+	}
+	return Dictionary();
 }
 
-MethodInfo Object::get_method_info(const StringName &p_method) const {
+MethodInfo Object::get_method_info(const StringName &p_method, bool *r_is_valid) const {
 	MethodInfo mi;
 	if (p_method == CoreStringName(free_)) {
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
 		return mi;
 	}
 
 	if (script_instance) {
-		mi = script_instance->get_method_info(p_method);
-		if (!(mi == MethodInfo())) {
+		bool valid = false;
+		mi = script_instance->get_method_info(p_method, &valid);
+		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
 			return mi;
 		}
 	}
@@ -830,6 +842,9 @@ MethodInfo Object::get_method_info(const StringName &p_method) const {
 	{
 		bool valid = ClassDB::get_method_info(get_class_name(), p_method, &mi);
 		if (valid) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
 			return mi;
 		}
 	}
@@ -838,11 +853,17 @@ MethodInfo Object::get_method_info(const StringName &p_method) const {
 	while (scr != nullptr) {
 		mi = scr->get_method_info(p_method);
 		if (!(mi == MethodInfo())) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
 			return mi;
 		}
 		scr = scr->get_base_script().ptr();
 	}
 
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
 	return mi;
 }
 

@@ -114,7 +114,7 @@ public:
 	int get_bound_arguments_count() const;
 	void get_bound_arguments_ref(Vector<Variant> &r_arguments) const; // Internal engine use, the exposed one is below.
 	Array get_bound_arguments() const;
-	void get_method_info_ref(MethodInfo &r_method_info) const; // Internal engine use, the exposed one is below.
+	bool get_method_info_ref(MethodInfo &r_method_info) const; // Internal engine use, the exposed one is below.
 	Dictionary get_method_info() const;
 	int get_unbound_arguments_count() const;
 
@@ -167,7 +167,7 @@ public:
 	virtual int get_argument_count(bool &r_is_valid) const;
 	virtual int get_bound_arguments_count() const;
 	virtual void get_bound_arguments(Vector<Variant> &r_arguments) const;
-	virtual void get_method_info(MethodInfo &r_method_info) const;
+	virtual bool get_method_info(MethodInfo &r_method_info) const;
 	virtual int get_unbound_arguments_count() const;
 
 	CallableCustom();

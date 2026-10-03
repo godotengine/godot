@@ -1761,22 +1761,30 @@ int CSharpInstance::get_method_argument_count(const StringName &p_method, bool *
 	return 0;
 }
 
-MethodInfo CSharpInstance::get_method_info(const StringName &p_method) const {
-	MethodInfo mi;
+MethodInfo CSharpInstance::get_method_info(const StringName &p_method, bool *r_is_valid) const {
 	if (!script->is_script_valid() || !script->valid) {
-		return mi;
+		if (r_is_valid) {
+			*r_is_valid = false;
+		}
+		return MethodInfo();
 	}
 
 	const CSharpScript *top = script.ptr();
 	while (top != nullptr) {
-		mi = top->get_method_info(p_method);
+		MethodInfo mi = top->get_method_info(p_method);
 		if (!(mi == MethodInfo())) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
 			return mi;
 		}
 		top = top->base_script.ptr();
 	}
 
-	return mi;
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return MethodInfo();
 }
 
 Variant CSharpInstance::_callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) const {

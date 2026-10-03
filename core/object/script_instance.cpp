@@ -54,19 +54,24 @@ int ScriptInstance::get_method_argument_count(const StringName &p_method, bool *
 	return 0;
 }
 
-MethodInfo ScriptInstance::get_method_info(const StringName &p_method) const {
+MethodInfo ScriptInstance::get_method_info(const StringName &p_method, bool *r_is_valid) const {
 	// Default implementation simply traverses hierarchy.
-	MethodInfo mi;
-
 	Ref<Script> script = get_script();
 	while (script.is_valid()) {
-		mi = script->get_method_info(p_method);
+		MethodInfo mi = script->get_method_info(p_method);
 		if (!(mi == MethodInfo())) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
 			return mi;
 		}
 		script = script->get_base_script();
 	}
-	return mi;
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return MethodInfo();
 }
 
 Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
