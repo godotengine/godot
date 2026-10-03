@@ -617,6 +617,7 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	bool _is_class_bind_compat_118582(const String &p_name) const;
+	Error _connect_bind_compat_124187(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
 #endif
 
 public: // Should be protected, but bug in clang++.
@@ -788,7 +789,7 @@ public:
 	DEBUG_VIRTUAL uint32_t get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const;
 	DEBUG_VIRTUAL void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
-	DEBUG_VIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0);
+	DEBUG_VIRTUAL Error connect(const StringName &p_signal, const Callable &p_callable, BitField<Object::ConnectFlags> p_flags = 0);
 	DEBUG_VIRTUAL void disconnect(const StringName &p_signal, const Callable &p_callable);
 	DEBUG_VIRTUAL bool is_connected(const StringName &p_signal, const Callable &p_callable) const;
 	DEBUG_VIRTUAL bool has_connections(const StringName &p_signal) const;

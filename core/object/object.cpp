@@ -1582,7 +1582,7 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 	}
 }
 
-Error Object::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
+Error Object::connect(const StringName &p_signal, const Callable &p_callable, BitField<Object::ConnectFlags> p_flags) {
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot connect to '%s': the provided callable is null.", p_signal));
 	Object *target_object = p_callable.get_object();
 	ObjectSignalLock signal_lock(this, target_object);
