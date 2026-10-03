@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_animation)
 
 #include "scene/resources/animation.h"
+#include "tests/signal_watcher.h"
 
 namespace TestAnimation {
 
@@ -41,6 +42,29 @@ TEST_CASE("[Animation] Empty animation getters") {
 
 	CHECK(animation->get_length() == doctest::Approx(real_t(1.0)));
 	CHECK(animation->get_step() == doctest::Approx(real_t(1.0 / 30)));
+}
+
+TEST_CASE("[Animation] Setters emit changed only when the value changes") {
+	Ref<Animation> animation = memnew(Animation);
+	SIGNAL_WATCH(*animation, CoreStringName(changed));
+	Array empty_args = { {} };
+
+	animation->set_length(2.0);
+	SIGNAL_CHECK("changed", empty_args);
+	animation->set_length(2.0);
+	SIGNAL_CHECK_FALSE("changed");
+
+	animation->set_loop_mode(Animation::LOOP_LINEAR);
+	SIGNAL_CHECK("changed", empty_args);
+	animation->set_loop_mode(Animation::LOOP_LINEAR);
+	SIGNAL_CHECK_FALSE("changed");
+
+	animation->set_step(0.1);
+	SIGNAL_CHECK("changed", empty_args);
+	animation->set_step(0.1);
+	SIGNAL_CHECK_FALSE("changed");
+
+	SIGNAL_UNWATCH(*animation, CoreStringName(changed));
 }
 
 TEST_CASE("[Animation] Create value track") {
