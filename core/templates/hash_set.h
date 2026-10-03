@@ -193,7 +193,7 @@ public:
 		_inner = {};
 	}
 	HashSet(std::initializer_list<TKey> p_init) {
-		_inner = p_init.size();
+		_inner = InnerTable(p_init.size());
 		for (const TKey &E : p_init) {
 			insert(E);
 		}
