@@ -1,40 +1,100 @@
 GDTEST_OK
---- built-in methods ---
+--- built-in methods using Callable.get_method_info ---
 func add_to_group(group: StringName, persistent: bool = false) -> void
 func find_child(pattern: String, recursive: bool = true, owned: bool = true) -> Node
---- built-in vararg methods ---
+--- built-in methods using ClassDB.class_get_method_info ---
+func add_to_group(group: StringName, persistent: bool = false) -> void
+func find_child(pattern: String, recursive: bool = true, owned: bool = true) -> Node
+--- built-in methods using Object.get_method_info ---
+func add_to_group(group: StringName, persistent: bool = false) -> void
+func find_child(pattern: String, recursive: bool = true, owned: bool = true) -> Node
+--- built-in vararg methods using Callable.get_method_info ---
 func call_thread_safe(method: StringName, ...args) -> Variant
 func rpc_id(peer_id: int, method: StringName, ...args) -> Error
---- plain methods ---
+--- built-in vararg methods using ClassDB.class_get_method_info ---
+func call_thread_safe(method: StringName, ...args) -> Variant
+func rpc_id(peer_id: int, method: StringName, ...args) -> Error
+--- built-in vararg methods using Object.get_method_info ---
+func call_thread_safe(method: StringName, ...args) -> Variant
+func rpc_id(peer_id: int, method: StringName, ...args) -> Error
+--- plain methods using Callable.get_method_info ---
 func my_func_1(_foo: int, _bar: String) -> void
 func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
---- static methods ---
+--- plain methods using ClassDB.class_get_method_info ---
+true
+true
+--- plain methods using Object.get_method_info ---
+func my_func_1(_foo: int, _bar: String) -> void
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
+--- static methods using Callable.get_method_info ---
 static func my_static_func_1(_foo: Node3D, _bar: bool) -> Variant
 static func my_static_func_2(_foo: Variant, _bar: int, _baz: Variant) -> String
---- rpc methods ---
+--- static methods using ClassDB.class_get_method_info ---
+true
+true
+--- static methods using Object.get_method_info ---
+static func my_static_func_1(_foo: Node3D, _bar: bool) -> Variant
+static func my_static_func_2(_foo: Variant, _bar: int, _baz: Variant) -> String
+--- rpc methods using Callable.get_method_info ---
 func my_rpc_func_1(_foo: String, _bar: StringName) -> bool
 func my_rpc_func_2(_foo: int, _bar: String, _baz: bool) -> StringName
---- lambdas ---
+--- rpc methods using ClassDB.class_get_method_info ---
+true
+true
+--- rpc methods using Object.get_method_info ---
+func my_rpc_func_1(_foo: String, _bar: StringName) -> bool
+func my_rpc_func_2(_foo: int, _bar: String, _baz: bool) -> StringName
+--- lambdas using Callable.get_method_info ---
 func <anonymous lambda>(_foo: Variant, _bar: Variant) -> Variant
 func <anonymous lambda>(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
---- lambdas with self ---
+--- lambdas using ClassDB.class_get_method_info ---
+true
+true
+--- lambdas using Object.get_method_info ---
+true
+true
+--- lambdas with self using Callable.get_method_info ---
 func <anonymous lambda>(_foo: Variant, _bar: Variant) -> Variant
 func <anonymous lambda>(_foo: Variant, _bar: Variant, _baz: Variant) -> Variant
---- bind ---
+--- lambdas with self using ClassDB.class_get_method_info ---
+true
+true
+--- lambdas with self using Object.get_method_info ---
+true
+true
+--- bind using Callable.get_method_info ---
 func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
 func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
---- unbind ---
+--- bind using ClassDB.class_get_method_info ---
+true
+true
+--- bind using Object.get_method_info ---
 func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
 func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
---- variant callables ---
+--- unbind using Callable.get_method_info ---
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
+--- unbind using ClassDB.class_get_method_info ---
+true
+true
+--- unbind using Object.get_method_info ---
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
+func my_func_2(_foo: bool, _bar: StringName, _baz: NodePath) -> Variant
+--- variant callables using Callable.get_method_info ---
 func replace(what: String, forwhat: String) -> String
 func rsplit(delimiter: String = "", allow_empty: bool = true, maxsplit: int = 0) -> PackedStringArray
---- variant vararg callables ---
+--- variant vararg using Callable.get_method_info ---
 func call(...args) -> Variant
 func rpc_id(peer_id: int, ...args) -> void
---- global methods ---
+--- global methods using Callable.get_method_info ---
 func is_equal_approx(a: float, b: float) -> bool
 func inverse_lerp(from: float, to: float, weight: float) -> float
---- GDScript methods ---
+--- global methods using Object.get_method_info ---
+true
+true
+--- GDScript methods using Callable.get_method_info ---
 func char(code: int) -> String
 func is_instance_of(value: Variant, type: Variant) -> bool
+--- GDScript methods using Object.get_method_info ---
+true
+true

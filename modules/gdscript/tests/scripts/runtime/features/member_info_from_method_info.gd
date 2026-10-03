@@ -21,82 +21,161 @@ func my_rpc_func_2(_foo: int, _bar: String, _baz: bool) -> StringName:
 	return &""
 
 func test():
-	print("--- built-in methods ---")
 	var builtin_callable_1 : Callable = add_to_group
-	print(Utils.get_method_signature(builtin_callable_1.get_method_info()))
 	var builtin_callable_2 : Callable = find_child
+
+	print("--- built-in methods using Callable.get_method_info ---")
+	print(Utils.get_method_signature(builtin_callable_1.get_method_info()))
 	print(Utils.get_method_signature(builtin_callable_2.get_method_info()))
+	print("--- built-in methods using ClassDB.class_get_method_info ---")
+	print(Utils.get_method_signature(ClassDB.class_get_method_info(builtin_callable_1.get_object().get_class(), builtin_callable_1.get_method())))
+	print(Utils.get_method_signature(ClassDB.class_get_method_info(builtin_callable_2.get_object().get_class(), builtin_callable_2.get_method())))
+	print("--- built-in methods using Object.get_method_info ---")
+	print(Utils.get_method_signature(self.get_method_info(builtin_callable_1.get_method())))
+	print(Utils.get_method_signature(self.get_method_info(builtin_callable_2.get_method())))
 
-	print("--- built-in vararg methods ---")
 	var builtin_vararg_callable_1 : Callable = call_thread_safe
-	print(Utils.get_method_signature(builtin_vararg_callable_1.get_method_info()))
 	var builtin_vararg_callable_2 : Callable = rpc_id
+
+	print("--- built-in vararg methods using Callable.get_method_info ---")
+	print(Utils.get_method_signature(builtin_vararg_callable_1.get_method_info()))
 	print(Utils.get_method_signature(builtin_vararg_callable_2.get_method_info()))
+	print("--- built-in vararg methods using ClassDB.class_get_method_info ---")
+	print(Utils.get_method_signature(ClassDB.class_get_method_info(builtin_vararg_callable_1.get_object().get_class(), builtin_vararg_callable_1.get_method())))
+	print(Utils.get_method_signature(ClassDB.class_get_method_info(builtin_vararg_callable_2.get_object().get_class(), builtin_vararg_callable_2.get_method())))
+	print("--- built-in vararg methods using Object.get_method_info ---")
+	print(Utils.get_method_signature(self.get_method_info(builtin_vararg_callable_1.get_method())))
+	print(Utils.get_method_signature(self.get_method_info(builtin_vararg_callable_2.get_method())))
 
-	print("--- plain methods ---")
 	var callable_1 : Callable = my_func_1
-	print(Utils.get_method_signature(callable_1.get_method_info()))
 	var callable_2 : Callable = my_func_2
+
+	print("--- plain methods using Callable.get_method_info ---")
+	print(Utils.get_method_signature(callable_1.get_method_info()))
 	print(Utils.get_method_signature(callable_2.get_method_info()))
+	print("--- plain methods using ClassDB.class_get_method_info ---")
+	print(ClassDB.class_get_method_info(callable_1.get_object().get_class(), callable_1.get_method()) == Dictionary()) # Should print true
+	print(ClassDB.class_get_method_info(callable_2.get_object().get_class(), callable_2.get_method()) == Dictionary()) # Should print true
+	print("--- plain methods using Object.get_method_info ---")
+	print(Utils.get_method_signature(self.get_method_info(callable_1.get_method())))
+	print(Utils.get_method_signature(self.get_method_info(callable_2.get_method())))
 
-	print("--- static methods ---")
 	var static_callable_1 : Callable = my_static_func_1
-	print(Utils.get_method_signature(static_callable_1.get_method_info()))
 	var static_callable_2 : Callable = my_static_func_2
+
+	print("--- static methods using Callable.get_method_info ---")
+	print(Utils.get_method_signature(static_callable_1.get_method_info()))
 	print(Utils.get_method_signature(static_callable_2.get_method_info()))
+	print("--- static methods using ClassDB.class_get_method_info ---")
+	print(ClassDB.class_get_method_info(static_callable_1.get_object().get_class(), static_callable_1.get_method()) == Dictionary()) # Should print true
+	print(ClassDB.class_get_method_info(static_callable_2.get_object().get_class(), static_callable_2.get_method()) == Dictionary()) # Should print true
+	print("--- static methods using Object.get_method_info ---")
+	print(Utils.get_method_signature(self.get_method_info(static_callable_1.get_method())))
+	print(Utils.get_method_signature(self.get_method_info(static_callable_2.get_method())))
 
-	print("--- rpc methods ---")
 	var rpc_callable_1 : Callable = my_rpc_func_1
-	print(Utils.get_method_signature(rpc_callable_1.get_method_info()))
 	var rpc_callable_2 : Callable = my_rpc_func_2
+
+	print("--- rpc methods using Callable.get_method_info ---")
+	print(Utils.get_method_signature(rpc_callable_1.get_method_info()))
 	print(Utils.get_method_signature(rpc_callable_2.get_method_info()))
+	print("--- rpc methods using ClassDB.class_get_method_info ---")
+	print(ClassDB.class_get_method_info(rpc_callable_1.get_object().get_class(), rpc_callable_1.get_method()) == Dictionary()) # Should print true
+	print(ClassDB.class_get_method_info(rpc_callable_2.get_object().get_class(), rpc_callable_2.get_method()) == Dictionary()) # Should print true
+	print("--- rpc methods using Object.get_method_info ---")
+	print(Utils.get_method_signature(self.get_method_info(rpc_callable_1.get_method())))
+	print(Utils.get_method_signature(self.get_method_info(rpc_callable_2.get_method())))
 
-	print("--- lambdas ---")
 	var lambda_callable_1 : Callable = func(_foo, _bar): pass
-	print(Utils.get_method_signature(lambda_callable_1.get_method_info()))
 	var lambda_callable_2 : Callable = func(_foo, _bar, _baz): pass
+
+	print("--- lambdas using Callable.get_method_info ---")
+	print(Utils.get_method_signature(lambda_callable_1.get_method_info()))
 	print(Utils.get_method_signature(lambda_callable_2.get_method_info()))
+	print("--- lambdas using ClassDB.class_get_method_info ---")
+	print(ClassDB.class_get_method_info(lambda_callable_1.get_object().get_class(), lambda_callable_1.get_method()) == Dictionary()) # Should print true
+	print(ClassDB.class_get_method_info(lambda_callable_2.get_object().get_class(), lambda_callable_2.get_method()) == Dictionary()) # Should print true
+	print("--- lambdas using Object.get_method_info ---")
+	print(self.get_method_info(lambda_callable_1.get_method()) == Dictionary()) # Should print true
+	print(self.get_method_info(lambda_callable_2.get_method()) == Dictionary()) # Should print true
 
-	print("--- lambdas with self ---")
 	var lambda_self_callable_1 : Callable = func(_foo, _bar): return self
-	print(Utils.get_method_signature(lambda_self_callable_1.get_method_info()))
 	var lambda_self_callable_2 : Callable = func(_foo, _bar, _baz): return self
+
+	print("--- lambdas with self using Callable.get_method_info ---")
+	print(Utils.get_method_signature(lambda_self_callable_1.get_method_info()))
 	print(Utils.get_method_signature(lambda_self_callable_2.get_method_info()))
+	print("--- lambdas with self using ClassDB.class_get_method_info ---")
+	print(ClassDB.class_get_method_info(lambda_self_callable_1.get_object().get_class(), lambda_self_callable_1.get_method()) == Dictionary()) # Should print true
+	print(ClassDB.class_get_method_info(lambda_self_callable_2.get_object().get_class(), lambda_self_callable_2.get_method()) == Dictionary()) # Should print true
+	print("--- lambdas with self using Object.get_method_info ---")
+	print(self.get_method_info(lambda_self_callable_1.get_method()) == Dictionary()) # Should print true
+	print(self.get_method_info(lambda_self_callable_2.get_method()) == Dictionary()) # Should print true
 
-	print("--- bind ---")
 	var bind_callable_1 : Callable = my_func_2.bind(1)
-	print(Utils.get_method_signature(bind_callable_1.get_method_info()))
 	var bind_callable_2 : Callable = my_func_2.bind(1, 2)
-	print(Utils.get_method_signature(bind_callable_2.get_method_info()))
 
-	print("--- unbind ---")
+	print("--- bind using Callable.get_method_info ---")
+	print(Utils.get_method_signature(bind_callable_1.get_method_info()))
+	print(Utils.get_method_signature(bind_callable_2.get_method_info()))
+	print("--- bind using ClassDB.class_get_method_info ---")
+	print(ClassDB.class_get_method_info(bind_callable_1.get_object().get_class(), bind_callable_1.get_method()) == Dictionary()) # Should print true
+	print(ClassDB.class_get_method_info(bind_callable_2.get_object().get_class(), bind_callable_2.get_method()) == Dictionary()) # Should print true
+	print("--- bind using Object.get_method_info ---")
+	print(Utils.get_method_signature(self.get_method_info(bind_callable_1.get_method())))
+	print(Utils.get_method_signature(self.get_method_info(bind_callable_2.get_method())))
+
 	var unbind_callable_1 : Callable = my_func_2.unbind(1)
-	print(Utils.get_method_signature(unbind_callable_1.get_method_info()))
 	var unbind_callable_2 : Callable = my_func_2.unbind(2)
+
+	print("--- unbind using Callable.get_method_info ---")
+	print(Utils.get_method_signature(unbind_callable_1.get_method_info()))
+	print(Utils.get_method_signature(unbind_callable_2.get_method_info()))
+	print("--- unbind using ClassDB.class_get_method_info ---")
+	print(ClassDB.class_get_method_info(unbind_callable_1.get_object().get_class(), unbind_callable_1.get_method()) == Dictionary()) # Should print true
+	print(ClassDB.class_get_method_info(unbind_callable_2.get_object().get_class(), unbind_callable_2.get_method()) == Dictionary()) # Should print true
+	print("--- unbind using Object.get_method_info ---")
+	print(Utils.get_method_signature(unbind_callable_1.get_method_info()))
 	print(Utils.get_method_signature(unbind_callable_2.get_method_info()))
 
-	print("--- variant callables ---")
 	var string_tmp := String()
 	var variant_callable_1 : Callable = string_tmp.replace
-	print(Utils.get_method_signature(variant_callable_1.get_method_info()))
 	var variant_callable_2 : Callable = string_tmp.rsplit
+
+	# ClassDB.class_get_method_info can't be used for variant class methods
+	# Object.get_method_info can't be used for variant class methods
+	print("--- variant callables using Callable.get_method_info ---")
+	print(Utils.get_method_signature(variant_callable_1.get_method_info()))
 	print(Utils.get_method_signature(variant_callable_2.get_method_info()))
 
-	print("--- variant vararg callables ---")
 	var callable_tmp := Callable()
 	var variant_vararg_callable_1 : Callable = callable_tmp.call
-	print(Utils.get_method_signature(variant_vararg_callable_1.get_method_info()))
 	var variant_vararg_callable_2 : Callable = callable_tmp.rpc_id
+
+	# ClassDB.class_get_method_info can't be used for variant class methods
+	# Object.get_method_info can't be used for variant class methods
+	print("--- variant vararg using Callable.get_method_info ---")
+	print(Utils.get_method_signature(variant_vararg_callable_1.get_method_info()))
 	print(Utils.get_method_signature(variant_vararg_callable_2.get_method_info()))
 
-	print("--- global methods ---")
 	var global_callable_1 = is_equal_approx
-	print(Utils.get_method_signature(global_callable_1.get_method_info()))
 	var global_callable_2 = inverse_lerp
-	print(Utils.get_method_signature(global_callable_2.get_method_info()))
 
-	print("--- GDScript methods ---")
+	# ClassDB.class_get_method_info can't be used for Global methods
+	print("--- global methods using Callable.get_method_info ---")
+	print(Utils.get_method_signature(global_callable_1.get_method_info()))
+	print(Utils.get_method_signature(global_callable_2.get_method_info()))
+	print("--- global methods using Object.get_method_info ---")
+	print(self.get_method_info(global_callable_1.get_method()) == Dictionary()) # Should print true
+	print(self.get_method_info(global_callable_2.get_method()) == Dictionary()) # Should print true
+
 	var gdscript_callable_1 = char
-	print(Utils.get_method_signature(gdscript_callable_1.get_method_info()))
 	var gdscript_callable_2 = is_instance_of
+
+	# ClassDB.class_get_method_info can't be used for GDScript methods
+	print("--- GDScript methods using Callable.get_method_info ---")
+	print(Utils.get_method_signature(gdscript_callable_1.get_method_info()))
 	print(Utils.get_method_signature(gdscript_callable_2.get_method_info()))
+	print("--- GDScript methods using Object.get_method_info ---")
+	print(self.get_method_info(gdscript_callable_1.get_method()) == Dictionary()) # Should print true
+	print(self.get_method_info(gdscript_callable_2.get_method()) == Dictionary()) # Should print true
