@@ -1952,6 +1952,25 @@ int GDScriptInstance::get_method_argument_count(const StringName &p_method, bool
 	return 0;
 }
 
+MethodInfo GDScriptInstance::get_method_info(const StringName &p_method, bool *r_is_valid) const {
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(p_method);
+		if (E) {
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
+			return E->value->get_method_info();
+		}
+		sptr = sptr->base.ptr();
+	}
+
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
+	return MethodInfo();
+}
+
 void GDScriptInstance::_call_implicit_ready_recursively(GDScript *p_script) {
 	// Call base class first.
 	if (p_script->base.ptr()) {
