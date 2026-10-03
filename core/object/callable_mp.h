@@ -97,7 +97,7 @@ public:
 		return sizeof...(P);
 	}
 
-	virtual bool get_method_info(MethodInfo &r_method_info) const override {
+	virtual bool get_method_info(MethodInfo &r_method_info) const {
 #ifndef DEBUG_ENABLED
 		MethodInfo mi;
 
