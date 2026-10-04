@@ -91,7 +91,9 @@ int ManagedCallable::get_argument_count(bool &r_is_valid) const {
 
 bool ManagedCallable::get_method_info(MethodInfo &r_method_info) const {
 	bool valid = false;
-	r_method_info = MethodInfo::from_dict(GDMonoCache::managed_callbacks.DelegateUtils_GetMethodInfo(delegate_handle, &valid));
+	Dictionary mi_dict;
+	GDMonoCache::managed_callbacks.DelegateUtils_GetMethodInfo(delegate_handle, &mi_dict, &valid);
+	r_method_info = MethodInfo::from_dict(mi_dict);
 	return valid;
 }
 

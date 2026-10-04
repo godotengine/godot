@@ -80,7 +80,7 @@ struct ManagedCallbacks {
 	using FuncDelegateUtils_DelegateEquals = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr);
 	using FuncDelegateUtils_DelegateHash = int32_t(GD_CLR_STDCALL *)(GCHandleIntPtr);
 	using FuncDelegateUtils_GetArgumentCount = int32_t(GD_CLR_STDCALL *)(GCHandleIntPtr, bool *);
-	using FuncDelegateUtils_GetMethodInfo = Dictionary(GD_CLR_STDCALL *)(GCHandleIntPtr, bool *);
+	using FuncDelegateUtils_GetMethodInfo = void(GD_CLR_STDCALL *)(GCHandleIntPtr, Dictionary *, bool *);
 	using FuncDelegateUtils_TrySerializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const Array *);
 	using FuncDelegateUtils_TryDeserializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(const Array *, GCHandleIntPtr *);
 	using FuncScriptManagerBridge_FrameCallback = void(GD_CLR_STDCALL *)();

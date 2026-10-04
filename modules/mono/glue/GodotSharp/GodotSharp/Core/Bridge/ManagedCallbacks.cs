@@ -13,7 +13,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, IntPtr, godot_bool> DelegateUtils_DelegateEquals;
         public delegate* unmanaged<IntPtr, int> DelegateUtils_DelegateHash;
         public delegate* unmanaged<IntPtr, godot_bool*, int> DelegateUtils_GetArgumentCount;
-        public delegate* unmanaged<IntPtr, bool*, godot_dictionary> DelegateUtils_GetMethodInfo;
+        public delegate* unmanaged<IntPtr, godot_dictionary*, godot_bool*, void> DelegateUtils_GetMethodInfo;
         public delegate* unmanaged<IntPtr, godot_array*, godot_bool> DelegateUtils_TrySerializeDelegateWithGCHandle;
         public delegate* unmanaged<godot_array*, IntPtr*, godot_bool> DelegateUtils_TryDeserializeDelegateWithGCHandle;
         public delegate* unmanaged<void> ScriptManagerBridge_FrameCallback;
