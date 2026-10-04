@@ -163,8 +163,8 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 	vec3 diffuse_light_highp = vec3(diffuse_light);
 	vec3 specular_light_highp = vec3(specular_light);
 	bool is_area = false;
-	float area_diffuse = 1.0;
-	float area_specular = 1.0;
+	vec3 area_diffuse = vec3(1.0);
+	vec3 area_specular = vec3(1.0);
 	vec3 area_diffuse_tex_color = vec3(1.0);
 	vec3 area_specular_tex_color = vec3(1.0);
 
