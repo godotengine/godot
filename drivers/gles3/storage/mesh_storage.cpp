@@ -1001,19 +1001,19 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			} break;
 			case RSE::ARRAY_BONES: {
 				attribs[i].offset = skin_stride;
+				attribs[i].size = 4;
 				attribs[i].type = GL_UNSIGNED_SHORT;
-				int bone_count = (s->format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
-				attribs[i].size = bone_count;
-				skin_stride += bone_count * sizeof(uint16_t);
+				bool use_8 = s->format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+				skin_stride += (use_8 ? 8 : 4) * sizeof(uint16_t);
 				attribs[i].normalized = GL_FALSE;
 				attribs[i].integer = true;
 			} break;
 			case RSE::ARRAY_WEIGHTS: {
 				attribs[i].offset = skin_stride;
+				attribs[i].size = 4;
 				attribs[i].type = GL_UNSIGNED_SHORT;
-				int bone_count = (s->format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 8 : 4;
-				attribs[i].size = bone_count;
-				skin_stride += bone_count * sizeof(uint16_t);
+				bool use_8 = s->format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
+				skin_stride += (use_8 ? 8 : 4) * sizeof(uint16_t);
 				attribs[i].normalized = GL_TRUE;
 			} break;
 		}
