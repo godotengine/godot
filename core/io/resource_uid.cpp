@@ -113,11 +113,11 @@ ResourceUID::ID ResourceUID::text_to_id(const String &p_text) const {
 ResourceUID::ID ResourceUID::create_id() {
 	while (true) {
 		ID id = INVALID_ID;
-		MutexLock lock(mutex);
 		Error err = CryptoCore::generate_random((uint8_t *)&id, sizeof(id));
 		ERR_FAIL_COND_V(err != OK, INVALID_ID);
 		id &= 0x7FFFFFFFFFFFFFFF;
-		bool exists = unique_ids.has(id);
+		MutexProtected<State>::Guard d = state.lock();
+		bool exists = d->unique_ids.has(id);
 		if (!exists) {
 			return id;
 		}
@@ -139,8 +139,8 @@ ResourceUID::ID ResourceUID::create_id_for_path(const String &p_path) {
 		int64_t num2 = ((int64_t)rng.rand()) << 32;
 		id = (num1 | num2) & 0x7FFFFFFFFFFFFFFF;
 
-		MutexLock lock(mutex);
-		if (!unique_ids.has(id)) {
+		MutexProtected<State>::Guard d = state.lock();
+		if (!d->unique_ids.has(id)) {
 			break;
 		}
 	}
@@ -148,51 +148,50 @@ ResourceUID::ID ResourceUID::create_id_for_path(const String &p_path) {
 }
 
 bool ResourceUID::has_id(ID p_id) const {
-	MutexLock l(mutex);
-	return unique_ids.has(p_id);
+	return state.lock()->unique_ids.has(p_id);
 }
 
 void ResourceUID::add_id(ID p_id, const String &p_path) {
-	MutexLock l(mutex);
-	ERR_FAIL_COND(unique_ids.has(p_id));
+	MutexProtected<State>::Guard d = state.lock();
+	ERR_FAIL_COND(d->unique_ids.has(p_id));
 	Cache c;
 	c.cs = p_path.utf8();
-	unique_ids[p_id] = c;
-	if (use_reverse_cache) {
-		reverse_cache[c.cs] = p_id;
+	d->unique_ids[p_id] = c;
+	if (d->use_reverse_cache) {
+		d->reverse_cache[c.cs] = p_id;
 	}
-	changed = true;
+	d->changed = true;
 	// The cache was never loaded (probably does not exist), so assume that first ID initializes it.
-	cache_initialized = true;
+	d->cache_initialized = true;
 }
 
 void ResourceUID::set_id(ID p_id, const String &p_path) {
-	MutexLock l(mutex);
-	ERR_FAIL_COND(!unique_ids.has(p_id));
+	MutexProtected<State>::Guard d = state.lock();
+	ERR_FAIL_COND(!d->unique_ids.has(p_id));
 	CharString cs = p_path.utf8();
 	const char *update_ptr = cs.ptr();
-	const char *cached_ptr = unique_ids[p_id].cs.ptr();
+	const char *cached_ptr = d->unique_ids[p_id].cs.ptr();
 	if (update_ptr == nullptr && cached_ptr == nullptr) {
 		return; // Both are empty strings.
 	}
 	if ((update_ptr == nullptr) != (cached_ptr == nullptr) || strcmp(update_ptr, cached_ptr) != 0) {
-		unique_ids[p_id].cs = cs;
-		unique_ids[p_id].saved_to_cache = false; //changed
-		if (use_reverse_cache) {
-			reverse_cache[cs] = p_id;
+		d->unique_ids[p_id].cs = cs;
+		d->unique_ids[p_id].saved_to_cache = false; //changed
+		if (d->use_reverse_cache) {
+			d->reverse_cache[cs] = p_id;
 		}
-		changed = true;
+		d->changed = true;
 	}
 }
 
 String ResourceUID::get_id_path(ID p_id) const {
 	ERR_FAIL_COND_V_MSG(p_id == INVALID_ID, String(), "Invalid UID.");
-	MutexLock l(mutex);
-	const ResourceUID::Cache *cache = unique_ids.getptr(p_id);
+	MutexProtected<State>::ConstGuard d = state.lock();
+	const Cache *cache = d->unique_ids.getptr(p_id);
 
 #if TOOLS_ENABLED
 	if (!cache) {
-		const ResourceUID::Cache *copy_cache = unique_ids_copy.getptr(p_id);
+		const Cache *copy_cache = d->unique_ids_copy.getptr(p_id);
 		if (copy_cache) {
 			return String::utf8(copy_cache->cs.ptr());
 		}
@@ -205,12 +204,12 @@ String ResourceUID::get_id_path(ID p_id) const {
 	//       once the first scan_for_uid is complete.
 	if (!cache && scan_for_uid_on_startup) {
 		scan_for_uid_on_startup();
-		cache = unique_ids.getptr(p_id);
+		cache = d->unique_ids.getptr(p_id);
 	}
 #endif
 
 	if (unlikely(!cache)) {
-		if (cache_initialized) {
+		if (d->cache_initialized) {
 			ERR_PRINT(vformat("Unrecognized UID: \"%s\".", id_to_text(p_id)));
 		}
 		return String();
@@ -220,7 +219,8 @@ String ResourceUID::get_id_path(ID p_id) const {
 }
 
 ResourceUID::ID ResourceUID::get_path_id(const String &p_path) const {
-	const ID *id = reverse_cache.getptr(p_path.utf8());
+	MutexProtected<State>::ConstGuard d = state.lock();
+	const ID *id = d->reverse_cache.getptr(p_path.utf8());
 	if (id) {
 		return *id;
 	}
@@ -228,12 +228,12 @@ ResourceUID::ID ResourceUID::get_path_id(const String &p_path) const {
 }
 
 void ResourceUID::remove_id(ID p_id) {
-	MutexLock l(mutex);
-	ERR_FAIL_COND(!unique_ids.has(p_id));
-	if (use_reverse_cache) {
-		reverse_cache.erase(unique_ids[p_id].cs);
+	MutexProtected<State>::Guard d = state.lock();
+	ERR_FAIL_COND(!d->unique_ids.has(p_id));
+	if (d->use_reverse_cache) {
+		d->reverse_cache.erase(d->unique_ids[p_id].cs);
 	}
-	unique_ids.erase(p_id);
+	d->unique_ids.erase(p_id);
 }
 
 String ResourceUID::uid_to_path(const String &p_uid) {
@@ -285,8 +285,8 @@ Vector<uint8_t> ResourceUID::encode_binary_cache(const Vector<Pair<ID, String>> 
 Error ResourceUID::save_to_cache() {
 	String cache_file = get_cache_file();
 	if (!FileAccess::exists(cache_file)) {
-		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		d->make_dir_recursive(String(cache_file).get_base_dir()); //ensure base dir exists
+		Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		dir->make_dir_recursive(String(cache_file).get_base_dir()); //ensure base dir exists
 	}
 
 	Ref<FileAccess> f = FileAccess::open(cache_file, FileAccess::WRITE);
@@ -294,22 +294,22 @@ Error ResourceUID::save_to_cache() {
 		return ERR_CANT_OPEN;
 	}
 
-	MutexLock l(mutex);
+	MutexProtected<State>::Guard d = state.lock();
 
 	Vector<Pair<ID, String>> entries;
-	entries.reserve(unique_ids.size());
-	cache_entries = 0;
+	entries.reserve(d->unique_ids.size());
+	d->cache_entries = 0;
 
-	for (KeyValue<ID, Cache> &E : unique_ids) {
+	for (KeyValue<ID, Cache> &E : d->unique_ids) {
 		entries.push_back(Pair<ID, String>(E.key, String::utf8(E.value.cs.ptr(), E.value.cs.length())));
 		E.value.saved_to_cache = true;
-		cache_entries++;
+		d->cache_entries++;
 	}
 
-	Vector<uint8_t> data = encode_binary_cache(entries);
-	f->store_buffer(data.ptr(), data.size());
+	Vector<uint8_t> cache_data = encode_binary_cache(entries);
+	f->store_buffer(cache_data.ptr(), cache_data.size());
 
-	changed = false;
+	d->changed = false;
 	return OK;
 }
 
@@ -319,12 +319,12 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 		return ERR_CANT_OPEN;
 	}
 
-	MutexLock l(mutex);
+	MutexProtected<State>::Guard d = state.lock();
 	if (p_reset) {
-		if (use_reverse_cache) {
-			reverse_cache.clear();
+		if (d->use_reverse_cache) {
+			d->reverse_cache.clear();
 		}
-		unique_ids.clear();
+		d->unique_ids.clear();
 	}
 
 	uint32_t entry_count = f->get_32();
@@ -339,30 +339,30 @@ Error ResourceUID::load_from_cache(bool p_reset) {
 		ERR_FAIL_COND_V(rl != len, ERR_FILE_CORRUPT);
 
 		c.saved_to_cache = true;
-		unique_ids[id] = c;
-		if (use_reverse_cache) {
-			reverse_cache[c.cs] = id;
+		d->unique_ids[id] = c;
+		if (d->use_reverse_cache) {
+			d->reverse_cache[c.cs] = id;
 		}
 	}
 
-	cache_entries = entry_count;
-	changed = false;
-	cache_initialized = true;
+	d->cache_entries = entry_count;
+	d->changed = false;
+	d->cache_initialized = true;
 	return OK;
 }
 
 Error ResourceUID::update_cache() {
-	if (!changed) {
+	MutexProtected<State>::Guard d = state.lock();
+	if (!d->changed) {
 		return OK;
 	}
 
-	if (cache_entries == 0) {
+	if (d->cache_entries == 0) {
 		return save_to_cache();
 	}
-	MutexLock l(mutex);
 
 	Ref<FileAccess> f;
-	for (KeyValue<ID, Cache> &E : unique_ids) {
+	for (KeyValue<ID, Cache> &E : d->unique_ids) {
 		if (!E.value.saved_to_cache) {
 			if (f.is_null()) {
 				f = FileAccess::open(get_cache_file(), FileAccess::READ_WRITE); // Append.
@@ -376,16 +376,16 @@ Error ResourceUID::update_cache() {
 			f->store_32(s);
 			f->store_buffer((const uint8_t *)E.value.cs.ptr(), s);
 			E.value.saved_to_cache = true;
-			cache_entries++;
+			d->cache_entries++;
 		}
 	}
 
 	if (f.is_valid()) {
 		f->seek(0);
-		f->store_32(cache_entries); //update amount of entries
+		f->store_32(d->cache_entries); //update amount of entries
 	}
 
-	changed = false;
+	d->changed = false;
 
 	return OK;
 }
@@ -416,26 +416,25 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 }
 
 void ResourceUID::clear() {
-	MutexLock l(mutex);
-	cache_entries = 0;
-	if (use_reverse_cache) {
-		reverse_cache.clear();
+	MutexProtected<State>::Guard d = state.lock();
+	d->cache_entries = 0;
+	if (d->use_reverse_cache) {
+		d->reverse_cache.clear();
 	}
-	unique_ids.clear();
-	changed = false;
+	d->unique_ids.clear();
+	d->changed = false;
 }
 
 #ifdef TOOLS_ENABLED
 void ResourceUID::copy_and_clear_cache() {
-	MutexLock l(mutex);
-	cache_entries = 0;
-	unique_ids_copy = std::move(unique_ids);
-	changed = false;
+	MutexProtected<State>::Guard d = state.lock();
+	d->cache_entries = 0;
+	d->unique_ids_copy = std::move(d->unique_ids);
+	d->changed = false;
 }
 
 void ResourceUID::clear_copy() {
-	MutexLock l(mutex);
-	unique_ids_copy.clear();
+	state.lock()->unique_ids_copy.clear();
 }
 #endif
 
