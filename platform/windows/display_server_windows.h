@@ -257,6 +257,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	KeyEvent key_event_buffer[KEY_EVENT_BUFFER_SIZE];
 	int key_event_pos;
+	bool legacy_shift_pressed[2] = {};
 
 	bool old_invalid;
 	int old_x, old_y;
@@ -542,6 +543,7 @@ class DisplayServerWindows : public DisplayServer {
 	Vector2 _get_raw_mouse_motion(const RAWINPUT &p_raw, DisplayServer::WindowID p_window_id);
 	void _process_raw_mouse_motion(const Vector2 &p_relative, bool p_left_button_down, DisplayServer::WindowID p_window_id);
 	void _process_raw_input_event(const RAWINPUT &p_raw, DisplayServer::WindowID p_window_id);
+	void _reconcile_shift_state(DisplayServer::WindowID p_window_id);
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

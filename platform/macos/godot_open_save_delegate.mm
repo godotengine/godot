@@ -245,6 +245,7 @@
 				[p_panel setAllowedContentTypes:type_filters];
 			}
 		} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 			if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
 				[p_panel setAllowedFileTypes:nil];
 				[p_panel setAllowsOtherFileTypes:true];
@@ -252,12 +253,15 @@
 				[p_panel setAllowsOtherFileTypes:false];
 				[p_panel setAllowedFileTypes:type_filters];
 			}
+#endif
 		}
 	} else {
 		if (@available(macOS 11, *)) {
 			[p_panel setAllowedContentTypes:@[ UTTypeData ]];
 		} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 			[p_panel setAllowedFileTypes:nil];
+#endif
 		}
 		[p_panel setAllowsOtherFileTypes:true];
 	}
@@ -331,6 +335,7 @@
 					[dialog setAllowedContentTypes:type_filters];
 				}
 			} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 				if (type_filters && [type_filters count] == 1 && [[type_filters objectAtIndex:0] isEqualToString:@"*"]) {
 					[dialog setAllowedFileTypes:nil];
 					[dialog setAllowsOtherFileTypes:true];
@@ -338,13 +343,16 @@
 					[dialog setAllowsOtherFileTypes:false];
 					[dialog setAllowedFileTypes:type_filters];
 				}
+#endif
 			}
 			cur_index = index;
 		} else {
 			if (@available(macOS 11, *)) {
 				[dialog setAllowedContentTypes:@[ UTTypeData ]];
 			} else {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 120000
 				[dialog setAllowedFileTypes:nil];
+#endif
 			}
 			[dialog setAllowsOtherFileTypes:true];
 			cur_index = -1;
