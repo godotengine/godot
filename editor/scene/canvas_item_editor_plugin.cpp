@@ -572,7 +572,8 @@ void CanvasItemEditor::_selection_menu_requested(const Array &p_selection, const
 	StringName root_name = root_path.get_name(root_path.get_name_count() - 1);
 	int icon_max_width = EditorNode::get_singleton()->get_editor_theme()->get_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 
-	for (const Variant &var : p_selection) {
+	for (int i = p_selection.size()-1;i>=0;i--) {
+		const Variant &var = p_selection[i];
 		Node *node = Object::cast_to<Node>(var);
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(node);
 		String node_path = "/" + root_name + "/" + String(root_path.rel_path_to(node->get_path()));
