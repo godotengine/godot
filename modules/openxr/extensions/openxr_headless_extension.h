@@ -58,7 +58,7 @@ private:
 
 	bool headless_ext = false;
 
-#if UNIX_ENABLED
+#ifdef UNIX_ENABLED
 	bool convert_timespec_time_ext = false;
 	EXT_PROTO_XRRESULT_FUNC3(xrConvertTimespecTimeToTimeKHR, (XrInstance), instance, (const struct timespec*), timespecTime, (XrTime*), time);
 #endif
