@@ -30,10 +30,12 @@
 
 #pragma once
 
+#include "core/input/input.h"
 #include "core/object/gdvirtual.gen.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/theme.h"
 #include "servers/display/accessibility_server_enums.h"
+#include "servers/display/display_server.h"
 
 class Label;
 class Panel;
@@ -352,6 +354,9 @@ private:
 		StringName translation_context;
 		AutoTranslateMode tooltip_auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
+		// Drag and drop handling.
+		CursorShape can_drop_cursor = CURSOR_CAN_DROP;
+		CursorShape can_not_drop_cursor = CURSOR_FORBIDDEN;
 	} data;
 
 	// Dynamic properties.
@@ -887,6 +892,12 @@ public:
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 
 	virtual String accessibility_get_contextual_info() const;
+
+	// Drag and drop handling.
+	void set_can_drop_cursor_shape(CursorShape p_shape);
+	CursorShape get_can_drop_cursor_shape() const;
+	void set_cannot_drop_cursor_shape(CursorShape p_shape);
+	CursorShape get_cannot_drop_cursor_shape() const;
 
 	Control();
 	~Control();

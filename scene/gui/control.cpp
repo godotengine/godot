@@ -2880,6 +2880,28 @@ void Control::accessibility_drop() {
 	queue_accessibility_update();
 }
 
+void Control::set_can_drop_cursor_shape(CursorShape p_shape) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_INDEX(int(p_shape), DisplayServerEnums::CURSOR_MAX);
+	data.can_drop_cursor = p_shape;
+}
+
+Control::CursorShape Control::get_can_drop_cursor_shape() const {
+	ERR_READ_THREAD_GUARD_V(CURSOR_CAN_DROP);
+	return data.can_drop_cursor;
+}
+
+void Control::set_cannot_drop_cursor_shape(CursorShape p_shape) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_INDEX(int(p_shape), DisplayServerEnums::CURSOR_MAX);
+	data.can_not_drop_cursor = p_shape;
+}
+
+Control::CursorShape Control::get_cannot_drop_cursor_shape() const {
+	ERR_READ_THREAD_GUARD_V(CURSOR_FORBIDDEN);
+	return data.can_not_drop_cursor;
+}
+
 String Control::get_accessibility_container_name(const Node *p_node) const {
 	String ret;
 	if (GDVIRTUAL_CALL(_get_accessibility_container_name, p_node, ret)) {
@@ -5120,6 +5142,10 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_focus_previous"), &Control::get_focus_previous);
 
 	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
+	ClassDB::bind_method(D_METHOD("set_can_drop_cursor_shape", "shape"), &Control::set_can_drop_cursor_shape);
+	ClassDB::bind_method(D_METHOD("get_can_drop_cursor_shape"), &Control::get_can_drop_cursor_shape);
+	ClassDB::bind_method(D_METHOD("set_cannot_drop_cursor_shape", "shape"), &Control::set_cannot_drop_cursor_shape);
+	ClassDB::bind_method(D_METHOD("get_cannot_drop_cursor_shape"), &Control::get_cannot_drop_cursor_shape);
 
 	ClassDB::bind_method(D_METHOD("accessibility_drag"), &Control::accessibility_drag);
 	ClassDB::bind_method(D_METHOD("accessibility_drop"), &Control::accessibility_drop);
@@ -5291,6 +5317,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_behavior_recursive", PROPERTY_HINT_ENUM, "Inherited,Disabled,Enabled"), "set_mouse_behavior_recursive", "get_mouse_behavior_recursive");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_can_drop_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_can_drop_cursor_shape", "get_can_drop_cursor_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_cannot_drop_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_cannot_drop_cursor_shape", "get_cannot_drop_cursor_shape");
 
 	ADD_GROUP("Input", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut_context", PROPERTY_HINT_NODE_TYPE, "Node"), "set_shortcut_context", "get_shortcut_context");

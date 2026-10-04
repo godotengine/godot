@@ -2216,9 +2216,10 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					gui.drag_mouse_over = nullptr;
 				}
 				if (gui.drag_mouse_over) {
-					ds_cursor_shape = DisplayServerEnums::CURSOR_CAN_DROP;
+					ds_cursor_shape = DisplayServerEnums::CursorShape(gui.drag_mouse_over->get_can_drop_cursor_shape());
 				} else {
-					ds_cursor_shape = DisplayServerEnums::CURSOR_FORBIDDEN;
+					// Fallback / Cannot-Drop-Cursor
+					ds_cursor_shape = DisplayServerEnums::CursorShape(over->get_cannot_drop_cursor_shape());
 				}
 			}
 		}
