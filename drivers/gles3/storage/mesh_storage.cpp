@@ -1211,15 +1211,19 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 
 		// First buffer to be used for rendering. Final output of skeleton and blend shapes.
 		// If motion vectors are enabled, a second buffer will be created on demand, and they'll be swapped every frame.
+		// These buffers are written by transform feedback and read by draws, never by the CPU, so they are
+		// GL_DYNAMIC_COPY. ANGLE's D3D11 backend treats *_DRAW dynamic usage as CPU-updated: it never binds
+		// such a buffer directly and instead re-streams it on the CPU for every draw, reading it back from
+		// the GPU first when transform feedback has written it. With a *_COPY hint it binds the buffer as is.
 		glGenBuffers(1, &s.vertex_buffers[0]);
 		glBindBuffer(GL_ARRAY_BUFFER, s.vertex_buffers[0]);
-		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffers[0], buffer_size, nullptr, GL_DYNAMIC_DRAW, "MeshInstance vertex buffer");
+		GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.vertex_buffers[0], buffer_size, nullptr, GL_DYNAMIC_COPY, "MeshInstance vertex buffer");
 		if (mesh->blend_shape_count > 0) {
 			// Ping-Pong buffers for processing blendshapes.
 			glGenBuffers(2, s.blend_shape_vertex_buffers);
 			for (uint32_t i = 0; i < 2; i++) {
 				glBindBuffer(GL_ARRAY_BUFFER, s.blend_shape_vertex_buffers[i]);
-				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.blend_shape_vertex_buffers[i], buffer_size, nullptr, GL_DYNAMIC_DRAW, "MeshInstance process buffer[" + itos(i) + "]");
+				GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s.blend_shape_vertex_buffers[i], buffer_size, nullptr, GL_DYNAMIC_COPY, "MeshInstance process buffer[" + itos(i) + "]");
 			}
 		}
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
@@ -1377,7 +1381,7 @@ void MeshStorage::update_mesh_instances() {
 						int buffer_size = mi->surfaces[i].vertex_stride_cache * surface->vertex_count;
 						glGenBuffers(1, &new_vertex_buffer);
 						glBindBuffer(GL_ARRAY_BUFFER, new_vertex_buffer);
-						GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, new_vertex_buffer, buffer_size, nullptr, (surface->format & RSE::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Secondary mesh vertex buffer");
+						GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, new_vertex_buffer, buffer_size, nullptr, GL_DYNAMIC_COPY, "Secondary mesh vertex buffer");
 						glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 						mi->surfaces[i].vertex_buffers[new_buffer_index] = new_vertex_buffer;
