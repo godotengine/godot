@@ -59,7 +59,7 @@ HashMap<String, bool *> OpenXRHeadlessExtension::get_requested_extensions(XrVers
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_MND_HEADLESS_EXTENSION_NAME] = &headless_ext;
-#if UNIX_ENABLED
+#ifdef UNIX_ENABLED
 	request_extensions[XR_KHR_CONVERT_TIMESPEC_TIME_EXTENSION_NAME] = &convert_timespec_time_ext;
 #endif
 
@@ -67,7 +67,7 @@ HashMap<String, bool *> OpenXRHeadlessExtension::get_requested_extensions(XrVers
 }
 
 void OpenXRHeadlessExtension::on_instance_created(const XrInstance p_instance) {
-#if UNIX_ENABLED
+#ifdef UNIX_ENABLED
 	if (convert_timespec_time_ext) {
 		EXT_INIT_XR_FUNC(xrConvertTimespecTimeToTimeKHR);
 	}
@@ -80,7 +80,7 @@ void OpenXRHeadlessExtension::get_current_xrtime(XrTime* result) {
 	XrInstance instance = openxr_api->get_instance();
 	ERR_FAIL_COND(instance == XR_NULL_HANDLE);
 
-#if UNIX_ENABLED
+#ifdef UNIX_ENABLED
 	timespec time;
 	clock_gettime(CLOCK_MONOTONIC, &time);
 	xrConvertTimespecTimeToTimeKHR(instance, &time, result);
@@ -88,7 +88,7 @@ void OpenXRHeadlessExtension::get_current_xrtime(XrTime* result) {
 }
 
 bool OpenXRHeadlessExtension::is_available() {
-#if UNIX_ENABLED
+#ifdef UNIX_ENABLED
 	return headless_ext && convert_timespec_time_ext;
 #else
 	return false;
