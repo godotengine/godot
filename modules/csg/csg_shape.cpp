@@ -2690,10 +2690,14 @@ void CSGPolygon3D::_notification(int p_what) {
 			path = nullptr;
 		}
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
+		// Force an update when the CSGPolygon3D re-enters the tree to make sure it still follows the Path3D's current state.
+		// This is not needed when collision is enabled, as having collision
+		// enabled will automatically trigger an update.
+#ifndef PHYSICS_3D_DISABLED
 		if (mode == MODE_PATH && !is_using_collision()) {
-			// Force an update when the CSGPolygon3D re-enters the tree to make sure it still follows the Path3D's current state.
-			// This is not needed when collision is enabled, as having collision
-			// enabled will automatically trigger an update.
+#else
+		if (mode == MODE_PATH) {
+#endif // PHYSICS_3D_DISABLED
 			_make_dirty();
 		}
 	}
