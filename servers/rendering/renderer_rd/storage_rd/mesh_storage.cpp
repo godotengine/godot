@@ -1421,13 +1421,13 @@ RD::VertexFormatID MeshStorage::_mesh_surface_generate_vertex_format(uint64_t p_
 					vd.offset = skin_stride;
 
 					vd.format = RD::DATA_FORMAT_R16G16B16A16_UINT;
-					skin_stride += sizeof(int16_t) * (p_surface_format & RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4);
+					skin_stride += sizeof(int16_t) * (p_surface_format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4);
 				} break;
 				case RSE::ARRAY_WEIGHTS: {
 					vd.offset = skin_stride;
 
 					vd.format = RD::DATA_FORMAT_R16G16B16A16_UNORM;
-					skin_stride += sizeof(int16_t) * (p_surface_format & RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4);
+					skin_stride += sizeof(int16_t) * (p_surface_format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4);
 				} break;
 			}
 
