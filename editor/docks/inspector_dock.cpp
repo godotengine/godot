@@ -105,8 +105,9 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RESOURCE_SHOW_IN_FILESYSTEM: {
 			Ref<Resource> current_res = _get_current_resource();
-			ERR_FAIL_COND(current_res.is_null());
-			FileSystemDock::get_singleton()->navigate_to_path(current_res->get_path());
+			if (current_res.is_valid() && !current_res->is_built_in()) {
+				FileSystemDock::get_singleton()->navigate_to_path(current_res->get_path());
+			}
 		} break;
 
 		case OBJECT_REQUEST_HELP: {
@@ -728,6 +729,18 @@ void InspectorDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		search->grab_focus();
 		search->select_all();
 		accept_event();
+		return;
+	}
+	// These items can be disabled if the menu is not yet prepared, so the events need to be handled separately.
+	if (ED_IS_SHORTCUT("property_editor/show_in_filesystem", p_event)) {
+		_menu_option(RESOURCE_SHOW_IN_FILESYSTEM);
+		accept_event();
+		return;
+	}
+	if (ED_IS_SHORTCUT("property_editor/paste_resource", p_event)) {
+		_menu_option(RESOURCE_EDIT_CLIPBOARD);
+		accept_event();
+		return;
 	}
 }
 
