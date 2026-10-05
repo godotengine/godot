@@ -240,7 +240,7 @@ void main() {
 				emission = clamp(emission, vec3(0.0), vec3(4.0));
 				// Scale to fit into R11G11B10 with a range of 0-4
 				uvec3 emission_u = uvec3(emission.r * 255.0, emission.g * 255.0, emission.b * 255.0);
-				// Each color channel has 10 bits allocated, leftmost 2 bits are unused. Then pack them into a 32 bit uint
+				// Each color channel has 10 bits allocated, leftmost 2 bits are unused to avoid biasing the final color at low densities. Then pack them into a 32 bit uint.
 				uint final_emission = emission_u.r << 20 | emission_u.g << 10 | emission_u.b;
 #ifdef NO_IMAGE_ATOMICS
 				uint prev_emission = atomicAdd(emissive_only_map[lpos], final_emission);
