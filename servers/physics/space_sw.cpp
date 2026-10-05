@@ -86,7 +86,7 @@ int PhysicsDirectSpaceStateSW::intersect_point(const Vector3 &p_point, ShapeResu
 		}
 
 		r_results[cc].collider_id = col_obj->get_instance_id();
-		if (r_results[cc].collider_id != 0) {
+		if (r_results[cc].collider_id.is_valid()) {
 			r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
 		} else {
 			r_results[cc].collider = nullptr;
@@ -166,7 +166,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vecto
 	}
 
 	r_result.collider_id = res_obj->get_instance_id();
-	if (r_result.collider_id != 0) {
+	if (r_result.collider_id.is_valid()) {
 		r_result.collider = ObjectDB::get_instance(r_result.collider_id);
 	} else {
 		r_result.collider = nullptr;
@@ -219,7 +219,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Transfo
 
 		if (r_results) {
 			r_results[cc].collider_id = col_obj->get_instance_id();
-			if (r_results[cc].collider_id != 0) {
+			if (r_results[cc].collider_id.is_valid()) {
 				r_results[cc].collider = ObjectDB::get_instance(r_results[cc].collider_id);
 			} else {
 				r_results[cc].collider = nullptr;
@@ -730,7 +730,7 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 	//but is it right? who knows at this point..
 
 	if (r_result) {
-		r_result->collider_id = 0;
+		r_result->collider_id = ObjectID();
 		r_result->collider_shape = 0;
 	}
 

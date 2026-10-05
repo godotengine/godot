@@ -109,7 +109,6 @@ private:
 		Vector<Button> buttons;
 
 		Cell() {
-			custom_draw_obj = 0;
 			custom_button = false;
 			mode = TreeItem::CELL_MODE_STRING;
 			min = 0;

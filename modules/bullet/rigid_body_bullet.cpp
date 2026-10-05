@@ -378,7 +378,7 @@ void RigidBodyBullet::dispatch_callbacks() {
 		Object *obj = ObjectDB::get_instance(force_integration_callback->id);
 		if (!obj) {
 			// Remove integration callback
-			set_force_integration_callback(0, StringName());
+			set_force_integration_callback(ObjectID(), StringName());
 		} else {
 			const Variant *vp[2] = { &variantBodyDirect, &force_integration_callback->udata };
 
@@ -406,7 +406,7 @@ void RigidBodyBullet::set_force_integration_callback(ObjectID p_id, const String
 		force_integration_callback = nullptr;
 	}
 
-	if (p_id != 0) {
+	if (p_id.is_valid()) {
 		force_integration_callback = memnew(ForceIntegrationCallback);
 		force_integration_callback->id = p_id;
 		force_integration_callback->method = p_method;
