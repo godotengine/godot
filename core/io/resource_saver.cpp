@@ -113,7 +113,11 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 			rwcopy->set_path(local_path);
 		}
 
+		p_resource->before_save();
+
 		err = saver[i]->save(p_path, p_resource, p_flags);
+
+		p_resource->after_save();
 
 		if (err == OK) {
 #ifdef TOOLS_ENABLED
