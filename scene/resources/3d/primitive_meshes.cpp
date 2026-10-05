@@ -429,7 +429,7 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 
 	// The end edge vertex is duplicated to give it a different texture coordinate.
 	const uint32_t points_per_ring = radial_segments + 1;
-	const uint32_t num_ring_sections = 3; // Top hemisphere, middle cylinder, bottom hemisphere.
+	const uint32_t num_ring_sections = (mid_height != 0.0f ? 3 : 2);
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
 	const uint32_t num_points = (rings + 2) * points_per_ring * num_ring_sections;
@@ -447,7 +447,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 	}
 	LocalVector<int> indices;
 	const uint32_t indices_per_ring = radial_segments * 6;
-	const uint32_t num_bands = num_ring_sections * (rings + 1);
+	// The top and bottom rings each use half the indices to connect to the poles.
+	const uint32_t num_bands = num_ring_sections * (rings + 1) - 1;
 	const uint32_t num_indices = num_bands * indices_per_ring;
 	indices.reserve(num_indices);
 	point = 0;
@@ -498,10 +499,11 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			point++;
 
 			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
+				if (j > 1) {
+					indices.push_back(prevrow + i - 1);
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i);
 				indices.push_back(thisrow + i - 1);
@@ -513,50 +515,51 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 	}
 
 	/* cylinder */
-	thisrow = point;
-	prevrow = 0;
-	for (j = 0; j <= (rings + 1); j++) {
-		v = j;
-		v /= (rings + 1);
-
-		y = (height - 2.0 * radius) * v;
-		y = (0.5 * height - radius) - y;
-
-		for (i = 0; i <= radial_segments; i++) {
-			u = i;
-			u /= radial_segments;
-
-			if (i == radial_segments) {
-				x = 0.0;
-				z = 1.0;
-			} else {
-				x = -Math::sin(u * Math::TAU);
-				z = Math::cos(u * Math::TAU);
-			}
-
-			Vector3 p = Vector3(x * radius, y, -z * radius);
-			points.push_back(p);
-			normals.push_back(Vector3(x, 0.0, -z));
-			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, one_third + (v * one_third)));
-			if (p_add_uv2) {
-				uv2s.push_back(Vector2(u * radial_h, radial_v + (v * height_v)));
-			}
-			point++;
-
-			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
-			}
-		}
-
-		prevrow = thisrow;
+	if (mid_height != 0.0f) {
 		thisrow = point;
+		prevrow = 0;
+		for (j = 0; j <= (rings + 1); j++) {
+			v = j;
+			v /= (rings + 1);
+
+			y = mid_height * (0.5 - v);
+
+			for (i = 0; i <= radial_segments; i++) {
+				u = i;
+				u /= radial_segments;
+
+				if (i == radial_segments) {
+					x = 0.0;
+					z = 1.0;
+				} else {
+					x = -Math::sin(u * Math::TAU);
+					z = Math::cos(u * Math::TAU);
+				}
+
+				Vector3 p = Vector3(x * radius, y, -z * radius);
+				points.push_back(p);
+				normals.push_back(Vector3(x, 0.0, -z));
+				ADD_TANGENT(-z, 0.0, -x, 1.0)
+				uvs.push_back(Vector2(u, one_third + (v * one_third)));
+				if (p_add_uv2) {
+					uv2s.push_back(Vector2(u * radial_h, radial_v + (v * height_v)));
+				}
+				point++;
+
+				if (i > 0 && j > 0) {
+					indices.push_back(prevrow + i - 1);
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i - 1);
+
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
+			}
+
+			prevrow = thisrow;
+			thisrow = point;
+		}
 	}
 
 	/* bottom hemisphere */
@@ -600,10 +603,11 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 				indices.push_back(prevrow + i - 1);
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
+				if (j < (rings + 1)) {
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
 			}
 		}
 
@@ -1104,8 +1108,10 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	float bottom_h = bottom_circumference / horizontal_length;
 	float padding_h = p_uv2_padding / horizontal_length;
 
-	const bool has_cap_top_mesh = cap_top && (top_radius > 0.0f);
-	const bool has_cap_bottom_mesh = cap_bottom && (bottom_radius > 0.0f);
+	const bool non_zero_top_radius = top_radius != 0.0f;
+	const bool non_zero_bottom_radius = bottom_radius != 0.0f;
+	const bool has_cap_top_mesh = cap_top && non_zero_top_radius;
+	const bool has_cap_bottom_mesh = cap_bottom && non_zero_bottom_radius;
 
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
@@ -1128,7 +1134,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	LocalVector<int> indices;
 	const uint32_t indices_per_cap = radial_segments * 3;
 	const uint32_t half_indices_per_ring = radial_segments * 3;
-	const uint32_t radial_segment_edges = 2;
+	const uint32_t radial_segment_edges = (non_zero_top_radius ? 1 : 0) + (non_zero_bottom_radius ? 1 : 0);
 	const uint32_t cap_indices = (has_cap_top_mesh ? indices_per_cap : 0) + (has_cap_bottom_mesh ? indices_per_cap : 0);
 	const uint32_t num_indices = (rings * 2 + radial_segment_edges) * half_indices_per_ring + cap_indices;
 	indices.reserve(num_indices);
@@ -1177,13 +1183,16 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			point++;
 
 			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
+				if (j > 1 || non_zero_top_radius) {
+					indices.push_back(prevrow + i - 1);
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
+				if (j < (rings + 1) || non_zero_bottom_radius) {
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
 			}
 		}
 
@@ -2051,7 +2060,8 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 	}
 	LocalVector<int> indices;
 	const uint32_t indices_per_ring = radial_segments * 6;
-	const uint32_t num_indices = (rings + 1) * indices_per_ring;
+	// The top and bottom rings each use half the indices to connect to the poles.
+	const uint32_t num_indices = rings * indices_per_ring;
 	indices.reserve(num_indices);
 	point = 0;
 
@@ -2106,13 +2116,16 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 			point++;
 
 			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
+				if (j > 1) {
+					indices.push_back(prevrow + i - 1);
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
+				if (j < (rings + 1)) {
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
 			}
 		}
 
