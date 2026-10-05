@@ -450,7 +450,7 @@ static void _find_scripts(Node *p_base, Node *p_current, HashSet<Ref<Script>> &r
 	}
 
 	if (p_current->get_script_instance()) {
-		Script *scr = p_current->get_script_ptr();
+		Script *scr = p_current->get_script();
 		if (scr != nullptr) {
 			r_used_scripts.insert(scr);
 		}
@@ -1585,7 +1585,7 @@ static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_curr
 	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return;
 	}
-	Script *c = p_current->get_script_ptr();
+	Script *c = p_current->get_script();
 
 	if (c != nullptr) {
 		r_scripts.insert(c);
@@ -3011,7 +3011,7 @@ Error DocumentEditorContainer::close_file(const String &p_file) {
 
 void DocumentEditorContainer::_add_callback(Object *p_obj, const String &p_function, const PackedStringArray &p_args) {
 	ERR_FAIL_NULL(p_obj);
-	Script *scr = p_obj->get_script_ptr();
+	Script *scr = p_obj->get_script();
 	ERR_FAIL_NULL(scr);
 
 	if (!scr->get_language()->can_make_function()) {

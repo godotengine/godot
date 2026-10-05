@@ -63,7 +63,7 @@ static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
 		return nullptr;
 	}
-	if (p_node->get_script_ptr() != nullptr) {
+	if (p_node->get_script() != nullptr) {
 		return p_node;
 	}
 
@@ -174,7 +174,7 @@ void ConnectDialog::ok_pressed() {
 	if (!target) {
 		return; // Nothing selected in the tree, not an error.
 	}
-	if (target->get_script_ptr() == nullptr) {
+	if (target->get_script() == nullptr) {
 		if (!target->has_method(method_name)) {
 			error->set_text(TTR("Target method not found. Specify a valid method or attach a script to the target node."));
 			error->popup_centered();
@@ -492,7 +492,7 @@ void ConnectDialog::_update_warning_label() {
 		return;
 	}
 
-	Script *scr = dst->get_script_ptr();
+	Script *scr = dst->get_script();
 	if (scr == nullptr) {
 		warning_label->set_visible(false);
 		return;
@@ -1010,7 +1010,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	// If the function is found in an inherited class or script no need to do anything
 	// except making a connection.
 	bool add_script_function_request = false;
-	Script *scr = target->get_script_ptr();
+	Script *scr = target->get_script();
 
 	if (scr != nullptr && !ClassDB::has_method(target->get_class(), cd.method)) {
 		// Check in target's own script.
@@ -1044,7 +1044,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 			String class_name = cd.source->get_class();
 			bool found = false;
 
-			Script *source_script = cd.source->get_script_ptr();
+			Script *source_script = cd.source->get_script();
 			if (source_script != nullptr) {
 				found = source_script->has_script_signal(cd.signal);
 				if (found) {
@@ -1238,7 +1238,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	Node *selected_node = Object::cast_to<Node>(selected_object);
 	Node *dst_node = selected_node->get_owner() ? selected_node->get_owner() : selected_node;
-	if (!dst_node || dst_node->get_script_ptr() == nullptr) {
+	if (!dst_node || dst_node->get_script() == nullptr) {
 		dst_node = _find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root());
 	}
 	cd.source = selected_object;
@@ -1290,7 +1290,7 @@ void ConnectionsDock::_go_to_method(TreeItem &p_item) {
 		return;
 	}
 
-	Script *scr = cd.target->get_script_ptr();
+	Script *scr = cd.target->get_script();
 
 	if (scr != nullptr && ScriptEditor::get_singleton()->script_goto_method(scr, cd.method)) {
 		ScriptEditor::get_singleton()->focus_script_editor(scr); // TODO: Move this to goto_method().
@@ -1566,7 +1566,7 @@ void ConnectionsDock::update_tree() {
 	DocTools *doc_data = EditorHelp::get_doc_data();
 	EditorData &editor_data = EditorNode::get_editor_data();
 	StringName native_base = selected_object->get_class();
-	Script *script_base = selected_object->get_script_ptr();
+	Script *script_base = selected_object->get_script();
 
 	bool use_monospace_font = EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols");
 	Ref<Font> monospace_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));

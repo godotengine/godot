@@ -749,9 +749,9 @@ public:
 #endif // DEBUG_ENABLED
 
 	DEBUG_VIRTUAL void set_script(const Variant &p_script);
-	// Prefer `get_script_ptr` for internal usage.
-	DEBUG_VIRTUAL Variant get_script() const;
-	Script *get_script_ptr() const;
+	DEBUG_VIRTUAL Script *get_script() const;
+	// Prefer `get_script` for internal usage.
+	Variant get_script_bind() const;
 
 	DEBUG_VIRTUAL bool has_meta(const StringName &p_name) const;
 	DEBUG_VIRTUAL void set_meta(const StringName &p_name, const Variant &p_value);

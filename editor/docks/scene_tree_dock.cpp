@@ -873,7 +873,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			for (int i = 0; i < selection.size(); i++) {
 				Node *n = Object::cast_to<Node>(selection[i]);
-				Script *existing = n->get_script_ptr();
+				Script *existing = n->get_script();
 				Ref<Script> empty = EditorNode::get_singleton()->get_object_custom_type_base(n);
 				if (empty != existing) {
 					undo_redo->add_do_method(n, "set_script", empty);
@@ -1339,7 +1339,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_OPEN_DOCUMENTATION: {
 			for (const Node *full_selection : editor_selection->get_full_selected_node_list()) {
 				String class_name;
-				Script *script_base = full_selection->get_script_ptr();
+				Script *script_base = full_selection->get_script();
 				while (script_base != nullptr) {
 					class_name = script_base->get_global_name();
 					if (!class_name.is_empty()) {
@@ -2714,7 +2714,7 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, selection.front()->get());
 	for (Node *E : selection) {
-		Script *existing = E->get_script_ptr();
+		Script *existing = E->get_script();
 		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", E);
 		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", E);
 		undo_redo->add_do_method(E, "set_script", p_script);
@@ -3081,7 +3081,7 @@ void SceneTreeDock::_update_script_button() {
 
 		for (int i = 0; i < selection.size(); i++) {
 			Node *n = Object::cast_to<Node>(selection[i]);
-			Script *s = n->get_script_ptr();
+			Script *s = n->get_script();
 			Ref<Script> cts;
 
 			if (n->has_meta(SceneStringName(_custom_type_script))) {
@@ -3987,7 +3987,7 @@ void SceneTreeDock::_script_dropped(const String &p_file, Node *p_to_node) {
 		undo_redo->add_do_method(InspectorDock::get_singleton(), "store_script_properties", p_to_node);
 		undo_redo->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", p_to_node);
 		undo_redo->add_do_method(p_to_node, "set_script", scr);
-		undo_redo->add_undo_method(p_to_node, "set_script", p_to_node->get_script());
+		undo_redo->add_undo_method(p_to_node, "set_script", p_to_node->get_script_bind());
 		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", p_to_node);
 		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", p_to_node);
 		undo_redo->add_do_method(this, "_queue_update_script_button");
@@ -4134,7 +4134,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_editor_theme_icon(SNAME("Collapse")), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
 
 		if (selection.size() == 1) {
-			existing_script = selected->get_script_ptr();
+			existing_script = selected->get_script();
 		}
 
 		if (EditorNode::get_singleton()->get_object_custom_type_base(selected) == existing_script) {
@@ -4229,7 +4229,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		} else if (full_selection.size() > 1) {
 			bool script_exists = false;
 			for (Node *E : full_selection) {
-				if (E->get_script_ptr() != nullptr) {
+				if (E->get_script() != nullptr) {
 					script_exists = true;
 					break;
 				}
@@ -4557,7 +4557,7 @@ void SceneTreeDock::attach_script_to_selected(bool p_extend) {
 		selected = selection.front()->get();
 	}
 
-	Script *existing = selected->get_script_ptr();
+	Script *existing = selected->get_script();
 
 	String path = selected->get_scene_file_path();
 	if (path.is_empty()) {

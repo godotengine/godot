@@ -696,7 +696,7 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 					break;
 				}
 
-				Script *base_script = p_property_object->get_script_ptr();
+				Script *base_script = p_property_object->get_script();
 				while (base_script != nullptr) {
 					if (base_script->get_global_name() == pi.hint_string) {
 						si->set(E.first, E.second);

@@ -5238,7 +5238,7 @@ void EditorNode::update_node_from_node_modification_entry(Node *p_node, Modifica
 		for (const Connection &E : p_node_modification.connections_from) {
 			Connection conn = E;
 
-			bool valid = p_node->has_method(conn.callable.get_method()) || p_node->get_script_ptr() == nullptr || p_node->get_script_ptr()->has_method(conn.callable.get_method());
+			bool valid = p_node->has_method(conn.callable.get_method()) || p_node->get_script() == nullptr || p_node->get_script()->has_method(conn.callable.get_method());
 			ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", conn.signal.get_object()->get_class(), conn.signal.get_name(), conn.callable.get_object()->get_class(), conn.callable.get_method()));
 
 			// Get the object which the signal is connected from.
@@ -5793,7 +5793,7 @@ Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) cons
 		return PropertyUtils::get_custom_type_script(node);
 	}
 
-	Script *scr = p_object->get_script_ptr();
+	Script *scr = p_object->get_script();
 
 	if (scr != nullptr) {
 		// Uncommenting would break things! Consider adding a parameter if you need it.
@@ -5825,7 +5825,7 @@ Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) cons
 StringName EditorNode::get_object_custom_type_name(const Object *p_object) const {
 	ERR_FAIL_NULL_V(p_object, StringName());
 
-	Script *scr = p_object->get_script_ptr();
+	Script *scr = p_object->get_script();
 	if (scr == nullptr) {
 		scr = const_cast<Script *>(Object::cast_to<const Script>(p_object));
 	}
@@ -5968,7 +5968,7 @@ Ref<Texture2D> EditorNode::_get_class_or_script_icon(const String &p_class, cons
 Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) {
 	ERR_FAIL_NULL_V_MSG(p_object, nullptr, "Object cannot be null.");
 
-	Script *scr = p_object->get_script_ptr();
+	Script *scr = p_object->get_script();
 
 	const EditorDebuggerRemoteObjects *robjs = Object::cast_to<EditorDebuggerRemoteObjects>(p_object);
 	if (robjs) {
@@ -6027,7 +6027,7 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringName &p_class) {
 	ERR_FAIL_NULL_V(p_object, false);
 
-	Script *scr = p_object->get_script_ptr();
+	Script *scr = p_object->get_script();
 	if (scr == nullptr) {
 		scr = Object::cast_to<Script>(const_cast<Object *>(p_object));
 	}

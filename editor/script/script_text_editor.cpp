@@ -1111,7 +1111,7 @@ static Vector<Node *> _find_all_node_for_script(Node *p_base, Node *p_current, c
 		return nodes;
 	}
 
-	Script *c = p_current->get_script_ptr();
+	Script *c = p_current->get_script();
 	if (p_script == c) {
 		nodes.push_back(p_current);
 	}
@@ -1128,7 +1128,7 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	if (p_current->get_owner() != p_base && p_base != p_current) {
 		return nullptr;
 	}
-	Script *c = p_current->get_script_ptr();
+	Script *c = p_current->get_script();
 	if (p_script == c) {
 		return p_current;
 	}
@@ -2027,7 +2027,7 @@ void ScriptTextEditor::_set_drop_info_text(const Dictionary &p_info) const {
 }
 
 static Node *_find_script_node(Node *p_current_node, const Ref<Script> &script) {
-	if (script == p_current_node->get_script_ptr()) {
+	if (script == p_current_node->get_script()) {
 		return p_current_node;
 	}
 
@@ -2094,7 +2094,7 @@ String ScriptTextEditor::_get_dropped_resource_as_exported_member(const Ref<Reso
 	variable_name = variable_name.to_snake_case().validate_unicode_identifier();
 
 	StringName class_name = p_resource->get_class();
-	Script *resource_script = p_resource->get_script_ptr();
+	Script *resource_script = p_resource->get_script();
 
 	if (resource_script != nullptr) {
 		StringName global_resource_script_name = resource_script->get_global_name();
@@ -2258,7 +2258,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
 				if (use_type) {
 					StringName custom_class_name;
-					Script *node_script = node->get_script_ptr();
+					Script *node_script = node->get_script();
 					while (node_script != nullptr && custom_class_name.is_empty()) {
 						custom_class_name = node_script->get_global_name();
 						node_script = node_script->get_base_script().ptr();
@@ -2288,7 +2288,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
 				StringName custom_class_name;
-				Script *node_script = node->get_script_ptr();
+				Script *node_script = node->get_script();
 				while (node_script != nullptr && custom_class_name.is_empty()) {
 					custom_class_name = node_script->get_global_name();
 					node_script = node_script->get_base_script().ptr();
@@ -2376,7 +2376,7 @@ Vector<ObjectID> ScriptTextEditor::_get_objects_for_export_assignment() const {
 		MultiNodeEdit *multi_node_edit = Object::cast_to<MultiNodeEdit>(edited_object);
 
 		if (node_edit != nullptr) {
-			if (script == node_edit->get_script_ptr()) {
+			if (script == node_edit->get_script()) {
 				objects.push_back(node_edit->get_instance_id());
 			}
 		} else if (multi_node_edit != nullptr) {
@@ -2384,7 +2384,7 @@ Vector<ObjectID> ScriptTextEditor::_get_objects_for_export_assignment() const {
 			for (int i = 0; i < multi_node_edit->get_node_count(); i++) {
 				NodePath np = multi_node_edit->get_node(i);
 				Node *node = es->get_node(np);
-				if (script == node->get_script_ptr()) {
+				if (script == node->get_script()) {
 					objects.push_back(node->get_instance_id());
 				}
 			}

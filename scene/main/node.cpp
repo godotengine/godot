@@ -3314,7 +3314,7 @@ void Node::_replace_connections_target(Node *p_new_target) {
 	for (const Connection &c : cl) {
 		if (c.flags & CONNECT_PERSIST) {
 			c.signal.get_object()->disconnect(c.signal.get_name(), Callable(this, c.callable.get_method()));
-			bool valid = p_new_target->has_method(c.callable.get_method()) || p_new_target->get_script_ptr() == nullptr || p_new_target->get_script_ptr()->has_method(c.callable.get_method());
+			bool valid = p_new_target->has_method(c.callable.get_method()) || p_new_target->get_script() == nullptr || p_new_target->get_script()->has_method(c.callable.get_method());
 			ERR_CONTINUE_MSG(!valid, vformat("Attempt to connect signal '%s.%s' to nonexistent method '%s.%s'.", c.signal.get_object()->get_class(), c.signal.get_name(), c.callable.get_object()->get_class(), c.callable.get_method()));
 			c.signal.get_object()->connect(c.signal.get_name(), Callable(p_new_target, c.callable.get_method()), c.flags);
 		}
@@ -3450,9 +3450,9 @@ static void _print_orphan_nodes_routine(Object *p_obj, void *p_user_data) {
 	}
 
 	String source;
-	Variant script = n->get_script();
-	if (!script.is_null()) {
-		Resource *obj = Object::cast_to<Resource>(script);
+	Script *script = n->get_script();
+	if (script != nullptr) {
+		Resource *obj = static_cast<Resource *>(script);
 		source = obj->get_path();
 	}
 
@@ -4197,8 +4197,8 @@ void Node::set_script(const Variant &p_script) {
 	Object::set_script(p_script);
 }
 
-Variant Node::get_script() const {
-	ERR_THREAD_GUARD_V(Variant());
+Script *Node::get_script() const {
+	ERR_THREAD_GUARD_V(nullptr);
 	return Object::get_script();
 }
 

@@ -61,7 +61,7 @@ void GDScriptWorkspace::_bind_methods() {
 }
 
 void GDScriptWorkspace::apply_new_signal(Object *obj, String function, PackedStringArray args) {
-	Script *scr = obj->get_script_ptr();
+	Script *scr = obj->get_script();
 
 	if (scr->get_language()->get_name() != "GDScript") {
 		return;
@@ -623,7 +623,7 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<E
 
 			while (!stack.is_empty()) {
 				current = Object::cast_to<Node>(stack.pop_back());
-				GDScript *scr = Object::cast_to<GDScript>(current->get_script_ptr());
+				GDScript *scr = Object::cast_to<GDScript>(current->get_script());
 				if (scr != nullptr && GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
 					break;
 				}
@@ -632,7 +632,7 @@ void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<E
 				}
 			}
 
-			GDScript *scr = Object::cast_to<GDScript>(current->get_script_ptr());
+			GDScript *scr = Object::cast_to<GDScript>(current->get_script());
 			if (scr == nullptr || !GDScript::is_canonically_equal_paths(scr->get_path(), path)) {
 				current = owner_scene_node;
 			}

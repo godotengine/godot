@@ -1911,7 +1911,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";
 		if (packed_scene.is_null()) {
 			title += "type=\"" + _resource_get_class(p_resource) + "\" ";
-			Script *script = p_resource->get_script_ptr();
+			Script *script = p_resource->get_script();
 			if (script != nullptr && script->get_global_name()) {
 				title += "script_class=\"" + String(script->get_global_name()) + "\" ";
 			}

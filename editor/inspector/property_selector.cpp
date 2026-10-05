@@ -596,7 +596,7 @@ void PropertySelector::select_method_from_instance(Object *p_instance, const Str
 	type = Variant::NIL;
 	script = ObjectID();
 	{
-		Script *scr = p_instance->get_script_ptr();
+		Script *scr = p_instance->get_script();
 		if (scr != nullptr) {
 			script = scr->get_instance_id();
 		}

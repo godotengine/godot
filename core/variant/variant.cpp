@@ -3572,7 +3572,7 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 	String base_text;
 	if (p_base) {
 		base_text = p_base->get_class();
-		Script *script = p_base->get_script_ptr();
+		Script *script = p_base->get_script();
 		if (script != nullptr && script->get_path().is_resource_file()) {
 			base_text += "(" + script->get_path().get_file() + ")";
 		}

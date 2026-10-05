@@ -881,7 +881,7 @@ Ref<Script> VisualShaderGraphPlugin::get_node_script(int p_node_id) const {
 
 	Ref<VisualShaderNodeCustom> custom = Ref<VisualShaderNodeCustom>(links[p_node_id].visual_node);
 	if (custom.is_valid()) {
-		return custom->get_script_ptr();
+		return custom->get_script();
 	}
 
 	return Ref<Script>();
@@ -2268,7 +2268,7 @@ void VisualShaderEditor::add_custom_type(const String &p_name, const String &p_t
 
 Dictionary VisualShaderEditor::get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node) {
 	Dictionary dict;
-	dict["script"] = p_custom_node->get_script();
+	dict["script"] = p_custom_node->get_script_bind();
 	dict["name"] = p_custom_node->_get_name();
 	dict["description"] = p_custom_node->_get_description();
 	dict["return_icon_type"] = p_custom_node->_get_return_icon_type();
@@ -2399,7 +2399,7 @@ void VisualShaderEditor::_update_custom_script(const Ref<Script> &p_script) {
 						continue;
 					}
 					Ref<VisualShaderNodeCustom> custom_node = vsnode;
-					if (custom_node.is_null() || p_script != custom_node->get_script_ptr()) {
+					if (custom_node.is_null() || p_script != custom_node->get_script()) {
 						continue;
 					}
 					need_rebuild = true;
@@ -2515,7 +2515,7 @@ void VisualShaderEditor::_resources_removed() {
 								continue;
 							}
 							Ref<VisualShaderNodeCustom> custom_node = vsnode;
-							if (custom_node.is_null() || scr != custom_node->get_script_ptr()) {
+							if (custom_node.is_null() || scr != custom_node->get_script()) {
 								continue;
 							}
 							visual_shader->remove_node(type, node_id);

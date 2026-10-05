@@ -114,7 +114,7 @@ bool GDScriptDataType::is_type(const Variant &p_variant, bool p_allow_implicit_c
 				return !was_freed;
 			}
 
-			Script *base = obj->get_script_ptr();
+			Script *base = obj->get_script();
 			bool valid = false;
 			while (base != nullptr) {
 				if (base == script_type) {
