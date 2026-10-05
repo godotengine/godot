@@ -195,6 +195,7 @@
 		<constant name="ARRAY_FLAG_USE_VERTEX_CACHE_OPTIMIZATION" value="4194304" enum="ArrayFormat">
 			Flag used to request vertex cache optimization.
 			This re-orders indices in order to make best use of GPU vertex caches, which can improve rendering performance particularly with high poly models.
+			[b]Note:[/b] This flag may change the rendering order of individual polygons. When using transparency or alpha blending, this may change the visual result. Be sure to turn this option off for a mesh if you notice it causing sorting problems.
 		</constant>
 		<constant name="ARRAY_COMPRESS_DEFAULT" value="2194432" enum="ArrayFormat">
 			Used to set flags [constant ARRAY_COMPRESS_VERTEX], [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV], [constant ARRAY_COMPRESS_TEX_UV2], [constant ARRAY_COMPRESS_WEIGHTS], and [constant ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION] quickly.
