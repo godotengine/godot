@@ -475,7 +475,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		real_t rot = new_transform.get_rotation() - get_transform().get_rotation();
 		angular_velocity = remainder(rot, 2.0 * Math_PI) / p_step;
 
-		do_motion = true;
+		do_motion = continuous_cd_mode != Physics2DServer::CCD_MODE_DISABLED;
 
 		/*
 		for(int i=0;i<get_shape_count();i++) {
@@ -542,7 +542,7 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	}
 
 	if (mode == Physics2DServer::BODY_MODE_KINEMATIC) {
-		_set_transform(new_transform, false);
+		_set_transform(new_transform, continuous_cd_mode == Physics2DServer::CCD_MODE_DISABLED);
 		_set_inv_transform(new_transform.affine_inverse());
 		if (contacts.size() == 0 && linear_velocity == Vector2() && angular_velocity == 0) {
 			set_active(false); //stopped moving, deactivate
