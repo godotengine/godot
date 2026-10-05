@@ -34,11 +34,16 @@
 
 #include <thirdparty/misc/fastlz.h>
 
+#include <zlib.h>
 #include <zstd.h>
 
 #ifdef BROTLI_ENABLED
 #include <brotli/decode.h>
 #endif
+
+// Validate our forward-declared magic numbers.
+static_assert(Z_DEFAULT_COMPRESSION == -1);
+static_assert(ZSTD_WINDOWLOG_LIMIT_DEFAULT == 27);
 
 namespace {
 struct ZstdDecompressorContext {
