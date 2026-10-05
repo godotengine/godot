@@ -182,7 +182,9 @@ void Trail3D::_notification(int p_what) {
 
 void Trail3D::set_width(float p_width) {
 	width = p_width;
-	_needs_rebuilding = true;
+	if (limit_mode == LIMIT_MODE_MAX_LENGTH && !RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+	}
 }
 
 float Trail3D::get_width() const {
@@ -219,8 +221,10 @@ Ref<Curve> Trail3D::get_width_curve() const {
 }
 
 void Trail3D::set_color(const Color &p_color) {
-	if (p_color != color) {
-		_needs_rebuilding = true;
+	if (p_color != color && limit_mode == LIMIT_MODE_MAX_LENGTH) {
+		if (!RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
+			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+		}
 	}
 	color = p_color;
 }
@@ -612,11 +616,11 @@ void Trail3D::_do_rebuild() {
 			custom.y = tangent.y;
 			custom.z = tangent.z;
 
-			custom.w = half_width;
+			custom.w = -half_width;
 			_write_custom(custom, j2, write_attrib);
 			custom.w = 0.;
 			_write_custom(custom, j1, write_attrib);
-			custom.w = -half_width;
+			custom.w = half_width;
 			_write_custom(custom, j0, write_attrib);
 		}
 
