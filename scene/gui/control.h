@@ -30,12 +30,10 @@
 
 #pragma once
 
-#include "core/input/input.h"
 #include "core/object/gdvirtual.gen.h"
 #include "scene/main/canvas_item.h"
 #include "scene/resources/theme.h"
 #include "servers/display/accessibility_server_enums.h"
-#include "servers/display/display_server.h"
 
 class Label;
 class Panel;
@@ -354,9 +352,11 @@ private:
 		StringName translation_context;
 		AutoTranslateMode tooltip_auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
-		// Drag and drop handling.
-		CursorShape can_drop_cursor = CURSOR_CAN_DROP;
-		CursorShape can_not_drop_cursor = CURSOR_FORBIDDEN;
+		bool use_custom_cursor_image = false;
+		Ref<Texture2D> allowed_drop_texture;
+		Vector2 allowed_drop_hotspot;
+		Ref<Texture2D> forbidden_drop_texture;
+		Vector2 forbidden_drop_hotspot;
 	} data;
 
 	// Dynamic properties.
@@ -893,11 +893,18 @@ public:
 
 	virtual String accessibility_get_contextual_info() const;
 
-	// Drag and drop handling.
-	void set_can_drop_cursor_shape(CursorShape p_shape);
-	CursorShape get_can_drop_cursor_shape() const;
-	void set_cannot_drop_cursor_shape(CursorShape p_shape);
-	CursorShape get_cannot_drop_cursor_shape() const;
+	void set_use_custom_cursor_image(bool p_enable);
+	bool is_using_custom_cursor_image() const;
+
+	void set_allowed_drop_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_allowed_drop_texture() const;
+	void set_allowed_drop_hotspot(const Vector2 &p_hotspot);
+	Vector2 get_allowed_drop_hotspot() const;
+
+	void set_forbidden_drop_texture(const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_forbidden_drop_texture() const;
+	void set_forbidden_drop_hotspot(const Vector2 &p_hotspot);
+	Vector2 get_forbidden_drop_hotspot() const;
 
 	Control();
 	~Control();

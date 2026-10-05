@@ -2880,26 +2880,54 @@ void Control::accessibility_drop() {
 	queue_accessibility_update();
 }
 
-void Control::set_can_drop_cursor_shape(CursorShape p_shape) {
+void Control::set_use_custom_cursor_image(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX(int(p_shape), DisplayServerEnums::CURSOR_MAX);
-	data.can_drop_cursor = p_shape;
+	data.use_custom_cursor_image = p_enable;
 }
 
-Control::CursorShape Control::get_can_drop_cursor_shape() const {
-	ERR_READ_THREAD_GUARD_V(CURSOR_CAN_DROP);
-	return data.can_drop_cursor;
+bool Control::is_using_custom_cursor_image() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return data.use_custom_cursor_image;
 }
 
-void Control::set_cannot_drop_cursor_shape(CursorShape p_shape) {
+void Control::set_allowed_drop_texture(const Ref<Texture2D> &p_texture) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_INDEX(int(p_shape), DisplayServerEnums::CURSOR_MAX);
-	data.can_not_drop_cursor = p_shape;
+	data.allowed_drop_texture = p_texture;
 }
 
-Control::CursorShape Control::get_cannot_drop_cursor_shape() const {
-	ERR_READ_THREAD_GUARD_V(CURSOR_FORBIDDEN);
-	return data.can_not_drop_cursor;
+Ref<Texture2D> Control::get_allowed_drop_texture() const {
+	ERR_READ_THREAD_GUARD_V(Ref<Texture2D>());
+	return data.allowed_drop_texture;
+}
+
+void Control::set_allowed_drop_hotspot(const Vector2 &p_hotspot) {
+	ERR_MAIN_THREAD_GUARD;
+	data.allowed_drop_hotspot = p_hotspot;
+}
+
+Vector2 Control::get_allowed_drop_hotspot() const {
+	ERR_READ_THREAD_GUARD_V(Vector2());
+	return data.allowed_drop_hotspot;
+}
+
+void Control::set_forbidden_drop_texture(const Ref<Texture2D> &p_texture) {
+	ERR_MAIN_THREAD_GUARD;
+	data.forbidden_drop_texture = p_texture;
+}
+
+Ref<Texture2D> Control::get_forbidden_drop_texture() const {
+	ERR_READ_THREAD_GUARD_V(Ref<Texture2D>());
+	return data.forbidden_drop_texture;
+}
+
+void Control::set_forbidden_drop_hotspot(const Vector2 &p_hotspot) {
+	ERR_MAIN_THREAD_GUARD;
+	data.forbidden_drop_hotspot = p_hotspot;
+}
+
+Vector2 Control::get_forbidden_drop_hotspot() const {
+	ERR_READ_THREAD_GUARD_V(Vector2());
+	return data.forbidden_drop_hotspot;
 }
 
 String Control::get_accessibility_container_name(const Node *p_node) const {
@@ -5142,10 +5170,20 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_focus_previous"), &Control::get_focus_previous);
 
 	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
-	ClassDB::bind_method(D_METHOD("set_can_drop_cursor_shape", "shape"), &Control::set_can_drop_cursor_shape);
-	ClassDB::bind_method(D_METHOD("get_can_drop_cursor_shape"), &Control::get_can_drop_cursor_shape);
-	ClassDB::bind_method(D_METHOD("set_cannot_drop_cursor_shape", "shape"), &Control::set_cannot_drop_cursor_shape);
-	ClassDB::bind_method(D_METHOD("get_cannot_drop_cursor_shape"), &Control::get_cannot_drop_cursor_shape);
+
+	ClassDB::bind_method(D_METHOD("set_use_custom_cursor_image", "enable"), &Control::set_use_custom_cursor_image);
+	ClassDB::bind_method(D_METHOD("is_using_custom_cursor_image"), &Control::is_using_custom_cursor_image);
+
+	ClassDB::bind_method(D_METHOD("set_allowed_drop_texture", "texture"), &Control::set_allowed_drop_texture);
+	ClassDB::bind_method(D_METHOD("get_allowed_drop_texture"), &Control::get_allowed_drop_texture);
+	ClassDB::bind_method(D_METHOD("set_allowed_drop_hotspot", "hotspot"), &Control::set_allowed_drop_hotspot);
+	ClassDB::bind_method(D_METHOD("get_allowed_drop_hotspot"), &Control::get_allowed_drop_hotspot);
+
+	ClassDB::bind_method(D_METHOD("set_forbidden_drop_texture", "texture"), &Control::set_forbidden_drop_texture);
+	ClassDB::bind_method(D_METHOD("get_forbidden_drop_texture"), &Control::get_forbidden_drop_texture);
+	ClassDB::bind_method(D_METHOD("set_forbidden_drop_hotspot", "hotspot"), &Control::set_forbidden_drop_hotspot);
+	ClassDB::bind_method(D_METHOD("get_forbidden_drop_hotspot"), &Control::get_forbidden_drop_hotspot);
+
 
 	ClassDB::bind_method(D_METHOD("accessibility_drag"), &Control::accessibility_drag);
 	ClassDB::bind_method(D_METHOD("accessibility_drop"), &Control::accessibility_drop);
@@ -5317,8 +5355,13 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_behavior_recursive", PROPERTY_HINT_ENUM, "Inherited,Disabled,Enabled"), "set_mouse_behavior_recursive", "get_mouse_behavior_recursive");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_can_drop_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_can_drop_cursor_shape", "get_can_drop_cursor_shape");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_cannot_drop_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_cannot_drop_cursor_shape", "get_cannot_drop_cursor_shape");
+
+	ADD_GROUP("Drag and Drop", "drag_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_use_custom_cursor_image", PROPERTY_HINT_GROUP_ENABLE), "set_use_custom_cursor_image", "is_using_custom_cursor_image");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "drag_allowed_drop_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_allowed_drop_texture", "get_allowed_drop_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "drag_allowed_drop_hotspot"), "set_allowed_drop_hotspot", "get_allowed_drop_hotspot");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "drag_forbidden_drop_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_forbidden_drop_texture", "get_forbidden_drop_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "drag_forbidden_drop_hotspot"), "set_forbidden_drop_hotspot", "get_forbidden_drop_hotspot");
 
 	ADD_GROUP("Input", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut_context", PROPERTY_HINT_NODE_TYPE, "Node"), "set_shortcut_context", "get_shortcut_context");

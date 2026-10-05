@@ -2210,17 +2210,37 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				drag_preview->set_position(pos);
 			}
 
-			gui.drag_mouse_over = section_root->gui.target_control;
-			if (gui.drag_mouse_over) {
-				if (!_gui_drop(gui.drag_mouse_over, gui.drag_mouse_over->get_local_mouse_position(), true)) {
-					gui.drag_mouse_over = nullptr;
-				}
-				if (gui.drag_mouse_over) {
-					ds_cursor_shape = DisplayServerEnums::CursorShape(gui.drag_mouse_over->get_can_drop_cursor_shape());
+			Control *target = section_root->gui.target_control;
+			if (gui.drag_target_control != target) {
+				gui.drag_target_control = target;
+
+				if (target && target->is_using_custom_cursor_image()) {
+					gui.drag_allowed_drop_texture = target->get_allowed_drop_texture();
+					gui.drag_allowed_drop_hotspot = target->get_allowed_drop_hotspot();
+					gui.drag_forbidden_drop_texture = target->get_forbidden_drop_texture();
+					gui.drag_forbidden_drop_hotspot = target->get_forbidden_drop_hotspot();
 				} else {
-					// Fallback / Cannot-Drop-Cursor
-					ds_cursor_shape = DisplayServerEnums::CursorShape(over->get_cannot_drop_cursor_shape());
+					gui.drag_allowed_drop_texture.unref();
+					gui.drag_allowed_drop_hotspot = Vector2();
+					gui.drag_forbidden_drop_texture.unref();
+					gui.drag_forbidden_drop_hotspot = Vector2();
 				}
+
+				if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
+					DisplayServer::get_singleton()->cursor_set_custom_image(gui.drag_allowed_drop_texture, DisplayServerEnums::CURSOR_CAN_DROP, gui.drag_allowed_drop_hotspot);
+					DisplayServer::get_singleton()->cursor_set_custom_image(gui.drag_forbidden_drop_texture, DisplayServerEnums::CURSOR_FORBIDDEN, gui.drag_forbidden_drop_hotspot);
+				}
+			}
+
+			gui.drag_mouse_over = target;
+			if (gui.drag_mouse_over && !_gui_drop(gui.drag_mouse_over, gui.drag_mouse_over->get_local_mouse_position(), true)) {
+				gui.drag_mouse_over = nullptr;
+			}
+
+			if (gui.drag_mouse_over) {
+				ds_cursor_shape = DisplayServerEnums::CURSOR_CAN_DROP;
+			} else {
+				ds_cursor_shape = DisplayServerEnums::CURSOR_FORBIDDEN;
 			}
 		}
 
@@ -2481,6 +2501,16 @@ void Viewport::gui_perform_drop_at(const Point2 &p_pos, Control *p_control) {
 	gui.drag_description = String();
 	section_root->gui.global_dragging = false;
 	gui.drag_mouse_over = nullptr;
+	gui.drag_target_control = nullptr;
+
+	//Resetting the cursor shape in case the control that received the drop had set a custom cursor image.
+	if (DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_CURSOR_SHAPE)) {
+		DisplayServer::get_singleton()->cursor_set_custom_image(Ref<Resource>(), DisplayServerEnums::CURSOR_CAN_DROP);
+		DisplayServer::get_singleton()->cursor_set_custom_image(Ref<Resource>(), DisplayServerEnums::CURSOR_FORBIDDEN);
+	}
+	gui.drag_allowed_drop_texture.unref();
+	gui.drag_forbidden_drop_texture.unref();
+
 	Viewport::_propagate_drag_notification(section_root, NOTIFICATION_DRAG_END);
 	// Display the new cursor shape instantly.
 	update_mouse_cursor_state();
