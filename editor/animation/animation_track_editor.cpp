@@ -3492,7 +3492,7 @@ bool AnimationTrackEdit::_lookup_key(int p_key_idx) const {
 			StringName method = animation->method_track_get_name(track, p_key_idx);
 			// First, check every script in the inheritance chain.
 			bool found_in_script = false;
-			Script *target_script = target->get_script_ptr();
+			Script *target_script = target->get_script();
 			while (target_script) {
 				if (target_script->has_method(method)) {
 					found_in_script = true;

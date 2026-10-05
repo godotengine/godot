@@ -380,7 +380,7 @@ void EditorAutoloadSettings::init_autoloads() {
 		info.node = _create_autoload(ResourceUID::ensure_path(info.path));
 
 		if (info.node) {
-			Script *scr = info.node->get_script_ptr();
+			Script *scr = info.node->get_script();
 			info.in_editor = scr != nullptr && scr->is_tool();
 			info.node->set_name(info.name);
 		}
@@ -517,7 +517,7 @@ void EditorAutoloadSettings::update_autoload() {
 				// Still the same resource, check status
 				info.node = old_info.node;
 				if (info.node && info.node->is_inside_tree()) {
-					Script *scr = info.node->get_script_ptr();
+					Script *scr = info.node->get_script();
 					info.in_editor = scr != nullptr && scr->is_tool();
 					if (info.is_singleton == old_info.is_singleton && info.in_editor == old_info.in_editor) {
 						to_remove.erase(name);
@@ -580,7 +580,7 @@ void EditorAutoloadSettings::update_autoload() {
 		ERR_CONTINUE(!info->node);
 		info->node->set_name(info->name);
 
-		Script *scr = info->node->get_script_ptr();
+		Script *scr = info->node->get_script();
 		info->in_editor = scr != nullptr && scr->is_tool();
 
 		if (info->in_editor) {

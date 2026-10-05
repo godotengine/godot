@@ -877,7 +877,7 @@ public:
 #ifdef DEBUG_ENABLED
 
 	virtual void set_script(const Variant &p_script) override;
-	virtual Variant get_script() const override;
+	virtual Script *get_script() const override;
 
 	virtual bool has_meta(const StringName &p_name) const override;
 	virtual void set_meta(const StringName &p_name, const Variant &p_value) override;

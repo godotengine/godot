@@ -78,7 +78,7 @@ bool ContainerTypeValidate::_internal_validate_object(const Variant &p_variant, 
 	if (obj_class != class_name && !object->is_class(class_name)) {
 		if (p_output_errors) {
 			String object_class_name = object->get_class();
-			if (Script *other_script = object->get_script_ptr(); other_script != nullptr) {
+			if (Script *other_script = object->get_script(); other_script != nullptr) {
 				if (const StringName &script_global_name = other_script->get_global_name(); !script_global_name.is_empty()) {
 					object_class_name = script_global_name;
 				}
@@ -93,7 +93,7 @@ bool ContainerTypeValidate::_internal_validate_object(const Variant &p_variant, 
 		return true; // All good, no script requested.
 	}
 
-	Script *other_script = object->get_script_ptr();
+	Script *other_script = object->get_script();
 
 	// Check base script..
 	if (other_script == nullptr) {

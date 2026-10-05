@@ -205,7 +205,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 			emit_signal(SNAME("open"), n->get_scene_file_path());
 		}
 	} else if (p_id == BUTTON_SCRIPT) {
-		Script *script_typed = n->get_script_ptr();
+		Script *script_typed = n->get_script();
 		if (script_typed != nullptr) {
 			emit_signal(SNAME("open_script"), script_typed);
 		}
@@ -470,7 +470,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 				valid = true;
 				break;
 			} else {
-				Script *node_script = p_node->get_script_ptr();
+				Script *node_script = p_node->get_script();
 				while (node_script != nullptr) {
 					if (node_script->get_path() == E) {
 						valid = true;
@@ -535,7 +535,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 
 	if (connecting_signal) {
 		// Add script icons for all scripted nodes.
-		Script *scr = p_node->get_script_ptr();
+		Script *scr = p_node->get_script();
 		if (scr != nullptr) {
 			p_item->add_button(0, get_editor_theme_icon(SNAME("Script")), BUTTON_SCRIPT);
 			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr) {
@@ -548,7 +548,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 	if (connect_to_script_mode) {
 		Color accent = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 
-		Script *scr = p_node->get_script_ptr();
+		Script *scr = p_node->get_script();
 		bool has_custom_script = scr != nullptr && EditorNode::get_singleton()->get_object_custom_type_base(p_node) == scr;
 		if (scr == nullptr || has_custom_script) {
 			_set_item_custom_color(p_item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
@@ -686,7 +686,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 
 	// Show buttons only when necessary (SceneTreeDock) to avoid crashes.
 	if (can_open_instance && is_scene_tree_dock) {
-		Script *scr = p_node->get_script_ptr();
+		Script *scr = p_node->get_script();
 		if (scr != nullptr) {
 			String additional_notes;
 			Color button_color = Color(1, 1, 1);
@@ -1141,7 +1141,7 @@ bool SceneTreeEditor::_update_filter_helper(TreeItem *p_parent, bool p_scroll_to
 					selectable = true;
 					break;
 				} else {
-					Script *node_script = n->get_script_ptr();
+					Script *node_script = n->get_script();
 					while (node_script != nullptr) {
 						if (node_script->get_path() == E) {
 							selectable = true;
@@ -1252,7 +1252,7 @@ bool SceneTreeEditor::_node_matches_class_term(const Node *p_item_node, const St
 		// Defend against https://github.com/godotengine/godot/issues/82473
 		return true;
 	}
-	Script *item_script = p_item_node->get_script_ptr();
+	Script *item_script = p_item_node->get_script();
 	while (item_script != nullptr) {
 		String global_name = item_script->get_global_name();
 		if (global_name.to_lower().contains(p_term)) {
