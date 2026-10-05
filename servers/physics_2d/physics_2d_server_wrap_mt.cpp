@@ -32,6 +32,12 @@
 
 #include "core/os/os.h"
 
+static thread_local bool cmd_queue_bypass_enabled = false;
+
+static bool is_cmd_queue_bypass_enabled() {
+	return cmd_queue_bypass_enabled;
+}
+
 void Physics2DServerWrapMT::thread_exit() {
 	exit.set();
 }
@@ -39,6 +45,10 @@ void Physics2DServerWrapMT::thread_exit() {
 void Physics2DServerWrapMT::thread_step(real_t p_delta) {
 	physics_2d_server->step(p_delta);
 	step_sem.post();
+}
+
+void Physics2DServerWrapMT::thread_flush_and_halt() {
+	thread_halted_semaphore.post();
 }
 
 void Physics2DServerWrapMT::_thread_callback(void *_instance) {
@@ -77,6 +87,8 @@ void Physics2DServerWrapMT::step(real_t p_step) {
 
 void Physics2DServerWrapMT::sync() {
 	if (create_thread) {
+		command_queue.push(this, &Physics2DServerWrapMT::thread_flush_and_halt);
+		thread_halted_semaphore.wait();
 		if (first_frame) {
 			first_frame = false;
 		} else {
@@ -93,6 +105,7 @@ void Physics2DServerWrapMT::flush_queries() {
 
 void Physics2DServerWrapMT::end_sync() {
 	physics_2d_server->end_sync();
+	cmd_queue_bypass_enabled = false;
 }
 
 void Physics2DServerWrapMT::init() {
@@ -130,7 +143,7 @@ void Physics2DServerWrapMT::finish() {
 }
 
 Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer *p_contained, bool p_create_thread) :
-		command_queue(p_create_thread) {
+		command_queue(p_create_thread, p_create_thread ? is_cmd_queue_bypass_enabled : (bool (*)()) nullptr) {
 	physics_2d_server = p_contained;
 	create_thread = p_create_thread;
 
