@@ -176,6 +176,8 @@ public:
 	// Object/Resource/Node editing.
 
 	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
+	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback);
+	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback);
 
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);

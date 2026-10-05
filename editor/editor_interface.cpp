@@ -705,6 +705,14 @@ void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property
 	EditorNode::get_singleton()->push_item(p_obj, p_for_property, p_inspector_only);
 }
 
+Ref<Texture2D> EditorInterface::get_class_icon(const String &p_class, const String &p_fallback) {
+	return EditorNode::get_singleton()->get_class_icon(p_class, p_fallback);
+}
+
+Ref<Texture2D> EditorInterface::get_object_icon(const Object *p_object, const String &p_fallback) {
+	return EditorNode::get_singleton()->get_object_icon(p_object, p_fallback);
+}
+
 void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
@@ -942,6 +950,9 @@ void EditorInterface::_bind_methods() {
 	// Object/Resource/Node editing.
 
 	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property", "inspector_only"), &EditorInterface::inspect_object, DEFVAL(String()), DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("get_class_icon", "class", "fallback"), &EditorInterface::get_class_icon);
+	ClassDB::bind_method(D_METHOD("get_object_icon", "object", "fallback"), &EditorInterface::get_object_icon);
 
 	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
 	ClassDB::bind_method(D_METHOD("edit_node", "node"), &EditorInterface::edit_node);
