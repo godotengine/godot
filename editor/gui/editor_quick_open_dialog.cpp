@@ -774,10 +774,12 @@ void QuickOpenResultContainer::update_results() {
 	candidates.clear();
 	candidates_uids.clear();
 
-	if (query.is_empty()) {
-		_use_default_candidates();
-	} else {
-		_score_and_sort_candidates();
+	if (max_total_results != 0) {
+		if (query.is_empty()) {
+			_use_default_candidates();
+		} else {
+			_score_and_sort_candidates();
+		}
 	}
 
 	_update_result_items(MIN(candidates.size(), max_total_results), 0);
