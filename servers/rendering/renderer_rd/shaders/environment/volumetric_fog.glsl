@@ -271,7 +271,7 @@ void main() {
 				vec3 scattering = albedo * clamp(density, 0.0, 1.0);
 				scattering = clamp(scattering, vec3(0.0), vec3(1.0));
 				uvec3 scattering_u = uvec3(scattering.r * 1023.0, scattering.g * 1023.0, scattering.b * 1023.0);
-				//Each color channel has 10 bits allocated, leftmost 2 bits are unused. Then pack them into a 32 bit uint
+				// Each color channel has 10 bits allocated, leftmost 2 bits are unused to avoid biasing the final color at low densities. Then pack them into a 32 bit uint.
 				uint final_scattering = scattering_u.r << 20 | scattering_u.g << 10 | scattering_u.b;
 #ifdef NO_IMAGE_ATOMICS
 				uint prev_scattering = atomicAdd(light_only_map[lpos], final_scattering);
