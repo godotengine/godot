@@ -1003,8 +1003,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 				attribs[i].offset = skin_stride;
 				attribs[i].size = 4;
 				attribs[i].type = GL_UNSIGNED_SHORT;
-				bool use_8 = s->format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
-				skin_stride += (use_8 ? 8 : 4) * sizeof(uint16_t);
+				skin_stride += sizeof(uint16_t) * (s->format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4);
 				attribs[i].normalized = GL_FALSE;
 				attribs[i].integer = true;
 			} break;
@@ -1012,8 +1011,7 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 				attribs[i].offset = skin_stride;
 				attribs[i].size = 4;
 				attribs[i].type = GL_UNSIGNED_SHORT;
-				bool use_8 = s->format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS;
-				skin_stride += (use_8 ? 8 : 4) * sizeof(uint16_t);
+				skin_stride += sizeof(uint16_t) * (s->format & RSE::ARRAY_FLAG_USE_8_BONE_WEIGHTS ? 8 : 4);
 				attribs[i].normalized = GL_TRUE;
 			} break;
 		}
