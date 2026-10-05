@@ -4384,6 +4384,8 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 			uncollapsed_tis = { "res://" };
 		}
 
+		favorites_item->set_collapsed(!uncollapsed_tis.has("Favorites"));
+
 		TreeItem *item = tree->get_item_with_metadata("res://", 0);
 		item->set_collapsed_recursive(true);
 		LocalVector<TreeItem *> ti_visit;
