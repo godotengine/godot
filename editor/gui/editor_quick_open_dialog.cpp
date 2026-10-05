@@ -775,7 +775,7 @@ void QuickOpenResultContainer::update_results() {
 	candidates_uids.clear();
 
 	if (query.is_empty()) {
-		_use_default_candidates();
+		_use_default_candidates(include_addons_toggle->is_pressed());
 	} else {
 		_score_and_sort_candidates();
 	}
@@ -783,13 +783,16 @@ void QuickOpenResultContainer::update_results() {
 	_update_result_items(MIN(candidates.size(), max_total_results), 0);
 }
 
-void QuickOpenResultContainer::_use_default_candidates() {
+void QuickOpenResultContainer::_use_default_candidates(bool p_include_addons) {
 	Vector<ResourceUID::ID> *history = _get_history();
 	if (history) {
 		for (const ResourceUID::ID &uid : *history) {
 			bool success;
 			QuickOpenResultCandidate candidate = QuickOpenResultCandidate::from_uid(uid, success);
 			if (!success) {
+				continue;
+			}
+			if (!p_include_addons && ResourceUID::get_singleton()->get_id_path(uid).begins_with("res://addons/")) {
 				continue;
 			}
 			_add_candidate(candidate);
