@@ -229,7 +229,11 @@ def configure(env: "SConsEnvironment"):
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
 
-        if not env["use_llvm"]:
+    if env["lto"] != "none" or env["library_type"] == "static_library":
+        if env["use_llvm"]:
+            env["RANLIB"] = "llvm-ranlib"
+            env["AR"] = "llvm-ar"
+        else:
             env["RANLIB"] = "gcc-ranlib"
             env["AR"] = "gcc-ar"
 

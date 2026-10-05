@@ -1017,12 +1017,7 @@ void OS_LinuxBSD::run() {
 	while (true) {
 		GodotProfileFrameMark;
 		GodotProfileZone("OS_LinuxBSD::run");
-		DisplayServer::get_singleton()->process_events(); // get rid of pending events
-#ifdef SDL_ENABLED
-		if (joypad_sdl) {
-			joypad_sdl->process_events();
-		}
-#endif
+		process_events();
 		if (Main::iteration()) {
 			break;
 		}
@@ -1032,6 +1027,15 @@ void OS_LinuxBSD::run() {
 #ifdef __linux__
 	if (gamemode_status == 0) {
 		GameMode::gamemode_request_end_for(OS::get_singleton()->get_process_id());
+	}
+#endif
+}
+
+void OS_LinuxBSD::process_events() {
+	DisplayServer::get_singleton()->process_events(); // get rid of pending events
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		joypad_sdl->process_events();
 	}
 #endif
 }
