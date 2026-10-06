@@ -64,9 +64,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	Label *drag_info_label = nullptr;
 
 	Vector<String> functions;
-	List<EditorLanguage::Warning> warnings;
-	List<EditorLanguage::ScriptError> errors;
-	HashMap<String, List<EditorLanguage::ScriptError>> depended_errors;
+	LocalVector<EditorLanguage::Diagnostic> diagnostics;
 	HashSet<int> safe_lines;
 
 	List<Connection> missing_connections;
@@ -157,8 +155,7 @@ protected:
 
 	void _on_caret_moved();
 
-	void _update_warnings();
-	void _update_errors();
+	void _update_diagnostics();
 
 	virtual void _code_complete_script(const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) override;
 
