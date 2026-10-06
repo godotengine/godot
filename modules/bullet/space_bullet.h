@@ -181,6 +181,8 @@ public:
 	void remove_rigid_body(RigidBodyBullet *p_body);
 	void reload_collision_filters(RigidBodyBullet *p_body);
 
+	void rigid_body_wake_neighbours(RigidBodyBullet *p_body);
+
 	void add_soft_body(SoftBodyBullet *p_body);
 	void remove_soft_body(SoftBodyBullet *p_body);
 	void reload_collision_filters(SoftBodyBullet *p_body);
