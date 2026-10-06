@@ -36,6 +36,7 @@
 #include "bullet_utilities.h"
 #include "godot_motion_state.h"
 #include "joint_bullet.h"
+#include <core/engine.h>
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
@@ -348,9 +349,19 @@ void RigidBodyBullet::reload_body() {
 	}
 }
 
+void RigidBodyBullet::wake_neighbors() {
+	if (space) {
+		space->rigid_body_wake_neighbors(this);
+	}
+}
+
 void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
 	if (space) {
+		// Ensure any bodies touching the object to be removed
+		// are woken, so that e.g. boxes fall from deleted platforms.
+		wake_neighbors();
+
 		can_integrate_forces = false;
 		isScratchedSpaceOverrideModificator = false;
 		// Remove any constraints
@@ -583,9 +594,22 @@ PhysicsServer::BodyMode RigidBodyBullet::get_mode() const {
 
 void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant &p_variant) {
 	switch (p_state) {
-		case PhysicsServer::BODY_STATE_TRANSFORM:
+		case PhysicsServer::BODY_STATE_TRANSFORM: {
 			set_transform(p_variant);
-			break;
+			uint32_t tick = Engine::get_singleton()->get_physics_frames();
+
+			// Waking up neighbours at this point is the AABB prior to that when this
+			// new transform has been set.
+			// The "forward" move is woken up elsewhere.
+			// As an optimization, only wake up neighbours here if we are not in continuous motion,
+			// as this is more likely to be a situation where we are moving out of the zone of a sleeping body.
+			// This check is not hugely expensive, but would be overkill to do as well as the forward motion
+			// when in continuous motion.
+			if (previous_move_tick < (tick - 1)) {
+				wake_neighbors();
+			}
+			previous_move_tick = tick;
+		} break;
 		case PhysicsServer::BODY_STATE_LINEAR_VELOCITY:
 			set_linear_velocity(p_variant);
 			break;
@@ -1071,7 +1095,12 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
 			set_transform__bullet(btBody->getWorldTransform()); // Set current Transform using kinematic method
 		}
+
+		// This is commented out as of 2026, it seems this was preventing kinematic and static bodies
+		// from waking up other RigidBodies on body_set_transform.
+#if 0
 		btBody->forceActivationState(DISABLE_SIMULATION); // DISABLE_SIMULATION 5
+#endif
 	}
 
 	btBody->setMassProps(p_mass, localInertia);

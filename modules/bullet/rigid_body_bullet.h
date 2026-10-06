@@ -186,6 +186,10 @@ private:
 	int collisionsCount;
 	int prev_collision_count;
 
+	// We can avoid some wakeup operations if the body is in continous motion.
+	// We can detect this by checking whether moved in the previous tick.
+	uint32_t previous_move_tick = UINT32_MAX;
+
 	Vector<AreaBullet *> areasWhereIam;
 	// these parameters are used to avoid vector resize
 	int maxAreasWhereIam;
@@ -298,6 +302,8 @@ public:
 	void reload_kinematic_shapes();
 
 	virtual void notify_transform_changed();
+
+	void wake_neighbors();
 
 private:
 	void _internal_set_mass(real_t p_mass);

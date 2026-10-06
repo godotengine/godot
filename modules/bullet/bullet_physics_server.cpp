@@ -551,6 +551,7 @@ void BulletPhysicsServer::body_set_shape_disabled(RID p_body, int p_shape_idx, b
 	ERR_FAIL_COND(!body);
 
 	body->set_shape_disabled(p_shape_idx, p_disabled);
+	body->wake_neighbors();
 }
 
 void BulletPhysicsServer::body_remove_shape(RID p_body, int p_shape_idx) {

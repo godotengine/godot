@@ -445,6 +445,12 @@ void PhysicsServerSW::body_set_space(RID p_body, RID p_space) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	// Is the body already in a space?
+	if (body->get_space()) {
+		// Wake any neighbours it is touching, as it will be removed.
+		body->wakeup_neighbours();
+	}
+
 	SpaceSW *space = nullptr;
 	if (p_space.is_valid()) {
 		space = space_owner.get(p_space);
@@ -533,6 +539,7 @@ void PhysicsServerSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool 
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
 	FLUSH_QUERY_CHECK(body);
 
+	body->wakeup_neighbours();
 	body->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
