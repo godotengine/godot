@@ -280,6 +280,7 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/app_category", PROPERTY_HINT_ENUM, "Books,Business,Developer-tools,Education,Entertainment,Finance,Food-and-drink,Games,Action-games,Adventure-games,Arcade-games,Board-games,Card-games,Casino-games,Dice-games,Educational-games,Family-games,Kids-games,Music-games,Puzzle-games,Racing-games,Role-playing-games,Simulation-games,Sports-games,Strategy-games,Trivia-games,Word-games,Graphics-design,Healthcare-fitness,Lifestyle,Magazines-and-newspapers,Medical,Music,Navigation,News,Photography,Productivity,Reference,Shopping,Social-networking,Sports,Travel,Utilities,Video,Weather"), "Games"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version", PROPERTY_HINT_PLACEHOLDER_TEXT, "Leave empty to use project version"), ""));
 
@@ -440,6 +441,9 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$version", p_preset->get_version("application/version")) + "\n";
 	} else if (p_line.contains("$signature")) {
 		strnew += p_line.replace("$signature", p_preset->get("application/signature")) + "\n";
+	} else if (p_line.contains("$app_category")) {
+		String cat = p_preset->get("application/app_category");
+		strnew += p_line.replace("$app_category", cat.to_lower()) + "\n";
 	} else if (p_line.contains("$team_id")) {
 		strnew += p_line.replace("$team_id", p_preset->get("application/app_store_team_id")) + "\n";
 	} else if (p_line.contains("$default_build_config")) {
