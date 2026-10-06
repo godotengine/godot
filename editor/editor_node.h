@@ -299,11 +299,17 @@ private:
 	OptionButton *renderer = nullptr;
 
 #ifdef ANDROID_ENABLED
-	VBoxContainer *base_vbox = nullptr; // It only contains the title_bar and main_box.
+	VBoxContainer *base_vbox = nullptr; // It only contains the title_bar, main_box, and vk_spacer.
 	BoxContainer *main_box = nullptr; // It only contains the touch_actions_panel and main_vbox.
 	TouchActionsPanel *touch_actions_panel = nullptr;
 	void _touch_actions_panel_mode_changed();
+
+	Control *vk_spacer = nullptr;
+	int last_vk_height = -1;
+	void _screen_orientation_changed(int p_new_orientation);
 #endif
+
+	bool portrait_mode = false;
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
@@ -1069,6 +1075,8 @@ public:
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
 	bool is_scene_unsaved(int p_idx);
+
+	bool is_portrait() const { return portrait_mode; }
 };
 
 struct EditorProgressBG {

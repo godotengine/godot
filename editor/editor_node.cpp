@@ -975,6 +975,16 @@ void EditorNode::_notification(int p_what) {
 				EditorSettings::get_singleton()->emit_signal(SNAME("settings_changed"));
 				settings_overrides_changed = false;
 			}
+
+#ifdef ANDROID_ENABLED
+			if (portrait_mode) {
+				const int vk_height = DisplayServer::get_singleton()->virtual_keyboard_get_height();
+				if (vk_height != last_vk_height) {
+					last_vk_height = vk_height;
+					vk_spacer->set_custom_minimum_size(Size2(0, vk_height));
+				}
+			}
+#endif
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1003,6 +1013,7 @@ void EditorNode::_notification(int p_what) {
 			if (is_fullscreen) {
 				DisplayServer::get_singleton()->window_set_mode(DisplayServerEnums::WINDOW_MODE_FULLSCREEN);
 			}
+			DisplayServer::get_singleton()->connect("orientation_changed", callable_mp(this, &EditorNode::_screen_orientation_changed));
 #endif
 			get_tree()->get_root()->connect("files_dropped", callable_mp(this, &EditorNode::_dropped_files));
 
@@ -8459,6 +8470,11 @@ void EditorNode::_touch_actions_panel_mode_changed() {
 			break;
 	}
 }
+
+void EditorNode::_screen_orientation_changed(int p_new_orientation) {
+	portrait_mode = p_new_orientation == DisplayServerEnums::SENSOR_ORIENTATION_PORTRAIT;
+	vk_spacer->set_custom_minimum_size(Size2()); // Reset size.
+}
 #endif
 
 #ifdef MACOS_ENABLED
@@ -8846,6 +8862,9 @@ EditorNode::EditorNode() {
 	base_vbox->add_child(main_box);
 
 	_touch_actions_panel_mode_changed();
+
+	vk_spacer = memnew(Control);
+	base_vbox->add_child(vk_spacer);
 
 	gui_base->add_child(base_vbox);
 #else
