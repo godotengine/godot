@@ -66,7 +66,7 @@
 		<method name="get_class_icon">
 			<return type="Texture2D" />
 			<param index="0" name="class" type="String" />
-			<param index="1" name="fallback" type="String" default="&quot;&quot;"/>
+			<param index="1" name="fallback" type="String" default="&quot;&quot;" />
 			<description>
 				Returns the icon associated with the given class name. If the class is not found, the fallback icon will be returned instead.
 			</description>
@@ -209,7 +209,7 @@
 		<method name="get_object_icon">
 			<return type="Texture2D" />
 			<param index="0" name="object" type="Object" />
-			<param index="1" name="fallback" type="String" default="&quot;&quot;"/>
+			<param index="1" name="fallback" type="String" default="&quot;&quot;" />
 			<description>
 				Returns the icon associated with the given object. If no icon is not found, the fallback icon will be returned instead.
 			</description>
