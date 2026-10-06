@@ -35,4 +35,7 @@
 extern "C" {
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_runScene(JNIEnv *p_env, jclass, jstring p_scene, jobjectArray p_scene_args);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_orientationChanged(JNIEnv *p_env, jclass, jboolean p_portrait);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_setDistractionFreeMode(JNIEnv *p_env, jclass, jboolean p_enter);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_lockDistractionFreeMode(JNIEnv *p_env, jclass);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_unlockDistractionFreeMode(JNIEnv *p_env, jclass);
 }

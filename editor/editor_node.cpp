@@ -7007,6 +7007,14 @@ void EditorNode::_toggle_distraction_free_mode() {
 	}
 }
 
+void EditorNode::lock_distraction_free_mode() {
+	distraction_free->set_disabled(true);
+}
+
+void EditorNode::unlock_distraction_free_mode() {
+	distraction_free->set_disabled(false);
+}
+
 void EditorNode::update_distraction_free_mode() {
 	if (!EDITOR_GET("interface/editor/behavior/separate_distraction_mode")) {
 		return;
