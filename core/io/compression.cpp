@@ -43,7 +43,9 @@
 
 // Validate our forward-declared magic numbers.
 static_assert(Z_DEFAULT_COMPRESSION == -1);
+#ifdef ZSTD_WINDOWLOG_LIMIT_DEFAULT
 static_assert(ZSTD_WINDOWLOG_LIMIT_DEFAULT == 27);
+#endif
 
 namespace {
 struct ZstdDecompressorContext {
