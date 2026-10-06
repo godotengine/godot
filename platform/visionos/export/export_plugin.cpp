@@ -207,6 +207,16 @@ String EditorExportPlatformVisionOS::_process_config_file_line(const Ref<EditorE
 	} else if (p_line.contains("$moltenvk_buildgrp")) {
 		strnew += p_line.replace("$moltenvk_buildgrp", "") + "\n";
 
+		// AccessKit Framework not used on visionOS
+	} else if (p_line.contains("$accesskit_buildfile")) {
+		strnew += p_line.replace("$accesskit_buildfile", "") + "\n";
+	} else if (p_line.contains("$accesskit_fileref")) {
+		strnew += p_line.replace("$accesskit_fileref", "") + "\n";
+	} else if (p_line.contains("$accesskit_buildphase")) {
+		strnew += p_line.replace("$accesskit_buildphase", "") + "\n";
+	} else if (p_line.contains("$accesskit_buildgrp")) {
+		strnew += p_line.replace("$accesskit_buildgrp", "") + "\n";
+
 		// Launch Storyboard
 	} else if (p_line.contains("$plist_launch_screen_name")) {
 		strnew += p_line.replace("$plist_launch_screen_name", "") + "\n";
