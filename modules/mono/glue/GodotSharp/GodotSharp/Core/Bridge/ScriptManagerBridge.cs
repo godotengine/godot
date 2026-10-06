@@ -23,6 +23,8 @@ namespace Godot.Bridge
         [MethodImpl(MethodImplOptions.NoInlining)]
         private static void OnAlcUnloading(AssemblyLoadContext alc)
         {
+            AlcTracker.RegisterUnloadingAlc(alc);
+
             if (_alcData.TryRemove(alc, out var typesInAlc))
             {
                 foreach (var type in typesInAlc.Keys)

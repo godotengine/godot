@@ -130,12 +130,20 @@ namespace GodotPlugins
             }
         }
 
+        private enum PluginReloadError : uint
+        {
+            Ok = 0,
+            AlcUnloadFailed,
+            AlcNotCollectible,
+            Exception,
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         private struct PluginsCallbacks
         {
             public unsafe delegate* unmanaged<char*, godot_string*, godot_bool> LoadProjectAssemblyCallback;
             public unsafe delegate* unmanaged<char*, IntPtr, int, IntPtr> LoadToolsAssemblyCallback;
-            public unsafe delegate* unmanaged<godot_bool> UnloadProjectPluginCallback;
+            public unsafe delegate* unmanaged<PluginReloadError> UnloadProjectPluginCallback;
         }
 
         [UnmanagedCallersOnly]
@@ -218,38 +226,35 @@ namespace GodotPlugins
         }
 
         [UnmanagedCallersOnly]
-        private static godot_bool UnloadProjectPlugin()
+        private static PluginReloadError UnloadProjectPlugin()
         {
             try
             {
-                return UnloadPlugin(ref _projectLoadContext).ToGodotBool();
+                return UnloadPlugin(ref _projectLoadContext);
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine(e);
-                return godot_bool.False;
+                return PluginReloadError.Exception;
             }
         }
 
-        private static bool UnloadPlugin(ref PluginLoadContextWrapper? pluginLoadContext)
+        private static PluginReloadError UnloadPlugin(ref PluginLoadContextWrapper? pluginLoadContext)
         {
             try
             {
                 if (pluginLoadContext == null)
-                    return true;
+                    return PluginReloadError.Ok;
 
                 if (!pluginLoadContext.IsCollectible)
                 {
-                    Console.Error.WriteLine("Cannot unload a non-collectible assembly load context.");
-                    return false;
+                    return PluginReloadError.AlcNotCollectible;
                 }
-
-                Console.WriteLine("Unloading assembly load context...");
 
                 pluginLoadContext.Unload();
 
+                PluginReloadError error = PluginReloadError.Ok;
                 int startTimeMs = Environment.TickCount;
-                bool takingTooLong = false;
 
                 while (pluginLoadContext.IsAlive)
                 {
@@ -261,33 +266,21 @@ namespace GodotPlugins
 
                     int elapsedTimeMs = Environment.TickCount - startTimeMs;
 
-                    if (!takingTooLong && elapsedTimeMs >= 200)
+                    if (elapsedTimeMs >= 1000)
                     {
-                        takingTooLong = true;
-
-                        // TODO: How to log from GodotPlugins? (delegate pointer?)
-                        Console.Error.WriteLine("Assembly unloading is taking longer than expected...");
-                    }
-                    else if (elapsedTimeMs >= 1000)
-                    {
-                        // TODO: How to log from GodotPlugins? (delegate pointer?)
-                        Console.Error.WriteLine(
-                            "Failed to unload assemblies. Possible causes: Strong GC handles, running threads, etc.");
-
-                        return false;
+                        error = PluginReloadError.AlcUnloadFailed;
+                        break;
                     }
                 }
 
-                Console.WriteLine("Assembly load context unloaded successfully.");
-
                 pluginLoadContext = null;
-                return true;
+                return error;
             }
             catch (Exception e)
             {
                 // TODO: How to log exceptions from GodotPlugins? (delegate pointer?)
                 Console.Error.WriteLine(e);
-                return false;
+                return PluginReloadError.Exception;
             }
         }
     }
