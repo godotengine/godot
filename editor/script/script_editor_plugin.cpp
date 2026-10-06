@@ -2715,7 +2715,7 @@ Vector<Control *> DocumentEditorContainer::get_all_editors() const {
 void DocumentEditorContainer::focus_active_editor() {
 	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(get_active_editor());
 	EditorHelp *eh = Object::cast_to<EditorHelp>(get_active_editor());
-	if (seb) {
+	if (seb && seb->get_base_editor()) {
 		seb->get_base_editor()->grab_focus();
 	} else if (eh) {
 		eh->set_focused();
