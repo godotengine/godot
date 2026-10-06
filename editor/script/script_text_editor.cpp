@@ -57,7 +57,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
@@ -175,7 +174,7 @@ Vector<String> ScriptTextEditor::get_functions() {
 	List<String> fnc;
 
 	Ref<Script> script = edited_res;
-	if (script.is_valid() && script->get_language()->get_editor_language()->validate(text, script->get_path(), nullptr, nullptr, &fnc, nullptr)) {
+	if (script.is_valid() && script->get_language()->get_editor_language()->validate(text, script->get_path(), nullptr, &fnc, nullptr)) {
 		//if valid rewrite functions to latest
 		functions.clear();
 		for (const String &E : fnc) {
@@ -747,50 +746,48 @@ void ScriptTextEditor::_update_background_color() {
 	}
 
 	te->clear_underlines();
-
-	// Set the warning background.
-	if (warning_line_color.a != 0.0 || warning_underline_color.a != 0.0) {
-		for (const EditorLanguage::Warning &warning : warnings) {
-			int warning_start_line = CLAMP(warning.start_line - 1, 0, te->get_line_count() - 1);
-			int warning_start_column = warning.start_column - 1;
-			int warning_end_line = CLAMP(warning.end_line - 1, 0, te->get_line_count() - 1);
-			int warning_end_column = warning.end_column - 1;
-			int folded_line_header = te->get_folded_line_header(warning_start_line);
-
-			if (warning_underline_color.a != 0.0) {
-				te->add_underline(warning_underline_color, warning_start_line, warning_start_column, warning_end_line, warning_end_column);
-			}
-
-			if (warning_line_color.a != 0.0) {
-				// If the warning highlight is too long, only highlight the start line.
-				const int warning_max_lines = 20;
-
-				te->set_line_background_color(folded_line_header, warning_line_color);
-				if (warning_end_line - warning_start_line < warning_max_lines) {
-					for (int i = warning_start_line + 1; i <= warning_end_line; i++) {
-						te->set_line_background_color(i, warning_line_color);
-					}
-				}
-			}
-		}
+	if (te->get_line_count() == 0 || !(warning_line_color.a != 0.0 || warning_underline_color.a != 0.0 || marked_line_color.a != 0.0 || error_underline_color.a != 0.0)) {
+		return;
 	}
 
-	// Set the error background.
-	if (marked_line_color.a != 0.0 || error_underline_color.a != 0.0) {
-		for (const EditorLanguage::ScriptError &error : errors) {
-			int error_start_line = CLAMP(error.start_line - 1, 0, te->get_line_count() - 1);
-			int error_start_column = error.start_column - 1;
-			int error_end_line = CLAMP(error.end_line - 1, 0, te->get_line_count() - 1);
-			int error_end_column = error.end_column - 1;
-			int folded_line_header = te->get_folded_line_header(error_start_line);
+	for (const EditorLanguage::Diagnostic &diagnostic : diagnostics) {
+		if (diagnostic.tags.group) {
+			continue;
+		}
 
-			if (error_underline_color.a != 0.0) {
-				te->add_underline(error_underline_color, error_start_line, error_start_column, error_end_line, error_end_column);
-			}
+		int start_line = CLAMP(diagnostic.range.start_line, 0u, (uint32_t)te->get_line_count() - 1);
+		int start_column = diagnostic.range.start_column;
+		int end_line = CLAMP(diagnostic.range.end_line, 0u, (uint32_t)te->get_line_count() - 1);
+		int end_column = diagnostic.range.end_column;
+		int folded_line_header = te->get_folded_line_header(start_line);
 
-			if (marked_line_color.a != 0.0) {
-				te->set_line_background_color(folded_line_header, marked_line_color);
-			}
+		switch (diagnostic.severity) {
+			case EditorLanguage::DiagnosticSeverity::ERROR: {
+				if (error_underline_color.a != 0.0) {
+					te->add_underline(error_underline_color, start_line, start_column, end_line, end_column);
+				}
+
+				if (marked_line_color.a != 0.0) {
+					te->set_line_background_color(folded_line_header, marked_line_color);
+				}
+			} break;
+			case EditorLanguage::DiagnosticSeverity::WARNING: {
+				if (warning_underline_color.a != 0.0) {
+					te->add_underline(warning_underline_color, start_line, start_column, end_line, end_column);
+				}
+
+				if (warning_line_color.a != 0.0) {
+					// If the warning highlight is too long, only highlight the start line.
+					constexpr int warning_max_lines = 20;
+
+					te->set_line_background_color(folded_line_header, warning_line_color);
+					if (end_line - start_line < warning_max_lines) {
+						for (int i = start_line + 1; i <= end_line; i++) {
+							te->set_line_background_color(i, warning_line_color);
+						}
+					}
+				}
+			} break;
 		}
 	}
 }
@@ -893,12 +890,12 @@ Ref<Texture2D> ScriptTextEditor::get_theme_icon() {
 	return Ref<Texture2D>();
 }
 
-struct ScriptErrorLineComparator {
-	bool operator()(const EditorLanguage::ScriptError &p_a, const EditorLanguage::ScriptError &p_b) const {
-		if (p_a.start_line != p_b.start_line) {
-			return p_a.start_line < p_b.start_line;
+struct DiagnosticLineComparator {
+	bool operator()(const EditorLanguage::Diagnostic &p_a, const EditorLanguage::Diagnostic &p_b) const {
+		if (p_a.range.start_line != p_b.range.start_line) {
+			return p_a.range.start_line < p_b.range.start_line;
 		}
-		return p_a.start_column < p_b.start_column;
+		return p_a.range.start_column < p_b.range.start_column;
 	}
 };
 
@@ -908,31 +905,22 @@ void ScriptTextEditor::_validate_script() {
 	String text = te->get_text();
 	List<String> fnc;
 
-	warnings.clear();
-	errors.clear();
-	depended_errors.clear();
+	diagnostics.clear();
 	safe_lines.clear();
 
 	Ref<Script> script = edited_res;
-	if (!script->get_language()->get_editor_language()->validate(text, script->get_path(), &errors, &warnings, &fnc, &safe_lines)) {
-		errors.sort_custom<ScriptErrorLineComparator>();
+	if (!script->get_language()->get_editor_language()->validate(text, script->get_path(), &diagnostics, &fnc, &safe_lines)) {
+		diagnostics.sort_custom<DiagnosticLineComparator>();
 
-		List<EditorLanguage::ScriptError>::Element *E = errors.front();
-		while (E) {
-			List<EditorLanguage::ScriptError>::Element *next_E = E->next();
-			if ((E->get().path.is_empty() && !script->get_path().is_empty()) || E->get().path != script->get_path()) {
-				depended_errors[E->get().path].push_back(E->get());
-				E->erase();
+		for (const EditorLanguage::Diagnostic &diagnostic : diagnostics) {
+			if (diagnostic.severity == EditorLanguage::DiagnosticSeverity::ERROR) {
+				code_editor->set_error_pos(diagnostic.range.start_line, diagnostic.range.start_column);
+				const String message = diagnostic.message.replace("[", "[lb]");
+				const Point2i display_pos = code_editor->get_pos_for_display(code_editor->get_error_pos());
+				const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), display_pos.x, display_pos.y, display_pos.x, display_pos.y) + " " + message;
+				code_editor->set_error(error_text);
+				break;
 			}
-			E = next_E;
-		}
-
-		if (errors.size() > 0) {
-			code_editor->set_error_pos(errors.front()->get().start_line - 1, errors.front()->get().start_column - 1);
-			const String message = errors.front()->get().message.replace("[", "[lb]");
-			const Point2i display_pos = code_editor->get_pos_for_display(code_editor->get_error_pos());
-			const String error_text = vformat(TTR("Error at ([hint=Line %d, column %d]%d, %d[/hint]):"), display_pos.x, display_pos.y, display_pos.x, display_pos.y) + " " + message;
-			code_editor->set_error(error_text);
 		}
 		validation_success = false;
 	} else {
@@ -950,8 +938,7 @@ void ScriptTextEditor::_validate_script() {
 		validation_success = true;
 	}
 	_update_connected_methods();
-	_update_warnings();
-	_update_errors();
+	_update_diagnostics();
 	_update_background_color();
 
 	if (!pending_dragged_exports.is_empty()) {
@@ -961,12 +948,13 @@ void ScriptTextEditor::_validate_script() {
 	TextEditorBase::_validate_script();
 }
 
-void ScriptTextEditor::_update_warnings() {
-	int warning_nb = warnings.size();
-	warnings_panel->clear();
+void ScriptTextEditor::_update_diagnostics() {
+	int warning_count = 0;
+	int error_count = 0;
 
 	bool has_connections_table = false;
-	// Add missing connections.
+
+	// Add warnings for missing connections.
 	if (GLOBAL_GET("debug/gdscript/warnings/enable")) {
 		Node *base = get_tree()->get_edited_scene_root();
 		if (base && missing_connections.size() > 0) {
@@ -985,103 +973,121 @@ void ScriptTextEditor::_update_warnings() {
 			}
 			warnings_panel->pop(); // Table.
 
-			warning_nb += missing_connections.size();
+			warning_count += missing_connections.size();
 		}
 	}
-
-	code_editor->set_warning_count(warning_nb);
 
 	if (has_connections_table) {
 		warnings_panel->add_newline();
 	}
 
-	// Add script warnings.
-	warnings_panel->push_table(3);
-	for (const EditorLanguage::Warning &w : warnings) {
-		Dictionary ignore_meta;
-		ignore_meta["line"] = w.start_line - 1;
-		ignore_meta["code"] = w.string_code.to_lower();
-		warnings_panel->push_cell();
-		warnings_panel->push_meta(ignore_meta);
-		warnings_panel->push_color(
-				warnings_panel->get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).lerp(warnings_panel->get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.5f));
-		warnings_panel->add_text(TTR("[Ignore]"));
-		warnings_panel->pop(); // Color.
-		warnings_panel->pop(); // Meta ignore.
-		warnings_panel->pop(); // Cell.
-
-		warnings_panel->push_cell();
-		warnings_panel->push_meta(w.start_line - 1);
-		warnings_panel->push_color(warnings_panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-		warnings_panel->add_text(vformat(TTR("Line %d (%s):"), w.start_line, w.string_code));
-		warnings_panel->pop(); // Color.
-		warnings_panel->pop(); // Meta goto.
-		warnings_panel->pop(); // Cell.
-
-		warnings_panel->push_cell();
-		warnings_panel->add_text(w.message);
-		warnings_panel->add_newline();
-		warnings_panel->pop(); // Cell.
-	}
-	warnings_panel->pop(); // Table.
-}
-
-void ScriptTextEditor::_update_errors() {
-	code_editor->set_error_count(errors.size());
-
+	// Add script diagnostics.
+	warnings_panel->clear();
 	errors_panel->clear();
+
+	warnings_panel->push_table(3);
 	errors_panel->push_table(2);
-	for (const EditorLanguage::ScriptError &err : errors) {
-		errors_panel->push_cell();
-		errors_panel->push_meta(err.start_line - 1);
-		errors_panel->push_color(warnings_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-		errors_panel->add_text(vformat(TTR("Line %d:"), err.start_line));
-		errors_panel->pop(); // Color.
-		errors_panel->pop(); // Meta goto.
-		errors_panel->pop(); // Cell.
 
-		errors_panel->push_cell();
-		errors_panel->add_text(err.message);
-		errors_panel->add_newline();
-		errors_panel->pop(); // Cell.
-	}
-	errors_panel->pop(); // Table
+	for (const EditorLanguage::Diagnostic &diagnostic : diagnostics) {
+		RichTextLabel *panel = nullptr;
+		Dictionary ignore_meta;
+		Color color;
+		switch (diagnostic.severity) {
+			case EditorLanguage::DiagnosticSeverity::ERROR:
+				error_count += 1;
+				panel = errors_panel;
+				color = panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+				break;
+			case EditorLanguage::DiagnosticSeverity::WARNING:
+				warning_count += 1;
+				panel = warnings_panel;
+				ignore_meta["line"] = diagnostic.range.start_line;
+				ignore_meta["code"] = diagnostic.code.to_lower();
+				color = panel->get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
 
-	for (const KeyValue<String, List<EditorLanguage::ScriptError>> &KV : depended_errors) {
-		Dictionary click_meta_script;
-		click_meta_script["path"] = KV.key;
-		click_meta_script["line"] = 0;
-
-		errors_panel->add_newline();
-		errors_panel->add_newline();
-		errors_panel->push_meta(click_meta_script);
-		errors_panel->add_text(vformat(R"(%s:)", KV.key));
-		errors_panel->pop(); // Meta goto.
-		errors_panel->add_newline();
-
-		errors_panel->push_indent(1);
-		errors_panel->push_table(2);
-		for (const EditorLanguage::ScriptError &err : KV.value) {
-			Dictionary click_meta;
-			click_meta["path"] = KV.key;
-			click_meta["line"] = err.start_line - 1;
-			click_meta["column"] = err.start_column - 1;
-
-			errors_panel->push_cell();
-			errors_panel->push_meta(click_meta);
-			errors_panel->push_color(errors_panel->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			errors_panel->add_text(vformat(TTR("Line %d:"), err.start_line));
-			errors_panel->pop(); // Color.
-			errors_panel->pop(); // Meta goto.
-			errors_panel->pop(); // Cell.
-
-			errors_panel->push_cell();
-			errors_panel->add_text(err.message);
-			errors_panel->pop(); // Cell.
+				break;
 		}
-		errors_panel->pop(); // Table
-		errors_panel->pop(); // Indent.
+
+		if (!ignore_meta.is_empty()) {
+			panel->push_cell();
+			panel->push_meta(ignore_meta);
+			panel->push_color(
+					panel->get_theme_color(SNAME("accent_color"), EditorStringName(Editor)).lerp(panel->get_theme_color(SNAME("mono_color"), EditorStringName(Editor)), 0.5f));
+			panel->add_text(TTR("[Ignore]"));
+			panel->pop(); // Color.
+			panel->pop(); // Meta ignore.
+			panel->pop(); // Cell.
+		}
+
+		if (diagnostic.tags.group) {
+			// Emulate the old look for compat.
+			ERR_FAIL_COND(diagnostic.related_information.is_empty());
+			panel->pop(); // Table;
+			panel->add_newline();
+			panel->add_newline();
+			const String &file = diagnostic.related_information[0].path;
+			Dictionary click_meta;
+			click_meta["path"] = file;
+			panel->push_meta(click_meta);
+			panel->add_text(vformat(TTR("%s:"), file));
+			panel->pop();
+		} else {
+			panel->push_cell();
+			panel->push_color(color);
+			panel->push_meta(diagnostic.range.start_line);
+
+			if (diagnostic.code.is_empty()) {
+				panel->add_text(vformat(TTR("Line %d:"), diagnostic.range.start_line + 1));
+			} else {
+				panel->add_text(vformat(TTR("Line %d (%s):"), diagnostic.range.start_line + 1, diagnostic.code));
+			}
+			panel->pop(); // Meta goto.
+			panel->pop(); // Color.
+			panel->pop(); // Cell.
+			panel->push_cell();
+			panel->add_text(diagnostic.message);
+			panel->add_newline();
+			panel->pop(); // Cell.
+		}
+
+		if (!diagnostic.related_information.is_empty()) {
+			if (!diagnostic.tags.group) {
+				// Already popped for groups.
+				panel->pop(); // Table;
+			}
+			panel->push_indent(1);
+			panel->push_table(2);
+			for (const EditorLanguage::DiagnosticRelatedInformation &related : diagnostic.related_information) {
+				Dictionary click_meta;
+				click_meta["path"] = related.path;
+				click_meta["line"] = related.range.start_line;
+				click_meta["column"] = related.range.start_column;
+
+				panel->push_cell();
+				panel->push_meta(click_meta);
+				panel->push_color(color);
+				panel->add_text(vformat(TTR("Line %d:"), related.range.start_line + 1));
+				panel->pop(); // Color.
+				panel->pop(); // Meta goto.
+				panel->pop(); // Cell.
+
+				panel->push_cell();
+				panel->add_text(related.message);
+				panel->pop(); // Cell.
+			}
+			panel->pop(); // Table
+			panel->pop(); // Indent.
+			//panel->add_newline();
+			panel->push_table(diagnostic.severity == EditorLanguage::DiagnosticSeverity::ERROR ? 2 : 3);
+		}
 	}
+
+	// Table.
+	warnings_panel->pop();
+	errors_panel->pop();
+
+	code_editor->set_error_count(error_count);
+	code_editor->set_warning_count(warning_count);
 
 	bool highlight_safe = EDITOR_GET("text_editor/appearance/gutters/highlight_type_safe_lines");
 	bool last_is_safe = false;
@@ -1335,19 +1341,16 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 
 	String diagnostic_strings_concatenated;
 	if (enable_diagnostics) {
-		// Look for any errors that include this location.
-		PackedStringArray error_strings;
-		for (const EditorLanguage::ScriptError &e : errors) {
-			if (_is_line_col_in_range(p_row + 1, p_column + 1, e.start_line, e.start_column, e.end_line, e.end_column)) {
-				error_strings.append(e.message);
-			}
-		}
-
-		// Look for any warnings that include this location.
-		PackedStringArray warning_strings;
-		for (const EditorLanguage::Warning &w : warnings) {
-			if (_is_line_col_in_range(p_row + 1, p_column + 1, w.start_line, w.start_column, w.end_line, w.end_column)) {
-				warning_strings.append(vformat("%s: %s", w.string_code, w.message));
+		// Look for any diagnostics that include this location.
+		Vector<String> error_strings;
+		Vector<String> warning_strings;
+		for (const EditorLanguage::Diagnostic &diagnostic : diagnostics) {
+			if (_is_line_col_in_range(p_row, p_column, diagnostic.range.start_line, diagnostic.range.start_column, diagnostic.range.end_line, diagnostic.range.end_column)) {
+				if (diagnostic.severity == EditorLanguage::DiagnosticSeverity::ERROR) {
+					error_strings.append(diagnostic.message);
+				} else {
+					warning_strings.append(vformat("%s: %s", diagnostic.code, diagnostic.message));
+				}
 			}
 		}
 
@@ -1933,8 +1936,7 @@ void ScriptTextEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_ready() && is_visible_in_tree()) {
-				_update_errors();
-				_update_warnings();
+				_update_diagnostics();
 			}
 		} break;
 
@@ -1943,8 +1945,7 @@ void ScriptTextEditor::_notification(int p_what) {
 				break;
 			}
 			if (is_visible_in_tree()) {
-				_update_warnings();
-				_update_errors();
+				_update_diagnostics();
 				_update_background_color();
 			}
 			[[fallthrough]];
@@ -2426,10 +2427,9 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 		}
 
 		bool script_has_errors = false;
-		String scr_path = si->get_script()->get_path();
 
-		for (const EditorLanguage::ScriptError &error : errors) {
-			if (error.path == scr_path) {
+		for (const EditorLanguage::Diagnostic &diagnostic : diagnostics) {
+			if (diagnostic.severity == EditorLanguage::DiagnosticSeverity::ERROR) {
 				script_has_errors = true;
 				break;
 			}

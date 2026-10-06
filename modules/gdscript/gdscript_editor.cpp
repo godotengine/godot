@@ -157,6 +157,13 @@ Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(
 
 #ifdef TOOLS_ENABLED
 
+static EditorLanguage::Range range_of(const GDScriptWarning &p_warning) {
+	return EditorLanguage::Range(p_warning.start_line - 1, p_warning.start_column - 1, p_warning.end_line - 1, p_warning.end_column - 1);
+}
+static EditorLanguage::Range range_of(const GDScriptParser::ParserError &p_error) {
+	return EditorLanguage::Range(p_error.start_line - 1, p_error.start_column - 1, p_error.end_line - 1, p_error.end_column - 1);
+}
+
 static void get_function_names_recursively(const GDScriptParser::ClassNode *p_class, const String &p_prefix, HashMap<int, String> &r_funcs) {
 	for (const GDScriptParser::ClassNode::Member &member : p_class->members) {
 		if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
@@ -169,7 +176,7 @@ static void get_function_names_recursively(const GDScriptParser::ClassNode *p_cl
 	}
 }
 
-bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const {
+bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_path, LocalVector<Diagnostic> *r_diagnostics, List<String> *r_functions, HashSet<int> *r_safe_lines) const {
 	GDScriptParser parser;
 	GDScriptAnalyzer analyzer(&parser);
 
@@ -183,32 +190,18 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 		err = linter.lint();
 	}
 
-#ifdef DEBUG_ENABLED
-	if (r_warnings) {
-		for (const GDScriptWarning &E : parser.get_warnings()) {
-			const GDScriptWarning &warn = E;
-			Warning w;
-			w.start_line = warn.start_line;
-			w.start_column = warn.start_column;
-			w.end_line = warn.end_line;
-			w.end_column = warn.end_column;
-			w.string_code = GDScriptWarning::get_name_from_code(warn.code);
-			w.message = warn.get_message();
-			r_warnings->push_back(w);
+	if (r_diagnostics) {
+		for (const GDScriptWarning &warning : parser.get_warnings()) {
+			Diagnostic diagnostic(DiagnosticSeverity::WARNING, warning.get_message(), range_of(warning));
+			diagnostic.code = warning.get_name();
+			r_diagnostics->push_back(diagnostic);
 		}
 	}
-#endif
 	if (err) {
-		if (r_errors) {
-			for (const GDScriptParser::ParserError &pe : parser.get_errors()) {
-				ScriptError e;
-				e.path = p_path;
-				e.start_line = pe.start_line;
-				e.start_column = pe.start_column;
-				e.end_line = pe.end_line;
-				e.end_column = pe.end_column;
-				e.message = pe.message;
-				r_errors->push_back(e);
+		if (r_diagnostics) {
+			for (const GDScriptParser::ParserError &error : parser.get_errors()) {
+				Diagnostic diagnostic(DiagnosticSeverity::ERROR, error.message, range_of(error));
+				r_diagnostics->push_back(diagnostic);
 			}
 
 			for (KeyValue<String, Ref<GDScriptParserRef>> E : parser.get_depended_parsers()) {
@@ -217,18 +210,21 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 					// The errors from this parser are irrelevant and the wrong positions could lead to crashes down the line.
 					continue;
 				}
-
 				GDScriptParser *depended_parser = E.value->get_parser();
-				for (const GDScriptParser::ParserError &pe : depended_parser->get_errors()) {
-					ScriptError e;
-					e.path = E.key;
-					e.start_line = pe.start_line;
-					e.start_column = pe.start_column;
-					e.end_line = pe.end_line;
-					e.end_column = pe.end_column;
-					e.message = pe.message;
-					r_errors->push_back(e);
+				if (depended_parser->get_errors().is_empty()) {
+					continue;
 				}
+
+				// TODO: Attach errors to the actual errors in this file instead of using a group diagnostic.
+				Diagnostic root(DiagnosticSeverity::ERROR, String(), Range(parser.get_last_line_number() - 1, 0, parser.get_last_line_number() - 1, 0));
+				root.tags.group = true;
+
+				for (const GDScriptParser::ParserError &error : depended_parser->get_errors()) {
+					DiagnosticRelatedInformation related(error.message, range_of(error), E.key);
+					root.related_information.push_back(related);
+				}
+
+				r_diagnostics->push_back(root);
 			}
 		}
 		return false;
