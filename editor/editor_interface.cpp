@@ -951,8 +951,8 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property", "inspector_only"), &EditorInterface::inspect_object, DEFVAL(String()), DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("get_class_icon", "class", "fallback"), &EditorInterface::get_class_icon);
-	ClassDB::bind_method(D_METHOD("get_object_icon", "object", "fallback"), &EditorInterface::get_object_icon);
+	ClassDB::bind_method(D_METHOD("get_class_icon", "class", "fallback"), &EditorInterface::get_class_icon, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("get_object_icon", "object", "fallback"), &EditorInterface::get_object_icon, DEFVAL(String()));
 
 	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
 	ClassDB::bind_method(D_METHOD("edit_node", "node"), &EditorInterface::edit_node);
