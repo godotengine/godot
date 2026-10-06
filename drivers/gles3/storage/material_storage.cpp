@@ -1299,6 +1299,12 @@ MaterialStorage::MaterialStorage() {
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["FRONT_FACING"] = "gl_FrontFacing";
+		actions.renames["CLIP_DISTANCE0"] = "gl_ClipDistance[0]";
+		actions.renames["CLIP_DISTANCE1"] = "gl_ClipDistance[1]";
+		actions.renames["CLIP_DISTANCE2"] = "gl_ClipDistance[2]";
+		actions.renames["CLIP_DISTANCE3"] = "gl_ClipDistance[3]";
+		actions.renames["CLIP_DISTANCE4"] = "gl_ClipDistance[4]";
+		actions.renames["CLIP_DISTANCE5"] = "gl_ClipDistance[5]";
 		actions.renames["NORMAL_MAP"] = "normal_map";
 		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
 		actions.renames["BENT_NORMAL_MAP"] = "bent_normal_map";
@@ -1362,6 +1368,12 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
 		actions.renames["SPECULAR_LIGHT"] = "specular_light";
 
+		actions.usage_defines["CLIP_DISTANCE0"] = "#define CLIP_DISTANCE0_USED\n";
+		actions.usage_defines["CLIP_DISTANCE1"] = "#define CLIP_DISTANCE1_USED\n";
+		actions.usage_defines["CLIP_DISTANCE2"] = "#define CLIP_DISTANCE2_USED\n";
+		actions.usage_defines["CLIP_DISTANCE3"] = "#define CLIP_DISTANCE3_USED\n";
+		actions.usage_defines["CLIP_DISTANCE4"] = "#define CLIP_DISTANCE4_USED\n";
+		actions.usage_defines["CLIP_DISTANCE5"] = "#define CLIP_DISTANCE5_USED\n";
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 		actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";
 		actions.usage_defines["BINORMAL"] = "@TANGENT";

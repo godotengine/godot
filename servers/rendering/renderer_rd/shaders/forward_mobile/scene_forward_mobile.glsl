@@ -166,6 +166,12 @@ ivec2 multiview_uv(ivec2 uv) {
 layout(location = 14) out vec2 point_coord_interp;
 #endif
 
+// TODO change this to #ifndef CLIP_DISTANCE_SUPPORTED and checking if any clip distance is used.
+#ifdef CLIP_DISTANCE_UNSUPPORTED
+// Need to figure out if we can reuse this name when not supported, or if we need to do a rename trick
+layout(location = 15) out float gl_ClipDistance[6];
+#endif
+
 invariant gl_Position;
 
 #GLOBALS
@@ -815,6 +821,31 @@ void main() {
 			scene_data_block.data.viewport_size,
 			scene_data_block.data.directional_light_count,
 			screen_position);
+
+// TODO change this to an #ifdef once we actually have a proper check and make it CULL_DISTANCE_SUPPORTED.
+#ifndef CULL_DISTANCE_UNSUPPORTED
+	// gl_ClipDistance will discard fragments outside of our clipping volume,
+	// but we'd still be processing all fragments of triangles outside of this volume.
+	// If gl_CullDistance is supported, using the same values will cull those triangles completely.
+#ifdef CLIP_DISTANCE0_USED
+	gl_CullDistance[0] = gl_ClipDistance[0];
+#endif
+#ifdef CLIP_DISTANCE1_USED
+	gl_CullDistance[1] = gl_ClipDistance[1];
+#endif
+#ifdef CLIP_DISTANCE2_USED
+	gl_CullDistance[2] = gl_ClipDistance[2];
+#endif
+#ifdef CLIP_DISTANCE3_USED
+	gl_CullDistance[3] = gl_ClipDistance[3];
+#endif
+#ifdef CLIP_DISTANCE4_USED
+	gl_CullDistance[4] = gl_ClipDistance[4];
+#endif
+#ifdef CLIP_DISTANCE5_USED
+	gl_CullDistance[5] = gl_ClipDistance[5];
+#endif
+#endif
 }
 
 #[fragment]
@@ -943,6 +974,11 @@ ivec2 multiview_uv(ivec2 uv) {
 
 #if defined(POINT_SIZE_USED) && defined(POINT_COORD_USED)
 layout(location = 14) in vec2 point_coord_interp;
+#endif
+
+// TODO change this to #ifndef CLIP_DISTANCE_SUPPORTED and checking if any clip distance is used.
+#ifdef CLIP_DISTANCE_UNSUPPORTED
+layout(location = 15) in float gl_ClipDistance[6];
 #endif
 
 //defines to keep compatibility with vertex
@@ -1099,6 +1135,42 @@ void main() {
 	if (dp_clip > 0.0) {
 		discard;
 	}
+#endif
+
+// TODO change this to #ifndef CLIP_DISTANCE_SUPPORTED
+#ifdef CLIP_DISTANCE_UNSUPPORTED
+// If clip distance not supported, we can fall back to doing it ourselves.
+// This will be slower as GPU can't determine if entire tile is visible and perform binning.
+#ifdef CLIP_DISTANCE0_USED
+	if (gl_ClipDistance[0] < 0.0) {
+		discard;
+	}
+#endif
+#ifdef CLIP_DISTANCE1_USED
+	if (gl_ClipDistance[1] < 0.0) {
+		discard;
+	}
+#endif
+#ifdef CLIP_DISTANCE2_USED
+	if (gl_ClipDistance[2] < 0.0) {
+		discard;
+	}
+#endif
+#ifdef CLIP_DISTANCE3_USED
+	if (gl_ClipDistance[3] < 0.0) {
+		discard;
+	}
+#endif
+#ifdef CLIP_DISTANCE4_USED
+	if (gl_ClipDistance[4] < 0.0) {
+		discard;
+	}
+#endif
+#ifdef CLIP_DISTANCE5_USED
+	if (gl_ClipDistance[5] < 0.0) {
+		discard;
+	}
+#endif
 #endif
 
 	//lay out everything, whatever is unused is optimized away anyway
