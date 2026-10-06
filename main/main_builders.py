@@ -1,12 +1,19 @@
 """Functions used to generate source files during build time"""
 
-import methods
+import argparse
+import sys
+
+try:
+    sys.path.insert(0, "./")
+    import methods
+except ImportError:
+    raise SystemExit(f'Generator script "{__file__}" must be run from repository root!')
 
 
-def make_splash(target, source, env):
-    buffer = methods.get_buffer(str(source[0]))
+def splash(target: str, image: str) -> None:
+    buffer = methods.get_buffer(image)
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         # Use a neutral gray color to better fit various kinds of projects.
         file.write(f"""\
 #include "core/math/color.h"
@@ -18,10 +25,10 @@ inline constexpr const unsigned char boot_splash_png[] = {{
 """)
 
 
-def make_splash_editor(target, source, env):
-    buffer = methods.get_buffer(str(source[0]))
+def splash_editor(target: str, image: str) -> None:
+    buffer = methods.get_buffer(image)
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         # The editor splash background color is taken from the default editor theme's background color.
         # This helps achieve a visually "smoother" transition between the splash screen and the editor.
         file.write(f"""\
@@ -34,13 +41,38 @@ inline constexpr const unsigned char boot_splash_editor_png[] = {{
 """)
 
 
-def make_app_icon(target, source, env):
-    buffer = methods.get_buffer(str(source[0]))
+def app_icon(target: str, image: str) -> None:
+    buffer = methods.get_buffer(image)
 
-    with methods.generated_wrapper(str(target[0])) as file:
+    with methods.generated_wrapper(target) as file:
         # Use a neutral gray color to better fit various kinds of projects.
         file.write(f"""\
 inline constexpr const unsigned char app_icon_png[] = {{
 {methods.format_buffer(buffer, 1)}
 }};
 """)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    splash_parser = subparsers.add_parser("splash")
+    splash_parser.add_argument("target")
+    splash_parser.add_argument("image")
+
+    splash_editor_parser = subparsers.add_parser("splash_editor")
+    splash_editor_parser.add_argument("target")
+    splash_editor_parser.add_argument("image")
+
+    app_icon_parser = subparsers.add_parser("app_icon")
+    app_icon_parser.add_argument("target")
+    app_icon_parser.add_argument("image")
+
+    args = vars(parser.parse_args())
+    command = globals().get(args.pop("command"), {})
+    command(**args)
+
+
+if __name__ == "__main__":
+    main()
