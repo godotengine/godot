@@ -32,6 +32,7 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
+#include "../toolchain/compilation_unit.h"
 
 #include "core/io/resource_loader.h"
 #include "core/templates/fixed_vector.h"
@@ -59,7 +60,8 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 	err = parser.parse(source_code, p_path, false);
 	ERR_FAIL_COND_V_MSG(err, err, "Failed to parse GDScript with GDScriptParser.");
 
-	GDScriptAnalyzer analyzer(&parser);
+	GDScriptCompilationUnit unit;
+	GDScriptAnalyzer analyzer(unit, &parser);
 	err = analyzer.analyze();
 	ERR_FAIL_COND_V_MSG(err, err, "Failed to analyze GDScript with GDScriptAnalyzer.");
 
