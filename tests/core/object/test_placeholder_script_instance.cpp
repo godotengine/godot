@@ -224,6 +224,55 @@ TEST_SUITE("[PlaceholderScriptInstance]") {
 		CHECK_EQ(obj->get("prop_a"), Variant(1));
 	}
 
+	TEST_CASE("Updating must remove properties that are no longer exported.") {
+		Ref<_MockScript> scr = memnew(_MockScript);
+		scr->property_infos.push_back(PropertyInfo(Variant::INT, "prop_a"));
+		scr->property_infos.push_back(PropertyInfo(Variant::INT, "prop_b"));
+		scr->default_values.insert("prop_a", 0);
+		scr->default_values.insert("prop_b", 0);
+		MAKE_INSTANCE(scr);
+
+		REQUIRE(inst->set("prop_b", 1));
+		scr->property_infos.pop_back();
+		scr->default_values.erase("prop_b");
+		inst->update(scr->property_infos, scr->default_values);
+
+		bool valid = true;
+		CHECK_EQ(obj->get("prop_b", &valid), Variant());
+		CHECK_FALSE(valid);
+	}
+
+	TEST_CASE("Updating must replace values whose type no longer matches the property.") {
+		Ref<_MockScript> scr = memnew(_MockScript);
+		scr->property_infos.push_back(PropertyInfo(Variant::INT, "prop_a"));
+		scr->default_values.insert("prop_a", 0);
+		MAKE_INSTANCE(scr);
+
+		REQUIRE(inst->set("prop_a", 1));
+		scr->property_infos.front()->get().type = Variant::STRING;
+		scr->default_values["prop_a"] = "default";
+		inst->update(scr->property_infos, scr->default_values);
+
+		CHECK_EQ(obj->get("prop_a"), Variant("default"));
+	}
+
+	TEST_CASE("Updating must refresh constants.") {
+		Ref<_MockScript> scr = memnew(_MockScript);
+		scr->constants.insert("const_a", 1);
+		MAKE_INSTANCE(scr);
+
+		CHECK_EQ(obj->get("const_a"), Variant(1));
+		scr->constants["const_a"] = 2;
+		inst->update(scr->property_infos, scr->default_values);
+		CHECK_EQ(obj->get("const_a"), Variant(2));
+
+		scr->constants.erase("const_a");
+		inst->update(scr->property_infos, scr->default_values);
+		bool valid = true;
+		CHECK_EQ(obj->get("const_a", &valid), Variant());
+		CHECK_FALSE(valid);
+	}
+
 	TEST_CASE("Updating the scripts default values.") {
 		Ref<_MockScript> scr = memnew(_MockScript);
 		scr->property_infos.push_back(PropertyInfo(Variant::INT, "prop_a"));
