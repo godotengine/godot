@@ -962,8 +962,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			undo_redo->commit_action();
 
-			NodePath np = full_selection.front()->get()->get_path();
-			TreeItem *item = scene_tree->get_scene_tree()->get_item_with_metadata(np);
+			TreeItem *item = scene_tree->get_node_item(full_selection.front()->get());
 			callable_mp(scene_tree->get_scene_tree(), &Tree::scroll_to_item).call_deferred(item, false);
 		} break;
 		case TOOL_DUPLICATE: {
