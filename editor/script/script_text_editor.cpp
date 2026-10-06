@@ -57,7 +57,6 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/split_container.h"
@@ -1668,7 +1667,7 @@ void ScriptTextEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (ED_GET_SHORTCUT("script_text_editor/rename_symbol")->matches_event(p_event)) {
+	if (ED_IS_SHORTCUT("script_text_editor/rename_symbol", p_event)) {
 		_edit_option(RENAME_SYMBOL);
 		accept_event();
 		return;
@@ -1878,16 +1877,6 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 			if (result.script_path.is_empty()) {
 				// Don't allow renaming native symbols.
 				break;
-			}
-
-			Vector2 pos = tx->get_screen_position();
-			// Set popup at the beginning of the word.
-			const PackedInt32Array words = TS->shaped_text_get_word_breaks(tx->get_line_data(tx->get_caret_line(0))->get_rid());
-			for (int i = 0; i < words.size(); i = i + 2) {
-				if ((words[i] <= tx->get_caret_column(0) && words[i + 1] >= tx->get_caret_column(0)) || (i == words.size() - 2 && tx->get_caret_column(0) == words[i + 1])) {
-					pos += tx->get_rect_at_line_column(tx->get_caret_line(), words[i] + 1).position;
-					break;
-				}
 			}
 			ScriptEditor::get_singleton()->rename_symbol(text, result);
 		} break;
