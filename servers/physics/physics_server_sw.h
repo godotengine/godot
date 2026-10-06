@@ -185,6 +185,8 @@ public:
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags);
 	virtual uint32_t body_get_user_flags(RID p_body) const;
 
+	virtual void body_wake_neighbors(RID p_body);
+
 	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value);
 	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const;
 

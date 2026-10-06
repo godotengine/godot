@@ -615,6 +615,12 @@ uint32_t PhysicsServerSW::body_get_object_instance_id(RID p_body) const {
 	return body->get_instance_id();
 };
 
+void PhysicsServerSW::body_wake_neighbors(RID p_body) {
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->wakeup_neighbours();
+}
+
 void PhysicsServerSW::body_set_user_flags(RID p_body, uint32_t p_flags) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);

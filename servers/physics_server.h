@@ -376,6 +376,8 @@ public:
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags) = 0;
 	virtual uint32_t body_get_user_flags(RID p_body) const = 0;
 
+	virtual void body_wake_neighbors(RID p_body);
+
 	// common body variables
 	enum BodyParameter {
 		BODY_PARAM_BOUNCE,
