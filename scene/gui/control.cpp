@@ -47,6 +47,7 @@ STATIC_ASSERT_INCOMPLETE_TYPE(class, RenderingServer);
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/audio/audio_stream_randomizer.h"
 #include "scene/theme/theme_db.h"
 #include "scene/theme/theme_owner.h"
 #include "servers/display/accessibility_server.h"
@@ -3123,11 +3124,23 @@ void Control::release_focus() {
 
 void Control::play_theme_sound(const Ref<AudioStream> &p_stream) {
 	ERR_MAIN_THREAD_GUARD;
-	if (p_stream.is_null() || p_stream->get_length() == 0 || !get_tree()) {
+	if (p_stream.is_null() || !get_tree()) {
 		return;
 	}
 
-	get_tree()->play_theme_sound(p_stream);
+	// Ignore playback attempt if the sound has no length, so that empty AudioStream resources
+	// can be used to disable sounds on specific controls using theme overrides.
+	// Without this check, no sound would be played, but a
+	// "Failed to instantiate playback." error would also be printed.
+	bool sound_no_length = false;
+	if (!Object::cast_to<AudioStreamRandomizer>(p_stream.ptr())) {
+		// AudioStreamRandomizer has no length defined.
+		sound_no_length = p_stream->get_length() == 0;
+	}
+
+	if (!sound_no_length) {
+		get_tree()->play_theme_sound(p_stream);
+	}
 }
 
 static Control *_next_control(Control *p_from) {
