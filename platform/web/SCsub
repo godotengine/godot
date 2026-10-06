@@ -78,6 +78,9 @@ if len(env["EXPORTED_FUNCTIONS"]):
 if len(env["EXPORTED_RUNTIME_METHODS"]):
     sys_env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=" + repr(sorted(list(set(env["EXPORTED_RUNTIME_METHODS"]))))])
 
+# Wrap the JavaScript support code around a closure named Godot.
+sys_env.Append(LINKFLAGS=["-sMODULARIZE=1", "-sEXPORT_NAME='Godot'"])
+
 build = []
 build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
 if env["dlink_enabled"]:
@@ -88,12 +91,14 @@ if env["dlink_enabled"]:
     # Configure it as a main module (dynamic linking support).
     sys_env["CCFLAGS"].remove("-sSIDE_MODULE=2")
     sys_env["LINKFLAGS"].remove("-sSIDE_MODULE=2")
-    sys_env.Append(CCFLAGS=["-s", "MAIN_MODULE=1"])
-    sys_env.Append(LINKFLAGS=["-s", "MAIN_MODULE=1"])
-    sys_env.Append(LINKFLAGS=["-s", "EXPORT_ALL=1"])
-    sys_env.Append(LINKFLAGS=["-s", "WARN_ON_UNDEFINED_SYMBOLS=0"])
+    sys_env.Append(CCFLAGS=["-sMAIN_MODULE=1"])
+    sys_env.Append(LINKFLAGS=["-sMAIN_MODULE=1"])
+    sys_env.Append(LINKFLAGS=["-sEXPORT_ALL=1"])
+    sys_env.Append(LINKFLAGS=["-sWARN_ON_UNDEFINED_SYMBOLS=0"])
     sys_env["CCFLAGS"].remove("-fvisibility=hidden")
     sys_env["LINKFLAGS"].remove("-fvisibility=hidden")
+    sys_env.Append(CCFLAGS=["-fwasm-exceptions"])
+    sys_env.Append(LINKFLAGS=["-fwasm-exceptions"])
 
     # The main emscripten runtime, with exported standard libraries.
     sys = sys_env.add_program(build_targets, ["web_runtime.cpp"])
