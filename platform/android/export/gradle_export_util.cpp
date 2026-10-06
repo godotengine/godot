@@ -312,7 +312,7 @@ String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, con
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
 			"tools:node=\"mergeOnlyAttributes\" "
-			"android:configChanges=\"layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode\" "
+			"android:configChanges=\"layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode|fontScale|fontWeightAdjustment\" "
 			"android:excludeFromRecents=\"%s\" "
 			"android:exported=\"false\" "
 			"android:launchMode=\"singleInstancePerTask\" "
