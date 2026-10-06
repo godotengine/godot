@@ -194,6 +194,7 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 
 	PipelineStatistics pipeline_statistics;
 	DriverWorkarounds driver_workarounds;
+	BinaryMutex *powervr_rogue_shader_crash_workaround_mutex = nullptr;
 
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
 	Error _initialize_device_extensions();
