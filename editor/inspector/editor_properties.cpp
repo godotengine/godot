@@ -814,14 +814,18 @@ void EditorPropertyPath::_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	const Dictionary drag_data = p_data;
-	if (!drag_data.has("type")) {
-		return false;
+	const String type = drag_data.get("type", "");
+	if (folder) {
+		if (type != "files_and_dirs") {
+			return false;
+		}
+	} else {
+		if (type != "files") {
+			return false;
+		}
 	}
 	const Vector<String> filesPaths = drag_data["files"];
 	if (folder) {
-		if (String(drag_data["type"]) != "files_and_dirs") {
-			return false;
-		}
 		if (filesPaths.size() > 1) {
 			for (const String &p : filesPaths) {
 				if (!p.ends_with("/")) {
@@ -831,9 +835,6 @@ bool EditorPropertyPath::_can_drop_data_fw(const Point2 &p_point, const Variant 
 		}
 		return true;
 	} else {
-		if (String(drag_data["type"]) != "files") {
-			return false;
-		}
 		if (filesPaths.is_empty()) {
 			return false;
 		}
