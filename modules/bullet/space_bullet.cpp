@@ -485,6 +485,66 @@ void SpaceBullet::reload_collision_filters(AreaBullet *p_area) {
 	dynamicsWorld->refreshBroadphaseProxy(ghost_object);
 }
 
+void SpaceBullet::rigid_body_wake_neighbors(RigidBodyBullet *p_body) {
+	struct WakeNeighborsCallback : public btBroadphaseAabbCallback {
+		btCollisionObject *me;
+
+		WakeNeighborsCallback(btCollisionObject *p_me) :
+				me(p_me) {}
+
+		virtual bool process(const btBroadphaseProxy *proxy) override {
+			btCollisionObject *obj = static_cast<btCollisionObject *>(proxy->m_clientObject);
+
+			if (obj && obj != me && !obj->isStaticOrKinematicObject() && !obj->isActive()) {
+				obj->activate(true);
+			}
+			// Return true to keep iterating through all overlaps.
+			return true;
+		}
+	};
+
+	btRigidBody *bt_body = p_body->get_bt_rigid_body();
+	ERR_FAIL_NULL(bt_body);
+
+	// In the case of Rigid type bodies, we make the assumption that when already active,
+	// paired bodies are also awake, so there is no need to run the rest of this routine.
+	// WATCH FOR BUGS HERE. If necessary, remove this shortcut.
+	if (!bt_body->isStaticOrKinematicObject() && bt_body->getInternalType() == btCollisionObject::CO_RIGID_BODY && bt_body->isActive()) {
+		return;
+	}
+
+	ERR_FAIL_NULL(broadphase);
+
+	// Check if the body has already been completely removed from the physics world.
+	// This is probably a user error, and makes no sense to complete as the AABB will be invalid.
+	const btBroadphaseProxy *handle = bt_body->getBroadphaseHandle();
+	if (!handle) {
+		ERR_PRINT_ONCE("wake_neighbors() failed: The body has no active presence in the physics space. Ensure this is called BEFORE disabling collision shapes or removing the body from the scene tree.");
+		return;
+	}
+
+	// Check if the collision shape is missing or has been stripped down to an empty type.
+	btCollisionShape *shape = bt_body->getCollisionShape();
+	if (!shape || shape->getShapeType() == EMPTY_SHAPE_PROXYTYPE) {
+		ERR_PRINT_ONCE("wake_neighbors() failed: The body has no active collision shapes. Ensure this is called BEFORE disabling its shapes.");
+		return;
+	}
+
+	// Get the bounding box of this body.
+	btVector3 aabbMin, aabbMax;
+	bt_body->getAabb(aabbMin, aabbMax);
+
+	// Pad the bounding box to account for gravity, and
+	// to capture the bounding boxes of anything physically resting on it.
+	const btVector3 padding(0.05f, 0.05f, 0.05f);
+	aabbMin -= padding;
+	aabbMax += padding;
+
+	// Instantiate our callback and execute the broadphase test
+	WakeNeighborsCallback callback(bt_body);
+	broadphase->aabbTest(aabbMin, aabbMax, callback);
+}
+
 void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 	if (p_body->is_static()) {
 		dynamicsWorld->addCollisionObject(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());

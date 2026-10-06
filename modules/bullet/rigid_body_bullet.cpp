@@ -36,6 +36,7 @@
 #include "bullet_utilities.h"
 #include "godot_motion_state.h"
 #include "joint_bullet.h"
+#include <core/engine.h>
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/CollisionShapes/btConvexPointCloudShape.h>
@@ -348,6 +349,12 @@ void RigidBodyBullet::reload_body() {
 	}
 }
 
+void RigidBodyBullet::wake_neighbors() {
+	if (space) {
+		space->rigid_body_wake_neighbors(this);
+	}
+}
+
 void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
 	if (space) {
@@ -583,9 +590,26 @@ PhysicsServer::BodyMode RigidBodyBullet::get_mode() const {
 
 void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant &p_variant) {
 	switch (p_state) {
-		case PhysicsServer::BODY_STATE_TRANSFORM:
+		case PhysicsServer::BODY_STATE_TRANSFORM: {
+			uint32_t tick = Engine::get_singleton()->get_physics_frames();
+
+			// The "forward" AABB is woken up elsewhere.
+			// Additionally, in the case of e.g. teleporting a platform from under a sleeping box,
+			// we want to wake neighbors in the PREVIOUS AABB, so that the box will fall.
+
+			// However, we don't need to do this in all situations.
+			// In continuous motion, the new AABB from the previous tick will be the previous AABB from the next
+			// tick, and we can omit this `wake_neighbors()` call, as it is effectively a duplicate.
+
+			// We detect this situation by storing on each body the tick at which it was last moved, and only wake
+			// if was NOT moved on the previous tick.
+			if (previous_move_tick < (tick - 1)) {
+				wake_neighbors();
+			}
+			previous_move_tick = tick;
+
 			set_transform(p_variant);
-			break;
+		} break;
 		case PhysicsServer::BODY_STATE_LINEAR_VELOCITY:
 			set_linear_velocity(p_variant);
 			break;
@@ -1071,7 +1095,12 @@ void RigidBodyBullet::_internal_set_mass(real_t p_mass) {
 			btBody->setCollisionFlags(clearedCurrentFlags | btCollisionObject::CF_KINEMATIC_OBJECT);
 			set_transform__bullet(btBody->getWorldTransform()); // Set current Transform using kinematic method
 		}
+
+		// This is commented out as of 2026, it seems this was preventing kinematic and static bodies
+		// from waking up other RigidBodies on body_set_transform.
+#if 0
 		btBody->forceActivationState(DISABLE_SIMULATION); // DISABLE_SIMULATION 5
+#endif
 	}
 
 	btBody->setMassProps(p_mass, localInertia);
