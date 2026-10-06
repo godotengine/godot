@@ -34,6 +34,7 @@
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer.h"
 #include "gdscript_utility_functions.h"
+#include "toolchain/compilation_unit.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/gdscript_docgen.h"
@@ -170,8 +171,9 @@ static void get_function_names_recursively(const GDScriptParser::ClassNode *p_cl
 }
 
 bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *r_safe_lines) const {
+	GDScriptCompilationUnit unit;
 	GDScriptParser parser;
-	GDScriptAnalyzer analyzer(&parser);
+	GDScriptAnalyzer analyzer(unit, &parser);
 
 	Error err = parser.parse(p_script, p_path, false);
 	if (err == OK) {
@@ -211,9 +213,9 @@ bool GDScriptEditorLanguage::validate(const String &p_script, const String &p_pa
 				r_errors->push_back(e);
 			}
 
-			for (KeyValue<String, Ref<GDScriptParserRef>> E : parser.get_depended_parsers()) {
+			for (KeyValue<String, GDScriptParserRef *> E : unit.get_depended_parsers(parser.script_path)) {
 				if (GDScript::is_canonically_equal_paths(E.key, p_path)) {
-					// HACK: A bug in the analyzer can lead to it depending on itself, which pulls an outdated parser from the cache.
+					// HACK: A bug in the analyzer can lead to it depending on itself, which pulls an outdated content from the cache.
 					// The errors from this parser are irrelevant and the wrong positions could lead to crashes down the line.
 					continue;
 				}
@@ -1852,8 +1854,8 @@ static GDScriptCompletionIdentifier _type_from_variant(const Variant &p_value, G
 			ci.type.kind = GDScriptParser::DataType::SCRIPT;
 
 			if (scr->get_path().ends_with(".gd")) {
-				Ref<GDScriptParserRef> parser = p_context.parser->get_depended_parser_for(scr->get_path());
-				if (parser.is_valid() && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
+				GDScriptParserRef *parser = p_context.unit->get_depended_parser_for(scr->get_path(), p_context.parser->script_path);
+				if (parser != nullptr && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
 					ci.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 					ci.type.class_type = parser->get_parser()->get_tree();
 					ci.type.kind = GDScriptParser::DataType::CLASS;
@@ -2444,8 +2446,10 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 
 	// If the found type was not fully analyzed we analyze it now.
 	if (found && r_type.type.kind == GDScriptParser::DataType::CLASS && !r_type.type.class_type->resolved_body) {
-		Error err;
-		Ref<GDScriptParserRef> r = GDScriptCache::get_parser(r_type.type.script_path, GDScriptParserRef::FULLY_SOLVED, err);
+		GDScriptParserRef *ref = p_context.unit->get_parser(r_type.type.script_path);
+		if (ref) {
+			ref->raise_status(GDScriptParserRef::FULLY_SOLVED);
+		}
 	}
 
 	// Check type hint last. For collections we want chance to get the actual value first
@@ -2658,8 +2662,8 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	if (ScriptServer::is_global_class(p_identifier->name)) {
 		String script = ScriptServer::get_global_class_path(p_identifier->name);
 		if (script.to_lower().ends_with(".gd")) {
-			Ref<GDScriptParserRef> parser = p_context.parser->get_depended_parser_for(script);
-			if (parser.is_valid() && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
+			GDScriptParserRef *parser = p_context.unit->get_depended_parser_for(script, p_context.parser->script_path);
+			if (parser != nullptr && parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED) == OK) {
 				r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 				r_type.type.script_path = script;
 				r_type.type.class_type = parser->get_parser()->get_tree();
@@ -3554,8 +3558,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 ::Error GDScriptEditorLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<EditorLanguage::CompletionOption> *r_options, bool &r_forced, String &r_call_hint) {
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
+	GDScriptCompilationUnit unit;
 	GDScriptParser parser;
-	GDScriptAnalyzer analyzer(&parser);
+	GDScriptAnalyzer analyzer(unit, &parser);
 
 	parser.parse(p_code, p_path, true);
 	analyzer.analyze();
@@ -4421,7 +4426,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		}
 	}
 
-	GDScriptAnalyzer analyzer(&parser);
+	GDScriptCompilationUnit unit;
+	GDScriptAnalyzer analyzer(unit, &parser);
 	analyzer.analyze();
 
 	if (context.current_class && context.current_class->extends.size() > 0) {

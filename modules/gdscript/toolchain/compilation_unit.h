@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gdscript_cache.h                                                      */
+/*  compilation_unit.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,63 +30,61 @@
 
 #pragma once
 
-#include "gdscript.h"
+#include "../gdscript_cache.h"
+#include "../gdscript_parser.h"
 
-#include "core/object/ref_counted.h"
-#include "core/os/safe_binary_mutex.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/hash_set.h"
+#include "core/string/ustring.h"
 
-class GDScriptAnalyzer;
-class GDScriptParser;
-
-namespace GDScriptTests {
-class TestGDScriptCacheAccessor;
-}
-
-class GDScriptCache {
-	// String key is full path.
-	HashMap<String, Ref<GDScript>> shallow_gdscript_cache;
-	HashMap<String, Ref<GDScript>> full_gdscript_cache;
-	HashMap<String, Ref<GDScript>> static_gdscript_cache;
-	HashMap<String, HashSet<String>> dependencies;
-
-	friend class GDScript;
-	friend class GDScriptParserRef;
-	friend class GDScriptInstance;
-	friend class GDScriptTests::TestGDScriptCacheAccessor;
-
-	static GDScriptCache *singleton;
-
-	bool cleared = false;
+// TODO: Better name.
+class GDScriptParserRef final {
+	GDScriptCompilationUnit &unit;
 
 public:
-	static const int BINARY_MUTEX_TAG = 2;
+	enum Status {
+		EMPTY,
+		PARSED,
+		INHERITANCE_SOLVED,
+		INTERFACE_SOLVED,
+		FULLY_SOLVED,
+	};
 
 private:
-	static SafeBinaryMutex<BINARY_MUTEX_TAG> mutex;
-	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_gdscript_cache_mutex();
+	GDScriptParser *parser = nullptr;
+	GDScriptAnalyzer *analyzer = nullptr;
+	Status status = EMPTY;
+	Error result = OK;
+	String path;
+
+	friend class GDScript;
+	friend class GDScriptCompilationUnit;
 
 public:
-	static void register_dependency(const String &p_dependency, const String &p_owner);
-	static void move_script(const String &p_from, const String &p_to);
-	static void remove_script(const String &p_path);
-	static String get_source_code(const String &p_path);
-	static Vector<uint8_t> get_binary_tokens(const String &p_path);
-	static Ref<GDScript> get_shallow_script(const String &p_path, Error &r_error, const String &p_owner = String());
-	/**
-	 * Returns a fully loaded GDScript using an already cached script if one exists.
-	 *
-	 * The returned instance is present in GDScriptCache and ResourceCache.
-	 */
-	static Ref<GDScript> get_full_script(const String &p_path, Error &r_error, const String &p_owner = String(), bool p_update_from_disk = false);
-	static Ref<GDScript> get_cached_script(const String &p_path);
-	static Error finish_compiling(const String &p_owner);
-	static void add_static_script(Ref<GDScript> p_script);
-	static void remove_static_script(const String &p_fqcn);
+	Status get_status() const { return status; }
+	String get_path() const { return path; }
+	GDScriptParser *get_parser();
+	GDScriptAnalyzer *get_analyzer();
+	Error raise_status(Status p_new_status);
 
-	static void clear();
+	GDScriptParserRef(GDScriptCompilationUnit &p_unit) : unit(p_unit) {}
+	~GDScriptParserRef();
+};
 
-	GDScriptCache();
-	~GDScriptCache();
+/**
+ * Owner of resources related to parsing, analyzing and compiling of scripts.
+ *
+ * Not thread safe.
+ */
+class GDScriptCompilationUnit final {
+	HashMap<String, GDScriptParserRef *> parsers;
+	HashMap<String, HashSet<String>> dependencies;
+
+public:
+	GDScriptParserRef *get_depended_parser_for(const String &p_path, const String &p_owner);
+	GDScriptParserRef *find_parser_ref_for_class(const GDScriptParser::ClassNode *p_class);
+	const HashMap<String, GDScriptParserRef *> get_depended_parsers(const String &p_owner);
+
+	/// Only meant as workaround for a completion usecase, use `get_depended_parser_for` instead.
+	GDScriptParserRef *get_parser(const String &p_path);
+
+	~GDScriptCompilationUnit();
 };

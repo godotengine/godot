@@ -36,6 +36,7 @@
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
 #include "../gdscript_tokenizer_buffer.h"
+#include "../toolchain/compilation_unit.h"
 #include "gdscript_test_runner.h"
 
 #include "core/config/project_settings.h"
@@ -182,7 +183,8 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 		}
 	}
 
-	GDScriptAnalyzer analyzer(&parser);
+	GDScriptCompilationUnit unit;
+	GDScriptAnalyzer analyzer(unit, &parser);
 	err = analyzer.analyze();
 
 #ifdef DEBUG_ENABLED
@@ -276,7 +278,8 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 		return;
 	}
 
-	GDScriptAnalyzer analyzer(&parser);
+	GDScriptCompilationUnit unit;
+	GDScriptAnalyzer analyzer(unit, &parser);
 	err = analyzer.analyze();
 
 #ifdef DEBUG_ENABLED
