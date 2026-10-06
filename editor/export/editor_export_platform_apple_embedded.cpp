@@ -750,6 +750,21 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 			}
 		}
 		strnew += "\t</array>\n";
+
+		// AccessKit Framework
+	} else if (p_line.contains("$accesskit_buildfile")) {
+		String value = p_config.has_accesskit ? "34E718094B1805BD1139E86C /* AccessKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A06DCD3FADF513A489D6CE0C /* AccessKit.xcframework */; };" : "";
+		strnew += p_line.replace("$accesskit_buildfile", value) + "\n";
+	} else if (p_line.contains("$accesskit_fileref")) {
+		String value = p_config.has_accesskit ? "A06DCD3FADF513A489D6CE0C /* AccessKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AccessKit; path = AccessKit.xcframework; sourceTree = \"<group>\"; };" : "";
+		strnew += p_line.replace("$accesskit_fileref", value) + "\n";
+	} else if (p_line.contains("$accesskit_buildphase")) {
+		String value = p_config.has_accesskit ? "34E718094B1805BD1139E86C /* AccessKit.xcframework in Frameworks */," : "";
+		strnew += p_line.replace("$accesskit_buildphase", value) + "\n";
+	} else if (p_line.contains("$accesskit_buildgrp")) {
+		String value = p_config.has_accesskit ? "A06DCD3FADF513A489D6CE0C /* AccessKit.xcframework */," : "";
+		strnew += p_line.replace("$accesskit_buildgrp", value) + "\n";
+
 	} else if (p_line.contains("$sdkroot")) {
 		strnew += p_line.replace("$sdkroot", get_sdk_name()) + "\n";
 
