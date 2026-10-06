@@ -1613,7 +1613,11 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 void EditorProperty::menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_COPY_VALUE: {
-			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::PROPERTY, object->get(property));
+			const Variant value = object->get(property);
+			EditorInspector::set_property_clipboard(EditorInspector::PropertyClipboard::Type::PROPERTY, value);
+			if (value.get_type() == Variant::INT) {
+				DisplayServer::get_singleton()->clipboard_set(value);
+			}
 		} break;
 		case MENU_PASTE_VALUE: {
 			if (EditorInspector::get_property_clipboard_type() != EditorInspector::PropertyClipboard::Type::PROPERTY) {
