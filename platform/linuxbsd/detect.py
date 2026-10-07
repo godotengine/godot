@@ -127,6 +127,11 @@ def configure(env: "SConsEnvironment"):
             env["CXX"] = "clang++"
         env.extra_suffix = ".llvm" + env.extra_suffix
 
+    if env["library_type"] == "executable" and env["arch"] not in ["x86_32", "arm32"]:
+        # PIE has a performance cost on 32-bit, and it's a niche target. Not worth the tradeoff.
+        env.Append(CCFLAGS=["-fPIE"], LINKFLAGS=["-pie"])
+    env.Append(LINKFLAGS=["-Wl,-z,relro", "-Wl,-z,now"])
+
     if env["linker"] != "default":
         print("Using linker program: " + env["linker"])
         if env["linker"] == "mold" and using_gcc(env):  # GCC < 12.1 doesn't support -fuse-ld=mold.
