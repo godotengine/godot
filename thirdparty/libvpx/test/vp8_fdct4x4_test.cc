@@ -190,10 +190,10 @@ INSTANTIATE_TEST_SUITE_P(NEON, FdctTest,
                          ::testing::Values(vp8_short_fdct4x4_neon));
 #endif  // HAVE_NEON
 
-#if HAVE_SSE2
+#if HAVE_SSE2 && HAVE_X86_ASM
 INSTANTIATE_TEST_SUITE_P(SSE2, FdctTest,
                          ::testing::Values(vp8_short_fdct4x4_sse2));
-#endif  // HAVE_SSE2
+#endif  // HAVE_SSE2 && HAVE_X86_ASM
 
 #if HAVE_MSA
 INSTANTIATE_TEST_SUITE_P(MSA, FdctTest,

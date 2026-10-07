@@ -132,8 +132,10 @@ VP9_CX_SRCS-$(HAVE_NEON) += encoder/arm/neon/vp9_highbd_temporal_filter_neon.c
 VP9_CX_SRCS-$(HAVE_SVE2) += encoder/arm/neon/vp9_highbd_temporal_filter_sve2.c
 endif
 
+ifeq ($(HAVE_X86_ASM),yes)
 VP9_CX_SRCS-$(HAVE_SSE2) += encoder/x86/vp9_dct_sse2.asm
 VP9_CX_SRCS-$(HAVE_SSE2) += encoder/x86/vp9_error_sse2.asm
+endif
 
 VP9_CX_SRCS-$(HAVE_SSE2) += encoder/x86/vp9_dct_intrin_sse2.c
 VP9_CX_SRCS-$(HAVE_SSSE3) += encoder/x86/vp9_frame_scale_ssse3.c

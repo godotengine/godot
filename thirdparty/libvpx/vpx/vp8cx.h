@@ -776,6 +776,16 @@ enum vp8e_enc_control_id {
    * 1. The default value is set to be 0.
    */
   VP9E_SET_KEY_FRAME_FILTERING,
+
+  /*!\brief Codec control function to validate HBD input.
+   *
+   * VP9 allows the encoder to validate the high bitdepth (HBD) input and
+   * ensure that every pixel is within the valid range. To disable/enable,
+   * set this parameter to 0/1. The default value is set to be 1.
+   *
+   * Supported in codecs: VP9
+   */
+  VP9E_SET_VALIDATE_HBD_INPUT,
 };
 
 /*!\brief vpx 1-D scaling mode
@@ -802,8 +812,7 @@ typedef enum vp9e_temporal_layering_mode {
   VP9E_TEMPORAL_LAYERING_MODE_NOLAYERING = 0,
 
   /*!\brief Bypass mode.
-   * Used when application needs to control temporal layering.
-   * This will only work when the number of spatial layers equals 1.
+   * Used when application needs to control spatial and temporal layering.
    */
   VP9E_TEMPORAL_LAYERING_MODE_BYPASS = 1,
 
@@ -1108,6 +1117,8 @@ VPX_CTRL_USE_TYPE(VP9E_SET_QUANTIZER_ONE_PASS, int)
 #define VPX_CTRL_VP9E_SET_QUANTIZER_ONE_PASS
 VPX_CTRL_USE_TYPE(VP9E_SET_KEY_FRAME_FILTERING, int)
 #define VPX_CTRL_VP9E_SET_KEY_FRAME_FILTERING
+VPX_CTRL_USE_TYPE(VP9E_SET_VALIDATE_HBD_INPUT, int)
+#define VPX_CTRL_VP9E_SET_VALIDATE_HBD_INPUT
 
 /*!\endcond */
 /*! @} - end defgroup vp8_encoder */

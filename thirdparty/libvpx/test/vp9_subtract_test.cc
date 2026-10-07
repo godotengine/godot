@@ -132,7 +132,7 @@ TEST_P(VP9SubtractBlockTest, SimpleSubtract) {
 INSTANTIATE_TEST_SUITE_P(C, VP9SubtractBlockTest,
                          ::testing::Values(vpx_subtract_block_c));
 
-#if HAVE_SSE2
+#if HAVE_SSE2 && HAVE_X86_ASM
 INSTANTIATE_TEST_SUITE_P(SSE2, VP9SubtractBlockTest,
                          ::testing::Values(vpx_subtract_block_sse2));
 #endif

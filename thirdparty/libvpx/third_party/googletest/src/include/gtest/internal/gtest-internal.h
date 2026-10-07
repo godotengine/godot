@@ -41,7 +41,7 @@
 
 #include "gtest/internal/gtest-port.h"
 
-#if GTEST_OS_LINUX
+#ifdef GTEST_OS_LINUX
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -57,12 +57,13 @@
 #include <string.h>
 
 #include <cstdint>
-#include <iomanip>
+#include <functional>
 #include <limits>
 #include <map>
 #include <set>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "gtest/gtest-message.h"
@@ -77,7 +78,7 @@
 //
 // will result in the token foo__LINE__, instead of foo followed by
 // the current line number.  For more details, see
-// http://www.parashift.com/c++-faq-lite/misc-technical-issues.html#faq-39.6
+// https://www.parashift.com/c++-faq-lite/misc-technical-issues.html#faq-39.6
 #define GTEST_CONCAT_TOKEN_(foo, bar) GTEST_CONCAT_TOKEN_IMPL_(foo, bar)
 #define GTEST_CONCAT_TOKEN_IMPL_(foo, bar) foo##bar
 
@@ -168,7 +169,7 @@ namespace edit_distance {
 // All edits cost the same, with replace having lower priority than
 // add/remove.
 // Simple implementation of the Wagner-Fischer algorithm.
-// See http://en.wikipedia.org/wiki/Wagner-Fischer_algorithm
+// See https://en.wikipedia.org/wiki/Wagner-Fischer_algorithm
 enum EditType { kMatch, kAdd, kRemove, kReplace };
 GTEST_API_ std::vector<EditType> CalculateOptimalEdits(
     const std::vector<size_t>& left, const std::vector<size_t>& right);
@@ -235,7 +236,7 @@ GTEST_API_ std::string GetBoolAssertionFailureMessage(
 //   For double, there are 11 exponent bits and 52 fraction bits.
 //
 //   More details can be found at
-//   http://en.wikipedia.org/wiki/IEEE_floating-point_standard.
+//   https://en.wikipedia.org/wiki/IEEE_floating-point_standard.
 //
 // Template parameter:
 //
@@ -280,7 +281,7 @@ class FloatingPoint {
   // bits.  Therefore, 4 should be enough for ordinary use.
   //
   // See the following article for more details on ULP:
-  // http://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+  // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
   static const uint32_t kMaxUlps = 4;
 
   // Constructs a FloatingPoint from a raw floating-point number.
@@ -289,38 +290,35 @@ class FloatingPoint {
   // around may change its bits, although the new value is guaranteed
   // to be also a NAN.  Therefore, don't expect this constructor to
   // preserve the bits in x when x is a NAN.
-  explicit FloatingPoint(const RawType& x) { u_.value_ = x; }
+  explicit FloatingPoint(RawType x) { memcpy(&bits_, &x, sizeof(x)); }
 
   // Static methods
 
   // Reinterprets a bit pattern as a floating-point number.
   //
   // This function is needed to test the AlmostEquals() method.
-  static RawType ReinterpretBits(const Bits bits) {
-    FloatingPoint fp(0);
-    fp.u_.bits_ = bits;
-    return fp.u_.value_;
+  static RawType ReinterpretBits(Bits bits) {
+    RawType fp;
+    memcpy(&fp, &bits, sizeof(fp));
+    return fp;
   }
 
   // Returns the floating-point number that represent positive infinity.
   static RawType Infinity() { return ReinterpretBits(kExponentBitMask); }
 
-  // Returns the maximum representable finite floating-point number.
-  static RawType Max();
-
   // Non-static methods
 
   // Returns the bits that represents this number.
-  const Bits& bits() const { return u_.bits_; }
+  const Bits& bits() const { return bits_; }
 
   // Returns the exponent bits of this number.
-  Bits exponent_bits() const { return kExponentBitMask & u_.bits_; }
+  Bits exponent_bits() const { return kExponentBitMask & bits_; }
 
   // Returns the fraction bits of this number.
-  Bits fraction_bits() const { return kFractionBitMask & u_.bits_; }
+  Bits fraction_bits() const { return kFractionBitMask & bits_; }
 
   // Returns the sign bit of this number.
-  Bits sign_bit() const { return kSignBitMask & u_.bits_; }
+  Bits sign_bit() const { return kSignBitMask & bits_; }
 
   // Returns true if and only if this is NAN (not a number).
   bool is_nan() const {
@@ -334,23 +332,16 @@ class FloatingPoint {
   //
   //   - returns false if either number is (or both are) NAN.
   //   - treats really large numbers as almost equal to infinity.
-  //   - thinks +0.0 and -0.0 are 0 DLP's apart.
+  //   - thinks +0.0 and -0.0 are 0 ULP's apart.
   bool AlmostEquals(const FloatingPoint& rhs) const {
     // The IEEE standard says that any comparison operation involving
     // a NAN must return false.
     if (is_nan() || rhs.is_nan()) return false;
 
-    return DistanceBetweenSignAndMagnitudeNumbers(u_.bits_, rhs.u_.bits_) <=
-           kMaxUlps;
+    return DistanceBetweenSignAndMagnitudeNumbers(bits_, rhs.bits_) <= kMaxUlps;
   }
 
  private:
-  // The data type used to store the actual floating-point number.
-  union FloatingPointUnion {
-    RawType value_;  // The raw floating-point number.
-    Bits bits_;      // The bits that represent the number.
-  };
-
   // Converts an integer from the sign-and-magnitude representation to
   // the biased representation.  More precisely, let N be 2 to the
   // power of (kBitCount - 1), an integer x is represented by the
@@ -364,9 +355,9 @@ class FloatingPoint {
   //   N - 1  (the biggest number representable using
   //          sign-and-magnitude) is represented by 2N - 1.
   //
-  // Read http://en.wikipedia.org/wiki/Signed_number_representations
+  // Read https://en.wikipedia.org/wiki/Signed_number_representations
   // for more details on signed number representations.
-  static Bits SignAndMagnitudeToBiased(const Bits& sam) {
+  static Bits SignAndMagnitudeToBiased(Bits sam) {
     if (kSignBitMask & sam) {
       // sam represents a negative number.
       return ~sam + 1;
@@ -378,26 +369,14 @@ class FloatingPoint {
 
   // Given two numbers in the sign-and-magnitude representation,
   // returns the distance between them as an unsigned number.
-  static Bits DistanceBetweenSignAndMagnitudeNumbers(const Bits& sam1,
-                                                     const Bits& sam2) {
+  static Bits DistanceBetweenSignAndMagnitudeNumbers(Bits sam1, Bits sam2) {
     const Bits biased1 = SignAndMagnitudeToBiased(sam1);
     const Bits biased2 = SignAndMagnitudeToBiased(sam2);
     return (biased1 >= biased2) ? (biased1 - biased2) : (biased2 - biased1);
   }
 
-  FloatingPointUnion u_;
+  Bits bits_;  // The bits that represent the number.
 };
-
-// We cannot use std::numeric_limits<T>::max() as it clashes with the max()
-// macro defined by <windows.h>.
-template <>
-inline float FloatingPoint<float>::Max() {
-  return FLT_MAX;
-}
-template <>
-inline double FloatingPoint<double>::Max() {
-  return DBL_MAX;
-}
 
 // Typedefs the instances of the FloatingPoint template class that we
 // care to use.
@@ -447,7 +426,7 @@ GTEST_API_ TypeId GetTestTypeId();
 // of a Test object.
 class TestFactoryBase {
  public:
-  virtual ~TestFactoryBase() {}
+  virtual ~TestFactoryBase() = default;
 
   // Creates a test instance to run. The instance is both created and destroyed
   // within TestInfoImpl::Run()
@@ -461,7 +440,7 @@ class TestFactoryBase {
   TestFactoryBase& operator=(const TestFactoryBase&) = delete;
 };
 
-// This class provides implementation of TeastFactoryBase interface.
+// This class provides implementation of TestFactoryBase interface.
 // It is used in TEST and TEST_F macros.
 template <class TestClass>
 class TestFactoryImpl : public TestFactoryBase {
@@ -469,7 +448,7 @@ class TestFactoryImpl : public TestFactoryBase {
   Test* CreateTest() override { return new TestClass; }
 };
 
-#if GTEST_OS_WINDOWS
+#ifdef GTEST_OS_WINDOWS
 
 // Predicate-formatters for implementing the HRESULT checking macros
 // {ASSERT|EXPECT}_HRESULT_{SUCCEEDED|FAILED}
@@ -487,8 +466,8 @@ using SetUpTestSuiteFunc = void (*)();
 using TearDownTestSuiteFunc = void (*)();
 
 struct CodeLocation {
-  CodeLocation(const std::string& a_file, int a_line)
-      : file(a_file), line(a_line) {}
+  CodeLocation(std::string a_file, int a_line)
+      : file(std::move(a_file)), line(a_line) {}
 
   std::string file;
   int line;
@@ -568,7 +547,7 @@ struct SuiteApiResolver : T {
 //   type_param:       the name of the test's type parameter, or NULL if
 //                     this is not a typed or a type-parameterized test.
 //   value_param:      text representation of the test's value parameter,
-//                     or NULL if this is not a type-parameterized test.
+//                     or NULL if this is not a value-parameterized test.
 //   code_location:    code location where the test is defined
 //   fixture_class_id: ID of the test fixture class
 //   set_up_tc:        pointer to the function that sets up the test suite
@@ -577,7 +556,7 @@ struct SuiteApiResolver : T {
 //                     The newly created TestInfo instance will assume
 //                     ownership of the factory object.
 GTEST_API_ TestInfo* MakeAndRegisterTestInfo(
-    const char* test_suite_name, const char* name, const char* type_param,
+    std::string test_suite_name, const char* name, const char* type_param,
     const char* value_param, CodeLocation code_location,
     TypeId fixture_class_id, SetUpTestSuiteFunc set_up_tc,
     TearDownTestSuiteFunc tear_down_tc, TestFactoryBase* factory);
@@ -608,8 +587,7 @@ class GTEST_API_ TypedTestSuitePState {
       fflush(stderr);
       posix::Abort();
     }
-    registered_tests_.insert(
-        ::std::make_pair(test_name, CodeLocation(file, line)));
+    registered_tests_.emplace(test_name, CodeLocation(file, line));
     return true;
   }
 
@@ -631,7 +609,7 @@ class GTEST_API_ TypedTestSuitePState {
                                         const char* registered_tests);
 
  private:
-  typedef ::std::map<std::string, CodeLocation> RegisteredTestsMap;
+  typedef ::std::map<std::string, CodeLocation, std::less<>> RegisteredTestsMap;
 
   bool registered_;
   RegisteredTestsMap registered_tests_;
@@ -713,7 +691,7 @@ class TypeParameterizedTest {
   // specified in INSTANTIATE_TYPED_TEST_SUITE_P(Prefix, TestSuite,
   // Types).  Valid values for 'index' are [0, N - 1] where N is the
   // length of Types.
-  static bool Register(const char* prefix, const CodeLocation& code_location,
+  static bool Register(const char* prefix, CodeLocation code_location,
                        const char* case_name, const char* test_names, int index,
                        const std::vector<std::string>& type_names =
                            GenerateNames<DefaultNameGenerator, Types>()) {
@@ -725,8 +703,7 @@ class TypeParameterizedTest {
     // list.
     MakeAndRegisterTestInfo(
         (std::string(prefix) + (prefix[0] == '\0' ? "" : "/") + case_name +
-         "/" + type_names[static_cast<size_t>(index)])
-            .c_str(),
+         "/" + type_names[static_cast<size_t>(index)]),
         StripTrailingSpaces(GetPrefixUntilComma(test_names)).c_str(),
         GetTypeName<Type>().c_str(),
         nullptr,  // No value parameter.
@@ -738,13 +715,9 @@ class TypeParameterizedTest {
         new TestFactoryImpl<TestClass>);
 
     // Next, recurses (at compile time) with the tail of the type list.
-    return TypeParameterizedTest<Fixture, TestSel,
-                                 typename Types::Tail>::Register(prefix,
-                                                                 code_location,
-                                                                 case_name,
-                                                                 test_names,
-                                                                 index + 1,
-                                                                 type_names);
+    return TypeParameterizedTest<Fixture, TestSel, typename Types::Tail>::
+        Register(prefix, std::move(code_location), case_name, test_names,
+                 index + 1, type_names);
   }
 };
 
@@ -752,7 +725,7 @@ class TypeParameterizedTest {
 template <GTEST_TEMPLATE_ Fixture, class TestSel>
 class TypeParameterizedTest<Fixture, TestSel, internal::None> {
  public:
-  static bool Register(const char* /*prefix*/, const CodeLocation&,
+  static bool Register(const char* /*prefix*/, CodeLocation,
                        const char* /*case_name*/, const char* /*test_names*/,
                        int /*index*/,
                        const std::vector<std::string>& =
@@ -799,7 +772,8 @@ class TypeParameterizedTestSuite {
 
     // Next, recurses (at compile time) with the tail of the test list.
     return TypeParameterizedTestSuite<Fixture, typename Tests::Tail,
-                                      Types>::Register(prefix, code_location,
+                                      Types>::Register(prefix,
+                                                       std::move(code_location),
                                                        state, case_name,
                                                        SkipComma(test_names),
                                                        type_names);
@@ -829,8 +803,7 @@ class TypeParameterizedTestSuite<Fixture, internal::None, Types> {
 // For example, if Foo() calls Bar(), which in turn calls
 // GetCurrentOsStackTraceExceptTop(..., 1), Foo() will be included in
 // the trace but Bar() and GetCurrentOsStackTraceExceptTop() won't.
-GTEST_API_ std::string GetCurrentOsStackTraceExceptTop(UnitTest* unit_test,
-                                                       int skip_count);
+GTEST_API_ std::string GetCurrentOsStackTraceExceptTop(int skip_count);
 
 // Helpers for suppressing warnings on unreachable code or constant
 // condition.
@@ -912,9 +885,6 @@ class HasDebugStringAndShortDebugString {
   static constexpr bool value =
       HasDebugStringType::value && HasShortDebugStringType::value;
 };
-
-template <typename T>
-constexpr bool HasDebugStringAndShortDebugString<T>::value;
 
 // When the compiler sees expression IsContainerTest<C>(0), if C is an
 // STL-style container class, the first overload of IsContainerTest
@@ -1154,40 +1124,6 @@ class NativeArray {
   void (NativeArray::*clone_)(const Element*, size_t);
 };
 
-// Backport of std::index_sequence.
-template <size_t... Is>
-struct IndexSequence {
-  using type = IndexSequence;
-};
-
-// Double the IndexSequence, and one if plus_one is true.
-template <bool plus_one, typename T, size_t sizeofT>
-struct DoubleSequence;
-template <size_t... I, size_t sizeofT>
-struct DoubleSequence<true, IndexSequence<I...>, sizeofT> {
-  using type = IndexSequence<I..., (sizeofT + I)..., 2 * sizeofT>;
-};
-template <size_t... I, size_t sizeofT>
-struct DoubleSequence<false, IndexSequence<I...>, sizeofT> {
-  using type = IndexSequence<I..., (sizeofT + I)...>;
-};
-
-// Backport of std::make_index_sequence.
-// It uses O(ln(N)) instantiation depth.
-template <size_t N>
-struct MakeIndexSequenceImpl
-    : DoubleSequence<N % 2 == 1, typename MakeIndexSequenceImpl<N / 2>::type,
-                     N / 2>::type {};
-
-template <>
-struct MakeIndexSequenceImpl<0> : IndexSequence<> {};
-
-template <size_t N>
-using MakeIndexSequence = typename MakeIndexSequenceImpl<N>::type;
-
-template <typename... T>
-using IndexSequenceFor = typename MakeIndexSequence<sizeof...(T)>::type;
-
 template <size_t>
 struct Ignore {
   Ignore(...);  // NOLINT
@@ -1196,7 +1132,7 @@ struct Ignore {
 template <typename>
 struct ElemFromListImpl;
 template <size_t... I>
-struct ElemFromListImpl<IndexSequence<I...>> {
+struct ElemFromListImpl<std::index_sequence<I...>> {
   // We make Ignore a template to solve a problem with MSVC.
   // A non-template Ignore would work fine with `decltype(Ignore(I))...`, but
   // MSVC doesn't understand how to deal with that pack expansion.
@@ -1207,9 +1143,8 @@ struct ElemFromListImpl<IndexSequence<I...>> {
 
 template <size_t N, typename... T>
 struct ElemFromList {
-  using type =
-      decltype(ElemFromListImpl<typename MakeIndexSequence<N>::type>::Apply(
-          static_cast<T (*)()>(nullptr)...));
+  using type = decltype(ElemFromListImpl<std::make_index_sequence<N>>::Apply(
+      static_cast<T (*)()>(nullptr)...));
 };
 
 struct FlatTupleConstructTag {};
@@ -1234,9 +1169,9 @@ template <typename Derived, typename Idx>
 struct FlatTupleBase;
 
 template <size_t... Idx, typename... T>
-struct FlatTupleBase<FlatTuple<T...>, IndexSequence<Idx...>>
+struct FlatTupleBase<FlatTuple<T...>, std::index_sequence<Idx...>>
     : FlatTupleElemBase<FlatTuple<T...>, Idx>... {
-  using Indices = IndexSequence<Idx...>;
+  using Indices = std::index_sequence<Idx...>;
   FlatTupleBase() = default;
   template <typename... Args>
   explicit FlatTupleBase(FlatTupleConstructTag, Args&&... args)
@@ -1271,14 +1206,15 @@ struct FlatTupleBase<FlatTuple<T...>, IndexSequence<Idx...>>
 // implementations.
 // FlatTuple and ElemFromList are not recursive and have a fixed depth
 // regardless of T...
-// MakeIndexSequence, on the other hand, it is recursive but with an
+// std::make_index_sequence, on the other hand, it is recursive but with an
 // instantiation depth of O(ln(N)).
 template <typename... T>
 class FlatTuple
     : private FlatTupleBase<FlatTuple<T...>,
-                            typename MakeIndexSequence<sizeof...(T)>::type> {
-  using Indices = typename FlatTupleBase<
-      FlatTuple<T...>, typename MakeIndexSequence<sizeof...(T)>::type>::Indices;
+                            std::make_index_sequence<sizeof...(T)>> {
+  using Indices =
+      typename FlatTupleBase<FlatTuple<T...>,
+                             std::make_index_sequence<sizeof...(T)>>::Indices;
 
  public:
   FlatTuple() = default;
@@ -1292,30 +1228,40 @@ class FlatTuple
 
 // Utility functions to be called with static_assert to induce deprecation
 // warnings.
-GTEST_INTERNAL_DEPRECATED(
+[[deprecated(
     "INSTANTIATE_TEST_CASE_P is deprecated, please use "
-    "INSTANTIATE_TEST_SUITE_P")
-constexpr bool InstantiateTestCase_P_IsDeprecated() { return true; }
+    "INSTANTIATE_TEST_SUITE_P")]]
+constexpr bool InstantiateTestCase_P_IsDeprecated() {
+  return true;
+}
 
-GTEST_INTERNAL_DEPRECATED(
+[[deprecated(
     "TYPED_TEST_CASE_P is deprecated, please use "
-    "TYPED_TEST_SUITE_P")
-constexpr bool TypedTestCase_P_IsDeprecated() { return true; }
+    "TYPED_TEST_SUITE_P")]]
+constexpr bool TypedTestCase_P_IsDeprecated() {
+  return true;
+}
 
-GTEST_INTERNAL_DEPRECATED(
+[[deprecated(
     "TYPED_TEST_CASE is deprecated, please use "
-    "TYPED_TEST_SUITE")
-constexpr bool TypedTestCaseIsDeprecated() { return true; }
+    "TYPED_TEST_SUITE")]]
+constexpr bool TypedTestCaseIsDeprecated() {
+  return true;
+}
 
-GTEST_INTERNAL_DEPRECATED(
+[[deprecated(
     "REGISTER_TYPED_TEST_CASE_P is deprecated, please use "
-    "REGISTER_TYPED_TEST_SUITE_P")
-constexpr bool RegisterTypedTestCase_P_IsDeprecated() { return true; }
+    "REGISTER_TYPED_TEST_SUITE_P")]]
+constexpr bool RegisterTypedTestCase_P_IsDeprecated() {
+  return true;
+}
 
-GTEST_INTERNAL_DEPRECATED(
+[[deprecated(
     "INSTANTIATE_TYPED_TEST_CASE_P is deprecated, please use "
-    "INSTANTIATE_TYPED_TEST_SUITE_P")
-constexpr bool InstantiateTypedTestCase_P_IsDeprecated() { return true; }
+    "INSTANTIATE_TYPED_TEST_SUITE_P")]]
+constexpr bool InstantiateTypedTestCase_P_IsDeprecated() {
+  return true;
+}
 
 }  // namespace internal
 }  // namespace testing
@@ -1508,19 +1454,20 @@ class NeverThrown {
              gtest_ar_, text, #actual, #expected)                     \
              .c_str())
 
-#define GTEST_TEST_NO_FATAL_FAILURE_(statement, fail)                          \
-  GTEST_AMBIGUOUS_ELSE_BLOCKER_                                                \
-  if (::testing::internal::AlwaysTrue()) {                                     \
-    ::testing::internal::HasNewFatalFailureHelper gtest_fatal_failure_checker; \
-    GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement);                 \
-    if (gtest_fatal_failure_checker.has_new_fatal_failure()) {                 \
-      goto GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__);            \
-    }                                                                          \
-  } else                                                                       \
-    GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__)                    \
-        : fail("Expected: " #statement                                         \
-               " doesn't generate new fatal "                                  \
-               "failures in the current thread.\n"                             \
+#define GTEST_TEST_NO_FATAL_FAILURE_(statement, fail)               \
+  GTEST_AMBIGUOUS_ELSE_BLOCKER_                                     \
+  if (::testing::internal::AlwaysTrue()) {                          \
+    const ::testing::internal::HasNewFatalFailureHelper             \
+        gtest_fatal_failure_checker;                                \
+    GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement);      \
+    if (gtest_fatal_failure_checker.has_new_fatal_failure()) {      \
+      goto GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__); \
+    }                                                               \
+  } else /* NOLINT */                                               \
+    GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__)         \
+        : fail("Expected: " #statement                              \
+               " doesn't generate new fatal "                       \
+               "failures in the current thread.\n"                  \
                "  Actual: it does.")
 
 // Expands to the name of the class that implements the given test.
@@ -1551,7 +1498,7 @@ class NeverThrown {
                                                                                \
    private:                                                                    \
     void TestBody() override;                                                  \
-    static ::testing::TestInfo* const test_info_ GTEST_ATTRIBUTE_UNUSED_;      \
+    [[maybe_unused]] static ::testing::TestInfo* const test_info_;             \
   };                                                                           \
                                                                                \
   ::testing::TestInfo* const GTEST_TEST_CLASS_NAME_(test_suite_name,           \

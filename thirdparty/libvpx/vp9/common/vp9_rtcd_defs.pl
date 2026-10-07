@@ -48,15 +48,21 @@ if ($opts{arch} eq "x86_64") {
   $avx512_x86_64 = 'avx512';
 }
 
+# Functions that are written in assembly (as opposed to intrinsics).
+$sse2_asm = '';
+if (vpx_config("HAVE_X86_ASM") eq "yes") {
+  $sse2_asm = 'sse2';
+}
+
 #
 # post proc
 #
 if (vpx_config("CONFIG_VP9_POSTPROC") eq "yes") {
 add_proto qw/void vp9_filter_by_weight16x16/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int src_weight";
-specialize qw/vp9_filter_by_weight16x16 sse2 msa/;
+specialize qw/vp9_filter_by_weight16x16 msa/, "$sse2_asm";
 
 add_proto qw/void vp9_filter_by_weight8x8/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int src_weight";
-specialize qw/vp9_filter_by_weight8x8 sse2 msa/;
+specialize qw/vp9_filter_by_weight8x8 msa/, "$sse2_asm";
 }
 
 #
@@ -131,7 +137,7 @@ if (vpx_config("CONFIG_VP9_TEMPORAL_DENOISING") eq "yes") {
 add_proto qw/int64_t vp9_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz";
 
 add_proto qw/int64_t vp9_block_error_fp/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, int block_size";
-specialize qw/vp9_block_error_fp neon sve avx2 sse2/;
+specialize qw/vp9_block_error_fp neon sve avx2/, "$sse2_asm";
 
 add_proto qw/void vp9_quantize_fp/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, const struct macroblock_plane *const mb_plane, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const struct ScanOrder *const scan_order";
 specialize qw/vp9_quantize_fp neon sse2 ssse3 avx2 vsx/;
@@ -140,7 +146,7 @@ add_proto qw/void vp9_quantize_fp_32x32/, "const tran_low_t *coeff_ptr, intptr_t
 specialize qw/vp9_quantize_fp_32x32 neon ssse3 avx2 vsx/;
 
 if (vpx_config("CONFIG_VP9_HIGHBITDEPTH") eq "yes") {
-  specialize qw/vp9_block_error neon sve avx2 sse2/;
+  specialize qw/vp9_block_error neon sve avx2/, "$sse2_asm";
 
   add_proto qw/int64_t vp9_highbd_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz, int bd";
   specialize qw/vp9_highbd_block_error neon sse2/;
@@ -163,7 +169,7 @@ add_proto qw/void vp9_fwht4x4/, "const int16_t *input, tran_low_t *output, int s
 specialize qw/vp9_fht4x4 sse2 neon/;
 specialize qw/vp9_fht8x8 sse2 neon/;
 specialize qw/vp9_fht16x16 sse2 neon/;
-specialize qw/vp9_fwht4x4 sse2/;
+specialize qw/vp9_fwht4x4/, "$sse2_asm";
 if (vpx_config("CONFIG_VP9_HIGHBITDEPTH") ne "yes") {
   # Note that these specializations are appended to the above ones.
   specialize qw/vp9_fht4x4 msa/;

@@ -455,6 +455,7 @@ static vpx_codec_err_t ctrl_set_reference(vpx_codec_alg_priv_t *ctx,
     vpx_ref_frame_t *const frame = (vpx_ref_frame_t *)data;
     YV12_BUFFER_CONFIG sd;
     image2yuvconfig(&frame->img, &sd);
+    if (!ctx->pbi) return VPX_CODEC_ERROR;
     return vp9_set_reference_dec(
         &ctx->pbi->common, ref_frame_to_vp9_reframe(frame->frame_type), &sd);
   } else {
@@ -470,6 +471,7 @@ static vpx_codec_err_t ctrl_copy_reference(vpx_codec_alg_priv_t *ctx,
     vpx_ref_frame_t *frame = (vpx_ref_frame_t *)data;
     YV12_BUFFER_CONFIG sd;
     image2yuvconfig(&frame->img, &sd);
+    if (!ctx->pbi) return VPX_CODEC_ERROR;
     return vp9_copy_reference_dec(ctx->pbi, (VP9_REFFRAME)frame->frame_type,
                                   &sd);
   } else {

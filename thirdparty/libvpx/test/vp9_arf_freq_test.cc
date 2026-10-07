@@ -58,9 +58,12 @@ const TestVideoParam kTestVectors[] = {
 };
 
 const TestEncodeParam kEncodeVectors[] = {
+#if !CONFIG_REALTIME_ONLY
   { ::libvpx_test::kOnePassGood, 2 }, { ::libvpx_test::kOnePassGood, 5 },
   { ::libvpx_test::kTwoPassGood, 1 }, { ::libvpx_test::kTwoPassGood, 2 },
-  { ::libvpx_test::kTwoPassGood, 5 }, { ::libvpx_test::kRealTime, 5 },
+  { ::libvpx_test::kTwoPassGood, 5 },
+#endif
+  { ::libvpx_test::kRealTime, 5 },
 };
 
 const int kMinArfVectors[] = {

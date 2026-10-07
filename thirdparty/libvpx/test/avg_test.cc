@@ -640,12 +640,14 @@ INSTANTIATE_TEST_SUITE_P(SSE2, SatdLowbdTest,
                                            make_tuple(256, &vpx_satd_sse2),
                                            make_tuple(1024, &vpx_satd_sse2)));
 
+#if HAVE_X86_ASM
 INSTANTIATE_TEST_SUITE_P(
     SSE2, BlockErrorTestFP,
     ::testing::Values(make_tuple(16, &vp9_block_error_fp_sse2),
                       make_tuple(64, &vp9_block_error_fp_sse2),
                       make_tuple(256, &vp9_block_error_fp_sse2),
                       make_tuple(1024, &vp9_block_error_fp_sse2)));
+#endif  // HAVE_X86_ASM
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2

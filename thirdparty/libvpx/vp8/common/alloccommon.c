@@ -17,10 +17,13 @@
 #include "entropymode.h"
 #include "systemdependent.h"
 
+// This function frees all frame and post processing buffers, as well as
+// indirect references to them via context and mode info allocations.
 void vp8_de_alloc_frame_buffers(VP8_COMMON *oci) {
   int i;
   for (i = 0; i < NUM_YV12_BUFFERS; ++i) {
     vp8_yv12_de_alloc_frame_buffer(&oci->yv12_fb[i]);
+    oci->fb_idx_ref_cnt[i] = 0;
   }
 
   vp8_yv12_de_alloc_frame_buffer(&oci->temp_scale_frame);
@@ -28,13 +31,14 @@ void vp8_de_alloc_frame_buffers(VP8_COMMON *oci) {
   vp8_yv12_de_alloc_frame_buffer(&oci->post_proc_buffer);
   if (oci->post_proc_buffer_int_used) {
     vp8_yv12_de_alloc_frame_buffer(&oci->post_proc_buffer_int);
+    oci->post_proc_buffer_int_used = 0;
   }
 
   vpx_free(oci->pp_limits_buffer);
   oci->pp_limits_buffer = NULL;
 
   vpx_free(oci->postproc_state.generated_noise);
-  oci->postproc_state.generated_noise = NULL;
+  memset(&oci->postproc_state, 0, sizeof(oci->postproc_state));
 #endif
 
   vpx_free(oci->above_context);
@@ -42,10 +46,14 @@ void vp8_de_alloc_frame_buffers(VP8_COMMON *oci) {
 #if CONFIG_ERROR_CONCEALMENT
   vpx_free(oci->prev_mip);
   oci->prev_mip = NULL;
+  oci->prev_mi = NULL;
 #endif
 
   oci->above_context = NULL;
   oci->mip = NULL;
+  oci->mi = NULL;
+  oci->show_frame_mi = NULL;
+  oci->frame_to_show = NULL;
 }
 
 int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height) {
@@ -59,8 +67,6 @@ int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height) {
   if ((height & 0xf) != 0) height += 16 - (height & 0xf);
 
   for (i = 0; i < NUM_YV12_BUFFERS; ++i) {
-    oci->fb_idx_ref_cnt[i] = 0;
-    oci->yv12_fb[i].flags = 0;
     if (vp8_yv12_alloc_frame_buffer(&oci->yv12_fb[i], width, height,
                                     VP8BORDERINPIXELS) < 0) {
       goto allocation_fail;
@@ -107,8 +113,6 @@ int vp8_alloc_frame_buffers(VP8_COMMON *oci, int width, int height) {
     goto allocation_fail;
   }
 
-  oci->post_proc_buffer_int_used = 0;
-  memset(&oci->postproc_state, 0, sizeof(oci->postproc_state));
   memset(oci->post_proc_buffer.buffer_alloc, 128,
          oci->post_proc_buffer.frame_size);
 

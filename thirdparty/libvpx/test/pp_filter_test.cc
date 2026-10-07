@@ -524,7 +524,7 @@ INSTANTIATE_TEST_SUITE_P(C, VpxMbPostProcAcrossIpTest,
 INSTANTIATE_TEST_SUITE_P(C, VpxMbPostProcDownTest,
                          ::testing::Values(vpx_mbpost_proc_down_c));
 
-#if HAVE_SSE2
+#if HAVE_SSE2 && HAVE_X86_ASM
 INSTANTIATE_TEST_SUITE_P(
     SSE2, VpxPostProcDownAndAcrossMbRowTest,
     ::testing::Values(vpx_post_proc_down_and_across_mb_row_sse2));
@@ -534,7 +534,7 @@ INSTANTIATE_TEST_SUITE_P(SSE2, VpxMbPostProcAcrossIpTest,
 
 INSTANTIATE_TEST_SUITE_P(SSE2, VpxMbPostProcDownTest,
                          ::testing::Values(vpx_mbpost_proc_down_sse2));
-#endif  // HAVE_SSE2
+#endif  // HAVE_SSE2 && HAVE_X86_ASM
 
 #if HAVE_NEON
 INSTANTIATE_TEST_SUITE_P(

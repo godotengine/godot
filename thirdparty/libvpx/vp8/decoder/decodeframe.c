@@ -883,7 +883,7 @@ int vp8_decode_frame(VP8D_COMP *pbi) {
   const unsigned char *data = pbi->fragments.ptrs[0];
   const unsigned int data_sz = pbi->fragments.sizes[0];
   const unsigned char *data_end = data + data_sz;
-  ptrdiff_t first_partition_length_in_bytes;
+  int first_partition_length_in_bytes;
 
   int i, j, k, l;
   const int *const mb_feature_data_bits = vp8_mb_feature_data_bits;
@@ -924,10 +924,9 @@ int vp8_decode_frame(VP8D_COMP *pbi) {
     first_partition_length_in_bytes =
         (clear[0] | (clear[1] << 8) | (clear[2] << 16)) >> 5;
 
-    if (!pbi->ec_active && (data + first_partition_length_in_bytes > data_end ||
-                            data + first_partition_length_in_bytes < data)) {
+    if (!pbi->ec_active && first_partition_length_in_bytes == 0) {
       vpx_internal_error(&pc->error, VPX_CODEC_CORRUPT_FRAME,
-                         "Truncated packet or corrupt partition 0 length");
+                         "Corrupt partition 0 length");
     }
 
     data += 3;
@@ -936,22 +935,16 @@ int vp8_decode_frame(VP8D_COMP *pbi) {
     vp8_setup_version(pc);
 
     if (pc->frame_type == KEY_FRAME) {
-      /* vet via sync code */
-      /* When error concealment is enabled we should only check the sync
-       * code if we have enough bits available
-       */
-      if (data + 3 < data_end) {
+      if (data_end - data >= 7) {
+        /* vet via sync code */
+        /* When error concealment is enabled we should only check the sync
+         * code if we have enough bits available
+         */
         if (clear[0] != 0x9d || clear[1] != 0x01 || clear[2] != 0x2a) {
           vpx_internal_error(&pc->error, VPX_CODEC_UNSUP_BITSTREAM,
                              "Invalid frame sync code");
         }
-      }
 
-      /* If error concealment is enabled we should only parse the new size
-       * if we have enough data. Otherwise we will end up with the wrong
-       * size.
-       */
-      if (data + 6 < data_end) {
         pc->Width = (clear[3] | (clear[4] << 8)) & 0x3fff;
         pc->horiz_scale = clear[4] >> 6;
         pc->Height = (clear[5] | (clear[6] << 8)) & 0x3fff;
@@ -971,6 +964,11 @@ int vp8_decode_frame(VP8D_COMP *pbi) {
   }
   if ((!pbi->decoded_key_frame && pc->frame_type != KEY_FRAME)) {
     return -1;
+  }
+
+  if (!pbi->ec_active && data_end - data < first_partition_length_in_bytes) {
+    vpx_internal_error(&pc->error, VPX_CODEC_CORRUPT_FRAME,
+                       "Truncated packet or corrupt partition 0 length");
   }
 
   init_frame(pbi);

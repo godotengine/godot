@@ -1599,7 +1599,7 @@ using std::make_tuple;
                       x0_q4, x_step_q4, y0_q4, y_step_q4, w, h, bd);         \
   }
 
-#if HAVE_SSE2 && VPX_ARCH_X86_64
+#if HAVE_SSE2 && VPX_ARCH_X86_64 && HAVE_X86_ASM
 WRAP(convolve_copy_sse2, 8)
 WRAP(convolve_avg_sse2, 8)
 WRAP(convolve_copy_sse2, 10)
@@ -1624,9 +1624,9 @@ WRAP(convolve8_vert_sse2, 12)
 WRAP(convolve8_avg_vert_sse2, 12)
 WRAP(convolve8_sse2, 12)
 WRAP(convolve8_avg_sse2, 12)
-#endif  // HAVE_SSE2 && VPX_ARCH_X86_64
+#endif  // HAVE_SSE2 && VPX_ARCH_X86_64 && HAVE_X86_ASM
 
-#if HAVE_AVX2
+#if HAVE_AVX2 && HAVE_X86_ASM
 WRAP(convolve_copy_avx2, 8)
 WRAP(convolve_avg_avx2, 8)
 WRAP(convolve8_horiz_avx2, 8)
@@ -1653,7 +1653,7 @@ WRAP(convolve8_vert_avx2, 12)
 WRAP(convolve8_avg_avx2, 12)
 WRAP(convolve8_avg_horiz_avx2, 12)
 WRAP(convolve8_avg_vert_avx2, 12)
-#endif  // HAVE_AVX2
+#endif  // HAVE_AVX2 && HAVE_X86_ASM
 
 #if HAVE_NEON
 WRAP(convolve_copy_neon, 8)
@@ -1780,7 +1780,7 @@ INSTANTIATE_TEST_SUITE_P(C, ConvolveTest,
                       x0_q4, x_step_q4, y0_q4, y_step_q4, w, h, bd);         \
   }
 
-#if HAVE_AVX2
+#if HAVE_AVX2 && HAVE_X86_ASM
 WRAP12TAP(convolve12_horiz_avx2, 8)
 WRAP12TAP(convolve12_vert_avx2, 8)
 WRAP12TAP(convolve12_avx2, 8)
@@ -1792,7 +1792,7 @@ WRAP12TAP(convolve12_vert_avx2, 12)
 WRAP12TAP(convolve12_avx2, 12)
 #endif  // HAVE_AVX2
 
-#if HAVE_SSSE3
+#if HAVE_SSSE3 && HAVE_X86_ASM
 WRAP12TAP(convolve12_horiz_ssse3, 8)
 WRAP12TAP(convolve12_vert_ssse3, 8)
 WRAP12TAP(convolve12_ssse3, 8)
@@ -1802,7 +1802,7 @@ WRAP12TAP(convolve12_ssse3, 10)
 WRAP12TAP(convolve12_horiz_ssse3, 12)
 WRAP12TAP(convolve12_vert_ssse3, 12)
 WRAP12TAP(convolve12_ssse3, 12)
-#endif  // HAVE_SSSE3
+#endif  // HAVE_SSSE3 && HAVE_X86_ASM
 
 #if HAVE_NEON
 WRAP12TAP(convolve12_horiz_neon, 8)
@@ -1868,6 +1868,7 @@ INSTANTIATE_TEST_SUITE_P(C, ConvolveTest12Tap,
 
 #if HAVE_SSE2 && VPX_ARCH_X86_64
 #if CONFIG_VP9_HIGHBITDEPTH
+#if HAVE_X86_ASM
 const ConvolveFunctions convolve8_sse2(
     wrap_convolve_copy_sse2_8, wrap_convolve_avg_sse2_8,
     wrap_convolve8_horiz_sse2_8, wrap_convolve8_avg_horiz_sse2_8,
@@ -1895,6 +1896,9 @@ const ConvolveFunctions convolve12_sse2(
 const ConvolveParam kArrayConvolve_sse2[] = { ALL_SIZES(convolve8_sse2),
                                               ALL_SIZES(convolve10_sse2),
                                               ALL_SIZES(convolve12_sse2) };
+INSTANTIATE_TEST_SUITE_P(SSE2, ConvolveTest,
+                         ::testing::ValuesIn(kArrayConvolve_sse2));
+#endif  // HAVE_X86_ASM
 #else
 const ConvolveFunctions convolve8_sse2(
     vpx_convolve_copy_sse2, vpx_convolve_avg_sse2, vpx_convolve8_horiz_sse2,
@@ -1904,12 +1908,12 @@ const ConvolveFunctions convolve8_sse2(
     vpx_scaled_avg_vert_c, vpx_scaled_2d_c, vpx_scaled_avg_2d_c, 0);
 
 const ConvolveParam kArrayConvolve_sse2[] = { ALL_SIZES(convolve8_sse2) };
-#endif  // CONFIG_VP9_HIGHBITDEPTH
 INSTANTIATE_TEST_SUITE_P(SSE2, ConvolveTest,
                          ::testing::ValuesIn(kArrayConvolve_sse2));
+#endif  // CONFIG_VP9_HIGHBITDEPTH
 #endif
 
-#if HAVE_SSSE3
+#if HAVE_SSSE3 && HAVE_X86_ASM
 const ConvolveFunctions convolve8_ssse3(
     vpx_convolve_copy_c, vpx_convolve_avg_c, vpx_convolve8_horiz_ssse3,
     vpx_convolve8_avg_horiz_ssse3, vpx_convolve8_vert_ssse3,
@@ -1951,9 +1955,9 @@ const Convolve12TapParam kArrayConvolve12Tap_ssse3[] = { ALL_SIZES_12TAP(
 INSTANTIATE_TEST_SUITE_P(SSSE3, ConvolveTest12Tap,
                          ::testing::ValuesIn(kArrayConvolve12Tap_ssse3));
 #endif  // !CONFIG_REALTIME_ONLY && CONFIG_VP9_ENCODER
-#endif
+#endif  // HAVE_SSSE3 && HAVE_X86_ASM
 
-#if HAVE_AVX2
+#if HAVE_AVX2 && HAVE_X86_ASM
 #if CONFIG_VP9_HIGHBITDEPTH
 const ConvolveFunctions convolve8_avx2(
     wrap_convolve_copy_avx2_8, wrap_convolve_avg_avx2_8,
@@ -2024,7 +2028,7 @@ const Convolve12TapParam kArrayConvolve12Tap_avx2[] = { ALL_SIZES_12TAP(
 INSTANTIATE_TEST_SUITE_P(AVX2, ConvolveTest12Tap,
                          ::testing::ValuesIn(kArrayConvolve12Tap_avx2));
 #endif
-#endif  // HAVE_AVX2
+#endif  // HAVE_AVX2 && HAVE_X86_ASM
 
 #if HAVE_NEON
 #if CONFIG_VP9_HIGHBITDEPTH

@@ -96,6 +96,7 @@ static INLINE unsigned int sad32xh_avx2(const uint8_t *src_ptr, int src_stride,
                             h / 2);                                           \
   }
 
+#if CONFIG_ENCODERS
 #define FSAD64  \
   FSAD64_H(64)  \
   FSAD64_H(32)  \
@@ -109,6 +110,10 @@ static INLINE unsigned int sad32xh_avx2(const uint8_t *src_ptr, int src_stride,
   FSADS32_H(64) \
   FSADS32_H(32) \
   FSADS32_H(16)
+#else  // !CONFIG_ENCODERS
+#define FSAD64 FSAD64_H(64)
+#define FSAD32 FSAD32_H(32)
+#endif  // CONFIG_ENCODERS
 
 FSAD64
 FSAD32
@@ -120,6 +125,7 @@ FSAD32
 #undef FSADS64_H
 #undef FSADS32_H
 
+#if CONFIG_ENCODERS
 #define FSADAVG64_H(h)                                                        \
   unsigned int vpx_sad64x##h##_avg_avx2(                                      \
       const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr,         \
@@ -206,3 +212,5 @@ FSADAVG32
 #undef FSADAVG32
 #undef FSADAVG64_H
 #undef FSADAVG32_H
+
+#endif  // CONFIG_ENCODERS

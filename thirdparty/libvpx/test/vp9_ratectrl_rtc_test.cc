@@ -379,6 +379,37 @@ class RcInterfaceSvcTest
   void MismatchHook(const vpx_image_t * /*img1*/,
                     const vpx_image_t * /*img2*/) override {}
 
+  void RunSvcInvalidInputs() {
+    SetRCConfigSvc(3, 3);
+    rc_api_ = libvpx::VP9RateControlRTC::Create(rc_cfg_);
+    ASSERT_NE(rc_api_, nullptr);
+    frame_params_.frame_type = libvpx::RcFrameType::kKeyFrame;
+    // Verify return false on UpdateRateControl if resolution goes above
+    // configured setting.
+    rc_cfg_.width = 2560;
+    rc_cfg_.height = 1440;
+    ASSERT_FALSE(rc_api_->UpdateRateControl(rc_cfg_));
+    // Go back to original resolution.
+    rc_cfg_.width = 1280;
+    rc_cfg_.height = 720;
+    ASSERT_TRUE(rc_api_->UpdateRateControl(rc_cfg_));
+    // Set layer_id beyond the range set in init (#spatial=3, #temporal=3).
+    // Expect ComputeQP() to return kDrop.
+    frame_params_.spatial_layer_id = 4;
+    frame_params_.temporal_layer_id = 0;
+    ASSERT_EQ(rc_api_->ComputeQP(frame_params_),
+              libvpx::FrameDropDecision::kDrop);
+    frame_params_.spatial_layer_id = 0;
+    frame_params_.temporal_layer_id = 4;
+    ASSERT_EQ(rc_api_->ComputeQP(frame_params_),
+              libvpx::FrameDropDecision::kDrop);
+    // Start with valid (0, 0) layer_id, expect return kOk.
+    frame_params_.spatial_layer_id = 0;
+    frame_params_.temporal_layer_id = 0;
+    ASSERT_EQ(rc_api_->ComputeQP(frame_params_),
+              libvpx::FrameDropDecision::kOk);
+  }
+
   void RunSvc() {
     SetRCConfigSvc(3, 3);
     rc_api_ = libvpx::VP9RateControlRTC::Create(rc_cfg_);
@@ -655,6 +686,8 @@ TEST_P(RcInterfaceTest, OneLayerDropFramesCBR) { RunOneLayerDropFramesCBR(); }
 TEST_P(RcInterfaceTest, OneLayerScreen) { RunOneLayerScreen(); }
 
 TEST_P(RcInterfaceTest, OneLayerVBRPeriodicKey) { RunOneLayerVBRPeriodicKey(); }
+
+TEST_P(RcInterfaceSvcTest, SvcInvalidInputs) { RunSvcInvalidInputs(); }
 
 TEST_P(RcInterfaceSvcTest, Svc) { RunSvc(); }
 

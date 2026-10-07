@@ -312,19 +312,19 @@ INSTANTIATE_TEST_SUITE_P(
                       make_tuple(8, 4, &vp8_sixtap_predict8x4_neon),
                       make_tuple(4, 4, &vp8_sixtap_predict4x4_neon)));
 #endif
-#if HAVE_MMX
+#if HAVE_MMX && HAVE_X86_ASM
 INSTANTIATE_TEST_SUITE_P(
     MMX, SixtapPredictTest,
     ::testing::Values(make_tuple(4, 4, &vp8_sixtap_predict4x4_mmx)));
 #endif
-#if HAVE_SSE2
+#if HAVE_SSE2 && HAVE_X86_ASM
 INSTANTIATE_TEST_SUITE_P(
     SSE2, SixtapPredictTest,
     ::testing::Values(make_tuple(16, 16, &vp8_sixtap_predict16x16_sse2),
                       make_tuple(8, 8, &vp8_sixtap_predict8x8_sse2),
                       make_tuple(8, 4, &vp8_sixtap_predict8x4_sse2)));
 #endif
-#if HAVE_SSSE3
+#if HAVE_SSSE3 && HAVE_X86_ASM
 INSTANTIATE_TEST_SUITE_P(
     SSSE3, SixtapPredictTest,
     ::testing::Values(make_tuple(16, 16, &vp8_sixtap_predict16x16_ssse3),
@@ -397,7 +397,7 @@ INSTANTIATE_TEST_SUITE_P(
                       make_tuple(8, 4, &vp8_bilinear_predict8x4_sse2),
                       make_tuple(4, 4, &vp8_bilinear_predict4x4_sse2)));
 #endif
-#if HAVE_SSSE3
+#if HAVE_SSSE3 && HAVE_X86_ASM
 INSTANTIATE_TEST_SUITE_P(
     SSSE3, BilinearPredictTest,
     ::testing::Values(make_tuple(16, 16, &vp8_bilinear_predict16x16_ssse3),

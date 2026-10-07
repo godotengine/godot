@@ -39,6 +39,7 @@ static void execute(VPxWorker *const worker);  // Forward declaration.
 
 static THREADFN thread_loop(void *ptr) {
   VPxWorker *const worker = (VPxWorker *)ptr;
+#ifdef HAVE_PTHREAD_SETNAME_NP
 #ifdef __APPLE__
   if (worker->thread_name != NULL) {
     // Apple's version of pthread_setname_np takes one argument and operates on
@@ -60,6 +61,7 @@ static THREADFN thread_loop(void *ptr) {
     thread_name[sizeof(thread_name) - 1] = '\0';
     pthread_setname_np(pthread_self(), thread_name);
   }
+#endif
 #endif
   pthread_mutex_lock(&worker->impl_->mutex_);
   for (;;) {

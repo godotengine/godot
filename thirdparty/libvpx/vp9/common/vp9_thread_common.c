@@ -19,13 +19,30 @@
 #include "vp9/common/vp9_reconinter.h"
 #include "vp9/common/vp9_loopfilter.h"
 
+#if CONFIG_MULTITHREAD
+static INLINE void mutex_lock(pthread_mutex_t *const mutex) {
+  const int kMaxTryLocks = 4000;
+  int locked = 0;
+  int i;
+
+  for (i = 0; i < kMaxTryLocks; ++i) {
+    if (!pthread_mutex_trylock(mutex)) {
+      locked = 1;
+      break;
+    }
+  }
+
+  if (!locked) pthread_mutex_lock(mutex);
+}
+#endif  // CONFIG_MULTITHREAD
+
 static INLINE void sync_read(VP9LfSync *const lf_sync, int r, int c) {
 #if CONFIG_MULTITHREAD
   const int nsync = lf_sync->sync_range;
 
   if (r && !(c & (nsync - 1))) {
     pthread_mutex_t *const mutex = &lf_sync->mutex[r - 1];
-    pthread_mutex_lock(mutex);
+    mutex_lock(mutex);
 
     while (c > lf_sync->cur_sb_col[r - 1] - nsync) {
       pthread_cond_wait(&lf_sync->cond[r - 1], mutex);
@@ -55,7 +72,7 @@ static INLINE void sync_write(VP9LfSync *const lf_sync, int r, int c,
   }
 
   if (sig) {
-    pthread_mutex_lock(&lf_sync->mutex[r]);
+    mutex_lock(&lf_sync->mutex[r]);
 
     lf_sync->cur_sb_col[r] = cur;
 

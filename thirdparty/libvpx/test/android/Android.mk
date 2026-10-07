@@ -31,6 +31,7 @@ LOCAL_PATH := $(CUR_WD)/../..
 #libgtest
 include $(CLEAR_VARS)
 LOCAL_ARM_MODE := arm
+LOCAL_CPPFLAGS := -std=c++17
 LOCAL_CPP_EXTENSION := .cc
 LOCAL_MODULE := gtest
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/third_party/googletest/src/
@@ -45,6 +46,7 @@ include $(BUILD_STATIC_LIBRARY)
 #libvpx_test
 include $(CLEAR_VARS)
 LOCAL_ARM_MODE := arm
+LOCAL_CPPFLAGS := -std=c++17
 LOCAL_MODULE := libvpx_test
 LOCAL_STATIC_LIBRARIES := gtest libwebm
 

@@ -262,6 +262,10 @@ static INLINE void store_u8_8x3(uint8_t *s, const ptrdiff_t p,
   vst1_u8(s, s2);
 }
 
+static INLINE uint8x16_t load_u8_8x2(const uint8_t *s, ptrdiff_t p) {
+  return vcombine_u8(vld1_u8(s), vld1_u8(s + p));
+}
+
 static INLINE void load_u8_8x3(const uint8_t *s, const ptrdiff_t p,
                                uint8x8_t *const s0, uint8x8_t *const s1,
                                uint8x8_t *const s2) {

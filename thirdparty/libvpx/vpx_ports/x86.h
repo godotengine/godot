@@ -176,6 +176,11 @@ static INLINE uint64_t xgetbv(void) {
 // Bits 16 (AVX-512F) & 17 (AVX-512DQ) & 28 (AVX-512CD) & 30 (AVX-512BW)
 // & 31 (AVX-512VL)
 #define AVX512_BITS (BIT(16) | BIT(17) | BIT(28) | BIT(30) | BIT(31))
+// Bits 1 (AVX512-VBMI) & 6 (AVX512-VBMI2) & 8 (AVX512-GFNI) & 9 (AVX512-VAES) &
+// 10 (AVX512-VPCLMULQDQ) & 11 (AVX512-VNNI) & 12 (AVX512-BITALG) &
+// 14 (AVX512-POPCNTDQ)
+#define AVX512_DL_BITS \
+  (BIT(1) | BIT(6) | BIT(8) | BIT(9) | BIT(10) | BIT(11) | BIT(12) | BIT(14))
 
 #define FEATURE_SET(reg, feature) \
   (((reg) & (feature##_BITS)) == (feature##_BITS))
@@ -218,7 +223,11 @@ static INLINE int x86_simd_caps(void) {
         flags |= FEATURE_SET(reg_ebx, AVX2) ? HAS_AVX2 : 0;
         if (FEATURE_SET(reg_ebx, AVX512)) {
           // Check for OS-support of ZMM and YMM state. Necessary for AVX-512.
-          if ((xgetbv() & 0xe6) == 0xe6) flags |= HAS_AVX512;
+          if ((xgetbv() & 0xe6) == 0xe6) {
+            // Older AVX512 implementations (such as Skylake) have turbo curves
+            // that are currently problematic for mixed AVX512/AVX2 code
+            flags |= FEATURE_SET(reg_ecx, AVX512_DL) ? HAS_AVX512 : 0;
+          }
         }
       }
     }
@@ -250,11 +259,11 @@ static INLINE int x86_simd_caps(void) {
 static INLINE unsigned int x86_readtsc(void) {
 #if defined(__GNUC__)
   unsigned int tsc;
-  __asm__ __volatile__("rdtsc\n\t" : "=a"(tsc) :);
+  __asm__ __volatile__("rdtsc\n\t" : "=a"(tsc) : : "edx");
   return tsc;
 #elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
   unsigned int tsc;
-  asm volatile("rdtsc\n\t" : "=a"(tsc) :);
+  asm volatile("rdtsc\n\t" : "=a"(tsc) : : "edx");
   return tsc;
 #else
 #if VPX_ARCH_X86_64
@@ -287,11 +296,11 @@ static INLINE uint64_t x86_readtsc64(void) {
 static INLINE unsigned int x86_readtscp(void) {
 #if defined(__GNUC__)
   unsigned int tscp;
-  __asm__ __volatile__("rdtscp\n\t" : "=a"(tscp) :);
+  __asm__ __volatile__("rdtscp\n\t" : "=a"(tscp) : : "edx");
   return tscp;
 #elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
   unsigned int tscp;
-  asm volatile("rdtscp\n\t" : "=a"(tscp) :);
+  asm volatile("rdtscp\n\t" : "=a"(tscp) : : "edx");
   return tscp;
 #elif defined(_MSC_VER)
   unsigned int ui;

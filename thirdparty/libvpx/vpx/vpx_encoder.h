@@ -331,11 +331,15 @@ typedef struct vpx_codec_enc_cfg {
    */
   vpx_bit_depth_t g_bit_depth;
 
-  /*!\brief Bit-depth of the input frames
+  /*!\brief Bit-depth of the input source
    *
-   * This value identifies the bit_depth of the input frames in bits.
-   * Note that the frames passed as input to the encoder must have
-   * this bit-depth.
+   * This value identifies the actual bit-depth of the input source in bits. It
+   * must not exceed codec bit-depth. Note that the frames passed as input to
+   * the encoder must match codec bit-depth. So, if there is a mismatch between
+   * source bit-depth and codec bit-depth, the application is required to
+   * upshift the frame to the codec bit-depth before passing it for encoding.
+   * This is only used for computing quality metrics relative to the actual
+   * input source and has no effect on the encoder's output.
    */
   unsigned int g_input_bit_depth;
 
@@ -877,8 +881,9 @@ typedef struct vpx_svc_parameters {
  * is not thread safe and should be guarded with a lock if being used
  * in a multithreaded context.
  *
- * If vpx_codec_enc_init_ver() fails, it is not necessary to call
- * vpx_codec_destroy() on the encoder context.
+ * On success, vpx_codec_destroy() must be used to free resources allocated for
+ * the encoder context. If vpx_codec_enc_init_ver() fails, it is not necessary
+ * to call vpx_codec_destroy() on the encoder context.
  *
  * \param[in]    ctx     Pointer to this instance's context.
  * \param[in]    iface   Pointer to the algorithm interface to use.

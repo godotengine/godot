@@ -131,7 +131,7 @@ static vpx_codec_err_t vp8_peek_si_internal(const uint8_t *data,
                                             void *decrypt_state) {
   vpx_codec_err_t res = VPX_CODEC_OK;
 
-  assert(data != NULL);
+  if (data == NULL) return VPX_CODEC_INVALID_PARAM;
 
   if (data + data_sz <= data) {
     res = VPX_CODEC_INVALID_PARAM;
@@ -246,6 +246,14 @@ static int update_fragments(vpx_codec_alg_priv_t *ctx, const uint8_t *data,
     memset((void *)ctx->fragments.ptrs, 0, sizeof(ctx->fragments.ptrs));
     memset(ctx->fragments.sizes, 0, sizeof(ctx->fragments.sizes));
   }
+
+  /* Flush signal in fragment mode but no fragments were accumulated yet.
+   * Nothing to decode; treat as a no-op. */
+  if (ctx->fragments.enabled && data == NULL && data_sz == 0 &&
+      ctx->fragments.count == 0) {
+    return 0;
+  }
+
   if (ctx->fragments.enabled && !(data == NULL && data_sz == 0)) {
     /* Store a pointer to this fragment and return. We haven't
      * received the complete frame yet, so we will wait with decoding.
@@ -422,6 +430,7 @@ static vpx_codec_err_t vp8_decode(vpx_codec_alg_priv_t *ctx,
         }
 #endif
 
+        pbi->decoded_key_frame = 0;
         if (vp8_alloc_frame_buffers(pc, pc->Width, pc->Height)) {
           vpx_internal_error(&pc->error, VPX_CODEC_MEM_ERROR,
                              "Failed to allocate frame buffers");
@@ -586,6 +595,8 @@ static vpx_codec_err_t vp8_set_reference(vpx_codec_alg_priv_t *ctx,
 
     image2yuvconfig(&frame->img, &sd);
 
+    if (ctx->yv12_frame_buffers.pbi[0] == NULL) return VPX_CODEC_CORRUPT_FRAME;
+
     return vp8dx_set_reference(ctx->yv12_frame_buffers.pbi[0],
                                frame->frame_type, &sd);
   } else {
@@ -602,6 +613,8 @@ static vpx_codec_err_t vp8_get_reference(vpx_codec_alg_priv_t *ctx,
     YV12_BUFFER_CONFIG sd;
 
     image2yuvconfig(&frame->img, &sd);
+
+    if (ctx->yv12_frame_buffers.pbi[0] == NULL) return VPX_CODEC_CORRUPT_FRAME;
 
     return vp8dx_get_reference(ctx->yv12_frame_buffers.pbi[0],
                                frame->frame_type, &sd);

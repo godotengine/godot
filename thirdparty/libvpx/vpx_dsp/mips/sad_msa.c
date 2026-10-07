@@ -20,6 +20,7 @@
   }
 #define SAD_INSVE_W4_UB(...) SAD_INSVE_W4(v16u8, __VA_ARGS__)
 
+#if CONFIG_ENCODERS
 static uint32_t sad_4width_msa(const uint8_t *src_ptr, int32_t src_stride,
                                const uint8_t *ref_ptr, int32_t ref_stride,
                                int32_t height) {
@@ -66,6 +67,7 @@ static uint32_t sad_8width_msa(const uint8_t *src, int32_t src_stride,
 
   return HADD_UH_U32(sad);
 }
+#endif  // CONFIG_ENCODERS
 
 static uint32_t sad_16width_msa(const uint8_t *src, int32_t src_stride,
                                 const uint8_t *ref, int32_t ref_stride,
@@ -159,6 +161,7 @@ static uint32_t sad_64width_msa(const uint8_t *src, int32_t src_stride,
   return sad;
 }
 
+#if CONFIG_ENCODERS
 static void sad_4width_x4d_msa(const uint8_t *src_ptr, int32_t src_stride,
                                const uint8_t *const aref_ptr[],
                                int32_t ref_stride, int32_t height,
@@ -632,6 +635,7 @@ static uint32_t avgsad_64width_msa(const uint8_t *src, int32_t src_stride,
 
   return HADD_SW_S32(sad);
 }
+#endif  // CONFIG_ENCODERS
 
 #define VPX_SAD_4xHEIGHT_MSA(height)                                         \
   uint32_t vpx_sad4x##height##_msa(const uint8_t *src, int32_t src_stride,   \
@@ -738,6 +742,7 @@ static uint32_t avgsad_64width_msa(const uint8_t *src, int32_t src_stride,
                               second_pred);                             \
   }
 
+#if CONFIG_ENCODERS
 // 64x64
 VPX_SAD_64xHEIGHT_MSA(64);
 VPX_SAD_64xHEIGHTx4D_MSA(64);
@@ -802,3 +807,13 @@ VPX_AVGSAD_4xHEIGHT_MSA(8);
 VPX_SAD_4xHEIGHT_MSA(4);
 VPX_SAD_4xHEIGHTx4D_MSA(4);
 VPX_AVGSAD_4xHEIGHT_MSA(4);
+#else   // !CONFIG_ENCODERS
+// 64x64
+VPX_SAD_64xHEIGHT_MSA(64);
+
+// 32x32
+VPX_SAD_32xHEIGHT_MSA(32);
+
+// 16x16
+VPX_SAD_16xHEIGHT_MSA(16);
+#endif  // CONFIG_ENCODERS

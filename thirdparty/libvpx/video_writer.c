@@ -44,6 +44,7 @@ VpxVideoWriter *vpx_video_writer_open(const char *filename,
     writer = malloc(sizeof(*writer));
     if (!writer) {
       fprintf(stderr, "Can't allocate VpxVideoWriter.\n");
+      fclose(file);
       return NULL;
     }
     writer->frame_count = 0;

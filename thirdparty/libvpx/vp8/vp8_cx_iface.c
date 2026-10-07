@@ -29,6 +29,7 @@
 #include "vp8/encoder/ethreading.h"
 #endif
 #include "vp8/encoder/onyx_int.h"
+#include "vp8/encoder/block.h"
 #include "vpx/vp8cx.h"
 #include "vp8/encoder/firstpass.h"
 #include "vp8/common/onyx.h"
@@ -99,9 +100,10 @@ struct vpx_codec_alg_priv {
   vpx_enc_frame_flags_t control_frame_flags;
 };
 
-// Called by vp8e_set_config() and vp8e_encode() only. Must not be called
-// by vp8e_init() because the `error` paramerer (cpi->common.error) will be
-// destroyed by vpx_codec_enc_init_ver() after vp8e_init() returns an error.
+// Called by update_extracfg(), vp8e_set_config() and vp8e_encode() only. Must
+// not be called by vp8e_init() because the `error` paramerer
+// (cpi->common.error) will be destroyed by vpx_codec_enc_init_ver() after
+// vp8e_init() returns an error.
 // See the "IMPORTANT" comment in vpx_codec_enc_init_ver().
 static vpx_codec_err_t update_error_state(
     vpx_codec_alg_priv_t *ctx, const struct vpx_internal_error_info *error) {
@@ -199,6 +201,9 @@ static vpx_codec_err_t validate_config(vpx_codec_alg_priv_t *ctx,
   RANGE_CHECK_BOOL(vp8_cfg, enable_auto_alt_ref);
   RANGE_CHECK(vp8_cfg, cpu_used, -16, 16);
 
+  /* Prevent (static_thresh >> 7) from exceeding MAX_ERROR_BINS (1024) */
+  RANGE_CHECK_HI(vp8_cfg, static_thresh, (MAX_ERROR_BINS << 7) - 1);
+
 #if CONFIG_REALTIME_ONLY && !CONFIG_TEMPORAL_DENOISING
   RANGE_CHECK(vp8_cfg, noise_sensitivity, 0, 0);
 #else
@@ -244,7 +249,7 @@ static vpx_codec_err_t validate_config(vpx_codec_alg_priv_t *ctx,
 
   if (cfg->ts_number_layers > 1) {
     unsigned int i;
-    RANGE_CHECK_HI(cfg, ts_periodicity, 16);
+    RANGE_CHECK(cfg, ts_periodicity, 1, 16);
 
     for (i = 1; i < cfg->ts_number_layers; ++i) {
       if (cfg->ts_target_bitrate[i] <= cfg->ts_target_bitrate[i - 1] &&
@@ -258,7 +263,9 @@ static vpx_codec_err_t validate_config(vpx_codec_alg_priv_t *ctx,
         ERROR("ts_rate_decimator factors are not powers of 2");
     }
 
-    RANGE_CHECK_HI(cfg, ts_layer_id[i], cfg->ts_number_layers - 1);
+    for (i = 0; i < cfg->ts_periodicity; ++i) {
+      RANGE_CHECK_HI(cfg, ts_layer_id[i], cfg->ts_number_layers - 1);
+    }
   }
 
 #if (CONFIG_REALTIME_ONLY & CONFIG_ONTHEFLY_BITPACKING)
@@ -300,6 +307,9 @@ static vpx_codec_err_t validate_img(vpx_codec_alg_priv_t *ctx,
 
   if ((img->d_w != ctx->cfg.g_w) || (img->d_h != ctx->cfg.g_h))
     ERROR("Image size must match encoder init configuration size");
+  assert(img->fmt & VPX_IMG_FMT_PLANAR);
+  if (img->stride[VPX_PLANE_U] != img->stride[VPX_PLANE_V])
+    ERROR("Image U/V strides must match");
 
   return VPX_CODEC_OK;
 }
@@ -525,12 +535,22 @@ static vpx_codec_err_t get_quantizer64(vpx_codec_alg_priv_t *ctx,
 static vpx_codec_err_t update_extracfg(vpx_codec_alg_priv_t *ctx,
                                        const struct vp8_extracfg *extra_cfg) {
   const vpx_codec_err_t res = validate_config(ctx, &ctx->cfg, extra_cfg, 0);
-  if (res == VPX_CODEC_OK) {
-    ctx->vp8_cfg = *extra_cfg;
-    set_vp8e_config(&ctx->oxcf, ctx->cfg, ctx->vp8_cfg, NULL);
-    vp8_change_config(ctx->cpi, &ctx->oxcf);
+  if (res != VPX_CODEC_OK) return res;
+
+  if (setjmp(ctx->cpi->common.error.jmp)) {
+    const vpx_codec_err_t codec_err =
+        update_error_state(ctx, &ctx->cpi->common.error);
+    ctx->cpi->common.error.setjmp = 0;
+    vpx_clear_system_state();
+    assert(codec_err != VPX_CODEC_OK);
+    return codec_err;
   }
-  return res;
+  ctx->cpi->common.error.setjmp = 1;
+  ctx->vp8_cfg = *extra_cfg;
+  set_vp8e_config(&ctx->oxcf, ctx->cfg, ctx->vp8_cfg, NULL);
+  vp8_change_config(ctx->cpi, &ctx->oxcf);
+  ctx->cpi->common.error.setjmp = 0;
+  return VPX_CODEC_OK;
 }
 
 static vpx_codec_err_t set_cpu_used(vpx_codec_alg_priv_t *ctx, va_list args) {
@@ -786,6 +806,10 @@ static vpx_codec_err_t image2yuvconfig(const vpx_image_t *img,
   yv12->u_buffer = img->planes[VPX_PLANE_U];
   yv12->v_buffer = img->planes[VPX_PLANE_V];
 
+  // TODO(issue 520751602): this should use img->w/h to set y_width/y_height
+  // and that should be used to calculate uv_width/height after the code is
+  // updated to correctly use uv_crop_width/height to avoid using uninitialized
+  // data from the border.
   yv12->y_crop_width = y_w;
   yv12->y_crop_height = y_h;
   yv12->y_width = y_w;
@@ -796,6 +820,7 @@ static vpx_codec_err_t image2yuvconfig(const vpx_image_t *img,
   yv12->uv_height = uv_h;
 
   yv12->y_stride = img->stride[VPX_PLANE_Y];
+  assert(img->stride[VPX_PLANE_U] == img->stride[VPX_PLANE_V]);
   yv12->uv_stride = img->stride[VPX_PLANE_U];
 
   yv12->border = (img->stride[VPX_PLANE_Y] - img->w) / 2;
@@ -1153,7 +1178,9 @@ static vpx_codec_err_t vp8e_set_reference(vpx_codec_alg_priv_t *ctx,
     YV12_BUFFER_CONFIG sd;
 
     image2yuvconfig(&frame->img, &sd);
-    vp8_set_reference(ctx->cpi, frame->frame_type, &sd);
+    if (vp8_set_reference(ctx->cpi, frame->frame_type, &sd)) {
+      return VPX_CODEC_INVALID_PARAM;
+    }
     return VPX_CODEC_OK;
   } else {
     return VPX_CODEC_INVALID_PARAM;
@@ -1169,7 +1196,9 @@ static vpx_codec_err_t vp8e_get_reference(vpx_codec_alg_priv_t *ctx,
     YV12_BUFFER_CONFIG sd;
 
     image2yuvconfig(&frame->img, &sd);
-    vp8_get_reference(ctx->cpi, frame->frame_type, &sd);
+    if (vp8_get_reference(ctx->cpi, frame->frame_type, &sd)) {
+      return VPX_CODEC_INVALID_PARAM;
+    }
     return VPX_CODEC_OK;
   } else {
     return VPX_CODEC_INVALID_PARAM;

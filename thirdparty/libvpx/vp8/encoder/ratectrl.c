@@ -984,7 +984,9 @@ static void calc_pframe_target_size(VP8_COMP *cpi) {
               int Boost = cpi->last_boost;
               int frames_in_section = cpi->frames_till_gf_update_due + 1;
               int allocation_chunks = (frames_in_section * 100) + (Boost - 100);
-              int bits_in_section = cpi->inter_frame_target * frames_in_section;
+              int bits_in_section =
+                  (int)VPXMIN(INT_MAX, (int64_t)cpi->inter_frame_target *
+                                           frames_in_section);
 
               /* Normalize Altboost and allocations chunck down to
                * prevent overflow

@@ -1096,7 +1096,7 @@ static int rc_pick_q_and_bounds_one_pass_cbr(const VP9_COMP *cpi,
 
   // Special case code to try and match quality with forced key frames
   if (frame_is_intra_only(cm) && rc->this_key_frame_forced) {
-    q = rc->last_boosted_qindex;
+    q = clamp(rc->last_boosted_qindex, rc->best_quality, rc->worst_quality);
   } else {
     q = vp9_rc_regulate_q(cpi, rc->this_frame_target, active_best_quality,
                           active_worst_quality);
@@ -1299,7 +1299,7 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const VP9_COMP *cpi,
     q = active_best_quality;
     // Special case code to try and match quality with forced key frames
   } else if ((cm->frame_type == KEY_FRAME) && rc->this_key_frame_forced) {
-    q = rc->last_boosted_qindex;
+    q = clamp(rc->last_boosted_qindex, rc->best_quality, rc->worst_quality);
   } else {
     q = vp9_rc_regulate_q(cpi, rc->this_frame_target, active_best_quality,
                           active_worst_quality);
@@ -1638,8 +1638,8 @@ int vp9_rc_pick_q_and_bounds(const VP9_COMP *cpi, int *bottom_index,
                                           gf_group_index);
   }
   if (cpi->sf.use_nonrd_pick_mode) {
-    if (cpi->sf.force_frame_boost == 1) q -= cpi->sf.max_delta_qindex;
-
+    if (cpi->sf.force_frame_boost == 1)
+      q = VPXMAX(q - cpi->sf.max_delta_qindex, cpi->rc.best_quality);
     if (q < *bottom_index)
       *bottom_index = q;
     else if (q > *top_index)
@@ -1800,7 +1800,9 @@ static void update_altref_usage(VP9_COMP *const cpi) {
   int arf_frame_usage = 0;
   int mi_row, mi_col;
   if (cpi->rc.alt_ref_gf_group && !cpi->rc.is_src_frame_alt_ref &&
-      !cpi->refresh_golden_frame && !cpi->refresh_alt_ref_frame)
+      !cpi->refresh_golden_frame && !cpi->refresh_alt_ref_frame &&
+      cpi->count_arf_frame_usage != NULL &&
+      cpi->count_lastgolden_frame_usage != NULL)
     for (mi_row = 0; mi_row < cm->mi_rows; mi_row += 8) {
       for (mi_col = 0; mi_col < cm->mi_cols; mi_col += 8) {
         int sboffset = ((cm->mi_cols + 7) >> 3) * (mi_row >> 3) + (mi_col >> 3);
@@ -2161,7 +2163,7 @@ int vp9_calc_pframe_target_size_one_pass_cbr(const VP9_COMP *cpi) {
       VPXMAX(rc->avg_frame_bandwidth >> 4, FRAME_OVERHEAD_BITS);
   int64_t target;
 
-  if (oxcf->gf_cbr_boost_pct) {
+  if (oxcf->gf_cbr_boost_pct && rc->baseline_gf_interval != INT_MAX) {
     const int af_ratio_pct = oxcf->gf_cbr_boost_pct + 100;
     target = cpi->refresh_golden_frame
                  ? ((int64_t)rc->avg_frame_bandwidth *

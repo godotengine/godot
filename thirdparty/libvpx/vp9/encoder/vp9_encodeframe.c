@@ -2877,7 +2877,8 @@ static void rd_auto_partition_range(VP9_COMP *cpi, const TileInfo *const tile,
     // NOTE: each call to get_sb_partition_size_range() uses the previous
     // passed in values for min and max as a starting point.
     // Find the min and max partition used in previous frame at this location
-    if (cm->frame_type != KEY_FRAME) {
+    if (cm->frame_type != KEY_FRAME &&
+        (cm->width == cm->last_width && cm->height == cm->last_height)) {
       MODE_INFO **prev_mi =
           &cm->prev_mi_grid_visible[mi_row * xd->mi_stride + mi_col];
       get_sb_partition_size_range(xd, prev_mi, &min_size, &max_size, bs_hist);
@@ -2934,14 +2935,20 @@ static void set_partition_range(VP9_COMMON *cm, MACROBLOCKD *xd, int mi_row,
   int mi_width = num_8x8_blocks_wide_lookup[bsize];
   int mi_height = num_8x8_blocks_high_lookup[bsize];
   int idx, idy;
-
-  MODE_INFO *mi;
-  const int idx_str = cm->mi_stride * mi_row + mi_col;
-  MODE_INFO **prev_mi = &cm->prev_mi_grid_visible[idx_str];
   BLOCK_SIZE bs, min_size, max_size;
 
   min_size = BLOCK_64X64;
   max_size = BLOCK_4X4;
+
+  if (cm->width != cm->last_width || cm->height != cm->last_height) {
+    *min_bs = min_size;
+    *max_bs = max_size;
+    return;
+  }
+
+  MODE_INFO *mi;
+  const int idx_str = cm->mi_stride * mi_row + mi_col;
+  MODE_INFO **prev_mi = &cm->prev_mi_grid_visible[idx_str];
 
   for (idy = 0; idy < mi_height; ++idy) {
     for (idx = 0; idx < mi_width; ++idx) {
@@ -3046,8 +3053,6 @@ static int ml_pruning_partition(VP9_COMMON *const cm, MACROBLOCKD *const xd,
       abs(ctx->mic.mv[0].as_mv.col) + abs(ctx->mic.mv[0].as_mv.row);
   const int left_in_image = !!xd->left_mi;
   const int above_in_image = !!xd->above_mi;
-  MODE_INFO **prev_mi =
-      &cm->prev_mi_grid_visible[mi_col + cm->mi_stride * mi_row];
   int above_par = 0;  // above_partitioning
   int left_par = 0;   // left_partitioning
   int last_par = 0;   // last_partitioning
@@ -3094,12 +3099,16 @@ static int ml_pruning_partition(VP9_COMMON *const cm, MACROBLOCKD *const xd,
       left_par = 1;
   }
 
-  if (prev_mi[0]) {
-    context_size = prev_mi[0]->sb_type;
-    if (context_size < bsize)
-      last_par = 2;
-    else if (context_size == bsize)
-      last_par = 1;
+  if (cm->width == cm->last_width && cm->height == cm->last_height) {
+    MODE_INFO **prev_mi =
+        &cm->prev_mi_grid_visible[mi_col + cm->mi_stride * mi_row];
+    if (prev_mi[0]) {
+      context_size = prev_mi[0]->sb_type;
+      if (context_size < bsize)
+        last_par = 2;
+      else if (context_size == bsize)
+        last_par = 1;
+    }
   }
 
   mean = &vp9_partition_feature_mean[offset];
@@ -5397,7 +5406,7 @@ void vp9_init_tile_data(VP9_COMP *cpi) {
   int tile_col, tile_row;
   TOKENEXTRA *pre_tok = cpi->tile_tok[0][0];
   TOKENLIST *tplist = cpi->tplist[0][0];
-  int tile_tok = 0;
+  int64_t tile_tok = 0;
   int tplist_count = 0;
 
   if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows) {

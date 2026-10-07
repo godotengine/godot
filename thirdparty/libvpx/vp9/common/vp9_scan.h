@@ -22,6 +22,7 @@ extern "C" {
 #endif
 
 #define MAX_NEIGHBORS 2
+#define MAX_SCAN_VALUE 1024
 
 typedef struct ScanOrder {
   const int16_t *scan;
@@ -32,6 +33,10 @@ typedef struct ScanOrder {
 extern const ScanOrder vp9_default_scan_orders[TX_SIZES];
 extern const ScanOrder vp9_scan_orders[TX_SIZES][TX_TYPES];
 
+// The return value is at most the maximum value in token_cache.
+// If N is the maximum value in token_cache, the function returns
+// (1 + val1 + val2) >> 1, where val1 and val2 are at most N.
+// The result of this expression is also at most N.
 static INLINE int get_coef_context(const int16_t *neighbors,
                                    const uint8_t *token_cache, int c) {
   return (1 + token_cache[neighbors[MAX_NEIGHBORS * c + 0]] +

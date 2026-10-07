@@ -1,7 +1,12 @@
+Name: x86inc.asm
 URL: https://git.videolan.org/git/x264.git
-Version: 3e5aed95cc470f37e2db3e6506a8deb89b527720
+Version: N/A
+Update Mechanism: Manual
+Revision: 3e5aed95cc470f37e2db3e6506a8deb89b527720
 License: ISC
 License File: LICENSE
+Shipped in Chromium: yes
+Security Critical: yes
 
 Description:
 x264/libav's framework for x86 assembly. Contains a variety of macros and

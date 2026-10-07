@@ -321,6 +321,7 @@ static const int quantizer_to_qindex[] = {
 };
 
 int vp9_quantizer_to_qindex(int quantizer) {
+  assert(quantizer >= 0 && quantizer <= 63);
   return quantizer_to_qindex[quantizer];
 }
 

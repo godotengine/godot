@@ -102,9 +102,44 @@ class YUVVideoSource : public VideoSource {
 
   virtual void FillFrame() {
     ASSERT_NE(input_file_, nullptr);
-    // Read a frame from input_file.
-    if (fread(img_->img_data, raw_size_, 1, input_file_) == 0) {
-      limit_ = frame_;
+
+    // If vpx_img_alloc() pads the row -- for example, to a power of 2 when
+    // width is odd -- the YUV data needs to be read row-wise to ensure the
+    // planes refer to the correct data.
+    const int width_in_bytes =
+        static_cast<int>(width_ * (img_->bit_depth >> 3));
+    if (img_->stride[VPX_PLANE_Y] != width_in_bytes) {
+      uint8_t *row = img_->planes[VPX_PLANE_Y];
+      const int y_stride = img_->stride[VPX_PLANE_Y];
+      for (unsigned int y = 0; y < height_; ++y) {
+        if (fread(row, width_in_bytes, 1, input_file_) == 0) {
+          limit_ = frame_;
+          return;
+        }
+        row += y_stride;
+      }
+      const int uv_width =
+          (width_in_bytes + img_->x_chroma_shift) >> img_->x_chroma_shift;
+      const int uv_height =
+          (height_ + img_->y_chroma_shift) >> img_->y_chroma_shift;
+      const int last_uv_plane =
+          (format_ == VPX_IMG_FMT_NV12) ? VPX_PLANE_U : VPX_PLANE_V;
+      for (int i = VPX_PLANE_U; i <= last_uv_plane; ++i) {
+        row = img_->planes[i];
+        const int stride = img_->stride[i];
+        for (int y = 0; y < uv_height; ++y) {
+          if (fread(row, uv_width, 1, input_file_) == 0) {
+            limit_ = frame_;
+            return;
+          }
+          row += stride;
+        }
+      }
+    } else {
+      // Read a frame from input_file.
+      if (fread(img_->img_data, raw_size_, 1, input_file_) == 0) {
+        limit_ = frame_;
+      }
     }
   }
 

@@ -265,7 +265,9 @@ TEST_F(ExtRateCtrlTest, EncodeTest) {
 
   ASSERT_NE(video, nullptr);
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get()));
+#if CONFIG_VP9_DECODER
   EXPECT_EQ(received_show_frame_count_, kShowFrameCount);
+#endif
 }
 
 }  // namespace

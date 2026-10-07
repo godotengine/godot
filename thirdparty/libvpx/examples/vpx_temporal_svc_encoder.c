@@ -32,8 +32,6 @@
 
 #define zero(Dest) memset(&(Dest), 0, sizeof(Dest))
 
-static const char *exec_name;
-
 void usage_exit(void) { exit(EXIT_FAILURE); }
 
 // Denoiser states for vp8, for temporal denoising.
@@ -684,7 +682,6 @@ int main(int argc, char **argv) {
   input_ctx.only_i420 = 1;
   input_ctx.bit_depth = 0;
 
-  exec_name = argv[0];
   // Check usage and arguments.
   if (argc < min_args) {
 #if CONFIG_VP9_HIGHBITDEPTH

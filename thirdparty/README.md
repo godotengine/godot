@@ -681,7 +681,7 @@ Files extracted from upstream source:
 ## libvpx
 
 - Upstream: https://github.com/webmproject/libvpx
-- Version: 1.16.0 (1024874c5919305883187e2953de8fcb4c3d7fa6, 2026)
+- Version: 1.17.0 (6df3ec34557879fff673706f4a1d9fbd0f3a6f0e, 2026)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

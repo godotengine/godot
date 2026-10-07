@@ -8,12 +8,20 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <array>
+#include <vector>
+
 #include "gtest/gtest.h"
 
 #include "./vpx_config.h"
 #include "test/ivf_video_source.h"
+#include "test/video_source.h"
+#if CONFIG_VP8_ENCODER || CONFIG_VP9_ENCODER
+#include "vpx/vp8cx.h"
+#endif
 #include "vpx/vp8dx.h"
 #include "vpx/vpx_decoder.h"
+#include "vpx/vpx_encoder.h"
 
 namespace {
 
@@ -77,6 +85,107 @@ TEST(DecodeAPI, OptionalParams) {
                                VPX_CODEC_USE_ERROR_CONCEALMENT));
 #endif  // CONFIG_ERROR_CONCEALMENT
 }
+
+TEST(DecodeAPI, Vp8FlushWithNoFragments) {
+  vpx_codec_ctx_t dec;
+  vpx_codec_dec_cfg_t cfg = { 1, 0, 0 };
+  vpx_codec_flags_t flags = VPX_CODEC_USE_INPUT_FRAGMENTS;
+
+  EXPECT_EQ(VPX_CODEC_OK,
+            vpx_codec_dec_init(&dec, &vpx_codec_vp8_dx_algo, &cfg, flags));
+  EXPECT_EQ(VPX_CODEC_OK, vpx_codec_decode(&dec, nullptr, 0, nullptr, 0));
+  EXPECT_EQ(VPX_CODEC_OK, vpx_codec_destroy(&dec));
+}
+
+#if CONFIG_VP8_ENCODER && CONFIG_MULTITHREAD
+// Encodes a sequence of key frames using two token partitions, truncates the
+// second token partition of one frame so that the worker thread's bool decoder
+// runs past the end of its partition, and then verifies that the
+// multi-threaded decoder still reports subsequent well-formed key frames as
+// not corrupted.
+TEST(DecodeAPI, Vp8MultiThreadedCorruptedStateResetAcrossFrames) {
+  constexpr int kWidth = 16;
+  constexpr int kHeight = 32;
+  constexpr int kFrames = 4;
+
+  std::vector<std::vector<uint8_t>> frames;
+  {
+    vpx_codec_ctx_t enc;
+    vpx_codec_enc_cfg_t cfg;
+    ASSERT_EQ(vpx_codec_enc_config_default(&vpx_codec_vp8_cx_algo, &cfg, 0),
+              VPX_CODEC_OK);
+    cfg.g_w = kWidth;
+    cfg.g_h = kHeight;
+    cfg.g_lag_in_frames = 0;
+    ASSERT_EQ(vpx_codec_enc_init(&enc, &vpx_codec_vp8_cx_algo, &cfg, 0),
+              VPX_CODEC_OK);
+    ASSERT_EQ(vpx_codec_control(&enc, VP8E_SET_TOKEN_PARTITIONS,
+                                VP8_TWO_TOKENPARTITION),
+              VPX_CODEC_OK);
+
+    libvpx_test::RandomVideoSource video;
+    video.SetSize(kWidth, kHeight);
+    video.set_limit(kFrames);
+    for (video.Begin(); video.img() != nullptr; video.Next()) {
+      ASSERT_EQ(
+          vpx_codec_encode(&enc, video.img(), video.pts(), video.duration(),
+                           VPX_EFLAG_FORCE_KF, VPX_DL_REALTIME),
+          VPX_CODEC_OK);
+      vpx_codec_iter_t iter = nullptr;
+      const vpx_codec_cx_pkt_t *pkt;
+      while ((pkt = vpx_codec_get_cx_data(&enc, &iter)) != nullptr) {
+        if (pkt->kind != VPX_CODEC_CX_FRAME_PKT) continue;
+        ASSERT_NE(pkt->data.frame.flags & VPX_FRAME_IS_KEY, 0u);
+        const uint8_t *buf = static_cast<const uint8_t *>(pkt->data.frame.buf);
+        frames.emplace_back(buf, buf + pkt->data.frame.sz);
+      }
+    }
+    ASSERT_EQ(vpx_codec_destroy(&enc), VPX_CODEC_OK);
+  }
+  ASSERT_EQ(frames.size(), static_cast<size_t>(kFrames));
+
+  // Truncate frame 1 so that only a single byte of the second token partition
+  // remains. The first token partition (used by the main thread) is left
+  // intact.
+  {
+    std::vector<uint8_t> &f = frames[1];
+    ASSERT_GT(f.size(), 10u);
+    const size_t first_part_sz =
+        (static_cast<size_t>(f[0]) | (static_cast<size_t>(f[1]) << 8) |
+         (static_cast<size_t>(f[2]) << 16)) >>
+        5;
+    const size_t part_sizes = 10 + first_part_sz;
+    ASSERT_LT(part_sizes + 3, f.size());
+    const size_t part0_sz = static_cast<size_t>(f[part_sizes]) |
+                            (static_cast<size_t>(f[part_sizes + 1]) << 8) |
+                            (static_cast<size_t>(f[part_sizes + 2]) << 16);
+    const size_t part1_start = part_sizes + 3 + part0_sz;
+    ASSERT_LT(part1_start, f.size());
+    f.resize(part1_start + 1);
+  }
+
+  vpx_codec_ctx_t dec;
+  vpx_codec_dec_cfg_t dec_cfg = { /*threads=*/4, /*w=*/0, /*h=*/0 };
+  ASSERT_EQ(vpx_codec_dec_init(&dec, &vpx_codec_vp8_dx_algo, &dec_cfg, 0),
+            VPX_CODEC_OK);
+  for (int i = 0; i < kFrames; ++i) {
+    const vpx_codec_err_t res = vpx_codec_decode(
+        &dec, frames[i].data(), static_cast<unsigned int>(frames[i].size()),
+        /*user_priv=*/nullptr, /*deadline=*/0);
+    vpx_codec_iter_t iter = nullptr;
+    while (vpx_codec_get_frame(&dec, &iter)) {
+    }
+    if (i == 1) continue;
+    EXPECT_EQ(res, VPX_CODEC_OK)
+        << "frame " << i << ": " << vpx_codec_error_detail(&dec);
+    int corrupted = -1;
+    EXPECT_EQ(vpx_codec_control(&dec, VP8D_GET_FRAME_CORRUPTED, &corrupted),
+              VPX_CODEC_OK);
+    EXPECT_EQ(corrupted, 0) << "frame " << i;
+  }
+  EXPECT_EQ(vpx_codec_destroy(&dec), VPX_CODEC_OK);
+}
+#endif  // CONFIG_VP8_ENCODER && CONFIG_MULTITHREAD
 #endif  // CONFIG_VP8_DECODER
 
 #if CONFIG_VP9_DECODER
@@ -192,6 +301,49 @@ TEST(DecodeAPI, Vp9PeekStreamInfoTruncated) {
   for (uint32_t data_sz = 1; data_sz <= 10; ++data_sz) {
     TestPeekInfo(profile1_data, data_sz, 11);
   }
+}
+
+TEST(DecodeAPI, Buganizer499206650) {
+  vpx_codec_ctx_t dec;
+  ASSERT_EQ(vpx_codec_dec_init(&dec, vpx_codec_vp9_dx(), /*cfg=*/nullptr,
+                               /*flags=*/0),
+            VPX_CODEC_OK);
+
+  // Frame 1: VP9 intra_only, profile 0, 8x8, error_resilient=1,
+  // refresh_frame_flags=0x00. Clears need_resync without updating ref slots.
+  static constexpr std::array<uint8_t, 83> frame1 = {
+    0x85, 0xa4, 0xc1, 0xa1, 0x00, 0x00, 0x03, 0x80, 0x03, 0x80, 0x00, 0x40,
+    0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  };
+  EXPECT_EQ(vpx_codec_decode(&dec, frame1.data(),
+                             static_cast<unsigned int>(frame1.size()),
+                             /*user_priv=*/nullptr, /*deadline=*/0),
+            VPX_CODEC_OK)
+      << vpx_codec_error_detail(&dec);
+
+  vpx_codec_iter_t it = nullptr;
+  while (vpx_codec_get_frame(&dec, &it)) {
+  }
+
+  // Frame 2: VP9 inter, profile 0, show_frame=1, error_resilient=1,
+  // refresh=0xFF, references slot 0 (ref_frame_map[0] == -1).
+  static constexpr std::array<uint8_t, 16> frame2 = {
+    0x87, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  };
+  // Ensure there is no out of bounds read using the invalid index and that the
+  // decoder reports an error.
+  EXPECT_EQ(vpx_codec_decode(&dec, frame2.data(),
+                             static_cast<unsigned int>(frame2.size()),
+                             /*user_priv=*/nullptr, /*deadline=*/0),
+            VPX_CODEC_CORRUPT_FRAME);
+
+  EXPECT_EQ(vpx_codec_destroy(&dec), VPX_CODEC_OK);
 }
 #endif  // CONFIG_VP9_DECODER
 

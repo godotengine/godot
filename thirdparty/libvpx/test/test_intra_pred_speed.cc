@@ -202,7 +202,7 @@ INTRA_PRED_TEST(C, TestIntraPred32, vpx_dc_predictor_32x32_c,
                 vpx_d153_predictor_32x32_c, vpx_d207_predictor_32x32_c,
                 vpx_d63_predictor_32x32_c, vpx_tm_predictor_32x32_c)
 
-#if HAVE_SSE2
+#if HAVE_SSE2 && HAVE_X86_ASM
 INTRA_PRED_TEST(SSE2, TestIntraPred4, vpx_dc_predictor_4x4_sse2,
                 vpx_dc_left_predictor_4x4_sse2, vpx_dc_top_predictor_4x4_sse2,
                 vpx_dc_128_predictor_4x4_sse2, vpx_v_predictor_4x4_sse2,
@@ -229,9 +229,9 @@ INTRA_PRED_TEST(SSE2, TestIntraPred32, vpx_dc_predictor_32x32_sse2,
                 vpx_dc_128_predictor_32x32_sse2, vpx_v_predictor_32x32_sse2,
                 vpx_h_predictor_32x32_sse2, nullptr, nullptr, nullptr, nullptr,
                 nullptr, nullptr, vpx_tm_predictor_32x32_sse2)
-#endif  // HAVE_SSE2
+#endif  // HAVE_SSE2 && HAVE_X86_ASM
 
-#if HAVE_SSSE3
+#if HAVE_SSSE3 && HAVE_X86_ASM
 INTRA_PRED_TEST(SSSE3, TestIntraPred4, nullptr, nullptr, nullptr, nullptr,
                 nullptr, nullptr, nullptr, nullptr, nullptr,
                 vpx_d153_predictor_4x4_ssse3, nullptr,
@@ -250,7 +250,7 @@ INTRA_PRED_TEST(SSSE3, TestIntraPred32, nullptr, nullptr, nullptr, nullptr,
                 nullptr, vpx_d153_predictor_32x32_ssse3,
                 vpx_d207_predictor_32x32_ssse3, vpx_d63_predictor_32x32_ssse3,
                 nullptr)
-#endif  // HAVE_SSSE3
+#endif  // HAVE_SSSE3 && HAVE_X86_ASM
 
 #if HAVE_DSPR2
 INTRA_PRED_TEST(DSPR2, TestIntraPred4, vpx_dc_predictor_4x4_dspr2, nullptr,
@@ -502,6 +502,7 @@ HIGHBD_INTRA_PRED_TEST(
     vpx_highbd_d63_predictor_32x32_c, vpx_highbd_tm_predictor_32x32_c)
 
 #if HAVE_SSE2
+#if HAVE_X86_ASM
 HIGHBD_INTRA_PRED_TEST(
     SSE2, TestHighbdIntraPred4, vpx_highbd_dc_predictor_4x4_sse2,
     vpx_highbd_dc_left_predictor_4x4_sse2, vpx_highbd_dc_top_predictor_4x4_sse2,
@@ -509,7 +510,7 @@ HIGHBD_INTRA_PRED_TEST(
     vpx_highbd_h_predictor_4x4_sse2, nullptr,
     vpx_highbd_d135_predictor_4x4_sse2, vpx_highbd_d117_predictor_4x4_sse2,
     vpx_highbd_d153_predictor_4x4_sse2, vpx_highbd_d207_predictor_4x4_sse2,
-    vpx_highbd_d63_predictor_4x4_sse2, vpx_highbd_tm_predictor_4x4_c)
+    vpx_highbd_d63_predictor_4x4_sse2, vpx_highbd_tm_predictor_4x4_sse2)
 
 HIGHBD_INTRA_PRED_TEST(
     SSE2, TestHighbdIntraPred8, vpx_highbd_dc_predictor_8x8_sse2,
@@ -537,6 +538,36 @@ HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred32,
                        vpx_highbd_h_predictor_32x32_sse2, nullptr, nullptr,
                        nullptr, nullptr, nullptr, nullptr,
                        vpx_highbd_tm_predictor_32x32_sse2)
+#else   // !HAVE_X86_ASM
+HIGHBD_INTRA_PRED_TEST(
+    SSE2, TestHighbdIntraPred4, nullptr, vpx_highbd_dc_left_predictor_4x4_sse2,
+    vpx_highbd_dc_top_predictor_4x4_sse2, vpx_highbd_dc_128_predictor_4x4_sse2,
+    nullptr, vpx_highbd_h_predictor_4x4_sse2, nullptr,
+    vpx_highbd_d135_predictor_4x4_sse2, vpx_highbd_d117_predictor_4x4_sse2,
+    vpx_highbd_d153_predictor_4x4_sse2, vpx_highbd_d207_predictor_4x4_sse2,
+    vpx_highbd_d63_predictor_4x4_sse2, vpx_highbd_tm_predictor_4x4_c)
+
+HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred8, nullptr,
+                       vpx_highbd_dc_left_predictor_8x8_sse2,
+                       vpx_highbd_dc_top_predictor_8x8_sse2,
+                       vpx_highbd_dc_128_predictor_8x8_sse2, nullptr,
+                       vpx_highbd_h_predictor_8x8_sse2, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr)
+
+HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred16, nullptr,
+                       vpx_highbd_dc_left_predictor_16x16_sse2,
+                       vpx_highbd_dc_top_predictor_16x16_sse2,
+                       vpx_highbd_dc_128_predictor_16x16_sse2, nullptr,
+                       vpx_highbd_h_predictor_16x16_sse2, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr)
+
+HIGHBD_INTRA_PRED_TEST(SSE2, TestHighbdIntraPred32, nullptr,
+                       vpx_highbd_dc_left_predictor_32x32_sse2,
+                       vpx_highbd_dc_top_predictor_32x32_sse2,
+                       vpx_highbd_dc_128_predictor_32x32_sse2, nullptr,
+                       vpx_highbd_h_predictor_32x32_sse2, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr)
+#endif  // HAVE_X86_ASM
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3
@@ -569,6 +600,24 @@ HIGHBD_INTRA_PRED_TEST(SSSE3, TestHighbdIntraPred32, nullptr, nullptr, nullptr,
                        vpx_highbd_d207_predictor_32x32_ssse3,
                        vpx_highbd_d63_predictor_32x32_ssse3, nullptr)
 #endif  // HAVE_SSSE3
+
+#if HAVE_AVX2
+HIGHBD_INTRA_PRED_TEST(AVX2, TestHighbdIntraPred16, nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                       nullptr, vpx_highbd_d207_predictor_16x16_avx2,
+                       vpx_highbd_d63_predictor_16x16_avx2, nullptr)
+HIGHBD_INTRA_PRED_TEST(AVX2, TestHighbdIntraPred32, nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                       nullptr, vpx_highbd_d207_predictor_32x32_avx2,
+                       vpx_highbd_d63_predictor_32x32_avx2, nullptr)
+#endif  // HAVE_AVX2
+
+#if HAVE_AVX512
+HIGHBD_INTRA_PRED_TEST(AVX512, TestHighbdIntraPred32, nullptr, nullptr, nullptr,
+                       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                       nullptr, vpx_highbd_d207_predictor_32x32_avx512,
+                       vpx_highbd_d63_predictor_32x32_avx512, nullptr)
+#endif  // HAVE_AVX512
 
 #if HAVE_NEON
 HIGHBD_INTRA_PRED_TEST(

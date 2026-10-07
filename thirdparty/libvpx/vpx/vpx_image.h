@@ -102,7 +102,12 @@ typedef struct vpx_image {
 #define VPX_PLANE_V 2       /**< V (Chroma) plane */
 #define VPX_PLANE_ALPHA 3   /**< A (Transparency) plane */
   unsigned char *planes[4]; /**< pointer to the top left pixel for each plane */
-  int stride[4];            /**< stride between rows for each plane */
+  /*!Stride between rows for each plane
+   *
+   * \note With planar formats, \c stride[VPX_PLANE_U] must be the same as \c
+   * stride[VPX_PLANE_V].
+   */
+  int stride[4];
 
   int bps; /**< bits per sample (for packed formats) */
 

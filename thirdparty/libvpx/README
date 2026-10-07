@@ -78,6 +78,8 @@ COMPILING THE APPLICATIONS/LIBRARIES:
     arm64-win64-vs16-clangcl
     arm64-win64-vs17
     arm64-win64-vs17-clangcl
+    arm64-win64-vs18
+    arm64-win64-vs18-clangcl
     armv7-android-gcc
     armv7-darwin-gcc
     armv7-linux-rvct
@@ -119,6 +121,7 @@ COMPILING THE APPLICATIONS/LIBRARIES:
     x86-win32-vs15
     x86-win32-vs16
     x86-win32-vs17
+    x86-win32-vs18
     x86_64-android-gcc
     x86_64-darwin9-gcc
     x86_64-darwin10-gcc
@@ -146,6 +149,7 @@ COMPILING THE APPLICATIONS/LIBRARIES:
     x86_64-win64-vs15
     x86_64-win64-vs16
     x86_64-win64-vs17
+    x86_64-win64-vs18
     generic-gnu
 
   The generic-gnu target, in conjunction with the CROSS environment variable,
@@ -232,6 +236,6 @@ SUPPORT
   email webm-discuss@webmproject.org for help.
 
 BUG REPORTS
-  Bug reports can be filed in the libvpx issue tracker:
-  https://issues.webmproject.org/.
+  Bug reports can be filed in the libvpx component of the issue tracker:
+  https://issues.webmproject.org/issues/new?component=1618984&template=2023833.
   For security reports, select 'Security report' from the Template dropdown.

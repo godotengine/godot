@@ -236,7 +236,10 @@ vpx_codec_err_t vpx_codec_encode(vpx_codec_ctx_t *ctx, const vpx_image_t *img,
         ctx--;
         if (img) img--;
       }
-      ctx++;
+      // Only restore ctx to &ctx[0] when the loop ran to completion. If an
+      // iteration failed, ctx already points at the failing element; advancing
+      // it would point past the array when the first iteration failed.
+      if (i < 0) ctx++;
     }
 
     FLOATING_POINT_RESTORE();

@@ -1,2 +1,3 @@
 configure    eol=lf
 *.sh         eol=lf
+*.patch      -whitespace
