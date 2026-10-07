@@ -1588,7 +1588,11 @@ def compress_buffer(buffer: bytes) -> bytes:
 
 
 def format_buffer(buffer: bytes, indent: int = 0, width: int = 120) -> str:
-    return re.sub(f"(.{{0,{width - indent - 1}}},) ", ("\t" * indent) + "\\g<1>\n", ", ".join(map(str, buffer)))
+    return re.sub(
+        f"(.{{{width - (indent * 4) - 6}}},) (?:, )?",
+        r"\g<1>\n" + ("\t" * indent),
+        ", ".join(map(str, buffer)),
+    )
 
 
 ############################################################
