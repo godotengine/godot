@@ -47,7 +47,10 @@ env_libvpx.add_source_files(env.modules_sources, "#thirdparty/libvpx/vp8/decoder
 env_libvpx.add_source_files(env.modules_sources, "#thirdparty/libvpx/vp8/decoder/decodemv.c")
 env_libvpx.add_source_files(env.modules_sources, "#thirdparty/libvpx/vp8/decoder/detokenize.c")
 env_libvpx.add_source_files(env.modules_sources, "#thirdparty/libvpx/vp8/decoder/onyxd_if.c")
-env_libvpx.add_source_files(env.modules_sources, "#thirdparty/libvpx/vp8/decoder/threading.c")
+
+if env["platform"] != "web":
+    env_libvpx.add_source_files(env.modules_sources, "#thirdparty/libvpx/vp8/decoder/threading.c")
+
 env_libvpx.add_source_files(env.modules_sources, "#thirdparty/libvpx/vp9/vp9_dx_iface.c")
 env_libvpx.add_source_files(env.modules_sources, "#thirdparty/libvpx/vp9/vp9_iface_common.c")
 env_libvpx.add_source_files(env.modules_sources, "#thirdparty/libvpx/vp9/common/vp9_alloccommon.c")
