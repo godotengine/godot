@@ -108,6 +108,10 @@ void TileMapLayerEditorTilesPlugin::_on_scattering_spinbox_changed(double p_valu
 	scattering = p_value;
 }
 
+void TileMapLayerEditorTilesPlugin::_on_random_alt_checkbox_toggled(bool p_pressed) {
+	random_alt_enabled = p_pressed;
+}
+
 void TileMapLayerEditorTilesPlugin::_update_toolbar() {
 	// Stop dragging if needed.
 	_stop_dragging();
@@ -1026,7 +1030,25 @@ TileMapCell TileMapLayerEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern>
 	}
 
 	TypedArray<Vector2i> used_cells = p_pattern->get_used_cells();
+
+	struct Candidate {
+		int source_id;
+		Vector2i atlas_coords;
+		int alternative_tile;
+	};
+	LocalVector<Candidate> candidates;
+	Vector<float> weights;
 	double sum = 0.0;
+
+	auto has_candidate = [&](int p_src, const Vector2i &p_coords, int p_alt) {
+		for (const Candidate &c : candidates) {
+			if (c.source_id == p_src && c.atlas_coords == p_coords && c.alternative_tile == p_alt) {
+				return true;
+			}
+		}
+		return false;
+	};
+
 	for (int i = 0; i < used_cells.size(); i++) {
 		int source_id = p_pattern->get_cell_source_id(used_cells[i]);
 		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(used_cells[i]);
@@ -1034,36 +1056,58 @@ TileMapCell TileMapLayerEditorTilesPlugin::_pick_random_tile(Ref<TileMapPattern>
 
 		TileSetSource *source = *tile_set->get_source(source_id);
 		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-		if (atlas_source) {
-			TileData *tile_data = atlas_source->get_tile_data(atlas_coords, alternative_tile);
-			ERR_FAIL_NULL_V(tile_data, TileMapCell());
-			sum += tile_data->get_probability();
-		} else {
+		if (!atlas_source) {
+			if (random_alt_enabled && has_candidate(source_id, atlas_coords, alternative_tile)) {
+				continue; // Ignore duplicates.
+			}
+			candidates.push_back({ source_id, atlas_coords, alternative_tile });
+			weights.push_back(1.0f);
 			sum += 1.0;
+			continue;
 		}
+
+		LocalVector<int> alt_ids;
+		if (random_alt_enabled) {
+			int alt_count = atlas_source->get_alternative_tiles_count(atlas_coords);
+			for (int a = 0; a < alt_count; a++) {
+				alt_ids.push_back(atlas_source->get_alternative_tile_id(atlas_coords, a));
+			}
+		} else {
+			alt_ids.push_back(alternative_tile);
+		}
+
+		for (int alt : alt_ids) {
+			TileData *tile_data = atlas_source->get_tile_data(atlas_coords, alt);
+			ERR_CONTINUE(!tile_data);
+
+			if (random_alt_enabled && has_candidate(source_id, atlas_coords, alt)) {
+				continue; // Ignore duplicates.
+			}
+
+			double prob = tile_data->get_probability();
+			candidates.push_back({ source_id, atlas_coords, alt });
+			weights.push_back((float)prob);
+			sum += prob;
+		}
+	}
+
+	if (candidates.is_empty()) {
+		return TileMapCell();
 	}
 
 	double empty_probability = sum * scattering;
-	double current = 0.0;
-	double rand = pattern_rng.random(0.0, sum + empty_probability);
-	for (int i = 0; i < used_cells.size(); i++) {
-		int source_id = p_pattern->get_cell_source_id(used_cells[i]);
-		Vector2i atlas_coords = p_pattern->get_cell_atlas_coords(used_cells[i]);
-		int alternative_tile = p_pattern->get_cell_alternative_tile(used_cells[i]);
-
-		TileSetSource *source = *tile_set->get_source(source_id);
-		TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-		if (atlas_source) {
-			current += atlas_source->get_tile_data(atlas_coords, alternative_tile)->get_probability();
-		} else {
-			current += 1.0;
-		}
-
-		if (current >= rand) {
-			return TileMapCell(source_id, atlas_coords, alternative_tile);
+	if (empty_probability > 0.0) {
+		double rand = pattern_rng.random(0.0, sum + empty_probability);
+		if (rand >= sum) {
+			return TileMapCell();
 		}
 	}
-	return TileMapCell();
+
+	int idx = pattern_rng.rand_weighted(weights);
+	if (idx < 0) {
+		return TileMapCell();
+	}
+	return TileMapCell(candidates[idx].source_id, candidates[idx].atlas_coords, candidates[idx].alternative_tile);
 }
 
 HashMap<Vector2i, TileMapCell> TileMapLayerEditorTilesPlugin::_draw_line(Vector2 p_start_drag_mouse_pos, Vector2 p_from_mouse_pos, Vector2 p_to_mouse_pos, bool p_erase) {
@@ -2356,6 +2400,14 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	scatter_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &TileMapLayerEditorTilesPlugin::_on_scattering_spinbox_changed));
 	scatter_spinbox->set_accessibility_name(TTRC("Scattering:"));
 	scatter_controls_container->add_child(scatter_spinbox);
+
+	random_alt_checkbox = memnew(CheckBox);
+	random_alt_checkbox->set_flat(true);
+	random_alt_checkbox->set_text(TTRC("Alternatives"));
+	random_alt_checkbox->set_tooltip_text(TTRC("Include all alternative tiles when placing a random tile."));
+	random_alt_checkbox->set_pressed(false);
+	random_alt_checkbox->connect(SceneStringName(toggled), callable_mp(this, &TileMapLayerEditorTilesPlugin::_on_random_alt_checkbox_toggled));
+	scatter_controls_container->add_child(random_alt_checkbox);
 	tools_settings->add_child(scatter_controls_container);
 
 	_on_random_tile_checkbox_toggled(false);
