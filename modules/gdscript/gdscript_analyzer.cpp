@@ -4971,7 +4971,11 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		}
 		reduce_expression(p_subscript->index);
 
-		if (p_subscript->base->is_constant && p_subscript->index->is_constant) {
+		if (p_subscript->base->type_constraint.is_meta_type && p_subscript->base->type_constraint.kind == GDScriptParser::DataType::BUILTIN) {
+			// A builtin type (like Array) can't be indexed like a value.
+			push_error(R"(Builtin type cannot be used as a name on its own.)", p_subscript->base);
+			result_type.kind = GDScriptParser::DataType::VARIANT;
+		} else if (p_subscript->base->is_constant && p_subscript->index->is_constant) {
 			// Just try to get it.
 			bool valid = false;
 			// TODO: Check if `p_subscript->base->reduced_value` is GDScript.
