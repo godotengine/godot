@@ -773,6 +773,9 @@ class ResizeCspTest : public ResizeTest {
 
   void PreEncodeFrameHook(libvpx_test::VideoSource *video,
                           libvpx_test::Encoder *encoder) override {
+    if (video->frame() == 0) {
+      encoder->Control(VP8E_SET_CPUUSED, 5);
+    }
     if (CspForFrameNumber(video->frame()) != VPX_IMG_FMT_I420 &&
         cfg_.g_profile != 1) {
       cfg_.g_profile = 1;
@@ -787,7 +790,7 @@ class ResizeCspTest : public ResizeTest {
 
   void PSNRPktHook(const vpx_codec_cx_pkt_t *pkt) override {
     if (frame0_psnr_ == 0.) frame0_psnr_ = pkt->data.psnr.psnr[0];
-    EXPECT_NEAR(pkt->data.psnr.psnr[0], frame0_psnr_, 2.0);
+    EXPECT_NEAR(pkt->data.psnr.psnr[0], frame0_psnr_, 3.5);
   }
 
 #if WRITE_COMPRESSED_STREAM

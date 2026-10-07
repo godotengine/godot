@@ -190,7 +190,7 @@ void vpx_get16x16var_neon_dotprod(const uint8_t *src_ptr, int src_stride,
     return *sse - (uint32_t)(((int64_t)sum * sum) >> shift);                  \
   }
 
-VARIANCE_WXH_NEON_DOTPROD(4, 4, 4)
+// The Armv8.0 Neon implementation is faster than Neon DotProd for 4x4.
 VARIANCE_WXH_NEON_DOTPROD(4, 8, 5)
 
 VARIANCE_WXH_NEON_DOTPROD(8, 4, 5)

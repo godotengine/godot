@@ -768,7 +768,7 @@ INSTANTIATE_TEST_SUITE_P(
         ::testing::Values(wht_c_func_info), ::testing::Values(0),
         ::testing::Values(VPX_BITS_8, VPX_BITS_10, VPX_BITS_12)));
 
-#if HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2 && HAVE_X86_ASM && !CONFIG_EMULATE_HARDWARE
 static const FuncInfo wht_sse2_func_info = {
   &fdct_wrapper<vp9_fwht4x4_sse2>, &idct_wrapper<vpx_iwht4x4_16_add_sse2>, 4, 1
 };
@@ -776,7 +776,7 @@ static const FuncInfo wht_sse2_func_info = {
 INSTANTIATE_TEST_SUITE_P(SSE2, TransWHT,
                          ::testing::Values(make_tuple(0, &wht_sse2_func_info, 0,
                                                       VPX_BITS_8)));
-#endif  // HAVE_SSE2 && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_SSE2 && HAVE_X86_ASM && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_VSX && !CONFIG_EMULATE_HARDWARE && !CONFIG_VP9_HIGHBITDEPTH
 static const FuncInfo wht_vsx_func_info = {

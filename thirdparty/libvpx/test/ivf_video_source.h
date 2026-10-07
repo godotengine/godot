@@ -54,6 +54,15 @@ class IVFVideoSource : public CompressedVideoSource {
     uint8_t file_hdr[kIvfFileHdrSize];
     ASSERT_EQ(kIvfFileHdrSize, fread(file_hdr, 1, kIvfFileHdrSize, input_file_))
         << "File header read failed.";
+    // The following two conditions are not asserted directly as some static
+    // analyzers (observed with clang-19) do not properly terminate execution
+    // when an eof or error is assumed after the previous fread().
+    if (ferror(input_file_)) {
+      FAIL() << "File header read failed.";
+    }
+    if (feof(input_file_)) {
+      FAIL() << "Unexpected eof.";
+    }
     // Check file header
     ASSERT_TRUE(file_hdr[0] == 'D' && file_hdr[1] == 'K' &&
                 file_hdr[2] == 'I' && file_hdr[3] == 'F')

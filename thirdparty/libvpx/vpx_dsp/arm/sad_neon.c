@@ -108,6 +108,7 @@ static INLINE unsigned int sad16xh_neon(const uint8_t *src_ptr, int src_stride,
   return horizontal_add_uint16x8(sum);
 }
 
+#if CONFIG_ENCODERS
 static INLINE unsigned int sad8xh_neon(const uint8_t *src_ptr, int src_stride,
                                        const uint8_t *ref_ptr, int ref_stride,
                                        int h) {
@@ -145,6 +146,7 @@ static INLINE unsigned int sad4xh_neon(const uint8_t *src_ptr, int src_stride,
 
   return horizontal_add_uint16x8(sum);
 }
+#endif  // CONFIG_ENCODERS
 
 #define SAD_WXH_NEON(w, h)                                                   \
   unsigned int vpx_sad##w##x##h##_neon(const uint8_t *src, int src_stride,   \
@@ -152,6 +154,7 @@ static INLINE unsigned int sad4xh_neon(const uint8_t *src_ptr, int src_stride,
     return sad##w##xh_neon(src, src_stride, ref, ref_stride, (h));           \
   }
 
+#if CONFIG_ENCODERS
 SAD_WXH_NEON(4, 4)
 SAD_WXH_NEON(4, 8)
 
@@ -169,9 +172,15 @@ SAD_WXH_NEON(32, 64)
 
 SAD_WXH_NEON(64, 32)
 SAD_WXH_NEON(64, 64)
+#else   // !CONFIG_ENCODERS
+SAD_WXH_NEON(16, 16)
+SAD_WXH_NEON(32, 32)
+SAD_WXH_NEON(64, 64)
+#endif  // CONFIG_ENCODERS
 
 #undef SAD_WXH_NEON
 
+#if CONFIG_ENCODERS
 #define SAD_SKIP_WXH_NEON(w, h)                                                \
   unsigned int vpx_sad_skip_##w##x##h##_neon(                                  \
       const uint8_t *src, int src_stride, const uint8_t *ref,                  \
@@ -389,3 +398,4 @@ SAD_WXH_AVG_NEON(64, 32)
 SAD_WXH_AVG_NEON(64, 64)
 
 #undef SAD_WXH_AVG_NEON
+#endif  // CONFIG_ENCODERS

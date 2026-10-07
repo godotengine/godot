@@ -41,8 +41,8 @@
    $make -j32
 
  * Build vp9 fuzzer
-   $ $CXX $CXXFLAGS -std=gnu++17 -DENCODER=vp9 \
-   -fsanitize=fuzzer -I../libvpx -I. -Wl,--start-group \
+   $ $CXX $CXXFLAGS -std=gnu++17 -Wall -Wextra -Wimplicit-fallthrough \
+   -DENCODER=vp9 -fsanitize=fuzzer -I../libvpx -I. -Wl,--start-group \
    ../libvpx/examples/vpx_enc_fuzzer.cc -o ./vpx_enc_fuzzer_vp9 \
    ./libvpx.a -Wl,--end-group
 
@@ -115,8 +115,9 @@ static int fuzz_vpx_img_read(vpx_image_t *img, const uint8_t *data,
 
     // Assuming that for nv12 we read all chroma data at once
     if (img->fmt == VPX_IMG_FMT_NV12 && plane > 1) break;
-    // Fixing NV12 chroma width if it is odd
-    if (img->fmt == VPX_IMG_FMT_NV12 && plane == 1) w = (w + 1) & ~1;
+    // NV12 UV plane is interleaved, so it has twice the width of a subsampled
+    // plane.
+    if (img->fmt == VPX_IMG_FMT_NV12 && plane == 1) w = w * 2;
 
     for (y = 0; y < h; ++y) {
       size_t nb = bytespp * w;
@@ -138,13 +139,13 @@ static int encode_frame(vpx_codec_ctx_t *codec, vpx_image_t *img,
                         int frame_index, int flags, FILE *out,
                         vpx_enc_deadline_t quality) {
   int got_pkts = 0;
-  vpx_codec_iter_t iter = NULL;
-  const vpx_codec_cx_pkt_t *pkt = NULL;
+  vpx_codec_iter_t iter = nullptr;
+  const vpx_codec_cx_pkt_t *pkt = nullptr;
   const vpx_codec_err_t res =
       vpx_codec_encode(codec, img, frame_index, 1, flags, quality);
   if (res != VPX_CODEC_OK) return 0;
 
-  while ((pkt = vpx_codec_get_cx_data(codec, &iter)) != NULL) {
+  while ((pkt = vpx_codec_get_cx_data(codec, &iter)) != nullptr) {
     got_pkts = 1;
 
     if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
@@ -178,17 +179,36 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   } else if ((data[0] & 0x20) != 0) {
     quality = VPX_DL_BEST_QUALITY;
   }
+  const int max_frames = (quality == VPX_DL_BEST_QUALITY) ? 150 : 300;
 
   if (vpx_codec_enc_config_default(VPXC_INTERFACE(ENCODER), &cfg, 0)) abort();
   FILE *out = fopen("/dev/null", "wb");
 
   switch (data[0] & 0x1F) {
-    case 0: cfg.g_w = 64; cfg.g_h = 1;
-    case 1: cfg.g_w = 1; cfg.g_h = 48;
-    case 2: cfg.g_w = 1; cfg.g_h = 1;
-    case 3: cfg.g_w = 4; cfg.g_h = 4;
-    case 4: cfg.g_w = 16; cfg.g_h = 16;
-    default: cfg.g_w = 64; cfg.g_h = 48;
+    case 0:
+      cfg.g_w = 64;
+      cfg.g_h = 1;
+      break;
+    case 1:
+      cfg.g_w = 1;
+      cfg.g_h = 48;
+      break;
+    case 2:
+      cfg.g_w = 1;
+      cfg.g_h = 1;
+      break;
+    case 3:
+      cfg.g_w = 4;
+      cfg.g_h = 4;
+      break;
+    case 4:
+      cfg.g_w = 16;
+      cfg.g_h = 16;
+      break;
+    default:
+      cfg.g_w = 64;
+      cfg.g_h = 48;
+      break;
   }
   cfg.g_timebase.num = 1;
   cfg.g_timebase.den = 30;  // fps
@@ -212,7 +232,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size -= FUZZ_HDR_SZ;
 
   // Encode frames.
-  while (1) {
+  for (int i = 0; i < max_frames; ++i) {
     int flags = 0;
     size_t size_read = fuzz_vpx_img_read(&raw, data, size);
     if (size_read == 0) break;
@@ -224,7 +244,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   }
 
   // Flush encoder.
-  while (encode_frame(&codec, NULL, -1, 0, out, quality)) {
+  while (encode_frame(&codec, nullptr, -1, 0, out, quality)) {
   }
 
 fail:

@@ -7,6 +7,7 @@
  *  All contributing  project authors may be  found in the AUTHORS  file in
  *  the root of the source tree.
  */
+#include <assert.h>
 
 #include "vp9/vp9_iface_common.h"
 void yuvconfig2image(vpx_image_t *img, const YV12_BUFFER_CONFIG *yv12,
@@ -36,8 +37,8 @@ void yuvconfig2image(vpx_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->cs = yv12->color_space;
   img->range = yv12->color_range;
   img->bit_depth = 8;
-  img->w = yv12->y_stride;
-  img->h = ALIGN_POWER_OF_TWO(yv12->y_height + 2 * VP9_ENC_BORDER_IN_PIXELS, 3);
+  img->w = yv12->y_width;
+  img->h = yv12->y_height;
   img->d_w = yv12->y_crop_width;
   img->d_h = yv12->y_crop_height;
   img->r_w = yv12->render_width;
@@ -85,18 +86,19 @@ vpx_codec_err_t image2yuvconfig(const vpx_image_t *img,
   yv12->y_crop_height = img->d_h;
   yv12->render_width = img->r_w;
   yv12->render_height = img->r_h;
-  yv12->y_width = img->d_w;
-  yv12->y_height = img->d_h;
+  yv12->y_width = img->w;
+  yv12->y_height = img->h;
 
-  yv12->uv_width = img->x_chroma_shift == 1 || img->fmt == VPX_IMG_FMT_NV12
-                       ? (1 + yv12->y_width) / 2
-                       : yv12->y_width;
+  yv12->uv_width = (yv12->y_width + img->x_chroma_shift) >> img->x_chroma_shift;
   yv12->uv_height =
-      img->y_chroma_shift == 1 ? (1 + yv12->y_height) / 2 : yv12->y_height;
-  yv12->uv_crop_width = yv12->uv_width;
-  yv12->uv_crop_height = yv12->uv_height;
+      (yv12->y_height + img->y_chroma_shift) >> img->y_chroma_shift;
+  yv12->uv_crop_width =
+      (yv12->y_crop_width + img->x_chroma_shift) >> img->x_chroma_shift;
+  yv12->uv_crop_height =
+      (yv12->y_crop_height + img->y_chroma_shift) >> img->y_chroma_shift;
 
   yv12->y_stride = img->stride[VPX_PLANE_Y];
+  assert(img->stride[VPX_PLANE_U] == img->stride[VPX_PLANE_V]);
   yv12->uv_stride = img->stride[VPX_PLANE_U];
   yv12->color_space = img->cs;
   yv12->color_range = img->range;
@@ -128,9 +130,5 @@ vpx_codec_err_t image2yuvconfig(const vpx_image_t *img,
 #endif  // CONFIG_VP9_HIGHBITDEPTH
   yv12->subsampling_x = img->x_chroma_shift;
   yv12->subsampling_y = img->y_chroma_shift;
-  // When reading the data, UV are in one plane for NV12 format, thus
-  // x_chroma_shift is 0. After converting, UV are in separate planes, and
-  // subsampling_x should be set to 1.
-  if (img->fmt == VPX_IMG_FMT_NV12) yv12->subsampling_x = 1;
   return VPX_CODEC_OK;
 }

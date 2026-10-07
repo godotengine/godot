@@ -89,8 +89,13 @@ void vpx_subtract_block_avx2(int rows, int cols, int16_t *diff_ptr,
                                pred_ptr, pred_stride);
       break;
     default:
+#if HAVE_X86_ASM
       vpx_subtract_block_sse2(rows, cols, diff_ptr, diff_stride, src_ptr,
                               src_stride, pred_ptr, pred_stride);
+#else
+      vpx_subtract_block_c(rows, cols, diff_ptr, diff_stride, src_ptr,
+                           src_stride, pred_ptr, pred_stride);
+#endif
       break;
   }
 }

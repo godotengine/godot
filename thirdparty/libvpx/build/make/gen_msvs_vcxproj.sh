@@ -34,7 +34,7 @@ Options:
     --name=project_name         Name of the project (required)
     --proj-guid=GUID            GUID to use for the project
     --module-def=filename       File containing export definitions (for DLLs)
-    --ver=version               Version (14-16) of visual studio to generate for
+    --ver=version               Version (14-18) of visual studio to generate for
     --src-path-bare=dir         Path to root of source tree
     -Ipath/to/include           Additional include directories
     -DFLAG[=value]              Preprocessor macros to define
@@ -180,7 +180,7 @@ for opt in "$@"; do
         --ver=*)
             vs_ver="$optval"
             case "$optval" in
-                1[4-7])
+                1[4-8])
                 ;;
                 *) die Unrecognized Visual Studio Version in $opt
                 ;;
@@ -364,6 +364,9 @@ generate_vcxproj() {
                 if [ "$vs_ver" = "17" ]; then
                     tag_content PlatformToolset v143
                 fi
+                if [ "$vs_ver" = "18" ]; then
+                    tag_content PlatformToolset v145
+                fi
             fi
             tag_content CharacterSet Unicode
             if [ "$config" = "Release" ]; then
@@ -433,6 +436,8 @@ generate_vcxproj() {
             tag_content Optimization $opt
             tag_content AdditionalIncludeDirectories "$incs;%(AdditionalIncludeDirectories)"
             tag_content PreprocessorDefinitions "WIN32;$debug;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE$extradefines;%(PreprocessorDefinitions)"
+            tag_content LanguageStandard_C stdc11
+            tag_content LanguageStandard stdcpp17
             tag_content RuntimeLibrary $runtime
             tag_content WarningLevel Level3
             if ${werror:-false}; then

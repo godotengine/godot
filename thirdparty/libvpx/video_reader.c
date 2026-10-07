@@ -38,18 +38,19 @@ VpxVideoReader *vpx_video_reader_open(const char *filename) {
   if (fread(header, 1, 32, file) != 32) {
     fprintf(stderr, "File header on %s can't be read.\n",
             filename);  // Can't read file header
+    fclose(file);
     return NULL;
   }
   if (memcmp(kIVFSignature, header, 4) != 0) {
     fprintf(stderr, "The IVF signature on %s is wrong.\n",
             filename);  // Wrong IVF signature
-
+    fclose(file);
     return NULL;
   }
   if (mem_get_le16(header + 4) != 0) {
     fprintf(stderr, "%s uses the wrong IVF version.\n",
             filename);  // Wrong IVF version
-
+    fclose(file);
     return NULL;
   }
 
@@ -58,7 +59,7 @@ VpxVideoReader *vpx_video_reader_open(const char *filename) {
     fprintf(
         stderr,
         "Can't allocate VpxVideoReader\n");  // Can't allocate VpxVideoReader
-
+    fclose(file);
     return NULL;
   }
 

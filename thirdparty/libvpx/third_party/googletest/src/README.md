@@ -9,10 +9,10 @@ depends on which build system you use, and is usually straightforward.
 ### Build with CMake
 
 GoogleTest comes with a CMake build script
-([CMakeLists.txt](https://github.com/google/googletest/blob/master/CMakeLists.txt))
+([CMakeLists.txt](https://github.com/google/googletest/blob/main/CMakeLists.txt))
 that can be used on a wide range of platforms ("C" stands for cross-platform.).
 If you don't have CMake installed already, you can download it for free from
-<http://www.cmake.org/>.
+<https://cmake.org/>.
 
 CMake works by generating native makefiles or build projects that can be used in
 the compiler environment of your choice. You can either build GoogleTest as a
@@ -25,7 +25,7 @@ When building GoogleTest as a standalone project, the typical workflow starts
 with
 
 ```
-git clone https://github.com/google/googletest.git -b release-1.11.0
+git clone https://github.com/google/googletest.git -b v1.17.0
 cd googletest        # Main directory of the cloned repository.
 mkdir build          # Create a directory to hold the build output.
 cd build
@@ -94,7 +94,7 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   # Specify the commit you depend on and update it regularly.
-  URL https://github.com/google/googletest/archive/e2239ee6043f73722e7aa812a459f54a28552929.zip
+  URL https://github.com/google/googletest/archive/5376968f6948923e2411081fd9372e71a59d8e77.zip
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -124,12 +124,12 @@ match the project in which it is included.
 
 #### C++ Standard Version
 
-An environment that supports C++11 is required in order to successfully build
+An environment that supports C++17 is required in order to successfully build
 GoogleTest. One way to ensure this is to specify the standard in the top-level
-project, for example by using the `set(CMAKE_CXX_STANDARD 11)` command. If this
-is not feasible, for example in a C project using GoogleTest for validation,
-then it can be specified by adding it to the options for cmake via the
-`DCMAKE_CXX_FLAGS` option.
+project, for example by using the `set(CMAKE_CXX_STANDARD 17)` command along
+with `set(CMAKE_CXX_STANDARD_REQUIRED ON)`. If this is not feasible, for example
+in a C project using GoogleTest for validation, then it can be specified by
+adding it to the options for cmake via the`-DCMAKE_CXX_FLAGS` option.
 
 ### Tweaking GoogleTest
 
@@ -140,23 +140,27 @@ command line. Generally, these macros are named like `GTEST_XYZ` and you define
 them to either 1 or 0 to enable or disable a certain feature.
 
 We list the most frequently used macros below. For a complete list, see file
-[include/gtest/internal/gtest-port.h](https://github.com/google/googletest/blob/master/googletest/include/gtest/internal/gtest-port.h).
+[include/gtest/internal/gtest-port.h](https://github.com/google/googletest/blob/main/googletest/include/gtest/internal/gtest-port.h).
 
 ### Multi-threaded Tests
 
 GoogleTest is thread-safe where the pthread library is available. After
-`#include "gtest/gtest.h"`, you can check the
+`#include <gtest/gtest.h>`, you can check the
 `GTEST_IS_THREADSAFE` macro to see whether this is the case (yes if the macro is
 `#defined` to 1, no if it's undefined.).
 
 If GoogleTest doesn't correctly detect whether pthread is available in your
 environment, you can force it with
 
-    -DGTEST_HAS_PTHREAD=1
+```
+-DGTEST_HAS_PTHREAD=1
+```
 
 or
 
-    -DGTEST_HAS_PTHREAD=0
+```
+-DGTEST_HAS_PTHREAD=0
+```
 
 When GoogleTest uses pthread, you may need to add flags to your compiler and/or
 linker to select the pthread library, or you'll get link errors. If you use the
@@ -172,23 +176,27 @@ as a DLL on Windows) if you prefer.
 
 To compile *gtest* as a shared library, add
 
-    -DGTEST_CREATE_SHARED_LIBRARY=1
+```
+-DGTEST_CREATE_SHARED_LIBRARY=1
+```
 
 to the compiler flags. You'll also need to tell the linker to produce a shared
 library instead - consult your linker's manual for how to do it.
 
 To compile your *tests* that use the gtest shared library, add
 
-    -DGTEST_LINKED_AS_SHARED_LIBRARY=1
+```
+-DGTEST_LINKED_AS_SHARED_LIBRARY=1
+```
 
 to the compiler flags.
 
 Note: while the above steps aren't technically necessary today when using some
 compilers (e.g. GCC), they may become necessary in the future, if we decide to
 improve the speed of loading the library (see
-<http://gcc.gnu.org/wiki/Visibility> for details). Therefore you are recommended
-to always add the above flags when using GoogleTest as a shared library.
-Otherwise a future release of GoogleTest may break your build script.
+<https://gcc.gnu.org/wiki/Visibility> for details). Therefore you are
+recommended to always add the above flags when using GoogleTest as a shared
+library. Otherwise a future release of GoogleTest may break your build script.
 
 ### Avoiding Macro Name Clashes
 
@@ -200,7 +208,9 @@ rename its macro to avoid the conflict.
 Specifically, if both GoogleTest and some other code define macro FOO, you can
 add
 
-    -DGTEST_DONT_DEFINE_FOO=1
+```
+-DGTEST_DONT_DEFINE_FOO=1
+```
 
 to the compiler flags to tell GoogleTest to change the macro's name from `FOO`
 to `GTEST_FOO`. Currently `FOO` can be `ASSERT_EQ`, `ASSERT_FALSE`, `ASSERT_GE`,
@@ -208,10 +218,14 @@ to `GTEST_FOO`. Currently `FOO` can be `ASSERT_EQ`, `ASSERT_FALSE`, `ASSERT_GE`,
 `EXPECT_FALSE`, `EXPECT_TRUE`, `FAIL`, `SUCCEED`, `TEST`, or `TEST_F`. For
 example, with `-DGTEST_DONT_DEFINE_TEST=1`, you'll need to write
 
-    GTEST_TEST(SomeTest, DoesThis) { ... }
+```
+GTEST_TEST(SomeTest, DoesThis) { ... }
+```
 
 instead of
 
-    TEST(SomeTest, DoesThis) { ... }
+```
+TEST(SomeTest, DoesThis) { ... }
+```
 
 in order to define a test.

@@ -69,11 +69,14 @@ VP8_COMMON_SRCS-yes += common/vp8_entropymodedata.h
 
 VP8_COMMON_SRCS-yes += common/treecoder.c
 
-VP8_COMMON_SRCS-$(VPX_ARCH_X86)$(VPX_ARCH_X86_64) += common/x86/vp8_asm_stubs.c
-VP8_COMMON_SRCS-$(VPX_ARCH_X86)$(VPX_ARCH_X86_64) += common/x86/loopfilter_x86.c
 VP8_COMMON_SRCS-$(CONFIG_POSTPROC) += common/mfqe.c
 VP8_COMMON_SRCS-$(CONFIG_POSTPROC) += common/postproc.h
 VP8_COMMON_SRCS-$(CONFIG_POSTPROC) += common/postproc.c
+VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/bilinear_filter_sse2.c
+
+ifeq ($(HAVE_X86_ASM),yes)
+VP8_COMMON_SRCS-$(VPX_ARCH_X86)$(VPX_ARCH_X86_64) += common/x86/vp8_asm_stubs.c
+VP8_COMMON_SRCS-$(VPX_ARCH_X86)$(VPX_ARCH_X86_64) += common/x86/loopfilter_x86.c
 VP8_COMMON_SRCS-$(HAVE_MMX) += common/x86/dequantize_mmx.asm
 VP8_COMMON_SRCS-$(HAVE_MMX) += common/x86/idct_blk_mmx.c
 VP8_COMMON_SRCS-$(HAVE_MMX) += common/x86/idctllm_mmx.asm
@@ -82,17 +85,17 @@ VP8_COMMON_SRCS-$(HAVE_MMX) += common/x86/subpixel_mmx.asm
 VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/idct_blk_sse2.c
 VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/idctllm_sse2.asm
 VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/recon_sse2.asm
-VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/bilinear_filter_sse2.c
 VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/subpixel_sse2.asm
 VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/loopfilter_sse2.asm
 VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/iwalsh_sse2.asm
 VP8_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/subpixel_ssse3.asm
+endif
 
-ifeq ($(CONFIG_POSTPROC),yes)
+ifeq ($(CONFIG_POSTPROC)$(HAVE_X86_ASM),yesyes)
 VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/mfqe_sse2.asm
 endif
 
-ifeq ($(VPX_ARCH_X86_64),yes)
+ifeq ($(VPX_ARCH_X86_64)$(HAVE_X86_ASM),yesyes)
 VP8_COMMON_SRCS-$(HAVE_SSE2) += common/x86/loopfilter_block_sse2_x86_64.asm
 endif
 

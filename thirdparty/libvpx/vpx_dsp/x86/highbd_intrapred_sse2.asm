@@ -280,7 +280,7 @@ cglobal highbd_tm_predictor_4x4, 5, 5, 6, dst, stride, above, left, bd
   pmaxsw                m2, m4
   ;Store the values
   movq    [dstq          ], m2
-  movhpd  [dstq+strideq*2], m2
+  movhps  [dstq+strideq*2], m2
   lea                 dstq, [dstq+strideq*4]
   pshuflw               m2, m1, 0xaa
   pshuflw               m5, m1, 0xff
@@ -291,7 +291,7 @@ cglobal highbd_tm_predictor_4x4, 5, 5, 6, dst, stride, above, left, bd
   pmaxsw                m2, m4
   ;Store the values
   movq    [dstq          ], m2
-  movhpd  [dstq+strideq*2], m2
+  movhps  [dstq+strideq*2], m2
   RET
 
 INIT_XMM sse2

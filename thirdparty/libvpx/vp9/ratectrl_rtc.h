@@ -99,6 +99,9 @@ class VP9RateControlRTC {
   VP9RateControlRTC() = default;
   bool InitRateControl(const VP9RateControlRtcConfig &cfg);
   struct VP9_COMP *cpi_ = nullptr;
+  int initial_width_ = 0;
+  int initial_height_ = 0;
+  bool rc_is_valid_ = false;
 };
 
 }  // namespace libvpx

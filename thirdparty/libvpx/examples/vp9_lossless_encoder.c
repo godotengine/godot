@@ -96,7 +96,8 @@ int main(int argc, char **argv) {
   printf("Using %s\n", vpx_codec_iface_name(encoder->codec_interface()));
 
   res = vpx_codec_enc_config_default(encoder->codec_interface(), &cfg, 0);
-  if (res) die_codec(&codec, "Failed to get default codec config.");
+  if (res)
+    die("Failed to get default codec config: %s", vpx_codec_err_to_string(res));
 
   cfg.g_w = info.frame_width;
   cfg.g_h = info.frame_height;

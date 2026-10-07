@@ -172,7 +172,7 @@ TEST_P(BlockErrorTest, ExtremeValues) {
 
 using std::make_tuple;
 
-#if HAVE_SSE2
+#if HAVE_SSE2 && (CONFIG_VP9_HIGHBITDEPTH || HAVE_X86_ASM)
 const BlockErrorParam sse2_block_error_tests[] = {
 #if CONFIG_VP9_HIGHBITDEPTH
   make_tuple(&vp9_highbd_block_error_sse2, &vp9_highbd_block_error_c,
@@ -182,8 +182,10 @@ const BlockErrorParam sse2_block_error_tests[] = {
   make_tuple(&vp9_highbd_block_error_sse2, &vp9_highbd_block_error_c,
              VPX_BITS_8),
 #endif  // CONFIG_VP9_HIGHBITDEPTH
+#if HAVE_X86_ASM
   make_tuple(&BlockError8BitWrapper<vp9_block_error_sse2>,
              &BlockError8BitWrapper<vp9_block_error_c>, VPX_BITS_8)
+#endif
 };
 
 INSTANTIATE_TEST_SUITE_P(SSE2, BlockErrorTest,

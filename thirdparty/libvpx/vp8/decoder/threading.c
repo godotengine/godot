@@ -47,6 +47,15 @@ static void setup_decoding_thread_data(VP8D_COMP *pbi, MACROBLOCKD *xd,
 
   for (i = 0; i < count; ++i) {
     MACROBLOCKD *mbd = &mbrd[i].mbd;
+
+    // The worker MACROBLOCKDs persist across frames, so reset the per-frame
+    // error state in line with the main thread (see vp8_decode_frame()).
+    // This should only be done for keyframes or when error concealment
+    // is active.
+    if (pc->frame_type == KEY_FRAME || pbi->ec_active) {
+      mbd->corrupted = 0;
+    }
+
     mbd->subpixel_predict = xd->subpixel_predict;
     mbd->subpixel_predict8x4 = xd->subpixel_predict8x4;
     mbd->subpixel_predict8x8 = xd->subpixel_predict8x8;

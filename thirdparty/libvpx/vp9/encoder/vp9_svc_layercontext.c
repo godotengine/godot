@@ -240,14 +240,8 @@ void vp9_update_layer_context_change_config(VP9_COMP *const cpi,
       }
     }
   } else {
-    int layer_end;
-
-    if (svc->number_temporal_layers > 1 && cpi->oxcf.rc_mode == VPX_CBR) {
-      layer_end = svc->number_temporal_layers;
-    } else {
-      layer_end = svc->number_spatial_layers;
-    }
-
+    assert(svc->number_temporal_layers == 1);
+    int layer_end = svc->number_spatial_layers;
     for (layer = 0; layer < layer_end; ++layer) {
       LAYER_CONTEXT *const lc = &svc->layer_context[layer];
       RATE_CONTROL *const lrc = &lc->rc;
@@ -267,12 +261,7 @@ void vp9_update_layer_context_change_config(VP9_COMP *const cpi,
       lrc->bits_off_target =
           VPXMIN(lrc->bits_off_target, lrc->maximum_buffer_size);
       lrc->buffer_level = VPXMIN(lrc->buffer_level, lrc->maximum_buffer_size);
-      // Update framerate-related quantities.
-      if (svc->number_temporal_layers > 1 && cpi->oxcf.rc_mode == VPX_CBR) {
-        lc->framerate = cpi->framerate / oxcf->ts_rate_decimator[layer];
-      } else {
-        lc->framerate = cpi->framerate;
-      }
+      lc->framerate = cpi->framerate;
       lrc->avg_frame_bandwidth = saturate_cast_double_to_int(
           round(lc->target_bandwidth / lc->framerate));
       lrc->max_frame_bandwidth = rc->max_frame_bandwidth;
@@ -363,7 +352,11 @@ void vp9_restore_layer_context(VP9_COMP *const cpi) {
   // Check if it is one_pass_cbr_svc mode and lc->speed > 0 (real-time mode
   // does not use speed = 0).
   if (is_one_pass_svc(cpi) && lc->speed > 0) {
+#if CONFIG_REALTIME_ONLY
+    cpi->oxcf.speed = VPXMAX(lc->speed, 5);
+#else
     cpi->oxcf.speed = lc->speed;
+#endif
   }
   cpi->loopfilter_ctrl = lc->loopfilter_ctrl;
   // Reset the frames_since_key and frames_to_key counters to their values
@@ -465,8 +458,8 @@ void get_layer_resolution(const int width_org, const int height_org,
     return;
   }
 
-  w = width_org * num / den;
-  h = height_org * num / den;
+  w = (int)((int64_t)width_org * num / den);
+  h = (int)((int64_t)height_org * num / den);
 
   // make height and width even to make chrome player happy
   w += w % 2;
@@ -934,7 +927,7 @@ int vp9_one_pass_svc_start_layer(VP9_COMP *const cpi) {
     svc->downsample_filter_type[svc->spatial_layer_id] = EIGHTTAP_SMOOTH;
   // For scale factors > 0.75, set the phase to 0 (aligns decimated pixel
   // to source pixel).
-  if (scaling_factor_num > (3 * scaling_factor_den) >> 2)
+  if (scaling_factor_num > ((int64_t)3 * scaling_factor_den) >> 2)
     svc->downsample_filter_phase[svc->spatial_layer_id] = 0;
 
   // The usage of use_base_mv or partition_reuse assumes down-scale of 2x2.

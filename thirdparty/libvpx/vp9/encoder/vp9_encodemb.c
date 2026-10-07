@@ -8,6 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include <stdlib.h>
+
 #include "./vp9_rtcd.h"
 #include "./vpx_config.h"
 #include "./vpx_dsp_rtcd.h"
@@ -29,6 +31,44 @@
 #include "vp9/encoder/vp9_encoder.h"
 #include "vp9/encoder/vp9_rd.h"
 #include "vp9/encoder/vp9_tokenize.h"
+
+#if defined(NDEBUG)
+#if defined(__clang__) && defined(__has_builtin)
+#if __has_builtin(__builtin_assume)
+// This is verified by test/vp9_scan_test.cc
+#define ASSUME_VALID_SCAN_VALUE(i) \
+  __builtin_assume(0 <= i && i <= MAX_SCAN_VALUE)
+// This is verified by test/vp9_entropy_test.cc
+#define ASSUME_VALID_ENERGY_CLASS(i) \
+  __builtin_assume(0 <= i && i <= MAX_ENERGY_CLASS)
+#define ASSUME_VALID_TOKEN(i) __builtin_assume(0 <= i && i <= MAX_TOKEN)
+#else
+#define ASSUME_VALID_SCAN_VALUE(i) \
+  do {                             \
+  } while (0)
+#define ASSUME_VALID_ENERGY_CLASS(i) \
+  do {                               \
+  } while (0)
+#define ASSUME_VALID_TOKEN(i) \
+  do {                        \
+  } while (0)
+#endif
+#else
+#define ASSUME_VALID_SCAN_VALUE(i) \
+  do {                             \
+  } while (0)
+#define ASSUME_VALID_ENERGY_CLASS(i) \
+  do {                               \
+  } while (0)
+#define ASSUME_VALID_TOKEN(i) \
+  do {                        \
+  } while (0)
+#endif
+#else
+#define ASSUME_VALID_SCAN_VALUE(i) assert(0 <= i && i <= MAX_SCAN_VALUE)
+#define ASSUME_VALID_ENERGY_CLASS(i) assert(0 <= i && i <= MAX_ENERGY_CLASS)
+#define ASSUME_VALID_TOKEN(i) assert(0 <= i && i <= MAX_TOKEN)
+#endif
 
 struct optimize_ctx {
   ENTROPY_CONTEXT ta[MAX_MB_PLANE][16];
@@ -69,7 +109,7 @@ int vp9_optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
   struct macroblock_plane *const p = &mb->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int ref = is_inter_block(xd->mi[0]);
-  uint8_t token_cache[1024];
+  uint8_t token_cache[MAX_SCAN_VALUE + 1];
   const tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -104,7 +144,6 @@ int vp9_optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
       mb->token_costs[tx_size][plane_type][ref];
   unsigned int(*token_costs_cur)[2][COEFF_CONTEXTS][ENTROPY_TOKENS];
   int64_t eob_cost0, eob_cost1;
-  const int ctx0 = ctx;
   int64_t accu_rate = 0;
   // Initialized to the worst possible error for the largest transform size.
   // This ensures that it never goes negative.
@@ -119,13 +158,27 @@ int vp9_optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
 
   for (i = 0; i < eob; i++) {
     const int rc = scan[i];
-    token_cache[rc] = vp9_pt_energy_class[vp9_get_token(qcoeff[rc])];
+    ASSUME_VALID_SCAN_VALUE(rc);
+    int16_t token = vp9_get_token(qcoeff[rc]);
+    ASSUME_VALID_TOKEN(token);
+    token_cache[rc] = vp9_pt_energy_class[token];
   }
   final_eob = 0;
 
+  // This is used in the first iteration, and must be inbounds. We cannot
+  // locally verify that this is in bounds, so we need to verify at runtime.
+  // For now, only verify if we have array-bounds turned on.
+#if defined(__clang__) && defined(__has_feature)
+#if __has_feature(array_bounds_sanitizer)
+  if (ctx < 0 || ctx > MAX_ENERGY_CLASS) {
+    abort();
+  }
+#endif
+#endif
+
   // Initial RD cost.
   token_costs_cur = token_costs + band_translate[0];
-  rate0 = (*token_costs_cur)[0][ctx0][EOB_TOKEN];
+  rate0 = (*token_costs_cur)[0][ctx][EOB_TOKEN];
   best_block_rd_cost = RDCOST(rdmult, rddiv, rate0, accu_error);
 
   // For each token, pick one of two choices greedily:
@@ -133,13 +186,16 @@ int vp9_optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
   // (ii) Second candidate: Reduce quantized value by 1.
   for (i = 0; i < eob; i++) {
     const int rc = scan[i];
+    ASSUME_VALID_SCAN_VALUE(rc);
     const int x = qcoeff[rc];
     const int band_cur = band_translate[i];
     const int ctx_cur = (i == 0) ? ctx : get_coef_context(nb, token_cache, i);
+    ASSUME_VALID_ENERGY_CLASS(ctx_cur);
     const int token_tree_sel_cur = (x_prev == 0);
     token_costs_cur = token_costs + band_cur;
     if (x == 0) {  // No need to search
       const int token = vp9_get_token(x);
+      ASSUME_VALID_TOKEN(token);
       rate0 = (*token_costs_cur)[token_tree_sel_cur][ctx_cur][token];
       accu_rate += rate0;
       x_prev = 0;
@@ -212,11 +268,16 @@ int vp9_optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
           const int band_next = band_translate[i + 1];
           const int token_next =
               (i + 1 != eob) ? vp9_get_token(qcoeff[scan[i + 1]]) : EOB_TOKEN;
+          ASSUME_VALID_TOKEN(token_next);
           unsigned int(*const token_costs_next)[2][COEFF_CONTEXTS]
                                                [ENTROPY_TOKENS] =
                                                    token_costs + band_next;
           token_cache[rc] = vp9_pt_energy_class[t0];
           ctx_next = get_coef_context(nb, token_cache, i + 1);
+          // token_cache is initialized with valid energy classes.
+          // get_coef_context returns at most the maximum value of
+          // token_cache.
+          ASSUME_VALID_ENERGY_CLASS(ctx_next);
           token_tree_sel_next = (x == 0);
           next_bits0 =
               (*token_costs_next)[token_tree_sel_next][ctx_next][token_next];
@@ -224,6 +285,10 @@ int vp9_optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
               (*token_costs_next)[token_tree_sel_next][ctx_next][EOB_TOKEN];
           token_cache[rc] = vp9_pt_energy_class[t1];
           ctx_next = get_coef_context(nb, token_cache, i + 1);
+          // token_cache is initialized with valid energy classes.
+          // get_coef_context returns at most the maximum value of
+          // token_cache.
+          ASSUME_VALID_ENERGY_CLASS(ctx_next);
           token_tree_sel_next = (x1 == 0);
           next_bits1 =
               (*token_costs_next)[token_tree_sel_next][ctx_next][token_next];
@@ -301,6 +366,7 @@ int vp9_optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
     final_eob = eob - 1;
     for (; final_eob >= 0; final_eob--) {
       const int rc = scan[final_eob];
+      ASSUME_VALID_SCAN_VALUE(rc);
       const int x = qcoeff[rc];
       if (x) {
         break;
@@ -314,11 +380,13 @@ int vp9_optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
       assert(before_best_eob_qc != 0);
       i = final_eob - 1;
       rc = scan[i];
+      ASSUME_VALID_SCAN_VALUE(rc);
       qcoeff[rc] = before_best_eob_qc;
       dqcoeff[rc] = before_best_eob_dqc;
     }
     for (i = final_eob; i < eob; i++) {
       int rc = scan[i];
+      ASSUME_VALID_SCAN_VALUE(rc);
       qcoeff[rc] = 0;
       dqcoeff[rc] = 0;
     }

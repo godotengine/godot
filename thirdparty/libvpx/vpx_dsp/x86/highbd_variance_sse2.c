@@ -13,6 +13,7 @@
 #include "./vpx_dsp_rtcd.h"
 #include "vpx_ports/mem.h"
 
+#if HAVE_X86_ASM
 typedef uint32_t (*high_variance_fn_t)(const uint16_t *src, int src_stride,
                                        const uint16_t *ref, int ref_stride,
                                        uint32_t *sse, int *sum);
@@ -560,6 +561,7 @@ FNS(sse2)
 
 #undef FNS
 #undef FN
+#endif  // HAVE_X86_ASM
 
 void vpx_highbd_comp_avg_pred_sse2(uint16_t *comp_pred, const uint16_t *pred,
                                    int width, int height, const uint16_t *ref,

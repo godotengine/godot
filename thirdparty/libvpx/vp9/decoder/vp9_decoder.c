@@ -16,6 +16,8 @@
 #include "./vpx_dsp_rtcd.h"
 #include "./vpx_scale_rtcd.h"
 
+#include "vpx/internal/vpx_codec_internal.h"
+#include "vpx/vpx_codec.h"
 #include "vpx_mem/vpx_mem.h"
 #include "vpx_ports/system_state.h"
 #include "vpx_ports/vpx_once.h"
@@ -59,8 +61,11 @@ static void vp9_dec_setup_mi(VP9_COMMON *cm) {
 void vp9_dec_alloc_row_mt_mem(RowMTWorkerData *row_mt_worker_data,
                               VP9_COMMON *cm, int num_sbs, int max_threads,
                               int num_jobs) {
-  int plane;
-  const size_t dqcoeff_size = (num_sbs << DQCOEFFS_PER_SB_LOG2) *
+  if ((size_t)num_sbs > SIZE_MAX / (sizeof(*row_mt_worker_data->dqcoeff[0])
+                                    << DQCOEFFS_PER_SB_LOG2)) {
+    vpx_internal_error(&cm->error, VPX_CODEC_ERROR, "num_sbs too big");
+  }
+  const size_t dqcoeff_size = ((size_t)num_sbs << DQCOEFFS_PER_SB_LOG2) *
                               sizeof(*row_mt_worker_data->dqcoeff[0]);
   row_mt_worker_data->num_jobs = num_jobs;
 #if CONFIG_MULTITHREAD
@@ -86,16 +91,16 @@ void vp9_dec_alloc_row_mt_mem(RowMTWorkerData *row_mt_worker_data,
   }
 #endif
   row_mt_worker_data->num_sbs = num_sbs;
-  for (plane = 0; plane < 3; ++plane) {
+  for (int plane = 0; plane < 3; ++plane) {
     CHECK_MEM_ERROR(&cm->error, row_mt_worker_data->dqcoeff[plane],
                     vpx_memalign(32, dqcoeff_size));
     memset(row_mt_worker_data->dqcoeff[plane], 0, dqcoeff_size);
     CHECK_MEM_ERROR(&cm->error, row_mt_worker_data->eob[plane],
-                    vpx_calloc(num_sbs << EOBS_PER_SB_LOG2,
+                    vpx_calloc((size_t)num_sbs << EOBS_PER_SB_LOG2,
                                sizeof(*row_mt_worker_data->eob[plane])));
   }
   CHECK_MEM_ERROR(&cm->error, row_mt_worker_data->partition,
-                  vpx_calloc(num_sbs * PARTITIONS_PER_SB,
+                  vpx_calloc((size_t)num_sbs * PARTITIONS_PER_SB,
                              sizeof(*row_mt_worker_data->partition)));
   CHECK_MEM_ERROR(&cm->error, row_mt_worker_data->recon_map,
                   vpx_calloc(num_sbs, sizeof(*row_mt_worker_data->recon_map)));
@@ -512,16 +517,27 @@ int vp9_get_raw_frame(VP9Decoder *pbi, YV12_BUFFER_CONFIG *sd,
   pbi->ready_for_new_data = 1;
 
 #if CONFIG_VP9_POSTPROC
+  if (setjmp(cm->error.jmp)) {
+    cm->error.setjmp = 0;
+    vpx_clear_system_state();
+    return -1;
+  }
+
+  cm->error.setjmp = 1;
+
   if (!cm->show_existing_frame) {
     ret = vp9_post_proc_frame(cm, sd, flags, cm->width);
   } else {
     *sd = *cm->frame_to_show;
     ret = 0;
   }
+
+  cm->error.setjmp = 0;
 #else
   *sd = *cm->frame_to_show;
   ret = 0;
 #endif /*!CONFIG_POSTPROC*/
+
   vpx_clear_system_state();
   return ret;
 }

@@ -134,7 +134,7 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(make_tuple(3.25, vpx_plane_add_noise_c),
                       make_tuple(4.4, vpx_plane_add_noise_c)));
 
-#if HAVE_SSE2
+#if HAVE_SSE2 && HAVE_X86_ASM
 INSTANTIATE_TEST_SUITE_P(
     SSE2, AddNoiseTest,
     ::testing::Values(make_tuple(3.25, vpx_plane_add_noise_sse2),

@@ -497,7 +497,7 @@ static const arg_def_t bitdeptharg = ARG_DEF_ENUM(
     "Bit depth for codec (8 for version <=1, 10 or 12 for version 2)",
     bitdepth_enum);
 static const arg_def_t inbitdeptharg =
-    ARG_DEF(NULL, "input-bit-depth", 1, "Bit depth of input");
+    ARG_DEF(NULL, "input-bit-depth", 1, "Actual bit depth of input source");
 #endif
 
 static const struct arg_enum_list tune_content_enum[] = {
@@ -534,6 +534,11 @@ static const arg_def_t disable_loopfilter =
             "1: Loopfilter off for non reference frames\n"
             "                                          "
             "2: Loopfilter off for all frames");
+static const arg_def_t validate_hbd_input =
+    ARG_DEF(NULL, "validate-hbd-input", 1,
+            "Check that input samples are within the valid range "
+            "for the chosen bit depth with high bit depth encoding (0: "
+            "disabled, 1: enabled (default))");
 #endif
 
 #if CONFIG_VP9_ENCODER
@@ -566,6 +571,7 @@ static const arg_def_t *vp9_args[] = { &cpu_used_vp9,
                                        &target_level,
                                        &row_mt,
                                        &disable_loopfilter,
+                                       &validate_hbd_input,
 // NOTE: The entries above have a corresponding entry in vp9_arg_ctrl_map. The
 // entries below do not have a corresponding entry in vp9_arg_ctrl_map. They
 // must be listed at the end of vp9_args.
@@ -603,6 +609,7 @@ static const int vp9_arg_ctrl_map[] = { VP8E_SET_CPUUSED,
                                         VP9E_SET_TARGET_LEVEL,
                                         VP9E_SET_ROW_MT,
                                         VP9E_SET_DISABLE_LOOPFILTER,
+                                        VP9E_SET_VALIDATE_HBD_INPUT,
                                         0 };
 #endif
 

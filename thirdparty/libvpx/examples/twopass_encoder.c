@@ -191,7 +191,6 @@ static void pass1(vpx_image_t *raw, FILE *infile, const char *outfile_name,
 int main(int argc, char **argv) {
   FILE *infile = NULL;
   int w, h;
-  vpx_codec_ctx_t codec;
   vpx_codec_enc_cfg_t cfg;
   vpx_image_t raw;
   vpx_codec_err_t res;
@@ -228,7 +227,8 @@ int main(int argc, char **argv) {
 
   // Configuration
   res = vpx_codec_enc_config_default(encoder->codec_interface(), &cfg, 0);
-  if (res) die_codec(&codec, "Failed to get default codec config.");
+  if (res)
+    die("Failed to get default codec config: %s", vpx_codec_err_to_string(res));
 
   cfg.g_w = w;
   cfg.g_h = h;

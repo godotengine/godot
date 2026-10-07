@@ -383,6 +383,7 @@ static inline unsigned int vpx_sad64x(const uint8_t *src, int src_stride,
   }
 
 vpx_sad64xN(64);
+#if CONFIG_ENCODERS
 vpx_sad64xN(32);
 sadMxNx4D_mmi(64, 64);
 sadMxNx4D_mmi(64, 32);
@@ -434,6 +435,7 @@ static inline unsigned int vpx_sad_avg64x(const uint8_t *src, int src_stride,
 
 vpx_sad_avg64xN(64);
 vpx_sad_avg64xN(32);
+#endif  // CONFIG_ENCODERS
 
 static inline unsigned int vpx_sad32x(const uint8_t *src, int src_stride,
                                       const uint8_t *ref, int ref_stride,
@@ -473,8 +475,9 @@ static inline unsigned int vpx_sad32x(const uint8_t *src, int src_stride,
     return vpx_sad32x(src, src_stride, ref, ref_stride, H);              \
   }
 
-vpx_sad32xN(64);
 vpx_sad32xN(32);
+#if CONFIG_ENCODERS
+vpx_sad32xN(64);
 vpx_sad32xN(16);
 sadMxNx4D_mmi(32, 64);
 sadMxNx4D_mmi(32, 32);
@@ -528,6 +531,7 @@ static inline unsigned int vpx_sad_avg32x(const uint8_t *src, int src_stride,
 vpx_sad_avg32xN(64);
 vpx_sad_avg32xN(32);
 vpx_sad_avg32xN(16);
+#endif  // CONFIG_ENCODERS
 
 static inline unsigned int vpx_sad16x(const uint8_t *src, int src_stride,
                                       const uint8_t *ref, int ref_stride,
@@ -567,8 +571,9 @@ static inline unsigned int vpx_sad16x(const uint8_t *src, int src_stride,
     return vpx_sad16x(src, src_stride, ref, ref_stride, H);              \
   }
 
-vpx_sad16xN(32);
 vpx_sad16xN(16);
+#if CONFIG_ENCODERS
+vpx_sad16xN(32);
 vpx_sad16xN(8);
 sadMxNx4D_mmi(16, 32);
 sadMxNx4D_mmi(16, 16);
@@ -805,3 +810,4 @@ static inline unsigned int vpx_sad_avg4x(const uint8_t *src, int src_stride,
 
 vpx_sad_avg4xN(8);
 vpx_sad_avg4xN(4);
+#endif  // CONFIG_ENCODERS

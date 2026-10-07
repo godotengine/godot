@@ -112,6 +112,8 @@ all_platforms="${all_platforms} arm64-win64-vs16"
 all_platforms="${all_platforms} arm64-win64-vs16-clangcl"
 all_platforms="${all_platforms} arm64-win64-vs17"
 all_platforms="${all_platforms} arm64-win64-vs17-clangcl"
+all_platforms="${all_platforms} arm64-win64-vs18"
+all_platforms="${all_platforms} arm64-win64-vs18-clangcl"
 all_platforms="${all_platforms} armv7-android-gcc"   #neon Cortex-A8
 all_platforms="${all_platforms} armv7-darwin-gcc"    #neon Cortex-A8
 all_platforms="${all_platforms} armv7-linux-rvct"    #neon Cortex-A8
@@ -153,6 +155,7 @@ all_platforms="${all_platforms} x86-win32-vs14"
 all_platforms="${all_platforms} x86-win32-vs15"
 all_platforms="${all_platforms} x86-win32-vs16"
 all_platforms="${all_platforms} x86-win32-vs17"
+all_platforms="${all_platforms} x86-win32-vs18"
 all_platforms="${all_platforms} x86_64-android-gcc"
 all_platforms="${all_platforms} x86_64-darwin9-gcc"
 all_platforms="${all_platforms} x86_64-darwin10-gcc"
@@ -180,6 +183,7 @@ all_platforms="${all_platforms} x86_64-win64-vs14"
 all_platforms="${all_platforms} x86_64-win64-vs15"
 all_platforms="${all_platforms} x86_64-win64-vs16"
 all_platforms="${all_platforms} x86_64-win64-vs17"
+all_platforms="${all_platforms} x86_64-win64-vs18"
 all_platforms="${all_platforms} generic-gnu"
 
 # all_targets is a list of all targets that can be configured
@@ -294,6 +298,7 @@ ARCH_EXT_LIST="
     msa
     mips64
 
+    x86_asm
     ${ARCH_EXT_LIST_X86}
 
     vsx
@@ -304,6 +309,7 @@ HAVE_LIST="
     ${ARCH_EXT_LIST}
     vpx_ports
     pthread_h
+    pthread_setname_np
     unistd_h
 "
 EXPERIMENT_LIST="
@@ -677,8 +683,10 @@ process_toolchain() {
         if enabled mips || [ -z "${INLINE}" ]; then
           enabled extra_warnings || check_add_cflags -Wno-unused-function
         fi
-        # Enforce C99 for C files. Allow GNU extensions.
-        check_cflags -std=gnu99 && add_cflags_only -std=gnu99
+        # Enforce C11 for C files. Allow GNU extensions.
+        check_cflags -std=gnu11 && add_cflags_only -std=gnu11
+        # Enforce C11 compatibility.
+        check_cflags -Wc23-extensions && add_cflags_only -Wc23-extensions
         # Avoid this warning for third_party C++ sources. Some reorganization
         # would be needed to apply this only to test/*.cc.
         check_cflags -Wshorten-64-to-32 && add_cflags_only -Wshorten-64-to-32

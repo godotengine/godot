@@ -19,6 +19,7 @@ struct postproc_state {
   int last_frame_valid;
   int clamp;
   int8_t *generated_noise;
+  int generated_noise_size;
 };
 #include "onyxc_int.h"
 #include "ppflags.h"

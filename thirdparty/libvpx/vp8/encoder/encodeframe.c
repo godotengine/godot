@@ -96,8 +96,7 @@ static unsigned int mb_activity_measure(MACROBLOCK *x, int mb_row, int mb_col) {
   unsigned int mb_activity;
 
   if (ALT_ACT_MEASURE) {
-    int use_dc_pred = (mb_col || mb_row) && (!mb_col || !mb_row);
-
+    int use_dc_pred = (mb_col > 1 && mb_row > 1);
     /* Or use an alternative. */
     mb_activity = vp8_encode_intra(x, use_dc_pred);
   } else {
@@ -828,7 +827,13 @@ void vp8_encode_frame(VP8_COMP *cpi) {
       for (i = 0; i < cpi->encoding_thread_count; ++i) {
         int mode_count;
         int c_idx;
-        totalrate += cpi->mb_row_ei[i].totalrate;
+        /* Saturate like encode_mb_row(); per-thread totalrate is already
+         * clamped to INT_MAX individually, so their sum can overflow. */
+        const int thread_rate = cpi->mb_row_ei[i].totalrate;
+        if (INT_MAX - totalrate > thread_rate)
+          totalrate += thread_rate;
+        else
+          totalrate = INT_MAX;
 
         cpi->mb.skip_true_count += cpi->mb_row_ei[i].mb.skip_true_count;
 

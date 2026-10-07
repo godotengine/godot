@@ -33,6 +33,8 @@
 #ifndef GOOGLETEST_INCLUDE_GTEST_GTEST_SPI_H_
 #define GOOGLETEST_INCLUDE_GTEST_GTEST_SPI_H_
 
+#include <string>
+
 #include "gtest/gtest.h"
 
 GTEST_DISABLE_MSC_WARNINGS_PUSH_(4251 \

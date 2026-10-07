@@ -1645,9 +1645,6 @@ typedef void (*PVp8SixtapPredictFunc2)(uint8_t *RESTRICT src,
 void vp8_sixtap_predict4x4_lsx(uint8_t *RESTRICT src, int32_t src_stride,
                                int32_t xoffset, int32_t yoffset,
                                uint8_t *RESTRICT dst, int32_t dst_stride) {
-  const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
-  const int8_t *v_filter = vp8_subpel_filters_lsx[yoffset - 1];
-
   static PVp8SixtapPredictFunc1 Predict4x4Funcs1[4] = {
     common_hv_6ht_6vt_4w_lsx,
     common_hv_6ht_4vt_4w_lsx,
@@ -1662,6 +1659,8 @@ void vp8_sixtap_predict4x4_lsx(uint8_t *RESTRICT src, int32_t src_stride,
   if (yoffset < 8 && xoffset < 8) {
     if (yoffset) {
       if (xoffset) {
+        const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
+        const int8_t *v_filter = vp8_subpel_filters_lsx[yoffset - 1];
         switch (xoffset & 1) {
           case 0:
             switch (yoffset & 1) {
@@ -1691,6 +1690,7 @@ void vp8_sixtap_predict4x4_lsx(uint8_t *RESTRICT src, int32_t src_stride,
             break;
         }
       } else {
+        const int8_t *v_filter = vp8_subpel_filters_lsx[yoffset - 1];
         switch (yoffset & 1) {
           case 0:
             Predict4x4Funcs2[0](src, src_stride, dst, dst_stride, v_filter, 4);
@@ -1726,15 +1726,19 @@ void vp8_sixtap_predict4x4_lsx(uint8_t *RESTRICT src, int32_t src_stride,
         }
         case 2:
         case 4:
-        case 6:
+        case 6: {
+          const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
           Predict4x4Funcs2[2](src, src_stride, dst, dst_stride, h_filter, 4);
           break;
+        }
       }
       switch (xoffset & 1) {
-        case 1:
+        case 1: {
+          const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
           Predict4x4Funcs2[3](src, src_stride, dst, dst_stride, h_filter + 1,
                               4);
           break;
+        }
       }
     }
   }
@@ -1743,9 +1747,6 @@ void vp8_sixtap_predict4x4_lsx(uint8_t *RESTRICT src, int32_t src_stride,
 void vp8_sixtap_predict8x8_lsx(uint8_t *RESTRICT src, int32_t src_stride,
                                int32_t xoffset, int32_t yoffset,
                                uint8_t *RESTRICT dst, int32_t dst_stride) {
-  const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
-  const int8_t *v_filter = vp8_subpel_filters_lsx[yoffset - 1];
-
   static PVp8SixtapPredictFunc1 Predict8x8Funcs1[4] = {
     common_hv_6ht_6vt_8w_lsx,
     common_hv_6ht_4vt_8w_lsx,
@@ -1761,6 +1762,8 @@ void vp8_sixtap_predict8x8_lsx(uint8_t *RESTRICT src, int32_t src_stride,
   if (yoffset < 8 && xoffset < 8) {
     if (yoffset) {
       if (xoffset) {
+        const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
+        const int8_t *v_filter = vp8_subpel_filters_lsx[yoffset - 1];
         switch (xoffset & 1) {
           case 0:
             switch (yoffset & 1) {
@@ -1791,6 +1794,7 @@ void vp8_sixtap_predict8x8_lsx(uint8_t *RESTRICT src, int32_t src_stride,
             break;
         }
       } else {
+        const int8_t *v_filter = vp8_subpel_filters_lsx[yoffset - 1];
         switch (yoffset & 1) {
           case 0:
             Predict8x8Funcs2[0](src, src_stride, dst, dst_stride, v_filter, 8);
@@ -1804,18 +1808,22 @@ void vp8_sixtap_predict8x8_lsx(uint8_t *RESTRICT src, int32_t src_stride,
       }
     } else {
       switch (xoffset & 1) {
-        case 1:
+        case 1: {
+          const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
           Predict8x8Funcs2[3](src, src_stride, dst, dst_stride, h_filter + 1,
                               8);
           break;
+        }
       }
       switch (xoffset) {
         case 0: vp8_copy_mem8x8(src, src_stride, dst, dst_stride); break;
         case 2:
         case 4:
-        case 6:
+        case 6: {
+          const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
           Predict8x8Funcs2[2](src, src_stride, dst, dst_stride, h_filter, 8);
           break;
+        }
       }
     }
   }
@@ -1824,9 +1832,6 @@ void vp8_sixtap_predict8x8_lsx(uint8_t *RESTRICT src, int32_t src_stride,
 void vp8_sixtap_predict16x16_lsx(uint8_t *RESTRICT src, int32_t src_stride,
                                  int32_t xoffset, int32_t yoffset,
                                  uint8_t *RESTRICT dst, int32_t dst_stride) {
-  const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
-  const int8_t *v_filter = vp8_subpel_filters_lsx[yoffset - 1];
-
   static PVp8SixtapPredictFunc1 Predict16x16Funcs1[4] = {
     common_hv_6ht_6vt_16w_lsx,
     common_hv_6ht_4vt_16w_lsx,
@@ -1842,6 +1847,8 @@ void vp8_sixtap_predict16x16_lsx(uint8_t *RESTRICT src, int32_t src_stride,
   if (yoffset < 8 && xoffset < 8) {
     if (yoffset) {
       if (xoffset) {
+        const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
+        const int8_t *v_filter = vp8_subpel_filters_lsx[yoffset - 1];
         switch (xoffset & 1) {
           case 0:
             switch (yoffset & 1) {
@@ -1872,6 +1879,7 @@ void vp8_sixtap_predict16x16_lsx(uint8_t *RESTRICT src, int32_t src_stride,
             break;
         }
       } else {
+        const int8_t *v_filter = vp8_subpel_filters_lsx[yoffset - 1];
         switch (yoffset & 1) {
           case 0:
             Predict16x16Funcs2[0](src, src_stride, dst, dst_stride, v_filter,
@@ -1886,18 +1894,22 @@ void vp8_sixtap_predict16x16_lsx(uint8_t *RESTRICT src, int32_t src_stride,
       }
     } else {
       switch (xoffset & 1) {
-        case 1:
+        case 1: {
+          const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
           Predict16x16Funcs2[3](src, src_stride, dst, dst_stride, h_filter + 1,
                                 16);
           break;
+        }
       }
       switch (xoffset) {
         case 0: vp8_copy_mem16x16(src, src_stride, dst, dst_stride); break;
         case 2:
         case 4:
-        case 6:
+        case 6: {
+          const int8_t *h_filter = vp8_subpel_filters_lsx[xoffset - 1];
           Predict16x16Funcs2[2](src, src_stride, dst, dst_stride, h_filter, 16);
           break;
+        }
       }
     }
   }

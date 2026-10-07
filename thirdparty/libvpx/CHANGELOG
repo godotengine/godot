@@ -1,3 +1,80 @@
+2026-08-07 v1.17.0 "Yellowbilled Duck"
+  This release includes a new encoder control to validate high bitdepth input,
+  additional Neon and AVX2/AVX512 optimizations, support for the C11 standard,
+  and numerous bug fixes.
+
+  - Upgrading:
+    This release is ABI compatible with the previous release.
+
+    ISO C11 standard is now enforced for C files.
+
+    SVC is now strictly disallowed for 2-pass encoding; enabling it will return
+    VPX_CODEC_INVALID_PARAM.
+
+    VP9 High Bitdepth (HBD) input validation is now enabled by default. If the
+    input contains values outside the valid range, the encoder will return
+    VPX_CODEC_INVALID_PARAM. Use the new VP9E_SET_VALIDATE_HBD_INPUT control
+    (or vpxenc --validate-hbd-input=0) to disable this validation.
+
+    VP9 now sets the returned image width (w) and height (h) to the actual
+    width and height, rather than the stride and aligned height. This is a
+    behavior change that may affect applications relying on w being equal to the
+    stride or h being the aligned height.
+
+    Strict validation has been added to some APIs:
+    - Encoders (VP8/VP9) now reject input images with unequal U and V strides.
+    - vpx_img_alloc() and vpx_img_wrap() now strictly validate the image format.
+    - External rate control (RTC) API now validates configuration inputs.
+    - VP9 SVC now validates spatial layer ID input.
+
+  - Enhancement:
+    Added Arm Neon DotProd subpel variance paths.
+    Optimized Neon HBD sadx4d and sad_skipx4d functions.
+    Added AVX2/AVX512 implementations for various vpx_highbd predictor
+    functions.
+    Added support for MSVC v145 (Visual Studio 2026).
+    Added configure option --disable-x86-asm.
+
+  - Bug fixes:
+    Fix to heap buffer overflow / out-of-bounds write in vp9_postproc,
+    vp8-multi-res-encoding, vpx_setup_noise, set_mb_ssim_rdmult_scaling,
+    vp9_change_config (resolution change), vp9_dec_alloc_row_mt_mem (decode
+    coeffs), and vp8_sixtap_predict (LoongArch).
+
+    Fix to integer overflow in vp9-svc (layer resolution, duration),
+    set_mb_ssim_rdmult_scaling, vp8_encode_frame, calc_pframe_target_size,
+    y4minput buffer size calculations, and get_token_alloc.
+
+    Fix to VP8 decoder crash on flush with no fragments.
+    Fix to VP8 decoder potential hang/slowdown with corrupt partition 0 size.
+    Fix to VP9 decoder crash with invalid reference frame index.
+    Fix to VP9 highbitdepth encoder format mismatch.
+    Fix to VP9 float-to-int overflow in validate_config (EOS count) and with
+    zero bitrate.
+
+    Fix to VP8 decoder multithreading corruption flag reset at start of
+    frame.
+    Fix to VP8 decoder accepting inter frames on resolution change before
+    keyframe.
+    Fix to VP8 encoder reference frame dimension validation.
+    Fix to VP8 encoder temporal layer ID validation.
+    Fix to VP8 encoder missing setjmp in VP8E_SET_SCALEMODE.
+
+    Fix to VP9 SVC encoder crash with dynamic resize and cyclic refresh
+    (aq_mode=3).
+    Fix to VP9 1-pass rate control last_boosted_qindex clamping and
+    VP9E_SET_QUANTIZER_ONE_PASS validation.
+
+    Fix to NV12 x_chroma_shift calculation in vpx_image and image2yuvconfig.
+    Fix to AVX-512 CPU feature detection on older x86 CPUs.
+    Fix to x86_abi_support.asm placing read-only data tables in .rdata for
+    Windows.
+    Fix to configure disabling _FORTIFY_SOURCE on Linux.
+    Fix to file leaks on error paths in vpxdec and video reader/writer
+    utilities.
+
+    Fix to crash/undefined behavior in vpx_img_flip with formats without alpha.
+
 2026-01-06 v1.16.0 "Xenonetta Duck"
   This release includes Arm SVE2 and Neon optimizations for 12-tap filters,
   AVX512 implementations for SAD, support for per-frame and per-spatial-layer

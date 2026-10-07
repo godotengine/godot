@@ -277,6 +277,12 @@ void vp9_deblock(struct VP9Common *cm, const YV12_BUFFER_CONFIG *src,
 
 void vp9_denoise(struct VP9Common *cm, const YV12_BUFFER_CONFIG *src,
                  YV12_BUFFER_CONFIG *dst, int q, uint8_t *limits) {
+  if (src->uv_width < 8) {
+    // This function is only called by the encoder to perform an in place
+    // modification of 'src'.
+    assert(src == dst);
+    return;
+  }
   vp9_deblock(cm, src, dst, q, limits);
 }
 
@@ -294,13 +300,24 @@ static void swap_mi_and_prev_mi(VP9_COMMON *cm) {
 int vp9_post_proc_frame(struct VP9Common *cm, YV12_BUFFER_CONFIG *dest,
                         vp9_ppflags_t *ppflags, int unscaled_width) {
   const int q = VPXMIN(105, cm->lf.filter_level * 2);
-  const int flags = ppflags->post_proc_flag;
   YV12_BUFFER_CONFIG *const ppbuf = &cm->post_proc_buffer;
   struct postproc_state *const ppstate = &cm->postproc_state;
-  ppstate->limits_size = unscaled_width;
+  const int generated_noise_size = unscaled_width + 256;
 
   if (!cm->frame_to_show) return -1;
 
+  int flags = ppflags->post_proc_flag;
+#if CONFIG_VP9_HIGHBITDEPTH
+  if (cm->use_highbitdepth) {
+    // VP9D_ADDNOISE is an 8-bit only implementation. See issue 499602810.
+    flags &= ~VP9D_ADDNOISE;
+  }
+#endif
+  if (cm->frame_to_show->uv_width < 8) {
+    // vp9_deblock() has a minimum width of 8.
+    flags &= ~VP9D_DEBLOCK;
+    flags &= ~VP9D_DEMACROBLOCK;
+  }
   if (!flags) {
     *dest = *cm->frame_to_show;
     return 0;
@@ -314,10 +331,13 @@ int vp9_post_proc_frame(struct VP9Common *cm, YV12_BUFFER_CONFIG *dest,
     ppstate->last_frame_valid = 1;
   }
 
-  if ((flags & VP9D_MFQE) && ppstate->prev_mip == NULL) {
-    ppstate->prev_mip = vpx_calloc(cm->mi_alloc_size, sizeof(*cm->mip));
-    if (!ppstate->prev_mip) {
-      return 1;
+  if ((flags & VP9D_MFQE)) {
+    if (ppstate->prev_mip == NULL ||
+        cm->mi_alloc_size > ppstate->prev_mip_size) {
+      vpx_free(ppstate->prev_mip);
+      CHECK_MEM_ERROR(&cm->error, ppstate->prev_mip,
+                      vpx_calloc(cm->mi_alloc_size, sizeof(*cm->mip)));
+      ppstate->prev_mip_size = cm->mi_alloc_size;
     }
     ppstate->prev_mi = ppstate->prev_mip + cm->mi_stride + 1;
   }
@@ -360,18 +380,24 @@ int vp9_post_proc_frame(struct VP9Common *cm, YV12_BUFFER_CONFIG *dest,
          cm->post_proc_buffer.frame_size);
 
   if (flags & (VP9D_DEMACROBLOCK | VP9D_DEBLOCK)) {
-    if (!cm->postproc_state.limits) {
+    if (!cm->postproc_state.limits ||
+        cm->postproc_state.limits_size < unscaled_width) {
+      if (cm->postproc_state.limits) vpx_free(cm->postproc_state.limits);
       cm->postproc_state.limits =
-          vpx_calloc(ppstate->limits_size, sizeof(*cm->postproc_state.limits));
+          vpx_calloc(unscaled_width, sizeof(*cm->postproc_state.limits));
       if (!cm->postproc_state.limits) return 1;
+      cm->postproc_state.limits_size = unscaled_width;
     }
   }
 
   if (flags & VP9D_ADDNOISE) {
-    if (!cm->postproc_state.generated_noise) {
+    if (!cm->postproc_state.generated_noise ||
+        cm->postproc_state.generated_noise_size < generated_noise_size) {
+      vpx_free(cm->postproc_state.generated_noise);
       cm->postproc_state.generated_noise = vpx_calloc(
-          cm->width + 256, sizeof(*cm->postproc_state.generated_noise));
+          generated_noise_size, sizeof(*cm->postproc_state.generated_noise));
       if (!cm->postproc_state.generated_noise) return 1;
+      cm->postproc_state.generated_noise_size = generated_noise_size;
     }
   }
 
@@ -414,8 +440,8 @@ int vp9_post_proc_frame(struct VP9Common *cm, YV12_BUFFER_CONFIG *dest,
       double sigma;
       vpx_clear_system_state();
       sigma = noise_level + .5 + .6 * q / 63.0;
-      ppstate->clamp =
-          vpx_setup_noise(sigma, ppstate->generated_noise, cm->width + 256);
+      ppstate->clamp = vpx_setup_noise(sigma, ppstate->generated_noise,
+                                       generated_noise_size);
       ppstate->last_q = q;
       ppstate->last_noise = noise_level;
     }

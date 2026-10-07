@@ -102,6 +102,7 @@ static INLINE unsigned int sad16xh_neon_dotprod(const uint8_t *src_ptr,
     return sad##w##xh_neon_dotprod(src, src_stride, ref, ref_stride, (h)); \
   }
 
+#if CONFIG_ENCODERS
 SAD_WXH_NEON_DOTPROD(16, 8)
 SAD_WXH_NEON_DOTPROD(16, 16)
 SAD_WXH_NEON_DOTPROD(16, 32)
@@ -112,9 +113,15 @@ SAD_WXH_NEON_DOTPROD(32, 64)
 
 SAD_WXH_NEON_DOTPROD(64, 32)
 SAD_WXH_NEON_DOTPROD(64, 64)
+#else   // !CONFIG_ENCODERS
+SAD_WXH_NEON_DOTPROD(16, 16)
+SAD_WXH_NEON_DOTPROD(32, 32)
+SAD_WXH_NEON_DOTPROD(64, 64)
+#endif  // CONFIG_ENCODERS
 
 #undef SAD_WXH_NEON_DOTPROD
 
+#if CONFIG_ENCODERS
 #define SAD_SKIP_WXH_NEON_DOTPROD(w, h)                          \
   unsigned int vpx_sad_skip_##w##x##h##_neon_dotprod(            \
       const uint8_t *src, int src_stride, const uint8_t *ref,    \
@@ -245,3 +252,4 @@ SAD_WXH_AVG_NEON_DOTPROD(64, 32)
 SAD_WXH_AVG_NEON_DOTPROD(64, 64)
 
 #undef SAD_WXH_AVG_NEON_DOTPROD
+#endif  // CONFIG_ENCODERS

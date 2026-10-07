@@ -1435,7 +1435,7 @@ INSTANTIATE_TEST_SUITE_P(NEON_DOTPROD, SADSkipx4Test,
 
 //------------------------------------------------------------------------------
 // x86 functions
-#if HAVE_SSE2
+#if HAVE_SSE2 && HAVE_X86_ASM
 const SadMxNParam sse2_tests[] = {
   SadMxNParam(64, 64, &vpx_sad64x64_sse2),
   SadMxNParam(64, 32, &vpx_sad64x32_sse2),
@@ -1696,7 +1696,7 @@ const SadSkipMxNx4Param skip_x4d_sse2_tests[] = {
 };
 INSTANTIATE_TEST_SUITE_P(SSE2, SADSkipx4Test,
                          ::testing::ValuesIn(skip_x4d_sse2_tests));
-#endif  // HAVE_SSE2
+#endif  // HAVE_SSE2 && HAVE_X86_ASM
 
 #if HAVE_SSE3
 // Only functions are x3, which do not have tests.

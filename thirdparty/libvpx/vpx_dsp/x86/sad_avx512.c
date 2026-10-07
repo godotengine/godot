@@ -45,17 +45,23 @@ static INLINE unsigned int sad64xh_avx512(const uint8_t *src_ptr,
                               ref_stride * 2, h / 2);                 \
   }
 
+#if CONFIG_ENCODERS
 #define FSAD64  \
   FSAD64_H(64)  \
   FSAD64_H(32)  \
   FSADS64_H(64) \
   FSADS64_H(32)
+#else
+#define FSAD64 FSAD64_H(64)
+#endif  // CONFIG_ENCODERS
 
 FSAD64
 
 #undef FSAD64
 #undef FSAD64_H
 #undef FSADS64_H
+
+#if CONFIG_ENCODERS
 
 #define FSADAVG64_H(h)                                                         \
   unsigned int vpx_sad64x##h##_avg_avx512(                                     \
@@ -86,3 +92,5 @@ FSADAVG64
 
 #undef FSADAVG64
 #undef FSADAVG64_H
+
+#endif  // CONFIG_ENCODERS

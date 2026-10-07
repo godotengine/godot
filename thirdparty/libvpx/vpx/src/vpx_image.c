@@ -17,6 +17,22 @@
 #include "vpx/vpx_integer.h"
 #include "vpx_mem/vpx_mem.h"
 
+static int is_valid_img_fmt(vpx_img_fmt_t fmt) {
+  switch (fmt) {
+    case VPX_IMG_FMT_YV12:
+    case VPX_IMG_FMT_I420:
+    case VPX_IMG_FMT_I422:
+    case VPX_IMG_FMT_I444:
+    case VPX_IMG_FMT_I440:
+    case VPX_IMG_FMT_NV12:
+    case VPX_IMG_FMT_I42016:
+    case VPX_IMG_FMT_I42216:
+    case VPX_IMG_FMT_I44416:
+    case VPX_IMG_FMT_I44016: return 1;
+    default: return 0;
+  }
+}
+
 static vpx_image_t *img_alloc_helper(vpx_image_t *img, vpx_img_fmt_t fmt,
                                      unsigned int d_w, unsigned int d_h,
                                      unsigned int buf_align,
@@ -29,7 +45,7 @@ static vpx_image_t *img_alloc_helper(vpx_image_t *img, vpx_img_fmt_t fmt,
 
   if (img != NULL) memset(img, 0, sizeof(vpx_image_t));
 
-  if (fmt == VPX_IMG_FMT_NONE) goto fail;
+  if (!is_valid_img_fmt(fmt)) goto fail;
 
   /* Impose maximum values on input parameters so that this function can
    * perform arithmetic operations without worrying about overflows.
@@ -67,11 +83,10 @@ static vpx_image_t *img_alloc_helper(vpx_image_t *img, vpx_img_fmt_t fmt,
   }
 
   /* Get chroma shift values for this format */
-  // For VPX_IMG_FMT_NV12, xcs needs to be 0 such that UV data is all read at
-  // once.
   switch (fmt) {
     case VPX_IMG_FMT_I420:
     case VPX_IMG_FMT_YV12:
+    case VPX_IMG_FMT_NV12:
     case VPX_IMG_FMT_I422:
     case VPX_IMG_FMT_I42016:
     case VPX_IMG_FMT_I42216: xcs = 1; break;
@@ -147,6 +162,10 @@ static vpx_image_t *img_alloc_helper(vpx_image_t *img, vpx_img_fmt_t fmt,
   img->stride[VPX_PLANE_Y] = img->stride[VPX_PLANE_ALPHA] = stride_in_bytes;
   img->stride[VPX_PLANE_U] = img->stride[VPX_PLANE_V] = stride_in_bytes >> xcs;
 
+  if (fmt == VPX_IMG_FMT_NV12) {
+    img->stride[VPX_PLANE_U] = img->stride[VPX_PLANE_V] = stride_in_bytes;
+  }
+
   /* Default viewport to entire image. (This vpx_img_set_rect call always
    * succeeds.) */
   int ret = vpx_img_set_rect(img, 0, 0, d_w, d_h);
@@ -202,9 +221,9 @@ int vpx_img_set_rect(vpx_image_t *img, unsigned int x, unsigned int y,
       unsigned int uv_x = x >> img->x_chroma_shift;
       unsigned int uv_y = y >> img->y_chroma_shift;
       if (img->fmt == VPX_IMG_FMT_NV12) {
-        img->planes[VPX_PLANE_U] =
-            data + uv_x + uv_y * img->stride[VPX_PLANE_U];
-        img->planes[VPX_PLANE_V] = img->planes[VPX_PLANE_U] + 1;
+        img->planes[VPX_PLANE_U] = data + uv_x * bytes_per_sample * 2 +
+                                   uv_y * img->stride[VPX_PLANE_U];
+        img->planes[VPX_PLANE_V] = img->planes[VPX_PLANE_U] + bytes_per_sample;
       } else if (!(img->fmt & VPX_IMG_FMT_UV_FLIP)) {
         img->planes[VPX_PLANE_U] =
             data + uv_x * bytes_per_sample + uv_y * img->stride[VPX_PLANE_U];
@@ -244,9 +263,11 @@ void vpx_img_flip(vpx_image_t *img) {
                               img->stride[VPX_PLANE_V];
   img->stride[VPX_PLANE_V] = -img->stride[VPX_PLANE_V];
 
-  img->planes[VPX_PLANE_ALPHA] +=
-      (signed)(img->d_h - 1) * img->stride[VPX_PLANE_ALPHA];
-  img->stride[VPX_PLANE_ALPHA] = -img->stride[VPX_PLANE_ALPHA];
+  if (img->fmt & VPX_IMG_FMT_HAS_ALPHA) {
+    img->planes[VPX_PLANE_ALPHA] +=
+        (signed)(img->d_h - 1) * img->stride[VPX_PLANE_ALPHA];
+    img->stride[VPX_PLANE_ALPHA] = -img->stride[VPX_PLANE_ALPHA];
+  }
 }
 
 void vpx_img_free(vpx_image_t *img) {

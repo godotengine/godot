@@ -108,11 +108,13 @@ lea           ref_strided, [ref_strided*2]
 
 INIT_XMM sse2
 SAD64XN 64 ; sad64x64_sse2
+%if CONFIG_ENCODERS
 SAD64XN 32 ; sad64x32_sse2
 SAD64XN 64, 1 ; sad64x64_avg_sse2
 SAD64XN 32, 1 ; sad64x32_avg_sse2
 SAD64XN  64, 2  ; sad64x64_skip_sse2
 SAD64XN  32, 2  ; sad64x32_skip_sse2
+%endif  ; CONFIG_ENCODERS
 
 ; unsigned int vpx_sad32x32_sse2(uint8_t *src, int src_stride,
 ;                                uint8_t *ref, int ref_stride);
@@ -159,8 +161,9 @@ SAD64XN  32, 2  ; sad64x32_skip_sse2
 %endmacro
 
 INIT_XMM sse2
-SAD32XN 64 ; sad32x64_sse2
 SAD32XN 32 ; sad32x32_sse2
+%if CONFIG_ENCODERS
+SAD32XN 64 ; sad32x64_sse2
 SAD32XN 16 ; sad32x16_sse2
 SAD32XN 64, 1 ; sad32x64_avg_sse2
 SAD32XN 32, 1 ; sad32x32_avg_sse2
@@ -168,6 +171,7 @@ SAD32XN 16, 1 ; sad32x16_avg_sse2
 SAD32XN 64, 2 ; sad32x64_skip_sse2
 SAD32XN 32, 2 ; sad32x32_skip_sse2
 SAD32XN 16, 2 ; sad32x16_skip_sse2
+%endif  ; CONFIG_ENCODERS
 
 ; unsigned int vpx_sad16x{8,16}_sse2(uint8_t *src, int src_stride,
 ;                                    uint8_t *ref, int ref_stride);
@@ -215,8 +219,9 @@ SAD32XN 16, 2 ; sad32x16_skip_sse2
 %endmacro
 
 INIT_XMM sse2
-SAD16XN 32 ; sad16x32_sse2
 SAD16XN 16 ; sad16x16_sse2
+%if CONFIG_ENCODERS
+SAD16XN 32 ; sad16x32_sse2
 SAD16XN  8 ; sad16x8_sse2
 SAD16XN 32, 1 ; sad16x32_avg_sse2
 SAD16XN 16, 1 ; sad16x16_avg_sse2
@@ -330,3 +335,5 @@ SAD4XN  4 ; sad4x4_sse
 SAD4XN  8, 1 ; sad4x8_avg_sse
 SAD4XN  4, 1 ; sad4x4_avg_sse
 SAD4XN  8, 2 ; sad4x8_skip_sse
+
+%endif  ; CONFIG_ENCODERS

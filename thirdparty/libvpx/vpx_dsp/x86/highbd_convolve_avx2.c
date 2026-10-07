@@ -189,6 +189,7 @@ void vpx_highbd_convolve_avg_avx2(const uint16_t *src, ptrdiff_t src_stride,
   }
 }
 
+#if HAVE_X86_ASM
 // -----------------------------------------------------------------------------
 // Horizontal and vertical filtering
 
@@ -1493,3 +1494,4 @@ HIGH_FUN_CONV_1D(avg_vert, y0_q4, y_step_q4, v,
 HIGH_FUN_CONV_2D(avg_, avx2, 1)
 
 #undef HIGHBD_FUNC
+#endif  // HAVE_X86_ASM
