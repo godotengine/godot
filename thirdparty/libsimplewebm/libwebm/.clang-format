@@ -1,0 +1,35 @@
+---
+Language:        Cpp
+BasedOnStyle:  Google
+AlignTrailingComments: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+# A separate 'Other libraries' grouping is added before libwebm's headers for
+# gtest and gmock includes. This is based on the suggested grouping in the
+# Google C++ Style Guide:
+# https://google.github.io/styleguide/cppguide.html#Names_and_Order_of_Includes
+# The other categories come from `clang-format-14 --dump-config --style=Google`.
+# See the clang-format documentation for more information on this option:
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includecategories
+IncludeCategories:
+  - Regex:           '^<ext/.*\.h>'
+    Priority:        2
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '^<.*\.h>'
+    Priority:        1
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '^<.*'
+    Priority:        2
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '^((<|")(gtest|gmock)/)'
+    Priority:        3
+    SortPriority:    0
+    CaseSensitive:   false
+  - Regex:           '.*'
+    Priority:        4
+    SortPriority:    0
+    CaseSensitive:   false

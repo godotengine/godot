@@ -1,0 +1,57 @@
+CXX       := g++
+DEFINES   := -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS
+DEFINES   += -D__STDC_LIMIT_MACROS
+INCLUDES  := -I.
+CXXFLAGS  := -W -Wall -g -std=c++11
+ALL_CXXFLAGS := -MMD -MP $(DEFINES) $(INCLUDES) $(CXXFLAGS)
+LIBWEBMA  := libwebm.a
+LIBWEBMSO := libwebm.so
+WEBMOBJS  := mkvmuxer/mkvmuxer.o mkvmuxer/mkvmuxerutil.o mkvmuxer/mkvwriter.o
+WEBMOBJS  += mkvparser/mkvparser.o mkvparser/mkvreader.o
+WEBMOBJS  += common/file_util.o common/hdr_util.o
+OBJSA     := $(WEBMOBJS:.o=_a.o)
+OBJSSO    := $(WEBMOBJS:.o=_so.o)
+VTTOBJS   := webvtt/vttreader.o webvtt/webvttparser.o sample_muxer_metadata.o
+EXEOBJS   := mkvmuxer_sample.o mkvparser_sample.o dumpvtt.o vttdemux.o
+EXES      := mkvparser_sample mkvmuxer_sample dumpvtt vttdemux
+DEPS      := $(WEBMOBJS:.o=.d) $(OBJECTS1:.o=.d) $(OBJECTS2:.o=.d)
+DEPS      += $(OBJECTS3:.o=.d) $(OBJECTS4:.o=.d) $(OBJSA:.o=.d) $(OBJSSO:.o=.d)
+DEPS      += $(VTTOBJS:.o=.d) $(EXEOBJS:.o=.d)
+CLEAN     := $(EXEOBJS) $(VTTOBJS) $(WEBMOBJS) $(OBJSA) $(OBJSSO) $(LIBWEBMA)
+CLEAN     += $(LIBWEBMSO) $(EXES) $(DEPS) $(INFOOBJS)
+
+all: $(EXES)
+
+mkvparser_sample: mkvparser_sample.o $(LIBWEBMA)
+	$(CXX) $^ -o $@
+
+mkvmuxer_sample: mkvmuxer_sample.o $(VTTOBJS) $(LIBWEBMA)
+	$(CXX) $^ -o $@
+
+dumpvtt: dumpvtt.o $(VTTOBJS) $(WEBMOBJS)
+	$(CXX) $^ -o $@
+
+vttdemux: vttdemux.o $(VTTOBJS) $(LIBWEBMA)
+	$(CXX) $^ -o $@
+
+shared: $(LIBWEBMSO)
+
+libwebm.a: $(OBJSA)
+	$(AR) rcs $@ $^
+
+libwebm.so: $(OBJSSO)
+	$(CXX) $(ALL_CXXFLAGS) -shared $(OBJSSO) -o $(LIBWEBMSO)
+
+%.o: %.cc
+	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
+%_a.o: %.cc
+	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
+%_so.o: %.cc
+	$(CXX) -c $(ALL_CXXFLAGS) -fPIC $< -o $@
+
+clean:
+	$(RM) -f $(CLEAN) Makefile.bak
+
+ifneq ($(MAKECMDGOALS), clean)
+  -include $(DEPS)
+endif

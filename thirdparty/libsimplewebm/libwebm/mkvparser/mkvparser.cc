@@ -8,56 +8,33 @@
 #include "mkvparser/mkvparser.h"
 
 #if defined(_MSC_VER) && _MSC_VER < 1800
-#include <float.h>  // _isnan() / _finite()
 #define MSC_COMPAT
 #endif
 
-#include <assert.h>
-#include <float.h>
-#include <limits.h>
-#include <math.h>
-#include <string.h>
+#include <cassert>
+#include <cfloat>
+#include <climits>
+#include <cmath>
+#include <cstdint>
+#include <cstring>
+#include <memory>
+#include <new>
 
 #include "common/webmids.h"
 
 namespace mkvparser {
+const long long kStringElementSizeLimit = 20 * 1000 * 1000;
 const float MasteringMetadata::kValueNotPresent = FLT_MAX;
 const long long Colour::kValueNotPresent = LLONG_MAX;
+const float Projection::kValueNotPresent = FLT_MAX;
 
 #ifdef MSC_COMPAT
 inline bool isnan(double val) { return !!_isnan(val); }
 inline bool isinf(double val) { return !_finite(val); }
+#else
+inline bool isnan(double val) { return std::isnan(val); }
+inline bool isinf(double val) { return std::isinf(val); }
 #endif  // MSC_COMPAT
-
-template<typename T>
-class my_auto_ptr {
-  my_auto_ptr(const my_auto_ptr &);
-  T *operator =(const my_auto_ptr &);
-
-  T *m_ptr;
-public:
-  my_auto_ptr(T *ptr) :
-    m_ptr(ptr)
-  {}
-  my_auto_ptr() :
-    m_ptr(NULL)
-  {}
-  ~my_auto_ptr() {
-    delete m_ptr;
-  }
-
-  T *release() {
-    T *ptr = m_ptr;
-    m_ptr = NULL;
-    return ptr;
-  }
-
-  T *operator ->() const {
-    return m_ptr;
-  }
-};
-
-IMkvReader::~IMkvReader() {}
 
 template <typename Type>
 Type* SafeArrayAlloc(unsigned long long num_elements,
@@ -72,14 +49,14 @@ Type* SafeArrayAlloc(unsigned long long num_elements,
   if (num_bytes != static_cast<size_t>(num_bytes))
     return NULL;
 
-  return new Type[static_cast<size_t>(num_bytes)];
+  return new (std::nothrow) Type[static_cast<size_t>(num_bytes)];
 }
 
 void GetVersion(int& major, int& minor, int& build, int& revision) {
   major = 1;
-  minor = 0;
-  build = 0;
-  revision = 30;
+  minor = 1;
+  build = 4;
+  revision = 0;
 }
 
 long long ReadUInt(IMkvReader* pReader, long long pos, long& len) {
@@ -269,7 +246,8 @@ long UnserializeFloat(IMkvReader* pReader, long long pos, long long size_,
   if (size == 4) {
     union {
       float f;
-      unsigned long ff;
+      uint32_t ff;
+      static_assert(sizeof(float) == sizeof(uint32_t), "");
     };
 
     ff = 0;
@@ -287,7 +265,8 @@ long UnserializeFloat(IMkvReader* pReader, long long pos, long long size_,
   } else {
     union {
       double d;
-      unsigned long long dd;
+      uint64_t dd;
+      static_assert(sizeof(double) == sizeof(uint64_t), "");
     };
 
     dd = 0;
@@ -304,7 +283,7 @@ long UnserializeFloat(IMkvReader* pReader, long long pos, long long size_,
     result = d;
   }
 
-  if (isinf(result) || isnan(result))
+  if (mkvparser::isinf(result) || mkvparser::isnan(result))
     return E_FILE_FORMAT_INVALID;
 
   return 0;
@@ -321,7 +300,7 @@ long UnserializeInt(IMkvReader* pReader, long long pos, long long size,
   if (status < 0)
     return status;
 
-  unsigned long long result = first_byte;
+  unsigned long long result = static_cast<unsigned long long>(first_byte);
   ++pos;
 
   for (long i = 1; i < size; ++i) {
@@ -347,7 +326,7 @@ long UnserializeString(IMkvReader* pReader, long long pos, long long size,
   delete[] str;
   str = NULL;
 
-  if (size >= LONG_MAX || size < 0)
+  if (size >= LONG_MAX || size < 0 || size > kStringElementSizeLimit)
     return E_FILE_FORMAT_INVALID;
 
   // +1 for '\0' terminator
@@ -818,7 +797,9 @@ long long Segment::CreateInstance(IMkvReader* pReader, long long pos,
       else if ((pos + size) > total)
         size = -1;
 
-      pSegment = new Segment(pReader, idpos, pos, size);
+      pSegment = new (std::nothrow) Segment(pReader, idpos, pos, size);
+      if (pSegment == NULL)
+        return E_PARSE_FAILED;
 
       return 0;  // success
     }
@@ -954,7 +935,11 @@ long long Segment::ParseHeaders() {
       if (m_pInfo)
         return E_FILE_FORMAT_INVALID;
 
-      m_pInfo = new SegmentInfo(this, pos, size, element_start, element_size);
+      m_pInfo = new (std::nothrow)
+          SegmentInfo(this, pos, size, element_start, element_size);
+
+      if (m_pInfo == NULL)
+        return -1;
 
       const long status = m_pInfo->Parse();
 
@@ -964,7 +949,11 @@ long long Segment::ParseHeaders() {
       if (m_pTracks)
         return E_FILE_FORMAT_INVALID;
 
-      m_pTracks = new Tracks(this, pos, size, element_start, element_size);
+      m_pTracks = new (std::nothrow)
+          Tracks(this, pos, size, element_start, element_size);
+
+      if (m_pTracks == NULL)
+        return -1;
 
       const long status = m_pTracks->Parse();
 
@@ -972,11 +961,19 @@ long long Segment::ParseHeaders() {
         return status;
     } else if (id == libwebm::kMkvCues) {
       if (m_pCues == NULL) {
-        m_pCues = new Cues(this, pos, size, element_start, element_size);
+        m_pCues = new (std::nothrow)
+            Cues(this, pos, size, element_start, element_size);
+
+        if (m_pCues == NULL)
+          return -1;
       }
     } else if (id == libwebm::kMkvSeekHead) {
       if (m_pSeekHead == NULL) {
-        m_pSeekHead = new SeekHead(this, pos, size, element_start, element_size);
+        m_pSeekHead = new (std::nothrow)
+            SeekHead(this, pos, size, element_start, element_size);
+
+        if (m_pSeekHead == NULL)
+          return -1;
 
         const long status = m_pSeekHead->Parse();
 
@@ -985,7 +982,11 @@ long long Segment::ParseHeaders() {
       }
     } else if (id == libwebm::kMkvChapters) {
       if (m_pChapters == NULL) {
-        m_pChapters = new Chapters(this, pos, size, element_start, element_size);
+        m_pChapters = new (std::nothrow)
+            Chapters(this, pos, size, element_start, element_size);
+
+        if (m_pChapters == NULL)
+          return -1;
 
         const long status = m_pChapters->Parse();
 
@@ -994,7 +995,11 @@ long long Segment::ParseHeaders() {
       }
     } else if (id == libwebm::kMkvTags) {
       if (m_pTags == NULL) {
-        m_pTags = new Tags(this, pos, size, element_start, element_size);
+        m_pTags = new (std::nothrow)
+            Tags(this, pos, size, element_start, element_size);
+
+        if (m_pTags == NULL)
+          return -1;
 
         const long status = m_pTags->Parse();
 
@@ -1136,7 +1141,9 @@ long Segment::DoLoadCluster(long long& pos, long& len) {
       if (m_pCues == NULL) {
         const long long element_size = (pos - idpos) + size;
 
-        m_pCues = new Cues(this, pos, size, idpos, element_size);
+        m_pCues = new (std::nothrow) Cues(this, pos, size, idpos, element_size);
+        if (m_pCues == NULL)
+          return -1;
       }
 
       m_pos = pos + size;  // consume payload
@@ -1342,7 +1349,9 @@ bool Segment::AppendCluster(Cluster* pCluster) {
   if (count >= size) {
     const long n = (size <= 0) ? 2048 : 2 * size;
 
-    Cluster** const qq = new Cluster*[n];
+    Cluster** const qq = new (std::nothrow) Cluster*[n];
+    if (qq == NULL)
+      return false;
 
     Cluster** q = qq;
     Cluster** p = m_clusters;
@@ -1397,7 +1406,9 @@ bool Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx) {
   if (count >= size) {
     const long n = (size <= 0) ? 2048 : 2 * size;
 
-    Cluster** const qq = new Cluster*[n];
+    Cluster** const qq = new (std::nothrow) Cluster*[n];
+    if (qq == NULL)
+      return false;
     Cluster** q = qq;
 
     Cluster** p = m_clusters;
@@ -1466,6 +1477,8 @@ long Segment::Load() {
   }
 }
 
+SeekHead::Entry::Entry() : id(0), pos(0), element_start(0), element_size(0) {}
+
 SeekHead::SeekHead(Segment* pSegment, long long start, long long size_,
                    long long element_start, long long element_size)
     : m_pSegment(pSegment),
@@ -1491,8 +1504,8 @@ long SeekHead::Parse() {
 
   // first count the seek head entries
 
-  int entry_count = 0;
-  int void_element_count = 0;
+  long long entry_count = 0;
+  long long void_element_count = 0;
 
   while (pos < stop) {
     long long id, size;
@@ -1502,10 +1515,15 @@ long SeekHead::Parse() {
     if (status < 0)  // error
       return status;
 
-    if (id == libwebm::kMkvSeek)
+    if (id == libwebm::kMkvSeek) {
       ++entry_count;
-    else if (id == libwebm::kMkvVoid)
+      if (entry_count > INT_MAX)
+        return E_PARSE_FAILED;
+    } else if (id == libwebm::kMkvVoid) {
       ++void_element_count;
+      if (void_element_count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
 
@@ -1516,9 +1534,20 @@ long SeekHead::Parse() {
   if (pos != stop)
     return E_FILE_FORMAT_INVALID;
 
-  m_entries = new Entry[entry_count];
+  if (entry_count > 0) {
+    m_entries = new (std::nothrow) Entry[static_cast<size_t>(entry_count)];
 
-  m_void_elements = new VoidElement[void_element_count];
+    if (m_entries == NULL)
+      return -1;
+  }
+
+  if (void_element_count > 0) {
+    m_void_elements =
+        new (std::nothrow) VoidElement[static_cast<size_t>(void_element_count)];
+
+    if (m_void_elements == NULL)
+      return -1;
+  }
 
   // now parse the entries and void elements
 
@@ -1537,14 +1566,14 @@ long SeekHead::Parse() {
     if (status < 0)  // error
       return status;
 
-    if (id == libwebm::kMkvSeek) {
+    if (id == libwebm::kMkvSeek && entry_count > 0) {
       if (ParseEntry(pReader, pos, size, pEntry)) {
         Entry& e = *pEntry++;
 
         e.element_start = idpos;
         e.element_size = (pos + size) - idpos;
       }
-    } else if (id == libwebm::kMkvVoid) {
+    } else if (id == libwebm::kMkvVoid && void_element_count > 0) {
       VoidElement& e = *pVoidElement++;
 
       e.element_start = idpos;
@@ -1561,13 +1590,13 @@ long SeekHead::Parse() {
 
   ptrdiff_t count_ = ptrdiff_t(pEntry - m_entries);
   assert(count_ >= 0);
-  assert(count_ <= entry_count);
+  assert(static_cast<long long>(count_) <= entry_count);
 
   m_entry_count = static_cast<int>(count_);
 
   count_ = ptrdiff_t(pVoidElement - m_void_elements);
   assert(count_ >= 0);
-  assert(count_ <= void_element_count);
+  assert(static_cast<long long>(count_) <= void_element_count);
 
   m_void_element_count = static_cast<int>(count_);
 
@@ -1706,7 +1735,10 @@ long Segment::ParseCues(long long off, long long& pos, long& len) {
 
   const long long element_size = element_stop - element_start;
 
-  m_pCues = new Cues(this, pos, size, element_start, element_size);
+  m_pCues =
+      new (std::nothrow) Cues(this, pos, size, element_start, element_size);
+  if (m_pCues == NULL)
+    return -1;
 
   return 0;  // success
 }
@@ -1748,18 +1780,7 @@ bool SeekHead::ParseEntry(IMkvReader* pReader, long long start, long long size_,
   if ((pos + seekIdSize) > stop)
     return false;
 
-  // Note that the SeekId payload really is serialized
-  // as a "Matroska integer", not as a plain binary value.
-  // In fact, Matroska requires that ID values in the
-  // stream exactly match the binary representation as listed
-  // in the Matroska specification.
-  //
-  // This parser is more liberal, and permits IDs to have
-  // any width.  (This could make the representation in the stream
-  // different from what's in the spec, but it doesn't matter here,
-  // since we always normalize "Matroska integer" values.)
-
-  pEntry->id = ReadUInt(pReader, pos, len);  // payload
+  pEntry->id = ReadID(pReader, pos, len);  // payload
 
   if (pEntry->id <= 0)
     return false;
@@ -1898,7 +1919,9 @@ bool Cues::PreloadCuePoint(long& cue_points_size, long long pos) const {
   if (m_preload_count >= cue_points_size) {
     const long n = (cue_points_size <= 0) ? 2048 : 2 * cue_points_size;
 
-    CuePoint** const qq = new CuePoint*[n];
+    CuePoint** const qq = new (std::nothrow) CuePoint*[n];
+    if (qq == NULL)
+      return false;
 
     CuePoint** q = qq;  // beginning of target
 
@@ -1914,7 +1937,9 @@ bool Cues::PreloadCuePoint(long& cue_points_size, long long pos) const {
     cue_points_size = n;
   }
 
-  CuePoint* const pCP = new CuePoint(m_preload_count, pos);
+  CuePoint* const pCP = new (std::nothrow) CuePoint(m_preload_count, pos);
+  if (pCP == NULL)
+    return false;
 
   m_cue_points[m_preload_count++] = pCP;
   return true;
@@ -2282,7 +2307,7 @@ bool CuePoint::Load(IMkvReader* pReader) {
   long long pos = pos_;
 
   // First count number of track positions
-
+  unsigned long long track_positions_count = 0;
   while (pos < stop) {
     long len;
 
@@ -2306,11 +2331,16 @@ bool CuePoint::Load(IMkvReader* pReader) {
     if (id == libwebm::kMkvCueTime)
       m_timecode = UnserializeUInt(pReader, pos, size);
 
-    else if (id == libwebm::kMkvCueTrackPositions)
-      ++m_track_positions_count;
+    else if (id == libwebm::kMkvCueTrackPositions) {
+      ++track_positions_count;
+      if (track_positions_count > UINT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
   }
+
+  m_track_positions_count = static_cast<size_t>(track_positions_count);
 
   if (m_timecode < 0 || m_track_positions_count <= 0) {
     return false;
@@ -2320,7 +2350,9 @@ bool CuePoint::Load(IMkvReader* pReader) {
   //   << " timecode=" << m_timecode
   //   << endl;
 
-  m_track_positions = new TrackPosition[m_track_positions_count];
+  m_track_positions = new (std::nothrow) TrackPosition[m_track_positions_count];
+  if (m_track_positions == NULL)
+    return false;
 
   // Now parse track positions
 
@@ -2402,7 +2434,7 @@ bool CuePoint::TrackPosition::Parse(IMkvReader* pReader, long long start_,
     pos += size;  // consume payload
   }
 
-  if ((m_pos < 0) || (m_track <= 0)) {
+  if ((m_pos < 0) || (m_track <= 0) || (m_block < 0) || (m_block > LONG_MAX)) {
     return false;
   }
 
@@ -2410,7 +2442,9 @@ bool CuePoint::TrackPosition::Parse(IMkvReader* pReader, long long start_,
 }
 
 const CuePoint::TrackPosition* CuePoint::Find(const Track* pTrack) const {
-  assert(pTrack);
+  if (pTrack == NULL) {
+    return NULL;
+  }
 
   const long long n = pTrack->GetNumber();
 
@@ -2915,7 +2949,10 @@ long Segment::DoParseNext(const Cluster*& pResult, long long& pos, long& len) {
       const long long element_size = element_stop - element_start;
 
       if (m_pCues == NULL) {
-        m_pCues = new Cues(this, pos, size, element_start, element_size);
+        m_pCues = new (std::nothrow)
+            Cues(this, pos, size, element_start, element_size);
+        if (m_pCues == NULL)
+          return false;
       }
 
       pos += size;  // consume payload
@@ -3266,7 +3303,10 @@ bool Chapters::ExpandEditionsArray() {
 
   const int size = (m_editions_size == 0) ? 1 : 2 * m_editions_size;
 
-  Edition* const editions = new Edition[size];
+  Edition* const editions = new (std::nothrow) Edition[size];
+
+  if (editions == NULL)
+    return false;
 
   for (int idx = 0; idx < m_editions_count; ++idx) {
     m_editions[idx].ShallowCopy(editions[idx]);
@@ -3378,7 +3418,10 @@ bool Chapters::Edition::ExpandAtomsArray() {
 
   const int size = (m_atoms_size == 0) ? 1 : 2 * m_atoms_size;
 
-  Atom* const atoms = new Atom[size];
+  Atom* const atoms = new (std::nothrow) Atom[size];
+
+  if (atoms == NULL)
+    return false;
 
   for (int idx = 0; idx < m_atoms_count; ++idx) {
     m_atoms[idx].ShallowCopy(atoms[idx]);
@@ -3563,7 +3606,10 @@ bool Chapters::Atom::ExpandDisplaysArray() {
 
   const int size = (m_displays_size == 0) ? 1 : 2 * m_displays_size;
 
-  Display* const displays = new Display[size];
+  Display* const displays = new (std::nothrow) Display[size];
+
+  if (displays == NULL)
+    return false;
 
   for (int idx = 0; idx < m_displays_count; ++idx) {
     m_displays[idx].ShallowCopy(displays[idx]);
@@ -3723,7 +3769,10 @@ bool Tags::ExpandTagsArray() {
 
   const int size = (m_tags_size == 0) ? 1 : 2 * m_tags_size;
 
-  Tag* const tags = new Tag[size];
+  Tag* const tags = new (std::nothrow) Tag[size];
+
+  if (tags == NULL)
+    return false;
 
   for (int idx = 0; idx < m_tags_count; ++idx) {
     m_tags[idx].ShallowCopy(tags[idx]);
@@ -3834,7 +3883,10 @@ bool Tags::Tag::ExpandSimpleTagsArray() {
 
   const int size = (m_simple_tags_size == 0) ? 1 : 2 * m_simple_tags_size;
 
-  SimpleTag* const displays = new SimpleTag[size];
+  SimpleTag* const displays = new (std::nothrow) SimpleTag[size];
+
+  if (displays == NULL)
+    return false;
 
   for (int idx = 0; idx < m_simple_tags_count; ++idx) {
     m_simple_tags[idx].ShallowCopy(displays[idx]);
@@ -3992,7 +4044,7 @@ long SegmentInfo::Parse() {
   }
 
   const double rollover_check = m_duration * m_timecodeScale;
-  if (rollover_check > LLONG_MAX)
+  if (rollover_check > static_cast<double>(LLONG_MAX))
     return E_FILE_FORMAT_INVALID;
 
   if (pos != stop)
@@ -4083,7 +4135,7 @@ ContentEncoding::~ContentEncoding() {
 }
 
 const ContentEncoding::ContentCompression*
-    ContentEncoding::GetCompressionByIndex(unsigned long idx) const {
+ContentEncoding::GetCompressionByIndex(unsigned long idx) const {
   const ptrdiff_t count = compression_entries_end_ - compression_entries_;
   assert(count >= 0);
 
@@ -4155,8 +4207,8 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
   const long long stop = start + size;
 
   // Count ContentCompression and ContentEncryption elements.
-  int compression_count = 0;
-  int encryption_count = 0;
+  long long compression_count = 0;
+  long long encryption_count = 0;
 
   while (pos < stop) {
     long long id, size;
@@ -4164,11 +4216,17 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
     if (status < 0)  // error
       return status;
 
-    if (id == libwebm::kMkvContentCompression)
+    if (id == libwebm::kMkvContentCompression) {
       ++compression_count;
+      if (compression_count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
-    if (id == libwebm::kMkvContentEncryption)
+    if (id == libwebm::kMkvContentEncryption) {
       ++encryption_count;
+      if (encryption_count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
     if (pos > stop)
@@ -4179,12 +4237,21 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
     return -1;
 
   if (compression_count > 0) {
-    compression_entries_ = new ContentCompression*[compression_count];
+    compression_entries_ = new (std::nothrow)
+        ContentCompression*[static_cast<size_t>(compression_count)];
+    if (!compression_entries_)
+      return -1;
     compression_entries_end_ = compression_entries_;
   }
 
   if (encryption_count > 0) {
-    encryption_entries_ = new ContentEncryption*[encryption_count];
+    encryption_entries_ = new (std::nothrow)
+        ContentEncryption*[static_cast<size_t>(encryption_count)];
+    if (!encryption_entries_) {
+      delete[] compression_entries_;
+      compression_entries_ = NULL;
+      return -1;
+    }
     encryption_entries_end_ = encryption_entries_;
   }
 
@@ -4204,22 +4271,30 @@ long ContentEncoding::ParseContentEncodingEntry(long long start, long long size,
     } else if (id == libwebm::kMkvContentEncodingType) {
       encoding_type_ = UnserializeUInt(pReader, pos, size);
     } else if (id == libwebm::kMkvContentCompression) {
-      ContentCompression* const compression = new ContentCompression();
+      ContentCompression* const compression =
+          new (std::nothrow) ContentCompression();
+      if (!compression)
+        return -1;
 
       status = ParseCompressionEntry(pos, size, pReader, compression);
       if (status) {
         delete compression;
         return status;
       }
+      assert(compression_count > 0);
       *compression_entries_end_++ = compression;
     } else if (id == libwebm::kMkvContentEncryption) {
-      ContentEncryption* const encryption = new ContentEncryption();
+      ContentEncryption* const encryption =
+          new (std::nothrow) ContentEncryption();
+      if (!encryption)
+        return -1;
 
       status = ParseEncryptionEntry(pos, size, pReader, encryption);
       if (status) {
         delete encryption;
         return status;
       }
+      assert(encryption_count > 0);
       *encryption_entries_end_++ = encryption;
     }
 
@@ -4270,6 +4345,12 @@ long ContentEncoding::ParseCompressionEntry(long long start, long long size,
       if (read_status) {
         delete[] buf;
         return status;
+      }
+
+      // There should be only one settings element per content compression.
+      if (compression->settings != NULL) {
+        delete[] buf;
+        return E_FILE_FORMAT_INVALID;
       }
 
       compression->settings = buf;
@@ -4419,7 +4500,11 @@ long Track::Create(Segment* pSegment, const Info& info, long long element_start,
   if (pResult)
     return -1;
 
-  Track* const pTrack = new Track(pSegment, element_start, element_size);
+  Track* const pTrack =
+      new (std::nothrow) Track(pSegment, element_start, element_size);
+
+  if (pTrack == NULL)
+    return -1;  // generic error
 
   const int status = info.Copy(pTrack->m_info);
 
@@ -4486,7 +4571,8 @@ int Track::Info::CopyStr(char* Info::*str, Info& dst_) const {
   if (dst == NULL)
     return -1;
 
-  strcpy(dst, src);
+  memcpy(dst, src, len);
+  dst[len] = '\0';
 
   return 0;
 }
@@ -4852,7 +4938,7 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
   const long long stop = start + size;
 
   // Count ContentEncoding elements.
-  int count = 0;
+  long long count = 0;
   while (pos < stop) {
     long long id, size;
     const long status = ParseElementHeader(pReader, pos, stop, id, size);
@@ -4860,8 +4946,11 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
       return status;
 
     // pos now designates start of element
-    if (id == libwebm::kMkvContentEncoding)
+    if (id == libwebm::kMkvContentEncoding) {
       ++count;
+      if (count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
     if (pos > stop)
@@ -4871,7 +4960,11 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
   if (count <= 0)
     return -1;
 
-  content_encoding_entries_ = new ContentEncoding*[count];
+  content_encoding_entries_ =
+      new (std::nothrow) ContentEncoding*[static_cast<size_t>(count)];
+  if (!content_encoding_entries_)
+    return -1;
+
   content_encoding_entries_end_ = content_encoding_entries_;
 
   pos = start;
@@ -4883,7 +4976,10 @@ long Track::ParseContentEncodingsEntry(long long start, long long size) {
 
     // pos now designates start of element
     if (id == libwebm::kMkvContentEncoding) {
-      ContentEncoding* const content_encoding = new ContentEncoding();
+      ContentEncoding* const content_encoding =
+          new (std::nothrow) ContentEncoding();
+      if (!content_encoding)
+        return -1;
 
       status = content_encoding->ParseContentEncodingEntry(pos, size, pReader);
       if (status) {
@@ -4917,20 +5013,27 @@ bool PrimaryChromaticity::Parse(IMkvReader* reader, long long read_pos,
   if (!reader)
     return false;
 
-  my_auto_ptr<PrimaryChromaticity> chromaticity_ptr(*chromaticity ? *chromaticity : new PrimaryChromaticity());
+  if (!*chromaticity)
+    *chromaticity = new (std::nothrow) PrimaryChromaticity();
 
-  float* value = is_x ? &chromaticity_ptr->x : &chromaticity_ptr->y;
+  if (!*chromaticity)
+    return false;
+
+  PrimaryChromaticity* pc = *chromaticity;
+  float* value = is_x ? &pc->x : &pc->y;
 
   double parser_value = 0;
-  const long long value_parse_status =
+  const long long parse_status =
       UnserializeFloat(reader, read_pos, value_size, parser_value);
+
+  // Valid range is [0, 1]. Make sure the double is representable as a float
+  // before casting.
+  if (parse_status < 0 || parser_value < 0.0 || parser_value > 1.0 ||
+      (parser_value > 0.0 && parser_value < FLT_MIN))
+    return false;
 
   *value = static_cast<float>(parser_value);
 
-  if (value_parse_status < 0 || *value < 0.0 || *value > 1.0)
-    return false;
-
-  *chromaticity = chromaticity_ptr.release();
   return true;
 }
 
@@ -4939,7 +5042,10 @@ bool MasteringMetadata::Parse(IMkvReader* reader, long long mm_start,
   if (!reader || *mm)
     return false;
 
-  my_auto_ptr<MasteringMetadata> mm_ptr(new MasteringMetadata());
+  std::unique_ptr<MasteringMetadata> mm_ptr(new (std::nothrow)
+                                                MasteringMetadata());
+  if (!mm_ptr)
+    return false;
 
   const long long mm_end = mm_start + mm_size;
   long long read_pos = mm_start;
@@ -4957,6 +5063,10 @@ bool MasteringMetadata::Parse(IMkvReader* reader, long long mm_start,
       double value = 0;
       const long long value_parse_status =
           UnserializeFloat(reader, read_pos, child_size, value);
+      if (value < -FLT_MAX || value > FLT_MAX ||
+          (value > 0.0 && value < FLT_MIN)) {
+        return false;
+      }
       mm_ptr->luminance_max = static_cast<float>(value);
       if (value_parse_status < 0 || mm_ptr->luminance_max < 0.0 ||
           mm_ptr->luminance_max > 9999.99) {
@@ -4966,6 +5076,10 @@ bool MasteringMetadata::Parse(IMkvReader* reader, long long mm_start,
       double value = 0;
       const long long value_parse_status =
           UnserializeFloat(reader, read_pos, child_size, value);
+      if (value < -FLT_MAX || value > FLT_MAX ||
+          (value > 0.0 && value < FLT_MIN)) {
+        return false;
+      }
       mm_ptr->luminance_min = static_cast<float>(value);
       if (value_parse_status < 0 || mm_ptr->luminance_min < 0.0 ||
           mm_ptr->luminance_min > 999.9999) {
@@ -5018,7 +5132,9 @@ bool Colour::Parse(IMkvReader* reader, long long colour_start,
   if (!reader || *colour)
     return false;
 
-  my_auto_ptr<Colour> colour_ptr(new Colour());
+  std::unique_ptr<Colour> colour_ptr(new (std::nothrow) Colour());
+  if (!colour_ptr)
+    return false;
 
   const long long colour_end = colour_start + colour_size;
   long long read_pos = colour_start;
@@ -5109,11 +5225,98 @@ bool Colour::Parse(IMkvReader* reader, long long colour_start,
   return true;
 }
 
+bool Projection::Parse(IMkvReader* reader, long long start, long long size,
+                       Projection** projection) {
+  if (!reader || *projection)
+    return false;
+
+  std::unique_ptr<Projection> projection_ptr(new (std::nothrow) Projection());
+  if (!projection_ptr)
+    return false;
+
+  const long long end = start + size;
+  long long read_pos = start;
+
+  while (read_pos < end) {
+    long long child_id = 0;
+    long long child_size = 0;
+
+    const long long status =
+        ParseElementHeader(reader, read_pos, end, child_id, child_size);
+    if (status < 0)
+      return false;
+
+    if (child_id == libwebm::kMkvProjectionType) {
+      long long projection_type = kTypeNotPresent;
+      projection_type = UnserializeUInt(reader, read_pos, child_size);
+      if (projection_type < 0)
+        return false;
+
+      projection_ptr->type = static_cast<ProjectionType>(projection_type);
+    } else if (child_id == libwebm::kMkvProjectionPrivate) {
+      if (projection_ptr->private_data != NULL)
+        return false;
+      unsigned char* data = SafeArrayAlloc<unsigned char>(1, child_size);
+
+      if (data == NULL)
+        return false;
+
+      const int status =
+          reader->Read(read_pos, static_cast<long>(child_size), data);
+
+      if (status) {
+        delete[] data;
+        return false;
+      }
+
+      projection_ptr->private_data = data;
+      projection_ptr->private_data_length = static_cast<size_t>(child_size);
+    } else {
+      double value = 0;
+      const long long value_parse_status =
+          UnserializeFloat(reader, read_pos, child_size, value);
+      // Make sure value is representable as a float before casting.
+      if (value_parse_status < 0 || value < -FLT_MAX || value > FLT_MAX ||
+          (value > 0.0 && value < FLT_MIN)) {
+        return false;
+      }
+
+      switch (child_id) {
+        case libwebm::kMkvProjectionPoseYaw:
+          projection_ptr->pose_yaw = static_cast<float>(value);
+          break;
+        case libwebm::kMkvProjectionPosePitch:
+          projection_ptr->pose_pitch = static_cast<float>(value);
+          break;
+        case libwebm::kMkvProjectionPoseRoll:
+          projection_ptr->pose_roll = static_cast<float>(value);
+          break;
+        default:
+          return false;
+      }
+    }
+
+    read_pos += child_size;
+    if (read_pos > end)
+      return false;
+  }
+
+  *projection = projection_ptr.release();
+  return true;
+}
+
 VideoTrack::VideoTrack(Segment* pSegment, long long element_start,
                        long long element_size)
-    : Track(pSegment, element_start, element_size), m_colour(NULL) {}
+    : Track(pSegment, element_start, element_size),
+      m_colour_space(NULL),
+      m_colour(NULL),
+      m_projection(NULL) {}
 
-VideoTrack::~VideoTrack() { delete m_colour; }
+VideoTrack::~VideoTrack() {
+  delete[] m_colour_space;
+  delete m_colour;
+  delete m_projection;
+}
 
 long VideoTrack::Parse(Segment* pSegment, const Info& info,
                        long long element_start, long long element_size,
@@ -5132,6 +5335,7 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   long long stereo_mode = 0;
 
   double rate = 0.0;
+  std::unique_ptr<char[]> colour_space_ptr;
 
   IMkvReader* const pReader = pSegment->m_pReader;
 
@@ -5144,7 +5348,8 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
 
   const long long stop = pos + s.size;
 
-  Colour* colour = NULL;
+  std::unique_ptr<Colour> colour_ptr;
+  std::unique_ptr<Projection> projection_ptr;
 
   while (pos < stop) {
     long long id, size;
@@ -5193,8 +5398,25 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
       if (rate <= 0)
         return E_FILE_FORMAT_INVALID;
     } else if (id == libwebm::kMkvColour) {
-      if (!Colour::Parse(pReader, pos, size, &colour))
+      Colour* colour = NULL;
+      if (!Colour::Parse(pReader, pos, size, &colour)) {
         return E_FILE_FORMAT_INVALID;
+      } else {
+        colour_ptr.reset(colour);
+      }
+    } else if (id == libwebm::kMkvProjection) {
+      Projection* projection = NULL;
+      if (!Projection::Parse(pReader, pos, size, &projection)) {
+        return E_FILE_FORMAT_INVALID;
+      } else {
+        projection_ptr.reset(projection);
+      }
+    } else if (id == libwebm::kMkvColourSpace) {
+      char* colour_space = NULL;
+      const long status = UnserializeString(pReader, pos, size, colour_space);
+      if (status < 0)
+        return status;
+      colour_space_ptr.reset(colour_space);
     }
 
     pos += size;  // consume payload
@@ -5205,7 +5427,11 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   if (pos != stop)
     return E_FILE_FORMAT_INVALID;
 
-  VideoTrack* const pTrack = new VideoTrack(pSegment, element_start, element_size);
+  VideoTrack* const pTrack =
+      new (std::nothrow) VideoTrack(pSegment, element_start, element_size);
+
+  if (pTrack == NULL)
+    return -1;  // generic error
 
   const int status = info.Copy(pTrack->m_info);
 
@@ -5221,7 +5447,9 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
   pTrack->m_display_unit = display_unit;
   pTrack->m_stereo_mode = stereo_mode;
   pTrack->m_rate = rate;
-  pTrack->m_colour = colour;
+  pTrack->m_colour = colour_ptr.release();
+  pTrack->m_colour_space = colour_space_ptr.release();
+  pTrack->m_projection = projection_ptr.release();
 
   pResult = pTrack;
   return 0;  // success
@@ -5322,6 +5550,8 @@ long VideoTrack::Seek(long long time_ns, const BlockEntry*& pResult) const {
 
 Colour* VideoTrack::GetColour() const { return m_colour; }
 
+Projection* VideoTrack::GetProjection() const { return m_projection; }
+
 long long VideoTrack::GetWidth() const { return m_width; }
 
 long long VideoTrack::GetHeight() const { return m_height; }
@@ -5404,7 +5634,11 @@ long AudioTrack::Parse(Segment* pSegment, const Info& info,
   if (pos != stop)
     return E_FILE_FORMAT_INVALID;
 
-  AudioTrack* const pTrack = new AudioTrack(pSegment, element_start, element_size);
+  AudioTrack* const pTrack =
+      new (std::nothrow) AudioTrack(pSegment, element_start, element_size);
+
+  if (pTrack == NULL)
+    return -1;  // generic error
 
   const int status = info.Copy(pTrack->m_info);
 
@@ -5444,7 +5678,7 @@ long Tracks::Parse() {
   const long long stop = m_start + m_size;
   IMkvReader* const pReader = m_pSegment->m_pReader;
 
-  int count = 0;
+  long long count = 0;
   long long pos = m_start;
 
   while (pos < stop) {
@@ -5458,8 +5692,11 @@ long Tracks::Parse() {
     if (size == 0)  // weird
       continue;
 
-    if (id == libwebm::kMkvTrackEntry)
+    if (id == libwebm::kMkvTrackEntry) {
       ++count;
+      if (count > INT_MAX)
+        return E_PARSE_FAILED;
+    }
 
     pos += size;  // consume payload
     if (pos > stop)
@@ -5472,7 +5709,11 @@ long Tracks::Parse() {
   if (count <= 0)
     return 0;  // success
 
-  m_trackEntries = new Track*[count];
+  m_trackEntries = new (std::nothrow) Track*[static_cast<size_t>(count)];
+
+  if (m_trackEntries == NULL)
+    return -1;
+
   m_trackEntriesEnd = m_trackEntries;
 
   pos = m_start;
@@ -6575,7 +6816,10 @@ Cluster* Cluster::Create(Segment* pSegment, long idx, long long off) {
 
   const long long element_start = pSegment->m_start + off;
 
-  return new Cluster(pSegment, idx, element_start);
+  Cluster* const pCluster =
+      new (std::nothrow) Cluster(pSegment, idx, element_start);
+
+  return pCluster;
 }
 
 Cluster::Cluster()
@@ -6604,8 +6848,10 @@ Cluster::Cluster(Segment* pSegment, long idx, long long element_start
 {}
 
 Cluster::~Cluster() {
-  if (m_entries_count <= 0)
+  if (m_entries_count <= 0) {
+    delete[] m_entries;
     return;
+  }
 
   BlockEntry** i = m_entries;
   BlockEntry** const j = m_entries + m_entries_count;
@@ -6918,7 +7164,9 @@ long Cluster::CreateBlock(long long id,
     assert(m_entries_size == 0);
 
     m_entries_size = 1024;
-    m_entries = new BlockEntry*[m_entries_size];
+    m_entries = new (std::nothrow) BlockEntry*[m_entries_size];
+    if (m_entries == NULL)
+      return -1;
 
     m_entries_count = 0;
   } else {
@@ -6929,7 +7177,9 @@ long Cluster::CreateBlock(long long id,
     if (m_entries_count >= m_entries_size) {
       const long entries_size = 2 * m_entries_size;
 
-      BlockEntry** const entries = new BlockEntry*[entries_size];
+      BlockEntry** const entries = new (std::nothrow) BlockEntry*[entries_size];
+      if (entries == NULL)
+        return -1;
 
       BlockEntry** src = m_entries;
       BlockEntry** const src_end = src + m_entries_count;
@@ -7038,7 +7288,11 @@ long Cluster::CreateBlockGroup(long long start_offset, long long size,
   BlockEntry** const ppEntry = m_entries + idx;
   BlockEntry*& pEntry = *ppEntry;
 
-  pEntry = new BlockGroup(this, idx, bpos, bsize, prev, next, duration, discard_padding);
+  pEntry = new (std::nothrow)
+      BlockGroup(this, idx, bpos, bsize, prev, next, duration, discard_padding);
+
+  if (pEntry == NULL)
+    return -1;  // generic error
 
   BlockGroup* const p = static_cast<BlockGroup*>(pEntry);
 
@@ -7066,7 +7320,10 @@ long Cluster::CreateSimpleBlock(long long st, long long sz) {
   BlockEntry** const ppEntry = m_entries + idx;
   BlockEntry*& pEntry = *ppEntry;
 
-  pEntry = new SimpleBlock(this, idx, st, sz);
+  pEntry = new (std::nothrow) SimpleBlock(this, idx, st, sz);
+
+  if (pEntry == NULL)
+    return -1;  // generic error
 
   SimpleBlock* const p = static_cast<SimpleBlock*>(pEntry);
 
@@ -7461,7 +7718,9 @@ long Block::Parse(const Cluster* pCluster) {
       return E_FILE_FORMAT_INVALID;
 
     m_frame_count = 1;
-    m_frames = new Frame[m_frame_count];
+    m_frames = new (std::nothrow) Frame[m_frame_count];
+    if (m_frames == NULL)
+      return -1;
 
     Frame& f = m_frames[0];
     f.pos = pos;
@@ -7492,7 +7751,9 @@ long Block::Parse(const Cluster* pCluster) {
 
   m_frame_count = int(biased_count) + 1;
 
-  m_frames = new Frame[m_frame_count];
+  m_frames = new (std::nothrow) Frame[m_frame_count];
+  if (m_frames == NULL)
+    return -1;
 
   if (!m_frames)
     return E_FILE_FORMAT_INVALID;
@@ -7630,8 +7891,10 @@ long Block::Parse(const Cluster* pCluster) {
     if (frame_size <= 0)
       return E_FILE_FORMAT_INVALID;
 
+#if LLONG_MAX > LONG_MAX
     if (frame_size > LONG_MAX)
       return E_FILE_FORMAT_INVALID;
+#endif
 
     if ((pos + len) > stop)
       return E_FILE_FORMAT_INVALID;
@@ -7697,10 +7960,16 @@ long Block::Parse(const Cluster* pCluster) {
       if (frame_size <= 0)
         return E_FILE_FORMAT_INVALID;
 
+#if LLONG_MAX > LONG_MAX
       if (frame_size > LONG_MAX)
         return E_FILE_FORMAT_INVALID;
+#endif
 
       curr.len = static_cast<long>(frame_size);
+      // Check if size + curr.len could overflow.
+      if (size > LLONG_MAX - curr.len) {
+        return E_FILE_FORMAT_INVALID;
+      }
       size += curr.len;  // contribution of this frame
 
       --frame_count;
@@ -7741,7 +8010,6 @@ long Block::Parse(const Cluster* pCluster) {
     pf = m_frames;
     while (pf != pf_end) {
       Frame& f = *pf++;
-      assert((pos + f.len) <= stop);
       if ((pos + f.len) > stop)
         return E_FILE_FORMAT_INVALID;
 
@@ -7763,6 +8031,11 @@ long long Block::GetTimeCode(const Cluster* pCluster) const {
   const long long tc0 = pCluster->GetTimeCode();
   assert(tc0 >= 0);
 
+  // Check if tc0 + m_timecode would overflow.
+  if (tc0 < 0 || LLONG_MAX - tc0 < m_timecode) {
+    return -1;
+  }
+
   const long long tc = tc0 + m_timecode;
 
   return tc;  // unscaled timecode units
@@ -7780,6 +8053,10 @@ long long Block::GetTime(const Cluster* pCluster) const {
   const long long scale = pInfo->GetTimeCodeScale();
   assert(scale >= 1);
 
+  // Check if tc * scale could overflow.
+  if (tc != 0 && scale > LLONG_MAX / tc) {
+    return -1;
+  }
   const long long ns = tc * scale;
 
   return ns;
