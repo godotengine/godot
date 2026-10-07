@@ -33,7 +33,7 @@ if env["platform"] in ["ios", "visionos"]:
     SConscript("apple_embedded/SCsub")
 
 # Accessibility
-if env["accesskit"] and env["platform"] in ["macos", "windows", "linuxbsd", "android", "ios"]:
+if env["accesskit"] and env["platform"] in ["macos", "windows", "linuxbsd", "android", "ios", "visionos"]:
     SConscript("accesskit/SCsub")
 
 # Midi drivers
