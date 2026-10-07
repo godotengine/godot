@@ -164,6 +164,7 @@
 /modules/mono/                                @godotengine/dotnet
 /modules/mono/doc_classes/                    @godotengine/dotnet @godotengine/documentation
 /modules/mono/editor/                         @godotengine/dotnet @godotengine/editor
+/modules/mono/build_scripts/*.py              @godotengine/dotnet @godotengine/buildsystem
 
 ## Text
 /modules/freetype/                            @godotengine/buildsystem
