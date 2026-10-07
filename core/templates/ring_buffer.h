@@ -34,7 +34,7 @@
 
 template <typename T>
 class _WARN_UNUSED_ RingBuffer {
-	LocalVector<T> data;
+	T *_data = nullptr;
 	int _read_pos = 0;
 	int _count = 0;
 	int _size_mask;
@@ -58,7 +58,7 @@ class _WARN_UNUSED_ RingBuffer {
 public:
 	T read() {
 		ERR_FAIL_COND_V(data_left() < 1, T());
-		return data.ptr()[_inc_read(1)];
+		return _data[_inc_read()];
 	}
 
 	int read(T *p_buf, int p_size, bool p_advance = true) {
@@ -72,9 +72,8 @@ public:
 			int end = pos + to_read;
 			end = MIN(end, size());
 			int total = end - pos;
-			const T *read = data.ptr();
 			for (int i = 0; i < total; i++) {
-				p_buf[dst++] = read[pos + i];
+				p_buf[dst++] = _data[pos + i];
 			}
 			to_read -= total;
 			pos = 0;
@@ -102,7 +101,7 @@ public:
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				p_buf[dst++] = data[pos + i];
+				p_buf[dst++] = _data[pos + i];
 			}
 			to_read -= total;
 			pos = 0;
@@ -125,7 +124,7 @@ public:
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				if (data[pos + i] == p_value) {
+				if (_data[pos + i] == p_value) {
 					return i + (p_max_size - to_read);
 				}
 			}
@@ -150,7 +149,7 @@ public:
 
 	Error write(const T &p_v) {
 		ERR_FAIL_COND_V(space_left() < 1, FAILED);
-		data[_write_pos()] = p_v;
+		memnew_placement(&_data[_write_pos()], T(p_v));
 		_count += 1;
 		return OK;
 	}
@@ -166,9 +165,11 @@ public:
 			int end = pos + to_write;
 			end = MIN(end, size());
 			int total = end - pos;
+
 			for (int i = 0; i < total; i++) {
-				data[pos + i] = p_buf[src++];
+				memnew_placement(&_data[pos + i], T(p_buf[src++]));
 			}
+
 			to_write -= total;
 			pos = 0;
 		}
@@ -185,7 +186,7 @@ public:
 	}
 
 	inline int size() const {
-		return data.size();
+		return _size_mask + 1;
 	}
 
 	inline void clear() {
@@ -193,29 +194,37 @@ public:
 		_count = 0;
 	}
 
+	// If the new size is smalled than the old size, the older entries may be discarded.
 	void resize(int p_power) {
 		const int old_size = size();
 		const int new_size = uint32_t(1) << uint32_t(p_power);
 		const int mask = new_size - 1;
 
-		if (old_size < new_size) {
-			data.resize(new_size);
+		if (_data == nullptr || old_size < new_size) {
+			_data = static_cast<T*>(Memory::realloc_static(_data, sizeof(T) * new_size));
 			// Make data contiguous
 			if (_read_pos > _write_pos()) {
 				for (int i = 0; i < _write_pos(); i++) {
-					data[_wrapped_pos(old_size + i)] = data[i];
+					_data[_wrapped_pos(old_size + i)] = _data[i];
 				}
 			}
 		} else if (old_size > new_size) {
-			LocalVector<T> new_data;
-			new_data.resize(new_size);
+			T *new_data = static_cast<T*>(Memory::alloc_static(sizeof(T) * new_size));
 			const int new_count = MIN(new_size - 1, data_left());
-			for (int i = 0; i < new_count; i++) {
-				new_data[i] = data[_wrapped_pos(_read_pos + i)];
+
+			// Destructing the excess older data.
+			const int excess = data_left() - new_count;
+			for (int i = 0; i < excess; i++) {
+				_data[_inc_read()].~T();
 			}
+
+			for (int i = 0; i < new_count; i++) {
+				new_data[i] = _data[_inc_read()];
+			}
+
 			_read_pos = 0;
 			_count = new_count;
-			data = new_data;
+			_data = new_data;
 		}
 
 		_size_mask = mask;
@@ -223,5 +232,13 @@ public:
 
 	RingBuffer(int p_power = 0) {
 		resize(p_power);
+	}
+
+	~RingBuffer() {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
+			while (data_left() > 0) {
+				_data[_inc_read()].~T();
+			}
+		}
 	}
 };
