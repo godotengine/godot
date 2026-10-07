@@ -18,6 +18,15 @@
 		<link title="Optimization using Servers">$DOCS_URL/tutorials/performance/using_servers.html</link>
 	</tutorials>
 	<methods>
+		<method name="area_light_create">
+			<return type="RID" />
+			<description>
+				Creates a new area light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] method.
+				To place in a scene, attach this area light to an instance using [method instance_set_base] using the returned RID.
+				[b]Note:[/b] The equivalent node is [AreaLight3D].
+			</description>
+		</method>
 		<method name="bake_render_uv2">
 			<return type="Image[]" />
 			<param index="0" name="base" type="RID" />
@@ -187,6 +196,15 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				If [code]true[/code], preserves the horizontal aspect ratio which is equivalent to [constant Camera3D.KEEP_WIDTH]. If [code]false[/code], preserves the vertical aspect ratio which is equivalent to [constant Camera3D.KEEP_HEIGHT].
+			</description>
+		</method>
+		<method name="camera_set_xr_projections" experimental="">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="projections" type="Projection[]" />
+			<param index="2" name="offsets" type="Transform3D[]" default="[]" />
+			<description>
+				Sets camera to use any set of [param projections]. You can specify one projection for each view set on the viewport. If the views are offset (e.g. ocular distance) and/or skewed, this data can be provided through [param offsets].
 			</description>
 		</method>
 		<method name="canvas_create">
@@ -1545,7 +1563,7 @@
 			<param index="5" name="emission_energy" type="float" />
 			<param index="6" name="anisotropy" type="float" />
 			<param index="7" name="length" type="float" />
-			<param index="8" name="p_detail_spread" type="float" />
+			<param index="8" name="detail_spread" type="float" />
 			<param index="9" name="gi_inject" type="float" />
 			<param index="10" name="temporal_reprojection" type="bool" />
 			<param index="11" name="temporal_reprojection_amount" type="float" />
@@ -1820,7 +1838,7 @@
 			<return type="bool" />
 			<param index="0" name="feature" type="String" />
 			<description>
-				Returns [code]true[/code] if the OS supports a certain [param feature]. Features might be [code]s3tc[/code], [code]etc[/code], and [code]etc2[/code].
+				Returns [code]true[/code] if the OS supports a certain [param feature]. Features might be [code]s3tc[/code], [code]rgtc[/code], [code]bptc[/code], [code]etc[/code], [code]etc2[/code], [code]astc[/code], and [code]astc_hdr[/code].
 			</description>
 		</method>
 		<method name="instance_attach_object_instance_id">
@@ -2104,6 +2122,22 @@
 				Returns [code]true[/code] if our code is currently executing on the rendering thread.
 			</description>
 		</method>
+		<method name="light_area_set_normalize_energy">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Defines whether the energy of an [AreaLight3D] is normalized (divided) by its area. If set to [code]true[/code], changing the size does not affect the total energy output. Equivalent to [member AreaLight3D.area_normalize_energy].
+			</description>
+		</method>
+		<method name="light_area_set_size">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="size" type="Vector2" />
+			<description>
+				Sets the extents (width and height) in meters for this area light. Equivalent to [member AreaLight3D.area_size].
+			</description>
+		</method>
 		<method name="light_directional_set_blend_splits">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />
@@ -2141,6 +2175,14 @@
 			<param index="0" name="filter" type="int" enum="RenderingServer.LightProjectorFilter" />
 			<description>
 				Sets the texture filter mode to use when rendering light projectors. This parameter is global and cannot be set on a per-light basis.
+			</description>
+		</method>
+		<method name="light_set_allow_contact_shadows">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				If [code]true[/code], allows screen-space contact shadows for this light. Only used when [member ProjectSettings.rendering/lights_and_shadows/contact_shadow/enabled] is enabled. Equivalent to [member Light3D.shadow_contact_shadows_allow].
 			</description>
 		</method>
 		<method name="light_set_bake_mode">
@@ -2405,11 +2447,11 @@
 				[codeblock]
 				{
 					# Required:
-				    "primitive": RenderingServer.PrimitiveType,
-				    "format": RenderingServer.ArrayFormat,
-				    "vertex_data": PackedByteArray,
-				    "vertex_count": int,
-				    "aabb": AABB,
+					"primitive": RenderingServer.PrimitiveType,
+					"format": RenderingServer.ArrayFormat,
+					"vertex_data": PackedByteArray,
+					"vertex_count": int,
+					"aabb": AABB,
 
 					# Optional:
 					"attribute_data": PackedByteArray,
@@ -2548,6 +2590,16 @@
 				Returns a mesh's surface's buffer arrays.
 			</description>
 		</method>
+		<method name="mesh_surface_get_attribute_buffer_rd_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<description>
+				Returns the [RenderingDevice] [RID] handle of the attribute buffer of the given mesh surface (Color, UV, UV2, Custom0-3). The returned [RID] can be used like any other buffer on the [RenderingDevice], so the surface attributes can be read or written from a compute shader without a CPU round-trip.
+				To bind the buffer as a storage buffer in compute, the surface must have been created with the [constant ARRAY_FLAG_USE_STORAGE_BUFFER] flag set in its format.
+				Returns an invalid [RID] if the surface has no attribute buffer or if the rendering backend does not expose [RenderingDevice] [RID]s (such as the OpenGL backend).
+			</description>
+		</method>
 		<method name="mesh_surface_get_blend_shape_arrays" qualifiers="const">
 			<return type="Array[]" />
 			<param index="0" name="mesh" type="RID" />
@@ -2605,12 +2657,42 @@
 				Returns the stride of the vertex positions for a mesh with given [param format]. Note importantly that vertex positions are stored consecutively and are not interleaved with the other attributes in the vertex buffer (normals and tangents).
 			</description>
 		</method>
+		<method name="mesh_surface_get_index_buffer_rd_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<description>
+				Returns the [RenderingDevice] [RID] handle of the index buffer of the given mesh surface. The returned [RID] can be used like any other buffer on the [RenderingDevice], so the indices can be read or written from a compute shader without a CPU round-trip.
+				To bind the buffer as a storage buffer in compute, the surface must have been created with the [constant ARRAY_FLAG_USE_STORAGE_BUFFER] flag set in its format.
+				Returns an invalid [RID] if the surface is not indexed or if the rendering backend does not expose [RenderingDevice] [RID]s (such as the OpenGL backend).
+			</description>
+		</method>
 		<method name="mesh_surface_get_material" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="surface" type="int" />
 			<description>
 				Returns a mesh's surface's material.
+			</description>
+		</method>
+		<method name="mesh_surface_get_skin_buffer_rd_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<description>
+				Returns the [RenderingDevice] [RID] handle of the skin buffer of the given mesh surface (Bones, Weights). The returned [RID] can be used like any other buffer on the [RenderingDevice], so the skin data can be read or written from a compute shader without a CPU round-trip.
+				This buffer is created with the storage-buffer usage bit whenever the surface has skinning data, so it can be bound as a storage buffer in compute even without [constant ARRAY_FLAG_USE_STORAGE_BUFFER].
+				Returns an invalid [RID] if the surface has no skin buffer or if the rendering backend does not expose [RenderingDevice] [RID]s (such as the OpenGL backend).
+			</description>
+		</method>
+		<method name="mesh_surface_get_vertex_buffer_rd_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<description>
+				Returns the [RenderingDevice] [RID] handle of the vertex buffer of the given mesh surface (Vertex, Normal, Tangent). The returned [RID] can be used like any other buffer on the [RenderingDevice], so the surface vertices can be read or written from a compute shader without a CPU round-trip. This is the [Mesh] equivalent of [method multimesh_get_buffer_rd_rid] and is intended for GPU-driven mesh workflows (procedural meshes, ribbon trails, cloth, hair, grass) implemented from a [GDExtension].
+				To bind the buffer as a storage buffer in compute, the surface must have been created with the [constant ARRAY_FLAG_USE_STORAGE_BUFFER] flag set in its format.
+				Returns an invalid [RID] if the surface has no vertex buffer or if the rendering backend does not expose [RenderingDevice] [RID]s (such as the OpenGL backend).
 			</description>
 		</method>
 		<method name="mesh_surface_remove">
@@ -3331,7 +3413,7 @@
 		<method name="particles_set_transform_align_axis">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
-			<param index="1" name="p_rotation_axis" type="int" enum="RenderingServer.ParticlesTransformAlignAxis" />
+			<param index="1" name="rotation_axis" type="int" enum="RenderingServer.ParticlesTransformAlignAxis" />
 			<description>
 				Sets which axis to use for transform alignment.
 			</description>
@@ -4001,6 +4083,16 @@
 				Replaces [param texture]'s texture data by the texture specified by the [param by_texture] RID, without changing [param texture]'s RID.
 			</description>
 		</method>
+		<method name="texture_replace_compatible">
+			<return type="void" />
+			<param index="0" name="texture" type="RID" />
+			<param index="1" name="by_texture" type="RID" />
+			<description>
+				Replaces [param texture]'s texture data by the texture specified by the [param by_texture] RID, without changing [param texture]'s RID.
+				Unlike [method texture_replace], this method automatically patches any uniform sets that reference [param texture] so they point to the new underlying resource. This makes it suitable for replacing textures that are already bound in materials or shaders without invalidating existing draw state. The new texture may have different dimensions (e.g. for texture streaming mip level changes).
+				Textures that are not compatible will likely cause rendering errors, so it's recommended to only use this method on textures that are compatible with each other (e.g. same format and usage flags).
+			</description>
+		</method>
 		<method name="texture_set_force_redraw_if_visible">
 			<return type="void" />
 			<param index="0" name="texture" type="RID" />
@@ -4406,6 +4498,7 @@
 			<description>
 				Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close). To get sharper textures at a distance without introducing too much graininess, set this between [code]-0.75[/code] and [code]0.0[/code]. Enabling temporal antialiasing ([member ProjectSettings.rendering/anti_aliasing/quality/use_taa]) can help reduce the graininess visible when using negative mipmap bias.
 				[b]Note:[/b] When the 3D scaling mode is set to FSR 1.0, this value is used to adjust the automatic mipmap bias which is calculated internally based on the scale factor. The formula for this is [code]-log2(1.0 / scale) + mipmap_bias[/code].
+				[b]Note:[/b] This method is only supported in the Forward+ and Mobile renderers, not Compatibility. In Compatibility, this method is always treated as if [param mipmap_bias] was set to [code]0.0[/code].
 			</description>
 		</method>
 		<method name="viewport_set_transparent_background">
@@ -4740,7 +4833,7 @@
 		</constant>
 		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB" value="1" enum="TextureDrawableFormat">
 			OpenGL texture format RGBA with four components, each with a bitdepth of 8.
-			When drawn to, an sRGB to linear color space conversion is performed.
+			When drawn to, a linear to sRGB color encoding conversion is performed.
 		</constant>
 		<constant name="TEXTURE_DRAWABLE_FORMAT_RGBAH" value="2" enum="TextureDrawableFormat">
 			OpenGL texture format GL_RGBA16F where there are four components, each a 16-bit "half-precision" floating-point value.
@@ -4928,6 +5021,9 @@
 		<constant name="ARRAY_FLAG_COMPRESS_ATTRIBUTES" value="536870912" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark that a mesh is using compressed attributes (vertices, normals, tangents, UVs). When this form of compression is enabled, vertex positions will be packed into an RGBA16UNORM attribute and scaled in the vertex shader. The normal and tangent will be packed into an RG16UNORM representing an axis, and a 16-bit float stored in the A-channel of the vertex. UVs will use 16-bit normalized floats instead of full 32-bit signed floats. When using this compression mode you must use either vertices, normals, and tangents or only vertices. You cannot use normals without tangents. Importers will automatically enable this compression if they can.
 		</constant>
+		<constant name="ARRAY_FLAG_USE_STORAGE_BUFFER" value="1073741824" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that the surface's vertex, attribute, skin, and index buffers must be created with the storage-buffer usage bit so they can be bound as storage buffers in compute shaders. This is required to write into them from a compute pipeline through the [RID]s returned by [method RenderingServer.mesh_surface_get_vertex_buffer_rd_rid] and the matching methods for the attribute, skin, and index buffers. Has no effect on the OpenGL backend, which does not expose [RenderingDevice] [RID]s.
+		</constant>
 		<constant name="ARRAY_FLAG_FORMAT_VERSION_BASE" value="35" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark the start of the bits used to store the mesh version.
 		</constant>
@@ -5009,6 +5105,9 @@
 		<constant name="LIGHT_SPOT" value="2" enum="LightType">
 			Spot light (see [SpotLight3D]).
 		</constant>
+		<constant name="LIGHT_AREA" value="3" enum="LightType">
+			Area light (see [AreaLight3D]).
+		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy multiplier.
 		</constant>
@@ -5071,7 +5170,13 @@
 		<constant name="LIGHT_PARAM_INTENSITY" value="20" enum="LightParam">
 			Constant representing the intensity of the light, measured in Lumens when dealing with a [SpotLight3D] or [OmniLight3D], or measured in Lux with a [DirectionalLight3D]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="21" enum="LightParam">
+		<constant name="LIGHT_PARAM_CONTACT_SHADOW_OPACITY" value="21" enum="LightParam">
+			Changes the opacity of the lights screen-space contact shadows. A value of [code]1.0[/code] uses the same opacity as [constant LIGHT_PARAM_SHADOW_OPACITY], a value of [code]0.5[/code] would be 50% of the opacity of [constant LIGHT_PARAM_SHADOW_OPACITY].
+		</constant>
+		<constant name="LIGHT_PARAM_CONTACT_SHADOW_BLUR" value="22" enum="LightParam">
+			Blurs the edges of the contact shadow. [code]0.0[/code] produces sharp shadows; higher values increase the noise magnitude.
+		</constant>
+		<constant name="LIGHT_PARAM_MAX" value="23" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">

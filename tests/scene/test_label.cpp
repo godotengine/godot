@@ -32,6 +32,8 @@
 
 TEST_FORCE_LINK(test_label)
 
+#include "modules/modules_enabled.gen.h" // IWYU pragma: keep. Needed for MODULE_TEXT_SERVER_FB_ENABLED and MODULE_TEXT_SERVER_ADV_ENABLED definitions.
+
 #if defined(MODULE_TEXT_SERVER_FB_ENABLED) || defined(MODULE_TEXT_SERVER_ADV_ENABLED)
 
 #include "scene/gui/label.h"
@@ -139,7 +141,7 @@ TEST_CASE("[SceneTree][Label] Sizing") {
 	real_t max_width = 50;
 	real_t min_width = 25;
 
-	test_label->set_custom_maximum_size(Size2(max_width, 0));
+	test_label->set_custom_maximum_size(Size2(max_width, -1));
 	test_label->set_custom_minimum_size(Size2(min_width, 0));
 	test_label->set_text("This is a long text that should be wrapped and exceeds minimum size.");
 	SceneTree::get_singleton()->process(0);

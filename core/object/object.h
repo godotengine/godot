@@ -110,8 +110,9 @@ struct ObjectGDExtension {
 
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassCreateInstance create_instance;
+	GDExtensionClassCreateInstance2 create_instance2; // Without refcount.
 #endif // DISABLE_DEPRECATED
-	GDExtensionClassCreateInstance2 create_instance2;
+	GDExtensionClassCreateInstance3 create_instance3;
 	GDExtensionClassFreeInstance free_instance;
 #ifndef DISABLE_DEPRECATED
 	GDExtensionClassGetVirtual get_virtual;
@@ -130,11 +131,8 @@ struct ObjectGDExtension {
 
 	/// A type for this Object extension.
 	/// This is not exposed through the GDExtension API (yet) so it is inferred from above parameters.
-	GDType *gdtype;
-	void create_gdtype();
-	void destroy_gdtype();
-
-	~ObjectGDExtension();
+	/// The GDType's lifetime is (usually) owned by ClassDB.
+	const GDType *gdtype = nullptr;
 };
 
 #define GDVIRTUAL_CALL(m_name, ...) _gdvirtual_##m_name##_call(__VA_ARGS__)
@@ -155,7 +153,7 @@ struct ObjectGDExtension {
  * much alone defines the object model.
  */
 
-/// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
+/// Provides `Object` functionality, such as being able to use `Object::cast_to()`.
 /// Use this for `Object` subclasses that are not registered in `ClassDB` (use `GDCLASS` otherwise).
 #define GDSOFTCLASS(m_class, m_inherits) \
 public: \
@@ -242,12 +240,12 @@ protected: \
 \
 private:
 
-/// `GDSOFTCLASS` provides `Object` functionality, such as being able to use `Object::cast_to()`.
-/// Use this for `Object` subclasses that are registered in `ObjectDB` (use `GDSOFTCLASS` otherwise).
+/// Provides `Object` functionality, such as being able to use `Object::cast_to()`, and `ClassDB` integration.
+/// Use this for `Object` subclasses that are registered in `ClassDB` (use `GDSOFTCLASS` otherwise).
 #define GDCLASS(m_class, m_inherits) \
 	GDSOFTCLASS(m_class, m_inherits) \
 private: \
-	void operator=(const m_class &p_rval) {} \
+	void operator=(const m_class &p_rval) = delete; \
 	friend class ::ClassDB; \
 \
 	static GDType &get_gdtype_static_mutable() { \
@@ -322,8 +320,7 @@ protected: \
 		if (!p_reversed) { \
 			m_inherits::_get_property_listv(p_list, p_reversed); \
 		} \
-		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY)); \
-		_get_property_list_from_classdb(#m_class, p_list, true, this); \
+		_get_property_list_inner(p_list, get_class_static()); \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) { \
 			_get_property_list(p_list); \
 		} \
@@ -345,6 +342,12 @@ private:
 class ClassDB;
 class ScriptInstance;
 
+/**
+ * Base class for all OBJECT Variant types.
+ *
+ * For documentation, see:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/object_class.html
+ */
 class Object {
 public:
 	typedef Object self_type;
@@ -447,7 +450,6 @@ private:
 #endif
 	ScriptInstance *script_instance = nullptr;
 	HashMap<StringName, Variant> metadata;
-	HashMap<StringName, Variant *> metadata_properties;
 	mutable const GDType *_gdtype_ptr = nullptr;
 	void _reset_gdtype() const;
 
@@ -537,7 +539,7 @@ protected:
 	virtual String _to_string();
 
 	static void _bind_methods();
-	static void _bind_compatibility_methods() {}
+	static void _bind_compatibility_methods();
 	bool _set(const StringName &p_name, const Variant &p_property) { return false; }
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; }
 	void _get_property_list(List<PropertyInfo> *p_list) const {}
@@ -545,6 +547,9 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const { return false; }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; }
 	void _notification(int p_notification) {}
+
+	// Out-lined helper function to save on binary space.
+	_NO_INLINE_ void _get_property_list_inner(List<PropertyInfo> *p_list, const StringName &p_class_name) const;
 
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
 		return &Object::_bind_methods;
@@ -612,6 +617,10 @@ protected:
 	mutable VirtualMethodTracker *virtual_method_list = nullptr;
 #endif
 
+#ifndef DISABLE_DEPRECATED
+	bool _is_class_bind_compat_118582(const String &p_name) const;
+#endif
+
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
@@ -669,7 +678,7 @@ public:
 
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
-	bool is_class(const String &p_class) const;
+	bool is_class(const StringName &p_class) const;
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
 	template <typename T, typename O>
@@ -683,6 +692,10 @@ public:
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
+	/// Like set/get but only uses the internal path. Used from ClassDB::set_property and for GDScript optimization.
+	bool set_native(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
+	bool get_native(const StringName &p_name, Variant &r_value, bool *r_valid = nullptr) const;
+
 	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 
@@ -1019,12 +1032,12 @@ public:
 	}
 
 	template <typename U = T, std::enable_if_t<std::is_base_of_v<RefCounted, U>, int> = 0>
-	_FORCE_INLINE_ element_type *ptr() const {
+	_FORCE_INLINE_ T *ptr() const {
 		return *_value;
 	}
 
 	template <typename U = T, std::enable_if_t<!std::is_base_of_v<RefCounted, U>, int> = 0>
-	_FORCE_INLINE_ element_type *ptr() const {
+	_FORCE_INLINE_ T *ptr() const {
 		return _value;
 	}
 
@@ -1037,11 +1050,11 @@ public:
 		return Ref<T_Other>(_value);
 	}
 
-	_FORCE_INLINE_ element_type *operator*() const {
+	_FORCE_INLINE_ T *operator*() const {
 		return ptr();
 	}
 
-	_FORCE_INLINE_ element_type *operator->() const {
+	_FORCE_INLINE_ T *operator->() const {
 		return ptr();
 	}
 };
@@ -1097,6 +1110,15 @@ public:
 	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
 	_FORCE_INLINE_ RequiredParam &operator=(const RequiredParam<T_Other> &p_other) {
 		_value = p_other._internal_ptr_dont_use();
+		return *this;
+	}
+
+	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
+	_FORCE_INLINE_ RequiredParam(const RequiredResult<T_Other> &p_other) :
+			_value(p_other.ptr()) {}
+	template <typename T_Other, std::enable_if_t<std::is_base_of_v<T, T_Other>, int> = 0>
+	_FORCE_INLINE_ RequiredParam &operator=(const RequiredResult<T_Other> &p_other) {
+		_value = p_other.ptr();
 		return *this;
 	}
 

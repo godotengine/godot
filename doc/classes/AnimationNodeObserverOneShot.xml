@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeObserverOneShot" inherits="AnimationNodeObserver" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Observer for events from [AnimationNodeOneShot] instances.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<signals>
+		<signal name="fade_in_finished">
+			<description>
+				Emitted when the one-shot has finished fading in. Only emitted if fade-in time is greater than zero.
+			</description>
+		</signal>
+		<signal name="fade_out_started">
+			<description>
+				Emitted when the one-shot has started fading out. Only emitted if fade-out time is greater than zero.
+			</description>
+		</signal>
+		<signal name="finished">
+			<description>
+				Emitted when the one-shot has finished.
+			</description>
+		</signal>
+		<signal name="started">
+			<description>
+				Emitted when the one-shot has started.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -94,6 +94,7 @@ public:
 	virtual RID texture_drawable_get_default_material() const = 0;
 
 	virtual void texture_replace(RID p_texture, RID p_by_texture) = 0;
+	virtual void texture_replace_compatible(RID p_texture, RID p_by_texture) = 0;
 	virtual void texture_set_size_override(RID p_texture, int p_width, int p_height) = 0;
 
 	virtual void texture_set_path(RID p_texture, const String &p_path) = 0;
@@ -114,6 +115,10 @@ public:
 	virtual void texture_rd_initialize(RID p_texture, const RID &p_rd_texture, const RSE::TextureLayeredType p_layer_type = RSE::TEXTURE_LAYERED_2D_ARRAY) = 0;
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
+
+	/* AREA LIGHT ATLAS API */
+	virtual void texture_add_to_area_light_atlas(RID p_texture) = 0;
+	virtual void texture_remove_from_area_light_atlas(RID p_texture) = 0;
 
 	/* Decal API */
 	virtual RID decal_allocate() = 0;
@@ -207,4 +212,7 @@ public:
 	// Motion vectors
 	virtual void render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) = 0;
 	virtual Size2i render_target_get_velocity_target_size(RID p_render_target) const = 0;
+
+	// Texture Streaming
+	virtual void texture_2d_attach_streaming_state(RID p_texture, RID p_streaming_state) = 0;
 };

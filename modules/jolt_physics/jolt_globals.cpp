@@ -31,9 +31,8 @@
 #include "jolt_globals.h"
 
 #include "objects/jolt_group_filter.h"
-#include "shapes/jolt_custom_double_sided_shape.h"
+#include "shapes/jolt_custom_instance_overrides_shape.h"
 #include "shapes/jolt_custom_ray_shape.h"
-#include "shapes/jolt_custom_user_data_shape.h"
 
 #include "core/os/memory.h"
 
@@ -43,6 +42,7 @@
 
 #include <Jolt/Jolt.h>
 
+#include <Jolt/Core/Factory.h>
 #include <Jolt/RegisterTypes.h>
 
 #include <cstdarg>
@@ -108,8 +108,7 @@ void jolt_initialize() {
 	JPH::RegisterTypes();
 
 	JoltCustomRayShape::register_type();
-	JoltCustomUserDataShape::register_type();
-	JoltCustomDoubleSidedShape::register_type();
+	JoltCustomInstanceOverridesShape::register_type();
 
 	JoltGroupFilter::instance = new JoltGroupFilter();
 	JoltGroupFilter::instance->SetEmbedded();

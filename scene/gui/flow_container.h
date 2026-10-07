@@ -64,6 +64,7 @@ private:
 	} theme_cache;
 
 	void _resort();
+	Size2 _get_minimum_size(bool p_use_desired_sizes) const;
 
 protected:
 	bool is_fixed = false;
@@ -89,6 +90,7 @@ public:
 	bool is_reverse_fill() const;
 
 	virtual Size2 get_minimum_size() const override;
+	virtual Size2 get_desired_size() const override;
 
 	virtual Vector<int> get_allowed_size_flags_horizontal() const override;
 	virtual Vector<int> get_allowed_size_flags_vertical() const override;

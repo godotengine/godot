@@ -119,6 +119,7 @@ void __print_line_rich(const String &p_string) {
 
 	String output;
 	int pos = 0;
+	bool in_named_url = false;
 	while (pos <= p_string.length()) {
 		int brk_pos = p_string.find_char('[', pos);
 
@@ -167,10 +168,24 @@ void __print_line_rich(const String &p_string) {
 			output += "\u001b[2m";
 		} else if (tag == "/code") {
 			output += "\u001b[22m";
+		} else if (tag.begins_with("url=")) {
+			// Support named URLs using OSC 8 escape codes:
+			// <https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda>
+			in_named_url = true;
+			const String url_link = tag.substr(strlen("url="));
+			output += vformat("\u001b]8;;%s\u001b\\", url_link);
 		} else if (tag == "url") {
 			output += "";
 		} else if (tag == "/url") {
-			output += "";
+			if (in_named_url) {
+				output += "\u001b]8;;\u001b\\";
+				in_named_url = false;
+			} else {
+				// While it's legal to close an URL that was never opened using OSC 8 escape codes,
+				// it would result in the code being printed to unsupported terminal emulators
+				// when using unnamed URLs.
+				output += "";
+			}
 		} else if (tag == "center") {
 			output += "\n\t\t\t";
 		} else if (tag == "/center") {

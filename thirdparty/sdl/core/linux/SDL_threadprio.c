@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -70,7 +70,7 @@ static Sint64 rtkit_max_rttime_usec = 200000;
 static bool realtime_portal_supported(DBusConnection *conn)
 {
     Sint64 res;
-    return SDL_DBus_QueryPropertyOnConnection(conn, XDG_PORTAL_DBUS_NODE, XDG_PORTAL_DBUS_PATH, XDG_PORTAL_DBUS_INTERFACE,
+    return SDL_DBus_QueryPropertyOnConnection(conn, NULL, XDG_PORTAL_DBUS_NODE, XDG_PORTAL_DBUS_PATH, XDG_PORTAL_DBUS_INTERFACE,
                                               "RTTimeUSecMax", DBUS_TYPE_INT64, &res);
 }
 
@@ -111,19 +111,19 @@ static void rtkit_initialize(void)
     dbus_conn = get_rtkit_dbus_connection();
 
     // Try getting minimum nice level: this is often greater than PRIO_MIN (-20).
-    if (!dbus_conn || !SDL_DBus_QueryPropertyOnConnection(dbus_conn, rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MinNiceLevel",
+    if (!dbus_conn || !SDL_DBus_QueryPropertyOnConnection(dbus_conn, NULL, rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MinNiceLevel",
                                                                  DBUS_TYPE_INT32, &rtkit_min_nice_level)) {
         rtkit_min_nice_level = -20;
     }
 
     // Try getting maximum realtime priority: this can be less than the POSIX default (99).
-    if (!dbus_conn || !SDL_DBus_QueryPropertyOnConnection(dbus_conn, rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MaxRealtimePriority",
+    if (!dbus_conn || !SDL_DBus_QueryPropertyOnConnection(dbus_conn, NULL, rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MaxRealtimePriority",
                                                                  DBUS_TYPE_INT32, &rtkit_max_realtime_priority)) {
         rtkit_max_realtime_priority = 99;
     }
 
     // Try getting maximum rttime allowed by rtkit: exceeding this value will result in SIGKILL
-    if (!dbus_conn || !SDL_DBus_QueryPropertyOnConnection(dbus_conn, rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "RTTimeUSecMax",
+    if (!dbus_conn || !SDL_DBus_QueryPropertyOnConnection(dbus_conn, NULL, rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "RTTimeUSecMax",
                                                                  DBUS_TYPE_INT64, &rtkit_max_rttime_usec)) {
         rtkit_max_rttime_usec = 200000;
     }
@@ -202,10 +202,10 @@ static bool rtkit_setpriority_nice(pid_t thread, int nice_level)
         nice = rtkit_min_nice_level;
     }
 
-    if (!dbus_conn || !SDL_DBus_CallMethodOnConnection(dbus_conn,
-                                                              rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MakeThreadHighPriorityWithPID",
-                                                              DBUS_TYPE_UINT64, &pid, DBUS_TYPE_UINT64, &tid, DBUS_TYPE_INT32, &nice, DBUS_TYPE_INVALID,
-                                                              DBUS_TYPE_INVALID)) {
+    if (!dbus_conn || !SDL_DBus_CallMethodOnConnection(dbus_conn, NULL,
+                                                       rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MakeThreadHighPriorityWithPID",
+                                                       DBUS_TYPE_UINT64, &pid, DBUS_TYPE_UINT64, &tid, DBUS_TYPE_INT32, &nice, DBUS_TYPE_INVALID,
+                                                       DBUS_TYPE_INVALID)) {
         return false;
     }
     return true;
@@ -233,10 +233,10 @@ static bool rtkit_setpriority_realtime(pid_t thread, int rt_priority)
     // go through to determine whether it really needs to fail or not.
     rtkit_initialize_realtime_thread();
 
-    if (!dbus_conn || !SDL_DBus_CallMethodOnConnection(dbus_conn,
-                                                              rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MakeThreadRealtimeWithPID",
-                                                              DBUS_TYPE_UINT64, &pid, DBUS_TYPE_UINT64, &tid, DBUS_TYPE_UINT32, &priority, DBUS_TYPE_INVALID,
-                                                              DBUS_TYPE_INVALID)) {
+    if (!dbus_conn || !SDL_DBus_CallMethodOnConnection(dbus_conn, NULL,
+                                                       rtkit_dbus_node, rtkit_dbus_path, rtkit_dbus_interface, "MakeThreadRealtimeWithPID",
+                                                       DBUS_TYPE_UINT64, &pid, DBUS_TYPE_UINT64, &tid, DBUS_TYPE_UINT32, &priority, DBUS_TYPE_INVALID,
+                                                       DBUS_TYPE_INVALID)) {
         return false;
     }
     return true;

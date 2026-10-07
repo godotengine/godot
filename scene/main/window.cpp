@@ -102,6 +102,13 @@ bool Window::_set(const StringName &p_name, const Variant &p_value) {
 			String dname = name.get_slicec('/', 1);
 			theme_constant_override.erase(dname);
 			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_sounds/")) {
+			String dname = name.get_slicec('/', 1);
+			if (theme_sound_override.has(dname)) {
+				theme_sound_override[dname]->disconnect_changed(callable_mp(this, &Window::_notify_theme_override_changed));
+			}
+			theme_sound_override.erase(dname);
+			_notify_theme_override_changed();
 		} else {
 			return false;
 		}
@@ -124,6 +131,9 @@ bool Window::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_constant_override(dname, p_value);
+		} else if (name.begins_with("theme_override_sounds/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_sound_override(dname, p_value);
 		} else {
 			return false;
 		}
@@ -157,6 +167,9 @@ bool Window::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (sname.begins_with("theme_override_constants/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = theme_constant_override.has(name) ? Variant(theme_constant_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_sounds/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = theme_sound_override.has(name) ? Variant(theme_sound_override[name]) : Variant();
 	} else {
 		return false;
 	}
@@ -243,6 +256,18 @@ void Window::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_styles") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), usage));
 		}
 	}
+	{
+		List<StringName> names;
+		default_theme->get_sound_list(get_class_name(), &names);
+		for (const StringName &E : names) {
+			uint32_t usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
+			if (theme_sound_override.has(E)) {
+				usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+			}
+
+			p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("theme_override_sounds") + String("/") + E, PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), usage));
+		}
+	}
 }
 
 void Window::_validate_property(PropertyInfo &p_property) const {
@@ -300,6 +325,11 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 
 		p_property.hint_string = hint_string;
 	}
+
+	if (p_property.name == "title") {
+		p_property.hint = PROPERTY_HINT_PLACEHOLDER_TEXT;
+		p_property.hint_string = default_title;
+	}
 }
 
 //
@@ -313,11 +343,25 @@ Window *Window::get_from_id(DisplayServerEnums::WindowID p_window_id) {
 
 void Window::set_title(const String &p_title) {
 	ERR_MAIN_THREAD_GUARD;
-
+	if (title == p_title) {
+		return;
+	}
 	title = p_title;
 	_update_displayed_title();
 
 	emit_signal("title_changed");
+}
+
+void Window::set_default_title(const String &p_title) {
+	ERR_MAIN_THREAD_GUARD;
+	if (default_title == p_title) {
+		return;
+	}
+	default_title = p_title;
+	if (title.is_empty()) {
+		_update_displayed_title();
+	}
+	notify_property_list_changed();
 }
 
 String Window::get_title() const {
@@ -401,8 +445,7 @@ void Window::move_to_center() {
 		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
-		parent_rect.position = DisplayServer::get_singleton()->screen_get_position(parent_screen);
-		parent_rect.size = DisplayServer::get_singleton()->screen_get_size(parent_screen);
+		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(parent_screen);
 	}
 
 	if (parent_rect != Rect2()) {
@@ -550,6 +593,14 @@ Window::Mode Window::get_mode() const {
 		mode = (Mode)DisplayServer::get_singleton()->window_get_mode(window_id);
 	}
 	return mode;
+}
+
+void Window::set_fullscreen_shortcut_enabled(bool p_enabled) {
+	fullscreen_shortcut_enabled = p_enabled;
+}
+
+bool Window::is_fullscreen_shortcut_enabled() const {
+	return fullscreen_shortcut_enabled;
 }
 
 void Window::set_flag(Flags p_flag, bool p_enabled) {
@@ -732,8 +783,6 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 	DisplayServer::get_singleton()->window_request_hdr_output(hdr_output_requested, window_id);
 	AccessibilityServer::get_singleton()->set_window_callbacks(window_id, callable_mp(this, &Window::_accessibility_activate), callable_mp(this, &Window::_accessibility_deactivate));
-
-	_update_window_size();
 
 	if (transient_parent) {
 		for (const Window *E : transient_children) {
@@ -1547,6 +1596,25 @@ PackedStringArray Window::get_accessibility_configuration_warnings() const {
 	return warnings;
 }
 
+Transform2D Window::get_accessibility_transform() const {
+	if (is_inside_tree() && get_parent()) {
+		Transform2D parent_tr = get_parent()->get_accessibility_transform();
+		Transform2D window_tr;
+		if (window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
+			window_tr.set_origin(position);
+		} else {
+			Window *np = get_non_popup_window();
+			if (np) {
+				window_tr.set_origin(get_position() - np->get_position());
+			}
+		}
+		window_tr.set_scale(Vector2(1.f, 1.f) * get_content_scale_factor());
+		return parent_tr.affine_inverse() * window_tr;
+	} else {
+		return Transform2D();
+	}
+}
+
 void Window::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
 	switch (p_what) {
@@ -1573,19 +1641,8 @@ void Window::_notification(int p_what) {
 			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !visible);
 
 			if (get_embedder() || is_popup()) {
-				Control *parent_ctrl = Object::cast_to<Control>(get_parent());
-				Transform2D parent_tr = parent_ctrl ? parent_ctrl->get_global_transform() : Transform2D();
-				Transform2D tr;
-				if (window_id == DisplayServerEnums::INVALID_WINDOW_ID) {
-					tr.set_origin(position);
-				} else {
-					Window *np = get_non_popup_window();
-					if (np) {
-						tr.set_origin(get_position() - np->get_position());
-					}
-				}
-				AccessibilityServer::get_singleton()->update_set_transform(ae, parent_tr.affine_inverse() * tr);
-				AccessibilityServer::get_singleton()->update_set_bounds(ae, Rect2(Point2(), size));
+				AccessibilityServer::get_singleton()->update_set_transform(ae, get_accessibility_transform());
+				AccessibilityServer::get_singleton()->update_set_bounds(ae, Rect2(Point2(), Vector2(size) / get_content_scale_factor()));
 
 				if (accessibility_title_element.is_null()) {
 					accessibility_title_element = AccessibilityServer::get_singleton()->create_sub_element(ae, AccessibilityServerEnums::AccessibilityRole::ROLE_TITLE_BAR);
@@ -1672,6 +1729,7 @@ void Window::_notification(int p_what) {
 					// It's the root window!
 					visible = true; // Always visible.
 					window_id = DisplayServerEnums::MAIN_WINDOW_ID;
+					fullscreen_shortcut_enabled = GLOBAL_GET("display/window/size/enable_toggle_fullscreen_shortcut");
 					focused_window = this;
 					DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 					AccessibilityServer::get_singleton()->set_window_callbacks(window_id, callable_mp(this, &Window::_accessibility_activate), callable_mp(this, &Window::_accessibility_deactivate));
@@ -1691,7 +1749,7 @@ void Window::_notification(int p_what) {
 					_update_viewport_size(); // Then feed back to the viewport.
 					_update_window_callbacks();
 					// Simulate mouse-enter event when mouse is over the window, since OS event might arrive before setting callbacks.
-					if (!mouse_in_window && Rect2(position, size).has_point(DisplayServer::get_singleton()->mouse_get_position())) {
+					if (!mouse_in_window && DisplayServer::get_singleton()->has_feature(DisplayServerEnums::FEATURE_MOUSE) && Rect2(position, size).has_point(DisplayServer::get_singleton()->mouse_get_position())) {
 						_event_callback(DisplayServerEnums::WINDOW_EVENT_MOUSE_ENTER);
 					}
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RSE::VIEWPORT_UPDATE_WHEN_VISIBLE);
@@ -2017,6 +2075,15 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 		emit_signal(SceneStringName(window_input), p_ev);
 	}
 
+	if (fullscreen_shortcut_enabled && p_ev->is_action_pressed("ui_toggle_fullscreen")) {
+		if (mode == MODE_FULLSCREEN || mode == MODE_EXCLUSIVE_FULLSCREEN) {
+			set_mode(toggle_fullscreen_previous_mode);
+		} else {
+			toggle_fullscreen_previous_mode = mode;
+			set_mode(MODE_FULLSCREEN);
+		}
+	}
+
 	if (is_inside_tree()) {
 		push_input(p_ev);
 	}
@@ -2117,7 +2184,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	if (popup_rect != Rect2()) {
 		set_size(popup_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(popup_rect.size);
 	if (popup_rect != Rect2i()) {
 		popup_rect.size = get_size();
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -2156,7 +2223,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	if (popup_rect != Rect2()) {
 		set_size(popup_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(popup_rect.size);
 	if (popup_rect != Rect2i()) {
 		popup_rect.size = get_size();
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -2193,7 +2260,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	if (popup_rect != Rect2()) {
 		set_size(popup_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(popup_rect.size);
 	if (popup_rect != Rect2i()) {
 		popup_rect.size = get_size();
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
@@ -2209,7 +2276,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	if (screen_rect != Rect2i()) {
 		set_size(screen_rect.size);
 	}
-	_pre_popup();
+	_pre_popup(screen_rect.size);
 	if (screen_rect != Rect2i()) {
 		screen_rect.size = get_size();
 	}
@@ -2577,6 +2644,7 @@ void Window::_invalidate_theme_cache() {
 	theme_font_size_cache.clear();
 	theme_color_cache.clear();
 	theme_constant_cache.clear();
+	theme_audio_cache.clear();
 }
 
 void Window::_update_theme_item_cache() {
@@ -2763,6 +2831,30 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_the
 	return constant;
 }
 
+Ref<AudioStream> Window::get_theme_sound(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(Ref<AudioStream>());
+	if (!initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const Ref<AudioStream> *audio = theme_sound_override.getptr(p_name);
+		if (audio) {
+			return *audio;
+		}
+	}
+
+	if (theme_audio_cache.has(p_theme_type) && theme_audio_cache[p_theme_type].has(p_name)) {
+		return theme_audio_cache[p_theme_type][p_name];
+	}
+
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	Ref<AudioStream> audio = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_SOUND, p_name, theme_types);
+	theme_audio_cache[p_theme_type][p_name] = audio;
+	return audio;
+}
+
 Variant Window::get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const {
 	switch (p_data_type) {
 		case Theme::DATA_TYPE_COLOR:
@@ -2777,6 +2869,8 @@ Variant Window::get_theme_item(Theme::DataType p_data_type, const StringName &p_
 			return get_theme_icon(p_name, p_theme_type);
 		case Theme::DATA_TYPE_STYLEBOX:
 			return get_theme_stylebox(p_name, p_theme_type);
+		case Theme::DATA_TYPE_SOUND:
+			return get_theme_sound(p_name, p_theme_type);
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
 	}
@@ -2892,6 +2986,23 @@ bool Window::has_theme_constant(const StringName &p_name, const StringName &p_th
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
 }
 
+bool Window::has_theme_sound(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_sound_override(p_name)) {
+			return true;
+		}
+	}
+
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_SOUND, p_name, theme_types);
+}
+
 /// Local property overrides.
 
 void Window::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
@@ -2951,6 +3062,12 @@ void Window::add_theme_constant_override(const StringName &p_name, int p_constan
 	_notify_theme_override_changed();
 }
 
+void Window::add_theme_sound_override(const StringName &p_name, const Ref<AudioStream> &p_sound) {
+	ERR_MAIN_THREAD_GUARD;
+	theme_sound_override[p_name] = p_sound;
+	_notify_theme_override_changed();
+}
+
 void Window::remove_theme_icon_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	if (theme_icon_override.has(p_name)) {
@@ -2999,6 +3116,12 @@ void Window::remove_theme_constant_override(const StringName &p_name) {
 	_notify_theme_override_changed();
 }
 
+void Window::remove_theme_sound_override(const StringName &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	theme_sound_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
 bool Window::has_theme_icon_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	const Ref<Texture2D> *tex = theme_icon_override.getptr(p_name);
@@ -3033,6 +3156,12 @@ bool Window::has_theme_constant_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	const int *constant = theme_constant_override.getptr(p_name);
 	return constant != nullptr;
+}
+
+bool Window::has_theme_sound_override(const StringName &p_name) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	const Ref<AudioStream> *audio = theme_sound_override.getptr(p_name);
+	return audio != nullptr;
 }
 
 /// Default theme properties.
@@ -3316,7 +3445,11 @@ void Window::_mouse_leave_viewport() {
 }
 
 void Window::_update_displayed_title() {
-	displayed_title = atr(title);
+	String title_text = title;
+	if (title_text.is_empty()) {
+		title_text = default_title;
+	}
+	displayed_title = atr(title_text);
 
 #ifdef DEBUG_ENABLED
 	if (window_id == DisplayServerEnums::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
@@ -3388,6 +3521,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hdr_output_requested", "requested"), &Window::set_hdr_output_requested);
 	ClassDB::bind_method(D_METHOD("is_hdr_output_requested"), &Window::is_hdr_output_requested);
 	ClassDB::bind_method(D_METHOD("get_output_max_linear_value"), &Window::get_output_max_linear_value);
+
+	ClassDB::bind_method(D_METHOD("set_fullscreen_shortcut_enabled", "enabled"), &Window::set_fullscreen_shortcut_enabled);
+	ClassDB::bind_method(D_METHOD("is_fullscreen_shortcut_enabled"), &Window::is_fullscreen_shortcut_enabled);
 
 	ClassDB::bind_method(D_METHOD("is_maximize_allowed"), &Window::is_maximize_allowed);
 
@@ -3476,6 +3612,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_theme_font_size_override", "name", "font_size"), &Window::add_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("add_theme_color_override", "name", "color"), &Window::add_theme_color_override);
 	ClassDB::bind_method(D_METHOD("add_theme_constant_override", "name", "constant"), &Window::add_theme_constant_override);
+	ClassDB::bind_method(D_METHOD("add_theme_sound_override", "name", "sound"), &Window::add_theme_sound_override);
 
 	ClassDB::bind_method(D_METHOD("remove_theme_icon_override", "name"), &Window::remove_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_stylebox_override", "name"), &Window::remove_theme_style_override);
@@ -3483,6 +3620,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_theme_font_size_override", "name"), &Window::remove_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_color_override", "name"), &Window::remove_theme_color_override);
 	ClassDB::bind_method(D_METHOD("remove_theme_constant_override", "name"), &Window::remove_theme_constant_override);
+	ClassDB::bind_method(D_METHOD("remove_theme_sound_override", "name"), &Window::remove_theme_sound_override);
 
 	ClassDB::bind_method(D_METHOD("get_theme_icon", "name", "theme_type"), &Window::get_theme_icon, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_theme_stylebox", "name", "theme_type"), &Window::get_theme_stylebox, DEFVAL(StringName()));
@@ -3490,6 +3628,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_theme_font_size", "name", "theme_type"), &Window::get_theme_font_size, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_theme_color", "name", "theme_type"), &Window::get_theme_color, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("get_theme_constant", "name", "theme_type"), &Window::get_theme_constant, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("get_theme_sound", "name", "theme_type"), &Window::get_theme_sound, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon_override", "name"), &Window::has_theme_icon_override);
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox_override", "name"), &Window::has_theme_stylebox_override);
@@ -3497,6 +3636,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_font_size_override", "name"), &Window::has_theme_font_size_override);
 	ClassDB::bind_method(D_METHOD("has_theme_color_override", "name"), &Window::has_theme_color_override);
 	ClassDB::bind_method(D_METHOD("has_theme_constant_override", "name"), &Window::has_theme_constant_override);
+	ClassDB::bind_method(D_METHOD("has_theme_sound_override", "name"), &Window::has_theme_sound_override);
 
 	ClassDB::bind_method(D_METHOD("has_theme_icon", "name", "theme_type"), &Window::has_theme_icon, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("has_theme_stylebox", "name", "theme_type"), &Window::has_theme_stylebox, DEFVAL(StringName()));
@@ -3504,6 +3644,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_theme_font_size", "name", "theme_type"), &Window::has_theme_font_size, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("has_theme_color", "name", "theme_type"), &Window::has_theme_color, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("has_theme_constant", "name", "theme_type"), &Window::has_theme_constant, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("has_theme_sound", "name", "theme_type"), &Window::has_theme_sound, DEFVAL(StringName()));
 
 	ClassDB::bind_method(D_METHOD("get_theme_default_base_scale"), &Window::get_theme_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_theme_default_font"), &Window::get_theme_default_font);
@@ -3575,6 +3716,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_wm_hint"), "set_flag", "get_flag", FLAG_POPUP_WM_HINT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "minimize_disabled"), "set_flag", "get_flag", FLAG_MINIMIZE_DISABLED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "maximize_disabled"), "set_flag", "get_flag", FLAG_MAXIMIZE_DISABLED);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fullscreen_shortcut_enabled"), "set_fullscreen_shortcut_enabled", "is_fullscreen_shortcut_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_native"), "set_force_native", "get_force_native");
 
 	ADD_GROUP("Limits", "");
@@ -3730,4 +3872,5 @@ Window::~Window() {
 	theme_font_size_override.clear();
 	theme_color_override.clear();
 	theme_constant_override.clear();
+	theme_sound_override.clear();
 }

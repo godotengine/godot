@@ -17,7 +17,15 @@ inline int FindRoot(const T inA, const T inB, const T inC, T &outX1, T &outX2)
 	{
 		// Check if this is a constant equation
 		if (inB == T(0))
+		{
+			if (inC == T(0))
+			{
+				outX1 = outX2 = 0.0f;
+				return 1; // Actually infinitely many solutions
+			}
+
 			return 0;
+		}
 
 		// Linear equation with 1 solution
 		outX1 = outX2 = -inC / inB;
@@ -25,10 +33,10 @@ inline int FindRoot(const T inA, const T inB, const T inC, T &outX1, T &outX2)
 	}
 
 	// See Numerical Recipes in C, Chapter 5.6 Quadratic and Cubic Equations
-	T det = Square(inB) - T(4) * inA * inC;
+	T det = DifferenceOfProducts(inB, inB, T(4) * inA, inC);
 	if (det < T(0))
 		return 0;
-	T q = (inB + Sign(inB) * sqrt(det)) / T(-2);
+	T q = (inB + Sign(inB) * Sqrt(det)) / T(-2);
 	outX1 = q / inA;
 	if (q == T(0))
 	{

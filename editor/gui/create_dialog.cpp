@@ -656,6 +656,11 @@ void CreateDialog::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			// Update `EditorHelpBit` in case it contains custom text.
+			_update_search();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			search_options->add_theme_constant_override("icon_max_width", icon_width);
@@ -1005,6 +1010,7 @@ CreateDialog::CreateDialog() {
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
 	favorites->add_theme_constant_override("draw_guides", 1);
+	favorites->add_theme_constant_override("h_separation", 0);
 	favorites->set_theme_type_variation("TreeSecondary");
 	SET_DRAG_FORWARDING_GCD(favorites, CreateDialog);
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
@@ -1077,6 +1083,7 @@ CreateDialog::CreateDialog() {
 
 	search_options = memnew(Tree);
 	search_box->set_forward_control(search_options);
+	search_options->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_TOP);
 	search_options->set_accessibility_name(TTRC("Matches:"));
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->set_v_size_flags(Control::SIZE_EXPAND_FILL);

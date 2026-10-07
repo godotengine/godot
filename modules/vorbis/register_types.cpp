@@ -39,11 +39,18 @@
 #include "resource_importer_ogg_vorbis.h"
 
 #include "editor/editor_node.h"
+#include "editor/inspector/editor_inspector.h"
+
+#include "modules/vorbis/editor/audio_stream_ogg_vorbis_editor_plugin.h"
 
 static void _editor_init() {
 	Ref<ResourceImporterOggVorbis> ogg_vorbis_importer;
 	ogg_vorbis_importer.instantiate();
 	ResourceFormatImporter::get_singleton()->add_importer(ogg_vorbis_importer);
+
+	Ref<EditorInspectorPluginAudioStreamOggVorbis> plugin;
+	plugin.instantiate();
+	EditorInspector::add_inspector_plugin(plugin);
 }
 #endif
 

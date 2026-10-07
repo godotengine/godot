@@ -36,6 +36,7 @@
 
 class AcceptDialog;
 class Button;
+class HFlowContainer;
 class Label;
 class PopupMenu;
 class ProjectList;
@@ -56,10 +57,12 @@ class ProjectListItemControl : public HBoxContainer {
 	Label *project_version = nullptr;
 	TextureRect *project_unsupported_features = nullptr;
 	TextureRect *project_different_version = nullptr;
-	HBoxContainer *tag_container = nullptr;
+	HFlowContainer *tag_container = nullptr;
 	Button *touch_menu_button = nullptr;
 
 	Color favorite_focus_color;
+
+	int project_title_index = -1;
 
 	bool project_is_missing = false;
 	bool icon_needs_reload = true;
@@ -90,6 +93,13 @@ class ProjectListItemControl : public HBoxContainer {
 	void _accessibility_action_focus(const Variant &p_data);
 	void _accessibility_action_blur(const Variant &p_data);
 
+private:
+	// Caches for resizing project titles.
+
+	int title_fullsize_cache = 0;
+	int tag_size_cache = 0;
+	int window_size_cache = 0;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -104,11 +114,16 @@ public:
 	void set_unsupported_features(PackedStringArray p_features);
 
 	bool should_load_project_icon() const;
+	bool is_older_version() const { return version_match_type == VersionMatchType::PROJECT_USES_OLDER_MAJOR || version_match_type == VersionMatchType::PROJECT_USES_OLDER_MINOR; }
 	void set_selected(bool p_selected, bool p_hide_focus = false);
 
 	void set_is_favorite(bool p_favorite);
 	void set_is_missing(bool p_missing);
 	void set_is_grayed(bool p_grayed);
+	void set_project_title_index(int p_title_index);
+	void set_project_title_autowrap();
+
+	void resize_project_title();
 
 	ProjectListItemControl();
 };
@@ -157,6 +172,7 @@ public:
 		bool missing = false;
 		bool recovery_mode = false;
 		int version = 0;
+		int project_title_index = -1;
 
 		ProjectListItemControl *control = nullptr;
 
@@ -205,11 +221,15 @@ public:
 		String get_last_edited_string() const;
 	};
 
+	HashMap<int, int> title_size_cache;
+	int project_title_index_count = -1;
+
 private:
 	String _config_path;
 	ConfigFile _config;
 
 	Vector<Item> _projects;
+	static inline HashMap<String, int> modified_time_cache;
 
 	int _icon_load_index = 0;
 	bool project_opening_initiated = false;
@@ -251,6 +271,7 @@ private:
 	// Project list items.
 
 	void _create_project_item_control(int p_index);
+	void _update_project_control_translatable_fields(const Item &item);
 	void _toggle_project(int p_index);
 	void _remove_project(int p_index, bool p_update_settings);
 
@@ -319,6 +340,10 @@ public:
 	const HashSet<String> &get_selected_project_keys() const;
 	int get_single_selected_index() const;
 	void erase_selected_projects(bool p_delete_project_contents);
+
+	// Resize project titles.
+
+	void resize_project_titles();
 
 	// Missing projects.
 

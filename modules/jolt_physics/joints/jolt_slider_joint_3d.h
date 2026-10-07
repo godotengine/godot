@@ -38,7 +38,7 @@
 #include <Jolt/Physics/Constraints/SliderConstraint.h>
 
 class JoltSliderJoint3D final : public JoltJoint3D {
-	typedef PhysicsServer3D::SliderJointParam Parameter;
+	typedef PS3DE::SliderJointParam Parameter;
 	typedef JoltPhysicsServer3D::SliderJointParamJolt JoltParameter;
 	typedef JoltPhysicsServer3D::SliderJointFlagJolt JoltFlag;
 
@@ -75,10 +75,10 @@ class JoltSliderJoint3D final : public JoltJoint3D {
 public:
 	JoltSliderJoint3D(const JoltJoint3D &p_old_joint, JoltBody3D *p_body_a, JoltBody3D *p_body_b, const Transform3D &p_local_ref_a, const Transform3D &p_local_ref_b);
 
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
+	virtual PS3DE::JointType get_type() const override { return PS3DE::JOINT_TYPE_SLIDER; }
 
-	double get_param(PhysicsServer3D::SliderJointParam p_param) const;
-	void set_param(PhysicsServer3D::SliderJointParam p_param, double p_value);
+	double get_param(PS3DE::SliderJointParam p_param) const;
+	void set_param(PS3DE::SliderJointParam p_param, double p_value);
 
 	double get_jolt_param(JoltParameter p_param) const;
 	void set_jolt_param(JoltParameter p_param, double p_value);

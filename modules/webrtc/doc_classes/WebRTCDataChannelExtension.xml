@@ -86,14 +86,14 @@
 		</method>
 		<method name="_put_packet" qualifiers="virtual">
 			<return type="int" enum="Error" />
-			<param index="0" name="p_buffer" type="const uint8_t*" />
-			<param index="1" name="p_buffer_size" type="int" />
+			<param index="0" name="buffer" type="const uint8_t*" />
+			<param index="1" name="buffer_size" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="_set_write_mode" qualifiers="virtual required">
 			<return type="void" />
-			<param index="0" name="p_write_mode" type="int" enum="WebRTCDataChannel.WriteMode" />
+			<param index="0" name="write_mode" type="int" enum="WebRTCDataChannel.WriteMode" />
 			<description>
 			</description>
 		</method>

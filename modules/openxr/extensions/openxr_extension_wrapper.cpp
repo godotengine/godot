@@ -47,7 +47,9 @@ void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_set_frame_end_info_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_projection_layer_and_get_next_pointer, "next_pointer");
 	GDVIRTUAL_BIND(_set_view_locate_info_and_get_next_pointer, "next_pointer");
+	GDVIRTUAL_BIND(_set_spatial_container_views_locate_info_and_get_next_pointer, "spatial_container", "next_pointer");
 	GDVIRTUAL_BIND(_set_reference_space_create_info_and_get_next_pointer, "reference_space_type", "next_pointer");
+	GDVIRTUAL_BIND(_set_spatial_container_create_info_and_get_next_pointer, "spatial_container", "next_pointer");
 	GDVIRTUAL_BIND(_prepare_view_configuration, "view_count");
 	GDVIRTUAL_BIND(_set_view_configuration_and_get_next_pointer, "view", "next_pointer");
 	GDVIRTUAL_BIND(_print_view_configuration_info, "view");
@@ -81,6 +83,9 @@ void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_get_viewport_composition_layer_extension_property_defaults);
 	GDVIRTUAL_BIND(_on_viewport_composition_layer_destroyed, "layer");
 	GDVIRTUAL_BIND(_set_android_surface_swapchain_create_info_and_get_next_pointer, "property_values", "next_pointer");
+
+	GDVIRTUAL_BIND(_get_camera_projections, "tracker_name", "aspect", "z_near", "z_far");
+	GDVIRTUAL_BIND(_get_camera_offsets, "tracker_name");
 
 #ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND_COMPAT(_get_requested_extensions_bind_compat_109302);
@@ -224,6 +229,16 @@ void *OpenXRExtensionWrapper::set_projection_layer_and_get_next_pointer(void *p_
 	return nullptr;
 }
 
+void *OpenXRExtensionWrapper::set_spatial_container_create_info_and_get_next_pointer(RID p_spatial_container, void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_spatial_container_create_info_and_get_next_pointer, p_spatial_container, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
 void OpenXRExtensionWrapper::prepare_view_configuration(uint32_t p_view_count) {
 	GDVIRTUAL_CALL(_prepare_view_configuration, p_view_count);
 }
@@ -246,6 +261,16 @@ void *OpenXRExtensionWrapper::set_view_locate_info_and_get_next_pointer(void *p_
 	uint64_t pointer = 0;
 
 	if (GDVIRTUAL_CALL(_set_view_locate_info_and_get_next_pointer, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+		return reinterpret_cast<void *>(pointer);
+	}
+
+	return nullptr;
+}
+
+void *OpenXRExtensionWrapper::set_spatial_container_views_locate_info_and_get_next_pointer(RID p_spatial_container, void *p_next_pointer) {
+	uint64_t pointer = 0;
+
+	if (GDVIRTUAL_CALL(_set_spatial_container_views_locate_info_and_get_next_pointer, p_spatial_container, GDExtensionPtr<void>(p_next_pointer), pointer)) {
 		return reinterpret_cast<void *>(pointer);
 	}
 
@@ -375,7 +400,7 @@ void OpenXRExtensionWrapper::on_state_exiting() {
 bool OpenXRExtensionWrapper::on_event_polled(const XrEventDataBuffer &p_event) {
 	bool event_polled;
 
-	if (GDVIRTUAL_CALL(_on_event_polled, GDExtensionConstPtr<void>(&p_event), event_polled)) {
+	if (GDVIRTUAL_CALL(_on_event_polled, GDExtensionPtr<const void>(&p_event), event_polled)) {
 		return event_polled;
 	}
 
@@ -385,7 +410,7 @@ bool OpenXRExtensionWrapper::on_event_polled(const XrEventDataBuffer &p_event) {
 void *OpenXRExtensionWrapper::set_viewport_composition_layer_and_get_next_pointer(const XrCompositionLayerBaseHeader *p_layer, const Dictionary &p_property_values, void *p_next_pointer) {
 	uint64_t pointer = 0;
 
-	if (GDVIRTUAL_CALL(_set_viewport_composition_layer_and_get_next_pointer, GDExtensionConstPtr<void>(p_layer), p_property_values, GDExtensionPtr<void>(p_next_pointer), pointer)) {
+	if (GDVIRTUAL_CALL(_set_viewport_composition_layer_and_get_next_pointer, GDExtensionPtr<const void>(p_layer), p_property_values, GDExtensionPtr<void>(p_next_pointer), pointer)) {
 		return reinterpret_cast<void *>(pointer);
 	}
 
@@ -393,7 +418,7 @@ void *OpenXRExtensionWrapper::set_viewport_composition_layer_and_get_next_pointe
 }
 
 void OpenXRExtensionWrapper::on_viewport_composition_layer_destroyed(const XrCompositionLayerBaseHeader *p_layer) {
-	GDVIRTUAL_CALL(_on_viewport_composition_layer_destroyed, GDExtensionConstPtr<void>(p_layer));
+	GDVIRTUAL_CALL(_on_viewport_composition_layer_destroyed, GDExtensionPtr<const void>(p_layer));
 }
 
 void OpenXRExtensionWrapper::get_viewport_composition_layer_extension_properties(List<PropertyInfo> *p_property_list) {
@@ -420,6 +445,22 @@ void *OpenXRExtensionWrapper::set_android_surface_swapchain_create_info_and_get_
 	}
 
 	return p_next_pointer;
+}
+
+TypedArray<Projection> OpenXRExtensionWrapper::get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) {
+	TypedArray<Projection> camera_projections;
+
+	GDVIRTUAL_CALL(_get_camera_projections, p_tracker_name, p_aspect, p_z_near, p_z_far, camera_projections);
+
+	return camera_projections;
+}
+
+TypedArray<Transform3D> OpenXRExtensionWrapper::get_camera_offsets(const StringName &p_tracker_name) {
+	TypedArray<Transform3D> camera_offsets;
+
+	GDVIRTUAL_CALL(_get_camera_offsets, p_tracker_name, camera_offsets);
+
+	return camera_offsets;
 }
 
 Ref<OpenXRAPIExtension> OpenXRExtensionWrapper::_gdextension_get_openxr_api() {

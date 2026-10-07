@@ -36,7 +36,6 @@
 #include "core/object/class_db.h"
 #include "core/templates/rb_set.h"
 #include "editor/editor_node.h"
-#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/inspector/editor_inspector.h"
@@ -256,7 +255,8 @@ void AnimationNodeBlendTreeEditor::update_graph_immediately() {
 		if (AnimationTreeEditor::get_singleton()->can_edit(agnode)) {
 			node->add_child(memnew(HSeparator));
 			Button *open_in_editor = memnew(Button);
-			open_in_editor->set_text(TTR("Open Editor"));
+			open_in_editor->set_text(TTR("Open"));
+			open_in_editor->set_tooltip_text(TTR("Open in editor."));
 			open_in_editor->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			node->add_child(open_in_editor);
 			open_in_editor->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendTreeEditor::_open_in_editor).bind(E), CONNECT_DEFERRED);
@@ -1044,9 +1044,6 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
-			error_label->add_theme_color_override(SNAME("default_color"), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-
 			if (is_visible_in_tree()) {
 				update_graph();
 			}
@@ -1061,8 +1058,6 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 			if (graph_update_queued) {
 				return;
 			}
-
-			update_error_message(tree, error_panel, error_label);
 
 			LocalVector<AnimationNodeBlendTree::NodeConnection> conns;
 			blend_tree->get_node_connections(&conns);
@@ -1187,7 +1182,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 
 	//change editors accordingly
 	for (int i = 0; i < visible_properties.size(); i++) {
-		String pname = visible_properties[i]->get_edited_property().operator String();
+		String pname = visible_properties[i]->get_edited_property().string();
 		if (pname.begins_with(base_path + prev_name)) {
 			String new_name2 = pname.replace_first(base_path + prev_name, base_path + name);
 			visible_properties[i]->set_object_and_property(visible_properties[i]->get_edited_object(), new_name2);
@@ -1312,12 +1307,6 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	add_options.push_back(AddOption("BlendSpace2D", "AnimationNodeBlendSpace2D"));
 	add_options.push_back(AddOption("StateMachine", "AnimationNodeStateMachine"));
 	_update_options_menu();
-
-	error_panel = memnew(PanelContainer);
-	add_child(error_panel);
-	error_label = create_error_label_node();
-	error_panel->add_child(error_label);
-
 	filter_dialog = memnew(AcceptDialog);
 	add_child(filter_dialog);
 	filter_dialog->set_title(TTR("Edit Filtered Tracks:"));
@@ -1425,10 +1414,14 @@ void AnimationNodeAnimationEditor::_confirm_set_custom_timeline_from_marker_dial
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set Custom Timeline from Marker"));
-	undo_redo->add_do_method(*animation_node_animation, "set_start_offset", start_time);
-	undo_redo->add_undo_method(*animation_node_animation, "set_start_offset", animation_node_animation->get_start_offset());
 	undo_redo->add_do_method(*animation_node_animation, "set_stretch_time_scale", false);
 	undo_redo->add_undo_method(*animation_node_animation, "set_stretch_time_scale", animation_node_animation->is_stretching_time_scale());
+	if (animation_node_animation->get_play_mode() == AnimationNodeAnimation::PLAY_MODE_FORWARD) {
+		undo_redo->add_do_method(*animation_node_animation, "set_start_offset", start_time);
+	} else {
+		undo_redo->add_do_method(*animation_node_animation, "set_start_offset", animation->get_length() - end_time);
+	}
+	undo_redo->add_undo_method(*animation_node_animation, "set_start_offset", animation_node_animation->get_start_offset());
 	undo_redo->add_do_method(*animation_node_animation, "set_timeline_length", length);
 	undo_redo->add_undo_method(*animation_node_animation, "set_timeline_length", animation_node_animation->get_timeline_length());
 	undo_redo->add_do_method(*animation_node_animation, "notify_property_list_changed");

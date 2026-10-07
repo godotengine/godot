@@ -1,5 +1,3 @@
-GH-112290
----------
 Validate extension JSON: Error: Field 'builtin_classes/PackedByteArray/methods/duplicate': is_const changed value in new API, from false to true.
 Validate extension JSON: Error: Field 'builtin_classes/PackedColorArray/methods/duplicate': is_const changed value in new API, from false to true.
 Validate extension JSON: Error: Field 'builtin_classes/PackedFloat32Array/methods/duplicate': is_const changed value in new API, from false to true.

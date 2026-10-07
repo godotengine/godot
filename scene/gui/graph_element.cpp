@@ -46,6 +46,10 @@ void GraphElement::_edit_set_position(const Point2 &p_position) {
 }
 #endif
 
+Size2 GraphElement::get_minimum_size() const {
+	return Container::_get_minimum_size();
+}
+
 void GraphElement::_resort() {
 	Size2 size = get_size();
 
@@ -56,22 +60,6 @@ void GraphElement::_resort() {
 		}
 		fit_child_in_rect(child, Rect2(Point2(), size));
 	}
-}
-
-Size2 GraphElement::get_minimum_size() const {
-	Size2 minsize;
-	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = as_sortable_control(get_child(i), SortableVisibilityMode::IGNORE);
-		if (!child) {
-			continue;
-		}
-
-		Size2i size = child->get_bound_minimum_size();
-
-		minsize = minsize.max(size);
-	}
-
-	return minsize;
 }
 
 void GraphElement::_notification(int p_what) {

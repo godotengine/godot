@@ -38,6 +38,7 @@ JPH_EXPORT void RegisterDefaultAllocator();
 // It uses the non-aligned version, which on 32 bit platforms usually returns an 8 byte aligned block.
 // We therefore default to 16 byte aligned allocations when the regular new operator is used.
 // See: https://github.com/godotengine/godot/issues/105455#issuecomment-2824311547
+// Note: See similar fix for the definition of JPH_DEFAULT_ALLOCATE_ALIGNMENT
 #if defined(JPH_COMPILER_MINGW) && JPH_CPU_ARCH_BITS == 32
 	#define JPH_INTERNAL_DEFAULT_ALLOCATE(size) JPH::AlignedAllocate(size, 16)
 	#define JPH_INTERNAL_DEFAULT_FREE(pointer) JPH::AlignedFree(pointer)

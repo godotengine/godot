@@ -868,6 +868,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 	if (userdata_count != particles->userdata_count) {
 		// Mismatch userdata, re-create buffers.
 		_particles_free_data(particles);
+		particles->restart_request = true;
 	}
 
 	if (particles->amount > 0 && particles->front_process_buffer == 0) {

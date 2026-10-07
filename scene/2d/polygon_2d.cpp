@@ -46,7 +46,7 @@ Callable Polygon2D::_navmesh_source_geometry_parsing_callback;
 RID Polygon2D::_navmesh_source_geometry_parser;
 #endif // NAVIGATION_2D_DISABLED
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Dictionary Polygon2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
@@ -70,9 +70,7 @@ Point2 Polygon2D::_edit_get_pivot() const {
 bool Polygon2D::_edit_use_pivot() const {
 	return true;
 }
-#endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 Rect2 Polygon2D::_edit_get_rect() const {
 	if (rect_cache_dirty) {
 		int l = polygon.size();
@@ -415,12 +413,14 @@ void Polygon2D::_notification(int p_what) {
 
 				if (needs_clear) {
 					RS::get_singleton()->mesh_add_surface(mesh, sd);
+					RS::get_singleton()->mesh_set_custom_aabb(mesh, AABB());
 				} else {
 					RS::get_singleton()->mesh_surface_update_vertex_region(mesh, 0, 0, sd.vertex_data);
 					if (has_uv || has_color) {
 						RS::get_singleton()->mesh_surface_update_attribute_region(mesh, 0, 0, sd.attribute_data);
 					}
 					RS::get_singleton()->mesh_surface_update_index_region(mesh, 0, 0, sd.index_data);
+					RS::get_singleton()->mesh_set_custom_aabb(mesh, sd.aabb);
 				}
 			}
 
@@ -578,8 +578,9 @@ NodePath Polygon2D::get_bone_path(int p_index) const {
 	return bone_weights[p_index].path;
 }
 
-Vector<float> Polygon2D::get_bone_weights(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), Vector<float>());
+const Vector<float> &Polygon2D::get_bone_weights(int p_index) const {
+	static const Vector<float> EMPTY;
+	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), EMPTY);
 	return bone_weights[p_index].weights;
 }
 

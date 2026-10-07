@@ -34,8 +34,8 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
-#include "core/object/class_db.h" // IWYU pragma: keep. `ADD_SIGNAL` macro.
 #include "core/os/os.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/file_system/editor_file_system.h"
@@ -461,7 +461,7 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 		}
 
 		if (only_scenes_selected) {
-			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRN("Open Scene", "Open Scenes", selected_items.size()), FILE_MENU_OPEN);
+			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TPL(selected_items.size(), TTRC("Open Scene"), TTRC("Open Scenes")), FILE_MENU_OPEN);
 		} else if (selected_items.size() == 1) {
 			file_options->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTR("Open"), FILE_MENU_OPEN);
 		} else {
@@ -537,6 +537,14 @@ void DependencyEditorOwners::show(const String &p_path) {
 	editing = p_path;
 	owners->clear();
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem());
+
+	for (const StringName &setting : FileSystemDock::get_singleton()->get_path_project_settings()) {
+		const String path = ResourceUID::ensure_path(GLOBAL_GET(setting));
+		if (path == p_path) {
+			owners->add_item(vformat(TTR("Project setting: %s"), setting));
+			owners->set_item_icon(-1, get_editor_theme_icon(SNAME("ClassList")));
+		}
+	}
 
 	int count = owners->get_item_count();
 	if (count > 0) {
@@ -644,6 +652,24 @@ void DependencyRemoveDialog::_find_all_removed_dependencies(EditorFileSystemDire
 	}
 }
 
+void DependencyRemoveDialog::_find_setting_owners_of_removed_files(Vector<RemovedDependency> &p_removed) {
+	for (KeyValue<String, String> &files : all_remove_files) {
+		const String &path = files.key;
+
+		for (const StringName &setting : FileSystemDock::get_singleton()->get_path_project_settings()) {
+			const String setting_path = ResourceUID::ensure_path(GLOBAL_GET(setting));
+			if (setting_path == path) {
+				RemovedDependency dep;
+				dep.file = vformat(TTR("Project setting: %s"), setting);
+				dep.file_type = "ClassList";
+				dep.dependency = path;
+				dep.dependency_folder = files.value;
+				p_removed.push_back(dep);
+			}
+		}
+	}
+}
+
 void DependencyRemoveDialog::_find_localization_remaps_of_removed_files(Vector<RemovedDependency> &p_removed) {
 	for (KeyValue<String, String> &files : all_remove_files) {
 		const String &path = files.key;
@@ -713,10 +739,11 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 		}
 
 		//List this file under this dependency
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(rd.file_type);
 		TreeItem *file_item = owners->create_item(tree_items[rd.dependency]);
 		file_item->set_text(0, rd.file);
-		file_item->set_icon(0, icon);
+		if (!rd.file_type.is_empty()) {
+			file_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(rd.file_type));
+		}
 	}
 }
 
@@ -754,6 +781,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 
 	Vector<RemovedDependency> removed_deps;
 	_find_all_removed_dependencies(EditorFileSystem::get_singleton()->get_filesystem(), removed_deps);
+	_find_setting_owners_of_removed_files(removed_deps);
 	_find_localization_remaps_of_removed_files(removed_deps);
 	removed_deps.sort();
 	if (removed_deps.is_empty()) {
@@ -773,7 +801,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 
 void DependencyRemoveDialog::ok_pressed() {
 	HashMap<String, StringName> setting_path_map;
-	for (const StringName &setting : path_project_settings) {
+	for (const StringName &setting : FileSystemDock::get_singleton()->get_path_project_settings()) {
 		const String path = ResourceUID::ensure_path(GLOBAL_GET(setting));
 		setting_path_map[path] = setting;
 	}
@@ -893,7 +921,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 
 	Label *owners_label = memnew(Label);
 	owners_label->set_theme_type_variation("HeaderSmall");
-	owners_label->set_text(TTR("Dependencies of files to be deleted:"));
+	owners_label->set_text(TTR("Owners of files to be deleted:"));
 	vb_owners->add_child(owners_label);
 
 	mc = memnew(MarginContainer);
@@ -906,17 +934,9 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTH);
 	owners->set_hide_root(true);
 	owners->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
-	owners->set_accessibility_name(TTRC("Dependencies"));
+	owners->set_accessibility_name(TTRC("Owners"));
 	mc->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
-	List<PropertyInfo> property_list;
-	ProjectSettings::get_singleton()->get_property_list(&property_list);
-	for (const PropertyInfo &pi : property_list) {
-		if (pi.type == Variant::STRING && pi.hint == PROPERTY_HINT_FILE) {
-			path_project_settings.push_back(pi.name);
-		}
-	}
 }
 
 //////////////
@@ -1034,7 +1054,7 @@ void DependencyErrorDialog::_check_for_resolved() {
 
 				LocalVector<String> &stored_paths = owner_deps[owner_path];
 				for (const String &dep : deps) {
-					if (!errors_fixed && !FileAccess::exists(_get_resolved_dep_path(dep))) {
+					if (errors_fixed && !FileAccess::exists(_get_resolved_dep_path(dep))) {
 						errors_fixed = false;
 					}
 					stored_paths.push_back(_get_stored_dep_path(dep));

@@ -153,6 +153,10 @@ public:
 		DisplayServerEnums::WindowEvent event;
 	};
 
+	class WindowHoverMessage : public WindowMessage {
+		GDSOFTCLASS(WindowHoverMessage, WindowMessage);
+	};
+
 	class InputEventMessage : public Message {
 		GDSOFTCLASS(InputEventMessage, Message);
 
@@ -478,6 +482,13 @@ public:
 		HashSet<String> mime_types;
 	};
 
+	struct TouchPoint {
+		DisplayServerEnums::WindowID touched_id = DisplayServerEnums::INVALID_WINDOW_ID;
+		Point2 position;
+		uint32_t down_time = 0;
+		uint32_t motion_time = 0;
+	};
+
 	struct SeatState {
 		RegistryState *registry = nullptr;
 
@@ -496,6 +507,11 @@ public:
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
+
+		bool pointer_locked = false;
+
+		bool constraint_warping = false;
+		bool constraint_warp_committed = false;
 
 		struct zwp_pointer_gesture_pinch_v1 *wp_pointer_gesture_pinch = nullptr;
 
@@ -561,6 +577,12 @@ public:
 		uint32_t last_key_pressed_serial = 0;
 
 		struct wl_data_device *wl_data_device = nullptr;
+
+		// Touch.
+		struct wl_touch *wl_touch = nullptr;
+		AHashMap<int32_t, TouchPoint> touch_points_buffer;
+		AHashMap<int32_t, TouchPoint> touch_points;
+		int32_t last_touch_id = -1;
 
 		// Drag and drop.
 		DisplayServerEnums::WindowID dnd_id = DisplayServerEnums::INVALID_WINDOW_ID;
@@ -698,6 +720,12 @@ private:
 	struct wl_registry *wl_registry = nullptr;
 
 	struct wl_seat *wl_seat_current = nullptr;
+	bool has_touch = false;
+
+	// We got plenty of different pointing devices but Godot can only hover a
+	// single window at a time. This helps track that and gives us a way to avoid
+	// invalid mouse enter/leave event combinations.
+	DisplayServerEnums::WindowID hovered_window_id = DisplayServerEnums::INVALID_WINDOW_ID;
 
 	bool frame = true;
 
@@ -760,6 +788,14 @@ private:
 	static void _wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
 	static void _wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
+	static void _wl_touch_on_down(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, struct wl_surface *surface, int32_t id, wl_fixed_t x, wl_fixed_t y);
+	static void _wl_touch_on_up(void *data, struct wl_touch *wl_touch, uint32_t serial, uint32_t time, int32_t id);
+	static void _wl_touch_on_motion(void *data, struct wl_touch *wl_touch, uint32_t time, int32_t id, wl_fixed_t x, wl_fixed_t y);
+	static void _wl_touch_on_frame(void *data, struct wl_touch *wl_touch);
+	static void _wl_touch_on_cancel(void *data, struct wl_touch *wl_touch);
+	static void _wl_touch_on_shape(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t major, wl_fixed_t minor);
+	static void _wl_touch_on_orientation(void *data, struct wl_touch *wl_touch, int32_t id, wl_fixed_t orientation);
+
 	static void _wl_data_device_on_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
 	static void _wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id);
 	static void _wl_data_device_on_leave(void *data, struct wl_data_device *wl_data_device);
@@ -793,6 +829,9 @@ private:
 	static void _xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token);
 
 	// wayland-protocols event handlers.
+	static void _zwp_locked_pointer_v1_on_locked(void *data, struct zwp_locked_pointer_v1 *zwp_locked_pointer_v1);
+	static void _zwp_locked_pointer_v1_on_unlocked(void *data, struct zwp_locked_pointer_v1 *zwp_locked_pointer_v1);
+
 	static void _wp_color_manager_on_supported_intent(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t render_intent);
 	static void _wp_color_manager_on_supported_feature(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t feature);
 	static void _wp_color_manager_on_supported_tf_named(void *data, struct wp_color_manager_v1 *wp_color_manager_v1, uint32_t tf);
@@ -939,6 +978,16 @@ private:
 		.repeat_info = _wl_keyboard_on_repeat_info,
 	};
 
+	static constexpr struct wl_touch_listener wl_touch_listener = {
+		.down = _wl_touch_on_down,
+		.up = _wl_touch_on_up,
+		.motion = _wl_touch_on_motion,
+		.frame = _wl_touch_on_frame,
+		.cancel = _wl_touch_on_cancel,
+		.shape = _wl_touch_on_shape,
+		.orientation = _wl_touch_on_orientation,
+	};
+
 	static constexpr struct wl_data_device_listener wl_data_device_listener = {
 		.data_offer = _wl_data_device_on_data_offer,
 		.enter = _wl_data_device_on_enter,
@@ -986,6 +1035,11 @@ private:
 	};
 
 	// wayland-protocols event listeners.
+	static constexpr struct zwp_locked_pointer_v1_listener zwp_locked_pointer_v1_listener{
+		.locked = _zwp_locked_pointer_v1_on_locked,
+		.unlocked = _zwp_locked_pointer_v1_on_unlocked,
+	};
+
 	static constexpr struct wp_color_manager_v1_listener wp_color_manager_listener = {
 		.supported_intent = _wp_color_manager_on_supported_intent,
 		.supported_feature = _wp_color_manager_on_supported_feature,
@@ -1177,6 +1231,9 @@ private:
 
 	void _set_current_seat(struct wl_seat *p_seat);
 
+	void _window_hover(DisplayServerEnums::WindowID p_window_id);
+	void _window_hover();
+
 	bool _load_cursor_theme(int p_cursor_size);
 
 	void _update_scale(int p_scale);
@@ -1202,10 +1259,10 @@ public:
 	static EmbeddingCompositorState *godot_embedding_compositor_get_state(struct godot_embedding_compositor *p_compositor);
 
 	void seat_state_unlock_pointer(SeatState *p_ss);
-	void seat_state_lock_pointer(SeatState *p_ss);
+	void seat_state_lock_pointer(SeatState *p_ss, struct wl_surface *p_surface);
 	void seat_state_set_hint(SeatState *p_ss, int p_x, int p_y);
 	void seat_state_warp_pointer(SeatState *p_ss, int p_x, int p_y);
-	void seat_state_confine_pointer(SeatState *p_ss);
+	void seat_state_confine_pointer(SeatState *p_ss, struct wl_surface *p_surface);
 
 	static void seat_state_update_cursor(SeatState *p_ss);
 
@@ -1230,6 +1287,10 @@ public:
 	void window_create(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size, DisplayServerEnums::WindowID p_parent_id = DisplayServerEnums::INVALID_WINDOW_ID);
 	void window_create_popup(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id, Rect2i p_rect);
 	void window_destroy(DisplayServerEnums::WindowID p_window_Id);
+
+	// Checks if a window exists for this ID (NOT if its data is valid). Useful to
+	// detect deleted windows.
+	bool window_exists(DisplayServerEnums::WindowID p_window_id) const;
 
 	void window_set_parent(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowID p_parent_id);
 
@@ -1267,6 +1328,8 @@ public:
 
 	ScreenData screen_get_data(int p_screen) const;
 	int get_screen_count() const;
+
+	bool input_has_touch() const;
 
 	void pointer_set_constraint(PointerConstraint p_constraint);
 	void pointer_set_hint(const Point2i &p_hint);
@@ -1318,6 +1381,8 @@ public:
 	bool get_reset_frame();
 	bool wait_frame_suspend_ms(int p_timeout);
 	bool is_fifo_available() const;
+
+	void main_loop_callback();
 
 	uint64_t window_get_last_frame_time(DisplayServerEnums::WindowID p_window_id) const;
 	bool window_is_suspended(DisplayServerEnums::WindowID p_window_id) const;

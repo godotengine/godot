@@ -34,14 +34,15 @@
 #include "core/input/input.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
-#import "drivers/apple_embedded/app_delegate_service.h"
 #import "drivers/apple_embedded/apple_embedded.h"
+#import "drivers/apple_embedded/godot_app_delegate_service_apple_embedded.h"
 #import "drivers/apple_embedded/godot_keyboard_input_view.h"
 #import "drivers/apple_embedded/godot_view_apple_embedded.h"
 #import "drivers/apple_embedded/godot_view_controller.h"
 #import "drivers/apple_embedded/key_mapping_apple_embedded.h"
 #import "drivers/apple_embedded/os_apple_embedded.h"
 #import "drivers/apple_embedded/tts_apple_embedded.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/display/native_menu.h"
 
 #import <GameController/GameController.h>
@@ -176,10 +177,23 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
+	GDTView *godot_view = GDTAppDelegateService.viewController.godotView;
+	if (godot_view && AccessibilityServer::get_singleton()) {
+		if (!AccessibilityServer::get_singleton()->window_create(DisplayServerEnums::MAIN_WINDOW_ID, (__bridge void *)godot_view)) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+			}
+		}
+	}
+
 	r_error = OK;
 }
 
 DisplayServerAppleEmbedded::~DisplayServerAppleEmbedded() {
+	if (AccessibilityServer::get_singleton()) {
+		AccessibilityServer::get_singleton()->window_destroy(DisplayServerEnums::MAIN_WINDOW_ID);
+	}
+
 	if (native_menu) {
 		memdelete(native_menu);
 		native_menu = nullptr;
@@ -269,7 +283,7 @@ void DisplayServerAppleEmbedded::_window_callback(const Callable &p_callable, co
 
 // MARK: Touches
 
-void DisplayServerAppleEmbedded::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
+void DisplayServerAppleEmbedded::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click, bool p_long_press) {
 	Ref<InputEventScreenTouch> ev;
 	ev.instantiate();
 
@@ -277,6 +291,7 @@ void DisplayServerAppleEmbedded::touch_press(int p_idx, int p_x, int p_y, bool p
 	ev->set_pressed(p_pressed);
 	ev->set_position(Vector2(p_x, p_y));
 	ev->set_double_tap(p_double_click);
+	ev->set_long_press(p_long_press);
 	perform_event(ev);
 }
 
@@ -302,7 +317,7 @@ void DisplayServerAppleEmbedded::perform_event(const Ref<InputEvent> &p_event) {
 }
 
 void DisplayServerAppleEmbedded::touches_canceled(int p_idx) {
-	touch_press(p_idx, -1, -1, false, false);
+	touch_press(p_idx, -1, -1, false, false, false);
 }
 
 // MARK: Keyboard
@@ -352,6 +367,10 @@ void DisplayServerAppleEmbedded::update_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
+void DisplayServerAppleEmbedded::update_device_orientation(const Quaternion &p_orientation) {
+	Input::get_singleton()->set_device_orientation(p_orientation);
+}
+
 // MARK: -
 
 bool DisplayServerAppleEmbedded::has_feature(DisplayServerEnums::Feature p_feature) const {
@@ -383,9 +402,16 @@ bool DisplayServerAppleEmbedded::has_feature(DisplayServerEnums::Feature p_featu
 		case DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD:
 		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH:
 			return true;
+		case DisplayServerEnums::FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return AccessibilityServer::get_singleton()->is_supported();
+		} break;
 		default:
 			return false;
 	}
+}
+
+int DisplayServerAppleEmbedded::accessibility_screen_reader_active() const {
+	return UIAccessibilityIsVoiceOverRunning() ? 1 : 0;
 }
 
 void DisplayServerAppleEmbedded::initialize_tts() const {
@@ -479,7 +505,11 @@ void DisplayServerAppleEmbedded::emit_system_theme_changed() {
 	}
 }
 
-Rect2i DisplayServerAppleEmbedded::get_display_safe_area() const {
+Rect2i DisplayServerAppleEmbedded::get_display_safe_area(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	UIEdgeInsets insets = UIEdgeInsetsZero;
 	UIView *view = GDTAppDelegateService.viewController.godotView;
 	if ([view respondsToSelector:@selector(safeAreaInsets)]) {
@@ -665,11 +695,25 @@ void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServerEnums::Scre
 	ERR_FAIL_INDEX(p_screen, screen_count);
 
 	screen_orientation = p_orientation;
-	if (@available(iOS 16.0, *)) {
-		[GDTAppDelegateService.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
+#ifdef IOS_ENABLED
+	// Under the SwiftUI app lifecycle, GDTViewController is wrapped by a UIHostingController
+	// that is the window's root VC. iOS queries the root VC for orientation preferences, so we
+	// must install the selectors on the hosting class before requesting an orientation update.
+	GDTViewController *vc = GDTAppDelegateService.viewController;
+	if (!vc) {
+		return;
 	}
-#if !defined(VISIONOS_ENABLED)
-	else {
+	[vc propagateUIPreferencesToRootViewController];
+
+	UIViewController *rootViewController = vc.view.window.rootViewController ?: vc;
+	if (@available(iOS 16.0, *)) {
+		[rootViewController setNeedsUpdateOfSupportedInterfaceOrientations];
+		UIWindowScene *windowScene = rootViewController.view.window.windowScene;
+		if (windowScene) {
+			UIWindowSceneGeometryPreferencesIOS *preferences = [[UIWindowSceneGeometryPreferencesIOS alloc] initWithInterfaceOrientations:[rootViewController supportedInterfaceOrientations]];
+			[windowScene requestGeometryUpdateWithPreferences:preferences errorHandler:nil];
+		}
+	} else {
 		[UIViewController attemptRotationToDeviceOrientation];
 	}
 #endif
@@ -853,18 +897,45 @@ void DisplayServerAppleEmbedded::current_edr_headroom_changed() {
 }
 
 bool DisplayServerAppleEmbedded::window_is_hdr_output_supported(DisplayServerEnums::WindowID p_window) const {
+	bool renderer_supports_hdr_output = false;
+	bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
-	if (rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
-		return false;
+	if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+		renderer_supports_hdr_output = true;
+		surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
 	}
 #endif
+	if (!renderer_supports_hdr_output) {
+		return false;
+	}
+
+	if (!surface_supports_hdr_output) {
+		return false;
+	}
+
 	return _screen_hdr_is_supported();
 }
 
 void DisplayServerAppleEmbedded::window_request_hdr_output(const bool p_enabled, DisplayServerEnums::WindowID p_window) {
+	if (p_enabled) {
+		bool renderer_supports_hdr_output = false;
+		bool surface_supports_hdr_output = false;
 #if defined(RD_ENABLED)
-	ERR_FAIL_COND_MSG(p_enabled && rendering_device && !rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT), "HDR output is not supported by the rendering device.");
+		if (rendering_device && rendering_device->has_feature(RenderingDevice::Features::SUPPORTS_HDR_OUTPUT)) {
+			renderer_supports_hdr_output = true;
+			surface_supports_hdr_output = rendering_device->screen_get_hdr_output_supported(p_window);
+		}
 #endif
+		if (!renderer_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but is not supported by the renderer or rendering device driver.");
+			return;
+		}
+
+		if (!surface_supports_hdr_output) {
+			WARN_PRINT("HDR output requested, but the window does not support an HDR format.");
+			return;
+		}
+	}
 
 	edr_requested = p_enabled;
 	_update_hdr_output(false);

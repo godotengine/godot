@@ -152,7 +152,7 @@
 			<param index="2" name="post_b" type="Vector2" />
 			<param index="3" name="weight" type="float" />
 			<description>
-				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
 		<method name="cubic_interpolate_in_time" qualifiers="const">
@@ -165,7 +165,7 @@
 			<param index="5" name="pre_a_t" type="float" />
 			<param index="6" name="post_b_t" type="float" />
 			<description>
-				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 				It can perform smoother interpolation than [method cubic_interpolate] by the time values.
 			</description>
 		</method>
@@ -181,7 +181,7 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the squared distance between this vector and [param to].
+				Returns the squared [url=https://en.wikipedia.org/wiki/Euclidean_distance]Euclidean distance[/url] between this vector and [param to].
 				This method runs faster than [method distance_to], so prefer it if you need to compare vectors or need the squared distance for some formula.
 			</description>
 		</method>
@@ -189,7 +189,7 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the distance between this vector and [param to].
+				Returns the [url=https://en.wikipedia.org/wiki/Euclidean_distance]Euclidean distance[/url] between this vector and [param to].
 			</description>
 		</method>
 		<method name="dot" qualifiers="const">
@@ -219,6 +219,12 @@
 				print(Vector2.from_angle(PI / 2)) # Prints (0.0, 1.0)
 				[/codeblock]
 				[b]Note:[/b] The length of the returned [Vector2] is [i]approximately[/i] [code]1.0[/code], but is is not guaranteed to be exactly [code]1.0[/code] due to floating-point precision issues. Call [method normalized] on the returned [Vector2] if you require a unit vector.
+			</description>
+		</method>
+		<method name="inverse" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the inverse of the vector. This is the same as [code]Vector2(1.0 / v.x, 1.0 / v.y)[/code].
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">

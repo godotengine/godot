@@ -96,7 +96,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 	Vector2 prev = Vector2(p2[lasti].x, p2[lasti].y);
 	for (uint64_t i = 0; i < p2.size(); i++) {
 		Vector2 cur = Vector2(p2[i].x, p2[i].y);
-		if (cur.distance_to(prev) > 0.5) {
+		if (cur.distance_to(prev) > 0.5f) {
 			outPoints.push_back(cur);
 			prev = cur;
 		}
@@ -652,6 +652,7 @@ Sprite2DEditor::Sprite2DEditor() {
 
 	// Other elements definition
 	err_dialog = memnew(AcceptDialog);
+	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(ConfirmationDialog);
@@ -670,15 +671,15 @@ Sprite2DEditor::Sprite2DEditor() {
 	zoom_widget = memnew(EditorZoomWidget);
 	debug_uv->add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
-	zoom_widget->connect("zoom_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(true));
+	zoom_widget->connect("zoom_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).bind(true).unbind(1));
 	zoom_widget->set_shortcut_context(nullptr);
 
 	v_scroll = memnew(VScrollBar);
 	debug_uv->add_child(v_scroll);
-	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 	h_scroll = memnew(HScrollBar);
 	debug_uv->add_child(h_scroll);
-	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 
 	debug_uv_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Sprite2DEditor::_create_node));
 

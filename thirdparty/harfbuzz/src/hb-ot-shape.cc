@@ -922,7 +922,10 @@ hb_ot_substitute_plan (const hb_ot_shape_context_t *c)
   {
     hb_aat_layout_substitute (c->plan, c->font, c->buffer,
 			      c->user_features, c->num_user_features);
-    c->buffer->update_digest ();
+    /* The buffer digest is only used by the OT lookup-apply loop;
+     * without GPOS ahead, nothing consumes it. */
+    if (c->plan->apply_gpos)
+      c->buffer->update_digest ();
   }
   else
 #endif
@@ -973,8 +976,8 @@ hb_ot_substitute_post (const hb_ot_shape_context_t *c)
 static inline void
 adjust_mark_offsets (hb_glyph_position_t *pos)
 {
-  pos->x_offset -= pos->x_advance;
-  pos->y_offset -= pos->y_advance;
+  pos->x_offset = hb_saturate_sub (pos->x_offset, pos->x_advance);
+  pos->y_offset = hb_saturate_sub (pos->y_offset, pos->y_advance);
 }
 
 static inline void
@@ -1327,5 +1330,21 @@ hb_ot_shape_glyphs_closure (hb_font_t          *font,
   hb_shape_plan_destroy (shape_plan);
 }
 
+
+/**
+ * hb_ot_shape_get_buffer_format_serial:
+ *
+ * Returns the serial number of the current internal buffer format.
+ * See #HB_OT_SHAPE_BUFFER_FORMAT_SERIAL for more information.
+ *
+ * Return value: The current buffer-format serial number.
+ *
+ * Since: 13.2.0
+ **/
+unsigned int
+hb_ot_shape_get_buffer_format_serial (void)
+{
+  return HB_OT_SHAPE_BUFFER_FORMAT_SERIAL;
+}
 
 #endif

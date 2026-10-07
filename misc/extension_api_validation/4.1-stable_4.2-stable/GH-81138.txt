@@ -1,5 +1,3 @@
-GH-81138
---------
 Validate extension JSON: Error: Field 'classes/ImporterMesh/methods/add_surface/arguments/6': meta changed value in new API, from "uint32" to "uint64".
 Validate extension JSON: Error: Field 'classes/ImporterMesh/methods/get_surface_format/return_value': meta changed value in new API, from "uint32" to "uint64".
 Validate extension JSON: Error: Field 'classes/MeshDataTool/methods/commit_to_surface/arguments': size changed value in new API, from 1 to 2.

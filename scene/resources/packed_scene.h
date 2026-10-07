@@ -37,6 +37,7 @@ class PackedScene;
 
 class SceneState : public RefCounted {
 	GDCLASS(SceneState, RefCounted);
+	friend class PackedScene;
 
 	Vector<StringName> names;
 	Vector<Variant> variants;
@@ -107,6 +108,8 @@ class SceneState : public RefCounted {
 
 	Node *_recover_node_path_index(Node *p_base, int p_idx) const;
 
+	static Variant _duplicate_recursive(const Variant &p_variant, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_remap_cache, const Variant &p_fallback, Node *p_for_scene);
+
 #ifdef TOOLS_ENABLED
 public:
 	typedef void (*InstantiationWarningNotify)(const String &p_warning);
@@ -162,6 +165,10 @@ public:
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state) const;
 
+private:
+	Node *_instantiate(GenEditState p_edit_state, LocalVector<DeferredNodePathProperties> *r_parent_deferred_node_paths) const;
+
+public:
 	Array setup_resources_in_array(Array &array_to_scan, const SceneState::NodeData &n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *node, const StringName sname, int i, Node **ret_nodes, SceneState::GenEditState p_edit_state) const;
 	Dictionary setup_resources_in_dictionary(Dictionary &p_dictionary_to_scan, const SceneState::NodeData &p_n, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
 	Variant make_local_resource(Variant &value, const SceneState::NodeData &p_node_data, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resources_local_to_scenes, Node *p_node, const StringName p_sname, int p_i, Node **p_ret_nodes, SceneState::GenEditState p_edit_state) const;
@@ -246,6 +253,7 @@ VARIANT_ENUM_CAST(SceneState::GenEditState)
 class PackedScene : public Resource {
 	GDCLASS(PackedScene, Resource);
 	RES_BASE_EXTENSION("scn");
+	friend class SceneState;
 
 	Ref<SceneState> state;
 
@@ -272,6 +280,10 @@ public:
 	bool can_instantiate() const;
 	Node *instantiate(GenEditState p_edit_state = GEN_EDIT_STATE_DISABLED) const;
 
+private:
+	Node *_instantiate(GenEditState p_edit_state, LocalVector<SceneState::DeferredNodePathProperties> *r_parent_deferred_node_paths) const;
+
+public:
 	void recreate_state();
 	void replace_state(Ref<SceneState> p_by);
 

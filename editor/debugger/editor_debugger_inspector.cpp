@@ -92,13 +92,7 @@ void EditorDebuggerRemoteObjects::_get_property_list(List<PropertyInfo> *p_list)
 }
 
 void EditorDebuggerRemoteObjects::set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field) {
-	// Ignore the field with arrays and dictionaries, as they are passed whole when edited.
-	Variant::Type type = p_value.get_type();
-	if (type == Variant::ARRAY || type == Variant::DICTIONARY) {
-		_set_impl(p_property, p_value, "");
-	} else {
-		_set_impl(p_property, p_value, p_field);
-	}
+	_set_impl(p_property, p_value, p_field);
 }
 
 String EditorDebuggerRemoteObjects::get_title() {
@@ -148,8 +142,9 @@ EditorDebuggerInspector::~EditorDebuggerInspector() {
 
 void EditorDebuggerInspector::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(Variant::ARRAY, "ids"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value"), PropertyInfo(Variant::STRING, "field")));
+	ADD_SIGNAL(MethodInfo("objects_edited", PropertyInfo(Variant::STRING, "property"), PropertyInfo(Variant::DICTIONARY, "values", PROPERTY_HINT_DICTIONARY_TYPE, "int;Variant"), PropertyInfo(Variant::STRING, "field")));
 	ADD_SIGNAL(MethodInfo("object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
+	ADD_SIGNAL(MethodInfo("canvas_item_objects_changed", PropertyInfo(Variant::DICTIONARY, "states")));
 }
 
 void EditorDebuggerInspector::_notification(int p_what) {
@@ -173,12 +168,12 @@ void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
 	emit_signal(SNAME("object_selected"), p_object);
 }
 
-EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_arr) {
-	ERR_FAIL_COND_V(p_arr.is_empty(), nullptr);
+EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p_array, int p_debugger_id) {
+	ERR_FAIL_COND_V(p_array.is_empty(), nullptr);
 
 	TypedArray<uint64_t> ids;
 	LocalVector<SceneDebuggerObject> objects;
-	for (const Array arr : p_arr) {
+	for (const Array arr : p_array) {
 		SceneDebuggerObject obj;
 		obj.deserialize(arr);
 		if (obj.id.is_valid()) {
@@ -191,10 +186,13 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	// Sorting is necessary, as selected nodes in the remote tree are ordered by index.
 	ids.sort();
 
+	bool pre_existing = false;
+
 	EditorDebuggerRemoteObjects *remote_objects = nullptr;
 	for (EditorDebuggerRemoteObjects *robjs : remote_objects_list) {
 		if (robjs->remote_object_ids == ids) {
 			remote_objects = robjs;
+			pre_existing = true;
 			break;
 		}
 	}
@@ -203,6 +201,7 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 		remote_objects = memnew(EditorDebuggerRemoteObjects);
 		remote_objects->remote_object_ids = ids;
 		remote_objects->remote_object_ids.make_read_only();
+		remote_objects->debugger_id = p_debugger_id;
 		remote_objects->connect("values_edited", callable_mp(this, &EditorDebuggerInspector::_objects_edited));
 		remote_objects_list.push_back(remote_objects);
 	}
@@ -233,15 +232,39 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 				usage[pinfo.name] = usage_dt;
 			}
 
-			// Make sure only properties with the same exact PropertyInfo data will appear.
-			if (usage[pinfo.name].prop.first == pinfo) {
+			// Make sure only properties with matching PropertyInfo data will appear.
+			if (usage[pinfo.name].prop.first.name == pinfo.name &&
+					usage[pinfo.name].prop.first.type == pinfo.type &&
+					usage[pinfo.name].prop.first.class_name == pinfo.class_name &&
+					usage[pinfo.name].prop.first.hint == pinfo.hint &&
+					usage[pinfo.name].prop.first.hint_string == pinfo.hint_string) {
+				if (usage[pinfo.name].prop.first.usage != pinfo.usage) {
+					// Checkable properties (mostly theme items) need special treatment.
+					if (usage[pinfo.name].prop.first.usage & PROPERTY_USAGE_CHECKABLE && pinfo.usage & PROPERTY_USAGE_CHECKABLE) {
+						if (usage[pinfo.name].prop.first.usage & PROPERTY_USAGE_CHECKED) {
+							pinfo.usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+						} else {
+							pinfo.usage &= ~(PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED);
+						}
+
+						if (usage[pinfo.name].prop.first.usage != pinfo.usage) {
+							continue;
+						}
+					}
+				}
+
 				usage[pinfo.name].qty++;
 				usage[pinfo.name].values[obj.id] = prop.second;
 			}
 		}
 
+		if (!pre_existing && ClassDB::is_parent_class(obj.class_name, CanvasItem::get_class_static())) {
+			remote_objects->has_canvas_items = true;
+		}
+
 		nc++;
 	}
+
 	for (HashMap<String, UsageData>::Iterator E = usage.begin(); E;) {
 		HashMap<String, UsageData>::Iterator next = E;
 		++next;
@@ -325,6 +348,8 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 				}
 			}
 		}
+	} else {
+		has_custom_class = false;
 	}
 
 	if (!has_custom_class && class_name != SNAME("Object")) {
@@ -374,6 +399,38 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	}
 
 	return remote_objects;
+}
+
+void EditorDebuggerInspector::add_undo_redo_action(const Array &p_array) {
+	Dictionary states = p_array[1];
+	ERR_FAIL_COND(states.is_empty());
+
+	Object *obj = InspectorDock::get_inspector_singleton()->get_edited_object();
+	EditorDebuggerRemoteObjects *remote_objects = Object::cast_to<EditorDebuggerRemoteObjects>(obj);
+	if (!remote_objects) {
+		return;
+	}
+
+	for (const Variant &var : states.get_key_list()) {
+		if (!remote_objects->remote_object_ids.has(var)) {
+			return;
+		}
+	}
+
+	Dictionary undo_state;
+	for (const KeyValue<Variant, Variant> &kv : states) {
+		undo_state[kv.key] = Dictionary(kv.value)["undo"];
+	}
+	Dictionary redo_state;
+	for (const KeyValue<Variant, Variant> &kv : states) {
+		redo_state[kv.key] = Dictionary(kv.value)["redo"];
+	}
+
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(p_array[0], UndoRedo::MERGE_DISABLE, remote_objects);
+	ur->add_do_method(this, SNAME("emit_signal"), SNAME("canvas_item_objects_changed"), redo_state);
+	ur->add_undo_method(this, SNAME("emit_signal"), SNAME("canvas_item_objects_changed"), undo_state);
+	ur->commit_action(false);
 }
 
 void EditorDebuggerInspector::clear_remote_inspector() {
@@ -427,7 +484,14 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 		v = Object::cast_to<EncodedObjectAsID>(v)->get_object_id();
 		h = PROPERTY_HINT_OBJECT_ID;
 		hs = var.type_hint;
+
+		// Makes the call stack select the node in the remote tree.
+		// FIXME: Disabled until the feedback loop with breakpoints inside getters is fixed. See GH-122339.
+		//if (n == "self") {
+		//	_object_selected(v);
+		//}
 	}
+
 	String type;
 	switch (var.type) {
 		case 0:
@@ -479,7 +543,7 @@ void EditorDebuggerInspector::clear_stack_variables() {
 
 String EditorDebuggerInspector::get_stack_variable(const String &p_var) {
 	for (KeyValue<StringName, TypedDictionary<uint64_t, Variant>> &E : variables->prop_values) {
-		String v = E.key.operator String();
+		String v = E.key.string();
 		if (v.get_slicec('/', 1) == p_var) {
 			return variables->get_variant(v);
 		}

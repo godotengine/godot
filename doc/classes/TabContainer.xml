@@ -206,8 +206,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" default="false">
-			If [code]true[/code], all tabs are drawn in front of the panel. If [code]false[/code], inactive tabs are drawn behind the panel.
+		<member name="all_tabs_in_front" type="bool" setter="set_all_tabs_in_front" getter="is_all_tabs_in_front" deprecated="Due to internal changes this doesn&apos;t do anything anymore, as they&apos;re always in front.">
+			This doesn't do anything.
 		</member>
 		<member name="clip_tabs" type="bool" setter="set_clip_tabs" getter="get_clip_tabs" default="true">
 			If [code]true[/code], tabs overflowing this node's width will be hidden, displaying two navigation buttons instead. Otherwise, this node's minimum size is updated so that all tabs are visible.
@@ -231,6 +231,9 @@
 		</member>
 		<member name="tab_focus_mode" type="int" setter="set_tab_focus_mode" getter="get_tab_focus_mode" enum="Control.FocusMode" default="2">
 			The focus access mode for the internal [TabBar] node.
+		</member>
+		<member name="tab_sizing" type="int" setter="set_tab_sizing" getter="get_tab_sizing" enum="TabBar.SizingMode" default="0">
+			The sizing strategy used to determine tab widths.
 		</member>
 		<member name="tab_{index}/disabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the tab at [code]index[/code] is disabled.
@@ -390,6 +393,24 @@
 		</theme_item>
 		<theme_item name="menu_highlight" data_type="icon" type="Texture2D">
 			The icon for the menu button (see [method set_popup]) when it's being hovered with the cursor.
+		</theme_item>
+		<theme_item name="drag_ended_sound" data_type="sound" type="AudioStream">
+			Played when a tab is done being dragged to rearrange it. Can only be heard if [member drag_to_rearrange_enabled] is [code]true[/code].
+		</theme_item>
+		<theme_item name="drag_started_sound" data_type="sound" type="AudioStream">
+			Played when a tab is beginning to be dragged to rearrange it. Can only be heard if [member drag_to_rearrange_enabled] is [code]true[/code].
+		</theme_item>
+		<theme_item name="focus_sound" data_type="sound" type="AudioStream">
+			Played when this [TabBar] receives keyboard or gamepad-induced focus. Mouse or touch-induced focus does not play a focus sound.
+		</theme_item>
+		<theme_item name="hover_sound" data_type="sound" type="AudioStream">
+			Played when a tab is hovered with the mouse.
+		</theme_item>
+		<theme_item name="pressed_disabled_sound" data_type="sound" type="AudioStream">
+			Played when the tab close button is pressed while the tab is disabled, or when pressing the previous/next tab navigation buttons when already at the beginning/end of the list.
+		</theme_item>
+		<theme_item name="pressed_sound" data_type="sound" type="AudioStream">
+			Played when the tab close or previous/next tab navigation buttons are pressed.
 		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The style for the background fill.

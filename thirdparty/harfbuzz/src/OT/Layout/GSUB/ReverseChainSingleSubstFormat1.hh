@@ -67,6 +67,76 @@ struct ReverseChainSingleSubstFormat1
   bool may_have_non_1to1 () const
   { return false; }
 
+  void depend (hb_depend_context_t *c) const {
+    // Filter by intersects and parent_active_glyphs like closure does
+    if (!intersects (c->glyphs)) return;
+
+    const auto &lookahead = StructAfter<decltype (lookaheadX)> (backtrack);
+    const auto &substitute = StructAfter<decltype (substituteX)> (lookahead);
+
+    /* Build context set from backtrack and lookahead coverages.
+     * ReverseChainSingleSubst has contextual requirements - the substitution
+     * only fires when backtrack and lookahead glyphs are present. */
+    hb_set_t context_glyphs;
+
+    /* Add glyphs from backtrack coverages */
+    unsigned int count = backtrack.len;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      hb_set_t back_glyphs;
+      (this+backtrack[i]).intersect_set (*c->glyphs, back_glyphs);
+      if (back_glyphs.get_population () == 1)
+        context_glyphs.add (back_glyphs.get_min ());
+      else if (back_glyphs.get_population () > 1)
+      {
+        hb_codepoint_t set_idx = c->depend_data->find_or_create_context_set (back_glyphs);
+        if (unlikely (set_idx == HB_CODEPOINT_INVALID))
+          return;
+        context_glyphs.add (HB_DEPEND_CONTEXT_SET_FLAG | set_idx);
+      }
+    }
+
+    /* Add glyphs from lookahead coverages */
+    count = lookahead.len;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      hb_set_t look_glyphs;
+      (this+lookahead[i]).intersect_set (*c->glyphs, look_glyphs);
+      if (look_glyphs.get_population () == 1)
+        context_glyphs.add (look_glyphs.get_min ());
+      else if (look_glyphs.get_population () > 1)
+      {
+        hb_codepoint_t set_idx = c->depend_data->find_or_create_context_set (look_glyphs);
+        if (unlikely (set_idx == HB_CODEPOINT_INVALID))
+          return;
+        context_glyphs.add (HB_DEPEND_CONTEXT_SET_FLAG | set_idx);
+      }
+    }
+
+    /* Allocate context set and save/restore around edge creation */
+    if (unlikely (context_glyphs.in_error ()))
+    {
+      c->depend_data->fail ();
+      return;
+    }
+    hb_codepoint_t context_set_idx = context_glyphs.is_empty ()
+      ? HB_CODEPOINT_INVALID
+      : c->depend_data->find_or_create_context_set (context_glyphs);
+    if (unlikely (!context_glyphs.is_empty () &&
+                  context_set_idx == HB_CODEPOINT_INVALID))
+      return;
+
+    hb_codepoint_t saved_context = c->depend_data->current_context_set_index;
+    c->depend_data->current_context_set_index = context_set_idx;
+
+    + hb_zip (this+coverage, substitute)
+    | hb_filter (c->parent_active_glyphs (), hb_first)
+    | hb_apply ([&] (const hb_codepoint_pair_t &_) { c->depend_data->add_gsub_lookup (_.first, c->lookup_index, _.second); })
+    ;
+
+    c->depend_data->current_context_set_index = saved_context;
+  }
+
   void closure (hb_closure_context_t *c) const
   {
     if (!intersects (c->glyphs)) return;

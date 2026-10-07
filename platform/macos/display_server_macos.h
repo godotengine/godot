@@ -78,6 +78,7 @@ public:
 		bool pressed = false;
 		bool echo = false;
 		bool raw = false;
+		bool ime = false;
 		Key keycode = Key::NONE;
 		Key physical_keycode = Key::NONE;
 		Key key_label = Key::NONE;
@@ -242,7 +243,7 @@ private:
 public:
 	void menu_callback(id p_sender);
 
-	bool has_window(DisplayServerEnums::WindowID p_window) const;
+	virtual bool has_window(DisplayServerEnums::WindowID p_window) const override;
 	WindowData &get_window(DisplayServerEnums::WindowID p_window);
 
 	NSImage *_convert_to_nsimg(Ref<Image> &p_image) const;
@@ -299,6 +300,9 @@ public:
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
+
+	virtual TypedArray<Rect2> get_display_cutouts(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
+	virtual Rect2i get_display_safe_area(int p_screen = DisplayServerEnums::SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_keyboard_focus_screen() const override;

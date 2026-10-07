@@ -1662,7 +1662,7 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 96);
 
-	//Get physical monitor Dimensions through XRandR and calculate dpi
+	// Get physical monitor Dimensions through XRandR and calculate DPI.
 	Size2i sc = screen_get_size(p_screen);
 	if (xrandr_ext_ok) {
 		int count = 0;
@@ -1693,8 +1693,56 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
 	}
 
-	//could not get dpi
+	// Could not get DPI.
 	return 96;
+}
+
+float DisplayServerX11::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	p_screen = _get_screen_index(p_screen);
+	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 1.0);
+
+	// KDE on X11 stores fractional scaling in the Xsettings configuration file.
+	// Other desktop environments such as GNOME usually only support fractional scaling on Wayland.
+	// <https://wiki.archlinux.org/title/Xsettingsd>
+	const String xsettings_path = OS::get_singleton()->get_environment("HOME").path_join(".config/xsettingsd/xsettingsd.conf");
+	if (FileAccess::exists(xsettings_path)) {
+		Ref<FileAccess> file = FileAccess::open(xsettings_path, FileAccess::READ);
+		if (file.is_valid()) {
+			// The display scaling value is split into an integer portion, and a fractional part reported as `dpi * 1024`.
+			// The fractional part rolls over to `96 * 1024 = 98304` when reaching a new integer scale factor.
+			//
+			// We do not use the value reported by `screen_get_dpi()` as it reports the actual physical DPI of the monitor,
+			// rather than a pseudo-DPI value meant for scaling (which is always 96 DPI at 100% scaling, like on Windows).
+			int window_scaling_factor = 1;
+			float dpi = 0.0;
+			while (!file->eof_reached()) {
+				const String line = file->get_line().strip_edges();
+
+				if (line.begins_with("Gdk/WindowScalingFactor")) {
+					const Vector<String> parts = line.split(" ");
+					if (parts.size() == 2) {
+						window_scaling_factor = parts[1].to_int();
+					}
+				}
+
+				if (line.begins_with("Gdk/UnscaledDPI")) {
+					const Vector<String> parts = line.split(" ");
+					if (parts.size() == 2) {
+						dpi = parts[1].to_float() / 1024.0;
+					}
+				}
+			}
+
+			if (dpi > 0.0) {
+				return (dpi * MAX(window_scaling_factor, 1)) / 96.0;
+			}
+		}
+	}
+
+	// Could not get scale factor.
+	return 1.0;
 }
 
 int get_image_errorhandler(Display *dpy, XErrorEvent *ev) {
@@ -3241,7 +3289,7 @@ void DisplayServerX11::_update_window_icon(WindowData &p_wd) {
 			const uint8_t *r = w_icon->get_data().ptr();
 
 			long *wr = &pd.write[2];
-			uint8_t const *pr = r;
+			const uint8_t *pr = r;
 
 			for (int i = 0; i < w * h; i++) {
 				long v = 0;
@@ -3351,7 +3399,7 @@ void DisplayServerX11::window_set_flag(DisplayServerEnums::WindowFlags p_flag, b
 			xev.data.l[3] = 1;
 			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
 
-			if (!p_enabled && !wd.fullscreen) {
+			if (!p_enabled && !wd.fullscreen && !wd.maximized) {
 				_set_wm_maximized(p_window, false);
 			}
 			wd.on_top = p_enabled;
@@ -4512,11 +4560,15 @@ void DisplayServerX11::_xim_preedit_caret_callback(::XIM xim, ::XPointer client_
 
 void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
+	print_verbose("Input method stopped.");
+
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
 	ds->xim = nullptr;
+	ds->warn_xim_just_stopped = true;
 
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {
 		E.value.xic = nullptr;
+		E.value.ime_active = false;
 	}
 }
 
@@ -4911,6 +4963,9 @@ void DisplayServerX11::process_events() {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
 				app_focused = false;
+
+				// Release pressed events here instead of FocusOut because it's a no-op until NOTIFICATION_APPLICATION_FOCUS_OUT is processed.
+				Input::get_singleton()->release_pressed_events();
 			}
 		} else {
 			time_since_no_focus = OS::get_singleton()->get_ticks_msec();
@@ -5270,8 +5325,6 @@ void DisplayServerX11::process_events() {
 					OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 				}
 				wd.focused = false;
-
-				Input::get_singleton()->release_pressed_events();
 
 				AccessibilityServer::get_singleton()->set_window_focused(window_id, false);
 				_send_window_event(wd, DisplayServerEnums::WINDOW_EVENT_FOCUS_OUT);
@@ -6061,6 +6114,9 @@ Window find_window_from_process_id(Display *p_display, pid_t p_process_id) {
 		}
 	}
 
+	// Suppress any pending bad window errors.
+	XSync(p_display, False);
+
 	// Restore default error handler.
 	XSetErrorHandler(oldHandler);
 
@@ -6110,6 +6166,9 @@ Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, Pro
 
 	DEBUG_LOG_X11("Starting embedding %ld to window %lu \n", p_pid, wd.x11_window);
 
+	// Handle bad window errors silently because the embedded window may be closed at any time.
+	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&bad_window_error_handler);
+
 	EmbeddedProcessData *ep = nullptr;
 	if (embedded_processes.has(p_pid)) {
 		ep = embedded_processes.get(p_pid);
@@ -6117,6 +6176,8 @@ Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, Pro
 		// New process, trying to find the window.
 		Window process_window = find_window_from_process_id(x11_display, p_pid);
 		if (!process_window) {
+			XSync(x11_display, False);
+			XSetErrorHandler(oldHandler);
 			return ERR_DOES_NOT_EXIST;
 		}
 		DEBUG_LOG_X11("Process %ld window found: %lu \n", p_pid, process_window);
@@ -6127,9 +6188,6 @@ Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, Pro
 		_set_window_taskbar_pager_enabled(process_window, false);
 		embedded_processes.insert(p_pid, ep);
 	}
-
-	// Handle bad window errors silently because just in case the embedded window was closed.
-	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&bad_window_error_handler);
 
 	if (p_visible) {
 		// Resize and move the window to match the desired rectangle.
@@ -6232,6 +6290,9 @@ Error DisplayServerX11::embed_process(DisplayServerEnums::WindowID p_window, Pro
 		}
 	}
 
+	// Suppress any pending bad window errors.
+	XSync(x11_display, False);
+
 	// Restore default error handler.
 	XSetErrorHandler(oldHandler);
 	return OK;
@@ -6263,6 +6324,9 @@ Error DisplayServerX11::request_close_embedded_process(ProcessID p_pid) {
 		ev.xclient.data.l[1] = CurrentTime;
 		XSendEvent(x11_display, ep->process_window, False, NoEventMask, &ev);
 	}
+
+	// Suppress any pending bad window errors.
+	XSync(x11_display, False);
 
 	// Restore default error handler.
 	XSetErrorHandler(oldHandler);
@@ -6321,69 +6385,83 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, D
 }
 
 void DisplayServerX11::_create_xic(WindowData &wd) {
-	if (xim && xim_style) {
-		// Block events polling while changing input focus
-		// because it triggers some event polling internally.
-		MutexLock mutex_lock(events_mutex);
-
-		// Force on-the-spot for the over-the-spot style.
-		if ((xim_style & XIMPreeditPosition) != 0) {
-			xim_style &= ~XIMPreeditPosition;
-			xim_style |= XIMPreeditCallbacks;
+	wd.xic = nullptr;
+	if (!xim) {
+		// An input method is not required for the application to run.
+		// However, it is still assumed that the user requires an input method for text input;
+		// therefore, in order to avoid generating spam, a warning is issued only once whenever
+		// the input method becomes inactive.
+		if (warn_xim_just_stopped) {
+			WARN_PRINT("Failed to create wd.xic as the input method or its xim server may not have started yet.");
+			warn_xim_just_stopped = false;
 		}
-		if ((xim_style & XIMPreeditCallbacks) != 0) {
-			::XIMCallback preedit_start_callback;
-			preedit_start_callback.client_data = (::XPointer)(this);
-			preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
-
-			::XIMCallback preedit_done_callback;
-			preedit_done_callback.client_data = (::XPointer)(this);
-			preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
-
-			::XIMCallback preedit_draw_callback;
-			preedit_draw_callback.client_data = (::XPointer)(this);
-			preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
-
-			::XIMCallback preedit_caret_callback;
-			preedit_caret_callback.client_data = (::XPointer)(this);
-			preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
-
-			::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
-					XNPreeditStartCallback, &preedit_start_callback,
-					XNPreeditDoneCallback, &preedit_done_callback,
-					XNPreeditDrawCallback, &preedit_draw_callback,
-					XNPreeditCaretCallback, &preedit_caret_callback,
-					(char *)nullptr);
-
-			wd.xic = XCreateIC(xim,
-					XNInputStyle, xim_style,
-					XNClientWindow, wd.x11_xim_window,
-					XNFocusWindow, wd.x11_xim_window,
-					XNPreeditAttributes, preedit_attributes,
-					(char *)nullptr);
-			XFree(preedit_attributes);
-		} else {
-			wd.xic = XCreateIC(xim,
-					XNInputStyle, xim_style,
-					XNClientWindow, wd.x11_xim_window,
-					XNFocusWindow, wd.x11_xim_window,
-					(char *)nullptr);
+		return;
+	}
+	if (xim_style == 0L) {
+		if (warn_xim_just_stopped) {
+			WARN_PRINT("Failed to create wd.xic as the input method may not support any styles.");
+			warn_xim_just_stopped = false;
 		}
+		return;
+	}
 
-		long im_event_mask = 0;
-		if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
-			WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value.");
-			XDestroyIC(wd.xic);
-			wd.xic = nullptr;
-		}
-		if (wd.xic) {
-			XUnsetICFocus(wd.xic);
-		} else {
-			WARN_PRINT("XCreateIC couldn't create wd.xic.");
-		}
+	// Block events polling while changing input focus
+	// because it triggers some event polling internally.
+	MutexLock mutex_lock(events_mutex);
+
+	// Force on-the-spot for the over-the-spot style.
+	if ((xim_style & XIMPreeditPosition) != 0) {
+		xim_style &= ~XIMPreeditPosition;
+		xim_style |= XIMPreeditCallbacks;
+	}
+	if ((xim_style & XIMPreeditCallbacks) != 0) {
+		::XIMCallback preedit_start_callback;
+		preedit_start_callback.client_data = (::XPointer)(this);
+		preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
+
+		::XIMCallback preedit_done_callback;
+		preedit_done_callback.client_data = (::XPointer)(this);
+		preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
+
+		::XIMCallback preedit_draw_callback;
+		preedit_draw_callback.client_data = (::XPointer)(this);
+		preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
+
+		::XIMCallback preedit_caret_callback;
+		preedit_caret_callback.client_data = (::XPointer)(this);
+		preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
+
+		::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
+				XNPreeditStartCallback, &preedit_start_callback,
+				XNPreeditDoneCallback, &preedit_done_callback,
+				XNPreeditDrawCallback, &preedit_draw_callback,
+				XNPreeditCaretCallback, &preedit_caret_callback,
+				(char *)nullptr);
+
+		wd.xic = XCreateIC(xim,
+				XNInputStyle, xim_style,
+				XNClientWindow, wd.x11_xim_window,
+				XNFocusWindow, wd.x11_xim_window,
+				XNPreeditAttributes, preedit_attributes,
+				(char *)nullptr);
+		XFree(preedit_attributes);
 	} else {
+		wd.xic = XCreateIC(xim,
+				XNInputStyle, xim_style,
+				XNClientWindow, wd.x11_xim_window,
+				XNFocusWindow, wd.x11_xim_window,
+				(char *)nullptr);
+	}
+
+	ERR_FAIL_NULL_MSG(wd.xic, "XCreateIC couldn't create wd.xic.");
+
+	long im_event_mask = 0;
+	if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
+		WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value.");
+		XDestroyIC(wd.xic);
 		wd.xic = nullptr;
-		WARN_PRINT("XCreateIC couldn't create wd.xic.");
+	} else {
+		XUnsetICFocus(wd.xic);
 	}
 }
 
@@ -6744,6 +6822,8 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 
 void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer client_data,
 		::XPointer call_data) {
+	print_verbose("Input method started.");
+
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
 
 	ds->xim = XOpenIM(display, nullptr, nullptr, nullptr);
@@ -6751,38 +6831,40 @@ void DisplayServerX11::_xim_instantiate_callback(::Display *display, ::XPointer 
 	if (ds->xim == nullptr) {
 		WARN_PRINT("XOpenIM failed.");
 		ds->xim_style = 0L;
-	} else {
-		::XIMCallback im_destroy_callback;
-		im_destroy_callback.client_data = client_data;
-		im_destroy_callback.callback = (::XIMProc)(_xim_destroy_callback);
-		if (XSetIMValues(ds->xim, XNDestroyCallback, &im_destroy_callback,
-					nullptr) != nullptr) {
-			WARN_PRINT("Error setting XIM destroy callback.");
-		}
+		return;
+	}
 
-		::XIMStyles *xim_styles = nullptr;
-		ds->xim_style = 0L;
-		char *imvalret = XGetIMValues(ds->xim, XNQueryInputStyle, &xim_styles, nullptr);
-		if (imvalret != nullptr || xim_styles == nullptr) {
-			fprintf(stderr, "Input method doesn't support any styles\n");
-		}
+	::XIMCallback im_destroy_callback;
+	im_destroy_callback.client_data = client_data;
+	im_destroy_callback.callback = (::XIMProc)(_xim_destroy_callback);
+	if (XSetIMValues(ds->xim, XNDestroyCallback, &im_destroy_callback,
+				nullptr) != nullptr) {
+		WARN_PRINT("Error setting XIM destroy callback.");
+	}
 
-		if (xim_styles) {
-			ds->xim_style = 0L;
-			for (int i = 0; i < xim_styles->count_styles; i++) {
-				const ::XIMStyle &style = xim_styles->supported_styles[i];
+	::XIMStyles *xim_styles = nullptr;
+	ds->xim_style = 0L;
+	char *imvalret = XGetIMValues(ds->xim, XNQueryInputStyle, &xim_styles, nullptr);
+	if (imvalret != nullptr || xim_styles == nullptr) {
+		fprintf(stderr, "Input method doesn't support any styles\n");
+	}
 
-				if (!_is_xim_style_supported(style)) {
-					continue;
-				}
+	if (xim_styles) {
+		for (int i = 0; i < xim_styles->count_styles; i++) {
+			const ::XIMStyle &style = xim_styles->supported_styles[i];
 
-				ds->xim_style = _get_best_xim_style(ds->xim_style, style);
+			if (!_is_xim_style_supported(style)) {
+				continue;
 			}
 
-			XFree(xim_styles);
+			ds->xim_style = _get_best_xim_style(ds->xim_style, style);
 		}
-		XFree(imvalret);
+
+		ds->warn_xim_just_stopped = false;
+
+		XFree(xim_styles);
 	}
+	XFree(imvalret);
 
 	// The input method has been (re)started.
 	for (KeyValue<DisplayServerEnums::WindowID, WindowData> &E : ds->windows) {
@@ -7545,21 +7627,13 @@ DisplayServerX11::~DisplayServerX11() {
 	}
 
 #ifdef SPEECHD_ENABLED
-	if (tts) {
-		memdelete(tts);
-	}
+	memdelete(tts);
 #endif
 
 #ifdef DBUS_ENABLED
-	if (screensaver) {
-		memdelete(screensaver);
-	}
-	if (portal_desktop) {
-		memdelete(portal_desktop);
-	}
-	if (atspi_monitor) {
-		memdelete(atspi_monitor);
-	}
+	memdelete(screensaver);
+	memdelete(portal_desktop);
+	memdelete(atspi_monitor);
 #endif
 }
 

@@ -110,7 +110,7 @@ static inline auto StructAfter(TObject &X, Ts... args) HB_AUTO_RETURN((
 
 #define DEFINE_SIZE_STATIC(size) \
   DEFINE_INSTANCE_ASSERTION (sizeof (*this) == (size)) \
-  unsigned int get_size () const { return (size); } \
+  size_t get_size () const { return (size); } \
   static constexpr unsigned null_size = (size); \
   static constexpr unsigned min_size = (size); \
   static constexpr unsigned static_size = (size)
@@ -137,7 +137,7 @@ static inline auto StructAfter(TObject &X, Ts... args) HB_AUTO_RETURN((
   static constexpr unsigned min_size = (size)
 
 #define DEFINE_SIZE_ARRAY_SIZED(size, array) \
-  unsigned int get_size () const { return (size - (array).min_size + (array).get_size ()); } \
+  size_t get_size () const { return (size - (array).min_size + (array).get_size ()); } \
   DEFINE_SIZE_ARRAY(size, array)
 
 

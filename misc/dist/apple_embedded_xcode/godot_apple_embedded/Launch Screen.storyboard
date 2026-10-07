@@ -16,7 +16,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="$launch_screen_image_mode" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="SplashImage" translatesAutoresizingMaskIntoConstraints="NO" id="tjZ-vn-Lsv">
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="$launch_screen_image_mode" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="$launch_screen_image_file_name" translatesAutoresizingMaskIntoConstraints="NO" id="tjZ-vn-Lsv">
                                 <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                             </imageView>
                         </subviews>
@@ -36,6 +36,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="SplashImage" width="266.66665649414062" height="200"/>
+        <image name="$launch_screen_image_file_name" width="266.66665649414062" height="200"/>
     </resources>
 </document>

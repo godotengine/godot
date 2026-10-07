@@ -139,6 +139,14 @@ public:
 		IMAGE_UNIT_EM,
 	};
 
+	enum ResourceAccessFlag {
+		RESOURCE_ACCESS_RESOURCES = 1 << 0,
+		RESOURCE_ACCESS_USERDATA = 1 << 1,
+		RESOURCE_ACCESS_FILESYSTEM = 1 << 2,
+		RESOURCE_ACCESS_PIPE = 1 << 3,
+		RESOURCE_ACCESS_NETWORK = 1 << 4,
+	};
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
@@ -245,7 +253,6 @@ private:
 		Size2 min_size_over = Size2(-1, -1);
 		Size2 max_size_over = Size2(-1, -1);
 		Rect2 padding;
-		int indent_level = 0;
 
 		ItemFrame() {
 			type = ITEM_FRAME;
@@ -386,7 +393,6 @@ private:
 			int min_width = 0;
 			int max_width = 0;
 			int width = 0;
-			int width_with_padding = 0;
 		};
 
 		LocalVector<Column> columns;
@@ -548,6 +554,8 @@ private:
 	int scroll_w = 0;
 	bool scroll_updated = false;
 	bool updating_scroll = false;
+	int first_line = 0;
+	int character_inside_first_drawn_subline = 0;
 	int current_idx = 1;
 	int current_char_ofs = 0;
 	int visible_paragraph_count = 0;
@@ -566,6 +574,10 @@ private:
 
 	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
+
+	BitField<ResourceAccessFlag> access_flags = RESOURCE_ACCESS_RESOURCES | RESOURCE_ACCESS_USERDATA;
+
+	bool _validate_resource_path(const String &p_path) const;
 
 	Array custom_effects;
 
@@ -739,7 +751,7 @@ private:
 	Size2 _get_item_image_final_size(ItemImage *p_img, float p_orig_width, float p_base_font_size);
 
 	String _get_prefix(Item *p_item, const Vector<int> &p_list_index, const Vector<ItemList *> &p_list_items);
-	void _add_list_prefixes(ItemFrame *p_frame, int p_line, Line &r_l);
+	void _add_list_prefixes(ItemFrame *p_frame, int p_line, Line &r_l, int p_base_font_size);
 
 	static int _find_unquoted(const String &p_src, char32_t p_chr, int p_from);
 	static Vector<String> _split_unquoted(const String &p_src, char32_t p_splitter);
@@ -766,6 +778,11 @@ private:
 	RID accessibility_scroll_element;
 
 	bool fit_content = false;
+
+	bool resize_font_to_fit = false;
+	int minimum_font_size = 10;
+	int maximum_font_size = 60;
+	mutable int current_fitted_font_size = -1;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
@@ -903,6 +920,17 @@ public:
 	void set_fit_content(bool p_enabled);
 	bool is_fit_content_enabled() const;
 
+	void set_resize_font_to_fit(bool p_enabled);
+	bool is_resize_font_to_fit_enabled() const;
+
+	void set_minimum_font_size(int p_size);
+	int get_minimum_font_size() const;
+
+	void set_maximum_font_size(int p_size);
+	int get_maximum_font_size() const;
+
+	int get_rendered_font_size() const;
+
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
 	void scroll_to_paragraph(int p_paragraph);
@@ -1026,6 +1054,9 @@ public:
 	void install_effect(const Variant effect);
 	void reload_effects();
 
+	BitField<ResourceAccessFlag> get_resource_access_flags() const;
+	void set_resource_access_flags(BitField<ResourceAccessFlag> p_flags);
+
 	virtual Size2 get_minimum_size() const override;
 
 	RichTextLabel(const String &p_text = String());
@@ -1036,4 +1067,5 @@ VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
 VARIANT_ENUM_CAST(RichTextLabel::MetaUnderline);
 VARIANT_BITFIELD_CAST(RichTextLabel::ImageUpdateMask);
+VARIANT_BITFIELD_CAST(RichTextLabel::ResourceAccessFlag);
 VARIANT_ENUM_CAST(RichTextLabel::ImageUnit);

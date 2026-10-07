@@ -61,7 +61,7 @@ struct hb_priority_queue_t
       bubble_down (i);
   }
 
-  void reset () { heap.resize (0); }
+  void reset () { heap.clear (); }
 
   bool in_error () const { return heap.in_error (); }
 

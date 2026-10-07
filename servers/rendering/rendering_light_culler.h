@@ -78,15 +78,13 @@ private:
 			ST_DIRECTIONAL,
 			ST_SPOTLIGHT,
 			ST_OMNI,
+			ST_AREA,
 		};
 
 		LightSource() {
 			type = ST_UNKNOWN;
 			angle = 0.0f;
 			range = FLT_MAX;
-			cascade_count = 0;
-			cascade_splits[0] = cascade_splits[1] = cascade_splits[2] = 0;
-			blend_splits = false;
 		}
 
 		// All in world space, culling done in world space.
@@ -96,10 +94,9 @@ private:
 
 		float angle; // For spotlight.
 		float range;
-
-		int cascade_count;
-		float cascade_splits[3]; // Max 4 cascades, which only has 3 splits.
-		bool blend_splits;
+		float width; // For area light.
+		float height;
+		Vector2 area_size; // For area light.
 	};
 
 	// Directional lights have separate cull frustums for each cascade, so this struct is needed to specify which one to use for each cull step.
@@ -149,14 +146,15 @@ public:
 	// REGULAR LIGHTS (SPOT, OMNI).
 	// These are prepared then used for culling one by one, single threaded.
 	// prepare_regular_light() returns false if the entire light is culled (i.e. there is no intersection between the light and the view frustum).
-	bool prepare_regular_light(const RendererSceneCull::Instance &p_instance) { return _prepare_light(p_instance, -1); }
+	bool prepare_regular_light(const RendererSceneCull::Instance &p_instance) { return _prepare_light(p_instance); }
 
 	// Cull according to the regular light planes that were setup in the previous call to prepare_regular_light.
 	void cull_regular_light(PagedArray<RendererSceneCull::Instance *> &r_instance_shadow_cull_result);
 
 	// Directional lights are prepared in advance, and can be culled multithreaded chopping and changing between
 	// different directional_light_id.
-	void prepare_directional_light(const RendererSceneCull::Instance *p_instance, int32_t p_directional_light_id);
+	void prepare_directional_light_begin(const RendererSceneCull::Instance *p_instance, int32_t p_directional_light_id);
+	void prepare_directional_light_cascade(int32_t p_directional_light_id, int32_t p_cascade, const Vector<Plane> &p_receiver_frustum_planes, const Vector3 *p_receiver_frustum_points);
 
 	// Return false if the instance is to be culled.
 	bool cull_directional_light(const RendererSceneCull::InstanceBounds &p_bound, int32_t p_directional_light_id, int32_t p_cascade);
@@ -175,11 +173,12 @@ private:
 #endif
 	};
 
-	struct DirectionalCullPlanes {
-		LightCullPlanes planes[4]; // One set of cull planes per cascade
+	struct DirectionalLightCullData {
+		LightSource light_source;
+		LightCullPlanes planes[4]; // One set of cull planes per cascade.
 	};
 
-	bool _prepare_light(const RendererSceneCull::Instance &p_instance, int32_t p_directional_light_id = -1);
+	bool _prepare_light(const RendererSceneCull::Instance &p_instance);
 
 	// Avoid adding extra culling planes derived from near colinear triangles.
 	// The normals derived from these will be inaccurate, and can lead to false
@@ -255,7 +254,7 @@ private:
 		// chops and changes between culling different lights
 		// instead of doing one by one, and we don't want to prepare
 		// lights multiple times per frame.
-		LocalVector<DirectionalCullPlanes> directional_cull_planes;
+		LocalVector<DirectionalLightCullData> directional_cull_planes;
 
 		Transform3D camera_transform;
 		Projection camera_projection;

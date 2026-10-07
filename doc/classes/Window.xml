@@ -8,6 +8,8 @@
 		At runtime, [Window]s will not close automatically when requested. You need to handle it manually using the [signal close_requested] signal (this applies both to pressing the close button and clicking outside of a popup).
 	</description>
 	<tutorials>
+		<link title="HDR output">$DOCS_URL/tutorials/rendering/hdr_output.html</link>
+		<link title="Multiple Windows demo">https://github.com/godotengine/godot-demo-projects/tree/master/misc/multiple_windows</link>
 	</tutorials>
 	<methods>
 		<method name="_get_contents_minimum_size" qualifiers="virtual const">
@@ -59,6 +61,15 @@
 			<description>
 				Creates a local override for a theme icon with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_icon_override].
 				See also [method get_theme_icon].
+			</description>
+		</method>
+		<method name="add_theme_sound_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="sound" type="AudioStream" />
+			<description>
+				Creates a local override for a theme sound with the specified [param name]. Local overrides always take precedence when fetching theme items for the control. An override can be removed with [method remove_theme_sound_override].
+				See also [method get_theme_sound].
 			</description>
 		</method>
 		<method name="add_theme_stylebox_override">
@@ -124,7 +135,7 @@
 			<return type="float" />
 			<description>
 				Returns the maximum value for linear color components that can be displayed in this window, regardless of SDR or HDR output. Returns [code]1.0[/code] if HDR is not enabled or not supported. The [signal output_max_linear_value_changed] signal will be emitted whenever this value changes.
-				This value is used by tonemapping and other [Environment] effects to ensure that bright colors are presented in the range that can be displayed by this window. When using the Linear tonemapper without [Environment] effects or no [WorldEnvironment], use the returned value to scale content to maximize the screen's brightness, such as for lasers or other bright effects. The following is an example that produces the brightest purple color that the screen can produce:
+				This value is used by tonemapping and other [Environment] effects to ensure that bright colors are presented in the range that can be displayed by this window. When using this maximum linear value in your project, it should only be used to present colors directly to the screen without tonemapping and without influencing lighting, post-processing effects, or surrounding color. The following is an example that produces the brightest purple color that the screen can produce:
 				[codeblocks]
 				[gdscript]
 				func _process(_delta):
@@ -173,7 +184,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a [Color] from the first matching [Theme] in the tree if that [Theme] has a color item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for more details.
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_constant" qualifiers="const">
@@ -182,7 +193,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a constant from the first matching [Theme] in the tree if that [Theme] has a constant item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for more details.
+				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
 		<method name="get_theme_default_base_scale" qualifiers="const">
@@ -230,6 +241,15 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns an icon from the first matching [Theme] in the tree if that [Theme] has an icon item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_color] for details.
+			</description>
+		</method>
+		<method name="get_theme_sound" qualifiers="const">
+			<return type="AudioStream" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns a sound from the first matching [Theme] in the tree if that [Theme] has a sound item with the specified [param name] and [param theme_type].
 				See [method Control.get_theme_color] for details.
 			</description>
 		</method>
@@ -300,7 +320,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_font] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_override" qualifiers="const">
@@ -317,7 +337,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a font size item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_font_size] for details.
 			</description>
 		</method>
 		<method name="has_theme_font_size_override" qualifiers="const">
@@ -334,7 +354,7 @@
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has an icon item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_icon] for details.
 			</description>
 		</method>
 		<method name="has_theme_icon_override" qualifiers="const">
@@ -345,13 +365,30 @@
 				See [method add_theme_icon_override].
 			</description>
 		</method>
+		<method name="has_theme_sound" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a sound item with the specified [param name] and [param theme_type].
+				See [method Control.get_theme_sound] for details.
+			</description>
+		</method>
+		<method name="has_theme_sound_override" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is a local override for a theme sound with the specified [param name] in this [Control] node.
+				See [method add_theme_sound_override].
+			</description>
+		</method>
 		<method name="has_theme_stylebox" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="theme_type" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns [code]true[/code] if there is a matching [Theme] in the tree that has a stylebox item with the specified [param name] and [param theme_type].
-				See [method Control.get_theme_color] for details.
+				See [method Control.get_theme_stylebox] for details.
 			</description>
 		</method>
 		<method name="has_theme_stylebox_override" qualifiers="const">
@@ -527,6 +564,13 @@
 				Removes a local override for a theme icon with the specified [param name] previously added by [method add_theme_icon_override] or via the Inspector dock.
 			</description>
 		</method>
+		<method name="remove_theme_sound_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Removes a local override for a theme sound with the specified [param name] previously added by [method add_theme_sound_override] or via the Inspector dock.
+			</description>
+		</method>
 		<method name="remove_theme_stylebox_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -680,6 +724,9 @@
 		<member name="force_native" type="bool" setter="set_force_native" getter="get_force_native" default="false">
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
+		<member name="fullscreen_shortcut_enabled" type="bool" setter="set_fullscreen_shortcut_enabled" getter="is_fullscreen_shortcut_enabled" default="false">
+			If [code]true[/code], allows the user to toggle fullscreen mode by pressing the shortcut defined in [member ProjectSettings.input/ui_toggle_fullscreen] ([kbd]Alt + Enter[/kbd] by default). This is enabled on the main window according to the [member ProjectSettings.display/window/size/enable_toggle_fullscreen_shortcut] project setting.
+		</member>
 		<member name="hdr_output_requested" type="bool" setter="set_hdr_output_requested" getter="is_hdr_output_requested" default="false">
 			If [code]true[/code], requests HDR output for the [Window], falling back to SDR if not supported, and automatically switching between HDR and SDR as the window moves between screens, screen capabilities change, or system settings are modified. This will internally force [member Viewport.use_hdr_2d] to be enabled on the main [Viewport]. All other [SubViewport] of this [Window] must have their [member Viewport.use_hdr_2d] property enabled to produce HDR output.
 		</member>
@@ -696,7 +743,7 @@
 		<member name="maximize_disabled" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window]'s maximize button is disabled.
 			[b]Note:[/b] If both minimize and maximize buttons are disabled, buttons are fully hidden, and only close button is visible.
-			[b]Note:[/b] This property is implemented only on macOS and Windows.
+			[b]Note:[/b] This property is implemented on Linux (X11), macOS, and Windows.
 		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be smaller than this size.
@@ -705,7 +752,7 @@
 		<member name="minimize_disabled" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window]'s minimize button is disabled.
 			[b]Note:[/b] If both minimize and maximize buttons are disabled, buttons are fully hidden, and only close button is visible.
-			[b]Note:[/b] This property is implemented only on macOS and Windows.
+			[b]Note:[/b] This property is implemented on Linux (X11), macOS, and Windows.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
 			Set's the window's current mode.
@@ -776,7 +823,7 @@
 			The name of a theme type variation used by this [Window] to look up its own theme items. See [member Control.theme_type_variation] for more details.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
-			The window's title. If the [Window] is native, title styles set in [Theme] will have no effect.
+			The window's title. If the [Window] is native, title styles set in [Theme] will have no effect. If empty, some dialogs may use a default title.
 		</member>
 		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
 			If [code]true[/code], the [Window] is transient, i.e. it's considered a child of another [Window]. The transient window will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
@@ -834,6 +881,7 @@
 					print(files)
 				[/codeblock]
 				[b]Note:[/b] This signal only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
+				[b]Note:[/b] On the web platform, the files are dropped to a temporary folder and will be removed automatically after the signal is emitted. Process them immediately, or move them to a separate possibly persistent location (e.g. [code]user://[/code]) to preserve them.
 			</description>
 		</signal>
 		<signal name="focus_entered">
@@ -940,32 +988,38 @@
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
 			The window can't be resized by dragging its resize grip. It's still possible to resize the window using [member size]. This flag is ignored for full screen windows. Set with [member unresizable].
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
 			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows. Set with [member borderless].
+			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_ALWAYS_ON_TOP" value="2" enum="Flags">
 			The window is floating on top of all other windows. This flag is ignored for full-screen windows. Set with [member always_on_top].
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_TRANSPARENT" value="3" enum="Flags">
 			The window background can be transparent. Set with [member transparent].
 			[b]Note:[/b] This flag has no effect if either [member ProjectSettings.display/window/per_pixel_transparency/allowed], or the window's [member Viewport.transparent_bg] is set to [code]false[/code].
+			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks. Set with [member unfocusable].
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows, and embedded windows.
 		</constant>
 		<constant name="FLAG_POPUP" value="5" enum="Flags">
 			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have transient parent set (see [member transient]).
-			[b]Note:[/b] This flag has no effect in embedded windows (unless said window is a [Popup]).
+			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, Windows, and embedded [Popup] windows.
 		</constant>
 		<constant name="FLAG_EXTEND_TO_TITLE" value="6" enum="Flags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
-			[b]Note:[/b] This flag is implemented only on macOS.
 			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
 		<constant name="FLAG_MOUSE_PASSTHROUGH" value="7" enum="Flags">
 			All mouse events are passed to the underlying window of the same application.
 			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, Windows.
 		</constant>
 		<constant name="FLAG_SHARP_CORNERS" value="8" enum="Flags">
 			Window style is overridden, forcing sharp corners.
@@ -980,14 +1034,18 @@
 		</constant>
 		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">
 			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on Linux (Wayland).
 		</constant>
 		<constant name="FLAG_MINIMIZE_DISABLED" value="11" enum="Flags">
 			Window minimize button is disabled.
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="FLAG_MAXIMIZE_DISABLED" value="12" enum="Flags">
 			Window maximize button is disabled.
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] This flag has no effect in embedded windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
 		</constant>
 		<constant name="FLAG_MAX" value="13" enum="Flags">
 			Max value of the [enum Flags].

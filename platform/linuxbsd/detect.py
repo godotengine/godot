@@ -1,10 +1,11 @@
 import os
 import platform
+import subprocess
 import sys
 from typing import TYPE_CHECKING
 
 from methods import get_compiler_version, print_error, print_info, print_warning, using_gcc
-from platform_methods import detect_arch, validate_arch
+from platform_methods import check_accesskit_version, detect_arch, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -18,8 +19,7 @@ def can_build():
     if os.name != "posix" or sys.platform == "darwin":
         return False
 
-    pkgconf_error = os.system("pkg-config --version > /dev/null")
-    if pkgconf_error:
+    if subprocess.run(["pkg-config", "--version"], capture_output=True).returncode != 0:
         print_error("pkg-config not found. Aborting.")
         return False
 
@@ -100,11 +100,6 @@ def configure(env: "SConsEnvironment"):
 
     ## Build type
 
-    if env.dev_build:
-        # This is needed for our crash handler to work properly.
-        # gdb works fine without it though, so maybe our crash handler could too.
-        env.Append(LINKFLAGS=["-rdynamic"])
-
     # Cross-compilation
     # TODO: Support cross-compilation on architectures other than x86.
     host_is_64_bit = sys.maxsize > 2**32
@@ -158,7 +153,7 @@ def configure(env: "SConsEnvironment"):
             else:
                 env.Append(LINKFLAGS=["-fuse-ld=mold"])
         else:
-            env.Append(LINKFLAGS=["-fuse-ld=%s" % env["linker"]])
+            env.Append(LINKFLAGS=[f"-fuse-ld={env['linker']}"])
 
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
@@ -166,6 +161,10 @@ def configure(env: "SConsEnvironment"):
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
         env.extra_suffix += ".san"
+
+        if not env["use_llvm"] and env["arch"] == "x86_64":
+            env.Append(CCFLAGS=["-mcmodel=medium"])
+            env.Append(LINKFLAGS=["-mcmodel=medium"])
 
         if env["use_ubsan"]:
             env.Append(CPPDEFINES=["UBSAN_ENABLED"])
@@ -242,7 +241,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
 
     if env["wayland"]:
-        if os.system("wayland-scanner -v 2>/dev/null") != 0:
+        if not env.WhereIs("wayland-scanner"):
             print_warning("wayland-scanner not found. Disabling Wayland support.")
             env["wayland"] = False
 
@@ -261,7 +260,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config icu-i18n icu-uc --cflags --libs")
 
     if not env["builtin_harfbuzz"]:
-        env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
+        env.ParseConfig("pkg-config harfbuzz harfbuzz-icu harfbuzz-raster harfbuzz-vector --cflags --libs")
 
     if not env["builtin_icu4c"] or not env["builtin_harfbuzz"]:
         print_warning(
@@ -314,12 +313,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config libturbojpeg --cflags --libs")
 
     if not env["builtin_mbedtls"]:
-        # mbedTLS only provides a pkgconfig file since 3.6.0, but we still support 2.28.x,
-        # so fallback to manually specifying LIBS if it fails.
-        if os.system("pkg-config --exists mbedtls") == 0:  # 0 means found
-            env.ParseConfig("pkg-config mbedtls mbedcrypto mbedx509 --cflags --libs")
-        else:
-            env.Append(LIBS=["mbedtls", "mbedcrypto", "mbedx509"])
+        env.ParseConfig("pkg-config mbedtls mbedcrypto mbedx509 --cflags --libs")
 
     if not env["builtin_wslay"]:
         env.ParseConfig("pkg-config libwslay --cflags --libs")
@@ -344,7 +338,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["fontconfig"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
+            if subprocess.run(["pkg-config", "--exists", "fontconfig"], capture_output=True).returncode == 0:
                 env.ParseConfig("pkg-config fontconfig --cflags --libs")
                 env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
             else:
@@ -355,7 +349,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["alsa"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists alsa") == 0:  # 0 means found
+            if subprocess.run(["pkg-config", "--exists", "alsa"], capture_output=True).returncode == 0:
                 env.ParseConfig("pkg-config alsa --cflags --libs")
                 env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
             else:
@@ -366,7 +360,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["pulseaudio"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
+            if subprocess.run(["pkg-config", "--exists", "libpulse"], capture_output=True).returncode == 0:
                 env.ParseConfig("pkg-config libpulse --cflags --libs")
                 env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
             else:
@@ -377,7 +371,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["dbus"] and env["threads"]:  # D-Bus functionality expects threads.
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
+            if subprocess.run(["pkg-config", "--exists", "dbus-1"], capture_output=True).returncode == 0:
                 env.ParseConfig("pkg-config dbus-1 --cflags --libs")
                 env.Append(CPPDEFINES=["DBUS_ENABLED"])
             else:
@@ -388,7 +382,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["speechd"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists speech-dispatcher") == 0:  # 0 means found
+            if subprocess.run(["pkg-config", "--exists", "speech-dispatcher"], capture_output=True).returncode == 0:
                 env.ParseConfig("pkg-config speech-dispatcher --cflags --libs")
                 env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
             else:
@@ -398,7 +392,7 @@ def configure(env: "SConsEnvironment"):
             env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
 
     if not env["use_sowrap"]:
-        if os.system("pkg-config --exists xkbcommon") == 0:  # 0 means found
+        if subprocess.run(["pkg-config", "--exists", "xkbcommon"], capture_output=True).returncode == 0:
             env.ParseConfig("pkg-config xkbcommon --cflags --libs")
             env.Append(CPPDEFINES=["XKB_ENABLED"])
         else:
@@ -415,7 +409,7 @@ def configure(env: "SConsEnvironment"):
     if platform.system() == "Linux":
         if env["udev"]:
             if not env["use_sowrap"]:
-                if os.system("pkg-config --exists libudev") == 0:  # 0 means found
+                if subprocess.run(["pkg-config", "--exists", "libudev"], capture_output=True).returncode == 0:
                     env.ParseConfig("pkg-config libudev --cflags --libs")
                     env.Append(CPPDEFINES=["UDEV_ENABLED"])
                 else:
@@ -429,7 +423,7 @@ def configure(env: "SConsEnvironment"):
     if env["sdl"]:
         if env["builtin_sdl"]:
             env.Append(CPPDEFINES=["SDL_ENABLED"])
-        elif os.system("pkg-config --exists sdl3") == 0:  # 0 means found
+        elif subprocess.run(["pkg-config", "--exists", "sdl3"], capture_output=True).returncode == 0:
             env.ParseConfig("pkg-config sdl3 --cflags --libs")
             env.Append(CPPDEFINES=["SDL_ENABLED"])
         else:
@@ -456,31 +450,31 @@ def configure(env: "SConsEnvironment"):
 
     if env["x11"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists x11"):
+            if subprocess.run(["pkg-config", "--exists", "x11"], capture_output=True).returncode != 0:
                 print_error("X11 libraries not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config x11 --cflags --libs")
-            if os.system("pkg-config --exists xcursor"):
+            if subprocess.run(["pkg-config", "--exists", "xcursor"], capture_output=True).returncode != 0:
                 print_error("Xcursor library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config xcursor --cflags --libs")
-            if os.system("pkg-config --exists xinerama"):
+            if subprocess.run(["pkg-config", "--exists", "xinerama"], capture_output=True).returncode != 0:
                 print_error("Xinerama library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config xinerama --cflags --libs")
-            if os.system("pkg-config --exists xext"):
+            if subprocess.run(["pkg-config", "--exists", "xext"], capture_output=True).returncode != 0:
                 print_error("Xext library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config xext --cflags --libs")
-            if os.system("pkg-config --exists xrandr"):
+            if subprocess.run(["pkg-config", "--exists", "xrandr"], capture_output=True).returncode != 0:
                 print_error("XrandR library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config xrandr --cflags --libs")
-            if os.system("pkg-config --exists xrender"):
+            if subprocess.run(["pkg-config", "--exists", "xrender"], capture_output=True).returncode != 0:
                 print_error("XRender library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config xrender --cflags --libs")
-            if os.system("pkg-config --exists xi"):
+            if subprocess.run(["pkg-config", "--exists", "xi"], capture_output=True).returncode != 0:
                 print_error("Xi library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config xi --cflags --libs")
@@ -488,20 +482,20 @@ def configure(env: "SConsEnvironment"):
 
     if env["wayland"]:
         if not env["use_sowrap"]:
-            if os.system("pkg-config --exists libdecor-0"):
+            if subprocess.run(["pkg-config", "--exists", "libdecor-0"], capture_output=True).returncode != 0:
                 print_warning("libdecor development libraries not found. Disabling client-side decorations.")
                 env["libdecor"] = False
             else:
                 env.ParseConfig("pkg-config libdecor-0 --cflags --libs")
-            if os.system("pkg-config --exists wayland-client"):
+            if subprocess.run(["pkg-config", "--exists", "wayland-client"], capture_output=True).returncode != 0:
                 print_error("Wayland client library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config wayland-client --cflags --libs")
-            if os.system("pkg-config --exists wayland-cursor"):
+            if subprocess.run(["pkg-config", "--exists", "wayland-cursor"], capture_output=True).returncode != 0:
                 print_error("Wayland cursor library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config wayland-cursor --cflags --libs")
-            if os.system("pkg-config --exists wayland-egl"):
+            if subprocess.run(["pkg-config", "--exists", "wayland-egl"], capture_output=True).returncode != 0:
                 print_error("Wayland EGL library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config wayland-egl --cflags --libs")
@@ -518,31 +512,34 @@ def configure(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
-            if env["arch"] == "arm64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
-            elif env["arch"] == "arm32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
-            elif env["arch"] == "rv64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
-            elif env["arch"] == "x86_64":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
-            elif env["arch"] == "x86_32":
-                env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
-            env.Append(LIBS=["accesskit"])
-            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            if check_accesskit_version(env["accesskit_sdk_path"]):
+                env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+                if env["arch"] == "arm64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm64/static/"])
+                elif env["arch"] == "arm32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/arm32/static/"])
+                elif env["arch"] == "rv64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/riscv64gc/static/"])
+                elif env["arch"] == "x86_64":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86_64/static/"])
+                elif env["arch"] == "x86_32":
+                    env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/linux/x86/static/"])
+                env.Append(LIBS=["accesskit"])
+                env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            else:
+                env["accesskit"] = False
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
                 f"You can install them by running `python {os.path.join('misc', 'scripts', 'install_accesskit.py')}`.\n"
                 "See the documentation for more information:\n"
-                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html\n"
+                "\thttps://docs.godotengine.org/en/latest/engine_details/development/compiling/compiling_for_linuxbsd.html#compiling-with-accesskit-support\n"
                 "Alternatively, disable this driver by compiling with `accesskit=no` explicitly."
             )
             env["accesskit"] = False
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:

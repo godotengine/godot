@@ -157,12 +157,19 @@ private:
 	void _mouse_exited();
 	void _shift_range_select(int p_from, int p_to);
 
+	int _get_available_item_width() const;
+
 	String _atr(int p_idx, const String &p_text) const;
 
 protected:
 	struct ThemeCache {
 		int h_separation = 0;
 		int v_separation = 0;
+		int scrollbar_margin_left = -1;
+		int scrollbar_margin_top = -1;
+		int scrollbar_margin_right = -1;
+		int scrollbar_margin_bottom = -1;
+		int scrollbar_h_separation = 0;
 
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
@@ -175,6 +182,8 @@ protected:
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
+		Color font_disabled_color;
+		Color font_disabled_hovered_color;
 
 		int line_separation = 0;
 		int icon_margin = 0;
@@ -185,10 +194,17 @@ protected:
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
 		Ref<StyleBox> cursor_focus_style;
+		Ref<StyleBox> disabled_style;
+		Ref<StyleBox> disabled_hovered_style;
 		Color guide_color;
 
 		Ref<Texture2D> scroll_hint;
 		Color scroll_hint_color;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> item_hovered_sound;
+		Ref<AudioStream> item_selected_sound;
+		Ref<AudioStream> item_selected_disabled_sound;
 	} theme_cache;
 
 	void _notification(int p_what);

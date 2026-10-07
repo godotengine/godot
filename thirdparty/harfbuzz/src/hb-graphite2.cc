@@ -113,15 +113,11 @@ retry:
 hb_graphite2_face_data_t *
 _hb_graphite2_shaper_face_data_create (hb_face_t *face)
 {
-  hb_blob_t *silf_blob = face->reference_table (HB_GRAPHITE2_TAG_SILF);
+  hb_unique_ptr_t<hb_blob_t> silf_blob (face->reference_table (HB_GRAPHITE2_TAG_SILF));
   /* Umm, we just reference the table to check whether it exists.
    * Maybe add better API for this? */
   if (!hb_blob_get_length (silf_blob))
-  {
-    hb_blob_destroy (silf_blob);
     return nullptr;
-  }
-  hb_blob_destroy (silf_blob);
 
   hb_graphite2_face_data_t *data = (hb_graphite2_face_data_t *) hb_calloc (1, sizeof (hb_graphite2_face_data_t));
   if (unlikely (!data))
@@ -223,7 +219,12 @@ struct hb_graphite2_cluster_t {
   unsigned int base_glyph;
   unsigned int num_glyphs;
   unsigned int cluster;
-  int advance;
+  hb_position_t advance;
+};
+
+struct hb_graphite2_glyph_t {
+  hb_codepoint_t codepoint;
+  unsigned int cluster;
 };
 
 hb_bool_t
@@ -266,7 +267,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   gr_segment *seg = nullptr;
   const gr_slot *is;
   unsigned int ci = 0, ic = 0;
-  int curradvx = 0, curradvy = 0;
+  hb_position_t curradvx = 0, curradvy = 0;
 
   unsigned int scratch_size;
   hb_buffer_t::scratch_buffer_t *scratch = buffer->get_scratch_buffer (&scratch_size);
@@ -298,7 +299,7 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   (void) buffer->ensure (glyph_count);
   scratch = buffer->get_scratch_buffer (&scratch_size);
   while ((DIV_CEIL (sizeof (hb_graphite2_cluster_t) * buffer->len, sizeof (*scratch)) +
-	  DIV_CEIL (sizeof (hb_codepoint_t) * glyph_count, sizeof (*scratch))) > scratch_size)
+	  DIV_CEIL (sizeof (hb_graphite2_glyph_t) * glyph_count, sizeof (*scratch))) > scratch_size)
   {
     if (unlikely (!buffer->ensure (buffer->allocated * 2)))
     {
@@ -319,37 +320,49 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   } while (0)
 
   ALLOCATE_ARRAY (hb_graphite2_cluster_t, clusters, buffer->len);
-  ALLOCATE_ARRAY (hb_codepoint_t, gids, glyph_count);
+  ALLOCATE_ARRAY (hb_graphite2_glyph_t, glyphs, glyph_count);
 
 #undef ALLOCATE_ARRAY
 
   hb_memset (clusters, 0, sizeof (clusters[0]) * buffer->len);
 
-  hb_codepoint_t *pg = gids;
+  hb_graphite2_glyph_t *pg = glyphs;
   clusters[0].cluster = buffer->info[0].cluster;
   unsigned int upem = hb_face_get_upem (face);
   float xscale = (float) font->x_scale / upem;
   float yscale = (float) font->y_scale / upem;
   yscale *= yscale / xscale;
-  unsigned int curradv = 0;
+  hb_position_t curradv = 0;
   if (HB_DIRECTION_IS_BACKWARD (direction))
   {
-    curradv = gr_slot_origin_X(gr_seg_first_slot(seg)) * xscale;
-    clusters[0].advance = gr_seg_advance_X(seg) * xscale - curradv;
+    curradv = hb_clamp_to<hb_position_t> (gr_slot_origin_X(gr_seg_first_slot(seg)) * xscale);
+    clusters[0].advance = hb_clamp_to<hb_position_t> ((double) (gr_seg_advance_X(seg) * xscale) - curradv);
   }
   else
     clusters[0].advance = 0;
   for (is = gr_seg_first_slot (seg), ic = 0; is; is = gr_slot_next_in_segment (is), ic++)
   {
-    unsigned int before = gr_slot_before (is);
-    unsigned int after = gr_slot_after (is);
-    *pg = gr_slot_gid (is);
+    int slot_before = gr_slot_before (is);
+    int slot_after = gr_slot_after (is);
+    if (unlikely (slot_before < 0 ||
+		  slot_after < slot_before ||
+		  (unsigned int) slot_after >= buffer->len))
+    {
+      if (feats) gr_featureval_destroy (feats);
+      gr_seg_destroy (seg);
+      return false;
+    }
+    unsigned int before = (unsigned int) slot_before;
+    unsigned int after = (unsigned int) slot_after;
+    pg->codepoint = gr_slot_gid (is);
+    pg->cluster = hb_min (buffer->info[before].cluster,
+			  buffer->info[after].cluster);
     pg++;
     while (clusters[ci].base_char > before && ci)
     {
       clusters[ci-1].num_chars += clusters[ci].num_chars;
       clusters[ci-1].num_glyphs += clusters[ci].num_glyphs;
-      clusters[ci-1].advance += clusters[ci].advance;
+      clusters[ci-1].advance = hb_saturate_add (clusters[ci-1].advance, clusters[ci].advance);
       ci--;
     }
 
@@ -363,14 +376,16 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
       c->num_glyphs = 0;
       if (HB_DIRECTION_IS_BACKWARD (direction))
       {
-	c->advance = curradv - gr_slot_origin_X(is) * xscale;
-	curradv -= c->advance;
+	c->advance = hb_clamp_to<hb_position_t> ((double) curradv -
+						   (double) (gr_slot_origin_X(is) * xscale));
+	curradv = hb_saturate_sub (curradv, c->advance);
       }
       else
       {
-	auto origin_X = gr_slot_origin_X (is) * xscale;
+	hb_position_t origin_X = hb_clamp_to<hb_position_t> (gr_slot_origin_X (is) * xscale);
 	c->advance = 0;
-	clusters[ci].advance += origin_X - curradv;
+	clusters[ci].advance = hb_saturate_add (clusters[ci].advance,
+						      hb_saturate_sub (origin_X, curradv));
 	curradv = origin_X;
       }
       ci++;
@@ -382,9 +397,10 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
   }
 
   if (HB_DIRECTION_IS_BACKWARD (direction))
-    clusters[ci].advance += curradv;
+    clusters[ci].advance = hb_saturate_add (clusters[ci].advance, curradv);
   else
-    clusters[ci].advance += gr_seg_advance_X(seg) * xscale - curradv;
+    clusters[ci].advance = hb_clamp_to<hb_position_t> ((double) clusters[ci].advance +
+							       (double) (gr_seg_advance_X(seg) * xscale) - curradv);
   ci++;
 
   for (unsigned int i = 0; i < ci; ++i)
@@ -392,15 +408,22 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
     for (unsigned int j = 0; j < clusters[i].num_glyphs; ++j)
     {
       hb_glyph_info_t *info = &buffer->info[clusters[i].base_glyph + j];
-      info->codepoint = gids[clusters[i].base_glyph + j];
-      info->cluster = clusters[i].cluster;
+      info->codepoint = glyphs[clusters[i].base_glyph + j].codepoint;
+      info->cluster = HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (buffer->cluster_level) ?
+		      glyphs[clusters[i].base_glyph + j].cluster :
+		      clusters[i].cluster;
       info->var1.i32 = clusters[i].advance;     // all glyphs in the cluster get the same advance
+      info->var2.u32 = i;                       // Graphite cluster index
     }
   }
   buffer->len = glyph_count;
 
+  for (unsigned int i = 0; i < ci; ++i)
+    buffer->merge_clusters (clusters[i].base_glyph,
+			    clusters[i].base_glyph + clusters[i].num_glyphs);
+
   /* Positioning. */
-  unsigned int currclus = UINT_MAX;
+  unsigned int curr_gr_cluster = UINT_MAX;
   const hb_glyph_info_t *info = buffer->info;
   hb_glyph_position_t *pPos = hb_buffer_get_glyph_positions (buffer, nullptr);
   if (!HB_DIRECTION_IS_BACKWARD (direction))
@@ -408,36 +431,37 @@ _hb_graphite2_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
     curradvx = 0;
     for (is = gr_seg_first_slot (seg); is; pPos++, ++info, is = gr_slot_next_in_segment (is))
     {
-      pPos->x_offset = gr_slot_origin_X (is) * xscale - curradvx;
-      pPos->y_offset = gr_slot_origin_Y (is) * yscale - curradvy;
-      if (info->cluster != currclus) {
+      pPos->x_offset = hb_clamp_to<hb_position_t> ((double) (gr_slot_origin_X (is) * xscale) - curradvx);
+      pPos->y_offset = hb_clamp_to<hb_position_t> ((double) (gr_slot_origin_Y (is) * yscale) - curradvy);
+      if (info->var2.u32 != curr_gr_cluster) {
 	pPos->x_advance = info->var1.i32;
-	curradvx += pPos->x_advance;
-	currclus = info->cluster;
+	curradvx = hb_saturate_add (curradvx, pPos->x_advance);
+	curr_gr_cluster = info->var2.u32;
       } else
 	pPos->x_advance = 0.;
 
-      pPos->y_advance = gr_slot_advance_Y (is, grface, nullptr) * yscale;
-      curradvy += pPos->y_advance;
+      pPos->y_advance = hb_clamp_to<hb_position_t> (gr_slot_advance_Y (is, grface, nullptr) * yscale);
+      curradvy = hb_saturate_add (curradvy, pPos->y_advance);
     }
   }
   else
   {
-    curradvx = gr_seg_advance_X(seg) * xscale;
+    curradvx = hb_clamp_to<hb_position_t> (gr_seg_advance_X(seg) * xscale);
     for (is = gr_seg_first_slot (seg); is; pPos++, info++, is = gr_slot_next_in_segment (is))
     {
-      if (info->cluster != currclus)
+      if (info->var2.u32 != curr_gr_cluster)
       {
 	pPos->x_advance = info->var1.i32;
-	curradvx -= pPos->x_advance;
-	currclus = info->cluster;
+	curradvx = hb_saturate_sub (curradvx, pPos->x_advance);
+	curr_gr_cluster = info->var2.u32;
       } else
 	pPos->x_advance = 0.;
 
-      pPos->y_advance = gr_slot_advance_Y (is, grface, nullptr) * yscale;
-      curradvy -= pPos->y_advance;
-      pPos->x_offset = gr_slot_origin_X (is) * xscale - info->var1.i32 - curradvx + pPos->x_advance;
-      pPos->y_offset = gr_slot_origin_Y (is) * yscale - curradvy;
+      pPos->y_advance = hb_clamp_to<hb_position_t> (gr_slot_advance_Y (is, grface, nullptr) * yscale);
+      curradvy = hb_saturate_sub (curradvy, pPos->y_advance);
+      pPos->x_offset = hb_clamp_to<hb_position_t> ((double) (gr_slot_origin_X (is) * xscale) -
+							  info->var1.i32 - curradvx + pPos->x_advance);
+      pPos->y_offset = hb_clamp_to<hb_position_t> ((double) (gr_slot_origin_Y (is) * yscale) - curradvy);
     }
     hb_buffer_reverse_clusters (buffer);
   }

@@ -6,7 +6,7 @@ public:
 		MODE_NINEPATCH,
 	};
 
-	enum Specializations {
+	enum Specializations : uint64_t {
 		DISABLE_LIGHTING = 1,
 	};
 

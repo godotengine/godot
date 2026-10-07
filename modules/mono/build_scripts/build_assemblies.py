@@ -100,12 +100,7 @@ def find_msbuild_tools_path_reg():
                 raise ValueError("Value of `installationPath` entry is empty")
 
             # Since VS2019, the directory is simply named "Current"
-            msbuild_dir = os.path.join(val, "MSBuild", "Current", "Bin")
-            if os.path.isdir(msbuild_dir):
-                return msbuild_dir
-
-            # Directory name "15.0" is used in VS 2017
-            return os.path.join(val, "MSBuild", "15.0", "Bin")
+            return os.path.join(val, "MSBuild", "Current", "Bin")
 
         raise ValueError("Cannot find `installationPath` entry")
     except ValueError as e:
@@ -230,7 +225,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
 
         core_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharp", "bin", build_config))
         editor_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharpEditor", "bin", build_config))
-        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net8.0"))
+        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net10.0"))
 
         if not os.path.isdir(editor_api_dir):
             assert not os.path.isfile(editor_api_dir)
@@ -327,7 +322,7 @@ def generate_sdk_package_versions():
     <PackageVersion_Godot_NET_Sdk>{godotsharp_version_str}</PackageVersion_Godot_NET_Sdk>
     <PackageVersion_Godot_SourceGenerators>{godotsharp_version_str}</PackageVersion_Godot_SourceGenerators>
     <PackageVersion_GodotDotNet>{godot_dotnet_version_str}</PackageVersion_GodotDotNet>
-    <GodotVersionConstants>{";".join(version_defines)}</GodotVersionConstants>
+    <_GodotVersionConstants>{";".join(version_defines)}</_GodotVersionConstants>
   </PropertyGroup>
 </Project>
 """

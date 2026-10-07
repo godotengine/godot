@@ -28,7 +28,7 @@
 #define HB_RASTER_IMAGE_HH
 
 #include "hb.hh"
-#include "hb-raster-utils.hh"
+#include "hb-raster.hh"
 #include "hb-raster.h"
 #include "hb-object.hh"
 #include "hb-vector.hh"

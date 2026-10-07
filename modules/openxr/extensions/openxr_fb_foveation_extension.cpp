@@ -210,7 +210,7 @@ void OpenXRFBFoveationExtension::get_fragment_density_offsets(LocalVector<Vector
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	if (!is_foveation_eye_tracked_enabled() || !OpenXREyeGazeInteractionExtension::get_singleton()->is_available()) {
+	if (foveation_level == 0 || !is_foveation_eye_tracked_enabled() || !OpenXREyeGazeInteractionExtension::get_singleton()->is_available()) {
 		return;
 	}
 
@@ -247,7 +247,7 @@ void OpenXRFBFoveationExtension::set_foveation_with_subsampled_images_enabled(bo
 }
 
 bool OpenXRFBFoveationExtension::is_foveation_with_subsampled_images_enabled() const {
-	return is_enabled() && meta_vulkan_swapchain_create_info_ext && foveation_with_subsampled_images_enabled;
+	return is_enabled() && foveation_level > 0 && meta_vulkan_swapchain_create_info_ext && foveation_with_subsampled_images_enabled;
 }
 
 void OpenXRFBFoveationExtension::set_foveation_with_subsampled_images_active(bool p_active) {

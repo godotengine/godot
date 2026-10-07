@@ -64,7 +64,8 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	Button *snap = nullptr;
 	SpinBox *snap_x = nullptr;
 	SpinBox *snap_y = nullptr;
-	CheckBox *sync = nullptr;
+	OptionButton *sync = nullptr;
+	SpinBox *cyclic_length_value = nullptr;
 	OptionButton *interpolation = nullptr;
 
 	Button *auto_triangles = nullptr;
@@ -87,9 +88,6 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	int selected_triangle;
 
 	Control *blend_space_draw = nullptr;
-
-	PanelContainer *error_panel = nullptr;
-	RichTextLabel *error_label = nullptr;
 
 	bool updating;
 

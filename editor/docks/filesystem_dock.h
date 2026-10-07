@@ -55,6 +55,7 @@ class LineEdit;
 class ProgressBar;
 class SceneCreateDialog;
 class ShaderCreateDialog;
+class Timer;
 class DirectoryCreateDialog;
 class EditorResourceTooltipPlugin;
 class VBoxContainer;
@@ -126,6 +127,7 @@ private:
 		FILE_MENU_SHOW_IN_EXPLORER,
 		FILE_MENU_OPEN_EXTERNAL,
 		FILE_MENU_OPEN_IN_TERMINAL,
+		FILE_MENU_DOWNLOAD, // Web editor only
 		FILE_MENU_COPY_PATH,
 		FILE_MENU_COPY_ABSOLUTE_PATH,
 		FILE_MENU_COPY_UID,
@@ -137,6 +139,7 @@ private:
 		FILE_MENU_NEW_SCRIPT,
 		FILE_MENU_NEW_SCENE,
 		FILE_MENU_RUN_SCRIPT,
+		FILE_MENU_RUN_SCENE,
 		FILE_MENU_MAX,
 		// Extra shortcuts that don't exist in the menu.
 		EXTRA_FOCUS_PATH,
@@ -155,7 +158,6 @@ private:
 	ProgressBar *scanning_progress = nullptr;
 	SplitContainer *split_box = nullptr;
 	MarginContainer *tree_mc = nullptr;
-	MarginContainer *files_mc = nullptr;
 	VBoxContainer *file_list_vb = nullptr;
 
 	int split_box_offset_h = 0;
@@ -174,6 +176,9 @@ private:
 	LineEdit *tree_search_box = nullptr;
 	MenuButton *tree_button_sort = nullptr;
 
+	HBoxContainer *bottom_toolbar_hbc = nullptr;
+	HSlider *thumbnail_size_slider = nullptr;
+
 	LineEdit *file_list_search_box = nullptr;
 	MenuButton *file_list_button_sort = nullptr;
 
@@ -187,6 +192,7 @@ private:
 	DisplayMode old_display_mode;
 
 	bool horizontal = false;
+	bool touches_bottom = false;
 
 	PopupMenu *file_list_popup = nullptr;
 	PopupMenu *tree_popup = nullptr;
@@ -221,6 +227,7 @@ private:
 
 	bool always_show_folders = false;
 	int thumbnail_size_setting = 0;
+	Timer *thumbnail_debounce_timer = nullptr;
 
 	bool editor_is_dark_icon_and_font = false;
 
@@ -250,6 +257,7 @@ private:
 	String current_path = "res://";
 	String select_after_scan;
 	String main_scene_path;
+	LocalVector<StringName> path_project_settings;
 
 	bool updating_tree = false;
 	int tree_update_id;
@@ -276,18 +284,19 @@ private:
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path);
-	void _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
-	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true);
+	void _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, const Vector<String> &p_uncollapsed_paths, const Vector<String> &p_selected_paths);
+	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true, const Vector<String> &p_override_selection = Vector<String>());
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false, bool p_grab_focus = false);
 	bool _update_filtered_items(TreeItem *p_tree_item = nullptr);
 	void _append_favorite_items();
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
+	bool _handle_custom_context_callback(Ref<InputEvent> p_event, const PackedStringArray &p_selected);
 
 	HashSet<String> _get_valid_conversions_for_file_paths(const Vector<String> &p_paths);
 
-	void _update_file_list(bool p_keep_selection);
+	void _update_file_list(bool p_keep_selection, const Vector<String> &p_override_selection = Vector<String>());
 	void _toggle_file_display();
 	void _set_file_display(bool p_active);
 	void _fs_changed();
@@ -321,7 +330,7 @@ private:
 	void _resource_created();
 	void _script_or_shader_created(const Ref<Resource> &p_resource);
 	void _make_scene_confirm();
-	void _rename_operation_confirm();
+	void _rename_operation_confirm(bool p_from_tree);
 	void _duplicate_operation_confirm(const String &p_path);
 	void _move_confirm();
 	void _overwrite_dialog_action(bool p_overwrite);
@@ -353,12 +362,15 @@ private:
 	void _file_sort_popup(int p_id);
 
 	void _folder_color_index_pressed(int p_index, PopupMenu *p_menu);
-	void _file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options = true);
+	void _file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options = true, bool p_show_expand_options = true);
+	void _add_create_options(PopupMenu *p_popup, const String &p_base_folder);
 	void _tree_rmb_select(const Vector2 &p_pos, MouseButton p_button);
 	void _file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _file_list_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
 	void _tree_empty_click(const Vector2 &p_pos, MouseButton p_button);
 	void _tree_empty_selected();
+	void _thumbnail_size_changed(float p_value);
+	void _thumbnail_size_timeout();
 
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
@@ -378,6 +390,8 @@ private:
 
 	Vector<String> _tree_get_selected(bool remove_self_inclusion = true, bool p_include_unselected_cursor = false) const;
 	Vector<String> _file_list_get_selected() const;
+	static Dictionary _get_context_data(const PackedStringArray &p_selected_files);
+	static Dictionary _get_context_data_for_create(const String &p_base_dir, bool p_needs_prefix);
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
@@ -398,7 +412,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void update_layout(EditorDock::DockLayout p_layout) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
 	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
 
@@ -409,6 +423,7 @@ public:
 	static constexpr double ITEM_BG_DARK_SCALE = 0.3;
 
 	static Color get_dir_icon_color(const String &p_dir_path, const Color &p_default);
+	const LocalVector<StringName> &get_path_project_settings() const { return path_project_settings; }
 
 	const HashMap<String, Color> &get_folder_colors() const;
 	Dictionary get_assigned_folder_colors() const;

@@ -37,6 +37,8 @@ Adapted to Godot from the Bullet library.
 #include "../godot_joint_3d.h"
 #include "godot_jacobian_entry_3d.h"
 
+#include <cfloat>
+
 /*
 Bullet Continuous Collision Detection and Physics Library
 Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
@@ -164,11 +166,13 @@ protected:
 	//! Linear_Limit_parameters
 	//!@{
 	GodotG6DOFTranslationalLimitMotor3D m_linearLimits;
+	real_t m_linearDriveForceLimit[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
 	//!@}
 
 	//! hinge_parameters
 	//!@{
 	GodotG6DOFRotationalLimitMotor3D m_angularLimits[3];
+	real_t m_angularDriveTorqueLimit[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
 	//!@}
 
 protected:
@@ -186,8 +190,8 @@ protected:
 
 	//!@}
 
-	GodotGeneric6DOFJoint3D(GodotGeneric6DOFJoint3D const &) = delete;
-	void operator=(GodotGeneric6DOFJoint3D const &) = delete;
+	GodotGeneric6DOFJoint3D(const GodotGeneric6DOFJoint3D &) = delete;
+	void operator=(const GodotGeneric6DOFJoint3D &) = delete;
 
 	void buildLinearJacobian(
 			GodotJacobianEntry3D &jacLinear, const Vector3 &normalWorld,
@@ -201,7 +205,7 @@ protected:
 public:
 	GodotGeneric6DOFJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameInA, const Transform3D &frameInB, bool useLinearReferenceFrameA);
 
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_6DOF; }
+	virtual PS3DE::JointType get_type() const override { return PS3DE::JOINT_TYPE_6DOF; }
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
@@ -311,9 +315,9 @@ public:
 
 	virtual void calcAnchorPos(); // overridable
 
-	void set_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param, real_t p_value);
-	real_t get_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param) const;
+	void set_param(Vector3::Axis p_axis, PS3DE::G6DOFJointAxisParam p_param, real_t p_value);
+	real_t get_param(Vector3::Axis p_axis, PS3DE::G6DOFJointAxisParam p_param) const;
 
-	void set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag, bool p_value);
-	bool get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const;
+	void set_flag(Vector3::Axis p_axis, PS3DE::G6DOFJointAxisFlag p_flag, bool p_value);
+	bool get_flag(Vector3::Axis p_axis, PS3DE::G6DOFJointAxisFlag p_flag) const;
 };

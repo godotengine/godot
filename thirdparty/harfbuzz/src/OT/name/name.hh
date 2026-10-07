@@ -312,7 +312,7 @@ struct name
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_name;
 
-  unsigned int get_size () const
+  size_t get_size () const
   { return min_size + count * nameRecordZ.item_size; }
 
   template <typename Iterator,

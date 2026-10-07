@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/object/object.h"
-#include "core/templates/simple_type.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
 
@@ -65,7 +64,7 @@ template <typename T, typename = void>
 struct GetTypeInfo;
 
 template <typename T>
-struct GetTypeInfo<T, std::enable_if_t<!std::is_same_v<T, GetSimpleTypeT<T>>>> : GetTypeInfo<GetSimpleTypeT<T>> {};
+struct GetTypeInfo<T, std::enable_if_t<!std::is_same_v<T, std::decay_t<T>>>> : GetTypeInfo<std::decay_t<T>> {};
 
 #define MAKE_TYPE_INFO(m_type, m_var_type) \
 	template <> \
@@ -233,14 +232,7 @@ struct GetTypeInfo<RequiredResult<T>, std::enable_if_t<std::is_base_of_v<Object,
 
 namespace GodotTypeInfo {
 namespace Internal {
-inline String enum_qualified_name_to_class_info_name(const String &p_qualified_name) {
-	Vector<String> parts = p_qualified_name.split("::", false);
-	if (parts.size() <= 2) {
-		return String(".").join(parts);
-	}
-	// Contains namespace. We only want the class and enum names.
-	return parts[parts.size() - 2] + "." + parts[parts.size() - 1];
-}
+String enum_qualified_name_to_class_info_name(const char *p_qualified_name);
 } // namespace Internal
 } // namespace GodotTypeInfo
 
@@ -249,45 +241,35 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 	struct GetTypeInfo<m_enum> { \
 		static const Variant::Type VARIANT_TYPE = Variant::INT; \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE; \
+		static constexpr char enum_qualified_name[] = #m_bound_name; \
 		static inline PropertyInfo get_class_info() { \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, \
-					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_bound_name))); \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(enum_qualified_name)); \
 		} \
 	};
-
-template <typename T>
-inline StringName __constant_get_enum_name(T param) {
-	return GetTypeInfo<T>::get_class_info().class_name;
-}
-
-inline StringName __constant_get_enum_value_name(const char *p_name) {
-	return String(p_name).get_slice("::", 1);
-}
 
 #define MAKE_BITFIELD_TYPE_INFO(m_enum, m_bound_name) \
 	template <> \
 	struct GetTypeInfo<m_enum> { \
 		static const Variant::Type VARIANT_TYPE = Variant::INT; \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE; \
+		static constexpr char enum_qualified_name[] = #m_bound_name; \
 		static inline PropertyInfo get_class_info() { \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
-					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_bound_name))); \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(enum_qualified_name)); \
 		} \
 	}; \
 	template <> \
 	struct GetTypeInfo<BitField<m_enum>> { \
 		static const Variant::Type VARIANT_TYPE = Variant::INT; \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE; \
+		static constexpr char enum_qualified_name[] = #m_bound_name; \
 		static inline PropertyInfo get_class_info() { \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
-					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_bound_name))); \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(enum_qualified_name)); \
 		} \
 	};
 
-template <typename T>
-inline StringName __constant_get_bitfield_name(T param) {
-	return GetTypeInfo<BitField<T>>::get_class_info().class_name;
-}
 #define CLASS_INFO(m_type) (GetTypeInfo<m_type *>::get_class_info())
 
 #define VARIANT_ENUM_CAST(m_enum) MAKE_ENUM_TYPE_INFO(m_enum, m_enum)
@@ -300,9 +282,9 @@ inline StringName __constant_get_bitfield_name(T param) {
 // No initialization by default, except for scalar types.
 template <typename T>
 struct ZeroInitializer {
-	static void initialize(T &value) {
+	static void initialize(T &r_value) {
 		if constexpr (std::is_scalar_v<T>) {
-			value = {};
+			r_value = {};
 		}
 	}
 };
@@ -320,11 +302,12 @@ Variant::Type get_variant_type() {
 }
 
 template <typename T>
-const String get_object_class_name_or_empty() {
+const StringName &get_object_class_name_or_empty() {
 	if constexpr (std::is_base_of_v<Object, T>) {
 		return T::get_class_static();
 	} else {
-		return "";
+		static const StringName EMPTY = "";
+		return EMPTY;
 	}
 }
 

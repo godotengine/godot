@@ -21,7 +21,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the marker ID for the marker at this [param index]. Only applicable for Aruco or April Tag markers.
+				Returns the marker ID for the marker at this [param index]. Only applicable for ArUco or April Tag markers.
 			</description>
 		</method>
 		<method name="get_marker_type" qualifiers="const">
@@ -43,7 +43,7 @@
 			Marker based on a micro QR code.
 		</constant>
 		<constant name="MARKER_TYPE_ARUCO" value="3" enum="MarkerType">
-			Marker based on an Aruco code.
+			Marker based on an ArUco code.
 		</constant>
 		<constant name="MARKER_TYPE_APRIL_TAG" value="4" enum="MarkerType">
 			Marker based on an April Tag.

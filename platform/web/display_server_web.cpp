@@ -37,6 +37,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/input/input_event.h"
+#include "core/io/dir_access.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "servers/display/native_menu.h"
@@ -113,21 +114,26 @@ void DisplayServerWeb::drop_files_js_callback(const char **p_filev, int p_filec)
 }
 
 void DisplayServerWeb::_drop_files_js_callback(const Vector<String> &p_files) {
+	// Dropped files on the web are copied in memory, into a temporary folder.
+	// The first element from the callback is expected to be the temporary folder.
+	ERR_FAIL_COND(p_files.is_empty());
 	DisplayServerWeb *ds = get_singleton();
-	if (!ds) {
-		ERR_FAIL_MSG("Unable to drop files because the DisplayServer is not active");
+	if (likely(ds && ds->drop_files_callback.is_valid())) {
+		Variant v_files = p_files.slice(1); // Without the temporary folder name.
+		const Variant *v_args[1] = { &v_files };
+		Variant ret;
+		Callable::CallError ce;
+		ds->drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(ds->drop_files_callback, v_args, 1, ce)));
+		}
 	}
-	if (!ds->drop_files_callback.is_valid()) {
-		return;
-	}
-	Variant v_files = p_files;
-	const Variant *v_args[1] = { &v_files };
-	Variant ret;
-	Callable::CallError ce;
-	ds->drop_files_callback.callp((const Variant **)&v_args, 1, ret, ce);
-	if (ce.error != Callable::CallError::CALL_OK) {
-		ERR_PRINT(vformat("Failed to execute drop files callback: %s.", Variant::get_callable_error_text(ds->drop_files_callback, v_args, 1, ce)));
-	}
+	// Remove the temporary folder recursively.
+	Ref<DirAccess> dir = DirAccess::open(p_files[0]);
+	ERR_FAIL_COND(dir.is_null());
+	dir->erase_contents_recursive();
+	dir.unref();
+	DirAccess::remove_absolute(p_files[0]);
 }
 
 // Web quit request callback.

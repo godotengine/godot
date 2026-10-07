@@ -9,12 +9,22 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="create_default_persistence_context">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Calls [method create_persistence_context] with a configuration that likely works with the XR runtime.
+				[param user_callback] is called when the context is created.
+			</description>
+		</method>
 		<method name="create_new_anchor">
 			<return type="OpenXRAnchorTracker" />
 			<param index="0" name="transform" type="Transform3D" />
 			<param index="1" name="spatial_context" type="RID" default="RID()" />
+			<param index="2" name="next" type="OpenXRStructureBase" default="null" />
 			<description>
 				Creates a new anchor that will be tracked by the XR runtime. The [param transform] should be a transform in the local space of your [XROrigin3D] node. If [param spatial_context] is not specified the default will be used, this requires [member ProjectSettings.xr/openxr/extensions/spatial_entity/enable_builtin_anchor_detection] to be set. The returned tracker will track the location in case our reference space changes.
+				[param next] must be a valid next object for the [code]XrSpatialAnchorCreateInfoEXT[/code] chain.
 			</description>
 		</method>
 		<method name="create_persistence_context">
@@ -24,6 +34,19 @@
 			<description>
 				Creates a new persistence context for storing persistent data.
 				[b]Note:[/b] This is an asynchronous method and returns an [OpenXRFutureResult] object with which to track the status, discarding this object will not cancel the creation process. On success [param user_callback] will be called if specified. The result value for this function is the [RID] for our persistence context.
+			</description>
+		</method>
+		<method name="do_entity_update">
+			<return type="void" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="component_data" type="OpenXRSpatialComponentData[]" />
+			<param index="2" name="next_snapshot_create" type="OpenXRStructureBase" default="null" />
+			<param index="3" name="next_snapshot_query" type="OpenXRStructureBase" default="null" />
+			<description>
+				Calls [method OpenXRSpatialEntityExtension.update_spatial_entities] and [method OpenXRSpatialEntityExtension.query_snapshot] with the anchor entities associated with [param spatial_context].
+				[param component_data] are the [OpenXRSpatialComponentData]s to update for this anchor capability.
+				If [param next_snapshot_create] is non-null, then pass this to the [code]next[/code] parameter in [method OpenXRSpatialEntityExtension.update_spatial_entities].
+				If [param next_snapshot_query] is non-null, then pass this to the [code]next[/code] parameter in [method OpenXRSpatialEntityExtension.query_snapshot].
 			</description>
 		</method>
 		<method name="free_persistence_context">
@@ -76,6 +99,22 @@
 			<param index="0" name="anchor_tracker" type="OpenXRAnchorTracker" />
 			<description>
 				Remove an anchor previously created with [method create_new_anchor]. If this anchor was persistent you must first call [method unpersist_anchor] and await its callback.
+			</description>
+		</method>
+		<method name="start_entity_discovery">
+			<return type="OpenXRFutureResult" />
+			<param index="0" name="spatial_context" type="RID" />
+			<param index="1" name="component_data" type="OpenXRSpatialComponentData[]" />
+			<param index="2" name="next_snapshot_create" type="OpenXRStructureBase" default="null" />
+			<param index="3" name="next_snapshot_query" type="OpenXRStructureBase" default="null" />
+			<param index="4" name="user_callback" type="Callable" default="Callable()" />
+			<description>
+				Calls [method OpenXRSpatialEntityExtension.discover_spatial_entities] and [method OpenXRSpatialEntityExtension.query_snapshot] with the anchor entities associated with [param spatial_context].
+				[param component_data] are the [OpenXRSpatialComponentData]s to discover for this anchor capability.
+				If [param next_snapshot_create] is non-null, then pass this to the [code]next[/code] parameter in [method OpenXRSpatialEntityExtension.discover_spatial_entities].
+				If [param next_snapshot_query] is non-null, then pass this to the [code]next[/code] parameter in [method OpenXRSpatialEntityExtension.query_snapshot].
+				[param user_callback], when non-null, is called with two parameters usually twice. The first parameter is the [RID] of the discovery snapshot and the second parameter is a boolean where [code]false[/code] indicates the discovery snapshot is about to be processed, and [code]true[/code] indicates the discovery snapshot has been processed and [param component_data] has valid data. The second call is skipped if an error was encountered.
+				The returned [OpenXRFutureResult] is identical to the return from [method OpenXRSpatialEntityExtension.discover_spatial_entities].
 			</description>
 		</method>
 		<method name="unpersist_anchor">

@@ -319,7 +319,7 @@ private:
 	void _propagate_translation_domain_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
 
-	void _duplicate_scripts(const Node *p_original, Node *p_copy) const;
+	void _duplicate_scripts(const Node *p_original, Node *p_copy, int p_flags) const;
 	void _duplicate_properties(const Node *p_root, const Node *p_original, Node *p_copy, int p_flags) const;
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	Node *_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap = nullptr) const;
@@ -414,6 +414,10 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	virtual String _to_string() override;
 
+	// Localization
+
+	virtual StringName _get_translation_context_with_override(const StringName &p_context) const { return p_context; }
+
 	Variant _get_node_rpc_config_bind() const {
 		return get_node_rpc_config().duplicate(true);
 	}
@@ -503,7 +507,7 @@ public:
 		NOTIFICATION_APPLICATION_PIP_MODE_ENTERED = 2019,
 		NOTIFICATION_APPLICATION_PIP_MODE_EXITED = 2020,
 
-		// Editor specific node notifications
+		// Editor specific node notifications.
 		NOTIFICATION_EDITOR_PRE_SAVE = 9001,
 		NOTIFICATION_EDITOR_POST_SAVE = 9002,
 		NOTIFICATION_SUSPENDED = 9003,
@@ -518,9 +522,9 @@ public:
 
 	InternalMode get_internal_mode() const;
 
-	void add_child(RequiredParam<Node> rp_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
-	void add_sibling(RequiredParam<Node> rp_sibling, bool p_force_readable_name = false);
-	void remove_child(RequiredParam<Node> rp_child);
+	void add_child(RequiredParam<Node> p_child, bool p_force_readable_name = false, InternalMode p_internal = INTERNAL_MODE_DISABLED);
+	void add_sibling(RequiredParam<Node> p_sibling, bool p_force_readable_name = false);
+	void remove_child(RequiredParam<Node> p_child);
 
 	/// Optimal way to iterate the children of this node.
 	/// The caller is responsible to ensure:
@@ -540,7 +544,7 @@ public:
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, Ref<Resource> &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
-	virtual void reparent(RequiredParam<Node> rp_parent, bool p_keep_global_transform = true);
+	virtual void reparent(RequiredParam<Node> p_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
 
@@ -559,11 +563,11 @@ public:
 	_FORCE_INLINE_ bool is_inside_tree() const { return data.tree; }
 	bool is_internal() const { return data.internal_mode != INTERNAL_MODE_DISABLED; }
 
-	bool is_ancestor_of(RequiredParam<const Node> rp_node) const;
-	bool is_greater_than(RequiredParam<const Node> rp_node) const;
+	bool is_ancestor_of(RequiredParam<const Node> p_node) const;
+	bool is_greater_than(RequiredParam<const Node> p_node) const;
 
 	NodePath get_path() const;
-	NodePath get_path_to(RequiredParam<const Node> rp_node, bool p_use_unique_path = false) const;
+	NodePath get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_path = false) const;
 	Node *find_common_parent_with(const Node *p_node) const;
 
 	void add_to_group(const StringName &p_identifier, bool p_persistent = false);
@@ -578,7 +582,7 @@ public:
 	void get_groups(List<GroupInfo> *p_groups) const;
 	int get_persistent_group_count() const;
 
-	void move_child(RequiredParam<Node> rp_child, int p_index);
+	void move_child(RequiredParam<Node> p_child, int p_index);
 	void _move_child(Node *p_child, int p_index, bool p_ignore_end = false);
 
 	void set_owner(Node *p_owner);
@@ -627,7 +631,7 @@ public:
 	void set_editor_description(const String &p_editor_description);
 	String get_editor_description() const;
 
-	void set_editable_instance(RequiredParam<Node> rp_node, bool p_editable);
+	void set_editable_instance(RequiredParam<Node> p_node, bool p_editable);
 	bool is_editable_instance(const Node *p_node) const;
 	Node *get_deepest_editable_node(Node *p_start_node) const;
 
@@ -721,6 +725,7 @@ public:
 	virtual RID get_accessibility_element() const;
 	virtual RID get_focused_accessibility_element() const;
 	virtual bool accessibility_override_tree_hierarchy() const { return false; }
+	virtual Transform2D get_accessibility_transform() const;
 
 	virtual PackedStringArray get_accessibility_configuration_warnings() const;
 
@@ -748,7 +753,7 @@ public:
 		return binds;
 	}
 
-	void replace_by(RequiredParam<Node> rp_node, bool p_keep_groups = false);
+	void replace_by(RequiredParam<Node> p_node, bool p_keep_groups = false);
 
 	void set_process_mode(ProcessMode p_mode);
 	ProcessMode get_process_mode() const;
@@ -826,10 +831,12 @@ public:
 	virtual void set_translation_domain(const StringName &p_domain) override;
 	void set_translation_domain_inherited();
 
-	_FORCE_INLINE_ String atr(const String &p_message, const StringName &p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
+	_FORCE_INLINE_ String atr(const String &p_message, const StringName &p_context = "") const {
+		return can_auto_translate() ? tr(p_message, _get_translation_context_with_override(p_context)) : p_message;
+	}
 	_FORCE_INLINE_ String atr_n(const String &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const {
 		if (can_auto_translate()) {
-			return tr_n(p_message, p_message_plural, p_n, p_context);
+			return tr_n(p_message, p_message_plural, p_n, _get_translation_context_with_override(p_context));
 		}
 		return p_n == 1 ? p_message : String(p_message_plural);
 	}

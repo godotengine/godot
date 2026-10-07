@@ -31,6 +31,7 @@
 #include "openxr_editor_plugin.h"
 
 #include "../action_map/openxr_action_map.h"
+#include "../extensions/spatial_container/openxr_spatial_container_state.h"
 #include "../openxr_api.h"
 
 #include "editor/docks/editor_dock_manager.h"
@@ -54,6 +55,10 @@ bool OpenXRExportPlugin::is_openxr_mode() const {
 	int xr_mode_index = get_option("xr_features/xr_mode");
 
 	return openxr_enabled && xr_mode_index == XR_MODE_OPENXR;
+}
+
+bool OpenXRExportPlugin::is_spatial_container_enabled() const {
+	return (bool)get_export_platform()->get_project_setting(get_export_preset(), "xr/openxr/extensions/spatial_container/enabled");
 }
 
 String OpenXRExportPlugin::_get_export_option_warning(const Ref<EditorExportPlatform> &p_export_platform, const String &p_option_name) const {
@@ -150,15 +155,34 @@ String OpenXRExportPlugin::get_android_manifest_activity_element_contents(const 
 		return contents;
 	}
 
-	contents += R"n(
+	if (!is_spatial_container_enabled()) {
+		contents += R"n(
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
 				<category android:name="android.intent.category.DEFAULT" />
-
                 <category android:name="org.khronos.openxr.intent.category.IMMERSIVE_HMD" />
             </intent-filter>
 )n";
+	} else {
+		contents += R"n(
+                <property android:name="org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_USED_BOUNDS_MODES" android:value="" />
+)n";
+
+		// Get the initial bounds mode.
+		OpenXRSpatialContainerState::BoundsMode initial_bounds_mode = (OpenXRSpatialContainerState::BoundsMode)get_export_platform()->get_project_setting(get_export_preset(), "xr/openxr/extensions/spatial_container/bounds_mode");
+		String manifest_initial_bounds_mode_value = "XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_UNDEFINED";
+		switch (initial_bounds_mode) {
+			case OpenXRSpatialContainerState::BOUNDS_MODE_BOUNDED:
+				manifest_initial_bounds_mode_value = "XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_BOUNDED";
+				break;
+			case OpenXRSpatialContainerState::BOUNDS_MODE_IMMERSIVE:
+				manifest_initial_bounds_mode_value = "XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE_IMMERSIVE";
+				break;
+		}
+		contents += vformat(
+				"                <property android:name=\"org.khronos.openxr.PROPERTY_ACTIVITY_HINT_XR_SPATIAL_CONTAINER_INITIAL_BOUNDS_MODE\" android:value=\"%s\" />\n",
+				manifest_initial_bounds_mode_value);
+	}
 
 	return contents;
 }
