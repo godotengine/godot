@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/templates/local_vector.h"
+#include "core/os/memory.h"
 
 template <typename T>
 class _WARN_UNUSED_ RingBuffer {
