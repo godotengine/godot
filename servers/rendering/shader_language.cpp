@@ -9931,7 +9931,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								static Vector<int> supported_hints = {
 									TK_HINT_SOURCE_COLOR, TK_HINT_COLOR_CONVERSION_DISABLED, TK_REPEAT_DISABLE, TK_REPEAT_ENABLE,
 									TK_FILTER_LINEAR, TK_FILTER_LINEAR_MIPMAP, TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC,
-									TK_FILTER_NEAREST, TK_FILTER_NEAREST_MIPMAP, TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC
+									TK_FILTER_NEAREST, TK_FILTER_NEAREST_MIPMAP, TK_FILTER_NEAREST_MIPMAP_ANISOTROPIC,
+									TK_HINT_NO_STORAGE, TK_HINT_NO_EDITOR
 								};
 								if (!supported_hints.has(tk.type)) {
 									_set_error(RTR("This hint is not supported for uniform arrays."));
