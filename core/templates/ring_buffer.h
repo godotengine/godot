@@ -55,13 +55,35 @@ class _WARN_UNUSED_ RingBuffer {
 		return p_val & _size_mask;
 	}
 
+	void _init_from(const RingBuffer &p_other) {
+		_read_pos = p_other._read_pos;
+		_count = p_other._count;
+		_size_mask = p_other._size_mask;
+
+		_data = static_cast<T *>(Memory::alloc_static(sizeof(T) * size()));
+
+		if constexpr (std::is_trivially_copyable_v<T>) {
+			void *destination = _data;
+			const void *source = p_other._data;
+			memcpy(destination, source, sizeof(T) * size());
+		} else {
+			p_other.copy(_data, data_left());
+		}
+	}
+
+	inline void _reset() {
+		clear();
+		Memory::free_static(_data);
+		_data = nullptr;
+	}
+
 public:
 	T read() {
 		ERR_FAIL_COND_V(data_left() < 1, T());
 		return _data[_inc_read()];
 	}
 
-	int read(T *p_buf, int p_size, bool p_advance = true) {
+	int read(T *p_buf, int p_size) {
 		const int left = data_left();
 		p_size = MIN(left, p_size);
 
@@ -73,16 +95,13 @@ public:
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				p_buf[dst++] = _data[pos + i];
+				p_buf[dst++] = std::move(_data[pos + i]);
 			}
 			to_read -= total;
 			pos = 0;
 		}
 
-		if (p_advance) {
-			_inc_read(p_size);
-		}
-
+		_inc_read(p_size);
 		return p_size;
 	}
 
@@ -101,7 +120,7 @@ public:
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				p_buf[dst++] = _data[pos + i];
+				memnew_placement(&p_buf[dst++], T(_data[pos + i]));
 			}
 			to_read -= total;
 			pos = 0;
@@ -190,6 +209,12 @@ public:
 	}
 
 	inline void clear() {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
+			while (data_left() > 0) {
+				_data[_inc_read()].~T();
+			}
+		}
+
 		_read_pos = 0;
 		_count = 0;
 	}
@@ -230,15 +255,37 @@ public:
 		_size_mask = mask;
 	}
 
+	void operator=(const RingBuffer &p_other) {
+		if (this == &p_other) {
+			return; // Ignore self assignment.
+		}
+
+		_reset();
+
+		_init_from(p_other);
+	}
+
+	RingBuffer(RingBuffer &&p_other) {
+		_data = p_other._data;
+		_read_pos = p_other._read_pos;
+		_count = p_other._count;
+		_size_mask = p_other._size_mask;
+
+		p_other._data = nullptr;
+		p_other._read_pos = 0;
+		p_other._count = 0;
+		p_other._size_mask = 0;
+	}
+
+	explicit RingBuffer(const RingBuffer &p_other) {
+		_init_from(p_other);
+	}
+
 	RingBuffer(int p_power = 0) {
 		resize(p_power);
 	}
 
 	~RingBuffer() {
-		if constexpr (!std::is_trivially_destructible_v<T>) {
-			while (data_left() > 0) {
-				_data[_inc_read()].~T();
-			}
-		}
+		_reset();
 	}
 };
