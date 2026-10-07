@@ -351,6 +351,10 @@ void RigidBodyBullet::reload_body() {
 void RigidBodyBullet::set_space(SpaceBullet *p_space) {
 	// Clear the old space if there is one
 	if (space) {
+		// Ensure any bodies touching the object to be removed
+		// are woken, so that e.g. boxes fall from deleted platforms.
+		space->rigid_body_wake_neighbours(this);
+
 		can_integrate_forces = false;
 		isScratchedSpaceOverrideModificator = false;
 		// Remove any constraints
@@ -585,6 +589,9 @@ void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant 
 	switch (p_state) {
 		case PhysicsServer::BODY_STATE_TRANSFORM:
 			set_transform(p_variant);
+			if (space) {
+				space->rigid_body_wake_neighbours(this);
+			}
 			break;
 		case PhysicsServer::BODY_STATE_LINEAR_VELOCITY:
 			set_linear_velocity(p_variant);

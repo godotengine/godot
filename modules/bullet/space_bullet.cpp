@@ -485,6 +485,32 @@ void SpaceBullet::reload_collision_filters(AreaBullet *p_area) {
 	dynamicsWorld->refreshBroadphaseProxy(ghost_object);
 }
 
+void SpaceBullet::rigid_body_wake_neighbours(RigidBodyBullet *p_body) {
+	btRigidBody *bt_body = p_body->get_bt_rigid_body();
+	ERR_FAIL_NULL(bt_body);
+	const btBroadphaseProxy *handle = bt_body->getBroadphaseHandle();
+	ERR_FAIL_NULL(handle);
+
+	btOverlappingPairCache *pair_cache = broadphase->getOverlappingPairCache();
+	ERR_FAIL_NULL(pair_cache);
+	btBroadphasePairArray &pair_array = pair_cache->getOverlappingPairArray();
+
+	for (int i = 0; i < pair_array.size(); ++i) {
+		const btBroadphasePair &pair = pair_array[i];
+
+		// We only care about pairs that involve our kinematic body.
+		if (pair.m_pProxy0 == handle ||
+				pair.m_pProxy1 == handle) {
+			btCollisionObject *other_obj = (pair.m_pProxy0->m_clientObject == bt_body) ? static_cast<btCollisionObject *>(pair.m_pProxy1->m_clientObject) : static_cast<btCollisionObject *>(pair.m_pProxy0->m_clientObject);
+
+			// Wake up the RigidBody if it's currently asleep.
+			if (other_obj && !other_obj->isStaticOrKinematicObject() && !other_obj->isActive()) {
+				other_obj->activate(true);
+			}
+		}
+	}
+}
+
 void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
 	if (p_body->is_static()) {
 		dynamicsWorld->addCollisionObject(p_body->get_bt_rigid_body(), p_body->get_collision_layer(), p_body->get_collision_mask());
