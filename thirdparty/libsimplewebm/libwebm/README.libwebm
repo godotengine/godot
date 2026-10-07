@@ -1,0 +1,148 @@
+Building Libwebm
+
+To build libwebm you must first create project files. To do this run cmake
+and pass it the path to your libwebm repo.
+
+Makefile.unix can be used as a fallback on systems that cmake does not
+support.
+
+
+CMake Basics
+
+To generate project/make files for the default toolchain on your system simply
+run cmake with the path to the libwebm repo:
+
+$ cmake path/to/libwebm
+
+On Windows the above command will produce Visual Studio project files for the
+newest Visual Studio detected on the system. On Mac OS X and Linux systems, the
+above command will produce a makefile.
+
+To control what types of projects are generated the -G parameter is added to
+the cmake command line. This argument must be followed by the name of a
+generator. Running cmake with the --help argument will list the available
+generators for your system.
+
+On Mac OS X you would run the following command to generate Xcode projects:
+
+$ cmake path/to/libwebm -G Xcode
+
+On a Windows box you would run the following command to generate Visual Studio
+2013 projects:
+
+$ cmake path/to/libwebm -G "Visual Studio 12"
+
+To generate 64-bit Windows Visual Studio 2013 projects:
+
+$ cmake path/to/libwebm "Visual Studio 12 Win64"
+
+
+CMake Makefiles: Debugging and Optimization
+
+Unlike Visual Studio and Xcode projects, the build configuration for make builds
+is controlled when you run cmake. The following examples demonstrate various
+build configurations.
+
+Omitting the build type produces makefiles that use build flags containing
+neither optimization nor debug flags:
+$ cmake path/to/libwebm
+
+A makefile using release (optimized) flags is produced like this:
+$ cmake path/to/libwebm -DCMAKE_BUILD_TYPE=release
+
+A release build with debug info can be produced as well:
+$ cmake path/to/libwebm -DCMAKE_BUILD_TYPE=relwithdebinfo
+
+And your standard debug build will be produced using:
+$ cmake path/to/libwebm -DCMAKE_BUILD_TYPE=debug
+
+
+Tests
+
+To enable libwebm tests add -DENABLE_TESTS=ON CMake generation command line. For
+example:
+
+$ cmake path/to/libwebm -G Xcode -DENABLE_TESTS=ON
+
+Libwebm tests depend on googletest. By default googletest is expected to be a
+sibling directory of the Libwebm repository. To change that, update your CMake
+command to be similar to the following:
+
+$ cmake path/to/libwebm -G Xcode -DENABLE_TESTS=ON \
+  -DGTEST_SRC_DIR=/path/to/googletest
+
+The tests rely upon the LIBWEBM_TEST_DATA_PATH environment variable to locate
+test input. The following example demonstrates running the muxer tests from the
+build directory:
+
+$ LIBWEBM_TEST_DATA_PATH=path/to/libwebm/testing/testdata ./mkvmuxer_tests
+
+Note: Libwebm Googletest integration was built with googletest from
+      https://github.com/google/googletest.git at git revision
+      ddb8012eb48bc203aa93dcc2b22c1db516302b29.
+
+
+CMake Include-what-you-use integration
+
+Include-what-you-use is an analysis tool that helps ensure libwebm includes the
+C/C++ header files actually in use. To enable the integration support
+ENABLE_IWYU must be turned on at cmake run time:
+
+$ cmake path/to/libwebm -G "Unix Makefiles" -DENABLE_IWYU=ON
+
+This adds the iwyu target to the build. To run include-what-you-use:
+
+$ make iwyu
+
+The following requirements must be met for ENABLE_IWYU to enable the iwyu
+target:
+
+1. include-what-you-use and iwyu_tool.py must be in your PATH.
+2. A python interpreter must be on the system and available to CMake.
+
+The values of the following variables are used to determine if the requirements
+have been met. Values to the right of the equals sign are what a successful run
+might look like:
+  iwyu_path=/path/to/iwyu_tool.py
+  iwyu_tool_path=/path/to/include-what-you-use
+  PYTHONINTERP_FOUND=TRUE
+
+An empty PYTHONINTERP_FOUND, or iwyu_path/iwyu_tool_path suffixed with NOTFOUND
+are failures.
+
+For Include-what-you-use setup instructions, see:
+https://github.com/include-what-you-use/include-what-you-use/blob/master/docs/InstructionsForUsers.md
+
+If, when building the iwyu target, compile errors reporting failures loading
+standard include files occur, one solution can be found here:
+https://github.com/include-what-you-use/include-what-you-use/issues/100
+
+
+CMake cross compile
+To cross compile libwebm for Windows using mingw-w64 run cmake with the
+following arguments:
+
+$ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/libwebm/build/mingw-w64_toolchain.cmake \
+  path/to/libwebm
+
+Note1: As of this writing googletest will not build via mingw-w64 without
+disabling pthreads.
+googletest hash: d225acc90bc3a8c420a9bcd1f033033c1ccd7fe0
+
+To build with tests when using mingw-w64 use the following arguments when
+running CMake:
+
+$ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/libwebm/build/mingw-w64_toolchain.cmake \
+  -DENABLE_TESTS=ON -Dgtest_disable_pthreads=ON path/to/libwebm
+
+Note2: i686-w64-mingw32 is the default compiler. This can be controlled using
+the MINGW_PREFIX variable:
+
+$ cmake -DCMAKE_TOOLCHAIN_FILE=path/to/libwebm/build/mingw-w64_toolchain.cmake \
+  -DMINGW_PREFIX=x86_64-w64-mingw32 path/to/libwebm
+
+Bug reports
+
+Bug reports can be filed in the libwebm issue tracker:
+https://issues.webmproject.org/.
+For security reports, select 'Security report' from the Template dropdown.

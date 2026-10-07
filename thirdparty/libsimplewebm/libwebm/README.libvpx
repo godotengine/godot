@@ -1,11 +1,11 @@
 URL: https://chromium.googlesource.com/webm/libwebm
-Version: 32d5ac49414a8914ec1e1f285f3f927c6e8ec29d
-License: BSD
+Version: 1.0.0.32 (f2a982d748b80586ae53b89a2e6ebbc305848b8c, 2026)
+License: BSD-3-Clause
 License File: LICENSE.txt
 
 Description:
 libwebm is used to handle WebM container I/O.
 
 Local Changes:
-* Removed: "mkvmuxer", "hdr_util", "file_util", "mkv_reader".
-* Make "~IMkvRerader()" public.
+* Removed: "build", "infra", "testing", "webm_parser", "sample_muxer_metadata", "m2ts/tests", "mkvmuxer", "hdr_util", "file_util", "mkv_reader".
+* Made "~IMkvReader()" public.
