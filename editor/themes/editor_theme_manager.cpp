@@ -333,6 +333,11 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 			} else if (config.preset == "Breeze Dark") {
 				preset_accent_color = Color(0.239, 0.682, 0.914);
 				preset_base_color = Color(0.1255, 0.1373, 0.149);
+			} else if (config.preset == "Ember (Dark)") {
+				// Charcoal base with a warm amber accent, in the spirit of modern DCC/game-engine editors.
+				preset_accent_color = Color(1.0, 0.58, 0.16);
+				preset_base_color = Color(0.105, 0.105, 0.115);
+				preset_contrast = 0.12;
 			} else if (config.preset == "Godot 2") {
 				preset_accent_color = Color(0.53, 0.67, 0.89);
 				preset_base_color = Color(0.24, 0.23, 0.27);
