@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    env.module_add_dependencies("webm", ["ogg", "opus", "vorbis"])
+    env.module_add_dependencies("webm", ["opus", "vorbis"])
     return True
 
 
