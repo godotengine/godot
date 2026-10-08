@@ -38,49 +38,106 @@
 
 #include <thirdparty/misc/yuv2rgb.h>
 
+// Disable shadowed declaration warnings for libwebm's status.h.
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4458)
+#elif defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
+
 // libsimplewebm
-#include <OpusVorbisDecoder.hpp>
-#include <VPXDecoder.hpp>
+#include <decoder/OpusDecoder.h>
+#include <decoder/VPXDecoder.h>
+#include <decoder/VorbisDecoder.h>
+#include <webm/status.h>
+
+// Restore shadowed declaration warnings.
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#elif defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 // libvpx
 #include <vpx/vpx_image.h>
 
-// libwebm
-#include <mkvparser/mkvparser.h>
-
-class MkvReader : public mkvparser::IMkvReader {
+// This class is an alternative to webm::FileReader that uses Godot's FileAccess.
+class GodotWebmReader : public webm::Reader {
 public:
-	MkvReader(const String &p_file) {
+	GodotWebmReader(const String &p_file) {
 		file = FileAccess::open(p_file, FileAccess::READ);
 
 		ERR_FAIL_COND_MSG(file.is_null(), "Failed loading resource: '" + p_file + "'.");
 	}
-	~MkvReader() {}
+	~GodotWebmReader() {}
 
-	virtual int Read(long long pos, long len, unsigned char *buf) {
-		if (file.is_valid()) {
-			if (file->get_position() != (uint64_t)pos) {
-				file->seek(pos);
-			}
-			if (file->get_buffer(buf, len) == (uint64_t)len) {
-				return 0;
-			}
+	virtual webm::Status Read(size_t num_to_read, uint8_t *buffer, uint64_t *num_actually_read) override {
+		if (file.is_null()) {
+			*num_actually_read = 0;
+			return webm::Status(webm::Status::kEndOfFile);
 		}
-		return -1;
+
+		uint64_t actual = file->get_buffer(buffer, (uint64_t)num_to_read);
+		*num_actually_read = actual;
+
+		if (actual == 0) {
+			return webm::Status(webm::Status::kEndOfFile);
+		}
+
+		if (actual == num_to_read) {
+			return webm::Status(webm::Status::kOkCompleted);
+		} else {
+			return webm::Status(webm::Status::kOkPartial);
+		}
 	}
 
-	virtual int Length(long long *total, long long *available) {
-		if (file.is_valid()) {
-			const uint64_t len = file->get_length();
-			if (total) {
-				*total = len;
-			}
-			if (available) {
-				*available = len;
-			}
+	virtual webm::Status Skip(uint64_t num_to_skip, uint64_t *num_actually_skipped) override {
+		if (file.is_null()) {
+			*num_actually_skipped = 0;
+			return webm::Status(webm::Status::kEndOfFile);
+		}
+
+		uint64_t previous_position = file->get_position();
+		uint64_t length = file->get_length();
+		if (previous_position >= length) {
+			*num_actually_skipped = 0;
+			return webm::Status(webm::Status::kEndOfFile);
+		}
+
+		uint64_t seek_position = previous_position + num_to_skip;
+		if (seek_position > length) {
+			seek_position = length;
+		}
+		file->seek(seek_position);
+
+		uint64_t new_position = file->get_position();
+		if (new_position < previous_position) {
+			*num_actually_skipped = 0;
+			return webm::Status(webm::Status::kEndOfFile);
+		}
+
+		uint64_t actual = new_position - previous_position;
+		*num_actually_skipped = actual;
+
+		if (actual == 0) {
+			return webm::Status(webm::Status::kEndOfFile);
+		}
+
+		if (actual == num_to_skip) {
+			return webm::Status(webm::Status::kOkCompleted);
+		} else {
+			return webm::Status(webm::Status::kOkPartial);
+		}
+	}
+
+	virtual uint64_t Position() const override {
+		if (file.is_null()) {
 			return 0;
 		}
-		return -1;
+
+		return file->get_position();
 	}
 
 private:
@@ -99,25 +156,45 @@ VideoStreamPlaybackWebm::~VideoStreamPlaybackWebm() {
 bool VideoStreamPlaybackWebm::set_file(const String &p_file) {
 	file_name = p_file;
 
-	webm = memnew(WebMDemuxer(new MkvReader(file_name), 0, audio_track));
+	webm_reader = memnew(GodotWebmReader(file_name));
+	webm = memnew(WebMDemuxer(webm_reader, 0, audio_track));
 	if (!webm->isOpen()) {
-		webm = nullptr;
+		delete_pointers();
 		return false;
 	}
 
 	video = memnew(VPXDecoder(*webm, OS::get_singleton()->get_processor_count()));
 	if (!video->isOpen()) {
-		video = nullptr;
+		delete_pointers();
 		return false;
 	}
 
-	audio = memnew(OpusVorbisDecoder(*webm));
-	if (audio->isOpen()) {
-		audio_frame = memnew(WebMFrame);
-		pcm = TightLocalVector<float>();
-		pcm.resize(sizeof(float) * audio->getBufferSamples() * webm->getChannels());
-	} else {
-		audio = nullptr;
+	switch (webm->getAudioCodec()) {
+		case WebMDemuxer::AUDIO_OPUS: {
+			audio_opus = memnew(OpusDecoder(*webm));
+			if (audio_opus->isOpen()) {
+				audio_frame = memnew(WebMFrame);
+				pcm = TightLocalVector<float>();
+				pcm.resize(sizeof(float) * audio_opus->getBufferSamples() * webm->getChannels());
+			} else {
+				memdelete(audio_opus);
+				audio_opus = nullptr;
+			}
+		} break;
+		case WebMDemuxer::AUDIO_VORBIS: {
+			audio_vorbis = memnew(VorbisDecoder(*webm));
+			if (audio_vorbis->isOpen()) {
+				audio_frame = memnew(WebMFrame);
+				pcm = TightLocalVector<float>();
+				pcm.resize(sizeof(float) * audio_vorbis->getBufferSamples() * webm->getChannels());
+			} else {
+				memdelete(audio_vorbis);
+				audio_vorbis = nullptr;
+			}
+		} break;
+		case WebMDemuxer::NO_AUDIO:
+		default: {
+		} break;
 	}
 
 	frame_data.resize((webm->getWidth() * webm->getHeight()) << 2);
@@ -196,11 +273,12 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 	}
 
 	bool audio_buffer_full = false;
+	bool reached_eos = false;
 
 	if (samples_offset > -1) {
-		//Mix remaining samples
+		// Mix remaining samples
 		const int to_read = num_decoded_samples - samples_offset;
-		const int mixed = mix_callback(mix_udata, pcm.ptr() + samples_offset * webm->getChannels(), to_read);
+		const int mixed = mix_callback(mix_udata, pcm.ptr() + (samples_offset * webm->getChannels()), to_read);
 		if (mixed != to_read) {
 			samples_offset += mixed;
 			audio_buffer_full = true;
@@ -209,28 +287,35 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 		}
 	}
 
-	const bool has_audio = (audio && mix_callback);
-	while ((has_audio && !audio_buffer_full && !has_enough_video_frames()) ||
-			(!has_audio && video_frames_pos == 0)) {
-		if (has_audio && !audio_buffer_full && audio_frame->isValid() &&
-				audio->getPCMF(*audio_frame, pcm.ptr(), num_decoded_samples) && num_decoded_samples > 0) {
-			const int mixed = mix_callback(mix_udata, pcm.ptr(), num_decoded_samples);
+	const bool has_audio = ((audio_opus || audio_vorbis) && mix_callback);
+	while ((has_audio && !audio_buffer_full && !has_enough_video_frames()) || (!has_audio && video_frames_pos == 0)) {
+		if (has_audio && !audio_buffer_full && audio_frame->isValid()) {
+			bool get_pcmf_succeeded;
+			if (audio_opus) {
+				get_pcmf_succeeded = audio_opus->getPCMF(*audio_frame, pcm.ptr(), num_decoded_samples);
+			} else {
+				get_pcmf_succeeded = audio_vorbis->getPCMF(*audio_frame, pcm.ptr(), num_decoded_samples);
+			}
+			if (get_pcmf_succeeded && num_decoded_samples > 0) {
+				const int mixed = mix_callback(mix_udata, pcm.ptr(), num_decoded_samples);
 
-			if (mixed != num_decoded_samples) {
-				samples_offset = mixed;
-				audio_buffer_full = true;
+				if (mixed != num_decoded_samples) {
+					samples_offset = mixed;
+					audio_buffer_full = true;
+				}
 			}
 		}
 
 		if (video_frames_pos >= video_frames_capacity) {
 			WebMFrame **video_frames_new = (WebMFrame **)memrealloc(video_frames, ++video_frames_capacity * sizeof(void *));
-			ERR_FAIL_COND(!video_frames_new); //Out of memory
+			ERR_FAIL_COND(!video_frames_new); // Out of memory
 			(video_frames = video_frames_new)[video_frames_capacity - 1] = memnew(WebMFrame);
 		}
 		WebMFrame *video_frame = video_frames[video_frames_pos];
 
-		if (!webm->readFrame(video_frame, audio_frame)) { //This will invalidate frames
-			break; //Can't demux, EOS?
+		if (!webm->readFrame(video_frame, audio_frame)) {
+			reached_eos = true;
+			break;
 		}
 
 		if (video_frame->isValid()) {
@@ -299,19 +384,19 @@ void VideoStreamPlaybackWebm::update(double p_delta) {
 		video_frames[video_frames_pos] = video_frame;
 	}
 
-	if (video_frames_pos == 0 && webm->isEOS()) {
+	if (video_frames_pos == 0 && reached_eos) {
 		stop();
 	}
 }
 
 int VideoStreamPlaybackWebm::get_channels() const {
-	if (audio) {
+	if (audio_opus || audio_vorbis) {
 		return webm->getChannels();
 	}
 	return 0;
 }
 int VideoStreamPlaybackWebm::get_mix_rate() const {
-	if (audio) {
+	if (audio_opus || audio_vorbis) {
 		return webm->getSampleRate();
 	}
 	return 0;
@@ -356,13 +441,21 @@ void VideoStreamPlaybackWebm::delete_pointers() {
 		memdelete(video);
 		video = nullptr;
 	}
-	if (audio) {
-		memdelete(audio);
-		audio = nullptr;
+	if (audio_opus) {
+		memdelete(audio_opus);
+		audio_opus = nullptr;
+	}
+	if (audio_vorbis) {
+		memdelete(audio_vorbis);
+		audio_vorbis = nullptr;
 	}
 	if (webm) {
 		memdelete(webm);
 		webm = nullptr;
+	}
+	if (webm_reader) {
+		memdelete(webm_reader);
+		webm_reader = nullptr;
 	}
 }
 

@@ -35,9 +35,11 @@
 #include "scene/resources/video_stream.h"
 
 class WebMFrame;
+class GodotWebmReader;
 class WebMDemuxer;
 class VPXDecoder;
-class OpusVorbisDecoder;
+class VorbisDecoder;
+class OpusDecoder;
 
 class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 	GDCLASS(VideoStreamPlaybackWebm, VideoStreamPlayback);
@@ -46,8 +48,10 @@ class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 	int audio_track = 0;
 
 	WebMDemuxer *webm = nullptr;
+	GodotWebmReader *webm_reader = nullptr;
 	VPXDecoder *video = nullptr;
-	OpusVorbisDecoder *audio = nullptr;
+	OpusDecoder *audio_opus = nullptr;
+	VorbisDecoder *audio_vorbis = nullptr;
 
 	WebMFrame **video_frames = nullptr;
 	WebMFrame *audio_frame = nullptr;

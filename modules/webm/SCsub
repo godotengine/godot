@@ -13,7 +13,9 @@ thirdparty_obj = []
 env_webm.Prepend(
     CPPPATH=[
         "#thirdparty/libsimplewebm/",
-        "#thirdparty/libsimplewebm/libwebm/",
+        "#thirdparty/libsimplewebm/include/",
+        "#thirdparty/libsimplewebm/libwebm/webm_parser",
+        "#thirdparty/libsimplewebm/libwebm/webm_parser/include",
     ]
 )
 
@@ -32,10 +34,38 @@ if env["builtin_libvpx"]:
 env_thirdparty = env_webm.Clone()
 env_thirdparty.disable_warnings()
 
-env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libsimplewebm/libwebm/mkvparser/mkvparser.cc")
-env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libsimplewebm/OpusVorbisDecoder.cpp")
-env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libsimplewebm/VPXDecoder.cpp")
-env_thirdparty.add_source_files(thirdparty_obj, "#thirdparty/libsimplewebm/WebMDemuxer.cpp")
+thirdparty_dir = "#thirdparty/libsimplewebm/"
+thirdparty_sources = [
+    "decoder/OpusDecoder.cpp",
+    "decoder/VorbisDecoder.cpp",
+    "decoder/VPXDecoder.cpp",
+    "demuxer/WebMDemuxer.cpp",
+    "libwebm/webm_parser/src/ancestory.cc",  # codespell:ignore ancestory
+    "libwebm/webm_parser/src/bit_utils.cc",
+    "libwebm/webm_parser/src/block_header_parser.cc",
+    "libwebm/webm_parser/src/block_parser.cc",
+    "libwebm/webm_parser/src/buffer_reader.cc",
+    "libwebm/webm_parser/src/callback.cc",
+    "libwebm/webm_parser/src/date_parser.cc",
+    "libwebm/webm_parser/src/file_reader.cc",
+    "libwebm/webm_parser/src/float_parser.cc",
+    "libwebm/webm_parser/src/id_element_parser.cc",
+    "libwebm/webm_parser/src/id_parser.cc",
+    "libwebm/webm_parser/src/istream_reader.cc",
+    "libwebm/webm_parser/src/master_parser.cc",
+    "libwebm/webm_parser/src/parser_utils.cc",
+    "libwebm/webm_parser/src/segment_parser.cc",
+    "libwebm/webm_parser/src/size_parser.cc",
+    "libwebm/webm_parser/src/skip_parser.cc",
+    "libwebm/webm_parser/src/unknown_parser.cc",
+    "libwebm/webm_parser/src/var_int_parser.cc",
+    "libwebm/webm_parser/src/virtual_block_parser.cc",
+    "libwebm/webm_parser/src/void_parser.cc",
+    "libwebm/webm_parser/src/webm_parser.cc",
+]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
 
 env.modules_sources += thirdparty_obj
 
