@@ -37,7 +37,7 @@ class _WARN_UNUSED_ RingBuffer {
 	T *_data = nullptr;
 	int _read_pos = 0;
 	int _count = 0;
-	int _size_mask;
+	int _size_mask = 0;
 
 	inline int _write_pos() const {
 		return _wrapped_pos(_read_pos + _count);
