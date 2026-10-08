@@ -2474,14 +2474,14 @@ struct GDScriptDepSort {
 
 void GDScriptLanguage::reload_all_scripts() {
 #ifdef DEBUG_ENABLED
-	print_verbose("GDScript: Reloading all scripts");
+	PRINT_VERBOSE("GDScript: Reloading all scripts");
 	Array scripts;
 	{
 		MutexLock lock(mutex);
 
 		for (GDScript &script : script_list) {
 			if (script.get_path().is_resource_file()) {
-				print_verbose("GDScript: Found: " + script.get_path());
+				PRINT_VERBOSE("GDScript: Found: " + script.get_path());
 				scripts.push_back(Ref<GDScript>(&script)); //cast to gdscript to avoid being erased by accident
 			}
 		}
@@ -2539,7 +2539,7 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts) {
 
 	for (KeyValue<Ref<GDScript>, HashMap<ObjectID, List<Pair<StringName, Variant>>>> &E : to_reload) {
 		Ref<GDScript> scr = E.key;
-		print_verbose("GDScript: Reloading: " + scr->get_path());
+		PRINT_VERBOSE("GDScript: Reloading: " + scr->get_path());
 #ifdef TOOLS_ENABLED
 		bool was_tool = scr->is_tool();
 #endif
