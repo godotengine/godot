@@ -156,13 +156,18 @@ public:
 
 	inline int advance_read(int p_n) {
 		p_n = MIN(p_n, data_left());
-		_inc_read(p_n);
+		for (int i = 0; i < p_n; i++) {
+			_data[_inc_read()].~T();
+		}
 		return p_n;
 	}
 
 	inline int decrease_write(int p_n) {
 		p_n = MIN(p_n, data_left());
-		_count -= p_n;
+		for (int i = 0; i < p_n; i++) {
+			_data[_write_pos()].~T();
+			_count -= 1;
+		}
 		return p_n;
 	}
 
