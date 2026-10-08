@@ -1,4 +1,23 @@
-simplewebm
-*.pro.user
+# CMake build artifacts & caches
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
 Makefile
-*.o
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+CMakeUserPresets.json
+
+# Common build directory patterns
+build/
+build*/
+out/
+
+# IDE specific build trees (CLion, Visual Studio, VS Code)
+.idea/
+cmake-build-*/
+.vscode/
+.vs/
