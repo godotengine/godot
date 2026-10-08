@@ -231,7 +231,7 @@ public:
 		const int mask = new_size - 1;
 
 		if (_data == nullptr || old_size < new_size) {
-			_data = static_cast<T*>(Memory::realloc_static(_data, sizeof(T) * new_size));
+			_data = static_cast<T *>(Memory::realloc_static(_data, sizeof(T) * new_size));
 			// Make data contiguous
 			if (_read_pos > _write_pos()) {
 				for (int i = 0; i < _write_pos(); i++) {
@@ -239,7 +239,7 @@ public:
 				}
 			}
 		} else if (old_size > new_size) {
-			T *new_data = static_cast<T*>(Memory::alloc_static(sizeof(T) * new_size));
+			T *new_data = static_cast<T *>(Memory::alloc_static(sizeof(T) * new_size));
 			const int new_count = MIN(new_size - 1, data_left());
 
 			// Destructing the excess older data.
