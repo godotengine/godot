@@ -115,6 +115,9 @@ private:
 			RID index_array;
 			uint32_t index_count = 0;
 
+			// Bottom-level acceleration structure for hybrid ray tracing, built on first use.
+			RID blas;
+
 			struct LOD {
 				float edge_length = 0.0;
 				uint32_t index_count = 0;
@@ -396,6 +399,9 @@ public:
 	virtual RID mesh_surface_get_attribute_buffer_rd_rid(RID p_mesh, int p_surface) const override;
 	virtual RID mesh_surface_get_skin_buffer_rd_rid(RID p_mesh, int p_surface) const override;
 	virtual RID mesh_surface_get_index_buffer_rd_rid(RID p_mesh, int p_surface) const override;
+
+	// Returns the surface BLAS, creating it on first use. Returns an invalid RID for surfaces that cannot be ray traced yet.
+	RID mesh_surface_get_blas(RID p_mesh, uint32_t p_surface);
 
 	virtual int mesh_get_surface_count(RID p_mesh) const override;
 

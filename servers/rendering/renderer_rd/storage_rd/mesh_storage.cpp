@@ -519,6 +519,12 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RenderingServerTypes::Surfa
 void MeshStorage::_mesh_surface_clear(Mesh *p_mesh, int p_surface) {
 	Mesh::Surface &s = *p_mesh->surfaces[p_surface];
 
+	// The BLAS references the vertex and index buffers, so it must go first.
+	if (s.blas.is_valid()) {
+		RD::get_singleton()->free_rid(s.blas);
+		s.blas = RID();
+	}
+
 	if (s.vertex_buffer.is_valid()) {
 		RD::get_singleton()->free_rid(s.vertex_buffer); // Clears arrays as dependency automatically, including all versions.
 	}
@@ -648,6 +654,42 @@ RID MeshStorage::mesh_surface_get_index_buffer_rd_rid(RID p_mesh, int p_surface)
 	ERR_FAIL_NULL_V(mesh, RID());
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_surface, mesh->surface_count, RID());
 	return mesh->surfaces[p_surface]->index_buffer;
+}
+
+RID MeshStorage::mesh_surface_get_blas(RID p_mesh, uint32_t p_surface) {
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL_V(mesh, RID());
+	ERR_FAIL_UNSIGNED_INDEX_V(p_surface, mesh->surface_count, RID());
+
+	Mesh::Surface *s = mesh->surfaces[p_surface];
+	if (s->blas.is_valid()) {
+		return s->blas;
+	}
+
+	// Only plain float3 positions in an interleaved vertex buffer are supported for now.
+	// 2D and compressed vertex layouts are skipped (they stay on the rasterized path).
+	if (s->primitive != RSE::PRIMITIVE_TRIANGLES || !(s->format & RSE::ARRAY_FORMAT_VERTEX) || (s->format & (RSE::ARRAY_FLAG_USE_2D_VERTICES | RSE::ARRAY_FLAG_COMPRESS_ATTRIBUTES))) {
+		return RID();
+	}
+	if (!s->vertex_buffer.is_valid() || s->vertex_count == 0 || s->vertex_buffer_size == 0) {
+		return RID();
+	}
+
+	RD::AccelerationStructureGeometry geometry;
+	geometry.flags = RD::ACCELERATION_STRUCTURE_GEOMETRY_OPAQUE_BIT;
+	geometry.vertex_buffer = s->vertex_buffer;
+	geometry.vertex_offset = 0;
+	geometry.vertex_stride = s->vertex_buffer_size / s->vertex_count;
+	geometry.vertex_count = s->vertex_count;
+	geometry.vertex_format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+	if (s->index_count) {
+		geometry.index_buffer = s->index_buffer;
+		geometry.index_offset = 0;
+		geometry.index_count = s->index_count;
+	}
+
+	s->blas = RD::get_singleton()->blas_create(Span<RD::AccelerationStructureGeometry>(&geometry, 1), {});
+	return s->blas;
 }
 
 void MeshStorage::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
