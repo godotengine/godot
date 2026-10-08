@@ -239,6 +239,7 @@ protected:
 	virtual Vector<IconInfo> get_icon_infos() const = 0;
 
 	virtual void get_usage_descriptions(List<UsageDescription> *r_descriptions) const;
+	virtual void get_required_device_capabilities(const Ref<EditorExportPreset> &p_preset, Vector<String> &r_capabilities) const;
 
 	void _notification(int p_what);
 
