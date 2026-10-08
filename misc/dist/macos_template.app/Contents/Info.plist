@@ -55,6 +55,8 @@ $usage_descriptions
 		<string>arm64</string>
 		<string>x86_64</string>
 	</array>
+	<key>LSMinimumSystemVersion</key>
+	<string>$min_version_common</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
 		<key>arm64</key>
