@@ -5134,6 +5134,62 @@ Error EditorNode::open_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	return OK;
 }
 
+static bool is_node_array_property(const PropertyInfo &p_info) {
+	if (p_info.hint != PROPERTY_HINT_TYPE_STRING && p_info.hint != PROPERTY_HINT_ARRAY_TYPE) {
+		return false;
+	}
+	int colon = p_info.hint_string.find_char(':');
+	if (colon < 0) {
+		return false;
+	}
+	String subtype_string = p_info.hint_string.substr(0, colon);
+	PropertyHint subtype_hint = PROPERTY_HINT_NONE;
+	int slash = subtype_string.find_char('/');
+	if (slash >= 0) {
+		subtype_hint = PropertyHint(subtype_string.get_slicec('/', 1).to_int());
+		subtype_string = subtype_string.substr(0, slash);
+	}
+	return Variant::Type(subtype_string.to_int()) == Variant::OBJECT && subtype_hint == PROPERTY_HINT_NODE_TYPE;
+}
+
+// Converts p_value's node references to NodePaths so they survive a reimport
+// (which re-creates the referenced nodes). Handles a single node ref and arrays
+// of Nodes (recursing into elements). Returns true and sets r_value to the
+// converted value if any node ref was converted; otherwise returns false.
+static bool convert_node_refs_to_paths(Node *p_node, const PropertyInfo &p_info, const Variant &p_value, Variant &r_value, const HashSet<Node *> *p_relevant = nullptr) {
+	r_value = p_value;
+
+	// A direct node reference: replace with its path. If p_relevant is set,
+	// only convert references to nodes in that set.
+	if (p_info.type == Variant::OBJECT && p_info.hint == PROPERTY_HINT_NODE_TYPE) {
+		if (p_value.get_type() == Variant::OBJECT) {
+			Node *target_node = Object::cast_to<Node>(p_value);
+			if (target_node && (p_relevant == nullptr || p_relevant->has(target_node))) {
+				r_value = p_node->get_path_to(target_node);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// An array of Nodes: recurse into the elements.
+	if (is_node_array_property(p_info)) {
+		const PropertyInfo node_info(Variant::OBJECT, "node", PROPERTY_HINT_NODE_TYPE);
+		Array array = p_value;
+		Array new_array;
+		bool changed = false;
+		for (int i = 0; i < array.size(); i++) {
+			Variant elem;
+			changed = changed || convert_node_refs_to_paths(p_node, node_info, array[i], elem, p_relevant);
+			new_array.push_back(elem);
+		}
+		r_value = new_array;
+		return changed;
+	}
+
+	return false;
+}
+
 HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *p_node, bool p_node_references_only) {
 	HashMap<StringName, Variant> modified_property_map;
 
@@ -5150,14 +5206,10 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *
 			Variant current_value = p_node->get(E.name);
 			if (is_valid_revert) {
 				if (PropertyUtils::is_property_value_different(p_node, current_value, revert_value)) {
-					// If this property is a direct node reference, save a NodePath instead to prevent corrupted references.
-					if (node_reference) {
-						Node *target_node = Object::cast_to<Node>(current_value);
-						if (target_node) {
-							modified_property_map[E.name] = p_node->get_path_to(target_node);
-						}
-					} else {
-						modified_property_map[E.name] = current_value;
+					// Store node references as NodePaths to prevent corruption on reimport.
+					Variant value;
+					if (convert_node_refs_to_paths(p_node, E, current_value, value)) {
+						modified_property_map[E.name] = value;
 					}
 				}
 			}
@@ -5170,17 +5222,29 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *
 HashMap<StringName, Variant> EditorNode::get_modified_properties_reference_to_nodes(Node *p_node, List<Node *> &p_nodes_referenced_by) {
 	HashMap<StringName, Variant> modified_property_map;
 
+	// Build a set of the nodes being re-created, for fast membership tests.
+	HashSet<Node *> referenced_set;
+	for (Node *node : p_nodes_referenced_by) {
+		referenced_set.insert(node);
+	}
+
 	List<PropertyInfo> pinfo;
 	p_node->get_property_list(&pinfo);
 	for (const PropertyInfo &E : pinfo) {
 		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			if (E.type != Variant::OBJECT || E.hint != PROPERTY_HINT_NODE_TYPE) {
-				continue;
-			}
 			Variant current_value = p_node->get(E.name);
-			Node *target_node = Object::cast_to<Node>(current_value);
-			if (target_node && p_nodes_referenced_by.find(target_node)) {
-				modified_property_map[E.name] = p_node->get_path_to(target_node);
+
+			if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
+				Node *target_node = Object::cast_to<Node>(current_value);
+				if (target_node && referenced_set.has(target_node)) {
+					modified_property_map[E.name] = p_node->get_path_to(target_node);
+				}
+			} else if (is_node_array_property(E)) {
+				// Array of Nodes: record it if any element is re-created by the reimport.
+				Variant value;
+				if (convert_node_refs_to_paths(p_node, E, current_value, value, &referenced_set)) {
+					modified_property_map[E.name] = value;
+				}
 			}
 		}
 	}
@@ -5200,29 +5264,35 @@ void EditorNode::update_node_from_node_modification_entry(Node *p_node, Modifica
 		List<PropertyInfo> pinfo;
 		p_node->get_property_list(&pinfo);
 
-		// Get names of all valid property names.
-		HashMap<StringName, bool> property_node_reference_table;
+		// Get info about all valid property names, so node references can be
+		// re-resolved from paths (single refs and arrays of Nodes).
+		HashMap<StringName, PropertyInfo> property_info_table;
 		for (const PropertyInfo &E : pinfo) {
 			if (E.usage & PROPERTY_USAGE_STORAGE) {
-				if (E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE) {
-					property_node_reference_table[E.name] = true;
-				} else {
-					property_node_reference_table[E.name] = false;
-				}
+				property_info_table[E.name] = E;
 			}
 		}
 
 		// Restore the modified properties for this node.
 		for (const KeyValue<StringName, Variant> &E : p_node_modification.property_table) {
-			bool *property_node_reference_table_entry = property_node_reference_table.getptr(E.key);
-			if (property_node_reference_table_entry) {
-				// If the property is a node reference, attempt to restore from the node path instead.
-				bool is_node_reference = *property_node_reference_table_entry;
-				if (is_node_reference) {
-					if (E.value.get_type() == Variant::NODE_PATH) {
-						p_node->set(E.key, p_node->get_node_or_null(E.value));
+			PropertyInfo *property_info = property_info_table.getptr(E.key);
+			if (property_info) {
+				Variant value = E.value;
+
+				// A single node reference: resolve the stored NodePath to a live node.
+				if (value.get_type() == Variant::NODE_PATH && property_info->type == Variant::OBJECT && property_info->hint == PROPERTY_HINT_NODE_TYPE) {
+					p_node->set(E.key, p_node->get_node_or_null(value));
+				} else if (value.get_type() == Variant::ARRAY && is_node_array_property(*property_info)) {
+					// An array of Nodes: resolve NodePath elements to live nodes.
+					Array array = value;
+					Array new_array;
+					for (int i = 0; i < array.size(); i++) {
+						Variant elem = array[i];
+						new_array.push_back(elem.get_type() == Variant::NODE_PATH ? p_node->get_node_or_null(elem) : elem);
 					}
+					p_node->set(E.key, new_array);
 				} else {
+					// NodePath properties and everything else: stored as-is.
 					p_node->set(E.key, E.value);
 				}
 			}
