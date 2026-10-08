@@ -780,6 +780,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	if (warning_count == 0 && error_count == 0) {
 		expand_all_button->set_disabled(false);
 		collapse_all_button->set_disabled(false);
+		copy_all_button->set_disabled(false);
 		clear_button->set_disabled(false);
 	}
 
@@ -1924,7 +1925,47 @@ void ScriptEditorDebugger::_clear_errors_list() {
 
 	expand_all_button->set_disabled(true);
 	collapse_all_button->set_disabled(true);
+	copy_all_button->set_disabled(true);
 	clear_button->set_disabled(true);
+}
+
+String ScriptEditorDebugger::_get_error_item_as_text(const TreeItem *p_item) const {
+	String type;
+	if (p_item->has_meta("_is_warning")) {
+		type = "W ";
+	} else if (p_item->has_meta("_is_error")) {
+		type = "E ";
+	}
+
+	// The type prefix is not counted when padding the child rows, so that their
+	// second column lines up with the error's one.
+	String text = type + p_item->get_text(0) + "   ";
+	const int rpad_len = text.length() - type.length();
+
+	text += p_item->get_text(1) + "\n";
+	for (const TreeItem *child = p_item->get_first_child(); child; child = child->get_next()) {
+		text += "  " + child->get_text(0).rpad(rpad_len) + child->get_text(1) + "\n";
+	}
+
+	return text;
+}
+
+void ScriptEditorDebugger::_copy_errors_list() {
+	const TreeItem *root = error_tree->get_root();
+	if (root == nullptr) {
+		return;
+	}
+
+	String text;
+	for (const TreeItem *item = root->get_first_child(); item; item = item->get_next()) {
+		text += _get_error_item_as_text(item);
+	}
+
+	if (text.is_empty()) {
+		return;
+	}
+
+	DisplayServer::get_singleton()->clipboard_set(text);
 }
 
 void ScriptEditorDebugger::_breakpoints_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button) {
@@ -1977,25 +2018,7 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 				ti = ti->get_parent();
 			}
 
-			String type;
-
-			if (ti->has_meta("_is_warning")) {
-				type = "W ";
-			} else if (ti->has_meta("_is_error")) {
-				type = "E ";
-			}
-
-			String text = ti->get_text(0) + "   ";
-			int rpad_len = text.length();
-
-			text = type + text + ti->get_text(1) + "\n";
-			TreeItem *ci = ti->get_first_child();
-			while (ci) {
-				text += "  " + ci->get_text(0).rpad(rpad_len) + ci->get_text(1) + "\n";
-				ci = ci->get_next();
-			}
-
-			DisplayServer::get_singleton()->clipboard_set(text);
+			DisplayServer::get_singleton()->clipboard_set(_get_error_item_as_text(ti));
 		} break;
 
 		case ACTION_OPEN_SOURCE: {
@@ -2331,6 +2354,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		Control *space = memnew(Control);
 		space->set_h_size_flags(SIZE_EXPAND_FILL);
 		error_hbox->add_child(space);
+
+		copy_all_button = memnew(Button);
+		copy_all_button->set_text(TTRC("Copy All"));
+		copy_all_button->set_h_size_flags(SIZE_SHRINK_BEGIN);
+		copy_all_button->set_disabled(true);
+		copy_all_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_copy_errors_list));
+		error_hbox->add_child(copy_all_button);
 
 		clear_button = memnew(Button);
 		clear_button->set_text(TTRC("Clear"));

@@ -100,6 +100,7 @@ private:
 	Tree *error_tree = nullptr;
 	Button *expand_all_button = nullptr;
 	Button *collapse_all_button = nullptr;
+	Button *copy_all_button = nullptr;
 	Button *clear_button = nullptr;
 	PopupMenu *item_menu = nullptr;
 
@@ -270,6 +271,7 @@ private:
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
+	String _get_error_item_as_text(const TreeItem *p_item) const;
 
 	void _vmem_item_activated();
 	void _vmem_tree_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
@@ -279,6 +281,7 @@ private:
 	void _profiler_seeked();
 
 	void _clear_errors_list();
+	void _copy_errors_list();
 
 	void _breakpoints_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
 	void _error_tree_item_rmb_selected(const Vector2 &p_pos, MouseButton p_button);
