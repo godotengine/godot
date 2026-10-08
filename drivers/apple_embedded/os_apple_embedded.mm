@@ -48,6 +48,7 @@
 #include "drivers/sdl/joypad_sdl.h"
 #endif
 #include "main/main.h"
+#include "servers/audio/audio_driver.h"
 #include "servers/camera/camera_server.h"
 #include "servers/display/accessibility_server.h"
 
@@ -785,11 +786,16 @@ Error OS_AppleEmbedded::setup_remote_filesystem(const String &p_server_host, int
 }
 
 void OS_AppleEmbedded::audio_driver_start() {
-	audio_driver.start();
+	// Dummy is the singleton when Core Audio init failed. Starting this unit would run a second mix thread.
+	if (AudioDriver::get_singleton() == &audio_driver) {
+		audio_driver.start();
+	}
 }
 
 void OS_AppleEmbedded::audio_driver_stop() {
-	audio_driver.stop();
+	if (AudioDriver::get_singleton() == &audio_driver) {
+		audio_driver.stop();
+	}
 }
 
 void OS_AppleEmbedded::on_focus_out() {
@@ -810,7 +816,7 @@ void OS_AppleEmbedded::on_focus_out() {
 
 		[GDTAppDelegateService.viewController.godotView stopRendering];
 
-		audio_driver.stop();
+		audio_driver_stop();
 	}
 }
 
@@ -832,7 +838,7 @@ void OS_AppleEmbedded::on_focus_in() {
 
 		[GDTAppDelegateService.viewController.godotView startRendering];
 
-		audio_driver.start();
+		audio_driver_start();
 	}
 }
 
