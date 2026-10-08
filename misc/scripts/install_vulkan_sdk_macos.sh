@@ -4,6 +4,15 @@ set -euo pipefail
 IFS=$'\n\t'
 new_ver_full=''
 
+case "$(uname -s)" in
+	Darwin)
+		;;
+	*)
+		echo "Error: This script is intended to run on macOS only."
+		exit 1
+		;;
+esac
+
 # Check currently installed and latest available Vulkan SDK versions.
 if command -v jq 2>&1 >/dev/null; then
 	curl -L "https://sdk.lunarg.com/sdk/download/latest/mac/config.json" -o /tmp/vulkan-sdk.json
