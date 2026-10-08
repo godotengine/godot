@@ -286,7 +286,7 @@ ResourceUID::ID ResourceSaver::get_resource_id_for_path(const String &p_path, bo
 	if (save_get_id_for_path) {
 		return save_get_id_for_path(p_path, p_generate);
 	}
-	return ResourceUID::INVALID_ID;
+	return ResourceLoader::get_resource_uid(p_path);
 }
 
 void ResourceSaver::set_get_resource_id_for_path(ResourceSaverGetResourceIDForPath p_callback) {
