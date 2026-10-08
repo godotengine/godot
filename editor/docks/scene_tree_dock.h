@@ -343,6 +343,7 @@ private:
 
 public:
 	static SceneTreeDock *get_singleton() { return singleton; }
+	void duplicate_selection() { _tool_selected(TOOL_DUPLICATE); }
 
 protected:
 	void _notification(int p_what);

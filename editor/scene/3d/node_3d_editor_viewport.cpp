@@ -2263,7 +2263,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 					}
 
-					if (b->is_alt_pressed()) {
+					// Alt+drag on a transform handle clones the selection; the drag then moves the copies.
+					if (b->is_alt_pressed() && transform_gizmo_visible && _transform_gizmo_select(b->get_position(), true)) {
+						SceneTreeDock::get_singleton()->duplicate_selection();
+					} else if (b->is_alt_pressed()) {
 						_list_select(b);
 						return;
 					}
