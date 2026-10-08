@@ -493,20 +493,22 @@ List<String> EditorExportPlatformWeb::get_binary_extensions(const Ref<EditorExpo
 Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags, bool p_notify) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags, p_notify);
 
+	// Allow exporting to `res://` and `user://` for convenience, but ensure the export folder exists beforehand.
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	const String base_dir = ProjectSettings::get_singleton()->globalize_path(p_path.get_base_dir());
+	Error err = ensure_folder(da, base_dir);
+	if (err != OK) {
+		return err;
+	}
+
 	const String custom_debug = p_preset->get("custom_template/debug");
 	const String custom_release = p_preset->get("custom_template/release");
 	const String custom_html = p_preset->get("html/custom_html_shell");
 	const bool export_icon = p_preset->get("html/export_icon");
 	const bool pwa = p_preset->get("progressive_web_app/enabled");
 
-	const String base_dir = p_path.get_base_dir();
 	const String base_path = p_path.get_basename();
 	const String base_name = p_path.get_file().get_basename();
-
-	if (!DirAccess::exists(base_dir)) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
-		return ERR_FILE_BAD_PATH;
-	}
 
 	// Find the correct template
 	String template_path = p_debug ? custom_debug : custom_release;
@@ -532,7 +534,6 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	{
-		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		for (int i = 0; i < shared_objects.size(); i++) {
 			String dst = base_dir.path_join(shared_objects[i].path.get_file());
 			error = da->copy(shared_objects[i].path, dst);
@@ -575,7 +576,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 
 	// Generate HTML file with replaced strings.
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
-	Error err = _write_or_error(html.ptr(), html.size(), p_path);
+	err = _write_or_error(html.ptr(), html.size(), p_path);
 	if (err != OK) {
 		// Message is supplied by the subroutine method.
 		return err;
