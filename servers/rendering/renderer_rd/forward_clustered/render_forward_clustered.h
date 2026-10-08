@@ -778,6 +778,11 @@ private:
 	/* SDFGI */
 	void _update_sdfgi(RenderDataRD *p_render_data);
 
+	// Hybrid ray tracing: top-level acceleration structure over the scene's mesh surfaces, rebuilt every frame.
+	void _update_raytracing_tlas(RenderDataRD *p_render_data);
+	RID rt_tlas;
+	uint32_t rt_tlas_capacity = 0;
+
 	/* Volumetric fog */
 	RID shadow_sampler;
 

@@ -1280,6 +1280,57 @@ void RenderForwardClustered::_setup_lightmaps(const RenderDataRD *p_render_data,
 
 /* SDFGI */
 
+void RenderForwardClustered::_update_raytracing_tlas(RenderDataRD *p_render_data) {
+	RD *rd = RD::get_singleton();
+	if (!rd->has_feature(RD::SUPPORTS_RAY_QUERY) && !rd->has_feature(RD::SUPPORTS_RAYTRACING_PIPELINE)) {
+		return;
+	}
+	if (p_render_data->instances == nullptr) {
+		return;
+	}
+
+	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
+	const PagedArray<RenderGeometryInstance *> &instances = *p_render_data->instances;
+
+	// One TLAS instance per mesh surface. Instances that are not plain meshes stay on the rasterized path.
+	LocalVector<RD::AccelerationStructureInstance> tlas_instances;
+	for (uint32_t i = 0; i < instances.size(); i++) {
+		RenderGeometryInstanceBase *inst = static_cast<RenderGeometryInstanceBase *>(instances[i]);
+		if (inst->data == nullptr || inst->data->base_type != RSE::INSTANCE_MESH || !inst->data->base.is_valid()) {
+			continue;
+		}
+
+		const int surface_count = mesh_storage->mesh_get_surface_count(inst->data->base);
+		const Transform3D xform = inst->get_transform();
+		for (int s = 0; s < surface_count; s++) {
+			RID blas = mesh_storage->mesh_surface_get_blas(inst->data->base, s);
+			if (!blas.is_valid()) {
+				continue;
+			}
+			RD::AccelerationStructureInstance tlas_instance;
+			tlas_instance.transform = xform;
+			tlas_instance.id = tlas_instances.size();
+			tlas_instance.blas = blas;
+			tlas_instances.push_back(tlas_instance);
+		}
+	}
+
+	if (tlas_instances.is_empty()) {
+		return;
+	}
+
+	// Grow the TLAS when the scene has more surfaces than it can hold.
+	if (!rt_tlas.is_valid() || rt_tlas_capacity < tlas_instances.size()) {
+		if (rt_tlas.is_valid()) {
+			rd->free_rid(rt_tlas);
+		}
+		rt_tlas_capacity = MAX((uint32_t)tlas_instances.size(), rt_tlas_capacity * 2);
+		rt_tlas = rd->tlas_create(rt_tlas_capacity, {});
+	}
+
+	rd->tlas_build(rt_tlas, Span<RD::AccelerationStructureInstance>(tlas_instances.ptr(), tlas_instances.size()));
+}
+
 void RenderForwardClustered::_update_sdfgi(RenderDataRD *p_render_data) {
 	if (p_render_data->sdfgi_update_data == nullptr) {
 		return;
@@ -1809,6 +1860,8 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool ce_needs_motion_vectors = _compositor_effects_has_flag(p_render_data, RSE::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS);
 	bool ce_needs_normal_roughness = _compositor_effects_has_flag(p_render_data, RSE::COMPOSITOR_EFFECT_FLAG_NEEDS_ROUGHNESS);
 	bool ce_needs_separate_specular = _compositor_effects_has_flag(p_render_data, RSE::COMPOSITOR_EFFECT_FLAG_NEEDS_SEPARATE_SPECULAR);
+
+	_update_raytracing_tlas(p_render_data);
 
 	// sdfgi first
 	_update_sdfgi(p_render_data);
@@ -5379,6 +5432,10 @@ RenderForwardClustered::RenderForwardClustered() {
 }
 
 RenderForwardClustered::~RenderForwardClustered() {
+	if (rt_tlas.is_valid()) {
+		RD::get_singleton()->free_rid(rt_tlas);
+		rt_tlas = RID();
+	}
 	if (ss_effects != nullptr) {
 		memdelete(ss_effects);
 		ss_effects = nullptr;

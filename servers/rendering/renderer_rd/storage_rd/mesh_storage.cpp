@@ -689,6 +689,10 @@ RID MeshStorage::mesh_surface_get_blas(RID p_mesh, uint32_t p_surface) {
 	}
 
 	s->blas = RD::get_singleton()->blas_create(Span<RD::AccelerationStructureGeometry>(&geometry, 1), {});
+	if (s->blas.is_valid()) {
+		// blas_create only allocates the structure; the build has to be recorded separately.
+		RD::get_singleton()->blas_build(s->blas);
+	}
 	return s->blas;
 }
 
