@@ -5903,8 +5903,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 	if (p_property.type == Variant::OBJECT) {
 		const StringName &class_name = p_property.class_name.is_empty() ? Object::get_class_static() : p_property.class_name;
 		if (ScriptServer::is_global_class(class_name)) {
-			result = make_global_class_meta_type(class_name, p_source);
-			result.is_meta_type = false;
+			result = type_from_metatype(make_global_class_meta_type(class_name, p_source));
 		} else if (class_exists(class_name)) {
 			result.kind = GDScriptParser::DataType::NATIVE;
 			result.native_type = class_name;
