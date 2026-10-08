@@ -455,6 +455,8 @@ public:
 	bool is_gizmo_visible() const;
 
 	ToolMode get_tool_mode() const { return tool_mode; }
+	void cycle_tool_mode();
+	void cycle_rotate_snap_step();
 	bool are_local_coords_enabled() const;
 	void set_local_coords_enabled(bool on) const;
 	bool is_preserve_children_transform_enabled() const;

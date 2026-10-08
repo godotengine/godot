@@ -3033,10 +3033,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			view_3d_controller->set_freelook_enabled(false);
 		}
 
-		if (k->get_keycode() == Key::SPACE) {
-			if (!k->is_pressed()) {
-				emit_signal(SNAME("toggle_maximize_view"), this);
-			}
+		// Space cycles the gizmo (move -> rotate -> scale). Shift+Space keeps the old maximize behavior.
+		if (ED_IS_SHORTCUT("spatial_editor/cycle_tool_mode", event_mod) && k->is_pressed() && !k->is_echo() && _edit.mode == TRANSFORM_NONE) {
+			spatial_editor->cycle_tool_mode();
+		} else if (ED_IS_SHORTCUT("spatial_editor/cycle_rotate_snap", event_mod) && k->is_pressed() && !k->is_echo() && _edit.mode == TRANSFORM_NONE) {
+			spatial_editor->cycle_rotate_snap_step();
+		} else if (k->get_keycode() == Key::SPACE && k->is_shift_pressed() && !k->is_pressed()) {
+			emit_signal(SNAME("toggle_maximize_view"), this);
 		}
 	}
 

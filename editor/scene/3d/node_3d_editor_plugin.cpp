@@ -3661,6 +3661,8 @@ Node3DEditor::Node3DEditor() {
 	ED_SHORTCUT("spatial_editor/switch_perspective_orthogonal", TTRC("Switch Perspective/Orthogonal View"), Key::KP_5);
 	ED_SHORTCUT("spatial_editor/insert_anim_key", TTRC("Insert Animation Key"), Key::K);
 	ED_SHORTCUT("spatial_editor/focus_origin", TTRC("Focus Origin"), Key::O);
+	ED_SHORTCUT("spatial_editor/cycle_tool_mode", TTRC("Cycle Transform Mode"), Key::SPACE);
+	ED_SHORTCUT("spatial_editor/cycle_rotate_snap", TTRC("Cycle Rotation Snap (45/90)"), Key::Z);
 	ED_SHORTCUT("spatial_editor/focus_selection", TTRC("Focus Selection"), KeyModifierMask::CMD_OR_CTRL + Key::F);
 	ED_SHORTCUT("spatial_editor/focus_aabb", TTRC("Focus and Frame Selection"), Key::F);
 	ED_SHORTCUT_ARRAY("spatial_editor/align_transform_with_view", TTRC("Align Transform with View"),
@@ -4369,6 +4371,34 @@ real_t Node3DEditor::get_rotate_snap() const {
 		snap_value /= 3.0f;
 	}
 	return snap_value;
+}
+
+void Node3DEditor::cycle_tool_mode() {
+	switch (tool_mode) {
+		case TOOL_MODE_MOVE:
+			_menu_item_pressed(MENU_TOOL_ROTATE);
+			break;
+		case TOOL_MODE_ROTATE:
+			_menu_item_pressed(MENU_TOOL_SCALE);
+			break;
+		default:
+			_menu_item_pressed(MENU_TOOL_MOVE);
+			break;
+	}
+}
+
+void Node3DEditor::cycle_rotate_snap_step() {
+	// Off -> 45 degrees -> 90 degrees -> off.
+	if (snap_enabled && Math::is_equal_approx(snap_rotate_value, 45.0)) {
+		snap_rotate_value = 90.0;
+	} else if (snap_enabled && Math::is_equal_approx(snap_rotate_value, 90.0)) {
+		snap_enabled = false;
+	} else {
+		snap_rotate_value = 45.0;
+		snap_enabled = true;
+	}
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_pressed(snap_enabled);
+	_snap_update();
 }
 
 real_t Node3DEditor::get_scale_snap() const {
