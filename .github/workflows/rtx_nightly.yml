@@ -1,0 +1,105 @@
+name: 🌙 RTX Nightly (Windows)
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  SCONS_FLAGS: >-
+    dev_mode=no
+    module_text_server_fb_enabled=yes
+    debug_symbols=no
+  PYTHONIOENCODING: utf8
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    name: ${{ matrix.name }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Editor (Vulkan, hybrid RT)
+            cache-name: rtx-windows-editor
+            target: editor
+            scons-flags: windows_subsystem=console
+            bin: ./bin/godot.windows.editor.x86_64.exe
+            asset: godot-rtx-nightly-windows-editor.exe
+          - name: Template release (Vulkan, hybrid RT)
+            cache-name: rtx-windows-template
+            target: template_release
+            scons-flags: ""
+            bin: ./bin/godot.windows.template_release.x86_64.exe
+            asset: godot-rtx-nightly-windows-template.exe
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }} d3d12=no angle=no accesskit=no
+          platform: windows
+          target: ${{ matrix.target }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Smoke test
+        shell: bash
+        run: |
+          ${{ matrix.bin }} --version
+          ${{ matrix.bin }} --headless --quit || true
+
+      - name: Stage asset
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "${{ matrix.bin }}" "dist/${{ matrix.asset }}"
+
+      - name: Upload asset to nightly release
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+
+  publish-nightly:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download assets
+        uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Replace nightly release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="nightly"
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          gh release create "$TAG" assets/* \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "Godot RTX nightly ($(date -u +%Y-%m-%d))" \
+            --notes "Nightly Windows build of Godot with hybrid ray tracing (Vulkan). Built from commit ${GITHUB_SHA}."
