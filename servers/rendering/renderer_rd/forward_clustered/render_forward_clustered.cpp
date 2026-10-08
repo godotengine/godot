@@ -30,6 +30,7 @@
 
 #include "render_forward_clustered.h"
 
+#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
@@ -1498,7 +1499,7 @@ void RenderForwardClustered::setup_added_decal(const Transform3D &p_transform, c
 
 /* Render scene */
 
-void RenderForwardClustered::_process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections) {
+void RenderForwardClustered::_process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections, const Transform3D &p_cam_transform) {
 	ERR_FAIL_NULL(ss_effects);
 	ERR_FAIL_COND(p_render_buffers.is_null());
 	ERR_FAIL_COND(p_environment.is_null());
@@ -1518,6 +1519,21 @@ void RenderForwardClustered::_process_ssao(Ref<RenderSceneBuffersRD> p_render_bu
 	settings.full_screen_size = p_render_buffers->get_internal_size();
 
 	ss_effects->ssao_allocate_buffers(p_render_buffers, rb_data->ss_effects_data.ssao, settings);
+
+	if (rt_tlas.is_valid()) {
+		// Hybrid path: ray-traced AO writes the same final SSAO slice that the materials already read.
+		// Screen-space gather is skipped on this path.
+		if (rt_ao == nullptr) {
+			rt_ao = memnew(RendererRD::RtAo);
+		}
+		const uint64_t frame = Engine::get_singleton()->get_frames_drawn();
+		for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
+			RID depth = p_render_buffers->get_depth_texture(v);
+			RID ao_final = p_render_buffers->get_texture_slice(RB_SCOPE_SSAO, RB_FINAL, v, 0);
+			rt_ao->generate(rt_tlas, depth, ao_final, p_render_buffers->get_internal_size(), p_projections[v], p_cam_transform, settings.radius, rt_ao_sample_count, uint32_t(frame));
+		}
+		return;
+	}
 
 	for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
 		ss_effects->generate_ssao(p_render_buffers, rb_data->ss_effects_data.ssao, v, p_normal_buffers[v], p_projections[v], settings);
@@ -1754,7 +1770,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 
 			if (p_use_ssao) {
-				_process_ssao(rb, p_render_data->environment, p_normal_roughness_slices, p_render_data->scene_data->view_projection);
+				_process_ssao(rb, p_render_data->environment, p_normal_roughness_slices, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform);
 			}
 
 			if (p_use_ssil) {
@@ -5435,6 +5451,10 @@ RenderForwardClustered::~RenderForwardClustered() {
 	if (rt_tlas.is_valid()) {
 		RD::get_singleton()->free_rid(rt_tlas);
 		rt_tlas = RID();
+	}
+	if (rt_ao != nullptr) {
+		memdelete(rt_ao);
+		rt_ao = nullptr;
 	}
 	if (ss_effects != nullptr) {
 		memdelete(ss_effects);
