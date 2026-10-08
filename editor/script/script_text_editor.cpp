@@ -1667,6 +1667,11 @@ void ScriptTextEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	Control *focus_owner = get_viewport()->gui_get_focus_owner();
+	if (!(focus_owner && (this == focus_owner || is_ancestor_of(focus_owner)))) {
+		return;
+	}
+
 	if (ED_IS_SHORTCUT("script_text_editor/rename_symbol", p_event)) {
 		_edit_option(RENAME_SYMBOL);
 		accept_event();
