@@ -80,7 +80,12 @@ class _WARN_UNUSED_ RingBuffer {
 public:
 	T read() {
 		ERR_FAIL_COND_V(data_left() < 1, T());
-		return _data[_inc_read()];
+
+		T *src = &_data[_inc_read()];
+		T res = std::move(*src);
+		src->~T();
+
+		return res;
 	}
 
 	int read(T *p_buf, int p_size) {
@@ -95,7 +100,9 @@ public:
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				p_buf[dst++] = std::move(_data[pos + i]);
+				T *src = &_data[pos + i];
+				memnew_placement(&p_buf[dst++], T(std::move(*src)));
+				src->~T();
 			}
 			to_read -= total;
 			pos = 0;
@@ -165,8 +172,9 @@ public:
 	inline int decrease_write(int p_n) {
 		p_n = MIN(p_n, data_left());
 		for (int i = 0; i < p_n; i++) {
-			_data[_write_pos()].~T();
+			// Because write_pos points to the next index to write, decrement it first, then destruct
 			_count -= 1;
+			_data[_write_pos()].~T();
 		}
 		return p_n;
 	}
@@ -235,7 +243,9 @@ public:
 			// Make data contiguous
 			if (_read_pos > _write_pos()) {
 				for (int i = 0; i < _write_pos(); i++) {
-					_data[_wrapped_pos(old_size + i)] = _data[i];
+					T *src = &_data[i];
+					memnew_placement(&_data[old_size + i], T(std::move(*src)));
+					src->~T();
 				}
 			}
 		} else if (old_size > new_size) {
@@ -249,8 +259,12 @@ public:
 			}
 
 			for (int i = 0; i < new_count; i++) {
-				new_data[i] = _data[_inc_read()];
+				T *src = &_data[_inc_read()];
+				memnew_placement(&new_data[i], T(std::move(*src)));
+				src->~T();
 			}
+
+			Memory::free_static(_data);
 
 			_read_pos = 0;
 			_count = new_count;
