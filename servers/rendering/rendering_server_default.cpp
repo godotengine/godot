@@ -300,6 +300,13 @@ void RenderingServerDefault::finish() {
 	} else {
 		_finish();
 	}
+#ifdef RD_ENABLED
+	// The display server destroys the main device after the render worker
+	// has stopped. Return ownership to the calling (main) thread first.
+	if (RenderingDevice *rd = RenderingDevice::get_singleton()) {
+		rd->make_current();
+	}
+#endif
 }
 
 /* STATUS INFORMATION */
