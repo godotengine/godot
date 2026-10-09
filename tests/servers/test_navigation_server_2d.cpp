@@ -47,6 +47,8 @@ TEST_FORCE_LINK(test_navigation_server_2d)
 #include "servers/navigation_2d/navigation_server_2d.h"
 #include "tests/signal_watcher.h"
 
+#include <cfloat> // FLT_MAX
+
 namespace TestNavigationServer2D {
 
 // TODO: Find a more generic way to create `Callable` mocks.
@@ -698,6 +700,22 @@ TEST_SUITE("[Navigation2D]") {
 			CHECK_NE(query_result->get_path_owner_ids().size(), 0);
 		}
 
+		SUBCASE("Elaborate query with 'DIJKSTRA' pathfinding algorithm should yield non-empty result") {
+			Ref<NavigationPathQueryParameters2D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector2(0, 0));
+			query_parameters->set_target_position(Vector2(10, 10));
+			query_parameters->set_pathfinding_algorithm(NavigationPathQueryParameters2D::PATHFINDING_ALGORITHM_DIJKSTRA);
+			Ref<NavigationPathQueryResult2D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_NE(query_result->get_path().size(), 0);
+			CHECK_NE(query_result->get_path_types().size(), 0);
+			CHECK_NE(query_result->get_path_rids().size(), 0);
+			CHECK_NE(query_result->get_path_owner_ids().size(), 0);
+		}
+
 		SUBCASE("Elaborate query with 'EDGECENTERED' post-processing should yield non-empty result") {
 			Ref<NavigationPathQueryParameters2D> query_parameters;
 			query_parameters.instantiate();
@@ -747,6 +765,99 @@ TEST_SUITE("[Navigation2D]") {
 		}
 
 		navigation_server->free_rid(region);
+		navigation_server->free_rid(map);
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
+	}
+
+	TEST_CASE("[NavigationServer2D] Dijkstra pathfinding should prefer a lower-cost detour") {
+		NavigationServer2D *navigation_server = NavigationServer2D::get_singleton();
+
+		RID map = navigation_server->map_create();
+		navigation_server->map_set_active(map, true);
+		navigation_server->map_set_use_async_iterations(map, false);
+
+		LocalVector<RID> regions;
+		Vector<Ref<NavigationPolygon>> navigation_polygons;
+
+		const auto add_rect_region = [&](const Rect2 &p_rect, real_t p_travel_cost) {
+			Ref<NavigationPolygon> navigation_polygon;
+			navigation_polygon.instantiate();
+
+			Vector<Vector2> vertices;
+			vertices.push_back(p_rect.position);
+			vertices.push_back(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y));
+			vertices.push_back(p_rect.position + p_rect.size);
+			vertices.push_back(Vector2(p_rect.position.x, p_rect.position.y + p_rect.size.y));
+			navigation_polygon->set_vertices(vertices);
+
+			Vector<int> polygon;
+			polygon.push_back(0);
+			polygon.push_back(1);
+			polygon.push_back(2);
+			polygon.push_back(3);
+			navigation_polygon->add_polygon(polygon);
+			navigation_polygons.push_back(navigation_polygon);
+
+			RID region = navigation_server->region_create();
+			navigation_server->region_set_map(region, map);
+			navigation_server->region_set_use_async_iterations(region, false);
+			navigation_server->region_set_travel_cost(region, p_travel_cost);
+			navigation_server->region_set_navigation_polygon(region, navigation_polygon);
+			regions.push_back(region);
+		};
+
+		// The start region has zero travel cost, so reaching the far detour entrance is cheap.
+		add_rect_region(Rect2(0.0, 0.0, 10.0, 1010.0), 0.0);
+
+		// The direct corridor is geometrically close to the target, but costs more overall.
+		for (int i = 1; i <= 10; i++) {
+			add_rect_region(Rect2(i * 10.0, 0.0, 10.0, 10.0), 1.0);
+		}
+
+		// The detour starts far away from the target, misleading A*, but has a lower accumulated cost.
+		add_rect_region(Rect2(0.0, 1010.0, 10.0, 10.0), 1.0);
+		add_rect_region(Rect2(5.0, 1020.0, 105.0, 10.0), 0.0);
+		add_rect_region(Rect2(100.0, 10.0, 10.0, 1010.0), 0.0);
+
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
+
+		const auto query_path = [&](NavigationPathQueryParameters2D::PathfindingAlgorithm p_pathfinding_algorithm) {
+			Ref<NavigationPathQueryParameters2D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector2(5.0, 5.0));
+			query_parameters->set_target_position(Vector2(105.0, 5.0));
+			query_parameters->set_pathfinding_algorithm(p_pathfinding_algorithm);
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters2D::PATH_POSTPROCESSING_EDGECENTERED);
+
+			Ref<NavigationPathQueryResult2D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			return query_result->get_path();
+		};
+
+		PackedVector2Array astar_path = query_path(NavigationPathQueryParameters2D::PATHFINDING_ALGORITHM_ASTAR);
+		PackedVector2Array dijkstra_path = query_path(NavigationPathQueryParameters2D::PATHFINDING_ALGORITHM_DIJKSTRA);
+
+		REQUIRE_NE(astar_path.size(), 0);
+		REQUIRE_NE(dijkstra_path.size(), 0);
+
+		real_t astar_max_y = -FLT_MAX;
+		for (int i = 0; i < astar_path.size(); i++) {
+			astar_max_y = MAX(astar_max_y, astar_path[i].y);
+		}
+
+		real_t dijkstra_max_y = -FLT_MAX;
+		for (int i = 0; i < dijkstra_path.size(); i++) {
+			dijkstra_max_y = MAX(dijkstra_max_y, dijkstra_path[i].y);
+		}
+
+		CHECK_LT(astar_max_y, 100.0);
+		CHECK_GT(dijkstra_max_y, 1000.0);
+
+		for (RID region : regions) {
+			navigation_server->free_rid(region);
+		}
 		navigation_server->free_rid(map);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
