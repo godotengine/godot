@@ -106,7 +106,7 @@ class GodotSoftBody3D : public GodotCollisionObject3D {
 
 	HashSet<GodotConstraint3D *> constraints;
 
-	Vector<AreaCMP> areas;
+	LocalVector<AreaCMP> areas;
 
 	VSet<RID> exceptions;
 
@@ -138,7 +138,7 @@ public:
 	_FORCE_INLINE_ void add_area(GodotArea3D *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas.write[index].refCount += 1;
+			areas[index].refCount += 1;
 		} else {
 			areas.ordered_insert(AreaCMP(p_area));
 		}
@@ -147,7 +147,7 @@ public:
 	_FORCE_INLINE_ void remove_area(GodotArea3D *p_area) {
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
-			areas.write[index].refCount -= 1;
+			areas[index].refCount -= 1;
 			if (areas[index].refCount < 1) {
 				areas.remove_at(index);
 			}
