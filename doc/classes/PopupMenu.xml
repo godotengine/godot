@@ -284,7 +284,7 @@
 			<return type="int" />
 			<param index="0" name="id" type="int" />
 			<description>
-				Returns the index of the item containing the specified [param id]. The index is automatically assigned to each item by the engine when added and represents the order items will be displayed.
+				Returns the index of the item containing the specified [param id]. The index is automatically assigned to each item by the engine when added and represents the order items will be displayed. Returns [code]-1[/code] if no item matches the [param id].
 			</description>
 		</method>
 		<method name="get_item_language" qualifiers="const">
