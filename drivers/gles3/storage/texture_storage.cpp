@@ -322,7 +322,7 @@ void TextureStorage::_tex_blit_shader_initialize() {
 
 	{
 		String global_defines;
-		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
+		global_defines += "#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT " + itos(GLES3::GlobalShaderUniforms::TEXTURE_WIDTH_SHIFT) + "\n";
 		material_storage->shaders.tex_blit_shader.initialize(global_defines, 1);
 	}
 
