@@ -90,8 +90,9 @@ def redirect_emitter(target, source, env):
     Emitter to automatically redirect object/library build files to the `bin/obj` directory,
     retaining subfolder structure. External build files will attempt to retain subfolder
     structure relative to their environment's parent directory, sorted under `bin/obj/external`.
-    If `redirect_build_objects` is `False`, an external build file isn't relative to the passed
-    environment, or a file is being written directly into `bin`, this emitter does nothing.
+    If the build file isn't relative to the passed environment whatsoever, the file will be
+    stored under `bin/obj/external` with a concatenated name of the full path. If file is written
+    directly to `bin`, or `redirect_build_objects` is `False`, this emitter does nothing.
     """
     if not env["redirect_build_objects"]:
         return target, source
@@ -107,7 +108,7 @@ def redirect_emitter(target, source, env):
         elif (alt_base := Path(env.Dir(".").get_abspath()).resolve().parent) in path.parents:
             item = env.File(f"#bin/obj/external/{path.relative_to(alt_base)}")
         else:
-            print_warning(f'Failed to redirect "{path}"')
+            item = env.File(f"#bin/obj/external/{path.as_posix().replace(':', '_').replace('/', '_')}")
         redirected_targets.append(item)
     return redirected_targets, source
 
