@@ -302,6 +302,8 @@ class ArrayMesh : public Mesh {
 	GDCLASS(ArrayMesh, Mesh);
 	RES_BASE_EXTENSION("mesh");
 
+	friend class ImporterMesh; // Needs _block_emit_changed().
+
 	PackedStringArray _get_blend_shape_names() const;
 	void _set_blend_shape_names(const PackedStringArray &p_names);
 
