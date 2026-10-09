@@ -31,6 +31,7 @@
 	<members>
 		<member name="color" type="Color" setter="set_pick_color" getter="get_pick_color" default="Color(0, 0, 0, 1)" keywords="colour">
 			The currently selected color.
+			[b]Note:[/b] Setting this property does not emit the [signal color_changed] signal.
 		</member>
 		<member name="edit_alpha" type="bool" setter="set_edit_alpha" getter="is_editing_alpha" default="true">
 			If [code]true[/code], the alpha channel in the displayed [ColorPicker] will be visible.
@@ -44,7 +45,8 @@
 		<signal name="color_changed">
 			<param index="0" name="color" type="Color" />
 			<description>
-				Emitted when the color changes.
+				Emitted when the user sets the color via the ColorPicker.
+				[b]Note:[/b] This signal is not emitted when [member color] is changed programmatically.
 			</description>
 		</signal>
 		<signal name="picker_created">
