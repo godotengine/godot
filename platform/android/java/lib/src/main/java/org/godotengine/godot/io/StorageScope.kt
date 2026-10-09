@@ -70,6 +70,7 @@ internal enum class StorageScope {
 
 		companion object {
 			internal const val ACCESS_RESOURCES_PREFIX = "res://"
+			internal const val ACCESS_EDITOR_RESOURCES_PREFIX = "editor://"
 			internal const val ASSETS_PREFIX = "assets://"
 			internal const val CONTENT_PREFIX = "content://"
 		}
@@ -103,6 +104,10 @@ internal enum class StorageScope {
 			}
 
 			if (Godot.isTemplateBuild() && path.startsWith(ACCESS_RESOURCES_PREFIX)) {
+				return ASSETS
+			}
+
+			if (Godot.isTemplateBuild() && path.startsWith(ACCESS_EDITOR_RESOURCES_PREFIX)) {
 				return ASSETS
 			}
 
