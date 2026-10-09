@@ -41,13 +41,11 @@ class NoiseTexture2D : public Texture2D {
 	GDCLASS(NoiseTexture2D, Texture2D);
 
 private:
-	Ref<Image> image;
-
 	WorkerThreadPool::TaskID current_task_id = WorkerThreadPool::INVALID_TASK_ID;
 
-	bool first_time = true;
-	bool update_queued = false;
-	bool regen_queued = false;
+	mutable bool first_time = true;
+	mutable bool update_queued = false;
+	mutable bool regen_queued = false;
 
 	mutable RID texture;
 	uint32_t flags = 0;
@@ -69,11 +67,13 @@ private:
 	void _thread_function();
 
 	void _queue_update();
-	Ref<Image> _generate_texture();
+	Ref<Image> _generate_texture() const;
 	void _update_texture();
-	void _set_texture_image(const Ref<Image> &p_image);
+	void _update_texture_immediate() const;
+	void _update_now() const;
+	void _set_texture_image(const Ref<Image> &p_image) const;
 
-	Ref<Image> _modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient);
+	Ref<Image> _modulate_with_gradient(Ref<Image> p_image, Ref<Gradient> p_gradient) const;
 
 protected:
 	static void _bind_methods();
