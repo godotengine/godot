@@ -234,18 +234,32 @@ bool EditorExportPlatformPC::_copy_debugsymbols(Ref<DirAccess> &p_da, const Stri
 
 	// TODO: Consider other zip files as needed for official templates.
 
-	if (FileAccess::exists(p_symbols_path)) {
-		r_err = p_da->copy(p_symbols_path, p_path + ".debugsymbols");
-	} else if (FileAccess::exists(p_symbols_path + ".zip")) {
-		r_err = _unzip_debugsymbols(p_da, p_path + ".debugsymbols", p_symbols_path.get_file(), p_symbols_path + ".zip");
+	if (FileAccess::exists(p_symbols_path + ".debugsymbols")) {
+		r_err = p_da->copy(p_symbols_path + ".debugsymbols", p_path + ".debugsymbols");
+	} else if (FileAccess::exists(p_symbols_path + ".debugsymbols.zip")) {
+		r_err = _unzip_debugsymbols(p_da, p_path + ".debugsymbols", p_symbols_path.get_file(), p_symbols_path + ".debugsymbols.zip");
 	} else {
 		return false;
 	}
 	if (r_err == OK) {
 		r_err = fixup_debug_symbol_link(p_path, p_path.get_file() + ".debugsymbols");
+		return true;
 	}
 
-	return r_err == OK;
+	// Try ".pdb".
+	if (FileAccess::exists(p_symbols_path.get_basename() + ".pdb")) {
+		r_err = p_da->copy(p_symbols_path.get_basename() + ".pdb", p_path + ".pdb");
+	} else if (FileAccess::exists(p_symbols_path.get_basename() + ".pdb.zip")) {
+		r_err = _unzip_debugsymbols(p_da, p_path + ".pdb", p_symbols_path.get_basename() + ".pdb", p_symbols_path.get_basename() + ".pdb.zip");
+	}
+	if (r_err == OK) {
+		r_err = fixup_debug_symbol_link(p_path, p_path.get_file() + ".pdb");
+		return true;
+	}
+
+	// Not found.
+	r_err = OK;
+	return false;
 }
 
 Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
@@ -299,7 +313,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	}
 	if (err == OK && copy_debug_symbols) {
 		// We don't copy symbols for the wrapper as they are trivial.
-		_copy_debugsymbols(da, p_path, template_path + ".debugsymbols", err);
+		_copy_debugsymbols(da, p_path, template_path, err);
 	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
