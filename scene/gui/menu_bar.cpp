@@ -137,7 +137,7 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 
 	Rect2 rect = get_screen_rect();
 	rect.position.x += item_rect.position.x;
-	rect.position.y += rect.size.height;
+	rect.position.y += rect.size.height + theme_cache.popup_offset_y;
 	if (get_viewport()->is_embedding_subwindows() && pm->get_force_native()) {
 		Transform2D xform = get_viewport()->get_popup_base_transform_native();
 		rect = xform.xform(rect);
@@ -147,8 +147,11 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 
 	pm->set_size(Size2(item_rect.size.x, 0));
 	if (is_layout_rtl()) {
-		rect.position.x += item_rect.size.x - pm->get_size().width;
+		rect.position.x += item_rect.size.x - pm->get_size().width - theme_cache.popup_offset_x;
+	} else {
+		rect.position.x += theme_cache.popup_offset_x;
 	}
+
 	pm->set_position(rect.position);
 	pm->popup();
 
@@ -791,6 +794,8 @@ void MenuBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_focus_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, popup_offset_x);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, popup_offset_y);
 
 	ADD_CLASS_DEPENDENCY("PopupMenu");
 }
