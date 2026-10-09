@@ -140,6 +140,7 @@ public:
 				// `2.0` if `true`, `1.0` if `false`.
 				uint32_t luminance_multiplier : 1;
 				uint32_t material_feedback : 1;
+				uint32_t use_directional_projector : 1;
 			};
 		};
 	};
