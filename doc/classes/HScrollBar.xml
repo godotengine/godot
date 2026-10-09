@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		A horizontal scrollbar, typically used to navigate through content that extends beyond the visible width of a control. It is a [Range]-based control and goes from left (min) to right (max).
+		This class inherits its properties, methods, and signals from [ScrollBar].
 	</description>
 	<tutorials>
 	</tutorials>
