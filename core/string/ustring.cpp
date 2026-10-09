@@ -1365,7 +1365,7 @@ char32_t String::char_uppercase(char32_t p_char) {
 	return _find_upper(p_char);
 }
 
-char32_t String::char_lowercase(char32_t p_char) {
+char32_t String::_char_lowercase_table(char32_t p_char) {
 	return _find_lower(p_char);
 }
 

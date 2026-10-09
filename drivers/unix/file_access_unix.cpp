@@ -35,6 +35,9 @@
 #include "core/string/ustring.h"
 
 #include <fcntl.h>
+#if defined(__APPLE__)
+#include <sys/param.h>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 #if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(WEB_ENABLED)
@@ -98,22 +101,6 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 				return ERR_FILE_CANT_OPEN;
 		}
 	}
-
-#if defined(TOOLS_ENABLED)
-	if (p_mode_flags & READ) {
-		String real_path = get_real_path();
-		if (real_path != path) {
-			// Don't warn on symlinks, since they can be used to simply share addons on multiple projects.
-			if (real_path.to_lower() == path.to_lower()) {
-				// The File system is case insensitive, but other platforms can be sensitive to it
-				// To ease cross-platform development, we issue a warning if users try to access
-				// a file using the wrong case (which *works* on Windows and macOS, but won't on other
-				// platforms).
-				WARN_PRINT(vformat("Case mismatch opening requested file '%s', stored as '%s' in the filesystem. This file will not open when exported to other case-sensitive platforms.", path, real_path));
-			}
-		}
-	}
-#endif
 
 	if (is_backup_save_enabled() && (p_mode_flags == WRITE)) {
 		// Set save path to the symlink target, not the link itself.
@@ -182,6 +169,22 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 		return last_error;
 	}
 
+#if defined(TOOLS_ENABLED)
+	if (p_mode_flags & READ) {
+		String real_path = get_real_path();
+		if (real_path != path) {
+			// Don't warn on symlinks, since they can be used to simply share addons on multiple projects.
+			if (real_path.to_lower() == path.to_lower()) {
+				// The File system is case insensitive, but other platforms can be sensitive to it
+				// To ease cross-platform development, we issue a warning if users try to access
+				// a file using the wrong case (which *works* on Windows and macOS, but won't on other
+				// platforms).
+				WARN_PRINT(vformat("Case mismatch opening requested file '%s', stored as '%s' in the filesystem. This file will not open when exported to other case-sensitive platforms.", path, real_path));
+			}
+		}
+	}
+#endif
+
 	// Set close on exec to avoid leaking it to subprocesses.
 	int fd = fileno(f);
 
@@ -233,6 +236,14 @@ String FileAccessUnix::get_path_absolute() const {
 
 #if defined(TOOLS_ENABLED)
 String FileAccessUnix::get_real_path() const {
+#if defined(__APPLE__)
+	char buf[MAXPATHLEN];
+	if (fcntl(fileno(f), F_GETPATH, buf) == -1) {
+		return path;
+	}
+	String result;
+	return result.append_utf8(buf) == OK ? result : path;
+#else
 	char *resolved_path = ::realpath(path.utf8().get_data(), nullptr);
 
 	if (!resolved_path) {
@@ -248,6 +259,7 @@ String FileAccessUnix::get_real_path() const {
 	}
 
 	return result.simplify_path();
+#endif
 }
 #endif
 
