@@ -1,0 +1,18 @@
+GH-121102
+--------------
+
+Validate extension JSON: Error: Field 'classes/Area2D/methods/get_angular_damp_space_override_mode/return_value': type changed value in new API, from "enum::Area2D.SpaceOverride" to "enum::PhysicsServer2D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/get_gravity_space_override_mode/return_value': type changed value in new API, from "enum::Area2D.SpaceOverride" to "enum::PhysicsServer2D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/get_linear_damp_space_override_mode/return_value': type changed value in new API, from "enum::Area2D.SpaceOverride" to "enum::PhysicsServer2D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/set_angular_damp_space_override_mode/arguments/0': type changed value in new API, from "enum::Area2D.SpaceOverride" to "enum::PhysicsServer2D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/set_gravity_space_override_mode/arguments/0': type changed value in new API, from "enum::Area2D.SpaceOverride" to "enum::PhysicsServer2D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area2D/methods/set_linear_damp_space_override_mode/arguments/0': type changed value in new API, from "enum::Area2D.SpaceOverride" to "enum::PhysicsServer2D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/get_angular_damp_space_override_mode/return_value': type changed value in new API, from "enum::Area3D.SpaceOverride" to "enum::PhysicsServer3D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/get_gravity_space_override_mode/return_value': type changed value in new API, from "enum::Area3D.SpaceOverride" to "enum::PhysicsServer3D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/get_linear_damp_space_override_mode/return_value': type changed value in new API, from "enum::Area3D.SpaceOverride" to "enum::PhysicsServer3D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/set_angular_damp_space_override_mode/arguments/0': type changed value in new API, from "enum::Area3D.SpaceOverride" to "enum::PhysicsServer3D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/set_gravity_space_override_mode/arguments/0': type changed value in new API, from "enum::Area3D.SpaceOverride" to "enum::PhysicsServer3D.AreaSpaceOverrideMode".
+Validate extension JSON: Error: Field 'classes/Area3D/methods/set_linear_damp_space_override_mode/arguments/0': type changed value in new API, from "enum::Area3D.SpaceOverride" to "enum::PhysicsServer3D.AreaSpaceOverrideMode".
+
+Change Area2D/3D space override properties to use PhysicsServer2D/3D.AreaSpaceOverrideMode instead of Area2D/3D.SpaceOverride.
+Compatibility methods registered.
