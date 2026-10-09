@@ -193,6 +193,8 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 	void _material_tree_selected();
 	void _mesh_tree_selected();
 	void _scene_tree_selected();
+	void _tree_gui_input(const Ref<InputEvent> &p_event, Tree *p_tree);
+	void _copy_selected_tree_item_name(Tree *p_tree);
 	void _skeleton_tree_entered(Skeleton3D *p_skeleton);
 	void _cleanup();
 	void _on_light_1_switch_pressed();
