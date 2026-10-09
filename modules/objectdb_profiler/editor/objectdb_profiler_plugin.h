@@ -52,9 +52,7 @@ class ObjectDBProfilerDebuggerPlugin : public EditorDebuggerPlugin {
 	GDCLASS(ObjectDBProfilerDebuggerPlugin, EditorDebuggerPlugin);
 
 protected:
-	ObjectDBProfilerPanel *debugger_panel = nullptr;
-
-	void _request_object_snapshot(int p_request_id);
+	HashMap<int, ObjectDBProfilerPanel *> panels;
 
 public:
 	ObjectDBProfilerDebuggerPlugin() {}
