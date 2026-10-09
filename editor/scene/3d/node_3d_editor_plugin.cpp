@@ -464,18 +464,18 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 
 	if (d.has("vertex_snap_origin_mode")) {
 		vertex_snap_origin_mode = d["vertex_snap_origin_mode"];
-		int idx_vertex = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
-		int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
-		transform_menu->get_popup()->set_item_checked(idx_vertex, !vertex_snap_origin_mode);
-		transform_menu->get_popup()->set_item_checked(idx_origin, vertex_snap_origin_mode);
+		int idx_vertex = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
+		int idx_origin = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
+		snap_menu->get_popup()->set_item_checked(idx_vertex, !vertex_snap_origin_mode);
+		snap_menu->get_popup()->set_item_checked(idx_origin, vertex_snap_origin_mode);
 	}
 
 	if (d.has("vertex_snap_use_collision")) {
 		vertex_snap_use_collision = d["vertex_snap_use_collision"];
-		int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
-		int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
-		transform_menu->get_popup()->set_item_checked(idx_mesh, !vertex_snap_use_collision);
-		transform_menu->get_popup()->set_item_checked(idx_collision, vertex_snap_use_collision);
+		int idx_mesh = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+		int idx_collision = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+		snap_menu->get_popup()->set_item_checked(idx_mesh, !vertex_snap_use_collision);
+		snap_menu->get_popup()->set_item_checked(idx_collision, vertex_snap_use_collision);
 	}
 
 	if (d.has("local_coords")) {
@@ -655,7 +655,7 @@ void Node3DEditor::_snap_update() {
 
 void Node3DEditor::_update_vertex_snap_tooltips() {
 	String snap_key = ED_GET_SHORTCUT("spatial_editor/vertex_snap")->get_as_text();
-	PopupMenu *p = transform_menu->get_popup();
+	PopupMenu *p = snap_menu->get_popup();
 	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX),
 			vformat(TTR("Hold %s to highlight a vertex on the currently selected node,\nthen drag to move the node and snap it to vertices on neighboring nodes.\n\nFor nodes without a vertex-based representation,\nSnap Origin to Vertex is always used instead."), snap_key));
 	p->set_item_tooltip(p->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN),
@@ -833,31 +833,31 @@ void Node3DEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VERTEX_SNAP_BASE_VERTEX: {
 			vertex_snap_origin_mode = false;
-			int idx_vertex = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
-			int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
-			transform_menu->get_popup()->set_item_checked(idx_vertex, true);
-			transform_menu->get_popup()->set_item_checked(idx_origin, false);
+			int idx_vertex = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
+			int idx_origin = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
+			snap_menu->get_popup()->set_item_checked(idx_vertex, true);
+			snap_menu->get_popup()->set_item_checked(idx_origin, false);
 		} break;
 		case MENU_VERTEX_SNAP_BASE_ORIGIN: {
 			vertex_snap_origin_mode = true;
-			int idx_vertex = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
-			int idx_origin = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
-			transform_menu->get_popup()->set_item_checked(idx_vertex, false);
-			transform_menu->get_popup()->set_item_checked(idx_origin, true);
+			int idx_vertex = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX);
+			int idx_origin = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_BASE_ORIGIN);
+			snap_menu->get_popup()->set_item_checked(idx_vertex, false);
+			snap_menu->get_popup()->set_item_checked(idx_origin, true);
 		} break;
 		case MENU_VERTEX_SNAP_SOURCE_MESH: {
 			vertex_snap_use_collision = false;
-			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
-			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
-			transform_menu->get_popup()->set_item_checked(idx_mesh, true);
-			transform_menu->get_popup()->set_item_checked(idx_collision, false);
+			int idx_mesh = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			snap_menu->get_popup()->set_item_checked(idx_mesh, true);
+			snap_menu->get_popup()->set_item_checked(idx_collision, false);
 		} break;
 		case MENU_VERTEX_SNAP_SOURCE_COLLISION: {
 			vertex_snap_use_collision = true;
-			int idx_mesh = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
-			int idx_collision = transform_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
-			transform_menu->get_popup()->set_item_checked(idx_mesh, false);
-			transform_menu->get_popup()->set_item_checked(idx_collision, true);
+			int idx_mesh = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_MESH);
+			int idx_collision = snap_menu->get_popup()->get_item_index(MENU_VERTEX_SNAP_SOURCE_COLLISION);
+			snap_menu->get_popup()->set_item_checked(idx_mesh, false);
+			snap_menu->get_popup()->set_item_checked(idx_collision, true);
 		} break;
 		case MENU_TRANSFORM_DIALOG: {
 			for (int i = 0; i < 3; i++) {
@@ -3589,6 +3589,7 @@ Node3DEditor::Node3DEditor() {
 	snap_menu->set_button_icon(EditorIconManager::get_icon(SNAME("GuiDropdown")));
 
 	PopupMenu *snap_p = snap_menu->get_popup();
+	snap_p->set_hide_on_checkable_item_selection(false);
 	snap_p->add_radio_check_item(TTRC("Snap Vertex to Vertex"), MENU_VERTEX_SNAP_BASE_VERTEX);
 	snap_p->set_item_checked(snap_p->get_item_index(MENU_VERTEX_SNAP_BASE_VERTEX), true);
 	snap_p->add_radio_check_item(TTRC("Snap Origin to Vertex"), MENU_VERTEX_SNAP_BASE_ORIGIN);
