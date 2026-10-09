@@ -74,7 +74,6 @@ public:
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 
 	virtual int get_available_packet_count() const;
-	virtual int get_max_packet_size() const;
 
 	static void initialize_dtls();
 	static void finalize_dtls();

@@ -95,7 +95,6 @@ public:
 	virtual int get_unique_id() const override;
 	virtual bool is_server_relay_supported() const override { return true; }
 
-	virtual int get_max_packet_size() const override;
 	virtual bool is_server() const override;
 	virtual void poll() override;
 	virtual void close() override;
