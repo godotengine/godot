@@ -410,6 +410,7 @@ class DisplayServerWindows : public DisplayServer {
 	void _destroy_window(DisplayServerEnums::WindowID p_window_id); // Destroys only what was needed to be created for the main window. Does not destroy transient parent dependencies or GL/rendering context windows.
 
 	void _window_set_native_icon(const String &p_filename, DisplayServerEnums::WindowID p_window);
+	void _set_window_icon(WindowData &p_window_data);
 
 #ifdef RD_ENABLED
 	Error _create_rendering_context_window(DisplayServerEnums::WindowID p_window_id, const String &p_rendering_driver);

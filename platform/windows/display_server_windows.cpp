@@ -2721,6 +2721,16 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 	}
 }
 
+void DisplayServerWindows::_set_window_icon(WindowData &p_window_data) {
+	HICON small_icon = p_window_data.icon_small ? p_window_data.icon_small : p_window_data.icon_big;
+	if (p_window_data.icon_big) {
+		SendMessage(p_window_data.hWnd, WM_SETICON, ICON_BIG, (LPARAM)p_window_data.icon_big);
+	}
+	if (small_icon) {
+		SendMessage(p_window_data.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)small_icon);
+	}
+}
+
 void DisplayServerWindows::_update_window_style(DisplayServerEnums::WindowID p_window, bool p_repaint) {
 	_THREAD_SAFE_METHOD_
 
@@ -2736,17 +2746,7 @@ void DisplayServerWindows::_update_window_style(DisplayServerEnums::WindowID p_w
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
 
 	if (wd.icon_set) {
-		if (wd.icon_big && !wd.icon_small) {
-			SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
-			SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_big);
-		} else {
-			if (wd.icon_big) {
-				SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, (LPARAM)wd.icon_big);
-			}
-			if (wd.icon_small) {
-				SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, (LPARAM)wd.icon_small);
-			}
-		}
+		_set_window_icon(wd);
 	} else if (p_window != DisplayServerEnums::MAIN_WINDOW_ID) {
 		HICON mainwindow_icon = (HICON)SendMessage(windows[DisplayServerEnums::MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
 		if (mainwindow_icon) {
@@ -2759,6 +2759,12 @@ void DisplayServerWindows::_update_window_style(DisplayServerEnums::WindowID p_w
 	}
 
 	SetWindowPos(wd.hWnd, _is_always_on_top_recursive(p_window) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
+
+	if (wd.icon_set) {
+		SendMessage(wd.hWnd, WM_SETICON, ICON_SMALL, 0);
+		SendMessage(wd.hWnd, WM_SETICON, ICON_BIG, 0);
+		_set_window_icon(wd);
+	}
 
 	if (p_repaint) {
 		RECT rect;
