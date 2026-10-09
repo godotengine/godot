@@ -275,6 +275,48 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the slice of the <see cref="NodePath"/>, from <paramref name="begin"/> (inclusive) to <paramref name="end"/> (exclusive), as a
+        /// new <see cref="NodePath"/>.
+        /// The absolute value of <paramref name="begin"/> and <paramref name="end"/> will be clamped to the sum of
+        /// <see cref="GetNameCount"/> and
+        /// <see cref="GetSubNameCount"/>.
+        /// If either <paramref name="begin"/> or <paramref name="end"/> are negative, they will be relative to the end of the <see cref="NodePath"/>
+        /// (i.e. <c>path.Slice(0, -2)</c> is shorthand for
+        /// <c>path.Slice(0, path.GetNameCount() + path.GetSubNameCount() - 2)</c>).
+        /// If you want a slice of the <see cref="NodePath"/> that from an index to the end of the
+        /// <see cref="NodePath"/>, the <see cref="Slice(int)"/> overload provides a convenient shorthand to achieve
+        /// that.
+        /// </summary>
+        /// <param name="begin">The index of the name or subname at which to start the slice.</param>
+        /// <param name="end">The index (exclusive) of the name or subname at which to end the slice.</param>
+        /// <returns>A slice of the <see cref="NodePath"/> bounded by <paramref name="begin"/> and <paramref name="end"/>.</returns>
+        public NodePath Slice(int begin, int end)
+        {
+            var self = (godot_node_path)NativeValue;
+            NativeFuncs.godotsharp_node_path_slice(self, begin, end, out godot_node_path slicedNodePath);
+
+            using (slicedNodePath)
+                return new NodePath(slicedNodePath);
+        }
+
+        /// <summary>
+        /// Returns the slice of the <see cref="NodePath"/>, from <paramref name="begin"/> (inclusive) to the end of the
+        /// <see cref="NodePath"/> as a new instance.
+        /// The absolute value of <paramref name="begin"/> will be clamped to the sum of <see cref="GetNameCount"/> and
+        /// <see cref="GetSubNameCount"/>.
+        /// If <paramref name="begin"/> is negative, it will be relative to the end of the <see cref="NodePath"/>
+        /// (i.e. <c>path.Slice(-2)</c> is shorthand for
+        /// <c>path.Slice(path.GetNameCount() + path.GetSubNameCount - 2)</c>
+        /// </summary>
+        /// <param name="begin">The index of the name or subname at which to start the slice.</param>
+        /// <returns>A slice of the <see cref="NodePath"/> bounded by <paramref name="begin"/> and the end of the
+        /// <see cref="NodePath"/>, including all subnames.</returns>
+        public NodePath Slice(int begin)
+        {
+            return Slice(begin, int.MaxValue);
+        }
+
+        /// <summary>
         /// Returns <see langword="true"/> if the node path is absolute (as opposed to relative),
         /// which means that it starts with a slash character (<c>/</c>). Absolute node paths can
         /// be used to access the root node (<c>"/root"</c>) or autoloads (e.g. <c>"/global"</c>
