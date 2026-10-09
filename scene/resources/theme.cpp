@@ -130,21 +130,21 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Icons.
 	for (const KeyValue<StringName, ThemeIconMap> &E : icon_map) {
 		for (const KeyValue<StringName, Ref<Texture2D>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/icons/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/icons/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_DEFAULT));
 		}
 	}
 
 	// Styles.
 	for (const KeyValue<StringName, ThemeStyleMap> &E : style_map) {
 		for (const KeyValue<StringName, Ref<StyleBox>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/styles/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/styles/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_DEFAULT));
 		}
 	}
 
 	// Fonts.
 	for (const KeyValue<StringName, ThemeFontMap> &E : font_map) {
 		for (const KeyValue<StringName, Ref<Font>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/fonts/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, Font::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_DEFAULT));
 		}
 	}
 
@@ -172,7 +172,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	// Sounds.
 	for (const KeyValue<StringName, ThemeSoundMap> &E : sound_map) {
 		for (const KeyValue<StringName, Ref<AudioStream>> &F : E.value) {
-			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/sounds/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
+			list.push_back(PropertyInfo(Variant::OBJECT, String() + E.key + "/sounds/" + F.key, PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_DEFAULT));
 		}
 	}
 
