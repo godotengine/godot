@@ -798,6 +798,9 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 
 	bool sun_scatter_enabled = environment_get_fog_enabled(p_render_data->environment) && environment_get_fog_sun_scatter(p_render_data->environment) > 0.001;
 	glBindBufferBase(GL_UNIFORM_BUFFER, SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION, sky_globals.directional_light_buffer);
+
+	glActiveTexture(GL_TEXTURE0 + GLES3::Config::get_singleton()->max_texture_image_units - 4);
+	glBindTexture(GL_TEXTURE_2D, GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_texture());
 	if (shader_data->uses_light || sun_scatter_enabled) {
 		sky_globals.directional_light_count = 0;
 		for (int i = 0; i < (int)p_lights.size(); i++) {
@@ -1561,6 +1564,11 @@ void RasterizerSceneGLES3::_update_scene_ubo(GLuint &p_ubo_buffer, GLuint p_inde
 	}
 
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void RasterizerSceneGLES3::_bind_global_shader_parameters() {
+	glActiveTexture(GL_TEXTURE0 + GLES3::Config::get_singleton()->max_texture_image_units - 13);
+	glBindTexture(GL_TEXTURE_2D, GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_texture());
 }
 
 // Needs to be called after _setup_lights so that directional_light_count is accurate.
@@ -2383,10 +2391,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	glBindFramebuffer(GL_FRAMEBUFFER, shadow_fb);
 	glViewport(atlas_rect.position.x, atlas_rect.position.y, atlas_rect.size.x, atlas_rect.size.y);
 
-	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
-
-	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_GLOBALS_UNIFORM_LOCATION, global_buffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	_bind_global_shader_parameters();
 
 	scene_state.reset_gl_state();
 	scene_state.enable_gl_depth_test(true);
@@ -2534,8 +2539,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	// Fill Light lists here
 	//////////
 
-	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
-	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_GLOBALS_UNIFORM_LOCATION, global_buffer);
+	_bind_global_shader_parameters();
 
 	Color clear_color;
 	if (!is_reflection_probe && rb->render_target.is_valid()) {
@@ -4204,10 +4208,7 @@ void RasterizerSceneGLES3::render_particle_collider_heightfield(RID p_collider, 
 	glBindFramebuffer(GL_FRAMEBUFFER, fb);
 	glViewport(0, 0, fb_size.width, fb_size.height);
 
-	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
-
-	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_GLOBALS_UNIFORM_LOCATION, global_buffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	_bind_global_shader_parameters();
 
 	scene_state.reset_gl_state();
 	scene_state.enable_gl_depth_test(true);
@@ -4250,10 +4251,7 @@ void RasterizerSceneGLES3::_render_uv2(const PagedArray<RenderGeometryInstance *
 		glBindFramebuffer(GL_FRAMEBUFFER, p_framebuffer);
 		glViewport(p_region.position.x, p_region.position.y, p_region.size.x, p_region.size.y);
 
-		GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
-
-		glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_GLOBALS_UNIFORM_LOCATION, global_buffer);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		_bind_global_shader_parameters();
 
 		scene_state.reset_gl_state();
 		scene_state.enable_gl_depth_test(true);
@@ -4737,7 +4735,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 
 	{
 		String global_defines;
-		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
+		global_defines += "#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT " + itos(GLES3::GlobalShaderUniforms::TEXTURE_WIDTH_SHIFT) + "\n";
 		global_defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(config->max_renderable_lights) + "\n";
 		global_defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(MAX_DIRECTIONAL_LIGHTS) + "\n";
 		global_defines += "\n#define MAX_FORWARD_LIGHTS " + itos(config->max_lights_per_object) + "u\n";
@@ -4807,7 +4805,7 @@ void fragment() {
 		sky_globals.roughness_layers = GLOBAL_GET("rendering/reflections/sky_reflections/roughness_layers");
 
 		String global_defines;
-		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
+		global_defines += "#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT " + itos(GLES3::GlobalShaderUniforms::TEXTURE_WIDTH_SHIFT) + "\n";
 		global_defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(sky_globals.max_directional_lights) + "\n";
 		material_storage->shaders.sky_shader.initialize(global_defines);
 		sky_globals.shader_default_version = material_storage->shaders.sky_shader.version_create();
