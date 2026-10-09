@@ -30,62 +30,96 @@
 
 #pragma once
 
-#include "core/templates/local_vector.h"
+#include "core/os/memory.h"
 
 template <typename T>
 class _WARN_UNUSED_ RingBuffer {
-	LocalVector<T> data;
-	int read_pos = 0;
-	int write_pos = 0;
-	int size_mask;
+	T *_data = nullptr;
+	int _read_pos = 0;
+	int _count = 0;
+	int _size_mask = 0;
 
-	inline int inc(int &p_var, int p_size) const {
-		int ret = p_var;
-		p_var += p_size;
-		p_var = p_var & size_mask;
+	inline int _write_pos() const {
+		return _wrapped_pos(_read_pos + _count);
+	}
+
+	inline int _inc_read(int p_amount = 1) {
+		const int ret = _read_pos;
+
+		_read_pos = _wrapped_pos(_read_pos + p_amount);
+		_count -= p_amount;
 		return ret;
+	}
+
+	inline int _wrapped_pos(int p_val) const {
+		return p_val & _size_mask;
+	}
+
+	void _init_from(const RingBuffer &p_other) {
+		_read_pos = p_other._read_pos;
+		_count = p_other._count;
+		_size_mask = p_other._size_mask;
+
+		_data = static_cast<T *>(Memory::alloc_static(sizeof(T) * size()));
+
+		if constexpr (std::is_trivially_copyable_v<T>) {
+			void *destination = _data;
+			const void *source = p_other._data;
+			memcpy(destination, source, sizeof(T) * size());
+		} else {
+			p_other.copy(_data, data_left());
+		}
+	}
+
+	inline void _reset() {
+		clear();
+		Memory::free_static(_data);
+		_data = nullptr;
 	}
 
 public:
 	T read() {
 		ERR_FAIL_COND_V(data_left() < 1, T());
-		return data.ptr()[inc(read_pos, 1)];
+
+		T *src = &_data[_inc_read()];
+		T res = std::move(*src);
+		src->~T();
+
+		return res;
 	}
 
-	int read(T *p_buf, int p_size, bool p_advance = true) {
-		int left = data_left();
+	int read(T *p_buf, int p_size) {
+		const int left = data_left();
 		p_size = MIN(left, p_size);
-		int pos = read_pos;
+
+		int pos = _read_pos;
 		int to_read = p_size;
 		int dst = 0;
 		while (to_read) {
 			int end = pos + to_read;
 			end = MIN(end, size());
 			int total = end - pos;
-			const T *read = data.ptr();
 			for (int i = 0; i < total; i++) {
-				p_buf[dst++] = read[pos + i];
+				T *src = &_data[pos + i];
+				memnew_placement(&p_buf[dst++], T(std::move(*src)));
+				src->~T();
 			}
 			to_read -= total;
 			pos = 0;
 		}
-		if (p_advance) {
-			inc(read_pos, p_size);
-		}
+
+		_inc_read(p_size);
 		return p_size;
 	}
 
 	int copy(T *p_buf, int p_offset, int p_size) const {
-		int left = data_left();
-		if ((p_offset + p_size) > left) {
-			p_size = left - p_offset;
-			if (p_size <= 0) {
-				return 0;
-			}
+		const int left = data_left();
+		if (p_offset > left) {
+			return 0;
 		}
-		p_size = MIN(left, p_size);
-		int pos = read_pos;
-		inc(pos, p_offset);
+
+		p_size = MIN(left - p_offset, p_size);
+		int pos = _wrapped_pos(_read_pos + p_offset);
 		int to_read = p_size;
 		int dst = 0;
 		while (to_read) {
@@ -93,64 +127,70 @@ public:
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				p_buf[dst++] = data[pos + i];
+				memnew_placement(&p_buf[dst++], T(_data[pos + i]));
 			}
 			to_read -= total;
 			pos = 0;
 		}
+
 		return p_size;
 	}
 
 	int find(const T &p_value, int p_offset, int p_max_size) const {
-		int left = data_left();
-		if ((p_offset + p_max_size) > left) {
-			p_max_size = left - p_offset;
-			if (p_max_size <= 0) {
-				return 0;
-			}
+		const int left = data_left();
+		if (p_offset > left) {
+			return 0;
 		}
-		p_max_size = MIN(left, p_max_size);
-		int pos = read_pos;
-		inc(pos, p_offset);
+
+		p_max_size = MIN(left - p_offset, p_max_size);
+		int pos = _wrapped_pos(_read_pos + p_offset);
 		int to_read = p_max_size;
 		while (to_read) {
 			int end = pos + to_read;
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				if (data[pos + i] == p_value) {
+				if (_data[pos + i] == p_value) {
 					return i + (p_max_size - to_read);
 				}
 			}
 			to_read -= total;
 			pos = 0;
 		}
+
 		return -1;
 	}
 
 	inline int advance_read(int p_n) {
 		p_n = MIN(p_n, data_left());
-		inc(read_pos, p_n);
+		for (int i = 0; i < p_n; i++) {
+			_data[_inc_read()].~T();
+		}
 		return p_n;
 	}
 
 	inline int decrease_write(int p_n) {
 		p_n = MIN(p_n, data_left());
-		inc(write_pos, size_mask + 1 - p_n);
+		for (int i = 0; i < p_n; i++) {
+			// Because write_pos points to the next index to write, decrement it first, then destruct
+			_count -= 1;
+			_data[_write_pos()].~T();
+		}
 		return p_n;
 	}
 
 	Error write(const T &p_v) {
 		ERR_FAIL_COND_V(space_left() < 1, FAILED);
-		data[inc(write_pos, 1)] = p_v;
+		memnew_placement(&_data[_write_pos()], T(p_v));
+		_count += 1;
 		return OK;
 	}
 
 	int write(const T *p_buf, int p_size) {
-		int left = space_left();
+		const int left = space_left();
 		p_size = MIN(left, p_size);
 
-		int pos = write_pos;
+		int pos = _write_pos();
 		int to_write = p_size;
 		int src = 0;
 		while (to_write) {
@@ -159,58 +199,112 @@ public:
 			int total = end - pos;
 
 			for (int i = 0; i < total; i++) {
-				data[pos + i] = p_buf[src++];
+				memnew_placement(&_data[pos + i], T(p_buf[src++]));
 			}
+
 			to_write -= total;
 			pos = 0;
 		}
 
-		inc(write_pos, p_size);
+		_count += p_size;
 		return p_size;
 	}
 
 	inline int space_left() const {
-		int left = read_pos - write_pos;
-		if (left < 0) {
-			return size() + left - 1;
-		}
-		if (left == 0) {
-			return size() - 1;
-		}
-		return left - 1;
+		return size() - data_left() - 1;
 	}
 	inline int data_left() const {
-		return size() - space_left() - 1;
+		return _count;
 	}
 
 	inline int size() const {
-		return data.size();
+		return _size_mask + 1;
 	}
 
 	inline void clear() {
-		read_pos = 0;
-		write_pos = 0;
-	}
-
-	void resize(int p_power) {
-		int old_size = size();
-		int new_size = 1 << p_power;
-		int mask = new_size - 1;
-		data.resize(int64_t(1) << int64_t(p_power));
-		if (old_size < new_size && read_pos > write_pos) {
-			for (int i = 0; i < write_pos; i++) {
-				data[(old_size + i) & mask] = data[i];
+		if constexpr (!std::is_trivially_destructible_v<T>) {
+			while (data_left() > 0) {
+				_data[_inc_read()].~T();
 			}
-			write_pos = (old_size + write_pos) & mask;
-		} else {
-			read_pos = read_pos & mask;
-			write_pos = write_pos & mask;
 		}
 
-		size_mask = mask;
+		_read_pos = 0;
+		_count = 0;
+	}
+
+	// If the new size is smalled than the old size, the older entries may be discarded.
+	void resize(int p_power) {
+		const int old_size = size();
+		const int new_size = uint32_t(1) << uint32_t(p_power);
+		const int mask = new_size - 1;
+
+		if (_data == nullptr || old_size < new_size) {
+			_data = static_cast<T *>(Memory::realloc_static(_data, sizeof(T) * new_size));
+			// Make data contiguous
+			if (_read_pos > _write_pos()) {
+				for (int i = 0; i < _write_pos(); i++) {
+					T *src = &_data[i];
+					memnew_placement(&_data[old_size + i], T(std::move(*src)));
+					src->~T();
+				}
+			}
+		} else if (old_size > new_size) {
+			T *new_data = static_cast<T *>(Memory::alloc_static(sizeof(T) * new_size));
+			const int new_count = MIN(new_size - 1, data_left());
+
+			// Destructing the excess older data.
+			const int excess = data_left() - new_count;
+			for (int i = 0; i < excess; i++) {
+				_data[_inc_read()].~T();
+			}
+
+			for (int i = 0; i < new_count; i++) {
+				T *src = &_data[_inc_read()];
+				memnew_placement(&new_data[i], T(std::move(*src)));
+				src->~T();
+			}
+
+			Memory::free_static(_data);
+
+			_read_pos = 0;
+			_count = new_count;
+			_data = new_data;
+		}
+
+		_size_mask = mask;
+	}
+
+	void operator=(const RingBuffer &p_other) {
+		if (this == &p_other) {
+			return; // Ignore self assignment.
+		}
+
+		_reset();
+
+		_init_from(p_other);
+	}
+
+	RingBuffer(RingBuffer &&p_other) {
+		_data = p_other._data;
+		_read_pos = p_other._read_pos;
+		_count = p_other._count;
+		_size_mask = p_other._size_mask;
+
+		p_other._data = nullptr;
+		p_other._read_pos = 0;
+		p_other._count = 0;
+		p_other._size_mask = 0;
+	}
+
+	explicit RingBuffer(const RingBuffer &p_other) {
+		_init_from(p_other);
 	}
 
 	RingBuffer(int p_power = 0) {
 		resize(p_power);
+	}
+
+	~RingBuffer() {
+		_reset();
 	}
 };
