@@ -4269,7 +4269,7 @@ void Node::get_signals_connected_to_this(List<Connection> *p_connections) const 
 	Object::get_signals_connected_to_this(p_connections);
 }
 
-Error Node::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
+Error Node::connect(const StringName &p_signal, const Callable &p_callable, BitField<Object::ConnectFlags> p_flags) {
 	ERR_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
 
 	Error retval = Object::connect(p_signal, p_callable, p_flags);

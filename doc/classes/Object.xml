@@ -530,7 +530,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="signal" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
-			<param index="2" name="flags" type="int" default="0" />
+			<param index="2" name="flags" type="int" enum="Object.ConnectFlags" is_bitfield="true" default="0" />
 			<description>
 				Connects a [param signal] by name to a [param callable]. Optional [param flags] can be also added to configure the connection's behavior (see [enum ConnectFlags] constants).
 				A signal can only be connected once to the same [Callable]. If the signal is already connected, this method returns [constant ERR_INVALID_PARAMETER] and generates an error, unless the signal is connected with [constant CONNECT_REFERENCE_COUNTED]. To prevent this, use [method is_connected] first to check for existing connections.

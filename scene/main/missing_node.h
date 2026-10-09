@@ -47,7 +47,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 #ifdef DEBUG_ENABLED
-	virtual Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0) override;
+	virtual Error connect(const StringName &p_signal, const Callable &p_callable, BitField<Object::ConnectFlags> p_flags = 0) override;
 #endif
 
 	static void _bind_methods();

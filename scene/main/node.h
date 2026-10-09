@@ -894,7 +894,7 @@ public:
 	virtual uint32_t get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const override;
 	virtual void get_signals_connected_to_this(List<Connection> *p_connections) const override;
 
-	virtual Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0) override;
+	virtual Error connect(const StringName &p_signal, const Callable &p_callable, BitField<Object::ConnectFlags> p_flags = 0) override;
 	virtual void disconnect(const StringName &p_signal, const Callable &p_callable) override;
 	virtual bool is_connected(const StringName &p_signal, const Callable &p_callable) const override;
 	virtual bool has_connections(const StringName &p_signal) const override;
