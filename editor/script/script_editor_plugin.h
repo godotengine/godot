@@ -289,6 +289,7 @@ class DocumentEditorContainer : public MarginContainer {
 	struct ScriptHistory {
 		Control *control = nullptr;
 		Dictionary state;
+		String source;
 	};
 
 	Vector<ScriptHistory> history;
