@@ -78,6 +78,139 @@ inline String find_addr2line_executable() {
 	return String("addr2line");
 }
 
+static String get_gnu_debuglink(const String &p_exec_path) {
+	Ref<FileAccess> f = FileAccess::open(p_exec_path, FileAccess::READ);
+	if (f.is_null()) {
+		return String();
+	}
+
+	// Read and check ELF magic number.
+	{
+		uint32_t magic = f->get_32();
+		if (magic != 0x464c457f) { // 0x7F + "ELF"
+			return String();
+		}
+	}
+
+	// Read program architecture bits from class field.
+	int bits = f->get_8() * 32;
+
+	// Get info about the section header table.
+	int64_t section_table_pos;
+	int64_t section_header_size;
+	if (bits == 32) {
+		section_header_size = 40;
+		f->seek(0x20);
+		section_table_pos = f->get_32();
+		f->seek(0x30);
+	} else { // 64
+		section_header_size = 64;
+		f->seek(0x28);
+		section_table_pos = f->get_64();
+		f->seek(0x3c);
+	}
+	int num_sections = f->get_16();
+
+	// Load the strings table.
+	uint8_t *strings;
+	{
+		int string_section_idx = f->get_16();
+
+		// Jump to the strings section header.
+		f->seek(section_table_pos + string_section_idx * section_header_size);
+
+		// Read strings data size and offset.
+		int64_t string_data_pos;
+		int64_t string_data_size;
+		if (bits == 32) {
+			f->seek(f->get_position() + 0x10);
+			string_data_pos = f->get_32();
+			string_data_size = f->get_32();
+		} else { // 64
+			f->seek(f->get_position() + 0x18);
+			string_data_pos = f->get_64();
+			string_data_size = f->get_64();
+		}
+
+		// Read strings data.
+		f->seek(string_data_pos);
+		strings = (uint8_t *)memalloc(string_data_size);
+		if (!strings) {
+			return String();
+		}
+		f->get_buffer(strings, string_data_size);
+	}
+
+	// Search for the ".gnu_debuglink" section.
+	String ret;
+	for (int i = 0; i < num_sections; ++i) {
+		int64_t section_header_pos = section_table_pos + i * section_header_size;
+		f->seek(section_header_pos);
+
+		uint32_t name_offset = f->get_32();
+		if (strcmp((char *)strings + name_offset, ".gnu_debuglink") == 0) {
+			// ".gnu_debuglink" section found.
+
+			int64_t section_start = 0;
+			int64_t section_size = 0;
+			if (bits == 32) {
+				f->seek(section_header_pos + 0x10);
+				section_start = f->get_32();
+				section_size = f->get_32();
+			} else { // 64
+				f->seek(section_header_pos + 0x18);
+				section_start = f->get_64();
+				section_size = f->get_64();
+			}
+
+			f->seek(section_start);
+
+			// Extract the value as a UTF-8 string.
+			uint8_t *str = (uint8_t *)memalloc(section_size);
+
+			f->get_buffer(str, section_size);
+
+			ret = String::utf8((const char *)str, section_size);
+
+			memfree(str);
+
+			break;
+		}
+	}
+	memfree(strings);
+
+	return ret;
+}
+
+static String find_debugsymbols(const String &p_exec_path) {
+	const String base_dir = p_exec_path.get_base_dir() + "/";
+	const String exec_file = p_exec_path.get_file() + ".debugsymbols";
+
+	// TODO: Additional paths? e.g. `/usr/lib/debug` and similar.
+	// TODO: Integrate directly with debuginfod-find?
+
+	// First try the current executable name plus `.debugsymbols`, possibly in a `.debug` folder.
+	if (FileAccess::exists(p_exec_path + ".debugsymbols")) {
+		return p_exec_path + ".debugsymbols";
+	} else if (FileAccess::exists(base_dir + ".debug/" + exec_file)) {
+		return base_dir + ".debug/" + exec_file;
+	}
+
+	// Otherwise try using the `.gnu_debuglink` section, and try it in the same places if non-empty.
+	const String debuglink_value = get_gnu_debuglink(p_exec_path);
+	if (debuglink_value.is_empty()) {
+		return p_exec_path;
+	}
+
+	if (FileAccess::exists(base_dir + debuglink_value)) {
+		return base_dir + debuglink_value;
+	} else if (FileAccess::exists(base_dir + ".debug/" + debuglink_value)) {
+		return base_dir + ".debug/" + debuglink_value;
+	}
+
+	return p_exec_path;
+}
+
 static void handle_crash(int sig) {
 	signal(SIGSEGV, SIG_DFL);
 	signal(SIGFPE, SIG_DFL);
@@ -93,11 +226,7 @@ static void handle_crash(int sig) {
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
-	String exec_path = OS::get_singleton()->get_executable_path();
-
-	if (FileAccess::exists(exec_path + ".debugsymbols")) {
-		exec_path = exec_path + ".debugsymbols";
-	}
+	String exec_path = find_debugsymbols(OS::get_singleton()->get_executable_path());
 
 	String msg;
 	if (ProjectSettings::get_singleton()) {
