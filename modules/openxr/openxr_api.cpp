@@ -31,6 +31,7 @@
 #include "openxr_api.h"
 
 #include "action_map/openxr_interaction_profile_metadata.h"
+#include "extensions/openxr_headless_extension.h"
 #include "openxr_interface.h"
 #include "openxr_util.h"
 
@@ -38,6 +39,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/os/memory.h"
+#include "core/os/os.h"
 #include "core/profiling/profiling.h"
 #include "core/version.h"
 #include "servers/rendering/rendering_server.h"
@@ -1272,8 +1274,14 @@ bool OpenXRAPI::is_swapchain_format_supported(int64_t p_swapchain_format) {
 }
 
 bool OpenXRAPI::obtain_swapchain_formats() {
-	ERR_FAIL_NULL_V(graphics_extension, false);
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
+
+	// TODO: When this is not set, assume we're running a headless session.
+	//       (We also return early in pre_render and and_frame when unset.)
+	//       May be better to have a dedicated "headless" variable instead.
+	if (!graphics_extension) {
+		return true;
+	}
 
 	{
 		// Build a vector with swapchain formats we want to use, from best fit to worst
@@ -1750,7 +1758,11 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 		return false;
 	}
 
-	if (p_rendering_driver == "vulkan") {
+	if (true) {
+		// TODO: This is hardcoded to assume we want a "headless" session.
+		//       Obviously we'd want to do this only when actually requested.
+		//       Such as from a project setting or "--xr-mode headless" arg.
+	} else if (p_rendering_driver == "vulkan") {
 #ifdef VULKAN_ENABLED
 		graphics_extension = memnew(OpenXRVulkanExtension);
 		register_extension_wrapper(graphics_extension);
@@ -2742,6 +2754,10 @@ bool OpenXRAPI::process() {
 		return false;
 	}
 
+	if (!graphics_extension) {
+		OpenXRHeadlessExtension::get_singleton()->get_current_xrtime(&frame_state.predictedDisplayTime);
+	}
+
 	if (frame_state.predictedDisplayPeriod > 500000000) {
 		// display period more then 0.5 seconds? must be wrong data
 		print_verbose(String("OpenXR resetting invalid display period ") + rtos(frame_state.predictedDisplayPeriod));
@@ -2789,7 +2805,7 @@ void OpenXRAPI::pre_render() {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	if (!render_state.running) {
+	if (!render_state.running || !graphics_extension) {
 		return;
 	}
 
@@ -2978,7 +2994,7 @@ void OpenXRAPI::end_frame() {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
 
-	if (!render_state.running) {
+	if (!render_state.running || !graphics_extension) {
 		return;
 	}
 
