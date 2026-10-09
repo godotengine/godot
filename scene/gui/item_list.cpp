@@ -1818,7 +1818,15 @@ void ItemList::force_update_list_size() {
 		return;
 	}
 
-	int scroll_bar_v_minwidth = scroll_bar_v->get_minimum_size().x;
+	int scroll_bar_v_minwidth = scroll_bar_v->get_bound_minimum_size().width + theme_cache.scrollbar_h_separation;
+	if (theme_cache.scrollbar_margin_right >= 0) {
+		int scroll_margin = theme_cache.scrollbar_margin_right + scroll_bar_v_minwidth;
+		if (scroll_margin > theme_cache.panel_style->get_margin(SIDE_RIGHT)) {
+			scroll_bar_v_minwidth = scroll_margin - theme_cache.panel_style->get_margin(SIDE_RIGHT);
+		}
+	}
+	int scroll_bar_h_minheight = scroll_bar_h->get_bound_minimum_size().height;
+
 	Size2 size = get_size();
 	float max_column_width = 0.0;
 
@@ -1878,7 +1886,9 @@ void ItemList::force_update_list_size() {
 		items.write[i].accessibility_item_dirty = true;
 	}
 
-	int fit_size = size.x - theme_cache.panel_style->get_minimum_size().width;
+	Size2 panel_minsize = theme_cache.panel_style->get_minimum_size();
+
+	int fit_size = size.x - panel_minsize.width;
 	if (!wraparound_items) {
 		fit_size += (scroll_bar_h->get_max() - scroll_bar_h->get_page());
 	}
@@ -1934,12 +1944,32 @@ void ItemList::force_update_list_size() {
 			}
 		}
 
-		float scroll_bar_v_page = MAX(0, size.height - theme_cache.panel_style->get_minimum_size().height);
+		Size2 content_size = (size - panel_minsize).maxf(0);
+		float scroll_bar_v_page = content_size.height;
 		float scroll_bar_v_max = MAX(scroll_bar_v_page, ofs.y + max_h);
-		float scroll_bar_h_page = MAX(0, size.width - theme_cache.panel_style->get_minimum_size().width);
+		float scroll_bar_h_page = content_size.width;
 		float scroll_bar_h_max = 0;
 		if (!wraparound_items) {
 			scroll_bar_h_max = MAX(scroll_bar_h_page, max_w);
+		}
+
+		bool display_vscroll = scroll_bar_v_max > scroll_bar_v_page;
+		bool display_hscroll = scroll_bar_h_max > scroll_bar_h_page;
+		// Check twice, as both values are dependent on each other.
+		for (int i = 0; i < 2; i++) {
+			if (display_vscroll) {
+				scroll_bar_h_page = content_size.width - scroll_bar_v_minwidth;
+				display_hscroll = scroll_bar_h_max > scroll_bar_h_page;
+			}
+			if (display_hscroll) {
+				scroll_bar_v_page = content_size.height - scroll_bar_h_minheight;
+				display_vscroll = scroll_bar_v_max > scroll_bar_v_page;
+			}
+
+			scroll_bar_v_max = MAX(scroll_bar_v_page, ofs.y + max_h);
+			if (!wraparound_items) {
+				scroll_bar_h_max = MAX(scroll_bar_h_page, max_w);
+			}
 		}
 
 		if (scroll_bar_v_page >= scroll_bar_v_max || is_layout_rtl()) {
@@ -1952,23 +1982,24 @@ void ItemList::force_update_list_size() {
 			}
 
 			if (auto_height) {
-				auto_height_value = ofs.y + max_h + theme_cache.panel_style->get_minimum_size().height;
+				auto_height_value = ofs.y + max_h + panel_minsize.height;
 			}
 			if (auto_width) {
-				auto_width_value = max_w + theme_cache.panel_style->get_minimum_size().width;
+				auto_width_value = max_w + panel_minsize.width;
 			}
+
 			scroll_bar_v->set_max(scroll_bar_v_max);
 			scroll_bar_v->set_page(scroll_bar_v_page);
-			if (scroll_bar_v_max <= scroll_bar_v_page) {
-				scroll_bar_v->set_value(0);
-				scroll_bar_v->hide();
-			} else {
+			if (display_vscroll) {
 				auto_width_value += scroll_bar_v_minwidth;
 				scroll_bar_v->show();
 
 				if (do_autoscroll_to_bottom) {
 					scroll_bar_v->set_value(scroll_bar_v_max);
 				}
+			} else {
+				scroll_bar_v->set_value(0);
+				scroll_bar_v->hide();
 			}
 
 			if (is_layout_rtl() && !wraparound_items) {
@@ -1979,12 +2010,12 @@ void ItemList::force_update_list_size() {
 				scroll_bar_h->set_min(0);
 			}
 			scroll_bar_h->set_page(scroll_bar_h_page);
-			if (scroll_bar_h_max <= scroll_bar_h_page) {
+			if (display_hscroll) {
+				auto_height_value += scroll_bar_h_minheight;
+				scroll_bar_h->show();
+			} else {
 				scroll_bar_h->set_value(0);
 				scroll_bar_h->hide();
-			} else {
-				auto_height_value += scroll_bar_h->get_minimum_size().y;
-				scroll_bar_h->show();
 			}
 			break;
 		}
