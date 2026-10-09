@@ -57,7 +57,7 @@ public:
 			return;
 		}
 
-		uint64_t pt = OS::get_singleton()->get_ticks_msec();
+		uint64_t pt = OS::get_singleton()->get_ticks_msec_raw();
 		if (pt - last_perf_time < 1000) {
 			return;
 		}
@@ -247,7 +247,7 @@ void RemoteDebugger::flush_output() {
 	}
 
 	// Update limits
-	uint64_t ticks = OS::get_singleton()->get_ticks_usec() / 1000;
+	uint64_t ticks = OS::get_singleton()->get_ticks_usec_raw() / 1000;
 
 	if (ticks - last_reset > 1000) {
 		last_reset = ticks;

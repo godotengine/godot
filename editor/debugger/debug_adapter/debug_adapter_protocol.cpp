@@ -99,7 +99,7 @@ Error DAPeer::handle_data() {
 
 		// Apply a timestamp if it there's none yet
 		if (!timestamp) {
-			timestamp = OS::get_singleton()->get_ticks_msec();
+			timestamp = OS::get_singleton()->get_ticks_msec_raw();
 		}
 
 		// Response
@@ -857,7 +857,7 @@ bool DebugAdapterProtocol::process_message(const String &p_text) {
 		params["seq"] = (int)params["seq"];
 	}
 
-	if (OS::get_singleton()->get_ticks_msec() - _current_peer->timestamp > _request_timeout) {
+	if (OS::get_singleton()->get_ticks_msec_raw() - _current_peer->timestamp > _request_timeout) {
 		Dictionary response = parser->prepare_error_response(params, DAP::ErrorType::TIMEOUT);
 		_current_peer->res_queue.push_front(response);
 		return true;
