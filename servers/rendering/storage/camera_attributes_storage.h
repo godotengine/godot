@@ -36,6 +36,7 @@
 class RendererCameraAttributes {
 private:
 	static RendererCameraAttributes *singleton;
+	int num_camera_attributes_with_motion_blur = 0;
 
 	struct CameraAttributes {
 		float exposure_multiplier = 1.0;
@@ -49,6 +50,14 @@ private:
 		float auto_exposure_scale = 1.0;
 		uint64_t auto_exposure_version = 0;
 
+		bool motion_blur_enabled = false;
+		float motion_blur_intensity = 1.0;
+		float motion_blur_velocity_multiplier_object = 1.0;
+		float motion_blur_velocity_multiplier_camera_movement = 1.0;
+		float motion_blur_velocity_multiplier_camera_rotation = 0.1;
+		float motion_blur_velocity_threshold_lower = 1.75;
+		float motion_blur_velocity_threshold_upper = 3.0;
+
 		bool dof_blur_far_enabled = false;
 		float dof_blur_far_distance = 10;
 		float dof_blur_far_transition = 5;
@@ -57,6 +66,9 @@ private:
 		float dof_blur_near_transition = 1;
 		float dof_blur_amount = 0.1;
 	};
+
+	bool motion_blur_show_in_editor = true;
+	RSE::MotionBlurQuality motion_blur_quality = RSE::MOTION_BLUR_QUALITY_STANDARD;
 
 	RSE::DOFBlurQuality dof_blur_quality = RSE::DOF_BLUR_QUALITY_MEDIUM;
 	RSE::DOFBokehShape dof_blur_bokeh_shape = RSE::DOF_BOKEH_HEXAGON;
@@ -67,6 +79,7 @@ private:
 
 public:
 	static RendererCameraAttributes *get_singleton() { return singleton; }
+	int get_num_camera_attributes_with_motion_blur() const { return num_camera_attributes_with_motion_blur; }
 
 	RendererCameraAttributes();
 	~RendererCameraAttributes();
@@ -77,6 +90,23 @@ public:
 	RID camera_attributes_allocate();
 	void camera_attributes_initialize(RID p_rid);
 	void camera_attributes_free(RID p_rid);
+
+	void camera_attributes_set_motion_blur_show_in_editor(bool p_enabled);
+	void camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality);
+
+	void camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, float p_velocity_multiplier_object, float p_velocity_multiplier_camera_movement, float p_velocity_multiplier_camera_rotation, float p_velocity_threshold_lower, float p_velocity_threshold_upper);
+	float camera_attributes_get_motion_blur_intensity(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_multiplier_object(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_multiplier_camera_movement(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_multiplier_camera_rotation(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_threshold_lower(RID p_camera_attributes);
+	float camera_attributes_get_motion_blur_velocity_threshold_upper(RID p_camera_attributes);
+
+	_FORCE_INLINE_ bool camera_attributes_uses_motion_blur(RID p_camera_attributes) {
+		CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
+
+		return cam_attributes && cam_attributes->motion_blur_enabled && cam_attributes->motion_blur_intensity > 0.0;
+	}
 
 	void camera_attributes_set_dof_blur_quality(RSE::DOFBlurQuality p_quality, bool p_use_jitter);
 	void camera_attributes_set_dof_blur_bokeh_shape(RSE::DOFBokehShape p_shape);
@@ -110,6 +140,14 @@ public:
 		CameraAttributes *cam_attributes = camera_attributes_owner.get_or_null(p_camera_attributes);
 
 		return cam_attributes && cam_attributes->use_auto_exposure;
+	}
+
+	_FORCE_INLINE_ bool camera_attributes_get_motion_blur_show_in_editor() {
+		return motion_blur_show_in_editor;
+	}
+
+	_FORCE_INLINE_ RSE::MotionBlurQuality camera_attributes_get_motion_blur_quality() {
+		return motion_blur_quality;
 	}
 
 	_FORCE_INLINE_ RSE::DOFBlurQuality camera_attributes_get_dof_blur_quality() {
