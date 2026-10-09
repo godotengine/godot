@@ -656,7 +656,7 @@
 	</methods>
 	<members>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
-			The mode in which this node clips its children, acting as a mask.
+			The mode in which this node clips its children. If not [constant CLIP_CHILDREN_DISABLED], any parts of direct child nodes that extend outside this node's visible region are hidden. The child nodes must be at the same Z index as the parent in order for the clipping to occur.
 			[b]Note:[/b] Clipping nodes cannot be nested or placed within a [CanvasGroup]. If an ancestor of this node clips its children or is a [CanvasGroup], then this node's clip mode should be set to [constant CLIP_CHILDREN_DISABLED] to avoid unexpected behavior.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
