@@ -575,7 +575,7 @@
 			<param index="0" name="callable" type="Callable" />
 			<description>
 				Hooks a callback into the undo/redo action creation when a property is modified in the inspector. This allows, for example, to save other properties that may be lost when a given property is modified.
-				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [UndoRedo] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
+				The callback should have 4 arguments: [Object] [code]undo_redo[/code], [Object] [code]modified_object[/code], [String] [code]property[/code] and [Variant] [code]new_value[/code]. They are, respectively, the [EditorUndoRedoManager] object used by the inspector, the currently modified object, the name of the modified property and the new value the property is about to take.
 			</description>
 		</method>
 		<method name="get_editor_interface" deprecated="[EditorInterface] is a global singleton and can be accessed directly by its name.">
