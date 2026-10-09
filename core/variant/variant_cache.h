@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  script_instance.cpp                                                   */
+/*  variant_cache.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,68 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "script_instance.h"
+#pragma once
 
-#include "core/object/script_language.h"
+class GDScriptFunction;
+class MethodBind;
 
-int ScriptInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
-	// Default implementation simply traverses hierarchy.
-	Ref<Script> script = get_script();
-	while (script.is_valid()) {
-		bool valid = false;
-		int ret = script->get_script_method_argument_count(p_method, &valid);
-		if (valid) {
-			if (r_is_valid) {
-				*r_is_valid = true;
-			}
-			return ret;
-		}
+struct VariantCallCache {
+	enum class Type {
+		INVALID,
+		GDSCRIPT_FUNCTION,
+		METHOD_BIND,
+		VARIANT_BUILTIN_METHOD,
+	};
 
-		script = script->get_base_script();
-	}
+	Type type;
 
-	if (r_is_valid) {
-		*r_is_valid = false;
-	}
-	return 0;
-}
+	struct VariantBuiltInMethod {
+		void (*call)(Variant *, const Variant **, int, Variant &, const Vector<Variant> &, Callable::CallError &);
+		const Vector<Variant> *default_values;
+	};
 
-Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-	return callp(p_method, p_args, p_argcount, r_error);
-}
+	union {
+		GDScriptFunction *gdscript_function;
+		const MethodBind *method_bind;
+		VariantBuiltInMethod variant_builtin_method;
+	};
 
-VariantCallCache ScriptInstance::lookup_function_call(const StringName &p_method_name, Callable::CallError::Error &p_error) {
-	p_error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-	return VariantCallCache();
-}
-
-void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &r_state) {
-	List<PropertyInfo> pinfo;
-	get_property_list(&pinfo);
-	for (const PropertyInfo &E : pinfo) {
-		if (E.usage & PROPERTY_USAGE_STORAGE) {
-			Pair<StringName, Variant> p;
-			p.first = E.name;
-			if (get(p.first, p.second)) {
-				r_state.push_back(p);
-			}
-		}
-	}
-}
-
-void ScriptInstance::property_set_fallback(const StringName &, const Variant &, bool *r_valid) {
-	if (r_valid) {
-		*r_valid = false;
-	}
-}
-
-Variant ScriptInstance::property_get_fallback(const StringName &, bool *r_valid) {
-	if (r_valid) {
-		*r_valid = false;
-	}
-	return Variant();
-}
-
-const Variant ScriptInstance::get_rpc_config() const {
-	return get_script()->get_rpc_config();
-}
+	VariantCallCache() : type(Type::INVALID) {}
+	VariantCallCache(GDScriptFunction *p_gdscript_function) : type(Type::GDSCRIPT_FUNCTION), gdscript_function(p_gdscript_function) {}
+	VariantCallCache(const MethodBind *p_method_bind) : type(Type::METHOD_BIND), method_bind(p_method_bind) {}
+	VariantCallCache(
+			void (*p_call)(Variant *, const Variant **, int, Variant &, const Vector<Variant> &, Callable::CallError &),
+			const Vector<Variant> *p_default_values) :
+			type(Type::VARIANT_BUILTIN_METHOD), variant_builtin_method{ p_call, p_default_values } {}
+};

@@ -31,6 +31,7 @@
 #include "gdscript.h"
 #include "gdscript_function.h"
 #include "gdscript_lambda_callable.h"
+#include "inline_cache.h"
 
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -1928,7 +1929,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				bool call_async = (_code_ptr[ip]) == OPCODE_CALL_ASYNC;
 #endif
 				LOAD_INSTRUCTION_ARGS
-				CHECK_SPACE(3 + instr_arg_count);
+				CHECK_SPACE(4 + instr_arg_count);
 
 				ip += instr_arg_count;
 
@@ -1944,6 +1945,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_INSTRUCTION_ARG(base, argc);
 				Variant **argptrs = instruction_args;
 
+				FunctionInlineCache *fn = reinterpret_cast<FunctionInlineCache *>(&_code_ptr[ip + 3]);
+
 #ifdef DEBUG_ENABLED
 				uint64_t call_time = 0;
 
@@ -1958,7 +1961,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Callable::CallError err;
 				if (call_ret) {
 					GET_INSTRUCTION_ARG(ret, argc + 1);
-					base->callp(*methodname, (const Variant **)argptrs, argc, temp_ret, err);
+					temp_ret = fn->callp(*base, *methodname, const_cast<const Variant **>(argptrs), argc, err);
 					*ret = temp_ret;
 #ifdef DEBUG_ENABLED
 					if (ret->get_type() == Variant::NIL) {
@@ -1993,7 +1996,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 #endif
 				} else {
-					base->callp(*methodname, (const Variant **)argptrs, argc, temp_ret, err);
+					fn->callp(*base, *methodname, const_cast<const Variant **>(argptrs), argc, err);
 				}
 #ifdef DEBUG_ENABLED
 
@@ -2049,7 +2052,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif // DEBUG_ENABLED
 
-				ip += 3;
+				ip += 3 + FunctionInlineCacheIntSize;
 			}
 			DISPATCH_OPCODE;
 
