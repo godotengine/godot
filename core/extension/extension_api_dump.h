@@ -33,12 +33,19 @@
 #ifdef TOOLS_ENABLED
 
 #include "core/error/error_list.h"
+#include "core/object/object.h"
 #include "core/string/ustring.h"
 #include "core/variant/dictionary.h"
 
-class GDExtensionAPIDump {
+class GDExtensionAPIDump : public Object {
+	GDCLASS(GDExtensionAPIDump, Object);
+
+protected:
+	static void _bind_methods();
+
 public:
 	static Dictionary generate_extension_api(bool p_include_docs = false);
+	static String dump_extension_api();
 	static void generate_extension_json_file(const String &p_path, bool p_include_docs = false);
 	static Error validate_extension_json_file(const String &p_path);
 };
