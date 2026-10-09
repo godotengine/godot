@@ -71,6 +71,7 @@ public:
 	static size_t _set_addr_storage(struct sockaddr_storage *p_addr, const IPAddress &p_ip, uint16_t p_port, IP::Type p_ip_type);
 
 	virtual Error open(Family p_family, Type p_sock_type, IP::Type &ip_type) override;
+	virtual void shutdown(ShutdownType p_flag) override;
 	virtual void close() override;
 	virtual Error bind(Address p_addr) override;
 	virtual Error listen(int p_max_pending) override;

@@ -48,6 +48,7 @@ public:
 	}
 
 	virtual Error open(Family p_family, Type p_sock_type, IP::Type &ip_type) override { return ERR_UNAVAILABLE; }
+	virtual void shutdown(ShutdownType p_flag) override {}
 	virtual void close() override {}
 	virtual Error bind(Address p_addr) override { return ERR_UNAVAILABLE; }
 	virtual Error listen(int p_max_pending) override { return ERR_UNAVAILABLE; }
