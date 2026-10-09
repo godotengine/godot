@@ -46,6 +46,16 @@
 				It will fail if there is no open file.
 			</description>
 		</method>
+		<method name="compress" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="input_paths" type="PackedStringArray" />
+			<param index="1" name="output_path" type="String" />
+			<param index="2" name="compression_level" type="int" default="-1" />
+			<param index="3" name="append" type="int" enum="ZIPPacker.ZipAppend" default="0" />
+			<description>
+				Creates a zip archive at the given [param output_path] containing the files/directories specified in [param input_paths].
+			</description>
+		</method>
 		<method name="open">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
