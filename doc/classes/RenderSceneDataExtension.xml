@@ -9,6 +9,24 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_decal_atlas_get_texture" qualifiers="virtual const" experimental="">
+			<return type="RID" />
+			<description>
+				Implement this in GDExtension to return the decal atlas texture.
+			</description>
+		</method>
+		<method name="_decal_atlas_get_texture_srgb" qualifiers="virtual const" experimental="">
+			<return type="RID" />
+			<description>
+				Implement this in GDExtension to return the decal atlas texture in sRGB.
+			</description>
+		</method>
+		<method name="_directional_shadow_get_texture" qualifiers="virtual const" experimental="">
+			<return type="RID" />
+			<description>
+				Implement this in GDExtension to return the directional shadow texture.
+			</description>
+		</method>
 		<method name="_get_cam_projection" qualifiers="virtual const">
 			<return type="Projection" />
 			<description>
@@ -19,6 +37,24 @@
 			<return type="Transform3D" />
 			<description>
 				Implement this in GDExtension to return the camera [Transform3D].
+			</description>
+		</method>
+		<method name="_get_directional_light_buffer" qualifiers="virtual const" experimental="">
+			<return type="RID" />
+			<description>
+				Implement this in GDExtension to return the directional light buffer.
+			</description>
+		</method>
+		<method name="_get_omni_light_buffer" qualifiers="virtual const" experimental="">
+			<return type="RID" />
+			<description>
+				Implement this in GDExtension to return the omni light buffer.
+			</description>
+		</method>
+		<method name="_get_spot_light_buffer" qualifiers="virtual const" experimental="">
+			<return type="RID" />
+			<description>
+				Implement this in GDExtension to return the spot light buffer.
 			</description>
 		</method>
 		<method name="_get_uniform_buffer" qualifiers="virtual const">
