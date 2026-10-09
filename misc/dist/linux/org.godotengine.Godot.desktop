@@ -23,6 +23,6 @@ Exec=godot %f
 Icon=godot
 Terminal=false
 Type=Application
-MimeType=application/x-godot-project;
+MimeType=application/vnd.godot.project.text;
 Categories=Development;IDE;
 StartupWMClass=Godot
