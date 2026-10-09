@@ -845,6 +845,7 @@ public:
 
 	/* RENDER TARGET API */
 
+	// Compatibility state for platform GL managers that have not migrated to per-window FBO lookup yet.
 	static GLuint system_fbo;
 
 	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); }
@@ -937,10 +938,6 @@ public:
 
 	void bind_framebuffer(GLuint framebuffer) {
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-	}
-
-	void bind_framebuffer_system() {
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 
 	String get_framebuffer_error(GLenum p_status);
