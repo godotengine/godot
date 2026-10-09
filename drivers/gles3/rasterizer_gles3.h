@@ -59,6 +59,7 @@ private:
 
 #ifdef WINDOWS_ENABLED
 	static bool screen_flipped_y;
+	static int screen_y_offset;
 #endif
 
 protected:
@@ -116,6 +117,9 @@ public:
 #ifdef WINDOWS_ENABLED
 	static void set_screen_flipped_y(bool p_flipped) {
 		screen_flipped_y = p_flipped;
+	}
+	static void set_screen_y_offset(int p_offset) {
+		screen_y_offset = p_offset;
 	}
 #endif
 

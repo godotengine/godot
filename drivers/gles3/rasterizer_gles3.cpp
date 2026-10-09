@@ -96,6 +96,7 @@
 
 #ifdef WINDOWS_ENABLED
 bool RasterizerGLES3::screen_flipped_y = false;
+int RasterizerGLES3::screen_y_offset = 0;
 #endif
 
 void RasterizerGLES3::begin_frame(double frame_step) {
@@ -436,10 +437,16 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServerEnums::WindowID
 		}
 	}
 
-	Vector2 screen_rect_end = p_blit.dst_rect.get_end();
+	Rect2i dst_rect = p_blit.dst_rect;
+#ifdef WINDOWS_ENABLED
+	if (!screen_flipped_y) {
+		dst_rect.position.y += screen_y_offset;
+	}
+#endif
+	Vector2 screen_rect_end = dst_rect.get_end();
 
-	Vector2 p1 = Vector2(p_blit.dst_rect.position.x, flip_y ? screen_rect_end.y : p_blit.dst_rect.position.y);
-	Vector2 p2 = Vector2(screen_rect_end.x, flip_y ? p_blit.dst_rect.position.y : screen_rect_end.y);
+	Vector2 p1 = Vector2(dst_rect.position.x, flip_y ? screen_rect_end.y : dst_rect.position.y);
+	Vector2 p2 = Vector2(screen_rect_end.x, flip_y ? dst_rect.position.y : screen_rect_end.y);
 	Vector2 size = p2 - p1;
 
 	Rect2 screenrect = Rect2(Vector2(0.0, flip_y ? 1.0 : 0.0), Vector2(1.0, flip_y ? -1.0 : 1.0));
