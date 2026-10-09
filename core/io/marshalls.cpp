@@ -1768,7 +1768,9 @@ Error encode_variant(const Variant &p_variant, uint8_t *p_buffer, int &r_len, bo
 					Object *obj = p_variant.get_validated_object();
 					ObjectID id;
 					if (obj) {
-						id = obj->get_instance_id();
+						// If the object is already an encoded ID, use that instead.
+						Ref<EncodedObjectAsID> obj_as_id = Object::cast_to<EncodedObjectAsID>(obj);
+						id = obj_as_id.is_valid() ? obj_as_id->get_object_id() : obj->get_instance_id();
 					}
 
 					encode_uint64(id, buf);
