@@ -389,7 +389,12 @@ private:
 		bool sending_mouse_enter_exit_notifications = false;
 		Window *subwindow_over = nullptr; // mouse_over and subwindow_over are mutually exclusive. At all times at least one of them is nullptr.
 		Window *windowmanager_window_over = nullptr; // Only used in root Viewport.
+		Control *drag_target_control = nullptr;
 		Control *drag_mouse_over = nullptr;
+		Ref<Texture2D> drag_allowed_drop_texture;
+		Vector2 drag_allowed_drop_hotspot;
+		Ref<Texture2D> drag_forbidden_drop_texture;
+		Vector2 drag_forbidden_drop_hotspot;
 		Control *tooltip_control = nullptr;
 		Window *tooltip_popup = nullptr;
 		Label *tooltip_label = nullptr;
@@ -411,6 +416,7 @@ private:
 		bool global_dragging = false; // Is true while dragging is active. Only used in root-Viewport and SubViewports that are not children of a SubViewportContainer.
 		bool drag_successful = false;
 		Control *target_control = nullptr; // Control that the mouse is over in the innermost nested Viewport. Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
+
 		bool embed_subwindows_hint = false;
 		int drag_threshold = 10;
 
