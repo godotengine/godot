@@ -896,6 +896,8 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 		float tv = 0.0;
 
+		Vector2 align_y_velocity;
+
 		if (restart) {
 			if (!emitting) {
 				p.active = false;
@@ -1086,6 +1088,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 				// Not sure why the ParticleProcessMaterial code uses a clockwise rotation matrix,
 				// but we use -ang here to reproduce its behavior.
 				Transform2D rot = Transform2D(-ang, Vector2());
+				align_y_velocity += rot.basis_xform(diff) - diff;
 				p.transform[2] -= diff;
 				p.transform[2] += rot.basis_xform(diff);
 			}
@@ -1164,17 +1167,16 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 		p.color *= p.base_color * p.start_color_rand;
 
+		float angle = p.rotation;
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
-			if (p.velocity.length() > 0.0f) {
-				p.transform.columns[1] = p.velocity;
-			}
+			align_y_velocity += p.velocity;
 
-			p.transform.columns[1] = p.transform.columns[1].normalized();
-			p.transform.columns[0] = p.transform.columns[1].orthogonal();
-		} else {
-			p.transform.columns[0] = Vector2(Math::cos(p.rotation), -Math::sin(p.rotation));
-			p.transform.columns[1] = Vector2(Math::sin(p.rotation), Math::cos(p.rotation));
+			if (align_y_velocity.length() > 0.0f) {
+				angle += Math::atan2(align_y_velocity.x, align_y_velocity.y);
+			}
 		}
+		p.transform.columns[0] = Vector2(Math::cos(angle), -Math::sin(angle));
+		p.transform.columns[1] = Vector2(Math::sin(angle), Math::cos(angle));
 
 		//scale by scale
 		Vector2 base_scale = tex_scale * Math::lerp(parameters_min[PARAM_SCALE], parameters_max[PARAM_SCALE], p.scale_rand);
