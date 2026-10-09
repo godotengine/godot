@@ -577,6 +577,13 @@ void AnimationMixer::set_dummy(bool p_dummy) {
 bool AnimationMixer::is_dummy() const {
 	return dummy;
 }
+
+bool AnimationMixer::editor_audio_muted = false;
+
+void AnimationMixer::set_editor_audio_muted(bool p_muted) {
+	ERR_FAIL_COND(!Engine::get_singleton()->is_editor_hint());
+	editor_audio_muted = p_muted;
+}
 #endif // TOOLS_ENABLED
 
 /* -------------------------------------------- */
@@ -1735,6 +1742,18 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					// The end of audio should be observed even if the blend value is 0, build up the information and store to the cache for that.
 					TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 					Object *t_obj = ObjectDB::get_instance(t->object_id);
+#ifdef TOOLS_ENABLED
+					bool just_unmuted = false;
+					if (editor_audio_muted) {
+						if (t_obj->call(SNAME("is_playing"))) {
+							t_obj->call(SNAME("stop"));
+							t_obj->call(SNAME("set_stream"), Ref<AudioStreamPolyphonic>());
+						}
+						continue;
+					} else {
+						just_unmuted = !t_obj->call(SNAME("is_playing"));
+					}
+#endif
 					Node *asp = t_obj ? Object::cast_to<Node>(t_obj) : nullptr;
 					if (!t_obj || !asp) {
 						t->playing_streams.clear();
@@ -1760,7 +1779,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 					}
 					// Find stream.
 					int idx = -1;
+#ifdef TOOLS_ENABLED
+					if (seeked || just_unmuted) {
+#else
 					if (seeked) {
+#endif
 						// Audio key may be playbacked from the middle, should use FIND_MODE_NEAREST.
 						// Then, check the current playing stream to prevent to playback doubly.
 						idx = a->track_find_key(i, time, Animation::FIND_MODE_NEAREST, true);
@@ -1786,7 +1809,11 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 						double start_ofs = a->audio_track_get_key_start_offset(i, idx);
 						double end_ofs = a->audio_track_get_key_end_offset(i, idx);
 						double len = stream->get_length();
+#ifdef TOOLS_ENABLED
+						if (seeked || just_unmuted) {
+#else
 						if (seeked) {
+#endif
 							start_ofs += time - a->track_get_key_time(i, idx);
 						}
 
