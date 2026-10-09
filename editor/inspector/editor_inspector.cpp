@@ -5779,6 +5779,29 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		if (valid) {
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
+			} else if (Object::cast_to<Resource>(object) && p_name == "resource_inherits_state" && res != nullptr) {
+				// Take a snapshot of all properties that will change
+				List<PropertyInfo> properties;
+				object->get_property_list(&properties);
+				bool current_valid = false;
+				bool new_valid = false;
+				Variant current_value;
+				Variant inherited_value;
+				for (const PropertyInfo &info : properties) {
+					if (!(info.usage & PROPERTY_USAGE_STORAGE)) {
+						continue;
+					}
+					if (info.name == "resource_path") {
+						continue; //do not change path
+					}
+					current_value = object->get(info.name, &current_valid);
+					inherited_value = res->get(info.name, &new_valid);
+					if (current_valid && new_valid && PropertyUtils::is_property_value_different(object, inherited_value, current_value)) {
+						undo_redo->add_undo_property(object, info.name, current_value);
+						undo_redo->add_do_property(object, info.name, inherited_value);
+					}
+				}
+				undo_redo->add_undo_property(object, p_name, value);
 			} else {
 				undo_redo->add_undo_property(object, p_name, value);
 			}
