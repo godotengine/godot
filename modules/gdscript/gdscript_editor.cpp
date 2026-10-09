@@ -3573,6 +3573,15 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 		case GDScriptParser::COMPLETION_NONE:
 		case GDScriptParser::COMPLETION_DECLARATION:
 			break;
+		case GDScriptParser::COMPLETION_STATIC_DECLARATION: {
+			EditorLanguage::CompletionOption func("func", EditorLanguage::CompletionKind::PLAIN_TEXT);
+			func.insert_text = "func ";
+			options.insert(func.display, func);
+			EditorLanguage::CompletionOption var("var", EditorLanguage::CompletionKind::PLAIN_TEXT);
+			var.insert_text = "var ";
+			options.insert(var.display, var);
+			r_forced = true;
+		} break;
 		case GDScriptParser::COMPLETION_ANNOTATION: {
 			List<MethodInfo> annotations;
 			parser.get_annotation_list(&annotations);
@@ -3903,6 +3912,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				EditorLanguage::CompletionOption option(method_hint, EditorLanguage::CompletionKind::FUNCTION);
 				options.insert(option.display, option);
 			}
+
+			r_forced = true;
 		} break;
 		case GDScriptParser::COMPLETION_GET_NODE: {
 			// Handles the `$Node/Path` or `$"Some NodePath"` syntax specifically.
@@ -4495,6 +4506,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		case GDScriptParser::COMPLETION_ASSIGN:
 		case GDScriptParser::COMPLETION_CALL_ARGUMENTS:
 		case GDScriptParser::COMPLETION_DECLARATION:
+		case GDScriptParser::COMPLETION_STATIC_DECLARATION:
 		case GDScriptParser::COMPLETION_INHERIT_TYPE:
 		case GDScriptParser::COMPLETION_IDENTIFIER:
 		case GDScriptParser::COMPLETION_PROPERTY_METHOD:
