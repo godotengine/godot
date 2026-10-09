@@ -115,7 +115,10 @@ def configure(env: "SConsEnvironment"):
 
     # Minimum emscripten requirements.
     if cc_semver < (6, 0, 1):
-        print_error("The minimum Emscripten version to build Godot is 6.0.1, detected: {}.{}.{}".format(*cc_semver))
+        print_error("Godot requires Emscripten 6.0.1+. Detected: {}.{}.{}".format(*cc_semver))
+        sys.exit(255)
+    if env["dlink_enabled"] and env["threads"] and cc_semver < (6, 0, 12):
+        print_error("Godot with dlink+threads requires Emscripten 6.0.12+. Detected: {}.{}.{}".format(*cc_semver))
         sys.exit(255)
 
     env.Append(LIBEMITTER=[library_emitter])

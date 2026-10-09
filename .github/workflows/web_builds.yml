@@ -9,7 +9,7 @@ env:
     dev_mode=yes
     debug_symbols=no
     use_closure_compiler=yes
-  EM_VERSION: 6.0.1
+  EM_VERSION: 6.0.12
 
 jobs:
   web-template:
