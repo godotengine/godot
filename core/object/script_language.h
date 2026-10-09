@@ -135,7 +135,9 @@ protected:
 	TypedArray<Dictionary> _get_script_signal_list();
 	Dictionary _get_script_constant_map();
 
+#ifdef DEBUG_ENABLED
 	void _set_debugger_break_language();
+#endif
 
 	Variant _get_rpc_config_bind() const {
 		return get_rpc_config().duplicate(true);

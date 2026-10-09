@@ -1719,7 +1719,9 @@ void GodotPhysicsServer3D::flush_queries() {
 
 	flushing_queries = true;
 
+#ifdef DEBUG_ENABLED
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
+#endif
 
 	for (GodotSpace3D *E : active_spaces) {
 		GodotSpace3D *space = E;
@@ -1728,6 +1730,7 @@ void GodotPhysicsServer3D::flush_queries() {
 
 	flushing_queries = false;
 
+#ifdef DEBUG_ENABLED
 	if (EngineDebugger::is_profiling("servers")) {
 		uint64_t total_time[GodotSpace3D::ELAPSED_TIME_MAX];
 		static const char *time_name[GodotSpace3D::ELAPSED_TIME_MAX] = {
@@ -1760,6 +1763,7 @@ void GodotPhysicsServer3D::flush_queries() {
 		values.push_front("physics_3d");
 		EngineDebugger::profiler_add_frame_data("servers", values);
 	}
+#endif
 }
 
 void GodotPhysicsServer3D::end_sync() {

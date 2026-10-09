@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef DEBUG_ENABLED
+
 #include "remote_debugger_peer_websocket.h"
 
 #include "core/config/project_settings.h"
@@ -139,3 +141,5 @@ Ref<RemoteDebuggerPeer> RemoteDebuggerPeerWebSocket::create(const String &p_uri)
 	}
 	return peer;
 }
+
+#endif // DEBUG_ENABLED
