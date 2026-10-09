@@ -205,7 +205,7 @@ public:
 	}
 
 #ifndef DISABLE_DEPRECATED
-	[[deprecated("Use Object::get_script instead.")]] bool instance_has(const Object *p_this) const { return p_this != nullptr && Object::cast_to<Script>(p_this->get_script()) == this; }
+	[[deprecated("Use Object::get_script instead.")]] bool instance_has(const Object *p_this) const { return p_this != nullptr && Object::cast_to<Script>(p_this->get_script_bind()) == this; }
 #endif // !DISABLE_DEPRECATED
 };
 
