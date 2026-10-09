@@ -117,7 +117,7 @@
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Similar to [method get_setting], but applies feature tag overrides if any exists and is valid.
+				Similar to [method get_setting], but applies feature tag overrides if any exists and is valid. Prints a warning if the setting is not found. To silence this warning, use [method get_setting_with_override_or_null] instead.
 				[b]Example:[/b] If the setting override [code]"application/config/name.windows"[/code] exists, and the following code is executed on a [i]Windows[/i] operating system, the overridden setting is printed instead:
 				[codeblocks]
 				[gdscript]
@@ -134,7 +134,22 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="features" type="PackedStringArray" />
 			<description>
-				Similar to [method get_setting_with_override], but applies feature tag overrides instead of current OS features.
+				Similar to [method get_setting_with_override], but applies feature tag overrides instead of current OS features. Prints a warning if the setting is not found. To silence this warning, use [method get_setting_with_override_and_custom_features_or_null] instead.
+			</description>
+		</method>
+		<method name="get_setting_with_override_and_custom_features_or_null" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="features" type="PackedStringArray" />
+			<description>
+				Similar to [method get_setting_with_override_and_custom_features], but does not print a warning if the setting is not found.
+			</description>
+		</method>
+		<method name="get_setting_with_override_or_null" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Similar to [method get_setting_with_override], but does not print a warning if the setting is not found.
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
