@@ -4237,7 +4237,11 @@ void RichTextLabel::_process_line_caches() {
 
 	float ctrl_height = get_size().height;
 	int fi = main->first_invalid_line.load();
-	int total_chars = main->lines[fi].char_offset;
+	int total_chars = 0;
+	if (fi > 0) {
+		Line &l_prev = main->lines[fi - 1];
+		total_chars = l_prev.char_offset + l_prev.char_count;
+	}
 	float old_scroll = vscroll->get_value();
 
 	float total_height = 0;
