@@ -76,6 +76,7 @@ uint32_t EditorThemeManager::ThemeConfiguration::hash() {
 
 	hash = hash_murmur3_one_32((int)draw_extra_borders, hash);
 	hash = hash_murmur3_one_float(relationship_line_opacity, hash);
+	hash = hash_murmur3_one_float(strip_alpha, hash);
 	hash = hash_murmur3_one_32(thumb_size, hash);
 	hash = hash_murmur3_one_32(class_icon_size, hash);
 	hash = hash_murmur3_one_32((int)enable_touch_optimizations, hash);
@@ -262,6 +263,7 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 	config.draw_extra_borders = EDITOR_GET("interface/theme/draw_extra_borders");
 	config.draw_relationship_lines = EDITOR_GET("interface/theme/draw_relationship_lines");
 	config.relationship_line_opacity = EDITOR_GET("interface/theme/relationship_line_opacity");
+	config.strip_alpha = EDITOR_GET("interface/theme/strip_alpha");
 	config.thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	config.class_icon_size = 16 * EDSCALE;
 	config.enable_touch_optimizations = EDITOR_GET("interface/touchscreen/enable_touch_optimizations");
