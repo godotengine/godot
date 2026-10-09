@@ -31,6 +31,7 @@
 #include "message_queue.h"
 
 #include "core/config/project_settings.h"
+#include "core/templates/paged_allocator.h" // IWYU pragma: keep. PagedAllocator is aliased as CallQueue::Allocator.
 
 #include <cstdio>
 
@@ -55,6 +56,14 @@
 	if (this != MessageQueue::thread_singleton) { \
 		mutex.unlock(); \
 	}
+
+_FORCE_INLINE_ void CallQueue::_ensure_first_page() {
+	if (unlikely(pages.is_empty())) {
+		pages.push_back(allocator->alloc());
+		page_bytes.push_back(0);
+		pages_used = 1;
+	}
+}
 
 void CallQueue::_add_page() {
 	if (pages_used == page_bytes.size()) {
