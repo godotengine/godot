@@ -83,10 +83,10 @@ private:
 		 * to the server the `text` might not be persisted.
 		 */
 		HashMap<String, LSP::TextDocumentItem> managed_files;
-		HashMap<String, ExtendGDScriptParser *> parse_results;
+		HashMap<String, LSPParseResult *> parse_results;
 
 		void remove_cached_parser(const String &p_path);
-		ExtendGDScriptParser *parse_script(const String &p_path);
+		LSPParseResult *parse_script(const String &p_path);
 
 		~LSPeer();
 
@@ -167,7 +167,7 @@ public:
 	 * Returns parse results for the given path, using the cache if available.
 	 * If no such file exists, or the file is not a GDScript file a `nullptr` is returned.
 	 */
-	ExtendGDScriptParser *get_parse_result(const String &p_path);
+	LSPParseResult *get_parse_result(const String &p_path);
 
 	/**
 	 * Returns the HTML tags the client can render inside Markdown content, e.g. `span`.

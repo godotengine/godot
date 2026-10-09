@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "gdscript_extend_parser.h"
 #include "godot_lsp.h"
+#include "lsp_parse_result.h"
 
 #include "core/error/error_macros.h"
 #include "core/object/editor_language.h"
@@ -64,7 +64,7 @@ protected:
 	const LSP::DocumentSymbol *get_native_symbol(const String &p_class, const String &p_member = "") const;
 	const LSP::DocumentSymbol *get_script_symbol(const String &p_path) const;
 	const LSP::DocumentSymbol *get_parameter_symbol(const LSP::DocumentSymbol *p_parent, const String &symbol_identifier);
-	const LSP::DocumentSymbol *get_local_symbol_at(const ExtendGDScriptParser *p_parser, const String &p_symbol_identifier, const LSP::Position p_position);
+	const LSP::DocumentSymbol *get_local_symbol_at(const LSPParseResult *p_parser, const String &p_symbol_identifier, const LSP::Position p_position);
 
 	void reload_all_workspace_scripts();
 
