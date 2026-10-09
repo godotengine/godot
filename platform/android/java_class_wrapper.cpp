@@ -2176,3 +2176,8 @@ JavaClassWrapper::JavaClassWrapper() {
 	Double_doubleValue = env->GetMethodID(bclass, "doubleValue", "()D");
 	env->DeleteLocalRef(bclass);
 }
+
+JavaClassWrapper::~JavaClassWrapper() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}

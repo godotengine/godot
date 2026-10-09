@@ -3812,4 +3812,6 @@ EditorFileSystem::~EditorFileSystem() {
 	memdelete(filesystem);
 	filesystem = nullptr;
 	ResourceSaver::set_get_resource_id_for_path(nullptr);
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }
