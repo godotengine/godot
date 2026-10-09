@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -53,21 +54,25 @@ namespace Godot
         /// <summary>
         /// The projection's X column. Also accessible by using the index position <c>[0]</c>.
         /// </summary>
+        [JsonInclude]
         public Vector4 X;
 
         /// <summary>
         /// The projection's Y column. Also accessible by using the index position <c>[1]</c>.
         /// </summary>
+        [JsonInclude]
         public Vector4 Y;
 
         /// <summary>
         /// The projection's Z column. Also accessible by using the index position <c>[2]</c>.
         /// </summary>
+        [JsonInclude]
         public Vector4 Z;
 
         /// <summary>
         /// The projection's W column. Also accessible by using the index position <c>[3]</c>.
         /// </summary>
+        [JsonInclude]
         public Vector4 W;
 
         /// <summary>
@@ -77,6 +82,7 @@ namespace Godot
         /// <exception cref="ArgumentOutOfRangeException">
         /// <paramref name="column"/> is not 0, 1, 2 or 3.
         /// </exception>
+        [JsonIgnore]
         public Vector4 this[int column]
         {
             readonly get
@@ -125,6 +131,7 @@ namespace Godot
         /// <exception cref="ArgumentOutOfRangeException">
         /// <paramref name="column"/> or <paramref name="row"/> are not 0, 1, 2 or 3.
         /// </exception>
+        [JsonIgnore]
         public real_t this[int column, int row]
         {
             readonly get

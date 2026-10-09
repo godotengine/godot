@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 #nullable enable
 
@@ -22,27 +23,32 @@ namespace Godot
         /// <summary>
         /// The basis matrix's X vector (column 0). Equivalent to array index <c>[0]</c>.
         /// </summary>
+        [JsonInclude]
         public Vector2 X;
 
         /// <summary>
         /// The basis matrix's Y vector (column 1). Equivalent to array index <c>[1]</c>.
         /// </summary>
+        [JsonInclude]
         public Vector2 Y;
 
         /// <summary>
         /// The origin vector (column 2, the third column). Equivalent to array index <c>[2]</c>.
         /// The origin vector represents translation.
         /// </summary>
+        [JsonInclude]
         public Vector2 Origin;
 
         /// <summary>
         /// Returns the transform's rotation (in radians).
         /// </summary>
+        [JsonIgnore]
         public readonly real_t Rotation => Mathf.Atan2(X.Y, X.X);
 
         /// <summary>
         /// Returns the scale.
         /// </summary>
+        [JsonIgnore]
         public readonly Vector2 Scale
         {
             get
@@ -55,6 +61,7 @@ namespace Godot
         /// <summary>
         /// Returns the transform's skew (in radians).
         /// </summary>
+        [JsonIgnore]
         public readonly real_t Skew
         {
             get
@@ -72,6 +79,7 @@ namespace Godot
         /// <exception cref="ArgumentOutOfRangeException">
         /// <paramref name="column"/> is not 0, 1 or 2.
         /// </exception>
+        [JsonIgnore]
         public Vector2 this[int column]
         {
             readonly get
@@ -113,6 +121,7 @@ namespace Godot
         /// </summary>
         /// <param name="column">Which column, the matrix horizontal position.</param>
         /// <param name="row">Which row, the matrix vertical position.</param>
+        [JsonIgnore]
         public real_t this[int column, int row]
         {
             readonly get
