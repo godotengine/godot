@@ -173,6 +173,10 @@
 			If [code]true[/code], the ancestor [Viewport] is currently using this camera.
 			If multiple cameras are in the scene, one will always be made current. For example, if two [Camera3D] nodes are present in the scene and only one is current, setting one camera's [member current] to [code]false[/code] will cause the other camera to be made current.
 		</member>
+		<member name="doppler_scale" type="float" setter="set_doppler_scale" getter="get_doppler_scale" default="1.0">
+			Scale of the Doppler effect. Negative values will have an "inverted" effect, where approaching sounds have a higher pitch and departing sounds have a lower pitch.
+			The final scale is determined by multiplying this with [member AudioStreamPlayer3D.doppler_scale].
+		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera3D.DopplerTracking" default="0">
 			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the [url=https://en.wikipedia.org/wiki/Doppler_effect]Doppler effect[/url] for objects changed in particular [code]_process[/code] methods.
 			[b]Note:[/b] The Doppler effect will only be heard on [AudioStreamPlayer3D]s if [member AudioStreamPlayer3D.doppler_tracking] is not set to [constant AudioStreamPlayer3D.DOPPLER_TRACKING_DISABLED].
