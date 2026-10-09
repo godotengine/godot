@@ -1164,6 +1164,36 @@
 				See also [method chr], [method @GDScript.char], and [method @GDScript.ord].
 			</description>
 		</method>
+		<method name="idna_decode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Decodes a string in Internationalized Domain Names in Applications (IDNA) format back to its Unicode representation. Punycode-encoded labels (prefixed with [code]xn--[/code]) are decoded to their original Unicode characters. Labels that are not Punycode-encoded are passed through unchanged.
+				[codeblocks]
+				[gdscript]
+				print("xn--yp9h.example.com".idna_decode()) # Prints "🤖.example.com"
+				[/gdscript]
+				[csharp]
+				GD.Print("xn--yp9h.example.com".IdnaDecode()); // Prints "🤖.example.com"
+				[/csharp]
+				[/codeblocks]
+				Returns an empty string if decoding fails. See also [method idna_encode].
+			</description>
+		</method>
+		<method name="idna_encode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Encodes a Unicode string to Internationalized Domain Names in Applications (IDNA) format. Each dot-separated label that contains non-ASCII characters is encoded using Punycode and prefixed with [code]xn--[/code]. Pure ASCII labels are passed through unchanged.
+				[codeblocks]
+				[gdscript]
+				print("🤖.example.com".idna_encode()) # Prints "xn--yp9h.example.com"
+				[/gdscript]
+				[csharp]
+				GD.Print("🤖.example.com".IdnaEncode()); // Prints "xn--yp9h.example.com"
+				[/csharp]
+				[/codeblocks]
+				See also [method idna_decode].
+			</description>
+		</method>
 		<method name="uri_decode" qualifiers="const">
 			<return type="String" />
 			<description>
