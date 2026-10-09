@@ -36,7 +36,6 @@
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
-#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
@@ -631,7 +630,13 @@ void ScenePaint2DEditor::_update_scene_picker(int p_mode, Control *p_control) {
 	PickMode pick_mode = (PickMode)p_mode;
 	switch (pick_mode) {
 		case PICK_FILE_SYSTEM: {
-			node_2d = _get_scene_from_path(FileSystemDock::get_singleton()->get_current_path());
+			const String path = FileSystemDock::get_singleton()->get_current_path();
+			if (path.ends_with("/") || !ClassDB::is_parent_class(EditorFileSystem::get_singleton()->get_file_type(path), PackedScene::get_class_static())) {
+				EditorNode::get_singleton()->show_warning(TTR("The selected path is not a scene."));
+				node_2d = nullptr;
+			} else {
+				node_2d = _get_scene_from_path(path);
+			}
 		} break;
 		case PICK_SCENE_TREE: {
 			node_2d = Object::cast_to<Node2D>(SceneTreeDock::get_singleton()->get_tree_editor()->get_selected());
