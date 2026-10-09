@@ -560,6 +560,14 @@
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
 			</description>
 		</method>
+		<method name="store_buffer_as_file" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<param index="1" name="path" type="String" />
+			<description>
+				Stores the given array of bytes as the whole content of the file at [param path]. Returns [constant OK] on success.
+			</description>
+		</method>
 		<method name="store_csv_line">
 			<return type="bool" />
 			<param index="0" name="values" type="PackedStringArray" />
@@ -626,6 +634,14 @@
 				Stores [param string] in the file without a newline character ([code]\n[/code]), encoding the text as UTF-8. This advances the file cursor by the length of the string in UTF-8 encoded bytes, which may be different from [method String.length] which counts the number of UTF-32 codepoints. Returns [code]true[/code] if the operation is successful.
 				[b]Note:[/b] This method is intended to be used to write text files. The string is stored as a UTF-8 encoded buffer without string length or terminating zero, which means that it can't be loaded back easily. If you want to store a retrievable string in a binary file, consider using [method store_pascal_string] instead. For retrieving strings from a text file, you can use [code]get_buffer(length).get_string_from_utf8()[/code] (if you know the length) or [method get_as_text].
 				[b]Note:[/b] If an error occurs, the resulting value of the file position indicator is indeterminate.
+			</description>
+		</method>
+		<method name="store_string_as_file" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="string" type="String" />
+			<param index="1" name="path" type="String" />
+			<description>
+				Stores [param string] as the whole content of the file at [param path], encoding the text as UTF-8. Returns [constant OK] on success.
 			</description>
 		</method>
 		<method name="store_var">
