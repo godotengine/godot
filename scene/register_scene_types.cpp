@@ -77,6 +77,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
+#include "scene/gui/popup_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/reference_rect.h"
@@ -554,6 +555,7 @@ void register_scene_types() {
 
 	GDREGISTER_ABSTRACT_CLASS(TreeItem);
 	GDREGISTER_CLASS(MenuBar);
+	GDREGISTER_CLASS(PopupButton);
 	GDREGISTER_CLASS(MenuButton);
 	GDREGISTER_CLASS(OptionButton);
 	GDREGISTER_CLASS(SpinBox);
