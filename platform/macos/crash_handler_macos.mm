@@ -35,6 +35,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/object/script_language.h"
+#include "core/os/crash_handler.h"
 #include "core/os/main_loop.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
@@ -113,6 +114,8 @@ static void handle_crash(int sig) {
 
 	const Vector<String> lines = StackTraceMacOS::symbolize_with_atos(exec_path, load_addr, bt_buffer, size);
 
+	LocalVector<CrashHandlerBase::ModData> mod_info;
+	LocalVector<CrashHandlerBase::SymInfo> sym_info;
 	if (!lines.is_empty()) {
 		// Get demangled names from dladdr for fallback.
 		char **strings = backtrace_symbols(bt_buffer, size);
@@ -151,6 +154,22 @@ static void handle_crash(int sig) {
 				} else {
 					mod_name = "<unknown module>";
 				}
+			}
+			{
+				bool mod_found = false;
+				int8_t mod_idx = 0;
+				for (unsigned int j = 0; j < mod_info.size(); j++) {
+					if (mod_info[j].mod_name == mod_name) {
+						mod_found = true;
+						mod_idx = j;
+						break;
+					}
+				}
+				if (!mod_found) {
+					mod_info.push_back({ mod_name, mod_off });
+					mod_idx = mod_info.size() - 1;
+				}
+				sym_info.push_back({ (uint64_t)bt_buffer[i], mod_idx });
 			}
 
 			print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
@@ -191,6 +210,22 @@ static void handle_crash(int sig) {
 				} else {
 					mod_name = "<unknown module>";
 				}
+				{
+					bool mod_found = false;
+					int8_t mod_idx = 0;
+					for (unsigned int j = 0; j < mod_info.size(); j++) {
+						if (mod_info[j].mod_name == mod_name) {
+							mod_found = true;
+							mod_idx = j;
+							break;
+						}
+					}
+					if (!mod_found) {
+						mod_info.push_back({ mod_name, mod_off });
+						mod_idx = mod_info.size() - 1;
+					}
+					sym_info.push_back({ (uint64_t)bt_buffer[i], mod_idx });
+				}
 
 				print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
 			}
@@ -208,6 +243,10 @@ static void handle_crash(int sig) {
 			print_error("================================================================");
 		}
 	}
+
+	// Prints base64-encoded stack trace.
+	CrashHandlerBase::print_encoded_trace(mod_info, sym_info, "macos");
+	print_error("================================================================");
 
 	// Abort to pass the error to the OS
 	abort();

@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
+#include "core/os/crash_handler.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -269,6 +270,8 @@ static void handle_crash(int sig) {
 
 	print_error(vformat("Load address: %x\n", (uint64_t)load_addr));
 
+	LocalVector<CrashHandlerBase::ModData> mod_info;
+	LocalVector<CrashHandlerBase::SymInfo> sym_info;
 	if (strings) {
 		int ret;
 		const String exe_name = find_addr2line_executable();
@@ -321,6 +324,22 @@ static void handle_crash(int sig) {
 				} else {
 					mod_name = "<unknown module>";
 				}
+				{
+					bool mod_found = false;
+					int8_t mod_idx = 0;
+					for (unsigned int j = 0; j < mod_info.size(); j++) {
+						if (mod_info[j].mod_name == mod_name) {
+							mod_found = true;
+							mod_idx = j;
+							break;
+						}
+					}
+					if (!mod_found) {
+						mod_info.push_back({ mod_name, mod_off });
+						mod_idx = mod_info.size() - 1;
+					}
+					sym_info.push_back({ (uint64_t)bt_buffer[i], mod_idx });
+				}
 
 				// Simplify printed file paths to remove redundant `/./` sections (e.g. `/opt/godot/./core` -> `/opt/godot/core`).
 				print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
@@ -354,6 +373,22 @@ static void handle_crash(int sig) {
 				} else {
 					mod_name = "<unknown module>";
 				}
+				{
+					bool mod_found = false;
+					int8_t mod_idx = 0;
+					for (unsigned int j = 0; j < mod_info.size(); j++) {
+						if (mod_info[j].mod_name == mod_name) {
+							mod_found = true;
+							mod_idx = j;
+							break;
+						}
+					}
+					if (!mod_found) {
+						mod_info.push_back({ mod_name, mod_off });
+						mod_idx = mod_info.size() - 1;
+					}
+					sym_info.push_back({ (uint64_t)bt_buffer[i], mod_idx });
+				}
 
 				print_error(vformat("[%d] %x (%s+%x) - %s", (int64_t)i, (uint64_t)bt_buffer[i], mod_name, (uint64_t)bt_buffer[i] - mod_off, output));
 			}
@@ -371,6 +406,10 @@ static void handle_crash(int sig) {
 			print_error("================================================================");
 		}
 	}
+
+	// Prints base64-encoded stack trace.
+	CrashHandlerBase::print_encoded_trace(mod_info, sym_info, "linuxbsd");
+	print_error("================================================================");
 
 	// Abort to pass the error to the OS
 	abort();
