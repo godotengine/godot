@@ -281,6 +281,8 @@ class [[nodiscard]] _WARN_UNUSED_ String {
 	CowData<char32_t> _cowdata;
 	static constexpr char32_t _null = 0;
 	static constexpr char32_t _replacement_char = 0xfffd;
+	static const String _empty_val;
+	static constexpr const String &_empty_ref() { return _empty_val; }
 
 	// NULL-terminated c string copy - automatically parse the string to find the length.
 	void append_latin1(const char *p_cstr) {
@@ -308,6 +310,8 @@ public:
 	enum {
 		npos = -1 ///<for "some" compatibility with std::string (npos is a huge value in std::string)
 	};
+
+	static const String &EMPTY;
 
 	_FORCE_INLINE_ char32_t *ptrw() _LIFETIME_BOUND_ { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const _LIFETIME_BOUND_ { return _cowdata.ptr(); }
@@ -673,12 +677,13 @@ public:
 	 * The constructors must not depend on other overloads
 	 */
 
-	_FORCE_INLINE_ String() {}
+	_FORCE_INLINE_ constexpr String() = default;
 	_FORCE_INLINE_ String(const String &p_str) = default;
 	_FORCE_INLINE_ String(String &&p_str) = default;
 #ifdef SIZE_EXTRA
-	_NO_INLINE_ ~String() {}
+	_NO_INLINE_
 #endif
+	constexpr ~String() = default;
 	_FORCE_INLINE_ void operator=(const String &p_str) { _cowdata = p_str._cowdata; }
 	_FORCE_INLINE_ void operator=(String &&p_str) { _cowdata = std::move(p_str._cowdata); }
 
@@ -714,6 +719,9 @@ public:
 		append_utf32(p_cstr);
 	}
 };
+
+inline constexpr const String String::_empty_val;
+inline constexpr const String &String::EMPTY = String::_empty_ref();
 
 // Zero-constructing String initializes _cowdata.ptr() to nullptr and thus empty.
 template <>
