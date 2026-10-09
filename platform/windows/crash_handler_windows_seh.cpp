@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/object/script_language.h"
+#include "core/os/crash_handler.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
@@ -200,6 +201,8 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	IMAGE_NT_HEADERS *h = ImageNtHeader(base);
 	DWORD image_type = h->FileHeader.Machine;
 
+	LocalVector<CrashHandlerBase::ModData> mod_info;
+	LocalVector<CrashHandlerBase::SymInfo> sym_info;
 	int n = 0;
 	do {
 		if (skip_first) {
@@ -208,22 +211,38 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 			if (frame.AddrPC.Offset != 0) {
 				std::string fnName = symbol(process, frame.AddrPC.Offset).undecorated_name();
 
-				IMAGEHLP_MODULE64 mod_info;
-				memset(&mod_info, 0, sizeof(IMAGEHLP_MODULE64));
-				mod_info.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
+				IMAGEHLP_MODULE64 img_mod_info;
+				memset(&img_mod_info, 0, sizeof(IMAGEHLP_MODULE64));
+				img_mod_info.SizeOfStruct = sizeof(IMAGEHLP_MODULE64);
 				uint64_t offset = (uint64_t)base;
 				String mod_name = "main";
-				if (SymGetModuleInfo64(process, frame.AddrPC.Offset, &mod_info)) {
-					offset = mod_info.BaseOfImage;
+				if (SymGetModuleInfo64(process, frame.AddrPC.Offset, &img_mod_info)) {
+					offset = img_mod_info.BaseOfImage;
 					if (offset != (uint64_t)base) {
-						if (mod_info.ImageName[0] != 0) {
-							mod_name = String((const char *)mod_info.ImageName).to_lower().get_file();
-						} else if (mod_info.ModuleName[0] != 0) {
-							mod_name = String((const char *)mod_info.ModuleName).to_lower();
+						if (img_mod_info.ImageName[0] != 0) {
+							mod_name = String((const char *)img_mod_info.ImageName).to_lower().get_file();
+						} else if (img_mod_info.ModuleName[0] != 0) {
+							mod_name = String((const char *)img_mod_info.ModuleName).to_lower();
 						} else {
 							mod_name = "<unknown module>";
 						}
 					}
+				}
+				{
+					bool mod_found = false;
+					int8_t mod_idx = 0;
+					for (unsigned int j = 0; j < mod_info.size(); j++) {
+						if (mod_info[j].mod_name == mod_name) {
+							mod_found = true;
+							mod_idx = j;
+							break;
+						}
+					}
+					if (!mod_found) {
+						mod_info.push_back({ mod_name, offset });
+						mod_idx = mod_info.size() - 1;
+					}
+					sym_info.push_back({ (uint64_t)frame.AddrPC.Offset, mod_idx });
 				}
 				if (SymGetLineFromAddr64(process, frame.AddrPC.Offset, &offset_from_symbol, &line)) {
 					print_error(vformat("[%d] %x (%s+%x) - %s (%s:%d)", n, (uint64_t)frame.AddrPC.Offset, mod_name, (uint64_t)frame.AddrPC.Offset - offset, fnName.c_str(), (char *)line.FileName, (int)line.LineNumber));
@@ -254,6 +273,10 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 			print_error("================================================================");
 		}
 	}
+
+	// Prints base64-encoded stack trace.
+	CrashHandlerBase::print_encoded_trace(mod_info, sym_info, "windows-msvc");
+	print_error("================================================================");
 
 	// Pass the exception to the OS
 	return EXCEPTION_CONTINUE_SEARCH;
