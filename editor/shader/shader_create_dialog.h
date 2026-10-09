@@ -97,6 +97,7 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	void _create_new();
 	void _load_exist();
 	void _update_dialog();
+	void _update_templates();
 
 protected:
 	void _notification(int p_what);
