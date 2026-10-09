@@ -2370,6 +2370,20 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 	return const_cast<Node *>(common_parent);
 }
 
+uint32_t Node::calculate_depth() const {
+	if (is_inside_tree()) {
+		return data.depth;
+	}
+
+	uint32_t depth = 0;
+	const Node *iter = this;
+	while (iter) {
+		depth += 1;
+		iter = iter->data.parent;
+	}
+	return depth;
+}
+
 NodePath Node::get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_path) const {
 	EXTRACT_PARAM_OR_FAIL_V(node, p_node, NodePath());
 
@@ -2377,27 +2391,29 @@ NodePath Node::get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_p
 		return NodePath(".");
 	}
 
-	HashSet<const Node *> visited;
-
 	const Node *n = this;
+	const Node *common_parent = node;
 
-	while (n) {
-		visited.insert(n);
+	const uint32_t this_depth = calculate_depth();
+	const uint32_t other_depth = node->calculate_depth();
+	uint32_t common_parent_depth = other_depth;
+
+	for (uint32_t i = other_depth; i > this_depth; i--) {
+		common_parent = common_parent->data.parent;
+		common_parent_depth -= 1;
+	}
+
+	for (uint32_t i = this_depth; i > other_depth; i--) {
 		n = n->data.parent;
 	}
 
-	const Node *common_parent = node;
-
-	while (common_parent) {
-		if (visited.has(common_parent)) {
-			break;
-		}
+	while (common_parent != n) {
 		common_parent = common_parent->data.parent;
+		n = n->data.parent;
+		common_parent_depth -= 1;
 	}
 
 	ERR_FAIL_NULL_V_MSG(common_parent, NodePath(), vformat("No path can be resolved between the nodes %s and %s as they share no common ancestor.", get_description(true), node->get_description(true)));
-
-	visited.clear();
 
 	Vector<StringName> path;
 	StringName up = String("..");
@@ -2438,23 +2454,30 @@ NodePath Node::get_path_to(RequiredParam<const Node> p_node, bool p_use_unique_p
 				path.push_back(UNIQUE_NODE_PREFIX + detected_name);
 			}
 		}
+		path.reverse();
 	} else {
-		n = node;
+		const int32_t this_branch_depth = (this_depth - common_parent_depth);
+		const int32_t other_branch_depth = (other_depth - common_parent_depth);
 
+		path.resize(this_branch_depth + other_branch_depth);
+
+		int i = 0;
+		n = this;
+		StringName *ptrw = path.ptrw();
 		while (n != common_parent) {
-			path.push_back(n->get_name());
+			ptrw[i] = up;
+			i++;
 			n = n->data.parent;
 		}
 
-		n = this;
-
+		n = node;
+		i = this_branch_depth + other_branch_depth - 1;
 		while (n != common_parent) {
-			path.push_back(up);
+			ptrw[i] = n->get_name();
+			i--;
 			n = n->data.parent;
 		}
 	}
-
-	path.reverse();
 
 	return NodePath(path, false);
 }
