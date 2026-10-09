@@ -198,6 +198,7 @@ void HTTPRequest::cancel_request() {
 	} else {
 		thread_request_quit.set();
 		if (thread.is_started()) {
+			client->disconnect_from_host();
 			thread.wait_to_finish();
 		}
 	}
