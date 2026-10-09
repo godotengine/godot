@@ -34,10 +34,56 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/templates/rb_map.h"
+#include "core/typedefs.h"
 #include "core/variant/variant_parser.h"
 #include "scene/resources/packed_scene.h"
 
 class ResourceLoaderText {
+	template <typename T>
+	bool get_field(const String p_name, T &p_result) const {
+		if (!next_tag.fields.has(p_name)) {
+			return false;
+		}
+
+		p_result = next_tag.fields[p_name];
+		return true;
+	}
+
+#define ERR_SET_MSG(m_error, m_message) \
+	error = m_error; \
+	error_text = m_message; \
+	ERR_FAIL_V_MSG(m_error, _get_error_string());
+
+#define ERR_SET_V_MSG(m_error, m_return, m_message) \
+	error = m_error; \
+	error_text = m_message; \
+	ERR_FAIL_V_MSG(m_return, _get_error_string());
+
+#define GET_FIELD(m_type, m_name) \
+	m_type m_name; \
+	get_field(#m_name, m_name)
+
+#define GET_FIELD_OR_PRINT_ERR(m_type, m_name, m_error) \
+	m_type m_name; \
+	if (unlikely(!get_field(#m_name, m_name))) { \
+		error = m_error; \
+		error_text = "Missing '" #m_name "' field from " + next_tag.name + " tag"; \
+		ERR_PRINT(_get_error_string()); \
+		return; \
+	}
+
+#define GET_FIELD_OR_ERROR_V(m_type, m_name, m_error, m_return) \
+	m_type m_name; \
+	if (unlikely(!get_field(#m_name, m_name))) { \
+		ERR_SET_V_MSG(m_error, m_return, "Missing '" #m_name "' field from " + next_tag.name + "tag") \
+	}
+
+#define GET_FIELD_OR_ERROR(m_type, m_name, m_error) \
+	m_type m_name; \
+	if (unlikely(!get_field(#m_name, m_name))) { \
+		ERR_SET_MSG(m_error, "Missing '" #m_name "' field from " + next_tag.name + "tag") \
+	}
+
 public:
 	enum {
 		// Version 2: Changed names for Basis, AABB, Vectors, etc.
