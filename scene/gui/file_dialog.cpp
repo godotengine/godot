@@ -2350,6 +2350,7 @@ FileDialog::FileDialog() {
 		customization_flags[i] = true;
 	}
 
+	action_shortcuts[ITEM_MENU_NEW_FOLDER] = Shortcut::make_from_action("ui_filedialog_new_folder");
 	action_shortcuts[ITEM_MENU_DELETE] = Shortcut::make_from_action("ui_filedialog_delete");
 	action_shortcuts[ITEM_MENU_GO_UP] = Shortcut::make_from_action("ui_filedialog_up_one_level");
 	action_shortcuts[ITEM_MENU_REFRESH] = Shortcut::make_from_action("ui_filedialog_refresh");
@@ -2431,6 +2432,7 @@ FileDialog::FileDialog() {
 	make_dir_button = memnew(Button);
 	make_dir_button->set_theme_type_variation(SceneStringName(FlatButton));
 	make_dir_button->set_tooltip_text(ETR("Create a new folder."));
+	make_dir_button->set_shortcut(action_shortcuts[ITEM_MENU_NEW_FOLDER]);
 	make_dir_container->add_child(make_dir_button);
 	make_dir_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_make_dir));
 
