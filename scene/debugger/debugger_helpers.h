@@ -39,8 +39,8 @@ class DebuggerHelpers {
 public:
 	struct SelectResult {
 		Node *item = nullptr;
-		real_t order = 0;
-		_FORCE_INLINE_ bool operator<(const SelectResult &p_rr) const { return p_rr.order < order; }
+		int order = 0;
+		bool operator<(const SelectResult &p_rr) const;
 	};
 
 	static bool is_shortcut_pressed(const int p_idx, const HashMap<int, Ref<Shortcut>> &p_shortcuts, bool p_true_if_empty = false);
