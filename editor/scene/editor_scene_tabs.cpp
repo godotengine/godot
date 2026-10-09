@@ -53,6 +53,7 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/resources/packed_scene.h"
 
 void EditorSceneTabs::_notification(int p_what) {
 	switch (p_what) {
@@ -181,6 +182,7 @@ void EditorSceneTabs::_update_context_menu(int p_index) {
 
 	int tab_id = p_index;
 	bool no_root_node = !EditorNode::get_editor_data().get_edited_scene_root(tab_id);
+	bool cant_instantiate = !EditorNode::get_editor_data().get_scene_resource(tab_id)->can_instantiate();
 
 	scene_tabs_context_menu->add_shortcut(ED_GET_SHORTCUT("editor/new_scene"), EditorNode::SCENE_NEW_SCENE);
 	if (tab_id >= 0) {
@@ -209,6 +211,8 @@ void EditorSceneTabs::_update_context_menu(int p_index) {
 		DISABLE_LAST_OPTION_IF(!ResourceLoader::exists(scene_path));
 		scene_tabs_context_menu->add_item(TTR("Play This Scene"), SCENE_RUN);
 		DISABLE_LAST_OPTION_IF(no_root_node);
+		scene_tabs_context_menu->add_item(TTR("Edit Scene in Inspector"), EditorNode::SCENE_EDIT_IN_INSPECTOR);
+		DISABLE_LAST_OPTION_IF(cant_instantiate);
 		scene_tabs_context_menu->add_item(TTR("Set as Main Scene"), SCENE_SET_AS_MAIN_SCENE);
 		DISABLE_LAST_OPTION_IF(no_root_node || (!main_scene_path.is_empty() && ResourceUID::ensure_path(main_scene_path) == scene_path));
 
