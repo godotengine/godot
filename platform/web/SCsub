@@ -12,12 +12,16 @@ if "serve" in COMMAND_LINE_TARGETS or "run" in COMMAND_LINE_TARGETS:
     from serve import serve
 
     port = os.environ.get("GODOT_WEB_TEST_PORT", 8060)
+    run = "run" in COMMAND_LINE_TARGETS
+    https = os.environ.get("GODOT_WEB_TEST_SSL", "").lower() in ["1", "true"]
+    key = os.environ.get("GODOT_WEB_TEST_SSL_KEY", "")
+    cert = os.environ.get("GODOT_WEB_TEST_SSL_CERT", "")
     try:
         port = int(port)
     except Exception:
         print_error("GODOT_WEB_TEST_PORT must be a valid integer")
         sys.exit(255)
-    serve(env.Dir(env.GetTemplateZipPath()).abspath, port, "run" in COMMAND_LINE_TARGETS)
+    serve(env.Dir(env.GetTemplateZipPath()).abspath, port, https, run, key=key, cert=cert)
     sys.exit(0)
 
 web_files = [
