@@ -55,6 +55,9 @@ protected:
 	HashMap<StringName, int> blend_shape_properties;
 	Vector<Ref<Material>> surface_override_materials;
 
+	HashMap<Vector3, Vector<int>> overlapping_vertices;
+	HashMap<int, Vector3> point_to_position;
+
 	void _mesh_changed();
 	void _resolve_skeleton_path();
 
@@ -62,6 +65,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _update_overlapping_vertices();
 	bool surface_index_0 = false;
 
 	void _notification(int p_what);
