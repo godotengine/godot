@@ -415,20 +415,24 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const float height, const int radial_segments, const int rings, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, w;
-	float onethird = 1.0 / 3.0;
-	float twothirds = 2.0 / 3.0;
+	constexpr float one_third = 1.0 / 3.0;
+	constexpr float two_thirds = 2.0 / 3.0;
 
 	// Only used if we calculate UV2
-	float radial_width = 2.0 * radius * Math::PI;
-	float radial_h = radial_width / (radial_width + p_uv2_padding);
-	float radial_length = radius * Math::PI * 0.5; // circumference of 90 degree bend
-	float vertical_length = radial_length * 2 + (height - 2.0 * radius) + p_uv2_padding; // total vertical length
-	float radial_v = radial_length / vertical_length; // v size of top and bottom section
-	float height_v = (height - 2.0 * radius) / vertical_length; // v size of height section
+	const float radial_width = 2.0 * radius * Math::PI;
+	const float radial_h = radial_width / (radial_width + p_uv2_padding);
+	const float radial_length = radius * Math::PI * 0.5; // circumference of 90 degree bend
+	const float mid_height = height - 2.0 * radius;
+	const float vertical_length = radial_length * 2 + mid_height + p_uv2_padding; // total vertical length
+	const float radial_v = radial_length / vertical_length; // v size of top and bottom section
+	const float height_v = mid_height / vertical_length; // v size of height section
 
+	// The end edge vertex is duplicated to give it a different texture coordinate.
+	const uint32_t points_per_ring = radial_segments + 1;
+	const uint32_t num_ring_sections = (mid_height != 0.0f ? 3 : 2);
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (rings + 2) * (radial_segments + 1) * 2;
+	const uint32_t num_points = (rings + 2) * points_per_ring * num_ring_sections;
 	LocalVector<Vector3> points;
 	points.reserve(num_points);
 	LocalVector<Vector3> normals;
@@ -442,7 +446,11 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		uv2s.reserve(num_points);
 	}
 	LocalVector<int> indices;
-	indices.reserve((rings + 1) * (radial_segments) * 6 * 2);
+	const uint32_t indices_per_ring = radial_segments * 6;
+	// The top and bottom rings each use half the indices to connect to the poles.
+	const uint32_t num_bands = num_ring_sections * (rings + 1) - 1;
+	const uint32_t num_indices = num_bands * indices_per_ring;
+	indices.reserve(num_indices);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -484,17 +492,18 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			points.push_back(p * radius + Vector3(0.0, 0.5 * height - radius, 0.0));
 			normals.push_back(p);
 			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, v * onethird));
+			uvs.push_back(Vector2(u, v * one_third));
 			if (p_add_uv2) {
 				uv2s.push_back(Vector2(u * radial_h, v * radial_v));
 			}
 			point++;
 
 			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
+				if (j > 1) {
+					indices.push_back(prevrow + i - 1);
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i);
 				indices.push_back(thisrow + i - 1);
@@ -506,50 +515,51 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 	}
 
 	/* cylinder */
-	thisrow = point;
-	prevrow = 0;
-	for (j = 0; j <= (rings + 1); j++) {
-		v = j;
-		v /= (rings + 1);
-
-		y = (height - 2.0 * radius) * v;
-		y = (0.5 * height - radius) - y;
-
-		for (i = 0; i <= radial_segments; i++) {
-			u = i;
-			u /= radial_segments;
-
-			if (i == radial_segments) {
-				x = 0.0;
-				z = 1.0;
-			} else {
-				x = -Math::sin(u * Math::TAU);
-				z = Math::cos(u * Math::TAU);
-			}
-
-			Vector3 p = Vector3(x * radius, y, -z * radius);
-			points.push_back(p);
-			normals.push_back(Vector3(x, 0.0, -z));
-			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, onethird + (v * onethird)));
-			if (p_add_uv2) {
-				uv2s.push_back(Vector2(u * radial_h, radial_v + (v * height_v)));
-			}
-			point++;
-
-			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
-			}
-		}
-
-		prevrow = thisrow;
+	if (mid_height != 0.0f) {
 		thisrow = point;
+		prevrow = 0;
+		for (j = 0; j <= (rings + 1); j++) {
+			v = j;
+			v /= (rings + 1);
+
+			y = mid_height * (0.5 - v);
+
+			for (i = 0; i <= radial_segments; i++) {
+				u = i;
+				u /= radial_segments;
+
+				if (i == radial_segments) {
+					x = 0.0;
+					z = 1.0;
+				} else {
+					x = -Math::sin(u * Math::TAU);
+					z = Math::cos(u * Math::TAU);
+				}
+
+				Vector3 p = Vector3(x * radius, y, -z * radius);
+				points.push_back(p);
+				normals.push_back(Vector3(x, 0.0, -z));
+				ADD_TANGENT(-z, 0.0, -x, 1.0)
+				uvs.push_back(Vector2(u, one_third + (v * one_third)));
+				if (p_add_uv2) {
+					uv2s.push_back(Vector2(u * radial_h, radial_v + (v * height_v)));
+				}
+				point++;
+
+				if (i > 0 && j > 0) {
+					indices.push_back(prevrow + i - 1);
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i - 1);
+
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
+			}
+
+			prevrow = thisrow;
+			thisrow = point;
+		}
 	}
 
 	/* bottom hemisphere */
@@ -583,7 +593,7 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			points.push_back(p * radius + Vector3(0.0, -0.5 * height + radius, 0.0));
 			normals.push_back(p);
 			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, twothirds + v * onethird));
+			uvs.push_back(Vector2(u, two_thirds + v * one_third));
 			if (p_add_uv2) {
 				uv2s.push_back(Vector2(u * radial_h, radial_v + height_v + v * radial_v));
 			}
@@ -593,10 +603,11 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 				indices.push_back(prevrow + i - 1);
 				indices.push_back(prevrow + i);
 				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
+				if (j < (rings + 1)) {
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
 			}
 		}
 
@@ -604,6 +615,8 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		thisrow = point;
 	}
 
+	DEV_ASSERT(points.size() == num_points);
+	DEV_ASSERT(indices.size() == num_indices);
 	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
 	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
 	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
@@ -729,8 +742,8 @@ void BoxMesh::_create_mesh_array(Array &p_arr) const {
 void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int subdivide_h, int subdivide_d, bool p_add_uv2, const float p_uv2_padding) {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
-	float onethird = 1.0 / 3.0;
-	float twothirds = 2.0 / 3.0;
+	constexpr float one_third = 1.0 / 3.0;
+	constexpr float two_thirds = 2.0 / 3.0;
 
 	// Only used if we calculate UV2
 	// TODO this could be improved by changing the order depending on which side is the longest (basically the below works best if size.y is the longest)
@@ -748,7 +761,8 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (subdivide_h + 2) * (subdivide_w + 2) * 6;
+	const uint32_t num_points_positive = (subdivide_h + 2) * (subdivide_w + 2) + (subdivide_h + 2) * (subdivide_d + 2) + (subdivide_w + 2) * (subdivide_d + 2);
+	const uint32_t num_points = num_points_positive * 2;
 	LocalVector<Vector3> points;
 	points.reserve(num_points);
 	LocalVector<Vector3> normals;
@@ -762,7 +776,10 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 		uv2s.reserve(num_points);
 	}
 	LocalVector<int> indices;
-	indices.reserve((subdivide_h + 1) * (subdivide_w + 1) * 6 * 6);
+	const uint32_t num_quads_positive = (subdivide_h + 1) * (subdivide_w + 1) + (subdivide_h + 1) * (subdivide_d + 1) + (subdivide_w + 1) * (subdivide_d + 1);
+	// Each side has a negative counterpart (2), and each quad uses 6 indices (2 triangles).
+	const uint32_t num_indices = num_quads_positive * (2 * 6);
+	indices.reserve(num_indices);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -800,7 +817,7 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 			points.push_back(Vector3(-x, -y, start_pos.z));
 			normals.push_back(Vector3(0.0, 0.0, -1.0));
 			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
-			uvs.push_back(Vector2(twothirds + u, v));
+			uvs.push_back(Vector2(two_thirds + u, v));
 			if (p_add_uv2) {
 				uv2s.push_back(Vector2(u2 * width_h, height_v + padding_v + (v2 * height_v)));
 			}
@@ -853,7 +870,7 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 			points.push_back(Vector3(-start_pos.x, -y, -z));
 			normals.push_back(Vector3(1.0, 0.0, 0.0));
 			ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
-			uvs.push_back(Vector2(onethird + u, v));
+			uvs.push_back(Vector2(one_third + u, v));
 			if (p_add_uv2) {
 				uv2s.push_back(Vector2(width_h + padding_h + (u2 * depth_h), v2 * height_v));
 			}
@@ -916,7 +933,7 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 			points.push_back(Vector3(-x, -start_pos.y, -z));
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
 			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
-			uvs.push_back(Vector2(onethird + u, 0.5 + v));
+			uvs.push_back(Vector2(one_third + u, 0.5 + v));
 			if (p_add_uv2) {
 				uv2s.push_back(Vector2(u2 * width_h, ((height_v + padding_v) * 2.0) + (v2 * depth_v)));
 			}
@@ -926,7 +943,7 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 			points.push_back(Vector3(x, start_pos.y, -z));
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
-			uvs.push_back(Vector2(twothirds + u, 0.5 + v));
+			uvs.push_back(Vector2(two_thirds + u, 0.5 + v));
 			if (p_add_uv2) {
 				uv2s.push_back(Vector2(width_h + padding_h + (u2 * depth_h), ((height_v + padding_v) * 2.0) + (v2 * width_v)));
 			}
@@ -960,6 +977,8 @@ void BoxMesh::create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w, int
 		thisrow = point;
 	}
 
+	DEV_ASSERT(points.size() == num_points);
+	DEV_ASSERT(indices.size() == num_indices);
 	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
 	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
 	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
@@ -1089,9 +1108,17 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	float bottom_h = bottom_circumference / horizontal_length;
 	float padding_h = p_uv2_padding / horizontal_length;
 
+	const bool non_zero_top_radius = top_radius != 0.0f;
+	const bool non_zero_bottom_radius = bottom_radius != 0.0f;
+	const bool has_cap_top_mesh = cap_top && non_zero_top_radius;
+	const bool has_cap_bottom_mesh = cap_bottom && non_zero_bottom_radius;
+
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (rings + 2) * (radial_segments + 1) + 4 + 2 * radial_segments;
+	const uint32_t side_points = (rings + 2) * (radial_segments + 1);
+	// Each cap repeats its edge vertices (radial_segments + 1) plus a center vertex.
+	const uint32_t points_per_cap = radial_segments + 2;
+	const uint32_t num_points = side_points + (has_cap_top_mesh ? points_per_cap : 0) + (has_cap_bottom_mesh ? points_per_cap : 0);
 	LocalVector<Vector3> points;
 	points.reserve(num_points);
 	LocalVector<Vector3> normals;
@@ -1105,7 +1132,12 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 		uv2s.reserve(num_points);
 	}
 	LocalVector<int> indices;
-	indices.reserve((rings + 1) * (radial_segments) * 6 + 6 * radial_segments);
+	const uint32_t indices_per_cap = radial_segments * 3;
+	const uint32_t half_indices_per_ring = radial_segments * 3;
+	const uint32_t radial_segment_edges = (non_zero_top_radius ? 1 : 0) + (non_zero_bottom_radius ? 1 : 0);
+	const uint32_t cap_indices = (has_cap_top_mesh ? indices_per_cap : 0) + (has_cap_bottom_mesh ? indices_per_cap : 0);
+	const uint32_t num_indices = (rings * 2 + radial_segment_edges) * half_indices_per_ring + cap_indices;
+	indices.reserve(num_indices);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1117,6 +1149,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	thisrow = 0;
 	prevrow = 0;
 	const real_t side_normal_y = (bottom_radius - top_radius) / height;
+	// Add sides.
 	for (j = 0; j <= (rings + 1); j++) {
 		v = j;
 		v /= (rings + 1);
@@ -1150,13 +1183,16 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			point++;
 
 			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
+				if (j > 1 || non_zero_top_radius) {
+					indices.push_back(prevrow + i - 1);
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
+				if (j < (rings + 1) || non_zero_bottom_radius) {
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
 			}
 		}
 
@@ -1171,7 +1207,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	float bottom_v = bottom_radius / vertical_length;
 
 	// Add top.
-	if (cap_top && top_radius > 0.0) {
+	if (has_cap_top_mesh) {
 		y = height * 0.5;
 
 		thisrow = point;
@@ -1218,7 +1254,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	}
 
 	// Add bottom.
-	if (cap_bottom && bottom_radius > 0.0) {
+	if (has_cap_bottom_mesh) {
 		y = height * -0.5;
 
 		thisrow = point;
@@ -1264,6 +1300,8 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 		}
 	}
 
+	DEV_ASSERT(points.size() == num_points);
+	DEV_ASSERT(indices.size() == num_indices);
 	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
 	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
 	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
@@ -1431,7 +1469,7 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (subdivide_d + 2) * (subdivide_w + 2);
+	const uint32_t num_points = (subdivide_d + 2) * (subdivide_w + 2);
 	LocalVector<Vector3> points;
 	points.reserve(num_points);
 	LocalVector<Vector3> normals;
@@ -1441,7 +1479,8 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 	LocalVector<Vector2> uvs;
 	uvs.reserve(num_points);
 	LocalVector<int> indices;
-	indices.reserve((subdivide_d + 1) * (subdivide_w + 1) * 6);
+	const uint32_t num_indices = (subdivide_d + 1) * (subdivide_w + 1) * 6;
+	indices.reserve(num_indices);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -1495,6 +1534,8 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 		thisrow = point;
 	}
 
+	DEV_ASSERT(points.size() == num_points);
+	DEV_ASSERT(indices.size() == num_indices);
 	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
 	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
 	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
@@ -1615,8 +1656,8 @@ void PrismMesh::_update_lightmap_size() {
 void PrismMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
-	float onethird = 1.0 / 3.0;
-	float twothirds = 2.0 / 3.0;
+	constexpr float one_third = 1.0 / 3.0;
+	constexpr float two_thirds = 2.0 / 3.0;
 
 	// Only used if we calculate UV2
 	bool _add_uv2 = get_add_uv2();
@@ -1638,7 +1679,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (subdivide_h + 2) * (subdivide_w + 2) * 2 + (subdivide_h + 2) * (subdivide_d + 2) * 2 + (subdivide_d + 2) * (subdivide_w + 2);
+	const uint32_t num_points = ((subdivide_h + 2) * (subdivide_w + 2) * 2 + (subdivide_h + 2) * (subdivide_d + 2) * 2 + (subdivide_d + 2) * (subdivide_w + 2));
 	LocalVector<Vector3> points;
 	points.reserve(num_points);
 	LocalVector<Vector3> normals;
@@ -1652,9 +1693,11 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 		uv2s.reserve(num_points);
 	}
 
-	int num_indices = (subdivide_h + 1) * (subdivide_w + 1) * 12 + (subdivide_w + 1) * 6;
-	num_indices += (subdivide_h + 1) * (subdivide_d + 1) * 12;
-	num_indices += (subdivide_d + 1) * (subdivide_w + 1) * 6;
+	const uint32_t apex_indices = (subdivide_w + 1) * 6; // Here 6 means 2 triangle faces of 1 triangle each.
+	const uint32_t front_back_indices = subdivide_h * (subdivide_w + 1) * 12; // Here 12 means 2 quad faces of 2 triangles each.
+	const uint32_t left_right_indices = (subdivide_h + 1) * (subdivide_d + 1) * 12; // Here 12 means 2 quad faces of 2 triangles each.
+	const uint32_t bottom_indices = (subdivide_d + 1) * (subdivide_w + 1) * 6; // Here 6 means 1 quad face of 2 triangles.
+	const uint32_t num_indices = front_back_indices + apex_indices + left_right_indices + bottom_indices;
 	LocalVector<int> indices;
 	indices.reserve(num_indices);
 	point = 0;
@@ -1673,8 +1716,8 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 		float scale = j / (subdivide_h + 1.0);
 		float scaled_size_x = size.x * scale;
 		float start_x = start_pos.x + (1.0 - scale) * size.x * left_to_right;
-		float offset_front = (1.0 - scale) * onethird * left_to_right;
-		float offset_back = (1.0 - scale) * onethird * (1.0 - left_to_right);
+		float offset_front = (1.0 - scale) * one_third * left_to_right;
+		float offset_back = (1.0 - scale) * one_third * (1.0 - left_to_right);
 
 		float v = j;
 		float v2 = scale;
@@ -1702,7 +1745,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			points.push_back(Vector3(start_x + scaled_size_x - x, -y, start_pos.z));
 			normals.push_back(Vector3(0.0, 0.0, -1.0));
 			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
-			uvs.push_back(Vector2(twothirds + offset_back + u, v));
+			uvs.push_back(Vector2(two_thirds + offset_back + u, v));
 			if (_add_uv2) {
 				uv2s.push_back(Vector2(u2 * scale * width_h, height_v + padding_v + v2 * height_v));
 			}
@@ -1780,7 +1823,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			points.push_back(Vector3(right, -y, -z));
 			normals.push_back(normal_right);
 			ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
-			uvs.push_back(Vector2(onethird + u, v));
+			uvs.push_back(Vector2(one_third + u, v));
 			if (_add_uv2) {
 				uv2s.push_back(Vector2(width_h + padding_h + u2 * depth_h, v2 * height_v));
 			}
@@ -1843,7 +1886,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			points.push_back(Vector3(x, start_pos.y, -z));
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
-			uvs.push_back(Vector2(twothirds + u, 0.5 + v));
+			uvs.push_back(Vector2(two_thirds + u, 0.5 + v));
 			if (_add_uv2) {
 				uv2s.push_back(Vector2(u2 * width_h, 2.0 * (height_v + padding_v) + v2 * depth_v));
 			}
@@ -1867,6 +1910,8 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 		thisrow = point;
 	}
 
+	DEV_ASSERT(points.size() == num_points);
+	DEV_ASSERT(indices.size() == num_indices);
 	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
 	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
 	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
@@ -2000,7 +2045,7 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (rings + 2) * (radial_segments + 1);
+	const uint32_t num_points = (rings + 2) * (radial_segments + 1);
 	LocalVector<Vector3> points;
 	points.reserve(num_points);
 	LocalVector<Vector3> normals;
@@ -2014,7 +2059,10 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 		uv2s.reserve(num_points);
 	}
 	LocalVector<int> indices;
-	indices.reserve((rings + 1) * (radial_segments) * 6);
+	const uint32_t indices_per_ring = radial_segments * 6;
+	// The top and bottom rings each use half the indices to connect to the poles.
+	const uint32_t num_indices = rings * indices_per_ring;
+	indices.reserve(num_indices);
 	point = 0;
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
@@ -2068,13 +2116,16 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 			point++;
 
 			if (i > 0 && j > 0) {
-				indices.push_back(prevrow + i - 1);
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i - 1);
-
-				indices.push_back(prevrow + i);
-				indices.push_back(thisrow + i);
-				indices.push_back(thisrow + i - 1);
+				if (j > 1) {
+					indices.push_back(prevrow + i - 1);
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
+				if (j < (rings + 1)) {
+					indices.push_back(prevrow + i);
+					indices.push_back(thisrow + i);
+					indices.push_back(thisrow + i - 1);
+				}
 			}
 		}
 
@@ -2082,6 +2133,8 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 		thisrow = point;
 	}
 
+	DEV_ASSERT(points.size() == num_points);
+	DEV_ASSERT(indices.size() == num_indices);
 	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
 	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
 	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
@@ -2212,7 +2265,7 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (rings + 1) * (ring_segments + 1);
+	const uint32_t num_points = (rings + 1) * (ring_segments + 1);
 	LocalVector<Vector3> points;
 	points.reserve(num_points);
 	LocalVector<Vector3> normals;
@@ -2226,7 +2279,8 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 		uv2s.reserve(num_points);
 	}
 	LocalVector<int> indices;
-	indices.reserve(rings * ring_segments * 6);
+	const uint32_t num_indices = rings * ring_segments * 6;
+	indices.reserve(num_indices);
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
 	tangents.push_back(m_x); \
@@ -2293,6 +2347,8 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 		}
 	}
 
+	DEV_ASSERT(points.size() == num_points);
+	DEV_ASSERT(indices.size() == num_indices);
 	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
 	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
 	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
@@ -2511,9 +2567,25 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 	int total_rings = section_rings * sections;
 	float depth = section_length * sections;
 
+	bool has_cap_top_mesh = cap_top;
+	float cap_top_scale_pos = 1.0;
+	if (cap_top && curve.is_valid() && curve->get_point_count() > 0) {
+		cap_top_scale_pos = curve->sample_baked(0);
+		has_cap_top_mesh = cap_top_scale_pos > CMP_EPSILON;
+	}
+	bool has_cap_bottom_mesh = cap_bottom;
+	float cap_bottom_scale_neg = 1.0;
+	if (cap_bottom && curve.is_valid() && curve->get_point_count() > 0) {
+		cap_bottom_scale_neg = curve->sample_baked(1.0);
+		has_cap_bottom_mesh = cap_bottom_scale_neg > CMP_EPSILON;
+	}
+
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (total_rings + 1) * (radial_steps + 1) + 4 + radial_steps * 2;
+	const uint32_t body_points = (total_rings + 1) * (radial_steps + 1);
+	// Each cap repeats its edge vertices (radial_steps + 1) plus a center vertex.
+	const uint32_t points_per_cap = radial_steps + 2;
+	const uint32_t num_points = body_points + (has_cap_top_mesh ? points_per_cap : 0) + (has_cap_bottom_mesh ? points_per_cap : 0);
 	LocalVector<Vector3> points;
 	points.reserve(num_points);
 	LocalVector<Vector3> normals;
@@ -2527,7 +2599,10 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 	LocalVector<float> bone_weights;
 	bone_weights.reserve(num_points * 4);
 	LocalVector<int> indices;
-	indices.reserve(total_rings * radial_steps * 6 + radial_steps * 6);
+	const uint32_t body_indices = total_rings * radial_steps * 6;
+	const uint32_t indices_per_cap = radial_steps * 3;
+	const uint32_t num_indices = body_indices + (has_cap_top_mesh ? indices_per_cap : 0) + (has_cap_bottom_mesh ? indices_per_cap : 0);
+	indices.reserve(num_indices);
 
 	int point = 0;
 
@@ -2598,21 +2673,48 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 		thisrow = point;
 	}
 
-	if (cap_top) {
+	if (has_cap_top_mesh) {
 		// add top
-		float scale_pos = 1.0;
-		if (curve.is_valid() && curve->get_point_count() > 0) {
-			scale_pos = curve->sample_baked(0);
-		}
+		float y = depth * 0.5;
 
-		if (scale_pos > CMP_EPSILON) {
-			float y = depth * 0.5;
+		thisrow = point;
+		points.push_back(Vector3(0.0, y, 0));
+		normals.push_back(Vector3(0.0, 1.0, 0.0));
+		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+		uvs.push_back(Vector2(0.25, 0.75));
+		point++;
 
-			thisrow = point;
-			points.push_back(Vector3(0.0, y, 0));
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+
+		bone_weights.push_back(1.0);
+		bone_weights.push_back(0);
+		bone_weights.push_back(0);
+		bone_weights.push_back(0);
+
+		float rm = radius * cap_top_scale_pos;
+
+		for (int i = 0; i <= radial_steps; i++) {
+			float r = i;
+			r /= radial_steps;
+
+			float x = 0.0;
+			float z = 1.0;
+			if (i < radial_steps) {
+				x = Math::sin(r * Math::TAU);
+				z = Math::cos(r * Math::TAU);
+			}
+
+			float u = ((x + 1.0) * 0.25);
+			float v = 0.5 + ((z + 1.0) * 0.25);
+
+			Vector3 p = Vector3(x * rm, y, z * rm);
+			points.push_back(p);
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
-			uvs.push_back(Vector2(0.25, 0.75));
+			uvs.push_back(Vector2(u, v));
 			point++;
 
 			bone_indices.push_back(0);
@@ -2625,63 +2727,56 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 			bone_weights.push_back(0);
 			bone_weights.push_back(0);
 
-			float rm = radius * scale_pos;
-
-			for (int i = 0; i <= radial_steps; i++) {
-				float r = i;
-				r /= radial_steps;
-
-				float x = 0.0;
-				float z = 1.0;
-				if (i < radial_steps) {
-					x = Math::sin(r * Math::TAU);
-					z = Math::cos(r * Math::TAU);
-				}
-
-				float u = ((x + 1.0) * 0.25);
-				float v = 0.5 + ((z + 1.0) * 0.25);
-
-				Vector3 p = Vector3(x * rm, y, z * rm);
-				points.push_back(p);
-				normals.push_back(Vector3(0.0, 1.0, 0.0));
-				ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
-				uvs.push_back(Vector2(u, v));
-				point++;
-
-				bone_indices.push_back(0);
-				bone_indices.push_back(0);
-				bone_indices.push_back(0);
-				bone_indices.push_back(0);
-
-				bone_weights.push_back(1.0);
-				bone_weights.push_back(0);
-				bone_weights.push_back(0);
-				bone_weights.push_back(0);
-
-				if (i > 0) {
-					indices.push_back(thisrow);
-					indices.push_back(point - 1);
-					indices.push_back(point - 2);
-				}
+			if (i > 0) {
+				indices.push_back(thisrow);
+				indices.push_back(point - 1);
+				indices.push_back(point - 2);
 			}
 		}
 	}
 
-	if (cap_bottom) {
-		float scale_neg = 1.0;
-		if (curve.is_valid() && curve->get_point_count() > 0) {
-			scale_neg = curve->sample_baked(1.0);
-		}
+	if (has_cap_bottom_mesh) {
+		// add bottom
+		float y = depth * -0.5;
 
-		if (scale_neg > CMP_EPSILON) {
-			// add bottom
-			float y = depth * -0.5;
+		thisrow = point;
+		points.push_back(Vector3(0.0, y, 0.0));
+		normals.push_back(Vector3(0.0, -1.0, 0.0));
+		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
+		uvs.push_back(Vector2(0.75, 0.75));
+		point++;
 
-			thisrow = point;
-			points.push_back(Vector3(0.0, y, 0.0));
+		bone_indices.push_back(sections);
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+		bone_indices.push_back(0);
+
+		bone_weights.push_back(1.0);
+		bone_weights.push_back(0);
+		bone_weights.push_back(0);
+		bone_weights.push_back(0);
+
+		float rm = radius * cap_bottom_scale_neg;
+
+		for (int i = 0; i <= radial_steps; i++) {
+			float r = i;
+			r /= radial_steps;
+
+			float x = 0.0;
+			float z = 1.0;
+			if (i < radial_steps) {
+				x = Math::sin(r * Math::TAU);
+				z = Math::cos(r * Math::TAU);
+			}
+
+			float u = 0.5 + ((x + 1.0) * 0.25);
+			float v = 1.0 - ((z + 1.0) * 0.25);
+
+			Vector3 p = Vector3(x * rm, y, z * rm);
+			points.push_back(p);
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
 			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
-			uvs.push_back(Vector2(0.75, 0.75));
+			uvs.push_back(Vector2(u, v));
 			point++;
 
 			bone_indices.push_back(sections);
@@ -2694,48 +2789,16 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 			bone_weights.push_back(0);
 			bone_weights.push_back(0);
 
-			float rm = radius * scale_neg;
-
-			for (int i = 0; i <= radial_steps; i++) {
-				float r = i;
-				r /= radial_steps;
-
-				float x = 0.0;
-				float z = 1.0;
-				if (i < radial_steps) {
-					x = Math::sin(r * Math::TAU);
-					z = Math::cos(r * Math::TAU);
-				}
-
-				float u = 0.5 + ((x + 1.0) * 0.25);
-				float v = 1.0 - ((z + 1.0) * 0.25);
-
-				Vector3 p = Vector3(x * rm, y, z * rm);
-				points.push_back(p);
-				normals.push_back(Vector3(0.0, -1.0, 0.0));
-				ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
-				uvs.push_back(Vector2(u, v));
-				point++;
-
-				bone_indices.push_back(sections);
-				bone_indices.push_back(0);
-				bone_indices.push_back(0);
-				bone_indices.push_back(0);
-
-				bone_weights.push_back(1.0);
-				bone_weights.push_back(0);
-				bone_weights.push_back(0);
-				bone_weights.push_back(0);
-
-				if (i > 0) {
-					indices.push_back(thisrow);
-					indices.push_back(point - 2);
-					indices.push_back(point - 1);
-				}
+			if (i > 0) {
+				indices.push_back(thisrow);
+				indices.push_back(point - 2);
+				indices.push_back(point - 1);
 			}
 		}
 	}
 
+	DEV_ASSERT(points.size() == num_points);
+	DEV_ASSERT(indices.size() == num_indices);
 	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
 	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
 	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
@@ -2889,8 +2952,7 @@ void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
 
 	// Use LocalVector for operations and copy to Vector at the end to save the cost of CoW semantics which aren't
 	// needed here and are very expensive in such a hot loop. Use reserve to avoid repeated memory allocations.
-	int num_points = (total_segments + 1) * 2;
-	num_points *= shape == SHAPE_CROSS ? 2 : 1;
+	const uint32_t num_points = ((total_segments + 1) * 2) * (shape == SHAPE_CROSS ? 2 : 1);
 	LocalVector<Vector3> points;
 	points.reserve(num_points);
 	LocalVector<Vector3> normals;
@@ -2904,7 +2966,8 @@ void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
 	LocalVector<float> bone_weights;
 	bone_weights.reserve(num_points * 4);
 	LocalVector<int> indices;
-	indices.reserve(total_segments * 6 * (shape == SHAPE_CROSS ? 2 : 1));
+	const uint32_t num_indices = total_segments * 6 * (shape == SHAPE_CROSS ? 2 : 1);
+	indices.reserve(num_indices);
 
 #define ADD_TANGENT(m_x, m_y, m_z, m_d) \
 	tangents.push_back(m_x); \
@@ -2999,6 +3062,8 @@ void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
 		}
 	}
 
+	DEV_ASSERT(points.size() == num_points);
+	DEV_ASSERT(indices.size() == num_indices);
 	p_arr[RSE::ARRAY_VERTEX] = Vector<Vector3>(points);
 	p_arr[RSE::ARRAY_NORMAL] = Vector<Vector3>(normals);
 	p_arr[RSE::ARRAY_TANGENT] = Vector<float>(tangents);
