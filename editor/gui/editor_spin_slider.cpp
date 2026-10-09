@@ -612,13 +612,13 @@ void EditorSpinSlider::_evaluate_input_text() {
 	text = text.replace_char(';', ',');
 	text = TranslationServer::get_singleton()->parse_number(text, lang);
 
-	Error err = expr->parse(text);
+	Error err = expr->parse(text, Vector<String>(), Expression::FUNC_TYPE_MATH | Expression::FUNC_TYPE_RANDOM);
 	if (err != OK) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = value_input->get_text();
 		text = TranslationServer::get_singleton()->parse_number(text, lang);
 
-		err = expr->parse(text);
+		err = expr->parse(text, Vector<String>(), Expression::FUNC_TYPE_MATH | Expression::FUNC_TYPE_RANDOM);
 		if (err != OK) {
 			return;
 		}
