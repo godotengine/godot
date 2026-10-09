@@ -72,4 +72,18 @@ enum class VisionOSAuthorizationStatus {
 	DENIED,
 };
 
+// Trackers used by both VisionOSControllerTracking and VisionOSSpatialEventTracking.
+struct VisionOSSharedController {
+	Ref<XRControllerTracker> tracker;
+
+	enum class Source {
+		None,
+		SpatialEvent,
+		Controller
+	};
+
+	// Spatial Events override controllers, when active.
+	Source source = Source::None;
+};
+
 #endif // VISIONOS_ENABLED
