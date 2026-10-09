@@ -74,6 +74,7 @@ public:
 	virtual int get_buffered_amount() const override;
 
 	virtual Error poll() override;
+	virtual void clear_buffer() override;
 	virtual void close() override;
 
 	/** Inherited from PacketPeer: **/
