@@ -1570,6 +1570,150 @@ void Thread::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIORITY_HIGH);
 }
 
+////// RegExMatch //////
+
+String RegExMatch::get_subject() const {
+	return _regex_match.get_subject();
+}
+
+int RegExMatch::get_group_count() const {
+	return _regex_match.get_group_count();
+}
+
+Dictionary RegExMatch::get_names() const {
+	Dictionary result;
+
+	for (const KeyValue<String, int> &name : _regex_match.get_names()) {
+		result[name.key] = name.value;
+	}
+
+	return result;
+}
+
+PackedStringArray RegExMatch::get_strings() const {
+	return _regex_match.get_strings();
+}
+
+String RegExMatch::get_string(const Variant &p_name) const {
+	if (p_name.is_num()) {
+		return _regex_match.get_string((int)p_name);
+	} else if (p_name.is_string()) {
+		return _regex_match.get_string((String)p_name);
+	} else {
+		return String();
+	}
+}
+
+int RegExMatch::get_start(const Variant &p_name) const {
+	if (p_name.is_num()) {
+		return _regex_match.get_start((int)p_name);
+	} else if (p_name.is_string()) {
+		return _regex_match.get_start((String)p_name);
+	} else {
+		return -1;
+	}
+}
+
+int RegExMatch::get_end(const Variant &p_name) const {
+	if (p_name.is_num()) {
+		return _regex_match.get_end((int)p_name);
+	} else if (p_name.is_string()) {
+		return _regex_match.get_end((String)p_name);
+	} else {
+		return -1;
+	}
+}
+
+void RegExMatch::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_subject"), &RegExMatch::get_subject);
+	ClassDB::bind_method(D_METHOD("get_group_count"), &RegExMatch::get_group_count);
+	ClassDB::bind_method(D_METHOD("get_names"), &RegExMatch::get_names);
+	ClassDB::bind_method(D_METHOD("get_strings"), &RegExMatch::get_strings);
+	ClassDB::bind_method(D_METHOD("get_string", "name"), &RegExMatch::get_string, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_start", "name"), &RegExMatch::get_start, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_end", "name"), &RegExMatch::get_end, DEFVAL(0));
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "subject"), "", "get_subject");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "names"), "", "get_names");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "strings"), "", "get_strings");
+}
+
+////// RegEx //////
+
+Ref<RegEx> RegEx::create_from_string(const String &p_pattern, bool p_show_error) {
+	Ref<RegEx> ret;
+	ret.instantiate();
+	ret->compile(p_pattern, p_show_error);
+	return ret;
+}
+
+void RegEx::clear() {
+	_regex.clear();
+}
+
+Error RegEx::compile(const String &p_pattern, bool p_show_error) {
+	return _regex.compile(p_pattern, p_show_error);
+}
+
+Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) const {
+	::RegExMatch match = _regex.search(p_subject, p_offset, p_end);
+	if (!match.is_valid()) {
+		return Ref<RegExMatch>();
+	}
+	Ref<RegExMatch> result;
+	result.instantiate();
+	result->_regex_match = match;
+	return result;
+}
+
+TypedArray<RegExMatch> RegEx::search_all(const String &p_subject, int p_offset, int p_end) const {
+	TypedArray<RegExMatch> result;
+	for (const ::RegExMatch &match : _regex.search_all(p_subject, p_offset, p_end)) {
+		Ref<RegExMatch> ref;
+		ref.instantiate();
+		ref->_regex_match = match;
+		result.push_back(ref);
+	}
+	return result;
+}
+
+String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_all, int p_offset, int p_end) const {
+	return _regex.sub(p_subject, p_replacement, p_all, p_offset, p_end);
+}
+
+bool RegEx::is_valid() const {
+	return _regex.is_valid();
+}
+
+String RegEx::get_pattern() const {
+	return _regex.get_pattern();
+}
+
+int RegEx::get_group_count() const {
+	return _regex.get_group_count();
+}
+
+PackedStringArray RegEx::get_names() const {
+	return _regex.get_names();
+}
+
+RegEx::RegEx(const String &p_pattern) :
+		_regex(::RegEx(p_pattern)) {}
+
+void RegEx::_bind_methods() {
+	ClassDB::bind_static_method("RegEx", D_METHOD("create_from_string", "pattern", "show_error"), &RegEx::create_from_string, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("clear"), &RegEx::clear);
+	ClassDB::bind_method(D_METHOD("compile", "pattern", "show_error"), &RegEx::compile, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("search", "subject", "offset", "end"), &RegEx::search, DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("search_all", "subject", "offset", "end"), &RegEx::search_all, DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("sub", "subject", "replacement", "all", "offset", "end"), &RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("is_valid"), &RegEx::is_valid);
+	ClassDB::bind_method(D_METHOD("get_pattern"), &RegEx::get_pattern);
+	ClassDB::bind_method(D_METHOD("get_group_count"), &RegEx::get_group_count);
+	ClassDB::bind_method(D_METHOD("get_names"), &RegEx::get_names);
+}
+
 namespace Special {
 
 ////// ClassDB //////
