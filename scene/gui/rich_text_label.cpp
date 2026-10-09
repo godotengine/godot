@@ -7845,7 +7845,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 			float total_height = (first_invalid == 0) ? 0 : _calculate_line_vertical_offset(main->lines[first_invalid - 1]);
 			if (first_invalid < to_line) {
 				int total_chars = main->lines[first_invalid].char_offset;
-				total_height = _shape_line(main, first_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+				total_height = _shape_line(main, first_invalid, theme_cache.normal_font, (resize_font_to_fit) ? current_fitted_font_size : theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
 			}
 			if (first_invalid != second_invalid) {
 				for (int i = first_invalid + 1; i < second_invalid; i++) {
@@ -7854,7 +7854,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 				}
 				if (second_invalid < to_line) {
 					int total_chars = main->lines[second_invalid].char_offset;
-					total_height = _shape_line(main, second_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+					total_height = _shape_line(main, second_invalid, theme_cache.normal_font, (resize_font_to_fit) ? current_fitted_font_size : theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
 				}
 			}
 			for (int i = second_invalid + 1; i < to_line; i++) {
@@ -8409,7 +8409,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 			float total_height = (first_invalid == 0) ? 0 : _calculate_line_vertical_offset(main->lines[first_invalid - 1]);
 			if (first_invalid < to_line) {
 				int total_chars = main->lines[first_invalid].char_offset;
-				total_height = _shape_line(main, first_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+				total_height = _shape_line(main, first_invalid, theme_cache.normal_font, (resize_font_to_fit) ? current_fitted_font_size : theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
 			}
 			if (first_invalid != second_invalid) {
 				for (int i = first_invalid + 1; i < second_invalid; i++) {
@@ -8418,7 +8418,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 				}
 				if (second_invalid < to_line) {
 					int total_chars = main->lines[second_invalid].char_offset;
-					total_height = _shape_line(main, second_invalid, theme_cache.normal_font, theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
+					total_height = _shape_line(main, second_invalid, theme_cache.normal_font, (resize_font_to_fit) ? current_fitted_font_size : theme_cache.normal_font_size, text_rect.get_size().width - scroll_w, total_height, &total_chars);
 				}
 			}
 			for (int i = second_invalid + 1; i < to_line; i++) {
