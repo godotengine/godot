@@ -1534,11 +1534,6 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		}
 	}
 
-	if (!pending_body_resolution_lambdas.is_empty()) {
-		ERR_PRINT("GDScript bug (please report): Not all pending lambda bodies were resolved in time.");
-		resolve_pending_lambda_bodies();
-	}
-
 	// Resolve base abstract class/method implementation requirements.
 	if (!p_class->is_abstract) {
 		HashSet<StringName> implemented_funcs;
@@ -6681,6 +6676,11 @@ Error GDScriptAnalyzer::resolve_interface() {
 
 Error GDScriptAnalyzer::resolve_body() {
 	resolve_class_body(parser->head, true);
+
+	if (!pending_body_resolution_lambdas.is_empty()) {
+		ERR_PRINT("GDScript bug (please report): Not all pending lambda bodies were resolved in time.");
+		resolve_pending_lambda_bodies();
+	}
 
 #ifdef DEBUG_ENABLED
 	// Apply here, after all `@warning_ignore`s have been resolved and applied.
