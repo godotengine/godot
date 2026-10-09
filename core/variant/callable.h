@@ -73,6 +73,7 @@ public:
 	void callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const;
 	void call_deferredp(const Variant **p_arguments, int p_argcount) const;
 	Variant callv(const Array &p_arguments) const;
+	Variant callv_err(const Vector<Variant> &p_arguments, CallError &r_call_error) const;
 
 	template <typename... VarArgs>
 	void call_deferred(VarArgs... p_args) const {
