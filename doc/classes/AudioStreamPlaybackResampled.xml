@@ -4,7 +4,7 @@
 		Playback class used for resampled [AudioStream]s.
 	</brief_description>
 	<description>
-		Playback class used to mix an [AudioStream]'s audio samples to [method AudioServer.get_mix_rate] using cubic interpolation.
+		Playback class used to mix an [AudioStream]'s audio frames to [method AudioServer.get_mix_rate] using cubic interpolation.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -21,6 +21,7 @@
 			<param index="1" name="frame_count" type="int" />
 			<description>
 				Called by [method begin_resample] to mix an [AudioStream] to [method AudioServer.get_mix_rate]. Uses [method _get_stream_sampling_rate] as the source sample rate. Returns the number of mixed frames.
+				[b]Note:[/b] It is not useful to override this method in GDScript or C#. Only GDExtension can take advantage of it.
 			</description>
 		</method>
 		<method name="begin_resample">
