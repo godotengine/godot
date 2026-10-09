@@ -970,6 +970,7 @@ namespace Godot
         /// The resulting value of the inverse interpolation.
         /// The returned value will be between 0.0 and 1.0 if <paramref name="weight"/> is
         /// between <paramref name="from"/> and <paramref name="to"/> (inclusive).
+        /// The passed values should be finite, and <paramref name="from"/> and <paramref name="to"/> should not be equal.
         /// </returns>
         public static float InverseLerp(float from, float to, float weight)
         {
@@ -987,6 +988,7 @@ namespace Godot
         /// The resulting value of the inverse interpolation.
         /// The returned value will be between 0.0 and 1.0 if <paramref name="weight"/> is
         /// between <paramref name="from"/> and <paramref name="to"/> (inclusive).
+        /// The passed values should be finite, and <paramref name="from"/> and <paramref name="to"/> should not be equal.
         /// </returns>
         public static double InverseLerp(double from, double to, double weight)
         {
