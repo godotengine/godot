@@ -18,6 +18,12 @@
 				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally to determine if [member next_pass] should be shown in the editor or not.
 			</description>
 		</method>
+		<method name="_can_use_layer_mask" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Only exposed for the purpose of overriding. You cannot call this function directly. Used internally to determine if [member layer_mask] should be shown in the editor or not.
+			</description>
+		</method>
 		<method name="_can_use_render_priority" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
@@ -42,14 +48,32 @@
 				Creates a placeholder version of this resource ([PlaceholderMaterial]).
 			</description>
 		</method>
+		<method name="get_layer_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member layer_mask] is enabled, given a [param layer_number] between 1 and 20.
+			</description>
+		</method>
 		<method name="inspect_native_shader_code">
 			<return type="void" />
 			<description>
 				Only available when running in the editor. Opens a popup that visualizes the generated shader code, including all variants and internal shader code. See also [method Shader.inspect_native_shader_code].
 			</description>
 		</method>
+		<method name="set_layer_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member layer_mask], given a [param layer_number] between 1 and 20.
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="layer_mask" type="int" setter="set_layer_mask" getter="get_layer_mask">
+			The render layer(s) this [Material] will render to. This material will only be visible for [Camera3D]s whose cull mask includes any of the render layers included in this layer mask.
+		</member>
 		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
 			Sets the [Material] to be used for the next pass. This renders the object again using a different material.
 			[b]Note:[/b] [member next_pass] materials are not necessarily drawn immediately after the source [Material]. Draw order is determined by material properties, [member render_priority], and distance to camera.
