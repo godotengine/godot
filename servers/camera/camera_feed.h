@@ -57,6 +57,12 @@ public:
 		FEED_BACK // this is a camera on the back of the device
 	};
 
+	enum FeedActivationStatus {
+		FEED_INACTIVE = 0,
+		FEED_ACTIVATING = 1,
+		FEED_ACTIVE = 2,
+	};
+
 private:
 	int id; // unique id for this, for internal use in case feeds are removed
 	const StringName format_changed_signal_name = "format_changed";
@@ -83,8 +89,11 @@ protected:
 	int selected_format = -1;
 
 	bool active; // only when active do we actually update the camera texture each frame
+	FeedActivationStatus activation_status = FEED_INACTIVE;
 	RID texture[CameraServer::FEED_IMAGES]; // texture images needed for this
 
+	FeedActivationStatus get_activation_status() const;
+	void _set_activation_status(FeedActivationStatus p_status);
 	static void _bind_methods();
 
 public:
@@ -132,3 +141,4 @@ public:
 
 VARIANT_ENUM_CAST(CameraFeed::FeedDataType);
 VARIANT_ENUM_CAST(CameraFeed::FeedPosition);
+VARIANT_ENUM_CAST(CameraFeed::FeedActivationStatus);
