@@ -68,6 +68,13 @@ void RenderSceneBuffersExtension::set_use_debanding(bool p_use_debanding) {
 void RenderSceneDataExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_cam_transform);
 	GDVIRTUAL_BIND(_get_cam_projection);
+	GDVIRTUAL_BIND(_get_transformed_projection_data);
+	GDVIRTUAL_BIND(_get_z_far);
+	GDVIRTUAL_BIND(_get_z_near);
+	GDVIRTUAL_BIND(_get_aspect);
+	GDVIRTUAL_BIND(_get_viewport_half_extents);
+	GDVIRTUAL_BIND(_get_far_plane_half_extents);
+	GDVIRTUAL_BIND(_get_pixels_per_meter, "for_pixel_width");
 	GDVIRTUAL_BIND(_get_view_count);
 	GDVIRTUAL_BIND(_get_view_eye_offset, "view");
 	GDVIRTUAL_BIND(_get_view_projection, "view");
@@ -82,8 +89,51 @@ Transform3D RenderSceneDataExtension::get_cam_transform() const {
 }
 
 Projection RenderSceneDataExtension::get_cam_projection() const {
+	WARN_DEPRECATED_MSG(R"*(RenderSceneDataExtension::get_cam_projection() is deprecated. Use RenderSceneDataExtension::get_transformed_projection_data() instead.)*");
 	Projection ret;
 	GDVIRTUAL_CALL(_get_cam_projection, ret);
+	return ret;
+}
+
+PackedFloat32Array RenderSceneDataExtension::get_transformed_projection_data() const {
+	PackedFloat32Array ret;
+	GDVIRTUAL_CALL(_get_transformed_projection_data, ret);
+	return ret;
+}
+
+float RenderSceneDataExtension::get_z_far() const {
+	float ret = 0;
+	GDVIRTUAL_CALL(_get_z_far, ret);
+	return ret;
+}
+
+float RenderSceneDataExtension::get_z_near() const {
+	float ret = 0;
+	GDVIRTUAL_CALL(_get_z_near, ret);
+	return ret;
+}
+
+float RenderSceneDataExtension::get_aspect() const {
+	float ret = 0;
+	GDVIRTUAL_CALL(_get_aspect, ret);
+	return ret;
+}
+
+Vector2 RenderSceneDataExtension::get_viewport_half_extents() const {
+	Vector2 ret;
+	GDVIRTUAL_CALL(_get_viewport_half_extents, ret);
+	return ret;
+}
+
+Vector2 RenderSceneDataExtension::get_far_plane_half_extents() const {
+	Vector2 ret;
+	GDVIRTUAL_CALL(_get_far_plane_half_extents, ret);
+	return ret;
+}
+
+int RenderSceneDataExtension::get_pixels_per_meter(int p_for_pixel_width) const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_pixels_per_meter, p_for_pixel_width, ret);
 	return ret;
 }
 

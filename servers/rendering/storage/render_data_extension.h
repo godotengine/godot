@@ -68,6 +68,15 @@ public:
 	virtual Transform3D get_cam_transform() const override;
 	virtual Projection get_cam_projection() const override;
 
+	virtual PackedFloat32Array get_transformed_projection_data() const override;
+
+	virtual float get_z_far() const override;
+	virtual float get_z_near() const override;
+	virtual float get_aspect() const override;
+	virtual Vector2 get_viewport_half_extents() const override;
+	virtual Vector2 get_far_plane_half_extents() const override;
+	virtual int get_pixels_per_meter(int p_for_pixel_width) const override;
+
 	virtual uint32_t get_view_count() const override;
 	virtual Vector3 get_view_eye_offset(uint32_t p_view) const override;
 	virtual Projection get_view_projection(uint32_t p_view) const override;
@@ -76,6 +85,15 @@ public:
 
 	GDVIRTUAL0RC(Transform3D, _get_cam_transform)
 	GDVIRTUAL0RC(Projection, _get_cam_projection)
+
+	GDVIRTUAL0RC(PackedFloat32Array, _get_transformed_projection_data)
+
+	GDVIRTUAL0RC(float, _get_z_far)
+	GDVIRTUAL0RC(float, _get_z_near)
+	GDVIRTUAL0RC(float, _get_aspect)
+	GDVIRTUAL0RC(Vector2, _get_viewport_half_extents)
+	GDVIRTUAL0RC(Vector2, _get_far_plane_half_extents)
+	GDVIRTUAL1RC(int, _get_pixels_per_meter, int)
 
 	GDVIRTUAL0RC(uint32_t, _get_view_count)
 	GDVIRTUAL1RC(Vector3, _get_view_eye_offset, uint32_t)
