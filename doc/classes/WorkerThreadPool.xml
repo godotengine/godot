@@ -4,7 +4,7 @@
 		A singleton that allocates some [Thread]s on startup, used to offload tasks to these threads.
 	</brief_description>
 	<description>
-		The [WorkerThreadPool] singleton allocates a set of [Thread]s (called worker threads) on project startup and provides methods for offloading tasks to them. This can be used for simple multithreading without having to create [Thread]s.
+		The [WorkerThreadPool] singleton allocates a set of [Thread]s (called worker threads) on project startup and provides methods for offloading tasks to them. By default, the number of worker threads is equal to the number of logical processors on the host machine. This can be changed via the [code]threading/worker_pool/max_threads[/code] project setting. This can be used for simple multithreading without having to create [Thread]s.
 		Tasks hold the [Callable] to be run by the threads. [WorkerThreadPool] can be used to create regular tasks, which will be taken by one worker thread, or group tasks, which can be distributed between multiple worker threads. Group tasks execute the [Callable] multiple times, which makes them useful for iterating over a lot of elements, such as the enemies in an arena.
 		Here's a sample on how to offload an expensive function to worker threads:
 		[codeblocks]
