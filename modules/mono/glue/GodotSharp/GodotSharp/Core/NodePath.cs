@@ -275,20 +275,20 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the slice of the <em>NodePath</em>, from <c>begin</c> (inclusive) to <c>end</c> (exclusive), as a
-        /// new <em>NodePath</em>.<br/>
-        /// The absolute value of <c>begin</c> and <c>end</c> will be clamped to the sum of
-        /// <see cref="NodePath.GetNameCount">GetNameCount</see> and
-        /// <see cref="NodePath.GetSubNameCount">GetSubNameCount</see>, so the default value for <c>end</c> makes it
-        /// slice to the end of the <em>NodePath</em> by default (i.e. <c>path.Slice(1)</c> is a shorthand for
-        /// <c>path.Slice(1, path.GetNameCount() + path.GetSubNameCount())</c>).<br/>
-        /// If either <c>begin</c> or <c>end</c> are negative, they will be relative to the end of the <em>NodePath</em>
+        /// Returns the slice of the <see cref="NodePath"/>, from <paramref name="begin"/> (inclusive) to <paramref name="end"/> (exclusive), as a
+        /// new <see cref="NodePath"/>.
+        /// The absolute value of <paramref name="begin"/> and <paramref name="end"/> will be clamped to the sum of
+        /// <see cref="GetNameCount"/> and
+        /// <see cref="GetSubNameCount"/>, so the default value for <paramref name="end"/> makes it
+        /// slice to the end of the <see cref="NodePath"/> by default (i.e. <c>path.Slice(1)</c> is a shorthand for
+        /// <c>path.Slice(1, path.GetNameCount() + path.GetSubNameCount())</c>).
+        /// If either <paramref name="begin"/> or <paramref name="end"/> are negative, they will be relative to the end of the <see cref="NodePath"/>
         /// (i.e. <c>path.Slice(0, -2)</c> is shorthand for
         /// <c>path.Slice(0, path.GetNameCount() + path.GetSubNameCount() - 2)</c>).
         /// </summary>
         /// <param name="begin">The index of the name or subname at which to start the slice.</param>
         /// <param name="end">The index (exclusive) of the name or subname at which to end the slice.</param>
-        /// <returns>A slice of the <em>NodePath</em> bounded by <c>begin</c> and <c>end</c>.</returns>
+        /// <returns>A slice of the <see cref="NodePath"/> bounded by <paramref name="begin"/> and <paramref name="end"/>.</returns>
         public NodePath Slice(int begin, int end = Int32.MaxValue)
         {
             var self = (godot_node_path)NativeValue;
