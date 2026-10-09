@@ -37,7 +37,6 @@ import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
@@ -258,8 +257,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 	private val updatedCommandLineParams = ArrayList<String>()
 
-	private var changingOrientationAllowed = false
-	private var distractionFreeModeEnabled = false
+	private var distractionFreeModeEnabledByUser = false
+	private var distractionFreeModeEnabledByPortraitOrientation = false
 	private var activeWorkspace: String? = null
 	private var currentOrientation = Configuration.ORIENTATION_UNDEFINED
 
@@ -330,23 +329,40 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Add the game menu bar.
 		setupGameMenuBar()
-
-		if (!isLargeScreen && !isNativeXRDevice(applicationContext) && godot?.isEditorHint() == true) {
-			// Lock the editor screen orientation to landscape on small screens.
-			changingOrientationAllowed = true
-			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
-			changingOrientationAllowed = false
-		}
 	}
 
 	override fun onConfigurationChanged(newConfig: Configuration) {
 		super.onConfigurationChanged(newConfig)
 
-		// Some editor parts are hidden on small screens due to width limitations in portrait.
-		if (!isLargeScreen && currentOrientation != newConfig.orientation) {
-			currentOrientation = newConfig.orientation
-			godot?.runOnRenderThread {
-				EditorUtils.orientationChanged(currentOrientation == Configuration.ORIENTATION_PORTRAIT)
+		updateCurrentOrientation(newConfig.orientation)
+	}
+
+	private fun updateCurrentOrientation(newOrientation: Int) {
+		if (currentOrientation != newOrientation) {
+			currentOrientation = newOrientation
+			// Some editor parts are hidden on small screens due to width limitations in portrait.
+			if (!isLargeScreen) {
+				godot?.runOnRenderThread {
+					val isPortrait = currentOrientation == Configuration.ORIENTATION_PORTRAIT
+					EditorUtils.orientationChanged(isPortrait)
+
+					if (godot?.isEditorHint() == true) {
+						if (isPortrait) {
+							if (!distractionFreeModeEnabledByUser) {
+								distractionFreeModeEnabledByPortraitOrientation = true
+								EditorUtils.setDistractionFreeMode(true)
+							}
+							EditorUtils.lockDistractionFreeMode()
+						} else {
+							// Landscape orientation; if the docks were hidden by this logic, show them.
+							if (distractionFreeModeEnabledByPortraitOrientation) {
+								EditorUtils.setDistractionFreeMode(false)
+								distractionFreeModeEnabledByPortraitOrientation = false
+							}
+							EditorUtils.unlockDistractionFreeMode()
+						}
+					}
+				}
 			}
 		}
 	}
@@ -563,6 +579,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		val panScaleEnabled = enablePanAndScaleGestures()
 		val overrideVolumeButtonsEnabled = overrideVolumeButtons()
 		val hapticEnabled = enableHapticOnLongPress()
+
+		updateCurrentOrientation(resources.configuration.orientation)
 
 		runOnUiThread {
 			// Enable long press, panning and scaling gestures
@@ -847,7 +865,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	/**
 	 * The Godot Android Editor sets its own orientation via its AndroidManifest
 	 */
-	protected open fun overrideOrientationRequest() = isLargeScreen || godot?.isProjectManagerHint() == true || !changingOrientationAllowed
+	protected open fun overrideOrientationRequest() = true
 
 	protected open fun overrideVolumeButtons() = false
 
@@ -1075,27 +1093,13 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 				embeddedGameViewContainerWindow?.isVisible = true
 			}
 		}
-
-		if (!isLargeScreen) {
-			toggleEditorOrientation()
-		}
 	}
 
 	override fun onDistractionFreeModeChanged(enabled: Boolean) {
-		distractionFreeModeEnabled = enabled
-		if (!isLargeScreen) {
-			toggleEditorOrientation()
+		if (distractionFreeModeEnabledByPortraitOrientation) {
+			return
 		}
-	}
-
-	private fun toggleEditorOrientation() {
-		if (distractionFreeModeEnabled) {
-			changingOrientationAllowed = true
-			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
-		} else if (changingOrientationAllowed) {
-			requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
-			changingOrientationAllowed = false
-		}
+		distractionFreeModeEnabledByUser = enabled
 	}
 
 	internal open fun bringSelfToFront() {

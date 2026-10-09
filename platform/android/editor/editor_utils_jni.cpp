@@ -118,4 +118,28 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_orien
 	}
 #endif
 }
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_setDistractionFreeMode(JNIEnv *p_env, jclass, jboolean p_enter) {
+#ifdef TOOLS_ENABLED
+	if (EditorNode::get_singleton() != nullptr) {
+		EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_lockDistractionFreeMode(JNIEnv *p_env, jclass) {
+#ifdef TOOLS_ENABLED
+	if (EditorNode::get_singleton() != nullptr) {
+		EditorNode::get_singleton()->lock_distraction_free_mode();
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_editor_utils_EditorUtils_unlockDistractionFreeMode(JNIEnv *p_env, jclass) {
+#ifdef TOOLS_ENABLED
+	if (EditorNode::get_singleton() != nullptr) {
+		EditorNode::get_singleton()->unlock_distraction_free_mode();
+	}
+#endif
+}
 }

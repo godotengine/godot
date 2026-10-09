@@ -832,6 +832,8 @@ public:
 
 	void new_inherited_scene() { _menu_option_confirm(SCENE_NEW_INHERITED_SCENE, false); }
 
+	void lock_distraction_free_mode();
+	void unlock_distraction_free_mode();
 	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
 	bool is_distraction_free_mode_enabled() const;
