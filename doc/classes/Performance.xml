@@ -11,6 +11,7 @@
 		[b]Note:[/b] Custom monitors do not support negative values. Negative values are clamped to 0.
 	</description>
 	<tutorials>
+		<link title="Custom performance monitors">$DOCS_URL/tutorials/scripting/debug/custom_performance_monitors.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_custom_monitor">
@@ -20,25 +21,26 @@
 			<param index="2" name="arguments" type="Array" default="[]" />
 			<param index="3" name="type" type="int" enum="Performance.MonitorType" default="0" />
 			<description>
-				Adds a custom monitor with the name [param id]. You can specify the category of the monitor using slash delimiters in [param id] (for example: [code]"Game/NumberOfNPCs"[/code]). If there is more than one slash delimiter, then the default category is used. The default category is [code]"Custom"[/code]. Prints an error if given [param id] is already present.
+				Adds a custom monitor with the name [param id]. You can specify the category of the monitor using slash delimiters in [param id] (for example: [code]"game/number_of_npcs"[/code]). If there is more than one slash delimiter, then the default category is used. The default category is [code]custom[/code]. Prints an error if the given [param id] is already present.
+				By convention, categories and names should use [code]snake_case[/code]. They are automatically capitalized when displayed in the editor, but like script properties, they should be queried with their original name from methods such as [method get_custom_monitor].
 				[codeblocks]
 				[gdscript]
 				func _ready():
 					var monitor_value = Callable(self, "get_monitor_value")
 
-					# Adds monitor with name "MyName" to category "MyCategory".
-					Performance.add_custom_monitor("MyCategory/MyMonitor", monitor_value)
+					# Adds monitor with name "my_monitor" to category "my_category".
+					Performance.add_custom_monitor("my_category/my_monitor", monitor_value)
 
-					# Adds monitor with name "MyName" to category "Custom".
-					# Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different IDs, so the code is valid.
-					Performance.add_custom_monitor("MyMonitor", monitor_value)
+					# Adds monitor with name "my_monitor" to category "custom".
+					# NOTE: "my_category/my_monitor" and "my_monitor" have the same name but different IDs, so the code is valid.
+					Performance.add_custom_monitor("my_monitor", monitor_value)
 
-					# Adds monitor with name "MyName" to category "Custom".
-					# Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different IDs, so the code is valid.
-					Performance.add_custom_monitor("Custom/MyMonitor", monitor_value)
+					# Adds monitor with name "my_monitor" to category "custom".
+					# NOTE: "my_monitor" and "custom/my_monitor" have the same name and same category but different IDs, so the code is valid.
+					Performance.add_custom_monitor("custom/my_monitor", monitor_value)
 
-					# Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
-					Performance.add_custom_monitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitor_value)
+					# Adds monitor with name "my_category_one/my_category_two/my_monitor" to category "custom".
+					Performance.add_custom_monitor("my_category_one/my_category_two/my_monitor", monitor_value)
 
 				func get_monitor_value():
 					return randi() % 25
@@ -48,18 +50,18 @@
 				{
 					var monitorValue = new Callable(this, MethodName.GetMonitorValue);
 
-					// Adds monitor with name "MyName" to category "MyCategory".
-					Performance.AddCustomMonitor("MyCategory/MyMonitor", monitorValue);
-					// Adds monitor with name "MyName" to category "Custom".
-					// Note: "MyCategory/MyMonitor" and "MyMonitor" have same name but different ids so the code is valid.
-					Performance.AddCustomMonitor("MyMonitor", monitorValue);
+					// Adds monitor with name "my_monitor" to category "my_category".
+					Performance.AddCustomMonitor("my_category/my_monitor", monitorValue);
+					// Adds monitor with name "my_monitor" to category "custom".
+					// NOTE: "my_category/my_monitor" and "my_monitor" have the same name but different IDs, so the code is valid.
+					Performance.AddCustomMonitor("my_monitor", monitorValue);
 
-					// Adds monitor with name "MyName" to category "Custom".
-					// Note: "MyMonitor" and "Custom/MyMonitor" have same name and same category but different ids so the code is valid.
-					Performance.AddCustomMonitor("Custom/MyMonitor", monitorValue);
+					// Adds monitor with name "my_monitor" to category "custom".
+					// NOTE: "my_monitor" and "custom/my_monitor" have the same name and same category but different IDs, so the code is valid.
+					Performance.AddCustomMonitor("custom/my_monitor", monitorValue);
 
-					// Adds monitor with name "MyCategoryOne/MyCategoryTwo/MyMonitor" to category "Custom".
-					Performance.AddCustomMonitor("MyCategoryOne/MyCategoryTwo/MyMonitor", monitorValue);
+					// Adds monitor with name "my_category_one/my_category_two/my_monitor" to category "custom".
+					Performance.AddCustomMonitor("my_category_one/my_category_two/my_monitor", monitorValue);
 				}
 
 				public int GetMonitorValue()
