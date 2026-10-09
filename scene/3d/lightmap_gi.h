@@ -32,6 +32,8 @@
 
 #include "core/io/resource.h"
 #include "core/templates/local_vector.h"
+#include "core/variant/typed_array.h"
+#include "core/variant/variant.h"
 #include "scene/3d/lightmapper.h"
 #include "scene/3d/visual_instance_3d.h"
 
@@ -79,6 +81,12 @@ private:
 		int slice_index = 0;
 	};
 
+	struct BSP {
+		static const int32_t EMPTY_LEAF = INT32_MIN;
+		float plane[4];
+		int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
+	};
+
 	Vector<User> users;
 
 	void _set_user_data(const Array &p_data);
@@ -120,6 +128,10 @@ public:
 
 	bool is_interior() const;
 	float get_baked_exposure() const;
+
+	PackedInt32Array get_tetrahedron_at_position(const Vector3 &p_position);
+	PackedVector3Array get_capture_probes_at_position(const Vector3 &p_position);
+	PackedColorArray get_capture_spherical_harmonics_at_position(const Vector3 &p_position);
 
 	void set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure, uint32_t p_lightprobe_hash);
 	PackedVector3Array get_capture_points() const;
