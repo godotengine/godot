@@ -1384,11 +1384,11 @@ void DisplayServerWayland::window_request_attention(DisplayServerEnums::WindowID
 
 	DEBUG_LOG_WAYLAND("Requested attention.");
 
-	wayland_thread.window_request_attention(p_window_id);
+	wayland_thread.window_request_attention(p_window_id, false);
 }
 
 void DisplayServerWayland::window_move_to_foreground(DisplayServerEnums::WindowID p_window_id) {
-	// Standard Wayland APIs don't support this.
+	wayland_thread.window_request_attention(p_window_id, true);
 }
 
 bool DisplayServerWayland::window_is_focused(DisplayServerEnums::WindowID p_window_id) const {
