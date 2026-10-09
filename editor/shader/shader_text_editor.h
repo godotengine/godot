@@ -148,7 +148,7 @@ class ShaderTextEditor : public CodeEditorBase {
 	void _update_warning_panel();
 	void _update_warnings(bool p_validate);
 
-	bool dependencies_changed = true;
+	bool dependencies_changed = false;
 
 	Color marked_line_color = Color(1, 1, 1);
 
