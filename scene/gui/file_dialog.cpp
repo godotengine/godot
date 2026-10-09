@@ -360,15 +360,17 @@ Vector<String> FileDialog::get_selected_files() const {
 }
 
 void FileDialog::update_dir() {
-	full_dir = dir_access->get_current_dir();
+	const String current_dir = dir_access->get_current_dir();
+	const String current_dir_no_drive = dir_access->get_current_dir(false);
+	full_dir = current_dir;
 	if (root_prefix.is_empty()) {
-		directory_edit->set_text(dir_access->get_current_dir(false));
+		directory_edit->set_text(current_dir_no_drive);
 	} else {
-		directory_edit->set_text(dir_access->get_current_dir(false).trim_prefix(root_prefix).trim_prefix("/"));
+		directory_edit->set_text(current_dir_no_drive.trim_prefix(root_prefix).trim_prefix("/"));
 	}
 
 	if (drives->is_visible()) {
-		if (dir_access->get_current_dir().is_network_share_path()) {
+		if (current_dir.is_network_share_path()) {
 			_update_drives(false);
 			PopupMenu *pm = drives->get_popup();
 			pm->add_item(ETR("Network"));
@@ -391,6 +393,13 @@ void FileDialog::update_dir() {
 					break;
 				}
 			}
+		}
+	}
+
+	for (int p_item : recent_list->get_selected_items()) {
+		const String selected_item = ((String)recent_list->get_item_metadata(p_item)).trim_suffix("/");
+		if (selected_item.filecasecmp_to(current_dir) != 0) {
+			recent_list->deselect(p_item);
 		}
 	}
 
