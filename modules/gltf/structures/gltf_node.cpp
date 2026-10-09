@@ -57,6 +57,8 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotation", "rotation"), &GLTFNode::set_rotation);
 	ClassDB::bind_method(D_METHOD("get_scale"), &GLTFNode::get_scale);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &GLTFNode::set_scale);
+	ClassDB::bind_method(D_METHOD("get_weights"), &GLTFNode::get_weights);
+	ClassDB::bind_method(D_METHOD("set_weights", "weights"), &GLTFNode::set_weights);
 	ClassDB::bind_method(D_METHOD("get_children"), &GLTFNode::get_children);
 	ClassDB::bind_method(D_METHOD("set_children", "children"), &GLTFNode::set_children);
 	ClassDB::bind_method(D_METHOD("append_child_index", "child_index"), &GLTFNode::append_child_index);
@@ -79,6 +81,7 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation"), "set_rotation", "get_rotation"); // Quaternion
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "weights"), "set_weights", "get_weights"); // Vector<float>
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "children"), "set_children", "get_children"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light"), "set_light", "get_light"); // GLTFLightIndex
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "get_visible"); // bool
@@ -169,6 +172,14 @@ Vector3 GLTFNode::get_scale() {
 
 void GLTFNode::set_scale(const Vector3 &p_scale) {
 	transform.basis = transform.basis.orthonormalized() * Basis::from_scale(p_scale);
+}
+
+Vector<float> GLTFNode::get_weights() {
+	return weights;
+}
+
+void GLTFNode::set_weights(const Vector<float> &p_weights) {
+	weights = p_weights;
 }
 
 Vector<int> GLTFNode::get_children() {

@@ -86,6 +86,9 @@
 		<member name="visible" type="bool" setter="set_visible" getter="get_visible" default="true">
 			If [code]true[/code], the GLTF node is visible. If [code]false[/code], the GLTF node is not visible. This is converted to the [member Node3D.visible] property in the Godot scene, and is exported to [code]KHR_node_visibility[/code] when [code]false[/code].
 		</member>
+		<member name="weights" type="PackedFloat32Array" setter="set_weights" getter="get_weights" default="PackedFloat32Array()">
+			If this glTF node is a mesh with blend shapes, the weights of the blend shapes for this glTF node.
+		</member>
 		<member name="xform" type="Transform3D" setter="set_xform" getter="get_xform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			The transform of the glTF node relative to its parent. This property is usually unused since the position, rotation, and scale properties are preferred.
 		</member>

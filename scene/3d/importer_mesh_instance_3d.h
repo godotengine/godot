@@ -50,6 +50,7 @@ class ImporterMeshInstance3D : public Node3D {
 	float visibility_range_begin_margin = 0.0;
 	float visibility_range_end_margin = 0.0;
 	GeometryInstance3D::VisibilityRangeFadeMode visibility_range_fade_mode = GeometryInstance3D::VISIBILITY_RANGE_FADE_DISABLED;
+	LocalVector<float> blend_shape_values;
 
 protected:
 	static void _bind_methods();
@@ -60,6 +61,11 @@ public:
 
 	void set_skin(const Ref<Skin> &p_skin);
 	Ref<Skin> get_skin() const;
+
+	int get_blend_shape_count() const;
+	int find_blend_shape_by_name(const StringName &p_name);
+	float get_blend_shape_value(int p_blend_shape) const;
+	void set_blend_shape_value(int p_blend_shape, float p_value);
 
 	void set_surface_material(int p_idx, const Ref<Material> &p_material);
 	Ref<Material> get_surface_material(int p_idx) const;
