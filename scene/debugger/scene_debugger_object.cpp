@@ -82,15 +82,17 @@ SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 	List<PropertyInfo> pinfo;
 	p_obj->get_property_list(&pinfo, true);
 	for (PropertyInfo &E : pinfo) {
+		if ((E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_CATEGORY)) == 0) {
+			continue;
+		}
+
 		const Variant &m = p_obj->get(E.name);
 
 		if (!m.is_null() && E.type == Variant::OBJECT && E.hint == PROPERTY_HINT_NODE_TYPE && E.usage & PROPERTY_USAGE_EDITOR) {
 			E.hint_string = DebuggerMarshalls::parse_type_from_variant(m);
 		}
 
-		if (E.usage & (PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_CATEGORY)) {
-			properties.push_back(SceneDebuggerProperty(E, m));
-		}
+		properties.push_back(SceneDebuggerProperty(E, m));
 	}
 }
 
