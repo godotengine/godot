@@ -53,7 +53,7 @@ ParticlesStorage::ParticlesStorage() {
 
 	{
 		String global_defines;
-		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
+		global_defines += "#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT " + itos(GLES3::GlobalShaderUniforms::TEXTURE_WIDTH_SHIFT) + "\n";
 		material_storage->shaders.particles_process_shader.initialize(global_defines, 1);
 	}
 	{
@@ -1044,10 +1044,8 @@ void ParticlesStorage::update_particles() {
 	glEnable(GL_RASTERIZER_DISCARD);
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
-	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
-
-	glBindBufferBase(GL_UNIFORM_BUFFER, PARTICLES_GLOBALS_UNIFORM_LOCATION, global_buffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	glActiveTexture(GL_TEXTURE0 + GLES3::Config::get_singleton()->max_texture_image_units - 2);
+	glBindTexture(GL_TEXTURE_2D, GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_texture());
 
 	while (particle_update_list.first()) {
 		// Use transform feedback to process particles.
