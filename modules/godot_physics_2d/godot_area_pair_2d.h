@@ -40,14 +40,20 @@ class GodotAreaPair2D : public GodotConstraint2D {
 	int body_shape = 0;
 	int area_shape = 0;
 	bool colliding = false;
-	bool has_space_override = false;
+	bool process_monitored_collision = false;
 	bool process_collision = false;
-	bool body_has_attached_area = false;
+	bool has_space_override;
+	bool monitoring;
 
 public:
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
+
+	virtual void refresh_pair(GodotCollisionObject2D *p_source) override {
+		body->refresh_pair(p_source);
+		area->refresh_pair(p_source);
+	}
 
 	GodotAreaPair2D(GodotBody2D *p_body, int p_body_shape, GodotArea2D *p_area, int p_area_shape);
 	~GodotAreaPair2D();
@@ -64,11 +70,18 @@ class GodotArea2Pair2D : public GodotConstraint2D {
 	bool process_collision_b = false;
 	bool area_a_monitorable;
 	bool area_b_monitorable;
+	bool area_a_monitoring;
+	bool area_b_monitoring;
 
 public:
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
+
+	virtual void refresh_pair(GodotCollisionObject2D *p_source) override {
+		area_a->refresh_pair(p_source);
+		area_b->refresh_pair(p_source);
+	}
 
 	GodotArea2Pair2D(GodotArea2D *p_area_a, int p_shape_a, GodotArea2D *p_area_b, int p_shape_b);
 	~GodotArea2Pair2D();
