@@ -658,6 +658,7 @@ private:
 		Mutex mutex;
 
 		struct wl_display *wl_display = nullptr;
+		int wakeup_fd = -1;
 	};
 
 	// FIXME: Is this the right thing to do?
@@ -665,6 +666,7 @@ private:
 
 	Thread events_thread;
 	ThreadData thread_data;
+	int wakeup_pipe[2] = { -1, -1 };
 
 	HashMap<DisplayServerEnums::WindowID, WindowState> windows;
 

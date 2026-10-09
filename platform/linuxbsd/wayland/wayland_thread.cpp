@@ -51,6 +51,8 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include <cstring>
+
 // Fix the wl_array_for_each macro to work with C++. This is based on the
 // original from `wayland-util.h` in the Wayland client library.
 #undef wl_array_for_each
@@ -3812,9 +3814,10 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 	ERR_FAIL_NULL(data);
 	ERR_FAIL_NULL(data->wl_display);
 
-	struct pollfd poll_fd = {};
-	poll_fd.fd = wl_display_get_fd(data->wl_display);
-	poll_fd.events = POLLIN;
+	struct pollfd poll_fds[2] = {
+		{ wl_display_get_fd(data->wl_display), POLLIN, 0 },
+		{ data->wakeup_fd, POLLIN, 0 },
+	};
 
 	while (true) {
 		// Empty the event queue while it's full.
@@ -3844,20 +3847,26 @@ void WaylandThread::_poll_events_thread(void *p_data) {
 
 		wl_display_flush(data->wl_display);
 
-		// Wait for the event file descriptor to have new data.
-		poll(&poll_fd, 1, -1);
+		// Wait for the event file descriptor to have new data, or for `destroy()` to
+		// wake us up
+		poll(poll_fds, 2, -1);
 
 		if (data->thread_done.is_set()) {
 			wl_display_cancel_read(data->wl_display);
 			break;
 		}
 
-		if (poll_fd.revents | POLLIN) {
+		if (poll_fds[0].revents & POLLIN) {
 			// Load the queues with fresh new data.
 			wl_display_read_events(data->wl_display);
 		} else {
 			// Oh well... Stop signaling that we want to read.
 			wl_display_cancel_read(data->wl_display);
+		}
+
+		if (poll_fds[1].revents & POLLIN) {
+			uint8_t wake_up = 0;
+			[[maybe_unused]] ssize_t result = read(data->wakeup_fd, &wake_up, sizeof(wake_up));
 		}
 
 		// The docs advise to redispatch unconditionally and it looks like that if we
@@ -5677,6 +5686,12 @@ Error WaylandThread::init() {
 	// Update the cursor.
 	cursor_set_shape(DisplayServerEnums::CURSOR_ARROW);
 
+	// Create the wakeup pipe used by `destroy()` to reliably unblock the event thread
+	if (pipe2(wakeup_pipe, O_NONBLOCK) == -1) {
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, vformat("Can't create the Wayland events thread wakeup pipe: %s", strerror(errno)));
+	}
+	thread_data.wakeup_fd = wakeup_pipe[0];
+
 	events_thread.start(_poll_events_thread, &thread_data);
 
 	initialized = true;
@@ -6095,7 +6110,7 @@ int WaylandThread::wait_events(int p_timeout_ms) {
 	// Wait for the event file descriptor to have new data.
 	poll(&poll_fd, 1, p_timeout_ms);
 
-	if (poll_fd.revents | POLLIN) {
+	if (poll_fd.revents & POLLIN) {
 		// Load the queues with fresh new data.
 		wl_display_read_events(wl_display);
 	} else {
@@ -6277,11 +6292,22 @@ void WaylandThread::destroy() {
 	if (wl_display && events_thread.is_started()) {
 		thread_data.thread_done.set();
 
-		// By sending a roundtrip message we're unblocking the polling thread so that
-		// it can realize that it's done and also handle every event that's left.
-		wl_display_roundtrip(wl_display);
+		// Ensure the polling thread wakes up to see thread_done
+		if (wakeup_pipe[1] != -1) {
+			uint8_t wake_up = 1;
+			[[maybe_unused]] ssize_t result = write(wakeup_pipe[1], &wake_up, sizeof(wake_up));
+		}
 
 		events_thread.wait_to_finish();
+
+		if (wakeup_pipe[0] != -1) {
+			close(wakeup_pipe[0]);
+			wakeup_pipe[0] = -1;
+		}
+		if (wakeup_pipe[1] != -1) {
+			close(wakeup_pipe[1]);
+			wakeup_pipe[1] = -1;
+		}
 	}
 
 	if (!windows.is_empty()) {
