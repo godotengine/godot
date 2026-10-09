@@ -48,6 +48,17 @@ namespace Godot.SourceGenerators
             return false;
         }
 
+        public static string? GetPropertyInfoClassName(this INamedTypeSymbol memberSymbol)
+        {
+            if (memberSymbol.GetAttributes()
+                .Any(a => a.AttributeClass?.IsGodotGlobalClassAttribute() ?? false))
+            {
+                return memberSymbol.Name;
+            }
+
+            return memberSymbol.GetGodotScriptNativeClassName();
+        }
+
         public static INamedTypeSymbol? GetGodotScriptNativeClass(this INamedTypeSymbol classTypeSymbol)
         {
             var symbol = classTypeSymbol;
