@@ -40,8 +40,8 @@ class StringName;
 class Variant;
 struct ContainerType;
 struct ContainerTypeValidate;
+struct DictionaryKeyComparator;
 struct DictionaryPrivate;
-struct StringLikeVariantComparator;
 
 /**
  * Key-value Variant container (aka hash table or dictionary) using robin-hood hashing.
@@ -58,7 +58,7 @@ class _WARN_UNUSED_ Dictionary {
 	void _unref() const;
 
 public:
-	using ConstIterator = HashMap<Variant, Variant, HashMapHasherDefault, StringLikeVariantComparator>::ConstIterator;
+	using ConstIterator = HashMap<Variant, Variant, HashMapHasherDefault, DictionaryKeyComparator>::ConstIterator;
 
 	ConstIterator begin() const;
 	ConstIterator end() const;
