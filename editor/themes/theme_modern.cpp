@@ -396,7 +396,7 @@ void ThemeModern::populate_shared_styles(const Ref<EditorTheme> &p_theme, Editor
 			p_config.content_panel_style->set_content_margin_individual(content_panel_margin, EDSCALE_RND(2) + content_panel_margin, content_panel_margin, content_panel_margin);
 
 			p_config.tab_container_style = p_config.base_style->duplicate();
-			p_config.tab_container_style->set_content_margin_all(EDSCALE_RND(p_config.increased_margin * 1.5));
+			p_config.tab_container_style->set_content_margin_all(EDSCALE_RND(p_config.increased_margin));
 			p_config.tab_container_style->set_corner_radius_individual(0, 0, EDSCALE_RND(p_config.corner_radius), EDSCALE_RND(p_config.corner_radius));
 
 			p_config.foreground_panel = p_config.tab_container_style->duplicate();
