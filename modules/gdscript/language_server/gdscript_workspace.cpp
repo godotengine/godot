@@ -607,6 +607,32 @@ void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
 	GDScriptLanguageProtocol::get_singleton()->notify_client("textDocument/publishDiagnostics", params);
 }
 
+LocalVector<LSP::CodeAction> GDScriptWorkspace::get_code_actions_for_params(const LSP::CodeActionParams &p_params) {
+	LocalVector<LSP::CodeAction> lsp_code_actions_to_send;
+
+	const ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_parse_result(get_file_path(p_params.textDocument.uri));
+	if (parser) {
+		const LocalVector<LSP::CodeAction> &list = parser->get_lsp_code_actions();
+
+		for (const LSP::CodeAction &action : list) {
+			bool overlap_found = false;
+			for (const LSP::Diagnostic &d : action.diagnostics) {
+				if (p_params.range.overlaps(d.range)) {
+					overlap_found = true;
+					break;
+				}
+			}
+			if (!overlap_found) {
+				continue;
+			}
+			lsp_code_actions_to_send.push_back(action);
+		}
+		return lsp_code_actions_to_send;
+	}
+
+	return LocalVector<LSP::CodeAction>();
+}
+
 void GDScriptWorkspace::completion(const LSP::CompletionParams &p_params, List<EditorLanguage::CompletionOption> *r_options) {
 	String path = get_file_path(p_params.textDocument.uri);
 	String call_hint;
