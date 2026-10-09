@@ -4,8 +4,11 @@
 		[VideoStream] resource for WebM videos.
 	</brief_description>
 	<description>
-		[VideoStream] resource handling the [url=https://www.webmproject.org/]WebM[/url] video format with [code].webm[/code] extension. Both the VP8 and VP9 codecs are supported. The VP8 and VP9 codecs are more efficient than [VideoStreamTheora], but they require more CPU resources to decode (especially VP9). Both the VP8 and VP9 codecs are decoded on the CPU.
-		[b]Note:[/b] Alpha channel (also known as transparency) is not supported. The video will always appear to have a black background, even if it originally contains an alpha channel.
+		[VideoStream] resource handling the [url=https://www.webmproject.org/]WebM[/url] video format with [code].webm[/code] extension. The WebM codecs are currently decoded on the CPU, although they may be hardware-accelerated in the future.
+		The supported video codecs are VP8 and VP9, and the supported audio codecs are Opus and Vorbis.
+		The VP8 and VP9 codecs are more efficient than [VideoStreamTheora], but they require more CPU resources to decode (especially VP9).
+		[b]Note:[/b] The AV1 and AV2 video codecs are not supported.
+		[b]Note:[/b] Unlike [VideoStreamTheora], an alpha channel (also known as transparency) is supported. This means WebM videos may contain transparent areas.
 	</description>
 	<tutorials>
 	</tutorials>
