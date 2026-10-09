@@ -340,6 +340,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $bundle_identifier;
 				INFOPLIST_KEY_CFBundleDisplayName = "$name";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.$app_category";
 				PRODUCT_NAME = "$binary";
 				EXECUTABLE_NAME = "$binary";
 				MARKETING_VERSION = $short_version;
@@ -377,6 +378,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $bundle_identifier;
 				INFOPLIST_KEY_CFBundleDisplayName = "$name";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.$app_category";
 				PRODUCT_NAME = "$binary";
 				EXECUTABLE_NAME = "$binary";
 				MARKETING_VERSION = $short_version;

@@ -17,6 +17,9 @@
 			&lt;string&gt;value&lt;/string&gt;
 			[/codeblock]
 		</member>
+		<member name="application/app_category" type="String" setter="" getter="">
+			Application category for the App Store.
+		</member>
 		<member name="application/app_role" type="int" setter="" getter="">
 			The application role on the visionOS platform. It can be [code skip-lint]Window[/code] for running a 3D game on a 2D window, or [code skip-lint]Immersive[/code] for an XR experience.
 		</member>
