@@ -45,6 +45,7 @@ class Texture2DRD : public Texture2D {
 	mutable RID texture_rid;
 	RID texture_rd_rid;
 	Size2i size;
+	bool rg8_semantics = false;
 
 protected:
 	static void _bind_methods();
@@ -54,6 +55,9 @@ public:
 	virtual int get_height() const override;
 	virtual RID get_rid() const override;
 	virtual bool has_alpha() const override;
+
+	void set_rg8_semantics(bool p_rg8_semantics);
+	bool get_rg8_semantics() const;
 
 	virtual Ref<Image> get_image() const override;
 
