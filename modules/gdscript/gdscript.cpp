@@ -37,6 +37,7 @@
 #include "gdscript_parser.h"
 #include "gdscript_tokenizer_buffer.h"
 #include "gdscript_warning.h"
+#include "toolchain/compilation_unit.h"
 
 #include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
@@ -528,8 +529,9 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 			basedir = basedir.get_base_dir();
 		}
 
+		GDScriptCompilationUnit unit;
 		GDScriptParser parser;
-		GDScriptAnalyzer analyzer(&parser);
+		GDScriptAnalyzer analyzer(unit, &parser);
 		Error err = parser.parse(source, path, false);
 
 		if (err == OK && analyzer.analyze() == OK) {
@@ -789,21 +791,6 @@ Error GDScript::reload(bool p_keep_state) {
 				MutexLock lock(GDScriptCache::singleton->mutex);
 				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = Ref<GDScript>(this);
 			}
-			if (GDScriptCache::has_parser(source_path)) {
-				Error err = OK;
-				Ref<GDScriptParserRef> parser_ref = GDScriptCache::get_parser(source_path, GDScriptParserRef::EMPTY, err);
-				if (parser_ref.is_valid()) {
-					uint32_t source_hash;
-					if (!binary_tokens.is_empty()) {
-						source_hash = hash_djb2_buffer(binary_tokens.ptr(), binary_tokens.size());
-					} else {
-						source_hash = source.hash();
-					}
-					if (parser_ref->get_source_hash() != source_hash) {
-						GDScriptCache::remove_parser(source_path);
-					}
-				}
-			}
 		}
 	}
 
@@ -833,7 +820,8 @@ Error GDScript::reload(bool p_keep_state) {
 		return ERR_PARSE_ERROR;
 	}
 
-	GDScriptAnalyzer analyzer(&parser);
+	GDScriptCompilationUnit unit;
+	GDScriptAnalyzer analyzer(unit, &parser);
 	err = analyzer.analyze();
 
 #ifdef DEBUG_ENABLED

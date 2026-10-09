@@ -35,25 +35,16 @@
 
 #include "core/object/ref_counted.h"
 
+class GDScriptCompilationUnit;
+class GDScriptParserRef;
+
 class GDScriptAnalyzer {
+	GDScriptCompilationUnit &unit;
 	GDScriptParser *parser = nullptr;
-
-	template <typename Fn>
-	class Finally {
-		Fn fn;
-
-	public:
-		Finally(Fn p_fn) :
-				fn(p_fn) {}
-		~Finally() {
-			fn();
-		}
-	};
 
 	const GDScriptParser::EnumNode *current_enum = nullptr;
 	GDScriptParser::LambdaNode *current_lambda = nullptr;
 	List<GDScriptParser::LambdaNode *> pending_body_resolution_lambdas;
-	HashMap<const GDScriptParser::ClassNode *, Ref<GDScriptParserRef>> external_class_parser_cache;
 	bool static_context = false;
 
 	// Tests for detecting invalid overloading of script members
@@ -153,9 +144,7 @@ class GDScriptAnalyzer {
 	void mark_lambda_use_self();
 	void resolve_pending_lambda_bodies();
 	void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
-	Ref<GDScriptParserRef> ensure_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const GDScriptParser::ClassNode *p_from_class, const char *p_context, const GDScriptParser::Node *p_source);
-	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const Ref<GDScriptParserRef> &p_dependant_parser);
-	Ref<GDScriptParserRef> find_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, GDScriptParser *p_dependant_parser);
+	GDScriptParserRef *ensure_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const char *p_context, const GDScriptParser::Node *p_source);
 	Ref<GDScript> get_depended_shallow_script(const String &p_path, Error &r_error);
 
 #ifdef DEBUG_ENABLED
@@ -176,5 +165,5 @@ public:
 	static GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type);
 	static bool class_exists(const StringName &p_class);
 
-	GDScriptAnalyzer(GDScriptParser *p_parser);
+	GDScriptAnalyzer(GDScriptCompilationUnit &p_unit, GDScriptParser *p_parser);
 };
