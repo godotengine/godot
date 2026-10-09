@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "mesh_storage.h"
+#include "drivers/gles3/shaders/skeleton.glsl.gen.h"
 
 #ifdef GLES3_ENABLED
 
@@ -1171,6 +1172,13 @@ void MeshStorage::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int 
 	mi->dirty = true;
 }
 
+void MeshStorage::mesh_instance_set_skinning_method(RID p_mesh_instance, RSE::MeshSkinningMethod p_method) {
+	MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
+	ERR_FAIL_NULL(mi);
+	mi->skinning_method = p_method;
+	mi->dirty = true;
+}
+
 void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
 	while (mi->surfaces.size()) {
 		_mesh_instance_remove_surface(mi, mi->surfaces.size() - 1);
@@ -1501,6 +1509,7 @@ void MeshStorage::update_mesh_instances() {
 					skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::INVERSE_TRANSFORM_Y, inverse_transform[1], skeleton_shader.shader_version, variant, specialization);
 					skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::INVERSE_TRANSFORM_OFFSET, inverse_transform[2], skeleton_shader.shader_version, variant, specialization);
 
+					skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::SKINNING_METHOD, mi->skinning_method, skeleton_shader.shader_version, variant, specialization);
 					// Do last blendshape in the same pass as the Skeleton.
 					_compute_skeleton(mi, sk, i);
 					can_use_skeleton = false;
@@ -1549,6 +1558,8 @@ void MeshStorage::update_mesh_instances() {
 				skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::INVERSE_TRANSFORM_Y, inverse_transform[1], skeleton_shader.shader_version, variant, specialization);
 				skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::INVERSE_TRANSFORM_OFFSET, inverse_transform[2], skeleton_shader.shader_version, variant, specialization);
 
+				skeleton_shader.shader.version_set_uniform(SkeletonShaderGLES3::SKINNING_METHOD, mi->skinning_method, skeleton_shader.shader_version, variant, specialization);
+				
 				GLuint vertex_array_gl = 0;
 				uint64_t mask = RSE::ARRAY_FORMAT_VERTEX | RSE::ARRAY_FORMAT_NORMAL | RSE::ARRAY_FORMAT_VERTEX;
 				uint64_t format = mi->mesh->surfaces[i]->format & mask; // Format should only have vertex, normal, tangent (as necessary).
