@@ -1414,6 +1414,9 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 		version = m->shader_data->version;
 	}
 
+	glActiveTexture(GL_TEXTURE0 + GLES3::Config::get_singleton()->max_texture_image_units - 4);
+	glBindTexture(GL_TEXTURE_2D, GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_texture());
+
 	glBindFramebuffer(GL_FRAMEBUFFER, tex_blit_fbo);
 	TightLocalVector<GLenum> draw_buffers;
 

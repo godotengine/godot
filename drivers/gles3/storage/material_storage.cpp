@@ -1603,6 +1603,9 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["COLOR2"] = "color2";
 		actions.renames["COLOR3"] = "color3";
 
+		actions.global_buffer_array_variable = "global_shader_uniforms";
+		actions.global_buffer_array_is_texture = true;
+
 		shaders.compiler_tex_blit.initialize(actions);
 	}
 }
