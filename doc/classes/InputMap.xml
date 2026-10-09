@@ -101,6 +101,8 @@
 			<return type="StringName[]" />
 			<description>
 				Returns an array of all actions in the [InputMap].
+				[b]Note:[/b] If this method is called from a [code]@tool[/code] script, by default it returns the input actions of the Godot editor, not the actions of the project currently being edited, since [code]@tool[/code] scripts run inside of the editor application.
+				If you want to get the input actions of the edited project from a [code]@tool[/code] script, you should call [method load_from_project_settings] before using this method.
 			</description>
 		</method>
 		<method name="has_action" qualifiers="const">
