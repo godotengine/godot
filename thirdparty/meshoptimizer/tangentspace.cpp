@@ -65,6 +65,44 @@ static void computeFaceTangents(Tangent* result, size_t triangle_count, const un
 	}
 }
 
+struct Normal
+{
+	float x, y, z;
+	int id;
+};
+
+static void computeFaceNormals(Normal* result, size_t triangle_count, const unsigned int* indices, const float* vertex_positions, size_t vertex_positions_stride)
+{
+	size_t vertex_position_stride_float = vertex_positions_stride / sizeof(float);
+
+	for (size_t i = 0; i < triangle_count; ++i)
+	{
+		unsigned int a = indices ? indices[i * 3 + 0] : unsigned(i * 3 + 0);
+		unsigned int b = indices ? indices[i * 3 + 1] : unsigned(i * 3 + 1);
+		unsigned int c = indices ? indices[i * 3 + 2] : unsigned(i * 3 + 2);
+
+		const float* pa = &vertex_positions[a * vertex_position_stride_float];
+		const float* pb = &vertex_positions[b * vertex_position_stride_float];
+		const float* pc = &vertex_positions[c * vertex_position_stride_float];
+
+		float dp1x = pb[0] - pa[0], dp1y = pb[1] - pa[1], dp1z = pb[2] - pa[2];
+		float dp2x = pc[0] - pa[0], dp2y = pc[1] - pa[1], dp2z = pc[2] - pa[2];
+
+		float nx = dp1y * dp2z - dp1z * dp2y;
+		float ny = dp1z * dp2x - dp1x * dp2z;
+		float nz = dp1x * dp2y - dp1y * dp2x;
+
+		float nl = sqrtf(nx * nx + ny * ny + nz * nz);
+		float ns = nl != 0.f ? 1.f / nl : 0.f;
+
+		result[i].x = nx * ns;
+		result[i].y = ny * ns;
+		result[i].z = nz * ns;
+		result[i].id = nl != 0.f;
+	}
+}
+
+template <bool PositionOnly>
 struct VertexHasherF
 {
 	const float* vertex_positions;
@@ -77,8 +115,6 @@ struct VertexHasherF
 	size_t hash(unsigned int index) const
 	{
 		const unsigned int* p = reinterpret_cast<const unsigned int*>(vertex_positions + index * vertex_positions_stride_float);
-		const unsigned int* n = reinterpret_cast<const unsigned int*>(vertex_normals + index * vertex_normals_stride_float);
-		const unsigned int* t = reinterpret_cast<const unsigned int*>(vertex_uvs + index * vertex_uvs_stride_float);
 
 		unsigned int x = p[0], y = p[1], z = p[2];
 
@@ -91,6 +127,12 @@ struct VertexHasherF
 		x ^= x >> 17;
 		y ^= y >> 17;
 		z ^= z >> 17;
+
+		if (PositionOnly)
+			return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+
+		const unsigned int* n = reinterpret_cast<const unsigned int*>(vertex_normals + index * vertex_normals_stride_float);
+		const unsigned int* t = reinterpret_cast<const unsigned int*>(vertex_uvs + index * vertex_uvs_stride_float);
 
 		// mix in normal bits
 		x ^= (n[0] == 0x80000000) ? 0 : n[0] >> 15;
@@ -108,9 +150,13 @@ struct VertexHasherF
 	bool equal(unsigned int lhs, unsigned int rhs) const
 	{
 		const float* lp = vertex_positions + lhs * vertex_positions_stride_float;
+		const float* rp = vertex_positions + rhs * vertex_positions_stride_float;
+
+		if (PositionOnly)
+			return lp[0] == rp[0] && lp[1] == rp[1] && lp[2] == rp[2];
+
 		const float* ln = vertex_normals + lhs * vertex_normals_stride_float;
 		const float* lt = vertex_uvs + lhs * vertex_uvs_stride_float;
-		const float* rp = vertex_positions + rhs * vertex_positions_stride_float;
 		const float* rn = vertex_normals + rhs * vertex_normals_stride_float;
 		const float* rt = vertex_uvs + rhs * vertex_uvs_stride_float;
 
@@ -154,9 +200,10 @@ static T* hashLookup4(T* table, size_t buckets, const Hash& hash, const T& key, 
 	return NULL;
 }
 
-static void buildVertexRemap(unsigned int* remap, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const float* vertex_normals, size_t vertex_normals_stride, const float* vertex_uvs, size_t vertex_uvs_stride, meshopt_Allocator& allocator)
+template <bool PositionOnly>
+static void buildVertexRemap(unsigned int* remap, size_t vertex_count, const float* vertex_positions, size_t vertex_positions_stride, const float* vertex_normals, size_t vertex_normals_stride, const float* vertex_uvs, size_t vertex_uvs_stride, meshopt_Allocator& allocator)
 {
-	VertexHasherF vertex_hasher = {vertex_positions, vertex_positions_stride / sizeof(float), vertex_normals, vertex_normals_stride / sizeof(float), vertex_uvs, vertex_uvs_stride / sizeof(float)};
+	VertexHasherF<PositionOnly> vertex_hasher = {vertex_positions, vertex_positions_stride / sizeof(float), vertex_normals, vertex_normals_stride / sizeof(float), vertex_uvs, vertex_uvs_stride / sizeof(float)};
 
 	size_t vertex_table_size = hashBuckets4(vertex_count);
 	unsigned int* vertex_table = allocator.allocate<unsigned int>(vertex_table_size);
@@ -296,6 +343,46 @@ static void mergeTangentGroups(unsigned int* groups, unsigned int* facegroups, u
 	}
 }
 
+static void mergeNormalGroups(unsigned int* groups, const unsigned int* data, size_t count, const unsigned int* indices, const unsigned int* remap, const Normal* face_normals, float crease_cutoff)
+{
+	static const int next[4] = {1, 2, 0, 1};
+
+	for (size_t i = 0; i < count; ++i)
+	{
+		unsigned int ti = data[i] >> 2;
+		unsigned int cib = ti * 3 + next[(data[i] & 3) + 0];
+		unsigned int cic = ti * 3 + next[(data[i] & 3) + 1];
+
+		unsigned int nib = indices ? remap[indices[cib]] : remap[cib];
+		unsigned int nic = indices ? remap[indices[cic]] : remap[cic];
+
+		const Normal& fi = face_normals[ti];
+
+		for (size_t j = i + 1; j < count; ++j)
+		{
+			unsigned int tj = data[j] >> 2;
+			unsigned int cjb = tj * 3 + next[(data[j] & 3) + 0];
+			unsigned int cjc = tj * 3 + next[(data[j] & 3) + 1];
+
+			unsigned int njb = indices ? remap[indices[cjb]] : remap[cjb];
+			unsigned int njc = indices ? remap[indices[cjc]] : remap[cjc];
+
+			const Normal& fj = face_normals[tj];
+
+			// merge normal groups if triangles are adjacent and normal angle is below crease threshold
+			if ((njb == nic || njc == nib) && fi.x * fj.x + fi.y * fj.y + fi.z * fj.z > crease_cutoff && fi.id == fj.id)
+			{
+				// union normal groups for individual corners with gi as the root
+				unsigned int gi = follow2(groups, ti * 3 + (data[i] & 3));
+				unsigned int gj = follow2(groups, tj * 3 + (data[j] & 3));
+
+				if (gi != gj)
+					groups[gj] = gi;
+			}
+		}
+	}
+}
+
 inline float optacos(float x)
 {
 	// approximation for acos(x) = sqrt(1 - abs(x)) * 2-degree polynomial, max error ~5e-4
@@ -306,7 +393,7 @@ inline float optacos(float x)
 	return x < 0.f ? 3.1415926f - r : r;
 }
 
-static void accumulateTangentGroups(float* result, const unsigned int* groups, const unsigned int* indices, size_t index_count, const unsigned int* remap, const Tangent* face_tangents, const float* vertex_positions, size_t vertex_positions_stride, const float* vertex_normals, size_t vertex_normals_stride, unsigned int options)
+static void accumulateTangents(float* result, const unsigned int* groups, const unsigned int* indices, size_t index_count, const Tangent* face_tangents, const float* vertex_positions, size_t vertex_positions_stride, const float* vertex_normals, size_t vertex_normals_stride, unsigned int options)
 {
 	static const int next[4] = {1, 2, 0, 1};
 
@@ -326,9 +413,9 @@ static void accumulateTangentGroups(float* result, const unsigned int* groups, c
 		{
 			float* r = &result[size_t(groups[i * 3 + k]) * 4];
 
-			unsigned int a = indices ? remap[indices[i * 3 + k]] : remap[i * 3 + k];
-			unsigned int b = indices ? remap[indices[i * 3 + next[k]]] : remap[i * 3 + next[k]];
-			unsigned int c = indices ? remap[indices[i * 3 + next[k + 1]]] : remap[i * 3 + next[k + 1]];
+			unsigned int a = indices ? indices[i * 3 + k] : unsigned(i * 3 + k);
+			unsigned int b = indices ? indices[i * 3 + next[k]] : unsigned(i * 3 + next[k]);
+			unsigned int c = indices ? indices[i * 3 + next[k + 1]] : unsigned(i * 3 + next[k + 1]);
 
 			const float* pa = vertex_positions + a * vertex_position_stride_float;
 			const float* pb = vertex_positions + b * vertex_position_stride_float;
@@ -373,6 +460,111 @@ static void accumulateTangentGroups(float* result, const unsigned int* groups, c
 	}
 }
 
+static void accumulateNormals(float* result, const unsigned int* groups, const unsigned int* indices, size_t index_count, const Normal* face_normals, const float* vertex_positions, size_t vertex_positions_stride)
+{
+	static const int next[4] = {1, 2, 0, 1};
+
+	size_t vertex_position_stride_float = vertex_positions_stride / sizeof(float);
+
+	size_t face_count = index_count / 3;
+
+	for (size_t i = 0; i < face_count; ++i)
+	{
+		const Normal& n = face_normals[i];
+
+		for (int k = 0; k < 3; ++k)
+		{
+			float* r = &result[size_t(groups[i * 3 + k]) * 3];
+
+			unsigned int a = indices ? indices[i * 3 + k] : unsigned(i * 3 + k);
+			unsigned int b = indices ? indices[i * 3 + next[k]] : unsigned(i * 3 + next[k]);
+			unsigned int c = indices ? indices[i * 3 + next[k + 1]] : unsigned(i * 3 + next[k + 1]);
+
+			const float* pa = vertex_positions + a * vertex_position_stride_float;
+			const float* pb = vertex_positions + b * vertex_position_stride_float;
+			const float* pc = vertex_positions + c * vertex_position_stride_float;
+
+			// compute incident angle for weighting
+			float dp1x = pb[0] - pa[0], dp1y = pb[1] - pa[1], dp1z = pb[2] - pa[2];
+			float dp2x = pc[0] - pa[0], dp2y = pc[1] - pa[1], dp2z = pc[2] - pa[2];
+
+			float dp1l = dp1x * dp1x + dp1y * dp1y + dp1z * dp1z;
+			float dp2l = dp2x * dp2x + dp2y * dp2y + dp2z * dp2z;
+			float dpl = sqrtf(dp1l * dp2l);
+
+			float cosa = (dp1x * dp2x + dp1y * dp2y + dp1z * dp2z) * (dpl == 0.f ? 0.f : 1.f / dpl);
+			float angle = optacos(cosa); // optacos handles clamping to [-1..1]
+
+			// accumulate normal weighted by angle and edge length product; this weighting scheme matches the default scheme used for tangents
+			float w = angle * dpl;
+
+			r[0] += n.x * w;
+			r[1] += n.y * w;
+			r[2] += n.z * w;
+		}
+	}
+}
+
+static void smoothNormals(float* result, float* scratch, const unsigned int* groups, size_t index_count, float alpha)
+{
+	static const int next[4] = {1, 2, 0, 1};
+
+	size_t face_count = index_count / 3;
+
+	memset(scratch, 0, index_count * 4 * sizeof(float));
+
+	// for each triangle, accumulate normal deltas alongside each edge in both directions
+	for (size_t i = 0; i < face_count; ++i)
+	{
+		for (int k = 0; k < 3; ++k)
+		{
+			unsigned int ga = groups[i * 3 + k];
+			unsigned int gb = groups[i * 3 + next[k]];
+
+			const float* na = &result[ga * 3];
+			const float* nb = &result[gb * 3];
+
+			// normal alignment is symmetric; we compute it once per edge and use dp^2 for stronger alignment
+			float dp = na[0] * nb[0] + na[1] * nb[1] + na[2] * nb[2];
+			float w = (dp > 0.f ? dp * dp : 0.f);
+
+			float nx = (nb[0] - na[0]) * w, ny = (nb[1] - na[1]) * w, nz = (nb[2] - na[2]) * w;
+
+			// accumulate deltas; the last component is used to compute delta averages below
+			float* sa = &scratch[ga * 4];
+			float* sb = &scratch[gb * 4];
+
+			sa[0] += nx;
+			sa[1] += ny;
+			sa[2] += nz;
+			sa[3] += 1.f;
+
+			sb[0] -= nx;
+			sb[1] -= ny;
+			sb[2] -= nz;
+			sb[3] += 1.f;
+		}
+	}
+
+	// apply average delta to group roots and renormalize the results
+	for (size_t i = 0; i < index_count; ++i)
+		if (groups[i] == i && scratch[i * 4 + 3] > 0.f)
+		{
+			float* r = &result[i * 3];
+			const float* s = &scratch[i * 4];
+
+			float sw = alpha / s[3];
+			float rx = r[0] + s[0] * sw, ry = r[1] + s[1] * sw, rz = r[2] + s[2] * sw;
+
+			float rl = sqrtf(rx * rx + ry * ry + rz * rz);
+			float rs = rl == 0.f ? 0.f : 1.f / rl;
+
+			r[0] = rx * rs;
+			r[1] = ry * rs;
+			r[2] = rz * rs;
+		}
+}
+
 } // namespace meshopt
 
 void meshopt_generateTangents(float* result, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, const float* vertex_normals, size_t vertex_normals_stride, const float* vertex_uvs, size_t vertex_uvs_stride, unsigned int options)
@@ -392,7 +584,7 @@ void meshopt_generateTangents(float* result, const unsigned int* indices, size_t
 
 	// compute vertex remap to unique vertex index
 	unsigned int* remap = allocator.allocate<unsigned int>(vertex_count);
-	buildVertexRemap(remap, vertex_positions, vertex_count, vertex_positions_stride, vertex_normals, vertex_normals_stride, vertex_uvs, vertex_uvs_stride, allocator);
+	buildVertexRemap<false>(remap, vertex_count, vertex_positions, vertex_positions_stride, vertex_normals, vertex_normals_stride, vertex_uvs, vertex_uvs_stride, allocator);
 
 	// build adjacency information
 	CornerAdjacency adjacency = {};
@@ -426,7 +618,7 @@ void meshopt_generateTangents(float* result, const unsigned int* indices, size_t
 
 	// accumulate tangents into their own respective groups
 	memset(result, 0, index_count * sizeof(float) * 4);
-	accumulateTangentGroups(result, groups, indices, index_count, remap, face_tangents, vertex_positions, vertex_positions_stride, vertex_normals, vertex_normals_stride, options);
+	accumulateTangents(result, groups, indices, index_count, face_tangents, vertex_positions, vertex_positions_stride, vertex_normals, vertex_normals_stride, options);
 
 	// finalize tangent signs for each face using facegroups
 	for (size_t i = 0; i < face_count; ++i)
@@ -449,11 +641,90 @@ void meshopt_generateTangents(float* result, const unsigned int* indices, size_t
 			r[1] *= s;
 			r[2] *= s;
 
-			if ((options & meshopt_TangentZeroFallback) == 0)
-				r[0] = s == 0.f ? 1.f : r[0]; // for isolated degenerate triangles, use (1, 0, 0) tangent for consistency
+			// for isolated degenerate triangles, use (1, 0, 0) tangent for consistency
+			r[0] = (l == 0.f && (options & meshopt_TangentZeroFallback) == 0) ? 1.f : r[0];
 		}
 
 	for (size_t i = 0; i < index_count; ++i)
 		if (groups[i] != i)
 			memcpy(&result[i * 4], &result[size_t(groups[i]) * 4], sizeof(float) * 3); // .w was set per face earlier
+}
+
+void meshopt_generateNormals(float* result, const unsigned int* indices, size_t index_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, float crease_angle, float smoothing)
+{
+	using namespace meshopt;
+
+	assert(indices || index_count == vertex_count);
+	assert(index_count % 3 == 0);
+	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride % sizeof(float) == 0);
+	assert(crease_angle >= 0 && crease_angle <= 3.1415927f);
+	assert(smoothing >= 0);
+
+	meshopt_Allocator allocator;
+
+	size_t face_count = index_count / 3;
+	float crease_cutoff = cosf(crease_angle);
+
+	// compute vertex remap to unique vertex index
+	unsigned int* remap = allocator.allocate<unsigned int>(vertex_count);
+	buildVertexRemap<true>(remap, vertex_count, vertex_positions, vertex_positions_stride, NULL, 0, NULL, 0, allocator);
+
+	// build adjacency information
+	CornerAdjacency adjacency = {};
+	buildCornerAdjacency(adjacency, indices, index_count, remap, vertex_count, allocator);
+
+	// compute per-triangle normals
+	Normal* face_normals = allocator.allocate<Normal>(face_count);
+	computeFaceNormals(face_normals, face_count, indices, vertex_positions, vertex_positions_stride);
+
+	// compute per-corner normal groups: triangles adjacent to the same vertex with similar normals are merged in strips
+	unsigned int* groups = allocator.allocate<unsigned int>(index_count);
+	for (size_t i = 0; i < index_count; ++i)
+		groups[i] = unsigned(i);
+
+	for (size_t i = 0; i < vertex_count; ++i)
+		if (adjacency.offsets[i + 1] != adjacency.offsets[i])
+			mergeNormalGroups(groups, adjacency.data + adjacency.offsets[i], adjacency.offsets[i + 1] - adjacency.offsets[i], indices, remap, face_normals, crease_cutoff);
+
+	for (size_t i = 0; i < index_count; ++i)
+		groups[i] = follow2(groups, unsigned(i));
+
+	// accumulate normals into their own respective groups
+	memset(result, 0, index_count * sizeof(float) * 3);
+	accumulateNormals(result, groups, indices, index_count, face_normals, vertex_positions, vertex_positions_stride);
+
+	// normalize accumulated normals; we need to do this before smoothing as smoothing expects normalized inputs
+	for (size_t i = 0; i < index_count; ++i)
+		if (groups[i] == i)
+		{
+			float* r = &result[i * 3];
+			float l = sqrtf(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
+			float s = l == 0.f ? 0.f : 1.f / l;
+
+			r[0] *= s;
+			r[1] *= s;
+			r[2] *= s;
+		}
+
+	if (smoothing > 0.f)
+	{
+		int passes = int(ceilf(smoothing));
+		passes = passes < 10 ? passes : 10; // clamp to avoid pathological cases
+
+		float* scratch = allocator.allocate<float>(index_count * 4);
+
+		for (int pass = 0; pass < passes; ++pass)
+		{
+			float rem = smoothing - float(pass);
+			float alpha = 0.5f * (rem < 1.f ? rem : 1.f);
+
+			smoothNormals(result, scratch, groups, index_count, alpha);
+		}
+	}
+
+	// finalize normal vectors by propagating the rest
+	for (size_t i = 0; i < index_count; ++i)
+		if (groups[i] != i)
+			memcpy(&result[i * 3], &result[size_t(groups[i]) * 3], sizeof(float) * 3);
 }

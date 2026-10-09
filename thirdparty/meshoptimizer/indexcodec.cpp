@@ -138,19 +138,25 @@ static int getCodeAuxIndex(unsigned char v, const unsigned char* table)
 	return -1;
 }
 
-static void writeTriangle(void* destination, size_t offset, size_t index_size, unsigned int a, unsigned int b, unsigned int c)
+static void* writeTriangle(void* destination, size_t index_size, unsigned int a, unsigned int b, unsigned int c)
 {
 	if (index_size == 2)
 	{
-		static_cast<unsigned short*>(destination)[offset + 0] = (unsigned short)(a);
-		static_cast<unsigned short*>(destination)[offset + 1] = (unsigned short)(b);
-		static_cast<unsigned short*>(destination)[offset + 2] = (unsigned short)(c);
+		unsigned short* tri = static_cast<unsigned short*>(destination);
+		tri[0] = (unsigned short)(a);
+		tri[1] = (unsigned short)(b);
+		tri[2] = (unsigned short)(c);
+
+		return tri + 3;
 	}
 	else
 	{
-		static_cast<unsigned int*>(destination)[offset + 0] = a;
-		static_cast<unsigned int*>(destination)[offset + 1] = b;
-		static_cast<unsigned int*>(destination)[offset + 2] = c;
+		unsigned int* tri = static_cast<unsigned int*>(destination);
+		tri[0] = a;
+		tri[1] = b;
+		tri[2] = c;
+
+		return tri + 3;
 	}
 }
 
@@ -409,19 +415,16 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 
 	// since we store 16-byte codeaux table at the end, triangle data has to begin before data_safe_end
 	const unsigned char* code = buffer + 1;
-	const unsigned char* data = code + index_count / 3;
+	const unsigned char* code_end = code + index_count / 3;
+	const unsigned char* data = code_end;
+
+	// each triangle reads at most 16 bytes of data: 1b for codeaux and 5b for each free index
 	const unsigned char* data_safe_end = buffer + buffer_size - 16;
 
 	const unsigned char* codeaux_table = data_safe_end;
 
-	for (size_t i = 0; i < index_count; i += 3)
+	while (code < code_end)
 	{
-		// make sure we have enough data to read for a triangle
-		// each triangle reads at most 16 bytes of data: 1b for codeaux and 5b for each free index
-		// after this we can be sure we can read without extra bounds checks
-		if (data > data_safe_end)
-			return -2;
-
 		unsigned char codetri = *code++;
 
 		if (codetri < 0xf0)
@@ -441,6 +444,14 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 			{
 				// fifo reads are wrapped around 16 entry buffer
 				unsigned int cf = vertexfifo[(vertexfifooffset - 1 - fec) & 15];
+
+#if (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__aarch64__))
+				// on clang, x86-cmov-conversion pass emits a branch since cf is a load from memory; asm barrier defeats this
+				// this can be fixed with __builtin_unpredictable, but gcc doesn't support it and has a similar problem due to if-conversion
+				// additionally, gcc can fuse a/b into one 64-bit load but use 32-bit edgefifo[] stores, which breaks load store forwarding
+				__asm__("" : "+r"(a) : "r"(cf));
+#endif
+
 				c = (fec == 0) ? next : cf;
 
 				int fec0 = fec == 0;
@@ -451,9 +462,13 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 			}
 			else
 			{
-				// fec - (fec ^ 3) decodes 13, 14 into -1, 1
+				// make sure we have enough data to read for a triangle; this check covers worst case advance
+				if (data > data_safe_end)
+					return -2;
+
+				// fec * 2 - 27 decodes 13, 14 into -1, 1
 				// note that we need to update the last index since free indices are delta-encoded
-				last = c = (fec != 15) ? last + (fec - (fec ^ 3)) : decodeIndex(data, last);
+				last = c = (fec != 15) ? last + (fec * 2 - 27) : decodeIndex(data, last);
 
 				// push vertex/edge fifo must match the encoding step *exactly* otherwise the data will not be decoded correctly
 				pushVertexFifo(vertexfifo, c, vertexfifooffset);
@@ -464,7 +479,7 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 			pushEdgeFifo(edgefifo, a, c, edgefifooffset);
 
 			// output triangle
-			writeTriangle(destination, i, index_size, a, b, c);
+			destination = writeTriangle(destination, index_size, a, b, c);
 		}
 		else
 		{
@@ -494,7 +509,7 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 				next += fec0;
 
 				// output triangle
-				writeTriangle(destination, i, index_size, a, b, c);
+				destination = writeTriangle(destination, index_size, a, b, c);
 
 				// push vertex/edge fifo must match the encoding step *exactly* otherwise the data will not be decoded correctly
 				pushVertexFifo(vertexfifo, a, vertexfifooffset);
@@ -507,6 +522,10 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 			}
 			else
 			{
+				// make sure we have enough data to read for a triangle; this check covers worst case advance
+				if (data > data_safe_end)
+					return -2;
+
 				// slow path: read a full byte for codeaux instead of using a table lookup
 				unsigned char codeaux = *data++;
 
@@ -535,7 +554,7 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 					last = c = decodeIndex(data, last);
 
 				// output triangle
-				writeTriangle(destination, i, index_size, a, b, c);
+				destination = writeTriangle(destination, index_size, a, b, c);
 
 				// push vertex/edge fifo must match the encoding step *exactly* otherwise the data will not be decoded correctly
 				pushVertexFifo(vertexfifo, a, vertexfifooffset);
