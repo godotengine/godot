@@ -1081,7 +1081,17 @@ static void gdextension_string_name_new_with_utf8_chars_and_len(GDExtensionUnini
 
 static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
 	XMLParser *xml = (XMLParser *)p_instance;
-	return (GDExtensionInt)xml->_open_buffer(p_buffer, p_size);
+	if (xml == nullptr || p_buffer == nullptr || p_size == 0) {
+		return (GDExtensionInt)ERR_INVALID_DATA;
+	}
+
+	// Use the safe public method; this causes an extra copy, but it's harmless
+	// and ensures the buffer is properly null-terminated.
+	Vector<uint8_t> buf;
+	buf.resize(p_size);
+	memcpy(buf.ptrw(), p_buffer, p_size);
+
+	return (GDExtensionInt)xml->open_buffer(buf);
 }
 
 static void gdextension_file_access_store_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_src, uint64_t p_length) {
