@@ -164,6 +164,7 @@ public:
 		TEXTURE_DETAIL_NORMAL,
 		TEXTURE_ORM,
 		TEXTURE_BENT_NORMAL,
+		TEXTURE_SLUG,
 		TEXTURE_MAX
 	};
 
@@ -279,6 +280,8 @@ public:
 		FLAG_DISABLE_SPECULAR_OCCLUSION,
 		FLAG_USE_Z_CLIP_SCALE,
 		FLAG_USE_FOV_OVERRIDE,
+		FLAG_USE_SLUG,
+		FLAG_USE_SLUG_COLOR,
 		FLAG_MAX
 	};
 
@@ -502,6 +505,7 @@ private:
 		StringName distance_fade_min;
 		StringName distance_fade_max;
 		StringName ao_light_affect;
+		StringName slug_scale;
 
 		StringName metallic_texture_channel;
 		StringName ao_texture_channel;
@@ -593,6 +597,8 @@ private:
 
 	float msdf_pixel_range = 4.f;
 	float msdf_outline_size = 0.f;
+
+	float slug_scale = 1.0;
 
 	DistanceFadeMode distance_fade = DISTANCE_FADE_DISABLED;
 	float distance_fade_max_distance = 0.0f;
@@ -829,6 +835,9 @@ public:
 	void set_msdf_outline_size(float p_size);
 	float get_msdf_outline_size() const;
 
+	void set_slug_scale(float p_scale);
+	float get_slug_scale() const;
+
 	void set_distance_fade(DistanceFadeMode p_mode);
 	DistanceFadeMode get_distance_fade() const;
 
@@ -877,7 +886,7 @@ public:
 	static void finish_shaders();
 	static void flush_changes();
 
-	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, bool p_texture_repeat = false, RID *r_shader_rid = nullptr);
+	static Ref<Material> get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard = false, bool p_billboard_y = false, bool p_msdf = false, bool p_slug = false, bool p_slug_color = false, bool p_no_depth = false, bool p_fixed_size = false, TextureFilter p_filter = TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, AlphaAntiAliasing p_alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF, bool p_texture_repeat = false, RID *r_shader_rid = nullptr);
 
 	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;

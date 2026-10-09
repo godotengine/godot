@@ -826,7 +826,11 @@
 		<constant name="FORMAT_ASTC_6x6_HDR" value="48" enum="Format">
 			Same format as [constant FORMAT_ASTC_6x6], but with the hint to let the GPU know it is used for HDR.
 		</constant>
-		<constant name="FORMAT_MAX" value="49" enum="Format">
+		<constant name="FORMAT_RGBA16SI" value="49" enum="Format">
+			OpenGL texture format [code]GL_RGBA16I[/code] where there are four components, each a 16-bit signed integer value. Each component is clamped between [code]-32768[/code] and [code]32767[/code] (inclusive).
+			[b]Note:[/b] When used in a shader, the texture requires usage of [code]isampler[/code] samplers. Additionally, it only supports nearest-neighbor filtering under the Compatibility renderer.
+		</constant>
+		<constant name="FORMAT_MAX" value="50" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">

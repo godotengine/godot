@@ -73,10 +73,16 @@ bool DynamicFontImportSettingsData::_get(const StringName &p_name, Variant &r_re
 void DynamicFontImportSettingsData::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const List<ResourceImporter::ImportOption>::Element *E = options.front(); E; E = E->next()) {
 		if (owner && owner->import_settings_data.is_valid()) {
-			if (owner->import_settings_data->get("multichannel_signed_distance_field") && (E->get().option.name == "size" || E->get().option.name == "outline_size" || E->get().option.name == "oversampling")) {
+			if (int(owner->import_settings_data->get("render_mode")) != TextServer::FONT_RENDER_RASTER && (E->get().option.name == "size" || E->get().option.name == "antialiasing" || E->get().option.name == "oversampling" || E->get().option.name == "subpixel_positioning" || E->get().option.name == "keep_rounding_remainders" || E->get().option.name == "disable_embedded_bitmaps")) {
 				continue;
 			}
-			if (!owner->import_settings_data->get("multichannel_signed_distance_field") && (E->get().option.name == "msdf_pixel_range" || E->get().option.name == "msdf_size")) {
+			if (int(owner->import_settings_data->get("render_mode")) != TextServer::FONT_RENDER_MSDF && (E->get().option.name == "msdf_pixel_range" || E->get().option.name == "msdf_size")) {
+				continue;
+			}
+			if (int(owner->import_settings_data->get("render_mode")) == TextServer::FONT_RENDER_MSDF && (E->get().option.name == "outline_size")) {
+				continue;
+			}
+			if (int(owner->import_settings_data->get("render_mode")) == TextServer::FONT_RENDER_HB_SLUG && (E->get().option.name == "generate_mipmaps" || E->get().option.name == "hinting" || E->get().option.name == "force_autohinter" || E->get().option.name == "modulate_color_glyphs")) {
 				continue;
 			}
 		}
@@ -130,14 +136,14 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 			font_preview->set_generate_mipmaps(import_settings_data->get("generate_mipmaps"));
 		} else if (p_edited_property == "disable_embedded_bitmaps") {
 			font_preview->set_disable_embedded_bitmaps(import_settings_data->get("disable_embedded_bitmaps"));
-		} else if (p_edited_property == "multichannel_signed_distance_field") {
-			font_preview->set_multichannel_signed_distance_field(import_settings_data->get("multichannel_signed_distance_field"));
+		} else if (p_edited_property == "render_mode") {
+			font_preview->set_render_mode(import_settings_data->get("render_mode"));
 			_variation_selected();
 			_variations_validate();
 		} else if (p_edited_property == "msdf_pixel_range") {
 			font_preview->set_msdf_pixel_range(import_settings_data->get("msdf_pixel_range"));
 		} else if (p_edited_property == "msdf_size") {
-			font_preview->set_msdf_size(import_settings_data->get("msdf_size"));
+			font_preview->set_source_size(import_settings_data->get("msdf_size"));
 		} else if (p_edited_property == "allow_system_fallback") {
 			font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		} else if (p_edited_property == "force_autohinter") {
@@ -647,7 +653,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	main_settings["antialiasing"] = import_settings_data->get("antialiasing");
 	main_settings["generate_mipmaps"] = import_settings_data->get("generate_mipmaps");
 	main_settings["disable_embedded_bitmaps"] = import_settings_data->get("disable_embedded_bitmaps");
-	main_settings["multichannel_signed_distance_field"] = import_settings_data->get("multichannel_signed_distance_field");
+	main_settings["render_mode"] = import_settings_data->get("render_mode");
 	main_settings["msdf_pixel_range"] = import_settings_data->get("msdf_pixel_range");
 	main_settings["msdf_size"] = import_settings_data->get("msdf_size");
 	main_settings["allow_system_fallback"] = import_settings_data->get("allow_system_fallback");
@@ -831,7 +837,7 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	// Load second copy of font with MSDF disabled for the glyph table and metadata extraction.
 	font_main.instantiate();
 	font_main->set_data(font_data);
-	font_main->set_multichannel_signed_distance_field(false);
+	font_main->set_render_mode(TextServer::FONT_RENDER_RASTER);
 
 	text_edit->add_theme_font_override(SceneStringName(font), font_main);
 
@@ -948,9 +954,9 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 
 	if (font_preview.is_valid()) {
 		font_preview->set_antialiasing((TextServer::FontAntialiasing)import_settings_data->get("antialiasing").operator int());
-		font_preview->set_multichannel_signed_distance_field(import_settings_data->get("multichannel_signed_distance_field"));
+		font_preview->set_render_mode(import_settings_data->get("render_mode"));
 		font_preview->set_msdf_pixel_range(import_settings_data->get("msdf_pixel_range"));
-		font_preview->set_msdf_size(import_settings_data->get("msdf_size"));
+		font_preview->set_source_size(import_settings_data->get("msdf_size"));
 		font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
 		font_preview->set_modulate_color_glyphs(import_settings_data->get("modulate_color_glyphs"));
@@ -1004,7 +1010,7 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD Subpixel"), 1));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "generate_mipmaps"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "disable_embedded_bitmaps"), true));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "render_mode", PROPERTY_HINT_ENUM, "Raster,MSDF,HarfBuzz/SLUG", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), TextServer::FONT_RENDER_RASTER));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "msdf_size", PROPERTY_HINT_RANGE, "1,250,1"), 48));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
