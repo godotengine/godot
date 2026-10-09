@@ -30,7 +30,9 @@
 
 #include "file_access_pack.h"
 
+#include "core/crypto/crypto_core.h"
 #include "core/io/file_access_encrypted.h"
+#include "core/io/file_access_memory.h"
 #include "core/io/file_access_patched.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
@@ -39,6 +41,16 @@
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
 	for (int i = 0; i < sources.size(); i++) {
 		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset, p_decryption_key)) {
+			return OK;
+		}
+	}
+
+	return ERR_FILE_UNRECOGNIZED;
+}
+
+Error PackedData::add_pack_from_buffer(const PackedByteArray &p_bytes, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
+	for (int i = 0; i < sources.size(); i++) {
+		if (sources[i]->try_open_pack_from_buffer(p_bytes, p_replace_files, p_offset, p_decryption_key)) {
 			return OK;
 		}
 	}
@@ -220,6 +232,26 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	if (f.is_null()) {
 		return false;
 	}
+	return _try_open_pack(f, p_path, p_replace_files, p_offset, p_decryption_key);
+}
+
+bool PackedSourcePCK::try_open_pack_from_buffer(const PackedByteArray &p_bytes, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
+	uint8_t md5_hash[16];
+	if (CryptoCore::md5(p_bytes.ptr(), p_bytes.size(), md5_hash) != OK) {
+		return false;
+	}
+	String internal_path = "mem://" + String::hex_encode_buffer((const uint8_t *)md5_hash, 16);
+
+	FileAccessMemory::register_file(internal_path, p_bytes);
+
+	Ref<FileAccessMemory> f;
+	f.instantiate();
+	f->open_internal(internal_path, FileAccess::READ);
+	return _try_open_pack(f, internal_path, p_replace_files, p_offset, p_decryption_key);
+}
+
+bool PackedSourcePCK::_try_open_pack(Ref<FileAccess> p_file, const String &p_path, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
+	Ref<FileAccess> &f = p_file;
 
 	bool pck_header_found = false;
 
@@ -400,6 +432,10 @@ bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_f
 	return true;
 }
 
+bool PackedSourceDirectory::try_open_pack_from_buffer(const PackedByteArray &p_bytes, bool p_replace_files, uint64_t p_offset, const Vector<uint8_t> &p_decryption_key) {
+	return false; // Not implementable. Needed for add_pack_from_buffer.
+}
+
 Ref<FileAccess> PackedSourceDirectory::get_file(const String &p_path, PackedData::PackedFile *p_file, const Vector<uint8_t> &p_decryption_key) {
 	Ref<FileAccess> ret = FileAccess::create_for_path(p_path);
 	ret->reopen(p_path, FileAccess::READ);
@@ -544,6 +580,13 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		f = FileAccess::open(path_to_load, FileAccess::READ | FileAccess::SKIP_PACK, &err);
 		ERR_FAIL_COND_MSG(err != OK, vformat(R"(Can't open pack-referenced file "%s" from sparse pack "%s" due to error "%s".)", simplified_path, pf.pack, error_names[err]));
 		off = 0; // For the sparse pack offset is always zero.
+	} else if (pf.pack.begins_with("mem://")) {
+		Ref<FileAccessMemory> f_mem;
+		f_mem.instantiate();
+		f_mem->open_internal(pf.pack, FileAccess::READ);
+		f_mem->seek(pf.offset);
+		off = pf.offset;
+		f = f_mem;
 	} else {
 		Error err = OK;
 		f = FileAccess::open(pf.pack, FileAccess::READ, &err);
