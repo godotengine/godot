@@ -37,15 +37,20 @@
 #include "scene/gui/button.h"
 #include "scene/main/viewport.h"
 
+constexpr real_t PREVIEW_TRACKBALL_SENSITIVITY = 0.02;
+
 void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
-		rot_x -= mm->get_relative().y * 0.01;
-		rot_y -= mm->get_relative().x * 0.01;
+		const real_t delta_yaw = mm->get_relative().x * PREVIEW_TRACKBALL_SENSITIVITY;
+		const real_t delta_pitch = mm->get_relative().y * PREVIEW_TRACKBALL_SENSITIVITY;
 
-		rot_x = CLAMP(rot_x, -Math::PI / 2, Math::PI / 2);
+		Basis increment = Basis(Vector3(0, 1, 0), delta_yaw) * Basis(Vector3(1, 0, 0), delta_pitch);
+		rot_basis = increment * rot_basis;
+		rot_basis.orthonormalize();
+
 		_update_rotation();
 	}
 }
@@ -68,8 +73,7 @@ void MeshEditor::_notification(int p_what) {
 
 void MeshEditor::_update_rotation() {
 	Transform3D t;
-	t.basis.rotate(Vector3(0, 1, 0), -rot_y);
-	t.basis.rotate(Vector3(1, 0, 0), -rot_x);
+	t.basis = rot_basis;
 	rotation->set_transform(t);
 }
 
@@ -77,8 +81,9 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	mesh = p_mesh;
 	mesh_instance->set_mesh(mesh);
 
-	rot_x = Math::deg_to_rad(-15.0);
-	rot_y = Math::deg_to_rad(30.0);
+	rot_basis = Basis();
+	rot_basis.rotate(Vector3(0, 1, 0), -Math::deg_to_rad(30.0));
+	rot_basis.rotate(Vector3(1, 0, 0), Math::deg_to_rad(15.0));
 	_update_rotation();
 
 	AABB aabb = mesh->get_aabb();
@@ -162,9 +167,6 @@ MeshEditor::MeshEditor() {
 	light_2_switch->set_accessibility_name(TTRC("Second Light"));
 	vb_light->add_child(light_2_switch);
 	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &MeshEditor::_on_light_2_switch_pressed));
-
-	rot_x = 0;
-	rot_y = 0;
 
 	EditorNode::get_singleton()->register_hdr_viewport(viewport);
 }
