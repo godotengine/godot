@@ -37,35 +37,39 @@
 
 // https://partner.steamgames.com/doc/sdk/api#initialization_and_shutdown
 
-SteamTracker::SteamTracker() {
+SteamTracker::SteamTracker(const String &p_path) {
 	String path;
-	if (OS::get_singleton()->has_feature("linuxbsd")) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libsteam_api.so");
-		if (!FileAccess::exists(path)) {
-			path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../lib").path_join("libsteam_api.so");
+	if (p_path.is_empty()) {
+		if (OS::get_singleton()->has_feature("linuxbsd")) {
+			path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libsteam_api.so");
+			if (!FileAccess::exists(path)) {
+				path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../lib").path_join("libsteam_api.so");
+				if (!FileAccess::exists(path)) {
+					return;
+				}
+			}
+		} else if (OS::get_singleton()->has_feature("windows")) {
+			if (OS::get_singleton()->has_feature("64")) {
+				path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("steam_api64.dll");
+			} else {
+				path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("steam_api.dll");
+			}
 			if (!FileAccess::exists(path)) {
 				return;
 			}
-		}
-	} else if (OS::get_singleton()->has_feature("windows")) {
-		if (OS::get_singleton()->has_feature("64")) {
-			path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("steam_api64.dll");
+		} else if (OS::get_singleton()->has_feature("macos")) {
+			path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libsteam_api.dylib");
+			if (!FileAccess::exists(path)) {
+				path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../Frameworks").path_join("libsteam_api.dylib");
+				if (!FileAccess::exists(path)) {
+					return;
+				}
+			}
 		} else {
-			path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("steam_api.dll");
-		}
-		if (!FileAccess::exists(path)) {
 			return;
 		}
-	} else if (OS::get_singleton()->has_feature("macos")) {
-		path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("libsteam_api.dylib");
-		if (!FileAccess::exists(path)) {
-			path = OS::get_singleton()->get_executable_path().get_base_dir().path_join("../Frameworks").path_join("libsteam_api.dylib");
-			if (!FileAccess::exists(path)) {
-				return;
-			}
-		}
 	} else {
-		return;
+		path = p_path;
 	}
 
 	Error err = OS::get_singleton()->open_dynamic_library(path, steam_library_handle);
