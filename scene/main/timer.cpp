@@ -187,7 +187,7 @@ Timer::TimerProcessCallback Timer::get_timer_process_callback() const {
 	return timer_process_callback;
 }
 
-void Timer::_set_process(bool p_process, bool p_force) {
+void Timer::_set_process(bool p_process) {
 	switch (timer_process_callback) {
 		case TIMER_PROCESS_PHYSICS:
 			set_physics_process_internal(p_process && !paused);
