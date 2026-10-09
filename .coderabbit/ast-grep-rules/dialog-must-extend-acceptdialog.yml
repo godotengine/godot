@@ -1,0 +1,17 @@
+id: dialog-must-extend-acceptdialog
+language: cpp
+severity: error
+message: Modal prompts must derive from AcceptDialog/ConfirmationDialog (scene/gui/dialogs.h), not Window or Popup.
+note: Canonical pattern is scene/gui/dialogs.h. Platform team owns this rule.
+files:
+  - "scene/**/*.h"
+  - "editor/**/*.h"
+rule:
+  kind: class_specifier
+  all:
+    - has:
+        kind: base_class_clause
+        regex: 'public\s+(Window|Popup)\b'
+    - has:
+        field: name
+        regex: 'Dialog|Prompt|Confirm'

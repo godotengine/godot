@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  path_instructions:
+    - path: "scene/gui/**"
+      instructions: |
+        Platform-team standard: every modal prompt/dialog (anything with OK/Cancel semantics)
+        MUST derive from AcceptDialog or ConfirmationDialog (scene/gui/dialogs.h).
+        Never derive a dialog directly from Window or Popup and re-implement buttons,
+        focus, Escape/close handling or hide_on_ok. Point to the canonical pattern in review.
+    - path: "editor/**"
+      instructions: |
+        Same dialog standard as scene/gui: derive from ConfirmationDialog/AcceptDialog.
+        Use callable_mp() for signal connections; use TTR()/TTRC() for user-visible strings.
+    - path: "core/**"
+      instructions: |
+        Core is a dependency of everything. Treat any change to a public signature or
+        return-value contract as breaking: list the callers in scene/, editor/ and modules/
+        that depend on the old behaviour.
+  pre_merge_checks:
+    custom_checks:
+      - name: "Dialog must extend AcceptDialog"
+        mode: "error"
+        instructions: |
+          Fail if the PR adds or modifies a C++ class in scene/ or editor/ that is a modal
+          dialog or prompt (OK/Cancel or confirm/deny semantics) and derives directly from
+          Window or Popup instead of AcceptDialog or ConfirmationDialog. Pass otherwise.
+      - name: "Public contract change lists callers"
+        mode: "warning"
+        instructions: |
+          If the PR changes the return value, nullability or signal-emission behaviour of a
+          public method in core/ or scene/, fail unless the PR description lists affected callers.
+  tools:
+    ast-grep:
+      enabled: true
+      rule_dirs:
+        - ".coderabbit/ast-grep-rules"
+knowledge_base:
+  learnings:
+    scope: local
+    approval_delay: 0

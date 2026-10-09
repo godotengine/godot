@@ -1,0 +1,4 @@
+ruleDirs:
+  - .coderabbit/ast-grep-rules
+languageGlobs:
+  cpp: ["*.h"]
