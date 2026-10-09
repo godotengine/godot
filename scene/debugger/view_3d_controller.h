@@ -280,6 +280,8 @@ public:
 	inline Transform3D to_camera_transform() const { return _to_camera_transform(cursor); }
 	inline Transform3D interp_to_camera_transform() const { return _to_camera_transform(cursor_interp); }
 
+	NavigationMode get_nav_mode_from_input(const Ref<InputEvent> &p_event);
+
 	Key emulate_numpad_key(const Key p_code) const;
 
 	void set_shortcut(const ShortcutName p_name, const Ref<Shortcut> &p_shortcut);
