@@ -37,15 +37,20 @@ namespace Godot.Collections
 
         private Dictionary(godot_dictionary nativeValueToOwn)
         {
-            NativeValue = (godot_dictionary.movable)(nativeValueToOwn.IsAllocated ?
-                nativeValueToOwn :
-                NativeFuncs.godotsharp_dictionary_new());
-            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+            TakeOwnershipOfDisposableValue(nativeValueToOwn);
         }
 
         // Explicit name to make it very clear
         internal static Dictionary CreateTakingOwnershipOfDisposableValue(godot_dictionary nativeValueToOwn)
             => new Dictionary(nativeValueToOwn);
+
+        internal void TakeOwnershipOfDisposableValue(godot_dictionary nativeValueToOwn)
+        {
+            NativeValue = (godot_dictionary.movable)(nativeValueToOwn.IsAllocated ?
+                nativeValueToOwn :
+                NativeFuncs.godotsharp_dictionary_new());
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+        }
 
         ~Dictionary()
         {
@@ -530,7 +535,7 @@ namespace Godot.Collections
             VariantUtils.GenericConversion<Dictionary<TKey, TValue>>.FromVariantCb = FromVariantFunc;
         }
 
-        private readonly Dictionary _underlyingDict;
+        internal Dictionary _underlyingDict;
 
         Dictionary IGenericGodotDictionary.UnderlyingDictionary => _underlyingDict;
 
