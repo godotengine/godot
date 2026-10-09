@@ -26,6 +26,14 @@
 				For resources that store state in non-exported properties, such as via [method Object._validate_property] or [method Object._get_property_list], this method must be implemented to clear them.
 			</description>
 		</method>
+		<method name="_set_path" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="take_over" type="bool" />
+			<description>
+				Override this method to execute additional logic after either [member resource_path] is set or [method take_over_path] is called on this object.
+			</description>
+		</method>
 		<method name="_set_path_cache" qualifiers="virtual const">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
