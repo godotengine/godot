@@ -759,12 +759,13 @@ void ConnectDialog::_advanced_pressed() {
 		vbc_right->show();
 		error_label->hide();
 	} else {
-		reset_size();
 		connect_to_label->set_text(TTR("Connect to Script:"));
 		tree->set_connect_to_script_mode(true);
 
 		vbc_right->hide();
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
+
+		reset_size();
 	}
 
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "use_advanced_connections", advanced->is_pressed());
