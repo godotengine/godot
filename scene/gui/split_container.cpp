@@ -1746,6 +1746,8 @@ bool SplitContainer::is_dragging_nested_intersections() const {
 void SplitContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_split_offsets", "offsets"), &SplitContainer::set_split_offsets);
 	ClassDB::bind_method(D_METHOD("get_split_offsets"), &SplitContainer::get_split_offsets);
+	ClassDB::bind_method(D_METHOD("set_split_offset", "offset", "index"), &SplitContainer::set_split_offset, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_split_offset", "index"), &SplitContainer::get_split_offset, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("clamp_split_offset", "priority_index"), &SplitContainer::clamp_split_offset, DEFVAL(0));
 
@@ -1819,9 +1821,9 @@ void SplitContainer::_bind_methods() {
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_drag_area_control"), &SplitContainer::get_drag_area_control);
-	ClassDB::bind_method(D_METHOD("set_split_offset", "offset"), &SplitContainer::_set_split_offset_first);
-	ClassDB::bind_method(D_METHOD("get_split_offset"), &SplitContainer::_get_split_offset_first);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_offset", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_NO_EDITOR), "set_split_offset", "get_split_offset");
+	ClassDB::bind_method(D_METHOD("set_split_offset_first", "offset"), &SplitContainer::_set_split_offset_first);
+	ClassDB::bind_method(D_METHOD("get_split_offset_first"), &SplitContainer::_get_split_offset_first);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_offset", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_NO_EDITOR), "set_split_offset_first", "get_split_offset_first");
 #endif // DISABLE_DEPRECATED
 }
 
