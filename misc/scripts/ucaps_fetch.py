@@ -4,8 +4,6 @@
 # the Unicode Character Database to the `ucaps.h` file.
 # NOTE: This script is deliberately not integrated into the build system;
 # you should run it manually whenever you want to update the data.
-from __future__ import annotations
-
 import os
 import sys
 from typing import Final
