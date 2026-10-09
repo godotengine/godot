@@ -966,4 +966,11 @@ CodeEditorBase::CodeEditorBase() {
 	add_child(editor_box);
 	editor_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	editor_box->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	for (const Ref<EditorSyntaxHighlighter> &highlighter : highlighters) {
+		if (Object::cast_to<EditorStandardSyntaxHighlighter>(highlighter.ptr())) {
+			set_syntax_highlighter(highlighter);
+			break;
+		}
+	}
 }
