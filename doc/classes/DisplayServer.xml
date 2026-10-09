@@ -1650,7 +1650,7 @@
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Converts a physical (US QWERTY) [param keycode] to one in the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_label_from_physical" qualifiers="const">
@@ -1658,14 +1658,14 @@
 			<param index="0" name="keycode" type="int" enum="Key" />
 			<description>
 				Converts a physical (US QWERTY) [param keycode] to localized label printed on the key in the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of keyboard layouts.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_language" qualifiers="const">
@@ -1673,7 +1673,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the ISO-639/BCP-47 language code of the keyboard layout at position [param index].
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_layout_name" qualifiers="const">
@@ -1681,7 +1681,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns the localized name of the keyboard layout at position [param index].
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="keyboard_set_current_layout">
@@ -1689,7 +1689,7 @@
 			<param index="0" name="index" type="int" />
 			<description>
 				Sets the active keyboard layout.
-				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
@@ -2572,7 +2572,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="window_set_popup_safe_rect">
@@ -3376,7 +3376,7 @@
 		</constant>
 		<constant name="WINDOW_FLAG_MOUSE_PASSTHROUGH" value="7" enum="WindowFlags">
 			All mouse events are passed to the underlying window of the same application.
-			[b]Note:[/b] This flag is implemented on Linux (X11), macOS, and Windows.
+			[b]Note:[/b] This flag is implemented on Linux (X11/Wayland), macOS, and Windows.
 		</constant>
 		<constant name="WINDOW_FLAG_SHARP_CORNERS" value="8" enum="WindowFlags">
 			Window style is overridden, forcing sharp corners.

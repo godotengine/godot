@@ -81,6 +81,8 @@ class DisplayServerWayland : public DisplayServer {
 
 		bool emulate_vsync = false;
 
+		Vector<Vector2> mpass_region;
+
 #ifdef GLES3_ENABLED
 		struct wl_egl_window *wl_egl_window = nullptr;
 #endif

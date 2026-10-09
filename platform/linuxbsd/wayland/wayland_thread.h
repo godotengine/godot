@@ -1309,6 +1309,7 @@ public:
 	DisplayServerEnums::WindowMode window_get_mode(DisplayServerEnums::WindowID p_window_id) const;
 
 	void window_set_borderless(DisplayServerEnums::WindowID p_window_id, bool p_borderless);
+	void window_set_input_region(DisplayServerEnums::WindowID p_window_id, bool p_empty_region, const Vector<Vector2> &p_region);
 	void window_set_title(DisplayServerEnums::WindowID p_window_id, const String &p_title);
 	void window_set_app_id(DisplayServerEnums::WindowID p_window_id, const String &p_app_id);
 
