@@ -440,9 +440,6 @@ String GLTFState::get_filename() const {
 
 void GLTFState::set_filename(const String &p_filename) {
 	filename = p_filename;
-	if (extract_prefix.is_empty()) {
-		extract_prefix = p_filename.get_basename();
-	}
 }
 
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) const {
