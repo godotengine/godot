@@ -69,6 +69,7 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is de
 	bool ime_suppress_next_keyup;
 	id layer_delegate;
 	NSMutableSet<NSString *> *registered_observers;
+	float trackpad_pressure;
 }
 
 - (void)processScrollEvent:(NSEvent *)event button:(MouseButton)button factor:(double)factor;
