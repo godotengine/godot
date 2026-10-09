@@ -362,6 +362,37 @@ int JoypadSDL::Joypad::get_joy_num_touchpads() const {
 	return SDL_GetNumGamepadTouchpads(get_sdl_gamepad());
 }
 
+JoyModel JoypadSDL::Joypad::get_joy_model() const {
+	switch (SDL_GetGamepadType(get_sdl_gamepad())) {
+		case SDL_GAMEPAD_TYPE_XBOX360:
+			return JoyModel::XBOX_360;
+		case SDL_GAMEPAD_TYPE_XBOXONE:
+			return JoyModel::XBOX_ONE;
+		case SDL_GAMEPAD_TYPE_PS3:
+			return JoyModel::PS3;
+		case SDL_GAMEPAD_TYPE_PS4:
+			return JoyModel::PS4;
+		case SDL_GAMEPAD_TYPE_PS5:
+			return JoyModel::PS5;
+		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+			return JoyModel::SWITCH_PRO;
+		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+			return JoyModel::JOYCON_LEFT;
+		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+			return JoyModel::JOYCON_RIGHT;
+		case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+			return JoyModel::JOYCON_PAIR;
+		case SDL_GAMEPAD_TYPE_UNKNOWN:
+		case SDL_GAMEPAD_TYPE_STANDARD: // We will deduce the model in the Input class itself for this one
+		default:
+			return JoyModel::UNKNOWN;
+	}
+}
+
+JoyDeviceType JoypadSDL::Joypad::get_joy_device_type() const {
+	return static_cast<JoyDeviceType>(SDL_GetJoystickType(get_sdl_joystick()));
+}
+
 SDL_Joystick *JoypadSDL::Joypad::get_sdl_joystick() const {
 	return SDL_GetJoystickFromID(sdl_instance_idx);
 }
