@@ -15,6 +15,7 @@
 			<return type="ArrayMesh" />
 			<description>
 				Returns the [ArrayMesh] used to draw the debug collision for this [Shape3D].
+				[b]Note:[/b] This generates a debug line mesh intended for visual debugging purposes only. It has no surface data accessible via [MeshDataTool], and cannot be used with [SurfaceTool] to create triangle meshes as they use different array layouts. To extract actual collision mesh data, use [method ConcavePolygonShape3D.get_faces] for trimesh collision shapes.
 			</description>
 		</method>
 	</methods>
