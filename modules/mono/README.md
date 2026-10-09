@@ -5,10 +5,19 @@
    ```sh
    <godot_binary> --generate-mono-glue ./modules/mono/glue
    ```
+    To also emit localized IntelliSense XML files into the GodotSharp projects for every available doc translation, add:
+    ```sh
+    <godot_binary> --generate-mono-glue ./modules/mono/glue --generate-localized-docs
+    ```
+    To limit localized XML generation to specific locales, pass the locale list directly to the localized docs option:
+    ```sh
+    <godot_binary> --generate-mono-glue ./modules/mono/glue --generate-localized-docs zh-Hans,fr
+    ```
 3. Build the C# solutions:
    ```sh
    ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin
    ```
+    If localized XML docs were generated, they are mirrored into the copied GodotSharp API output automatically.
 
 The paths specified in these examples assume the command is being run from
 the Godot source root.
