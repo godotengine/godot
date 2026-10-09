@@ -5,17 +5,17 @@ SUBTEST_INIT_ARRAY_EMPTY
 >> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:33 on subtest_init_array_empty(): There was an error calling "_iter_next" on iterator object of type "BadInit".
 SUBTEST_NEXT_ARRAY_LARGE
 1
->> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:67 on subtest_next_array_large(): There was an error calling "_iter_next" on iterator object of type "BadNext".
+>> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:66 on subtest_next_array_large(): There was an error calling "_iter_next" on iterator object of type "BadNext".
 SUBTEST_NEXT_ARRAY_EMPTY
 1
->> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:72 on subtest_next_array_empty(): There was an error calling "_iter_next" on iterator object of type "BadNext".
+>> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:71 on subtest_next_array_empty(): There was an error calling "_iter_next" on iterator object of type "BadNext".
 SUBTEST_VARIANT_INIT_ARRAY_LARGE
 >> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:2 on iterate(): Unable to iterate on object of type 'Object'.
 SUBTEST_VARIANT_INIT_ARRAY_EMPTY
 >> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:2 on iterate(): Unable to iterate on object of type 'Object'.
 SUBTEST_VARIANT_NEXT_ARRAY_LARGE
 1
->> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:3 on iterate(): Unable to iterate on object of type 'Object' (type changed since first iteration?).
+>> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:2 on iterate(): Unable to iterate on object of type 'Object' (type changed since first iteration?).
 SUBTEST_VARIANT_NEXT_ARRAY_EMPTY
 1
->> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:3 on iterate(): Unable to iterate on object of type 'Object' (type changed since first iteration?).
+>> SCRIPT ERROR at runtime/errors/for_loop_iterator_array_size.gd:2 on iterate(): Unable to iterate on object of type 'Object' (type changed since first iteration?).
