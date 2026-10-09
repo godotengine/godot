@@ -345,7 +345,7 @@ private:
 	HBoxContainer *right_menu_hb = nullptr;
 
 	// Spacers to center 2D / 3D / Script buttons.
-	HBoxContainer *left_spacer = nullptr;
+	Control *left_spacer = nullptr;
 	Control *right_spacer = nullptr;
 
 	Control *menu_btn_spacer = nullptr;
