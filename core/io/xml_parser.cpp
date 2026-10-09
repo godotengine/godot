@@ -458,16 +458,11 @@ bool XMLParser::is_empty() const {
 Error XMLParser::open_buffer(const Vector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_V(p_buffer.is_empty(), ERR_INVALID_DATA);
 
-	if (data_copy) {
-		memdelete_arr(data_copy);
-		data_copy = nullptr;
-	}
+	data_copy = p_buffer;
+	data_copy.push_back(0);
 
 	length = p_buffer.size();
-	data_copy = memnew_arr(char, length + 1);
-	memcpy(data_copy, p_buffer.ptr(), length);
-	data_copy[length] = 0;
-	data = data_copy;
+	data = (const char *)data_copy.ptr();
 	P = data;
 	current_line = 0;
 
@@ -478,10 +473,7 @@ Error XMLParser::_open_buffer(const uint8_t *p_buffer, size_t p_size) {
 	ERR_FAIL_COND_V(p_size == 0, ERR_INVALID_DATA);
 	ERR_FAIL_NULL_V(p_buffer, ERR_INVALID_DATA);
 
-	if (data_copy) {
-		memdelete_arr(data_copy);
-		data_copy = nullptr;
-	}
+	data_copy.clear();
 
 	length = p_size;
 	data = (const char *)p_buffer;
@@ -500,15 +492,11 @@ Error XMLParser::open(const String &p_path) {
 	length = file->get_length();
 	ERR_FAIL_COND_V(length < 1, ERR_FILE_CORRUPT);
 
-	if (data_copy) {
-		memdelete_arr(data_copy);
-		data_copy = nullptr;
-	}
+	data_copy.resize(length + 1);
+	file->get_buffer(data_copy.ptrw(), length);
+	data_copy.write[length] = 0;
 
-	data_copy = memnew_arr(char, length + 1);
-	file->get_buffer((uint8_t *)data_copy, length);
-	data_copy[length] = 0;
-	data = data_copy;
+	data = (const char *)data_copy.ptr();
 	P = data;
 	current_line = 0;
 
@@ -535,10 +523,7 @@ void XMLParser::skip_section() {
 }
 
 void XMLParser::close() {
-	if (data_copy) {
-		memdelete_arr(data);
-		data_copy = nullptr;
-	}
+	data_copy.clear();
 	data = nullptr;
 	length = 0;
 	P = nullptr;
@@ -552,8 +537,4 @@ int XMLParser::get_current_line() const {
 }
 
 XMLParser::~XMLParser() {
-	if (data_copy) {
-		memdelete_arr(data_copy);
-		data_copy = nullptr;
-	}
 }
