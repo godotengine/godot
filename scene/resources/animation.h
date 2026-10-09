@@ -41,6 +41,10 @@ class Animation : public Resource {
 	GDCLASS(Animation, Resource);
 	RES_BASE_EXTENSION("anim");
 
+#ifdef TOOLS_ENABLED
+	friend class AnimationBezierTrackEdit;
+#endif
+
 public:
 	typedef uint64_t TrackCacheID;
 
@@ -459,6 +463,16 @@ public:
 	_FORCE_INLINE_ const LocalVector<Track *> &get_tracks() {
 		return tracks;
 	}
+
+#ifdef TOOLS_ENABLED
+	template <typename T>
+	void replace_track(uint32_t p_track, const T &p_track_data) {
+		ERR_FAIL_COND_MSG(p_track >= tracks.size(), vformat("Replace track failed: No track with index %d.", p_track));
+		ERR_FAIL_COND_MSG(p_track_data.type != tracks[p_track]->type, "Replace track failed: Track type mismatch.");
+		*static_cast<T *>(tracks[p_track]) = p_track_data;
+		emit_changed();
+	}
+#endif
 
 	bool is_capture_included() const;
 
