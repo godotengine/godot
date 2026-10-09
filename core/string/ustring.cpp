@@ -340,7 +340,7 @@ bool String::operator==(const char32_t *p_str) const {
 }
 
 bool String::operator==(const String &p_str) const {
-	return span() == p_str.span();
+	return _cowdata.ptr() == p_str._cowdata.ptr() || span() == p_str.span();
 }
 
 bool String::operator==(const Span<char32_t> &p_str_range) const {
@@ -446,7 +446,8 @@ bool String::operator<(const String &p_str) const {
 }
 
 signed char String::nocasecmp_to(const String &p_str) const {
-	if (is_empty() && p_str.is_empty()) {
+	if (unlikely(p_str.ptr() == ptr())) {
+		// We have the same buffer (or are both null).
 		return 0;
 	}
 	if (is_empty()) {
@@ -478,7 +479,8 @@ signed char String::nocasecmp_to(const String &p_str) const {
 }
 
 signed char String::casecmp_to(const String &p_str) const {
-	if (is_empty() && p_str.is_empty()) {
+	if (unlikely(p_str.ptr() == ptr())) {
+		// We have the same buffer (or are both null).
 		return 0;
 	}
 	if (is_empty()) {
