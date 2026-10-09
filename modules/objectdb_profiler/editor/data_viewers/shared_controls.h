@@ -41,7 +41,7 @@ class SpanningHeader : public PanelContainer {
 	GDCLASS(SpanningHeader, PanelContainer);
 
 public:
-	SpanningHeader(const String &p_text);
+	SpanningHeader(const String &p_text, const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 };
 
 class DarkPanelContainer : public PanelContainer {
@@ -110,6 +110,7 @@ protected:
 	Tree *managed_tree = nullptr;
 	HashMap<int, SortItem> sort_items;
 	int current_sort = 0;
+	Callable custom_filter_cb;
 
 	void _apply_filter(TreeItem *p_current_node = nullptr);
 	void _apply_sort();
@@ -117,11 +118,12 @@ protected:
 	void _filter_changed(const String &p_filter);
 
 public:
-	TreeSortAndFilterBar(Tree *p_managed_tree, const String &p_filter_placeholder_text);
+	TreeSortAndFilterBar(Tree *p_managed_tree, const String &p_filter_placeholder_text, const String &p_tooltip_text = String());
 	void _notification(int p_what);
 	SortOptionIndexes add_sort_option(const String &p_new_option, SortType p_sort_type, int p_sort_column, bool p_is_default = false);
 	void clear_filter();
 	void clear();
 	void select_sort(int p_item_id);
+	void set_custom_filter_callback(const Callable &p_custom_callback);
 	void apply();
 };

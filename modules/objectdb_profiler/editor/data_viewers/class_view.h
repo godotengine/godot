@@ -46,9 +46,12 @@ struct ClassData {
 	LocalVector<SnapshotDataObject *> instances;
 	TreeItem *tree_node = nullptr;
 	HashMap<GameStateSnapshot *, int> recursive_instance_count_cache;
+	HashMap<GameStateSnapshot *, int> recursive_unique_instance_count_cache;
 
 	int instance_count(GameStateSnapshot *p_snapshot = nullptr);
+	int unique_instance_count(GameStateSnapshot *p_snapshot, GameStateSnapshot *p_other_snapshot);
 	int get_recursive_instance_count(HashMap<String, ClassData> &p_all_classes, GameStateSnapshot *p_snapshot = nullptr);
+	int get_recursive_unique_instance_count(HashMap<String, ClassData> &p_all_classes, GameStateSnapshot *p_snapshot, GameStateSnapshot *p_other_snapshot);
 };
 
 class SnapshotClassView : public SnapshotView {
