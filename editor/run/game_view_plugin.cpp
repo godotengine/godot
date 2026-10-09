@@ -140,7 +140,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	p_session->send_message("scene:runtime_node_select_setup", { settings });
 	p_session->send_message("scene:runtime_node_select_set_node_type", { node_type });
 	p_session->send_message("scene:runtime_node_select_set_selection_visible", { selection_visible });
-	p_session->send_message("scene:runtime_node_select_set_ci_tool", { ci_tool });
+	p_session->send_message("scene:runtime_node_select_set_ci_tool", { ci_tool, false });
 	p_session->send_message("scene:runtime_node_select_set_ci_local_space", { ci_local_space });
 	p_session->send_message("scene:runtime_node_select_set_n3d_tool", { n3d_tool });
 	p_session->send_message("scene:runtime_node_select_set_avoid_locked", { selection_avoid_locked });
@@ -287,6 +287,7 @@ void GameViewDebugger::set_ci_tool(int p_tool) {
 
 	Array message;
 	message.append(p_tool);
+	message.append(Input::get_singleton()->is_key_pressed(Key::SHIFT));
 
 	for (Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
