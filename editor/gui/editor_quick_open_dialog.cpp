@@ -455,10 +455,7 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		include_addons_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_include_addons));
 		bottom_bar->add_child(include_addons_toggle);
 
-		VSeparator *vsep = memnew(VSeparator);
-		vsep->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-		vsep->set_custom_minimum_size(Size2i(0, 14 * EDSCALE));
-		bottom_bar->add_child(vsep);
+		bottom_bar->add_child(memnew(VSeparator));
 
 		display_mode_toggle = memnew(Button);
 		display_mode_toggle->set_accessibility_name(TTRC("Display Mode"));
