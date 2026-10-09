@@ -11,7 +11,7 @@
 	<tutorials>
 		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 		<link title="Audio effects">$DOCS_URL/tutorials/audio/audio_effects.html</link>
-		<link title="Third Person Shooter (TPS) Demo">https://godotengine.org/asset-library/asset/2710</link>
+		<link title="Third Person Shooter (TPS) Demo">https://store.godotengine.org/asset/godot-foundation/third-person-shooter-demo/</link>
 	</tutorials>
 	<members>
 		<member name="damping" type="float" setter="set_damping" getter="get_damping" default="0.5">
