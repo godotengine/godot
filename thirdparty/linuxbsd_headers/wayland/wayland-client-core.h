@@ -34,6 +34,8 @@
 extern "C" {
 #endif
 
+struct timespec;
+
 /** \class wl_proxy
  *
  * \brief Represents a protocol object on the client side.
@@ -120,7 +122,7 @@ struct wl_display;
 struct wl_event_queue;
 
 /** Destroy proxy after marshalling
- * @ingroup wl_proxy
+ * \relates wl_proxy
  */
 #define WL_MARSHAL_FLAG_DESTROY (1 << 0)
 
@@ -219,8 +221,20 @@ wl_proxy_get_tag(struct wl_proxy *proxy);
 const char *
 wl_proxy_get_class(struct wl_proxy *proxy);
 
+const struct wl_interface *
+wl_proxy_get_interface(struct wl_proxy *proxy);
+
+struct wl_display *
+wl_proxy_get_display(struct wl_proxy *proxy);
+
 void
 wl_proxy_set_queue(struct wl_proxy *proxy, struct wl_event_queue *queue);
+
+struct wl_event_queue *
+wl_proxy_get_queue(const struct wl_proxy *proxy);
+
+const char *
+wl_event_queue_get_name(const struct wl_event_queue *queue);
 
 struct wl_display *
 wl_display_connect(const char *name);
@@ -240,6 +254,15 @@ wl_display_dispatch(struct wl_display *display);
 int
 wl_display_dispatch_queue(struct wl_display *display,
 			  struct wl_event_queue *queue);
+
+int
+wl_display_dispatch_timeout(struct wl_display *display,
+			    const struct timespec *timeout);
+
+int
+wl_display_dispatch_queue_timeout(struct wl_display *display,
+				  struct wl_event_queue *queue,
+				  const struct timespec *timeout);
 
 int
 wl_display_dispatch_queue_pending(struct wl_display *display,
@@ -269,6 +292,10 @@ wl_display_roundtrip(struct wl_display *display);
 struct wl_event_queue *
 wl_display_create_queue(struct wl_display *display);
 
+struct wl_event_queue *
+wl_display_create_queue_with_name(struct wl_display *display,
+				  const char *name);
+
 int
 wl_display_prepare_read_queue(struct wl_display *display,
 			      struct wl_event_queue *queue);
@@ -284,6 +311,10 @@ wl_display_read_events(struct wl_display *display);
 
 void
 wl_log_set_handler_client(wl_log_func_t handler);
+
+void
+wl_display_set_max_buffer_size(struct wl_display *display,
+                               size_t max_buffer_size);
 
 #ifdef  __cplusplus
 }
