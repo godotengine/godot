@@ -221,7 +221,45 @@
 	}
 }
 
+- (void)sendKeyEvent:(Key)keycode {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return;
+	}
+
+	DisplayServerMacOS::KeyEvent ke;
+
+	ke.window_id = window_id;
+	ke.macos_state = 0;
+	ke.echo = false;
+	ke.keycode = (Key)keycode;
+	ke.physical_keycode = (Key)keycode;
+	ke.key_label = (Key)keycode;
+	ke.unicode = 0;
+	ke.location = KeyLocation::UNSPECIFIED;
+	ke.raw = true;
+
+	ke.pressed = true;
+	ds->push_to_key_event_buffer(ke);
+
+	ke.pressed = false;
+	ds->push_to_key_event_buffer(ke);
+}
+
 - (void)doCommandBySelector:(SEL)aSelector {
+	if (ime_suppress_next_keyup) {
+		if (aSelector == @selector(insertNewline:)) {
+			[self sendKeyEvent:Key::ENTER];
+		} else if (aSelector == @selector(moveLeft:)) {
+			[self sendKeyEvent:Key::LEFT];
+		} else if (aSelector == @selector(moveRight:)) {
+			[self sendKeyEvent:Key::RIGHT];
+		} else if (aSelector == @selector(deleteBackward:)) {
+			[self sendKeyEvent:Key::BACKSPACE];
+		} else if (aSelector == @selector(deleteForward:)) {
+			[self sendKeyEvent:Key::KEY_DELETE];
+		}
+	}
 	[self tryToPerform:aSelector with:self];
 }
 
