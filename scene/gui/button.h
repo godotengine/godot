@@ -67,7 +67,20 @@ private:
 		Ref<StyleBox> hover_pressed_mirrored;
 		Ref<StyleBox> disabled;
 		Ref<StyleBox> disabled_mirrored;
+		Ref<StyleBox> disabled_pressed;
+		Ref<StyleBox> disabled_pressed_mirrored;
 		Ref<StyleBox> focus;
+		Ref<StyleBox> focus_mirrored;
+		Ref<StyleBox> focus_hover;
+		Ref<StyleBox> focus_hover_mirrored;
+		Ref<StyleBox> focus_pressed;
+		Ref<StyleBox> focus_pressed_mirrored;
+		Ref<StyleBox> focus_hover_pressed;
+		Ref<StyleBox> focus_hover_pressed_mirrored;
+		Ref<StyleBox> focus_disabled;
+		Ref<StyleBox> focus_disabled_mirrored;
+		Ref<StyleBox> focus_disabled_pressed;
+		Ref<StyleBox> focus_disabled_pressed_mirrored;
 
 		Size2 max_style_size;
 		float style_margin_left = 0;
@@ -116,6 +129,7 @@ protected:
 
 	Size2 _fit_icon_size(const Size2 &p_size) const;
 	Ref<StyleBox> _get_current_stylebox() const;
+	Ref<StyleBox> _get_current_stylebox_focus() const;
 	Size2 _get_largest_stylebox_size() const;
 	void _notification(int p_what);
 	static void _bind_methods();
