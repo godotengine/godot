@@ -529,12 +529,13 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				} else if (tab_pressing != -1 && !tabs[tab_pressing].disabled) {
 					// Selecting a tab.
 					int found = get_tab_idx_at_point(pos);
-					// Handle audio feedback separately, so that we can play the "disabled" sound when needed.
-					if (true) {
-						play_theme_sound(tabs[found].disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
-					}
 					if (found == tab_pressing) {
-						if (deselect_enabled && get_current_tab() == found) {
+						// Handle audio feedback separately, so that we can play the "disabled" sound when needed.
+						if (current != found) {
+							play_theme_sound(tabs[found].disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
+						}
+
+						if (deselect_enabled && current == found) {
 							set_current_tab(-1);
 						} else {
 							set_current_tab(found);
