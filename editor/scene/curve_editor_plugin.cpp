@@ -43,11 +43,54 @@
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/image_texture.h"
+
+void CurveSettings::set_curve(Ref<Curve> p_curve) {
+	curve = p_curve;
+	notify_property_list_changed();
+}
+
+Ref<Curve> CurveSettings::get_curve() {
+	return curve;
+}
+
+void CurveSettings::_get_property_list(List<PropertyInfo> *p_list) const {
+	if (curve.is_valid()) {
+		List<PropertyInfo> unfiltered;
+		curve->get_property_list(&unfiltered);
+		for (const PropertyInfo &info : unfiltered) {
+			if (info.name.begins_with("min_") || info.name.begins_with("max_")) {
+				p_list->push_back(info);
+			}
+		}
+	}
+}
+
+bool CurveSettings::_get(const StringName &p_name, Variant &r_ret) const {
+	if (curve.is_valid()) {
+		bool valid;
+		Variant tmp = curve->get(p_name, &valid);
+		if (valid) {
+			r_ret = tmp;
+		}
+		return valid;
+	}
+	return false;
+}
+
+bool CurveSettings::_set(const StringName &p_name, const Variant &p_value) {
+	bool ret = false;
+	if (curve.is_valid()) {
+		curve->set(p_name, p_value, &ret);
+	}
+	return ret;
+}
 
 CurveEdit::CurveEdit() {
 	set_focus_mode(FOCUS_ALL);
@@ -110,7 +153,7 @@ void CurveEdit::set_snap_count(int p_snap_count) {
 }
 
 Size2 CurveEdit::get_minimum_size() const {
-	return Vector2(64, MAX(135, get_size().x * ASPECT_RATIO)) * EDSCALE;
+	return Vector2(64, MAX(135, aspect_ratio_enforced ? get_size().x * ASPECT_RATIO : 0)) * EDSCALE;
 }
 
 void CurveEdit::_notification(int p_what) {
@@ -657,6 +700,11 @@ void CurveEdit::set_selected_index(int p_index) {
 	}
 }
 
+void CurveEdit::set_enforce_aspect_ratio(bool p_enforced) {
+	aspect_ratio_enforced = p_enforced;
+	set_v_size_flags(p_enforced ? SIZE_SHRINK_BEGIN : SIZE_EXPAND_FILL);
+}
+
 void CurveEdit::update_view_transform() {
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
@@ -950,6 +998,26 @@ void CurveEditor::_set_snap_count(int p_snap_count) {
 	curve_editor_rect->set_snap_count(CLAMP(p_snap_count, 2, 100));
 }
 
+void CurveEditor::_popout_editor() {
+	AcceptDialog *dlg = memnew(AcceptDialog);
+	// Cannot make dlg child of this node because inspector is rebuilt when curve changes
+	get_tree()->get_root()->add_child(dlg);
+	dlg->set_exclusive(true);
+	dlg->set_flag(Window::FLAG_MAXIMIZE_DISABLED, false);
+	dlg->set_title(TTRC("Curve Editor"));
+	dlg->popup_centered_ratio(0.8);
+
+	CurveEditor *editor = memnew(CurveEditor);
+	dlg->add_child(editor);
+	editor->set_popout_button_visible(false);
+	editor->set_curve(curve_editor_rect->get_curve());
+	editor->set_anchors_preset(PRESET_FULL_RECT);
+	editor->set_curve_settings_visible(true);
+	editor->curve_editor_rect->set_enforce_aspect_ratio(false);
+
+	dlg->connect(SceneStringName(visibility_changed), callable_mp(static_cast<Node *>(dlg), &Node::queue_free));
+}
+
 void CurveEditor::_on_preset_item_selected(int p_preset_id) {
 	curve_editor_rect->use_preset(p_preset_id);
 }
@@ -958,11 +1026,60 @@ void CurveEditor::set_curve(const Ref<Curve> &p_curve) {
 	curve_editor_rect->set_curve(p_curve);
 }
 
+void CurveEditor::set_popout_button_visible(bool p_visible) {
+	popout_button->set_visible(p_visible);
+}
+
+static void _show_curve_settings(Button *p_button, Popup *p_popup) {
+	Point2i window_offset = p_popup->is_embedded() ? Point2i() : p_button->get_window()->get_position();
+	p_popup->set_position(window_offset + p_button->get_global_position() + Vector2(0, p_button->get_size().y));
+	p_popup->popup();
+}
+
+void CurveEditor::set_curve_settings_visible(bool p_visible) {
+	bool btn_visible = curve_settings_btn != nullptr;
+	if (p_visible == btn_visible) {
+		return;
+	}
+	if (p_visible) {
+		curve_settings_btn = memnew(Button);
+		curve_settings_btn->set_text(TTRC("Curve Settings"));
+		curve_settings_btn->set_button_icon(get_editor_theme_icon(SNAME("Curve")));
+
+		Popup *popup = memnew(Popup);
+		popup->set_wrap_controls(true);
+		popup->set_min_size(Size2i(300, 0));
+		curve_settings_btn->add_child(popup);
+
+		EditorInspector *inspector = memnew(EditorInspector);
+		inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+		inspector->set_anchors_preset(PRESET_FULL_RECT);
+		popup->add_child(inspector);
+
+		Node *toolbar = presets_button->get_parent();
+		toolbar->add_child(curve_settings_btn);
+
+		Ref<CurveSettings> settings = memnew(CurveSettings);
+		settings->set_curve(curve_editor_rect->get_curve());
+		inspector->edit(settings.ptr());
+		curve_settings_btn->set_meta(SceneStringName(hidden), settings); // Keep object alive.
+
+		curve_settings_btn->connect(SceneStringName(pressed), callable_mp_static(&_show_curve_settings).bind(curve_settings_btn, popup));
+	} else {
+		curve_settings_btn->queue_free();
+		curve_settings_btn = nullptr;
+	}
+}
+
 void CurveEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			spacing = Math::round(BASE_SPACING * get_theme_default_base_scale());
 			snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			popout_button->set_button_icon(get_editor_theme_icon(SNAME("MakeFloating")));
+			if (curve_settings_btn) {
+				curve_settings_btn->set_button_icon(get_editor_theme_icon(SNAME("Curve")));
+			}
 			PopupMenu *p = presets_button->get_popup();
 			p->clear();
 			p->add_icon_item(get_editor_theme_icon(SNAME("CurveConstant")), TTR("Constant"), CurveEdit::PRESET_CONSTANT);
@@ -1012,6 +1129,11 @@ CurveEditor::CurveEditor() {
 	presets_button->set_h_size_flags(SIZE_EXPAND | SIZE_SHRINK_END);
 	toolbar->add_child(presets_button);
 	presets_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CurveEditor::_on_preset_item_selected));
+
+	popout_button = memnew(Button);
+	popout_button->set_tooltip_text(TTRC("Popout this Editor"));
+	popout_button->connect(SceneStringName(pressed), callable_mp(this, &CurveEditor::_popout_editor));
+	toolbar->add_child(popout_button);
 
 	curve_editor_rect = memnew(CurveEdit);
 	add_child(curve_editor_rect);
