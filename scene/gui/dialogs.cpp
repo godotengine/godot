@@ -527,7 +527,8 @@ void ConfirmationDialog::_bind_methods() {
 }
 
 Button *ConfirmationDialog::get_cancel_button() {
-	return cancel;
+	// The cancel button is only meaningful while the dialog is shown.
+	return is_visible() ? cancel : nullptr;
 }
 
 ConfirmationDialog::ConfirmationDialog() {
