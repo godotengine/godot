@@ -68,4 +68,6 @@ public:
 
 	void set_exclude(const TypedArray<RID> &p_exclude);
 	TypedArray<RID> get_exclude() const;
+
+	PhysicsRayQueryParameters3D();
 };

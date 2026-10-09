@@ -58,4 +58,6 @@ public:
 	real_t get_collision_depth() const;
 	real_t get_collision_safe_fraction() const;
 	real_t get_collision_unsafe_fraction() const;
+
+	PhysicsTestMotionResult2D();
 };
