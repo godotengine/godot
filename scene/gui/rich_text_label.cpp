@@ -1520,156 +1520,163 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					}
 				}
 				if (step == DRAW_STEP_SHADOW_OUTLINE || step == DRAW_STEP_SHADOW || step == DRAW_STEP_OUTLINE || step == DRAW_STEP_TEXT) {
-					ItemFade *fade = nullptr;
-					Item *fade_item = it;
-					while (fade_item) {
-						if (fade_item->type == ITEM_FADE) {
-							fade = static_cast<ItemFade *>(fade_item);
-							break;
-						}
-						fade_item = fade_item->parent;
-					}
-
-					Vector<ItemFX *> fx_stack;
-					_fetch_item_fx_stack(it, fx_stack);
-					bool custom_fx_ok = true;
-
 					Point2 fx_offset = Vector2(glyphs[i].x_off, glyphs[i].y_off);
+					Vector2 char_off;
 					RID frid = glyphs[i].font_rid;
 					uint32_t gl = glyphs[i].index;
 					uint16_t gl_fl = glyphs[i].flags;
-					uint8_t gl_cn = glyphs[i].count;
-					bool cprev_cluster = false;
-					bool cprev_conn = false;
-					if (gl_cn == 0) { // Parts of the same grapheme cluster, always connected.
-						cprev_cluster = true;
-					}
-					if (gl_fl & TextServer::GRAPHEME_IS_RTL) { // Check if previous grapheme cluster is connected.
-						if (i > 0 && (glyphs[i - 1].flags & TextServer::GRAPHEME_IS_CONNECTED)) {
-							cprev_conn = true;
-						}
+					float gla = glyphs[i].advance;
+
+					if (gl == 0 && (gla == 0.0 || (gl_fl & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL)) {
+						// Zero width or virtual non-visual glyph, skip FX.
+						char_off = p_ofs + off_step;
 					} else {
-						if (glyphs[i].flags & TextServer::GRAPHEME_IS_CONNECTED) {
-							cprev_conn = true;
-						}
-					}
-
-					//Apply fx.
-					if (fade) {
-						float faded_visibility = 1.0f;
-						if (l.char_offset + glyphs[i].start >= fade->char_ofs + fade->starting_index) {
-							faded_visibility -= (float)((l.char_offset + glyphs[i].start) - (fade->char_ofs + fade->starting_index)) / (float)fade->length;
-							faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
-						}
-						font_color.a = faded_visibility;
-					}
-
-					Transform2D char_xform;
-					char_xform.set_origin(p_ofs + off_step);
-
-					for (int j = 0; j < fx_stack.size(); j++) {
-						ItemFX *item_fx = fx_stack[j];
-						bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
-
-						if (item_fx->type == ITEM_CUSTOMFX && custom_fx_ok) {
-							ItemCustomFX *item_custom = static_cast<ItemCustomFX *>(item_fx);
-
-							Ref<CharFXTransform> charfx = item_custom->char_fx_transform;
-							Ref<RichTextEffect> custom_effect = item_custom->custom_effect;
-
-							if (custom_effect.is_valid()) {
-								charfx->elapsed_time = item_custom->elapsed_time;
-								charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
-								charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
-								charfx->visibility = txt_visible;
-								charfx->outline = (step == DRAW_STEP_SHADOW_OUTLINE) || (step == DRAW_STEP_SHADOW) || (step == DRAW_STEP_OUTLINE);
-								charfx->font = frid;
-								charfx->glyph_index = gl;
-								charfx->glyph_flags = gl_fl;
-								charfx->glyph_count = gl_cn;
-								charfx->offset = fx_offset;
-								charfx->color = font_color;
-								charfx->transform = char_xform;
-
-								bool effect_status = custom_effect->_process_effect_impl(charfx);
-								custom_fx_ok = effect_status;
-
-								char_xform = charfx->transform;
-								fx_offset = charfx->offset;
-								font_color = charfx->color;
-								gl = charfx->glyph_index;
-								txt_visible &= charfx->visibility;
+						ItemFade *fade = nullptr;
+						Item *fade_item = it;
+						while (fade_item) {
+							if (fade_item->type == ITEM_FADE) {
+								fade = static_cast<ItemFade *>(fade_item);
+								break;
 							}
-						} else if (item_fx->type == ITEM_SHAKE) {
-							ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
-
-							if (!cn) {
-								uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
-								uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
-								uint64_t max_rand = 2147483647;
-								double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math::PI);
-								double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math::PI);
-								double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
-								n_time = (n_time > 1.0) ? 1.0 : n_time;
-								item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;
-							}
-							fx_offset += item_shake->prev_off;
-						} else if (item_fx->type == ITEM_WAVE) {
-							ItemWave *item_wave = static_cast<ItemWave *>(item_fx);
-
-							if (!cn) {
-								double value = Math::sin(item_wave->frequency * item_wave->elapsed_time + ((p_ofs.x + off_step.x) / 50)) * (item_wave->amplitude / 10.0f);
-								item_wave->prev_off = Point2(0, 1) * value;
-							}
-							fx_offset += item_wave->prev_off;
-						} else if (item_fx->type == ITEM_TORNADO) {
-							ItemTornado *item_tornado = static_cast<ItemTornado *>(item_fx);
-
-							if (!cn) {
-								double torn_x = Math::sin(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off_step.x) / 50)) * (item_tornado->radius);
-								double torn_y = Math::cos(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off_step.x) / 50)) * (item_tornado->radius);
-								item_tornado->prev_off = Point2(torn_x, torn_y);
-							}
-							fx_offset += item_tornado->prev_off;
-						} else if (item_fx->type == ITEM_RAINBOW) {
-							ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
-
-							font_color = font_color.from_ok_hsv(MAX(item_rainbow->frequency, 0) * Math::abs(item_rainbow->elapsed_time * item_rainbow->speed + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
-						} else if (item_fx->type == ITEM_PULSE) {
-							ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
-
-							const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
-							font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
-						}
-					}
-
-					if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-						fx_offset = (fx_offset + Point2(0.5, 0.5)).floor();
-					}
-
-					Vector2 char_off = char_xform.get_origin();
-					Transform2D char_reverse_xform;
-					if (step == DRAW_STEP_TEXT) {
-						if (selected && use_selected_font_color) {
-							font_color = theme_cache.font_selected_color;
+							fade_item = fade_item->parent;
 						}
 
-						char_reverse_xform.set_origin(-char_off);
-						Transform2D char_final_xform = char_xform * char_reverse_xform;
-						draw_set_transform_matrix(char_final_xform);
-					} else if (step == DRAW_STEP_SHADOW_OUTLINE || step == DRAW_STEP_SHADOW) {
-						font_color = font_shadow_color * Color(1, 1, 1, font_color.a);
+						Vector<ItemFX *> fx_stack;
+						_fetch_item_fx_stack(it, fx_stack);
+						bool custom_fx_ok = true;
+						bool cprev_cluster = false;
+						bool cprev_conn = false;
+						uint8_t gl_cn = glyphs[i].count;
+						if (gl_cn == 0) { // Parts of the same grapheme cluster, always connected.
+							cprev_cluster = true;
+						}
+						if (gl_fl & TextServer::GRAPHEME_IS_RTL) { // Check if previous grapheme cluster is connected.
+							if (i > 0 && (glyphs[i - 1].flags & TextServer::GRAPHEME_IS_CONNECTED)) {
+								cprev_conn = true;
+							}
+						} else {
+							if (glyphs[i].flags & TextServer::GRAPHEME_IS_CONNECTED) {
+								cprev_conn = true;
+							}
+						}
 
-						char_reverse_xform.set_origin(-char_off - p_shadow_ofs);
-						Transform2D char_final_xform = char_xform * char_reverse_xform;
-						char_final_xform.columns[2] += p_shadow_ofs;
-						draw_set_transform_matrix(char_final_xform);
-					} else if (step == DRAW_STEP_OUTLINE) {
-						font_color = font_outline_color * Color(1, 1, 1, font_color.a);
+						//Apply fx.
+						if (fade) {
+							float faded_visibility = 1.0f;
+							if (l.char_offset + glyphs[i].start >= fade->char_ofs + fade->starting_index) {
+								faded_visibility -= (float)((l.char_offset + glyphs[i].start) - (fade->char_ofs + fade->starting_index)) / (float)fade->length;
+								faded_visibility = faded_visibility < 0.0f ? 0.0f : faded_visibility;
+							}
+							font_color.a = faded_visibility;
+						}
 
-						char_reverse_xform.set_origin(-char_off);
-						Transform2D char_final_xform = char_xform * char_reverse_xform;
-						draw_set_transform_matrix(char_final_xform);
+						Transform2D char_xform;
+						char_xform.set_origin(p_ofs + off_step);
+
+						for (int j = 0; j < fx_stack.size(); j++) {
+							ItemFX *item_fx = fx_stack[j];
+							bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
+
+							if (item_fx->type == ITEM_CUSTOMFX && custom_fx_ok) {
+								ItemCustomFX *item_custom = static_cast<ItemCustomFX *>(item_fx);
+
+								Ref<CharFXTransform> charfx = item_custom->char_fx_transform;
+								Ref<RichTextEffect> custom_effect = item_custom->custom_effect;
+
+								if (custom_effect.is_valid()) {
+									charfx->elapsed_time = item_custom->elapsed_time;
+									charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
+									charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
+									charfx->visibility = txt_visible;
+									charfx->outline = (step == DRAW_STEP_SHADOW_OUTLINE) || (step == DRAW_STEP_SHADOW) || (step == DRAW_STEP_OUTLINE);
+									charfx->font = frid;
+									charfx->glyph_index = gl;
+									charfx->glyph_flags = gl_fl;
+									charfx->glyph_count = gl_cn;
+									charfx->offset = fx_offset;
+									charfx->color = font_color;
+									charfx->transform = char_xform;
+
+									bool effect_status = custom_effect->_process_effect_impl(charfx);
+									custom_fx_ok = effect_status;
+
+									char_xform = charfx->transform;
+									fx_offset = charfx->offset;
+									font_color = charfx->color;
+									gl = charfx->glyph_index;
+									txt_visible &= charfx->visibility;
+								}
+							} else if (item_fx->type == ITEM_SHAKE) {
+								ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
+
+								if (!cn) {
+									uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
+									uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
+									uint64_t max_rand = 2147483647;
+									double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math::PI);
+									double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math::PI);
+									double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
+									n_time = (n_time > 1.0) ? 1.0 : n_time;
+									item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;
+								}
+								fx_offset += item_shake->prev_off;
+							} else if (item_fx->type == ITEM_WAVE) {
+								ItemWave *item_wave = static_cast<ItemWave *>(item_fx);
+
+								if (!cn) {
+									double value = Math::sin(item_wave->frequency * item_wave->elapsed_time + ((p_ofs.x + off_step.x) / 50)) * (item_wave->amplitude / 10.0f);
+									item_wave->prev_off = Point2(0, 1) * value;
+								}
+								fx_offset += item_wave->prev_off;
+							} else if (item_fx->type == ITEM_TORNADO) {
+								ItemTornado *item_tornado = static_cast<ItemTornado *>(item_fx);
+
+								if (!cn) {
+									double torn_x = Math::sin(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off_step.x) / 50)) * (item_tornado->radius);
+									double torn_y = Math::cos(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off_step.x) / 50)) * (item_tornado->radius);
+									item_tornado->prev_off = Point2(torn_x, torn_y);
+								}
+								fx_offset += item_tornado->prev_off;
+							} else if (item_fx->type == ITEM_RAINBOW) {
+								ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
+
+								font_color = font_color.from_ok_hsv(MAX(item_rainbow->frequency, 0) * Math::abs(item_rainbow->elapsed_time * item_rainbow->speed + ((p_ofs.x + off_step.x) / 50)), item_rainbow->saturation, item_rainbow->value, font_color.a);
+							} else if (item_fx->type == ITEM_PULSE) {
+								ItemPulse *item_pulse = static_cast<ItemPulse *>(item_fx);
+
+								const float sined_time = (Math::ease(Math::pingpong(item_pulse->elapsed_time, 1.0 / item_pulse->frequency) * item_pulse->frequency, item_pulse->ease));
+								font_color = font_color.lerp(font_color * item_pulse->color, sined_time);
+							}
+						}
+
+						if (is_inside_tree() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
+							fx_offset = (fx_offset + Point2(0.5, 0.5)).floor();
+						}
+
+						char_off = char_xform.get_origin();
+						Transform2D char_reverse_xform;
+						if (step == DRAW_STEP_TEXT) {
+							if (selected && use_selected_font_color) {
+								font_color = theme_cache.font_selected_color;
+							}
+
+							char_reverse_xform.set_origin(-char_off);
+							Transform2D char_final_xform = char_xform * char_reverse_xform;
+							draw_set_transform_matrix(char_final_xform);
+						} else if (step == DRAW_STEP_SHADOW_OUTLINE || step == DRAW_STEP_SHADOW) {
+							font_color = font_shadow_color * Color(1, 1, 1, font_color.a);
+
+							char_reverse_xform.set_origin(-char_off - p_shadow_ofs);
+							Transform2D char_final_xform = char_xform * char_reverse_xform;
+							char_final_xform.columns[2] += p_shadow_ofs;
+							draw_set_transform_matrix(char_final_xform);
+						} else if (step == DRAW_STEP_OUTLINE) {
+							font_color = font_outline_color * Color(1, 1, 1, font_color.a);
+
+							char_reverse_xform.set_origin(-char_off);
+							Transform2D char_final_xform = char_xform * char_reverse_xform;
+							draw_set_transform_matrix(char_final_xform);
+						}
 					}
 
 					// Draw glyphs.
@@ -1678,7 +1685,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						if (!skip) {
 							if (txt_visible) {
 								has_visible_chars = true;
-								visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(fx_offset + char_off - Vector2i(0, l_ascent), Point2i(glyphs[i].advance, l_size.y)));
+								visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(fx_offset + char_off - Vector2i(0, l_ascent), Point2i(gla, l_size.y)));
 								if (step == DRAW_STEP_TEXT) {
 									if (frid != RID()) {
 										TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
@@ -1716,7 +1723,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
 							}
 						}
-						off_step.x += glyphs[i].advance;
+						off_step.x += gla;
 					}
 					draw_set_transform_matrix(Transform2D());
 				}
