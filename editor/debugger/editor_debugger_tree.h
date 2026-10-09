@@ -56,6 +56,7 @@ private:
 		ITEM_MENU_SAVE_REMOTE_NODE,
 		ITEM_MENU_COPY_NODE_PATH,
 		ITEM_MENU_EXPAND_COLLAPSE,
+		ITEM_MENU_COPY_FULL_NODE_PATH
 	};
 
 	TypedArray<uint64_t> inspected_object_ids;
