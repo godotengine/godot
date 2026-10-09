@@ -769,6 +769,7 @@ public:
 
 		PropertyClipboard() {}
 	};
+	void preview_change(Object *p_object, const Variant &p_name, const Variant &p_value);
 
 private:
 	enum {
