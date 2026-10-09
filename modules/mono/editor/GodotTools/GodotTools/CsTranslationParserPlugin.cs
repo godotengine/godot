@@ -65,6 +65,7 @@ public partial class CsTranslationParserPlugin : EditorTranslationParserPlugin
                 }
             }
             System.AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !HotReloadAssemblyWatcher.IsAssemblyBeingUnloaded(a))
                 .Where(a => !a.IsDynamic)
                 .Where(a => a.Location != "")
                 .Select(a => MetadataReference.CreateFromFile(a.Location))

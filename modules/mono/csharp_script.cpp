@@ -1025,6 +1025,8 @@ void CSharpLanguage::reload_assemblies() {
 		SignalsDock::get_singleton()->update_lists();
 	}
 #endif
+
+	print_verbose(".NET: Successfully loaded new assemblies.");
 }
 #endif
 
