@@ -73,6 +73,9 @@ public:
 	void set_param(Param p_param, real_t p_value);
 	real_t get_param(Param p_param) const;
 
+	float get_applied_force() const;
+	float get_applied_torque() const;
+
 	SliderJoint3D();
 };
 
