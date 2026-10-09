@@ -95,11 +95,6 @@ int EditorBottomPanel::get_bottom_panel_offset() {
 void EditorBottomPanel::_repaint() {
 	bool panel_collapsed = get_current_tab() == -1;
 
-	if (panel_collapsed && get_popup()) {
-		set_popup(nullptr);
-	} else if (!panel_collapsed && !get_popup()) {
-		set_popup(dock_context_popup);
-	}
 	if (!panel_collapsed && (previous_tab != -1)) {
 		return;
 	}
