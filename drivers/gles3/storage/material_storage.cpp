@@ -39,6 +39,7 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/texture_storage.h"
+#include "drivers/gles3/storage/utilities.h"
 #include "servers/rendering/rendering_server_types.h"
 #include "servers/rendering/storage/variant_converters.h"
 
@@ -1162,21 +1163,28 @@ MaterialStorage::MaterialStorage() {
 
 	static_assert(sizeof(GlobalShaderUniforms::Value) == 16);
 
-	global_shader_uniforms.buffer_size = MAX(16, (int)GLOBAL_GET("rendering/limits/global_shader_variables/buffer_size"));
-	if (global_shader_uniforms.buffer_size * sizeof(GlobalShaderUniforms::Value) > uint32_t(Config::get_singleton()->max_uniform_buffer_size)) {
-		// Limit to maximum support UBO size.
-		global_shader_uniforms.buffer_size = uint32_t(Config::get_singleton()->max_uniform_buffer_size) / sizeof(GlobalShaderUniforms::Value);
+	global_shader_uniforms.buffer_size = MAX(GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE, (int)GLOBAL_GET("rendering/limits/global_shader_variables/buffer_size"));
+	global_shader_uniforms.buffer_size = Math::division_round_up(global_shader_uniforms.buffer_size, uint32_t(GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE)) * GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE;
+	uint32_t max_buffer_size = uint32_t(Config::get_singleton()->max_texture_size) * GlobalShaderUniforms::TEXTURE_WIDTH;
+	if (global_shader_uniforms.buffer_size > max_buffer_size) {
+		global_shader_uniforms.buffer_size = max_buffer_size;
 	}
 
 	global_shader_uniforms.buffer_values = memnew_arr(GlobalShaderUniforms::Value, global_shader_uniforms.buffer_size);
 	memset(global_shader_uniforms.buffer_values, 0, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size);
 	global_shader_uniforms.buffer_usage = memnew_arr(GlobalShaderUniforms::ValueUsage, global_shader_uniforms.buffer_size);
-	global_shader_uniforms.buffer_dirty_regions = memnew_arr(bool, 1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE));
-	memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * (1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE)));
-	glGenBuffers(1, &global_shader_uniforms.buffer);
-	glBindBuffer(GL_UNIFORM_BUFFER, global_shader_uniforms.buffer);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size, nullptr, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	global_shader_uniforms.buffer_dirty_regions = memnew_arr(bool, global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
+	memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE));
+
+	glGenTextures(1, &global_shader_uniforms.texture);
+	glBindTexture(GL_TEXTURE_2D, global_shader_uniforms.texture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, GlobalShaderUniforms::TEXTURE_WIDTH, global_shader_uniforms.buffer_size / GlobalShaderUniforms::TEXTURE_WIDTH, 0, GL_RGBA, GL_FLOAT, global_shader_uniforms.buffer_values);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(global_shader_uniforms.texture, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size, "Global shader uniform texture");
 
 	{
 		// Setup CanvasItem compiler
@@ -1246,6 +1254,7 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["world_vertex_coords"] = "#define USE_WORLD_VERTEX_COORDS\n";
 
 		actions.global_buffer_array_variable = "global_shader_uniforms";
+		actions.global_buffer_array_is_texture = true;
 		actions.instance_uniform_index_variable = "read_draw_data_instance_offset";
 
 		shaders.compiler_canvas.initialize(actions);
@@ -1450,6 +1459,7 @@ MaterialStorage::MaterialStorage() {
 		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
 		actions.check_multiview_samplers = RasterizerGLES3::get_singleton()->is_xr_enabled();
 		actions.global_buffer_array_variable = "global_shader_uniforms";
+		actions.global_buffer_array_is_texture = true;
 		actions.instance_uniform_index_variable = "instance_offset";
 
 		shaders.compiler_scene.initialize(actions);
@@ -1514,6 +1524,7 @@ MaterialStorage::MaterialStorage() {
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms";
+		actions.global_buffer_array_is_texture = true;
 
 		shaders.compiler_particles.initialize(actions);
 	}
@@ -1569,6 +1580,7 @@ MaterialStorage::MaterialStorage() {
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms";
+		actions.global_buffer_array_is_texture = true;
 
 		shaders.compiler_sky.initialize(actions);
 	}
@@ -1602,7 +1614,8 @@ MaterialStorage::~MaterialStorage() {
 	memdelete_arr(global_shader_uniforms.buffer_values);
 	memdelete_arr(global_shader_uniforms.buffer_usage);
 	memdelete_arr(global_shader_uniforms.buffer_dirty_regions);
-	glDeleteBuffers(1, &global_shader_uniforms.buffer);
+	GLES3::Utilities::get_singleton()->texture_free_data(global_shader_uniforms.texture);
+	global_shader_uniforms.texture = 0;
 
 	singleton = nullptr;
 }
@@ -1888,7 +1901,7 @@ void MaterialStorage::global_shader_parameter_add(const StringName &p_name, RSE:
 
 		//is vector, allocate in buffer and update index
 		gv.buffer_index = _global_shader_uniform_allocate(gv.buffer_elements);
-		ERR_FAIL_COND_MSG(gv.buffer_index < 0, vformat("Failed allocating global variable '%s' out of buffer memory. Consider increasing rendering/limits/global_shader_variables/buffer_size in the Project Settings. Maximum items supported by this hardware is: %d.", String(p_name), Config::get_singleton()->max_uniform_buffer_size / sizeof(GlobalShaderUniforms::Value)));
+		ERR_FAIL_COND_MSG(gv.buffer_index < 0, vformat("Failed allocating global variable '%s' out of buffer memory. Consider increasing rendering/limits/global_shader_variables/buffer_size in the Project Settings. Maximum items supported by this hardware is: %d.", String(p_name), uint32_t(Config::get_singleton()->max_texture_size) * GlobalShaderUniforms::TEXTURE_WIDTH));
 		global_shader_uniforms.buffer_usage[gv.buffer_index].elements = gv.buffer_elements;
 		_global_shader_uniform_store_in_buffer(gv.buffer_index, gv.type, gv.value);
 		_global_shader_uniform_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
@@ -2092,15 +2105,15 @@ void MaterialStorage::global_shader_parameters_clear() {
 	global_shader_uniforms.variables.clear();
 }
 
-GLuint MaterialStorage::global_shader_parameters_get_uniform_buffer() const {
-	return global_shader_uniforms.buffer;
+GLuint MaterialStorage::global_shader_parameters_get_texture() const {
+	return global_shader_uniforms.texture;
 }
 
 int32_t MaterialStorage::global_shader_parameters_instance_allocate(RID p_instance) {
 	ERR_FAIL_COND_V(global_shader_uniforms.instance_buffer_pos.has(p_instance), -1);
 	int32_t pos = _global_shader_uniform_allocate(ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
 	global_shader_uniforms.instance_buffer_pos[p_instance] = pos; //save anyway
-	ERR_FAIL_COND_V_MSG(pos < 0, -1, vformat("Too many instances using shader instance variables. Consider increasing rendering/limits/global_shader_variables/buffer_size in the Project Settings. Maximum items supported by this hardware is: %d.", Config::get_singleton()->max_uniform_buffer_size / sizeof(GlobalShaderUniforms::Value)));
+	ERR_FAIL_COND_V_MSG(pos < 0, -1, vformat("Too many instances using shader instance variables. Consider increasing rendering/limits/global_shader_variables/buffer_size in the Project Settings. Maximum items supported by this hardware is: %d.", uint32_t(Config::get_singleton()->max_texture_size) * GlobalShaderUniforms::TEXTURE_WIDTH));
 	global_shader_uniforms.buffer_usage[pos].elements = ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES;
 	return pos;
 }
@@ -2180,23 +2193,21 @@ void MaterialStorage::global_shader_parameters_instance_update(RID p_instance, i
 void MaterialStorage::_update_global_shader_uniforms() {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	if (global_shader_uniforms.buffer_dirty_region_count > 0) {
-		uint32_t total_regions = 1 + (global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE);
+		uint32_t total_regions = global_shader_uniforms.buffer_size / GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE;
+
+		glBindTexture(GL_TEXTURE_2D, global_shader_uniforms.texture);
 		if (total_regions / global_shader_uniforms.buffer_dirty_region_count <= 4) {
-			// 25% of regions dirty, just update all buffer
-			glBindBuffer(GL_UNIFORM_BUFFER, global_shader_uniforms.buffer);
-			glBufferData(GL_UNIFORM_BUFFER, sizeof(GlobalShaderUniforms::Value) * global_shader_uniforms.buffer_size, global_shader_uniforms.buffer_values, GL_DYNAMIC_DRAW);
-			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+			// 25% of regions dirty, just update the whole texture.
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, GlobalShaderUniforms::TEXTURE_WIDTH, global_shader_uniforms.buffer_size / GlobalShaderUniforms::TEXTURE_WIDTH, GL_RGBA, GL_FLOAT, global_shader_uniforms.buffer_values);
 			memset(global_shader_uniforms.buffer_dirty_regions, 0, sizeof(bool) * total_regions);
 		} else {
-			uint32_t region_byte_size = sizeof(GlobalShaderUniforms::Value) * GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE;
-			glBindBuffer(GL_UNIFORM_BUFFER, global_shader_uniforms.buffer);
 			for (uint32_t i = 0; i < total_regions; i++) {
 				if (global_shader_uniforms.buffer_dirty_regions[i]) {
-					glBufferSubData(GL_UNIFORM_BUFFER, i * region_byte_size, region_byte_size, &global_shader_uniforms.buffer_values[i * GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE]);
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, i, GlobalShaderUniforms::TEXTURE_WIDTH, 1, GL_RGBA, GL_FLOAT, &global_shader_uniforms.buffer_values[i * GlobalShaderUniforms::BUFFER_DIRTY_REGION_SIZE]);
 					global_shader_uniforms.buffer_dirty_regions[i] = false;
 				}
 			}
-			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 
 		global_shader_uniforms.buffer_dirty_region_count = 0;
