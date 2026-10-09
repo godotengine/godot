@@ -770,7 +770,7 @@
 		<method name="print_tree">
 			<return type="void" />
 			<description>
-				Prints the node and its children to the console, recursively. The node does not have to be inside the tree. This method outputs [NodePath]s relative to this node, and is good for copy/pasting into [method get_node]. See also [method print_tree_pretty].
+				Prints the node and its children to the console, recursively. The node does not have to be inside the tree. This method outputs [NodePath]s relative to this node, and is good for copy/pasting into [method get_node]. See also [method print_tree_pretty]. The node's string representation is always displayed on the right of each node path. By default, this displays the node type and unique instance ID. Custom representations can be created by creating a [code]_to_string()[/code] function that returns a [String]. If the custom representation contains BBCode, it is parsed as rich text following [method @GlobalScope.print_rich]'s limitations.
 				May print, for example:
 				[codeblock lang=text]
 				.
@@ -785,7 +785,7 @@
 		<method name="print_tree_pretty">
 			<return type="void" />
 			<description>
-				Prints the node and its children to the console, recursively. The node does not have to be inside the tree. Similar to [method print_tree], but the graphical representation looks like what is displayed in the editor's Scene dock. It is useful for inspecting larger trees.
+				Prints the node and its children to the console, recursively. The node does not have to be inside the tree. Similar to [method print_tree], but the graphical representation looks like what is displayed in the editor's Scene dock. It is useful for inspecting larger trees. The node's string representation is always displayed on the right of each node path. By default, this displays the node type and unique instance ID. Custom representations can be created by creating a [code]_to_string()[/code] function that returns a [String]. If the custom representation contains BBCode, it is parsed as rich text following [method @GlobalScope.print_rich]'s limitations.
 				May print, for example:
 				[codeblock lang=text]
 				 ┖╴TheGame
