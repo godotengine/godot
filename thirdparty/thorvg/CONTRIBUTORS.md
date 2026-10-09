@@ -1,60 +1,68 @@
 ## Project Lead
-- Hermet Park <hermetpark@gmail.com>
+- Hermet Park @hermet
 
 ## Core Contributors
-- Pranay Samanta <pranay.ks@samsung.com>
-- Junsu Choi <jsuya.choi@samsung.com>
-- Mira Grudzinska <veleveta@gmail.com>
-- Ruiwen Tang <tangruiwen1989@gmail.com>
-- Sergii Liebodkin <sergii@lottiefiles.com>
-- Jinny You <jinny@lottiefiles.com>
-- Jay WenJie <jay@lottiefiles.com>
+- Pranay Kumar Samanta @pks2707
+- Junsu Choi @JSUYA
+- Mira Grudzinska @mgrudzinska
+- Ruiwen Tang @RuiwenTang
+- Sergii Liebodkin @SergeyLebedkin
+- Jinny You @tinyjin
+- Jay WenJie @wenjieshen
+- SoonGeon Noh @Nor-s
 
 ## Contributors
-- Prudhvi Raj Vasireddi <prudhvi.raj@samsung.com>
-- Mateusz Palkowski <m.palkowski@samsung.com>
-- Subhransu Mohanty <sub.mohanty@samsung.com>
-- Michal Szczecinski <m.szczecinsk@partner.samsung.com>
-- Shinwoo Kim <cinoo.kim@samsung.com>
-- Piotr Kalota <p.kalota@samsung.com>
-- Vincent Torri <vincent.torri@gmail.com>
-- Pankaj Kumar <pankaj.m1@samsung.com>
-- Patryk Kaczmarek <patryk.k@partner.samsung.com>
-- Michal Maciola <m.maciola@samsung.com>
-- Peter Vullings <peter@projectitis.com>
-- K. S. Ernest (iFire) Lee <ernest.lee@chibifire.com>
-- Rémi Verschelde <rverschelde@gmail.com>
-- Martin Liska <mliksa@suse.cz>
-- Vincenzo Pupillo <vincenzo.pupillo@unimi.it>
-- EunSik Jeong <rinechran@outlook.jp>
-- Rafał Mikrut <mikrutrafal@protonmail.com>
-- Martin Capitanio <capnm@capitanio.org>
-- YouJin Lee <ol-of@naver.com>
-- Nattu Adnan <nattu@reallynattu.com>
-- Gabor Kiss-Vamosi <kisvegabor@gmail.com>
-- Lorcán Mc Donagh <lorcan@lmdsp.com>
-- Lucas Niu <hoiyu3twon9@gmail.com>
-- Francisco Ramírez <franchuti688@gmail.com>
-- Abdelrahman Ashraf <a.theashraf@gmail.com>
-- Neo Xu <neo.xu1990@gmail.com>
-- Thaddeus Crews <repiteo@outlook.com>
-- Josh Soref <jsoref@gmail.com>
-- Elliott Sales de Andrade <quantum.analyst@gmail.com>
-- Łukasz Pomietło <oficjalnyadreslukasza@gmail.com>
-- Kelly Loh <kelly@lottiefiles.com>
-- Dragoș Tiselice <dragos@lottiefiles.com>
-- Marcin Baszczewski <marcin@baszczewski.pl>
-- Fabian Blatz <fabianblatz@gmail.com>
-- Jakub Marcowski <chubercikbattle@gmail.com>
-- Benjamin Halko <benjaminhalko@hotmail.com>
-- Benson Muite <benson_muite@emailplus.com>
-- kkocdko <kkocdko@gmail.com>
-- SoonGeon Noh <nors.nsg@gmail.com>
-- Giseong Ji <jiggyjiggy0323@gmail.com>
-- KunYoung Park <rjsdud3263@gmail.com>
-- Wang SiMiao 王思淼 <wangsimiao1@xiaomi.com>
-- Jackson Hu <huming2207@gmail.com>
-- Andy French <andyf@canva.com>
-- Andreas Deininger <andreas@deininger.net>
-- Jonathan Liu <net147@gmail.com>
-- Shiny Chang <owner@shinychang.net>
+- Prudhvi Raj Vasireddi @prudhvirajv
+- Mateusz Palkowski @MathewP1
+- Subhransu Mohanty @smohantty
+- Michal Szczecinski @mihashco
+- Shinwoo Kim @kimcinoo
+- Piotr Kalota @pkalota
+- Vincent Torri @vtorri
+- Patryk Kaczmarek @patrykka
+- Michal Maciola @mmaciola
+- Peter Vullings @projectitis
+- K. S. Ernest @iFire @fire
+- Rémi Verschelde @akien-mga
+- Martin Liska @marxin
+- Vincenzo Pupillo @vpxyz
+- EunSik Jeong @rinechran
+- Rafał Mikrut @qarmin
+- Martin Capitanio @capnm
+- YouJin Lee @ol-of
+- Nattu Adnan @reallynattu
+- Gabor Kiss-Vamosi @kisvegabor
+- Lorcán Mc Donagh @lmdsp
+- Lucas Niu @fall2019
+- Francisco Ramírez @franramirez688
+- Abdelrahman Ashraf @theashraf
+- Neo Xu @XuNeo
+- Thaddeus Crews @Repiteo
+- Josh Soref @jsoref
+- Elliott Sales de Andrade @QuLogic
+- Łukasz Pomietło @lpogic
+- Dragoș Tiselice @dragostis
+- Marcin Baszczewski @baszczewski
+- Fabian Blatz @faxe1008
+- Jakub Marcowski @Chubercik
+- Benjamin Halko @BenjaminHalko
+- Benson Muite @bkmgit
+- kkocdko @kkocdko
+- Giseong Ji @jiggyjiggy
+- KunYoung Park @kunyoungparkk
+- Wang SiMiao 王思淼 @wangsimiao1
+- Jackson Hu @huming2207
+- Andy French @andyf-canva
+- Andreas Deininger @deining
+- Jonathan Liu @net147
+- Shiny Chang @ShinyChang
+- Mattia Basaglia @mbasaglia
+- Jongmin Kim @jmkim
+- Andrew X @LizzaM1net
+- Geordie Jay @ephemer
+- Weihang Ding @xiaozhuai
+- Duram Kim @alpakaDurumi
+- Hoyang Tsai @hoyangtsai
+- DaHee Chae @chae-dahee
+- Sunyong Jeong @jeongsunyong
+- Park Sung Jun @J-unStiN

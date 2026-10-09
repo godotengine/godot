@@ -37,8 +37,8 @@ struct SwRenderer : RenderMethod
 {
     //main features
     bool preUpdate() override;
-    RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) override;
-    RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags) override;
+    RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) override;
+    RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, FilterMethod filter, RenderUpdateFlag flags) override;
     bool postUpdate() override;
     bool preRender() override;
     bool renderShape(RenderData data) override;
@@ -54,7 +54,7 @@ struct SwRenderer : RenderMethod
     bool sync() override;
     bool intersectsShape(RenderData data, const RenderRegion& region) override;
     bool intersectsImage(RenderData data, const RenderRegion& region) override;
-    bool target(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, ColorSpace cs);
+    Result target(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, ColorSpace cs);
 
     //composition
     SwSurface* request(int channelSize, bool square);
@@ -76,13 +76,15 @@ struct SwRenderer : RenderMethod
     SwRenderer(uint32_t threads, EngineOption op);
     static bool term();
 
+    SwSurface*           surface = nullptr;           // active surface
+    SwMpool*             mpool;                       // designated memory pool
+    bool                 antiAlias;                   // anti-aliasing support
+
 private:
-    SwSurface*           surface = nullptr;           //active surface
+    bool                 fulldraw = true;             //buffer is cleared (need to redraw full screen)
     Array<SwTask*>       tasks;                       //async task list
     Array<SwSurface*>    compositors;                 //render targets cache list
     RenderDirtyRegion    dirtyRegion;                 //partial rendering support
-    SwMpool* mpool;                                   // designated memory pool
-    bool                 fulldraw = true;             //buffer is cleared (need to redraw full screen)
 
     ~SwRenderer();
 
