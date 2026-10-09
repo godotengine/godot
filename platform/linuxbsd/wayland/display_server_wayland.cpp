@@ -1366,9 +1366,9 @@ void DisplayServerWayland::window_set_flag(DisplayServerEnums::WindowFlags p_fla
 	}
 
 	if (p_enabled) {
-		wd.flags |= 1 << p_flag;
+		wd.flags |= 1u << p_flag;
 	} else {
-		wd.flags &= ~(1 << p_flag);
+		wd.flags &= ~(1u << p_flag);
 	}
 }
 
@@ -1376,7 +1376,7 @@ bool DisplayServerWayland::window_get_flag(DisplayServerEnums::WindowFlags p_fla
 	MutexLock mutex_lock(wayland_thread.mutex);
 
 	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
-	return windows[p_window_id].flags & (1 << p_flag);
+	return windows[p_window_id].flags & (1u << p_flag);
 }
 
 void DisplayServerWayland::window_request_attention(DisplayServerEnums::WindowID p_window_id) {
