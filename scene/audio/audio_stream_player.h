@@ -53,8 +53,13 @@ private:
 
 	MixTarget mix_target = MIX_TARGET_STEREO;
 
+	Vector<float> deferred_plays;
+
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
+
+	void _play(float p_from_pos);
+	void _flush_deferred_plays();
 
 	Vector<AudioFrame> _get_volume_vector();
 
