@@ -6626,8 +6626,21 @@ void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 		const int title_button_height = _get_title_button_height();
 		y_offset -= title_button_height;
 
+		bool item_is_sticky = false;
+		for (TreeItem *item : sticky_list) {
+			if (p_item == item) {
+				y_offset -= item->sticky_offset.y;
+				item_is_sticky = true;
+				break;
+			}
+		}
+
+		if (!item_is_sticky) {
+			y_offset -= sticky_stack_end;
+		}
+
 		const int cell_h = compute_item_height(p_item) + theme_cache.v_separation;
-		int screen_h = area_size.height - title_button_height;
+		int screen_h = area_size.height - title_button_height - sticky_stack_end;
 
 		if (p_center_on_item) {
 			// This makes sure that centering the offset doesn't overflow.
