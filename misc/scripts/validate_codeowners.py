@@ -7,11 +7,12 @@ import argparse
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 sys.path.insert(0, "./")
 
 try:
-    from methods import print_error, print_info
+    from methods import base_folder, print_error, print_info
 except ImportError:
     raise SystemExit(f"Utility script {__file__} must be run from repository root!")
 
@@ -100,6 +101,14 @@ def glob_to_regex(glob: str) -> re.Pattern[str]:
 
 RE_CODEOWNERS = re.compile(r"^(?P<code>[^#](?:\\ |[^\s])+) +(?P<owners>(?:[^#][^\s]+ ?)+)")
 
+# Certain areas of the engine need explicit ownership; enforce that here.
+EXPLICIT_OWNERSHIP = {
+    re.compile(r".*(?:SConstruct|SCsub|\.(?:bat|py|sh))$"): ["@godotengine/buildsystem"],
+    re.compile(r".*/doc(?:_classes)?/.*"): ["@godotengine/documentation"],
+    re.compile(r".*/tests/.*"): ["@godotengine/tests"],
+    re.compile(r"(?:(?!\bjava\b).)*/editor/.*"): ["@godotengine/editor"],
+}
+
 
 def parse_codeowners() -> list[tuple[re.Pattern[str], list[str]]]:
     codeowners = []
@@ -116,7 +125,7 @@ def main() -> int:
     parser.add_argument("-u", "--unowned", action="store_true", help="Only output files without an owner.")
     args = parser.parse_args()
 
-    files: list[str] = args.files
+    files: list[str] = [Path(file).resolve().relative_to(base_folder).as_posix() for file in args.files]
     if not files:
         files = subprocess.run(["git", "ls-files"], text=True, capture_output=True).stdout.splitlines()
 
@@ -125,13 +134,21 @@ def main() -> int:
 
     for file in files:
         matched = False
+        missing: set[str] = set()
         for code, owners in codeowners:
             if code.match(file):
                 matched = True
                 if not args.unowned:
                     print_info(f"{file}: {owners}")
+                # Validate explicit ownership.
+                for key, value in EXPLICIT_OWNERSHIP.items():
+                    if key.match(file):
+                        missing.update(item for item in value if item not in owners)
                 break
-        if not matched:
+        if missing:
+            print_error(f"{file}: <MISSING OWNERS> {missing}")
+            ret += 1
+        elif not matched:
             print_error(f"{file}: <UNOWNED>")
             ret += 1
 
