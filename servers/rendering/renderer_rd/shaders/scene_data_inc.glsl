@@ -85,4 +85,6 @@ struct SceneData {
 	float IBL_exposure_normalization;
 	uint camera_visible_layers;
 	float pass_alpha_multiplier;
+
+	float probe_max_roughness_lod;
 };
