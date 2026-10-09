@@ -67,7 +67,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 * The canvas resize policy determines how the canvas should be resized by Godot.
 		 *
 		 * ``0`` means Godot won't do any resizing. This is useful if you want to control the canvas size from
-		 * javascript code in your template.
+		 * JavaScript code in your template.
 		 *
 		 * ``1`` means Godot will resize the canvas on start, and when changing window size via engine functions.
 		 *
@@ -155,7 +155,7 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *
-		 * This is for example used in the Web Editor template to switch between project manager and editor, and for running the game.
+		 * This is for example used in the Web Editor template to switch between Project Manager and editor, and for running the game.
 		 *
 		 * @callback EngineConfig.onExecute
 		 * @param {string} path The path that Godot's wants executed.

@@ -217,7 +217,7 @@ function make_rst_object(f, obj) {
 	// Format members table and descriptions
 	const data = [['type', 'name']].concat(obj.members.map((m) => [m.type, `:js:attr:\`${m.name}\``]));
 
-	f.write(make_header('Properties', '^'));
+	f.write(make_header('Properties', '~'));
 	format_table(f, data, 0);
 
 	make_rst_attribute(f, obj, 0, brief);
@@ -257,10 +257,10 @@ function make_rst_class(f, obj) {
 	const sfuncs = funcs.filter((m) => m.is_static());
 	const ifuncs = funcs.filter((m) => !m.is_static());
 
-	f.write(make_header('Static Methods', '^'));
+	f.write(make_header('Static Methods', '~'));
 	format_table(f, sfuncs.map((m) => make_data(m)));
 
-	f.write(make_header('Instance Methods', '^'));
+	f.write(make_header('Instance Methods', '~'));
 	format_table(f, ifuncs.map((m) => make_data(m)));
 
 	const sig = make_rst_signature(obj);

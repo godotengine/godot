@@ -72,7 +72,7 @@ const Engine = (function () {
 			 * if it hasn't been loaded yet. See :js:meth:`Engine.load`.
 			 *
 			 * @param {string=} basePath Base path of the engine to load.
-			 * @return {Promise} A ``Promise`` that resolves once the engine is loaded and initialized.
+			 * @return {Promise} A Promise that resolves once the engine is loaded and initialized.
 			 */
 			init: function (basePath) {
 				if (initPromise) {
@@ -141,7 +141,7 @@ const Engine = (function () {
 			 * Fails if a canvas cannot be found on the page, or not specified in the configuration.
 			 *
 			 * @param {EngineConfig} override An optional configuration override.
-			 * @return {Promise} Promise that resolves once the engine started.
+			 * @return {Promise} A Promise that resolves once the engine started.
 			 */
 			start: function (override) {
 				this.config.update(override);
@@ -191,7 +191,7 @@ const Engine = (function () {
 			 * properties set (normally done by the editor during export).
 			 *
 			 * @param {EngineConfig} override An optional configuration override.
-			 * @return {Promise} Promise that resolves once the game started.
+			 * @return {Promise} A Promise that resolves once the game started.
 			 */
 			startGame: function (override) {
 				this.config.update(override);
