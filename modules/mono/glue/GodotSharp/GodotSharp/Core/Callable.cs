@@ -91,7 +91,8 @@ namespace Godot
         /// </summary>
         /// <param name="args">Arguments that will be passed to the method call.</param>
         /// <returns>The value returned by the method.</returns>
-        public unsafe Variant Call(scoped ReadOnlySpan<Variant> args)
+        [OverloadResolutionPriority(1)]
+        public unsafe Variant Call(params ReadOnlySpan<Variant> args)
         {
             using godot_callable callable = Marshaling.ConvertCallableToNative(this);
 
@@ -132,7 +133,8 @@ namespace Godot
         /// Arguments can be passed and should match the method's signature.
         /// </summary>
         /// <param name="args">Arguments that will be passed to the method call.</param>
-        public unsafe void CallDeferred(scoped ReadOnlySpan<Variant> args)
+        [OverloadResolutionPriority(1)]
+        public unsafe void CallDeferred(params ReadOnlySpan<Variant> args)
         {
             using godot_callable callable = Marshaling.ConvertCallableToNative(this);
 
