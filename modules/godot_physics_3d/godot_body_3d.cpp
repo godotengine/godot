@@ -615,7 +615,7 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 	if (mode == PS3DE::BODY_MODE_KINEMATIC) {
 		//compute motion, angular and etc. velocities from prev transform
 		motion = new_transform.origin - get_transform().origin;
-		do_motion = true;
+		do_motion = is_continuous_collision_detection_enabled();
 		linear_velocity = constant_linear_velocity + motion / p_step;
 
 		//compute a FAKE angular velocity, not so easy
@@ -699,7 +699,7 @@ void GodotBody3D::integrate_velocities(real_t p_step) {
 	}
 
 	if (mode == PS3DE::BODY_MODE_KINEMATIC) {
-		_set_transform(new_transform, false);
+		_set_transform(new_transform, !is_continuous_collision_detection_enabled());
 		_set_inv_transform(new_transform.affine_inverse());
 		if (contacts.is_empty() && linear_velocity == Vector3() && angular_velocity == Vector3()) {
 			set_active(false); //stopped moving, deactivate
