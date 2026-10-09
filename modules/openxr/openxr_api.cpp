@@ -2880,6 +2880,16 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 		}
 	}
 
+	if (fov_ext && fov_ext->is_enabled() && fov_ext->get_foveation_level() > 0 && render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_density_map().is_valid()) {
+		bool use_vrs_xr = (RSG::texture_storage->render_target_get_vrs_mode(p_render_target) == RSE::VIEWPORT_VRS_XR);
+		if (render_state.use_vrs_xr != use_vrs_xr) {
+			render_state.use_vrs_xr = use_vrs_xr;
+			if (!use_vrs_xr) {
+				WARN_PRINT("OpenXR: Foveation is enabled, but the viewport's VRS mode is not set to XR, so foveated rendering will have no effect.");
+			}
+		}
+	}
+
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_pre_draw_viewport(p_render_target);
 	}

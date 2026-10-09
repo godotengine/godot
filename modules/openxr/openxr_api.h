@@ -385,6 +385,7 @@ private:
 		LocalVector<XrCompositionLayerDepthInfoKHR> depth_views; // Only used by Composition Layer Depth Extension if available
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 		bool use_subsampled_images = true; // We need to default to true for the warning to be shown if we fallback immediately at startup.
+		bool use_vrs_xr = true; // Defaults to true so the warning is shown if the VRS mode is wrong at startup.
 
 		uint32_t view_count = 0;
 		uint32_t primary_view_count = 0;
