@@ -80,6 +80,13 @@ void LocalizationEditor::_notification(int p_what) {
 				tree->set_drop_mode_flags(Tree::DROP_MODE_DISABLED);
 			}
 		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			translation_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			translation_res_add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			translation_res_option_add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			translation_template_gen_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+		} break;
 	}
 }
 
@@ -782,7 +789,8 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_spacer();
 		tvb->add_child(thb);
 
-		Button *addtr = memnew(Button(TTRC("Add...")));
+		Button *addtr = memnew(Button(TTRC("Add")));
+		translation_button = addtr;
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_file_open));
 		thb->add_child(addtr);
 
@@ -820,8 +828,9 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_spacer();
 		tvb->add_child(thb);
 
-		Button *addtr = memnew(Button(TTRC("Add...")));
+		Button *addtr = memnew(Button(TTRC("Add")));
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_res_file_open));
+		translation_res_add_button = addtr;
 		thb->add_child(addtr);
 
 		MarginContainer *mc = memnew(MarginContainer);
@@ -847,7 +856,7 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_spacer();
 		tvb->add_child(thb);
 
-		addtr = memnew(Button(TTRC("Add...")));
+		addtr = memnew(Button(TTRC("Add")));
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_translation_res_option_file_open));
 		translation_res_option_add_button = addtr;
 		thb->add_child(addtr);
@@ -893,8 +902,9 @@ LocalizationEditor::LocalizationEditor() {
 		thb->add_spacer();
 		tvb->add_child(thb);
 
-		Button *addtr = memnew(Button(TTRC("Add...")));
+		Button *addtr = memnew(Button(TTRC("Add")));
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_source_file_open));
+		translation_template_gen_button = addtr;
 		thb->add_child(addtr);
 
 		addtr = memnew(Button(TTRC("Quick Add...")));
