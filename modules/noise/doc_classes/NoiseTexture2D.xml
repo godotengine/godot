@@ -13,6 +13,7 @@
 		var image = texture.get_image()
 		var data = image.get_data()
 		[/codeblock]
+		Once the process has completed, [method Texture2D.get_image] will return a [i]shared instance[/i] of the image data. If you need to independently manipulate the data, create a copy first.
 	</description>
 	<tutorials>
 	</tutorials>
