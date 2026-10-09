@@ -309,6 +309,7 @@
 		</member>
 		<member name="ssr_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" default="0.15">
 			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
+			[b]Note:[/b] The editor preview environment uses a value of [code]0.0[/code] by default, which is more physically accurate.
 		</member>
 		<member name="ssr_fade_out" type="float" setter="set_ssr_fade_out" getter="get_ssr_fade_out" default="2.0">
 			The fade-out distance for screen-space reflections. Affects the area from the screen-space reflection to the "global" reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
