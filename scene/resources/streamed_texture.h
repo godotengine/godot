@@ -37,7 +37,6 @@
 #include <atomic>
 
 class BitMap;
-class ResourceImporterStreamedTexture;
 
 class StreamedTexture2D : public Texture2D {
 	GDCLASS(StreamedTexture2D, Texture2D);
@@ -69,15 +68,9 @@ class StreamedTexture2D : public Texture2D {
 		uint32_t streaming_max = 0;
 	};
 
-	enum FormatBits {
-		FORMAT_BIT_DETECT_NORMAL = 1 << 0,
-		FORMAT_BIT_DETECT_ROUGHNESS = 1 << 1,
-	};
-
 	static Error _parse_header(const String &p_path, StreamedTextureFileHeader &r_header, Ref<FileAccess> &r_file);
 	static Error _load_mips_from_file(Ref<FileAccess> p_file, const StreamedTextureFileHeader &p_header, uint32_t p_start_mip, uint32_t p_mip_count, Vector<uint8_t> &r_mip_data);
 	static Error _load_data(const String &p_path, const uint8_t p_mip_level, struct StreamedTexture2DLoadData &p_load_data);
-	static Error _save_data(const String &p_path, const Ref<Image> &p_image, uint32_t p_flags, uint32_t p_streaming_min, uint32_t p_streaming_max);
 	uint8_t _get_initial_streaming_mip(uint32_t p_streaming_min, uint32_t p_streaming_max) const;
 
 	Ref<Image> _load_image(const String &p_path, uint8_t p_mip_level) const {
@@ -94,7 +87,7 @@ class StreamedTexture2D : public Texture2D {
 	}
 
 	void _save_image(const String &p_path, const Ref<Image> &p_image) const {
-		_save_data(p_path, p_image, 0, 0, 0);
+		save_data(p_path, p_image, 0, 0, 0);
 	}
 
 	void update_texture();
@@ -129,6 +122,13 @@ protected:
 	virtual void reload_from_file() override;
 
 public:
+	enum FormatBits {
+		FORMAT_BIT_DETECT_NORMAL = 1 << 0,
+		FORMAT_BIT_DETECT_ROUGHNESS = 1 << 1,
+	};
+
+	static Error save_data(const String &p_path, const Ref<Image> &p_image, uint32_t p_flags, uint32_t p_streaming_min, uint32_t p_streaming_max);
+
 	static TextureFormatRoughnessRequestCallback request_roughness_callback;
 	static TextureFormatRequestCallback request_normal_callback;
 
@@ -160,8 +160,6 @@ public:
 
 	StreamedTexture2D();
 	~StreamedTexture2D();
-
-	friend class ResourceImporterStreamedTexture; // For saving to stex format
 };
 
 class ResourceFormatLoaderStreamedTexture2D : public ResourceFormatLoader {

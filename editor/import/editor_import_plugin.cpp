@@ -80,6 +80,14 @@ String EditorImportPlugin::get_resource_type() const {
 	return ret;
 }
 
+bool EditorImportPlugin::get_preserves_source_file() const {
+	bool ret;
+	if (GDVIRTUAL_CALL(_get_preserves_source_file, ret)) {
+		return ret;
+	}
+	return false;
+}
+
 float EditorImportPlugin::get_priority() const {
 	float ret;
 	if (GDVIRTUAL_CALL(_get_priority, ret)) {
@@ -200,6 +208,7 @@ void EditorImportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_import_options, "path", "preset_index")
 	GDVIRTUAL_BIND(_get_save_extension)
 	GDVIRTUAL_BIND(_get_resource_type)
+	GDVIRTUAL_BIND(_get_preserves_source_file)
 	GDVIRTUAL_BIND(_get_priority)
 	GDVIRTUAL_BIND(_get_import_order)
 	GDVIRTUAL_BIND(_get_format_version)
