@@ -88,39 +88,42 @@ env.add_source_files(sources, common_win)
 sources += res_obj
 
 if env["library_type"] == "static_library":
-    prog = env.add_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
+    prog = env.add_library("#bin/godot", sources)
+    arrange_program_clean(prog)
 elif env["library_type"] == "shared_library":
-    prog = env.add_shared_library("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
-else:
+    prog = env.add_shared_library("#bin/godot", sources)
+    arrange_program_clean(prog)
+else:  # building executable
     prog = env.add_program("#bin/godot", sources, PROGSUFFIX=env["PROGSUFFIX"])
-arrange_program_clean(prog)
-
-env.Depends(prog, "godot.manifest")
-if env.msvc:
-    env.Depends(prog, "godot.natvis")
-
-# Build console wrapper app.
-if env["windows_subsystem"] == "gui":
-    if env.editor_build:
-        res_wrap_file = "godot_res_wrap.rc"
-        res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
-    else:
-        res_wrap_file = "godot_res_wrap_template.rc"
-        res_wrap_target = "godot_res_wrap_template" + env["OBJSUFFIX"]
-    res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
-    env_wrap.Depends(res_wrap_obj, "#core/version_generated.gen.h")
+    arrange_program_clean(prog)
 
     if env.msvc:
-        env_wrap.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
-        env_wrap.Append(LINKFLAGS=["version.lib"])
-    else:
-        env_wrap.Append(LINKFLAGS=["-Wl,--subsystem,console"])
-        env_wrap.Append(LIBS=["version"])
+        env.Depends(prog, "godot.natvis")
 
-    prog_wrap = env_wrap.add_program("#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"])
-    arrange_program_clean(prog_wrap)
-    env_wrap.Depends(prog_wrap, prog)
-    sources += common_win_wrap + res_wrap_obj
+    # Build console wrapper app.
+    if env["windows_subsystem"] == "gui":
+        if env.editor_build:
+            res_wrap_file = "godot_res_wrap.rc"
+            res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
+        else:
+            res_wrap_file = "godot_res_wrap_template.rc"
+            res_wrap_target = "godot_res_wrap_template" + env["OBJSUFFIX"]
+        res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)
+        env_wrap.Depends(res_wrap_obj, "#core/version_generated.gen.h")
+
+        if env.msvc:
+            env_wrap.Append(LINKFLAGS=["/SUBSYSTEM:CONSOLE"])
+            env_wrap.Append(LINKFLAGS=["version.lib"])
+        else:
+            env_wrap.Append(LINKFLAGS=["-Wl,--subsystem,console"])
+            env_wrap.Append(LIBS=["version"])
+
+        prog_wrap = env_wrap.add_program(
+            "#bin/godot", common_win_wrap + res_wrap_obj, PROGSUFFIX=env["PROGSUFFIX_WRAP"]
+        )
+        arrange_program_clean(prog_wrap)
+        env_wrap.Depends(prog_wrap, prog)
+        sources += common_win_wrap + res_wrap_obj
 
 if env["d3d12"]:
     dxc_target_aliases = {

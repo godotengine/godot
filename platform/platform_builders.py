@@ -26,6 +26,8 @@ def register_platform_apis_builder(target, source, env):
     api_inc = "\n".join([f'#include "{p}/api/api.h"' for p in platforms])
     api_reg = "\n\t".join([f"register_{p}_api();" for p in platforms])
     api_unreg = "\n\t".join([f"unregister_{p}_api();" for p in platforms])
+    reg_core_apis = "\n".join([f"\tregister_core_{p}_api();" for p in platforms])
+    unreg_core_apis = "\n".join([f"\tunregister_core_{p}_api();" for p in platforms])
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(
             f"""\
@@ -39,6 +41,14 @@ void register_platform_apis() {{
 
 void unregister_platform_apis() {{
 	{api_unreg}
+}}
+
+void register_core_platform_apis() {{
+{reg_core_apis}
+}}
+
+void unregister_core_platform_apis() {{
+{unreg_core_apis}
 }}
 """
         )
