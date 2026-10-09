@@ -142,7 +142,7 @@ protected:
 
 public:
 	GDType(const GDType *p_super_type, StringName p_name);
-	~GDType();
+	virtual ~GDType();
 
 	InitState get_init_state() const { return init_state; }
 	void initialize();
