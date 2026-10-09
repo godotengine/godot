@@ -44,8 +44,10 @@ class ProjectSettings : public Object {
 
 	bool is_changed = false;
 
-	// Starting version from 1 ensures that all callers can reset their tested version to 0,
-	// and will always detect the initial project settings as a "change".
+	// The first version starts at 1, leaving 0 as the uninitialized cache version.
+	// Subsequent singleton instances continue from the previous version so
+	// GLOBAL_GET_CACHED values are invalidated across reinitialization.
+	static inline uint32_t last_version = 0;
 	uint32_t _version = 1;
 
 	// Track changed settings for get_changed_settings functionality
