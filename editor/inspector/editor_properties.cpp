@@ -3975,7 +3975,7 @@ static EditorProperty *_get_input_action_editor(const String &p_hint_text, bool 
 	ProjectSettings::get_singleton()->get_property_list(&pinfo);
 	Vector<String> hints = p_hint_text.remove_char(' ').split(",", false);
 
-	HashMap<String, List<Ref<InputEvent>>> builtins(InputMap::get_singleton()->get_builtins());
+	const HashMap<String, List<Ref<InputEvent>>> &builtins = InputMap::get_singleton()->get_builtins();
 	bool show_builtin = hints.has("show_builtin");
 
 	for (const PropertyInfo &pi : pinfo) {
