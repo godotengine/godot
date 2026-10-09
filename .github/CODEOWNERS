@@ -103,6 +103,7 @@
 /modules/cvtt/                                @godotengine/asset-pipeline
 /modules/dds/                                 @godotengine/asset-pipeline
 /modules/dds/tests/                           @godotengine/asset-pipeline @godotengine/tests
+/modules/efsw/                                @godotengine/asset-pipeline
 /modules/etcpak/                              @godotengine/asset-pipeline
 /modules/fbx/                                 @godotengine/asset-pipeline
 /modules/fbx/doc_classes/                     @godotengine/asset-pipeline @godotengine/documentation

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EFSWWatcher" inherits="Object" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A wrapper class for FileWatcher in [url=https://github.com/SpartanJ/efsw/]efsw[/url].
+	</brief_description>
+	<description>
+		Listens to files and directories and dispatches events to notify the listener of file and directory changes.
+		Here is a simple example:
+		[codeblock]
+		extends Node
+
+		const ACTION_NAMES = ["Add", "Delete", "Modified", "Moved"]
+
+		var listener : EFSWListener
+		var watcher : EFSWWatcher
+
+		# A simple function for handling file actions.
+		func _file_action_handle(watch_id: int, directory: String, filename: String, is_dir: bool, action: EFSWListener.FileAction, old_filename: String) -&gt; void:
+			# Simply output the detected file actions.
+			prints("watch id: %d, dir: %s filename: %s, is dir: %s, action: %s, old_filename: %s" %
+				[watch_id, directory, filename, is_dir, ACTION_NAMES[action-1], old_filename])
+
+		func _enter_tree() -&gt; void:
+			listener = EFSWListener.new()
+			watcher = EFSWWatcher.new()
+
+			listener.set_file_action_handler(_file_action_handle) # Sets the callable used to handle file actions.
+			watcher.add_watch("/opt/godot/projects", listener, false) # Adds directory to watch.
+			watcher.watch() # Starts watching.
+
+		func _exit_tree() -&gt; void:
+			listener.free()
+			watcher.free()
+		[/codeblock]
+		[b]Note:[/b] An OS-specific backend implementation is used by default; if no specific backend implementation exists for the current OS platform, a generic backend implementation will be used instead.
+		[b]Note:[/b] When used on remote file systems, you may need to enable [member force_generic] to use the generic backend.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_watch">
+			<return type="int" />
+			<param index="0" name="directory" type="String" />
+			<param index="1" name="listener" type="EFSWListener" />
+			<param index="2" name="recursive" type="bool" default="true" />
+			<description>
+				Adds a watch for [param directory]. On success, returns a positive [int] that can be used in [method remove_watch_by_id]; otherwise, returns an [enum WatcherError].
+				If [param recursive] is [code]true[/code], the subdirectories within the [param directory] will be automatically watched recursively.
+				File change events in the directory will be listened to and handled by [param listener].
+				[b]Note:[/b] For directories where watches are added automatically, it is still possible to add watches manually.
+			</description>
+		</method>
+		<method name="get_watch_directories" qualifiers="const">
+			<return type="String[]" />
+			<description>
+				Returns a list of directories that were manually added for watching.
+			</description>
+		</method>
+		<method name="remove_watch_by_id">
+			<return type="void" />
+			<param index="0" name="watch_id" type="int" />
+			<description>
+				Removes the directory watch specified by [param watch_id], which was previously returned by [method add_watch].
+			</description>
+		</method>
+		<method name="remove_watch_by_path">
+			<return type="void" />
+			<param index="0" name="directory" type="String" />
+			<description>
+				Removes the [param directory]'s watch.
+			</description>
+		</method>
+		<method name="watch">
+			<return type="void" />
+			<description>
+				Starts watching in a separate thread.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="allow_out_of_scope_links" type="bool" setter="set_allow_out_of_scope_links" getter="get_allow_out_of_scope_links" default="false">
+			Whether to allow symlinks to watch recursively out of the pointed directory. [member follow_symlinks] must be enabled for this to work.
+			[b]Note:[/b] Enabling this may lead to infinite recursion and cause crash.
+		</member>
+		<member name="follow_symlinks" type="bool" setter="set_follow_symlinks" getter="get_follow_symlinks" default="false">
+			Whether to allow recursive watchers to follow symbolic links to other directories.
+		</member>
+		<member name="force_generic" type="bool" setter="set_force_generic" getter="get_force_generic" default="false">
+			Whether to force the use of a generic backend implementation. Usefully for remote file systems.
+			[b]Note:[/b] Toggling this value will release the backend instance and all configurations will be reset.
+		</member>
+	</members>
+	<constants>
+		<constant name="NO_ERROR" value="0" enum="WatcherError">
+			No error occurred.
+		</constant>
+		<constant name="FILE_NOT_FOUND" value="-1" enum="WatcherError">
+			The directory to be watched does not exist or is inaccessible.
+		</constant>
+		<constant name="FILE_REPEATED" value="-2" enum="WatcherError">
+			The directory to be watched has already been manually added for watching.
+		</constant>
+		<constant name="FILE_OUT_OF_SCOPE" value="-3" enum="WatcherError">
+			The directory to be watched is a symbolic link pointing outside its base directory when [member follow_symlinks] is disabled.
+		</constant>
+		<constant name="FILE_NOT_READABLE" value="-4" enum="WatcherError">
+			The directory to be watched lacks read permissions.
+		</constant>
+		<constant name="FILE_REMOTE" value="-5" enum="WatcherError">
+			The directory to be watched is in a remote file system. Please use [EFSWWatcher] with [member force_generic] enabled instead.
+		</constant>
+		<constant name="WATCHER_FAILED" value="-6" enum="WatcherError">
+			File system watcher failed to watch for changes.
+		</constant>
+		<constant name="UNSPECIFIED" value="-7" enum="WatcherError">
+			Errors caused by other reasons.
+		</constant>
+	</constants>
+</class>
