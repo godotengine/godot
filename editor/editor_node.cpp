@@ -9270,12 +9270,6 @@ EditorNode::EditorNode() {
 
 	_update_main_menu_type();
 
-	// Spacer to center 2D / 3D / Script buttons.
-	left_spacer = memnew(HBoxContainer);
-	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	title_bar->add_child(left_spacer);
-
 	project_title = memnew(Label);
 	project_title->add_theme_font_override(SceneStringName(font), theme->get_font(SNAME("bold"), EditorStringName(EditorFonts)));
 	project_title->add_theme_font_size_override(SceneStringName(font_size), theme->get_font_size(SNAME("bold_size"), EditorStringName(EditorFonts)));
@@ -9284,7 +9278,13 @@ EditorNode::EditorNode() {
 	project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	project_title->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	project_title->set_visible(can_expand && menu_type == MENU_TYPE_GLOBAL);
-	left_spacer->add_child(project_title);
+	title_bar->add_child(project_title);
+
+	// Spacer to center 2D / 3D / Script buttons.
+	left_spacer = memnew(Control);
+	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	title_bar->add_child(left_spacer);
 
 	// Spacer to center 2D / 3D / Script buttons.
 	right_spacer = memnew(Control);
