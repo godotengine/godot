@@ -35,7 +35,6 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/debugger/editor_file_server.h"
-#include "editor/debugger/script_editor_debugger.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/run/run_instances_dialog.h"
