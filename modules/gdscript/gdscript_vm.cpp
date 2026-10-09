@@ -85,13 +85,13 @@ static String _get_var_type(const Variant *p_var) {
 	} else {
 		if (p_var->get_type() == Variant::ARRAY) {
 			basestr = "Array";
-			const Array *p_array = VariantInternal::get_array(p_var);
+			const Array *p_array = &VariantInternalAccessor<Array>::get(p_var);
 			if (p_array->is_typed()) {
 				basestr += "[" + _get_element_type((Variant::Type)p_array->get_typed_builtin(), p_array->get_typed_class_name(), p_array->get_typed_script()) + "]";
 			}
 		} else if (p_var->get_type() == Variant::DICTIONARY) {
 			basestr = "Dictionary";
-			const Dictionary *p_dictionary = VariantInternal::get_dictionary(p_var);
+			const Dictionary *p_dictionary = &VariantInternalAccessor<Dictionary>::get(p_var);
 			if (p_dictionary->is_typed()) {
 				basestr += "[" + _get_element_type((Variant::Type)p_dictionary->get_typed_key_builtin(), p_dictionary->get_typed_key_class_name(), p_dictionary->get_typed_key_script()) +
 						", " + _get_element_type((Variant::Type)p_dictionary->get_typed_value_builtin(), p_dictionary->get_typed_value_class_name(), p_dictionary->get_typed_value_script()) + "]";
@@ -887,7 +887,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				bool result = false;
 				if (value->get_type() == Variant::ARRAY) {
-					Array *array = VariantInternal::get_array(value);
+					Array *array = &VariantInternalAccessor<Array>::get(value);
 					result = array->get_typed_builtin() == ((uint32_t)builtin_type) && array->get_typed_class_name() == native_type && array->get_typed_script() == *script_type;
 				}
 
@@ -916,7 +916,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				bool result = false;
 				if (value->get_type() == Variant::DICTIONARY) {
-					Dictionary *dictionary = VariantInternal::get_dictionary(value);
+					Dictionary *dictionary = &VariantInternalAccessor<Dictionary>::get(value);
 					result = dictionary->get_typed_key_builtin() == ((uint32_t)key_builtin_type) && dictionary->get_typed_key_class_name() == key_native_type && dictionary->get_typed_key_script() == *key_script_type &&
 							dictionary->get_typed_value_builtin() == ((uint32_t)value_builtin_type) && dictionary->get_typed_value_class_name() == value_native_type && dictionary->get_typed_value_script() == *value_script_type;
 				}
@@ -1077,7 +1077,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(index_setter < 0 || index_setter >= _indexed_setters_count);
 				const Variant::ValidatedIndexedSetter setter = _indexed_setters_ptr[index_setter];
 
-				int64_t int_index = *VariantInternal::get_int(index);
+				int64_t int_index = VariantInternalAccessor<int64_t>::get(index);
 
 				bool oob;
 				setter(dst, int_index, value, &oob);
@@ -1185,7 +1185,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(index_getter < 0 || index_getter >= _indexed_getters_count);
 				const Variant::ValidatedIndexedGetter getter = _indexed_getters_ptr[index_getter];
 
-				int64_t int_index = *VariantInternal::get_int(index);
+				int64_t int_index = VariantInternalAccessor<int64_t>::get(index);
 
 				bool oob;
 				getter(src, int_index, dst, &oob);
@@ -1492,7 +1492,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				Array *array = VariantInternal::get_array(src);
+				Array *array = &VariantInternalAccessor<Array>::get(src);
 
 				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
 #ifdef DEBUG_ENABLED
@@ -1534,7 +1534,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				Dictionary *dictionary = VariantInternal::get_dictionary(src);
+				Dictionary *dictionary = &VariantInternalAccessor<Dictionary>::get(src);
 
 				if (dictionary->get_typed_key_builtin() != ((uint32_t)key_builtin_type) || dictionary->get_typed_key_class_name() != key_native_type || dictionary->get_typed_key_script() != *key_script_type ||
 						dictionary->get_typed_value_builtin() != ((uint32_t)value_builtin_type) || dictionary->get_typed_value_class_name() != value_native_type || dictionary->get_typed_value_script() != *value_script_type) {
@@ -2893,7 +2893,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				Array *array = VariantInternal::get_array(r);
+				Array *array = &VariantInternalAccessor<Array>::get(r);
 
 				if (array->get_typed_builtin() != ((uint32_t)builtin_type) || array->get_typed_class_name() != native_type || array->get_typed_script() != *script_type) {
 #ifdef DEBUG_ENABLED
@@ -2936,7 +2936,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				Dictionary *dictionary = VariantInternal::get_dictionary(r);
+				Dictionary *dictionary = &VariantInternalAccessor<Dictionary>::get(r);
 
 				if (dictionary->get_typed_key_builtin() != ((uint32_t)key_builtin_type) || dictionary->get_typed_key_class_name() != key_native_type || dictionary->get_typed_key_script() != *key_script_type ||
 						dictionary->get_typed_value_builtin() != ((uint32_t)value_builtin_type) || dictionary->get_typed_value_class_name() != value_native_type || dictionary->get_typed_value_script() != *value_script_type) {
@@ -3103,15 +3103,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				int64_t size = *VariantInternal::get_int(container);
+				int64_t size = VariantInternalAccessor<int64_t>::get(container);
 
 				VariantInternal::initialize(counter, Variant::INT);
-				*VariantInternal::get_int(counter) = 0;
+				VariantInternalAccessor<int64_t>::get(counter) = 0;
 
 				if (size > 0) {
 					GET_VARIANT_PTR(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::INT);
-					*VariantInternal::get_int(iterator) = 0;
+					VariantInternalAccessor<int64_t>::get(iterator) = 0;
 
 					// Skip regular iterate.
 					ip += 5;
@@ -3130,15 +3130,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				double size = *VariantInternal::get_float(container);
+				double size = VariantInternalAccessor<double>::get(container);
 
 				VariantInternal::initialize(counter, Variant::FLOAT);
-				*VariantInternal::get_float(counter) = 0.0;
+				VariantInternalAccessor<double>::get(counter) = 0.0;
 
 				if (size > 0) {
 					GET_VARIANT_PTR(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::FLOAT);
-					*VariantInternal::get_float(iterator) = 0;
+					VariantInternalAccessor<double>::get(iterator) = 0;
 
 					// Skip regular iterate.
 					ip += 5;
@@ -3157,15 +3157,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				Vector2 *bounds = VariantInternal::get_vector2(container);
+				Vector2 *bounds = &VariantInternalAccessor<Vector2>::get(container);
 
 				VariantInternal::initialize(counter, Variant::FLOAT);
-				*VariantInternal::get_float(counter) = bounds->x;
+				VariantInternalAccessor<double>::get(counter) = bounds->x;
 
 				if (bounds->x < bounds->y) {
 					GET_VARIANT_PTR(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::FLOAT);
-					*VariantInternal::get_float(iterator) = bounds->x;
+					VariantInternalAccessor<double>::get(iterator) = bounds->x;
 
 					// Skip regular iterate.
 					ip += 5;
@@ -3184,15 +3184,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				Vector2i *bounds = VariantInternal::get_vector2i(container);
+				Vector2i *bounds = &VariantInternalAccessor<Vector2i>::get(container);
 
 				VariantInternal::initialize(counter, Variant::FLOAT);
-				*VariantInternal::get_int(counter) = bounds->x;
+				VariantInternalAccessor<int64_t>::get(counter) = bounds->x;
 
 				if (bounds->x < bounds->y) {
 					GET_VARIANT_PTR(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::INT);
-					*VariantInternal::get_int(iterator) = bounds->x;
+					VariantInternalAccessor<int64_t>::get(iterator) = bounds->x;
 
 					// Skip regular iterate.
 					ip += 5;
@@ -3211,20 +3211,20 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				Vector3 *bounds = VariantInternal::get_vector3(container);
+				Vector3 *bounds = &VariantInternalAccessor<Vector3>::get(container);
 				double from = bounds->x;
 				double to = bounds->y;
 				double step = bounds->z;
 
 				VariantInternal::initialize(counter, Variant::FLOAT);
-				*VariantInternal::get_float(counter) = from;
+				VariantInternalAccessor<double>::get(counter) = from;
 
 				bool do_continue = from == to ? false : (from < to ? step > 0 : step < 0);
 
 				if (do_continue) {
 					GET_VARIANT_PTR(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::FLOAT);
-					*VariantInternal::get_float(iterator) = from;
+					VariantInternalAccessor<double>::get(iterator) = from;
 
 					// Skip regular iterate.
 					ip += 5;
@@ -3243,20 +3243,20 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				Vector3i *bounds = VariantInternal::get_vector3i(container);
+				Vector3i *bounds = &VariantInternalAccessor<Vector3i>::get(container);
 				int64_t from = bounds->x;
 				int64_t to = bounds->y;
 				int64_t step = bounds->z;
 
 				VariantInternal::initialize(counter, Variant::INT);
-				*VariantInternal::get_int(counter) = from;
+				VariantInternalAccessor<int64_t>::get(counter) = from;
 
 				bool do_continue = from == to ? false : (from < to ? step > 0 : step < 0);
 
 				if (do_continue) {
 					GET_VARIANT_PTR(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::INT);
-					*VariantInternal::get_int(iterator) = from;
+					VariantInternalAccessor<int64_t>::get(iterator) = from;
 
 					// Skip regular iterate.
 					ip += 5;
@@ -3275,15 +3275,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				String *str = VariantInternal::get_string(container);
+				String *str = &VariantInternalAccessor<String>::get(container);
 
 				VariantInternal::initialize(counter, Variant::INT);
-				*VariantInternal::get_int(counter) = 0;
+				VariantInternalAccessor<int64_t>::get(counter) = 0;
 
 				if (!str->is_empty()) {
 					GET_VARIANT_PTR(iterator, 2);
 					VariantInternal::initialize(iterator, Variant::STRING);
-					*VariantInternal::get_string(iterator) = str->substr(0, 1);
+					VariantInternalAccessor<String>::get(iterator) = str->substr(0, 1);
 
 					// Skip regular iterate.
 					ip += 5;
@@ -3302,7 +3302,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				Dictionary *dict = VariantInternal::get_dictionary(container);
+				Dictionary *dict = &VariantInternalAccessor<Dictionary>::get(container);
 				const Variant *next = dict->next(nullptr);
 
 				if (!dict->is_empty()) {
@@ -3327,10 +3327,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				Array *array = VariantInternal::get_array(container);
+				Array *array = &VariantInternalAccessor<Array>::get(container);
 
 				VariantInternal::initialize(counter, Variant::INT);
-				*VariantInternal::get_int(counter) = 0;
+				VariantInternalAccessor<int64_t>::get(counter) = 0;
 
 				if (!array->is_empty()) {
 					GET_VARIANT_PTR(iterator, 2);
@@ -3347,18 +3347,18 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
-#define OPCODE_ITERATE_BEGIN_PACKED_ARRAY(m_var_type, m_elem_type, m_get_func, m_var_ret_type, m_ret_type, m_ret_get_func) \
+#define OPCODE_ITERATE_BEGIN_PACKED_ARRAY(m_var_type, m_elem_type, m_var_ret_type, m_ret_type) \
 	OPCODE(OPCODE_ITERATE_BEGIN_PACKED_##m_var_type##_ARRAY) { \
 		CHECK_SPACE(8); \
 		GET_VARIANT_PTR(counter, 0); \
 		GET_VARIANT_PTR(container, 1); \
-		Vector<m_elem_type> *array = VariantInternal::m_get_func(container); \
+		Vector<m_elem_type> *array = &VariantInternalAccessor<Vector<m_elem_type>>::get(container); \
 		VariantInternal::initialize(counter, Variant::INT); \
-		*VariantInternal::get_int(counter) = 0; \
+		VariantInternalAccessor<int64_t>::get(counter) = 0; \
 		if (!array->is_empty()) { \
 			GET_VARIANT_PTR(iterator, 2); \
 			VariantInternal::initialize(iterator, Variant::m_var_ret_type); \
-			m_ret_type *it = VariantInternal::m_ret_get_func(iterator); \
+			m_ret_type *it = &VariantInternalAccessor<m_ret_type>::get(iterator); \
 			*it = array->get(0); \
 			ip += 5; \
 		} else { \
@@ -3369,16 +3369,16 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	} \
 	DISPATCH_OPCODE
 
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(BYTE, uint8_t, get_byte_array, INT, int64_t, get_int);
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(INT32, int32_t, get_int32_array, INT, int64_t, get_int);
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(INT64, int64_t, get_int64_array, INT, int64_t, get_int);
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(FLOAT32, float, get_float32_array, FLOAT, double, get_float);
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(FLOAT64, double, get_float64_array, FLOAT, double, get_float);
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(STRING, String, get_string_array, STRING, String, get_string);
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR2, Vector2, get_vector2_array, VECTOR2, Vector2, get_vector2);
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR3, Vector3, get_vector3_array, VECTOR3, Vector3, get_vector3);
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(COLOR, Color, get_color_array, COLOR, Color, get_color);
-			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR4, Vector4, get_vector4_array, VECTOR4, Vector4, get_vector4);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(BYTE, uint8_t, INT, int64_t);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(INT32, int32_t, INT, int64_t);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(INT64, int64_t, INT, int64_t);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(FLOAT32, float, FLOAT, double);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(FLOAT64, double, FLOAT, double);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(STRING, String, STRING, String);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR2, Vector2, VECTOR2, Vector2);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR3, Vector3, VECTOR3, Vector3);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(COLOR, Color, COLOR, Color);
+			OPCODE_ITERATE_BEGIN_PACKED_ARRAY(VECTOR4, Vector4, VECTOR4, Vector4);
 
 			OPCODE(OPCODE_ITERATE_BEGIN_OBJECT) {
 				CHECK_SPACE(4);
@@ -3402,7 +3402,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				Array ref = { Variant() };
 				VariantInternal::initialize(state, Variant::ARRAY);
-				*VariantInternal::get_array(state) = ref;
+				VariantInternalAccessor<Array>::get(state) = ref;
 
 				Callable::CallError ce;
 				Variant has_next = obj->callp(CoreStringName(_iter_init), const_cast<const Variant **>(&state), 1, ce);
@@ -3442,19 +3442,19 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(to_ptr, 2);
 				GET_VARIANT_PTR(step_ptr, 3);
 
-				int64_t from = *VariantInternal::get_int(from_ptr);
-				int64_t to = *VariantInternal::get_int(to_ptr);
-				int64_t step = *VariantInternal::get_int(step_ptr);
+				int64_t from = VariantInternalAccessor<int64_t>::get(from_ptr);
+				int64_t to = VariantInternalAccessor<int64_t>::get(to_ptr);
+				int64_t step = VariantInternalAccessor<int64_t>::get(step_ptr);
 
 				VariantInternal::initialize(counter, Variant::INT);
-				*VariantInternal::get_int(counter) = from;
+				VariantInternalAccessor<int64_t>::get(counter) = from;
 
 				bool do_continue = from == to ? false : (from < to ? step > 0 : step < 0);
 
 				if (do_continue) {
 					GET_VARIANT_PTR(iterator, 4);
 					VariantInternal::initialize(iterator, Variant::INT);
-					*VariantInternal::get_int(iterator) = from;
+					VariantInternalAccessor<int64_t>::get(iterator) = from;
 
 					// Skip regular iterate.
 					ip += 7;
@@ -3505,8 +3505,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				int64_t size = *VariantInternal::get_int(container);
-				int64_t *count = VariantInternal::get_int(counter);
+				int64_t size = VariantInternalAccessor<int64_t>::get(container);
+				int64_t *count = &VariantInternalAccessor<int64_t>::get(counter);
 
 				(*count)++;
 
@@ -3516,7 +3516,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_VARIANT_PTR(iterator, 2);
-					*VariantInternal::get_int(iterator) = *count;
+					VariantInternalAccessor<int64_t>::get(iterator) = *count;
 
 					ip += 5; // Loop again.
 				}
@@ -3529,8 +3529,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				double size = *VariantInternal::get_float(container);
-				double *count = VariantInternal::get_float(counter);
+				double size = VariantInternalAccessor<double>::get(container);
+				double *count = &VariantInternalAccessor<double>::get(counter);
 
 				(*count)++;
 
@@ -3540,7 +3540,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_VARIANT_PTR(iterator, 2);
-					*VariantInternal::get_float(iterator) = *count;
+					VariantInternalAccessor<double>::get(iterator) = *count;
 
 					ip += 5; // Loop again.
 				}
@@ -3553,8 +3553,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				const Vector2 *bounds = VariantInternal::get_vector2((const Variant *)container);
-				double *count = VariantInternal::get_float(counter);
+				const Vector2 *bounds = &VariantInternalAccessor<Vector2>::get((const Variant *)container);
+				double *count = &VariantInternalAccessor<double>::get(counter);
 
 				(*count)++;
 
@@ -3564,7 +3564,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_VARIANT_PTR(iterator, 2);
-					*VariantInternal::get_float(iterator) = *count;
+					VariantInternalAccessor<double>::get(iterator) = *count;
 
 					ip += 5; // Loop again.
 				}
@@ -3577,8 +3577,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				const Vector2i *bounds = VariantInternal::get_vector2i((const Variant *)container);
-				int64_t *count = VariantInternal::get_int(counter);
+				const Vector2i *bounds = &VariantInternalAccessor<Vector2i>::get((const Variant *)container);
+				int64_t *count = &VariantInternalAccessor<int64_t>::get(counter);
 
 				(*count)++;
 
@@ -3588,7 +3588,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_VARIANT_PTR(iterator, 2);
-					*VariantInternal::get_int(iterator) = *count;
+					VariantInternalAccessor<int64_t>::get(iterator) = *count;
 
 					ip += 5; // Loop again.
 				}
@@ -3601,8 +3601,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				const Vector3 *bounds = VariantInternal::get_vector3((const Variant *)container);
-				double *count = VariantInternal::get_float(counter);
+				const Vector3 *bounds = &VariantInternalAccessor<Vector3>::get((const Variant *)container);
+				double *count = &VariantInternalAccessor<double>::get(counter);
 
 				*count += bounds->z;
 
@@ -3612,7 +3612,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_VARIANT_PTR(iterator, 2);
-					*VariantInternal::get_float(iterator) = *count;
+					VariantInternalAccessor<double>::get(iterator) = *count;
 
 					ip += 5; // Loop again.
 				}
@@ -3625,8 +3625,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				const Vector3i *bounds = VariantInternal::get_vector3i((const Variant *)container);
-				int64_t *count = VariantInternal::get_int(counter);
+				const Vector3i *bounds = &VariantInternalAccessor<Vector3i>::get((const Variant *)container);
+				int64_t *count = &VariantInternalAccessor<int64_t>::get(counter);
 
 				*count += bounds->z;
 
@@ -3636,7 +3636,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_VARIANT_PTR(iterator, 2);
-					*VariantInternal::get_int(iterator) = *count;
+					VariantInternalAccessor<int64_t>::get(iterator) = *count;
 
 					ip += 5; // Loop again.
 				}
@@ -3649,8 +3649,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				const String *str = VariantInternal::get_string((const Variant *)container);
-				int64_t *idx = VariantInternal::get_int(counter);
+				const String *str = &VariantInternalAccessor<String>::get((const Variant *)container);
+				int64_t *idx = &VariantInternalAccessor<int64_t>::get(counter);
 				(*idx)++;
 
 				if (*idx >= str->length()) {
@@ -3659,7 +3659,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_VARIANT_PTR(iterator, 2);
-					*VariantInternal::get_string(iterator) = str->substr(*idx, 1);
+					VariantInternalAccessor<String>::get(iterator) = str->substr(*idx, 1);
 
 					ip += 5; // Loop again.
 				}
@@ -3672,7 +3672,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				const Dictionary *dict = VariantInternal::get_dictionary((const Variant *)container);
+				const Dictionary *dict = &VariantInternalAccessor<Dictionary>::get((const Variant *)container);
 				const Variant *next = dict->next(counter);
 
 				if (!next) {
@@ -3695,8 +3695,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(counter, 0);
 				GET_VARIANT_PTR(container, 1);
 
-				const Array *array = VariantInternal::get_array((const Variant *)container);
-				int64_t *idx = VariantInternal::get_int(counter);
+				const Array *array = &VariantInternalAccessor<Array>::get((const Variant *)container);
+				int64_t *idx = &VariantInternalAccessor<int64_t>::get(counter);
 				(*idx)++;
 
 				if (*idx >= array->size()) {
@@ -3712,13 +3712,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
-#define OPCODE_ITERATE_PACKED_ARRAY(m_var_type, m_elem_type, m_get_func, m_ret_get_func) \
+#define OPCODE_ITERATE_PACKED_ARRAY(m_var_type, m_elem_type, m_native_type) \
 	OPCODE(OPCODE_ITERATE_PACKED_##m_var_type##_ARRAY) { \
 		CHECK_SPACE(4); \
 		GET_VARIANT_PTR(counter, 0); \
 		GET_VARIANT_PTR(container, 1); \
-		const Vector<m_elem_type> *array = VariantInternal::m_get_func((const Variant *)container); \
-		int64_t *idx = VariantInternal::get_int(counter); \
+		const Vector<m_elem_type> *array = &VariantInternalAccessor<Vector<m_elem_type>>::get((const Variant *)container); \
+		int64_t *idx = &VariantInternalAccessor<int64_t>::get(counter); \
 		(*idx)++; \
 		if (*idx >= array->size()) { \
 			int jumpto = _code_ptr[ip + 4]; \
@@ -3726,22 +3726,22 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			ip = jumpto; \
 		} else { \
 			GET_VARIANT_PTR(iterator, 2); \
-			*VariantInternal::m_ret_get_func(iterator) = array->get(*idx); \
+			VariantInternalAccessor<m_native_type>::set(iterator, array->get(*idx)); \
 			ip += 5; \
 		} \
 	} \
 	DISPATCH_OPCODE
 
-			OPCODE_ITERATE_PACKED_ARRAY(BYTE, uint8_t, get_byte_array, get_int);
-			OPCODE_ITERATE_PACKED_ARRAY(INT32, int32_t, get_int32_array, get_int);
-			OPCODE_ITERATE_PACKED_ARRAY(INT64, int64_t, get_int64_array, get_int);
-			OPCODE_ITERATE_PACKED_ARRAY(FLOAT32, float, get_float32_array, get_float);
-			OPCODE_ITERATE_PACKED_ARRAY(FLOAT64, double, get_float64_array, get_float);
-			OPCODE_ITERATE_PACKED_ARRAY(STRING, String, get_string_array, get_string);
-			OPCODE_ITERATE_PACKED_ARRAY(VECTOR2, Vector2, get_vector2_array, get_vector2);
-			OPCODE_ITERATE_PACKED_ARRAY(VECTOR3, Vector3, get_vector3_array, get_vector3);
-			OPCODE_ITERATE_PACKED_ARRAY(COLOR, Color, get_color_array, get_color);
-			OPCODE_ITERATE_PACKED_ARRAY(VECTOR4, Vector4, get_vector4_array, get_vector4);
+			OPCODE_ITERATE_PACKED_ARRAY(BYTE, uint8_t, int64_t);
+			OPCODE_ITERATE_PACKED_ARRAY(INT32, int32_t, int64_t);
+			OPCODE_ITERATE_PACKED_ARRAY(INT64, int64_t, int64_t);
+			OPCODE_ITERATE_PACKED_ARRAY(FLOAT32, float, double);
+			OPCODE_ITERATE_PACKED_ARRAY(FLOAT64, double, double);
+			OPCODE_ITERATE_PACKED_ARRAY(STRING, String, String);
+			OPCODE_ITERATE_PACKED_ARRAY(VECTOR2, Vector2, Vector2);
+			OPCODE_ITERATE_PACKED_ARRAY(VECTOR3, Vector3, Vector3);
+			OPCODE_ITERATE_PACKED_ARRAY(COLOR, Color, Color);
+			OPCODE_ITERATE_PACKED_ARRAY(VECTOR4, Vector4, Vector4);
 
 			OPCODE(OPCODE_ITERATE_OBJECT) {
 				CHECK_SPACE(4);
@@ -3767,7 +3767,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Variant has_next = obj->callp(CoreStringName(_iter_next), const_cast<const Variant **>(&state), 1, ce);
 
 #ifdef DEBUG_ENABLED
-				if (VariantInternal::get_array(state)->size() != 1 || ce.error != Callable::CallError::CALL_OK) {
+				if (VariantInternalAccessor<Array>::get(state).size() != 1 || ce.error != Callable::CallError::CALL_OK) {
 					err_text = vformat(R"(There was an error calling "_iter_next" on iterator object of type "%s".)", GDScript::debug_get_script_name(obj->get_script_instance()->get_script()));
 					OPCODE_BREAK;
 				}
@@ -3778,7 +3778,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					// For _iter_get(): get a pointer to the single element in the array.
-					Variant *state_ptr = &((*VariantInternal::get_array(state))[0]);
+					Variant *state_ptr = &((VariantInternalAccessor<Array>::get(state))[0]);
 
 					GET_VARIANT_PTR(iterator, 2);
 					*iterator = obj->callp(CoreStringName(_iter_get), const_cast<const Variant **>(&state_ptr), 1, ce);
@@ -3801,10 +3801,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(to_ptr, 1);
 				GET_VARIANT_PTR(step_ptr, 2);
 
-				int64_t to = *VariantInternal::get_int(to_ptr);
-				int64_t step = *VariantInternal::get_int(step_ptr);
+				int64_t to = VariantInternalAccessor<int64_t>::get(to_ptr);
+				int64_t step = VariantInternalAccessor<int64_t>::get(step_ptr);
 
-				int64_t *count = VariantInternal::get_int(counter);
+				int64_t *count = &VariantInternalAccessor<int64_t>::get(counter);
 
 				*count += step;
 
@@ -3814,7 +3814,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ip = jumpto;
 				} else {
 					GET_VARIANT_PTR(iterator, 3);
-					*VariantInternal::get_int(iterator) = *count;
+					VariantInternalAccessor<int64_t>::get(iterator) = *count;
 
 					ip += 6; // Loop again.
 				}
