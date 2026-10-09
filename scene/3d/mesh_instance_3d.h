@@ -135,4 +135,5 @@ public:
 	virtual PackedStringArray get_configuration_warnings() const override;
 
 	MeshInstance3D();
+	~MeshInstance3D();
 };
