@@ -34,7 +34,6 @@
 #include "godot_lsp.h"
 
 #include "core/error/error_macros.h"
-#include "core/object/editor_language.h"
 #include "core/variant/variant.h"
 
 class GDScriptWorkspace : public RefCounted {
@@ -82,7 +81,6 @@ public:
 	String get_file_uri(const String &p_path) const;
 
 	void publish_diagnostics(const String &p_path);
-	void completion(const LSP::CompletionParams &p_params, List<EditorLanguage::CompletionOption> *r_options);
 
 	const LSP::DocumentSymbol *resolve_symbol(const LSP::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name = "", bool p_func_required = false);
 
