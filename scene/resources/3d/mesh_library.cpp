@@ -195,6 +195,13 @@ void MeshLibrary::set_item_navigation_layers(int p_item, uint32_t p_navigation_l
 }
 #endif // NAVIGATION_3D_DISABLED
 
+void MeshLibrary::set_item_render_layers(int p_item, uint32_t p_render_layers) {
+	if (_validate_index(p_item)) {
+		item_map[p_item].render_layers = p_render_layers;
+		emit_changed();
+	}
+}
+
 void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {
 	if (_validate_index(p_item)) {
 		item_map[p_item].preview = p_preview;
@@ -250,6 +257,11 @@ uint32_t MeshLibrary::get_item_navigation_layers(int p_item) const {
 	return item_map[p_item].navigation_layers;
 }
 #endif // NAVIGATION_3D_DISABLED
+
+uint32_t MeshLibrary::get_item_render_layers(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), 0, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].render_layers;
+}
 
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture2D>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
@@ -371,6 +383,8 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_navigation_layers", "id", "navigation_layers"), &MeshLibrary::set_item_navigation_layers);
 #endif // NAVIGATION_3D_DISABLED
 
+	ClassDB::bind_method(D_METHOD("set_item_render_layers", "id", "render_layers"), &MeshLibrary::set_item_render_layers);
+
 #ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
 #endif // PHYSICS_3D_DISABLED
@@ -387,6 +401,8 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_navigation_mesh_transform", "id"), &MeshLibrary::get_item_navigation_mesh_transform);
 	ClassDB::bind_method(D_METHOD("get_item_navigation_layers", "id"), &MeshLibrary::get_item_navigation_layers);
 #endif // NAVIGATION_3D_DISABLED
+
+	ClassDB::bind_method(D_METHOD("get_item_render_layers", "id"), &MeshLibrary::get_item_render_layers);
 
 #ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_item_shapes", "id"), &MeshLibrary::_get_item_shapes);
@@ -414,6 +430,8 @@ void MeshLibrary::_bind_methods() {
 #ifndef PHYSICS_3D_DISABLED
 	base_property_helper.register_property(PropertyInfo(Variant::ARRAY, PNAME("shapes"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Array(), &MeshLibrary::_set_item_shapes, &MeshLibrary::_get_item_shapes);
 #endif // PHYSICS_3D_DISABLED
+
+	base_property_helper.register_property(PropertyInfo(Variant::INT, PNAME("render_layers"), PROPERTY_HINT_LAYERS_3D_RENDER, "", PROPERTY_USAGE_NO_EDITOR), defaults.mesh_cast_shadow, &MeshLibrary::set_item_render_layers, &MeshLibrary::get_item_render_layers);
 
 #ifndef NAVIGATION_3D_DISABLED
 	base_property_helper.register_property(PropertyInfo(Variant::OBJECT, PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, NavigationMesh::get_class_static(), PROPERTY_USAGE_NO_EDITOR), defaults.navigation_mesh, &MeshLibrary::set_item_navigation_mesh, &MeshLibrary::get_item_navigation_mesh);
