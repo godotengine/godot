@@ -351,18 +351,27 @@ void EditorDockManager::_move_dock(EditorDock *p_dock, Control *p_target, int p_
 			_close_window(p_dock->dock_window);
 		} else {
 			DockTabContainer *parent_tabs = Object::cast_to<DockTabContainer>(parent);
+			EditorDock *previous_dock = nullptr;
 			if (parent_tabs) {
 				p_dock->previous_tab_index = parent_tabs->get_tab_idx_from_control(p_dock);
 
-				// Swap to previous tab when closing current tab.
 				if (parent_tabs->get_current_tab() == p_dock->previous_tab_index && parent_tabs->get_previous_tab() != -1) {
-					parent_tabs->set_current_tab(parent_tabs->get_previous_tab());
+					previous_dock = parent_tabs->get_dock(parent_tabs->get_previous_tab());
 				}
 			}
 			parent->set_block_signals(true);
 			parent->remove_child(p_dock);
 			parent->set_block_signals(false);
 			if (parent_tabs) {
+				if (previous_dock) {
+					// Swap to previous tab when closing current tab.
+					for (int i = 0; i < parent_tabs->get_tab_count(); i++) {
+						if (parent_tabs->get_dock(i) == previous_dock) {
+							parent_tabs->set_current_tab(i);
+							break;
+						}
+					}
+				}
 				parent_tabs->update_visibility();
 			}
 		}

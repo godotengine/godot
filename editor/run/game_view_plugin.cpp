@@ -1509,6 +1509,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	game_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN);
 	game_dock->set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
 	game_dock->set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_game"));
+	dock_singleton = game_dock;
 
 	debugger = p_debugger;
 	window_wrapper = p_wrapper;
@@ -1881,27 +1882,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 
 ///////
 
-void GameViewPluginBase::make_visible(bool p_visible) {
-	if (p_visible) {
-#ifndef ANDROID_ENABLED
-		window_wrapper->show();
-#endif // ANDROID_ENABLED
-
-		if (_is_window_wrapper_enabled()) {
-#ifdef ANDROID_ENABLED
-			notify_main_screen_changed(get_plugin_name());
-#else
-			window_wrapper->grab_window_focus();
-#endif // ANDROID_ENABLED
-			_focus_another_editor();
-		}
-	} else {
-#ifndef ANDROID_ENABLED
-		window_wrapper->hide();
-#endif // ANDROID_ENABLED
-	}
-}
-
 #ifndef ANDROID_ENABLED
 void GameViewPluginBase::set_window_layout(Ref<ConfigFile> p_layout) {
 	game_view->set_window_layout(p_layout);
@@ -1922,11 +1902,15 @@ void GameViewPluginBase::setup(Ref<GameViewDebugger> p_debugger, EmbeddedProcess
 
 	window_wrapper->set_wrapped_control(game_view, nullptr);
 
-	GameView::get_dock()->add_child(window_wrapper);
+	EditorDock *game_dock = GameView::get_dock();
+	game_dock->add_child(window_wrapper);
+	game_dock->connect(SceneStringName(visibility_changed), callable_mp(this, &GameViewPluginBase::_dock_visibility_changed).bind(game_dock));
+	_create_empty_info_label(TTRC("The Game dock is embedded in a floating window and is not available here."));
+	empty_dock_info->hide();
 
 	EditorDockManager::get_singleton()->add_dock(GameView::get_dock());
 	window_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	window_wrapper->connect("window_visibility_changed", callable_mp(this, &GameViewPlugin::_focus_another_editor).unbind(1));
+	window_wrapper->connect("window_visibility_changed", callable_mp(this, &GameViewPlugin::_window_visibility_changed));
 }
 
 #endif // ANDROID_ENABLED
@@ -1940,31 +1924,59 @@ void GameViewPluginBase::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			add_debugger_plugin(debugger);
-			connect("main_screen_changed", callable_mp(this, &GameViewPluginBase::_save_last_editor));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			remove_debugger_plugin(debugger);
-			disconnect("main_screen_changed", callable_mp(this, &GameViewPluginBase::_save_last_editor));
 		} break;
 	}
 }
 
-void GameViewPluginBase::_save_last_editor(const String &p_editor) {
-	if (p_editor != get_plugin_name()) {
-		last_editor = p_editor;
-	}
+void GameViewPluginBase::_window_visibility_changed(bool p_visible) {
+	empty_dock_info->set_visible(p_visible);
+	_focus_another_editor();
+}
+
+void GameViewPluginBase::_create_empty_info_label(const String &p_message) {
+	empty_dock_info = memnew(Label(p_message));
+	empty_dock_info->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	empty_dock_info->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	empty_dock_info->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+	GameView::get_dock()->add_child(empty_dock_info);
 }
 
 void GameViewPluginBase::_focus_another_editor() {
-	if (_is_window_wrapper_enabled()) {
-		if (last_editor.is_empty() || (last_editor == "Script" && ScriptEditor::get_singleton()->get_current_layout() == EditorDock::DOCK_LAYOUT_FLOATING)) {
-			CanvasItemEditor::get_singleton()->make_visible();
-		} else {
-			EditorDock *last_dock = EditorDockManager::get_singleton()->get_dock_by_name(last_editor);
-			if (last_dock && last_dock->get_current_layout() == EditorDock::DOCK_LAYOUT_MAIN_SCREEN) {
-				last_dock->make_visible();
-			}
+	DockTabContainer *main_screen = EditorNode::get_editor_main_screen();
+	EditorDock *game_dock = GameView::get_dock();
+
+	if (main_screen->get_current_tab_control() != game_dock) {
+		// Already showing different screen, so nothing to do.
+		return;
+	}
+	EditorDock *prev_dock = main_screen->get_dock(main_screen->get_previous_tab());
+	if (prev_dock && prev_dock != game_dock && prev_dock->is_dock_open()) {
+		EditorDockManager::get_singleton()->force_focus_dock(prev_dock);
+		return;
+	}
+	// The above switch can still fail when a tab is closed. Try to open the first tab that isn't Game.
+	for (int i = 0; i < main_screen->get_tab_count(); i++) {
+		if (main_screen->get_dock(i) != game_dock) {
+			EditorDockManager::get_singleton()->force_focus_dock(main_screen->get_dock(i));
+			break;
 		}
+	}
+}
+
+void GameViewPluginBase::_dock_visibility_changed(EditorDock *p_dock) {
+	if (!p_dock->is_visible_in_tree()) {
+		return;
+	}
+	if (window_wrapper) {
+		if (EditorRunBar::get_singleton()->is_playing() && window_wrapper->get_window_enabled()) {
+			_focus_another_editor();
+			window_wrapper->grab_window_focus();
+		}
+	} else {
+		_focus_another_editor();
 	}
 }
 
@@ -2001,16 +2013,10 @@ void GameViewPluginBase::setup_android() {
 	game_dock->set_available_layouts(EditorDock::DOCK_LAYOUT_MAIN_SCREEN);
 	game_dock->set_default_slot(EditorDock::DOCK_SLOT_MAIN_SCREEN);
 	game_dock->set_dock_shortcut(ED_GET_SHORTCUT("editor/editor_game"));
-
+	GameView::dock_singleton = game_dock;
 	EditorDockManager::get_singleton()->add_dock(game_dock);
-	game_dock->get_parent_container()->connect("tab_changed", callable_mp(this, &GameViewPluginBase::_main_screen_tab_changed).bind(game_dock).unbind(1));
-}
+	game_dock->connect(SceneStringName(visibility_changed), callable_mp(this, &GameViewPluginBase::_dock_visibility_changed).bind(game_dock));
 
-void GameViewPluginBase::_main_screen_tab_changed(EditorDock *game_dock) {
-	if (game_dock->is_visible_in_tree()) {
-		EditorNode::get_editor_main_screen()->set_current_tab(previous_tab);
-	} else {
-		previous_tab = EditorNode::get_editor_main_screen()->get_current_tab();
-	}
+	_create_empty_info_label(TTRC("Game dock is not available on Android."));
 }
 #endif
