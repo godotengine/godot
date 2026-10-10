@@ -80,3 +80,11 @@ func bench_engine(n: int) -> int:
 	for i in n:
 		s = (s + get_child_count()) & 0x3FFFFFFF
 	return s
+
+func bench_hoist(n: int) -> int:
+	# 用法层批量化：把跨边界调用提到循环外，循环内只做本地算术。
+	var c := get_child_count()
+	var s := 0
+	for i in n:
+		s = (s + c) & 0x3FFFFFFF
+	return s

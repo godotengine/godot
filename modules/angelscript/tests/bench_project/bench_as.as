@@ -130,4 +130,16 @@ class bench_as {
 		}
 		return s;
 	}
+
+	int bench_hoist(int n) {
+		// 用法层批量化：把跨边界调用提到循环外，循环内只做本地算术。
+		// 与 bench_engine 对比可量化「每次跨边界调用」的代价。
+		Node @selfn = Node();
+		int c = int(selfn.get_child_count(false));
+		int s = 0;
+		for (int i = 0; i < n; i++) {
+			s = (s + c) & 0x3FFFFFFF;
+		}
+		return s;
+	}
 }

@@ -129,4 +129,16 @@ public partial class BenchCs : Node
 		}
 		return s;
 	}
+
+	public long bench_hoist(long n)
+	{
+		// 用法层批量化：把跨边界调用提到循环外，循环内只做本地算术。
+		long c = GetChildCount();
+		long s = 0;
+		for (long i = 0; i < n; i++)
+		{
+			s = (s + c) & 0x3FFFFFFF;
+		}
+		return s;
+	}
 }

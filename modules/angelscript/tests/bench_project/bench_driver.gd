@@ -23,6 +23,7 @@ const WORKLOADS := {
 	"bench_vector": 1000000,
 	"bench_color": 1000000,
 	"bench_engine": 200000,
+	"bench_hoist": 200000,
 }
 
 var _targets := {}
