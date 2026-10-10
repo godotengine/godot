@@ -1247,7 +1247,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 	append(p_base);
 	append(ct.target);
 	append(p_arguments.size());
-	append(Variant::get_validated_builtin_method(p_type, p_method));
+	append_builtin_method(Variant::get_validated_builtin_method(p_type, p_method));
 	ct.cleanup();
 
 #ifdef DEBUG_ENABLED

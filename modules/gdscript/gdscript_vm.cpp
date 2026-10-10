@@ -2422,7 +2422,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Variant **argptrs = instruction_args;
 
 				GET_INSTRUCTION_ARG(ret, argc + 1);
-				method(base, (const Variant **)argptrs, argc, ret);
+				method->validated_call(base, (const Variant **)argptrs, ret);
 
 				ip += 3;
 			}

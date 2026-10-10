@@ -64,6 +64,7 @@
 #include "core/variant/variant_deep_duplicate.h"
 
 class GDType;
+class MethodBind;
 class Object;
 class RefCounted;
 
@@ -626,7 +627,7 @@ public:
 
 	/* Built-In Methods */
 
-	typedef void (*ValidatedBuiltInMethod)(Variant *p_base, const Variant **p_args, int p_argcount, Variant *r_ret);
+	typedef const MethodBind *ValidatedBuiltInMethod;
 	typedef void (*PTRBuiltInMethod)(void *p_base, const void **p_args, void *r_ret, int p_argcount);
 
 	static bool has_builtin_method(Variant::Type p_type, const StringName &p_method);
