@@ -1,5 +1,5 @@
 /* Opus configuration header */
-/* Based on the output of libopus configure script */
+/* Based on the output of libopus configure script (https://github.com/xiph/opus/blob/main/configure.ac) */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
@@ -8,13 +8,11 @@
 #define HAVE_INTTYPES_H 1
 
 #if (!defined(_MSC_VER) || (_MSC_VER >= 1800))
-
 /* Define to 1 if you have the `lrint' function. */
 #define HAVE_LRINT 1
 
 /* Define to 1 if you have the `lrintf' function. */
 #define HAVE_LRINTF 1
-
 #endif
 
 /* Define to 1 if you have the <memory.h> header file. */
@@ -45,52 +43,69 @@
  */
 #define LT_OBJDIR ".libs/"
 
-#ifdef OPUS_ARM_OPT
-/* Make use of ARM asm optimization */
-#define OPUS_ARM_ASM 1
-
-/* Use generic ARMv4 inline asm optimizations */
-#define OPUS_ARM_INLINE_ASM 1
-
-/* Use ARMv5E inline asm optimizations */
-#define OPUS_ARM_INLINE_EDSP 1
-
-/* Use ARMv6 inline asm optimizations */
-#define OPUS_ARM_INLINE_MEDIA 1
-
-/* Use ARM NEON inline asm optimizations */
-#define OPUS_ARM_INLINE_NEON 1
-
-/* Define if assembler supports EDSP instructions */
-#define OPUS_ARM_MAY_HAVE_EDSP 1
-
-/* Define if assembler supports ARMv6 media instructions */
-#define OPUS_ARM_MAY_HAVE_MEDIA 1
-
-/* Define if compiler supports NEON instructions */
-#define OPUS_ARM_MAY_HAVE_NEON 1
-#endif // OPUS_ARM_OPT
+#ifdef OPUS_ARM32_OPT
+#endif // OPUS_ARM32_OPT
 
 #ifdef OPUS_ARM64_OPT
-/* Make use of ARM asm optimization */
-#define OPUS_ARM_ASM 1
-
-/* Use ARMv6 inline asm optimizations */
-#define OPUS_ARM_INLINE_MEDIA 1 // work
-
-/* Use ARM NEON inline asm optimizations */
-#define OPUS_ARM_INLINE_NEON 1 // work
-
-/* Define if assembler supports EDSP instructions */
-#define OPUS_ARM_MAY_HAVE_EDSP 1 // work
-
-/* Define if assembler supports ARMv6 media instructions */
-#define OPUS_ARM_MAY_HAVE_MEDIA 1 // work
-
-/* Define if compiler supports NEON instructions */
+/* Use NEON optimizations */
+/* Supported by all ARM64 devices by requirement */
 #define OPUS_ARM_MAY_HAVE_NEON 1
+#define OPUS_ARM_PRESUME_NEON 1
 
+/* Use NEON intrinsics optimizations */
+/* Supported by all ARM64 devices by requirement */
+#define OPUS_ARM_MAY_HAVE_NEON_INTR 1
+#define OPUS_ARM_PRESUME_NEON_INTR 1
+
+/* Use 64-bit NEON intrinsics optimizations */
+/* Supported by all ARM64 devices by requirement */
+#define OPUS_ARM_MAY_HAVE_AARCH64_NEON_INTR 1
+#define OPUS_ARM_PRESUME_AARCH64_NEON_INTR 1
 #endif // OPUS_ARM64_OPT
+
+#ifdef OPUS_X32_OPT
+/* Use SSE SIMD optimizations */
+/* Supported by Godot's minimum system requirements for x32 */
+#define OPUS_X86_MAY_HAVE_SSE 1
+#define OPUS_X86_PRESUME_SSE 1
+
+/* Use SSE2 SIMD optimizations */
+/* Supported by Godot's minimum system requirements for x32 */
+#define OPUS_X86_MAY_HAVE_SSE2 1
+#define OPUS_X86_PRESUME_SSE2 1
+
+/* Use SSE4.1 SIMD optimizations */
+/* Not enabled by Godot for x32: https://github.com/godotengine/godot/blob/master/SConstruct#L798 */
+//#define OPUS_X86_MAY_HAVE_SSE4_1 1
+//#define OPUS_X86_PRESUME_SSE4_1 1
+
+/* Use AVX2 SIMD optimizations */
+/* Not enabled by Godot for x32: https://github.com/godotengine/godot/blob/master/SConstruct#L798 */
+//#define OPUS_X86_MAY_HAVE_AVX2 1
+//#define OPUS_X86_PRESUME_AVX2 1
+#endif // OPUS_X32_OPT
+
+#ifdef OPUS_X64_OPT
+/* Use SSE SIMD optimizations */
+/* Supported by Godot's minimum system requirements for x64 */
+#define OPUS_X86_MAY_HAVE_SSE 1
+#define OPUS_X86_PRESUME_SSE 1
+
+/* Use SSE2 SIMD optimizations */
+/* Supported by Godot's minimum system requirements for x64 */
+#define OPUS_X86_MAY_HAVE_SSE2 1
+#define OPUS_X86_PRESUME_SSE2 1
+
+/* Use SSE4.1 SIMD optimizations */
+/* Supported by Godot's minimum system requirements for x64 */
+#define OPUS_X86_MAY_HAVE_SSE4_1 1
+#define OPUS_X86_PRESUME_SSE4_1 1
+
+/* Use AVX2 SIMD optimizations */
+/* Not enabled by Godot for x64: https://github.com/godotengine/godot/blob/master/SConstruct#L798 */
+//#define OPUS_X86_MAY_HAVE_AVX2 1
+//#define OPUS_X86_PRESUME_AVX2 1
+#endif // OPUS_X64_OPT
 
 /* This is a build of OPUS */
 #define OPUS_BUILD /**/
