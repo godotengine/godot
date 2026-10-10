@@ -55,6 +55,10 @@ namespace ASNativeValueOps {
 bool try_add_op(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type, const String &p_op, const String &p_decl);
 bool try_add_method(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type, const StringName &p_method, const String &p_decl);
 
+// Packed 标量数组索引访问器（get/set_opIndex）原生注册（P2）。
+// 仅覆盖元素为 int64/double 的 Packed*Array；成功注册 get 与 set 各一次并返回 true。
+bool try_add_index_accessor(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type, const String &p_get_decl, const String &p_set_decl);
+
 int native_registration_count();
 int native_thunk_calls();
 void reset_native_thunk_calls();

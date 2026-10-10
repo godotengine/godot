@@ -403,19 +403,25 @@ static void register_type_members(asIScriptEngine *p_engine, const String &p_nam
 		Variant::Type et = Variant::get_indexed_element_type(p_type);
 		String et_name = param_type_name(et);
 		if (!et_name.is_empty()) {
-			ASValueBinding *g = memnew(ASValueBinding);
-			g->kind = VT_INDEX_GET;
-			g->type = p_type;
-			g->return_type = et;
-			g->return_kind = kind_of_type(et);
-			add_method(p_engine, cname, et_name + " get_opIndex(int64 index) const property", g);
+			String get_decl = et_name + " get_opIndex(int64 index) const property";
+			String set_decl = "void set_opIndex(int64 index, " + as_binding_render_param(et_name) + ") property";
+			// P2：Packed 标量数组的索引读写走原生 thunk，跳过 generic 跳板；
+			// 未命中（含 Variant/对象/字符串元素）返回 false，保持既有 generic 注册。
+			if (!ASNativeValueOps::try_add_index_accessor(p_engine, p_name, p_type, get_decl, set_decl)) {
+				ASValueBinding *g = memnew(ASValueBinding);
+				g->kind = VT_INDEX_GET;
+				g->type = p_type;
+				g->return_type = et;
+				g->return_kind = kind_of_type(et);
+				add_method(p_engine, cname, get_decl, g);
 
-			ASValueBinding *s = memnew(ASValueBinding);
-			s->kind = VT_INDEX_SET;
-			s->type = p_type;
-			s->param_kinds.push_back(kind_of_type(et));
-			s->param_types.push_back(et);
-			add_method(p_engine, cname, "void set_opIndex(int64 index, " + as_binding_render_param(et_name) + ") property", s);
+				ASValueBinding *s = memnew(ASValueBinding);
+				s->kind = VT_INDEX_SET;
+				s->type = p_type;
+				s->param_kinds.push_back(kind_of_type(et));
+				s->param_types.push_back(et);
+				add_method(p_engine, cname, set_decl, s);
+			}
 		}
 	}
 	if (Variant::is_keyed(p_type)) {

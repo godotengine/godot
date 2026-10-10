@@ -159,6 +159,49 @@ void thunk_method_f_obj(T *ret, const T *self, double arg) {
 	new (ret) T((R)((self->*M)((real_t)arg)));
 }
 
+// ---------- P2：Packed 标量数组 ----------
+// 这些操作的存储仍是 Variant（容器不是原生存储类型），thunk 直接调用 Variant 的索引
+// 访问器，跳过 asCALL_GENERIC 跳板。元素为标量（int64/double），可按值返回。
+
+// size()：返回元素个数。对所有带索引的容器均等价。
+int64_t thunk_packed_size(const Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	return (int64_t)self->get_indexed_size();
+}
+
+// 索引读：int64 元素（PACKED_BYTE/INT32/INT64）。
+int64_t thunk_index_get_i64(const Variant *self, int64_t index) {
+	ASNativeValueOps::note_thunk_call();
+	bool valid = false;
+	bool oob = false;
+	Variant v = self->get_indexed(index, valid, oob); // 越界返回默认值 0，与 generic 一致。
+	return (int64_t)v;
+}
+
+// 索引读：double 元素（PACKED_FLOAT32/FLOAT64）。
+double thunk_index_get_f64(const Variant *self, int64_t index) {
+	ASNativeValueOps::note_thunk_call();
+	bool valid = false;
+	bool oob = false;
+	Variant v = self->get_indexed(index, valid, oob);
+	return (double)v;
+}
+
+// 索引写：越界静默忽略（与 generic 的 set_indexed 语义一致）。
+void thunk_index_set_i64(Variant *self, int64_t index, int64_t value) {
+	ASNativeValueOps::note_thunk_call();
+	bool valid = false;
+	bool oob = false;
+	self->set_indexed(index, Variant(value), valid, oob);
+}
+
+void thunk_index_set_f64(Variant *self, int64_t index, double value) {
+	ASNativeValueOps::note_thunk_call();
+	bool valid = false;
+	bool oob = false;
+	self->set_indexed(index, Variant(value), valid, oob);
+}
+
 } // namespace
 
 namespace ASNativeValueOps {
@@ -377,10 +420,60 @@ bool try_add_method(asIScriptEngine *p_engine, const String &p_type_name, Varian
 				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_method1_scalar<Vector3i, int64_t, &Vector3i::distance_squared_to>);
 			}
 			break;
+		// P2：Packed 标量数组的 size()（元素个数），无参标量返回，直接走原生 thunk。
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+			if (m == "size") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+			}
+			break;
 		default:
 			break;
 	}
 	return false; // 未覆盖的方法走 generic 回退。
+#endif
+}
+
+bool try_add_index_accessor(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type, const String &p_get_decl, const String &p_set_decl) {
+#if !AS_NATIVE_VALUE_OPS_ENABLED
+	// 未验证平台：整体回退 generic（spec §6）。
+	(void)p_engine;
+	(void)p_type_name;
+	(void)p_type;
+	(void)p_get_decl;
+	(void)p_set_decl;
+	return false;
+#else
+	void *get_fn = nullptr;
+	void *set_fn = nullptr;
+	switch (p_type) {
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+			get_fn = (void *)&thunk_index_get_i64;
+			set_fn = (void *)&thunk_index_set_i64;
+			break;
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+			get_fn = (void *)&thunk_index_get_f64;
+			set_fn = (void *)&thunk_index_set_f64;
+			break;
+		default:
+			return false; // 元素为 Variant/对象/字符串等的容器仍走 generic。
+	}
+	if (p_engine->RegisterObjectMethod(p_type_name.utf8().get_data(), p_get_decl.utf8().get_data(), asFUNCTION(get_fn), asCALL_CDECL_OBJFIRST) < 0) {
+		ERR_PRINT(vformat("AngelScript: failed to register native packed index getter for '%s' (decl: %s).", p_type_name, p_get_decl));
+		return false;
+	}
+	if (p_engine->RegisterObjectMethod(p_type_name.utf8().get_data(), p_set_decl.utf8().get_data(), asFUNCTION(set_fn), asCALL_CDECL_OBJFIRST) < 0) {
+		ERR_PRINT(vformat("AngelScript: failed to register native packed index setter for '%s' (decl: %s).", p_type_name, p_set_decl));
+		return false;
+	}
+	g_native_registration_count += 2;
+	return true;
 #endif
 }
 

@@ -80,6 +80,19 @@ class bench_as {
 		return s;
 	}
 
+	int bench_packed(int n) {
+		// Packed 标量数组：索引读写走原生 thunk（P2）。
+		PackedInt64Array arr;
+		for (int i = 0; i < n; i++) {
+			arr.push_back(i);
+		}
+		int s = 0;
+		for (int i = 0; i < n; i++) {
+			s = (s + int(arr[i])) & 0x3FFFFFFF;
+		}
+		return s;
+	}
+
 	int bench_string(int n) {
 		// AS 原生 string 只注册了赋值与 length()，没有拼接；字符串运算只能用 Godot String（以 Variant 存储）。
 		String s = String();

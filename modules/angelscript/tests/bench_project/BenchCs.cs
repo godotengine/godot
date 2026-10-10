@@ -73,6 +73,21 @@ public partial class BenchCs : Node
 		return s;
 	}
 
+	public long bench_packed(long n)
+	{
+		var arr = new long[n];
+		for (long i = 0; i < n; i++)
+		{
+			arr[i] = i;
+		}
+		long s = 0;
+		for (long i = 0; i < n; i++)
+		{
+			s = (s + arr[i]) & 0x3FFFFFFF;
+		}
+		return s;
+	}
+
 	public long bench_string(long n)
 	{
 		string s = "";

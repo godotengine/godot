@@ -50,6 +50,9 @@ void as_native_vo_storage_slot_helpers();
 void as_native_vo_native_storage_round_trip();
 void as_native_vo_native_fast_path_active();
 void as_native_vo_boundary_conversions();
+void as_native_vo_packed_index_accessors();
+void as_native_vo_packed_size();
+void as_native_vo_packed_index_oob();
 
 #ifndef ANGELSCRIPT_NATIVE_VALUE_OPS_TESTS_IMPL
 
@@ -115,6 +118,18 @@ TEST_CASE("[AngelScript] native value ops native fast path active") {
 
 TEST_CASE("[AngelScript] native value ops boundary conversions") {
 	as_native_vo_boundary_conversions();
+}
+
+TEST_CASE("[AngelScript] native value ops packed index accessors") {
+	as_native_vo_packed_index_accessors();
+}
+
+TEST_CASE("[AngelScript] native value ops packed size") {
+	as_native_vo_packed_size();
+}
+
+TEST_CASE("[AngelScript] native value ops packed index oob") {
+	as_native_vo_packed_index_oob();
 }
 
 #endif // ANGELSCRIPT_NATIVE_VALUE_OPS_TESTS_IMPL

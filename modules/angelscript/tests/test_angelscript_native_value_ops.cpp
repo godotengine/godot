@@ -459,3 +459,66 @@ void as_native_vo_boundary_conversions() {
 	CHECK(nearly(out, 5001.0));
 }
 
+// P2：Packed 标量数组索引访问器（get/set_opIndex）原生 thunk。读写命中即计数增加。
+void as_native_vo_packed_index_accessors() {
+	double out = 0.0;
+	ASNativeValueOps::reset_native_thunk_calls();
+	if (!run_double(R"(
+		double main() {
+			PackedInt64Array a;
+			a.push_back(10);
+			a.push_back(20);
+			a.push_back(30);
+			a[1] = 25;                        // set_opIndex（原生）
+			PackedFloat64Array f;
+			f.push_back(1.5);
+			f.push_back(2.5);
+			f[0] = 3.5;                       // set_opIndex（原生）
+			int64 ai = a[0] + a[1] + a[2];    // get_opIndex（原生）
+			double fd = f[0] + f[1];
+			return double(ai) + fd;
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 71.0)); // (10+25+30) + (3.5+2.5) = 65 + 6
+	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+}
+
+// P2：Packed 标量数组 size() 原生 thunk。
+void as_native_vo_packed_size() {
+	double out = 0.0;
+	ASNativeValueOps::reset_native_thunk_calls();
+	if (!run_double(R"(
+		double main() {
+			PackedInt64Array a;
+			a.push_back(1);
+			a.push_back(2);
+			PackedFloat64Array f;
+			f.push_back(1.0);
+			return double(a.size()) * 10.0 + double(f.size());
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 21.0));
+	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+}
+
+// P2：越界语义与 generic 一致（读返回默认 0，写静默忽略），不得崩溃。
+void as_native_vo_packed_index_oob() {
+	double out = 0.0;
+	if (!run_double(R"(
+		double main() {
+			PackedInt64Array a;
+			a.push_back(5);
+			int64 oob = a[7];   // 越界读 -> 0
+			a[7] = 9;           // 越界写 -> 静默忽略
+			return double(a[0]) + double(oob);
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 5.0));
+}
+
