@@ -784,6 +784,8 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_request_hdr_output(hdr_output_requested, window_id);
 	AccessibilityServer::get_singleton()->set_window_callbacks(window_id, callable_mp(this, &Window::_accessibility_activate), callable_mp(this, &Window::_accessibility_deactivate));
 
+	_update_window_size();
+
 	if (transient_parent) {
 		for (const Window *E : transient_children) {
 			if (E->window_id != DisplayServerEnums::INVALID_WINDOW_ID) {
