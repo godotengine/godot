@@ -524,6 +524,29 @@ void as_native_vo_packed_index_oob() {
 	CHECK(nearly(out, 5.0));
 }
 
+// P2+：Packed 标量数组 push_back 原生 thunk。5 次 push_back 应各命中一次原生 thunk，
+// 叠加随后的 5 次索引读，总数应为 10；若 push_back 仍走 generic，则只有索引的 5 次。
+void as_native_vo_packed_push_back() {
+	double out = 0.0;
+	ASNativeValueOps::reset_native_thunk_calls();
+	if (!run_double(R"(
+		double main() {
+			PackedInt64Array a;
+			a.push_back(10);
+			a.push_back(20);
+			a.push_back(30);
+			PackedFloat64Array f;
+			f.push_back(1.5);
+			f.push_back(2.5);
+			return double(a[0] + a[1] + a[2]) + f[0] + f[1];
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 64.0)); // (10+20+30) + (1.5+2.5) = 60 + 4
+	CHECK(ASNativeValueOps::native_thunk_calls() >= 10);
+}
+
 // P3b：更多几何值类型纳入原生存储。原生存储只改变脚本侧内存布局与生命周期，
 // 不改变脚本可见语义，故主要验证：判定表覆盖到位、槽 ↔ Variant 双向转换精确、
 // 且这些类型在脚本中的构造/拷贝/运算仍与既有 generic 行为一致。

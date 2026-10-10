@@ -253,6 +253,32 @@ void thunk_index_set_f64(Variant *self, int64_t index, double value) {
 	self->set_indexed(index, Variant(value), valid, oob);
 }
 
+// P2+：Packed 数组 push_back 原生 thunk。存储为 Variant，转发给 Variant 内省的
+// ValidatedBuiltInMethod；首个调用后由 static 缓存函数指针，避免每次查表。
+template <Variant::Type T>
+void thunk_packed_push_i64(Variant *self, int64_t value) {
+	ASNativeValueOps::note_thunk_call();
+	Variant v(value);
+	const Variant *args[1] = { &v };
+	Variant ret;
+	static Variant::ValidatedBuiltInMethod m = Variant::get_validated_builtin_method(T, "push_back");
+	if (m) {
+		m(self, args, 1, &ret);
+	}
+}
+
+template <Variant::Type T>
+void thunk_packed_push_f64(Variant *self, double value) {
+	ASNativeValueOps::note_thunk_call();
+	Variant v(value);
+	const Variant *args[1] = { &v };
+	Variant ret;
+	static Variant::ValidatedBuiltInMethod m = Variant::get_validated_builtin_method(T, "push_back");
+	if (m) {
+		m(self, args, 1, &ret);
+	}
+}
+
 } // namespace
 
 namespace ASNativeValueOps {
@@ -510,14 +536,45 @@ bool try_add_method(asIScriptEngine *p_engine, const String &p_type_name, Varian
 				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_method1_scalar<Vector3i, int64_t, &Vector3i::distance_squared_to>);
 			}
 			break;
-		// P2：Packed 标量数组的 size()（元素个数），无参标量返回，直接走原生 thunk。
+		// P2：Packed 标量数组的 size()（元素个数）与 push_back（追加）原生 thunk。
 		case Variant::PACKED_BYTE_ARRAY:
+			if (m == "size") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+			}
+			if (m == "push_back") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_i64<Variant::PACKED_BYTE_ARRAY>);
+			}
+			break;
 		case Variant::PACKED_INT32_ARRAY:
+			if (m == "size") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+			}
+			if (m == "push_back") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_i64<Variant::PACKED_INT32_ARRAY>);
+			}
+			break;
 		case Variant::PACKED_INT64_ARRAY:
+			if (m == "size") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+			}
+			if (m == "push_back") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_i64<Variant::PACKED_INT64_ARRAY>);
+			}
+			break;
 		case Variant::PACKED_FLOAT32_ARRAY:
+			if (m == "size") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+			}
+			if (m == "push_back") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_f64<Variant::PACKED_FLOAT32_ARRAY>);
+			}
+			break;
 		case Variant::PACKED_FLOAT64_ARRAY:
 			if (m == "size") {
 				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+			}
+			if (m == "push_back") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_f64<Variant::PACKED_FLOAT64_ARRAY>);
 			}
 			break;
 		default:
