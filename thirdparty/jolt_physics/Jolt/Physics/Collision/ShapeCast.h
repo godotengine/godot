@@ -96,6 +96,9 @@ public:
 	/// Set the backfacing mode for all shapes
 	void						SetBackFaceMode(EBackFaceMode inMode) { mBackFaceModeTriangles = mBackFaceModeConvex = inMode; }
 
+	/// When > 0 the query shape is inflated by an extra convex radius, this makes it bigger in every direction by this margin. (unit: meter)
+	float						mExtraConvexRadius = 0.0f;
+
 	/// How backfacing triangles should be treated (should we report moving from back to front for triangle based shapes, e.g. for MeshShape/HeightFieldShape?)
 	EBackFaceMode				mBackFaceModeTriangles = EBackFaceMode::IgnoreBackFaces;
 

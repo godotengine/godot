@@ -189,6 +189,10 @@ void ActionMapEditor::_tree_button_pressed(Object *p_item, int p_column, int p_i
 			// Send removed action name
 			String name = item->get_meta("__name");
 			emit_signal(SNAME("action_removed"), name);
+
+			// Update the "Add" button in case the deleted action shares
+			// the same name as the new one.
+			_add_edit_text_changed(add_edit->get_text());
 		} break;
 		case ActionMapEditor::BUTTON_REMOVE_EVENT: {
 			// Remove event and send updated action
@@ -624,7 +628,7 @@ ActionMapEditor::ActionMapEditor() {
 
 	MarginContainer *mc = memnew(MarginContainer);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	mc->set_theme_type_variation("NoBorderActionEditor");
+	mc->set_theme_type_variation("NoBorderBottomPanel");
 	main_vbox->add_child(mc);
 
 	// Action Editor Tree

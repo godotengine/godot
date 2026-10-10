@@ -123,8 +123,16 @@ layout(std140) uniform MultiviewData { // ubo:12
 	highp mat4 projection_matrix_view[MAX_VIEWS];
 	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
 	highp vec4 eye_offset[MAX_VIEWS];
+	highp uint view_index;
+	highp uint pad0;
+	highp uint pad1;
+	highp uint pad2;
 }
 multiview_data;
+
+#ifdef EMULATE_MULTIVIEW
+#define ViewIndex (multiview_data.view_index)
+#endif
 #endif
 
 layout(location = 0) out vec4 frag_color;
@@ -200,7 +208,7 @@ void main() {
 	cube_normal = mat3(orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
 
-	vec2 uv = gl_FragCoord.xy; // uv_interp * 0.5 + 0.5;
+	vec2 uv = uv_interp * 0.5 + 0.5;
 
 	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
@@ -249,7 +257,7 @@ void main() {
 
 	color *= sky_energy_multiplier;
 
-#if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
+#if !defined(DISABLE_FOG)
 
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	if (fog_enabled) {

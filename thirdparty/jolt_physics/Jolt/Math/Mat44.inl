@@ -261,6 +261,30 @@ Mat44 Mat44::operator * (Mat44Arg inM) const
 		t = vmlaq_f32(t, mCol[3].mValue, vdupq_laneq_f32(c, 3));
 		result.mCol[i].mValue = t;
 	}
+#elif defined(JPH_USE_RVV)
+	const vfloat32m1_t col0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+	const vfloat32m1_t col3 = __riscv_vle32_v_f32m1(mCol[3].mF32, 4);
+
+	for (int i = 0; i < 4; ++i)
+	{
+		const float *c = inM.mCol[i].mF32;
+		const vfloat32m1_t rep_0 = __riscv_vfmv_v_f_f32m1(c[0], 4);
+		const vfloat32m1_t rep_1 = __riscv_vfmv_v_f_f32m1(c[1], 4);
+		const vfloat32m1_t rep_2 = __riscv_vfmv_v_f_f32m1(c[2], 4);
+		const vfloat32m1_t rep_3 = __riscv_vfmv_v_f_f32m1(c[3], 4);
+
+		const vfloat32m1_t mul1 = __riscv_vfmul_vv_f32m1(col1, rep_1, 4);
+		const vfloat32m1_t mul2 = __riscv_vfmul_vv_f32m1(col2, rep_2, 4);
+		const vfloat32m1_t mul3 = __riscv_vfmul_vv_f32m1(col3, rep_3, 4);
+
+		vfloat32m1_t t = __riscv_vfmul_vv_f32m1(col0, rep_0, 4);
+		t = __riscv_vfadd_vv_f32m1(t, mul1, 4);
+		t = __riscv_vfadd_vv_f32m1(t, mul2, 4);
+		t = __riscv_vfadd_vv_f32m1(t, mul3, 4);
+		__riscv_vse32_v_f32m1(result.mCol[i].mF32, t, 4);
+	}
 #else
 	for (int i = 0; i < 4; ++i)
 		result.mCol[i] = mCol[0] * inM.mCol[i].mF32[0] + mCol[1] * inM.mCol[i].mF32[1] + mCol[2] * inM.mCol[i].mF32[2] + mCol[3] * inM.mCol[i].mF32[3];
@@ -282,6 +306,27 @@ Vec3 Mat44::operator * (Vec3Arg inV) const
 	t = vmlaq_f32(t, mCol[2].mValue, vdupq_laneq_f32(inV.mValue, 2));
 	t = vaddq_f32(t, mCol[3].mValue); // Don't combine this with the first mul into a fused multiply add, causes precision issues
 	return Vec3::sFixW(t);
+#elif defined(JPH_USE_RVV)
+	const vfloat32m1_t v0 = __riscv_vfmv_v_f_f32m1(inV.mF32[0], 4);
+	const vfloat32m1_t v1 = __riscv_vfmv_v_f_f32m1(inV.mF32[1], 4);
+	const vfloat32m1_t v2 = __riscv_vfmv_v_f_f32m1(inV.mF32[2], 4);
+
+	const vfloat32m1_t col0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+	const vfloat32m1_t col3 = __riscv_vle32_v_f32m1(mCol[3].mF32, 4);
+
+	const vfloat32m1_t mul1 = __riscv_vfmul_vv_f32m1(col1, v1, 4);
+	const vfloat32m1_t mul2 = __riscv_vfmul_vv_f32m1(col2, v2, 4);
+
+	vfloat32m1_t t = __riscv_vfmul_vv_f32m1(col0, v0, 4);
+	t = __riscv_vfadd_vv_f32m1(t, mul1, 4);
+	t = __riscv_vfadd_vv_f32m1(t, mul2, 4);
+	t = __riscv_vfadd_vv_f32m1(t, col3, 4);
+
+	Type v;
+	__riscv_vse32_v_f32m1(v.mData, t, 4);
+	return Vec3::sFixW(v);
 #else
 	return Vec3(
 		mCol[0].mF32[0] * inV.mF32[0] + mCol[1].mF32[0] * inV.mF32[1] + mCol[2].mF32[0] * inV.mF32[2] + mCol[3].mF32[0],
@@ -304,6 +349,29 @@ Vec4 Mat44::operator * (Vec4Arg inV) const
 	t = vmlaq_f32(t, mCol[2].mValue, vdupq_laneq_f32(inV.mValue, 2));
 	t = vmlaq_f32(t, mCol[3].mValue, vdupq_laneq_f32(inV.mValue, 3));
 	return t;
+#elif defined(JPH_USE_RVV)
+	const vfloat32m1_t v0 = __riscv_vfmv_v_f_f32m1(inV.mF32[0], 4);
+	const vfloat32m1_t v1 = __riscv_vfmv_v_f_f32m1(inV.mF32[1], 4);
+	const vfloat32m1_t v2 = __riscv_vfmv_v_f_f32m1(inV.mF32[2], 4);
+	const vfloat32m1_t v3 = __riscv_vfmv_v_f_f32m1(inV.mF32[3], 4);
+
+	const vfloat32m1_t col0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+	const vfloat32m1_t col3 = __riscv_vle32_v_f32m1(mCol[3].mF32, 4);
+
+	const vfloat32m1_t mul1 = __riscv_vfmul_vv_f32m1(col1, v1, 4);
+	const vfloat32m1_t mul2 = __riscv_vfmul_vv_f32m1(col2, v2, 4);
+	const vfloat32m1_t mul3 = __riscv_vfmul_vv_f32m1(col3, v3, 4);
+
+	vfloat32m1_t t = __riscv_vfmul_vv_f32m1(col0, v0, 4);
+	t = __riscv_vfadd_vv_f32m1(t, mul1, 4);
+	t = __riscv_vfadd_vv_f32m1(t, mul2, 4);
+	t = __riscv_vfadd_vv_f32m1(t, mul3, 4);
+
+	Vec4 v;
+	__riscv_vse32_v_f32m1(v.mF32, t, 4);
+	return v;
 #else
 	return Vec4(
 		mCol[0].mF32[0] * inV.mF32[0] + mCol[1].mF32[0] * inV.mF32[1] + mCol[2].mF32[0] * inV.mF32[2] + mCol[3].mF32[0] * inV.mF32[3],
@@ -325,6 +393,25 @@ Vec3 Mat44::Multiply3x3(Vec3Arg inV) const
 	t = vmlaq_f32(t, mCol[1].mValue, vdupq_laneq_f32(inV.mValue, 1));
 	t = vmlaq_f32(t, mCol[2].mValue, vdupq_laneq_f32(inV.mValue, 2));
 	return Vec3::sFixW(t);
+#elif defined(JPH_USE_RVV)
+	const vfloat32m1_t v0 = __riscv_vfmv_v_f_f32m1(inV.mF32[0], 4);
+	const vfloat32m1_t v1 = __riscv_vfmv_v_f_f32m1(inV.mF32[1], 4);
+	const vfloat32m1_t v2 = __riscv_vfmv_v_f_f32m1(inV.mF32[2], 4);
+
+	const vfloat32m1_t col0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+
+	const vfloat32m1_t mul1 = __riscv_vfmul_vv_f32m1(v1, col1, 4);
+	const vfloat32m1_t mul2 = __riscv_vfmul_vv_f32m1(v2, col2, 4);
+
+	vfloat32m1_t t = __riscv_vfmul_vv_f32m1(v0, col0, 4);
+	t = __riscv_vfadd_vv_f32m1(t, mul1, 4);
+	t = __riscv_vfadd_vv_f32m1(t, mul2, 4);
+
+	Type v;
+	__riscv_vse32_v_f32m1(v.mData, t, 4);
+	return Vec3::sFixW(v);
 #else
 	return Vec3(
 		mCol[0].mF32[0] * inV.mF32[0] + mCol[1].mF32[0] * inV.mF32[1] + mCol[2].mF32[0] * inV.mF32[2],
@@ -335,16 +422,7 @@ Vec3 Mat44::Multiply3x3(Vec3Arg inV) const
 
 Vec3 Mat44::Multiply3x3Transposed(Vec3Arg inV) const
 {
-#if defined(JPH_USE_SSE4_1)
-	__m128 x = _mm_dp_ps(mCol[0].mValue, inV.mValue, 0x7f);
-	__m128 y = _mm_dp_ps(mCol[1].mValue, inV.mValue, 0x7f);
-	__m128 xy = _mm_blend_ps(x, y, 0b0010);
-	__m128 z = _mm_dp_ps(mCol[2].mValue, inV.mValue, 0x7f);
-	__m128 xyzz = _mm_blend_ps(xy, z, 0b1100);
-	return xyzz;
-#else
 	return Transposed3x3().Multiply3x3(inV);
-#endif
 }
 
 Mat44 Mat44::Multiply3x3(Mat44Arg inM) const
@@ -371,6 +449,26 @@ Mat44 Mat44::Multiply3x3(Mat44Arg inM) const
 		t = vmlaq_f32(t, mCol[1].mValue, vdupq_laneq_f32(c, 1));
 		t = vmlaq_f32(t, mCol[2].mValue, vdupq_laneq_f32(c, 2));
 		result.mCol[i].mValue = t;
+	}
+#elif defined(JPH_USE_RVV)
+	const vfloat32m1_t col0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t col1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t col2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+
+	for (int i = 0; i < 3; ++i)
+	{
+		const float* col_i = inM.mCol[i].mF32;
+		const vfloat32m1_t v0 = __riscv_vfmv_v_f_f32m1(col_i[0], 4);
+		const vfloat32m1_t v1 = __riscv_vfmv_v_f_f32m1(col_i[1], 4);
+		const vfloat32m1_t v2 = __riscv_vfmv_v_f_f32m1(col_i[2], 4);
+
+		const vfloat32m1_t mul1 = __riscv_vfmul_vv_f32m1(v1, col1, 4);
+		const vfloat32m1_t mul2 = __riscv_vfmul_vv_f32m1(v2, col2, 4);
+
+		vfloat32m1_t t = __riscv_vfmul_vv_f32m1(v0, col0, 4);
+		t = __riscv_vfadd_vv_f32m1(t, mul1, 4);
+		t = __riscv_vfadd_vv_f32m1(t, mul2, 4);
+		__riscv_vse32_v_f32m1(result.mCol[i].mF32, t, 4);
 	}
 #else
 	for (int i = 0; i < 3; ++i)
@@ -490,6 +588,18 @@ Mat44 Mat44::Transposed() const
 	result.mCol[2].mValue = tmp4.val[0];
 	result.mCol[3].mValue = tmp4.val[1];
 	return result;
+#elif defined(JPH_USE_RVV)
+	const vfloat32m1_t row0 = __riscv_vlse32_v_f32m1(&mCol[0].mF32[0], sizeof(Vec4), 4);
+	const vfloat32m1_t row1 = __riscv_vlse32_v_f32m1(&mCol[0].mF32[1], sizeof(Vec4), 4);
+	const vfloat32m1_t row2 = __riscv_vlse32_v_f32m1(&mCol[0].mF32[2], sizeof(Vec4), 4);
+	const vfloat32m1_t row3 = __riscv_vlse32_v_f32m1(&mCol[0].mF32[3], sizeof(Vec4), 4);
+
+	Mat44 result;
+	__riscv_vse32_v_f32m1(result.mCol[0].mF32, row0, 4);
+	__riscv_vse32_v_f32m1(result.mCol[1].mF32, row1, 4);
+	__riscv_vse32_v_f32m1(result.mCol[2].mF32, row2, 4);
+	__riscv_vse32_v_f32m1(result.mCol[3].mF32, row3, 4);
+	return result;
 #else
 	Mat44 result;
 	for (int c = 0; c < 4; ++c)
@@ -522,6 +632,22 @@ Mat44 Mat44::Transposed3x3() const
 	result.mCol[0].mValue = tmp3.val[0];
 	result.mCol[1].mValue = tmp3.val[1];
 	result.mCol[2].mValue = tmp4.val[0];
+#elif defined(JPH_USE_RVV)
+	const float end_col[4] = { 0, 0, 0, 1 };
+	const vfloat32m1_t rvv_end_col = __riscv_vle32_v_f32m1(end_col, 4);
+	const vfloat32m1_t rvv_end_row = __riscv_vfmv_v_f_f32m1(0.0f, 3);
+
+	const vfloat32m1_t row0 = __riscv_vlse32_v_f32m1(&mCol[0].mF32[0], sizeof(Vec4), 3);
+	const vfloat32m1_t row1 = __riscv_vlse32_v_f32m1(&mCol[0].mF32[1], sizeof(Vec4), 3);
+	const vfloat32m1_t row2 = __riscv_vlse32_v_f32m1(&mCol[0].mF32[2], sizeof(Vec4), 3);
+
+	Mat44 result;
+	__riscv_vse32_v_f32m1(result.mCol[0].mF32, row0, 3);
+	__riscv_vse32_v_f32m1(result.mCol[1].mF32, row1, 3);
+	__riscv_vse32_v_f32m1(result.mCol[2].mF32, row2, 3);
+	__riscv_vse32_v_f32m1(result.mCol[3].mF32, rvv_end_col, 4);
+	__riscv_vsse32_v_f32m1(&result.mCol[0].mF32[3], sizeof(Vec4), rvv_end_row, 3);
+	return result;
 #else
 	Mat44 result;
 	for (int c = 0; c < 3; ++c)
@@ -690,6 +816,95 @@ Mat44 Mat44::Inversed() const
 	result.mCol[2].mValue = vmulq_f32(det, minor2);
 	result.mCol[3].mValue = vmulq_f32(det, minor3);
 	return result;
+#elif defined(JPH_USE_RVV)
+	// Implementation mirrored from SSE and NEON implementations
+	const vfloat32m1_t c0 = __riscv_vle32_v_f32m1(mCol[0].mF32, 4);
+	const vfloat32m1_t c1 = __riscv_vle32_v_f32m1(mCol[1].mF32, 4);
+	const vfloat32m1_t c2 = __riscv_vle32_v_f32m1(mCol[2].mF32, 4);
+	const vfloat32m1_t c3 = __riscv_vle32_v_f32m1(mCol[3].mF32, 4);
+
+	vfloat32m1_t minor0, minor1, minor2, minor3;
+	vfloat32m1_t tmp1;
+	vfloat32m1_t row0, row1, row2, row3;
+
+	tmp1 = RVVShuffleFloat32x4<0, 1, 4, 5>(c0, c1);
+	row1 = RVVShuffleFloat32x4<0, 1, 4, 5>(c2, c3);
+	row0 = RVVShuffleFloat32x4<0, 2, 4, 6>(tmp1, row1);
+	row1 = RVVShuffleFloat32x4<1, 3, 5, 7>(row1, tmp1);
+	tmp1 = RVVShuffleFloat32x4<2, 3, 6, 7>(c0, c1);
+	row3 = RVVShuffleFloat32x4<2, 3, 6, 7>(c2, c3);
+	row2 = RVVShuffleFloat32x4<0, 2, 4, 6>(tmp1, row3);
+	row3 = RVVShuffleFloat32x4<1, 3, 5, 7>(row3, tmp1);
+
+	tmp1 = __riscv_vfmul_vv_f32m1(row2, row3, 4);
+	tmp1 = RVVShuffleFloat32x4<1, 0, 3, 2>(tmp1, tmp1);
+	minor0 = __riscv_vfmul_vv_f32m1(row1, tmp1, 4);
+	minor1 = __riscv_vfmul_vv_f32m1(row0, tmp1, 4);
+	tmp1 = RVVShuffleFloat32x4<2, 3, 0, 1>(tmp1, tmp1);
+	minor0 = __riscv_vfsub_vv_f32m1(__riscv_vfmul_vv_f32m1(row1, tmp1, 4), minor0, 4);
+	minor1 = __riscv_vfsub_vv_f32m1(__riscv_vfmul_vv_f32m1(row0, tmp1, 4), minor1, 4);
+	minor1 = RVVShuffleFloat32x4<2, 3, 0, 1>(minor1, minor1);
+
+	tmp1 = __riscv_vfmul_vv_f32m1(row1, row2, 4);
+	tmp1 = RVVShuffleFloat32x4<1, 0, 3, 2>(tmp1, tmp1);
+	minor0 = __riscv_vfadd_vv_f32m1(__riscv_vfmul_vv_f32m1(row3, tmp1, 4), minor0, 4);
+	minor3 = __riscv_vfmul_vv_f32m1(row0, tmp1, 4);
+	tmp1 = RVVShuffleFloat32x4<2, 3, 0, 1>(tmp1, tmp1);
+	minor0 = __riscv_vfsub_vv_f32m1(minor0, __riscv_vfmul_vv_f32m1(row3, tmp1, 4), 4);
+	minor3 = __riscv_vfsub_vv_f32m1(__riscv_vfmul_vv_f32m1(row0, tmp1, 4), minor3, 4);
+	minor3 = RVVShuffleFloat32x4<2, 3, 0, 1>(minor3, minor3);
+
+	tmp1 = RVVShuffleFloat32x4<2, 3, 0, 1>(row1, row1);
+	tmp1 = __riscv_vfmul_vv_f32m1(tmp1, row3, 4);
+	tmp1 = RVVShuffleFloat32x4<1, 0, 3, 2>(tmp1, tmp1);
+	row2 = RVVShuffleFloat32x4<2, 3, 0, 1>(row2, row2);
+	minor0 = __riscv_vfadd_vv_f32m1(__riscv_vfmul_vv_f32m1(row2, tmp1, 4), minor0, 4);
+	minor2 = __riscv_vfmul_vv_f32m1(row0, tmp1, 4);
+	tmp1 = RVVShuffleFloat32x4<2, 3, 0, 1>(tmp1, tmp1);
+	minor0 = __riscv_vfsub_vv_f32m1(minor0, __riscv_vfmul_vv_f32m1(row2, tmp1, 4), 4);
+	minor2 = __riscv_vfsub_vv_f32m1(__riscv_vfmul_vv_f32m1(row0, tmp1, 4), minor2, 4);
+	minor2 = RVVShuffleFloat32x4<2, 3, 0, 1>(minor2, minor2);
+
+	tmp1 = __riscv_vfmul_vv_f32m1(row0, row1, 4);
+	tmp1 = RVVShuffleFloat32x4<1, 0, 3, 2>(tmp1, tmp1);
+	minor2 = __riscv_vfadd_vv_f32m1(__riscv_vfmul_vv_f32m1(row3, tmp1, 4), minor2, 4);
+	minor3 = __riscv_vfsub_vv_f32m1(__riscv_vfmul_vv_f32m1(row2, tmp1, 4), minor3, 4);
+	tmp1 = RVVShuffleFloat32x4<2, 3, 0, 1>(tmp1, tmp1);
+	minor2 = __riscv_vfsub_vv_f32m1(__riscv_vfmul_vv_f32m1(row3, tmp1, 4), minor2, 4);
+	minor3 = __riscv_vfsub_vv_f32m1(minor3, __riscv_vfmul_vv_f32m1(row2, tmp1, 4), 4);
+
+	tmp1 = __riscv_vfmul_vv_f32m1(row0, row3, 4);
+	tmp1 = RVVShuffleFloat32x4<1, 0, 3, 2>(tmp1, tmp1);
+	minor1 = __riscv_vfsub_vv_f32m1(minor1, __riscv_vfmul_vv_f32m1(row2, tmp1, 4), 4);
+	minor2 = __riscv_vfadd_vv_f32m1(__riscv_vfmul_vv_f32m1(row1, tmp1, 4), minor2, 4);
+	tmp1 = RVVShuffleFloat32x4<2, 3, 0, 1>(tmp1, tmp1);
+	minor1 = __riscv_vfadd_vv_f32m1(__riscv_vfmul_vv_f32m1(row2, tmp1, 4), minor1, 4);
+	minor2 = __riscv_vfsub_vv_f32m1(minor2, __riscv_vfmul_vv_f32m1(row1, tmp1, 4), 4);
+
+	tmp1 = __riscv_vfmul_vv_f32m1(row0, row2, 4);
+	tmp1 = RVVShuffleFloat32x4<1, 0, 3, 2>(tmp1, tmp1);
+	minor1 = __riscv_vfadd_vv_f32m1(__riscv_vfmul_vv_f32m1(row3, tmp1, 4), minor1, 4);
+	minor3 = __riscv_vfsub_vv_f32m1(minor3, __riscv_vfmul_vv_f32m1(row1, tmp1, 4), 4);
+	tmp1 = RVVShuffleFloat32x4<2, 3, 0, 1>(tmp1, tmp1);
+	minor1 = __riscv_vfsub_vv_f32m1(minor1, __riscv_vfmul_vv_f32m1(row3, tmp1, 4), 4);
+	minor3 = __riscv_vfadd_vv_f32m1(__riscv_vfmul_vv_f32m1(row1, tmp1, 4), minor3, 4);
+
+	const vfloat32m1_t v_det = __riscv_vfmul_vv_f32m1(row0, minor0, 4);
+	const vfloat32m1_t s_det = RVVSumElementsFloat32x4(v_det);
+	const vfloat32m1_t det_splat = __riscv_vrgather_vx_f32m1(s_det, 0, 4);
+	const vfloat32m1_t det_inv = __riscv_vfrdiv_vf_f32m1(det_splat, 1.0f, 4);
+
+	minor0 = __riscv_vfmul_vv_f32m1(det_inv, minor0, 4);
+	minor1 = __riscv_vfmul_vv_f32m1(det_inv, minor1, 4);
+	minor2 = __riscv_vfmul_vv_f32m1(det_inv, minor2, 4);
+	minor3 = __riscv_vfmul_vv_f32m1(det_inv, minor3, 4);
+
+	Mat44 result;
+	__riscv_vse32_v_f32m1(result.mCol[0].mF32, minor0, 4);
+	__riscv_vse32_v_f32m1(result.mCol[1].mF32, minor1, 4);
+	__riscv_vse32_v_f32m1(result.mCol[2].mF32, minor2, 4);
+	__riscv_vse32_v_f32m1(result.mCol[3].mF32, minor3, 4);
+	return result;
 #else
 	float m00 = JPH_EL(0, 0), m10 = JPH_EL(1, 0), m20 = JPH_EL(2, 0), m30 = JPH_EL(3, 0);
 	float m01 = JPH_EL(0, 1), m11 = JPH_EL(1, 1), m21 = JPH_EL(2, 1), m31 = JPH_EL(3, 1);
@@ -735,7 +950,7 @@ Mat44 Mat44::InversedRotationTranslation() const
 
 float Mat44::GetDeterminant3x3() const
 {
-	return GetAxisX().Dot(GetAxisY().Cross(GetAxisZ()));
+	return GetAxisX().Dot(GetAxisY().CrossPrecise(GetAxisZ()));
 }
 
 Mat44 Mat44::Adjointed3x3() const
@@ -786,7 +1001,7 @@ Quat Mat44::GetQuaternion() const
 
 	if (tr >= 0.0f)
 	{
-		float s = sqrt(tr + 1.0f);
+		float s = Sqrt(tr + 1.0f);
 		float is = 0.5f / s;
 		return Quat(
 			(mCol[1].mF32[2] - mCol[2].mF32[1]) * is,
@@ -802,7 +1017,7 @@ Quat Mat44::GetQuaternion() const
 
 		if (i == 0)
 		{
-			float s = sqrt(mCol[0].mF32[0] - (mCol[1].mF32[1] + mCol[2].mF32[2]) + 1);
+			float s = Sqrt(mCol[0].mF32[0] - (mCol[1].mF32[1] + mCol[2].mF32[2]) + 1);
 			float is = 0.5f / s;
 			return Quat(
 				0.5f * s,
@@ -812,7 +1027,7 @@ Quat Mat44::GetQuaternion() const
 		}
 		else if (i == 1)
 		{
-			float s = sqrt(mCol[1].mF32[1] - (mCol[2].mF32[2] + mCol[0].mF32[0]) + 1);
+			float s = Sqrt(mCol[1].mF32[1] - (mCol[2].mF32[2] + mCol[0].mF32[0]) + 1);
 			float is = 0.5f / s;
 			return Quat(
 				(mCol[1].mF32[0] + mCol[0].mF32[1]) * is,
@@ -824,7 +1039,7 @@ Quat Mat44::GetQuaternion() const
 		{
 			JPH_ASSERT(i == 2);
 
-			float s = sqrt(mCol[2].mF32[2] - (mCol[0].mF32[0] + mCol[1].mF32[1]) + 1);
+			float s = Sqrt(mCol[2].mF32[2] - (mCol[0].mF32[0] + mCol[1].mF32[1]) + 1);
 			float is = 0.5f / s;
 			return Quat(
 				(mCol[0].mF32[2] + mCol[2].mF32[0]) * is,
@@ -880,6 +1095,15 @@ Mat44 Mat44::GetRotationSafe() const
 				 vsetq_lane_f32(0, mCol[1].mValue, 3),
 				 vsetq_lane_f32(0, mCol[2].mValue, 3),
 				 Vec4(0, 0, 0, 1));
+#elif defined(JPH_USE_RVV)
+	const float end_col[4] = { 0, 0, 0, 1 };
+	const vfloat32m1_t rvv_end_col = __riscv_vle32_v_f32m1(end_col, 4);
+	const vfloat32m1_t rvv_end_row = __riscv_vfmv_v_f_f32m1(0.0f, 3);
+
+	Mat44 result(*this);
+	__riscv_vse32_v_f32m1(result.mCol[3].mF32, rvv_end_col, 4);
+	__riscv_vsse32_v_f32m1(&result.mCol[0].mF32[3], sizeof(Vec4), rvv_end_row, 3);
+	return result;
 #else
 	return Mat44(Vec4(mCol[0].mF32[0], mCol[0].mF32[1], mCol[0].mF32[2], 0),
 				 Vec4(mCol[1].mF32[0], mCol[1].mF32[1], mCol[1].mF32[2], 0),

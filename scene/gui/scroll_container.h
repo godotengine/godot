@@ -54,6 +54,12 @@ public:
 		SCROLL_HINT_MODE_ALL,
 		SCROLL_HINT_MODE_TOP_AND_LEFT,
 		SCROLL_HINT_MODE_BOTTOM_AND_RIGHT,
+		SCROLL_HINT_MODE_TOP_AND_BOTTOM,
+		SCROLL_HINT_MODE_LEFT_AND_RIGHT,
+		SCROLL_HINT_MODE_TOP,
+		SCROLL_HINT_MODE_BOTTOM,
+		SCROLL_HINT_MODE_LEFT,
+		SCROLL_HINT_MODE_RIGHT,
 	};
 
 private:
@@ -105,6 +111,10 @@ private:
 		Color scroll_hint_vertical_color;
 		Color scroll_hint_horizontal_color;
 
+		int scrollbar_margin_left = -1;
+		int scrollbar_margin_top = -1;
+		int scrollbar_margin_right = -1;
+		int scrollbar_margin_bottom = -1;
 		int scrollbar_h_separation = 0;
 		int scrollbar_v_separation = 0;
 	} theme_cache;

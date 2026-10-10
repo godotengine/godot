@@ -268,6 +268,7 @@ class EditorFileSystem : public Node {
 
 	List<String> sources_changed;
 	List<ItemAction> scan_actions;
+	bool updating_scan_actions = false;
 
 	bool _update_scan_actions();
 
@@ -378,6 +379,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	// The name is the version, to keep compatibility with different versions of Godot.
+	static inline String CACHE_FILE_NAME = "filesystem_cache10";
+
 	static EditorFileSystem *get_singleton() { return singleton; }
 
 	EditorFileSystemDirectory *get_filesystem();

@@ -482,23 +482,23 @@ inline bool triangle_sphere_intersection_test(const Vector3 *p_triangle, const V
 }
 #endif // DISABLE_DEPRECATED
 
-inline Vector<Vector3> clip_polygon(const Vector<Vector3> &polygon, const Plane &p_plane) {
+inline Vector<Vector3> clip_polygon(const Vector<Vector3> &p_polygon, const Plane &p_plane) {
 	enum LocationCache {
 		LOC_INSIDE = 1,
 		LOC_BOUNDARY = 0,
 		LOC_OUTSIDE = -1
 	};
 
-	if (polygon.is_empty()) {
-		return polygon;
+	if (p_polygon.is_empty()) {
+		return p_polygon;
 	}
 
-	int *location_cache = (int *)alloca(sizeof(int) * polygon.size());
+	int *location_cache = (int *)alloca(sizeof(int) * p_polygon.size());
 	int inside_count = 0;
 	int outside_count = 0;
 
-	for (int a = 0; a < polygon.size(); a++) {
-		real_t dist = p_plane.distance_to(polygon[a]);
+	for (int a = 0; a < p_polygon.size(); a++) {
+		real_t dist = p_plane.distance_to(p_polygon[a]);
 		if (dist < (real_t)-CMP_POINT_IN_PLANE_EPSILON) {
 			location_cache[a] = LOC_INSIDE;
 			inside_count++;
@@ -513,20 +513,20 @@ inline Vector<Vector3> clip_polygon(const Vector<Vector3> &polygon, const Plane 
 	}
 
 	if (outside_count == 0) {
-		return polygon; // No changes.
+		return p_polygon; // No changes.
 	} else if (inside_count == 0) {
 		return Vector<Vector3>(); // Empty.
 	}
 
-	long previous = polygon.size() - 1;
+	long previous = p_polygon.size() - 1;
 	Vector<Vector3> clipped;
 
-	for (int index = 0; index < polygon.size(); index++) {
+	for (int index = 0; index < p_polygon.size(); index++) {
 		int loc = location_cache[index];
 		if (loc == LOC_OUTSIDE) {
 			if (location_cache[previous] == LOC_INSIDE) {
-				const Vector3 &v1 = polygon[previous];
-				const Vector3 &v2 = polygon[index];
+				const Vector3 &v1 = p_polygon[previous];
+				const Vector3 &v2 = p_polygon[index];
 
 				Vector3 segment = v1 - v2;
 				real_t den = p_plane.normal.dot(segment);
@@ -535,9 +535,9 @@ inline Vector<Vector3> clip_polygon(const Vector<Vector3> &polygon, const Plane 
 				clipped.push_back(v1 + segment * dist);
 			}
 		} else {
-			const Vector3 &v1 = polygon[index];
+			const Vector3 &v1 = p_polygon[index];
 			if ((loc == LOC_INSIDE) && (location_cache[previous] == LOC_OUTSIDE)) {
-				const Vector3 &v2 = polygon[previous];
+				const Vector3 &v2 = p_polygon[previous];
 				Vector3 segment = v1 - v2;
 				real_t den = p_plane.normal.dot(segment);
 				real_t dist = p_plane.distance_to(v1) / den;
@@ -615,22 +615,22 @@ Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_co
 		max = x2; \
 	}
 
-_FORCE_INLINE_ bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
+_FORCE_INLINE_ bool planeBoxOverlap(Vector3 p_normal, real_t p_d, Vector3 p_maxbox) {
 	int q;
 	Vector3 vmin, vmax;
 	for (q = 0; q <= 2; q++) {
-		if (normal[q] > 0.0f) {
-			vmin[q] = -maxbox[q];
-			vmax[q] = maxbox[q];
+		if (p_normal[q] > 0.0f) {
+			vmin[q] = -p_maxbox[q];
+			vmax[q] = p_maxbox[q];
 		} else {
-			vmin[q] = maxbox[q];
-			vmax[q] = -maxbox[q];
+			vmin[q] = p_maxbox[q];
+			vmax[q] = -p_maxbox[q];
 		}
 	}
-	if (normal.dot(vmin) + d > 0.0f) {
+	if (p_normal.dot(vmin) + p_d > 0.0f) {
 		return false;
 	}
-	if (normal.dot(vmax) + d >= 0.0f) {
+	if (p_normal.dot(vmax) + p_d >= 0.0f) {
 		return true;
 	}
 
@@ -648,7 +648,7 @@ _FORCE_INLINE_ bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
 		min = p2; \
 		max = p0; \
 	} \
-	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
+	rad = fa * p_box_half_size.y + fb * p_box_half_size.z; \
 	if (min > rad || max < -rad) { \
 		return false; \
 	}
@@ -663,7 +663,7 @@ _FORCE_INLINE_ bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
 		min = p1; \
 		max = p0; \
 	} \
-	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
+	rad = fa * p_box_half_size.y + fb * p_box_half_size.z; \
 	if (min > rad || max < -rad) { \
 		return false; \
 	}
@@ -679,7 +679,7 @@ _FORCE_INLINE_ bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
 		min = p2; \
 		max = p0; \
 	} \
-	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
+	rad = fa * p_box_half_size.x + fb * p_box_half_size.z; \
 	if (min > rad || max < -rad) { \
 		return false; \
 	}
@@ -694,7 +694,7 @@ _FORCE_INLINE_ bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
 		min = p1; \
 		max = p0; \
 	} \
-	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
+	rad = fa * p_box_half_size.x + fb * p_box_half_size.z; \
 	if (min > rad || max < -rad) { \
 		return false; \
 	}
@@ -710,7 +710,7 @@ _FORCE_INLINE_ bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
 		min = p1; \
 		max = p2; \
 	} \
-	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
+	rad = fa * p_box_half_size.x + fb * p_box_half_size.y; \
 	if (min > rad || max < -rad) { \
 		return false; \
 	}
@@ -725,12 +725,12 @@ _FORCE_INLINE_ bool planeBoxOverlap(Vector3 normal, real_t d, Vector3 maxbox) {
 		min = p1; \
 		max = p0; \
 	} \
-	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
+	rad = fa * p_box_half_size.x + fb * p_box_half_size.y; \
 	if (min > rad || max < -rad) { \
 		return false; \
 	}
 
-_FORCE_INLINE_ bool triangle_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalfsize, const Vector3 *triverts) {
+_FORCE_INLINE_ bool triangle_box_overlap(const Vector3 &p_box_center, const Vector3 p_box_half_size, const Vector3 *p_triverts) {
 	/*    use separating axis theorem to test overlap between triangle and box */
 	/*    need to test for overlap in these directions: */
 	/*    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle */
@@ -743,9 +743,9 @@ _FORCE_INLINE_ bool triangle_box_overlap(const Vector3 &boxcenter, const Vector3
 	/* This is the fastest branch on Sun */
 	/* move everything so that the boxcenter is in (0,0,0) */
 
-	const Vector3 v0 = triverts[0] - boxcenter;
-	const Vector3 v1 = triverts[1] - boxcenter;
-	const Vector3 v2 = triverts[2] - boxcenter;
+	const Vector3 v0 = p_triverts[0] - p_box_center;
+	const Vector3 v1 = p_triverts[1] - p_box_center;
+	const Vector3 v2 = p_triverts[2] - p_box_center;
 
 	/* compute triangle edges */
 	const Vector3 e0 = v1 - v0; /* tri edge 0 */
@@ -783,19 +783,19 @@ _FORCE_INLINE_ bool triangle_box_overlap(const Vector3 &boxcenter, const Vector3
 
 	/* test in X-direction */
 	FINDMINMAX(v0.x, v1.x, v2.x, min, max);
-	if (min > boxhalfsize.x || max < -boxhalfsize.x) {
+	if (min > p_box_half_size.x || max < -p_box_half_size.x) {
 		return false;
 	}
 
 	/* test in Y-direction */
 	FINDMINMAX(v0.y, v1.y, v2.y, min, max);
-	if (min > boxhalfsize.y || max < -boxhalfsize.y) {
+	if (min > p_box_half_size.y || max < -p_box_half_size.y) {
 		return false;
 	}
 
 	/* test in Z-direction */
 	FINDMINMAX(v0.z, v1.z, v2.z, min, max);
-	if (min > boxhalfsize.z || max < -boxhalfsize.z) {
+	if (min > p_box_half_size.z || max < -p_box_half_size.z) {
 		return false;
 	}
 
@@ -804,7 +804,7 @@ _FORCE_INLINE_ bool triangle_box_overlap(const Vector3 &boxcenter, const Vector3
 	/*  compute plane equation of triangle: normal*x+d=0 */
 	const Vector3 normal = e0.cross(e1);
 	const real_t d = -normal.dot(v0); /* plane eq: normal.x+d=0 */
-	return planeBoxOverlap(normal, d, boxhalfsize); /* if true, box and triangle overlaps */
+	return planeBoxOverlap(normal, d, p_box_half_size); /* if true, box and triangle overlaps */
 }
 
 Vector<uint32_t> generate_edf(const Vector<bool> &p_voxels, const Vector3i &p_size, bool p_negative);

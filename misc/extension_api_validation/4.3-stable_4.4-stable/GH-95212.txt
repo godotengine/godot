@@ -1,5 +1,3 @@
-GH-95212
---------
 Validate extension JSON: Error: Field 'classes/RegEx/methods/compile/arguments': size changed value in new API, from 1 to 2.
 Validate extension JSON: Error: Field 'classes/RegEx/methods/create_from_string/arguments': size changed value in new API, from 1 to 2.
 

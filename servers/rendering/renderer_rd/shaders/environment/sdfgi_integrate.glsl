@@ -292,9 +292,9 @@ void main() {
 
 		vec3 ray_dir2 = ray_dir * ray_dir;
 
-#define SH_ACCUM(m_idx, m_value)                       \
-	{                                                  \
-		vec3 l = light.rgb * (m_value);                \
+#define SH_ACCUM(m_idx, m_value) \
+	{ \
+		vec3 l = light.rgb * (m_value); \
 		sh_accum[probe_index].c[m_idx * 3 + 0] += l.r; \
 		sh_accum[probe_index].c[m_idx * 3 + 1] += l.g; \
 		sh_accum[probe_index].c[m_idx * 3 + 2] += l.b; \

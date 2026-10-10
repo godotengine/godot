@@ -1,5 +1,3 @@
-GH-78289
---------
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_16': return_value
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_32': return_value
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/FileAccess/methods/store_64': return_value

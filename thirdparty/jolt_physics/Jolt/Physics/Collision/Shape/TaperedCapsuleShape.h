@@ -29,7 +29,8 @@ public:
 	/// Checks if the settings of this tapered capsule make this shape a sphere
 	bool					IsSphere() const;
 
-	// See: ShapeSettings
+	/// Create a shape according to the settings specified by this object.
+	/// Note that when one sphere fully contains the other sphere, this will return a RotatedTranslatedShape with a SphereShape, or a SphereShape if mHalfHeightOfTaperedCylinder is 0.
 	virtual ShapeResult		Create() const override;
 
 	float					mHalfHeightOfTaperedCylinder = 0.0f;

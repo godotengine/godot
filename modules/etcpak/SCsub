@@ -31,6 +31,9 @@ env.modules_sources += thirdparty_obj
 
 module_obj = []
 
+if env.editor_build or env["etcpak_export_templates"]:
+    env_etcpak.Append(CPPDEFINES=["ETCPAK_COMPRESS_ENABLED"])
+
 env_etcpak.add_source_files(module_obj, "*.cpp")
 env.modules_sources += module_obj
 

@@ -1263,7 +1263,7 @@ int TPpContext::tokenize(TPpToken& ppToken)
             assert(stringifyDepth > 0);
             stringifyDepth--;
             if (stringifyDepth == 0) {
-                snprintf(ppToken.name, sizeof(ppToken.name), "%s", stringifiedToken.name);
+                SetPpTokenName(ppToken, stringifiedToken.name, strlen(stringifiedToken.name));
                 return PpAtomConstString;
             }
             continue;
@@ -1313,9 +1313,11 @@ int TPpContext::tokenize(TPpToken& ppToken)
         case '\'':
             parseContext.ppError(ppToken.loc, "character literals not supported", "\'", "");
             continue;
-        default:
-            snprintf(ppToken.name, sizeof(ppToken.name), "%s", atomStrings.getString(token));
+        default: {
+            const TString* atomString = atomStrings.getTString(token);
+            SetPpTokenName(ppToken, atomString->c_str(), atomString->size());
             break;
+        }
         }
         if (stringifyDepth > 0) {
             size_t existingLen = strlen(stringifiedToken.name);
@@ -1401,8 +1403,12 @@ int TPpContext::tokenPaste(int token, TPpToken& ppToken)
             case PpAtomAnd:
             case PpAtomOr:
             case PpAtomXor:
-                snprintf(ppToken.name, sizeof(ppToken.name), "%s", atomStrings.getString(resultToken));
-                snprintf(pastedPpToken.name, sizeof(pastedPpToken.name), "%s", atomStrings.getString(token));
+                {
+                    const TString* resultString = atomStrings.getTString(resultToken);
+                    SetPpTokenName(ppToken, resultString->c_str(), resultString->size());
+                    const TString* tokenString = atomStrings.getTString(token);
+                    SetPpTokenName(pastedPpToken, tokenString->c_str(), tokenString->size());
+                }
                 break;
             default:
                 parseContext.ppError(ppToken.loc, "not supported for these tokens", "##", "");

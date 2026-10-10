@@ -37,6 +37,7 @@
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
 #include "../objects/jolt_object_3d.h"
+#include "../shapes/jolt_custom_instance_overrides_shape.h"
 #include "../shapes/jolt_custom_motion_shape.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "jolt_motion_filter_3d.h"
@@ -498,7 +499,6 @@ bool JoltPhysicsDirectSpaceState3D::intersect_ray(const PS3DT::RayParameters &p_
 	r_result.normal = to_godot(normal);
 	r_result.rid = object->get_rid();
 	r_result.collider_id = object->get_instance_id();
-	r_result.collider = object->get_instance();
 	r_result.shape = 0;
 
 	if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
@@ -543,7 +543,6 @@ int JoltPhysicsDirectSpaceState3D::intersect_point(const PS3DT::PointParameters 
 
 		result.rid = object->get_rid();
 		result.collider_id = object->get_instance_id();
-		result.collider = object->get_instance();
 	}
 
 	return hit_count;
@@ -578,31 +577,51 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const PS3DT::ShapeParameters 
 	settings.mMaxSeparationDistance = (float)p_parameters.margin;
 
 	const JoltQueryFilter3D query_filter(*this, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.exclude);
-	JoltQueryCollectorAnyMulti<JPH::CollideShapeCollector, 32> collector(p_result_max);
-	_collide_shape_queries(jolt_shape, to_jolt(scale), to_jolt_r(transform_com), settings, to_jolt_r(transform_com.origin), collector, query_filter, query_filter, query_filter);
 
-	const int hit_count = collector.get_hit_count();
+	// Calculate bounds for query shape and expand by max separation distance
+	JPH::RMat44 jolt_transform_com = to_jolt_r(transform_com);
+	JPH::Vec3 jolt_scale = to_jolt(scale);
+	JPH::AABox jolt_bounds = jolt_shape->GetWorldSpaceBounds(jolt_transform_com, jolt_scale);
+	jolt_bounds.ExpandBy(JPH::Vec3::sReplicate(settings.mMaxSeparationDistance));
 
-	for (int i = 0; i < hit_count; ++i) {
-		const JPH::CollideShapeResult &hit = collector.get_hit(i);
-		const JoltObject3D *object = space->try_get_object(hit.mBodyID2);
-		ERR_FAIL_NULL_V(object, 0);
+	// Collect all transformed shapes that intersect with the bounding box of the query shape
+	JoltQueryCollectorAll<JPH::TransformedShapeCollector, 32> ts_collector;
+	space->get_narrow_phase_query().CollectTransformedShapes(jolt_bounds, ts_collector, query_filter, query_filter, query_filter);
 
-		PS3DT::ShapeResult &result = *r_results++;
+	// Loop over all collected transformed shapes
+	int hit_count = 0;
+	for (int ts = 0, nts = ts_collector.get_hit_count(); ts < nts; ts++) {
+		const JPH::TransformedShape &transformed_shape = ts_collector.get_hit(ts);
 
-		result.shape = 0;
+		JoltQueryCollectorAny<JPH::CollideShapeCollector> leaf_collector;
+		transformed_shape.CollideShape(jolt_shape, jolt_scale, jolt_transform_com, settings, jolt_transform_com.GetTranslation(), leaf_collector);
 
-		if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
-			const int shape_index = shaped_object->find_shape_index(hit.mSubShapeID2);
-			ERR_FAIL_COND_V(shape_index == -1, 0);
-			result.shape = shape_index;
+		if (leaf_collector.had_hit()) {
+			const JPH::CollideShapeResult &hit = leaf_collector.get_hit();
+
+			const JoltObject3D *object = space->try_get_object(transformed_shape.mBodyID);
+			ERR_FAIL_NULL_V(object, 0);
+
+			PS3DT::ShapeResult &result = *r_results++;
+
+			result.shape = 0;
+
+			if (const JoltShapedObject3D *shaped_object = object->as_shaped()) {
+				const int shape_index = shaped_object->find_shape_index(hit.mSubShapeID2);
+				ERR_FAIL_COND_V(shape_index == -1, 0);
+				result.shape = shape_index;
+			}
+
+			result.rid = object->get_rid();
+			result.collider_id = object->get_instance_id();
+
+			hit_count++;
+			if (hit_count >= p_result_max) {
+				// Early out if we reach the maximum number of results
+				return hit_count;
+			}
 		}
-
-		result.rid = object->get_rid();
-		result.collider_id = object->get_instance_id();
-		result.collider = object->get_instance();
 	}
-
 	return hit_count;
 }
 
@@ -797,21 +816,25 @@ Vector3 JoltPhysicsDirectSpaceState3D::get_closest_point_to_object_volume(RID p_
 
 	for (int i = 0; i < collector.get_hit_count(); ++i) {
 		const JPH::TransformedShape &shape_transformed = collector.get_hit(i);
-		const JPH::Shape &shape = *shape_transformed.mShape;
-
-		if (shape.GetType() != JPH::EShapeType::Convex) {
+		const JPH::Shape *shape = shape_transformed.mShape;
+		if (unlikely(shape->GetSubType() != JoltCustomShapeSubType::INSTANCE_OVERRIDES)) {
 			continue;
 		}
 
-		const JPH::ConvexShape &shape_convex = static_cast<const JPH::ConvexShape &>(shape);
+		shape = static_cast<const JoltCustomInstanceOverridesShape *>(shape)->GetInnerShape();
+		if (shape->GetType() != JPH::EShapeType::Convex) {
+			continue;
+		}
+
+		const JPH::ConvexShape *shape_convex = static_cast<const JPH::ConvexShape *>(shape);
 
 		JPH::GJKClosestPoint gjk;
 
 		JPH::ConvexShape::SupportBuffer shape_support_buffer;
-		const JPH::ConvexShape::Support *shape_support = shape_convex.GetSupportFunction(JPH::ConvexShape::ESupportMode::IncludeConvexRadius, shape_support_buffer, shape_transformed.GetShapeScale());
+		const JPH::ConvexShape::Support *shape_support = shape_convex->GetSupportFunction(JPH::ConvexShape::ESupportMode::IncludeConvexRadius, shape_support_buffer, shape_transformed.GetShapeScale());
 
 		const JPH::RMat44 shape_rotation = JPH::RMat44::sRotation(shape_transformed.mShapeRotation);
-		const JPH::Vec3 shape_com = shape_rotation.Multiply3x3(shape.GetCenterOfMass());
+		const JPH::Vec3 shape_com = shape_rotation.Multiply3x3(shape->GetCenterOfMass());
 		const JPH::RVec3 shape_pos = shape_transformed.mShapePositionCOM - JPH::RVec3(shape_com);
 		const JPH::RMat44 shape_xform = shape_rotation.PostTranslated(shape_pos);
 		const JPH::RMat44 shape_xform_inv = shape_xform.InversedRotationTranslation();

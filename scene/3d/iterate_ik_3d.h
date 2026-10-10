@@ -45,6 +45,8 @@ public:
 		SecondaryDirection limitation_right_axis = SECONDARY_DIRECTION_NONE;
 		Vector3 limitation_right_axis_vector = Vector3(1, 0, 0);
 		Quaternion limitation_rotation_offset;
+		Quaternion limitation_offset_delta;
+		bool use_rest_for_limitation = false;
 
 		// Rotation axis.
 		Vector3 get_rotation_axis_vector() const {
@@ -100,19 +102,24 @@ public:
 			return ret;
 		}
 
+#ifdef TOOLS_ENABLED
+		Quaternion limitation_gizmo_offset;
 		Quaternion get_limitation_space(const Vector3 &p_local_forward) const {
 			if (limitation.is_null()) {
 				return Quaternion();
 			}
-			return limitation->make_space(p_local_forward, get_limitation_right_axis_vector(), limitation_rotation_offset);
+			return limitation_gizmo_offset * limitation->make_space(p_local_forward, get_limitation_right_axis_vector(), limitation_rotation_offset);
 		}
+#endif // TOOLS_ENABLED
 
 		// Get rotation around normal vector (normal vector is rotation axis).
 		Vector3 get_projected_rotation(const Quaternion &p_offset, const Vector3 &p_vector) const {
 			ERR_FAIL_COND_V(rotation_axis == ROTATION_AXIS_ALL, p_vector);
 			const double ALMOST_ONE = 1.0 - CMP_EPSILON;
 			Vector3 axis = get_rotation_axis_vector().normalized();
-			Vector3 local_vector = p_offset.xform_inv(p_vector);
+			// If use_rest_for_limitation is enabled, reference pose is bone_rest instead of the bone_pose immediately before processing IK.
+			Quaternion offset = p_offset * limitation_offset_delta;
+			Vector3 local_vector = offset.xform_inv(p_vector);
 			double length = local_vector.length();
 			Vector3 projected = snap_vector_to_plane(axis, local_vector.normalized());
 			if (!Math::is_zero_approx(length)) {
@@ -121,19 +128,20 @@ public:
 			if (Math::abs(local_vector.normalized().dot(axis)) > ALMOST_ONE) {
 				return p_vector;
 			}
-			return p_offset.xform(projected);
+			return offset.xform(projected);
 		}
 
 		// Get limited rotation from forward axis in local rest space.
 		Vector3 get_limited_rotation(const Quaternion &p_offset, const Vector3 &p_vector, const Vector3 &p_forward) const {
 			ERR_FAIL_COND_V(limitation.is_null(), p_vector);
-			Vector3 local_vector = p_offset.xform_inv(p_vector);
+			Quaternion offset = p_offset * limitation_offset_delta;
+			Vector3 local_vector = offset.xform_inv(p_vector);
 			float length = local_vector.length();
 			if (Math::is_zero_approx(length)) {
 				return p_vector;
 			}
 			Vector3 limited = limitation->solve(p_forward, get_limitation_right_axis_vector(), limitation_rotation_offset, local_vector.normalized()) * length;
-			return p_offset.xform(limited);
+			return offset.xform(limited);
 		}
 
 		~IterateIK3DJointSetting() {
@@ -167,11 +175,32 @@ public:
 				solver_info->current_lrest = p_skeleton->get_bone_pose(joints[HEAD].bone).basis.get_rotation_quaternion();
 				solver_info->current_grest = parent_gpose * solver_info->current_lrest;
 				solver_info->current_grest.normalize();
+				// If the joint's use_rest_for_limitation is true, cancel relative bone_pose from the bone_rest.
+				if (joint_settings[HEAD]->use_rest_for_limitation) {
+					joint_settings[HEAD]->limitation_offset_delta = (solver_info->current_lrest.inverse() * p_skeleton->get_bone_rest(joints[HEAD].bone).basis.get_rotation_quaternion()).normalized();
+				} else {
+					joint_settings[HEAD]->limitation_offset_delta = Quaternion();
+				}
 				Vector3 from = solver_info->forward_vector;
 				Vector3 to = solver_info->current_grest.xform_inv(solver_info->current_vector).normalized();
 				Quaternion prev = solver_info->current_lpose;
 				if (joint_settings[HEAD]->rotation_axis == ROTATION_AXIS_ALL) {
 					solver_info->current_lpose = solver_info->current_lrest * get_swing(Quaternion(from, to), from);
+				} else if (joint_settings[HEAD]->use_rest_for_limitation) {
+					Quaternion pose_from_rest = joint_settings[HEAD]->limitation_offset_delta.inverse();
+					Vector3 axis = joint_settings[HEAD]->get_rotation_axis_vector().normalized();
+					Vector3 to_rest = snap_vector_to_plane(axis, pose_from_rest.xform(to));
+					if (to_rest.is_zero_approx()) {
+						to_rest = from;
+					} else {
+						to_rest.normalize();
+					}
+					Quaternion twist;
+					if (!from.is_zero_approx()) {
+						Vector3 forward_nrm = from.normalized();
+						twist = Quaternion(forward_nrm, get_roll_angle(pose_from_rest, forward_nrm));
+					}
+					solver_info->current_lpose = solver_info->current_lrest * joint_settings[HEAD]->limitation_offset_delta * get_from_to_rotation_by_axis(from, to_rest, axis) * twist;
 				} else {
 					// To stabilize rotation path especially nearely 180deg.
 					solver_info->current_lpose = solver_info->current_lrest * get_from_to_rotation_by_axis(from, to, joint_settings[HEAD]->get_rotation_axis_vector().normalized());
@@ -268,6 +297,9 @@ protected:
 
 	virtual void _make_simulation_dirty(int p_index) override;
 	virtual void _update_bone_axis(Skeleton3D *p_skeleton, int p_index) override;
+#ifdef TOOLS_ENABLED
+	void _update_limitation_gizmo(Skeleton3D *p_skeleton, int p_index);
+#endif // TOOLS_ENABLED
 
 	virtual void _process_ik(Skeleton3D *p_skeleton, double p_delta) override;
 	void _process_joints(double p_delta, Skeleton3D *p_skeleton, IterateIK3DSetting *p_setting, const Vector3 &p_target_destination);
@@ -321,11 +353,12 @@ public:
 	Vector3 get_joint_limitation_right_axis_vector(int p_index, int p_joint) const;
 	void set_joint_limitation_rotation_offset(int p_index, int p_joint, const Quaternion &p_offset);
 	Quaternion get_joint_limitation_rotation_offset(int p_index, int p_joint) const;
+	void set_joint_use_rest_for_limitation(int p_index, int p_joint, bool p_enabled);
+	bool is_joint_using_rest_for_limitation(int p_index, int p_joint) const;
 
 	// Helper.
-	Quaternion get_joint_limitation_space(int p_index, int p_joint, const Vector3 &p_forward) const;
-
 #ifdef TOOLS_ENABLED
+	Quaternion get_joint_limitation_space(int p_index, int p_joint, const Vector3 &p_forward) const;
 	virtual Vector3 get_bone_vector(int p_index, int p_joint) const override;
 #endif // TOOLS_ENABLED
 

@@ -68,20 +68,20 @@
 			For keyboard layouts with a single label on the key, it is equivalent to [member keycode].
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.key_label)[/code] where [code]event[/code] is the [InputEventKey].
 			[codeblock lang=text]
-			+-----+ +-----+
-			| Q   | | Q   | - "Q" - keycode
-			|   Й | |  ض | - "Й" and "ض" - key_label
-			+-----+ +-----+
+			┌─────┐ ┌─────┐
+			│ Q   │ │ Q   │ - "Q" - keycode
+			│   Й │ │  ض │ - "Й" and "ض" - key_label
+			└─────┘ └─────┘
 			[/codeblock]
 		</member>
 		<member name="keycode" type="int" setter="set_keycode" getter="get_keycode" enum="Key" default="0">
 			Latin label printed on the key in the current keyboard layout, which corresponds to one of the [enum Key] constants. Key codes are meant for shortcuts expressed with a standard Latin keyboard, such as [kbd]Ctrl + S[/kbd] for a "Save" shortcut.
 			To get a human-readable representation of the [InputEventKey], use [code]OS.get_keycode_string(event.keycode)[/code] where [code]event[/code] is the [InputEventKey].
 			[codeblock lang=text]
-			+-----+ +-----+
-			| Q   | | Q   | - "Q" - keycode
-			|   Й | |  ض | - "Й" and "ض" - key_label
-			+-----+ +-----+
+			┌─────┐ ┌─────┐
+			│ Q   │ │ Q   │ - "Q" - keycode
+			│   Й │ │  ض │ - "Й" and "ض" - key_label
+			└─────┘ └─────┘
 			[/codeblock]
 		</member>
 		<member name="location" type="int" setter="set_location" getter="get_location" enum="KeyLocation" default="0">

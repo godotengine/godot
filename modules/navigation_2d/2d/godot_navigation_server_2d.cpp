@@ -32,6 +32,7 @@
 
 #include "core/os/mutex.h"
 #include "scene/main/node.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 
 #include <cstdint>
 

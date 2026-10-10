@@ -33,11 +33,10 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/dir_access.h"
 #include "core/io/plist.h"
+#include "core/string/regex.h"
 #include "editor/export/lipo.h"
 #include "editor/export/macho.h"
 #include "editor/file_system/editor_paths.h"
-
-#include "modules/regex/regex.h"
 
 #include <ctime>
 
@@ -1493,8 +1492,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	}
 	if (files_to_sign.size() > 1) {
 		print_verbose("CodeSign: Rebuilding fat executable...");
-		LipO lip;
-		if (!lip.create_file(main_exe, files_to_sign)) {
+		if (!LipO::create_file(main_exe, files_to_sign)) {
 			CLEANUP();
 			r_error_msg = TTR("Failed to create fat binary.");
 			ERR_FAIL_V_MSG(FAILED, "CodeSign: Failed to create fat binary.");

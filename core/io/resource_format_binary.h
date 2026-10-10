@@ -99,11 +99,11 @@ public:
 	void set_translation_remapped(bool p_remapped);
 
 	void set_remaps(const HashMap<String, String> &p_remaps) { remaps = p_remaps; }
-	void open(Ref<FileAccess> p_f, bool p_no_resources = false, bool p_keep_uuid_paths = false);
-	String recognize(Ref<FileAccess> p_f);
-	String recognize_script_class(Ref<FileAccess> p_f);
-	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
-	void get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes);
+	void open(Ref<FileAccess> p_file, bool p_no_resources = false, bool p_keep_uuid_paths = false);
+	String recognize(Ref<FileAccess> p_file);
+	String recognize_script_class(Ref<FileAccess> p_file);
+	void get_dependencies(Ref<FileAccess> p_file, List<String> *p_dependencies, bool p_add_types);
+	void get_classes_used(Ref<FileAccess> p_file, HashSet<StringName> *p_classes);
 };
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
@@ -159,9 +159,9 @@ class ResourceFormatSaverBinaryInstance {
 		List<Property> properties;
 	};
 
-	static void _pad_buffer(Ref<FileAccess> f, int p_bytes);
+	static void _pad_buffer(Ref<FileAccess> r_file, int p_bytes);
 	void _find_resources(const Variant &p_variant, bool p_main = false);
-	static void save_unicode_string(Ref<FileAccess> f, const String &p_string, bool p_bit_on_len = false);
+	static void save_unicode_string(Ref<FileAccess> r_file, const String &p_string, bool p_bit_on_len = false);
 	int get_string_index(const String &p_string);
 
 public:
@@ -176,7 +176,7 @@ public:
 	};
 	Error save(const String &p_path, const Ref<Resource> &p_resource, uint32_t p_flags = 0);
 	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
-	static void write_variant(Ref<FileAccess> f, const Variant &p_property, HashMap<Ref<Resource>, int> &resource_map, HashMap<Ref<Resource>, int> &external_resources, HashMap<StringName, int> &string_map, const PropertyInfo &p_hint = PropertyInfo());
+	static void write_variant(Ref<FileAccess> r_file, const Variant &p_property, HashMap<Ref<Resource>, int> &r_resource_map, HashMap<Ref<Resource>, int> &r_external_resources, HashMap<StringName, int> &r_string_map, const PropertyInfo &p_hint = PropertyInfo());
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {

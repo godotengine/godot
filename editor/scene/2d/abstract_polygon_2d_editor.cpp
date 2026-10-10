@@ -300,6 +300,29 @@ void AbstractPolygon2DEditor::_wip_close() {
 	center_drag = false;
 }
 
+bool AbstractPolygon2DEditor::_wip_undo() {
+	if (wip_active && selected_point.polygon == -1) {
+		if (wip.size() == 1) {
+			_wip_cancel();
+			return true;
+		} else if (wip.size() > selected_point.vertex) {
+			wip.remove_at(selected_point.vertex);
+			_wip_changed();
+			selected_point = wip.size() - 1;
+			canvas_item_editor->update_viewport();
+			return true;
+		}
+	} else {
+		const Vertex active_point = get_active_point();
+
+		if (active_point.valid()) {
+			remove_point(active_point);
+			return true;
+		}
+	}
+	return false;
+}
+
 void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, const String &p_reason) {
 	_polygon_editing_enabled = !p_disable;
 
@@ -336,6 +359,12 @@ bool AbstractPolygon2DEditor::_commit_drag() {
 	return true;
 }
 
+void AbstractPolygon2DEditor::_cancel_drag() {
+	edited_point = PosVertex();
+	_set_polygon(0, pre_move_edit);
+	canvas_item_editor->update_viewport();
+}
+
 bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	if (!_get_node() || !_polygon_editing_enabled) {
 		return false;
@@ -361,8 +390,8 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		return (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT);
 	}
 
-	CanvasItemEditor::Tool tool = CanvasItemEditor::get_singleton()->get_current_tool();
-	if (tool != CanvasItemEditor::TOOL_SELECT) {
+	CanvasItemManipulator::Tool tool = CanvasItemEditor::get_singleton()->get_current_tool();
+	if (tool != CanvasItemManipulator::TOOL_SELECT) {
 		return false;
 	}
 
@@ -370,7 +399,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_screen_transform();
 
 		Vector2 gpoint = mb->get_position();
-		Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
+		Vector2 cpoint = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 		cpoint = _get_node()->get_screen_transform().affine_inverse().xform(cpoint);
 
 		if (mode == MODE_EDIT || (_is_line() && mode == MODE_CREATE)) {
@@ -433,12 +462,17 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 						return true;
 					}
 				}
-			} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && !edited_point.valid()) {
-				const PosVertex closest = closest_point(gpoint);
-
-				if (closest.valid()) {
-					remove_point(closest);
+			} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
+				if (edited_point.valid()) {
+					_cancel_drag();
 					return true;
+				} else {
+					const PosVertex closest = closest_point(gpoint);
+
+					if (closest.valid()) {
+						remove_point(closest);
+						return true;
+					}
 				}
 			}
 		} else if (mode == MODE_DELETE) {
@@ -492,7 +526,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					}
 				}
 			} else if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && wip_active) {
-				_wip_cancel();
+				return _wip_undo();
 			}
 		}
 
@@ -531,7 +565,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Vector2 gpoint = mm->get_position();
 
 		if (center_drag) {
-			Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
+			Vector2 cpoint = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 			cpoint = _get_node()->get_screen_transform().affine_inverse().xform(cpoint);
 			Vector2 delta = center_drag_origin - cpoint;
 
@@ -549,7 +583,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 			}
 			center_drag_origin = cpoint;
 		} else if (edited_point.valid() && (wip_active || mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
-			Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
+			Vector2 cpoint = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 			cpoint = _get_node()->get_screen_transform().affine_inverse().xform(cpoint);
 
 			//Move the point in a single axis. Should only work when editing a polygon and while holding shift.
@@ -601,27 +635,29 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed()) {
-		if (k->get_keycode() == Key::KEY_DELETE || k->get_keycode() == Key::BACKSPACE) {
-			if (wip_active && selected_point.polygon == -1) {
-				if (wip.size() > selected_point.vertex) {
-					wip.remove_at(selected_point.vertex);
-					_wip_changed();
-					selected_point = wip.size() - 1;
-					canvas_item_editor->update_viewport();
-					return true;
-				}
-			} else {
-				const Vertex active_point = get_active_point();
-
-				if (active_point.valid()) {
-					remove_point(active_point);
-					return true;
-				}
+		if (wip_active) {
+			if (k->get_keycode() == Key::BACKSPACE) {
+				return _wip_undo();
+				return true;
+			} else if (k->get_keycode() == Key::ENTER) {
+				_wip_close();
+				return true;
+			} else if (k->get_keycode() == Key::ESCAPE || k->get_keycode() == Key::KEY_DELETE) {
+				_wip_cancel();
+				return true;
 			}
-		} else if (wip_active && k->get_keycode() == Key::ENTER) {
-			_wip_close();
-		} else if (wip_active && k->get_keycode() == Key::ESCAPE) {
-			_wip_cancel();
+		} else if (edited_point.valid() && k->get_keycode() == Key::ESCAPE) {
+			_cancel_drag();
+			return true;
+		} else if ((edited_point.valid() || selected_point.valid()) && k->get_keycode() == Key::KEY_DELETE) {
+			if (edited_point.valid()) {
+				remove_point(edited_point);
+			} else if (selected_point.valid()) {
+				remove_point(selected_point);
+			}
+			edited_point = PosVertex();
+			selected_point = PosVertex();
+			return true;
 		}
 	}
 

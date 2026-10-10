@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,9 +25,16 @@
 #include "SDL_internal.h"
 
 // Useful functions and variables from SDL_events.c
-//#include "../video/SDL_sysvideo.h"
+// #include "../video/SDL_sysvideo.h"
 
+// #include "SDL_clipboardevents_c.h"
+// #include "SDL_displayevents_c.h"
+// #include "SDL_dropevents_c.h"
+// #include "SDL_keyboard_c.h"
 #include "SDL_mouse_c.h"
+// #include "SDL_touch_c.h"
+// #include "SDL_pen_c.h"
+// #include "SDL_windowevents_c.h"
 
 // Start and stop the event processing loop
 extern bool SDL_StartEventLoop(void);

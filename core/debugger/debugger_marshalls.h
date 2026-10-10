@@ -41,7 +41,7 @@ struct DebuggerMarshalls {
 		int var_type = -1;
 		String type_hint;
 
-		Array serialize(int max_size = 1 << 20); // 1 MiB default.
+		Array serialize(int p_max_size = 1 << 20); // 1 MiB default.
 		bool deserialize(const Array &p_arr);
 	};
 

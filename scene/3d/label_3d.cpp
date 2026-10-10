@@ -356,7 +356,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 		gl_of = Vector2(0, -gl_sz.y);
 	}
 
-	if (gl_uv.size.x <= 2 || gl_uv.size.y <= 2) {
+	if (p_glyph.font_rid.is_valid() && tex.is_null()) {
 		r_offset.x += p_glyph.advance * pixel_size * p_glyph.repeat; // Nothing to draw.
 		return;
 	}

@@ -35,6 +35,8 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/main/scene_tree.h"
 #include "scene/resources/3d/shape_3d.h"
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {
@@ -86,7 +88,7 @@ real_t SpringArm3D::get_length() const {
 }
 
 void SpringArm3D::set_length(real_t p_length) {
-	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || PhysicsServer3D::get_singleton()->debug_is_enabled())) {
 		update_gizmos();
 	}
 

@@ -46,7 +46,7 @@ Callable Polygon2D::_navmesh_source_geometry_parsing_callback;
 RID Polygon2D::_navmesh_source_geometry_parser;
 #endif // NAVIGATION_2D_DISABLED
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Dictionary Polygon2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
@@ -70,9 +70,7 @@ Point2 Polygon2D::_edit_get_pivot() const {
 bool Polygon2D::_edit_use_pivot() const {
 	return true;
 }
-#endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 Rect2 Polygon2D::_edit_get_rect() const {
 	if (rect_cache_dirty) {
 		int l = polygon.size();

@@ -146,7 +146,13 @@ void SnapshotObjectView::_insert_data(GameStateSnapshot *p_snapshot, const Strin
 		item->set_auto_translate_mode(offset + 0, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_auto_translate_mode(offset + 1, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_text(offset + 0, pair.value->type_name);
+		if (has_theme_icon(pair.value->type_name, SNAME("EditorIcons"))) {
+			item->set_icon(offset + 0, get_editor_theme_icon(pair.value->type_name));
+		} else {
+			item->set_icon(offset + 0, get_editor_theme_icon(SNAME("Object")));
+		}
 		item->set_text(offset + 1, pair.value->get_name());
+		item->set_tooltip_text(offset + 1, pair.value->remote_path);
 		item->set_text(offset + 2, String::num_uint64(pair.value->inbound_references.size()));
 		item->set_text(offset + 3, String::num_uint64(pair.value->outbound_references.size()));
 		item_data_map[item] = pair.value;

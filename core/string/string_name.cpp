@@ -40,17 +40,27 @@ struct StringName::Table {
 	constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;
 	constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
 
-	static inline _Data *table[TABLE_LEN];
-	static inline BinaryMutex mutex;
-	static inline PagedAllocator<_Data> allocator;
+	static _Data *table[TABLE_LEN];
+	static BinaryMutex mutex;
+	static PagedAllocator<_Data> allocator;
+	static bool configured;
 };
 
+// Defined out-of-class instead of using static inline so the compiler can
+// place the table in the zero-fill region (.bss) instead of the initialized
+// data section (.data). Because the zero-fill region is allocated at runtime,
+// this shrinks the binary size on disk.
+StringName::_Data *StringName::Table::table[TABLE_LEN];
+BinaryMutex StringName::Table::mutex;
+PagedAllocator<StringName::_Data> StringName::Table::allocator;
+bool StringName::Table::configured = false;
+
 void StringName::setup() {
-	ERR_FAIL_COND(configured);
+	ERR_FAIL_COND(Table::configured);
 	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
 		Table::table[i] = nullptr;
 	}
-	configured = true;
+	Table::configured = true;
 }
 
 void StringName::cleanup() {
@@ -72,7 +82,8 @@ void StringName::cleanup() {
 		data.sort_custom<DebugSortReferences>();
 		int unreferenced_stringnames = 0;
 		int rarely_referenced_stringnames = 0;
-		for (int i = 0; i < data.size(); i++) {
+		const int data_size = data.size();
+		for (int i = 0; i < data_size; i++) {
 			print_line(itos(i + 1) + ": " + data[i]->name + " - " + itos(data[i]->debug_references));
 			if (data[i]->debug_references == 0) {
 				unreferenced_stringnames += 1;
@@ -81,8 +92,8 @@ void StringName::cleanup() {
 			}
 		}
 
-		print_line(vformat("\nOut of %d StringNames, %d StringNames were never referenced during this run (0 times) (%.2f%%).", data.size(), unreferenced_stringnames, unreferenced_stringnames / float(data.size()) * 100));
-		print_line(vformat("Out of %d StringNames, %d StringNames were rarely referenced during this run (1-4 times) (%.2f%%).", data.size(), rarely_referenced_stringnames, rarely_referenced_stringnames / float(data.size()) * 100));
+		print_line(vformat("\nOut of %d StringNames, %d StringNames were never referenced during this run (0 times) (%.2f%%).", data_size, unreferenced_stringnames, unreferenced_stringnames / float(data_size) * 100));
+		print_line(vformat("Out of %d StringNames, %d StringNames were rarely referenced during this run (1-4 times) (%.2f%%).", data_size, rarely_referenced_stringnames, rarely_referenced_stringnames / float(data_size) * 100));
 	}
 #endif
 	int lost_strings = 0;
@@ -104,11 +115,16 @@ void StringName::cleanup() {
 	if (lost_strings) {
 		print_verbose(vformat("StringName: %d unclaimed string names at exit.", lost_strings));
 	}
-	configured = false;
+	Table::configured = false;
 }
 
 void StringName::unref() {
-	ERR_FAIL_COND(!configured);
+	if (unlikely(!Table::configured)) {
+		// Most likely tearing down. It's possible someone is genuinely
+		// misusing StringName, but they'll hopefully know soon enough
+		// without us printing because something down the line breaks.
+		return;
+	}
 
 	if (_data && _data->refcount.unref()) {
 		MutexLock lock(Table::mutex);
@@ -195,7 +211,7 @@ StringName &StringName::operator=(const StringName &p_name) {
 StringName::StringName(const StringName &p_name) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!configured);
+	ERR_FAIL_COND(!Table::configured);
 
 	if (p_name._data && p_name._data->refcount.ref()) {
 		_data = p_name._data;
@@ -205,7 +221,7 @@ StringName::StringName(const StringName &p_name) {
 StringName::StringName(const char *p_name, bool p_static) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!configured);
+	ERR_FAIL_COND(!Table::configured);
 
 	if (!p_name || p_name[0] == 0) {
 		return; //empty, ignore
@@ -262,7 +278,7 @@ StringName::StringName(const char *p_name, bool p_static) {
 StringName::StringName(const String &p_name, bool p_static) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!configured);
+	ERR_FAIL_COND(!Table::configured);
 
 	if (p_name.is_empty()) {
 		return;

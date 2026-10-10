@@ -37,7 +37,16 @@
 
 class Main;
 
-class [[nodiscard]] StringName {
+/**
+ * String (UTF-32 Unicode array) with interning semantics.
+ *
+ * Two different StringNames with the same String contents use the same buffer (by interning).
+ * By this, lookup of (existing) StringName, as well as equality checks, are fast.
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
+class [[nodiscard]] _WARN_UNUSED_ StringName {
 	struct Table;
 
 	struct _Data {
@@ -62,7 +71,6 @@ class [[nodiscard]] StringName {
 	static void setup();
 	static void cleanup();
 	static uint32_t get_empty_hash();
-	static inline bool configured = false;
 #ifdef DEBUG_ENABLED
 	struct DebugSortReferences {
 		bool operator()(const _Data *p_left, const _Data *p_right) const {
@@ -136,20 +144,20 @@ public:
 
 	struct AlphCompare {
 		template <typename LT, typename RT>
-		_FORCE_INLINE_ bool operator()(const LT &l, const RT &r) const {
-			return compare(l, r);
+		_FORCE_INLINE_ bool operator()(const LT &p_left, const RT &p_right) const {
+			return compare(p_left, p_right);
 		}
-		_FORCE_INLINE_ static bool compare(const StringName &l, const StringName &r) {
-			return str_compare(l.get_data(), r.get_data()) < 0;
+		_FORCE_INLINE_ static bool compare(const StringName &p_left, const StringName &p_right) {
+			return str_compare(p_left.get_data(), p_right.get_data()) < 0;
 		}
-		_FORCE_INLINE_ static bool compare(const String &l, const StringName &r) {
-			return str_compare(l.get_data(), r.get_data()) < 0;
+		_FORCE_INLINE_ static bool compare(const String &p_left, const StringName &p_right) {
+			return str_compare(p_left.get_data(), p_right.get_data()) < 0;
 		}
-		_FORCE_INLINE_ static bool compare(const StringName &l, const String &r) {
-			return str_compare(l.get_data(), r.get_data()) < 0;
+		_FORCE_INLINE_ static bool compare(const StringName &p_left, const String &p_right) {
+			return str_compare(p_left.get_data(), p_right.get_data()) < 0;
 		}
-		_FORCE_INLINE_ static bool compare(const String &l, const String &r) {
-			return str_compare(l.get_data(), r.get_data()) < 0;
+		_FORCE_INLINE_ static bool compare(const String &p_left, const String &p_right) {
+			return str_compare(p_left.get_data(), p_right.get_data()) < 0;
 		}
 	};
 
@@ -179,7 +187,8 @@ public:
 	_FORCE_INLINE_
 #endif
 	~StringName() {
-		if (likely(configured) && _data) { //only free if configured
+		// Using `likely` here leads to huge binary size benefits.
+		if (likely(_data)) {
 			unref();
 		}
 	}

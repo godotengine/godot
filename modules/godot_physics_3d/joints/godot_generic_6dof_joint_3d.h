@@ -190,8 +190,8 @@ protected:
 
 	//!@}
 
-	GodotGeneric6DOFJoint3D(GodotGeneric6DOFJoint3D const &) = delete;
-	void operator=(GodotGeneric6DOFJoint3D const &) = delete;
+	GodotGeneric6DOFJoint3D(const GodotGeneric6DOFJoint3D &) = delete;
+	void operator=(const GodotGeneric6DOFJoint3D &) = delete;
 
 	void buildLinearJacobian(
 			GodotJacobianEntry3D &jacLinear, const Vector3 &normalWorld,

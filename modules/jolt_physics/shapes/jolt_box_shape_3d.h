@@ -41,6 +41,7 @@ class JoltBoxShape3D final : public JoltShape3D {
 public:
 	virtual ShapeType get_type() const override { return ShapeType::SHAPE_BOX; }
 	virtual bool is_convex() const override { return true; }
+	virtual bool has_back_face_collision() const override { return false; }
 
 	virtual Variant get_data() const override;
 	virtual void set_data(const Variant &p_data) override;

@@ -201,6 +201,9 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_ANTIALIASING_EDGE"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["ALPHA_TEXTURE_COORDINATE"] = ShaderLanguage::TYPE_VEC2;
 
+	// texture streaming
+	shader_modes[RSE::SHADER_SPATIAL].functions["fragment"].built_ins["STREAMING_LOD"] = ShaderLanguage::TYPE_FLOAT;
+
 	shader_modes[RSE::SHADER_SPATIAL].functions["light"].built_ins["MODEL_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RSE::SHADER_SPATIAL].functions["light"].built_ins["VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
 	shader_modes[RSE::SHADER_SPATIAL].functions["light"].built_ins["INV_VIEW_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
@@ -545,7 +548,7 @@ ShaderTypes::ShaderTypes() {
 
 	// Texture Blit Modes
 	{
-		shader_modes[RSE::SHADER_TEXTURE_BLIT].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul", "disabled" });
+		shader_modes[RSE::SHADER_TEXTURE_BLIT].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul", "disabled", "premul_alpha" });
 	}
 
 	// Must be kept in sync with the Shader::Mode enum.

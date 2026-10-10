@@ -50,7 +50,7 @@ struct ExtensionFormat1 : public OT::ExtensionFormat1<T>
     this->extensionOffset = 0;
   }
 
-  bool sanitize (graph_t::vertex_t& vertex) const
+  bool sanitize (const graph_t::vertex_t& vertex) const
   {
     size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     return vertex_len >= OT::ExtensionFormat1<T>::static_size;
@@ -74,7 +74,7 @@ struct Lookup : public OT::Lookup
     return subTable.len;
   }
 
-  bool sanitize (graph_t::vertex_t& vertex) const
+  bool sanitize (const graph_t::vertex_t& vertex) const
   {
     size_t vertex_len = vertex.obj.tail - vertex.obj.head;
     if (vertex_len < OT::Lookup::min_size) return false;
@@ -414,9 +414,9 @@ struct GSTAR : public OT::GSUBGPOS
   const void* get_lookup_list_field_offset () const
   {
     switch (u.version.major) {
-    case 1: return u.version1.get_lookup_list_offset ();
+    case 1: hb_barrier (); return u.version1.get_lookup_list_offset ();
 #ifndef HB_NO_BEYOND_64K
-    case 2: return u.version2.get_lookup_list_offset ();
+    case 2: hb_barrier (); return u.version2.get_lookup_list_offset ();
 #endif
     default: return 0;
     }

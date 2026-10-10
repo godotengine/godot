@@ -34,6 +34,7 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/string/char_utils.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/file_access_unix_pipe.h"
@@ -93,21 +94,6 @@
 #define GODOT_DLOPEN_MODE RTLD_NOW | RTLD_DEEPBIND
 #else
 #define GODOT_DLOPEN_MODE RTLD_NOW
-#endif
-
-#if defined(MACOS_ENABLED) || (defined(__ANDROID_API__) && __ANDROID_API__ >= 28)
-// Random location for getentropy. Fitting.
-#include <sys/random.h>
-#define UNIX_GET_ENTROPY
-#elif defined(__FreeBSD__) || defined(__OpenBSD__) || (defined(__GLIBC_MINOR__) && (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 26))
-// In <unistd.h>.
-// One day... (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 700)
-// https://publications.opengroup.org/standards/unix/c211
-#define UNIX_GET_ENTROPY
-#endif
-
-#if !defined(UNIX_GET_ENTROPY) && !defined(NO_URANDOM)
-#include <fcntl.h>
 #endif
 
 /// Clock Setup function (used by get_ticks_usec)
@@ -277,32 +263,6 @@ OS_Unix::StdHandleType OS_Unix::get_stderr_type() const {
 		return STD_HANDLE_FILE;
 	}
 	return STD_HANDLE_UNKNOWN;
-}
-
-Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
-#if defined(UNIX_GET_ENTROPY)
-	int left = p_bytes;
-	int ofs = 0;
-	do {
-		int chunk = MIN(left, 256);
-		ERR_FAIL_COND_V(getentropy(r_buffer + ofs, chunk), FAILED);
-		left -= chunk;
-		ofs += chunk;
-	} while (left > 0);
-// Define this yourself if you don't want to fall back to /dev/urandom.
-#elif !defined(NO_URANDOM)
-	int r = open("/dev/urandom", O_RDONLY);
-	ERR_FAIL_COND_V(r < 0, FAILED);
-	int left = p_bytes;
-	do {
-		ssize_t ret = read(r, r_buffer, p_bytes);
-		ERR_FAIL_COND_V(ret <= 0, FAILED);
-		left -= ret;
-	} while (left > 0);
-#else
-	return ERR_UNAVAILABLE;
-#endif
-	return OK;
 }
 
 String OS_Unix::get_name() const {
@@ -1217,6 +1177,45 @@ String OS_Unix::expand_path(const String &p_path) const {
 		String home = get_environment("HOME");
 		if (!home.is_empty()) {
 			path = home + path.substr(1);
+		}
+	}
+
+	int pos = 0;
+
+	while (pos < path.length()) {
+		int dollar = path.find_char('$', pos);
+		if (dollar == -1) {
+			break;
+		}
+
+		const int begin = dollar + 1;
+		if (begin >= path.length()) {
+			break;
+		}
+
+		if (!(is_ascii_alphabet_char(path[begin]) || is_underscore(path[begin]))) {
+			pos = dollar + 1;
+			continue;
+		}
+
+		int end = begin + 1;
+		while (end < path.length()) {
+			const char32_t c = path[end];
+
+			if (!(is_ascii_alphanumeric_char(c) || is_underscore(c))) {
+				break;
+			}
+			end++;
+		}
+
+		const String var_name = path.substr(begin, end - begin);
+		const String value = get_environment(var_name);
+
+		if (!value.is_empty()) {
+			path = path.substr(0, dollar) + value + path.substr(end);
+			pos = dollar + value.length();
+		} else {
+			pos = end;
 		}
 	}
 

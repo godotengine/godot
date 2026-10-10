@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeObserverBlendSpace" inherits="AnimationNodeObserver" api_type="core" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Observer for events from [AnimationNodeBlendSpace1D] and [AnimationNodeBlendSpace2D] instances.
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<signals>
+		<signal name="closest_point_changed">
+			<param index="0" name="closest_point_name" type="StringName" />
+			<description>
+				Emitted when the closest point to the current blend position changes.
+			</description>
+		</signal>
+	</signals>
+</class>

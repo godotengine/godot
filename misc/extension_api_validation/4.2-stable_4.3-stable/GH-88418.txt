@@ -1,5 +1,3 @@
-GH-88418
---------
 Validate extension JSON: API was removed: classes/GDExtension/methods/close_library
 Validate extension JSON: API was removed: classes/GDExtension/methods/initialize_library
 Validate extension JSON: API was removed: classes/GDExtension/methods/open_library

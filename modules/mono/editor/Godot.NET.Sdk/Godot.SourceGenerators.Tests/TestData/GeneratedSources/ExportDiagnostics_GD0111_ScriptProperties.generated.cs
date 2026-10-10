@@ -41,61 +41,82 @@ partial class ExportDiagnostics_GD0111
         /// </summary>
         public new static readonly global::Godot.StringName @_backingField = "_backingField";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
+    protected internal new static partial class GodotInternal
     {
-        if (name == PropertyName.@MyButtonGetSet) {
-            this.@MyButtonGetSet = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
-            return true;
+        public static void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_MyButtonGet(object godotObject)
+            {
+                var ret = ((global::ExportDiagnostics_GD0111)godotObject).@MyButtonGet;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static godot_variant trampoline_get_MyButtonGetSet(object godotObject)
+            {
+                var ret = ((global::ExportDiagnostics_GD0111)godotObject).@MyButtonGetSet;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static void trampoline_set_MyButtonGetSet(object godotObject, in godot_variant value)
+            {
+                ((global::ExportDiagnostics_GD0111)godotObject).@MyButtonGetSet = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+            }
+            static godot_variant trampoline_get_MyButtonGetWithBackingField(object godotObject)
+            {
+                var ret = ((global::ExportDiagnostics_GD0111)godotObject).@MyButtonGetWithBackingField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static godot_variant trampoline_get_MyButtonGetSetWithBackingField(object godotObject)
+            {
+                var ret = ((global::ExportDiagnostics_GD0111)godotObject).@MyButtonGetSetWithBackingField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static void trampoline_set_MyButtonGetSetWithBackingField(object godotObject, in godot_variant value)
+            {
+                ((global::ExportDiagnostics_GD0111)godotObject).@MyButtonGetSetWithBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+            }
+            static godot_variant trampoline_get_MyButtonOkWithCallableCreationExpression(object godotObject)
+            {
+                var ret = ((global::ExportDiagnostics_GD0111)godotObject).@MyButtonOkWithCallableCreationExpression;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static godot_variant trampoline_get_MyButtonOkWithImplicitCallableCreationExpression(object godotObject)
+            {
+                var ret = ((global::ExportDiagnostics_GD0111)godotObject).@MyButtonOkWithImplicitCallableCreationExpression;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static godot_variant trampoline_get_MyButtonOkWithCallableFromExpression(object godotObject)
+            {
+                var ret = ((global::ExportDiagnostics_GD0111)godotObject).@MyButtonOkWithCallableFromExpression;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static godot_variant trampoline_get__backingField(object godotObject)
+            {
+                var ret = ((global::ExportDiagnostics_GD0111)godotObject).@_backingField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static void trampoline_set__backingField(object godotObject, in godot_variant value)
+            {
+                ((global::ExportDiagnostics_GD0111)godotObject).@_backingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
+            }
+            var aux_delegate_get_MyButtonGet = trampoline_get_MyButtonGet;
+            collector.TryAdd(PropertyName.@MyButtonGet, new(aux_delegate_get_MyButtonGet.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_get_MyButtonGetSet = trampoline_get_MyButtonGetSet;
+            var aux_delegate_set_MyButtonGetSet = trampoline_set_MyButtonGetSet;
+            collector.TryAdd(PropertyName.@MyButtonGetSet, new(aux_delegate_get_MyButtonGetSet.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set_MyButtonGetSet.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get_MyButtonGetWithBackingField = trampoline_get_MyButtonGetWithBackingField;
+            collector.TryAdd(PropertyName.@MyButtonGetWithBackingField, new(aux_delegate_get_MyButtonGetWithBackingField.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_get_MyButtonGetSetWithBackingField = trampoline_get_MyButtonGetSetWithBackingField;
+            var aux_delegate_set_MyButtonGetSetWithBackingField = trampoline_set_MyButtonGetSetWithBackingField;
+            collector.TryAdd(PropertyName.@MyButtonGetSetWithBackingField, new(aux_delegate_get_MyButtonGetSetWithBackingField.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set_MyButtonGetSetWithBackingField.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get_MyButtonOkWithCallableCreationExpression = trampoline_get_MyButtonOkWithCallableCreationExpression;
+            collector.TryAdd(PropertyName.@MyButtonOkWithCallableCreationExpression, new(aux_delegate_get_MyButtonOkWithCallableCreationExpression.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_get_MyButtonOkWithImplicitCallableCreationExpression = trampoline_get_MyButtonOkWithImplicitCallableCreationExpression;
+            collector.TryAdd(PropertyName.@MyButtonOkWithImplicitCallableCreationExpression, new(aux_delegate_get_MyButtonOkWithImplicitCallableCreationExpression.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_get_MyButtonOkWithCallableFromExpression = trampoline_get_MyButtonOkWithCallableFromExpression;
+            collector.TryAdd(PropertyName.@MyButtonOkWithCallableFromExpression, new(aux_delegate_get_MyButtonOkWithCallableFromExpression.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_get__backingField = trampoline_get__backingField;
+            var aux_delegate_set__backingField = trampoline_set__backingField;
+            collector.TryAdd(PropertyName.@_backingField, new(aux_delegate_get__backingField.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__backingField.Method.MethodHandle.GetFunctionPointer()));
         }
-        if (name == PropertyName.@MyButtonGetSetWithBackingField) {
-            this.@MyButtonGetSetWithBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
-            return true;
-        }
-        if (name == PropertyName.@_backingField) {
-            this.@_backingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
-    {
-        if (name == PropertyName.@MyButtonGet) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonGet);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonGetSet) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonGetSet);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonGetWithBackingField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonGetWithBackingField);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonGetSetWithBackingField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonGetSetWithBackingField);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonOkWithCallableCreationExpression) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonOkWithCallableCreationExpression);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonOkWithImplicitCallableCreationExpression) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonOkWithImplicitCallableCreationExpression);
-            return true;
-        }
-        if (name == PropertyName.@MyButtonOkWithCallableFromExpression) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButtonOkWithCallableFromExpression);
-            return true;
-        }
-        if (name == PropertyName.@_backingField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@_backingField);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.

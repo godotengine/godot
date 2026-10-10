@@ -17,19 +17,27 @@
 #endif
 
 #include <algorithm>
+#include <cstdint>
 
 #include "boolean3.h"
 #include "csg_tree.h"
+#include "execution_impl.h"
 #include "impl.h"
 #include "mesh_fixes.h"
 #include "parallel.h"
 
 namespace {
 using namespace manifold;
+
 struct MeshCompare {
-  bool operator()(const std::shared_ptr<CsgLeafNode>& a,
-                  const std::shared_ptr<CsgLeafNode>& b) {
-    return a->GetImpl()->NumVert() < b->GetImpl()->NumVert();
+  bool operator()(const std::pair<std::shared_ptr<CsgLeafNode>, uint64_t>& a,
+                  const std::pair<std::shared_ptr<CsgLeafNode>, uint64_t>& b) {
+    // Use NumVert() which doesn't trigger transform application.
+    const size_t aVert = a.first->NumVert();
+    const size_t bVert = b.first->NumVert();
+    if (aVert != bVert) return aVert < bVert;
+    // Tie-break by insertion order so heap behavior is deterministic across
+    return a.second < b.second;
   }
 };
 
@@ -86,7 +94,14 @@ CsgLeafNode::CsgLeafNode(std::shared_ptr<const Manifold::Impl> pImpl_,
                          mat3x4 transform_)
     : pImpl_(pImpl_), transform_(transform_) {}
 
+CsgLeafNode::CsgLeafNode(const CsgLeafNode& other) {
+  std::lock_guard<std::mutex> lock(other.mutex_);
+  pImpl_ = other.pImpl_;
+  transform_ = other.transform_;
+}
+
 std::shared_ptr<const Manifold::Impl> CsgLeafNode::GetImpl() const {
+  std::lock_guard<std::mutex> lock(mutex_);
   if (transform_ == mat3x4(la::identity)) return pImpl_;
   pImpl_ =
       std::make_shared<const Manifold::Impl>(pImpl_->Transform(transform_));
@@ -94,22 +109,67 @@ std::shared_ptr<const Manifold::Impl> CsgLeafNode::GetImpl() const {
   return pImpl_;
 }
 
-std::shared_ptr<CsgLeafNode> CsgLeafNode::ToLeafNode() const {
+std::shared_ptr<CsgLeafNode> CsgLeafNode::ToLeafNode(
+    ExecutionContext::Impl*) const {
   return std::make_shared<CsgLeafNode>(*this);
 }
 
 std::shared_ptr<CsgNode> CsgLeafNode::Transform(const mat3x4& m) const {
+  std::lock_guard<std::mutex> lock(mutex_);
   return std::make_shared<CsgLeafNode>(pImpl_, m * Mat4(transform_));
 }
 
 CsgNodeType CsgLeafNode::GetNodeType() const { return CsgNodeType::Leaf; }
 
+Box CsgLeafNode::GetBoundingBox() const {
+  // Compute transformed bounding box without triggering full mesh transform.
+  // This is an approximation - the actual bounding box of the transformed mesh
+  // may be tighter, but this is sufficient for overlap checks.
+  std::lock_guard<std::mutex> lock(mutex_);
+  const Box& box = pImpl_->bBox_;
+  if (transform_ == mat3x4(la::identity)) {
+    return box;
+  }
+
+  // Arvo's algorithm for transforming AABBs efficiently.
+  // Instead of transforming all 8 corners, we compute min/max directly
+  // from the matrix elements based on their signs.
+  vec3 newMin = transform_[3];  // translation component
+  vec3 newMax = newMin;
+
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 3; j++) {
+      const auto a = transform_[j][i] * box.min[j];
+      const auto b = transform_[j][i] * box.max[j];
+      newMin[i] += std::min(a, b);
+      newMax[i] += std::max(a, b);
+    }
+  }
+  return Box{newMin, newMax};
+}
+
+size_t CsgLeafNode::NumVert() const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  return pImpl_->NumVert();
+}
+
 std::shared_ptr<CsgLeafNode> ImplToLeaf(Manifold::Impl&& impl) {
-  return std::make_shared<CsgLeafNode>(std::make_shared<Manifold::Impl>(impl));
+  return std::make_shared<CsgLeafNode>(
+      std::make_shared<Manifold::Impl>(std::move(impl)));
+}
+
+// Build a leaf with the given error status — used to short-circuit boolean
+// evaluation on cancellation.
+std::shared_ptr<CsgLeafNode> ErrorLeaf(Manifold::Error err) {
+  Manifold::Impl impl;
+  impl.status_ = err;
+  return ImplToLeaf(std::move(impl));
 }
 
 std::shared_ptr<CsgLeafNode> SimpleBoolean(const Manifold::Impl& a,
-                                           const Manifold::Impl& b, OpType op) {
+                                           const Manifold::Impl& b, OpType op,
+                                           ExecutionContext::Impl* ctx) {
+  if (IsCancelled(ctx)) return ErrorLeaf(Manifold::Error::Cancelled);
 #ifdef MANIFOLD_DEBUG
   auto dump = [&]() {
     dump_lock.lock();
@@ -117,7 +177,6 @@ std::shared_ptr<CsgLeafNode> SimpleBoolean(const Manifold::Impl& a,
               << std::endl;
     std::cout << "RHS self-intersecting: " << b.IsSelfIntersecting()
               << std::endl;
-#ifdef MANIFOLD_EXPORT
     if (ManifoldParams().verbose) {
       if (op == OpType::Add)
         std::cout << "Add";
@@ -129,11 +188,10 @@ std::shared_ptr<CsgLeafNode> SimpleBoolean(const Manifold::Impl& a,
       std::cout << a;
       std::cout << b;
     }
-#endif
     dump_lock.unlock();
   };
   try {
-    Boolean3 boolean(a, b, op);
+    Boolean3 boolean(a, b, op, ctx);
     auto impl = boolean.Result(op);
     if (ManifoldParams().selfIntersectionChecks && impl.IsSelfIntersecting()) {
       dump_lock.lock();
@@ -141,6 +199,7 @@ std::shared_ptr<CsgLeafNode> SimpleBoolean(const Manifold::Impl& a,
       dump_lock.unlock();
       throw logicErr("self intersection detected");
     }
+    if (ctx) ctx->doneBooleans.fetch_add(1, std::memory_order_relaxed);
     return ImplToLeaf(std::move(impl));
   } catch (logicErr& err) {
     dump();
@@ -150,7 +209,9 @@ std::shared_ptr<CsgLeafNode> SimpleBoolean(const Manifold::Impl& a,
     throw err;
   }
 #else
-  return ImplToLeaf(Boolean3(a, b, op).Result(op));
+  auto leaf = ImplToLeaf(Boolean3(a, b, op, ctx).Result(op));
+  if (ctx) ctx->doneBooleans.fetch_add(1, std::memory_order_relaxed);
+  return leaf;
 #endif
 }
 
@@ -162,6 +223,7 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
   ZoneScoped;
   double epsilon = -1;
   double tolerance = -1;
+  Box bbox;
   int numVert = 0;
   int numEdge = 0;
   int numTri = 0;
@@ -186,6 +248,7 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
     if (!std::isfinite(nodeEpsilon)) nodeEpsilon = -1;
     epsilon = std::max(epsilon, nodeEpsilon);
     tolerance = std::max(tolerance, node->pImpl_->tolerance_);
+    bbox = bbox.Union(node->GetBoundingBox());
 
     vertIndices.push_back(numVert);
     edgeIndices.push_back(numEdge * 2);
@@ -203,7 +266,9 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
   Manifold::Impl combined;
   combined.epsilon_ = epsilon;
   combined.tolerance_ = tolerance;
+  combined.bBox_ = bbox;
   combined.vertPos_.resize_nofill(numVert);
+  combined.vertNormal_.resize_nofill(numVert);
   combined.halfedge_.resize_nofill(2 * numEdge);
   combined.faceNormal_.resize_nofill(numTri);
   combined.halfedgeTangent_.resize(2 * numEdge);
@@ -219,11 +284,15 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
   if (nodes.size() > 1 && policy == ExecutionPolicy::Par)
     policy = ExecutionPolicy::Seq;
 
+  // Snapshot once and reuse for both shifts; two reads can disagree under
+  // cross-thread CSG and leave triRef.meshID values not in meshIDtransform.
+  const uint32_t meshIDCounterSnapshot = Manifold::Impl::meshIDCounter_;
+
   for_each_n(
       nodes.size() > 1 ? ExecutionPolicy::Par : ExecutionPolicy::Seq,
       countAt(0), nodes.size(),
       [&nodes, &vertIndices, &edgeIndices, &triIndices, &propVertIndices,
-       numPropOut, &combined, policy](int i) {
+       numPropOut, &combined, policy, meshIDCounterSnapshot](int i) {
         auto& node = nodes[i];
         copy(node->pImpl_->halfedgeTangent_.begin(),
              node->pImpl_->halfedgeTangent_.end(),
@@ -231,16 +300,19 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
         const int nextVert = vertIndices[i];
         const int nextEdge = edgeIndices[i];
         const int nextProp = propVertIndices[i];
-        transform(node->pImpl_->halfedge_.begin(),
-                  node->pImpl_->halfedge_.end(),
-                  combined.halfedge_.begin() + edgeIndices[i],
-                  [nextVert, nextEdge, nextProp](Halfedge edge) {
-                    edge.startVert += nextVert;
-                    edge.endVert += nextVert;
-                    edge.pairedHalfedge += nextEdge;
-                    edge.propVert += nextProp;
-                    return edge;
-                  });
+        const bool hasProp = node->pImpl_->NumProp() > 0;
+        for_each_n(
+            policy, countAt(0), node->pImpl_->halfedge_.size(), [&](int edge) {
+              const int newEdge = edgeIndices[i] + edge;
+              combined.halfedge_.SetStart(
+                  newEdge, node->pImpl_->halfedge_.Start(edge) + nextVert);
+              combined.halfedge_.SetPair(
+                  newEdge, node->pImpl_->halfedge_.Pair(edge) + nextEdge);
+              const int propVert =
+                  hasProp ? node->pImpl_->halfedge_.Prop(edge) + nextProp
+                          : nextProp;
+              combined.halfedge_.SetProp(newEdge, propVert);
+            });
 
         if (node->pImpl_->NumProp() > 0) {
           const int numProp = node->pImpl_->NumProp();
@@ -254,11 +326,26 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
                 newProp.end(), numPropOut);
             copy(oldRange.begin(), oldRange.end(), newRange.begin());
           }
+          // Properties copy above doesn't go through the on-the-fly transform
+          // applied to vertPos_/faceNormal_ below; eager-transform slot 0..2
+          // per-meshID so world-frame normals stay in sync. Covers mixed
+          // input nodes (some meshIDs with hasNormals, some without).
+          if (numProp >= 3 && node->transform_ != mat3x4(la::identity)) {
+            const mat3 normalTransform =
+                la::inverse(la::transpose(mat3(node->transform_)));
+            Manifold::Impl::EagerTransformPropNormals(
+                node->pImpl_->halfedge_, node->pImpl_->meshRelation_,
+                normalTransform, newProp, oldProp.size() / numProp, numPropOut,
+                propVertIndices[i]);
+          }
         }
 
         if (node->transform_ == mat3x4(la::identity)) {
           copy(node->pImpl_->vertPos_.begin(), node->pImpl_->vertPos_.end(),
                combined.vertPos_.begin() + vertIndices[i]);
+          copy(node->pImpl_->vertNormal_.begin(),
+               node->pImpl_->vertNormal_.end(),
+               combined.vertNormal_.begin() + vertIndices[i]);
           copy(node->pImpl_->faceNormal_.begin(),
                node->pImpl_->faceNormal_.end(),
                combined.faceNormal_.begin() + triIndices[i]);
@@ -272,11 +359,16 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
               });
           mat3 normalTransform =
               la::inverse(la::transpose(mat3(node->transform_)));
+          auto vertNormalBegin =
+              TransformIterator(node->pImpl_->vertNormal_.begin(),
+                                TransformNormals({normalTransform}));
           auto faceNormalBegin =
               TransformIterator(node->pImpl_->faceNormal_.begin(),
                                 TransformNormals({normalTransform}));
           copy_n(vertPosBegin, node->pImpl_->vertPos_.size(),
                  combined.vertPos_.begin() + vertIndices[i]);
+          copy_n(vertNormalBegin, node->pImpl_->vertNormal_.size(),
+                 combined.vertNormal_.begin() + vertIndices[i]);
           copy_n(faceNormalBegin, node->pImpl_->faceNormal_.size(),
                  combined.faceNormal_.begin() + triIndices[i]);
 
@@ -288,12 +380,12 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
                                        node->pImpl_->halfedge_});
           if (invert)
             for_each_n(policy, countAt(triIndices[i]), node->pImpl_->NumTri(),
-                       FlipTris({combined.halfedge_}));
+                       FlipTris{combined.halfedge_});
         }
         // Since the nodes may be copies containing the same meshIDs, it is
         // important to add an offset so that each node instance gets
         // unique meshIDs.
-        const int offset = i * Manifold::Impl::meshIDCounter_;
+        const int offset = i * meshIDCounterSnapshot;
         transform(node->pImpl_->meshRelation_.triRef.begin(),
                   node->pImpl_->meshRelation_.triRef.end(),
                   combined.meshRelation_.triRef.begin() + triIndices[i],
@@ -305,16 +397,23 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
 
   for (size_t i = 0; i < nodes.size(); i++) {
     auto& node = nodes[i];
-    const int offset = i * Manifold::Impl::meshIDCounter_;
+    const int offset = i * meshIDCounterSnapshot;
 
     for (const auto& pair : node->pImpl_->meshRelation_.meshIDtransform) {
-      combined.meshRelation_.meshIDtransform[pair.first + offset] = pair.second;
+      Manifold::Impl::Relation rel = pair.second;
+      // Apply the node's transform to the mesh relation if not identity.
+      // This is necessary because we may not have called GetImpl() which would
+      // have applied the transform to the mesh relations.
+      if (node->transform_ != mat3x4(la::identity)) {
+        rel.transform = node->transform_ * Mat4(rel.transform);
+      }
+      combined.meshRelation_.meshIDtransform[pair.first + offset] = rel;
     }
   }
 
   // required to remove parts that are smaller than the tolerance
   combined.RemoveDegenerates();
-  combined.Finish();
+  combined.SortGeometry();
   combined.IncrementMeshIDs();
   return ImplToLeaf(std::move(combined));
 }
@@ -324,7 +423,8 @@ std::shared_ptr<CsgLeafNode> CsgLeafNode::Compose(
  * operation. Only supports union and intersection.
  */
 std::shared_ptr<CsgLeafNode> BatchBoolean(
-    OpType operation, std::vector<std::shared_ptr<CsgLeafNode>>& results) {
+    OpType operation, std::vector<std::shared_ptr<CsgLeafNode>>& results,
+    ExecutionContext::Impl* ctx) {
   ZoneScoped;
   DEBUG_ASSERT(operation != OpType::Subtract, logicErr,
                "BatchBoolean doesn't support Difference.");
@@ -333,48 +433,62 @@ std::shared_ptr<CsgLeafNode> BatchBoolean(
   if (results.size() == 1) return results.front();
   if (results.size() == 2)
     return SimpleBoolean(*results[0]->GetImpl(), *results[1]->GetImpl(),
-                         operation);
+                         operation, ctx);
+  std::vector<std::pair<std::shared_ptr<CsgLeafNode>, uint64_t>> heapNodes;
+  heapNodes.reserve(results.size());
+  for (size_t i = 0; i < results.size(); ++i) {
+    heapNodes.emplace_back(std::move(results[i]), i);
+  }
+  results.clear();
+  uint64_t nextSerial = heapNodes.size();
+
   // apply boolean operations starting from smaller meshes
   // the assumption is that boolean operations on smaller meshes is faster,
   // due to less data being copied and processed
   auto cmpFn = MeshCompare();
-  std::make_heap(results.begin(), results.end(), cmpFn);
-  std::vector<std::shared_ptr<CsgLeafNode>> tmp;
+  std::make_heap(heapNodes.begin(), heapNodes.end(), cmpFn);
+  std::vector<std::pair<std::shared_ptr<CsgLeafNode>, uint64_t>> tmp;
 #if MANIFOLD_PAR == 1
   tbb::task_group group;
   // make sure the order of result is deterministic
   std::vector<std::shared_ptr<CsgLeafNode>> parallelTmp;
+  std::vector<uint64_t> parallelSerial;
   for (int i = 0; i < 4; i++) parallelTmp.push_back(nullptr);
+  for (int i = 0; i < 4; i++) parallelSerial.push_back(0);
 #endif
-  while (results.size() > 1) {
-    for (size_t i = 0; i < 4 && results.size() > 1; i++) {
-      std::pop_heap(results.begin(), results.end(), cmpFn);
-      auto a = std::move(results.back());
-      results.pop_back();
-      std::pop_heap(results.begin(), results.end(), cmpFn);
-      auto b = std::move(results.back());
-      results.pop_back();
+  while (heapNodes.size() > 1) {
+    if (IsCancelled(ctx)) return ErrorLeaf(Manifold::Error::Cancelled);
+    for (size_t i = 0; i < 4 && heapNodes.size() > 1; i++) {
+      std::pop_heap(heapNodes.begin(), heapNodes.end(), cmpFn);
+      auto a = std::move(heapNodes.back());
+      heapNodes.pop_back();
+      std::pop_heap(heapNodes.begin(), heapNodes.end(), cmpFn);
+      auto b = std::move(heapNodes.back());
+      heapNodes.pop_back();
 #if MANIFOLD_PAR == 1
-      group.run([&, i, a, b]() {
-        parallelTmp[i] = SimpleBoolean(*a->GetImpl(), *b->GetImpl(), operation);
+      parallelSerial[i] = nextSerial++;
+      group.run([&, i, a = std::move(a.first), b = std::move(b.first)]() {
+        parallelTmp[i] =
+            SimpleBoolean(*a->GetImpl(), *b->GetImpl(), operation, ctx);
       });
 #else
-      auto result = SimpleBoolean(*a->GetImpl(), *b->GetImpl(), operation);
-      tmp.push_back(result);
+      auto result = SimpleBoolean(*a.first->GetImpl(), *b.first->GetImpl(),
+                                  operation, ctx);
+      tmp.emplace_back(std::move(result), nextSerial++);
 #endif
     }
 #if MANIFOLD_PAR == 1
     group.wait();
     for (int i = 0; i < 4 && parallelTmp[i]; i++)
-      tmp.emplace_back(std::move(parallelTmp[i]));
+      tmp.emplace_back(std::move(parallelTmp[i]), parallelSerial[i]);
 #endif
-    for (auto result : tmp) {
-      results.push_back(result);
-      std::push_heap(results.begin(), results.end(), cmpFn);
+    for (auto& result : tmp) {
+      heapNodes.push_back(std::move(result));
+      std::push_heap(heapNodes.begin(), heapNodes.end(), cmpFn);
     }
     tmp.clear();
   }
-  return results.front();
+  return heapNodes.front().first;
 }
 
 /**
@@ -382,7 +496,8 @@ std::shared_ptr<CsgLeafNode> BatchBoolean(
  * possible.
  */
 std::shared_ptr<CsgLeafNode> BatchUnion(
-    std::vector<std::shared_ptr<CsgLeafNode>>& children) {
+    std::vector<std::shared_ptr<CsgLeafNode>>& children,
+    ExecutionContext::Impl* ctx) {
   ZoneScoped;
   // INVARIANT: children_ is a vector of leaf nodes
   // this kMaxUnionSize is a heuristic to avoid the pairwise disjoint check
@@ -393,13 +508,14 @@ std::shared_ptr<CsgLeafNode> BatchUnion(
   DEBUG_ASSERT(!children.empty(), logicErr,
                "BatchUnion should not have empty children");
   while (children.size() > 1) {
+    if (IsCancelled(ctx)) return ErrorLeaf(Manifold::Error::Cancelled);
     const size_t start = (children.size() > kMaxUnionSize)
                              ? (children.size() - kMaxUnionSize)
                              : 0;
     Vec<Box> boxes;
     boxes.reserve(children.size() - start);
     for (size_t i = start; i < children.size(); i++) {
-      boxes.push_back(children[i]->GetImpl()->bBox_);
+      boxes.push_back(children[i]->GetBoundingBox());
     }
     // partition the children into a set of disjoint sets
     // each set contains a set of children that are pairwise disjoint
@@ -428,11 +544,19 @@ std::shared_ptr<CsgLeafNode> BatchUnion(
           tmp.push_back(children[start + j]);
         }
         impls.push_back(CsgLeafNode::Compose(tmp));
+        // Compose absorbs set.size() leaves into 1 leaf, which is
+        // set.size() - 1 leaf-reductions toward the final result.
+        if (ctx) {
+          const int reductions = static_cast<int>(set.size() - 1);
+          ctx->doneBooleans.fetch_add(reductions, std::memory_order_relaxed);
+          ctx->donePhases.fetch_add(reductions * kPhasesPerBoolean,
+                                    std::memory_order_relaxed);
+        }
       }
     }
 
     children.erase(children.begin() + start, children.end());
-    children.push_back(BatchBoolean(OpType::Add, impls));
+    children.push_back(BatchBoolean(OpType::Add, impls, ctx));
     // move it to the front as we process from the back, and the newly added
     // child should be quite complicated
     std::swap(children.front(), children.back());
@@ -465,7 +589,10 @@ CsgOpNode::~CsgOpNode() {
     while (!toProcess.empty()) {
       auto child = std::move(toProcess.back());
       toProcess.pop_back();
-      if (impl_.UseCount() == 1) {
+      // Only empty the child's impl if we are its last holder. Otherwise
+      // another live tree still references this CsgOpNode and may later
+      // try to evaluate it, which requires its impl intact.
+      if (child.use_count() == 1 && child->impl_.UseCount() == 1) {
         auto childImpl = child->impl_.GetGuard();
         handleChildren(*childImpl);
       }
@@ -513,8 +640,15 @@ struct CsgStackFrame {
         op_node(op_node) {}
 };
 
-std::shared_ptr<CsgLeafNode> CsgOpNode::ToLeafNode() const {
-  if (cache_ != nullptr) return cache_;
+std::shared_ptr<CsgLeafNode> CsgOpNode::ToLeafNode(
+    ExecutionContext::Impl* ctx) const {
+  ZoneScoped;
+  {
+    // cache_ is published under impl_'s guard below; read it under the same
+    // lock so a concurrent eval of a shared op node can't tear it.
+    auto guard = impl_.GetGuard();
+    if (cache_ != nullptr) return cache_;
+  }
 
   // Note: We do need a pointer here to avoid vector pointers from being
   // invalidated after pushing elements into the explicit stack.
@@ -615,16 +749,31 @@ std::shared_ptr<CsgLeafNode> CsgOpNode::ToLeafNode() const {
   //     destination->push_back(node->cache_->Transform(transform));
   // }
   while (!stack.empty()) {
+    if (IsCancelled(ctx)) {
+      // Poison every op_node currently on the stack, not just `this`.
+      // Sub-ops may have had their impl_ partially mutated during finalize
+      // (children replaced with an intermediate result); leaving cache_
+      // unset would let a later evaluation of a shared sub-op run against
+      // a partially-reduced tree. Shared cache ensures any subsequent
+      // eval of any op on the stack returns Cancelled.
+      auto cancelled = ErrorLeaf(Manifold::Error::Cancelled);
+      for (auto& frame : stack) {
+        if (!frame->op_node->cache_) frame->op_node->cache_ = cancelled;
+      }
+      cache_ = cancelled;
+      return cache_;
+    }
     std::shared_ptr<CsgStackFrame> frame = stack.back();
     auto impl = frame->op_node->impl_.GetGuard();
     if (frame->finalize) {
       if (!frame->op_node->cache_) {
         switch (frame->op_node->op_) {
           case OpType::Add:
-            *impl = {BatchUnion(frame->positive_children)};
+            *impl = {BatchUnion(frame->positive_children, ctx)};
             break;
           case OpType::Intersect: {
-            *impl = {BatchBoolean(OpType::Intersect, frame->positive_children)};
+            *impl = {
+                BatchBoolean(OpType::Intersect, frame->positive_children, ctx)};
             break;
           };
           case OpType::Subtract:
@@ -632,14 +781,15 @@ std::shared_ptr<CsgLeafNode> CsgOpNode::ToLeafNode() const {
               // nothing to subtract from, so the result is empty.
               *impl = {std::make_shared<CsgLeafNode>()};
             } else {
-              auto positive = BatchUnion(frame->positive_children);
+              auto positive = BatchUnion(frame->positive_children, ctx);
               if (frame->negative_children.empty()) {
                 // nothing to subtract, result equal to the LHS.
                 *impl = {frame->positive_children[0]};
               } else {
-                auto negative = BatchUnion(frame->negative_children);
+                auto negative = BatchUnion(frame->negative_children, ctx);
                 *impl = {SimpleBoolean(*positive->GetImpl(),
-                                       *negative->GetImpl(), OpType::Subtract)};
+                                       *negative->GetImpl(), OpType::Subtract,
+                                       ctx)};
               }
             }
             break;
@@ -708,6 +858,34 @@ CsgNodeType CsgOpNode::GetNodeType() const {
   }
   // unreachable...
   return CsgNodeType::Leaf;
+}
+
+size_t CsgOpNode::NumLeaves() const {
+  // An already-evaluated CsgOpNode counts as a single leaf for the purposes
+  // of estimating remaining boolean work. Iterative walk: `+=` chains can
+  // produce very deep CsgOpNode trees that would blow the call stack if
+  // this were recursive.
+  if (cache_ != nullptr) return 1;
+  size_t total = 0;
+  std::vector<const CsgOpNode*> stack;
+  stack.push_back(this);
+  while (!stack.empty()) {
+    const CsgOpNode* op = stack.back();
+    stack.pop_back();
+    if (op->cache_ != nullptr) {
+      total += 1;
+      continue;
+    }
+    auto impl = op->impl_.GetGuard();
+    for (const auto& child : *impl) {
+      if (child->GetNodeType() == CsgNodeType::Leaf) {
+        total += 1;
+      } else {
+        stack.push_back(static_cast<const CsgOpNode*>(child.get()));
+      }
+    }
+  }
+  return total;
 }
 
 }  // namespace manifold

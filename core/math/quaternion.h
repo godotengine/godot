@@ -35,24 +35,28 @@
 #include "core/string/ustring.h"
 
 struct [[nodiscard]] Quaternion {
-	union {
-		// NOLINTBEGIN(modernize-use-default-member-init)
-		struct {
-			real_t x;
-			real_t y;
-			real_t z;
-			real_t w;
-		};
-		real_t components[4] = { 0, 0, 0, 1.0 };
-		// NOLINTEND(modernize-use-default-member-init)
-	};
+	real_t x = 0.0f;
+	real_t y = 0.0f;
+	real_t z = 0.0f;
+	real_t w = 1.0f;
 
-	_FORCE_INLINE_ real_t &operator[](int p_idx) {
-		return components[p_idx];
+	constexpr real_t &operator[](int p_idx) {
+		// The pointer math below assumes that the elements are placed back-to-back, like an array.
+		// This is always true in practice, but technically not guaranteed; we safety-check it here.
+		static_assert(offsetof(Quaternion, x) == 0 * sizeof(real_t));
+		static_assert(offsetof(Quaternion, y) == 1 * sizeof(real_t));
+		static_assert(offsetof(Quaternion, z) == 2 * sizeof(real_t));
+		static_assert(offsetof(Quaternion, w) == 3 * sizeof(real_t));
+		static_assert(sizeof(Quaternion) == 4 * sizeof(real_t));
+
+		DEV_ASSERT((unsigned int)p_idx < 4);
+		return (&x)[p_idx];
 	}
-	_FORCE_INLINE_ const real_t &operator[](int p_idx) const {
-		return components[p_idx];
+	constexpr const real_t &operator[](int p_idx) const {
+		DEV_ASSERT((unsigned int)p_idx < 4);
+		return (&x)[p_idx];
 	}
+
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Quaternion &p_quaternion) const;
 	bool is_same(const Quaternion &p_quaternion) const;
@@ -72,6 +76,7 @@ struct [[nodiscard]] Quaternion {
 
 	Quaternion slerp(const Quaternion &p_to, real_t p_weight) const;
 	Quaternion slerpni(const Quaternion &p_to, real_t p_weight) const;
+	static Quaternion blend_log(const Quaternion &p_from_q, const Quaternion &p_from_ln, const Quaternion &p_to_ln, const Quaternion &p_to_in_from_ln, real_t p_weight);
 	Quaternion spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight) const;
 	Quaternion spherical_cubic_interpolate_in_time(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, real_t p_weight, real_t p_b_t, real_t p_pre_a_t, real_t p_post_b_t) const;
 
@@ -117,23 +122,12 @@ struct [[nodiscard]] Quaternion {
 
 	explicit operator String() const;
 
-	constexpr Quaternion() :
-			x(0), y(0), z(0), w(1) {}
+	constexpr Quaternion() = default;
 
 	constexpr Quaternion(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x), y(p_y), z(p_z), w(p_w) {}
 
 	Quaternion(const Vector3 &p_axis, real_t p_angle);
-
-	constexpr Quaternion(const Quaternion &p_q) :
-			x(p_q.x), y(p_q.y), z(p_q.z), w(p_q.w) {}
-
-	constexpr void operator=(const Quaternion &p_q) {
-		x = p_q.x;
-		y = p_q.y;
-		z = p_q.z;
-		w = p_q.w;
-	}
 
 	Quaternion(const Vector3 &p_v0, const Vector3 &p_v1) { // Shortest arc.
 #ifdef MATH_CHECKS

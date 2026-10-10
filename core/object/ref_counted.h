@@ -212,9 +212,9 @@ public:
 		}
 	}
 
-	template <typename... VarArgs>
-	void instantiate(VarArgs... p_params) {
-		Ref<T> ref = memnew(T(p_params...));
+	template <typename... Args>
+	void instantiate(Args &&...p_params) {
+		Ref<T> ref = memnew(T(std::forward<Args>(p_params)...));
 		// Appropriate the new Ref, and if the previous one was set, free it.
 		SWAP(reference, ref.reference);
 	}
@@ -237,20 +237,6 @@ template <typename T>
 void postinitialize_handler(Ref<T> &p_object) {
 	postinitialize_handler(p_object.ptr());
 }
-
-class WeakRef : public RefCounted {
-	GDCLASS(WeakRef, RefCounted);
-
-	ObjectID ref;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Variant get_ref() const;
-	void set_obj(Object *p_object);
-	void set_ref(const Ref<RefCounted> &p_ref);
-};
 
 // Zero-constructing Ref initializes reference to nullptr (and thus empty).
 template <typename T>

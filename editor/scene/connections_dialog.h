@@ -235,7 +235,7 @@ class ConnectionsDock : public VBoxContainer {
 	VBoxContainer *holder = nullptr;
 	Label *select_an_object = nullptr;
 
-	Object *selected_object = nullptr;
+	ObjectID selected_object_id;
 	ConnectionsDockTree *tree = nullptr;
 
 	ConfirmationDialog *disconnect_all_dialog = nullptr;
@@ -273,6 +273,8 @@ class ConnectionsDock : public VBoxContainer {
 	void _slot_menu_about_to_popup();
 	void _tree_gui_input(const Ref<InputEvent> &p_event);
 	void _close();
+
+	void _changed_callback();
 
 protected:
 	void _connect_pressed();

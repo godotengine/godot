@@ -280,7 +280,7 @@ static const struct ligature_set_t {
  struct ligature_pairs_t {
    uint16_t components[1];
    uint16_t ligature;
- } ligatures[14];
+ } ligatures[15];
 } ligature_table[] =
 {
   { 0xFE91u, {
@@ -337,6 +337,7 @@ static const struct ligature_set_t {
     { {0xFEA8u}, 0xFCCBu }, /* ARABIC LIGATURE LAM WITH KHAH INITIAL FORM */
     { {0xFEE2u}, 0xFC42u }, /* ARABIC LIGATURE LAM WITH MEEM ISOLATED FORM */
     { {0xFEE4u}, 0xFCCCu }, /* ARABIC LIGATURE LAM WITH MEEM INITIAL FORM */
+    { {0xFEF0u}, 0xFC43u }, /* ARABIC LIGATURE LAM WITH ALEF MAKSURA ISOLATED FORM */
     { {0xFEF2u}, 0xFC44u }, /* ARABIC LIGATURE LAM WITH YEH ISOLATED FORM */
     { {0xFEECu}, 0xFCCDu }, /* ARABIC LIGATURE LAM WITH HEH INITIAL FORM */
     { {0xFE82u}, 0xFEF5u }, /* ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE ISOLATED FORM */

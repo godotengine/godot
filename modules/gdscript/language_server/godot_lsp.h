@@ -774,7 +774,7 @@ struct Diagnostic {
 	/**
 	 * The diagnostic's code, which might appear in the user interface.
 	 */
-	int code = 0;
+	String code;
 
 	/**
 	 * A human-readable string describing the source of this
@@ -1922,7 +1922,7 @@ static String marked_documentation(const String &p_bbcode, const HashSet<String>
 			in_codeblock_tag = false;
 		}
 
-		if (!in_codeblock_tag) {
+		if (!in_codeblock_tag && !in_codeblocks_gdscript_tag) {
 			line = line.strip_edges();
 			line = line.replace("[br]", "\n\n");
 

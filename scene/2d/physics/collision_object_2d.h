@@ -159,7 +159,7 @@ public:
 	void shape_owner_set_one_way_collision_direction(uint32_t p_owner, const Vector2 &p_direction);
 	Vector2 get_shape_owner_one_way_collision_direction(uint32_t p_owner) const;
 
-	void shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape2D> rp_shape);
+	void shape_owner_add_shape(uint32_t p_owner, RequiredParam<Shape2D> p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
 	Ref<Shape2D> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
 	int shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const;

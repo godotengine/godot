@@ -42,7 +42,7 @@
  * @face: a face object
  * @start_offset: iteration's start offset
  * @entries_count:(inout) (optional): buffer size as input, filled size as output
- * @entries: (out caller-allocates) (array length=entries_count): entries tags buffer
+ * @entries: (out caller-allocates) (array length=entries_count) (nullable): entries tags buffer
  *
  * Fetches all available feature types.
  *

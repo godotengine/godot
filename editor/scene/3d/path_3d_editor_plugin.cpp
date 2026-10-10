@@ -47,6 +47,10 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/curve.h"
 
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/direct_states/physics_direct_space_state_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
 String Path3DGizmo::get_handle_name(int p_id, bool p_secondary) const {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
@@ -903,6 +907,7 @@ void Path3DEditorPlugin::_clear_curve_points() {
 		return;
 	}
 	Ref<Curve3D> curve = path->get_curve();
+	Node3DEditor::get_singleton()->clear_subgizmo_selection(path);
 	curve->set_closed(false);
 	curve->clear_points();
 }

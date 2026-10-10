@@ -449,6 +449,7 @@ void Range::set_exp_ratio(bool p_enable) {
 	}
 
 	shared->exp_ratio = p_enable;
+	shared->redraw_owners();
 
 	update_configuration_warnings();
 }

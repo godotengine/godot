@@ -52,13 +52,13 @@
 #include <xcb/xcb.h>
 #endif  // XR_USE_PLATFORM_XCB
 
-#if defined(XR_USE_GRAPHICS_API_OPENGL_ES) || defined(XR_USE_PLATFORM_EGL) || defined(XR_USE_PLATFORM_ANDROID)
+#if defined(XR_USE_GRAPHICS_API_OPENGL_ES) || defined(XR_USE_PLATFORM_EGL)
 #ifdef XRDEPENDENCIES_USE_GLAD
 #include <glad/egl.h>
 #else
 #include <EGL/egl.h>
 #endif
-#endif  // XR_USE_GRAPHICS_API_OPENGL_ES || XR_USE_PLATFORM_EGL || XR_USE_PLATFORM_ANDROID
+#endif  // XR_USE_GRAPHICS_API_OPENGL_ES || XR_USE_PLATFORM_EGL
 
 #if defined(XR_USE_GRAPHICS_API_OPENGL) && (defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB))
 #ifdef XRDEPENDENCIES_USE_GLAD

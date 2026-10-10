@@ -250,7 +250,7 @@ public:
 				else if ((outClampedAxis & cClampedSwingYMin) != 0)
 				{
 					float z = ioSwing.GetZ();
-					ioSwing = Quat(0, 0, z, sqrt(1.0f - Square(z)));
+					ioSwing = Quat(0, 0, z, Sqrt(1.0f - Square(z)));
 				}
 			}
 		}
@@ -277,7 +277,7 @@ public:
 			else if ((outClampedAxis & cClampedSwingZMin) != 0)
 			{
 				float y = ioSwing.GetY();
-				ioSwing = Quat(0, y, 0, sqrt(1.0f - Square(y)));
+				ioSwing = Quat(0, y, 0, Sqrt(1.0f - Square(y)));
 			}
 		}
 		else
@@ -291,7 +291,7 @@ public:
 				if (!ellipse.IsInside(point))
 				{
 					Float2 closest = ellipse.GetClosestPoint(point);
-					ioSwing = Quat(0, closest.x, closest.y, sqrt(max(0.0f, 1.0f - Square(closest.x) - Square(closest.y))));
+					ioSwing = Quat(0, closest.x, closest.y, Sqrt(max(0.0f, 1.0f - Square(closest.x) - Square(closest.y))));
 					outClampedAxis |= cClampedSwingYMin | cClampedSwingYMax | cClampedSwingZMin | cClampedSwingZMax; // We're not using the flags on which side we got clamped here
 				}
 			}

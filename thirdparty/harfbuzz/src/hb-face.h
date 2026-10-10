@@ -169,7 +169,7 @@ hb_face_get_glyph_count (const hb_face_t *face);
  * @start_offset: The index of first table tag to retrieve
  * @table_count: (inout): Input = the maximum number of table tags to return;
  *                Output = the actual number of table tags returned (may be zero)
- * @table_tags: (out) (array length=table_count): The array of table tags found
+ * @table_tags: (out) (array length=table_count) (nullable): The array of table tags found
  * @user_data: User data pointer passed by the caller
  *
  * Callback function for hb_face_get_table_tags().

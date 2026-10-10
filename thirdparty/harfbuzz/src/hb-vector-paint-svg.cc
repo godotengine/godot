@@ -246,6 +246,7 @@ hb_vector_svg_add_sweep_patch (hb_vector_buf_t *body,
 /* Callback context + trampoline for hb_paint_sweep_gradient_tiles. */
 struct hb_vector_svg_sweep_ctx_t
 {
+  hb_vector_paint_t *paint;
   hb_vector_buf_t *body;
   unsigned precision;
   float cx, cy, radius;
@@ -257,10 +258,18 @@ hb_vector_svg_sweep_emit_patch (float a0, hb_color_t c0,
 				void *user_data)
 {
   auto *ctx = (hb_vector_svg_sweep_ctx_t *) user_data;
+  auto *paint = ctx->paint;
+  /* Skip patch generation when the session work budget is spent, so
+   * per-gradient patch counts cannot multiply with the paint-graph
+   * traversal limits of the font tables driving us. */
+  if (unlikely (paint->work_left <= 0))
+    return;
+  unsigned before = ctx->body->length;
   hb_vector_svg_add_sweep_patch (ctx->body, ctx->precision,
 				 ctx->cx, ctx->cy, ctx->radius,
 				 a0, hb_vector_svg_rgba_from_hb_color (c0),
 				 a1, hb_vector_svg_rgba_from_hb_color (c1));
+  paint->work_left -= ctx->body->length - before;
 }
 
 
@@ -268,6 +277,7 @@ static void hb_vector_paint_push_transform (hb_paint_funcs_t *, void *,
                                             float, float, float, float, float, float,
                                             void *);
 static void hb_vector_paint_pop_transform (hb_paint_funcs_t *, void *, void *);
+static void hb_vector_paint_fill_glyph (hb_paint_funcs_t *, void *, hb_codepoint_t, hb_font_t *, hb_bool_t, hb_color_t, void *);
 static void hb_vector_paint_push_clip_glyph (hb_paint_funcs_t *, void *, hb_codepoint_t, hb_font_t *, void *);
 static void hb_vector_paint_push_clip_rectangle (hb_paint_funcs_t *, void *, float, float, float, float, void *);
 static hb_draw_funcs_t * hb_vector_paint_push_clip_path_start (hb_paint_funcs_t *, void *, void **, void *);
@@ -308,6 +318,7 @@ static struct hb_vector_paint_funcs_lazy_loader_t
     hb_paint_funcs_t *funcs = hb_paint_funcs_create ();
     hb_paint_funcs_set_push_transform_func (funcs, (hb_paint_push_transform_func_t) hb_vector_paint_push_transform, nullptr, nullptr);
     hb_paint_funcs_set_pop_transform_func (funcs, (hb_paint_pop_transform_func_t) hb_vector_paint_pop_transform, nullptr, nullptr);
+    hb_paint_funcs_set_fill_glyph_func (funcs, (hb_paint_fill_glyph_func_t) hb_vector_paint_fill_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_glyph_func (funcs, (hb_paint_push_clip_glyph_func_t) hb_vector_paint_push_clip_glyph, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_rectangle_func (funcs, (hb_paint_push_clip_rectangle_func_t) hb_vector_paint_push_clip_rectangle, nullptr, nullptr);
     hb_paint_funcs_set_push_clip_path_start_func (funcs, (hb_paint_push_clip_path_start_func_t) hb_vector_paint_push_clip_path_start, nullptr, nullptr);
@@ -414,6 +425,38 @@ hb_vector_paint_pop_transform (hb_paint_funcs_t *,
 }
 
 static void
+hb_vector_paint_fill_glyph (hb_paint_funcs_t *,
+                            void *paint_data,
+                            hb_codepoint_t glyph,
+                            hb_font_t *font,
+                            hb_bool_t,
+                            hb_color_t color,
+                            void *)
+{
+  auto *paint = (hb_vector_paint_t *) paint_data;
+  if (unlikely (!paint->ensure_initialized ()))
+    return;
+
+  paint->path.clear ();
+  /* Skip the outline extraction when the session work budget is
+   * spent; an empty path keeps the document structure intact. */
+  if (likely (paint->work_left > 0))
+  {
+    hb_vector_path_sink_t sink = {&paint->path, paint->get_precision (),
+				 paint->x_scale_factor, paint->y_scale_factor,
+				 &paint->work_left};
+    hb_font_draw_glyph (font, glyph, hb_vector_svg_path_draw_funcs_get (), &sink);
+  }
+
+  auto &body = paint->current_body ();
+  body.append_str ("<path d=\"");
+  body.append_len (paint->path.arrayZ, paint->path.length);
+  body.append_str ("\" fill=\"");
+  body.append_svg_color (color, true);
+  body.append_str ("\"/>\n");
+}
+
+static void
 hb_vector_paint_push_clip_glyph (hb_paint_funcs_t *,
                                  void *paint_data,
                                  hb_codepoint_t glyph,
@@ -428,9 +471,13 @@ hb_vector_paint_push_clip_glyph (hb_paint_funcs_t *,
   unsigned pfx_len = paint->id_prefix_length;
 
   paint->path.clear ();
+  /* Skip the outline extraction when the session work budget is
+   * spent; an empty clip path clips everything out. */
+  if (likely (paint->work_left > 0))
   {
     hb_vector_path_sink_t sink = {&paint->path, paint->get_precision (),
-				 paint->x_scale_factor, paint->y_scale_factor};
+				 paint->x_scale_factor, paint->y_scale_factor,
+				 &paint->work_left};
     hb_font_draw_glyph (font, glyph, hb_vector_svg_path_draw_funcs_get (), &sink);
   }
 
@@ -510,7 +557,8 @@ hb_vector_paint_push_clip_path_start (hb_paint_funcs_t *,
   paint->path.clear ();
   paint->clip_path_sink = {&paint->path, paint->get_precision (),
 			   paint->x_scale_factor,
-			   paint->y_scale_factor};
+			   paint->y_scale_factor,
+			   &paint->work_left};
   *draw_data = &paint->clip_path_sink;
   return hb_vector_svg_path_draw_funcs_get ();
 }
@@ -781,7 +829,7 @@ hb_vector_paint_sweep_gradient (hb_paint_funcs_t *,
   float ga1 = start_angle + mx * (end_angle - start_angle);
 
   hb_vector_svg_sweep_ctx_t ctx {
-    &paint->current_body (), paint->get_precision (), paint->sx (cx), paint->sy (cy), 32767.f
+    paint, &paint->current_body (), paint->get_precision (), paint->sx (cx), paint->sy (cy), 32767.f
   };
   hb_paint_sweep_gradient_tiles (stops.arrayZ, stops.length,
 				 hb_color_line_get_extend (color_line),

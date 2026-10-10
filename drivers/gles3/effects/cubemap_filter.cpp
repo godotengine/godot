@@ -157,7 +157,7 @@ void CubemapFilter::filter_radiance(GLuint p_source_cubemap, GLuint p_dest_cubem
 		float roughness4 = roughness * roughness;
 		roughness4 *= roughness4;
 
-		float solid_angle_texel = 4.0 * Math::PI / float(6 * size * size);
+		float solid_angle_texel = 4.0 * Math::PI / float(6 * p_source_size * p_source_size);
 
 		LocalVector<float> sample_directions;
 		sample_directions.resize(4 * sample_count);

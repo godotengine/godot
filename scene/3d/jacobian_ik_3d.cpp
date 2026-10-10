@@ -61,11 +61,15 @@ void JacobianIK3D::_solve_iteration(double p_delta, Skeleton3D *p_skeleton, Iter
 			p_setting->update_chain_coordinate_fw(p_skeleton, j, current_head + to_rot.xform(to_tail));
 
 			int k = j - 1;
+			IKModifier3DSolverInfo *limited_joint_solver_info = p_setting->solver_info_list[k];
+			if (!limited_joint_solver_info) {
+				continue;
+			}
 			if (p_setting->joint_settings[k]->rotation_axis != ROTATION_AXIS_ALL) {
-				p_setting->update_chain_coordinate_fw(p_skeleton, j, p_setting->chain[k] + p_setting->joint_settings[k]->get_projected_rotation(solver_info->current_grest, p_setting->chain[j] - p_setting->chain[k]));
+				p_setting->update_chain_coordinate_fw(p_skeleton, j, p_setting->chain[k] + p_setting->joint_settings[k]->get_projected_rotation(limited_joint_solver_info->current_grest, p_setting->chain[j] - p_setting->chain[k]));
 			}
 			if (p_setting->joint_settings[k]->limitation.is_valid()) {
-				p_setting->update_chain_coordinate_fw(p_skeleton, j, p_setting->chain[k] + p_setting->joint_settings[k]->get_limited_rotation(solver_info->current_grest, p_setting->chain[j] - p_setting->chain[k], solver_info->forward_vector));
+				p_setting->update_chain_coordinate_fw(p_skeleton, j, p_setting->chain[k] + p_setting->joint_settings[k]->get_limited_rotation(limited_joint_solver_info->current_grest, p_setting->chain[j] - p_setting->chain[k], limited_joint_solver_info->forward_vector));
 			}
 		}
 	}

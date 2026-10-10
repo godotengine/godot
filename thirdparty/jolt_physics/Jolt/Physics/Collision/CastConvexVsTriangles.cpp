@@ -58,7 +58,7 @@ void CastConvexVsTriangles::Cast(Vec3Arg inV0, Vec3Arg inV1, Vec3Arg inV2, uint8
 	EPAPenetrationDepth epa;
 	float fraction = mCollector.GetEarlyOutFraction();
 	Vec3 contact_point_a, contact_point_b, contact_normal;
-	if (epa.CastShape(mShapeCast.mCenterOfMassStart, mShapeCast.mDirection, mShapeCastSettings.mCollisionTolerance, mShapeCastSettings.mPenetrationTolerance, *mSupport, triangle, mSupport->GetConvexRadius(), 0.0f, mShapeCastSettings.mReturnDeepestPoint, fraction, contact_point_a, contact_point_b, contact_normal))
+	if (epa.CastShape(mShapeCast.mCenterOfMassStart, mShapeCast.mDirection, mShapeCastSettings.mCollisionTolerance, mShapeCastSettings.mPenetrationTolerance, *mSupport, triangle, mSupport->GetConvexRadius() + mShapeCastSettings.mExtraConvexRadius, 0.0f, mShapeCastSettings.mReturnDeepestPoint, fraction, contact_point_a, contact_point_b, contact_normal))
 	{
 		// Check if we have enabled active edge detection
 		if (mShapeCastSettings.mActiveEdgeMode == EActiveEdgeMode::CollideOnlyWithActive && inActiveEdges != 0b111)

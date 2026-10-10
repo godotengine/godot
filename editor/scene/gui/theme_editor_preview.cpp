@@ -243,7 +243,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_toolbar->add_child(picker_button);
 	picker_button->set_theme_type_variation(SceneStringName(FlatButton));
 	picker_button->set_toggle_mode(true);
-	picker_button->set_tooltip_text(TTR("Toggle the control picker, allowing to visually select control types for edit."));
+	picker_button->set_tooltip_text(TTRC("Toggle the control picker, allowing to visually select control types for edit."));
 	picker_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
 
 	MarginContainer *preview_body = memnew(MarginContainer);
@@ -320,12 +320,12 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 
 	first_vb->add_child(memnew(Button("Button")));
 	Button *bt = memnew(Button);
-	bt->set_text(TTR("Toggle Button"));
+	bt->set_text(TTRC("Toggle Button"));
 	bt->set_toggle_mode(true);
 	bt->set_pressed(true);
 	first_vb->add_child(bt);
 	bt = memnew(Button);
-	bt->set_text(TTR("Disabled Button"));
+	bt->set_text(TTRC("Disabled Button"));
 	bt->set_disabled(true);
 	first_vb->add_child(bt);
 	Button *tb = memnew(Button);
@@ -342,31 +342,31 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 
 	MenuButton *test_menu_button = memnew(MenuButton);
 	test_menu_button->set_text("MenuButton");
-	test_menu_button->get_popup()->add_item(TTR("Item"));
-	test_menu_button->get_popup()->add_item(TTR("Disabled Item"));
+	test_menu_button->get_popup()->add_item(TTRC("Item"));
+	test_menu_button->get_popup()->add_item(TTRC("Disabled Item"));
 	test_menu_button->get_popup()->set_item_disabled(1, true);
 	test_menu_button->get_popup()->add_separator();
-	test_menu_button->get_popup()->add_check_item(TTR("Check Item"));
-	test_menu_button->get_popup()->add_check_item(TTR("Checked Item"));
+	test_menu_button->get_popup()->add_check_item(TTRC("Check Item"));
+	test_menu_button->get_popup()->add_check_item(TTRC("Checked Item"));
 	test_menu_button->get_popup()->set_item_checked(4, true);
 	test_menu_button->get_popup()->add_separator();
-	test_menu_button->get_popup()->add_radio_check_item(TTR("Radio Item"));
-	test_menu_button->get_popup()->add_radio_check_item(TTR("Checked Radio Item"));
+	test_menu_button->get_popup()->add_radio_check_item(TTRC("Radio Item"));
+	test_menu_button->get_popup()->add_radio_check_item(TTRC("Checked Radio Item"));
 	test_menu_button->get_popup()->set_item_checked(7, true);
-	test_menu_button->get_popup()->add_separator(TTR("Named Separator"));
+	test_menu_button->get_popup()->add_separator(TTRC("Named Separator"));
 
 	PopupMenu *test_submenu = memnew(PopupMenu);
-	test_menu_button->get_popup()->add_submenu_node_item(TTR("Submenu"), test_submenu);
-	test_submenu->add_item(TTR("Subitem 1"));
-	test_submenu->add_item(TTR("Subitem 2"));
+	test_menu_button->get_popup()->add_submenu_node_item(TTRC("Submenu"), test_submenu);
+	test_submenu->add_item(TTRC("Subitem 1"));
+	test_submenu->add_item(TTRC("Subitem 2"));
 	first_vb->add_child(test_menu_button);
 
 	OptionButton *test_option_button = memnew(OptionButton);
 	test_option_button->add_item("OptionButton");
 	test_option_button->add_separator();
-	test_option_button->add_item(TTR("Has"));
-	test_option_button->add_item(TTR("Many"));
-	test_option_button->add_item(TTR("Options"));
+	test_option_button->add_item(TTRC("Has"));
+	test_option_button->add_item(TTRC("Many"));
+	test_option_button->add_item(TTRC("Options"));
 	first_vb->add_child(test_option_button);
 	test_color_picker_button = memnew(ColorPickerButton);
 	first_vb->add_child(test_color_picker_button);
@@ -379,7 +379,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	le->set_text("LineEdit");
 	second_vb->add_child(le);
 	le = memnew(LineEdit);
-	le->set_text(TTR("Disabled LineEdit"));
+	le->set_text(TTRC("Disabled LineEdit"));
 	le->set_editable(false);
 	second_vb->add_child(le);
 	TextEdit *te = memnew(TextEdit);
@@ -421,13 +421,13 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	third_vb->add_child(tc);
 	tc->set_custom_minimum_size(Size2(0, 135));
 	Control *tcc = memnew(Control);
-	tcc->set_name(TTR("Tab 1"));
+	tcc->set_name(TTRC("Tab 1"));
 	tc->add_child(tcc);
 	tcc = memnew(Control);
-	tcc->set_name(TTR("Tab 2"));
+	tcc->set_name(TTRC("Tab 2"));
 	tc->add_child(tcc);
 	tcc = memnew(Control);
-	tcc->set_name(TTR("Tab 3"));
+	tcc->set_name(TTRC("Tab 3"));
 	tc->add_child(tcc);
 	tc->set_tab_disabled(2, true);
 
@@ -441,9 +441,9 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	item->set_text(0, "Item");
 	item = test_tree->create_item(test_tree->get_root());
 	item->set_editable(0, true);
-	item->set_text(0, TTR("Editable Item"));
+	item->set_text(0, TTRC("Editable Item"));
 	TreeItem *sub_tree = test_tree->create_item(test_tree->get_root());
-	sub_tree->set_text(0, TTR("Subtree"));
+	sub_tree->set_text(0, TTRC("Subtree"));
 	item = test_tree->create_item(sub_tree);
 	item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	item->set_editable(0, true);
@@ -456,7 +456,7 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	item = test_tree->create_item(sub_tree);
 	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
 	item->set_editable(0, true);
-	item->set_text(0, TTR("Has,Many,Options"));
+	item->set_text(0, TTRC("Has,Many,Options"));
 	item->set_range(0, 2);
 }
 
@@ -466,7 +466,7 @@ void SceneThemeEditorPreview::_reload_scene() {
 	}
 
 	if (loaded_scene->get_path().is_empty() || !ResourceLoader::exists(loaded_scene->get_path())) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid path, the PackedScene resource was probably moved or removed."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid path, the PackedScene resource was probably moved or removed."));
 		emit_signal(SNAME("scene_invalidated"));
 		return;
 	}
@@ -479,7 +479,7 @@ void SceneThemeEditorPreview::_reload_scene() {
 
 	Node *instance = loaded_scene->instantiate();
 	if (!instance || !Object::cast_to<Control>(instance)) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, must have a Control node at its root."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid PackedScene resource, must have a Control node at its root."));
 		emit_signal(SNAME("scene_invalidated"));
 		return;
 	}
@@ -504,19 +504,19 @@ void SceneThemeEditorPreview::_bind_methods() {
 bool SceneThemeEditorPreview::set_preview_scene(const String &p_path) {
 	loaded_scene = ResourceLoader::load(p_path);
 	if (loaded_scene.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid file, not a PackedScene resource."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid file, not a PackedScene resource."));
 		return false;
 	}
 
 	Node *instance = loaded_scene->instantiate();
 
 	if (!instance) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, could not instantiate it."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid PackedScene resource, could not instantiate it."));
 		return false;
 	}
 
 	if (!Object::cast_to<Control>(instance)) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid PackedScene resource, must have a Control node at its root."));
+		EditorNode::get_singleton()->show_warning(TTRC("Invalid PackedScene resource, must have a Control node at its root."));
 		memdelete(instance);
 		return false;
 	}
@@ -538,7 +538,7 @@ SceneThemeEditorPreview::SceneThemeEditorPreview() {
 
 	reload_scene_button = memnew(Button);
 	reload_scene_button->set_flat(true);
-	reload_scene_button->set_tooltip_text(TTR("Reload the scene to reflect its most actual state."));
+	reload_scene_button->set_tooltip_text(TTRC("Reload the scene to reflect its most actual state."));
 	preview_toolbar->add_child(reload_scene_button);
 	reload_scene_button->connect(SceneStringName(pressed), callable_mp(this, &SceneThemeEditorPreview::_reload_scene));
 }

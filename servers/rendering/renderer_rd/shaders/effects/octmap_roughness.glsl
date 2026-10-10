@@ -27,7 +27,7 @@ void main() {
 			imageStore(dest_octmap, ivec2(id), vec4(texture(source_oct, uv).rgb, 1.0));
 		}
 	} else {
-		float solid_angle_texel = 4.0 * M_PI / float(params.dest_size * params.dest_size);
+		float solid_angle_texel = 4.0 * M_PI / float(params.source_size * params.source_size);
 		float roughness2 = params.roughness * params.roughness;
 		float roughness4 = roughness2 * roughness2;
 

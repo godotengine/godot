@@ -173,6 +173,7 @@ public:
 		RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_SHADING_RATE_READ,
 		RESOURCE_USAGE_ATTACHMENT_FRAGMENT_DENSITY_MAP_READ,
+		RESOURCE_USAGE_ATTACHMENT_RASTERIZATION_RATE_MAP_READ,
 		RESOURCE_USAGE_GENERAL,
 		RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ,
 		RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE,
@@ -259,6 +260,7 @@ public:
 
 	struct WorkaroundsState {
 		bool draw_list_found = false;
+		bool bound_any_draw_list_pipeline = false;
 	};
 
 	enum AttachmentOperation {
@@ -841,8 +843,10 @@ private:
 	bool command_synchronization_pending = false;
 	BarrierGroup barrier_group;
 	bool driver_honors_barriers : 1;
-	bool driver_clears_with_copy_engine : 1;
+	bool driver_buffer_clears_with_copy_engine : 1;
+	bool driver_texture_clears_with_copy_engine : 1;
 	bool driver_buffers_require_transitions : 1;
+	bool driver_textures_require_layout_transitions : 1;
 	WorkaroundsState workarounds_state;
 	TightLocalVector<Frame> frames;
 	uint32_t frame = 0;

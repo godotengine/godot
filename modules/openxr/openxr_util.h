@@ -66,6 +66,6 @@ public:
 	} XrMatrix4x4f;
 
 	static void XrMatrix4x4f_CreateProjection(XrMatrix4x4f *result, const float tanAngleLeft, const float tanAngleRight,
-			const float tanAngleUp, float const tanAngleDown, const float nearZ, const float farZ);
+			const float tanAngleUp, const float tanAngleDown, const float nearZ, const float farZ);
 	static void XrMatrix4x4f_CreateProjectionFov(XrMatrix4x4f *result, const XrFovf fov, const float nearZ, const float farZ);
 };

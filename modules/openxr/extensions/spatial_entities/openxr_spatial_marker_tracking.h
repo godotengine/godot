@@ -33,6 +33,7 @@
 #include "../openxr_extension_wrapper.h"
 #include "../openxr_future_extension.h"
 #include "openxr_spatial_entities.h"
+#include "openxr_spatial_entity_extension.h"
 
 // QrCode marker tracking capability configuration
 class OpenXRSpatialCapabilityConfigurationQrCode : public OpenXRSpatialCapabilityConfigurationBaseHeader {
@@ -74,7 +75,7 @@ private:
 	PackedInt64Array _get_enabled_components() const;
 };
 
-// Aruco marker tracking capability configuration
+// ArUco marker tracking capability configuration
 class OpenXRSpatialCapabilityConfigurationAruco : public OpenXRSpatialCapabilityConfigurationBaseHeader {
 	GDCLASS(OpenXRSpatialCapabilityConfigurationAruco, OpenXRSpatialCapabilityConfigurationBaseHeader);
 
@@ -182,6 +183,7 @@ public:
 
 	MarkerType get_marker_type(int64_t p_index) const;
 	uint32_t get_marker_id(int64_t p_index) const;
+	XrSpatialBufferIdEXT get_marker_buffer_id(int64_t p_index) const;
 	Variant get_marker_data(RID p_snapshot, int64_t p_index) const;
 
 protected:
@@ -209,6 +211,9 @@ public:
 	void set_marker_id(uint32_t p_id);
 	uint32_t get_marker_id() const;
 
+	XrSpatialBufferIdEXT get_marker_buffer_id() { return marker_buffer_id; }
+
+	void set_marker_data_with_buffer_id(const Variant &p_data, XrSpatialBufferIdEXT p_buffer_id);
 	void set_marker_data(const Variant &p_data);
 	Variant get_marker_data() const;
 
@@ -220,6 +225,7 @@ private:
 
 	OpenXRSpatialComponentMarkerList::MarkerType marker_type = OpenXRSpatialComponentMarkerList::MarkerType::MARKER_TYPE_UNKNOWN;
 	uint32_t marker_id = 0;
+	XrSpatialBufferIdEXT marker_buffer_id = XR_NULL_SPATIAL_BUFFER_ID_EXT;
 	Variant marker_data;
 };
 
@@ -231,6 +237,13 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum MarkerTypeFlags {
+		MARKER_QR_CODE = 1,
+		MARKER_MICRO_QR_CODE = 2,
+		MARKER_ARUCO = 4,
+		MARKER_APRIL_TAG = 8,
+	};
+
 	static OpenXRSpatialMarkerTrackingCapability *get_singleton();
 
 	OpenXRSpatialMarkerTrackingCapability();
@@ -251,11 +264,18 @@ public:
 	bool is_aruco_supported();
 	bool is_april_tag_supported();
 
+	OpenXRSpatialEntityExtension::TrackingState get_built_in_tracking_state() { return builtin_tracking_state; }
+	bool start_built_in_tracking(BitField<MarkerTypeFlags> p_marker_types);
+	void stop_built_in_tracking(bool p_clear_trackers = true);
+
 private:
 	static OpenXRSpatialMarkerTrackingCapability *singleton;
 	bool spatial_marker_tracking_ext = false;
 
+	OpenXRSpatialEntityExtension::TrackingState builtin_tracking_state = OpenXRSpatialEntityExtension::TrackingState::TRACKING_NOT_ACTIVE;
+	Ref<OpenXRFutureResult> built_in_future;
 	RID spatial_context;
+
 	bool need_discovery = false;
 	int discovery_cooldown = 0;
 	Ref<OpenXRFutureResult> discovery_query_result;
@@ -268,8 +288,9 @@ private:
 	Ref<OpenXRSpatialCapabilityConfigurationAprilTag> april_tag_configuration;
 
 	// Discovery logic
-	Ref<OpenXRFutureResult> _create_spatial_context();
+	Ref<OpenXRFutureResult> _create_spatial_context(BitField<MarkerTypeFlags> p_marker_types);
 	void _on_spatial_context_created(RID p_spatial_context);
+	void _on_spatial_context_creation_failed(int p_xr_result, bool p_is_completion_failure);
 
 	void _on_spatial_discovery_recommended(RID p_spatial_context);
 
@@ -278,3 +299,5 @@ private:
 	// Trackers; maps each Spatial Context RID to their marker entities and trackers
 	HashMap<RID, HashMap<XrSpatialEntityIdEXT, Ref<OpenXRMarkerTracker>>> marker_trackers;
 };
+
+VARIANT_BITFIELD_CAST(OpenXRSpatialMarkerTrackingCapability::MarkerTypeFlags);

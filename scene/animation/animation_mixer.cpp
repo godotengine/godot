@@ -40,8 +40,8 @@
 #include "scene/animation/animation_player.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/resources/animation.h"
+#include "scene/resources/audio/audio_stream.h"
 #include "servers/audio/audio_server.h"
-#include "servers/audio/audio_stream.h"
 
 #ifndef _3D_DISABLED
 #include "scene/3d/audio_stream_player_3d.h"
@@ -756,7 +756,7 @@ bool AnimationMixer::_update_caches() {
 							track_value->object_id = child->get_instance_id();
 						}
 
-						track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
+						track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_MAKIMA_ANGLE;
 
 						track_value->subpath = leftover_path;
 
@@ -916,7 +916,7 @@ bool AnimationMixer::_update_caches() {
 						track_audio->object_id = child->get_instance_id();
 						track_audio->audio_stream.instantiate();
 						track_audio->audio_stream->set_polyphony(audio_max_polyphony);
-						track_audio->playback_type = (AudioServer::PlaybackType)(int)(child->call(SNAME("get_playback_type")));
+						track_audio->playback_type = (AuSE::PlaybackType)(int)(child->call(SNAME("get_playback_type")));
 						track_audio->bus = (StringName)(child->call(SNAME("get_bus")));
 
 						track = track_audio;
@@ -965,7 +965,7 @@ bool AnimationMixer::_update_caches() {
 					if (track_value->init_value.is_string() && anim->value_track_get_update_mode(i) != Animation::UPDATE_DISCRETE) {
 						WARN_PRINT_ONCE_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' blends String types. This is an experimental algorithm.");
 					}
-					track_value->is_using_angle = track_value->is_using_angle || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
+					track_value->is_using_angle = track_value->is_using_angle || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_MAKIMA_ANGLE;
 				}
 				if (check_angle_interpolation && (was_using_angle != track_value->is_using_angle)) {
 					WARN_PRINT_ED(mixer_name + ": '" + String(E) + "', Value Track: '" + String(path) + "' has different interpolation types for rotation between some animations which may be blended together. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
@@ -1955,7 +1955,7 @@ void AnimationMixer::_blend_apply() {
 						return;
 					}
 					if (t->loc_used && t->rot_used && t->scale_used) {
-						Transform3D transform = Transform3D(Basis(t->rot).scaled(t->scale), t->loc);
+						Transform3D transform = Transform3D(Basis(t->rot).scaled_local(t->scale), t->loc);
 						t_node_3d->set_transform(transform);
 					} else {
 						if (t->loc_used) {
@@ -2552,6 +2552,12 @@ void AnimationMixer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_reset"), &AnimationMixer::reset);
 	ClassDB::bind_method(D_METHOD("_restore", "backup"), &AnimationMixer::restore);
+
+	// TODO Note: These used to be bound in AnimationPlayer::_bind_methods, indicating it
+	//            was originally meant to be exposed to AnimationPlayer instead of AnimationMixer.
+	//            This should be investigated, to either move the binding or remove this comment.
+	ClassDB::bind_method(D_METHOD("find_animation", "animation"), &AnimationMixer::find_animation);
+	ClassDB::bind_method(D_METHOD("find_animation_library", "animation"), &AnimationMixer::find_animation_library);
 }
 
 AnimationMixer::AnimationMixer() {

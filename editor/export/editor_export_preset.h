@@ -92,13 +92,17 @@ private:
 
 	String custom_features;
 
-	String enc_in_filters;
-	String enc_ex_filters;
+	String enc_in_filters_str;
+	String enc_ex_filters_str;
+	Vector<String> enc_in_filters;
+	Vector<String> enc_ex_filters;
 	bool enc_pck = false;
 	bool enc_directory = false;
 	uint64_t seed = 0;
 
 	String script_key;
+	Vector<uint8_t> script_key_resolved;
+	bool is_script_key_resolved = false;
 	ScriptExportMode script_mode = MODE_SCRIPT_BINARY_TOKENS_COMPRESSED;
 
 protected:
@@ -190,11 +194,13 @@ public:
 	void set_export_path(const String &p_path);
 	String get_export_path() const;
 
-	void set_enc_in_filter(const String &p_filter);
-	String get_enc_in_filter() const;
+	void set_enc_in_filters_str(const String &p_filter);
+	String get_enc_in_filters_str() const;
+	Vector<String> get_enc_in_filters() const;
 
-	void set_enc_ex_filter(const String &p_filter);
-	String get_enc_ex_filter() const;
+	void set_enc_ex_filters_str(const String &p_filter);
+	String get_enc_ex_filters_str() const;
+	Vector<String> get_enc_ex_filters() const;
 
 	void set_seed(uint64_t p_seed);
 	uint64_t get_seed() const;
@@ -207,6 +213,7 @@ public:
 
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;
+	Vector<uint8_t> resolve_script_encryption_key();
 
 	void set_script_export_mode(ScriptExportMode p_mode);
 	ScriptExportMode get_script_export_mode() const;

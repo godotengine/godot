@@ -36,12 +36,14 @@
 GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Warray-bounds")
 
 /**
- * A high performance Vector of fixed capacity.
- * Especially useful if you need to create an array on the stack, to
- *  prevent dynamic allocations (especially in bottleneck code).
+ * Array-like storage that's local (no allocations).
  *
- * Choose CAPACITY such that it is enough for all elements that could be added through all branches.
+ * Elements are relocated by naive memory moves; they must not store their own address (see GH-100509).
  *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ *
+ * @tparam CAPACITY Must be enough for all elements that could be added through all code branches.
  */
 template <class T, uint32_t CAPACITY>
 class _WARN_UNUSED_ FixedVector {
@@ -111,6 +113,7 @@ public:
 		}
 
 		// Relocate elements (and size) into our buffer.
+		// Assumes trivial relocatability (see GH-100509).
 		memcpy((void *)&_size, (void *)&p_from._size, sizeof(_size) + DATA_PADDING + p_from.size() * sizeof(T));
 		p_from._size = 0;
 

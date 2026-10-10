@@ -596,7 +596,7 @@ void GraphEdit::_graph_element_resize_request(const Vector2 &p_new_minsize, Node
 	// Snap the new size to the grid if snapping is enabled.
 	Vector2 new_size = p_new_minsize;
 	if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-		new_size = new_size.snappedf(snapping_distance);
+		new_size = new_size.snappedf(snapping_distance * snapping_distance_scale);
 	}
 
 	// Disallow resizing the frame to a size smaller than the minimum size of the attached nodes.
@@ -981,7 +981,7 @@ void GraphEdit::_set_position_of_frame_attached_nodes(GraphFrame *p_frame, const
 
 		Vector2 pos = (attached_node->get_drag_from() * zoom + drag_accum) / zoom;
 		if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-			pos = pos.snappedf(snapping_distance);
+			pos = pos.snappedf(snapping_distance * snapping_distance_scale);
 		}
 
 		// Recursively move graph frames.
@@ -1901,8 +1901,9 @@ void GraphEdit::_draw_grid() {
 	Vector2 offset = get_scroll_offset() / zoom;
 	Size2 size = get_size() / zoom;
 
-	Point2i from_pos = (offset / float(snapping_distance)).floor();
-	Point2i len = (size / float(snapping_distance)).floor() + Vector2(1, 1);
+	float snapping_scaled = snapping_distance * snapping_distance_scale;
+	Point2i from_pos = (offset / snapping_scaled).floor();
+	Point2i len = (size / snapping_scaled).floor() + Vector2(1, 1);
 
 	switch (grid_pattern) {
 		case GRID_PATTERN_LINES: {
@@ -1915,7 +1916,7 @@ void GraphEdit::_draw_grid() {
 					color = theme_cache.grid_minor;
 				}
 
-				float base_offset = i * snapping_distance * zoom - offset.x * zoom;
+				float base_offset = i * snapping_scaled * zoom - offset.x * zoom;
 				draw_line(Vector2(base_offset, 0), Vector2(base_offset, get_size().height), color);
 			}
 
@@ -1928,7 +1929,7 @@ void GraphEdit::_draw_grid() {
 					color = theme_cache.grid_minor;
 				}
 
-				float base_offset = i * snapping_distance * zoom - offset.y * zoom;
+				float base_offset = i * snapping_scaled * zoom - offset.y * zoom;
 				draw_line(Vector2(0, base_offset), Vector2(get_size().width, base_offset), color);
 			}
 		} break;
@@ -1944,8 +1945,8 @@ void GraphEdit::_draw_grid() {
 							continue;
 						}
 
-						float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
-						float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
+						float base_offset_x = i * snapping_scaled * zoom - offset.x * zoom;
+						float base_offset_y = j * snapping_scaled * zoom - offset.y * zoom;
 
 						draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), transparent_grid_minor);
 					}
@@ -1956,8 +1957,8 @@ void GraphEdit::_draw_grid() {
 			if (theme_cache.grid_major.a != 0) {
 				for (int i = from_pos.x - from_pos.x % GRID_MINOR_STEPS_PER_MAJOR_DOT; i < from_pos.x + len.x; i += GRID_MINOR_STEPS_PER_MAJOR_DOT) {
 					for (int j = from_pos.y - from_pos.y % GRID_MINOR_STEPS_PER_MAJOR_DOT; j < from_pos.y + len.y; j += GRID_MINOR_STEPS_PER_MAJOR_DOT) {
-						float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
-						float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
+						float base_offset_x = i * snapping_scaled * zoom - offset.x * zoom;
+						float base_offset_y = j * snapping_scaled * zoom - offset.y * zoom;
 
 						draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), theme_cache.grid_major);
 					}
@@ -2014,7 +2015,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
 				if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					pos = pos.snappedf(snapping_distance);
+					pos = pos.snappedf(snapping_distance * snapping_distance_scale);
 				}
 
 				graph_element->set_position_offset(pos);
@@ -2720,8 +2721,8 @@ bool GraphEdit::is_snapping_enabled() const {
 }
 
 void GraphEdit::set_snapping_distance(int p_snapping_distance) {
-	ERR_FAIL_COND_MSG(p_snapping_distance < GRID_MIN_SNAPPING_DISTANCE || p_snapping_distance > GRID_MAX_SNAPPING_DISTANCE,
-			vformat("GraphEdit's snapping distance must be between %d and %d (inclusive)", GRID_MIN_SNAPPING_DISTANCE, GRID_MAX_SNAPPING_DISTANCE));
+	ERR_FAIL_COND_MSG(p_snapping_distance < GRID_MIN_SNAPPING_DISTANCE * snapping_distance_scale || p_snapping_distance > GRID_MAX_SNAPPING_DISTANCE * snapping_distance_scale,
+			vformat("GraphEdit's snapping distance must be between %d and %d (inclusive)", GRID_MIN_SNAPPING_DISTANCE * snapping_distance_scale, GRID_MAX_SNAPPING_DISTANCE * snapping_distance_scale));
 	snapping_distance = p_snapping_distance;
 	snapping_distance_spinbox->set_value(p_snapping_distance);
 	queue_redraw();
@@ -2729,6 +2730,15 @@ void GraphEdit::set_snapping_distance(int p_snapping_distance) {
 
 int GraphEdit::get_snapping_distance() const {
 	return snapping_distance;
+}
+
+void GraphEdit::set_snapping_distance_scale(float p_snapping_distance_scale) {
+	snapping_distance_scale = p_snapping_distance_scale;
+	queue_redraw();
+}
+
+float GraphEdit::get_snapping_distance_scale() const {
+	return snapping_distance_scale;
 }
 
 void GraphEdit::set_show_grid(bool p_show) {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -77,15 +77,18 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
         thread->handle = (SYS_ThreadHandle)((size_t)pfnBeginThread(NULL, (unsigned int)thread->stacksize,
                                                                    RunThreadViaBeginThreadEx,
                                                                    thread, flags, &threadid));
+        thread->threadid = (SDL_ThreadID) threadid;
     } else {
         DWORD threadid = 0;
         thread->handle = CreateThread(NULL, thread->stacksize,
                                       RunThreadViaCreateThread,
                                       thread, flags, &threadid);
+        thread->threadid = (SDL_ThreadID) threadid;
     }
     if (!thread->handle) {
         return SDL_SetError("Not enough resources to create thread");
     }
+
     return true;
 }
 
@@ -108,7 +111,7 @@ static LONG NTAPI EmptyVectoredExceptionHandler(EXCEPTION_POINTERS *info)
     }
 }
 
-typedef HRESULT(WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
+typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
 
 void SDL_SYS_SetupThread(const char *name)
 {

@@ -176,11 +176,10 @@ String get_friendly_config_prefix(Ref<GLTFDocumentExtension> p_extension) {
 }
 
 bool is_any_node_invisible(Node *p_node) {
-	if (p_node->has_method("is_visible")) {
-		bool visible = p_node->call("is_visible");
-		if (!visible) {
-			return true;
-		}
+	Callable::CallError err;
+	bool visible = p_node->callp(SceneStringName(is_visible), nullptr, 0, err);
+	if (err.error == Callable::CallError::CALL_OK && !visible) {
+		return true;
 	}
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		if (is_any_node_invisible(p_node->get_child(i))) {

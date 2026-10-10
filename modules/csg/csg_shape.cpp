@@ -38,7 +38,11 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
 #include "scene/resources/surface_tool.h"
-#include "servers/rendering/rendering_server.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/rendering/rendering_server.h" // Only used for debug collision shapes.
+#endif // PHYSICS_3D_DISABLED
 
 #ifdef DEV_ENABLED
 #include "core/io/json.h"
@@ -206,6 +210,7 @@ void CSGShape3D::set_collision_priority(real_t p_priority) {
 real_t CSGShape3D::get_collision_priority() const {
 	return collision_priority;
 }
+#endif // PHYSICS_3D_DISABLED
 
 void CSGShape3D::set_autosmooth(bool p_smooth) {
 	autosmooth = p_smooth;
@@ -225,8 +230,6 @@ void CSGShape3D::set_smoothing_angle(const float p_angle) {
 float CSGShape3D::get_smoothing_angle() const {
 	return smoothing_angle;
 }
-
-#endif // PHYSICS_3D_DISABLED
 
 bool CSGShape3D::is_root_shape() const {
 	return !parent_shape;
@@ -485,9 +488,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	if (!dirty) {
 		return brush;
 	}
-	if (brush) {
-		memdelete(brush);
-	}
+	memdelete(brush);
 	brush = nullptr;
 	CSGBrush *n = _build_brush();
 	HashMap<int32_t, Ref<Material>> mesh_materials;
@@ -520,9 +521,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	}
 	if (!manifolds.empty()) {
 		manifold::Manifold manifold_result = manifold::Manifold::BatchBoolean(manifolds, current_op);
-		if (n) {
-			memdelete(n);
-		}
+		memdelete(n);
 		n = memnew(CSGBrush);
 		_unpack_manifold(manifold_result, mesh_materials, n);
 	}
@@ -870,6 +869,16 @@ void CSGShape3D::_build_surfaces_default(CSGBrush *p_brush, Vector<CSGShape3D::S
 	}
 }
 
+void CSGShape3D::_physics_debug_changed() {
+#if defined(DEBUG_ENABLED) && !defined(PHYSICS_3D_DISABLED)
+	if (_is_debug_collision_shape_visible()) {
+		_update_debug_collision_shape();
+	} else {
+		_clear_debug_collision_shape();
+	}
+#endif
+}
+
 Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
 	Ref<ArrayMesh> baked_mesh;
 	if (is_root_shape() && root_mesh.is_valid()) {
@@ -924,7 +933,7 @@ Ref<ConcavePolygonShape3D> CSGShape3D::bake_collision_shape() {
 }
 
 bool CSGShape3D::_is_debug_collision_shape_visible() {
-	return !Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->is_debugging_collisions_hint();
+	return !Engine::get_singleton()->is_editor_hint() && is_inside_tree() && PhysicsServer3D::get_singleton()->debug_is_enabled();
 }
 
 void CSGShape3D::_update_debug_collision_shape() {
@@ -1217,6 +1226,10 @@ void CSGShape3D::_bind_methods() {
 
 CSGShape3D::CSGShape3D() {
 	set_notify_local_transform(true);
+
+#if defined(DEBUG_ENABLED) && !defined(PHYSICS_3D_DISABLED)
+	PhysicsServer3D::get_singleton()->connect("_debug_changed", callable_mp(this, &CSGShape3D::_physics_debug_changed));
+#endif
 }
 
 CSGShape3D::~CSGShape3D() {
@@ -2675,6 +2688,13 @@ void CSGPolygon3D::_notification(int p_what) {
 			path->disconnect(SceneStringName(tree_exited), callable_mp(this, &CSGPolygon3D::_path_exited));
 			path->disconnect("curve_changed", callable_mp(this, &CSGPolygon3D::_path_changed));
 			path = nullptr;
+		}
+	} else if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (mode == MODE_PATH && !is_using_collision()) {
+			// Force an update when the CSGPolygon3D re-enters the tree to make sure it still follows the Path3D's current state.
+			// This is not needed when collision is enabled, as having collision
+			// enabled will automatically trigger an update.
+			_make_dirty();
 		}
 	}
 }

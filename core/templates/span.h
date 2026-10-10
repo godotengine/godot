@@ -130,7 +130,7 @@ public:
 	/// Find the index of the given value using binary search.
 	/// Note: Assumes that elements in the span are sorted. Otherwise, use find() instead.
 	template <typename Comparator = Comparator<T>>
-	constexpr uint64_t bisect(const T &p_value, bool p_before, Comparator compare = Comparator()) const;
+	constexpr uint64_t bisect(const T &p_value, bool p_before, Comparator p_compare = Comparator()) const;
 
 	/// The caller is responsible to ensure size() > 0.
 	constexpr T max() const;
@@ -195,13 +195,13 @@ constexpr uint64_t Span<T>::count(const T &p_val) const {
 
 template <typename T>
 template <typename Comparator>
-constexpr uint64_t Span<T>::bisect(const T &p_value, bool p_before, Comparator compare) const {
+constexpr uint64_t Span<T>::bisect(const T &p_value, bool p_before, Comparator p_compare) const {
 	uint64_t lo = 0;
 	uint64_t hi = size();
 	if (p_before) {
 		while (lo < hi) {
 			const uint64_t mid = (lo + hi) / 2;
-			if (compare(ptr()[mid], p_value)) {
+			if (p_compare(ptr()[mid], p_value)) {
 				lo = mid + 1;
 			} else {
 				hi = mid;
@@ -210,7 +210,7 @@ constexpr uint64_t Span<T>::bisect(const T &p_value, bool p_before, Comparator c
 	} else {
 		while (lo < hi) {
 			const uint64_t mid = (lo + hi) / 2;
-			if (compare(p_value, ptr()[mid])) {
+			if (p_compare(p_value, ptr()[mid])) {
 				hi = mid;
 			} else {
 				lo = mid + 1;

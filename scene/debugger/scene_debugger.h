@@ -74,6 +74,7 @@ private:
 	static Error _msg_request_scene_tree(const Array &p_args);
 	static Error _msg_save_node(const Array &p_args);
 	static Error _msg_inspect_objects(const Array &p_args);
+	static Error _msg_change_canvas_item_states(const Array &p_args);
 #ifndef DISABLE_DEPRECATED
 	static Error _msg_inspect_object(const Array &p_args);
 #endif // DISABLE_DEPRECATED
@@ -85,6 +86,7 @@ private:
 	static Error _msg_window_request_size(const Array &p_args);
 	static Error _msg_hdr_output_request_state(const Array &p_args);
 	static Error _msg_hdr_output_toggle_requested(const Array &p_args);
+	static Error _msg_set_debug_collisions(const Array &p_args);
 	static Error _msg_override_cameras(const Array &p_args);
 	static Error _msg_set_object_property(const Array &p_args);
 	static Error _msg_set_object_property_field(const Array &p_args);
@@ -106,16 +108,20 @@ private:
 	static Error _msg_live_duplicate_node(const Array &p_args);
 	static Error _msg_live_reparent_node(const Array &p_args);
 	static Error _msg_runtime_node_select_setup(const Array &p_args);
-	static Error _msg_runtime_node_select_set_type(const Array &p_args);
-	static Error _msg_runtime_node_select_set_mode(const Array &p_args);
-	static Error _msg_runtime_node_select_set_visible(const Array &p_args);
+	static Error _msg_runtime_node_select_set_node_type(const Array &p_args);
+	static Error _msg_runtime_node_select_set_ci_tool(const Array &p_args);
+	static Error _msg_runtime_node_select_set_ci_local_space(const Array &p_args);
+	static Error _msg_runtime_node_select_set_n3d_tool(const Array &p_args);
+	static Error _msg_runtime_node_select_set_selection_visible(const Array &p_args);
 	static Error _msg_runtime_node_select_set_avoid_locked(const Array &p_args);
 	static Error _msg_runtime_node_select_set_prefer_group(const Array &p_args);
 	static Error _msg_rq_screenshot(const Array &p_args);
 	static Error _msg_report_window_focused(const Array &p_args);
 
+#ifndef _2D_DISABLED
 	static Error _msg_runtime_node_select_reset_camera_2d(const Array &p_args);
 	static Error _msg_transform_camera_2d(const Array &p_args);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	static Error _msg_runtime_node_select_reset_camera_3d(const Array &p_args);
 	static Error _msg_transform_camera_3d(const Array &p_args);

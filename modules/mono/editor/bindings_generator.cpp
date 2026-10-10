@@ -153,7 +153,11 @@ const Vector<String> prop_allowed_inherited_member_hiding = {
 // This avoids hiding the enum when the property is declared in a derived class,
 // and the need for the 'new' keyword. It can also be used to avoid breaking compat
 // later if a new member is added with the same name as the enum.
-const Vector<String> enums_with_forced_suffix = {};
+const Vector<String> enums_with_forced_suffix = {
+	"Line3D.MaterialMode",
+	"Line3D.MeshAlignment",
+	"Line3D.TilingMode",
+};
 
 void BindingsGenerator::TypeInterface::postsetup_enum_type(BindingsGenerator::TypeInterface &r_enum_itype) {
 	// C interface for enums is the same as that of 'uint32_t'. Remember to apply
@@ -1769,10 +1773,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		StringBuilder constants_source;
 		_generate_global_constants(constants_source);
 		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
-		Error save_err = _save_file(output_file, constants_source);
-		if (save_err != OK) {
-			return save_err;
-		}
+		RETURN_IF_ERROR(_save_file(output_file, constants_source));
 
 		compile_items.push_back(output_file);
 	}
@@ -1782,10 +1783,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		StringBuilder extensions_source;
 		_generate_array_extensions(extensions_source);
 		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_extensions.cs");
-		Error save_err = _save_file(output_file, extensions_source);
-		if (save_err != OK) {
-			return save_err;
-		}
+		RETURN_IF_ERROR(_save_file(output_file, extensions_source));
 
 		compile_items.push_back(output_file);
 	}
@@ -1865,11 +1863,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
 		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR ".cs");
-		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
-
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_save_file(constructors_file, cs_built_in_ctors_content));
 
 		compile_items.push_back(constructors_file);
 	}
@@ -1899,20 +1893,14 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 		if (icall.editor_only) {
 			continue;
 		}
-		Error err = _generate_cs_native_calls(icall, cs_icalls_content);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_generate_cs_native_calls(icall, cs_icalls_content));
 	}
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
 	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
 
-	Error err = _save_file(internal_methods_file, cs_icalls_content);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_save_file(internal_methods_file, cs_icalls_content));
 
 	compile_items.push_back(internal_methods_file);
 
@@ -1932,10 +1920,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
-	err = _save_file(includes_props_file, includes_props_content);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_save_file(includes_props_file, includes_props_content));
 
 	return OK;
 }
@@ -2023,11 +2008,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
 		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR_EDITOR ".cs");
-		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
-
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_save_file(constructors_file, cs_built_in_ctors_content));
 
 		compile_items.push_back(constructors_file);
 	}
@@ -2059,20 +2040,14 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 		if (!icall.editor_only) {
 			continue;
 		}
-		Error err = _generate_cs_native_calls(icall, cs_icalls_content);
-		if (err != OK) {
-			return err;
-		}
+		RETURN_IF_ERROR(_generate_cs_native_calls(icall, cs_icalls_content));
 	}
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
 	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
-	Error err = _save_file(internal_methods_file, cs_icalls_content);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_save_file(internal_methods_file, cs_icalls_content));
 
 	compile_items.push_back(internal_methods_file);
 
@@ -2092,10 +2067,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
-	err = _save_file(includes_props_file, includes_props_content);
-	if (err != OK) {
-		return err;
-	}
+	RETURN_IF_ERROR(_save_file(includes_props_file, includes_props_content));
 
 	return OK;
 }
@@ -4065,7 +4037,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			PropertyInfo return_info = method_info.return_val;
 
-			MethodBind *m = nullptr;
+			const MethodBind *m = nullptr;
 
 			if (!imethod.is_virtual) {
 				bool method_exists = false;
@@ -4262,12 +4234,15 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const AHashMap<StringName, const MethodInfo *> &signal_map = class_info->gdtype->get_signal_map(true);
+		const AHashMap<StringName, GDType::Member> &member_map = class_info->gdtype->members(true);
 
-		for (const KeyValue<StringName, const MethodInfo *> &E : signal_map) {
+		for (const KeyValue<StringName, GDType::Member> &E : member_map) {
+			if (E.value.type != GDType::Member::Type::SIGNAL) {
+				continue;
+			}
 			SignalInterface isignal;
 
-			const MethodInfo &method_info = *E.value;
+			const MethodInfo &method_info = *E.value.payload.signal;
 
 			if (method_info.name.begins_with("_")) {
 				// Signals starting with an underscore are internal and not meant to be exposed.
@@ -4358,9 +4333,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
-		const AHashMap<StringName, const GDType::EnumInfo *> &enum_map = class_info->gdtype->get_enum_map(true);
-
-		for (const KeyValue<StringName, const GDType::EnumInfo *> &kv : enum_map) {
+		for (const KeyValue<StringName, GDType::Member> &kv : member_map) {
+			if (kv.value.type != GDType::Member::Type::ENUM) {
+				continue;
+			}
 			StringName enum_proxy_cname = kv.key;
 			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.string());
 			if (enums_with_forced_suffix.has(itype.proxy_name + "." + enum_proxy_name) || itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
@@ -4370,8 +4346,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
-			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, kv.value->is_bitfield);
-			for (const KeyValue<StringName, int64_t> &kv_case : kv.value->values) {
+			EnumInterface ienum(enum_proxy_cname, enum_proxy_name, kv.value.payload.enum_info->is_bitfield);
+			for (const KeyValue<StringName, int64_t> &kv_case : kv.value.payload.enum_info->values) {
 				String constant_name = kv_case.key.string();
 				constants.erase(kv_case.key);
 
@@ -4416,8 +4392,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			const int64_t *value = class_info->gdtype->get_integer_constant_map(true).getptr(StringName(constant_name));
-			ERR_FAIL_NULL_V(value, false);
+			const GDType::Member *member = class_info->gdtype->members(true).getptr(StringName(constant_name));
+			ERR_FAIL_NULL_V(member, false);
+			int64_t value = member->payload.integer_constant.value;
 
 			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
 
@@ -4427,7 +4404,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				constant_proxy_name += "Constant";
 			}
 
-			ConstantInterface iconstant(constant_name, constant_proxy_name, *value);
+			ConstantInterface iconstant(constant_name, constant_proxy_name, value);
 
 			iconstant.const_doc = nullptr;
 			for (int i = 0; i < itype.class_doc->constants.size(); i++) {

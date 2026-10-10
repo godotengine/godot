@@ -30,6 +30,7 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.gl.GodotRenderer;
 import org.godotengine.godot.input.GodotInputHandler;
@@ -46,12 +47,16 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.SurfaceView;
+import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeProvider;
 
 import androidx.annotation.Keep;
 
@@ -80,15 +85,60 @@ class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final GodotInputHandler inputHandler;
 	private final GodotRenderer godotRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
+	private final AccessibilityNodeProvider accessibilityNodeProvider;
+	private final long mWindowID = 0; // DisplayServerEnums::MAIN_WINDOW_ID
 
 	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
 		super(godot.getContext());
-
+		if (GodotLib.createAccessKitAdapter(mWindowID)) {
+			accessibilityNodeProvider = new AccessibilityNodeProvider() {
+				@Override
+				public AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId) {
+					return GodotLib.createAccessibilityNodeInfo(mWindowID, getView(), virtualViewId);
+				}
+				@Override
+				public AccessibilityNodeInfo findFocus(int focusType) {
+					return GodotLib.findAccessibilityFocus(mWindowID, getView(), focusType);
+				}
+				@Override
+				public boolean performAction(int virtualViewId, int action, Bundle arguments) {
+					return GodotLib.performAccessibilityAction(mWindowID, getView(), virtualViewId, action, arguments);
+				}
+			};
+			setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
+		} else {
+			accessibilityNodeProvider = null;
+		}
 		this.godot = godot;
 		this.inputHandler = inputHandler;
 		this.godotRenderer = new GodotRenderer();
 		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
 		init(xrMode, shouldBeTranslucent, useDebugOpengl);
+	}
+
+	@Override
+	public boolean onHoverEvent(MotionEvent event) {
+		if (accessibilityNodeProvider != null && GodotLib.onAccessibilityHoverEvent(mWindowID, this, event.getAction(), event.getX(), event.getY())) {
+			return true;
+		}
+		return super.onHoverEvent(event);
+	}
+
+	@Override
+	public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+		if (accessibilityNodeProvider == null) {
+			return super.getAccessibilityNodeProvider();
+		}
+		return accessibilityNodeProvider;
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		try {
+			GodotLib.freeAccessKitAdapter(mWindowID);
+		} finally {
+			super.finalize();
+		}
 	}
 
 	@Override

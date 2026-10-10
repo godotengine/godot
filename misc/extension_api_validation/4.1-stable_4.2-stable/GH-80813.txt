@@ -1,5 +1,3 @@
-GH-80813
---------
 Validate extension JSON: API was removed: classes/AnimationPlayer/methods/_post_process_key_value
 Validate extension JSON: API was removed: classes/AnimationPlayer/methods/add_animation_library
 Validate extension JSON: API was removed: classes/AnimationPlayer/methods/advance

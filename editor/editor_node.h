@@ -42,7 +42,11 @@ typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
+#ifndef ANDROID_ENABLED
+class AndroidSDKManager;
+#endif
 class AcceptDialog;
+class BoxContainer;
 class ColorPicker;
 class ConfirmationDialog;
 class Control;
@@ -79,6 +83,7 @@ class EditorExport;
 class EditorExportPreset;
 class EditorFeatureProfileManager;
 class EditorFileDialog;
+class EditorIconManager;
 class EditorFolding;
 class EditorLayoutsDialog;
 class EditorLog;
@@ -167,17 +172,20 @@ public:
 		// Project menu.
 		PROJECT_OPEN_SETTINGS,
 		PROJECT_FIND_IN_FILES,
+		PROJECT_REPLACE_IN_FILES,
 		PROJECT_VERSION_CONTROL,
 		PROJECT_EXPORT,
 		PROJECT_PACK_AS_ZIP,
-		PROJECT_INSTALL_ANDROID_SOURCE,
+		PROJECT_SETUP_ANDROID_BUILD,
 		PROJECT_OPEN_USER_DATA_FOLDER,
+		PROJECT_DOWNLOAD_SOURCE, // Web editor only
 		PROJECT_RELOAD_CURRENT_PROJECT,
 		PROJECT_QUIT_TO_PROJECT_MANAGER,
 
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_BUILD_PROFILE_MANAGER,
 		TOOLS_PROJECT_UPGRADE,
+		TOOLS_CLEAR_PROJECT_CACHE,
 		TOOLS_CUSTOM,
 
 		VCS_METADATA,
@@ -285,18 +293,23 @@ private:
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
 	LocalVector<String> pending_addons;
 	HashMap<ObjectID, HashSet<EditorPlugin *>> active_plugins;
-	bool is_main_screen_editing = false;
 
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
 
 #ifdef ANDROID_ENABLED
-	VBoxContainer *base_vbox = nullptr; // It only contains the title_bar and main_hbox.
-	HBoxContainer *main_hbox = nullptr; // It only contains the touch_actions_panel and main_vbox.
+	VBoxContainer *base_vbox = nullptr; // It only contains the title_bar, main_box, and vk_spacer.
+	BoxContainer *main_box = nullptr; // It only contains the touch_actions_panel and main_vbox.
 	TouchActionsPanel *touch_actions_panel = nullptr;
 	void _touch_actions_panel_mode_changed();
+
+	Control *vk_spacer = nullptr;
+	int last_vk_height = -1;
+	void _screen_orientation_changed(int p_new_orientation);
 #endif
+
+	bool portrait_mode = false;
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
@@ -359,6 +372,7 @@ private:
 	AcceptDialog *execute_output_dialog = nullptr;
 
 	Ref<Theme> theme;
+	EditorIconManager *icon_manager = nullptr;
 
 	bool follow_system_theme = false;
 	bool use_system_accent_color = false;
@@ -368,7 +382,7 @@ private:
 
 	PopupMenu *recent_scenes = nullptr;
 	String _recent_scene;
-	List<String> prev_closed_scenes;
+	LocalVector<String> prev_closed_scenes;
 	String defer_load_scene;
 	Node *_last_instantiated_scene = nullptr;
 
@@ -431,7 +445,7 @@ private:
 	EditorBottomPanel *bottom_panel = nullptr;
 
 	Tree *disk_changed_list = nullptr;
-	LocalVector<String> disk_changed_scenes;
+	HashSet<String> disk_changed_scenes;
 	bool disk_changed_project = false;
 	ConfirmationDialog *disk_changed = nullptr;
 	ConfirmationDialog *project_data_missing = nullptr;
@@ -487,10 +501,17 @@ private:
 
 	ProjectUpgradeTool *project_upgrade_tool = nullptr;
 	bool run_project_upgrade_tool = false;
+	ConfirmationDialog *clear_cache_dialog = nullptr;
+
+	LocalVector<String> files_to_delete_on_exit;
 
 	bool was_window_windowed_last = false;
 
 	bool unfocused_low_processor_usage_mode_enabled = true;
+
+#ifndef ANDROID_ENABLED
+	AndroidSDKManager *android_sdk_manager = nullptr;
+#endif
 
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
@@ -544,6 +565,8 @@ private:
 	void _android_export_preset_selected(int p_index);
 	void _android_install_build_template();
 	void _android_explore_build_templates();
+	void _android_remove_build_templates(bool p_prompt_for_removal);
+	void _setup_android_build(bool p_confirmed);
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
@@ -556,6 +579,7 @@ private:
 	void _export_as_menu_option(int p_idx);
 	void _update_file_menu_opened();
 	void _palette_quick_open_dialog();
+	void _clear_cache_confirmed();
 
 	void _remove_plugin_from_enabled(const String &p_name);
 	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object, bool p_set_current = true);
@@ -1037,6 +1061,8 @@ public:
 
 	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false, String *r_output = nullptr);
 
+	Error setup_android_build_template(const Ref<EditorExportPreset> &p_preset, bool p_confirmed);
+
 	EditorNode();
 	~EditorNode();
 
@@ -1049,6 +1075,8 @@ public:
 	bool validate_custom_directory();
 	void run_editor_script(const Ref<Script> &p_script);
 	bool is_scene_unsaved(int p_idx);
+
+	bool is_portrait() const { return portrait_mode; }
 };
 
 struct EditorProgressBG {

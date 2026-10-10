@@ -63,6 +63,24 @@ void ProjectZIPPacker::pack_project_zip(const String &p_path) {
 	zipClose(zip, nullptr);
 }
 
+void ProjectZIPPacker::pack_zip_absolute_path(const String &p_output_path, const String &p_source_absolute_path) {
+	ERR_FAIL_COND_MSG(!DirAccess::dir_exists_absolute(p_source_absolute_path), vformat("Path %s doesn't exist or is not a directory.", p_source_absolute_path));
+	Ref<FileAccess> io_fa;
+	zlib_filefunc_def io = zipio_create_io(&io_fa);
+
+	String base_path = p_source_absolute_path.rstrip("/");
+	if (base_path.begins_with("res://")) {
+		// This allows to find the parent dir of res:// if needed
+		base_path = ProjectSettings::get_singleton()->globalize_path(base_path);
+	}
+	base_path = base_path.get_base_dir(); // This will force to include the root dir in the zip
+
+	zipFile zip = zipOpen2(p_output_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
+
+	_zip_recursive(p_source_absolute_path, base_path + "/", zip);
+	zipClose(zip, nullptr);
+}
+
 void ProjectZIPPacker::_zip_file(const String &p_path, const String &p_base_path, zipFile p_zip) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {

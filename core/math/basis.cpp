@@ -326,7 +326,7 @@ Vector3 Basis::get_scale() const {
 // Decomposes a Basis into a rotation-reflection matrix (an element of the group O(3)) and a positive scaling matrix as B = O.S.
 // Returns the rotation-reflection matrix via reference argument, and scaling information is returned as a Vector3.
 // This (internal) function is too specific and named too ugly to expose to users, and probably there's no need to do so.
-Vector3 Basis::rotref_posscale_decomposition(Basis &rotref) const {
+Vector3 Basis::rotref_posscale_decomposition(Basis &r_rotref) const {
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(determinant() == 0, Vector3());
 
@@ -335,10 +335,10 @@ Vector3 Basis::rotref_posscale_decomposition(Basis &rotref) const {
 #endif
 	Vector3 scale = get_scale();
 	Basis inv_scale = Basis().scaled(scale.inverse()); // this will also absorb the sign of scale
-	rotref = (*this) * inv_scale;
+	r_rotref = (*this) * inv_scale;
 
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!rotref.is_orthogonal(), Vector3());
+	ERR_FAIL_COND_V(!r_rotref.is_orthogonal(), Vector3());
 #endif
 	return scale.abs();
 }

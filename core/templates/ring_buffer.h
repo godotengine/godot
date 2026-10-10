@@ -101,7 +101,7 @@ public:
 		return p_size;
 	}
 
-	int find(const T &t, int p_offset, int p_max_size) const {
+	int find(const T &p_value, int p_offset, int p_max_size) const {
 		int left = data_left();
 		if ((p_offset + p_max_size) > left) {
 			p_max_size = left - p_offset;
@@ -118,7 +118,7 @@ public:
 			end = MIN(end, size());
 			int total = end - pos;
 			for (int i = 0; i < total; i++) {
-				if (data[pos + i] == t) {
+				if (data[pos + i] == p_value) {
 					return i + (p_max_size - to_read);
 				}
 			}

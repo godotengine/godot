@@ -198,46 +198,7 @@ Body *BodyManager::AllocateBody(const BodyCreationSettings &inBodyCreationSettin
 		body = new Body;
 	}
 	body->mBodyType = EBodyType::RigidBody;
-	body->mShape = inBodyCreationSettings.GetShape();
-	body->mUserData = inBodyCreationSettings.mUserData;
-	body->SetFriction(inBodyCreationSettings.mFriction);
-	body->SetRestitution(inBodyCreationSettings.mRestitution);
-	body->mMotionType = inBodyCreationSettings.mMotionType;
-	if (inBodyCreationSettings.mIsSensor)
-		body->SetIsSensor(true);
-	if (inBodyCreationSettings.mCollideKinematicVsNonDynamic)
-		body->SetCollideKinematicVsNonDynamic(true);
-	if (inBodyCreationSettings.mUseManifoldReduction)
-		body->SetUseManifoldReduction(true);
-	if (inBodyCreationSettings.mApplyGyroscopicForce)
-		body->SetApplyGyroscopicForce(true);
-	if (inBodyCreationSettings.mEnhancedInternalEdgeRemoval)
-		body->SetEnhancedInternalEdgeRemoval(true);
-	SetBodyObjectLayerInternal(*body, inBodyCreationSettings.mObjectLayer);
-	body->mObjectLayer = inBodyCreationSettings.mObjectLayer;
-	body->mCollisionGroup = inBodyCreationSettings.mCollisionGroup;
-
-	if (inBodyCreationSettings.HasMassProperties())
-	{
-		MotionProperties *mp = body->mMotionProperties;
-		mp->SetLinearDamping(inBodyCreationSettings.mLinearDamping);
-		mp->SetAngularDamping(inBodyCreationSettings.mAngularDamping);
-		mp->SetMaxLinearVelocity(inBodyCreationSettings.mMaxLinearVelocity);
-		mp->SetMaxAngularVelocity(inBodyCreationSettings.mMaxAngularVelocity);
-		mp->SetMassProperties(inBodyCreationSettings.mAllowedDOFs, inBodyCreationSettings.GetMassProperties());
-		mp->SetLinearVelocity(inBodyCreationSettings.mLinearVelocity); // Needs to happen after setting the max linear/angular velocity and setting allowed DOFs
-		mp->SetAngularVelocity(inBodyCreationSettings.mAngularVelocity);
-		mp->SetGravityFactor(inBodyCreationSettings.mGravityFactor);
-		mp->SetNumVelocityStepsOverride(inBodyCreationSettings.mNumVelocityStepsOverride);
-		mp->SetNumPositionStepsOverride(inBodyCreationSettings.mNumPositionStepsOverride);
-		mp->mMotionQuality = inBodyCreationSettings.mMotionQuality;
-		mp->mAllowSleeping = inBodyCreationSettings.mAllowSleeping;
-		JPH_IF_ENABLE_ASSERTS(mp->mCachedBodyType = body->mBodyType;)
-		JPH_IF_ENABLE_ASSERTS(mp->mCachedMotionType = body->mMotionType;)
-	}
-
-	// Position body
-	body->SetPositionAndRotationInternal(inBodyCreationSettings.mPosition, inBodyCreationSettings.mRotation);
+	body->ApplyBodyCreationSettings(inBodyCreationSettings, *mBroadPhaseLayerInterface);
 
 	return body;
 }
@@ -254,27 +215,7 @@ Body *BodyManager::AllocateSoftBody(const SoftBodyCreationSettings &inSoftBodyCr
 	body->mBodyType = EBodyType::SoftBody;
 	body->mMotionProperties = mp;
 	body->mShape = shape;
-	body->mUserData = inSoftBodyCreationSettings.mUserData;
-	body->SetFriction(inSoftBodyCreationSettings.mFriction);
-	body->SetRestitution(inSoftBodyCreationSettings.mRestitution);
-	body->mMotionType = EMotionType::Dynamic;
-	SetBodyObjectLayerInternal(*body, inSoftBodyCreationSettings.mObjectLayer);
-	body->mObjectLayer = inSoftBodyCreationSettings.mObjectLayer;
-	body->mCollisionGroup = inSoftBodyCreationSettings.mCollisionGroup;
-	mp->SetLinearDamping(inSoftBodyCreationSettings.mLinearDamping);
-	mp->SetAngularDamping(0);
-	mp->SetMaxLinearVelocity(inSoftBodyCreationSettings.mMaxLinearVelocity);
-	mp->SetMaxAngularVelocity(FLT_MAX);
-	mp->SetLinearVelocity(Vec3::sZero());
-	mp->SetAngularVelocity(Vec3::sZero());
-	mp->SetGravityFactor(inSoftBodyCreationSettings.mGravityFactor);
-	mp->mMotionQuality = EMotionQuality::Discrete;
-	mp->mAllowSleeping = inSoftBodyCreationSettings.mAllowSleeping;
-	JPH_IF_ENABLE_ASSERTS(mp->mCachedBodyType = body->mBodyType;)
-	JPH_IF_ENABLE_ASSERTS(mp->mCachedMotionType = body->mMotionType;)
-	mp->Initialize(inSoftBodyCreationSettings);
-
-	body->SetPositionAndRotationInternal(inSoftBodyCreationSettings.mPosition, inSoftBodyCreationSettings.mMakeRotationIdentity? Quat::sIdentity() : inSoftBodyCreationSettings.mRotation);
+	body->ApplySoftBodyCreationSettings(inSoftBodyCreationSettings, *mBroadPhaseLayerInterface);
 
 	return body;
 }
@@ -1189,7 +1130,7 @@ void BodyManager::ReportSimulationStats()
 {
 	UniqueLock lock(mActiveBodiesMutex JPH_IF_ENABLE_ASSERTS(, this, EPhysicsLockTypes::ActiveBodiesList));
 
-	Trace("BodyID, IslandIndex, LargeIsland, BroadPhase (us), NarrowPhase (us), VelocityConstraint (us), PositionConstraint (us), UpdateBounds (us), CCD (us), NumContactConstraints, NumVelocitySteps, NumPositionSteps");
+	Trace("BodyID, IslandIndex, LargeIsland, BroadPhase (us), NarrowPhase (us), VelocityConstraint (us), PositionConstraint (us), UpdateBounds (us), CCD (us), NumContactConstraints, NumCollisionSteps, NumVelocitySteps, NumPositionSteps");
 
 	double us_per_tick = 1000000.0 / Profiler::sInstance->GetProcessorTicksPerSecond();
 
@@ -1199,7 +1140,7 @@ void BodyManager::ReportSimulationStats()
 			const Body *body = mBodies[id->GetIndex()];
 			const MotionProperties *mp = body->mMotionProperties;
 			const MotionProperties::SimulationStats &stats = mp->GetSimulationStats();
-			Trace("%u, %u, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %u, %u, %u",
+			Trace("%u, %u, %s, %.2f, %.2f, %.2f, %.2f, %.2f, %.2f, %u, %u, %u, %u",
 				body->GetID().GetIndex(),
 				mp->GetIslandIndexInternal(),
 				stats.mIsLargeIsland? "True" : "False",
@@ -1210,6 +1151,7 @@ void BodyManager::ReportSimulationStats()
 				double(stats.mUpdateBoundsTicks) * us_per_tick,
 				double(stats.mCCDTicks) * us_per_tick,
 				stats.mNumContactConstraints.load(memory_order_relaxed),
+				stats.mNumCollisionSteps,
 				stats.mNumVelocitySteps,
 				stats.mNumPositionSteps);
 		}

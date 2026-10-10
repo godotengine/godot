@@ -1,5 +1,3 @@
-GH-84906
---------
 Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/play/arguments/0': default_value changed value in new API, from "\"\"" to "&\"\"".
 Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/play_backwards/arguments/0': default_value changed value in new API, from "\"\"" to "&\"\"".
 Validate extension JSON: Error: Field 'classes/CodeEdit/methods/add_code_completion_option/arguments/5': default_value changed value in new API, from "0" to "null".

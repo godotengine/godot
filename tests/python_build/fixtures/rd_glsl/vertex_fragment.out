@@ -3,36 +3,17 @@
 class VertexFragmentShaderRD : public ShaderRD {
 public:
 	VertexFragmentShaderRD() {
-		static const char _vertex_code[] = {
-R"<!>(
-#version 450
-
-#VERSION_DEFINES
-
-#define M_PI 3.14159265359
-
-layout(location = 0) out vec2 uv_interp;
-
-void main() {
-	uv_interp = vec2(0, 1);
-}
-
-)<!>"
+		static const uint8_t _code_compressed[] = {
+			120, 218, 227, 82, 46, 75, 45, 42, 206, 204, 207, 83, 48, 49, 53, 224, 226, 82, 14, 115, 13, 10, 246, 244,
+			247, 139, 119, 113, 117, 243, 244, 115, 13, 6, 138, 164, 164, 166, 101, 230, 165, 42, 248, 198, 7, 120,
+			42, 24, 235, 25, 154, 24, 154, 90, 26, 153, 153, 26, 155, 90, 114, 113, 229, 36, 86, 230, 151, 150, 104,
+			228, 228, 39, 39, 150, 128, 140, 176, 85, 48, 208, 84, 0, 138, 40, 148, 165, 38, 27, 41, 148, 150, 197,
+			103, 230, 149, 164, 22, 21, 88, 115, 113, 149, 229, 103, 166, 40, 228, 38, 102, 230, 105, 104, 42, 84, 115,
+			113, 194, 165, 128, 90, 64, 106, 53, 12, 116, 20, 12, 53, 173, 185, 106, 185, 184, 24, 184, 8, 185, 8, 171,
+			173, 153, 121, 164, 91, 106, 168, 3, 212, 9, 178, 148, 1, 0, 5, 173, 76, 106
 		};
-		static const char _fragment_code[] = {
-R"<!>(
-#version 450
+		const CharString _code = _decompress_code(_code_compressed, 157, 262);
 
-#VERSION_DEFINES
-
-layout(location = 0) in vec2 uv_interp;
-
-void main() {
-	uv_interp = vec2(1, 0);
-}
-)<!>"
-		};
-		static const char *_compute_code = nullptr;
-		setup(_vertex_code, _fragment_code, _compute_code, "VertexFragmentShaderRD");
+		setup(_code.get_data() + 0, _code.get_data() + 146, nullptr, "VertexFragmentShaderRD");
 	}
 };

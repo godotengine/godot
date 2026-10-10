@@ -1,5 +1,3 @@
-GH-69988
---------
 Validate extension JSON: API was removed: classes/NavigationAgent2D/methods/get_time_horizon
 Validate extension JSON: API was removed: classes/NavigationAgent2D/methods/set_time_horizon
 Validate extension JSON: API was removed: classes/NavigationAgent2D/properties/time_horizon

@@ -1039,7 +1039,7 @@ void OpenXRSpatialAnchorCapability::remove_anchor(Ref<OpenXRAnchorTracker> p_anc
 
 	// Get our entity id.
 	XrSpatialEntityIdEXT entity_id = se_extension->get_spatial_entity_id(entity);
-	ERR_FAIL_COND(entity_id == XR_NULL_ENTITY);
+	ERR_FAIL_COND(entity_id == XR_NULL_SPATIAL_ENTITY_ID_EXT);
 
 	// Remove it from our entity list.
 	for (KeyValue<RID, HashMap<XrSpatialEntityIdEXT, Ref<OpenXRAnchorTracker>>> &anchors : anchor_trackers) {
@@ -1076,7 +1076,7 @@ Ref<OpenXRFutureResult> OpenXRSpatialAnchorCapability::persist_anchor(Ref<OpenXR
 	ERR_FAIL_COND_V(entity.is_null(), nullptr);
 
 	XrSpatialEntityIdEXT entity_id = se_extension->get_spatial_entity_id(entity);
-	ERR_FAIL_COND_V(entity_id == XR_NULL_ENTITY, nullptr);
+	ERR_FAIL_COND_V(entity_id == XR_NULL_SPATIAL_ENTITY_ID_EXT, nullptr);
 
 	RID spatial_context_rid = se_extension->get_spatial_entity_context(entity);
 	const XrSpatialContextEXT spatial_context_handle = se_extension->get_spatial_context_handle(spatial_context_rid);

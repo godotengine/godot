@@ -23,7 +23,7 @@ def pathToRootDir = "../../../../"
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-    ndkVersion versions.ndkVersion
+    ndkVersion = versions.ndkVersion
 
     defaultConfig {
         minSdkVersion versions.minSdk
@@ -55,7 +55,7 @@ android {
     }
 
     lintOptions {
-        abortOnError false
+        abortOnError = false
         disable 'MissingTranslation', 'UnusedResources'
     }
 

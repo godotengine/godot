@@ -54,6 +54,7 @@ class Shape3D : public Resource {
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	_FORCE_INLINE_ RID get_shape() const { return shape; }
 	Shape3D(RID p_shape);

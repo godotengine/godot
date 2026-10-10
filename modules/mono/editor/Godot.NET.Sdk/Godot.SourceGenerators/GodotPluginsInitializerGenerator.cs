@@ -32,13 +32,15 @@ namespace GodotPlugins.Game
         {
             try
             {
+                NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
+
+                Marshaling.Initialize();
+
                 DllImportResolver dllImportResolver = new GodotDllImportResolver(godotDllHandle).OnResolveDllImport;
 
                 var coreApiAssembly = typeof(global::Godot.GodotObject).Assembly;
 
                 NativeLibrary.SetDllImportResolver(coreApiAssembly, dllImportResolver);
-
-                NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
 
                 ManagedCallbacks.Create(outManagedCallbacks);
 

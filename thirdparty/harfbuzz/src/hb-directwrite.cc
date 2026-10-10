@@ -47,13 +47,13 @@ static struct hb_directwrite_global_lazy_loader_t : hb_lazy_loader_t<hb_directwr
 {
   static hb_directwrite_global_t * create ()
   {
-    hb_directwrite_global_t *global = new hb_directwrite_global_t;
+    hb_directwrite_global_t *global = hb_directwrite_object_create<hb_directwrite_global_t> ();
 
     if (unlikely (!global))
       return nullptr;
     if (unlikely (!global->success))
     {
-      delete global;
+      hb_directwrite_object_destroy (global);
       return nullptr;
     }
 
@@ -63,7 +63,7 @@ static struct hb_directwrite_global_lazy_loader_t : hb_lazy_loader_t<hb_directwr
   }
   static void destroy (hb_directwrite_global_t *l)
   {
-    delete l;
+    hb_directwrite_object_destroy (l);
   }
   static hb_directwrite_global_t * get_null ()
   {
@@ -116,7 +116,9 @@ dw_face_create (hb_blob_t *blob, unsigned index)
   if (unlikely (!global))
     FAIL ("Couldn't load DirectWrite!");
 
-  DWriteFontFileStream *fontFileStream = new DWriteFontFileStream (blob);
+  DWriteFontFileStream *fontFileStream = hb_directwrite_object_create<DWriteFontFileStream> (blob);
+  if (unlikely (!fontFileStream))
+    FAIL ("Failed to allocate font file stream!");
 
   IDWriteFontFile *fontFile;
   auto hr = global->dwriteFactory->CreateCustomFontFileReference (&fontFileStream->fontFileKey, sizeof (fontFileStream->fontFileKey),
@@ -168,12 +170,11 @@ _hb_directwrite_get_file_blob (IDWriteFontFace *dw_face)
   if (FAILED (dw_face->GetFiles(&file_count, NULL)))
     return nullptr;
 
-  IDWriteFontFile **files = new IDWriteFontFile*[file_count];
-  if (FAILED (dw_face->GetFiles(&file_count, files)))
-  {
-    delete [] files;
+  hb_vector_t<IDWriteFontFile *> files;
+  if (unlikely (!files.resize_exact (file_count)))
     return nullptr;
-  }
+  if (FAILED (dw_face->GetFiles(&file_count, files.arrayZ)))
+    return nullptr;
 
   hb_blob_t *blob = nullptr;
   for (UINT32 i = 0; i < file_count; i++)
@@ -209,7 +210,6 @@ _hb_directwrite_get_file_blob (IDWriteFontFace *dw_face)
     break;
   }
 
-  delete [] files;
   return blob;
 }
 
@@ -315,7 +315,7 @@ hb_directwrite_face_create_from_file_or_fail (const char   *file_name,
  * Creates an #hb_face_t face object from the specified
  * blob and face index.
  *
- * This is similar in functionality to hb_face_create_from_blob_or_fail(),
+ * This is similar in functionality to hb_face_create_or_fail(),
  * but uses the DirectWrite library for loading the font data.
  *
  * Return value: (transfer full): The new face object, or `NULL` if

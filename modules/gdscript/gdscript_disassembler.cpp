@@ -722,7 +722,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 					text += "call-method_bind ";
 				}
 
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				if (ret) {
@@ -768,7 +768,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			} break;
 			case OPCODE_CALL_NATIVE_STATIC: {
 				int instr_var_args = _code_ptr[++ip];
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 1 + instr_var_args]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 1 + instr_var_args]];
 				int argc = _code_ptr[ip + 2 + instr_var_args];
 
 				text += "call native method static ";
@@ -793,7 +793,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CALL_NATIVE_STATIC_VALIDATED_RETURN: {
 				int instr_var_args = _code_ptr[++ip];
 				text += "call native static method validated (return) ";
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(1 + argc) + " = ";
 				text += method->get_instance_class();
@@ -815,7 +815,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "call native static method validated (no return) ";
 
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
@@ -838,7 +838,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CALL_METHOD_BIND_VALIDATED_RETURN: {
 				int instr_var_args = _code_ptr[++ip];
 				text += "call method-bind validated (return) ";
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(2 + argc) + " = ";
 				text += DADDR(1 + argc) + ".";
@@ -859,7 +859,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "call method-bind validated (no return) ";
 
-				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
+				const MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 

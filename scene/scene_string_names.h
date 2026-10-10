@@ -48,6 +48,7 @@ public:
 	const StringName draw = "draw";
 	const StringName hidden = "hidden";
 	const StringName visibility_changed = "visibility_changed";
+	const StringName is_visible = "is_visible";
 
 	const StringName input_event = "input_event";
 	const StringName gui_input = "gui_input";

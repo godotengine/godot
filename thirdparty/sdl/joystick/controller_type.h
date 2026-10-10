@@ -39,6 +39,8 @@ typedef enum
 	k_eControllerType_SteamControllerV2 = 3,
 	k_eControllerType_SteamControllerNeptune = 4,
 
+	k_eControllerType_SteamControllerTriton = 10,
+
 	// Other Controllers
 	k_eControllerType_UnknownNonSteamController = 30,
 	k_eControllerType_XBox360Controller = 31,

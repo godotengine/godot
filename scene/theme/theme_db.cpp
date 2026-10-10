@@ -77,7 +77,7 @@ void ThemeDB::initialize_theme() {
 
 	Ref<Font> project_font;
 	if (!project_font_path.is_empty()) {
-		project_font = ResourceLoader::load(project_font_path);
+		project_font = ResourceLoader::load(project_font_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
 		if (project_font.is_valid()) {
 			set_fallback_font(project_font);
 		} else {
@@ -198,6 +198,19 @@ void ThemeDB::set_fallback_stylebox(const Ref<StyleBox> &p_stylebox) {
 
 Ref<StyleBox> ThemeDB::get_fallback_stylebox() {
 	return fallback_stylebox;
+}
+
+void ThemeDB::set_fallback_sound(const Ref<AudioStream> &p_sound) {
+	if (fallback_sound == p_sound) {
+		return;
+	}
+
+	fallback_sound = p_sound;
+	emit_signal(SNAME("fallback_changed"));
+}
+
+Ref<AudioStream> ThemeDB::get_fallback_sound() {
+	return fallback_sound;
 }
 
 void ThemeDB::get_native_type_dependencies(const StringName &p_base_type, Vector<StringName> &r_result) {
@@ -375,6 +388,15 @@ void ThemeDB::update_class_instance_items(Node *p_instance) {
 	}
 }
 
+void ThemeDB::get_class_list(HashSet<StringName> &r_list) const {
+	for (const KeyValue<StringName, List<ThemeDB::ThemeItemBind>> &KV : theme_item_binds_list) {
+		if (ClassDB::get_api_type(KV.key) == ClassDB::API_CORE) {
+			// Don't include editor and extension classes.
+			r_list.insert(KV.key);
+		}
+	}
+}
+
 void ThemeDB::get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited, Theme::DataType p_filter_type) {
 	List<StringName> class_hierarchy;
 	StringName class_name = p_class_name;
@@ -430,6 +452,8 @@ void ThemeDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fallback_icon"), &ThemeDB::get_fallback_icon);
 	ClassDB::bind_method(D_METHOD("set_fallback_stylebox", "stylebox"), &ThemeDB::set_fallback_stylebox);
 	ClassDB::bind_method(D_METHOD("get_fallback_stylebox"), &ThemeDB::get_fallback_stylebox);
+	ClassDB::bind_method(D_METHOD("set_fallback_sound", "audio"), &ThemeDB::set_fallback_sound);
+	ClassDB::bind_method(D_METHOD("get_fallback_sound"), &ThemeDB::get_fallback_sound);
 
 	ADD_GROUP("Fallback values", "fallback_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fallback_base_scale", PROPERTY_HINT_RANGE, "0.0,2.0,0.01,or_greater"), "set_fallback_base_scale", "get_fallback_base_scale");
@@ -437,6 +461,7 @@ void ThemeDB::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fallback_font_size", PROPERTY_HINT_RANGE, "0,256,1,or_greater,suffix:px"), "set_fallback_font_size", "get_fallback_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_icon", PROPERTY_HINT_RESOURCE_TYPE, Texture2D::get_class_static(), PROPERTY_USAGE_NONE), "set_fallback_icon", "get_fallback_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_stylebox", PROPERTY_HINT_RESOURCE_TYPE, StyleBox::get_class_static(), PROPERTY_USAGE_NONE), "set_fallback_stylebox", "get_fallback_stylebox");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_sound", PROPERTY_HINT_RESOURCE_TYPE, AudioStream::get_class_static(), PROPERTY_USAGE_NONE), "set_fallback_sound", "get_fallback_sound");
 
 	ADD_SIGNAL(MethodInfo("fallback_changed"));
 }
@@ -469,6 +494,7 @@ ThemeDB::~ThemeDB() {
 	fallback_font.unref();
 	fallback_icon.unref();
 	fallback_stylebox.unref();
+	fallback_sound.unref();
 
 	singleton = nullptr;
 }

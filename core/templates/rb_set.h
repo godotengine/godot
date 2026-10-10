@@ -35,9 +35,18 @@
 
 #include <initializer_list>
 
-// based on the very nice implementation of rb-trees by:
-// https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
-
+/**
+ * Set container using a red-black tree for lookup.
+ *
+ * Elements are ordered (using the < comparison operator).
+ * Key-Values are pointer-stable until removed.
+ *
+ * Implementation based on:
+ * https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 template <typename T, typename C = Comparator<T>, typename A = DefaultAllocator>
 class _WARN_UNUSED_ RBSet {
 	enum Color {
@@ -96,11 +105,11 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_other) const { return E == p_other.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &p_other) const { return E != p_other.E; }
 
 		explicit operator bool() const { return E != nullptr; }
-		Iterator(Element *p_E) { E = p_E; }
+		Iterator(Element *p_element) { E = p_element; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
 
@@ -122,10 +131,10 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &b) const { return E != b.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_other) const { return E == p_other.E; }
+		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_other) const { return E != p_other.E; }
 
-		_FORCE_INLINE_ ConstIterator(const Element *p_E) { E = p_E; }
+		_FORCE_INLINE_ ConstIterator(const Element *p_element) { E = p_element; }
 		_FORCE_INLINE_ ConstIterator() {}
 		_FORCE_INLINE_ ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 
@@ -534,16 +543,16 @@ private:
 		ERR_FAIL_COND(_data._nil->color == RED);
 	}
 
-	void _calculate_depth(Element *p_element, int &max_d, int d) const {
+	void _calculate_depth(Element *p_element, int &p_max_d, int p_d) const {
 		if (p_element == _data._nil) {
 			return;
 		}
 
-		_calculate_depth(p_element->left, max_d, d + 1);
-		_calculate_depth(p_element->right, max_d, d + 1);
+		_calculate_depth(p_element->left, p_max_d, p_d + 1);
+		_calculate_depth(p_element->right, p_max_d, p_d + 1);
 
-		if (d > max_d) {
-			max_d = d;
+		if (p_d > p_max_d) {
+			p_max_d = p_d;
 		}
 	}
 

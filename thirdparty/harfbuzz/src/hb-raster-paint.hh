@@ -128,7 +128,22 @@ struct hb_raster_paint_t
   /* Internal rasterizer for clip-to-glyph */
   hb_raster_draw_t *clip_rdr = nullptr;
 
+  /* Cumulative work budget for the current paint session; reset by
+   * hb_raster_paint_clear().  Bounds total pixel and outline work so
+   * that per-node costs cannot multiply with the paint-graph traversal
+   * limits of the font tables driving us (e.g. COLR). */
+  int64_t work_left = HB_RASTER_MAX_PAINT_WORK;
+
   /* Helpers */
+
+  /* Returns whether the operation should proceed.  Allows a single
+   * overshoot past zero; callers skip work once the budget is spent. */
+  bool charge_work (int64_t work)
+  {
+    if (unlikely (work_left <= 0)) return false;
+    work_left -= work;
+    return true;
+  }
 
   hb_raster_image_t *acquire_surface ()
   {

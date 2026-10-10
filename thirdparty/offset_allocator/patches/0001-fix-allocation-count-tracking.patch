@@ -1,0 +1,48 @@
+diff --git a/thirdparty/offset_allocator/offsetAllocator.cpp b/thirdparty/offset_allocator/offsetAllocator.cpp
+--- a/thirdparty/offset_allocator/offsetAllocator.cpp
++++ b/thirdparty/offset_allocator/offsetAllocator.cpp
+@@ -170,7 +170,7 @@ namespace OffsetAllocator
+     {
+         m_freeStorage = 0;
+         m_usedBinsTop = 0;
+-        m_freeOffset = m_maxAllocs - 1;
++        m_freeOffset = m_maxAllocs;
+ 
+         for (uint32 i = 0 ; i < NUM_TOP_BINS; i++)
+             m_usedBins[i] = 0;
+@@ -181,13 +181,13 @@ namespace OffsetAllocator
+         if (m_nodes) delete[] m_nodes;
+         if (m_freeNodes) delete[] m_freeNodes;
+ 
+-        m_nodes = new Node[m_maxAllocs];
+-        m_freeNodes = new NodeIndex[m_maxAllocs];
++        m_nodes = new Node[m_maxAllocs + 1];
++        m_freeNodes = new NodeIndex[m_maxAllocs + 1];
+         
+         // Freelist is a stack. Nodes in inverse order so that [0] pops first.
+-        for (uint32 i = 0; i < m_maxAllocs; i++)
++        for (uint32 i = 0; i < m_maxAllocs + 1; i++)
+         {
+-            m_freeNodes[i] = m_maxAllocs - i - 1;
++            m_freeNodes[i] = m_maxAllocs - i;
+         }
+         
+         // Start state: Whole storage as one big node
+@@ -204,7 +204,7 @@ namespace OffsetAllocator
+     Allocation Allocator::allocate(uint32 size)
+     {
+         // Out of allocations?
+-        if (m_freeOffset == 0)
++        if (m_freeOffset == Allocation::NO_SPACE)
+         {
+             return {.offset = Allocation::NO_SPACE, .metadata = Allocation::NO_SPACE};
+         }
+@@ -452,7 +452,7 @@ namespace OffsetAllocator
+         uint32 freeStorage = 0;
+         
+         // Out of allocations? -> Zero free space
+-        if (m_freeOffset > 0)
++        if ((m_nodes != nullptr) && (m_freeOffset != Allocation::NO_SPACE))
+         {
+             freeStorage = m_freeStorage;
+             if (m_usedBinsTop)

@@ -480,6 +480,7 @@ GLTFBufferViewIndex GLTFState::append_data_to_buffers(const Vector<uint8_t> &p_d
 }
 
 GLTFNodeIndex GLTFState::append_gltf_node(Ref<GLTFNode> p_gltf_node, Node *p_godot_scene_node, GLTFNodeIndex p_parent_node_index) {
+	ERR_FAIL_COND_V(p_gltf_node.is_null(), GLTFNodeIndex(0));
 	p_gltf_node->set_parent(p_parent_node_index);
 	const GLTFNodeIndex new_index = nodes.size();
 	nodes.append(p_gltf_node);

@@ -1,5 +1,3 @@
-GH-104872
----------
 Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_char/arguments': size changed value in new API, from 5 to 6.
 Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_char_outline/arguments': size changed value in new API, from 6 to 7.
 Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_multiline_string/arguments': size changed value in new API, from 12 to 13.

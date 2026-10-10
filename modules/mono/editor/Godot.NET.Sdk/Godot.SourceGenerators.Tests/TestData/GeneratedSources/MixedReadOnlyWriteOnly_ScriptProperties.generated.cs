@@ -33,45 +33,57 @@ partial class MixedReadOnlyWriteOnly
         /// </summary>
         public new static readonly global::Godot.StringName @_writeOnlyBackingField = "_writeOnlyBackingField";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
+    protected internal new static partial class GodotInternal
     {
-        if (name == PropertyName.@WriteOnlyProperty) {
-            this.@WriteOnlyProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
-            return true;
+        public static void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_ReadOnlyAutoProperty(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@ReadOnlyAutoProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static godot_variant trampoline_get_ReadOnlyProperty(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@ReadOnlyProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static godot_variant trampoline_get_InitOnlyAutoProperty(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@InitOnlyAutoProperty;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_WriteOnlyProperty(object godotObject, in godot_variant value)
+            {
+                ((global::MixedReadOnlyWriteOnly)godotObject).@WriteOnlyProperty = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+            }
+            static godot_variant trampoline_get_ReadOnlyField(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@ReadOnlyField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static godot_variant trampoline_get__writeOnlyBackingField(object godotObject)
+            {
+                var ret = ((global::MixedReadOnlyWriteOnly)godotObject).@_writeOnlyBackingField;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(ret);
+            }
+            static void trampoline_set__writeOnlyBackingField(object godotObject, in godot_variant value)
+            {
+                ((global::MixedReadOnlyWriteOnly)godotObject).@_writeOnlyBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
+            }
+            var aux_delegate_get_ReadOnlyAutoProperty = trampoline_get_ReadOnlyAutoProperty;
+            collector.TryAdd(PropertyName.@ReadOnlyAutoProperty, new(aux_delegate_get_ReadOnlyAutoProperty.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_get_ReadOnlyProperty = trampoline_get_ReadOnlyProperty;
+            collector.TryAdd(PropertyName.@ReadOnlyProperty, new(aux_delegate_get_ReadOnlyProperty.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_get_InitOnlyAutoProperty = trampoline_get_InitOnlyAutoProperty;
+            collector.TryAdd(PropertyName.@InitOnlyAutoProperty, new(aux_delegate_get_InitOnlyAutoProperty.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_set_WriteOnlyProperty = trampoline_set_WriteOnlyProperty;
+            collector.TryAdd(PropertyName.@WriteOnlyProperty, new(global::System.IntPtr.Zero), new(aux_delegate_set_WriteOnlyProperty.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get_ReadOnlyField = trampoline_get_ReadOnlyField;
+            collector.TryAdd(PropertyName.@ReadOnlyField, new(aux_delegate_get_ReadOnlyField.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_get__writeOnlyBackingField = trampoline_get__writeOnlyBackingField;
+            var aux_delegate_set__writeOnlyBackingField = trampoline_set__writeOnlyBackingField;
+            collector.TryAdd(PropertyName.@_writeOnlyBackingField, new(aux_delegate_get__writeOnlyBackingField.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set__writeOnlyBackingField.Method.MethodHandle.GetFunctionPointer()));
         }
-        if (name == PropertyName.@_writeOnlyBackingField) {
-            this.@_writeOnlyBackingField = global::Godot.NativeInterop.VariantUtils.ConvertTo<bool>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
-    {
-        if (name == PropertyName.@ReadOnlyAutoProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyAutoProperty);
-            return true;
-        }
-        if (name == PropertyName.@ReadOnlyProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyProperty);
-            return true;
-        }
-        if (name == PropertyName.@InitOnlyAutoProperty) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@InitOnlyAutoProperty);
-            return true;
-        }
-        if (name == PropertyName.@ReadOnlyField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@ReadOnlyField);
-            return true;
-        }
-        if (name == PropertyName.@_writeOnlyBackingField) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<bool>(this.@_writeOnlyBackingField);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.

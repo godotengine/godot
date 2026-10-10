@@ -52,6 +52,13 @@
 				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
 			</description>
 		</method>
+		<method name="set_include_path">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Sets the include path for this shader. Used only if the shader does not have a resource path set, for example when created by code.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="code" type="String" setter="set_code" getter="get_code" default="&quot;&quot;">

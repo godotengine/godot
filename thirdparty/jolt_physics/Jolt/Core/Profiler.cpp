@@ -8,9 +8,11 @@
 #include <Jolt/Core/Color.h>
 #include <Jolt/Core/StringTools.h>
 #include <Jolt/Core/QuickSort.h>
+#include <Jolt/Core/UnorderedMap.h>
 
 JPH_SUPPRESS_WARNINGS_STD_BEGIN
 #include <fstream>
+#include <chrono>
 JPH_SUPPRESS_WARNINGS_STD_END
 
 JPH_NAMESPACE_BEGIN
@@ -49,15 +51,15 @@ bool ProfileMeasurement::sOutOfSamplesReported = false;
 void Profiler::UpdateReferenceTime()
 {
 	mReferenceTick = GetProcessorTickCount();
-	mReferenceTime = std::chrono::high_resolution_clock::now();
+	mReferenceTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 }
 
 uint64 Profiler::GetProcessorTicksPerSecond() const
 {
 	uint64 ticks = GetProcessorTickCount();
-	std::chrono::high_resolution_clock::time_point time = std::chrono::high_resolution_clock::now();
+	uint64 micros = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 
-	return (ticks - mReferenceTick) * 1000000000ULL / std::chrono::duration_cast<std::chrono::nanoseconds>(time - mReferenceTime).count();
+	return (ticks - mReferenceTick) * 1000000ULL / (micros - mReferenceTime);
 }
 
 // This function assumes that none of the threads are active while we're dumping the profile,

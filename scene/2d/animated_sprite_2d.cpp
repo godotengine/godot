@@ -36,7 +36,7 @@
 #include "scene/main/viewport.h"
 #include "servers/display/accessibility_server.h"
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Dictionary AnimatedSprite2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = offset;
@@ -60,9 +60,7 @@ Point2 AnimatedSprite2D::_edit_get_pivot() const {
 bool AnimatedSprite2D::_edit_use_pivot() const {
 	return true;
 }
-#endif // TOOLS_ENABLED
 
-#ifdef DEBUG_ENABLED
 Rect2 AnimatedSprite2D::_edit_get_rect() const {
 	return _get_rect();
 }
@@ -688,7 +686,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_looped"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, SpriteFrames::get_class_static()), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, SpriteFrames::get_class_static(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, ""), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");

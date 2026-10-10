@@ -32,6 +32,7 @@
 
 #include "core/math/math_funcs.h"
 #include "core/object/class_db.h"
+#include "servers/audio/audio_server.h"
 
 Ref<AudioStreamPlayback> AudioStreamPlaylist::instantiate_playback() {
 	Ref<AudioStreamPlaybackPlaylist> playback_playlist;
@@ -321,8 +322,10 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 					}
 					fade_index = -1;
 				} else {
-					// Move current mixed data to fade buffer.
-					for (int j = i; j < to_mix; j++) {
+					// Index i was already mixed but will be accessed later already, so set it to 0.
+					fade_buffer[i] = AudioFrame(0.0, 0.0);
+					// Move remaining mixed data to fade buffer.
+					for (int j = i + 1; j < to_mix; j++) {
 						fade_buffer[j] = mix_buffer[j];
 					}
 

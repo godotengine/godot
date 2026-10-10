@@ -41,8 +41,8 @@ public:
 	I begin() { return _begin; }
 	I end() { return _end; }
 
-	Iterable(I &&begin, I &&end) :
-			_begin(std::move(begin)), _end(std::move(end)) {}
-	Iterable(const I &begin, const I &end) :
-			_begin(begin), _end(end) {}
+	Iterable(I &&p_begin, I &&p_end) :
+			_begin(std::move(p_begin)), _end(std::move(p_end)) {}
+	Iterable(const I &p_begin, const I &p_end) :
+			_begin(p_begin), _end(p_end) {}
 };

@@ -331,7 +331,7 @@ B.  sqrt(x) by Reciproot Iteration
 
 	Let x0 and x1 be the leading and the trailing 32-bit words of
 	a floating point number x (in IEEE double format) respectively
-	(see section A). By performing shifs and subtracts on x0 and y0,
+	(see section A). By performing shifts and subtracts on x0 and y0,
 	we obtain a 7.8-bit approximation of 1/sqrt(x) as follows.
 
 	    k := 0x5fe80000 - (x0>>1);

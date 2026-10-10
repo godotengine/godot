@@ -167,7 +167,7 @@ void SceneCache::unload(const String &p_script_path) {
 	if (!cache.has(p_script_path)) {
 		return;
 	}
-	memdelete_notnull(cache[p_script_path]);
+	memdelete(cache[p_script_path]);
 	cache.erase(p_script_path);
 	LOG_LSP("Cache cleared for path:", p_script_path);
 }
@@ -179,7 +179,7 @@ void SceneCache::clear() {
 	}
 	script_path_queue.clear();
 	for (const KeyValue<String, Node *> &E : cache) {
-		memdelete_notnull(E.value);
+		memdelete(E.value);
 	}
 	cache.clear();
 	LOG_LSP("Cache cleared.");

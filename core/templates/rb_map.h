@@ -36,9 +36,18 @@
 
 #include <initializer_list>
 
-// based on the very nice implementation of rb-trees by:
-// https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
-
+/**
+ * Key-value container (aka dictionary) using a red-black tree for lookup.
+ *
+ * Elements are ordered by key (using the < comparison operator).
+ * Key-Values are pointer-stable until removed.
+ *
+ * Implementation based on:
+ * https://web.archive.org/web/20120507164830/https://web.mit.edu/~emin/www/source_code/red_black_tree/index.html
+ *
+ * Core container guidance:
+ * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
+ */
 template <typename K, typename V, typename C = Comparator<K>, typename A = DefaultAllocator>
 class _WARN_UNUSED_ RBMap {
 	enum Color {
@@ -122,7 +131,7 @@ public:
 			E = p_it.E;
 			return *this;
 		}
-		Iterator(Element *p_E) { E = p_E; }
+		Iterator(Element *p_element) { E = p_element; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
 
@@ -154,7 +163,7 @@ public:
 			E = p_it.E;
 			return *this;
 		}
-		ConstIterator(const Element *p_E) { E = p_E; }
+		ConstIterator(const Element *p_element) { E = p_element; }
 		ConstIterator() {}
 		ConstIterator(const ConstIterator &p_it) { E = p_it.E; }
 
@@ -583,16 +592,16 @@ private:
 		ERR_FAIL_COND(_data._nil->color == RED);
 	}
 
-	void _calculate_depth(Element *p_element, int &max_d, int d) const {
+	void _calculate_depth(Element *p_element, int &p_max_d, int p_d) const {
 		if (p_element == _data._nil) {
 			return;
 		}
 
-		_calculate_depth(p_element->left, max_d, d + 1);
-		_calculate_depth(p_element->right, max_d, d + 1);
+		_calculate_depth(p_element->left, p_max_d, p_d + 1);
+		_calculate_depth(p_element->right, p_max_d, p_d + 1);
 
-		if (d > max_d) {
-			max_d = d;
+		if (p_d > p_max_d) {
+			p_max_d = p_d;
 		}
 	}
 

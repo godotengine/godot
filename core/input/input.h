@@ -124,6 +124,8 @@ private:
 	Vector3 magnetometer;
 	bool gyroscope_enabled = false;
 	Vector3 gyroscope;
+	bool device_orientation_enabled = false;
+	Quaternion device_orientation;
 	Vector2 mouse_pos;
 	int64_t mouse_window = 0;
 	bool legacy_just_pressed_behavior = false;
@@ -181,6 +183,7 @@ private:
 		bool sensors_enabled : 1;
 		bool calibrating : 1;
 		bool calibrated : 1;
+		bool auto_calibration_enabled : 1;
 		float sensor_data_rate = 0.0f;
 		uint64_t last_timestamp = 0;
 		GamepadMotion *gamepad_motion = nullptr;
@@ -189,6 +192,7 @@ private:
 			sensors_enabled = false;
 			calibrating = false;
 			calibrated = false;
+			auto_calibration_enabled = true;
 		}
 	};
 
@@ -306,11 +310,11 @@ private:
 
 	void _set_joypad_mapping(Joypad &p_js, int p_map_index);
 
-	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button);
-	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range);
-	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
-	JoyButton _get_output_button(const String &output);
-	JoyAxis _get_output_axis(const String &output);
+	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &p_mapping, JoyButton p_button);
+	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &p_mapping, JoyAxis p_axis, float p_value, JoyAxisRange &r_range);
+	void _get_mapped_hat_events(const JoyDeviceMapping &p_mapping, HatDir p_hat, JoyEvent r_events[(size_t)HatDir::MAX]);
+	JoyButton _get_output_button(const String &p_output);
+	JoyAxis _get_output_axis(const String &p_output);
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
 	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
 	void _update_action_cache(const StringName &p_action_name, ActionState &r_action_state);
@@ -375,8 +379,8 @@ public:
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_pressed(const StringName &p_action, bool p_exact = false) const;
 	bool is_action_just_released(const StringName &p_action, bool p_exact = false) const;
-	bool is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact = false) const;
-	bool is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> rp_event, bool p_exact = false) const;
+	bool is_action_just_pressed_by_event(const StringName &p_action, RequiredParam<InputEvent> p_event, bool p_exact = false) const;
+	bool is_action_just_released_by_event(const StringName &p_action, RequiredParam<InputEvent> p_event, bool p_exact = false) const;
 	float get_action_strength(const StringName &p_action, bool p_exact = false) const;
 	float get_action_raw_strength(const StringName &p_action, bool p_exact = false) const;
 
@@ -398,6 +402,7 @@ public:
 	Vector3 get_accelerometer() const;
 	Vector3 get_magnetometer() const;
 	Vector3 get_gyroscope() const;
+	Quaternion get_device_orientation() const;
 
 	int get_joy_num_touchpads(int p_device) const;
 
@@ -409,12 +414,13 @@ public:
 	void warp_mouse(const Vector2 &p_position);
 	Point2 warp_mouse_motion(const Ref<InputEventMouseMotion> &p_motion, const Rect2 &p_rect);
 
-	void parse_input_event(RequiredParam<InputEvent> rp_event);
+	void parse_input_event(RequiredParam<InputEvent> p_event);
 
 	void set_gravity(const Vector3 &p_gravity);
 	void set_accelerometer(const Vector3 &p_accel);
 	void set_magnetometer(const Vector3 &p_magnetometer);
 	void set_gyroscope(const Vector3 &p_gyroscope);
+	void set_device_orientation(const Quaternion &p_orientation);
 	void set_joy_axis(int p_device, JoyAxis p_axis, float p_value);
 
 	void set_joy_features(int p_device, JoypadFeatures *p_features);
@@ -441,6 +447,9 @@ public:
 
 	bool is_joy_motion_sensors_calibrating(int p_device) const;
 	bool is_joy_motion_sensors_calibrated(int p_device) const;
+
+	void set_joy_motion_sensors_auto_calibration_enabled(int p_device, bool p_enable);
+	bool is_joy_motion_sensors_auto_calibration_enabled(int p_device) const;
 
 	void set_joy_motion_sensors_rate(int p_device, float p_rate);
 

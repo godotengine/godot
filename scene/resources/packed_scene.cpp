@@ -40,11 +40,14 @@
 #include "core/templates/local_vector.h"
 #include "core/variant/callable_bind.h"
 #include "core/variant/container_type_validate.h"
-#include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
+
+#ifndef _2D_DISABLED
+#include "scene/2d/node_2d.h"
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
@@ -103,10 +106,7 @@ Variant SceneState::_duplicate_recursive(const Variant &p_variant, HashMap<Node 
 				has_fallback = false;
 				if (fallback.is_typed()) {
 					const ContainerType &fallback_type = fallback.get_element_type();
-					has_fallback =
-							scr_type.builtin_type == fallback_type.builtin_type &&
-							scr_type.class_name == fallback_type.class_name &&
-							scr_type.script == fallback_type.script;
+					has_fallback = scr_type == fallback_type;
 				}
 			}
 			dst.resize(src.size());
@@ -126,16 +126,10 @@ Variant SceneState::_duplicate_recursive(const Variant &p_variant, HashMap<Node 
 			bool has_fallback = true;
 			Dictionary dst;
 			if (src.is_typed()) {
-				dst.set_typed(src.get_typed_key_builtin(), src.get_typed_key_class_name(), src.get_typed_key_script(), src.get_typed_value_builtin(), src.get_typed_value_class_name(), src.get_typed_value_script());
+				dst.set_typed(src.get_key_type(), src.get_value_type());
 				has_fallback = false;
 				if (fallback.is_typed()) {
-					has_fallback =
-							src.get_typed_key_builtin() == fallback.get_typed_key_builtin() &&
-							src.get_typed_key_class_name() == fallback.get_typed_key_class_name() &&
-							src.get_typed_key_script() == fallback.get_typed_key_script() &&
-							src.get_typed_value_builtin() == fallback.get_typed_value_builtin() &&
-							src.get_typed_value_class_name() == fallback.get_typed_value_class_name() &&
-							src.get_typed_value_script() == fallback.get_typed_value_script();
+					has_fallback = src.get_key_type() == fallback.get_key_type() && src.get_value_type() == fallback.get_value_type();
 				}
 			}
 
@@ -226,6 +220,10 @@ static Node *_find_node_by_id(Node *p_owner, Node *p_node, int32_t p_id) {
 }
 
 Node *SceneState::instantiate(GenEditState p_edit_state) const {
+	return _instantiate(p_edit_state, nullptr);
+}
+
+Node *SceneState::_instantiate(GenEditState p_edit_state, LocalVector<DeferredNodePathProperties> *r_parent_deferred_node_paths) const {
 	// Nodes where instantiation failed (because something is missing.)
 	List<Node *> stray_instances;
 
@@ -303,7 +301,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			// Scene inheritance on root node.
 			Ref<PackedScene> sdata = props[base_scene_idx];
 			ERR_FAIL_COND_V(sdata.is_null(), nullptr);
-			node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
+			node = sdata->_instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE, &deferred_node_paths); // Only main gets main edit state.
 			ERR_FAIL_NULL_V(node, nullptr);
 			if (p_edit_state != GEN_EDIT_STATE_DISABLED) {
 				node->set_scene_inherited_state(sdata->get_state());
@@ -409,8 +407,10 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					if (n.parent >= 0 && n.parent < nc && ret_nodes[n.parent]) {
 						if (Object::cast_to<Control>(ret_nodes[n.parent])) {
 							obj = memnew(Control);
+#ifndef _2D_DISABLED
 						} else if (Object::cast_to<Node2D>(ret_nodes[n.parent])) {
 							obj = memnew(Node2D);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 						} else if (Object::cast_to<Node3D>(ret_nodes[n.parent])) {
 							obj = memnew(Node3D);
@@ -530,7 +530,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								if (set_array.is_same_typed(get_array)) {
 									set_array = set_array.duplicate();
 								} else {
-									set_array = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+									set_array = Array(set_array, get_array.get_element_type());
 								}
 							}
 
@@ -547,7 +547,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 								if (set_dict.is_same_typed(get_dict)) {
 									set_dict = set_dict.duplicate();
 								} else {
-									set_dict = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(), get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
+									set_dict = Dictionary(set_dict, get_dict.get_key_type(), get_dict.get_value_type());
 								}
 							}
 
@@ -667,49 +667,57 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 	}
 
-	for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
-		// Replace properties stored as NodePaths with actual Nodes.
-		Node *base = ObjectDB::get_instance<Node>(dnp.base);
-		ERR_CONTINUE_EDMSG(!base, vformat("Failed to set deferred property '%s' as the base node disappeared.", dnp.property));
-		if (dnp.value.get_type() == Variant::ARRAY) {
-			Array paths = dnp.value;
+	if (r_parent_deferred_node_paths != nullptr) {
+		// Bubble deferred paths to the caller to be resolved after
+		// all nodes in scene inheritance have been instantiated.
+		for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
+			r_parent_deferred_node_paths->push_back(dnp);
+		}
+	} else {
+		for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
+			// Replace properties stored as NodePaths with actual Nodes.
+			Node *base = ObjectDB::get_instance<Node>(dnp.base);
+			ERR_CONTINUE_EDMSG(!base, vformat("Failed to set deferred property '%s' as the base node disappeared.", dnp.property));
+			if (dnp.value.get_type() == Variant::ARRAY) {
+				Array paths = dnp.value;
 
-			bool valid;
-			Array array = base->get(dnp.property, &valid);
-			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
-			array = array.duplicate();
+				bool valid;
+				Array array = base->get(dnp.property, &valid);
+				ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
+				array = array.duplicate();
 
-			array.resize(paths.size());
-			for (int i = 0; i < array.size(); i++) {
-				array.set(i, base->get_node_or_null(paths[i]));
-			}
-			base->set(dnp.property, array);
-		} else if (dnp.value.get_type() == Variant::DICTIONARY) {
-			Dictionary paths = dnp.value;
-
-			bool valid;
-			Dictionary dict = base->get(dnp.property, &valid);
-			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
-			dict = dict.duplicate();
-			bool convert_key = dict.get_typed_key_builtin() == Variant::OBJECT &&
-					ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
-			bool convert_value = dict.get_typed_value_builtin() == Variant::OBJECT &&
-					ClassDB::is_parent_class(dict.get_typed_value_class_name(), "Node");
-
-			for (const KeyValue<Variant, Variant> &kv : paths) {
-				Variant key = kv.key;
-				if (convert_key) {
-					key = base->get_node_or_null(key);
+				array.resize(paths.size());
+				for (int i = 0; i < array.size(); i++) {
+					array.set(i, base->get_node_or_null(paths[i]));
 				}
-				Variant value = kv.value;
-				if (convert_value) {
-					value = base->get_node_or_null(value);
+				base->set(dnp.property, array);
+			} else if (dnp.value.get_type() == Variant::DICTIONARY) {
+				Dictionary paths = dnp.value;
+
+				bool valid;
+				Dictionary dict = base->get(dnp.property, &valid);
+				ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
+				dict = dict.duplicate();
+				bool convert_key = dict.get_typed_key_builtin() == Variant::OBJECT &&
+						ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
+				bool convert_value = dict.get_typed_value_builtin() == Variant::OBJECT &&
+						ClassDB::is_parent_class(dict.get_typed_value_class_name(), "Node");
+
+				for (const KeyValue<Variant, Variant> &kv : paths) {
+					Variant key = kv.key;
+					if (convert_key) {
+						key = base->get_node_or_null(key);
+					}
+					Variant value = kv.value;
+					if (convert_value) {
+						value = base->get_node_or_null(value);
+					}
+					dict[key] = value;
 				}
-				dict[key] = value;
+				base->set(dnp.property, dict);
+			} else {
+				base->set(dnp.property, base->get_node_or_null(dnp.value));
 			}
-			base->set(dnp.property, dict);
-		} else {
-			base->set(dnp.property, base->get_node_or_null(dnp.value));
 		}
 	}
 
@@ -1201,10 +1209,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		Error err = _parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map, ids_saved);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_parse_node(p_owner, c, parent_node, name_map, variant_map, node_map, nodepath_map, ids_saved));
 	}
 
 	return OK;
@@ -1404,10 +1409,7 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 	// Recursively parse child connections.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *child = p_node->get_child(i);
-		Error err = _parse_connections(p_owner, child, name_map, variant_map, node_map, nodepath_map);
-		if (err) {
-			return err;
-		}
+		RETURN_IF_ERROR(_parse_connections(p_owner, child, name_map, variant_map, node_map, nodepath_map));
 	}
 
 	return OK;
@@ -2578,11 +2580,15 @@ bool PackedScene::can_instantiate() const {
 }
 
 Node *PackedScene::instantiate(GenEditState p_edit_state) const {
+	return _instantiate(p_edit_state, nullptr);
+}
+
+Node *PackedScene::_instantiate(GenEditState p_edit_state, LocalVector<SceneState::DeferredNodePathProperties> *r_parent_deferred_node_paths) const {
 #ifndef TOOLS_ENABLED
 	ERR_FAIL_COND_V_MSG(p_edit_state != GEN_EDIT_STATE_DISABLED, nullptr, "Edit state is only for editors, does not work without tools compiled.");
 #endif
 
-	Node *s = state->instantiate((SceneState::GenEditState)p_edit_state);
+	Node *s = state->_instantiate((SceneState::GenEditState)p_edit_state, r_parent_deferred_node_paths);
 	if (!s) {
 		return nullptr;
 	}

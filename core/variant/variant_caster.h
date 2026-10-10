@@ -56,7 +56,7 @@ struct VariantCaster {
 		if constexpr (std::is_base_of_v<Object, TStripped>) {
 			return Object::cast_to<TStripped>(p_variant);
 		} else {
-			return p_variant;
+			return p_variant.to<T>();
 		}
 	}
 };
@@ -68,7 +68,7 @@ struct VariantCaster<T &> {
 		if constexpr (std::is_base_of_v<Object, TStripped>) {
 			return Object::cast_to<TStripped>(p_variant);
 		} else {
-			return p_variant;
+			return p_variant.to<T>();
 		}
 	}
 };
@@ -80,7 +80,7 @@ struct VariantCaster<const T &> {
 		if constexpr (std::is_base_of_v<Object, TStripped>) {
 			return Object::cast_to<TStripped>(p_variant);
 		} else {
-			return p_variant;
+			return p_variant.to<T>();
 		}
 	}
 };

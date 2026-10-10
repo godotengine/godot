@@ -47,6 +47,8 @@
 		<string>arm64</string>
 		<string>x86_64</string>
 	</array>
+	<key>LSMinimumSystemVersion</key>
+	<string>11.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
 		<key>arm64</key>

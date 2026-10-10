@@ -60,6 +60,7 @@ private:
 	String requested_reference_space_types;
 	String reference_space_type;
 	String enabled_features;
+	bool disable_webxr_layers = false;
 
 	XRInterface::EnvironmentBlendMode environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
 
@@ -106,6 +107,8 @@ public:
 	virtual String get_requested_reference_space_types() const override;
 	virtual String get_reference_space_type() const override;
 	virtual String get_enabled_features() const override;
+	virtual void set_disable_webxr_layers(bool p_disable_webxr_layers) override;
+	virtual bool get_disable_webxr_layers() const override;
 	virtual bool is_input_source_active(int p_input_source_id) const override;
 	virtual Ref<XRControllerTracker> get_input_source_tracker(int p_input_source_id) const override;
 	virtual TargetRayMode get_input_source_target_ray_mode(int p_input_source_id) const override;
@@ -131,8 +134,12 @@ public:
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;
+	virtual TypedArray<Projection> get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) override;
+	virtual TypedArray<Transform3D> get_camera_offsets(const StringName &p_tracker_name) override;
+#ifndef DISABLE_DEPRECATED
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) override;
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) override;
+#endif
 	virtual bool pre_draw_viewport(RID p_render_target) override;
 	virtual Vector<RenderingServerTypes::BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual RID get_color_texture() override;

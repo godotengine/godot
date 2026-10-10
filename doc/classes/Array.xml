@@ -166,10 +166,10 @@
 	<methods>
 		<method name="all" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="method" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
 				Calls the given [Callable] on each element in the array and returns [code]true[/code] if the [Callable] returns [code]true[/code] for [i]all[/i] elements in the array. If the [Callable] returns [code]false[/code] for one array element or more, this method returns [code]false[/code].
-				The [param method] should take one [Variant] parameter (the current array element) and return a [bool].
+				The [param callable] should take one [Variant] parameter (the current array element) and return a [bool].
 				[codeblocks]
 				[gdscript]
 				func greater_than_5(number):
@@ -213,10 +213,10 @@
 		</method>
 		<method name="any" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="method" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
 				Calls the given [Callable] on each element in the array and returns [code]true[/code] if the [Callable] returns [code]true[/code] for [i]one or more[/i] elements in the array. If the [Callable] returns [code]false[/code] for all elements in the array, this method returns [code]false[/code].
-				The [param method] should take one [Variant] parameter (the current array element) and return a [bool].
+				The [param callable] should take one [Variant] parameter (the current array element) and return a [bool].
 				[codeblock]
 				func greater_than_5(number):
 					return number &gt; 5
@@ -387,10 +387,10 @@
 		</method>
 		<method name="filter" qualifiers="const">
 			<return type="Array" />
-			<param index="0" name="method" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
 				Calls the given [Callable] on each element in the array and returns a new, filtered [Array].
-				The [param method] receives one of the array elements as an argument, and should return [code]true[/code] to add the element to the filtered array, or [code]false[/code] to exclude it.
+				The [param callable] receives one of the array elements as an argument, and should return [code]true[/code] to add the element to the filtered array, or [code]false[/code] to exclude it.
 				[codeblock]
 				func is_even(number):
 					return number % 2 == 0
@@ -416,12 +416,12 @@
 		</method>
 		<method name="find_custom" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="method" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<param index="1" name="from" type="int" default="0" />
 			<description>
-				Returns the index of the [b]first[/b] element in the array that causes [param method] to return [code]true[/code], or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the end of the array.
-				[param method] is a callable that takes an element of the array, and returns a [bool].
-				[b]Note:[/b] If you just want to know whether the array contains [i]anything[/i] that satisfies [param method], use [method any].
+				Returns the index of the [b]first[/b] element in the array that causes [param callable] to return [code]true[/code], or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the end of the array.
+				[param callable] takes an element of the array and returns a [bool].
+				[b]Note:[/b] If you just want to know whether the array contains [i]anything[/i] that satisfies [param callable], use [method any].
 				[codeblocks]
 				[gdscript]
 				func is_even(number):
@@ -559,10 +559,10 @@
 		</method>
 		<method name="map" qualifiers="const">
 			<return type="Array" />
-			<param index="0" name="method" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
-				Calls the given [Callable] for each element in the array and returns a new array filled with values returned by the [param method].
-				The [param method] should take one [Variant] parameter (the current array element) and can return any [Variant].
+				Calls the given [Callable] for each element in the array and returns a new array filled with values returned by the [param callable].
+				The [param callable] should take one [Variant] parameter (the current array element) and can return any [Variant].
 				[codeblock]
 				func double(number):
 					return number * 2
@@ -644,11 +644,11 @@
 		</method>
 		<method name="reduce" qualifiers="const">
 			<return type="Variant" />
-			<param index="0" name="method" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<param index="1" name="accum" type="Variant" default="null" />
 			<description>
 				Calls the given [Callable] for each element in array, accumulates the result in [param accum], then returns it.
-				The [param method] takes two arguments: the current value of [param accum] and the current array element. If [param accum] is [code]null[/code] (as by default), the iteration will start from the second element, with the first one used as initial value of [param accum].
+				The [param callable] takes two arguments: the current value of [param accum] and the current array element. If [param accum] is [code]null[/code] (as by default), the iteration will start from the second element, with the first one used as initial value of [param accum].
 				[codeblock]
 				func sum(accum, number):
 					return accum + number
@@ -719,10 +719,10 @@
 		</method>
 		<method name="rfind_custom" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="method" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
-				Returns the index of the [b]last[/b] element of the array that causes [param method] to return [code]true[/code], or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the array. This method is the reverse of [method find_custom].
+				Returns the index of the [b]last[/b] element of the array that causes [param callable] to return [code]true[/code], or [code]-1[/code] if there are none. The search's start can be specified with [param from], continuing to the beginning of the array. This method is the reverse of [method find_custom].
 			</description>
 		</method>
 		<method name="set">

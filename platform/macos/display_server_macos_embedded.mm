@@ -413,7 +413,7 @@ bool DisplayServerMacOSEmbedded::has_feature(DisplayServerEnums::Feature p_featu
 		case DisplayServerEnums::FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case DisplayServerEnums::FEATURE_HIDPI:
 			// case DisplayServerEnums::FEATURE_ICON:
-			// case DisplayServerEnums::FEATURE_MOUSE:
+		case DisplayServerEnums::FEATURE_MOUSE:
 		case DisplayServerEnums::FEATURE_HDR_OUTPUT:
 		case DisplayServerEnums::FEATURE_MOUSE_WARP:
 			// case DisplayServerEnums::FEATURE_NATIVE_DIALOG:
@@ -425,6 +425,7 @@ bool DisplayServerMacOSEmbedded::has_feature(DisplayServerEnums::Feature p_featu
 			// case DisplayServerEnums::FEATURE_VIRTUAL_KEYBOARD:
 		case DisplayServerEnums::FEATURE_TEXT_TO_SPEECH:
 			// case DisplayServerEnums::FEATURE_TOUCHSCREEN:
+		case DisplayServerEnums::FEATURE_EMBEDDED:
 			return true;
 		default:
 			return false;

@@ -31,6 +31,7 @@
 #pragma once
 
 #include "editor/asset_library/editor_asset_installer.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/grid_container.h"
@@ -60,6 +61,7 @@ class EditorAssetLibraryItem : public MarginContainer {
 	MarginContainer *margin = nullptr;
 	Button *button = nullptr;
 	TextureRect *icon = nullptr;
+	MarginContainer *text_margin = nullptr;
 	Label *title = nullptr;
 	LinkButton *author = nullptr;
 	TextureRect *verified = nullptr;
@@ -122,6 +124,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	Label *version_label = nullptr;
 	Label *version = nullptr;
 	OptionButton *version_list = nullptr;
+	TextureRect *compat_warning = nullptr;
 	Button *store = nullptr;
 	Button *source = nullptr;
 	VBoxContainer *desc_vbox = nullptr;
@@ -154,6 +157,9 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	struct Release {
 		String url;
 		String version;
+		String changes;
+		String compat_min;
+		String compat_max;
 		String sha256;
 	};
 
@@ -192,7 +198,7 @@ protected:
 public:
 	void configure(const String &p_title, const String &p_asset_id, const String &p_author, const String &p_author_id, bool p_verified, const String &p_license_type, const String &p_license_url, int p_rating, const String &p_description, const HashMap<String, String> &p_tags, const String &p_store_url, const String &p_source_url);
 	void set_install_mode(InstallMode p_mode);
-	void add_release(const String &p_url, const String &p_version, const String &p_changes, const String &p_sha256);
+	void add_release(const String &p_url, const String &p_version, const String &p_changes, const String &p_compat_min, const String &p_compat_max, const String &p_sha256);
 	void add_preview(int p_id, bool p_video = false, const String &p_url = "", const String &p_thumbnail = "");
 	void preview_click(int p_id);
 
@@ -248,8 +254,8 @@ public:
 	EditorAssetLibraryItemDownload();
 };
 
-class EditorAssetLibrary : public PanelContainer {
-	GDCLASS(EditorAssetLibrary, PanelContainer);
+class EditorAssetLibrary : public EditorDock {
+	GDCLASS(EditorAssetLibrary, EditorDock);
 
 	String host;
 
@@ -259,6 +265,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _asset_open();
 	void _asset_file_selected(const String &p_file);
 	void _update_repository_options();
+	void _update_margins();
 
 	MarginContainer *library_mc = nullptr;
 	ScrollContainer *library_scroll = nullptr;
@@ -315,7 +322,7 @@ class EditorAssetLibrary : public PanelContainer {
 	static const char *sort_key[SORT_MAX];
 	static const char *sort_text[SORT_MAX];
 
-	constexpr static Size2 THUMBNAIL_SIZE = Size2(114, 64);
+	constexpr static Size2 THUMBNAIL_SIZE = Size2(160, 90);
 
 	enum ImageType {
 		IMAGE_QUEUE_THUMBNAIL,
@@ -399,6 +406,7 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+	virtual void update_layout(EditorDock::DockLayout p_layout, int p_slot) override;
 
 public:
 	EditorAssetLibrary(bool p_templates_only = false);
@@ -407,14 +415,13 @@ public:
 class AssetLibraryEditorPlugin : public EditorPlugin {
 	GDCLASS(AssetLibraryEditorPlugin, EditorPlugin);
 
-	EditorAssetLibrary *addon_library = nullptr;
+	static inline EditorAssetLibrary *addon_library = nullptr;
 
 public:
 	static bool is_available();
+	static EditorAssetLibrary *get_library() { return addon_library; }
 
-	virtual String get_plugin_name() const override { return TTRC("Asset Store"); }
-	virtual const Ref<Texture2D> get_plugin_icon() const override;
-	bool has_main_screen() const override { return true; }
+	virtual String get_plugin_name() const override { return "Asset Store"; }
 	virtual void edit(Object *p_object) override {}
 	virtual bool handles(Object *p_object) const override { return false; }
 	virtual void make_visible(bool p_visible) override;

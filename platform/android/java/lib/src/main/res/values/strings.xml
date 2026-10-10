@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="godot_project_name_string">godot-project-name</string>
     <string name="text_error_title">Error!</string>
     <string name="error_engine_setup_message">Unable to set up the Godot Engine! Aborting…</string>
     <string name="error_missing_vulkan_requirements_message">Warning - this device does not meet the requirements for Vulkan support</string>

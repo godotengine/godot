@@ -30,7 +30,6 @@
 
 #include "audio_effect_compressor.h"
 
-#include "core/config/engine.h"
 #include "core/object/class_db.h"
 #include "servers/audio/audio_server.h"
 
@@ -187,21 +186,6 @@ StringName AudioEffectCompressor::get_sidechain() const {
 	return sidechain;
 }
 
-void AudioEffectCompressor::_validate_property(PropertyInfo &p_property) const {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-	if (p_property.name == "sidechain") {
-		String buses = "";
-		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
-			buses += ",";
-			buses += AudioServer::get_singleton()->get_bus_name(i);
-		}
-
-		p_property.hint_string = buses;
-	}
-}
-
 void AudioEffectCompressor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_threshold", "threshold"), &AudioEffectCompressor::set_threshold);
 	ClassDB::bind_method(D_METHOD("get_threshold"), &AudioEffectCompressor::get_threshold);
@@ -230,7 +214,7 @@ void AudioEffectCompressor::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "attack_us", PROPERTY_HINT_RANGE, U"20,2000,1,suffix:\u00B5s"), "set_attack_us", "get_attack_us");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "release_ms", PROPERTY_HINT_RANGE, "20,2000,1,suffix:ms"), "set_release_ms", "get_release_ms");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_mix", "get_mix");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "sidechain", PROPERTY_HINT_ENUM), "set_sidechain", "get_sidechain");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "sidechain", PROPERTY_HINT_AUDIO_BUS), "set_sidechain", "get_sidechain");
 }
 
 AudioEffectCompressor::AudioEffectCompressor() {
