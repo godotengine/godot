@@ -30,6 +30,7 @@
 
 #include "../as_engine.h"
 #include "../binding/as_binding_decl.h"
+#include "../binding/as_binding_native_value_ops.h"
 #include "../binding/as_binding_object.h"
 #include "../binding/as_binding_plan.h"
 #include "../binding/as_binding_value_types.h"
@@ -309,4 +310,26 @@ void as_binding_object_enums_and_constants() {
 		return;
 	}
 	CHECK(nearly(out, 1.0)); // ClassDB 枚举（名带点号需净化）+ BIND_CONSTANT 全局常量。
+}
+
+void as_binding_object_native_hot_method() {
+#if AS_NATIVE_VALUE_OPS_ENABLED
+	// Node::get_child_count 是 P1 热点；命中原生 thunk 时计数器必须递增，
+	// 未命中则走 generic，计数为 0（本用例即用于锁定该路径）。
+	ASNativeValueOps::reset_native_thunk_calls();
+	double out = 0.0;
+	if (!run_double(
+				"double main() {"
+				"  Node @p = probe_test_parent();"
+				"  return double(p.get_child_count(false));"
+				"}",
+				&out)) {
+		return;
+	}
+	CHECK(nearly(out, 0.0)); // 宿主父节点未挂子节点。
+	CHECK(ASNativeValueOps::native_thunk_calls() > 0); // 证明走了原生 thunk 而非 generic。
+	release_test_nodes();
+#else
+	MESSAGE("native value ops disabled on this platform; native hot method path is inactive");
+#endif
 }

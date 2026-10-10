@@ -40,6 +40,7 @@ void as_binding_object_property_access();
 void as_binding_object_upcast();
 void as_binding_object_refcount_lifetime();
 void as_binding_object_enums_and_constants();
+void as_binding_object_native_hot_method();
 
 #ifndef ANGELSCRIPT_BINDING_OBJECT_TESTS_IMPL
 
@@ -60,6 +61,9 @@ TEST_CASE("[AngelScript] binding object refcount lifetime") {
 }
 TEST_CASE("[AngelScript] binding object enums and constants") {
 	as_binding_object_enums_and_constants();
+}
+TEST_CASE("[AngelScript] binding object native hot method") {
+	as_binding_object_native_hot_method();
 }
 
 #endif // ANGELSCRIPT_BINDING_OBJECT_TESTS_IMPL

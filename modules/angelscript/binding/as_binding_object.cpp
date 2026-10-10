@@ -31,6 +31,7 @@
 #include "as_binding_object.h"
 
 #include "as_binding_decl.h"
+#include "as_binding_native_value_ops.h"
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 #include "core/os/memory.h"
@@ -38,6 +39,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/variant/callable.h"
+#include "scene/main/node.h"
 
 // 非拥有句柄的槽里放的是 64 位 ObjectID（validator + slot + ref 位），必须完整放进 sizeof(void*) 的槽。
 // 32 位平台的 uintptr_t 会截断高位，解码时可能命中另一个存活对象（对象错认），而不是安全降级为 null。
@@ -142,6 +144,40 @@ void *as_handle_encode(Object *p_obj, ASBindingKind p_kind) {
 	return (void *)(uintptr_t)(uint64_t)p_obj->get_instance_id();
 }
 
+#if AS_NATIVE_VALUE_OPS_ENABLED
+namespace {
+
+// P1：引擎成员热点原生 thunk。全量不划算（~12.8 万成员，且原生约定无 per-call userdata），
+// 只对确认的热点按「(类, 方法) + self 槽语义」白名单注册专用 thunk；未命中一律回退 generic。
+// 新增热点 = 在此加一个 thunk + 一条白名单分支。
+int64_t hot_node_get_child_count(const void *p_self, bool p_include_internal) {
+	ASNativeValueOps::note_thunk_call();
+	// Node 非 RefCounted → self 槽是非拥有句柄（ObjectID），必须经 ObjectDB 解码。
+	Object *obj = as_handle_decode(const_cast<void *>(p_self), AS_KIND_OBJECT_NONOWNING);
+	if (obj == nullptr) {
+		set_exception("AngelScript: get_child_count: object is null or has been freed");
+		return 0;
+	}
+	return (int64_t)static_cast<Node *>(obj)->get_child_count(p_include_internal);
+}
+
+// 返回 true 表示已用原生 thunk 注册（调用方跳过 generic）。
+bool try_register_hot_method(asIScriptEngine *p_engine, const char *p_class_cstr, const StringName &p_class, ASBindingKind p_kind, const StringName &p_method, const String &p_decl) {
+	if (p_class == StringName("Node") && p_kind == AS_KIND_OBJECT_NONOWNING && p_method == StringName("get_child_count")) {
+		const CharString decl = p_decl.utf8();
+		const int r = p_engine->RegisterObjectMethod(p_class_cstr, decl.get_data(), asFUNCTION(hot_node_get_child_count), asCALL_CDECL_OBJFIRST);
+		if (r < 0) {
+			ERR_PRINT(vformat("AngelScript: failed to register native hot method Node::get_child_count (%d)", r));
+			return false;
+		}
+		return true;
+	}
+	return false;
+}
+
+} // namespace
+#endif // AS_NATIVE_VALUE_OPS_ENABLED
+
 Error ASBindingObject::register_skeleton(const ASBindingClass &p_class, asIScriptEngine *p_engine) {
 	ERR_FAIL_COND_V(p_engine == nullptr, ERR_INVALID_PARAMETER);
 
@@ -203,6 +239,11 @@ Error ASBindingObject::register_class(const ASBindingClass &p_class, asIScriptEn
 		if (m.bind == nullptr || m.is_static) {
 			continue;
 		}
+#if AS_NATIVE_VALUE_OPS_ENABLED
+		if (try_register_hot_method(p_engine, cname.get_data(), p_class.name, class_kind, m.name, m.as_decl)) {
+			continue;
+		}
+#endif
 		ASObjectBinding *b = memnew(ASObjectBinding);
 		b->kind = ASObjectBinding::KIND_METHOD;
 		b->member = m.name;
