@@ -311,6 +311,23 @@ void *thunk_for_string_op(const String &p_op) {
 	return nullptr;
 }
 
+// ---------- Array 的 Variant 元素索引 ----------
+// 需 Variant 注册为 asOBJ_APP_CLASS，按值原生返回才被 AS 配置校验接受。
+// 元素为 Variant（引用计数负载），thunk 就地构造返回槽。
+void thunk_variant_index_get(Variant *ret, const Variant *self, int64_t index) {
+	ASNativeValueOps::note_thunk_call();
+	bool valid = false;
+	bool oob = false;
+	new (ret) Variant(self->get_indexed(index, valid, oob));
+}
+
+void thunk_variant_index_set(Variant *self, int64_t index, const Variant *value) {
+	ASNativeValueOps::note_thunk_call();
+	bool valid = false;
+	bool oob = false;
+	self->set_indexed(index, *value, valid, oob);
+}
+
 } // namespace
 
 namespace ASNativeValueOps {
@@ -643,6 +660,11 @@ bool try_add_index_accessor(asIScriptEngine *p_engine, const String &p_type_name
 		case Variant::PACKED_FLOAT64_ARRAY:
 			get_fn = (void *)&thunk_index_get_f64;
 			set_fn = (void *)&thunk_index_set_f64;
+			break;
+		case Variant::ARRAY:
+			// 元素的 AS 类型是 Variant；需 Variant 带 asOBJ_APP_CLASS 才能原生返回。
+			get_fn = (void *)&thunk_variant_index_get;
+			set_fn = (void *)&thunk_variant_index_set;
 			break;
 		default:
 			return false; // 元素为 Variant/对象/字符串等的容器仍走 generic。

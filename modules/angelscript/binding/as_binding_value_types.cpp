@@ -643,7 +643,10 @@ Error ASBindingValueTypes::register_all(asIScriptEngine *p_engine) {
 		}
 		register_type_skeleton(p_engine, ASBindingDecl::variant_type_to_as(TYPES[i]), sizeof(Variant), true);
 	}
-	register_type_skeleton(p_engine, "Variant", sizeof(Variant), false);
+	// Variant 开 asOBJ_APP_CLASS：使其可按值原生返回，从而 Array 的 Variant 元素索引可走
+	// 原生 thunk（thunk 就地构造返回槽，AS 对脚本侧拷贝仍调用已注册的 generic 拷贝构造，
+	// 不做位拷贝）。ABI 前提同几何值类型：仅 AS_NATIVE_VALUE_OPS_ENABLED 平台启用。
+	register_type_skeleton(p_engine, "Variant", sizeof(Variant), true);
 	register_type_skeleton(p_engine, "string", sizeof(void *), false);
 
 	// 第二阶段：骨架齐备后做内省注册，签名里的类型引用才都能解析。

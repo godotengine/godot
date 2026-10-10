@@ -568,6 +568,50 @@ void as_native_vo_string_ops() {
 	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
 }
 
+// Array 的 Variant 元素索引（get/set_opIndex）原生 thunk：需 Variant 带 asOBJ_APP_CLASS
+// 才能按值原生返回。命中即计数增加；未开启时索引走 generic，计数保持 0。
+void as_native_vo_array_index() {
+	double out = 0.0;
+	ASNativeValueOps::reset_native_thunk_calls();
+	if (!run_double(R"(
+		double main() {
+			Array a;
+			a.push_back(10);
+			a.push_back(20);
+			a.push_back(30);
+			a[1] = 25;                                        // set_opIndex（原生）
+			return double(int(a[0]) + int(a[1]) + int(a[2])); // get_opIndex（原生）
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 65.0)); // 10 + 25 + 30
+	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+}
+
+// 引用计数负载回归：Array 元素是持有 String（引用计数）的 Variant，经原生索引读返回
+// 并按值拷贝。若 Variant 的 APP_CLASS 导致位拷贝破坏引用计数，这里会崩溃或值错误。
+void as_native_vo_array_refcount_payload() {
+	double out = 0.0;
+	if (!run_double(R"(
+		double main() {
+			Array a;
+			a.push_back(String("hello")); // length 5
+			a.push_back(String("world")); // length 5
+			double s = 0;
+			for (int i = 0; i < 3; i++) {
+				Variant v = a[i % 2];     // 原生索引读返回 Variant（持引用计数 String）
+				String t = v;             // 按值拷贝 + 转换
+				s += double(t.length());
+			}
+			return s;
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 15.0)); // 5 + 5 + 5
+}
+
 // P3b：更多几何值类型纳入原生存储。原生存储只改变脚本侧内存布局与生命周期，
 // 不改变脚本可见语义，故主要验证：判定表覆盖到位、槽 ↔ Variant 双向转换精确、
 // 且这些类型在脚本中的构造/拷贝/运算仍与既有 generic 行为一致。
