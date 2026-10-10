@@ -601,6 +601,32 @@ Files extracted from upstream source:
 - `COPYING`
 
 
+## libopus
+
+- Upstream: https://gitlab.xiph.org/xiph/opus
+- Version: 1.6.1 (6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1, 2026)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- All `.c` and `.h` files in `celt/`, `silk/` and `src/`, except `celt/opus_custom_demo.c`, `src/opus_demo.c`, `src/qext_compare.c` and `src/repacketizer_demo.c`
+- All `.h` files in `include/` as `opus/`
+- `COPYING`
+
+
+## libopusfile
+
+- Upstream: https://gitlab.xiph.org/xiph/opusfile
+- Version: 0.12 (118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b, 2020)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- All `.c` and `.h` files in `src/`
+- All `.h` files in `include/` as `opus/`
+- `COPYING`
+
+
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
@@ -613,6 +639,17 @@ Files extracted from upstream source:
 - `arm/`, `intel/`, `loongarch/`, and `powerpc/` folders, except `arm/filter_neon.S` and `.editorconfig` files
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
 - `LICENSE`
+
+
+## libsimplewebm
+
+- Upstream: https://github.com/The-Simplicity-Group/libsimplewebm
+- Version: git (d06ed91a61994e23ce572a0e3fae0096652d573b, 2026)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `*`
 
 
 ## libtheora
@@ -639,6 +676,17 @@ Files extracted from upstream source:
 - `lib/*` except from: `lookups.pl`, `Makefile.*`
 - `include/vorbis/*.h` as `vorbis/`
 - `COPYING`
+
+
+## libvpx
+
+- Upstream: https://github.com/webmproject/libvpx
+- Version: 1.17.0 (6df3ec34557879fff673706f4a1d9fbd0f3a6f0e, 2026)
+- License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- `*`
 
 
 ## libwebp

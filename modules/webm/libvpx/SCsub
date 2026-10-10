@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_modules")
+
+# Thirdparty source files
+
+env_libvpx = env_modules.Clone()
+env_libvpx.disable_warnings()
+
+env_libvpx.Prepend(
+    CPPPATH=[
+        "#thirdparty/libvpx/",
+    ]
+)
+
+thirdparty_dir = "#thirdparty/libvpx/"
+thirdparty_sources = [
+    "vp8/vp8_dx_iface.c",
+    "vp8/common/generic/systemdependent.c",
+    "vp8/common/alloccommon.c",
+    "vp8/common/blockd.c",
+    "vp8/common/copy_c.c",
+    "vp8/common/debugmodes.c",
+    "vp8/common/dequantize.c",
+    "vp8/common/entropy.c",
+    "vp8/common/entropymode.c",
+    "vp8/common/entropymv.c",
+    "vp8/common/extend.c",
+    "vp8/common/filter.c",
+    "vp8/common/findnearmv.c",
+    "vp8/common/idct_blk.c",
+    "vp8/common/idctllm.c",
+    "vp8/common/loopfilter_filters.c",
+    "vp8/common/mbpitch.c",
+    "vp8/common/modecont.c",
+    "vp8/common/quant_common.c",
+    "vp8/common/reconinter.c",
+    "vp8/common/reconintra.c",
+    "vp8/common/reconintra4x4.c",
+    "vp8/common/rtcd.c",
+    "vp8/common/setupintrarecon.c",
+    "vp8/common/swapyv12buffer.c",
+    "vp8/common/treecoder.c",
+    "vp8/common/vp8_loopfilter.c",
+    "vp8/decoder/dboolhuff.c",
+    "vp8/decoder/decodeframe.c",
+    "vp8/decoder/decodemv.c",
+    "vp8/decoder/detokenize.c",
+    "vp8/decoder/onyxd_if.c",
+    "vp9/vp9_dx_iface.c",
+    "vp9/vp9_iface_common.c",
+    "vp9/common/vp9_alloccommon.c",
+    "vp9/common/vp9_blockd.c",
+    "vp9/common/vp9_common_data.c",
+    "vp9/common/vp9_debugmodes.c",
+    "vp9/common/vp9_entropy.c",
+    "vp9/common/vp9_entropymode.c",
+    "vp9/common/vp9_entropymv.c",
+    "vp9/common/vp9_filter.c",
+    "vp9/common/vp9_frame_buffers.c",
+    "vp9/common/vp9_idct.c",
+    "vp9/common/vp9_loopfilter.c",
+    "vp9/common/vp9_mvref_common.c",
+    "vp9/common/vp9_pred_common.c",
+    "vp9/common/vp9_quant_common.c",
+    "vp9/common/vp9_reconinter.c",
+    "vp9/common/vp9_reconintra.c",
+    "vp9/common/vp9_rtcd.c",
+    "vp9/common/vp9_scale.c",
+    "vp9/common/vp9_scan.c",
+    "vp9/common/vp9_seg_common.c",
+    "vp9/common/vp9_thread_common.c",
+    "vp9/common/vp9_tile_common.c",
+    "vp9/decoder/vp9_decodeframe.c",
+    "vp9/decoder/vp9_decodemv.c",
+    "vp9/decoder/vp9_decoder.c",
+    "vp9/decoder/vp9_detokenize.c",
+    "vp9/decoder/vp9_dsubexp.c",
+    "vp9/decoder/vp9_dthread.c",
+    "vp9/decoder/vp9_job_queue.c",
+    "vpx/src/vpx_codec.c",
+    "vpx/src/vpx_decoder.c",
+    "vpx/src/vpx_image.c",
+    "vpx/src/vpx_psnr.c",
+    "vpx_dsp/bitreader.c",
+    "vpx_dsp/bitreader_buffer.c",
+    "vpx_dsp/intrapred.c",
+    "vpx_dsp/inv_txfm.c",
+    "vpx_dsp/loopfilter.c",
+    "vpx_dsp/prob.c",
+    "vpx_dsp/vpx_convolve.c",
+    "vpx_dsp/vpx_dsp_rtcd.c",
+    "vpx_mem/vpx_mem.c",
+    "vpx_scale/vpx_scale_rtcd.c",
+    "vpx_scale/generic/yv12config.c",
+    "vpx_scale/generic/yv12extend.c",
+    "vpx_util/vpx_thread.c",
+]
+
+if env["platform"] != "web":
+    thirdparty_sources += ["vp8/decoder/threading.c"]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+for source in thirdparty_sources:
+    env_libvpx.add_source_files(env.modules_sources, source)
