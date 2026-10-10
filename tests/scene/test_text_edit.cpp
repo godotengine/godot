@@ -7540,491 +7540,664 @@ TEST_CASE("[SceneTree][TextEdit] line wrapping") {
 TEST_CASE("[SceneTree][TextEdit] viewport") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
+	text_edit->grab_focus();
 
-	// No subcases here for performance.
-	text_edit->set_size(Size2(800, 600));
-	for (int i = 0; i < 50; i++) {
-		text_edit->insert_line_at(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
-	}
+	const String line = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.\n";
+	text_edit->insert_text(line.repeat(50), 0, 0, false, false);
+
+	const int line_height = text_edit->get_line_height();
+	const Size2 stylebox_minimum_size = text_edit->get_theme_stylebox(CoreStringName(normal))->get_minimum_size();
+	const double hscroll_height = text_edit->get_h_scroll_bar()->get_size().height;
+	const int intended_visible_lines = 21;
+	text_edit->set_size(Size2(800, intended_visible_lines * line_height + stylebox_minimum_size.y + hscroll_height));
 	MessageQueue::get_singleton()->flush();
 
 	const int visible_lines = text_edit->get_visible_line_count();
 	const int total_visible_lines = text_edit->get_total_visible_line_count();
 	CHECK(total_visible_lines == 51);
-
-	// First visible line.
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	text_edit->set_line_as_first_visible(visible_lines);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == visible_lines);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(visible_lines)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	ERR_PRINT_OFF;
-	text_edit->set_line_as_first_visible(-1);
-	text_edit->set_line_as_first_visible(500);
-	text_edit->set_line_as_first_visible(0, -1);
-	text_edit->set_line_as_first_visible(0, 500);
-	CHECK(text_edit->get_first_visible_line() == visible_lines);
-	ERR_PRINT_ON;
-
-	// Wrap.
-	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
-
-	text_edit->set_line_as_first_visible(5, 1);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 5);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(11)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 6);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
-
-	// Reset.
-	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_total_visible_line_count() == total_visible_lines);
-	text_edit->set_line_as_first_visible(0);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	// Last visible line.
-	text_edit->set_line_as_last_visible(visible_lines * 2);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == visible_lines);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(visible_lines)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	ERR_PRINT_OFF;
-	text_edit->set_line_as_last_visible(-1);
-	text_edit->set_line_as_last_visible(500);
-	text_edit->set_line_as_last_visible(0, -1);
-	text_edit->set_line_as_last_visible(0, 500);
-	CHECK(text_edit->get_first_visible_line() == visible_lines);
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
-	ERR_PRINT_ON;
-
-	// Wrap.
-	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
-
-	text_edit->set_line_as_last_visible(visible_lines + 5, 1);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 16);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(32.0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines + 5);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	// Reset.
-	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_total_visible_line_count() == total_visible_lines);
-	text_edit->set_line_as_first_visible(0);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	// Center.
-	text_edit->set_line_as_center_visible(visible_lines + (visible_lines / 2));
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == visible_lines);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(visible_lines)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	ERR_PRINT_OFF;
-	text_edit->set_line_as_last_visible(-1);
-	text_edit->set_line_as_last_visible(500);
-	text_edit->set_line_as_last_visible(0, -1);
-	text_edit->set_line_as_last_visible(0, 500);
-	CHECK(text_edit->get_first_visible_line() == visible_lines);
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
-	ERR_PRINT_ON;
-
-	// Wrap.
-	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
-
-	text_edit->set_line_as_center_visible(visible_lines + (visible_lines / 2) + 5, 1);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == visible_lines + (visible_lines / 2));
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double((visible_lines * 3))));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
-
-	// Scroll past eof.
-	int line_count = text_edit->get_line_count();
-	text_edit->set_scroll_past_end_of_file_enabled(true);
-	MessageQueue::get_singleton()->flush();
-	text_edit->set_line_as_center_visible(line_count - 1);
-	MessageQueue::get_singleton()->flush();
-
-	CHECK(text_edit->get_first_visible_line() == (visible_lines * 2) + 3);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double((visible_lines * 4))) + 6);
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) + 8);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	text_edit->set_scroll_past_end_of_file_enabled(false);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == (visible_lines * 2) + 3);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double((visible_lines * 4))) - 4);
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) + 8);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	// Reset.
-	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_total_visible_line_count() == total_visible_lines);
-	text_edit->set_line_as_first_visible(0);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	// Auto adjust - todo: horizontal scroll.
-	// Below.
-	MessageQueue::get_singleton()->flush();
-	CHECK_FALSE(text_edit->is_caret_visible());
-	text_edit->set_caret_line(visible_lines + 5, false);
-	CHECK_FALSE(text_edit->is_caret_visible());
-	text_edit->adjust_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->is_caret_visible());
-	CHECK(text_edit->get_first_visible_line() == 5);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(5)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines - 1) + 5);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	text_edit->center_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == visible_lines - 5);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(visible_lines - 5)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 6);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	// Caret visible, do nothing.
-	text_edit->adjust_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == visible_lines - 5);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(visible_lines - 5)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 6);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	// Above.
-	text_edit->set_caret_line(1, false);
-	MessageQueue::get_singleton()->flush();
-	text_edit->adjust_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->is_caret_visible());
-	CHECK(text_edit->get_first_visible_line() == 1);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(1)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	text_edit->set_line_as_first_visible(0);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	text_edit->adjust_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	// Wrap.
-	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
-
-	text_edit->set_caret_line(visible_lines + 5, false, true, 1);
-	MessageQueue::get_singleton()->flush();
-	text_edit->adjust_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-
-	CHECK(text_edit->get_first_visible_line() == (visible_lines / 2) + 6);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double((visible_lines + (visible_lines / 2)))) + 1);
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines) + 5);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 1);
-
-	text_edit->center_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == visible_lines);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double((visible_lines * 2))) + 1);
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 11);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
-
-	// Caret visible, do nothing.
-	text_edit->adjust_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == visible_lines);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double((visible_lines * 2))) + 1);
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 11);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
-
-	// Above.
-	text_edit->set_caret_line(1, false, true, 1);
-	MessageQueue::get_singleton()->flush();
-	text_edit->adjust_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->is_caret_visible());
-	CHECK(text_edit->get_first_visible_line() == 1);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(3)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines / 2) + 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
-	CHECK(text_edit->get_caret_wrap_index() == 1);
-
-	text_edit->set_line_as_first_visible(0);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->is_caret_visible());
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 11);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	text_edit->adjust_viewport_to_caret();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 11);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	// Reset.
-	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_total_visible_line_count() == total_visible_lines);
-	text_edit->set_line_as_first_visible(0);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	// Smooth scroll.
-	text_edit->set_v_scroll_speed(10);
-	CHECK(text_edit->get_v_scroll_speed() == 10);
-	ERR_PRINT_OFF;
-	text_edit->set_v_scroll_speed(-1);
-	CHECK(text_edit->get_v_scroll_speed() == 10);
-
-	text_edit->set_v_scroll_speed(0);
-	CHECK(text_edit->get_v_scroll_speed() == 10);
-
-	text_edit->set_v_scroll_speed(1);
-	CHECK(text_edit->get_v_scroll_speed() == 1);
-	ERR_PRINT_ON;
-
-	// Scroll.
-	int v_scroll = text_edit->get_v_scroll();
-	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButtonMask::NONE, Key::NONE);
-	CHECK(text_edit->get_v_scroll() > v_scroll);
-	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_UP, MouseButtonMask::NONE, Key::NONE);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(v_scroll)));
-
-	// smooth scroll speed.
-	text_edit->set_smooth_scroll_enabled(true);
-
-	v_scroll = text_edit->get_v_scroll();
-	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButtonMask::NONE, Key::NONE);
-	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	CHECK(text_edit->get_v_scroll() >= v_scroll);
-	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_UP, MouseButtonMask::NONE, Key::NONE);
-	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(v_scroll)));
-
-	v_scroll = text_edit->get_v_scroll();
-	text_edit->set_v_scroll_speed(10000);
-	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButtonMask::NONE, Key::NONE);
-	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	CHECK(text_edit->get_v_scroll() >= v_scroll);
-	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_UP, MouseButtonMask::NONE, Key::NONE);
-	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(v_scroll)));
-
-	ERR_PRINT_OFF;
-	CHECK(text_edit->get_scroll_pos_for_line(-1) == 0);
-	CHECK(text_edit->get_scroll_pos_for_line(1000) == 0);
-	CHECK(text_edit->get_scroll_pos_for_line(1, -1) == 0);
-	CHECK(text_edit->get_scroll_pos_for_line(1, 100) == 0);
-	ERR_PRINT_ON;
-
-	text_edit->set_h_scroll(-100);
-	CHECK(text_edit->get_h_scroll() == 0);
-
-	text_edit->set_h_scroll(10000000);
-	CHECK(text_edit->get_h_scroll() == 307);
-	CHECK(text_edit->get_h_scroll_bar()->get_bound_minimum_size().x == 8);
-
-	text_edit->set_h_scroll(-100);
-	CHECK(text_edit->get_h_scroll() == 0);
-
-	text_edit->set_smooth_scroll_enabled(false);
-
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-
-	text_edit->grab_focus();
-	SEND_GUI_ACTION("ui_text_scroll_down");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 1);
-	CHECK(text_edit->get_first_visible_line() == 1);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(1)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	SEND_GUI_ACTION("ui_text_scroll_up");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 1);
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	// Page down, similar to VSCode, to end of page then scroll.
-	SEND_GUI_ACTION("ui_text_caret_page_down");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 21);
-	CHECK(text_edit->get_first_visible_line() == 0);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(0)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	SEND_GUI_ACTION("ui_text_caret_page_down");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 41);
-	CHECK(text_edit->get_first_visible_line() == 20);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(20)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines - 1) * 2);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	SEND_GUI_ACTION("ui_text_caret_page_up");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 21);
-	CHECK(text_edit->get_first_visible_line() == 20);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(20)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines - 1) * 2);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	SEND_GUI_ACTION("ui_text_caret_page_up");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 1);
-	CHECK(text_edit->get_first_visible_line() == 1);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(1)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
-	MessageQueue::get_singleton()->flush();
-
-	text_edit->grab_focus();
-	SEND_GUI_ACTION("ui_text_scroll_down");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 2);
-	CHECK(text_edit->get_first_visible_line() == 2);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(2)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines + 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	SEND_GUI_ACTION("ui_text_scroll_up");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 2);
-	CHECK(text_edit->get_first_visible_line() == 1);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(1)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	// Page down, similar to VSCode, to end of page then scroll.
-	SEND_GUI_ACTION("ui_text_caret_page_down");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 22);
-	CHECK(text_edit->get_first_visible_line() == 1);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(1)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	SEND_GUI_ACTION("ui_text_caret_page_down");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 42);
-	CHECK(text_edit->get_first_visible_line() == 21);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(21)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	SEND_GUI_ACTION("ui_text_caret_page_up");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 22);
-	CHECK(text_edit->get_first_visible_line() == 21);
-	CHECK(Math::is_equal_approx(Math::floor(text_edit->get_v_scroll()), double(21)));
-	CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	SEND_GUI_ACTION("ui_text_caret_page_up");
-	CHECK(text_edit->get_viewport()->is_input_handled());
-	CHECK(text_edit->get_caret_line() == 2);
-	CHECK(text_edit->get_first_visible_line() == 2);
-	CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(2)));
-	CHECK(text_edit->get_last_full_visible_line() == visible_lines + 1);
-	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
-	CHECK(text_edit->get_caret_wrap_index() == 0);
-
-	// Typing and undo / redo should adjust viewport.
-	text_edit->set_caret_line(0);
-	text_edit->set_caret_column(0);
-	text_edit->set_line_as_first_visible(5);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 5);
-
-	SEND_GUI_KEY_EVENT(Key::A);
-	CHECK(text_edit->get_first_visible_line() == 0);
-
-	text_edit->set_line_as_first_visible(5);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 5);
-
-	text_edit->undo();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 0);
-
-	text_edit->set_line_as_first_visible(5);
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 5);
-
-	text_edit->redo();
-	MessageQueue::get_singleton()->flush();
-	CHECK(text_edit->get_first_visible_line() == 0);
+	CHECK(visible_lines == intended_visible_lines);
+	const int last_line = text_edit->get_line_count() - 1;
+
+	SUBCASE("[TextEdit] first visible line") {
+		// First visible line.
+		CHECK(text_edit->get_first_visible_line() == 0);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 0);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		text_edit->set_line_as_first_visible(visible_lines);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == visible_lines);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == visible_lines);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines * 2 - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		ERR_PRINT_OFF;
+		text_edit->set_line_as_first_visible(-1);
+		text_edit->set_line_as_first_visible(500);
+		text_edit->set_line_as_first_visible(0, -1);
+		text_edit->set_line_as_first_visible(0, 500);
+		CHECK(text_edit->get_first_visible_line() == visible_lines);
+		ERR_PRINT_ON;
+
+		// Wrap. Every line with text wraps once.
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
+		CHECK(text_edit->get_first_visible_line() == visible_lines);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == visible_lines * 2);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines + visible_lines / 2);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		text_edit->set_line_as_first_visible(5, 1);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 5);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 1);
+		CHECK(int(text_edit->get_v_scroll()) == 11);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines - 6);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
+
+		// Disable wrapping.
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_total_visible_line_count() == total_visible_lines);
+		CHECK(text_edit->get_first_visible_line() == 5);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 5);
+		CHECK(text_edit->get_last_full_visible_line() == 5 + visible_lines - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+	}
+
+	SUBCASE("[TextEdit] last visible line") {
+		text_edit->set_line_as_last_visible(visible_lines * 2);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == visible_lines + 1);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == visible_lines + 1);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines * 2);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		ERR_PRINT_OFF;
+		text_edit->set_line_as_last_visible(-1);
+		text_edit->set_line_as_last_visible(500);
+		text_edit->set_line_as_last_visible(0, -1);
+		text_edit->set_line_as_last_visible(0, 500);
+		CHECK(text_edit->get_first_visible_line() == visible_lines + 1);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines * 2);
+		ERR_PRINT_ON;
+
+		// Clamp to the top.
+		text_edit->set_line_as_last_visible(visible_lines / 2);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 0);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 0);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Make the last line the last visible line.
+		text_edit->set_line_as_last_visible(last_line);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == last_line - visible_lines + 1);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == last_line - visible_lines + 1);
+		CHECK(text_edit->get_last_full_visible_line() == last_line);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Wrap.
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
+		CHECK(text_edit->get_first_visible_line() == last_line - visible_lines + 1);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == (last_line - visible_lines + 1) * 2);
+		CHECK(text_edit->get_last_full_visible_line() == last_line - visible_lines / 2);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Make the last line the last visible line.
+		text_edit->set_line_as_last_visible(last_line);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == int(last_line - visible_lines / 2.0));
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 1);
+		CHECK(int(text_edit->get_v_scroll()) == int((last_line - visible_lines / 2.0) * 2));
+		CHECK(text_edit->get_last_full_visible_line() == last_line);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Make a line in the middle the last visible, wrap index 1.
+		text_edit->set_line_as_last_visible(visible_lines / 2 + 5, 1);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 5);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 5 * 2);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines / 2 + 5);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
+
+		// Disable wrapping.
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_total_visible_line_count() == total_visible_lines);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_first_visible_line() == 5);
+		CHECK(int(text_edit->get_v_scroll()) == 5);
+		CHECK(text_edit->get_last_full_visible_line() == 5 + visible_lines - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+	}
+
+	SUBCASE("[TextEdit] center visible line") {
+		// Center.
+		text_edit->set_line_as_center_visible(visible_lines + (visible_lines / 2));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == visible_lines);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(visible_lines)));
+		CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		ERR_PRINT_OFF;
+		text_edit->set_line_as_last_visible(-1);
+		text_edit->set_line_as_last_visible(500);
+		text_edit->set_line_as_last_visible(0, -1);
+		text_edit->set_line_as_last_visible(0, 500);
+		CHECK(text_edit->get_first_visible_line() == visible_lines);
+		CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
+		ERR_PRINT_ON;
+
+		// Wrap.
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
+
+		text_edit->set_line_as_center_visible(visible_lines + (visible_lines / 2) + 5, 1);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == visible_lines + (visible_lines / 2));
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 1);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double((visible_lines * 3))));
+		CHECK(text_edit->get_last_full_visible_line() == (visible_lines * 2) - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
+
+		// Scroll past eof.
+		text_edit->set_scroll_past_end_of_file_enabled(true);
+		MessageQueue::get_singleton()->flush();
+		text_edit->set_line_as_center_visible(last_line);
+		MessageQueue::get_singleton()->flush();
+
+		int first_line = last_line - visible_lines / 4; // Divide by 2 for half of screen and again for wrapping.
+		CHECK(text_edit->get_first_visible_line() == first_line);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == first_line * 2);
+		CHECK(text_edit->get_last_full_visible_line() == last_line);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Disabling scroll past end of file scrolls back up to fit the text.
+		text_edit->set_scroll_past_end_of_file_enabled(false);
+		MessageQueue::get_singleton()->flush();
+		first_line = last_line - visible_lines / 2.0;
+		CHECK(text_edit->get_first_visible_line() == first_line);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 1);
+		CHECK(int(text_edit->get_v_scroll()) == first_line * 2 + 1);
+		CHECK(text_edit->get_last_full_visible_line() == last_line);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Disable wrapping. Again scrolls up to fit the text.
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_total_visible_line_count() == total_visible_lines);
+		CHECK(text_edit->get_first_visible_line() == last_line - visible_lines + 1);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == last_line - visible_lines + 1);
+		CHECK(text_edit->get_last_full_visible_line() == last_line);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+	}
+
+	SUBCASE("[TextEdit] vertical auto adjust to caret") {
+		text_edit->set_caret_line(last_line);
+		text_edit->set_v_scroll(0);
+		MessageQueue::get_singleton()->flush();
+		CHECK_FALSE(text_edit->is_caret_visible());
+
+		text_edit->set_caret_line(visible_lines + 5, false);
+		CHECK_FALSE(text_edit->is_caret_visible());
+
+		// Adjust to caret below.
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->is_caret_visible());
+		CHECK(text_edit->get_first_visible_line() == 6);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 6);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines + 5);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		text_edit->center_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == visible_lines - 5);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(visible_lines - 5)));
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines * 2 - 6);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Caret visible, do nothing.
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == visible_lines - 5);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(visible_lines - 5)));
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines * 2 - 6);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Adjust to caret above.
+		text_edit->set_caret_line(1, false);
+		MessageQueue::get_singleton()->flush();
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->is_caret_visible());
+		CHECK(text_edit->get_first_visible_line() == 1);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 1);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		text_edit->set_line_as_first_visible(0);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 0);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 0);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Caret visible, do nothing.
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 0);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 0);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Wrap.
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
+
+		// Adjust to caret below, wrapped.
+		text_edit->set_caret_line(visible_lines + 5, false, true, 1);
+		MessageQueue::get_singleton()->flush();
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+
+		CHECK(text_edit->get_first_visible_line() == visible_lines / 2 + 6);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == visible_lines + 11);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines + 5);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
+		CHECK(text_edit->get_caret_wrap_index() == 1);
+
+		text_edit->center_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == visible_lines);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 1);
+		CHECK(int(text_edit->get_v_scroll()) == visible_lines * 2 + 1);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines * 2 - 11);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
+
+		// Caret visible, do nothing.
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == visible_lines);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 1);
+		CHECK(int(text_edit->get_v_scroll()) == visible_lines * 2 + 1);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines * 2 - 11);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
+
+		// Adjust to caret above, wrapped.
+		text_edit->set_caret_line(1, false, true, 1);
+		MessageQueue::get_singleton()->flush();
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->is_caret_visible());
+		CHECK(text_edit->get_first_visible_line() == 1);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 1);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), 3.0));
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines / 2 + 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 1);
+		CHECK(text_edit->get_caret_wrap_index() == 1);
+
+		text_edit->set_line_as_first_visible(0);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->is_caret_visible());
+		CHECK(text_edit->get_first_visible_line() == 0);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), 0.0));
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines - 11);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		// Caret visible, do nothing.
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 0);
+		CHECK(text_edit->get_first_visible_line_wrap_index() == 0);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), 0.0));
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines - 11);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+	}
+
+	SUBCASE("[TextEdit] horizontal auto adjust to caret") {
+		text_edit->set_caret_line(0);
+		text_edit->set_caret_column(0);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->is_caret_visible());
+		CHECK(text_edit->get_h_scroll() == 0);
+
+		text_edit->set_caret_column(line.length());
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->is_caret_visible());
+		CHECK(text_edit->get_h_scroll() > 0);
+
+		// Adjust to the start with `adjust_viewport_to_caret`.
+		text_edit->set_caret_column(0, false);
+		MessageQueue::get_singleton()->flush();
+		CHECK_FALSE(text_edit->is_caret_visible());
+		CHECK(text_edit->get_h_scroll() > 0);
+
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->is_caret_visible());
+		CHECK(text_edit->get_h_scroll() == 0);
+
+		// Adjust to the end with `adjust_viewport_to_caret`.
+		text_edit->set_caret_column(line.length(), false);
+		MessageQueue::get_singleton()->flush();
+		CHECK_FALSE(text_edit->is_caret_visible());
+		CHECK(text_edit->get_h_scroll() == 0);
+
+		text_edit->adjust_viewport_to_caret();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->is_caret_visible());
+		CHECK(text_edit->get_h_scroll() > 0);
+
+		// Wrap resets h scroll.
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
+		CHECK(text_edit->is_caret_visible());
+		CHECK(text_edit->get_h_scroll() == 0);
+	}
+
+	SUBCASE("[TextEdit] smooth scroll") {
+		text_edit->set_v_scroll_speed(10);
+		CHECK(text_edit->get_v_scroll_speed() == 10);
+		ERR_PRINT_OFF;
+		text_edit->set_v_scroll_speed(-1);
+		CHECK(text_edit->get_v_scroll_speed() == 10);
+
+		text_edit->set_v_scroll_speed(0);
+		CHECK(text_edit->get_v_scroll_speed() == 10);
+
+		text_edit->set_v_scroll_speed(1);
+		CHECK(text_edit->get_v_scroll_speed() == 1);
+		ERR_PRINT_ON;
+
+		// Scroll.
+		int v_scroll = text_edit->get_v_scroll();
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButtonMask::NONE, Key::NONE);
+		CHECK(text_edit->get_v_scroll() > v_scroll);
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_UP, MouseButtonMask::NONE, Key::NONE);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(v_scroll)));
+
+		// smooth scroll speed.
+		text_edit->set_smooth_scroll_enabled(true);
+
+		v_scroll = text_edit->get_v_scroll();
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButtonMask::NONE, Key::NONE);
+		text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+		CHECK(text_edit->get_v_scroll() >= v_scroll);
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_UP, MouseButtonMask::NONE, Key::NONE);
+		text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(v_scroll)));
+
+		v_scroll = text_edit->get_v_scroll();
+		text_edit->set_v_scroll_speed(10000);
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButtonMask::NONE, Key::NONE);
+		text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+		CHECK(text_edit->get_v_scroll() >= v_scroll);
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_UP, MouseButtonMask::NONE, Key::NONE);
+		text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), double(v_scroll)));
+
+		ERR_PRINT_OFF;
+		CHECK(text_edit->get_scroll_pos_for_line(-1) == 0);
+		CHECK(text_edit->get_scroll_pos_for_line(1000) == 0);
+		CHECK(text_edit->get_scroll_pos_for_line(1, -1) == 0);
+		CHECK(text_edit->get_scroll_pos_for_line(1, 100) == 0);
+		ERR_PRINT_ON;
+
+		text_edit->set_h_scroll(-100);
+		CHECK(text_edit->get_h_scroll() == 0);
+
+		text_edit->set_h_scroll(10000000);
+		CHECK(text_edit->get_h_scroll() == 307);
+		CHECK(text_edit->get_h_scroll_bar()->get_bound_minimum_size().x == 8);
+
+		text_edit->set_h_scroll(-100);
+		CHECK(text_edit->get_h_scroll() == 0);
+
+		text_edit->set_smooth_scroll_enabled(false);
+
+		CHECK(text_edit->get_first_visible_line() == 0);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), 0.0));
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+
+		SEND_GUI_ACTION("ui_text_scroll_down");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 1);
+		CHECK(text_edit->get_first_visible_line() == 1);
+		CHECK(int(text_edit->get_v_scroll()) == 1);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		SEND_GUI_ACTION("ui_text_scroll_up");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 1);
+		CHECK(text_edit->get_first_visible_line() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 0);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines - 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+	}
+
+	SUBCASE("[TextEdit] page down") {
+		text_edit->set_caret_line(1);
+		text_edit->set_v_scroll(0);
+		text_edit->set_size(text_edit->get_size() + Size2(0, line_height / 2.0));
+
+		// Page down, similar to VSCode, to end of page then scroll.
+		SEND_GUI_ACTION("ui_text_caret_page_down");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 21);
+		CHECK(text_edit->get_first_visible_line() == 0);
+		CHECK(int(text_edit->get_v_scroll()) == 0);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		SEND_GUI_ACTION("ui_text_caret_page_down");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 41);
+		CHECK(text_edit->get_first_visible_line() == 20);
+		CHECK(int(text_edit->get_v_scroll()) == 20);
+		CHECK(text_edit->get_last_full_visible_line() == (visible_lines - 1) * 2 + 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		SEND_GUI_ACTION("ui_text_caret_page_up");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 21);
+		CHECK(text_edit->get_first_visible_line() == 20);
+		CHECK(int(text_edit->get_v_scroll()) == 20);
+		CHECK(text_edit->get_last_full_visible_line() == (visible_lines - 1) * 2 + 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		SEND_GUI_ACTION("ui_text_caret_page_up");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 1);
+		CHECK(text_edit->get_first_visible_line() == 1);
+		CHECK(int(text_edit->get_v_scroll()) == 1);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_NONE);
+		MessageQueue::get_singleton()->flush();
+
+		SEND_GUI_ACTION("ui_text_scroll_down");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 2);
+		CHECK(text_edit->get_first_visible_line() == 2);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), 2.0));
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines + 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		SEND_GUI_ACTION("ui_text_scroll_up");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 2);
+		CHECK(text_edit->get_first_visible_line() == 1);
+		CHECK(int(text_edit->get_v_scroll()) == 1);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		// Page down, similar to VSCode, to end of page then scroll.
+		SEND_GUI_ACTION("ui_text_caret_page_down");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 22);
+		CHECK(text_edit->get_first_visible_line() == 1);
+		CHECK(int(text_edit->get_v_scroll()) == 1);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines + 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		SEND_GUI_ACTION("ui_text_caret_page_down");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 42);
+		CHECK(text_edit->get_first_visible_line() == 21);
+		CHECK(int(text_edit->get_v_scroll()) == 21);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines * 2);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		SEND_GUI_ACTION("ui_text_caret_page_up");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 22);
+		CHECK(text_edit->get_first_visible_line() == 21);
+		CHECK(int(text_edit->get_v_scroll()) == 21);
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines * 2);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+
+		SEND_GUI_ACTION("ui_text_caret_page_up");
+		CHECK(text_edit->get_viewport()->is_input_handled());
+		CHECK(text_edit->get_caret_line() == 2);
+		CHECK(text_edit->get_first_visible_line() == 2);
+		CHECK(Math::is_equal_approx(text_edit->get_v_scroll(), 2.0));
+		CHECK(text_edit->get_last_full_visible_line() == visible_lines + 1);
+		CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
+		CHECK(text_edit->get_caret_wrap_index() == 0);
+	}
+
+	SUBCASE("[TextEdit] typing and undo / redo adjust viewport") {
+		text_edit->set_caret_line(0);
+		text_edit->set_caret_column(0);
+		text_edit->set_line_as_first_visible(5);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 5);
+
+		SEND_GUI_KEY_EVENT(Key::A);
+		CHECK(text_edit->get_first_visible_line() == 0);
+
+		text_edit->set_line_as_first_visible(5);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 5);
+
+		text_edit->undo();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 0);
+
+		text_edit->set_line_as_first_visible(5);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 5);
+
+		text_edit->redo();
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == 0);
+	}
+
+	SUBCASE("[TextEdit] resize keeps first visible line") {
+		// Wrap.
+		text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_total_visible_line_count() > total_visible_lines);
+
+		int first_vis_line = 5;
+		text_edit->set_line_as_first_visible(first_vis_line);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		const Size2 original_size = text_edit->get_size();
+
+		text_edit->set_size(Size2(original_size.x / 2.0, original_size.y));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		text_edit->set_size(Size2(original_size.x * 2.0, original_size.y));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		text_edit->set_size(Size2(original_size.x, original_size.y / 2.0));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		text_edit->set_size(Size2(original_size.x, original_size.y * 2.0));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		text_edit->set_size(Size2(original_size.x, original_size.y));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		// Works near the end.
+		first_vis_line = last_line - visible_lines;
+		text_edit->set_line_as_first_visible(first_vis_line);
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		text_edit->set_size(Size2(original_size.x / 2.0, original_size.y));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		text_edit->set_size(Size2(original_size.x * 2.0, original_size.y));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		text_edit->set_size(Size2(original_size.x, original_size.y / 2.0));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		text_edit->set_size(Size2(original_size.x, original_size.y * 2.0));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+
+		text_edit->set_size(Size2(original_size.x, original_size.y));
+		MessageQueue::get_singleton()->flush();
+		CHECK(text_edit->get_first_visible_line() == first_vis_line);
+	}
 
 	memdelete(text_edit);
 }
@@ -8051,14 +8224,8 @@ TEST_CASE("[SceneTree][TextEdit] fit content scrollbar behavior") {
 	text_edit->set_fit_content_width_enabled(true);
 	text_edit->set_fit_content_height_enabled(true);
 
-	const String long_line = "0123456789012345678901234567890123456789012345678901234567890123456789";
-	String content;
-	for (int i = 0; i < 40; i++) {
-		if (i > 0) {
-			content += "\n";
-		}
-		content += long_line;
-	}
+	const String long_line = "0123456789012345678901234567890123456789012345678901234567890123456789\n";
+	const String content = long_line.repeat(40).strip_edges();
 	text_edit->set_text(content);
 	MessageQueue::get_singleton()->flush();
 
