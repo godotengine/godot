@@ -547,6 +547,27 @@ void as_native_vo_packed_push_back() {
 	CHECK(ASNativeValueOps::native_thunk_calls() >= 10);
 }
 
+// String（存储为 Variant）的原生运算符：拼接/赋值/相等。命中即计数增加；
+// 未原生化时三步均走 generic，计数保持 0。
+void as_native_vo_string_ops() {
+	double out = 0.0;
+	ASNativeValueOps::reset_native_thunk_calls();
+	if (!run_double(R"(
+		double main() {
+			String a = "foo";
+			String b = a + "bar";   // opAdd（原生）
+			String c = b;           // 拷贝构造（泛型）
+			c = a;                  // opAssign（原生）
+			bool eq = (a == "foo"); // opEquals（原生）
+			return double(b.length()) * 100.0 + double(c.length()) * 10.0 + (eq ? 1.0 : 0.0);
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 631.0)); // b="foobar"(6)*100 + c="foo"(3)*10 + 1
+	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+}
+
 // P3b：更多几何值类型纳入原生存储。原生存储只改变脚本侧内存布局与生命周期，
 // 不改变脚本可见语义，故主要验证：判定表覆盖到位、槽 ↔ Variant 双向转换精确、
 // 且这些类型在脚本中的构造/拷贝/运算仍与既有 generic 行为一致。

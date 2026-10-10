@@ -54,6 +54,7 @@ void as_native_vo_packed_index_accessors();
 void as_native_vo_packed_size();
 void as_native_vo_packed_index_oob();
 void as_native_vo_packed_push_back();
+void as_native_vo_string_ops();
 void as_native_vo_extended_native_storage();
 void as_native_vo_extended_types_script();
 void as_native_vo_extended_types_ops_parity();
@@ -138,6 +139,10 @@ TEST_CASE("[AngelScript] native value ops packed index oob") {
 
 TEST_CASE("[AngelScript] native value ops packed push back") {
 	as_native_vo_packed_push_back();
+}
+
+TEST_CASE("[AngelScript] native value ops string ops") {
+	as_native_vo_string_ops();
 }
 
 TEST_CASE("[AngelScript] native value ops extended native storage") {

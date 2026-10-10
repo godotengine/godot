@@ -279,6 +279,38 @@ void thunk_packed_push_f64(Variant *self, double value) {
 	}
 }
 
+// ---------- String（存储为 Variant）的原生运算符 ----------
+// Godot String 已带 asOBJ_APP_CLASS，可原生按值返回；其存储是 sizeof(Variant)，
+// 故 thunk 直接读写 Variant 存储。绕过 generic 跳板完成拼接/赋值/相等。
+void thunk_string_add(Variant *ret, const Variant *self, const Variant *other) {
+	ASNativeValueOps::note_thunk_call();
+	new (ret) Variant(String(*self) + String(*other));
+}
+
+Variant *thunk_string_assign(Variant *self, const Variant *other) {
+	ASNativeValueOps::note_thunk_call();
+	*self = *other;
+	return self;
+}
+
+bool thunk_string_equals(const Variant *self, const Variant *other) {
+	ASNativeValueOps::note_thunk_call();
+	return String(*self) == String(*other);
+}
+
+void *thunk_for_string_op(const String &p_op) {
+	if (p_op == "opAdd") {
+		return (void *)&thunk_string_add;
+	}
+	if (p_op == "opAssign") {
+		return (void *)&thunk_string_assign;
+	}
+	if (p_op == "opEquals") {
+		return (void *)&thunk_string_equals;
+	}
+	return nullptr;
+}
+
 } // namespace
 
 namespace ASNativeValueOps {
@@ -349,6 +381,10 @@ bool try_add_op(asIScriptEngine *p_engine, const String &p_type_name, Variant::T
 			break;
 		case Variant::COLOR:
 			fn = thunk_for_op<Color>(p_op);
+			break;
+		case Variant::STRING:
+			// String 已是 asOBJ_APP_CLASS，可原生按值返回；存储为 Variant。
+			fn = thunk_for_string_op(p_op);
 			break;
 		default:
 			return false; // 其余类型暂走 generic 回退。
