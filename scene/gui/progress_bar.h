@@ -35,7 +35,6 @@
 class ProgressBar : public Range {
 	GDCLASS(ProgressBar, Range);
 
-	bool show_percentage = true;
 	bool indeterminate = false;
 	bool editor_preview_indeterminate = false;
 
@@ -67,11 +66,18 @@ public:
 		FILL_MODE_MAX
 	};
 
+	enum ProgressLabelFormat {
+		FORMAT_NONE,
+		FORMAT_PERCENTAGE,
+		FORMAT_DECIMAL,
+		FORMAT_FRACTION
+	};
+
 	void set_fill_mode(int p_fill);
 	int get_fill_mode();
 
-	void set_show_percentage(bool p_visible);
-	bool is_percentage_shown() const;
+	void set_progress_label_format(ProgressLabelFormat p_format);
+	ProgressLabelFormat get_progress_label_format() const;
 
 	void set_indeterminate(bool p_indeterminate);
 	bool is_indeterminate() const;
@@ -86,6 +92,9 @@ private:
 	float _indeterminate_fill_progress = 0;
 
 	FillMode mode = FILL_BEGIN_TO_END;
+
+	ProgressLabelFormat progress_label_format = FORMAT_PERCENTAGE;
 };
 
 VARIANT_ENUM_CAST(ProgressBar::FillMode);
+VARIANT_ENUM_CAST(ProgressBar::ProgressLabelFormat);

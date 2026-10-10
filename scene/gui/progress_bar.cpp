@@ -40,8 +40,23 @@
 Size2 ProgressBar::get_minimum_size() const {
 	Size2 minimum_size = theme_cache.background_style->get_minimum_size();
 	minimum_size = minimum_size.max(theme_cache.fill_style->get_minimum_size());
-	if (show_percentage) {
-		String txt = "100%";
+	if (progress_label_format != FORMAT_NONE) {
+		String txt = "";
+
+		switch (progress_label_format) {
+			case FORMAT_PERCENTAGE:
+				txt = "100%";
+				break;
+			case FORMAT_DECIMAL:
+				txt = "1.000";
+				break;
+			case FORMAT_FRACTION:
+				txt = "1/1";
+				break;
+			default:
+				break;
+		}
+
 		TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 		minimum_size.height = MAX(minimum_size.height, theme_cache.background_style->get_minimum_size().height + tl.get_size().y);
 	} else { // this is needed, else the progressbar will collapse
@@ -149,31 +164,54 @@ void ProgressBar::_notification(int p_what) {
 					break;
 			}
 
-			if (show_percentage) {
+			if (progress_label_format != FORMAT_NONE) {
 				double ratio = 0;
 
-				// Avoid division by zero.
-				if (Math::is_equal_approx(get_max(), get_min())) {
-					ratio = 1;
-				} else if (is_ratio_exp() && get_min() >= 0 && get_value() >= 0) {
-					double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
-					double exp_max = Math::log(get_max()) / Math::log((double)2);
-					double exp_value = get_value() == 0 ? 0.0 : Math::log(get_value()) / Math::log((double)2);
-					double percentage = (exp_value - exp_min) / (exp_max - exp_min);
+				if (progress_label_format != FORMAT_FRACTION) {
+					// Avoid division by zero.
+					if (Math::is_equal_approx(get_max(), get_min())) {
+						ratio = 1;
+					} else if (is_ratio_exp() && get_min() >= 0 && get_value() >= 0) {
+						double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
+						double exp_max = Math::log(get_max()) / Math::log((double)2);
+						double exp_value = get_value() == 0 ? 0.0 : Math::log(get_value()) / Math::log((double)2);
+						double percentage = (exp_value - exp_min) / (exp_max - exp_min);
 
-					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
-				} else {
-					double percentage = (get_value() - get_min()) / (get_max() - get_min());
+						ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+					} else {
+						double percentage = (get_value() - get_min()) / (get_max() - get_min());
 
-					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+						ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+					}
 				}
 
-				String txt = itos(int(Math::round(ratio * 100)));
+				String txt;
+				switch (progress_label_format) {
+					case FORMAT_PERCENTAGE:
+						txt = itos(int(Math::round(ratio * 100)));
+						break;
+					case FORMAT_DECIMAL:
+						txt = rtos(Math::snapped(ratio, 0.001));
+						break;
+					case FORMAT_FRACTION: {
+						const bool step_is_whole_number = Math::is_equal_approx(get_step(), Math::round(get_step()));
+						const int decimals = step_is_whole_number ? 0 : -1;
+						const String value = String::num(Math::snapped(get_value(), get_step()), decimals);
+						const String max = String::num(Math::snapped(get_max(), get_step()), decimals);
+						txt = value + "/" + max;
+					} break;
+					default:
+						break;
+				}
 
 				if (is_localizing_numeral_system()) {
 					const String &lang = _get_locale();
-					txt = TranslationServer::get_singleton()->format_number(txt, lang) + TranslationServer::get_singleton()->get_percent_sign(lang);
-				} else {
+					txt = TranslationServer::get_singleton()->format_number(txt, lang);
+
+					if (progress_label_format == FORMAT_PERCENTAGE) {
+						txt += TranslationServer::get_singleton()->get_percent_sign(lang);
+					}
+				} else if (progress_label_format == FORMAT_PERCENTAGE) {
 					txt += String("%");
 				}
 
@@ -191,9 +229,7 @@ void ProgressBar::_notification(int p_what) {
 }
 
 void ProgressBar::_validate_property(PropertyInfo &p_property) const {
-	if (Engine::get_singleton()->is_editor_hint() && indeterminate && p_property.name == "show_percentage") {
-		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
-	} else if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
+	if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -209,17 +245,14 @@ int ProgressBar::get_fill_mode() {
 	return mode;
 }
 
-void ProgressBar::set_show_percentage(bool p_visible) {
-	if (show_percentage == p_visible) {
-		return;
-	}
-	show_percentage = p_visible;
+void ProgressBar::set_progress_label_format(ProgressLabelFormat	p_format) {
+	progress_label_format = p_format;
 	update_minimum_size();
 	queue_redraw();
 }
 
-bool ProgressBar::is_percentage_shown() const {
-	return show_percentage;
+ProgressBar::ProgressLabelFormat ProgressBar::get_progress_label_format() const {
+	return progress_label_format;
 }
 
 void ProgressBar::set_indeterminate(bool p_indeterminate) {
@@ -261,15 +294,14 @@ bool ProgressBar::is_editor_preview_indeterminate_enabled() const {
 void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &ProgressBar::set_fill_mode);
 	ClassDB::bind_method(D_METHOD("get_fill_mode"), &ProgressBar::get_fill_mode);
-	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
-	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
 	ClassDB::bind_method(D_METHOD("set_indeterminate", "indeterminate"), &ProgressBar::set_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_indeterminate"), &ProgressBar::is_indeterminate);
 	ClassDB::bind_method(D_METHOD("set_editor_preview_indeterminate", "preview_indeterminate"), &ProgressBar::set_editor_preview_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_editor_preview_indeterminate_enabled"), &ProgressBar::is_editor_preview_indeterminate_enabled);
+	ClassDB::bind_method(D_METHOD("set_progress_label_format", "progress_label_format"), &ProgressBar::set_progress_label_format);
+	ClassDB::bind_method(D_METHOD("get_progress_label_format"), &ProgressBar::get_progress_label_format);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_percentage"), "set_show_percentage", "is_percentage_shown");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indeterminate"), "set_indeterminate", "is_indeterminate");
 	ADD_GROUP("Editor", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_preview_indeterminate"), "set_editor_preview_indeterminate", "is_editor_preview_indeterminate_enabled");
@@ -278,6 +310,13 @@ void ProgressBar::_bind_methods() {
 	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);
 	BIND_ENUM_CONSTANT(FILL_TOP_TO_BOTTOM);
 	BIND_ENUM_CONSTANT(FILL_BOTTOM_TO_TOP);
+
+	BIND_ENUM_CONSTANT(FORMAT_NONE);
+	BIND_ENUM_CONSTANT(FORMAT_PERCENTAGE);
+	BIND_ENUM_CONSTANT(FORMAT_DECIMAL);
+	BIND_ENUM_CONSTANT(FORMAT_FRACTION);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "progress_label_format", PROPERTY_HINT_ENUM, "None,Percentage,Decimal,Fraction"), "set_progress_label_format", "get_progress_label_format");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ProgressBar, background_style, "background");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ProgressBar, fill_style, "fill");
