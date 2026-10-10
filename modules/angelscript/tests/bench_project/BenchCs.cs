@@ -109,6 +109,17 @@ public partial class BenchCs : Node
 		return (long)(acc.X + acc.Y);
 	}
 
+	public long bench_color(long n)
+	{
+		var c = new Color(1.0f, 2.0f, 3.0f, 1.0f);
+		var acc = new Color();
+		for (long i = 0; i < n; i++)
+		{
+			acc = acc + c;
+		}
+		return (long)acc.R & 0x3FFFFFFF;
+	}
+
 	public long bench_engine(long n)
 	{
 		long s = 0;

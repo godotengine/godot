@@ -31,14 +31,28 @@
 #include "as_binding_native_value_ops.h"
 
 #include "core/error/error_macros.h"
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/color.h"
+#include "core/math/plane.h"
+#include "core/math/projection.h"
+#include "core/math/quaternion.h"
+#include "core/math/rect2.h"
+#include "core/math/rect2i.h"
+#include "core/math/transform_2d.h"
+#include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector2i.h"
 #include "core/math/vector3.h"
 #include "core/math/vector3i.h"
+#include "core/math/vector4.h"
+#include "core/math/vector4i.h"
 #include "core/variant/variant_internal.h"
 
 #include <angelscript.h>
 #include <new>
+#include <type_traits>
+#include <utility>
 
 namespace {
 
@@ -86,26 +100,63 @@ bool thunk_equals(const T *self, const T *other) {
 	return *self == *other;
 }
 
-// 按运算符名取该类型的原生 thunk 函数指针；未覆盖的运算符返回 nullptr。
+// 运算符可用性探测：值类型不一定支持全部六个运算符（如 Projection 无 `/`、Rect2 无四则）。
+// 只有真正存在的运算符才实例化对应 thunk；其余返回 nullptr，由调用方回退 generic。
+template <typename T, typename = void>
+struct has_add : std::false_type {};
+template <typename T>
+struct has_add<T, std::void_t<decltype(std::declval<T>() + std::declval<T>())>> : std::true_type {};
+
+template <typename T, typename = void>
+struct has_sub : std::false_type {};
+template <typename T>
+struct has_sub<T, std::void_t<decltype(std::declval<T>() - std::declval<T>())>> : std::true_type {};
+
+template <typename T, typename = void>
+struct has_mul : std::false_type {};
+template <typename T>
+struct has_mul<T, std::void_t<decltype(std::declval<T>() * std::declval<T>())>> : std::true_type {};
+
+template <typename T, typename = void>
+struct has_div : std::false_type {};
+template <typename T>
+struct has_div<T, std::void_t<decltype(std::declval<T>() / std::declval<T>())>> : std::true_type {};
+
+template <typename T, typename = void>
+struct has_eq : std::false_type {};
+template <typename T>
+struct has_eq<T, std::void_t<decltype(std::declval<T>() == std::declval<T>())>> : std::true_type {};
+
+// 按运算符名取该类型的原生 thunk 函数指针；该类型不支持或未覆盖的运算符返回 nullptr。
 template <typename T>
 void *thunk_for_op(const String &p_op) {
-	if (p_op == "opAdd") {
-		return (void *)&thunk_binop<T, OpAdd<T>>;
+	if constexpr (has_add<T>::value) {
+		if (p_op == "opAdd") {
+			return (void *)&thunk_binop<T, OpAdd<T>>;
+		}
 	}
-	if (p_op == "opSub") {
-		return (void *)&thunk_binop<T, OpSub<T>>;
+	if constexpr (has_sub<T>::value) {
+		if (p_op == "opSub") {
+			return (void *)&thunk_binop<T, OpSub<T>>;
+		}
 	}
-	if (p_op == "opMul") {
-		return (void *)&thunk_binop<T, OpMul<T>>;
+	if constexpr (has_mul<T>::value) {
+		if (p_op == "opMul") {
+			return (void *)&thunk_binop<T, OpMul<T>>;
+		}
 	}
-	if (p_op == "opDiv") {
-		return (void *)&thunk_binop<T, OpDiv<T>>;
+	if constexpr (has_div<T>::value) {
+		if (p_op == "opDiv") {
+			return (void *)&thunk_binop<T, OpDiv<T>>;
+		}
 	}
 	if (p_op == "opAssign") {
 		return (void *)&thunk_assign<T>;
 	}
-	if (p_op == "opEquals") {
-		return (void *)&thunk_equals<T>;
+	if constexpr (has_eq<T>::value) {
+		if (p_op == "opEquals") {
+			return (void *)&thunk_equals<T>;
+		}
 	}
 	return nullptr;
 }
@@ -233,6 +284,45 @@ bool try_add_op(asIScriptEngine *p_engine, const String &p_type_name, Variant::T
 			break;
 		case Variant::VECTOR3I:
 			fn = thunk_for_op<Vector3i>(p_op);
+			break;
+		// P3b：与原生存储类型表一一对应。仅当 register_type_members 已确认该类型存在
+		// (T, T) -> T 形式的运算符时才会走到这里，故未覆盖的运算符（如 Color*float）
+		// 不会命中，安全回退 generic。
+		case Variant::VECTOR4:
+			fn = thunk_for_op<Vector4>(p_op);
+			break;
+		case Variant::VECTOR4I:
+			fn = thunk_for_op<Vector4i>(p_op);
+			break;
+		case Variant::RECT2:
+			fn = thunk_for_op<Rect2>(p_op);
+			break;
+		case Variant::RECT2I:
+			fn = thunk_for_op<Rect2i>(p_op);
+			break;
+		case Variant::TRANSFORM2D:
+			fn = thunk_for_op<Transform2D>(p_op);
+			break;
+		case Variant::PLANE:
+			fn = thunk_for_op<Plane>(p_op);
+			break;
+		case Variant::QUATERNION:
+			fn = thunk_for_op<Quaternion>(p_op);
+			break;
+		case Variant::AABB:
+			fn = thunk_for_op<AABB>(p_op);
+			break;
+		case Variant::BASIS:
+			fn = thunk_for_op<Basis>(p_op);
+			break;
+		case Variant::TRANSFORM3D:
+			fn = thunk_for_op<Transform3D>(p_op);
+			break;
+		case Variant::PROJECTION:
+			fn = thunk_for_op<Projection>(p_op);
+			break;
+		case Variant::COLOR:
+			fn = thunk_for_op<Color>(p_op);
 			break;
 		default:
 			return false; // 其余类型暂走 generic 回退。

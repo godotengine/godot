@@ -36,6 +36,8 @@
 #define ANGELSCRIPT_NATIVE_VALUE_OPS_TESTS_IMPL
 #include "test_angelscript_native_value_ops.h"
 
+#include "core/math/color.h"
+#include "core/math/transform_2d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector2i.h"
 #include "core/math/vector3.h"
@@ -520,5 +522,89 @@ void as_native_vo_packed_index_oob() {
 		return;
 	}
 	CHECK(nearly(out, 5.0));
+}
+
+// P3b：更多几何值类型纳入原生存储。原生存储只改变脚本侧内存布局与生命周期，
+// 不改变脚本可见语义，故主要验证：判定表覆盖到位、槽 ↔ Variant 双向转换精确、
+// 且这些类型在脚本中的构造/拷贝/运算仍与既有 generic 行为一致。
+void as_native_vo_extended_native_storage() {
+	if (!ASNativeValueStorage::is_native_storage_type(Variant::VECTOR2)) {
+		return; // 未启用平台跳过（判定表整体返回 false）。
+	}
+	const Variant::Type extended[] = {
+		Variant::VECTOR4, Variant::VECTOR4I, Variant::RECT2, Variant::RECT2I,
+		Variant::TRANSFORM2D, Variant::PLANE, Variant::QUATERNION, Variant::AABB,
+		Variant::BASIS, Variant::TRANSFORM3D, Variant::PROJECTION, Variant::COLOR,
+	};
+	for (const Variant::Type t : extended) {
+		CHECK(ASNativeValueStorage::is_native_storage_type(t));
+	}
+	// Color 槽双向转换。
+	Color c(0.1f, 0.2f, 0.3f, 0.4f);
+	Variant cback = ASNativeValueStorage::native_to_variant(Variant::COLOR, &c);
+	CHECK(nearly((double)((Color)cback).r, 0.1));
+	Color cslot;
+	ASNativeValueStorage::variant_to_native(Variant::COLOR, Variant(Color(0.5, 0.6, 0.7, 1.0)), &cslot);
+	CHECK(nearly((double)cslot.g, 0.6));
+	// Transform3D 槽双向转换（较大的结构体，验证非 8/12 字节布局也正确）。
+	Transform3D xf(Basis(), Vector3(1.5, -2.5, 3.5));
+	Variant xback = ASNativeValueStorage::native_to_variant(Variant::TRANSFORM3D, &xf);
+	CHECK_EQ((Transform3D)xback, xf);
+}
+
+// P3b：脚本侧新原生存储类型语义等价（Color 算术 + 成员读写、Transform2D 拷贝/构造/取原点）。
+void as_native_vo_extended_types_script() {
+	if (!ASNativeValueStorage::is_native_storage_type(Variant::COLOR)) {
+		return;
+	}
+	double out = 0.0;
+	ASNativeValueOps::reset_native_thunk_calls();
+	CHECK(run_double(R"(
+		double main() {
+			Color a(1.0, 0.5, 0.25, 1.0);
+			Color b = a;                 // 拷贝构造
+			b.g = 1.0;                   // 成员写
+			Color s = a + b;             // (2, 1.5, 0.5, 2)
+			Transform2D t(Vector2(1, 0), Vector2(0, 1), Vector2(3, 4));
+			Transform2D u = t;           // 拷贝
+			Vector2 o = u.get_origin();  // (3, 4)
+			return 100.0 * s.b + s.r + s.a + o.x + o.y; // 50 + 2 + 2 + 3 + 4 = 61
+		}
+	)", &out));
+	CHECK(nearly(out, 61.0));
+	CHECK(ASNativeValueOps::native_thunk_calls() > 0); // Color 的 opAdd/opAssign 已命中原生 thunk
+}
+
+// P3b：新原生运算符的表值对齐（Color 四则与相等、Vector4 分量乘、Transform2D 组合乘）。
+// 值均取二进制精确数（0.5/0.25/0.125 等），保证期望值是确定有理数，便于检测 thunk 语义偏差。
+void as_native_vo_extended_types_ops_parity() {
+	if (!ASNativeValueStorage::is_native_storage_type(Variant::COLOR)) {
+		return;
+	}
+	double out = 0.0;
+	CHECK(run_double(R"(
+		double main() {
+			Color a(0.5, 0.25, 1.0, 1.0);
+			Color b(0.25, 0.5, 0.5, 0.5);
+			Color s = a + b;   // (0.75, 0.75, 1.5, 1.5)
+			Color d = a - b;   // (0.25, -0.25, 0.5, 0.5)
+			Color m = a * b;   // (0.125, 0.125, 0.5, 0.5)
+			Color q = a / b;   // (2.0, 0.5, 2.0, 2.0)
+			Vector4 v(1.0, 2.0, 3.0, 4.0);
+			Vector4 w = v * v; // 分量乘 (1, 4, 9, 16)
+			Transform2D t(Vector2(1, 0), Vector2(0, 1), Vector2(3, 4));
+			Transform2D c = t * t;          // 组合：origin 翻倍
+			Vector2 o = c.get_origin();     // (6, 8)
+			bool eq = (a == a);             // opEquals
+			return 100.0 * (s.r + s.g + s.b + s.a)  // 450
+					+ 10.0 * (d.r + d.b + d.a)       // 12.5
+					+ (m.r + m.g + m.b)              // 0.75
+					+ q.r                            // 2.0
+					+ (w.x + w.y + w.z + w.w)        // 30.0
+					+ (eq ? 1.0 : 0.0)               // 1.0
+					+ (o.x + o.y);                   // 14.0
+		}
+	)", &out));
+	CHECK(nearly(out, 510.25));
 }
 

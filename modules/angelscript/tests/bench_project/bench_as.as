@@ -111,6 +111,16 @@ class bench_as {
 		return int(acc.x + acc.y);
 	}
 
+	int bench_color(int n) {
+		// 几何值类型原生存储（P3b）：Color 的构造/拷贝/析构走原生布局；运算符仍 generic。
+		Color c(1.0, 2.0, 3.0, 1.0);
+		Color acc;
+		for (int i = 0; i < n; i++) {
+			acc = acc + c;
+		}
+		return int(acc.r) & 0x3FFFFFFF;
+	}
+
 	int bench_engine(int n) {
 		// as_self() 返回 Object@，本模块不支持向下转换到 Node@，只能自建一个 Node 句柄来调用引擎方法。
 		Node @selfn = Node();

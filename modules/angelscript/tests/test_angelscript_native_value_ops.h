@@ -53,6 +53,9 @@ void as_native_vo_boundary_conversions();
 void as_native_vo_packed_index_accessors();
 void as_native_vo_packed_size();
 void as_native_vo_packed_index_oob();
+void as_native_vo_extended_native_storage();
+void as_native_vo_extended_types_script();
+void as_native_vo_extended_types_ops_parity();
 
 #ifndef ANGELSCRIPT_NATIVE_VALUE_OPS_TESTS_IMPL
 
@@ -130,6 +133,18 @@ TEST_CASE("[AngelScript] native value ops packed size") {
 
 TEST_CASE("[AngelScript] native value ops packed index oob") {
 	as_native_vo_packed_index_oob();
+}
+
+TEST_CASE("[AngelScript] native value ops extended native storage") {
+	as_native_vo_extended_native_storage();
+}
+
+TEST_CASE("[AngelScript] native value ops extended types script") {
+	as_native_vo_extended_types_script();
+}
+
+TEST_CASE("[AngelScript] native value ops extended types ops parity") {
+	as_native_vo_extended_types_ops_parity();
 }
 
 #endif // ANGELSCRIPT_NATIVE_VALUE_OPS_TESTS_IMPL

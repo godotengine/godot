@@ -68,6 +68,13 @@ func bench_vector(n: int) -> int:
 		acc = acc + v
 	return int(acc.x + acc.y)
 
+func bench_color(n: int) -> int:
+	var c := Color(1.0, 2.0, 3.0, 1.0)
+	var acc := Color()
+	for i in n:
+		acc = acc + c
+	return int(acc.r) & 0x3FFFFFFF
+
 func bench_engine(n: int) -> int:
 	var s := 0
 	for i in n:

@@ -21,6 +21,7 @@ const WORKLOADS := {
 	"bench_packed": 100000,
 	"bench_string": 8000,
 	"bench_vector": 1000000,
+	"bench_color": 1000000,
 	"bench_engine": 200000,
 }
 
