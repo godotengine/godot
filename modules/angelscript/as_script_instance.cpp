@@ -191,6 +191,43 @@ int ASScriptInstance::_expected_param_count(const StringName &p_method) {
 	return -1;
 }
 
+uint64_t ASScriptInstance::method_resolution_count_value = 0;
+
+uint64_t ASScriptInstance::method_resolution_count() {
+	return method_resolution_count_value;
+}
+
+void ASScriptInstance::reset_method_resolution_count() {
+	method_resolution_count_value = 0;
+}
+
+asIScriptFunction *ASScriptInstance::_resolve_method(const StringName &p_method) const {
+	HashMap<StringName, asIScriptFunction *>::ConstIterator cached = method_resolution_cache.find(p_method);
+	if (cached) {
+		return cached->value;
+	}
+	method_resolution_count_value++;
+
+	// 慢路径：信号声明与非法/签名不符的方法都缓存成 nullptr，后续同名调用直接命中，
+	// 不再重复构造 String / 转 UTF-8 / 查名字（与 _is_signal_declaration / has_method 原语义一致）。
+	asIScriptFunction *func = nullptr;
+	if (!_is_signal_declaration(p_method)) {
+		asITypeInfo *type = script->get_type_info();
+		if (type != nullptr) {
+			CharString name = String(p_method).utf8();
+			func = type->GetMethodByName(name.get_data(), true);
+			if (func != nullptr) {
+				const int expected = _expected_param_count(p_method);
+				if (expected >= 0 && (int)func->GetParamCount() != expected) {
+					func = nullptr;
+				}
+			}
+		}
+	}
+	method_resolution_cache.insert(p_method, func);
+	return func;
+}
+
 bool ASScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	if (object == nullptr) {
 		return false;
@@ -428,48 +465,17 @@ void ASScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 }
 
 bool ASScriptInstance::has_method(const StringName &p_method) const {
-	if (_is_signal_declaration(p_method)) {
-		// 信号声明不是方法（与 ASScript::has_method 一致）。
-		return false;
-	}
-	asITypeInfo *type = script->get_type_info();
-	if (type == nullptr) {
-		return false;
-	}
-	CharString name = String(p_method).utf8();
-	asIScriptFunction *func = type->GetMethodByName(name.get_data(), true);
-	if (func == nullptr) {
-		return false;
-	}
-	const int expected = _expected_param_count(p_method);
-	if (expected >= 0 && (int)func->GetParamCount() != expected) {
-		return false;
-	}
-	return true;
+	// 与 callp 共用同一份缓存解析：信号声明、无此方法、签名不符一律为 false。
+	return _resolve_method(p_method) != nullptr;
 }
 
 Variant ASScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	if (_is_signal_declaration(p_method)) {
-		// 信号声明不是方法，不可经 call/callp 调用（与 has_method 的过滤一致）。
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-		return Variant();
-	}
-
-	asITypeInfo *type = script->get_type_info();
-	if (type == nullptr) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-		return Variant();
-	}
-	CharString name = String(p_method).utf8();
-	asIScriptFunction *func = type->GetMethodByName(name.get_data(), true);
+	// 每实例缓存方法解析结果：首次走慢路径，之后仅一次 StringName 哈希查找。
+	// 信号声明、无此方法、签名不符统一解析为 nullptr → 非法方法。
+	asIScriptFunction *func = _resolve_method(p_method);
 	if (func == nullptr) {
-		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
-		return Variant();
-	}
-	const int expected = _expected_param_count(p_method);
-	if (expected >= 0 && (int)func->GetParamCount() != expected) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
 	}

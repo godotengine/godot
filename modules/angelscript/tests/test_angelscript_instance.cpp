@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "../as_script.h"
+#include "../as_script_instance.h"
 
 #include "scene/main/node.h"
 
@@ -233,6 +234,35 @@ void as_instance_scalar_properties_round_trip() {
 	bool is_valid = true;
 	CHECK(instance->get_property_type("does_not_exist", &is_valid) == Variant::NIL);
 	CHECK_FALSE(is_valid);
+
+	memdelete(node);
+}
+
+void as_instance_repeated_dispatch_is_cached() {
+	Ref<ASScript> script = _make_script("cached_dispatch_node",
+			"\tint ping() const { return 5; }");
+	REQUIRE(script.is_valid());
+	if (!script.is_valid()) {
+		return;
+	}
+
+	Node *node = memnew(Node);
+	ScriptInstance *instance = _attach_instance(script, node);
+	REQUIRE(instance != nullptr);
+	if (instance == nullptr) {
+		memdelete(node);
+		return;
+	}
+
+	ASScriptInstance::reset_method_resolution_count();
+	Callable::CallError error;
+	for (int i = 0; i < 5; i++) {
+		const Variant result = instance->callp("ping", nullptr, 0, error);
+		CHECK(error.error == Callable::CallError::CALL_OK);
+		CHECK(result == Variant(5));
+	}
+	// 5 次同名派发只应触发 1 次昂贵的方法名解析，其余命中每实例缓存。
+	CHECK(ASScriptInstance::method_resolution_count() == 1);
 
 	memdelete(node);
 }

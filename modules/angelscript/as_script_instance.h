@@ -33,8 +33,10 @@
 #include "as_script.h"
 
 #include "core/object/script_instance.h"
+#include "core/templates/hash_map.h"
 
 #include <angelscript.h>
+#include <cstdint>
 
 // 脚本实例：持有 AS 侧对象句柄（object）与一个专用执行上下文（context）。
 // 引擎回调 _ready/_enter_tree/_exit_tree/_process/_physics_process 由 Node 的
@@ -50,9 +52,22 @@ class ASScriptInstance : public ScriptInstance {
 	bool _find_property(const StringName &p_name, int *r_index, int *r_type_id) const;
 	static int _expected_param_count(const StringName &p_method);
 
+	// 方法名解析缓存：StringName → asIScriptFunction*（nullptr 表示"信号/无此方法/签名不符"）。
+	// 每次跨界派发都要按名字解析函数；缓存把「2 次 String 构造 + UTF-8 转换 + 名字查找 +
+	// 参数个数校验」压成一次 StringName 哈希查找。实例在热更（reload_with_instances）时会被
+	// 销毁重建，缓存不跨代，因此无需失效钩子。
+	mutable HashMap<StringName, asIScriptFunction *> method_resolution_cache;
+	asIScriptFunction *_resolve_method(const StringName &p_method) const;
+
+	static uint64_t method_resolution_count_value;
+
 public:
 	ASScriptInstance(const Ref<ASScript> &p_script, Object *p_owner);
 	virtual ~ASScriptInstance() override;
+
+	// 诊断/测试：统计昂贵的方法名解析次数（即缓存 miss 次数）。
+	static uint64_t method_resolution_count();
+	static void reset_method_resolution_count();
 
 	// AS 侧对象为空表示构造失败（没有默认 factory，或构造函数执行异常）。
 	// ASScript::instance_create() 据此丢弃半成品实例，避免返回"哑实例"。
