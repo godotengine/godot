@@ -581,7 +581,7 @@ private:
 	HScrollBar *h_scroll = nullptr;
 	VScrollBar *v_scroll = nullptr;
 
-	Vector2i content_size_cache;
+	Size2 content_size_cache;
 	bool fit_content_height = false;
 	bool fit_content_width = false;
 	bool scroll_past_end_of_file_enabled = false;
@@ -597,13 +597,13 @@ private:
 	int first_visible_col = 0;
 
 	bool scrolling = false;
-	bool updating_scrolls = false;
 
 	void _update_scrollbars();
-	int _get_control_height() const;
+	double _get_text_area_height() const;
 
 	void _v_scroll_input();
-	void _scroll_moved(double p_to_val);
+	void _h_scroll_moved();
+	void _v_scroll_moved();
 
 	double _get_visible_lines_offset() const;
 	double _get_v_scroll_offset() const;
@@ -1165,6 +1165,7 @@ public:
 	// Visible lines.
 	void set_line_as_first_visible(int p_line, int p_wrap_index = 0);
 	int get_first_visible_line() const;
+	int get_first_visible_line_wrap_index() const;
 
 	void set_line_as_center_visible(int p_line, int p_wrap_index = 0);
 
