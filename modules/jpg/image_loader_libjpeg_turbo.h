@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  image_loader_jpegd.h                                                  */
+/*  image_loader_libjpeg_turbo.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,16 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMAGE_LOADER_JPEGD_H
-#define IMAGE_LOADER_JPEGD_H
+#ifndef IMAGE_LOADER_JPEGTURBO_H
+#define IMAGE_LOADER_JPEGTURBO_H
 
 #include "core/io/image_loader.h"
 
-class ImageLoaderJPG : public ImageFormatLoader {
+class ImageLoaderLibJPEGTurbo : public ImageFormatLoader {
 public:
 	virtual Error load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	ImageLoaderJPG();
+
+	ImageLoaderLibJPEGTurbo();
 };
 
-#endif // IMAGE_LOADER_JPEGD_H
+#endif // IMAGE_LOADER_JPEGTURBO_H
