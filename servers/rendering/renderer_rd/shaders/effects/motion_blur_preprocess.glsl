@@ -70,9 +70,9 @@ layout(push_constant, std430) uniform Params {
 	float velocity_multiplier_camera_rotation;
 	float velocity_multiplier_camera_movement;
 	float velocity_multiplier_object;
-	float velocity_threshold_lower;
+	float activation_threshold;
 
-	float velocity_threshold_upper;
+	float activation_smoothing;
 	float support_fsr2;
 	float motion_blur_intensity;
 	float framerate_normalization_factor;
@@ -233,7 +233,7 @@ void main() {
 	// thresholds is to be aware of human's eye tracking capabilities, keeping eye-trackable objects crisp.
 	// This revolves around the object's speed across the screen which is framerate-independent, meaning activation of the
 	// blur should also be framerate-independent.
-	float thresholds_multiplier = sharp_step(params.velocity_threshold_lower, params.velocity_threshold_upper, length(total_velocity.xy * vec2(float(render_size.x) / float(render_size.y), 1)) * params.framerate_normalization_factor * params.motion_blur_intensity);
+	float thresholds_multiplier = sharp_step(params.activation_threshold, params.activation_threshold + params.activation_smoothing, length(total_velocity.xy * vec2(float(render_size.x) / float(render_size.y), 1)) * params.framerate_normalization_factor * params.motion_blur_intensity);
 
 	// If the previous position is happening behind the camera's near clip plane, which can happen when the camera moves backwards at high speed,
 	// the w component of the projected vector would be negative, and the velocity vector would be flipped.

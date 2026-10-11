@@ -201,26 +201,22 @@ float CameraAttributesPractical::get_motion_blur_velocity_multiplier_camera_rota
 	return motion_blur_velocity_multiplier_camera_rotation;
 }
 
-void CameraAttributesPractical::set_motion_blur_velocity_threshold_lower(float p_threshold) {
-	p_threshold = CLAMP(p_threshold, 0.0f, 100.0f);
-	motion_blur_velocity_threshold_lower = p_threshold;
-	motion_blur_velocity_threshold_upper = MAX(motion_blur_velocity_threshold_upper, motion_blur_velocity_threshold_lower);
+void CameraAttributesPractical::set_motion_blur_activation_threshold(float p_threshold) {
+	motion_blur_activation_threshold = p_threshold;
 	_update_motion_blur();
 }
 
-float CameraAttributesPractical::get_motion_blur_velocity_threshold_lower() const {
-	return motion_blur_velocity_threshold_lower;
+float CameraAttributesPractical::get_motion_blur_activation_threshold() const {
+	return motion_blur_activation_threshold;
 }
 
-void CameraAttributesPractical::set_motion_blur_velocity_threshold_upper(float p_threshold) {
-	p_threshold = CLAMP(p_threshold, 0.0f, 100.0f);
-	motion_blur_velocity_threshold_upper = p_threshold;
-	motion_blur_velocity_threshold_lower = MIN(motion_blur_velocity_threshold_lower, motion_blur_velocity_threshold_upper);
+void CameraAttributesPractical::set_motion_blur_activation_smoothing(float p_threshold) {
+	motion_blur_activation_smoothing = p_threshold;
 	_update_motion_blur();
 }
 
-float CameraAttributesPractical::get_motion_blur_velocity_threshold_upper() const {
-	return motion_blur_velocity_threshold_upper;
+float CameraAttributesPractical::get_motion_blur_activation_smoothing() const {
+	return motion_blur_activation_smoothing;
 }
 
 void CameraAttributesPractical::set_dof_blur_far_enabled(bool p_enabled) {
@@ -296,8 +292,8 @@ void CameraAttributesPractical::_update_motion_blur() {
 			motion_blur_velocity_multiplier_object,
 			motion_blur_velocity_multiplier_camera_movement,
 			motion_blur_velocity_multiplier_camera_rotation,
-			motion_blur_velocity_threshold_lower,
-			motion_blur_velocity_threshold_upper);
+			motion_blur_activation_threshold,
+			motion_blur_activation_smoothing);
 }
 
 void CameraAttributesPractical::_update_dof_blur() {
@@ -373,10 +369,10 @@ void CameraAttributesPractical::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_motion_blur_velocity_multiplier_camera_movement"), &CameraAttributesPractical::get_motion_blur_velocity_multiplier_camera_movement);
 	ClassDB::bind_method(D_METHOD("set_motion_blur_velocity_multiplier_camera_rotation", "multiplier"), &CameraAttributesPractical::set_motion_blur_velocity_multiplier_camera_rotation);
 	ClassDB::bind_method(D_METHOD("get_motion_blur_velocity_multiplier_camera_rotation"), &CameraAttributesPractical::get_motion_blur_velocity_multiplier_camera_rotation);
-	ClassDB::bind_method(D_METHOD("set_motion_blur_velocity_threshold_lower", "threshold"), &CameraAttributesPractical::set_motion_blur_velocity_threshold_lower);
-	ClassDB::bind_method(D_METHOD("get_motion_blur_velocity_threshold_lower"), &CameraAttributesPractical::get_motion_blur_velocity_threshold_lower);
-	ClassDB::bind_method(D_METHOD("set_motion_blur_velocity_threshold_upper", "threshold"), &CameraAttributesPractical::set_motion_blur_velocity_threshold_upper);
-	ClassDB::bind_method(D_METHOD("get_motion_blur_velocity_threshold_upper"), &CameraAttributesPractical::get_motion_blur_velocity_threshold_upper);
+	ClassDB::bind_method(D_METHOD("set_motion_blur_activation_threshold", "threshold"), &CameraAttributesPractical::set_motion_blur_activation_threshold);
+	ClassDB::bind_method(D_METHOD("get_motion_blur_activation_threshold"), &CameraAttributesPractical::get_motion_blur_activation_threshold);
+	ClassDB::bind_method(D_METHOD("set_motion_blur_activation_smoothing", "threshold"), &CameraAttributesPractical::set_motion_blur_activation_smoothing);
+	ClassDB::bind_method(D_METHOD("get_motion_blur_activation_smoothing"), &CameraAttributesPractical::get_motion_blur_activation_smoothing);
 
 	// DOF blur
 
@@ -411,9 +407,9 @@ void CameraAttributesPractical::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_movement", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_motion_blur_velocity_multiplier_camera_movement", "get_motion_blur_velocity_multiplier_camera_movement");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_multiplier_camera_rotation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_motion_blur_velocity_multiplier_camera_rotation", "get_motion_blur_velocity_multiplier_camera_rotation");
 
-	ADD_SUBGROUP("Velocity Thresholds", "motion_blur_velocity_threshold_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_threshold_lower", PROPERTY_HINT_RANGE, "0.0,100.0,0.01"), "set_motion_blur_velocity_threshold_lower", "get_motion_blur_velocity_threshold_lower");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_velocity_threshold_upper", PROPERTY_HINT_RANGE, "0.0,100.0,0.01"), "set_motion_blur_velocity_threshold_upper", "get_motion_blur_velocity_threshold_upper");
+	ADD_SUBGROUP("Activation", "motion_blur_activation_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_activation_threshold", PROPERTY_HINT_RANGE, "0.0,100.0,0.01,or_greater"), "set_motion_blur_activation_threshold", "get_motion_blur_activation_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_blur_activation_smoothing", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater"), "set_motion_blur_activation_smoothing", "get_motion_blur_activation_smoothing");
 
 	ADD_GROUP("DOF Blur", "dof_blur_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dof_blur_far_enabled"), "set_dof_blur_far_enabled", "is_dof_blur_far_enabled");

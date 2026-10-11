@@ -715,7 +715,7 @@ public:
 
 	virtual RID camera_attributes_create() = 0;
 
-	virtual void camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, float p_velocity_multiplier_object, float p_velocity_multiplier_camera_movement, float p_velocity_multiplier_camera_rotation, float p_velocity_threshold_lower, float p_velocity_threshold_upper) = 0;
+	virtual void camera_attributes_set_motion_blur(RID p_camera_attributes, bool p_enable, float p_intensity, float p_velocity_multiplier_object, float p_velocity_multiplier_camera_movement, float p_velocity_multiplier_camera_rotation, float p_activation_threshold, float p_activation_smoothing) = 0;
 
 	virtual void camera_attributes_set_motion_blur_show_in_editor(bool p_enabled) = 0;
 	virtual void camera_attributes_set_motion_blur_quality(RSE::MotionBlurQuality p_quality) = 0;

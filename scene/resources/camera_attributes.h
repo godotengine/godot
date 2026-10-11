@@ -84,8 +84,8 @@ private:
 	float motion_blur_velocity_multiplier_object = 1.0;
 	float motion_blur_velocity_multiplier_camera_movement = 1.0;
 	float motion_blur_velocity_multiplier_camera_rotation = 0.1;
-	float motion_blur_velocity_threshold_lower = 1.75;
-	float motion_blur_velocity_threshold_upper = 3.0;
+	float motion_blur_activation_threshold = 1.75;
+	float motion_blur_activation_smoothing = 1.25;
 	void _update_motion_blur();
 
 	// DOF blur
@@ -118,10 +118,10 @@ public:
 	float get_motion_blur_velocity_multiplier_camera_movement() const;
 	void set_motion_blur_velocity_multiplier_camera_rotation(float p_multiplier);
 	float get_motion_blur_velocity_multiplier_camera_rotation() const;
-	void set_motion_blur_velocity_threshold_lower(float p_threshold);
-	float get_motion_blur_velocity_threshold_lower() const;
-	void set_motion_blur_velocity_threshold_upper(float p_threshold);
-	float get_motion_blur_velocity_threshold_upper() const;
+	void set_motion_blur_activation_threshold(float p_threshold);
+	float get_motion_blur_activation_threshold() const;
+	void set_motion_blur_activation_smoothing(float p_threshold);
+	float get_motion_blur_activation_smoothing() const;
 
 	// DOF blur
 	void set_dof_blur_far_enabled(bool p_enabled);

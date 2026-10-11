@@ -65,9 +65,9 @@ private:
 		float velocity_multiplier_camera_rotation;
 		float velocity_multiplier_camera_movement;
 		float velocity_multiplier_object;
-		float velocity_threshold_lower;
+		float activation_threshold;
 
-		float velocity_threshold_upper;
+		float activation_smoothing;
 		float support_fsr2;
 		float motion_blur_intensity;
 		float framerate_normalization_factor;
