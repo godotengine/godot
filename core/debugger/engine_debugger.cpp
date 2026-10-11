@@ -33,6 +33,7 @@
 #include "core/debugger/local_debugger.h"
 #include "core/debugger/remote_debugger.h"
 #include "core/debugger/remote_debugger_peer.h"
+#include "core/debugger/remote_debugger_v2.h"
 #include "core/debugger/script_debugger.h"
 #include "core/os/os.h"
 
@@ -133,6 +134,23 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bo
 		script_debugger = memnew(ScriptDebugger);
 		// Tell the OS that we want to handle termination signals.
 		OS::get_singleton()->initialize_debugging();
+	} else if (p_uri.begins_with("debugv2://")) {
+		const String address = p_uri.substr(String("debugv2://").length());
+		const int separator = address.rfind_char(':');
+		const String host = separator < 0 ? address : address.substr(0, separator);
+		const int port = separator < 0 ? 6007 : address.substr(separator + 1).to_int();
+		ERR_FAIL_COND_MSG(host.is_empty() || port < 1 || port > 65535, "Invalid debugv2:// endpoint.");
+		RemoteDebuggerV2 *remote = memnew(RemoteDebuggerV2);
+		singleton = remote;
+		script_debugger = memnew(ScriptDebugger);
+		if (remote->connect(host, port) != OK) {
+			memdelete(script_debugger);
+			script_debugger = nullptr;
+			memdelete(singleton);
+			singleton = nullptr;
+			ERR_PRINT("Remote Debugger v2 could not connect to both debugger channels.");
+			return;
+		}
 	} else if (p_uri.contains("://")) {
 		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
 		CreatePeerFunc *create_fn = protocols.getptr(proto);
