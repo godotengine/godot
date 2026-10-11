@@ -1831,6 +1831,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with_texture) {
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
 	ERR_FAIL_NULL_V(src_texture, RID());
+	ERR_FAIL_COND_V_MSG(src_texture->is_external, RID(), "Imported external textures only support sampling through their conversion.");
 
 	if (src_texture->owner.is_valid()) { // Ahh this is a share. The RenderingDeviceDriver needs the actual owner.
 		p_with_texture = src_texture->owner;
@@ -1914,6 +1915,79 @@ RID RenderingDevice::texture_create_shared(const TextureView &p_view, RID p_with
 	return id;
 }
 
+void RenderingDevice::external_buffer_acquire(uint64_t p_buffer) {
+	driver->external_buffer_acquire(p_buffer);
+}
+
+void RenderingDevice::external_buffer_release(uint64_t p_buffer) {
+	driver->external_buffer_release(p_buffer);
+}
+
+RID RenderingDevice::texture_create_from_external_buffer(uint64_t p_buffer, ExternalTextureProperties &r_properties) {
+	ERR_RENDER_THREAD_GUARD_V(RID());
+	_THREAD_SAFE_METHOD_
+
+	Texture texture;
+	texture.driver_id = driver->texture_create_from_external_buffer(p_buffer, r_properties);
+	ERR_FAIL_COND_V(!texture.driver_id, RID());
+	texture.type = TEXTURE_TYPE_2D;
+	texture.format = r_properties.format;
+	texture.samples = TEXTURE_SAMPLES_1;
+	texture.width = r_properties.width;
+	texture.height = r_properties.height;
+	texture.depth = 1;
+	texture.layers = 1;
+	texture.mipmaps = 1;
+	texture.usage_flags = TEXTURE_USAGE_SAMPLING_BIT;
+	texture.is_external = true;
+	texture.read_aspect_flags = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	texture.barrier_aspect_flags = RDD::TEXTURE_ASPECT_COLOR_BIT;
+	_texture_make_mutable(&texture, RID());
+	// The producer owns the image until the first acquire.
+	texture.draw_tracker->usage = RDG::RESOURCE_USAGE_EXTERNAL_RELEASE;
+	texture_memory.add(driver->texture_get_allocation_size(texture.driver_id));
+	return texture_owner.make_rid(texture);
+}
+
+RID RenderingDevice::texture_set_external_conversion(RID p_texture, ExternalTextureModel p_model, ExternalTextureRange p_range) {
+	ERR_RENDER_THREAD_GUARD_V(RID());
+	_THREAD_SAFE_METHOD_
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!texture || !texture->is_external, RID());
+	RDD::SamplerID driver_sampler = driver->texture_set_external_conversion(texture->driver_id, p_model, p_range);
+	ERR_FAIL_COND_V(!driver_sampler, RID());
+	const RID *sampler = external_samplers.getptr(driver_sampler.id);
+	if (!sampler) {
+		sampler = &external_samplers.insert(driver_sampler.id, sampler_owner.make_rid({ driver_sampler, true }))->value;
+	}
+	texture->external_sampler = *sampler;
+	return *sampler;
+}
+
+Error RenderingDevice::texture_external_acquire(RID p_texture) {
+	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
+	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V_MSG(draw_list.active || compute_list.active || raytracing_list.active, ERR_INVALID_PARAMETER, "Acquiring external textures is forbidden during creation of a command list.");
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!texture || texture->external_sampler.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(acquired_external_texture.is_valid(), ERR_ALREADY_IN_USE);
+	draw_graph.add_texture_external_transfer(texture->draw_tracker, true);
+	acquired_external_texture = p_texture;
+	return OK;
+}
+
+Error RenderingDevice::texture_external_release(RID p_texture) {
+	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
+	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V_MSG(draw_list.active || compute_list.active || raytracing_list.active, ERR_INVALID_PARAMETER, "Releasing external textures is forbidden during creation of a command list.");
+	ERR_FAIL_COND_V(acquired_external_texture != p_texture, ERR_INVALID_PARAMETER);
+	Texture *texture = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL_V(texture, ERR_INVALID_PARAMETER);
+	draw_graph.add_texture_external_transfer(texture->draw_tracker, false);
+	acquired_external_texture = RID();
+	return OK;
+}
+
 RID RenderingDevice::texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps) {
 	// This method creates a texture object using a VkImage created by an extension, module or other external source (OpenXR uses this).
 
@@ -1959,6 +2033,7 @@ RID RenderingDevice::texture_create_from_extension(TextureType p_type, DataForma
 RID RenderingDevice::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps, TextureSliceType p_slice_type, uint32_t p_layers) {
 	Texture *src_texture = texture_owner.get_or_null(p_with_texture);
 	ERR_FAIL_NULL_V(src_texture, RID());
+	ERR_FAIL_COND_V_MSG(src_texture->is_external, RID(), "Imported external textures only support sampling through their conversion.");
 
 	if (src_texture->owner.is_valid()) { // // Ahh this is a share. The RenderingDeviceDriver needs the actual owner.
 		p_with_texture = src_texture->owner;
@@ -3892,7 +3967,7 @@ RID RenderingDevice::sampler_create(const SamplerState &p_state) {
 	RDD::SamplerID sampler = driver->sampler_create(p_state);
 	ERR_FAIL_COND_V(!sampler, RID());
 
-	RID id = sampler_owner.make_rid(sampler);
+	RID id = sampler_owner.make_rid({ sampler, false });
 #ifdef DEV_ENABLED
 	set_resource_name(id, "RID:" + itos(id.get_id()));
 #endif
@@ -4299,9 +4374,10 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 		driver_sampler.set = source_sampler.set;
 		driver_sampler.binding = source_sampler.binding;
 		for (int j = 0; j < source_sampler.samplers.size(); j++) {
-			RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.samplers[j]);
-			ERR_FAIL_NULL_V_MSG(sampler_driver_id, RID(), vformat("Immutable sampler binding (%d), set (%d), index (%d) is not a valid sampler RID.", source_sampler.binding, source_sampler.set, j));
-			driver_sampler.ids.push_back(*sampler_driver_id);
+			const Sampler *sampler = sampler_owner.get_or_null(source_sampler.samplers[j]);
+			ERR_FAIL_NULL_V_MSG(sampler, RID(), vformat("Immutable sampler binding (%d), set (%d), index (%d) is not a valid sampler RID.", source_sampler.binding, source_sampler.set, j));
+			ERR_FAIL_COND_V_MSG(sampler->is_external && (uniform->type != UNIFORM_TYPE_SAMPLER_WITH_TEXTURE || uniform->length != 1), RID(), "External conversion samplers require a single combined image sampler binding.");
+			driver_sampler.ids.push_back(sampler->driver_id);
 		}
 		driver_immutable_samplers.append(driver_sampler);
 	}
@@ -4330,10 +4406,14 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 	shader->layout_hash = driver->shader_get_layout_hash(shader_id);
 
 	for (const PipelineImmutableSampler &sampler : p_immutable_samplers) {
+		RID external_sampler;
 		for (const RID &sampler_id : sampler.samplers) {
+			if (sampler_owner.get_or_null(sampler_id)->is_external) {
+				external_sampler = sampler_id;
+			}
 			_add_dependency(id, sampler_id);
 		}
-		shader->immutable_samplers.insert((uint64_t(sampler.set) << 32) | sampler.binding);
+		shader->immutable_samplers.insert((uint64_t(sampler.set) << 32) | sampler.binding, external_sampler);
 	}
 
 	for (int i = 0; i < shader->uniform_sets.size(); i++) {
@@ -4552,7 +4632,8 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 		driver_uniform.type = uniform.uniform_type;
 		driver_uniform.binding = uniform.binding;
 
-		driver_uniform.immutable_sampler = shader->immutable_samplers.has((uint64_t(p_shader_set) << 32) | uniform.binding);
+		const RID *immutable_sampler = shader->immutable_samplers.getptr((uint64_t(p_shader_set) << 32) | uniform.binding);
+		driver_uniform.immutable_sampler = immutable_sampler != nullptr;
 
 		switch (uniform.uniform_type) {
 			case UNIFORM_TYPE_SAMPLER: {
@@ -4565,10 +4646,12 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 				}
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j++) {
-					RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(uniform.get_id(j));
-					ERR_FAIL_NULL_V_MSG(sampler_driver_id, RID(), "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
+					const Sampler *sampler = sampler_owner.get_or_null(uniform.get_id(j));
+					ERR_FAIL_NULL_V_MSG(sampler, RID(), "Sampler (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid sampler.");
 
-					driver_uniform.ids.push_back(*sampler_driver_id);
+					ERR_FAIL_COND_V_MSG(sampler->is_external, RID(), "External conversion samplers require a combined image sampler binding.");
+
+					driver_uniform.ids.push_back(sampler->driver_id);
 				}
 			} break;
 			case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
@@ -4581,12 +4664,15 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 				}
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j += 2) {
-					RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(uniform.get_id(j + 0));
-					ERR_FAIL_NULL_V_MSG(sampler_driver_id, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
+					const Sampler *sampler = sampler_owner.get_or_null(uniform.get_id(j));
+					ERR_FAIL_NULL_V_MSG(sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
 
 					RID texture_id = uniform.get_id(j + 1);
 					Texture *texture = texture_owner.get_or_null(texture_id);
 					ERR_FAIL_NULL_V_MSG(texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
+
+					const RID external_sampler = immutable_sampler ? *immutable_sampler : RID();
+					ERR_FAIL_COND_V_MSG((texture->is_external || sampler->is_external || external_sampler.is_valid()) && (external_sampler != texture->external_sampler || external_sampler != uniform.get_id(j)), RID(), "An imported texture requires its matching immutable conversion sampler.");
 
 					ERR_FAIL_COND_V_MSG(texture->type != set_uniform.texture_type, RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform (expected: " + String(TEXTURE_TYPE_NAMES[set_uniform.texture_type]) + ", actual: " + String(TEXTURE_TYPE_NAMES[texture->type]) + ").");
@@ -4622,7 +4708,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 
 					DEV_ASSERT(!texture->owner.is_valid() || texture_owner.get_or_null(texture->owner));
 
-					driver_uniform.ids.push_back(*sampler_driver_id);
+					driver_uniform.ids.push_back(sampler->driver_id);
 					driver_uniform.ids.push_back(driver_id);
 					_check_transfer_worker_texture(texture);
 				}
@@ -4640,6 +4726,8 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 					RID texture_id = uniform.get_id(j);
 					Texture *texture = texture_owner.get_or_null(texture_id);
 					ERR_FAIL_NULL_V_MSG(texture, RID(), "Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") is not a valid texture.");
+
+					ERR_FAIL_COND_V_MSG(texture->is_external, RID(), "Imported external textures require a combined immutable sampler binding.");
 
 					ERR_FAIL_COND_V_MSG(texture->type != set_uniform.texture_type, RID(),
 							"Texture (binding: " + itos(uniform.binding) + ", index " + itos(j) + ") needs to have the same type as the uniform (expected: " + String(TEXTURE_TYPE_NAMES[set_uniform.texture_type]) + ", actual: " + String(TEXTURE_TYPE_NAMES[texture->type]) + ").");
@@ -4779,8 +4867,9 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 				}
 
 				for (uint32_t j = 0; j < uniform.get_id_count(); j += 2) {
-					RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(uniform.get_id(j + 0));
-					ERR_FAIL_NULL_V_MSG(sampler_driver_id, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
+					const Sampler *sampler = sampler_owner.get_or_null(uniform.get_id(j + 0));
+					ERR_FAIL_NULL_V_MSG(sampler, RID(), "SamplerBuffer (binding: " + itos(uniform.binding) + ", index " + itos(j + 1) + ") is not a valid sampler.");
+					ERR_FAIL_COND_V_MSG(sampler->is_external, RID(), "External conversion samplers require a combined image sampler binding.");
 
 					RID buffer_id = uniform.get_id(j + 1);
 					Buffer *buffer = texture_buffer_owner.get_or_null(buffer_id);
@@ -4793,7 +4882,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 						untracked_usage[buffer_id] = RDG::RESOURCE_USAGE_TEXTURE_BUFFER_READ;
 					}
 
-					driver_uniform.ids.push_back(*sampler_driver_id);
+					driver_uniform.ids.push_back(sampler->driver_id);
 					driver_uniform.ids.push_back(buffer->driver_id);
 					_check_transfer_worker_buffer(buffer);
 				}
@@ -7761,6 +7850,8 @@ bool RenderingDevice::_dependencies_make_mutable(RID p_id, RDG::ResourceTracker 
 
 void RenderingDevice::free_rid(RID p_rid) {
 	ERR_RENDER_THREAD_GUARD();
+	const Sampler *sampler = sampler_owner.get_or_null(p_rid);
+	ERR_FAIL_COND_MSG(sampler && sampler->is_external, "External conversion samplers are owned by the rendering device.");
 
 	_free_dependencies(p_rid); // Recursively erase dependencies first, to avoid potential API problems.
 	_free_internal(p_rid);
@@ -7813,7 +7904,7 @@ void RenderingDevice::_free_internal(RID p_id) {
 
 		framebuffer_owner.free(p_id);
 	} else if (sampler_owner.owns(p_id)) {
-		RDD::SamplerID sampler_driver_id = *sampler_owner.get_or_null(p_id);
+		RDD::SamplerID sampler_driver_id = sampler_owner.get_or_null(p_id)->driver_id;
 		frames[frame].samplers_to_dispose_of.push_back(sampler_driver_id);
 		sampler_owner.free(p_id);
 	} else if (vertex_buffer_owner.owns(p_id)) {
@@ -8041,7 +8132,7 @@ void RenderingDevice::set_resource_name(RID p_id, const String &p_name) {
 		//Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_id);
 		// Not implemented for now as the relationship between Framebuffer and RenderPass is very complex.
 	} else if (sampler_owner.owns(p_id)) {
-		RDD::SamplerID sampler_driver_id = *sampler_owner.get_or_null(p_id);
+		RDD::SamplerID sampler_driver_id = sampler_owner.get_or_null(p_id)->driver_id;
 		driver->set_object_name(RDD::OBJECT_TYPE_SAMPLER, sampler_driver_id, p_name);
 	} else if (vertex_buffer_owner.owns(p_id)) {
 		Buffer *vertex_buffer = vertex_buffer_owner.get_or_null(p_id);
@@ -8298,6 +8389,12 @@ void RenderingDevice::_free_pending_resources(int p_frame) {
 	}
 }
 
+void RenderingDevice::frame_completed_callback_add(const Callable &p_callback) {
+	ERR_RENDER_THREAD_GUARD();
+	frames[frame].completion_callbacks.push_back(p_callback);
+	frames_pending_resources_for_processing = frames.size();
+}
+
 uint32_t RenderingDevice::get_frame_delay() const {
 	return frames.size();
 }
@@ -8501,6 +8598,11 @@ void RenderingDevice::_stall_for_frame(uint32_t p_frame) {
 		GodotProfileZoneGroupedFirst(_profile_zone, "driver->fence_wait");
 		driver->fence_wait(frames[p_frame].fence);
 		frames[p_frame].fence_signaled = false;
+
+		for (const Callable &callback : frames[p_frame].completion_callbacks) {
+			callback.call();
+		}
+		frames[p_frame].completion_callbacks.clear();
 
 		// Flush any pending requests for asynchronous buffer downloads.
 		if (!frames[p_frame].download_buffer_get_data_requests.is_empty()) {
@@ -9025,10 +9127,10 @@ uint64_t RenderingDevice::get_driver_resource(DriverResource p_resource, RID p_r
 			driver_id = tex->driver_id.id;
 		} break;
 		case DRIVER_RESOURCE_SAMPLER: {
-			RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(p_rid);
-			ERR_FAIL_NULL_V(sampler_driver_id, 0);
+			const Sampler *sampler = sampler_owner.get_or_null(p_rid);
+			ERR_FAIL_NULL_V(sampler, 0);
 
-			driver_id = (*sampler_driver_id).id;
+			driver_id = sampler->driver_id.id;
 		} break;
 		case DRIVER_RESOURCE_UNIFORM_SET: {
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(p_rid);
@@ -9179,6 +9281,11 @@ void RenderingDevice::finalize() {
 	_free_rids(vertex_array_owner, "VertexArray");
 	_free_rids(vertex_buffer_owner, "VertexBuffer");
 	_free_rids(framebuffer_owner, "Framebuffer");
+	for (const KeyValue<uint64_t, RID> &sampler : external_samplers) {
+		_free_dependencies(sampler.value);
+		sampler_owner.free(sampler.value);
+	}
+	external_samplers.clear();
 	_free_rids(sampler_owner, "Sampler");
 	{
 		// For textures it's a bit more difficult because they may be shared.
@@ -10064,6 +10171,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUPPORTS_RAYTRACING_PIPELINE);
 	BIND_ENUM_CONSTANT(SUPPORTS_HDR_OUTPUT);
 	BIND_ENUM_CONSTANT(SUPPORTS_RASTERIZATION_RATE_MAP);
+	BIND_ENUM_CONSTANT(SUPPORTS_ANDROID_HARDWARE_BUFFER);
 
 	BIND_ENUM_CONSTANT(LIMIT_MAX_BOUND_UNIFORM_SETS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS);
@@ -10568,4 +10676,4 @@ static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_STORAGE_IMAGE_READ_
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE, RDG::RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE, RDG::RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE));
 static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_GENERAL, RDG::RESOURCE_USAGE_GENERAL));
-static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_MAX, RDG::RESOURCE_USAGE_MAX));
+static_assert(ENUM_MEMBERS_EQUAL(RD::CALLBACK_RESOURCE_USAGE_MAX, RDG::RESOURCE_USAGE_EXTERNAL_ACQUIRE));

@@ -280,6 +280,10 @@ public:
 
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) = 0;
 	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) = 0;
+	virtual void external_buffer_acquire(uint64_t p_buffer) {}
+	virtual void external_buffer_release(uint64_t p_buffer) {}
+	virtual TextureID texture_create_from_external_buffer(uint64_t p_buffer, ExternalTextureProperties &r_properties) { return TextureID(); }
+	virtual SamplerID texture_set_external_conversion(TextureID p_texture, ExternalTextureModel p_model, ExternalTextureRange p_range) { return SamplerID(); }
 	// texture_create_shared_*() can only use original, non-view textures as original. RenderingDevice is responsible for ensuring that.
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) = 0;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) = 0;
@@ -403,6 +407,8 @@ public:
 			VectorView<BufferBarrier> p_buffer_barriers,
 			VectorView<TextureBarrier> p_texture_barriers,
 			VectorView<AccelerationStructureBarrier> p_acceleration_structure_barriers) = 0;
+	virtual void command_texture_external_acquire(CommandBufferID p_cmd_buffer, TextureID p_texture) {}
+	virtual void command_texture_external_release(CommandBufferID p_cmd_buffer, TextureID p_texture) {}
 
 	/****************/
 	/**** FENCES ****/

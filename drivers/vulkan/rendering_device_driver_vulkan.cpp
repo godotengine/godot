@@ -46,6 +46,11 @@
 #include <thirdparty/swappy-frame-pacing/swappyVk.h>
 #endif
 
+#ifdef ANDROID_ENABLED
+#include <android/hardware_buffer.h>
+#include <dlfcn.h>
+#endif
+
 #define ARRAY_SIZE(a) std_size(a)
 
 // Disable raytracing support on macOS and iOS due to MoltenVK limitations.
@@ -333,6 +338,21 @@ static const VkFormat RD_TO_VK_FORMAT[RDD::DATA_FORMAT_MAX] = {
 	VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK,
 };
 
+#ifdef ANDROID_ENABLED
+static void (*AndroidHardwareBuffer_acquire)(AHardwareBuffer *) = nullptr;
+static void (*AndroidHardwareBuffer_release)(AHardwareBuffer *) = nullptr;
+static void (*AndroidHardwareBuffer_describe)(const AHardwareBuffer *, AHardwareBuffer_Desc *) = nullptr;
+
+static RDD::DataFormat _external_texture_data_format(VkFormat p_format) {
+	for (uint32_t i = 0; i < RDD::DATA_FORMAT_MAX; i++) {
+		if (RD_TO_VK_FORMAT[i] == p_format) {
+			return (RDD::DataFormat)i;
+		}
+	}
+	return RDD::DATA_FORMAT_MAX;
+}
+#endif
+
 static VkImageLayout RD_TO_VK_LAYOUT[RDD::TEXTURE_LAYOUT_MAX] = {
 	VK_IMAGE_LAYOUT_UNDEFINED, // TEXTURE_LAYOUT_UNDEFINED
 	VK_IMAGE_LAYOUT_GENERAL, // TEXTURE_LAYOUT_GENERAL
@@ -605,6 +625,12 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
 	}
+
+#ifdef ANDROID_ENABLED
+	_register_requested_device_extension(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_MAINTENANCE_6_EXTENSION_NAME, false);
+#endif
 
 #if defined(VK_TRACK_DEVICE_MEMORY)
 	if (Engine::get_singleton()->is_extra_gpu_memory_tracking_enabled()) {
@@ -936,6 +962,14 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		VkPhysicalDeviceSynchronization2FeaturesKHR sync_2_features = {};
 		VkPhysicalDeviceRayTracingValidationFeaturesNV raytracing_validation_features = {};
 		VkPhysicalDeviceRayQueryFeaturesKHR ray_query_features = {};
+#ifdef ANDROID_ENABLED
+		VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr_features = {};
+		if (physical_device_properties.apiVersion >= VK_API_VERSION_1_1 && enabled_device_extension_names.has(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME)) {
+			ycbcr_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+			ycbcr_features.pNext = next_features;
+			next_features = &ycbcr_features;
+		}
+#endif
 
 		const bool use_1_2_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_2;
 		if (use_1_2_features) {
@@ -1036,6 +1070,17 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		device_features_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
 		device_features_2.pNext = next_features;
 		functions.GetPhysicalDeviceFeatures2(physical_device, &device_features_2);
+#ifdef ANDROID_ENABLED
+		if (ycbcr_features.samplerYcbcrConversion && enabled_device_extension_names.has(VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME)) {
+			android_hardware_buffer_library = dlopen("libnativewindow.so", RTLD_NOW | RTLD_LOCAL);
+			if (android_hardware_buffer_library) {
+				AndroidHardwareBuffer_acquire = (decltype(AndroidHardwareBuffer_acquire))dlsym(android_hardware_buffer_library, "AHardwareBuffer_acquire");
+				AndroidHardwareBuffer_release = (decltype(AndroidHardwareBuffer_release))dlsym(android_hardware_buffer_library, "AHardwareBuffer_release");
+				AndroidHardwareBuffer_describe = (decltype(AndroidHardwareBuffer_describe))dlsym(android_hardware_buffer_library, "AHardwareBuffer_describe");
+				android_hardware_buffer_support = AndroidHardwareBuffer_acquire && AndroidHardwareBuffer_release && AndroidHardwareBuffer_describe;
+			}
+		}
+#endif
 
 		if (use_1_2_features) {
 #ifdef MACOS_ENABLED
@@ -1126,6 +1171,13 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		}
 	}
 
+#ifdef ANDROID_ENABLED
+	if (!android_hardware_buffer_support) {
+		enabled_device_extension_names.erase(VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME);
+		enabled_device_extension_names.erase(VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME);
+	}
+#endif
+
 	if (functions.GetPhysicalDeviceProperties2 != nullptr) {
 		void *next_properties = nullptr;
 		VkPhysicalDeviceFragmentShadingRatePropertiesKHR fsr_properties = {};
@@ -1137,6 +1189,15 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		VkPhysicalDeviceAccelerationStructurePropertiesKHR acceleration_structure_properties = {};
 		VkPhysicalDeviceRayTracingPipelinePropertiesKHR raytracing_properties = {};
 		VkPhysicalDeviceProperties2 physical_device_properties_2 = {};
+#ifdef ANDROID_ENABLED
+		VkPhysicalDeviceMaintenance6PropertiesKHR maintenance_properties = {};
+		const bool use_maintenance_6_properties = android_hardware_buffer_support && (enabled_device_extension_names.has(VK_KHR_MAINTENANCE_6_EXTENSION_NAME) || physical_device_properties.apiVersion >= VK_API_VERSION_1_4);
+		if (use_maintenance_6_properties) {
+			maintenance_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_6_PROPERTIES_KHR;
+			maintenance_properties.pNext = next_properties;
+			next_properties = &maintenance_properties;
+		}
+#endif
 
 		const bool use_1_1_properties = physical_device_properties.apiVersion >= VK_API_VERSION_1_1;
 		if (use_1_1_properties) {
@@ -1191,6 +1252,11 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		physical_device_properties_2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
 		physical_device_properties_2.pNext = next_properties;
 		functions.GetPhysicalDeviceProperties2(physical_device, &physical_device_properties_2);
+#ifdef ANDROID_ENABLED
+		if (use_maintenance_6_properties) {
+			external_conversion_descriptor_count = MAX(1u, maintenance_properties.maxCombinedImageSamplerDescriptorCount);
+		}
+#endif
 
 		subgroup_capabilities.size = subgroup_properties.subgroupSize;
 		subgroup_capabilities.min_size = subgroup_properties.subgroupSize;
@@ -1479,6 +1545,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		create_info_next = &ray_query_features;
 	}
 
+	VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr_features = {};
 	VkPhysicalDeviceVulkan11Features vulkan_1_1_features = {};
 	VkPhysicalDevice16BitStorageFeaturesKHR storage_features = {};
 	VkPhysicalDeviceMultiviewFeatures multiview_features = {};
@@ -1497,7 +1564,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		vulkan_1_1_features.variablePointersStorageBuffer = 0;
 		vulkan_1_1_features.variablePointers = 0;
 		vulkan_1_1_features.protectedMemory = 0;
-		vulkan_1_1_features.samplerYcbcrConversion = 0;
+		vulkan_1_1_features.samplerYcbcrConversion = android_hardware_buffer_support;
 		vulkan_1_1_features.shaderDrawParameters = 0;
 		create_info_next = &vulkan_1_1_features;
 	} else {
@@ -1512,6 +1579,13 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 
 		const bool enable_1_1_features = physical_device_properties.apiVersion >= VK_API_VERSION_1_1;
 		if (enable_1_1_features) {
+			if (android_hardware_buffer_support) {
+				ycbcr_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+				ycbcr_features.pNext = create_info_next;
+				ycbcr_features.samplerYcbcrConversion = VK_TRUE;
+				create_info_next = &ycbcr_features;
+			}
+
 			multiview_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
 			multiview_features.pNext = create_info_next;
 			multiview_features.multiview = multiview_capabilities.is_supported;
@@ -1569,6 +1643,14 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		if (device_fault_support) {
 			device_functions.GetDeviceFaultInfoEXT = (PFN_vkGetDeviceFaultInfoEXT)functions.GetDeviceProcAddr(vk_device, "vkGetDeviceFaultInfoEXT");
 		}
+
+#ifdef ANDROID_ENABLED
+		if (android_hardware_buffer_support) {
+			device_functions.CreateSamplerYcbcrConversion = PFN_vkCreateSamplerYcbcrConversion(functions.GetDeviceProcAddr(vk_device, "vkCreateSamplerYcbcrConversion"));
+			device_functions.DestroySamplerYcbcrConversion = PFN_vkDestroySamplerYcbcrConversion(functions.GetDeviceProcAddr(vk_device, "vkDestroySamplerYcbcrConversion"));
+			device_functions.GetAndroidHardwareBufferPropertiesANDROID = PFN_vkGetAndroidHardwareBufferPropertiesANDROID(functions.GetDeviceProcAddr(vk_device, "vkGetAndroidHardwareBufferPropertiesANDROID"));
+		}
+#endif
 
 		// Device raytracing extensions.
 		if (enabled_device_extension_names.has(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME)) {
@@ -2544,6 +2626,344 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_extension(uint64
 	return TextureID(tex_info);
 }
 
+#ifdef ANDROID_ENABLED
+// RDD::ExternalTextureModel == VkSamplerYcbcrModelConversion.
+static_assert(ENUM_MEMBERS_EQUAL(RDD::EXTERNAL_TEXTURE_MODEL_RGB_IDENTITY, VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::EXTERNAL_TEXTURE_MODEL_YCBCR_IDENTITY, VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::EXTERNAL_TEXTURE_MODEL_YCBCR_709, VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::EXTERNAL_TEXTURE_MODEL_YCBCR_601, VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::EXTERNAL_TEXTURE_MODEL_YCBCR_2020, VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020));
+
+// RDD::ExternalTextureRange == VkSamplerYcbcrRange.
+static_assert(ENUM_MEMBERS_EQUAL(RDD::EXTERNAL_TEXTURE_RANGE_FULL, VK_SAMPLER_YCBCR_RANGE_ITU_FULL));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::EXTERNAL_TEXTURE_RANGE_NARROW, VK_SAMPLER_YCBCR_RANGE_ITU_NARROW));
+
+static int _get_ycbcr_subsampling(VkFormat p_format) {
+	switch (p_format) {
+		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16:
+		case VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_420_UNORM:
+		case VK_FORMAT_G14X2_B14X2R14X2_2PLANE_420_UNORM_3PACK16_ARM:
+			return 3;
+		case VK_FORMAT_G8B8G8R8_422_UNORM:
+		case VK_FORMAT_B8G8R8G8_422_UNORM:
+		case VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_422_UNORM:
+		case VK_FORMAT_G10X6B10X6G10X6R10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_B10X6G10X6R10X6G10X6_422_UNORM_4PACK16:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4B12X4G12X4R12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_B12X4G12X4R12X4G12X4_422_UNORM_4PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
+		case VK_FORMAT_G16B16G16R16_422_UNORM:
+		case VK_FORMAT_B16G16R16G16_422_UNORM:
+		case VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_422_UNORM:
+		case VK_FORMAT_G14X2_B14X2R14X2_2PLANE_422_UNORM_3PACK16_ARM:
+			return 1;
+		case VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM:
+		case VK_FORMAT_G8_B8R8_2PLANE_444_UNORM:
+		case VK_FORMAT_G10X6_B10X6_R10X6_3PLANE_444_UNORM_3PACK16:
+		case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_444_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16:
+		case VK_FORMAT_G12X4_B12X4R12X4_2PLANE_444_UNORM_3PACK16:
+		case VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
+		case VK_FORMAT_G16_B16R16_2PLANE_444_UNORM:
+			return 0;
+		default:
+			return -1;
+	}
+}
+
+static bool _format_has_alpha(VkFormat p_format) {
+	switch (p_format) {
+		case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+		case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+		case VK_FORMAT_R5G5B5A1_UNORM_PACK16:
+		case VK_FORMAT_B5G5R5A1_UNORM_PACK16:
+		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+		case VK_FORMAT_A4R4G4B4_UNORM_PACK16:
+		case VK_FORMAT_A4B4G4R4_UNORM_PACK16:
+		case VK_FORMAT_A1B5G5R5_UNORM_PACK16:
+		case VK_FORMAT_R8G8B8A8_UNORM:
+		case VK_FORMAT_R8G8B8A8_SRGB:
+		case VK_FORMAT_B8G8R8A8_UNORM:
+		case VK_FORMAT_B8G8R8A8_SRGB:
+		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+		case VK_FORMAT_R16G16B16A16_SFLOAT:
+		case VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16:
+			return true;
+		default:
+			return false;
+	}
+}
+
+void RenderingDeviceDriverVulkan::external_buffer_acquire(uint64_t p_buffer) {
+	AndroidHardwareBuffer_acquire((AHardwareBuffer *)p_buffer);
+}
+
+void RenderingDeviceDriverVulkan::external_buffer_release(uint64_t p_buffer) {
+	AndroidHardwareBuffer_release((AHardwareBuffer *)p_buffer);
+}
+
+RDD::TextureID RenderingDeviceDriverVulkan::texture_create_from_external_buffer(uint64_t p_buffer, ExternalTextureProperties &r_properties) {
+	r_properties = {};
+	AHardwareBuffer *buffer = (AHardwareBuffer *)p_buffer;
+	AHardwareBuffer_Desc description = {};
+	AndroidHardwareBuffer_describe(buffer, &description);
+	ERR_FAIL_COND_V_MSG(!description.width || !description.height || description.layers != 1, TextureID(), "External textures require a nonempty, single-layer Android hardware buffer.");
+	ERR_FAIL_COND_V_MSG(description.width > physical_device_properties.limits.maxImageDimension2D || description.height > physical_device_properties.limits.maxImageDimension2D, TextureID(), vformat("Android hardware buffer size %dx%d exceeds the device's 2D texture limit of %d.", description.width, description.height, physical_device_properties.limits.maxImageDimension2D));
+	ERR_FAIL_COND_V_MSG(!(description.usage & AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE) || (description.usage & AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT), TextureID(), "External textures require an unprotected GPU-sampleable Android hardware buffer.");
+	ERR_FAIL_COND_V_MSG(description.usage & AHARDWAREBUFFER_USAGE_GPU_MIPMAP_COMPLETE, TextureID(), "Mipmapped Android hardware buffers are not supported by external textures.");
+	ERR_FAIL_COND_V_MSG(description.format == AHARDWAREBUFFER_FORMAT_BLOB || (description.format >= AHARDWAREBUFFER_FORMAT_D16_UNORM && description.format <= AHARDWAREBUFFER_FORMAT_S8_UINT), TextureID(), "External textures require a color Android hardware buffer.");
+
+	VkAndroidHardwareBufferFormatPropertiesANDROID format_properties = {};
+	format_properties.sType = VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID;
+	VkAndroidHardwareBufferPropertiesANDROID properties = {};
+	properties.sType = VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID;
+	properties.pNext = &format_properties;
+	VkResult result = device_functions.GetAndroidHardwareBufferPropertiesANDROID(vk_device, buffer, &properties);
+	ERR_FAIL_COND_V_MSG(result != VK_SUCCESS, TextureID(), vformat("Couldn't query Android hardware buffer properties (VkResult error %d).", result));
+
+	const VkFormat format = format_properties.format;
+	const uint64_t external_format = format == VK_FORMAT_UNDEFINED ? format_properties.externalFormat : 0;
+	const bool is_yuv = external_format ? format_properties.suggestedYcbcrModel != VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY : (_get_ycbcr_subsampling(format) >= 0);
+	VkFormatFeatureFlags format_features = format_properties.formatFeatures;
+	uint32_t descriptor_count = external_conversion_descriptor_count;
+	if (format != VK_FORMAT_UNDEFINED) {
+		// VkAndroidHardwareBufferFormatPropertiesANDROID::formatFeatures describes only external-format usage.
+		VkFormatProperties native_properties = {};
+		vkGetPhysicalDeviceFormatProperties(physical_device, format, &native_properties);
+		format_features = native_properties.optimalTilingFeatures;
+		VkPhysicalDeviceExternalImageFormatInfo external_info = {};
+		external_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO;
+		external_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
+		VkPhysicalDeviceImageFormatInfo2 image_info = {};
+		image_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2;
+		image_info.pNext = &external_info;
+		image_info.format = format;
+		image_info.type = VK_IMAGE_TYPE_2D;
+		image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+		image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+		VkSamplerYcbcrConversionImageFormatProperties conversion_properties = {};
+		conversion_properties.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES;
+		VkExternalImageFormatProperties external_properties = {};
+		external_properties.sType = VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES;
+		external_properties.pNext = &conversion_properties;
+		VkImageFormatProperties2 image_properties = {};
+		image_properties.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2;
+		image_properties.pNext = &external_properties;
+		result = context_driver->functions_get().GetPhysicalDeviceImageFormatProperties2(physical_device, &image_info, &image_properties);
+		ERR_FAIL_COND_V_MSG(result != VK_SUCCESS, TextureID(), vformat("Couldn't query Android hardware buffer format %d for sampling (VkResult error %d).", format, result));
+		ERR_FAIL_COND_V_MSG(!(external_properties.externalMemoryProperties.externalMemoryFeatures & VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT), TextureID(), vformat("Android hardware buffer format %d cannot be imported for sampling.", format));
+		ERR_FAIL_COND_V_MSG(description.width > image_properties.imageFormatProperties.maxExtent.width || description.height > image_properties.imageFormatProperties.maxExtent.height, TextureID(), vformat("Android hardware buffer size %dx%d exceeds the import limit of %dx%d for Vulkan format %d.", description.width, description.height, image_properties.imageFormatProperties.maxExtent.width, image_properties.imageFormatProperties.maxExtent.height, format));
+		descriptor_count = MAX(1u, conversion_properties.combinedImageSamplerDescriptorCount);
+	}
+
+	VkExternalFormatANDROID external_format_info = {};
+	external_format_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_ANDROID;
+	external_format_info.externalFormat = external_format;
+	VkExternalMemoryImageCreateInfo external_memory_info = {};
+	external_memory_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
+	external_memory_info.pNext = external_format ? &external_format_info : nullptr;
+	external_memory_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
+	VkImageCreateInfo image_info = {};
+	image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	image_info.pNext = &external_memory_info;
+	image_info.imageType = VK_IMAGE_TYPE_2D;
+	image_info.format = format;
+	image_info.extent = { description.width, description.height, 1 };
+	image_info.mipLevels = 1;
+	image_info.arrayLayers = description.layers;
+	image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+	image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+	image_info.usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+	image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	VkImage image = VK_NULL_HANDLE;
+	result = vkCreateImage(vk_device, &image_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE), &image);
+	ERR_FAIL_COND_V_MSG(result != VK_SUCCESS, TextureID(), vformat("Couldn't create imported Vulkan image (VkResult error %d).", result));
+
+	const VkPhysicalDeviceMemoryProperties *memory_properties = nullptr;
+	vmaGetMemoryProperties(allocator, &memory_properties);
+	uint32_t memory_type = UINT32_MAX;
+	for (uint32_t i = 0; i < memory_properties->memoryTypeCount; i++) {
+		if ((properties.memoryTypeBits & (1u << i)) && !(memory_properties->memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_PROTECTED_BIT)) {
+			memory_type = i;
+			if (memory_properties->memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) {
+				break;
+			}
+		}
+	}
+	if (memory_type == UINT32_MAX) {
+		vkDestroyImage(vk_device, image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE));
+		ERR_FAIL_V_MSG(TextureID(), "Android hardware buffer has no compatible memory type.");
+	}
+	VkImportAndroidHardwareBufferInfoANDROID import_info = {};
+	import_info.sType = VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID;
+	import_info.buffer = buffer;
+	VkMemoryDedicatedAllocateInfo dedicated_info = {};
+	dedicated_info.sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO;
+	dedicated_info.pNext = &import_info;
+	dedicated_info.image = image;
+	VkMemoryAllocateInfo allocate_info = {};
+	allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocate_info.pNext = &dedicated_info;
+	allocate_info.allocationSize = properties.allocationSize;
+	allocate_info.memoryTypeIndex = memory_type;
+	VkDeviceMemory memory = VK_NULL_HANDLE;
+	result = vkAllocateMemory(vk_device, &allocate_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE_MEMORY), &memory);
+	if (result == VK_SUCCESS) {
+		result = vkBindImageMemory(vk_device, image, memory, 0);
+	}
+	if (result != VK_SUCCESS) {
+		vkDestroyImage(vk_device, image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE));
+		vkFreeMemory(vk_device, memory, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE_MEMORY));
+		ERR_FAIL_V_MSG(TextureID(), vformat("Couldn't import Android hardware buffer memory (VkResult error %d).", result));
+	}
+
+	TextureInfo *texture = VersatileResource::allocate<TextureInfo>(resources_allocator);
+	texture->vk_image = image;
+	texture->vk_create_info = image_info;
+	texture->imported_memory = memory;
+	texture->allocation.info.size = properties.allocationSize;
+	texture->external_conversion_key.format = format;
+	texture->external_conversion_key.external_format = external_format;
+	texture->external_conversion_key.components = format_properties.samplerYcbcrConversionComponents;
+	texture->external_conversion_key.x_chroma_offset = format_properties.suggestedXChromaOffset;
+	texture->external_conversion_key.y_chroma_offset = format_properties.suggestedYChromaOffset;
+	texture->external_format_features = format_features;
+	texture->external_descriptor_count = descriptor_count;
+	texture->vk_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	texture->vk_view_create_info.image = image;
+	texture->vk_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	texture->vk_view_create_info.format = format;
+	texture->vk_view_create_info.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+
+	r_properties.width = description.width;
+	r_properties.height = description.height;
+	r_properties.format = _external_texture_data_format(format);
+	texture->rd_format = r_properties.format;
+	r_properties.is_yuv = is_yuv;
+	r_properties.has_alpha = external_format || _format_has_alpha(format);
+	// VkAndroidHardwareBufferFormatPropertiesANDROID suggestions describe external conversions; defined RGB uses identity.
+	r_properties.suggested_model = (external_format || is_yuv) ? (ExternalTextureModel)format_properties.suggestedYcbcrModel : EXTERNAL_TEXTURE_MODEL_RGB_IDENTITY;
+	r_properties.suggested_range = (external_format || is_yuv) ? (ExternalTextureRange)format_properties.suggestedYcbcrRange : EXTERNAL_TEXTURE_RANGE_FULL;
+	return TextureID(texture);
+}
+
+RDD::SamplerID RenderingDeviceDriverVulkan::texture_set_external_conversion(TextureID p_texture, ExternalTextureModel p_model, ExternalTextureRange p_range) {
+	TextureInfo *texture = (TextureInfo *)p_texture.id;
+	ExternalConversionKey key = texture->external_conversion_key;
+	key.model = p_model;
+	key.range = p_range;
+	const VkFormatFeatureFlags features = texture->external_format_features;
+	const VkFormat format = key.format;
+	// formats-requiring-sampler-ycbcr-conversion includes RGBA10x6 and RGBA12x4 despite their RGB components.
+	const bool use_conversion = key.external_format != 0 || _get_ycbcr_subsampling(format) >= 0 || format == VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16 || format == VK_FORMAT_R12X4G12X4B12X4A12X4_UNORM_4PACK16 || (features & (VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT | VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT));
+	const VkFormatFeatureFlags linear_features = VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT;
+	const VkFilter filter = (features & linear_features) == linear_features ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
+	if (use_conversion) {
+		ERR_FAIL_COND_V_MSG(!(features & (VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT | VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT)), SamplerID(), "The imported texture format requires a YCbCr conversion but supports no chroma sample locations.");
+		const int subsampling = key.external_format ? 3 : _get_ycbcr_subsampling(format);
+		const VkChromaLocation offsets[] = { key.x_chroma_offset, key.y_chroma_offset };
+		for (uint32_t i = 0; i < 2; i++) {
+			ERR_FAIL_COND_V_MSG(subsampling > 0 && (subsampling & (1u << i)) && !(features & (offsets[i] == VK_CHROMA_LOCATION_MIDPOINT ? VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT : VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT)), SamplerID(), vformat("External conversion chroma offset %d on axis %d is unsupported by the imported texture format.", offsets[i], i));
+		}
+	} else {
+		texture->external_descriptor_count = 1;
+	}
+	VkSamplerYcbcrConversionInfo conversion_info = {};
+	conversion_info.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO;
+	ExternalConversion *cached = external_conversions.getptr(key);
+	if (!cached) {
+		ExternalConversion entry;
+		if (use_conversion) {
+			VkExternalFormatANDROID external_info = {};
+			external_info.sType = VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_ANDROID;
+			external_info.externalFormat = key.external_format;
+			VkSamplerYcbcrConversionCreateInfo conversion = {};
+			conversion.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO;
+			conversion.pNext = key.external_format ? &external_info : nullptr;
+			conversion.format = key.format;
+			conversion.ycbcrModel = (VkSamplerYcbcrModelConversion)key.model;
+			conversion.ycbcrRange = (VkSamplerYcbcrRange)key.range;
+			conversion.components = key.components;
+			conversion.xChromaOffset = key.x_chroma_offset;
+			conversion.yChromaOffset = key.y_chroma_offset;
+			conversion.chromaFilter = filter;
+			VkResult result = device_functions.CreateSamplerYcbcrConversion(vk_device, &conversion, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION), &entry.conversion);
+			ERR_FAIL_COND_V_MSG(result != VK_SUCCESS, SamplerID(), vformat("Couldn't create external texture conversion (VkResult error %d).", result));
+			conversion_info.conversion = entry.conversion;
+		}
+		VkSamplerCreateInfo sampler = {};
+		sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		sampler.pNext = use_conversion ? &conversion_info : nullptr;
+		sampler.magFilter = filter;
+		sampler.minFilter = filter;
+		sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		VkResult result = vkCreateSampler(vk_device, &sampler, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER), &entry.sampler);
+		if (result != VK_SUCCESS) {
+			if (entry.conversion) {
+				device_functions.DestroySamplerYcbcrConversion(vk_device, entry.conversion, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION));
+			}
+			ERR_FAIL_V_MSG(SamplerID(), vformat("Couldn't create external texture sampler (VkResult error %d).", result));
+		}
+		cached = &external_conversions.insert(key, entry)->value;
+	}
+	conversion_info.conversion = cached->conversion;
+	VkImageViewCreateInfo view_info = texture->vk_view_create_info;
+	view_info.pNext = cached->conversion ? &conversion_info : nullptr;
+	VkResult result = vkCreateImageView(vk_device, &view_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE_VIEW), &texture->vk_view);
+	ERR_FAIL_COND_V_MSG(result != VK_SUCCESS, SamplerID(), vformat("Couldn't create external texture view (VkResult error %d).", result));
+	return SamplerID(uint64_t(cached->sampler));
+}
+
+void RenderingDeviceDriverVulkan::command_texture_external_acquire(CommandBufferID p_cmd_buffer, TextureID p_texture) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	const TextureInfo *texture = (const TextureInfo *)p_texture.id;
+	// Wait for earlier releases of aliases of the same buffer before acquiring it again.
+	vkCmdPipelineBarrier(command_buffer->vk_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+	// GENERAL is the producer handoff layout, as in Android CTS.
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_FOREIGN_EXT;
+	barrier.dstQueueFamilyIndex = command_buffer->queue_family_index;
+	barrier.image = texture->vk_image;
+	barrier.subresourceRange = texture->vk_view_create_info.subresourceRange;
+	vkCmdPipelineBarrier(command_buffer->vk_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+}
+
+void RenderingDeviceDriverVulkan::command_texture_external_release(CommandBufferID p_cmd_buffer, TextureID p_texture) {
+	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
+	const TextureInfo *texture = (const TextureInfo *)p_texture.id;
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+	barrier.srcQueueFamilyIndex = command_buffer->queue_family_index;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_FOREIGN_EXT;
+	barrier.image = texture->vk_image;
+	barrier.subresourceRange = texture->vk_view_create_info.subresourceRange;
+	vkCmdPipelineBarrier(command_buffer->vk_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+}
+
+#endif
+
 RDD::TextureID RenderingDeviceDriverVulkan::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
 	const TextureInfo *owner_tex_info = (const TextureInfo *)p_original_texture.id;
 #ifdef DEBUG_ENABLED
@@ -2665,6 +3085,12 @@ void RenderingDeviceDriverVulkan::texture_free(TextureID p_texture) {
 			vmaFreeMemory(allocator, tex_info->allocation.handle);
 		}
 	}
+#ifdef ANDROID_ENABLED
+	if (tex_info->imported_memory) {
+		vkDestroyImage(vk_device, tex_info->vk_image, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_IMAGE));
+		vkFreeMemory(vk_device, tex_info->imported_memory, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE_MEMORY));
+	}
+#endif
 	VersatileResource::free(resources_allocator, tex_info);
 }
 
@@ -3470,6 +3896,7 @@ RDD::CommandPoolID RenderingDeviceDriverVulkan::command_pool_create(CommandQueue
 	CommandPool *command_pool = memnew(CommandPool);
 	command_pool->vk_command_pool = vk_command_pool;
 	command_pool->buffer_type = p_cmd_buffer_type;
+	command_pool->queue_family_index = family_index;
 	return CommandPoolID(command_pool);
 }
 
@@ -3518,6 +3945,7 @@ RDD::CommandBufferID RenderingDeviceDriverVulkan::command_buffer_create(CommandP
 
 	CommandBufferInfo *command_buffer = VersatileResource::allocate<CommandBufferInfo>(resources_allocator);
 	command_buffer->vk_command_buffer = vk_command_buffer;
+	command_buffer->queue_family_index = command_pool->queue_family_index;
 	command_pool->command_buffers_created.push_back(command_buffer);
 	return CommandBufferID(command_buffer);
 }
@@ -4959,8 +5387,14 @@ RDD::UniformSetID RenderingDeviceDriverVulkan::uniform_set_create(VectorView<Bou
 			writes_amount++;
 		}
 
+		uint32_t descriptor_cost = 1;
+#ifdef ANDROID_ENABLED
+		if (uniform.type == UNIFORM_TYPE_SAMPLER_WITH_TEXTURE) {
+			descriptor_cost = ((const TextureInfo *)uniform.ids[1].id)->external_descriptor_count;
+		}
+#endif
 		ERR_FAIL_COND_V_MSG(pool_key.uniform_type[uniform.type] == MAX_UNIFORM_POOL_ELEMENT, UniformSetID(), "Uniform set reached the limit of bindings for the same type (" + itos(MAX_UNIFORM_POOL_ELEMENT) + ").");
-		pool_key.uniform_type[uniform.type] += num_descriptors;
+		pool_key.uniform_type[uniform.type] += num_descriptors * descriptor_cost;
 	}
 
 	bool linear_pool = p_linear_pool_index >= 0;
@@ -7502,6 +7936,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 #endif // defined(WINDOWS_ENABLED)
 		case SUPPORTS_GPU_MAPPABLE_BUFFER:
 			return device_local_host_visible_host_coherent_memory_support;
+		case SUPPORTS_ANDROID_HARDWARE_BUFFER:
+			return android_hardware_buffer_support;
 		default:
 			return false;
 	}
@@ -7584,6 +8020,19 @@ RenderingDeviceDriverVulkan::~RenderingDeviceDriverVulkan() {
 			}
 		}
 	}
+
+#ifdef ANDROID_ENABLED
+	// Conversion samplers are immutable in shader layouts, so they live until the device is destroyed.
+	for (const KeyValue<ExternalConversionKey, ExternalConversion> &entry : external_conversions) {
+		vkDestroySampler(vk_device, entry.value.sampler, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER));
+		if (entry.value.conversion) {
+			device_functions.DestroySamplerYcbcrConversion(vk_device, entry.value.conversion, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_SAMPLER_YCBCR_CONVERSION));
+		}
+	}
+	if (android_hardware_buffer_library) {
+		dlclose(android_hardware_buffer_library);
+	}
+#endif
 
 	if (vk_device != VK_NULL_HANDLE) {
 		vkDestroyDevice(vk_device, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_DEVICE));

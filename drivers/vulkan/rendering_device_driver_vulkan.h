@@ -110,6 +110,11 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	};
 
 	struct DeviceFunctions {
+#ifdef ANDROID_ENABLED
+		PFN_vkCreateSamplerYcbcrConversion CreateSamplerYcbcrConversion = nullptr;
+		PFN_vkDestroySamplerYcbcrConversion DestroySamplerYcbcrConversion = nullptr;
+		PFN_vkGetAndroidHardwareBufferPropertiesANDROID GetAndroidHardwareBufferPropertiesANDROID = nullptr;
+#endif
 		PFN_vkCreateSwapchainKHR CreateSwapchainKHR = nullptr;
 		PFN_vkDestroySwapchainKHR DestroySwapchainKHR = nullptr;
 		PFN_vkGetSwapchainImagesKHR GetSwapchainImagesKHR = nullptr;
@@ -168,6 +173,43 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	bool pipeline_cache_control_support = false;
 	bool device_fault_support = false;
 	bool framebuffer_depth_resolve = false;
+	bool android_hardware_buffer_support = false;
+#ifdef ANDROID_ENABLED
+	void *android_hardware_buffer_library = nullptr;
+	// Opaque formats reserve four descriptors when maintenance6 is unavailable.
+	uint32_t external_conversion_descriptor_count = 4;
+
+	struct ExternalConversionKey {
+		VkFormat format = VK_FORMAT_UNDEFINED;
+		uint64_t external_format = 0;
+		ExternalTextureModel model = EXTERNAL_TEXTURE_MODEL_RGB_IDENTITY;
+		ExternalTextureRange range = EXTERNAL_TEXTURE_RANGE_FULL;
+		VkComponentMapping components = {};
+		VkChromaLocation x_chroma_offset = VK_CHROMA_LOCATION_COSITED_EVEN;
+		VkChromaLocation y_chroma_offset = VK_CHROMA_LOCATION_COSITED_EVEN;
+
+		bool operator==(const ExternalConversionKey &p_other) const {
+			return format == p_other.format && external_format == p_other.external_format && model == p_other.model && range == p_other.range &&
+					components.r == p_other.components.r && components.g == p_other.components.g && components.b == p_other.components.b && components.a == p_other.components.a &&
+					x_chroma_offset == p_other.x_chroma_offset && y_chroma_offset == p_other.y_chroma_offset;
+		}
+
+		uint32_t hash() const {
+			uint32_t h = hash_murmur3_one_64(external_format);
+			const uint32_t fields[] = { uint32_t(format), uint32_t(model), uint32_t(range), components.r, components.g, components.b, components.a, x_chroma_offset, y_chroma_offset };
+			for (uint32_t field : fields) {
+				h = hash_murmur3_one_32(field, h);
+			}
+			return hash_fmix32(h);
+		}
+	};
+
+	struct ExternalConversion {
+		VkSamplerYcbcrConversion conversion = VK_NULL_HANDLE;
+		VkSampler sampler = VK_NULL_HANDLE;
+	};
+	HashMap<ExternalConversionKey, ExternalConversion> external_conversions;
+#endif
 #if defined(VK_TRACK_DEVICE_MEMORY)
 	bool device_memory_report_support = false;
 #endif
@@ -286,6 +328,12 @@ public:
 			VmaAllocationInfo info = {};
 		} allocation; // All 0/null if just a view.
 		bool is_subsampled = false;
+#ifdef ANDROID_ENABLED
+		VkDeviceMemory imported_memory = VK_NULL_HANDLE;
+		ExternalConversionKey external_conversion_key;
+		VkFormatFeatureFlags external_format_features = 0;
+		uint32_t external_descriptor_count = 1;
+#endif
 #ifdef DEBUG_ENABLED
 		bool created_from_extension = false;
 		bool transient = false;
@@ -297,6 +345,14 @@ public:
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
 	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
+#ifdef ANDROID_ENABLED
+	virtual void external_buffer_acquire(uint64_t p_buffer) override final;
+	virtual void external_buffer_release(uint64_t p_buffer) override final;
+	virtual TextureID texture_create_from_external_buffer(uint64_t p_buffer, ExternalTextureProperties &r_properties) override final;
+	virtual SamplerID texture_set_external_conversion(TextureID p_texture, ExternalTextureModel p_model, ExternalTextureRange p_range) override final;
+	virtual void command_texture_external_acquire(CommandBufferID p_cmd_buffer, TextureID p_texture) override final;
+	virtual void command_texture_external_release(CommandBufferID p_cmd_buffer, TextureID p_texture) override final;
+#endif
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) override final;
 	virtual void texture_free(TextureID p_texture) override final;
@@ -394,6 +450,7 @@ private:
 
 	struct CommandPool {
 		VkCommandPool vk_command_pool = VK_NULL_HANDLE;
+		uint32_t queue_family_index = VK_QUEUE_FAMILY_IGNORED;
 		CommandBufferType buffer_type = COMMAND_BUFFER_TYPE_PRIMARY;
 		LocalVector<CommandBufferInfo *> command_buffers_created;
 	};
@@ -408,6 +465,7 @@ private:
 
 	struct CommandBufferInfo {
 		VkCommandBuffer vk_command_buffer = VK_NULL_HANDLE;
+		uint32_t queue_family_index = VK_QUEUE_FAMILY_IGNORED;
 		Framebuffer *active_framebuffer = nullptr;
 		RenderPassInfo *active_render_pass = nullptr;
 	};

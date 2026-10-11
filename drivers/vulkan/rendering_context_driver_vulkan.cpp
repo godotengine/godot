@@ -757,6 +757,7 @@ Error RenderingContextDriverVulkan::_initialize_instance() {
 	if (enabled_instance_extension_names.has(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
 		functions.GetPhysicalDeviceFeatures2 = PFN_vkGetPhysicalDeviceFeatures2(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceFeatures2"));
 		functions.GetPhysicalDeviceProperties2 = PFN_vkGetPhysicalDeviceProperties2(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceProperties2"));
+		functions.GetPhysicalDeviceImageFormatProperties2 = PFN_vkGetPhysicalDeviceImageFormatProperties2(vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceImageFormatProperties2"));
 
 		// In Vulkan 1.0, the functions might be accessible under their original extension names.
 		if (functions.GetPhysicalDeviceFeatures2 == nullptr) {

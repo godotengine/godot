@@ -120,6 +120,7 @@ public:
 			TYPE_TEXTURE_UPDATE,
 			TYPE_CAPTURE_TIMESTAMP,
 			TYPE_DRIVER_CALLBACK,
+			TYPE_TEXTURE_EXTERNAL_TRANSFER,
 			TYPE_MAX
 		};
 
@@ -177,6 +178,8 @@ public:
 		RESOURCE_USAGE_GENERAL,
 		RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ,
 		RESOURCE_USAGE_ACCELERATION_STRUCTURE_READ_WRITE,
+		RESOURCE_USAGE_EXTERNAL_ACQUIRE,
+		RESOURCE_USAGE_EXTERNAL_RELEASE,
 		RESOURCE_USAGE_MAX
 	};
 
@@ -390,6 +393,11 @@ private:
 		_FORCE_INLINE_ const RecordedBufferCopy *buffer_copies() const {
 			return reinterpret_cast<const RecordedBufferCopy *>(&this[1]);
 		}
+	};
+
+	struct RecordedTextureExternalTransferCommand : RecordedCommand {
+		RDD::TextureID texture;
+		bool acquire;
 	};
 
 	struct RecordedDriverCallbackCommand : RecordedCommand {
@@ -840,6 +848,7 @@ private:
 	LocalVector<RecordedSliceListNode> write_slice_list_nodes;
 	int32_t command_timestamp_index = -1;
 	int32_t command_synchronization_index = -1;
+	int32_t command_external_transfer_index = -1;
 	bool command_synchronization_pending = false;
 	BarrierGroup barrier_group;
 	bool driver_honors_barriers : 1;
@@ -904,6 +913,7 @@ public:
 	void add_buffer_copy(RDD::BufferID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, RDD::BufferCopyRegion p_region);
 	void add_buffer_get_data(RDD::BufferID p_src, ResourceTracker *p_src_tracker, RDD::BufferID p_dst, RDD::BufferCopyRegion p_region);
 	void add_buffer_update(RDD::BufferID p_dst, ResourceTracker *p_dst_tracker, VectorView<RecordedBufferCopy> p_buffer_copies);
+	void add_texture_external_transfer(ResourceTracker *p_tracker, bool p_acquire);
 	void add_driver_callback(RDD::DriverCallback p_callback, void *p_userdata, VectorView<ResourceTracker *> p_trackers, VectorView<ResourceUsage> p_usages);
 	void add_raytracing_list_begin();
 	void add_raytracing_list_bind_pipeline(RDD::RaytracingPipelineID p_pipeline);

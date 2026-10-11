@@ -495,6 +495,29 @@ public:
 		TEXTURE_SLICE_MAX
 	};
 
+	enum ExternalTextureModel {
+		EXTERNAL_TEXTURE_MODEL_RGB_IDENTITY,
+		EXTERNAL_TEXTURE_MODEL_YCBCR_IDENTITY,
+		EXTERNAL_TEXTURE_MODEL_YCBCR_709,
+		EXTERNAL_TEXTURE_MODEL_YCBCR_601,
+		EXTERNAL_TEXTURE_MODEL_YCBCR_2020,
+	};
+
+	enum ExternalTextureRange {
+		EXTERNAL_TEXTURE_RANGE_FULL,
+		EXTERNAL_TEXTURE_RANGE_NARROW,
+	};
+
+	struct ExternalTextureProperties {
+		DataFormat format = DATA_FORMAT_MAX;
+		uint32_t width = 0;
+		uint32_t height = 0;
+		bool is_yuv = false;
+		bool has_alpha = false;
+		ExternalTextureModel suggested_model = EXTERNAL_TEXTURE_MODEL_RGB_IDENTITY;
+		ExternalTextureRange suggested_range = EXTERNAL_TEXTURE_RANGE_FULL;
+	};
+
 	/*****************/
 	/**** SAMPLER ****/
 	/*****************/
@@ -1038,6 +1061,7 @@ public:
 		SUPPORTS_HDR_OUTPUT,
 		SUPPORTS_RASTERIZATION_RATE_MAP,
 		SUPPORTS_GPU_MAPPABLE_BUFFER,
+		SUPPORTS_ANDROID_HARDWARE_BUFFER,
 	};
 
 	enum SubgroupOperations {

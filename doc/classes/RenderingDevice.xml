@@ -2853,6 +2853,11 @@
 		<constant name="SUPPORTS_RASTERIZATION_RATE_MAP" value="14" enum="Features">
 			Support for rasterization rate maps. The current implementation targets Metal on Apple platforms. This allows for foveated rendering, which is used by the visionOS XR module.
 		</constant>
+		<constant name="SUPPORTS_ANDROID_HARDWARE_BUFFER" value="16" enum="Features">
+			Support for importing Android hardware buffers as textures.
+
+			[b]Note:[/b] This is currently only supported when using Vulkan on Android.
+		</constant>
 		<constant name="LIMIT_MAX_BOUND_UNIFORM_SETS" value="0" enum="Limit">
 			Maximum number of uniform sets that can be bound at a given time.
 		</constant>

@@ -371,6 +371,8 @@ public:
 		bool is_discardable = false;
 		bool is_subsampled = false;
 		bool has_initial_data = false;
+		bool is_external = false;
+		RID external_sampler;
 		bool pending_clear = false;
 
 		BitField<RDD::TextureAspectBits> read_aspect_flags = {};
@@ -413,6 +415,7 @@ public:
 	};
 
 	RID_Owner<Texture, true> texture_owner;
+	RID acquired_external_texture;
 	uint32_t texture_upload_region_size_px = 0;
 	uint32_t texture_download_region_size_px = 0;
 
@@ -468,6 +471,12 @@ public:
 
 	RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
 	RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
+	void external_buffer_acquire(uint64_t p_buffer);
+	void external_buffer_release(uint64_t p_buffer);
+	RID texture_create_from_external_buffer(uint64_t p_buffer, ExternalTextureProperties &r_properties);
+	RID texture_set_external_conversion(RID p_texture, ExternalTextureModel p_model, ExternalTextureRange p_range);
+	Error texture_external_acquire(RID p_texture);
+	Error texture_external_release(RID p_texture);
 	RID texture_create_from_extension(TextureType p_type, DataFormat p_format, TextureSamples p_samples, BitField<RenderingDevice::TextureUsageBits> p_usage, uint64_t p_image, uint64_t p_width, uint64_t p_height, uint64_t p_depth, uint64_t p_layers, uint64_t p_mipmaps = 1);
 	RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, uint32_t p_mipmaps = 1, TextureSliceType p_slice_type = TEXTURE_SLICE_2D, uint32_t p_layers = 0);
 	Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data);
@@ -726,7 +735,12 @@ public:
 	/**** SAMPLER ****/
 	/*****************/
 private:
-	RID_Owner<RDD::SamplerID, true> sampler_owner;
+	struct Sampler {
+		RDD::SamplerID driver_id;
+		bool is_external = false;
+	};
+	RID_Owner<Sampler, true> sampler_owner;
+	HashMap<uint64_t, RID> external_samplers;
 
 public:
 	RID sampler_create(const SamplerState &p_state);
@@ -967,7 +981,7 @@ private:
 		uint32_t layout_hash = 0;
 		BitField<RDD::PipelineStageBits> stage_bits = {};
 		Vector<uint32_t> set_formats;
-		HashSet<uint64_t> immutable_samplers;
+		HashMap<uint64_t, RID> immutable_samplers;
 	};
 
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
@@ -1818,6 +1832,7 @@ private:
 	// when the frame is cycled.
 
 	struct Frame {
+		LocalVector<Callable> completion_callbacks;
 		// List in usage order, from last to free to first to free.
 		List<Buffer> buffers_to_dispose_of;
 		List<Texture> textures_to_dispose_of;
@@ -1961,6 +1976,7 @@ public:
 
 	void swap_buffers(bool p_present);
 
+	void frame_completed_callback_add(const Callable &p_callback);
 	uint32_t get_frame_delay() const;
 
 	void submit();
