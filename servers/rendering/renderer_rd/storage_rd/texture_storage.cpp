@@ -31,14 +31,19 @@
 #include "texture_storage.h"
 
 #include "core/config/engine.h"
+#include "core/object/callable_mp.h"
+#include "core/object/message_queue.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/rendering_server_globals.h"
 
 using namespace RendererRD;
+
+static uint32_t external_texture_conversions_in_flight = 0;
 
 ///////////////////////////////////////////////////////////////////////////
 // TextureStorage::CanvasTexture
@@ -634,6 +639,9 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
+	external_textures.shader.initialize({ "" });
+	external_textures.shader_version = external_textures.shader.version_create();
+
 	// Initialize texture placeholder data for the `texture_*_placeholder_initialize()` methods.
 
 	constexpr int placeholder_size = 4;
@@ -662,6 +670,12 @@ TextureStorage::TextureStorage() {
 }
 
 TextureStorage::~TextureStorage() {
+	external_textures.pending.clear();
+	for (const KeyValue<RID, ExternalTextures::Pipeline> &E : external_textures.pipelines) {
+		RD::get_singleton()->free_rid(E.value.shader);
+	}
+	external_textures.shader.version_free(external_textures.shader_version);
+
 	rt_sdf.shader.version_free(rt_sdf.shader_version);
 
 	free_decal_data();
@@ -964,6 +978,8 @@ void TextureStorage::texture_free(RID p_texture) {
 	Texture *t = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL(t);
 	ERR_FAIL_COND(t->is_render_target);
+
+	external_textures.pending.erase(p_texture);
 
 	t->cleanup();
 
@@ -1297,6 +1313,55 @@ void TextureStorage::texture_3d_initialize(RID p_texture, Image::Format p_format
 }
 
 void TextureStorage::texture_external_initialize(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
+	_texture_external_initialize(p_texture, p_width, p_height, true);
+	ERR_FAIL_COND_MSG(p_external_buffer != 0, "External buffer IDs are only supported by the Compatibility renderer. Use ExternalTexture.submit_hardware_buffer() instead.");
+}
+
+void TextureStorage::_texture_external_initialize(RID p_texture, int p_width, int p_height, bool p_clear) {
+	Texture initial = {};
+	initial.is_external = true;
+	initial.type = TYPE_2D;
+	initial.rd_type = RD::TEXTURE_TYPE_2D;
+	initial.rd_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	initial.rd_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+	initial.format = Image::FORMAT_RGBA8;
+	initial.validated_format = Image::FORMAT_RGBA8;
+	initial.width = p_width;
+	initial.height = p_height;
+	initial.width_2d = p_width;
+	initial.height_2d = p_height;
+	initial.depth = 1;
+	initial.layers = 1;
+	initial.mipmaps = 1;
+	texture_owner.initialize_rid(p_texture, initial);
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	RD *rd = RD::get_singleton();
+	const int64_t max_size = rd->limit_get(RD::LIMIT_MAX_TEXTURE_SIZE_2D);
+	ERR_FAIL_COND_MSG(p_width <= 0 || p_height <= 0 || p_width > max_size || p_height > max_size, "External texture dimensions exceed the device limits.");
+
+	RD::TextureFormat format;
+	format.format = tex->rd_format;
+	format.width = p_width;
+	format.height = p_height;
+	format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	format.shareable_formats.push_back(tex->rd_format);
+	format.shareable_formats.push_back(tex->rd_format_srgb);
+	Vector<Vector<uint8_t>> data;
+	if (p_clear) {
+		Ref<Image> image = Image::create_empty(p_width, p_height, false, Image::FORMAT_RGBA8);
+		image->fill(Color(0, 0, 0, 1));
+		data.push_back(image->get_data());
+	}
+	tex->rd_texture = rd->texture_create(format, RD::TextureView(), data);
+	ERR_FAIL_COND(tex->rd_texture.is_null());
+	RD::TextureView srgb_view;
+	srgb_view.format_override = tex->rd_format_srgb;
+	tex->rd_texture_srgb = rd->texture_create_shared(srgb_view, tex->rd_texture);
+	if (tex->rd_texture_srgb.is_null()) {
+		rd->free_rid(tex->rd_texture);
+		tex->rd_texture = RID();
+		ERR_FAIL_MSG("Could not create the external texture's sRGB sampling view.");
+	}
 }
 
 void TextureStorage::texture_proxy_initialize(RID p_texture, RID p_base) {
@@ -1694,6 +1759,191 @@ void TextureStorage::texture_3d_update(RID p_texture, const Vector<Ref<Image>> &
 }
 
 void TextureStorage::texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) {
+	ERR_FAIL_COND_MSG(p_external_buffer != 0, "External buffer IDs are only supported by the Compatibility renderer. Use ExternalTexture.submit_hardware_buffer() instead.");
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_NULL(tex);
+	ERR_FAIL_COND(!tex->is_external);
+	if (tex->width == p_width && tex->height == p_height) {
+		return;
+	}
+	RID replacement = texture_allocate();
+	texture_external_initialize(replacement, p_width, p_height, 0);
+	Texture *replacement_tex = texture_owner.get_or_null(replacement);
+	if (replacement_tex->rd_texture.is_null()) {
+		texture_free(replacement);
+		ERR_FAIL_MSG("Could not resize the external texture.");
+	}
+	texture_replace(p_texture, replacement);
+}
+
+void TextureStorage::texture_external_submit(RID p_texture, const Ref<ExternalTextureSubmission> &p_submission) {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_MSG(!tex || !tex->is_external || tex->is_proxy, "The external texture was freed or replaced before its buffer submission was processed.");
+	external_textures.pending.insert(p_texture, p_submission);
+}
+
+void TextureStorage::update_external_textures() {
+	if (!external_textures.pending.is_empty()) {
+		RENDER_TIMESTAMP("External Textures");
+		HashMap<RID, Ref<ExternalTextureSubmission>> pending;
+		SWAP(pending, external_textures.pending);
+		for (const KeyValue<RID, Ref<ExternalTextureSubmission>> &E : pending) {
+			Texture *tex = texture_owner.get_or_null(E.key);
+			if (!tex || !tex->is_external) {
+				continue;
+			}
+			if (_texture_external_convert(E.key, E.value) != OK) {
+				E.value->complete(int(RSE::EXTERNAL_TEXTURE_COMPLETION_FAILED));
+			}
+		}
+	}
+	if (external_texture_conversions_in_flight > 0) {
+		RenderingServerDefault::redraw_request();
+	}
+}
+
+void TextureStorage::_texture_external_complete(const Ref<ExternalTextureSubmission> &p_submission, int p_status) {
+	external_texture_conversions_in_flight--;
+	p_submission->complete(p_status);
+}
+
+Error TextureStorage::_texture_external_convert(RID p_texture, const Ref<ExternalTextureSubmission> &p_submission) {
+	RD *rd = RD::get_singleton();
+	RD::ExternalTextureProperties properties;
+	RID imported = rd->texture_create_from_external_buffer(p_submission->buffer, properties);
+	ERR_FAIL_COND_V(imported.is_null(), ERR_CANT_CREATE);
+
+	Rect2i crop = p_submission->crop;
+	if (crop == Rect2i()) {
+		crop.size = Size2i(properties.width, properties.height);
+	}
+	if (!crop.has_area() || crop.position.x < 0 || crop.position.y < 0 || int64_t(crop.position.x) + crop.size.x > properties.width || int64_t(crop.position.y) + crop.size.y > properties.height) {
+		rd->free_rid(imported);
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "The crop rectangle must have positive dimensions and lie within the hardware buffer.");
+	}
+
+	RD::ExternalTextureModel model = properties.suggested_model;
+	switch (p_submission->color_model) {
+		case RSE::EXTERNAL_TEXTURE_COLOR_MODEL_AUTOMATIC:
+			break;
+		case RSE::EXTERNAL_TEXTURE_COLOR_MODEL_RGB:
+			model = RD::EXTERNAL_TEXTURE_MODEL_RGB_IDENTITY;
+			break;
+		case RSE::EXTERNAL_TEXTURE_COLOR_MODEL_BT601:
+			model = RD::EXTERNAL_TEXTURE_MODEL_YCBCR_601;
+			break;
+		case RSE::EXTERNAL_TEXTURE_COLOR_MODEL_BT709:
+			model = RD::EXTERNAL_TEXTURE_MODEL_YCBCR_709;
+			break;
+		case RSE::EXTERNAL_TEXTURE_COLOR_MODEL_BT2020:
+			model = RD::EXTERNAL_TEXTURE_MODEL_YCBCR_2020;
+			break;
+	}
+	RD::ExternalTextureRange range = properties.suggested_range;
+	if (p_submission->color_range != RSE::EXTERNAL_TEXTURE_COLOR_RANGE_AUTOMATIC) {
+		range = p_submission->color_range == RSE::EXTERNAL_TEXTURE_COLOR_RANGE_FULL ? RD::EXTERNAL_TEXTURE_RANGE_FULL : RD::EXTERNAL_TEXTURE_RANGE_NARROW;
+	}
+	bool is_yuv = properties.is_yuv;
+	if (properties.format == RD::DATA_FORMAT_MAX && p_submission->color_model != RSE::EXTERNAL_TEXTURE_COLOR_MODEL_AUTOMATIC) {
+		is_yuv = model != RD::EXTERNAL_TEXTURE_MODEL_RGB_IDENTITY;
+	}
+	if ((is_yuv ? model < RD::EXTERNAL_TEXTURE_MODEL_YCBCR_709 || model > RD::EXTERNAL_TEXTURE_MODEL_YCBCR_2020 : model != RD::EXTERNAL_TEXTURE_MODEL_RGB_IDENTITY) || (range != RD::EXTERNAL_TEXTURE_RANGE_FULL && range != RD::EXTERNAL_TEXTURE_RANGE_NARROW)) {
+		rd->free_rid(imported);
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "The hardware buffer has no usable color model or range. Specify the color model and range supplied by the producer.");
+	}
+	RID sampler = rd->texture_set_external_conversion(imported, model, range);
+	if (sampler.is_null()) {
+		rd->free_rid(imported);
+		return ERR_CANT_CREATE;
+	}
+
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	RID replacement;
+	Texture *destination = tex;
+	if (tex->width != crop.size.width || tex->height != crop.size.height) {
+		replacement = texture_allocate();
+		_texture_external_initialize(replacement, crop.size.width, crop.size.height, false);
+		destination = texture_owner.get_or_null(replacement);
+		if (destination->rd_texture.is_null()) {
+			rd->free_rid(imported);
+			texture_free(replacement);
+			return ERR_CANT_CREATE;
+		}
+	}
+	RID framebuffer = FramebufferCacheRD::get_singleton()->get_cache(destination->rd_texture);
+	ExternalTextures::Pipeline *conversion = external_textures.pipelines.getptr(sampler);
+	if (!conversion) {
+		Vector<uint8_t> bytecode = external_textures.shader.version_get_shader_bytecode(external_textures.shader_version, 0);
+		RD::PipelineImmutableSampler immutable;
+		immutable.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+		immutable.samplers.push_back(sampler);
+		RID shader = rd->shader_create_from_bytecode_with_samplers(bytecode, RID(), Vector<RD::PipelineImmutableSampler>({ immutable }));
+		if (shader.is_null()) {
+			rd->free_rid(imported);
+			if (replacement.is_valid()) {
+				texture_free(replacement);
+			}
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
+		ExternalTextures::Pipeline pipeline;
+		pipeline.shader = shader;
+		pipeline.pipeline = rd->render_pipeline_create(shader, rd->framebuffer_get_format(framebuffer), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled());
+		conversion = &external_textures.pipelines.insert(sampler, pipeline)->value;
+	}
+	RD::Uniform uniform(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 0, Vector<RID>({ sampler, imported }));
+	RID uniform_set = rd->uniform_set_create(Vector<RD::Uniform>({ uniform }), conversion->shader, 0, true);
+	Error error = rd->texture_external_acquire(imported);
+	if (error != OK) {
+		rd->free_rid(imported);
+		if (replacement.is_valid()) {
+			texture_free(replacement);
+		}
+		return error;
+	}
+
+	const bool has_alpha = model == RD::EXTERNAL_TEXTURE_MODEL_RGB_IDENTITY && properties.has_alpha;
+	rd->draw_command_begin_label("External Texture Conversion");
+	RD::DrawListID draw_list = rd->draw_list_begin(framebuffer, RD::DRAW_IGNORE_COLOR_0);
+	bool converted = draw_list != RD::INVALID_ID;
+	if (converted) {
+		rd->draw_list_bind_render_pipeline(draw_list, conversion->pipeline);
+		rd->draw_list_bind_uniform_set(draw_list, uniform_set, 0);
+		ExternalTextures::PushConstant push_constant = {};
+		push_constant.uv_offset[0] = float(crop.position.x) / properties.width;
+		push_constant.uv_offset[1] = float(crop.position.y) / properties.height;
+		push_constant.uv_scale[0] = float(crop.size.width) / properties.width;
+		push_constant.uv_scale[1] = float(crop.size.height) / properties.height;
+		push_constant.force_opaque = !has_alpha;
+		rd->draw_list_set_push_constant(draw_list, &push_constant, sizeof(push_constant));
+		rd->draw_list_draw(draw_list, false, 1, 3);
+		rd->draw_list_end();
+	}
+	rd->draw_command_end_label();
+	rd->texture_external_release(imported);
+	if (converted) {
+		bool changed = tex->width != crop.size.width || tex->height != crop.size.height || tex->external_has_alpha != has_alpha;
+		if (replacement.is_valid()) {
+			texture_replace(p_texture, replacement);
+			replacement = RID();
+			tex = texture_owner.get_or_null(p_texture);
+		}
+		tex->external_has_alpha = has_alpha;
+		if (changed) {
+			MessageQueue::get_main_singleton()->push_callable(p_submission->changed, crop.size, has_alpha);
+		}
+#ifdef TOOLS_ENABLED
+		tex->image_cache_2d.unref();
+#endif
+		decal_atlas_mark_draw_on_texture(p_texture);
+		area_light_atlas_mark_dirty_on_texture(p_texture);
+	}
+	rd->free_rid(imported);
+	if (replacement.is_valid()) {
+		texture_free(replacement);
+	}
+	external_texture_conversions_in_flight++;
+	rd->frame_completed_callback_add(callable_mp_static(&TextureStorage::_texture_external_complete).bind(p_submission, int(converted ? RSE::EXTERNAL_TEXTURE_COMPLETION_COMPLETED : RSE::EXTERNAL_TEXTURE_COMPLETION_FAILED)));
+	return OK;
 }
 
 void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {

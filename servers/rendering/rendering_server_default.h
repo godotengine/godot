@@ -227,6 +227,7 @@ public:
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
 	FUNC2(texture_3d_update, RID, const Vector<Ref<Image>> &)
 	FUNC4(texture_external_update, RID, int, int, uint64_t)
+	virtual Error texture_external_submit(RID p_texture, uint64_t p_buffer, RSE::ExternalTextureColorModel p_color_model, RSE::ExternalTextureColorRange p_color_range, const Rect2i &p_crop, const Callable &p_completion, const Callable &p_changed) override;
 	FUNC2(texture_proxy_update, RID, RID)
 
 	FUNC6(texture_drawable_blit_rect, const TypedArray<RID> &, const Rect2i &, RID, const Color &, const TypedArray<RID> &, int)

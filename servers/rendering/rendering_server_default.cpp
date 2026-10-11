@@ -67,6 +67,35 @@ void RenderingServerDefault::_free(RID p_rid) {
 	}
 }
 
+/* TEXTURE API */
+
+Error RenderingServerDefault::texture_external_submit(RID p_texture, uint64_t p_buffer, RSE::ExternalTextureColorModel p_color_model, RSE::ExternalTextureColorRange p_color_range, const Rect2i &p_crop, const Callable &p_completion, const Callable &p_changed) {
+	ERR_FAIL_COND_V_MSG(p_buffer == 0, ERR_INVALID_PARAMETER, "The hardware buffer handle must be nonzero.");
+#ifdef RD_ENABLED
+	RenderingDevice *rd = RenderingDevice::get_singleton();
+	ERR_FAIL_COND_V_MSG(!rd || !rd->has_feature(RenderingDevice::SUPPORTS_ANDROID_HARDWARE_BUFFER), ERR_UNAVAILABLE, "Android hardware buffers are not supported by this rendering device.");
+	rd->external_buffer_acquire(p_buffer);
+	Ref<ExternalTextureSubmission> submission;
+	submission.instantiate();
+	submission->buffer = p_buffer;
+	submission->color_model = p_color_model;
+	submission->color_range = p_color_range;
+	submission->crop = p_crop;
+	submission->completion = p_completion;
+	submission->changed = p_changed;
+	redraw_request();
+	if (Thread::get_caller_id() == server_thread) {
+		command_queue.flush_if_pending();
+		RSG::texture_storage->texture_external_submit(p_texture, submission);
+	} else {
+		command_queue.push(RSG::texture_storage, &RendererTextureStorage::texture_external_submit, p_texture, submission);
+	}
+	return OK;
+#else
+	return ERR_UNAVAILABLE;
+#endif
+}
+
 /* EVENT QUEUING */
 
 void RenderingServerDefault::request_frame_drawn_callback(const Callable &p_callable) {
@@ -80,6 +109,9 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	TIMESTAMP_BEGIN()
 
 	uint64_t time_usec = OS::get_singleton()->get_ticks_usec();
+
+	GodotProfileZoneGrouped(_profile_zone, "texture_storage->update_external_textures");
+	RSG::texture_storage->update_external_textures();
 
 	RENDER_TIMESTAMP("Prepare Render Frame");
 

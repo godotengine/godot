@@ -32,6 +32,7 @@
 
 #include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_types.h"
+#include "servers/rendering/storage/external_texture.h"
 
 class RendererTextureStorage {
 private:
@@ -77,6 +78,8 @@ public:
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) = 0;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) = 0;
 	virtual void texture_external_update(RID p_proxy, int p_width, int p_height, uint64_t p_external_buffer) = 0;
+	virtual void texture_external_submit(RID p_texture, const Ref<ExternalTextureSubmission> &p_submission) {}
+	virtual void update_external_textures() {}
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) = 0;
 
 	virtual void texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) = 0;

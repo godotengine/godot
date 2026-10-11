@@ -30,6 +30,7 @@
 
 #include "external_texture.h"
 
+#include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
@@ -37,18 +38,41 @@ void ExternalTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &ExternalTexture::set_size);
 	ClassDB::bind_method(D_METHOD("get_external_texture_id"), &ExternalTexture::get_external_texture_id);
 	ClassDB::bind_method(D_METHOD("set_external_buffer_id", "external_buffer_id"), &ExternalTexture::set_external_buffer_id);
+	ClassDB::bind_method(D_METHOD("submit_hardware_buffer", "buffer", "color_model", "color_range", "crop", "completion"), &ExternalTexture::submit_hardware_buffer, DEFVAL(COLOR_MODEL_AUTOMATIC), DEFVAL(COLOR_RANGE_AUTOMATIC), DEFVAL(Rect2i()), DEFVAL(Callable()));
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+
+	BIND_ENUM_CONSTANT(COLOR_MODEL_AUTOMATIC);
+	BIND_ENUM_CONSTANT(COLOR_MODEL_RGB);
+	BIND_ENUM_CONSTANT(COLOR_MODEL_BT601);
+	BIND_ENUM_CONSTANT(COLOR_MODEL_BT709);
+	BIND_ENUM_CONSTANT(COLOR_MODEL_BT2020);
+
+	BIND_ENUM_CONSTANT(COLOR_RANGE_AUTOMATIC);
+	BIND_ENUM_CONSTANT(COLOR_RANGE_FULL);
+	BIND_ENUM_CONSTANT(COLOR_RANGE_NARROW);
+
+	BIND_ENUM_CONSTANT(COMPLETION_COMPLETED);
+	BIND_ENUM_CONSTANT(COMPLETION_DROPPED);
+	BIND_ENUM_CONSTANT(COMPLETION_FAILED);
 }
 
 uint64_t ExternalTexture::get_external_texture_id() const {
+	MutexLock lock(mutex);
+	if (RenderingServer::get_singleton()->get_rendering_device() != nullptr) {
+		return 0;
+	}
 	_ensure_created();
 	return RenderingServer::get_singleton()->texture_get_native_handle(texture);
 }
 
 void ExternalTexture::set_size(const Size2 &p_size) {
+	MutexLock lock(mutex);
 	if (p_size.width > 0 && p_size.height > 0 && p_size != size) {
 		size = p_size;
+		if (using_hardware_buffer) {
+			return;
+		}
 		_ensure_created();
 		RenderingServer::get_singleton()->texture_external_update(texture, size.width, size.height, external_buffer);
 		emit_changed();
@@ -56,10 +80,12 @@ void ExternalTexture::set_size(const Size2 &p_size) {
 }
 
 Size2 ExternalTexture::get_size() const {
-	return size;
+	MutexLock lock(mutex);
+	return using_hardware_buffer ? Size2(resolved_size) : size;
 }
 
 void ExternalTexture::set_external_buffer_id(uint64_t p_external_buffer) {
+	MutexLock lock(mutex);
 	if (p_external_buffer != external_buffer) {
 		external_buffer = p_external_buffer;
 		_ensure_created();
@@ -67,24 +93,50 @@ void ExternalTexture::set_external_buffer_id(uint64_t p_external_buffer) {
 	}
 }
 
+Error ExternalTexture::submit_hardware_buffer(uint64_t p_buffer, ColorModel p_color_model, ColorRange p_color_range, const Rect2i &p_crop, const Callable &p_completion) {
+	ERR_FAIL_INDEX_V(p_color_model, COLOR_MODEL_BT2020 + 1, ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_color_range, COLOR_RANGE_NARROW + 1, ERR_INVALID_PARAMETER);
+	MutexLock lock(mutex);
+	_ensure_created();
+	Error error = RenderingServer::get_singleton()->texture_external_submit(texture, p_buffer, RSE::ExternalTextureColorModel(p_color_model), RSE::ExternalTextureColorRange(p_color_range), p_crop, p_completion, callable_mp(this, &ExternalTexture::_hardware_buffer_changed));
+	if (error == OK && !using_hardware_buffer) {
+		resolved_size = Size2i(size);
+		using_hardware_buffer = true;
+	}
+	return error;
+}
+
 int ExternalTexture::get_width() const {
-	return size.width;
+	return get_size().width;
 }
 
 int ExternalTexture::get_height() const {
-	return size.height;
+	return get_size().height;
 }
 
 bool ExternalTexture::has_alpha() const {
-	return false;
+	MutexLock lock(mutex);
+	return resolved_alpha;
 }
 
 RID ExternalTexture::get_rid() const {
+	MutexLock lock(mutex);
+	if (RenderingServer::get_singleton()->get_rendering_device() != nullptr) {
+		_ensure_created();
+		return texture;
+	}
 	if (!texture.is_valid()) {
 		texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();
 		using_placeholder = true;
 	}
 	return texture;
+}
+
+Ref<Image> ExternalTexture::get_image() const {
+	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+		return Ref<Image>();
+	}
+	return RenderingServer::get_singleton()->texture_2d_get(get_rid());
 }
 
 void ExternalTexture::_ensure_created() const {
@@ -100,6 +152,15 @@ void ExternalTexture::_ensure_created() const {
 	} else {
 		texture = new_texture;
 	}
+}
+
+void ExternalTexture::_hardware_buffer_changed(const Size2i &p_size, bool p_has_alpha) {
+	{
+		MutexLock lock(mutex);
+		resolved_size = p_size;
+		resolved_alpha = p_has_alpha;
+	}
+	emit_changed();
 }
 
 ExternalTexture::ExternalTexture() {

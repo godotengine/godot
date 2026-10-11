@@ -891,6 +891,13 @@ bool ShaderRD::version_is_valid(RID p_version) {
 	return version->valid;
 }
 
+Vector<uint8_t> ShaderRD::version_get_shader_bytecode(RID p_version, int p_variant) {
+	ERR_FAIL_COND_V(version_get_shader(p_version, p_variant).is_null(), Vector<uint8_t>());
+	Version *version = version_owner.get_or_null(p_version);
+	MutexLock lock(*version->mutex);
+	return version->variant_data[p_variant];
+}
+
 bool ShaderRD::version_free(RID p_version) {
 	if (version_owner.owns(p_version)) {
 		{

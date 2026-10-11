@@ -33,6 +33,7 @@
 #include "core/templates/paged_array.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/external_texture.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/tex_blit.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/forward_id_storage.h"
 #include "servers/rendering/rendering_server_types.h"
@@ -182,6 +183,8 @@ private:
 		RenderTarget *render_target = nullptr;
 		bool is_render_target;
 		bool is_proxy;
+		bool is_external = false;
+		bool external_has_alpha = false;
 
 		Ref<Image> image_cache_2d;
 		String path;
@@ -251,6 +254,27 @@ private:
 	};
 
 	void _texture_format_from_rd(RD::DataFormat p_rd_format, TextureFromRDFormat &r_format);
+
+	struct ExternalTextures {
+		struct PushConstant {
+			float uv_offset[2];
+			float uv_scale[2];
+			uint32_t force_opaque;
+			uint32_t pad[3];
+		};
+		struct Pipeline {
+			RID shader;
+			RID pipeline;
+		};
+		ExternalTextureShaderRD shader;
+		RID shader_version;
+		HashMap<RID, Pipeline> pipelines;
+		HashMap<RID, Ref<ExternalTextureSubmission>> pending;
+	} external_textures;
+
+	void _texture_external_initialize(RID p_texture, int p_width, int p_height, bool p_clear);
+	Error _texture_external_convert(RID p_texture, const Ref<ExternalTextureSubmission> &p_submission);
+	static void _texture_external_complete(const Ref<ExternalTextureSubmission> &p_submission, int p_status);
 
 	/* AREA LIGHT ATLAS API */
 
@@ -604,6 +628,8 @@ public:
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override;
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
+	virtual void texture_external_submit(RID p_texture, const Ref<ExternalTextureSubmission> &p_submission) override;
+	virtual void update_external_textures() override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
 
 	virtual void texture_drawable_blit_rect(const TypedArray<RID> &p_textures, const Rect2i &p_rect, RID p_material, const Color &p_modulate, const TypedArray<RID> &p_source_textures, int p_to_mipmap) override;

@@ -232,6 +232,7 @@ public:
 	}
 
 	bool version_is_valid(RID p_version);
+	Vector<uint8_t> version_get_shader_bytecode(RID p_version, int p_variant);
 
 	bool version_free(RID p_version);
 

@@ -5,7 +5,8 @@
 	</brief_description>
 	<description>
 		Displays the content of an external buffer provided by the platform.
-		Requires the [url=https://registry.khronos.org/OpenGL/extensions/OES/OES_EGL_image_external.txt]OES_EGL_image_external[/url] extension (OpenGL) or [url=https://registry.khronos.org/vulkan/specs/1.1-extensions/html/vkspec.html#VK_ANDROID_external_memory_android_hardware_buffer]VK_ANDROID_external_memory_android_hardware_buffer[/url] extension (Vulkan).
+		When using the Forward+ or Mobile rendering methods, [method submit_hardware_buffer] converts Android hardware buffers into an RGBA texture without mipmaps. The texture is black until the first conversion and keeps the last converted frame afterwards. Transform metadata is ignored.
+		When using the Compatibility rendering method, use [method get_external_texture_id] or [method set_external_buffer_id]. This requires the [url=https://registry.khronos.org/OpenGL/extensions/OES/OES_EGL_image_external.txt]OES_EGL_image_external[/url] extension, and shaders must sample the texture with [code]samplerExternalOES[/code].
 		[b]Note:[/b] This is currently only supported in Android builds.
 	</description>
 	<tutorials>
@@ -14,23 +15,71 @@
 		<method name="get_external_texture_id" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the external texture ID.
-				Depending on your use case, you may need to pass this to platform APIs, for example, when creating an [code]android.graphics.SurfaceTexture[/code] on Android.
+				Returns the OpenGL texture name used by the Compatibility rendering method, for example to create an [code]android.graphics.SurfaceTexture[/code]. Returns [code]0[/code] when using other rendering methods.
 			</description>
 		</method>
 		<method name="set_external_buffer_id">
 			<return type="void" />
 			<param index="0" name="external_buffer_id" type="int" />
 			<description>
-				Sets the external buffer ID.
-				Depending on your use case, you may need to call this with data received from a platform API, for example, [code]SurfaceTexture.getHardwareBuffer()[/code] on Android.
+				Sets the [code]EGLImage[/code] displayed when using the Compatibility rendering method. The caller manages its lifetime and synchronization. Use [method submit_hardware_buffer] for an [code]AHardwareBuffer[/code].
+			</description>
+		</method>
+		<method name="submit_hardware_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="int" />
+			<param index="1" name="color_model" type="int" enum="ExternalTexture.ColorModel" default="0" />
+			<param index="2" name="color_range" type="int" enum="ExternalTexture.ColorRange" default="0" />
+			<param index="3" name="crop" type="Rect2i" default="Rect2i(0, 0, 0, 0)" />
+			<param index="4" name="completion" type="Callable" default="Callable()" />
+			<description>
+				Queues [param buffer], an [code]AHardwareBuffer*[/code] passed as an integer, for display. The producer must finish writing and wait on any acquire fence first. Returns [constant ERR_UNAVAILABLE] unless the current [RenderingDevice] supports [constant RenderingDevice.SUPPORTS_ANDROID_HARDWARE_BUFFER]. Can be called from any thread.
+				At the next frame, the newest queued buffer is converted and older submissions are dropped. Failed conversions leave the previous frame visible.
+				[param crop] is the visible region in buffer pixels, for example to exclude the padding rows MediaCodec adds. The default [code skip-lint]Rect2i()[/code] uses the whole buffer; any other value must have a positive size and lie within the buffer. The texture takes the size of the visible region.
+				Input is treated as SDR, gamma-encoded data. Godot does not apply HDR transfer functions or gamut conversion. [param color_model] and [param color_range] override driver suggestions independently. Set explicit values when the producer format is known; suggestions may depend on buffer dimensions. YUV models produce opaque alpha.
+				[param completion] receives a [enum CompletionStatus] on the main thread after GPU reads have finished and Godot has released its buffer reference. Reuse the buffer, or return its [code]AImage[/code] to the [code]AImageReader[/code], only after every submission completes. If this method returns an error, [param completion] is not called.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(256, 256)">
-			External texture size.
+			The texture size. Hardware buffers determine the size after the first conversion.
 		</member>
 	</members>
+	<constants>
+		<constant name="COLOR_MODEL_AUTOMATIC" value="0" enum="ColorModel">
+			Use the driver's suggested color model, or fail if unusable.
+		</constant>
+		<constant name="COLOR_MODEL_RGB" value="1" enum="ColorModel">
+			The buffer contains RGB data.
+		</constant>
+		<constant name="COLOR_MODEL_BT601" value="2" enum="ColorModel">
+			The buffer contains YCbCr data using BT.601.
+		</constant>
+		<constant name="COLOR_MODEL_BT709" value="3" enum="ColorModel">
+			The buffer contains YCbCr data using BT.709.
+		</constant>
+		<constant name="COLOR_MODEL_BT2020" value="4" enum="ColorModel">
+			The buffer contains YCbCr data using BT.2020. The output is SDR.
+		</constant>
+		<constant name="COLOR_RANGE_AUTOMATIC" value="0" enum="ColorRange">
+			Use the driver's suggested color range, or fail if unusable.
+		</constant>
+		<constant name="COLOR_RANGE_FULL" value="1" enum="ColorRange">
+			Full range.
+		</constant>
+		<constant name="COLOR_RANGE_NARROW" value="2" enum="ColorRange">
+			Narrow (video) range.
+		</constant>
+		<constant name="COMPLETION_COMPLETED" value="0" enum="CompletionStatus">
+			The buffer was converted and the GPU has finished reading it.
+		</constant>
+		<constant name="COMPLETION_DROPPED" value="1" enum="CompletionStatus">
+			The buffer was superseded or the texture was freed before conversion.
+		</constant>
+		<constant name="COMPLETION_FAILED" value="2" enum="CompletionStatus">
+			The buffer could not be converted.
+		</constant>
+	</constants>
 </class>
