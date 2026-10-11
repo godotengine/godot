@@ -612,6 +612,14 @@
 				Moves IME to the given position.
 			</description>
 		</method>
+		<method name="set_ime_rect">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" />
+			<description>
+				Sets a rectangle which should not be obstructed by the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] popup.
+				[b]Note:[/b] This method is implemented only on Windows.
+			</description>
+		</method>
 		<method name="set_layout_direction">
 			<return type="void" />
 			<param index="0" name="direction" type="int" enum="Window.LayoutDirection" />
