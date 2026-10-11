@@ -66,18 +66,11 @@ public:
 		FILL_MODE_MAX
 	};
 
-	enum ProgressLabelFormat {
-		FORMAT_NONE,
-		FORMAT_PERCENTAGE,
-		FORMAT_DECIMAL,
-		FORMAT_FRACTION
-	};
-
 	void set_fill_mode(int p_fill);
 	int get_fill_mode();
 
-	void set_progress_label_format(ProgressLabelFormat p_format);
-	ProgressLabelFormat get_progress_label_format() const;
+	void set_format(const String &p_format);
+	String get_format() const;
 
 	void set_indeterminate(bool p_indeterminate);
 	bool is_indeterminate() const;
@@ -86,6 +79,7 @@ public:
 	bool is_editor_preview_indeterminate_enabled() const;
 
 	Size2 get_minimum_size() const override;
+	PackedStringArray get_configuration_warnings() const override;
 	ProgressBar();
 
 private:
@@ -93,8 +87,7 @@ private:
 
 	FillMode mode = FILL_BEGIN_TO_END;
 
-	ProgressLabelFormat progress_label_format = FORMAT_PERCENTAGE;
+	String label_format = "%d%%";
 };
 
 VARIANT_ENUM_CAST(ProgressBar::FillMode);
-VARIANT_ENUM_CAST(ProgressBar::ProgressLabelFormat);

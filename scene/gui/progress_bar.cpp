@@ -40,21 +40,27 @@
 Size2 ProgressBar::get_minimum_size() const {
 	Size2 minimum_size = theme_cache.background_style->get_minimum_size();
 	minimum_size = minimum_size.max(theme_cache.fill_style->get_minimum_size());
-	if (progress_label_format != FORMAT_NONE) {
-		String txt = "";
+	if (!label_format.is_empty()) {
+		bool error = false;
+		String txt;
 
-		switch (progress_label_format) {
-			case FORMAT_PERCENTAGE:
-				txt = "100%";
-				break;
-			case FORMAT_DECIMAL:
-				txt = "1.000";
-				break;
-			case FORMAT_FRACTION:
-				txt = "1/1";
-				break;
-			default:
-				break;
+		const int s_count = label_format.count("%s");
+
+		if (s_count == 0) {
+			const Variant percentage = 100.0;
+			txt = label_format.sprintf(Span(&percentage, 1), &error);
+		} else if (s_count == 2) {
+			const Variant fraction_args[] = { String("1"), String("1") };
+			txt = label_format.sprintf(Span(fraction_args, 2), &error);
+		} else if (s_count == 1) {
+			const Variant value = String("1");
+			txt = label_format.sprintf(Span(&value, 1), &error);
+		} else {
+			error = true;
+		}
+
+		if (error) {
+			txt = RTR("<Invalid>");
 		}
 
 		TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
@@ -164,55 +170,55 @@ void ProgressBar::_notification(int p_what) {
 					break;
 			}
 
-			if (progress_label_format != FORMAT_NONE) {
+			if (!label_format.is_empty()) {
 				double ratio = 0;
 
-				if (progress_label_format != FORMAT_FRACTION) {
-					// Avoid division by zero.
-					if (Math::is_equal_approx(get_max(), get_min())) {
-						ratio = 1;
-					} else if (is_ratio_exp() && get_min() >= 0 && get_value() >= 0) {
-						double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
-						double exp_max = Math::log(get_max()) / Math::log((double)2);
-						double exp_value = get_value() == 0 ? 0.0 : Math::log(get_value()) / Math::log((double)2);
-						double percentage = (exp_value - exp_min) / (exp_max - exp_min);
+				// Avoid division by zero.
+				if (Math::is_equal_approx(get_max(), get_min())) {
+					ratio = 1;
+				} else if (is_ratio_exp() && get_min() >= 0 && get_value() >= 0) {
+					double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
+					double exp_max = Math::log(get_max()) / Math::log((double)2);
+					double exp_value = get_value() == 0 ? 0.0 : Math::log(get_value()) / Math::log((double)2);
+					double percentage = (exp_value - exp_min) / (exp_max - exp_min);
 
-						ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
-					} else {
-						double percentage = (get_value() - get_min()) / (get_max() - get_min());
+					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
+				} else {
+					double percentage = (get_value() - get_min()) / (get_max() - get_min());
 
-						ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
-					}
+					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
 				}
 
+				bool error = false;
 				String txt;
-				switch (progress_label_format) {
-					case FORMAT_PERCENTAGE:
-						txt = itos(int(Math::round(ratio * 100)));
-						break;
-					case FORMAT_DECIMAL:
-						txt = rtos(Math::snapped(ratio, 0.001));
-						break;
-					case FORMAT_FRACTION: {
-						const bool step_is_whole_number = Math::is_equal_approx(get_step(), Math::round(get_step()));
-						const int decimals = step_is_whole_number ? 0 : -1;
-						const String value = String::num(Math::snapped(get_value(), get_step()), decimals);
-						const String max = String::num(Math::snapped(get_max(), get_step()), decimals);
-						txt = value + "/" + max;
-					} break;
-					default:
-						break;
+
+				const int s_count = label_format.count("%s");
+
+				if (s_count == 0) {
+					// Check this first as this is the most likely case
+					const Variant percentage = ratio * 100;
+					txt = label_format.sprintf(Span(&percentage, 1), &error);
+				} else if (s_count == 2) {
+					const String value = String::num(Math::snapped(get_value(), get_step()), -1).trim_suffix(".0");
+					const String max = String::num(Math::snapped(get_max(), get_step()), -1).trim_suffix(".0");
+					const Variant fraction_args[] = {
+						value,
+						max
+					};
+
+					txt = label_format.sprintf(Span(fraction_args, 2), &error);
+				} else if (s_count == 1) {
+					const Variant value_arg = String::num(Math::snapped(get_value(), get_step()), -1).trim_suffix(".0");;
+					txt = label_format.sprintf(Span(&value_arg, 1), &error);
+				} else {
+					error = true;
 				}
 
-				if (is_localizing_numeral_system()) {
+				if (error) {
+					txt = RTR("<Invalid>");
+				} else if (is_localizing_numeral_system()) {
 					const String &lang = _get_locale();
 					txt = TranslationServer::get_singleton()->format_number(txt, lang);
-
-					if (progress_label_format == FORMAT_PERCENTAGE) {
-						txt += TranslationServer::get_singleton()->get_percent_sign(lang);
-					}
-				} else if (progress_label_format == FORMAT_PERCENTAGE) {
-					txt += String("%");
 				}
 
 				TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
@@ -245,15 +251,45 @@ int ProgressBar::get_fill_mode() {
 	return mode;
 }
 
-void ProgressBar::set_progress_label_format(ProgressLabelFormat	p_format) {
-	progress_label_format = p_format;
+void ProgressBar::set_format(const String &p_format) {
+	if (label_format == p_format) {
+		return;
+	}
+
+	label_format = p_format;
 	update_minimum_size();
+	update_configuration_warnings();
 	queue_redraw();
 }
 
-ProgressBar::ProgressLabelFormat ProgressBar::get_progress_label_format() const {
-	return progress_label_format;
+String ProgressBar::get_format() const {
+	return label_format;
 }
+
+PackedStringArray ProgressBar::get_configuration_warnings() const {
+	PackedStringArray warnings = Range::get_configuration_warnings();
+
+	if (!label_format.is_empty()) {
+		bool error = false;
+		String error_message;
+		if (label_format.count("%s") == 0) {
+			const Variant test_value = 100.0;
+			error_message = label_format.sprintf(Span(&test_value, 1), &error);
+		} else if (label_format.count("%s") == 2) {
+			const Variant fraction_args[] = { String("1"), String("1") };
+			error_message = label_format.sprintf(Span(fraction_args, 2), &error);
+		} else if (label_format.count("%s") == 1) {
+			const Variant value = String("1");
+			error_message = label_format.sprintf(Span(&value, 1), &error);
+		}
+		if (error) {
+			warnings.push_back(vformat(RTR("The format property is not valid: %s."), error_message));
+		}
+	}
+
+	return warnings;
+}
+
 
 void ProgressBar::set_indeterminate(bool p_indeterminate) {
 	if (indeterminate == p_indeterminate) {
@@ -298,25 +334,19 @@ void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_indeterminate"), &ProgressBar::is_indeterminate);
 	ClassDB::bind_method(D_METHOD("set_editor_preview_indeterminate", "preview_indeterminate"), &ProgressBar::set_editor_preview_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_editor_preview_indeterminate_enabled"), &ProgressBar::is_editor_preview_indeterminate_enabled);
-	ClassDB::bind_method(D_METHOD("set_progress_label_format", "progress_label_format"), &ProgressBar::set_progress_label_format);
-	ClassDB::bind_method(D_METHOD("get_progress_label_format"), &ProgressBar::get_progress_label_format);
+	ClassDB::bind_method(D_METHOD("set_format", "format"), &ProgressBar::set_format);
+	ClassDB::bind_method(D_METHOD("get_format"), &ProgressBar::get_format);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indeterminate"), "set_indeterminate", "is_indeterminate");
 	ADD_GROUP("Editor", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_preview_indeterminate"), "set_editor_preview_indeterminate", "is_editor_preview_indeterminate_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "format"), "set_format", "get_format");
 
 	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);
 	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);
 	BIND_ENUM_CONSTANT(FILL_TOP_TO_BOTTOM);
 	BIND_ENUM_CONSTANT(FILL_BOTTOM_TO_TOP);
-
-	BIND_ENUM_CONSTANT(FORMAT_NONE);
-	BIND_ENUM_CONSTANT(FORMAT_PERCENTAGE);
-	BIND_ENUM_CONSTANT(FORMAT_DECIMAL);
-	BIND_ENUM_CONSTANT(FORMAT_FRACTION);
-
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "progress_label_format", PROPERTY_HINT_ENUM, "None,Percentage,Decimal,Fraction"), "set_progress_label_format", "get_progress_label_format");
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ProgressBar, background_style, "background");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ProgressBar, fill_style, "fill");

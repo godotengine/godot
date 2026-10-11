@@ -296,7 +296,7 @@ void AnimationNodeBlendTreeEditor::update_graph_immediately() {
 				options.push_back(F);
 			}
 
-			pb->set_progress_label_format(ProgressBar::ProgressLabelFormat::FORMAT_NONE);
+			pb->set_format("");
 			pb->set_custom_minimum_size(Vector2(0, 14) * EDSCALE);
 			animations[E] = pb;
 			node->add_child(pb);
