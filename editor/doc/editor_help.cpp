@@ -5363,7 +5363,6 @@ FindBar::FindBar() {
 	find_prev->set_disabled(results_count < 1);
 	find_prev->set_tooltip_text(TTR("Previous Match"));
 	add_child(find_prev);
-	find_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
 
 	find_next = memnew(Button);
@@ -5371,7 +5370,6 @@ FindBar::FindBar() {
 	find_next->set_disabled(results_count < 1);
 	find_next->set_tooltip_text(TTR("Next Match"));
 	add_child(find_next);
-	find_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_next));
 
 	hide_button = memnew(Button);

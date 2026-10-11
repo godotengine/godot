@@ -765,7 +765,6 @@ FindReplaceBar::FindReplaceBar() {
 	toggle_replace_button->set_theme_type_variation(SceneStringName(FlatButton));
 	add_child(toggle_replace_button);
 	toggle_replace_button->set_accessibility_name(TTRC("Replace Mode"));
-	toggle_replace_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	toggle_replace_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_toggle_replace_pressed));
 
 	VBoxContainer *vbc_lineedit = memnew(VBoxContainer);
@@ -812,7 +811,6 @@ FindReplaceBar::FindReplaceBar() {
 	find_prev->set_disabled(results_count < 1);
 	find_prev->set_tooltip_text(TTRC("Previous Match"));
 	hbc_button_search->add_child(find_prev);
-	find_prev->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_prev));
 
 	find_next = memnew(Button);
@@ -820,19 +818,16 @@ FindReplaceBar::FindReplaceBar() {
 	find_next->set_disabled(results_count < 1);
 	find_next->set_tooltip_text(TTRC("Next Match"));
 	hbc_button_search->add_child(find_next);
-	find_next->set_focus_mode(FOCUS_ACCESSIBILITY);
 	find_next->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::search_next));
 
 	case_sensitive = memnew(CheckBox);
 	hbc_option_search->add_child(case_sensitive);
 	case_sensitive->set_text(TTRC("Match Case"));
-	case_sensitive->set_focus_mode(FOCUS_ACCESSIBILITY);
 	case_sensitive->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	whole_words = memnew(CheckBox);
 	hbc_option_search->add_child(whole_words);
 	whole_words->set_text(TTRC("Whole Words"));
-	whole_words->set_focus_mode(FOCUS_ACCESSIBILITY);
 	whole_words->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	// Replace toolbar.
@@ -858,7 +853,6 @@ FindReplaceBar::FindReplaceBar() {
 	selection_only = memnew(CheckBox);
 	hbc_option_replace->add_child(selection_only);
 	selection_only->set_text(TTRC("Selection Only"));
-	selection_only->set_focus_mode(FOCUS_ACCESSIBILITY);
 	selection_only->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
 	hide_button = memnew(Button);
