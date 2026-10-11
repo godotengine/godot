@@ -4278,17 +4278,31 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 	bool parsed_container = shader_container->from_bytes(p_shader_binary);
 	ERR_FAIL_COND_V_MSG(!parsed_container, RID(), "Failed to parse shader container from binary.");
 
+	ShaderReflection shader_reflection = shader_container->get_shader_reflection();
+
 	Vector<RDD::ImmutableSampler> driver_immutable_samplers;
 	for (const PipelineImmutableSampler &source_sampler : p_immutable_samplers) {
+		ERR_FAIL_COND_V_MSG(source_sampler.set >= (uint32_t)shader_reflection.uniform_sets.size(), RID(), vformat("Immutable sampler set (%d) is not used by the shader.", source_sampler.set));
+		const ShaderUniform *uniform = nullptr;
+		for (const ShaderUniform &candidate : shader_reflection.uniform_sets[source_sampler.set]) {
+			if (candidate.binding == source_sampler.binding) {
+				uniform = &candidate;
+				break;
+			}
+		}
+		ERR_FAIL_NULL_V_MSG(uniform, RID(), vformat("Immutable sampler binding (%d), set (%d) is not used by the shader.", source_sampler.binding, source_sampler.set));
+		ERR_FAIL_COND_V_MSG(source_sampler.uniform_type != uniform->type, RID(), vformat("Immutable sampler type for binding (%d), set (%d) does not match the shader uniform type.", source_sampler.binding, source_sampler.set));
+		ERR_FAIL_COND_V_MSG(source_sampler.samplers.size() != uniform->length, RID(), vformat("Immutable sampler binding (%d), set (%d) requires %d samplers, but %d were provided.", source_sampler.binding, source_sampler.set, uniform->length, source_sampler.samplers.size()));
+
 		RDD::ImmutableSampler driver_sampler;
 		driver_sampler.type = source_sampler.uniform_type;
+		driver_sampler.set = source_sampler.set;
 		driver_sampler.binding = source_sampler.binding;
-
-		for (uint32_t j = 0; j < source_sampler.get_id_count(); j++) {
-			RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.get_id(j));
+		for (int j = 0; j < source_sampler.samplers.size(); j++) {
+			RDD::SamplerID *sampler_driver_id = sampler_owner.get_or_null(source_sampler.samplers[j]);
+			ERR_FAIL_NULL_V_MSG(sampler_driver_id, RID(), vformat("Immutable sampler binding (%d), set (%d), index (%d) is not a valid sampler RID.", source_sampler.binding, source_sampler.set, j));
 			driver_sampler.ids.push_back(*sampler_driver_id);
 		}
-
 		driver_immutable_samplers.append(driver_sampler);
 	}
 
@@ -4309,11 +4323,18 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 	Shader *shader = shader_owner.get_or_null(id);
 	ERR_FAIL_NULL_V(shader, RID());
 
-	*((ShaderReflection *)shader) = shader_container->get_shader_reflection();
+	*((ShaderReflection *)shader) = shader_reflection;
 	shader->name.clear();
 	shader->name.append_utf8(shader_container->shader_name);
 	shader->driver_id = shader_id;
 	shader->layout_hash = driver->shader_get_layout_hash(shader_id);
+
+	for (const PipelineImmutableSampler &sampler : p_immutable_samplers) {
+		for (const RID &sampler_id : sampler.samplers) {
+			_add_dependency(id, sampler_id);
+		}
+		shader->immutable_samplers.insert((uint64_t(sampler.set) << 32) | sampler.binding);
+	}
 
 	for (int i = 0; i < shader->uniform_sets.size(); i++) {
 		uint32_t format = 0; // No format, default.
@@ -4325,6 +4346,20 @@ RID RenderingDevice::shader_create_from_bytecode_with_samplers(const Vector<uint
 
 			UniformSetFormat usformat;
 			usformat.uniforms = shader->uniform_sets[i];
+			for (const PipelineImmutableSampler &sampler : p_immutable_samplers) {
+				if (sampler.set != (uint32_t)i) {
+					continue;
+				}
+				if (usformat.immutable_samplers.is_empty()) {
+					usformat.immutable_samplers.resize(usformat.uniforms.size());
+				}
+				for (int j = 0; j < usformat.uniforms.size(); j++) {
+					if (usformat.uniforms[j].binding == sampler.binding) {
+						usformat.immutable_samplers.write[j] = sampler.samplers;
+						break;
+					}
+				}
+			}
 			RBMap<UniformSetFormat, uint32_t>::Element *E = uniform_set_format_cache.find(usformat);
 			if (E) {
 				format = E->get();
@@ -4517,8 +4552,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 		driver_uniform.type = uniform.uniform_type;
 		driver_uniform.binding = uniform.binding;
 
-		// Mark immutable samplers to be skipped when creating uniform set.
-		driver_uniform.immutable_sampler = uniform.immutable_sampler;
+		driver_uniform.immutable_sampler = shader->immutable_samplers.has((uint64_t(p_shader_set) << 32) | uniform.binding);
 
 		switch (uniform.uniform_type) {
 			case UNIFORM_TYPE_SAMPLER: {

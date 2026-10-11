@@ -909,6 +909,7 @@ private:
 private:
 	struct UniformSetFormat {
 		Vector<ShaderUniform> uniforms;
+		Vector<Vector<RID>> immutable_samplers;
 
 		_FORCE_INLINE_ bool operator<(const UniformSetFormat &p_other) const {
 			if (uniforms.size() != p_other.uniforms.size()) {
@@ -919,6 +920,21 @@ private:
 					return true;
 				} else if (p_other.uniforms[i] < uniforms[i]) {
 					return false;
+				}
+			}
+			if (immutable_samplers.size() != p_other.immutable_samplers.size()) {
+				return immutable_samplers.size() < p_other.immutable_samplers.size();
+			}
+			for (int i = 0; i < immutable_samplers.size(); i++) {
+				const Vector<RID> &samplers = immutable_samplers[i];
+				const Vector<RID> &other_samplers = p_other.immutable_samplers[i];
+				if (samplers.size() != other_samplers.size()) {
+					return samplers.size() < other_samplers.size();
+				}
+				for (int j = 0; j < samplers.size(); j++) {
+					if (samplers[j] != other_samplers[j]) {
+						return samplers[j] < other_samplers[j];
+					}
 				}
 			}
 			return false;
@@ -951,6 +967,7 @@ private:
 		uint32_t layout_hash = 0;
 		BitField<RDD::PipelineStageBits> stage_bits = {};
 		Vector<uint32_t> set_formats;
+		HashSet<uint64_t> immutable_samplers;
 	};
 
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
@@ -1073,8 +1090,6 @@ public:
 	struct Uniform {
 		UniformType uniform_type = UNIFORM_TYPE_IMAGE;
 		uint32_t binding = 0; // Binding index as specified in shader.
-		// This flag specifies that this is an immutable sampler to be set when creating pipeline layout.
-		bool immutable_sampler = false;
 
 	private:
 		// In most cases only one ID is provided per binding, so avoid allocating memory unnecessarily for performance.
@@ -1135,7 +1150,12 @@ public:
 		_FORCE_INLINE_ Uniform() = default;
 	};
 
-	typedef Uniform PipelineImmutableSampler;
+	struct PipelineImmutableSampler {
+		UniformType uniform_type = UNIFORM_TYPE_SAMPLER;
+		uint32_t set = 0;
+		uint32_t binding = 0;
+		Vector<RID> samplers;
+	};
 	RID shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID(), const Vector<PipelineImmutableSampler> &p_immutable_samplers = Vector<PipelineImmutableSampler>());
 
 private:

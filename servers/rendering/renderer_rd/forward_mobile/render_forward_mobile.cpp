@@ -1937,7 +1937,6 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			u.binding = 2;
 			u.uniform_type = RD::UNIFORM_TYPE_SAMPLER;
 			u.append_id(scene_shader.shadow_sampler);
-			u.immutable_sampler = true;
 			uniforms.push_back(u);
 		}
 

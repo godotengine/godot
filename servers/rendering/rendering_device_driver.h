@@ -508,6 +508,7 @@ public:
 
 	struct ImmutableSampler {
 		UniformType type = UNIFORM_TYPE_MAX;
+		uint32_t set = 0;
 		uint32_t binding = 0xffffffff; // Binding index as specified in shader.
 		LocalVector<ID> ids;
 	};

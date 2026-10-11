@@ -4330,19 +4330,6 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 				case UNIFORM_TYPE_SAMPLER: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
 					layout_binding.descriptorCount = uniform.length;
-					// Immutable samplers: here they get set in the layoutbinding, given that they will not be changed later.
-					int immutable_bind_index = -1;
-					if (immutable_samplers_enabled && p_immutable_samplers.size() > 0) {
-						for (int k = 0; k < p_immutable_samplers.size(); k++) {
-							if (p_immutable_samplers[k].binding == layout_binding.binding) {
-								immutable_bind_index = k;
-								break;
-							}
-						}
-						if (immutable_bind_index >= 0) {
-							layout_binding.pImmutableSamplers = (VkSampler *)&p_immutable_samplers[immutable_bind_index].ids[0].id;
-						}
-					}
 				} break;
 				case UNIFORM_TYPE_SAMPLER_WITH_TEXTURE: {
 					layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -4383,6 +4370,15 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_container(const Re
 				} break;
 				default: {
 					DEV_ASSERT(false);
+				}
+			}
+
+			if (immutable_samplers_enabled && (uniform.type == UNIFORM_TYPE_SAMPLER || uniform.type == UNIFORM_TYPE_SAMPLER_WITH_TEXTURE)) {
+				for (const ImmutableSampler &sampler : p_immutable_samplers) {
+					if (sampler.set == i && sampler.binding == uniform.binding) {
+						layout_binding.pImmutableSamplers = (const VkSampler *)sampler.ids.ptr();
+						break;
+					}
 				}
 			}
 

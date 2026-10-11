@@ -621,7 +621,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		Vector<RD::PipelineImmutableSampler> immutable_samplers;
 		RD::PipelineImmutableSampler immutable_shadow_sampler;
 		immutable_shadow_sampler.binding = 2;
-		immutable_shadow_sampler.append_id(shadow_sampler);
+		immutable_shadow_sampler.samplers.push_back(shadow_sampler);
 		immutable_shadow_sampler.uniform_type = RenderingDeviceCommons::UNIFORM_TYPE_SAMPLER;
 		immutable_samplers.push_back(immutable_shadow_sampler);
 		Vector<uint64_t> dynamic_buffers;
@@ -1024,7 +1024,6 @@ SceneShaderForwardMobile::~SceneShaderForwardMobile() {
 
 	RD::get_singleton()->free_rid(default_vec4_xform_buffer);
 	RD::get_singleton()->free_rid(default_material_feedback_buffer);
-	RD::get_singleton()->free_rid(shadow_sampler);
 
 	material_storage->shader_free(overdraw_material_shader);
 	material_storage->shader_free(default_shader);
@@ -1033,4 +1032,7 @@ SceneShaderForwardMobile::~SceneShaderForwardMobile() {
 	material_storage->material_free(overdraw_material);
 	material_storage->material_free(default_material);
 	material_storage->material_free(debug_shadow_splits_material);
+
+	// Shaders bake this sampler as immutable, so it must outlive them.
+	RD::get_singleton()->free_rid(shadow_sampler);
 }
