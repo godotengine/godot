@@ -1081,6 +1081,7 @@ RID MaterialStorage::MaterialData::get_default_texture_id(ShaderLanguage::DataTy
 	switch (p_type) {
 		case ShaderLanguage::TYPE_ISAMPLER2D:
 		case ShaderLanguage::TYPE_USAMPLER2D:
+		case ShaderLanguage::TYPE_SAMPLEREXT:
 		case ShaderLanguage::TYPE_SAMPLER2D: {
 			switch (p_hint) {
 				case ShaderLanguage::ShaderNode::Uniform::HINT_DEFAULT_BLACK: {
