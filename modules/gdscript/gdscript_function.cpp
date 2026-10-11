@@ -1088,6 +1088,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 
+#ifdef DEBUG_ENABLED
+				if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->consume_break_on_function_return()) {
+					GDScriptLanguage::get_singleton()->debug_break("Breakpoint", true);
+				}
+#endif
+
 				//_call_func(NULL,base,*methodname,ip,argc,p_instance,stack);
 				ip += argc + 1;
 			}
@@ -1200,6 +1206,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					OPCODE_BREAK;
 				}
+
+#ifdef DEBUG_ENABLED
+				if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->consume_break_on_function_return()) {
+					GDScriptLanguage::get_singleton()->debug_break("Breakpoint", true);
+				}
+#endif
 
 				ip += 4 + argc;
 			}

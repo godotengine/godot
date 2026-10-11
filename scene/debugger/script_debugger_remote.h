@@ -31,11 +31,12 @@
 #ifndef SCRIPT_DEBUGGER_REMOTE_H
 #define SCRIPT_DEBUGGER_REMOTE_H
 
-#include "core/io/packet_peer.h"
-#include "core/io/stream_peer_tcp.h"
 #include "core/list.h"
 #include "core/os/os.h"
 #include "core/script_language.h"
+#include "debug_session_v2.h"
+#include "debug_transport_v2.h"
+#include "debug_variable_store_v2.h"
 
 class SceneTree;
 
@@ -64,7 +65,9 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	bool skip_profile_frame;
 	bool reload_all_scripts;
 
-	Ref<StreamPeerTCP> tcp_client;
+	DebugTransportV2 transport;
+	DebugSessionV2 session;
+	DebugVariableStoreV2 variable_store;
 	Ref<PacketPeerStream> packet_peer_stream;
 
 	uint64_t last_perf_time;
@@ -102,6 +105,7 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	int max_warnings_per_second;
 	int n_errors_dropped;
 	int n_warnings_dropped;
+	uint64_t last_transport_dropped;
 
 	int max_cps;
 	int char_count;
@@ -119,7 +123,15 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	void _get_output();
 	void _poll_events();
+	DebugSessionV2::Action _handle_control_message(const DebugProtocolV2::Envelope &p_message);
+	void _send_control_ack(const DebugSessionV2::Decision &p_decision);
+	bool _poll_data_request(ScriptLanguage *p_script);
+	void _send_data_error(const DebugProtocolV2::Envelope &p_request, const String &p_code, const String &p_message);
 	uint32_t poll_every;
+	uint64_t next_reconnect_msec;
+	uint64_t scene_revision;
+	uint64_t pending_scene_request_id;
+	uint64_t pending_scene_stop_id;
 
 	SceneTree *scene_tree;
 
@@ -127,8 +139,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value);
 
-	void _send_object_id(ObjectID p_id);
-	void _send_video_memory();
+	bool _send_object_id(ObjectID p_id, uint64_t p_request_id, uint64_t p_stop_id);
+	void _send_video_memory(uint64_t p_request_id = 0, uint64_t p_stop_id = 0);
 
 	Ref<MultiplayerAPI> multiplayer;
 

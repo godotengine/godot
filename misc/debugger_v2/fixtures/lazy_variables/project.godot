@@ -1,0 +1,5 @@
+[application]
+config/name="debug-v2-lazy-variables"
+
+[rendering]
+driver/driver_name="GLES2"

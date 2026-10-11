@@ -1058,6 +1058,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		sdr->set_skip_breakpoints(skip_breakpoints);
 
 		if (derr != OK) {
+			ERR_PRINT("Unable to establish the Godot Debug Protocol v2 dual-channel session.");
 			memdelete(sdr);
 		} else {
 			script_debugger = sdr;

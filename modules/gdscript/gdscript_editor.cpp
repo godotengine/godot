@@ -219,7 +219,7 @@ bool GDScriptLanguage::debug_break(const String &p_error, bool p_allow_continue)
 		_debug_parse_err_line = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
-		bool is_error_breakpoint = p_error != "Breakpoint";
+		bool is_error_breakpoint = p_error != "Breakpoint" && p_error != "Breakpoint Statement";
 		ScriptDebugger::get_singleton()->debug(this, p_allow_continue, is_error_breakpoint);
 		return true;
 	} else {

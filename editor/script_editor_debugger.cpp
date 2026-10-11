@@ -110,6 +110,23 @@ public:
 		values[p_name] = p_value;
 	}
 
+	void add_v2_descriptors(const String &p_category, const Array &p_descriptors, bool p_clear) {
+		if (p_clear) {
+			clear();
+		}
+		for (int index = 0; index < p_descriptors.size(); index++) {
+			const Array descriptor = p_descriptors[index];
+			if (descriptor.size() < 6) {
+				continue;
+			}
+			String preview = descriptor[2];
+			if ((int64_t)descriptor[3] != 0) {
+				preview += "  [expandable]";
+			}
+			add_property(p_category + "/" + String(descriptor[0]), preview, PROPERTY_HINT_NONE, String());
+		}
+	}
+
 	void update() {
 		_change_notify();
 	}
@@ -210,6 +227,227 @@ void ScriptEditorDebugger::debug_copy() {
 	OS::get_singleton()->set_clipboard(msg);
 }
 
+uint64_t ScriptEditorDebugger::_send_v2_data(const String &p_type, const Array &p_payload, const String &p_context) {
+	if (!debugger_session_v2.is_connected()) {
+		return 0;
+	}
+	const uint64_t request_id = ++v2_request_id;
+	if (!p_context.empty()) {
+		v2_data_requests[request_id] = p_context;
+	}
+	v2_request_started_usec[request_id] = OS::get_singleton()->get_ticks_usec();
+	if (debugger_session_v2.send_data(p_type, p_payload, request_id, v2_stop_id) != OK) {
+		v2_data_requests.erase(request_id);
+		v2_request_started_usec.erase(request_id);
+		return 0;
+	}
+	return request_id;
+}
+
+void ScriptEditorDebugger::_send_legacy_command(const Array &p_command) {
+	if (!debugger_session_v2.is_connected() || p_command.size() == 0 || p_command[0].get_type() != Variant::STRING) {
+		return;
+	}
+	const String command = p_command[0];
+	Array payload = p_command.duplicate();
+	payload.remove(0);
+	String control_type;
+	if (command == "break") {
+		control_type = "pause";
+	} else if (command == "continue" || command == "step" || command == "next") {
+		control_type = command;
+	}
+	if (!control_type.empty()) {
+		const uint64_t request_id = ++v2_request_id;
+		v2_request_started_usec[request_id] = OS::get_singleton()->get_ticks_usec();
+		v2_waiting_execution_ack = true;
+		step->set_disabled(true);
+		next->set_disabled(true);
+		dobreak->set_disabled(true);
+		docontinue->set_disabled(true);
+		debugger_session_v2.send_control(control_type, Array(), request_id, control_type == "pause" ? 0 : v2_stop_id);
+		return;
+	}
+	if (command == "get_stack_dump") {
+		Array request;
+		request.push_back(0);
+		request.push_back(100);
+		_send_v2_data("stack_trace", request, "stack_trace");
+	} else if (command == "get_stack_frame_vars") {
+		_send_v2_data("scopes", payload, "scopes");
+	} else if (command == "request_scene_tree") {
+		_send_v2_data("scene_snapshot", Array(), "scene_snapshot");
+	} else if (command == "request_video_mem") {
+		_send_v2_data("video_memory", Array(), "video_memory");
+	} else if (command == "inspect_object") {
+		_send_v2_data("inspect_object_id", payload, "inspect_object_id");
+	} else {
+		_send_v2_data(command, payload, command);
+	}
+}
+
+void ScriptEditorDebugger::_on_v2_connected() {
+	connection = debugger_session_v2.get_control_tcp();
+	v2_stop_id = 0;
+	v2_request_id = 1;
+	v2_request_started_usec.clear();
+	v2_data_requests.clear();
+	v2_scope_handles.clear();
+	v2_waiting_execution_ack = false;
+	v2_last_heartbeat_msec = 0;
+	EditorNode::get_log()->add_message("--- Debug Protocol v2 session connected ---", EditorLog::MSG_TYPE_EDITOR);
+	dobreak->set_disabled(false);
+	tabs->set_current_tab(0);
+	_set_reason_text(TTR("Debug Protocol v2: control and data connected."), MESSAGE_SUCCESS);
+	profiler->clear();
+	inspect_scene_tree->clear();
+	le_set->set_disabled(true);
+	le_clear->set_disabled(false);
+	vmem_refresh->set_disabled(false);
+	error_tree->clear();
+	error_count = 0;
+	warning_count = 0;
+	profiler_signature.clear();
+	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
+	EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
+	update_live_edit_root();
+}
+
+void ScriptEditorDebugger::_handle_v2_control(const DebugProtocolV2::Envelope &p_message) {
+	if (p_message.type == "stopped") {
+		v2_stop_id = p_message.stop_id;
+		print_verbose("Editor Debugger v2: stopped at stop_id " + String::num_int64(v2_stop_id) + ".");
+		Array legacy;
+		legacy.push_back(p_message.payload.size() > 0 ? p_message.payload[0] : true);
+		legacy.push_back(p_message.payload.size() > 1 ? p_message.payload[1] : String());
+		_parse_message("debug_enter", legacy);
+		Array request;
+		request.push_back(0);
+		request.push_back(100);
+		_send_v2_data("stack_trace", request, "stack_trace");
+	} else if (p_message.type == "running") {
+		v2_waiting_execution_ack = false;
+		_parse_message("debug_exit", Array());
+	} else if (p_message.type == "ack") {
+		uint64_t latency_usec = 0;
+		if (v2_request_started_usec.has(p_message.request_id)) {
+			latency_usec = OS::get_singleton()->get_ticks_usec() - v2_request_started_usec[p_message.request_id];
+			v2_request_started_usec.erase(p_message.request_id);
+		}
+		const bool accepted = p_message.payload.size() > 0 && (bool)p_message.payload[0];
+		const String outcome = p_message.payload.size() > 2 ? String(p_message.payload[2]) : String();
+		reason->set_tooltip(vformat("Protocol v2 control ACK: %.2f ms (%s)", latency_usec / 1000.0, outcome));
+		if (!accepted) {
+			v2_waiting_execution_ack = false;
+			_set_reason_text(TTR("Debugger command rejected: ") + outcome, MESSAGE_WARNING);
+			step->set_disabled(!breaked);
+			next->set_disabled(!breaked);
+			dobreak->set_disabled(breaked);
+			docontinue->set_disabled(!breaked);
+		}
+	} else if (p_message.type == "diagnostic" && p_message.payload.size() > 0) {
+		_set_reason_text(String(p_message.payload[0]), MESSAGE_WARNING);
+	}
+}
+
+void ScriptEditorDebugger::_handle_v2_data(const DebugProtocolV2::Envelope &p_message) {
+	String context;
+	if (v2_data_requests.has(p_message.request_id)) {
+		context = v2_data_requests[p_message.request_id];
+		v2_data_requests.erase(p_message.request_id);
+	}
+	v2_request_started_usec.erase(p_message.request_id);
+	if (p_message.type == "request_error") {
+		_set_reason_text(p_message.payload.size() > 1 ? String(p_message.payload[1]) : TTR("Debugger data request failed."), MESSAGE_WARNING);
+		return;
+	}
+	if (p_message.type == "stack_trace_result" && p_message.payload.size() > 1) {
+		Array legacy;
+		const Array frames = p_message.payload[1];
+		for (int index = 0; index < frames.size(); index++) {
+			const Array frame = frames[index];
+			if (frame.size() < 4) {
+				continue;
+			}
+			Dictionary descriptor;
+			descriptor["id"] = 0;
+			descriptor["frame"] = frame[0];
+			descriptor["file"] = frame[1];
+			descriptor["line"] = frame[2];
+			descriptor["function"] = frame[3];
+			legacy.push_back(descriptor);
+		}
+		_parse_message("stack_dump", legacy);
+		print_verbose("Editor Debugger v2: loaded " + String::num_int64(legacy.size()) + " stack frame(s).");
+	} else if (p_message.type == "scopes_result" && p_message.payload.size() > 0) {
+		const Array scopes = p_message.payload[0];
+		v2_scope_handles.clear();
+		for (int index = 0; index < scopes.size(); index++) {
+			const Array scope = scopes[index];
+			if (scope.size() >= 2) {
+				v2_scope_handles[String(scope[0])] = (uint64_t)(int64_t)scope[1];
+			}
+		}
+		for (int index = 0; index < 2; index++) {
+			const String name = index == 0 ? "Locals" : "Members";
+			if (v2_scope_handles.has(name)) {
+				Array request;
+				request.push_back((int64_t)v2_scope_handles[name]);
+				request.push_back(0);
+				request.push_back(100);
+				_send_v2_data("variables", request, "variables:" + name);
+			}
+		}
+	} else if (p_message.type == "variables_result" && p_message.payload.size() > 2) {
+		const String category = context.get_slice(":", 1);
+		variables->add_v2_descriptors(category, p_message.payload[2], category == "Locals");
+		variables->update();
+		inspector->edit(variables);
+		print_verbose("Editor Debugger v2: loaded variable page for " + category + ".");
+	} else if (p_message.type == "scene_snapshot_result" && p_message.payload.size() > 1) {
+		_parse_message("message:scene_tree", p_message.payload[1]);
+	} else if (p_message.type == "output") {
+		Array outputs;
+		outputs.push_back(p_message.payload);
+		_parse_message("output", outputs);
+	} else if (p_message.type.begins_with("message:")) {
+		_parse_message(p_message.type, p_message.payload);
+	} else if (p_message.type == "performance" || p_message.type == "error") {
+		_parse_message(p_message.type, p_message.payload);
+	} else if (p_message.type == "video_memory_result" && p_message.payload.size() > 0) {
+		Array legacy;
+		const Array resources = p_message.payload[0];
+		for (int index = 0; index < resources.size(); index++) {
+			const Array resource = resources[index];
+			for (int field = 0; field < resource.size(); field++) {
+				legacy.push_back(resource[field]);
+			}
+		}
+		_parse_message("message:video_mem", legacy);
+	}
+}
+
+void ScriptEditorDebugger::_poll_v2_messages() {
+	const uint64_t now_msec = OS::get_singleton()->get_ticks_msec();
+	if (now_msec - v2_last_heartbeat_msec >= 250) {
+		debugger_session_v2.send_control("heartbeat", Array(), 0, v2_stop_id);
+		v2_last_heartbeat_msec = now_msec;
+	}
+	const uint64_t deadline = now_msec + 20;
+	while (OS::get_singleton()->get_ticks_msec() <= deadline) {
+		DebugProtocolV2::Envelope message;
+		if (debugger_session_v2.poll_control(message) == OK) {
+			_handle_v2_control(message);
+			continue;
+		}
+		if (debugger_session_v2.poll_data(message) == OK) {
+			_handle_v2_data(message);
+			continue;
+		}
+		break;
+	}
+}
+
 void ScriptEditorDebugger::debug_skip_breakpoints() {
 	skip_breakpoints_value = !skip_breakpoints_value;
 	if (skip_breakpoints_value) {
@@ -222,7 +460,7 @@ void ScriptEditorDebugger::debug_skip_breakpoints() {
 		Array msg;
 		msg.push_back("set_skip_breakpoints");
 		msg.push_back(skip_breakpoints_value);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 
@@ -232,7 +470,7 @@ void ScriptEditorDebugger::debug_next() {
 	ERR_FAIL_COND(!connection->is_connected_to_host());
 	Array msg;
 	msg.push_back("next");
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 	_clear_execution();
 }
 void ScriptEditorDebugger::debug_step() {
@@ -242,7 +480,7 @@ void ScriptEditorDebugger::debug_step() {
 
 	Array msg;
 	msg.push_back("step");
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 	_clear_execution();
 }
 
@@ -253,7 +491,7 @@ void ScriptEditorDebugger::debug_break() {
 
 	Array msg;
 	msg.push_back("break");
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 }
 
 void ScriptEditorDebugger::debug_continue() {
@@ -266,7 +504,7 @@ void ScriptEditorDebugger::debug_continue() {
 	Array msg;
 	_clear_execution();
 	msg.push_back("continue");
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 }
 
 void ScriptEditorDebugger::_scene_tree_folded(Object *obj) {
@@ -301,7 +539,7 @@ void ScriptEditorDebugger::_scene_tree_selected() {
 	Array msg;
 	msg.push_back("inspect_object");
 	msg.push_back(inspected_object_id);
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 }
 
 void ScriptEditorDebugger::_scene_tree_rmb_selected(const Vector2 &p_position) {
@@ -326,7 +564,7 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			msg.push_back("save_node");
 			msg.push_back(inspected_object_id);
 			msg.push_back(p_file);
-			ppeer->put_var(msg);
+			_send_legacy_command(msg);
 		} break;
 		case SAVE_MONITORS_CSV: {
 			Error err;
@@ -402,7 +640,7 @@ void ScriptEditorDebugger::_scene_tree_property_value_edited(const String &p_pro
 	msg.push_back(inspected_object_id);
 	msg.push_back(p_prop);
 	msg.push_back(p_value);
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 	inspect_edited_object_timeout = 0.7; //avoid annoyance, don't request soon after editing
 }
 
@@ -411,7 +649,7 @@ void ScriptEditorDebugger::_scene_tree_property_select_object(ObjectID p_object)
 	Array msg;
 	msg.push_back("inspect_object");
 	msg.push_back(inspected_object_id);
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 }
 
 void ScriptEditorDebugger::_scene_tree_request() {
@@ -420,7 +658,7 @@ void ScriptEditorDebugger::_scene_tree_request() {
 
 	Array msg;
 	msg.push_back("request_scene_tree");
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 }
 
 /// Populates inspect_scene_tree recursively given data in nodes.
@@ -518,7 +756,7 @@ void ScriptEditorDebugger::_video_mem_request() {
 
 	Array msg;
 	msg.push_back("request_video_mem");
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 }
 
 void ScriptEditorDebugger::_video_mem_export() {
@@ -537,9 +775,6 @@ Size2 ScriptEditorDebugger::get_minimum_size() const {
 
 void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_data) {
 	if (p_msg == "debug_enter") {
-		Array msg;
-		msg.push_back("get_stack_dump");
-		ppeer->put_var(msg);
 		ERR_FAIL_COND(p_data.size() != 2);
 		bool can_continue = p_data[0];
 		String error = p_data[1];
@@ -1307,13 +1542,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PROCESS: {
 			if (connection.is_valid()) {
-				inspect_scene_tree_timeout -= get_process_delta_time();
-				if (inspect_scene_tree_timeout < 0) {
-					inspect_scene_tree_timeout = EditorSettings::get_singleton()->get("debugger/remote_scene_tree_refresh_interval");
-					if (inspect_scene_tree->is_visible_in_tree()) {
-						_scene_tree_request();
-					}
+				const bool scene_visible = inspect_scene_tree->is_visible_in_tree();
+				if (scene_visible && !v2_scene_was_visible) {
+					_scene_tree_request();
 				}
+				v2_scene_was_visible = scene_visible;
 
 				inspect_edited_object_timeout -= get_process_delta_time();
 				if (inspect_edited_object_timeout < 0) {
@@ -1325,7 +1558,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 								Array msg;
 								msg.push_back("inspect_object");
 								msg.push_back(inspected_object_id);
-								ppeer->put_var(msg);
+								_send_legacy_command(msg);
 							}
 						}
 					}
@@ -1345,7 +1578,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					Array msg;
 					msg.push_back("override_camera_2D:transform");
 					msg.push_back(transform);
-					ppeer->put_var(msg);
+					_send_legacy_command(msg);
 
 				} else if (camera_override >= OVERRIDE_3D_1) {
 					int viewport_idx = camera_override - OVERRIDE_3D_1;
@@ -1364,7 +1597,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					}
 					msg.push_back(cam->get_znear());
 					msg.push_back(cam->get_zfar());
-					ppeer->put_var(msg);
+					_send_legacy_command(msg);
 				}
 			}
 
@@ -1396,6 +1629,22 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				last_error_count = error_count;
 				last_warning_count = warning_count;
 			}
+
+			debugger_session_v2.poll_server(server);
+			if (debugger_session_v2.take_just_connected()) {
+				_on_v2_connected();
+			}
+			if (debugger_session_v2.take_just_disconnected()) {
+				connection.unref();
+				if (breaked) {
+					_parse_message("debug_exit", Array());
+				}
+				_set_reason_text(TTR("Debug Protocol v2 disconnected; waiting for reconnect."), MESSAGE_WARNING);
+			}
+			if (debugger_session_v2.is_connected()) {
+				_poll_v2_messages();
+			}
+			break;
 
 			if (server->is_connection_available()) {
 				if (connection.is_valid()) {
@@ -1620,6 +1869,7 @@ void ScriptEditorDebugger::stop() {
 	_clear_execution();
 
 	server->stop();
+	debugger_session_v2.reset();
 	_clear_remote_objects();
 	ppeer->set_stream_peer(Ref<StreamPeer>());
 
@@ -1632,6 +1882,14 @@ void ScriptEditorDebugger::stop() {
 	}
 
 	remote_port = 0;
+	v2_request_id = 1;
+	v2_stop_id = 0;
+	v2_last_heartbeat_msec = 0;
+	v2_waiting_execution_ack = false;
+	v2_scene_was_visible = false;
+	v2_request_started_usec.clear();
+	v2_data_requests.clear();
+	v2_scope_handles.clear();
 	pending_in_queue = 0;
 	message.clear();
 
@@ -1670,13 +1928,13 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable) {
 		int max_funcs = EditorSettings::get_singleton()->get("debugger/profiler_frame_max_functions");
 		max_funcs = CLAMP(max_funcs, 16, 512);
 		msg.push_back(max_funcs);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 		print_verbose("Starting profiling.");
 
 	} else {
 		Array msg;
 		msg.push_back("stop_profiling");
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 		print_verbose("Ending profiling.");
 	}
 }
@@ -1689,13 +1947,13 @@ void ScriptEditorDebugger::_network_profiler_activate(bool p_enable) {
 	if (p_enable) {
 		Array msg;
 		msg.push_back("start_network_profiling");
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 		print_verbose("Starting network profiling.");
 
 	} else {
 		Array msg;
 		msg.push_back("stop_network_profiling");
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 		print_verbose("Ending network profiling.");
 	}
 }
@@ -1728,7 +1986,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 		Array msg;
 		msg.push_back("get_stack_frame_vars");
 		msg.push_back(d["frame"]);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	} else {
 		inspector->edit(nullptr);
 	}
@@ -1767,7 +2025,7 @@ int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
 	msg.push_back("live_node_path");
 	msg.push_back(p_path);
 	msg.push_back(last_path_id);
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 
 	return last_path_id;
 }
@@ -1786,7 +2044,7 @@ int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
 	msg.push_back("live_res_path");
 	msg.push_back(p_path);
 	msg.push_back(last_path_id);
-	ppeer->put_var(msg);
+	_send_legacy_command(msg);
 
 	return last_path_id;
 }
@@ -1819,7 +2077,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 			//no pointers, sorry
 			msg.push_back(*argptr[i]);
 		}
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 
 		return;
 	}
@@ -1838,7 +2096,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 			//no pointers, sorry
 			msg.push_back(*argptr[i]);
 		}
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 
 		return;
 	}
@@ -1863,7 +2121,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 				msg.push_back(pathid);
 				msg.push_back(p_property);
 				msg.push_back(res->get_path());
-				ppeer->put_var(msg);
+				_send_legacy_command(msg);
 			}
 		} else {
 			Array msg;
@@ -1871,7 +2129,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 			msg.push_back(pathid);
 			msg.push_back(p_property);
 			msg.push_back(p_value);
-			ppeer->put_var(msg);
+			_send_legacy_command(msg);
 		}
 
 		return;
@@ -1891,7 +2149,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 				msg.push_back(pathid);
 				msg.push_back(p_property);
 				msg.push_back(res2->get_path());
-				ppeer->put_var(msg);
+				_send_legacy_command(msg);
 			}
 		} else {
 			Array msg;
@@ -1899,7 +2157,7 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 			msg.push_back(pathid);
 			msg.push_back(p_property);
 			msg.push_back(p_value);
-			ppeer->put_var(msg);
+			_send_legacy_command(msg);
 		}
 
 		return;
@@ -1963,7 +2221,7 @@ void ScriptEditorDebugger::update_live_edit_root() {
 		} else {
 			msg.push_back("");
 		}
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 	live_edit_root->set_text(np);
 }
@@ -1975,7 +2233,7 @@ void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, cons
 		msg.push_back(p_parent);
 		msg.push_back(p_type);
 		msg.push_back(p_name);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 
@@ -1986,7 +2244,7 @@ void ScriptEditorDebugger::live_debug_instance_node(const NodePath &p_parent, co
 		msg.push_back(p_parent);
 		msg.push_back(p_path);
 		msg.push_back(p_name);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_remove_node(const NodePath &p_at) {
@@ -1994,7 +2252,7 @@ void ScriptEditorDebugger::live_debug_remove_node(const NodePath &p_at) {
 		Array msg;
 		msg.push_back("live_remove_node");
 		msg.push_back(p_at);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id) {
@@ -2003,7 +2261,7 @@ void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath &p_at,
 		msg.push_back("live_remove_and_keep_node");
 		msg.push_back(p_at);
 		msg.push_back(p_keep_id);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
@@ -2013,7 +2271,7 @@ void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath
 		msg.push_back(p_id);
 		msg.push_back(p_at);
 		msg.push_back(p_at_pos);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name) {
@@ -2022,7 +2280,7 @@ void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath &p_at, const
 		msg.push_back("live_duplicate_node");
 		msg.push_back(p_at);
 		msg.push_back(p_new_name);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
@@ -2033,7 +2291,7 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 		msg.push_back(p_new_place);
 		msg.push_back(p_new_name);
 		msg.push_back(p_at_pos);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 
@@ -2047,28 +2305,28 @@ void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
 			Array msg;
 			msg.push_back("override_camera_2D:set");
 			msg.push_back(true);
-			ppeer->put_var(msg);
+			_send_legacy_command(msg);
 		}
 	} else if (p_override != OVERRIDE_2D && camera_override == OVERRIDE_2D) {
 		if (connection.is_valid()) {
 			Array msg;
 			msg.push_back("override_camera_2D:set");
 			msg.push_back(false);
-			ppeer->put_var(msg);
+			_send_legacy_command(msg);
 		}
 	} else if (p_override >= OVERRIDE_3D_1 && camera_override < OVERRIDE_3D_1) {
 		if (connection.is_valid()) {
 			Array msg;
 			msg.push_back("override_camera_3D:set");
 			msg.push_back(true);
-			ppeer->put_var(msg);
+			_send_legacy_command(msg);
 		}
 	} else if (p_override < OVERRIDE_3D_1 && camera_override >= OVERRIDE_3D_1) {
 		if (connection.is_valid()) {
 			Array msg;
 			msg.push_back("override_camera_3D:set");
 			msg.push_back(false);
-			ppeer->put_var(msg);
+			_send_legacy_command(msg);
 		}
 	}
 
@@ -2082,7 +2340,7 @@ void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool
 		msg.push_back(p_path);
 		msg.push_back(p_line);
 		msg.push_back(p_enabled);
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 
@@ -2090,7 +2348,7 @@ void ScriptEditorDebugger::reload_scripts() {
 	if (connection.is_valid()) {
 		Array msg;
 		msg.push_back("reload_scripts");
-		ppeer->put_var(msg);
+		_send_legacy_command(msg);
 	}
 }
 
@@ -2774,6 +3032,11 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	last_error_count = 0;
 	last_warning_count = 0;
 	remote_port = 0;
+	v2_request_id = 1;
+	v2_stop_id = 0;
+	v2_last_heartbeat_msec = 0;
+	v2_waiting_execution_ack = false;
+	v2_scene_was_visible = false;
 
 	EditorNode::get_singleton()->get_pause_button()->connect("pressed", this, "_paused");
 }
@@ -2782,6 +3045,7 @@ ScriptEditorDebugger::~ScriptEditorDebugger() {
 	memdelete(variables);
 
 	ppeer->set_stream_peer(Ref<StreamPeer>());
+	debugger_session_v2.reset();
 
 	server->stop();
 	_clear_remote_objects();

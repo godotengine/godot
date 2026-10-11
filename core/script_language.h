@@ -421,6 +421,7 @@ public:
 class ScriptDebugger {
 	int lines_left;
 	int depth;
+	bool break_on_function_return;
 
 	static ScriptDebugger *singleton;
 	Map<int, Set<StringName>> breakpoints;
@@ -434,6 +435,8 @@ public:
 
 	void set_depth(int p_depth);
 	int get_depth() const;
+	void set_break_on_function_return(bool p_enabled);
+	bool consume_break_on_function_return();
 
 	String breakpoint_find_source(const String &p_source) const;
 	void insert_breakpoint(int p_line, const StringName &p_source);

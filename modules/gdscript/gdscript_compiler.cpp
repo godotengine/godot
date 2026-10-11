@@ -1316,19 +1316,20 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::BlockNode *p_block, int p_stack_level, int p_break_addr, int p_continue_addr) {
 	codegen.push_stack_identifiers();
-	codegen.current_line = p_block->line;
 
 	for (int i = 0; i < p_block->statements.size(); i++) {
 		const GDScriptParser::Node *s = p_block->statements[i];
 
+#ifdef DEBUG_ENABLED
+		if (s->type != GDScriptParser::Node::TYPE_NEWLINE && codegen.current_line != s->line) {
+			codegen.opcodes.push_back(GDScriptFunction::OPCODE_LINE);
+			codegen.opcodes.push_back(s->line);
+			codegen.current_line = s->line;
+		}
+#endif
+
 		switch (s->type) {
 			case GDScriptParser::Node::TYPE_NEWLINE: {
-#ifdef DEBUG_ENABLED
-				const GDScriptParser::NewLineNode *nl = static_cast<const GDScriptParser::NewLineNode *>(s);
-				codegen.opcodes.push_back(GDScriptFunction::OPCODE_LINE);
-				codegen.opcodes.push_back(nl->line);
-				codegen.current_line = nl->line;
-#endif
 			} break;
 			case GDScriptParser::Node::TYPE_CONTROL_FLOW: {
 				// try subblocks
@@ -1428,10 +1429,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 							int end_addr = codegen.opcodes.size();
 							codegen.opcodes.push_back(0);
 							codegen.opcodes.write[else_addr] = codegen.opcodes.size();
-
-							codegen.opcodes.push_back(GDScriptFunction::OPCODE_LINE);
-							codegen.opcodes.push_back(cf->body_else->line);
-							codegen.current_line = cf->body_else->line;
 
 							Error err2 = _parse_block(codegen, cf->body_else, p_stack_level, p_break_addr, p_continue_addr);
 							if (err2) {

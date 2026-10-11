@@ -376,6 +376,19 @@ int ScriptDebugger::get_depth() const {
 	return depth;
 }
 
+void ScriptDebugger::set_break_on_function_return(bool p_enabled) {
+	break_on_function_return = p_enabled;
+}
+
+bool ScriptDebugger::consume_break_on_function_return() {
+	if (!break_on_function_return || depth != 0) {
+		return false;
+	}
+
+	break_on_function_return = false;
+	return true;
+}
+
 void ScriptDebugger::insert_breakpoint(int p_line, const StringName &p_source) {
 	if (!breakpoints.has(p_line)) {
 		breakpoints[p_line] = Set<StringName>();
@@ -429,6 +442,7 @@ ScriptDebugger::ScriptDebugger() {
 	singleton = this;
 	lines_left = -1;
 	depth = -1;
+	break_on_function_return = false;
 	break_lang = nullptr;
 }
 

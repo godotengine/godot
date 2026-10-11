@@ -33,6 +33,7 @@
 
 #include "core/io/packet_peer.h"
 #include "core/io/tcp_server.h"
+#include "editor/debugger_session_v2.h"
 #include "editor/editor_inspector.h"
 #include "editor/property_editor.h"
 #include "scene/3d/camera.h"
@@ -165,6 +166,15 @@ private:
 	Ref<TCP_Server> server;
 	Ref<StreamPeerTCP> connection;
 	Ref<PacketPeerStream> ppeer;
+	EditorDebuggerSessionV2 debugger_session_v2;
+	uint64_t v2_request_id;
+	uint64_t v2_stop_id;
+	uint64_t v2_last_heartbeat_msec;
+	Map<uint64_t, uint64_t> v2_request_started_usec;
+	Map<uint64_t, String> v2_data_requests;
+	Map<String, uint64_t> v2_scope_handles;
+	bool v2_waiting_execution_ack;
+	bool v2_scene_was_visible;
 
 	String message_type;
 	Array message;
@@ -238,6 +248,12 @@ private:
 	void _export_csv();
 
 	void _clear_execution();
+	void _send_legacy_command(const Array &p_command);
+	uint64_t _send_v2_data(const String &p_type, const Array &p_payload, const String &p_context = String());
+	void _poll_v2_messages();
+	void _handle_v2_control(const DebugProtocolV2::Envelope &p_message);
+	void _handle_v2_data(const DebugProtocolV2::Envelope &p_message);
+	void _on_v2_connected();
 
 protected:
 	void _notification(int p_what);
