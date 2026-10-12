@@ -2768,11 +2768,6 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 		glViewport(0, 0, rb->internal_size.x, rb->internal_size.y);
 
-		// If SSAO is enabled, we definitely need the depth buffer.
-		if (ssao_enabled) {
-			scene_state.used_depth_texture = true;
-		}
-
 		// Do depth prepass if it's explicitly enabled
 		bool use_depth_prepass = config->use_depth_prepass;
 
@@ -2973,7 +2968,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				if (scene_state.used_depth_texture) {
 					glBlitFramebuffer(0, 0, size.x, size.y,
 							0, 0, size.x, size.y,
-							GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+							GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 					glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 7);
 					glBindTexture(GL_TEXTURE_2D, backbuffer_depth);
 				}
