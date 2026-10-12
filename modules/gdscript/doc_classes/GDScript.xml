@@ -17,6 +17,12 @@
 				Returns byte code for the script source code.
 			</description>
 		</method>
+		<method name="get_optimization_option" qualifiers="const">
+			<return type="bool" />
+			<argument index="0" name="option" type="int" enum="GDScript.OptimizationOption" />
+			<description>
+			</description>
+		</method>
 		<method name="new" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
@@ -29,7 +35,49 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="set_optimization_option">
+			<return type="void" />
+			<argument index="0" name="option" type="int" enum="GDScript.OptimizationOption" />
+			<argument index="1" name="enabled" type="bool" />
+			<description>
+			</description>
+		</method>
 	</methods>
+	<members>
+		<member name="optimization_option_constant_folding" type="bool" setter="set_optimization_option" getter="get_optimization_option" default="true">
+			If [code]true[/code], the optimizer will attempt to precalculate constant expressions at compile time so that less processing is done at runtime.
+			For example, the expression [code]3 + (10 * 3)[/code] can be folded to [code]33[/code].
+			[b]Note:[/b] Values declared [code]const[/code] can also be folded.
+		</member>
+		<member name="optimization_option_dead_code_elimination" type="bool" setter="set_optimization_option" getter="get_optimization_option" default="true">
+			If [code]true[/code], the optimizer will attempt to remove redundant instructions.
+			[b]Note:[/b] The optimizer can remove [code]if[/code] branches that branch on a constant that has been declared with the [code]const[/code] keyword. It can also remove branch instructions where the branch can be determined to always be taken at compile time.
+		</member>
+		<member name="optimization_option_inlining" type="bool" setter="set_optimization_option" getter="get_optimization_option" default="true">
+			If [code]true[/code], functions declared using the [code]inline[/code] keyword will be inlined at calling sites wherever possible. This removes the cost of the function call, and also can allow further optimizations for local variables.
+		</member>
+		<member name="optimization_option_licm" type="bool" setter="set_optimization_option" getter="get_optimization_option" default="true">
+			If [code]true[/code], loop invariant code motion (LICM) will try to move variables and code outside of loops to minimize the processing on each iteration of a loop.
+		</member>
+		<member name="optimization_option_loop_unrolling" type="bool" setter="set_optimization_option" getter="get_optimization_option" default="true">
+			If [code]true[/code], [code]for loops[/code] marked with the [code]unroll[/code] keyword will be unrolled (where possible) such that a groups of iterations will be processed together, minimizing the housekeeping processing.
+			This only benefits short loops, and may be slower unless there are a large number of iterations (more than approx 8, although the threshold may vary depending on your code).
+		</member>
+		<member name="optimize" type="bool" setter="set_optimization_enabled" getter="is_optimization_enabled" default="true">
+			If [code]true[/code], optimization will be enabled for this script.
+			[b]Note:[/b] Optimization options only take effect when optimization is enabled.
+		</member>
+	</members>
 	<constants>
+		<constant name="OPTIMIZATION_OPTION_LICM" value="0" enum="OptimizationOption">
+		</constant>
+		<constant name="OPTIMIZATION_OPTION_CONSTANT_FOLDING" value="1" enum="OptimizationOption">
+		</constant>
+		<constant name="OPTIMIZATION_OPTION_DEAD_CODE_ELIMINATION" value="2" enum="OptimizationOption">
+		</constant>
+		<constant name="OPTIMIZATION_OPTION_INLINING" value="3" enum="OptimizationOption">
+		</constant>
+		<constant name="OPTIMIZATION_OPTION_LOOP_UNROLLING" value="4" enum="OptimizationOption">
+		</constant>
 	</constants>
 </class>
