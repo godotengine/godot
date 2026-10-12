@@ -312,7 +312,7 @@
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
 		<member name="icon_expand_mode" type="int" setter="set_icon_expand_mode" getter="get_icon_expand_mode" enum="LineEdit.ExpandMode" default="0">
-			Define the scaling behavior of the [member right_icon].
+			Define the scaling behavior of the [member right_icon] and the [theme_item clear] button.
 		</member>
 		<member name="keep_editing_on_text_submit" type="bool" setter="set_keep_editing_on_text_submit" getter="is_editing_kept_on_text_submit" default="false">
 			If [code]true[/code], the [LineEdit] will not exit edit mode when text is submitted by pressing [code]ui_text_submit[/code] action (by default: [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]).
