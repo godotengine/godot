@@ -1311,6 +1311,10 @@ void ThemeClassic::populate_standard_styles(const Ref<EditorTheme> &p_theme, Edi
 	p_theme->set_color(SceneStringName(font_color), "ProgressBar", p_config.font_color);
 	p_theme->set_color("font_outline_color", "ProgressBar", p_config.font_outline_color);
 	p_theme->set_constant("outline_size", "ProgressBar", 0);
+	p_theme->set_constant("percentage_margin_left", "ProgressBar", 0);
+	p_theme->set_constant("percentage_margin_top", "ProgressBar", 0);
+	p_theme->set_constant("percentage_margin_right", "ProgressBar", 0);
+	p_theme->set_constant("percentage_margin_bottom", "ProgressBar", 0);
 
 	// GraphEdit and related nodes.
 	{
