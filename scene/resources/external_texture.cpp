@@ -34,6 +34,14 @@
 #include "core/object/class_db.h"
 #include "servers/rendering/rendering_server.h"
 
+static bool _uses_rendering_device() {
+#ifdef RD_ENABLED
+	return RenderingServer::get_singleton()->get_rendering_device() != nullptr;
+#else
+	return false;
+#endif
+}
+
 void ExternalTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &ExternalTexture::set_size);
 	ClassDB::bind_method(D_METHOD("get_external_texture_id"), &ExternalTexture::get_external_texture_id);
@@ -59,7 +67,7 @@ void ExternalTexture::_bind_methods() {
 
 uint64_t ExternalTexture::get_external_texture_id() const {
 	MutexLock lock(mutex);
-	if (RenderingServer::get_singleton()->get_rendering_device() != nullptr) {
+	if (_uses_rendering_device()) {
 		return 0;
 	}
 	_ensure_created();
@@ -121,7 +129,7 @@ bool ExternalTexture::has_alpha() const {
 
 RID ExternalTexture::get_rid() const {
 	MutexLock lock(mutex);
-	if (RenderingServer::get_singleton()->get_rendering_device() != nullptr) {
+	if (_uses_rendering_device()) {
 		_ensure_created();
 		return texture;
 	}
@@ -133,7 +141,7 @@ RID ExternalTexture::get_rid() const {
 }
 
 Ref<Image> ExternalTexture::get_image() const {
-	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+	if (!_uses_rendering_device()) {
 		return Ref<Image>();
 	}
 	return RenderingServer::get_singleton()->texture_2d_get(get_rid());
