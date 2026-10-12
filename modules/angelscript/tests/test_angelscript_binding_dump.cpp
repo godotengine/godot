@@ -120,3 +120,42 @@ void as_binding_dump_content_matches_runtime() {
 		CHECK(line.split("\t").size() == 3);
 	}
 }
+
+#include "core/templates/hash_map.h"
+
+void as_binding_dump_accessor_name_taken() {
+	ASBindingPlan plan;
+	plan.build(ASBindingScope());
+
+	const String dir = "user://as_dump_accessor";
+	REQUIRE(ASBindingDumper::write(plan, dir) == OK);
+	const String decl = _read_all_text(dir.path_join("angelscript_api.d.as"));
+
+	// Image.data 在运行期让位（get_data 是同类真实方法）：dump 只声明方法，不再声明属性。
+	const int start = decl.find("class Image {");
+	REQUIRE(start >= 0);
+	const int open = decl.find("{", start);
+	const int close = decl.find("}", open);
+	REQUIRE(open >= 0);
+	REQUIRE(close > open);
+	const String block = decl.substr(open, close - open);
+	CHECK(block.find("get_data() const;") >= 0);
+	CHECK(block.find("get_data() const property;") < 0);
+
+	// 反向保护：dump 声明的 getter 行数必须与 plan 的属性总数一致（一致性修复不得误删）。
+	int expected_getters = 0;
+	for (const ASBindingClass &c : plan.get_classes()) {
+		expected_getters += c.properties.size();
+	}
+	int actual_getters = 0;
+	int pos = 0;
+	while (true) {
+		const int idx = decl.find("() const property;", pos);
+		if (idx < 0) {
+			break;
+		}
+		actual_getters++;
+		pos = idx + 1;
+	}
+	CHECK(actual_getters == expected_getters);
+}

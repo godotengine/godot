@@ -36,6 +36,7 @@
 
 void as_binding_dump_files_and_determinism();
 void as_binding_dump_content_matches_runtime();
+void as_binding_dump_accessor_name_taken();
 
 #ifndef ANGELSCRIPT_BINDING_DUMP_TESTS_IMPL
 
@@ -44,6 +45,9 @@ TEST_CASE("[AngelScript] binding dump files and determinism") {
 }
 TEST_CASE("[AngelScript] binding dump content matches runtime") {
 	as_binding_dump_content_matches_runtime();
+}
+TEST_CASE("[AngelScript] binding dump reports name-taken property accessors") {
+	as_binding_dump_accessor_name_taken();
 }
 
 #endif // ANGELSCRIPT_BINDING_DUMP_TESTS_IMPL

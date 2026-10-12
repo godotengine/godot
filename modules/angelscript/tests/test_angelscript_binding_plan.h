@@ -40,6 +40,7 @@ void as_binding_plan_binds_static_methods();
 void as_binding_plan_binds_variant_abi();
 void as_binding_plan_whitelist_keeps_ancestors();
 void as_binding_plan_blacklist_wins();
+void as_binding_plan_accessor_name_taken();
 
 #ifndef ANGELSCRIPT_BINDING_PLAN_TESTS_IMPL
 
@@ -60,6 +61,9 @@ TEST_CASE("[AngelScript] binding plan whitelist keeps ancestors") {
 }
 TEST_CASE("[AngelScript] binding plan blacklist wins over whitelist") {
 	as_binding_plan_blacklist_wins();
+}
+TEST_CASE("[AngelScript] binding plan records name-taken property accessors") {
+	as_binding_plan_accessor_name_taken();
 }
 
 #endif // ANGELSCRIPT_BINDING_PLAN_TESTS_IMPL

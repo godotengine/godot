@@ -262,6 +262,19 @@ void ASBindingPlan::_build_class(const StringName &p_class, const HashSet<String
 	}
 
 	// 属性：含继承（每个 AS 类型自包含），跳过分类/分组标记。
+	//
+	// 运行期先注册方法、再注册属性；属性循环遇到「访问器名已是同类方法」就让位
+	// （GetMethodByName 命中即跳过），成员仍可通过同名方法访问。上面 accessor_names
+	// 只能过滤 ClassDB 明确报告了 getter/setter 的属性；Image.data 这类属性 ClassDB
+	// 不报告访问器名，其 get_data 会作为方法存活，运行期于是跳过该属性。这里用同一
+	// 判定在编译期确定性地让属性让位并记入 unbound，避免 dump 声明一个运行期并不存在
+	// 的属性（评审 I1）。
+	HashSet<String> method_names;
+	for (const ASBindingMethod &m : c.methods) {
+		if (!m.is_static) {
+			method_names.insert(m.name);
+		}
+	}
 	List<PropertyInfo> props;
 	ClassDB::get_property_list(p_class, &props, false);
 	for (const PropertyInfo &pi : props) {
@@ -276,6 +289,15 @@ void ASBindingPlan::_build_class(const StringName &p_class, const HashSet<String
 			e.owner = p_class;
 			e.member = String(pi.name);
 			e.reason = "unsupported-property-name: " + String(pi.name);
+			unbound.push_back(e);
+			continue;
+		}
+		const bool read_only = (pi.usage & PROPERTY_USAGE_READ_ONLY);
+		if (method_names.has("get_" + String(pi.name)) || (!read_only && method_names.has("set_" + String(pi.name)))) {
+			ASUnboundEntry e;
+			e.owner = p_class;
+			e.member = String(pi.name);
+			e.reason = "accessor-name-taken";
 			unbound.push_back(e);
 			continue;
 		}

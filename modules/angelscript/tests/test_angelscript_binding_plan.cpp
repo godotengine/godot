@@ -172,3 +172,60 @@ void as_binding_plan_blacklist_wins() {
 	// Object 无条件保留，即使被拉黑。
 	CHECK_FALSE(plan.get_classes().is_empty());
 }
+
+#include "core/templates/hash_set.h"
+
+void as_binding_plan_accessor_name_taken() {
+	ASBindingPlan plan;
+	plan.build(ASBindingScope());
+
+	// 运行期先注册方法、再注册属性；属性访问器名若与同类（非静态）方法名重名，该属性
+	// 会静默让位（成员仍可经同名方法访问）。plan 必须用同一判定确定性地记录它，否则
+	// dump 会声明一个运行期并不存在的属性（评审 I1）。
+	HashSet<String> taken;
+	for (const ASUnboundEntry &e : plan.get_unbound()) {
+		if (e.reason == "accessor-name-taken") {
+			taken.insert(String(e.owner) + "." + e.member);
+		}
+	}
+	CHECK(taken.has("Image.data"));
+	CHECK(taken.has("Control.size"));
+
+	// 不变量：plan 里不应再有任何「属性访问器名 == 同类非静态方法名」的残留。
+	int collisions = 0;
+	for (const ASBindingClass &c : plan.get_classes()) {
+		HashSet<String> method_names;
+		for (const ASBindingMethod &m : c.methods) {
+			if (!m.is_static) {
+				method_names.insert(m.name);
+			}
+		}
+		for (const ASBindingProperty &p : c.properties) {
+			if (method_names.has("get_" + p.name) || (!p.read_only && method_names.has("set_" + p.name))) {
+				collisions++;
+			}
+		}
+	}
+	CHECK(collisions == 0);
+
+	// 让位的属性不再进入属性集；占名的方法仍在。
+	bool image_has_method = false;
+	bool image_has_data_property = false;
+	for (const ASBindingClass &c : plan.get_classes()) {
+		if (c.name != StringName("Image")) {
+			continue;
+		}
+		for (const ASBindingMethod &m : c.methods) {
+			if (m.name == "get_data") {
+				image_has_method = true;
+			}
+		}
+		for (const ASBindingProperty &p : c.properties) {
+			if (p.name == "data") {
+				image_has_data_property = true;
+			}
+		}
+	}
+	CHECK(image_has_method);
+	CHECK_FALSE(image_has_data_property);
+}
