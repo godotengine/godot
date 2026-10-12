@@ -4,12 +4,12 @@
 游戏逻辑以 `.as` 资源下发，由本模块在运行时编译执行。设计文档见
 `docs/superpowers/specs/2026-09-30-godot-angelscript-hot-update-design.md`（当前仅存在于工作区，未随仓库提交）。
 
-## 当前状态（阶段一 M0–M1 + M2 绑定层）
+## 当前状态（M0–M5）
 
 已可用：
 
 - `ASScriptLanguage`：向 `ScriptServer` 注册 `AngelScript` 语言，扩展名 `as`；引擎懒初始化（`--test`/headless 下不会主动调用 `ScriptServer::init_languages()` 的路径也能工作）。
-- `ASEngine`：持有唯一的 `asIScriptEngine`，提供模块编译、函数执行与内建 API 注册；`ensure_initialized()` 时按项目设置构建绑定计划并一次性注册。
+- `ASEngine`：持有唯一的 `asIScriptEngine`，提供模块编译、函数执行与内建 API 注册；`ensure_initialized()` 时按项目设置构建绑定计划，并按惰性注册策略注册（见下）。
 - `ASScript`：`.as`/`.asb` 资源（`Script` 子类），经 `ASResourceFormatLoaderASScript` / `ASResourceFormatSaverASScript` 接入资源系统，`.tscn` 可按路径引用。
 - `ASScriptInstance`：脚本实例，支持内建标量属性的读写与方法按名字调用；`_ready`/`_enter_tree`/`_exit_tree`/`_process`/`_physics_process` 经 Node 的 `GDVIRTUAL` 按名字派发，`notification()` 承载 `_notification(int)`。
 - 绑定层（M2）：把 ClassDB 内省结果注册给 AS，让热更脚本能直接调用引擎 API。
@@ -17,10 +17,12 @@
   - 对象类型：`Object` 派生类以引用类型注册，含工厂（可实例化类）、方法、属性（virtual property）、常量、枚举与向上转换（`opImplCast`）；`RefCounted` 走引用计数语义，脚本持有会延长生命周期。
   - `@GlobalScope` 工具函数：签名可表达的工具函数（如 `clampf`）注册为全局函数。
   - 可见性：`angel_script/class_whitelist` / `angel_script/class_blacklist` 项目设置控制绑定范围（空白名单 = 全部放行，`Object` 无条件保留，白名单会回填祖先链）。
+  - 惰性注册：`angel_script/binding/startup_mode`（`auto` 默认 / `full` 启动即全量）与 `angel_script/binding/scan_project`（默认 `true`，扫描 `res://` 下 `.as` 源推断所需类型）。`auto` 下先注册 core 与扫描到的基础类型，脚本加载/热更时按需增量注册，遇到无法处理的类型回退全量（`ASBindingLazyRegistry`）。
+  - 静态方法：AS 2.38 不认 `static` 关键字，静态方法与内建值类型的静态方法注册为全局函数，名字为 `<声明类/类型>_<成员名>`（如 `Node_print_orphan_nodes`、`Vector2_from_angle`）；dump 的 `global functions` 区与之对应。
   - `--dump-angelscript-api <dir>`：把当前绑定面导出为 `angelscript_api.d.as`（声明，首行为内容哈希）与 `angelscript_unbound.txt`（不可绑定清单）。
   - `--compile-angelscript [<output_dir>]`：扫描 `res://` 下的 `.as` 源文件，逐个离线编译为 `.asb` 字节码容器（默认输出到当前目录）。
 
-尚未提供（后续里程碑）：跨语言通道的对象/字符串回调编组（`_input` 等带参回调仍不派发）、协程（await）、编辑器语言服务（上游已将 `validate()` / `find_function()` 等迁往 `EditorLanguage`，AS 暂用默认实现；`make_function()` 为 stub）、脚本内自定义类注册进 ClassDB。
+尚未提供（后续里程碑）：跨语言通道的对象/字符串回调编组（`_input` 等带参回调仍不派发）、协程（await）、脚本内自定义类注册进 ClassDB。编辑器语言服务（`EditorLanguage`）已实现 `validate()` / `complete_code()` / `find_function()`；`make_function()` 仍为 stub，`lookup_code()` / `format_code()` / 重命名等沿用默认实现。
 
 ## 宿主桥（M5 互操作 L2）
 
@@ -60,13 +62,15 @@ AngelScript 脚本可经 `as_host_call(int method_id, const Array &in args) -> V
 | 其它（x86_32/wasm32/ppc64/… 及 MSVC arm64）| 定义 `AS_MAX_PORTABILITY`，纯可移植执行 |
 
 平台→汇编的映射与自检见 `asm_sources.py` 与 `tests/asm_sources_test.py`。
+
+绑定层的原生值类型快速路径（`as_binding_native_value_ops.h`，用 C++ thunk 取代 generic 调用桩）只在**已验证平台**默认启用：`x86_64 + MSVC`（`_MSC_VER && _M_X64`）且未定义 `AS_MAX_PORTABILITY`。其它平台与 `AS_MAX_PORTABILITY` 一律走 generic 回退以保证可移植；未验证平台可定义 `AS_NATIVE_VALUE_OPS_ENABLE_UNVERIFIED` 强行开启（若同时定义 `AS_MAX_PORTABILITY` 会在编译期 `#error` 拒绝）。启用时另有 `sizeof(void *) == 8` 与 `ANGELSCRIPT_VERSION == 23800` 两条 `static_assert` 作 ABI 前置检查。Linux / macOS 等其它平台**尚未验证**，门控保持关闭。
 冒烟工程见 `tests/smoke_project/`（`smoke.as` + 入库的 `smoke_bc.asb`，`_ready` 打印 `910001`/`910002`）。
 
 ## 脚本约定
 
 - 扩展名：`.as`（源码）与 `.asb`（预编译字节码容器，M4）均可加载。`.asb` 由 `--compile-angelscript` 离线生成：容器携带基类名与所需的 ClassDB 类型符号表，加载前只对这些类型做增量注册（不退回全量注册）；字节码脚本没有 `source_code`，`reload()` 返回 `ERR_INVALID_DATA`，类名同样必须等于文件名，且 `.asb` 必须与生成它的引擎 ABI 一致（版本/签名校验与回退策略由业务层 manifest 负责，本模块不做校验）。
 - 加载线程：`.as` 必须在主线程加载（AS 引擎主线程独占，见 `as_engine.h`）；`ResourceLoader.load_threaded_request()` 会失败并打印错误，而不是在后台线程破坏引擎状态。
-- 基类指令：源码前 10 行内必须有一行 `// godot_base: <ClassDB 类型名>`，它决定 `ASScript::get_instance_base_type()`（如 `Node`、`Resource`）。缺少或类型不存在都会导致加载失败。
+- 基类指令：源码前 10 行内必须有一行 `// godot_base: <ClassDB 类型名>`，它决定 `ASScript::get_instance_base_type()`（如 `Node`、`Resource`）。缺少或类型不存在都会导致加载失败。扫描感知块注释与字符串字面量：`/* ... */` 内的伪指令、`"..."` 内的文本都不会被当成指令。
 - 类名必须等于文件名（不含扩展名），例如 `res://enemy_spawner.as` 里的类必须叫 `enemy_spawner`。本模块不做全局类名注册，脚本一律按路径引用。
 - 回调签名必须与 Godot 一致：`void _ready()`、`void _process(double delta)`、`void _physics_process(double delta)`、`void _enter_tree()`、`void _exit_tree()`、`void _notification(int what)`。签名不匹配的回调不会被派发（例如 `void _process()` 视为不存在）。
 - 属性：阶段一支持 `bool` / `int` / `int64` / `float` / `double`；方法参数与返回值支持同样的标量类型（`int` 形参按 32 位、`int64` 按 64 位编组）。
@@ -89,15 +93,15 @@ AngelScript 脚本可经 `as_host_call(int method_id, const Array &in args) -> V
 
 ### 已知限制
 
-- 基类指令扫描是逐行的字面量匹配（行首 `// godot_base:`），不做块注释解析：若 `/* ... */` 块注释内恰好有一行以 `// godot_base:` 开头，它会被当成指令。指令是作者侧的引导约定、并非外部输入，故此限制在阶段一接受；块注释感知的扫描留待 M2 编辑器集成。
 - 热更脚本类不是基类的子类：基类指令只决定节点实例类型（D2），脚本里的 `this` 是 AS 对象而非 Node，因此不能直接写 `add_child(...)`；绑定层 API 需要显式对象句柄（`Node @n = Node(); n.add_child(...)`）。
-- 不可绑定的签名一律整体归入 unbound（不半注册），可通过 `--dump-angelscript-api` 的 `angelscript_unbound.txt` 查询：vararg 方法（含内建 `print`）、静态方法、返回或形参为 `Variant` 的方法、形参/返回引用不可见类型的方法、非标识符属性名（如 `frame_0/texture`）。
+- 不可绑定的签名一律整体归入 unbound（不半注册），可通过 `--dump-angelscript-api` 的 `angelscript_unbound.txt` 查询：vararg 方法（含内建 `print`）、`METHOD_FLAG_VIRTUAL` 的虚方法（GDVIRTUAL，AS 侧注册也调不到实现）、形参/返回引用不可见类型的方法、非标识符属性名（如 `frame_0/texture`）。
+- 静态方法与内建值类型的静态方法不进 unbound，而是注册为全局函数，名字 `<声明类/类型>_<成员名>`（如 `Node_print_orphan_nodes`）；不绑实例、不受 `const` 修饰。`Variant` 形参与返回也可绑定（AS 侧声明为 `Variant`，经已注册的 Variant 拷贝构造编组；真 `void` 返回仍不编组）。
 - vararg 的 `print` 家族因此不可用；热更脚本的字符串输出暂用内建 `as_log_string`（见内建 API 表）。
 - 不支持向下转换（无 `opCast`）：只能把派生类句柄赋给祖先类句柄，不能反向。
 - 非 `RefCounted` 的 `Object`（如 `Node`）不绑定 `free()`（它是 GDVIRTUAL、没有 MethodBind），脚本无法显式释放，退出时会出现 `ObjectDB instances were leaked` 警告；`RefCounted` 由引用计数正常回收。
 - 仅支持 64 位平台：非拥有句柄槽里存 64 位 `ObjectID`，必须完整放进指针宽度的槽；32 位平台会截断高位、可能错认对象。绑定层用 `static_assert(sizeof(void *) >= 8)` 在编译期拦截 32 位构建。
-- 绑定注册耗时随绑定面线性增长：默认（空白名单）全量放行时，editor 构建下约 1047 个类、12.8 万条成员，`ensure_initialized()` 首次调用需约 2 分钟（`ASBindingPlan::build()` 只占 0.2 s，耗时在 AS `RegisterObjectMethod` 的固有开销，约 1 ms/条；本版 AS 的注册类型之间不支持继承，只能逐类复制全量成员 + `opImplCast`，没有捷径）。用 `angel_script/class_whitelist` 收窄到脚本实际需要的类型可降到秒级（白名单 5 类时注册 878 条），按需/惰性注册属后续里程碑。
-- `.d.as` 声明与运行期注册在极端重名场景下可能不一致：运行期对「属性访问器/常量/枚举名已被祖先注册占用」的项做幂等跳过（这些成员通常仍可经祖先句柄访问），但这些跳过项不会回填 `angelscript_unbound.txt`，dump 仍会声明它们。若严格照 dump 写脚本后在运行期编译失败，请以运行期为准。
+- 绑定注册耗时随绑定面线性增长：默认（空白名单）全量放行时，editor 构建下约 1047 个类、12.8 万条成员，全量注册路径需约 2 分钟（`ASBindingPlan::build()` 只占 0.2 s，耗时在 AS `RegisterObjectMethod` 的固有开销，约 1 ms/条；本版 AS 的注册类型之间不支持继承，只能逐类复制全量成员 + `opImplCast`，没有捷径）。用 `angel_script/class_whitelist` 收窄到脚本实际需要的类型可降到秒级（白名单 5 类时注册 878 条）；默认的惰性注册（见「当前状态」）在 `auto` 模式下只先注册 core 与扫描到的基础类型，其余按需增量注册，避免启动即付全量开销。
+- 属性访问器名与同类方法重名时（如 `Image.data` 与真实方法 `get_data`），plan 在编译期即用与运行期一致的判定把该属性归入 unbound（reason `accessor-name-taken`），dump 不再声明它（评审 I1）；成员仍可经同名方法访问。
 - 脚本属性的读写（`ASScriptInstance::set()` / `get()`）支持标量、全部内建值类型（含 `String` / `Vector2` / `Array` …，AS 侧存储就是一颗 `Variant`）与对象句柄（拥有 / 非拥有按静态类型编码）；但**小写内建 `string` 类型的属性不做读写往返**（`set` / `get` 返回 `false`），需要字符串属性请声明为 `String`（大写，以 Variant 存储）。
 
 示例 `res://main.as`：
@@ -144,8 +148,8 @@ class signal_demo {
 - `as_self()`：取当前正在执行的脚本实例所承载的节点（`ASScriptInstance::get_owner()`，弱句柄）。AS 脚本类不是 `Node` 子类，脚本内需要用它才能引用宿主节点、进而连接或发射自己声明的信号。
 - `as_emit_signal(obj, name, args)`：发射 `obj` 上名为 `name` 的信号，`args` 必须是 `Array`，其元素按顺序作为信号实参。`obj` 为非拥有句柄，为空或已释放时抛 `AngelScript: as_emit_signal: target object is null or has been freed`。
 - `as_callable(obj, method)`：把 `obj` 上的方法包装成 `Callable`，配合 `Object.connect` 接收信号。
-- 已知限制：信号（以及任何宿主 `Callable`）回调的**参数只支持标量**——`ASEngine::call_function` 目前只编组 `bool` / `int64` / `double`，带对象、字符串或其它内建值类型参数的信号回调无法派发。需要传递复杂数据时，请让回调只接收标量句柄 / ID，或改用属性通道。
-- 已知限制：带默认值形参的 Godot 方法在 AS 侧没有默认值，必须显式传全部实参，例如 `connect(StringName("ping"), as_callable(as_self(), "on_ping"), 0)`。
+- 已知限制：信号（以及任何宿主 `Callable`）回调的**参数只支持标量**——`ASEngine::call_function` 只按 AS 形参宽度编组 `bool` / `int`（32/64 位）/ `float`（32/64 位），带对象、字符串或其它内建值类型参数的信号回调无法派发。需要传递复杂数据时，请让回调只接收标量句柄 / ID，或改用属性通道。
+- 已知限制：声明渲染不输出默认值，带默认值形参的 Godot 方法与内建值类型方法（如 `connect(...)`、`String.split(...)`）在 AS 侧都没有默认值，必须显式传全部实参，例如 `connect(StringName("ping"), as_callable(as_self(), "on_ping"), 0)`。
 
 ## 垃圾回收（M3）
 
@@ -166,7 +170,7 @@ class signal_demo {
 | 声明 | 说明 |
 | --- | --- |
 | `void as_log_int(int value)` | 把整数打印到 stdout（阶段一引入的宿主调试桩）。 |
-| `void as_log_string(const String &in value)` | 把 Godot `String` 打印到 stdout。内建 `print` 是 vararg、M2 不可绑定，热更脚本的字符串输出暂用这个出口。 |
+| `void as_log_string(const String &in value)` | 把 Godot `String` 打印到 stdout。内建 `print` 是 vararg、无法在 AS 静态类型里表达，热更脚本的字符串输出暂用这个出口。 |
 | `Object @as_self()` | 取当前脚本实例承载的节点（弱句柄），见「信号（M3）」。 |
 | `void as_emit_signal(Object @obj, const String &in name, const Array &in args)` | 发射 `obj` 上的信号 `name`，`args` 为实参数组。 |
 | `Callable as_callable(Object @obj, const String &in method)` | 把 `obj` 上的方法包装成 `Callable`，配合 `Object.connect` 接收信号。 |
