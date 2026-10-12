@@ -461,6 +461,20 @@ String OS_MacOS::get_bundle_resource_dir() const {
 	return ret;
 }
 
+String OS_MacOS::get_bundle_or_executable_path() const {
+	String ret;
+
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *resource_path = [main bundlePath];
+		ret.append_utf8([resource_path UTF8String]);
+	}
+	if (ret.is_empty()) {
+		ret = get_executable_path();
+	}
+	return ret;
+}
+
 String OS_MacOS::get_bundle_icon_path() const {
 	String ret;
 
