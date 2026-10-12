@@ -117,6 +117,19 @@ ASObjectBinding *get_binding(asIScriptGeneric *p_gen, ASObjectBinding::Kind p_ex
 	return b;
 }
 
+// 静态方法以全局函数注册，名字 `<类名>_<成员名>` 可能与工具函数等既有全局符号重名。
+// 任何 Register* 失败都会永久污染引擎，故注册前先扫描已存在的全局函数名。
+bool global_function_name_taken(asIScriptEngine *p_engine, const String &p_name) {
+	const asUINT count = p_engine->GetGlobalFunctionCount();
+	for (asUINT i = 0; i < count; i++) {
+		const asIScriptFunction *fn = p_engine->GetGlobalFunctionByIndex(i);
+		if (fn != nullptr && String(fn->GetName()) == p_name) {
+			return true;
+		}
+	}
+	return false;
+}
+
 } // namespace
 
 Object *as_handle_decode(void *p_slot, ASBindingKind p_kind) {
@@ -237,7 +250,33 @@ Error ASBindingObject::register_class(const ASBindingClass &p_class, asIScriptEn
 			: AS_KIND_OBJECT_NONOWNING;
 
 	for (const ASBindingMethod &m : p_class.methods) {
-		if (m.bind == nullptr || m.is_static) {
+		if (m.bind == nullptr) {
+			continue;
+		}
+		if (m.is_static) {
+			// AS 2.38 无 `static` 关键字：静态方法注册为**全局函数**，命名沿用
+			// <类名>_<成员名> 约定（与常量、枚举一致）。名字冲突时跳过，
+			// 否则 Register* 失败会永久污染引擎。
+			const String gname = String(p_class.name) + "_" + m.name;
+			if (g_global_names[p_engine].has(gname) || global_function_name_taken(p_engine, gname)) {
+				continue;
+			}
+			ASObjectBinding *b = memnew(ASObjectBinding);
+			b->kind = ASObjectBinding::KIND_METHOD;
+			b->member = m.name;
+			b->bind = m.bind;
+			b->param_kinds = m.param_kinds;
+			b->return_kind = m.return_kind;
+			b->param_types = m.param_types;
+			b->return_type = m.return_type;
+			const CharString decl = m.as_decl.utf8();
+			const int id = p_engine->RegisterGlobalFunction(decl.get_data(), asFUNCTION(generic_static_method_call), asCALL_GENERIC);
+			if (id < 0) {
+				memdelete(b);
+				continue;
+			}
+			g_global_names[p_engine].insert(gname);
+			attach_binding(p_engine, id, b);
 			continue;
 		}
 #if AS_NATIVE_VALUE_OPS_ENABLED
@@ -416,6 +455,39 @@ void ASBindingObject::generic_method_call(asIScriptGeneric *p_gen) {
 		argv = argptrs.ptrw();
 	}
 	Variant ret = b->bind->call(self, argv, argc, ce);
+	if (ce.error != Callable::CallError::CALL_OK) {
+		set_exception(vformat("AngelScript: %s() failed (%d)", b->member, (int)ce.error));
+		return;
+	}
+	as_binding_marshal_return(p_gen, b->return_kind, ret, b->return_type);
+}
+
+void ASBindingObject::generic_static_method_call(asIScriptGeneric *p_gen) {
+	ASObjectBinding *b = get_binding(p_gen, ASObjectBinding::KIND_METHOD);
+	if (b == nullptr) {
+		return;
+	}
+	// 静态方法没有 self：MethodBind 的静态实现忽略实例指针，传 nullptr 即可。
+
+	const int argc = b->param_kinds.size();
+	Vector<Variant> args;
+	args.resize(argc);
+	for (int i = 0; i < argc; i++) {
+		const Variant::Type pt = i < b->param_types.size() ? b->param_types[i] : Variant::NIL;
+		args.write[i] = as_binding_marshal_arg(p_gen, i, b->param_kinds[i], pt);
+	}
+	Vector<const Variant *> argptrs;
+	argptrs.resize(argc);
+	for (int i = 0; i < argc; i++) {
+		argptrs.write[i] = &args[i];
+	}
+
+	Callable::CallError ce;
+	const Variant **argv = nullptr;
+	if (argc > 0) {
+		argv = argptrs.ptrw();
+	}
+	Variant ret = b->bind->call(nullptr, argv, argc, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
 		set_exception(vformat("AngelScript: %s() failed (%d)", b->member, (int)ce.error));
 		return;

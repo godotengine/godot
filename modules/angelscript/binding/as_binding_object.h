@@ -43,6 +43,8 @@ public:
 
 	// 以下为 asCALL_GENERIC 跳板，函数指针交给 Register*。
 	static void generic_method_call(asIScriptGeneric *p_gen);
+	// 静态方法（注册为全局函数，无 self）：编组实参后以 self=nullptr 调 MethodBind。
+	static void generic_static_method_call(asIScriptGeneric *p_gen);
 	static void generic_upcast(asIScriptGeneric *p_gen);
 	static void generic_instantiate(asIScriptGeneric *p_gen);
 	// RefCounted 语义：句柄持有即加引用。

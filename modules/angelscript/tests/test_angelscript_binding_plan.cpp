@@ -75,6 +75,37 @@ void as_binding_plan_collects_unbound_vararg() {
 	CHECK(has_vararg); // Object::call 是 vararg，必须进未绑定清单。
 }
 
+void as_binding_plan_binds_static_methods() {
+	ASBindingPlan plan;
+	plan.build(ASBindingScope());
+
+	// 静态方法改为注册为全局函数后，不应再以 "static-method" 理由出现在未绑定清单。
+	// 未绑定清单很大，这里聚合成一个计数断言，避免制造海量断言噪声。
+	int static_reasons = 0;
+	for (const ASUnboundEntry &e : plan.get_unbound()) {
+		if (e.reason == "static-method") {
+			static_reasons++;
+		}
+	}
+	CHECK(static_reasons == 0);
+
+	// Node::print_orphan_nodes 是 ClassDB 静态方法：声明名称为全局函数 <类名>_<成员名>。
+	bool found = false;
+	for (const ASBindingClass &c : plan.get_classes()) {
+		if (c.name != StringName("Node")) {
+			continue;
+		}
+		for (const ASBindingMethod &m : c.methods) {
+			if (m.name == StringName("print_orphan_nodes")) {
+				found = true;
+				CHECK(m.is_static);
+				CHECK(m.as_decl == "void Node_print_orphan_nodes()");
+			}
+		}
+	}
+	CHECK(found);
+}
+
 void as_binding_plan_whitelist_keeps_ancestors() {
 	ASBindingScope scope;
 	scope.whitelist.push_back("Sprite2D"); // 期望连带保留 Node2D/CanvasItem/Node/Object。

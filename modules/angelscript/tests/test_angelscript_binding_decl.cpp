@@ -120,6 +120,47 @@ void as_binding_decl_method_forms() {
 	CHECK(decl == "void queue_free()");
 }
 
+void as_binding_decl_static_method_forms() {
+	// 静态方法 -> AS 全局函数声明：名字 `<类名>_<成员名>`，无 self、无 const。
+	MethodInfo stat;
+	stat.name = "is_main_thread";
+	stat.return_val = make_pi(Variant::BOOL);
+	stat.flags = METHOD_FLAG_STATIC;
+	String decl, reason;
+	REQUIRE(ASBindingDecl::static_method_to_decl(stat, StringName("Thread"), &decl, &reason));
+	CHECK(decl == "bool Thread_is_main_thread()");
+	CHECK(reason.is_empty());
+
+	// 带参的静态方法：形参照样按通用规则渲染（String 走 const 引用）。
+	MethodInfo stat_arg;
+	stat_arg.name = "set_default_interface";
+	stat_arg.return_val = make_pi(Variant::NIL);
+	stat_arg.arguments.push_back(make_pi(Variant::STRING));
+	stat_arg.flags = METHOD_FLAG_STATIC;
+	CHECK(ASBindingDecl::static_method_to_decl(stat_arg, StringName("MultiplayerAPI"), &decl, &reason));
+	CHECK(decl == "void MultiplayerAPI_set_default_interface(const String &in)");
+
+	// 非静态方法不得走静态分类（否则实例方法会被误注册成全局函数）。
+	MethodInfo inst;
+	inst.name = "get_name";
+	inst.return_val = make_pi(Variant::STRING);
+	inst.flags = METHOD_FLAG_CONST;
+	CHECK_FALSE(ASBindingDecl::static_method_to_decl(inst, StringName("Node"), &decl, &reason));
+	CHECK(reason == "not-static-method");
+
+	// vararg 静态方法同样拒绝。
+	MethodInfo vstat;
+	vstat.name = "log";
+	vstat.return_val = make_pi(Variant::NIL);
+	vstat.flags = METHOD_FLAG_STATIC | METHOD_FLAG_VARARG;
+	CHECK_FALSE(ASBindingDecl::static_method_to_decl(vstat, StringName("Thread"), &decl, &reason));
+	CHECK(reason.begins_with("vararg"));
+
+	// method_to_decl 对静态方法仍拒绝：既有契约不变，静态方法必须走 static_method_to_decl。
+	CHECK_FALSE(ASBindingDecl::method_to_decl(stat, &decl, &reason));
+	CHECK(reason == "static-method");
+}
+
 void as_binding_decl_rejects_vararg_and_unknown() {
 	MethodInfo vararg;
 	vararg.name = "call";

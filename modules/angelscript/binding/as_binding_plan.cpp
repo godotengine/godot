@@ -189,7 +189,13 @@ void ASBindingPlan::_build_class(const StringName &p_class, const HashSet<String
 			continue;
 		}
 		String decl, reason;
-		if (!ASBindingDecl::method_to_decl(mi, &decl, &reason)) {
+		const bool is_static = (mi.flags & METHOD_FLAG_STATIC) != 0;
+		// 静态方法本质是全局函数：走 static_method_to_decl（声明名 <类名>_<成员名>），
+		// 运行期由 register_class 以 RegisterGlobalFunction 注册，不做 RegisterObjectMethod。
+		const bool decl_ok = is_static
+				? ASBindingDecl::static_method_to_decl(mi, p_class, &decl, &reason)
+				: ASBindingDecl::method_to_decl(mi, &decl, &reason);
+		if (!decl_ok) {
 			ASUnboundEntry e;
 			e.owner = p_class;
 			e.member = String(mi.name);

@@ -124,3 +124,10 @@ void as_binding_visibility_utility_function_clampf() {
 	REQUIRE(run_double("double main() { return clampf(5.0, 0.0, 1.0); }", &out));
 	CHECK(nearly(out, 1.0));
 }
+
+void as_binding_visibility_static_method_global() {
+	// ClassDB 静态方法注册为 AS 全局函数：Thread::is_main_thread -> Thread_is_main_thread()。
+	double out = 0.0;
+	REQUIRE(run_double("double main() { return Thread_is_main_thread() ? 1.0 : 0.0; }", &out));
+	CHECK(nearly(out, 1.0));
+}

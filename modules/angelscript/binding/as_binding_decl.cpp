@@ -143,6 +143,57 @@ static String render_param(const ASBindingType &t) {
 	return as_binding_render_param(t.as_name);
 }
 
+// 渲染返回类型与形参表（method_to_decl / static_method_to_decl 的公共部分）。
+static bool render_signature(const MethodInfo &p_info, const String &p_name, bool p_is_const, String *r_decl, String *r_reason) {
+	String ret;
+	if (p_info.return_val.type == Variant::NIL) {
+		// 真正返回 Variant 的方法（property_info 带 NIL_IS_VARIANT）在 M2 没有可编组的
+		// 返回类型：声明成 void 会静默丢弃返回值（半注册），必须整体归为 unbound。
+		if (p_info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
+			if (r_reason) {
+				*r_reason = "unsupported-return-type: Variant";
+			}
+			return false;
+		}
+		ret = "void";
+	} else {
+		ASBindingType rt = ASBindingDecl::resolve(p_info.return_val);
+		if (!rt.valid) {
+			if (r_reason) {
+				*r_reason = "unsupported-return-type: " + rt.unbound_reason;
+			}
+			return false;
+		}
+		ret = rt.as_name;
+	}
+
+	String args;
+	for (int i = 0; i < p_info.arguments.size(); i++) {
+		ASBindingType at = ASBindingDecl::resolve(p_info.arguments[i]);
+		if (!at.valid) {
+			if (r_reason) {
+				*r_reason = vformat("unsupported-param-type: %s (arg %d)", at.unbound_reason, i);
+			}
+			return false;
+		}
+		if (i > 0) {
+			args += ", ";
+		}
+		args += render_param(at);
+	}
+
+	String decl;
+	decl += ret + " " + p_name + "(" + args + ")";
+	if (p_is_const) {
+		decl += " const";
+	}
+
+	if (r_decl) {
+		*r_decl = decl;
+	}
+	return true;
+}
+
 bool ASBindingDecl::method_to_decl(const MethodInfo &p_info, String *r_decl, String *r_reason) {
 	if (r_decl) {
 		*r_decl = String();
@@ -160,7 +211,8 @@ bool ASBindingDecl::method_to_decl(const MethodInfo &p_info, String *r_decl, Str
 	}
 
 	// AS 2.38 的解析器不识别 `static` 关键字：把 "static ..." 交给 RegisterObjectMethod
-	// 会返回 asINVALID_DECLARATION 并永久污染引擎（探针验证）。M2 一律不绑定静态方法。
+	// 会返回 asINVALID_DECLARATION 并永久污染引擎（探针验证）。静态方法走
+	// static_method_to_decl 注册为全局函数（见该函数注释）。
 	if (p_info.flags & METHOD_FLAG_STATIC) {
 		if (r_reason) {
 			*r_reason = "static-method";
@@ -168,53 +220,33 @@ bool ASBindingDecl::method_to_decl(const MethodInfo &p_info, String *r_decl, Str
 		return false;
 	}
 
-	String ret;
-	if (p_info.return_val.type == Variant::NIL) {
-		// 真正返回 Variant 的方法（property_info 带 NIL_IS_VARIANT）在 M2 没有可编组的
-		// 返回类型：声明成 void 会静默丢弃返回值（半注册），必须整体归为 unbound。
-		if (p_info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-			if (r_reason) {
-				*r_reason = "unsupported-return-type: Variant";
-			}
-			return false;
-		}
-		ret = "void";
-	} else {
-		ASBindingType rt = resolve(p_info.return_val);
-		if (!rt.valid) {
-			if (r_reason) {
-				*r_reason = "unsupported-return-type: " + rt.unbound_reason;
-			}
-			return false;
-		}
-		ret = rt.as_name;
-	}
+	return render_signature(p_info, String(p_info.name), (p_info.flags & METHOD_FLAG_CONST) != 0, r_decl, r_reason);
+}
 
-	String args;
-	for (int i = 0; i < p_info.arguments.size(); i++) {
-		ASBindingType at = resolve(p_info.arguments[i]);
-		if (!at.valid) {
-			if (r_reason) {
-				*r_reason = vformat("unsupported-param-type: %s (arg %d)", at.unbound_reason, i);
-			}
-			return false;
-		}
-		if (i > 0) {
-			args += ", ";
-		}
-		args += render_param(at);
-	}
-
-	String decl;
-	decl += ret + " " + p_info.name + "(" + args + ")";
-	if (p_info.flags & METHOD_FLAG_CONST) {
-		decl += " const";
-	}
-
+bool ASBindingDecl::static_method_to_decl(const MethodInfo &p_info, const StringName &p_scope, String *r_decl, String *r_reason) {
 	if (r_decl) {
-		*r_decl = decl;
+		*r_decl = String();
 	}
-	return true;
+	if (r_reason) {
+		*r_reason = String();
+	}
+
+	if (p_info.flags & METHOD_FLAG_VARARG) {
+		if (r_reason) {
+			*r_reason = "vararg";
+		}
+		return false;
+	}
+	if (!(p_info.flags & METHOD_FLAG_STATIC)) {
+		if (r_reason) {
+			*r_reason = "not-static-method";
+		}
+		return false;
+	}
+
+	// 全局函数没有 this：声明不带 const；名字沿用 `<作用域>_<成员名>` 约定。
+	const String name = String(p_scope) + "_" + String(p_info.name);
+	return render_signature(p_info, name, false, r_decl, r_reason);
 }
 
 Variant as_binding_marshal_arg(asIScriptGeneric *p_gen, int p_index, ASBindingKind p_kind, Variant::Type p_stored_type) {
