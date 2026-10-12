@@ -7,6 +7,7 @@ concurrency:
 
 jobs:
   static-checks:
+    if: ${{ !vars.DISABLE_GODOT_CI }}
     name: 📊 Static
     uses: ./.github/workflows/static_checks.yml
 
