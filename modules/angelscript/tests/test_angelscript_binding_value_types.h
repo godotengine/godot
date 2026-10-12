@@ -43,6 +43,7 @@ void as_binding_value_types_variant_dictionary();
 void as_binding_value_types_string_interop();
 void as_binding_value_types_string_variable_forms();
 void as_binding_value_types_builtin_variant_return();
+void as_binding_value_types_static_builtin_methods();
 
 #ifndef ANGELSCRIPT_BINDING_VALUE_TYPES_TESTS_IMPL
 
@@ -72,6 +73,9 @@ TEST_CASE("[AngelScript] binding value types string copy and assignment forms") 
 }
 TEST_CASE("[AngelScript] binding value types builtin method returning Variant") {
 	as_binding_value_types_builtin_variant_return();
+}
+TEST_CASE("[AngelScript] binding value types static builtin methods") {
+	as_binding_value_types_static_builtin_methods();
 }
 
 #endif // ANGELSCRIPT_BINDING_VALUE_TYPES_TESTS_IMPL

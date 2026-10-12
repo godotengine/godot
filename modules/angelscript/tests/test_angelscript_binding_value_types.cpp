@@ -247,3 +247,19 @@ void as_binding_value_types_builtin_variant_return() {
 	}
 	CHECK(nearly(out, 5.0));
 }
+
+void as_binding_value_types_static_builtin_methods() {
+	double out = 0.0;
+	// 值类型静态内建方法没有对象 this，作为 <类型>_<方法> 全局函数注册
+	// （与 ClassDB 静态方法注册为全局函数的约定一致）。
+	if (!run_double("double main() { Vector2 v = Vector2_from_angle(0.0); return v.x; }", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 1.0));
+
+	// 整型参 + String 返回的静态方法（chr 无默认参数）。
+	if (!run_double("double main() { String s = String_chr(65); return double(s.length()); }", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 1.0));
+}

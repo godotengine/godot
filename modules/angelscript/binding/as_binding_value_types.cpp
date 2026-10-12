@@ -70,6 +70,7 @@ enum ASValueBindingKind {
 	VT_STRING_ASSIGN, // string &opAssign(const string &in)
 	VT_STRING_FROM_GODOT, // string(const String &in)
 	VT_STRING_LENGTH, // int64 length() const
+	VT_STATIC_METHOD, // 静态内建方法：无对象 this，注册为 <类型>_<方法> 全局函数
 };
 
 // 绑定记录通过 asIScriptFunction::SetUserData 挂到函数上，跳板运行时取回。
@@ -116,6 +117,32 @@ static void add_behaviour(asIScriptEngine *p_engine, const CharString &p_type, a
 	CharString decl = p_decl.utf8();
 	int id = p_engine->RegisterObjectBehaviour(p_type.get_data(), p_behaviour, decl.get_data(), asFUNCTION(ASBindingValueTypes::generic_value_call), asCALL_GENERIC);
 	attach_binding(p_engine, id, p_binding);
+}
+
+// 静态内建方法没有对象 this，按 <类型>_<方法> 全局函数注册（与 ClassDB 静态方法
+// 注册为全局函数的约定一致）。
+static void add_global_function(asIScriptEngine *p_engine, const String &p_decl, ASValueBinding *p_binding) {
+	CharString decl = p_decl.utf8();
+	int id = p_engine->RegisterGlobalFunction(decl.get_data(), asFUNCTION(ASBindingValueTypes::generic_value_call), asCALL_GENERIC);
+	attach_binding(p_engine, id, p_binding);
+}
+
+// 全局符号（函数/属性）重名会让 Register* 失败并永久置位引擎 configFailed，
+// 故注册前必须查重；这同时让 register_all 天然幂等。
+static bool global_symbol_taken(asIScriptEngine *p_engine, const String &p_name) {
+	for (asUINT i = 0; i < p_engine->GetGlobalFunctionCount(); i++) {
+		if (String(p_engine->GetGlobalFunctionByIndex(i)->GetName()) == p_name) {
+			return true;
+		}
+	}
+	for (asUINT i = 0; i < p_engine->GetGlobalPropertyCount(); i++) {
+		const char *n = nullptr;
+		p_engine->GetGlobalPropertyByIndex(i, &n);
+		if (n && String(n) == p_name) {
+			return true;
+		}
+	}
+	return false;
 }
 
 // ---------- string 互操作 ----------
@@ -327,9 +354,6 @@ static void register_type_members(asIScriptEngine *p_engine, const String &p_nam
 		if (member_accessors.has(String(mn))) {
 			continue; // 已由成员虚属性覆盖。
 		}
-		if (Variant::is_builtin_method_static(p_type, mn)) {
-			continue; // M2：静态内建方法没有对象 this，暂不注册（ledger noted）。
-		}
 		Variant::ValidatedBuiltInMethod vm = Variant::get_validated_builtin_method(p_type, mn);
 		if (!vm) {
 			continue;
@@ -349,6 +373,27 @@ static void register_type_members(asIScriptEngine *p_engine, const String &p_nam
 		Vector<ASBindingKind> kinds;
 		Vector<Variant::Type> types;
 		if (!render_args(mi.arguments, &args, &kinds, &types)) {
+			continue;
+		}
+		bool is_static = Variant::is_builtin_method_static(p_type, mn);
+		if (is_static) {
+			// 静态内建方法的 validated thunk 忽略 base（variant_call.cpp STATIC_METHOD_CLASS），
+			// 可安全以 nullptr 调用，故注册为 <类型>_<方法> 全局函数。
+			String gname = p_name + "_" + String(mn);
+			if (global_symbol_taken(p_engine, gname)) {
+				continue;
+			}
+			String gdecl = ret + " " + gname + "(" + args + ")";
+			ASValueBinding *sb = memnew(ASValueBinding);
+			sb->kind = VT_STATIC_METHOD;
+			sb->type = p_type;
+			sb->method = vm;
+			sb->return_type = mi.return_val.type;
+			sb->return_kind = returns_void ? AS_KIND_VOID : kind_of_type(mi.return_val.type);
+			sb->param_kinds = kinds;
+			sb->param_types = types;
+			sb->arg_count = mi.arguments.size();
+			add_global_function(p_engine, gdecl, sb);
 			continue;
 		}
 		bool is_const = Variant::is_builtin_method_const(p_type, mn);
@@ -807,6 +852,24 @@ void ASBindingValueTypes::generic_value_call(asIScriptGeneric *p_gen) {
 			}
 			VariantInternal::initialize(&ret, b->return_type);
 			b->method(self, args, n, &ret);
+			as_binding_marshal_return(p_gen, b->return_kind, ret, b->return_type);
+			return;
+		}
+		case VT_STATIC_METHOD: {
+			if (!b->method) {
+				set_exception("angelscript: invalid static builtin method binding");
+				return;
+			}
+			Variant vals[8];
+			const Variant *args[8];
+			int n = b->arg_count;
+			for (int i = 0; i < n && i < 8; i++) {
+				Variant::Type pt = i < b->param_types.size() ? b->param_types[i] : Variant::NIL;
+				vals[i] = as_binding_marshal_arg(p_gen, i, b->param_kinds[i], pt);
+				args[i] = &vals[i];
+			}
+			VariantInternal::initialize(&ret, b->return_type);
+			b->method(nullptr, args, n, &ret);
 			as_binding_marshal_return(p_gen, b->return_kind, ret, b->return_type);
 			return;
 		}
