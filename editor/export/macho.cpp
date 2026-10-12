@@ -197,7 +197,7 @@ String MachO::arch_name(uint32_t p_arch) {
 }
 
 bool MachO::open_file(const String &p_path) {
-	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
+	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ_WRITE);
 	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("MachO: Can't open file: \"%s\".", p_path));
 
 	return open_file(fb);

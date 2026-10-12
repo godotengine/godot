@@ -146,6 +146,7 @@ bool LipO::_create_file(const String &p_output_path, const Vector<Ref<FileAccess
 		int pages = archs[i].size / 4096;
 		int remain = archs[i].size % 4096;
 		unsigned char step[4096];
+		p_files[i]->seek(0);
 		for (int j = 0; j < pages; j++) {
 			uint64_t br = p_files[i]->get_buffer(step, 4096);
 			if (br > 0) {
