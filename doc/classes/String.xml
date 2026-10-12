@@ -194,6 +194,17 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="bin_to_int">
+			<return type="int" />
+			<description>
+				Converts the string representing a binary number into an [int]. The string may optionally be prefixed with [code]"0b"[/code], and an additional [code]-[/code] prefix for negative numbers.
+				[codeblock]
+				print("101".bin_to_int())   # Prints 5
+				print("0b101".bin_to_int()) # Prints 5
+				print("-0b10".bin_to_int()) # Prints -2
+				[/codeblock]
+			</description>
+		</method>
 		<method name="c_escape">
 			<return type="String" />
 			<description>
