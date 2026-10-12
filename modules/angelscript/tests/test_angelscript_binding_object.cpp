@@ -38,6 +38,7 @@
 #define ANGELSCRIPT_BINDING_OBJECT_TESTS_IMPL
 #include "test_angelscript_binding_object.h"
 
+#include "core/object/object.h"
 #include "core/os/memory.h"
 #include "core/string/print_string.h"
 #include "scene/2d/node_2d.h"
@@ -366,6 +367,42 @@ void as_binding_object_nonowning_assign() {
 		return;
 	}
 	CHECK(nearly(out, 1.0));
+}
+
+// B2：丢弃拥有句柄返回值不得泄漏 ObjectDB 实例 —— 返回值 transfer 必须恰好一次。
+// 覆盖多种“返回值生命周期结束后”的形态：丢弃工厂结果、丢弃方法返回值、弱上转后作用域结束、
+// 接收变量后作用域结束。每段脚本前后比较 ObjectDB 实例数，差值必须为 0。
+void as_binding_object_discarded_return() {
+	double out = 0.0;
+	// 预热一次，完成值类型与对象绑定注册，避免把首次注册的副作用计入差值。
+	if (!run_double("double main() { return 0.0; }", &out)) {
+		return;
+	}
+
+	struct DiscardProbe {
+		const char *label;
+		const char *source;
+	};
+	const DiscardProbe probes[] = {
+		{ "discard factory result",
+				"double main() { for (int i = 0; i < 8; i++) { Resource(); } return 1.0; }" },
+		{ "discard method return",
+				"double main() { for (int i = 0; i < 8; i++) { Resource @r = Resource(); r.duplicate(false); } return 1.0; }" },
+		{ "weak upcast then scope end",
+				"double main() { for (int i = 0; i < 8; i++) { Resource @r = Resource(); Object @o = r; } return 1.0; }" },
+		{ "receive then scope end",
+				"double main() { for (int i = 0; i < 8; i++) { Resource @r = Resource(); Resource @d = r.duplicate(false); } return 1.0; }" },
+	};
+
+	for (const DiscardProbe &p : probes) {
+		const int before = ObjectDB::get_object_count();
+		if (!run_double(p.source, &out)) {
+			return;
+		}
+		const int after = ObjectDB::get_object_count();
+		INFO("probe: ", p.label, " before=", before, " after=", after);
+		CHECK(after == before);
+	}
 }
 
 void as_binding_object_enums_and_constants() {

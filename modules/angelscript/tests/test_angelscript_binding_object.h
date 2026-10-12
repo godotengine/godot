@@ -40,6 +40,7 @@ void as_binding_object_property_access();
 void as_binding_object_upcast();
 void as_binding_object_refcount_lifetime();
 void as_binding_object_nonowning_assign();
+void as_binding_object_discarded_return();
 void as_binding_object_enums_and_constants();
 void as_binding_object_native_hot_method();
 
@@ -62,6 +63,9 @@ TEST_CASE("[AngelScript] binding object refcount lifetime") {
 }
 TEST_CASE("[AngelScript] binding object nonowning assign") {
 	as_binding_object_nonowning_assign();
+}
+TEST_CASE("[AngelScript] binding object discarded return") {
+	as_binding_object_discarded_return();
 }
 TEST_CASE("[AngelScript] binding object enums and constants") {
 	as_binding_object_enums_and_constants();
