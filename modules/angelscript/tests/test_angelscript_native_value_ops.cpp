@@ -612,6 +612,26 @@ void as_native_vo_array_refcount_payload() {
 	CHECK(nearly(out, 15.0)); // 5 + 5 + 5
 }
 
+// 遗留缺陷回归：`Vector2(a)`（a 为 Vector2）曾因拷贝构造被注册两次
+// （原生生命周期的 `void f(const Vector2 &in)` 与内省构造器清单里的
+// `Vector2(const Vector2&)`）而报「歧义」。这里锁定拷贝构造与相关转换构造均可解析。
+void as_native_vo_copy_ctor_unambiguous() {
+	double out = 0.0;
+	if (!run_double(R"(
+		double main() {
+			Vector2 a(1.0, 2.0);
+			Vector2 b(a);        // 拷贝构造（曾歧义）
+			Vector2 c = a;       // 拷贝初始化
+			Vector2i d(3, 4);
+			Vector2 e(d);        // 从 Vector2i 构造
+			return b.x * 100.0 + c.y * 10.0 + e.x;
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 123.0)); // 1*100 + 2*10 + 3
+}
+
 // P3b：更多几何值类型纳入原生存储。原生存储只改变脚本侧内存布局与生命周期，
 // 不改变脚本可见语义，故主要验证：判定表覆盖到位、槽 ↔ Variant 双向转换精确、
 // 且这些类型在脚本中的构造/拷贝/运算仍与既有 generic 行为一致。

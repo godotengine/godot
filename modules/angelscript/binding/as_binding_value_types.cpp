@@ -286,6 +286,12 @@ static void register_type_members(asIScriptEngine *p_engine, const String &p_nam
 		if (mi.arguments.is_empty()) {
 			continue;
 		}
+		// 单参且参数类型就是自身类型的内省构造器等价于拷贝构造；拷贝构造已在上面
+		// 注册（原生生命周期或 generic）。若再注册一次，`Vector2(a)` 会因两个完全
+		// 相同的 `Vector2(const Vector2 &in)` 报「Multiple matching signatures」。
+		if (mi.arguments.size() == 1 && mi.arguments[0].type == p_type) {
+			continue;
+		}
 		String args;
 		Vector<ASBindingKind> kinds;
 		Vector<Variant::Type> types;
