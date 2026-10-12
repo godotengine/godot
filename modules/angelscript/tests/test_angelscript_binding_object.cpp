@@ -298,6 +298,76 @@ void as_binding_object_refcount_lifetime() {
 	CHECK(nearly(out, 1.0));
 }
 
+// B1：锁定 M3 非拥有（弱）句柄语义 —— `Object@`/`Node@` 槽里存 ObjectID，脚本持有既
+// 不参与引用计数、也不保活对象；需要保活必须声明具体 RefCounted 类型（如 `Resource@`）。
+// 固化为回归可防止再次把它“修复”成补引用而破坏 `ObjectDB` 生命周期契约。
+void as_binding_object_nonowning_assign() {
+	double out = 0.0;
+	// 1) 把 RefCounted 赋给非拥有祖先句柄，不得改变引用计数（弱引用）。
+	if (!run_double(
+				"double main() {"
+				"  Resource @r = Resource();"
+				"  double before = double(r.get_reference_count());"
+				"  Object @o = r;"
+				"  double after = double(r.get_reference_count());"
+				"  return before * 10.0 + after;"
+				"}",
+				&out)) {
+		return;
+	}
+	CHECK(nearly(out, 11.0)); // 赋值前后都恰好 1 份：弱句柄不补引用
+
+	// 2) 同一对象赋给另一个弱句柄同样不改变引用计数。
+	if (!run_double(
+				"double main() {"
+				"  Resource @r = Resource();"
+				"  Object @a = r;"
+				"  Object @b = a;"
+				"  return double(r.get_reference_count());"
+				"}",
+				&out)) {
+		return;
+	}
+	CHECK(nearly(out, 1.0));
+
+	// 3) 拥有句柄仍存活时，弱句柄可正常使用。
+	if (!run_double(
+				"double main() {"
+				"  Resource @r = Resource();"
+				"  Object @o = r;"
+				"  return (o !is null) ? 1.0 : 0.0;"
+				"}",
+				&out)) {
+		return;
+	}
+	CHECK(nearly(out, 1.0));
+
+	// 4) 拥有句柄释放后对象随之销毁；`is null` 只比较槽原值（ObjectID），弱句柄不会
+	//    变为 null —— 失效只在解引用时经 ObjectDB 反查暴露异常。
+	if (!run_double(
+				"double main() {"
+				"  Resource @r = Resource();"
+				"  Object @o = r;"
+				"  @r = null;"
+				"  return (o !is null) ? 1.0 : 0.0;"
+				"}",
+				&out)) {
+		return;
+	}
+	CHECK(nearly(out, 1.0));
+
+	// 5) 空句柄安全。
+	if (!run_double(
+				"double main() {"
+				"  Object @n = null;"
+				"  return (n is null) ? 1.0 : 0.0;"
+				"}",
+				&out)) {
+		return;
+	}
+	CHECK(nearly(out, 1.0));
+}
+
 void as_binding_object_enums_and_constants() {
 	double out = 0.0;
 	if (!run_double(

@@ -193,10 +193,11 @@ Error ASBindingObject::register_skeleton(const ASBindingClass &p_class, asIScrip
 		return ERR_CANT_CREATE;
 	}
 
-	// addref/release 对非 RefCounted（如 Node）是空操作：普通节点不该被脚本计数，
-	// 而且脚本里 free() 之后句柄还在，空操作跳板不会去碰已释放的内存。
-	// （把 RefCounted 赋给非 RefCounted 祖先类型的句柄，如 `Object @o = res;`，当前不会补引用，
-	// 这会漏掉一份引用；M2 记录为已知限制，留待 M3 用 ObjectID 做动态校验。）
+	// RefCounted 类：句柄槽里是裸指针，直接按 RefCounted 补/放引用。
+	// 非 RefCounted 类（Node 等）：addref/release 为空操作——脚本持有的 `Object@`/`Node@`
+	// 是弱引用（M3 语义），不保活对象、无跨边界引用环；句柄槽存 ObjectID，对象 free() 后
+	// 解引用经 as_handle_decode 反查为 null 并抛异常，绝不触碰已释放内存。
+	// 需要保活请声明具体 RefCounted 类型（如 `Resource@`）。
 	const bool refcounted = ClassDB::is_parent_class(p_class.name, "RefCounted");
 	asSFuncPtr addref_fn = refcounted ? asFUNCTION(generic_addref) : asFUNCTION(generic_addref_noop);
 	asSFuncPtr release_fn = refcounted ? asFUNCTION(generic_release) : asFUNCTION(generic_release_noop);
@@ -506,11 +507,13 @@ void ASBindingObject::generic_release(asIScriptGeneric *p_gen) {
 }
 
 void ASBindingObject::generic_addref_noop(asIScriptGeneric *p_gen) {
-	// 有意留空：非 RefCounted 对象不参与脚本引用计数。
+	// 有意留空：非 RefCounted 句柄是弱引用，不参与引用计数；且槽里是 ObjectID，
+	// 对象已 free() 时也绝不能解引用。
+	(void)p_gen;
 }
 
 void ASBindingObject::generic_release_noop(asIScriptGeneric *p_gen) {
-	// 有意留空：句柄可能指向已被 free() 的对象，这里绝不能解引用。
+	(void)p_gen;
 }
 
 void ASBindingObject::generic_upcast(asIScriptGeneric *p_gen) {

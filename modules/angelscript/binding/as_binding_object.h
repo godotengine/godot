@@ -48,8 +48,9 @@ public:
 	// RefCounted 语义：句柄持有即加引用。
 	static void generic_addref(asIScriptGeneric *p_gen);
 	static void generic_release(asIScriptGeneric *p_gen);
-	// 非 RefCounted（Node 等）：AS 句柄只是借用，且对象随时可能被 free()。
-	// 这两个跳板绝不能解引用指针，否则会在已释放的内存上调虚函数。
+	// 非 RefCounted（Node 等）：句柄槽里存 ObjectID，不是裸指针。addref/release 有意
+	// 为空操作——脚本持有弱句柄不保活对象、不参与引用计数（M3 语义）；且对象 free() 后
+	// 槽仍存 ObjectID，空操作跳板绝不触碰已释放内存。
 	static void generic_addref_noop(asIScriptGeneric *p_gen);
 	static void generic_release_noop(asIScriptGeneric *p_gen);
 	static void generic_property_get(asIScriptGeneric *p_gen);
