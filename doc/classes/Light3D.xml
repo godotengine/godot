@@ -102,9 +102,12 @@
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" default="1.0">
 			The intensity of the specular blob in objects affected by the light. At [code]0[/code], the light becomes a pure diffuse light. When not baking emission, this can be used to avoid unrealistic reflections when placing lights above an emissive surface.
 		</member>
-		<member name="light_temperature" type="float" setter="set_temperature" getter="get_temperature">
+		<member name="light_temperature" type="float" setter="set_temperature" getter="get_temperature" default="6500.0">
 			Sets the color temperature of the light source, measured in Kelvin. This is used to calculate a correlated color temperature which tints the [member light_color].
 			The sun on a cloudy day is approximately 6500 Kelvin, on a clear day it is between 5500 to 6000 Kelvin, and on a clear day at sunrise or sunset it ranges to around 1850 Kelvin.
+		</member>
+		<member name="light_temperature_enabled" type="bool" setter="set_temperature_enabled" getter="is_temperature_enabled" default="false">
+			If [code]true[/code], [member light_temperature] is used to tint [member light_color]. This only has an effect when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is disabled, as the temperature is always used when physical light units are enabled.
 		</member>
 		<member name="light_volumetric_fog_energy" type="float" setter="set_param" getter="get_param" default="1.0">
 			Secondary multiplier multiplied with [member light_energy] then used with the [Environment]'s volumetric fog (if enabled). If set to [code]0.0[/code], computing volumetric fog will be skipped for this light, which can improve performance for large amounts of lights when volumetric fog is enabled.
