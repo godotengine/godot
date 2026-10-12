@@ -139,13 +139,15 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) ResourceTracker {
 
 struct BindingCache {
 	struct BufferBinding {
-		MTL::Buffer *buffer = nullptr;
-		NS::UInteger offset = 0;
+		MTL::Buffer *buffer;
+		NS::UInteger offset;
 
 		bool operator!=(const BufferBinding &p_other) const {
 			return buffer != p_other.buffer || offset != p_other.offset;
 		}
 	};
+
+	static_assert(std::is_trivially_constructible_v<BufferBinding>);
 
 	LocalVector<MTL::Texture *> textures;
 	LocalVector<MTL::SamplerState *> samplers;
@@ -158,11 +160,14 @@ struct BindingCache {
 	}
 
 private:
+	// Returns true if p_vec was resized, and therefore new elements were initialized.
 	template <typename T>
-	_FORCE_INLINE_ void ensure_size(LocalVector<T> &p_vec, uint32_t p_required) {
+	_FORCE_INLINE_ bool ensure_size(LocalVector<T> &p_vec, uint32_t p_required) {
 		if (p_vec.size() < p_required) {
 			p_vec.resize_initialized(p_required);
+			return true;
 		}
+		return false;
 	}
 
 public:
@@ -238,6 +243,15 @@ public:
 			return true;
 		}
 		return false;
+	}
+
+	_FORCE_INLINE_ void invalidate_buffer(uint32_t p_index) {
+		if (!ensure_size(buffers, p_index + 1)) {
+			buffers.ptr()[p_index] = {
+				.buffer = nullptr,
+				.offset = 0,
+			};
+		}
 	}
 };
 
