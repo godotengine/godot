@@ -1986,6 +1986,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	String architecture = p_preset->get("binary_format/architecture");
 	String binary_to_use = "godot_macos_" + String(p_debug ? "debug" : "release") + "." + architecture;
 	String binary_to_use_uni = "godot_macos_" + String(p_debug ? "debug" : "release") + ".universal";
+	String binary_to_use_base = "godot_macos_" + String(p_debug ? "debug" : "release") + ".";
 
 	String pkg_name;
 	if (String(get_project_setting(p_preset, "application/config/name")) != "") {
@@ -2311,9 +2312,16 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (file.begins_with("Contents/MacOS/godot_")) {
-			if (file != "Contents/MacOS/" + binary_to_use && file != "Contents/MacOS/" + binary_to_use_uni) {
-				ret = unzGoToNextFile(src_pkg_zip);
-				continue; // skip
+			if (architecture == "universal") {
+				if (file.begins_with("Contents/MacOS/" + binary_to_use_base)) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; // skip
+				}
+			} else {
+				if (file != "Contents/MacOS/" + binary_to_use && file != "Contents/MacOS/" + binary_to_use_uni) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; // skip
+				}
 			}
 			found_binary = true;
 			file = "Contents/MacOS/" + pkg_name;
@@ -2429,6 +2437,13 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Unable to create universal bninary \"%s\""), E.key));
 			err = ERR_CANT_CREATE;
 		}
+		// chmod with 0755 if the file is executable.
+		FileAccess::set_unix_permissions(E.key, 0755);
+#ifndef UNIX_ENABLED
+		if (export_format == "app") {
+			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), vformat(TTR("Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set it after transferring the exported .app to macOS or Linux."), "Contents/MacOS/" + E.key.get_file()));
+		}
+#endif
 	}
 	universal_binaries.clear();
 
