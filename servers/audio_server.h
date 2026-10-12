@@ -269,6 +269,7 @@ private:
 	Map<StringName, Bus *> bus_map;
 
 	void _update_bus_effects(int p_bus);
+	void _update_bus_index_cache();
 
 	static AudioServer *singleton;
 
