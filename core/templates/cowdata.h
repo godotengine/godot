@@ -230,7 +230,7 @@ public:
 	_FORCE_INLINE_ operator Span<T>() const _LIFETIME_BOUND_ { return Span<T>(ptr(), size()); }
 	_FORCE_INLINE_ Span<T> span() const _LIFETIME_BOUND_ { return operator Span<T>(); }
 
-	_FORCE_INLINE_ CowData() {}
+	_FORCE_INLINE_ constexpr CowData() {}
 	_FORCE_INLINE_ ~CowData() { _unref(); }
 	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init);
 	_FORCE_INLINE_ explicit CowData(Span<T> p_span);
