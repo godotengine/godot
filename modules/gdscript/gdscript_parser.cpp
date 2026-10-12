@@ -4679,6 +4679,45 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									_ADVANCE_AND_CONSUME_NEWLINES;
 
 								} break;
+								case Variant::NODE_PATH: {
+									if (tokenizer->get_token() != GDScriptTokenizer::TK_IDENTIFIER) {
+										current_export = PropertyInfo();
+										_set_error("Hint expects a Node Type. (e.g. Control or Sprite)");
+										return;
+									}
+
+									String identifier = tokenizer->get_token_identifier();
+
+									if (!ClassDB::class_exists(identifier) && !ScriptServer::is_global_class(identifier)) {
+										current_export = PropertyInfo();
+										_set_error(vformat("Node Type \"%s\" doesn't exist", identifier));
+										return;
+									}
+
+									// There may be an inheritance chain of custom classes before we
+									// reach the true native c++ base. We need the native base in order
+									// to call is_parent_class() to check it is a Node.
+									String native_base = identifier;
+									String current_check = identifier;
+
+									while (ScriptServer::is_global_class(current_check)) {
+										native_base = ScriptServer::get_global_class_native_base(current_check);
+										current_check = ScriptServer::get_global_class_base(current_check);
+									}
+
+									// Verify that the underlying core class is a Node.
+									if (!ClassDB::is_parent_class(native_base, "Node") && native_base != "Node") {
+										current_export = PropertyInfo();
+										_set_error(vformat("\"%s\" does not inherit from Node", identifier));
+										return;
+									}
+
+									current_export.hint_string = identifier;
+									current_export.hint = PROPERTY_HINT_NODE_PATH_VALID_TYPES;
+
+									_ADVANCE_AND_CONSUME_NEWLINES;
+
+								} break;
 								default: {
 									current_export = PropertyInfo();
 									_set_error("Type \"" + Variant::get_type_name(type) + "\" can't take hints.");

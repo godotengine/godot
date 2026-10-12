@@ -133,6 +133,7 @@ class SceneTreeEditor : public Control {
 	bool _is_script_type(const StringName &p_type) const;
 
 	Vector<StringName> valid_types;
+	LocalVector<Ref<Script>> _valid_scripts;
 
 public:
 	void set_filter(const String &p_filter);
