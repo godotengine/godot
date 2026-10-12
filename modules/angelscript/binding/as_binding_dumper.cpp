@@ -69,7 +69,8 @@ String ASBindingDumper::_render_declaration(const ASBindingPlan &p_plan) {
 	out += "// Names match runtime registration exactly:\n";
 	out += "//   - object types require explicit handle syntax: Node @n = Node();\n";
 	out += "//   - enums are named <Scope>_<Enum>;\n";
-	out += "//   - constants are named <Class>_<NAME>.\n";
+	out += "//   - constants are named <Class>_<NAME>;\n";
+	out += "//   - static methods are global functions named <Scope>_<Member>.\n";
 	out += "\n";
 
 	if (!p_plan.get_value_types().is_empty()) {
@@ -116,6 +117,29 @@ String ASBindingDumper::_render_declaration(const ASBindingPlan &p_plan) {
 		out += "\n";
 	}
 
+	// 静态方法本质是全局函数（运行期 RegisterGlobalFunction，声明名 <类名>_<成员名>），
+	// 必须声明在类体外，否则与运行期注册名不符。
+	bool has_static_methods = false;
+	for (const ASBindingClass &c : p_plan.get_classes()) {
+		for (const ASBindingMethod &m : c.methods) {
+			if (m.is_static) {
+				has_static_methods = true;
+				break;
+			}
+		}
+	}
+	if (has_static_methods) {
+		out += "// ---------------- global functions ----------------\n";
+		for (const ASBindingClass &c : p_plan.get_classes()) {
+			for (const ASBindingMethod &m : c.methods) {
+				if (m.is_static) {
+					out += m.as_decl + ";\n";
+				}
+			}
+		}
+		out += "\n";
+	}
+
 	out += "// ---------------- object types ----------------\n";
 	for (const ASBindingClass &c : p_plan.get_classes()) {
 		out += "class " + String(c.name) + " { // extends: " + String(c.parent) + "\n";
@@ -123,6 +147,9 @@ String ASBindingDumper::_render_declaration(const ASBindingPlan &p_plan) {
 			out += "\t// factory: " + String(c.name) + " @x = " + String(c.name) + "();\n";
 		}
 		for (const ASBindingMethod &m : c.methods) {
+			if (m.is_static) {
+				continue; // 静态方法已在全局函数区声明。
+			}
 			out += "\t" + m.as_decl + ";\n";
 		}
 		for (const ASBindingProperty &p : c.properties) {

@@ -42,6 +42,8 @@
 //     所以继承成员会在每个派生类下重复声明（`get_class()` 同时出现在 Object 与 Node 下）。
 // 运行期「属性访问器名已被同类方法占用」的让位不再算偏差：plan 用同一判定在编译期把这类
 // 属性归入 unbound（reason accessor-name-taken），dump 不再声明它们（评审 I1 已解决）。
+// 静态方法运行期是全局函数（RegisterGlobalFunction，名 <类名>_<成员名>），dump 同样放在
+// 类体外的「global functions」区，与类方法区分。
 class ASBindingDumper {
 	static String _render_declaration(const ASBindingPlan &p_plan);
 	static String _render_unbound(const ASBindingPlan &p_plan);

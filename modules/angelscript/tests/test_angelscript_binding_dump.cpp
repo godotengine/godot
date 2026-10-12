@@ -121,6 +121,38 @@ void as_binding_dump_content_matches_runtime() {
 	}
 }
 
+void as_binding_dump_static_methods_are_global() {
+	// 静态方法运行期以 RegisterGlobalFunction 注册（全局名 <类名>_<成员名>），dump 必须
+	// 同样放在类体外，不能在 class 体内声明成实例方法。
+	ASBindingScope scope;
+	scope.whitelist.push_back("Object");
+	scope.whitelist.push_back("Node");
+	ASBindingPlan plan;
+	plan.build(scope);
+
+	const String dir = "user://as_dump_static";
+	REQUIRE(ASBindingDumper::write(plan, dir) == OK);
+	const String decl = _read_all_text(dir.path_join("angelscript_api.d.as"));
+	REQUIRE(!decl.is_empty());
+	if (decl.is_empty()) {
+		return;
+	}
+
+	const int start = decl.find("class Node {");
+	REQUIRE(start >= 0);
+	const int open = decl.find("{", start);
+	REQUIRE(open >= 0);
+	const int close = decl.find("}", open);
+	REQUIRE(close > open);
+	if (start < 0 || open < 0 || close <= open) {
+		return;
+	}
+	const String block = decl.substr(open, close - open);
+	CHECK(block.find("Node_print_orphan_nodes") < 0); // 不得作为类方法声明。
+	CHECK(decl.contains("// ---------------- global functions ----------------"));
+	CHECK(decl.find("void Node_print_orphan_nodes();") >= 0); // 作为全局函数声明。
+}
+
 #include "core/templates/hash_map.h"
 
 void as_binding_dump_accessor_name_taken() {
