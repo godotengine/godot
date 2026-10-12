@@ -2512,23 +2512,35 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_end_label();
 
-	RENDER_TIMESTAMP("Resolve");
-
-	RD::get_singleton()->draw_command_begin_label("Resolve");
-
 	if (rb_data.is_valid() && use_msaa) {
+		RENDER_TIMESTAMP("> Resolve MSAA (Post-Transparent)");
+		RD::get_singleton()->draw_command_begin_label("Resolve MSAA (Post-Transparent)");
+
+		bool compositor_needs_resolved_depth = _compositor_effects_has_flag(p_render_data, RSE::COMPOSITOR_EFFECT_FLAG_ACCESS_RESOLVED_DEPTH, RSE::CompositorEffectCallbackType::COMPOSITOR_EFFECT_CALLBACK_TYPE_POST_TRANSPARENT);
+		bool using_dof = RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes);
+		bool resolve_transparent_depth = (using_taa || using_upscaling || using_dof || compositor_needs_resolved_depth);
 		bool resolve_velocity_buffer = (using_taa || using_upscaling || ce_needs_motion_vectors) && rb->has_velocity_buffer(true);
+
+		RENDER_TIMESTAMP("Resolve Color");
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RD::get_singleton()->texture_resolve_multisample(rb->get_color_msaa(v), rb->get_internal_texture(v));
-			resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
-
-			if (resolve_velocity_buffer) {
+		}
+		if (resolve_transparent_depth) {
+			RENDER_TIMESTAMP("Resolve Depth");
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				resolve_effects->resolve_depth(rb->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[msaa]);
+			}
+		}
+		if (resolve_velocity_buffer) {
+			RENDER_TIMESTAMP("Resolve Velocity Buffer");
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 				RD::get_singleton()->texture_resolve_multisample(rb->get_velocity_buffer(true, v), rb->get_velocity_buffer(false, v));
 			}
 		}
-	}
 
-	RD::get_singleton()->draw_command_end_label();
+		RENDER_TIMESTAMP("< Resolve MSAA (Post-Transparent)");
+		RD::get_singleton()->draw_command_end_label();
+	}
 
 	RD::get_singleton()->draw_command_begin_label("Copy Framebuffer for SSIL/SSR");
 	if (using_ssil || using_ssr) {
