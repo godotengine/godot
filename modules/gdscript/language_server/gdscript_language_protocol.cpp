@@ -228,7 +228,7 @@ void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
 }
 
 void GDScriptLanguageProtocol::poll(int p_limit_usec) {
-	uint64_t target_ticks = OS::get_singleton()->get_ticks_usec() + p_limit_usec;
+	uint64_t target_ticks = OS::get_singleton()->get_ticks_usec_raw() + p_limit_usec;
 
 	if (server->is_connection_available()) {
 		on_client_connected();
@@ -245,7 +245,7 @@ void GDScriptLanguageProtocol::poll(int p_limit_usec) {
 			while (peer->connection->get_available_bytes() > 0) {
 				latest_client_id = *id;
 				err = peer->handle_data();
-				if (err != OK || OS::get_singleton()->get_ticks_usec() >= target_ticks) {
+				if (err != OK || OS::get_singleton()->get_ticks_usec_raw() >= target_ticks) {
 					break;
 				}
 			}

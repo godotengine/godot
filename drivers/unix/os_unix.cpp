@@ -242,7 +242,7 @@ void OS_Unix::delay_usec(uint32_t p_usec) const {
 		requested.tv_nsec = remaining.tv_nsec;
 	}
 }
-uint64_t OS_Unix::get_ticks_usec() const {
+uint64_t OS_Unix::get_ticks_usec_raw() const {
 #if defined(__APPLE__)
 	uint64_t longtime = mach_absolute_time() * _clock_scale;
 #else
