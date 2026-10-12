@@ -35,6 +35,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/callable_mp.h"
+#include "core/os/os.h"
 #include "editor/editor_node.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/scene/editor_scene_tabs.h"
@@ -101,6 +102,7 @@ void ProjectUpgradeTool::prepare_upgrade() {
 }
 
 void ProjectUpgradeTool::begin_upgrade() {
+	is_running = true;
 	EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RUN_ON_RESTART, false);
 	DirAccess::remove_absolute("res://.godot/uid_cache.bin");
 }
@@ -116,6 +118,7 @@ void ProjectUpgradeTool::finish_upgrade() {
 	MeshInstance3D::upgrading_skeleton_compat = true;
 #endif
 
+	int skipped_scenes_count = 0;
 	{
 		paths = EditorSettings::get_singleton()->get_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_SCENES, Vector<String>());
 		EditorProgress ep("uid_upgrade_resave", TTR("Updating Project Scenes"), paths.size());
@@ -123,9 +126,16 @@ void ProjectUpgradeTool::finish_upgrade() {
 		int step = 0;
 		for (const String &file_path : paths) {
 			ep.step(TTR("Re-saving scene:") + " " + file_path, step++);
-			EditorNode::get_singleton()->open_scene(file_path);
-			EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_SAVE_SCENE, true);
-			EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_CLOSE, true);
+			OS::get_singleton()->set_stderr_enabled(false); // Suppress loading errors.
+			Error err = EditorNode::get_singleton()->open_scene(file_path);
+			OS::get_singleton()->set_stderr_enabled(true);
+			if (err == ERR_FILE_MISSING_DEPENDENCIES) {
+				ERR_PRINT(vformat("Upgrade of %s was skipped because of broken dependencies.", file_path));
+				skipped_scenes_count++;
+			} else {
+				EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_SAVE_SCENE, true);
+				EditorNode::get_singleton()->trigger_menu_option(EditorNode::SCENE_CLOSE, true);
+			}
 		}
 		EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_SCENES, Variant());
 	}
@@ -147,6 +157,13 @@ void ProjectUpgradeTool::finish_upgrade() {
 			}
 		}
 		EditorSettings::get_singleton()->set_project_metadata(META_PROJECT_UPGRADE_TOOL, META_RESAVE_RESOURCES, Variant());
+	}
+
+	is_running = false;
+	if (skipped_scenes_count > 0) {
+		String msg = TTRN("%d scene failed to be upgraded because of broken dependencies.", "%d scenes failed to be upgraded because of broken dependencies.", skipped_scenes_count);
+		msg += "\n" + TTR("Check Output logs for more details.");
+		EditorNode::get_singleton()->show_warning(vformat(msg, skipped_scenes_count), TTRC("Project Upgrade Tool"));
 	}
 
 	emit_signal(UPGRADE_FINISHED);
