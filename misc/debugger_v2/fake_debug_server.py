@@ -103,10 +103,7 @@ def _encode_variant(value: Any) -> bytes:
         padding = b"\0" * ((-len(encoded)) % 4)
         return struct.pack("<II", TYPE_STRING, len(encoded)) + encoded + padding
     if isinstance(value, (list, tuple)):
-        return (
-            struct.pack("<II", TYPE_ARRAY, len(value))
-            + b"".join(_encode_variant(item) for item in value)
-        )
+        return struct.pack("<II", TYPE_ARRAY, len(value)) + b"".join(_encode_variant(item) for item in value)
     raise ProtocolError(f"cannot encode Python type {type(value).__name__}")
 
 
@@ -244,9 +241,7 @@ def _exercise_timeout(control: socket.socket, hello: list[Any], result: dict[str
     if diagnostic[10] != ["control_timeout_auto_continue"]:
         raise ProtocolError(f"unexpected timeout diagnostic: {diagnostic[10]}")
     if not 900.0 <= result["timeout_recovery_msec"] < 1250.0:
-        raise ProtocolError(
-            f"heartbeat timeout recovery took {result['timeout_recovery_msec']:.2f} ms"
-        )
+        raise ProtocolError(f"heartbeat timeout recovery took {result['timeout_recovery_msec']:.2f} ms")
 
 
 def _exercise_lazy_data(
@@ -443,19 +438,13 @@ def _exercise_executable_lines(
             elif packet[9] in ("error", "noncontinuable_error", "diagnostic", "output"):
                 diagnostics.append([packet[9], packet[10]])
     if stopped is None:
-        raise ProtocolError(
-            f"executable-line fixture did not stop; diagnostics={diagnostics}"
-        )
+        raise ProtocolError(f"executable-line fixture did not stop; diagnostics={diagnostics}")
     stop_id = stopped[8]
     control_sequence = 2
     data_sequence = 2
     request_id = 10
     data_request_id = 100
-    actual = [
-        _request_top_frame_line(
-            data, data_hello, data_sequence, data_request_id, stop_id
-        )
-    ]
+    actual = [_request_top_frame_line(data, data_hello, data_sequence, data_request_id, stop_id)]
 
     for _ in range(len(EXECUTABLE_LINE_STOPS) - 1):
         _send_packet(
@@ -473,25 +462,18 @@ def _exercise_executable_lines(
         try:
             stopped = _receive_envelope(control, "stopped")
         except ProtocolError as error:
-            raise ProtocolError(
-                f"fixture exited before the expected stop sequence; stops={actual}"
-            ) from error
+            raise ProtocolError(f"fixture exited before the expected stop sequence; stops={actual}") from error
         stop_id = stopped[8]
         control_sequence += 1
         request_id += 1
         data_sequence += 1
         data_request_id += 1
-        actual.append(
-            _request_top_frame_line(
-                data, data_hello, data_sequence, data_request_id, stop_id
-            )
-        )
+        actual.append(_request_top_frame_line(data, data_hello, data_sequence, data_request_id, stop_id))
 
     result["executable_line_stops"] = actual
     if actual != EXECUTABLE_LINE_STOPS:
         raise ProtocolError(
-            "step sequence included a non-executable line: "
-            f"expected {EXECUTABLE_LINE_STOPS}, got {actual}"
+            "step sequence included a non-executable line: " f"expected {EXECUTABLE_LINE_STOPS}, got {actual}"
         )
 
     _send_packet(
@@ -525,9 +507,7 @@ def _exercise_call_stepping(
 
     def capture(expected_function: str, expected_line: int, expected_caller: bool) -> None:
         nonlocal data_sequence, data_request_id
-        frames = _request_stack(
-            data, data_hello, data_sequence, data_request_id, stop_id
-        )
+        frames = _request_stack(data, data_hello, data_sequence, data_request_id, stop_id)
         top = (str(frames[0][3]), int(frames[0][2]))
         actual.append(top)
         if top != (expected_function, expected_line):
@@ -705,19 +685,17 @@ def run_test(godot: Path, scenario: str) -> None:
 
     with tempfile.TemporaryDirectory(prefix="godot-debug-v2-") as temp_directory:
         project = Path(temp_directory)
-        (project / "project.godot").write_text(
-            '[application]\nconfig/name="debug-v2-handshake"\n', encoding="utf-8"
-        )
+        (project / "project.godot").write_text('[application]\nconfig/name="debug-v2-handshake"\n', encoding="utf-8")
         if scenario == "backpressure":
             script = (
                 "extends SceneTree\n"
                 "var total = 0\n"
                 "func _init():\n"
-                "    call_deferred(\"_exercise\")\n"
+                '    call_deferred("_exercise")\n'
                 "func _exercise():\n"
                 "    for _index in range(4000):\n"
-                "        print(\"x\")\n"
-                "    yield(self, \"idle_frame\")\n"
+                '        print("x")\n'
+                '    yield(self, "idle_frame")\n'
                 "    for index in range(1000000):\n"
                 "        total += index\n"
                 "    quit()\n"
@@ -730,7 +708,7 @@ def run_test(godot: Path, scenario: str) -> None:
                 "extends SceneTree\n"
                 "var total = 0\n"
                 "func _init():\n"
-                "    call_deferred(\"_exercise\")\n"
+                '    call_deferred("_exercise")\n'
                 "func _exercise():\n"
                 "    for index in range(1000000):\n"
                 "        total += index\n"
@@ -740,9 +718,9 @@ def run_test(godot: Path, scenario: str) -> None:
             script = (
                 "extends SceneTree\n"
                 "func _init():\n"
-                "    call_deferred(\"_wait\")\n"
+                '    call_deferred("_wait")\n'
                 "func _wait():\n"
-                "    yield(create_timer(0.75), \"timeout\")\n"
+                '    yield(create_timer(0.75), "timeout")\n'
                 "    quit()\n"
             )
         elif scenario == "executable_lines":
@@ -766,22 +744,17 @@ def run_test(godot: Path, scenario: str) -> None:
         elif scenario == "call_stepping":
             command.extend(["--breakpoints", "res://main.gd:21"])
         command.extend(["--script", "main.gd"])
-        completed = subprocess.run(
-            command, capture_output=True, text=True, timeout=15.0, check=False
-        )
+        completed = subprocess.run(command, capture_output=True, text=True, timeout=15.0, check=False)
 
     server.join(timeout=6.0)
     if server.is_alive():
         raise ProtocolError("fake server did not finish")
     if "error" in result:
         raise ProtocolError(
-            f"{result['error']}\nGodot stdout:\n{completed.stdout}\n"
-            f"Godot stderr:\n{completed.stderr}"
+            f"{result['error']}\nGodot stdout:\n{completed.stdout}\n" f"Godot stderr:\n{completed.stderr}"
         ) from result["error"]
     if completed.returncode != 0:
-        raise ProtocolError(
-            f"Godot exited with {completed.returncode}:\n{completed.stdout}\n{completed.stderr}"
-        )
+        raise ProtocolError(f"Godot exited with {completed.returncode}:\n{completed.stdout}\n{completed.stderr}")
 
     session_id = result["hellos"][0][3]
     if scenario == "control":
@@ -793,20 +766,11 @@ def run_test(godot: Path, scenario: str) -> None:
             f"(ack_p95={result['ack_p95_msec']:.2f} ms, recovery={recovery_msec:.2f} ms)"
         )
     elif scenario == "timeout":
-        print(
-            "debug protocol v2 heartbeat recovery: PASS "
-            f"(recovery={result['timeout_recovery_msec']:.2f} ms)"
-        )
+        print("debug protocol v2 heartbeat recovery: PASS " f"(recovery={result['timeout_recovery_msec']:.2f} ms)")
     elif scenario == "reconnect":
-        print(
-            "debug protocol v2 nonblocking reconnect: PASS "
-            f"(generation={result['reconnected_generation']})"
-        )
+        print("debug protocol v2 nonblocking reconnect: PASS " f"(generation={result['reconnected_generation']})")
     elif scenario == "data_disconnect":
-        print(
-            "debug protocol v2 data-channel recovery: PASS "
-            f"(generation={result['reconnected_generation']})"
-        )
+        print("debug protocol v2 data-channel recovery: PASS " f"(generation={result['reconnected_generation']})")
     elif scenario == "lazy":
         print(
             "debug protocol v2 lazy variables: PASS "
@@ -823,15 +787,9 @@ def run_test(godot: Path, scenario: str) -> None:
             f"dropped={result['pressure_dropped']})"
         )
     elif scenario == "executable_lines":
-        print(
-            "debug protocol v2 executable-line stepping: PASS "
-            f"(stops={result['executable_line_stops']})"
-        )
+        print("debug protocol v2 executable-line stepping: PASS " f"(stops={result['executable_line_stops']})")
     elif scenario == "call_stepping":
-        print(
-            "debug protocol v2 same-line call stepping: PASS "
-            f"(stops={result['call_stepping_stops']})"
-        )
+        print("debug protocol v2 same-line call stepping: PASS " f"(stops={result['call_stepping_stops']})")
     else:
         print(f"debug protocol v2 dual-channel handshake: PASS (session={session_id})")
 
@@ -841,7 +799,17 @@ def main() -> int:
     parser.add_argument("--godot", required=True, type=Path)
     parser.add_argument(
         "--scenario",
-        choices=("handshake", "control", "timeout", "reconnect", "data_disconnect", "lazy", "backpressure", "executable_lines", "call_stepping"),
+        choices=(
+            "handshake",
+            "control",
+            "timeout",
+            "reconnect",
+            "data_disconnect",
+            "lazy",
+            "backpressure",
+            "executable_lines",
+            "call_stepping",
+        ),
         default="handshake",
     )
     arguments = parser.parse_args()

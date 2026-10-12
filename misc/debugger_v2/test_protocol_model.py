@@ -24,9 +24,9 @@ def main() -> int:
     header = HEADER.read_text(encoding="utf-8")
     source = SOURCE.read_text(encoding="utf-8")
 
-    require(header, r'class DebugProtocolV2\s*\{', "protocol class")
-    require(header, r'MAJOR\s*=\s*2', "major version")
-    require(header, r'MINOR\s*=\s*0', "minor version")
+    require(header, r"class DebugProtocolV2\s*\{", "protocol class")
+    require(header, r"MAJOR\s*=\s*2", "major version")
+    require(header, r"MINOR\s*=\s*0", "minor version")
 
     envelope_fields = [
         "session_id",
@@ -39,9 +39,9 @@ def main() -> int:
         "payload",
     ]
     for field in envelope_fields:
-        require(header, rf'\b{field}\b', f"envelope field {field}")
+        require(header, rf"\b{field}\b", f"envelope field {field}")
 
-    states = re.findall(r'STATE_[A-Z_]+', header)
+    states = re.findall(r"STATE_[A-Z_]+", header)
     required_states = {
         "STATE_DISCONNECTED",
         "STATE_CONNECTING",
@@ -56,9 +56,9 @@ def main() -> int:
     if len(states) != len(set(states)):
         raise AssertionError("state names must be unique")
 
-    require(source, r'DebugProtocolV2::encode', "envelope encoder")
-    require(source, r'DebugProtocolV2::decode', "envelope decoder")
-    require(source, r'GDDBG2', "protocol magic")
+    require(source, r"DebugProtocolV2::encode", "envelope encoder")
+    require(source, r"DebugProtocolV2::decode", "envelope decoder")
+    require(source, r"GDDBG2", "protocol magic")
 
     print("debug protocol v2 model contract: PASS")
     return 0

@@ -50,7 +50,7 @@ def run(godot: Path) -> None:
             "tool\n"
             "extends EditorPlugin\n"
             "func _find_debugger(node):\n"
-            "    if node.has_method(\"debug_next\") and node.has_method(\"debug_continue\"):\n"
+            '    if node.has_method("debug_next") and node.has_method("debug_continue"):\n'
             "        return node\n"
             "    for child in node.get_children():\n"
             "        var found = _find_debugger(child)\n"
@@ -58,16 +58,16 @@ def run(godot: Path) -> None:
             "            return found\n"
             "    return null\n"
             "func _enter_tree():\n"
-            "    call_deferred(\"_run_smoke\")\n"
+            '    call_deferred("_run_smoke")\n'
             "func _run_smoke():\n"
             "    get_editor_interface().play_main_scene()\n"
-            "    yield(get_tree().create_timer(0.5), \"timeout\")\n"
+            '    yield(get_tree().create_timer(0.5), "timeout")\n'
             "    var debugger = _find_debugger(get_tree().root)\n"
             "    for _index in range(100):\n"
             "        if debugger:\n"
             "            debugger.debug_next()\n"
-            "        yield(get_tree().create_timer(0.03), \"timeout\")\n"
-            "    yield(get_tree().create_timer(0.5), \"timeout\")\n"
+            '        yield(get_tree().create_timer(0.03), "timeout")\n'
+            '    yield(get_tree().create_timer(0.5), "timeout")\n'
             "    get_tree().quit()\n",
             encoding="utf-8",
         )
@@ -94,8 +94,12 @@ def run(godot: Path) -> None:
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
         except subprocess.TimeoutExpired as error:
-            partial_stdout = error.stdout.decode(errors="replace") if isinstance(error.stdout, bytes) else (error.stdout or "")
-            partial_stderr = error.stderr.decode(errors="replace") if isinstance(error.stderr, bytes) else (error.stderr or "")
+            partial_stdout = (
+                error.stdout.decode(errors="replace") if isinstance(error.stdout, bytes) else (error.stdout or "")
+            )
+            partial_stderr = (
+                error.stderr.decode(errors="replace") if isinstance(error.stderr, bytes) else (error.stderr or "")
+            )
             raise RuntimeError(f"custom editor timed out:\n{partial_stdout}\n{partial_stderr}") from error
 
     output = completed.stdout + completed.stderr
