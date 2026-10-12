@@ -106,6 +106,15 @@ ASBindingType ASBindingDecl::resolve(const PropertyInfo &p_info) {
 		out.kind = owning ? AS_KIND_OBJECT_OWNING : AS_KIND_OBJECT_NONOWNING;
 		return out;
 	}
+	if (p_info.type == Variant::NIL) {
+		// AS 无法表达「void 值」：NIL 作为形参/属性类型只可能是 Variant
+		// （上游约定参数不能是 void，故不需要 NIL_IS_VARIANT 标记）。
+		// 返回值是否为 void 由 render_signature 在调用 resolve 前判定。
+		out.valid = true;
+		out.as_name = "Variant";
+		out.kind = AS_KIND_VALUE;
+		return out;
+	}
 	String as = variant_type_to_as(p_info.type);
 	if (as.is_empty()) {
 		// 只写裸类型名，由调用方按场景拼 reason 前缀（return/param/property）。
@@ -146,17 +155,12 @@ static String render_param(const ASBindingType &t) {
 // 渲染返回类型与形参表（method_to_decl / static_method_to_decl 的公共部分）。
 static bool render_signature(const MethodInfo &p_info, const String &p_name, bool p_is_const, String *r_decl, String *r_reason) {
 	String ret;
-	if (p_info.return_val.type == Variant::NIL) {
-		// 真正返回 Variant 的方法（property_info 带 NIL_IS_VARIANT）在 M2 没有可编组的
-		// 返回类型：声明成 void 会静默丢弃返回值（半注册），必须整体归为 unbound。
-		if (p_info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
-			if (r_reason) {
-				*r_reason = "unsupported-return-type: Variant";
-			}
-			return false;
-		}
+	if (p_info.return_val.type == Variant::NIL && !(p_info.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
+		// 真 void：NIL 且未标记 NIL_IS_VARIANT。
 		ret = "void";
 	} else {
+		// 真 Variant 返回（NIL + NIL_IS_VARIANT）与其它类型统一走 resolve，
+		// AS 侧声明为 Variant，由跳板用已注册的 Variant 拷贝构造写回。
 		ASBindingType rt = ASBindingDecl::resolve(p_info.return_val);
 		if (!rt.valid) {
 			if (r_reason) {

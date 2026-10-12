@@ -36,7 +36,9 @@
 
 void as_binding_visibility_project_setting_applies();
 void as_binding_visibility_utility_function_clampf();
+void as_binding_visibility_utility_variant_function();
 void as_binding_visibility_static_method_global();
+void as_binding_visibility_variant_abi();
 
 #ifndef ANGELSCRIPT_BINDING_VISIBILITY_TESTS_IMPL
 
@@ -46,8 +48,14 @@ TEST_CASE("[AngelScript] binding visibility project setting applies") {
 TEST_CASE("[AngelScript] binding visibility utility function clampf") {
 	as_binding_visibility_utility_function_clampf();
 }
+TEST_CASE("[AngelScript] binding visibility Variant utility function") {
+	as_binding_visibility_utility_variant_function();
+}
 TEST_CASE("[AngelScript] binding visibility static method as global function") {
 	as_binding_visibility_static_method_global();
+}
+TEST_CASE("[AngelScript] binding visibility marshals Variant parameters and returns") {
+	as_binding_visibility_variant_abi();
 }
 
 #endif // ANGELSCRIPT_BINDING_VISIBILITY_TESTS_IMPL

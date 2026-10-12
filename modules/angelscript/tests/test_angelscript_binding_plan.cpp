@@ -106,6 +106,44 @@ void as_binding_plan_binds_static_methods() {
 	CHECK(found);
 }
 
+void as_binding_plan_binds_variant_abi() {
+	ASBindingPlan plan;
+	plan.build(ASBindingScope());
+
+	// Variant 返回/形参不再因为 "unsupported-...: Variant" 落入未绑定清单。
+	// 清单很大，聚合成计数断言。
+	int variant_reasons = 0;
+	for (const ASUnboundEntry &e : plan.get_unbound()) {
+		if (e.reason.begins_with("unsupported-return-type: Variant") ||
+				e.reason.begins_with("unsupported-param-type: Variant")) {
+			variant_reasons++;
+		}
+	}
+	CHECK(variant_reasons == 0);
+
+	// Object::set_meta(const StringName&, Variant) 与 Object::get_meta(...) -> Variant。
+	bool found_set = false;
+	bool found_get = false;
+	for (const ASBindingClass &c : plan.get_classes()) {
+		if (c.name != StringName("Object")) {
+			continue;
+		}
+		for (const ASBindingMethod &m : c.methods) {
+			if (m.name == StringName("set_meta")) {
+				found_set = true;
+				CHECK(m.as_decl == "void set_meta(const StringName &in, const Variant &in)");
+			} else if (m.name == StringName("get_meta")) {
+				found_get = true;
+				CHECK(m.return_kind == AS_KIND_VALUE);
+				CHECK(m.return_type == Variant::NIL);
+				CHECK(m.as_decl.begins_with("Variant get_meta("));
+			}
+		}
+	}
+	CHECK(found_set);
+	CHECK(found_get);
+}
+
 void as_binding_plan_whitelist_keeps_ancestors() {
 	ASBindingScope scope;
 	scope.whitelist.push_back("Sprite2D"); // 期望连带保留 Node2D/CanvasItem/Node/Object。

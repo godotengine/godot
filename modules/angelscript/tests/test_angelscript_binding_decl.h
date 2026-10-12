@@ -39,6 +39,7 @@ void as_binding_decl_scalar_mapping();
 void as_binding_decl_object_and_enum();
 void as_binding_decl_method_forms();
 void as_binding_decl_static_method_forms();
+void as_binding_decl_variant_abi();
 void as_binding_decl_rejects_vararg_and_unknown();
 
 #ifndef ANGELSCRIPT_BINDING_DECL_TESTS_IMPL
@@ -54,6 +55,9 @@ TEST_CASE("[AngelScript] binding decl renders method declarations") {
 }
 TEST_CASE("[AngelScript] binding decl renders static methods as global functions") {
 	as_binding_decl_static_method_forms();
+}
+TEST_CASE("[AngelScript] binding decl marshals Variant parameters and returns") {
+	as_binding_decl_variant_abi();
 }
 TEST_CASE("[AngelScript] binding decl rejects vararg") {
 	as_binding_decl_rejects_vararg_and_unknown();

@@ -103,14 +103,14 @@ void as_binding_decl_method_forms() {
 	CHECK_FALSE(ASBindingDecl::method_to_decl(stat, &decl, &reason));
 	CHECK(reason == "static-method");
 
-	// 真正返回 Variant 的方法（usage 带 NIL_IS_VARIANT）在 M2 不能退化成 void：
-	// 那会静默丢弃返回值（半注册），必须整体归为 unbound。
+	// 真正返回 Variant 的方法（usage 带 NIL_IS_VARIANT）：AS 侧声明为 Variant，
+	// 由通用跳板用已注册的 Variant 拷贝构造写回返回值（B4）。
 	MethodInfo vari;
 	vari.name = "get_indexed";
 	vari.return_val = make_pi(Variant::NIL);
 	vari.return_val.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT;
-	CHECK_FALSE(ASBindingDecl::method_to_decl(vari, &decl, &reason));
-	CHECK(reason == "unsupported-return-type: Variant");
+	REQUIRE(ASBindingDecl::method_to_decl(vari, &decl, &reason));
+	CHECK(decl == "Variant get_indexed()");
 
 	// 真 void 返回仍然必须可注册。
 	MethodInfo no_ret;
@@ -159,6 +159,42 @@ void as_binding_decl_static_method_forms() {
 	// method_to_decl 对静态方法仍拒绝：既有契约不变，静态方法必须走 static_method_to_decl。
 	CHECK_FALSE(ASBindingDecl::method_to_decl(stat, &decl, &reason));
 	CHECK(reason == "static-method");
+}
+
+void as_binding_decl_variant_abi() {
+	// Variant 形参：PropertyInfo.type == NIL。上游约定参数不可能是 void，
+	// 因此 NIL 形参唯一含义就是 Variant，渲染为 `const Variant &in`。
+	MethodInfo set_meta;
+	set_meta.name = "set_meta";
+	set_meta.return_val = make_pi(Variant::NIL); // 真 void
+	set_meta.arguments.push_back(make_pi(Variant::STRING_NAME));
+	set_meta.arguments.push_back(make_pi(Variant::NIL));
+	String decl, reason;
+	REQUIRE(ASBindingDecl::method_to_decl(set_meta, &decl, &reason));
+	CHECK(decl == "void set_meta(const StringName &in, const Variant &in)");
+
+	// resolve() 对 NIL 给出合法的 Variant 分类，供跳板按 AS_KIND_VALUE 编组。
+	ASBindingType t = ASBindingDecl::resolve(make_pi(Variant::NIL));
+	CHECK(t.valid);
+	CHECK(t.as_name == "Variant");
+	CHECK(t.kind == AS_KIND_VALUE);
+
+	// 无 NIL_IS_VARIANT 的 NIL 返回仍是 void：不能把所有 NIL 都当成 Variant。
+	MethodInfo no_ret;
+	no_ret.name = "queue_free";
+	no_ret.return_val = make_pi(Variant::NIL);
+	REQUIRE(ASBindingDecl::method_to_decl(no_ret, &decl, &reason));
+	CHECK(decl == "void queue_free()");
+
+	// 静态方法（注册为全局函数）的 Variant 形参/返回同样按通用规则渲染。
+	MethodInfo stat;
+	stat.name = "interpolate_value";
+	stat.return_val = make_pi(Variant::NIL);
+	stat.return_val.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT;
+	stat.arguments.push_back(make_pi(Variant::NIL));
+	stat.flags = METHOD_FLAG_STATIC;
+	REQUIRE(ASBindingDecl::static_method_to_decl(stat, StringName("Tween"), &decl, &reason));
+	CHECK(decl == "Variant Tween_interpolate_value(const Variant &in)");
 }
 
 void as_binding_decl_rejects_vararg_and_unknown() {

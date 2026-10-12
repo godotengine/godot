@@ -120,8 +120,12 @@ void register_global_functions(asIScriptEngine *p_engine) {
 
 		ASUtilityBinding *binding = memnew(ASUtilityBinding);
 		binding->name = name;
-		binding->return_kind = (info.return_val.type == Variant::NIL) ? AS_KIND_VOID : ASBindingDecl::resolve(info.return_val).kind;
-		binding->return_type = info.return_val.type;
+		// 与 plan 同一判据：真 void（NIL 且无 NIL_IS_VARIANT）不编组；真 Variant 走 Variant 拷贝构造。
+		const PropertyInfo &rv = info.return_val;
+		binding->return_kind = (rv.type == Variant::NIL && !(rv.usage & PROPERTY_USAGE_NIL_IS_VARIANT))
+				? AS_KIND_VOID
+				: ASBindingDecl::resolve(rv).kind;
+		binding->return_type = rv.type;
 		for (const PropertyInfo &arg : info.arguments) {
 			binding->param_kinds.push_back(ASBindingDecl::resolve(arg).kind);
 			binding->param_types.push_back(arg.type);

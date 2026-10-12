@@ -219,6 +219,20 @@ void ASBindingPlan::_build_class(const StringName &p_class, const HashSet<String
 			continue;
 		}
 
+		// 虚方法（GDVIRTUAL / Object 核心虚方法）在 ClassDB 里只有 MethodInfo，没有可由 AS
+		// 直接调用的实现，必须归入 unbound。注意不能用 get_method()==nullptr 判断：同名实
+		// 方法存在时它会返回实方法的指针，从而把虚方法误当成可绑定项，注册出「同名同参、仅
+		// 返回类型不同」的重载（B4 解禁 Variant 形参/返回后撞出 asALREADY_REGISTERED 并永久
+		// 污染引擎）。必须按 METHOD_FLAG_VIRTUAL 判定。
+		if (mi.flags & METHOD_FLAG_VIRTUAL) {
+			ASUnboundEntry e;
+			e.owner = p_class;
+			e.member = String(mi.name);
+			e.reason = "virtual";
+			unbound.push_back(e);
+			continue;
+		}
+
 		ASBindingMethod m;
 		m.name = String(mi.name);
 		m.as_decl = decl;
@@ -234,8 +248,12 @@ void ASBindingPlan::_build_class(const StringName &p_class, const HashSet<String
 			continue;
 		}
 		m.is_static = (mi.flags & METHOD_FLAG_STATIC);
-		m.return_kind = (mi.return_val.type == Variant::NIL) ? AS_KIND_VOID : ASBindingDecl::resolve(mi.return_val).kind;
-		m.return_type = mi.return_val.type;
+		// 真 void（NIL 且无 NIL_IS_VARIANT）不编组返回值；其余（含真 Variant）按 resolve 的 kind。
+		const PropertyInfo &rv = mi.return_val;
+		m.return_kind = (rv.type == Variant::NIL && !(rv.usage & PROPERTY_USAGE_NIL_IS_VARIANT))
+				? AS_KIND_VOID
+				: ASBindingDecl::resolve(rv).kind;
+		m.return_type = rv.type;
 		for (const PropertyInfo &pi : mi.arguments) {
 			m.param_kinds.push_back(ASBindingDecl::resolve(pi).kind);
 			m.param_types.push_back(pi.type);

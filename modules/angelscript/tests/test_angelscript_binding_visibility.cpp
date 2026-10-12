@@ -118,10 +118,23 @@ void as_binding_visibility_project_setting_applies() {
 }
 
 void as_binding_visibility_utility_function_clampf() {
-	// clamp 这类全 Variant 签名的工具函数在 AS 侧不可表达（无 double→Variant 隐式转换），
-	// 这里用具体标量签名的 clampf 验证 @GlobalScope 工具函数接线。
+	// 具体标量签名的 clampf 验证 @GlobalScope 工具函数接线。
 	double out = 0.0;
 	REQUIRE(run_double("double main() { return clampf(5.0, 0.0, 1.0); }", &out));
+	CHECK(nearly(out, 1.0));
+}
+
+void as_binding_visibility_utility_variant_function() {
+	// B4 解禁 Variant 形参/返回后，全 Variant 签名的工具函数（clamp）也随之外接
+	// （此前因签名含 Variant 被跳过）。脚本侧没有 double→Variant 隐式转换，必须显式构造 Variant。
+	double out = 0.0;
+	REQUIRE(run_double(
+			"double main() {"
+			" Variant v = clamp(Variant(5.0), Variant(0.0), Variant(1.0));"
+			" double d = v;"
+			" return d;"
+			"}",
+			&out));
 	CHECK(nearly(out, 1.0));
 }
 
@@ -130,4 +143,21 @@ void as_binding_visibility_static_method_global() {
 	double out = 0.0;
 	REQUIRE(run_double("double main() { return Thread_is_main_thread() ? 1.0 : 0.0; }", &out));
 	CHECK(nearly(out, 1.0));
+}
+
+void as_binding_visibility_variant_abi() {
+	// Variant 形参/返回 ABI 的端到端验证：Object::set_meta / get_meta 是常用的
+	// 带 Variant 形参且不依赖其它新绑定的方法。Resource 是 RefCounted，拥有句柄
+	// 在作用域结束后释放，不会在退出时泄漏。
+	double out = 0.0;
+	REQUIRE(run_double(
+			"double main() {"
+			" Resource r;"
+			" r.set_meta(StringName(\"k\"), Variant(3.0));"
+			" Variant v = r.get_meta(StringName(\"k\"), Variant(0.0));"
+			" double d = v;"
+			" return d;"
+			"}",
+			&out));
+	CHECK(nearly(out, 3.0));
 }

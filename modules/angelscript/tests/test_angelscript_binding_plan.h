@@ -37,6 +37,7 @@
 void as_binding_plan_default_scope_is_ordered();
 void as_binding_plan_collects_unbound_vararg();
 void as_binding_plan_binds_static_methods();
+void as_binding_plan_binds_variant_abi();
 void as_binding_plan_whitelist_keeps_ancestors();
 void as_binding_plan_blacklist_wins();
 
@@ -50,6 +51,9 @@ TEST_CASE("[AngelScript] binding plan collects unbound vararg methods") {
 }
 TEST_CASE("[AngelScript] binding plan binds static methods as global functions") {
 	as_binding_plan_binds_static_methods();
+}
+TEST_CASE("[AngelScript] binding plan marshals Variant parameters and returns") {
+	as_binding_plan_binds_variant_abi();
 }
 TEST_CASE("[AngelScript] binding plan whitelist keeps ancestors") {
 	as_binding_plan_whitelist_keeps_ancestors();
