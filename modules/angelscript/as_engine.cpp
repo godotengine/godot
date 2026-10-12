@@ -64,6 +64,20 @@ void ASEngine::_message_callback(const asSMessageInfo *p_msg, void *p_param) {
 	}
 }
 
+void ASEngine::_diag_message_callback(const asSMessageInfo *p_msg, void *p_param) {
+	Vector<ASMessage> *msgs = static_cast<Vector<ASMessage> *>(p_param);
+	if (msgs == nullptr || p_msg == nullptr) {
+		return;
+	}
+	ASMessage m;
+	m.type = (int)p_msg->type;
+	m.row = (int)p_msg->row;
+	m.column = (int)p_msg->col;
+	m.section = String(p_msg->section ? p_msg->section : "");
+	m.message = String(p_msg->message ? p_msg->message : "");
+	msgs->push_back(m);
+}
+
 asIScriptContext *ASEngine::_request_context(asIScriptEngine *p_engine, void *p_param) {
 	if (p_engine == nullptr) {
 		return nullptr;
@@ -344,6 +358,51 @@ bool ASEngine::compile_module(const String &p_name, const String &p_source, Stri
 	}
 	engine->DiscardModule(module_cstr.get_data());
 	return false;
+}
+
+bool ASEngine::compile_for_diagnostics(const String &p_name, const String &p_source, Vector<ASMessage> *r_messages, Vector<String> *r_functions) {
+	if (!ensure_initialized()) {
+		if (r_messages != nullptr) {
+			ASMessage m;
+			m.type = asMSGTYPE_ERROR;
+			m.message = "AngelScript engine failed to initialize.";
+			r_messages->push_back(m);
+		}
+		return false;
+	}
+
+	// 编辑器诊断只需要结构化消息，不触发惰性补绑定；用独立回调收集后恢复常驻回调。
+	Vector<ASMessage> msgs;
+	engine->SetMessageCallback(asFUNCTION(_diag_message_callback), &msgs, asCALL_CDECL);
+
+	const CharString name = p_name.utf8();
+	const CharString source = p_source.utf8();
+	bool ok = false;
+	asIScriptModule *mod = engine->GetModule(name.get_data(), asGM_ALWAYS_CREATE);
+	if (mod != nullptr) {
+		mod->AddScriptSection("editor", source.get_data());
+		ok = mod->Build() >= 0;
+		if (ok && r_functions != nullptr) {
+			const asUINT function_count = mod->GetFunctionCount();
+			for (asUINT i = 0; i < function_count; i++) {
+				asIScriptFunction *func = mod->GetFunctionByIndex(i);
+				// 只列出全局命名空间里的自由函数（供编辑器大纲），排除类方法。
+				// 注意：AS 对无命名空间的函数返回「非空指针的空串」而非 nullptr。
+				const char *func_ns = func != nullptr ? func->GetNamespace() : nullptr;
+				if (func == nullptr || func->GetObjectType() != nullptr || (func_ns != nullptr && func_ns[0] != '\0')) {
+					continue;
+				}
+				r_functions->push_back(String(func->GetName()));
+			}
+		}
+		engine->DiscardModule(name.get_data());
+	}
+
+	engine->SetMessageCallback(asFUNCTION(_message_callback), this, asCALL_CDECL);
+	if (r_messages != nullptr) {
+		r_messages->append_array(msgs);
+	}
+	return ok;
 }
 
 asIScriptContext *ASEngine::create_context() {

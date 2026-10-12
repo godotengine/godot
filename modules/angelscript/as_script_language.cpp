@@ -39,6 +39,8 @@
 #include "core/debugger/script_debugger.h"
 #include "core/object/class_db.h"
 #include "core/object/editor_language.h"
+#include "core/templates/hash_map.h"
+#include "core/templates/hash_set.h"
 
 #include <angelscript.h>
 
@@ -236,11 +238,153 @@ void ASScriptLanguage::reload_tool_script(const Ref<Script> &p_script) {
 }
 
 #ifdef TOOLS_ENABLED
+namespace {
+
+bool _as_is_identifier_char(char32_t p_char) {
+	return (p_char >= 'A' && p_char <= 'Z') || (p_char >= 'a' && p_char <= 'z') || (p_char >= '0' && p_char <= '9') || p_char == '_';
+}
+
+// 编辑器语言服务：validate 复用 AS 编译器诊断；complete_code 对引擎已注册的
+// 全局符号做前缀匹配。两者都不改动引擎状态（validate 用临时模块，编译后即弃）。
+class ASEditorLanguage : public EditorLanguage {
+public:
+	bool validate(const String &p_code, const String &p_path, List<ScriptError> *r_errors, List<Warning> *r_warnings, List<String> *r_functions, HashSet<int> *) const override {
+		Vector<ASEngine::ASMessage> messages;
+		Vector<String> functions;
+		const bool ok = ASEngine::get_singleton()->compile_for_diagnostics("__as_editor_validate", p_code, &messages, &functions);
+
+		// Build() 成功仍可能带告警；错误类型以消息回调的 type 为准。
+		bool has_error = !ok;
+		for (const ASEngine::ASMessage &m : messages) {
+			if (m.type == asMSGTYPE_ERROR) {
+				has_error = true;
+				if (r_errors != nullptr) {
+					ScriptError e;
+					e.path = p_path;
+					e.start_line = m.row;
+					e.start_column = m.column;
+					e.end_line = m.row;
+					e.end_column = m.column + 1;
+					e.message = m.message;
+					r_errors->push_back(e);
+				}
+			} else if (m.type == asMSGTYPE_WARNING) {
+				if (r_warnings != nullptr) {
+					Warning w;
+					w.start_line = m.row;
+					w.start_column = m.column;
+					w.end_line = m.row;
+					w.end_column = m.column + 1;
+					w.message = m.message;
+					r_warnings->push_back(w);
+				}
+			}
+		}
+
+		if (ok && r_functions != nullptr) {
+			for (const String &f : functions) {
+				r_functions->push_back(f);
+			}
+		}
+		return !has_error;
+	}
+
+	Error complete_code(const String &p_code, const String &, Object *, List<CompletionOption> *r_options, bool &r_force, String &) override {
+		r_force = false;
+		if (r_options == nullptr) {
+			return OK;
+		}
+		// 光标处总是哨兵字符 0xFFFF；取其前面的标识符作为补全前缀。
+		const int caret = p_code.find(String::chr(0xFFFF));
+		if (caret < 0) {
+			return OK;
+		}
+		int start = caret;
+		while (start > 0 && _as_is_identifier_char(p_code[start - 1])) {
+			start--;
+		}
+		const String prefix = p_code.substr(start, caret - start);
+		if (prefix.is_empty()) {
+			return OK;
+		}
+
+		asIScriptEngine *engine = ASEngine::get_singleton()->get_engine();
+		if (engine == nullptr) {
+			return OK;
+		}
+
+		HashMap<String, CompletionKind> kinds;
+		Vector<String> names;
+		auto consider = [&](const char *p_name, CompletionKind p_kind) {
+			if (p_name == nullptr) {
+				return;
+			}
+			const String name = String(p_name);
+			if (!name.begins_with(prefix) || kinds.has(name)) {
+				return;
+			}
+			kinds.insert(name, p_kind);
+			names.push_back(name);
+		};
+
+		for (asUINT i = 0; i < engine->GetObjectTypeCount(); i++) {
+			consider(engine->GetObjectTypeByIndex(i)->GetName(), CompletionKind::CLASS);
+		}
+		for (asUINT i = 0; i < engine->GetEnumCount(); i++) {
+			consider(engine->GetEnumByIndex(i)->GetName(), CompletionKind::ENUM);
+		}
+		for (asUINT i = 0; i < engine->GetGlobalFunctionCount(); i++) {
+			consider(engine->GetGlobalFunctionByIndex(i)->GetName(), CompletionKind::FUNCTION);
+		}
+		for (asUINT i = 0; i < engine->GetGlobalPropertyCount(); i++) {
+			const char *name = nullptr;
+			engine->GetGlobalPropertyByIndex(i, &name);
+			consider(name, CompletionKind::CONSTANT);
+		}
+
+		// 确定性输出：字母序，并限量以防超大 API 淹没编辑器。
+		names.sort();
+		for (int i = 0; i < names.size() && i < 64; i++) {
+			r_options->push_back(CompletionOption(names[i], kinds[names[i]], CompletionLocation::OTHER, String()));
+		}
+		return OK;
+	}
+
+	int32_t find_function(const String &p_function, const String &p_code) const override {
+		if (p_function.is_empty()) {
+			return -1;
+		}
+		const Vector<String> lines = p_code.split("\n");
+		for (int i = 0; i < lines.size(); i++) {
+			String line = lines[i];
+			const int comment = line.find("//");
+			if (comment >= 0) {
+				line = line.substr(0, comment);
+			}
+			const int idx = line.find(p_function);
+			if (idx < 0) {
+				continue;
+			}
+			if (idx > 0 && _as_is_identifier_char(line[idx - 1])) {
+				continue;
+			}
+			int j = idx + p_function.length();
+			while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+				j++;
+			}
+			if (j < line.length() && line[j] == '(') {
+				return i;
+			}
+		}
+		return -1;
+	}
+};
+
+} // namespace
+
 EditorLanguage *ASScriptLanguage::get_editor_language() {
-	// AS 暂未提供编辑器语言服务；返回默认实现（validate/complete_code 等均为空或恒真），
-	// 与原 ScriptLanguage 上的 stub 行为等价。
-	static EditorLanguage default_editor_language;
-	return &default_editor_language;
+	static ASEditorLanguage editor_language;
+	return &editor_language;
 }
 #endif
 

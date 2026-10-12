@@ -55,6 +55,8 @@ class ASEngine {
 	int gc_count = 0;
 
 	static void _message_callback(const asSMessageInfo *p_msg, void *p_param);
+	// 编辑器诊断专用的消息回调：把结构化消息写入 p_param（Vector<ASMessage>*）。
+	static void _diag_message_callback(const asSMessageInfo *p_msg, void *p_param);
 
 	// AS 内部有一类上下文不经 create_context()：脚本全局变量初始化与脚本对象的
 	// 拷贝构造 / opEquals / GC 枚举都走 asIScriptEngine::RequestContext()。接管这对
@@ -96,6 +98,18 @@ public:
 
 	// 编译一个独立模块；同名模块会被整体替换。失败时把 AngelScript 诊断写入 r_error。
 	bool compile_module(const String &p_name, const String &p_source, String *r_error);
+
+	// 编辑器诊断：在一次性模块上编译源码，回传结构化消息（类型/行/列/文本）。
+	// 与 compile_module 不同：不参与缺失符号补绑定、不污染 compile_messages，
+	// 编译结束后临时模块被丢弃、消息回调恢复为运行期回调。Build 成功返回 true。
+	struct ASMessage {
+		int type = 0; // asMSGTYPE_ERROR / asMSGTYPE_WARNING / asMSGTYPE_INFORMATION
+		int row = 0;
+		int column = 0;
+		String section;
+		String message;
+	};
+	bool compile_for_diagnostics(const String &p_name, const String &p_source, Vector<ASMessage> *r_messages, Vector<String> *r_functions);
 
 	// 执行一个无参全局 AS 函数并把整型返回值写入 r_ret（测试/宿主辅助入口）。
 	// 内部复用 call_function()，因此与回调通道共享参数编组、返回值映射与异常日志。
