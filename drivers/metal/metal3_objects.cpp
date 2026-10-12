@@ -414,11 +414,9 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 			render.dirty.set_flag((RenderState::DirtyFlag)(RenderState::DIRTY_PIPELINE | RenderState::DIRTY_RASTER));
 			// Mark all uniforms as dirty, as variants of a shader pipeline may have a different entry point ABI,
 			// due to setting force_active_argument_buffer_resources = true for spirv_cross::CompilerMSL::Options.
-			// As a result, uniform sets with the same layout will generate redundant binding warnings when
-			// capturing a Metal frame in Xcode.
 			//
-			// If we don't mark as dirty, then some bindings will generate a validation error.
-			// binding_cache.clear();
+			// binding_cache is kept, so unchanged bindings are not reissued. Slots written outside the
+			// cache (push constants, view mask) are invalidated at the write site in _render_set_dirty_state.
 			render.mark_uniforms_dirty();
 			render.pipeline = rp;
 			render.raster_state = rp->raster_state;
@@ -1045,12 +1043,16 @@ void MDCommandBuffer::_render_set_dirty_state() {
 	_render_bind_uniform_sets();
 
 	if (render.dirty.has_flag(RenderState::DIRTY_PUSH)) {
+		uint32_t slot = push_constant_binding.get_binding();
 		if (push_constant_binding.has(RDD::SHADER_STAGE_VERTEX)) {
-			render.encoder->setVertexBytes(push_constant_data, push_constant_data_len, push_constant_binding.get_binding());
+			render.encoder->setVertexBytes(push_constant_data, push_constant_data_len, slot);
+			render.arg_buffer_cache[RenderState::ARG_BUFFER_STAGE_VERTEX].invalidate_buffer(slot);
 		}
 		if (push_constant_binding.has(RDD::SHADER_STAGE_FRAGMENT)) {
-			render.encoder->setFragmentBytes(push_constant_data, push_constant_data_len, push_constant_binding.get_binding());
+			render.encoder->setFragmentBytes(push_constant_data, push_constant_data_len, slot);
+			render.arg_buffer_cache[RenderState::ARG_BUFFER_STAGE_FRAGMENT].invalidate_buffer(slot);
 		}
+		binding_cache.invalidate_buffer(slot);
 	}
 
 	const MDSubpass &subpass = render.get_subpass();
@@ -1058,6 +1060,7 @@ void MDCommandBuffer::_render_set_dirty_state() {
 		uint32_t view_range[2] = { 0, subpass.view_count };
 		render.encoder->setVertexBytes(view_range, sizeof(view_range), VIEW_MASK_BUFFER_INDEX);
 		render.encoder->setFragmentBytes(view_range, sizeof(view_range), VIEW_MASK_BUFFER_INDEX);
+		binding_cache.invalidate_buffer(VIEW_MASK_BUFFER_INDEX);
 	}
 
 	if (render.dirty.has_flag(RenderState::DIRTY_PIPELINE)) {
@@ -1630,7 +1633,9 @@ void MDCommandBuffer::_compute_set_dirty_state() {
 
 	if (compute.dirty.has_flag(ComputeState::DIRTY_PUSH)) {
 		if (push_constant_binding.has(RDD::SHADER_STAGE_COMPUTE)) {
-			compute.encoder->setBytes(push_constant_data, push_constant_data_len, push_constant_binding.get_binding());
+			uint32_t slot = push_constant_binding.get_binding();
+			compute.encoder->setBytes(push_constant_data, push_constant_data_len, slot);
+			binding_cache.invalidate_buffer(slot);
 		}
 	}
 
