@@ -882,4 +882,18 @@ int native_thunk_calls() { return g_native_thunk_calls; }
 void reset_native_thunk_calls() { g_native_thunk_calls = 0; }
 void note_thunk_call() { g_native_thunk_calls++; }
 
+bool native_ops_enabled() { return AS_NATIVE_VALUE_OPS_ENABLED != 0; }
+
+const char *native_ops_gate_name() {
+#if AS_NATIVE_VALUE_OPS_GATE == AS_NATIVE_VALUE_OPS_GATE_VERIFIED
+	return "verified-msvc-x64";
+#elif AS_NATIVE_VALUE_OPS_GATE == AS_NATIVE_VALUE_OPS_GATE_OVERRIDE
+	return "unverified-override";
+#elif AS_NATIVE_VALUE_OPS_GATE == AS_NATIVE_VALUE_OPS_GATE_FORCED_GENERIC
+	return "forced-generic";
+#else
+	return "platform-fallback";
+#endif
+}
+
 } // namespace ASNativeValueOps

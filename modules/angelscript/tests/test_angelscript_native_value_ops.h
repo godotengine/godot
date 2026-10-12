@@ -63,6 +63,8 @@ void as_native_vo_copy_ctor_unambiguous();
 void as_native_vo_extended_native_storage();
 void as_native_vo_extended_types_script();
 void as_native_vo_extended_types_ops_parity();
+void as_native_vo_platform_gate();
+void as_native_vo_generic_fallback_path();
 
 #ifndef ANGELSCRIPT_NATIVE_VALUE_OPS_TESTS_IMPL
 
@@ -180,6 +182,14 @@ TEST_CASE("[AngelScript] native value ops extended types script") {
 
 TEST_CASE("[AngelScript] native value ops extended types ops parity") {
 	as_native_vo_extended_types_ops_parity();
+}
+
+TEST_CASE("[AngelScript] native value ops platform gate") {
+	as_native_vo_platform_gate();
+}
+
+TEST_CASE("[AngelScript] native value ops generic fallback path") {
+	as_native_vo_generic_fallback_path();
 }
 
 #endif // ANGELSCRIPT_NATIVE_VALUE_OPS_TESTS_IMPL

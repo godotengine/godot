@@ -50,6 +50,17 @@ static bool nearly(double p_a, double p_b) {
 	return p_a > p_b - 0.001 && p_a < p_b + 0.001;
 }
 
+// 门控感知断言：原生开启时要求至少命中 p_min_hits 次原生 thunk；强制/平台回退模式下
+// 要求完全未走原生（证明确实走了 generic 回退）。同一套用例由此在两种门控下都可复现。
+static void check_native_hits(int p_min_hits) {
+#if AS_NATIVE_VALUE_OPS_ENABLED
+	CHECK(ASNativeValueOps::native_thunk_calls() >= p_min_hits);
+#else
+	CHECK_EQ(ASNativeValueOps::native_thunk_calls(), 0);
+	(void)p_min_hits;
+#endif
+}
+
 // 编译并执行 `double main()`，取回其 double 返回值。
 static bool run_double(const String &p_source, double *r_out) {
 	ASEngine *as = ASEngine::get_singleton();
@@ -110,7 +121,7 @@ void as_native_vo_vector2_opadd() {
 		return;
 	}
 	CHECK(nearly(out, 46.0)); // (1+3)*10 + (2+4)
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0); // 证明走了原生 opAdd
+	check_native_hits(1); // 证明走了原生 opAdd
 }
 
 void as_native_vo_vector2_arith_assign() {
@@ -121,7 +132,7 @@ void as_native_vo_vector2_arith_assign() {
 	}
 	CHECK(out > 3331.0); // s=(8,5) m=(20,24) d=(5,2.666..) r=(33,31.666..)
 	CHECK(out < 3332.0);
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 
 	// 隔离验证：仅减法也必须走原生（排除 opAdd 对计数的干扰）。
 	ASNativeValueOps::reset_native_thunk_calls();
@@ -129,7 +140,7 @@ void as_native_vo_vector2_arith_assign() {
 		return;
 	}
 	CHECK(nearly(out, 805.0)); // (8,5)
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 void as_native_vo_vector3_arith_assign() {
@@ -139,7 +150,7 @@ void as_native_vo_vector3_arith_assign() {
 		return;
 	}
 	CHECK(nearly(out, 30.0)); // f.x=5 (a+b) + d.y=3 (b-a) + m.z=18 (a*b) + q.x=4 (b/a)
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 void as_native_vo_integer_vectors() {
@@ -161,7 +172,7 @@ void as_native_vo_integer_vectors() {
 		return;
 	}
 	CHECK(nearly(out, 2.0 + 4.0 + 9.0)); // 整数除法 (7/3,8/2)=(2,4) + s.y=9
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 void as_native_vo_op_equals() {
@@ -179,7 +190,7 @@ void as_native_vo_op_equals() {
 		return;
 	}
 	CHECK(nearly(out, 1.0)); // 四类型 opEquals：相等为 true、不相等为 false
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 void as_native_vo_method_core() {
@@ -200,7 +211,7 @@ void as_native_vo_method_core() {
 	// a=(3,4): normalized=(0.6,0.8), length=5, distance_to((0,0))=5, dot=0；
 	// b 为零向量，normalized 应为 (0,0)（与 generic 语义一致）。
 	CHECK(nearly(out, 11.4));
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 void as_native_vo_cross() {
@@ -218,7 +229,7 @@ void as_native_vo_cross() {
 		return;
 	}
 	CHECK(nearly(out, 2.0));
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 void as_native_vo_geometry() {
@@ -239,7 +250,7 @@ void as_native_vo_geometry() {
 		return;
 	}
 	CHECK(nearly(out, 1.5707963267948966));
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 // 全方法覆盖 + C++ 参照值 parity：调用每个已原生化的方法，与相同表达式用
@@ -302,7 +313,7 @@ void as_native_vo_vector2_methods_all() {
 	e += a.rotated(0.5).x + a.rotated(0.5).y;
 	e += a.posmod(2.0).x + a.posmod(2.0).y;
 	CHECK(nearly(out, e));
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 void as_native_vo_vector3_methods_all() {
@@ -355,7 +366,7 @@ void as_native_vo_vector3_methods_all() {
 	e += a.move_toward(c, 100.0).x + a.move_toward(c, 100.0).y + a.move_toward(c, 100.0).z;
 	e += a.clamp(lo, hi).x + a.clamp(lo, hi).y + a.clamp(lo, hi).z;
 	CHECK(nearly(out, e));
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 void as_native_vo_integer_methods_all() {
@@ -391,7 +402,7 @@ void as_native_vo_integer_methods_all() {
 	e += p.distance_to(q);
 	e += p.distance_squared_to(q);
 	CHECK(nearly(out, e));
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 void as_native_vo_storage_slot_helpers() {
@@ -433,7 +444,7 @@ void as_native_vo_native_fast_path_active() {
 	ASNativeValueOps::reset_native_thunk_calls();
 	double out = 0.0;
 	CHECK(run_double("double main() { Vector2 a(1, 2); Vector2 b(3, 4); Vector2 c = a + b; return c.length(); }", &out));
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0); // opAdd 与 length 均命中原生 thunk
+	check_native_hits(1); // opAdd 与 length 均命中原生 thunk
 }
 
 // 边界编组：原生存储类型在"原生槽 ↔ Variant"的每一个出入口都必须双向正确。
@@ -484,7 +495,7 @@ void as_native_vo_packed_index_accessors() {
 		return;
 	}
 	CHECK(nearly(out, 71.0)); // (10+25+30) + (3.5+2.5) = 65 + 6
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 // P2：Packed 标量数组 size() 原生 thunk。
@@ -504,7 +515,7 @@ void as_native_vo_packed_size() {
 		return;
 	}
 	CHECK(nearly(out, 21.0));
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 // P2：越界语义与 generic 一致（读返回默认 0，写静默忽略），不得崩溃。
@@ -544,7 +555,7 @@ void as_native_vo_packed_push_back() {
 		return;
 	}
 	CHECK(nearly(out, 64.0)); // (10+20+30) + (1.5+2.5) = 60 + 4
-	CHECK(ASNativeValueOps::native_thunk_calls() >= 10);
+	check_native_hits(10);
 }
 
 // String（存储为 Variant）的原生运算符：拼接/赋值/相等。命中即计数增加；
@@ -565,7 +576,7 @@ void as_native_vo_string_ops() {
 		return;
 	}
 	CHECK(nearly(out, 631.0)); // b="foobar"(6)*100 + c="foo"(3)*10 + 1
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 // Array 的 Variant 元素索引（get/set_opIndex）原生 thunk：需 Variant 带 asOBJ_APP_CLASS
@@ -586,7 +597,7 @@ void as_native_vo_array_index() {
 		return;
 	}
 	CHECK(nearly(out, 65.0)); // 10 + 25 + 30
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0);
+	check_native_hits(1);
 }
 
 // 引用计数负载回归：Array 元素是持有 String（引用计数）的 Variant，经原生索引读返回
@@ -644,7 +655,7 @@ void as_native_vo_dictionary_keyed_access() {
 		return;
 	}
 	CHECK(nearly(out, 35.0));
-	CHECK(ASNativeValueOps::native_thunk_calls() >= 3); // set、命中 get、缺失 get
+	check_native_hits(3); // set、命中 get、缺失 get
 }
 
 // A2：Array/Dictionary 安全内建方法的原生 thunk 回归。只白名单无参标量/Variant 返回、
@@ -680,7 +691,7 @@ void as_native_vo_container_methods() {
 		return;
 	}
 	CHECK(nearly(out, 135.0));
-	CHECK(ASNativeValueOps::native_thunk_calls() >= 10);
+	check_native_hits(10);
 }
 
 // 遗留缺陷回归：`Vector2(a)`（a 为 Vector2）曾因拷贝构造被注册两次
@@ -751,7 +762,7 @@ void as_native_vo_extended_types_script() {
 		}
 	)", &out));
 	CHECK(nearly(out, 61.0));
-	CHECK(ASNativeValueOps::native_thunk_calls() > 0); // Color 的 opAdd/opAssign 已命中原生 thunk
+	check_native_hits(1); // Color 的 opAdd/opAssign 已命中原生 thunk
 }
 
 // P3b：新原生运算符的表值对齐（Color 四则与相等、Vector4 分量乘、Transform2D 组合乘）。
@@ -785,4 +796,54 @@ void as_native_vo_extended_types_ops_parity() {
 		}
 	)", &out));
 	CHECK(nearly(out, 510.25));
+}
+
+// B8：门控诊断必须与编译期门控自洽。默认 Windows/MSVC/x64 构建应报 verified-msvc-x64 且确有
+// 原生注册（>0），一旦静默降级为 generic 回退立即变红；未启用平台则报 platform-fallback
+// 且 native_ops_enabled()==false。
+void as_native_vo_platform_gate() {
+	const bool enabled = ASNativeValueOps::native_ops_enabled();
+	const String gate = String(ASNativeValueOps::native_ops_gate_name());
+	CHECK_FALSE(gate.is_empty());
+#if AS_NATIVE_VALUE_OPS_ENABLED
+	CHECK(enabled);
+	CHECK(gate != String("forced-generic"));
+	CHECK(gate != String("platform-fallback"));
+#else
+	CHECK_FALSE(enabled);
+	CHECK(gate != String("verified-msvc-x64"));
+#endif
+
+#if defined(_MSC_VER) && defined(_M_X64) && !defined(AS_MAX_PORTABILITY) && !defined(AS_NATIVE_VALUE_OPS_FORCE_GENERIC)
+	// 已验证平台的默认路径：必须真的启用并完成原生注册，杜绝「门控开着但注册全失败」的假绿。
+	CHECK(enabled);
+	CHECK_EQ(gate, String("verified-msvc-x64"));
+	ASEngine *as = ASEngine::get_singleton();
+	REQUIRE(as->ensure_initialized());
+	CHECK(ASBindingValueTypes::register_all(as->get_engine()) == OK);
+	CHECK(ASNativeValueOps::native_registration_count() > 0);
+#endif
+}
+
+// B8：完整 generic 回退路径的可复现验证。PackedStringArray 不在任何原生白名单内
+// （原生只覆盖 int64/double 元素 Packed 数组的 size/push_back 与索引），故构造、push_back、
+// 索引读、size 全程走 generic。断言语义正确且原生 thunk 计数为 0，证明未误走原生路径。
+void as_native_vo_generic_fallback_path() {
+	double out = 0.0;
+	ASNativeValueOps::reset_native_thunk_calls();
+	if (!run_double(R"(
+		double main() {
+			PackedStringArray ps;
+			ps.push_back("hello"); // 5
+			ps.push_back("world"); // 5
+			ps.push_back("!");     // 1
+			String a = ps[0];
+			String c = ps[2];
+			return double(a.length() + c.length()) * 10.0 + double(ps.size());
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 63.0)); // (5 + 1) * 10 + 3
+	CHECK_EQ(ASNativeValueOps::native_thunk_calls(), 0); // 全 generic，未命中原生 thunk
 }
