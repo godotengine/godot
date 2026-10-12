@@ -50,6 +50,8 @@ class EditorExportPlatformIOS : public EditorExportPlatformAppleEmbedded {
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const override;
 
+	String _get_launch_screen_image_mode(const Ref<EditorExportPreset> &p_preset) const;
+
 	virtual Error _export_loading_screen_file(const Ref<EditorExportPreset> &p_preset, const String &p_dest_dir) override;
 	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const override;
 

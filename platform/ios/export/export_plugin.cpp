@@ -103,9 +103,7 @@ bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPre
 	return EditorExportPlatformAppleEmbedded::get_export_option_visibility(p_preset, p_option);
 }
 
-HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const {
-	HashMap<String, Variant> settings;
-
+String EditorExportPlatformIOS::_get_launch_screen_image_mode(const Ref<EditorExportPreset> &p_preset) const {
 	int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
 	String value;
 
@@ -143,7 +141,12 @@ HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(co
 			value = storyboard_image_scale_mode[image_scale_mode - 1];
 		}
 	}
-	settings["ios/launch_screen_image_mode"] = value;
+	return value;
+}
+
+HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const {
+	HashMap<String, Variant> settings;
+	settings["ios/launch_screen_image_mode"] = _get_launch_screen_image_mode(p_preset);
 	return settings;
 }
 
@@ -308,21 +311,7 @@ String EditorExportPlatformIOS::_process_config_file_line(const Ref<EditorExport
 
 		// Launch Storyboard customization
 	} else if (p_line.contains("$launch_screen_image_mode")) {
-		int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
-		String value;
-
-		switch (image_scale_mode) {
-			case 0: {
-				String logo_path = get_project_setting(p_preset, "application/boot_splash/image");
-				bool is_on = get_project_setting(p_preset, "application/boot_splash/fullsize");
-				// If custom logo is not specified, Godot does not scale default one, so we should do the same.
-				value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
-			} break;
-			default: {
-				value = storyboard_image_scale_mode[image_scale_mode - 1];
-			}
-		}
-
+		String value = _get_launch_screen_image_mode(p_preset);
 		strnew += p_line.replace("$launch_screen_image_mode", value).replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
 	} else if (p_line.contains("$launch_screen_image_file_name")) {
 		strnew += p_line.replace("$launch_screen_image_file_name", launch_screen_image_file_name) + "\n";
