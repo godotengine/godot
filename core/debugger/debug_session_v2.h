@@ -10,7 +10,7 @@
 /*                                                                        */
 /* Permission is hereby granted, free of charge, to any person obtaining  */
 /* a copy of this software and associated documentation files (the        */
-/* "Software"), to deal in the Software without restriction, including  */
+/* "Software"), to deal in the Software without restriction, including    */
 /* without limitation the rights to use, copy, modify, merge, publish,    */
 /* distribute, sublicense, and/or sell copies of the Software, and to     */
 /* permit persons to whom the Software is furnished to do so, subject to  */
@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUG_SESSION_V2_H
-#define DEBUG_SESSION_V2_H
+#pragma once
 
 #include "core/templates/rb_map.h"
 #include "debug_protocol_v2.h"
@@ -81,5 +80,3 @@ public:
 	uint64_t get_last_heartbeat_msec() const { return last_heartbeat_msec; }
 	bool is_paused() const { return state == DebugProtocolV2::STATE_PAUSED || state == DebugProtocolV2::STATE_RESUME_REQUESTED; }
 };
-
-#endif // DEBUG_SESSION_V2_H

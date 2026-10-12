@@ -10,7 +10,7 @@
 /*                                                                        */
 /* Permission is hereby granted, free of charge, to any person obtaining  */
 /* a copy of this software and associated documentation files (the        */
-/* "Software"), to deal in the Software without restriction, including  */
+/* "Software"), to deal in the Software without restriction, including    */
 /* without limitation the rights to use, copy, modify, merge, publish,    */
 /* distribute, sublicense, and/or sell copies of the Software, and to     */
 /* permit persons to whom the Software is furnished to do so, subject to  */
@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUG_TRACE_V2_H
-#define DEBUG_TRACE_V2_H
+#pragma once
 
 #include "core/templates/list.h"
 #include "debug_protocol_v2.h"
@@ -56,5 +55,3 @@ public:
 	Array export_metadata() const;
 	void clear();
 };
-
-#endif // DEBUG_TRACE_V2_H
