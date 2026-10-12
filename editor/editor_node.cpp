@@ -1970,7 +1970,7 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 		return;
 	}
 
-	uint32_t id = p_object->get_instance_id();
+	ObjectID id = p_object->get_instance_id();
 	if (id != editor_history.get_current()) {
 		if (p_inspector_only) {
 			editor_history.add_object_inspector_only(id);
