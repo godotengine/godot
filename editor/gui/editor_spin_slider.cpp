@@ -794,6 +794,7 @@ void EditorSpinSlider::_bind_methods() {
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, normal, "normal", "LineEdit");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, read_only, "read_only", "LineEdit");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, focus, "focus", "LineEdit");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, EditorSpinSlider, label_bg);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, EditorSpinSlider, updown_icon, "updown");

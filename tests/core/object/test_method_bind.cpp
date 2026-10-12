@@ -221,6 +221,7 @@ TEST_CASE("[MethodBind] check all method binds") {
 }
 
 TEST_CASE("[MethodBind] check bound enums") {
+	MethodBindTester::initialize_class();
 	const AHashMap<StringName, GDType::Member> &property_map = MethodBindTester::get_gdtype_static().members();
 
 #define BOUND_ENUM_LOOP(m_info, m_value, m_name) \

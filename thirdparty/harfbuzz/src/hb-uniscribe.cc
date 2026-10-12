@@ -864,9 +864,10 @@ retry:
     hb_glyph_position_t *pos = &buffer->pos[i];
 
     /* TODO vertical */
-    pos->x_advance = x_mult * (int32_t) info->mask;
-    pos->x_offset = x_mult * (backward ? -info->var1.i32 : info->var1.i32);
-    pos->y_offset = y_mult * info->var2.i32;
+    pos->x_advance = hb_clamp_to<hb_position_t> (x_mult * (int32_t) info->mask);
+    double x_offset = backward ? -(double) info->var1.i32 : info->var1.i32;
+    pos->x_offset = hb_clamp_to<hb_position_t> (x_mult * x_offset);
+    pos->y_offset = hb_clamp_to<hb_position_t> (y_mult * info->var2.i32);
   }
 
   if (backward)

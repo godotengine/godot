@@ -1312,12 +1312,13 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hf->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
+	edit_hb = memnew(HBoxContainer);
+	edit_hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	top_hf->add_child(edit_hb);
+
 	Control *top_spacer = memnew(Control);
 	top_spacer->set_h_size_flags(SIZE_EXPAND_FILL);
-	top_hf->add_child(top_spacer);
-
-	edit_hb = memnew(HBoxContainer);
-	top_hf->add_child(edit_hb);
+	edit_hb->add_child(top_spacer);
 
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,52 +24,25 @@
 
 #include "../../core/windows/SDL_windows.h"
 
-/* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag was added in Windows 10 version 1803. */
-#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
-#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x2
-#endif
+Uint64 SDL_GetPerformanceCounter(void)
+{
+    LARGE_INTEGER counter;
+    const BOOL rc = QueryPerformanceCounter(&counter);
+    SDL_assert(rc != 0); // this should _never_ fail if you're on XP or later.
+    return (Uint64)counter.QuadPart;
+}
 
-typedef HANDLE (WINAPI *CreateWaitableTimerExW_t)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCWSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
-static CreateWaitableTimerExW_t pCreateWaitableTimerExW;
-
-typedef BOOL (WINAPI *SetWaitableTimerEx_t)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, PREASON_CONTEXT WakeContext, ULONG TolerableDelay);
-static SetWaitableTimerEx_t pSetWaitableTimerEx;
+Uint64 SDL_GetPerformanceFrequency(void)
+{
+    LARGE_INTEGER frequency;
+    const BOOL rc = QueryPerformanceFrequency(&frequency);
+    SDL_assert(rc != 0); // this should _never_ fail if you're on XP or later.
+    return (Uint64)frequency.QuadPart;
+}
 
 static void SDL_CleanupWaitableHandle(void *handle)
 {
     CloseHandle(handle);
-}
-
-static HANDLE SDL_GetWaitableTimer(void)
-{
-    static SDL_TLSID TLS_timer_handle;
-    HANDLE timer;
-
-    if (!pCreateWaitableTimerExW || !pSetWaitableTimerEx) {
-        static bool initialized;
-
-        if (!initialized) {
-            HMODULE module = GetModuleHandle(TEXT("kernel32.dll"));
-            if (module) {
-                pCreateWaitableTimerExW = (CreateWaitableTimerExW_t)GetProcAddress(module, "CreateWaitableTimerExW");
-                pSetWaitableTimerEx = (SetWaitableTimerEx_t)GetProcAddress(module, "SetWaitableTimerEx");
-            }
-            initialized = true;
-        }
-
-        if (!pCreateWaitableTimerExW || !pSetWaitableTimerEx) {
-            return NULL;
-        }
-    }
-
-    timer = SDL_GetTLS(&TLS_timer_handle);
-    if (!timer) {
-        timer = pCreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
-        if (timer) {
-            SDL_SetTLS(&TLS_timer_handle, timer, SDL_CleanupWaitableHandle);
-        }
-    }
-    return timer;
 }
 
 static HANDLE SDL_GetWaitableEvent(void)
@@ -87,20 +60,65 @@ static HANDLE SDL_GetWaitableEvent(void)
     return event;
 }
 
-Uint64 SDL_GetPerformanceCounter(void)
-{
-    LARGE_INTEGER counter;
-    const BOOL rc = QueryPerformanceCounter(&counter);
-    SDL_assert(rc != 0); // this should _never_ fail if you're on XP or later.
-    return (Uint64)counter.QuadPart;
-}
+/* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag was added in Windows 10 version 1803. */
+#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x2
+#endif
 
-Uint64 SDL_GetPerformanceFrequency(void)
+typedef HANDLE (WINAPI *pfnCreateWaitableTimerExW)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCWSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
+static pfnCreateWaitableTimerExW pCreateWaitableTimerExW;
+
+#if WINVER < _WIN32_WINNT_WIN7
+typedef struct _REASON_CONTEXT REASON_CONTEXT;
+typedef REASON_CONTEXT * PREASON_CONTEXT;
+#endif
+typedef BOOL (WINAPI *pfnSetWaitableTimerEx)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, PREASON_CONTEXT WakeContext, ULONG TolerableDelay);
+static pfnSetWaitableTimerEx pSetWaitableTimerEx;
+
+typedef HANDLE (WINAPI *pfnCreateWaitableTimerW)(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName);
+static pfnCreateWaitableTimerW pCreateWaitableTimerW;
+
+typedef BOOL (WINAPI *pfnSetWaitableTimer)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
+static pfnSetWaitableTimer pSetWaitableTimer;
+
+static HANDLE SDL_GetWaitableTimer(void)
 {
-    LARGE_INTEGER frequency;
-    const BOOL rc = QueryPerformanceFrequency(&frequency);
-    SDL_assert(rc != 0); // this should _never_ fail if you're on XP or later.
-    return (Uint64)frequency.QuadPart;
+    static SDL_TLSID TLS_timer_handle;
+    HANDLE timer;
+    static bool initialized;
+
+    if (!initialized) {
+        HMODULE module = GetModuleHandle(TEXT("kernel32.dll"));
+        if (module) {
+            pCreateWaitableTimerExW = (pfnCreateWaitableTimerExW)GetProcAddress(module, "CreateWaitableTimerExW"); // Windows 7 and up
+            if (!pCreateWaitableTimerExW) {
+                pCreateWaitableTimerW = (pfnCreateWaitableTimerW)GetProcAddress(module, "CreateWaitableTimerW");
+            }
+            pSetWaitableTimerEx = (pfnSetWaitableTimerEx)GetProcAddress(module, "SetWaitableTimerEx"); // Windows Vista and up
+            if (!pSetWaitableTimerEx) {
+                pSetWaitableTimer = (pfnSetWaitableTimer)GetProcAddress(module, "SetWaitableTimer");
+            }
+            initialized =
+                (pCreateWaitableTimerExW || pCreateWaitableTimerW) &&
+                (pSetWaitableTimerEx || pSetWaitableTimer);
+        }
+        if (!initialized) {
+            return NULL;
+        }
+    }
+
+    timer = SDL_GetTLS(&TLS_timer_handle);
+    if (!timer) {
+        if (pCreateWaitableTimerExW) {
+            timer = pCreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+        } else {
+            timer = pCreateWaitableTimerW(NULL, TRUE, NULL);
+        }
+        if (timer) {
+            SDL_SetTLS(&TLS_timer_handle, timer, SDL_CleanupWaitableHandle);
+        }
+    }
+    return timer;
 }
 
 void SDL_SYS_DelayNS(Uint64 ns)
@@ -109,7 +127,7 @@ void SDL_SYS_DelayNS(Uint64 ns)
     if (timer) {
         LARGE_INTEGER due_time;
         due_time.QuadPart = -((LONGLONG)ns / 100);
-        if (pSetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) {
+        if ((pSetWaitableTimerEx && pSetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) || pSetWaitableTimer(timer, &due_time, 0, NULL, NULL, 0)) {
             WaitForSingleObject(timer, INFINITE);
         }
         return;

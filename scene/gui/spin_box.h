@@ -77,6 +77,10 @@ class SpinBox : public Range {
 	void _text_changed(const String &p_string);
 
 	String format;
+	String plural_format;
+	AutoTranslateMode format_auto_translate_mode = AUTO_TRANSLATE_MODE_DISABLED;
+	String _get_xl_format() const;
+
 	bool use_default_format = false;
 #ifndef DISABLE_DEPRECATED
 	String prefix;
@@ -144,6 +148,14 @@ class SpinBox : public Range {
 		int buttons_vertical_separation = 0;
 		int field_and_buttons_separation = 0;
 		int buttons_width = 0;
+		int icon_max_width = 0;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> pressed_sound;
+		Ref<AudioStream> pressed_disabled_sound;
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
+
 #ifndef DISABLE_DEPRECATED
 		Ref<Texture2D> updown_icon;
 		bool is_updown_assigned = false;
@@ -161,6 +173,7 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+	Size2 _fit_icon_size(const Size2 &p_size) const;
 	static void _bind_methods();
 
 public:
@@ -176,6 +189,14 @@ public:
 
 	void set_format(const String &p_format);
 	String get_format() const;
+
+	void set_plural_format(const String &p_format);
+	String get_plural_format() const { return plural_format; }
+
+	void set_format_with_plural(const String &p_format, const String &p_plural);
+
+	void set_format_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_format_auto_translate_mode() const { return format_auto_translate_mode; }
 
 #ifndef DISABLE_DEPRECATED
 	void set_suffix(const String &p_suffix);

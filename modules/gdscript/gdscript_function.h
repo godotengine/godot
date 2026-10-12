@@ -39,6 +39,7 @@
 #include "core/templates/self_list.h"
 #include "core/variant/variant.h"
 
+struct ContainerType;
 class GDScriptInstance;
 class GDScript;
 
@@ -63,6 +64,7 @@ public:
 
 	_FORCE_INLINE_ bool has_type() const { return kind != VARIANT; }
 
+	bool is_type_exact(const ContainerType &p_container_type) const;
 	bool is_type(const Variant &p_variant, bool p_allow_implicit_conversion = false) const;
 
 	bool can_contain_object() const {
@@ -346,6 +348,8 @@ private:
 	StringName source;
 	bool _static = false;
 	Vector<GDScriptDataType> argument_types;
+	// NOTE: This is the expected return type, but coroutines can actually return a `GDScriptFunctionState` object.
+	// In VM it is currently only used to return a default value on error (as a fallback).
 	GDScriptDataType return_type;
 	MethodInfo method_info;
 	Variant rpc_config;

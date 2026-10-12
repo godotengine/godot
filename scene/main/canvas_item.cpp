@@ -63,13 +63,11 @@ bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tole
 		return p_point.length() < p_tolerance;
 	}
 }
-#endif // DEBUG_ENABLED
 
-#ifdef TOOLS_ENABLED
 Transform2D CanvasItem::_edit_get_transform() const {
 	return Transform2D(_edit_get_rotation(), _edit_get_position() + _edit_get_pivot());
 }
-#endif //TOOLS_ENABLED
+#endif // DEBUG_ENABLED
 
 bool CanvasItem::is_visible_in_tree() const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -110,6 +108,7 @@ void CanvasItem::_handle_visibility_change(bool p_visible) {
 	} else {
 		emit_signal(SceneStringName(hidden));
 	}
+	queue_accessibility_update();
 
 	_block();
 	for (int i = 0; i < get_child_count(); i++) {
@@ -376,7 +375,7 @@ void CanvasItem::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !visible);
+			AccessibilityServer::get_singleton()->update_set_flag(ae, AccessibilityServerEnums::AccessibilityFlags::FLAG_HIDDEN, !is_visible_in_tree());
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

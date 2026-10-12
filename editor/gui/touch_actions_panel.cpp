@@ -96,7 +96,7 @@ void TouchActionsPanel::_hardware_keyboard_connected(bool p_connected) {
 }
 
 void TouchActionsPanel::_screen_orientation_changed(int p_new_orientation) {
-	portrait_mode = p_new_orientation == 1;
+	portrait_mode = p_new_orientation == DisplayServerEnums::SENSOR_ORIENTATION_PORTRAIT;
 
 	if (is_floating) {
 		set_position(EDITOR_DEF(portrait_mode ? "_touch_actions_panel_portrait_pos" : "_touch_actions_panel_position", Point2(100, 480)));

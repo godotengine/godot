@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -166,6 +166,9 @@ typedef enum SDL_ProcessIO
  * - `SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER`: an SDL_Environment
  *   pointer. If this property is set, it will be the entire environment for
  *   the process, otherwise the current environment is used.
+ * - `SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING`: a UTF-8 encoded
+ *   string representing the working directory for the process, defaults to
+ *   the current working directory.
  * - `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER`: an SDL_ProcessIO value describing
  *   where standard input for the process comes from, defaults to
  *   `SDL_PROCESS_STDIO_NULL`.
@@ -192,6 +195,12 @@ typedef enum SDL_ProcessIO
  *   run in the background. In this case the default input and output is
  *   `SDL_PROCESS_STDIO_NULL` and the exitcode of the process is not
  *   available, and will always be 0.
+ * - `SDL_PROP_PROCESS_CREATE_CMDLINE_STRING`: a string containing the program
+ *   to run and any parameters. This string is passed directly to
+ *   `CreateProcess` on Windows, and does nothing on other platforms. This
+ *   property is only important if you want to start programs that does
+ *   non-standard command-line processing, and in most cases using
+ *   `SDL_PROP_PROCESS_CREATE_ARGS_POINTER` is sufficient.
  *
  * On POSIX platforms, wait() and waitpid(-1, ...) should not be called, and
  * SIGCHLD should not be ignored or handled because those would prevent SDL
@@ -219,6 +228,7 @@ extern SDL_DECLSPEC SDL_Process * SDLCALL SDL_CreateProcessWithProperties(SDL_Pr
 
 #define SDL_PROP_PROCESS_CREATE_ARGS_POINTER                "SDL.process.create.args"
 #define SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER         "SDL.process.create.environment"
+#define SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING    "SDL.process.create.working_directory"
 #define SDL_PROP_PROCESS_CREATE_STDIN_NUMBER                "SDL.process.create.stdin_option"
 #define SDL_PROP_PROCESS_CREATE_STDIN_POINTER               "SDL.process.create.stdin_source"
 #define SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER               "SDL.process.create.stdout_option"
@@ -227,6 +237,7 @@ extern SDL_DECLSPEC SDL_Process * SDLCALL SDL_CreateProcessWithProperties(SDL_Pr
 #define SDL_PROP_PROCESS_CREATE_STDERR_POINTER              "SDL.process.create.stderr_source"
 #define SDL_PROP_PROCESS_CREATE_STDERR_TO_STDOUT_BOOLEAN    "SDL.process.create.stderr_to_stdout"
 #define SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN          "SDL.process.create.background"
+#define SDL_PROP_PROCESS_CREATE_CMDLINE_STRING              "SDL.process.create.cmdline"
 
 /**
  * Get the properties associated with a process.

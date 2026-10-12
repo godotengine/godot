@@ -28,6 +28,13 @@ struct Sequence
   void closure (hb_closure_context_t *c) const
   { c->output->add_array (substitute.arrayZ, substitute.len); }
 
+  void depend (hb_depend_context_t *c, hb_codepoint_t source) const
+  {
+    + hb_iter (substitute)
+    | hb_apply ([&] (const hb_codepoint_t &target) { c->depend_data->add_gsub_lookup (source, c->lookup_index, target); })
+    ;
+  }
+
   void collect_glyphs (hb_collect_glyphs_context_t *c) const
   { c->output->add_array (substitute.arrayZ, substitute.len); }
 

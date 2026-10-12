@@ -17,33 +17,35 @@ partial class InheritanceChild
         /// </summary>
         public new static readonly global::Godot.StringName @MyInteger = "MyInteger";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
+    protected internal new static partial class GodotInternal
     {
-        if (name == PropertyName.@MyString) {
-            this.@MyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
-            return true;
+        public static void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_MyString(object godotObject)
+            {
+                var ret = ((global::InheritanceChild)godotObject).@MyString;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(ret);
+            }
+            static void trampoline_set_MyString(object godotObject, in godot_variant value)
+            {
+                ((global::InheritanceChild)godotObject).@MyString = global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(value);
+            }
+            static godot_variant trampoline_get_MyInteger(object godotObject)
+            {
+                var ret = ((global::InheritanceChild)godotObject).@MyInteger;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(ret);
+            }
+            static void trampoline_set_MyInteger(object godotObject, in godot_variant value)
+            {
+                ((global::InheritanceChild)godotObject).@MyInteger = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
+            }
+            var aux_delegate_get_MyString = trampoline_get_MyString;
+            var aux_delegate_set_MyString = trampoline_set_MyString;
+            collector.TryAdd(PropertyName.@MyString, new(aux_delegate_get_MyString.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set_MyString.Method.MethodHandle.GetFunctionPointer()));
+            var aux_delegate_get_MyInteger = trampoline_get_MyInteger;
+            var aux_delegate_set_MyInteger = trampoline_set_MyInteger;
+            collector.TryAdd(PropertyName.@MyInteger, new(aux_delegate_get_MyInteger.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set_MyInteger.Method.MethodHandle.GetFunctionPointer()));
         }
-        if (name == PropertyName.@MyInteger) {
-            this.@MyInteger = global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
-    {
-        if (name == PropertyName.@MyString) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<string>(this.@MyString);
-            return true;
-        }
-        if (name == PropertyName.@MyInteger) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<int>(this.@MyInteger);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.

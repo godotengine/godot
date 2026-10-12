@@ -1,5 +1,3 @@
-GH-111212
----------
 Validate extension JSON: API was removed: classes/EditorFileDialog/methods/add_filter
 Validate extension JSON: API was removed: classes/EditorFileDialog/methods/add_option
 Validate extension JSON: API was removed: classes/EditorFileDialog/methods/add_side_menu

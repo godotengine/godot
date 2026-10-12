@@ -1391,6 +1391,7 @@ void GDScriptParser::parse_property_setter(VariableNode *p_variable) {
 		case VariableNode::PROP_INLINE: {
 			FunctionNode *function = alloc_node<FunctionNode>();
 			IdentifierNode *identifier = alloc_node<IdentifierNode>();
+			set_synthetic_extents(identifier);
 			complete_extents(identifier);
 			identifier->name = "@" + p_variable->identifier->name + "_setter";
 			function->identifier = identifier;
@@ -1454,6 +1455,7 @@ void GDScriptParser::parse_property_getter(VariableNode *p_variable) {
 			function->header_end_column = previous.start_column;
 
 			IdentifierNode *identifier = alloc_node<IdentifierNode>();
+			set_synthetic_extents(identifier);
 			complete_extents(identifier);
 			identifier->name = "@" + p_variable->identifier->name + "_getter";
 			function->identifier = identifier;
@@ -2829,14 +2831,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assi
 }
 
 GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
-	IdentifierNode *identifier = static_cast<IdentifierNode *>(parse_identifier(nullptr, false));
-#ifdef DEBUG_ENABLED
-	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
-	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name)) {
-		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.string());
-	}
-#endif
-	return identifier;
+	return static_cast<IdentifierNode *>(parse_identifier(nullptr, false));
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode *p_previous_operand, bool p_can_assign) {
@@ -3849,6 +3844,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_invalid_token(ExpressionNo
 
 GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	TypeNode *type = alloc_node<TypeNode>();
+	reset_extents(type, current);
 	make_completion_context(p_allow_void ? COMPLETION_TYPE_NAME_OR_VOID : COMPLETION_TYPE_NAME, type);
 	if (!match(GDScriptTokenizer::Token::IDENTIFIER)) {
 		if (match(GDScriptTokenizer::Token::TK_VOID)) {
@@ -3946,6 +3942,8 @@ static void _process_doc_line(const String &p_line, String &r_text, const String
 				// We want to replace `[br][br]` with `\n` (paragraph), so we move the trailing `[br]` here.
 				r_text = r_text.left(-4); // `-len("[br]")`.
 				line = "[br]" + line;
+			} else if (!r_text.ends_with("\n") && line.is_empty()) {
+				line_join = "\n";
 			} else if (!r_text.ends_with("\n")) {
 				line_join = " ";
 			}
@@ -4652,6 +4650,10 @@ static StringName _find_narrowest_native_or_global_class(const GDScriptParser::D
 
 template <PropertyHint t_hint, Variant::Type t_type>
 bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	return _export_annotations(p_annotation, p_target, p_class, t_hint, t_type);
+}
+
+bool GDScriptParser::_export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class, PropertyHint p_hint, Variant::Type p_type) {
 	ERR_FAIL_COND_V_MSG(p_target->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
 	ERR_FAIL_NULL_V(p_class, false);
 
@@ -4667,8 +4669,8 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 	variable->exported = true;
 
-	variable->export_info.type = t_type;
-	variable->export_info.hint = t_hint;
+	variable->export_info.type = p_type;
+	variable->export_info.hint = p_hint;
 
 	String hint_string;
 	for (uint32_t i = 0; i < p_annotation->resolved_arguments.size(); i++) {
@@ -4964,10 +4966,10 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 
 	if (use_default_variable_type_check) {
 		// Validate variable type with export.
-		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != t_type)) {
+		if (!export_type.is_variant() && (export_type.kind != DataType::BUILTIN || export_type.builtin_type != p_type)) {
 			// Allow float/int conversion.
-			if ((t_type != Variant::FLOAT || export_type.builtin_type != Variant::INT) && (t_type != Variant::INT || export_type.builtin_type != Variant::FLOAT)) {
-				Vector<Variant::Type> expected_types = { t_type };
+			if ((p_type != Variant::FLOAT || export_type.builtin_type != Variant::INT) && (p_type != Variant::INT || export_type.builtin_type != Variant::FLOAT)) {
+				Vector<Variant::Type> expected_types = { p_type };
 				push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->type_constraint), p_annotation);
 				return false;
 			}

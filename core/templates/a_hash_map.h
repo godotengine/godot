@@ -48,6 +48,8 @@ class Variant;
  * Key-values are not pointer-stable.
  * Indices are stable as long as no elements are removed; otherwise arbitrary.
  *
+ * Keys and values are relocated by naive memory moves; they must not store their own address (see GH-100509).
+ *
  * Core container guidance:
  * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  */
@@ -343,6 +345,7 @@ public:
 		_size--;
 
 		if (element_idx < _size) {
+			// Relocate element down (see GH-100509).
 			memcpy((void *)&_elements[element_idx], (const void *)&_elements[_size], sizeof(MapKeyValue));
 			uint32_t moved_element_idx = 0;
 			uint32_t moved_meta_idx = 0;
@@ -662,7 +665,7 @@ public:
 		_init_from(p_other);
 	}
 
-	AHashMap(uint32_t p_initial_capacity) {
+	explicit AHashMap(uint32_t p_initial_capacity) {
 		// Capacity can't be 0 and must be 2^n - 1.
 		_capacity_mask = MAX(4u, p_initial_capacity);
 		_capacity_mask = Math::next_power_of_2(_capacity_mask) - 1;

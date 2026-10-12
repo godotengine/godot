@@ -1,0 +1,4 @@
+GDTEST_OK
+~~ WARNING at line 3: (ONREADY_WITH_CAST) "as" will silently return "null" if the type of "$Node" is wrong. Prefer assigning the node directly to an explicitly typed variable to get an error in such cases.
+~~ WARNING at line 4: (ONREADY_WITH_CAST) "as" will silently return "null" if the type of "$Node" is wrong. Prefer assigning the node directly to an explicitly typed variable to get an error in such cases.
+~~ WARNING at line 5: (ONREADY_WITH_CAST) "as" will silently return "null" if the type of "$Node" is wrong. Prefer assigning the node directly to an explicitly typed variable to get an error in such cases.

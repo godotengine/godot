@@ -1694,7 +1694,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTRC("Runnable"));
-	runnable->set_tooltip_text(TTRC("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
+	runnable->set_tooltip_text(TTRC("If checked, the preset will be available for use in remote deploy.\nOnly one preset per platform may be marked as runnable."));
 	runnable->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_runnable_pressed));
 
 	advanced_options = memnew(CheckButton);

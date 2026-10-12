@@ -38,6 +38,7 @@
 #include "core/error/error_macros.h"
 #include "core/input/input.h"
 #include "core/math/transform_3d.h"
+#include "core/math/vector3.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
@@ -48,6 +49,7 @@
 #include "servers/rendering/rendering_server.h" // ERR_NOT_ON_RENDER_THREAD_V
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/rendering_server_types.h"
+#include "servers/xr/xr_controller_tracker.h"
 #include "servers/xr/xr_server.h"
 
 #include "platform/visionos/godot_app_delegate_service_visionos.h"
@@ -150,6 +152,18 @@ bool VisionOSXRInterface::initialize() {
 	hands.enabled = GLOBAL_GET("xr/visionos/enable_hand_tracking");
 	controllers.enabled = GLOBAL_GET("xr/visionos/enable_controller_tracking");
 
+	// Shared trackers
+	left_hand.tracker.instantiate();
+	left_hand.tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_LEFT);
+	left_hand.tracker->set_tracker_name("left_hand");
+	left_hand.tracker->set_tracker_desc("visionOS left controller and spatial event");
+	xr_server->add_tracker(left_hand.tracker);
+	right_hand.tracker.instantiate();
+	right_hand.tracker->set_tracker_hand(XRPositionalTracker::TRACKER_HAND_RIGHT);
+	right_hand.tracker->set_tracker_name("right_hand");
+	right_hand.tracker->set_tracker_desc("visionOS right controller and spatial event");
+	xr_server->add_tracker(right_hand.tracker);
+
 	// ARKit session
 	ar_session = ar_session_create();
 
@@ -179,8 +193,10 @@ bool VisionOSXRInterface::initialize() {
 
 	// Controllers
 	if (controllers.enabled) {
-		controllers.initialize(xr_server, this);
+		controllers.initialize(xr_server, this, left_hand, right_hand);
 	}
+
+	spatial_events.initialize(xr_server, left_hand, right_hand);
 
 	// Running the ARKit session for head tracking, at first
 	run_ar_session();
@@ -221,6 +237,18 @@ bool VisionOSXRInterface::CompositorServicesData::initialize(XRServer *p_xr_serv
 	return true;
 }
 
+namespace {
+
+template <typename TrackerType>
+void uninitialize_tracker(Ref<TrackerType> &p_tracker, XRServer *p_xr_server) {
+	if (p_tracker.is_valid()) {
+		p_xr_server->remove_tracker(p_tracker);
+		p_tracker.unref();
+	}
+}
+
+} // namespace
+
 void VisionOSXRInterface::uninitialize() {
 	if (!initialized) {
 		return;
@@ -232,32 +260,28 @@ void VisionOSXRInterface::uninitialize() {
 
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
+		uninitialize_tracker(left_hand.tracker, xr_server);
+		uninitialize_tracker(right_hand.tracker, xr_server);
+
 		if (controllers.enabled) {
 			controllers.uninitialize(xr_server);
 		}
 
 		if (hands.enabled) {
-			if (hands.left_hand_tracker.is_valid()) {
-				xr_server->remove_tracker(hands.left_hand_tracker);
-				hands.left_hand_tracker.unref();
-			}
-			if (hands.right_hand_tracker.is_valid()) {
-				xr_server->remove_tracker(hands.right_hand_tracker);
-				hands.right_hand_tracker.unref();
-			}
+			uninitialize_tracker(hands.left_hand_tracker, xr_server);
+			uninitialize_tracker(hands.right_hand_tracker, xr_server);
 		}
 
 		if (cs.enabled) {
-			if (cs.head_tracker.is_valid()) {
-				xr_server->remove_tracker(cs.head_tracker);
-				cs.head_tracker.unref();
-			}
+			uninitialize_tracker(cs.head_tracker, xr_server);
 
 			if (xr_server->get_primary_interface() == this) {
 				// no longer our primary interface
 				xr_server->set_primary_interface(nullptr);
 			}
 		}
+
+		spatial_events.uninitialize(xr_server);
 
 		initialized = false;
 	}
@@ -541,6 +565,10 @@ void VisionOSXRInterface::run_ar_session() {
 	ar_session_run(ar_session, ar_data_providers);
 }
 
+void VisionOSXRInterface::on_spatial_event(const VisionOSSpatialEvent &p_event) {
+	spatial_events.on_spatial_event(p_event);
+}
+
 CFTimeInterval VisionOSXRInterface::get_trackable_anchor_time() {
 	// Computing the time to use for pose prediction
 	CFTimeInterval trackable_anchor_time = 0;
@@ -597,10 +625,101 @@ void VisionOSXRInterface::process() {
 			controllers.update_controller_trackers_from_arkit(trackable_anchor_time);
 		}
 	}
+
+	// Invalidating poses on controllers when not tracked.
+	for (const VisionOSSharedController &hand : { left_hand, right_hand }) {
+		if (hand.source == VisionOSSharedController::Source::None) {
+			for (const String name : { "default", "aim", "grip", "palm" }) {
+				hand.tracker->invalidate_pose(name);
+			}
+		}
+	}
 }
 
 Size2 VisionOSXRInterface::get_render_target_size() {
 	return rt.get_render_target_size();
+}
+
+TypedArray<Projection> VisionOSXRInterface::get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) {
+	TypedArray<Projection> ret;
+
+	if (!initialized) {
+		return ret;
+	}
+
+	if (p_tracker_name == XR_TRACKER_HEAD) {
+		XRServer *xr_server = XRServer::get_singleton();
+		ERR_FAIL_NULL_V(xr_server, ret);
+
+		float world_scale = xr_server->get_world_scale();
+		double scaled_z_near = p_z_near / world_scale;
+		double scaled_z_far = p_z_far / world_scale;
+
+		ERR_FAIL_COND_V_MSG(scaled_z_near < minimum_supported_near_plane, ret, "Your XRCamera3D Near value is lower than the minimum value supported by the visionOS platform. Make sure that Near divided by XROrigin's World Scale is higher than or equal to the value returned by LayerRender.Capabilities.supportedMinimumNearPlaneDistance. This value is 0.1 for Apple Vision Pro.");
+
+		// We can't get/set data around our projection matrix until our render thread
+		// starts processing our frame.
+		// So our first frame will have an incorrect projection matrix
+		// and our subsequent frames use last frames projection matrix.
+		// Unless our IPD changes, or our near/far changes,
+		// our projection matrices should not change.
+
+		rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL_V(rendering_server, ret);
+		rendering_server->call_on_render_thread(callable_mp(&rt, &RenderThread::set_near_and_far).bind(scaled_z_near, scaled_z_far));
+
+		// Godot renderers work in the normalized [-1, 1] depth space, and they do a final z remap of the projection matrixes to the [0, 1] depth space in RenderSceneDataRD::update_ubo().
+		// Compositor Services projection matrices are already in the [0, 1] depth space, so we need to apply the inverse z remap before passing them to the renderer.
+		Projection normalized_depth_correction;
+		normalized_depth_correction.set_depth_correction(false, false, true);
+		normalized_depth_correction = normalized_depth_correction.inverse();
+
+		// Correct depth by world_scale
+		Projection reverse_z;
+		real_t *m = &reverse_z.columns[0][0];
+		m[10] = -1.0;
+		m[14] = 1.0;
+
+		Projection world_scale_correction;
+		world_scale_correction.make_scale(Vector3(1, 1, world_scale));
+		world_scale_correction = reverse_z.inverse() * world_scale_correction * reverse_z;
+
+		for (uint32_t v = 0; v < 2; v++) {
+			Projection view_projection = rt.get_view_projection(v);
+			ret.push_back(normalized_depth_correction * world_scale_correction * view_projection);
+		}
+	}
+
+	return ret;
+}
+
+TypedArray<Transform3D> VisionOSXRInterface::get_camera_offsets(const StringName &p_tracker_name) {
+	TypedArray<Transform3D> ret;
+
+	if (!initialized) {
+		return ret;
+	}
+
+	if (p_tracker_name == XR_TRACKER_HEAD) {
+		// We can't get/set data around our offsets until our render thread
+		// starts processing our frame.
+		// So our first frame will have an incorrect offsets
+		// and our subsequent frames use last frames offsets.
+		// Unless our IPD changes, our offsets should not change.
+
+		XRServer *xr_server = XRServer::get_singleton();
+		ERR_FAIL_NULL_V(xr_server, ret);
+
+		float world_scale = xr_server->get_world_scale();
+
+		for (uint32_t v = 0; v < 2; v++) {
+			Transform3D offset = rt.get_view_offset(v);
+			offset.origin *= world_scale;
+			ret.push_back(offset);
+		}
+	}
+
+	return ret;
 }
 
 void VisionOSXRInterface::RenderThread::set_minimum_supported_near_plane(float p_minimum_supported_near_plane) {
@@ -625,6 +744,45 @@ void VisionOSXRInterface::RenderThread::set_current_frame(uint64_t p_current_fra
 	origin_from_head = MTL::simd_to_transform3D(origin_from_head_simd);
 }
 
+void VisionOSXRInterface::RenderThread::set_near_and_far(double p_scaled_z_near, double p_scaled_z_far) {
+	ERR_NOT_ON_RENDER_THREAD;
+
+	scaled_z_near = p_scaled_z_near;
+	scaled_z_far = p_scaled_z_far;
+}
+
+Projection VisionOSXRInterface::RenderThread::get_view_projection(uint32_t p_view) {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, 2, Projection());
+
+	if (!has_view_data) {
+		// We want to return a valid projection matrix even if it doesn't match our device.
+		// This will prevent error spam at startup.
+		return Projection::create_for_hmd(p_view + 1, 1.0, 6.0, 15.0, 4.0, 1.0, 0.1, 1000.0);
+	}
+
+	mutex.lock();
+	Projection ret = view_projections[p_view];
+	mutex.unlock();
+
+	return ret;
+}
+
+Transform3D VisionOSXRInterface::RenderThread::get_view_offset(uint32_t p_view) {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_view, 2, Transform3D());
+
+	if (!has_view_data) {
+		// We want to return a valid transform even if it doesn't match our device.
+		// This will prevent error spam at startup.
+		return Transform3D(Basis(), Vector3(p_view == 0 ? -0.03 : 0.03, 0.0, 0.0));
+	}
+
+	mutex.lock();
+	Transform3D ret = view_offsets[p_view];
+	mutex.unlock();
+
+	return ret;
+}
+
 uint32_t VisionOSXRInterface::RenderThread::get_view_count() {
 	// No need for ERR_NOT_ON_RENDER_THREAD
 	return 2;
@@ -647,6 +805,7 @@ Transform3D VisionOSXRInterface::RenderThread::get_camera_transform() {
 	return camera_transform;
 }
 
+#ifndef DISABLE_DEPRECATED
 Transform3D VisionOSXRInterface::RenderThread::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	Transform3D origin_from_eye;
 	ERR_NOT_ON_RENDER_THREAD_V(origin_from_eye);
@@ -715,6 +874,7 @@ Projection VisionOSXRInterface::RenderThread::get_projection_for_view(uint32_t p
 	eye_projection = normalized_depth_correction.inverse() * reverse_z.inverse() * world_scale_correction * reverse_z * eye_projection;
 	return eye_projection;
 }
+#endif
 
 // The render region is the logical texture size. With foveated rendering, it's bigger than the
 // physical texture size. This value is equivalent to rasterizationRateMap.screenSize.
@@ -801,6 +961,23 @@ void VisionOSXRInterface::RenderThread::pre_render() {
 	} else {
 		ERR_PRINT("Current device anchor is nil, will present drawable without a device anchor.");
 	}
+
+	simd_float2 depth_range = simd_make_float2(scaled_z_far, scaled_z_near);
+	cp_drawable_set_depth_range(current_drawable, depth_range);
+
+	mutex.lock();
+
+	for (uint32_t v = 0; v < 2; v++) {
+		simd_float4x4 eye_simd_projection = cp_drawable_compute_projection(current_drawable, cp_axis_direction_convention_right_up_forward, v);
+		view_projections[v] = MTL::simd_to_projection(eye_simd_projection);
+
+		cp_view_t view = cp_drawable_get_view(current_drawable, v);
+		simd_float4x4 view_offset_simd = cp_view_get_transform(view);
+		view_offsets[v] = MTL::simd_to_transform3D(view_offset_simd);
+	}
+	has_view_data = true;
+
+	mutex.unlock();
 }
 
 Vector<RenderingServerTypes::BlitToScreen> VisionOSXRInterface::RenderThread::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {

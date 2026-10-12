@@ -422,6 +422,9 @@ private:
 
 			float ambient_light_color_energy[4];
 
+			float reflection_color[3];
+			uint32_t use_reflection_color = 0;
+
 			float ambient_color_sky_mix;
 			uint32_t directional_shadow_count;
 			float emissive_exposure_normalization;
@@ -464,6 +467,10 @@ private:
 			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
 			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
+			// Current view being rendered. Used when emulating multiview by
+			// rendering once per view (when the GPU doesn't support multiview).
+			uint32_t view_index = 0;
+			uint32_t pad[3];
 		};
 		static_assert(sizeof(MultiviewUBO) % 16 == 0, "Multiview UBO size must be a multiple of 16 bytes");
 		static_assert(sizeof(MultiviewUBO) < 16384, "MultiviewUBO size must be 16384 bytes or smaller");
@@ -866,6 +873,7 @@ protected:
 	mutable RID_Owner<Sky, true> sky_owner;
 
 	GLES3::SkyMaterialData *_get_sky_material_data(RID p_env);
+	GLES3::SkyMaterialData *_get_flat_color_sky_material_data(RID p_env);
 	void _setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();

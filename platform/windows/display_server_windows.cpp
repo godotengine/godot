@@ -4527,6 +4527,9 @@ void DisplayServerWindows::process_events() {
 
 	bool has_touch_events = process_raw_input();
 
+	DisplayServerEnums::WindowID window_id = _get_focused_window_or_popup();
+	const WindowData &wd = windows[window_id];
+
 	// The pump throttles only what the hardware can flood, and drains the rest.
 	// See <https://ph3at.github.io/posts/Windows-Input/> for more information.
 	//
@@ -4560,7 +4563,7 @@ void DisplayServerWindows::process_events() {
 		}
 		return ret;
 	};
-	if (has_touch_events) {
+	if (has_touch_events || wd.ime_active) {
 		// Process all messages.
 		while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);

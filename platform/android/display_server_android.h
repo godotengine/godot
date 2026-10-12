@@ -109,6 +109,10 @@ public:
 	virtual bool has_feature(DisplayServerEnums::Feature p_feature) const override;
 	virtual String get_name() const override;
 
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_screen_reader_active() const override;
+	virtual int accessibility_should_reduce_animation() const override;
+
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;
 	virtual TypedArray<Dictionary> tts_get_voices() const override;

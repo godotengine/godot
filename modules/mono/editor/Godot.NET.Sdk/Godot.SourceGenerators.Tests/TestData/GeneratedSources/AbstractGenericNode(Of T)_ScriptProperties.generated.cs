@@ -13,25 +13,23 @@ partial class AbstractGenericNode<T>
         /// </summary>
         public new static readonly global::Godot.StringName @MyArray = "MyArray";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
+    protected internal new static partial class GodotInternal
     {
-        if (name == PropertyName.@MyArray) {
-            this.@MyArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<T>(value);
-            return true;
+        public static void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_MyArray(object godotObject)
+            {
+                var ret = ((global::AbstractGenericNode<T>)godotObject).@MyArray;
+                return global::Godot.NativeInterop.VariantUtils.CreateFromArray(ret);
+            }
+            static void trampoline_set_MyArray(object godotObject, in godot_variant value)
+            {
+                ((global::AbstractGenericNode<T>)godotObject).@MyArray = global::Godot.NativeInterop.VariantUtils.ConvertToArray<T>(value);
+            }
+            var aux_delegate_get_MyArray = trampoline_get_MyArray;
+            var aux_delegate_set_MyArray = trampoline_set_MyArray;
+            collector.TryAdd(PropertyName.@MyArray, new(aux_delegate_get_MyArray.Method.MethodHandle.GetFunctionPointer()), new(aux_delegate_set_MyArray.Method.MethodHandle.GetFunctionPointer()));
         }
-        return base.SetGodotClassPropertyValue(name, value);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
-    {
-        if (name == PropertyName.@MyArray) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFromArray(this.@MyArray);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.

@@ -79,7 +79,6 @@ public:
 	void ensure_playback_limit();
 
 	void notification(int p_what);
-	void validate_property(PropertyInfo &p_property) const;
 	bool set(const StringName &p_name, const Variant &p_value);
 	bool get(const StringName &p_name, Variant &r_ret) const;
 	void get_property_list(List<PropertyInfo> *p_list) const;

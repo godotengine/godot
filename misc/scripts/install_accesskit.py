@@ -20,7 +20,7 @@ else:
     deps_folder = os.path.join("bin", "build_deps")
 
 # AccessKit
-ac_version = "0.22.3-1"
+ac_version = "0.23.1"
 
 # Create dependencies folder
 if not os.path.exists(deps_folder):
@@ -45,5 +45,8 @@ print(f"Extracting AccessKit {ac_filename} to {ac_folder} ...")
 shutil.unpack_archive(ac_archive, deps_folder)
 os.remove(ac_archive)
 os.rename(os.path.join(deps_folder, "accesskit-c-" + ac_version), ac_folder)
+
+with open(os.path.join(ac_folder, "version"), "w") as f:
+    f.write(ac_version)
 
 print("AccessKit installed successfully.\n")

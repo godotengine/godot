@@ -25,10 +25,6 @@
 #include "math_libm.h"
 #include "math_private.h"
 
-#ifdef __WATCOMC__ /* Watcom defines huge=__huge */
-#undef huge
-#endif
-
 static const double huge = 1.0e300;
 
 double floor(double x)

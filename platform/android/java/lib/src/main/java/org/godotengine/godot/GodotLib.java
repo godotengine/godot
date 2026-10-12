@@ -41,7 +41,11 @@ import org.godotengine.godot.variant.Callable;
 import android.app.Activity;
 import android.content.res.AssetManager;
 import android.hardware.SensorEvent;
+import android.os.Bundle;
 import android.view.Surface;
+import android.view.View;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityNodeProvider;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -109,14 +113,25 @@ public class GodotLib {
 	public static native void ttsCallback(int event, long id, int pos);
 
 	/**
+	 * Accesskit.
+	 */
+
+	static native boolean createAccessKitAdapter(long windowID);
+	static native void freeAccessKitAdapter(long windowID);
+	static native AccessibilityNodeInfo createAccessibilityNodeInfo(long windowID, View host, int virtualViewId);
+	static native AccessibilityNodeInfo findAccessibilityFocus(long windowID, View host, int focusType);
+	static native boolean performAccessibilityAction(long windowID, View host, int virtualViewId, int action, Bundle arguments);
+	static native boolean onAccessibilityHoverEvent(long windowID, View host, int action, float x, float y);
+
+	/**
 	 * Forward touch events.
 	 */
-	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap);
+	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap, boolean longPress);
 
 	/**
 	 * Dispatch mouse events
 	 */
-	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY);
+	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY, boolean emulated);
 
 	public static native void magnify(float x, float y, float factor);
 

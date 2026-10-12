@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'org.godotengine.editor.v4.macrobenchmark'
+    namespace = 'org.godotengine.editor.v4.macrobenchmark'
     compileSdk versions.compileSdk
 
     compileOptions {

@@ -182,7 +182,7 @@ class CommandQueueMT {
 
 			// Protect against race condition between this thread
 			// during the call to the command and other threads potentially
-			// invalidating the pointer due to reallocs by relocating the object.
+			// invalidating the pointer due to reallocs by relocating the object (see GH-100509).
 			CommandBase *cmd_original = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 			CommandBase *cmd_local = reinterpret_cast<CommandBase *>(cmd_local_mem);
 			memcpy(cmd_local_mem, (char *)cmd_original, size);

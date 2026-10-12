@@ -31,13 +31,68 @@ inline double MaxEpsilon(double minEpsilon, const Box& bBox) {
 }
 
 inline int NextHalfedge(int current) {
-  ++current;
-  if (current % 3 == 0) current -= 3;
+  current += current % 3 == 2 ? -2 : 1;
   return current;
 }
 
+inline int PrevHalfedge(int current) {
+  current += current % 3 == 0 ? 2 : -1;
+  return current;
+}
+
+/**
+When a transform is applied to the verts of an object, and different transform
+is needed for the normals. Note that applying this transform will stretch their
+length, so they should be renormalized after.
+*/
 inline mat3 NormalTransform(const mat3x4& transform) {
   return la::inverse(la::transpose(mat3(transform)));
+}
+
+/**
+This is the corresponding normal transform for the inverse of the input
+transform.
+*/
+inline mat3 InverseNormalTransform(const mat3x4& transform) {
+  return la::inverse(la::transpose(la::inverse(mat3(transform))));
+}
+
+/**
+ * Symbolic perturbation primitives shared by Boolean3 and Boolean2.
+ * Carefully designed to minimize FP rounding error and eliminate it at edge
+ * cases.
+ */
+
+inline double withSign(bool pos, double v) { return pos ? v : -v; }
+
+/**
+ * Interpolate the (y, z) of segment aL-aR at the given x. The choice of
+ * (x - aL) vs (x - aR) is the smaller in magnitude, which keeps FP error
+ * low near either endpoint. Domain check via DEBUG_ASSERT.
+ */
+inline vec2 Interpolate(vec3 aL, vec3 aR, double x) {
+  const double dxL = x - aL.x;
+  const double dxR = x - aR.x;
+  DEBUG_ASSERT(dxL * dxR <= 0, logicErr,
+               "Boolean manifold error: not in domain");
+  const bool useL = fabs(dxL) < fabs(dxR);
+  const vec3 dLR = aR - aL;
+  const double lambda = (useL ? dxL : dxR) / dLR.x;
+  if (!std::isfinite(lambda) || !std::isfinite(dLR.y) || !std::isfinite(dLR.z))
+    return vec2(aL.y, aL.z);
+  vec2 yz;
+  yz[0] = lambda * dLR.y + (useL ? aL.y : aR.y);
+  yz[1] = lambda * dLR.z + (useL ? aL.z : aR.z);
+  return yz;
+}
+
+/**
+ * `p < q` with symbolic perturbation: when `p == q` exactly, `dir < 0`
+ * acts as the tiebreaker. Used to give consistent strict-ordering answers
+ * regardless of which side of an FP equality we land on.
+ */
+inline bool Shadows(double p, double q, double dir) {
+  return p == q ? dir < 0 : p < q;
 }
 
 /**
@@ -113,8 +168,8 @@ inline vec3 GetBarycentric(const vec3& v, const mat3& triPos,
 }
 
 /**
- * The fundamental component of the halfedge data structure used for storing and
- * operating on the Manifold.
+ * Temporary or value-style halfedge record. Persistent Manifold storage uses
+ * Halfedges below, which derives endVert from the next halfedge in each face.
  */
 struct Halfedge {
   int startVert, endVert;
@@ -125,6 +180,101 @@ struct Halfedge {
     return startVert == other.startVert ? endVert < other.endVert
                                         : startVert < other.startVert;
   }
+};
+
+class Halfedges {
+ public:
+  Halfedges() = default;
+  explicit Halfedges(size_t size) { resize_nofill(size); }
+  explicit Halfedges(const VecView<const Halfedge>& edges) { FromData(edges); }
+
+  size_t size() const { return start_.size(); }
+  bool empty() const { return start_.empty(); }
+
+  int Start(int idx) const { return start_[idx]; }
+  int End(int idx) const { return start_[NextHalfedge(idx)]; }
+  int Pair(int idx) const { return paired_[idx]; }
+  int Prop(int idx) const { return propVert_[idx]; }
+
+  void SetStart(int idx, int vert) { start_[idx] = vert; }
+  void SetEnd(int idx, int vert) { start_[NextHalfedge(idx)] = vert; }
+  void SetPair(int idx, int pair) { paired_[idx] = pair; }
+  void SetProp(int idx, int prop) { propVert_[idx] = prop; }
+
+  bool IsForward(int idx) const { return Start(idx) < End(idx); }
+
+  Halfedge Get(int idx) const {
+    return {Start(idx), End(idx), Pair(idx), Prop(idx)};
+  }
+
+  void Set(int idx, int startVert, int pairedHalfedge, int propVert) {
+    SetStart(idx, startVert);
+    SetPair(idx, pairedHalfedge);
+    SetProp(idx, propVert);
+  }
+
+  void push_back(int startVert, int pairedHalfedge, int propVert) {
+    start_.push_back(startVert);
+    paired_.push_back(pairedHalfedge);
+    propVert_.push_back(propVert);
+  }
+
+  void resize(size_t newSize) {
+    start_.resize(newSize, -1);
+    paired_.resize(newSize, -1);
+    propVert_.resize(newSize, -1);
+  }
+
+  void resize_nofill(size_t newSize) {
+    start_.resize_nofill(newSize);
+    paired_.resize_nofill(newSize);
+    propVert_.resize_nofill(newSize);
+  }
+
+  void clear(bool shrink = true) {
+    start_.clear(shrink);
+    paired_.clear(shrink);
+    propVert_.clear(shrink);
+  }
+
+  void MakeUnique() {
+    start_.MakeUnique();
+    paired_.MakeUnique();
+    propVert_.MakeUnique();
+  }
+
+  Vec<Halfedge> ToData() const {
+    Vec<Halfedge> data(size());
+    for_each_n(autoPolicy(size()), countAt(0), size(),
+               [this, &data](int idx) { data[idx] = Get(idx); });
+    return data;
+  }
+
+  void FromData(const VecView<const Halfedge>& data) {
+    clear(true);
+    resize_nofill(data.size());
+    for_each_n(autoPolicy(data.size()), countAt(0), data.size(),
+               [this, &data](int idx) {
+                 start_[idx] = data[idx].startVert;
+                 paired_[idx] = data[idx].pairedHalfedge;
+                 propVert_[idx] = data[idx].propVert;
+               });
+#ifdef MANIFOLD_DEBUG
+    DEBUG_ASSERT(data.size() % 3 == 0, topologyErr,
+                 "Halfedges::FromData requires triangle faces!");
+    for (size_t idx = 0; idx < data.size(); ++idx) {
+      const int next = NextHalfedge(static_cast<int>(idx));
+      if (data[idx].endVert >= 0 && data[next].startVert >= 0) {
+        DEBUG_ASSERT(data[idx].endVert == data[next].startVert, topologyErr,
+                     "Halfedges::FromData requires triangle-ordered edges!");
+      }
+    }
+#endif
+  }
+
+  SharedVec<int> start_;
+  SharedVec<int> paired_;
+  SharedVec<int> propVert_;
 };
 
 struct Barycentric {
@@ -140,10 +290,13 @@ struct TriRef {
   /// The OriginalID of the mesh this triangle came from. This ID is ideal for
   /// reapplying properties like UV coordinates to the output mesh.
   int originalID;
-  /// Probably the triangle index of the original triangle this was part of:
-  /// Mesh.triVerts[tri], but it's an input, so just pass it along unchanged.
+  /// If set as an input of MeshGL, it is passed along unchanged. This is how
+  /// the user can tell us not to collapse certain edges: those that divide
+  /// difference faceIDs. If not set, this is always -1.
   int faceID;
-  /// Triangles with the same coplanar ID are coplanar.
+  /// Triangles with the same coplanar ID are coplanar. Starts as a canonical
+  /// triangle index, but after boolean operations it may refer to a triangle
+  /// that is no longer present in this mesh.
   int coplanarID;
 
   bool SameFace(const TriRef& other) const {
@@ -171,13 +324,12 @@ struct TmpEdge {
   }
 };
 
-Vec<TmpEdge> inline CreateTmpEdges(const Vec<Halfedge>& halfedge) {
+Vec<TmpEdge> inline CreateTmpEdges(const Halfedges& halfedge) {
   Vec<TmpEdge> edges(halfedge.size());
   for_each_n(autoPolicy(edges.size()), countAt(0), edges.size(),
              [&edges, &halfedge](const int idx) {
-               const Halfedge& half = halfedge[idx];
-               edges[idx] = TmpEdge(half.startVert, half.endVert,
-                                    half.IsForward() ? idx : -1);
+               edges[idx] = TmpEdge(halfedge.Start(idx), halfedge.End(idx),
+                                    halfedge.IsForward(idx) ? idx : -1);
              });
 
   size_t numEdge =

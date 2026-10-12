@@ -4427,9 +4427,9 @@ String String::uri_decode() const {
 	for (int i = 0; i < src.length(); ++i) {
 		if (src[i] == '%' && i + 2 < src.length()) {
 			char ord1 = src[i + 1];
-			if (is_digit(ord1) || is_ascii_upper_case(ord1)) {
+			if (is_hex_digit(ord1)) {
 				char ord2 = src[i + 2];
-				if (is_digit(ord2) || is_ascii_upper_case(ord2)) {
+				if (is_hex_digit(ord2)) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;
@@ -4452,9 +4452,9 @@ String String::uri_file_decode() const {
 	for (int i = 0; i < src.length(); ++i) {
 		if (src[i] == '%' && i + 2 < src.length()) {
 			char ord1 = src[i + 1];
-			if (is_digit(ord1) || is_ascii_upper_case(ord1)) {
+			if (is_hex_digit(ord1)) {
 				char ord2 = src[i + 2];
-				if (is_digit(ord2) || is_ascii_upper_case(ord2)) {
+				if (is_hex_digit(ord2)) {
 					char bytes[3] = { (char)ord1, (char)ord2, 0 };
 					res += (char)strtol(bytes, nullptr, 16);
 					i += 2;

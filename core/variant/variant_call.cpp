@@ -2118,6 +2118,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector2, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector2, is_zero_approx, sarray(), varray());
 	bind_method(Vector2, is_finite, sarray(), varray());
+	bind_method(Vector2, inverse, sarray(), varray());
 	bind_method(Vector2, posmod, sarray("mod"), varray());
 	bind_method(Vector2, posmodv, sarray("modv"), varray());
 	bind_method(Vector2, project, sarray("b"), varray());

@@ -257,22 +257,10 @@ EditorSelectionHistory::EditorSelectionHistory() {
 
 ////////////////////////////////////////////////////////////
 
-EditorPlugin *EditorData::get_handling_main_editor(Object *p_object) {
-	// We need to iterate backwards so that we can check user-created plugins first.
-	// Otherwise, it would not be possible for plugins to handle CanvasItem and Spatial nodes.
-	for (int i = editor_plugins.size() - 1; i > -1; i--) {
-		if (editor_plugins[i]->has_main_screen() && editor_plugins[i]->handles(p_object)) {
-			return editor_plugins[i];
-		}
-	}
-
-	return nullptr;
-}
-
 Vector<EditorPlugin *> EditorData::get_handling_sub_editors(Object *p_object) {
 	Vector<EditorPlugin *> sub_plugins;
 	for (EditorPlugin *plugin : editor_plugins) {
-		if (!plugin->has_main_screen() && plugin->handles(p_object)) {
+		if (plugin->handles(p_object)) {
 			sub_plugins.push_back(plugin);
 		}
 	}
@@ -719,6 +707,13 @@ void EditorData::set_scene_root(int p_idx, Node *p_root) {
 	if (!scene_info.path.is_empty()) {
 		scene_info.file_modified_time = FileAccess::get_modified_time(scene_info.path);
 	}
+}
+
+void EditorData::set_scene_resource(int p_idx, const Ref<PackedScene> &p_scene) {
+	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	EditedScene &scene_info = edited_scene.write[p_idx];
+
+	scene_info.scene = p_scene;
 }
 
 bool EditorData::_find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths) {

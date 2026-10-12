@@ -60,7 +60,6 @@ class AudioEffectCompressor : public AudioEffect {
 	StringName sidechain;
 
 protected:
-	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:

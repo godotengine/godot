@@ -53,13 +53,20 @@ class LipO : public RefCounted {
 		return (a - s % a);
 	}
 
+	static bool _create_file(const String &p_output_path, const Vector<Ref<FileAccess>> &p_files, const Vector<Vector2i> &p_cputypes);
+
 public:
 	static bool is_lipo(const String &p_path);
+	static bool is_lipo(const PackedByteArray &p_buffer);
+	static bool is_lipo(const Ref<FileAccess> &p_fa);
 
-	bool create_file(const String &p_output_path, const Vector<String> &p_files);
-	bool create_file(const String &p_output_path, const Vector<String> &p_files, const Vector<Vector2i> &p_cputypes);
+	static bool create_file(const String &p_output_path, const Vector<String> &p_files, const Vector<Vector2i> &p_cputypes = Vector<Vector2i>());
+	static bool create_file(const String &p_output_path, const Vector<PackedByteArray> &p_file_buffers, const Vector<Vector2i> &p_cputypes = Vector<Vector2i>());
 
 	bool open_file(const String &p_path);
+	bool open_buffer(const PackedByteArray &p_buffer);
+	bool open_file(const Ref<FileAccess> &p_fa);
+
 	int get_arch_count() const;
 	uint32_t get_arch_cputype(int p_index) const;
 	uint32_t get_arch_cpusubtype(int p_index) const;

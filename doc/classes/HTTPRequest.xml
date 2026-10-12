@@ -7,7 +7,7 @@
 		A node with the ability to send HTTP requests. Uses [HTTPClient] internally.
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
 		[b]Warning:[/b] See the notes and warnings on [HTTPClient] for limitations, especially regarding TLS security.
-		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using remote deploy. Otherwise, network communication of any kind will be blocked by Android.
 		[b]Example:[/b] Contact a REST API and print one of its returned fields:
 		[codeblocks]
 		[gdscript]

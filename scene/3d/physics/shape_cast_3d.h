@@ -66,6 +66,7 @@ class ShapeCast3D : public Node3D {
 	void _update_debug_shape_material(bool p_check_collision = false);
 	void _update_debug_shape_vertices();
 	void _clear_debug_shape();
+	void _physics_debug_changed();
 
 	// Result
 	int max_results = 32;
@@ -143,4 +144,6 @@ public:
 	void clear_exceptions();
 
 	virtual PackedStringArray get_configuration_warnings() const override;
+
+	ShapeCast3D();
 };

@@ -107,7 +107,10 @@ RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const Vector<Vector2> &p
 #ifdef RD_ENABLED
 	ERR_FAIL_COND_V(p_eye_foci.is_empty(), RID());
 
-	Size2i texel_size = RD::get_singleton()->vrs_get_texel_size();
+	const RD *rd = RD::get_singleton();
+	ERR_FAIL_NULL_V(rd, RID());
+
+	Size2i texel_size = rd->vrs_get_texel_size();
 
 	// Should return sensible data or graphics API does not support VRS.
 	ERR_FAIL_COND_V(texel_size.x < 1 || texel_size.y < 1, RID());

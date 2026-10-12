@@ -78,6 +78,14 @@
 #include "scene/resources/packed_scene.h"
 #include "servers/display/display_server.h"
 
+#ifdef WEB_ENABLED
+#include "core/os/time.h"
+#include "editor/export/project_zip_packer.h"
+extern "C" {
+extern void godot_js_os_download_buffer(const uint8_t *p_buf, int p_buf_size, const char *p_name, const char *p_mime);
+}
+#endif // WEB_ENABLED
+
 Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
 	TreeItem *item = get_item_at_position(get_local_mouse_position());
 	if (!item) {
@@ -542,7 +550,6 @@ void FileSystemDock::_update_display_mode(bool p_force) {
 
 			files->set_theme_type_variation("ItemListSecondary");
 			files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_DISABLED);
-			files_mc->set_theme_type_variation("");
 
 			toolbar2_hbc->hide();
 			button_file_list_display_mode->show();
@@ -817,8 +824,13 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 		return;
 	}
 
-	// Unfold all folders along the path.
+	// Unfold all folders along the path...
 	TreeItem *ti = *directory_ptr;
+	// ...minus itself, if the target is a folder.
+	if (target_path == base_dir_path) {
+		ti = ti->get_parent();
+	}
+
 	while (ti) {
 		ti->set_collapsed(false);
 		ti = ti->get_parent();
@@ -1870,12 +1882,12 @@ void FileSystemDock::_folder_removed(const String &p_folder) {
 	}
 }
 
-void FileSystemDock::_rename_operation_confirm() {
+void FileSystemDock::_rename_operation_confirm(bool p_from_tree) {
 	String new_name;
 	TreeItem *ti = tree->get_edited();
 	int col_index = tree->get_edited_column();
 
-	if (ti) {
+	if (p_from_tree) {
 		new_name = ti->get_text(col_index).strip_edges();
 	} else {
 		new_name = files->get_edit_text().strip_edges();
@@ -2286,6 +2298,45 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 			OS::get_singleton()->shell_show_in_file_manager(dir, true);
+		} break;
+
+		case FILE_MENU_DOWNLOAD: {
+#ifdef WEB_ENABLED
+			String fpath = ProjectSettings::get_singleton()->globalize_path(current_path);
+			const bool is_directory = DirAccess::dir_exists_absolute(fpath);
+			if (is_directory) {
+				String output_name;
+				if (current_path == "res://") {
+					output_name = ProjectZIPPacker::get_project_zip_safe_name();
+				} else {
+					output_name = fpath.rstrip("/").get_file().to_lower().replace_char(' ', '_');
+					const String datetime_safe =
+							Time::get_singleton()->get_datetime_string_from_system(false, true).replace_char(' ', '_');
+					output_name = vformat("%s_%s.zip", output_name, datetime_safe);
+				}
+				const String output_path = String("/tmp").path_join(output_name);
+				ProjectZIPPacker::pack_zip_absolute_path(output_path, fpath);
+
+				{
+					Ref<FileAccess> f = FileAccess::open(output_path, FileAccess::READ);
+					ERR_FAIL_COND_MSG(f.is_null(), "Unable to create ZIP file.");
+					LocalVector<uint8_t> buf;
+					buf.resize(f->get_length());
+					f->get_buffer(buf.ptr(), buf.size());
+					godot_js_os_download_buffer(buf.ptr(), buf.size(), output_name.utf8().get_data(), "application/zip");
+				}
+
+				// Remove the temporary file since it was sent to the user's native filesystem as a download.
+				DirAccess::remove_file_or_error(output_path);
+			} else {
+				Ref<FileAccess> f = FileAccess::open(current_path, FileAccess::READ);
+				ERR_FAIL_COND_MSG(f.is_null(), vformat("Failed to open file %s", current_path));
+				LocalVector<uint8_t> buf;
+				buf.resize(f->get_length());
+				f->get_buffer(buf.ptr(), buf.size());
+				godot_js_os_download_buffer(buf.ptr(), buf.size(), current_path.get_file().utf8().get_data(), "application/octet-stream");
+			}
+#endif // WEB_ENABLED
 		} break;
 
 		case FILE_MENU_OPEN_EXTERNAL: {
@@ -2810,6 +2861,10 @@ int FileSystemDock::_get_menu_option_from_key(const Ref<InputEventKey> &p_key) {
 		return FILE_MENU_OPEN_EXTERNAL;
 	} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_terminal", p_key)) {
 		return FILE_MENU_OPEN_IN_TERMINAL;
+#endif
+#ifdef WEB_ENABLED
+	} else if (ED_IS_SHORTCUT("filesystem_dock/download_source", p_key)) {
+		return FILE_MENU_DOWNLOAD;
 #endif
 	} else if (ED_IS_SHORTCUT("filesystem_dock/focus_path", p_key)) {
 		return EXTRA_FOCUS_PATH;
@@ -3417,7 +3472,7 @@ void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu)
 	emit_signal(SNAME("folder_color_changed"));
 }
 
-void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options) {
+void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vector<String> &p_paths, bool p_display_path_dependent_options, bool p_show_expand_options) {
 	Vector<String> filenames;
 	Vector<String> foldernames;
 
@@ -3510,14 +3565,16 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 	bool root_path_not_selected = !no_paths && p_paths[0] != "res://" && (p_paths.size() <= 1 || p_paths[1] != "res://");
 
 	if (all_folders && foldernames.size() > 0) {
-		p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
+		if (p_show_expand_options) {
+			p_popup->add_icon_item(get_editor_theme_icon(SNAME("Load")), TTRC("Expand Folder"), FILE_MENU_OPEN);
 
-		if (foldernames.size() == 1) {
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
-			p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
+			if (foldernames.size() == 1) {
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), TTRC("Expand Hierarchy"), FILE_MENU_EXPAND_ALL);
+				p_popup->add_icon_item(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), TTRC("Collapse Hierarchy"), FILE_MENU_COLLAPSE_ALL);
+			}
+
+			p_popup->add_separator();
 		}
-
-		p_popup->add_separator();
 
 		// Only add the 'Set Folder Color...' option if the root path is not selected.
 		if (root_path_not_selected) {
@@ -3669,19 +3726,27 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, const Vect
 			p_popup->add_separator();
 			added_separator = true;
 		}
+		{
+			// Opening the system file manager is not supported on the Android and web editors.
+			const bool is_directory = fpath.ends_with("/");
 
-		// Opening the system file manager is not supported on the Android and web editors.
-		const bool is_directory = fpath.ends_with("/");
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
+			p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_OPEN_IN_TERMINAL), is_directory ? TTRC("Open in Terminal") : TTRC("Open Folder in Terminal"));
 
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Terminal")), ED_GET_SHORTCUT("filesystem_dock/open_in_terminal"), FILE_MENU_OPEN_IN_TERMINAL);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_OPEN_IN_TERMINAL), is_directory ? TTRC("Open in Terminal") : TTRC("Open Folder in Terminal"));
+			if (!is_directory) {
+				p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_MENU_OPEN_EXTERNAL);
+			}
 
-		if (!is_directory) {
-			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("ExternalLink")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_MENU_OPEN_EXTERNAL);
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
+			p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_SHOW_IN_EXPLORER), is_directory ? OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN) : OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW));
 		}
-
-		p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Filesystem")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_MENU_SHOW_IN_EXPLORER);
-		p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_SHOW_IN_EXPLORER), is_directory ? OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_OPEN) : OS::get_singleton()->get_platform_string(OS::PLATFORM_STRING_FILE_MANAGER_SHOW));
+#endif
+#ifdef WEB_ENABLED
+		{
+			const bool is_directory = fpath.ends_with("/");
+			p_popup->add_icon_shortcut(get_editor_theme_icon(SNAME("Download")), ED_GET_SHORTCUT("filesystem_dock/download_source"), FILE_MENU_DOWNLOAD);
+			p_popup->set_item_text(p_popup->get_item_index(FILE_MENU_DOWNLOAD), is_directory ? TTRC("Download Folder as ZIP") : TTRC("Download File"));
+		}
 #endif
 
 		current_path = fpath;
@@ -3814,7 +3879,7 @@ void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, M
 	// Popup.
 	if (!paths.is_empty()) {
 		file_list_popup->clear();
-		_file_and_folders_fill_popup(file_list_popup, paths, searched_tokens.is_empty());
+		_file_and_folders_fill_popup(file_list_popup, paths, searched_tokens.is_empty(), false);
 		file_list_popup->set_position(files->get_screen_position() + p_pos);
 		file_list_popup->reset_size();
 		file_list_popup->popup();
@@ -4089,6 +4154,10 @@ bool FileSystemDock::_get_imported_files(const String &p_path, String &r_extensi
 	Ref<DirAccess> da = DirAccess::open(p_path);
 	ERR_FAIL_COND_V(da.is_null(), false);
 
+	if (da->file_exists(".gdignore")) {
+		return true;
+	}
+
 	da->list_dir_begin();
 	String n = da->get_next();
 	while (!n.is_empty()) {
@@ -4140,39 +4209,12 @@ void FileSystemDock::_update_import_dock() {
 		_get_imported_files(fpath, extension, efiles);
 	}
 
-	// Check import.
-	Vector<String> imports;
-	String import_type;
-	for (int i = 0; i < efiles.size(); i++) {
-		const String &fpath = efiles[i];
-		Ref<ConfigFile> cf;
-		cf.instantiate();
-		Error err = cf->load(fpath + ".import");
-		if (err != OK) {
-			imports.clear();
-			break;
-		}
-
-		String type;
-		if (cf->has_section_key("remap", "type")) {
-			type = cf->get_value("remap", "type");
-		}
-		if (import_type.is_empty()) {
-			import_type = type;
-		} else if (import_type != type) {
-			// All should be the same type.
-			imports.clear();
-			break;
-		}
-		imports.push_back(fpath);
-	}
-
-	if (imports.is_empty()) {
+	if (efiles.is_empty()) {
 		ImportDock::get_singleton()->clear();
-	} else if (imports.size() == 1) {
-		ImportDock::get_singleton()->set_edit_path(imports[0]);
+	} else if (efiles.size() == 1) {
+		ImportDock::get_singleton()->set_edit_path(efiles[0]);
 	} else {
-		ImportDock::get_singleton()->set_edit_multiple_paths(imports);
+		ImportDock::get_singleton()->set_edit_multiple_paths(efiles);
 	}
 
 	import_dock_needs_update = false;
@@ -4341,6 +4383,8 @@ void FileSystemDock::load_layout_from_config(const Ref<ConfigFile> &p_layout, co
 		} else {
 			uncollapsed_tis = { "res://" };
 		}
+
+		favorites_item->set_collapsed(!uncollapsed_tis.has("Favorites"));
 
 		TreeItem *item = tree->get_item_with_metadata("res://", 0);
 		item->set_collapsed_recursive(true);
@@ -4518,7 +4562,9 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTRC("Open in External Program"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::E);
 	ED_SHORTCUT("filesystem_dock/open_in_terminal", TTRC("Open in Terminal"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::T);
 #endif
-
+#ifdef WEB_ENABLED
+	ED_SHORTCUT("filesystem_dock/download_source", TTRC("Download File(s)"), Key::NONE);
+#endif
 	ED_SHORTCUT("filesystem_dock/focus_path", TTRC("Focus Path"), KeyModifierMask::CMD_OR_CTRL | Key::L);
 	// Allow both Cmd + L and Cmd + Shift + G to match Safari's and Finder's shortcuts respectively.
 	ED_SHORTCUT_OVERRIDE_ARRAY("filesystem_dock/focus_path", "macos",
@@ -4632,7 +4678,7 @@ FileSystemDock::FileSystemDock() {
 	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_tree_gui_input));
 	tree->connect(SceneStringName(mouse_exited), callable_mp(this, &FileSystemDock::_tree_mouse_exited));
-	tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
+	tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm).bind(true));
 
 	file_list_vb = memnew(VBoxContainer);
 	file_list_vb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -4652,11 +4698,6 @@ FileSystemDock::FileSystemDock() {
 
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);
-
-	files_mc = memnew(MarginContainer);
-	file_list_vb->add_child(files_mc);
-	files_mc->set_theme_type_variation("NoBorderHorizontalBottom");
-	files_mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	bottom_toolbar_hbc = memnew(HBoxContainer);
 	bottom_toolbar_hbc->set_alignment(BoxContainer::ALIGNMENT_END);
@@ -4690,15 +4731,16 @@ FileSystemDock::FileSystemDock() {
 	files->set_accessibility_name(TTRC("Files"));
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
+	files->set_allow_rmb_select(true);
+	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
+	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
 	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
 	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
 	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
-	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
-	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
-	files->set_allow_rmb_select(true);
-	files_mc->add_child(files);
+	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm).bind(false));
+	file_list_vb->add_child(files);
 
 	scanning_vb = memnew(VBoxContainer);
 	scanning_vb->hide();
@@ -4812,6 +4854,14 @@ FileSystemDock::FileSystemDock() {
 	display_mode = DISPLAY_MODE_TREE_ONLY;
 	old_display_mode = DISPLAY_MODE_TREE_ONLY;
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
+
+	List<PropertyInfo> property_list;
+	ProjectSettings::get_singleton()->get_property_list(&property_list);
+	for (const PropertyInfo &pi : property_list) {
+		if (pi.type == Variant::STRING && pi.hint == PROPERTY_HINT_FILE) {
+			path_project_settings.push_back(pi.name);
+		}
+	}
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_project_settings_changed));
 	EditorSettings::get_singleton()->connect("_favorites_changed", callable_mp(this, &FileSystemDock::update_all));

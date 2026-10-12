@@ -131,7 +131,7 @@ public:
 
 	// MARK: Touches and Apple Pencil
 
-	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click);
+	void touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click, bool p_long_press);
 	void touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_pressure, Vector2 p_tilt);
 	void touches_canceled(int p_idx);
 
@@ -151,6 +151,7 @@ public:
 	// MARK: -
 
 	virtual bool has_feature(DisplayServerEnums::Feature p_feature) const override;
+	virtual int accessibility_screen_reader_active() const override;
 
 	virtual bool tts_is_speaking() const override;
 	virtual bool tts_is_paused() const override;

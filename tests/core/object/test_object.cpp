@@ -103,8 +103,8 @@ public:
 	}
 	void notification(int p_notification, bool p_reversed = false) override {
 	}
-	Ref<Script> get_script() const override {
-		return Ref<Script>();
+	Script *get_script() const override {
+		return nullptr;
 	}
 	const Variant get_rpc_config() const override {
 		return Variant();

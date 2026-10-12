@@ -100,7 +100,7 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	if (!line_edit->is_editing() && !format.is_empty() && !use_default_format) {
 		const Variant current_value = get_value();
 		bool error = false;
-		const String text = format.sprintf(Span(&current_value, 1), &error);
+		const String text = _get_xl_format().sprintf(Span(&current_value, 1), &error);
 		if (error) {
 			line_edit->set_text_with_selection(RTR("<Invalid>"));
 			return;
@@ -124,7 +124,7 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 		if (!format.is_empty()) {
 			const Variant current_value = value;
 			bool error = false;
-			value = format.sprintf(Span(&current_value, 1), &error);
+			value = _get_xl_format().sprintf(Span(&current_value, 1), &error);
 			if (error) {
 				line_edit->set_text_with_selection(RTR("<Invalid>"));
 				return;
@@ -212,6 +212,21 @@ void SpinBox::_text_changed(const String &p_string) {
 	}
 }
 
+String SpinBox::_get_xl_format() const {
+	bool translated = false;
+	if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_ALWAYS) {
+		translated = true;
+	} else if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
+		translated = can_auto_translate();
+	}
+	if (!translated) {
+		return format;
+	} else if (plural_format.is_empty()) {
+		return tr(format);
+	}
+	return tr_n(format, plural_format, get_value());
+}
+
 LineEdit *SpinBox::get_line_edit() {
 	return line_edit;
 }
@@ -253,11 +268,18 @@ void SpinBox::_release_mouse_from_drag_mode() {
 		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_HIDDEN);
 		warp_mouse(drag.capture_pos);
 		Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_VISIBLE);
+		play_theme_sound(theme_cache.drag_ended_sound);
 	}
 }
 
 void SpinBox::_arrow_clicked(bool p_up) {
 	double arrow_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
+
+	// Play the sound before setting the value, so that the "disabled" sound
+	// does not play when the value was changed one last time before reaching the limit.
+	const bool disabled = !is_editable() || (p_up && state_cache.up_button_disabled) || (!p_up && state_cache.down_button_disabled);
+	play_theme_sound(disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
+
 	if (custom_arrow_round) {
 		// Arrow button is being pressed, snap the value to next `arrow_step`.
 		// `arrow_step` should be a multiple of `step`, otherwise it may not be able to increase/decrease the value.
@@ -328,17 +350,21 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 			case MouseButton::RIGHT: {
 				line_edit->grab_focus(true);
 				if (mouse_on_up_button || mouse_on_down_button) {
+					const bool disabled = mouse_on_up_button ? state_cache.up_button_disabled : state_cache.down_button_disabled;
+					play_theme_sound(disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
 					set_value(mouse_on_up_button ? get_max() : get_min());
 				}
 			} break;
 			case MouseButton::WHEEL_UP: {
 				if (line_edit->is_editing()) {
+					play_theme_sound(state_cache.up_button_disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
 					set_value(get_value() + step * mb->get_factor());
 					accept_event();
 				}
 			} break;
 			case MouseButton::WHEEL_DOWN: {
 				if (line_edit->is_editing()) {
+					play_theme_sound(state_cache.down_button_disabled ? theme_cache.pressed_disabled_sound : theme_cache.pressed_sound);
 					set_value(get_value() - step * mb->get_factor());
 					accept_event();
 				}
@@ -384,6 +410,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 			drag.enabled = true;
 			drag.base_val = get_value();
 			drag.diff_y = 0;
+			play_theme_sound(theme_cache.drag_started_sound);
 		}
 	}
 }
@@ -442,19 +469,22 @@ inline void SpinBox::_compute_sizes() {
 }
 
 inline int SpinBox::_get_widest_button_icon_width() {
-	int max = 0;
+	int width = 0;
 #ifndef DISABLE_DEPRECATED
-	max = MAX(max, theme_cache.updown_icon->get_width());
+	width = MAX(width, theme_cache.updown_icon->get_width());
 #endif
-	max = MAX(max, theme_cache.up_icon->get_width());
-	max = MAX(max, theme_cache.up_hover_icon->get_width());
-	max = MAX(max, theme_cache.up_pressed_icon->get_width());
-	max = MAX(max, theme_cache.up_disabled_icon->get_width());
-	max = MAX(max, theme_cache.down_icon->get_width());
-	max = MAX(max, theme_cache.down_hover_icon->get_width());
-	max = MAX(max, theme_cache.down_pressed_icon->get_width());
-	max = MAX(max, theme_cache.down_disabled_icon->get_width());
-	return max;
+	width = MAX(width, theme_cache.up_icon->get_width());
+	width = MAX(width, theme_cache.up_hover_icon->get_width());
+	width = MAX(width, theme_cache.up_pressed_icon->get_width());
+	width = MAX(width, theme_cache.up_disabled_icon->get_width());
+	width = MAX(width, theme_cache.down_icon->get_width());
+	width = MAX(width, theme_cache.down_hover_icon->get_width());
+	width = MAX(width, theme_cache.down_pressed_icon->get_width());
+	width = MAX(width, theme_cache.down_disabled_icon->get_width());
+	if (theme_cache.icon_max_width > 0) {
+		width = MIN(width, theme_cache.icon_max_width);
+	}
+	return width;
 }
 
 void SpinBox::_notification(int p_what) {
@@ -502,11 +532,14 @@ void SpinBox::_notification(int p_what) {
 				down_icon_modulate = theme_cache.down_hover_icon_modulate;
 			}
 
+			Size2 up_icon_size = _fit_icon_size(up_icon->get_size()).round();
+			Size2 down_icon_size = _fit_icon_size(down_icon->get_size()).round();
+
 			// Compute center icon positions once we know which one is used.
-			int up_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - up_icon->get_width()) / 2;
-			int up_icon_top = (sizing_cache.button_up_height - up_icon->get_height()) / 2;
-			int down_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - down_icon->get_width()) / 2;
-			int down_icon_top = sizing_cache.second_button_top + (sizing_cache.button_down_height - down_icon->get_height()) / 2;
+			int up_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - up_icon_size.width) / 2;
+			int up_icon_top = (sizing_cache.button_up_height - up_icon_size.height) / 2;
+			int down_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - down_icon_size.width) / 2;
+			int down_icon_top = sizing_cache.second_button_top + (sizing_cache.button_down_height - down_icon_size.height) / 2;
 
 			// Draw separators.
 			draw_style_box(theme_cache.up_down_buttons_separator, Rect2(sizing_cache.buttons_left, sizing_cache.buttons_separator_top, sizing_cache.buttons_width, sizing_cache.buttons_vertical_separation));
@@ -526,8 +559,8 @@ void SpinBox::_notification(int p_what) {
 			}
 #endif
 			// Draw arrows.
-			draw_texture(up_icon, Point2i(up_icon_left, up_icon_top), up_icon_modulate);
-			draw_texture(down_icon, Point2i(down_icon_left, down_icon_top), down_icon_modulate);
+			draw_texture_rect(up_icon, Rect2(Point2i(up_icon_left, up_icon_top), up_icon_size));
+			draw_texture_rect(down_icon, Rect2(Point2i(down_icon_left, down_icon_top), down_icon_size));
 
 		} break;
 
@@ -553,6 +586,9 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (format_auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+				_update_text();
+			}
 			queue_redraw();
 		} break;
 
@@ -568,6 +604,18 @@ void SpinBox::_notification(int p_what) {
 			queue_redraw();
 		} break;
 	}
+}
+
+Size2 SpinBox::_fit_icon_size(const Size2 &p_size) const {
+	int max_width = theme_cache.icon_max_width;
+	Size2 icon_size = p_size;
+
+	if (max_width > 0 && icon_size.width > max_width) {
+		icon_size.height = icon_size.height * max_width / icon_size.width;
+		icon_size.width = max_width;
+	}
+
+	return icon_size;
 }
 
 void SpinBox::set_horizontal_alignment(HorizontalAlignment p_alignment) {
@@ -591,6 +639,36 @@ void SpinBox::set_format(const String &p_format) {
 
 String SpinBox::get_format() const {
 	return format;
+}
+
+void SpinBox::set_plural_format(const String &p_format) {
+	if (plural_format == p_format) {
+		return;
+	}
+	plural_format = p_format;
+
+	_update_text();
+	update_configuration_warnings();
+}
+
+void SpinBox::set_format_with_plural(const String &p_format, const String &p_plural) {
+	if (format == p_format && plural_format == p_format) {
+		return;
+	}
+	format = p_format;
+	plural_format = p_plural;
+
+	_update_text();
+	update_configuration_warnings();
+}
+
+void SpinBox::set_format_auto_translate_mode(AutoTranslateMode p_mode) {
+	if (format_auto_translate_mode == p_mode) {
+		return;
+	}
+	format_auto_translate_mode = p_mode;
+	_update_text();
+	notify_property_list_changed();
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -692,6 +770,17 @@ PackedStringArray SpinBox::get_configuration_warnings() const {
 			warnings.push_back(vformat(RTR("The format property is not valid: %s."), error_str));
 		}
 	}
+	if (!plural_format.is_empty()) {
+		bool error = false;
+		const Variant test_value = 0.0;
+		const String error_str = plural_format.sprintf(Span(&test_value, 1), &error);
+		if (error) {
+			warnings.push_back(vformat(RTR("The plural_format property is not valid: %s."), error_str));
+		}
+		if (format.is_empty()) {
+			warnings.push_back(RTR("The format property is empty, while plural_format was specified. It will have no effect."));
+		}
+	}
 	return warnings;
 }
 
@@ -710,6 +799,8 @@ void SpinBox::_update_buttons_state_for_current_value() {
 void SpinBox::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "exp_edit") {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (format_auto_translate_mode == AUTO_TRANSLATE_MODE_DISABLED && p_property.name == "plural_format") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -718,6 +809,10 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("set_format", "format"), &SpinBox::set_format);
 	ClassDB::bind_method(D_METHOD("get_format"), &SpinBox::get_format);
+	ClassDB::bind_method(D_METHOD("set_plural_format", "format"), &SpinBox::set_plural_format);
+	ClassDB::bind_method(D_METHOD("get_plural_format"), &SpinBox::get_plural_format);
+	ClassDB::bind_method(D_METHOD("set_format_auto_translate_mode", "mode"), &SpinBox::set_format_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_format_auto_translate_mode"), &SpinBox::get_format_auto_translate_mode);
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
@@ -740,18 +835,23 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "format", PROPERTY_HINT_PLACEHOLDER_TEXT, "%s"), "set_format", "get_format");
-#ifndef DISABLE_DEPRECATED
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
-#endif
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_arrow_round"), "set_custom_arrow_round", "is_custom_arrow_rounding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
+	ADD_GROUP("Format", "");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "format", PROPERTY_HINT_PLACEHOLDER_TEXT, "%s"), "set_format", "get_format");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "plural_format", PROPERTY_HINT_PLACEHOLDER_TEXT, "%s"), "set_plural_format", "get_plural_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "format_auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_format_auto_translate_mode", "get_format_auto_translate_mode");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
+#endif
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_vertical_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, field_and_buttons_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, icon_max_width);
 #ifndef DISABLE_DEPRECATED
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, set_min_buttons_width_from_icons);
 
@@ -786,6 +886,12 @@ void SpinBox::_bind_methods() {
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, SpinBox, field_and_buttons_separator, "field_and_buttons_separator");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, SpinBox, up_down_buttons_separator, "up_down_buttons_separator");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, SpinBox, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, SpinBox, pressed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, SpinBox, pressed_disabled_sound);
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, SpinBox, drag_started_sound, "drag_started_sound", "Slider");
+	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_SOUND, SpinBox, drag_ended_sound, "drag_ended_sound", "Slider");
 
 	ADD_CLASS_DEPENDENCY("LineEdit");
 }

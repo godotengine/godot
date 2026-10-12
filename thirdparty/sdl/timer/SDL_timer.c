@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 
 // #define DEBUG_TIMERS
 
-#if !defined(SDL_PLATFORM_EMSCRIPTEN) || !defined(SDL_THREADS_DISABLED)
+#if !defined(SDL_PLATFORM_EMSCRIPTEN)
 
 typedef struct SDL_Timer
 {
@@ -301,7 +301,7 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    if (!callback_ms && !callback_ns) {
+    CHECK_PARAM(!callback_ms && !callback_ns) {
         SDL_InvalidParamError("callback");
         return 0;
     }
@@ -374,7 +374,7 @@ bool SDL_RemoveTimer(SDL_TimerID id)
     SDL_TimerMap *prev, *entry;
     bool canceled = false;
 
-    if (!id) {
+    CHECK_PARAM(!id) {
         return SDL_InvalidParamError("id");
     }
 
@@ -407,7 +407,7 @@ bool SDL_RemoveTimer(SDL_TimerID id)
     }
 }
 
-#else
+#else   // Emscripten-specific implementation.
 
 #include <emscripten/emscripten.h>
 #include <emscripten/eventloop.h>
@@ -467,7 +467,7 @@ static SDL_TimerID SDL_CreateTimer(Uint64 interval, SDL_TimerCallback callback_m
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *entry;
 
-    if (!callback_ms && !callback_ns) {
+    CHECK_PARAM(!callback_ms && !callback_ns) {
         SDL_InvalidParamError("callback");
         return 0;
     }
@@ -507,7 +507,7 @@ bool SDL_RemoveTimer(SDL_TimerID id)
     SDL_TimerData *data = &SDL_timer_data;
     SDL_TimerMap *prev, *entry;
 
-    if (!id) {
+    CHECK_PARAM(!id) {
         return SDL_InvalidParamError("id");
     }
 
@@ -533,13 +533,22 @@ bool SDL_RemoveTimer(SDL_TimerID id)
     }
 }
 
-#endif // !SDL_PLATFORM_EMSCRIPTEN || !SDL_THREADS_DISABLED
+#endif // !SDL_PLATFORM_EMSCRIPTEN
+
+#ifdef USE_128BIT_MATH
+typedef unsigned __int128 Uint128;
+#endif
 
 static Uint64 tick_start;
+#ifdef USE_128BIT_MATH
+static Uint64 tick_numerator_ns;
+static Uint64 tick_numerator_ms;
+#else
 static Uint32 tick_numerator_ns;
 static Uint32 tick_denominator_ns;
 static Uint32 tick_numerator_ms;
 static Uint32 tick_denominator_ms;
+#endif
 
 #if defined(SDL_TIMER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 #include <mmsystem.h>
@@ -583,7 +592,9 @@ static void SDLCALL SDL_TimerResolutionChanged(void *userdata, const char *name,
 void SDL_InitTicks(void)
 {
     Uint64 tick_freq;
+#ifndef USE_128BIT_MATH
     Uint32 gcd;
+#endif
 
     if (tick_start) {
         return;
@@ -597,6 +608,10 @@ void SDL_InitTicks(void)
     tick_freq = SDL_GetPerformanceFrequency();
     SDL_assert(tick_freq > 0 && tick_freq <= (Uint64)SDL_MAX_UINT32);
 
+#ifdef USE_128BIT_MATH
+    tick_numerator_ns = ((Uint64)SDL_NS_PER_SECOND << 32) / tick_freq;
+    tick_numerator_ms = ((Uint64)SDL_MS_PER_SECOND << 32) / tick_freq;
+#else
     gcd = SDL_CalculateGCD(SDL_NS_PER_SECOND, (Uint32)tick_freq);
     tick_numerator_ns = (SDL_NS_PER_SECOND / gcd);
     tick_denominator_ns = (Uint32)(tick_freq / gcd);
@@ -604,6 +619,7 @@ void SDL_InitTicks(void)
     gcd = SDL_CalculateGCD(SDL_MS_PER_SECOND, (Uint32)tick_freq);
     tick_numerator_ms = (SDL_MS_PER_SECOND / gcd);
     tick_denominator_ms = (Uint32)(tick_freq / gcd);
+#endif
 
     tick_start = SDL_GetPerformanceCounter();
     if (!tick_start) {
@@ -630,9 +646,12 @@ Uint64 SDL_GetTicksNS(void)
     }
 
     starting_value = (SDL_GetPerformanceCounter() - tick_start);
-    value = (starting_value * tick_numerator_ns);
-    SDL_assert(value >= starting_value);
-    value /= tick_denominator_ns;
+#ifdef USE_128BIT_MATH
+    value = (Uint64)(((Uint128)starting_value * tick_numerator_ns) >> 32);
+#else
+    value = (starting_value / tick_denominator_ns) * tick_numerator_ns +
+            (starting_value % tick_denominator_ns) * tick_numerator_ns / tick_denominator_ns;
+#endif
     return value;
 }
 
@@ -645,9 +664,12 @@ Uint64 SDL_GetTicks(void)
     }
 
     starting_value = (SDL_GetPerformanceCounter() - tick_start);
-    value = (starting_value * tick_numerator_ms);
-    SDL_assert(value >= starting_value);
-    value /= tick_denominator_ms;
+#ifdef USE_128BIT_MATH
+    value = (Uint64)(((Uint128)starting_value * tick_numerator_ms) >> 32);
+#else
+    value = (starting_value / tick_denominator_ms) * tick_numerator_ms +
+            (starting_value % tick_denominator_ms) * tick_numerator_ms / tick_denominator_ms;
+#endif
     return value;
 }
 

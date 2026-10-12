@@ -401,7 +401,7 @@ void ConnectDialog::_update_method_tree() {
 	ScriptInstance *si = target->get_script_instance();
 	if (si) {
 		if (si->get_script()->is_built_in()) {
-			si->get_script()->reload();
+			si->get_script()->reload(true);
 		}
 		List<MethodInfo> methods;
 		si->get_method_list(&methods);
@@ -987,6 +987,7 @@ void ConnectionsDock::_filter_changed(const String &p_text) {
  */
 void ConnectionsDock::_make_or_edit_connection() {
 	NodePath dst_path = connect_dialog->get_dst_path();
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	Node *target = Object::cast_to<Node>(selected_object)->get_node(dst_path);
 
 	ERR_FAIL_NULL(target);
@@ -1121,6 +1122,7 @@ void ConnectionsDock::_connect(const ConnectDialog::ConnectionData &p_cd) {
  * Break single connection w/ undo-redo functionality.
  */
 void ConnectionsDock::_disconnect(const ConnectDialog::ConnectionData &p_cd) {
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	ERR_FAIL_COND(p_cd.source != selected_object); // Shouldn't happen but... Bugcheck.
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -1156,6 +1158,7 @@ void ConnectionsDock::_disconnect_all() {
 		Connection connection = child->get_metadata(0);
 		if (!_is_connection_inherited(connection)) {
 			ConnectDialog::ConnectionData cd = connection;
+			Object *selected_object = ObjectDB::get_instance(selected_object_id);
 			undo_redo->add_do_method(selected_object, "disconnect", cd.signal, cd.get_callable());
 			undo_redo->add_undo_method(selected_object, "connect", cd.signal, cd.get_callable(), cd.flags);
 		}
@@ -1232,6 +1235,7 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 
 	ConnectDialog::ConnectionData cd;
 
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	Node *selected_node = Object::cast_to<Node>(selected_object);
 	Node *dst_node = selected_node->get_owner() ? selected_node->get_owner() : selected_node;
 	if (!dst_node || dst_node->get_script().is_null()) {
@@ -1279,6 +1283,7 @@ void ConnectionsDock::_go_to_method(TreeItem &p_item) {
 
 	Connection connection = p_item.get_metadata(0);
 	ConnectDialog::ConnectionData cd = connection;
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	ERR_FAIL_COND(cd.source != selected_object); // Shouldn't happen but... bugcheck.
 
 	if (!cd.target) {
@@ -1470,6 +1475,7 @@ void ConnectionsDock::_close() {
 }
 
 void ConnectionsDock::_changed_callback() {
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	if (selected_object != nullptr) {
 		update_tree();
 	}
@@ -1532,10 +1538,13 @@ void ConnectionsDock::set_object(Object *p_object) {
 		select_an_object->hide();
 		holder->show();
 	}
-	if (selected_object != nullptr && likely(Variant(selected_object).get_validated_object())) {
+
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
+	if (selected_object != nullptr) {
 		selected_object->disconnect(CoreStringName(property_list_changed), callable_mp(this, &ConnectionsDock::_changed_callback));
 	}
 
+	selected_object_id = p_object ? p_object->get_instance_id() : ObjectID();
 	selected_object = p_object;
 	is_editing_resource = (Object::cast_to<Resource>(selected_object) != nullptr);
 
@@ -1552,6 +1561,7 @@ void ConnectionsDock::update_tree() {
 	}
 	tree->clear();
 
+	Object *selected_object = ObjectDB::get_instance(selected_object_id);
 	if (!selected_object) {
 		return;
 	}

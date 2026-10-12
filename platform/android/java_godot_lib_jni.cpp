@@ -55,6 +55,7 @@
 #include "core/profiling/profiling.h"
 #include "main/main.h"
 #include "servers/camera/camera_server.h"
+#include "servers/display/accessibility_server.h"
 #include "servers/rendering/rendering_server.h"
 
 #ifndef XR_DISABLED
@@ -97,6 +98,11 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 	}
 
 	step.set(STEP_TERMINATED); // Ensure no further steps are attempted and no further events are sent
+
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac && ac->has_window(DisplayServerEnums::MAIN_WINDOW_ID)) {
+		ac->window_destroy(DisplayServerEnums::MAIN_WINDOW_ID);
+	}
 
 	// lets cleanup
 	// Unregister android plugins
@@ -288,6 +294,53 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ttsCallback(JNIEnv *e
 	TTS_Android::_java_utterance_callback(event, id, pos);
 }
 
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_createAccessKitAdapter(JNIEnv *env, jclass clazz, jlong p_window_id) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac && ac->is_supported()) {
+		return ac->window_create((DisplayServerEnums::WindowID)p_window_id, nullptr);
+	}
+	return false;
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_freeAccessKitAdapter(JNIEnv *env, jclass clazz, jlong p_window_id) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac && ac->has_window((DisplayServerEnums::WindowID)p_window_id)) {
+		ac->window_destroy((DisplayServerEnums::WindowID)p_window_id);
+	}
+}
+
+JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_createAccessibilityNodeInfo(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_virtual_view_id) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return (jobject)ac->native_create_node_info((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_virtual_view_id);
+	}
+	return nullptr;
+}
+
+JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_findAccessibilityFocus(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_focus_type) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return (jobject)ac->native_find_focus((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_focus_type);
+	}
+	return nullptr;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_performAccessibilityAction(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_virtual_view_id, jint p_action, jobject p_arguments) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return ac->native_perform_action((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_virtual_view_id, p_action, (void *)p_arguments);
+	}
+	return false;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_onAccessibilityHoverEvent(JNIEnv *env, jclass clazz, jlong p_window_id, jobject p_host, jint p_action, jfloat p_x, jfloat p_y) {
+	AccessibilityServer *ac = AccessibilityServer::get_singleton();
+	if (ac) {
+		return ac->native_on_hover((DisplayServerEnums::WindowID)p_window_id, (void *)p_host, p_action, p_x, p_y);
+	}
+	return false;
+}
+
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jclass clazz) {
 	if (step.get() == STEP_TERMINATED) {
 		return true;
@@ -359,16 +412,16 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchMouseEvent(JNIEnv *env, jclass clazz, jint p_event_type, jint p_button_mask, jfloat p_x, jfloat p_y, jfloat p_delta_x, jfloat p_delta_y, jboolean p_double_click, jboolean p_source_mouse_relative, jfloat p_pressure, jfloat p_tilt_x, jfloat p_tilt_y) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchMouseEvent(JNIEnv *env, jclass clazz, jint p_event_type, jint p_button_mask, jfloat p_x, jfloat p_y, jfloat p_delta_x, jfloat p_delta_y, jboolean p_double_click, jboolean p_source_mouse_relative, jfloat p_pressure, jfloat p_tilt_x, jfloat p_tilt_y, jboolean p_emulated) {
 	if (step.get() <= STEP_SETUP) {
 		return;
 	}
 
-	input_handler->process_mouse_event(p_event_type, p_button_mask, Point2(p_x, p_y), Vector2(p_delta_x, p_delta_y), p_double_click, p_source_mouse_relative, p_pressure, Vector2(p_tilt_x, p_tilt_y));
+	input_handler->process_mouse_event(p_event_type, p_button_mask, Point2(p_x, p_y), Vector2(p_delta_x, p_delta_y), p_double_click, p_source_mouse_relative, p_pressure, Vector2(p_tilt_x, p_tilt_y), p_emulated);
 }
 
 // Called on the UI thread
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint pointer_count, jfloatArray position, jboolean p_double_tap) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JNIEnv *env, jclass clazz, jint ev, jint pointer, jint pointer_count, jfloatArray position, jboolean p_double_tap, jboolean p_long_press) {
 	if (step.get() <= STEP_SETUP) {
 		return;
 	}
@@ -383,6 +436,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_dispatchTouchEvent(JN
 		tp.pressure = p[3];
 		tp.tilt = Vector2(p[4], p[5]);
 		tp.double_tap = p_double_tap;
+		tp.long_press = p_long_press;
 		points.push_back(tp);
 	}
 

@@ -1493,6 +1493,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					if (has_vertex_color) {
 						mat3d->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 					}
+					mat3d->set_name(_gen_unique_name(p_state, vformat("%s_%s", mesh_name, itos(j + 1))));
 					mat = mat3d;
 				}
 				ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
