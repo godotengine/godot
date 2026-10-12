@@ -46,6 +46,13 @@ func bench_array(n: int) -> int:
 		s = (s + arr[i]) & 0x3FFFFFFF
 	return s
 
+func bench_dictionary(n: int) -> int:
+	var dict := {"value": 7}
+	var s := 0
+	for i in n:
+		s = (s + int(dict["value"])) & 0x3FFFFFFF
+	return s
+
 func bench_packed(n: int) -> int:
 	var arr := PackedInt64Array()
 	for i in n:

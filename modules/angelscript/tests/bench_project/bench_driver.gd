@@ -18,6 +18,7 @@ const WORKLOADS := {
 	"bench_calls": 5000000,
 	"bench_class": 5000000,
 	"bench_array": 100000,
+	"bench_dictionary": 100000,
 	"bench_packed": 100000,
 	"bench_string": 8000,
 	"bench_vector": 1000000,

@@ -612,6 +612,41 @@ void as_native_vo_array_refcount_payload() {
 	CHECK(nearly(out, 15.0)); // 5 + 5 + 5
 }
 
+// Dictionary 的 Variant 键值访问回归：字符串键、整数键、缺失键，以及 String/Array/
+// Dictionary 引用计数负载都经过 keyed get/set。实现原生 thunk 前计数应保持为 0。
+void as_native_vo_dictionary_keyed_access() {
+	double out = 0.0;
+	if (!run_double(R"(
+		double main() {
+			Dictionary d;
+			d[Variant("name")] = Variant("hello");
+			d[Variant(7)] = Variant(35);
+			String name = d[Variant("name")];
+			int64 number = d[Variant(7)];
+			int64 missing = d[Variant("missing")]; // 缺失键保持默认值 0
+			return double(name.length()) * 10.0 + double(number) + double(missing);
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 85.0)); // "hello" 长度 5，整数键 35，缺失键 0
+
+	ASNativeValueOps::reset_native_thunk_calls();
+	if (!run_double(R"(
+		double main() {
+			Dictionary d;
+			d[Variant(7)] = Variant(35);
+			int64 value = d[Variant(7)];
+			int64 missing = d[Variant(8)];
+			return double(value + missing);
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 35.0));
+	CHECK(ASNativeValueOps::native_thunk_calls() >= 3); // set、命中 get、缺失 get
+}
+
 // 遗留缺陷回归：`Vector2(a)`（a 为 Vector2）曾因拷贝构造被注册两次
 // （原生生命周期的 `void f(const Vector2 &in)` 与内省构造器清单里的
 // `Vector2(const Vector2&)`）而报「歧义」。这里锁定拷贝构造与相关转换构造均可解析。
@@ -715,4 +750,3 @@ void as_native_vo_extended_types_ops_parity() {
 	)", &out));
 	CHECK(nearly(out, 510.25));
 }
-

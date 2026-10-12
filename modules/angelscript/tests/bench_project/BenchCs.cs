@@ -73,6 +73,17 @@ public partial class BenchCs : Node
 		return s;
 	}
 
+	public long bench_dictionary(long n)
+	{
+		var dict = new Godot.Collections.Dictionary { ["value"] = 7L };
+		long s = 0;
+		for (long i = 0; i < n; i++)
+		{
+			s = (s + (long)dict["value"]) & 0x3FFFFFFF;
+		}
+		return s;
+	}
+
 	public long bench_packed(long n)
 	{
 		var arr = new long[n];

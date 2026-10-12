@@ -80,6 +80,16 @@ class bench_as {
 		return s;
 	}
 
+	int bench_dictionary(int n) {
+		Dictionary dict;
+		dict[Variant("value")] = Variant(7);
+		int s = 0;
+		for (int i = 0; i < n; i++) {
+			s = (s + int(dict[Variant("value")])) & 0x3FFFFFFF;
+		}
+		return s;
+	}
+
 	int bench_packed(int n) {
 		// Packed 标量数组：索引读写走原生 thunk（P2）。
 		PackedInt64Array arr;

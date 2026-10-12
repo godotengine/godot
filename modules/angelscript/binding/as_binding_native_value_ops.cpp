@@ -328,6 +328,21 @@ void thunk_variant_index_set(Variant *self, int64_t index, const Variant *value)
 	self->set_indexed(index, *value, valid, oob);
 }
 
+// ---------- Dictionary 的 Variant 键值索引 ----------
+// Dictionary 的 key/value 都是 Variant，不能复用整数索引 thunk；这里保留 Godot
+// get_keyed/set_keyed 的 valid 语义，并在返回槽中正确构造引用计数负载。
+void thunk_variant_keyed_get(Variant *ret, const Variant *self, const Variant *key) {
+	ASNativeValueOps::note_thunk_call();
+	bool valid = false;
+	new (ret) Variant(self->get_keyed(*key, valid));
+}
+
+void thunk_variant_keyed_set(Variant *self, const Variant *key, const Variant *value) {
+	ASNativeValueOps::note_thunk_call();
+	bool valid = false;
+	self->set_keyed(*key, *value, valid);
+}
+
 } // namespace
 
 namespace ASNativeValueOps {
@@ -675,6 +690,31 @@ bool try_add_index_accessor(asIScriptEngine *p_engine, const String &p_type_name
 	}
 	if (p_engine->RegisterObjectMethod(p_type_name.utf8().get_data(), p_set_decl.utf8().get_data(), asFUNCTION(set_fn), asCALL_CDECL_OBJFIRST) < 0) {
 		ERR_PRINT(vformat("AngelScript: failed to register native packed index setter for '%s' (decl: %s).", p_type_name, p_set_decl));
+		return false;
+	}
+	g_native_registration_count += 2;
+	return true;
+#endif
+}
+
+bool try_add_keyed_accessor(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type, const String &p_get_decl, const String &p_set_decl) {
+#if !AS_NATIVE_VALUE_OPS_ENABLED
+	(void)p_engine;
+	(void)p_type_name;
+	(void)p_type;
+	(void)p_get_decl;
+	(void)p_set_decl;
+	return false;
+#else
+	if (p_type != Variant::DICTIONARY) {
+		return false;
+	}
+	if (p_engine->RegisterObjectMethod(p_type_name.utf8().get_data(), p_get_decl.utf8().get_data(), asFUNCTION(thunk_variant_keyed_get), asCALL_CDECL_OBJFIRST) < 0) {
+		ERR_PRINT(vformat("AngelScript: failed to register native keyed getter for '%s' (decl: %s).", p_type_name, p_get_decl));
+		return false;
+	}
+	if (p_engine->RegisterObjectMethod(p_type_name.utf8().get_data(), p_set_decl.utf8().get_data(), asFUNCTION(thunk_variant_keyed_set), asCALL_CDECL_OBJFIRST) < 0) {
+		ERR_PRINT(vformat("AngelScript: failed to register native keyed setter for '%s' (decl: %s).", p_type_name, p_set_decl));
 		return false;
 	}
 	g_native_registration_count += 2;

@@ -431,18 +431,23 @@ static void register_type_members(asIScriptEngine *p_engine, const String &p_nam
 		}
 	}
 	if (Variant::is_keyed(p_type)) {
-		ASValueBinding *g = memnew(ASValueBinding);
-		g->kind = VT_KEYED_GET;
-		g->type = p_type;
-		g->return_kind = AS_KIND_VALUE;
-		add_method(p_engine, cname, "Variant get_opIndex(const Variant &in key) const property", g);
+		const String keyed_get_decl = "Variant get_opIndex(const Variant &in key) const property";
+		const String keyed_set_decl = "void set_opIndex(const Variant &in key, const Variant &in value) property";
+		// Dictionary 的 keyed accessor 与普通 Array accessor 分开注册，避免重复 opIndex。
+		if (!ASNativeValueOps::try_add_keyed_accessor(p_engine, p_name, p_type, keyed_get_decl, keyed_set_decl)) {
+			ASValueBinding *g = memnew(ASValueBinding);
+			g->kind = VT_KEYED_GET;
+			g->type = p_type;
+			g->return_kind = AS_KIND_VALUE;
+			add_method(p_engine, cname, keyed_get_decl, g);
 
-		ASValueBinding *s = memnew(ASValueBinding);
-		s->kind = VT_KEYED_SET;
-		s->type = p_type;
-		s->param_kinds.push_back(AS_KIND_VALUE);
-		s->param_types.push_back(Variant::NIL);
-		add_method(p_engine, cname, "void set_opIndex(const Variant &in key, const Variant &in value) property", s);
+			ASValueBinding *s = memnew(ASValueBinding);
+			s->kind = VT_KEYED_SET;
+			s->type = p_type;
+			s->param_kinds.push_back(AS_KIND_VALUE);
+			s->param_types.push_back(Variant::NIL);
+			add_method(p_engine, cname, keyed_set_decl, s);
+		}
 	}
 
 	// 运算符：仅注册 (T, T) 形式的二元算术与相等比较。

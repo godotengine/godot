@@ -57,6 +57,7 @@ void as_native_vo_packed_push_back();
 void as_native_vo_string_ops();
 void as_native_vo_array_index();
 void as_native_vo_array_refcount_payload();
+void as_native_vo_dictionary_keyed_access();
 void as_native_vo_copy_ctor_unambiguous();
 void as_native_vo_extended_native_storage();
 void as_native_vo_extended_types_script();
@@ -154,6 +155,10 @@ TEST_CASE("[AngelScript] native value ops array index") {
 
 TEST_CASE("[AngelScript] native value ops array refcount payload") {
 	as_native_vo_array_refcount_payload();
+}
+
+TEST_CASE("[AngelScript] native value ops dictionary keyed access") {
+	as_native_vo_dictionary_keyed_access();
 }
 
 TEST_CASE("[AngelScript] native value ops copy ctor unambiguous") {
