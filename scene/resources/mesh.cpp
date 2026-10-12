@@ -638,8 +638,17 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 						dst.append_array(src);
 						arrays[j] = dst;
 					} break;
+					case ARRAY_BONES: {
+						PackedInt32Array dst = arrays[j];
+						PackedInt32Array src = a[j];
+						if (dst.is_empty() || src.is_empty()) {
+							arrays[j] = Variant();
+							continue;
+						}
+						dst.append_array(src);
+						arrays[j] = dst;
+					} break;
 					case ARRAY_TANGENT:
-					case ARRAY_BONES:
 					case ARRAY_WEIGHTS: {
 						Vector<real_t> dst = arrays[j];
 						Vector<real_t> src = a[j];

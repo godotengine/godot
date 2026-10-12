@@ -647,6 +647,7 @@ public:
 	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override;
 
 	void _update_dirty_skeletons();
+	GLuint skeleton_get_bones_buffer(RID p_skeleton) const;
 
 	_FORCE_INLINE_ bool skeleton_is_valid(RID p_skeleton) {
 		return skeleton_owner.get_or_null(p_skeleton) != nullptr;
