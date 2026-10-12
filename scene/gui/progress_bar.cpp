@@ -152,6 +152,11 @@ void ProgressBar::_notification(int p_what) {
 			if (show_percentage) {
 				double ratio = 0;
 
+				bool is_empty = get_value() == get_min();
+				if (is_empty && percentage_display_location == PERCENTAGE_DISPLAY_FILL) {
+					break;
+				}
+
 				// Avoid division by zero.
 				if (Math::is_equal_approx(get_max(), get_min())) {
 					ratio = 1;
@@ -178,13 +183,63 @@ void ProgressBar::_notification(int p_what) {
 				}
 
 				TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
-				Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
 
-				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
-					tl.draw_outline(get_canvas_item(), text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
+				Size2 txt_bounds = Size2(get_size().width - (theme_cache.percentage_margin_right + theme_cache.percentage_margin_left), get_size().height - (theme_cache.percentage_margin_bottom + theme_cache.percentage_margin_top));
+				Point2 txt_pos = Point2(theme_cache.percentage_margin_left, theme_cache.percentage_margin_top);
+
+				if (percentage_display_location == PERCENTAGE_DISPLAY_FILL) {
+					switch (mode) {
+						case FILL_BEGIN_TO_END:
+						case FILL_END_TO_BEGIN: {
+							int mp = theme_cache.fill_style->get_minimum_size().width;
+							float bound_r = CLAMP(ratio, 0, 1);
+
+							bool right_to_left = mode == (is_layout_rtl() ? FILL_BEGIN_TO_END : FILL_END_TO_BEGIN);
+							if (right_to_left) {
+								txt_pos.x += (1.0 - bound_r) * (txt_bounds.width - mp);
+							}
+							txt_bounds.width = bound_r * (txt_bounds.width - mp) + mp;
+
+						} break;
+						case FILL_TOP_TO_BOTTOM:
+						case FILL_BOTTOM_TO_TOP: {
+							int mp = theme_cache.fill_style->get_minimum_size().height;
+							float bound_r = CLAMP(ratio, 0, 1);
+
+							if (mode == FILL_BOTTOM_TO_TOP) {
+								txt_pos.y += (1.0 - bound_r) * (txt_bounds.height - mp);
+							}
+							txt_bounds.height = bound_r * (txt_bounds.height - mp) + mp;
+						} break;
+						case FILL_MODE_MAX:
+							break;
+					}
+
+					if (txt_bounds.width < tl.get_size().width || txt_bounds.height < tl.get_size().height) {
+						break;
+					}
 				}
 
-				tl.draw(get_canvas_item(), text_pos, theme_cache.font_color);
+				tl.set_width(txt_bounds.width);
+				tl.set_horizontal_alignment(percentage_horizontal_alignment);
+
+				switch (percentage_vertical_alignment) {
+					case VERTICAL_ALIGNMENT_FILL:
+					case VERTICAL_ALIGNMENT_TOP: {
+						//Nothing
+					} break;
+					case VERTICAL_ALIGNMENT_CENTER: {
+						txt_pos.y += (txt_bounds.height - tl.get_size().height) / 2;
+					} break;
+					case VERTICAL_ALIGNMENT_BOTTOM: {
+						txt_pos.y += txt_bounds.height - tl.get_size().height;
+					} break;
+				}
+				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+					tl.draw_outline(get_canvas_item(), txt_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
+				}
+
+				tl.draw(get_canvas_item(), txt_pos, theme_cache.font_color);
 			}
 		} break;
 	}
@@ -209,6 +264,18 @@ int ProgressBar::get_fill_mode() {
 	return mode;
 }
 
+void ProgressBar::set_percentage_display_location(PercentageDisplayLocation p_location) {
+	if (percentage_display_location == p_location) {
+		return;
+	}
+	percentage_display_location = p_location;
+	queue_redraw();
+}
+
+ProgressBar::PercentageDisplayLocation ProgressBar::get_percentage_display_location() const {
+	return percentage_display_location;
+}
+
 void ProgressBar::set_show_percentage(bool p_visible) {
 	if (show_percentage == p_visible) {
 		return;
@@ -220,6 +287,32 @@ void ProgressBar::set_show_percentage(bool p_visible) {
 
 bool ProgressBar::is_percentage_shown() const {
 	return show_percentage;
+}
+
+void ProgressBar::set_percentage_horizontal_alignment(HorizontalAlignment p_alignment) {
+	ERR_FAIL_INDEX((int)p_alignment, 3);
+	if (percentage_horizontal_alignment == p_alignment) {
+		return;
+	}
+	percentage_horizontal_alignment = p_alignment;
+	queue_redraw();
+}
+
+HorizontalAlignment ProgressBar::get_percentage_horizontal_alignment() const {
+	return percentage_horizontal_alignment;
+}
+
+void ProgressBar::set_percentage_vertical_alignment(VerticalAlignment p_alignment) {
+	ERR_FAIL_INDEX((int)p_alignment, 3);
+	if (percentage_vertical_alignment == p_alignment) {
+		return;
+	}
+	percentage_vertical_alignment = p_alignment;
+	queue_redraw();
+}
+
+VerticalAlignment ProgressBar::get_percentage_vertical_alignment() const {
+	return percentage_vertical_alignment;
 }
 
 void ProgressBar::set_indeterminate(bool p_indeterminate) {
@@ -261,8 +354,14 @@ bool ProgressBar::is_editor_preview_indeterminate_enabled() const {
 void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &ProgressBar::set_fill_mode);
 	ClassDB::bind_method(D_METHOD("get_fill_mode"), &ProgressBar::get_fill_mode);
+	ClassDB::bind_method(D_METHOD("set_percentage_display_location", "percentage_display_location"), &ProgressBar::set_percentage_display_location);
+	ClassDB::bind_method(D_METHOD("get_percentage_display_location"), &ProgressBar::get_percentage_display_location);
 	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
 	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
+	ClassDB::bind_method(D_METHOD("set_percentage_horizontal_alignment", "percentage_horizontal_alignment"), &ProgressBar::set_percentage_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("get_percentage_horizontal_alignment"), &ProgressBar::get_percentage_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("set_percentage_vertical_alignment", "percentage_vertical_alignment"), &ProgressBar::set_percentage_vertical_alignment);
+	ClassDB::bind_method(D_METHOD("get_percentage_vertical_alignment"), &ProgressBar::get_percentage_vertical_alignment);
 	ClassDB::bind_method(D_METHOD("set_indeterminate", "indeterminate"), &ProgressBar::set_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_indeterminate"), &ProgressBar::is_indeterminate);
 	ClassDB::bind_method(D_METHOD("set_editor_preview_indeterminate", "preview_indeterminate"), &ProgressBar::set_editor_preview_indeterminate);
@@ -273,11 +372,17 @@ void ProgressBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indeterminate"), "set_indeterminate", "is_indeterminate");
 	ADD_GROUP("Editor", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_preview_indeterminate"), "set_editor_preview_indeterminate", "is_editor_preview_indeterminate_enabled");
+	ADD_GROUP("Percentage Behavior", "percentage_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "percentage_display_location", PROPERTY_HINT_ENUM, "Bar,Fill"), "set_percentage_display_location", "get_percentage_display_location");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "percentage_horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_percentage_horizontal_alignment", "get_percentage_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "percentage_vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_percentage_vertical_alignment", "get_percentage_vertical_alignment");
 
 	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);
 	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);
 	BIND_ENUM_CONSTANT(FILL_TOP_TO_BOTTOM);
 	BIND_ENUM_CONSTANT(FILL_BOTTOM_TO_TOP);
+	BIND_ENUM_CONSTANT(PERCENTAGE_DISPLAY_BAR);
+	BIND_ENUM_CONSTANT(PERCENTAGE_DISPLAY_FILL);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ProgressBar, background_style, "background");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ProgressBar, fill_style, "fill");
@@ -287,6 +392,10 @@ void ProgressBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ProgressBar, font_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, ProgressBar, font_outline_size, "outline_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ProgressBar, font_outline_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ProgressBar, percentage_margin_left);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ProgressBar, percentage_margin_top);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ProgressBar, percentage_margin_right);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, ProgressBar, percentage_margin_bottom);
 }
 
 ProgressBar::ProgressBar() {
