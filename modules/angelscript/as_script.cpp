@@ -44,6 +44,68 @@
 
 static const char *AS_BASE_DIRECTIVE = "// godot_base:";
 
+// 扫描前 10 行里的 `// godot_base:` 指令；找到返回 true 并写出实参，否则返回 false。
+// 必须忽略块注释里的伪指令：源码注释是作者侧文档，`/* ... */` 里恰好有一行以指令开头
+// 时（旧实现按逐行字面量匹配会误采纳）不能左右基类。编辑器高亮词法器早已区分块注释，
+// 这里对齐同一语义：跟踪块注释状态，并跳过字符串/字符字面量与行注释，避免把 `"/*"`
+// 这类文本当成注释开始。
+static bool _scan_base_directive(const Vector<String> &p_lines, String *r_base_type) {
+	const int scan_lines = MIN(p_lines.size(), 10);
+	bool in_block_comment = false;
+	for (int i = 0; i < scan_lines; i++) {
+		const String &line = p_lines[i];
+		const bool line_starts_in_block = in_block_comment;
+		bool in_string = false;
+		char32_t string_quote = 0;
+		for (int j = 0; j < line.length(); j++) {
+			const char32_t c = line[j];
+			if (in_block_comment) {
+				if (c == U'*' && j + 1 < line.length() && line[j + 1] == U'/') {
+					in_block_comment = false;
+					j++;
+				}
+				continue;
+			}
+			if (in_string) {
+				if (c == U'\\') {
+					j++;
+					continue;
+				}
+				if (c == string_quote) {
+					in_string = false;
+				}
+				continue;
+			}
+			if (c == U'/' && j + 1 < line.length()) {
+				if (line[j + 1] == U'*') {
+					in_block_comment = true;
+					j++;
+					continue;
+				}
+				if (line[j + 1] == U'/') {
+					break; // 行注释：本行余下内容不再是代码（含嵌入式指令）。
+				}
+			}
+			if (c == U'"' || c == U'\'') {
+				in_string = true;
+				string_quote = c;
+			}
+		}
+		// 整行位于块注释内时，即便文本看起来像指令也不采纳。
+		if (line_starts_in_block) {
+			continue;
+		}
+		const String trimmed = line.strip_edges();
+		if (trimmed.begins_with(AS_BASE_DIRECTIVE)) {
+			if (r_base_type) {
+				*r_base_type = trimmed.substr(String(AS_BASE_DIRECTIVE).length()).strip_edges();
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
 // AngelScript 的模块名直接复用资源路径：热更时同一路径整体替换（spec §7），
 // 且路径天然唯一，不需要额外的模块名分配表。
 ASScript::ASScript() {
@@ -126,14 +188,10 @@ bool ASScript::compile_source(const String &p_source, const String &p_path, Stri
 	StringName base_type;
 	bool found_directive = false;
 	Vector<String> lines = src.split("\n");
-	const int scan_lines = MIN(lines.size(), 10);
-	for (int i = 0; i < scan_lines; i++) {
-		String line = lines[i].strip_edges();
-		if (line.begins_with(AS_BASE_DIRECTIVE)) {
-			base_type = StringName(line.substr(String(AS_BASE_DIRECTIVE).length()).strip_edges());
-			found_directive = true;
-			break;
-		}
+	String base_directive_arg;
+	if (_scan_base_directive(lines, &base_directive_arg)) {
+		base_type = StringName(base_directive_arg);
+		found_directive = true;
 	}
 
 	if (!found_directive) {

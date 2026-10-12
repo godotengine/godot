@@ -43,6 +43,8 @@ void as_script_derives_class_name_from_path();
 void as_script_tolerates_utf8_bom_and_crlf();
 void as_script_rejects_missing_base_directive();
 void as_script_rejects_unknown_base_type();
+void as_script_ignores_base_directive_inside_block_comment();
+void as_script_rejects_directive_only_inside_block_comment();
 void as_script_rejects_class_name_that_does_not_match_file_name();
 void as_script_rejects_syntax_errors();
 void as_script_rejects_empty_and_whitespace_source();
@@ -77,6 +79,14 @@ TEST_CASE("[AngelScript] ASScript rejects missing base directive") {
 
 TEST_CASE("[AngelScript] ASScript rejects unknown base type") {
 	as_script_rejects_unknown_base_type();
+}
+
+TEST_CASE("[AngelScript] ASScript ignores base directive inside block comment") {
+	as_script_ignores_base_directive_inside_block_comment();
+}
+
+TEST_CASE("[AngelScript] ASScript rejects base directive only inside block comment") {
+	as_script_rejects_directive_only_inside_block_comment();
 }
 
 TEST_CASE("[AngelScript] ASScript rejects class name that does not match file name") {

@@ -113,6 +113,33 @@ void as_script_rejects_unknown_base_type() {
 	CHECK_FALSE(error.is_empty());
 }
 
+void as_script_ignores_base_directive_inside_block_comment() {
+	// 块注释里的伪指令必须忽略，取块注释之后的真指令。
+	Ref<ASScript> script = _compile(
+			"/* legacy note\n// godot_base: Resource\n*/\n// godot_base: Node\nclass enemy_spawner {}\n",
+			"res://enemy_spawner.as");
+	REQUIRE(script.is_valid());
+	if (!script.is_valid()) {
+		return;
+	}
+	CHECK(script->is_script_valid());
+	CHECK(script->get_instance_base_type() == StringName("Node"));
+}
+
+void as_script_rejects_directive_only_inside_block_comment() {
+	// 指令只出现在块注释里时等同缺失，不得把注释当成引导指令。
+	String error;
+	Ref<ASScript> script = _compile(
+			"/* comment\n// godot_base: Node\n*/\nclass enemy_spawner {}\n",
+			"res://enemy_spawner.as", &error);
+	REQUIRE(script.is_valid());
+	if (!script.is_valid()) {
+		return;
+	}
+	CHECK_FALSE(script->is_script_valid());
+	CHECK(error.contains("godot_base"));
+}
+
 void as_script_rejects_class_name_that_does_not_match_file_name() {
 	String error;
 	Ref<ASScript> script = _compile("// godot_base: Node\nclass something_else {}", "res://enemy_spawner.as", &error);
