@@ -33,6 +33,7 @@
 #include "as_binding_decl.h"
 #include "as_binding_object.h"
 #include "as_binding_value_types.h"
+#include "as_typed_containers.h"
 
 #include "core/object/method_info.h"
 #include "core/os/memory.h"
@@ -161,8 +162,11 @@ Error ASBindingRegistry::register_value_types_and_skeletons(const ASBindingPlan 
 		const Error e = ASBindingObject::register_skeleton(c, p_engine);
 		ERR_FAIL_COND_V_MSG(e != OK, e, vformat("AngelScript: skeleton registration failed for '%s'", c.name));
 	}
-	// 对象骨架齐备后，才能注册依赖 `Object` 类型名的 Variant 转换构造器。
-	return ASBindingValueTypes::register_object_conversions(p_engine);
+	// 对象骨架齐备后，才能注册依赖 `Object` 类型名的 Variant 转换构造器及
+	// 保存 ObjectID 的强类型容器方法签名。
+	const Error object_err = ASBindingValueTypes::register_object_conversions(p_engine);
+	ERR_FAIL_COND_V(object_err != OK, object_err);
+	return ASTypedContainers::register_all(p_engine);
 }
 
 Error ASBindingRegistry::register_types(const ASBindingPlan &p_plan, const Vector<StringName> &p_types, asIScriptEngine *p_engine) {

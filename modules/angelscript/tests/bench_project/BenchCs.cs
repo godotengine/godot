@@ -168,4 +168,41 @@ public partial class BenchCs : Node
 		}
 		return s;
 	}
+
+	public long bench_typed_i64(long n)
+	{
+		var arr = new long[n];
+		for (long i = 0; i < n; i++) arr[i] = i;
+		long s = 0;
+		for (long i = 0; i < n; i++) s = (s + arr[i]) & 0x3FFFFFFF;
+		return s;
+	}
+
+	public long bench_typed_vec2(long n)
+	{
+		var dst = new Vector2[n];
+		var src = new Vector2[n];
+		for (int i = 0; i < n; i++) { dst[i] = new Vector2(1, 2); src[i] = new Vector2(0.5f, 1); }
+		for (int i = 0; i < n; i++) dst[i] += src[i] * 2.0f;
+		return n > 0 ? (long)(dst[n - 1].X + dst[n - 1].Y) : 0;
+	}
+
+	public long bench_typed_map(long n)
+	{
+		var dict = new System.Collections.Generic.Dictionary<StringName, long>();
+		var key = new StringName("value");
+		for (long i = 0; i < n; i++) dict[key] = i;
+		long s = 0;
+		for (long i = 0; i < n; i++) { dict.TryGetValue(key, out long value); s = (s + value) & 0x3FFFFFFF; }
+		return s;
+	}
+
+	public long bench_batch_sum(long n)
+	{
+		var arr = new long[n];
+		for (long i = 0; i < n; i++) arr[i] = i;
+		long s = 0;
+		foreach (long value in arr) s = (s + value) & 0x3FFFFFFF;
+		return s;
+	}
 }

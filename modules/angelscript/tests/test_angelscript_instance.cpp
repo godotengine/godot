@@ -238,6 +238,16 @@ void as_instance_scalar_properties_round_trip() {
 	memdelete(node);
 }
 
+void as_instance_scalar_call_plan_is_cached() {
+	Ref<ASScript> script = _make_script("cached_plan_node", "\tint64 add4(int64 a, int64 b, int64 c, int64 d) const { return a+b+c+d; }");
+	REQUIRE(script.is_valid()); if (!script.is_valid()) return;
+	Node *node=memnew(Node); ScriptInstance *instance=_attach_instance(script,node); REQUIRE(instance!=nullptr); if(!instance){memdelete(node);return;}
+	ASScriptInstance::reset_method_resolution_count(); Callable::CallError error;
+	Variant a=1,b=2,c=3,d=4; const Variant *args[4]={&a,&b,&c,&d};
+	for(int i=0;i<5;i++){Variant result=instance->callp("add4",args,4,error);CHECK(error.error==Callable::CallError::CALL_OK);CHECK(result==Variant((int64_t)10));}
+	CHECK(ASScriptInstance::method_resolution_count()==1); CHECK(ASScriptInstance::call_plan_analysis_count()==1); memdelete(node);
+}
+
 void as_instance_repeated_dispatch_is_cached() {
 	Ref<ASScript> script = _make_script("cached_dispatch_node",
 			"\tint ping() const { return 5; }");

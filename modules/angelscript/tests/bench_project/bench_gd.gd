@@ -105,3 +105,45 @@ func bench_hoist(n: int) -> int:
 	for i in n:
 		s = (s + c) & 0x3FFFFFFF
 	return s
+
+func bench_typed_i64(n: int) -> int:
+	var arr := PackedInt64Array()
+	for i in n:
+		arr.push_back(i)
+	var s := 0
+	for i in n:
+		s = (s + arr[i]) & 0x3FFFFFFF
+	return s
+
+func bench_typed_vec2(n: int) -> int:
+	var dst := PackedVector2Array()
+	var src := PackedVector2Array()
+	dst.resize(n)
+	src.resize(n)
+	for i in n:
+		dst[i] = Vector2(1.0, 2.0)
+		src[i] = Vector2(0.5, 1.0)
+	for i in n:
+		dst[i] = dst[i] + src[i] * 2.0
+	var last := dst[n - 1] if n > 0 else Vector2.ZERO
+	return int(last.x + last.y)
+
+func bench_typed_map(n: int) -> int:
+	var dict: Dictionary[StringName, int] = {}
+	var key := &"value"
+	for i in n:
+		dict[key] = i
+	var s := 0
+	for i in n:
+		s = (s + dict.get(key, 0)) & 0x3FFFFFFF
+	return s
+
+func bench_batch_sum(n: int) -> int:
+	var arr := PackedInt64Array()
+	arr.resize(n)
+	for i in n:
+		arr[i] = i
+	var s := 0
+	for value in arr:
+		s = (s + value) & 0x3FFFFFFF
+	return s

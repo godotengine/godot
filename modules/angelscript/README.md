@@ -77,6 +77,30 @@ AngelScript 脚本可经 `as_host_call(int method_id, const Array &in args) -> V
 - 绑定层类型（M2）：`int`→`int64`、`float`→`double`、`StringName`/`NodePath` 等内建值类型按 `Variant` 存储的类型直接可用；对象类型必须用显式句柄语法（`Node @n = Node();`，本模块关闭了 AS 的隐式句柄），枚举写作 `<声明类>_<枚举名>::<值>`（如 `Node_ProcessMode::PROCESS_MODE_ALWAYS`），常量写作 `<声明类>_<常量名>`（如 `Object_NOTIFICATION_PREDELETE`）。
 - 回调形参：需要对象或字符串形参的回调（`_input` / `_shortcut_input` / `_unhandled_input` / `_unhandled_key_input` / `_get_configuration_warnings` 等）暂不会被派发（`_process` 这类标量形参除外），因为 `ASScriptInstance::callp` 的编组目前只支持标量；绑定层已能表达对象与字符串，补全回调通道属后续里程碑。
 
+### 强类型高性能容器
+
+热循环可使用固定引用容器，绕过 `Variant` 元素装箱：
+
+- 数组：`Int64Array`、`Float64Array`、`Vector2Array`、`Vector3Array`、`ColorArray`、`StringNameArray`、`ObjectArray`。
+- Map：`Int64Int64Map`、`StringNameInt64Map`、`StringNameFloat64Map`、`StringNameVector2Map`、`StringNameColorMap`、`StringNameObjectMap`。
+- 公共数组 API：`size/is_empty/reserve/resize/clear/push_back/get/set/fill/append_array`；数值数组另有 `sum/min_value/max_value/add_scalar/multiply_scalar`，Vector 数组有 `sum/add_in_place/add_scaled_in_place`。
+- 数值/Vector/Color 数组可用 `assign_packed` / `to_packed` 在边界一次性转换；`StringNameArray`、`ObjectArray` 可用 `assign_array` / `to_array`。
+- `ObjectArray` 与 `StringNameObjectMap` 保存弱 `ObjectID`，不拥有对象；`remove_invalid()` 批量清除 null 或已释放对象。
+
+```angelscript
+Int64Array@ values = Int64Array();
+values.reserve(1000);
+for (int i = 0; i < 1000; i++) values.push_back(i);
+int64 total = values.sum(); // 求和循环在 C++ 内执行。
+
+Vector2Array@ positions = Vector2Array();
+Vector2Array@ velocities = Vector2Array();
+positions.resize(1000); velocities.resize(1000);
+positions.add_scaled_in_place(velocities, delta);
+```
+
+这些名称表示 AngelScript 模块的原生引用容器，不是 Godot `Packed*Array` 的别名。动态互操作应集中在边界批量转换，不要在内层循环反复转为 `Array` / `Dictionary`。
+
 ## 对象句柄语义（M3）
 
 句柄的拥有 / 非拥有语义由**静态类型**决定，在注册时一次判定：

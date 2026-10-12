@@ -26,6 +26,11 @@ const WORKLOADS := {
 	"bench_color": 1000000,
 	"bench_engine": 200000,
 	"bench_hoist": 200000,
+	# 方案 B 基线/验收负载：实现前 AS 使用现有 Godot 容器，实现后切换到强类型容器。
+	"bench_typed_i64": 100000,
+	"bench_typed_vec2": 100000,
+	"bench_typed_map": 100000,
+	"bench_batch_sum": 100000,
 }
 
 var _targets := {}

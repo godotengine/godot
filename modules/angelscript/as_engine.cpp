@@ -524,7 +524,33 @@ static StringName _make_profile_signature(asIScriptFunction *p_func) {
 	return StringName(signature);
 }
 
-Error ASEngine::call_function(asIScriptContext *p_context, asIScriptFunction *p_func, asIScriptObject *p_object, const Variant **p_args, int p_argc, Variant *r_ret) {
+static ASEngine::ASScalarKind scalar_kind_for_type(int p_type_id) {
+	switch (p_type_id) {
+		case asTYPEID_VOID: return ASEngine::AS_VOID;
+		case asTYPEID_BOOL: return ASEngine::AS_BOOL;
+		case asTYPEID_INT32: case asTYPEID_UINT32: return ASEngine::AS_INT32;
+		case asTYPEID_INT64: case asTYPEID_UINT64: return ASEngine::AS_INT64;
+		case asTYPEID_FLOAT: return ASEngine::AS_FLOAT32;
+		case asTYPEID_DOUBLE: return ASEngine::AS_FLOAT64;
+		default: return ASEngine::AS_OTHER;
+	}
+}
+
+ASEngine::ASCallPlan ASEngine::make_call_plan(asIScriptFunction *p_func) {
+	ASCallPlan plan; plan.function = p_func;
+	if (p_func == nullptr) return plan;
+	plan.argument_count = (uint8_t)MIN((asUINT)255, p_func->GetParamCount());
+	plan.fast_scalar_eligible = plan.argument_count <= 4;
+	for (int i = 0; i < MIN(4, (int)plan.argument_count); i++) {
+		int type_id = asTYPEID_VOID; p_func->GetParam(i, &type_id); plan.arguments[i] = scalar_kind_for_type(type_id);
+		if (plan.arguments[i] == AS_OTHER) plan.fast_scalar_eligible = false;
+	}
+	plan.return_kind = scalar_kind_for_type(p_func->GetReturnTypeId());
+	if (plan.return_kind == AS_OTHER) plan.fast_scalar_eligible = false;
+	return plan;
+}
+
+Error ASEngine::call_function(asIScriptContext *p_context, asIScriptFunction *p_func, asIScriptObject *p_object, const Variant **p_args, int p_argc, Variant *r_ret, const ASCallPlan *p_plan) {
 	ERR_FAIL_NULL_V(p_context, ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_func, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_argc != (int)p_func->GetParamCount(), ERR_INVALID_PARAMETER);
@@ -571,42 +597,22 @@ Error ASEngine::call_function(asIScriptContext *p_context, asIScriptFunction *p_
 		p_context->SetObject(p_object);
 	}
 
+	const bool use_plan = p_plan != nullptr && p_plan->function == p_func && p_plan->fast_scalar_eligible;
 	for (int i = 0; i < p_argc; i++) {
 		const Variant &arg = *p_args[i];
-		// AS 的 SetArg* 会校验形参在栈上的宽度（SetArgQWord 只接受 8 字节形参，
-		// 对 32 位 int 会返回 asINVALID_TYPE 并把上下文置为错误态；SetArgFloat/
-		// SetArgDouble 分别是 4/8 字节），所以按形参类型 id 选择赋值函数，
-		// 而不是只看 Variant 类型，并且必须检查返回值。
+		ASScalarKind kind = AS_OTHER;
+		if (use_plan) kind = p_plan->arguments[i];
+		else { int type_id = asTYPEID_VOID; p_func->GetParam(i, &type_id); kind = scalar_kind_for_type(type_id); }
 		int set_result = asSUCCESS;
-		switch (arg.get_type()) {
-			case Variant::BOOL:
-				set_result = p_context->SetArgByte(i, arg.operator bool() ? 1 : 0);
-				break;
-			case Variant::INT: {
-				int param_type_id = asTYPEID_VOID;
-				p_func->GetParam(i, &param_type_id);
-				if (param_type_id == asTYPEID_INT64 || param_type_id == asTYPEID_UINT64) {
-					set_result = p_context->SetArgQWord(i, (asQWORD)arg.operator int64_t());
-				} else {
-					set_result = p_context->SetArgDWord(i, (asDWORD)(int32_t)arg.operator int64_t());
-				}
-			} break;
-			case Variant::FLOAT: {
-				int param_type_id = asTYPEID_VOID;
-				p_func->GetParam(i, &param_type_id);
-				if (param_type_id == asTYPEID_FLOAT) {
-					set_result = p_context->SetArgFloat(i, (float)arg.operator double());
-				} else {
-					set_result = p_context->SetArgDouble(i, arg.operator double());
-				}
-			} break;
-			default:
-				// 对象/字符串等参数类型留待绑定层（M2）。
-				return finish(ERR_INVALID_PARAMETER);
+		switch (kind) {
+			case AS_BOOL: if (arg.get_type()!=Variant::BOOL) return finish(ERR_INVALID_PARAMETER); set_result=p_context->SetArgByte(i,arg.operator bool()?1:0); break;
+			case AS_INT32: if (arg.get_type()!=Variant::INT) return finish(ERR_INVALID_PARAMETER); set_result=p_context->SetArgDWord(i,(asDWORD)(int32_t)arg.operator int64_t()); break;
+			case AS_INT64: if (arg.get_type()!=Variant::INT) return finish(ERR_INVALID_PARAMETER); set_result=p_context->SetArgQWord(i,(asQWORD)arg.operator int64_t()); break;
+			case AS_FLOAT32: if (arg.get_type()!=Variant::FLOAT) return finish(ERR_INVALID_PARAMETER); set_result=p_context->SetArgFloat(i,(float)arg.operator double()); break;
+			case AS_FLOAT64: if (arg.get_type()!=Variant::FLOAT) return finish(ERR_INVALID_PARAMETER); set_result=p_context->SetArgDouble(i,arg.operator double()); break;
+			default: return finish(ERR_INVALID_PARAMETER);
 		}
-		if (set_result < 0) {
-			return finish(ERR_INVALID_PARAMETER);
-		}
+		if (set_result < 0) return finish(ERR_INVALID_PARAMETER);
 	}
 
 	const int executed = p_context->Execute();
@@ -628,24 +634,14 @@ Error ASEngine::call_function(asIScriptContext *p_context, asIScriptFunction *p_
 	}
 
 	if (r_ret != nullptr) {
-		switch (p_func->GetReturnTypeId()) {
-			case asTYPEID_VOID:
-				*r_ret = Variant();
-				break;
-			case asTYPEID_BOOL:
-				*r_ret = Variant(p_context->GetReturnByte() != 0);
-				break;
-			case asTYPEID_INT32:
-				// 32 位返回值必须走 GetReturnDWord：QWord 高位未定义，负数会被读成大正数。
-				*r_ret = Variant((int64_t)(int32_t)p_context->GetReturnDWord());
-				break;
-			case asTYPEID_INT64:
-				*r_ret = Variant((int64_t)p_context->GetReturnQWord());
-				break;
-			case asTYPEID_FLOAT:
-			case asTYPEID_DOUBLE:
-				*r_ret = Variant(p_context->GetReturnDouble());
-				break;
+		const int return_type = use_plan ? (int)p_plan->return_kind : (int)scalar_kind_for_type(p_func->GetReturnTypeId());
+		switch (return_type) {
+			case AS_VOID: *r_ret = Variant(); break;
+			case AS_BOOL: *r_ret = Variant(p_context->GetReturnByte() != 0); break;
+			case AS_INT32: *r_ret = Variant((int64_t)(int32_t)p_context->GetReturnDWord()); break;
+			case AS_INT64: *r_ret = Variant((int64_t)p_context->GetReturnQWord()); break;
+			case AS_FLOAT32: *r_ret = Variant((double)p_context->GetReturnFloat()); break;
+			case AS_FLOAT64: *r_ret = Variant(p_context->GetReturnDouble()); break;
 			default:
 				*r_ret = Variant();
 				break;

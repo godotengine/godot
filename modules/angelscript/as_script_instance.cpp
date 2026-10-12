@@ -192,24 +192,16 @@ int ASScriptInstance::_expected_param_count(const StringName &p_method) {
 }
 
 uint64_t ASScriptInstance::method_resolution_count_value = 0;
+uint64_t ASScriptInstance::call_plan_analysis_count_value = 0;
 
-uint64_t ASScriptInstance::method_resolution_count() {
-	return method_resolution_count_value;
-}
+uint64_t ASScriptInstance::method_resolution_count() { return method_resolution_count_value; }
+uint64_t ASScriptInstance::call_plan_analysis_count() { return call_plan_analysis_count_value; }
+void ASScriptInstance::reset_method_resolution_count() { method_resolution_count_value = 0; call_plan_analysis_count_value = 0; }
 
-void ASScriptInstance::reset_method_resolution_count() {
-	method_resolution_count_value = 0;
-}
-
-asIScriptFunction *ASScriptInstance::_resolve_method(const StringName &p_method) const {
-	HashMap<StringName, asIScriptFunction *>::ConstIterator cached = method_resolution_cache.find(p_method);
-	if (cached) {
-		return cached->value;
-	}
+const ASEngine::ASCallPlan *ASScriptInstance::_resolve_call_plan(const StringName &p_method) const {
+	HashMap<StringName, ASEngine::ASCallPlan>::ConstIterator cached = method_resolution_cache.find(p_method);
+	if (cached) return &cached->value;
 	method_resolution_count_value++;
-
-	// 慢路径：信号声明与非法/签名不符的方法都缓存成 nullptr，后续同名调用直接命中，
-	// 不再重复构造 String / 转 UTF-8 / 查名字（与 _is_signal_declaration / has_method 原语义一致）。
 	asIScriptFunction *func = nullptr;
 	if (!_is_signal_declaration(p_method)) {
 		asITypeInfo *type = script->get_type_info();
@@ -218,14 +210,14 @@ asIScriptFunction *ASScriptInstance::_resolve_method(const StringName &p_method)
 			func = type->GetMethodByName(name.get_data(), true);
 			if (func != nullptr) {
 				const int expected = _expected_param_count(p_method);
-				if (expected >= 0 && (int)func->GetParamCount() != expected) {
-					func = nullptr;
-				}
+				if (expected >= 0 && (int)func->GetParamCount() != expected) func = nullptr;
 			}
 		}
 	}
-	method_resolution_cache.insert(p_method, func);
-	return func;
+	ASEngine::ASCallPlan plan;
+	if (func != nullptr) { plan = ASEngine::make_call_plan(func); call_plan_analysis_count_value++; }
+	method_resolution_cache.insert(p_method, plan);
+	return method_resolution_cache.getptr(p_method);
 }
 
 bool ASScriptInstance::set(const StringName &p_name, const Variant &p_value) {
@@ -466,7 +458,7 @@ void ASScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 
 bool ASScriptInstance::has_method(const StringName &p_method) const {
 	// 与 callp 共用同一份缓存解析：信号声明、无此方法、签名不符一律为 false。
-	return _resolve_method(p_method) != nullptr;
+	return _resolve_call_plan(p_method)->function != nullptr;
 }
 
 Variant ASScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -474,7 +466,8 @@ Variant ASScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 
 	// 每实例缓存方法解析结果：首次走慢路径，之后仅一次 StringName 哈希查找。
 	// 信号声明、无此方法、签名不符统一解析为 nullptr → 非法方法。
-	asIScriptFunction *func = _resolve_method(p_method);
+	const ASEngine::ASCallPlan *plan = _resolve_call_plan(p_method);
+	asIScriptFunction *func = plan->function;
 	if (func == nullptr) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return Variant();
@@ -485,7 +478,7 @@ Variant ASScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 	ASInstanceScope instance_scope(this);
 
 	Variant ret;
-	const Error err = ASEngine::call_function(context, func, object, p_args, p_argcount, &ret);
+	const Error err = ASEngine::call_function(context, func, object, p_args, p_argcount, &ret, plan);
 	if (err == ERR_INVALID_PARAMETER) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		return Variant();

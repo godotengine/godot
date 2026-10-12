@@ -165,4 +165,40 @@ class bench_as {
 		}
 		return s;
 	}
+
+	int bench_typed_i64(int n) {
+		Int64Array@ arr = Int64Array();
+		arr.reserve(n);
+		for (int i = 0; i < n; i++) arr.push_back(i);
+		int s = 0;
+		for (int i = 0; i < n; i++) s = (s + int(arr.get(i))) & 0x3FFFFFFF;
+		return s;
+	}
+
+	int bench_typed_vec2(int n) {
+		Vector2Array@ dst = Vector2Array();
+		Vector2Array@ src = Vector2Array();
+		dst.resize(n); src.resize(n);
+		dst.fill(Vector2(1.0, 2.0)); src.fill(Vector2(0.5, 1.0));
+		dst.add_scaled_in_place(src, 2.0);
+		Vector2 last;
+		if (n > 0) last = dst.get(n - 1);
+		return int(last.x + last.y);
+	}
+
+	int bench_typed_map(int n) {
+		StringNameInt64Map@ dict = StringNameInt64Map();
+		StringName key("value");
+		for (int i = 0; i < n; i++) dict.set(key, i);
+		int s = 0;
+		for (int i = 0; i < n; i++) s = (s + int(dict.get_or(key, 0))) & 0x3FFFFFFF;
+		return s;
+	}
+
+	int bench_batch_sum(int n) {
+		Int64Array@ arr = Int64Array();
+		arr.reserve(n);
+		for (int i = 0; i < n; i++) arr.push_back(i);
+		return int(arr.sum()) & 0x3FFFFFFF;
+	}
 }

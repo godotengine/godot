@@ -115,9 +115,20 @@ public:
 	// 内部复用 call_function()，因此与回调通道共享参数编组、返回值映射与异常日志。
 	static Error execute(asIScriptEngine *p_engine, asIScriptFunction *p_func, int *r_ret);
 
+	// 缓存跨界调用的标量参数/返回布局，避免每次派发重复 GetParam/GetReturnTypeId。
+	enum ASScalarKind : uint8_t { AS_VOID, AS_BOOL, AS_INT32, AS_INT64, AS_FLOAT32, AS_FLOAT64, AS_OTHER };
+	struct ASCallPlan {
+		asIScriptFunction *function = nullptr;
+		uint8_t argument_count = 0;
+		ASScalarKind arguments[4] = { AS_VOID, AS_VOID, AS_VOID, AS_VOID };
+		ASScalarKind return_kind = AS_VOID;
+		bool fast_scalar_eligible = false;
+	};
+	static ASCallPlan make_call_plan(asIScriptFunction *p_func);
+
 	// 以 Variant 编组调用 AS 函数（ScriptInstance::callp 的通道）。只支持
 	// bool / int(int64) / float(double) 三类参数；返回值按 AS 返回类型映射为 Variant。
-	static Error call_function(asIScriptContext *p_context, asIScriptFunction *p_func, asIScriptObject *p_object, const Variant **p_args, int p_argc, Variant *r_ret);
+	static Error call_function(asIScriptContext *p_context, asIScriptFunction *p_func, asIScriptObject *p_object, const Variant **p_args, int p_argc, Variant *r_ret, const ASCallPlan *p_plan = nullptr);
 
 	void shutdown();
 
