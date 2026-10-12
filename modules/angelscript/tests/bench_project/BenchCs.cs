@@ -99,6 +99,22 @@ public partial class BenchCs : Node
 		return s;
 	}
 
+	public long bench_array_methods(long n)
+	{
+		var arr = new Godot.Collections.Array();
+		for (long i = 0; i < 16; i++)
+		{
+			arr.Add(i * 7);
+		}
+		long s = 0;
+		for (long i = 0; i < n; i++)
+		{
+			int idx = (int)(i % 16);
+			s = (s + arr.Count + (arr.Contains(idx * 7) ? 1 : 0) + (long)arr[idx]) & 0x3FFFFFFF;
+		}
+		return s;
+	}
+
 	public long bench_string(long n)
 	{
 		string s = "";

@@ -58,6 +58,7 @@ void as_native_vo_string_ops();
 void as_native_vo_array_index();
 void as_native_vo_array_refcount_payload();
 void as_native_vo_dictionary_keyed_access();
+void as_native_vo_container_methods();
 void as_native_vo_copy_ctor_unambiguous();
 void as_native_vo_extended_native_storage();
 void as_native_vo_extended_types_script();
@@ -159,6 +160,10 @@ TEST_CASE("[AngelScript] native value ops array refcount payload") {
 
 TEST_CASE("[AngelScript] native value ops dictionary keyed access") {
 	as_native_vo_dictionary_keyed_access();
+}
+
+TEST_CASE("[AngelScript] native value ops container methods") {
+	as_native_vo_container_methods();
 }
 
 TEST_CASE("[AngelScript] native value ops copy ctor unambiguous") {

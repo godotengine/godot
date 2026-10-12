@@ -647,6 +647,42 @@ void as_native_vo_dictionary_keyed_access() {
 	CHECK(ASNativeValueOps::native_thunk_calls() >= 3); // set、命中 get、缺失 get
 }
 
+// A2：Array/Dictionary 安全内建方法的原生 thunk 回归。只白名单无参标量/Variant 返回、
+// 单个 Variant 参数、无默认值、无 Object handle 的方法。此处覆盖 Array 的
+// front/back/pop_back/size/has/count 与 Dictionary 的 has/size/erase/is_empty。
+// 未原生化时这些方法走 generic，计数仅 A1 keyed set 的 1 次 → RED。
+void as_native_vo_container_methods() {
+	double out = 0.0;
+	ASNativeValueOps::reset_native_thunk_calls();
+	if (!run_double(R"(
+		double main() {
+			Array a;
+			a.push_back(3);
+			a.push_back(5);
+			a.push_back(7);
+			int64 s = 0;
+			s += int64(a.front());            // 3
+			s += int64(a.back());             // 7
+			s += int64(a.size());             // 3
+			s += a.has(Variant(5)) ? 1 : 0;   // 1
+			s += int64(a.count(Variant(5)));  // 1
+			s += int64(a.pop_back());         // 7
+			s += int64(a.size());             // 2（pop 后 [3,5]）
+			Dictionary d;
+			d[Variant("k")] = Variant(11);
+			s += d.has(Variant("k")) ? 10 : 0; // 10
+			s += int64(d.size());              // 1
+			d.erase(Variant("k"));
+			s += d.is_empty() ? 100 : 0;       // 100
+			return double(s);
+		}
+	)", &out)) {
+		return;
+	}
+	CHECK(nearly(out, 135.0));
+	CHECK(ASNativeValueOps::native_thunk_calls() >= 10);
+}
+
 // 遗留缺陷回归：`Vector2(a)`（a 为 Vector2）曾因拷贝构造被注册两次
 // （原生生命周期的 `void f(const Vector2 &in)` 与内省构造器清单里的
 // `Vector2(const Vector2&)`）而报「歧义」。这里锁定拷贝构造与相关转换构造均可解析。

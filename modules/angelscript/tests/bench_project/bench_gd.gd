@@ -62,6 +62,16 @@ func bench_packed(n: int) -> int:
 		s = (s + arr[i]) & 0x3FFFFFFF
 	return s
 
+func bench_array_methods(n: int) -> int:
+	# A2：Array.size/has 经原生内建方法 thunk；索引读走数组原生索引。
+	var arr := []
+	for i in 16:
+		arr.push_back(i * 7)
+	var s := 0
+	for i in n:
+		s = (s + arr.size() + (1 if arr.has(i % 16 * 7) else 0) + int(arr[i % 16])) & 0x3FFFFFFF
+	return s
+
 func bench_string(n: int) -> int:
 	var s := ""
 	for i in n:

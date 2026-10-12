@@ -103,6 +103,19 @@ class bench_as {
 		return s;
 	}
 
+	int bench_array_methods(int n) {
+		// A2：Array 的 size/has/push_back 走原生内建方法 thunk，索引读走数组原生索引。
+		Array arr;
+		for (int i = 0; i < 16; i++) {
+			arr.push_back(Variant(i * 7));
+		}
+		int s = 0;
+		for (int i = 0; i < n; i++) {
+			s = (s + int(arr.size()) + (arr.has(Variant((i % 16) * 7)) ? 1 : 0) + int(arr[i % 16])) & 0x3FFFFFFF;
+		}
+		return s;
+	}
+
 	int bench_string(int n) {
 		// AS 原生 string 只注册了赋值与 length()，没有拼接；字符串运算只能用 Godot String（以 Variant 存储）。
 		String s = String();

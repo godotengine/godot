@@ -343,6 +343,98 @@ void thunk_variant_keyed_set(Variant *self, const Variant *key, const Variant *v
 	self->set_keyed(*key, *value, valid);
 }
 
+// ---------- A2：Array/Dictionary 安全内建方法白名单 ----------
+// 函数指针无法携带方法名字符串，故用 traits 结构承载名字以参数化 thunk 模板。
+struct BmSize { static const char *get() { return "size"; } };
+struct BmIsEmpty { static const char *get() { return "is_empty"; } };
+struct BmHash { static const char *get() { return "hash"; } };
+struct BmClear { static const char *get() { return "clear"; } };
+struct BmPushBack { static const char *get() { return "push_back"; } };
+struct BmPushFront { static const char *get() { return "push_front"; } };
+struct BmAppend { static const char *get() { return "append"; } };
+struct BmHas { static const char *get() { return "has"; } };
+struct BmCount { static const char *get() { return "count"; } };
+struct BmFront { static const char *get() { return "front"; } };
+struct BmBack { static const char *get() { return "back"; } };
+struct BmPopBack { static const char *get() { return "pop_back"; } };
+struct BmPopFront { static const char *get() { return "pop_front"; } };
+struct BmErase { static const char *get() { return "erase"; } };
+
+// 标量/布尔返回槽必须预先初始化为对应 Variant 类型：VariantInternalAccessor<T>::set
+// 只写 Variant 的 _data 存储、不设置 type 字段（generic_value_call 因此在调用前
+// 会 VariantInternal::initialize）。这里用等价的公开赋值预置，否则返回值会被当作 NIL 0。
+template <typename R>
+static void init_bm_scalar_slot(Variant &r) {
+	if constexpr (std::is_same_v<R, bool>) {
+		r = false;
+	} else {
+		r = (int64_t)0;
+	}
+}
+
+// 无参、标量/布尔返回：AS 侧走寄存器返回，self 是首参。
+template <Variant::Type T, typename BM, typename R>
+R thunk_bm0_scalar(const Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	static Variant::ValidatedBuiltInMethod m = Variant::get_validated_builtin_method(T, BM::get());
+	Variant r;
+	init_bm_scalar_slot<R>(r);
+	if (m) {
+		m(const_cast<Variant *>(self), nullptr, 0, &r);
+	}
+	return (R)r;
+}
+
+// 无参、Variant 按值返回：隐式返回指针在最前，就地构造返回槽。先写入本地 Variant，
+// 再 placement-new 拷贝到返回槽，避免对未构造的槽做赋值（与 generic marshal 一致）。
+template <Variant::Type T, typename BM>
+void thunk_bm0_variant(Variant *ret, Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	static Variant::ValidatedBuiltInMethod m = Variant::get_validated_builtin_method(T, BM::get());
+	Variant r;
+	if (m) {
+		m(self, nullptr, 0, &r);
+	}
+	new (ret) Variant(r);
+}
+
+// 无参、void 返回。
+template <Variant::Type T, typename BM>
+void thunk_bm0_void(Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	static Variant::ValidatedBuiltInMethod m = Variant::get_validated_builtin_method(T, BM::get());
+	Variant r;
+	if (m) {
+		m(self, nullptr, 0, &r);
+	}
+}
+
+// 单个 Variant 参、标量/布尔返回。
+template <Variant::Type T, typename BM, typename R>
+R thunk_bm1_scalar(const Variant *self, const Variant *arg) {
+	ASNativeValueOps::note_thunk_call();
+	static Variant::ValidatedBuiltInMethod m = Variant::get_validated_builtin_method(T, BM::get());
+	Variant r;
+	init_bm_scalar_slot<R>(r);
+	if (m) {
+		const Variant *args[1] = { arg };
+		m(const_cast<Variant *>(self), args, 1, &r);
+	}
+	return (R)r;
+}
+
+// 单个 Variant 参、void 返回。
+template <Variant::Type T, typename BM>
+void thunk_bm1_void(Variant *self, const Variant *arg) {
+	ASNativeValueOps::note_thunk_call();
+	static Variant::ValidatedBuiltInMethod m = Variant::get_validated_builtin_method(T, BM::get());
+	Variant r;
+	if (m) {
+		const Variant *args[1] = { arg };
+		m(self, args, 1, &r);
+	}
+}
+
 } // namespace
 
 namespace ASNativeValueOps {
@@ -643,6 +735,69 @@ bool try_add_method(asIScriptEngine *p_engine, const String &p_type_name, Varian
 			}
 			if (m == "push_back") {
 				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_f64<Variant::PACKED_FLOAT64_ARRAY>);
+			}
+			break;
+		// A2：Array/Dictionary 安全内建方法白名单。仅覆盖无参标量/Variant 返回、单个
+		// Variant 参、无默认值、无 Object handle 的方法；其余方法保持 generic 回退。
+		case Variant::ARRAY:
+			if (m == "size") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_scalar<Variant::ARRAY, BmSize, int64_t>);
+			}
+			if (m == "is_empty") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_scalar<Variant::ARRAY, BmIsEmpty, bool>);
+			}
+			if (m == "hash") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_scalar<Variant::ARRAY, BmHash, int64_t>);
+			}
+			if (m == "clear") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_void<Variant::ARRAY, BmClear>);
+			}
+			if (m == "push_back") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_void<Variant::ARRAY, BmPushBack>);
+			}
+			if (m == "push_front") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_void<Variant::ARRAY, BmPushFront>);
+			}
+			if (m == "append") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_void<Variant::ARRAY, BmAppend>);
+			}
+			if (m == "has") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_scalar<Variant::ARRAY, BmHas, bool>);
+			}
+			if (m == "count") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_scalar<Variant::ARRAY, BmCount, int64_t>);
+			}
+			if (m == "front") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_variant<Variant::ARRAY, BmFront>);
+			}
+			if (m == "back") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_variant<Variant::ARRAY, BmBack>);
+			}
+			if (m == "pop_back") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_variant<Variant::ARRAY, BmPopBack>);
+			}
+			if (m == "pop_front") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_variant<Variant::ARRAY, BmPopFront>);
+			}
+			break;
+		case Variant::DICTIONARY:
+			if (m == "size") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_scalar<Variant::DICTIONARY, BmSize, int64_t>);
+			}
+			if (m == "is_empty") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_scalar<Variant::DICTIONARY, BmIsEmpty, bool>);
+			}
+			if (m == "hash") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_scalar<Variant::DICTIONARY, BmHash, int64_t>);
+			}
+			if (m == "clear") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_void<Variant::DICTIONARY, BmClear>);
+			}
+			if (m == "has") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_scalar<Variant::DICTIONARY, BmHas, bool>);
+			}
+			if (m == "erase") {
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_scalar<Variant::DICTIONARY, BmErase, bool>);
 			}
 			break;
 		default:

@@ -20,6 +20,7 @@ const WORKLOADS := {
 	"bench_array": 100000,
 	"bench_dictionary": 100000,
 	"bench_packed": 100000,
+	"bench_array_methods": 100000,
 	"bench_string": 8000,
 	"bench_vector": 1000000,
 	"bench_color": 1000000,
