@@ -38,14 +38,15 @@ void main() {
 	if (any(greaterThanEqual(pos, params.screen_size))) { //too large, do nothing
 		return;
 	}
+	int sample_count = min(textureSamples(source_depth), params.sample_count);
 
 #ifdef MODE_RESOLVE_DEPTH
 
 	float depth_avg = 0.0;
-	for (int i = 0; i < params.sample_count; i++) {
+	for (int i = 0; i < sample_count; i++) {
 		depth_avg += texelFetch(source_depth, pos, i).r;
 	}
-	depth_avg /= float(params.sample_count);
+	depth_avg /= float(sample_count);
 	imageStore(dest_depth, pos, vec4(depth_avg));
 
 #endif
@@ -60,7 +61,7 @@ void main() {
 
 #if 0
 
-	for(int i=0;i<params.sample_count;i++) {
+	for(int i=0;i<sample_count;i++) {
 		float depth = texelFetch(source_depth,pos,i).r;
 		if (depth < best_depth) { //use the depth closest to camera
 			best_depth = depth;
@@ -87,19 +88,19 @@ void main() {
 	group1.y = texelFetch(source_depth, pos, 1).r;
 
 	//4X
-	if (params.sample_count >= 4) {
+	if (sample_count >= 4) {
 		group1.z = texelFetch(source_depth, pos, 2).r;
 		group1.w = texelFetch(source_depth, pos, 3).r;
 	}
 	//8X
-	if (params.sample_count >= 8) {
+	if (sample_count >= 8) {
 		group2.x = texelFetch(source_depth, pos, 4).r;
 		group2.y = texelFetch(source_depth, pos, 5).r;
 		group2.z = texelFetch(source_depth, pos, 6).r;
 		group2.w = texelFetch(source_depth, pos, 7).r;
 	}
 	//16X
-	if (params.sample_count >= 16) {
+	if (sample_count >= 16) {
 		group3.x = texelFetch(source_depth, pos, 8).r;
 		group3.y = texelFetch(source_depth, pos, 9).r;
 		group3.z = texelFetch(source_depth, pos, 10).r;
@@ -111,9 +112,9 @@ void main() {
 		group4.w = texelFetch(source_depth, pos, 15).r;
 	}
 
-	if (params.sample_count == 2) {
+	if (sample_count == 2) {
 		best_index = (group1.x < group1.y) ? 1 : 0; // Not much can be done here. Pick the sample closer to the camera.
-	} else if (params.sample_count == 4) {
+	} else if (sample_count == 4) {
 		vec4 freq = vec4(equal(group1, vec4(group1.x)));
 		freq += vec4(equal(group1, vec4(group1.y)));
 		freq += vec4(equal(group1, vec4(group1.z)));
@@ -132,7 +133,7 @@ void main() {
 		if (freq.w < min_f) {
 			best_index = 3;
 		}
-	} else if (params.sample_count == 8) {
+	} else if (sample_count == 8) {
 		vec4 freq0 = vec4(equal(group1, vec4(group1.x)));
 		vec4 freq1 = vec4(equal(group2, vec4(group1.x)));
 		freq0 += vec4(equal(group1, vec4(group1.y)));
@@ -189,7 +190,7 @@ void main() {
 	int depth_amount[16];
 	int depth_count = 0;
 
-	for (int i = 0; i < params.sample_count; i++) {
+	for (int i = 0; i < sample_count; i++) {
 		float depth = texelFetch(source_depth, pos, i).r;
 		int depth_index = -1;
 		for (int j = 0; j < depth_count; j++) {

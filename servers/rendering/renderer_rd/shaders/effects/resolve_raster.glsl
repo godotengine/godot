@@ -36,11 +36,12 @@ layout (location = 0) out float out_depth;
 
 void main() {
     ivec2 pos = ivec2(gl_FragCoord.xy);
+	int sample_count = min(textureSamples(source_depth), params.sample_count);
 
 	float depth_avg = 0.0;
-	for (int i = 0; i < params.sample_count; i++) {
+	for (int i = 0; i < sample_count; i++) {
 		depth_avg += texelFetch(source_depth, pos, i).r;
 	}
-	depth_avg /= float(params.sample_count);
+	depth_avg /= float(sample_count);
 	out_depth = depth_avg;
 }
