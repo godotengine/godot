@@ -76,7 +76,7 @@ private:
 	};
 
 	struct TrackKey {
-		uint32_t id;
+		ObjectID id;
 		StringName subpath_concatenated;
 		int bone_idx;
 
@@ -94,7 +94,7 @@ private:
 	};
 
 	struct Track {
-		uint32_t id;
+		ObjectID id;
 		Object *object;
 		Spatial *spatial;
 		Skeleton *skeleton;
@@ -110,7 +110,6 @@ private:
 		bool skip;
 
 		Track() :
-				id(0),
 				object(nullptr),
 				spatial(nullptr),
 				skeleton(nullptr),

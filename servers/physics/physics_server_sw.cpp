@@ -338,7 +338,7 @@ ObjectID PhysicsServerSW::area_get_object_instance_id(RID p_area) const {
 		p_area = space->get_default_area()->get_self();
 	}
 	AreaSW *area = area_owner.get(p_area);
-	ERR_FAIL_COND_V(!area, 0);
+	ERR_FAIL_COND_V(!area, ObjectID());
 	return area->get_instance_id();
 }
 
@@ -402,7 +402,7 @@ void PhysicsServerSW::area_set_monitor_callback(RID p_area, Object *p_receiver, 
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_monitor_callback(p_receiver ? p_receiver->get_instance_id() : 0, p_method);
+	area->set_monitor_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
 }
 
 void PhysicsServerSW::area_set_ray_pickable(RID p_area, bool p_enable) {
@@ -423,7 +423,7 @@ void PhysicsServerSW::area_set_area_monitor_callback(RID p_area, Object *p_recei
 	AreaSW *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
-	area->set_area_monitor_callback(p_receiver ? p_receiver->get_instance_id() : 0, p_method);
+	area->set_area_monitor_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method);
 }
 
 /* BODY API */
@@ -601,16 +601,16 @@ uint32_t PhysicsServerSW::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 }
 
-void PhysicsServerSW::body_attach_object_instance_id(RID p_body, uint32_t p_id) {
+void PhysicsServerSW::body_attach_object_instance_id(RID p_body, ObjectID p_id) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 	body->set_instance_id(p_id);
 };
 
-uint32_t PhysicsServerSW::body_get_object_instance_id(RID p_body) const {
+ObjectID PhysicsServerSW::body_get_object_instance_id(RID p_body) const {
 	BodySW *body = body_owner.get(p_body);
-	ERR_FAIL_COND_V(!body, 0);
+	ERR_FAIL_COND_V(!body, ObjectID());
 
 	return body->get_instance_id();
 };
@@ -843,7 +843,7 @@ int PhysicsServerSW::body_get_max_contacts_reported(RID p_body) const {
 void PhysicsServerSW::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
-	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(0), p_method, p_udata);
+	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method, p_udata);
 }
 
 void PhysicsServerSW::body_set_ray_pickable(RID p_body, bool p_enable) {

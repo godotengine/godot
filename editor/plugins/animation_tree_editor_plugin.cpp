@@ -58,7 +58,7 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	if (tree && tree->has_meta("_tree_edit_path")) {
 		path = tree->get_meta("_tree_edit_path");
 	} else {
-		current_root = 0;
+		current_root = ObjectID();
 	}
 
 	edit_path(path);
@@ -126,7 +126,7 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 			}
 		}
 	} else {
-		current_root = 0;
+		current_root = ObjectID();
 		edited_path = button_path;
 
 		for (int i = 0; i < editors.size(); i++) {
@@ -153,7 +153,7 @@ void AnimationTreeEditor::_about_to_show_root() {
 
 void AnimationTreeEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
-		ObjectID root = 0;
+		ObjectID root;
 		if (tree && tree->get_tree_root().is_valid()) {
 			root = tree->get_tree_root()->get_instance_id();
 		}
@@ -244,7 +244,6 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 	add_child(memnew(HSeparator));
 
-	current_root = 0;
 	singleton = this;
 	editor_base = memnew(MarginContainer);
 	editor_base->set_v_size_flags(SIZE_EXPAND_FILL);

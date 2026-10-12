@@ -91,7 +91,6 @@ void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_s
 CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		RIDBullet(),
 		type(p_type),
-		instance_id(0),
 		collisionLayer(0),
 		collisionMask(0),
 		collisionsEnabled(true),
