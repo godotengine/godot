@@ -466,8 +466,9 @@ void ProjectListItemControl::resize_project_title(const int p_title_size) {
 
 	int abs_minsize = (200 * EDSCALE);
 	if (title_fullsize_cache > abs_minsize && p_title_size < title_fullsize_cache + tag_size_cache) {
-		ProjectTag tag = ProjectTag("dummy");
-		int tag_maxsize = tag.get_custom_maximum_size().x;
+		ProjectTag *tag = memnew(ProjectTag("dummy"));
+		int tag_maxsize = tag->get_custom_maximum_size().x;
+		memdelete(tag);
 		int title_maxsize = p_title_size - tag_size_cache;
 		int title_minsize = abs_minsize + tag_maxsize - tag_size_cache;
 
