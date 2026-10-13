@@ -448,6 +448,7 @@ protected:
 #ifndef DISABLE_DEPRECATED
 	void _set_name_bind_compat_76560(const String &p_name);
 	Variant _get_rpc_config_bind_compat_106848() const;
+	void _replace_by_bind_compat_124447(RequiredParam<Node> p_node, bool p_keep_groups = false);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -753,7 +754,7 @@ public:
 		return binds;
 	}
 
-	void replace_by(RequiredParam<Node> p_node, bool p_keep_groups = false);
+	void replace_by(RequiredParam<Node> p_node, bool p_keep_groups = false, bool p_keep_owned_children = true);
 
 	void set_process_mode(ProcessMode p_mode);
 	ProcessMode get_process_mode() const;
