@@ -311,24 +311,28 @@ void Joint3DGizmoPlugin::incremental_update_gizmos() {
 			Node3D *node_body_a = nullptr;
 			if (!joint->get_node_a().is_empty()) {
 				node_body_a = Object::cast_to<Node3D>(joint->get_node(joint->get_node_a()));
-				Vector3 pos = node_body_a->get_global_position();
-				Vector3 &prev_pos = it->value.node_a_last_global_pos;
+				if (node_body_a) {
+					Vector3 pos = node_body_a->get_global_position();
+					Vector3 &prev_pos = it->value.node_a_last_global_pos;
 
-				if (!pos.is_equal_approx(prev_pos)) {
-					prev_pos = pos;
-					perform_redraw = true;
+					if (!pos.is_equal_approx(prev_pos)) {
+						prev_pos = pos;
+						perform_redraw = true;
+					}
 				}
 			}
 
 			Node3D *node_body_b = nullptr;
 			if (!joint->get_node_b().is_empty()) {
 				node_body_b = Object::cast_to<Node3D>(joint->get_node(joint->get_node_b()));
-				Vector3 pos = node_body_b->get_global_position();
-				Vector3 &prev_pos = it->value.node_b_last_global_pos;
+				if (node_body_b) {
+					Vector3 pos = node_body_b->get_global_position();
+					Vector3 &prev_pos = it->value.node_b_last_global_pos;
 
-				if (!pos.is_equal_approx(prev_pos)) {
-					prev_pos = pos;
-					perform_redraw = true;
+					if (!pos.is_equal_approx(prev_pos)) {
+						prev_pos = pos;
+						perform_redraw = true;
+					}
 				}
 			}
 		}
