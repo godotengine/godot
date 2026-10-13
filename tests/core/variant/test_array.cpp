@@ -33,6 +33,7 @@
 TEST_FORCE_LINK(test_array)
 
 #include "core/object/callable_mp.h"
+#include "core/object/ref_counted.h"
 #include "core/variant/array.h"
 #include "core/variant/typed_array.h"
 #include "tests/test_tools.h"
@@ -769,7 +770,7 @@ TEST_CASE("[Array] Test typed arrays") {
 	Array arr1;
 	CHECK_FALSE(arr1.is_typed());
 
-	arr1.set_typed(Variant::FLOAT, StringName(), Variant());
+	arr1.set_typed(Variant::FLOAT, StringName(), Ref<Script>());
 	CHECK(arr1.is_typed());
 	CHECK_EQ(arr1.get_typed_builtin(), Variant::FLOAT);
 
@@ -782,11 +783,11 @@ TEST_CASE("[Array] Test typed arrays") {
 	ERR_PRINT_ON;
 
 	Array arr2;
-	arr2.set_typed(Variant::INT, StringName(), Variant());
+	arr2.set_typed(Variant::INT, StringName(), Ref<Script>());
 	CHECK_FALSE(arr1.is_same_typed(arr2));
 
 	Array arr3;
-	arr3.set_typed(Variant::OBJECT, "Node", Variant());
+	arr3.set_typed(Variant::OBJECT, "Node", Ref<Script>());
 	CHECK_EQ(arr3.get_typed_class_name(), "Node");
 }
 

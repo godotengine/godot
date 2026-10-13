@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/ref_counted.h"
 #include "core/variant/type_info.h"
 
 template <typename K, typename V>
@@ -41,8 +42,8 @@ public:
 	}
 
 	_FORCE_INLINE_ TypedDictionary(const Dictionary &p_dictionary) {
-		set_typed(GodotTypeInfo::Internal::get_variant_type<K>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<K>(), Variant(),
-				GodotTypeInfo::Internal::get_variant_type<V>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<V>(), Variant());
+		set_typed(GodotTypeInfo::Internal::get_variant_type<K>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<K>(), Ref<Script>(),
+				GodotTypeInfo::Internal::get_variant_type<V>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<V>(), Ref<Script>());
 		if (is_same_typed(p_dictionary)) {
 			Dictionary::operator=(p_dictionary);
 		} else {
@@ -54,7 +55,7 @@ public:
 			TypedDictionary(Dictionary(p_init)) {}
 
 	_FORCE_INLINE_ TypedDictionary() {
-		set_typed(GodotTypeInfo::Internal::get_variant_type<K>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<K>(), Variant(),
-				GodotTypeInfo::Internal::get_variant_type<V>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<V>(), Variant());
+		set_typed(GodotTypeInfo::Internal::get_variant_type<K>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<K>(), Ref<Script>(),
+				GodotTypeInfo::Internal::get_variant_type<V>(), GodotTypeInfo::Internal::get_object_class_name_or_empty<V>(), Ref<Script>());
 	}
 };

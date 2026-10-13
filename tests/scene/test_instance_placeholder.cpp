@@ -36,6 +36,7 @@ TEST_FORCE_LINK(test_instance_placeholder)
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
@@ -98,7 +99,7 @@ public:
 	}
 
 	_TestInstancePlaceholderNode() {
-		reference_array_property.set_typed(Variant::OBJECT, "Node", Variant());
+		reference_array_property.set_typed(Variant::OBJECT, "Node", Ref<Script>());
 	}
 };
 
@@ -177,7 +178,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with no
 		referenced1->set_owner(scene);
 		referenced2->set_owner(scene);
 		Array node_array;
-		node_array.set_typed(Variant::OBJECT, "Node", Variant());
+		node_array.set_typed(Variant::OBJECT, "Node", Ref<Script>());
 		node_array.push_back(referenced1);
 		node_array.push_back(referenced2);
 		scene->set_reference_array_property(node_array);
@@ -286,7 +287,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with ov
 		root->add_child(override3);
 
 		Array override_node_array;
-		override_node_array.set_typed(Variant::OBJECT, "Node", Variant());
+		override_node_array.set_typed(Variant::OBJECT, "Node", Ref<Script>());
 		override_node_array.push_back(override1);
 		override_node_array.push_back(override2);
 		override_node_array.push_back(override3);
@@ -304,7 +305,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instantiate from placeholder with ov
 		referenced1->set_owner(scene);
 		referenced2->set_owner(scene);
 		Array referenced_array;
-		referenced_array.set_typed(Variant::OBJECT, "Node", Variant());
+		referenced_array.set_typed(Variant::OBJECT, "Node", Ref<Script>());
 		referenced_array.push_back(referenced1);
 		referenced_array.push_back(referenced2);
 
@@ -436,7 +437,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	internal->add_child(array_ref2);
 	array_ref2->set_owner(internal);
 	Array referenced_array;
-	referenced_array.set_typed(Variant::OBJECT, "Node", Variant());
+	referenced_array.set_typed(Variant::OBJECT, "Node", Ref<Script>());
 	referenced_array.push_back(array_ref1);
 	referenced_array.push_back(array_ref2);
 	internal->set_reference_array_property(referenced_array);
@@ -475,7 +476,7 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	internal_created->set_reference_property(overriding);
 	Array internal_array = internal_created->get_reference_array_property();
 	Array override_array;
-	override_array.set_typed(Variant::OBJECT, "Node", Variant());
+	override_array.set_typed(Variant::OBJECT, "Node", Ref<Script>());
 	for (int i = 0; i < internal_array.size(); i++) {
 		override_array.push_back(internal_array[i]);
 	}
