@@ -19,7 +19,7 @@
 			When set to [code]true[/code], the progress bar indicates that something is happening with an animation, but does not show the fill percentage or value.
 		</member>
 		<member name="format" type="String" setter="set_format" getter="get_format" default="%d%%">
-			The formatting of the displayed numeric value, using the same rules as [String]'s [code]%[/code] operator (see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url]). If empty, no text will be displayed.  If the format string is invalid, the [ProgressBar] will display [code]Invalid[/code], with the error message available as a configuration warning.
+			The formatting of the displayed numeric value, using the same rules as [String]'s [code]%[/code] operator (see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url]). If empty, no text will be displayed. If the format string is invalid, the [ProgressBar] will display [code]Invalid[/code], with the error message available as a configuration warning.
 			The following format strings can be used as examples:
 			- [code]"%d%%"[/code] displays as a whole number with a percent sign (e.g. [code]65%[/code]).
 			- [code]"%f"[/code] displays as a floating point number (e.g. [code]65.000000[/code]).
