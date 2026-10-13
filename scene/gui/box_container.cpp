@@ -141,6 +141,7 @@ void BoxContainer::_resort() {
 				if (msc.will_stretch) {
 					// Increase the minimum size to reflect the desired size allocation, so that the SIZE_EXPAND allocation does not shrink them back down.
 					msc.min_size += desired_size_increase;
+					combined_min += desired_size_increase;
 				} else {
 					// If the Control isn't stretchable
 					stretch_space -= desired_size_increase;
