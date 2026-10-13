@@ -35,6 +35,8 @@
 #include "core/string/print_string.h"
 #include "core/templates/paged_allocator.h"
 
+const StringName StringName::EMPTY;
+
 struct StringName::Table {
 	constexpr static uint32_t TABLE_BITS = 16;
 	constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;

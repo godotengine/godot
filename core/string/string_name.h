@@ -84,6 +84,8 @@ class [[nodiscard]] _WARN_UNUSED_ StringName {
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
+	static const StringName EMPTY;
+
 	_FORCE_INLINE_ explicit operator bool() const { return _data; }
 
 	bool operator==(const String &p_name) const;
@@ -134,8 +136,7 @@ public:
 	}
 
 	_FORCE_INLINE_ const String &string() const _LIFETIME_BOUND_ {
-		static const String EMPTY;
-		return _data ? _data->name : EMPTY;
+		return _data ? _data->name : String::EMPTY;
 	}
 
 	_FORCE_INLINE_ operator const String &() const _LIFETIME_BOUND_ {
@@ -179,7 +180,7 @@ public:
 		p_name._data = nullptr;
 	}
 	StringName(const String &p_name, bool p_static = false);
-	StringName() {}
+	constexpr StringName() {}
 
 #ifdef SIZE_EXTRA
 	_NO_INLINE_
