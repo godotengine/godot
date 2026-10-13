@@ -644,7 +644,7 @@ Files extracted from upstream source:
 ## libsimplewebm
 
 - Upstream: https://github.com/The-Simplicity-Group/libsimplewebm
-- Version: git (d06ed91a61994e23ce572a0e3fae0096652d573b, 2026)
+- Version: git (6443bdc857303ba4ce18455bca15bf0b6749def6, 2026)
 - License: MIT
 
 Files extracted from upstream source:

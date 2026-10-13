@@ -48,9 +48,7 @@ public:
 	}
 
 	bool getPCMS16(const WebMFrame &frame, short *buffer, int &numOutSamples);
-	// -- GODOT begin --
 	bool getPCMF(const WebMFrame &frame, float *buffer, int &numOutSamples);
-	// -- GODOT end --
 
 private:
 	bool open(const WebMDemuxer &demuxer);

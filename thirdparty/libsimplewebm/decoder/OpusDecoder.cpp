@@ -53,7 +53,7 @@ bool OpusDecoder::getPCMS16(const WebMFrame &frame, short *buffer, int &numOutSa
 {
 	numOutSamples = 0;
 
-	if (!m_decoder || !m_decoder->decoder || !buffer || frame.bufferSize <= 0)
+	if (!m_decoder || !m_decoder->decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_numSamples <= 0)
 		return false;
 
 	const int samples = opus_decode(m_decoder->decoder, frame.buffer, frame.bufferSize, buffer, m_numSamples, 0);
@@ -65,12 +65,11 @@ bool OpusDecoder::getPCMS16(const WebMFrame &frame, short *buffer, int &numOutSa
 	return true;
 }
 
-// -- GODOT begin --
 bool OpusDecoder::getPCMF(const WebMFrame &frame, float *buffer, int &numOutSamples)
 {
 	numOutSamples = 0;
 
-	if (!m_decoder || !m_decoder->decoder || !buffer || frame.bufferSize <= 0)
+	if (!m_decoder || !m_decoder->decoder || !buffer || !frame.buffer || frame.bufferSize <= 0 || m_numSamples <= 0)
 		return false;
 
 	const int samples = opus_decode_float(m_decoder->decoder, frame.buffer, frame.bufferSize, buffer, m_numSamples, 0);
@@ -81,7 +80,6 @@ bool OpusDecoder::getPCMF(const WebMFrame &frame, float *buffer, int &numOutSamp
 	numOutSamples = samples;
 	return true;
 }
-// -- GODOT end --
 
 bool OpusDecoder::open(const WebMDemuxer &demuxer)
 {
