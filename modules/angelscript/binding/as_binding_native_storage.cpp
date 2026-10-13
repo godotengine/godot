@@ -33,6 +33,7 @@
 // 仅为取得 AS_NATIVE_VALUE_OPS_ENABLED 门控宏（定义于该头文件）。它不是“未使用包含”，
 // 删掉会让下方 #if 静默退化为 #else（原生存储整体失效）。
 #include "as_binding_native_value_ops.h"
+
 #include "core/error/error_macros.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -52,7 +53,9 @@
 #include "core/math/vector4i.h"
 
 #include <angelscript.h>
+
 #include <new>
+#include <type_traits>
 
 #if AS_NATIVE_VALUE_OPS_ENABLED
 
@@ -104,6 +107,17 @@ bool is_native_storage_type(Variant::Type p_type) {
 	}
 }
 
+bool is_trivial_probe_type(Variant::Type p_type) {
+#ifdef AS_POD_GEOMETRY_PROBE
+	static_assert(std::is_trivially_copyable_v<Vector2> && std::is_trivially_destructible_v<Vector2>);
+	static_assert(std::is_trivially_copyable_v<Vector3> && std::is_trivially_destructible_v<Vector3>);
+	static_assert(std::is_trivially_copyable_v<Color> && std::is_trivially_destructible_v<Color>);
+	return p_type == Variant::VECTOR2 || p_type == Variant::VECTOR3 || p_type == Variant::COLOR;
+#else
+	return false;
+#endif
+}
+
 bool register_native_lifecycle(asIScriptEngine *p_engine, const String &p_name, Variant::Type p_type) {
 	void *fn_ctor_default = nullptr;
 	void *fn_ctor_copy = nullptr;
@@ -139,6 +153,12 @@ bool register_native_lifecycle(asIScriptEngine *p_engine, const String &p_name, 
 #undef AS_NATIVE_STORAGE_CASE
 	CharString cname = p_name.utf8();
 	const CharString copy_decl = ("void f(const " + p_name + " &in)").utf8();
+	if (is_trivial_probe_type(p_type)) {
+		// Explicit Vector2(other) still requires its constructor signature. Keep
+		// that and semantic defaults (Color alpha=1); omit assign/destructor only.
+		return p_engine->RegisterObjectBehaviour(cname.get_data(), asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(fn_ctor_default), asCALL_CDECL_OBJFIRST) >= 0 &&
+				p_engine->RegisterObjectBehaviour(cname.get_data(), asBEHAVE_CONSTRUCT, copy_decl.get_data(), asFUNCTION(fn_ctor_copy), asCALL_CDECL_OBJFIRST) >= 0;
+	}
 	if (p_engine->RegisterObjectBehaviour(cname.get_data(), asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(fn_ctor_default), asCALL_CDECL_OBJFIRST) < 0 ||
 			p_engine->RegisterObjectBehaviour(cname.get_data(), asBEHAVE_CONSTRUCT, copy_decl.get_data(), asFUNCTION(fn_ctor_copy), asCALL_CDECL_OBJFIRST) < 0 ||
 			p_engine->RegisterObjectBehaviour(cname.get_data(), asBEHAVE_DESTRUCT, "void f()", asFUNCTION(fn_dtor), asCALL_CDECL_OBJFIRST) < 0) {
@@ -173,8 +193,13 @@ bool register_skeleton(asIScriptEngine *p_engine, Variant::Type p_type) {
 	if (p_engine->GetTypeInfoByName(name) != nullptr) {
 		return true; // 幂等
 	}
-	const asDWORD flags = asOBJ_VALUE | asOBJ_APP_CLASS | asOBJ_APP_CLASS_CONSTRUCTOR |
+	asDWORD flags = asOBJ_VALUE | asOBJ_APP_CLASS | asOBJ_APP_CLASS_CONSTRUCTOR |
 			asOBJ_APP_CLASS_DESTRUCTOR | asOBJ_APP_CLASS_ASSIGNMENT | asOBJ_APP_CLASS_COPY_CONSTRUCTOR;
+	// APP_CLASS flags describe our existing hidden-return-slot thunks. POD
+	// describes VM lifetime only; do NOT replace the calling-convention flags.
+	if (is_trivial_probe_type(p_type)) {
+		flags |= asOBJ_POD;
+	}
 	if (p_engine->RegisterObjectType(name, size, flags) < 0) {
 		ERR_PRINT(vformat("AngelScript: failed to register native value type '%s'.", name));
 		return false;
@@ -253,6 +278,10 @@ bool write_native_return(asIScriptGeneric *p_gen, Variant::Type p_type, const Va
 #else // !AS_NATIVE_VALUE_OPS_ENABLED
 
 namespace ASNativeValueStorage {
+
+bool is_trivial_probe_type(Variant::Type p_type) {
+	return false;
+}
 
 bool is_native_storage_type(Variant::Type p_type) {
 	(void)p_type;

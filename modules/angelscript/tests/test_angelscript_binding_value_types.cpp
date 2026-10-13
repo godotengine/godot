@@ -111,6 +111,45 @@ static bool run_double(const String &p_source, double *r_out) {
 	return true;
 }
 
+void as_binding_metadata_auxiliary() {
+	ASEngine *as = ASEngine::get_singleton();
+	if (!as->ensure_initialized()) {
+		REQUIRE(false);
+		return;
+	}
+	asIScriptEngine *engine = as->get_engine();
+	CHECK(ASBindingValueTypes::register_all(engine) == OK);
+	int methods = 0;
+	int behaviours = 0;
+	int globals = 0;
+	bool matched = true;
+	auto inspect = [&matched](asIScriptFunction *f, int &count) {
+		if (f != nullptr && f->GetUserData() != nullptr) {
+			count++;
+			matched = matched && f->GetAuxiliary() == f->GetUserData();
+		}
+	};
+	for (asUINT i = 0; i < engine->GetObjectTypeCount(); i++) {
+		asITypeInfo *type = engine->GetObjectTypeByIndex(i);
+		for (asUINT j = 0; j < type->GetMethodCount(); j++) {
+			inspect(type->GetMethodByIndex(j), methods);
+		}
+		for (asUINT j = 0; j < type->GetBehaviourCount(); j++) {
+			inspect(type->GetBehaviourByIndex(j, nullptr), behaviours);
+		}
+		for (asUINT j = 0; j < type->GetFactoryCount(); j++) {
+			inspect(type->GetFactoryByIndex(j), behaviours);
+		}
+	}
+	for (asUINT i = 0; i < engine->GetGlobalFunctionCount(); i++) {
+		inspect(engine->GetGlobalFunctionByIndex(i), globals);
+	}
+	CHECK(methods > 0);
+	CHECK(behaviours > 0);
+	CHECK(globals > 0);
+	CHECK(matched);
+}
+
 void as_binding_value_types_register_all() {
 	ASEngine *as = ASEngine::get_singleton();
 	REQUIRE(as->ensure_initialized());

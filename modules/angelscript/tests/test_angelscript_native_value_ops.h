@@ -65,8 +65,37 @@ void as_native_vo_extended_types_script();
 void as_native_vo_extended_types_ops_parity();
 void as_native_vo_platform_gate();
 void as_native_vo_generic_fallback_path();
+void as_native_vo_variant_lifecycle_conversions();
+void as_native_vo_packed_storage_parity();
+void as_native_vo_container_constraints();
+void as_native_vo_literal_direct_paths();
+void as_native_vo_geometry_lifetime_probe();
+void as_native_vo_array_mutator_constraints();
 
 #ifndef ANGELSCRIPT_NATIVE_VALUE_OPS_TESTS_IMPL
+
+TEST_CASE("[AngelScript] native value ops geometry lifetime probe") {
+	as_native_vo_geometry_lifetime_probe();
+}
+TEST_CASE("[AngelScript] native value ops Array mutator constraints") {
+	as_native_vo_array_mutator_constraints();
+}
+
+TEST_CASE("[AngelScript] native value ops literal direct paths") {
+	as_native_vo_literal_direct_paths();
+}
+
+TEST_CASE("[AngelScript] native value ops Variant lifecycle conversions") {
+	as_native_vo_variant_lifecycle_conversions();
+}
+
+TEST_CASE("[AngelScript] native value ops Packed storage parity") {
+	as_native_vo_packed_storage_parity();
+}
+
+TEST_CASE("[AngelScript] native value ops container constraints") {
+	as_native_vo_container_constraints();
+}
 
 TEST_CASE("[AngelScript] native value ops scaffold fallback") {
 	as_native_vo_scaffold_fallback_unchanged();

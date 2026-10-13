@@ -1,0 +1,27 @@
+=== run 1 exit 0 ===
+RETAIN|unprepared|200000|8511|9044|10788
+RETAIN|retained|200000|5466|6594|8518
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 1618 skipped
+[doctest] assertions: 42 | 42 passed | 0 failed |
+[doctest] Status: SUCCESS!
+=== run 2 exit 0 ===
+RETAIN|unprepared|200000|8638|10956|12834
+RETAIN|retained|200000|4591|5520|7887
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 1618 skipped
+[doctest] assertions: 42 | 42 passed | 0 failed |
+[doctest] Status: SUCCESS!
+=== run 3 exit 0 ===
+RETAIN|unprepared|200000|7799|8652|51689
+RETAIN|retained|200000|7327|10257|64598
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  1 |  1 passed | 0 failed | 1618 skipped
+[doctest] assertions: 42 | 42 passed | 0 failed |
+[doctest] Status: SUCCESS!

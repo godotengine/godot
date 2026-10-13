@@ -1,0 +1,19 @@
+{
+  "stage": "nine-geometry",
+  "runs": 3,
+  "command": [
+    "D:\\GitWorkspace\\GodotWorkspace\\godot\\bin\\godot.windows.editor.x86_64.mono.console.exe",
+    "--headless",
+    "--path",
+    "D:\\GitWorkspace\\GodotWorkspace\\godot\\modules\\angelscript\\tests\\bench_project"
+  ],
+  "platform": "Windows-10-10.0.19045-SP0",
+  "executable_sha256": "6ef87a0ffcc8b87d92e6cf83de7088cffda10c7537c5d71ce4d2bc5aee6b260c",
+  "runtime_executable": "D:\\GitWorkspace\\GodotWorkspace\\godot\\bin\\godot.windows.editor.x86_64.mono.exe",
+  "runtime_sha256": "619dbebbaba3a9527d0c5e1a35d3db6e0b1cfc2f4d96a9b193e06d57dcc652ff",
+  "source_diff_sha256": "c315e455d8624339f23eef745c1ecf61f11ad51618955045f727279f97a20242",
+  "started": "2026-10-13T19:18:21+0800",
+  "repetitions_per_process": 7,
+  "csharp_assembly": "Debug (editor project)",
+  "source_revision": "20530409fc50563e19954441aa1b81f47ffcee0e"
+}

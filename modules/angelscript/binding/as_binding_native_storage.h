@@ -47,6 +47,8 @@ namespace ASNativeValueStorage {
 
 // 门控 + 类型判定：仅 MSVC x64 且为 4 个向量类型时为真。
 bool is_native_storage_type(Variant::Type p_type);
+// Explicit experimental opt-in, never changes the native hidden-return-slot ABI.
+bool is_trivial_probe_type(Variant::Type p_type);
 // 生命周期阶段：为原生类型注册原生（非 generic）默认构造/拷贝构造/析构。
 // 命中→true（调用方跳过 generic 行为注册）；非原生类型或未启用平台→false。
 bool register_native_lifecycle(asIScriptEngine *p_engine, const String &p_name, Variant::Type p_type);

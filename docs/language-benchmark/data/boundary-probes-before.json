@@ -1,0 +1,13 @@
+{
+  "runtime_sha256": "409adfb809f6a9efd753f779ff33bf65070d9c2a4130208c83ec18f2dd60eb5e",
+  "command": [
+    "D:\\GitWorkspace\\GodotWorkspace\\godot\\bin\\godot.windows.editor.x86_64.mono.console.exe",
+    "--headless",
+    "--test",
+    "--test-case=*boundary probes*"
+  ],
+  "runs": 3,
+  "repetitions": 7,
+  "warmups": 1,
+  "note": "Native thunk counters unchanged from baseline; diagnostic iteration work differs from original language benchmark."
+}

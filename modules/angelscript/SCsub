@@ -46,6 +46,12 @@ if not env.msvc:
 env_angelscript.disable_warnings()
 env_angelscript.add_source_files(env.modules_sources, "thirdparty/angelscript/source/*.cpp")
 
+# Apply only to our binding/test sources, not the VM or the rest of Godot.
+if env["angelscript_force_generic"]:
+    env_as.Append(CPPDEFINES=["AS_NATIVE_VALUE_OPS_FORCE_GENERIC"])
+if env["angelscript_pod_geometry_probe"]:
+    env_as.Append(CPPDEFINES=["AS_POD_GEOMETRY_PROBE"])
+
 env_as.add_source_files(env.modules_sources, "*.cpp")
 
 # binding/ 子目录（M2 绑定层）；同时把模块根加入 include 路径，

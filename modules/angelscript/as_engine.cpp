@@ -85,7 +85,7 @@ asIScriptContext *ASEngine::_request_context(asIScriptEngine *p_engine, void *p_
 	asIScriptContext *ctx = p_engine->CreateContext();
 	if (ctx != nullptr) {
 		ASDebugger::attach(ctx);
-		ASDebugger::enter_execution();
+		ASDebugger::enter_execution(ctx);
 	}
 	return ctx;
 }
@@ -540,23 +540,46 @@ static ASEngine::ASScalarKind scalar_kind_for_type(int p_type_id) {
 }
 
 ASEngine::ASCallPlan ASEngine::make_call_plan(asIScriptFunction *p_func) {
-	ASCallPlan plan; plan.function = p_func;
-	if (p_func == nullptr) return plan;
-	plan.argument_count = (uint8_t)MIN((asUINT)255, p_func->GetParamCount());
-	plan.fast_scalar_eligible = plan.argument_count <= 4;
-	for (int i = 0; i < MIN(4, (int)plan.argument_count); i++) {
-		int type_id = asTYPEID_VOID; p_func->GetParam(i, &type_id); plan.arguments[i] = scalar_kind_for_type(type_id);
-		if (plan.arguments[i] == AS_OTHER) plan.fast_scalar_eligible = false;
+	ASCallPlan plan;
+	plan.function = p_func;
+	if (p_func == nullptr) {
+		return plan;
 	}
-	plan.return_kind = scalar_kind_for_type(p_func->GetReturnTypeId());
-	if (plan.return_kind == AS_OTHER) plan.fast_scalar_eligible = false;
+	plan.argument_count = p_func->GetParamCount();
+	plan.fast_scalar_eligible = plan.argument_count <= 4;
+	for (asUINT i = 0; i < MIN(4u, plan.argument_count); i++) {
+		int type_id = asTYPEID_VOID;
+		asDWORD flags = 0;
+		p_func->GetParam(i, &type_id, &flags);
+		plan.arguments[i] = scalar_kind_for_type(type_id);
+		if (plan.arguments[i] == AS_OTHER || (flags & asTM_INOUTREF)) {
+			plan.fast_scalar_eligible = false;
+		}
+	}
+	asDWORD return_flags = 0;
+	plan.return_kind = scalar_kind_for_type(p_func->GetReturnTypeId(&return_flags));
+	if (plan.return_kind == AS_OTHER || (return_flags & asTM_INOUTREF)) {
+		plan.fast_scalar_eligible = false;
+	}
 	return plan;
 }
 
 Error ASEngine::call_function(asIScriptContext *p_context, asIScriptFunction *p_func, asIScriptObject *p_object, const Variant **p_args, int p_argc, Variant *r_ret, const ASCallPlan *p_plan) {
 	ERR_FAIL_NULL_V(p_context, ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_func, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_argc != (int)p_func->GetParamCount(), ERR_INVALID_PARAMETER);
+	// Snapshot before Execute: a reentrant call may grow the instance's plan map.
+	const ASCallPlan plan = p_plan != nullptr ? *p_plan : ASCallPlan();
+	const bool use_plan = plan.function == p_func && plan.fast_scalar_eligible;
+	const asUINT expected_argc = use_plan ? plan.argument_count : p_func->GetParamCount();
+	ERR_FAIL_COND_V(p_argc < 0 || (asUINT)p_argc != expected_argc, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_argc > 0 && p_args == nullptr, ERR_INVALID_PARAMETER);
+	if (!use_plan) {
+		asDWORD return_flags = 0;
+		p_func->GetReturnTypeId(&return_flags);
+		if (return_flags & asTM_INOUTREF) {
+			return ERR_INVALID_PARAMETER;
+		}
+	}
 
 	// M3：信号/回调会在脚本执行过程中再次进入脚本（宿主 Callable → Object::callp →
 	// 本函数），此时复用的 asIScriptContext 仍处于 asEXECUTION_ACTIVE，直接 Prepare
@@ -600,12 +623,24 @@ Error ASEngine::call_function(asIScriptContext *p_context, asIScriptFunction *p_
 		p_context->SetObject(p_object);
 	}
 
-	const bool use_plan = p_plan != nullptr && p_plan->function == p_func && p_plan->fast_scalar_eligible;
 	for (int i = 0; i < p_argc; i++) {
+		if (p_args[i] == nullptr) {
+			return finish(ERR_INVALID_PARAMETER);
+		}
 		const Variant &arg = *p_args[i];
 		ASScalarKind kind = AS_OTHER;
-		if (use_plan) kind = p_plan->arguments[i];
-		else { int type_id = asTYPEID_VOID; p_func->GetParam(i, &type_id); kind = scalar_kind_for_type(type_id); }
+		if (use_plan) {
+			kind = plan.arguments[i];
+		} else {
+			int type_id = asTYPEID_VOID;
+			asDWORD flags = 0;
+			p_func->GetParam(i, &type_id, &flags);
+			// The Variant bridge has no reference/out storage contract.
+			if (flags & asTM_INOUTREF) {
+				return finish(ERR_INVALID_PARAMETER);
+			}
+			kind = scalar_kind_for_type(type_id);
+		}
 		int set_result = asSUCCESS;
 		switch (kind) {
 			case AS_BOOL: if (arg.get_type()!=Variant::BOOL) return finish(ERR_INVALID_PARAMETER); set_result=p_context->SetArgByte(i,arg.operator bool()?1:0); break;
@@ -620,7 +655,7 @@ Error ASEngine::call_function(asIScriptContext *p_context, asIScriptFunction *p_
 
 	int executed;
 	{
-		ASDebugger::ExecutionScope debug_scope;
+		ASDebugger::ExecutionScope debug_scope(p_context);
 		executed = p_context->Execute();
 	}
 	if (executed != asEXECUTION_FINISHED) {
@@ -641,7 +676,7 @@ Error ASEngine::call_function(asIScriptContext *p_context, asIScriptFunction *p_
 	}
 
 	if (r_ret != nullptr) {
-		const int return_type = use_plan ? (int)p_plan->return_kind : (int)scalar_kind_for_type(p_func->GetReturnTypeId());
+		const int return_type = use_plan ? (int)plan.return_kind : (int)scalar_kind_for_type(p_func->GetReturnTypeId());
 		switch (return_type) {
 			case AS_VOID: *r_ret = Variant(); break;
 			case AS_BOOL: *r_ret = Variant(p_context->GetReturnByte() != 0); break;

@@ -31,7 +31,6 @@
 #include "as_debugger.h"
 
 #include "as_script_language.h"
-
 #include "binding/as_binding_decl.h"
 #include "binding/as_binding_native_storage.h"
 #include "binding/as_binding_object.h"
@@ -40,6 +39,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/object/class_db.h"
+#include "core/templates/safe_refcount.h"
 #include "core/variant/dictionary.h"
 
 #include <angelscript.h>
@@ -68,6 +68,16 @@ constexpr int DEFAULT_MAX_DEPTH = 4;
 // 而装配是个必须可断言的不变量，所以用一个专属 user data 槽位自己记。
 // 取值任意，只要不与模块内其它 user data 使用者冲突；目前本模块无其它使用者。
 constexpr asPWORD ATTACHED_USER_DATA_TYPE = 0x4153'4442; // 'ASDB'
+constexpr uintptr_t EXCEPTION_ATTACHED = 1;
+constexpr uintptr_t LINE_ENABLED = 2;
+SafeNumeric<uint32_t> g_line_context_count;
+
+void cleanup_debugger_context(asIScriptContext *p_ctx) {
+	const uintptr_t flags = (uintptr_t)p_ctx->GetUserData(ATTACHED_USER_DATA_TYPE);
+	if (flags & LINE_ENABLED) {
+		g_line_context_count.decrement();
+	}
+}
 
 bool is_level_valid(asIScriptContext *p_ctx, int p_level) {
 	return p_ctx != nullptr && p_level >= 0 && p_level < (int)p_ctx->GetCallstackSize();
@@ -79,16 +89,46 @@ void ASDebugger::attach(asIScriptContext *p_ctx) {
 	if (p_ctx == nullptr) {
 		return;
 	}
-	// 无条件安装：装一个函数指针本身零成本，是否生效由 on_exception 首行的
-	// is_active() 判定。这样就避开了「ASScriptInstance 的上下文在实例构造时就创建、
-	// 而调试器可能稍后才激活」的时序耦合。
-	p_ctx->SetExceptionCallback(asFUNCTION(ASDebugger::on_exception), nullptr, asCALL_CDECL);
-	p_ctx->SetLineCallback(asFUNCTION(ASDebugger::on_line), nullptr, asCALL_CDECL);
-	p_ctx->SetUserData((void *)1, ATTACHED_USER_DATA_TYPE);
+	if (!is_attached(p_ctx)) {
+		p_ctx->SetExceptionCallback(asFUNCTION(ASDebugger::on_exception), nullptr, asCALL_CDECL);
+		p_ctx->SetUserData((void *)EXCEPTION_ATTACHED, ATTACHED_USER_DATA_TYPE);
+		p_ctx->GetEngine()->SetContextUserDataCleanupCallback(cleanup_debugger_context, ATTACHED_USER_DATA_TYPE);
+	}
+	sync_line_callback(p_ctx);
 }
 
 bool ASDebugger::is_attached(asIScriptContext *p_ctx) {
 	return p_ctx != nullptr && p_ctx->GetUserData(ATTACHED_USER_DATA_TYPE) != nullptr;
+}
+
+bool ASDebugger::is_line_enabled(asIScriptContext *p_ctx) {
+	return p_ctx != nullptr && ((uintptr_t)p_ctx->GetUserData(ATTACHED_USER_DATA_TYPE) & LINE_ENABLED) != 0;
+}
+
+void ASDebugger::sync_line_callback(asIScriptContext *p_ctx) {
+	if (p_ctx == nullptr) {
+		return;
+	}
+	const bool enabled = EngineDebugger::is_active();
+	// With no instrumented contexts there is nothing to disable. In particular,
+	// normal dispatch must not replace per-line overhead with GetUserData's lock.
+	if (!enabled && g_line_context_count.get() == 0) {
+		return;
+	}
+	const uintptr_t flags = (uintptr_t)p_ctx->GetUserData(ATTACHED_USER_DATA_TYPE);
+	if ((flags & EXCEPTION_ATTACHED) == 0 || enabled == ((flags & LINE_ENABLED) != 0)) {
+		return;
+	}
+	if (enabled) {
+		if (p_ctx->SetLineCallback(asFUNCTION(ASDebugger::on_line), nullptr, asCALL_CDECL) < 0) {
+			return;
+		}
+		g_line_context_count.increment();
+	} else {
+		p_ctx->ClearLineCallback();
+		g_line_context_count.decrement();
+	}
+	p_ctx->SetUserData((void *)(enabled ? flags | LINE_ENABLED : flags & ~LINE_ENABLED), ATTACHED_USER_DATA_TYPE);
 }
 
 bool ASDebugger::is_unhandled_exception(asIScriptContext *p_ctx) {
@@ -132,7 +172,8 @@ void ASDebugger::on_exception(asIScriptContext *p_ctx, void *p_user) {
 	g_break_error = prev_error;
 }
 
-void ASDebugger::enter_execution() {
+void ASDebugger::enter_execution(asIScriptContext *p_ctx) {
+	sync_line_callback(p_ctx);
 	if (EngineDebugger::is_active()) {
 		g_execution_depths.push_back(0);
 	}

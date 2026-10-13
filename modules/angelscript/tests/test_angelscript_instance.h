@@ -44,6 +44,8 @@ void as_instance_requires_default_constructor();
 void as_instance_scalar_properties_round_trip();
 void as_instance_repeated_dispatch_is_cached();
 void as_instance_scalar_call_plan_is_cached();
+void as_instance_call_plan_safety();
+void as_instance_retained_context_probe();
 
 #ifndef ANGELSCRIPT_INSTANCE_TESTS_IMPL
 
@@ -76,6 +78,13 @@ TEST_CASE("[AngelScript] repeated dispatch resolves the method name only once") 
 }
 TEST_CASE("[AngelScript] scalar dispatch analyzes its call plan only once") {
 	as_instance_scalar_call_plan_is_cached();
+}
+
+TEST_CASE("[AngelScript] call plan rejects refs and survives reentry") {
+	as_instance_call_plan_safety();
+}
+TEST_CASE("[AngelScript] retained context isolated lifetime probe") {
+	as_instance_retained_context_probe();
 }
 
 #endif // ANGELSCRIPT_INSTANCE_TESTS_IMPL

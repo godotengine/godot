@@ -30,6 +30,8 @@
 
 #include "as_binding_native_value_ops.h"
 
+#include "as_binding_value_types.h"
+
 #include "core/error/error_macros.h"
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -50,6 +52,7 @@
 #include "core/variant/variant_internal.h"
 
 #include <angelscript.h>
+
 #include <new>
 #include <type_traits>
 #include <utility>
@@ -210,73 +213,79 @@ void thunk_method_f_obj(T *ret, const T *self, double arg) {
 	new (ret) T((R)((self->*M)((real_t)arg)));
 }
 
-// ---------- P2：Packed 标量数组 ----------
-// 这些操作的存储仍是 Variant（容器不是原生存储类型），thunk 直接调用 Variant 的索引
-// 访问器，跳过 asCALL_GENERIC 跳板。元素为标量（int64/double），可按值返回。
+// Boxed lifecycle: keep Variant storage; do not change VM flags or ownership.
+template <typename T>
+void thunk_boxed_default(Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	new (self) Variant(T());
+}
 
-// size()：返回元素个数。对所有带索引的容器均等价。
+void thunk_boxed_copy(Variant *self, const Variant *other) {
+	ASNativeValueOps::note_thunk_call();
+	new (self) Variant(*other);
+}
+
+void thunk_boxed_destroy(Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	self->~Variant();
+}
+
+template <typename T>
+void thunk_variant_construct(Variant *self, T value) {
+	ASNativeValueOps::note_thunk_call();
+	new (self) Variant(value);
+}
+
+template <typename T>
+T thunk_variant_convert(const Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	return (T)*self;
+}
+
+void thunk_variant_to_string(Variant *ret, const Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	new (ret) Variant((String)*self);
+}
+
+// Packed scalar arrays: access the same Vector inside PackedArrayRef as Godot's
+// validated methods. Do NOT copy it locally: that adds a ref and forces COW.
+// Variant copies intentionally share PackedArrayRef; duplicate() separates it.
+template <typename T>
 int64_t thunk_packed_size(const Variant *self) {
 	ASNativeValueOps::note_thunk_call();
-	return (int64_t)self->get_indexed_size();
+	return VariantInternalAccessor<Vector<T>>::get(self).size();
 }
 
-// 索引读：int64 元素（PACKED_BYTE/INT32/INT64）。
-int64_t thunk_index_get_i64(const Variant *self, int64_t index) {
+template <typename T, typename R>
+R thunk_packed_get(const Variant *self, int64_t index) {
 	ASNativeValueOps::note_thunk_call();
-	bool valid = false;
-	bool oob = false;
-	Variant v = self->get_indexed(index, valid, oob); // 越界返回默认值 0，与 generic 一致。
-	return (int64_t)v;
-}
-
-// 索引读：double 元素（PACKED_FLOAT32/FLOAT64）。
-double thunk_index_get_f64(const Variant *self, int64_t index) {
-	ASNativeValueOps::note_thunk_call();
-	bool valid = false;
-	bool oob = false;
-	Variant v = self->get_indexed(index, valid, oob);
-	return (double)v;
-}
-
-// 索引写：越界静默忽略（与 generic 的 set_indexed 语义一致）。
-void thunk_index_set_i64(Variant *self, int64_t index, int64_t value) {
-	ASNativeValueOps::note_thunk_call();
-	bool valid = false;
-	bool oob = false;
-	self->set_indexed(index, Variant(value), valid, oob);
-}
-
-void thunk_index_set_f64(Variant *self, int64_t index, double value) {
-	ASNativeValueOps::note_thunk_call();
-	bool valid = false;
-	bool oob = false;
-	self->set_indexed(index, Variant(value), valid, oob);
-}
-
-// P2+：Packed 数组 push_back 原生 thunk。存储为 Variant，转发给 Variant 内省的
-// ValidatedBuiltInMethod；首个调用后由 static 缓存函数指针，避免每次查表。
-template <Variant::Type T>
-void thunk_packed_push_i64(Variant *self, int64_t value) {
-	ASNativeValueOps::note_thunk_call();
-	Variant v(value);
-	const Variant *args[1] = { &v };
-	Variant ret;
-	static Variant::ValidatedBuiltInMethod m = Variant::get_validated_builtin_method(T, "push_back");
-	if (m) {
-		m(self, args, 1, &ret);
+	const Vector<T> &values = VariantInternalAccessor<Vector<T>>::get(self);
+	if (index < 0) {
+		index += values.size();
 	}
+	if (index < 0 || index >= values.size()) {
+		return R(0);
+	}
+	return (R)values[index];
 }
 
-template <Variant::Type T>
-void thunk_packed_push_f64(Variant *self, double value) {
+template <typename T, typename R>
+void thunk_packed_set(Variant *self, int64_t index, R value) {
 	ASNativeValueOps::note_thunk_call();
-	Variant v(value);
-	const Variant *args[1] = { &v };
-	Variant ret;
-	static Variant::ValidatedBuiltInMethod m = Variant::get_validated_builtin_method(T, "push_back");
-	if (m) {
-		m(self, args, 1, &ret);
+	Vector<T> &values = VariantInternalAccessor<Vector<T>>::get(self);
+	if (index < 0) {
+		index += values.size();
 	}
+	if (index < 0 || index >= values.size()) {
+		return;
+	}
+	values.write[index] = (T)value;
+}
+
+template <typename T, typename R>
+void thunk_packed_push(Variant *self, R value) {
+	ASNativeValueOps::note_thunk_call();
+	VariantInternalAccessor<Vector<T>>::get(self).push_back((T)value);
 }
 
 // ---------- String（存储为 Variant）的原生运算符 ----------
@@ -284,7 +293,7 @@ void thunk_packed_push_f64(Variant *self, double value) {
 // 故 thunk 直接读写 Variant 存储。绕过 generic 跳板完成拼接/赋值/相等。
 void thunk_string_add(Variant *ret, const Variant *self, const Variant *other) {
 	ASNativeValueOps::note_thunk_call();
-	new (ret) Variant(String(*self) + String(*other));
+	new (ret) Variant(VariantInternalAccessor<String>::get(self) + VariantInternalAccessor<String>::get(other));
 }
 
 Variant *thunk_string_assign(Variant *self, const Variant *other) {
@@ -295,7 +304,7 @@ Variant *thunk_string_assign(Variant *self, const Variant *other) {
 
 bool thunk_string_equals(const Variant *self, const Variant *other) {
 	ASNativeValueOps::note_thunk_call();
-	return String(*self) == String(*other);
+	return VariantInternalAccessor<String>::get(self) == VariantInternalAccessor<String>::get(other);
 }
 
 void *thunk_for_string_op(const String &p_op) {
@@ -311,14 +320,64 @@ void *thunk_for_string_op(const String &p_op) {
 	return nullptr;
 }
 
+// Direct lowercase string arguments still accept both literal factory pointers
+// and pointer-sized variable slots. The shared decoder owns that distinction.
+void thunk_literal_construct(Variant *self, const void *arg) {
+	ASNativeValueOps::note_thunk_call();
+	new (self) Variant(ASBindingValueTypes::string_from_argument(arg));
+}
+
+void thunk_literal_add(Variant *ret, const Variant *self, const void *arg) {
+	ASNativeValueOps::note_thunk_call();
+	new (ret) Variant(VariantInternalAccessor<String>::get(self) + ASBindingValueTypes::string_from_argument(arg));
+}
+
+// Direct Array core methods retain Godot's typed/read-only checks. Do not
+// access its backing Vector or construct a temporary Variant return for scalars.
+template <auto M, typename R>
+R thunk_array0(const Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	return (R)(VariantInternalAccessor<Array>::get(self).*M)();
+}
+
+template <auto M>
+void thunk_array_mutate0(Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	(VariantInternalAccessor<Array>::get(self).*M)();
+}
+
+template <auto M>
+void thunk_array_mutate1(Variant *self, const Variant *arg) {
+	ASNativeValueOps::note_thunk_call();
+	(VariantInternalAccessor<Array>::get(self).*M)(*arg);
+}
+
+template <auto M, typename R>
+R thunk_array1(const Variant *self, const Variant *arg) {
+	ASNativeValueOps::note_thunk_call();
+	return (R)(VariantInternalAccessor<Array>::get(self).*M)(*arg);
+}
+
+template <auto M>
+void thunk_array_return(Variant *ret, Variant *self) {
+	ASNativeValueOps::note_thunk_call();
+	new (ret) Variant((VariantInternalAccessor<Array>::get(self).*M)());
+}
+
 // ---------- Array 的 Variant 元素索引 ----------
 // 需 Variant 注册为 asOBJ_APP_CLASS，按值原生返回才被 AS 配置校验接受。
 // 元素为 Variant（引用计数负载），thunk 就地构造返回槽。
 void thunk_variant_index_get(Variant *ret, const Variant *self, int64_t index) {
 	ASNativeValueOps::note_thunk_call();
-	bool valid = false;
-	bool oob = false;
-	new (ret) Variant(self->get_indexed(index, valid, oob));
+	const Array &values = VariantInternalAccessor<Array>::get(self);
+	if (index < 0) {
+		index += values.size();
+	}
+	if (index < 0 || index >= values.size()) {
+		new (ret) Variant();
+		return;
+	}
+	new (ret) Variant(values[index]);
 }
 
 void thunk_variant_index_set(Variant *self, int64_t index, const Variant *value) {
@@ -333,8 +392,14 @@ void thunk_variant_index_set(Variant *self, int64_t index, const Variant *value)
 // get_keyed/set_keyed 的 valid 语义，并在返回槽中正确构造引用计数负载。
 void thunk_variant_keyed_get(Variant *ret, const Variant *self, const Variant *key) {
 	ASNativeValueOps::note_thunk_call();
-	bool valid = false;
-	new (ret) Variant(self->get_keyed(*key, valid));
+	// Const getptr retains typed-key validation without inserting a missing key.
+	const Dictionary &values = VariantInternalAccessor<Dictionary>::get(self);
+	const Variant *value = values.getptr(*key);
+	if (value) {
+		new (ret) Variant(*value);
+	} else {
+		new (ret) Variant();
+	}
 }
 
 void thunk_variant_keyed_set(Variant *self, const Variant *key, const Variant *value) {
@@ -442,6 +507,104 @@ namespace ASNativeValueOps {
 static int g_native_registration_count = 0;
 static int g_native_thunk_calls = 0;
 
+bool try_add_boxed_lifecycle(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type) {
+#if !AS_NATIVE_VALUE_OPS_ENABLED
+	return false;
+#else
+	void *ctor = nullptr;
+	switch (p_type) {
+		case Variant::NIL:
+			ctor = (void *)&thunk_boxed_default<Variant>;
+			break;
+		case Variant::STRING:
+			ctor = (void *)&thunk_boxed_default<String>;
+			break;
+		case Variant::STRING_NAME:
+			ctor = (void *)&thunk_boxed_default<StringName>;
+			break;
+		case Variant::ARRAY:
+			ctor = (void *)&thunk_boxed_default<Array>;
+			break;
+		case Variant::DICTIONARY:
+			ctor = (void *)&thunk_boxed_default<Dictionary>;
+			break;
+		case Variant::PACKED_BYTE_ARRAY:
+			ctor = (void *)&thunk_boxed_default<Vector<uint8_t>>;
+			break;
+		case Variant::PACKED_INT32_ARRAY:
+			ctor = (void *)&thunk_boxed_default<Vector<int32_t>>;
+			break;
+		case Variant::PACKED_INT64_ARRAY:
+			ctor = (void *)&thunk_boxed_default<Vector<int64_t>>;
+			break;
+		case Variant::PACKED_FLOAT32_ARRAY:
+			ctor = (void *)&thunk_boxed_default<Vector<float>>;
+			break;
+		case Variant::PACKED_FLOAT64_ARRAY:
+			ctor = (void *)&thunk_boxed_default<Vector<double>>;
+			break;
+		default:
+			return false;
+	}
+	CharString name = p_type_name.utf8();
+	int a = p_engine->RegisterObjectBehaviour(name.get_data(), asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(ctor), asCALL_CDECL_OBJFIRST);
+	int b = p_engine->RegisterObjectBehaviour(name.get_data(), asBEHAVE_CONSTRUCT, ("void f(const " + p_type_name + " &in)").utf8().get_data(), asFUNCTION(thunk_boxed_copy), asCALL_CDECL_OBJFIRST);
+	int c = p_engine->RegisterObjectBehaviour(name.get_data(), asBEHAVE_DESTRUCT, "void f()", asFUNCTION(thunk_boxed_destroy), asCALL_CDECL_OBJFIRST);
+	ERR_FAIL_COND_V(a < 0 || b < 0 || c < 0, false);
+	g_native_registration_count += 3;
+	return true;
+#endif
+}
+
+bool try_add_variant_conversions(asIScriptEngine *p_engine) {
+#if !AS_NATIVE_VALUE_OPS_ENABLED
+	return false;
+#else
+	struct Entry {
+		const char *decl;
+		void *fn;
+	} ctors[] = {
+		{ "void f(int64)", (void *)&thunk_variant_construct<int64_t> },
+		{ "void f(double)", (void *)&thunk_variant_construct<double> },
+		{ "void f(bool)", (void *)&thunk_variant_construct<bool> },
+		{ "void f(const String &in)", (void *)&thunk_boxed_copy },
+	},
+	  conversions[] = {
+		  { "int64 opImplConv() const", (void *)&thunk_variant_convert<int64_t> },
+		  { "double opImplConv() const", (void *)&thunk_variant_convert<double> },
+		  { "bool opImplConv() const", (void *)&thunk_variant_convert<bool> },
+		  { "String opImplConv() const", (void *)&thunk_variant_to_string },
+	  };
+	for (const Entry &e : ctors) {
+		int id = p_engine->RegisterObjectBehaviour("Variant", asBEHAVE_CONSTRUCT, e.decl, asFUNCTION(e.fn), asCALL_CDECL_OBJFIRST);
+		ERR_FAIL_COND_V(id < 0, false);
+		g_native_registration_count++;
+	}
+	for (const Entry &e : conversions) {
+		int id = p_engine->RegisterObjectMethod("Variant", e.decl, asFUNCTION(e.fn), asCALL_CDECL_OBJFIRST);
+		ERR_FAIL_COND_V(id < 0, false);
+		g_native_registration_count++;
+	}
+	return true;
+#endif
+}
+
+bool try_add_literal_support(asIScriptEngine *p_engine) {
+#if !AS_NATIVE_VALUE_OPS_ENABLED
+	return false;
+#else
+	for (const char *name : { "String", "Variant" }) {
+		int id = p_engine->RegisterObjectBehaviour(name, asBEHAVE_CONSTRUCT, "void f(const string &in)", asFUNCTION(thunk_literal_construct), asCALL_CDECL_OBJFIRST);
+		ERR_FAIL_COND_V(id < 0, false);
+		g_native_registration_count++;
+	}
+	int id = p_engine->RegisterObjectMethod("String", "String opAdd(const string &in) const", asFUNCTION(thunk_literal_add), asCALL_CDECL_OBJFIRST);
+	ERR_FAIL_COND_V(id < 0, false);
+	g_native_registration_count++;
+	return true;
+#endif
+}
+
 // 命中即原生注册并返回 true（调用方跳过 generic 跳板）；未命中返回 false。
 bool try_add_op(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type, const String &p_op, const String &p_decl) {
 #if !AS_NATIVE_VALUE_OPS_ENABLED
@@ -507,8 +670,20 @@ bool try_add_op(asIScriptEngine *p_engine, const String &p_type_name, Variant::T
 			fn = thunk_for_op<Color>(p_op);
 			break;
 		case Variant::STRING:
-			// String 已是 asOBJ_APP_CLASS，可原生按值返回；存储为 Variant。
 			fn = thunk_for_string_op(p_op);
+			break;
+		case Variant::NIL:
+		case Variant::STRING_NAME:
+		case Variant::ARRAY:
+		case Variant::DICTIONARY:
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+			if (p_op == "opAssign") {
+				fn = (void *)&thunk_assign<Variant>;
+			}
 			break;
 		default:
 			return false; // 其余类型暂走 generic 回退。
@@ -696,88 +871,87 @@ bool try_add_method(asIScriptEngine *p_engine, const String &p_type_name, Varian
 				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_method1_scalar<Vector3i, int64_t, &Vector3i::distance_squared_to>);
 			}
 			break;
-		// P2：Packed 标量数组的 size()（元素个数）与 push_back（追加）原生 thunk。
 		case Variant::PACKED_BYTE_ARRAY:
 			if (m == "size") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size<uint8_t>);
 			}
 			if (m == "push_back") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_i64<Variant::PACKED_BYTE_ARRAY>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push<uint8_t, int64_t>);
 			}
 			break;
 		case Variant::PACKED_INT32_ARRAY:
 			if (m == "size") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size<int32_t>);
 			}
 			if (m == "push_back") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_i64<Variant::PACKED_INT32_ARRAY>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push<int32_t, int64_t>);
 			}
 			break;
 		case Variant::PACKED_INT64_ARRAY:
 			if (m == "size") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size<int64_t>);
 			}
 			if (m == "push_back") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_i64<Variant::PACKED_INT64_ARRAY>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push<int64_t, int64_t>);
 			}
 			break;
 		case Variant::PACKED_FLOAT32_ARRAY:
 			if (m == "size") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size<float>);
 			}
 			if (m == "push_back") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_f64<Variant::PACKED_FLOAT32_ARRAY>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push<float, double>);
 			}
 			break;
 		case Variant::PACKED_FLOAT64_ARRAY:
 			if (m == "size") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_size<double>);
 			}
 			if (m == "push_back") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push_f64<Variant::PACKED_FLOAT64_ARRAY>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_packed_push<double, double>);
 			}
 			break;
 		// A2：Array/Dictionary 安全内建方法白名单。仅覆盖无参标量/Variant 返回、单个
 		// Variant 参、无默认值、无 Object handle 的方法；其余方法保持 generic 回退。
 		case Variant::ARRAY:
 			if (m == "size") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_scalar<Variant::ARRAY, BmSize, int64_t>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array0<&Array::size, int64_t>);
 			}
 			if (m == "is_empty") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_scalar<Variant::ARRAY, BmIsEmpty, bool>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array0<&Array::is_empty, bool>);
 			}
 			if (m == "hash") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_scalar<Variant::ARRAY, BmHash, int64_t>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array0<&Array::hash, int64_t>);
 			}
 			if (m == "clear") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_void<Variant::ARRAY, BmClear>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array_mutate0<&Array::clear>);
 			}
 			if (m == "push_back") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_void<Variant::ARRAY, BmPushBack>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array_mutate1<&Array::push_back>);
 			}
 			if (m == "push_front") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_void<Variant::ARRAY, BmPushFront>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array_mutate1<&Array::push_front>);
 			}
 			if (m == "append") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_void<Variant::ARRAY, BmAppend>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array_mutate1<&Array::append>);
 			}
 			if (m == "has") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_scalar<Variant::ARRAY, BmHas, bool>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array1<&Array::has, bool>);
 			}
 			if (m == "count") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm1_scalar<Variant::ARRAY, BmCount, int64_t>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array1<&Array::count, int64_t>);
 			}
 			if (m == "front") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_variant<Variant::ARRAY, BmFront>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array_return<&Array::front>);
 			}
 			if (m == "back") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_variant<Variant::ARRAY, BmBack>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array_return<&Array::back>);
 			}
 			if (m == "pop_back") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_variant<Variant::ARRAY, BmPopBack>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array_return<&Array::pop_back>);
 			}
 			if (m == "pop_front") {
-				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_bm0_variant<Variant::ARRAY, BmPopFront>);
+				return reg_method(p_engine, p_type_name, p_decl, (void *)&thunk_array_return<&Array::pop_front>);
 			}
 			break;
 		case Variant::DICTIONARY:
@@ -821,15 +995,24 @@ bool try_add_index_accessor(asIScriptEngine *p_engine, const String &p_type_name
 	void *set_fn = nullptr;
 	switch (p_type) {
 		case Variant::PACKED_BYTE_ARRAY:
+			get_fn = (void *)&thunk_packed_get<uint8_t, int64_t>;
+			set_fn = (void *)&thunk_packed_set<uint8_t, int64_t>;
+			break;
 		case Variant::PACKED_INT32_ARRAY:
+			get_fn = (void *)&thunk_packed_get<int32_t, int64_t>;
+			set_fn = (void *)&thunk_packed_set<int32_t, int64_t>;
+			break;
 		case Variant::PACKED_INT64_ARRAY:
-			get_fn = (void *)&thunk_index_get_i64;
-			set_fn = (void *)&thunk_index_set_i64;
+			get_fn = (void *)&thunk_packed_get<int64_t, int64_t>;
+			set_fn = (void *)&thunk_packed_set<int64_t, int64_t>;
 			break;
 		case Variant::PACKED_FLOAT32_ARRAY:
+			get_fn = (void *)&thunk_packed_get<float, double>;
+			set_fn = (void *)&thunk_packed_set<float, double>;
+			break;
 		case Variant::PACKED_FLOAT64_ARRAY:
-			get_fn = (void *)&thunk_index_get_f64;
-			set_fn = (void *)&thunk_index_set_f64;
+			get_fn = (void *)&thunk_packed_get<double, double>;
+			set_fn = (void *)&thunk_packed_set<double, double>;
 			break;
 		case Variant::ARRAY:
 			// 元素的 AS 类型是 Variant；需 Variant 带 asOBJ_APP_CLASS 才能原生返回。

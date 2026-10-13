@@ -116,7 +116,7 @@ ASScriptInstance::ASScriptInstance(const Ref<ASScript> &p_script, Object *p_owne
 	}
 	int factory_result;
 	{
-		ASDebugger::ExecutionScope debug_scope;
+		ASDebugger::ExecutionScope debug_scope(context);
 		factory_result = context->Execute();
 	}
 	if (factory_result != asEXECUTION_FINISHED) {

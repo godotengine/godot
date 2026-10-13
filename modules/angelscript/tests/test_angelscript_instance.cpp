@@ -31,6 +31,7 @@
 #include "../as_script.h"
 #include "../as_script_instance.h"
 
+#include "core/os/os.h"
 #include "scene/main/node.h"
 
 #define ANGELSCRIPT_INSTANCE_TESTS_IMPL
@@ -246,6 +247,155 @@ void as_instance_scalar_call_plan_is_cached() {
 	Variant a=1,b=2,c=3,d=4; const Variant *args[4]={&a,&b,&c,&d};
 	for(int i=0;i<5;i++){Variant result=instance->callp("add4",args,4,error);CHECK(error.error==Callable::CallError::CALL_OK);CHECK(result==Variant((int64_t)10));}
 	CHECK(ASScriptInstance::method_resolution_count()==1); CHECK(ASScriptInstance::call_plan_analysis_count()==1); memdelete(node);
+}
+
+// Simulate a plan-cache relocation at exactly the native -> script reentry edge.
+static ASEngine::ASCallPlan *invalidated_plan = nullptr;
+static void invalidate_call_plan() {
+	if (invalidated_plan) {
+		*invalidated_plan = ASEngine::ASCallPlan();
+	}
+}
+
+void as_instance_call_plan_safety() {
+	ASEngine *as = ASEngine::get_singleton();
+	if (!as->ensure_initialized()) {
+		REQUIRE(false);
+		return;
+	}
+	asIScriptEngine *engine = as->get_engine();
+	if (!engine->GetGlobalFunctionByDecl("void invalidate_call_plan()")) {
+		REQUIRE(engine->RegisterGlobalFunction("void invalidate_call_plan()", asFUNCTION(invalidate_call_plan), asCALL_CDECL) >= 0);
+	}
+	String error;
+	if (!as->compile_module("call_plan_safety", R"(
+		int64 ref_in(const int64 &in a) { return a; }
+		void ref_out(int64 &out a) { a=9; }
+		int64 four(int64 a,int64 b,int64 c,int64 d) { return a+b+c+d; }
+		float scalar_float(float a) { return a+0.5f; }
+		bool scalar_bool(bool a) { return !a; }
+		int64 reenter() { invalidate_call_plan(); return 42; }
+	)",
+				&error)) {
+		REQUIRE_MESSAGE(false, error);
+		return;
+	}
+	asIScriptModule *mod = engine->GetModule("call_plan_safety");
+	asIScriptContext *ctx = as->create_context();
+	if (!ctx) {
+		REQUIRE(false);
+		return;
+	}
+	Variant value = int64_t(3), ret;
+	const Variant *args[4] = { &value, &value, &value, &value };
+	for (const char *name : { "ref_in", "ref_out" }) {
+		auto plan = ASEngine::make_call_plan(mod->GetFunctionByName(name));
+		CHECK_FALSE(plan.fast_scalar_eligible);
+		CHECK_EQ(ASEngine::call_function(ctx, plan.function, nullptr, args, 1, &ret, &plan), ERR_INVALID_PARAMETER);
+		CHECK_EQ(ctx->GetState(), asEXECUTION_UNINITIALIZED);
+	}
+	auto plan = ASEngine::make_call_plan(mod->GetFunctionByName("four"));
+	CHECK(plan.fast_scalar_eligible);
+	CHECK_EQ(ASEngine::call_function(ctx, plan.function, nullptr, args, 4, &ret, &plan), OK);
+	CHECK_EQ(int64_t(ret), 12);
+	value = 1.25;
+	plan = ASEngine::make_call_plan(mod->GetFunctionByName("scalar_float"));
+	CHECK_EQ(ASEngine::call_function(ctx, plan.function, nullptr, args, 1, &ret, &plan), OK);
+	CHECK_EQ(double(ret), 1.75);
+	value = true;
+	plan = ASEngine::make_call_plan(mod->GetFunctionByName("scalar_bool"));
+	CHECK_EQ(ASEngine::call_function(ctx, plan.function, nullptr, args, 1, &ret, &plan), OK);
+	CHECK_FALSE(bool(ret));
+	plan = ASEngine::make_call_plan(mod->GetFunctionByName("reenter"));
+	invalidated_plan = &plan;
+	CHECK_EQ(ASEngine::call_function(ctx, plan.function, nullptr, nullptr, 0, &ret, &plan), OK);
+	invalidated_plan = nullptr;
+	CHECK_EQ(int64_t(ret), 42);
+	CHECK_EQ(ctx->GetState(), asEXECUTION_UNINITIALIZED);
+	ctx->Release();
+	engine->DiscardModule("call_plan_safety");
+}
+
+void as_instance_retained_context_probe() {
+	ASEngine *as = ASEngine::get_singleton();
+	if (!as->ensure_initialized()) {
+		REQUIRE(false);
+		return;
+	}
+	String error;
+	if (!as->compile_module("retained_context", R"(
+		int destroyed=0;
+		class Item { ~Item() { destroyed++; } int value() { return 7; } }
+		int ping() { return 1; }
+		int fail() { int z=0; return 1/z; }
+	)",
+				&error)) {
+		REQUIRE_MESSAGE(false, error);
+		return;
+	}
+	asIScriptEngine *engine = as->get_engine();
+	asIScriptModule *mod = engine->GetModule("retained_context");
+	asIScriptContext *ctx = as->create_context();
+	if (!ctx) {
+		REQUIRE(false);
+		return;
+	}
+	asIScriptFunction *ping = mod->GetFunctionByName("ping");
+	const bool timing = OS::get_singleton()->get_environment("AS_BOUNDARY_TIMING") == "1";
+	const int n = timing ? 200000 : 3;
+	for (bool retain : { false, true }) {
+		Vector<uint64_t> times;
+		for (int rep = 0; rep < (timing ? 8 : 1); ++rep) {
+			int64_t sum = 0;
+			const uint64_t start = OS::get_singleton()->get_ticks_usec();
+			for (int i = 0; i < n; i++) {
+				if (ctx->Prepare(ping) < 0 || ctx->Execute() != asEXECUTION_FINISHED) {
+					REQUIRE(false);
+					ctx->Release();
+					return;
+				}
+				sum += ctx->GetReturnDWord();
+				if (!retain) {
+					ctx->Unprepare();
+				}
+			}
+			const uint64_t elapsed = OS::get_singleton()->get_ticks_usec() - start;
+			CHECK_EQ(sum, n);
+			CHECK_EQ(ctx->GetState(), retain ? asEXECUTION_FINISHED : asEXECUTION_UNINITIALIZED);
+			ctx->Unprepare();
+			if (rep > 0) {
+				times.push_back(elapsed);
+			}
+		}
+		if (timing) {
+			times.sort();
+			print_line(vformat("RETAIN|%s|%d|%d|%d|%d", retain ? "retained" : "unprepared", n, times[0], times[3], times[6]));
+		}
+	}
+	CHECK_EQ(ctx->Prepare(mod->GetFunctionByName("fail")), asSUCCESS);
+	CHECK_EQ(ctx->Execute(), asEXECUTION_EXCEPTION);
+	CHECK_EQ(ctx->Prepare(ping), asSUCCESS);
+	CHECK_EQ(ctx->Execute(), asEXECUTION_FINISHED);
+	CHECK_EQ(ctx->GetReturnDWord(), 1u);
+	ctx->Unprepare();
+	// A finished method still owns this. Retaining it changes destruction timing.
+	asITypeInfo *type = mod->GetTypeInfoByName("Item");
+	auto *object = static_cast<asIScriptObject *>(engine->CreateScriptObject(type));
+	if (!object) {
+		REQUIRE(false);
+		ctx->Release();
+		return;
+	}
+	CHECK_EQ(ctx->Prepare(type->GetMethodByName("value")), asSUCCESS);
+	CHECK_EQ(ctx->SetObject(object), asSUCCESS);
+	CHECK_EQ(ctx->Execute(), asEXECUTION_FINISHED);
+	object->Release();
+	int *destroyed = static_cast<int *>(mod->GetAddressOfGlobalVar(mod->GetGlobalVarIndexByName("destroyed")));
+	CHECK_EQ(*destroyed, 0);
+	ctx->Unprepare();
+	CHECK_EQ(*destroyed, 1);
+	ctx->Release();
+	engine->DiscardModule("retained_context");
 }
 
 void as_instance_repeated_dispatch_is_cached() {

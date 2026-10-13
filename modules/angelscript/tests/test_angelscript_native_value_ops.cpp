@@ -106,6 +106,274 @@ static bool run_double(const String &p_source, double *r_out) {
 	return true;
 }
 
+void as_native_vo_geometry_lifetime_probe() {
+	double out = 0;
+	if (!run_double(R"(
+		class Holder { Vector2 v; Vector3 w; Color c; }
+		Vector2 pass2(Vector2 a) { return a+Vector2(3,4); }
+		Vector3 pass3(Vector3 a) { return a+Vector3(3,4,5); }
+		Color pass_color(Color a) { return a+Color(1,2,3,4); }
+		double main() {
+			Vector2 a(1,2); Vector2 b(a); Vector2 c; c=b=a;
+			Holder h; h.v=pass2(c); h.w=pass3(Vector3(1,2,3)); h.c=pass_color(Color(1,1,1,1));
+			Vector2 copied=Vector2(h.v); copied.x=99;
+			Color defaults;
+			if(h.v.x!=4 || h.v.y!=6 || h.w.z!=8 || h.c.a!=5) return -1;
+			if(defaults.a!=1 || h.v.x!=4 || c.x!=1) return -2;
+			for(int i=0;i<20;i++) { Vector2 temp=pass2(h.v+Vector2(1,1)); if(temp.y!=11) return -3; }
+			return 42;
+		}
+	)",
+				&out)) {
+		return;
+	}
+	CHECK_EQ(out, 42.0);
+	if (ASNativeValueStorage::is_native_storage_type(Variant::VECTOR2)) {
+		// Typed geometry containers use native return slots; validate copying
+		// across that boundary, not just AS-to-AS values.
+		if (!run_double(R"(
+			double main() {
+				Vector2Array@ a=Vector2Array(); a.push_back(Vector2(2,3));
+				Vector3Array@ b=Vector3Array(); b.push_back(Vector3(4,5,6));
+				ColorArray@ c=ColorArray(); c.push_back(Color(1,2,3,4));
+				Vector2 v=a.get(0); Vector3 w=b.get(0); Color k=c.get(0);
+				v.x=99; w.z=99; k.a=99;
+				if(a.get(0).x!=2 || b.get(0).z!=6 || c.get(0).a!=4) return -1;
+				return 42;
+			}
+		)",
+					&out)) {
+			return;
+		}
+		CHECK_EQ(out, 42.0);
+	}
+}
+
+void as_native_vo_array_mutator_constraints() {
+	ASEngine *as = ASEngine::get_singleton();
+	if (!as->ensure_initialized()) {
+		REQUIRE(false);
+		return;
+	}
+	String error;
+	if (!as->compile_module("array_mutators", R"(
+		int64 main(Array &in a) {
+			a.push_back(Variant(9)); a.push_front(Variant(8)); a.append(Variant(7));
+			a.pop_back(); a.pop_front(); a.clear();
+			return a.size();
+		}
+	)",
+				&error)) {
+		REQUIRE_MESSAGE(false, error);
+		return;
+	}
+	asIScriptEngine *engine = as->get_engine();
+	for (bool readonly : { false, true }) {
+		Array a;
+		a.set_typed(Variant::INT, StringName(), Variant());
+		a.push_back(4);
+		if (readonly) {
+			a.make_read_only();
+		}
+		Variant value(a);
+		asIScriptContext *ctx = engine->CreateContext();
+		if (!ctx) {
+			REQUIRE(false);
+			return;
+		}
+		CHECK_EQ(ctx->Prepare(engine->GetModule("array_mutators")->GetFunctionByName("main")), asSUCCESS);
+		ctx->SetArgObject(0, &value);
+		ERR_PRINT_OFF;
+		const int result = ctx->Execute();
+		ERR_PRINT_ON;
+		CHECK_EQ(result, asEXECUTION_FINISHED);
+		CHECK_EQ(ctx->GetReturnQWord(), readonly ? 1u : 0u);
+		CHECK_EQ(a.size(), readonly ? 1 : 0);
+		if (readonly) {
+			CHECK_EQ(int64_t(a[0]), 4);
+		}
+		ctx->Release();
+	}
+	engine->DiscardModule("array_mutators");
+}
+
+void as_native_vo_literal_direct_paths() {
+	double out = 0;
+	if (!run_double(R"(
+		string make_text() { return "returned"; }
+		String from_arg(const string &in s) { return String(s); }
+		double main() {
+			Variant literal("value");
+			string s="variable"; string copy=s; s="changed";
+			Variant variable(copy); Variant returned(make_text());
+			String a=literal; String b=variable; String c=returned;
+			String empty=""; Variant e("");
+			String prefix="pre:";
+			String joined=prefix+copy;
+			String combined=prefix+"尾\n";
+			String result=prefix+make_text();
+			String explicit_string=prefix+String("boxed");
+			if(a!="value" || b!="variable" || c!="returned") return -1;
+			if(joined!="pre:variable" || combined!="pre:尾\n" || result!="pre:returned") return -2;
+			if(explicit_string!="pre:boxed" || from_arg(copy)!="variable" || from_arg("literal")!="literal") return -3;
+			if(String(e)!=empty || String(Variant("中文"))!="中文") return -4;
+			return 42;
+		}
+	)",
+				&out)) {
+		return;
+	}
+	CHECK(nearly(out, 42));
+	asIScriptEngine *engine = ASEngine::get_singleton()->get_engine();
+	asITypeInfo *variant = engine->GetTypeInfoByName("Variant");
+	asITypeInfo *string_type = engine->GetTypeInfoByName("String");
+	bool direct_ctor = false;
+	for (asUINT i = 0; i < variant->GetBehaviourCount(); ++i) {
+		asEBehaviours kind;
+		asIScriptFunction *func = variant->GetBehaviourByIndex(i, &kind);
+		if (kind != asBEHAVE_CONSTRUCT || func->GetParamCount() != 1) {
+			continue;
+		}
+		int type_id = 0;
+		func->GetParam(0, &type_id);
+		if (type_id == engine->GetTypeIdByDecl("string")) {
+			direct_ctor = true;
+		}
+	}
+	CHECK(direct_ctor);
+	CHECK(string_type->GetMethodByDecl("String opAdd(const string &in) const") != nullptr);
+}
+
+void as_native_vo_variant_lifecycle_conversions() {
+	double out = 0;
+	ASNativeValueOps::reset_native_thunk_calls();
+	if (!run_double(R"(
+		double main() {
+			Variant empty;
+			Variant a(int64(-7)); Variant b(a); b = b;
+			Variant f(2.5); Variant yes(true); Variant no(false);
+			String s = "payload"; Variant text(s); Variant copy(text);
+			text = Variant(int64(99));
+			String restored = copy;
+			string literal = "variable";
+			Variant from_variable(literal);
+			String variable = from_variable;
+			if (int64(empty) != 0 || int64(b) != -7 || double(f) != 2.5) return -1;
+			if (!bool(yes) || bool(no) || restored != "payload" || variable != "variable") return -2;
+			return 42;
+		}
+	)",
+				&out)) {
+		return;
+	}
+	CHECK(nearly(out, 42));
+	check_native_hits(10);
+	asITypeInfo *type = ASEngine::get_singleton()->get_engine()->GetTypeInfoByName("Variant");
+	if (!type) {
+		REQUIRE(false);
+		return;
+	}
+	for (asUINT i = 0; i < type->GetBehaviourCount(); ++i) {
+		asEBehaviours kind;
+		asIScriptFunction *f = type->GetBehaviourByIndex(i, &kind);
+		if (kind == asBEHAVE_DESTRUCT || (kind == asBEHAVE_CONSTRUCT && f->GetParamCount() == 0)) {
+			CHECK_EQ(f->GetAuxiliary() == nullptr, ASNativeValueOps::native_ops_enabled());
+		}
+	}
+}
+
+void as_native_vo_packed_storage_parity() {
+	double out = 0;
+	if (!run_double(R"(
+		double main() {
+			PackedByteArray bytes; bytes.push_back(258); bytes[-1] = -1;
+			PackedInt32Array ints; ints.push_back(4294967297); ints[-1] = -9;
+			PackedInt64Array longs; longs.push_back(-7); longs.push_back(8);
+			PackedInt64Array alias(longs); alias[0] = 11;
+			PackedInt64Array separate = longs.duplicate(); separate[0] = 99; separate.push_back(5);
+			longs[-1] = 12; longs[-3] = 22; longs[2] = 33;
+			PackedFloat32Array f; f.push_back(16777217.0); f.push_back(1.25); f[-1] = 2.5;
+			PackedFloat64Array d; d.push_back(16777217.0); d[-1] = -2.75;
+			PackedInt64Array empty; empty[0] = 1;
+			if (bytes[0] != 255 || ints[0] != -9 || longs[0] != 11 || alias[-1] != 12) return -1;
+			if (separate[0] != 99 || separate.size() != 3 || longs.size() != 2) return -2;
+			if (longs[-3] != 0 || longs[2] != 0 || empty[0] != 0 || empty.size() != 0) return -3;
+			if (f[0] != 16777216.0 || f[-1] != 2.5 || d[0] != -2.75) return -4;
+			return 42;
+		}
+	)",
+				&out)) {
+		return;
+	}
+	CHECK(nearly(out, 42));
+}
+
+void as_native_vo_container_constraints() {
+	ASEngine *as = ASEngine::get_singleton();
+	if (!as->ensure_initialized()) {
+		REQUIRE(false);
+		return;
+	}
+	asIScriptEngine *engine = as->get_engine();
+	if (ASBindingValueTypes::register_all(engine) != OK) {
+		REQUIRE(false);
+		return;
+	}
+	String error;
+	if (!as->compile_module("as_container_constraints", R"(
+		int64 main(Array &in a, Dictionary &in d) {
+			a.push_back(Variant("bad")); a.push_front(Variant("bad")); a.append(Variant("bad"));
+			a[-1] = Variant(9); a[0] = Variant("bad");
+			a[-2] = Variant(88); a[1] = Variant(88);
+			d[Variant("key")] = Variant(9);
+			d[Variant("key")] = Variant("bad");
+			d[Variant(7)] = Variant(99);
+			int64 missing = d[Variant("missing")];
+			int64 wrong_key = d[Variant(7)];
+			return int64(a[-1]) + int64(d[Variant("key")]) + missing + wrong_key + int64(a[1]);
+		}
+	)",
+				&error)) {
+		INFO(error.utf8().get_data());
+		REQUIRE(false);
+		return;
+	}
+	asIScriptFunction *fn = engine->GetModule("as_container_constraints")->GetFunctionByName("main");
+	for (bool read_only : { false, true }) {
+		Array array;
+		array.set_typed(Variant::INT, StringName(), Variant());
+		array.push_back(4);
+		Dictionary dictionary;
+		dictionary.set_typed(Variant::STRING, StringName(), Variant(), Variant::INT, StringName(), Variant());
+		dictionary.set("key", 5);
+		if (read_only) {
+			array.make_read_only();
+			dictionary.make_read_only();
+		}
+		Variant a(array), d(dictionary);
+		asIScriptContext *ctx = engine->CreateContext();
+		if (!ctx || ctx->Prepare(fn) < 0) {
+			if (ctx) {
+				ctx->Release();
+			}
+			REQUIRE(false);
+			return;
+		}
+		ctx->SetArgObject(0, &a);
+		ctx->SetArgObject(1, &d);
+		ERR_PRINT_OFF;
+		int rc = ctx->Execute();
+		ERR_PRINT_ON;
+		CHECK_EQ(rc, asEXECUTION_FINISHED);
+		CHECK_EQ(ctx->GetReturnQWord(), read_only ? 9 : 18);
+		CHECK_EQ(array.size(), 1);
+		CHECK_EQ(dictionary.size(), 1);
+		CHECK_EQ((int64_t)array[0], read_only ? 4 : 9);
+		CHECK_EQ((int64_t)dictionary.get("key", Variant()), read_only ? 5 : 9);
+		ctx->Release();
+	}
+}
+
 void as_native_vo_scaffold_fallback_unchanged() {
 	double out = 0.0;
 	if (!run_double("double main() { Vector2 a(1, 2); Vector2 b(3, 4); Vector2 c = a + b; return c.x + c.y; }", &out)) {
@@ -825,9 +1093,9 @@ void as_native_vo_platform_gate() {
 #endif
 }
 
-// B8：完整 generic 回退路径的可复现验证。PackedStringArray 不在任何原生白名单内
-// （原生只覆盖 int64/double 元素 Packed 数组的 size/push_back 与索引），故构造、push_back、
-// 索引读、size 全程走 generic。断言语义正确且原生 thunk 计数为 0，证明未误走原生路径。
+// PackedStringArray operations remain generic, but their String arguments and
+// results now have native lifecycle on supported builds. Check the actual method
+// metadata; require zero total native calls only under the forced/platform gate.
 void as_native_vo_generic_fallback_path() {
 	double out = 0.0;
 	ASNativeValueOps::reset_native_thunk_calls();
@@ -845,5 +1113,18 @@ void as_native_vo_generic_fallback_path() {
 		return;
 	}
 	CHECK(nearly(out, 63.0)); // (5 + 1) * 10 + 3
-	CHECK_EQ(ASNativeValueOps::native_thunk_calls(), 0); // 全 generic，未命中原生 thunk
+	asITypeInfo *type = ASEngine::get_singleton()->get_engine()->GetTypeInfoByName("PackedStringArray");
+	if (!type) {
+		REQUIRE(false);
+		return;
+	}
+	for (asUINT i = 0; i < type->GetMethodCount(); ++i) {
+		asIScriptFunction *method = type->GetMethodByIndex(i);
+		if (String(method->GetName()) == "push_back" || String(method->GetName()) == "get_opIndex" || String(method->GetName()) == "size") {
+			CHECK(method->GetAuxiliary() != nullptr);
+		}
+	}
+#if !AS_NATIVE_VALUE_OPS_ENABLED
+	CHECK_EQ(ASNativeValueOps::native_thunk_calls(), 0);
+#endif
 }

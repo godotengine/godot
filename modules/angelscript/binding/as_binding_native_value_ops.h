@@ -87,6 +87,11 @@ static_assert(ANGELSCRIPT_VERSION == 23800, "原生值 thunk ABI 仅针对 Angel
 // Variant 存储 ↔ 原生值 的转换。
 namespace ASNativeValueOps {
 
+// Boxed types retain Variant storage and their existing copy/alias semantics.
+bool try_add_boxed_lifecycle(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type);
+bool try_add_variant_conversions(asIScriptEngine *p_engine);
+bool try_add_literal_support(asIScriptEngine *p_engine);
+
 bool try_add_op(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type, const String &p_op, const String &p_decl);
 bool try_add_method(asIScriptEngine *p_engine, const String &p_type_name, Variant::Type p_type, const StringName &p_method, const String &p_decl);
 

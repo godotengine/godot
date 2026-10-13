@@ -1,0 +1,81 @@
+
+=== run 1 exit 0 ===
+PROBE|empty_native|200000|4437|4773|5080|200000
+PROBE|arithmetic|200000|1655|1787|2572|200000
+PROBE|array_size|200000|5160|5495|5586|819200000
+PROBE|array_has|200000|16694|18911|20479|200000
+PROBE|array_get|200000|14346|20498|86301|200000
+PROBE|array_push|200000|25356|33298|47897|200000
+PROBE|literal_key|200000|89485|129820|230043|200000
+PROBE|copy_key|200000|43513|57693|105737|200000
+PROBE|dict_cached|200000|35571|39829|52441|200000
+PROBE|dict_literal|200000|53244|74992|107977|200000
+PROBE|string_literal|8000|4119|4265|24192|8000
+PROBE|packed_get|200000|8581|8925|35783|200000
+PROBE|packed_push|200000|8856|9132|9363|200000
+PROBE|typed_get|200000|8301|8503|8793|200000
+PROBE|typed_push|200000|8282|8403|17952|200000
+PROBE|vector_add|200000|16777|17114|22907|200000
+PROBE|vector_assign|200000|6949|7915|14485|1
+PROBE|color_add|200000|16697|16813|27353|200000
+PROBE|dispatch|200000|15474|16132|16518|200000
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 1614 skipped
+[doctest] assertions: 305 | 305 passed | 0 failed |
+[doctest] Status: SUCCESS!
+
+=== run 2 exit 0 ===
+PROBE|empty_native|200000|7264|8076|62068|200000
+PROBE|arithmetic|200000|2481|6475|46499|200000
+PROBE|array_size|200000|8056|36700|100965|819200000
+PROBE|array_has|200000|26393|49822|58408|200000
+PROBE|array_get|200000|20925|58034|88553|200000
+PROBE|array_push|200000|40999|53408|61432|200000
+PROBE|literal_key|200000|61951|68467|251711|200000
+PROBE|copy_key|200000|53561|67970|100561|200000
+PROBE|dict_cached|200000|33269|33706|38150|200000
+PROBE|dict_literal|200000|44978|47595|55535|200000
+PROBE|string_literal|8000|4130|4333|4742|8000
+PROBE|packed_get|200000|8519|8942|9393|200000
+PROBE|packed_push|200000|8910|9285|23850|200000
+PROBE|typed_get|200000|8313|8803|9225|200000
+PROBE|typed_push|200000|8324|8409|14071|200000
+PROBE|vector_add|200000|16845|17393|18620|200000
+PROBE|vector_assign|200000|7011|7062|8091|1
+PROBE|color_add|200000|16976|17236|18523|200000
+PROBE|dispatch|200000|15694|15776|16127|200000
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 1614 skipped
+[doctest] assertions: 305 | 305 passed | 0 failed |
+[doctest] Status: SUCCESS!
+
+=== run 3 exit 0 ===
+PROBE|empty_native|200000|7185|9453|108956|200000
+PROBE|arithmetic|200000|2431|3291|57467|200000
+PROBE|array_size|200000|9312|10119|129156|819200000
+PROBE|array_has|200000|29202|32487|197471|200000
+PROBE|array_get|200000|19342|20270|21060|200000
+PROBE|array_push|200000|23228|23559|31775|200000
+PROBE|literal_key|200000|47764|50902|220489|200000
+PROBE|copy_key|200000|35268|40327|51331|200000
+PROBE|dict_cached|200000|32556|33275|42915|200000
+PROBE|dict_literal|200000|36840|47179|73196|200000
+PROBE|string_literal|8000|3316|4345|5240|8000
+PROBE|packed_get|200000|5467|5804|6395|200000
+PROBE|packed_push|200000|5682|6235|6869|200000
+PROBE|typed_get|200000|5143|5409|6000|200000
+PROBE|typed_push|200000|5238|5321|6427|200000
+PROBE|vector_add|200000|11584|11772|12288|200000
+PROBE|vector_assign|200000|4726|4856|5211|1
+PROBE|color_add|200000|11616|11955|12668|200000
+PROBE|dispatch|200000|10770|11018|11533|200000
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:   1 |   1 passed | 0 failed | 1614 skipped
+[doctest] assertions: 305 | 305 passed | 0 failed |
+[doctest] Status: SUCCESS!

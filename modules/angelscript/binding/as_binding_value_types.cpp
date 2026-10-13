@@ -64,7 +64,8 @@ enum ASValueBindingKind {
 	VT_OP, // 运算符
 	VT_CONV, // Variant -> 标量/String 转换
 	VT_NOOP, // 无操作（string 析构等）
-	VT_CTOR_FROM_STRING, // String(const string &in)
+	VT_CTOR_FROM_STRING, // String/Variant(const string &in)
+	VT_ADD_STRING, // String + const string &in
 	VT_STRING_DEFAULT, // string() -> 空串
 	VT_STRING_COPY, // string(const string &in)
 	VT_STRING_ASSIGN, // string &opAssign(const string &in)
@@ -73,7 +74,7 @@ enum ASValueBindingKind {
 	VT_STATIC_METHOD, // 静态内建方法：无对象 this，注册为 <类型>_<方法> 全局函数
 };
 
-// 绑定记录通过 asIScriptFunction::SetUserData 挂到函数上，跳板运行时取回。
+// 不可变绑定记录通过注册 auxiliary 直接传给跳板；UserData 仅保留供外部检查。
 // 注册只发生一次（register_all 幂等），因此这些记录的生命周期与进程一致，不做释放。
 struct ASValueBinding {
 	ASValueBindingKind kind = VT_METHOD;
@@ -109,13 +110,13 @@ static void set_exception(const char *p_message) {
 
 static void add_method(asIScriptEngine *p_engine, const CharString &p_type, const String &p_decl, ASValueBinding *p_binding) {
 	CharString decl = p_decl.utf8();
-	int id = p_engine->RegisterObjectMethod(p_type.get_data(), decl.get_data(), asFUNCTION(ASBindingValueTypes::generic_value_call), asCALL_GENERIC);
+	int id = p_engine->RegisterObjectMethod(p_type.get_data(), decl.get_data(), asFUNCTION(ASBindingValueTypes::generic_value_call), asCALL_GENERIC, p_binding);
 	attach_binding(p_engine, id, p_binding);
 }
 
 static void add_behaviour(asIScriptEngine *p_engine, const CharString &p_type, asEBehaviours p_behaviour, const String &p_decl, ASValueBinding *p_binding) {
 	CharString decl = p_decl.utf8();
-	int id = p_engine->RegisterObjectBehaviour(p_type.get_data(), p_behaviour, decl.get_data(), asFUNCTION(ASBindingValueTypes::generic_value_call), asCALL_GENERIC);
+	int id = p_engine->RegisterObjectBehaviour(p_type.get_data(), p_behaviour, decl.get_data(), asFUNCTION(ASBindingValueTypes::generic_value_call), asCALL_GENERIC, p_binding);
 	attach_binding(p_engine, id, p_binding);
 }
 
@@ -123,7 +124,7 @@ static void add_behaviour(asIScriptEngine *p_engine, const CharString &p_type, a
 // 注册为全局函数的约定一致）。
 static void add_global_function(asIScriptEngine *p_engine, const String &p_decl, ASValueBinding *p_binding) {
 	CharString decl = p_decl.utf8();
-	int id = p_engine->RegisterGlobalFunction(decl.get_data(), asFUNCTION(ASBindingValueTypes::generic_value_call), asCALL_GENERIC);
+	int id = p_engine->RegisterGlobalFunction(decl.get_data(), asFUNCTION(ASBindingValueTypes::generic_value_call), asCALL_GENERIC, p_binding);
 	attach_binding(p_engine, id, p_binding);
 }
 
@@ -275,7 +276,8 @@ static void register_type_members(asIScriptEngine *p_engine, const String &p_nam
 	// 原生存储类型的默认构造/拷贝构造/析构注册为原生（非 generic）行为：热路径上每个
 	// 临时对象的析构都经 generic 跳板时，其开销会主导循环（实测使 bench_vector ≈280 ns/op；
 	// 原生化后 ≈60）。未启用平台或非原生类型返回 false，保持原 generic 路径。
-	if (!ASNativeValueStorage::register_native_lifecycle(p_engine, p_name, p_type)) {
+	if (!ASNativeValueStorage::register_native_lifecycle(p_engine, p_name, p_type) &&
+			!ASNativeValueOps::try_add_boxed_lifecycle(p_engine, p_name, p_type)) {
 		{
 			ASValueBinding *b = memnew(ASValueBinding);
 			b->kind = VT_CTOR_DEFAULT;
@@ -295,7 +297,7 @@ static void register_type_members(asIScriptEngine *p_engine, const String &p_nam
 			add_behaviour(p_engine, cname, asBEHAVE_DESTRUCT, "void f()", b);
 		}
 	}
-	{
+	if (!ASNativeValueStorage::is_trivial_probe_type(p_type)) {
 		// AS 没有 asBEHAVE_ASSIGNMENT；opAssign 作为运算符方法注册。
 		String decl = p_name + " &opAssign(const " + p_name + " &in)";
 		if (!ASNativeValueOps::try_add_op(p_engine, p_name, p_type, "opAssign", decl)) {
@@ -551,6 +553,9 @@ static void register_type_members(asIScriptEngine *p_engine, const String &p_nam
 
 // Variant 自身的转换构造与转换运算符：脚本里 Variant 与标量/String 的互转。
 static void register_variant_conversions(asIScriptEngine *p_engine) {
+	if (ASNativeValueOps::try_add_variant_conversions(p_engine)) {
+		return;
+	}
 	CharString name = String("Variant").utf8();
 
 	struct {
@@ -629,12 +634,17 @@ static void register_string_support(asIScriptEngine *p_engine) {
 	// 类型已可解析，绑定工厂：字符串字面量由它创建。
 	p_engine->RegisterStringFactory("string", &g_string_factory);
 
-	// String(const string &in)：Godot String 从 AS string 构造。
-	{
+	if (!ASNativeValueOps::try_add_literal_support(p_engine)) {
+		for (const char *name : { "String", "Variant" }) {
+			ASValueBinding *b = memnew(ASValueBinding);
+			b->kind = VT_CTOR_FROM_STRING;
+			b->type = Variant::STRING;
+			add_behaviour(p_engine, String(name).utf8(), asBEHAVE_CONSTRUCT, "void f(const string &in)", b);
+		}
 		ASValueBinding *b = memnew(ASValueBinding);
-		b->kind = VT_CTOR_FROM_STRING;
+		b->kind = VT_ADD_STRING;
 		b->type = Variant::STRING;
-		add_behaviour(p_engine, String("String").utf8(), asBEHAVE_CONSTRUCT, "void f(const string &in)", b);
+		add_method(p_engine, String("String").utf8(), "String opAdd(const string &in) const", b);
 	}
 }
 
@@ -719,8 +729,7 @@ Error ASBindingValueTypes::register_all(asIScriptEngine *p_engine) {
 //  - 字面量：asBC_PGA 直接把工厂指针作为实参压入，不能再解引用；
 //  - 变量：压入的是保存工厂指针的存储地址，必须解一次引用。
 // 用驻留指针集合区分二者，得到统一的工厂指针。
-static const ASGodotStringObject *string_slot(asIScriptGeneric *p_gen, int p_index) {
-	const void *arg = p_gen->GetArgObject(p_index);
+static const ASGodotStringObject *string_argument(const void *arg) {
 	if (!arg) {
 		return nullptr;
 	}
@@ -729,6 +738,16 @@ static const ASGodotStringObject *string_slot(asIScriptGeneric *p_gen, int p_ind
 		return o; // 字面量。
 	}
 	return *(const ASGodotStringObject *const *)arg; // 变量：存储地址解一次。
+}
+
+static const ASGodotStringObject *string_slot(asIScriptGeneric *p_gen, int p_index) {
+	return string_argument(p_gen->GetArgObject(p_index));
+}
+
+const String &ASBindingValueTypes::string_from_argument(const void *p_arg) {
+	const ASGodotStringObject *o = string_argument(p_arg);
+	static const String empty;
+	return o ? o->str : empty;
 }
 
 String ASBindingValueTypes::string_from_slot(const void *p_slot) {
@@ -740,8 +759,7 @@ String ASBindingValueTypes::string_from_slot(const void *p_slot) {
 }
 
 void ASBindingValueTypes::generic_value_call(asIScriptGeneric *p_gen) {
-	asIScriptFunction *func = p_gen->GetFunction();
-	ASValueBinding *b = func ? (ASValueBinding *)func->GetUserData() : nullptr;
+	ASValueBinding *b = static_cast<ASValueBinding *>(p_gen->GetAuxiliary());
 	if (!b) {
 		set_exception("angelscript: missing value type binding");
 		return;
@@ -984,8 +1002,11 @@ void ASBindingValueTypes::generic_value_call(asIScriptGeneric *p_gen) {
 		case VT_NOOP:
 			return;
 		case VT_CTOR_FROM_STRING: {
-			const ASGodotStringObject *o = string_slot(p_gen, 0);
-			new (self) Variant(Variant(o ? o->str : String()));
+			new (self) Variant(string_from_argument(p_gen->GetArgObject(0)));
+			return;
+		}
+		case VT_ADD_STRING: {
+			new (p_gen->GetAddressOfReturnLocation()) Variant(VariantInternalAccessor<String>::get(self) + string_from_argument(p_gen->GetArgObject(0)));
 			return;
 		}
 		case VT_STRING_DEFAULT: {

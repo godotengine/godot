@@ -59,4 +59,8 @@ public:
 	// 槽里装的是驻留工厂对象的指针。槽内容对 .cpp 之外不透明，调试器要读它就只能走这里。
 	// p_slot 是对象槽地址（即 AS 的 this / GetAddressOfVar 结果），不是工厂指针本身。
 	static String string_from_slot(const void *p_slot);
+
+	// const string &in call argument: literal factory pointer OR variable slot.
+	// Returned reference belongs to the immutable process-lifetime intern pool.
+	static const String &string_from_argument(const void *p_arg);
 };

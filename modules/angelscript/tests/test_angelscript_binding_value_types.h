@@ -35,6 +35,7 @@
 // 用例注册头：不得 include 任何 AngelScript 头；实现见 test_angelscript_binding_value_types.cpp。
 
 void as_binding_value_types_register_all();
+void as_binding_metadata_auxiliary();
 void as_binding_value_types_vector2_roundtrip();
 void as_binding_value_types_members_and_ops();
 void as_binding_value_types_indexing();
@@ -46,6 +47,10 @@ void as_binding_value_types_builtin_variant_return();
 void as_binding_value_types_static_builtin_methods();
 
 #ifndef ANGELSCRIPT_BINDING_VALUE_TYPES_TESTS_IMPL
+
+TEST_CASE("[AngelScript] binding metadata uses lock-free auxiliary") {
+	as_binding_metadata_auxiliary();
+}
 
 TEST_CASE("[AngelScript] binding value types register all builtin types") {
 	as_binding_value_types_register_all();

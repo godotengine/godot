@@ -66,7 +66,7 @@ void set_exception(const String &p_message) {
 // @GlobalScope 工具函数的统一跳板：按 kind 编组实参后交给 Variant::call_utility_function，
 // 与对象方法跳板共用 as_binding_marshal_arg / as_binding_marshal_return。
 void generic_utility_call(asIScriptGeneric *p_gen) {
-	const ASUtilityBinding *binding = (const ASUtilityBinding *)p_gen->GetFunction()->GetUserData();
+	const ASUtilityBinding *binding = static_cast<const ASUtilityBinding *>(p_gen->GetAuxiliary());
 	if (binding == nullptr) {
 		set_exception("AngelScript: utility function binding metadata missing");
 		return;
@@ -133,7 +133,7 @@ void register_global_functions(asIScriptEngine *p_engine) {
 		}
 
 		const CharString decl_utf8 = decl.utf8();
-		const int id = p_engine->RegisterGlobalFunction(decl_utf8.get_data(), asFUNCTION(generic_utility_call), asCALL_GENERIC);
+		const int id = p_engine->RegisterGlobalFunction(decl_utf8.get_data(), asFUNCTION(generic_utility_call), asCALL_GENERIC, binding);
 		if (id < 0) {
 			memdelete(binding);
 			continue;

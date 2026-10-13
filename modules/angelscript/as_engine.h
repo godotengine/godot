@@ -119,7 +119,7 @@ public:
 	enum ASScalarKind : uint8_t { AS_VOID, AS_BOOL, AS_INT32, AS_INT64, AS_FLOAT32, AS_FLOAT64, AS_OTHER };
 	struct ASCallPlan {
 		asIScriptFunction *function = nullptr;
-		uint8_t argument_count = 0;
+		asUINT argument_count = 0;
 		ASScalarKind arguments[4] = { AS_VOID, AS_VOID, AS_VOID, AS_VOID };
 		ASScalarKind return_kind = AS_VOID;
 		bool fast_scalar_eligible = false;

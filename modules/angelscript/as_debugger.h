@@ -54,18 +54,20 @@ public:
 	// AS 内部经 RequestContext() 创建的上下文由 ASEngine 注册的上下文回调兜住。
 	static void attach(asIScriptContext *p_ctx);
 
-	// 该上下文是否已装上异常与行回调。装配是一个不变量，所以它必须可被断言。
+	// Exception attachment is permanent; line callbacks follow debugger activity.
 	static bool is_attached(asIScriptContext *p_ctx);
+	static bool is_line_enabled(asIScriptContext *p_ctx);
+	static void sync_line_callback(asIScriptContext *p_ctx);
 
 	static void on_exception(asIScriptContext *p_ctx, void *p_user);
 	static void on_line(asIScriptContext *p_ctx, void *p_user);
 
 	// One scope per Execute, including reentrant host calls and AS-owned contexts.
-	static void enter_execution();
+	static void enter_execution(asIScriptContext *p_ctx);
 	static void leave_execution();
 	class ExecutionScope {
 	public:
-		ExecutionScope() { enter_execution(); }
+		explicit ExecutionScope(asIScriptContext *p_ctx) { enter_execution(p_ctx); }
 		~ExecutionScope() { leave_execution(); }
 		ExecutionScope(const ExecutionScope &) = delete;
 		ExecutionScope &operator=(const ExecutionScope &) = delete;

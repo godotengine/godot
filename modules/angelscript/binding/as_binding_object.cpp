@@ -108,8 +108,7 @@ void attach_binding(asIScriptEngine *p_engine, int p_id, void *p_userdata) {
 }
 
 ASObjectBinding *get_binding(asIScriptGeneric *p_gen, ASObjectBinding::Kind p_expected) {
-	asIScriptFunction *f = p_gen->GetFunction();
-	ASObjectBinding *b = f ? static_cast<ASObjectBinding *>(f->GetUserData()) : nullptr;
+	ASObjectBinding *b = static_cast<ASObjectBinding *>(p_gen->GetAuxiliary());
 	if (b == nullptr || b->kind != p_expected) {
 		set_exception("AngelScript: binding metadata missing");
 		return nullptr;
@@ -223,7 +222,7 @@ Error ASBindingObject::register_skeleton(const ASBindingClass &p_class, asIScrip
 		fb->object_kind = refcounted ? AS_KIND_OBJECT_OWNING : AS_KIND_OBJECT_NONOWNING;
 		const String decl = String(p_class.name) + "@ f()";
 		const CharString cdecl_utf8 = decl.utf8();
-		attach_binding(p_engine, p_engine->RegisterObjectBehaviour(cname.get_data(), asBEHAVE_FACTORY, cdecl_utf8.get_data(), asFUNCTION(generic_instantiate), asCALL_GENERIC), fb);
+		attach_binding(p_engine, p_engine->RegisterObjectBehaviour(cname.get_data(), asBEHAVE_FACTORY, cdecl_utf8.get_data(), asFUNCTION(generic_instantiate), asCALL_GENERIC, fb), fb);
 	}
 
 	return OK;
@@ -270,7 +269,7 @@ Error ASBindingObject::register_class(const ASBindingClass &p_class, asIScriptEn
 			b->param_types = m.param_types;
 			b->return_type = m.return_type;
 			const CharString decl = m.as_decl.utf8();
-			const int id = p_engine->RegisterGlobalFunction(decl.get_data(), asFUNCTION(generic_static_method_call), asCALL_GENERIC);
+			const int id = p_engine->RegisterGlobalFunction(decl.get_data(), asFUNCTION(generic_static_method_call), asCALL_GENERIC, b);
 			if (id < 0) {
 				memdelete(b);
 				continue;
@@ -294,7 +293,7 @@ Error ASBindingObject::register_class(const ASBindingClass &p_class, asIScriptEn
 		b->return_type = m.return_type;
 		b->object_kind = class_kind;
 		const CharString decl = m.as_decl.utf8();
-		attach_binding(p_engine, p_engine->RegisterObjectMethod(cname.get_data(), decl.get_data(), asFUNCTION(generic_method_call), asCALL_GENERIC), b);
+		attach_binding(p_engine, p_engine->RegisterObjectMethod(cname.get_data(), decl.get_data(), asFUNCTION(generic_method_call), asCALL_GENERIC, b), b);
 	}
 
 	for (const ASBindingProperty &p : p_class.properties) {
@@ -323,7 +322,7 @@ Error ASBindingObject::register_class(const ASBindingClass &p_class, asIScriptEn
 		gb->return_kind = p.kind;
 		gb->return_type = p.type;
 		gb->object_kind = class_kind;
-		attach_binding(p_engine, p_engine->RegisterObjectMethod(cname.get_data(), cgdecl.get_data(), asFUNCTION(generic_property_get), asCALL_GENERIC), gb);
+		attach_binding(p_engine, p_engine->RegisterObjectMethod(cname.get_data(), cgdecl.get_data(), asFUNCTION(generic_property_get), asCALL_GENERIC, gb), gb);
 
 		if (p.read_only) {
 			continue;
@@ -337,7 +336,7 @@ Error ASBindingObject::register_class(const ASBindingClass &p_class, asIScriptEn
 		sb->param_kinds.push_back(p.kind);
 		sb->param_types.push_back(p.type);
 		sb->object_kind = class_kind;
-		attach_binding(p_engine, p_engine->RegisterObjectMethod(cname.get_data(), csdecl.get_data(), asFUNCTION(generic_property_set), asCALL_GENERIC), sb);
+		attach_binding(p_engine, p_engine->RegisterObjectMethod(cname.get_data(), csdecl.get_data(), asFUNCTION(generic_property_set), asCALL_GENERIC, sb), sb);
 	}
 
 	for (const ASBindingConstant &c : p_class.constants) {
@@ -376,7 +375,7 @@ Error ASBindingObject::register_class(const ASBindingClass &p_class, asIScriptEn
 				: AS_KIND_OBJECT_NONOWNING;
 		const String decl = String(ancestor) + "@ opImplCast() const";
 		const CharString cdecl_utf8 = decl.utf8();
-		attach_binding(p_engine, p_engine->RegisterObjectMethod(cname.get_data(), cdecl_utf8.get_data(), asFUNCTION(generic_upcast), asCALL_GENERIC), ub);
+		attach_binding(p_engine, p_engine->RegisterObjectMethod(cname.get_data(), cdecl_utf8.get_data(), asFUNCTION(generic_upcast), asCALL_GENERIC, ub), ub);
 		ancestor = ClassDB::get_parent_class_nocheck(ancestor);
 	}
 
@@ -537,8 +536,7 @@ void ASBindingObject::generic_property_set(asIScriptGeneric *p_gen) {
 }
 
 void ASBindingObject::generic_instantiate(asIScriptGeneric *p_gen) {
-	asIScriptFunction *f = p_gen->GetFunction();
-	ASObjectFactoryBinding *fb = f ? static_cast<ASObjectFactoryBinding *>(f->GetUserData()) : nullptr;
+	ASObjectFactoryBinding *fb = static_cast<ASObjectFactoryBinding *>(p_gen->GetAuxiliary());
 	if (fb == nullptr) {
 		set_exception("AngelScript: factory metadata missing");
 		return;
@@ -589,8 +587,7 @@ void ASBindingObject::generic_release_noop(asIScriptGeneric *p_gen) {
 }
 
 void ASBindingObject::generic_upcast(asIScriptGeneric *p_gen) {
-	asIScriptFunction *fn = p_gen->GetFunction();
-	ASUpcastBinding *b = fn != nullptr ? static_cast<ASUpcastBinding *>(fn->GetUserData()) : nullptr;
+	ASUpcastBinding *b = static_cast<ASUpcastBinding *>(p_gen->GetAuxiliary());
 	if (b == nullptr) {
 		set_exception("AngelScript: upcast metadata missing");
 		return;

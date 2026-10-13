@@ -35,6 +35,7 @@
 namespace TestAngelScriptDebugger {
 
 void test_line_stepping();
+void test_callback_activation();
 void test_builds_stack_info();
 void test_skips_caught_exception();
 void test_reads_locals();
@@ -48,6 +49,10 @@ void test_exception_flag_is_per_context();
 void test_attaches_engine_internal_contexts();
 
 #ifndef ANGELSCRIPT_DEBUGGER_TESTS_IMPL
+
+TEST_CASE("[AngelScript] debugger callbacks follow execution activity") {
+	test_callback_activation();
+}
 
 TEST_CASE("[AngelScript] debugger line breakpoints step next out and resume") {
 	test_line_stepping();

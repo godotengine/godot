@@ -357,6 +357,46 @@ void probe_invalid_levels(asIScriptContext *p_ctx) {
 
 } // namespace
 
+void test_callback_activation() {
+	ASEngine *as = ASEngine::get_singleton();
+	if (as == nullptr || !as->ensure_initialized()) {
+		REQUIRE(false);
+		return;
+	}
+	CHECK_FALSE(EngineDebugger::is_active());
+	asIScriptContext *context = as->create_context();
+	if (context == nullptr) {
+		REQUIRE(false);
+		return;
+	}
+	CHECK(ASDebugger::is_attached(context));
+	CHECK_FALSE(ASDebugger::is_line_enabled(context));
+	LineDebugger *debugger = memnew(LineDebugger);
+	EngineDebugger *previous_engine = debugger->get_previous_engine();
+	ScriptDebugger *previous_script = debugger->get_previous_script();
+	{
+		ASDebugger::ExecutionScope scope(context);
+		CHECK(ASDebugger::is_line_enabled(context));
+	}
+	ASDebugger::sync_line_callback(context); // idempotent enable
+	CHECK(ASDebugger::is_line_enabled(context));
+	asIScriptContext *second = as->create_context();
+	CHECK(ASDebugger::is_line_enabled(second));
+	if (second != nullptr) {
+		second->Release(); // cleanup balances the live count
+	}
+	memdelete(debugger);
+	LineDebugger::restore_previous(previous_engine, previous_script);
+	{
+		ASDebugger::ExecutionScope scope(context);
+		CHECK_FALSE(ASDebugger::is_line_enabled(context));
+		CHECK(ASDebugger::is_attached(context));
+	}
+	ASDebugger::sync_line_callback(context); // idempotent disable
+	CHECK_FALSE(ASDebugger::is_line_enabled(context));
+	context->Release();
+}
+
 void test_line_stepping() {
 	ASEngine *as = ASEngine::get_singleton();
 	REQUIRE(as != nullptr);
@@ -584,6 +624,8 @@ void test_decodes_bound_value_type() {
 	const String source =
 			"void probe() {\n"
 			"	Vector2 v = Vector2(3, 4);\n"
+			"	Vector3 w = Vector3(5, 6, 7);\n"
+			"	Color c = Color(1, 2, 3, 4);\n"
 			"	int d = 0;\n"
 			"	int boom = 1 / d;\n"
 			"}\n";
@@ -601,6 +643,8 @@ void test_decodes_bound_value_type() {
 		return;
 	}
 	CHECK(Vector2(got) == Vector2(3, 4));
+	CHECK(find_local("w") == Variant(Vector3(5, 6, 7)));
+	CHECK(find_local("c") == Variant(Color(1, 2, 3, 4)));
 }
 
 void test_decodes_native_string() {
