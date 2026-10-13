@@ -235,7 +235,9 @@ void ProgressBar::_notification(int p_what) {
 }
 
 void ProgressBar::_validate_property(PropertyInfo &p_property) const {
-	if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
+	if (Engine::get_singleton()->is_editor_hint() && indeterminate && p_property.name == "format") {
+		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+	} else if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
