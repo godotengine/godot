@@ -79,7 +79,7 @@ public:
 	bool is_editor_preview_indeterminate_enabled() const;
 
 	Size2 get_minimum_size() const override;
-	PackedStringArray get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 	ProgressBar();
 
 private:
