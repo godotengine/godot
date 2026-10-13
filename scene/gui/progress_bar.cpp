@@ -266,6 +266,16 @@ String ProgressBar::get_format() const {
 	return label_format;
 }
 
+#ifndef DISABLE_DEPRECATED
+void ProgressBar::set_show_percentage(bool p_visible) {
+	set_format(p_visible ? String("%d%%") : String());
+}
+
+bool ProgressBar::is_percentage_shown() const {
+	return !label_format.is_empty();
+}
+#endif // DISABLE_DEPRECATED
+
 PackedStringArray ProgressBar::get_configuration_warnings() const {
 	PackedStringArray warnings = Range::get_configuration_warnings();
 
@@ -336,12 +346,19 @@ void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editor_preview_indeterminate_enabled"), &ProgressBar::is_editor_preview_indeterminate_enabled);
 	ClassDB::bind_method(D_METHOD("set_format", "format"), &ProgressBar::set_format);
 	ClassDB::bind_method(D_METHOD("get_format"), &ProgressBar::get_format);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
+	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
+#endif
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indeterminate"), "set_indeterminate", "is_indeterminate");
 	ADD_GROUP("Editor", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_preview_indeterminate"), "set_editor_preview_indeterminate", "is_editor_preview_indeterminate_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "format"), "set_format", "get_format");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_percentage"), "set_show_percentage", "is_percentage_shown");
+#endif
 
 	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);
 	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);

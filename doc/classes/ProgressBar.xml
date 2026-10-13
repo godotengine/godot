@@ -27,6 +27,9 @@
 			- [code]"%s"[/code] displays the current value (e.g. [code]65[/code] assuming [member value] is 65. This is diffrent from the percentage shown above).
 			- [code]"%s/%s"[/code] displays the current value and maximum value separated by a slash (e.g. [code]65/100[/code] assuming [member value] is 65 and [member max_value] is 100).
 		</member>
+		<member name="show_percentage" type="bool" setter="set_show_percentage" getter="is_percentage_shown" default="true" deprecated="Use [member format] instead.">
+			If [code]true[/code], the fill percentage is displayed on the bar.
+		</member>
 	</members>
 	<constants>
 		<constant name="FILL_BEGIN_TO_END" value="0" enum="FillMode">

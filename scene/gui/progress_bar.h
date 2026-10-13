@@ -72,6 +72,11 @@ public:
 	void set_format(const String &p_format);
 	String get_format() const;
 
+#ifndef DISABLE_DEPRECATED
+	void set_show_percentage(bool p_visible);
+	bool is_percentage_shown() const;
+#endif
+
 	void set_indeterminate(bool p_indeterminate);
 	bool is_indeterminate() const;
 
