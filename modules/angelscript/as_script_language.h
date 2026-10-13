@@ -67,7 +67,7 @@ public:
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value) override {}
 
 	// 照搬 GDScript 的模式（gdscript_editor.cpp:273-287）：调试器不活跃时直接返回 false。
-	bool debug_break(const String &p_error, bool p_allow_continue);
+	bool debug_break(const String &p_error, bool p_allow_continue, bool p_is_error_breakpoint = true);
 	virtual Vector<StackInfo> debug_get_current_stack_info() override;
 
 	virtual String debug_get_error() const override;

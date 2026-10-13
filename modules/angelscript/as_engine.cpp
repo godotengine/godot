@@ -85,6 +85,7 @@ asIScriptContext *ASEngine::_request_context(asIScriptEngine *p_engine, void *p_
 	asIScriptContext *ctx = p_engine->CreateContext();
 	if (ctx != nullptr) {
 		ASDebugger::attach(ctx);
+		ASDebugger::enter_execution();
 	}
 	return ctx;
 }
@@ -93,6 +94,8 @@ void ASEngine::_return_context(asIScriptEngine *p_engine, asIScriptContext *p_ct
 	if (p_ctx == nullptr) {
 		return;
 	}
+	// Unprepare may execute script destructors through another requested context.
+	ASDebugger::leave_execution();
 	// 不做上下文池化：AS 内部借还很稀疏，缓存收益不抵「上下文被复用时残留状态」的风险。
 	p_ctx->Unprepare();
 	p_ctx->Release();
@@ -615,7 +618,11 @@ Error ASEngine::call_function(asIScriptContext *p_context, asIScriptFunction *p_
 		if (set_result < 0) return finish(ERR_INVALID_PARAMETER);
 	}
 
-	const int executed = p_context->Execute();
+	int executed;
+	{
+		ASDebugger::ExecutionScope debug_scope;
+		executed = p_context->Execute();
+	}
 	if (executed != asEXECUTION_FINISHED) {
 		// 调试器已经以「富信息 + 调用栈」的形式上报过了，再打一条干巴巴的 ERR_PRINT
 		// 会让错误面板出现重复条目。非调试运行时 consume 恒为 false，行为与以前完全一致。

@@ -30,8 +30,11 @@
 
 #include "../as_debugger.h"
 #include "../as_engine.h"
+#include "../as_script_language.h"
 #include "../binding/as_binding_object.h"
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/object/object.h"
 
 #include <angelscript.h>
@@ -42,6 +45,89 @@
 namespace TestAngelScriptDebugger {
 
 namespace {
+
+class LineDebugger : public EngineDebugger {
+	EngineDebugger *previous_engine = nullptr;
+	ScriptDebugger *previous_script = nullptr;
+
+public:
+	Vector<int> lines;
+	Vector<String> functions;
+	bool use_step = false;
+	bool manual_pause = false;
+	bool saw_globals = false;
+	bool saw_locals = false;
+	bool saw_typed_globals = false;
+	int command_mode = 0; // 0=next, 1=step/out, 2=continue, 3=out
+	Vector<int> stack_sizes;
+
+	LineDebugger() {
+		previous_engine = singleton;
+		previous_script = script_debugger;
+		singleton = this;
+		script_debugger = memnew(ScriptDebugger);
+		script_debugger->set_lines_left(-1);
+		script_debugger->set_depth(-1);
+	}
+	~LineDebugger() {
+		memdelete(script_debugger);
+		// EngineDebugger destructor deletes the current static ScriptDebugger.
+		script_debugger = nullptr;
+		singleton = nullptr;
+	}
+	static void restore_previous(EngineDebugger *p_engine, ScriptDebugger *p_script) {
+		singleton = p_engine;
+		script_debugger = p_script;
+	}
+	EngineDebugger *get_previous_engine() const { return previous_engine; }
+	ScriptDebugger *get_previous_script() const { return previous_script; }
+	void send_message(const String &, const Array &) override {}
+	void send_error(const String &, const String &, int, const String &, const String &, bool, ErrorHandlerType) override {}
+	void debug(bool p_can_continue, bool p_is_error) override {
+		if (script_debugger->is_skipping_breakpoints() && !p_is_error) return;
+		CHECK(p_can_continue);
+		CHECK_FALSE(p_is_error);
+		CHECK(script_debugger->get_break_language() == ASScriptLanguage::get_singleton());
+		CHECK(ASDebugger::get_break_context() != nullptr);
+		stack_sizes.push_back(ASDebugger::get_stack_level_count());
+		lines.push_back(ASDebugger::get_stack_level_line(0));
+		functions.push_back(ASDebugger::get_stack_level_function(0));
+		List<String> names;
+		List<Variant> values;
+		ASDebugger::get_globals(&names, &values, -1, -1);
+		const List<Variant>::Element *global_value = values.front();
+		bool saw_label = false;
+		bool saw_namespaced = false;
+		for (const String &name : names) {
+			if (name == "total") saw_globals = true;
+			if (name == "label" && global_value != nullptr) saw_label = String(global_value->get()) == "debug";
+			if (name == "settings::limit" && global_value != nullptr) saw_namespaced = (int64_t)global_value->get() == 42;
+			if (global_value != nullptr) global_value = global_value->next();
+		}
+		saw_typed_globals = saw_typed_globals || (saw_label && saw_namespaced);
+		names.clear();
+		values.clear();
+		ASDebugger::get_stack_level_locals(0, &names, &values, -1, -1);
+		for (const String &name : names) {
+			if (name == "x") saw_locals = true;
+		}
+		if (lines.size() == 1 && !manual_pause && command_mode != 2) {
+			script_debugger->set_depth(command_mode == 3 ? 1 : (use_step ? -1 : 0));
+			script_debugger->set_lines_left(1);
+		} else if (lines.size() == 2 && use_step) {
+			script_debugger->set_depth(1);
+			script_debugger->set_lines_left(1);
+		} else {
+			script_debugger->set_depth(-1);
+			script_debugger->set_lines_left(-1);
+		}
+	}
+	void poll_events(bool) override {
+		if (manual_pause && lines.is_empty()) {
+			script_debugger->debug(script_debugger->get_break_language());
+		}
+	}
+};
 
 // 每个用例用独立模块名，避免 AS 引擎里重名模块互相覆盖。
 int g_module_seq = 0;
@@ -100,6 +186,13 @@ bool run_until_exception(const String &p_source, const char *p_func_name, ProbeF
 		*r_module_name = module_name;
 	}
 	return true;
+}
+
+asIScriptContext *g_nested_context = nullptr;
+asIScriptFunction *g_nested_function = nullptr;
+
+void nested_host_call() {
+	CHECK(ASEngine::get_singleton()->call_function(g_nested_context, g_nested_function, nullptr, nullptr, 0, nullptr) == OK);
 }
 
 Vector<ScriptLanguage::StackInfo> g_captured_stack;
@@ -263,6 +356,145 @@ void probe_invalid_levels(asIScriptContext *p_ctx) {
 }
 
 } // namespace
+
+void test_line_stepping() {
+	ASEngine *as = ASEngine::get_singleton();
+	REQUIRE(as != nullptr);
+	if (as == nullptr || !as->ensure_initialized()) return;
+	const String source = "int total = 0;\n"
+			"void child() {\n"
+			"  total += 2;\n"
+			"}\n"
+			"int main() {\n"
+			"  int x = 1;\n"
+			"  child();\n"
+			"  x += 3;\n"
+			"  return x + total;\n"
+			"}\n"
+			"String label = \"debug\";\n"
+			"namespace settings { int limit = 42; }\n";
+	const String module_name = next_module_name();
+	String error;
+	REQUIRE(as->compile_module(module_name, source, &error));
+	asIScriptModule *module = as->get_engine()->GetModule(module_name.utf8().get_data());
+	if (module == nullptr) return;
+	asIScriptFunction *function = module->GetFunctionByName("main");
+	if (function == nullptr) return;
+	for (int mode = 0; mode < 3; mode++) {
+		LineDebugger *debugger = memnew(LineDebugger);
+		EngineDebugger *previous_engine = debugger->get_previous_engine();
+		ScriptDebugger *previous_script = debugger->get_previous_script();
+		debugger->use_step = mode == 1;
+		debugger->command_mode = mode == 1 ? 1 : 0;
+		debugger->manual_pause = mode == 2;
+		if (mode != 2) EngineDebugger::get_script_debugger()->insert_breakpoint(7, module_name);
+		asIScriptContext *context = as->create_context();
+		Variant result;
+		CHECK(as->call_function(context, function, nullptr, nullptr, 0, &result) == OK);
+		CHECK((int64_t)result == 6 + mode * 2);
+		CHECK_FALSE(debugger->lines.is_empty());
+		if (mode == 0 && debugger->lines.size() >= 2) {
+			CHECK(debugger->lines[0] == 7);
+			CHECK(debugger->lines[1] == 8);
+			CHECK(debugger->functions[1] == "main");
+		}
+		if (mode == 1 && debugger->lines.size() >= 3) {
+			CHECK(debugger->functions[1] == "child");
+			CHECK(debugger->functions[2] == "main");
+		}
+		CHECK(debugger->saw_globals);
+		CHECK(debugger->saw_typed_globals);
+		if (mode != 2) CHECK(debugger->saw_locals);
+		CHECK(ASDebugger::get_break_context() == nullptr);
+		CHECK(EngineDebugger::get_script_debugger()->get_break_language() == nullptr);
+		context->Release();
+		memdelete(debugger);
+		LineDebugger::restore_previous(previous_engine, previous_script);
+	}
+	as->get_engine()->DiscardModule(module_name.utf8().get_data());
+
+	// Repeated hits at the same line are real loop iterations, not duplicate
+	// debugger notifications. Removed and disabled breakpoints must not stop.
+	const String loop_name = next_module_name();
+	REQUIRE(as->compile_module(loop_name, "int main() {\n int x = 0;\n for (int i=0; i<3; i++) {\n x++;\n }\n return x;\n}\n", &error));
+	asIScriptFunction *loop = as->get_engine()->GetModule(loop_name.utf8().get_data())->GetFunctionByName("main");
+	for (int mode = 0; mode < 3; mode++) {
+		LineDebugger *debugger = memnew(LineDebugger);
+		EngineDebugger *previous_engine = debugger->get_previous_engine();
+		ScriptDebugger *previous_script = debugger->get_previous_script();
+		debugger->command_mode = 2;
+		ScriptDebugger *sd = EngineDebugger::get_script_debugger();
+		sd->insert_breakpoint(4, loop_name);
+		if (mode == 1) sd->remove_breakpoint(4, loop_name);
+		if (mode == 2) sd->set_skip_breakpoints(true);
+		asIScriptContext *context = as->create_context();
+		Variant result;
+		CHECK(as->call_function(context, loop, nullptr, nullptr, 0, &result) == OK);
+		CHECK((int64_t)result == 3);
+		CHECK(debugger->lines.size() == (mode == 0 ? 3 : 0));
+		context->Release();
+		memdelete(debugger);
+		LineDebugger::restore_previous(previous_engine, previous_script);
+	}
+	as->get_engine()->DiscardModule(loop_name.utf8().get_data());
+
+	// Recursion has identical function/source names but distinct stack depths.
+	const String recursive_name = next_module_name();
+	REQUIRE(as->compile_module(recursive_name, "int recurse(int n) {\n if (n > 0) {\n return recurse(n-1);\n }\n return n;\n}\nint main() {\n return recurse(2);\n}\n", &error));
+	LineDebugger *debugger = memnew(LineDebugger);
+	EngineDebugger *previous_engine = debugger->get_previous_engine();
+	ScriptDebugger *previous_script = debugger->get_previous_script();
+	debugger->command_mode = 3;
+	EngineDebugger::get_script_debugger()->insert_breakpoint(5, recursive_name);
+	asIScriptContext *context = as->create_context();
+	Variant result;
+	asIScriptFunction *recursive = as->get_engine()->GetModule(recursive_name.utf8().get_data())->GetFunctionByName("main");
+	CHECK(as->call_function(context, recursive, nullptr, nullptr, 0, &result) == OK);
+	CHECK(debugger->stack_sizes.size() >= 2);
+	if (debugger->stack_sizes.size() >= 2) CHECK(debugger->stack_sizes[1] < debugger->stack_sizes[0]);
+	CHECK(ASDebugger::get_break_context() == nullptr);
+	context->Release();
+	memdelete(debugger);
+	LineDebugger::restore_previous(previous_engine, previous_script);
+	as->get_engine()->DiscardModule(recursive_name.utf8().get_data());
+
+	// next must skip a script re-entry through a host function, including a
+	// different source section, and then stop back in the original caller.
+	REQUIRE(as->get_engine()->RegisterGlobalFunction("void debugger_nested_host()", asFUNCTION(nested_host_call), asCALL_CDECL) >= 0);
+	const String outer_name = next_module_name();
+	const String inner_name = next_module_name();
+	REQUIRE(as->compile_module(inner_name, "void inner() {\n int value = 1;\n value++;\n}\n", &error));
+	REQUIRE(as->compile_module(outer_name, "int main() {\n int x = 0;\n debugger_nested_host();\n x++;\n return x;\n}\n", &error));
+	g_nested_context = as->create_context();
+	g_nested_function = as->get_engine()->GetModule(inner_name.utf8().get_data())->GetFunctionByName("inner");
+	debugger = memnew(LineDebugger);
+	previous_engine = debugger->get_previous_engine();
+	previous_script = debugger->get_previous_script();
+	EngineDebugger::get_script_debugger()->insert_breakpoint(3, outer_name);
+	context = as->create_context();
+	asIScriptFunction *outer = as->get_engine()->GetModule(outer_name.utf8().get_data())->GetFunctionByName("main");
+	CHECK(as->call_function(context, outer, nullptr, nullptr, 0, &result) == OK);
+	CHECK((int64_t)result == 1);
+	CHECK(debugger->lines.size() == 2);
+	if (debugger->lines.size() == 2) CHECK(debugger->lines[1] == 4);
+	CHECK(ASDebugger::get_break_context() == nullptr);
+	context->Release();
+	g_nested_context->Release();
+	g_nested_context = nullptr;
+	g_nested_function = nullptr;
+	memdelete(debugger);
+	LineDebugger::restore_previous(previous_engine, previous_script);
+	as->get_engine()->DiscardModule(outer_name.utf8().get_data());
+	as->get_engine()->DiscardModule(inner_name.utf8().get_data());
+
+	List<String> names;
+	List<Variant> values;
+	names.push_back("sentinel");
+	values.push_back(7);
+	ASDebugger::get_globals(&names, &values, -1, -1);
+	CHECK(names.size() == 1);
+	CHECK(values.size() == 1);
+}
 
 void test_builds_stack_info() {
 	const String source =

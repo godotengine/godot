@@ -157,12 +157,11 @@ Ref<Script> ASScriptLanguage::make_template(const String &p_template, const Stri
 	return scr;
 }
 
-bool ASScriptLanguage::debug_break(const String &p_error, bool p_allow_continue) {
+bool ASScriptLanguage::debug_break(const String &p_error, bool p_allow_continue, bool p_is_error_breakpoint) {
 	if (!EngineDebugger::is_active()) {
 		return false;
 	}
-	// is_error_breakpoint = true：这是异常断点，不是用户主动下的断点。
-	EngineDebugger::get_script_debugger()->debug(this, p_allow_continue, true);
+	EngineDebugger::get_script_debugger()->debug(this, p_allow_continue, p_is_error_breakpoint);
 	return true;
 }
 
@@ -205,8 +204,7 @@ void ASScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 }
 
 void ASScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
-	// AS 的全局变量属于 module 而非 context，而本模块一个脚本就是一个 module，
-	// 没有跨脚本的「全局作用域」概念可供展示。保持空实现。
+	ASDebugger::get_globals(p_globals, p_values, p_max_subitems, p_max_depth);
 }
 
 String ASScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {

@@ -43,7 +43,7 @@ class asIScriptEngine;
 //
 // 为什么所有查询都直读「活着的」上下文而不做快照：AS 的调用栈在 Execute() 返回后
 // 立刻被展开，栈帧与局部变量地址随之失效。因此异常上报与断点挂起都必须在
-// SetExceptionCallback 回调仍在栈上的那一刻完成，查询也只能在那期间进行。
+// SetExceptionCallback / SetLineCallback 回调仍在栈上的那一刻完成。
 //
 // 每个查询都提供「显式 ctx 重载 + 无参包装」两个版本：无参版读 thread_local 的
 // break_context（生产路径，由编辑器在断点期间反查），带 ctx 版供测试在自己的
@@ -54,10 +54,24 @@ public:
 	// AS 内部经 RequestContext() 创建的上下文由 ASEngine 注册的上下文回调兜住。
 	static void attach(asIScriptContext *p_ctx);
 
-	// 该上下文是否已装上异常回调。装配是一个不变量，所以它必须可被断言。
+	// 该上下文是否已装上异常与行回调。装配是一个不变量，所以它必须可被断言。
 	static bool is_attached(asIScriptContext *p_ctx);
 
 	static void on_exception(asIScriptContext *p_ctx, void *p_user);
+	static void on_line(asIScriptContext *p_ctx, void *p_user);
+
+	// One scope per Execute, including reentrant host calls and AS-owned contexts.
+	static void enter_execution();
+	static void leave_execution();
+	class ExecutionScope {
+	public:
+		ExecutionScope() { enter_execution(); }
+		~ExecutionScope() { leave_execution(); }
+		ExecutionScope(const ExecutionScope &) = delete;
+		ExecutionScope &operator=(const ExecutionScope &) = delete;
+	};
+
+	static void get_globals(List<String> *p_names, List<Variant> *p_values, int p_max_subitems, int p_max_depth);
 
 	// 这个异常是否值得打断执行：脚本自己 try/catch 接住的异常不是故障。
 	// 单独抽成谓词是为了可测——headless 下 EngineDebugger 不活跃，

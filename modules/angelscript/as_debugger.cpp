@@ -52,6 +52,14 @@ namespace {
 thread_local asIScriptContext *g_break_context = nullptr;
 thread_local String g_break_error;
 thread_local asIScriptContext *g_exception_reported_ctx = nullptr;
+thread_local Vector<int> g_execution_depths;
+
+void adjust_step_depth(int p_delta) {
+	ScriptDebugger *debugger = EngineDebugger::get_script_debugger();
+	if (debugger != nullptr && debugger->get_lines_left() > 0 && debugger->get_depth() >= 0) {
+		debugger->set_depth(debugger->get_depth() + p_delta);
+	}
+}
 
 // 递归展开的默认深度上限。调用方（Godot 调试器）传入 >= 0 的值时以调用方为准。
 constexpr int DEFAULT_MAX_DEPTH = 4;
@@ -75,6 +83,7 @@ void ASDebugger::attach(asIScriptContext *p_ctx) {
 	// is_active() 判定。这样就避开了「ASScriptInstance 的上下文在实例构造时就创建、
 	// 而调试器可能稍后才激活」的时序耦合。
 	p_ctx->SetExceptionCallback(asFUNCTION(ASDebugger::on_exception), nullptr, asCALL_CDECL);
+	p_ctx->SetLineCallback(asFUNCTION(ASDebugger::on_line), nullptr, asCALL_CDECL);
 	p_ctx->SetUserData((void *)1, ATTACHED_USER_DATA_TYPE);
 }
 
@@ -121,6 +130,92 @@ void ASDebugger::on_exception(asIScriptContext *p_ctx, void *p_user) {
 
 	g_break_context = prev_context;
 	g_break_error = prev_error;
+}
+
+void ASDebugger::enter_execution() {
+	if (EngineDebugger::is_active()) {
+		g_execution_depths.push_back(0);
+	}
+}
+
+void ASDebugger::leave_execution() {
+	if (g_execution_depths.is_empty()) {
+		return;
+	}
+	adjust_step_depth(-g_execution_depths[g_execution_depths.size() - 1]);
+	g_execution_depths.resize(g_execution_depths.size() - 1);
+}
+
+void ASDebugger::on_line(asIScriptContext *p_ctx, void *p_user) {
+	if (!EngineDebugger::is_active() || p_ctx == nullptr || g_break_context != nullptr) {
+		return;
+	}
+	ScriptDebugger *debugger = EngineDebugger::get_script_debugger();
+	// AS reports every executable statement, including loop iterations. Do not
+	// deduplicate source lines: a loop or two statements on a line may repeat.
+	if (!g_execution_depths.is_empty()) {
+		int &previous = g_execution_depths.write[g_execution_depths.size() - 1];
+		const int depth = (int)p_ctx->GetCallstackSize();
+		adjust_step_depth(depth - previous);
+		previous = depth;
+	}
+
+	asIScriptContext *const previous_context = g_break_context;
+	const String previous_error = g_break_error;
+	ScriptLanguage *const previous_language = debugger->get_break_language();
+	g_break_context = p_ctx;
+	g_break_error = "Breakpoint";
+	debugger->set_break_language(ASScriptLanguage::get_singleton());
+
+	bool do_break = false;
+	if (debugger->get_lines_left() > 0) {
+		if (debugger->get_depth() <= 0) {
+			debugger->set_lines_left(debugger->get_lines_left() - 1);
+		}
+		do_break = debugger->get_lines_left() <= 0;
+	}
+	const char *section = nullptr;
+	const int line = p_ctx->GetLineNumber(0, nullptr, &section);
+	if (line > 0 && section != nullptr && debugger->is_breakpoint(line, StringName(String::utf8(section)))) {
+		do_break = true;
+	}
+	if (do_break) {
+		ASScriptLanguage::get_singleton()->debug_break(g_break_error, true, false);
+	}
+	// core:break is handled synchronously here; keep live context and language
+	// exposed while polling, otherwise a manual pause has an empty stack.
+	EngineDebugger::get_singleton()->line_poll();
+
+	debugger->set_break_language(previous_language);
+	g_break_context = previous_context;
+	g_break_error = previous_error;
+}
+
+void ASDebugger::get_globals(List<String> *p_names, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
+	if (g_break_context == nullptr || p_names == nullptr || p_values == nullptr) {
+		return;
+	}
+	asIScriptFunction *function = g_break_context->GetFunction(0);
+	asIScriptModule *module = function != nullptr ? function->GetModule() : nullptr;
+	if (module == nullptr) {
+		return;
+	}
+	HashSet<const void *> seen;
+	const int max_depth = p_max_depth >= 0 ? p_max_depth : DEFAULT_MAX_DEPTH;
+	for (asUINT i = 0; i < module->GetGlobalVarCount(); i++) {
+		const char *name = nullptr;
+		const char *name_space = nullptr;
+		int type_id = 0;
+		if (module->GetGlobalVar(i, &name, &name_space, &type_id) < 0 || name == nullptr) {
+			continue;
+		}
+		String qualified = String::utf8(name);
+		if (name_space != nullptr && name_space[0] != '\0') {
+			qualified = String::utf8(name_space) + "::" + qualified;
+		}
+		p_names->push_back(qualified);
+		p_values->push_back(decode_var(module->GetAddressOfGlobalVar(i), type_id, g_break_context->GetEngine(), 0, max_depth, p_max_subitems, seen));
+	}
 }
 
 void ASDebugger::mark_exception_reported(asIScriptContext *p_ctx) {

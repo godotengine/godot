@@ -31,6 +31,7 @@
 #include "as_script_instance.h"
 
 #include "as_engine.h"
+#include "as_debugger.h"
 #include "as_script.h"
 #include "as_script_language.h"
 #include "binding/as_binding_decl.h"
@@ -113,7 +114,12 @@ ASScriptInstance::ASScriptInstance(const Ref<ASScript> &p_script, Object *p_owne
 	if (context->Prepare(factory) < 0) {
 		ERR_FAIL_MSG("Failed to prepare the AngelScript factory.");
 	}
-	if (context->Execute() != asEXECUTION_FINISHED) {
+	int factory_result;
+	{
+		ASDebugger::ExecutionScope debug_scope;
+		factory_result = context->Execute();
+	}
+	if (factory_result != asEXECUTION_FINISHED) {
 		context->Unprepare();
 		ERR_FAIL_MSG("AngelScript constructor execution failed.");
 	}

@@ -1,0 +1,234 @@
+[
+  {
+    "name": "output",
+    "thread": 1,
+    "data": [
+      [
+        "Godot Engine v4.8.dev.custom_build.c62001d26 (2026-10-12 08:33:38 UTC) - https://godotengine.org\n"
+      ],
+      [
+        0
+      ]
+    ]
+  },
+  {
+    "name": "debug_enter",
+    "thread": 1,
+    "data": [
+      true,
+      "Breakpoint",
+      true,
+      1
+    ]
+  },
+  {
+    "name": "stack_dump",
+    "thread": 1,
+    "data": [
+      3,
+      "res://main.as",
+      9,
+      "_ready"
+    ]
+  },
+  {
+    "name": "stack_frame_vars",
+    "thread": 1,
+    "data": [
+      2
+    ]
+  },
+  {
+    "name": "stack_frame_var",
+    "thread": 1,
+    "data": [
+      "x",
+      0,
+      2,
+      1,
+      ""
+    ]
+  },
+  {
+    "name": "stack_frame_var",
+    "thread": 1,
+    "data": [
+      "total",
+      2,
+      2,
+      0,
+      ""
+    ]
+  },
+  {
+    "name": "debug_exit",
+    "thread": 1,
+    "data": []
+  },
+  {
+    "name": "debug_enter",
+    "thread": 1,
+    "data": [
+      true,
+      "Breakpoint",
+      true,
+      1
+    ]
+  },
+  {
+    "name": "stack_dump",
+    "thread": 1,
+    "data": [
+      6,
+      "res://main.as",
+      5,
+      "child",
+      "res://main.as",
+      9,
+      "_ready"
+    ]
+  },
+  {
+    "name": "stack_frame_vars",
+    "thread": 1,
+    "data": [
+      1
+    ]
+  },
+  {
+    "name": "stack_frame_var",
+    "thread": 1,
+    "data": [
+      "total",
+      2,
+      2,
+      0,
+      ""
+    ]
+  },
+  {
+    "name": "debug_exit",
+    "thread": 1,
+    "data": []
+  },
+  {
+    "name": "debug_enter",
+    "thread": 1,
+    "data": [
+      true,
+      "Breakpoint",
+      true,
+      1
+    ]
+  },
+  {
+    "name": "stack_dump",
+    "thread": 1,
+    "data": [
+      3,
+      "res://main.as",
+      10,
+      "_ready"
+    ]
+  },
+  {
+    "name": "stack_frame_vars",
+    "thread": 1,
+    "data": [
+      2
+    ]
+  },
+  {
+    "name": "stack_frame_var",
+    "thread": 1,
+    "data": [
+      "x",
+      0,
+      2,
+      1,
+      ""
+    ]
+  },
+  {
+    "name": "stack_frame_var",
+    "thread": 1,
+    "data": [
+      "total",
+      2,
+      2,
+      2,
+      ""
+    ]
+  },
+  {
+    "name": "debug_exit",
+    "thread": 1,
+    "data": []
+  },
+  {
+    "name": "debug_enter",
+    "thread": 1,
+    "data": [
+      true,
+      "Breakpoint",
+      true,
+      1
+    ]
+  },
+  {
+    "name": "stack_dump",
+    "thread": 1,
+    "data": [
+      3,
+      "res://main.as",
+      11,
+      "_ready"
+    ]
+  },
+  {
+    "name": "stack_frame_vars",
+    "thread": 1,
+    "data": [
+      2
+    ]
+  },
+  {
+    "name": "stack_frame_var",
+    "thread": 1,
+    "data": [
+      "x",
+      0,
+      2,
+      4,
+      ""
+    ]
+  },
+  {
+    "name": "stack_frame_var",
+    "thread": 1,
+    "data": [
+      "total",
+      2,
+      2,
+      2,
+      ""
+    ]
+  },
+  {
+    "name": "debug_exit",
+    "thread": 1,
+    "data": []
+  },
+  {
+    "name": "output",
+    "thread": 1,
+    "data": [
+      [
+        "6"
+      ],
+      [
+        0
+      ]
+    ]
+  }
+]
