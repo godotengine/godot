@@ -323,7 +323,8 @@
 		ke.macos_state = 0;
 		ke.pressed = true;
 		ke.echo = false;
-		ke.raw = false; // IME input event.
+		ke.raw = false; // Can have composite characters.
+		ke.ime = true; // IME event, do not remove.
 		ke.keycode = Key::NONE;
 		ke.physical_keycode = Key::NONE;
 		ke.key_label = Key::NONE;
@@ -728,7 +729,7 @@
 			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 			ke.unicode = 0;
 			ke.location = KeyMappingMacOS::translate_location([event keyCode]);
-			ke.raw = false;
+			ke.raw = false; // Can have composite characters.
 
 			ds->push_to_key_event_buffer(ke);
 		}
