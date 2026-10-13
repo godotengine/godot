@@ -250,7 +250,7 @@ double VideoStreamPlaybackWebm::get_playback_position() const {
 	return video_pos;
 }
 void VideoStreamPlaybackWebm::seek(double p_time) {
-	WARN_PRINT_ONCE("Seeking in WebM videos is not implemented yet (it's only supported for GDNative-provided video streams).");
+	WARN_PRINT_ONCE("Seeking WebM videos is not implemented yet.");
 }
 
 void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {
