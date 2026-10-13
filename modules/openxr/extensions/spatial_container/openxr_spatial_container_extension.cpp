@@ -367,7 +367,7 @@ bool OpenXRSpatialContainerExtension::request_spatial_container_bounds_mode(Open
 	return true;
 }
 
-XrResult OpenXRSpatialContainerExtension::locate_spatial_container_views(XrView *p_views, bool &r_view_pose_valid, bool &r_should_submit_layers) {
+XrResult OpenXRSpatialContainerExtension::locate_spatial_container_views(XrView *p_views, bool &r_view_pose_valid) {
 	if (!is_spatial_container_active()) {
 		return XR_ERROR_INITIALIZATION_FAILED;
 	}
@@ -379,8 +379,7 @@ XrResult OpenXRSpatialContainerExtension::locate_spatial_container_views(XrView 
 			spatial_container_data.spatial_container_rid,
 			spatial_container_data.current_bounds_mode == XR_SPATIAL_CONTAINER_BOUNDS_MODE_IMMERSIVE_EXT ? openxr_api->get_play_space() : spatial_container_data.space_handle,
 			p_views,
-			r_view_pose_valid,
-			r_should_submit_layers);
+			r_view_pose_valid);
 }
 
 bool OpenXRSpatialContainerExtension::request_spatial_container_visible(bool p_visible) {

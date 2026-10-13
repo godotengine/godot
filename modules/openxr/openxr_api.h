@@ -76,7 +76,7 @@ public:
 		static void free_queued();
 		void free();
 
-		bool acquire(bool &p_should_render);
+		bool acquire(bool &r_should_render);
 		bool release();
 		RID get_image();
 		RID get_density_map();
@@ -370,7 +370,6 @@ private:
 	// Render state, Only accessible in rendering thread
 	struct RenderState {
 		bool running = false;
-		bool should_submit_spatial_container_layers = false;
 		bool should_render = false;
 		bool has_xr_viewport = false;
 		XrTime predicted_display_time = 0;
@@ -415,7 +414,7 @@ private:
 	static void _set_render_environment_blend_mode_rt(int32_t p_environment_blend_mode);
 	static void _set_render_state_multiplier_rt(double p_render_target_size_multiplier);
 	static void _set_render_state_render_region_rt(const Rect2i &p_render_region);
-	static void _set_render_state_view_poses(bool p_is_valid, bool p_should_submit_spatial_container_layers, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
+	static void _set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
 	static void _set_render_state_near_and_far(uint32_t p_view, double p_z_near, double p_z_far);
 	static void _update_main_swapchain_size_rt();
 
@@ -426,7 +425,7 @@ private:
 	void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode);
 	void set_render_state_multiplier(double p_render_target_size_multiplier);
 	void set_render_state_render_region(const Rect2i &p_render_region);
-	void set_render_state_view_poses(bool p_is_valid, bool p_should_submit_spatial_container_layers, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
+	void set_render_state_view_poses(bool p_is_valid, const PackedVector4Array &p_orientations, const PackedVector3Array &p_positions, const PackedVector4Array &p_fovs);
 	void set_render_state_near_and_far(uint32_t p_view, double p_z_near, double p_z_far);
 
 public:
@@ -558,7 +557,7 @@ public:
 	Rect2i get_combined_render_region();
 
 	// Spatial container settings.
-	bool is_spatial_container_enabled() const;
+	static bool is_spatial_container_enabled();
 
 	// Foveation settings
 	bool is_foveation_supported() const;

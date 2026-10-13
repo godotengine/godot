@@ -65,7 +65,7 @@ public:
 	void on_spatial_container_visibility_changed(const OpenXRSpatialContainerExtension::SpatialContainerData &p_container, bool p_visible);
 	void on_spatial_container_closed(const OpenXRSpatialContainerExtension::SpatialContainerData &p_container);
 	XrSpatialContainerGraphicsPresentationEXT get_spatial_container_graphics_presentation() const;
-	XrResult locate_spatial_container_views(RID p_spatial_container_rid, XrSpace p_space, XrView *p_views, bool &r_view_pose_valid, bool &r_should_submit_layers);
+	XrResult locate_spatial_container_views(RID p_spatial_container_rid, XrSpace p_space, XrView *p_views, bool &r_view_pose_valid);
 
 protected:
 	static void _bind_methods();
