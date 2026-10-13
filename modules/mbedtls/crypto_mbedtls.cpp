@@ -77,7 +77,7 @@ Ref<CryptoKeyMbedTLS> CryptoKeyMbedTLS::generate(psa_key_type_t p_type, size_t p
 Error CryptoKeyMbedTLS::load(const String &p_path, bool p_public_only) {
 	PackedByteArray out;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
@@ -96,7 +96,7 @@ Error CryptoKeyMbedTLS::load(const String &p_path, bool p_public_only) {
 Error CryptoKeyMbedTLS::save(const String &p_path, bool p_public_only) {
 	ERR_FAIL_COND_V_MSG(public_only && !p_public_only, ERR_INVALID_PARAMETER, "The key only has the public part. Cannot save as a private key.");
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	mbedtls_pk_context ctx;
 	mbedtls_pk_init(&ctx);
@@ -252,7 +252,7 @@ Error X509CertificateMbedTLS::load(const String &p_path) {
 
 	PackedByteArray out;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot open X509CertificateMbedTLS file '%s'.", p_path));
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, vformat("Cannot open X509CertificateMbedTLS file '%s'.", p_path));
 
 	uint64_t flen = f->get_length();
 	out.resize(flen + 1);
@@ -281,7 +281,7 @@ Error X509CertificateMbedTLS::load_from_memory(const uint8_t *p_buffer, int p_le
 
 Error X509CertificateMbedTLS::save(const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_INVALID_PARAMETER, vformat("Cannot save X509CertificateMbedTLS file '%s'.", p_path));
+	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, vformat("Cannot save X509CertificateMbedTLS file '%s'.", p_path));
 
 	mbedtls_x509_crt *crt = &cert;
 	while (crt) {
