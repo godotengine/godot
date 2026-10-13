@@ -178,6 +178,7 @@ class ExportTemplateManager : public AcceptDialog {
 		String name;
 		String description;
 		PackedStringArray file_list;
+		PackedStringArray debug_symbols;
 	};
 
 	struct FileMetadata {
@@ -189,6 +190,7 @@ class ExportTemplateManager : public AcceptDialog {
 	};
 
 	bool mirrors_empty = true;
+	bool show_debug_symbols = true;
 
 	HashMap<PlatformID, PlatformInfo> platform_map;
 	HashMap<TemplateID, TemplateInfo> template_data;
@@ -240,6 +242,7 @@ class ExportTemplateManager : public AcceptDialog {
 	void _update_version_list();
 	void _update_template_tree();
 	void _fill_template_tree(Tree *p_tree, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_current_version);
+	void _add_template(TemplateID p_id, TreeItem *p_parent, const HashMap<TemplateID, LocalVector<String>> &p_installed_template_files, bool p_is_sole_template, bool p_is_current_version, bool p_debug_symbols);
 	void _update_install_button();
 	bool _can_download_templates();
 
@@ -248,6 +251,7 @@ class ExportTemplateManager : public AcceptDialog {
 	String _get_template_folder_path(const String &p_version) const;
 	Ref<Texture2D> _get_platform_icon(const String &p_platform_name);
 
+	void _debug_symbols_toggled(bool p_enable);
 	void _version_selected();
 	void _tree_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
 	void _tree_item_edited();
