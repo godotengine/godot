@@ -99,6 +99,19 @@ private:
 	void reset_current_info();
 	void reset_ids();
 	void reset_stack_info();
+	struct MovedBreakpoint {
+		int id = 0;
+		String path;
+		int line = 0;
+		bool remove_only = false;
+	};
+
+	void _reset_breakpoint_sync();
+	void _queue_moved_breakpoint(int p_id, const String &p_path, int p_line, bool p_remove_only);
+	void _keep_moved_breakpoint(int p_old_id, const String &p_path, int p_line, bool p_remove_only);
+	void _flush_moved_breakpoints();
+	void on_configuration_done();
+	void drop_breakpoints_omitted_by_client();
 
 	int parse_variant(const Variant &p_var);
 	void parse_object(SceneDebuggerObject &p_obj);
@@ -128,6 +141,10 @@ private:
 	int stackframe_id = 0;
 	DAPVarID variable_id = 0;
 	List<DAP::Breakpoint> breakpoint_list;
+	Vector<MovedBreakpoint> pending_moved_breakpoints;
+	bool send_pending_moves = false;
+	bool session_configured = false;
+	HashMap<String, HashSet<int>> client_breakpoint_lines;
 	HashMap<String, DAP::Source> breakpoint_source_list;
 	List<DAP::StackFrame> stackframe_list;
 	HashMap<DAPStackFrameID, Vector<int>> scope_list;

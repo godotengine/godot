@@ -83,6 +83,7 @@ class ScriptTextEditor : public CodeEditorBase {
 	ConnectionInfoDialog *connection_info_dialog = nullptr;
 
 	int connection_gutter = -1;
+	bool adjusting_breakpoint = false;
 	void _gutter_clicked(int p_line, int p_gutter);
 	void _update_gutter_indexes();
 
