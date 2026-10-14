@@ -40,6 +40,8 @@
  * Elements are not pointer stable.
  * The element order is arbitrary.
  *
+ * Elements are relocated by naive memory moves; they must not store their own address (see GH-100509).
+ *
  * Core container guidance:
  * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  */
@@ -489,7 +491,7 @@ public:
 		return !(*this == p_other);
 	}
 
-	HashSet(uint32_t p_initial_capacity) {
+	explicit HashSet(uint32_t p_initial_capacity) {
 		// Capacity can't be 0.
 		_capacity_idx = 0;
 		reserve(p_initial_capacity);

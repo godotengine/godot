@@ -735,6 +735,12 @@ bool EditorThemeManager::is_generated_theme_outdated() {
 	return outdated_cache;
 }
 
+void EditorThemeManager::set_theme_outdated() {
+	callable_mp_static(&EditorThemeManager::_reset_dirty_flag).call_deferred();
+	outdated_cache_dirty = false;
+	outdated_cache = true;
+}
+
 bool EditorThemeManager::is_dark_theme() {
 	Color base_color = EDITOR_GET("interface/theme/base_color");
 	return base_color.get_luminance() < 0.5;

@@ -337,6 +337,11 @@ private:
 	TileSet::TerrainsPattern selected_terrains_pattern;
 	void _update_selection();
 
+	// Terrain selection restoration
+	HashMap<ObjectID, Vector2i> last_selected_terrain_by_layer;
+	void _prune_last_selected_terrain_cache();
+	void _restore_terrain_selection();
+
 	// Bottom panel.
 	Tree *terrains_tree = nullptr;
 	ItemList *terrains_tile_list = nullptr;

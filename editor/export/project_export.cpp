@@ -1694,7 +1694,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTRC("Runnable"));
-	runnable->set_tooltip_text(TTRC("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
+	runnable->set_tooltip_text(TTRC("If checked, the preset will be available for use in remote deploy.\nOnly one preset per platform may be marked as runnable."));
 	runnable->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_runnable_pressed));
 
 	advanced_options = memnew(CheckButton);
@@ -1870,7 +1870,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	patch_delta_min_reduction->set_min(0.0);
 	patch_delta_min_reduction->set_max(100.0);
 	patch_delta_min_reduction->set_step(1.0);
-	patch_delta_min_reduction->set_suffix("%");
+	patch_delta_min_reduction->set_format("%s%%");
 	patch_delta_min_reduction->set_tooltip_text(TTRC("How much smaller, when compared to the new file, a delta-encoded patch needs to be for it to be exported.\n"
 													 "If the patch is not at least this much smaller, the new file will be exported as-is."));
 	patch_delta_min_reduction->connect(SceneStringName(value_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_min_reduction_changed));

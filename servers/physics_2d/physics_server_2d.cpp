@@ -40,6 +40,24 @@ PhysicsServer2D *PhysicsServer2D::get_singleton() {
 	return singleton;
 }
 
+void PhysicsServer2D::debug_set_enabled(bool p_enabled) {
+#ifdef DEBUG_ENABLED
+	if (debug_enabled == p_enabled) {
+		return;
+	}
+	debug_enabled = p_enabled;
+	emit_signal("_debug_changed");
+#endif
+}
+
+bool PhysicsServer2D::debug_is_enabled() const {
+#ifdef DEBUG_ENABLED
+	return debug_enabled;
+#else
+	return false;
+#endif
+}
+
 bool PhysicsServer2D::_body_test_motion(RID p_body, RequiredParam<PhysicsTestMotionParameters2D> p_parameters, const Ref<PhysicsTestMotionResult2D> &p_result) {
 	EXTRACT_PARAM_OR_FAIL_V(parameters, p_parameters, false);
 
@@ -323,6 +341,10 @@ void PhysicsServer2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PS2DE::INFO_ACTIVE_OBJECTS);
 	BIND_ENUM_CONSTANT(PS2DE::INFO_COLLISION_PAIRS);
 	BIND_ENUM_CONSTANT(PS2DE::INFO_ISLAND_COUNT);
+
+#ifdef DEBUG_ENABLED
+	ADD_SIGNAL(MethodInfo("_debug_changed"));
+#endif
 }
 
 PhysicsServer2D::PhysicsServer2D() {
@@ -335,13 +357,13 @@ PhysicsServer2D::PhysicsServer2D() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), 1.0);
 
 	// PhysicsServer2D
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/sleep_threshold_linear", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), 2.0);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/sleep_threshold_angular", PROPERTY_HINT_RANGE, "0,90,0.1,radians_as_degrees"), Math::deg_to_rad(8.0));
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/sleep_threshold_linear", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater,suffix:m/s"), 2.0);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/sleep_threshold_angular", PROPERTY_HINT_RANGE, U"0,90,0.1,radians_as_degrees,suffix:°/s"), Math::deg_to_rad(8.0));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater,suffix:s"), 0.5);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/2d/solver/solver_iterations", PROPERTY_HINT_RANGE, "1,32,1,or_greater"), 16);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"), 1.0);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"), 1.5);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater"), 0.3);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_recycle_radius", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater,suffix:m"), 1.0);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_separation", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater,suffix:m"), 1.5);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/contact_max_allowed_penetration", PROPERTY_HINT_RANGE, "0.01,10,0.01,or_greater,suffix:m"), 0.3);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/default_contact_bias", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.8);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/solver/default_constraint_bias", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.2);
 }

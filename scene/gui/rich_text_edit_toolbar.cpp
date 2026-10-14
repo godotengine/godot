@@ -1023,6 +1023,10 @@ void RichTextEditToolbar::_pressed_horizontal_rule() {
 }
 
 void RichTextEditToolbar::_pressed_outline_color() {
+	if (external_color_picker_enabled) {
+		emit_signal(SNAME("color_picker_requested"), SNAME("outline"), outline_color_value, outline_button);
+		return;
+	}
 	_ensure_outline_color_picker();
 	if (outline_color_popup_was_open) {
 		outline_color_popup_was_open = false;
@@ -1154,6 +1158,10 @@ void RichTextEditToolbar::_line_height_cancel_pressed() {
 }
 
 void RichTextEditToolbar::_pressed_font_color() {
+	if (external_color_picker_enabled) {
+		emit_signal(SNAME("color_picker_requested"), SNAME("font"), font_color_value, font_color_button);
+		return;
+	}
 	_ensure_font_color_picker();
 	if (font_color_popup_was_open) {
 		font_color_popup_was_open = false;
@@ -1169,6 +1177,10 @@ void RichTextEditToolbar::_pressed_font_color() {
 }
 
 void RichTextEditToolbar::_pressed_bg_color() {
+	if (external_color_picker_enabled) {
+		emit_signal(SNAME("color_picker_requested"), SNAME("background"), bg_color_value, bg_color_button);
+		return;
+	}
 	_ensure_bg_color_picker();
 	if (bg_color_popup_was_open) {
 		bg_color_popup_was_open = false;
@@ -1418,6 +1430,7 @@ void RichTextEditToolbar::_notification(int p_what) {
 }
 
 void RichTextEditToolbar::set_rich_text_edit_path(const NodePath &p_path) {
+	end_external_color_picker();
 	rich_text_edit_path = p_path;
 	if (is_inside_tree()) {
 		_resolve_rich_text_edit();
@@ -1444,12 +1457,94 @@ RichTextEdit *RichTextEditToolbar::get_rich_text_edit() const {
 	return _get_rich_text_edit();
 }
 
+void RichTextEditToolbar::set_external_color_picker_enabled(bool p_enabled) {
+	if (!p_enabled) {
+		end_external_color_picker();
+	}
+	external_color_picker_enabled = p_enabled;
+}
+
+bool RichTextEditToolbar::is_external_color_picker_enabled() const {
+	return external_color_picker_enabled;
+}
+
+void RichTextEditToolbar::begin_external_color_picker(const StringName &p_slot) {
+	ERR_FAIL_COND(p_slot != SNAME("font") && p_slot != SNAME("background") && p_slot != SNAME("outline"));
+	end_external_color_picker();
+	external_color_slot = p_slot;
+	external_initial_color = p_slot == SNAME("font") ? font_color_value : (p_slot == SNAME("background") ? bg_color_value : outline_color_value);
+	external_pending_color = external_initial_color;
+	external_initial_bg_assigned = bg_color_assigned;
+	color_picker_open = p_slot != SNAME("background");
+	bg_color_picker_open = p_slot == SNAME("background");
+	if (RichTextEdit *target = _get_rich_text_edit()) {
+		target->begin_selection_color_preview();
+	}
+}
+
+void RichTextEditToolbar::preview_external_color(const Color &p_color) {
+	ERR_FAIL_COND(external_color_slot == StringName());
+	external_pending_color = p_color;
+	RichTextEdit *target = _get_rich_text_edit();
+	if (external_color_slot == SNAME("font")) {
+		font_color_value = p_color;
+		if (target != nullptr) {
+			target->preview_selection_color(p_color);
+		}
+	} else if (external_color_slot == SNAME("background")) {
+		bg_color_value = p_color;
+		bg_color_assigned = true;
+		if (target != nullptr) {
+			target->preview_selection_bg_color(p_color);
+		}
+	} else {
+		outline_color_value = p_color;
+		if (target != nullptr) {
+			target->preview_selection_outline_color(p_color);
+		}
+	}
+	_apply_color_button_previews();
+}
+
+void RichTextEditToolbar::end_external_color_picker(bool p_commit) {
+	if (external_color_slot == StringName()) {
+		return;
+	}
+	const bool changed = !external_pending_color.is_equal_approx(external_initial_color) ||
+			(external_color_slot == SNAME("background") && bg_color_assigned != external_initial_bg_assigned);
+	external_color_slot = StringName();
+	color_picker_open = false;
+	bg_color_picker_open = false;
+	font_color_button->set_pressed_no_signal(false);
+	bg_color_button->set_pressed_no_signal(false);
+	outline_button->set_pressed_no_signal(false);
+	if (RichTextEdit *target = _get_rich_text_edit()) {
+		target->end_selection_color_preview(p_commit && changed);
+	}
+	_update_controls_from_target();
+}
+
+void RichTextEditToolbar::clear_external_background_color() {
+	ERR_FAIL_COND(external_color_slot != SNAME("background"));
+	end_external_color_picker(false);
+	_bg_color_cleared();
+}
+
 void RichTextEditToolbar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rich_text_edit_path", "path"), &RichTextEditToolbar::set_rich_text_edit_path);
 	ClassDB::bind_method(D_METHOD("get_rich_text_edit_path"), &RichTextEditToolbar::get_rich_text_edit_path);
 	ClassDB::bind_method(D_METHOD("get_rich_text_edit"), &RichTextEditToolbar::get_rich_text_edit);
 	ClassDB::bind_method(D_METHOD("set_two_row_layout", "enabled"), &RichTextEditToolbar::set_two_row_layout);
 	ClassDB::bind_method(D_METHOD("is_two_row_layout"), &RichTextEditToolbar::is_two_row_layout);
+
+	ClassDB::bind_method(D_METHOD("set_external_color_picker_enabled", "enabled"), &RichTextEditToolbar::set_external_color_picker_enabled);
+	ClassDB::bind_method(D_METHOD("is_external_color_picker_enabled"), &RichTextEditToolbar::is_external_color_picker_enabled);
+	ClassDB::bind_method(D_METHOD("begin_external_color_picker", "slot"), &RichTextEditToolbar::begin_external_color_picker);
+	ClassDB::bind_method(D_METHOD("preview_external_color", "color"), &RichTextEditToolbar::preview_external_color);
+	ClassDB::bind_method(D_METHOD("end_external_color_picker", "commit"), &RichTextEditToolbar::end_external_color_picker, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("clear_external_background_color"), &RichTextEditToolbar::clear_external_background_color);
+	ADD_SIGNAL(MethodInfo("color_picker_requested", PropertyInfo(Variant::STRING_NAME, "slot"), PropertyInfo(Variant::COLOR, "color"), PropertyInfo(Variant::OBJECT, "anchor", PROPERTY_HINT_NODE_TYPE, "Control")));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "external_color_picker_enabled"), "set_external_color_picker_enabled", "is_external_color_picker_enabled");
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "rich_text_edit_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, RichTextEdit::get_class_static()), "set_rich_text_edit_path", "get_rich_text_edit_path");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "two_row_layout"), "set_two_row_layout", "is_two_row_layout");

@@ -185,6 +185,7 @@ private:
 	mutable uint64_t style_spans_revision = 0;
 	bool setting_bbcode_text = false;
 	bool use_bbcode = false;
+	Callable style_font_resolver;
 	Overflow overflow_x = OVERFLOW_AUTO;
 	Overflow overflow_y = OVERFLOW_AUTO;
 	LinkActivationMode link_activation_mode = LINK_ACTIVATION_AUTO;
@@ -370,6 +371,8 @@ public:
 
 	void set_bbcode_text(const String &p_bbcode);
 	String get_bbcode_text() const;
+	void set_style_font_resolver(const Callable &p_resolver);
+	Callable get_style_font_resolver() const;
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
 	void set_visible_ratio(float p_ratio);
@@ -415,6 +418,7 @@ public:
 	void end_selection_color_preview(bool p_commit);
 	void begin_selection_bg_color_preview();
 	void preview_selection_bg_color(const Color &p_color);
+	void preview_selection_outline_color(const Color &p_color);
 	void end_selection_bg_color_preview(bool p_commit);
 	void set_selection_font_size(int p_size);
 	void clear_selection_font_size();

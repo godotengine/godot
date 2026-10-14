@@ -228,15 +228,15 @@ struct PairPosFormat2_4 : ValueBase
 
           if (!backward)
           {
-            dst1[i] += kern1;
-            dst2[i] += kern2;
-            dst2[i + 2] += kern2;
+            dst1[i] = hb_saturate_add (dst1[i], kern1);
+            dst2[i] = hb_saturate_add (dst2[i], kern2);
+            dst2[i + 2] = hb_saturate_add (dst2[i + 2], kern2);
           }
           else
           {
-            dst1[i] += kern1;
-            dst1[i + 2] += src[i + 2] - kern2;
-            dst2[i] += kern2;
+            dst1[i] = hb_saturate_add (dst1[i], kern1);
+            dst1[i + 2] = hb_clamp_to<hb_position_t> ((int64_t) dst1[i + 2] + src[i + 2] - kern2);
+            dst2[i] = hb_saturate_add (dst2[i], kern2);
           }
 
           applied_first = applied_second = kern != 0;

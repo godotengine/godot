@@ -1238,6 +1238,10 @@ void FileDialog::update_customization() {
 	favorite_button->set_visible(customization_flags[CUSTOMIZATION_FAVORITES]);
 	favorite_vbox->set_visible(customization_flags[CUSTOMIZATION_FAVORITES]);
 	recent_vbox->set_visible(customization_flags[CUSTOMIZATION_RECENT]);
+	dir_prev->set_visible(customization_flags[CUSTOMIZATION_NAVIGATION_BUTTONS]);
+	dir_next->set_visible(customization_flags[CUSTOMIZATION_NAVIGATION_BUTTONS]);
+	drives->set_visible(customization_flags[CUSTOMIZATION_DRIVE_SELECTOR]);
+	filter->set_visible(customization_flags[CUSTOMIZATION_FILTERS]);
 }
 
 void FileDialog::clear_filename_filter() {
@@ -1381,14 +1385,6 @@ String FileDialog::get_root_subfolder() const {
 	return root_subfolder;
 }
 
-void FileDialog::set_mode_overrides_title(bool p_override) {
-	mode_overrides_title = p_override;
-}
-
-bool FileDialog::is_mode_overriding_title() const {
-	return mode_overrides_title;
-}
-
 void FileDialog::set_file_mode(FileMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 5);
 	if (mode == p_mode) {
@@ -1398,34 +1394,24 @@ void FileDialog::set_file_mode(FileMode p_mode) {
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
 			set_default_ok_text(ETR("Open"));
-			if (mode_overrides_title) {
-				set_title(ETR("Open a File"));
-			}
+			set_default_title(ETR("Open a File"));
 			break;
 		case FILE_MODE_OPEN_FILES:
 			set_default_ok_text(ETR("Open"));
-			if (mode_overrides_title) {
-				set_title(ETR("Open File(s)"));
-			}
+			set_default_title(ETR("Open File(s)"));
 			break;
 		case FILE_MODE_OPEN_DIR:
 			set_default_ok_text(ETR("Select Current Folder"));
-			if (mode_overrides_title) {
-				set_title(ETR("Open a Directory"));
-			}
+			set_default_title(ETR("Open a Directory"));
 			break;
 		case FILE_MODE_OPEN_ANY:
 			set_default_ok_text(ETR("Open"));
-			if (mode_overrides_title) {
-				set_title(ETR("Open a File or Directory"));
-			}
+			set_default_title(ETR("Open a File or Directory"));
 			make_dir_button->show();
 			break;
 		case FILE_MODE_SAVE_FILE:
 			set_default_ok_text(ETR("Save"));
-			if (mode_overrides_title) {
-				set_title(ETR("Save a File"));
-			}
+			set_default_title(ETR("Save a File"));
 			break;
 	}
 	_update_make_dir_visible();
@@ -2138,8 +2124,6 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_dir", "dir"), &FileDialog::set_current_dir);
 	ClassDB::bind_method(D_METHOD("set_current_file", "file"), &FileDialog::set_current_file);
 	ClassDB::bind_method(D_METHOD("set_current_path", "path"), &FileDialog::set_current_path);
-	ClassDB::bind_method(D_METHOD("set_mode_overrides_title", "override"), &FileDialog::set_mode_overrides_title);
-	ClassDB::bind_method(D_METHOD("is_mode_overriding_title"), &FileDialog::is_mode_overriding_title);
 	ClassDB::bind_method(D_METHOD("set_file_mode", "mode"), &FileDialog::set_file_mode);
 	ClassDB::bind_method(D_METHOD("get_file_mode"), &FileDialog::get_file_mode);
 	ClassDB::bind_method(D_METHOD("set_display_mode", "mode"), &FileDialog::set_display_mode);
@@ -2168,7 +2152,12 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_file_dialog"), &FileDialog::popup_file_dialog);
 	ClassDB::bind_method(D_METHOD("invalidate"), &FileDialog::invalidate);
 
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_mode_overrides_title", "override"), &FileDialog::set_mode_overrides_title);
+	ClassDB::bind_method(D_METHOD("is_mode_overriding_title"), &FileDialog::is_mode_overriding_title);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mode_overrides_title"), "set_mode_overrides_title", "is_mode_overriding_title");
+#endif
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "file_mode", PROPERTY_HINT_ENUM, "Open File,Open Files,Open Folder,Open Any,Save"), "set_file_mode", "get_file_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List"), "set_display_mode", "get_display_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User Data,File System"), "set_access", "get_access");
@@ -2190,6 +2179,9 @@ void FileDialog::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "layout_toggle_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_LAYOUT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "overwrite_warning_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_OVERWRITE_WARNING);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "deleting_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_DELETE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "navigation_buttons_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_NAVIGATION_BUTTONS);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "drive_selector_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_DRIVE_SELECTOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "filters_enabled"), "set_customization_flag_enabled", "is_customization_flag_enabled", CUSTOMIZATION_FILTERS);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE_PATH, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
@@ -2222,6 +2214,9 @@ void FileDialog::_bind_methods() {
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_LAYOUT);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_OVERWRITE_WARNING);
 	BIND_ENUM_CONSTANT(CUSTOMIZATION_DELETE);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_NAVIGATION_BUTTONS);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_DRIVE_SELECTOR);
+	BIND_ENUM_CONSTANT(CUSTOMIZATION_FILTERS);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, FileDialog, thumbnail_size);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, FileDialog, parent_folder);
@@ -2345,7 +2340,7 @@ bool FileDialog::get_use_native_dialog() const {
 }
 
 FileDialog::FileDialog() {
-	set_title(ETR("Save a File"));
+	set_default_title(ETR("Save a File"));
 	set_hide_on_ok(false);
 	set_size(Size2(640, 360));
 	set_default_ok_text(ETR("Save")); // Default mode text.

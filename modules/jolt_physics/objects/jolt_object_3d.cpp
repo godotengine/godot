@@ -74,10 +74,6 @@ JoltObject3D::JoltObject3D(ObjectType p_object_type) :
 
 JoltObject3D::~JoltObject3D() = default;
 
-Object *JoltObject3D::get_instance() const {
-	return ObjectDB::get_instance(instance_id);
-}
-
 void JoltObject3D::set_space(JoltSpace3D *p_space) {
 	if (space == p_space) {
 		return;
@@ -141,6 +137,6 @@ String JoltObject3D::to_string() const {
 		return fallback_name; // Calling `Object::to_string` is not thread-safe.
 	}
 
-	Object *instance = get_instance();
+	Object *instance = get_instance_id().is_valid() ? ObjectDB::get_instance(get_instance_id()) : nullptr;
 	return instance != nullptr ? instance->to_string() : fallback_name;
 }

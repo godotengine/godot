@@ -44,6 +44,25 @@ struct hb_vector_path_sink_t
   unsigned precision;
   float x_scale;
   float y_scale;
+  int64_t *work_left;
+
+  bool begin_command (unsigned *before)
+  {
+    if (unlikely (path->in_error () ||
+		  (work_left && *work_left <= 0)))
+      return false;
+    *before = path->length;
+    return true;
+  }
+
+  void end_command (unsigned before)
+  {
+    if (!work_left) return;
+    if (unlikely (path->in_error ()))
+      *work_left = 0;
+    else
+      *work_left -= path->length - before;
+  }
 };
 
 HB_INTERNAL hb_draw_funcs_t *

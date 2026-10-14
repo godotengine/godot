@@ -287,6 +287,8 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 
 			const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+			const Ref<Font> source_font = get_theme_font(SNAME("source"), EditorStringName(EditorFonts));
+			const int source_font_size = get_theme_font_size(SNAME("source_size"), EditorStringName(EditorFonts));
 			const Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 
 			const Color h_line_color = get_theme_color(SNAME("h_line_color"), SNAME("AnimationBezierTrackEdit"));
@@ -499,6 +501,13 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					}
 				}
 
+				Ref<Font> font_to_use = font;
+				int font_size_to_use = font_size;
+				if (EDITOR_GET("interface/theme/use_monospace_font_for_editor_symbols")) {
+					font_to_use = source_font;
+					font_size_to_use = source_font_size;
+				}
+
 				float remove_hpos = limit - h_separation - remove->get_width();
 				float lock_hpos = remove_hpos - h_separation - lock->get_width();
 				float visibility_hpos = lock_hpos - h_separation - visibility_visible->get_width();
@@ -515,7 +524,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					path = path.replace_first(base_path, "");
 
 					Color cc = color;
-					TextLine text_buf = TextLine(path, font, font_size);
+					TextLine text_buf = TextLine(path, font_to_use, font_size_to_use);
 					text_buf.set_width(limit - margin - buttons_width - h_separation * 2);
 
 					Rect2 rect = Rect2(margin, vofs, solo_hpos - h_separation - solo->get_width(), text_buf.get_size().y + v_separation);

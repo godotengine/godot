@@ -2,7 +2,7 @@
 
 This provides some basic information in how GDScript is implemented and integrates with the rest of the engine. You can learn more about GDScript in the [documentation](https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/index.html). It describes the syntax and user facing systems and concepts, and can be used as a reference for what user expectations are.
 
-For general language design guidelines, please visit the [contributing docs](https://contributing.godotengine.org/en/latest/engine/guidelines/gdscript_language_guidelines.html).
+For general language design guidelines, please visit the [contributing docs](https://contributing.godotengine.org/en/latest/development/engine/gdscript_language_guidelines.html).
 
 
 ## Integration into Godot

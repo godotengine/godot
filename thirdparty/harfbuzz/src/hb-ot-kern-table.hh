@@ -144,13 +144,13 @@ struct KernSubTable
     unsigned int subtable_type = get_type ();
     TRACE_DISPATCH (this, subtable_type);
     switch (subtable_type) {
-    case 0:	return_trace (c->dispatch (u.format0));
+    case 0:	hb_barrier (); return_trace (c->dispatch (u.format0));
 #ifndef HB_NO_AAT_SHAPE
-    case 1:	return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
+    case 1:	hb_barrier (); return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
 #endif
-    case 2:	return_trace (c->dispatch (u.format2));
+    case 2:	hb_barrier (); return_trace (c->dispatch (u.format2));
 #ifndef HB_NO_AAT_SHAPE
-    case 3:	return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
+    case 3:	hb_barrier (); return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
 #endif
     default:	return_trace (c->default_return_value ());
     }
@@ -161,10 +161,14 @@ struct KernSubTable
   {
     unsigned int subtable_type = get_type ();
     switch (subtable_type) {
-    case 0:	u.format0.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 1:	u.format1.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 2:	u.format2.collect_glyphs (left_set, right_set, num_glyphs); return;
-    case 3:	u.format3.collect_glyphs (left_set, right_set, num_glyphs); return;
+    case 0:	hb_barrier (); u.format0.collect_glyphs (left_set, right_set, num_glyphs); return;
+#ifndef HB_NO_AAT_SHAPE
+    case 1:	hb_barrier (); u.format1.collect_glyphs (left_set, right_set, num_glyphs); return;
+#endif
+    case 2:	hb_barrier (); u.format2.collect_glyphs (left_set, right_set, num_glyphs); return;
+#ifndef HB_NO_AAT_SHAPE
+    case 3:	hb_barrier (); u.format3.collect_glyphs (left_set, right_set, num_glyphs); return;
+#endif
     default:	return;
     }
   }
@@ -184,9 +188,13 @@ struct KernSubTable
   union {
   KernSubTableHeader				header;
   AAT::KerxSubTableFormat0<KernSubTableHeader>	format0;
+#ifndef HB_NO_AAT_SHAPE
   AAT::KerxSubTableFormat1<KernSubTableHeader>	format1;
+#endif
   AAT::KerxSubTableFormat2<KernSubTableHeader>	format2;
+#ifndef HB_NO_AAT_SHAPE
   KernSubTableFormat3<KernSubTableHeader>	format3;
+#endif
   } u;
   public:
   DEFINE_SIZE_MIN (KernSubTableHeader::static_size);
@@ -352,9 +360,9 @@ struct kern
     unsigned int subtable_type = get_type ();
     TRACE_DISPATCH (this, subtable_type);
     switch (subtable_type) {
-    case 0:	return_trace (c->dispatch (u.ot, std::forward<Ts> (ds)...));
+    case 0:	hb_barrier (); return_trace (c->dispatch (u.ot, std::forward<Ts> (ds)...));
 #ifndef HB_NO_AAT_SHAPE
-    case 1:	return_trace (c->dispatch (u.aat, std::forward<Ts> (ds)...));
+    case 1:	hb_barrier (); return_trace (c->dispatch (u.aat, std::forward<Ts> (ds)...));
 #endif
     default:	return_trace (c->default_return_value ());
     }

@@ -36,6 +36,8 @@
 class RetargetModifier3D : public SkeletonModifier3D {
 	GDCLASS(RetargetModifier3D, SkeletonModifier3D);
 
+	const Vector3 DEFAULT_SKIN_SCALE = Vector3(1, 1, 1);
+
 public:
 	enum TransformFlag {
 		TRANSFORM_FLAG_POSITION = 1,
@@ -47,6 +49,7 @@ public:
 private:
 	Ref<SkeletonProfile> profile;
 
+	bool copy_bone_skin_scale = true;
 	bool use_global_pose = false;
 	BitField<TransformFlag> enable_flags = TRANSFORM_FLAG_ALL;
 
@@ -81,6 +84,7 @@ private:
 
 	void _retarget_global_pose();
 	void _retarget_pose();
+	void _retarget_skin_scale();
 
 protected:
 	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) override;
@@ -101,6 +105,8 @@ protected:
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
 
+	void set_copy_bone_skin_scale(bool p_enabled);
+	bool is_copying_bone_skin_scale() const;
 	void set_use_global_pose(bool p_use_global_pose);
 	bool is_using_global_pose() const;
 	void set_enable_flags(BitField<TransformFlag> p_enable_flags);

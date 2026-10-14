@@ -65,6 +65,8 @@ protected:
 
 	virtual void _resort();
 
+	virtual Size2 get_minimum_size() const override;
+
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:

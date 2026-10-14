@@ -80,8 +80,7 @@ TEST_CASE("[SceneTree][SpinBox] Range clamping and allow flags") {
 
 TEST_CASE("[SceneTree][SpinBox] Prefix and suffix in line edit text") {
 	SpinBox *spin = memnew(SpinBox);
-	spin->set_prefix("px");
-	spin->set_suffix("deg");
+	spin->set_format("px %s deg");
 	spin->set_value(42.0);
 
 	Window *root = SceneTree::get_singleton()->get_root();

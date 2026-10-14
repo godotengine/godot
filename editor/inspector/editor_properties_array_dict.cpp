@@ -284,7 +284,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 
 	Variant array = object->get_array().duplicate();
 	array.set(index, p_value);
-	emit_changed(get_edited_property(), array, p_name, p_changing);
+	emit_changed(get_edited_property(), array, "", p_changing);
 	if (p_changing) {
 		object->set_array(array);
 	}
@@ -334,7 +334,7 @@ void EditorPropertyArray::_create_new_property_slot() {
 
 	Button *reorder_button = memnew(Button);
 	reorder_button->set_accessibility_name(TTRC("Reorder"));
-	reorder_button->set_button_icon(EditorIconManager::get_icon(SNAME("TripleBar")));
+	reorder_button->set_button_icon(EditorIconManager::get_icon(SNAME("DragHandle")));
 	reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 	reorder_button->set_disabled(is_read_only());
 	reorder_button->set_theme_type_variation(SNAME("EditorInspectorFlatButton"));
@@ -1070,7 +1070,7 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 
 	object->set(p_property, p_value);
 	bool new_item_or_key = !p_property.begins_with("indices");
-	emit_changed(get_edited_property(), object->get_dict(), p_name, p_changing || new_item_or_key);
+	emit_changed(get_edited_property(), object->get_dict(), "", p_changing || new_item_or_key);
 	if (new_item_or_key) {
 		update_property();
 	}

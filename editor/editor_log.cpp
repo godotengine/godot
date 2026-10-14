@@ -108,20 +108,20 @@ void EditorLog::_update_theme() {
 	log->add_theme_font_size_override("mono_font_size", font_size);
 	log->end_bulk_theme_override();
 
-	const String wide_text = "MM";
+	const String wide_text = "0000";
 
 	Button *button = type_filter_map[MSG_TYPE_STD]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("Popup")));
-	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x, 0));
 	button = type_filter_map[MSG_TYPE_ERROR]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("StatusError")));
-	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x, 0));
 	button = type_filter_map[MSG_TYPE_WARNING]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("StatusWarning")));
-	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x, 0));
 	button = type_filter_map[MSG_TYPE_EDITOR]->toggle_button;
 	button->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
-	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x * EDSCALE, 0));
+	button->set_custom_minimum_size(Vector2(button->get_minimum_size_for_text_and_icon(wide_text, button->get_button_icon()).x, 0));
 
 	clear_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	collapse_button->set_button_icon(get_editor_theme_icon(SNAME("CombineLines")));
@@ -145,7 +145,6 @@ void EditorLog::_editor_settings_changed() {
 void EditorLog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			_update_theme();
 			_load_state();
 		} break;
 
@@ -157,8 +156,8 @@ void EditorLog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_theme();
-			_rebuild_log();
+			callable_mp(this, &EditorLog::_update_theme).call_deferred();
+			callable_mp(this, &EditorLog::_rebuild_log).call_deferred();
 		} break;
 	}
 }

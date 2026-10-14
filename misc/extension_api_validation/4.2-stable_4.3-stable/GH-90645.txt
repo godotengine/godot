@@ -1,5 +1,3 @@
-GH-90645
---------
 Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_desc
 Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_name
 Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_type

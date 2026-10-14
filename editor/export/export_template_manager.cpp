@@ -1597,7 +1597,7 @@ void ExportTemplateManager::popup_manager() {
 		_update_template_tree();
 		_request_mirrors();
 	}
-	popup_centered_clamped(Vector2i(640, 700) * EDSCALE);
+	popup_centered_clamped(Vector2(640, 700) * EDSCALE);
 }
 
 bool ExportTemplateManager::is_downloading() const {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,12 +45,16 @@
  * `SDLK_*` constant for those keys that do not generate characters.
  *
  * A special exception is the number keys at the top of the keyboard which map
- * to SDLK_0...SDLK_9 on AZERTY layouts.
+ * by default to SDLK_0...SDLK_9 on AZERTY layouts.
  *
  * Keys with the `SDLK_EXTENDED_MASK` bit set do not map to a scancode or
- * unicode code point.
+ * Unicode code point.
+ *
+ * Many common keycodes are listed below, but this list is not exhaustive.
  *
  * \since This datatype is available since SDL 3.2.0.
+ *
+ * \sa SDL_HINT_KEYCODE_OPTIONS
  */
 typedef Uint32 SDL_Keycode;
 

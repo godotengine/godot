@@ -17,19 +17,25 @@ partial class ExportedToolButtons
         /// </summary>
         public new static readonly global::Godot.StringName @MyButton2 = "MyButton2";
     }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool GetGodotClassPropertyValue(in godot_string_name name, out godot_variant value)
+    protected internal new static partial class GodotInternal
     {
-        if (name == PropertyName.@MyButton1) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButton1);
-            return true;
+        public static void GetGodotPropertyTrampolines(global::Godot.Bridge.PropertyTrampolineCollector collector)
+        {
+            static godot_variant trampoline_get_MyButton1(object godotObject)
+            {
+                var ret = ((global::ExportedToolButtons)godotObject).@MyButton1;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            static godot_variant trampoline_get_MyButton2(object godotObject)
+            {
+                var ret = ((global::ExportedToolButtons)godotObject).@MyButton2;
+                return global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(ret);
+            }
+            var aux_delegate_get_MyButton1 = trampoline_get_MyButton1;
+            collector.TryAdd(PropertyName.@MyButton1, new(aux_delegate_get_MyButton1.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
+            var aux_delegate_get_MyButton2 = trampoline_get_MyButton2;
+            collector.TryAdd(PropertyName.@MyButton2, new(aux_delegate_get_MyButton2.Method.MethodHandle.GetFunctionPointer()), new(global::System.IntPtr.Zero));
         }
-        if (name == PropertyName.@MyButton2) {
-            value = global::Godot.NativeInterop.VariantUtils.CreateFrom<global::Godot.Callable>(this.@MyButton2);
-            return true;
-        }
-        return base.GetGodotClassPropertyValue(name, out value);
     }
     /// <summary>
     /// Get the property information for all the properties declared in this class.

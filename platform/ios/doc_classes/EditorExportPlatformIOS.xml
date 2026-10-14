@@ -18,7 +18,7 @@
 			[/codeblock]
 		</member>
 		<member name="application/app_store_team_id" type="String" setter="" getter="">
-			Apple Team ID, unique 10-character string. To locate your Team ID check "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
+			Apple Team ID, unique 10-character string. To locate your Team ID check the "Membership details" section in your Apple developer account dashboard, or "Organizational Unit" of your code signing certificate. See [url=https://developer.apple.com/help/account/manage-your-team/locate-your-team-id]Locate your Team ID[/url].
 		</member>
 		<member name="application/bundle_identifier" type="String" setter="" getter="">
 			Unique application identifier in a reverse-DNS format, can only contain alphanumeric characters ([code]A-Z[/code], [code]a-z[/code], and [code]0-9[/code]), hyphens ([code]-[/code]), and periods ([code].[/code]).
@@ -48,11 +48,11 @@
 			Minimum version of iOS required for this application to run in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
 		<member name="application/provisioning_profile_specifier_debug" type="String" setter="" getter="">
-			Name of the provisioning profile. Sets Xcode PROVISIONING_PROFILE_SPECIFIER for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Name of the provisioning profile. Sets Xcode [code]PROVISIONING_PROFILE_SPECIFIER[/code] for debug. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
 			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROFILE_SPECIFIER_DEBUG[/code].
 		</member>
 		<member name="application/provisioning_profile_specifier_release" type="String" setter="" getter="">
-			Name of the provisioning profile. Sets Xcode PROVISIONING_PROFILE_SPECIFIER for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
+			Name of the provisioning profile. Sets Xcode [code]PROVISIONING_PROFILE_SPECIFIER[/code] for release. [url=https://developer.apple.com/documentation/xcode/build-settings-reference#Provisioning-Profile]Used for manual provisioning[/url].
 			Can be overridden with the environment variable [code]GODOT_APPLE_PLATFORM_PROFILE_SPECIFIER_RELEASE[/code].
 		</member>
 		<member name="application/provisioning_profile_uuid_debug" type="String" setter="" getter="">
@@ -78,7 +78,7 @@
 			[b]Note:[/b] This value is used for the [i]Identity &gt; Build[/i] value in the generated Xcode project.
 		</member>
 		<member name="architectures/arm64" type="bool" setter="" getter="">
-			If [code]true[/code], [code]arm64[/code] binaries are included into exported project.
+			If [code]true[/code], [code]arm64[/code] binaries are included in the exported project.
 		</member>
 		<member name="capabilities/access_wifi" type="bool" setter="" getter="">
 			If [code]true[/code], networking features related to Wi-Fi access are enabled. See [url=https://developer.apple.com/support/required-device-capabilities/]Required Device Capabilities[/url].
@@ -117,7 +117,7 @@
 			Environment for Apple Push Notification service. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/aps-environment]aps-environment[/url].
 		</member>
 		<member name="icons/app_store_1024x1024" type="String" setter="" getter="">
-			App Store application icon file. If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			App Store application icon file. If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/app_store_1024x1024_dark" type="String" setter="" getter="">
 			App Store application icon file, dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -126,7 +126,7 @@
 			App Store application icon file, tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/icon_1024x1024" type="String" setter="" getter="">
-			Base application icon used to generate other icons. If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Base application icon used to generate other icons. If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/icon_1024x1024_dark" type="String" setter="" getter="">
 			Base application icon used to generate other icons, dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -135,7 +135,7 @@
 			Base application icon used to generate other icons, tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ios_128x128" type="String" setter="" getter="">
-			iOS application 64×64 icon file (2× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			iOS application 64×64 icon file (2× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ios_128x128_dark" type="String" setter="" getter="">
 			iOS application 64×64 icon file (2× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -144,7 +144,7 @@
 			iOS application 64×64 icon file (2× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ios_136x136" type="String" setter="" getter="">
-			iOS application 68×68 icon file (2× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			iOS application 68×68 icon file (2× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ios_136x136_dark" type="String" setter="" getter="">
 			iOS application 68×68 icon file (2× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -153,7 +153,7 @@
 			iOS application 68×68 icon file (2× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ios_192x192" type="String" setter="" getter="">
-			iOS application 64×64 icon file (3× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			iOS application 64×64 icon file (3× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ios_192x192_dark" type="String" setter="" getter="">
 			iOS application 64×64 icon file (3× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -162,7 +162,7 @@
 			iOS application 64×64 icon file (3× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ipad_152x152" type="String" setter="" getter="">
-			Home screen application icon file on iPad (2× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Home screen application icon file on iPad (2× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ipad_152x152_dark" type="String" setter="" getter="">
 			Home screen application icon file on iPad (2× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -171,7 +171,7 @@
 			Home screen application icon file on iPad (2× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ipad_167x167" type="String" setter="" getter="">
-			Home screen application icon file on iPad (3× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Home screen application icon file on iPad (3× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/ipad_167x167_dark" type="String" setter="" getter="">
 			Home screen application icon file on iPad (3× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -180,7 +180,7 @@
 			Home screen application icon file on iPad (3× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/iphone_120x120" type="String" setter="" getter="">
-			Home screen application icon file on iPhone (2× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Home screen application icon file on iPhone (2× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/iphone_120x120_dark" type="String" setter="" getter="">
 			Home screen application icon file on iPhone (2× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -189,7 +189,7 @@
 			Home screen application icon file on iPhone (2× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/iphone_180x180" type="String" setter="" getter="">
-			Home screen application icon file on iPhone (3× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Home screen application icon file on iPhone (3× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/iphone_180x180_dark" type="String" setter="" getter="">
 			Home screen application icon file on iPhone (3× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -198,7 +198,7 @@
 			Home screen application icon file on iPhone (3× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_40x40" type="String" setter="" getter="">
-			Notification icon file on iPad and iPhone (2× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Notification icon file on iPad and iPhone (2× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_40x40_dark" type="String" setter="" getter="">
 			Notification icon file on iPad and iPhone (2× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -207,7 +207,7 @@
 			Notification icon file on iPad and iPhone (2× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_60x60" type="String" setter="" getter="">
-			Notification icon file on iPhone (3× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Notification icon file on iPhone (3× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_60x60_dark" type="String" setter="" getter="">
 			Notification icon file on iPhone (3× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -216,7 +216,7 @@
 			Notification icon file on iPhone (3× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_76x76" type="String" setter="" getter="">
-			Notification icon file on iPad and iPhone (2× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Notification icon file on iPad and iPhone (2× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_76x76_dark" type="String" setter="" getter="">
 			Notification icon file on iPad and iPhone (2× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -225,7 +225,7 @@
 			Notification icon file on iPad and iPhone (2× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_114x114" type="String" setter="" getter="">
-			Notification icon file on iPad and iPhone (3× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Notification icon file on iPad and iPhone (3× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/notification_114x114_dark" type="String" setter="" getter="">
 			Notification icon file on iPad and iPhone (3× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -234,7 +234,7 @@
 			Notification icon file on iPad and iPhone (3× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/settings_58x58" type="String" setter="" getter="">
-			Application settings icon file on iPad and iPhone (2× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Application settings icon file on iPad and iPhone (2× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/settings_58x58_dark" type="String" setter="" getter="">
 			Application settings icon file on iPad and iPhone (2× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -243,7 +243,7 @@
 			Application settings icon file on iPad and iPhone (2× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/settings_87x87" type="String" setter="" getter="">
-			Application settings icon file on iPhone (3× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Application settings icon file on iPhone (3× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/settings_87x87_dark" type="String" setter="" getter="">
 			Application settings icon file on iPhone (3× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -252,7 +252,7 @@
 			Application settings icon file on iPhone (3× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/spotlight_80x80" type="String" setter="" getter="">
-			Spotlight icon file on iPad and iPhone (2× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Spotlight icon file on iPad and iPhone (2× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/spotlight_80x80_dark" type="String" setter="" getter="">
 			Spotlight icon file on iPad and iPhone (2× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -261,7 +261,7 @@
 			Spotlight icon file on iPad and iPhone (2× DPI), tinted version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/spotlight_120x120" type="String" setter="" getter="">
-			Spotlight icon file on iPad and iPhone (3× DPI). If left empty, it will fallback to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
+			Spotlight icon file on iPad and iPhone (3× DPI). If left empty, it will fall back to [member ProjectSettings.application/config/icon]. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
 		</member>
 		<member name="icons/spotlight_120x120_dark" type="String" setter="" getter="">
 			Spotlight icon file on iPad and iPhone (3× DPI), dark version. See [url=https://developer.apple.com/design/human-interface-guidelines/foundations/app-icons]App icons[/url].
@@ -273,7 +273,7 @@
 			If [code]true[/code], [CameraServer] module is added to the exported project.
 		</member>
 		<member name="privacy/active_keyboard_access_reasons" type="int" setter="" getter="">
-			The reasons your app use active keyboard API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+			The reasons your app uses active keyboard API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
 		</member>
 		<member name="privacy/camera_usage_description" type="String" setter="" getter="">
 			A message displayed when requesting access to the device's camera (in English).
@@ -390,16 +390,16 @@
 			Indicates whether your app uses device IDs for tracking.
 		</member>
 		<member name="privacy/collected_data/email_address/collected" type="bool" setter="" getter="">
-			Indicates whether your app collects email address.
+			Indicates whether your app collects email addresses.
 		</member>
 		<member name="privacy/collected_data/email_address/collection_purposes" type="int" setter="" getter="">
-			The reasons your app collects email address. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+			The reasons your app collects email addresses. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
 		</member>
 		<member name="privacy/collected_data/email_address/linked_to_user" type="bool" setter="" getter="">
-			Indicates whether your app links email address to the user's identity.
+			Indicates whether your app links email addresses to the user's identity.
 		</member>
 		<member name="privacy/collected_data/email_address/used_for_tracking" type="bool" setter="" getter="">
-			Indicates whether your app uses email address for tracking.
+			Indicates whether your app uses email addresses for tracking.
 		</member>
 		<member name="privacy/collected_data/emails_or_text_messages/collected" type="bool" setter="" getter="">
 			Indicates whether your app collects emails or text messages.
@@ -594,16 +594,16 @@
 			Indicates whether your app uses performance data for tracking.
 		</member>
 		<member name="privacy/collected_data/phone_number/collected" type="bool" setter="" getter="">
-			Indicates whether your app collects phone number.
+			Indicates whether your app collects phone numbers.
 		</member>
 		<member name="privacy/collected_data/phone_number/collection_purposes" type="int" setter="" getter="">
-			The reasons your app collects phone number. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+			The reasons your app collects phone numbers. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
 		</member>
 		<member name="privacy/collected_data/phone_number/linked_to_user" type="bool" setter="" getter="">
-			Indicates whether your app links phone number to the user's identity.
+			Indicates whether your app links phone numbers to the user's identity.
 		</member>
 		<member name="privacy/collected_data/phone_number/used_for_tracking" type="bool" setter="" getter="">
-			Indicates whether your app uses phone number for tracking.
+			Indicates whether your app uses phone numbers for tracking.
 		</member>
 		<member name="privacy/collected_data/photos_or_videos/collected" type="bool" setter="" getter="">
 			Indicates whether your app collects photos or videos.
@@ -618,16 +618,16 @@
 			Indicates whether your app uses photos or videos for tracking.
 		</member>
 		<member name="privacy/collected_data/physical_address/collected" type="bool" setter="" getter="">
-			Indicates whether your app collects physical address.
+			Indicates whether your app collects physical addresses.
 		</member>
 		<member name="privacy/collected_data/physical_address/collection_purposes" type="int" setter="" getter="">
-			The reasons your app collects physical address. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
+			The reasons your app collects physical addresses. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests]Describing data use in privacy manifests[/url].
 		</member>
 		<member name="privacy/collected_data/physical_address/linked_to_user" type="bool" setter="" getter="">
-			Indicates whether your app links physical address to the user's identity.
+			Indicates whether your app links physical addresses to the user's identity.
 		</member>
 		<member name="privacy/collected_data/physical_address/used_for_tracking" type="bool" setter="" getter="">
-			Indicates whether your app uses physical address for tracking.
+			Indicates whether your app uses physical addresses for tracking.
 		</member>
 		<member name="privacy/collected_data/precise_location/collected" type="bool" setter="" getter="">
 			Indicates whether your app collects precise location data.
@@ -702,10 +702,10 @@
 			Indicates whether your app uses user IDs for tracking.
 		</member>
 		<member name="privacy/disk_space_access_reasons" type="int" setter="" getter="">
-			The reasons your app use free disk space API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+			The reasons your app uses free disk space API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
 		</member>
 		<member name="privacy/file_timestamp_access_reasons" type="int" setter="" getter="">
-			The reasons your app use file timestamp/metadata API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+			The reasons your app uses file timestamp/metadata API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
 		</member>
 		<member name="privacy/microphone_usage_description" type="String" setter="" getter="">
 			A message displayed when requesting access to the device's microphone (in English).
@@ -720,7 +720,7 @@
 			A message displayed when requesting access to the user's photo library (localized).
 		</member>
 		<member name="privacy/system_boot_time_access_reasons" type="int" setter="" getter="">
-			The reasons your app use system boot time / absolute time API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+			The reasons your app uses system boot time / absolute time API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
 		</member>
 		<member name="privacy/tracking_domains" type="PackedStringArray" setter="" getter="">
 			The list of internet domains your app connects to that engage in tracking. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files]Privacy manifest files[/url].
@@ -729,7 +729,7 @@
 			Indicates whether your app uses data for tracking. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files]Privacy manifest files[/url].
 		</member>
 		<member name="privacy/user_defaults_access_reasons" type="int" setter="" getter="">
-			The reasons your app use user defaults API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
+			The reasons your app uses user defaults API. See [url=https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api]Describing use of required reason API[/url].
 		</member>
 		<member name="shader_baker/enabled" type="bool" setter="" getter="">
 			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
@@ -739,16 +739,16 @@
 			A custom background color of the storyboard launch screen.
 		</member>
 		<member name="storyboard/custom_image@2x" type="String" setter="" getter="">
-			Application launch screen image file (2× DPI). If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
+			Application launch screen image file (2× DPI). If left empty, it will fall back to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="storyboard/custom_image@3x" type="String" setter="" getter="">
-			Application launch screen image file (3× DPI). If left empty, it will fallback to [member ProjectSettings.application/boot_splash/image].
+			Application launch screen image file (3× DPI). If left empty, it will fall back to [member ProjectSettings.application/boot_splash/image].
 		</member>
 		<member name="storyboard/image_scale_mode" type="int" setter="" getter="">
 			Launch screen image scaling mode.
 		</member>
 		<member name="storyboard/use_custom_bg_color" type="bool" setter="" getter="">
-			If [code]true[/code], [member storyboard/custom_bg_color] is used as a launch screen background color, otherwise [code]application/boot_splash/bg_color[/code] project setting is used.
+			If [code]true[/code], [member storyboard/custom_bg_color] is used as a launch screen background color, otherwise the [code]application/boot_splash/bg_color[/code] project setting is used.
 		</member>
 		<member name="user_data/accessible_from_files_app" type="bool" setter="" getter="">
 			If [code]true[/code], the app "Documents" folder can be accessed via "Files" app. See [url=https://developer.apple.com/documentation/bundleresources/information_property_list/lssupportsopeningdocumentsinplace]LSSupportsOpeningDocumentsInPlace[/url].

@@ -26,6 +26,7 @@ web_files = [
     "display_server_web.cpp",
     "http_client_web.cpp",
     "javascript_bridge_singleton.cpp",
+    "remote_debugger_peer_messageport.cpp",
     "web_main.cpp",
     "os_web.cpp",
 ]
@@ -44,6 +45,7 @@ sys_env.AddJSLibraries([
     "js/libs/library_godot_runtime.js",
     "js/libs/library_godot_input.js",
     "js/libs/library_godot_webgl2.js",
+    "js/libs/library_godot_debugger.js",
 ])
 sys_env.AddJSExterns([
     "js/libs/library_godot_webgl2.externs.js",
@@ -55,6 +57,8 @@ sys_env.AddJSPost([
 
 if env["javascript_eval"]:
     sys_env.AddJSLibraries(["js/libs/library_godot_javascript_singleton.js"])
+if env["target"] == "editor":
+    sys_env.AddJSLibraries(["js/libs/library_godot_editor_debugger.js"])
 
 for lib in sys_env["JS_LIBS"]:
     sys_env.Append(LINKFLAGS=["--js-library", lib.abspath])
@@ -74,6 +78,9 @@ if len(env["EXPORTED_FUNCTIONS"]):
 if len(env["EXPORTED_RUNTIME_METHODS"]):
     sys_env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=" + repr(sorted(list(set(env["EXPORTED_RUNTIME_METHODS"]))))])
 
+# Wrap the JavaScript support code around a closure named Godot.
+sys_env.Append(LINKFLAGS=["-sMODULARIZE=1", "-sEXPORT_NAME='Godot'"])
+
 build = []
 build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm"]
 if env["dlink_enabled"]:
@@ -84,12 +91,14 @@ if env["dlink_enabled"]:
     # Configure it as a main module (dynamic linking support).
     sys_env["CCFLAGS"].remove("-sSIDE_MODULE=2")
     sys_env["LINKFLAGS"].remove("-sSIDE_MODULE=2")
-    sys_env.Append(CCFLAGS=["-s", "MAIN_MODULE=1"])
-    sys_env.Append(LINKFLAGS=["-s", "MAIN_MODULE=1"])
-    sys_env.Append(LINKFLAGS=["-s", "EXPORT_ALL=1"])
-    sys_env.Append(LINKFLAGS=["-s", "WARN_ON_UNDEFINED_SYMBOLS=0"])
+    sys_env.Append(CCFLAGS=["-sMAIN_MODULE=1"])
+    sys_env.Append(LINKFLAGS=["-sMAIN_MODULE=1"])
+    sys_env.Append(LINKFLAGS=["-sEXPORT_ALL=1"])
+    sys_env.Append(LINKFLAGS=["-sWARN_ON_UNDEFINED_SYMBOLS=0"])
     sys_env["CCFLAGS"].remove("-fvisibility=hidden")
     sys_env["LINKFLAGS"].remove("-fvisibility=hidden")
+    sys_env.Append(CCFLAGS=["-fwasm-exceptions"])
+    sys_env.Append(LINKFLAGS=["-fwasm-exceptions"])
 
     # The main emscripten runtime, with exported standard libraries.
     sys = sys_env.add_program(build_targets, ["web_runtime.cpp"])
@@ -113,6 +122,9 @@ engine = [
     "js/engine/config.js",
     "js/engine/engine.js",
 ]
+if env["target"] == "editor":
+    engine += ["js/engine/iframe.js"]
+
 externs = [env.File("#platform/web/js/engine/engine.externs.js")]
 js_engine = env.CreateEngineFile("#bin/godot${PROGSUFFIX}.engine.js", engine, externs, env["threads"])
 env.Depends(js_engine, externs)

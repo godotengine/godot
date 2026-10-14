@@ -154,7 +154,14 @@ Dictionary RichTextEdit::_get_style_render_info(int p_style) const {
 	const TextStyle &style = styles[p_style];
 	Ref<Font> font;
 	if (!style.font.is_empty()) {
-		font = ResourceLoader::load(style.font, "Font");
+		// Applications may map a family resource to its real or verified
+		// synthesized face. Keep formatting flags in the native document/history.
+		if (style_font_resolver.is_valid()) {
+			font = style_font_resolver.call(style.font, style.bold, style.italic);
+		}
+		if (font.is_null()) {
+			font = ResourceLoader::load(style.font, "Font");
+		}
 	} else if (style.code) {
 		font = get_theme_font(SNAME("mono_font"));
 	} else if (style.bold && style.italic) {
@@ -1724,6 +1731,13 @@ void RichTextEdit::preview_selection_bg_color(const Color &p_color) {
 	_apply_style_property_to_selection(STYLE_PROPERTY_BG_COLOR, p_color, false);
 }
 
+void RichTextEdit::preview_selection_outline_color(const Color &p_color) {
+	if (!style_preview_active) {
+		begin_selection_color_preview();
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_OUTLINE_COLOR, p_color, false);
+}
+
 void RichTextEdit::end_selection_bg_color_preview(bool p_commit) {
 	end_selection_color_preview(p_commit);
 }
@@ -2137,6 +2151,16 @@ String RichTextEdit::get_bbcode_text() const {
 		bbcode_revision = model_revision;
 	}
 	return bbcode_text;
+}
+
+void RichTextEdit::set_style_font_resolver(const Callable &p_resolver) {
+	// Reinstalling the same resolver refreshes asynchronously loaded faces.
+	style_font_resolver = p_resolver;
+	_refresh_all_styles();
+}
+
+Callable RichTextEdit::get_style_font_resolver() const {
+	return style_font_resolver;
 }
 
 void RichTextEdit::set_outline_over_fill(bool p_enabled) {
@@ -3819,6 +3843,8 @@ void RichTextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_link_activation_mode", "mode"), &RichTextEdit::set_link_activation_mode);
 	ClassDB::bind_method(D_METHOD("get_link_activation_mode"), &RichTextEdit::get_link_activation_mode);
 	ClassDB::bind_method(D_METHOD("set_bbcode_text", "text"), &RichTextEdit::set_bbcode_text);
+	ClassDB::bind_method(D_METHOD("set_style_font_resolver", "resolver"), &RichTextEdit::set_style_font_resolver);
+	ClassDB::bind_method(D_METHOD("get_style_font_resolver"), &RichTextEdit::get_style_font_resolver);
 	ClassDB::bind_method(D_METHOD("get_bbcode_text"), &RichTextEdit::get_bbcode_text);
 	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &RichTextEdit::set_visible_characters);
 	ClassDB::bind_method(D_METHOD("get_visible_characters"), &RichTextEdit::get_visible_characters);

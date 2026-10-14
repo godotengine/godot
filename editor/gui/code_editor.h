@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/object/editor_language.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/code_edit.h"
 #include "scene/gui/dialogs.h"
@@ -155,7 +156,7 @@ public:
 	FindReplaceBar();
 };
 
-typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_forced);
+typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_forced);
 
 class CodeTextEditor : public VBoxContainer {
 	GDCLASS(CodeTextEditor, VBoxContainer);
@@ -164,8 +165,6 @@ class CodeTextEditor : public VBoxContainer {
 	FindReplaceBar *find_replace_bar = nullptr;
 	HBoxContainer *status_bar = nullptr;
 
-	Button *toggle_files_button = nullptr;
-	Control *toggle_files_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
 
@@ -192,7 +191,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _update_text_editor_theme();
 	void _update_font_ligatures();
 	void _complete_request();
-	Ref<Texture2D> _get_completion_icon(const ScriptLanguage::CodeCompletionOption &p_option);
+	Ref<Texture2D> _get_completion_icon(const EditorLanguage::CompletionOption &p_option);
 
 	virtual void input(const Ref<InputEvent> &event) override;
 	void _text_editor_gui_input(const Ref<InputEvent> &p_event);
@@ -222,8 +221,6 @@ class CodeTextEditor : public VBoxContainer {
 	void _error_pressed(const Ref<InputEvent> &p_event);
 
 	void _zoom_popup_id_pressed(int p_idx);
-
-	void _toggle_files_pressed();
 
 protected:
 	void _text_changed_idle_timeout();
@@ -302,10 +299,6 @@ public:
 	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 
 	void validate_script();
-
-	void set_toggle_list_control(Control *p_toggle_list_control);
-	void show_toggle_files_button();
-	void update_toggle_files_button();
 
 	CodeTextEditor();
 };

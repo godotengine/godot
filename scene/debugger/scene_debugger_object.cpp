@@ -47,8 +47,8 @@ SceneDebuggerObject::SceneDebuggerObject(Object *p_obj) {
 
 	if (ScriptInstance *si = p_obj->get_script_instance()) {
 		// Read script instance constants and variables.
-		if (!si->get_script().is_null()) {
-			Script *s = si->get_script().ptr();
+		if (si->get_script() != nullptr) {
+			Script *s = si->get_script();
 			_parse_script_properties(s, si);
 		}
 	}
@@ -297,7 +297,6 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 	List<Node *> stack;
 	stack.push_back(p_root);
 	bool is_root = true;
-	const StringName &is_visible_sn = SNAME("is_visible");
 	const StringName &is_visible_in_tree_sn = SNAME("is_visible_in_tree");
 	while (stack.size()) {
 		Node *n = stack.front()->get();
@@ -312,8 +311,8 @@ SceneDebuggerTree::SceneDebuggerTree(Node *p_root) {
 		if (is_root) {
 			// Prevent root window visibility from being changed.
 			is_root = false;
-		} else if (n->has_method(is_visible_sn)) {
-			const Variant visible = n->call(is_visible_sn);
+		} else if (n->has_method(SceneStringName(is_visible))) {
+			const Variant visible = n->call(SceneStringName(is_visible));
 			if (visible.get_type() == Variant::BOOL) {
 				view_flags = RemoteNode::VIEW_HAS_VISIBLE_METHOD;
 				view_flags |= uint8_t(visible) * RemoteNode::VIEW_VISIBLE;

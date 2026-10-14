@@ -422,7 +422,7 @@ License: BSD-3-clause
 
 Files: thirdparty/manifold/*
 Comment: Manifold
-Copyright: 2020-2025, The Manifold Authors
+Copyright: 2020-2026, The Manifold Authors
 License: Apache-2.0
 
 Files: thirdparty/mbedtls/*
@@ -548,6 +548,11 @@ License: BSD-2-clause
 Files: thirdparty/msdfgen/*
 Comment: Multi-channel signed distance field generator
 Copyright: 2014-2025, Viktor Chlumsky
+License: Expat
+
+Files: thirdparty/offset_allocator/*
+Comment: OffsetAllocator
+Copyright: 2023, Sebastian Aaltonen
 License: Expat
 
 Files: thirdparty/openxr/*

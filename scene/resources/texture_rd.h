@@ -30,11 +30,12 @@
 
 #pragma once
 
+#ifdef RD_ENABLED
 // Note, these classes are part of the Rendering Device based renderer.
 // They are included here to ensure the correct order of registration
 // is performed.
-// Once the renderer has been moved into a module, these classes should
-// be moved as well.
+// If the renderer is moved into a driver/module, these classes
+// should be moved as well.
 
 #include "scene/resources/texture.h"
 
@@ -157,3 +158,4 @@ public:
 	Texture3DRD();
 	~Texture3DRD();
 };
+#endif // RD_ENABLED

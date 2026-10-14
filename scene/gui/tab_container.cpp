@@ -202,7 +202,9 @@ void TabContainer::_notification(int p_what) {
 				popup_button->set_button_icon(theme_cache.menu_icon);
 				internal_container->move_child(popup_button, is_layout_rtl() ? 0 : 1);
 			}
+
 			_update_margins();
+			callable_mp(this, &TabContainer::_repaint).call_deferred();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -251,7 +253,30 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_constant_override(SNAME("icon_max_width"), theme_cache.icon_max_width);
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), theme_cache.outline_size);
 
+	if (theme_cache.focus_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("focus_sound"), theme_cache.focus_sound);
+	}
+	if (theme_cache.hover_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("hover_sound"), theme_cache.hover_sound);
+	}
+	if (theme_cache.pressed_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("pressed_sound"), theme_cache.pressed_sound);
+	}
+	if (theme_cache.pressed_disabled_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("pressed_disabled_sound"), theme_cache.pressed_disabled_sound);
+	}
+	if (theme_cache.drag_started_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("drag_started_sound"), theme_cache.drag_started_sound);
+	}
+	if (theme_cache.drag_ended_sound.is_valid()) {
+		tab_bar->add_theme_sound_override(SNAME("drag_ended_sound"), theme_cache.drag_ended_sound);
+	}
+
 	tab_bar->end_bulk_theme_override();
+
+	if (popup_button) {
+		popup_button->set_button_icon(theme_cache.menu_icon);
+	}
 
 	_update_margins();
 	if (get_tab_count() > 0) {
@@ -276,9 +301,6 @@ void TabContainer::_repaint() {
 }
 
 void TabContainer::_repaint_internal() {
-	Vector<Control *> controls = _get_tab_controls();
-	int current = get_current_tab();
-
 	float top_margin = theme_cache.tabbar_style->get_margin(SIDE_TOP);
 	float bottom_margin = theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
 
@@ -295,28 +317,30 @@ void TabContainer::_repaint_internal() {
 	}
 
 	updating_visibility = true;
-	for (int i = 0; i < controls.size(); i++) {
-		Control *c = controls[i];
-
-		if (i == current) {
-			c->show();
-			c->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-
-			if (tabs_visible && _is_tab_bar_owned()) {
-				if (tabs_position == POSITION_BOTTOM) {
-					c->set_offset(SIDE_BOTTOM, -_get_tab_height());
-				} else {
-					c->set_offset(SIDE_TOP, _get_tab_height());
-				}
-			}
-
-			c->set_offset(SIDE_TOP, c->get_offset(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_TOP));
-			c->set_offset(SIDE_LEFT, c->get_offset(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_LEFT));
-			c->set_offset(SIDE_RIGHT, c->get_offset(SIDE_RIGHT) - theme_cache.panel_style->get_margin(SIDE_RIGHT));
-			c->set_offset(SIDE_BOTTOM, c->get_offset(SIDE_BOTTOM) - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
-		} else {
+	Control *current_control = get_current_tab_control();
+	// First hide all non-current controls, so that visibility order does not depend on tab order.
+	for (Control *c : _get_tab_controls()) {
+		if (c != current_control) {
 			c->hide();
 		}
+	}
+	// Then show the current control.
+	if (current_control) {
+		current_control->show();
+		current_control->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+
+		if (tabs_visible && _is_tab_bar_owned()) {
+			if (tabs_position == POSITION_BOTTOM) {
+				current_control->set_offset(SIDE_BOTTOM, -_get_tab_height());
+			} else {
+				current_control->set_offset(SIDE_TOP, _get_tab_height());
+			}
+		}
+
+		current_control->set_offset(SIDE_TOP, current_control->get_offset(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_TOP));
+		current_control->set_offset(SIDE_LEFT, current_control->get_offset(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_LEFT));
+		current_control->set_offset(SIDE_RIGHT, current_control->get_offset(SIDE_RIGHT) - theme_cache.panel_style->get_margin(SIDE_RIGHT));
+		current_control->set_offset(SIDE_BOTTOM, current_control->get_offset(SIDE_BOTTOM) - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
 	}
 	updating_visibility = false;
 
@@ -1349,6 +1373,13 @@ void TabContainer::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT, TabContainer, tab_font, "font");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT_SIZE, TabContainer, tab_font_size, "font_size");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, outline_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, focus_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, hover_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, pressed_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, pressed_disabled_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, drag_started_sound);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_SOUND, TabContainer, drag_ended_sound);
 
 	CachedTab defaults;
 

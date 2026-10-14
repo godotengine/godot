@@ -165,6 +165,9 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				WARN_PRINT_ONCE("MetalFX temporal and FSR upscaling are not supported in the Mobile renderer. Falling back to bilinear scaling.");
 			}
 
+			RenderingServerEnums::ViewportMSAA msaa_3d = p_viewport->msaa_3d;
+
+#ifdef RD_ENABLED
 			if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL)) {
 				if (RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL)) {
 					// Prefer MetalFX spatial if it is supported, which will be much more efficient than FSR2,
@@ -183,8 +186,6 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				WARN_PRINT_ONCE("MetalFX spatial upscaling is not supported by the current renderer or hardware. Falling back to FSR scaling.");
 			}
 
-			RSE::ViewportMSAA msaa_3d = p_viewport->msaa_3d;
-
 			// If MetalFX Temporal upscaling is supported, verify limits.
 			if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
 				double min_scale = (double)RD::get_singleton()->limit_get(RD::LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE) / 1000'000.0;
@@ -197,6 +198,15 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 					msaa_3d = RSE::VIEWPORT_MSAA_DISABLED;
 				}
 			}
+#else
+			if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL) {
+				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_FSR2;
+				WARN_PRINT_ONCE("MetalFX upscaling is not supported by the current renderer or hardware. Falling back to FSR 2 scaling.");
+			} else if (scaling_3d_mode == RSE::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+				scaling_3d_mode = RSE::VIEWPORT_SCALING_3D_MODE_FSR;
+				WARN_PRINT_ONCE("MetalFX spatial upscaling is not supported by the current renderer or hardware. Falling back to FSR scaling.");
+			}
+#endif // RD_ENABLED
 
 			bool scaling_3d_is_not_bilinear = scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_OFF && scaling_3d_mode != RSE::VIEWPORT_SCALING_3D_MODE_BILINEAR;
 			bool use_taa = p_viewport->use_taa;
@@ -306,13 +316,6 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 #ifndef _3D_DISABLED
 	RENDER_TIMESTAMP("> Render 3D Scene");
 
-	Ref<XRInterface> xr_interface;
-#ifndef XR_DISABLED
-	if (p_viewport->use_xr && XRServer::get_singleton() != nullptr) {
-		xr_interface = XRServer::get_singleton()->get_primary_interface();
-	}
-#endif // XR_DISABLED
-
 	if (p_viewport->use_occlusion_culling) {
 		if (p_viewport->occlusion_buffer_dirty) {
 			float aspect = p_viewport->size.aspect();
@@ -329,7 +332,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	}
 
 	float screen_mesh_lod_threshold = p_viewport->mesh_lod_threshold / float(p_viewport->size.width);
-	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, xr_interface, p_viewport->window_output_max_value, &p_viewport->render_info);
+	RSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->self, p_viewport->internal_size, p_viewport->jitter_phase_count, screen_mesh_lod_threshold, p_viewport->shadow_atlas, p_viewport->window_output_max_value, &p_viewport->render_info);
 
 	RENDER_TIMESTAMP("< Render 3D Scene");
 #endif // _3D_DISABLED
@@ -373,6 +376,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 
 		p_viewport->window_output_max_value = 1.0;
+#ifdef RD_ENABLED
 		DisplayServerEnums::WindowID parent_window = _get_containing_window(p_viewport);
 		if (RD::get_singleton() && parent_window != DisplayServerEnums::INVALID_WINDOW_ID) {
 			RenderingContextDriver *context_driver = RD::get_singleton()->get_context_driver();
@@ -380,6 +384,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 				p_viewport->window_output_max_value = context_driver->window_get_output_max_linear_value(parent_window);
 			}
 		}
+#endif
 	}
 
 	bool can_draw_3d = RSG::scene->is_camera(p_viewport->camera) && !p_viewport->disable_3d;

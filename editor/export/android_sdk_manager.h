@@ -37,6 +37,9 @@ class Label;
 class ProgressBar;
 class RichTextLabel;
 
+const String DEFAULT_ANDROID_KEYSTORE_DEBUG_USER = "androiddebugkey";
+const String DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD = "android";
+
 class AndroidSDKManager : public AcceptDialog {
 	GDCLASS(AndroidSDKManager, AcceptDialog)
 
@@ -76,6 +79,7 @@ class AndroidSDKManager : public AcceptDialog {
 	static bool _is_android_sdk_setup(const String &p_android_sdk_path, String *r_error = nullptr);
 	static bool _is_java_sdk_setup(const String &p_java_sdk_path, String *r_error = nullptr);
 
+	static String _get_keytool_path(const String &p_java_sdk_path);
 	static String _get_java_path(const String &p_java_sdk_path);
 	static String _get_adb_path(const String &p_android_sdk_path);
 
@@ -108,9 +112,12 @@ public:
 	/// Returns true if the Java SDK is set up.
 	static bool is_java_sdk_setup(String *r_error = nullptr);
 
+	static String get_keytool_path();
 	static String get_java_path();
 	static String get_adb_path();
 	static String get_apksigner_path(int p_target_sdk = -1, bool p_check_executes = false);
+
+	static void create_editor_debug_keystore_if_needed();
 
 	AndroidSDKManager();
 };

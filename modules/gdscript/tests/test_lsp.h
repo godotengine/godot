@@ -35,6 +35,7 @@
 #ifndef GDSCRIPT_NO_LSP
 
 #include "../gdscript_analyzer.h"
+#include "../gdscript_linter.h"
 #include "../language_server/gdscript_extend_parser.h"
 #include "../language_server/gdscript_language_protocol.h"
 #include "../language_server/gdscript_workspace.h"
@@ -311,6 +312,14 @@ void assert_no_errors_in(const String &p_path) {
 
 	GDScriptAnalyzer analyzer(&parser);
 	err = analyzer.analyze();
+
+#ifdef DEBUG_ENABLED
+	if (err == OK) {
+		GDScriptLinter linter(parser);
+		err = linter.lint();
+	}
+#endif
+
 	REQUIRE_MESSAGE(err == OK, vformat("Errors while analyzing '%s'", p_path));
 }
 
@@ -511,6 +520,9 @@ TEST_SUITE("[Modules][GDScript][LSP][Editor]") {
 		// NOTE: There is always a GDScript code listing in the built-in class reference.
 		CHECK_EQ(LSP::marked_documentation("[codeblocks]\n[gdscript]\nprint(hash(\"a\")) # Prints 177670\n[/gdscript]\n[csharp]\nGD.Print(GD.Hash(\"a\")); // Prints 177670\n[/csharp]\n[/codeblocks]", {}),
 				"```gdscript\nprint(hash(\"a\")) # Prints 177670\n```\n");
+		// Indentation and brackets inside the [gdscript] listing must be preserved.
+		CHECK_EQ(LSP::marked_documentation("[codeblocks]\n[gdscript]\nfunc test(arr):\n\tfor i in 3:\n\t\tprint(arr[i])\n[/gdscript]\n[csharp]\npublic void Test()\n{\n}\n[/csharp]\n[/codeblocks]", {}),
+				"```gdscript\nfunc test(arr):\n\tfor i in 3:\n\t\tprint(arr[i])\n```\n");
 
 		// lb and rb are used to insert literal square brackets in markdown.
 		CHECK_EQ(LSP::marked_documentation("[lb]literal brackets[rb]", {}), "\\[literal brackets\\]");

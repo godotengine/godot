@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRFoveatedInsetViewport" inherits="SubViewport" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		This viewport is used for rendering our foveated inset.
+	</brief_description>
+	<description>
+		This viewport is used for rendering our foveated inset. When foveated inset rendering is supported OpenXR will create and configure this viewport correctly and use its output. The viewport will be available after OpenXR reaches the "begun" state. You can access it by calling [code]get_tree().get_root().get_node("OpenXRFoveatedInsetViewport")[/code] at this time.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_xr_camera3d" qualifiers="const">
+			<return type="XRCamera3D" />
+			<description>
+				Returns the [XRCamera3D] node used for rendering the foveated inset.
+			</description>
+		</method>
+		<method name="get_xr_origin3d" qualifiers="const">
+			<return type="XROrigin3D" />
+			<description>
+				Returns the [XROrigin3D] node used for tracking the foveated inset. Our built-in logic handles positioning this node. It will copy the position and orientation of the [XROrigin3D] node marked as current.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="process_priority" type="int" setter="set_process_priority" getter="get_process_priority" overrides="Node" default="99999" />
+		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" overrides="SubViewport" enum="SubViewport.UpdateMode" default="0" />
+	</members>
+</class>

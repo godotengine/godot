@@ -32,6 +32,12 @@
 
 #include "core/variant/type_info.h"
 #include "servers/physics_2d/physics_server_2d_types.h"
+#include "servers/physics_2d/queries/physics_cast_motion_result_2d.h"
+#include "servers/physics_2d/queries/physics_collide_shape_result_2d.h"
+#include "servers/physics_2d/queries/physics_get_rest_info_result_2d.h"
+#include "servers/physics_2d/queries/physics_intersect_point_result_2d.h"
+#include "servers/physics_2d/queries/physics_intersect_ray_result_2d.h"
+#include "servers/physics_2d/queries/physics_intersect_shape_result_2d.h"
 #include "servers/physics_2d/queries/physics_point_query_parameters_2d.h"
 #include "servers/physics_2d/queries/physics_ray_query_parameters_2d.h"
 #include "servers/physics_2d/queries/physics_shape_query_parameters_2d.h"
@@ -46,14 +52,19 @@ class PhysicsDirectSpaceState2D : public Object {
 	TypedArray<Vector2> _collide_shape(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query);
 
+	bool _intersect_ray_into(RequiredParam<PhysicsRayQueryParameters2D> p_ray_query, RequiredParam<PhysicsIntersectRayResult2D> p_result);
+	bool _intersect_point_into(RequiredParam<PhysicsPointQueryParameters2D> p_point_query, RequiredParam<PhysicsIntersectPointResult2D> p_result);
+	bool _intersect_shape_into(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, RequiredParam<PhysicsIntersectShapeResult2D> p_result);
+	bool _cast_motion_into(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, RequiredParam<PhysicsCastMotionResult2D> p_result);
+	bool _collide_shape_into(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, RequiredParam<PhysicsCollideShapeResult2D> p_result);
+	bool _get_rest_info_into(RequiredParam<PhysicsShapeQueryParameters2D> p_shape_query, RequiredParam<PhysicsGetRestInfoResult2D> p_result);
+
 protected:
 	static void _bind_methods();
 
 public:
 	virtual bool intersect_ray(const PS2DT::RayParameters &p_parameters, PS2DT::RayResult &r_result) = 0;
-
 	virtual int intersect_point(const PS2DT::PointParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) = 0;
-
 	virtual int intersect_shape(const PS2DT::ShapeParameters &p_parameters, PS2DT::ShapeResult *r_results, int p_result_max) = 0;
 	virtual bool cast_motion(const PS2DT::ShapeParameters &p_parameters, real_t &p_closest_safe, real_t &p_closest_unsafe) = 0;
 	virtual bool collide_shape(const PS2DT::ShapeParameters &p_parameters, Vector2 *r_results, int p_result_max, int &r_result_count) = 0;

@@ -662,7 +662,7 @@ _hb_blob_try_mmap (const char *file_name)
   if (unlikely (!file)) return nullptr;
   auto file_guard = hb_make_scope_guard ([&]() { hb_free (file); });
 
-  unsigned int size = strlen (file_name) + 1;
+  size_t size = strlen (file_name) + 1;
   wchar_t *wchar_file_name = (wchar_t *) hb_malloc (sizeof (wchar_t) * size);
   if (unlikely (!wchar_file_name)) return nullptr;
 

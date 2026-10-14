@@ -42,6 +42,8 @@
 /**
  * Array-like container with unique ownership.
  *
+ * Elements are relocated by naive memory moves; they must not store their own address (see GH-100509).
+ *
  * Core container guidance:
  * https://docs.godotengine.org/en/latest/engine_details/architecture/core_types.html#containers
  *
@@ -74,6 +76,16 @@ private:
 			}
 			count = p_size;
 		}
+	}
+
+	// Can't use `_resize(0)`, since it requires a no-arg-constructor even if it wouldn't be called.
+	void _clear() {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
+			for (U i = 0; i < count; i++) {
+				data[i].~T();
+			}
+		}
+		count = 0;
 	}
 
 public:
@@ -174,7 +186,7 @@ public:
 	[[deprecated("Use reverse() instead")]] void invert() { reverse(); }
 #endif
 
-	_FORCE_INLINE_ void clear() { resize(0); }
+	_FORCE_INLINE_ void clear() { _clear(); }
 	_FORCE_INLINE_ void reset() {
 		clear();
 		if (data) {

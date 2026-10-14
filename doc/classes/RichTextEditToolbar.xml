@@ -25,6 +25,25 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="begin_external_color_picker">
+			<return type="void" />
+			<param index="0" name="slot" type="StringName" />
+			<description>Starts one selection-preserving preview for [code]font[/code], [code]background[/code], or [code skip-lint]outline[/code]. Close the previous application picker before calling this method.</description>
+		</method>
+		<method name="preview_external_color">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>Previews a color without adding an undo entry or stealing keyboard focus.</description>
+		</method>
+		<method name="end_external_color_picker">
+			<return type="void" />
+			<param index="0" name="commit" type="bool" default="true" />
+			<description>Commits the preview as one undo entry, or restores its original state when cancelled. Safe to call repeatedly.</description>
+		</method>
+		<method name="clear_external_background_color">
+			<return type="void" />
+			<description>Cancels the active background preview and removes the selection's background in one undoable edit.</description>
+		</method>
 		<method name="get_rich_text_edit" qualifiers="const">
 			<return type="RichTextEdit" />
 			<description>
@@ -32,7 +51,11 @@
 			</description>
 		</method>
 	</methods>
+
 	<members>
+		<member name="external_color_picker_enabled" type="bool" setter="set_external_color_picker_enabled" getter="is_external_color_picker_enabled" default="false">
+			Delegates all three color buttons to [signal color_picker_requested]. Applications bracket previews with [method begin_external_color_picker] and [method end_external_color_picker].
+		</member>
 		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" overrides="Control" default="Vector2(0, 40)" />
 		<member name="rich_text_edit_path" type="NodePath" setter="set_rich_text_edit_path" getter="get_rich_text_edit_path" default="NodePath(&quot;&quot;)">
 			Path to the [RichTextEdit] controlled by this toolbar. Leave this empty to use the first sibling [RichTextEdit] found in the scene tree.
@@ -42,6 +65,14 @@
 			If [code]true[/code], the controls are laid out on two rows instead of one: the first row holds the character formatting, font size, and the font, background and outline color controls, and the second row holds the horizontal rule, quote, alignment, indentation, list, link, image and line-height controls. The toolbar becomes narrower and twice as tall. Can be changed at any time, including at run time.
 		</member>
 	</members>
+	<signals>
+		<signal name="color_picker_requested">
+			<param index="0" name="slot" type="StringName" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="anchor" type="Control" />
+			<description>Requests the application's shared color picker when [member external_color_picker_enabled] is enabled. The toolbar creates no native ColorPicker in this mode.</description>
+		</signal>
+	</signals>
 	<theme_items>
 		<theme_item name="accent_color" data_type="color" type="Color" default="Color(0.37254903, 0.69803923, 0.9411765, 1)">
 			Color used to mark the selected state of the formatting toggles, the caret of text fields, and the [b]Apply[/b] button of the URL dropdown.

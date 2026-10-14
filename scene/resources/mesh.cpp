@@ -1339,6 +1339,17 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint64_t p_old_forma
 	}
 }
 
+static inline Vector<uint8_t> _convert_index_data_to_16_bit(const Vector<uint8_t> &p_array_index_data, int p_index_count) {
+	Vector<uint8_t> index_data_16;
+	index_data_16.resize(p_index_count * sizeof(uint16_t));
+	uint16_t *index_data_16_ptr = (uint16_t *)index_data_16.ptrw();
+	uint32_t *index_data_32_ptr = (uint32_t *)p_array_index_data.ptr();
+	for (int i = 0; i < p_index_count; i++) {
+		index_data_16_ptr[i] = (uint16_t)index_data_32_ptr[i];
+	}
+	return index_data_16;
+}
+
 bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;
 
@@ -1441,6 +1452,12 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			int index_count = 0;
 			if (d.has("index_count")) {
 				index_count = d["index_count"];
+			}
+
+			// 3.x used 16-bit indices for meshes with < 65536 vertices, but we currently use 16-bit for <= 65536 vertices
+			// If the vertex count is exactly 65536, we need to convert the 32-bit index data to 16-bit
+			if (vertex_count == 65536 && array_index_data.size() == (int)(index_count * sizeof(uint32_t))) {
+				array_index_data = _convert_index_data_to_16_bit(array_index_data, index_count);
 			}
 
 			Vector<uint8_t> blend_shapes_new;

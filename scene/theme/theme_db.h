@@ -37,6 +37,7 @@
 
 class Font;
 class Node;
+class AudioStream;
 class StyleBox;
 class Texture2D;
 class ThemeContext;
@@ -85,6 +86,7 @@ class ThemeDB : public Object {
 	int fallback_font_size = 16;
 	Ref<Texture2D> fallback_icon;
 	Ref<StyleBox> fallback_stylebox;
+	Ref<AudioStream> fallback_sound;
 
 	// Global theme contexts used to scope global Theme resources.
 
@@ -155,6 +157,9 @@ public:
 	void set_fallback_stylebox(const Ref<StyleBox> &p_stylebox);
 	Ref<StyleBox> get_fallback_stylebox();
 
+	void set_fallback_sound(const Ref<AudioStream> &p_sound);
+	Ref<AudioStream> get_fallback_sound();
+
 	void get_native_type_dependencies(const StringName &p_base_type, Vector<StringName> &r_result);
 
 	// Global theme contexts.
@@ -172,6 +177,7 @@ public:
 	void bind_class_external_item(Theme::DataType p_data_type, const StringName &p_class_name, const StringName &p_prop_name, const StringName &p_item_name, const StringName &p_type_name, ThemeItemSetter p_setter);
 	void update_class_instance_items(Node *p_instance);
 
+	void get_class_list(HashSet<StringName> &r_list) const;
 	void get_class_items(const StringName &p_class_name, List<ThemeItemBind> *r_list, bool p_include_inherited = false, Theme::DataType p_filter_type = Theme::DATA_TYPE_MAX);
 
 	// Memory management, reference, and initialization.

@@ -38,7 +38,7 @@ Size2 SubViewportContainer::get_minimum_size() const {
 	if (stretch) {
 		return Size2();
 	}
-	return Container::get_minimum_size();
+	return Container::_get_minimum_size();
 }
 
 void SubViewportContainer::set_stretch(bool p_enable) {

@@ -17,9 +17,10 @@ USERDATA6_USED = false
 
 #define SDF_MAX_LENGTH 16384.0
 
-layout(std140) uniform GlobalShaderUniformData { //ubo:1
-	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
-};
+uniform highp sampler2D global_shader_parameters_texture; //texunit:-2
+
+#define GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK ((1 << GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT) - 1)
+#define global_shader_uniforms(m_index) texelFetch(global_shader_parameters_texture, ivec2(int(m_index) & GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_MASK, int(m_index) >> GLOBAL_SHADER_UNIFORM_TEXTURE_WIDTH_SHIFT), 0)
 
 // This needs to be outside clang-format so the ubo comment is in the right place
 #ifdef MATERIAL_UNIFORMS_USED

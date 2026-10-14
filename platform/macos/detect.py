@@ -3,7 +3,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from methods import detect_darwin_sdk_path, get_compiler_version, is_apple_clang, print_error, print_warning
-from platform_methods import detect_arch, detect_mvk, validate_arch
+from platform_methods import check_accesskit_version, detect_arch, detect_mvk, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -235,13 +235,16 @@ def configure(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if os.path.exists(env["accesskit_sdk_path"]):
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
-            if env["arch"] == "arm64" or env["arch"] == "universal":
-                env.Append(LINKFLAGS=["-L" + env["accesskit_sdk_path"] + "/lib/macos/arm64/static/"])
-            if env["arch"] == "x86_64" or env["arch"] == "universal":
-                env.Append(LINKFLAGS=["-L" + env["accesskit_sdk_path"] + "/lib/macos/x86_64/static/"])
-            env.Append(LINKFLAGS=["-laccesskit"])
-            env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            if check_accesskit_version(env["accesskit_sdk_path"]):
+                env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+                if env["arch"] == "arm64" or env["arch"] == "universal":
+                    env.Append(LINKFLAGS=["-L" + env["accesskit_sdk_path"] + "/lib/macos/arm64/static/"])
+                if env["arch"] == "x86_64" or env["arch"] == "universal":
+                    env.Append(LINKFLAGS=["-L" + env["accesskit_sdk_path"] + "/lib/macos/x86_64/static/"])
+                env.Append(LINKFLAGS=["-laccesskit"])
+                env.Append(CPPDEFINES=["ACCESSKIT_ENABLED"])
+            else:
+                env["accesskit"] = False
         else:
             print_warning(
                 "The screen reader support driver requires dependencies to be installed.\n"
@@ -332,14 +335,14 @@ def configure(env: "SConsEnvironment"):
         env["metal"] = False
 
     if env["metal"]:
-        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED"])
         extra_frameworks.add("Metal")
         extra_frameworks.add("MetalKit")
         extra_frameworks.add("MetalFX")
         env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
         extra_frameworks.add("Metal")
         if not env["use_volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])

@@ -161,6 +161,14 @@ String WebXRInterfaceJS::get_enabled_features() const {
 	return enabled_features;
 }
 
+void WebXRInterfaceJS::set_disable_webxr_layers(bool p_disable_webxr_layers) {
+	disable_webxr_layers = p_disable_webxr_layers;
+}
+
+bool WebXRInterfaceJS::get_disable_webxr_layers() const {
+	return disable_webxr_layers;
+}
+
 bool WebXRInterfaceJS::is_input_source_active(int p_input_source_id) const {
 	ERR_FAIL_INDEX_V(p_input_source_id, input_source_count, false);
 	return input_sources[p_input_source_id].active;
@@ -295,11 +303,6 @@ bool WebXRInterfaceJS::initialize() {
 			return false;
 		}
 
-		if (session_mode == "immersive-vr" && !GLES3::Config::get_singleton()->multiview_supported) {
-			emit_signal("session_failed", "Stereo rendering in Godot requires multiview, but this web browser doesn't support it.");
-			return false;
-		}
-
 		if (requested_reference_space_types.is_empty()) {
 			emit_signal("session_failed", "No reference spaces were requested.");
 			return false;
@@ -311,8 +314,8 @@ bool WebXRInterfaceJS::initialize() {
 		head_transform.basis = Basis();
 		head_transform.origin = Vector3();
 		head_tracker.instantiate();
-		head_tracker->set_tracker_type(XRServer::TRACKER_HEAD);
-		head_tracker->set_tracker_name("head");
+		head_tracker->set_tracker_type(XRServer::TRACKER_CAMERA);
+		head_tracker->set_tracker_name(XR_TRACKER_HEAD);
 		head_tracker->set_tracker_desc("Players head");
 		xr_server->add_tracker(head_tracker);
 
@@ -332,6 +335,8 @@ bool WebXRInterfaceJS::initialize() {
 				required_features.utf8().get_data(),
 				optional_features.utf8().get_data(),
 				requested_reference_space_types.utf8().get_data(),
+				// Disable WebXR Layers if multiview isn't supported.
+				disable_webxr_layers || !GLES3::Config::get_singleton()->multiview_supported,
 				&_emwebxr_on_session_started,
 				&_emwebxr_on_session_ended,
 				&_emwebxr_on_session_failed,
@@ -454,6 +459,87 @@ Transform3D WebXRInterfaceJS::get_camera_transform() {
 	return camera_transform;
 }
 
+TypedArray<Projection> WebXRInterfaceJS::get_camera_projections(const StringName &p_tracker_name, double p_aspect, double p_z_near, double p_z_far) {
+	TypedArray<Projection> camera_projections;
+
+	if (p_tracker_name != XR_TRACKER_HEAD) {
+		return camera_projections;
+	}
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, camera_projections);
+	ERR_FAIL_COND_V(!initialized, camera_projections);
+
+	for (uint32_t v = 0; v < get_view_count(); v++) {
+		Projection view;
+
+		float js_matrix[16];
+		bool has_projection = godot_webxr_get_projection_for_view(v, js_matrix);
+		if (!has_projection) {
+			return camera_projections;
+		}
+
+		int k = 0;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				view.columns[i][j] = js_matrix[k++];
+			}
+		}
+
+		// Copied from godot_oculus_mobile's ovr_mobile_session.cpp
+		view.columns[2][2] = -(p_z_far + p_z_near) / (p_z_far - p_z_near);
+		view.columns[3][2] = -(2.0f * p_z_far * p_z_near) / (p_z_far - p_z_near);
+
+		camera_projections.push_back(view);
+	}
+
+	return camera_projections;
+}
+
+TypedArray<Transform3D> WebXRInterfaceJS::get_camera_offsets(const StringName &p_tracker_name) {
+	TypedArray<Transform3D> camera_offsets;
+
+	if (p_tracker_name != XR_TRACKER_HEAD) {
+		return camera_offsets;
+	}
+
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, camera_offsets);
+	ERR_FAIL_COND_V(!initialized, camera_offsets);
+
+	// Get our world scale
+	double world_scale = xr_server->get_world_scale();
+
+	// Get our head transform
+	float js_matrix[16];
+	bool has_transform = godot_webxr_get_transform_for_view(-1, js_matrix);
+	if (!has_transform) {
+		return camera_offsets;
+	}
+
+	Transform3D inv_head_transform = _js_matrix_to_transform(js_matrix).inverse();
+
+	for (uint32_t v = 0; v < get_view_count(); v++) {
+		// Get our view transform
+		has_transform = godot_webxr_get_transform_for_view(v, js_matrix);
+		if (!has_transform) {
+			return camera_offsets;
+		}
+
+		Transform3D transform_for_view = _js_matrix_to_transform(js_matrix);
+
+		// Calculate the offset
+		Transform3D offset = inv_head_transform * transform_for_view;
+
+		offset.origin *= world_scale;
+
+		camera_offsets.push_back(offset);
+	}
+
+	return camera_offsets;
+}
+
+#ifndef DISABLE_DEPRECATED
 Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, p_cam_transform);
@@ -497,6 +583,7 @@ Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_a
 
 	return view;
 }
+#endif
 
 bool WebXRInterfaceJS::pre_draw_viewport(RID p_render_target) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
@@ -532,6 +619,12 @@ Vector<RenderingServerTypes::BlitToScreen> WebXRInterfaceJS::post_draw_viewport(
 	}
 
 	texture_storage->render_target_set_reattach_textures(p_render_target, false);
+
+	GLES3::Texture *texture = texture_storage->get_texture(texture_storage->render_target_get_texture(p_render_target));
+	if (texture != nullptr) {
+		int layer_count = texture->target == GL_TEXTURE_2D_ARRAY ? texture->layers : 1;
+		godot_webxr_commit_render_target(texture->tex_id, layer_count);
+	}
 
 	return blit_to_screen;
 }
