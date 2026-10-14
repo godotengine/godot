@@ -89,6 +89,17 @@ int SubViewportContainer::get_stretch_shrink() const {
 	return shrink;
 }
 
+Transform2D SubViewportContainer::get_child_viewport_transform() const {
+	Transform2D xform;
+	if (GDVIRTUAL_CALL(_get_child_viewport_transform, xform)) {
+		return xform;
+	}
+	if (!stretch) {
+		return Transform2D();
+	}
+	return Transform2D(Vector2(shrink, 0), Vector2(0, shrink), Vector2());
+}
+
 Vector<int> SubViewportContainer::get_allowed_size_flags_horizontal() const {
 	Vector<int> flags;
 	flags.append(SIZE_MAXIMIZE);
@@ -211,12 +222,11 @@ void SubViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (stretch && shrink > 1) {
-		Transform2D xform;
-		xform.scale(Vector2(1, 1) / shrink);
-		_send_event_to_viewports(p_event->xformed_by(xform));
-	} else {
+	const Transform2D xform = get_child_viewport_transform();
+	if (xform == Transform2D()) {
 		_send_event_to_viewports(p_event);
+	} else {
+		_send_event_to_viewports(p_event->xformed_by(xform.affine_inverse()));
 	}
 }
 
@@ -296,6 +306,7 @@ void SubViewportContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_target"), "set_mouse_target", "is_mouse_target_enabled");
 
 	GDVIRTUAL_BIND(_propagate_input_event, "event");
+	GDVIRTUAL_BIND(_get_child_viewport_transform);
 }
 
 SubViewportContainer::SubViewportContainer() {
