@@ -1734,8 +1734,9 @@ void MeshStorage::_multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 	if (multimesh->data_cache.size()) {
 		//we have a data cache, just mark it dirt
 		_multimesh_mark_all_dirty(multimesh, false, true);
-	} else if (multimesh->instances) {
+	} else if (multimesh->instances && multimesh->custom_aabb == AABB()) {
 		//need to re-create AABB unfortunately, calling this has a penalty
+		//a custom AABB is never recalculated, so skip the buffer readback entirely
 		if (multimesh->buffer_set) {
 			Vector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 			const uint8_t *r = buffer.ptr() + multimesh->motion_vectors_current_offset * multimesh->stride_cache * sizeof(float);
