@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef WINDOWS_ENABLED
+
 #include "camera_win.h"
 
 #include "servers/camera/camera_feed.h"
@@ -94,3 +96,5 @@ CameraWindows::CameraWindows() {
 
 	// need to add something that will react to devices being connected/removed...
 }
+
+#endif // WINDOWS_ENABLED

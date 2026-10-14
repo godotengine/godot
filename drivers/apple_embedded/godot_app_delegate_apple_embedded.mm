@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import "godot_app_delegate_apple_embedded.h"
 
 #include "core/typedefs.h"
@@ -548,3 +550,5 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations")
 @end
 
 GODOT_CLANG_WARNING_POP
+
+#endif // APPLE_EMBEDDED_ENABLED

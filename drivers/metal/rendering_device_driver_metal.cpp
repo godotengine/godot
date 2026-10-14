@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 /**************************************************************************/
 /*                                                                        */
 /* Portions of this code were derived from MoltenVK.                      */
@@ -3078,3 +3080,5 @@ Error RenderingDeviceDriverMetal::_initialize(uint32_t p_device_index, uint32_t 
 const RenderingShaderContainerFormat &RenderingDeviceDriverMetal::get_shader_container_format() const {
 	return *shader_container_format;
 }
+
+#endif // METAL_ENABLED

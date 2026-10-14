@@ -30,7 +30,7 @@
 
 #pragma once
 
-#if defined(WINDOWS_ENABLED)
+#ifdef WINDOWS_ENABLED
 
 #include "core/io/ip.h"
 

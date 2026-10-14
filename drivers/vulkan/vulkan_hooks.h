@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef VULKAN_ENABLED
+
 #include "core/math/vector2i.h"
 #include "core/templates/local_vector.h"
 
@@ -51,3 +53,5 @@ public:
 	virtual bool use_subsampled_images() = 0;
 	static VulkanHooks *get_singleton() { return singleton; }
 };
+
+#endif // VULKAN_ENABLED

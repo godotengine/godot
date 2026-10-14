@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "os_unix.h"
-
 #ifdef UNIX_ENABLED
+
+#include "os_unix.h"
 
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
@@ -1293,4 +1293,4 @@ OS_Unix::OS_Unix() {
 	_set_logger(memnew(CompositeLogger(loggers)));
 }
 
-#endif
+#endif // UNIX_ENABLED

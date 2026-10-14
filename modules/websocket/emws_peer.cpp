@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "emws_peer.h"
-
 #ifdef WEB_ENABLED
+
+#include "emws_peer.h"
 
 #include "core/io/ip.h"
 #include "core/object/class_db.h"

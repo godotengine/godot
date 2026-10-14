@@ -31,6 +31,8 @@
 // Based on the patched public domain implementation released by Microsoft here:
 // https://github.com/microsoft/hlsl-specs/blob/main/proposals/infra/INF-0004-validator-hashing.md
 
+#ifdef D3D12_ENABLED
+
 #include "dxil_hash.h"
 
 #include <memory.h>
@@ -207,3 +209,5 @@ void compute_dxil_hash(const BYTE *pData, UINT byteCount, BYTE *pOutHash) {
 
 	memcpy(pOutHash, state, 16);
 }
+
+#endif // D3D12_ENABLED

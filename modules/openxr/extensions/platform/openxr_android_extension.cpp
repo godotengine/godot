@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef ANDROID_ENABLED
+
 #include "openxr_android_extension.h"
 
 #include "../../openxr_api.h" // IWYU pragma: keep. `XR_FAILED` macro.
@@ -113,3 +115,5 @@ OpenXRAndroidExtension::~OpenXRAndroidExtension() {
 
 	env->DeleteGlobalRef(activity_object);
 }
+
+#endif // ANDROID_ENABLED

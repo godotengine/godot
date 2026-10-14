@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import <UIKit/UIKit.h>
 
 @interface GDTKeyboardInputView : UITextView
@@ -37,3 +39,5 @@
 - (BOOL)becomeFirstResponderWithString:(NSString *)existingString cursorStart:(NSInteger)start cursorEnd:(NSInteger)end;
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

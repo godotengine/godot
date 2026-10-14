@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_apple_embedded.h"
-
 #ifdef APPLE_EMBEDDED_ENABLED
+
+#import "os_apple_embedded.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"

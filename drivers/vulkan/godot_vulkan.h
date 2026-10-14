@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef VULKAN_ENABLED
+
 // IWYU pragma: begin_exports.
 #ifdef USE_VOLK
 #include <volk.h>
@@ -42,3 +44,5 @@
 #endif
 #endif
 // IWYU pragma: end_exports.
+
+#endif // VULKAN_ENABLED

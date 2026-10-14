@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef LINUXBSD_ENABLED
+
 #include "buffer_decoder.h"
 
 #include "core/os/thread.h"
@@ -75,3 +77,5 @@ public:
 	CameraFeedLinux(const String &p_device_name);
 	~CameraFeedLinux() override;
 };
+
+#endif // LINUXBSD_ENABLED

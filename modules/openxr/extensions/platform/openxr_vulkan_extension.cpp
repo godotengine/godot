@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef VULKAN_ENABLED
+
 #include "openxr_vulkan_extension.h"
 
 #include "../../openxr_util.h"
@@ -769,3 +771,5 @@ String OpenXRVulkanExtension::get_swapchain_format_name(int64_t p_swapchain_form
 		} break;
 	}
 }
+
+#endif // VULKAN_ENABLED

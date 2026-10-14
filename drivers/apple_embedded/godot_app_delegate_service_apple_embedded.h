@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import <UIKit/UIKit.h>
 
 @class GDTViewController;
@@ -39,3 +41,5 @@
 @property(weak, class, nonatomic, nullable) GDTViewController *viewController;
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

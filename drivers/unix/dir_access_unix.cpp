@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "dir_access_unix.h"
+#ifdef UNIX_ENABLED
 
-#if defined(UNIX_ENABLED)
+#include "dir_access_unix.h"
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef D3D12_ENABLED
+
 #include "core/typedefs.h"
 
 #if !defined(_MSC_VER) && !defined(__REQUIRED_RPCNDR_H_VERSION__)
@@ -44,3 +46,5 @@ GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor")
 
 GODOT_GCC_WARNING_POP
 GODOT_CLANG_WARNING_POP
+
+#endif // D3D12_ENABLED

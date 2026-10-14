@@ -30,6 +30,10 @@
 
 #pragma once
 
+#ifdef D3D12_ENABLED
+
 #include <windows.h>
 
 void compute_dxil_hash(const BYTE *pData, UINT byteCount, BYTE *pOutHash);
+
+#endif // D3D12_ENABLED

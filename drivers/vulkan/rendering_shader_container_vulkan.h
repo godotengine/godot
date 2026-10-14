@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef VULKAN_ENABLED
+
 #include "servers/rendering/rendering_shader_container.h"
 
 class RenderingShaderContainerVulkan : public RenderingShaderContainer {
@@ -66,3 +68,5 @@ public:
 	RenderingShaderContainerFormatVulkan();
 	virtual ~RenderingShaderContainerFormatVulkan();
 };
+
+#endif // VULKAN_ENABLED

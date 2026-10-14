@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "shader_gles3.h"
-
 #ifdef GLES3_ENABLED
+
+#include "shader_gles3.h"
 
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
@@ -854,4 +854,5 @@ ShaderGLES3::~ShaderGLES3() {
 		}
 	}
 }
-#endif
+
+#endif // GLES3_ENABLED

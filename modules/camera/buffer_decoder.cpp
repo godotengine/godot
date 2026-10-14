@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef LINUXBSD_ENABLED
+
 #include "buffer_decoder.h"
 
 #include "servers/camera/camera_feed.h"
@@ -210,3 +212,5 @@ void JpegBufferDecoder::decode(StreamingBuffer p_buffer) {
 		camera_feed->set_rgb_image(image);
 	}
 }
+
+#endif // LINUXBSD_ENABLED

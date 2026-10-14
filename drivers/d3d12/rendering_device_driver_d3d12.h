@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef D3D12_ENABLED
+
 #include "core/templates/a_hash_map.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
@@ -984,3 +986,5 @@ public:
 	RenderingDeviceDriverD3D12(RenderingContextDriverD3D12 *p_context_driver);
 	virtual ~RenderingDeviceDriverD3D12();
 };
+
+#endif // D3D12_ENABLED

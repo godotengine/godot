@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "particles_storage.h"
-
 #ifdef GLES3_ENABLED
+
+#include "particles_storage.h"
 
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/material_storage.h"

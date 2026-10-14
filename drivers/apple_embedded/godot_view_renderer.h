@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import "drivers/apple_embedded/godot_renderer.h"
 
 #import <UIKit/UIKit.h>
@@ -39,3 +41,5 @@
 - (void)renderOnView:(UIView *)view;
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED
