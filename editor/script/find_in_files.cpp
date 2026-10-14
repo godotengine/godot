@@ -308,7 +308,7 @@ void FindInFilesSearch::_scan_dir(const String &p_path, PackedStringArray &r_out
 	}
 }
 
-CodeTextEditor *get_code_edit(const String &p_fpath) {
+TextEditorBase *get_text_editor_base(const String &p_fpath) {
 	Ref<Resource> res = ResourceCache::get_ref(p_fpath);
 	if (res.is_null()) {
 		return nullptr;
@@ -324,10 +324,7 @@ CodeTextEditor *get_code_edit(const String &p_fpath) {
 		document_editor_container = ScriptEditor::get_singleton()->get_script_container();
 	}
 	if (document_editor_container) {
-		TextEditorBase *teb = Object::cast_to<TextEditorBase>(document_editor_container->get_resource_editor(res));
-		if (teb) {
-			return teb->get_code_editor();
-		}
+		return Object::cast_to<TextEditorBase>(document_editor_container->get_resource_editor(res));
 	}
 
 	return nullptr;
@@ -336,9 +333,11 @@ CodeTextEditor *get_code_edit(const String &p_fpath) {
 void FindInFilesSearch::_scan_file(const String &p_fpath) {
 	Vector<String> lines;
 
-	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
-	if (code_text_editor) {
-		lines = code_text_editor->get_text_editor()->get_text().split("\n");
+	TextEditorBase *text_editor_base = get_text_editor_base(p_fpath);
+	if (text_editor_base) {
+		// Update resource to ensure code lookup in _on_result_found uses the latest version.
+		text_editor_base->apply_code();
+		lines = text_editor_base->get_code_editor()->get_text_editor()->get_text().split("\n");
 	} else {
 		Ref<FileAccess> f = FileAccess::open(p_fpath, FileAccess::READ);
 		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_fpath + "'.");
@@ -1296,10 +1295,10 @@ void FindInFilesResultsPanel::_on_button_clicked(TreeItem *p_item, int p_column,
 }
 
 void FindInFilesResultsPanel::_apply_replaces_in_file(const String &p_fpath, const Vector<Result> &p_locations, const String &p_new_text) {
-	CodeTextEditor *code_text_editor = get_code_edit(p_fpath);
+	TextEditorBase *text_editor_base = get_text_editor_base(p_fpath);
 	CodeEdit *code_edit = nullptr;
-	if (code_text_editor) {
-		code_edit = code_text_editor->get_text_editor();
+	if (text_editor_base) {
+		code_edit = text_editor_base->get_code_editor()->get_text_editor();
 	}
 	Ref<FileAccess> f;
 	Vector<String> lines;
@@ -1335,10 +1334,10 @@ void FindInFilesResultsPanel::_apply_replaces_in_file(const String &p_fpath, con
 
 	if (code_edit) {
 		code_edit->begin_complex_operation();
-		Variant nav_state = code_text_editor->get_navigation_state();
+		Variant nav_state = text_editor_base->get_navigation_state();
 		code_edit->set_text(final_text);
 		code_edit->emit_signal(SceneStringName(text_changed));
-		code_text_editor->set_edit_state(nav_state);
+		text_editor_base->set_edit_state(nav_state);
 		code_edit->end_complex_operation();
 	} else {
 		// Now the modified contents are in the buffer, rewrite the file with our changes.
