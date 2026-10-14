@@ -31,6 +31,12 @@
 				Removes a body from the list of bodies that this body can't collide with.
 			</description>
 		</method>
+		<method name="wake_neighbors">
+			<return type="void" />
+			<description>
+				Allows a PhysicsBody to manually wake paired neighboring physics bodies. This is particularly useful for [StaticBody] and [KinematicBody], where removing or disabling / enabling does not automatically wake neighboring bodies. The classic example is removing a platform which is supporting a box.
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>

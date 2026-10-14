@@ -623,6 +623,12 @@ uint32_t BulletPhysicsServer::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 }
 
+void BulletPhysicsServer::body_wake_neighbors(RID p_body) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->wake_neighbors();
+}
+
 void BulletPhysicsServer::body_set_user_flags(RID p_body, uint32_t p_flags) {
 	// This function si not currently supported
 }
