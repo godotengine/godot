@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		By changing various properties of this object, such as the motion, you can configure the parameters for [method PhysicsServer3D.body_test_motion].
+		[b]Note:[/b] For optimal performance results, it is recommended to create this object in advance, store it, and reuse it for every subsequent query.
 	</description>
 	<tutorials>
 	</tutorials>

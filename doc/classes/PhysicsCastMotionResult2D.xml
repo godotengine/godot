@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This class contains the safe and unsafe fractions computed by [method PhysicsDirectSpaceState2D.cast_motion_into].
+		[b]Note:[/b] For optimal performance results, it is recommended to create this object in advance, store it, and reuse it for every subsequent query.
 	</description>
 	<tutorials>
 	</tutorials>
