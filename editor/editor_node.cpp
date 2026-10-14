@@ -9181,7 +9181,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/clear_project_cache", TTRC("Clear Project Cache..."));
 
 #ifdef WEB_ENABLED
-	ED_SHORTCUT_AND_COMMAND("editor/download_project_source", TTRC("Download Project Source"));
+	ED_SHORTCUT_AND_COMMAND("editor/download_project_source", TTRC("Download Project"));
 #endif
 
 	ED_SHORTCUT_AND_COMMAND("editor/reload_current_project", TTRC("Reload Current Project"));
