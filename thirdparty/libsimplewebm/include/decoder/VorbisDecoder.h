@@ -59,4 +59,4 @@ private:
 	int m_channels;
 };
 
-#endif // VORBISDECODER_H
+#endif // VORBIS_DECODER_H

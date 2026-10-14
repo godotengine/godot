@@ -59,4 +59,4 @@ private:
 	int m_channels;
 };
 
-#endif // OPUSDECODER_H
+#endif // OPUS_DECODER_H

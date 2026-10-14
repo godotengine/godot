@@ -33,14 +33,13 @@
 #include <cstdlib>
 #include <cstring>
 
-VPXDecoder::VPXDecoder(const WebMDemuxer &demuxer, unsigned threads) :
+VPXDecoder::VPXDecoder(const WebMDemuxer &demuxer, unsigned int threads) :
 	m_ctx(NULL),
 	m_alphaCtx(NULL),
 	m_codecIface(NULL),
 	m_iter(NULL),
 	m_alphaIter(NULL),
 	m_threads(1),
-	m_delay(0),
 	m_last_space(VPX_CS_UNKNOWN)
 {
 	if (threads > 8)
@@ -60,14 +59,17 @@ VPXDecoder::VPXDecoder(const WebMDemuxer &demuxer, unsigned threads) :
 
 	switch (demuxer.getVideoCodec())
 	{
+#ifndef LIBSIMPLEWEBM_DISABLE_VP8
 		case WebMDemuxer::VIDEO_VP8:
 			codecIface = vpx_codec_vp8_dx();
 			break;
+#endif
 
+#ifndef LIBSIMPLEWEBM_DISABLE_VP9
 		case WebMDemuxer::VIDEO_VP9:
 			codecIface = vpx_codec_vp9_dx();
-			m_delay = threads - 1;
 			break;
+#endif
 
 		default:
 			return;
@@ -77,7 +79,7 @@ VPXDecoder::VPXDecoder(const WebMDemuxer &demuxer, unsigned threads) :
 
 	m_ctx = new vpx_codec_ctx_t;
 
-	if (vpx_codec_dec_init(m_ctx, codecIface, &codecCfg, m_delay > 0 ? VPX_CODEC_USE_FRAME_THREADING : 0))
+	if (vpx_codec_dec_init(m_ctx, codecIface, &codecCfg, 0))
 	{
 		delete m_ctx;
 		m_ctx = NULL;
@@ -129,7 +131,7 @@ bool VPXDecoder::decode(const WebMFrame &frame)
 
 			m_alphaCtx = new vpx_codec_ctx_t;
 
-			if (vpx_codec_dec_init(m_alphaCtx, m_codecIface, &alphaCodecCfg, m_delay > 0 ? VPX_CODEC_USE_FRAME_THREADING : 0))
+			if (vpx_codec_dec_init(m_alphaCtx, m_codecIface, &alphaCodecCfg, 0))
 			{
 				delete m_alphaCtx;
 				m_alphaCtx = NULL;

@@ -159,4 +159,4 @@ private:
 	bool m_parseError;
 };
 
-#endif // WEBMDEMUXER_H
+#endif // WEBM_DEMUXER_H
