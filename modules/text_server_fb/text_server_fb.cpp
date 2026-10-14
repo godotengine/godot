@@ -946,6 +946,7 @@ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const
 			// When a font does not provide a `family_name`, FreeType tries to synthesize one based on other names.
 			// FreeType automatically converts non-ASCII characters to "?" in the synthesized name.
 			// To avoid that behavior, use the format-specific name directly if available.
+			p_font_data->font_name = String();
 			if (FT_IS_SFNT(p_font_data->face)) {
 				int name_count = FT_Get_Sfnt_Name_Count(p_font_data->face);
 				for (int i = 0; i < name_count; i++) {
@@ -1201,6 +1202,10 @@ void TextServerFallback::_font_set_face_index(const RID &p_font_rid, int64_t p_f
 	if (fd->face_index != p_face_index) {
 		fd->face_index = p_face_index;
 		_font_clear_cache(fd);
+		if (fd->face) {
+			FT_Done_Face(fd->face);
+			fd->face = nullptr;
+		}
 	}
 }
 

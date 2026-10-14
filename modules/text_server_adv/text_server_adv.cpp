@@ -1737,6 +1737,7 @@ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_font_data, const
 
 			unsigned int num_entries = 0;
 			const hb_ot_name_entry_t *names = hb_ot_name_list_names(hb_face, &num_entries);
+			p_font_data->font_name = String();
 			for (unsigned int i = 0; i < num_entries; i++) {
 				if (names[i].name_id != HB_OT_NAME_ID_FONT_FAMILY) {
 					continue;
@@ -2332,6 +2333,10 @@ void TextServerAdvanced::_font_set_face_index(const RID &p_font_rid, int64_t p_f
 	if (fd->face_index != p_face_index) {
 		fd->face_index = p_face_index;
 		_font_clear_cache(fd);
+		if (fd->face) {
+			FT_Done_Face(fd->face);
+			fd->face = nullptr;
+		}
 	}
 }
 
