@@ -1557,7 +1557,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 						} else if (!implemented_funcs.has(member.function->identifier->name)) {
 							const String class_name = p_class->identifier == nullptr ? p_class->fqcn.get_file() : String(p_class->identifier->name);
 							const String base_class_name = base_class->identifier == nullptr ? base_class->fqcn.get_file() : String(base_class->identifier->name);
-							push_error(vformat(R"*(Class "%s" must implement "%s.%s()" and other inherited abstract methods or be marked as "@abstract".)*", class_name, base_class_name, member.function->identifier->name), p_class);
+							push_error(vformat(R"*(Class "%s" must implement "%s.%s()" and other inherited abstract methods or be marked as "@abstract".)*", class_name, base_class_name, member.function->identifier->name), p_class, p_class->extends_start_line, p_class->extends_start_column, p_class->extends_end_line, p_class->extends_end_column);
 							break;
 						}
 					} else {
@@ -6557,6 +6557,11 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 void GDScriptAnalyzer::push_error(const String &p_message, const GDScriptParser::Node *p_origin) const {
 	mark_node_unsafe(p_origin);
 	parser->push_error(p_message, p_origin);
+}
+
+void GDScriptAnalyzer::push_error(const String &p_message, const GDScriptParser::Node *p_origin, int p_start_line, int p_start_column, int p_end_line, int p_end_column) const {
+	mark_node_unsafe(p_origin);
+	parser->push_error(p_message, p_start_line, p_start_column, p_end_line, p_end_column);
 }
 
 void GDScriptAnalyzer::mark_node_unsafe(const GDScriptParser::Node *p_node) const {
