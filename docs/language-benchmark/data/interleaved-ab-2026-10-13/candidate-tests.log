@@ -1,0 +1,12 @@
+7
+ERROR: as_host_call(1) failed: the host bridge is not installed or the host reported an error (error 3).
+   at: _as_host_call (modules\angelscript\as_engine.cpp:191)
+ERROR: AngelScript class has no default factory (default constructor).
+   at: ASScriptInstance::ASScriptInstance (modules\angelscript\as_script_instance.cpp:112)
+7
+[doctest] doctest version is "2.4.12"
+[doctest] run with "--help" for options
+===============================================================================
+[doctest] test cases:  190 |  190 passed | 0 failed | 1429 skipped
+[doctest] assertions: 3797 | 3797 passed | 0 failed |
+[doctest] Status: SUCCESS!

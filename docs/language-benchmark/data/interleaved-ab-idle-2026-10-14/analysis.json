@@ -1,0 +1,826 @@
+{
+  "processes": [
+    {
+      "pair": 1,
+      "arm": "A",
+      "idle_gate": true,
+      "idle_samples": 49,
+      "idle_observed_span_s": 48.53834557533264,
+      "actual_sample_interval_s": {
+        "n": 27,
+        "median": 1.014134407043457,
+        "minimum": 1.0105774402618408,
+        "maximum": 1.0272338390350342
+      },
+      "wall_s": 28.865140500012785,
+      "cpu_s": 28.796875,
+      "samples": 28,
+      "cpu_percent": {
+        "n": 28,
+        "median": 33.53064903846154,
+        "minimum": 18.26923076923077,
+        "maximum": 45.703125
+      },
+      "available_mb": {
+        "n": 28,
+        "median": 38536.0703125,
+        "minimum": 38361.54296875,
+        "maximum": 38622.03125
+      },
+      "frequency_mhz_proxy": {
+        "n": 28,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 28,
+        "median": 100.0,
+        "minimum": 100.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 28,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 1.0
+      }
+    },
+    {
+      "pair": 1,
+      "arm": "B",
+      "idle_gate": true,
+      "idle_samples": 9,
+      "idle_observed_span_s": 8.087053537368774,
+      "actual_sample_interval_s": {
+        "n": 22,
+        "median": 1.0143005847930908,
+        "minimum": 1.0114657878875732,
+        "maximum": 1.025782585144043
+      },
+      "wall_s": 23.772955399937928,
+      "cpu_s": 23.65625,
+      "samples": 23,
+      "cpu_percent": {
+        "n": 23,
+        "median": 35.19230769230769,
+        "minimum": 21.73076923076923,
+        "maximum": 56.34615384615385
+      },
+      "available_mb": {
+        "n": 23,
+        "median": 38545.55078125,
+        "minimum": 38331.390625,
+        "maximum": 38625.79296875
+      },
+      "frequency_mhz_proxy": {
+        "n": 23,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 23,
+        "median": 100.0,
+        "minimum": 99.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 23,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0
+      }
+    },
+    {
+      "pair": 2,
+      "arm": "B",
+      "idle_gate": true,
+      "idle_samples": 9,
+      "idle_observed_span_s": 8.086666345596313,
+      "actual_sample_interval_s": {
+        "n": 22,
+        "median": 1.014406442642212,
+        "minimum": 1.0086102485656738,
+        "maximum": 1.0265545845031738
+      },
+      "wall_s": 23.675863099982962,
+      "cpu_s": 23.671875,
+      "samples": 23,
+      "cpu_percent": {
+        "n": 23,
+        "median": 32.00757575757576,
+        "minimum": 21.139705882352942,
+        "maximum": 44.90384615384615
+      },
+      "available_mb": {
+        "n": 23,
+        "median": 38683.48828125,
+        "minimum": 38581.64453125,
+        "maximum": 38739.609375
+      },
+      "frequency_mhz_proxy": {
+        "n": 23,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 23,
+        "median": 100.0,
+        "minimum": 100.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 23,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 142.0
+      }
+    },
+    {
+      "pair": 2,
+      "arm": "A",
+      "idle_gate": true,
+      "idle_samples": 20,
+      "idle_observed_span_s": 19.215559005737305,
+      "actual_sample_interval_s": {
+        "n": 27,
+        "median": 1.0186033248901367,
+        "minimum": 1.008354902267456,
+        "maximum": 1.032390832901001
+      },
+      "wall_s": 28.972134300041944,
+      "cpu_s": 28.734375,
+      "samples": 28,
+      "cpu_percent": {
+        "n": 28,
+        "median": 31.915064102564102,
+        "minimum": 23.46153846153846,
+        "maximum": 45.05597014925373
+      },
+      "available_mb": {
+        "n": 28,
+        "median": 39534.388671875,
+        "minimum": 38621.625,
+        "maximum": 39590.05859375
+      },
+      "frequency_mhz_proxy": {
+        "n": 28,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 28,
+        "median": 100.0,
+        "minimum": 100.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 28,
+        "median": 1.0,
+        "minimum": 0.0,
+        "maximum": 54.0
+      }
+    },
+    {
+      "pair": 3,
+      "arm": "A",
+      "idle_gate": true,
+      "idle_samples": 14,
+      "idle_observed_span_s": 13.144500970840454,
+      "actual_sample_interval_s": {
+        "n": 27,
+        "median": 1.0169055461883545,
+        "minimum": 1.012789249420166,
+        "maximum": 1.0263729095458984
+      },
+      "wall_s": 28.68532280018553,
+      "cpu_s": 28.546875,
+      "samples": 28,
+      "cpu_percent": {
+        "n": 28,
+        "median": 33.125,
+        "minimum": 19.807692307692307,
+        "maximum": 43.84615384615385
+      },
+      "available_mb": {
+        "n": 28,
+        "median": 39491.875,
+        "minimum": 38983.421875,
+        "maximum": 39606.68359375
+      },
+      "frequency_mhz_proxy": {
+        "n": 28,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 28,
+        "median": 100.0,
+        "minimum": 100.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 28,
+        "median": 1.0,
+        "minimum": 0.0,
+        "maximum": 79.0
+      }
+    },
+    {
+      "pair": 3,
+      "arm": "B",
+      "idle_gate": true,
+      "idle_samples": 4,
+      "idle_observed_span_s": 3.0309534072875977,
+      "actual_sample_interval_s": {
+        "n": 22,
+        "median": 1.0185784101486206,
+        "minimum": 1.0099008083343506,
+        "maximum": 1.0330767631530762
+      },
+      "wall_s": 23.677285499870777,
+      "cpu_s": 23.5,
+      "samples": 23,
+      "cpu_percent": {
+        "n": 23,
+        "median": 31.634615384615383,
+        "minimum": 21.921641791044777,
+        "maximum": 43.55769230769231
+      },
+      "available_mb": {
+        "n": 23,
+        "median": 38951.546875,
+        "minimum": 38660.44140625,
+        "maximum": 39034.36328125
+      },
+      "frequency_mhz_proxy": {
+        "n": 23,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 23,
+        "median": 100.0,
+        "minimum": 99.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 23,
+        "median": 1.0,
+        "minimum": 0.0,
+        "maximum": 104.0
+      }
+    },
+    {
+      "pair": 4,
+      "arm": "B",
+      "idle_gate": true,
+      "idle_samples": 8,
+      "idle_observed_span_s": 7.075969934463501,
+      "actual_sample_interval_s": {
+        "n": 22,
+        "median": 1.0208663940429688,
+        "minimum": 1.0101559162139893,
+        "maximum": 1.0257916450500488
+      },
+      "wall_s": 23.865743700182065,
+      "cpu_s": 23.671875,
+      "samples": 23,
+      "cpu_percent": {
+        "n": 23,
+        "median": 30.28846153846154,
+        "minimum": 23.076923076923077,
+        "maximum": 44.32692307692308
+      },
+      "available_mb": {
+        "n": 23,
+        "median": 39059.9609375,
+        "minimum": 38622.2890625,
+        "maximum": 39363.4453125
+      },
+      "frequency_mhz_proxy": {
+        "n": 23,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 23,
+        "median": 100.0,
+        "minimum": 100.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 23,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 1.0
+      }
+    },
+    {
+      "pair": 4,
+      "arm": "A",
+      "idle_gate": true,
+      "idle_samples": 18,
+      "idle_observed_span_s": 17.18103790283203,
+      "actual_sample_interval_s": {
+        "n": 27,
+        "median": 1.019763469696045,
+        "minimum": 1.012852430343628,
+        "maximum": 1.0244650840759277
+      },
+      "wall_s": 28.78668739995919,
+      "cpu_s": 28.6875,
+      "samples": 28,
+      "cpu_percent": {
+        "n": 28,
+        "median": 30.113636363636363,
+        "minimum": 21.634615384615383,
+        "maximum": 48.65384615384615
+      },
+      "available_mb": {
+        "n": 28,
+        "median": 39574.359375,
+        "minimum": 39292.33203125,
+        "maximum": 39666.65625
+      },
+      "frequency_mhz_proxy": {
+        "n": 28,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 28,
+        "median": 100.0,
+        "minimum": 100.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 28,
+        "median": 1.0,
+        "minimum": 0.0,
+        "maximum": 69.0
+      }
+    },
+    {
+      "pair": 5,
+      "arm": "A",
+      "idle_gate": true,
+      "idle_samples": 5,
+      "idle_observed_span_s": 4.042634963989258,
+      "actual_sample_interval_s": {
+        "n": 27,
+        "median": 1.0197241306304932,
+        "minimum": 1.010585069656372,
+        "maximum": 1.0336596965789795
+      },
+      "wall_s": 28.776685500051826,
+      "cpu_s": 28.546875,
+      "samples": 28,
+      "cpu_percent": {
+        "n": 28,
+        "median": 32.5,
+        "minimum": 22.307692307692307,
+        "maximum": 41.003787878787875
+      },
+      "available_mb": {
+        "n": 28,
+        "median": 39044.931640625,
+        "minimum": 38989.7265625,
+        "maximum": 39370.578125
+      },
+      "frequency_mhz_proxy": {
+        "n": 28,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 28,
+        "median": 100.0,
+        "minimum": 100.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 28,
+        "median": 1.0,
+        "minimum": 0.0,
+        "maximum": 162.0
+      }
+    },
+    {
+      "pair": 5,
+      "arm": "B",
+      "idle_gate": true,
+      "idle_samples": 8,
+      "idle_observed_span_s": 7.075811147689819,
+      "actual_sample_interval_s": {
+        "n": 22,
+        "median": 1.0147371292114258,
+        "minimum": 1.0116801261901855,
+        "maximum": 1.0264244079589844
+      },
+      "wall_s": 23.57087709987536,
+      "cpu_s": 23.65625,
+      "samples": 23,
+      "cpu_percent": {
+        "n": 23,
+        "median": 28.90625,
+        "minimum": 17.692307692307693,
+        "maximum": 40.09615384615385
+      },
+      "available_mb": {
+        "n": 23,
+        "median": 38855.10546875,
+        "minimum": 38571.70703125,
+        "maximum": 39083.515625
+      },
+      "frequency_mhz_proxy": {
+        "n": 23,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 23,
+        "median": 100.0,
+        "minimum": 100.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 23,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 6.0
+      }
+    },
+    {
+      "pair": 6,
+      "arm": "B",
+      "idle_gate": true,
+      "idle_samples": 7,
+      "idle_observed_span_s": 6.063953876495361,
+      "actual_sample_interval_s": {
+        "n": 22,
+        "median": 1.0165382623672485,
+        "minimum": 1.0121479034423828,
+        "maximum": 1.0251679420471191
+      },
+      "wall_s": 23.695146300131455,
+      "cpu_s": 23.828125,
+      "samples": 23,
+      "cpu_percent": {
+        "n": 23,
+        "median": 26.558005752636625,
+        "minimum": 19.03846153846154,
+        "maximum": 37.30769230769231
+      },
+      "available_mb": {
+        "n": 23,
+        "median": 38590.7421875,
+        "minimum": 38525.31640625,
+        "maximum": 38653.01953125
+      },
+      "frequency_mhz_proxy": {
+        "n": 23,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 23,
+        "median": 100.0,
+        "minimum": 100.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 23,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 85.0
+      }
+    },
+    {
+      "pair": 6,
+      "arm": "A",
+      "idle_gate": true,
+      "idle_samples": 3,
+      "idle_observed_span_s": 2.0222582817077637,
+      "actual_sample_interval_s": {
+        "n": 27,
+        "median": 1.0142605304718018,
+        "minimum": 1.0101878643035889,
+        "maximum": 1.0260701179504395
+      },
+      "wall_s": 28.48227859986946,
+      "cpu_s": 28.234375,
+      "samples": 28,
+      "cpu_percent": {
+        "n": 28,
+        "median": 25.817307692307693,
+        "minimum": 15.384615384615385,
+        "maximum": 42.51893939393939
+      },
+      "available_mb": {
+        "n": 28,
+        "median": 38680.068359375,
+        "minimum": 38564.828125,
+        "maximum": 38726.6953125
+      },
+      "frequency_mhz_proxy": {
+        "n": 28,
+        "median": 3801.0,
+        "minimum": 3801.0,
+        "maximum": 3801.0
+      },
+      "frequency_percent_proxy": {
+        "n": 28,
+        "median": 100.0,
+        "minimum": 99.0,
+        "maximum": 100.0
+      },
+      "processor_queue": {
+        "n": 28,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 2.0
+      }
+    }
+  ],
+  "idle_gates_passed": 12,
+  "telemetry_samples": 306,
+  "aggregate": {
+    "cpu_percent": {
+      "n": 306,
+      "median": 30.817307692307693,
+      "minimum": 15.384615384615385,
+      "maximum": 56.34615384615385
+    },
+    "processor_queue": {
+      "n": 306,
+      "median": 0.0,
+      "minimum": 0.0,
+      "maximum": 162.0
+    },
+    "frequency_mhz_proxy": {
+      "n": 306,
+      "median": 3801.0,
+      "minimum": 3801.0,
+      "maximum": 3801.0
+    },
+    "available_mb": {
+      "n": 306,
+      "median": 38716.259765625,
+      "minimum": 38331.390625,
+      "maximum": 39666.65625
+    }
+  },
+  "classifications": {
+    "supported_improvement": [
+      "bench_arith",
+      "bench_array",
+      "bench_array_methods",
+      "bench_batch_sum",
+      "bench_dictionary",
+      "bench_engine",
+      "bench_hoist",
+      "bench_packed",
+      "bench_string",
+      "bench_typed_i64"
+    ],
+    "supported_regression": [],
+    "inconclusive": [
+      "bench_calls",
+      "bench_class",
+      "bench_color",
+      "bench_dispatch",
+      "bench_typed_map",
+      "bench_typed_vec2",
+      "bench_vector"
+    ]
+  },
+  "numerical_as_gd_parity": [
+    "bench_arith",
+    "bench_calls",
+    "bench_class",
+    "bench_engine",
+    "bench_hoist",
+    "bench_typed_map",
+    "bench_typed_vec2"
+  ],
+  "cautions": [
+    "No samples removed",
+    "Intervals exploratory: six pairs, no multiple-comparison correction",
+    "PDH frequency proxy is not effective per-core frequency",
+    "Tested pair is combined optimization, not remaining-nine isolated delta"
+  ],
+  "status": "complete",
+  "performance_comparison_available": true,
+  "gate_analysis": {
+    "gates": [
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 50.20331650017761,
+        "overshoot_s": 0,
+        "samples": 49,
+        "consecutive": 3,
+        "started_monotonic": 1950374.6435512,
+        "deadline_monotonic": 1950434.6435512,
+        "pair": 1,
+        "arm": "A"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 9.099772299872711,
+        "overshoot_s": 0,
+        "samples": 9,
+        "consecutive": 3,
+        "started_monotonic": 1950453.8623198,
+        "deadline_monotonic": 1950513.8623198,
+        "pair": 1,
+        "arm": "B"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 9.097658300073817,
+        "overshoot_s": 0,
+        "samples": 9,
+        "consecutive": 3,
+        "started_monotonic": 1950486.8854548,
+        "deadline_monotonic": 1950546.8854548,
+        "pair": 2,
+        "arm": "B"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 20.22531080013141,
+        "overshoot_s": 0,
+        "samples": 20,
+        "consecutive": 3,
+        "started_monotonic": 1950519.8081097,
+        "deadline_monotonic": 1950579.8081097,
+        "pair": 2,
+        "arm": "A"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 14.155912999995053,
+        "overshoot_s": 0,
+        "samples": 14,
+        "consecutive": 3,
+        "started_monotonic": 1950569.1603919,
+        "deadline_monotonic": 1950629.1603919,
+        "pair": 3,
+        "arm": "A"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 4.0399968000128865,
+        "overshoot_s": 0,
+        "samples": 4,
+        "consecutive": 3,
+        "started_monotonic": 1950612.1497628,
+        "deadline_monotonic": 1950672.1497628,
+        "pair": 3,
+        "arm": "B"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 8.088796300115064,
+        "overshoot_s": 0,
+        "samples": 8,
+        "consecutive": 3,
+        "started_monotonic": 1950640.0209801,
+        "deadline_monotonic": 1950700.0209801,
+        "pair": 4,
+        "arm": "B"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 18.190393999917433,
+        "overshoot_s": 0,
+        "samples": 18,
+        "consecutive": 3,
+        "started_monotonic": 1950672.1248453,
+        "deadline_monotonic": 1950732.1248453,
+        "pair": 4,
+        "arm": "A"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 5.051306100096554,
+        "overshoot_s": 0,
+        "samples": 5,
+        "consecutive": 3,
+        "started_monotonic": 1950719.2510119,
+        "deadline_monotonic": 1950779.2510119,
+        "pair": 5,
+        "arm": "A"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 8.087495900224894,
+        "overshoot_s": 0,
+        "samples": 8,
+        "consecutive": 3,
+        "started_monotonic": 1950753.2373566,
+        "deadline_monotonic": 1950813.2373566,
+        "pair": 5,
+        "arm": "B"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 7.074597100028768,
+        "overshoot_s": 0,
+        "samples": 7,
+        "consecutive": 3,
+        "started_monotonic": 1950785.0379726,
+        "deadline_monotonic": 1950845.0379726,
+        "pair": 6,
+        "arm": "B"
+      },
+      {
+        "passed": true,
+        "reason": "idle",
+        "detail": null,
+        "budget_s": 60,
+        "elapsed_s": 3.0323498998768628,
+        "overshoot_s": 0,
+        "samples": 3,
+        "consecutive": 3,
+        "started_monotonic": 1950815.9593877,
+        "deadline_monotonic": 1950875.9593877,
+        "pair": 6,
+        "arm": "A"
+      }
+    ],
+    "idle_gates_passed": 12,
+    "idle_samples": 154,
+    "idle_aggregate": {
+      "cpu_percent": {
+        "n": 154,
+        "median": 26.114783653846153,
+        "minimum": 10.384615384615385,
+        "maximum": 49.609375
+      },
+      "cpu_window_s": {
+        "n": 154,
+        "median": 1.0109717999584973,
+        "minimum": 1.0003399001434445,
+        "maximum": 1.0214656998869032
+      },
+      "processor_queue": {
+        "n": 154,
+        "median": 0.0,
+        "minimum": 0.0,
+        "maximum": 31.0
+      },
+      "available_mb": {
+        "n": 154,
+        "median": 38860.53125,
+        "minimum": 37970.97265625,
+        "maximum": 39874.06640625
+      }
+    },
+    "valid_idle_samples": 154
+  }
+}

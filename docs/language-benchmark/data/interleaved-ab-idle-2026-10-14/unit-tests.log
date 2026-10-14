@@ -1,0 +1,32 @@
+test_idle_unavailable_has_environment_but_no_comparison (test_interleaved_ab_analysis.AnalysisTests.test_idle_unavailable_has_environment_but_no_comparison) ... ok
+test_preserved_reference_checks_all_content_not_paths (test_interleaved_ab_analysis.AnalysisTests.test_preserved_reference_checks_all_content_not_paths) ... ok
+test_reject_running_or_incomplete_run (test_interleaved_ab_analysis.AnalysisTests.test_reject_running_or_incomplete_run) ... ok
+test_reject_summary_attached_to_aborted_run (test_interleaved_ab_analysis.AnalysisTests.test_reject_summary_attached_to_aborted_run) ... ok
+test_busy_gate_uses_wall_clock_not_sample_count (test_interleaved_ab_benchmark.IdleDeadlineTests.test_busy_gate_uses_wall_clock_not_sample_count) ... ok
+test_busy_or_missing_resets_consecutive (test_interleaved_ab_benchmark.IdleDeadlineTests.test_busy_or_missing_resets_consecutive) ... ok
+test_exact_deadline_reply_and_reset_failure_do_not_pass (test_interleaved_ab_benchmark.IdleDeadlineTests.test_exact_deadline_reply_and_reset_failure_do_not_pass) ... ok
+test_late_low_cpu_result_cannot_pass (test_interleaved_ab_benchmark.IdleDeadlineTests.test_late_low_cpu_result_cannot_pass) ... ok
+test_nonfinite_out_of_range_or_stale_never_pass (test_interleaved_ab_benchmark.IdleDeadlineTests.test_nonfinite_out_of_range_or_stale_never_pass) ... ok
+test_real_blocked_worker_init_and_sample_are_cancellable (test_interleaved_ab_benchmark.IdleDeadlineTests.test_real_blocked_worker_init_and_sample_are_cancellable) ... ok
+test_scheduler_oversleep_does_not_start_sample (test_interleaved_ab_benchmark.IdleDeadlineTests.test_scheduler_oversleep_does_not_start_sample) ... ok
+test_single_sample_timeout_is_bounded (test_interleaved_ab_benchmark.IdleDeadlineTests.test_single_sample_timeout_is_bounded) ... ok
+test_three_fresh_idle_samples_pass (test_interleaved_ab_benchmark.IdleDeadlineTests.test_three_fresh_idle_samples_pass) ... ok
+test_balanced_order (test_interleaved_ab_benchmark.InterleavedTests.test_balanced_order) ... ok
+test_cross_arm_checksum_validation (test_interleaved_ab_benchmark.InterleavedTests.test_cross_arm_checksum_validation) ... ok
+test_original_parser_and_missing (test_interleaved_ab_benchmark.InterleavedTests.test_original_parser_and_missing) ... ok
+test_pair_order_does_not_depend_on_input_order (test_interleaved_ab_benchmark.InterleavedTests.test_pair_order_does_not_depend_on_input_order) ... ok
+test_paired_estimates (test_interleaved_ab_benchmark.InterleavedTests.test_paired_estimates) ... ok
+test_paired_regression (test_interleaved_ab_benchmark.InterleavedTests.test_paired_regression) ... ok
+test_reject_iteration_mismatch (test_interleaved_ab_benchmark.InterleavedTests.test_reject_iteration_mismatch) ... ok
+test_reject_missing_or_duplicate_rows (test_interleaved_ab_benchmark.InterleavedTests.test_reject_missing_or_duplicate_rows) ... ok
+test_reject_zero_timing (test_interleaved_ab_benchmark.InterleavedTests.test_reject_zero_timing) ... ok
+pair 1 arm A, idle_gate=False, reason=budget_expired, elapsed=60.000s
+STOP: {"status": "idle_unavailable", "completed_processes": 0, "validated_rows": 0, "stopped_before": {"pair": 1, "arm": "A"}, "reason": "budget_expired", "monitor_cleanup": {"alive": false}, "final_identity_checks": {"exes": true, "dependencies": true, "project": true, "runner": true, "snapshot": true, "parser": true}, "finished": "2026-10-14T09:46:30+0800", "final_verification_s": 0.0012789999600499868}; C:\Users\QIUCHA~1\AppData\Local\Temp\tmp2f3atgal\attempt
+test_failed_gate_never_launches_benchmark_or_summary (test_interleaved_ab_benchmark.RunnerPolicyTests.test_failed_gate_never_launches_benchmark_or_summary) ... ok
+test_project_fingerprint_covers_loaded_assembly_not_mutable_cache (test_interleaved_ab_manifest.ManifestTests.test_project_fingerprint_covers_loaded_assembly_not_mutable_cache) ... ok
+test_runtime_dependencies_require_real_tree (test_interleaved_ab_manifest.ManifestTests.test_runtime_dependencies_require_real_tree) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 1.360s
+
+OK

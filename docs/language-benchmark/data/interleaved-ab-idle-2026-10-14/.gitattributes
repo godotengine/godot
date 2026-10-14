@@ -1,0 +1,4 @@
+# Evidence is byte-fingerprinted; preserve original EOLs and raw log bytes.
+* -text whitespace=cr-at-eol
+# Raw tool output may contain trailing spaces; it must not be reformatted.
+*.log -whitespace

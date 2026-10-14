@@ -1,0 +1,22 @@
+{
+  "status": "complete",
+  "completed_processes": 12,
+  "validated_rows": 612,
+  "monitor_cleanup": {
+    "pid": 74928,
+    "forced": false,
+    "alive": false,
+    "exit_code": 0,
+    "elapsed_s": 0.017925400054082274
+  },
+  "final_identity_checks": {
+    "exes": true,
+    "dependencies": true,
+    "project": true,
+    "runner": true,
+    "snapshot": true,
+    "parser": true
+  },
+  "finished": "2026-10-14T09:44:17+0800",
+  "final_verification_s": 0.44024310004897416
+}

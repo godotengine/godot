@@ -1,0 +1,10 @@
+{
+  "validated_rows": 612,
+  "summary_recalculated": true,
+  "raw_logs_checked": 12,
+  "old_manifest_and_runner_hash_unchanged": true,
+  "local_links_checked": 36,
+  "sources_without_trailing_whitespace": 6,
+  "final_test_count": 25,
+  "test_log_sha256": "0dd260ecb7713e2d07a68a65178ed0664fda78cb9bd7561afab667036269f542"
+}
