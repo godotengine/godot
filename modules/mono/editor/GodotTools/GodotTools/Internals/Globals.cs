@@ -14,7 +14,7 @@ namespace GodotTools.Internals
         {
             using godot_string settingIn = Marshaling.ConvertStringToNative(setting);
             using godot_variant defaultValueIn = defaultValue.CopyNativeVariant();
-            Internal.godot_icall_Globals_GlobalDef(settingIn, defaultValueIn, restartIfChanged,
+            Internal.godot_icall_Globals_GlobalDef(settingIn, defaultValueIn, restartIfChanged.ToGodotBool(),
                 out godot_variant result);
             return Variant.CreateTakingOwnershipOfDisposableValue(result);
         }
@@ -24,7 +24,7 @@ namespace GodotTools.Internals
         {
             using godot_string settingIn = Marshaling.ConvertStringToNative(setting);
             using godot_variant defaultValueIn = defaultValue.CopyNativeVariant();
-            Internal.godot_icall_Globals_EditorDef(settingIn, defaultValueIn, restartIfChanged,
+            Internal.godot_icall_Globals_EditorDef(settingIn, defaultValueIn, restartIfChanged.ToGodotBool(),
                 out godot_variant result);
             return Variant.CreateTakingOwnershipOfDisposableValue(result);
         }

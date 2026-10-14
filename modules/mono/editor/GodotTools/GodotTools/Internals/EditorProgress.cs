@@ -14,7 +14,7 @@ namespace GodotTools.Internals
             Task = task;
             using godot_string taskIn = Marshaling.ConvertStringToNative(task);
             using godot_string labelIn = Marshaling.ConvertStringToNative(label);
-            Internal.godot_icall_EditorProgress_Create(taskIn, labelIn, amount, canCancel);
+            Internal.godot_icall_EditorProgress_Create(taskIn, labelIn, amount, canCancel.ToGodotBool());
         }
 
         ~EditorProgress()
@@ -36,14 +36,14 @@ namespace GodotTools.Internals
         {
             using godot_string taskIn = Marshaling.ConvertStringToNative(Task);
             using godot_string stateIn = Marshaling.ConvertStringToNative(state);
-            Internal.godot_icall_EditorProgress_Step(taskIn, stateIn, step, forceRefresh);
+            Internal.godot_icall_EditorProgress_Step(taskIn, stateIn, step, forceRefresh.ToGodotBool());
         }
 
         public bool TryStep(string state, int step = -1, bool forceRefresh = true)
         {
             using godot_string taskIn = Marshaling.ConvertStringToNative(Task);
             using godot_string stateIn = Marshaling.ConvertStringToNative(state);
-            return Internal.godot_icall_EditorProgress_Step(taskIn, stateIn, step, forceRefresh);
+            return Internal.godot_icall_EditorProgress_Step(taskIn, stateIn, step, forceRefresh.ToGodotBool()).ToBool();
         }
     }
 }
