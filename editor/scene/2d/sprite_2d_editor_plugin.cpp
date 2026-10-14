@@ -671,15 +671,15 @@ Sprite2DEditor::Sprite2DEditor() {
 	zoom_widget = memnew(EditorZoomWidget);
 	debug_uv->add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
-	zoom_widget->connect("zoom_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(true));
+	zoom_widget->connect("zoom_changed", callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).bind(true).unbind(1));
 	zoom_widget->set_shortcut_context(nullptr);
 
 	v_scroll = memnew(VScrollBar);
 	debug_uv->add_child(v_scroll);
-	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 	h_scroll = memnew(HScrollBar);
 	debug_uv->add_child(h_scroll);
-	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).unbind(1).bind(false));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Sprite2DEditor::_update_zoom_and_pan).bind(false).unbind(1));
 
 	debug_uv_dialog->connect(SceneStringName(confirmed), callable_mp(this, &Sprite2DEditor::_create_node));
 

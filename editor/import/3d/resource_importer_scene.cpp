@@ -2180,7 +2180,13 @@ void ResourceImporterScene::_compress_animations(AnimationPlayer *anim, int p_pa
 Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags) {
 	TypedArray<Node> mesh_instances = p_godot_scene->find_children("*", "MeshInstance3D", true, false);
 	const int mesh_inst_count = mesh_instances.size();
-	AHashMap<Ref<Mesh>, StringName> unique_meshes;
+
+	struct MeshData {
+		Vector<MeshLibrary::ShapeData> shapes;
+		Ref<NavigationMesh> nav_mesh;
+		String category;
+	};
+	AHashMap<Ref<Mesh>, MeshData> unique_meshes;
 
 	const bool use_node_names_as_mesh_names = p_options.has("mesh_library/use_node_names_as_mesh_names") && p_options["mesh_library/use_node_names_as_mesh_names"];
 	const bool create_categories_from_hierarchy = p_options.has("mesh_library/create_categories_from_hierarchy") && p_options["mesh_library/create_categories_from_hierarchy"];
@@ -2188,38 +2194,68 @@ Error ResourceImporterScene::_save_scene_as_mesh_library(const String &p_source_
 	for (int mesh_inst_i = 0; mesh_inst_i < mesh_inst_count; mesh_inst_i++) {
 		MeshInstance3D *mesh_inst = Object::cast_to<MeshInstance3D>(mesh_instances[mesh_inst_i]);
 		Ref<Mesh> mesh = mesh_inst->get_mesh();
-		if (mesh.is_valid()) {
-			if (unique_meshes.has(mesh)) {
+		if (mesh.is_null() || unique_meshes.has(mesh)) {
+			continue;
+		}
+
+		if (use_node_names_as_mesh_names) {
+			mesh->set_name(mesh_inst->get_name());
+		}
+
+		MeshData mesh_data;
+		for (const Node *node : mesh_inst->iterate_children()) {
+			// Shapes
+			const StaticBody3D *body = Object::cast_to<StaticBody3D>(node);
+			if (body) {
+				for (const Node *node2 : body->iterate_children()) {
+					const CollisionShape3D *collision = Object::cast_to<CollisionShape3D>(node2);
+					Ref<Shape3D> shape = collision->get_shape();
+					if (shape.is_valid()) {
+						MeshLibrary::ShapeData shape_data;
+						shape_data.shape = shape;
+						shape_data.local_transform = collision->get_transform();
+						mesh_data.shapes.push_back(shape_data);
+					}
+				}
 				continue;
 			}
 
-			if (use_node_names_as_mesh_names) {
-				mesh->set_name(mesh_inst->get_name());
-			}
-
-			String category;
-			if (create_categories_from_hierarchy) {
-				Node *parent = mesh_inst->get_parent();
-				while (parent) {
-					category = category.path_join(parent->get_name());
-					parent = parent->get_parent();
+			// Navigation Mesh
+			const NavigationRegion3D *region = Object::cast_to<NavigationRegion3D>(node);
+			if (region) {
+				Ref<NavigationMesh> nav = region->get_navigation_mesh();
+				if (nav.is_valid() && mesh_data.nav_mesh.is_null()) {
+					mesh_data.nav_mesh = nav;
 				}
 			}
-
-			unique_meshes.insert(mesh, category);
 		}
+
+		// Category
+		String category;
+		if (create_categories_from_hierarchy) {
+			Node *parent = mesh_inst->get_parent();
+			while (parent) {
+				category = category.path_join(parent->get_name());
+				parent = parent->get_parent();
+			}
+		}
+		mesh_data.category = category;
+
+		unique_meshes.insert(mesh, mesh_data);
 	}
 
 	Ref<MeshLibrary> mesh_library;
 	mesh_library.instantiate();
-	for (KeyValue<Ref<Mesh>, StringName> kv : unique_meshes) {
+	for (KeyValue<Ref<Mesh>, MeshData> kv : unique_meshes) {
 		// The scene importers guarantee mesh names to be unique and non-empty, so we can use it safely without fallback.
 		const String mesh_name = kv.key->get_name();
 		const int id = mesh_library->get_last_unused_item_id();
 		mesh_library->create_item(id);
 		mesh_library->set_item_name(id, mesh_name);
 		mesh_library->set_item_mesh(id, kv.key);
-		mesh_library->set_item_category(id, kv.value);
+		mesh_library->set_item_shapes(id, kv.value.shapes);
+		mesh_library->set_item_navigation_mesh(id, kv.value.nav_mesh);
+		mesh_library->set_item_category(id, kv.value.category);
 	}
 
 	return ResourceSaver::save(mesh_library, p_save_path + ".res", p_flags);

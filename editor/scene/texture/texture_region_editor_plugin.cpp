@@ -699,8 +699,9 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 
 	Ref<InputEventPanGesture> pan_gesture = p_input;
 	if (pan_gesture.is_valid()) {
-		hscroll->set_value(hscroll->get_value() + hscroll->get_page() * pan_gesture->get_delta().x / 8);
-		vscroll->set_value(vscroll->get_value() + vscroll->get_page() * pan_gesture->get_delta().y / 8);
+		Vector2 delta = pan_gesture->get_delta();
+		hscroll->set_value(hscroll->get_value() + delta.x);
+		vscroll->set_value(vscroll->get_value() + delta.y);
 	}
 }
 
@@ -1248,14 +1249,14 @@ TextureRegionEditor::TextureRegionEditor() {
 
 	sb_off_x = memnew(SpinBox);
 	sb_off_x->set_step(1);
-	sb_off_x->set_suffix("px");
+	sb_off_x->set_format("%s px");
 	sb_off_x->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_off_x));
 	sb_off_x->set_accessibility_name(TTRC("Offset X"));
 	hb_grid->add_child(sb_off_x);
 
 	sb_off_y = memnew(SpinBox);
 	sb_off_y->set_step(1);
-	sb_off_y->set_suffix("px");
+	sb_off_y->set_format("%s px");
 	sb_off_y->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_off_y));
 	sb_off_y->set_accessibility_name(TTRC("Offset Y"));
 	hb_grid->add_child(sb_off_y);
@@ -1266,7 +1267,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_step_x = memnew(SpinBox);
 	sb_step_x->set_min(0);
 	sb_step_x->set_step(1);
-	sb_step_x->set_suffix("px");
+	sb_step_x->set_format("%s px");
 	sb_step_x->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_step_x));
 	sb_step_x->set_accessibility_name(TTRC("Step X"));
 	hb_grid->add_child(sb_step_x);
@@ -1274,7 +1275,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_step_y = memnew(SpinBox);
 	sb_step_y->set_min(0);
 	sb_step_y->set_step(1);
-	sb_step_y->set_suffix("px");
+	sb_step_y->set_format("%s px");
 	sb_step_y->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_step_y));
 	sb_step_y->set_accessibility_name(TTRC("Step Y"));
 	hb_grid->add_child(sb_step_y);
@@ -1285,7 +1286,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_sep_x = memnew(SpinBox);
 	sb_sep_x->set_min(0);
 	sb_sep_x->set_step(1);
-	sb_sep_x->set_suffix("px");
+	sb_sep_x->set_format("%s px");
 	sb_sep_x->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_sep_x));
 	sb_sep_x->set_accessibility_name(TTRC("Separation X"));
 	hb_grid->add_child(sb_sep_x);
@@ -1293,7 +1294,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	sb_sep_y = memnew(SpinBox);
 	sb_sep_y->set_min(0);
 	sb_sep_y->set_step(1);
-	sb_sep_y->set_suffix("px");
+	sb_sep_y->set_format("%s px");
 	sb_sep_y->connect(SceneStringName(value_changed), callable_mp(this, &TextureRegionEditor::_set_snap_sep_y));
 	sb_sep_y->set_accessibility_name(TTRC("Separation Y"));
 	hb_grid->add_child(sb_sep_y);

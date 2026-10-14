@@ -7,7 +7,7 @@ plugins {
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-    ndkVersion versions.ndkVersion
+    ndkVersion = versions.ndkVersion
 
     namespace = "org.godotengine.godot"
 

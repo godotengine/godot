@@ -1250,7 +1250,7 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 	TreeItem *item = nullptr;
 	if (_find_or_create_item(p_parent, item_meta, item)) {
 		item->set_icon(0, ui_service->get_editor_theme_icon(p_icon));
-		item->set_text(1, TTRGET(p_type));
+		item->set_text(1, TTR(p_type));
 		item->set_tooltip_text(0, p_tooltip);
 		item->set_tooltip_text(1, p_tooltip);
 		item->set_metadata(0, item_meta);

@@ -207,24 +207,29 @@ void uninitialize_gdscript_module(ModuleInitializationLevel p_level) {
 }
 
 #ifdef TESTS_ENABLED
-void test_tokenizer() {
+int test_tokenizer() {
 	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER);
+	return 0;
 }
 
-void test_tokenizer_buffer() {
+int test_tokenizer_buffer() {
 	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER_BUFFER);
+	return 0;
 }
 
-void test_parser() {
+int test_parser() {
 	GDScriptTests::test(GDScriptTests::TestType::TEST_PARSER);
+	return 0;
 }
 
-void test_compiler() {
+int test_compiler() {
 	GDScriptTests::test(GDScriptTests::TestType::TEST_COMPILER);
+	return 0;
 }
 
-void test_bytecode() {
+int test_bytecode() {
 	GDScriptTests::test(GDScriptTests::TestType::TEST_BYTECODE);
+	return 0;
 }
 
 REGISTER_TEST_COMMAND("gdscript-tokenizer", &test_tokenizer);
@@ -232,4 +237,5 @@ REGISTER_TEST_COMMAND("gdscript-tokenizer-buffer", &test_tokenizer_buffer);
 REGISTER_TEST_COMMAND("gdscript-parser", &test_parser);
 REGISTER_TEST_COMMAND("gdscript-compiler", &test_compiler);
 REGISTER_TEST_COMMAND("gdscript-bytecode", &test_bytecode);
+REGISTER_TEST_COMMAND("gdscript-generate-tests", &GDScriptTests::generate_tests);
 #endif

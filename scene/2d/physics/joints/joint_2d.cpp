@@ -34,6 +34,7 @@
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "scene/2d/physics/physics_body_2d.h"
+#include "scene/main/scene_tree.h"
 #include "servers/physics_2d/physics_server_2d.h"
 
 void Joint2D::_disconnect_signals() {
@@ -189,10 +190,6 @@ void Joint2D::_notification(int p_what) {
 			}
 			_update_joint(true);
 		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
-		} break;
 	}
 }
 
@@ -257,6 +254,10 @@ void Joint2D::_bind_methods() {
 Joint2D::Joint2D() {
 	joint = PhysicsServer2D::get_singleton()->joint_create();
 	set_hide_clip_children(true);
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }
 
 Joint2D::~Joint2D() {

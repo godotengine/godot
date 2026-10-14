@@ -16,8 +16,10 @@
 #include <cstdint>  // uint32_t, uint64_t
 #include <functional>
 #include <memory>  // needed for shared_ptr
+#include <mutex>
 
 #include "manifold/common.h"
+#include "manifold/mesh.h"
 #include "manifold/vec_view.h"
 
 namespace manifold {
@@ -38,197 +40,6 @@ class CsgLeafNode;
  *  @brief The central classes of the library
  *  @{
  */
-
-/**
- * @brief Mesh input/output suitable for pushing directly into graphics
- * libraries.
- *
- * The core (non-optional) parts of MeshGL are the triVerts indices buffer and
- * the vertProperties interleaved vertex buffer, which follow the conventions of
- * OpenGL (and other graphic libraries') buffers and are therefore generally
- * easy to map directly to other applications' data structures.
- *
- * The triVerts vector has a stride of 3 and specifies triangles as
- * vertex indices. For triVerts = [2, 4, 5, 3, 1, 6, ...], the triangles are [2,
- * 4, 5], [3, 1, 6], etc. and likewise the halfedges are [2, 4], [4, 5], [5, 2],
- * [3, 1], [1, 6], [6, 3], etc.
- *
- * The triVerts indices should form a manifold mesh: each of the 3 halfedges of
- * each triangle should have exactly one paired halfedge in the list, defined as
- * having the first index of one equal to the second index of the other and
- * vice-versa. However, this is not always possible - consider e.g. a cube with
- * normal-vector properties. Shared vertices would turn the cube into a ball by
- * interpolating normals - the common solution is to duplicate each corner
- * vertex into 3, each with the same position, but different normals
- * corresponding to each face. This is exactly what should be done in MeshGL,
- * however we request two additional vectors in this case: mergeFromVert and
- * mergeToVert. Each vertex mergeFromVert[i] is merged into vertex
- * mergeToVert[i], avoiding unreliable floating-point comparisons to recover the
- * manifold topology. These merges are simply a union, so which is from and to
- * doesn't matter.
- *
- * If you don't have merge vectors, you can create them with the Merge() method,
- * however this will fail if the mesh is not already manifold within the set
- * tolerance. For maximum reliability, always store the merge vectors with the
- * mesh, e.g. using the EXT_mesh_manifold extension in glTF.
- *
- * You can have any number of arbitrary floating-point properties per vertex,
- * and they will all be interpolated as necessary during operations. It is up to
- * you to keep track of which channel represents what type of data. A few of
- * Manifold's methods allow you to specify the channel where normals data
- * starts, in order to update it automatically for transforms and such. This
- * will be easier if your meshes all use the same channels for properties, but
- * this is not a requirement. Operations between meshes with different numbers
- * of peroperties will simply use the larger numProp and pad the smaller one
- * with zeroes.
- *
- * On output, the triangles are sorted into runs (runIndex, runOriginalID,
- * runTransform) that correspond to different mesh inputs. Other 3D libraries
- * may refer to these runs as primitives of a mesh (as in glTF) or draw calls,
- * as they often represent different materials on different parts of the mesh.
- * It is generally a good idea to maintain a map of OriginalIDs to materials to
- * make it easy to reapply them after a set of Boolean operations. These runs
- * can also be used as input, and thus also ensure a lossless roundtrip of data
- * through MeshGL.
- *
- * As an example, with runIndex = [0, 6, 18, 21] and runOriginalID = [1, 3, 3],
- * there are 7 triangles, where the first two are from the input mesh with ID 1,
- * the next 4 are from an input mesh with ID 3, and the last triangle is from a
- * different copy (instance) of the input mesh with ID 3. These two instances
- * can be distinguished by their different runTransform matrices.
- *
- * You can reconstruct polygonal faces by assembling all the triangles that are
- * from the same run and share the same faceID. These faces will be planar
- * within the output tolerance.
- *
- * The halfedgeTangent vector is used to specify the weighted tangent vectors of
- * each halfedge for the purpose of using the Refine methods to create a
- * smoothly-interpolated surface. They can also be output when calculated
- * automatically by the Smooth functions.
- *
- * MeshGL is an alias for the standard single-precision version. Use MeshGL64 to
- * output the full double precision that Manifold uses internally.
- */
-template <typename Precision, typename I = uint32_t>
-struct MeshGLP {
-  /// Number of property vertices
-  I NumVert() const { return vertProperties.size() / numProp; };
-  /// Number of triangles
-  I NumTri() const { return triVerts.size() / 3; };
-  /// Number of properties per vertex, always >= 3.
-  I numProp = 3;
-  /// Flat, GL-style interleaved list of all vertex properties: propVal =
-  /// vertProperties[vert * numProp + propIdx]. The first three properties are
-  /// always the position x, y, z. The stride of the array is numProp.
-  std::vector<Precision> vertProperties;
-  /// The vertex indices of the three triangle corners in CCW (from the outside)
-  /// order, for each triangle.
-  std::vector<I> triVerts;
-  /// Optional: A list of only the vertex indicies that need to be merged to
-  /// reconstruct the manifold.
-  std::vector<I> mergeFromVert;
-  /// Optional: The same length as mergeFromVert, and the corresponding value
-  /// contains the vertex to merge with. It will have an identical position, but
-  /// the other properties may differ.
-  std::vector<I> mergeToVert;
-  /// Optional: Indicates runs of triangles that correspond to a particular
-  /// input mesh instance. The runs encompass all of triVerts and are sorted
-  /// by runOriginalID. Run i begins at triVerts[runIndex[i]] and ends at
-  /// triVerts[runIndex[i+1]]. All runIndex values are divisible by 3. Returned
-  /// runIndex will always be 1 longer than runOriginalID, but same length is
-  /// also allowed as input: triVerts.size() will be automatically appended in
-  /// this case.
-  std::vector<I> runIndex;
-  /// Optional: The OriginalID of the mesh this triangle run came from. This ID
-  /// is ideal for reapplying materials to the output mesh. Multiple runs may
-  /// have the same ID, e.g. representing different copies of the same input
-  /// mesh. If you create an input MeshGL that you want to be able to reference
-  /// as one or more originals, be sure to set unique values from ReserveIDs().
-  std::vector<uint32_t> runOriginalID;
-  /// Optional: For each run, a 3x4 transform is stored representing how the
-  /// corresponding original mesh was transformed to create this triangle run.
-  /// This matrix is stored in column-major order and the length of the overall
-  /// vector is 12 * runOriginalID.size().
-  std::vector<Precision> runTransform;
-  /// Optional: Length NumTri, contains the source face ID this triangle comes
-  /// from. Simplification will maintain all edges between triangles with
-  /// different faceIDs. Input faceIDs will be maintained to the outputs, but if
-  /// none are given, they will be filled in with Manifold's coplanar face
-  /// calculation based on mesh tolerance.
-  std::vector<I> faceID;
-  /// Optional: The X-Y-Z-W weighted tangent vectors for smooth Refine(). If
-  /// non-empty, must be exactly four times as long as Mesh.triVerts. Indexed
-  /// as 4 * (3 * tri + i) + j, i < 3, j < 4, representing the tangent value
-  /// Mesh.triVerts[tri][i] along the CCW edge. If empty, mesh is faceted.
-  std::vector<Precision> halfedgeTangent;
-  /// Tolerance for mesh simplification. When creating a Manifold, the tolerance
-  /// used will be the maximum of this and a baseline tolerance from the size of
-  /// the bounding box. Any edge shorter than tolerance may be collapsed.
-  /// Tolerance may be enlarged when floating point error accumulates.
-  Precision tolerance = 0;
-
-  MeshGLP() = default;
-
-  /**
-   * Updates the mergeFromVert and mergeToVert vectors in order to create a
-   * manifold solid. If the MeshGL is already manifold, no change will occur and
-   * the function will return false. Otherwise, this will merge verts along open
-   * edges within tolerance (the maximum of the MeshGL tolerance and the
-   * baseline bounding-box tolerance), keeping any from the existing merge
-   * vectors, and return true.
-   *
-   * There is no guarantee the result will be manifold - this is a best-effort
-   * helper function designed primarily to aid in the case where a manifold
-   * multi-material MeshGL was produced, but its merge vectors were lost due to
-   * a round-trip through a file format. Constructing a Manifold from the result
-   * will report an error status if it is not manifold.
-   */
-  bool Merge();
-
-  /**
-   * Returns the x, y, z position of the ith vertex.
-   *
-   * @param v vertex index.
-   */
-  la::vec<Precision, 3> GetVertPos(size_t v) const {
-    size_t offset = v * numProp;
-    return la::vec<Precision, 3>(vertProperties[offset],
-                                 vertProperties[offset + 1],
-                                 vertProperties[offset + 2]);
-  }
-
-  /**
-   * Returns the three vertex indices of the ith triangle.
-   *
-   * @param t triangle index.
-   */
-  la::vec<I, 3> GetTriVerts(size_t t) const {
-    size_t offset = 3 * t;
-    return la::vec<I, 3>(triVerts[offset], triVerts[offset + 1],
-                         triVerts[offset + 2]);
-  }
-
-  /**
-   * Returns the x, y, z, w tangent of the ith halfedge.
-   *
-   * @param h halfedge index (3 * triangle_index + [0|1|2]).
-   */
-  la::vec<Precision, 4> GetTangent(size_t h) const {
-    size_t offset = 4 * h;
-    return la::vec<Precision, 4>(
-        halfedgeTangent[offset], halfedgeTangent[offset + 1],
-        halfedgeTangent[offset + 2], halfedgeTangent[offset + 3]);
-  }
-};
-
-/**
- * @brief Single-precision - ideal for most uses, especially graphics.
- */
-using MeshGL = MeshGLP<float>;
-/**
- * @brief Double-precision, 64-bit indices - best for huge meshes.
- */
-using MeshGL64 = MeshGLP<double, uint64_t>;
 
 /**
  * @brief This library's internal representation of an oriented, 2-manifold,
@@ -282,6 +93,8 @@ class Manifold {
    */
   ///@{
   std::vector<Manifold> Decompose() const;
+  [[deprecated(
+      "Compose is deprecated, use BatchBoolean with OpType::Add instead.")]]
   static Manifold Compose(const std::vector<Manifold>&);
   static Manifold Tetrahedron();
   static Manifold Cube(vec3 size = vec3(1.0), bool center = false);
@@ -322,6 +135,8 @@ class Manifold {
     FaceIDWrongLength,
     InvalidConstruction,
     ResultTooLarge,
+    InvalidTangents,
+    Cancelled,
   };
 
   /** @name Information
@@ -329,6 +144,32 @@ class Manifold {
    */
   ///@{
   Error Status() const;
+
+  /// Returns a copy of this Manifold with the given ExecutionContext attached.
+  /// The attachment is consumed only by `Status()` (for deferred CSG trees)
+  /// and the eager ops (`Refine` / `RefineToLength` / `RefineToTolerance`,
+  /// `Hull`, `MinkowskiSum` / `MinkowskiDifference`); those snapshot the ctx
+  /// and report progress / observe cancellation through it. Other queries
+  /// that force evaluation (`Volume`, `GetMeshGL`, `BoundingBox`, etc.) do
+  /// not currently observe attached ctx.
+  ///
+  /// Deferred ops (Boolean operators, Translate / Rotate / Scale / Transform
+  /// / Mirror / Warp / SetTolerance / Simplify, BatchBoolean, the
+  /// vector-of-Manifold Hull) ignore any attached ctx and produce a result
+  /// with no attached ctx. Inputs are not mutated. The idiom for observing a
+  /// deferred tree is therefore:
+  ///
+  ///   (a + b - c).WithContext(ctx).Status();
+  ///
+  /// while the idiom for observing an eager op is:
+  ///
+  ///   m.WithContext(ctx).Refine(n);
+  ///   m.WithContext(ctx).MinkowskiSum(other);
+  ///
+  /// Raw copy / assignment preserves the attachment (it's the same logical
+  /// Manifold). Only ops that derive a *new* Manifold drop the attachment.
+  Manifold WithContext(const ExecutionContext& ctx) const;
+
   bool IsEmpty() const;
   size_t NumVert() const;
   size_t NumEdge() const;
@@ -346,6 +187,7 @@ class Manifold {
   double SurfaceArea() const;
   double Volume() const;
   double MinGap(const Manifold& other, double searchLength) const;
+  std::vector<RayHit> RayCast(vec3 origin, vec3 endpoint) const;
   ///@}
 
   /** @name Mesh ID
@@ -391,6 +233,8 @@ class Manifold {
   std::pair<Manifold, Manifold> SplitByPlane(vec3 normal,
                                              double originOffset) const;
   Manifold TrimByPlane(vec3 normal, double originOffset) const;
+  Manifold MinkowskiSum(const Manifold&) const;
+  Manifold MinkowskiDifference(const Manifold&) const;
   ///@}
 
   /** @name Properties
@@ -401,7 +245,8 @@ class Manifold {
       int numProp,
       std::function<void(double*, vec3, const double*)> propFunc) const;
   Manifold CalculateCurvature(int gaussianIdx, int meanIdx) const;
-  Manifold CalculateNormals(int normalIdx, double minSharpAngle = 60) const;
+  Manifold CalculateNormals(int normalIdx = 0,
+                            double minSharpAngle = 52.5) const;
   ///@}
 
   /** @name Smoothing
@@ -412,8 +257,9 @@ class Manifold {
   Manifold Refine(int) const;
   Manifold RefineToLength(double) const;
   Manifold RefineToTolerance(double) const;
-  Manifold SmoothByNormals(int normalIdx) const;
-  Manifold SmoothOut(double minSharpAngle = 60, double minSmoothness = 0) const;
+  Manifold SmoothByNormals(int normalIdx = 0) const;
+  Manifold SmoothOut(double minSharpAngle = 52.5,
+                     double minSmoothness = 0) const;
   static Manifold Smooth(const MeshGL&,
                          const std::vector<Smoothness>& sharpenedEdges = {});
   static Manifold Smooth(const MeshGL64&,
@@ -428,21 +274,10 @@ class Manifold {
   static Manifold Hull(const std::vector<vec3>& pts);
   ///@}
 
-  /** @name Debugging I/O
+  /** @name I/O
    * Self-contained mechanism for reading and writing high precision Manifold
    * data.  Write function creates special-purpose OBJ files, and Read function
-   * reads them in.  Be warned these are not (and not intended to be)
-   * full-featured OBJ importers/exporters.  Their primary use is to extract
-   * accurate Manifold data for debugging purposes - writing out any info
-   * needed to accurately reproduce a problem case's state.  Consequently, they
-   * may store and process additional data in comments that other OBJ parsing
-   * programs won't understand.
-   *
-   * The "format" read and written by these functions is not guaranteed to be
-   * stable from release to release - it will be modified as needed to ensure
-   * it captures information needed for debugging.  The only API guarantee is
-   * that the ReadOBJ method in a given build/release will read in the output
-   * of the WriteOBJ method produced by that release.
+   * reads them in.
    *
    * To work with a file, the caller should prepare the ifstream/ostream
    * themselves, as follows:
@@ -456,7 +291,7 @@ class Manifold {
    *   ifile.close();
    *   if (obj_m.Status() != Manifold::Error::NoError) {
    *      std::cerr << "Failed reading " << filename << ":\n";
-   *      std::cerr << Manifold::ToString(ob_m.Status()) << "\n";
+   *      std::cerr << Manifold::ToString(obj_m.Status()) << "\n";
    *   }
    *   ifile.close();
    * }
@@ -474,7 +309,7 @@ class Manifold {
    * ofile.close();
    * @endcode
    */
-#ifdef MANIFOLD_DEBUG
+#ifndef MANIFOLD_NO_IOSTREAM
   static Manifold ReadOBJ(std::istream& stream);
   bool WriteOBJ(std::ostream& stream) const;
 #endif
@@ -490,13 +325,39 @@ class Manifold {
 
   struct Impl;
 
+  /// @internal Wrap a fully-built Impl into a leaf-node Manifold.
+  /// Caller is responsible for the invariants the public ctors enforce
+  /// (in particular, calling `MakeEmpty(status)` on error). Used by
+  /// ctx-aware static factories on `ExecutionContext`.
+  static Manifold FromImpl(std::shared_ptr<Impl> pImpl);
+
  private:
   Manifold(std::shared_ptr<CsgNode> pNode_);
   Manifold(std::shared_ptr<Impl> pImpl_);
   static Manifold Invalid();
+  static Manifold PropagateStatus(Error status);
+  mutable std::shared_ptr<std::mutex> pNodeMutex_ =
+      std::make_shared<std::mutex>();
   mutable std::shared_ptr<CsgNode> pNode_;
+  // Optional attached ExecutionContext. shared_ptr so the Impl outlives
+  // the user's ExecutionContext if a ctx-attached Manifold survives it.
+  // Propagates through copy ctor / op= (raw copy preserves the attachment).
+  // Manifold-returning ops do *not* propagate it: derived Manifolds get a
+  // null ctx_. Eager ops (Status, Refine family) snapshot ctx_ to observe
+  // their in-call work; the snapshot uses std::atomic_load, which pins the
+  // Impl across long-running evaluations even if a concurrent op= reseats
+  // ctx_ mid-eval.
+  //
+  // Accessed only via std::atomic_load / std::atomic_store: no const method
+  // mutates ctx_, but op= and the copy ctor write it on a Manifold that
+  // may be concurrently observed by const methods on other threads. The
+  // atomic-shared-ptr free functions give a torn-read-free snapshot
+  // without taking a lock. (pNode_ uses a mutex instead because lazy CSG
+  // eval mutates it through const methods, which atomic_load can't model.)
+  std::shared_ptr<ExecutionContext::Impl> ctx_;
 
-  CsgLeafNode& GetCsgLeafNode() const;
+  std::shared_ptr<CsgNode> LoadPNode() const;
+  CsgLeafNode& GetCsgLeafNode(ExecutionContext::Impl* ctx = nullptr) const;
 };
 /** @} */
 
@@ -537,6 +398,10 @@ inline std::string ToString(const Manifold::Error& error) {
       return "Invalid Construction";
     case Manifold::Error::ResultTooLarge:
       return "Result Too Large";
+    case Manifold::Error::InvalidTangents:
+      return "Invalid Tangents";
+    case Manifold::Error::Cancelled:
+      return "Cancelled";
     default:
       return "Unknown Error";
   };

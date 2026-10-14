@@ -89,6 +89,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 
 	Error init_input_device();
 	void finish_input_device();
+	void _release_output_unit();
 
 public:
 	virtual const char *get_name() const override {

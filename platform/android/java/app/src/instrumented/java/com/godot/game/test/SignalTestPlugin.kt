@@ -1,7 +1,5 @@
 package com.godot.game.test
 
-import android.util.Log
-import org.godotengine.godot.Dictionary
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.SignalInfo

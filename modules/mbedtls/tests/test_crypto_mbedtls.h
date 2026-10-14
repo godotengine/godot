@@ -233,4 +233,30 @@ TEST_CASE("[Crypto] Crypto decrypt well-known") {
 	ERR_PRINT_ON;
 }
 
+void crypto_resource_format_loader_test(const String &p_path, Error p_expected);
+
+TEST_CASE("[Crypto] ResourceFormatLoaderCrypto") {
+	Vector<String> valid = {
+		"crypto/in.key",
+		"crypto/in.pub",
+		"crypto/in.prime256v1.key",
+		"crypto/in.prime256v1.pub",
+		"crypto/in.crt",
+	};
+	for (const String &v : valid) {
+		crypto_resource_format_loader_test(TestUtils::get_data_path(v), OK);
+	}
+	Vector<String> invalid = {
+		"crypto/invalid.key",
+		"crypto/invalid.pub",
+		"crypto/invalid.crt",
+	};
+	ERR_PRINT_OFF;
+	for (const String &v : invalid) {
+		crypto_resource_format_loader_test(TestUtils::get_data_path(v), ERR_FILE_CANT_OPEN);
+	}
+	crypto_resource_format_loader_test(TestUtils::get_data_path("crypto/invalid.ext"), ERR_FILE_UNRECOGNIZED);
+	ERR_PRINT_ON;
+}
+
 } // namespace TestCryptoMbedTLS

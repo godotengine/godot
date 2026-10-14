@@ -132,7 +132,7 @@ struct PerfettoGroupedEventEnder {
 	__godot_perfetto_zone_##m_group_name._end_now(); \
 	TRACE_EVENT_BEGIN("godot", m_zone_name);
 
-static HashSet<StringName> __tracing_system_call;
+static thread_local HashSet<StringName> __tracing_system_call;
 
 /**
  * Script tracing may cross function boundaries (tracing started in the caller script), so the logic below only triggers

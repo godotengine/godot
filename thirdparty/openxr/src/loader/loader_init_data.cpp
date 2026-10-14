@@ -83,12 +83,6 @@ XrResult LoaderInitData::initializePlatform(const XrLoaderInitInfoBaseHeaderKHR*
             _platform_info = *cast_info;
             _platform_info.next = nullptr;  // Not safe to store next pointer since the memory may not exist later.
 
-            if (_platform_info.applicationVM == nullptr) {
-                return XR_ERROR_VALIDATION_FAILURE;
-            }
-            if (_platform_info.applicationContext == nullptr) {
-                return XR_ERROR_VALIDATION_FAILURE;
-            }
             jni::init(static_cast<jni::JavaVM*>(_platform_info.applicationVM));
             const jni::Object context = jni::Object{static_cast<jni::jobject>(_platform_info.applicationContext)};
 

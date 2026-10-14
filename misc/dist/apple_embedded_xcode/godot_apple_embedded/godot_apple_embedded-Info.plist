@@ -62,7 +62,7 @@
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		$application_scene_manifest_default_session_role
-		<key>UIApplicationSupportsMultipleScenes</key><false/>
+		<key>UIApplicationSupportsMultipleScenes</key>$application_supports_multiple_scenes
 		<key>UISceneConfigurations</key>
 		<dict>
 			<key>UIWindowSceneSessionRoleApplication</key>

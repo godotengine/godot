@@ -102,17 +102,18 @@ int test_main(int argc, char *argv[]) {
 
 	// Run custom test tools.
 	if (test_commands) {
+		int res = 0;
 		for (const KeyValue<String, TestFunc> &E : (*test_commands)) {
 			if (args.find(E.key)) {
 				const TestFunc &test_func = E.value;
-				test_func();
+				res = test_func();
 				run_tests = false;
 				break;
 			}
 		}
 		if (!run_tests) {
 			delete test_commands;
-			return 0;
+			return res;
 		}
 	}
 	// Doctest runner.

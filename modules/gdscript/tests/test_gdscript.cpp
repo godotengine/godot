@@ -32,6 +32,7 @@
 
 #include "../gdscript_analyzer.h"
 #include "../gdscript_compiler.h"
+#include "../gdscript_linter.h"
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
 #include "../gdscript_tokenizer_buffer.h"
@@ -184,6 +185,13 @@ static void test_parser(const String &p_code, const String &p_script_path, const
 	GDScriptAnalyzer analyzer(&parser);
 	err = analyzer.analyze();
 
+#ifdef DEBUG_ENABLED
+	if (err == OK) {
+		GDScriptLinter linter(parser);
+		err = linter.lint();
+	}
+#endif
+
 	if (err != OK) {
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
 		for (const GDScriptParser::ParserError &error : errors) {
@@ -270,6 +278,13 @@ static void test_compiler(const String &p_code, const String &p_script_path, con
 
 	GDScriptAnalyzer analyzer(&parser);
 	err = analyzer.analyze();
+
+#ifdef DEBUG_ENABLED
+	if (err == OK) {
+		GDScriptLinter linter(parser);
+		err = linter.lint();
+	}
+#endif
 
 	if (err != OK) {
 		print_line("Error in analyzer:");
@@ -365,4 +380,25 @@ void test(TestType p_type) {
 
 	finish_language();
 }
+
+int generate_tests() {
+	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
+
+	const bool print_filenames = cmdline_args.erase("--print-filenames");
+
+	String path;
+
+	List<String>::Element *element = cmdline_args.find("gdscript-generate-tests");
+	if (element && element->next()) {
+		path = element->next()->get();
+	} else {
+		path = "modules/gdscript/tests/scripts";
+	}
+
+	GDScriptTestRunner runner(path, print_filenames);
+
+	bool completed = runner.generate_outputs();
+	return completed ? 0 : -1;
+}
+
 } // namespace GDScriptTests

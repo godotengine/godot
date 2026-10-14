@@ -33,7 +33,7 @@
 #include "scene/theme/theme_db.h"
 
 Size2 PanelContainer::get_minimum_size() const {
-	Size2 ms = Container::get_minimum_size();
+	Size2 ms = Container::_get_minimum_size();
 
 	if (theme_cache.panel_style.is_valid()) {
 		ms += theme_cache.panel_style->get_minimum_size();
@@ -50,7 +50,7 @@ Size2 PanelContainer::get_desired_size() const {
 			continue;
 		}
 
-		Size2 minsize = c->get_desired_size();
+		Size2 minsize = c->get_bound_desired_size();
 		ds = ds.max(minsize);
 	}
 	if (theme_cache.panel_style.is_valid()) {

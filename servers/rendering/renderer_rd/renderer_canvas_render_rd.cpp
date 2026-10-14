@@ -3399,7 +3399,10 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 
 	state.instance_buffers.uninit();
 
-	// Disable the callback, as we're tearing everything down
+	// Disable the callback for all canvas textures, as we're tearing everything down
+	for (const KeyValue<RID, TightLocalVector<RID>> &E : canvas_texture_to_uniform_set) {
+		texture_storage->canvas_texture_set_invalidation_callback(E.key, nullptr, nullptr);
+	}
 	texture_storage->canvas_texture_set_invalidation_callback(default_canvas_texture, nullptr, nullptr);
 	texture_storage->canvas_texture_free(default_canvas_texture);
 	//pipelines don't need freeing, they are all gone after shaders are gone

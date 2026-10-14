@@ -909,7 +909,7 @@ hb_face_set_get_table_tags_func (hb_face_t *face,
  * @start_offset: The index of first table tag to retrieve
  * @table_count: (inout): Input = the maximum number of table tags to return;
  *                Output = the actual number of table tags returned (may be zero)
- * @table_tags: (out) (array length=table_count): The array of table tags found
+ * @table_tags: (out) (array length=table_count) (nullable): The array of table tags found
  *
  * Fetches a list of all table tags for a face, if possible. The list returned will
  * begin at the offset provided

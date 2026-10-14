@@ -111,6 +111,42 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 	return true;
 }
 
+bool Rect2::intersects_ray(const Point2 &p_from, const Vector2 &p_dir, Point2 *r_pos) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0)) {
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
+	// Slab method for ray-AABB intersection. See https://tavianator.com/fast-branchless-raybounding-box-intersections/
+
+	Vector2 dir = p_dir.normalized();
+	// Avoid division by zero by ensuring an epsilon value.
+	if (Math::is_zero_approx(dir.x)) {
+		dir.x = 1e-10;
+	}
+	if (Math::is_zero_approx(dir.y)) {
+		dir.y = 1e-10;
+	}
+
+	real_t t_x1 = (position.x - p_from.x) / dir.x;
+	real_t t_x2 = (position.x + size.x - p_from.x) / dir.x;
+	real_t t_y1 = (position.y - p_from.y) / dir.y;
+	real_t t_y2 = (position.y + size.y - p_from.y) / dir.y;
+
+	real_t t_min = MAX(MIN(t_x1, t_x2), MIN(t_y1, t_y2));
+	real_t t_max = MIN(MAX(t_x1, t_x2), MAX(t_y1, t_y2));
+
+	if (t_max < 0 || t_min > t_max) {
+		return false;
+	}
+
+	if (r_pos) {
+		*r_pos = p_from + dir * (t_min >= 0 ? t_min : t_max);
+	}
+
+	return true;
+}
+
 bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {

@@ -1724,6 +1724,13 @@ void RichTextEdit::preview_selection_bg_color(const Color &p_color) {
 	_apply_style_property_to_selection(STYLE_PROPERTY_BG_COLOR, p_color, false);
 }
 
+void RichTextEdit::preview_selection_outline_color(const Color &p_color) {
+	if (!style_preview_active) {
+		begin_selection_color_preview();
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_OUTLINE_COLOR, p_color, false);
+}
+
 void RichTextEdit::end_selection_bg_color_preview(bool p_commit) {
 	end_selection_color_preview(p_commit);
 }

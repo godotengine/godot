@@ -228,12 +228,14 @@ CrossSection& CrossSection::operator=(CrossSection&&) noexcept = default;
  * const methods.
  */
 CrossSection::CrossSection(const CrossSection& other) {
+  std::lock_guard<std::mutex> lock(*other.pathsMutex_);
   paths_ = other.paths_;
   transform_ = other.transform_;
 }
 
 CrossSection& CrossSection::operator=(const CrossSection& other) {
   if (this != &other) {
+    std::scoped_lock lock(*pathsMutex_, *other.pathsMutex_);
     paths_ = other.paths_;
     transform_ = other.transform_;
   }
@@ -295,6 +297,7 @@ CrossSection::CrossSection(const Rect& rect) {
 // All access to paths_ should be done through the GetPaths() method, which
 // applies the accumulated transform_
 std::shared_ptr<const PathImpl> CrossSection::GetPaths() const {
+  std::lock_guard<std::mutex> lock(*pathsMutex_);
   if (transform_ == mat2x3(la::identity)) {
     return paths_;
   }
@@ -556,6 +559,7 @@ CrossSection CrossSection::Mirror(const vec2 ax) const {
  * @param m The affine transform matrix to apply to all the vertices.
  */
 CrossSection CrossSection::Transform(const mat2x3& m) const {
+  std::lock_guard<std::mutex> lock(*pathsMutex_);
   auto transformed = CrossSection();
   transformed.transform_ = m * Mat3(transform_);
   transformed.paths_ = paths_;
@@ -678,7 +682,7 @@ CrossSection CrossSection::Offset(double delta, JoinType jointype,
     // (radius) in order to get back the same number of segments in Clipper2:
     // steps_per_360 = PI / acos(1 - arc_tol / abs_delta)
     const double abs_delta = std::fabs(delta);
-    arc_tol = (std::cos(Clipper2Lib::PI / n) - 1) * -abs_delta;
+    arc_tol = (math::cos(Clipper2Lib::PI / n) - 1) * -abs_delta;
   }
   auto ps =
       C2::InflatePaths(GetPaths()->paths_, delta, jt(jointype),

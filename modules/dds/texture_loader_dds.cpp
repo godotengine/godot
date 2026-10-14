@@ -722,7 +722,7 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 		r_mipmaps = 1;
 	}
 
-	return _dds_load_images(p_f, r_dds_format, r_width, r_height, r_mipmaps, r_pitch, r_flags, r_layer_count, r_dds_type & DDST_3D);
+	return _dds_load_images(p_f, r_dds_format, r_width, r_height, r_mipmaps, r_pitch, r_flags, r_layer_count, (r_dds_type & DDST_TYPE_MASK) == DDST_3D);
 }
 
 static Ref<Resource> _dds_load_from_buffer(Ref<FileAccess> p_f, Error *r_error, const String &p_path = "") {

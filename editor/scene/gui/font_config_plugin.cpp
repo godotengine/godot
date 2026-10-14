@@ -713,7 +713,7 @@ void EditorPropertyOTFeatures::update_property() {
 		}
 		for (int i = 0; i < FGRP_MAX; i++) {
 			if (have_sub[i]) {
-				menu->add_submenu_node_item(TTRGET(group_names[i]), menu_sub[i]);
+				menu->add_submenu_node_item(TTR(group_names[i]), menu_sub[i]);
 			}
 		}
 

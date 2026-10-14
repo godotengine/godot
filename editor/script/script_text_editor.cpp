@@ -50,6 +50,7 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/multi_node_edit.h"
+#include "editor/script/find_in_files.h"
 #include "editor/script/script_editor_navigation_marker.h"
 #include "editor/script/syntax_highlighters.h"
 #include "editor/settings/editor_command_palette.h"
@@ -149,7 +150,7 @@ void ScriptTextEditor::EditMenusScTE::EditMenusScTE::_update_breakpoint_list() {
 	breakpoints_menu->set_item_index(-1, 0);
 }
 
-ScriptTextEditor::EditMenusScTE::EditMenusScTE(ScriptEditor *p_se) : EditMenusCEB(p_se, "Breakpoints") {
+ScriptTextEditor::EditMenusScTE::EditMenusScTE(DocumentEditorContainer *p_document_editor_container) : EditMenusCEB(p_document_editor_container, "Breakpoints") {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
 	_popup_move_item(EDIT_DUPLICATE_LINES, edit_menu->get_popup());
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_function"), SEARCH_LOCATE_FUNCTION);
@@ -412,6 +413,7 @@ void ScriptTextEditor::_error_clicked(const Variant &p_line) {
 
 void ScriptTextEditor::_on_mouse_exited() {
 	drag_info_label->hide();
+	hover_tooltip_timer->stop();
 }
 
 void ScriptTextEditor::add_callback(const String &p_function, const PackedStringArray &p_args) {
@@ -681,6 +683,9 @@ void ScriptTextEditor::_inline_object_handle_click(const Dictionary &p_info, con
 	inline_color_line = p_info["line"];
 	inline_color_start = p_info["column"];
 	inline_color_end = p_info["color_end"];
+
+	// Reset tooltip hover timer.
+	hover_tooltip_timer->stop();
 
 	_update_color_constructor_options();
 	inline_color_options->select(p_info["color_mode"]);
@@ -1137,64 +1142,7 @@ static Node *_find_node_for_script(Node *p_base, Node *p_current, const Ref<Scri
 	return nullptr;
 }
 
-static void _find_changed_scripts_for_external_editor(Node *p_base, Node *p_current, HashSet<Ref<Script>> &r_scripts) {
-	if (p_current->get_owner() != p_base && p_base != p_current) {
-		return;
-	}
-	Ref<Script> c = p_current->get_script();
-
-	if (c.is_valid()) {
-		r_scripts.insert(c);
-	}
-
-	for (int i = 0; i < p_current->get_child_count(); i++) {
-		_find_changed_scripts_for_external_editor(p_base, p_current->get_child(i), r_scripts);
-	}
-}
-
-void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_for_script) {
-	bool use_external_editor = bool(EDITOR_GET("text_editor/external/use_external_editor"));
-
-	ERR_FAIL_NULL(get_tree());
-
-	HashSet<Ref<Script>> scripts;
-
-	Node *base = get_tree()->get_edited_scene_root();
-	if (base) {
-		_find_changed_scripts_for_external_editor(base, base, scripts);
-	}
-
-	for (const Ref<Script> &E : scripts) {
-		Ref<Script> scr = E;
-
-		if (!use_external_editor && !scr->get_language()->overrides_external_editor()) {
-			continue; // We're not using an external editor for this script.
-		}
-
-		if (p_for_script.is_valid() && p_for_script != scr) {
-			continue;
-		}
-
-		if (scr->is_built_in()) {
-			continue; //internal script, who cares, though weird
-		}
-
-		uint64_t last_date = scr->get_last_modified_time();
-		uint64_t date = FileAccess::get_modified_time(scr->get_path());
-
-		if (last_date != date) {
-			Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-			ERR_CONTINUE(rel_scr.is_null());
-			scr->set_source_code(rel_scr->get_source_code());
-			scr->set_last_modified_time(rel_scr->get_last_modified_time());
-			scr->update_exports();
-
-			trigger_live_script_reload(scr->get_path());
-		}
-	}
-}
-
-void ScriptTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options, bool &r_force) {
+void ScriptTextEditor::_code_complete_script(const String &p_code, List<EditorLanguage::CompletionOption> *r_options, bool &r_force) {
 	Ref<Script> script = edited_res;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
@@ -1382,12 +1330,56 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 }
 
 void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column, bool p_shortcut) {
-	if (!EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize()) {
+	bool enable_docs = EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize();
+	bool enable_diagnostics = EDITOR_GET("text_editor/behavior/diagnostics/enable_tooltips").booleanize();
+
+	String diagnostic_strings_concatenated;
+	if (enable_diagnostics) {
+		// Look for any errors that include this location.
+		PackedStringArray error_strings;
+		for (const EditorLanguage::ScriptError &e : errors) {
+			if (_is_line_col_in_range(p_row + 1, p_column + 1, e.start_line, e.start_column, e.end_line, e.end_column)) {
+				error_strings.append(e.message);
+			}
+		}
+
+		// Look for any warnings that include this location.
+		PackedStringArray warning_strings;
+		for (const EditorLanguage::Warning &w : warnings) {
+			if (_is_line_col_in_range(p_row + 1, p_column + 1, w.start_line, w.start_column, w.end_line, w.end_column)) {
+				warning_strings.append(vformat("%s: %s", w.string_code, w.message));
+			}
+		}
+
+		if (!error_strings.is_empty()) {
+			const Color error_color = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
+			diagnostic_strings_concatenated += vformat("[color=%s]", error_color.to_html());
+			diagnostic_strings_concatenated += String("\n").join(error_strings).replace("[", "[lb]");
+			diagnostic_strings_concatenated += "[/color]";
+		}
+		if (!error_strings.is_empty() && !warning_strings.is_empty()) {
+			diagnostic_strings_concatenated += "\n";
+		}
+		if (!warning_strings.is_empty()) {
+			const Color warning_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+			diagnostic_strings_concatenated += vformat("[color=%s]", warning_color.to_html());
+			diagnostic_strings_concatenated += String("\n").join(warning_strings).replace("[", "[lb]");
+			diagnostic_strings_concatenated += "[/color]";
+		}
+	}
+
+	// If documentation tooltips aren't enabled, only show the tooltip
+	// if there is diagnostic information for this location.
+	if (!enable_docs) {
+		if (!diagnostic_strings_concatenated.is_empty()) {
+			Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), String(), String(), true, p_shortcut, diagnostic_strings_concatenated);
+			memdelete(tmp);
+		}
 		return;
 	}
 
 	if (p_symbol.begins_with("res://") || p_symbol.begins_with("uid://")) {
-		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol, String(), false, false, diagnostic_strings_concatenated);
 		memdelete(tmp);
 		return;
 	}
@@ -1499,8 +1491,8 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 		debug_value = TTR("Current value: ") + debug_value.replace("[", "[lb]");
 	}
 
-	if (!doc_symbol.is_empty() || !debug_value.is_empty()) {
-		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true, p_shortcut);
+	if (!doc_symbol.is_empty() || !debug_value.is_empty() || !diagnostic_strings_concatenated.is_empty()) {
+		Control *tmp = EditorHelpBitTooltip::make_tooltip(code_editor->get_text_editor(), doc_symbol, debug_value, true, p_shortcut, diagnostic_strings_concatenated);
 		memdelete(tmp);
 	}
 }
@@ -1675,6 +1667,17 @@ void ScriptTextEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+	Control *focus_owner = get_viewport()->gui_get_focus_owner();
+	if (!(focus_owner && (this == focus_owner || is_ancestor_of(focus_owner)))) {
+		return;
+	}
+
+	if (ED_IS_SHORTCUT("script_text_editor/rename_symbol", p_event)) {
+		_edit_option(RENAME_SYMBOL);
+		accept_event();
+		return;
+	}
+
 	const Callable custom_callback = EditorContextMenuPluginManager::get_singleton()->match_custom_shortcut(EditorContextMenuPlugin::CONTEXT_SLOT_SCRIPT_EDITOR_CODE, p_event);
 	if (custom_callback.is_valid()) {
 #ifndef DISABLE_DEPRECATED
@@ -1754,7 +1757,6 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_EVALUATE:
 		case EDIT_CREATE_CODE_REGION:
 		case SHOW_TOOLTIP_AT_CARET:
-		case LOOKUP_SYMBOL:
 		case EDIT_COMPLETE:
 		case EDIT_TOGGLE_COMMENT: {
 			callable_mp((Control *)tx, &Control::grab_focus).call_deferred(false);
@@ -1861,6 +1863,29 @@ bool ScriptTextEditor::_edit_option(int p_op) {
 				_lookup_symbol(text, tx->get_caret_line(0), tx->get_caret_column(0));
 			}
 		} break;
+		case RENAME_SYMBOL: {
+			String text = tx->get_word_under_caret(0);
+			if (text.is_empty()) {
+				text = tx->get_selected_text(0);
+			}
+			if (text.is_empty()) {
+				break;
+			}
+			Ref<Script> script = edited_res;
+
+			EditorLanguage::LookupResult result;
+			String code_text = code_editor->get_text_editor()->get_text_with_cursor_char(tx->get_caret_line(0), tx->get_caret_column(0));
+			if (script->get_language()->get_editor_language()->lookup_code_for_rename(code_text, text, script->get_path(), result) != OK) {
+				break;
+			}
+
+			if (result.script_path.is_empty()) {
+				// Don't allow renaming native symbols.
+				break;
+			}
+			ScriptEditor::get_singleton()->rename_symbol(text, result);
+		} break;
+
 		default: {
 			if (CodeEditorBase::_edit_option(p_op)) {
 				return true;
@@ -1891,8 +1916,16 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	code_editor->toggle_inline_comment(delimiter);
 }
 
+void ScriptTextEditor::_apply_project_settings() {
+	hover_tooltip_timer->set_wait_time(GLOBAL_GET_CACHED(double, "gui/timers/tooltip_delay_sec"));
+}
+
 void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			_apply_project_settings();
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptTextEditor::_apply_project_settings));
+		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			if (is_ready() && is_visible_in_tree()) {
 				_update_errors();
@@ -1955,7 +1988,8 @@ void ScriptTextEditor::_set_drop_info_text(const Dictionary &p_info) const {
 	}
 
 	String text;
-	String c = keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL);
+	const String ctrl_name = keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL);
+	const String alt_name = keycode_get_string((Key)KeyModifierMask::ALT);
 	bool drop_as_uid = bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
 	String default_drop_option = drop_as_uid ? TTR("UID path") : TTR("file path");
 	String alternate_drop_option = drop_as_uid ? TTR("file path") : TTR("UID path");
@@ -1964,15 +1998,15 @@ void ScriptTextEditor::_set_drop_info_text(const Dictionary &p_info) const {
 
 	if (type == "files" || type == "files_and_dirs" || type == "resource") {
 		Array files = p_info.get("files", Array());
-		text = TTRN("Drop file path.", "Drop file paths.", files.size()) +
-				"\n" + vformat(TTRN("Hold %s: Add const preload by %s.", "Hold %s: Add const preloads by %s.", files.size()), c, default_drop_option) +
-				"\n" + vformat(TTRN("Hold %s+Shift: Add const preload by %s.", "Hold %s+Shift: Add const preloads by %s.", files.size()), c, alternate_drop_option) +
-				"\n" + vformat(TTRN("Hold %s: Add @export var pointing to the resource.", "Hold %s: Add @export vars pointing to the resources.", files.size()), keycode_get_string((Key)KeyModifierMask::ALT));
+		text = TPL(files.size(), TTR("Drop file path."), TTR("Drop file paths.")) +
+				"\n" + vformat(TPL(files.size(), TTR("Hold %s: Add const preload by %s."), TTR("Hold %s: Add const preloads by %s.")), ctrl_name, default_drop_option) +
+				"\n" + vformat(TPL(files.size(), TTR("Hold %s+Shift: Add const preload by %s."), TTR("Hold %s+Shift: Add const preloads by %s.")), ctrl_name, alternate_drop_option) +
+				"\n" + vformat(TPL(files.size(), TTR("Hold %s: Add @export var pointing to the resource."), TTR("Hold %s: Add @export vars pointing to the resources.")), alt_name);
 	} else if (type == "nodes") {
 		Array nodes = p_info["nodes"];
-		text = TTRN("Drop node path.", "Drop node paths.", nodes.size()) +
-				"\n" + vformat(TTRN("Hold %s: Add @onready var pointing to the node path.", "Hold %s: Add @onready vars pointing to the node paths.", nodes.size()), c) +
-				"\n" + vformat(TTRN("Hold %s: Add @export var pointing to the node.", "Hold %s: Add @export vars pointing to the nodes.", nodes.size()), keycode_get_string((Key)KeyModifierMask::ALT));
+		text = TPL(nodes.size(), TTR("Drop node path."), TTR("Drop node paths.")) +
+				"\n" + vformat(TPL(nodes.size(), TTR("Hold %s: Add @onready var pointing to the node path."), TTR("Hold %s: Add @onready vars pointing to the node paths.")), ctrl_name) +
+				"\n" + vformat(TPL(nodes.size(), TTR("Hold %s: Add @export var pointing to the node."), TTR("Hold %s: Add @export vars pointing to the nodes.")), alt_name);
 	} else if (type == "obj_property") {
 		text = TTR("Drop property path.");
 	}
@@ -2419,6 +2453,7 @@ void ScriptTextEditor::_assign_dragged_export_variables() {
 void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	Ref<InputEventKey> k = p_ev;
+	Ref<InputEventMouseMotion> mm = p_ev;
 	Point2 local_pos;
 	bool create_menu = false;
 
@@ -2430,6 +2465,22 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 		tx->adjust_viewport_to_caret(0);
 		local_pos = tx->get_caret_draw_pos(0);
 		create_menu = true;
+	} else if (mm.is_valid() && p_ev->get_device() != InputEvent::DEVICE_ID_EMULATION) {
+		Vector2i mpos = mm->get_position();
+		if (tx->is_layout_rtl()) {
+			mpos.x = tx->get_size().x - mpos.x;
+		}
+
+		Point2i last_hover_tooltip_pos = hover_tooltip_pos;
+		hover_tooltip_pos = tx->get_line_column_at_pos(mpos, false, false);
+		if (hover_tooltip_pos != last_hover_tooltip_pos) {
+			hover_tooltip_timer->start();
+		}
+	}
+
+	// Matching behavior in CodeEdit::gui_input (see GH-121311)
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() != Key::CTRL && k->get_keycode() != Key::ALT && k->get_keycode() != Key::SHIFT && k->get_keycode() != Key::META && k->get_keycode() != Key::CAPSLOCK) {
+		hover_tooltip_timer->stop();
 	}
 
 	if (create_menu) {
@@ -2462,9 +2513,11 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 
 		bool foldable = tx->can_fold_line(mouse_line) || tx->is_line_folded(mouse_line);
 		bool open_docs = false;
+		bool allow_rename = false;
 
 		if (ScriptServer::is_global_class(word_at_pos) || word_at_pos.is_resource_file()) {
 			open_docs = true;
+			allow_rename = ScriptServer::is_global_class(word_at_pos);
 		} else {
 			Ref<Script> script = edited_res;
 			Node *base = get_tree()->get_edited_scene_root();
@@ -2474,6 +2527,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 			EditorLanguage::LookupResult result;
 			if (script->get_language()->get_editor_language()->lookup_code(tx->get_text_for_symbol_lookup(), word_at_pos, script->get_path(), base, result) == OK) {
 				open_docs = true;
+				allow_rename = !result.script_path.is_empty();
 			}
 		}
 
@@ -2501,14 +2555,12 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		_make_ste_context_menu(tx->has_selection(), has_color, foldable, open_docs, local_pos);
+		_make_ste_context_menu(tx->has_selection(), has_color, foldable, open_docs, allow_rename, local_pos);
 	}
 }
 
-void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, const Vector2 &p_position) {
+void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_allow_rename, const Vector2 &p_position) {
 	CodeEditorBase::_make_context_menu(p_selection, p_foldable, p_position, false);
-	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
-	_popup_move_item(EDIT_UNINDENT, context_menu);
 
 	if (p_selection) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
@@ -2521,6 +2573,10 @@ void ScriptTextEditor::_make_ste_context_menu(bool p_selection, bool p_color, bo
 		context_menu->add_separator();
 		if (p_open_docs) {
 			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_symbol"), LOOKUP_SYMBOL);
+		}
+		if (p_allow_rename) {
+			context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/rename_symbol"), RENAME_SYMBOL);
+			context_menu->set_item_text(-1, TTR("Rename Symbol (Experimental)"));
 		}
 		if (p_color) {
 			context_menu->add_item(TTRC("Pick Color"), EDIT_PICK_COLOR);
@@ -2604,6 +2660,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/goto_line", TTRC("Go to Line..."), KeyModifierMask::CMD_OR_CTRL | Key::G);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/goto_line", "macos", KeyModifierMask::CMD_OR_CTRL | Key::L);
 	ED_SHORTCUT("script_text_editor/goto_symbol", TTRC("Lookup Symbol"));
+	ED_SHORTCUT("script_text_editor/rename_symbol", TTRC("Rename Symbol"), Key::F2);
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTRC("Toggle Breakpoint"), Key::F9);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
@@ -2619,7 +2676,6 @@ void ScriptTextEditor::register_editor() {
 void ScriptTextEditor::_enable_code_editor() {
 	code_editor->connect("show_errors_panel", callable_mp(this, &ScriptTextEditor::_show_errors_panel));
 	code_editor->get_text_editor()->connect("symbol_lookup", callable_mp(this, &ScriptTextEditor::_lookup_symbol));
-	code_editor->get_text_editor()->connect("symbol_hovered", callable_mp(this, &ScriptTextEditor::_show_symbol_tooltip).bind(false));
 	code_editor->get_text_editor()->connect("symbol_validate", callable_mp(this, &ScriptTextEditor::_validate_symbol));
 	code_editor->get_text_editor()->connect("gutter_added", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
@@ -2636,6 +2692,20 @@ void ScriptTextEditor::_enable_code_editor() {
 	add_child(quick_open);
 
 	add_child(connection_info_dialog);
+}
+
+void ScriptTextEditor::_on_hover_tooltip_timer_timeout() {
+	CodeEdit *ce = code_editor->get_text_editor();
+	const String word = ce->get_lookup_word(hover_tooltip_pos.y, hover_tooltip_pos.x);
+	const int line = hover_tooltip_pos.y;
+	const int column = hover_tooltip_pos.x;
+
+	bool is_mouse_over_code_completion_popup = ce->get_code_completion_selected_index() != -1 && ce->get_code_completion_rect().has_point(get_local_mouse_position());
+	if (line < 0 || column < 0 || Input::get_singleton()->is_anything_pressed() || is_mouse_over_code_completion_popup) {
+		return;
+	}
+
+	_show_symbol_tooltip(word, line, column, false);
 }
 
 ScriptTextEditor::ScriptTextEditor() {
@@ -2680,8 +2750,6 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->add_child(drag_info_label);
 	drag_info_label->hide();
 
-	code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(true);
-
 	inline_color_popup = memnew(PopupPanel);
 	add_child(inline_color_popup);
 
@@ -2700,6 +2768,14 @@ ScriptTextEditor::ScriptTextEditor() {
 	inline_color_picker->get_slider_container()->add_sibling(inline_color_options);
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
+
+	// ScriptTextEditor uses its own timer instead of the CodeEdit symbol_hovered signal
+	// so that it can detect hovering over non-symbols for the purposes of warning/error tooltips.
+	hover_tooltip_timer = memnew(Timer);
+	hover_tooltip_timer->set_wait_time(0.5);
+	hover_tooltip_timer->set_one_shot(true);
+	hover_tooltip_timer->connect("timeout", callable_mp(this, &ScriptTextEditor::_on_hover_tooltip_timer_timeout));
+	add_child(hover_tooltip_timer, false, INTERNAL_MODE_FRONT);
 
 	update_settings();
 	set_process_shortcut_input(true);

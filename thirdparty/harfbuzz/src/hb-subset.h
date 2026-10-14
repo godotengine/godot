@@ -26,9 +26,15 @@
 
 #ifndef HB_SUBSET_H
 #define HB_SUBSET_H
+#define HB_SUBSET_H_IN
 
 #include "hb.h"
 #include "hb-ot.h"
+#include "hb-subset-serialize.h"
+#include "hb-subset-depend.h"
+#include "hb-subset-serialize.h"
+
+#undef HB_SUBSET_H_IN
 
 HB_BEGIN_DECLS
 
@@ -84,9 +90,12 @@ typedef struct hb_subset_plan_t hb_subset_plan_t;
  * HB_SUBSET_FLAGS_RETAIN_GIDS then the number of glyphs in the font won't
  * be reduced as a result of subsetting. If necessary empty glyphs will be
  * included at the end of the font to keep the number of glyphs unchanged.
- * @HB_SUBSET_FLAGS_DOWNGRADE_CFF2: If set and instantiating a variable font,
- * convert the output CFF2 table to CFF1. This enables compatibility with older
- * renderers that don't support CFF2. Since: 13.0.0
+ * @HB_SUBSET_FLAGS_DOWNGRADE_CFF2: If set and instantiating a variable font
+ * with all axes pinned, convert the output CFF2 table to CFF1. This enables
+ * compatibility with older renderers that don't support CFF2. Since: 13.0.0
+ * @HB_SUBSET_FLAGS_CFF_IDENTITY_CHARSET: If set and subsetting a CID-keyed CFF
+ * font, the output CFF charset will use sequential identity CIDs (CID = new
+ * GID) rather than preserving the original CIDs. Since: 14.3.0
  *
  * List of boolean properties that can be configured on the subset input.
  *
@@ -111,6 +120,7 @@ typedef enum { /*< flags >*/
   HB_SUBSET_FLAGS_RETAIN_NUM_GLYPHS  =  0x00002000u,
 #endif
   HB_SUBSET_FLAGS_DOWNGRADE_CFF2          =  0x00004000u,
+  HB_SUBSET_FLAGS_CFF_IDENTITY_CHARSET    =  0x00008000u,
 } hb_subset_flags_t;
 
 /**
@@ -228,6 +238,9 @@ hb_subset_axis_range_to_string (hb_subset_input_t *input,
 				unsigned size);
 
 #ifdef HB_EXPERIMENTAL_API
+HB_EXTERN hb_blob_t *
+hb_subset_input_to_string_or_fail (hb_subset_input_t *input);
+
 HB_EXTERN hb_bool_t
 hb_subset_input_override_name_table (hb_subset_input_t  *input,
 				     hb_ot_name_id_t     name_id,

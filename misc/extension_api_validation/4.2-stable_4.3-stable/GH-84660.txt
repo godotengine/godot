@@ -1,5 +1,3 @@
-GH-84660
---------
 Validate extension JSON: Error: Field 'classes/TileData/methods/get_navigation_polygon/arguments': size changed value in new API, from 1 to 4.
 Validate extension JSON: Error: Field 'classes/TileData/methods/get_occluder/arguments': size changed value in new API, from 1 to 4.
 

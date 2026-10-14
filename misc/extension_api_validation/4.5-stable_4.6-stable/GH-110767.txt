@@ -1,5 +1,3 @@
-GH-110767
----------
 Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_assigned_animation/return_value': type changed value in new API, from "String" to "StringName".
 Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_autoplay/return_value': type changed value in new API, from "String" to "StringName".
 Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/get_current_animation/return_value': type changed value in new API, from "String" to "StringName".

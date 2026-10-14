@@ -54,6 +54,27 @@ struct hb_vector_draw_t
   hb_vector_buf_t pdf_extgstate_dict;
   unsigned pdf_extgstate_count = 0;
 
+  /* Cumulative output budget for the current draw session; reset by
+   * hb_vector_draw_clear().  Charge complete path commands so budget
+   * exhaustion cannot leave a syntactically partial command. */
+  int64_t work_left = HB_VECTOR_MAX_DRAW_WORK;
+
+  bool begin_path_command (unsigned *before)
+  {
+    if (unlikely (work_left <= 0 || path.in_error ()))
+      return false;
+    *before = path.length;
+    return true;
+  }
+
+  void end_path_command (unsigned before)
+  {
+    if (unlikely (path.in_error ()))
+      work_left = 0;
+    else
+      work_left -= path.length - before;
+  }
+
   void set_precision (unsigned p)
   {
     p = hb_min (p, 12u);

@@ -181,15 +181,18 @@ _hb_face_builder_get_table_tags (const hb_face_t *face HB_UNUSED,
     // Not much to do...
   }
   sorted_tags.qsort ([] (const hb_tag_t &a, const hb_tag_t &b) {
-    return a < b;
+    return (a > b) - (a < b);
   });
 
   auto array = sorted_tags.as_array ().sub_array (start_offset, table_count);
-  auto out = hb_array (table_tags, *table_count);
+  if (table_tags)
+  {
+    auto out = hb_array (table_tags, *table_count);
 
-  + array.iter ()
-  | hb_sink (out)
-  ;
+    + array.iter ()
+    | hb_sink (out)
+    ;
+  }
 
   return population;
 }

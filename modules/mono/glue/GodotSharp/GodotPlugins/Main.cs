@@ -93,6 +93,9 @@ namespace GodotPlugins
         {
             try
             {
+                NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
+                Marshaling.Initialize();
+
                 _editorHint = editorHint.ToBool();
 
                 _dllImportResolver = new GodotDllImportResolver(godotDllHandle).OnResolveDllImport;
@@ -101,7 +104,6 @@ namespace GodotPlugins
                 NativeLibrary.SetDllImportResolver(CoreApiAssembly, _dllImportResolver);
 
                 AlcReloadCfg.Configure(alcReloadEnabled: _editorHint);
-                NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
 
                 if (_editorHint)
                 {

@@ -272,7 +272,7 @@ struct hb_vector_t
   const Type& tail () const { return (*this)[length - 1]; }
 
   explicit operator bool () const { return length; }
-  size_t get_size () const { return length * item_size; }
+  size_t get_size () const { return hb_unsigned_mul_saturate (length, item_size); }
 
   /* Sink interface. */
   template <typename T>
@@ -635,7 +635,9 @@ struct hb_vector_t
   HB_ALWAYS_INLINE_VECTOR_ALLOCS
   bool resize_full (int size_, bool initialize, bool exact)
   {
-    unsigned int size = size_ < 0 ? 0u : (unsigned int) size_;
+    if (unlikely (size_ < 0))
+      return false;
+    unsigned int size = (unsigned int) size_;
     if (!alloc (size, exact))
       return false;
 

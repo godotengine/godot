@@ -266,8 +266,12 @@ void OpenXRCompositionLayer::_on_openxr_session_begun() {
 	if (_should_register()) {
 		_setup_composition_layer();
 	}
-	if (!fallback && _should_use_fallback_node()) {
-		_create_fallback_node();
+	if (_should_use_fallback_node()) {
+		if (!fallback) {
+			_create_fallback_node();
+		} else {
+			should_update_fallback_mesh = true;
+		}
 	}
 }
 
@@ -294,7 +298,7 @@ void OpenXRCompositionLayer::update_transform() {
 		}
 
 		Transform3D xf;
-		if (parent_is_xr_origin || parent_is_xr_camera) {
+		if (parent_is_xr_origin || parent_is_xr_camera || !is_inside_tree()) {
 			xf = get_transform();
 		} else {
 			if (ancestor_camera) {
@@ -714,6 +718,11 @@ void OpenXRCompositionLayer::_notification(int p_what) {
 			}
 			if (composition_layer_extension) {
 				composition_layer_extension->composition_layer_set_extension_property_values(composition_layer, extension_property_values);
+			}
+		} break;
+		case NOTIFICATION_READY: {
+			if (!fallback && _should_use_fallback_node()) {
+				_create_fallback_node();
 			}
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {

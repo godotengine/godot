@@ -38,6 +38,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
 
 void CollisionShape2D::_shape_changed() {
 	queue_redraw();
@@ -90,7 +91,7 @@ void CollisionShape2D::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
 
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint() && !PhysicsServer2D::get_singleton()->debug_is_enabled()) {
 				break;
 			}
 
@@ -134,10 +135,6 @@ void CollisionShape2D::_notification(int p_what) {
 
 				draw_primitive(pts, cols, Vector<Vector2>());
 			}
-		} break;
-
-		case NOTIFICATION_DEBUG_COLLISIONS_HINT_CHANGED: {
-			queue_redraw();
 		} break;
 	}
 }
@@ -334,4 +331,8 @@ CollisionShape2D::CollisionShape2D() {
 	set_notify_local_transform(true);
 	set_hide_clip_children(true);
 	debug_color = _get_default_debug_color();
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+#endif
 }

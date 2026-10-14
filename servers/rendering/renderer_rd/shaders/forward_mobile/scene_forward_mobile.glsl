@@ -846,6 +846,32 @@ void main() {
 
 /* Varyings */
 
+#if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_LOD_USED))
+// When texture streaming is enabled subgroupElect is needed to properly handle texture feedback.
+#extension GL_KHR_shader_subgroup_basic : enable
+
+#extension GL_KHR_shader_subgroup_arithmetic : enable
+
+// Since material feedback writes to a ssbo buffer, early fragment tests likely get disabled by the
+// driver so unless we want bad performance, we need to force enable it again when we can.
+//
+// To Early-Z, or Not To Early-Z
+//  - https://therealmjp.github.io/posts/to-earlyz-or-not-to-earlyz/#uavsstorage-texturesstorage-buffers
+#if defined(ALPHA_SCISSOR_USED) || defined(ALPHA_HASH_USED) || defined(ENABLE_CLIP_ALPHA) || defined(UBERSHADER) || defined(DISCARD_USED)
+#define TEXTURE_STREAMING_MAY_DISCARD
+#endif
+
+#if defined(DEPTH_TEST_DISABLED_USED) || defined(DEPTH_DRAW_NEVER_USED)
+#define TEXTURE_STREAMING_NO_DEPTH_WRITE
+#endif
+
+#if !defined(DEPTH_USED) && (!defined(TEXTURE_STREAMING_MAY_DISCARD) || (defined(TEXTURE_STREAMING_NO_DEPTH_WRITE) && !defined(STENCIL_WRITE_USED)))
+layout(early_fragment_tests) in;
+#define EARLY_Z_ON
+#endif // early fragment tests are safe
+
+#endif // TEXTURE_STREAMING
+
 // All interpolators are intentionally kept at full precision as storageInputOutput16 is not
 // checked for support. Devices with Adreno GPUs don't usually support this capability.
 
@@ -861,6 +887,13 @@ layout(location = 2) in vec4 color_interp;
 
 #ifdef UV_USED
 layout(location = 3) in vec2 uv_interp;
+#endif
+
+// Provides the streaming_lod helpers
+#include "../scene_forward_streaming_inc.glsl"
+
+#ifdef STREAMING_LOD_USED
+float streaming_lod = 32.0; // Defaults to value past the coursest quality.
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
@@ -1310,6 +1343,41 @@ void main() {
 #endif // MODE_RENDER_MATERIAL
 #endif // ALPHA_SCISSOR_USED
 
+#if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_LOD_USED))
+	if (sc_material_feedback()) {
+		// Instance has materials which require feedback.
+#if !defined(STREAMING_LOD_USED)
+		vec2 uv_ddx = dFdx(uv_interp);
+		vec2 uv_ddy = dFdy(uv_interp);
+#endif
+
+		if (!gl_HelperInvocation) {
+#if defined(STREAMING_LOD_USED)
+			// The shader supplied the level itself.
+			float footprint_sq = streaming_footprint_sq_from_lod(streaming_lod);
+#else
+			// Calculate the mip level needed for the current fragment based on UV derivatives.
+			float footprint_sq = streaming_footprint_sq(uv_ddx, uv_ddy);
+#endif
+
+			// Bitwise NOT inverts the ordering so that smaller footprint_sq (higher quality)
+			// maps to larger uint values, allowing atomicMax with a 0-cleared buffer.
+			uint required_mip = ~floatBitsToUint(footprint_sq);
+
+			// Reduce atomic contention using subgroup operations.
+			// Find maximum inverted mip level across all invocations in the subgroup, then only
+			// one invocation performs the atomic write.
+			// Right now this assumes all invocations will have the same instance index.
+			// If that is not true then probably need a subgroupAllEqual check first + fallback.
+			uint subgroup_max_mip = subgroupMax(required_mip);
+			if (subgroupElect()) {
+				const uint material_feedback_index = instances.data[draw_call.instance_index].material_feedback_index;
+				atomicMax(material_feedback.data[material_feedback_index], subgroup_max_mip);
+			}
+		}
+	}
+#endif //TEXTURE_STREAMING
+
 // alpha hash can be used in unison with alpha antialiasing
 #ifdef ALPHA_HASH_USED
 	vec3 object_pos = (inverse(read_model_matrix) * inv_view_matrix * vec4(vertex, 1.0)).xyz;
@@ -1562,6 +1630,8 @@ void main() {
 		indirect_specular_light *= half(scene_data.IBL_exposure_normalization);
 		indirect_specular_light *= horizon * horizon;
 		indirect_specular_light *= half(scene_data.ambient_light_color_energy.a);
+	} else if (sc_scene_use_reflection_color()) {
+		indirect_specular_light = hvec3(scene_data.reflection_color.rgb);
 	}
 
 #if defined(CUSTOM_RADIANCE_USED)
@@ -1620,6 +1690,8 @@ void main() {
 
 #endif //USE_RADIANCE_OCTMAP_ARRAY
 		cc_specular_light += clearcoat_light * half(scene_data.IBL_exposure_normalization) * half(scene_data.ambient_light_color_energy.a);
+	} else if (sc_scene_use_reflection_color()) {
+		cc_specular_light = hvec3(scene_data.reflection_color.rgb);
 	}
 #endif // LIGHT_CLEARCOAT_USED
 #endif // !AMBIENT_LIGHT_DISABLED

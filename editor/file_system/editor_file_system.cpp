@@ -510,8 +510,7 @@ void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	if (first_scan) {
 		sd = first_scan_root_dir;
-		// Will be updated on scan.
-		ResourceUID::get_singleton()->clear();
+		ResourceUID::get_singleton()->copy_and_clear_cache();
 		ResourceUID::scan_for_uid_on_startup = nullptr;
 		processed_files = memnew(HashSet<String>());
 	} else {
@@ -851,6 +850,11 @@ bool EditorFileSystem::_scan_import_support(const Vector<String> &reimports) {
 }
 
 bool EditorFileSystem::_update_scan_actions() {
+	if (updating_scan_actions) {
+		return false;
+	}
+	updating_scan_actions = true;
+
 	sources_changed.clear();
 
 	// We need to update the script global class names before the reimports to be sure that
@@ -1071,6 +1075,7 @@ bool EditorFileSystem::_update_scan_actions() {
 	}
 	scan_actions.clear();
 
+	updating_scan_actions = false;
 	return fs_changed;
 }
 
@@ -1115,6 +1120,7 @@ void EditorFileSystem::scan() {
 		scanning = true;
 		scan_total = 0;
 		_scan_filesystem();
+		ResourceUID::get_singleton()->clear_copy();
 		memdelete(filesystem);
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
@@ -1793,6 +1799,7 @@ void EditorFileSystem::_notification(int p_what) {
 					}
 				} else if (!scanning && thread.is_started()) {
 					set_process(false);
+					ResourceUID::get_singleton()->clear_copy();
 
 					memdelete(filesystem);
 					filesystem = new_filesystem;
@@ -1917,7 +1924,8 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 		if (idx == -1) {
 			// Only create a missing directory in memory when it exists on disk.
-			if (!dir->dir_exists(fs->get_path().path_join(path_bit))) {
+			String dir_path = fs->get_path().path_join(path_bit);
+			if (!dir->dir_exists(ProjectSettings::get_singleton()->globalize_path(dir_path))) {
 				return false;
 			}
 			EditorFileSystemDirectory *efsd = memnew(EditorFileSystemDirectory);

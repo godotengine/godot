@@ -1,5 +1,3 @@
-GH-88647
---------
 Validate extension JSON: Error: Field 'classes/CPUParticles3D/properties/mesh': type changed value in new API, from "Mesh" to "QuadMesh,BoxMesh,SphereMesh,CapsuleMesh,CylinderMesh,PrismMesh,TorusMesh,PlaneMesh,TextMesh,RibbonTrailMesh,TubeTrailMesh,PointMesh,ArrayMesh,ImmediateMesh,PlaceholderMesh,Mesh".
 Validate extension JSON: Error: Field 'classes/CollisionShape2D/properties/shape': type changed value in new API, from "Shape2D" to "RectangleShape2D,CircleShape2D,CapsuleShape2D,SegmentShape2D,SeparationRayShape2D,WorldBoundaryShape2D,ConvexPolygonShape2D,ConcavePolygonShape2D,Shape2D".
 Validate extension JSON: Error: Field 'classes/CollisionShape3D/properties/shape': type changed value in new API, from "Shape3D" to "BoxShape3D,SphereShape3D,CapsuleShape3D,CylinderShape3D,SeparationRayShape3D,HeightMapShape3D,WorldBoundaryShape3D,ConvexPolygonShape3D,ConcavePolygonShape3D,Shape3D".

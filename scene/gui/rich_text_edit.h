@@ -415,6 +415,7 @@ public:
 	void end_selection_color_preview(bool p_commit);
 	void begin_selection_bg_color_preview();
 	void preview_selection_bg_color(const Color &p_color);
+	void preview_selection_outline_color(const Color &p_color);
 	void end_selection_bg_color_preview(bool p_commit);
 	void set_selection_font_size(int p_size);
 	void clear_selection_font_size();

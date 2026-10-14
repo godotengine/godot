@@ -490,8 +490,8 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 		wheel.m_raycastInfo.m_contactNormalWS = rr.normal;
 
 		wheel.m_raycastInfo.m_isInContact = true;
-		if (rr.collider) {
-			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody3D>(rr.collider);
+		if (rr.collider_id.is_valid()) {
+			wheel.m_raycastInfo.m_groundObject = ObjectDB::get_instance<PhysicsBody3D>(rr.collider_id);
 		}
 
 		real_t hitDistance = param * raylen;

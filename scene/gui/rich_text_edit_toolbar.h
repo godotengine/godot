@@ -137,6 +137,11 @@ class RichTextEditToolbar : public HBoxContainer {
 	Vector<Control *> paddings;
 
 	bool updating_controls = false;
+	bool external_color_picker_enabled = false;
+	StringName external_color_slot;
+	Color external_initial_color;
+	Color external_pending_color;
+	bool external_initial_bg_assigned = false;
 	bool color_picker_open = false;
 	bool bg_color_picker_open = false;
 	// Mirrors ColorPickerButton: a click that closes a popup can also reach the
@@ -239,6 +244,13 @@ public:
 	bool is_two_row_layout() const;
 
 	RichTextEdit *get_rich_text_edit() const;
+
+	void set_external_color_picker_enabled(bool p_enabled);
+	bool is_external_color_picker_enabled() const;
+	void begin_external_color_picker(const StringName &p_slot);
+	void preview_external_color(const Color &p_color);
+	void end_external_color_picker(bool p_commit = true);
+	void clear_external_background_color();
 
 	RichTextEditToolbar();
 };

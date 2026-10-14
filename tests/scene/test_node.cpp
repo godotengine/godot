@@ -234,15 +234,24 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 	Node *node1 = memnew(Node);
 	Node *node2 = memnew(Node);
 	Node *node1_1 = memnew(Node);
+	Node *root = SceneTree::get_singleton()->get_root();
 
-	SceneTree::get_singleton()->get_root()->add_child(node1);
-	SceneTree::get_singleton()->get_root()->add_child(node2);
+	root->add_child(node1);
+	root->add_child(node2);
 
 	node1->add_child(node1_1);
 
 	CHECK(node1_1->is_inside_tree());
 	CHECK_EQ(node1_1->get_parent(), node1);
 	CHECK_EQ(node1->get_child_count(), 1);
+
+	CHECK_EQ(root->is_ancestor_of(node1), true);
+	CHECK_EQ(root->is_ancestor_of(node2), true);
+	CHECK_EQ(root->is_ancestor_of(node1_1), true);
+	CHECK_EQ(node1->is_ancestor_of(node1), false);
+	CHECK_EQ(node1->is_ancestor_of(node1_1), true);
+	CHECK_EQ(node2->is_ancestor_of(node1_1), false);
+	CHECK_EQ(node2->is_ancestor_of(node1), false);
 
 	CHECK_EQ(SceneTree::get_singleton()->get_root()->get_child_count(), 2);
 	CHECK_EQ(SceneTree::get_singleton()->get_node_count(), 4);

@@ -2170,6 +2170,9 @@ bool Node::is_ancestor_of(RequiredParam<const Node> p_node) const {
 	EXTRACT_PARAM_OR_FAIL_V(node, p_node, false);
 
 	const Node *n = node;
+	if (n == this) {
+		return false;
+	}
 
 	if (is_inside_tree() && node->data.tree == data.tree) {
 		const int depth = data.depth;
@@ -2847,12 +2850,13 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 	}
 
 	List<const Node *> hidden_roots;
-	List<const Node *> node_tree;
-	node_tree.push_front(this);
 
 	if (instantiated) {
 		// Since nodes in the instantiated hierarchy won't be duplicated explicitly, we need to make an inventory
 		// of all the nodes in the tree of the instantiated scene in order to transfer the values of the properties
+
+		List<const Node *> node_tree;
+		node_tree.push_front(this);
 
 		Vector<const Node *> instance_roots;
 		instance_roots.push_back(this);
@@ -2963,7 +2967,7 @@ Node *Node::duplicate(int p_flags) const {
 	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
 
 	if (p_flags & DUPLICATE_SCRIPTS) {
-		_duplicate_scripts(this, dupe);
+		_duplicate_scripts(this, dupe, p_flags);
 	}
 
 	_duplicate_properties(this, this, dupe, p_flags);
@@ -2988,7 +2992,7 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, Nod
 	ERR_FAIL_NULL_V_MSG(dupe, nullptr, "Failed to duplicate node.");
 
 	if (flags & DUPLICATE_SCRIPTS) {
-		_duplicate_scripts(this, dupe);
+		_duplicate_scripts(this, dupe, flags);
 	}
 
 	_duplicate_properties(this, this, dupe, flags);
@@ -3081,17 +3085,21 @@ void Node::_emit_editor_state_changed() {
 }
 #endif
 
-void Node::_duplicate_scripts(const Node *p_original, Node *p_copy) const {
+void Node::_duplicate_scripts(const Node *p_original, Node *p_copy, int p_flags) const {
 	bool is_valid = false;
 	Variant scr = p_original->get(CoreStringName(script), &is_valid);
 	if (is_valid) {
 		p_copy->set(CoreStringName(script), scr);
 	}
 
+	bool instantiated = (p_flags & DUPLICATE_USE_INSTANTIATION) && is_instance();
 	for (int i = 0; i < p_original->get_child_count(false); i++) {
-		Node *copy_child = p_copy->get_child(i, false);
-		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
-		_duplicate_scripts(p_original->get_child(i, false), copy_child);
+		Node *original = p_original->get_child(i, false);
+		// If using instantiation and the child structure changed, getting it by index will result in
+		// fetching values from the wrong nodes. So use the slower (but more accurate) path method.
+		Node *copy = instantiated ? p_copy->get_node(p_original->get_path_to(original)) : p_copy->get_child(i, false);
+		ERR_FAIL_NULL_MSG(copy, "Child node disappeared while duplicating.");
+		_duplicate_scripts(original, copy, p_flags);
 	}
 }
 
@@ -3148,10 +3156,14 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		}
 	}
 
+	bool instantiated = (p_flags & DUPLICATE_USE_INSTANTIATION) && is_instance();
 	for (int i = 0; i < p_original->get_child_count(false); i++) {
-		Node *copy_child = p_copy->get_child(i, false);
-		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
-		_duplicate_properties(p_root, p_original->get_child(i, false), copy_child, p_flags);
+		Node *original = p_original->get_child(i, false);
+		// If using instantiation and the child structure changed, getting it by index will result in
+		// fetching values from the wrong nodes. So use the slower (but more accurate) path method.
+		Node *copy = instantiated ? p_copy->get_node(p_original->get_path_to(original)) : p_copy->get_child(i, false);
+		ERR_FAIL_NULL_MSG(copy, "Child node disappeared while duplicating.");
+		_duplicate_properties(p_root, original, copy, p_flags);
 	}
 }
 

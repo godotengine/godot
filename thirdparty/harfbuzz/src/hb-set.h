@@ -131,6 +131,10 @@ HB_EXTERN hb_bool_t
 hb_set_is_equal (const hb_set_t *set,
 		 const hb_set_t *other);
 
+HB_EXTERN hb_bool_t
+hb_set_intersects (const hb_set_t *set,
+		   const hb_set_t *other);
+
 HB_EXTERN unsigned int
 hb_set_hash (const hb_set_t *set);
 

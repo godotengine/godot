@@ -95,6 +95,7 @@ public:
 	struct DefaultIdentifierActions {
 		HashMap<StringName, String> renames;
 		HashMap<StringName, String> render_mode_defines;
+		HashMap<StringName, String> stencil_mode_defines;
 		HashMap<StringName, String> usage_defines;
 		HashMap<StringName, String> custom_samplers;
 		ShaderLanguage::TextureFilter default_filter = ShaderLanguage::TextureFilter::FILTER_NEAREST;
@@ -103,6 +104,7 @@ public:
 		int texture_layout_set = 0;
 		String base_uniform_string;
 		String global_buffer_array_variable;
+		bool global_buffer_array_is_texture = false;
 		String instance_uniform_index_variable;
 		uint32_t base_varying_index = 0;
 		bool apply_luminance_multiplier = false;
@@ -126,6 +128,7 @@ private:
 	HashSet<StringName> used_name_defines;
 	HashSet<StringName> used_flag_pointers;
 	HashSet<StringName> used_rmode_defines;
+	HashSet<StringName> used_smode_defines;
 	HashSet<StringName> internal_functions;
 	HashSet<StringName> fragment_varyings;
 

@@ -499,7 +499,7 @@ parse_cache_entries_linear (const char *svg,
     while (p + name_len < gt)
     {
       unsigned char c = (unsigned char) name[name_len];
-      if (!(isalnum (c) || c == '_' || c == '-' || c == ':'))
+      if (!(ISALNUM (c) || c == '_' || c == '-' || c == ':'))
         break;
       name_len++;
     }

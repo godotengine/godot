@@ -176,7 +176,12 @@ serialize_link_of_type (const hb_serialize_context_t::object_t::link_t& link,
                         const hb_vector_t<unsigned>& id_map,
                         hb_serialize_context_t* c)
 {
-  assert(link.position + link.width <= size);
+  // A link must never write outside the bounds of its parent object.
+  if (unlikely (link.position + link.width > size))
+  {
+    c->err (HB_SERIALIZE_ERROR_OTHER);
+    return;
+  }
 
   OT::Offset<O>* offset = reinterpret_cast<OT::Offset<O>*> (head + link.position);
   *offset = 0;

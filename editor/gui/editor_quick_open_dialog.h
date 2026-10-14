@@ -36,7 +36,6 @@
 #include "scene/gui/margin_container.h"
 
 class Button;
-class CenterContainer;
 class CheckButton;
 class ConfigFile;
 class EditorFileSystemDirectory;
@@ -140,8 +139,7 @@ private:
 	HFlowContainer *grid = nullptr;
 	PopupMenu *file_context_menu = nullptr;
 
-	PanelContainer *panel_container = nullptr;
-	CenterContainer *no_results_container = nullptr;
+	PanelContainer *no_results_container = nullptr;
 	Label *no_results_label = nullptr;
 
 	Label *file_details_path = nullptr;

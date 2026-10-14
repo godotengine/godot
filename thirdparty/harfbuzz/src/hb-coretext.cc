@@ -107,11 +107,12 @@ _hb_cg_get_table_tags (const hb_face_t *face HB_UNUSED,
   end_offset = hb_min (end_offset, (unsigned) population);
 
   *table_count = end_offset - start_offset;
-  for (unsigned i = start_offset; i < end_offset; i++)
-  {
-    CTFontTableTag tag = (CTFontTableTag)(uintptr_t) CFArrayGetValueAtIndex (arr, i);
-    table_tags[i - start_offset] = tag;
-  }
+  if (table_tags)
+    for (unsigned i = start_offset; i < end_offset; i++)
+    {
+      CTFontTableTag tag = (CTFontTableTag)(uintptr_t) CFArrayGetValueAtIndex (arr, i);
+      table_tags[i - start_offset] = tag;
+    }
 
   return population;
 }
@@ -446,7 +447,7 @@ hb_coretext_face_create_from_file_or_fail (const char   *file_name,
  * Creates an #hb_face_t face object from the specified
  * blob and face index.
  *
- * This is similar in functionality to hb_face_create_from_blob_or_fail(),
+ * This is similar in functionality to hb_face_create_or_fail(),
  * but uses the CoreText library for loading the font data.
  *
  * Return value: (transfer full): The new face object, or `NULL` if

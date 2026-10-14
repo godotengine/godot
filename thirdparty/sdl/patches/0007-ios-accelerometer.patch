@@ -1,0 +1,45 @@
+diff --git a/thirdparty/sdl/joystick/apple/SDL_mfijoystick.m b/thirdparty/sdl/joystick/apple/SDL_mfijoystick.m
+index 98756f2eab..5f1abf110f 100644
+--- a/thirdparty/sdl/joystick/apple/SDL_mfijoystick.m
++++ b/thirdparty/sdl/joystick/apple/SDL_mfijoystick.m
+@@ -945,8 +945,6 @@ static bool IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
+             GCMotion *motion = controller.motion;
+             if (motion && motion.hasRotationRate) {
+                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
+-            }
+-            if (motion && motion.hasGravityAndUserAcceleration) {
+                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
+             }
+         }
+@@ -1197,20 +1195,17 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
+             if (motion && motion.sensorsActive) {
+                 float data[3];
+ 
+-                if (motion.hasRotationRate) {
+-                    GCRotationRate rate = motion.rotationRate;
+-                    data[0] = rate.x;
+-                    data[1] = rate.z;
+-                    data[2] = -rate.y;
+-                    SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, timestamp, data, 3);
+-                }
+-                if (motion.hasGravityAndUserAcceleration) {
+-                    GCAcceleration accel = motion.acceleration;
+-                    data[0] = -accel.x * SDL_STANDARD_GRAVITY;
+-                    data[1] = -accel.y * SDL_STANDARD_GRAVITY;
+-                    data[2] = -accel.z * SDL_STANDARD_GRAVITY;
+-                    SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, data, 3);
+-                }
++                GCRotationRate rate = motion.rotationRate;
++                data[0] = rate.x;
++                data[1] = rate.z;
++                data[2] = -rate.y;
++                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, timestamp, data, 3);
++
++                GCAcceleration accel = motion.acceleration;
++                data[0] = -accel.x * SDL_STANDARD_GRAVITY;
++                data[1] = -accel.y * SDL_STANDARD_GRAVITY;
++                data[2] = -accel.z * SDL_STANDARD_GRAVITY;
++                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, data, 3);
+             }
+         }
+ 

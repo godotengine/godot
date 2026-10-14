@@ -45,6 +45,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_about.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_icon_manager.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_version_button.h"
 #include "editor/inspector/editor_inspector.h"
@@ -413,6 +414,10 @@ void ProjectManager::_select_main_view(int p_id) {
 }
 
 void ProjectManager::_show_about() {
+	if (!about_dialog) {
+		about_dialog = memnew(EditorAbout);
+		add_child(about_dialog);
+	}
 	about_dialog->popup_centered(Size2(780, 500) * EDSCALE);
 }
 
@@ -498,6 +503,9 @@ void ProjectManager::_show_quick_settings() {
 	if (!EditorPropertyNameProcessor::get_singleton()) {
 		EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
 		add_child(epnp);
+
+		EditorIconManager *icon_manager = memnew(EditorIconManager);
+		add_child(icon_manager);
 
 		EditorHelp::generate_doc();
 	}
@@ -1276,9 +1284,6 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 		bool keycode_handled = true;
 
 		switch (k->get_keycode()) {
-			case Key::ENTER: {
-				_open_selected_projects_check_recovery_mode();
-			} break;
 			case Key::HOME: {
 				if (project_list->get_project_count() > 0) {
 					project_list->ensure_project_visible(0);
@@ -1320,6 +1325,84 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 }
 
 void ProjectManager::_files_dropped(PackedStringArray p_files) {
+#ifdef WEB_ENABLED
+	if (p_files.size() == 1 && p_files[0].ends_with(".zip")) {
+		const String &file = p_files[0];
+		Error err = DirAccess::rename_absolute(file, "/tmp/install.zip"); // Cleaned up at shutdown.
+		if (err) {
+			_show_error(vformat("Error importing the ZIP file: %d", err));
+			return;
+		}
+		_install_project("/tmp/install.zip", file.get_file().get_basename().capitalize());
+		return;
+	}
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	PackedStringArray errors;
+	PackedStringArray folders;
+	const String home = "/home/web_user";
+	for (const String &folder : p_files) {
+		if (!da->dir_exists(folder)) {
+			if (folder.ends_with(".zip")) {
+				errors.push_back("Importing multiple ZIP projects is not supported.");
+			} else {
+				errors.push_back(vformat("Unrecognized file: %s", folder.get_file()));
+			}
+			continue;
+		}
+		const String &name = folder.get_file();
+		const String base = folder.get_base_dir();
+		const String dest = home + "/" + name;
+		if (da->dir_exists(dest)) {
+			errors.push_back(vformat("Cannot import folder '%s', path already exists.", name));
+			continue;
+		}
+		// Move dropped folder to the home folder destination
+		List<String> dirs;
+		dirs.push_back(name);
+		Error err = OK;
+		while (dirs.size()) {
+			const String cur = dirs.front()->get();
+			dirs.pop_front();
+			err = DirAccess::make_dir_absolute(home + "/" + cur);
+			if (err != OK) {
+				errors.push_back(vformat("Failed to create folder: '%s/%s'", home, cur));
+				break;
+			}
+			for (const String &F : DirAccess::get_files_at(base + "/" + cur)) {
+				const String src = base + "/" + cur + "/" + F;
+				const String dst = home + "/" + cur + "/" + F;
+				err = DirAccess::rename_absolute(src, dst);
+				if (err != OK) {
+					errors.push_back(vformat("Failed to move file: '%s' to '%s'", src, dst));
+					break;
+				}
+			}
+			if (err != OK) {
+				break;
+			}
+			for (const String &D : DirAccess::get_directories_at(base + "/" + cur)) {
+				dirs.push_back(cur + "/" + D);
+			}
+		}
+		if (err != OK) {
+			// Try removing the import destination.
+			Ref<DirAccess> dab = DirAccess::open(dest);
+			if (dab.is_valid()) {
+				dab->erase_contents_recursive();
+				dab.unref();
+				DirAccess::remove_absolute(dest);
+			}
+		} else {
+			folders.push_back(dest);
+		}
+	}
+
+	if (errors.size()) {
+		_show_error(String("\n").join(errors));
+	}
+	project_list->find_projects_multiple(folders);
+#else
 	// TODO: Support installing multiple ZIPs at the same time?
 	if (p_files.size() == 1 && p_files[0].ends_with(".zip")) {
 		const String &file = p_files[0];
@@ -1340,6 +1423,7 @@ void ProjectManager::_files_dropped(PackedStringArray p_files) {
 		folders.push_back(E);
 	}
 	project_list->find_projects_multiple(folders);
+#endif // WEB_ENABLED
 }
 
 void ProjectManager::_titlebar_resized() {
@@ -1481,7 +1565,7 @@ ProjectManager::ProjectManager() {
 
 		HBoxContainer *left_hbox = memnew(HBoxContainer);
 		left_hbox->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
-		left_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		left_hbox->set_h_size_flags(Control::SIZE_FILL);
 		left_hbox->set_stretch_ratio(1.0);
 		title_bar->add_child(left_hbox);
 
@@ -1515,6 +1599,7 @@ ProjectManager::ProjectManager() {
 			// Spacer to center main toggles.
 			left_spacer = memnew(Control);
 			left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			title_bar->add_child(left_spacer);
 		}
 
@@ -1529,6 +1614,7 @@ ProjectManager::ProjectManager() {
 			// Spacer to center main toggles.
 			right_spacer = memnew(Control);
 			right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+			right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			title_bar->add_child(right_spacer);
 		}
 
@@ -1536,7 +1622,7 @@ ProjectManager::ProjectManager() {
 
 		HBoxContainer *right_hbox = memnew(HBoxContainer);
 		right_hbox->set_alignment(BoxContainer::ALIGNMENT_END);
-		right_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		right_hbox->set_h_size_flags(Control::SIZE_FILL);
 		right_hbox->set_stretch_ratio(1.0);
 		title_bar->add_child(right_hbox);
 
@@ -1876,12 +1962,12 @@ ProjectManager::ProjectManager() {
 		ask_update_label->set_v_size_flags(SIZE_EXPAND_FILL);
 		ask_update_vb->add_child(ask_update_label);
 		ask_update_backup = memnew(CheckBox);
-		ask_update_backup->set_text(TTRC("Backup project first"));
+		ask_update_backup->set_text(TTRC("Back Up Project First"));
 		ask_update_backup->set_h_size_flags(SIZE_SHRINK_CENTER);
 		ask_update_vb->add_child(ask_update_backup);
 		ask_upgrade_tool = memnew(CheckBox);
 		ask_upgrade_tool->set_text(TTRC("Upgrade All Project Files"));
-		ask_upgrade_tool->set_tooltip_text(TTRC("Automatically runs the upgrade tool. This may take a while to finish. The project will be restarted once in the process."));
+		ask_upgrade_tool->set_tooltip_text(TTRC("Automatically runs the upgrade tool. This may take a while to finish. The editor may restart during the process."));
 		ask_upgrade_tool->set_h_size_flags(SIZE_SHRINK_CENTER);
 		ask_update_vb->add_child(ask_upgrade_tool);
 		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));
@@ -1909,9 +1995,6 @@ ProjectManager::ProjectManager() {
 		error_dialog = memnew(AcceptDialog);
 		error_dialog->set_title(TTRC("Error"));
 		add_child(error_dialog);
-
-		about_dialog = memnew(EditorAbout);
-		add_child(about_dialog);
 	}
 
 	// Tag management.

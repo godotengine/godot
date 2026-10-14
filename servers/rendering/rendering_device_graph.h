@@ -843,8 +843,10 @@ private:
 	bool command_synchronization_pending = false;
 	BarrierGroup barrier_group;
 	bool driver_honors_barriers : 1;
-	bool driver_clears_with_copy_engine : 1;
+	bool driver_buffer_clears_with_copy_engine : 1;
+	bool driver_texture_clears_with_copy_engine : 1;
 	bool driver_buffers_require_transitions : 1;
+	bool driver_textures_require_layout_transitions : 1;
 	WorkaroundsState workarounds_state;
 	TightLocalVector<Frame> frames;
 	uint32_t frame = 0;

@@ -35,7 +35,42 @@ import kotlin.collections.contentToString
 import kotlin.collections.joinToString
 
 class TestClass {
+	@JvmField var boolField: Boolean = false
+	@JvmField var byteField: Byte = 2
+	@JvmField var charField: Char = 'B'
+	@JvmField var shortField: Short = 3
+	@JvmField var intField: Int = 4
+	@JvmField var longField: Long = 5L
+	@JvmField var floatField: Float = 6.0f
+	@JvmField var doubleField: Double = 7.0
+	@JvmField var stringField: String = "string field"
+
+	@JvmField var boxedBoolField: Boolean? = null
+	@JvmField var boxedByteField: Byte? = null
+	@JvmField var boxedCharField: Char? = null
+	@JvmField var boxedShortField: Short? = null
+	@JvmField var boxedIntField: Int? = null
+	@JvmField var boxedLongField: Long? = null
+	@JvmField var boxedFloatField: Float? = null
+	@JvmField var boxedDoubleField: Double? = null
+
+	@JvmField val finalIntField: Int = 100
+	@JvmField val finalStringField: String = "final"
+
 	companion object {
+		@JvmField var staticBoolField: Boolean = true
+		@JvmField var staticByteField: Byte = 1
+		@JvmField var staticCharField: Char = 'A'
+		@JvmField var staticShortField: Short = 2
+		@JvmField var staticIntField: Int = 3
+		@JvmField var staticLongField: Long = 4L
+		@JvmField var staticFloatField: Float = 5.0f
+		@JvmField var staticDoubleField: Double = 6.0
+		@JvmField var staticStringField: String = "static"
+
+		@JvmField val staticFinalIntField: Int = 200
+		@JvmField val staticFinalStringField: String = "static final"
+
 		@JvmStatic
 		fun stringify(value: Any?): String {
 			return when (value) {

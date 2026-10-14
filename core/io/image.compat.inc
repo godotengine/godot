@@ -51,6 +51,10 @@ Error Image::_compress_from_channels_bind_compat_115003(CompressMode p_mode, Use
 	return compress_from_channels(p_mode, p_channels, _astc_format_to_compress_profile(p_format));
 }
 
+Error Image::_generate_mipmaps_bind_compat_104289(bool p_renormalize) {
+	return generate_mipmaps(p_renormalize, false, 0.5f);
+}
+
 Vector<uint8_t> Image::_save_exr_to_buffer_bind_compat_117800(bool p_grayscale) const {
 	return save_exr_to_buffer(p_grayscale);
 }
@@ -62,6 +66,7 @@ Error Image::_save_exr_bind_compat_117800(const String &p_path, bool p_grayscale
 void Image::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("compress", "mode", "source", "astc_format"), &Image::_compress_bind_compat_115003, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(ASTC_FORMAT_4x4));
 	ClassDB::bind_compatibility_method(D_METHOD("compress_from_channels", "mode", "channels", "astc_format"), &Image::_compress_from_channels_bind_compat_115003, DEFVAL(ASTC_FORMAT_4x4));
+	ClassDB::bind_compatibility_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::_generate_mipmaps_bind_compat_104289, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("save_exr", "path", "grayscale"), &Image::_save_exr_bind_compat_117800, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::_save_exr_to_buffer_bind_compat_117800, DEFVAL(false));
 }

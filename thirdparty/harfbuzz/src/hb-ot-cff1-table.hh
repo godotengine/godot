@@ -28,6 +28,7 @@
 #define HB_OT_CFF1_TABLE_HH
 
 #include "hb-ot-cff-common.hh"
+#include "hb-depend-data.hh"
 #include "hb-subset-cff-common.hh"
 #include "hb-draw.hh"
 #include "hb-paint.hh"
@@ -236,14 +237,14 @@ struct Encoding
 
   size_t get_size () const
   {
-    unsigned int size = min_size;
+    size_t size = min_size;
     switch (table_format ())
     {
-    case 0: hb_barrier (); size += u.format0.get_size (); break;
-    case 1: hb_barrier (); size += u.format1.get_size (); break;
+    case 0: hb_barrier (); size = hb_unsigned_add_saturate (size, u.format0.get_size ()); break;
+    case 1: hb_barrier (); size = hb_unsigned_add_saturate (size, u.format1.get_size ()); break;
     }
     if (has_supplement ())
-      size += suppEncData ().get_size ();
+      size = hb_unsigned_add_saturate (size, suppEncData ().get_size ());
     return size;
   }
 
@@ -326,7 +327,7 @@ struct Charset0
 
   void collect_glyph_to_sid_map (glyph_to_sid_map_t *mapping, unsigned int num_glyphs) const
   {
-    mapping->resize_dirty  (num_glyphs);
+    if (!mapping->resize_dirty  (num_glyphs)) return;
     for (hb_codepoint_t gid = 1; gid < num_glyphs; gid++)
       mapping->arrayZ[gid] = {sids[gid - 1], gid};
   }
@@ -426,10 +427,12 @@ struct Charset1_2 {
 
   void collect_glyph_to_sid_map (glyph_to_sid_map_t *mapping, unsigned int num_glyphs) const
   {
-    mapping->resize_dirty  (num_glyphs);
+    if (!mapping->resize_dirty  (num_glyphs)) return;
+
     hb_codepoint_t gid = 1;
     if (gid >= num_glyphs)
       return;
+
     for (unsigned i = 0;; i++)
     {
       hb_codepoint_t sid = ranges[i].first;
@@ -567,9 +570,9 @@ struct Charset
   {
     switch (format)
     {
-    case 0: hb_barrier (); return min_size + u.format0.get_size (num_glyphs);
-    case 1: hb_barrier (); return min_size + u.format1.get_size (num_glyphs);
-    case 2: hb_barrier (); return min_size + u.format2.get_size (num_glyphs);
+    case 0: hb_barrier (); return hb_unsigned_add_saturate (min_size, u.format0.get_size (num_glyphs));
+    case 1: hb_barrier (); return hb_unsigned_add_saturate (min_size, u.format1.get_size (num_glyphs));
+    case 2: hb_barrier (); return hb_unsigned_add_saturate (min_size, u.format2.get_size (num_glyphs));
     default:return 0;
     }
   }
@@ -770,8 +773,7 @@ struct cff1_top_dict_opset_t : top_dict_opset_t<cff1_top_dict_val_t>
 {
   static void process_op (op_code_t op, cff1_top_dict_interp_env_t& env, cff1_top_dict_values_t& dictval)
   {
-    cff1_top_dict_val_t  val;
-    val.last_arg_offset = (env.last_offset-1) - dictval.opStart;  /* offset to the last argument */
+    cff1_top_dict_val_t  val {};
 
     switch (op) {
       case OpCode_version:
@@ -815,6 +817,9 @@ struct cff1_top_dict_opset_t : top_dict_opset_t<cff1_top_dict_val_t>
 	dictval.nameSIDs[name_dict_values_t::ordering] = env.argStack.pop_uint ();
 	dictval.nameSIDs[name_dict_values_t::registry] = env.argStack.pop_uint ();
 	env.clear_args ();
+	if (unlikely (env.in_error ())) return;
+	assert (env.last_offset > dictval.opStart);
+	val.last_arg_offset = (env.last_offset - 1) - dictval.opStart;  /* offset to the last argument */
 	break;
 
       case OpCode_Encoding:
@@ -1463,8 +1468,8 @@ struct cff1
       return true;
     }
 
-    HB_INTERNAL bool get_extents (hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents) const;
-    HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const;
+    HB_INTERNAL bool get_extents (hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents, int64_t *budget = nullptr) const;
+    HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, int64_t *budget = nullptr) const;
 
     private:
     struct gname_t
@@ -1533,6 +1538,20 @@ struct cff1_accelerator_t : cff1::accelerator_t {
 
 struct cff1_subset_accelerator_t : cff1::accelerator_subset_t {
   cff1_subset_accelerator_t (hb_face_t *face) : cff1::accelerator_subset_t (face) {}
+
+  void depend (hb_depend_data_builder_t *builder) const
+  {
+    if (!is_valid ()) return;
+    for (hb_codepoint_t gid = 0; gid < num_glyphs; gid++)
+    {
+      hb_codepoint_t base_gid, accent_gid;
+      if (get_seac_components (gid, &base_gid, &accent_gid))
+      {
+        builder->add_depend (gid, HB_TAG('C','F','F',' '), base_gid);
+        builder->add_depend (gid, HB_TAG('C','F','F',' '), accent_gid);
+      }
+    }
+  }
 };
 
 } /* namespace OT */

@@ -3399,7 +3399,7 @@ void DisplayServerX11::window_set_flag(DisplayServerEnums::WindowFlags p_flag, b
 			xev.data.l[3] = 1;
 			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
 
-			if (!p_enabled && !wd.fullscreen) {
+			if (!p_enabled && !wd.fullscreen && !wd.maximized) {
 				_set_wm_maximized(p_window, false);
 			}
 			wd.on_top = p_enabled;

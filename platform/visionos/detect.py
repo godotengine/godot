@@ -138,7 +138,14 @@ def configure(env: "SConsEnvironment"):
     )
 
     env.Prepend(CPPPATH=["#platform/visionos"])
-    env.Append(CPPDEFINES=["VISIONOS_ENABLED", "APPLE_EMBEDDED_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED"])
+    env.Append(
+        CPPDEFINES=[
+            "VISIONOS_ENABLED",
+            "APPLE_EMBEDDED_ENABLED",
+            "UNIX_ENABLED",
+            "COREAUDIO_ENABLED",
+        ]
+    )
 
     if env["vulkan"]:
         print_warning("The visionOS platform does not support the Vulkan rendering driver")
@@ -149,7 +156,7 @@ def configure(env: "SConsEnvironment"):
         env["metal"] = False
 
     if env["metal"]:
-        env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["METAL_ENABLED"])
         env.Prepend(
             CPPPATH=[
                 "$APPLE_SDK_PATH/System/Library/Frameworks/Metal.framework/Headers",

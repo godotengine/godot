@@ -242,6 +242,14 @@
 				Returns whether [param class] (or its ancestor classes if [param no_inheritance] is [code]false[/code]) has an enum called [param enum] that is a bitfield.
 			</description>
 		</method>
+		<method name="is_class_exposed" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="class" type="StringName" />
+			<description>
+				Returns whether this [param class] is exposed or not.
+				Godot uses internal and platform specific classes at run time. [ClassDB] is able to work with those and lists them like any other class. This method can be used to filter them out if your use-case requires it.
+			</description>
+		</method>
 		<method name="is_parent_class" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="class" type="StringName" />

@@ -140,6 +140,47 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 			r_translations->push_back({ tooltip_text });
 		}
 
+		// Handle the `format` property of SpinBox.
+		{
+			String format_text;
+			String plural_format_text;
+			bool format_auto_translating = false;
+			int found = 0;
+
+			for (int j = 0; j < state->get_node_property_count(i); j++) {
+				if (found == 3) {
+					break;
+				}
+				const StringName property = state->get_node_property_name(i, j);
+				if (property == SNAME("format")) {
+					format_text = state->get_node_property_value(i, j);
+					found++;
+					continue;
+				}
+				if (property == SNAME("plural_format")) {
+					plural_format_text = state->get_node_property_value(i, j);
+					found++;
+					continue;
+				}
+				if (property == SNAME("format_auto_translate_mode")) {
+					int mode = state->get_node_property_value(i, j);
+					switch (mode) {
+						case Node::AUTO_TRANSLATE_MODE_ALWAYS: {
+							format_auto_translating = true;
+						} break;
+						case Node::AUTO_TRANSLATE_MODE_INHERIT: {
+							format_auto_translating = auto_translating;
+						} break;
+					}
+					found++;
+					continue;
+				}
+			}
+			if (format_auto_translating && !format_text.is_empty()) {
+				r_translations->push_back(PackedStringArray{ format_text, String(), plural_format_text });
+			}
+		}
+
 		// Parse the names of children of `TabContainer`s, as they are used for tab titles.
 		if (!tabcontainer_paths.is_empty()) {
 			if (!parent_path.begins_with(tabcontainer_paths[tabcontainer_paths.size() - 1])) {

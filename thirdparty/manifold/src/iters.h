@@ -13,11 +13,20 @@
 // limitations under the License.
 #pragma once
 
+#include <cstddef>
 #include <iterator>
 #include <optional>
 #include <type_traits>
 
 namespace manifold {
+
+/**
+ * Stand-in for C++23's operator""uz (P0330R8)[https://wg21.link/P0330R8].
+ */
+[[nodiscard]] constexpr std::size_t operator""_uz(
+    unsigned long long n) noexcept {
+  return n;
+}
 
 template <typename F, typename Iter>
 struct TransformIterator {
@@ -208,7 +217,8 @@ struct CountingIterator {
   }
 };
 
-constexpr CountingIterator<size_t> countAt(size_t i) {
+template <typename T, std::enable_if_t<std::is_integral_v<T>, bool> = true>
+constexpr CountingIterator<T> countAt(T i) {
   return CountingIterator(i);
 }
 

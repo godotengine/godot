@@ -114,7 +114,7 @@ struct FeatureName
     if (pdefault_index)
       *pdefault_index = default_index;
 
-    if (selectors_count)
+    if (selectors_count && selectors)
     {
       + settings_table.sub_array (start_offset, selectors_count)
       | hb_map ([=] (const SettingName& setting) { return setting.get_info (default_selector); })
@@ -168,7 +168,7 @@ struct feat
 				  unsigned int                 *count,
 				  hb_aat_layout_feature_type_t *features) const
   {
-    if (count)
+    if (count && features)
     {
       + namesZ.as_array (featureNameCount).sub_array (start_offset, count)
       | hb_map (&FeatureName::get_feature_type)

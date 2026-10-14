@@ -16,12 +16,49 @@
 
 #include <atomic>
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 #include "utils.h"
 #include "vec.h"
 
 namespace {
 using hash_fun_t = uint64_t(uint64_t);
 inline constexpr uint64_t kOpen = std::numeric_limits<uint64_t>::max();
+
+inline uint32_t ClzSizeT(size_t value) {
+#ifdef _MSC_VER
+#if defined(_WIN64)
+  unsigned long index = 0;
+  if (_BitScanReverse64(&index, static_cast<uint64_t>(value))) {
+    return 63u - index;
+  }
+  return 64u;
+#else
+  unsigned long index = 0;
+  if (_BitScanReverse(&index, static_cast<unsigned long>(value))) {
+    return 31u - index;
+  }
+  return 32u;
+#endif
+#else
+  if (value == 0) return 8u * static_cast<uint32_t>(sizeof(size_t));
+#if SIZE_MAX == UINT64_MAX
+  return static_cast<uint32_t>(
+      __builtin_clzll(static_cast<unsigned long long>(value)));
+#else
+  return static_cast<uint32_t>(__builtin_clz(static_cast<unsigned int>(value)));
+#endif
+#endif
+}
+
+inline uint32_t CeilLog2(size_t value) {
+  if (value <= 1) return 0;
+  const size_t x = value - 1;
+  const uint32_t width = 8u * static_cast<uint32_t>(sizeof(size_t));
+  return width - ClzSizeT(x);
+}
 
 template <typename T>
 T AtomicCAS(T& target, T compare, T val) {
@@ -115,8 +152,8 @@ template <typename V, hash_fun_t H = hash64bit>
 class HashTable {
  public:
   HashTable(size_t size, uint32_t step = 1)
-      : keys_{size == 0 ? 0 : 1_uz << (int)ceil(log2(size)), kOpen},
-        values_{size == 0 ? 0 : 1_uz << (int)ceil(log2(size)), {}},
+      : keys_{size == 0 ? 0 : 1_uz << static_cast<int>(CeilLog2(size)), kOpen},
+        values_{size == 0 ? 0 : 1_uz << static_cast<int>(CeilLog2(size)), {}},
         step_(step) {}
 
   HashTable(const HashTable& other)

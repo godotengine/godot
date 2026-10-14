@@ -38,6 +38,7 @@
 #ifndef HB_EXPERIMENTAL_API
 #define HB_NO_BEYOND_64K
 #define HB_NO_CUBIC_GLYF
+#define HB_NO_SUBSET_DEPEND
 #endif
 
 #ifdef HB_TINY
@@ -75,9 +76,11 @@
 #define HB_NO_MMAP
 #define HB_NO_NAME
 #define HB_NO_OPEN
+#define HB_NO_OT_FETCH
 #define HB_NO_OT_FONT_GLYPH_NAMES
 #define HB_NO_SETLOCALE
 #define HB_NO_STYLE
+#define HB_NO_SUBSET_DEPEND
 #define HB_NO_VERTICAL
 #define HB_NO_VAR
 
@@ -136,7 +139,7 @@
 #endif
 
 #ifdef HB_NO_DRAW
-#define HB_NO_CFF
+#define HB_NO_OT_FONT_CFF
 #define HB_NO_OUTLINE
 #define HB_NO_PAINT
 #endif
@@ -186,6 +189,13 @@
 #define HB_NO_GDEF_CACHE
 #define HB_NO_OT_LAYOUT_LOOKUP_CACHE
 #define HB_NO_OT_FONT_CMAP_CACHE
+#endif
+
+#if defined(HAVE_CONFIG_OVERRIDE_LAST_H) || defined(HB_CONFIG_OVERRIDE_LAST_H)
+#ifndef HB_CONFIG_OVERRIDE_LAST_H
+#define HB_CONFIG_OVERRIDE_LAST_H "config-override-last.h"
+#endif
+#include HB_CONFIG_OVERRIDE_LAST_H
 #endif
 
 #ifdef HB_OPTIMIZE_SIZE

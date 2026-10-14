@@ -159,6 +159,7 @@
 #include "scene/resources/shader_resource_format.h"
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sky.h"
+#include "scene/resources/streamed_texture.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
@@ -232,6 +233,7 @@
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/bone_constraint_3d.h"
+#include "scene/3d/bone_space_adjuster_3d.h"
 #include "scene/3d/bone_twist_disperser_3d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/ccd_ik_3d.h"
@@ -343,7 +345,6 @@
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
-#include "scene/3d/bone_spreader_3d.h"
 #include "scene/3d/physics/animatable_body_3d.h"
 #include "scene/3d/physics/area_3d.h"
 #include "scene/3d/physics/character_body_3d.h"
@@ -384,7 +385,8 @@
 static Ref<ResourceFormatSaverText> resource_saver_text;
 static Ref<ResourceFormatLoaderText> resource_loader_text;
 
-static Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_stream_texture;
+static Ref<ResourceFormatLoaderCompressedTexture2D> resource_loader_compressed_texture;
+static Ref<ResourceFormatLoaderStreamedTexture2D> resource_loader_streamed_texture;
 static Ref<ResourceFormatLoaderCompressedTextureLayered> resource_loader_texture_layered;
 static Ref<ResourceFormatLoaderCompressedTexture3D> resource_loader_texture_3d;
 
@@ -404,8 +406,13 @@ void register_scene_types() {
 	Node::init_node_hrcr();
 
 	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
-		resource_loader_stream_texture.instantiate();
-		ResourceLoader::add_resource_format_loader(resource_loader_stream_texture);
+		resource_loader_compressed_texture.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_compressed_texture);
+	}
+
+	if constexpr (GD_IS_CLASS_ENABLED(StreamedTexture2D)) {
+		resource_loader_streamed_texture.instantiate();
+		ResourceLoader::add_resource_format_loader(resource_loader_streamed_texture);
 	}
 
 	if constexpr (GD_IS_CLASS_ENABLED(TextureLayered)) {
@@ -744,7 +751,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SoftBody3D);
 #endif // PHYSICS_3D_DISABLED
 
-	GDREGISTER_CLASS(BoneSpreader3D);
+	GDREGISTER_CLASS(BoneSpaceAdjuster3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
 	GDREGISTER_CLASS(LookAtModifier3D);
 #ifndef DISABLE_DEPRECATED
@@ -956,6 +963,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(World2D);
 	GDREGISTER_CLASS(Sky);
 	GDREGISTER_CLASS(CompressedTexture2D);
+	GDREGISTER_CLASS(StreamedTexture2D);
 	GDREGISTER_CLASS(PortableCompressedTexture2D);
 	GDREGISTER_CLASS(ImageTexture);
 	GDREGISTER_CLASS(AtlasTexture);
@@ -990,13 +998,15 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimatedTexture);
 #endif
 
-	// These classes are part of renderer_rd
+#ifdef RD_ENABLED
+	// These classes are part of renderer_rd.
 	GDREGISTER_CLASS(Texture2DRD);
 	GDREGISTER_ABSTRACT_CLASS(TextureLayeredRD);
 	GDREGISTER_CLASS(Texture2DArrayRD);
 	GDREGISTER_CLASS(TextureCubemapRD);
 	GDREGISTER_CLASS(TextureCubemapArrayRD);
 	GDREGISTER_CLASS(Texture3DRD);
+#endif // RD_ENABLED
 
 	GDREGISTER_CLASS(Animation);
 	GDREGISTER_CLASS(AnimationLibrary);
@@ -1355,8 +1365,13 @@ void unregister_scene_types() {
 	}
 
 	if constexpr (GD_IS_CLASS_ENABLED(CompressedTexture2D)) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_stream_texture);
-		resource_loader_stream_texture.unref();
+		ResourceLoader::remove_resource_format_loader(resource_loader_compressed_texture);
+		resource_loader_compressed_texture.unref();
+	}
+
+	if constexpr (GD_IS_CLASS_ENABLED(StreamedTexture2D)) {
+		ResourceLoader::remove_resource_format_loader(resource_loader_streamed_texture);
+		resource_loader_streamed_texture.unref();
 	}
 
 	ResourceSaver::remove_resource_format_saver(resource_saver_text);

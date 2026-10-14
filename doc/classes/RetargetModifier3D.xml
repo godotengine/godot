@@ -52,6 +52,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="copy_bone_skin_scale" type="bool" setter="set_copy_bone_skin_scale" getter="is_copying_bone_skin_scale" default="true">
+			If [code]true[/code], copies [method Skeleton3D.get_bone_skin_scale] of the source skeleton's bones to the child skeletons' mapped bones.
+			If [code]false[/code], the skin scale of the child skeletons' mapped bones are reset to [code]Vector3(1, 1, 1)[/code] once and will not be overwritten after that.
+			[b]Note:[/b] If you want to use [method Skeleton3D.set_bone_skin_scale] on a child skeleton's mapped bone, set this to [code]false[/code]. Even if you are not using [method Skeleton3D.set_bone_skin_scale] with parent skeleton, [code]Vector3(1, 1, 1)[/code] will always be set for the child skeletons' mapped bones.
+		</member>
 		<member name="enable" type="int" setter="set_enable_flags" getter="get_enable_flags" enum="RetargetModifier3D.TransformFlag" is_bitfield="true" default="7">
 			Flags to control the process of the transform elements individually when [member use_global_pose] is disabled.
 		</member>

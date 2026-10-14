@@ -35,6 +35,7 @@
 #include "core/config/project_settings.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/editor_language.h"
 #include "core/os/os.h"
 #include "editor/doc/doc_tools.h"
 #include "editor/doc/editor_help.h"
@@ -528,14 +529,14 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 	params.load(p_params);
 	Dictionary request_data = params.to_json();
 
-	List<ScriptLanguage::CodeCompletionOption> options;
+	List<EditorLanguage::CompletionOption> options;
 	get_workspace()->completion(params, &options);
 
 	if (!options.is_empty()) {
 		int i = 0;
 		arr.resize(options.size());
 
-		for (const ScriptLanguage::CodeCompletionOption &option : options) {
+		for (const EditorLanguage::CompletionOption &option : options) {
 			LSP::CompletionItem item;
 			item.label = option.display;
 			item.data = request_data;
@@ -560,41 +561,39 @@ Array GDScriptLanguageProtocol::lsp_completion(const Dictionary &p_params) {
 			}
 
 			switch (option.kind) {
-				case ScriptLanguage::CODE_COMPLETION_KIND_ENUM:
+				case EditorLanguage::CompletionKind::ENUM:
 					item.kind = LSP::CompletionItemKind::Enum;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_CLASS:
+				case EditorLanguage::CompletionKind::CLASS:
 					item.kind = LSP::CompletionItemKind::Class;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_MEMBER:
+				case EditorLanguage::CompletionKind::MEMBER_VARIABLE:
 					item.kind = LSP::CompletionItemKind::Property;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION:
+				case EditorLanguage::CompletionKind::FUNCTION:
 					item.kind = LSP::CompletionItemKind::Method;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL:
+				case EditorLanguage::CompletionKind::SIGNAL:
 					item.kind = LSP::CompletionItemKind::Event;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT:
+				case EditorLanguage::CompletionKind::CONSTANT:
 					item.kind = LSP::CompletionItemKind::Constant;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE:
+				case EditorLanguage::CompletionKind::VARIABLE:
 					item.kind = LSP::CompletionItemKind::Variable;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH:
+				case EditorLanguage::CompletionKind::FILE_PATH:
 					item.kind = LSP::CompletionItemKind::File;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH:
+				case EditorLanguage::CompletionKind::NODE_PATH:
 					item.kind = LSP::CompletionItemKind::Snippet;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT:
+				case EditorLanguage::CompletionKind::PLAIN_TEXT:
 					item.kind = LSP::CompletionItemKind::Text;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_KEYWORD:
+				case EditorLanguage::CompletionKind::KEYWORD:
 					item.kind = LSP::CompletionItemKind::Keyword;
 					break;
-				case ScriptLanguage::CODE_COMPLETION_KIND_MAX: {
-				}
 			}
 
 			arr[i] = item.to_json();

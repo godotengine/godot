@@ -320,8 +320,7 @@ protected: \
 		if (!p_reversed) { \
 			m_inherits::_get_property_listv(p_list, p_reversed); \
 		} \
-		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY)); \
-		_get_property_list_from_classdb(#m_class, p_list, true, this); \
+		_get_property_list_inner(p_list, get_class_static()); \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) { \
 			_get_property_list(p_list); \
 		} \
@@ -548,6 +547,9 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const { return false; }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; }
 	void _notification(int p_notification) {}
+
+	// Out-lined helper function to save on binary space.
+	_NO_INLINE_ void _get_property_list_inner(List<PropertyInfo> *p_list, const StringName &p_class_name) const;
 
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
 		return &Object::_bind_methods;

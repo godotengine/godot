@@ -59,17 +59,17 @@ JPH::ShapeRefC JoltHeightMapShape3D::_build() const {
 	ERR_FAIL_COND_V_MSG(width < 2 || depth < 2, nullptr, vformat("Failed to build Jolt Physics height map shape with %s. The height map must be at least 2x2. This shape belongs to %s.", to_string(), _owners_to_string()));
 
 	if (width != depth) {
-		return JoltShape3D::with_double_sided(_build_mesh(), true);
+		return _build_mesh();
 	}
 
 	const int block_size = 2; // Default of JPH::HeightFieldShapeSettings::mBlockSize
 	const int block_count = width / block_size;
 
 	if (block_count < 2) {
-		return JoltShape3D::with_double_sided(_build_mesh(), true);
+		return _build_mesh();
 	}
 
-	return JoltShape3D::with_double_sided(_build_height_field(), true);
+	return _build_height_field();
 }
 
 JPH::ShapeRefC JoltHeightMapShape3D::_build_height_field() const {

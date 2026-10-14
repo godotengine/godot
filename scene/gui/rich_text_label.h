@@ -139,6 +139,14 @@ public:
 		IMAGE_UNIT_EM,
 	};
 
+	enum ResourceAccessFlag {
+		RESOURCE_ACCESS_RESOURCES = 1 << 0,
+		RESOURCE_ACCESS_USERDATA = 1 << 1,
+		RESOURCE_ACCESS_FILESYSTEM = 1 << 2,
+		RESOURCE_ACCESS_PIPE = 1 << 3,
+		RESOURCE_ACCESS_NETWORK = 1 << 4,
+	};
+
 protected:
 	virtual void _update_theme_item_cache() override;
 
@@ -546,6 +554,8 @@ private:
 	int scroll_w = 0;
 	bool scroll_updated = false;
 	bool updating_scroll = false;
+	int first_line = 0;
+	int character_inside_first_drawn_subline = 0;
 	int current_idx = 1;
 	int current_char_ofs = 0;
 	int visible_paragraph_count = 0;
@@ -564,6 +574,10 @@ private:
 
 	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;
+
+	BitField<ResourceAccessFlag> access_flags = RESOURCE_ACCESS_RESOURCES | RESOURCE_ACCESS_USERDATA;
+
+	bool _validate_resource_path(const String &p_path) const;
 
 	Array custom_effects;
 
@@ -1040,6 +1054,9 @@ public:
 	void install_effect(const Variant effect);
 	void reload_effects();
 
+	BitField<ResourceAccessFlag> get_resource_access_flags() const;
+	void set_resource_access_flags(BitField<ResourceAccessFlag> p_flags);
+
 	virtual Size2 get_minimum_size() const override;
 
 	RichTextLabel(const String &p_text = String());
@@ -1050,4 +1067,5 @@ VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
 VARIANT_ENUM_CAST(RichTextLabel::MetaUnderline);
 VARIANT_BITFIELD_CAST(RichTextLabel::ImageUpdateMask);
+VARIANT_BITFIELD_CAST(RichTextLabel::ResourceAccessFlag);
 VARIANT_ENUM_CAST(RichTextLabel::ImageUnit);

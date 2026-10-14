@@ -36,7 +36,7 @@ Size2 CenterContainer::get_minimum_size() const {
 	if (use_top_left) {
 		return Size2();
 	}
-	return Container::get_minimum_size();
+	return Container::_get_minimum_size();
 }
 
 Size2 CenterContainer::get_desired_size() const {

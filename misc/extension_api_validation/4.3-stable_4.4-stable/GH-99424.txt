@@ -1,5 +1,3 @@
-GH-99424
---------
 Validate extension JSON: API was removed: builtin_classes/Projection/constants/PLANE_BOTTOM
 Validate extension JSON: API was removed: builtin_classes/Projection/constants/PLANE_FAR
 Validate extension JSON: API was removed: builtin_classes/Projection/constants/PLANE_LEFT

@@ -25,34 +25,31 @@ partial class EventSignals
         signals.Add(new(name: SignalName.@MySignal, returnVal: new(type: (global::Godot.Variant.Type)0, name: "", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), flags: (global::Godot.MethodFlags)1, arguments: new() { new(type: (global::Godot.Variant.Type)4, name: "str", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false), new(type: (global::Godot.Variant.Type)2, name: "num", hint: (global::Godot.PropertyHint)0, hintString: "", usage: (global::Godot.PropertyUsageFlags)6, exported: false),  }, defaultArguments: null));
         return signals;
     }
+    protected internal new static partial class GodotInternal
+    {
+        public static void GetGodotRaiseSignalTrampolines(global::Godot.Bridge.RaiseSignalTrampolineCollector collector)
+        {
+            static void trampoline_2_MySignal(object godotObject, NativeVariantPtrArgs args, ref godot_variant_call_error callError)
+            {
+                if (args.Count != 2) {
+                    callError = godot_variant_call_error.CreateInvalidArgumentCountError(expected: 2, provided: args.Count);
+                    return;
+                }
+                ((global::EventSignals)godotObject).backing_MySignal?.Invoke(global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(args[0]), global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[1]));
+            }
+            var aux_delegate_2_MySignal = trampoline_2_MySignal;
+            collector.TryAdd(new(SignalName.@MySignal, 2), new(aux_delegate_2_MySignal.Method.MethodHandle.GetFunctionPointer()));
+        }
+    }
 #pragma warning restore CS0109
     private global::EventSignals.MySignalEventHandler backing_MySignal;
     /// <inheritdoc cref="global::EventSignals.MySignalEventHandler"/>
     public event global::EventSignals.MySignalEventHandler @MySignal {
         add => backing_MySignal += value;
         remove => backing_MySignal -= value;
-}
+    }
     protected void EmitSignalMySignal(string @str, int @num)
     {
         EmitSignal(SignalName.MySignal, [@str, @num]);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override void RaiseGodotClassSignalCallbacks(in godot_string_name signal, NativeVariantPtrArgs args)
-    {
-        if (signal == SignalName.@MySignal && args.Count == 2) {
-            backing_MySignal?.Invoke(global::Godot.NativeInterop.VariantUtils.ConvertTo<string>(args[0]), global::Godot.NativeInterop.VariantUtils.ConvertTo<int>(args[1]));
-            return;
-        }
-        base.RaiseGodotClassSignalCallbacks(signal, args);
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool HasGodotClassSignal(in godot_string_name signal)
-    {
-        if (signal == SignalName.@MySignal) {
-           return true;
-        }
-        return base.HasGodotClassSignal(signal);
     }
 }
