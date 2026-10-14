@@ -111,7 +111,9 @@ void JoltGeneric6DOFJoint3D::_update_limit_spring_parameters(int p_axis) {
 
 void JoltGeneric6DOFJoint3D::_update_motor_state(int p_axis) {
 	if (JPH::SixDOFConstraint *constraint = static_cast<JPH::SixDOFConstraint *>(jolt_ref.GetPtr())) {
-		if (motor_enabled[p_axis]) {
+		if (motor_enabled[p_axis] && spring_enabled[p_axis]) {
+			constraint->SetMotorState((JoltAxis)p_axis, JPH::EMotorState::PositionAndVelocity);
+		} else if (motor_enabled[p_axis]) {
 			constraint->SetMotorState((JoltAxis)p_axis, JPH::EMotorState::Velocity);
 		} else if (spring_enabled[p_axis]) {
 			constraint->SetMotorState((JoltAxis)p_axis, JPH::EMotorState::Position);

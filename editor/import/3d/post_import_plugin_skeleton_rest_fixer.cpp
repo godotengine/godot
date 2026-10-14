@@ -53,6 +53,7 @@ void PostImportPluginSkeletonRestFixer::get_internal_import_options(InternalImpo
 						Variant::STRING, U"retarget/rest_fixer/\u26A0_validation_warning/skeleton_bones_must_be_renamed",
 						PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY),
 				Variant(skeleton_bones_must_be_renamed_warning)));
+		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/copy_bone_skin_scale"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/use_global_pose"), true));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::STRING, "retarget/rest_fixer/original_skeleton_name"), "OriginalSkeleton"));
 		r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "retarget/rest_fixer/fix_silhouette/enable", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -75,7 +76,7 @@ Variant PostImportPluginSkeletonRestFixer::get_internal_option_visibility(Intern
 			}
 		} else if (p_option == "retarget/rest_fixer/keep_global_rest_on_leftovers") {
 			return int(p_options["retarget/rest_fixer/retarget_method"]) == 1;
-		} else if (p_option == "retarget/rest_fixer/original_skeleton_name" || p_option == "retarget/rest_fixer/use_global_pose") {
+		} else if (p_option == "retarget/rest_fixer/original_skeleton_name" || p_option == "retarget/rest_fixer/copy_bone_skin_scale" || p_option == "retarget/rest_fixer/use_global_pose") {
 			return int(p_options["retarget/rest_fixer/retarget_method"]) == 2;
 		} else if (p_option.begins_with("retarget/") && p_option.ends_with("skeleton_bones_must_be_renamed")) {
 			return int(p_options["retarget/rest_fixer/retarget_method"]) == 2 && bool(p_options["retarget/bone_renamer/rename_bones"]) == false;
@@ -462,6 +463,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 		}
 
 		bool is_using_modifier = int(p_options["retarget/rest_fixer/retarget_method"]) == 2;
+		bool is_copying_bone_skin_scale = bool(p_options["retarget/rest_fixer/copy_bone_skin_scale"]);
 		bool is_using_global_pose = bool(p_options["retarget/rest_fixer/use_global_pose"]);
 		Skeleton3D *orig_skeleton = nullptr;
 		Skeleton3D *profile_skeleton = nullptr;
@@ -563,6 +565,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				orig_skeleton->set_owner(owner);
 				orig_skeleton->set_unique_name_in_owner(true);
 
+				mod->set_copy_bone_skin_scale(is_copying_bone_skin_scale);
 				mod->set_use_global_pose(is_using_global_pose);
 				mod->set_profile(profile);
 

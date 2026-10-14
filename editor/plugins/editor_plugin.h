@@ -127,7 +127,9 @@ protected:
 	GDVIRTUAL1(_forward_3d_force_draw_over_viewport, Control *)
 	GDVIRTUAL0RC(String, _get_plugin_name)
 	GDVIRTUAL0RC(Ref<Texture2D>, _get_plugin_icon)
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL0RC(bool, _has_main_screen)
+#endif
 	GDVIRTUAL1(_make_visible, bool)
 	GDVIRTUAL1(_edit, Object *)
 	GDVIRTUAL1RC(bool, _handles, Object *)
@@ -197,7 +199,9 @@ public:
 	virtual const Ref<Texture2D> get_plugin_icon() const;
 	virtual String get_plugin_version() const;
 	virtual void set_plugin_version(const String &p_version);
+#ifndef DISABLE_DEPRECATED
 	virtual bool has_main_screen() const;
+#endif
 	virtual void make_visible(bool p_visible);
 	virtual void set_current() {}
 	virtual void edit(Object *p_object);

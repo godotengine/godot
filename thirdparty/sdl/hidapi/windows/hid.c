@@ -991,9 +991,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			break;
 		}
 
-		if (device_interface_list != NULL) {
-			free(device_interface_list);
-		}
+		free(device_interface_list); // This should NOT be SDL_free()
 
 		device_interface_list = (wchar_t*)calloc(len, sizeof(wchar_t));
 		if (device_interface_list == NULL) {
@@ -1029,6 +1027,12 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 			continue;
 		}
 
+#ifdef HIDAPI_IGNORE_DEVICE
+		hid_bus_type bus_type = HID_API_BUS_UNKNOWN;
+		PHIDP_PREPARSED_DATA pp_data = NULL;
+		HIDP_CAPS caps = { 0 };
+#endif
+
 		/* Get the Vendor ID and Product ID for this device. */
 		attrib.Size = sizeof(HIDD_ATTRIBUTES);
 		if (!HidD_GetAttributes(device_handle, &attrib)) {
@@ -1037,14 +1041,12 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 
 #ifdef HIDAPI_IGNORE_DEVICE
 		/* See if there are any devices we should skip in enumeration */
-		hid_bus_type bus_type = get_bus_type(device_interface);
-		PHIDP_PREPARSED_DATA pp_data = NULL;
-		HIDP_CAPS caps = { 0 };
+		bus_type = get_bus_type(device_interface);
 		if (HidD_GetPreparsedData(device_handle, &pp_data)) {
 			HidP_GetCaps(pp_data, &caps);
 			HidD_FreePreparsedData(pp_data);
 		}
-		if (HIDAPI_IGNORE_DEVICE(bus_type, attrib.VendorID, attrib.ProductID, caps.UsagePage, caps.Usage)) {
+		if (HIDAPI_IGNORE_DEVICE(bus_type, attrib.VendorID, attrib.ProductID, caps.UsagePage, caps.Usage, false, false)) {
 			goto cont_close;
 		}
 #endif

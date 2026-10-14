@@ -190,11 +190,11 @@ void PropertySelector::_update_search() {
 
 			// Skip getters and setters of properties because users will usually use the property instead.
 			HashSet<StringName> methods_to_skip;
-			for (const KeyValue<StringName, GDType::Property> &kv : ClassDB::get_gdtype(base_type)->get_property_map()) {
-				if (kv.value.type != GDType::Property::Type::SETGET) {
+			for (const KeyValue<StringName, GDType::Member> &kv : ClassDB::get_gdtype(base_type)->members()) {
+				if (kv.value.type != GDType::Member::Type::PROPERTY) {
 					continue; // Not relevant.
 				}
-				const GDType::Property::SetGet &psg = kv.value.payload.setget;
+				const GDType::Member::Property &psg = kv.value.payload.property;
 				if (psg.index != -1 || (psg.property_info->usage & PROPERTY_USAGE_INTERNAL)) {
 					continue; // Not exposed.
 				}

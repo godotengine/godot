@@ -337,18 +337,18 @@ struct sbix
       }
 
       extents->x_bearing = x_offset;
-      extents->y_bearing = png.IHDR.height + y_offset;
-      extents->width     = png.IHDR.width;
-      extents->height    = -1 * png.IHDR.height;
+      extents->y_bearing = hb_clamp_to<hb_position_t> ((int64_t) (unsigned int) png.IHDR.height + y_offset);
+      extents->width     = (hb_position_t) (unsigned int) png.IHDR.width;
+      extents->height    = -(hb_position_t) (unsigned int) png.IHDR.height;
 
       /* Convert to font units. */
       if (strike_ppem && scale)
       {
 	float scale = font->face->get_upem () / (float) strike_ppem;
-	extents->x_bearing = roundf (extents->x_bearing * scale);
-	extents->y_bearing = roundf (extents->y_bearing * scale);
-	extents->width = roundf (extents->width * scale);
-	extents->height = roundf (extents->height * scale);
+	extents->x_bearing = hb_clamp_to<hb_position_t> (roundf (extents->x_bearing * scale));
+	extents->y_bearing = hb_clamp_to<hb_position_t> (roundf (extents->y_bearing * scale));
+	extents->width = hb_clamp_to<hb_position_t> (roundf (extents->width * scale));
+	extents->height = hb_clamp_to<hb_position_t> (roundf (extents->height * scale));
       }
 
       if (scale)

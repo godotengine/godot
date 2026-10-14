@@ -2,6 +2,7 @@
 #define OT_LAYOUT_GPOS_CURSIVEPOSFORMAT1_HH
 
 #include "Anchor.hh"
+#include "../../../hb-limits.hh"
 
 namespace OT {
 namespace Layout {
@@ -55,8 +56,12 @@ reverse_cursive_minor_offset (hb_glyph_position_t *pos,
                               unsigned int len,
                               unsigned int i,
                               hb_direction_t direction,
-                              unsigned int new_parent)
+                              unsigned int new_parent,
+                              unsigned nesting_level = 0)
 {
+  if (nesting_level > HB_MAX_NESTING_LEVEL)
+    return;
+
   int chain = pos[i].attach_chain(), type = pos[i].attach_type();
   if (likely (!chain || 0 == (type & ATTACH_TYPE_CURSIVE)))
     return;
@@ -79,12 +84,12 @@ reverse_cursive_minor_offset (hb_glyph_position_t *pos,
   if (unlikely (reversed_chain != -chain))
     return;
 
-  reverse_cursive_minor_offset (pos, len, j, direction, new_parent);
+  reverse_cursive_minor_offset (pos, len, j, direction, new_parent, nesting_level + 1);
 
   if (HB_DIRECTION_IS_HORIZONTAL (direction))
-    pos[j].y_offset = -pos[i].y_offset;
+    pos[j].y_offset = hb_saturate_neg (pos[i].y_offset);
   else
-    pos[j].x_offset = -pos[i].x_offset;
+    pos[j].x_offset = hb_saturate_neg (pos[i].x_offset);
 
   pos[j].attach_chain() = reversed_chain;
   pos[j].attach_type() = type;
@@ -184,32 +189,32 @@ struct CursivePosFormat1
     /* Main-direction adjustment */
     switch (c->direction) {
       case HB_DIRECTION_LTR:
-        pos[i].x_advance  = roundf (exit_x) + pos[i].x_offset;
+        pos[i].x_advance = hb_saturate_add ((hb_position_t) roundf (exit_x), pos[i].x_offset);
 
-        d = roundf (entry_x) + pos[j].x_offset;
-        pos[j].x_advance -= d;
-        pos[j].x_offset  -= d;
+        d = hb_saturate_add ((hb_position_t) roundf (entry_x), pos[j].x_offset);
+        pos[j].x_advance = hb_saturate_sub (pos[j].x_advance, d);
+        pos[j].x_offset = hb_saturate_sub (pos[j].x_offset, d);
         break;
       case HB_DIRECTION_RTL:
-        d = roundf (exit_x) + pos[i].x_offset;
-        pos[i].x_advance -= d;
-        pos[i].x_offset  -= d;
+        d = hb_saturate_add ((hb_position_t) roundf (exit_x), pos[i].x_offset);
+        pos[i].x_advance = hb_saturate_sub (pos[i].x_advance, d);
+        pos[i].x_offset = hb_saturate_sub (pos[i].x_offset, d);
 
-        pos[j].x_advance  = roundf (entry_x) + pos[j].x_offset;
+        pos[j].x_advance = hb_saturate_add ((hb_position_t) roundf (entry_x), pos[j].x_offset);
         break;
       case HB_DIRECTION_TTB:
-        pos[i].y_advance  = roundf (exit_y) + pos[i].y_offset;
+        pos[i].y_advance = hb_saturate_add ((hb_position_t) roundf (exit_y), pos[i].y_offset);
 
-        d = roundf (entry_y) + pos[j].y_offset;
-        pos[j].y_advance -= d;
-        pos[j].y_offset  -= d;
+        d = hb_saturate_add ((hb_position_t) roundf (entry_y), pos[j].y_offset);
+        pos[j].y_advance = hb_saturate_sub (pos[j].y_advance, d);
+        pos[j].y_offset = hb_saturate_sub (pos[j].y_offset, d);
         break;
       case HB_DIRECTION_BTT:
-        d = roundf (exit_y) + pos[i].y_offset;
-        pos[i].y_advance -= d;
-        pos[i].y_offset  -= d;
+        d = hb_saturate_add ((hb_position_t) roundf (exit_y), pos[i].y_offset);
+        pos[i].y_advance = hb_saturate_sub (pos[i].y_advance, d);
+        pos[i].y_offset = hb_saturate_sub (pos[i].y_offset, d);
 
-        pos[j].y_advance  = roundf (entry_y);
+        pos[j].y_advance = (hb_position_t) roundf (entry_y);
         break;
       case HB_DIRECTION_INVALID:
       default:
@@ -226,8 +231,8 @@ struct CursivePosFormat1
      * Arabic. */
     unsigned int child  = i;
     unsigned int parent = j;
-    hb_position_t x_offset = roundf (entry_x - exit_x);
-    hb_position_t y_offset = roundf (entry_y - exit_y);
+    hb_position_t x_offset = (hb_position_t) roundf (entry_x - exit_x);
+    hb_position_t y_offset = (hb_position_t) roundf (entry_y - exit_y);
     if  (!(c->lookup_props & LookupFlag::RightToLeft))
     {
       unsigned int k = child;

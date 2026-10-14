@@ -405,6 +405,7 @@ void Utilities::update_dirty_resources() {
 	MaterialStorage::get_singleton()->_update_queued_materials();
 	MeshStorage::get_singleton()->_update_dirty_skeletons();
 	MeshStorage::get_singleton()->_update_dirty_multimeshes();
+	TextureStorage::get_singleton()->texture_atlas_redraw_textures();
 	TextureStorage::get_singleton()->update_texture_atlas();
 	TextureStorage::get_singleton()->update_decal_atlas();
 }
@@ -466,10 +467,6 @@ String Utilities::get_video_adapter_vendor() const {
 	const String rendering_device_vendor = String::utf8((const char *)glGetString(GL_VENDOR));
 	// NVIDIA suffixes its vendor name with " Corporation". This is neither necessary to process nor display.
 	return rendering_device_vendor.trim_suffix(" Corporation");
-}
-
-RenderingDeviceEnums::DeviceType Utilities::get_video_adapter_type() const {
-	return RenderingDeviceEnums::DeviceType::DEVICE_TYPE_OTHER;
 }
 
 String Utilities::get_video_adapter_api_version() const {

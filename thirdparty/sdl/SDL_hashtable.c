@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -292,7 +292,7 @@ static bool maybe_resize(SDL_HashTable *ht)
 
 bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value, bool replace)
 {
-    if (!table) {
+    CHECK_PARAM(!table) {
         return SDL_InvalidParamError("table");
     }
 
@@ -338,7 +338,7 @@ bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *
 
 bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **value)
 {
-    if (!table) {
+    CHECK_PARAM(!table) {
         if (value) {
             *value = NULL;
         }
@@ -364,7 +364,7 @@ bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void
 
 bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 {
-    if (!table) {
+    CHECK_PARAM(!table) {
         return SDL_InvalidParamError("table");
     }
 
@@ -384,9 +384,10 @@ bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key)
 
 bool SDL_IterateHashTable(const SDL_HashTable *table, SDL_HashTableIterateCallback callback, void *userdata)
 {
-    if (!table) {
+    CHECK_PARAM(!table) {
         return SDL_InvalidParamError("table");
-    } else if (!callback) {
+    }
+    CHECK_PARAM(!callback) {
         return SDL_InvalidParamError("callback");
     }
 
@@ -410,7 +411,7 @@ bool SDL_IterateHashTable(const SDL_HashTable *table, SDL_HashTableIterateCallba
 
 bool SDL_HashTableEmpty(SDL_HashTable *table)
 {
-    if (!table) {
+    CHECK_PARAM(!table) {
         return SDL_InvalidParamError("table");
     }
 

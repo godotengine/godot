@@ -225,7 +225,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
 
         core_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharp", "bin", build_config))
         editor_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharpEditor", "bin", build_config))
-        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net8.0"))
+        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net10.0"))
 
         if not os.path.isdir(editor_api_dir):
             assert not os.path.isfile(editor_api_dir)
@@ -249,6 +249,16 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
             copy_target(scons_target)
 
     return 0
+
+
+def write_file_if_different(path, content):
+    if os.path.isfile(path):
+        with open(path, "r", encoding="utf-8") as f:
+            existing_content = f.read()
+        if existing_content == content:
+            return
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
 
 
 def generate_sdk_package_versions():
@@ -328,8 +338,7 @@ def generate_sdk_package_versions():
 """
 
     # We write in ../SdkPackageVersions.props.
-    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(props)
+    write_file_if_different(os.path.join(dirname(script_path), "SdkPackageVersions.props"), props)
 
     # Also write the versioned docs URL to a constant for the Source Generators.
 
@@ -353,8 +362,7 @@ def generate_sdk_package_versions():
     )
     os.makedirs(generators_dir, exist_ok=True)
 
-    with open(os.path.join(generators_dir, "Common.Constants.cs"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(constants)
+    write_file_if_different(os.path.join(generators_dir, "Common.Constants.cs"), constants)
 
 
 def build_all(

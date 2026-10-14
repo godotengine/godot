@@ -85,16 +85,16 @@ uint32_t RichTextEdit::_hash_style(const TextStyle &p_style) {
 	}
 	uint32_t h = hash_murmur3_one_32(flags);
 	if (p_style.has_color) {
-		h = hash_murmur3_one_32(p_style.color.to_rgba32(), h);
+		h = hash_murmur3_one_32(p_style.color_ref.is_empty() ? p_style.color.to_rgba32() : p_style.color_ref.hash(), h);
 	}
 	if (p_style.has_bg_color) {
-		h = hash_murmur3_one_32(p_style.bg_color.to_rgba32(), h);
+		h = hash_murmur3_one_32(p_style.bg_color_ref.is_empty() ? p_style.bg_color.to_rgba32() : p_style.bg_color_ref.hash(), h);
 	}
 	if (p_style.has_fg_color) {
 		h = hash_murmur3_one_32(p_style.fg_color.to_rgba32(), h);
 	}
 	if (p_style.has_outline_color) {
-		h = hash_murmur3_one_32(p_style.outline_color.to_rgba32(), h);
+		h = hash_murmur3_one_32(p_style.outline_color_ref.is_empty() ? p_style.outline_color.to_rgba32() : p_style.outline_color_ref.hash(), h);
 	}
 	if (p_style.has_outline_size) {
 		h = hash_murmur3_one_32(p_style.outline_size, h);
@@ -154,7 +154,14 @@ Dictionary RichTextEdit::_get_style_render_info(int p_style) const {
 	const TextStyle &style = styles[p_style];
 	Ref<Font> font;
 	if (!style.font.is_empty()) {
-		font = ResourceLoader::load(style.font, "Font");
+		// Applications may map a family resource to its real or verified
+		// synthesized face. Keep formatting flags in the native document/history.
+		if (style_font_resolver.is_valid()) {
+			font = style_font_resolver.call(style.font, style.bold, style.italic);
+		}
+		if (font.is_null()) {
+			font = ResourceLoader::load(style.font, "Font");
+		}
 	} else if (style.code) {
 		font = get_theme_font(SNAME("mono_font"));
 	} else if (style.bold && style.italic) {
@@ -1065,20 +1072,51 @@ int RichTextEdit::_get_visual_line_wrap_height(int p_line, int p_wrap_index) con
 	const Paragraph &paragraph = paragraphs[p_line];
 	const int top_margin = _get_visual_line_wrap_top_margin(p_line, p_wrap_index);
 	const int bottom_margin = _get_visual_line_wrap_bottom_margin(p_line, p_wrap_index);
-	const int content_height = MAX(_get_visual_line_wrap_content_height(p_line, p_wrap_index) - top_margin - bottom_margin, 1);
-	int line_box_height = content_height;
+	// A number or a percentage is a multiple of the *font size*, as in CSS, not
+	// of the font's natural height (CSS `normal`, about 1.4 times the size).
+	int line_box_height = 0;
 	switch (paragraph.line_height_kind) {
 		case 1:
 			line_box_height = MAX(0, (int)Math::ceil(paragraph.line_height_value));
 			break;
 		case 2:
-			line_box_height = Math::ceil(content_height * paragraph.line_height_value / 100.0);
+			// A percentage is worked out once, against the font size of the element
+			// that sets it (the control's own size), and the text inherits the length.
+			line_box_height = Math::ceil(_get_default_font_size() * paragraph.line_height_value / 100.0);
 			break;
 		default:
-			line_box_height = Math::ceil(content_height * paragraph.line_height_value);
+			// A number is inherited as a number: every run scales with its own size,
+			// so a row is as tall as its largest text, and at least the control's size.
+			line_box_height = Math::ceil(_get_row_font_size(p_line, p_wrap_index) * paragraph.line_height_value);
 			break;
 	}
 	return MAX(line_box_height + top_margin + bottom_margin, 1);
+}
+
+int RichTextEdit::_get_row_font_size(int p_line, int p_wrap_index) const {
+	// The largest font size set on the text of one visual row; the control's own
+	// size where a run sets none, and as a floor (CSS keeps the strut of the block).
+	int size = _get_default_font_size();
+	if (p_line < 0 || p_line >= (int)paragraphs.size()) {
+		return size;
+	}
+	const bool wrapped = is_line_wrapped(p_line);
+	const int length = _get_line_length(p_line);
+	for (const StyleRun &run : paragraphs[p_line].runs) {
+		const int run_size = styles[run.style].font_size;
+		if (run_size <= size || run.from >= length) {
+			continue;
+		}
+		if (wrapped) {
+			const int first = get_line_wrap_index_at_column(p_line, run.from);
+			const int last = get_line_wrap_index_at_column(p_line, MIN(MAX(run.to - 1, run.from), length));
+			if (p_wrap_index < first || p_wrap_index > last) {
+				continue;
+			}
+		}
+		size = run_size;
+	}
+	return size;
 }
 
 int RichTextEdit::_get_list_item_number(int p_line, int p_list_type, int p_list_start) const {
@@ -1724,8 +1762,194 @@ void RichTextEdit::preview_selection_bg_color(const Color &p_color) {
 	_apply_style_property_to_selection(STYLE_PROPERTY_BG_COLOR, p_color, false);
 }
 
+void RichTextEdit::preview_selection_outline_color(const Color &p_color) {
+	if (!style_preview_active) {
+		begin_selection_color_preview();
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_OUTLINE_COLOR, p_color, false);
+}
+
 void RichTextEdit::end_selection_bg_color_preview(bool p_commit) {
 	end_selection_color_preview(p_commit);
+}
+
+void RichTextEdit::preview_selection_font(const String &p_font) {
+	if (!style_preview_active) {
+		begin_selection_color_preview();
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_FONT, p_font, false);
+}
+
+/* Design Token colors. */
+
+void RichTextEdit::set_token_color_resolver(const Callable &p_resolver) {
+	RichTextDocument::set_token_color_resolver(p_resolver);
+}
+
+void RichTextEdit::set_selection_color_ref(const String &p_ref, const Color &p_color) {
+	_apply_style_property_to_selection(STYLE_PROPERTY_COLOR, Array{ p_ref, p_color });
+}
+
+void RichTextEdit::set_selection_bg_color_ref(const String &p_ref, const Color &p_color) {
+	_apply_style_property_to_selection(STYLE_PROPERTY_BG_COLOR, Array{ p_ref, p_color });
+}
+
+void RichTextEdit::set_selection_outline_color_ref(const String &p_ref, const Color &p_color) {
+	_apply_style_property_to_selection(STYLE_PROPERTY_OUTLINE_COLOR, Array{ p_ref, p_color });
+}
+
+void RichTextEdit::preview_selection_color_ref(const String &p_ref, const Color &p_color) {
+	if (!style_preview_active) {
+		begin_selection_color_preview();
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_COLOR, Array{ p_ref, p_color }, false);
+}
+
+void RichTextEdit::preview_selection_bg_color_ref(const String &p_ref, const Color &p_color) {
+	if (!style_preview_active) {
+		begin_selection_color_preview();
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_BG_COLOR, Array{ p_ref, p_color }, false);
+}
+
+void RichTextEdit::preview_selection_outline_color_ref(const String &p_ref, const Color &p_color) {
+	if (!style_preview_active) {
+		begin_selection_color_preview();
+	}
+	_apply_style_property_to_selection(STYLE_PROPERTY_OUTLINE_COLOR, Array{ p_ref, p_color }, false);
+}
+
+// The token references of one color slot ("font", "background", "outline")
+// across the selection (or the caret's style): "" stands for a literal or no
+// color. More than one distinct entry means the selection is mixed.
+PackedStringArray RichTextEdit::get_selection_color_refs(const StringName &p_slot) const {
+	PackedStringArray refs;
+	auto ref_of = [&](const TextStyle &p_style) -> String {
+		if (p_slot == SNAME("font")) {
+			return p_style.has_color ? p_style.color_ref : String();
+		} else if (p_slot == SNAME("background")) {
+			return p_style.has_bg_color ? p_style.bg_color_ref : String();
+		}
+		return p_style.has_outline_color ? p_style.outline_color_ref : String();
+	};
+	auto add = [&](const String &p_ref) {
+		if (!refs.has(p_ref)) {
+			refs.push_back(p_ref);
+		}
+	};
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	if (!_get_selection_range(from_line, from_column, to_line, to_column)) {
+		add(ref_of(get_current_style()));
+		return refs;
+	}
+	LocalVector<StyleRun> segments;
+	for (int line = from_line; line <= to_line; line++) {
+		const int length = _get_line_length(line);
+		const int from = line == from_line ? from_column : 0;
+		const int to = line == to_line ? to_column : length;
+		if (to <= from) {
+			continue;
+		}
+		_collect_segments(paragraphs[line].runs, from, to, segments);
+		for (const StyleRun &segment : segments) {
+			add(ref_of(styles[segment.style]));
+		}
+	}
+	if (refs.is_empty()) {
+		add(String());
+	}
+	return refs;
+}
+
+// The resolved color of one slot ("font", "background", "outline") at the
+// selection start or the caret; transparent when the slot has no color.
+Color RichTextEdit::get_current_color(const StringName &p_slot) const {
+	const TextStyle style = get_current_style();
+	if (p_slot == SNAME("font")) {
+		return style.has_color ? style.color : Color(0, 0, 0, 0);
+	} else if (p_slot == SNAME("background")) {
+		return style.has_bg_color ? style.bg_color : Color(0, 0, 0, 0);
+	}
+	return style.has_outline_color ? style.outline_color : Color(0, 0, 0, 0);
+}
+
+// The `font` value of the selection (or the caret's style): "" stands for no
+// font of its own. More than one distinct entry means the selection is mixed.
+PackedStringArray RichTextEdit::get_selection_fonts() const {
+	PackedStringArray fonts;
+	auto add = [&](const String &p_font) {
+		if (!fonts.has(p_font)) {
+			fonts.push_back(p_font);
+		}
+	};
+	int from_line = 0;
+	int from_column = 0;
+	int to_line = 0;
+	int to_column = 0;
+	if (!_get_selection_range(from_line, from_column, to_line, to_column)) {
+		add(get_current_style().font);
+		return fonts;
+	}
+	LocalVector<StyleRun> segments;
+	for (int line = from_line; line <= to_line; line++) {
+		const int length = _get_line_length(line);
+		const int from = line == from_line ? from_column : 0;
+		const int to = line == to_line ? to_column : length;
+		if (to <= from) {
+			continue;
+		}
+		_collect_segments(paragraphs[line].runs, from, to, segments);
+		for (const StyleRun &segment : segments) {
+			add(styles[segment.style].font);
+		}
+	}
+	if (fonts.is_empty()) {
+		add(String());
+	}
+	return fonts;
+}
+
+// Re-resolves every token color after a token's value changed. References
+// are part of a style's identity, never the resolved color, so the style table
+// and its hashes stay valid.
+void RichTextEdit::refresh_token_colors() {
+	bool changed = false;
+	for (uint32_t i = 0; i < styles.size(); i++) {
+		TextStyle &style = styles[i];
+		if (!style.color_ref.is_empty()) {
+			const Color color = RichTextDocument::resolve_token_color(style.color_ref);
+			changed = changed || color != style.color;
+			style.color = color;
+		}
+		if (!style.bg_color_ref.is_empty()) {
+			const Color color = RichTextDocument::resolve_token_color(style.bg_color_ref);
+			changed = changed || color != style.bg_color;
+			style.bg_color = color;
+		}
+		if (!style.outline_color_ref.is_empty()) {
+			const Color color = RichTextDocument::resolve_token_color(style.outline_color_ref);
+			changed = changed || color != style.outline_color;
+			style.outline_color = color;
+		}
+	}
+	if (typing_style_override) {
+		if (!typing_style.color_ref.is_empty()) {
+			typing_style.color = RichTextDocument::resolve_token_color(typing_style.color_ref);
+		}
+		if (!typing_style.bg_color_ref.is_empty()) {
+			typing_style.bg_color = RichTextDocument::resolve_token_color(typing_style.bg_color_ref);
+		}
+		if (!typing_style.outline_color_ref.is_empty()) {
+			typing_style.outline_color = RichTextDocument::resolve_token_color(typing_style.outline_color_ref);
+		}
+	}
+	if (changed) {
+		_clear_style_render_infos();
+		queue_redraw();
+	}
 }
 
 void RichTextEdit::set_selection_url(const String &p_url) {
@@ -1941,6 +2165,7 @@ bool RichTextEdit::apply_style_template(const String &p_template, const Dictiona
 	if (p_overrides.has("BG")) {
 		const String color_text = String(p_overrides["BG"]);
 		desired.has_bg_color = Color::html_is_valid(color_text);
+		desired.bg_color_ref = String();
 		if (desired.has_bg_color) {
 			desired.bg_color = Color::html(color_text);
 		}
@@ -1948,6 +2173,7 @@ bool RichTextEdit::apply_style_template(const String &p_template, const Dictiona
 	if (p_overrides.has("OC")) {
 		const String color_text = String(p_overrides["OC"]);
 		desired.has_outline_color = Color::html_is_valid(color_text);
+		desired.outline_color_ref = String();
 		if (desired.has_outline_color) {
 			desired.outline_color = Color::html(color_text);
 		}
@@ -1960,6 +2186,7 @@ bool RichTextEdit::apply_style_template(const String &p_template, const Dictiona
 		const String color_text = String(p_overrides["COL"]);
 		if (Color::html_is_valid(color_text)) {
 			desired.has_color = true;
+			desired.color_ref = String();
 			desired.color = Color::html(color_text);
 		}
 	}
@@ -2139,6 +2366,16 @@ String RichTextEdit::get_bbcode_text() const {
 	return bbcode_text;
 }
 
+void RichTextEdit::set_style_font_resolver(const Callable &p_resolver) {
+	// Reinstalling the same resolver refreshes asynchronously loaded faces.
+	style_font_resolver = p_resolver;
+	_refresh_all_styles();
+}
+
+Callable RichTextEdit::get_style_font_resolver() const {
+	return style_font_resolver;
+}
+
 void RichTextEdit::set_outline_over_fill(bool p_enabled) {
 	if (outline_over_fill == p_enabled) {
 		return;
@@ -2263,6 +2500,19 @@ void RichTextEdit::_update_theme_item_cache() {
 	}
 }
 
+// A color property value is a Color (literal) or [token_id, Color] (a Design
+// Token reference with its resolved color).
+static void _assign_style_color(Color &r_color, String &r_ref, const Variant &p_value) {
+	if (p_value.get_type() == Variant::ARRAY) {
+		const Array value = p_value;
+		r_ref = value.size() > 0 ? String(value[0]) : String();
+		r_color = value.size() > 1 ? Color(value[1]) : Color();
+	} else {
+		r_ref = String();
+		r_color = p_value;
+	}
+}
+
 void RichTextEdit::_apply_style_property(TextStyle &r_style, const TextStyle &p_toggle_reference, StyleProperty p_property, const Variant &p_value) const {
 	switch (p_property) {
 		case STYLE_PROPERTY_BOLD:
@@ -2283,24 +2533,27 @@ void RichTextEdit::_apply_style_property(TextStyle &r_style, const TextStyle &p_
 			break;
 		case STYLE_PROPERTY_COLOR:
 			r_style.has_color = true;
-			r_style.color = p_value;
+			_assign_style_color(r_style.color, r_style.color_ref, p_value);
 			break;
 		case STYLE_PROPERTY_CLEAR_COLOR:
 			r_style.has_color = false;
+			r_style.color_ref = String();
 			break;
 		case STYLE_PROPERTY_BG_COLOR:
 			r_style.has_bg_color = true;
-			r_style.bg_color = p_value;
+			_assign_style_color(r_style.bg_color, r_style.bg_color_ref, p_value);
 			break;
 		case STYLE_PROPERTY_CLEAR_BG_COLOR:
 			r_style.has_bg_color = false;
+			r_style.bg_color_ref = String();
 			break;
 		case STYLE_PROPERTY_OUTLINE_COLOR:
 			r_style.has_outline_color = true;
-			r_style.outline_color = p_value;
+			_assign_style_color(r_style.outline_color, r_style.outline_color_ref, p_value);
 			break;
 		case STYLE_PROPERTY_CLEAR_OUTLINE_COLOR:
 			r_style.has_outline_color = false;
+			r_style.outline_color_ref = String();
 			break;
 		case STYLE_PROPERTY_OUTLINE_SIZE:
 			r_style.has_outline_size = true;
@@ -3819,6 +4072,8 @@ void RichTextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_link_activation_mode", "mode"), &RichTextEdit::set_link_activation_mode);
 	ClassDB::bind_method(D_METHOD("get_link_activation_mode"), &RichTextEdit::get_link_activation_mode);
 	ClassDB::bind_method(D_METHOD("set_bbcode_text", "text"), &RichTextEdit::set_bbcode_text);
+	ClassDB::bind_method(D_METHOD("set_style_font_resolver", "resolver"), &RichTextEdit::set_style_font_resolver);
+	ClassDB::bind_method(D_METHOD("get_style_font_resolver"), &RichTextEdit::get_style_font_resolver);
 	ClassDB::bind_method(D_METHOD("get_bbcode_text"), &RichTextEdit::get_bbcode_text);
 	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &RichTextEdit::set_visible_characters);
 	ClassDB::bind_method(D_METHOD("get_visible_characters"), &RichTextEdit::get_visible_characters);
@@ -3858,6 +4113,18 @@ void RichTextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_selection_outline_color"), &RichTextEdit::clear_selection_outline_color);
 	ClassDB::bind_method(D_METHOD("set_selection_outline_size", "size"), &RichTextEdit::set_selection_outline_size);
 	ClassDB::bind_method(D_METHOD("clear_selection_outline_size"), &RichTextEdit::clear_selection_outline_size);
+	ClassDB::bind_method(D_METHOD("set_token_color_resolver", "resolver"), &RichTextEdit::set_token_color_resolver);
+	ClassDB::bind_method(D_METHOD("set_selection_color_ref", "ref", "color"), &RichTextEdit::set_selection_color_ref);
+	ClassDB::bind_method(D_METHOD("set_selection_bg_color_ref", "ref", "color"), &RichTextEdit::set_selection_bg_color_ref);
+	ClassDB::bind_method(D_METHOD("set_selection_outline_color_ref", "ref", "color"), &RichTextEdit::set_selection_outline_color_ref);
+	ClassDB::bind_method(D_METHOD("preview_selection_color_ref", "ref", "color"), &RichTextEdit::preview_selection_color_ref);
+	ClassDB::bind_method(D_METHOD("preview_selection_bg_color_ref", "ref", "color"), &RichTextEdit::preview_selection_bg_color_ref);
+	ClassDB::bind_method(D_METHOD("preview_selection_outline_color_ref", "ref", "color"), &RichTextEdit::preview_selection_outline_color_ref);
+	ClassDB::bind_method(D_METHOD("get_selection_color_refs", "slot"), &RichTextEdit::get_selection_color_refs);
+	ClassDB::bind_method(D_METHOD("get_selection_fonts"), &RichTextEdit::get_selection_fonts);
+	ClassDB::bind_method(D_METHOD("get_current_color", "slot"), &RichTextEdit::get_current_color);
+	ClassDB::bind_method(D_METHOD("refresh_token_colors"), &RichTextEdit::refresh_token_colors);
+	ClassDB::bind_method(D_METHOD("preview_selection_font", "font"), &RichTextEdit::preview_selection_font);
 	ClassDB::bind_method(D_METHOD("begin_selection_color_preview"), &RichTextEdit::begin_selection_color_preview);
 	ClassDB::bind_method(D_METHOD("preview_selection_color", "color"), &RichTextEdit::preview_selection_color);
 	ClassDB::bind_method(D_METHOD("end_selection_color_preview", "commit"), &RichTextEdit::end_selection_color_preview);

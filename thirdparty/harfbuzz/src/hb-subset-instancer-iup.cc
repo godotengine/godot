@@ -48,11 +48,11 @@ static void _iup_contour_bound_forced_set (const hb_array_t<const contour_point_
   unsigned next_i = 0;
   for (int i = len - 1; i >= 0; i--)
   {
-    unsigned last_i = (len + i -1) % len;
+    unsigned last_i = (len + i - 1) % len;
     for (unsigned j = 0; j < 2; j++)
     {
       double cj, lcj, ncj;
-      int dj, ldj, ndj;
+      double dj, ldj, ndj;
       if (j == 0)
       {
         cj = static_cast<double> (contour_points.arrayZ[i].x);
@@ -73,7 +73,7 @@ static void _iup_contour_bound_forced_set (const hb_array_t<const contour_point_
       }
 
       double c1, c2;
-      int d1, d2;
+      double d1, d2;
       if (lcj <= ncj)
       {
         c1 = lcj;
@@ -92,7 +92,7 @@ static void _iup_contour_bound_forced_set (const hb_array_t<const contour_point_
       bool force = false;
       if (c1 == c2)
       {
-        if (abs (d1 - d2) > tolerance && abs (dj) > tolerance)
+        if (fabs (d1 - d2) > tolerance && fabs (dj) > tolerance)
           force = true;
       }
       else if (c1 <= cj && cj <= c2)
@@ -107,15 +107,15 @@ static void _iup_contour_bound_forced_set (const hb_array_t<const contour_point_
         {
           if (cj < c1)
           {
-            if (abs (dj) > tolerance &&
-                abs (dj - d1) > tolerance &&
+            if (fabs (dj) > tolerance &&
+                fabs (dj - d1) > tolerance &&
                 ((dj - tolerance < d1) != (d1 < d2)))
                 force = true;
           }
           else
           {
-            if (abs (dj) > tolerance &&
-                abs (dj - d2) > tolerance &&
+            if (fabs (dj) > tolerance &&
+                fabs (dj - d2) > tolerance &&
                 ((d2 < dj + tolerance) != (d1 < d2)))
               force = true;
           }
@@ -452,7 +452,8 @@ static bool _iup_contour_optimize (const hb_array_t<const contour_point_t> conto
 
     hb_vector_t<bool> &rot_indices = scratch.rot_indices.reset ();
     const hb_array_t<const bool> opt_indices_array (opt_indices.arrayZ, opt_indices.length);
-    rotate_array (opt_indices_array, -k, rot_indices);
+    if (unlikely (!rotate_array (opt_indices_array, -k, rot_indices)))
+      return false;
 
     for (unsigned i = 0; i < n; i++)
       opt_indices.arrayZ[i] = rot_indices.arrayZ[i];
@@ -534,13 +535,21 @@ bool iup_delta_optimize (const contour_point_vector_t& contour_points,
   if (unlikely (!end_points.alloc (count)))
     return false;
 
-  for (unsigned i = 0; i < count - 4; i++)
-    if (contour_points.arrayZ[i].is_end_point)
+  if (count < 4)
+  {
+    for (unsigned i = 0; i < count; i++)
       end_points.push (i);
+  }
+  else
+  {
+    for (unsigned i = 0; i < count - 4; i++)
+      if (contour_points.arrayZ[i].is_end_point)
+        end_points.push (i);
 
-  /* phantom points */
-  for (unsigned i = count - 4; i < count; i++)
-    end_points.push (i);
+    /* phantom points */
+    for (unsigned i = count - 4; i < count; i++)
+      end_points.push (i);
+  }
 
   if (end_points.in_error ()) return false;
 

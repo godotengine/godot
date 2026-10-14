@@ -254,6 +254,7 @@ public:
 
 private:
 	SkyMaterialData *_get_sky_material_data(RID p_env);
+	SkyMaterialData *_get_flat_color_sky_material_data(RID p_env);
 
 public:
 	struct Sky {

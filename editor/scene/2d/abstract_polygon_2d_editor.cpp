@@ -390,8 +390,8 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		return (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT);
 	}
 
-	CanvasItemEditor::Tool tool = CanvasItemEditor::get_singleton()->get_current_tool();
-	if (tool != CanvasItemEditor::TOOL_SELECT) {
+	CanvasItemManipulator::Tool tool = CanvasItemEditor::get_singleton()->get_current_tool();
+	if (tool != CanvasItemManipulator::TOOL_SELECT) {
 		return false;
 	}
 
@@ -399,7 +399,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_screen_transform();
 
 		Vector2 gpoint = mb->get_position();
-		Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
+		Vector2 cpoint = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 		cpoint = _get_node()->get_screen_transform().affine_inverse().xform(cpoint);
 
 		if (mode == MODE_EDIT || (_is_line() && mode == MODE_CREATE)) {
@@ -565,7 +565,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		Vector2 gpoint = mm->get_position();
 
 		if (center_drag) {
-			Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
+			Vector2 cpoint = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 			cpoint = _get_node()->get_screen_transform().affine_inverse().xform(cpoint);
 			Vector2 delta = center_drag_origin - cpoint;
 
@@ -583,7 +583,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 			}
 			center_drag_origin = cpoint;
 		} else if (edited_point.valid() && (wip_active || mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
-			Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
+			Vector2 cpoint = canvas_item_editor->get_canvas_item_manipulator()->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 			cpoint = _get_node()->get_screen_transform().affine_inverse().xform(cpoint);
 
 			//Move the point in a single axis. Should only work when editing a polygon and while holding shift.

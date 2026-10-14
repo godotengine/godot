@@ -68,8 +68,6 @@ class GDScriptAnalyzer {
 	Error resolve_class_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
 
-	void decide_pattern_type(GDScriptParser::PatternNode &p_pattern, GDScriptParser::PatternNode *p_statement);
-
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
 	void resolve_class_member(GDScriptParser::ClassNode *p_class, const StringName &p_name, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_member(GDScriptParser::ClassNode *p_class, uint32_t p_index, const GDScriptParser::Node *p_source = nullptr);
@@ -132,6 +130,7 @@ class GDScriptAnalyzer {
 	// Helpers.
 	Array make_array_from_element_datatype(const GDScriptParser::DataType &p_element_datatype, const GDScriptParser::Node *p_source_node = nullptr);
 	Dictionary make_dictionary_from_element_datatype(const GDScriptParser::DataType &p_key_element_datatype, const GDScriptParser::DataType &p_value_element_datatype, const GDScriptParser::Node *p_source_node = nullptr);
+	GDScriptParser::DataType meta_type_from_container_type(const ContainerType &p_type, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType type_from_script(const Ref<Script> &p_script, const GDScriptParser::Node *p_source, bool p_is_meta_type);
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
 	GDScriptParser::DataType type_from_property_hint_string(const String &p_type_name) const;

@@ -99,6 +99,7 @@ protected:
 		uint32_t code_decompressed_size = 0;
 	};
 
+	ContainerHeader container_header;
 	ReflectionData reflection_data;
 	Vector<uint32_t> reflection_binding_set_uniforms_count;
 	Vector<ReflectionBindingData> reflection_binding_set_uniforms_data;

@@ -341,7 +341,7 @@
 	<signals>
 		<signal name="changed">
 			<description>
-				Emitted when this [TileMapLayer]'s properties changes. This includes modified cells, properties, or changes made to its assigned [TileSet].
+				Emitted when this [TileMapLayer]'s properties changes, including changes to its assigned [TileSet].
 				[b]Note:[/b] This signal may be emitted very often when batch-modifying a [TileMapLayer]. Avoid executing complex processing in a connected function, and consider delaying it to the end of the frame instead (i.e. calling [method Object.call_deferred]).
 			</description>
 		</signal>

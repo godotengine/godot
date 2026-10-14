@@ -74,6 +74,7 @@ private:
 	static Error _msg_request_scene_tree(const Array &p_args);
 	static Error _msg_save_node(const Array &p_args);
 	static Error _msg_inspect_objects(const Array &p_args);
+	static Error _msg_change_canvas_item_states(const Array &p_args);
 #ifndef DISABLE_DEPRECATED
 	static Error _msg_inspect_object(const Array &p_args);
 #endif // DISABLE_DEPRECATED
@@ -107,9 +108,11 @@ private:
 	static Error _msg_live_duplicate_node(const Array &p_args);
 	static Error _msg_live_reparent_node(const Array &p_args);
 	static Error _msg_runtime_node_select_setup(const Array &p_args);
-	static Error _msg_runtime_node_select_set_type(const Array &p_args);
-	static Error _msg_runtime_node_select_set_mode(const Array &p_args);
-	static Error _msg_runtime_node_select_set_visible(const Array &p_args);
+	static Error _msg_runtime_node_select_set_node_type(const Array &p_args);
+	static Error _msg_runtime_node_select_set_ci_tool(const Array &p_args);
+	static Error _msg_runtime_node_select_set_ci_local_space(const Array &p_args);
+	static Error _msg_runtime_node_select_set_n3d_tool(const Array &p_args);
+	static Error _msg_runtime_node_select_set_selection_visible(const Array &p_args);
 	static Error _msg_runtime_node_select_set_avoid_locked(const Array &p_args);
 	static Error _msg_runtime_node_select_set_prefer_group(const Array &p_args);
 	static Error _msg_rq_screenshot(const Array &p_args);

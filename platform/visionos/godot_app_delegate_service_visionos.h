@@ -41,10 +41,34 @@ typedef NS_ENUM(NSInteger, GDTRenderMode) {
 	GDTRenderModeCompositorServices = RenderModeVisionOS::COMPOSITOR_SERVICES
 };
 
+typedef NS_ENUM(NSInteger, GDTImmersionStyle) {
+	GDTImmersionStyleFull,
+	GDTImmersionStyleMixed,
+	GDTImmersionStyleProgressive
+};
+
+typedef NS_ENUM(NSInteger, GDTVisibility) {
+	GDTVisibilityAutomatic,
+	GDTVisibilityVisible,
+	GDTVisibilityHidden
+};
+
 @interface GDTAppDelegateServiceVisionOS : GDTAppDelegateService
 
-@property(assign, class, nonatomic) GDTRenderMode renderMode;
-@property(weak, class, nonatomic, nullable) cp_layer_renderer_t layerRenderer;
-@property(strong, class, nonatomic, nullable) cp_layer_renderer_capabilities_t layerRendererCapabilities;
+@property(class, nonatomic, assign) GDTRenderMode renderMode;
+@property(class, nonatomic, weak, nullable) cp_layer_renderer_t layerRenderer;
+@property(class, nonatomic, strong, nullable) cp_layer_renderer_capabilities_t layerRendererCapabilities;
+
+@property(class, nonatomic, assign, readonly) BOOL isDynamicRenderQualityEnabled;
+@property(class, nonatomic, assign, readonly) float maxRenderQuality;
+
+@property(class, nonatomic, assign, readonly) GDTVisibility initialUpperLimbVisibility;
+@property(class, nonatomic, assign, readonly) GDTVisibility initialPersistentSystemOverlays;
+
+@property(class, nonatomic, assign) GDTImmersionStyle immersionStyle;
+
+@property(class, nonatomic, assign) GDTVisibility upperLimbVisibility;
+
+@property(class, nonatomic, assign) GDTVisibility persistentSystemOverlays;
 
 @end

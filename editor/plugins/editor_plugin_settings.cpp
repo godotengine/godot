@@ -111,7 +111,7 @@ void EditorPluginSettings::update_plugins() {
 				for (int j = 0; j < boundaries.size(); j += 2) {
 					const int start = boundaries[j];
 					const int end = boundaries[j + 1];
-					wrapped_description += "\n" + description.substr(start, end - start + 1).rstrip("\n");
+					wrapped_description += "\n" + description.substr(start, end - start).rstrip("\n");
 				}
 
 				TreeItem *item = plugin_list->create_item(root);

@@ -185,6 +185,7 @@ private:
 	mutable uint64_t style_spans_revision = 0;
 	bool setting_bbcode_text = false;
 	bool use_bbcode = false;
+	Callable style_font_resolver;
 	Overflow overflow_x = OVERFLOW_AUTO;
 	Overflow overflow_y = OVERFLOW_AUTO;
 	LinkActivationMode link_activation_mode = LINK_ACTIVATION_AUTO;
@@ -283,6 +284,7 @@ private:
 	TextStyle _get_style_at_offset(int p_offset) const;
 	TextStyle _get_selection_common_style() const;
 	int _get_default_font_size() const;
+	int _get_row_font_size(int p_line, int p_wrap_index) const;
 	void _caret_style_context_changed();
 	Ref<StyleState> _capture_style_state(int p_from_line, int p_to_line) const;
 	void _restore_style_state(const Ref<StyleState> &p_state);
@@ -370,6 +372,8 @@ public:
 
 	void set_bbcode_text(const String &p_bbcode);
 	String get_bbcode_text() const;
+	void set_style_font_resolver(const Callable &p_resolver);
+	Callable get_style_font_resolver() const;
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
 	void set_visible_ratio(float p_ratio);
@@ -410,11 +414,25 @@ public:
 	void clear_selection_outline_color();
 	void set_selection_outline_size(int p_size);
 	void clear_selection_outline_size();
+	// Registers the process-wide resolver of `token:<id>` colors (instance method so scripts can reach it).
+	void set_token_color_resolver(const Callable &p_resolver);
+	void set_selection_color_ref(const String &p_ref, const Color &p_color);
+	void set_selection_bg_color_ref(const String &p_ref, const Color &p_color);
+	void set_selection_outline_color_ref(const String &p_ref, const Color &p_color);
+	void preview_selection_color_ref(const String &p_ref, const Color &p_color);
+	void preview_selection_bg_color_ref(const String &p_ref, const Color &p_color);
+	void preview_selection_outline_color_ref(const String &p_ref, const Color &p_color);
+	PackedStringArray get_selection_color_refs(const StringName &p_slot) const;
+	PackedStringArray get_selection_fonts() const;
+	Color get_current_color(const StringName &p_slot) const;
+	void refresh_token_colors();
 	void begin_selection_color_preview();
 	void preview_selection_color(const Color &p_color);
 	void end_selection_color_preview(bool p_commit);
 	void begin_selection_bg_color_preview();
 	void preview_selection_bg_color(const Color &p_color);
+	void preview_selection_font(const String &p_font);
+	void preview_selection_outline_color(const Color &p_color);
 	void end_selection_bg_color_preview(bool p_commit);
 	void set_selection_font_size(int p_size);
 	void clear_selection_font_size();

@@ -48,8 +48,11 @@ hb_vector_svg_path_move_to (hb_draw_funcs_t *, void *draw_data, hb_draw_state_t 
 			     float to_x, float to_y, void *)
 {
   auto *s = (hb_vector_path_sink_t *) draw_data;
+  unsigned before;
+  if (unlikely (!s->begin_command (&before))) return;
   s->path->append_c ('M');
   hb_vector_svg_path_append_xy (s, to_x, to_y);
+  s->end_command (before);
 }
 
 static void
@@ -57,8 +60,11 @@ hb_vector_svg_path_line_to (hb_draw_funcs_t *, void *draw_data, hb_draw_state_t 
 			     float to_x, float to_y, void *)
 {
   auto *s = (hb_vector_path_sink_t *) draw_data;
+  unsigned before;
+  if (unlikely (!s->begin_command (&before))) return;
   s->path->append_c ('L');
   hb_vector_svg_path_append_xy (s, to_x, to_y);
+  s->end_command (before);
 }
 
 static void
@@ -66,10 +72,13 @@ hb_vector_svg_path_quadratic_to (hb_draw_funcs_t *, void *draw_data, hb_draw_sta
 				  float cx, float cy, float to_x, float to_y, void *)
 {
   auto *s = (hb_vector_path_sink_t *) draw_data;
+  unsigned before;
+  if (unlikely (!s->begin_command (&before))) return;
   s->path->append_c ('Q');
   hb_vector_svg_path_append_xy (s, cx, cy);
   s->path->append_c (' ');
   hb_vector_svg_path_append_xy (s, to_x, to_y);
+  s->end_command (before);
 }
 
 static void
@@ -78,19 +87,25 @@ hb_vector_svg_path_cubic_to (hb_draw_funcs_t *, void *draw_data, hb_draw_state_t
 			      float to_x, float to_y, void *)
 {
   auto *s = (hb_vector_path_sink_t *) draw_data;
+  unsigned before;
+  if (unlikely (!s->begin_command (&before))) return;
   s->path->append_c ('C');
   hb_vector_svg_path_append_xy (s, c1x, c1y);
   s->path->append_c (' ');
   hb_vector_svg_path_append_xy (s, c2x, c2y);
   s->path->append_c (' ');
   hb_vector_svg_path_append_xy (s, to_x, to_y);
+  s->end_command (before);
 }
 
 static void
 hb_vector_svg_path_close_path (hb_draw_funcs_t *, void *draw_data, hb_draw_state_t *, void *)
 {
   auto *s = (hb_vector_path_sink_t *) draw_data;
+  unsigned before;
+  if (unlikely (!s->begin_command (&before))) return;
   s->path->append_c ('Z');
+  s->end_command (before);
 }
 
 
@@ -109,8 +124,11 @@ hb_vector_pdf_path_move_to (hb_draw_funcs_t *, void *draw_data, hb_draw_state_t 
 			     float to_x, float to_y, void *)
 {
   auto *s = (hb_vector_path_sink_t *) draw_data;
+  unsigned before;
+  if (unlikely (!s->begin_command (&before))) return;
   hb_vector_pdf_path_append_xy (s, to_x, to_y);
   s->path->append_str (" m\n");
+  s->end_command (before);
 }
 
 static void
@@ -118,8 +136,11 @@ hb_vector_pdf_path_line_to (hb_draw_funcs_t *, void *draw_data, hb_draw_state_t 
 			     float to_x, float to_y, void *)
 {
   auto *s = (hb_vector_path_sink_t *) draw_data;
+  unsigned before;
+  if (unlikely (!s->begin_command (&before))) return;
   hb_vector_pdf_path_append_xy (s, to_x, to_y);
   s->path->append_str (" l\n");
+  s->end_command (before);
 }
 
 /* No quadratic_to — the null fallback auto-promotes to cubic. */
@@ -130,19 +151,25 @@ hb_vector_pdf_path_cubic_to (hb_draw_funcs_t *, void *draw_data, hb_draw_state_t
 			      float to_x, float to_y, void *)
 {
   auto *s = (hb_vector_path_sink_t *) draw_data;
+  unsigned before;
+  if (unlikely (!s->begin_command (&before))) return;
   hb_vector_pdf_path_append_xy (s, c1x, c1y);
   s->path->append_c (' ');
   hb_vector_pdf_path_append_xy (s, c2x, c2y);
   s->path->append_c (' ');
   hb_vector_pdf_path_append_xy (s, to_x, to_y);
   s->path->append_str (" c\n");
+  s->end_command (before);
 }
 
 static void
 hb_vector_pdf_path_close_path (hb_draw_funcs_t *, void *draw_data, hb_draw_state_t *, void *)
 {
   auto *s = (hb_vector_path_sink_t *) draw_data;
+  unsigned before;
+  if (unlikely (!s->begin_command (&before))) return;
   s->path->append_str ("h\n");
+  s->end_command (before);
 }
 
 

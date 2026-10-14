@@ -322,7 +322,7 @@ void AudioStreamImportSettingsDialog::_draw_indicator() {
 	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
 
 	float ofs_x = (_current - zoom_bar->get_value()) * rect.size.width / zoom_bar->get_page();
-	if (ofs_x < 0 || ofs_x >= rect.size.width) {
+	if (ofs_x < 0 || ofs_x > rect.size.width) {
 		return;
 	}
 
@@ -587,7 +587,7 @@ AudioStreamImportSettingsDialog::AudioStreamImportSettingsDialog() {
 	loop_offset->set_accessibility_name(TTRC("Offset:"));
 	loop_offset->set_max(10000);
 	loop_offset->set_step(0.001);
-	loop_offset->set_suffix("s");
+	loop_offset->set_format("%s s");
 	loop_offset->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	loop_offset->set_stretch_ratio(0.33);
 	loop_offset->set_tooltip_text(TTR("The loop start position, in seconds.\nThis is the position the stream's playback will return to when the end of the loop is reached."));

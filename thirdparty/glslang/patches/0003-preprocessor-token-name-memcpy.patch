@@ -1,0 +1,79 @@
+diff --git a/thirdparty/glslang/glslang/MachineIndependent/preprocessor/PpContext.h b/thirdparty/glslang/glslang/MachineIndependent/preprocessor/PpContext.h
+index 582d119f42..88b0d62dde 100644
+--- a/thirdparty/glslang/glslang/MachineIndependent/preprocessor/PpContext.h
++++ b/thirdparty/glslang/glslang/MachineIndependent/preprocessor/PpContext.h
+@@ -125,6 +125,14 @@ public:
+     char name[MaxTokenLength + 1];
+ };
+
++inline void SetPpTokenName(TPpToken& ppToken, const char* src, size_t len)
++{
++    if (len >= sizeof(ppToken.name))
++        len = sizeof(ppToken.name) - 1;
++    memcpy(ppToken.name, src, len);
++    ppToken.name[len] = '\0';
++}
++
+ class TStringAtomMap {
+ //
+ // Implementation is in PpAtom.cpp
+@@ -156,6 +164,7 @@ public:
+
+     // Map atom -> string.
+     const char* getString(int atom) const { return stringMap[atom]->c_str(); }
++    const TString* getTString(int atom) const { return stringMap[atom]; }
+
+ protected:
+     TStringAtomMap(TStringAtomMap&);
+@@ -261,7 +270,7 @@ public:
+                 ppToken.clear();
+                 ppToken.space = space;
+                 ppToken.i64val = i64val;
+-                snprintf(ppToken.name, sizeof(ppToken.name), "%s", name.c_str());
++                SetPpTokenName(ppToken, name.c_str(), name.size());
+                 return atom;
+             }
+             bool isAtom(int a) const { return atom == a; }
+diff --git a/thirdparty/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp b/thirdparty/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp
+index a252295631..7f74d6d72b 100644
+--- a/thirdparty/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp
++++ b/thirdparty/glslang/glslang/MachineIndependent/preprocessor/PpScanner.cpp
+@@ -1263,7 +1263,7 @@ int TPpContext::tokenize(TPpToken& ppToken)
+             assert(stringifyDepth > 0);
+             stringifyDepth--;
+             if (stringifyDepth == 0) {
+-                snprintf(ppToken.name, sizeof(ppToken.name), "%s", stringifiedToken.name);
++                SetPpTokenName(ppToken, stringifiedToken.name, strlen(stringifiedToken.name));
+                 return PpAtomConstString;
+             }
+             continue;
+@@ -1313,10 +1313,12 @@ int TPpContext::tokenize(TPpToken& ppToken)
+         case '\'':
+             parseContext.ppError(ppToken.loc, "character literals not supported", "\'", "");
+             continue;
+-        default:
+-            snprintf(ppToken.name, sizeof(ppToken.name), "%s", atomStrings.getString(token));
++        default: {
++            const TString* atomString = atomStrings.getTString(token);
++            SetPpTokenName(ppToken, atomString->c_str(), atomString->size());
+             break;
+         }
++        }
+         if (stringifyDepth > 0) {
+             size_t existingLen = strlen(stringifiedToken.name);
+             char* dst = stringifiedToken.name + existingLen;
+@@ -1401,8 +1403,12 @@ int TPpContext::tokenPaste(int token, TPpToken& ppToken)
+             case PpAtomAnd:
+             case PpAtomOr:
+             case PpAtomXor:
+-                snprintf(ppToken.name, sizeof(ppToken.name), "%s", atomStrings.getString(resultToken));
+-                snprintf(pastedPpToken.name, sizeof(pastedPpToken.name), "%s", atomStrings.getString(token));
++                {
++                    const TString* resultString = atomStrings.getTString(resultToken);
++                    SetPpTokenName(ppToken, resultString->c_str(), resultString->size());
++                    const TString* tokenString = atomStrings.getTString(token);
++                    SetPpTokenName(pastedPpToken, tokenString->c_str(), tokenString->size());
++                }
+                 break;
+             default:
+                 parseContext.ppError(ppToken.loc, "not supported for these tokens", "##", "");

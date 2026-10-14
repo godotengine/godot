@@ -4234,10 +4234,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		// Populate signals
 
-		const AHashMap<StringName, GDType::Property> &property_map = class_info->gdtype->get_property_map(true);
+		const AHashMap<StringName, GDType::Member> &member_map = class_info->gdtype->members(true);
 
-		for (const KeyValue<StringName, GDType::Property> &E : property_map) {
-			if (E.value.type != GDType::Property::Type::SIGNAL) {
+		for (const KeyValue<StringName, GDType::Member> &E : member_map) {
+			if (E.value.type != GDType::Member::Type::SIGNAL) {
 				continue;
 			}
 			SignalInterface isignal;
@@ -4333,8 +4333,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		List<String> constants;
 		ClassDB::get_integer_constant_list(type_cname, &constants, true);
 
-		for (const KeyValue<StringName, GDType::Property> &kv : property_map) {
-			if (kv.value.type != GDType::Property::Type::ENUM) {
+		for (const KeyValue<StringName, GDType::Member> &kv : member_map) {
+			if (kv.value.type != GDType::Member::Type::ENUM) {
 				continue;
 			}
 			StringName enum_proxy_cname = kv.key;
@@ -4392,9 +4392,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		for (const String &constant_name : constants) {
-			const GDType::Property *property = class_info->gdtype->get_property_map(true).getptr(StringName(constant_name));
-			ERR_FAIL_NULL_V(property, false);
-			int64_t value = property->payload.integer_constant.value;
+			const GDType::Member *member = class_info->gdtype->members(true).getptr(StringName(constant_name));
+			ERR_FAIL_NULL_V(member, false);
+			int64_t value = member->payload.integer_constant.value;
 
 			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
 

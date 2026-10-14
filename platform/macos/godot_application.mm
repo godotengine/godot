@@ -72,6 +72,15 @@ GodotApplication *GodotApp = nil;
 			[self performSelector:@selector(forceUnbundledWindowActivationHackStep1) withObject:nil afterDelay:0.02];
 		}
 	}
+	// Force reset main menu on macOS 27.
+	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
+	if (ver.majorVersion >= 27) {
+		NSMenu *main_menu = NSApp.mainMenu;
+		if (main_menu != nil) {
+			NSApp.mainMenu = nil;
+			NSApp.mainMenu = main_menu;
+		}
+	}
 }
 
 - (void)mediaKeyEvent:(int)key state:(BOOL)state repeat:(BOOL)repeat {
@@ -169,6 +178,11 @@ GodotApplication *GodotApp = nil;
 	}
 }
 
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 140000
+// This option was deprecated in macOS 14.0, replace it with 0 (no options) when min version is 14.0 or higher.
+#define NSApplicationActivateIgnoringOtherApps 0
+#endif
+
 - (void)forceUnbundledWindowActivationHackStep1 {
 	// Step 1: Switch focus to macOS SystemUIServer process.
 	// Required to perform step 2, TransformProcessType will fail if app is already the in focus.
@@ -192,5 +206,9 @@ GodotApplication *GodotApp = nil;
 	// Step 3: Switch focus back to app window.
 	[[NSRunningApplication currentApplication] activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
+
+#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 140000
+#undef NSApplicationActivateIgnoringOtherApps
+#endif
 
 @end

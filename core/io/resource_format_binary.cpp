@@ -36,12 +36,10 @@
 #include "core/io/missing_resource.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
+#include "core/variant/container_type_validate.h"
 #include "core/version.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
-
-//#define print_bl(m_what) print_line(m_what)
-#define print_bl(m_what) (void)(m_what)
 
 enum {
 	//numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
@@ -157,7 +155,6 @@ StringName ResourceLoaderBinary::_get_string() {
 
 Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 	uint32_t prop_type = f->get_32();
-	print_bl("find property of type: " + itos(prop_type));
 
 	switch (prop_type) {
 		case VARIANT_NIL: {
@@ -790,7 +787,7 @@ Error ResourceLoaderBinary::load() {
 				if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
 					Array get_array = get_value;
 					if (!set_array.is_same_typed(get_array)) {
-						value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+						value = Array(set_array, get_array.get_element_type());
 					}
 				}
 			}
@@ -802,8 +799,7 @@ Error ResourceLoaderBinary::load() {
 				if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
 					Dictionary get_dict = get_value;
 					if (!set_dict.is_same_typed(get_dict)) {
-						value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
-								get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
+						value = Dictionary(set_dict, get_dict.get_key_type(), get_dict.get_value_type());
 					}
 				}
 			}
@@ -944,20 +940,13 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_file, bool p_no_resources, boo
 	}
 
 	bool big_endian = f->get_32();
-	bool use_real64 = f->get_32();
+	f->get_32(); // use_real64
 
 	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
 	ver_format = f->get_32();
-
-	print_bl("big endian: " + itos(big_endian));
-	print_bl("endian swap: " + itos(big_endian));
-	print_bl("real64: " + itos(use_real64));
-	print_bl("major: " + itos(ver_major));
-	print_bl("minor: " + itos(ver_minor));
-	print_bl("format: " + itos(ver_format));
 
 	if (ver_format > FORMAT_VERSION || ver_major > GODOT_VERSION_MAJOR) {
 		f.unref();
@@ -966,8 +955,6 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_file, bool p_no_resources, boo
 	}
 
 	type = get_unicode_string();
-
-	print_bl("type: " + type);
 
 	importmd_ofs = f->get_64();
 	uint32_t flags = f->get_32();
@@ -1005,8 +992,6 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_file, bool p_no_resources, boo
 		string_map.write[i] = s;
 	}
 
-	print_bl("strings: " + itos(string_table_size));
-
 	uint32_t ext_resources_size = f->get_32();
 	for (uint32_t i = 0; i < ext_resources_size; i++) {
 		ExtResource er;
@@ -1034,7 +1019,6 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_file, bool p_no_resources, boo
 		external_resources.push_back(er);
 	}
 
-	print_bl("ext resources: " + itos(ext_resources_size));
 	uint32_t int_resources_size = f->get_32();
 
 	for (uint32_t i = 0; i < int_resources_size; i++) {
@@ -1043,8 +1027,6 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_file, bool p_no_resources, boo
 		ir.offset = f->get_64();
 		internal_resources.push_back(ir);
 	}
-
-	print_bl("int resources: " + itos(int_resources_size));
 
 	if (f->eof_reached()) {
 		error = ERR_FILE_CORRUPT;

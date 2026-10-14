@@ -8,7 +8,8 @@ const Features = {
 	 */
 	isWebGLAvailable: function (majorVersion = 1) {
 		try {
-			return !!document.createElement('canvas').getContext(['webgl', 'webgl2'][majorVersion - 1]);
+			const canvas = /** @type {!HTMLCanvasElement} */ (document.createElement('canvas'));
+			return !!canvas.getContext(['webgl', 'webgl2'][majorVersion - 1]);
 		} catch (e) { /* Not available */ }
 		return false;
 	},
@@ -38,7 +39,7 @@ const Features = {
 	 * This value is dependent on Cross-Origin-Opener-Policy and Cross-Origin-Embedder-Policy headers sent by the server.
 	 *
 	 * @returns {boolean} If the engine is running in a Secure Context.
-	 * @function Engine.isSecureContext
+	 * @function Engine.isCrossOriginIsolated
 	 */
 	isCrossOriginIsolated: function () {
 		return window['crossOriginIsolated'] === true;
@@ -70,9 +71,9 @@ const Features = {
 	/**
 	 * Return an array of missing required features (as string).
 	 *
-	 * @returns {Array<string>} A list of human-readable missing features.
+	 * @returns {!Array<string>} A list of human-readable missing features.
 	 * @function Engine.getMissingFeatures
-	 * @param {{threads: (boolean|undefined)}} supportedFeatures
+	 * @param {{threads: (boolean|undefined)}=} supportedFeatures
 	 */
 	getMissingFeatures: function (supportedFeatures = {}) {
 		const {

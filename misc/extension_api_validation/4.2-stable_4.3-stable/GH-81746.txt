@@ -1,5 +1,3 @@
-GH-81746
---------
 Validate extension JSON: API was removed: classes/EditorSceneFormatImporterFBX
 
 Renamed to EditorSceneFormatImporterFBX2GLTF.

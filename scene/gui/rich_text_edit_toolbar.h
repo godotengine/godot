@@ -126,6 +126,15 @@ class RichTextEditToolbar : public HBoxContainer {
 	Panel *font_color_bar = nullptr;
 	Panel *outline_color_bar = nullptr;
 	Panel *bg_color_swatch = nullptr;
+	// Marks a color button whose slot follows a Design Token.
+	Label *font_color_badge = nullptr;
+	Label *bg_color_badge = nullptr;
+	Label *outline_color_badge = nullptr;
+	String font_color_ref;
+	String bg_color_ref;
+	String outline_color_ref;
+	String external_initial_ref;
+	String external_pending_ref;
 	TextureRect *bg_color_checker = nullptr;
 	// "No Color" row at the top of the background color dropdown.
 	Panel *bg_color_none_swatch = nullptr;
@@ -137,6 +146,11 @@ class RichTextEditToolbar : public HBoxContainer {
 	Vector<Control *> paddings;
 
 	bool updating_controls = false;
+	bool external_color_picker_enabled = false;
+	StringName external_color_slot;
+	Color external_initial_color;
+	Color external_pending_color;
+	bool external_initial_bg_assigned = false;
 	bool color_picker_open = false;
 	bool bg_color_picker_open = false;
 	// Mirrors ColorPickerButton: a click that closes a popup can also reach the
@@ -175,6 +189,7 @@ class RichTextEditToolbar : public HBoxContainer {
 	void _style_line_edit(LineEdit *p_line_edit, const StringName &p_normal);
 	void _style_popup(PopupPanel *p_popup, const StringName &p_panel);
 	void _style_dropdown_label(Label *p_label);
+	Label *_make_token_badge(Button *p_button);
 	void _apply_color_button_previews();
 	void _set_button_icon(Button *p_button, const StringName &p_icon_name);
 	void _ensure_font_color_picker();
@@ -239,6 +254,15 @@ public:
 	bool is_two_row_layout() const;
 
 	RichTextEdit *get_rich_text_edit() const;
+
+	void set_external_color_picker_enabled(bool p_enabled);
+	bool is_external_color_picker_enabled() const;
+	void begin_external_color_picker(const StringName &p_slot);
+	void preview_external_color(const Color &p_color);
+	void preview_external_token(const String &p_ref, const Color &p_color);
+	String get_color_ref(const StringName &p_slot) const;
+	void end_external_color_picker(bool p_commit = true);
+	void clear_external_background_color();
 
 	RichTextEditToolbar();
 };

@@ -880,6 +880,25 @@ void main() {
 
 /* Varyings */
 
+#if defined(TEXTURE_STREAMING) && !defined(MODE_RENDER_DEPTH) && (defined(UV_USED) || defined(STREAMING_LOD_USED))
+// Since material feedback writes to a ssbo buffer, early fragment tests likely get disabled by the
+// driver so unless we want really bad performance, we need to force enable it again.
+//
+// To Early-Z, or Not To Early-Z
+//  - https://therealmjp.github.io/posts/to-earlyz-or-not-to-earlyz/#uavsstorage-texturesstorage-buffers
+#if defined(ALPHA_SCISSOR_USED) || defined(ALPHA_HASH_USED) || defined(ENABLE_CLIP_ALPHA) || defined(UBERSHADER) || defined(DISCARD_USED)
+#define TEXTURE_STREAMING_MAY_DISCARD
+#endif
+
+#if defined(DEPTH_TEST_DISABLED_USED) || defined(DEPTH_DRAW_NEVER_USED) || (defined(TEXTURE_STREAMING_DEPTH_PREPASS) && !defined(DEPTH_DRAW_ALWAYS_USED))
+#define TEXTURE_STREAMING_NO_DEPTH_WRITE
+#endif
+
+#if !defined(DEPTH_USED) && (!defined(TEXTURE_STREAMING_MAY_DISCARD) || (defined(TEXTURE_STREAMING_NO_DEPTH_WRITE) && !defined(STENCIL_WRITE_USED)))
+layout(early_fragment_tests) in;
+#endif
+#endif // TEXTURE_STREAMING
+
 layout(location = 0) in vec3 vertex_interp;
 
 #ifdef NORMAL_USED
@@ -892,6 +911,12 @@ layout(location = 2) in vec4 color_interp;
 
 #ifdef UV_USED
 layout(location = 3) in vec2 uv_interp;
+#endif
+
+#include "../scene_forward_streaming_inc.glsl"
+
+#ifdef STREAMING_LOD_USED
+float streaming_lod = 32.0; // Defaults to value past the coursest quality.
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
@@ -1334,6 +1359,45 @@ void fragment_shader(in SceneData scene_data) {
 #endif // MODE_RENDER_MATERIAL
 #endif // ALPHA_SCISSOR_USED
 
+#if defined(UV_USED) || defined(STREAMING_LOD_USED)
+#if defined(TEXTURE_STREAMING)
+#if !defined(MODE_RENDER_DEPTH)
+	if (sc_material_feedback()) {
+		// Instance has materials which require feedback.
+#if !defined(STREAMING_LOD_USED)
+		vec2 uv_ddx = dFdx(uv_interp);
+		vec2 uv_ddy = dFdy(uv_interp);
+#endif
+
+		if (!gl_HelperInvocation) {
+#if defined(STREAMING_LOD_USED)
+			// The shader supplied the level itself.
+			float footprint_sq = streaming_footprint_sq_from_lod(streaming_lod);
+#else
+			// Calculate the mip level needed for the current fragment based on UV derivatives.
+			float footprint_sq = streaming_footprint_sq(uv_ddx, uv_ddy);
+#endif
+
+			// Bitwise NOT inverts the ordering so that smaller footprint_sq (higher quality)
+			// maps to larger uint values, allowing atomicMax with a 0-cleared buffer.
+			uint required_mip = ~floatBitsToUint(footprint_sq);
+
+			// Reduce atomic contention using subgroup operations.
+			// Find maximum inverted mip level across all invocations in the subgroup, then only
+			// one invocation performs the atomic write.
+			// Right now this assumes all invocations will have the same instance index.
+			// If that is not true then probably need a subgroupAllEqual check first + fallback.
+			uint subgroup_max_mip = subgroupMax(required_mip);
+			if (subgroupElect()) {
+				const uint material_feedback_index = instances.data[instance_index].material_feedback_index;
+				atomicMax(material_feedback.data[material_feedback_index], subgroup_max_mip);
+			}
+		}
+	}
+#endif // MODE_RENDER_DEPTH
+#endif // TEXTURE_STREAMING
+#endif // UV_USED || STREAMING_LOD_USED
+
 // alpha hash can be used in unison with alpha antialiasing
 #ifdef ALPHA_HASH_USED
 	vec3 object_pos = (inverse(read_model_matrix) * inv_view_matrix * vec4(vertex, 1.0)).xyz;
@@ -1670,6 +1734,8 @@ void fragment_shader(in SceneData scene_data) {
 		indirect_specular_light *= scene_data.IBL_exposure_normalization;
 		indirect_specular_light *= horizon * horizon;
 		indirect_specular_light *= scene_data.ambient_light_color_energy.a;
+	} else if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_COLOR)) {
+		indirect_specular_light = scene_data.reflection_color.rgb;
 	}
 
 #if defined(CUSTOM_RADIANCE_USED)
@@ -1728,6 +1794,8 @@ void fragment_shader(in SceneData scene_data) {
 
 #endif //USE_RADIANCE_OCTMAP_ARRAY
 		cc_specular_light += clearcoat_light * scene_data.IBL_exposure_normalization * scene_data.ambient_light_color_energy.a;
+	} else if (bool(scene_data.flags & SCENE_DATA_FLAGS_USE_REFLECTION_COLOR)) {
+		cc_specular_light = scene_data.reflection_color.rgb;
 	}
 #endif // LIGHT_CLEARCOAT_USED
 #endif // !AMBIENT_LIGHT_DISABLED
@@ -1844,7 +1912,7 @@ void fragment_shader(in SceneData scene_data) {
 								transmittance_color,
 								transmittance_depth,
 								transmittance_boost,
-								transmittance_z,
+								0.0,
 #endif
 #ifdef LIGHT_RIM_USED
 								rim, rim_tint,
@@ -2556,6 +2624,18 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #undef BIAS_FUNC
+
+					//process sscs
+					if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSCS) && directional_lights.data[i].sscs_index != 0xFFFFFFFF) {
+#ifdef USE_MULTIVIEW
+						float sscs_layer = float(directional_lights.data[i].sscs_index * 2u + uint(ViewIndex));
+#else
+					float sscs_layer = float(directional_lights.data[i].sscs_index);
+#endif // USE_MULTIVIEW
+						float sscs_shadow = textureLod(sampler2DArray(sscs_buffer, SAMPLER_LINEAR_CLAMP), vec3(screen_uv, sscs_layer), 0.0).r;
+
+						shadow = min(shadow, sscs_shadow);
+					}
 				} // shadows
 
 				if (i < 4) {

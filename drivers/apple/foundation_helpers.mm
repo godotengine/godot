@@ -35,6 +35,10 @@
 
 #import <CoreFoundation/CFString.h>
 
+namespace NS {
+class String;
+}
+
 namespace conv {
 
 NSString *to_nsstring(const String &p_str) {
@@ -87,6 +91,11 @@ String to_string(NSString *p_str) {
 	}
 
 	return String::utf8(p_str.UTF8String);
+}
+
+String to_string(NS::String *p_str) {
+	NSString *str = (__bridge NSString *)p_str;
+	return to_string(str);
 }
 
 } //namespace conv

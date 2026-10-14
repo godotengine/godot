@@ -139,7 +139,7 @@
 	<signals>
 		<signal name="closed">
 			<description>
-				Emitted when the dock is closed with the Close button in the context popup, before it's removed from its parent. See [member closable].
+				Emitted when the dock is closed, before it's removed from its parent. The dock can be closed using Close button in the dock popup, using [method close], or as a result of a layout change.
 			</description>
 		</signal>
 		<signal name="opened">

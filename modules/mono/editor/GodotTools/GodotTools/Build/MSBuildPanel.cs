@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using Godot;
 using GodotTools.Internals;
 using static GodotTools.Internals.Globals;
@@ -22,7 +23,7 @@ namespace GodotTools.Build
         public BuildResult? BuildResult { get; private set; }
 
         private readonly object _pendingBuildLogTextLock = new object();
-        private string _pendingBuildLogText = string.Empty;
+        private readonly StringBuilder _pendingBuildLogText = new StringBuilder();
 
         public void UpdateBuildStateIcon()
         {
@@ -175,8 +176,8 @@ namespace GodotTools.Build
         {
             lock (_pendingBuildLogTextLock)
             {
-                _outputView.Append(_pendingBuildLogText);
-                _pendingBuildLogText = string.Empty;
+                _outputView.Append(_pendingBuildLogText.ToString());
+                _pendingBuildLogText.Clear();
             }
         }
 
@@ -186,7 +187,7 @@ namespace GodotTools.Build
             {
                 if (_pendingBuildLogText.Length == 0)
                     CallDeferred(nameof(UpdateBuildLogText));
-                _pendingBuildLogText += text + "\n";
+                _pendingBuildLogText.AppendLine(text);
             }
         }
 
@@ -196,7 +197,7 @@ namespace GodotTools.Build
             {
                 if (_pendingBuildLogText.Length == 0)
                     CallDeferred(nameof(UpdateBuildLogText));
-                _pendingBuildLogText += text + "\n";
+                _pendingBuildLogText.AppendLine(text);
             }
         }
 

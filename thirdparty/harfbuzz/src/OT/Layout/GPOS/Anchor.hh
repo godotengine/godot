@@ -27,9 +27,9 @@ struct Anchor
     if (!u.format.v.sanitize (c)) return_trace (false);
     hb_barrier ();
     switch (u.format.v) {
-    case 1: return_trace (u.format1.sanitize (c));
-    case 2: return_trace (u.format2.sanitize (c));
-    case 3: return_trace (u.format3.sanitize (c));
+    case 1: hb_barrier (); return_trace (u.format1.sanitize (c));
+    case 2: hb_barrier (); return_trace (u.format2.sanitize (c));
+    case 3: hb_barrier (); return_trace (u.format3.sanitize (c));
     default:return_trace (true);
     }
   }
@@ -39,9 +39,9 @@ struct Anchor
   {
     *x = *y = 0;
     switch (u.format.v) {
-    case 1: u.format1.get_anchor (c, glyph_id, x, y); return;
-    case 2: u.format2.get_anchor (c, glyph_id, x, y); return;
-    case 3: u.format3.get_anchor (c, glyph_id, x, y); return;
+    case 1: hb_barrier (); u.format1.get_anchor (c, glyph_id, x, y); return;
+    case 2: hb_barrier (); u.format2.get_anchor (c, glyph_id, x, y); return;
+    case 3: hb_barrier (); u.format3.get_anchor (c, glyph_id, x, y); return;
     default:                                          return;
     }
   }
@@ -50,8 +50,9 @@ struct Anchor
   {
     TRACE_SUBSET (this);
     switch (u.format.v) {
-    case 1: return_trace (bool (reinterpret_cast<Anchor *> (u.format1.copy (c->serializer))));
+    case 1: hb_barrier (); return_trace (bool (reinterpret_cast<Anchor *> (u.format1.copy (c->serializer))));
     case 2:
+      hb_barrier ();
       if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
       {
         // AnchorFormat 2 just containins extra hinting information, so
@@ -59,7 +60,7 @@ struct Anchor
         return_trace (bool (reinterpret_cast<Anchor *> (u.format1.copy (c->serializer))));
       }
       return_trace (bool (reinterpret_cast<Anchor *> (u.format2.copy (c->serializer))));
-    case 3: return_trace (u.format3.subset (c));
+    case 3: hb_barrier (); return_trace (u.format3.subset (c));
     default:return_trace (false);
     }
   }
@@ -70,6 +71,7 @@ struct Anchor
     case 1: case 2:
       return;
     case 3:
+      hb_barrier ();
       u.format3.collect_variation_indices (c);
       return;
     default: return;

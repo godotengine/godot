@@ -1610,7 +1610,8 @@ void GridMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			floor->set_tooltip_text(
-					vformat(TTR("Change Grid Floor:\nPrevious Plane (%s)\nNext Plane (%s)"),
+					vformat(TTR("Change Grid Floor (%s + Mouse Wheel):\nPrevious Plane (%s)\nNext Plane (%s)\nCan be done while selecting for multi-floor selections."),
+							keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL),
 							ED_GET_SHORTCUT("grid_map/previous_floor")->get_as_text(),
 							ED_GET_SHORTCUT("grid_map/next_floor")->get_as_text()));
 

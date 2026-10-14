@@ -24,6 +24,11 @@ func run_tests():
 
 	__exec_test(test_interface_object_proxy)
 
+	__exec_test(test_static_fields)
+	__exec_test(test_instance_fields)
+	__exec_test(test_boxed_instance_fields)
+	__exec_test(test_final_fields)
+
 	print("JavaClassWrapper tests finished.")
 	print("Tests started: " + str(_test_started))
 	print("Tests completed: " + str(_test_completed))
@@ -31,7 +36,6 @@ func run_tests():
 
 func test_exceptions() -> bool:
 	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
-	#print(TestClass.get_java_method_list())
 
 	assert_equal(JavaClassWrapper.get_exception(), null)
 
@@ -203,4 +207,89 @@ func test_interface_object_proxy() -> bool:
 	proxy.println("This is proxy test")
 	assert_equal(print_object.test_data['called'], true)
 	assert_equal(print_object.test_data['content'], "This is proxy test")
+	return true
+
+
+func test_static_fields() -> bool:
+	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
+
+	assert_equal(TestClass.staticBoolField, true)
+	assert_equal(TestClass.staticByteField, 1)
+	assert_equal(TestClass.staticCharField, 65) # 'A' is 65
+	assert_equal(TestClass.staticShortField, 2)
+	assert_equal(TestClass.staticIntField, 3)
+	assert_equal(TestClass.staticLongField, 4)
+	assert_equal(TestClass.staticFloatField, 5.0)
+	assert_equal(TestClass.staticDoubleField, 6.0)
+	assert_equal(TestClass.staticStringField, "static")
+
+	# Test setting static fields
+	TestClass.staticBoolField = false
+	assert_equal(TestClass.staticBoolField, false)
+	TestClass.staticIntField = 42
+	assert_equal(TestClass.staticIntField, 42)
+	TestClass.staticFloatField = 10.0
+	assert_equal(TestClass.staticFloatField, 10.0)
+	TestClass.staticStringField = "new static"
+	assert_equal(TestClass.staticStringField, "new static")
+
+	return true
+
+
+func test_instance_fields() -> bool:
+	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
+	var instance = TestClass.TestClass()
+
+	assert_equal(instance.boolField, false)
+	assert_equal(instance.byteField, 2)
+	assert_equal(instance.charField, 66) # 'B' is 66
+	assert_equal(instance.shortField, 3)
+	assert_equal(instance.intField, 4)
+	assert_equal(instance.longField, 5)
+	assert_equal(instance.floatField, 6.0)
+	assert_equal(instance.doubleField, 7.0)
+	assert_equal(instance.stringField, "string field")
+
+	# Test setting instance fields
+	instance.boolField = true
+	assert_equal(instance.boolField, true)
+	instance.intField = 123
+	assert_equal(instance.intField, 123)
+	instance.floatField = 12.0
+	assert_equal(instance.floatField, 12.0)
+	instance.stringField = "instance"
+	assert_equal(instance.stringField, "instance")
+
+	# Verify another instance has separate fields
+	var instance2 = TestClass.TestClass()
+	assert_equal(instance2.intField, 4)
+
+	return true
+
+
+func test_boxed_instance_fields() -> bool:
+	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
+	var instance = TestClass.TestClass()
+
+	assert_equal(instance.boxedBoolField, null)
+	assert_equal(instance.boxedIntField, null)
+
+	# Test setting boxed instance fields
+	instance.boxedBoolField = true
+	assert_equal(instance.boxedBoolField, true)
+	instance.boxedIntField = 123
+	assert_equal(instance.boxedIntField, 123)
+
+	return true
+
+
+func test_final_fields() -> bool:
+	var TestClass: JavaClass = JavaClassWrapper.wrap('com.godot.game.test.javaclasswrapper.TestClass')
+	var instance = TestClass.TestClass()
+
+	assert_equal(instance.finalIntField, 100)
+	assert_equal(instance.finalStringField, "final")
+	assert_equal(TestClass.staticFinalIntField, 200)
+	assert_equal(TestClass.staticFinalStringField, "static final")
+
 	return true

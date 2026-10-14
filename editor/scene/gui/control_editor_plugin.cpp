@@ -700,6 +700,7 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	add_child(main_vb);
 
 	HBoxContainer *top_row = memnew(HBoxContainer);
+	top_row->set_layout_direction(LayoutDirection::LAYOUT_DIRECTION_LTR);
 	top_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	top_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(top_row);
@@ -711,6 +712,7 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	_add_row_button(top_row, PRESET_TOP_WIDE, TTRC("Top Wide"));
 
 	HBoxContainer *mid_row = memnew(HBoxContainer);
+	mid_row->set_layout_direction(LayoutDirection::LAYOUT_DIRECTION_LTR);
 	mid_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	mid_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(mid_row);
@@ -722,6 +724,7 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	_add_row_button(mid_row, PRESET_HCENTER_WIDE, TTRC("HCenter Wide"));
 
 	HBoxContainer *bot_row = memnew(HBoxContainer);
+	bot_row->set_layout_direction(LayoutDirection::LAYOUT_DIRECTION_LTR);
 	bot_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	bot_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(bot_row);
@@ -735,6 +738,7 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	_add_separator(main_vb, memnew(HSeparator));
 
 	HBoxContainer *extra_row = memnew(HBoxContainer);
+	extra_row->set_layout_direction(LayoutDirection::LAYOUT_DIRECTION_LTR);
 	extra_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	extra_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(extra_row);
@@ -900,8 +904,8 @@ void ControlEditorToolbar::_anchors_to_current_ratio() {
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
 		if (control) {
-			Point2 top_left_anchor = _position_to_anchor(control, Point2());
-			Point2 bottom_right_anchor = _position_to_anchor(control, control->get_size());
+			Point2 top_left_anchor = CanvasItemManipulator::position_to_anchor(control, Point2());
+			Point2 bottom_right_anchor = CanvasItemManipulator::position_to_anchor(control, control->get_size());
 			undo_redo->add_do_method(control, "set_anchor", SIDE_LEFT, top_left_anchor.x, false, true);
 			undo_redo->add_do_method(control, "set_anchor", SIDE_RIGHT, bottom_right_anchor.x, false, true);
 			undo_redo->add_do_method(control, "set_anchor", SIDE_TOP, top_left_anchor.y, false, true);
@@ -940,6 +944,7 @@ void ControlEditorToolbar::_anchor_mode_toggled(bool p_status) {
 
 	anchors_mode = p_status;
 	CanvasItemEditor::get_singleton()->update_viewport();
+	emit_signal("anchors_mode_toggled", anchors_mode);
 }
 
 void ControlEditorToolbar::_container_flags_selected(int p_flags, bool p_vertical) {
@@ -1039,30 +1044,11 @@ void ControlEditorToolbar::_maximize_flag_toggled(bool p_maximize, bool p_vertic
 	undo_redo->commit_action();
 }
 
-Vector2 ControlEditorToolbar::_position_to_anchor(const Control *p_control, Vector2 position) {
-	ERR_FAIL_NULL_V(p_control, Vector2());
-
-	Rect2 parent_rect = p_control->get_parent_anchorable_rect();
-
-	Vector2 output;
-	if (p_control->is_layout_rtl()) {
-		output.x = (parent_rect.size.x == 0) ? 0.0 : (parent_rect.size.x - p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
-	} else {
-		output.x = (parent_rect.size.x == 0) ? 0.0 : (p_control->get_transform().xform(position).x - parent_rect.position.x) / parent_rect.size.x;
-	}
-	output.y = (parent_rect.size.y == 0) ? 0.0 : (p_control->get_transform().xform(position).y - parent_rect.position.y) / parent_rect.size.y;
-	return output;
-}
-
-bool ControlEditorToolbar::_is_node_locked(const Node *p_node) {
-	return p_node->get_meta("_edit_lock_", false);
-}
-
 List<Control *> ControlEditorToolbar::_get_edited_controls() {
 	List<Control *> selection;
 	for (const KeyValue<ObjectID, Object *> &E : editor_selection->get_selection()) {
 		Control *control = ObjectDB::get_instance<Control>(E.key);
-		if (control && control->is_visible_in_tree() && control->get_viewport() == EditorNode::get_singleton()->get_scene_root() && !_is_node_locked(control)) {
+		if (control && control->is_visible_in_tree() && control->get_viewport() == EditorNode::get_singleton()->get_scene_root() && !CanvasItemManipulator::is_node_locked(control)) {
 			selection.push_back(control);
 		}
 	}
@@ -1304,6 +1290,10 @@ void ControlEditorToolbar::_notification(int p_what) {
 			containers_button->set_button_icon(get_editor_theme_icon(SNAME("ContainerLayout")));
 		} break;
 	}
+}
+
+void ControlEditorToolbar::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("anchors_mode_toggled", PropertyInfo(Variant::BOOL, "enabled")));
 }
 
 ControlEditorToolbar::ControlEditorToolbar() {

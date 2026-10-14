@@ -260,7 +260,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		GDScriptInstance *inst = static_cast<GDScriptInstance *>(obj->get_script_instance());
 
-		Ref<GDScript> base = inst->get_script();
+		Ref<GDScript> base(static_cast<GDScript *>(inst->get_script()));
 		VALIDATE_ARG_CUSTOM(0, Variant::OBJECT, base.is_null(), "Not based on a script.");
 
 		GDScript *p = base.ptr();
@@ -321,7 +321,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 
 		GDScriptInstance *inst = static_cast<GDScriptInstance *>(static_cast<Object *>(*r_ret)->get_script_instance());
-		Ref<GDScript> gd_ref = inst->get_script();
+		Ref<GDScript> gd_ref(static_cast<GDScript *>(inst->get_script()));
 
 		for (KeyValue<StringName, GDScript::MemberInfo> &E : gd_ref->member_indices) {
 			if (d.has(E.key)) {
@@ -487,7 +487,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		if (script_type) {
 			bool result = false;
 			if (value_object->get_script_instance()) {
-				Script *script_ptr = value_object->get_script_instance()->get_script().ptr();
+				Script *script_ptr = value_object->get_script_instance()->get_script();
 				while (script_ptr) {
 					if (script_ptr == script_type) {
 						result = true;

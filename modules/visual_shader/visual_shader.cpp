@@ -37,6 +37,7 @@
 #include "core/config/engine.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
+#include "core/object/script_language.h"
 #include "core/templates/rb_map.h"
 #include "core/variant/variant_utility.h"
 #include "scene/gui/control.h"

@@ -17,8 +17,8 @@ allprojects {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
+        maven { url = "https://plugins.gradle.org/m2/" }
+        maven { url = "https://central.sonatype.com/repository/maven-snapshots/"}
     }
 }
 

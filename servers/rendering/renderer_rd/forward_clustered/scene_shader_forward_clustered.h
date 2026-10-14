@@ -129,6 +129,7 @@ public:
 				uint32_t fog_use_legacy_blending : 1;
 				uint32_t cluster_has_area_light : 1;
 				uint32_t use_lightmap_specular : 1;
+				uint32_t material_feedback : 1;
 			};
 		};
 
@@ -348,6 +349,7 @@ public:
 	SceneForwardClusteredShaderRD shader;
 	ShaderCompiler compiler;
 	bool emulate_point_size = false;
+	bool depth_prepass_enabled = false;
 
 	RID default_shader;
 	RID default_material;
@@ -361,6 +363,7 @@ public:
 
 	RID default_vec4_xform_buffer;
 	RID default_vec4_xform_uniform_set;
+	RID default_material_feedback_buffer;
 
 	RID shadow_sampler;
 
