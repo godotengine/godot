@@ -513,6 +513,7 @@ void ParticlesStorage::particles_set_process_material(RID p_particles, RID p_mat
 	ERR_FAIL_NULL(particles);
 
 	particles->process_material = p_material;
+	_particles_update_buffers(particles);
 	particles->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_PARTICLES); //the instance buffer may have changed
 }
 
