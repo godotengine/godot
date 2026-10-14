@@ -411,6 +411,11 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 		}
 
 		if (render.pipeline != rp) {
+			if (render.pipeline && render.pipeline->shader != rp->shader) {
+				// Push constants belong to the previous shader; RD requires them to be supplied again.
+				render.dirty.clear_flag(RenderState::DIRTY_PUSH);
+				push_constant_binding = MetalPushConstantBinding();
+			}
 			render.dirty.set_flag((RenderState::DirtyFlag)(RenderState::DIRTY_PIPELINE | RenderState::DIRTY_RASTER));
 			// Mark all uniforms as dirty, as variants of a shader pipeline may have a different entry point ABI,
 			// due to setting force_active_argument_buffer_resources = true for spirv_cross::CompilerMSL::Options.
@@ -424,11 +429,17 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 	} else if (p->type == MDPipelineType::Compute) {
 		DEV_ASSERT(type == MDCommandBufferStateType::Compute);
 
-		if (compute.pipeline != p) {
+		MDComputePipeline *cp = (MDComputePipeline *)p;
+		if (compute.pipeline != cp) {
+			if (compute.pipeline && compute.pipeline->shader != cp->shader) {
+				// Push constants belong to the previous shader; RD requires them to be supplied again.
+				compute.dirty.clear_flag(ComputeState::DIRTY_PUSH);
+				push_constant_binding = MetalPushConstantBinding();
+			}
 			compute.dirty.set_flag(ComputeState::DIRTY_PIPELINE);
 			binding_cache.clear();
 			compute.mark_uniforms_dirty();
-			compute.pipeline = (MDComputePipeline *)p;
+			compute.pipeline = cp;
 		}
 	}
 }
