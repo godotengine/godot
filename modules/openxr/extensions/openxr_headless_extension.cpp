@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <ctime>
+#include "openxr_headless_extension.h"
 
 #include "../openxr_api.h"
 #include "../openxr_platform_inc.h"
 
-#include "openxr_headless_extension.h"
+#include <ctime>
 
 // Implementation for:
 // https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_MND_headless
@@ -74,7 +74,7 @@ void OpenXRHeadlessExtension::on_instance_created(const XrInstance p_instance) {
 #endif
 }
 
-void OpenXRHeadlessExtension::get_current_xrtime(XrTime* result) {
+void OpenXRHeadlessExtension::get_current_xrtime(XrTime *result) {
 	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
 	ERR_FAIL_NULL(openxr_api);
 	XrInstance instance = openxr_api->get_instance();

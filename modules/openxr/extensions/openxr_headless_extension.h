@@ -49,7 +49,7 @@ public:
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 
-	void get_current_xrtime(XrTime* result);
+	void get_current_xrtime(XrTime *result);
 
 	bool is_available();
 
@@ -60,6 +60,6 @@ private:
 
 #ifdef UNIX_ENABLED
 	bool convert_timespec_time_ext = false;
-	EXT_PROTO_XRRESULT_FUNC3(xrConvertTimespecTimeToTimeKHR, (XrInstance), instance, (const struct timespec*), timespecTime, (XrTime*), time);
+	EXT_PROTO_XRRESULT_FUNC3(xrConvertTimespecTimeToTimeKHR, (XrInstance), instance, (const struct timespec *), timespecTime, (XrTime *), time);
 #endif
 };
