@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsShapeQueryParameters2D" inherits="RefCounted" api_type="core" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Provides parameters for [PhysicsDirectSpaceState2D]'s methods.
+		Provides parameters for [PhysicsDirectSpaceState2D]'s shape query methods.
 	</brief_description>
 	<description>
-		By changing various properties of this object, such as the shape, you can configure the parameters for [PhysicsDirectSpaceState2D]'s methods.
+		By changing various properties of this object, such as the shape, you can configure the parameters for [PhysicsDirectSpaceState2D]'s shape query methods.
 		[b]Note:[/b] For optimal performance results, it is recommended to create this object in advance, store it, and reuse it for every subsequent query.
 	</description>
 	<tutorials>
