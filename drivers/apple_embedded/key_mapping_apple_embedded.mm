@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import "key_mapping_apple_embedded.h"
 
 #include "core/templates/hash_map.h"
@@ -204,3 +206,5 @@ KeyLocation KeyMappingAppleEmbedded::key_location(CFIndex p_keycode) {
 	}
 	return KeyLocation::UNSPECIFIED;
 }
+
+#endif // APPLE_EMBEDDED_ENABLED

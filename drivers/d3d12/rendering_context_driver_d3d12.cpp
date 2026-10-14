@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef D3D12_ENABLED
+
 #include "rendering_context_driver_d3d12.h"
 
 #include "core/config/engine.h"
@@ -390,3 +392,5 @@ IDXGIFactory2 *RenderingContextDriverD3D12::dxgi_factory_get() {
 bool RenderingContextDriverD3D12::get_tearing_supported() const {
 	return tearing_supported;
 }
+
+#endif // D3D12_ENABLED

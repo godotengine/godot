@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "shader_baker_export_plugin_platform_metal.h"
 
 #include "drivers/metal/rendering_shader_container_metal.h"
@@ -57,3 +59,5 @@ RenderingShaderContainerFormat *ShaderBakerExportPluginPlatformMetal::create_sha
 bool ShaderBakerExportPluginPlatformMetal::matches_driver(const String &p_driver) {
 	return p_driver == "metal";
 }
+
+#endif // METAL_ENABLED

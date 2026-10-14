@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "drivers/metal/metal_allocator.h"
 
 namespace {
@@ -396,3 +398,5 @@ MetalHeapAllocator::~MetalHeapAllocator() {
 		}
 	}
 }
+
+#endif // METAL_ENABLED

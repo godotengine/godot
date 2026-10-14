@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import "godot_view_apple_embedded.h"
 
 #include "core/config/project_settings.h"
@@ -503,3 +505,5 @@ static const float earth_gravity = 9.80665;
 }
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

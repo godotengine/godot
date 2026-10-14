@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import <Foundation/Foundation.h>
 
 inline void safeDispatchSyncToMain(void (^block)(void)) {
@@ -48,3 +50,5 @@ inline void safeDispatchSyncToMain(void (^block)(void)) {
 - (void)setUpProjectDataShowingBootLogo:(BOOL)p_show_boot_logo;
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

@@ -48,6 +48,8 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
+#ifdef METAL_ENABLED
+
 #include "metal_device_properties.h"
 
 #include "core/os/os.h"
@@ -396,3 +398,5 @@ const SampleCount MetalDeviceProperties::sample_count[RenderingDeviceCommons::Te
 };
 
 // endregion
+
+#endif // METAL_ENABLED

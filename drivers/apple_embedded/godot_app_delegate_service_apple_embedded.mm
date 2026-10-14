@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import "godot_app_delegate_service_apple_embedded.h"
 
 #include "core/config/project_settings.h"
@@ -202,3 +204,5 @@ static __weak GDTViewController *_viewController = nil;
 }
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

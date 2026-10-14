@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef D3D12_ENABLED
+
 #include <drivers/d3d12/godot_d3dx12.h>
 
 class D3D12Hooks {
@@ -46,3 +48,5 @@ public:
 	virtual void cleanup_device() = 0;
 	static D3D12Hooks *get_singleton() { return singleton; }
 };
+
+#endif // D3D12_ENABLED

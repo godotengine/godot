@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef SDL_ENABLED
+
 // Always use standard library to avoid built-in functions changing (see GH-110198).
 #define HAVE_LIBC 1
 
@@ -182,3 +184,5 @@
 #else
 #error "No SDL build config was found for this platform. Setup one before compiling the engine."
 #endif
+
+#endif // SDL_ENABLED

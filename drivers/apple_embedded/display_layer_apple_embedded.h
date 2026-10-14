@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #import <QuartzCore/CAMetalLayer.h>
 
 @protocol GDTDisplayLayer <NSObject>
@@ -40,3 +42,5 @@
 - (void)layoutDisplayLayer;
 
 @end
+
+#endif // APPLE_EMBEDDED_ENABLED

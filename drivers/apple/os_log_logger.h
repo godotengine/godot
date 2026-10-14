@@ -30,6 +30,8 @@
 
 #pragma once
 
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
+
 #include "core/io/logger.h"
 
 #include <os/log.h>
@@ -53,3 +55,5 @@ public:
 	 */
 	OsLogLogger(const char *p_subsystem);
 };
+
+#endif // defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)

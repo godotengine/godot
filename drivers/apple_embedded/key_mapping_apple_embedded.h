@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef APPLE_EMBEDDED_ENABLED
+
 #include "core/os/keyboard.h"
 
 #import <UIKit/UIKit.h>
@@ -42,3 +44,5 @@ public:
 	static Key remap_key(CFIndex p_keycode);
 	static KeyLocation key_location(CFIndex p_keycode);
 };
+
+#endif // APPLE_EMBEDDED_ENABLED

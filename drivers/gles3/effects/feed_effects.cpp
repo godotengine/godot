@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "feed_effects.h"
-
 #ifdef GLES3_ENABLED
+
+#include "feed_effects.h"
 
 #include "core/os/os.h"
 #include "servers/rendering/rendering_server_enums.h"

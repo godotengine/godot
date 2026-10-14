@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef D3D12_ENABLED
+
 #include "servers/rendering/rendering_shader_container.h"
 
 #define NIR_ENABLED 1
@@ -183,3 +185,5 @@ public:
 	RenderingShaderContainerFormatD3D12();
 	virtual ~RenderingShaderContainerFormatD3D12();
 };
+
+#endif // D3D12_ENABLED
