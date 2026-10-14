@@ -701,6 +701,7 @@ void ProjectDialog::ok_pressed() {
 			ret = unzGoToFirstFile(pkg);
 
 			Vector<String> failed_files;
+			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			while (ret == UNZ_OK) {
 				//get filename
 				unz_file_info info;
@@ -719,8 +720,7 @@ void ProjectDialog::ok_pressed() {
 				String rel_path = name.trim_prefix(zip_root);
 				if (rel_path.is_empty()) { // Root.
 				} else if (rel_path.ends_with("/")) { // Directory.
-					Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-					da->make_dir(path.path_join(rel_path));
+					da->make_dir_recursive(path.path_join(rel_path));
 				} else { // File.
 					Vector<uint8_t> uncomp_data;
 					uncomp_data.resize(info.uncompressed_size);
@@ -729,6 +729,8 @@ void ProjectDialog::ok_pressed() {
 					ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
 					ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", rel_path));
 					unzCloseCurrentFile(pkg);
+
+					da->make_dir_recursive(path.path_join(rel_path).get_base_dir());
 
 					Ref<FileAccess> f = FileAccess::open(path.path_join(rel_path), FileAccess::WRITE);
 					if (f.is_valid()) {
