@@ -10,6 +10,12 @@ env_webm = env_modules.Clone()
 
 thirdparty_obj = []
 
+env_webm.Append(
+    CPPDEFINES=[
+        "LIBSIMPLEWEBM_DISABLE_VP8",
+    ]
+)
+
 env_webm.Prepend(
     CPPPATH=[
         "#thirdparty/libsimplewebm/",
