@@ -564,14 +564,14 @@ void Trail3D::_do_rebuild() {
 		real_t length_uv = 0;
 
 		switch (tiling_mode) {
-			case TILING_MODE_LENGTH: {
+			case TILING_MODE_TILE: {
 				if (pin_uv) {
 					length_uv = (dist + tiling_offset) * tiling_multiplier;
 				} else {
 					length_uv = dist * tiling_multiplier;
 				}
 			} break;
-			case TILING_MODE_UNIT: {
+			case TILING_MODE_STRETCH: {
 				length_uv = ratio * tiling_multiplier;
 			} break;
 			default: {
@@ -850,7 +850,7 @@ void Trail3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (p_property.name == "max_length" && limit_mode == LIMIT_MODE_LIFETIME) {
 		p_property.usage = PROPERTY_USAGE_NONE;
-	} else if (p_property.name == "pin_uv" && tiling_mode == TILING_MODE_UNIT) {
+	} else if (p_property.name == "pin_uv" && tiling_mode == TILING_MODE_STRETCH) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
