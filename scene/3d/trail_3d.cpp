@@ -666,6 +666,7 @@ void Trail3D::_process_trail() {
 	}
 
 	Vector3 up = tf.basis.get_column(1);
+	Vector3 fw = tf.basis.get_column(2);
 	real_t delta = get_process_delta_time();
 	_time += delta;
 	real_t head_velocity = (get_global_position() - _previous_position).length() / MAX(delta, CMP_EPSILON);
@@ -686,7 +687,12 @@ void Trail3D::_process_trail() {
 			normals.write[0] = up;
 			if (pos.distance_squared_to(points[1]) > CMP_EPSILON) {
 				real_t len = (pos - points[1]).length();
-				Vector3 t = (pos - points[1]) / len;
+				Vector3 t;
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					t = (pos - points[1]) / len;
+				} else {
+					t = fw;
+				}
 				tangents.write[0] = t;
 				if (points.size() == 2) {
 					tangents.write[1] = t;
@@ -723,24 +729,32 @@ void Trail3D::_process_trail() {
 	switch (limit_mode) {
 		case LIMIT_MODE_MAX_LENGTH:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					tangents.insert(1, (pos - points[1]).normalized());
+				} else {
+					tangents.insert(1, fw);
+				}
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_last_pinned_u += dist_from_leading;
-				if (points.size() > 3) {
+				if (points.size() > 3 && alignment == MESH_ALIGNMENT_BILLBOARD) {
 					tangents.write[2] = (points[1] - points[3]).normalized();
 				}
 			}
 			break;
 		case LIMIT_MODE_LIFETIME:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					tangents.insert(1, (pos - points[1]).normalized());
+				} else {
+					tangents.insert(1, fw);
+				}
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_times.insert(1, _time);
 				_last_pinned_u += dist_from_leading;
 				_velocities.insert(1, (points[1] - points[2]).length() / (_times[1] - _times[2]));
-				if (points.size() > 3) {
+				if (points.size() > 3 && alignment == MESH_ALIGNMENT_BILLBOARD) {
 					tangents.write[2] = (points[1] - points[3]).normalized();
 				}
 			}
