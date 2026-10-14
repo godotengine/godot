@@ -85,8 +85,12 @@ void SceneTreeDock::_nodes_drag_begin() {
 
 void SceneTreeDock::_quick_open(const String &p_file_path) {
 	List<Node *> selection = editor_selection->get_top_selected_node_list();
-	for (Node *node : selection) {
-		instantiate_scenes({ p_file_path }, node);
+	if (selection.is_empty()) {
+		instantiate_scenes({ p_file_path }, nullptr);
+	} else {
+		for (Node *node : selection) {
+			instantiate_scenes({ p_file_path }, node);
+		}
 	}
 }
 
