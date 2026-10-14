@@ -76,7 +76,15 @@ private:
 
 		bool center_grabber = false;
 		int grabber_offset = 0;
+		int grabber_max_size = 0;
 		int tick_offset = 0;
+		int tick_max_size = 0;
+
+		Ref<AudioStream> focus_sound;
+		Ref<AudioStream> drag_started_sound;
+		Ref<AudioStream> drag_ended_sound;
+		Ref<AudioStream> value_changed_sound;
+		Ref<AudioStream> value_change_rejected_sound;
 	} theme_cache;
 
 protected:
@@ -85,6 +93,7 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
+	Size2 _fit_icon_size(const Size2 &p_size, int p_max_size) const;
 	static void _bind_methods();
 
 public:

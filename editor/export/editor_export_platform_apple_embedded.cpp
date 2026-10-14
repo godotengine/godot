@@ -219,6 +219,14 @@ void EditorExportPlatformAppleEmbedded::get_usage_descriptions(List<EditorExport
 	r_descriptions->push_back({ "privacy/photolibrary_usage_description", "NSPhotoLibraryUsageDescription", "Provide a message if you need access to the photo library" });
 }
 
+void EditorExportPlatformAppleEmbedded::get_required_device_capabilities(const Ref<EditorExportPreset> &p_preset, Vector<String> &r_capabilities) const {
+	// Note that required device capabilities are requirements for the app to be installed.
+	// They don't enable anything.
+	if ((bool)p_preset->get("capabilities/access_wifi") && !r_capabilities.has("wifi")) {
+		r_capabilities.push_back("wifi");
+	}
+}
+
 void EditorExportPlatformAppleEmbedded::_notification(int p_what) {
 #ifdef MACOS_ENABLED
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
@@ -249,10 +257,6 @@ bool EditorExportPlatformAppleEmbedded::get_export_option_visibility(const Edito
 			p_option == "application/icon_interpolation" ||
 			p_option == "application/signature") {
 		return advanced_options_enabled;
-	}
-	if (p_option == "capabilities/performance_a12") {
-		String rendering_method = get_project_setting(Ref<EditorExportPreset>(p_preset), "rendering/renderer/rendering_method.mobile");
-		return !(rendering_method == "forward_plus" || rendering_method == "mobile");
 	}
 
 	return true;
@@ -327,8 +331,6 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "entitlements/additional", PROPERTY_HINT_MULTILINE_TEXT, "monospace,no_wrap"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/access_wifi"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_gaming_tier"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_a12"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "capabilities/additional"), PackedStringArray()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
@@ -412,7 +414,9 @@ void EditorExportPlatformAppleEmbedded::_fix_config_file(const Ref<EditorExportP
 
 String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) {
 	String strnew;
-	if (p_line.contains("$binary")) {
+	if (p_line.contains("$application_supports_multiple_scenes")) {
+		strnew += p_line.replace("$application_supports_multiple_scenes", "<false/>") + "\n";
+	} else if (p_line.contains("$binary")) {
 		strnew += p_line.replace("$binary", p_config.binary_name) + "\n";
 	} else if (p_line.contains("$modules_buildfile")) {
 		strnew += p_line.replace("$modules_buildfile", p_config.modules_buildfile) + "\n";
@@ -520,22 +524,8 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 		strnew += p_line.replace("$entitlements_full", entitlements);
 	} else if (p_line.contains("$required_device_capabilities")) {
 		String capabilities;
-
-		// I've removed armv7 as we can run on 64bit only devices
-		// Note that capabilities listed here are requirements for the app to be installed.
-		// They don't enable anything.
 		Vector<String> capabilities_list = p_config.capabilities;
-		String rendering_method = get_project_setting(p_preset, "rendering/renderer/rendering_method.mobile");
-
-		if ((bool)p_preset->get("capabilities/access_wifi") && !capabilities_list.has("wifi")) {
-			capabilities_list.push_back("wifi");
-		}
-		if ((bool)p_preset->get("capabilities/performance_gaming_tier") && !capabilities_list.has("iphone-performance-gaming-tier")) {
-			capabilities_list.push_back("iphone-performance-gaming-tier");
-		}
-		if (((bool)p_preset->get("capabilities/performance_a12") || rendering_method == "forward_plus" || rendering_method == "mobile") && !capabilities_list.has("iphone-ipad-minimum-performance-a12")) {
-			capabilities_list.push_back("iphone-ipad-minimum-performance-a12");
-		}
+		get_required_device_capabilities(p_preset, capabilities_list);
 		for (const String &capability : capabilities_list) {
 			capabilities += "<string>" + capability + "</string>\n";
 		}
@@ -748,6 +738,21 @@ String EditorExportPlatformAppleEmbedded::_process_config_file_line(const Ref<Ed
 			}
 		}
 		strnew += "\t</array>\n";
+
+		// AccessKit Framework
+	} else if (p_line.contains("$accesskit_buildfile")) {
+		String value = p_config.has_accesskit ? "34E718094B1805BD1139E86C /* AccessKit.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A06DCD3FADF513A489D6CE0C /* AccessKit.xcframework */; };" : "";
+		strnew += p_line.replace("$accesskit_buildfile", value) + "\n";
+	} else if (p_line.contains("$accesskit_fileref")) {
+		String value = p_config.has_accesskit ? "A06DCD3FADF513A489D6CE0C /* AccessKit.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AccessKit; path = AccessKit.xcframework; sourceTree = \"<group>\"; };" : "";
+		strnew += p_line.replace("$accesskit_fileref", value) + "\n";
+	} else if (p_line.contains("$accesskit_buildphase")) {
+		String value = p_config.has_accesskit ? "34E718094B1805BD1139E86C /* AccessKit.xcframework in Frameworks */," : "";
+		strnew += p_line.replace("$accesskit_buildphase", value) + "\n";
+	} else if (p_line.contains("$accesskit_buildgrp")) {
+		String value = p_config.has_accesskit ? "A06DCD3FADF513A489D6CE0C /* AccessKit.xcframework */," : "";
+		strnew += p_line.replace("$accesskit_buildgrp", value) + "\n";
+
 	} else if (p_line.contains("$sdkroot")) {
 		strnew += p_line.replace("$sdkroot", get_sdk_name()) + "\n";
 
@@ -1736,7 +1741,7 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 
 	bool export_project_only = p_preset->get("application/export_project_only");
 	if (p_oneclick) {
-		export_project_only = false; // Skip for one-click deploy.
+		export_project_only = false; // Skip for remote deploy.
 	}
 
 	EditorProgress ep("export", export_project_only ? TTR("Exporting for " + get_name() + " (Project Files Only)") : TTR("Exporting for " + get_name() + ""), export_project_only ? 2 : 5, true);
@@ -1916,6 +1921,24 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	if (!src_pkg_zip) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), TTR("Could not open export template (not a zip file?): \"%s\".", src_pkg_name));
 		return ERR_CANT_OPEN;
+	}
+
+	constexpr int ZIP_FNAME_MAX = 16384;
+
+	{
+		int scan_ret = unzGoToFirstFile(src_pkg_zip);
+		while (scan_ret == UNZ_OK) {
+			unz_file_info scan_info;
+			char scan_fname[ZIP_FNAME_MAX];
+			if (unzGetCurrentFileInfo(src_pkg_zip, &scan_info, scan_fname, ZIP_FNAME_MAX, nullptr, 0, nullptr, 0) != UNZ_OK) {
+				break;
+			}
+			if (String::utf8(scan_fname).begins_with("AccessKit.xcframework/")) {
+				config_data.has_accesskit = true;
+				break;
+			}
+			scan_ret = unzGoToNextFile(src_pkg_zip);
+		}
 	}
 
 	err = _export_apple_embedded_plugins(p_preset, config_data, binary_dir, module_libs, assets, p_debug);
@@ -3096,10 +3119,10 @@ void EditorExportPlatformAppleEmbedded::_initialize(const char *p_platform_logo_
 	Ref<Image> img = memnew(Image);
 	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
-	ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, false);
+	ImageLoaderSVG::create_image_from_string(img, p_platform_logo_svg, EDSCALE, upsample, HashMap<Color, Color>());
 	logo = ImageTexture::create_from_image(img);
 
-	ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, false);
+	ImageLoaderSVG::create_image_from_string(img, p_run_icon_svg, EDSCALE, upsample, HashMap<Color, Color>());
 	run_icon = ImageTexture::create_from_image(img);
 
 	plugins_changed.set();

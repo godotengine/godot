@@ -182,7 +182,9 @@ void Trail3D::_notification(int p_what) {
 
 void Trail3D::set_width(float p_width) {
 	width = p_width;
-	_needs_rebuilding = true;
+	if (limit_mode == LIMIT_MODE_MAX_LENGTH && !RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
+		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+	}
 }
 
 float Trail3D::get_width() const {
@@ -219,8 +221,10 @@ Ref<Curve> Trail3D::get_width_curve() const {
 }
 
 void Trail3D::set_color(const Color &p_color) {
-	if (p_color != color) {
-		_needs_rebuilding = true;
+	if (p_color != color && limit_mode == LIMIT_MODE_MAX_LENGTH) {
+		if (!RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail))) {
+			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &Trail3D::_process_trail), CONNECT_ONE_SHOT);
+		}
 	}
 	color = p_color;
 }
@@ -612,11 +616,11 @@ void Trail3D::_do_rebuild() {
 			custom.y = tangent.y;
 			custom.z = tangent.z;
 
-			custom.w = half_width;
+			custom.w = -half_width;
 			_write_custom(custom, j2, write_attrib);
 			custom.w = 0.;
 			_write_custom(custom, j1, write_attrib);
-			custom.w = -half_width;
+			custom.w = half_width;
 			_write_custom(custom, j0, write_attrib);
 		}
 
@@ -662,6 +666,7 @@ void Trail3D::_process_trail() {
 	}
 
 	Vector3 up = tf.basis.get_column(1);
+	Vector3 fw = tf.basis.get_column(2);
 	real_t delta = get_process_delta_time();
 	_time += delta;
 	real_t head_velocity = (get_global_position() - _previous_position).length() / MAX(delta, CMP_EPSILON);
@@ -682,7 +687,12 @@ void Trail3D::_process_trail() {
 			normals.write[0] = up;
 			if (pos.distance_squared_to(points[1]) > CMP_EPSILON) {
 				real_t len = (pos - points[1]).length();
-				Vector3 t = (pos - points[1]) / len;
+				Vector3 t;
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					t = (pos - points[1]) / len;
+				} else {
+					t = fw;
+				}
 				tangents.write[0] = t;
 				if (points.size() == 2) {
 					tangents.write[1] = t;
@@ -719,24 +729,32 @@ void Trail3D::_process_trail() {
 	switch (limit_mode) {
 		case LIMIT_MODE_MAX_LENGTH:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					tangents.insert(1, (pos - points[1]).normalized());
+				} else {
+					tangents.insert(1, fw);
+				}
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_last_pinned_u += dist_from_leading;
-				if (points.size() > 3) {
+				if (points.size() > 3 && alignment == MESH_ALIGNMENT_BILLBOARD) {
 					tangents.write[2] = (points[1] - points[3]).normalized();
 				}
 			}
 			break;
 		case LIMIT_MODE_LIFETIME:
 			if (dist_from_leading > min_section_length && emitting) {
-				tangents.insert(1, (pos - points[1]).normalized());
+				if (alignment == MESH_ALIGNMENT_BILLBOARD) {
+					tangents.insert(1, (pos - points[1]).normalized());
+				} else {
+					tangents.insert(1, fw);
+				}
 				points.insert(1, pos);
 				normals.insert(1, up);
 				_times.insert(1, _time);
 				_last_pinned_u += dist_from_leading;
 				_velocities.insert(1, (points[1] - points[2]).length() / (_times[1] - _times[2]));
-				if (points.size() > 3) {
+				if (points.size() > 3 && alignment == MESH_ALIGNMENT_BILLBOARD) {
 					tangents.write[2] = (points[1] - points[3]).normalized();
 				}
 			}
@@ -832,6 +850,8 @@ void Trail3D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	} else if (p_property.name == "max_length" && limit_mode == LIMIT_MODE_LIFETIME) {
 		p_property.usage = PROPERTY_USAGE_NONE;
+	} else if (p_property.name == "pin_uv" && tiling_mode == TILING_MODE_UNIT) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -920,7 +940,7 @@ void Trail3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "limit_mode", PROPERTY_HINT_ENUM, "Time,Length"), "set_limit_mode", "get_limit_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime", PROPERTY_HINT_RANGE, "0.0,10.0,0.001,or_greater"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_length", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater"), "set_max_length", "get_max_length");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_RANGE, "0.0,10,0.1,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_RANGE, "0.0,10,0.001,or_greater"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "width_curve", PROPERTY_HINT_RESOURCE_TYPE, Curve::get_class_static()), "set_width_curve", "get_width_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color", PROPERTY_HINT_NONE), "set_color", "get_color");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_gradient", PROPERTY_HINT_RESOURCE_TYPE, Gradient::get_class_static()), "set_color_gradient", "get_color_gradient");

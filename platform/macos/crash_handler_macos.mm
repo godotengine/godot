@@ -30,10 +30,12 @@
 
 #import "crash_handler_macos.h"
 
+#include "os_macos.h"
+
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/object/script_language.h"
 #include "core/os/main_loop.h"
-#include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
 #include "main/main.h"
@@ -52,6 +54,20 @@
 #include <cxxabi.h>
 #include <execinfo.h>
 
+static String find_debugsymbols(const String &p_exec_path) {
+	const String base_dir = p_exec_path.get_base_dir() + "/";
+	const String exec_bundle = p_exec_path.get_file() + ".dSYM";
+
+	// First try the current executable name plus `.dSYM`, possibly in a `.debug` folder.
+	if (DirAccess::exists(p_exec_path + ".dSYM")) {
+		return p_exec_path + ".dSYM";
+	} else if (DirAccess::exists(base_dir + ".debug/" + exec_bundle)) {
+		return base_dir + ".debug/" + exec_bundle;
+	}
+
+	return p_exec_path;
+}
+
 static void handle_crash(int sig) {
 	signal(SIGSEGV, SIG_DFL);
 	signal(SIGFPE, SIG_DFL);
@@ -68,7 +84,7 @@ static void handle_crash(int sig) {
 
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
-	String exec_path = OS::get_singleton()->get_executable_path();
+	String exec_path = find_debugsymbols(static_cast<OS_MacOS *>(OS::get_singleton())->get_bundle_or_executable_path());
 
 	String msg;
 	if (ProjectSettings::get_singleton()) {

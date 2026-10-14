@@ -8,6 +8,29 @@ namespace OT {
 namespace Layout {
 namespace GPOS_impl {
 
+static inline hb_position_t
+resolve_cross_offset (const hb_glyph_position_t *pos,
+		      unsigned int len,
+		      unsigned int glyph_pos,
+		      hb_direction_t direction)
+{
+  bool horizontal = HB_DIRECTION_IS_HORIZONTAL (direction);
+  hb_position_t offset = horizontal ? pos[glyph_pos].y_offset : pos[glyph_pos].x_offset;
+  while (pos[glyph_pos].attach_type() & ATTACH_TYPE_CURSIVE)
+  {
+    int chain = pos[glyph_pos].attach_chain();
+    if (!chain)
+      break;
+    unsigned int parent = (int) glyph_pos + chain;
+    if (unlikely (parent >= len))
+      break;
+    glyph_pos = parent;
+    offset = hb_saturate_add (offset,
+			      horizontal ? pos[glyph_pos].y_offset : pos[glyph_pos].x_offset);
+  }
+  return offset;
+}
+
 struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Coverage order */
 {
   bool sanitize (hb_sanitize_context_t *c) const
@@ -46,16 +69,23 @@ struct MarkArray : Array16Of<MarkRecord>        /* Array of MarkRecords--in Cove
 			  c->buffer->idx, glyph_pos);
     }
 
-    hb_glyph_position_t &o = buffer->cur_pos();
-    o.attach_chain() = (int) glyph_pos - (int) buffer->idx;
-    if (o.attach_chain() != (int) glyph_pos - (int) buffer->idx)
+    hb_position_t base_offset = resolve_cross_offset (buffer->pos, buffer->len, glyph_pos,
+						      buffer->props.direction);
+
+    hb_glyph_position_t &mark = buffer->cur_pos();
+    mark.attach_chain() = (int) glyph_pos - (int) buffer->idx;
+    if (mark.attach_chain() != (int) glyph_pos - (int) buffer->idx)
     {
-      o.attach_chain() = 0;
+      mark.attach_chain() = 0;
       goto overflow;
     }
-    o.attach_type() = ATTACH_TYPE_MARK;
-    o.x_offset = roundf (base_x - mark_x);
-    o.y_offset = roundf (base_y - mark_y);
+    mark.attach_type() = ATTACH_TYPE_MARK;
+    mark.x_offset = roundf (base_x - mark_x);
+    mark.y_offset = roundf (base_y - mark_y);
+    if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
+      mark.y_offset = hb_saturate_add (mark.y_offset, base_offset);
+    else
+      mark.x_offset = hb_saturate_add (mark.x_offset, base_offset);
     buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_HAS_GPOS_ATTACHMENT;
 
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())

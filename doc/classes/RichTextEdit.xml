@@ -39,6 +39,17 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_style_font_resolver" qualifiers="const">
+			<return type="Callable" />
+			<description>Returns the optional font resolver set with [method set_style_font_resolver].</description>
+		</method>
+		<method name="set_style_font_resolver">
+			<return type="void" />
+			<param index="0" name="resolver" type="Callable" />
+			<description>
+				Sets an optional callback for explicit [code skip-lint][font][/code] runs. It receives the font resource path, bold flag and italic flag, and returns a [Font] for that face. Returning [code]null[/code] preserves normal resource loading. The callback runs when shaping style spans; it must not mutate the document. Passing an empty [Callable] restores normal resolution. Calling this method invalidates shaping without changing the document, caret, selection or undo history, even when reinstalling the same callback after fonts finish loading.
+			</description>
+		</method>
 		<method name="begin_selection_color_preview">
 			<return type="void" />
 			<description>
@@ -384,6 +395,12 @@
 			<return type="void" />
 			<description>
 				Toggles bold formatting on the current selection. If there is no selection, toggles bold in the typing style used for newly inserted text.
+			</description>
+		</method>
+		<method name="style_change_affects_layout" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]false[/code] while a [signal text_style_changed] emission only repainted text (a live color preview) and [code]true[/code] when the style change may have moved glyphs. Call it from a [signal text_style_changed] handler to skip layout work after a color-only change.
 			</description>
 		</method>
 		<method name="toggle_code">

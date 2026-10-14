@@ -78,6 +78,7 @@ public:
 	void insert_debug_label(const String &p_label_name);
 
 	uint32_t get_view_count() const;
+	uint32_t get_primary_view_count() const;
 	uint64_t get_view_configuration() const;
 
 	bool is_initialized();

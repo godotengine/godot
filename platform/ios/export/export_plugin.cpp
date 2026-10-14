@@ -64,6 +64,9 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_custom_bg_color"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_gaming_tier"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/performance_a12"), false));
 }
 
 bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
@@ -88,6 +91,16 @@ bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExp
 	}
 
 	return valid;
+}
+
+bool EditorExportPlatformIOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
+	if (p_preset) {
+		if (p_option == "capabilities/performance_a12") {
+			String rendering_method = get_project_setting(Ref<EditorExportPreset>(p_preset), "rendering/renderer/rendering_method.mobile");
+			return !(rendering_method == "forward_plus" || rendering_method == "mobile");
+		}
+	}
+	return EditorExportPlatformAppleEmbedded::get_export_option_visibility(p_preset, p_option);
 }
 
 HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const {
@@ -228,6 +241,17 @@ Vector<EditorExportPlatformAppleEmbedded::IconInfo> EditorExportPlatformIOS::get
 		// App Store
 		{ PNAME("icons/app_store_1024x1024"), "universal", "Icon-1024", "1024", "1x", "1024x1024", true },
 	};
+}
+
+void EditorExportPlatformIOS::get_required_device_capabilities(const Ref<EditorExportPreset> &p_preset, Vector<String> &r_capabilities) const {
+	EditorExportPlatformAppleEmbedded::get_required_device_capabilities(p_preset, r_capabilities);
+	String rendering_method = get_project_setting(p_preset, "rendering/renderer/rendering_method.mobile");
+	if ((bool)p_preset->get("capabilities/performance_gaming_tier") && !r_capabilities.has("iphone-performance-gaming-tier")) {
+		r_capabilities.push_back("iphone-performance-gaming-tier");
+	}
+	if (((bool)p_preset->get("capabilities/performance_a12") || rendering_method == "forward_plus" || rendering_method == "mobile") && !r_capabilities.has("iphone-ipad-minimum-performance-a12")) {
+		r_capabilities.push_back("iphone-ipad-minimum-performance-a12");
+	}
 }
 
 String EditorExportPlatformIOS::_process_config_file_line(const Ref<EditorExportPreset> &p_preset, const String &p_line, const AppleEmbeddedConfigData &p_config, bool p_debug, const CodeSigningDetails &p_code_signing) {

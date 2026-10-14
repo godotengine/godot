@@ -661,7 +661,7 @@ typedef struct accesskit_macos_subclassing_adapter
 
 typedef struct accesskit_node accesskit_node;
 
-typedef struct accesskit_tree accesskit_tree;
+typedef struct accesskit_tree_info accesskit_tree_info;
 
 typedef struct accesskit_tree_update accesskit_tree_update;
 
@@ -1609,6 +1609,24 @@ void accesskit_node_clear_font_family(struct accesskit_node *node);
 /**
  * Caller must call `accesskit_string_free` with the return value.
  */
+char *accesskit_node_html_id(const struct accesskit_node *node);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_html_id(struct accesskit_node *node, const char *value);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `value`.
+ */
+void accesskit_node_set_html_id_with_length(struct accesskit_node *node,
+                                            const char *value, size_t length);
+
+void accesskit_node_clear_html_id(struct accesskit_node *node);
+
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
 char *accesskit_node_html_tag(const struct accesskit_node *node);
 
 /**
@@ -2303,54 +2321,56 @@ void accesskit_node_free(struct accesskit_node *node);
  */
 char *accesskit_node_debug(const struct accesskit_node *node);
 
-struct accesskit_tree *accesskit_tree_new(accesskit_node_id root);
+struct accesskit_tree_info *accesskit_tree_info_new(accesskit_node_id root);
 
-void accesskit_tree_free(struct accesskit_tree *tree);
+void accesskit_tree_info_free(struct accesskit_tree_info *tree);
 
 /**
  * Caller must call `accesskit_string_free` with the return value.
  */
-char *accesskit_tree_get_toolkit_name(const struct accesskit_tree *tree);
+char *accesskit_tree_info_get_toolkit_name(
+    const struct accesskit_tree_info *tree);
 
 /**
  * Caller is responsible for freeing the memory pointed by `toolkit_name`
  */
-void accesskit_tree_set_toolkit_name(struct accesskit_tree *tree,
-                                     const char *toolkit_name);
+void accesskit_tree_info_set_toolkit_name(struct accesskit_tree_info *tree,
+                                          const char *toolkit_name);
 
 /**
  * Caller is responsible for freeing the memory pointed by `toolkit_name`
  */
-void accesskit_tree_set_toolkit_name_with_length(struct accesskit_tree *tree,
-                                                 const char *toolkit_name,
-                                                 size_t length);
+void accesskit_tree_info_set_toolkit_name_with_length(
+    struct accesskit_tree_info *tree, const char *toolkit_name, size_t length);
 
-void accesskit_tree_clear_toolkit_name(struct accesskit_tree *tree);
-
-/**
- * Caller must call `accesskit_string_free` with the return value.
- */
-char *accesskit_tree_get_toolkit_version(const struct accesskit_tree *tree);
-
-/**
- * Caller is responsible for freeing the memory pointed by `toolkit_version`
- */
-void accesskit_tree_set_toolkit_version(struct accesskit_tree *tree,
-                                        const char *toolkit_version);
-
-/**
- * Caller is responsible for freeing the memory pointed by `toolkit_version`
- */
-void accesskit_tree_set_toolkit_version_with_length(struct accesskit_tree *tree,
-                                                    const char *toolkit_version,
-                                                    size_t length);
-
-void accesskit_tree_clear_toolkit_version(struct accesskit_tree *tree);
+void accesskit_tree_info_clear_toolkit_name(struct accesskit_tree_info *tree);
 
 /**
  * Caller must call `accesskit_string_free` with the return value.
  */
-char *accesskit_tree_debug(const struct accesskit_tree *tree);
+char *accesskit_tree_info_get_toolkit_version(
+    const struct accesskit_tree_info *tree);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `toolkit_version`
+ */
+void accesskit_tree_info_set_toolkit_version(struct accesskit_tree_info *tree,
+                                             const char *toolkit_version);
+
+/**
+ * Caller is responsible for freeing the memory pointed by `toolkit_version`
+ */
+void accesskit_tree_info_set_toolkit_version_with_length(
+    struct accesskit_tree_info *tree, const char *toolkit_version,
+    size_t length);
+
+void accesskit_tree_info_clear_toolkit_version(
+    struct accesskit_tree_info *tree);
+
+/**
+ * Caller must call `accesskit_string_free` with the return value.
+ */
+char *accesskit_tree_info_debug(const struct accesskit_tree_info *tree);
 
 struct accesskit_tree_update *accesskit_tree_update_with_focus(
     accesskit_node_id focus);
@@ -2368,10 +2388,11 @@ void accesskit_tree_update_push_node(struct accesskit_tree_update *update,
                                      accesskit_node_id id,
                                      struct accesskit_node *node);
 
-void accesskit_tree_update_set_tree(struct accesskit_tree_update *update,
-                                    struct accesskit_tree *tree);
+void accesskit_tree_update_set_tree_info(struct accesskit_tree_update *update,
+                                         struct accesskit_tree_info *tree);
 
-void accesskit_tree_update_clear_tree(struct accesskit_tree_update *update);
+void accesskit_tree_update_clear_tree_info(
+    struct accesskit_tree_update *update);
 
 void accesskit_tree_update_set_focus(struct accesskit_tree_update *update,
                                      accesskit_node_id focus);

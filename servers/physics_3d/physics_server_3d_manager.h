@@ -70,6 +70,8 @@ protected:
 
 public:
 	static const String setting_property_name;
+	static constexpr const char *GODOT_PHYSICS_3D_NAME = "GodotPhysics3D";
+	static constexpr const char *JOLT_PHYSICS_NAME = "Jolt Physics";
 
 	static PhysicsServer3DManager *get_singleton();
 

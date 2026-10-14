@@ -34,4 +34,4 @@
 #import "godot_app_delegate_visionos.h"
 #import "godot_compositor_services_renderer.h"
 
-#import "drivers/apple_embedded/godot_view_controller.h"
+#import "drivers/apple_embedded/bridging_header_apple_embedded.h"

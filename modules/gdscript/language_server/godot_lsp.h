@@ -1922,7 +1922,7 @@ static String marked_documentation(const String &p_bbcode, const HashSet<String>
 			in_codeblock_tag = false;
 		}
 
-		if (!in_codeblock_tag) {
+		if (!in_codeblock_tag && !in_codeblocks_gdscript_tag) {
 			line = line.strip_edges();
 			line = line.replace("[br]", "\n\n");
 

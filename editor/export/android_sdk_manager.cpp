@@ -54,9 +54,13 @@ static const char *ANDROID_SDK_PACKAGES[] = {
 	"platform-tools",
 	"build-tools/36.1.0", // Should match the value in 'platform/android/java/app/config.gradle#buildTools'.
 	"platforms/android-36",
+	"cmdline-tools/latest",
+	nullptr
+};
+// Android NDK packages.
+static const char *ANDROID_NDK_PACKAGES[] = {
 	"ndk/29.0.14206865", // Should match the value in 'platform/android/java/app/config.gradle#ndkVersion'.
 	"cmake/3.22.1",
-	"cmdline-tools/latest",
 	nullptr
 };
 
@@ -320,15 +324,23 @@ void AndroidSDKManager::_install_android_sdk_packages() {
 	cli_args.push_back("sdk");
 	cli_args.push_back("install");
 
-	const char **packages = ANDROID_SDK_PACKAGES;
-	while (*packages) {
-		String package = String(*packages);
+	const char **sdk_packages = ANDROID_SDK_PACKAGES;
+	while (*sdk_packages) {
+		String package = String(*sdk_packages);
 		print_verbose("Requesting Android SDK package " + package);
 		cli_args.push_back(package);
-		packages++;
+		sdk_packages++;
 	}
 
-	print_verbose("Installing Android SDK packages to " + default_android_sdk_path);
+	const char **ndk_packages = ANDROID_NDK_PACKAGES;
+	while (*ndk_packages) {
+		String package = String(*ndk_packages);
+		print_verbose("Requesting Android NDK package " + package);
+		cli_args.push_back(package);
+		ndk_packages++;
+	}
+
+	print_verbose("Installing Android SDK / NDK packages to " + default_android_sdk_path);
 	setup_process_data = OS::get_singleton()->execute_with_pipe(cli_bin, cli_args, false);
 	if (!setup_process_data.has("pid") || setup_process_data["pid"].operator int() <= 0) {
 		ERR_PRINT("Installation of Android SDK packages failed.");
@@ -484,6 +496,9 @@ void AndroidSDKManager::_java_sdk_installed() {
 	// Update the editor settings.
 	EditorSettings::get_singleton()->set_setting("export/android/java_sdk_path", EditorPaths::get_singleton()->get_default_java_sdk_path());
 	EditorSettings::get_singleton()->save();
+
+	// Check if we need to create the debug keystore.
+	create_editor_debug_keystore_if_needed();
 
 	_hide_setup_dialog(current_setup_status);
 	emit_signal(SNAME("java_sdk_installed"));
@@ -731,6 +746,18 @@ String AndroidSDKManager::get_android_cli_path() {
 	return cli_path.path_join("android" + exe_ext);
 }
 
+String AndroidSDKManager::_get_keytool_path(const String &p_java_sdk_path) {
+	String exe_ext;
+	if (OS::get_singleton()->get_name() == "Windows") {
+		exe_ext = ".exe";
+	}
+	return p_java_sdk_path.path_join("bin/keytool" + exe_ext);
+}
+
+String AndroidSDKManager::get_keytool_path() {
+	return _get_keytool_path(EDITOR_GET("export/android/java_sdk_path"));
+}
+
 String AndroidSDKManager::_get_java_path(const String &p_java_sdk_path) {
 	String exe_ext;
 	if (OS::get_singleton()->get_name() == "Windows") {
@@ -874,6 +901,66 @@ String AndroidSDKManager::get_apksigner_path(int p_target_sdk, bool p_check_exec
 	}
 
 	return apksigner_path;
+}
+
+void AndroidSDKManager::create_editor_debug_keystore_if_needed() {
+	// Check if we have a valid keytool path.
+	String keytool_path = get_keytool_path();
+	if (!FileAccess::exists(keytool_path)) {
+		return;
+	}
+
+	// Check if the current editor debug keystore exists.
+	String editor_debug_keystore = EDITOR_GET("export/android/debug_keystore");
+	if (FileAccess::exists(editor_debug_keystore)) {
+		return;
+	}
+
+	// Generate the debug keystore.
+	String keystore_path = EditorPaths::get_singleton()->get_debug_keystore_path();
+	String keystores_dir = keystore_path.get_base_dir();
+	if (!DirAccess::exists(keystores_dir)) {
+		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		Error err = dir_access->make_dir_recursive(keystores_dir);
+		if (err != OK) {
+			WARN_PRINT("Error creating keystores directory:\n" + keystores_dir);
+			return;
+		}
+	}
+
+	if (!FileAccess::exists(keystore_path)) {
+		String output;
+		List<String> args;
+		args.push_back("-genkey");
+		args.push_back("-keystore");
+		args.push_back(keystore_path);
+		args.push_back("-storepass");
+		args.push_back("android");
+		args.push_back("-alias");
+		args.push_back(DEFAULT_ANDROID_KEYSTORE_DEBUG_USER);
+		args.push_back("-keypass");
+		args.push_back(DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD);
+		args.push_back("-keyalg");
+		args.push_back("RSA");
+		args.push_back("-keysize");
+		args.push_back("2048");
+		args.push_back("-validity");
+		args.push_back("10000");
+		args.push_back("-dname");
+		args.push_back("cn=Godot, ou=Godot Engine, o=Stichting Godot, c=NL");
+		Error error = OS::get_singleton()->execute(keytool_path, args, &output, nullptr, true);
+		print_verbose(output);
+		if (error != OK) {
+			WARN_PRINT("Error: Unable to create debug keystore");
+			return;
+		}
+	}
+
+	// Update the editor settings.
+	EditorSettings::get_singleton()->set("export/android/debug_keystore", keystore_path);
+	EditorSettings::get_singleton()->set("export/android/debug_keystore_user", DEFAULT_ANDROID_KEYSTORE_DEBUG_USER);
+	EditorSettings::get_singleton()->set("export/android/debug_keystore_pass", DEFAULT_ANDROID_KEYSTORE_DEBUG_PASSWORD);
+	print_verbose("Updated editor debug keystore to " + keystore_path);
 }
 
 AndroidSDKManager::AndroidSDKManager() {

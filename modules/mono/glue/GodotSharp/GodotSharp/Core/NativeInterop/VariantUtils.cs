@@ -249,24 +249,30 @@ namespace Godot.NativeInterop
 
         public static godot_variant CreateFromSystemArrayOfStringName(scoped Span<StringName> from)
         {
+#pragma warning disable CA2265 // Comparing a span to 'null' might be redundant.
             if (from == null)
                 return default;
+#pragma warning restore CA2265
             using var fromGodot = new Collections.Array(from);
             return CreateFromArray((godot_array)fromGodot.NativeValue);
         }
 
         public static godot_variant CreateFromSystemArrayOfNodePath(scoped Span<NodePath> from)
         {
+#pragma warning disable CA2265 // Comparing a span to 'null' might be redundant.
             if (from == null)
                 return default;
+#pragma warning restore CA2265
             using var fromGodot = new Collections.Array(from);
             return CreateFromArray((godot_array)fromGodot.NativeValue);
         }
 
         public static godot_variant CreateFromSystemArrayOfRid(scoped Span<Rid> from)
         {
+#pragma warning disable CA2265 // Comparing a span to 'null' might be redundant.
             if (from == null)
                 return default;
+#pragma warning restore CA2265
             using var fromGodot = new Collections.Array(from);
             return CreateFromArray((godot_array)fromGodot.NativeValue);
         }

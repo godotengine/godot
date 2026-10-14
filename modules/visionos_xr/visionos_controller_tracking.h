@@ -34,6 +34,8 @@
 
 #include "visionos_definitions.h"
 
+#include "servers/xr/xr_controller_tracker.h"
+
 #ifdef __OBJC__
 #define Key GodotKey
 #import <CoreHaptics/CoreHaptics.h>
@@ -60,8 +62,8 @@ struct VisionOSControllerTracking {
 	ar_accessory_anchor_t right_controller_anchor = nullptr;
 
 	// Controller state
-	Ref<XRControllerTracker> left_controller_tracker;
-	Ref<XRControllerTracker> right_controller_tracker;
+	VisionOSSharedController *left_shared_controller = nullptr;
+	VisionOSSharedController *right_shared_controller = nullptr;
 	GCController *left_gc_controller = nullptr;
 	GCController *right_gc_controller = nullptr;
 	CHHapticEngine *left_haptic_engine = nullptr;
@@ -71,7 +73,9 @@ struct VisionOSControllerTracking {
 	id controller_observer = nullptr;
 	id controller_disconnect_observer = nullptr;
 
-	void initialize(XRServer *p_xr_server, VisionOSXRInterface *p_xr_interface);
+	void initialize(XRServer *p_xr_server, VisionOSXRInterface *p_xr_interface,
+			VisionOSSharedController &p_left_hand,
+			VisionOSSharedController &p_right_hand);
 	void uninitialize(XRServer *p_xr_server);
 
 	void init_for_controller(GCController *p_controller);

@@ -294,7 +294,7 @@ String OS_Android::get_distribution_name() const {
 		return "POSP";
 	} else if (!get_system_property("ro.xtended.version").is_empty()) {
 		return "Project-Xtended";
-	} else if (!get_system_property("org.evolution.version").is_empty()) {
+	} else if (!get_system_property("org.evolution.version").is_empty() || !get_system_property("ro.evolution.version").is_empty()) {
 		return "Evolution X";
 	} else if (!get_system_property("ro.corvus.version").is_empty()) {
 		return "Corvus-Q";
@@ -320,8 +320,8 @@ String OS_Android::get_distribution_name() const {
 
 String OS_Android::get_version() const {
 	const Vector<const char *> roms = { "ro.havoc.version", "org.pex.version", "org.pixelexperience.version",
-		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.corvus.version", "ro.pa.version",
-		"ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
+		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.evolution.version", "ro.corvus.version",
+		"ro.pa.version", "ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
 	for (int i = 0; i < roms.size(); i++) {
 		String rom_version = get_system_property(roms[i]);
 		if (!rom_version.is_empty()) {

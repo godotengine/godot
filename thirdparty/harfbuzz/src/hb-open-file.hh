@@ -88,7 +88,7 @@ typedef struct OpenTypeOffsetTable
 			       unsigned int *table_count, /* IN/OUT */
 			       hb_tag_t     *table_tags /* OUT */) const
   {
-    if (table_count)
+    if (table_count && table_tags)
     {
       + tables.as_array ().sub_array (start_offset, table_count)
       | hb_map (&TableRecord::tag)
@@ -474,8 +474,8 @@ struct OpenTypeFontFile
     case TrueTag:
     case Typ1Tag:
     case TrueTypeTag:	return 1;
-    case TTCTag:	return u.ttcHeader.get_face_count ();
-    case DFontTag:	return u.rfHeader.get_face_count ();
+    case TTCTag:	hb_barrier (); return u.ttcHeader.get_face_count ();
+    case DFontTag:	hb_barrier (); return u.rfHeader.get_face_count ();
     default:		return 0;
     }
   }
@@ -490,9 +490,9 @@ struct OpenTypeFontFile
     case CFFTag:	/* All the non-collection tags */
     case TrueTag:
     case Typ1Tag:
-    case TrueTypeTag:	return u.fontFace;
-    case TTCTag:	return u.ttcHeader.get_face (i);
-    case DFontTag:	return u.rfHeader.get_face (i, base_offset);
+    case TrueTypeTag:	hb_barrier (); return u.fontFace;
+    case TTCTag:	hb_barrier (); return u.ttcHeader.get_face (i);
+    case DFontTag:	hb_barrier (); return u.rfHeader.get_face (i, base_offset);
     default:		return Null (OpenTypeFontFace);
     }
   }
@@ -518,9 +518,9 @@ struct OpenTypeFontFile
     case CFFTag:	/* All the non-collection tags */
     case TrueTag:
     case Typ1Tag:
-    case TrueTypeTag:	return_trace (u.fontFace.sanitize (c));
-    case TTCTag:	return_trace (u.ttcHeader.sanitize (c));
-    case DFontTag:	return_trace (u.rfHeader.sanitize (c));
+    case TrueTypeTag:	hb_barrier (); return_trace (u.fontFace.sanitize (c));
+    case TTCTag:	hb_barrier (); return_trace (u.ttcHeader.sanitize (c));
+    case DFontTag:	hb_barrier (); return_trace (u.rfHeader.sanitize (c));
     default:		return_trace (true);
     }
   }

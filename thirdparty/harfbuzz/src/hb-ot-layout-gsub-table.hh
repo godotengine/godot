@@ -58,6 +58,24 @@ template <typename context_t>
   return l.dispatch (c);
 }
 
+/*static*/ hb_depend_context_t::return_t SubstLookup::depend_glyphs_recurse_func (hb_depend_context_t *c, unsigned lookup_index, hb_bit_page_t *covered_seq_indices, unsigned seq_index, unsigned end_index)
+{
+  const SubstLookup &l = c->face->table.GSUB.get_relaxed ()->table->get_lookup (lookup_index);
+  /* After a non-1-to-1 lookup (expansion/contraction), subsequent lookups in the same
+   * contextual rule see all glyphs, not position-specific ones. This matches closure behavior.
+   * Mark sequence positions as covered so later lookups use the full glyph set. */
+  if (l.may_have_non_1to1 ())
+      covered_seq_indices->add_range (seq_index, end_index);
+
+  hb_depend_context_t::recurse_key_t key;
+  if (!c->get_recurse_key (lookup_index, &key))
+    return hb_empty_t ();
+
+  hb_depend_context_t::return_t ret = l.dispatch (c);
+  c->finish_recurse (key);
+  return ret;
+}
+
 template <>
 inline hb_closure_lookups_context_t::return_t
 SubstLookup::dispatch_recurse_func<hb_closure_lookups_context_t> (hb_closure_lookups_context_t *c, unsigned this_index)
@@ -96,7 +114,90 @@ inline bool SubstLookup::dispatch_recurse_func<hb_ot_apply_context_t> (hb_ot_app
 
 } /* namespace GSUB_impl */
 } /* namespace Layout */
-} /* namespace OT */
 
+inline void
+GSUB_accelerator_t::depend (hb_depend_data_builder_t *builder, hb_face_t *face) const
+{
+  if (!this->table->has_data ()) return;
+
+  unsigned num_features = this->table->get_feature_count ();
+  unsigned num_lookups  = this->table->get_lookup_count ();
+
+  hb_vector_t<hb_tag_t> feature_tags;
+  if (!builder->check_success (feature_tags.resize (num_features)))
+    return;
+  this->table->get_feature_tags (0, &num_features, feature_tags.arrayZ);
+
+  if (!builder->init_lookup_features (num_lookups))
+    return;
+
+  hb_vector_t<hb_tag_t> feature_query_v;
+  feature_query_v.resize (2);
+  feature_query_v[1] = 0;
+
+  hb_set_t seen_features;
+  hb_set_t feature_indexes, lookup_indexes;
+
+  for (auto ft : feature_tags)
+  {
+    if (seen_features.has (ft)) continue;
+    seen_features.add (ft);
+    feature_query_v[0] = ft;
+    feature_indexes.reset ();
+    hb_ot_layout_collect_features (face, HB_OT_TAG_GSUB, nullptr, nullptr,
+                                   feature_query_v.arrayZ, &feature_indexes);
+    lookup_indexes.reset ();
+    for (auto feature_index : feature_indexes)
+      this->table->get_feature (feature_index).add_lookup_indexes_to (&lookup_indexes);
+
+    for (auto lookup_index : lookup_indexes)
+      if (unlikely (!builder->add_lookup_feature (lookup_index, ft)))
+	return;
+
+    auto &fv = this->table->get_feature_variations ();
+    auto fi_count = fv.record_count ();
+    for (unsigned i = 0; i < fi_count; i++)
+    {
+      lookup_indexes.reset ();
+      for (auto feature_index : feature_indexes)
+      {
+        auto feature_ptr = fv.find_substitute (i, feature_index);
+        if (feature_ptr != nullptr)
+          feature_ptr->add_lookup_indexes_to (&lookup_indexes);
+      }
+      for (auto lookup_index : lookup_indexes)
+        if (unlikely (!builder->add_lookup_feature (lookup_index, ft)))
+	  return;
+    }
+  }
+
+  if (unlikely (!builder->finish_lookup_features ()))
+    return;
+
+  hb_set_t all_glyphs;
+  all_glyphs.add_range (0, face->get_num_glyphs () - 1);
+
+  hb_depend_context_t c (builder, face, &all_glyphs);
+
+  for (unsigned i = 0; i < num_lookups; i++)
+  {
+    auto features = builder->get_lookup_features (i);
+    if (!features)
+    {
+      DEBUG_MSG_LEVEL (DEPEND, nullptr, 1, 0,
+                       "Skipping lookup %u (no features)", i);
+      continue;
+    }
+    DEBUG_MSG_LEVEL (DEPEND, nullptr, 1, 0,
+                     "Processing lookup %u with features:", i);
+    c.lookup_index = i;
+    c.reset_recurse_cache ();
+    c.lookups_seen.clear ();
+    c.lookups_seen.add (i);  /* Seed for A→B→A cycle detection in recurse(). */
+    this->table->get_lookup (i).depend (&c);
+  }
+}
+
+} /* namespace OT */
 
 #endif /* HB_OT_LAYOUT_GSUB_TABLE_HH */

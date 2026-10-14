@@ -23,6 +23,9 @@ Both exit with a nonzero code on failure.
   paragraph formatting, Shift+Enter at the end of a list item starts a plain
   paragraph, a paragraph's line height travels with its first character, rich
   paste keeps formatting, and images survive undo and redo.
+- Line heights follow CSS: `24px` is a length, a number is a multiple of the font
+  size of the row's largest run (at least the control's size), a percentage is a
+  length from the control's own size, and a wrapped row only counts its own runs.
 - Deferred shaping converges: once `has_pending_layout()` is false, the content
   height equals that of the same document with every line shaped.
 

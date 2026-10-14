@@ -91,7 +91,7 @@ void Container::remove_child_notify(Node *p_child) {
 	queue_sort();
 }
 
-Size2 Container::get_minimum_size() const {
+Size2 Container::_get_minimum_size() const {
 	Size2 min_size;
 
 	for (Node *child : iterate_children()) {

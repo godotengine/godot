@@ -641,7 +641,7 @@ struct VariantInternalAccessor<Object *> {
 
 template <typename T>
 struct VariantInternalAccessor<Ref<T>> {
-	static _FORCE_INLINE_ Ref<T> get(const Variant *p_variant) { return Ref<T>(const_cast<Object *>(*VariantInternal::get_object(p_variant))); }
+	static _FORCE_INLINE_ Ref<T> get(const Variant *p_variant) { return Ref<T>(static_cast<T *>(const_cast<Object *>(*VariantInternal::get_object(p_variant)))); }
 	static _FORCE_INLINE_ void set(Variant *r_variant, const Ref<T> &p_ref) { VariantInternal::object_assign(r_variant, p_ref); }
 };
 

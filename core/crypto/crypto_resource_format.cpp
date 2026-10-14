@@ -33,27 +33,26 @@
 #include "core/crypto/crypto.h"
 
 Ref<Resource> ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	Ref<Resource> out;
+	Error err = ERR_UNAVAILABLE;
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt") {
-		X509Certificate *cert = X509Certificate::create();
-		if (cert) {
-			cert->load(p_path);
+		Ref<X509Certificate> cert = X509Certificate::create();
+		if (cert.is_valid() && (err = cert->load(p_path)) == OK) {
+			out = cert;
 		}
-		return cert;
-	} else if (el == "key") {
-		CryptoKey *key = CryptoKey::create();
-		if (key) {
-			key->load(p_path, false);
+	} else if (el == "key" || el == "pub") {
+		Ref<CryptoKey> key = CryptoKey::create();
+		if (key.is_valid() && (err = key->load(p_path, el == "pub")) == OK) {
+			out = key;
 		}
-		return key;
-	} else if (el == "pub") {
-		CryptoKey *key = CryptoKey::create();
-		if (key) {
-			key->load(p_path, true);
-		}
-		return key;
+	} else {
+		err = ERR_FILE_UNRECOGNIZED;
 	}
-	return nullptr;
+	if (r_error) {
+		*r_error = err;
+	}
+	return out;
 }
 
 void ResourceFormatLoaderCrypto::get_recognized_extensions(List<String> *p_extensions) const {

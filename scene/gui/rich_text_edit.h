@@ -185,10 +185,13 @@ private:
 	mutable uint64_t style_spans_revision = 0;
 	bool setting_bbcode_text = false;
 	bool use_bbcode = false;
+	Callable style_font_resolver;
 	Overflow overflow_x = OVERFLOW_AUTO;
 	Overflow overflow_y = OVERFLOW_AUTO;
 	LinkActivationMode link_activation_mode = LINK_ACTIVATION_AUTO;
 	bool text_style_changed_dirty = false;
+	// True when a style change queued for `text_style_changed` can move glyphs (anything but a color).
+	bool style_layout_dirty = false;
 	bool typing_style_override = false;
 	bool style_preview_active = false;
 	bool style_preview_had_selection = false;
@@ -283,13 +286,15 @@ private:
 	TextStyle _get_style_at_offset(int p_offset) const;
 	TextStyle _get_selection_common_style() const;
 	int _get_default_font_size() const;
+	int _get_row_font_size(int p_line, int p_wrap_index) const;
 	void _caret_style_context_changed();
 	Ref<StyleState> _capture_style_state(int p_from_line, int p_to_line) const;
 	void _restore_style_state(const Ref<StyleState> &p_state);
 	static bool _is_coalescing_style_property(StyleProperty p_property);
+	static bool _is_paint_only_property(StyleProperty p_property);
 	void _break_style_run();
 	void _push_style_undo(const Ref<StyleState> &p_before, bool p_isolate = false);
-	void _style_changed();
+	void _style_changed(bool p_affects_layout = true);
 	void _emit_text_style_changed();
 	void _queue_full_style_refresh();
 	void _refresh_queued_styles();
@@ -370,6 +375,8 @@ public:
 
 	void set_bbcode_text(const String &p_bbcode);
 	String get_bbcode_text() const;
+	void set_style_font_resolver(const Callable &p_resolver);
+	Callable get_style_font_resolver() const;
 	void set_visible_characters(int p_visible);
 	int get_visible_characters() const;
 	void set_visible_ratio(float p_ratio);
@@ -410,11 +417,31 @@ public:
 	void clear_selection_outline_color();
 	void set_selection_outline_size(int p_size);
 	void clear_selection_outline_size();
+	// Registers the process-wide resolver of `token:<id>` colors (instance method so scripts can reach it).
+	void set_token_color_resolver(const Callable &p_resolver);
+	void set_selection_color_ref(const String &p_ref, const Color &p_color);
+	void set_selection_bg_color_ref(const String &p_ref, const Color &p_color);
+	void set_selection_outline_color_ref(const String &p_ref, const Color &p_color);
+	void preview_selection_color_ref(const String &p_ref, const Color &p_color);
+	void preview_selection_bg_color_ref(const String &p_ref, const Color &p_color);
+	void preview_selection_outline_color_ref(const String &p_ref, const Color &p_color);
+	PackedStringArray get_selection_color_refs(const StringName &p_slot) const;
+	PackedStringArray get_selection_fonts() const;
+	bool is_selection_color_unset(const StringName &p_slot) const;
+	Color get_current_color(const StringName &p_slot) const;
+	void refresh_token_colors();
 	void begin_selection_color_preview();
 	void preview_selection_color(const Color &p_color);
+	bool style_change_affects_layout() const;
 	void end_selection_color_preview(bool p_commit);
 	void begin_selection_bg_color_preview();
 	void preview_selection_bg_color(const Color &p_color);
+	void preview_selection_font(const String &p_font);
+	void set_token_size_resolver(const Callable &p_resolver);
+	void set_selection_font_size_ref(const String &p_ref, int p_size);
+	void preview_selection_font_size_ref(const String &p_ref, int p_size);
+	PackedStringArray get_selection_font_size_refs() const;
+	void preview_selection_outline_color(const Color &p_color);
 	void end_selection_bg_color_preview(bool p_commit);
 	void set_selection_font_size(int p_size);
 	void clear_selection_font_size();

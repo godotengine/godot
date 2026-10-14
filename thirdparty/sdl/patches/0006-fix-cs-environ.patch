@@ -1,5 +1,5 @@
 diff --git a/thirdparty/sdl/stdlib/SDL_getenv.c b/thirdparty/sdl/stdlib/SDL_getenv.c
-index 54fb6a7b46..d805217b19 100644
+index 1517b5974b..17220c69ae 100644
 --- a/thirdparty/sdl/stdlib/SDL_getenv.c
 +++ b/thirdparty/sdl/stdlib/SDL_getenv.c
 @@ -55,6 +55,9 @@ extern char **environ;
@@ -39,8 +39,8 @@ index 54fb6a7b46..d805217b19 100644
 +#else
      bool result = false;
  
-     if (!env) {
-@@ -286,10 +296,14 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
+     CHECK_PARAM(!env) {
+@@ -288,10 +298,14 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
      SDL_UnlockMutex(env->lock);
  
      return result;
@@ -54,8 +54,8 @@ index 54fb6a7b46..d805217b19 100644
 +#else
      bool result = false;
  
-     if (!env) {
-@@ -310,6 +324,7 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
+     CHECK_PARAM(!env) {
+@@ -313,6 +327,7 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
      SDL_UnlockMutex(env->lock);
  
      return result;

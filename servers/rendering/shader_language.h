@@ -30,14 +30,19 @@
 
 #pragma once
 
-#include "core/object/script_language.h"
+#include "core/object/property_info.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
+#include "core/templates/hash_set.h"
 #include "core/templates/list.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/typedefs.h"
 #include "core/variant/variant.h"
+
+#ifdef TOOLS_ENABLED
+#include "core/object/editor_language.h"
+#endif
 
 #ifdef DEBUG_ENABLED
 #include "servers/rendering/shader_warnings.h"
@@ -195,6 +200,8 @@ public:
 		TK_FILTER_LINEAR_MIPMAP_ANISOTROPIC,
 		TK_REPEAT_ENABLE,
 		TK_REPEAT_DISABLE,
+		TK_HINT_NO_STORAGE,
+		TK_HINT_NO_EDITOR,
 		TK_SHADER_TYPE,
 		TK_CURSOR,
 		TK_ERROR,
@@ -709,6 +716,7 @@ public:
 			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
 			PackedStringArray hint_enum_names;
+			uint32_t property_usage = PROPERTY_USAGE_DEFAULT;
 			int instance_index = 0;
 			String group;
 
@@ -845,6 +853,7 @@ public:
 	static String get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint);
 	static String get_texture_filter_name(TextureFilter p_filter);
 	static String get_texture_repeat_name(TextureRepeat p_repeat);
+	static String get_unset_property_usage_name(PropertyUsageFlags p_usage);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
 	static bool is_token_operator_assign(TokenType p_type);
@@ -1183,6 +1192,7 @@ private:
 	TextureFilter current_uniform_filter = FILTER_DEFAULT;
 	TextureRepeat current_uniform_repeat = REPEAT_DEFAULT;
 	bool current_uniform_instance_index_defined = false;
+	uint32_t current_property_usage = PROPERTY_USAGE_DEFAULT;
 	int completion_line = 0;
 	BlockNode *completion_block = nullptr;
 	DataType completion_base;
@@ -1274,7 +1284,9 @@ public:
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
-	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<ScriptLanguage::CodeCompletionOption> *r_options, String &r_call_hint);
+#ifdef TOOLS_ENABLED
+	Error complete(const String &p_code, const ShaderCompileInfo &p_info, List<EditorLanguage::CompletionOption> *r_options, String &r_call_hint);
+#endif
 
 	String get_error_text();
 	Vector<FilePosition> get_include_positions();

@@ -72,18 +72,19 @@ bool RichTextDocument::Style::operator==(const Style &p_other) const {
 			overline == p_other.overline &&
 			code == p_other.code &&
 			has_color == p_other.has_color &&
-			(!has_color || color == p_other.color) &&
+			(!has_color || (color_ref == p_other.color_ref && (!color_ref.is_empty() || color == p_other.color))) &&
 			has_bg_color == p_other.has_bg_color &&
-			(!has_bg_color || bg_color == p_other.bg_color) &&
+			(!has_bg_color || (bg_color_ref == p_other.bg_color_ref && (!bg_color_ref.is_empty() || bg_color == p_other.bg_color))) &&
 			has_fg_color == p_other.has_fg_color &&
 			(!has_fg_color || fg_color == p_other.fg_color) &&
 			has_outline_color == p_other.has_outline_color &&
-			(!has_outline_color || outline_color == p_other.outline_color) &&
+			(!has_outline_color || (outline_color_ref == p_other.outline_color_ref && (!outline_color_ref.is_empty() || outline_color == p_other.outline_color))) &&
 			has_outline_size == p_other.has_outline_size &&
 			(!has_outline_size || outline_size == p_other.outline_size) &&
 			has_url == p_other.has_url &&
 			url_visited == p_other.url_visited &&
-			font_size == p_other.font_size &&
+			font_size_ref == p_other.font_size_ref &&
+			(!font_size_ref.is_empty() || font_size == p_other.font_size) &&
 			alignment == p_other.alignment &&
 			indent_level == p_other.indent_level &&
 			list_type == p_other.list_type &&
@@ -233,6 +234,53 @@ RichTextDocument::ParsedTag RichTextDocument::_parse_tag(const String &p_tag) {
 		}
 	}
 	return tag;
+}
+
+static Callable token_color_resolver;
+static Callable token_size_resolver;
+
+void RichTextDocument::set_token_color_resolver(const Callable &p_resolver) {
+	token_color_resolver = p_resolver;
+}
+
+Color RichTextDocument::resolve_token_color(const String &p_ref) {
+	if (token_color_resolver.is_valid()) {
+		const Variant resolved = token_color_resolver.call(p_ref);
+		if (resolved.get_type() == Variant::COLOR) {
+			return resolved;
+		}
+	}
+	return Color(0, 0, 0);
+}
+
+void RichTextDocument::set_token_size_resolver(const Callable &p_resolver) {
+	token_size_resolver = p_resolver;
+}
+
+int RichTextDocument::resolve_token_size(const String &p_ref) {
+	if (token_size_resolver.is_valid()) {
+		const Variant resolved = token_size_resolver.call(p_ref);
+		if (resolved.get_type() == Variant::INT || resolved.get_type() == Variant::FLOAT) {
+			return MAX(1, int(resolved));
+		}
+	}
+	return 16;
+}
+
+// A color tag value is a literal color or `token:<id>`; a token's color is
+// resolved now and refreshed whenever the host says the token changed.
+bool RichTextDocument::_parse_color_value(const String &p_text, Color &r_color, String &r_ref) {
+	r_ref = String();
+	if (p_text.begins_with("token:") && p_text.length() > 6) {
+		r_ref = p_text.substr(6);
+		r_color = resolve_token_color(r_ref);
+		return true;
+	}
+	return _parse_color(p_text, r_color);
+}
+
+String RichTextDocument::_color_value(const Color &p_color, const String &p_ref) {
+	return p_ref.is_empty() ? p_color.to_html(p_color.a < 1.0) : "token:" + p_ref;
 }
 
 bool RichTextDocument::_parse_color(const String &p_text, Color &r_color) {
@@ -451,9 +499,11 @@ RichTextDocument RichTextDocument::parse_bbcode(const String &p_bbcode) {
 			if (color_text.is_empty() && tag.options.has("color")) {
 				color_text = tag.options["color"];
 			}
-			if (_parse_color(color_text, color)) {
+			String color_ref;
+			if (_parse_color_value(color_text, color, color_ref)) {
 				next_style.has_color = true;
 				next_style.color = color;
+				next_style.color_ref = color_ref;
 			}
 		} else if (tag.name == "fgcolor") {
 			Color color;
@@ -463,21 +513,31 @@ RichTextDocument RichTextDocument::parse_bbcode(const String &p_bbcode) {
 			}
 		} else if (tag.name == "bgcolor") {
 			Color color;
-			if (_parse_color(tag.value, color)) {
+			String color_ref;
+			if (_parse_color_value(tag.value, color, color_ref)) {
 				next_style.has_bg_color = true;
 				next_style.bg_color = color;
+				next_style.bg_color_ref = color_ref;
 			}
 		} else if (tag.name == "outline_color") {
 			Color color;
-			if (_parse_color(tag.value, color)) {
+			String color_ref;
+			if (_parse_color_value(tag.value, color, color_ref)) {
 				next_style.has_outline_color = true;
 				next_style.outline_color = color;
+				next_style.outline_color_ref = color_ref;
 			}
 		} else if (tag.name == "outline_size") {
 			next_style.has_outline_size = true;
 			next_style.outline_size = MAX(0, tag.value.to_int());
 		} else if (tag.name == "font_size" || tag.name == "size") {
-			next_style.font_size = MAX(1, tag.value.to_int());
+			if (tag.value.begins_with("token:") && tag.value.length() > 6) {
+				next_style.font_size_ref = tag.value.substr(6);
+				next_style.font_size = resolve_token_size(next_style.font_size_ref);
+			} else {
+				next_style.font_size_ref = String();
+				next_style.font_size = MAX(1, tag.value.to_int());
+			}
 		} else if (tag.name == "font") {
 			next_style.font = tag.value;
 			if (next_style.font.is_empty() && tag.options.has("name")) {
@@ -671,10 +731,10 @@ String RichTextDocument::to_bbcode() const {
 		}
 
 		if (p_style.has_bg_color) {
-			add_tag(tags, "[bgcolor=" + p_style.bg_color.to_html(p_style.bg_color.a < 1.0) + "]", "[/bgcolor]");
+			add_tag(tags, "[bgcolor=" + _color_value(p_style.bg_color, p_style.bg_color_ref) + "]", "[/bgcolor]");
 		}
 		if (p_style.has_color) {
-			add_tag(tags, "[color=" + p_style.color.to_html(p_style.color.a < 1.0) + "]", "[/color]");
+			add_tag(tags, "[color=" + _color_value(p_style.color, p_style.color_ref) + "]", "[/color]");
 		}
 		if (p_style.has_fg_color) {
 			add_tag(tags, "[fgcolor=" + p_style.fg_color.to_html(p_style.fg_color.a < 1.0) + "]", "[/fgcolor]");
@@ -683,10 +743,10 @@ String RichTextDocument::to_bbcode() const {
 			add_tag(tags, "[font=" + p_style.font + "]", "[/font]");
 		}
 		if (p_style.font_size > 0) {
-			add_tag(tags, "[font_size=" + itos(p_style.font_size) + "]", "[/font_size]");
+			add_tag(tags, "[font_size=" + (p_style.font_size_ref.is_empty() ? itos(p_style.font_size) : "token:" + p_style.font_size_ref) + "]", "[/font_size]");
 		}
 		if (p_style.has_outline_color) {
-			add_tag(tags, "[outline_color=" + p_style.outline_color.to_html(p_style.outline_color.a < 1.0) + "]", "[/outline_color]");
+			add_tag(tags, "[outline_color=" + _color_value(p_style.outline_color, p_style.outline_color_ref) + "]", "[/outline_color]");
 		}
 		if (p_style.has_outline_size) {
 			add_tag(tags, "[outline_size=" + itos(p_style.outline_size) + "]", "[/outline_size]");

@@ -33,6 +33,7 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/vector.h"
+#include "core/variant/callable.h"
 #include "core/variant/variant.h"
 #include "scene/resources/texture.h"
 
@@ -59,6 +60,14 @@ public:
 		Color bg_color;
 		Color fg_color;
 		Color outline_color;
+		// A Design Token the color follows (empty = the literal above). The
+		// color itself is the token's resolved value; equality and hashing use
+		// the reference so a token edit can refresh the value in place.
+		String color_ref;
+		String bg_color_ref;
+		String outline_color_ref;
+		// A Number Design Token the font size follows (empty = the literal `font_size`).
+		String font_size_ref;
 		int outline_size = 0;
 		int font_size = 0;
 		int alignment = -1;
@@ -136,6 +145,12 @@ public:
 
 	static Ref<Texture2D> load_image_texture(const String &p_source);
 	static bool is_valid_line_height(const String &p_value);
+	// Resolves `token:<id>` color values. Set once by the host application.
+	static void set_token_color_resolver(const Callable &p_resolver);
+	static Color resolve_token_color(const String &p_ref);
+	// Resolves `token:<id>` font sizes (whole pixels).
+	static void set_token_size_resolver(const Callable &p_resolver);
+	static int resolve_token_size(const String &p_ref);
 	static RichTextDocument parse_bbcode(const String &p_bbcode);
 	String to_bbcode() const;
 	void canonicalize();
@@ -153,6 +168,8 @@ private:
 	static Vector<String> _split_unquoted(const String &p_src, char32_t p_splitter);
 	static ParsedTag _parse_tag(const String &p_tag);
 	static bool _parse_color(const String &p_text, Color &r_color);
+	static bool _parse_color_value(const String &p_text, Color &r_color, String &r_ref);
+	static String _color_value(const Color &p_color, const String &p_ref);
 	static bool _is_preserved_pair_tag(const String &p_name);
 	static String _escape_text(const String &p_text);
 	static String _close_tag_for(const String &p_tag);

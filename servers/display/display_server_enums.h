@@ -80,6 +80,7 @@ enum Feature {
 	FEATURE_ACCESSIBILITY_SCREEN_READER,
 	FEATURE_HDR_OUTPUT,
 	FEATURE_PIP_MODE,
+	FEATURE_EMBEDDED,
 };
 
 /* RENDERING DEVICE */
@@ -170,6 +171,15 @@ enum ScreenOrientation {
 	SCREEN_SENSOR_LANDSCAPE,
 	SCREEN_SENSOR_PORTRAIT,
 	SCREEN_SENSOR,
+};
+
+// Values returned by the DisplayServer `orientation_changed` signal.
+// Unlike ScreenOrientation, which represents the desired screen orientation and can be used to get or set the screen orientation,
+// SensorOrientation represents the actual screen orientation detected. It can be used with ScreenOrientation::SCREEN_SENSOR.
+enum SensorOrientation {
+	SENSOR_ORIENTATION_UNDEFINED,
+	SENSOR_ORIENTATION_PORTRAIT,
+	SENSOR_ORIENTATION_LANDSCAPE,
 };
 
 /* WINDOW */

@@ -507,6 +507,10 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	p_theme->set_font(SceneStringName(font), "MainScreenContainer", bold_fc);
 	p_theme->set_font_size(SceneStringName(font_size), "MainScreenContainer", default_font_size + 2 * EDSCALE);
 
+	p_theme->set_type_variation("MainScreenButton", "Button");
+	p_theme->set_font(SceneStringName(font), "MainScreenButton", bold_fc);
+	p_theme->set_font_size(SceneStringName(font_size), "MainScreenButton", default_font_size + 2 * EDSCALE);
+
 	// Labels.
 
 	p_theme->set_font(SceneStringName(font), "Label", default_fc);

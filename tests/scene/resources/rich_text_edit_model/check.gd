@@ -249,6 +249,55 @@ func check_semantics() -> void:
 	expect(edit.get_bbcode_text() == with_image, "redo lost the image")
 
 
+# Line heights are CSS line heights: px is a length, a number is a multiple of the
+# font size, a percentage is a length worked out from the control's own size.
+func check_line_heights() -> void:
+	var size := 16
+	edit.add_theme_font_size_override("font_size", size)
+	var lines := ["a", "b", "c"]
+	var heights := {}
+	for value in ["24px", "1.5", "150%", "2", "1", "0.5"]:
+		var bbcode := ""
+		for index in lines.size():
+			bbcode += ("\n" if index > 0 else "") + "[line_height=%s]%s[/line_height]" % [value, lines[index]]
+		edit.set_bbcode_text(bbcode)
+		heights[value] = await settle()
+	expect(heights["24px"] == 3 * 24, "24px lines are %d tall" % heights["24px"])
+	expect(heights["1.5"] == 3 * 24, "1.5 x 16px lines are %d tall, not 72" % heights["1.5"])
+	expect(heights["150%"] == 3 * 24, "150%% of 16px lines are %d tall, not 72" % heights["150%"])
+	expect(heights["2"] == 3 * 32, "2 x 16px lines are %d tall, not 96" % heights["2"])
+	expect(heights["1"] == 3 * 16, "1 x 16px lines are %d tall, not 48" % heights["1"])
+	expect(heights["0.5"] == 3 * 8, "0.5 x 16px lines are %d tall, not 24" % heights["0.5"])
+
+	# A number follows the text it sets: the largest run of the row, never less than
+	# the control's size. A percentage is a length from the control's size alone.
+	edit.set_bbcode_text("[line_height=1.5][font_size=40]a[/font_size][/line_height]")
+	expect(await settle() == 60, "1.5 over a 40px run is not 60: %d" % edit.get_content_height())
+	edit.set_bbcode_text("[line_height=1.5][font_size=10]a[/font_size][/line_height]")
+	expect(await settle() == 24, "1.5 over a 10px run is not 24: %d" % edit.get_content_height())
+	edit.set_bbcode_text("[line_height=150%][font_size=40]a[/font_size][/line_height]")
+	expect(await settle() == 24, "150%% over a 40px run is not 24: %d" % edit.get_content_height())
+	edit.set_bbcode_text("[line_height=1.5]small [font_size=40]big[/font_size][/line_height]")
+	expect(await settle() == 60, "a row is as tall as its largest run: %d" % edit.get_content_height())
+
+	# A wrapped row only counts the runs on that row.
+	var narrow: RichTextEdit = RichTextEdit.new()
+	narrow.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	narrow.size = Vector2(120, 400)
+	narrow.add_theme_font_size_override("font_size", size)
+	root.add_child(narrow)
+	await process_frame
+	narrow.set_bbcode_text("[line_height=1.5]aaa bbb ccc ddd eee fff ggg hhh [font_size=40]BIG[/font_size][/line_height]")
+	for i in 5:
+		await process_frame
+	var rows := narrow.get_line_wrap_count(0) + 1
+	var content := narrow.get_content_height()
+	expect(rows >= 3, "the narrow control did not wrap (%d rows)" % rows)
+	expect(content == (rows - 1) * 24 + 60, "wrapped rows are not 24px each plus one 60px row: %d for %d rows" % [content, rows])
+	narrow.queue_free()
+	edit.remove_theme_font_size_override("font_size")
+
+
 # Deferred shaping converges on the layout a fully shaped document has.
 func check_deferred_layout(p_bbcode: String) -> void:
 	edit.set_bbcode_text(p_bbcode)
@@ -278,6 +327,7 @@ func _initialize() -> void:
 	edit.grab_focus()
 
 	await check_semantics()
+	await check_line_heights()
 	for seed in [1, 2, 3]:
 		await check_history(SMALL, false, 80, seed)
 	var large: String = Doc.new().make(20000)

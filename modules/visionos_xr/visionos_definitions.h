@@ -32,6 +32,7 @@
 
 #ifdef VISIONOS_ENABLED
 
+#include "core/os/mutex.h"
 #include "core/templates/safe_refcount.h"
 #include "drivers/metal/metal_objects_shared.h"
 #include "drivers/metal/rendering_context_driver_metal.h"
@@ -69,6 +70,20 @@ enum class VisionOSAuthorizationStatus {
 	NOT_DETERMINED,
 	ALLOWED,
 	DENIED,
+};
+
+// Trackers used by both VisionOSControllerTracking and VisionOSSpatialEventTracking.
+struct VisionOSSharedController {
+	Ref<XRControllerTracker> tracker;
+
+	enum class Source {
+		None,
+		SpatialEvent,
+		Controller
+	};
+
+	// Spatial Events override controllers, when active.
+	Source source = Source::None;
 };
 
 #endif // VISIONOS_ENABLED

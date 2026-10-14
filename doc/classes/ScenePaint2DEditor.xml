@@ -43,4 +43,26 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="scene_painted">
+			<param index="0" name="node" type="Node2D" />
+			<description>
+				Emitted for each new node created during drawing.
+				[b]Example:[/b]
+				[codeblocks]
+				[gdscript]
+				@tool
+				extends EditorPlugin
+
+				func _enter_tree():
+					EditorInterface.get_scene_paint_2d().scene_painted.connect(_on_scene_painted)
+
+				func _on_scene_painted(node: Node2D):
+					# Set random rotation when drawing nodes.
+					node.rotation = randf_range(0, 360)
+				[/gdscript]
+				[/codeblocks]
+			</description>
+		</signal>
+	</signals>
 </class>

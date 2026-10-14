@@ -56,6 +56,7 @@
 #include "scene/gui/flow_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
@@ -110,7 +111,7 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 					NodePath node_path = tree_item->get_metadata(0);
 					Node *node = get_scene_node()->get_node_or_null(node_path);
 					if (node != nullptr) {
-						visibility_drag_value = !node->call("is_visible");
+						visibility_drag_value = !node->call(SceneStringName(is_visible));
 						visibility_drag_start_pos = tree_mouse_pos;
 						visibility_drag_start_node = node->get_instance_id();
 					}
@@ -150,7 +151,7 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 			bool crossed_drag_threshold = visibility_drag_start_pos.distance_to(tree_mouse_pos) > get_viewport()->get_drag_threshold();
 			if (tree_button_id == BUTTON_VISIBILITY && (crossed_drag_threshold || !visibility_drag_nodes.is_empty())) {
 				Node *start_node = ObjectDB::get_instance<Node>(visibility_drag_start_node);
-				if (start_node != nullptr && (bool)start_node->call("is_visible") != visibility_drag_value) {
+				if (start_node != nullptr && (bool)start_node->call(SceneStringName(is_visible)) != visibility_drag_value) {
 					start_node->call("set_visible", visibility_drag_value);
 					visibility_drag_nodes.push_back(visibility_drag_start_node);
 				}
@@ -159,7 +160,7 @@ void SceneTreeEditor::_gui_input(const Ref<InputEvent> &p_event) {
 				ERR_FAIL_NULL(tree_item);
 				NodePath node_path = tree_item->get_metadata(0);
 				Node *node = get_scene_node()->get_node_or_null(node_path);
-				if (node != nullptr && (bool)node->call("is_visible") != visibility_drag_value) {
+				if (node != nullptr && (bool)node->call(SceneStringName(is_visible)) != visibility_drag_value) {
 					node->call("set_visible", visibility_drag_value);
 					visibility_drag_nodes.push_back(node->get_instance_id());
 				}
@@ -346,8 +347,8 @@ void SceneTreeEditor::_revoke_unique_name() {
 }
 
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
-	if (p_node->has_method("is_visible") && p_node->has_method("set_visible")) {
-		bool v = bool(p_node->call("is_visible"));
+	if (p_node->has_method(SceneStringName(is_visible)) && p_node->has_method(SNAME("set_visible"))) {
+		bool v = bool(p_node->call(SceneStringName(is_visible)));
 		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->add_do_method(p_node, "set_visible", !v);
 		undo_redo->add_undo_method(p_node, "set_visible", v);
@@ -641,7 +642,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			}
 		}
 		if (num_groups >= 1) {
-			msg_temp += TTRN("Node is in this group:", "Node is in the following groups:", num_groups) + "\n";
+			msg_temp += TPL(num_groups, TTR("Node is in this group:"), TTR("Node is in the following groups:")) + "\n";
 
 			List<GroupInfo> groups;
 			p_node->get_groups(&groups);
@@ -714,8 +715,8 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			p_item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
 		}
 
-		if (p_node->has_method("is_visible") && p_node->has_method("set_visible") && p_node->has_signal(SceneStringName(visibility_changed))) {
-			bool is_visible = p_node->call("is_visible");
+		if (p_node->has_method(SceneStringName(is_visible)) && p_node->has_method(SNAME("set_visible")) && p_node->has_signal(SceneStringName(visibility_changed))) {
+			bool is_visible = p_node->call(SceneStringName(is_visible));
 			if (is_visible) {
 				p_item->add_button(0, get_editor_theme_icon(SNAME("GuiVisibilityVisible")), BUTTON_VISIBILITY, false, TTR("Toggle Visibility"));
 			} else {
@@ -798,7 +799,7 @@ void SceneTreeEditor::_update_node_tooltip(Node *p_node, TreeItem *p_item) {
 		for (int i = 0; i < boundaries.size(); i += 2) {
 			const int start = boundaries[i];
 			const int end = boundaries[i + 1];
-			tooltip += "\n" + p_node->get_editor_description().substr(start, end - start + 1).rstrip("\n");
+			tooltip += "\n" + p_node->get_editor_description().substr(start, end - start).rstrip("\n");
 		}
 	}
 
@@ -833,9 +834,9 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
 	bool node_visible = false;
 
-	if (p_node->has_method("is_visible")) {
-		node_visible = p_node->call("is_visible");
-		if (p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
+	if (p_node->has_method(SceneStringName(is_visible))) {
+		node_visible = p_node->call(SceneStringName(is_visible));
+		if (Object::cast_to<CanvasItem>(p_node) || Object::cast_to<CanvasLayer>(p_node) || Object::cast_to<Window>(p_node)) {
 			CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
 		}
 	}
@@ -850,7 +851,7 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 }
 
 void SceneTreeEditor::_update_visibility_color(Node *p_node, TreeItem *p_item) {
-	if (p_node->has_method("is_visible_in_tree")) {
+	if (p_node->has_method(SNAME("is_visible_in_tree"))) {
 		Color color(1, 1, 1, 1);
 		bool visible_on_screen = p_node->call("is_visible_in_tree");
 		if (!visible_on_screen) {
@@ -1885,12 +1886,20 @@ void SceneTreeEditor::set_editor_selection(EditorSelection *p_selection) {
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeEditor::_selection_changed));
 }
 
+TreeItem *SceneTreeEditor::get_node_item(Node *p_node) const {
+	const CachedNode *node = node_cache.cache.getptr(p_node);
+	if (node) {
+		return node->item;
+	}
+	return nullptr;
+}
+
 void SceneTreeEditor::_update_selection(TreeItem *item) {
 	ERR_FAIL_NULL(item);
 
 	NodePath np = item->get_metadata(0);
 
-	if (!get_scene_node()->has_node(np)) {
+	if (!is_inside_tree() || !get_scene_node() || !get_scene_node()->has_node(np)) {
 		return;
 	}
 
@@ -2028,11 +2037,17 @@ bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
 }
 
 NodePath SceneTreeEditor::_get_node_path(Node *p_node) const {
-	return get_scene_node()->get_path_to(p_node);
+	if (likely(get_scene_node())) {
+		return get_scene_node()->get_path_to(p_node);
+	}
+	return NodePath();
 }
 
 Node *SceneTreeEditor::_get_node(const NodePath &p_path) const {
-	return get_scene_node()->get_node(p_path);
+	if (likely(get_scene_node())) {
+		return get_scene_node()->get_node(p_path);
+	}
+	return nullptr;
 }
 
 bool SceneTreeEditor::_has_drop_selection(TreeItem *p_item, const Point2 &p_point) const {
@@ -2108,8 +2123,8 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	if (String(d["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
 		if (se) {
-			String sp = se->get_edited_resource()->get_path();
-			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+			Ref<Resource> sr = se->get_edited_resource();
+			if (_is_script_type(sr->get_class())) {
 				tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 				return _has_drop_selection(item, p_point);
 			}
@@ -2174,8 +2189,19 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	if (String(d["type"]) == "script_list_element") {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
 		if (se) {
-			String sp = se->get_edited_resource()->get_path();
-			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+			Ref<Resource> sr = se->get_edited_resource();
+			if (_is_script_type(sr->get_class())) {
+				// Check if we are setting a built-in script from another scene.
+				if (sr->is_built_in()) {
+					String src_scene = sr->get_path().get_slice("::", 0);
+					Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
+					String current_scene_path = edited_scene ? edited_scene->get_scene_file_path() : "";
+					if (src_scene != current_scene_path) {
+						sr = sr->duplicate();
+						EditorNode::setup_built_in_resource(sr, current_scene_path);
+					}
+				}
+				String sp = sr->get_path();
 				emit_signal(SNAME("script_dropped"), sp, n);
 			}
 		}

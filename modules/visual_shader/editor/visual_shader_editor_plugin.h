@@ -281,8 +281,6 @@ class VisualShaderEditor : public ScriptEditorBase {
 	EditorProperty *current_prop = nullptr;
 	VBoxContainer *shader_preview_vbox = nullptr;
 	Button *site_search = nullptr;
-	Button *toggle_files_button = nullptr;
-	Control *toggle_files_list = nullptr;
 	GraphEdit *graph = nullptr;
 	Button *add_node = nullptr;
 	MenuButton *varying_button = nullptr;
@@ -411,9 +409,9 @@ class VisualShaderEditor : public ScriptEditorBase {
 		PASTE_PARAMS_TO_MATERIAL,
 	};
 
-	enum NodeMenuOptions {
+	enum class NodeMenuOptions {
 		ADD,
-		SEPARATOR, // ignore
+		MAKE_GROUP,
 		CUT,
 		COPY,
 		PASTE,
@@ -432,10 +430,11 @@ class VisualShaderEditor : public ScriptEditorBase {
 		ENABLE_FRAME_AUTOSHRINK,
 	};
 
-	enum ConnectionMenuOptions {
+	enum class ConnectionMenuOptions {
 		INSERT_NEW_NODE,
 		INSERT_NEW_REROUTE,
 		DISCONNECT,
+		MAKE_GROUP,
 	};
 
 	enum class VaryingMenuOptions {
@@ -547,8 +546,6 @@ class VisualShaderEditor : public ScriptEditorBase {
 
 	void _show_shader_preview();
 
-	void _toggle_files_pressed();
-
 	Vector<int> nodes_link_to_frame_buffer; // Contains the nodes that are requested to be linked to a frame. This is used to perform one Undo/Redo operation for dragging nodes.
 	int frame_node_id_to_link_to = -1;
 
@@ -573,7 +570,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 	void _scroll_offset_changed(const Vector2 &p_scroll);
 	void _node_selected(Object *p_node);
 
-	void _delete_nodes(int p_type, const List<int> &p_nodes);
+	void _delete_nodes(int p_type, const LocalVector<int> &p_nodes);
 	void _delete_node_request(int p_type, int p_node);
 	void _delete_nodes_request(const TypedArray<StringName> &p_nodes);
 
@@ -651,6 +648,32 @@ class VisualShaderEditor : public ScriptEditorBase {
 	void _dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<ShaderGraph::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate);
 
 	void _duplicate_nodes();
+
+	struct GroupPort {
+		int source_node = 0;
+		int source_port = 0;
+		VisualShaderNode::PortType type = VisualShaderNode::PORT_TYPE_SCALAR;
+		String name;
+
+		Vector2 source_position; // Cached for sorting.
+	};
+
+	struct GroupBuildData {
+		LocalVector<int> node_ids;
+		LocalVector<ShaderGraph::Connection> inner_connections;
+		LocalVector<ShaderGraph::Connection> incoming_connections;
+		LocalVector<ShaderGraph::Connection> outgoing_connections;
+		LocalVector<GroupPort> input_ports;
+		LocalVector<GroupPort> output_ports;
+	};
+
+	static int _find_group_port(const LocalVector<GroupPort> &p_ports, int p_source_node, int p_source_port);
+	static bool _is_type_groupable(const StringName &p_type_name);
+	bool _creates_group_cycle(const HashSet<int> &p_selection) const;
+	String _gather_group_build_data(GroupBuildData &r_data);
+	Rect2 _get_node_rect(int p_node_id) const;
+	Ref<VisualShaderGroup> _build_group(const GroupBuildData &p_data) const;
+	void _make_group_from_selection();
 
 	static Vector2 selection_center;
 	static List<CopyItem> copy_items_buffer;
@@ -763,9 +786,6 @@ public:
 
 	virtual void ensure_focus() override { graph->grab_focus(true); }
 
-	virtual void set_toggle_list_control(Control *p_toggle_list_control) override;
-
-	virtual void update_toggle_files_button() override;
 	void save_editor_layout();
 
 	void set_current_shader_type(VisualShader::Type p_type);
