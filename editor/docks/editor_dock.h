@@ -121,6 +121,7 @@ public:
 	void make_visible();
 	void make_floating(int p_screen = -1);
 	void close();
+	bool is_dock_open() { return is_open; }
 
 	void set_title(const String &p_title);
 	String get_title() const { return title; }
