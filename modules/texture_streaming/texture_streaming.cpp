@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+
 #include "texture_streaming.h"
 
 #include "core/config/project_settings.h"
@@ -889,3 +893,5 @@ void TextureStreaming::_emit_flush_completed() {
 	print_verbose("Texture Streaming flush completed.");
 	emit_signal(SNAME("flush_completed"));
 }
+
+#endif // MODULE_TEXTURE_STREAMING_ENABLED

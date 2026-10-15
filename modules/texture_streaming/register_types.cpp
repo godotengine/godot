@@ -28,8 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#include "modules/modules_enabled.gen.h"
 
+#ifdef MODULE_TEXTURE_STREAMING_ENABLED
+
+#include "register_types.h"
 #include "texture_streaming.h"
 
 #include "core/config/engine.h"
@@ -59,3 +62,5 @@ void uninitialize_texture_streaming_module(ModuleInitializationLevel p_level) {
 		}
 	}
 }
+
+#endif // MODULE_TEXTURE_STREAMING_ENABLED
