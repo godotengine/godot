@@ -127,7 +127,7 @@ static void track_mouse_leave_event(HWND hWnd) {
 	TrackMouseEvent(&tme);
 }
 
-static void update_ime_form_positions(HIMC p_himc, const Point2i &p_pos) {
+static void update_ime_form_positions(HIMC p_himc, const Point2i &p_pos, const Rect2i &p_rect) {
 	if (p_himc == (HIMC) nullptr) {
 		return;
 	}
@@ -154,10 +154,17 @@ static void update_ime_form_positions(HIMC p_himc, const Point2i &p_pos) {
 	ImmSetCandidateWindow(p_himc, &cf);
 
 	cf.dwStyle = CFS_EXCLUDE;
-	cf.rcArea.left = p_pos.x;
-	cf.rcArea.right = p_pos.x;
-	cf.rcArea.top = p_pos.y;
-	cf.rcArea.bottom = p_pos.y;
+	if (p_rect == Rect2i()) {
+		cf.rcArea.left = p_pos.x;
+		cf.rcArea.right = p_pos.x + 1;
+		cf.rcArea.top = p_pos.y;
+		cf.rcArea.bottom = p_pos.y + 1;
+	} else {
+		cf.rcArea.left = p_rect.position.x;
+		cf.rcArea.right = p_rect.position.x + p_rect.size.x;
+		cf.rcArea.top = p_rect.position.y;
+		cf.rcArea.bottom = p_rect.position.y + p_rect.size.y;
+	}
 	ImmSetCandidateWindow(p_himc, &cf);
 }
 
@@ -3344,7 +3351,24 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, Display
 		return;
 	}
 
-	update_ime_form_positions(himc, wd.im_position);
+	update_ime_form_positions(himc, wd.im_position, wd.im_rect);
+	ImmReleaseContext(wd.hWnd, himc);
+}
+
+void DisplayServerWindows::window_set_ime_rect(const Rect2i &p_rect, DisplayServerEnums::WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	wd.im_rect = p_rect;
+
+	HIMC himc = ImmGetContext(wd.hWnd);
+	if (himc == (HIMC) nullptr) {
+		return;
+	}
+
+	update_ime_form_positions(himc, wd.im_position, wd.im_rect);
 	ImmReleaseContext(wd.hWnd, himc);
 }
 
@@ -6926,7 +6950,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_IME_COMPOSITION: {
-			update_ime_form_positions(windows[window_id].im_himc, windows[window_id].im_position);
+			update_ime_form_positions(windows[window_id].im_himc, windows[window_id].im_position, windows[window_id].im_rect);
 
 			if (windows[window_id].ime_active) {
 				SetCaretPos(windows[window_id].im_position.x, windows[window_id].im_position.y);
