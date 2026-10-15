@@ -2579,6 +2579,19 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		return true;
 	}
 
+	// Check this script's class_name.
+	if (p_context.current_class) {
+		const GDScriptParser::ClassNode *class_node = p_context.current_class;
+		while (class_node->outer) {
+			class_node = class_node->outer;
+		}
+		if (class_node->identifier && class_node->identifier->name == p_identifier->name && class_node->self_type.is_set()) {
+			r_type.type = class_node->self_type;
+			r_type.value = Variant();
+			return true;
+		}
+	}
+
 	// Check global scripts.
 	if (ScriptServer::is_global_class(p_identifier->name)) {
 		String script = ScriptServer::get_global_class_path(p_identifier->name);
