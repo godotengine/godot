@@ -83,6 +83,7 @@
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/shader.h"
 #include "servers/display/display_server.h"
 
 void ScriptEditorQuickOpen::popup_dialog(const Vector<String> &p_functions, bool p_dontclear) {
@@ -183,7 +184,7 @@ void DocumentList::_notification(int p_what) {
 				ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(editor);
 				EditorHelp *eh = Object::cast_to<EditorHelp>(editor);
 				if (seb) {
-					item.icon = seb->get_theme_icon();
+					item.icon = seb->get_document_icon();
 				} else if (eh) {
 					item.icon = help_icon;
 				}
@@ -206,7 +207,7 @@ Variant DocumentList::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(cur_node);
 	if (seb) {
 		preview_name = seb->get_document_name();
-		preview_icon = seb->get_theme_icon();
+		preview_icon = seb->get_document_icon();
 	}
 	EditorHelp *eh = Object::cast_to<EditorHelp>(cur_node);
 	if (eh) {
@@ -489,7 +490,7 @@ void DocumentList::update_list() {
 			const String &path = seb->get_edited_resource()->get_path();
 
 			item.tooltip = path.is_empty() ? TTR("Unsaved file.") : path;
-			item.icon = seb->get_theme_icon();
+			item.icon = seb->get_document_icon();
 
 			TextEditorBase *teb = Object::cast_to<TextEditorBase>(seb);
 			if (teb) {
