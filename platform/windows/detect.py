@@ -732,7 +732,10 @@ def configure_mingw(env: "SConsEnvironment"):
     else:
         env["CC"] = get_detected(env, "gcc")
         env["CXX"] = get_detected(env, "g++")
-        env["AR"] = get_detected(env, "gcc-ar" if os.name != "nt" else "ar")
+        env["AR"] = get_detected(env, "gcc-ar")
+        if not env["AR"]:
+            print_warning("Couldn't find `gcc-ar`; falling back to `ar`. LTO builds might fail.")
+            env["AR"] = get_detected(env, "ar")
         env["RANLIB"] = get_detected(env, "gcc-ranlib")
         env["AS"] = get_detected(env, "gcc")
         env.Append(ASFLAGS=["-c"])
@@ -768,9 +771,9 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
         if not env["use_llvm"]:
-            # For mingw-gcc LTO, disable linker plugin and enable whole program to work around GH-102867.
-            env.Append(CCFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
-            env.Append(LINKFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
+            # HACK: MinGW-GCC is notably flaky with LTO. A deeper dive is warranted, but for now we
+            # can significantly mitigate the issue by expanding partitions to the GCC 16 baseline.
+            env.Append(CCFLAGS=["--param=lto-partitions=512"])
 
     if env["use_asan"]:
         env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE_SANITIZERS)])
