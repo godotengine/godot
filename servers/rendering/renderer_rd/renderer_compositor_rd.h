@@ -112,6 +112,7 @@ protected:
 	double delta = 0.0;
 
 	static uint64_t frame;
+	bool frame_in_progress = false;
 	static RendererCompositorRD *singleton;
 
 	BlitPipelines _get_blit_pipelines_for_format(RenderingDevice::FramebufferFormatID format);
@@ -144,6 +145,7 @@ public:
 	virtual void finalize() override;
 
 	_ALWAYS_INLINE_ virtual uint64_t get_frame_number() const override { return frame; }
+	_ALWAYS_INLINE_ virtual uint64_t get_frame_number_for_changes() const override { return frame_in_progress ? frame : frame + 1; }
 	_ALWAYS_INLINE_ virtual double get_frame_delta_time() const override { return delta; }
 	_ALWAYS_INLINE_ virtual double get_total_time() const override { return time; }
 	_ALWAYS_INLINE_ virtual bool can_create_resources_async() const override { return true; }

@@ -46,6 +46,7 @@ void RasterizerDummy::end_frame(bool p_present) {
 	if (p_present) {
 		DisplayServer::get_singleton()->swap_buffers();
 	}
+	frame_in_progress = false;
 }
 
 RendererCanvasRender *RasterizerDummy::get_canvas() {

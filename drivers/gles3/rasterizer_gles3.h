@@ -53,6 +53,7 @@
 class RasterizerGLES3 : public RendererCompositor {
 private:
 	uint64_t frame = 1;
+	bool frame_in_progress = false;
 	float delta = 0;
 
 	double time_total = 0.0;
@@ -120,6 +121,7 @@ public:
 #endif
 
 	_ALWAYS_INLINE_ uint64_t get_frame_number() const { return frame; }
+	_ALWAYS_INLINE_ uint64_t get_frame_number_for_changes() const { return frame_in_progress ? frame : frame + 1; }
 	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time_total; }
 	_ALWAYS_INLINE_ bool can_create_resources_async() const { return false; }

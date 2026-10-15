@@ -5045,9 +5045,9 @@ RenderGeometryInstance *RenderForwardClustered::geometry_instance_create(RID p_b
 }
 
 void RenderForwardClustered::GeometryInstanceForwardClustered::set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) {
-	uint64_t frame = RSG::rasterizer->get_frame_number();
+	uint64_t frame = RSG::rasterizer->get_frame_number_for_changes();
 	if (frame != prev_transform_change_frame) {
-		prev_transform = transform;
+		prev_transform = prev_transform_change_frame == 0xFFFFFFFF ? p_transform : transform;
 		prev_transform_change_frame = frame;
 		transform_status = TransformStatus::MOVED;
 	} else if (unlikely(transform_status == TransformStatus::TELEPORTED)) {

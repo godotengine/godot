@@ -50,6 +50,7 @@ class Utilities;
 class RasterizerDummy : public RendererCompositor {
 private:
 	uint64_t frame = 1;
+	bool frame_in_progress = false;
 	double delta = 0;
 	double time = 0.0;
 
@@ -84,6 +85,7 @@ public:
 	void initialize() override {}
 	void begin_frame(double frame_step) override {
 		frame++;
+		frame_in_progress = true;
 		delta = frame_step;
 		time += frame_step;
 	}
@@ -107,6 +109,7 @@ public:
 	}
 
 	uint64_t get_frame_number() const override { return frame; }
+	uint64_t get_frame_number_for_changes() const override { return frame_in_progress ? frame : frame + 1; }
 	double get_frame_delta_time() const override { return delta; }
 	double get_total_time() const override { return time; }
 	bool can_create_resources_async() const override { return false; }

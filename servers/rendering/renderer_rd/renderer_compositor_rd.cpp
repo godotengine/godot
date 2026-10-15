@@ -123,6 +123,7 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServerEnums::Win
 
 void RendererCompositorRD::begin_frame(double frame_step) {
 	frame++;
+	frame_in_progress = true;
 	delta = frame_step;
 	time += frame_step;
 
@@ -135,6 +136,7 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 
 void RendererCompositorRD::end_frame(bool p_present) {
 	RD::get_singleton()->swap_buffers(p_present);
+	frame_in_progress = false;
 }
 
 void RendererCompositorRD::initialize() {
