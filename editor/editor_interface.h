@@ -179,9 +179,6 @@ public:
 	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = String());
 	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = String());
 
-	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = String());
-	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = String());
-
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);
 	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);
