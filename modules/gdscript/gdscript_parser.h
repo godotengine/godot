@@ -286,6 +286,10 @@ public:
 		int end_line;
 		int end_column;
 #ifdef TOOLS_ENABLED
+		enum Type {
+			UNCLASSIFIED,
+			IDENTIFIER_NOT_DECLARED_IN_SCOPE
+		};
 		EditorLanguage::CodeActionGroup code_actions;
 #endif // TOOLS_ENABLED
 	};
@@ -1661,13 +1665,20 @@ private:
 	void push_error(const String &p_message, const GDScriptTokenizer::Token &p_origin);
 #ifdef TOOLS_ENABLED
 	struct QueuedCodeActionRequest {
-		// TODO: Handle errors as well in the future.
 		enum DiagnosticType {
-			WARNING
+			WARNING,
+			ERROR
 		};
 
-		// The index into either `errors` or `pending_warnings` for the diagnostic.
+		/// @brief If `diagnostic_type` is `WARNING`, this is the index of the warning
+		/// in `pending_warnings` that corresponds to this code action request.
+		///
+		/// If `diagnostic_type` is `ERROR`, this is the index of the error in `errors`
+		/// that corresponds to this code action request.
 		int diagnostic_index;
+
+		/// @brief If `diagnostic_type` is `ERROR`, this contains the error type.
+		ParserError::Type error_type;
 
 		DiagnosticType diagnostic_type = DiagnosticType::WARNING;
 
@@ -1675,6 +1686,14 @@ private:
 	};
 	LocalVector<QueuedCodeActionRequest> queued_code_action_requests;
 	void append_code_actions_to_last_error(const EditorLanguage::CodeActionGroup &p_code_action_group);
+	void queue_code_action_for_last_error(const Node *p_node, ParserError::Type p_err_type) {
+		QueuedCodeActionRequest a;
+		a.diagnostic_type = QueuedCodeActionRequest::ERROR;
+		a.diagnostic_index = errors.size() - 1;
+		a.node = p_node;
+		a.error_type = p_err_type;
+		queued_code_action_requests.push_back(a);
+	}
 	void queue_code_action_for_last_warning(const Node *p_node) {
 		QueuedCodeActionRequest a;
 		a.diagnostic_type = QueuedCodeActionRequest::WARNING;

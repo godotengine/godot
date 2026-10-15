@@ -46,6 +46,9 @@ EditorLanguage::CodeActionOperation remove_await(const GDScriptParser::AwaitNode
 EditorLanguage::CodeActionOperation call_method_from_type(const GDScriptParser::CallNode *p_call_node, const String &p_caller_type, const String &p_file_path);
 EditorLanguage::CodeActionOperation ignore_warning(GDScriptWarning::Code p_code, const String &p_source, const String &p_script_path, int p_start_line);
 
+bool get_args_for_signal_connect(const GDScriptParser::IdentifierNode *p_identifier, Vector<PropertyInfo> *r_arg_info);
+EditorLanguage::CodeActionOperation insert_function_stub(const GDScriptParser::Node *p_node, const String &p_function_name, const Vector<PropertyInfo> &p_arg_info, const String &p_file_path);
+
 EditorLanguage::CodeActionGroup make_code_action_ranges_zero_based(const EditorLanguage::CodeActionGroup &p_group, const LocalVector<String> &p_lines);
 
 LocalVector<EditorLanguage::CodeActionOperation> get_code_actions_for_warning(const GDScriptParser::Node *p_source, GDScriptWarning::Code p_code, const String &p_script_path);

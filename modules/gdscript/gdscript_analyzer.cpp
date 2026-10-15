@@ -4740,6 +4740,9 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 #else
 	push_error(vformat(R"(Identifier "%s" not declared in the current scope.)", name), p_identifier);
 #endif // SUGGEST_GODOT4_RENAMES
+#ifdef TOOLS_ENABLED
+	parser->queue_code_action_for_last_error(p_identifier, GDScriptParser::ParserError::Type::IDENTIFIER_NOT_DECLARED_IN_SCOPE);
+#endif
 	GDScriptParser::DataType dummy;
 	dummy.kind = GDScriptParser::DataType::VARIANT;
 	p_identifier->type_constraint = dummy; // Just so type is set to something.

@@ -292,6 +292,24 @@ void GDScriptParser::resolve_code_actions() {
 				pw.code_actions = action_group;
 				break;
 			}
+			case QueuedCodeActionRequest::ERROR: {
+				switch (request.error_type) {
+					case ParserError::Type::IDENTIFIER_NOT_DECLARED_IN_SCOPE: {
+						Vector<PropertyInfo> arg_info;
+						const IdentifierNode *as_identifier = static_cast<const IdentifierNode *>(request.node);
+						if (GDScriptCodeActions::get_args_for_signal_connect(as_identifier, &arg_info)) {
+							EditorLanguage::CodeActionOperation func_stub_op = GDScriptCodeActions::insert_function_stub(as_identifier, as_identifier->name, arg_info, script_path);
+							EditorLanguage::CodeActionGroup ca_group;
+							ca_group.title = TTR("Undefined function");
+							ca_group.actions.push_back(func_stub_op);
+							errors.get(request.diagnostic_index).code_actions = ca_group;
+						}
+						break;
+					}
+					default:
+						break;
+				}
+			}
 		}
 	}
 }

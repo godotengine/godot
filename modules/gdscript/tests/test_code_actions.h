@@ -183,6 +183,9 @@ static void test_directory_for_code_actions(const String &p_dir) {
 				continue;
 			}
 
+			EditorSettings::get_singleton()->set_setting("text_editor/behavior/indent/type", 1);
+			EditorSettings::get_singleton()->set_setting("text_editor/behavior/indent/size", 4);
+
 			Array include_only_warnings = conf.get_value("warnings", "include_only", Array());
 			for (int i = 0; i < GDScriptWarning::Code::WARNING_MAX; i++) {
 				GDScriptWarning::Code warning_code = (GDScriptWarning::Code)i;
@@ -208,6 +211,15 @@ static void test_directory_for_code_actions(const String &p_dir) {
 						code_actions.insert(line, LocalVector<EditorLanguage::CodeActionGroup>());
 					}
 					code_actions[line].push_back(w.code_actions);
+				}
+			}
+
+			for (const EditorLanguage::ScriptError &e : errors) {
+				for (int line = e.start_line; line <= e.end_line; line++) {
+					if (!code_actions.has(line)) {
+						code_actions.insert(line, LocalVector<EditorLanguage::CodeActionGroup>());
+					}
+					code_actions[line].push_back(e.code_actions);
 				}
 			}
 

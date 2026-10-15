@@ -314,6 +314,128 @@ EditorLanguage::CodeActionOperation GDScriptCodeActions::ignore_warning(GDScript
 	return op;
 }
 
+/**
+ * @brief Attempts to find the arguments for the signal a given identifier is attempting to connect to.
+ * For example, with the following code:
+ *
+ * ```gdscript
+ * extends Area2D
+ * func _ready() -> void:
+ *     area_entered.connect(_on_area_entered)
+ * ```
+ *
+ * If the identifier `_on_area_entered` is passed as `p_identifier`, this method will find the arguments
+ * that the `Area2D.area_entered` signal passes.
+ *
+ * @param p_identifier The identifier within a `Signal.connect` call.
+ * @param r_arg_info A pointer to a vector of `PropertyInfo` structs. On success, this vector will be filled
+ * with information about each of the signal's arguments.
+ * @return true If the signal's information could be found.
+ * @return false If the signal's information could not be found.
+ */
+bool GDScriptCodeActions::get_args_for_signal_connect(const GDScriptParser::IdentifierNode *p_identifier, Vector<PropertyInfo> *r_arg_info) {
+	if (p_identifier->parent && p_identifier->parent->type == GDScriptParser::Node::CALL) {
+		GDScriptParser::CallNode *call_node = static_cast<GDScriptParser::CallNode *>(p_identifier->parent);
+		if (call_node->get_callee_type() == GDScriptParser::Node::SUBSCRIPT && call_node->function_name == "connect") {
+			GDScriptParser::SubscriptNode *callee = static_cast<GDScriptParser::SubscriptNode *>(call_node->callee);
+			if (callee->base) {
+				// Case of something like `some_area_2d.body_shape_entered.connect(my_func)`
+				if (callee->base->type == GDScriptParser::Node::SUBSCRIPT) {
+					GDScriptParser::SubscriptNode *as_sub = static_cast<GDScriptParser::SubscriptNode *>(callee->base);
+					if (as_sub->is_attribute) {
+						GDScriptParser::IdentifierNode *callee_identifier = as_sub->attribute;
+						if (callee_identifier->type_constraint.kind == GDScriptParser::DataType::BUILTIN && callee_identifier->type_constraint.builtin_type == Variant::SIGNAL) {
+							*r_arg_info = callee_identifier->type_constraint.method_info.arguments;
+							return true;
+						}
+					}
+				}
+
+				// Case of something like `body_shape_entered.connect(my_func)` when written in a script
+				// with `extends Area2D`.
+				else if (callee->base->type == GDScriptParser::Node::IDENTIFIER) {
+					GDScriptParser::IdentifierNode *callee_identifier = static_cast<GDScriptParser::IdentifierNode *>(callee->base);
+					if (callee_identifier->type_constraint.kind == GDScriptParser::DataType::BUILTIN && callee_identifier->type_constraint.builtin_type == Variant::SIGNAL) {
+						*r_arg_info = callee_identifier->type_constraint.method_info.arguments;
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+/**
+ * @brief Creates a function with a given name and arguments, and an empty
+ * body.
+ *
+ * @param p_node The node from which to traverse up the tree to find a suitable
+ * location for the function.
+ * @param p_function_name The name of the function to be created.
+ * @param p_arg_info The arguments for the function to accept.
+ * @param p_file_path The file path of the script that the given node belongs to.
+ * @return EditorLanguage::CodeActionOperation
+ */
+EditorLanguage::CodeActionOperation GDScriptCodeActions::insert_function_stub(const GDScriptParser::Node *p_node, const String &p_function_name, const Vector<PropertyInfo> &p_arg_info, const String &p_file_path) {
+	// NOTE: If the user changes this editor setting then tries to apply the
+	// code action without making changes to the script, the old value for the
+	// setting will be used instead since the code action's text is generated
+	// at the time of parsing the script.
+	bool add_type_hints = EDITOR_GET("text_editor/completion/add_type_hints");
+	String func_args;
+	for (const PropertyInfo &p : p_arg_info) {
+		String arg_type = Variant::get_type_name(p.type);
+		if (p.type == Variant::Type::OBJECT) {
+			arg_type = p.class_name;
+		}
+
+		if (add_type_hints) {
+			func_args += vformat("%s: %s, ", p.name, arg_type);
+		} else {
+			func_args += vformat("%s, ", p.name);
+		}
+	}
+	func_args = func_args.substr(0, func_args.length() - 2);
+
+	// TODO: When creating function stubs for functions that don't have a void
+	// return type, we'll need to find their name and apply it here.
+	String return_type;
+	if (add_type_hints) {
+		return_type = " -> void";
+	}
+
+	EditorLanguage::CodeActionOperation op;
+	EditorLanguage::TextEdit te;
+
+	// Traverse up tree until we find the function node, so we can place
+	// our new stub method immediately after it.
+	const GDScriptParser::Node *curr = p_node;
+	while (curr->type != GDScriptParser::Node::FUNCTION) {
+		curr = curr->parent;
+	}
+	te.start_line = curr->end_line + 2;
+	te.start_column = 1;
+	te.end_line = curr->end_line + 2;
+	te.end_column = 1;
+
+	String indent_str = "\t";
+	if (EDITOR_GET("text_editor/behavior/indent/type")) {
+		indent_str = String(" ").repeat(EDITOR_GET("text_editor/behavior/indent/size"));
+	}
+
+	te.new_text = vformat("\nfunc %s(%s)%s:\n%spass\n", p_function_name, func_args, return_type, indent_str);
+
+	op.description = TTR("Insert stub for signal callback");
+
+	EditorLanguage::DocumentEditOperation de;
+	de.edits.push_back(te);
+	de.file_path = p_file_path;
+	op.document_edits.push_back(de);
+
+	return op;
+}
+
 EditorLanguage::CodeActionGroup GDScriptCodeActions::make_code_action_ranges_zero_based(const EditorLanguage::CodeActionGroup &p_group, const LocalVector<String> &p_lines) {
 	EditorLanguage::CodeActionGroup new_group;
 	new_group.title = p_group.title;
