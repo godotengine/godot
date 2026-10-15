@@ -95,6 +95,7 @@
 
 #include "core/input/input_event.h"
 #include "core/os/process_id.h"
+#include "core/os/rw_lock.h"
 #include "core/os/thread.h"
 #include "servers/display/display_server_enums.h"
 
@@ -296,6 +297,9 @@ public:
 		DisplayServerEnums::WindowMode mode = DisplayServerEnums::WINDOW_MODE_WINDOWED;
 
 		bool ready = false; // Is configured or otherwise ready to be mapped.
+		bool is_destroyed = false;
+		RWLock deletion_rw_lock = {}; // Prevent destruction of owned wayland objects while they are being used
+		SafeRefCount active_references = {}; // Prevent deletion of WindowState while waiting for callbacks
 
 		// Toplevel states.
 		bool maximized = false; // MUST obey configure size.
@@ -666,7 +670,7 @@ private:
 	Thread events_thread;
 	ThreadData thread_data;
 
-	HashMap<DisplayServerEnums::WindowID, WindowState> windows;
+	HashMap<DisplayServerEnums::WindowID, WindowState *> windows;
 
 	List<Ref<Message>> messages;
 
@@ -1233,6 +1237,7 @@ private:
 
 	void _window_hover(DisplayServerEnums::WindowID p_window_id);
 	void _window_hover();
+	static void _window_free_if_last_reference(WaylandThread::WindowState *p_windowstate);
 
 	bool _load_cursor_theme(int p_cursor_size);
 

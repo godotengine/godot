@@ -429,6 +429,12 @@ void WaylandThread::_window_hover() {
 	}
 }
 
+void WaylandThread::_window_free_if_last_reference(WindowState *p_windowstate) {
+	if (p_windowstate->active_references.unref()) {
+		memdelete(p_windowstate);
+	}
+}
+
 // Returns whether it loaded the theme or not.
 bool WaylandThread::_load_cursor_theme(int p_cursor_size) {
 	if (wl_cursor_theme) {
@@ -902,8 +908,8 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 	}
 
 	if (name == registry->wp_viewporter_name) {
-		for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
-			WindowState &ws = pair.value;
+		for (KeyValue<DisplayServerEnums::WindowID, WindowState *> &pair : registry->wayland_thread->windows) {
+			WindowState &ws = *pair.value;
 			if (registry->wp_viewporter) {
 				wp_viewporter_destroy(registry->wp_viewporter);
 				registry->wp_viewporter = nullptr;
@@ -921,8 +927,8 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 	}
 
 	if (name == registry->wp_color_manager_name) {
-		for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
-			WindowState ws = pair.value;
+		for (KeyValue<DisplayServerEnums::WindowID, WindowState *> &pair : registry->wayland_thread->windows) {
+			WindowState &ws = *pair.value;
 
 			if (ws.wp_color_management_surface) {
 				wp_color_management_surface_v1_destroy(ws.wp_color_management_surface);
@@ -966,8 +972,8 @@ void WaylandThread::_wl_registry_on_global_remove(void *data, struct wl_registry
 	}
 
 	if (name == registry->wp_fractional_scale_manager_name) {
-		for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : registry->wayland_thread->windows) {
-			WindowState &ws = pair.value;
+		for (KeyValue<DisplayServerEnums::WindowID, WindowState *> &pair : registry->wayland_thread->windows) {
+			WindowState &ws = *pair.value;
 
 			if (registry->wp_fractional_scale_manager) {
 				wp_fractional_scale_manager_v1_destroy(registry->wp_fractional_scale_manager);
@@ -3704,13 +3710,24 @@ void WaylandThread::_wp_text_input_on_done(void *data, struct zwp_text_input_v3 
 void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token) {
 	WindowState *ws = (WindowState *)data;
 	ERR_FAIL_NULL(ws);
-	ERR_FAIL_NULL(ws->wayland_thread);
-	ERR_FAIL_NULL(ws->wl_surface);
+	// TODO better mechanism than silently failing when the window has been destroyed
+	// or better yet fix the reason that attention is being called to a window while it is being destroyed
+	if (ws->deletion_rw_lock.read_try_lock()) { // Lock read before checking destroyed
+		if (!ws->is_destroyed) {
+			ERR_FAIL_NULL(ws->wayland_thread);
+			ERR_FAIL_NULL(ws->wl_surface);
 
-	xdg_activation_v1_activate(ws->wayland_thread->registry.xdg_activation, token, ws->wl_surface);
-	xdg_activation_token_v1_destroy(xdg_activation_token);
-
-	DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
+			xdg_activation_v1_activate(ws->wayland_thread->registry.xdg_activation, token, ws->wl_surface);
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
+		} else {
+			DEBUG_LOG_WAYLAND_THREAD(vformat("Window %d was destroyed while trying to activate.", ws->id));
+		}
+		ws->deletion_rw_lock.read_unlock();
+	} else {
+		DEBUG_LOG_WAYLAND_THREAD(vformat("Window %d was destroyed while trying to activate.", ws->id));
+	}
+	xdg_activation_token_v1_destroy(xdg_activation_token); // This needs to be done either way
+	ws->wayland_thread->_window_free_if_last_reference(ws);
 }
 
 void WaylandThread::_godot_embedding_compositor_on_client(void *data, struct godot_embedding_compositor *godot_embedding_compositor, struct godot_embedded_client *godot_embedded_client, int32_t pid) {
@@ -4341,7 +4358,9 @@ Ref<WaylandThread::Message> WaylandThread::pop_message() {
 
 void WaylandThread::window_create(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size, DisplayServerEnums::WindowID p_parent_id) {
 	ERR_FAIL_COND(windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	windows[p_window_id] = memnew(WindowState);
+	WindowState &ws = *windows[p_window_id];
+	ws.active_references.init();
 
 	ws.id = p_window_id;
 
@@ -4439,8 +4458,10 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 	ERR_FAIL_COND(windows.has(p_window_id));
 	ERR_FAIL_COND(!windows.has(p_parent_id));
 
-	WindowState &ws = windows[p_window_id];
-	WindowState &parent = windows[p_parent_id];
+	windows[p_window_id] = memnew(WindowState);
+	WindowState &ws = *windows[p_window_id];
+	ws.active_references.init();
+	WindowState &parent = *windows[p_parent_id];
 
 	double parent_scale = window_state_get_scale_factor(&parent);
 
@@ -4523,61 +4544,65 @@ void WaylandThread::window_create_popup(DisplayServerEnums::WindowID p_window_id
 
 void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
+	ws.is_destroyed = true; // Set destroyed flag before locking to stop any new users
+	{
+		RWLockWrite lock_guard{ ws.deletion_rw_lock }; // Ensure that nothing is currently using the objects
 
-	if (ws.xdg_popup) {
-		xdg_popup_destroy(ws.xdg_popup);
-	}
+		if (ws.xdg_popup) {
+			xdg_popup_destroy(ws.xdg_popup);
+		}
 
-	if (ws.xdg_toplevel_decoration) {
-		zxdg_toplevel_decoration_v1_destroy(ws.xdg_toplevel_decoration);
-	}
+		if (ws.xdg_toplevel_decoration) {
+			zxdg_toplevel_decoration_v1_destroy(ws.xdg_toplevel_decoration);
+		}
 
-	if (ws.xdg_toplevel) {
-		xdg_toplevel_destroy(ws.xdg_toplevel);
-	}
+		if (ws.xdg_toplevel) {
+			xdg_toplevel_destroy(ws.xdg_toplevel);
+		}
 
 #ifdef LIBDECOR_ENABLED
-	if (ws.libdecor_frame) {
-		libdecor_frame_unref(ws.libdecor_frame);
-	}
+		if (ws.libdecor_frame) {
+			libdecor_frame_unref(ws.libdecor_frame);
+		}
 #endif // LIBDECOR_ENABLED
 
-	if (ws.wp_fractional_scale) {
-		wp_fractional_scale_v1_destroy(ws.wp_fractional_scale);
-	}
+		if (ws.wp_fractional_scale) {
+			wp_fractional_scale_v1_destroy(ws.wp_fractional_scale);
+		}
 
-	if (ws.wp_color_management_surface) {
-		wp_color_management_surface_v1_destroy(ws.wp_color_management_surface);
-	}
+		if (ws.wp_color_management_surface) {
+			wp_color_management_surface_v1_destroy(ws.wp_color_management_surface);
+		}
 
-	if (ws.wp_color_management_surface_feedback) {
-		wp_color_management_surface_feedback_v1_destroy(ws.wp_color_management_surface_feedback);
-	}
+		if (ws.wp_color_management_surface_feedback) {
+			wp_color_management_surface_feedback_v1_destroy(ws.wp_color_management_surface_feedback);
+		}
 
-	if (ws.wp_viewport) {
-		wp_viewport_destroy(ws.wp_viewport);
-	}
+		if (ws.wp_viewport) {
+			wp_viewport_destroy(ws.wp_viewport);
+		}
 
-	if (ws.frame_callback) {
-		wl_callback_destroy(ws.frame_callback);
-	}
+		if (ws.frame_callback) {
+			wl_callback_destroy(ws.frame_callback);
+		}
 
-	if (ws.xdg_surface) {
-		xdg_surface_destroy(ws.xdg_surface);
-	}
+		if (ws.xdg_surface) {
+			xdg_surface_destroy(ws.xdg_surface);
+		}
 
-	if (ws.wl_surface) {
-		wl_surface_destroy(ws.wl_surface);
-	}
+		if (ws.wl_surface) {
+			wl_surface_destroy(ws.wl_surface);
+		}
 
-	if (ws.xdg_icon) {
-		xdg_toplevel_icon_v1_destroy(ws.xdg_icon);
-	}
+		if (ws.xdg_icon) {
+			xdg_toplevel_icon_v1_destroy(ws.xdg_icon);
+		}
 
-	if (ws.icon_buffer) {
-		wl_buffer_destroy(ws.icon_buffer);
-	}
+		if (ws.icon_buffer) {
+			wl_buffer_destroy(ws.icon_buffer);
+		}
+	} // Unlock before potentially freeing
 
 	// Before continuing, let's handle any leftover event that might still refer to
 	// this window.
@@ -4585,6 +4610,7 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 
 	// We can already clean up here, we're done.
 	windows.erase(p_window_id);
+	_window_free_if_last_reference(&ws);
 
 	// Let's update the window hover.
 	_window_hover();
@@ -4599,7 +4625,8 @@ bool WaylandThread::window_exists(DisplayServerEnums::WindowID p_window_id) cons
 }
 
 struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServerEnums::WindowID p_window_id) const {
-	const WindowState *ws = windows.getptr(p_window_id);
+	WindowState *const *wsp = windows.getptr(p_window_id);
+	const WindowState *ws = wsp ? *wsp : nullptr;
 	if (ws) {
 		return ws->wl_surface;
 	}
@@ -4608,16 +4635,18 @@ struct wl_surface *WaylandThread::window_get_wl_surface(DisplayServerEnums::Wind
 }
 
 WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServerEnums::WindowID p_window_id) {
-	return windows.getptr(p_window_id);
+	WindowState **wsp = windows.getptr(p_window_id);
+	return wsp ? *wsp : nullptr;
 }
 
 const WaylandThread::WindowState *WaylandThread::window_get_state(DisplayServerEnums::WindowID p_window_id) const {
-	return windows.getptr(p_window_id);
+	WindowState *const *wsp = windows.getptr(p_window_id);
+	return wsp ? *wsp : nullptr;
 }
 
 Size2i WaylandThread::window_set_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size) {
 	ERR_FAIL_COND_V(!windows.has(p_window_id), p_size);
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 	double window_scale = window_state_get_scale_factor(&ws);
 
@@ -4677,7 +4706,7 @@ void WaylandThread::beep() const {
 
 void WaylandThread::window_start_drag(DisplayServerEnums::WindowID p_window_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss && ws.xdg_toplevel) {
@@ -4693,7 +4722,7 @@ void WaylandThread::window_start_drag(DisplayServerEnums::WindowID p_window_id) 
 
 void WaylandThread::window_start_resize(DisplayServerEnums::WindowResizeEdge p_edge, DisplayServerEnums::WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowState &ws = windows[p_window];
+	WindowState &ws = *windows[p_window];
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss && ws.xdg_toplevel) {
@@ -4769,10 +4798,10 @@ void WaylandThread::window_set_parent(DisplayServerEnums::WindowID p_window_id, 
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	ERR_FAIL_COND(!windows.has(p_parent_id));
 
-	WindowState &child = windows[p_window_id];
+	WindowState &child = *windows[p_window_id];
 	child.parent_id = p_parent_id;
 
-	WindowState &parent = windows[p_parent_id];
+	WindowState &parent = *windows[p_parent_id];
 
 	// NOTE: We can't really unparent as, at the time of writing, libdecor
 	// segfaults when trying to set a null parent. Hopefully unparenting is not
@@ -4792,7 +4821,7 @@ void WaylandThread::window_set_parent(DisplayServerEnums::WindowID p_window_id, 
 
 void WaylandThread::window_set_max_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 	Vector2i logical_max_size = scale_vector2i(p_size, 1 / window_state_get_scale_factor(&ws));
 
@@ -4811,7 +4840,7 @@ void WaylandThread::window_set_max_size(DisplayServerEnums::WindowID p_window_id
 
 void WaylandThread::window_set_min_size(DisplayServerEnums::WindowID p_window_id, const Size2i &p_size) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 	Size2i logical_min_size = scale_vector2i(p_size, 1 / window_state_get_scale_factor(&ws));
 
@@ -4830,7 +4859,7 @@ void WaylandThread::window_set_min_size(DisplayServerEnums::WindowID p_window_id
 
 bool WaylandThread::window_can_set_mode(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_window_mode) const {
 	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
-	const WindowState &ws = windows[p_window_id];
+	const WindowState &ws = *windows[p_window_id];
 
 	switch (p_window_mode) {
 		case DisplayServerEnums::WINDOW_MODE_WINDOWED: {
@@ -4877,7 +4906,7 @@ bool WaylandThread::window_can_set_mode(DisplayServerEnums::WindowID p_window_id
 
 void WaylandThread::window_try_set_mode(DisplayServerEnums::WindowID p_window_id, DisplayServerEnums::WindowMode p_window_mode) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 	if (ws.mode == p_window_mode) {
 		return;
@@ -5004,7 +5033,7 @@ void WaylandThread::window_try_set_mode(DisplayServerEnums::WindowID p_window_id
 
 void WaylandThread::window_set_input_region(DisplayServerEnums::WindowID p_window_id, bool p_empty_region, const Vector<Vector2> &p_region) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 	wl_region *region = nullptr;
 	if (p_empty_region) {
@@ -5035,7 +5064,7 @@ void WaylandThread::window_set_input_region(DisplayServerEnums::WindowID p_windo
 
 void WaylandThread::window_set_borderless(DisplayServerEnums::WindowID p_window_id, bool p_borderless) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 	if (ws.xdg_toplevel_decoration) {
 		if (p_borderless) {
@@ -5065,7 +5094,7 @@ void WaylandThread::window_set_borderless(DisplayServerEnums::WindowID p_window_
 
 void WaylandThread::window_set_title(DisplayServerEnums::WindowID p_window_id, const String &p_title) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 #ifdef LIBDECOR_ENABLED
 	if (ws.libdecor_frame) {
@@ -5080,7 +5109,7 @@ void WaylandThread::window_set_title(DisplayServerEnums::WindowID p_window_id, c
 
 void WaylandThread::window_set_app_id(DisplayServerEnums::WindowID p_window_id, const String &p_app_id) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 #ifdef LIBDECOR_ENABLED
 	if (ws.libdecor_frame) {
@@ -5101,7 +5130,7 @@ void WaylandThread::set_icon(const Ref<Image> &p_icon, DisplayServerEnums::Windo
 	}
 
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 	if (ws.xdg_icon) {
 		xdg_toplevel_icon_v1_destroy(ws.xdg_icon);
@@ -5233,8 +5262,8 @@ void WaylandThread::set_default_icon(const Ref<Image> &p_icon) {
 		xdg_toplevel_icon_v1_set_name(xdg_icon, "godot");
 	}
 
-	for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
-		WindowState &ws = pair.value;
+	for (KeyValue<DisplayServerEnums::WindowID, WindowState *> &pair : windows) {
+		WindowState &ws = *pair.value;
 		if (ws.icon_set) {
 			continue;
 		}
@@ -5254,7 +5283,7 @@ void WaylandThread::set_default_icon(const Ref<Image> &p_icon) {
 
 DisplayServerEnums::WindowMode WaylandThread::window_get_mode(DisplayServerEnums::WindowID p_window_id) const {
 	ERR_FAIL_COND_V(!windows.has(p_window_id), DisplayServerEnums::WINDOW_MODE_WINDOWED);
-	const WindowState &ws = windows[p_window_id];
+	const WindowState &ws = *windows[p_window_id];
 
 	return ws.mode;
 }
@@ -5268,7 +5297,7 @@ DisplayServerEnums::WindowMode WaylandThread::window_get_mode(DisplayServerEnums
  */
 void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_window_id, bool p_hint_strong_focus) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	uint32_t last_serial = MAX(MAX(ss->pointer_data.button_serial, ss->last_key_pressed_serial), ss->pointer_enter_serial);
@@ -5289,6 +5318,7 @@ void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_wind
 	}
 
 	if (registry.xdg_activation) {
+		ERR_FAIL_COND(!ws.active_references.ref()); // increase ref count so the windowstate does not get destroyed
 		// Window attention requests are done through the XDG activation protocol.
 		xdg_activation_token_v1 *xdg_activation_token = xdg_activation_v1_get_activation_token(registry.xdg_activation);
 		// Set additional data on activation token when we want strong attention
@@ -5305,7 +5335,7 @@ void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_wind
 
 void WaylandThread::window_set_idle_inhibition(DisplayServerEnums::WindowID p_window_id, bool p_enable) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	WindowState &ws = windows[p_window_id];
+	WindowState &ws = *windows[p_window_id];
 
 	if (p_enable) {
 		if (ws.registry->wp_idle_inhibit_manager && !ws.wp_idle_inhibitor) {
@@ -5322,14 +5352,14 @@ void WaylandThread::window_set_idle_inhibition(DisplayServerEnums::WindowID p_wi
 
 bool WaylandThread::window_get_idle_inhibition(DisplayServerEnums::WindowID p_window_id) const {
 	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
-	const WindowState &ws = windows[p_window_id];
+	const WindowState &ws = *windows[p_window_id];
 
 	return ws.wp_idle_inhibitor != nullptr;
 }
 
 void WaylandThread::window_set_color_profile(DisplayServerEnums::WindowID p_window_id, ColorProfile p_profile) {
 	ERR_FAIL_COND(!windows.has(p_window_id));
-	const WindowState &ws = windows[p_window_id];
+	const WindowState &ws = *windows[p_window_id];
 
 	if (!ws.wp_color_management_surface) {
 		return;
@@ -6123,8 +6153,8 @@ bool WaylandThread::supports_hdr() const {
 }
 
 void WaylandThread::commit_surfaces() {
-	for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
-		wl_surface_commit(pair.value.wl_surface);
+	for (KeyValue<DisplayServerEnums::WindowID, WindowState *> &pair : windows) {
+		wl_surface_commit(pair.value->wl_surface);
 	}
 }
 
@@ -6237,12 +6267,12 @@ bool WaylandThread::wait_frame_suspend_ms(int p_timeout) {
 
 uint64_t WaylandThread::window_get_last_frame_time(DisplayServerEnums::WindowID p_window_id) const {
 	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
-	return windows[p_window_id].last_frame_time;
+	return windows[p_window_id]->last_frame_time;
 }
 
 bool WaylandThread::window_is_suspended(DisplayServerEnums::WindowID p_window_id) const {
 	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
-	return windows[p_window_id].suspended;
+	return windows[p_window_id]->suspended;
 }
 
 bool WaylandThread::is_fifo_available() const {
@@ -6276,8 +6306,8 @@ void WaylandThread::main_loop_callback() {
 }
 
 bool WaylandThread::is_suspended() const {
-	for (const KeyValue<DisplayServerEnums::WindowID, WindowState> &E : windows) {
-		if (!E.value.suspended) {
+	for (const KeyValue<DisplayServerEnums::WindowID, WindowState *> &E : windows) {
+		if (!E.value->suspended) {
 			return false;
 		}
 	}
@@ -6288,7 +6318,8 @@ bool WaylandThread::is_suspended() const {
 bool WaylandThread::window_wait_ready(DisplayServerEnums::WindowID p_window_id, int p_timeout_ms) {
 	MutexLock mutex_lock(mutex);
 
-	WindowState *ws = windows.getptr(p_window_id);
+	WindowState **wsp = windows.getptr(p_window_id);
+	WindowState *ws = wsp ? *wsp : nullptr;
 	ERR_FAIL_NULL_V(ws, false);
 
 	if (ws->ready) {
@@ -6356,7 +6387,7 @@ void WaylandThread::destroy() {
 		// server. We should figure whether the Wayland thread is the sole responsible
 		// for cleanup.
 		LocalVector<DisplayServerEnums::WindowID> window_ids;
-		for (KeyValue<DisplayServerEnums::WindowID, WindowState> &pair : windows) {
+		for (KeyValue<DisplayServerEnums::WindowID, WindowState *> &pair : windows) {
 			print_verbose(vformat("Window %d still allocated", pair.key));
 			window_ids.push_back(pair.key);
 		}
