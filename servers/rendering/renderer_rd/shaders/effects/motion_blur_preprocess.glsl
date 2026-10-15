@@ -239,7 +239,9 @@ void main() {
 	// the w component of the projected vector would be negative, and the velocity vector would be flipped.
 	// This happens with Godot's native motion vectors as well. We can detect this and flip them back, avoiding
 	// crazy artifacts.
-	total_velocity.xy *= thresholds_multiplier * render_size * (view_past_ndc_cache.w < 0 ? -1 : 1) * params.motion_blur_intensity;
+	total_velocity *= thresholds_multiplier * params.motion_blur_intensity * (view_past_ndc_cache.w < 0 ? -1 : 1);
+
+	total_velocity.xy *= render_size;
 
 	// Now we clamp the velocity magnitudes to the tile size. This avoids saturating tiles and
 	// revealing the seams between them. It also tames the velocities in general, otherwise
