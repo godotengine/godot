@@ -1050,6 +1050,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	if (is_frame) {
 		GraphFrame *frame = memnew(GraphFrame);
 		frame->set_title(vsnode->get_caption());
+		frame->set_title_editable(true);
+		frame->connect("title_changed", callable_mp(editor, &VisualShaderEditor::_frame_title_change).bind(p_id), CONNECT_DEFERRED);
 		node = frame;
 	} else if (is_reroute) {
 		VSRerouteNode *reroute_gnode = memnew(VSRerouteNode);
@@ -3935,6 +3937,21 @@ void VisualShaderEditor::_preview_select_port(int p_node, int p_port) {
 	undo_redo->commit_action();
 }
 
+void VisualShaderEditor::_frame_title_change(const String &p_old, const String &p_new, int p_node_id) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	VisualShader::Type type = get_current_shader_type();
+	Ref<VisualShaderNodeFrame> node = edited_shader_graph->get_node(p_node_id);
+
+	ERR_FAIL_COND(node.is_null());
+
+	_vs_create_action(TTR("Set Frame Title"));
+	undo_redo->add_do_method(node.ptr(), "set_title", p_new);
+	undo_redo->add_undo_method(node.ptr(), "set_title", p_old);
+	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, p_node_id);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, p_node_id);
+	undo_redo->commit_action();
+}
+
 void VisualShaderEditor::_frame_title_popup_show(const Point2 &p_position, int p_node_id) {
 	Ref<VisualShaderNodeFrame> node = edited_shader_graph->get_node(p_node_id);
 	if (node.is_null()) {
@@ -6375,7 +6392,7 @@ void VisualShaderEditor::_dup_copy_nodes(int p_type, List<CopyItem> &r_items, Li
 	selection_center /= (float)r_items.size();
 }
 
-void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<ShaderGraph::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate) {
+void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<ShaderGraph::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate, bool p_unformatted) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_duplicate) {
 		_vs_create_action(TTR("Duplicate VisualShader Node(s)"));
@@ -6467,21 +6484,23 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 	}
 
 	// Attach nodes to frame.
-	for (const CopyItem &item : r_items) {
-		Ref<VisualShaderNode> node = item.node;
-		if (node->get_frame() == -1) {
-			continue;
+	if (!p_unformatted) {
+		for (const CopyItem &item : r_items) {
+			Ref<VisualShaderNode> node = item.node;
+			if (node->get_frame() == -1) {
+				continue;
+			}
+
+			int new_node_id = connection_remap[item.id];
+			int new_frame_id = node->get_frame();
+
+			if (connection_remap.has(new_frame_id)) {
+				new_frame_id = connection_remap[new_frame_id];
+			}
+
+			undo_redo->add_do_method(edited_shader_graph.ptr(), "attach_node_to_frame", new_node_id, new_frame_id);
+			undo_redo->add_do_method(graph_plugin.ptr(), "attach_node_to_frame", type, new_node_id, new_frame_id);
 		}
-
-		int new_node_id = connection_remap[item.id];
-		int new_frame_id = node->get_frame();
-
-		if (connection_remap.has(new_frame_id)) {
-			new_frame_id = connection_remap[new_frame_id];
-		}
-
-		undo_redo->add_do_method(edited_shader_graph.ptr(), "attach_node_to_frame", new_node_id, new_frame_id);
-		undo_redo->add_do_method(graph_plugin.ptr(), "attach_node_to_frame", type, new_node_id, new_frame_id);
 	}
 
 	// Connect nodes.
@@ -6539,6 +6558,31 @@ void VisualShaderEditor::_duplicate_nodes() {
 	}
 
 	_dup_paste_nodes(type, items, node_connections, Vector2(10, 10) * EDSCALE, true);
+}
+
+void VisualShaderEditor::_create_frame_for_selection() {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	_vs_create_action("Create Frame for selected nodes");
+
+	int frame_id = edited_shader_graph->get_valid_node_id();
+	_add_node(add_frame_idx, {});
+
+	for (Node *child : graph->iterate_children()) {
+		GraphElement *graph_element = Object::cast_to<GraphElement>(child);
+		if (graph_element) {
+			int id = String(graph_element->get_name()).to_int();
+
+			Ref<VisualShaderNode> node = edited_shader_graph->get_node(id);
+
+			if (node.is_valid() && graph_element->is_selected()) {
+				undo_redo->add_do_method(edited_shader_graph.ptr(), "attach_node_to_frame", id, frame_id);
+				undo_redo->add_do_method(graph_plugin.ptr(), "attach_node_to_frame", get_current_shader_type(), id, frame_id);
+			}
+		}
+	}
+
+	undo_redo->commit_action();
 }
 
 // Returns the index of the group port whose source is the given output port, or -1.
@@ -6910,7 +6954,7 @@ void VisualShaderEditor::_copy_nodes(bool p_cut) {
 	}
 }
 
-void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 &p_custom_position) {
+void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 &p_custom_position, bool p_unformatted) {
 	if (copy_items_buffer.is_empty()) {
 		return;
 	}
@@ -6926,7 +6970,7 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 		mpos = graph->get_local_mouse_position();
 	}
 
-	_dup_paste_nodes(type, copy_items_buffer, copy_connections_buffer, graph->get_scroll_offset() / scale + mpos / scale - selection_center, false);
+	_dup_paste_nodes(type, copy_items_buffer, copy_connections_buffer, graph->get_scroll_offset() / scale + mpos / scale - selection_center, false, p_unformatted);
 }
 
 void VisualShaderEditor::_type_selected(int p_id) {
@@ -7425,6 +7469,9 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::ENABLE_FRAME_AUTOSHRINK:
 			_frame_autoshrink_enabled_changed(selected_frame);
 			break;
+		case NodeMenuOptions::ADD_FRAME:
+			_create_frame_for_selection();
+			break;
 		default:
 			break;
 	}
@@ -7827,9 +7874,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("node_selected", callable_mp(this, &VisualShaderEditor::_node_selected));
 	graph->connect("scroll_offset_changed", callable_mp(this, &VisualShaderEditor::_scroll_offset_changed));
 	graph->connect("duplicate_nodes_request", callable_mp(this, &VisualShaderEditor::_duplicate_nodes));
+	graph->connect("add_frame_request", callable_mp(this, &VisualShaderEditor::_create_frame_for_selection));
 	graph->connect("copy_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes).bind(false));
 	graph->connect("cut_nodes_request", callable_mp(this, &VisualShaderEditor::_copy_nodes).bind(true));
-	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes).bind(false, Point2()));
+	graph->connect("paste_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes).bind(false, Point2(), false));
+	graph->connect("paste_unformatted_nodes_request", callable_mp(this, &VisualShaderEditor::_paste_nodes).bind(false, Point2(), true));
 	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes_request));
 	graph->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
@@ -8069,6 +8118,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	popup_menu->add_item(TTR("Paste"), int(NodeMenuOptions::PASTE));
 	popup_menu->add_item(TTR("Delete"), int(NodeMenuOptions::DELETE_));
 	popup_menu->add_item(TTR("Duplicate"), int(NodeMenuOptions::DUPLICATE));
+	popup_menu->add_item(TTR("Add Frame"), int(NodeMenuOptions::ADD_FRAME));
 	popup_menu->add_item(TTR("Clear Copy Buffer"), int(NodeMenuOptions::CLEAR_COPY_BUFFER));
 	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_node_menu_id_pressed));
 
@@ -9030,6 +9080,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Vector4Parameter", "Vector/Variables", "VisualShaderNodeVec4Parameter", TTR("4D vector parameter."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 
 	// SPECIAL
+	add_frame_idx = add_options.size();
 	add_options.push_back(AddOption("Frame", "Special", "VisualShaderNodeFrame", TTR("A rectangular area with a description string for better graph organization.")));
 	add_options.push_back(AddOption("Expression", "Special", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
 	add_options.push_back(AddOption("Group", "Special", "VisualShaderNodeGroup", TTR("A node group/subgraph. Analogous to a function in textual shader languages.")));

@@ -428,6 +428,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 		ENABLE_FRAME_COLOR,
 		SET_FRAME_COLOR,
 		ENABLE_FRAME_AUTOSHRINK,
+		ADD_FRAME,
 	};
 
 	enum class ConnectionMenuOptions {
@@ -515,6 +516,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 	int texture3d_node_option_idx;
 	int custom_node_option_idx;
 	int curve_node_option_idx;
+	int add_frame_idx;
 	int curve_xyz_node_option_idx;
 	int mesh_emitter_option_idx;
 	List<String> keyword_list;
@@ -610,6 +612,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphEdit::Connection> *r_closest_connection, int *r_node_id = nullptr, int *r_to_port = nullptr);
 	void _handle_node_drop_on_connection();
 
+	void _frame_title_change(const String &p_old, const String &p_new, int p_node_id);
 	void _frame_title_popup_show(const Point2 &p_position, int p_node_id);
 	void _frame_title_popup_hide();
 	void _frame_title_popup_focus_out();
@@ -645,9 +648,10 @@ class VisualShaderEditor : public ScriptEditorBase {
 	bool _is_node_disallowed_in_context(const Ref<VisualShaderNode> &p_node) const;
 
 	void _dup_copy_nodes(int p_type, List<CopyItem> &r_nodes, List<ShaderGraph::Connection> &r_connections);
-	void _dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<ShaderGraph::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate);
+	void _dup_paste_nodes(int p_type, List<CopyItem> &r_items, const List<ShaderGraph::Connection> &p_connections, const Vector2 &p_offset, bool p_duplicate, bool p_unformatted = false);
 
 	void _duplicate_nodes();
+	void _create_frame_for_selection();
 
 	struct GroupPort {
 		int source_node = 0;
@@ -681,7 +685,7 @@ class VisualShaderEditor : public ScriptEditorBase {
 
 	void _clear_copy_buffer();
 	void _copy_nodes(bool p_cut);
-	void _paste_nodes(bool p_use_custom_position = false, const Vector2 &p_custom_position = Vector2());
+	void _paste_nodes(bool p_use_custom_position = false, const Vector2 &p_custom_position = Vector2(), bool p_unformatted = false);
 
 	Vector<Ref<VisualShaderNodePlugin>> plugins;
 	Ref<VisualShaderGraphPlugin> graph_plugin;
