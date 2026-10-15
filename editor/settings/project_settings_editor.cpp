@@ -87,6 +87,7 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 void ProjectSettingsEditor::popup_for_override(const String &p_override) {
 	popup_project_settings();
 	tab_container->set_current_tab(0);
+	search_box->clear();
 	general_settings_inspector->set_current_section(ProjectSettings::EDITOR_SETTING_OVERRIDE_PREFIX + p_override.get_slicec('/', 0));
 }
 
