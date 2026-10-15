@@ -350,8 +350,26 @@ public:
 		}
 	}
 
+	_FORCE_INLINE_ static RSE::ViewportMSAA samples_to_msaa(RD::TextureSamples p_samples) {
+		switch (p_samples) {
+			case RD::TEXTURE_SAMPLES_1:
+				return RSE::VIEWPORT_MSAA_DISABLED;
+			case RD::TEXTURE_SAMPLES_2:
+				return RSE::VIEWPORT_MSAA_2X;
+			case RD::TEXTURE_SAMPLES_4:
+				return RSE::VIEWPORT_MSAA_4X;
+			case RD::TEXTURE_SAMPLES_8:
+				return RSE::VIEWPORT_MSAA_8X;
+			default:
+				DEV_ASSERT(false && "Unknown sample count.");
+				return RSE::VIEWPORT_MSAA_DISABLED;
+		}
+	}
+
 	static uint32_t get_color_usage_bits(bool p_resolve, bool p_msaa, bool p_storage);
 	static RD::DataFormat get_depth_format(bool p_resolve, bool p_msaa, bool p_storage);
+	static RSE::ViewportMSAA get_nearest_supported_msaa(RSE::ViewportMSAA p_msaa, RD::DataFormat p_format, uint32_t p_usage_bits);
+	static RSE::ViewportMSAA get_nearest_supported_msaa_3d(RSE::ViewportMSAA p_msaa, bool p_storage);
 	static uint32_t get_depth_usage_bits(bool p_resolve, bool p_msaa, bool p_storage);
 	static RD::DataFormat get_velocity_format();
 	static uint32_t get_velocity_usage_bits(bool p_resolve, bool p_msaa, bool p_storage);
