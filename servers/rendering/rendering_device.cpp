@@ -7215,8 +7215,8 @@ void RenderingDevice::compute_list_add_barrier(ComputeListID p_list) {
 	}
 
 	uint32_t barrier_push_constant_size = compute_list_barrier_state.push_constant_size;
-	bool shouldSetPushConstants = barrier_push_constant_size > 0 && barrier_push_constant_size == compute_list.state.pipeline_push_constant_size;
-	if (shouldSetPushConstants) {
+	bool should_set_push_constants = barrier_push_constant_size > 0 && barrier_push_constant_size == compute_list.state.pipeline_push_constant_size;
+	if (should_set_push_constants) {
 		compute_list_set_push_constant(p_list, compute_list_barrier_state.push_constant_data, barrier_push_constant_size);
 	}
 }
