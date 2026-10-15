@@ -1,0 +1,53 @@
+{
+  "report": "docs\\language-benchmark\\three-language-2026-10-14.md",
+  "report_sha256": "17c43e290be0dcfae173f6c1ca49dd19de7ac4dcdc8c82626d2fc79fe711088b",
+  "raw_rows": 306,
+  "processes": 6,
+  "workloads": 17,
+  "languages": [
+    "as",
+    "cs",
+    "gd"
+  ],
+  "raw_rows_recompute_stored_summary": true,
+  "summary_recomputed_from_raw_logs": true,
+  "local_links_checked": 23,
+  "raw_logs_checked": 6,
+  "script_errors": 0,
+  "objectdb_leak_warning_present_in_all_logs": true,
+  "gates_failed": 6,
+  "gate_policy": "observe",
+  "angel_script_tests": {
+    "cases": 192,
+    "assertions": 4761,
+    "failed": 0
+  },
+  "analysis_unit_tests": 7,
+  "layout_control_runs": 8,
+  "layout_factors": {
+    "bench_arith": 1.5074865178668269,
+    "bench_array": 1.1245515591941864,
+    "bench_array_methods": 1.1057783691313439,
+    "bench_batch_sum": 1.2784929356357926,
+    "bench_calls": 1.3889187783177637,
+    "bench_class": 1.4410752853398894,
+    "bench_color": 1.0536971105198065,
+    "bench_dictionary": 1.0691197635069432,
+    "bench_dispatch": 0.9311651209009606,
+    "bench_engine": 1.1651425861952178,
+    "bench_hoist": 1.4577012085368988,
+    "bench_packed": 1.2368868946309763,
+    "bench_string": 0.9876851130163679,
+    "bench_typed_i64": 1.2381266490765173,
+    "bench_typed_map": 1.1921431118507073,
+    "bench_typed_vec2": 1.080392156862745,
+    "bench_vector": 1.0920496193966733
+  },
+  "exe_sha256": "bcc3ce1556f46b190d0805c225564249859bff0c648a6dd6cae38bd0c4459829",
+  "source_revision": "2bfae432e8763a396a5999053403fcf04d5e6738",
+  "merged_from_reports": [
+    "three-language-comprehensive-2026-10-12.md",
+    "interleaved-ab-idle-2026-10-14"
+  ],
+  "blocked_on": "idle gate unavailable (0/6); documented and labelled instead of hidden"
+}

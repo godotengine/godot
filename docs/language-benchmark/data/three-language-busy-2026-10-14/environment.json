@@ -1,0 +1,296 @@
+{
+  "per_process": {
+    "1": {
+      "idle": {
+        "cpu_percent": {
+          "n": 58,
+          "median": 36.73076923076923,
+          "minimum": 27.115384615384617,
+          "maximum": 53.515625
+        },
+        "processor_queue": {
+          "n": 58,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 38.0
+        },
+        "available_mb": {
+          "n": 58,
+          "median": 40492.84765625,
+          "minimum": 38310.08984375,
+          "maximum": 40569.88671875
+        }
+      },
+      "run": {
+        "cpu_percent": {
+          "n": 21,
+          "median": 44.22348484848485,
+          "minimum": 37.21590909090909,
+          "maximum": 60.57692307692308
+        },
+        "processor_queue": {
+          "n": 21,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 10.0
+        },
+        "available_mb": {
+          "n": 21,
+          "median": 40167.53125,
+          "minimum": 40103.6875,
+          "maximum": 40291.61328125
+        }
+      }
+    },
+    "2": {
+      "idle": {
+        "cpu_percent": {
+          "n": 59,
+          "median": 38.65384615384615,
+          "minimum": 31.057692307692307,
+          "maximum": 51.63461538461539
+        },
+        "processor_queue": {
+          "n": 59,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 25.0
+        },
+        "available_mb": {
+          "n": 59,
+          "median": 40301.7421875,
+          "minimum": 40176.44140625,
+          "maximum": 40408.37890625
+        }
+      },
+      "run": {
+        "cpu_percent": {
+          "n": 21,
+          "median": 46.96969696969697,
+          "minimum": 39.77272727272727,
+          "maximum": 75.48076923076923
+        },
+        "processor_queue": {
+          "n": 21,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 7.0
+        },
+        "available_mb": {
+          "n": 21,
+          "median": 40740.15234375,
+          "minimum": 40054.5859375,
+          "maximum": 40958.5703125
+        }
+      }
+    },
+    "3": {
+      "idle": {
+        "cpu_percent": {
+          "n": 59,
+          "median": 38.17307692307692,
+          "minimum": 28.846153846153847,
+          "maximum": 87.3076923076923
+        },
+        "processor_queue": {
+          "n": 59,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 76.0
+        },
+        "available_mb": {
+          "n": 59,
+          "median": 39651.4296875,
+          "minimum": 39267.95703125,
+          "maximum": 40934.43359375
+        }
+      },
+      "run": {
+        "cpu_percent": {
+          "n": 21,
+          "median": 47.30769230769231,
+          "minimum": 41.47727272727273,
+          "maximum": 57.859848484848484
+        },
+        "processor_queue": {
+          "n": 21,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 3.0
+        },
+        "available_mb": {
+          "n": 21,
+          "median": 39175.5,
+          "minimum": 39157.671875,
+          "maximum": 40209.375
+        }
+      }
+    },
+    "4": {
+      "idle": {
+        "cpu_percent": {
+          "n": 59,
+          "median": 35.76923076923077,
+          "minimum": 22.78846153846154,
+          "maximum": 61.82692307692308
+        },
+        "processor_queue": {
+          "n": 59,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 37.0
+        },
+        "available_mb": {
+          "n": 59,
+          "median": 40014.08203125,
+          "minimum": 39385.98828125,
+          "maximum": 40342.53125
+        }
+      },
+      "run": {
+        "cpu_percent": {
+          "n": 21,
+          "median": 37.21153846153846,
+          "minimum": 30.492424242424242,
+          "maximum": 54.071969696969695
+        },
+        "processor_queue": {
+          "n": 21,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 10.0
+        },
+        "available_mb": {
+          "n": 21,
+          "median": 39300.015625,
+          "minimum": 39190.26171875,
+          "maximum": 39358.58984375
+        }
+      }
+    },
+    "5": {
+      "idle": {
+        "cpu_percent": {
+          "n": 59,
+          "median": 30.28846153846154,
+          "minimum": 20.96153846153846,
+          "maximum": 40.38461538461539
+        },
+        "processor_queue": {
+          "n": 59,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 18.0
+        },
+        "available_mb": {
+          "n": 59,
+          "median": 39846.41015625,
+          "minimum": 39032.33203125,
+          "maximum": 39899.62109375
+        }
+      },
+      "run": {
+        "cpu_percent": {
+          "n": 20,
+          "median": 36.68269230769231,
+          "minimum": 31.25,
+          "maximum": 45.09615384615385
+        },
+        "processor_queue": {
+          "n": 20,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 2.0
+        },
+        "available_mb": {
+          "n": 20,
+          "median": 39687.87109375,
+          "minimum": 39670.25390625,
+          "maximum": 39711.21484375
+        }
+      }
+    },
+    "6": {
+      "idle": {
+        "cpu_percent": {
+          "n": 59,
+          "median": 30.576923076923077,
+          "minimum": 22.403846153846153,
+          "maximum": 46.44230769230769
+        },
+        "processor_queue": {
+          "n": 59,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 20.0
+        },
+        "available_mb": {
+          "n": 59,
+          "median": 39902.875,
+          "minimum": 39874.9921875,
+          "maximum": 40031.44140625
+        }
+      },
+      "run": {
+        "cpu_percent": {
+          "n": 20,
+          "median": 37.355769230769226,
+          "minimum": 28.365384615384617,
+          "maximum": 45.45454545454545
+        },
+        "processor_queue": {
+          "n": 20,
+          "median": 0.0,
+          "minimum": 0.0,
+          "maximum": 159.0
+        },
+        "available_mb": {
+          "n": 20,
+          "median": 39984.1015625,
+          "minimum": 39822.8984375,
+          "maximum": 40039.76953125
+        }
+      }
+    }
+  },
+  "gate": {
+    "cpu_percent": {
+      "n": 353,
+      "median": 34.86328125,
+      "minimum": 20.96153846153846,
+      "maximum": 87.3076923076923
+    },
+    "processor_queue": {
+      "n": 353,
+      "median": 0.0,
+      "minimum": 0.0,
+      "maximum": 76.0
+    },
+    "available_mb": {
+      "n": 353,
+      "median": 40014.2578125,
+      "minimum": 38310.08984375,
+      "maximum": 40934.43359375
+    }
+  },
+  "run": {
+    "cpu_percent": {
+      "n": 124,
+      "median": 43.125,
+      "minimum": 28.365384615384617,
+      "maximum": 75.48076923076923
+    },
+    "processor_queue": {
+      "n": 124,
+      "median": 0.0,
+      "minimum": 0.0,
+      "maximum": 159.0
+    },
+    "available_mb": {
+      "n": 124,
+      "median": 39834.58203125,
+      "minimum": 39157.671875,
+      "maximum": 40958.5703125
+    }
+  }
+}

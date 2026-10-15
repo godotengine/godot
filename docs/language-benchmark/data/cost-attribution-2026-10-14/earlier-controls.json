@@ -1,0 +1,14 @@
+[
+  {
+    "name": "debugger",
+    "exit_code": 0
+  },
+  {
+    "name": "highlighter",
+    "exit_code": 0
+  },
+  {
+    "name": "preserved-syntax",
+    "status": "timeout"
+  }
+]

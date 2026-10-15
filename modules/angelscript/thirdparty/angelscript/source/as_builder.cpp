@@ -1946,7 +1946,14 @@ int asCBuilder::ValidateVirtualProperty(asCScriptFunction *func)
 	if( prefix == "set_" && (func->returnType != asCDataType::CreatePrimitive(ttVoid, false) || func->parameterTypes.GetLength() < 1 || func->parameterTypes.GetLength() > 2) )
 		return -3;
 	
-	// Check matching getter/setter
+	// Check matching getter/setter. Registered application object methods are
+	// already indexed by their owning type. Scanning every engine function for
+	// each property makes large native interfaces quadratic in total functions.
+	// Script declarations may not yet be in the type's method list: retain the
+	// original scan for script types and globals, including all scope checks.
+	asCObjectType *registeredOwner = func->funcType == asFUNC_SYSTEM && func->objectType &&
+		!(func->objectType->flags & asOBJ_SCRIPT_OBJECT) ? func->objectType : 0;
+	const asUINT candidateCount = registeredOwner ? registeredOwner->methods.GetLength() : engine->scriptFunctions.GetLength();
 	asCDataType getType, setType;
 	bool found = false;
 	if( prefix == "get_" )
@@ -1954,11 +1961,10 @@ int asCBuilder::ValidateVirtualProperty(asCScriptFunction *func)
 		getType = func->returnType;
 		
 		// Find if there is a set accessor in the same scope, and then validate the type of it
-		// TODO: optimize search
 		asCString setName = "set_" + func->name.SubString(4);
-		for( asUINT n = 0; n < engine->scriptFunctions.GetLength(); n++ )
+		for( asUINT n = 0; n < candidateCount; n++ )
 		{
-			asCScriptFunction *setFunc = engine->scriptFunctions[n];
+			asCScriptFunction *setFunc = engine->scriptFunctions[registeredOwner ? registeredOwner->methods[n] : n];
 			if( setFunc == 0 || setFunc->name != setName || !setFunc->IsProperty() )
 				continue;
 			
@@ -1976,11 +1982,10 @@ int asCBuilder::ValidateVirtualProperty(asCScriptFunction *func)
 		setType = func->parameterTypes[func->parameterTypes.GetLength() - 1];
 		
 		// Find if there is a get accessor in the same scope and then validate the type of it
-		// TODO: optimize search
 		asCString getName = "get_" + func->name.SubString(4);
-		for( asUINT n = 0; n < engine->scriptFunctions.GetLength(); n++ )
+		for( asUINT n = 0; n < candidateCount; n++ )
 		{
-			asCScriptFunction *getFunc = engine->scriptFunctions[n];
+			asCScriptFunction *getFunc = engine->scriptFunctions[registeredOwner ? registeredOwner->methods[n] : n];
 			if( getFunc == 0 || getFunc->name != getName || !getFunc->IsProperty() )
 				continue;
 			

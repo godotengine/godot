@@ -62,6 +62,8 @@ TEST_CASE("[AngelScript] compile_module reports diagnostics on syntax error") {
 	String error;
 	CHECK_FALSE(as_engine_compile_module("as_engine_bad", "int main( { return 42; }", &error));
 	CHECK_FALSE(error.is_empty());
+	// 编译失败后必须仍能编译有效脚本；此断言同时暴露二进制布局对 AS 计时的影响（见三语言报告）。
+	CHECK(as_engine_compile_module("as_engine_good_after_bad", "int main() { return 42; }", &error));
 }
 
 #endif // ANGELSCRIPT_ENGINE_TESTS_IMPL

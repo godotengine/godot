@@ -329,7 +329,8 @@ class WinMonitor:
             self.query = None
 
 
-def run_child(exe, project, raw_path, mask, monitor, record, timeout=600, small=False):
+def run_child(exe, project, raw_path, mask, monitor, record, timeout=600, small=False,
+              arguments=None, extra_env=None):
     import _winapi
     import msvcrt
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
@@ -345,7 +346,9 @@ def run_child(exe, project, raw_path, mask, monitor, record, timeout=600, small=
     env.pop("BENCH_SMALL", None)
     if small:
         env["BENCH_SMALL"] = "1"
-    args = [str(exe), "--headless", "--path", str(project)]
+    if extra_env:
+        env.update(extra_env)
+    args = [str(exe)] + (list(arguments) if arguments is not None else ["--headless", "--path", str(project)])
     with raw_path.open("xb") as output, open(os.devnull, "rb") as stdin:
         out_handle, in_handle = msvcrt.get_osfhandle(output.fileno()), msvcrt.get_osfhandle(stdin.fileno())
         os.set_handle_inheritable(out_handle, True)

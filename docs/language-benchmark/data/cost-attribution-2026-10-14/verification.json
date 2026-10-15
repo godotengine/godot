@@ -1,0 +1,15 @@
+{
+  "local_links": 43,
+  "old_evidence_unchanged": true,
+  "tracked_changes": [
+    "modules/angelscript/tests/interleaved_ab_benchmark.py",
+    "modules/angelscript/tests/test_angelscript_engine.h",
+    "modules/angelscript/thirdparty/angelscript/source/as_builder.cpp"
+  ],
+  "python_tests": 29,
+  "full_as_tests": 192,
+  "full_as_assertions": 4761,
+  "measurement_status": "idle_unavailable",
+  "measured_processes": 0,
+  "exe_sha256": "c70bac41aee8a7ae2e2b163820134f87a1de8729b63862ac2460c53616e5b59f"
+}

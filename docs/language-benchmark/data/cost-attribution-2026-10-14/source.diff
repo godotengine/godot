@@ -1,0 +1,85 @@
+diff --git a/modules/angelscript/tests/interleaved_ab_benchmark.py b/modules/angelscript/tests/interleaved_ab_benchmark.py
+index c06f3e4c35..75d8ce8c49 100644
+--- a/modules/angelscript/tests/interleaved_ab_benchmark.py
++++ b/modules/angelscript/tests/interleaved_ab_benchmark.py
+@@ -329,7 +329,8 @@ class WinMonitor:
+             self.query = None
+ 
+ 
+-def run_child(exe, project, raw_path, mask, monitor, record, timeout=600, small=False):
++def run_child(exe, project, raw_path, mask, monitor, record, timeout=600, small=False,
++              arguments=None, extra_env=None):
+     import _winapi
+     import msvcrt
+     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+@@ -345,7 +346,9 @@ def run_child(exe, project, raw_path, mask, monitor, record, timeout=600, small=
+     env.pop("BENCH_SMALL", None)
+     if small:
+         env["BENCH_SMALL"] = "1"
+-    args = [str(exe), "--headless", "--path", str(project)]
++    if extra_env:
++        env.update(extra_env)
++    args = [str(exe)] + (list(arguments) if arguments is not None else ["--headless", "--path", str(project)])
+     with raw_path.open("xb") as output, open(os.devnull, "rb") as stdin:
+         out_handle, in_handle = msvcrt.get_osfhandle(output.fileno()), msvcrt.get_osfhandle(stdin.fileno())
+         os.set_handle_inheritable(out_handle, True)
+diff --git a/modules/angelscript/tests/test_angelscript_engine.h b/modules/angelscript/tests/test_angelscript_engine.h
+index 1f64caf50e..b6a4d62e6a 100644
+--- a/modules/angelscript/tests/test_angelscript_engine.h
++++ b/modules/angelscript/tests/test_angelscript_engine.h
+@@ -62,6 +62,7 @@ TEST_CASE("[AngelScript] compile_module reports diagnostics on syntax error") {
+ 	String error;
+ 	CHECK_FALSE(as_engine_compile_module("as_engine_bad", "int main( { return 42; }", &error));
+ 	CHECK_FALSE(error.is_empty());
++	CHECK(as_engine_compile_module("as_engine_good_after_bad", "int main() { return 42; }", &error));
+ }
+ 
+ #endif // ANGELSCRIPT_ENGINE_TESTS_IMPL
+diff --git a/modules/angelscript/thirdparty/angelscript/source/as_builder.cpp b/modules/angelscript/thirdparty/angelscript/source/as_builder.cpp
+index a7eb9762cd..de555a0bf5 100644
+--- a/modules/angelscript/thirdparty/angelscript/source/as_builder.cpp
++++ b/modules/angelscript/thirdparty/angelscript/source/as_builder.cpp
+@@ -1946,7 +1946,14 @@ int asCBuilder::ValidateVirtualProperty(asCScriptFunction *func)
+ 	if( prefix == "set_" && (func->returnType != asCDataType::CreatePrimitive(ttVoid, false) || func->parameterTypes.GetLength() < 1 || func->parameterTypes.GetLength() > 2) )
+ 		return -3;
+ 	
+-	// Check matching getter/setter
++	// Check matching getter/setter. Registered application object methods are
++	// already indexed by their owning type. Scanning every engine function for
++	// each property makes large native interfaces quadratic in total functions.
++	// Script declarations may not yet be in the type's method list: retain the
++	// original scan for script types and globals, including all scope checks.
++	asCObjectType *registeredOwner = func->funcType == asFUNC_SYSTEM && func->objectType &&
++		!(func->objectType->flags & asOBJ_SCRIPT_OBJECT) ? func->objectType : 0;
++	const asUINT candidateCount = registeredOwner ? registeredOwner->methods.GetLength() : engine->scriptFunctions.GetLength();
+ 	asCDataType getType, setType;
+ 	bool found = false;
+ 	if( prefix == "get_" )
+@@ -1954,11 +1961,10 @@ int asCBuilder::ValidateVirtualProperty(asCScriptFunction *func)
+ 		getType = func->returnType;
+ 		
+ 		// Find if there is a set accessor in the same scope, and then validate the type of it
+-		// TODO: optimize search
+ 		asCString setName = "set_" + func->name.SubString(4);
+-		for( asUINT n = 0; n < engine->scriptFunctions.GetLength(); n++ )
++		for( asUINT n = 0; n < candidateCount; n++ )
+ 		{
+-			asCScriptFunction *setFunc = engine->scriptFunctions[n];
++			asCScriptFunction *setFunc = engine->scriptFunctions[registeredOwner ? registeredOwner->methods[n] : n];
+ 			if( setFunc == 0 || setFunc->name != setName || !setFunc->IsProperty() )
+ 				continue;
+ 			
+@@ -1976,11 +1982,10 @@ int asCBuilder::ValidateVirtualProperty(asCScriptFunction *func)
+ 		setType = func->parameterTypes[func->parameterTypes.GetLength() - 1];
+ 		
+ 		// Find if there is a get accessor in the same scope and then validate the type of it
+-		// TODO: optimize search
+ 		asCString getName = "get_" + func->name.SubString(4);
+-		for( asUINT n = 0; n < engine->scriptFunctions.GetLength(); n++ )
++		for( asUINT n = 0; n < candidateCount; n++ )
+ 		{
+-			asCScriptFunction *getFunc = engine->scriptFunctions[n];
++			asCScriptFunction *getFunc = engine->scriptFunctions[registeredOwner ? registeredOwner->methods[n] : n];
+ 			if( getFunc == 0 || getFunc->name != getName || !getFunc->IsProperty() )
+ 				continue;
+ 			

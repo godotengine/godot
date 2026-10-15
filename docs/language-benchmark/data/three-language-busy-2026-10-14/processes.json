@@ -1,0 +1,110 @@
+[
+  {
+    "process": 1,
+    "status": "validated",
+    "idle_gate_passed": true,
+    "raw_log": "01.log",
+    "pid": 45068,
+    "exit_code": 0,
+    "wall_s": 21.52853920008056,
+    "cpu_s": 21.640625,
+    "affinity_mask": "0xf000",
+    "priority_class": 32768,
+    "command": [
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\bin\\godot.windows.editor.x86_64.mono.exe",
+      "--headless",
+      "--path",
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\modules\\angelscript\\tests\\bench_project"
+    ]
+  },
+  {
+    "process": 2,
+    "status": "validated",
+    "idle_gate_passed": true,
+    "raw_log": "02.log",
+    "pid": 10388,
+    "exit_code": 0,
+    "wall_s": 21.763331700116396,
+    "cpu_s": 21.8125,
+    "affinity_mask": "0xf000",
+    "priority_class": 32768,
+    "command": [
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\bin\\godot.windows.editor.x86_64.mono.exe",
+      "--headless",
+      "--path",
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\modules\\angelscript\\tests\\bench_project"
+    ]
+  },
+  {
+    "process": 3,
+    "status": "validated",
+    "idle_gate_passed": true,
+    "raw_log": "03.log",
+    "pid": 16960,
+    "exit_code": 0,
+    "wall_s": 21.76378810009919,
+    "cpu_s": 21.59375,
+    "affinity_mask": "0xf000",
+    "priority_class": 32768,
+    "command": [
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\bin\\godot.windows.editor.x86_64.mono.exe",
+      "--headless",
+      "--path",
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\modules\\angelscript\\tests\\bench_project"
+    ]
+  },
+  {
+    "process": 4,
+    "status": "validated",
+    "idle_gate_passed": true,
+    "raw_log": "04.log",
+    "pid": 66572,
+    "exit_code": 0,
+    "wall_s": 21.581804299959913,
+    "cpu_s": 21.28125,
+    "affinity_mask": "0xf000",
+    "priority_class": 32768,
+    "command": [
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\bin\\godot.windows.editor.x86_64.mono.exe",
+      "--headless",
+      "--path",
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\modules\\angelscript\\tests\\bench_project"
+    ]
+  },
+  {
+    "process": 5,
+    "status": "validated",
+    "idle_gate_passed": true,
+    "raw_log": "05.log",
+    "pid": 74308,
+    "exit_code": 0,
+    "wall_s": 21.112802400020882,
+    "cpu_s": 20.90625,
+    "affinity_mask": "0xf000",
+    "priority_class": 32768,
+    "command": [
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\bin\\godot.windows.editor.x86_64.mono.exe",
+      "--headless",
+      "--path",
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\modules\\angelscript\\tests\\bench_project"
+    ]
+  },
+  {
+    "process": 6,
+    "status": "validated",
+    "idle_gate_passed": true,
+    "raw_log": "06.log",
+    "pid": 52456,
+    "exit_code": 0,
+    "wall_s": 21.285151799907908,
+    "cpu_s": 21.109375,
+    "affinity_mask": "0xf000",
+    "priority_class": 32768,
+    "command": [
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\bin\\godot.windows.editor.x86_64.mono.exe",
+      "--headless",
+      "--path",
+      "D:\\GitWorkspace\\GodotWorkspace\\godot\\modules\\angelscript\\tests\\bench_project"
+    ]
+  }
+]

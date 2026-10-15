@@ -1,0 +1,19 @@
+{
+  "status": "idle_unavailable",
+  "stopped_before_run": 1,
+  "monitor_cleanup": {
+    "pid": 71136,
+    "forced": false,
+    "alive": false,
+    "exit_code": 0,
+    "elapsed_s": 0.020306200021877885
+  },
+  "final_identity": {
+    "exe": true,
+    "dependencies": true,
+    "sources": true
+  },
+  "rows": 0,
+  "completed_processes": 0,
+  "finished": "2026-10-14T11:15:29+0800"
+}

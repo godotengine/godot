@@ -1,0 +1,4 @@
+# Preserve byte-fingerprinted evidence, including original CRLF logs.
+* -text whitespace=cr-at-eol
+*.log -whitespace
+*.diff -whitespace

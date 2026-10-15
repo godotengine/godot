@@ -1,0 +1,29 @@
+{
+  "status": "complete",
+  "completed_processes": 6,
+  "validated_rows": 306,
+  "gates_failed": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "monitor_cleanup": {
+    "pid": 65372,
+    "forced": false,
+    "alive": false,
+    "exit_code": 0,
+    "elapsed_s": 0.02021349989809096
+  },
+  "final_identity_checks": {
+    "exe": true,
+    "dependencies": true,
+    "project": true,
+    "benchmark_sources": true,
+    "runner": true
+  },
+  "finished": "2026-10-14T12:46:44+0800",
+  "final_verification_s": 0.21464819996617734
+}

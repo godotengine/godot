@@ -1,0 +1,17 @@
+[
+  {
+    "name": "property",
+    "exit_code": 0,
+    "wall_s": 0.30685429996810853
+  },
+  {
+    "name": "syntax",
+    "exit_code": 0,
+    "wall_s": 3.699792299885303
+  },
+  {
+    "name": "full",
+    "exit_code": 0,
+    "wall_s": 11.666352399857715
+  }
+]

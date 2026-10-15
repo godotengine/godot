@@ -1,0 +1,23 @@
+{
+  "status": "idle_unavailable",
+  "completed_processes": 0,
+  "validated_rows": 0,
+  "stopped_before_process": 1,
+  "reason": "budget_expired",
+  "monitor_cleanup": {
+    "pid": 36200,
+    "forced": false,
+    "alive": false,
+    "exit_code": 0,
+    "elapsed_s": 0.019973000045865774
+  },
+  "final_identity_checks": {
+    "exe": true,
+    "dependencies": true,
+    "project": true,
+    "benchmark_sources": true,
+    "runner": true
+  },
+  "finished": "2026-10-14T12:37:28+0800",
+  "final_verification_s": 0.22780300001613796
+}

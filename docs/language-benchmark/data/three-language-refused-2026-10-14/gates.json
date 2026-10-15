@@ -1,0 +1,15 @@
+[
+  {
+    "passed": false,
+    "reason": "budget_expired",
+    "detail": null,
+    "budget_s": 60,
+    "elapsed_s": 60.00039610010572,
+    "overshoot_s": 0.0003961001057177782,
+    "samples": 58,
+    "consecutive": 0,
+    "started_monotonic": 1961178.9267481,
+    "deadline_monotonic": 1961238.9267481,
+    "process": 1
+  }
+]

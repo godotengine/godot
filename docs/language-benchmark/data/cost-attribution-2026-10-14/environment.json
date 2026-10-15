@@ -1,0 +1,24 @@
+{
+  "status": "idle_unavailable",
+  "performance_comparison_available": false,
+  "telemetry_samples": 58,
+  "valid_samples": 58,
+  "cpu_percent": {
+    "n": 58,
+    "median": 33.99038461538461,
+    "minimum": 24.23076923076923,
+    "maximum": 54.32692307692308
+  },
+  "processor_queue": {
+    "n": 58,
+    "median": 0.0,
+    "minimum": 0.0,
+    "maximum": 45.0
+  },
+  "cpu_window_s": {
+    "n": 58,
+    "median": 1.0127463999669999,
+    "minimum": 1.0006151001434773,
+    "maximum": 1.0280798999592662
+  }
+}
