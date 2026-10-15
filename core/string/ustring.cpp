@@ -2555,6 +2555,11 @@ static double built_in_strtod(
 		exp = maxExponent;
 		WARN_PRINT("Exponent too high");
 	}
+	// Past 10^308, `dblExp` would overflow to infinity and the division below would return 0.
+	if (expSign && exp > 308) {
+		fraction /= powersOf10[8];
+		exp -= 256;
+	}
 	dblExp = 1.0;
 	for (d = powersOf10; exp != 0; exp >>= 1, ++d) {
 		if (exp & 01) {

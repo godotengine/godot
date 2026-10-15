@@ -719,6 +719,10 @@ TEST_CASE("[String] String to float") {
 	CHECK(String("1e308").to_float() == 1e308);
 	CHECK(String("-1e308").to_float() == -1e308);
 
+	// Values near `DBL_MIN` and subnormals should not underflow to 0.
+	CHECK(String("2.2250738585072014e-308").to_float() == 2.2250738585072014e-308);
+	CHECK(String("5e-324").to_float() > 0);
+
 	// Exponent is so high that value is INFINITY/-INFINITY.
 	CHECK(String("1e309").to_float() == Math::INF);
 	CHECK(String("1e511").to_float() == Math::INF);
