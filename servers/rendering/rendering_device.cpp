@@ -6814,23 +6814,30 @@ void RenderingDevice::compute_list_bind_compute_pipeline(ComputeListID p_list, R
 		const uint32_t *pformats = pipeline->set_formats.ptr(); // Pipeline set formats.
 
 		uint32_t first_invalid_set = UINT32_MAX; // All valid by default.
-		switch (driver->api_trait_get(RDD::API_TRAIT_SHADER_CHANGE_INVALIDATION)) {
-			case RDD::SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS: {
-				first_invalid_set = 0;
-			} break;
-			case RDD::SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE: {
-				for (uint32_t i = 0; i < pcount; i++) {
-					if (compute_list.state.sets[i].pipeline_expected_format != pformats[i]) {
-						first_invalid_set = i;
-						break;
-					}
-				}
-			} break;
-			case RDD::SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH: {
-				if (compute_list.state.pipeline_shader_layout_hash != pipeline->shader_layout_hash) {
+		if (pipeline->push_constant_size != compute_list.state.pipeline_push_constant_size) {
+			// All sets must be invalidated as the pipeline layout is not compatible if the push constant range is different.
+			compute_list.state.pipeline_push_constant_size = pipeline->push_constant_size;
+			compute_list.state.push_constant_size = 0;
+			first_invalid_set = 0;
+		} else {
+			switch (driver->api_trait_get(RDD::API_TRAIT_SHADER_CHANGE_INVALIDATION)) {
+				case RDD::SHADER_CHANGE_INVALIDATION_ALL_BOUND_UNIFORM_SETS: {
 					first_invalid_set = 0;
-				}
-			} break;
+				} break;
+				case RDD::SHADER_CHANGE_INVALIDATION_INCOMPATIBLE_SETS_PLUS_CASCADE: {
+					for (uint32_t i = 0; i < pcount; i++) {
+						if (compute_list.state.sets[i].pipeline_expected_format != pformats[i]) {
+							first_invalid_set = i;
+							break;
+						}
+					}
+				} break;
+				case RDD::SHADER_CHANGE_INVALIDATION_ALL_OR_NONE_ACCORDING_TO_LAYOUT_HASH: {
+					if (compute_list.state.pipeline_shader_layout_hash != pipeline->shader_layout_hash) {
+						first_invalid_set = 0;
+					}
+				} break;
+			}
 		}
 
 		for (uint32_t i = 0; i < pcount; i++) {
@@ -7207,8 +7214,10 @@ void RenderingDevice::compute_list_add_barrier(ComputeListID p_list) {
 		}
 	}
 
-	if (compute_list_barrier_state.push_constant_size > 0) {
-		compute_list_set_push_constant(p_list, compute_list_barrier_state.push_constant_data, compute_list_barrier_state.push_constant_size);
+	uint32_t barrier_push_constant_size = compute_list_barrier_state.push_constant_size;
+	bool shouldSetPushConstants = barrier_push_constant_size > 0 && barrier_push_constant_size == compute_list.state.pipeline_push_constant_size;
+	if (shouldSetPushConstants) {
+		compute_list_set_push_constant(p_list, compute_list_barrier_state.push_constant_data, barrier_push_constant_size);
 	}
 }
 
