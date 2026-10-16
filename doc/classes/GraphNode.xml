@@ -5,9 +5,9 @@
 	</brief_description>
 	<description>
 		[GraphNode] allows to create nodes for a [GraphEdit] graph with customizable content based on its child controls. [GraphNode] is derived from [Container] and it is responsible for placing its children on screen. This works similar to [VBoxContainer]. Children, in turn, provide [GraphNode] with so-called slots, each of which can have a connection port on either side.
-		Each [GraphNode] slot is defined by its index and can provide the node with up to two ports: one on the left, and one on the right. By convention the left port is also referred to as the [b]input port[/b] and the right port is referred to as the [b]output port[/b]. Each port can be enabled and configured individually, using different type and color. The type is an arbitrary value that you can define using your own considerations. The parent [GraphEdit] will receive this information on each connect and disconnect request.
+		Each [GraphNode] slot is defined by a [Control]-derived child of the [GraphNode]. It has an index and can provide the node with up to two ports: one on the left, and one on the right. By convention the left port is also referred to as the [b]input port[/b] and the right port is referred to as the [b]output port[/b]. Each port can be enabled and configured individually, using different type and color. The type is an arbitrary value that you can define using your own considerations. The parent [GraphEdit] will receive this information on each connect and disconnect request.
 		Slots can be configured in the Inspector dock once you add at least one child [Control]. The properties are grouped by each slot's index in the "Slot" section.
-		[b]Note:[/b] While GraphNode is set up using slots and slot indices, connections are made between the ports which are enabled. Because of that [GraphEdit] uses the port's index and not the slot's index. You can use [method get_input_port_slot] and [method get_output_port_slot] to get the slot index from the port index.
+		[b]Note:[/b] While GraphNode is set up using slots and slot indices, connections are made between the ports which are enabled. Because of that [GraphEdit] uses the port's index and not the slot's index. You can use [method get_input_port_slot] and [method get_output_port_slot] to get the slot index from the port index, and [method get_slot_input_port] and [method get_slot_output_port] to get the port index from the slot index.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -116,6 +116,14 @@
 				Returns the right (output) [Color] of the slot with the given [param slot_index].
 			</description>
 		</method>
+		<method name="get_slot_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of slots.
+				[b]Note:[/b] Slots are defined by [Control]-derived children of the [GraphNode]. [method set_slot] only sets properties of a slot.
+				[b]Note:[/b] The slot count is updated in a deferred call, which means adding/removing a child does not have an immediate effect on the returned value of this function. The slot count is only updated after deferred functions are called.
+			</description>
+		</method>
 		<method name="get_slot_custom_icon_left" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="slot_index" type="int" />
@@ -130,6 +138,14 @@
 				Returns the right (output) custom [Texture2D] of the slot with the given [param slot_index].
 			</description>
 		</method>
+		<method name="get_slot_input_port">
+			<return type="int" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the index of the input port associated with the given [param slot_index].
+				Returns [code]-1[/code] if the slot has no input port.
+			</description>
+		</method>
 		<method name="get_slot_metadata_left" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="slot_index" type="int" />
@@ -142,6 +158,14 @@
 			<param index="0" name="slot_index" type="int" />
 			<description>
 				Returns the right (output) metadata of the slot with the given [param slot_index].
+			</description>
+		</method>
+		<method name="get_slot_output_port">
+			<return type="int" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the index of the output port associated with the given [param slot_index].
+				Returns [code]-1[/code] if the slot has no output port.
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
