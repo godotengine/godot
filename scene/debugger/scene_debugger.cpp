@@ -132,11 +132,13 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 	LocalVector<String> shortcuts = {
 		"editor/suspend_resume_embedded_project",
 		"canvas_item_editor/select_mode",
+		"canvas_item_editor/pan_mode",
+#ifdef TOOLS_ENABLED
 		"canvas_item_editor/move_mode",
 		"canvas_item_editor/rotate_mode",
 		"canvas_item_editor/scale_mode",
-		"canvas_item_editor/pan_mode",
 		"canvas_item_editor/use_local_space",
+#endif
 	};
 	for (const String &key : shortcuts) {
 		Ref<Shortcut> shortcut = p_settings.get(key, Ref<Shortcut>());
@@ -152,6 +154,7 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 		return;
 	}
 
+#ifdef TOOLS_ENABLED
 	if (RuntimeNodeSelect::get_singleton()->node_select_type == RuntimeNodeSelect::NODE_TYPE_NONE) {
 		return; // Ignore undo/redo actions in Input mode, as it can result in unwanted edits.
 	}
@@ -193,6 +196,7 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 	}
 
 	EngineDebugger::get_singleton()->send_message("editor_shortcut_pressed", { action });
+#endif
 }
 
 void SceneDebugger::_on_window_size_changed() {
@@ -539,12 +543,14 @@ Error SceneDebugger::_msg_runtime_node_select_set_ci_tool(const Array &p_args) {
 	return OK;
 }
 
+#ifdef TOOLS_ENABLED
 Error SceneDebugger::_msg_runtime_node_select_set_ci_local_space(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enabled = p_args[0];
 	RuntimeNodeSelect::get_singleton()->_set_ci_local_space(enabled);
 	return OK;
 }
+#endif
 
 Error SceneDebugger::_msg_runtime_node_select_set_n3d_tool(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
@@ -751,7 +757,9 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_set_node_type"] = _msg_runtime_node_select_set_node_type;
 	message_handlers["runtime_node_select_set_selection_visible"] = _msg_runtime_node_select_set_selection_visible;
 	message_handlers["runtime_node_select_set_ci_tool"] = _msg_runtime_node_select_set_ci_tool;
+#ifdef TOOLS_ENABLED
 	message_handlers["runtime_node_select_set_ci_local_space"] = _msg_runtime_node_select_set_ci_local_space;
+#endif // TOOLS_ENABLED
 	message_handlers["runtime_node_select_set_n3d_tool"] = _msg_runtime_node_select_set_n3d_tool;
 	message_handlers["runtime_node_select_set_avoid_locked"] = _msg_runtime_node_select_set_avoid_locked;
 	message_handlers["runtime_node_select_set_prefer_group"] = _msg_runtime_node_select_set_prefer_group;

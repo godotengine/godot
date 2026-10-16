@@ -115,12 +115,14 @@ private:
 	Ref<Shortcut> pan_shortcut;
 
 	Ref<CanvasItemManipulator> ci_manipulator;
+#ifdef TOOLS_ENABLED
 	Color accent_color;
 	Color axis_x_color;
 	Color axis_y_color;
 	Ref<Texture2D> pivot_icon;
 	Ref<Texture2D> resize_icon;
 	Ref<Texture2D> anchor_icon;
+#endif
 
 	HashMap<ObjectID, Dictionary> selected_ci_nodes; // The node's ID and its canvas state.
 	int sel_2d_scale = 1;
@@ -160,12 +162,12 @@ private:
 	void _setup(const Dictionary &p_settings);
 
 	void _set_node_type(NodeType p_type);
-
 	void _set_camera_override_enabled(bool p_enabled);
 
 	void _set_ci_tool(CanvasItemManipulator::Tool p_tool);
+#ifdef TOOLS_ENABLED
 	void _set_ci_local_space(bool p_enabled);
-	void _set_ci_smart_snap(bool p_enabled);
+#endif
 
 	void _set_n3d_tool(SelectMode p_tool);
 
@@ -199,10 +201,11 @@ private:
 
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+
 #ifndef _2D_DISABLED
 	void _reset_camera_2d();
 	void _update_view_2d();
-#endif // _2D_DISABLED
+#endif
 
 	Variant _find_ci_start_callback() const;
 	bool _point_selected_ci_callback(const Variant &p_node, bool p_append);
@@ -212,9 +215,12 @@ private:
 	bool _plugin_input_callback(const Ref<InputEvent> &p_event) { return false; }
 
 	void _box_selected_ci(const Array &p_nodes);
+
+#ifdef TOOLS_ENABLED
 	void _save_canvas_state_requested(const Array &p_selection, bool p_save_bones);
 	void _restore_canvas_state_requested(const Array &p_selection, bool p_restore_bones);
 	void _commit_canvas_state_requested(const Array &p_selection, const String &p_message, bool p_commit_bones);
+#endif
 
 #ifndef _3D_DISABLED
 	void _find_3d_items_at_pos(const Point2 &p_pos, Vector<DebuggerHelpers::SelectResult> &r_items);
@@ -226,7 +232,7 @@ private:
 
 	bool _handle_3d_input(const Ref<InputEvent> &p_event);
 	void _reset_camera_3d();
-#endif // _3D_DISABLED
+#endif
 
 	RuntimeNodeSelect() { singleton = this; }
 
