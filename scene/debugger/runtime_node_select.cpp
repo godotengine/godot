@@ -298,7 +298,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	sbox_mesh_xray = st_xray->commit();
 #endif // _3D_DISABLED
 
-	SceneTree::get_singleton()->connect("process_frame", callable_mp(this, &RuntimeNodeSelect::_process_frame));
+	SceneTree::get_singleton()->connect("_internal_process_frame", callable_mp(this, &RuntimeNodeSelect::_process_frame));
 #ifndef _3D_DISABLED
 	SceneTree::get_singleton()->connect("physics_frame", callable_mp(this, &RuntimeNodeSelect::_physics_frame));
 #endif
