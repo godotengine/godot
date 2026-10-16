@@ -34,6 +34,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rb_map.h"
+#include "core/templates/safe_refcount.h"
 #include "core/templates/self_list.h"
 #include "drivers/d3d12/rendering_shader_container_d3d12.h"
 #include "servers/rendering/rendering_device_driver.h"
@@ -506,6 +507,7 @@ private:
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> cmd_allocator;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmd_list;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList1> cmd_list_1;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList2> cmd_list_2;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList5> cmd_list_5;
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList7> cmd_list_7;
 
@@ -917,6 +919,30 @@ public:
 	/****************/
 	virtual void command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) override final;
 
+private:
+	// DRED auto-breadcrumbs, breadcrumb context and page fault reporting were enabled before creating the device.
+	bool dred_enabled = false;
+	SafeNumeric<uint32_t> device_removed_report_count;
+
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	// Breadcrumbs are written to memory owned by the process, so they can still be read after the device is removed.
+	void *breadcrumb_memory = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Heap> breadcrumb_heap;
+	Microsoft::WRL::ComPtr<ID3D12Resource> breadcrumb_buffer;
+	uint32_t breadcrumb_offset = 0u;
+	uint32_t breadcrumb_id = 0u;
+#endif
+
+	bool _enable_dred();
+	void _initialize_breadcrumbs();
+	void _free_breadcrumbs();
+	// Returns true if the device was removed. The first caller to notice prints the device removal report.
+	bool _check_device_removed(HRESULT p_result, const char *p_operation);
+	void _report_device_removed(const char *p_operation, HRESULT p_result, HRESULT p_removed_reason);
+	void print_lost_device_info();
+	void on_device_lost() const;
+
+public:
 	/********************/
 	/**** SUBMISSION ****/
 	/********************/

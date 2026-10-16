@@ -70,6 +70,24 @@ using Microsoft::WRL::ComPtr;
 // Tracks additional information and prints information about the allocation of descriptor heaps.
 #define D3D12_DESCRIPTOR_HEAP_VERBOSE 0
 
+// Note: symbol is not available in MinGW and old MSVC import libraries.
+static const GUID CLSID_D3D12DeviceRemovedExtendedDataGodot = { 0x4a75bbc4, 0x9ff4, 0x4ad8, { 0x9f, 0x18, 0xab, 0xae, 0x84, 0xdc, 0x5f, 0xf2 } };
+
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+static const uint32_t BREADCRUMB_BUFFER_ENTRIES = 512u;
+// OpenExistingHeapFromAddress() takes memory from VirtualAlloc(), whose allocation granularity is 64 KiB.
+static const SIZE_T BREADCRUMB_MEMORY_SIZE = 64u * 1024u;
+#endif
+
+// How long to wait on a fence before checking whether the device was removed.
+static const DWORD FENCE_WAIT_DEVICE_REMOVED_CHECK_MS = 1000;
+
+// Limits for the DRED report.
+static const uint32_t DRED_MAX_COMMAND_LISTS_TO_PRINT = 8u;
+static const uint32_t DRED_OPERATIONS_BEFORE_LAST_COMPLETED = 8u;
+static const uint32_t DRED_OPERATIONS_AFTER_LAST_COMPLETED = 4u;
+static const uint32_t DRED_MAX_ALLOCATIONS_TO_PRINT = 16u;
+
 static const D3D12_RANGE VOID_RANGE = {};
 
 static const uint32_t MAX_DYNAMIC_BUFFERS = 8u; // Minimum guaranteed by Vulkan.
@@ -961,6 +979,9 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 				IID_PPV_ARGS(buffer.GetAddressOf()));
 	}
 
+	if (FAILED(res)) {
+		_check_device_removed(res, "Buffer creation");
+	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), BufferID(), "Can't create buffer of size: " + itos(p_size) + ", error " + vformat("0x%08ux", (uint64_t)res) + ".");
 
 	// If device address usage is requested, create a UAV descriptor expected by spirv2dxil.
@@ -1539,6 +1560,9 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 					allocation.GetAddressOf(),
 					IID_PPV_ARGS(main_texture.GetAddressOf()));
 			initial_state = D3D12_RESOURCE_STATE_COPY_DEST;
+		}
+		if (FAILED(res)) {
+			_check_device_removed(res, "Texture creation");
 		}
 		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), TextureID(), "CreateResource failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		texture = main_texture.Get();
@@ -2548,13 +2572,42 @@ RDD::FenceID RenderingDeviceDriverD3D12::fence_create() {
 
 Error RenderingDeviceDriverD3D12::fence_wait(FenceID p_fence) {
 	FenceInfo *fence = (FenceInfo *)(p_fence.id);
-	fence->d3d_fence->SetEventOnCompletion(fence->fence_value, fence->event_handle);
-	DWORD res = WaitForSingleObjectEx(fence->event_handle, INFINITE, FALSE);
+	HRESULT hr = fence->d3d_fence->SetEventOnCompletion(fence->fence_value, fence->event_handle);
+	if (FAILED(hr)) {
+		_check_device_removed(hr, "ID3D12Fence::SetEventOnCompletion");
+		return FAILED;
+	}
+
+	// Wait in slices, so a removed device is noticed even if the fence is never signaled.
+	DWORD res;
+	do {
+		res = WaitForSingleObjectEx(fence->event_handle, FENCE_WAIT_DEVICE_REMOVED_CHECK_MS, FALSE);
+		if (res == WAIT_TIMEOUT) {
+			const HRESULT removed_reason = device->GetDeviceRemovedReason();
+			if (removed_reason != S_OK) {
+				_report_device_removed("Fence wait", removed_reason, removed_reason);
+				return FAILED;
+			}
+		}
+	} while (res == WAIT_TIMEOUT);
 #ifdef PIX_ENABLED
 	PIXNotifyWakeFromFenceSignal(fence->event_handle);
 #endif
 
-	return (res == WAIT_FAILED) ? FAILED : OK;
+	if (res == WAIT_FAILED) {
+		return FAILED;
+	}
+
+	// When the device is removed, fences complete with UINT64_MAX.
+	if (unlikely(fence->d3d_fence->GetCompletedValue() == UINT64_MAX)) {
+		const HRESULT removed_reason = device->GetDeviceRemovedReason();
+		if (removed_reason != S_OK) {
+			_report_device_removed("Fence wait", removed_reason, removed_reason);
+			return FAILED;
+		}
+	}
+
+	return OK;
 }
 
 void RenderingDeviceDriverD3D12::fence_free(FenceID p_fence) {
@@ -2604,12 +2657,29 @@ RDD::CommandQueueFamilyID RenderingDeviceDriverD3D12::command_queue_family_get(B
 
 // ----- QUEUE -----
 
+static const char *_command_list_type_name(D3D12_COMMAND_LIST_TYPE p_type) {
+	switch (p_type) {
+		case D3D12_COMMAND_LIST_TYPE_DIRECT:
+			return "direct";
+		case D3D12_COMMAND_LIST_TYPE_BUNDLE:
+			return "bundle";
+		case D3D12_COMMAND_LIST_TYPE_COMPUTE:
+			return "compute";
+		case D3D12_COMMAND_LIST_TYPE_COPY:
+			return "copy";
+		default:
+			return "other";
+	}
+}
+
 RDD::CommandQueueID RenderingDeviceDriverD3D12::command_queue_create(CommandQueueFamilyID p_cmd_queue_family, bool p_identify_as_main_queue) {
 	ComPtr<ID3D12CommandQueue> d3d_queue;
 	D3D12_COMMAND_QUEUE_DESC queue_desc = {};
 	queue_desc.Type = (D3D12_COMMAND_LIST_TYPE)(p_cmd_queue_family.id - 1);
 	HRESULT res = device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(d3d_queue.GetAddressOf()));
 	ERR_FAIL_COND_V(!SUCCEEDED(res), CommandQueueID());
+	// Named so device removal reports can tell queues apart.
+	_set_object_name(d3d_queue.Get(), vformat("Godot %s queue", _command_list_type_name(queue_desc.Type)));
 
 	if (p_identify_as_main_queue && D3D12Hooks::get_singleton() != nullptr) {
 		D3D12Hooks::get_singleton()->set_command_queue(d3d_queue.Get());
@@ -2622,9 +2692,15 @@ RDD::CommandQueueID RenderingDeviceDriverD3D12::command_queue_create(CommandQueu
 
 Error RenderingDeviceDriverD3D12::command_queue_execute_and_present(CommandQueueID p_cmd_queue, VectorView<SemaphoreID> p_wait_semaphores, VectorView<CommandBufferID> p_cmd_buffers, VectorView<SemaphoreID> p_cmd_semaphores, FenceID p_cmd_fence, VectorView<SwapChainID> p_swap_chains) {
 	CommandQueueInfo *command_queue = (CommandQueueInfo *)(p_cmd_queue.id);
+	HRESULT res;
+	bool any_submission_failed = false;
 	for (uint32_t i = 0; i < p_wait_semaphores.size(); i++) {
 		const SemaphoreInfo *semaphore = (const SemaphoreInfo *)(p_wait_semaphores[i].id);
-		command_queue->d3d_queue->Wait(semaphore->d3d_fence.Get(), semaphore->fence_value);
+		res = command_queue->d3d_queue->Wait(semaphore->d3d_fence.Get(), semaphore->fence_value);
+		if (FAILED(res)) {
+			_check_device_removed(res, "ID3D12CommandQueue::Wait");
+			any_submission_failed = true;
+		}
 	}
 
 	if (p_cmd_buffers.size() > 0) {
@@ -2640,28 +2716,36 @@ Error RenderingDeviceDriverD3D12::command_queue_execute_and_present(CommandQueue
 		for (uint32_t i = 0; i < p_cmd_semaphores.size(); i++) {
 			SemaphoreInfo *semaphore = (SemaphoreInfo *)(p_cmd_semaphores[i].id);
 			semaphore->fence_value++;
-			command_queue->d3d_queue->Signal(semaphore->d3d_fence.Get(), semaphore->fence_value);
+			res = command_queue->d3d_queue->Signal(semaphore->d3d_fence.Get(), semaphore->fence_value);
+			if (FAILED(res)) {
+				_check_device_removed(res, "ID3D12CommandQueue::Signal");
+				any_submission_failed = true;
+			}
 		}
 
 		if (p_cmd_fence) {
 			FenceInfo *fence = (FenceInfo *)(p_cmd_fence.id);
 			fence->fence_value++;
-			command_queue->d3d_queue->Signal(fence->d3d_fence.Get(), fence->fence_value);
+			res = command_queue->d3d_queue->Signal(fence->d3d_fence.Get(), fence->fence_value);
+			if (FAILED(res)) {
+				_check_device_removed(res, "ID3D12CommandQueue::Signal");
+				any_submission_failed = true;
+			}
 		}
 	}
 
-	HRESULT res;
-	bool any_present_failed = false;
 	for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
 		SwapChain *swap_chain = (SwapChain *)(p_swap_chains[i].id);
 		res = swap_chain->d3d_swap_chain->Present(swap_chain->sync_interval, swap_chain->present_flags);
 		if (!SUCCEEDED(res)) {
-			print_verbose(vformat("D3D12: Presenting swapchain failed with error 0x%08ux.", (uint64_t)res));
-			any_present_failed = true;
+			if (!_check_device_removed(res, "IDXGISwapChain::Present")) {
+				print_verbose(vformat("D3D12: Presenting swapchain failed with error 0x%08ux.", (uint64_t)res));
+			}
+			any_submission_failed = true;
 		}
 	}
 
-	return any_present_failed ? FAILED : OK;
+	return any_submission_failed ? FAILED : OK;
 }
 
 void RenderingDeviceDriverD3D12::command_queue_free(CommandQueueID p_cmd_queue) {
@@ -2731,6 +2815,8 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 		HRESULT res = device->CreateCommandList(0, list_type, cmd_allocator.Get(), nullptr, IID_PPV_ARGS(cmd_list.GetAddressOf()));
 		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), CommandBufferID(), "CreateCommandList failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 		cmd_list->Close();
+		// Named so device removal reports can tell command lists apart.
+		_set_object_name(cmd_list.Get(), vformat("Godot %s command list", _command_list_type_name(list_type)));
 	}
 
 	CPUDescriptorHeapPool::Allocation uav_alloc;
@@ -2763,6 +2849,7 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 	cmd_buf_info->cmd_list = cmd_list;
 
 	cmd_list->QueryInterface(cmd_buf_info->cmd_list_1.GetAddressOf());
+	cmd_list->QueryInterface(cmd_buf_info->cmd_list_2.GetAddressOf());
 	cmd_list->QueryInterface(cmd_buf_info->cmd_list_5.GetAddressOf());
 	cmd_list->QueryInterface(cmd_buf_info->cmd_list_7.GetAddressOf());
 
@@ -2779,8 +2866,14 @@ RDD::CommandBufferID RenderingDeviceDriverD3D12::command_buffer_create(CommandPo
 bool RenderingDeviceDriverD3D12::command_buffer_begin(CommandBufferID p_cmd_buffer) {
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 	HRESULT res = cmd_buf_info->cmd_allocator->Reset();
+	if (FAILED(res)) {
+		_check_device_removed(res, "ID3D12CommandAllocator::Reset");
+	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), false, "Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	res = cmd_buf_info->cmd_list->Reset(cmd_buf_info->cmd_allocator.Get(), nullptr);
+	if (FAILED(res)) {
+		_check_device_removed(res, "ID3D12GraphicsCommandList::Reset");
+	}
 	ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), false, "Reset failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	return true;
 }
@@ -2798,6 +2891,9 @@ void RenderingDeviceDriverD3D12::command_buffer_end(CommandBufferID p_cmd_buffer
 	CommandBufferInfo *cmd_buf_info = (CommandBufferInfo *)p_cmd_buffer.id;
 	HRESULT res = cmd_buf_info->cmd_list->Close();
 
+	if (FAILED(res)) {
+		_check_device_removed(res, "ID3D12GraphicsCommandList::Close");
+	}
 	ERR_FAIL_COND_MSG(!SUCCEEDED(res), "Close failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
 	cmd_buf_info->graphics_pso = nullptr;
 	cmd_buf_info->graphics_root_signature_crc = 0;
@@ -2948,6 +3044,9 @@ Error RenderingDeviceDriverD3D12::swap_chain_resize(CommandQueueID p_cmd_queue, 
 	if (swap_chain->d3d_swap_chain != nullptr) {
 		_swap_chain_release_buffers(swap_chain);
 		res = swap_chain->d3d_swap_chain->ResizeBuffers(p_desired_framebuffer_count, surface->width, surface->height, DXGI_FORMAT_UNKNOWN, creation_flags);
+		if (FAILED(res)) {
+			_check_device_removed(res, "IDXGISwapChain::ResizeBuffers");
+		}
 		ERR_FAIL_COND_V(!SUCCEEDED(res), ERR_UNAVAILABLE);
 	} else {
 		DEV_ASSERT(swap_chain->render_pass.id == 0);
@@ -5866,21 +5965,531 @@ void RenderingDeviceDriverD3D12::command_timestamp_write(CommandBufferID p_cmd_b
 }
 
 void RenderingDeviceDriverD3D12::command_begin_label(CommandBufferID p_cmd_buffer, const char *p_label_name, const Color &p_color) {
-#ifdef PIX_ENABLED
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+#ifdef PIX_ENABLED
 	PIXBeginEvent(cmd_buf_info->cmd_list.Get(), p_color.to_argb32(), p_label_name);
+#else
+	if (dred_enabled) {
+		// Metadata 0 (PIX_EVENT_UNICODE_VERSION) means the payload is a null-terminated UTF-16 string.
+		// DRED records it as breadcrumb context, so the report shows which pass each operation belongs to.
+		const Char16String label = String::utf8(p_label_name).utf16();
+		cmd_buf_info->cmd_list->BeginEvent(0, label.get_data(), (label.length() + 1) * sizeof(char16_t));
+	}
 #endif
 }
 
 void RenderingDeviceDriverD3D12::command_end_label(CommandBufferID p_cmd_buffer) {
-#ifdef PIX_ENABLED
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+#ifdef PIX_ENABLED
 	PIXEndEvent(cmd_buf_info->cmd_list.Get());
+#else
+	if (dred_enabled) {
+		cmd_buf_info->cmd_list->EndEvent();
+	}
 #endif
 }
 
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+static String _breadcrumb_to_string(uint32_t p_breadcrumb) {
+	const uint32_t phase = p_breadcrumb & uint32_t(~((1 << 16) - 1));
+	const uint32_t user_data = p_breadcrumb & ((1 << 16) - 1);
+	String str;
+
+	switch (phase) {
+		case RDD::BreadcrumbMarker::ALPHA_PASS:
+			str = "ALPHA_PASS";
+			break;
+		case RDD::BreadcrumbMarker::BLIT_PASS:
+			str = "BLIT_PASS";
+			break;
+		case RDD::BreadcrumbMarker::DEBUG_PASS:
+			str = "DEBUG_PASS";
+			break;
+		case RDD::BreadcrumbMarker::LIGHTMAPPER_PASS:
+			str = "LIGHTMAPPER_PASS";
+			break;
+		case RDD::BreadcrumbMarker::OPAQUE_PASS:
+			str = "OPAQUE_PASS";
+			break;
+		case RDD::BreadcrumbMarker::POST_PROCESSING_PASS:
+			str = "POST_PROCESSING_PASS";
+			break;
+		case RDD::BreadcrumbMarker::REFLECTION_PROBES:
+			str = "REFLECTION_PROBES";
+			break;
+		case RDD::BreadcrumbMarker::SHADOW_PASS_CUBE:
+			str = "SHADOW_PASS_CUBE";
+			break;
+		case RDD::BreadcrumbMarker::SHADOW_PASS_DIRECTIONAL:
+			str = "SHADOW_PASS_DIRECTIONAL";
+			break;
+		case RDD::BreadcrumbMarker::SKY_PASS:
+			str = "SKY_PASS";
+			break;
+		case RDD::BreadcrumbMarker::TRANSPARENT_PASS:
+			str = "TRANSPARENT_PASS";
+			break;
+		case RDD::BreadcrumbMarker::UI_PASS:
+			str = "UI_PASS";
+			break;
+		default:
+			str = "UNKNOWN_BREADCRUMB(" + itos((uint32_t)phase) + ')';
+			break;
+	}
+
+	if (user_data != 0) {
+		str += " | User data: " + itos(user_data);
+	}
+
+	return str;
+}
+#endif
+
 void RenderingDeviceDriverD3D12::command_insert_breadcrumb(CommandBufferID p_cmd_buffer, uint32_t p_data) {
-	// TODO: Implement via DRED.
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	if (p_data == BreadcrumbMarker::NONE) {
+		return;
+	}
+
+	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
+	if (cmd_buf_info->cmd_list->GetType() == D3D12_COMMAND_LIST_TYPE_BUNDLE) {
+		return;
+	}
+
+	if (dred_enabled) {
+		// Also leave the breadcrumb in the command list, so DRED shows it as context of the operations that follow.
+		// Metadata 0 (PIX_EVENT_UNICODE_VERSION) means the payload is a null-terminated UTF-16 string.
+		const Char16String marker = _breadcrumb_to_string(p_data).utf16();
+		cmd_buf_info->cmd_list->SetMarker(0, marker.get_data(), (marker.length() + 1) * sizeof(char16_t));
+	}
+
+	if (!breadcrumb_buffer || !cmd_buf_info->cmd_list_2) {
+		return;
+	}
+
+	// We write (ID, data) pairs to a circular buffer, like the Vulkan driver.
+	// MARKER_IN writes once all preceding commands have started. MARKER_OUT waits until they have completed,
+	// so the last breadcrumb found after a device removal is precise.
+	const D3D12_WRITEBUFFERIMMEDIATE_MODE mode = Engine::get_singleton()->is_accurate_breadcrumbs_enabled() ? D3D12_WRITEBUFFERIMMEDIATE_MODE_MARKER_OUT : D3D12_WRITEBUFFERIMMEDIATE_MODE_MARKER_IN;
+	const D3D12_GPU_VIRTUAL_ADDRESS address = breadcrumb_buffer->GetGPUVirtualAddress() + breadcrumb_offset;
+	const D3D12_WRITEBUFFERIMMEDIATE_PARAMETER params[2] = {
+		{ address, breadcrumb_id++ },
+		{ address + sizeof(uint32_t), p_data },
+	};
+	const D3D12_WRITEBUFFERIMMEDIATE_MODE modes[2] = { mode, mode };
+	cmd_buf_info->cmd_list_2->WriteBufferImmediate(2, params, modes);
+
+	breadcrumb_offset += sizeof(uint32_t) * 2u;
+	if (breadcrumb_offset >= BREADCRUMB_BUFFER_ENTRIES * sizeof(uint32_t) * 2u) {
+		breadcrumb_offset = 0u;
+	}
+#endif
+}
+
+void RenderingDeviceDriverD3D12::_initialize_breadcrumbs() {
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	// The breadcrumb buffer is placed in memory allocated by us and opened as a heap, so it stays readable
+	// after the device is removed. Without ID3D12Device3, the device removal report has no Godot breadcrumbs.
+	ComPtr<ID3D12Device3> device_3;
+	device.As(&device_3);
+	if (!device_3) {
+		print_verbose("D3D12: ID3D12Device3 is not available, GPU breadcrumbs are disabled.");
+		return;
+	}
+
+	breadcrumb_memory = VirtualAlloc(nullptr, BREADCRUMB_MEMORY_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+	if (breadcrumb_memory == nullptr) {
+		print_verbose("D3D12: Couldn't allocate memory for GPU breadcrumbs, GPU breadcrumbs are disabled.");
+		return;
+	}
+
+	HRESULT res = device_3->OpenExistingHeapFromAddress(breadcrumb_memory, IID_PPV_ARGS(breadcrumb_heap.GetAddressOf()));
+	if (SUCCEEDED(res)) {
+		const CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(BREADCRUMB_BUFFER_ENTRIES * sizeof(uint32_t) * 2u, D3D12_RESOURCE_FLAG_ALLOW_CROSS_ADAPTER);
+		res = device->CreatePlacedResource(breadcrumb_heap.Get(), 0, &resource_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(breadcrumb_buffer.GetAddressOf()));
+	}
+	if (FAILED(res)) {
+		print_verbose(vformat("D3D12: Couldn't create the GPU breadcrumb buffer (error 0x%08ux), GPU breadcrumbs are disabled.", (uint64_t)res));
+		_free_breadcrumbs();
+		return;
+	}
+
+	_set_object_name(breadcrumb_buffer.Get(), "Godot breadcrumbs");
+#endif
+}
+
+void RenderingDeviceDriverD3D12::_free_breadcrumbs() {
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	breadcrumb_buffer.Reset();
+	breadcrumb_heap.Reset();
+	if (breadcrumb_memory != nullptr) {
+		VirtualFree(breadcrumb_memory, 0, MEM_RELEASE);
+		breadcrumb_memory = nullptr;
+	}
+#endif
+}
+
+bool RenderingDeviceDriverD3D12::_enable_dred() {
+	// DRED settings only apply to devices created afterwards.
+	ComPtr<ID3D12DeviceRemovedExtendedDataSettings> dred_settings;
+	HRESULT res = E_NOINTERFACE;
+	ID3D12DeviceFactory *device_factory = context_driver->device_factory_get();
+	if (device_factory != nullptr) {
+		res = device_factory->GetConfigurationInterface(CLSID_D3D12DeviceRemovedExtendedDataGodot, IID_PPV_ARGS(dred_settings.GetAddressOf()));
+	}
+	if (FAILED(res)) {
+		PFN_D3D12_GET_DEBUG_INTERFACE d3d_D3D12GetDebugInterface = (PFN_D3D12_GET_DEBUG_INTERFACE)(void *)GetProcAddress(context_driver->lib_d3d12, "D3D12GetDebugInterface");
+		if (d3d_D3D12GetDebugInterface != nullptr) {
+			res = d3d_D3D12GetDebugInterface(IID_PPV_ARGS(dred_settings.GetAddressOf()));
+		}
+	}
+	if (FAILED(res)) {
+		WARN_PRINT(vformat("D3D12: DRED is not available (error 0x%08ux). Device removal reports won't include DRED breadcrumbs or page fault information.", (uint64_t)res));
+		return false;
+	}
+
+	dred_settings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+	dred_settings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+	ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> dred_settings_1;
+	if (SUCCEEDED(dred_settings.As(&dred_settings_1))) {
+		dred_settings_1->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+	}
+
+	print_verbose("D3D12: DRED auto-breadcrumbs, breadcrumb context and page fault reporting enabled.");
+	return true;
+}
+
+static const char *_device_removed_reason_name(HRESULT p_reason) {
+	switch (p_reason) {
+		case DXGI_ERROR_DEVICE_HUNG:
+			return "DXGI_ERROR_DEVICE_HUNG";
+		case DXGI_ERROR_DEVICE_REMOVED:
+			return "DXGI_ERROR_DEVICE_REMOVED";
+		case DXGI_ERROR_DEVICE_RESET:
+			return "DXGI_ERROR_DEVICE_RESET";
+		case DXGI_ERROR_DRIVER_INTERNAL_ERROR:
+			return "DXGI_ERROR_DRIVER_INTERNAL_ERROR";
+		case DXGI_ERROR_INVALID_CALL:
+			return "DXGI_ERROR_INVALID_CALL";
+		case E_OUTOFMEMORY:
+			return "E_OUTOFMEMORY";
+		default:
+			return "unknown";
+	}
+}
+
+bool RenderingDeviceDriverD3D12::_check_device_removed(HRESULT p_result, const char *p_operation) {
+	if (likely(SUCCEEDED(p_result))) {
+		return false;
+	}
+
+	const HRESULT removed_reason = device->GetDeviceRemovedReason();
+	if (removed_reason == S_OK) {
+		// An ordinary failure, the device is still there.
+		return false;
+	}
+
+	_report_device_removed(p_operation, p_result, removed_reason);
+	return true;
+}
+
+void RenderingDeviceDriverD3D12::_report_device_removed(const char *p_operation, HRESULT p_result, HRESULT p_removed_reason) {
+	if (device_removed_report_count.increment() != 1) {
+		// Every call fails the same way after a device removal, so only the first one is reported.
+		return;
+	}
+
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__,
+			vformat("D3D12 device was removed. Detected by: %s (error 0x%08ux). Device removed reason: 0x%08ux (%s). This could be due to a driver issue, a hardware issue, or the driver resetting itself because it was unresponsive for too long (TDR).",
+					p_operation, (uint64_t)p_result, (uint64_t)p_removed_reason, _device_removed_reason_name(p_removed_reason)));
+	print_lost_device_info();
+}
+
+void RenderingDeviceDriverD3D12::print_lost_device_info() {
+#if defined(DEBUG_ENABLED) || defined(DEV_ENABLED)
+	if (breadcrumb_memory != nullptr && breadcrumb_buffer) {
+		{
+			String error_msg = "Printing last known breadcrumbs in reverse order (last executed first).";
+			if (!Engine::get_singleton()->is_accurate_breadcrumbs_enabled()) {
+				error_msg += "\nSome of them might be inaccurate. Try running with --accurate-breadcrumbs for precise information.";
+			}
+			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, error_msg);
+		}
+
+		if (breadcrumb_id == 0u) {
+			_err_print_error_asap("No breadcrumbs were sent.");
+		} else {
+			// The memory belongs to the process, so it can be read even though the device is gone.
+			const volatile uint32_t *breadcrumb_ptr32 = reinterpret_cast<const volatile uint32_t *>(breadcrumb_memory);
+
+			_err_print_error_asap("Searching last breadcrumb. We've sent up to ID: " + itos(breadcrumb_id - 1u));
+
+			// Scan the whole buffer to find the entry with the highest ID, i.e. the last one written.
+			// "breadcrumb_id - id" accounts for wraparound, see the Vulkan driver.
+			uint32_t biggest_id = 0u;
+			uint32_t smallest_id_diff = UINT32_MAX;
+			for (uint32_t i = 0u; i < BREADCRUMB_BUFFER_ENTRIES; ++i) {
+				const uint32_t id_diff = breadcrumb_id - breadcrumb_ptr32[i * 2u];
+				if (id_diff < smallest_id_diff) {
+					biggest_id = i;
+					smallest_id_diff = id_diff;
+				}
+			}
+
+			_err_print_error_asap("Last breadcrumb ID found: " + itos(breadcrumb_ptr32[biggest_id * 2u]));
+
+			const uint32_t entries_to_print = 8u; // Note: The value is arbitrary.
+			uint32_t entry = biggest_id;
+			for (uint32_t i = 0u; i < entries_to_print; ++i) {
+				const uint32_t last_breadcrumb = breadcrumb_ptr32[entry * 2u + 1u];
+				if (last_breadcrumb == BreadcrumbMarker::NONE) {
+					// Never written.
+					break;
+				}
+				_err_print_error_asap("Last known breadcrumb: " + _breadcrumb_to_string(last_breadcrumb));
+				entry = (entry == 0u) ? BREADCRUMB_BUFFER_ENTRIES - 1u : entry - 1u;
+			}
+		}
+	} else {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "GPU breadcrumbs are not available on this device.");
+	}
+#endif
+	on_device_lost();
+}
+
+static const char *_dred_operation_name(D3D12_AUTO_BREADCRUMB_OP p_op) {
+	static const char *names[] = {
+		"SETMARKER",
+		"BEGINEVENT",
+		"ENDEVENT",
+		"DRAWINSTANCED",
+		"DRAWINDEXEDINSTANCED",
+		"EXECUTEINDIRECT",
+		"DISPATCH",
+		"COPYBUFFERREGION",
+		"COPYTEXTUREREGION",
+		"COPYRESOURCE",
+		"COPYTILES",
+		"RESOLVESUBRESOURCE",
+		"CLEARRENDERTARGETVIEW",
+		"CLEARUNORDEREDACCESSVIEW",
+		"CLEARDEPTHSTENCILVIEW",
+		"RESOURCEBARRIER",
+		"EXECUTEBUNDLE",
+		"PRESENT",
+		"RESOLVEQUERYDATA",
+		"BEGINSUBMISSION",
+		"ENDSUBMISSION",
+		"DECODEFRAME",
+		"PROCESSFRAMES",
+		"ATOMICCOPYBUFFERUINT",
+		"ATOMICCOPYBUFFERUINT64",
+		"RESOLVESUBRESOURCEREGION",
+		"WRITEBUFFERIMMEDIATE",
+		"DECODEFRAME1",
+		"SETPROTECTEDRESOURCESESSION",
+		"DECODEFRAME2",
+		"PROCESSFRAMES1",
+		"BUILDRAYTRACINGACCELERATIONSTRUCTURE",
+		"EMITRAYTRACINGACCELERATIONSTRUCTUREPOSTBUILDINFO",
+		"COPYRAYTRACINGACCELERATIONSTRUCTURE",
+		"DISPATCHRAYS",
+		"INITIALIZEMETACOMMAND",
+		"EXECUTEMETACOMMAND",
+		"ESTIMATEMOTION",
+		"RESOLVEMOTIONVECTORHEAP",
+		"SETPIPELINESTATE1",
+		"INITIALIZEEXTENSIONCOMMAND",
+		"EXECUTEEXTENSIONCOMMAND",
+		"DISPATCHMESH",
+		"ENCODEFRAME",
+		"RESOLVEENCODEROUTPUTMETADATA",
+		"BARRIER",
+		"BEGIN_COMMAND_LIST",
+		"DISPATCHGRAPH",
+		"SETPROGRAM",
+		"ENCODEFRAME1",
+		"RESOLVEENCODEROUTPUTMETADATA1",
+		"RESOLVEINPUTPARAMLAYOUT",
+		"PROCESSFRAMES2",
+		"SET_WORK_GRAPH_MAXIMUM_GPU_INPUT_RECORDS",
+	};
+	if ((uint32_t)p_op < sizeof(names) / sizeof(names[0])) {
+		return names[p_op];
+	}
+	return "UNKNOWN";
+}
+
+static const char *_dred_allocation_type_name(D3D12_DRED_ALLOCATION_TYPE p_type) {
+	switch (p_type) {
+		case D3D12_DRED_ALLOCATION_TYPE_COMMAND_QUEUE:
+			return "COMMAND_QUEUE";
+		case D3D12_DRED_ALLOCATION_TYPE_COMMAND_ALLOCATOR:
+			return "COMMAND_ALLOCATOR";
+		case D3D12_DRED_ALLOCATION_TYPE_PIPELINE_STATE:
+			return "PIPELINE_STATE";
+		case D3D12_DRED_ALLOCATION_TYPE_COMMAND_LIST:
+			return "COMMAND_LIST";
+		case D3D12_DRED_ALLOCATION_TYPE_FENCE:
+			return "FENCE";
+		case D3D12_DRED_ALLOCATION_TYPE_DESCRIPTOR_HEAP:
+			return "DESCRIPTOR_HEAP";
+		case D3D12_DRED_ALLOCATION_TYPE_HEAP:
+			return "HEAP";
+		case D3D12_DRED_ALLOCATION_TYPE_QUERY_HEAP:
+			return "QUERY_HEAP";
+		case D3D12_DRED_ALLOCATION_TYPE_COMMAND_SIGNATURE:
+			return "COMMAND_SIGNATURE";
+		case D3D12_DRED_ALLOCATION_TYPE_PIPELINE_LIBRARY:
+			return "PIPELINE_LIBRARY";
+		case D3D12_DRED_ALLOCATION_TYPE_RESOURCE:
+			return "RESOURCE";
+		case D3D12_DRED_ALLOCATION_TYPE_STATE_OBJECT:
+			return "STATE_OBJECT";
+		default:
+			return "OTHER";
+	}
+}
+
+static String _dred_object_name(const char *p_name_a, const wchar_t *p_name_w) {
+	if (p_name_w != nullptr) {
+		return String(p_name_w);
+	}
+	if (p_name_a != nullptr) {
+		return String(p_name_a);
+	}
+	return "<unnamed>";
+}
+
+static void _append_dred_allocations(String &r_msg, const D3D12_DRED_ALLOCATION_NODE1 *p_head) {
+	uint32_t count = 0u;
+	for (const D3D12_DRED_ALLOCATION_NODE1 *node = p_head; node != nullptr; node = node->pNext) {
+		if (count == DRED_MAX_ALLOCATIONS_TO_PRINT) {
+			r_msg += "\n      ...";
+			break;
+		}
+		r_msg += "\n      " + _dred_object_name(node->ObjectNameA, node->ObjectNameW) + " (" + _dred_allocation_type_name(node->AllocationType) + ")";
+		count++;
+	}
+	if (count == 0u) {
+		r_msg += "\n      None";
+	}
+}
+
+void RenderingDeviceDriverD3D12::on_device_lost() const {
+	ComPtr<ID3D12DeviceRemovedExtendedData1> dred;
+	if (FAILED(device.As(&dred))) {
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "ID3D12DeviceRemovedExtendedData1 not available, skipping DRED report...");
+		return;
+	}
+	ComPtr<ID3D12DeviceRemovedExtendedData2> dred_2;
+	dred.As(&dred_2);
+
+	String err_msg = "** Report from DRED (Device Removed Extended Data) **";
+	if (!dred_enabled) {
+		err_msg += "\nDRED wasn't enabled by Godot. Try running with --accurate-breadcrumbs for DRED breadcrumbs and page fault information.";
+	}
+
+	if (dred_2) {
+		switch (dred_2->GetDeviceState()) {
+			case D3D12_DRED_DEVICE_STATE_HUNG:
+				err_msg += "\nDevice state: HUNG";
+				break;
+			case D3D12_DRED_DEVICE_STATE_FAULT:
+				err_msg += "\nDevice state: FAULT";
+				break;
+			case D3D12_DRED_DEVICE_STATE_PAGEFAULT:
+				err_msg += "\nDevice state: PAGEFAULT";
+				break;
+			default:
+				err_msg += "\nDevice state: UNKNOWN";
+				break;
+		}
+	}
+
+	D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT1 breadcrumbs_output = {};
+	HRESULT res = dred->GetAutoBreadcrumbsOutput1(&breadcrumbs_output);
+	if (FAILED(res)) {
+		err_msg += vformat("\nAuto-breadcrumbs: not available (error 0x%08ux).", (uint64_t)res);
+	} else {
+		// Each node is a command list that was submitted but may not have finished. Its last breadcrumb value
+		// is the number of operations that completed, so the operation at that index is the first one that didn't.
+		err_msg += "\nAuto-breadcrumbs of the command lists that didn't complete:";
+		uint32_t incomplete_count = 0u;
+		for (const D3D12_AUTO_BREADCRUMB_NODE1 *node = breadcrumbs_output.pHeadAutoBreadcrumbNode; node != nullptr; node = node->pNext) {
+			const uint32_t completed = node->pLastBreadcrumbValue != nullptr ? *node->pLastBreadcrumbValue : 0u;
+			if (completed >= node->BreadcrumbCount) {
+				continue;
+			}
+			incomplete_count++;
+			if (incomplete_count > DRED_MAX_COMMAND_LISTS_TO_PRINT) {
+				continue;
+			}
+
+			err_msg += vformat("\nCommand list \"%s\" (0x%s) on queue \"%s\" (0x%s): %d of %d operations completed.",
+					_dred_object_name(node->pCommandListDebugNameA, node->pCommandListDebugNameW), String::num_uint64((uint64_t)node->pCommandList, 16),
+					_dred_object_name(node->pCommandQueueDebugNameA, node->pCommandQueueDebugNameW), String::num_uint64((uint64_t)node->pCommandQueue, 16),
+					completed, node->BreadcrumbCount);
+			if (completed == 0u) {
+				err_msg += " Not started.";
+				continue;
+			}
+
+			const uint32_t first = completed > DRED_OPERATIONS_BEFORE_LAST_COMPLETED ? completed - DRED_OPERATIONS_BEFORE_LAST_COMPLETED : 0u;
+			const uint32_t end = MIN(node->BreadcrumbCount, completed + DRED_OPERATIONS_AFTER_LAST_COMPLETED);
+			for (uint32_t i = first; i < end; i++) {
+				String line = vformat("\n   [%d] %s", i, _dred_operation_name(node->pCommandHistory[i]));
+				for (uint32_t j = 0u; j < node->BreadcrumbContextsCount; j++) {
+					if (node->pBreadcrumbContexts[j].BreadcrumbIndex == i && node->pBreadcrumbContexts[j].pContextString != nullptr) {
+						line += " \"" + String(node->pBreadcrumbContexts[j].pContextString) + "\"";
+					}
+				}
+				if (i + 1u == completed) {
+					line += "  <- last completed";
+				} else if (i == completed) {
+					line += "  <- first not completed";
+				}
+				err_msg += line;
+			}
+		}
+		if (incomplete_count == 0u) {
+			err_msg += "\n   None";
+		} else if (incomplete_count > DRED_MAX_COMMAND_LISTS_TO_PRINT) {
+			err_msg += vformat("\n   ... and %d more.", incomplete_count - DRED_MAX_COMMAND_LISTS_TO_PRINT);
+		}
+	}
+
+	D3D12_GPU_VIRTUAL_ADDRESS page_fault_va = 0;
+	const D3D12_DRED_ALLOCATION_NODE1 *existing_allocations = nullptr;
+	const D3D12_DRED_ALLOCATION_NODE1 *freed_allocations = nullptr;
+	if (dred_2) {
+		D3D12_DRED_PAGE_FAULT_OUTPUT2 page_fault_output = {};
+		res = dred_2->GetPageFaultAllocationOutput2(&page_fault_output);
+		page_fault_va = page_fault_output.PageFaultVA;
+		existing_allocations = page_fault_output.pHeadExistingAllocationNode;
+		freed_allocations = page_fault_output.pHeadRecentFreedAllocationNode;
+	} else {
+		D3D12_DRED_PAGE_FAULT_OUTPUT1 page_fault_output = {};
+		res = dred->GetPageFaultAllocationOutput1(&page_fault_output);
+		page_fault_va = page_fault_output.PageFaultVA;
+		existing_allocations = page_fault_output.pHeadExistingAllocationNode;
+		freed_allocations = page_fault_output.pHeadRecentFreedAllocationNode;
+	}
+	if (FAILED(res)) {
+		err_msg += vformat("\nPage fault: not available (error 0x%08ux).", (uint64_t)res);
+	} else if (page_fault_va == 0) {
+		err_msg += "\nPage fault: none reported.";
+	} else {
+		err_msg += "\nPage fault at GPU virtual address 0x" + String::num_uint64(page_fault_va, 16) + ".";
+		err_msg += "\n   Allocations at that address:";
+		_append_dred_allocations(err_msg, existing_allocations);
+		err_msg += "\n   Recently freed allocations at that address:";
+		_append_dred_allocations(err_msg, freed_allocations);
+	}
+
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, err_msg);
+
+	_err_print_error(FUNCTION_STR, __FILE__, __LINE__, context_driver->get_driver_and_device_memory_report());
 }
 
 /********************/
@@ -6176,6 +6785,8 @@ RenderingDeviceDriverD3D12::RenderingDeviceDriverD3D12(RenderingContextDriverD3D
 RenderingDeviceDriverD3D12::~RenderingDeviceDriverD3D12() {
 	rtv_descriptor_heap_pool.free(null_rtv_alloc);
 
+	_free_breadcrumbs();
+
 	{
 		MutexLock lock(resource_descriptor_heap_mutex);
 
@@ -6244,6 +6855,12 @@ Error RenderingDeviceDriverD3D12::_initialize_device() {
 		}
 		ERR_FAIL_NULL_V(desired_adapter, ERR_CANT_CREATE);
 		adapter = desired_adapter;
+	}
+
+	// DRED has to be configured before the device is created. Auto-breadcrumbs and page fault tracking have a
+	// cost, so they are opt-in like accurate breadcrumbs on Vulkan. Device removal is detected and reported either way.
+	if (Engine::get_singleton()->is_accurate_breadcrumbs_enabled()) {
+		dred_enabled = _enable_dred();
 	}
 
 	ID3D12DeviceFactory *device_factory = context_driver->device_factory_get();
@@ -6675,6 +7292,8 @@ Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p
 
 	err = _initialize_allocator();
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+
+	_initialize_breadcrumbs();
 
 	err = _initialize_frames(p_frame_count);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
