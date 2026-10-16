@@ -43,6 +43,8 @@ class EditorNode3DGizmoPlugin;
 class EditorNode3DGizmo : public Node3DGizmo {
 	GDCLASS(EditorNode3DGizmo, Node3DGizmo);
 
+	static inline String NO_PLUGIN_ERROR = "EditorNode3DGizmo requires an EditorNode3DGizmoPlugin to work.";
+
 	struct Instance {
 		RID instance;
 		Ref<Mesh> mesh;
