@@ -764,10 +764,21 @@ void Skeleton2D::set_modification_stack(Ref<SkeletonModificationStack2D> p_stack
 #endif // TOOLS_ENABLED
 	}
 	_update_process_mode();
+	update_configuration_warnings();
 }
 
 Ref<SkeletonModificationStack2D> Skeleton2D::get_modification_stack() const {
 	return modification_stack;
+}
+
+PackedStringArray Skeleton2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+
+	if (modification_stack.is_valid() && modification_stack->get_modification_count() > 0 && !modification_stack->is_local_to_scene()) {
+		warnings.push_back(RTR("This Skeleton2D holds a SkeletonModificationStack2D that is not local to the scene.\nBecause the resource is shared, instancing this scene more than once will make the instances share the same modification stack, causing errors and incorrect bone transforms.\nEnable \"Local to Scene\" on the modification stack resource (or otherwise make it unique) so each instance gets its own copy."));
+	}
+
+	return warnings;
 }
 
 void Skeleton2D::execute_modifications(real_t p_delta, int p_execution_mode) {
