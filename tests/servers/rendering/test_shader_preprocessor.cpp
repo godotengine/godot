@@ -293,6 +293,54 @@ TEST_CASE("[ShaderPreprocessor] Concatenation sorting network") {
 	CHECK_SHADER_EQ(result, expected);
 }
 
+TEST_CASE("[ShaderPreprocessor] Line continuations") {
+	String code(
+			"#define SAMPLE(N) vec4 tex##N = texture( \\\n"
+			"material##N \\\n"
+			", \\\n"
+			"UV \\\n"
+			"\\\n"
+			" )\n"
+			"\n"
+			"#define FUN_FUN(n)\\\n"
+			"void fun1() { return;\\\n"
+			"}\\\n"
+			"void fun2() { return; }\n"
+			"FUN_FUN(1.0)\n"
+			"\n"
+			"#define SCALE\\\n"
+			" 0.5\n"
+			"\n"
+			"#define HALF\\\n"
+			"  (0.5)\n"
+			"\n"
+			"#define DECL float\\\n"
+			" v = 0.5;\n"
+			"\n"
+			"void fragment() {\n"
+			"  DECL\n"
+			"  SAMPLE(0);\n"
+			"  ALBEDO = vec3(SCALE);\n"
+			"  ALBEDO = vec3(HALF);\n"
+			"}\n");
+	String expected(
+			"void fun1() { return;}"
+			"void fun2() { return; }\n"
+			"\n"
+			"void fragment() {\n"
+			"  float v = 0.5;\n"
+			"  vec4 tex0 = texture( material0 , UV  );\n"
+			"  ALBEDO = vec3(0.5);\n"
+			"  ALBEDO = vec3((0.5));\n"
+			"}\n");
+	String result;
+
+	ShaderPreprocessor preprocessor;
+	CHECK_EQ(preprocessor.preprocess(code, String("file.gdshader"), result), Error::OK);
+
+	CHECK_SHADER_EQ(result, expected);
+}
+
 TEST_CASE("[ShaderPreprocessor] Undefined behavior") {
 	// None of these are valid concatenation, nor valid shader code.
 	// Don't care about results, just make sure there's no crash.
