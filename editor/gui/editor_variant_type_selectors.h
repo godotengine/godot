@@ -45,13 +45,16 @@ protected:
 public:
 	Variant::Type get_selected_type() const;
 
-	void populate(const LocalVector<Variant::Type> &p_disabled_types, const HashMap<Variant::Type, String> &p_renames = {});
+	void populate(const LocalVector<Variant::Type> &p_disabled_types = {}, const HashMap<Variant::Type, String> &p_renames = {});
 };
 
 class EditorVariantTypePopupMenu : public PopupMenu {
 	GDCLASS(EditorVariantTypePopupMenu, PopupMenu);
 
 	bool remove_item = false;
+	LocalVector<Variant::Type> disabled_types;
+	HashMap<Variant::Type, String> renames;
+
 	bool icons_dirty = true;
 
 	void _populate();
@@ -62,5 +65,5 @@ protected:
 	virtual void _popup_base(const Rect2i &p_bounds = Rect2i()) override;
 
 public:
-	EditorVariantTypePopupMenu(bool p_remove_item);
+	EditorVariantTypePopupMenu(bool p_remove_item, const LocalVector<Variant::Type> &p_disabled_types = {}, const HashMap<Variant::Type, String> &p_renames = {});
 };
