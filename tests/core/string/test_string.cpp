@@ -715,6 +715,15 @@ TEST_CASE("[String] String to float") {
 		CHECK(String(invalid_nums[i]).to_float() == 0);
 	}
 
+	// Leading zeros must not count towards the 18 significant digit limit.
+	CHECK(String("00000000000000000001.5").to_float() == doctest::Approx(1.5));
+	CHECK(String("-00000000000000000001.5").to_float() == doctest::Approx(-1.5));
+	CHECK(String("0.0000000000000000271").to_float() == doctest::Approx(2.71e-17).scale(0));
+	CHECK(String("0000000000000000000.0000000000000000271").to_float() == doctest::Approx(2.71e-17).scale(0));
+	CHECK(String("00000000000000000000").to_float() == 0.0);
+	CHECK(String("0.00000000000000000000").to_float() == 0.0);
+	CHECK(String("0.00.5").to_float() == 0.0);
+
 	// Very large exponents.
 	CHECK(String("1e308").to_float() == 1e308);
 	CHECK(String("-1e308").to_float() == -1e308);
