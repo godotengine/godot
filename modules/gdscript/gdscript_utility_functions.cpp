@@ -452,6 +452,92 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
+#define STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, array_like, starting_number) \
+	for (int i = 0; i < array_like.size(); i++) { \
+		key_and_values[starting_number + i] = array_like[i]; \
+	} \
+	*r_ret = key_and_values;
+
+	static inline void enumerate(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		DEBUG_VALIDATE_ARG_COUNT(1, 2);
+		Dictionary key_and_values;
+		int starting_number = 0;
+		if (p_arg_count == 2) {
+			DEBUG_VALIDATE_ARG_TYPE(1, Variant::INT);
+			starting_number = *p_args[1];
+		}
+
+		switch (p_args[0]->get_type()) {
+			case Variant::STRING:
+			case Variant::STRING_NAME: {
+				String d = *p_args[0];
+				for (int i = 0; i < d.length(); i++) {
+					key_and_values[starting_number + i] = d.get(i);
+				}
+				*r_ret = key_and_values;
+			} break;
+			case Variant::DICTIONARY: {
+				Dictionary d = *p_args[0];
+				int pos = 0;
+				for (const KeyValue<Variant, Variant> &kv : d) {
+					key_and_values[starting_number + pos] = kv.key;
+					pos += 1;
+				}
+				*r_ret = key_and_values;
+			} break;
+			case Variant::ARRAY: {
+				Array d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_BYTE_ARRAY: {
+				Vector<uint8_t> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_INT32_ARRAY: {
+				Vector<int32_t> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_INT64_ARRAY: {
+				Vector<int64_t> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_FLOAT32_ARRAY: {
+				Vector<float> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_FLOAT64_ARRAY: {
+				Vector<double> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_STRING_ARRAY: {
+				Vector<String> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_VECTOR2_ARRAY: {
+				Vector<Vector2> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_VECTOR3_ARRAY: {
+				Vector<Vector3> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_COLOR_ARRAY: {
+				Vector<Color> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			case Variant::PACKED_VECTOR4_ARRAY: {
+				Vector<Vector4> d = *p_args[0];
+				STANDARD_ASSIGN_KEYS_AND_VALUES(key_and_values, d, starting_number)
+			} break;
+			default: {
+				*r_ret = vformat(RTR("Value of type '%s' can't be enumerated."), Variant::get_type_name(p_args[0]->get_type()));
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::NIL;
+			} break;
+		}
+	}
+
 	static inline void is_instance_of(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		DEBUG_VALIDATE_ARG_COUNT(2, 2);
 
@@ -588,6 +674,7 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_FUNC( print_stack,    false, RET(NIL),           NOARGS,                                  false, varray(     ));
 	REGISTER_FUNC( get_stack,      false, RET(ARRAY),         NOARGS,                                  false, varray(     ));
 	REGISTER_FUNC( len,            true,  RET(INT),           ARGS( ARGVAR("var")                   ), false, varray(     ));
+	REGISTER_FUNC( enumerate,      true,  RET(DICTIONARY),    ARGS( ARGVAR("var"), ARG("start", INT)), false, varray(  0  ));
 	REGISTER_FUNC( is_instance_of, true,  RET(BOOL),          ARGS( ARGVAR("value"), ARGVAR("type") ), false, varray(     ));
 	/* clang-format on */
 }
