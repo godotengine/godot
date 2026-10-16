@@ -172,6 +172,8 @@ private:
 	void _skin_changed();
 
 	mutable LocalVector<Bone> bones;
+	mutable LocalVector<Transform3D> global_bone_transforms_final;
+	mutable LocalVector<Transform3D> bone_transforms_final;
 	mutable bool process_order_dirty = false;
 
 	mutable Vector<int> parentless_bones;
@@ -279,6 +281,7 @@ public:
 
 	// Posing API
 	Transform3D get_bone_pose(int p_bone) const;
+	Transform3D get_bone_pose_final(int p_bone) const;
 	Vector3 get_bone_pose_position(int p_bone) const;
 	Quaternion get_bone_pose_rotation(int p_bone) const;
 	Vector3 get_bone_pose_scale(int p_bone) const;
@@ -291,6 +294,7 @@ public:
 	Vector3 get_bone_skin_scale(int p_bone) const;
 
 	Transform3D get_bone_global_pose(int p_bone) const;
+	Transform3D get_bone_global_pose_final(int p_bone) const;
 	void set_bone_global_pose(int p_bone, const Transform3D &p_pose);
 
 	void reset_bone_pose(int p_bone, bool p_reset_bone_skin_scale = false);
