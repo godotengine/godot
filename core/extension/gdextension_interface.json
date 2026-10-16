@@ -9322,6 +9322,96 @@
                 "Registers callbacks to be called at different phases of the main loop."
             ],
             "since": "4.5"
+        },
+        {
+            "name": "text_server_shaped_text_get_glyphs",
+            "return_value": {
+                "type": "GDExtensionConstTypePtr",
+                "description": [
+                    "A pointer to an array of Glyph structures.",
+                    "The length of the array is returned by TextServer::shaped_text_get_glyph_count."
+                ]
+            },
+            "arguments": [
+                {
+                    "name": "p_instance",
+                    "type": "GDExtensionObjectPtr",
+                    "description": [
+                        "A pointer to a TextServer object."
+                    ]
+                },
+                {
+                    "name": "p_shaped_rid",
+                    "type": "uint64_t",
+                    "description": [
+                        "An RID from TextServer::create_shaped_text."
+                    ]
+                }
+            ],
+            "description": [
+                "Returns an array of glyphs in the visual order."
+            ],
+            "since": "4.8"
+        },
+        {
+            "name": "text_server_shaped_text_sort_logical",
+            "return_value": {
+                "type": "GDExtensionConstTypePtr",
+                "description": [
+                    "A pointer to an array of Glyph structures.",
+                    "The length of the array is returned by TextServer::shaped_text_get_glyph_count."
+                ]
+            },
+            "arguments": [
+                {
+                    "name": "p_instance",
+                    "type": "GDExtensionObjectPtr",
+                    "description": [
+                        "A pointer to a TextServer object."
+                    ]
+                },
+                {
+                    "name": "p_shaped_rid",
+                    "type": "uint64_t",
+                    "description": [
+                        "An RID from TextServer::create_shaped_text."
+                    ]
+                }
+            ],
+            "description": [
+                "Returns text glyphs in the logical order."
+            ],
+            "since": "4.8"
+        },
+        {
+            "name": "text_server_shaped_text_get_ellipsis_glyphs",
+            "return_value": {
+                "type": "GDExtensionConstTypePtr",
+                "description": [
+                    "A pointer to an array of Glyph structures.",
+                    "The length of the array is returned by TextServer::shaped_text_get_ellipsis_glyph_count."
+                ]
+            },
+            "arguments": [
+                {
+                    "name": "p_instance",
+                    "type": "GDExtensionObjectPtr",
+                    "description": [
+                        "A pointer to a TextServer object."
+                    ]
+                },
+                {
+                    "name": "p_shaped_rid",
+                    "type": "uint64_t",
+                    "description": [
+                        "An RID from TextServer::create_shaped_text."
+                    ]
+                }
+            ],
+            "description": [
+                "Returns array of the glyphs in the ellipsis."
+            ],
+            "since": "4.8"
         }
     ]
 }
