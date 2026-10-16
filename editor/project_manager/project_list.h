@@ -151,6 +151,7 @@ public:
 		MENU_MANAGE_TAGS,
 		MENU_DUPLICATE,
 		MENU_REMOVE,
+		MENU_RELOCATE,
 	};
 
 	// Can often be passed by copy.
@@ -347,6 +348,7 @@ public:
 
 	bool is_any_project_missing() const;
 	void erase_missing_projects();
+	void erase_project(const String &p_dir_path);
 
 	// Project list sorting and filtering.
 
