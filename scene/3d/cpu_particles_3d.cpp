@@ -1811,6 +1811,31 @@ void CPUParticles3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_DIRECTED_POINTS);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_RING);
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_MAX);
+
+	ADD_LINKED_PROPERTY("initial_velocity_min", "initial_velocity_max");
+	ADD_LINKED_PROPERTY("initial_velocity_max", "initial_velocity_min");
+	ADD_LINKED_PROPERTY("angular_velocity_min", "angular_velocity_max");
+	ADD_LINKED_PROPERTY("angular_velocity_max", "angular_velocity_min");
+	ADD_LINKED_PROPERTY("orbit_velocity_min", "orbit_velocity_max");
+	ADD_LINKED_PROPERTY("orbit_velocity_max", "orbit_velocity_min");
+	ADD_LINKED_PROPERTY("linear_accel_min", "linear_accel_max");
+	ADD_LINKED_PROPERTY("linear_accel_max", "linear_accel_min");
+	ADD_LINKED_PROPERTY("radial_accel_min", "radial_accel_max");
+	ADD_LINKED_PROPERTY("radial_accel_max", "radial_accel_min");
+	ADD_LINKED_PROPERTY("tangential_accel_min", "tangential_accel_max");
+	ADD_LINKED_PROPERTY("tangential_accel_max", "tangential_accel_min");
+	ADD_LINKED_PROPERTY("damping_min", "damping_max");
+	ADD_LINKED_PROPERTY("damping_max", "damping_min");
+	ADD_LINKED_PROPERTY("angle_min", "angle_max");
+	ADD_LINKED_PROPERTY("angle_max", "angle_min");
+	ADD_LINKED_PROPERTY("scale_amount_min", "scale_amount_max");
+	ADD_LINKED_PROPERTY("scale_amount_max", "scale_amount_min");
+	ADD_LINKED_PROPERTY("hue_variation_min", "hue_variation_max");
+	ADD_LINKED_PROPERTY("hue_variation_max", "hue_variation_min");
+	ADD_LINKED_PROPERTY("anim_speed_min", "anim_speed_max");
+	ADD_LINKED_PROPERTY("anim_speed_max", "anim_speed_min");
+	ADD_LINKED_PROPERTY("anim_offset_min", "anim_offset_max");
+	ADD_LINKED_PROPERTY("anim_offset_max", "anim_offset_min");
 }
 
 CPUParticles3D::CPUParticles3D() {
