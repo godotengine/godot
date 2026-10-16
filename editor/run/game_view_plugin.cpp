@@ -72,6 +72,8 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 		return;
 	}
 
+	bool is_native = EditorRunBar::get_singleton()->is_running_natively();
+
 	Dictionary settings;
 	settings["debugger/max_node_selection"] = EDITOR_GET("debugger/max_node_selection");
 	settings["editors/2d/selection_rectangle_color"] = EDITOR_GET("editors/2d/selection_rectangle_color");
@@ -83,11 +85,14 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["editors/polygon_editor/point_grab_radius"] = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 	settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
 	settings["canvas_item_editor/cancel_transform"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/cancel_transform"));
-	settings["accent_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("accent_color"), EditorStringName(Editor));
 	settings["box_selection_fill_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_fill_color"), EditorStringName(Editor));
 	settings["box_selection_stroke_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor));
-	settings["axis_x_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("axis_x_color"), EditorStringName(Editor));
-	settings["axis_y_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("axis_y_color"), EditorStringName(Editor));
+	if (!is_native) {
+		settings["accent_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("accent_color"), EditorStringName(Editor));
+		settings["axis_x_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("axis_x_color"), EditorStringName(Editor));
+		settings["axis_y_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("axis_y_color"), EditorStringName(Editor));
+	}
+
 #ifndef _3D_DISABLED
 	settings["editors/3d/default_fov"] = EDITOR_GET("editors/3d/default_fov");
 	settings["editors/3d/default_z_near"] = EDITOR_GET("editors/3d/default_z_near");
@@ -141,7 +146,9 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	p_session->send_message("scene:runtime_node_select_set_node_type", { node_type });
 	p_session->send_message("scene:runtime_node_select_set_selection_visible", { selection_visible });
 	p_session->send_message("scene:runtime_node_select_set_ci_tool", { ci_tool });
-	p_session->send_message("scene:runtime_node_select_set_ci_local_space", { ci_local_space });
+	if (!is_native) {
+		p_session->send_message("scene:runtime_node_select_set_ci_local_space", { ci_local_space });
+	}
 	p_session->send_message("scene:runtime_node_select_set_n3d_tool", { n3d_tool });
 	p_session->send_message("scene:runtime_node_select_set_avoid_locked", { selection_avoid_locked });
 	p_session->send_message("scene:runtime_node_select_set_prefer_group", { selection_prefer_group });
@@ -151,12 +158,14 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	shortcut_settings["editor/suspend_resume_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
 	shortcut_settings["editor/next_frame_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/next_frame_embedded_project"));
 	shortcut_settings["canvas_item_editor/select_mode"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/select_mode"));
-	shortcut_settings["canvas_item_editor/move_mode"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/move_mode"));
-	shortcut_settings["canvas_item_editor/rotate_mode"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/rotate_mode"));
-	shortcut_settings["canvas_item_editor/scale_mode"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/scale_mode"));
 	shortcut_settings["canvas_item_editor/pan_mode"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_mode"));
-	shortcut_settings["ui_undo"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("ui_undo"));
-	shortcut_settings["ui_redo"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("ui_redo"));
+	if (!is_native) {
+		shortcut_settings["canvas_item_editor/move_mode"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/move_mode"));
+		shortcut_settings["canvas_item_editor/rotate_mode"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/rotate_mode"));
+		shortcut_settings["canvas_item_editor/scale_mode"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/scale_mode"));
+		shortcut_settings["ui_undo"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("ui_undo"));
+		shortcut_settings["ui_redo"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("ui_redo"));
+	}
 
 	p_session->send_message("scene:setup_embedded_shortcuts", { shortcut_settings });
 
@@ -498,6 +507,7 @@ void GameView::_sessions_changed() {
 		}
 	}
 
+	_update_ui();
 	_update_debugger_buttons();
 
 #ifdef MACOS_ENABLED
@@ -655,7 +665,9 @@ void GameView::_stop_pressed() {
 
 	screen_index_before_start = -1;
 
-	InspectorDock::get_inspector_singleton()->disconnect(SNAME("edited_object_changed"), callable_mp(this, &GameView::_inspector_object_changed));
+	if (InspectorDock::get_inspector_singleton()->is_connected(SNAME("edited_object_changed"), callable_mp(this, &GameView::_inspector_object_changed))) {
+		InspectorDock::get_inspector_singleton()->disconnect(SNAME("edited_object_changed"), callable_mp(this, &GameView::_inspector_object_changed));
+	}
 }
 
 void GameView::_embedding_completed() {
@@ -700,7 +712,8 @@ void GameView::_inspector_object_changed() {
 	EditorDebuggerRemoteObjects *robjs = nullptr;
 	Object *obj = InspectorDock::get_inspector_singleton()->get_edited_object();
 	robjs = Object::cast_to<EditorDebuggerRemoteObjects>(obj);
-	ci_button[CanvasItemManipulator::TOOL_EDIT_PIVOT]->set_disabled(!robjs || !robjs->has_canvas_items);
+	bool is_native = (active_sessions && EditorRunBar::get_singleton()->is_running_natively());
+	ci_button[CanvasItemManipulator::TOOL_EDIT_PIVOT]->set_disabled(!robjs || !robjs->has_canvas_items || is_native);
 }
 
 void GameView::_update_debugger_buttons() {
@@ -729,6 +742,19 @@ void GameView::_update_debugger_buttons() {
 	}
 
 	next_frame_button->set_disabled(!suspend_button->is_pressed());
+
+	// Node manipulation is disabled for native debug builds.
+	bool is_native = !empty && EditorRunBar::get_singleton()->is_running_natively();
+	for (int i = 0; i < CanvasItemManipulator::TOOL_MAX; i++) {
+		if (ci_button[i] &&
+				i != CanvasItemManipulator::TOOL_SELECT &&
+				i != CanvasItemManipulator::TOOL_LIST_SELECT &&
+				i != CanvasItemManipulator::TOOL_EDIT_PIVOT &&
+				i != CanvasItemManipulator::TOOL_PAN) {
+			ci_button[i]->set_disabled(is_native);
+		}
+	}
+	ci_local_space->set_disabled(is_native);
 
 	menu = game_window_options_menu->get_popup();
 	if (empty) {
@@ -843,8 +869,8 @@ void GameView::_game_window_options_menu_menu_id_pressed(int p_id) {
 			debugger->toggle_hdr_output_requested();
 		} break;
 	}
+
 	_update_embed_menu_options();
-	_update_ui();
 }
 
 void GameView::_reset_time_scales() {
@@ -1716,7 +1742,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	vsep->set_theme_type_variation("VSeparatorButtonGroup");
 	ci_bar->get_hbox()->add_child(vsep);
 
-	Button *ci_local_space = memnew(Button);
+	ci_local_space = memnew(Button);
 	ci_bar->get_hbox()->add_child(ci_local_space);
 	ci_local_space->set_button_icon(EditorIconManager::get_icon(SNAME("Object")));
 	ci_local_space->set_toggle_mode(true);
