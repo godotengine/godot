@@ -40,8 +40,29 @@
 Size2 ProgressBar::get_minimum_size() const {
 	Size2 minimum_size = theme_cache.background_style->get_minimum_size();
 	minimum_size = minimum_size.max(theme_cache.fill_style->get_minimum_size());
-	if (show_percentage) {
-		String txt = "100%";
+	if (!label_format.is_empty()) {
+		bool error = false;
+		String txt;
+
+		const int s_count = label_format.count("%s");
+
+		if (s_count == 0) {
+			const Variant percentage = 100.0;
+			txt = label_format.sprintf(Span(&percentage, 1), &error);
+		} else if (s_count == 2) {
+			const Variant fraction_args[] = { String("1"), String("1") };
+			txt = label_format.sprintf(Span(fraction_args, 2), &error);
+		} else if (s_count == 1) {
+			const Variant value = String("1");
+			txt = label_format.sprintf(Span(&value, 1), &error);
+		} else {
+			error = true;
+		}
+
+		if (error) {
+			txt = RTR("<Invalid>");
+		}
+
 		TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 		minimum_size.height = MAX(minimum_size.height, theme_cache.background_style->get_minimum_size().height + tl.get_size().y);
 	} else { // this is needed, else the progressbar will collapse
@@ -149,7 +170,7 @@ void ProgressBar::_notification(int p_what) {
 					break;
 			}
 
-			if (show_percentage) {
+			if (!label_format.is_empty()) {
 				double ratio = 0;
 
 				// Avoid division by zero.
@@ -168,13 +189,36 @@ void ProgressBar::_notification(int p_what) {
 					ratio = CLAMP(percentage, is_lesser_allowed() ? percentage : 0, is_greater_allowed() ? percentage : 1);
 				}
 
-				String txt = itos(int(Math::round(ratio * 100)));
+				bool error = false;
+				String txt;
 
-				if (is_localizing_numeral_system()) {
-					const String &lang = _get_locale();
-					txt = TranslationServer::get_singleton()->format_number(txt, lang) + TranslationServer::get_singleton()->get_percent_sign(lang);
+				const int s_count = label_format.count("%s");
+
+				if (s_count == 0) {
+					// Check this first as this is the most likely case
+					const Variant percentage = ratio * 100;
+					txt = label_format.sprintf(Span(&percentage, 1), &error);
+				} else if (s_count == 2) {
+					const String value = String::num(Math::snapped(get_value(), get_step()), -1).trim_suffix(".0");
+					const String max = String::num(Math::snapped(get_max(), get_step()), -1).trim_suffix(".0");
+					const Variant fraction_args[] = {
+						value,
+						max
+					};
+
+					txt = label_format.sprintf(Span(fraction_args, 2), &error);
+				} else if (s_count == 1) {
+					const Variant value_arg = String::num(Math::snapped(get_value(), get_step()), -1).trim_suffix(".0");;
+					txt = label_format.sprintf(Span(&value_arg, 1), &error);
 				} else {
-					txt += String("%");
+					error = true;
+				}
+
+				if (error) {
+					txt = RTR("<Invalid>");
+				} else if (is_localizing_numeral_system()) {
+					const String &lang = _get_locale();
+					txt = TranslationServer::get_singleton()->format_number(txt, lang);
 				}
 
 				TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
@@ -191,7 +235,7 @@ void ProgressBar::_notification(int p_what) {
 }
 
 void ProgressBar::_validate_property(PropertyInfo &p_property) const {
-	if (Engine::get_singleton()->is_editor_hint() && indeterminate && p_property.name == "show_percentage") {
+	if (Engine::get_singleton()->is_editor_hint() && indeterminate && p_property.name == "format") {
 		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 	} else if (!indeterminate && p_property.name == "editor_preview_indeterminate") {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -209,18 +253,55 @@ int ProgressBar::get_fill_mode() {
 	return mode;
 }
 
-void ProgressBar::set_show_percentage(bool p_visible) {
-	if (show_percentage == p_visible) {
+void ProgressBar::set_format(const String &p_format) {
+	if (label_format == p_format) {
 		return;
 	}
-	show_percentage = p_visible;
+
+	label_format = p_format;
 	update_minimum_size();
+	update_configuration_warnings();
 	queue_redraw();
 }
 
-bool ProgressBar::is_percentage_shown() const {
-	return show_percentage;
+String ProgressBar::get_format() const {
+	return label_format;
 }
+
+#ifndef DISABLE_DEPRECATED
+void ProgressBar::set_show_percentage(bool p_visible) {
+	set_format(p_visible ? String("%d%%") : String());
+}
+
+bool ProgressBar::is_percentage_shown() const {
+	return !label_format.is_empty();
+}
+#endif // DISABLE_DEPRECATED
+
+PackedStringArray ProgressBar::get_configuration_warnings() const {
+	PackedStringArray warnings = Range::get_configuration_warnings();
+
+	if (!label_format.is_empty()) {
+		bool error = false;
+		String error_message;
+		if (label_format.count("%s") == 0) {
+			const Variant test_value = 100.0;
+			error_message = label_format.sprintf(Span(&test_value, 1), &error);
+		} else if (label_format.count("%s") == 2) {
+			const Variant fraction_args[] = { String("1"), String("1") };
+			error_message = label_format.sprintf(Span(fraction_args, 2), &error);
+		} else if (label_format.count("%s") == 1) {
+			const Variant value = String("1");
+			error_message = label_format.sprintf(Span(&value, 1), &error);
+		}
+		if (error) {
+			warnings.push_back(vformat(RTR("The format property is not valid: %s."), error_message));
+		}
+	}
+
+	return warnings;
+}
+
 
 void ProgressBar::set_indeterminate(bool p_indeterminate) {
 	if (indeterminate == p_indeterminate) {
@@ -261,18 +342,25 @@ bool ProgressBar::is_editor_preview_indeterminate_enabled() const {
 void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &ProgressBar::set_fill_mode);
 	ClassDB::bind_method(D_METHOD("get_fill_mode"), &ProgressBar::get_fill_mode);
-	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
-	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
 	ClassDB::bind_method(D_METHOD("set_indeterminate", "indeterminate"), &ProgressBar::set_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_indeterminate"), &ProgressBar::is_indeterminate);
 	ClassDB::bind_method(D_METHOD("set_editor_preview_indeterminate", "preview_indeterminate"), &ProgressBar::set_editor_preview_indeterminate);
 	ClassDB::bind_method(D_METHOD("is_editor_preview_indeterminate_enabled"), &ProgressBar::is_editor_preview_indeterminate_enabled);
+	ClassDB::bind_method(D_METHOD("set_format", "format"), &ProgressBar::set_format);
+	ClassDB::bind_method(D_METHOD("get_format"), &ProgressBar::get_format);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
+	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
+#endif
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_percentage"), "set_show_percentage", "is_percentage_shown");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "indeterminate"), "set_indeterminate", "is_indeterminate");
 	ADD_GROUP("Editor", "editor_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_preview_indeterminate"), "set_editor_preview_indeterminate", "is_editor_preview_indeterminate_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "format"), "set_format", "get_format");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_percentage"), "set_show_percentage", "is_percentage_shown");
+#endif
 
 	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);
 	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);
