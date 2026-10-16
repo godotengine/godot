@@ -75,7 +75,7 @@ protected:
 
 	void _request_object_snapshot();
 	void _begin_object_snapshot();
-	void _on_debug_breaked(bool p_reallydid, bool p_can_debug, const String &p_reason, bool p_has_stackdump);
+	void _on_debug_breaked(bool p_reallydid, bool p_can_debug, const String &p_reason, bool p_has_stackdump, int p_thread_id);
 	void _show_selected_snapshot();
 	void _on_snapshot_deselected();
 	Ref<DirAccess> _get_and_create_snapshot_storage_dir();
