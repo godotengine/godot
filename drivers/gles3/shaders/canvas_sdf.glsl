@@ -47,6 +47,9 @@ layout(location = 0) out vec4 distance_field;
 #endif
 
 vec4 float_to_vec4(float p_float) {
+    if (p_float >= 1.0) {
+        return vec4(0.0, 0.0, 0.0, 1.0);
+    }
     highp vec4 comp = fract(p_float * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
 	return comp;
