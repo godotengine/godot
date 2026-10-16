@@ -174,6 +174,9 @@ static PackedData *packed_data = nullptr;
 static ZipArchive *zip_packed_data = nullptr;
 #endif
 static MessageQueue *message_queue = nullptr;
+#ifdef LIBGODOT_ENABLED
+static String original_cwd;
+#endif
 
 #if defined(STEAMAPI_ENABLED)
 static SteamTracker *steam_tracker = nullptr;
@@ -987,6 +990,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	set_current_thread_safe_for_nodes(true);
 
 	OS::get_singleton()->initialize();
+
+#ifdef LIBGODOT_ENABLED
+	original_cwd = OS::get_singleton()->get_cwd();
+#endif
 
 	CoreGlobals::print_ready = true;
 
@@ -5373,6 +5380,9 @@ void Main::cleanup(bool p_force) {
 	memdelete(camera_server);
 	camera_server = nullptr;
 
+#ifdef LIBGODOT_ENABLED
+	OS::get_singleton()->set_cwd(original_cwd);
+#endif
 	OS::get_singleton()->finalize();
 
 	finalize_display();
