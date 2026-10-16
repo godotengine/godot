@@ -36,21 +36,37 @@ class ArrayMesh;
 
 class CapsuleShape3D : public Shape3D {
 	GDCLASS(CapsuleShape3D, Shape3D);
-	float radius = 0.5;
-	float height = 2.0;
+	real_t top_radius = 0.5;
+	real_t bottom_radius = 0.5;
+	real_t mid_height = 1.0; // Height of the cylindrical part
+
+	bool tapered = false;
 
 protected:
 	static void _bind_methods();
 
 	virtual void _update_shape() override;
 
+	void _validate_property(PropertyInfo &p_property) const;
+
 public:
-	void set_radius(float p_radius);
-	float get_radius() const;
-	void set_height(float p_height);
-	float get_height() const;
+	void set_top_radius(real_t p_top_radius);
+	real_t get_top_radius() const;
+
+	void set_bottom_radius(real_t p_bottom_radius);
+	real_t get_bottom_radius() const;
+
+	void set_radius(const real_t p_radius);
+	real_t get_radius() const;
+
 	void set_mid_height(real_t p_mid_height);
 	real_t get_mid_height() const;
+
+	void set_height(real_t p_height);
+	real_t get_height() const;
+
+	void set_tapered(bool value);
+	bool is_tapered() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
 	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
