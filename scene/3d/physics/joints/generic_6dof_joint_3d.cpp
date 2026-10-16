@@ -58,6 +58,9 @@ void Generic6DOFJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_target_rotation"), &Generic6DOFJoint3D::has_target_rotation);
 	ClassDB::bind_method(D_METHOD("clear_angular_target_rotation"), &Generic6DOFJoint3D::clear_angular_target_rotation);
 
+	ClassDB::bind_method(D_METHOD("get_applied_force"), &Generic6DOFJoint3D::get_applied_force);
+	ClassDB::bind_method(D_METHOD("get_applied_torque"), &Generic6DOFJoint3D::get_applied_torque);
+
 	ADD_GROUP("Linear Limit", "linear_limit_");
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "linear_limit_x/enabled"), "set_flag_x", "get_flag_x", FLAG_ENABLE_LINEAR_LIMIT);
@@ -403,6 +406,20 @@ void Generic6DOFJoint3D::clear_angular_target_rotation() {
 	server->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_X, PS3DE::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, params_x[PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT]);
 	server->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_Y, PS3DE::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, params_y[PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT]);
 	server->generic_6dof_joint_set_param(get_rid(), Vector3::AXIS_Z, PS3DE::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, params_z[PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT]);
+}
+
+float Generic6DOFJoint3D::get_applied_force() const {
+	if (is_configured()) {
+		return PhysicsServer3D::get_singleton()->generic_6dof_joint_get_applied_force(get_rid());
+	}
+	return 0.0f;
+}
+
+float Generic6DOFJoint3D::get_applied_torque() const {
+	if (is_configured()) {
+		return PhysicsServer3D::get_singleton()->generic_6dof_joint_get_applied_torque(get_rid());
+	}
+	return 0.0f;
 }
 
 void Generic6DOFJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) {
