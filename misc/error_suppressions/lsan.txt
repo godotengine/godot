@@ -1,2 +1,5 @@
 # Supported suppression types are:
 # - leak
+
+# leak:libfontconfig
+# leak:libvulkan
