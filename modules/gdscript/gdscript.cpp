@@ -2083,6 +2083,16 @@ void GDScriptInstance::reload_members() {
 #endif
 }
 
+Variant GDScriptInstance::_get_default_value_for_member(const KeyValue<StringName, GDScript::MemberInfo> &p_member_index) {
+#ifdef DEBUG_ENABLED
+	if (script->member_default_values.has(p_member_index.key)) {
+		return script->member_default_values.get(p_member_index.key);
+	}
+
+	return GDScriptHelper::construct_empty_value_for_data_type(p_member_index.value.data_type);
+#endif
+}
+
 GDScriptInstance::~GDScriptInstance() {
 	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
