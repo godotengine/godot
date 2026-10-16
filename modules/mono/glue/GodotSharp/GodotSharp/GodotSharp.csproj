@@ -64,6 +64,7 @@
     <Compile Include="Core\Bridge\SignalKey.cs" />
     <Compile Include="Core\Callable.generics.cs" />
     <Compile Include="Core\CustomGCHandle.cs" />
+    <Compile Include="Core\AlcTracker.cs" />
     <Compile Include="Core\Array.cs" />
     <Compile Include="Core\Attributes\AssemblyHasScriptsAttribute.cs" />
     <Compile Include="Core\Attributes\ExportAttribute.cs" />
