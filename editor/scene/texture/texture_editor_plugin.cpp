@@ -33,13 +33,17 @@
 #include "core/object/callable_mp.h"
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/color_rect.h"
+#include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/view_panner.h"
+#include "scene/main/scene_tree.h"
 #include "scene/resources/animated_texture.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/compressed_texture.h"
@@ -51,6 +55,7 @@
 #include "scene/resources/streamed_texture.h"
 #include "scene/resources/texture_rd.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_server.h"
 
 constexpr const char *texture_2d_shader_code = R"(
 shader_type canvas_item;
@@ -96,47 +101,124 @@ void TexturePreview::finish_shaders() {
 	texture_material.unref();
 }
 
-TextureRect *TexturePreview::get_texture_display() {
-	return texture_display;
+void TexturePreview::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
+	draw_ofs -= p_scroll_vec / draw_zoom;
+	_clamp_draw_ofs();
+	_update_scrollbars();
+	texture_display->queue_redraw();
+	texture_display->set_default_cursor_shape(CursorShape::CURSOR_DRAG);
 }
 
-void TexturePreview::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			if (!is_inside_tree()) {
-				// TODO: This is a workaround because `NOTIFICATION_THEME_CHANGED`
-				// is getting called for some reason when the `TexturePreview` is
-				// getting destroyed, which causes `get_theme_font()` to return `nullptr`.
-				// See https://github.com/godotengine/godot/issues/50743.
-				break;
-			}
+void TexturePreview::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+	_zoom_on_position(draw_zoom * p_zoom_factor, p_origin);
+	_update_scrollbars();
+}
 
-			if (metadata_label) {
-				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
-				metadata_label->add_theme_font_override(SceneStringName(font), metadata_label_font);
-			}
-
-			if (metadata_toggle) {
-				metadata_toggle->set_button_icon(get_editor_theme_icon(SNAME("Info")));
-			}
-
-			bg_rect->set_color(get_theme_color(SNAME("dark_color_2"), EditorStringName(Editor)));
-			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
-			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
-		} break;
+void TexturePreview::_scroll_changed(float) {
+	if (updating_scroll) {
+		return;
 	}
+
+	if (hscroll->is_visible()) {
+		draw_ofs.x = hscroll->get_value() / draw_zoom;
+	}
+	if (vscroll->is_visible()) {
+		draw_ofs.y = vscroll->get_value() / draw_zoom;
+	}
+
+	texture_display->queue_redraw();
 }
 
-void TexturePreview::_draw_outline() {
+void TexturePreview::_zoom_on_position(float p_zoom, Point2 p_position) {
+	if (p_zoom < min_draw_zoom || p_zoom > max_draw_zoom) {
+		return;
+	}
+
+	float prev_zoom = draw_zoom;
+	draw_zoom = p_zoom;
+	Point2 ofs = p_position;
+	ofs = ofs / prev_zoom - ofs / draw_zoom;
+	draw_ofs = (draw_ofs + ofs).round();
+
+	texture_display->queue_redraw();
+}
+
+void TexturePreview::_zoom_in() {
+	_zoom_on_position(draw_zoom * 1.5, texture_display->get_size() / 2.0);
+	_update_scrollbars();
+}
+
+void TexturePreview::_zoom_out() {
+	_zoom_on_position(draw_zoom / 1.5, texture_display->get_size() / 2.0);
+	_update_scrollbars();
+}
+
+void TexturePreview::_fit_to_view() {
+	Size2 view_size = texture_display->get_size();
+	Size2 tex_size = preview_texture->get_size();
+
+	if (tex_size.x <= 0 || tex_size.y <= 0) {
+		return;
+	}
+
 	const float outline_width = Math::round(EDSCALE);
-	const Rect2 outline_rect = Rect2(Vector2(), outline_overlay->get_size()).grow(outline_width * 0.5);
-	outline_overlay->draw_rect(outline_rect, theme_cache.outline_color, false, outline_width);
+	float fit_zoom = MIN(
+			(view_size.x - outline_width) / tex_size.x,
+			(view_size.y - outline_width) / tex_size.y);
+	draw_zoom = CLAMP(fit_zoom, min_draw_zoom, max_draw_zoom);
+
+	draw_ofs = ((tex_size - view_size / draw_zoom) / 2.0).round();
+
+	_update_scrollbars();
+	texture_display->queue_redraw();
 }
 
-void TexturePreview::_update_texture_display_ratio() {
-	if (texture_display->get_texture().is_valid()) {
-		centering_container->set_ratio(texture_display->get_texture()->get_size().aspect());
+void TexturePreview::_clamp_draw_ofs() {
+	if (preview_texture.is_null()) {
+		return;
 	}
+	Size2 view = texture_display->get_size();
+	Size2 range = (preview_texture->get_size() * draw_zoom - view) / draw_zoom;
+	draw_ofs = draw_ofs.clamp(range.minf(0.0f), range.maxf(0.0f));
+}
+
+void TexturePreview::_update_scrollbars() {
+	if (preview_texture.is_null()) {
+		return;
+	}
+
+	Size2 view_size = texture_display->get_size();
+	Size2 scaled_size = preview_texture->get_size() * draw_zoom;
+
+	updating_scroll = true;
+
+	hscroll->set_max(scaled_size.x);
+	hscroll->set_page(view_size.x);
+	hscroll->set_value(draw_ofs.x * draw_zoom);
+
+	vscroll->set_max(scaled_size.y);
+	vscroll->set_page(view_size.y);
+	vscroll->set_value(draw_ofs.y * draw_zoom);
+
+	hscroll->set_visible(scaled_size.x > view_size.x);
+	vscroll->set_visible(scaled_size.y > view_size.y);
+
+	Size2 hmin = hscroll->get_combined_minimum_size();
+	Size2 vmin = vscroll->get_combined_minimum_size();
+
+	// Avoid scrollbar overlapping.
+	hscroll->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, vscroll->is_visible() ? -vmin.width : 0);
+	vscroll->set_anchor_and_offset(SIDE_BOTTOM, Control::ANCHOR_END, hscroll->is_visible() ? -hmin.height : 0);
+
+	updating_scroll = false;
+}
+
+Transform2D TexturePreview::_get_offset_transform() const {
+	Transform2D mtx;
+	mtx.columns[2] = -draw_ofs * draw_zoom;
+	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
+
+	return mtx;
 }
 
 static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
@@ -189,24 +271,23 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 }
 
 void TexturePreview::_update_metadata_label_text() {
-	const Ref<Texture2D> texture = texture_display->get_texture();
-	ERR_FAIL_COND(texture.is_null());
+	ERR_FAIL_COND(preview_texture.is_null());
 
 	Image::Format format;
 	int mipmaps;
 
-	Ref<Image> image = texture->get_image();
+	Ref<Image> image = preview_texture->get_image();
 	if (image.is_valid()) {
 		format = image->get_format();
 		mipmaps = image->get_mipmap_count();
 	} else {
-		format = get_texture_2d_format(texture.ptr());
-		mipmaps = get_texture_mipmaps_count(texture);
+		format = get_texture_2d_format(preview_texture.ptr());
+		mipmaps = get_texture_mipmaps_count(preview_texture);
 	}
 
-	const String format_name = format != Image::FORMAT_MAX ? Image::get_format_name(format) : texture->get_class();
+	const String format_name = format != Image::FORMAT_MAX ? Image::get_format_name(format) : preview_texture->get_class();
 
-	const Vector2i resolution = texture->get_size();
+	const Vector2i resolution = preview_texture->get_size();
 
 	if (format != Image::FORMAT_MAX) {
 		// Avoid signed integer overflow that could occur with huge texture sizes by casting everything to uint64_t.
@@ -227,8 +308,8 @@ void TexturePreview::_update_metadata_label_text() {
 		if (mipmaps >= 1) {
 			metadata_label->set_text(
 					vformat(String::utf8("%d×%d %s\n") + TTR("%s Mipmaps") + "\n" + TTR("Memory: %s"),
-							texture->get_width(),
-							texture->get_height(),
+							preview_texture->get_width(),
+							preview_texture->get_height(),
 							format_name,
 							mipmaps,
 							String::humanize_size(memory)));
@@ -237,16 +318,16 @@ void TexturePreview::_update_metadata_label_text() {
 			// especially since 0, 6, and 8 look quite close with the default code font.
 			metadata_label->set_text(
 					vformat(String::utf8("%d×%d %s\n") + TTR("No Mipmaps") + "\n" + TTR("Memory: %s"),
-							texture->get_width(),
-							texture->get_height(),
+							preview_texture->get_width(),
+							preview_texture->get_height(),
 							format_name,
 							String::humanize_size(memory)));
 		}
 	} else {
 		metadata_label->set_text(
 				vformat(String::utf8("%d×%d %s"),
-						texture->get_width(),
-						texture->get_height(),
+						preview_texture->get_width(),
+						preview_texture->get_height(),
 						format_name));
 	}
 }
@@ -254,6 +335,75 @@ void TexturePreview::_update_metadata_label_text() {
 void TexturePreview::_toggle_metadata_label() {
 	metadata_label->set_visible(!metadata_label->is_visible());
 	metadata_toggle->set_modulate(Color(1, 1, 1, metadata_label->is_visible() ? 0.8 : 0.4));
+}
+
+void TexturePreview::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (!is_inside_tree()) {
+				// TODO: This is a workaround because `NOTIFICATION_THEME_CHANGED`
+				// is getting called for some reason when the `TexturePreview` is
+				// getting destroyed, which causes `get_theme_font()` to return `nullptr`.
+				// See https://github.com/godotengine/godot/issues/50743.
+				break;
+			}
+
+			if (metadata_label) {
+				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), EditorStringName(EditorFonts));
+				metadata_label->add_theme_font_override(SceneStringName(font), metadata_label_font);
+			}
+
+			if (metadata_toggle) {
+				metadata_toggle->set_button_icon(get_editor_theme_icon(SNAME("Info")));
+			}
+
+			checkerboard->set_texture(get_editor_theme_icon(SNAME("Checkerboard")));
+			theme_cache.outline_color = get_theme_color(SNAME("extra_border_color_1"), EditorStringName(Editor));
+
+			zoom_out_button->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_reset_button->set_button_icon(get_editor_theme_icon(SNAME("ZoomReset")));
+			zoom_in_button->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			if (popout_button) {
+				popout_button->set_button_icon(get_editor_theme_icon(SNAME("MakeFloating")));
+			}
+		} break;
+	}
+}
+
+void TexturePreview::_texture_display_gui_input(const Ref<InputEvent> &p_event) {
+	panner->gui_input(p_event, texture_display->get_global_rect());
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && !mb->is_pressed() && !panner->is_panning()) {
+		texture_display->set_default_cursor_shape(CursorShape::CURSOR_ARROW);
+	}
+}
+
+void TexturePreview::_texture_display_draw() {
+	if (preview_texture.is_null()) {
+		return;
+	}
+
+	const float outline_width = Math::round(EDSCALE);
+
+	checkerboard->set_position(-draw_ofs * draw_zoom);
+	checkerboard->set_size(preview_texture->get_size() * draw_zoom);
+
+	outline_overlay->set_position(-draw_ofs * draw_zoom - Vector2(outline_width / 2, outline_width / 2));
+	outline_overlay->set_size(preview_texture->get_size() * draw_zoom + Vector2(outline_width, outline_width));
+	outline_overlay->queue_redraw();
+
+	Transform2D mtx = _get_offset_transform();
+
+	RS::get_singleton()->canvas_item_add_set_transform(texture_display->get_canvas_item(), mtx);
+	texture_display->draw_texture(preview_texture, Point2());
+	RS::get_singleton()->canvas_item_add_set_transform(texture_display->get_canvas_item(), Transform2D());
+}
+
+void TexturePreview::_outline_overlay_draw() {
+	const float outline_width = Math::round(EDSCALE);
+	Rect2 outline_rect = Rect2(Point2(), outline_overlay->get_size()).grow(-outline_width * 0.5);
+	outline_overlay->draw_rect(outline_rect, theme_cache.outline_color, false, outline_width);
 }
 
 void TexturePreview::on_selected_channels_changed() {
@@ -264,76 +414,154 @@ void TexturePreview::on_selected_mipmap_changed(double p_value) {
 	texture_display->set_instance_shader_parameter("lod", mipmap_spinbox->get_value());
 }
 
-TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
-	const float outline_width = Math::round(EDSCALE);
+void TexturePreview::on_popout_pressed() {
+	AcceptDialog *popout_dialog = memnew(AcceptDialog);
+	popout_dialog->set_title(TTRC("Texture Preview"));
 
-	set_custom_minimum_size(Size2(0.0, 256 * EDSCALE) + Size2(outline_width, outline_width) * 2);
+	Vector2 popout_size = get_tree()->get_root()->get_size();
+	popout_size = (popout_size * 0.5).max(Vector2(400, 300));
+	if (EditorSettings::get_singleton()->has_setting("interface/editor/thumbnail_window_size")) {
+		popout_size = EditorSettings::get_singleton()->get_setting("interface/editor/thumbnail_window_size");
+	}
 
-	bg_rect = memnew(ColorRect);
-	add_child(bg_rect);
+	add_child(popout_dialog);
+	TexturePreview *texture_preview_copy = memnew(TexturePreview(preview_texture, true, true));
+	popout_dialog->add_child(texture_preview_copy);
 
-	margin_container = memnew(MarginContainer);
-	margin_container->add_theme_constant_override("margin_right", outline_width);
-	margin_container->add_theme_constant_override("margin_top", outline_width);
-	margin_container->add_theme_constant_override("margin_left", outline_width);
-	margin_container->add_theme_constant_override("margin_bottom", outline_width);
-	add_child(margin_container);
+	popout_dialog->connect("canceled", callable_mp(this, &TexturePreview::on_popout_closed).bind(popout_dialog));
+	popout_dialog->connect(SceneStringName(confirmed), callable_mp(this, &TexturePreview::on_popout_closed).bind(popout_dialog));
+	popout_dialog->popup_centered(popout_size);
+}
 
-	centering_container = memnew(AspectRatioContainer);
-	margin_container->add_child(centering_container);
+void TexturePreview::on_popout_closed(AcceptDialog *p_dialog) {
+	if (p_dialog) {
+		EditorSettings::get_singleton()->set_setting("interface/editor/thumbnail_window_size", p_dialog->get_size());
+		EditorSettings::get_singleton()->save();
+		p_dialog->queue_free();
+	}
+}
+
+TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata, bool p_popout) {
+	set_custom_minimum_size(Size2(0.0, 256 * EDSCALE));
+
+	preview_texture = p_texture;
+
+	panner.instantiate();
+	panner->set_callbacks(callable_mp(this, &TexturePreview::_pan_callback), callable_mp(this, &TexturePreview::_zoom_callback));
+
+	draw_zoom = MAX(1.0f, EDSCALE);
+	max_draw_zoom = 128.0f * MAX(1.0f, EDSCALE);
+	min_draw_zoom = 0.01f * MAX(1.0f, EDSCALE);
+
+	texture_display = memnew(Control);
+	texture_display->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+	texture_display->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	texture_display->set_clip_contents(true);
+	texture_display->set_material(texture_material);
+	texture_display->set_instance_shader_parameter("u_channel_factors", Vector4(1, 1, 1, 1));
+	texture_display->connect(SceneStringName(draw), callable_mp(this, &TexturePreview::_texture_display_draw));
+	texture_display->connect(SceneStringName(gui_input), callable_mp(this, &TexturePreview::_texture_display_gui_input));
+	texture_display->connect(SceneStringName(focus_exited), callable_mp(panner.ptr(), &ViewPanner::release_pan_key));
+	texture_display->connect(SceneStringName(resized), callable_mp(this, &TexturePreview::_fit_to_view));
 
 	checkerboard = memnew(TextureRect);
 	checkerboard->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
-	checkerboard->set_texture_repeat(CanvasItem::TEXTURE_REPEAT_ENABLED);
-	centering_container->add_child(checkerboard);
+	checkerboard->set_texture_repeat(TextureRect::TEXTURE_REPEAT_ENABLED);
+	checkerboard->set_draw_behind_parent(true);
+	checkerboard->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	checkerboard->set_use_parent_material(false);
+	texture_display->add_child(checkerboard);
 
-	texture_display = memnew(TextureRect);
-	texture_display->set_texture_filter(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
-	texture_display->set_texture(p_texture);
-	texture_display->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
-	texture_display->set_material(texture_material);
-	texture_display->set_instance_shader_parameter("u_channel_factors", Vector4(1, 1, 1, 1));
-	centering_container->add_child(texture_display);
-
-	// Creating a separate control so it is not affected by the filtering shader.
 	outline_overlay = memnew(Control);
-	centering_container->add_child(outline_overlay);
+	outline_overlay->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	outline_overlay->set_use_parent_material(false);
+	outline_overlay->connect(SceneStringName(draw), callable_mp(this, &TexturePreview::_outline_overlay_draw));
+	texture_display->add_child(outline_overlay);
 
-	outline_overlay->connect(SceneStringName(draw), callable_mp(this, &TexturePreview::_draw_outline));
+	add_child(texture_display);
 
-	if (p_texture.is_valid()) {
-		_update_texture_display_ratio();
-		p_texture->connect_changed(callable_mp(this, &TexturePreview::_update_texture_display_ratio));
-	}
+	vscroll = memnew(VScrollBar);
+	vscroll->set_anchors_and_offsets_preset(Control::PRESET_RIGHT_WIDE);
+	vscroll->set_step(0.001);
+	vscroll->connect(SceneStringName(value_changed), callable_mp(this, &TexturePreview::_scroll_changed));
+	texture_display->add_child(vscroll);
+
+	hscroll = memnew(HScrollBar);
+	hscroll->set_anchors_and_offsets_preset(Control::PRESET_BOTTOM_WIDE);
+	hscroll->set_step(0.001);
+	hscroll->connect(SceneStringName(value_changed), callable_mp(this, &TexturePreview::_scroll_changed));
+	texture_display->add_child(hscroll);
 
 	// Null can be passed by `Camera3DPreview` (which immediately after sets a texture anyways).
 	const Image::Format format = p_texture.is_valid() ? get_texture_2d_format(p_texture.ptr()) : Image::FORMAT_MAX;
 	const uint32_t components_mask = format != Image::FORMAT_MAX ? Image::get_format_component_mask(format) : 0xf;
-
-	// Setup Mipmap selector.
 	const int mipmaps = get_texture_mipmaps_count(p_texture);
-	if (mipmaps > 0) {
-		mipmap_spinbox = memnew(SpinBox);
-		mipmap_spinbox->set_tooltip_text(TTRC("Mipmap level index selector."));
-		mipmap_spinbox->set_max(mipmaps);
-		mipmap_spinbox->set_modulate(Color(1, 1, 1, 0.8));
-		mipmap_spinbox->set_h_grow_direction(GROW_DIRECTION_BEGIN);
-		mipmap_spinbox->set_h_size_flags(Control::SIZE_SHRINK_END);
-		mipmap_spinbox->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
-		mipmap_spinbox->set_anchors_preset(Control::PRESET_TOP_RIGHT);
-		mipmap_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &TexturePreview::on_selected_mipmap_changed));
-		add_child(mipmap_spinbox);
+
+	const bool has_channels = p_show_metadata && !Math::is_power_of_2(components_mask);
+	const bool has_mipmaps = mipmaps > 0;
+	const bool has_content_controls = has_channels || has_mipmaps;
+
+	top_bar = memnew(HBoxContainer);
+	top_bar->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+	top_bar->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	add_child(top_bar);
+
+	zoom_out_button = memnew(Button);
+	zoom_out_button->connect(SceneStringName(pressed), callable_mp(this, &TexturePreview::_zoom_out));
+	zoom_out_button->set_flat(true);
+	top_bar->add_child(zoom_out_button);
+	zoom_reset_button = memnew(Button);
+	zoom_reset_button->connect(SceneStringName(pressed), callable_mp(this, &TexturePreview::_fit_to_view));
+	zoom_reset_button->set_flat(true);
+	top_bar->add_child(zoom_reset_button);
+	zoom_in_button = memnew(Button);
+	zoom_in_button->connect(SceneStringName(pressed), callable_mp(this, &TexturePreview::_zoom_in));
+	zoom_in_button->set_flat(true);
+	top_bar->add_child(zoom_in_button);
+
+	if (has_content_controls) {
+		VSeparator *top_bar_sep = memnew(VSeparator);
+		top_bar->add_child(top_bar_sep);
 	}
 
-	// Add color channel selector at the bottom left if more than 1 channel is available.
-	if (p_show_metadata && !Math::is_power_of_2(components_mask)) {
+	// Add color channel selector at the top left corner if more than 1 channel is available.
+	if (has_channels) {
 		channel_selector = memnew(ColorChannelSelector);
 		channel_selector->connect("selected_channels_changed", callable_mp(this, &TexturePreview::on_selected_channels_changed));
 		channel_selector->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 		channel_selector->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
 		channel_selector->set_available_channels_mask(components_mask);
-		add_child(channel_selector);
+		top_bar->add_child(channel_selector);
+	}
+
+	// Setup Mipmap selector.
+	if (has_mipmaps) {
+		mipmap_spinbox = memnew(SpinBox);
+		mipmap_spinbox->set_tooltip_text(TTRC("Mipmap level index selector."));
+		mipmap_spinbox->set_max(mipmaps);
+		mipmap_spinbox->set_modulate(Color(1, 1, 1, 0.8));
+		mipmap_spinbox->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
+		mipmap_spinbox->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+		mipmap_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &TexturePreview::on_selected_mipmap_changed));
+		mipmap_spinbox->get_line_edit()->add_theme_constant_override("minimum_character_width", 2);
+		top_bar->add_child(mipmap_spinbox);
+	}
+
+	// Spacer to keep the rest of the buttons on the right.
+	Control *top_bar_spacer = memnew(Control);
+	top_bar_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	top_bar_spacer->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	top_bar->add_child(top_bar_spacer);
+
+	// Add a button to the upper right corner that opens a popup window with a copy of the preview.
+	if (!p_popout) {
+		popout_button = memnew(Button);
+		popout_button->connect(SceneStringName(pressed), callable_mp(this, &TexturePreview::on_popout_pressed));
+		popout_button->set_tooltip_text(TTRC("Open the preview in a separate window."));
+		popout_button->set_flat(true);
+		popout_button->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+		top_bar->add_child(popout_button);
 	}
 
 	if (p_show_metadata) {
