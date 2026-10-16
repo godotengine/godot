@@ -52,9 +52,9 @@ struct FillLinear
         fillLinear(fill, dst, y, x, len, cmp, alpha, csize, opacity);
     }
 
-    void operator()(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlenderA op, SwBlender op2, uint8_t a)
+    void operator()(const SwSurface* surface, const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlenderA op, SwBlender op2, uint8_t a)
     {
-        fillLinear(fill, dst, y, x, len, op, op2, a);
+        fillLinear(surface, fill, dst, y, x, len, op, op2, a);
     }
 
 };
@@ -81,9 +81,9 @@ struct FillRadial
         fillRadial(fill, dst, y, x, len, cmp, alpha, csize, opacity);
     }
 
-    void operator()(const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlenderA op, SwBlender op2, uint8_t a)
+    void operator()(const SwSurface* surface, const SwFill* fill, uint32_t* dst, uint32_t y, uint32_t x, uint32_t len, SwBlenderA op, SwBlender op2, uint8_t a)
     {
-        fillRadial(fill, dst, y, x, len, op, op2, a);
+        fillRadial(surface, fill, dst, y, x, len, op, op2, a);
     }
 };
 
@@ -429,7 +429,7 @@ static bool _rasterBlendingRect(SwSurface* surface, const RenderRegion& bbox, co
     for (uint32_t y = 0; y < bbox.h(); ++y) {
         auto dst = &buffer[y * surface->stride];
         for (uint32_t x = 0; x < bbox.w(); ++x, ++dst) {
-            *dst = surface->blender(color, *dst);
+            *dst = surface->blender(surface, color, *dst);
         }
     }
     return true;
@@ -604,11 +604,11 @@ static bool _rasterBlendingRle(SwSurface* surface, const SwRle* rle, const Rende
         auto dst = &surface->buf32[span->y * surface->stride + x];
         if (span->coverage == 255) {
             for (auto x = 0; x < len; ++x, ++dst) {
-                *dst = surface->blender(color, *dst);
+                *dst = surface->blender(surface, color, *dst);
             }
         } else {
             for (auto x = 0; x < len; ++x, ++dst) {
-                *dst = INTERPOLATE(surface->blender(color, *dst), *dst, span->coverage);
+                *dst = INTERPOLATE(surface->blender(surface, color, *dst), *dst, span->coverage);
             }
         }
     }
@@ -711,6 +711,11 @@ static bool _rasterScaledMaskedRleImage(SwSurface* surface, const SwImage& image
 
 static bool _rasterScaledMattedRleImage(SwSurface* surface, const SwImage& image, const Matrix* itransform, const RenderRegion& bbox, uint8_t opacity)
 {
+    if (surface->channelSize == sizeof(uint8_t)) {
+        TVGERR("SW_ENGINE", "Not supported grayscale scaled matted rle image!");
+        return false;
+    }
+
     TVGLOG("SW_ENGINE", "Scaled Matted(%d) Rle Image", (int)surface->compositor->method);
 
     auto csize = surface->compositor->image.channelSize;
@@ -737,6 +742,11 @@ static bool _rasterScaledMattedRleImage(SwSurface* surface, const SwImage& image
 
 static bool _rasterScaledBlendingRleImage(SwSurface* surface, const SwImage& image, const Matrix* itransform, const RenderRegion& bbox, uint8_t opacity)
 {
+    if (surface->channelSize == sizeof(uint8_t)) {
+        TVGERR("SW_ENGINE", "Not supported grayscale scaled blending rle image!");
+        return false;
+    }
+
     auto scaleMethod = _scaleMethod(image);
     auto sampleSize = _sampleSize(image.scale);
     int32_t miny = 0, maxy = 0;
@@ -749,13 +759,13 @@ static bool _rasterScaledBlendingRleImage(SwSurface* surface, const SwImage& ima
             for (uint32_t x = static_cast<uint32_t>(span->x); x < static_cast<uint32_t>(span->x) + span->len; ++x, ++dst) {
                 SCALED_IMAGE_RANGE_X
                 auto src = scaleMethod(image.buf32, image.stride, image.w, image.h, sx, sy, miny, maxy, sampleSize);
-                *dst = INTERPOLATE(surface->blender(rasterUnpremultiply(src), *dst), *dst, A(src));
+                *dst = INTERPOLATE(surface->blender(surface, rasterUnpremultiply(src), *dst), *dst, A(src));
             }
         } else {
             for (uint32_t x = static_cast<uint32_t>(span->x); x < static_cast<uint32_t>(span->x) + span->len; ++x, ++dst) {
                 SCALED_IMAGE_RANGE_X
                 auto src = scaleMethod(image.buf32, image.stride, image.w, image.h, sx, sy, miny, maxy, sampleSize);
-                *dst = INTERPOLATE(surface->blender(rasterUnpremultiply(src), *dst), *dst, MULTIPLY(alpha, A(src)));
+                *dst = INTERPOLATE(surface->blender(surface, rasterUnpremultiply(src), *dst), *dst, MULTIPLY(alpha, A(src)));
             }
         }
     }
@@ -769,15 +779,28 @@ static bool _rasterScaledRleImage(SwSurface* surface, const SwImage& image, cons
     auto sampleSize = _sampleSize(image.scale);
     int32_t miny = 0, maxy = 0;
 
-    ARRAY_FOREACH(span, image.rle->spans) {
-        SCALED_IMAGE_RANGE_Y(span->y)
-        auto dst = &surface->buf32[span->y * surface->stride + span->x];
-        auto alpha = MULTIPLY(span->coverage, opacity);
-        for (uint32_t x = static_cast<uint32_t>(span->x); x < static_cast<uint32_t>(span->x) + span->len; ++x, ++dst) {
-            SCALED_IMAGE_RANGE_X
-            auto src = scaleMethod(image.buf32, image.stride, image.w, image.h, sx, sy, miny, maxy, sampleSize);
-            if (alpha < 255) src = ALPHA_BLEND(src, alpha);
-            *dst = src + ALPHA_BLEND(*dst, IA(src));
+    if (surface->channelSize == sizeof(uint32_t)) {
+        ARRAY_FOREACH(span, image.rle->spans) {
+            SCALED_IMAGE_RANGE_Y(span->y)
+            auto dst = &surface->buf32[span->y * surface->stride + span->x];
+            auto alpha = MULTIPLY(span->coverage, opacity);
+            for (uint32_t x = static_cast<uint32_t>(span->x); x < static_cast<uint32_t>(span->x) + span->len; ++x, ++dst) {
+                SCALED_IMAGE_RANGE_X
+                auto src = scaleMethod(image.buf32, image.stride, image.w, image.h, sx, sy, miny, maxy, sampleSize);
+                if (alpha < 255) src = ALPHA_BLEND(src, alpha);
+                *dst = src + ALPHA_BLEND(*dst, IA(src));
+            }
+        }
+    } else if (surface->channelSize == sizeof(uint8_t)) {
+        ARRAY_FOREACH(span, image.rle->spans) {
+            SCALED_IMAGE_RANGE_Y(span->y)
+            auto dst = &surface->buf8[span->y * surface->stride + span->x];
+            auto alpha = MULTIPLY(span->coverage, opacity);
+            for (uint32_t x = static_cast<uint32_t>(span->x); x < static_cast<uint32_t>(span->x) + span->len; ++x, ++dst) {
+                SCALED_IMAGE_RANGE_X
+                auto src = scaleMethod(image.buf32, image.stride, image.w, image.h, sx, sy, miny, maxy, sampleSize);
+                *dst = MULTIPLY(A(src), alpha);
+            }
         }
     }
     return true;
@@ -832,11 +855,11 @@ static bool _rasterDirectBlendingRleImage(SwSurface* surface, const SwImage& ima
         auto alpha = MULTIPLY(span->coverage, opacity);
         if (alpha == 255) {
             for (auto x = 0; x < len; ++x, ++dst, ++src) {
-                *dst = surface->blender(rasterUnpremultiply(*src), *dst);
+                *dst = surface->blender(surface, rasterUnpremultiply(*src), *dst);
             }
         } else {
             for (auto x = 0; x < len; ++x, ++dst, ++src) {
-                *dst = INTERPOLATE(surface->blender(rasterUnpremultiply(*src), *dst), *dst, MULTIPLY(alpha, A(*src)));
+                *dst = INTERPOLATE(surface->blender(surface, rasterUnpremultiply(*src), *dst), *dst, MULTIPLY(alpha, A(*src)));
             }
         }
     }
@@ -931,7 +954,7 @@ static bool _rasterScaledBlendingImage(SwSurface* surface, const SwImage& image,
         for (auto x = bbox.min.x; x < bbox.max.x; ++x, ++dst) {
             SCALED_IMAGE_RANGE_X
             auto src = scaleMethod(image.buf32, image.stride, image.w, image.h, sx, sy, miny, maxy, sampleSize);
-            *dst = INTERPOLATE(surface->blender(rasterUnpremultiply(src), *dst), *dst, MULTIPLY(opacity, A(src)));
+            *dst = INTERPOLATE(surface->blender(surface, rasterUnpremultiply(src), *dst), *dst, MULTIPLY(opacity, A(src)));
         }
     }
     return true;
@@ -950,11 +973,24 @@ static bool _rasterScaledImage(SwSurface* surface, const SwImage& image, const M
         for (auto y = bbox.min.y; y < bbox.max.y; ++y, buffer += surface->stride) {
             SCALED_IMAGE_RANGE_Y(y)
             auto dst = buffer;
-            for (auto x = bbox.min.x; x < bbox.max.x; ++x, ++dst) {
-                SCALED_IMAGE_RANGE_X
-                auto src = scaleMethod(image.buf32, image.stride, image.w, image.h, sx, sy, miny, maxy, sampleSize);
-                if (opacity < 255) src = ALPHA_BLEND(src, opacity);
-                *dst = src + ALPHA_BLEND(*dst, IA(src));
+            if (opacity == 255) {
+                for (auto x = bbox.min.x; x < bbox.max.x; ++x, ++dst) {
+                    SCALED_IMAGE_RANGE_X
+                    auto src = scaleMethod(image.buf32, image.stride, image.w, image.h, sx, sy, miny, maxy, sampleSize);
+                    if (image.alphaIgnored) *dst = src;
+                    else *dst = src + ALPHA_BLEND(*dst, IA(src));
+                }
+            } else {
+                for (auto x = bbox.min.x; x < bbox.max.x; ++x, ++dst) {
+                    SCALED_IMAGE_RANGE_X
+                    auto src = scaleMethod(image.buf32, image.stride, image.w, image.h, sx, sy, miny, maxy, sampleSize);
+                    if (image.alphaIgnored) {
+                        *dst = INTERPOLATE(src, *dst, opacity);
+                    } else {
+                        src = ALPHA_BLEND(src, opacity);
+                        *dst = src + ALPHA_BLEND(*dst, IA(src));
+                    }
+                }
             }
         }
     } else if (surface->channelSize == sizeof(uint8_t)) {
@@ -1042,7 +1078,8 @@ static bool _rasterDirectImage(SwSurface* surface, const SwImage& image, const R
     if (surface->channelSize == sizeof(uint32_t)) {
         auto dbuffer = &surface->buf32[bbox.min.y * surface->stride + bbox.min.x];
         for (auto y = 0; y < h; ++y, dbuffer += surface->stride, sbuffer += image.stride) {
-            rasterTranslucentPixel32(dbuffer, sbuffer, w, opacity);
+            if (image.alphaIgnored) rasterPixel32(dbuffer, sbuffer, w, opacity);
+            else rasterTranslucentPixel32(dbuffer, sbuffer, w, opacity);
         }
     //8bits grayscale
     //32 -> 8 direct converting seems an avoidable stage. maybe draw to a masking image after an intermediate scene. Can get rid of this?
@@ -1082,11 +1119,11 @@ static bool _rasterDirectMattedBlendingImage(SwSurface* surface, const SwImage& 
         auto src = sbuffer;
         if (opacity == 255) {
             for (auto dst = dbuffer; dst < dbuffer + w; ++dst, ++src, cmp += csize) {
-                *dst = INTERPOLATE(surface->blender(*src, *dst), *dst, MULTIPLY(A(*src), alpha(cmp)));
+                *dst = INTERPOLATE(surface->blender(surface, *src, *dst), *dst, MULTIPLY(A(*src), alpha(cmp)));
             }
         } else {
             for (auto dst = dbuffer; dst < dbuffer + w; ++dst, ++src, cmp += csize) {
-                *dst = INTERPOLATE(surface->blender(*src, *dst), *dst, MULTIPLY(MULTIPLY(A(*src), alpha(cmp)), opacity));
+                *dst = INTERPOLATE(surface->blender(surface, *src, *dst), *dst, MULTIPLY(MULTIPLY(A(*src), alpha(cmp)), opacity));
             }
         }
         cbuffer += compositor->image.stride * csize;
@@ -1115,11 +1152,11 @@ static bool _rasterDirectBlendingImage(SwSurface* surface, const SwImage& image,
         auto src = sbuffer;
         if (opacity == 255) {
             for (auto dst = dbuffer; dst < dbuffer + w; dst++, src++) {
-                *dst = INTERPOLATE(surface->blender(rasterUnpremultiply(*src), *dst), *dst, A(*src));
+                *dst = INTERPOLATE(surface->blender(surface, rasterUnpremultiply(*src), *dst), *dst, A(*src));
             }
         } else {
             for (auto dst = dbuffer; dst < dbuffer + w; dst++, src++) {
-                *dst = INTERPOLATE(surface->blender(rasterUnpremultiply(*src), *dst), *dst, MULTIPLY(opacity, A(*src)));
+                *dst = INTERPOLATE(surface->blender(surface, rasterUnpremultiply(*src), *dst), *dst, MULTIPLY(opacity, A(*src)));
             }
         }
     }
@@ -1203,11 +1240,11 @@ static bool _rasterBlendingGradientRect(SwSurface* surface, const RenderRegion& 
 
     if (fill->translucent) {
         for (uint32_t y = 0; y < bbox.h(); ++y) {
-            fillMethod()(fill, buffer + y * surface->stride, bbox.min.y + y, bbox.min.x, bbox.w(), opBlendPreNormal, surface->blender, 255);
+            fillMethod()(surface, fill, buffer + y * surface->stride, bbox.min.y + y, bbox.min.x, bbox.w(), opBlendPreNormal, surface->blender, 255);
         }
     } else {
         for (uint32_t y = 0; y < bbox.h(); ++y) {
-            fillMethod()(fill, buffer + y * surface->stride, bbox.min.y + y, bbox.min.x, bbox.w(), opBlendSrcOver, surface->blender, 255);
+            fillMethod()(surface, fill, buffer + y * surface->stride, bbox.min.y + y, bbox.min.x, bbox.w(), opBlendSrcOver, surface->blender, 255);
         }
     }
     return true;
@@ -1364,7 +1401,7 @@ static bool _rasterBlendingGradientRle(SwSurface* surface, const SwRle* rle, con
 
     for (uint32_t i = 0; i < rle->size(); ++i, ++span) {
         auto dst = &surface->buf32[span->y * surface->stride + span->x];
-        fillMethod()(fill, dst, span->y, span->x, span->len, opBlendPreNormal, surface->blender, span->coverage);
+        fillMethod()(surface, fill, dst, span->y, span->x, span->len, opBlendPreNormal, surface->blender, span->coverage);
     }
     return true;
 }
@@ -1489,10 +1526,8 @@ void rasterPixel32(uint32_t *dst, uint32_t val, uint32_t offset, int32_t len)
 #endif
 }
 
-
-bool rasterCompositor(SwSurface* surface)
+Result rasterCompositor(SwSurface* surface)
 {
-    //See MaskMethod, Alpha:1, InvAlpha:2, Luma:3, InvLuma:4
     surface->alphas[0] = _alpha;
     surface->alphas[1] = _ialpha;
 
@@ -1506,9 +1541,9 @@ bool rasterCompositor(SwSurface* surface)
         surface->alphas[3] = _argbInvLuma;
     } else {
         TVGERR("SW_ENGINE", "Unsupported Colorspace(%d) is expected!", (int)surface->cs);
-        return false;
+        return Result::NonSupport;
     }
-    return true;
+    return Result::Success;
 }
 
 
@@ -1606,10 +1641,8 @@ bool rasterScaledImage(SwSurface* surface, const SwImage& image, const Matrix& t
         else return _rasterScaledMaskedImage(surface, image, &itransform, bbox, opacity);
     } else if (_blending(surface)) {
         return _rasterScaledBlendingImage(surface, image, &itransform, bbox, opacity);
-    } else {
-        return _rasterScaledImage(surface, image, &itransform, bbox, opacity);
     }
-    return false;
+    return _rasterScaledImage(surface, image, &itransform, bbox, opacity);
 }
 
 
@@ -1626,22 +1659,14 @@ bool rasterDirectImage(SwSurface* surface, const SwImage& image, const RenderReg
         } else return _rasterDirectMaskedImage(surface, image, bbox, w, h, opacity);
     } else if (_blending(surface)) {
         return _rasterDirectBlendingImage(surface, image, bbox, w, h, opacity);
-    } else {
-        return _rasterDirectImage(surface, image, bbox, w, h, opacity);
     }
-    return false;
+    return _rasterDirectImage(surface, image, bbox, w, h, opacity);
 }
 
 
 bool rasterScaledRleImage(SwSurface* surface, const SwImage& image, const Matrix& transform, const RenderRegion& bbox, uint8_t opacity)
 {
-    if (surface->channelSize == sizeof(uint8_t)) {
-        TVGERR("SW_ENGINE", "Not supported scaled rle image!");
-        return false;
-    }
-
     Matrix itransform;
-
     if (!inverse(&transform, &itransform)) return true;
 
     if (_compositing(surface)) {
@@ -1649,10 +1674,8 @@ bool rasterScaledRleImage(SwSurface* surface, const SwImage& image, const Matrix
         else return _rasterScaledMaskedRleImage(surface, image, &itransform, bbox, opacity);
     } else if (_blending(surface)) {
         return _rasterScaledBlendingRleImage(surface, image, &itransform, bbox, opacity);
-    } else {
-        return _rasterScaledRleImage(surface, image, &itransform, bbox, opacity);
     }
-    return false;
+    return _rasterScaledRleImage(surface, image, &itransform, bbox, opacity);
 }
 
 
@@ -1668,10 +1691,8 @@ bool rasterDirectRleImage(SwSurface* surface, const SwImage& image, const Render
         else return _rasterDirectMaskedRleImage(surface, image, bbox, opacity);
     } else if (_blending(surface)) {
         return _rasterDirectBlendingRleImage(surface, image, bbox, opacity);
-    } else {
-        return _rasterDirectRleImage(surface, image, bbox, opacity);
     }
-    return false;
+    return _rasterDirectRleImage(surface, image, bbox, opacity);
 }
 
 
@@ -1788,42 +1809,6 @@ void rasterXYFlip(uint32_t* src, uint32_t* dst, int32_t stride, int32_t w, int32
                 p += 1 - by * stride;
                 q += stride - by;
             }
-        }
-    }
-}
-
-
-//TODO: can be moved in tvgColor
-void rasterRGB2HSL(uint8_t r, uint8_t g, uint8_t b, float* h, float* s, float* l)
-{
-    auto rf = r / 255.0f;
-    auto gf = g / 255.0f;
-    auto bf = b / 255.0f;
-    auto maxVal = std::max(std::max(rf, gf), bf);
-    auto minVal = std::min(std::min(rf, gf), bf);
-    auto delta = maxVal - minVal;
-
-    //lightness
-    float t = 0.0f;
-    if (l || s) {
-        t = (maxVal + minVal) * 0.5f;
-        if (l) *l = t;
-    }
-
-    if (tvg::zero(delta)) {
-        if (h) *h = 0.0f;
-        if (s) *s = 0.0f;
-    } else {
-        //saturation
-        if (s) {
-            *s = (t < 0.5f) ? (delta / (maxVal + minVal)) : (delta / (2.0f - maxVal - minVal));
-        }
-        //hue
-        if (h) {
-            if (maxVal == rf) *h = (gf - bf) / delta + (gf < bf ? 6.0f : 0.0f);
-            else if (maxVal == gf) *h = (bf - rf) / delta + 2.0f;
-            else *h = (rf - gf) / delta + 4.0f;
-            *h *= 60.0f; //directly convert to degrees
         }
     }
 }

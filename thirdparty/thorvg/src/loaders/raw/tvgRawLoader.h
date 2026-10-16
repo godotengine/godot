@@ -23,16 +23,13 @@
 #ifndef _TVG_RAW_LOADER_H_
 #define _TVG_RAW_LOADER_H_
 
-class RawLoader : public ImageLoader
+struct RawLoader : BitmapLoader
 {
-public:
-    bool copy = false;
-
-    RawLoader();
+    RawLoader() : BitmapLoader(FileType::Raw) {}
     ~RawLoader();
 
-    using LoadModule::open;
-    bool open(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, bool copy);
+    using Loader::open;
+    bool open(const uint32_t* data, uint32_t w, uint32_t h, ColorSpace cs, Ownership owner);
     bool read() override;
 };
 
