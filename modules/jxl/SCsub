@@ -185,6 +185,8 @@ if env["builtin_libjxl"]:
             "SKCMS_DISABLE_SKX",
         ]
     )
+    if env["platform"] == "windows":
+        env_thirdparty.Append(CPPDEFINES=[("SKCMS_HAS_MUSTTAIL", 0)])
     # SSSE3 is never used, since Godot requires SSE4.2.
     hwy_disabled_targets = ["HWY_SSSE3"]
     if not env["jxl_all_simd_targets"]:
