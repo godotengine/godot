@@ -782,7 +782,7 @@
 			Use this for non-pixel art textures that may be viewed at a low scale (e.g. due to [Camera2D] zoom or sprite scaling), as mipmaps are important to smooth out pixels that are smaller than on-screen pixels.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_PARENT_NODE" value="4" enum="DefaultCanvasItemTextureFilter">
-			The [Viewport] will inherit the filter from its parent [CanvasItem] or [Viewport].
+			The [Viewport] will inherit the filter from its parent [CanvasItem]. If the parent is not a [CanvasItem], or the parent's effective filter uses the viewport default, the filter is inherited from the nearest ancestor [Viewport].
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX" value="5" enum="DefaultCanvasItemTextureFilter">
 			Represents the size of the [enum DefaultCanvasItemTextureFilter] enum.
