@@ -40,6 +40,7 @@
 #include "scene/gui/texture_button.h"
 #include "scene/resources/bone_map.h"
 
+class LineEdit;
 class AspectRatioContainer;
 
 class BoneMapperButton : public TextureButton {
@@ -139,6 +140,10 @@ class BoneMapper : public VBoxContainer {
 	int current_group_idx = 0;
 	int current_bone_idx = -1;
 
+	LineEdit *original_suffix_edit = nullptr;
+	LineEdit *mirrored_suffix_edit = nullptr;
+	Button *mirror_selection_button = nullptr;
+
 	AspectRatioContainer *bone_mapper_field = nullptr;
 	EditorPropertyEnum *profile_group_selector = nullptr;
 	ColorRect *profile_bg = nullptr;
@@ -158,6 +163,8 @@ class BoneMapper : public VBoxContainer {
 	void _pick_bone(const StringName &p_bone_name);
 	void _apply_picker_selection();
 	void _clear_mapping_current_group();
+	void _mirror_selection();
+	void _mirror_text_changed(const String &p_text);
 
 	/* For auto mapping */
 	enum BoneSegregation {
