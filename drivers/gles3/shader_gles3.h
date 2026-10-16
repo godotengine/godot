@@ -102,10 +102,18 @@ private:
 		};
 
 		LocalVector<AHashMap<uint64_t, Specialization>> variants;
+
+		struct CachedBinary {
+			GLenum format = 0;
+			Vector<uint8_t> data;
+		};
+		LocalVector<AHashMap<uint64_t, CachedBinary>> cached_binaries;
+		bool cache_dirty = false;
 	};
 
 	void _get_uniform_locations(Version::Specialization &spec, Version *p_version);
 	void _compile_specialization(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
+	bool _load_specialization_from_cache(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization);
 
 	void _clear_version(Version *p_version);
 	void _initialize_version(Version *p_version);
@@ -139,6 +147,7 @@ private:
 	static bool shader_cache_save_compressed_zstd;
 	static bool shader_cache_save_debug;
 	bool shader_cache_dir_valid = false;
+	bool _is_shader_cache_enabled() const;
 
 	GLint max_image_units = 0;
 
@@ -200,14 +209,13 @@ protected:
 
 				spec = version->variants[p_variant].getptr(specialization_default_mask);
 			} else {
-				// Compile on the spot
+				// Load from the cached binary if available, otherwise compile.
 				Version::Specialization s;
-				_compile_specialization(s, p_variant, version, p_specialization);
+				if (!_load_specialization_from_cache(s, p_variant, version, p_specialization)) {
+					_compile_specialization(s, p_variant, version, p_specialization);
+				}
 				version->variants[p_variant].insert(p_specialization, s);
 				spec = version->variants[p_variant].getptr(p_specialization);
-				if (shader_cache_dir_valid) {
-					_save_to_cache(version);
-				}
 			}
 		} else if (spec->build_queued) {
 			// Still queued, wait

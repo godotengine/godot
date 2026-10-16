@@ -450,6 +450,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		}
 	}
 
+	glProgramParameteri(spec.id, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
 	glLinkProgram(spec.id);
 
 	glGetProgramiv(spec.id, GL_LINK_STATUS, &status);
@@ -493,6 +494,10 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	_get_uniform_locations(spec, p_version);
 
 	spec.ok = true;
+
+	if (!p_version->cached_binaries.is_empty()) {
+		p_version->cache_dirty = true;
+	}
 }
 
 RenderingServerTypes::ShaderNativeSourceCode ShaderGLES3::version_get_native_source_code(RID p_version) {
@@ -572,15 +577,29 @@ static const char *shader_file_header = "GLSC";
 static const uint32_t cache_file_version = 3;
 #endif
 
-bool ShaderGLES3::_load_from_cache(Version *p_version) {
+bool ShaderGLES3::_is_shader_cache_enabled() const {
 #ifdef WEB_ENABLED // not supported in webgl
 	return false;
 #else
+	if (!shader_cache_dir_valid) {
+		return false;
+	}
+	if (feedback_count > 0 && GLES3::Config::get_singleton()->disable_transform_feedback_shader_cache) {
+		return false;
+	}
 #if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerUtilGLES3::is_gles_over_gl() && (glProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
+	if (RasterizerUtilGLES3::is_gles_over_gl() && (glProgramBinary == nullptr || glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
 		return false;
 	}
 #endif
+	return true;
+#endif // WEB_ENABLED
+}
+
+bool ShaderGLES3::_load_from_cache(Version *p_version) {
+#ifdef WEB_ENABLED // Avoid compiling any of this on WebGL.
+	return false;
+#else
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.path_join(name).path_join(base_sha256).path_join(sha1) + ".cache";
 
@@ -601,59 +620,75 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	int cache_variant_count = static_cast<int>(f->get_32());
 	ERR_FAIL_COND_V_MSG(cache_variant_count != variant_count, false, "shader cache variant count mismatch, expected " + itos(variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
 
-	LocalVector<AHashMap<uint64_t, Version::Specialization>> variants;
 	for (int i = 0; i < cache_variant_count; i++) {
 		uint32_t cache_specialization_count = f->get_32();
-		AHashMap<uint64_t, Version::Specialization> variant;
 		for (uint32_t j = 0; j < cache_specialization_count; j++) {
 			uint64_t specialization_key = f->get_64();
 			uint32_t variant_size = f->get_32();
 			if (variant_size == 0) {
 				continue;
 			}
-			uint32_t variant_format = f->get_32();
-			Vector<uint8_t> variant_bytes;
-			variant_bytes.resize(variant_size);
+			Version::CachedBinary binary;
+			binary.format = f->get_32();
+			binary.data.resize(variant_size);
 
-			uint32_t br = f->get_buffer(variant_bytes.ptrw(), variant_size);
-
-			ERR_FAIL_COND_V(br != variant_size, false);
-
-			Version::Specialization specialization;
-
-			specialization.id = glCreateProgram();
-			if (feedback_count) {
-				Vector<const char *> feedback;
-				for (int feedback_index = 0; feedback_index < feedback_count; feedback_index++) {
-					if (feedbacks[feedback_index].specialization == 0 || (feedbacks[feedback_index].specialization & specialization_key)) {
-						// Specialization for this feedback is enabled.
-						feedback.push_back(feedbacks[feedback_index].name);
-					}
+			uint32_t br = f->get_buffer(binary.data.ptrw(), variant_size);
+			if (br != variant_size) {
+				for (AHashMap<uint64_t, Version::CachedBinary> &variant : p_version->cached_binaries) {
+					variant.clear();
 				}
-
-				if (!feedback.is_empty()) {
-					glTransformFeedbackVaryings(specialization.id, feedback.size(), feedback.ptr(), GL_INTERLEAVED_ATTRIBS);
-				}
-			}
-			glProgramBinary(specialization.id, variant_format, variant_bytes.ptr(), variant_bytes.size());
-
-			GLint link_status = 0;
-			glGetProgramiv(specialization.id, GL_LINK_STATUS, &link_status);
-			if (link_status != GL_TRUE) {
-				WARN_PRINT_ONCE("Failed to load cached shader, recompiling.");
-				return false;
+				ERR_FAIL_V(false);
 			}
 
-			_get_uniform_locations(specialization, p_version);
-
-			specialization.ok = true;
-
-			variant.insert(specialization_key, specialization);
+			p_version->cached_binaries[i].insert(specialization_key, binary);
 		}
-		variants.push_back(std::move(variant));
 	}
-	p_version->variants = variants;
 
+	return true;
+#endif // WEB_ENABLED
+}
+
+bool ShaderGLES3::_load_specialization_from_cache(Version::Specialization &spec, uint32_t p_variant, Version *p_version, uint64_t p_specialization) {
+#ifdef WEB_ENABLED // Avoid compiling any of this on WebGL.
+	return false;
+#else
+	if (p_version->cached_binaries.is_empty()) {
+		return false;
+	}
+	const Version::CachedBinary *binary = p_version->cached_binaries[p_variant].getptr(p_specialization);
+	if (!binary) {
+		return false;
+	}
+
+	spec.id = glCreateProgram();
+	if (feedback_count) {
+		LocalVector<const char *> feedback;
+		for (int feedback_index = 0; feedback_index < feedback_count; feedback_index++) {
+			if (feedbacks[feedback_index].specialization == 0 || (feedbacks[feedback_index].specialization & p_specialization)) {
+				// Specialization for this feedback is enabled.
+				feedback.push_back(feedbacks[feedback_index].name);
+			}
+		}
+
+		if (!feedback.is_empty()) {
+			glTransformFeedbackVaryings(spec.id, feedback.size(), feedback.ptr(), GL_INTERLEAVED_ATTRIBS);
+		}
+	}
+	glProgramBinary(spec.id, binary->format, binary->data.ptr(), binary->data.size());
+
+	GLint link_status = 0;
+	glGetProgramiv(spec.id, GL_LINK_STATUS, &link_status);
+	if (link_status != GL_TRUE) {
+		WARN_PRINT_ONCE("Failed to load cached shader, recompiling.");
+		glDeleteProgram(spec.id);
+		spec.id = 0;
+		p_version->cached_binaries[p_variant].erase(p_specialization);
+		return false;
+	}
+
+	_get_uniform_locations(spec, p_version);
+
+	spec.ok = true;
 	return true;
 #endif // WEB_ENABLED
 }
@@ -662,12 +697,38 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 #ifdef WEB_ENABLED // not supported in webgl
 	return;
 #else
-	ERR_FAIL_COND(!shader_cache_dir_valid);
-#if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
-	if (RasterizerUtilGLES3::is_gles_over_gl() && (glGetProgramBinary == nullptr)) { // ARB_get_program_binary extension not available.
-		return;
+	if (!p_version->cache_dirty || p_version->cached_binaries.is_empty()) {
+		return; // Nothing new to save, or cache not in use.
 	}
-#endif
+	ERR_FAIL_COND(!shader_cache_dir_valid);
+	ERR_FAIL_COND(int(p_version->cached_binaries.size()) != variant_count);
+	ERR_FAIL_COND(int(p_version->variants.size()) != variant_count);
+	p_version->cache_dirty = false;
+
+	// Cache all non-cached binaries first, so we can save everything all at once.
+	for (int i = 0; i < variant_count; i++) {
+		for (const KeyValue<uint64_t, Version::Specialization> &kv : p_version->variants[i]) {
+			const Version::Specialization &spec = kv.value;
+			if (!spec.ok || p_version->cached_binaries[i].has(kv.key)) {
+				continue;
+			}
+
+			GLint program_size = 0;
+			glGetProgramiv(spec.id, GL_PROGRAM_BINARY_LENGTH, &program_size);
+			if (program_size <= 0) {
+				continue;
+			}
+			Version::CachedBinary binary;
+			binary.data.resize(program_size);
+			GLsizei length = 0;
+			glGetProgramBinary(spec.id, program_size, &length, &binary.format, binary.data.ptrw());
+			if (length != program_size) {
+				continue;
+			}
+			p_version->cached_binaries[i].insert(kv.key, binary);
+		}
+	}
+
 	String sha1 = _version_get_sha1(p_version);
 	String path = shader_cache_dir.path_join(name).path_join(base_sha256).path_join(sha1) + ".cache";
 
@@ -679,37 +740,22 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 	f->store_32(variant_count);
 
 	for (int i = 0; i < variant_count; i++) {
-		int cache_specialization_count = p_version->variants[i].size();
-		f->store_32(cache_specialization_count);
+		f->store_32(p_version->cached_binaries[i].size());
 
-		for (KeyValue<uint64_t, ShaderGLES3::Version::Specialization> &kv : p_version->variants[i]) {
-			const uint64_t specialization_key = kv.key;
-			f->store_64(specialization_key);
-
-			const Version::Specialization *specialization = &kv.value;
-			GLint program_size = 0;
-			glGetProgramiv(specialization->id, GL_PROGRAM_BINARY_LENGTH, &program_size);
-			if (program_size == 0) {
-				f->store_32(0);
-				continue;
-			}
-			PackedByteArray compiled_program;
-			compiled_program.resize(program_size);
-			GLenum binary_format = 0;
-			glGetProgramBinary(specialization->id, program_size, nullptr, &binary_format, compiled_program.ptrw());
-			if (program_size != compiled_program.size()) {
-				f->store_32(0);
-				continue;
-			}
-			f->store_32(program_size);
-			f->store_32(binary_format);
-			f->store_buffer(compiled_program.ptr(), compiled_program.size());
+		for (const KeyValue<uint64_t, Version::CachedBinary> &kv : p_version->cached_binaries[i]) {
+			f->store_64(kv.key);
+			f->store_32(kv.value.data.size());
+			f->store_32(kv.value.format);
+			f->store_buffer(kv.value.data.ptr(), kv.value.data.size());
 		}
 	}
 #endif // WEB_ENABLED
 }
 
 void ShaderGLES3::_clear_version(Version *p_version) {
+	p_version->cached_binaries.clear();
+	p_version->cache_dirty = false;
+
 	// Variants not compiled yet, just return
 	if (p_version->variants.is_empty()) {
 		return;
@@ -730,19 +776,20 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 
 void ShaderGLES3::_initialize_version(Version *p_version) {
 	ERR_FAIL_COND(p_version->variants.size() > 0);
-	bool use_cache = shader_cache_dir_valid && !(feedback_count > 0 && GLES3::Config::get_singleton()->disable_transform_feedback_shader_cache);
-	if (use_cache && _load_from_cache(p_version)) {
-		return;
+	p_version->variants.resize(variant_count);
+
+	bool use_cache = _is_shader_cache_enabled();
+	if (use_cache) {
+		p_version->cached_binaries.resize(variant_count);
+		if (_load_from_cache(p_version)) {
+			return;
+		}
 	}
-	p_version->variants.reserve(variant_count);
+
 	for (int i = 0; i < variant_count; i++) {
-		p_version->variants.push_back(AHashMap<uint64_t, Version::Specialization>());
 		Version::Specialization spec;
 		_compile_specialization(spec, i, p_version, specialization_default_mask);
 		p_version->variants[i].insert(specialization_default_mask, spec);
-	}
-	if (use_cache) {
-		_save_to_cache(p_version);
 	}
 }
 
@@ -783,6 +830,7 @@ bool ShaderGLES3::version_is_valid(RID p_version) {
 bool ShaderGLES3::version_free(RID p_version) {
 	if (version_owner.owns(p_version)) {
 		Version *version = version_owner.get_or_null(p_version);
+		_save_to_cache(version);
 		_clear_version(version);
 		version_owner.free(p_version);
 	} else {
