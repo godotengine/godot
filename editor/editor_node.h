@@ -637,7 +637,6 @@ private:
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
 
-	void _dropped_files(const Vector<String> &p_files);
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 
 	void _update_vsync_mode();
@@ -759,6 +758,7 @@ protected:
 public:
 	// Public for use as signal callback.
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+	void _dropped_files(const Vector<String> &p_files);
 
 	void init_plugins();
 
