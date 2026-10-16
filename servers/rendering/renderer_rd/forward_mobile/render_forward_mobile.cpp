@@ -2917,8 +2917,8 @@ void RenderForwardMobile::_update_global_pipeline_data_requirements_from_project
 	const bool positional_shadow_16_bits = GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/atlas_16_bits");
 	global_pipeline_data_required.use_16_bit_shadows = directional_shadow_16_bits || positional_shadow_16_bits;
 	global_pipeline_data_required.use_32_bit_shadows = !directional_shadow_16_bits || !positional_shadow_16_bits;
-	global_pipeline_data_required.target_samples = RenderSceneBuffersRD::msaa_to_samples(RSE::ViewportMSAA(msaa_2d_mode));
-	global_pipeline_data_required.texture_samples = RenderSceneBuffersRD::msaa_to_samples(RSE::ViewportMSAA(msaa_3d_mode));
+	global_pipeline_data_required.target_samples = RenderSceneBuffersRD::msaa_to_samples(RendererRD::TextureStorage::render_target_get_nearest_supported_msaa(RSE::ViewportMSAA(msaa_2d_mode), false));
+	global_pipeline_data_required.texture_samples = RenderSceneBuffersRD::msaa_to_samples(RenderSceneBuffersRD::get_nearest_supported_msaa_3d(RSE::ViewportMSAA(msaa_3d_mode), _render_buffers_can_be_storage()));
 }
 
 void RenderForwardMobile::_update_global_pipeline_data_requirements_from_light_storage() {
