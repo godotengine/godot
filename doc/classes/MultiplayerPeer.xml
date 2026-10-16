@@ -23,7 +23,7 @@
 			<param index="0" name="peer" type="int" />
 			<param index="1" name="force" type="bool" default="false" />
 			<description>
-				Disconnects the given [param peer] from this host. If [param force] is [code]true[/code] the [signal peer_disconnected] signal will not be emitted for this peer.
+				Disconnects the given [param peer] from this host.
 			</description>
 		</method>
 		<method name="generate_unique_id" qualifiers="const">
