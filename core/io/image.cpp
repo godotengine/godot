@@ -4318,8 +4318,12 @@ _FORCE_INLINE_ uint16_t _srgb2lin_hf(uint16_t p_s) {
 void Image::_srgb2lin_hft4(void *p_td, uint32_t p_i) {
 	Image *img = (Image *)p_td;
 	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	int pixel_count = img->data.size() / 8;
 	for (int x = 0; x < img->width; x++) {
 		int i = img->width * p_i + x;
+		if (i >= pixel_count) {
+			break;
+		}
 		data_ptr[(i << 2) + 0] = _srgb2lin_hf(data_ptr[(i << 2) + 0]);
 		data_ptr[(i << 2) + 1] = _srgb2lin_hf(data_ptr[(i << 2) + 1]);
 		data_ptr[(i << 2) + 2] = _srgb2lin_hf(data_ptr[(i << 2) + 2]);
@@ -4329,8 +4333,12 @@ void Image::_srgb2lin_hft4(void *p_td, uint32_t p_i) {
 void Image::_srgb2lin_hft3(void *p_td, uint32_t p_i) {
 	Image *img = (Image *)p_td;
 	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	int pixel_count = img->data.size() / 6;
 	for (int x = 0; x < img->width; x++) {
 		int i = img->width * p_i + x;
+		if (i >= pixel_count) {
+			break;
+		}
 		data_ptr[(i * 3) + 0] = _srgb2lin_hf(data_ptr[(i * 3) + 0]);
 		data_ptr[(i * 3) + 1] = _srgb2lin_hf(data_ptr[(i * 3) + 1]);
 		data_ptr[(i * 3) + 2] = _srgb2lin_hf(data_ptr[(i * 3) + 2]);
@@ -4346,11 +4354,14 @@ void Image::srgb_to_linear() {
 
 	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8 && format != FORMAT_RGBH && format != FORMAT_RGBAH);
 
+	// Copy on write here, so the threaded tasks below don't race to do it.
+	data.ptrw();
+
 	if (format == FORMAT_RGBAH) {
-		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_srgb2lin_hft4, this, height, -1, true, String("SRGB2LIN4"));
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_srgb2lin_hft4, this, Math::division_round_up((int)(data.size() / 8), width), -1, true, String("SRGB2LIN4"));
 		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 	} else if (format == FORMAT_RGBH) {
-		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_srgb2lin_hft3, this, height, -1, true, String("SRGB2LIN3"));
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_srgb2lin_hft3, this, Math::division_round_up((int)(data.size() / 6), width), -1, true, String("SRGB2LIN3"));
 		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 	} else if (format == FORMAT_RGBA8) {
 		int len = data.size() / 4;
@@ -4387,19 +4398,27 @@ _FORCE_INLINE_ uint16_t _lin2srgb_hf(uint16_t p_l) {
 void Image::_lin2srgb_hft4(void *p_td, uint32_t p_i) {
 	Image *img = (Image *)p_td;
 	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	int pixel_count = img->data.size() / 8;
 	for (int x = 0; x < img->width; x++) {
 		int i = img->width * p_i + x;
-		data_ptr[(p_i << 2) + 0] = _lin2srgb_hf(data_ptr[(i << 2) + 0]);
-		data_ptr[(p_i << 2) + 1] = _lin2srgb_hf(data_ptr[(i << 2) + 1]);
-		data_ptr[(p_i << 2) + 2] = _lin2srgb_hf(data_ptr[(i << 2) + 2]);
+		if (i >= pixel_count) {
+			break;
+		}
+		data_ptr[(i << 2) + 0] = _lin2srgb_hf(data_ptr[(i << 2) + 0]);
+		data_ptr[(i << 2) + 1] = _lin2srgb_hf(data_ptr[(i << 2) + 1]);
+		data_ptr[(i << 2) + 2] = _lin2srgb_hf(data_ptr[(i << 2) + 2]);
 	}
 }
 
 void Image::_lin2srgb_hft3(void *p_td, uint32_t p_i) {
 	Image *img = (Image *)p_td;
 	uint16_t *data_ptr = (uint16_t *)img->data.ptrw();
+	int pixel_count = img->data.size() / 6;
 	for (int x = 0; x < img->width; x++) {
 		int i = img->width * p_i + x;
+		if (i >= pixel_count) {
+			break;
+		}
 		data_ptr[(i * 3) + 0] = _lin2srgb_hf(data_ptr[(i * 3) + 0]);
 		data_ptr[(i * 3) + 1] = _lin2srgb_hf(data_ptr[(i * 3) + 1]);
 		data_ptr[(i * 3) + 2] = _lin2srgb_hf(data_ptr[(i * 3) + 2]);
@@ -4415,11 +4434,14 @@ void Image::linear_to_srgb() {
 
 	ERR_FAIL_COND(format != FORMAT_RGB8 && format != FORMAT_RGBA8 && format != FORMAT_RGBH && format != FORMAT_RGBAH);
 
+	// Copy on write here, so the threaded tasks below don't race to do it.
+	data.ptrw();
+
 	if (format == FORMAT_RGBAH) {
-		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_lin2srgb_hft4, this, height, -1, true, String("LIN2SRGB4"));
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_lin2srgb_hft4, this, Math::division_round_up((int)(data.size() / 8), width), -1, true, String("LIN2SRGB4"));
 		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 	} else if (format == FORMAT_RGBH) {
-		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_lin2srgb_hft3, this, height, -1, true, String("LIN2SRGB3"));
+		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&Image::_lin2srgb_hft3, this, Math::division_round_up((int)(data.size() / 6), width), -1, true, String("LIN2SRGB3"));
 		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 	} else if (format == FORMAT_RGBA8) {
 		int len = data.size() / 4;
