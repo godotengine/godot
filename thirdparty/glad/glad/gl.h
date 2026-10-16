@@ -4582,6 +4582,8 @@ GLAD_API_CALL void gladLoaderUnloadGL(void);
 #endif
 #ifdef GLAD_GLES2
 
+GLAD_API_CALL void gladSetupGLES2(int glc, const char *glnames[]);
+
 GLAD_API_CALL int gladLoaderLoadGLES2(void);
 GLAD_API_CALL void gladLoaderUnloadGLES2(void);
 
