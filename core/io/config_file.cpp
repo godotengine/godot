@@ -282,7 +282,6 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 	String section;
 
 	while (true) {
-		assign = Variant();
 		next_tag.fields.clear();
 		next_tag.name = String();
 
