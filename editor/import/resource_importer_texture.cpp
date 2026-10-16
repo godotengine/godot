@@ -335,11 +335,17 @@ static void _save_jxl_mipmaps(Ref<FileAccess> f, const Ref<Image> &p_image, bool
 		mipmaps.push_back(data);
 	}
 
+	// Lossy RGB float textures are loaded as RGBE9995 to halve VRAM usage.
+	Image::Format format = p_image->get_format();
+	if (p_lossy && (format == Image::FORMAT_RGBH || format == Image::FORMAT_RGBF)) {
+		format = Image::FORMAT_RGBE9995;
+	}
+
 	f->store_32(CompressedTexture2D::DATA_FORMAT_JXL);
 	f->store_16(p_image->get_width());
 	f->store_16(p_image->get_height());
 	f->store_32(p_image->get_mipmap_count());
-	f->store_32(p_image->get_format());
+	f->store_32(format);
 
 	for (const Vector<uint8_t> &data : mipmaps) {
 		f->store_32(data.size());
