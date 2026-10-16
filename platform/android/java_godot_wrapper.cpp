@@ -78,25 +78,12 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_native_bridge)
 	_on_godot_terminating = p_env->GetMethodID(godot_native_bridge_class, "onGodotTerminating", "()V");
 	_create_new_godot_instance = p_env->GetMethodID(godot_native_bridge_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
 	_get_render_view = p_env->GetMethodID(godot_native_bridge_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
-	_begin_benchmark_measure = p_env->GetMethodID(godot_native_bridge_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
-	_end_benchmark_measure = p_env->GetMethodID(godot_native_bridge_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
-	_dump_benchmark = p_env->GetMethodID(godot_native_bridge_class, "nativeDumpBenchmark", "(Ljava/lang/String;)V");
 	_get_gdextension_list_config_file = p_env->GetMethodID(godot_native_bridge_class, "getGDExtensionConfigFiles", "()[Ljava/lang/String;");
 	_check_internal_feature_support = p_env->GetMethodID(godot_native_bridge_class, "checkInternalFeatureSupport", "(Ljava/lang/String;)Z");
-	_sign_apk = p_env->GetMethodID(godot_native_bridge_class, "nativeSignApk", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
-	_verify_apk = p_env->GetMethodID(godot_native_bridge_class, "nativeVerifyApk", "(Ljava/lang/String;)I");
 	_enable_immersive_mode = p_env->GetMethodID(godot_native_bridge_class, "nativeEnableImmersiveMode", "(Z)V");
 	_is_in_immersive_mode = p_env->GetMethodID(godot_native_bridge_class, "isInImmersiveMode", "()Z");
 	_set_window_color = p_env->GetMethodID(godot_native_bridge_class, "setWindowColor", "(Ljava/lang/String;)V");
-	_on_editor_workspace_selected = p_env->GetMethodID(godot_native_bridge_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
-	_on_distraction_free_mode_changed = p_env->GetMethodID(godot_native_bridge_class, "nativeOnDistractionFreeModeChanged", "(Z)V");
-	_show_editor_game_dock = p_env->GetMethodID(godot_native_bridge_class, "nativeShowEditorGameDock", "()V");
 	_get_activity = p_env->GetMethodID(godot_native_bridge_class, "getActivity", "()Landroid/app/Activity;");
-	_build_env_connect = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvConnect", "(Lorg/godotengine/godot/variant/Callable;)Z");
-	_build_env_disconnect = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvDisconnect", "()V");
-	_build_env_execute = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvExecute", "(Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;Lorg/godotengine/godot/variant/Callable;)I");
-	_build_env_cancel = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvCancel", "(I)V");
-	_build_env_clean_project = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvCleanProject", "(Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;)V");
 	_is_screen_reader_active = p_env->GetMethodID(godot_native_bridge_class, "isScreenReaderActive", "()Z");
 	_is_high_contrast_active = p_env->GetMethodID(godot_native_bridge_class, "isHighContrastActive", "()Z");
 	_is_animation_disabled = p_env->GetMethodID(godot_native_bridge_class, "isAnimationDisabled", "()Z");
@@ -107,6 +94,25 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_native_bridge)
 	_enter_pip_mode = p_env->GetMethodID(godot_native_bridge_class, "nativeEnterPiPMode", "()V");
 	_set_pip_mode_aspect_ratio = p_env->GetMethodID(godot_native_bridge_class, "nativeSetPiPModeAspectRatio", "(II)V");
 	_set_auto_enter_pip_mode_on_background = p_env->GetMethodID(godot_native_bridge_class, "nativeSetAutoEnterPiPModeOnBackground", "(Z)V");
+
+#ifdef TOOLS_ENABLED
+	_begin_benchmark_measure = p_env->GetMethodID(godot_native_bridge_class, "nativeBeginBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
+	_end_benchmark_measure = p_env->GetMethodID(godot_native_bridge_class, "nativeEndBenchmarkMeasure", "(Ljava/lang/String;Ljava/lang/String;)V");
+	_dump_benchmark = p_env->GetMethodID(godot_native_bridge_class, "nativeDumpBenchmark", "(Ljava/lang/String;)V");
+
+	_sign_apk = p_env->GetMethodID(godot_native_bridge_class, "nativeSignApk", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+	_verify_apk = p_env->GetMethodID(godot_native_bridge_class, "nativeVerifyApk", "(Ljava/lang/String;)I");
+
+	_on_editor_workspace_selected = p_env->GetMethodID(godot_native_bridge_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
+	_on_distraction_free_mode_changed = p_env->GetMethodID(godot_native_bridge_class, "nativeOnDistractionFreeModeChanged", "(Z)V");
+	_show_editor_game_dock = p_env->GetMethodID(godot_native_bridge_class, "nativeShowEditorGameDock", "()V");
+
+	_build_env_connect = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvConnect", "(Lorg/godotengine/godot/variant/Callable;)Z");
+	_build_env_disconnect = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvDisconnect", "()V");
+	_build_env_execute = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvExecute", "(Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;Lorg/godotengine/godot/variant/Callable;)I");
+	_build_env_cancel = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvCancel", "(I)V");
+	_build_env_clean_project = p_env->GetMethodID(godot_native_bridge_class, "nativeBuildEnvCleanProject", "(Ljava/lang/String;Ljava/lang/String;Lorg/godotengine/godot/variant/Callable;)V");
+#endif
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -502,40 +508,6 @@ int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
 	}
 }
 
-void GodotJavaWrapper::begin_benchmark_measure(const String &p_context, const String &p_label) {
-	if (_begin_benchmark_measure) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
-		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
-		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
-		env->CallVoidMethod(godot_native_bridge, _begin_benchmark_measure, j_context, j_label);
-		env->DeleteLocalRef(j_context);
-		env->DeleteLocalRef(j_label);
-	}
-}
-
-void GodotJavaWrapper::end_benchmark_measure(const String &p_context, const String &p_label) {
-	if (_end_benchmark_measure) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
-		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
-		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
-		env->CallVoidMethod(godot_native_bridge, _end_benchmark_measure, j_context, j_label);
-		env->DeleteLocalRef(j_context);
-		env->DeleteLocalRef(j_label);
-	}
-}
-
-void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
-	if (_dump_benchmark) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
-		jstring j_benchmark_file = env->NewStringUTF(benchmark_file.utf8().get_data());
-		env->CallVoidMethod(godot_native_bridge, _dump_benchmark, j_benchmark_file);
-		env->DeleteLocalRef(j_benchmark_file);
-	}
-}
-
 bool GodotJavaWrapper::is_screen_reader_active() {
 	if (_is_screen_reader_active) {
 		JNIEnv *env = get_jni_env();
@@ -580,6 +552,113 @@ bool GodotJavaWrapper::check_internal_feature_support(const String &p_feature) c
 	}
 }
 
+void GodotJavaWrapper::enable_immersive_mode(bool p_enabled) {
+	if (_enable_immersive_mode) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_native_bridge, _enable_immersive_mode, p_enabled);
+	}
+}
+
+bool GodotJavaWrapper::is_in_immersive_mode() {
+	if (_is_in_immersive_mode) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_native_bridge, _is_in_immersive_mode);
+	} else {
+		return false;
+	}
+}
+
+void GodotJavaWrapper::set_window_color(const Color &p_color) {
+	if (_set_window_color) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		String color = "#" + p_color.to_html(false);
+		jstring jStrColor = env->NewStringUTF(color.utf8().get_data());
+		env->CallVoidMethod(godot_native_bridge, _set_window_color, jStrColor);
+	}
+}
+
+bool GodotJavaWrapper::is_pip_mode_supported() {
+	if (_is_pip_mode_supported) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_native_bridge, _is_pip_mode_supported);
+	} else {
+		return false;
+	}
+}
+
+bool GodotJavaWrapper::is_in_pip_mode() {
+	if (_is_in_pip_mode) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_native_bridge, _is_in_pip_mode);
+	} else {
+		return false;
+	}
+}
+
+void GodotJavaWrapper::enter_pip_mode() {
+	if (_enter_pip_mode) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_native_bridge, _enter_pip_mode);
+	}
+}
+
+void GodotJavaWrapper::set_pip_mode_aspect_ratio(int p_numerator, int p_denominator) {
+	if (_set_pip_mode_aspect_ratio) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_native_bridge, _set_pip_mode_aspect_ratio, p_numerator, p_denominator);
+	}
+}
+
+void GodotJavaWrapper::set_auto_enter_pip_mode_on_background(bool p_auto_enter_on_background) {
+	if (_set_auto_enter_pip_mode_on_background) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		env->CallVoidMethod(godot_native_bridge, _set_auto_enter_pip_mode_on_background, p_auto_enter_on_background);
+	}
+}
+
+#ifdef TOOLS_ENABLED
+void GodotJavaWrapper::begin_benchmark_measure(const String &p_context, const String &p_label) {
+	if (_begin_benchmark_measure) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
+		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
+		env->CallVoidMethod(godot_native_bridge, _begin_benchmark_measure, j_context, j_label);
+		env->DeleteLocalRef(j_context);
+		env->DeleteLocalRef(j_label);
+	}
+}
+
+void GodotJavaWrapper::end_benchmark_measure(const String &p_context, const String &p_label) {
+	if (_end_benchmark_measure) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		jstring j_context = env->NewStringUTF(p_context.utf8().get_data());
+		jstring j_label = env->NewStringUTF(p_label.utf8().get_data());
+		env->CallVoidMethod(godot_native_bridge, _end_benchmark_measure, j_context, j_label);
+		env->DeleteLocalRef(j_context);
+		env->DeleteLocalRef(j_label);
+	}
+}
+
+void GodotJavaWrapper::dump_benchmark(const String &benchmark_file) {
+	if (_dump_benchmark) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+		jstring j_benchmark_file = env->NewStringUTF(benchmark_file.utf8().get_data());
+		env->CallVoidMethod(godot_native_bridge, _dump_benchmark, j_benchmark_file);
+		env->DeleteLocalRef(j_benchmark_file);
+	}
+}
+
 Error GodotJavaWrapper::sign_apk(const String &p_input_path, const String &p_output_path, const String &p_keystore_path, const String &p_keystore_user, const String &p_keystore_password) {
 	if (_sign_apk) {
 		JNIEnv *env = get_jni_env();
@@ -616,34 +695,6 @@ Error GodotJavaWrapper::verify_apk(const String &p_apk_path) {
 		return static_cast<Error>(result);
 	} else {
 		return ERR_UNCONFIGURED;
-	}
-}
-
-void GodotJavaWrapper::enable_immersive_mode(bool p_enabled) {
-	if (_enable_immersive_mode) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
-		env->CallVoidMethod(godot_native_bridge, _enable_immersive_mode, p_enabled);
-	}
-}
-
-bool GodotJavaWrapper::is_in_immersive_mode() {
-	if (_is_in_immersive_mode) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL_V(env, false);
-		return env->CallBooleanMethod(godot_native_bridge, _is_in_immersive_mode);
-	} else {
-		return false;
-	}
-}
-
-void GodotJavaWrapper::set_window_color(const Color &p_color) {
-	if (_set_window_color) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
-		String color = "#" + p_color.to_html(false);
-		jstring jStrColor = env->NewStringUTF(color.utf8().get_data());
-		env->CallVoidMethod(godot_native_bridge, _set_window_color, jStrColor);
 	}
 }
 
@@ -755,47 +806,4 @@ void GodotJavaWrapper::build_env_clean_project(const String &p_project_path, con
 		env->DeleteLocalRef(j_callback);
 	}
 }
-
-bool GodotJavaWrapper::is_pip_mode_supported() {
-	if (_is_pip_mode_supported) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL_V(env, false);
-		return env->CallBooleanMethod(godot_native_bridge, _is_pip_mode_supported);
-	} else {
-		return false;
-	}
-}
-
-bool GodotJavaWrapper::is_in_pip_mode() {
-	if (_is_in_pip_mode) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL_V(env, false);
-		return env->CallBooleanMethod(godot_native_bridge, _is_in_pip_mode);
-	} else {
-		return false;
-	}
-}
-
-void GodotJavaWrapper::enter_pip_mode() {
-	if (_enter_pip_mode) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
-		env->CallVoidMethod(godot_native_bridge, _enter_pip_mode);
-	}
-}
-
-void GodotJavaWrapper::set_pip_mode_aspect_ratio(int p_numerator, int p_denominator) {
-	if (_set_pip_mode_aspect_ratio) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
-		env->CallVoidMethod(godot_native_bridge, _set_pip_mode_aspect_ratio, p_numerator, p_denominator);
-	}
-}
-
-void GodotJavaWrapper::set_auto_enter_pip_mode_on_background(bool p_auto_enter_on_background) {
-	if (_set_auto_enter_pip_mode_on_background) {
-		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
-		env->CallVoidMethod(godot_native_bridge, _set_auto_enter_pip_mode_on_background, p_auto_enter_on_background);
-	}
-}
+#endif
