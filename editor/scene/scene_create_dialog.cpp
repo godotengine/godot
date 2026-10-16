@@ -183,12 +183,15 @@ Node *SceneCreateDialog::create_scene_root() {
 			root = gui_ctl;
 		} break;
 		case ROOT_OTHER:
-			root = Object::cast_to<Node>(select_node_dialog->instantiate_selected());
+			root = select_node_dialog->instantiate_selected<Node>();
 			break;
 	}
 
 	ERR_FAIL_NULL_V(root, nullptr);
 	root->set_name(root_name);
+	if (type != ROOT_OTHER) { // CreateDialog already handles this.
+		EditorNode::get_editor_data().instantiate_object_properties(root);
+	}
 	return root;
 }
 
