@@ -39,6 +39,7 @@
 #include "core/templates/rid_owner.h"
 #include "core/variant/type_info.h"
 #include "core/variant/typed_array.h"
+#include "servers/display/display_server.h"
 #include "servers/display/display_server_enums.h"
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_device_driver.h"
