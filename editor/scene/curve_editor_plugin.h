@@ -33,11 +33,30 @@
 #include "editor/inspector/editor_inspector.h"
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/plugins/editor_plugin.h"
+#include "scene/gui/view_panner.h"
 #include "scene/resources/curve.h"
 
 class EditorSpinSlider;
 class MenuButton;
 class PopupMenu;
+class HScrollBar;
+class VScrollBar;
+
+class CurveSettings : public RefCounted {
+	GDCLASS(CurveSettings, RefCounted);
+
+public:
+	void set_curve(Ref<Curve> p_curve);
+	Ref<Curve> get_curve();
+
+protected:
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+
+private:
+	Ref<Curve> curve;
+};
 
 class CurveEdit : public Control {
 	GDCLASS(CurveEdit, Control);
@@ -49,10 +68,15 @@ public:
 	void set_snap_count(int p_snap_count);
 	void use_preset(int p_preset_id);
 
+	void zoom_in();
+	void zoom_out();
+	void fit_to_view();
+
 	void set_curve(Ref<Curve> p_curve);
 	Ref<Curve> get_curve();
 
 	Size2 get_minimum_size() const override;
+	void set_is_popped_out(bool p_popped_out);
 
 	enum PresetID {
 		PRESET_CONSTANT = 0,
@@ -75,6 +99,15 @@ protected:
 
 private:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
+	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
+	void _clamp_draw_ofs();
+	void _update_scrollbars();
+	void _scroll_changed(float p_value);
+	Size2 _get_inner_view_size() const;
+
 	void _curve_changed();
 
 	int get_point_at(const Vector2 &p_pos) const;
@@ -105,10 +138,19 @@ private:
 
 private:
 	const float ASPECT_RATIO = 6.f / 13.f;
-	const float LINE_WIDTH = 0.5f;
+	const float LINE_WIDTH_EMBEDDED = 0.5f;
+	const float LINE_WIDTH_POPOUT = 1.5f;
 	const int STEP_SIZE = 2; // Number of pixels between plot points.
 
 	Transform2D _world_to_view;
+	Vector2 draw_ofs;
+	float draw_zoom = 1.0;
+	float min_draw_zoom = 1.0f;
+	float max_draw_zoom = 128.0f;
+
+	VScrollBar *vscroll = nullptr;
+	HScrollBar *hscroll = nullptr;
+	bool updating_scroll = false;
 
 	Ref<Curve> curve;
 
@@ -143,6 +185,10 @@ private:
 
 	bool snap_enabled = false;
 	int snap_count = 10;
+
+	bool aspect_ratio_enforced = true;
+	float line_width = LINE_WIDTH_EMBEDDED;
+	Ref<ViewPanner> panner;
 };
 
 // CurveEdit + toolbar
@@ -153,13 +199,20 @@ class CurveEditor : public VBoxContainer {
 	const int BASE_SPACING = 4;
 	int spacing = BASE_SPACING;
 
+	Button *zoom_out_button = nullptr;
+	Button *zoom_reset_button = nullptr;
+	Button *zoom_in_button = nullptr;
+
 	Button *snap_button = nullptr;
 	EditorSpinSlider *snap_count_edit = nullptr;
 	MenuButton *presets_button = nullptr;
+	Button *popout_button = nullptr;
+	Button *curve_settings_btn = nullptr;
 	CurveEdit *curve_editor_rect = nullptr;
 
 	void _set_snap_enabled(bool p_enabled);
 	void _set_snap_count(int p_snap_count);
+	void _popout_editor();
 	void _on_preset_item_selected(int p_preset_id);
 
 protected:
@@ -168,6 +221,8 @@ protected:
 public:
 	static const int DEFAULT_SNAP;
 	void set_curve(const Ref<Curve> &p_curve);
+	void set_popout_button_visible(bool p_visible);
+	void set_curve_settings_visible(bool p_visible);
 
 	CurveEditor();
 };
