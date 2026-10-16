@@ -91,16 +91,20 @@ public:
 		GDCLASS(LuminanceBuffers, RenderBufferCustomDataRD);
 
 	private:
+		static constexpr Color DEFAULT_LUMINANCE = Color(0.754, 0.754, 0.754);
 		bool prefer_raster_effects;
 
 	public:
 		Vector<RID> reduce;
 		RID current;
+		RID last_luminance;
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
 		virtual void free_data() override;
 
 		void set_prefer_raster_effects(bool p_prefer_raster_effects);
+
+		~LuminanceBuffers();
 	};
 
 	Ref<LuminanceBuffers> get_luminance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers);
