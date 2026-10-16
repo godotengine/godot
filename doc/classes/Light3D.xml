@@ -94,6 +94,10 @@
 			[b]Note:[/b] Unlike [BaseMaterial3D] whose filter mode can be adjusted on a per-material basis, the filter mode for light projector textures is set globally with [member ProjectSettings.rendering/textures/light_projectors/filter].
 			[b]Note:[/b] Light projector textures are only supported in the Forward+ and Mobile rendering methods, not Compatibility.
 		</member>
+		<member name="light_projector_offset" type="Vector2" setter="set_projector_offset" getter="get_projector_offset" default="Vector2(0, 0)">
+		</member>
+		<member name="light_projector_size" type="Vector2" setter="set_projector_size" getter="get_projector_size" default="Vector2(100, 100)">
+		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" default="0.0" keywords="pcss">
 			The simulated size of the light in Godot units, affecting shading and shadows. For [OmniLight3D]s and [SpotLight3D]s, increasing this value simulates a spherical area light, expanding the size of specular highlights. If shadows are enabled, a penumbra is rendered, making shadows appear blurrier. For [AreaLight3D]s, only the shadows are affected. Penumbras are simulated with percentage-closer soft shadows, or PCSS, which has a noticeable performance cost for values above [code]0.0[/code].
 			[b]Note:[/b] [member light_size] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).
