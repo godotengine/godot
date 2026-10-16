@@ -34,19 +34,18 @@
 #include "core/extension/libgodot.h"
 #include "main/main.h"
 
-static OS_MacOS *os = nullptr;
-
 static GodotInstance *instance = nullptr;
 
 GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], GDExtensionInitializationFunction p_init_func) {
 	ERR_FAIL_COND_V_MSG(instance != nullptr, nullptr, "Only one Godot Instance may be created.");
 
 	uint32_t remaining_args = p_argc - 1;
-	os = new OS_MacOS_NSApp(p_argv[0], remaining_args, remaining_args > 0 ? &p_argv[1] : nullptr);
+	new OS_MacOS_NSApp(p_argv[0], remaining_args, remaining_args > 0 ? &p_argv[1] : nullptr);
 
 	@autoreleasepool {
 		Error err = Main::setup(p_argv[0], remaining_args, remaining_args > 0 ? &p_argv[1] : nullptr, false);
 		if (err != OK) {
+			delete OS_MacOS_NSApp::get_singleton();
 			return nullptr;
 		}
 
@@ -54,6 +53,8 @@ GDExtensionObjectPtr libgodot_create_godot_instance(int p_argc, char *p_argv[], 
 		if (!instance->initialize(p_init_func)) {
 			memdelete(instance);
 			instance = nullptr;
+			Main::cleanup(true);
+			delete OS_MacOS_NSApp::get_singleton();
 			return nullptr;
 		}
 
@@ -66,8 +67,9 @@ void libgodot_destroy_godot_instance(GDExtensionObjectPtr p_godot_instance) {
 	if (instance == godot_instance) {
 		godot_instance->stop();
 		memdelete(godot_instance);
-		// Note: When Godot Engine supports reinitialization, clear the instance pointer here.
-		//instance = nullptr;
-		Main::cleanup();
+		instance = nullptr;
+
+		Main::cleanup(true);
+		delete OS_MacOS_NSApp::get_singleton();
 	}
 }
