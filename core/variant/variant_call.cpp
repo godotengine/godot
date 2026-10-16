@@ -31,630 +31,57 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
+#include "core/object/gdtype.h"
+#include "core/object/method_bind_common.h"
 #include "core/os/os.h"
 #include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/variant/binder_common.h"
-#include "core/variant/method_ptrcall.h"
 #include "core/variant/variant.h"
 #include "core/variant/variant_internal.h"
+
+#include <type_traits>
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
 
-template <typename R, typename... P>
-static _FORCE_INLINE_ void vc_static_method_call(R (*p_method)(P...), const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	call_with_variant_args_static_ret_dv(p_method, p_args, p_argcount, r_ret, r_error, p_defvals);
+template <typename M>
+using VcClass = typename BinderTraits<M, !std::is_member_function_pointer_v<M>>::Class;
+
+template <typename M>
+static _FORCE_INLINE_ void vc_ptrcall(M p_method, void *p_base, const void **p_args, void *r_ret) {
+	call_with_ptr_args(reinterpret_cast<VcClass<M> *>(p_base), p_method, p_args, r_ret);
+}
+
+template <typename From, typename M>
+static _FORCE_INLINE_ void vc_convert_ptrcall(M p_method, void *p_base, const void **p_args, void *r_ret) {
+	VcClass<M> converted(*reinterpret_cast<From *>(p_base));
+	call_with_ptr_args(&converted, p_method, p_args, r_ret);
+}
+
+template <typename M>
+static _FORCE_INLINE_ void vc_static_ptrcall(M p_method, const void **p_args, void *r_ret) {
+	call_with_ptr_args(BINDER_NO_INSTANCE, p_method, p_args, r_ret);
+}
+
+template <typename T, typename R>
+static _FORCE_INLINE_ void vc_vararg_ptrcall(void (*p_method)(Variant *, const Variant **, int, Variant &, Callable::CallError &), void *p_base, const void **p_args, void *r_ret, int p_argcount) {
+	LocalVector<Variant> variants;
+	LocalVector<const Variant *> variant_ptrs;
+	variants.resize(p_argcount);
+	variant_ptrs.resize(p_argcount);
+	for (int i = 0; i < p_argcount; i++) {
+		variants[i] = PtrToArg<Variant>::convert(p_args[i]);
+		variant_ptrs[i] = &variants[i];
+	}
+
+	Variant base = PtrToArg<T>::convert(p_base);
+	Variant ret;
+	Callable::CallError error;
+	p_method(&base, variant_ptrs.ptr(), p_argcount, ret, error);
+	if constexpr (!std::is_void_v<R>) {
+		PtrToArg<R>::encode(ret, r_ret);
+	}
 }
-
-template <typename... P>
-static _FORCE_INLINE_ void vc_static_method_call(void (*p_method)(P...), const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	call_with_variant_args_static_dv(p_method, p_args, p_argcount, r_error, p_defvals);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_method_call(R (T::*p_method)(P...), Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	call_with_variant_args_ret_dv(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, p_argcount, r_ret, r_error, p_defvals);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_method_call(R (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	call_with_variant_args_retc_dv(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, p_argcount, r_ret, r_error, p_defvals);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ void vc_method_call(void (T::*p_method)(P...), Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	VariantInternal::clear(&r_ret);
-	call_with_variant_args_dv(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, p_argcount, r_error, p_defvals);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ void vc_method_call(void (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	VariantInternal::clear(&r_ret);
-	call_with_variant_argsc_dv(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, p_argcount, r_error, p_defvals);
-}
-
-template <typename From, typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_method_call(R (T::*p_method)(P...), Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_variant_args_ret_dv(&converted, p_method, p_args, p_argcount, r_ret, r_error, p_defvals);
-}
-
-template <typename From, typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_method_call(R (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_variant_args_retc_dv(&converted, p_method, p_args, p_argcount, r_ret, r_error, p_defvals);
-}
-
-template <typename From, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_method_call(void (T::*p_method)(P...), Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_variant_args_dv(&converted, p_method, p_args, p_argcount, r_error, p_defvals);
-}
-
-template <typename From, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_method_call(void (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_variant_argsc_dv(&converted, p_method, p_args, p_argcount, r_error, p_defvals);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_method_call_static(R (*p_method)(T *, P...), Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	call_with_variant_args_retc_static_helper_dv(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, p_argcount, r_ret, p_defvals, r_error);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ void vc_method_call_static(void (*p_method)(T *, P...), Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
-	call_with_variant_args_static_helper_dv(&VariantInternalAccessor<T>::get(p_base), p_method, p_args, p_argcount, p_defvals, r_error);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_validated_call(R (T::*p_method)(P...), Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_ret(p_base, p_method, p_args, r_ret);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_validated_call(R (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_retc(p_base, p_method, p_args, r_ret);
-}
-template <typename T, typename... P>
-static _FORCE_INLINE_ void vc_validated_call(void (T::*p_method)(P...), Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args(p_base, p_method, p_args);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ void vc_validated_call(void (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_argsc(p_base, p_method, p_args);
-}
-
-template <typename From, typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_validated_call(R (T::*p_method)(P...), Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_validated_variant_args_ret_helper<T, R, P...>(&converted, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
-}
-
-template <typename From, typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_validated_call(R (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_validated_variant_args_retc_helper<T, R, P...>(&converted, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
-}
-template <typename From, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_validated_call(void (T::*p_method)(P...), Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_validated_variant_args_helper<T, P...>(&converted, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
-}
-
-template <typename From, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_validated_call(void (T::*p_method)(P...) const, Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	T converted(static_cast<T>(VariantInternalAccessor<From>::get(p_base)));
-	call_with_validated_variant_argsc_helper<T, P...>(&converted, p_method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_validated_call_static(R (*p_method)(T *, P...), Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_static_retc(p_base, p_method, p_args, r_ret);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ void vc_validated_call_static(void (*p_method)(T *, P...), Variant *p_base, const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_static(p_base, p_method, p_args);
-}
-
-template <typename R, typename... P>
-static _FORCE_INLINE_ void vc_validated_static_call(R (*p_method)(P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_static_method_ret(p_method, p_args, r_ret);
-}
-
-template <typename... P>
-static _FORCE_INLINE_ void vc_validated_static_call(void (*p_method)(P...), const Variant **p_args, Variant *r_ret) {
-	call_with_validated_variant_args_static_method(p_method, p_args);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_ptrcall(R (T::*p_method)(P...), void *p_base, const void **p_args, void *r_ret) {
-	call_with_ptr_args_ret(reinterpret_cast<T *>(p_base), p_method, p_args, r_ret);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_ptrcall(R (T::*p_method)(P...) const, void *p_base, const void **p_args, void *r_ret) {
-	call_with_ptr_args_retc(reinterpret_cast<T *>(p_base), p_method, p_args, r_ret);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ void vc_ptrcall(void (T::*p_method)(P...), void *p_base, const void **p_args, void *r_ret) {
-	call_with_ptr_args(reinterpret_cast<T *>(p_base), p_method, p_args);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ void vc_ptrcall(void (T::*p_method)(P...) const, void *p_base, const void **p_args, void *r_ret) {
-	call_with_ptr_argsc(reinterpret_cast<T *>(p_base), p_method, p_args);
-}
-
-template <typename From, typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_ptrcall(R (T::*p_method)(P...), void *p_base, const void **p_args, void *r_ret) {
-	T converted(*reinterpret_cast<From *>(p_base));
-	call_with_ptr_args_ret(&converted, p_method, p_args, r_ret);
-}
-
-template <typename From, typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_ptrcall(R (T::*p_method)(P...) const, void *p_base, const void **p_args, void *r_ret) {
-	T converted(*reinterpret_cast<From *>(p_base));
-	call_with_ptr_args_retc(&converted, p_method, p_args, r_ret);
-}
-
-template <typename From, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_ptrcall(void (T::*p_method)(P...), void *p_base, const void **p_args, void *r_ret) {
-	T converted(*reinterpret_cast<From *>(p_base));
-	call_with_ptr_args(&converted, p_method, p_args);
-}
-
-template <typename From, typename T, typename... P>
-static _FORCE_INLINE_ void vc_convert_ptrcall(void (T::*p_method)(P...) const, void *p_base, const void **p_args, void *r_ret) {
-	T converted(*reinterpret_cast<From *>(p_base));
-	call_with_ptr_argsc(&converted, p_method, p_args);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ int vc_get_argument_count(R (T::*p_method)(P...)) {
-	return sizeof...(P);
-}
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ int vc_get_argument_count(R (T::*p_method)(P...) const) {
-	return sizeof...(P);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ int vc_get_argument_count(void (T::*p_method)(P...)) {
-	return sizeof...(P);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ int vc_get_argument_count(void (T::*p_method)(P...) const) {
-	return sizeof...(P);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ int vc_get_argument_count(R (*p_method)(T *, P...)) {
-	return sizeof...(P);
-}
-
-template <typename R, typename... P>
-static _FORCE_INLINE_ int vc_get_argument_count_static(R (*p_method)(P...)) {
-	return sizeof...(P);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(R (T::*p_method)(P...), int p_arg) {
-	return call_get_argument_type<P...>(p_arg);
-}
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(R (T::*p_method)(P...) const, int p_arg) {
-	return call_get_argument_type<P...>(p_arg);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(void (T::*p_method)(P...), int p_arg) {
-	return call_get_argument_type<P...>(p_arg);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(void (T::*p_method)(P...) const, int p_arg) {
-	return call_get_argument_type<P...>(p_arg);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type(R (*p_method)(T *, P...), int p_arg) {
-	return call_get_argument_type<P...>(p_arg);
-}
-
-template <typename R, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_argument_type_static(R (*p_method)(P...), int p_arg) {
-	return call_get_argument_type<P...>(p_arg);
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(R (T::*p_method)(P...)) {
-	return GetTypeInfo<R>::VARIANT_TYPE;
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(R (T::*p_method)(P...) const) {
-	return GetTypeInfo<R>::VARIANT_TYPE;
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(void (T::*p_method)(P...)) {
-	return Variant::NIL;
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(void (T::*p_method)(P...) const) {
-	return Variant::NIL;
-}
-
-template <typename R, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(R (*p_method)(P...)) {
-	return GetTypeInfo<R>::VARIANT_TYPE;
-}
-
-template <typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_return_type(void (*p_method)(P...)) {
-	return Variant::NIL;
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ bool vc_has_return_type(R (T::*p_method)(P...)) {
-	return true;
-}
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ bool vc_has_return_type(R (T::*p_method)(P...) const) {
-	return true;
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ bool vc_has_return_type(void (T::*p_method)(P...)) {
-	return false;
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ bool vc_has_return_type(void (T::*p_method)(P...) const) {
-	return false;
-}
-
-template <typename... P>
-static _FORCE_INLINE_ bool vc_has_return_type_static(void (*p_method)(P...)) {
-	return false;
-}
-
-template <typename R, typename... P>
-static _FORCE_INLINE_ bool vc_has_return_type_static(R (*p_method)(P...)) {
-	return true;
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ bool vc_is_const(R (T::*p_method)(P...)) {
-	return false;
-}
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ bool vc_is_const(R (T::*p_method)(P...) const) {
-	return true;
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ bool vc_is_const(void (T::*p_method)(P...)) {
-	return false;
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ bool vc_is_const(void (T::*p_method)(P...) const) {
-	return true;
-}
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_base_type(R (T::*p_method)(P...)) {
-	return GetTypeInfo<T>::VARIANT_TYPE;
-}
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_base_type(R (T::*p_method)(P...) const) {
-	return GetTypeInfo<T>::VARIANT_TYPE;
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*p_method)(P...)) {
-	return GetTypeInfo<T>::VARIANT_TYPE;
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*p_method)(P...) const) {
-	return GetTypeInfo<T>::VARIANT_TYPE;
-}
-
-#define METHOD_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr) \
-	struct Method_##m_class##_##m_method_name { \
-		static void call(Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
-			vc_method_call(m_method_ptr, p_base, p_args, p_argcount, r_ret, p_defvals, r_error); \
-		} \
-		static void validated_call(Variant *p_base, const Variant **p_args, int p_argcount, Variant *r_ret) { \
-			vc_validated_call(m_method_ptr, p_base, p_args, r_ret); \
-		} \
-		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
-			vc_ptrcall(m_method_ptr, p_base, p_args, r_ret); \
-		} \
-		static int get_argument_count() { \
-			return vc_get_argument_count(m_method_ptr); \
-		} \
-		static Variant::Type get_argument_type(int p_arg) { \
-			return vc_get_argument_type(m_method_ptr, p_arg); \
-		} \
-		static Variant::Type get_return_type() { \
-			return vc_get_return_type(m_method_ptr); \
-		} \
-		static bool has_return_type() { \
-			return vc_has_return_type(m_method_ptr); \
-		} \
-		static bool is_const() { \
-			return vc_is_const(m_method_ptr); \
-		} \
-		static bool is_static() { \
-			return false; \
-		} \
-		static bool is_vararg() { \
-			return false; \
-		} \
-		static Variant::Type get_base_type() { \
-			return vc_get_base_type(m_method_ptr); \
-		} \
-		static StringName get_name() { \
-			return #m_exposed_name; \
-		} \
-	};
-
-#define CONVERT_METHOD_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr) \
-	struct Method_##m_class##_##m_method_name { \
-		static void call(Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
-			vc_convert_method_call<m_class>(m_method_ptr, p_base, p_args, p_argcount, r_ret, p_defvals, r_error); \
-		} \
-		static void validated_call(Variant *p_base, const Variant **p_args, int p_argcount, Variant *r_ret) { \
-			vc_convert_validated_call<m_class>(m_method_ptr, p_base, p_args, r_ret); \
-		} \
-		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
-			vc_convert_ptrcall<m_class>(m_method_ptr, p_base, p_args, r_ret); \
-		} \
-		static int get_argument_count() { \
-			return vc_get_argument_count(m_method_ptr); \
-		} \
-		static Variant::Type get_argument_type(int p_arg) { \
-			return vc_get_argument_type(m_method_ptr, p_arg); \
-		} \
-		static Variant::Type get_return_type() { \
-			return vc_get_return_type(m_method_ptr); \
-		} \
-		static bool has_return_type() { \
-			return vc_has_return_type(m_method_ptr); \
-		} \
-		static bool is_const() { \
-			return vc_is_const(m_method_ptr); \
-		} \
-		static bool is_static() { \
-			return false; \
-		} \
-		static bool is_vararg() { \
-			return false; \
-		} \
-		static Variant::Type get_base_type() { \
-			return GetTypeInfo<m_class>::VARIANT_TYPE; \
-		} \
-		static StringName get_name() { \
-			return #m_exposed_name; \
-		} \
-	};
-
-template <typename R, typename... P>
-static _FORCE_INLINE_ void vc_static_ptrcall(R (*p_method)(P...), const void **p_args, void *r_ret) {
-	call_with_ptr_args_static_method_ret<R, P...>(p_method, p_args, r_ret);
-}
-
-template <typename... P>
-static _FORCE_INLINE_ void vc_static_ptrcall(void (*p_method)(P...), const void **p_args, void *r_ret) {
-	call_with_ptr_args_static_method<P...>(p_method, p_args);
-}
-
-#define STATIC_METHOD_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr) \
-	struct Method_##m_class##_##m_method_name { \
-		static void call(Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
-			vc_static_method_call(m_method_ptr, p_args, p_argcount, r_ret, p_defvals, r_error); \
-		} \
-		static void validated_call(Variant *p_base, const Variant **p_args, int p_argcount, Variant *r_ret) { \
-			vc_validated_static_call(m_method_ptr, p_args, r_ret); \
-		} \
-		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
-			vc_static_ptrcall(m_method_ptr, p_args, r_ret); \
-		} \
-		static int get_argument_count() { \
-			return vc_get_argument_count_static(m_method_ptr); \
-		} \
-		static Variant::Type get_argument_type(int p_arg) { \
-			return vc_get_argument_type_static(m_method_ptr, p_arg); \
-		} \
-		static Variant::Type get_return_type() { \
-			return vc_get_return_type(m_method_ptr); \
-		} \
-		static bool has_return_type() { \
-			return vc_has_return_type_static(m_method_ptr); \
-		} \
-		static bool is_const() { \
-			return false; \
-		} \
-		static bool is_static() { \
-			return true; \
-		} \
-		static bool is_vararg() { \
-			return false; \
-		} \
-		static Variant::Type get_base_type() { \
-			return GetTypeInfo<m_class>::VARIANT_TYPE; \
-		} \
-		static StringName get_name() { \
-			return #m_exposed_name; \
-		} \
-	};
-
-template <typename R, typename T, typename... P>
-static _FORCE_INLINE_ void vc_ptrcall(R (*p_method)(T *, P...), void *p_base, const void **p_args, void *r_ret) {
-	call_with_ptr_args_static_retc<T, R, P...>(reinterpret_cast<T *>(p_base), p_method, p_args, r_ret);
-}
-
-template <typename T, typename... P>
-static _FORCE_INLINE_ void vc_ptrcall(void (*p_method)(T *, P...), void *p_base, const void **p_args, void *r_ret) {
-	call_with_ptr_args_static<T, P...>(reinterpret_cast<T *>(p_base), p_method, p_args);
-}
-
-#define FUNCTION_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr, m_const) \
-	struct Method_##m_class##_##m_method_name { \
-		static void call(Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
-			vc_method_call_static(m_method_ptr, p_base, p_args, p_argcount, r_ret, p_defvals, r_error); \
-		} \
-		static void validated_call(Variant *p_base, const Variant **p_args, int p_argcount, Variant *r_ret) { \
-			vc_validated_call_static(m_method_ptr, p_base, p_args, r_ret); \
-		} \
-		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
-			vc_ptrcall(m_method_ptr, p_base, p_args, r_ret); \
-		} \
-		static int get_argument_count() { \
-			return vc_get_argument_count(m_method_ptr); \
-		} \
-		static Variant::Type get_argument_type(int p_arg) { \
-			return vc_get_argument_type(m_method_ptr, p_arg); \
-		} \
-		static Variant::Type get_return_type() { \
-			return vc_get_return_type(m_method_ptr); \
-		} \
-		static bool has_return_type() { \
-			return vc_has_return_type_static(m_method_ptr); \
-		} \
-		static bool is_const() { \
-			return m_const; \
-		} \
-		static bool is_static() { \
-			return false; \
-		} \
-		static bool is_vararg() { \
-			return false; \
-		} \
-		static Variant::Type get_base_type() { \
-			return GetTypeInfo<m_class>::VARIANT_TYPE; \
-		} \
-		static StringName get_name() { \
-			return #m_exposed_name; \
-		} \
-	};
-
-#define VARARG_CLASS(m_class, m_exposed_name, m_method_name, m_method_ptr, m_has_return, m_return_type) \
-	struct Method_##m_class##_##m_method_name { \
-		static void call(Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
-			m_method_ptr(p_base, p_args, p_argcount, r_ret, r_error); \
-		} \
-		static void validated_call(Variant *p_base, const Variant **p_args, int p_argcount, Variant *r_ret) { \
-			Callable::CallError ce; \
-			m_method_ptr(p_base, p_args, p_argcount, *r_ret, ce); \
-		} \
-		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
-			LocalVector<Variant> vars; \
-			LocalVector<const Variant *> vars_ptrs; \
-			vars.resize(p_argcount); \
-			vars_ptrs.resize(p_argcount); \
-			for (int i = 0; i < p_argcount; i++) { \
-				vars[i] = PtrToArg<Variant>::convert(p_args[i]); \
-				vars_ptrs[i] = &vars[i]; \
-			} \
-			Variant base = PtrToArg<m_class>::convert(p_base); \
-			Variant ret; \
-			Callable::CallError ce; \
-			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce); \
-			if (m_has_return) { \
-				PtrToArg<m_return_type>::encode(ret, r_ret); \
-			} \
-		} \
-		static int get_argument_count() { \
-			return 0; \
-		} \
-		static Variant::Type get_argument_type(int p_arg) { \
-			return Variant::NIL; \
-		} \
-		static Variant::Type get_return_type() { \
-			return GetTypeInfo<m_return_type>::VARIANT_TYPE; \
-		} \
-		static bool has_return_type() { \
-			return m_has_return; \
-		} \
-		static bool is_const() { \
-			return true; \
-		} \
-		static bool is_static() { \
-			return false; \
-		} \
-		static bool is_vararg() { \
-			return true; \
-		} \
-		static Variant::Type get_base_type() { \
-			return GetTypeInfo<m_class>::VARIANT_TYPE; \
-		} \
-		static StringName get_name() { \
-			return #m_exposed_name; \
-		} \
-	};
-
-#define VARARG_CLASS1(m_class, m_exposed_name, m_method_name, m_method_ptr, m_arg_type) \
-	struct Method_##m_class##_##m_method_name { \
-		static void call(Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
-			m_method_ptr(p_base, p_args, p_argcount, r_ret, r_error); \
-		} \
-		static void validated_call(Variant *p_base, const Variant **p_args, int p_argcount, Variant *r_ret) { \
-			Callable::CallError ce; \
-			m_method_ptr(p_base, p_args, p_argcount, *r_ret, ce); \
-		} \
-		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
-			LocalVector<Variant> vars; \
-			LocalVector<const Variant *> vars_ptrs; \
-			vars.resize(p_argcount); \
-			vars_ptrs.resize(p_argcount); \
-			for (int i = 0; i < p_argcount; i++) { \
-				vars[i] = PtrToArg<Variant>::convert(p_args[i]); \
-				vars_ptrs[i] = &vars[i]; \
-			} \
-			Variant base = PtrToArg<m_class>::convert(p_base); \
-			Variant ret; \
-			Callable::CallError ce; \
-			m_method_ptr(&base, vars_ptrs.ptr(), p_argcount, ret, ce); \
-		} \
-		static int get_argument_count() { \
-			return 1; \
-		} \
-		static Variant::Type get_argument_type(int p_arg) { \
-			return m_arg_type; \
-		} \
-		static Variant::Type get_return_type() { \
-			return Variant::NIL; \
-		} \
-		static bool has_return_type() { \
-			return false; \
-		} \
-		static bool is_const() { \
-			return true; \
-		} \
-		static bool is_static() { \
-			return false; \
-		} \
-		static bool is_vararg() { \
-			return true; \
-		} \
-		static Variant::Type get_base_type() { \
-			return GetTypeInfo<m_class>::VARIANT_TYPE; \
-		} \
-		static StringName get_name() { \
-			return #m_exposed_name; \
-		} \
-	};
 
 #define VARCALL_ARRAY_GETTER_SETTER(m_packed_type, m_type) \
 	static m_type func_##m_packed_type##_get(m_packed_type *p_instance, int64_t p_index) { \
@@ -1245,147 +672,91 @@ struct _VariantCall {
 		return p_vector->bsearch(p_value, p_before);
 	}
 #endif
+
+	static void register_method(Variant::Type p_type, const StringName &p_name, MethodBind *p_bind, const Vector<String> &p_arg_names, const Vector<Variant> &p_default_args, bool p_compatibility = false, Variant::PTRBuiltInMethod p_ptrcall = nullptr) {
+		MethodBind *bind = p_bind;
+		bind->set_name(p_name);
+		bind->set_default_arguments(p_default_args);
+		bind->set_variant_ptrcall(p_ptrcall);
+
+#ifdef DEBUG_ENABLED
+		if (bind->get_argument_count() != p_arg_names.size()) {
+			memdelete(bind);
+			ERR_FAIL_MSG(vformat(
+					"Argument count mismatch for Variant method '%s'.",
+					p_name));
+		}
+
+		Vector<StringName> argument_names;
+		argument_names.resize(p_arg_names.size());
+		for (int i = 0; i < p_arg_names.size(); i++) {
+			argument_names.write[i] = StringName(p_arg_names[i]);
+		}
+		bind->set_argument_names(argument_names);
+#endif // DEBUG_ENABLED
+
+		GDType &type = Variant::_get_gdtype_for_type(p_type);
+
+		if (p_compatibility) {
+			if (!_VariantCall::get_method_bind(p_type, p_name)) {
+				memdelete(bind);
+				ERR_FAIL_MSG(vformat("Cannot bind compatibility method '%s' without a normal method.", p_name));
+			}
+			if (!type.bind_compatibility_method(bind)) {
+				memdelete(bind);
+				ERR_FAIL_MSG(vformat("Could not bind compatibility method '%s'.", p_name));
+			}
+		} else {
+			if (!type.bind_method(bind)) {
+				ERR_FAIL_MSG(vformat("Could not bind Variant method '%s'.", p_name));
+			}
+		}
+	}
+
+	static const MethodBind *get_method_bind(Variant::Type p_type, const StringName &p_name) {
+		const GDType::Member *member = Variant::_get_gdtype_for_type(p_type).members().getptr(p_name);
+		return member && member->type == GDType::Member::Type::METHOD ? member->payload.method : nullptr;
+	}
+
+	static const LocalVector<MethodBind *> *get_compatibility_method_binds(Variant::Type p_type, const StringName &p_name) {
+		return Variant::_get_gdtype_for_type(p_type).get_self_compatibility_method_map().getptr(p_name);
+	}
 };
 
 HashMap<StringName, Variant> *_VariantCall::variant_constants = nullptr;
 
-struct VariantBuiltInMethodInfo {
-	void (*call)(Variant *p_base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) = nullptr;
-	Variant::ValidatedBuiltInMethod validated_call = nullptr;
-	Variant::PTRBuiltInMethod ptrcall = nullptr;
+static MethodInfo get_method_info_from_bind(const MethodBind *p_method) {
+	MethodInfo method_info;
+	method_info.name = p_method->get_name();
+	method_info.return_val = p_method->get_return_info();
+	method_info.flags = p_method->get_hint_flags();
 
-	Vector<Variant> default_arguments;
-	Vector<String> argument_names;
-
-	bool is_const = false;
-	bool is_static = false;
-	bool has_return_type = false;
-	bool is_vararg = false;
-	Variant::Type return_type;
-	int argument_count = 0;
-	Variant::Type (*get_argument_type)(int p_arg) = nullptr;
-
-	MethodInfo get_method_info(const StringName &p_name) const {
-		MethodInfo mi;
-		mi.name = p_name;
-
-		if (has_return_type) {
-			mi.return_val.type = return_type;
-			if (mi.return_val.type == Variant::NIL) {
-				mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-			}
-		}
-
-		if (is_const) {
-			mi.flags |= METHOD_FLAG_CONST;
-		}
-		if (is_vararg) {
-			mi.flags |= METHOD_FLAG_VARARG;
-		}
-		if (is_static) {
-			mi.flags |= METHOD_FLAG_STATIC;
-		}
-
-		for (int i = 0; i < argument_count; i++) {
-			PropertyInfo pi;
-#ifdef DEBUG_ENABLED
-			pi.name = argument_names[i];
-#else
-			pi.name = "arg" + itos(i + 1);
-#endif // DEBUG_ENABLED
-			pi.type = (*get_argument_type)(i);
-			if (pi.type == Variant::NIL) {
-				pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-			}
-			mi.arguments.push_back(pi);
-		}
-
-		mi.default_arguments = default_arguments;
-
-		return mi;
-	}
-
-	uint32_t get_hash() const {
-		uint32_t hash = hash_murmur3_one_32(is_const);
-		hash = hash_murmur3_one_32(is_static, hash);
-		hash = hash_murmur3_one_32(is_vararg, hash);
-		hash = hash_murmur3_one_32(has_return_type, hash);
-		if (has_return_type) {
-			hash = hash_murmur3_one_32(return_type, hash);
-		}
-		hash = hash_murmur3_one_32(argument_count, hash);
-		for (int i = 0; i < argument_count; i++) {
-			hash = hash_murmur3_one_32(get_argument_type(i), hash);
-		}
-
-		return hash_fmix32(hash);
-	}
-};
-
-typedef AHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
-static BuiltinMethodMap *builtin_method_info;
-static List<StringName> *builtin_method_names;
-
-#ifndef DISABLE_DEPRECATED
-typedef AHashMap<StringName, LocalVector<VariantBuiltInMethodInfo>> BuiltinCompatMethodMap;
-static BuiltinCompatMethodMap *builtin_compat_method_info;
+	for (int i = 0; i < p_method->get_argument_count(); i++) {
+		PropertyInfo argument_info = p_method->get_argument_info(i);
+#ifndef DEBUG_ENABLED
+		argument_info.name = "arg" + itos(i + 1);
 #endif
-
-template <typename T>
-static void _populate_variant_builtin_method_info(VariantBuiltInMethodInfo &r_imi, const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
-	r_imi.call = T::call;
-	r_imi.validated_call = T::validated_call;
-	r_imi.ptrcall = T::ptrcall;
-
-	r_imi.default_arguments = p_def_args;
-	r_imi.argument_names = p_argnames;
-
-	r_imi.is_const = T::is_const();
-	r_imi.is_static = T::is_static();
-	r_imi.is_vararg = T::is_vararg();
-	r_imi.has_return_type = T::has_return_type();
-	r_imi.return_type = T::get_return_type();
-	r_imi.argument_count = T::get_argument_count();
-	r_imi.get_argument_type = T::get_argument_type;
-}
-
-template <typename T>
-static void register_builtin_method(const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
-	StringName name = T::get_name();
-
-	ERR_FAIL_COND(builtin_method_info[T::get_base_type()].has(name));
-
-	VariantBuiltInMethodInfo imi;
-	_populate_variant_builtin_method_info<T>(imi, p_argnames, p_def_args);
-
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(!imi.is_vararg && imi.argument_count != imi.argument_names.size());
-#endif // DEBUG_ENABLED
-
-	builtin_method_info[T::get_base_type()].insert(name, imi);
-	builtin_method_names[T::get_base_type()].push_back(name);
-}
-
-#ifndef DISABLE_DEPRECATED
-template <typename T>
-static void register_builtin_compat_method(const Vector<String> &p_argnames, const Vector<Variant> &p_def_args) {
-	StringName name = T::get_name();
-
-	ERR_FAIL_COND(!builtin_method_info[T::get_base_type()].has(name));
-
-	VariantBuiltInMethodInfo imi;
-	_populate_variant_builtin_method_info<T>(imi, p_argnames, p_def_args);
-
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(!imi.is_vararg && imi.argument_count != imi.argument_names.size());
-#endif // DEBUG_ENABLED
-
-	if (!builtin_compat_method_info[T::get_base_type()].has(name)) {
-		builtin_compat_method_info[T::get_base_type()].insert(name, LocalVector<VariantBuiltInMethodInfo>());
+		method_info.arguments.push_back(argument_info);
 	}
-	builtin_compat_method_info[T::get_base_type()][name].push_back(imi);
+	method_info.default_arguments = p_method->get_default_arguments();
+	return method_info;
 }
-#endif
+
+static uint32_t get_method_hash_from_bind(const MethodBind *p_method) {
+	uint32_t hash = hash_murmur3_one_32(p_method->is_const());
+	hash = hash_murmur3_one_32(p_method->is_static(), hash);
+	hash = hash_murmur3_one_32(p_method->is_vararg(), hash);
+	hash = hash_murmur3_one_32(p_method->has_return(), hash);
+	if (p_method->has_return()) {
+		hash = hash_murmur3_one_32(p_method->get_return_info().type, hash);
+	}
+	hash = hash_murmur3_one_32(p_method->get_argument_count(), hash);
+	for (int i = 0; i < p_method->get_argument_count(); i++) {
+		hash = hash_murmur3_one_32(p_method->get_argument_type(i), hash);
+	}
+
+	return hash_fmix32(hash);
+}
 
 void Variant::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 	if (type == Variant::OBJECT) {
@@ -1407,14 +778,14 @@ void Variant::callp(const StringName &p_method, const Variant **p_args, int p_ar
 	} else {
 		r_error.error = Callable::CallError::CALL_OK;
 
-		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].getptr(p_method);
+		const MethodBind *method = _VariantCall::get_method_bind(type, p_method);
 
-		if (!imf) {
+		if (!method) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return;
 		}
 
-		imf->call(this, p_args, p_argcount, r_ret, imf->default_arguments, r_error);
+		r_ret = method->call(this, p_args, p_argcount, r_error);
 	}
 }
 
@@ -1439,38 +810,38 @@ void Variant::call_const(const StringName &p_method, const Variant **p_args, int
 	} else {
 		r_error.error = Callable::CallError::CALL_OK;
 
-		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].getptr(p_method);
+		const MethodBind *method = _VariantCall::get_method_bind(type, p_method);
 
-		if (!imf) {
+		if (!method) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 			return;
 		}
 
-		if (!imf->is_const) {
+		if (!method->is_const()) {
 			r_error.error = Callable::CallError::CALL_ERROR_METHOD_NOT_CONST;
 			return;
 		}
 
-		imf->call(this, p_args, p_argcount, r_ret, imf->default_arguments, r_error);
+		r_ret = method->call(this, p_args, p_argcount, r_error);
 	}
 }
 
 void Variant::call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	const VariantBuiltInMethodInfo *imf = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 
-	if (!imf) {
+	if (!method) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 		return;
 	}
 
-	if (!imf->is_static) {
+	if (!method->is_static()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return;
 	}
 
-	imf->call(nullptr, p_args, p_argcount, r_ret, imf->default_arguments, r_error);
+	r_ret = method->call(nullptr, p_args, p_argcount, r_error);
 }
 
 bool Variant::has_method(const StringName &p_method) const {
@@ -1483,42 +854,42 @@ bool Variant::has_method(const StringName &p_method) const {
 		return obj->has_method(p_method);
 	}
 
-	return builtin_method_info[type].has(p_method);
+	return _VariantCall::get_method_bind(type, p_method);
 }
 
 bool Variant::has_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	return builtin_method_info[p_type].has(p_method);
+	return _VariantCall::get_method_bind(p_type, p_method);
 }
 
 Variant::ValidatedBuiltInMethod Variant::get_validated_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, nullptr);
-	return method->validated_call;
+	return method;
 }
 
 Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, nullptr);
-	return method->ptrcall;
+	return method->get_variant_ptrcall();
 }
 
 Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method_with_compatibility(Variant::Type p_type, const StringName &p_method, uint32_t p_hash) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
 
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
-	if (method && method->get_hash() == p_hash) {
-		return method->ptrcall;
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
+	if (method && get_method_hash_from_bind(method) == p_hash) {
+		return method->get_variant_ptrcall();
 	}
 
 #ifndef DISABLE_DEPRECATED
-	const LocalVector<VariantBuiltInMethodInfo> *compat_methods = builtin_compat_method_info[p_type].getptr(p_method);
+	const LocalVector<MethodBind *> *compat_methods = _VariantCall::get_compatibility_method_binds(p_type, p_method);
 	if (compat_methods) {
-		for (const VariantBuiltInMethodInfo &imi : *compat_methods) {
-			if (imi.get_hash() == p_hash) {
-				return imi.ptrcall;
+		for (const MethodBind *compat_method : *compat_methods) {
+			if (get_method_hash_from_bind(compat_method) == p_hash) {
+				return compat_method->get_variant_ptrcall();
 			}
 		}
 	}
@@ -1529,107 +900,111 @@ Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method_with_compatibility(Var
 
 MethodInfo Variant::get_builtin_method_info(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, MethodInfo());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, MethodInfo());
-	return method->get_method_info(p_method);
+	return get_method_info_from_bind(method);
 }
 
 int Variant::get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, 0);
-	return method->argument_count;
+	return method->get_argument_count();
 }
 
 Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, Variant::NIL);
-	ERR_FAIL_INDEX_V(p_argument, method->argument_count, Variant::NIL);
+	ERR_FAIL_INDEX_V(p_argument, method->get_argument_count(), Variant::NIL);
 	return method->get_argument_type(p_argument);
 }
 
 String Variant::get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, String());
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_INDEX_V(p_argument, method->argument_count, String());
-	return method->argument_names[p_argument];
-#else
-	return "arg" + itos(p_argument + 1);
-#endif // DEBUG_ENABLED
+	ERR_FAIL_INDEX_V(p_argument, method->get_argument_count(), String());
+	PropertyInfo argument_info = method->get_argument_info(p_argument);
+#ifndef DEBUG_ENABLED
+	argument_info.name = "arg" + itos(p_argument + 1);
+#endif
+	return argument_info.name;
 }
 
 Vector<Variant> Variant::get_builtin_method_default_arguments(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Vector<Variant>());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, Vector<Variant>());
-	return method->default_arguments;
+	return method->get_default_arguments();
 }
 
 bool Variant::has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, false);
-	return method->has_return_type;
+	return method->has_return();
 }
 
 void Variant::get_builtin_method_list(Variant::Type p_type, List<StringName> *p_list) {
 	ERR_FAIL_INDEX(p_type, Variant::VARIANT_MAX);
-	for (const StringName &E : builtin_method_names[p_type]) {
-		p_list->push_back(E);
+	for (const KeyValue<StringName, GDType::Member> &kv : Variant::_get_gdtype_for_type(p_type).members()) {
+		if (kv.value.type == GDType::Member::Type::METHOD) {
+			p_list->push_back(kv.key);
+		}
 	}
 }
 
 int Variant::get_builtin_method_count(Variant::Type p_type) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, -1);
-	return builtin_method_names[p_type].size();
+	List<StringName> methods;
+	get_builtin_method_list(p_type, &methods);
+	return methods.size();
 }
 
 Variant::Type Variant::get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, Variant::NIL);
-	return method->return_type;
+	return method->get_return_info().type;
 }
 
 bool Variant::is_builtin_method_const(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, false);
-	return method->is_const;
+	return method->is_const();
 }
 
 bool Variant::is_builtin_method_static(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, false);
-	return method->is_static;
+	return method->is_static();
 }
 
 bool Variant::is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, false);
-	return method->is_vararg;
+	return method->is_vararg();
 }
 
 uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
+	const MethodBind *method = _VariantCall::get_method_bind(p_type, p_method);
 	ERR_FAIL_NULL_V(method, 0);
-	return method->get_hash();
+	return get_method_hash_from_bind(method);
 }
 
 Vector<uint32_t> Variant::get_builtin_method_compatibility_hashes(Variant::Type p_type, const StringName &p_method) {
 	Vector<uint32_t> method_hashes;
 #ifndef DISABLE_DEPRECATED
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, method_hashes);
-	const LocalVector<VariantBuiltInMethodInfo> *compat_methods = builtin_compat_method_info[p_type].getptr(p_method);
+	const LocalVector<MethodBind *> *compat_methods = _VariantCall::get_compatibility_method_binds(p_type, p_method);
 	if (compat_methods) {
-		for (const VariantBuiltInMethodInfo &imi : *compat_methods) {
-			method_hashes.push_back(imi.get_hash());
+		for (const MethodBind *method : *compat_methods) {
+			method_hashes.push_back(get_method_hash_from_bind(method));
 		}
 	}
 #endif
@@ -1643,10 +1018,12 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 			obj->get_method_list(p_list);
 		}
 	} else {
-		for (const StringName &E : builtin_method_names[type]) {
-			const VariantBuiltInMethodInfo *method = builtin_method_info[type].getptr(E);
+		List<StringName> methods;
+		get_builtin_method_list(type, &methods);
+		for (const StringName &method_name : methods) {
+			const MethodBind *method = _VariantCall::get_method_bind(type, method_name);
 			ERR_CONTINUE(!method);
-			p_list->push_back(method->get_method_info(E));
+			p_list->push_back(get_method_info_from_bind(method));
 		}
 	}
 }
@@ -1766,165 +1143,104 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	return enum_info ? enum_info->name : StringName();
 }
 
-#ifdef DEBUG_ENABLED
+#define VARIANT_PTRCALL_METHOD_CLASS(m_class, m_name, m_method) \
+	struct VariantPtrCall_##m_class##_##m_name { \
+		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
+			vc_ptrcall(m_method, p_base, p_args, r_ret); \
+		} \
+	};
+
+#define VARIANT_PTRCALL_CONVERT_METHOD_CLASS(m_type_from, m_name, m_method) \
+	struct VariantPtrCall_##m_type_from##_##m_name { \
+		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
+			vc_convert_ptrcall<m_type_from>(m_method, p_base, p_args, r_ret); \
+		} \
+	};
+
+#define VARIANT_PTRCALL_STATIC_METHOD_CLASS(m_class, m_name, m_method) \
+	struct VariantPtrCall_##m_class##_##m_name { \
+		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
+			vc_static_ptrcall(m_method, p_args, r_ret); \
+		} \
+	};
+
+#define VARIANT_PTRCALL_FUNCTION_CLASS(m_class, m_name, m_method) \
+	struct VariantPtrCall_##m_class##_##m_name { \
+		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
+			vc_static_ptrcall(m_method, p_args, r_ret); \
+		} \
+	};
+
+#define VARIANT_PTRCALL_VARARG_CLASS(m_class, m_name, m_method, m_ret_type) \
+	struct VariantPtrCall_##m_class##_##m_name { \
+		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) { \
+			vc_vararg_ptrcall<m_class, m_ret_type>(m_method, p_base, p_args, r_ret, p_argcount); \
+		} \
+	};
+
 #define bind_method(m_type, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_method, m_method, &m_type::m_method); \
-	register_builtin_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
-#else
-#define bind_method(m_type, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_method, m_method, &m_type ::m_method); \
-	register_builtin_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_METHOD_CLASS(m_type, m_method, &m_type::m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_method), create_variant_method_bind(&m_type::m_method), m_arg_names, m_default_args, false, VariantPtrCall_##m_type##_##m_method::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_exposed_method, m_method, &m_type::m_method); \
-	register_builtin_compat_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
-#else
-#define bind_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_exposed_method, m_method, &m_type ::m_method); \
-	register_builtin_compat_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_METHOD_CLASS(m_type, m_method, &m_type::m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_exposed_method), create_variant_method_bind(&m_type::m_method), m_arg_names, m_default_args, true, VariantPtrCall_##m_type##_##m_method::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_convert_method(m_type_from, m_type_to, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_method, m_method, &m_type_to::m_method); \
-	register_builtin_method<Method_##m_type_from##_##m_method>(m_arg_names, m_default_args);
-#else
-#define bind_convert_method(m_type_from, m_type_to, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_method, m_method, &m_type_to ::m_method); \
-	register_builtin_method<Method_##m_type_from##_##m_method>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_CONVERT_METHOD_CLASS(m_type_from, m_method, &m_type_to::m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type_from>::VARIANT_TYPE, StringName(#m_method), create_variant_convert_method_bind<m_type_from>(&m_type_to::m_method), m_arg_names, m_default_args, false, VariantPtrCall_##m_type_from##_##m_method::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_convert_compat_method(m_type_from, m_type_to, m_exposed_method, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_exposed_method, m_method, &m_type_to::m_method); \
-	register_builtin_compat_method<Method_##m_type_from##_##m_method>(m_arg_names, m_default_args);
-#else
-#define bind_convert_compat_method(m_type_from, m_type_to, m_exposed_method, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_exposed_method, m_method, &m_type_to ::m_method); \
-	register_builtin_compat_method<Method_##m_type_from##_##m_method>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_CONVERT_METHOD_CLASS(m_type_from, m_method, &m_type_to::m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type_from>::VARIANT_TYPE, StringName(#m_exposed_method), create_variant_convert_method_bind<m_type_from>(&m_type_to::m_method), m_arg_names, m_default_args, true, VariantPtrCall_##m_type_from##_##m_method::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_static_method(m_type, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_method, m_method, m_type::m_method); \
-	register_builtin_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
-#else
-#define bind_static_method(m_type, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_method, m_method, m_type ::m_method); \
-	register_builtin_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_STATIC_METHOD_CLASS(m_type, m_method, &m_type::m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_method), create_static_method_bind(&m_type::m_method), m_arg_names, m_default_args, false, VariantPtrCall_##m_type##_##m_method::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_static_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_exposed_method, m_method, m_type::m_method); \
-	register_builtin_compat_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
-#else
-#define bind_static_compat_method(m_type, m_exposed_method, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_exposed_method, m_method, m_type ::m_method); \
-	register_builtin_compat_method<Method_##m_type##_##m_method>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_STATIC_METHOD_CLASS(m_type, m_method, &m_type::m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_exposed_method), create_static_method_bind(&m_type::m_method), m_arg_names, m_default_args, true, VariantPtrCall_##m_type##_##m_method::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_static_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_name, m_name, m_method); \
-	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_static_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_name, m_name, m_method); \
-	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
-#endif
+	VARIANT_PTRCALL_STATIC_METHOD_CLASS(m_type, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_name), create_static_method_bind(m_method), m_arg_names, m_default_args, false, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_static_compat_methodv(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_exposed_name, m_name, m_method); \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_static_compat_methodv(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	STATIC_METHOD_CLASS(m_type, m_exposed_name, m_name, m_method); \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
-#endif
+	VARIANT_PTRCALL_STATIC_METHOD_CLASS(m_type, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_exposed_name), create_static_method_bind(m_method), m_arg_names, m_default_args, true, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_name, m_name, m_method); \
-	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_methodv(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_name, m_name, m_method); \
-	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_METHOD_CLASS(m_type, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_name), create_variant_method_bind(m_method), m_arg_names, m_default_args, false, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_compat_methodv(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_exposed_name, m_name, m_method); \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_compat_methodv(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	METHOD_CLASS(m_type, m_exposed_name, m_name, m_method); \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_METHOD_CLASS(m_type, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_exposed_name), create_variant_method_bind(m_method), m_arg_names, m_default_args, true, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_convert_methodv(m_type_from, m_type_to, m_name, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_name, m_name, m_method); \
-	register_builtin_method<Method_##m_type_from##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_convert_methodv(m_type_from, m_type_to, m_name, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_name, m_name, m_method); \
-	register_builtin_method<Method_##m_type_from##_##m_name>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_CONVERT_METHOD_CLASS(m_type_from, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type_from>::VARIANT_TYPE, StringName(#m_name), create_variant_convert_method_bind<m_type_from>(m_method), m_arg_names, m_default_args, false, VariantPtrCall_##m_type_from##_##m_name::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_convert_compat_methodv(m_type_from, m_type_to, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_exposed_name, m_name, m_method); \
-	register_builtin_compat_method<Method_##m_type_from##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_convert_compat_methodv(m_type_from, m_type_to, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	CONVERT_METHOD_CLASS(m_type_from, m_exposed_name, m_name, m_method); \
-	register_builtin_compat_method<Method_##m_type_from##_##m_name>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_CONVERT_METHOD_CLASS(m_type_from, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type_from>::VARIANT_TYPE, StringName(#m_exposed_name), create_variant_convert_method_bind<m_type_from>(m_method), m_arg_names, m_default_args, true, VariantPtrCall_##m_type_from##_##m_name::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_function(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_name, m_name, m_method, true); \
-	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_function(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_name, m_name, m_method, true); \
-	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_FUNCTION_CLASS(m_type, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_name), create_variant_function_bind<true>(m_method), m_arg_names, m_default_args, false, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_compat_function(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_exposed_name, m_name, m_method, true); \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_compat_function(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_exposed_name, m_name, m_method, true); \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_FUNCTION_CLASS(m_type, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_exposed_name), create_variant_function_bind<true>(m_method), m_arg_names, m_default_args, true, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_functionnc(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_name, m_name, m_method, false); \
-	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_functionnc(m_type, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_name, m_name, m_method, false); \
-	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_FUNCTION_CLASS(m_type, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_name), create_variant_function_bind<false>(m_method), m_arg_names, m_default_args, false, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#ifdef DEBUG_ENABLED
 #define bind_compat_functionnc(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_exposed_name, m_name, m_method, false); \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
-#else
-#define bind_compat_functionnc(m_type, m_exposed_name, m_name, m_method, m_arg_names, m_default_args) \
-	FUNCTION_CLASS(m_type, m_exposed_name, m_name, m_method, false); \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
-#endif // DEBUG_ENABLED
+	VARIANT_PTRCALL_FUNCTION_CLASS(m_type, m_name, m_method) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_exposed_name), create_variant_function_bind<false>(m_method), m_arg_names, m_default_args, true, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
 #define bind_string_method(m_method, m_arg_names, m_default_args) \
 	bind_method(String, m_method, m_arg_names, m_default_args); \
@@ -1942,30 +1258,27 @@ StringName Variant::get_enum_for_enumeration(Variant::Type p_type, const StringN
 	bind_compat_methodv(String, m_exposed_name, m_name, m_method, m_arg_names, m_default_args); \
 	bind_convert_compat_methodv(StringName, String, m_exposed_name, m_name, m_method, m_arg_names, m_default_args);
 
-#define bind_custom(m_type, m_name, m_method, m_has_return, m_ret_type) \
-	VARARG_CLASS(m_type, m_name, m_name, m_method, m_has_return, m_ret_type) \
-	register_builtin_method<Method_##m_type##_##m_name>(sarray(), Vector<Variant>());
+#define bind_vararg(m_type, m_name, m_method, m_ret_type) \
+	VARIANT_PTRCALL_VARARG_CLASS(m_type, m_name, m_method, m_ret_type) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_name), create_variant_vararg_bind<m_type, m_ret_type>(m_method), sarray(), Vector<Variant>(), false, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#define bind_custom1(m_type, m_name, m_method, m_arg_type, m_arg_name) \
-	VARARG_CLASS1(m_type, m_name, m_name, m_method, m_arg_type) \
-	register_builtin_method<Method_##m_type##_##m_name>(sarray(m_arg_name), Vector<Variant>());
+#define bind_vararg1(m_type, m_name, m_method, m_arg_type, m_arg_name, m_ret_type) \
+	VARIANT_PTRCALL_VARARG_CLASS(m_type, m_name, m_method, m_ret_type) \
+	MethodInfo method_info; \
+	method_info.arguments.push_back(PropertyInfo(m_arg_type, m_arg_name)); \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_name), create_variant_vararg_bind<m_type, m_ret_type>(m_method, method_info), sarray(m_arg_name), Vector<Variant>(), false, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#define bind_compat_custom(m_type, m_exposed_name, m_name, m_method, m_has_return, m_ret_type) \
-	VARARG_CLASS(m_type, m_exposed_name, m_name, m_method, m_has_return, m_ret_type) \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(), Vector<Variant>());
+#define bind_compat_vararg(m_type, m_exposed_name, m_name, m_method, m_ret_type) \
+	VARIANT_PTRCALL_VARARG_CLASS(m_type, m_name, m_method, m_ret_type) \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_exposed_name), create_variant_vararg_bind<m_type, m_ret_type>(m_method), sarray(), Vector<Variant>(), true, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
-#define bind_compat_custom1(m_type, m_exposed_name, m_name, m_method, m_arg_type, m_arg_name) \
-	VARARG_CLASS1(m_type, m_exposed_name, m_name, m_method, m_arg_type) \
-	register_builtin_compat_method<Method_##m_type##_##m_name>(sarray(m_arg_name), Vector<Variant>());
+#define bind_compat_vararg1(m_type, m_exposed_name, m_name, m_method, m_arg_type, m_arg_name, m_ret_type) \
+	VARIANT_PTRCALL_VARARG_CLASS(m_type, m_name, m_method, m_ret_type) \
+	MethodInfo method_info; \
+	method_info.arguments.push_back(PropertyInfo(m_arg_type, m_arg_name)); \
+	_VariantCall::register_method(GetTypeInfo<m_type>::VARIANT_TYPE, StringName(#m_exposed_name), create_variant_vararg_bind<m_type, m_ret_type>(m_method, method_info), sarray(m_arg_name), Vector<Variant>(), true, VariantPtrCall_##m_type##_##m_name::ptrcall);
 
 static void _register_variant_builtin_methods_string() {
-	_VariantCall::variant_constants = memnew_arr_template<HashMap<StringName, Variant>>(Variant::VARIANT_MAX);
-	builtin_method_info = memnew_arr(BuiltinMethodMap, Variant::VARIANT_MAX);
-	builtin_method_names = memnew_arr(List<StringName>, Variant::VARIANT_MAX);
-#ifndef DISABLE_DEPRECATED
-	builtin_compat_method_info = memnew_arr(BuiltinCompatMethodMap, Variant::VARIANT_MAX);
-#endif
-
 	/* String */
 
 	bind_string_method(casecmp_to, sarray("to"), varray());
@@ -2031,7 +1344,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(unicode_at, sarray("at"), varray());
 	bind_string_method(indent, sarray("prefix"), varray());
 	bind_string_method(dedent, sarray(), varray());
-	bind_method(String, hash, sarray(), varray());
+	bind_methodv(String, hash, static_cast<uint32_t (String::*)() const>(&String::hash), sarray(), varray());
 	bind_string_method(md5_text, sarray(), varray());
 	bind_string_method(sha1_text, sarray(), varray());
 	bind_string_method(sha256_text, sarray(), varray());
@@ -2069,8 +1382,8 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(is_valid_ip_address, sarray(), varray());
 	bind_string_method(is_valid_filename, sarray(), varray());
 
-	bind_string_method(to_int, sarray(), varray());
-	bind_string_method(to_float, sarray(), varray());
+	bind_string_methodv(to_int, static_cast<int64_t (String::*)() const>(&String::to_int), sarray(), varray());
+	bind_string_methodv(to_float, static_cast<double (String::*)() const>(&String::to_float), sarray(), varray());
 	bind_string_method(hex_to_int, sarray(), varray());
 	bind_string_method(bin_to_int, sarray(), varray());
 
@@ -2404,7 +1717,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_static_method(Color, from_rgba8, sarray("r8", "g8", "b8", "a8"), varray(255));
 }
 
-VARIANT_ENUM_CAST(ResourceDeepDuplicateMode);
+VARIANT_ENUM_CAST_EXT(ResourceDeepDuplicateMode, Resource::DeepDuplicateMode);
 
 static void _register_variant_builtin_methods_misc() {
 	/* RID */
@@ -2445,11 +1758,11 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Callable, bindv, sarray("arguments"), varray());
 	bind_method(Callable, unbind, sarray("argcount"), varray());
 
-	bind_custom(Callable, call, _VariantCall::func_Callable_call, true, Variant);
-	bind_custom(Callable, call_deferred, _VariantCall::func_Callable_call_deferred, false, Variant);
-	bind_custom(Callable, rpc, _VariantCall::func_Callable_rpc, false, Variant);
-	bind_custom1(Callable, rpc_id, _VariantCall::func_Callable_rpc_id, Variant::INT, "peer_id");
-	bind_custom(Callable, bind, _VariantCall::func_Callable_bind, true, Callable);
+	bind_vararg(Callable, call, _VariantCall::func_Callable_call, Variant);
+	bind_vararg(Callable, call_deferred, _VariantCall::func_Callable_call_deferred, void);
+	bind_vararg(Callable, rpc, _VariantCall::func_Callable_rpc, void);
+	bind_vararg1(Callable, rpc_id, _VariantCall::func_Callable_rpc_id, Variant::INT, "peer_id", void);
+	bind_vararg(Callable, bind, _VariantCall::func_Callable_bind, Callable);
 
 	/* Signal */
 
@@ -2464,7 +1777,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Signal, get_connections, sarray(), varray());
 	bind_method(Signal, has_connections, sarray(), varray());
 
-	bind_custom(Signal, emit, _VariantCall::func_Signal_emit, false, Variant);
+	bind_vararg(Signal, emit, _VariantCall::func_Signal_emit, void);
 
 	/* Transform2D */
 
@@ -3163,6 +2476,7 @@ static void _register_variant_builtin_constants() {
 }
 
 void Variant::_register_variant_methods() {
+	_VariantCall::variant_constants = memnew_arr_template<HashMap<StringName, Variant>>(Variant::VARIANT_MAX);
 	_register_variant_builtin_methods_string();
 	_register_variant_builtin_methods_math();
 	_register_variant_builtin_methods_misc();
@@ -3171,11 +2485,5 @@ void Variant::_register_variant_methods() {
 }
 
 void Variant::_unregister_variant_methods() {
-	//clear methods
-	memdelete_arr(builtin_method_names);
-	memdelete_arr(builtin_method_info);
-#ifndef DISABLE_DEPRECATED
-	memdelete_arr(builtin_compat_method_info);
-#endif
 	memdelete_arr(_VariantCall::variant_constants);
 }
