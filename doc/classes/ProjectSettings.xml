@@ -3532,6 +3532,9 @@
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
+		<member name="rendering/textures/jxl_compression/effort" type="int" setter="" getter="" default="7">
+			The encoder effort for JPEG XL. Affects both lossy and lossless JPEG XL including JPEG XL textures with high dynamic range (HDR) data imported in Lossless or Lossy mode, and images saved with [method Image.save_jxl]. A higher value results in smaller files at the cost of compression speed. Supported values are 1 to 10.
+		</member>
 		<member name="rendering/textures/light_projectors/filter" type="int" setter="" getter="" default="3" keywords="nearest, linear, anisotropic">
 			The filtering quality to use for [OmniLight3D] and [SpotLight3D] projectors. When using one of the anisotropic filtering modes, the anisotropic filtering level is controlled by [member rendering/textures/default_filters/anisotropic_filtering_level].
 		</member>

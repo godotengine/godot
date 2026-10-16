@@ -382,6 +382,14 @@
 				Loads an image from the binary contents of a JPEG file.
 			</description>
 		</method>
+		<method name="load_jxl_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a JPEG XL file.
+				[b]Note:[/b] This method is only available in engine builds with the JXL module enabled. By default, the JXL module is enabled, but it can be disabled at build-time using the [code]module_jxl_enabled=no[/code] SCons option.
+			</description>
+		</method>
 		<method name="load_ktx_from_buffer">
 			<return type="int" enum="Error" />
 			<param index="0" name="buffer" type="PackedByteArray" />
@@ -532,6 +540,26 @@
 			<description>
 				Saves the image as a JPEG file to a byte array with the specified [param quality] between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [param quality] values result in better-looking output at the cost of larger byte array sizes (and therefore memory usage). Recommended [param quality] values are between [code]0.75[/code] and [code]0.90[/code]. Even at quality [code]1.00[/code], JPEG compression remains lossy.
 				[b]Note:[/b] JPEG does not save an alpha channel. If the [Image] contains an alpha channel, the image will still be saved, but the resulting byte array won't contain the alpha channel.
+			</description>
+		</method>
+		<method name="save_jxl" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="lossy" type="bool" default="false" />
+			<param index="2" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG XL file to the file at [param path]. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive).
+				Images in half or full float formats are saved as linear floating-point data, preserving high dynamic range (HDR) values. Other images are saved as 8 bits per channel sRGB data.
+				[b]Note:[/b] This method is only available in engine builds with the JXL module enabled. By default, the JXL module is enabled, but it can be disabled at build-time using the [code]module_jxl_enabled=no[/code] SCons option.
+			</description>
+		</method>
+		<method name="save_jxl_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<param index="0" name="lossy" type="bool" default="false" />
+			<param index="1" name="quality" type="float" default="0.75" />
+			<description>
+				Saves the image as a JPEG XL file to a byte array. See [method save_jxl] for a description of the parameters.
+				[b]Note:[/b] This method is only available in engine builds with the JXL module enabled. By default, the JXL module is enabled, but it can be disabled at build-time using the [code]module_jxl_enabled=no[/code] SCons option.
 			</description>
 		</method>
 		<method name="save_png" qualifiers="const">

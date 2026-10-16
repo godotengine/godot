@@ -90,7 +90,7 @@ void ResourceImporterStreamedTexture::get_import_options(const String &p_path, L
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.exr,*.jpeg,*.jpg,*.jxl,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "streaming/min_lod_override", PROPERTY_HINT_ENUM, "Settings,0,1,2,3,4,5,6,7,8,9,10,11,12,13"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "streaming/max_lod_override", PROPERTY_HINT_ENUM, "Settings,0,1,2,3,4,5,6,7,8,9,10,11,12,13"), 0));
