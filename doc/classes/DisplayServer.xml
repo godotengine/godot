@@ -649,6 +649,20 @@
 				Returns the user's clipboard as a string if possible.
 			</description>
 		</method>
+		<method name="clipboard_get_files" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the file paths of files on the user's clipboard if possible.
+				[b]Note:[/b] This method is only implemented on macOS and Windows. On Linux (X11/Wayland), files on the clipboard are represented as a newline-separated ([code]\n[/code]) list of file URIs (prefixed with [code]file://[/code]). use [method clipboard_get] to retrieve them.
+			</description>
+		</method>
+		<method name="clipboard_get_file_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of files on the user's clipboard.
+				[b]Note:[/b] This method is only implemented on macOS and Windows. See [method clipboard_get_files] for details about Linux (X11/Wayland).
+			</description>
+		</method>
 		<method name="clipboard_get_image" qualifiers="const">
 			<return type="Image" />
 			<description>
@@ -667,6 +681,13 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if there is a text content on the user's clipboard.
+			</description>
+		</method>
+		<method name="clipboard_has_file" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if there is a file on the user's clipboard.
+				[b]Note:[/b] This method is only implemented on macOS and Windows. See [method clipboard_get_files] for details about Linux (X11/Wayland).
 			</description>
 		</method>
 		<method name="clipboard_has_image" qualifiers="const">
