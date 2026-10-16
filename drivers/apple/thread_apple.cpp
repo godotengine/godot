@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)
+
 #include "thread_apple.h"
 
 #include "core/error/error_macros.h"
@@ -152,3 +154,5 @@ Thread::~Thread() {
 		pthread_detach(pthread);
 	}
 }
+
+#endif // defined(MACOS_ENABLED) || defined(IOS_ENABLED) || defined(VISIONOS_ENABLED)

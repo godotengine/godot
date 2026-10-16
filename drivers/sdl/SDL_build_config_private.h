@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef SDL_ENABLED
+
 #define SDL_build_config_h_
 
 #include <SDL3/SDL_platform_defines.h>
@@ -168,3 +170,5 @@
 #ifdef __GNUC__
 #define HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
 #endif
+
+#endif // SDL_ENABLED

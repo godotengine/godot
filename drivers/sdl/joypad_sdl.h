@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef SDL_ENABLED
+
 #include "core/input/input.h"
 
 typedef uint32_t SDL_JoystickID;
@@ -74,3 +76,5 @@ private:
 
 	void close_joypad(int p_pad_idx);
 };
+
+#endif // SDL_ENABLED

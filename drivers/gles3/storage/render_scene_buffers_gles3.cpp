@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "render_scene_buffers_gles3.h"
-
 #ifdef GLES3_ENABLED
+
+#include "render_scene_buffers_gles3.h"
 
 #include "drivers/gles3/storage/config.h"
 #include "drivers/gles3/storage/texture_storage.h"

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef ANDROID_ENABLED
+
 #include "../../util.h"
 #include "../openxr_extension_wrapper.h"
 
@@ -59,3 +61,5 @@ private:
 	// Initialize the loader
 	EXT_PROTO_XRRESULT_FUNC1(xrInitializeLoaderKHR, (const XrLoaderInitInfoBaseHeaderKHR *), loaderInitInfo)
 };
+
+#endif // LINUXBSD_ENABLED

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef METAL_ENABLED
+
 #include "drivers/metal/metal_device_profile.h"
 #include "drivers/metal/sha256_digest.h"
 #include "servers/rendering/rendering_device_driver.h"
@@ -294,3 +296,5 @@ public:
 	RenderingShaderContainerFormatMetal(const MetalDeviceProfile *p_device_profile, bool p_export = false);
 	virtual ~RenderingShaderContainerFormatMetal() = default;
 };
+
+#endif // METAL_ENABLED

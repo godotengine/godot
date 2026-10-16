@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "webxr_interface_js.h"
-
 #ifdef WEB_ENABLED
+
+#include "webxr_interface_js.h"
 
 #include "godot_webxr.h"
 

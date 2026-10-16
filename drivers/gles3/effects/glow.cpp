@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "glow.h"
-
 #ifdef GLES3_ENABLED
+
+#include "glow.h"
 
 #include "drivers/gles3/storage/texture_storage.h"
 

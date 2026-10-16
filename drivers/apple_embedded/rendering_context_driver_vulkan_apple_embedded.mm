@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "rendering_context_driver_vulkan_apple_embedded.h"
+#if defined(VULKAN_ENABLED) && (APPLE_EMBEDDED_ENABLED)
 
-#ifdef VULKAN_ENABLED
+#import "rendering_context_driver_vulkan_apple_embedded.h"
 
 #ifdef USE_VOLK
 #include <volk.h>
@@ -66,4 +66,4 @@ RenderingContextDriverVulkanAppleEmbedded::~RenderingContextDriverVulkanAppleEmb
 	// Does nothing.
 }
 
-#endif // VULKAN_ENABLED
+#endif // defined(VULKAN_ENABLED) && (APPLE_EMBEDDED_ENABLED)
