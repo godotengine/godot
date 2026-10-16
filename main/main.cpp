@@ -801,6 +801,7 @@ Error Main::test_setup() {
 
 	ClassDB::set_current_api(ClassDB::API_CORE);
 #endif
+	register_core_platform_apis();
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
@@ -866,6 +867,7 @@ void Main::test_cleanup() {
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 
 	unregister_platform_apis();
+	unregister_core_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
 
@@ -1015,6 +1017,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	register_core_types();
 	register_core_driver_types();
+	register_core_platform_apis();
 
 	MAIN_PRINT("Main: Initialize Globals");
 
@@ -2502,6 +2505,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		rendering_method = "gl_compatibility";
 		default_renderer_mobile = "gl_compatibility";
 	}
+#else
+	if (rendering_driver.is_empty() && rendering_method.is_empty() && project_manager) {
+		rendering_driver = "vulkan";
+		rendering_method = "mobile";
+		default_renderer_mobile = "mobile";
+	}
 #endif
 
 	if (!rendering_method.is_empty()) {
@@ -3059,6 +3068,7 @@ error:
 	memdelete(packed_data);
 	packed_data = nullptr;
 
+	unregister_core_platform_apis();
 	unregister_core_driver_types();
 	unregister_core_extensions();
 
