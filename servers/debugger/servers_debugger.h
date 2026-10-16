@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifdef DEBUG_ENABLED
+
 #include "core/error/error_list.h"
 #include "core/object/ref_counted.h"
 #include "core/string/string_name.h"
@@ -135,3 +137,5 @@ public:
 
 	~ServersDebugger();
 };
+
+#endif // DEBUG_ENABLED

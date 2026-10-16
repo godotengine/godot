@@ -58,6 +58,7 @@ struct ProgramExitGuard {
 static ProgramExitGuard program_exit_guard;
 
 void Script::_notification(int p_what) {
+#ifdef DEBUG_ENABLED
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			if (EngineDebugger::is_active()) {
@@ -65,6 +66,7 @@ void Script::_notification(int p_what) {
 			}
 		} break;
 	}
+#endif // DEBUG_ENABLED
 }
 
 Variant Script::_get_property_default_value(const StringName &p_property) {
@@ -113,11 +115,13 @@ Dictionary Script::_get_script_constant_map() {
 	return ret;
 }
 
+#ifdef DEBUG_ENABLED
 void Script::_set_debugger_break_language() {
 	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_script_debugger()->set_break_language(get_language());
 	}
 }
+#endif // DEBUG_ENABLED
 
 int Script::get_script_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
 	MethodInfo mi = get_method_info(p_method);
