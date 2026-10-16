@@ -231,4 +231,23 @@ TEST_CASE("[XMLParser] CDATA") {
 	CHECK_EQ(parser.get_node_name(), "a");
 }
 
+TEST_CASE("[XMLParser] Seek and current line") {
+	XMLParser parser;
+	const String input = "<a>\n<b>\r\n</a>";
+	REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+
+	REQUIRE_EQ(parser.read(), OK); // <a>, line 0
+	CHECK_EQ(parser.get_current_line(), 0);
+
+	REQUIRE_EQ(parser.read(), OK); // <b>, line 1
+	CHECK_EQ(parser.get_current_line(), 1);
+	uint64_t offset = parser.get_node_offset();
+
+	REQUIRE_EQ(parser.read(), OK); // </a>, line 2
+	CHECK_EQ(parser.get_current_line(), 2);
+
+	REQUIRE_EQ(parser.seek(offset), OK); // Seek back to <b>
+	CHECK_EQ(parser.get_current_line(), 1);
+}
+
 } // namespace TestXMLParser
