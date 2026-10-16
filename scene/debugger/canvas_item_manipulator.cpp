@@ -469,6 +469,7 @@ bool CanvasItemManipulator::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 				if (move_temp_pivot) {
 					drag_type = DRAG_TEMP_PIVOT;
 					temp_pivot = Transform2D(global_transform_callback.call()).affine_inverse().xform(event_pos);
+					temp_pivot = snap_point(temp_pivot);
 					emit_signal(update_canvas_signal);
 					return true;
 				}
@@ -540,6 +541,7 @@ bool CanvasItemManipulator::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_TEMP_PIVOT) {
 		if (m.is_valid()) {
 			temp_pivot = Transform2D(global_transform_callback.call()).affine_inverse().xform(m->get_position());
+			temp_pivot = snap_point(temp_pivot);
 			emit_signal(update_canvas_signal);
 			return true;
 		}
