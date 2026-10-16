@@ -59,13 +59,11 @@ void MultiMeshEditor::_populate() {
 		Ref<MultiMesh> multimesh;
 		multimesh = node->get_multimesh();
 		if (multimesh.is_null()) {
-			err_dialog->set_text(TTR("No mesh source specified (and no MultiMesh set in node)."));
-			err_dialog->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("No mesh source specified (and no MultiMesh set in node)."));
 			return;
 		}
 		if (multimesh->get_mesh().is_null()) {
-			err_dialog->set_text(TTR("No mesh source specified (and MultiMesh contains no Mesh)."));
-			err_dialog->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("No mesh source specified (and MultiMesh contains no Mesh)."));
 			return;
 		}
 
@@ -74,47 +72,41 @@ void MultiMeshEditor::_populate() {
 		Node *ms_node = node->get_node(mesh_source->get_text());
 
 		if (!ms_node) {
-			err_dialog->set_text(TTR("Mesh source is invalid (invalid path)."));
-			err_dialog->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("Mesh source is invalid (invalid path)."));
 			return;
 		}
 
 		MeshInstance3D *ms_instance = Object::cast_to<MeshInstance3D>(ms_node);
 
 		if (!ms_instance) {
-			err_dialog->set_text(TTR("Mesh source is invalid (not a MeshInstance3D)."));
-			err_dialog->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("Mesh source is invalid (not a MeshInstance3D)."));
 			return;
 		}
 
 		mesh = ms_instance->get_mesh();
 
 		if (mesh.is_null()) {
-			err_dialog->set_text(TTR("Mesh source is invalid (contains no Mesh resource)."));
-			err_dialog->popup_centered();
+			EditorNode::get_singleton()->show_warning(TTR("Mesh source is invalid (contains no Mesh resource)."));
 			return;
 		}
 	}
 
 	if (surface_source->get_text().is_empty()) {
-		err_dialog->set_text(TTR("No surface source specified."));
-		err_dialog->popup_centered();
+		EditorNode::get_singleton()->show_warning(TTR("No surface source specified."));
 		return;
 	}
 
 	Node *ss_node = node->get_node(surface_source->get_text());
 
 	if (!ss_node) {
-		err_dialog->set_text(TTR("Surface source is invalid (invalid path)."));
-		err_dialog->popup_centered();
+		EditorNode::get_singleton()->show_warning(TTR("Surface source is invalid (invalid path)."));
 		return;
 	}
 
 	MeshInstance3D *ss_instance = Object::cast_to<MeshInstance3D>(ss_node);
 
 	if (!ss_instance || ss_instance->get_mesh().is_null()) {
-		err_dialog->set_text(TTR("Surface source is invalid (no geometry)."));
-		err_dialog->popup_centered();
+		EditorNode::get_singleton()->show_warning(TTR("Surface source is invalid (no geometry)."));
 		return;
 	}
 
@@ -123,8 +115,7 @@ void MultiMeshEditor::_populate() {
 	Vector<Face3> geometry = ss_instance->get_mesh()->get_faces();
 
 	if (geometry.is_empty()) {
-		err_dialog->set_text(TTR("Surface source is invalid (no faces)."));
-		err_dialog->popup_centered();
+		EditorNode::get_singleton()->show_warning(TTR("Surface source is invalid (no faces)."));
 		return;
 	}
 
@@ -372,10 +363,6 @@ MultiMeshEditor::MultiMeshEditor() {
 	std->connect("selected", callable_mp(this, &MultiMeshEditor::_browsed));
 
 	_last_pp_node = nullptr;
-
-	err_dialog = memnew(AcceptDialog);
-	err_dialog->set_flag(Window::FLAG_RESIZE_DISABLED, true);
-	add_child(err_dialog);
 }
 
 void MultiMeshEditorPlugin::edit(Object *p_object) {
