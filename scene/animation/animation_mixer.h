@@ -45,6 +45,7 @@ class AnimationMixer : public Node {
 #ifdef TOOLS_ENABLED
 	bool editing = false;
 	bool dummy = false;
+	Dictionary fallback_path_map;
 #endif // TOOLS_ENABLED
 
 	bool reset_on_save = true;
