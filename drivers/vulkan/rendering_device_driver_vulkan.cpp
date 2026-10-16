@@ -1875,7 +1875,7 @@ void RenderingDeviceDriverVulkan::_set_object_name(VkObjectType p_object_type, u
 		// Debug marker extensions.
 		CharString obj_data = p_object_name.utf8();
 		VkDebugMarkerObjectNameInfoEXT name_info;
-		name_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+		name_info.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
 		name_info.pNext = nullptr;
 		name_info.objectType = _convert_to_debug_report_objectType(p_object_type);
 		name_info.object = p_object_handle;
