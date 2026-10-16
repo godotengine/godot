@@ -123,7 +123,7 @@ vec2 octahedron_encode(vec3 n) {
 	return n.xy;
 }
 
-void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, bool use_specular, float roughness, out vec3 diffuse_light, out vec3 specular_light, out float blend) {
+void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal, vec3 cam_specular_normal, bool use_specular, float roughness, vec3 ambient, vec3 environment, out vec3 diffuse_light, out vec3 specular_light, out float blend) {
 	cascade_pos += cam_normal * sdfgi.normal_bias;
 
 	vec3 base_pos = floor(cascade_pos);
@@ -211,14 +211,14 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 		diffuse_accum.rgb /= diffuse_accum.a;
 	}
 
-	diffuse_light = diffuse_accum.rgb;
+	diffuse_light = mix(ambient, diffuse_accum.rgb, min(1.0, diffuse_accum.a / 0.95));
 
 	if (use_specular) {
 		if (diffuse_accum.a > 0.0) {
 			specular_accum /= diffuse_accum.a;
 		}
 
-		specular_light = specular_accum;
+		specular_light = mix(environment, specular_accum, min(1.0, diffuse_accum.a / 0.95));
 	}
 
 	{
