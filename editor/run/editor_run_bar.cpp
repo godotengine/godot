@@ -565,7 +565,6 @@ EditorRunBar::EditorRunBar() {
 	profiler_autostart_indicator = memnew(Button);
 	profiler_autostart_indicator->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	profiler_autostart_indicator->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	profiler_autostart_indicator->set_focus_mode(FOCUS_ACCESSIBILITY);
 	profiler_autostart_indicator->set_theme_type_variation("ProfilerAutostartIndicator");
 	profiler_autostart_indicator->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_profiler_autostart_indicator_pressed));
 	outer_hbox->add_child(profiler_autostart_indicator);
@@ -595,7 +594,6 @@ EditorRunBar::EditorRunBar() {
 		recovery_mode_reload_button = memnew(Button);
 		main_hbox->add_child(recovery_mode_reload_button);
 		recovery_mode_reload_button->set_theme_type_variation("RunBarButton");
-		recovery_mode_reload_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		recovery_mode_reload_button->set_tooltip_text(TTR("Disable recovery mode and reload the project."));
 		recovery_mode_reload_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::recovery_mode_reload_project));
 
@@ -605,7 +603,6 @@ EditorRunBar::EditorRunBar() {
 		recovery_mode_button = memnew(Button);
 		recovery_mode_panel->add_child(recovery_mode_button);
 		recovery_mode_button->set_theme_type_variation("RunBarButton");
-		recovery_mode_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		recovery_mode_button->set_text(TTR("Recovery Mode"));
 		recovery_mode_button->set_tooltip_text(TTR("Recovery Mode is enabled. Click for more details."));
 		recovery_mode_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::recovery_mode_show_dialog));
@@ -617,7 +614,6 @@ EditorRunBar::EditorRunBar() {
 	main_hbox->add_child(play_button);
 	play_button->set_theme_type_variation("RunBarButton");
 	play_button->set_toggle_mode(true);
-	play_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTRC("Run Project"), Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_project", "macos", KeyModifierMask::META | Key::B);
 	play_button->set_shortcut(ED_GET_SHORTCUT("editor/run_project"));
@@ -628,7 +624,6 @@ EditorRunBar::EditorRunBar() {
 	main_hbox->add_child(pause_button);
 	pause_button->set_theme_type_variation("RunBarButton");
 	pause_button->set_toggle_mode(true);
-	pause_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	pause_button->set_tooltip_text(TTRC("Pause the running project's execution for debugging."));
 	pause_button->set_disabled(true);
 
@@ -639,7 +634,6 @@ EditorRunBar::EditorRunBar() {
 	stop_button = memnew(Button);
 	main_hbox->add_child(stop_button);
 	stop_button->set_theme_type_variation("RunBarButton");
-	stop_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	stop_button->set_tooltip_text(TTRC("Stop the currently running project."));
 	stop_button->set_disabled(true);
 	stop_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::stop_playing));
@@ -684,7 +678,6 @@ EditorRunBar::EditorRunBar() {
 
 	play_scene_button->set_tooltip_text(TTRC("Play the currently edited scene."));
 	play_scene_button->set_theme_type_variation("RunBarButton");
-	play_scene_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTRC("Run Specific Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
@@ -707,7 +700,6 @@ EditorRunBar::EditorRunBar() {
 
 	play_custom_scene_button->set_tooltip_text(TTRC("Play a custom scene."));
 	play_custom_scene_button->set_theme_type_variation("RunBarButton");
-	play_custom_scene_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	write_movie_panel = memnew(PanelContainer);
 	main_hbox->add_child(write_movie_panel);
@@ -720,7 +712,6 @@ EditorRunBar::EditorRunBar() {
 
 	write_movie_panel->add_child(write_movie_button);
 	write_movie_button->set_theme_type_variation("RunBarButtonMovieMakerDisabled");
-	write_movie_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	write_movie_button->set_tooltip_text(TTRC("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
 	write_movie_button->set_accessibility_name(TTRC("Enable Movie Maker Mode"));
 	write_movie_button->set_flat(false);
