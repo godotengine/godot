@@ -47,35 +47,23 @@ void Timer::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (!processing || timer_process_callback == TIMER_PROCESS_PHYSICS || !is_processing_internal()) {
+		case NOTIFICATION_INTERNAL_PROCESS:
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (!processing) {
 				return;
 			}
+
+			bool physics_timer = timer_process_callback == TIMER_PROCESS_PHYSICS;
+			if (physics_timer != (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS)) {
+				return;
+			}
+
 			if (ignore_time_scale) {
 				time_left -= Engine::get_singleton()->get_process_step();
+			} else if (physics_timer) {
+				time_left -= get_physics_process_delta_time();
 			} else {
 				time_left -= get_process_delta_time();
-			}
-
-			if (time_left < 0) {
-				if (!one_shot) {
-					time_left += wait_time;
-				} else {
-					stop();
-				}
-
-				emit_signal(SNAME("timeout"));
-			}
-		} break;
-
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (!processing || timer_process_callback == TIMER_PROCESS_IDLE || !is_physics_processing_internal()) {
-				return;
-			}
-			if (ignore_time_scale) {
-				time_left -= Engine::get_singleton()->get_process_step();
-			} else {
-				time_left -= get_physics_process_delta_time();
 			}
 
 			if (time_left < 0) {
