@@ -4340,15 +4340,13 @@ bool Animation::_vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<V
 	double v0 = vc0.length();
 	double v1 = vc1.length();
 	// Avoid zero div but check equality.
-	if (std::abs(v0 - v1) < p_allowed_precision_error) {
+	if ((vc0 - vc1).length() < p_allowed_precision_error) {
 		return true;
-	} else if (std::abs(v0) < p_allowed_precision_error || std::abs(v1) < p_allowed_precision_error) {
+	} else if (v0 < p_allowed_precision_error || v1 < p_allowed_precision_error) {
 		return false;
 	}
 	// Check axis.
 	if (vc0.normalized().dot(vc1.normalized()) >= 1.0 - p_allowed_angular_error * 2.0) {
-		v0 = std::abs(v0);
-		v1 = std::abs(v1);
 		double ratio = v0 < v1 ? v0 / v1 : v1 / v0;
 		if (ratio >= 1.0 - p_allowed_velocity_err) {
 			return true;
@@ -4375,15 +4373,13 @@ bool Animation::_vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<V
 	double v0 = vc0.length();
 	double v1 = vc1.length();
 	// Avoid zero div but check equality.
-	if (std::abs(v0 - v1) < p_allowed_precision_error) {
+	if ((vc0 - vc1).length() < p_allowed_precision_error) {
 		return true;
-	} else if (std::abs(v0) < p_allowed_precision_error || std::abs(v1) < p_allowed_precision_error) {
+	} else if (v0 < p_allowed_precision_error || v1 < p_allowed_precision_error) {
 		return false;
 	}
 	// Check axis.
 	if (vc0.normalized().dot(vc1.normalized()) >= 1.0 - p_allowed_angular_error * 2.0) {
-		v0 = std::abs(v0);
-		v1 = std::abs(v1);
 		double ratio = v0 < v1 ? v0 / v1 : v1 / v0;
 		if (ratio >= 1.0 - p_allowed_velocity_err) {
 			return true;
