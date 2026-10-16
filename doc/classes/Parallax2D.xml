@@ -21,10 +21,13 @@
 			If [code]true[/code], [Parallax2D]'s position is not affected by the position of the camera.
 		</member>
 		<member name="limit_begin" type="Vector2" setter="set_limit_begin" getter="get_limit_begin" default="Vector2(-10000000, -10000000)">
-			Top-left limits for scrolling to begin. If the camera is outside of this limit, the [Parallax2D] stops scrolling. Must be lower than [member limit_end] minus the viewport size to work.
+			Top-left limits for scrolling to begin. If the camera is outside of this limit, the [Parallax2D] uses [member limit_scale] instead of [member scroll_scale]. Must be lower than [member limit_end] minus the viewport size to work.
 		</member>
 		<member name="limit_end" type="Vector2" setter="set_limit_end" getter="get_limit_end" default="Vector2(10000000, 10000000)">
-			Bottom-right limits for scrolling to end. If the camera is outside of this limit, the [Parallax2D] will stop scrolling. Must be higher than [member limit_begin] and the viewport size combined to work.
+			Bottom-right limits for scrolling to end. If the camera is outside of this limit, the [Parallax2D] uses [member limit_scale] instead of [member scroll_scale]. Must be higher than [member limit_begin] and the viewport size combined to work.
+		</member>
+		<member name="limit_scale" type="Vector2" setter="set_limit_scale" getter="get_limit_scale" default="Vector2(0, 0)">
+			If outside of the [member limit_begin] and [member limit_end] limits, the [Parallax2D] uses this value instead of [member scroll_scale].
 		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="repeat_size" type="Vector2" setter="set_repeat_size" getter="get_repeat_size" default="Vector2(0, 0)">
