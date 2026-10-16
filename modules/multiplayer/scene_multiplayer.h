@@ -54,7 +54,6 @@ public:
 	virtual TransferMode get_packet_mode() const override { return TRANSFER_MODE_RELIABLE; }
 	virtual int get_packet_channel() const override { return 0; }
 	virtual void disconnect_peer(int p_peer, bool p_force = false) override {}
-	virtual bool is_server() const override { return true; }
 	virtual void poll() override {}
 	virtual void close() override {}
 	virtual int get_unique_id() const override { return TARGET_PEER_SERVER; }
