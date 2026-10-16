@@ -240,7 +240,8 @@ float get_omni_attenuation(float dist, float inv_range, float decay) {
 	nd *= nd; // nd^4
 	nd = max(1.0 - nd, 0.0);
 	nd *= nd; // nd^2
-	return nd * pow(max(dist, 0.0001), -decay);
+	float attenuation = nd * pow(max(dist, 0.0001), -decay);
+	return min(attenuation, 1.0);
 }
 
 void cluster_get_item_range(uint p_offset, out uint item_min, out uint item_max, out uint item_from, out uint item_to) {
