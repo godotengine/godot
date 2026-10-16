@@ -1371,7 +1371,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 	ERR_FAIL_COND(rb.is_null());
 
 	// View count of our render target must match our camera data.
-	ERR_FAIL_COND(rb->get_view_count() != p_camera_data->view_count);
+	ERR_FAIL_COND_MSG(rb->get_view_count() != p_camera_data->view_count, "The current camera doesn't match the view count of the viewport. Please make sure the correct camera is used or is set to current.");
 
 	// setup scene data
 	RenderSceneDataRD scene_data;
