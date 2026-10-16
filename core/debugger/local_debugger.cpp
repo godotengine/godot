@@ -69,13 +69,13 @@ struct LocalDebugger::ScriptsProfiler {
 	}
 
 	void _print_frame_data(bool p_accumulated) {
-		uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
+		uint64_t diff = OS::get_singleton()->get_ticks_usec_raw() - idle_accum;
 
 		if (!p_accumulated && diff < 1000000) { //show every one second
 			return;
 		}
 
-		idle_accum = OS::get_singleton()->get_ticks_usec();
+		idle_accum = OS::get_singleton()->get_ticks_usec_raw();
 
 		int ofs = 0;
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
@@ -112,7 +112,7 @@ struct LocalDebugger::ScriptsProfiler {
 	}
 
 	ScriptsProfiler() {
-		idle_accum = OS::get_singleton()->get_ticks_usec();
+		idle_accum = OS::get_singleton()->get_ticks_usec_raw();
 	}
 };
 

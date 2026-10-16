@@ -65,7 +65,7 @@ Error StreamPeerSocket::poll() {
 		return OK;
 	} else if (err == ERR_BUSY) {
 		// Check for connect timeout
-		if (OS::get_singleton()->get_ticks_msec() > timeout) {
+		if (OS::get_singleton()->get_ticks_msec_raw() > timeout) {
 			disconnect_from_host();
 			status = STATUS_ERROR;
 			return ERR_CONNECTION_ERROR;

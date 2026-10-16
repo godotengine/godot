@@ -568,13 +568,13 @@ void Performance::set_navigation_process_time(double p_pt) {
 void Performance::add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args, MonitorType p_type) {
 	ERR_FAIL_COND_MSG(has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' already exists.");
 	_monitor_map.insert(p_id, MonitorCall(p_type, p_callable, p_args));
-	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
+	_monitor_modification_time = OS::get_singleton()->get_ticks_usec_raw();
 }
 
 void Performance::remove_custom_monitor(const StringName &p_id) {
 	ERR_FAIL_COND_MSG(!has_custom_monitor(p_id), "Custom monitor with id '" + String(p_id) + "' doesn't exist.");
 	_monitor_map.erase(p_id);
-	_monitor_modification_time = OS::get_singleton()->get_ticks_usec();
+	_monitor_modification_time = OS::get_singleton()->get_ticks_usec_raw();
 }
 
 bool Performance::has_custom_monitor(const StringName &p_id) {

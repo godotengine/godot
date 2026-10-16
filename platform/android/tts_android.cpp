@@ -90,8 +90,8 @@ void TTS_Android::initialize_tts(bool p_wait) {
 	if (p_wait) {
 		uint64_t sleep = 200;
 		uint64_t wait = 1000000;
-		uint64_t time = OS::get_singleton()->get_ticks_usec();
-		while (OS::get_singleton()->get_ticks_usec() - time < wait) {
+		uint64_t time = OS::get_singleton()->get_ticks_usec_raw();
+		while (OS::get_singleton()->get_ticks_usec_raw() - time < wait) {
 			OS::get_singleton()->delay_usec(1000 * sleep);
 			if (init_done.is_set()) {
 				break;

@@ -47,11 +47,11 @@ void AudioDriver::set_singleton() {
 
 #ifdef DEBUG_ENABLED
 void AudioDriver::start_counting_ticks() {
-	prof_ticks.set(OS::get_singleton()->get_ticks_usec());
+	prof_ticks.set(OS::get_singleton()->get_ticks_usec_raw());
 }
 
 void AudioDriver::stop_counting_ticks() {
-	prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks.get());
+	prof_time.add(OS::get_singleton()->get_ticks_usec_raw() - prof_ticks.get());
 }
 #endif // DEBUG_ENABLED
 
@@ -68,7 +68,7 @@ void AudioDriver::audio_server_process(int p_frames, int32_t *p_buffer, bool p_u
 void AudioDriver::update_mix_time(int p_frames) {
 	_last_mix_frames = p_frames;
 	if (OS::get_singleton()) {
-		_last_mix_time = OS::get_singleton()->get_ticks_usec();
+		_last_mix_time = OS::get_singleton()->get_ticks_usec_raw();
 	}
 }
 
@@ -76,7 +76,7 @@ double AudioDriver::get_time_since_last_mix() {
 	lock();
 	uint64_t last_mix_time = _last_mix_time;
 	unlock();
-	return (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
+	return (OS::get_singleton()->get_ticks_usec_raw() - last_mix_time) / 1000000.0;
 }
 
 double AudioDriver::get_time_to_next_mix() {
@@ -84,7 +84,7 @@ double AudioDriver::get_time_to_next_mix() {
 	uint64_t last_mix_time = _last_mix_time;
 	uint64_t last_mix_frames = _last_mix_frames;
 	unlock();
-	double total = (OS::get_singleton()->get_ticks_usec() - last_mix_time) / 1000000.0;
+	double total = (OS::get_singleton()->get_ticks_usec_raw() - last_mix_time) / 1000000.0;
 	double mix_buffer = last_mix_frames / (double)get_mix_rate();
 	return mix_buffer - total;
 }
