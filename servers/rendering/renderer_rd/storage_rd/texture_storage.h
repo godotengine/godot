@@ -191,6 +191,7 @@ private:
 
 		HashSet<RID> lightmap_users;
 
+#ifdef TOOLS_ENABLED
 		RenderingServerTypes::TextureDetectCallback detect_3d_callback = nullptr;
 		void *detect_3d_callback_ud = nullptr;
 
@@ -199,6 +200,7 @@ private:
 
 		RenderingServerTypes::TextureDetectRoughnessCallback detect_roughness_callback = nullptr;
 		void *detect_roughness_callback_ud = nullptr;
+#endif
 
 		CanvasTexture *canvas_texture = nullptr;
 
@@ -634,9 +636,11 @@ public:
 
 	virtual Image::Format texture_get_format(RID p_texture) const override;
 
+#ifdef TOOLS_ENABLED
 	virtual void texture_set_detect_3d_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override;
 	virtual void texture_set_detect_normal_callback(RID p_texture, RenderingServerTypes::TextureDetectCallback p_callback, void *p_userdata) override;
 	virtual void texture_set_detect_roughness_callback(RID p_texture, RenderingServerTypes::TextureDetectRoughnessCallback p_callback, void *p_userdata) override;
+#endif
 
 	virtual void texture_debug_usage(List<RenderingServerTypes::TextureInfo> *r_info) override;
 
