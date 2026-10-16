@@ -188,69 +188,6 @@ def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: lis
     return subprocess.call(args, env=msbuild_env, cwd=chdir_to)
 
 
-def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision, no_deprecated, werror):
-    target_filenames = [
-        "GodotSharp.dll",
-        "GodotSharp.pdb",
-        "GodotSharp.xml",
-        "GodotSharpEditor.dll",
-        "GodotSharpEditor.pdb",
-        "GodotSharpEditor.xml",
-        "GodotPlugins.dll",
-        "GodotPlugins.pdb",
-        "GodotPlugins.runtimeconfig.json",
-    ]
-
-    for build_config in ["Debug", "Release"]:
-        editor_api_dir = os.path.join(output_dir, "GodotSharp", "Api", build_config)
-
-        targets = [os.path.join(editor_api_dir, filename) for filename in target_filenames]
-
-        args = ["/restore", "/t:Build", "/p:Configuration=" + build_config, "/p:NoWarn=1591"]
-        if push_nupkgs_local:
-            args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
-        if precision == "double":
-            args += ["/p:GodotFloat64=true"]
-        if no_deprecated:
-            args += ["/p:GodotNoDeprecated=true"]
-        if werror:
-            args += ["/p:TreatWarningsAsErrors=true"]
-
-        sln = os.path.join(module_dir, "glue/GodotSharp/GodotSharp.sln")
-        exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
-        if exit_code != 0:
-            return exit_code
-
-        # Copy targets
-
-        core_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharp", "bin", build_config))
-        editor_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharpEditor", "bin", build_config))
-        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net10.0"))
-
-        if not os.path.isdir(editor_api_dir):
-            assert not os.path.isfile(editor_api_dir)
-            os.makedirs(editor_api_dir)
-
-        def copy_target(target_path):
-            from shutil import copy
-
-            filename = os.path.basename(target_path)
-
-            src_path = os.path.join(core_src_dir, filename)
-            if not os.path.isfile(src_path):
-                src_path = os.path.join(editor_src_dir, filename)
-            if not os.path.isfile(src_path):
-                src_path = os.path.join(plugins_src_dir, filename)
-
-            print(f"Copying assembly to {target_path}...")
-            copy(src_path, target_path)
-
-        for scons_target in targets:
-            copy_target(scons_target)
-
-    return 0
-
-
 def write_file_if_different(path, content):
     if os.path.isfile(path):
         with open(path, "r", encoding="utf-8") as f:
@@ -371,38 +308,26 @@ def build_all(
     # Generate SdkPackageVersions.props and VersionDocsUrl constant
     generate_sdk_package_versions()
 
-    # Godot API
-    exit_code = build_godot_api(
-        msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision, no_deprecated, werror
-    )
-    if exit_code != 0:
-        return exit_code
-
-    # GodotTools
-    sln = os.path.join(module_dir, "editor/GodotTools/GodotTools.sln")
-    args = ["/restore", "/t:Build", "/p:Configuration=" + ("Debug" if dev_debug else "Release")] + (
-        ["/p:GodotPlatform=" + godot_platform] if godot_platform else []
-    )
-    if push_nupkgs_local:
-        args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
-    if precision == "double":
-        args += ["/p:GodotFloat64=true"]
-    exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
-    if exit_code != 0:
-        return exit_code
-
-    # Godot.NET.Sdk
-    args = ["/restore", "/t:Build", "/p:Configuration=Release"]
+    # Everything else
+    sln = os.path.join(module_dir, "Godot.sln")
+    args = ["/restore", "/t:Build"]
+    if godot_platform:
+        args += ["/p:GodotPlatform=" + godot_platform]
     if push_nupkgs_local:
         args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
     if no_deprecated:
         args += ["/p:GodotNoDeprecated=true"]
-    sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
-    exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
-    if exit_code != 0:
-        return exit_code
+    if werror:
+        args += ["/p:TreatWarningsAsErrors=true"]
+
+    for config in ["Debug", "Release"]:
+        exit_code = run_msbuild(
+            msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args + [f"/p:Configuration={config}"]
+        )
+        if exit_code != 0:
+            return exit_code
 
     return 0
 
@@ -412,12 +337,11 @@ def main():
     import sys
 
     parser = argparse.ArgumentParser(description="Builds all Godot .NET solutions")
-    parser.add_argument("--godot-output-dir", type=str, required=True)
     parser.add_argument(
-        "--dev-debug",
-        action="store_true",
-        default=False,
-        help="Build GodotTools and Godot.NET.Sdk with 'Configuration=Debug'",
+        "--godot-output-dir", type=str, default="", help="Deprecated; output directories are resolved internally."
+    )
+    parser.add_argument(
+        "--dev-debug", action="store_true", default=False, help="Deprecated; both configurations are built."
     )
     parser.add_argument("--godot-platform", type=str, default="")
     parser.add_argument("--mono-prefix", type=str, default="")
@@ -438,7 +362,7 @@ def main():
     this_script_dir = os.path.dirname(os.path.realpath(__file__))
     module_dir = os.path.abspath(os.path.join(this_script_dir, os.pardir))
 
-    output_dir = os.path.abspath(args.godot_output_dir)
+    output_dir = os.path.abspath(args.godot_output_dir) if args.godot_output_dir else None
 
     push_nupkgs_local = os.path.abspath(args.push_nupkgs_local) if args.push_nupkgs_local else None
 
