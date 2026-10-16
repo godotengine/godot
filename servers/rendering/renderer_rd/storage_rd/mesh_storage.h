@@ -35,6 +35,7 @@
 #include "core/templates/self_list.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/shaders/skeleton.glsl.gen.h"
+#include "servers/rendering/rendering_server_enums.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/mesh_storage.h"
 #include "servers/rendering/storage/utilities.h"
@@ -201,6 +202,7 @@ private:
 		RID blend_weights_buffer;
 		List<MeshInstance *>::Element *I = nullptr; //used to erase itself
 		uint64_t skeleton_version = 0;
+		RSE::MeshSkinningMethod skinning_method = RSE::MESH_SKINNING_METHOD_LINEAR_BLEND;
 		bool dirty = false;
 		bool weights_dirty = false;
 		SelfList<MeshInstance> weight_update_list;
@@ -294,7 +296,7 @@ private:
 			uint32_t blend_shape_count;
 			uint32_t normalized_blend_shapes;
 			uint32_t normal_tangent_stride;
-			uint32_t pad1;
+			uint32_t skinning_method;
 			float skeleton_transform_x[2];
 			float skeleton_transform_y[2];
 
@@ -651,6 +653,7 @@ public:
 	virtual void mesh_instance_free(RID p_rid) override;
 	virtual void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) override;
 	virtual void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override;
+	virtual void mesh_instance_set_skinning_method(RID p_mesh_instance, RSE::MeshSkinningMethod p_method) override;
 	virtual void mesh_instance_check_for_update(RID p_mesh_instance) override;
 	virtual void mesh_instance_set_canvas_item_transform(RID p_mesh_instance, const Transform2D &p_transform) override;
 	virtual void update_mesh_instances() override;

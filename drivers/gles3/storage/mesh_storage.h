@@ -178,6 +178,8 @@ struct MeshInstance {
 	LocalVector<Surface> surfaces;
 	LocalVector<float> blend_weights;
 
+	RSE::MeshSkinningMethod skinning_method = RSE::MESH_SKINNING_METHOD_LINEAR_BLEND;
+
 	List<MeshInstance *>::Element *I = nullptr; //used to erase itself
 	uint64_t skeleton_version = 0;
 	bool dirty = false;
@@ -475,6 +477,7 @@ public:
 	virtual void mesh_instance_free(RID p_rid) override;
 	virtual void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) override;
 	virtual void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) override;
+	virtual void mesh_instance_set_skinning_method(RID p_mesh_instance, RSE::MeshSkinningMethod p_method) override;
 	virtual void mesh_instance_check_for_update(RID p_mesh_instance) override;
 	virtual void mesh_instance_set_canvas_item_transform(RID p_mesh_instance, const Transform2D &p_transform) override;
 	virtual void update_mesh_instances() override;
