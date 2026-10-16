@@ -1,0 +1,4 @@
+Validate extension JSON: Error: Field 'classes/Object/methods/connect/arguments/2': type changed value in new API, from "int" to "bitfield::Object.ConnectFlags".
+Validate extension JSON: Error: Field 'classes/Object/methods/connect/arguments': meta was removed.
+
+Type of the 'flags' parameter changed to the enum. Compatibility method added.
