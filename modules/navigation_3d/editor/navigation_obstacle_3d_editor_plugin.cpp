@@ -903,4 +903,6 @@ NavigationObstacle3DEditorPlugin::~NavigationObstacle3DEditorPlugin() {
 		rs->free_rid(point_handle_mesh_rid);
 		point_handle_mesh_rid = RID();
 	}
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
 }

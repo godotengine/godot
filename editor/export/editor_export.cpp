@@ -539,3 +539,8 @@ EditorExport::EditorExport() {
 	singleton = this;
 	set_process(true);
 }
+
+EditorExport::~EditorExport() {
+	ERR_FAIL_COND(singleton != this);
+	singleton = nullptr;
+}
