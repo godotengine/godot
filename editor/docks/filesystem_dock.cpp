@@ -4699,6 +4699,21 @@ FileSystemDock::FileSystemDock() {
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);
 
+	files = memnew(FileSystemList);
+	files->set_accessibility_name(TTRC("Files"));
+	files->set_select_mode(ItemList::SELECT_MULTI);
+	files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
+	files->set_allow_rmb_select(true);
+	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
+	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
+	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
+	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
+	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
+	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
+	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm).bind(false));
+	file_list_vb->add_child(files);
+
 	bottom_toolbar_hbc = memnew(HBoxContainer);
 	bottom_toolbar_hbc->set_alignment(BoxContainer::ALIGNMENT_END);
 	file_list_vb->add_child(bottom_toolbar_hbc);
@@ -4726,21 +4741,6 @@ FileSystemDock::FileSystemDock() {
 	button_file_list_display_mode->set_accessibility_name(TTRC("Display Mode"));
 	button_file_list_display_mode->set_theme_type_variation("FlatMenuButton");
 	bottom_toolbar_hbc->add_child(button_file_list_display_mode);
-
-	files = memnew(FileSystemList);
-	files->set_accessibility_name(TTRC("Files"));
-	files->set_select_mode(ItemList::SELECT_MULTI);
-	files->set_scroll_hint_mode(ItemList::SCROLL_HINT_MODE_TOP);
-	files->set_allow_rmb_select(true);
-	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
-	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	SET_DRAG_FORWARDING_GCD(files, FileSystemDock);
-	files->connect("item_clicked", callable_mp(this, &FileSystemDock::_file_list_item_clicked));
-	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
-	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
-	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
-	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm).bind(false));
-	file_list_vb->add_child(files);
 
 	scanning_vb = memnew(VBoxContainer);
 	scanning_vb->hide();
