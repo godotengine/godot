@@ -4,7 +4,9 @@
 		Represents a magnifying touch gesture.
 	</brief_description>
 	<description>
-		Stores the factor of a magnifying touch gesture. This is usually performed when the user pinches the touch screen and used for zooming in/out.
+		Stores the factor of a magnifying touch gesture. This is usually performed when the user pinches the touch screen and used for zooming in/out. See also [InputEventPanGesture], [InputEventScreenTouch], and [InputEventScreenDrag].
+		[b]Note:[/b] [InputEventMagnifyGesture] is only supported on macOS, Android, and Linux (Wayland only). On other platforms, it is never emitted from touch events.
+		[b]Note:[/b] On macOS, [InputEventMagnifyGesture] is only emitted when the user performs a pinch gesture on the trackpad, not when performing a pinch gesture on a touch screen.
 		[b]Note:[/b] On Android, this requires the [member ProjectSettings.input_devices/pointing/android/enable_pan_and_scale_gestures] project setting to be enabled.
 	</description>
 	<tutorials>
