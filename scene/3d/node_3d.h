@@ -123,8 +123,6 @@ private:
 
 		mutable MTNumeric<uint32_t> dirty;
 
-		Viewport *viewport = nullptr;
-
 		bool top_level : 1;
 		bool inside_world : 1;
 
