@@ -3710,6 +3710,8 @@ void WaylandThread::_xdg_activation_token_on_done(void *data, struct xdg_activat
 	xdg_activation_v1_activate(ws->wayland_thread->registry.xdg_activation, token, ws->wl_surface);
 	xdg_activation_token_v1_destroy(xdg_activation_token);
 
+	ws->pending_xdg_activation_token = nullptr;
+
 	DEBUG_LOG_WAYLAND_THREAD(vformat("Received activation token and requested window activation."));
 }
 
@@ -4563,6 +4565,10 @@ void WaylandThread::window_destroy(DisplayServerEnums::WindowID p_window_id) {
 		wl_callback_destroy(ws.frame_callback);
 	}
 
+	if (ws.pending_xdg_activation_token) {
+		xdg_activation_token_v1_destroy(ws.pending_xdg_activation_token);
+	}
+
 	if (ws.xdg_surface) {
 		xdg_surface_destroy(ws.xdg_surface);
 	}
@@ -5289,17 +5295,22 @@ void WaylandThread::window_request_attention(DisplayServerEnums::WindowID p_wind
 	}
 
 	if (registry.xdg_activation) {
+		if (ws.pending_xdg_activation_token) {
+			xdg_activation_token_v1_destroy(ws.pending_xdg_activation_token);
+			ws.pending_xdg_activation_token = nullptr;
+		}
+
 		// Window attention requests are done through the XDG activation protocol.
-		xdg_activation_token_v1 *xdg_activation_token = xdg_activation_v1_get_activation_token(registry.xdg_activation);
+		ws.pending_xdg_activation_token = xdg_activation_v1_get_activation_token(registry.xdg_activation);
 		// Set additional data on activation token when we want strong attention
 		if (p_hint_strong_focus) {
-			xdg_activation_token_v1_set_serial(xdg_activation_token, last_serial, wl_seat_current);
+			xdg_activation_token_v1_set_serial(ws.pending_xdg_activation_token, last_serial, wl_seat_current);
 			if (focused_window) {
-				xdg_activation_token_v1_set_surface(xdg_activation_token, focused_window->wl_surface);
+				xdg_activation_token_v1_set_surface(ws.pending_xdg_activation_token, focused_window->wl_surface);
 			}
 		}
-		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &ws);
-		xdg_activation_token_v1_commit(xdg_activation_token);
+		xdg_activation_token_v1_add_listener(ws.pending_xdg_activation_token, &xdg_activation_token_listener, &ws);
+		xdg_activation_token_v1_commit(ws.pending_xdg_activation_token);
 	}
 }
 
