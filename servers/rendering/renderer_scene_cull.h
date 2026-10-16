@@ -714,6 +714,7 @@ public:
 		uint32_t light_update_frame_id;
 		bool light_intersects_multiple_cameras;
 		uint32_t light_intersects_multiple_cameras_timeout_frame_id;
+		real_t directional_cascade_radius[RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES] = {};
 
 	public:
 		bool is_shadow_dirty() const { return shadow_dirty_count != 0; }
@@ -747,6 +748,18 @@ public:
 		// Shadow updates can either full (everything in the shadow volume)
 		// or closely culled to the camera frustum.
 		bool is_shadow_update_full() const { return shadow_dirty_count == 0; }
+
+		// Stabilize the directional shadow cascade radius so shadows don't jitter in XR
+		// due to tiny camera movements from head-tracking.
+		real_t stabilize_directional_cascade_radius(int p_cascade, real_t p_radius) {
+			const real_t margin = 0.005;
+			real_t stabilized_radius = directional_cascade_radius[p_cascade];
+			if (p_radius > stabilized_radius || p_radius < stabilized_radius * (1.0 - 2.0 * margin)) {
+				stabilized_radius = p_radius * (1.0 + margin);
+				directional_cascade_radius[p_cascade] = stabilized_radius;
+			}
+			return stabilized_radius;
+		}
 
 		InstanceLightData() {
 			bake_mode = RSE::LIGHT_BAKE_DISABLED;
