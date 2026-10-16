@@ -1,0 +1,24 @@
+diff --git a/thirdparty/harfbuzz/src/hb-gpu-fragment-glsl.hh b/thirdparty/harfbuzz/src/hb-gpu-fragment-glsl.hh
+index c7356fede5..5bfa27b4f6 100644
+--- a/thirdparty/harfbuzz/src/hb-gpu-fragment-glsl.hh
++++ b/thirdparty/harfbuzz/src/hb-gpu-fragment-glsl.hh
+@@ -57,8 +57,9 @@ static const char *hb_gpu_fragment_glsl =
+ "\n"
+ "#define HB_GPU_INV_UNITS float(1.0 / float(HB_GPU_UNITS_PER_EM))\n"
+ "\n"
+ "\n"
++"#ifdef HB_GPU_FETCH\n"
+ "#ifdef HB_GPU_ATLAS_2D\n"
+ "uniform highp isampler2D hb_gpu_atlas;\n"
+ "uniform int hb_gpu_atlas_width;\n"
+ "ivec4 hb_gpu_fetch (int offset)\n"
+@@ -73,8 +74,9 @@ static const char *hb_gpu_fragment_glsl =
+ "{\n"
+ "  return texelFetch (hb_gpu_atlas, offset);\n"
+ "}\n"
+ "#endif\n"
++"#endif\n"
+ "\n"
+ "\n"
+ "uint _hb_gpu_calc_root_code (float y1, float y2, float y3)\n"
+ "{\n"
