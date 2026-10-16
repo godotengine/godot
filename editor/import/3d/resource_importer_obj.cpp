@@ -539,23 +539,25 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 		mesh->lightmap_unwrap_cached(Transform3D(), p_generate_lightmap_uv2_texel_size, p_src_lightmap_cache, lightmap_cache);
 
 		if (!lightmap_cache.is_empty()) {
-			if (r_lightmap_caches.is_empty()) {
-				r_lightmap_caches.push_back(lightmap_cache);
-			} else {
-				// MD5 is stored at the beginning of the cache data.
-				const String new_md5 = String::md5(lightmap_cache.ptr());
+			// MD5 is stored at the beginning of the cache data.
+			const String new_md5 = String::md5(lightmap_cache.ptr());
 
-				for (int i = 0; i < r_lightmap_caches.size(); i++) {
-					const String md5 = String::md5(r_lightmap_caches[i].ptr());
-					if (new_md5 < md5) {
-						r_lightmap_caches.insert(i, lightmap_cache);
-						break;
-					}
-
-					if (new_md5 == md5) {
-						break;
-					}
+			bool handled = false;
+			for (int i = 0; i < r_lightmap_caches.size(); i++) {
+				const String md5 = String::md5(r_lightmap_caches[i].ptr());
+				if (new_md5 < md5) {
+					r_lightmap_caches.insert(i, lightmap_cache);
+					handled = true;
+					break;
 				}
+
+				if (new_md5 == md5) {
+					handled = true;
+					break;
+				}
+			}
+			if (!handled) {
+				r_lightmap_caches.push_back(lightmap_cache);
 			}
 		}
 	}
